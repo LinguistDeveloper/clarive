@@ -27,6 +27,10 @@
     width: 100%;
 }
 
+.bali-form-table .x-table-layout-cell {
+    width: 1%;   /* this should help anchor:100% work, but doesn't...?? */
+}
+
 /* -- put gritter close on the right
     
 .gritter-close {
@@ -81,6 +85,41 @@
   font-size: 11px;  
 }
 
+
+/* -------------------------- Fieldlet HTML -----------------------------*/
+#boot .fieldlet-html li {
+    list-style-type: square;
+    margin-left: 15px;
+}
+
+#boot .fieldlet-html h1 {
+    font-size: 20px;
+}
+
+#boot .fieldlet-html h2 {
+    font-size: 17px;
+}
+
+#boot .fieldlet-html h3 {
+    font-size: 15px;
+}
+
+#boot .fieldlet-html h4 {
+    font-size: 14px;
+}
+
+#boot .fieldlet-html h5 {
+    font-size: 13px;
+}
+
+.status-html {
+      text-transform: uppercase;
+      font-size: 10px;
+      font-weight: bold; 
+      background-color: #eee; 
+      text-align: center
+}
+
 .x-tree-node div.forum-ct{
     background:#eee url(/static/images/icons/cmp-bg.gif) repeat-x;
     margin-top:1px;
@@ -130,39 +169,28 @@
 
 
 .styledCheckbox {
-    height: 13px;
-    width: 13px;
+    height: 18px;
     filter: alpha(opacity=0.0);
     opacity: 0.0;
     outline: 0;
 }
 
 .styledCheckboxWrap {
+    padding: 1px;
     position: relative;
-    background: url('/static/images/icons/checkboxes.gif') no-repeat top left;
-    background-size: 12px;
-    margin: 3px;
+    background: url('/static/images/row-check-sprite.png') no-repeat;
+    height: 18px;
+    width: 100%;	
 }
 
-.wrapChecked{ background-position: 0px -12px; }
+.wrapChecked{ background-position: -25px 0px; }
 
-.wrapPartial{ background-position: 0px -24px; }
+.wrapPartial{ background-position: -50px 0px; }
 
 .pruebafieldset fieldset { border: 4px solid ; }
 
 .pruebafieldset legend{ font-size: 35px; }
 
-/*  FF overwrites - FF uses 13px checkboxes */
-
-.styledCheckboxWrap, x:-moz-any-link {
-    background-size: 13px;
-}
-
-.wrapChecked, x:-moz-any-link
-{ background-position: 0px -13px;  }
-
-.wrapPartial, x:-moz-any-link
-{ background-position: 0px -26px; }
 
 /*
 .x-tree-selected {

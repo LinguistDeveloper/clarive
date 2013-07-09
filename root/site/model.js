@@ -10,63 +10,6 @@ http://baseliner.org/license
 Ext.ns('Baseliner.store');
 Ext.ns('Baseliner.model');
 
-Baseliner.store.Topics = function(c) {
-     Baseliner.store.Topics.superclass.constructor.call(this, Ext.apply({
-        root: 'data' , 
-        remoteSort: true,
-        autoLoad: true,
-        totalProperty:"totalCount", 
-        baseParams: {},
-        id: 'mid', 
-        url: '/topic/related',
-        fields: ['mid','name', 'title','description','color'] 
-     }, c));
-};
-Ext.extend( Baseliner.store.Topics, Baseliner.JsonStore );
-
-Baseliner.model.Topics = function(c) {
-    //var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name} - {title}</div></tpl>' );
-    var tpl_list = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">',
-        '<span id="boot" style="width:200px"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{name}</span></span>',
-        '&nbsp;&nbsp;<b>{title}</b></div></tpl>' );
-    var tpl_field = new Ext.XTemplate( '<tpl for=".">',
-        '<span id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}">{name}</span></span>',
-        '</tpl>' );
-    Baseliner.model.Topics.superclass.constructor.call(this, Ext.apply({
-        allowBlank: true,
-        msgTarget: 'under',
-        allowAddNewData: true,
-        addNewDataOnBlur: true, 
-        //emptyText: _('Enter or select topics'),
-        triggerAction: 'all',
-        resizable: true,
-        mode: 'local',
-        fieldLabel: _('Topics'),
-        typeAhead: true,
-            name: 'topics',
-            displayField: 'title',
-            hiddenName: 'topics',
-            valueField: 'mid',
-        tpl: tpl_list,
-        displayFieldTpl: tpl_field,
-        value: '/',
-        extraItemCls: 'x-tag'
-        /*
-        ,listeners: {
-            newitem: function(bs,v, f){
-                v = v.slice(0,1).toUpperCase() + v.slice(1).toLowerCase();
-                var newObj = {
-                    mid: v,
-                    title: v
-                };
-                bs.addItem(newObj);
-            }
-        }
-        */
-    }, c));
-};
-Ext.extend( Baseliner.model.Topics, Ext.ux.form.SuperBoxSelect );
-
 Baseliner.store.AllProjects = function(c) {
      Baseliner.store.AllProjects.superclass.constructor.call(this, Ext.apply({
         root: 'data' , 
@@ -164,11 +107,14 @@ Baseliner.model.Users = function(c) {
 };
 Ext.extend( Baseliner.model.Users, Ext.ux.form.SuperBoxSelect );
 
-        //Ext.form.Action.prototype.constructor = Ext.form.Action.prototype.constructor.createSequence(function() {
-        //    Ext.applyIf(this.options, {
-        //    submitEmptyText:false
-        //    });
-        //});
+/*
+Ext.form.Action.prototype.constructor = Ext.form.Action.prototype.constructor.createSequence(function() {
+    Ext.applyIf(this.options, {
+    submitEmptyText:false
+    });
+});
+*/
+
 Baseliner.model.Revisions = function(c) {
     var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name}</div></tpl>' );
     var tpl2 = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
@@ -784,7 +730,7 @@ Baseliner.store.CI = function(c) {
         remoteSort: true,
         autoLoad: true,
         totalProperty: 'totalCount', 
-        fields: ['mid','item', 'name','collection','class', 'versionid', 'description', 'properties', 'pretty_properties','data', 'icon'] 
+        fields: ['mid','item', 'name','collection','class','classname', 'versionid', 'description', 'properties', 'pretty_properties','data', 'icon'] 
      }, c));
 };
 Ext.extend( Baseliner.store.CI, Baseliner.JsonStore );
@@ -834,7 +780,7 @@ Baseliner.model.CICombo = function(c) {
         '<tpl for="."><div class="search-item">',
             //'<h3><span>{ns_type}<br />{user}</span><img src="{icon}" />{name}</h3>',
         '<span id="boot" style="background: transparent">',
-        '<table><tr><td><img src="{icon}" />&nbsp;</td><td><strong>{name}</strong> ({class})</td></tr></table>',
+        '<table><tr><td><img src="{icon}" />&nbsp;</td><td><strong>{name}</strong> {[values.classname ? "(" + values.classname + ")" : ""]}</td></tr></table>',
         '</span>',
         '<tpl if="pretty_properties">',
             '<br />{pretty_properties}',
@@ -883,7 +829,6 @@ Baseliner.ci_box = function(c) {
     var role = c.role; delete c.role;
     var cl = c['class']; delete c['class']; // IE - class is syntax errors due to reserved word
     var bp = {};
-	if (c.no_yaml != undefined) bp.no_yaml = c.no_yaml;
     if( cl !=undefined ) bp['class'] = cl;
     else bp.role = role;
     if( c.hiddenName == undefined ) c.hiddenName = c.name;
@@ -1185,8 +1130,7 @@ Baseliner.model.RevisionsGridDD = function(c) {
               renderer: function(v,meta,rec,rowIndex){
                   return '<a href="javascript:Baseliner.delete_revision(\''+revision_grid.id+'\', '+v+')"><img style="float:middle" height=16 src="/static/images/icons/clear.png" /></a>'
               }
-          },
-
+          }
         ]
     }, c ));
     
@@ -1847,7 +1791,7 @@ Ext.extend( Baseliner.Wizard, Ext.Panel );
         data: { aa: 11, bb: [ 'x','y','z' ], cc: [{ mm:99 },{ nn:88 }] },
         metadata: { 
             aa: { value: [ 1, 2, 3 ], read_only: true },
-            'cc.mm': { value: { 'Young': 18, 'Old': 70 } },
+            'cc.mm': { value: { 'Young': 18, 'Old': 70 } }
         }
     });
 
@@ -1910,7 +1854,7 @@ Baseliner.DataEditor = function(c) {
     /*[
     { key: 'aa', type:'array', value: 111, _is_leaf:true, _id:1 },
     { key: 'bb', type:'array', value: 2, _is_leaf:false, _id:2 },
-    { key: 'cc', type:'array', value: 2, _is_leaf:true, _parent:2, _id:3 },
+    { key: 'cc', type:'array', value: 2, _is_leaf:true, _parent:2, _id:3 }
     ];
     */
     var proxy = new Ext.data.MemoryProxy(data);
@@ -2212,6 +2156,7 @@ Baseliner.CBTreeNodeUI = function () {
 
 Ext.extend(Baseliner.CBTreeNodeUI, Ext.tree.TreeNodeUI, {
     renderElements: function (n, a, targetNode, bulkRender) {
+
         // add some indent caching, this helps performance when rendering a large tree
         this.indentMarkup = n.parentNode ? n.parentNode.ui.getChildIndent() : '';
         a.checked3 = a.checked3 ? a.checked3 : a.checked ? 1 : 0;
@@ -2264,6 +2209,67 @@ Ext.extend(Baseliner.CBTreeNodeUI, Ext.tree.TreeNodeUI, {
             cb.className = 'styledCheckboxWrap' + ( c3 == 0 ? '' : ( c3 == -1 ? ' wrapPartial' : ' wrapChecked') );
             this.onCheckChange();
             this.node.attributes.checked3 = c3;
+        }
+    }
+});
+
+
+Baseliner.CBTreeNodeUI_system = function () {
+    Baseliner.CBTreeNodeUI_system.superclass.constructor.apply(this, arguments);
+};
+
+Ext.extend(Baseliner.CBTreeNodeUI_system, Ext.tree.TreeNodeUI, {
+    renderElements: function (n, a, targetNode, bulkRender) {
+
+        // add some indent caching, this helps performance when rendering a large tree
+        this.indentMarkup = n.parentNode ? n.parentNode.ui.getChildIndent() : '';
+        //a.checked3 = a.checked3 ? a.checked3 : a.checked ? 1 : 0;
+        //a.checked = a.checked ? a.checked : ( a.checked3 == 0 ? false : true );
+
+        var cb = Ext.isBoolean(a.checked),
+            nel,
+            href = this.getHref(a.href),
+            c3class = 'styledCheckboxWrap' + (a.checked ? ' wrapChecked' : ''),
+            buf = ['<li class="x-tree-node"><div ext:tree-node-id="', n.id, '" class="x-tree-node-el x-tree-node-leaf x-unselectable ', a.cls, '" unselectable="on">',
+                '<span class="x-tree-node-indent">', this.indentMarkup, "</span>",
+                '<img src="', this.emptyIcon, '" class="x-tree-ec-icon x-tree-elbow" />',
+                '<img src="', a.icon || this.emptyIcon, '" class="x-tree-node-icon', (a.icon ? " x-tree-node-inline-icon" : ""), (a.iconCls ? " " + a.iconCls : ""), '" unselectable="on" />',
+            cb ? ('<span class="' + c3class + '"><input class="x-tree-node-cb styledCheckbox" type="checkbox" ' + (a.checked ? 'checked="checked" />' : '/>') + '</span>') : '',
+                '<a hidefocus="on" class="x-tree-node-anchor" href="', href, '" tabIndex="1" ',
+            a.hrefTarget ? ' target="' + a.hrefTarget + '"' : "", '><span unselectable="on">', n.text, "</span></a></div>",
+                '<ul class="x-tree-node-ct" style="display:none;"></ul>',
+                "</li>"].join('');
+
+        if (bulkRender !== true && n.nextSibling && (nel = n.nextSibling.ui.getEl())) {
+            this.wrap = Ext.DomHelper.insertHtml("beforeBegin", nel, buf);
+        } else {
+            this.wrap = Ext.DomHelper.insertHtml("beforeEnd", targetNode, buf);
+        }
+
+        this.elNode = this.wrap.childNodes[0];
+        this.ctNode = this.wrap.childNodes[1];
+        var cs = this.elNode.childNodes;
+        this.indentNode = cs[0];
+        this.ecNode = cs[1];
+        this.iconNode = cs[2];
+        var index = 3;
+        if (cb) {
+            this.checkbox = cs[3];
+            // fix for IE6
+            this.checkbox.defaultChecked = this.checkbox.checked;
+            index++;
+        }
+        this.anchor = cs[index];
+        this.textNode = cs[index].firstChild;
+    },
+
+    toggleCheck: function ( value ) {
+        var cb = this.checkbox;
+        if (cb) {
+
+            cb.checked = (value === undefined ? !cb.checked : value);
+            cb.className = 'styledCheckboxWrap' + (  cb.checked ? ' wrapChecked' : '');
+            this.onCheckChange();
         }
     }
 });

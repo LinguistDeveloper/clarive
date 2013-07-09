@@ -20,6 +20,7 @@ Baseliner.HtmlEditor = Ext.extend(Ext.form.HtmlEditor, {
 
 Baseliner.CLEditor = Ext.extend(Ext.form.TextArea, {
     fullscreen: false,
+    autofocus: false,
     initComponent : function(){
         Baseliner.CLEditor.superclass.initComponent.call(this);
         var self = this;
@@ -62,12 +63,18 @@ Baseliner.CLEditor = Ext.extend(Ext.form.TextArea, {
             this.cleditor = $( self.el.dom ).cleditor(c)[0];
             self.on('resize', function(){
                 self.cleditor.refresh();
-                self.cleditor.focus();
+                if( this.autofocus ) self.cleditor.focus();
             });
+            if( this.autofocus ) 
             this.cleditor.focus();
         });
         if( Ext.isChrome ) {
+            var foo_load = function(i){
+                if( i < 0 ) return;
             setTimeout( function(){  // TODO detect when the CLEditor is loaded
+                    if( !self.cleditor ) 
+                        foo_load( i-- );
+                    else
                 self.cleditor.$frame[0].contentDocument.onpaste = function(e){ 
                     var items = e.clipboardData.items;
                     var blob = items[0].getAsFile();
@@ -79,7 +86,9 @@ Baseliner.CLEditor = Ext.extend(Ext.form.TextArea, {
                     }; 
                     reader.readAsDataURL(blob); 
                 };
-            }, 800);
+                }, 500);
+            };
+            foo_load(5);
         }
     },
     editor_dom : function(){
@@ -599,5 +608,84 @@ Baseliner.MultiEditor = Ext.extend( Ext.Panel, {
     getCurrentField : function(){
         this.getLayout().activeItem;
     }
+});
+
+/*
+
+   Pagedown Editor - Stackoverflow Markdown style
+
+            var ed = new Baseliner.Pagedown({ fieldLabel: 'Comments', value: 'eee' });
+            var w = new Baseliner.Window({
+                width: 800, height: 450, layout:'fit', 
+                items: new Ext.FormPanel({
+                    items: ed
+                })
+            }).show();
+*/
+
+Baseliner.Pagedown = Ext.extend(Ext.form.Field, {
+    //shouldLayout: true,
+    initComponent : function(){
+        Baseliner.Pagedown.superclass.initComponent.apply(this, arguments);
+    },
+    defaultAutoCreate : {tag: 'div', 'class':'wmd-panel' },
+    onRender : function(){
+        Baseliner.Pagedown.superclass.onRender.apply(this, arguments);
+        this.list = [];
+        var self = this;
+        // the main navbar
+        self.id = Ext.id();
+        var div_btn = document.createElement('div');
+        div_btn.id = 'wmd-button-bar-' + self.id;
+        this.el.dom.appendChild( div_btn );
+
+        self.$field = document.createElement('textarea');
+        self.$field.className = 'wmd-input';
+        //self.$field.style['width'] = self.el.getWidth() + 'px';
+        self.$field.id = 'wmd-input-' + self.id;
+        self.$field.value =  self.value ;
+        this.el.dom.appendChild( self.$field );
+        
+        self.boot = document.createElement('span');
+        self.boot.id = 'boot';
+        self.preview = document.createElement('div');
+        self.preview.id = "wmd-preview-" + self.id;
+        self.preview.className = "wmd-panel wmd-preview";
+        self.boot.appendChild( self.preview );   
+        this.el.dom.appendChild( self.boot );   
+        
+        self.converter = Markdown.getSanitizingConverter();
+        self.converter.hooks.chain("preBlockGamut", function (text, rbg) {
+            return text.replace(/^ {0,3}""" *\n((?:.*?\n)+?) {0,3}""" *$/gm, function (whole, inner) {
+                return "<blockquote>" + rbg(inner) + "</blockquote>\n";
+            });
+        }); 
+        self.editor = new Markdown.Editor(self.converter, '-' + self.id);
+        self.editor.run();
+    },
+    // private
+    redraw : function(){ 
+    },
+    initEvents : function(){
+        this.originalValue = this.getValue();
+    },
+    // These are all private overrides
+    getValue: function(){
+        return this.$field.value;
+    },
+    setValue: function( v ){
+        this.value = this.$field.value = v;
+        this.redraw();
+    },
+    onResize : function( w,r ) {
+       //this.$field.style['width'] = ( w - 200 ) + 'px';
+    },
+    setSize : Ext.emptyFn,
+    setWidth : Ext.emptyFn,
+    setHeight : Ext.emptyFn,
+    setPosition : Ext.emptyFn,
+    setPagePosition : Ext.emptyFn,
+    markInvalid : Ext.emptyFn,
+    clearInvalid : Ext.emptyFn
 });
 

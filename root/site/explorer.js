@@ -1,5 +1,5 @@
-Baseliner.user_can_edit_ci = <% $c->model('Permissions')->user_has_any_action( action=>'action.ci.admin.%', username=>$c->username ) ? 'true' : 'false' %>;
-Baseliner.user_can_job = <% $c->model('Permissions')->user_has_any_action( action=>'action.job.%', username=>$c->username ) ? 'true' : 'false' %>;
+Baseliner.user_can_edit_ci = <% $c->model('Permissions')->user_has_any_action( action => 'action.ci.%', username=>$c->username ) ? 'true' : 'false' %>;
+Baseliner.user_can_job = <% $c->model('Permissions')->user_projects( username=>$c->username ) ? 'true' : 'false' %>;
 Baseliner.user_can_workspace = <% $c->model('Permissions')->user_has_any_action( action=>'action.home.view_workspace', username=>$c->username ) ? 'true' : 'false' %>;
 
 
@@ -46,7 +46,7 @@ Baseliner.TreeLoader = Ext.extend( Ext.tree.TreeLoader, {
         var self = this;
         self.id = Ext.id();
         
-        this.on("beforeload", function(loader, node) {
+        self.on("beforeload", function(loader, node) {
             // save params
             self.$baseParams = Ext.apply( {}, self.baseParams );
             self.$dataUrl = self.dataUrl;
@@ -55,10 +55,29 @@ Baseliner.TreeLoader = Ext.extend( Ext.tree.TreeLoader, {
                 self.dataUrl = node.attributes.url;
             }
             // apply node params to this params
-            self.baseParams = Ext.apply( {}, node.attributes.data, self.baseParams );
+            self.baseParams = Ext.apply( { '_bali_notify_valid_session': true }, node.attributes.data, self.baseParams );
         });
-        this.on("load", function(loader, node) {
+        self.on("load", function(loader, node) {
             // reset params back
+            self.baseParams = self.$baseParams;  
+            self.dataUrl = self.$dataUrl;  
+        });
+        self.on("loadexception", function(loader, node, res) {
+            var obj = Ext.util.JSON.decode( res.responseText );
+            if( ! Ext.isObject(obj) ) obj={};
+            if( res.status == 401 || obj.logged_out ) {
+                Baseliner.login({ no_reload: 1, on_login: function(){ 
+                    loader.load( node );
+                }});
+            } else if( ! obj.success )  {
+                Baseliner.error( _('Error'), res.responseText );
+            } else if( res.status == 0 ) {
+                alert( _('Server not available') );  // an alert does not ask for images from the server
+            } else {
+                // may be a programming error in the js side (treeloader event?), no message to show
+                Baseliner.error( _('Unknown Error'), _('Contact your administrator') );
+            }
+
             self.baseParams = self.$baseParams;  
             self.dataUrl = self.$dataUrl;  
         });
@@ -71,10 +90,34 @@ Baseliner.TreeLoader = Ext.extend( Ext.tree.TreeLoader, {
  *
  */
 
+Baseliner.class_name = function(v){
+    if( typeof(v) == 'object' && v.constructor!=undefined ) {
+        var results = (/function (.{1,})\(/).exec( v.constructor.toString() );
+        if(results && results.length>1) {
+            return results[1];
+        } else {
+            results = (/\[object (.{1,})\]/).exec( v.constructor.toString() );
+            return (results && results.length>1) ? results[1] : '';
+        }
+    } else {
+        return typeof v ;
+    }
+
+};
 Baseliner.TreeMultiTextNode = Ext.extend( Ext.tree.TreeNodeUI, {
     getDDHandles : function(){
         var nodes = [this.iconNode, this.textNode, this.elNode];
-        Ext.each( this.textNode.childNodes, function(n){ nodes.push(n) });
+        if( this.textNode == undefined || this.textNode.childNodes == undefined ) 
+             return nodes;
+        var nodelist = this.textNode.childNodes;
+        //var imax = ( Ext.isIE71 || Ext.isIE81 ) ? 2 : nodelist.length;
+        for( var i=0; i < nodelist.length; i++) {
+            var cn = Baseliner.class_name( nodelist[i] );
+            if( ! ( cn=='Text' && Ext.isIE ) ) 
+                nodes.push( nodelist[i] );
+        }
+        //this.textNode.childNodes.each(function(){ alert(1) });
+        //Ext.each( this.textNode.childNodes, function(n){ nodes.push(n) });
         return nodes;
     }
 });
@@ -170,7 +213,13 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
         if( params.tab_icon == undefined ) params.tab_icon = c.icon;
 
         if( c.type == 'comp' ) {
-            Baseliner.add_tabcomp( c.url, _(c.title), params );
+            if(n.attributes.topic_name) {
+                var topic = n.attributes.topic_name;
+                var title = Baseliner.topic_title( topic.mid, _(topic.category_name), topic.category_color );
+                Baseliner.show_topic( topic.mid, title, { topic_mid: topic.mid, title: title, _parent_grid: undefined } );
+            }
+            else Baseliner.add_tabcomp( c.url, _(c.title), params );
+            
         } else if( c.type == 'html' ) {
             Baseliner.add_tab( c.url, _(c.title), params );
         } else if( c.type == 'iframe' ) {
@@ -219,22 +268,11 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
 
                     if( !tn.category_color ) 
                         tn.category_color = '#999';
-                    //tn.style = 'font-size:10px';
-                    //tn.style = String.format('font-size:9px; margin: 2px 2px 2px 2px; border: 1px solid {0};background-color: #fff;color:{0}', tn.category_color);
-                    //tn.style = String.format('font-size:9px; margin: 2px 2px 2px 2px; border: 1px solid {0};background-color: #fff;color:{0}', tn.category_color);
                     var span = String.format( Baseliner.tree_topic_style, tn.category_color );
 
-                    //tn.mini = true;
-                    //var tn_span = Baseliner.topic_name(tn);
+                    n.setText( String.format( '{0}<b>{1} #{2}</b>: {3}', span, tn.category_name, tn.mid, n.text ) );
+                    n.ui = new Baseliner.TreeMultiTextNode( n );  // DD support for the whole node
 
-                    n.setText( String.format( '{0}<b>{1} #{2}</b>: {3}', span, _(tn.category_name), tn.mid, n.text ) );
-                    n.ui = new Baseliner.TreeMultiTextNode( n );
-
-                    /* n.setText( String.format('<span id="boot"><span class="label" style="font-size:10px;background-color:{0}">#{1}</span></span> {2}',
-                        n.attributes.topic_name.category_color, n.attributes.topic_name.mid, n.text ) ); */
-                } else {
-                    // translate nodes
-                    n.setText( _( n.text ) );
                 }
             });
         });
@@ -447,12 +485,11 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
     initComponent: function(){
         var self = this;
 
+        
         var show_projects = function() {
             if( !self.$tree_projects ) {
                 self.$tree_projects = new Baseliner.ExplorerTree({ dataUrl : '/lifecycle/tree' })
-                self.$tree_projects.on('favorite_added', function() { 
-                    if( self.$tree_favorites ) self.$tree_favorites.refresh() 
-                });
+                self.$tree_projects.on('favorite_added', function() { if( self.$tree_favorites ) self.$tree_favorites.refresh() });
                 self.add( self.$tree_projects );
             }
             self.getLayout().setActiveItem( self.$tree_projects );
@@ -482,6 +519,18 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 self.$tree_ci.on('favorite_added', function() { self.$tree_favorites.refresh() } );
             }
             self.getLayout().setActiveItem( self.$tree_ci );
+        };
+
+        var toggle_stick = function( button, e) {
+            if ( button_stick.enableToggle ) {
+                if( self.fixed == 0 ) {
+                    self.fixed = 1;
+                    button_collapse.hide();
+                } else {
+                    self.fixed = 0;
+                    button_collapse.show();
+                }
+            }
         };
 
         var button_projects = new Ext.Button({
@@ -516,7 +565,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             pressed: false,
             allowDepress: false,
             enableToggle: true,
-            hidden: ! Baseliner.user_can_workspace,
+            hidden: ! Baseliner.user_can_workspace
         });
 
         var button_ci = new Ext.Button({
@@ -576,6 +625,30 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             // ]
         });
 
+        var button_collapse = new Ext.Component({
+            cls: 'x-tool x-tool-expand-east', 
+            style: 'margin: -2px 0px 0px 0px',
+            //hidden; true,
+            listeners: {
+                'afterrender': function(d){
+                    d.el.on('click', function(){
+                        self.collapse();
+                    });
+                }
+            }
+        });
+
+        var button_stick = new Ext.Button({
+            cls: 'x-btn-icon',
+            icon: '/static/images/pin_icon.png',
+            handler: toggle_stick,
+            tooltip: _('Fix explorer'),
+            pressed: true,
+            allowDepress: true,
+            enableToggle: true
+        });
+
+
         self.tbar = new Ext.Toolbar({
             items: [
                 {   xtype:'button', 
@@ -591,22 +664,17 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 button_ci,
                 '->',
                 button_menu,
-                new Ext.Component({
-                    cls: 'x-tool x-tool-expand-east', 
-                    style: 'margin: -2px 0px 0px 0px',
-                    listeners: {
-                        'afterrender': function(d){
-                            d.el.on('click', function(){
-                                self.collapse();
-                            });
-                        }
-                    }
-                })
+                button_collapse,
+                ' ',
+                button_stick
             ]
         });
-        
+
+
         Baseliner.Explorer.superclass.initComponent.call(this);
-        self.on('afterrender', function(){ show_favorites() });
+        self.on('afterrender', function(){ show_favorites(); button_collapse.hide(); });
+        self.on('beforeexpand', function() { button_stick.show();})
+        self.on('beforecollapse', function() { button_stick.hide();})
     },
     current_tree : function(){
         return this.getLayout().activeItem;
@@ -737,6 +805,26 @@ Baseliner.delete_folder = function(node){
     );    
 };
 
+Baseliner.remove_folder_item = function(node_data1, node_data2){
+    if(node_data1.attributes.data.topic_mid ) {
+        Baseliner.ajaxEval( '/fileversion/remove_topic',{ topic_mid: node_data1.attributes.data.topic_mid,
+                                                          id_directory: node_data1.attributes.id_directory },
+            function(response) {
+                if ( response.success ) {
+                    //var explorer = node_data1.ownerTree;
+                    //explorer.refresh_node( node_data1.parentNode );
+                    node_data1.remove();
+                    Baseliner.message( _('Success'), response.msg );
+                } else {
+                    Baseliner.message( _('ERROR'), response.msg );
+                }
+            }
+        );
+    }else{
+        Baseliner.message( _('ERROR'), _('Error moving file') );
+    }
+}
+
 // Main event that gets fired everytime a node is right-clicked
 //    builds the menu from node attributes and base menu
 Baseliner.move_folder_item = function(node_data1, node_data2){
@@ -747,7 +835,7 @@ Baseliner.move_folder_item = function(node_data1, node_data2){
         data_to = node_data2.attributes.data;
         data_from_type = data_from.type || 'topic';
         Baseliner.ajaxEval( '/fileversion/move_' + data_from_type,{ from_file: data_from.id_file,
-                                                                    from_directory: data_from.id_directory,
+                                                                    from_directory: node_data1.attributes.id_directory || data_from.id_directory,
                                                                     from_topic_mid: data_from.topic_mid,
                                                                     to_directory: data_to.id_directory,
                                                                     project: data_to.id_project},
@@ -758,8 +846,8 @@ Baseliner.move_folder_item = function(node_data1, node_data2){
                     Baseliner.message( _('ERROR'), response.msg );
                 }
             }
-        
-        );    
+
+        );
     }else{
         Baseliner.message( _('ERROR'), _('Error moving file') );
     }
@@ -770,6 +858,15 @@ Baseliner.open_topic_grid_from_folder = function(n){
     var id_directory = n.attributes.data.id_directory;
     Baseliner.ajaxEval( '/fileversion/topics_for_folder', { id_directory: id_directory }, function(res){
         Baseliner.add_tabcomp('/comp/topic/topic_grid.js', _('Topics: %1', name), { topic_list: res.topics, tab_icon: '/static/images/icons/topic.png' });
+    });
+}
+
+Baseliner.open_topic_grid_from_release = function(n){
+    var name = n.attributes.data.click.title;
+    var id_release = n.attributes.data.topic_mid;
+    //console.dir(n);
+    Baseliner.ajaxEval( '/lifecycle/topics_for_release', { id_release: id_release }, function(res){
+        Baseliner.add_tabcomp('/comp/topic/topic_grid.js', _('Related: %1', name), { topic_list: res.topics, tab_icon: '/static/images/icons/topic.png' });
     });
 }
 

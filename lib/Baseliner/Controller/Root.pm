@@ -53,15 +53,22 @@ sub begin : Private {
     $c->res->headers->header( 'Cache-Control' => 'no-cache');
     $c->res->headers->header( Pragma => 'no-cache');
     $c->res->headers->header( Expires => 0 );
-    if( $c->req->path eq 'logout' ) {
-        return 1;
-    }
+    
+    $self->_set_user_lang($c);
 
     Baseliner->app( $c );
 
     _db_setup;  # make sure LongReadLen is set after forking
 
     $c->forward('/theme');
+
+    #my $logged_on = defined $c->username;
+    # catch invalid user object sessions
+    #try {
+        #die unless $c->session->{user} || $c->stash->{auth_skip};
+    ##} catch {
+        #my $path = $c->request->{path} || $c->request->path;
+    #};
 }
 
 =head2 auto
@@ -71,18 +78,20 @@ auto centralizes all auhtentication check and dispatch.
 =cut
 sub auto : Private {
     my ( $self, $c ) = @_;
-    
-    Baseliner->app( $c );
-    
-    # set language 
-    $self->_set_user_lang($c);
-
     my $last_msg = '';
     my $notify_valid_session = delete $c->request->params->{_bali_notify_valid_session};
-    return 1 if $c->stash->{auth_skip};
-    return 1 if $c->req->path eq 'i18n/js';
-    return 1 if try { $c->session->{user} // 0 } catch { 0 };
     my $path = $c->request->{path} || $c->request->path;
+
+    return 1 if $c->stash->{auth_skip};
+    return 1 if $path eq 'i18n/js';
+    return 1 if try { $c->session->{user} // 0 } catch { 0 };
+    
+    # auth check skip
+    return 1 if try { $c->user_exists } catch { 0 };
+    return 1 if $path eq 'logout';
+    return 1 if $path eq 'logoff';
+    return 1 if $path =~ /(^site\/)|(^login)|(^auth)/;
+    return 1 if $path =~ /\.(css)$/;
 
     # sessionid param?
     my $sid = $c->req->params->{sessionid} // $c->req->headers->{sessionid};
@@ -96,11 +105,6 @@ sub auto : Private {
         $c->session_is_valid;    
     };
     
-    # auth check skip
-    return 1 if try { $c->user_exists } catch { 0 };
-    return 1 if $path eq '/logout';
-    return 1 if $path =~ /(^site\/)|(^login)|(^auth)/;
-
     # saml?
     if( exists $c->config->{saml_auth} && $c->config->{saml_auth} eq 'on' ) {
         my $saml_username= $c->forward('/auth/saml_check');
@@ -132,16 +136,20 @@ sub auto : Private {
 
 sub _set_user_lang : Private {
     my ( $self, $c ) = @_;
-    my $langs;
+    
     if( ref $c->session->{user} ) {
-         $langs = $c->session->{user}->languages // [ $c->config->{default_lang} ];
+        $c->languages( $c->session->{user}->languages // [ $c->config->{default_lang} ] );
     }
     elsif( my $username = $c->username ) {
         my $prefs = $c->model('ConfigStore')->get('config.user.global', ns=>"user/$username");
-        $langs = [ $prefs->{language} || $c->config->{default_lang} ];
+        $c->languages( [ $prefs->{language} || $c->config->{default_lang} ] );
+        if( ref $c->session->{user} ) {
+            $c->session->{user}->languages( [ $prefs->{language} || $c->config->{default_lang} ] );
+        }
     }
-    $c->languages( $langs );
-    return $langs;
+    else {
+        $c->languages([ $c->config->{default_lang} ]); 
+    }
 }
 
 sub serve_file : Private {
@@ -225,6 +233,7 @@ sub tab : LocalRegex( '^tab/(.*)$' ) {
 
 sub index:Private {
     my ( $self, $c ) = @_;
+
     my $p = $c->request->parameters;
 
     if( $p->{tab}  ) {
@@ -234,13 +243,28 @@ sub index:Private {
         push @{ $c->stash->{tab_list} }, { url=>$p->{tab_page}, title=>$p->{tab_page}, type=>'page', params=>$p };
     }
 
+    # set language 
+    $self->_set_user_lang($c);
+
     # load menus
+    if ( ! $c->stash->{ reload_all } ) {
+        $c->stash->{ reload_all } = 1;
     my @menus;
     $c->forward('/user/can_surrogate');
     if( $c->username ) {
         my @actions = $c->model('Permissions')->list( username=> $c->username, ns=>'any', bl=>'any' );
         $c->stash->{menus} = $c->model('Menus')->menus( allowed_actions=>\@actions, username => $c->username );
+            $c->stash->{can_change_password} = $c->config->{authentication}{default_realm} eq 'none';
         $c->stash->{portlets} = [
+                map {
+                    +{
+                       key      => $_->key, 
+                       title    => $_->title, 
+                       url_comp => $_->url_comp, 
+                       url_max  => $_->url_max, 
+                       url      => $_->url,
+                    }
+                }
             grep { $_->active }
             $c->model('Registry')->search_for( key=>'portlet.', allowed_actions=>\@actions, username => $c->username )
         ];
@@ -257,8 +281,10 @@ sub index:Private {
 
     $c->stash->{show_js_reload} = $ENV{BASELINER_DEBUG} && $c->has_action('action.admin.develop');
     $c->stash->{can_lifecycle} = $c->has_action('action.home.show_lifecycle');
-    $c->stash->{can_menu} = $c->has_action('action.home.show_menu');
-
+        if( !( $c->stash->{can_menu} = $c->has_action('action.home.show_menu')) ) {
+            delete $c->stash->{menus}
+        }
+    }
     $c->stash->{template} = '/site/index.html';
 }
 

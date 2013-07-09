@@ -5,35 +5,36 @@
 */
 
 // Routing
-Baseliner.route_regex = /^#!\/(\w+)\:(.*)$/;
-Baseliner.route = function (path) {
-    var match = Baseliner.route_regex.exec( path );
-    if( ! match || ! Ext.isArray(match) || match.length < 2 ) return;
-    var action = match[1];
-    var route  = match[2];
-    switch( action ) {
-        case 'tab': 
-            if( Ext.getCmp( route ) ) {
-                Baseliner.tabpanel().setActiveTab( route );
-            } else {
-                // not good, messes up history: Baseliner.route_clean();
-            }
-            break;
-   }
-}
-Baseliner.route_clean = function () {
-    window.location.hash = '';
-}
+if( Prefs.routing ) {
+    Baseliner.route_regex = /^#!\/(\w+)\:(.*)$/;
+    Baseliner.route = function (path) {
+        var match = Baseliner.route_regex.exec( path );
+        if( ! match || ! Ext.isArray(match) || match.length < 2 ) return;
+        var action = match[1];
+        var route  = match[2];
+        switch( action ) {
+            case 'tab': 
+                if( Ext.getCmp( route ) ) {
+                    Baseliner.tabpanel().setActiveTab( route );
+                } else {
+                    // not good, messes up history: Baseliner.route_clean();
+                }
+                break;
+       }
+    }
+    Baseliner.route_clean = function () {
+        window.location.hash = '';
+    }
 
-$(window).bind('hashchange', function(e)
-{
-    Baseliner.route(window.location.hash);
-});
-$('a').click(function(event) {
-    event.preventDefault();
-    $(this).attr('href', '/#!/'+$(this).attr('href'));
-});
-
+    $(window).bind('hashchange', function(e)
+    {
+        Baseliner.route(window.location.hash);
+    });
+    $('a').click(function(event) {
+        event.preventDefault();
+        $(this).attr('href', '/#!/'+$(this).attr('href'));
+    });
+}
 
 /* if (false && typeof history.pushState !== 'undefined') 
 {
@@ -148,7 +149,7 @@ $('a').click(function(event) {
                     this.destroy();
                 }, this);    
             }
-        },
+        }
     });    
 
 
@@ -564,6 +565,11 @@ $('a').click(function(event) {
                     var id = tab.getId();
                     Baseliner.tabInfo[id] = { url: purl, title: ptitle, type: 'script', params: params };
                     if( params.callback != undefined ) params.callback();
+                    try { 
+                        if (Baseliner.explorer.fixed == 0) {
+                            Baseliner.explorer.collapse(); 
+                        }
+                    } catch(e) {}
                 } else {
                     Ext.getCmp('main-panel').remove( newpanel );
                     if( res.status == 401 ) {
@@ -799,8 +805,13 @@ $('a').click(function(event) {
     Baseliner.addNewTabComp = function( comp_url, ptitle, params ){
         var req_params = params != undefined ? params : {};
         Baseliner.ajaxEval( comp_url, req_params, function(comp) {
-            var id = Baseliner.addNewTabItem( comp, ptitle, params );
-            Baseliner.tabInfo[id] = { url: comp_url, title: ptitle, params: params, type: 'comp' };
+            var id = Baseliner.addNewTabItem( comp, comp.tab_title || ptitle, params );
+            Baseliner.tabInfo[id] = { url: comp_url, title: comp.tab_title || ptitle, params: params, type: 'comp' };
+            try { 
+                if (Baseliner.explorer.fixed == 0) {
+                    Baseliner.explorer.collapse(); 
+                }
+            } catch(e) {}
         });
     };
 
@@ -814,7 +825,12 @@ $('a').click(function(event) {
         if( params == undefined ) params = {};
         Baseliner.ajaxEval( comp_url, params, function(comp) {
             var id = Baseliner.addNewTabItem( comp, ptitle, params );
-            Baseliner.tabInfo[id] = { url: comp_url, title: ptitle, params: params, type: 'comp' };
+            Baseliner.tabInfo[id] = { url: comp_url, title: comp.tab_title || ptitle, params: params, type: 'comp' };
+            try { 
+                if (Baseliner.explorer.fixed == 0) {
+                    Baseliner.explorer.collapse(); 
+                }
+            } catch(e) {}
         });
     };
 
@@ -878,6 +894,28 @@ $('a').click(function(event) {
     };
     Baseliner.error_win_textarea_style = 'font: 12px Consolas,Courier New,monotype';
 
+    Baseliner.ErrorWindow = Ext.extend( Baseliner.Window, {
+        title: _('Error'), 
+        height: 300, width: 480, 
+        layout:'border', 
+        msg:'',
+        initComponent : function(){
+            var msg = this.msg;
+            this.title = String.format('<span id="boot" style="background:transparent"><span class="label" style="background:red">{0}</span></span>', this.title );
+            this.items = [
+                { xtype:'textarea', border:false, region:'center', layout:'fit', frame:false,
+                    readOnly: true,
+                      style: { font: '13px Verdana,Consolas,Helvetica,Verdana,sans-serif', 'background':'#eee', 'background-image':'none' } ,
+                      value: ""+msg },
+                { xtype:'tabpanel', height: 160, region:'south', split:true, activeTab:0, margins: '2 0 0 0', collapsible: true,
+                  collapsed: !Baseliner.DEBUG,  items: [
+                      { xtype:'textarea', title: _('Response'), value: msg, style: Baseliner.error_win_textarea_style }
+                  ]} 
+             ]
+            Baseliner.ErrorWindow.superclass.initComponent.call(this);
+        }
+    });
+
     Baseliner.error_win = function(url,params,xhr,e){
         var eo = { name: e }; // build my own error object
         try { eo.name = e.name } catch(e2){}
@@ -891,23 +929,45 @@ $('a').click(function(event) {
             if( Ext.isArray( mat ) ) eo.line = mat[1]
                 else eo.line = mat;
         }
+        var e_params, e_xhr;
+        if( params!=undefined && !Ext.isIE ) {
+            if( Ext.isFunction( JSON.stringify ) ) {
+                try { e_params = JSON.stringify(params); } catch(e){ e_params='[could not encode]' }
+            } else {
+                try { e_params = Ext.encode(params); } catch(e){ e_params='[could not encode]' }
+            }
+        }
+        if( xhr !=undefined && !Ext.isIE ) {
+            if( Ext.isFunction( JSON.stringify ) ) {
+                try { e_xhr = JSON.stringify(xhr); } catch(e){ e_xhr='[could not encode]' }
+            } else {
+                try { e_xhr = Ext.encode(xhr); } catch(e){ e_xhr='[could not encode]' }
+            }
+        }
         var emsg = String.format('name: {0}\nmessage: {1}\nline: {2}\ncode: {3}\nfile: {4}\nstack: {5}', eo.name, eo.msg, eo.line, eo.code, eo.file, eo.stack );
+        var msg = ""+e; 
+        var main_field;
+        if( /^<!DOCTYPE html/.test(msg) ) {
+            main_field = { xtype:'panel', html: msg, layout:'fit', region:'center', frame:false, readOnly: true };
+        } else {
+            main_field = { xtype:'textarea', border:false, region:'center', layout:'fit', frame:false,
+                    readOnly: true,
+                      style: { font: '13px Verdana,Consolas,Helvetica,Verdana,sans-serif', 'background':'#eee', 'background-image':'none' } ,
+                      value: msg };
+        }
         var win = new Baseliner.Window({
-            title: String.format('<span id="boot"><span class="badge" style="background:red">{0}</span></span>', _('Error') ),
+            title: String.format('<span id="boot" style="background:transparent"><span class="label" style="background:red">{0}</span></span>', _('Error') ),
             height: 300, width: 480, 
             layout:'border', 
             items:[
-                { xtype:'textarea', border:false, region:'center', layout:'fit', frame:false,
-                    readOnly: true,
-                      style: { font: '13px Verdana,Consolas,Helvetica,Verdana,sans-serif', 'background':'#eee', 'background-image':'none' } ,
-                      value: ""+e },
+                main_field,
                 { xtype:'tabpanel', height: 160, region:'south', split:true, activeTab:0, margins: '2 0 0 0', collapsible: true,
                   collapsed: !Baseliner.DEBUG,  items: [
                       { xtype:'textarea', title: _('Response'), value: xhr.responseText, style: Baseliner.error_win_textarea_style },
                       { xtype:'panel', title: _('Code'), items: new Baseliner.CodeMirror({ value: xhr.responseText }) },
                       { xtype:'textarea', title: _('Error'), value: emsg, style: Baseliner.error_win_textarea_style },
-                      { xtype:'textarea', title: _('Params'), value: Ext.encode( params ), style: Baseliner.error_win_textarea_style },
-                      { xtype:'textarea', title: _('XHR'), value: Ext.encode( xhr ), style: Baseliner.error_win_textarea_style },
+                      { xtype:'textarea', title: _('Params'), value: e_params, style: Baseliner.error_win_textarea_style },
+                      { xtype:'textarea', title: _('XHR'), value: e_xhr, style: Baseliner.error_win_textarea_style },
                       { xtype:'textarea', title: _('URL'), value: url, style: Baseliner.error_win_textarea_style }
                   ]} 
              ]
@@ -917,13 +977,15 @@ $('a').click(function(event) {
 
     Baseliner.eval_response = function( text, params, url ) {
         var comp;
+        // search cache, if exists
         if( Ext.isObject( Baseliner.eval_cache ) && Baseliner.eval_cache[url] !=undefined ) {
             var comp = Baseliner.eval_cache[url];
             if( Ext.isFunction(comp) ) return comp(params);
         }
+        // eval
         try { eval("comp = " + text ) } catch(e) {} // this is for (function(){})(); with semicolon, etc.
-        if( comp == undefined ) 
-            eval("comp = ( " + text + " )");  // json, pure js, closures (function(){ })
+        if( comp == undefined ) eval("comp = ( " + text + " )");  // json, pure js, closures (function(){ })
+        
         if( Ext.isFunction( comp ) ) {
             var ret = comp(params);
             if( Ext.isObject( Baseliner.eval_cache ) ) Baseliner.eval_cache[url]=comp;
@@ -935,25 +997,29 @@ $('a').click(function(event) {
 
     Baseliner.ajaxEval = function( url, params, foo, scope ){
         if(params == undefined ) params = {};
-        if( params.login_count == undefined ) params.login_count = 0;
+
+        if( params._login_count == undefined ) params._login_count = 0;
         params['_bali_notify_valid_session'] = true;
+        
         var login_and_go = function(url,params,foo,scope){
               Baseliner.login({ no_reload: 1, on_login: function(){ Baseliner.ajaxEval(url,params,foo,scope)} });
         };
-    
+        
         var login_or_error = function(){
-            if( params.login_count >= 2 ) {  // 2 attempts to authorize, then abort
+            if( params._login_count >= 2 ) {  // 2 attempts to authorize, then abort
                 Baseliner.error_win(url,params,xhr, _('Login not available') );       
             } else {
-                params.login_count++;
+                params._login_count++;
                 login_and_go(url,params,foo,scope);
             }
         }
     
+        if( Ext.isIE7 || Ext.isIE8 ) Ext.fly( document.body ).mask( _('Sending Request...') );  // so slow, better to mask the whole thing
         var the_request = function() { Ext.Ajax.request({
             url: url,
             params: params,
             callback: function(opts,success,xhr) {
+                if( Ext.isIE7 || Ext.isIE8 ) Ext.fly( document.body ).unmask();
                 if( !success ) {
                     var msg;
                     if( xhr.status==401 ) {
@@ -961,8 +1027,15 @@ $('a').click(function(event) {
                         if( Ext.isObject( comp ) && comp.logged_out ) {
                             login_or_error();
                         }
+                        return;
                     } else if( xhr.status==404 ) {
                         msg = _("Not found: %1", url );
+                    } else if( xhr.status==0 ) {
+                        var yn = confirm( _('Server not available. Retry?') );  // an alert does not ask for images from the server
+                        if( yn ) {
+                            the_request();
+                        }
+                        return;
                     } else {
                         msg = xhr.responseText || _('Unknown error');
                     }
@@ -976,8 +1049,14 @@ $('a').click(function(event) {
                     if( Ext.isObject( comp ) && comp.logged_out ) {
                         login_or_error();
                     }
+                    else if( Ext.isObject( comp ) && comp.success!=undefined && !comp.success ) {
+                        Baseliner.error( _('Loading Error'), comp.msg );
+                    }
                     else if( Ext.isFunction( foo ) ) {
                         foo( comp, scope );
+                    }
+                    else {
+                        Baseliner.error_win(url,params,xhr,e);
                     }
                 }
                 catch(e){
@@ -1277,21 +1356,31 @@ $('a').click(function(event) {
         return Baseliner._defaultLoadingMask;
     };
     Baseliner.showLoadingMaskFade = function (cmp, msg){
-        Baseliner.showLoadingMask(cmp, msg);
+        if( cmp ) {
+            Baseliner.showLoadingMask(cmp, msg);
+        }
     };
     
     Baseliner.hideLoadingMask = function ( cmp ){
         if(Baseliner._defaultLoadingMask != undefined){
-            cmp.unmask();
-
+            if( Ext.isObject( cmp ) ) {
+                cmp.unmask();
+            }
+            else if( Ext.isObject( Baseliner._defaultLoadingMask ) ) { 
+                 try { Baseliner._defaultLoadingMask.el.unmask(); } catch(e){} // not sure there is el or not
+                 try { Baseliner._defaultLoadingMask.unmask(); } catch(e){} // not sure there is el or not
+                 try { Baseliner._defaultLoadingMask.hide(); } catch(e){} // not sure there is el or not
+            }
             // Baseliner._defaultLoadingMask.el.unmask();
         }
     };
     
     Baseliner.hideLoadingMaskFade = function (cmp){
         if(Baseliner._defaultLoadingMask != undefined){
-            cmp.fadeIn();
-            cmp.unmask();
+            if( cmp ) {
+                cmp.fadeIn();
+                cmp.unmask();
+            } 
             // Baseliner._defaultLoadingMask.hide();
             //Baseliner._defaultLoadingMask.getEl().fadeOut();
         }
@@ -1510,3 +1599,110 @@ Ext.tree.TreeLoader.override({
     }
 });
 
+Baseliner.print_current_tab = function(){
+    var tabpanel = Ext.getCmp('main-panel');
+    var comp = tabpanel.getActiveTab();
+    var title = comp.title;
+    var grid_trans = function(i){
+        return Ext.isFunction(i.getGridEl) ? Baseliner.grid_scroller(i) : i;
+    }
+    if( Ext.isFunction( comp.print_hook ) ) {
+        Baseliner.print(comp.print_hook());
+    } else if( Ext.isObject( comp.print_hook ) ) {
+        Baseliner.print(comp.print_hook);
+    } else {
+        comp = grid_trans(comp);
+        var id = comp.id;
+        Baseliner.print({ title: title, id: id });
+    }
+}
+
+/* 
+ *  Baseliner.print({ title: title, id: el.id });
+ *
+ */
+Baseliner.print = function(opts) {
+    function add_css(doc,url){ 
+        var boot = doc.createElement( 'link' );
+        boot.rel = 'stylesheet';
+        boot.type = 'text/css';
+        boot.href = url;
+        if( doc.head ) {
+            doc.head.appendChild( boot );
+        } else {
+            // needed by IE apparently
+            var head = doc.createElement('head');
+            doc.appendChild( head );
+            head.appendChild( boot );
+        }
+    }
+
+    var title = opts.title || _('Print');
+    var el = opts.el || Ext.get(opts.id).dom;
+    
+    var ww = window.open('about:blank', '_blank'); //, 'resizable=yes, scrollbars=yes' );
+    var dw = ww.document;
+    //dw.write( style_html( el.innerHTML ));
+    var html = el.innerHTML;
+    dw.write( html );
+    dw.close();
+    dw.title = title;
+    add_css( dw, '/site/960-Grid-System/code/css/960_24_col.css' );
+    add_css( dw, '/site/boot.css' );
+    add_css( dw, '/static/ext/resources/css/ext-all.css');
+    add_css( dw, '/static/ext/examples/ux/css/ux-all.css');
+    add_css( dw, '/site/site.css' );
+    add_css( dw, '/static/gritter/css/jquery.gritter.css' );
+    add_css( dw, '/static/themes/bde/style.css' );
+
+    add_css( dw, "/static/datepickerplus/datepickerplus.css" );
+    add_css( dw, "/static/pagedown/pagedown.css" );
+    add_css( dw, "/static/cleditor/jquery.cleditor.css" );
+    add_css( dw, "/static/codemirror/lib/codemirror.css" );
+    add_css( dw, "/static/codemirror/theme/elegant.css" );
+    add_css( dw, "/static/codemirror/theme/night.css" );
+    add_css( dw, "/static/codemirror/theme/eclipse.css" );
+    add_css( dw, "/static/codemirror/theme/lesser-dark.css" );
+    add_css( dw, "/static/codemirror/lib/util/simple-hint.css" );
+    add_css( dw, "/site/portal/portal.css"  );
+    add_css( dw, "/site/portal/sample.css"  );
+    add_css( dw, "/static/livegrid/resources/css/ext-ux-livegrid.css"  );
+    add_css( dw, "/static/valums/fileuploader.css"  );
+    add_css( dw, "/static/superbox/superbox.css"  );
+    add_css( dw, '/static/fullcalendar/fullcalendar.css'  );
+    add_css( dw, '/static/fullcalendar/fullcalendar.print.css' );
+    add_css( dw, '/static/gridtree/css/treegrid.css'  );
+    add_css( dw, "/static/final.css"  );
+    add_css( dw, "/static/sprites.css"  );
+        
+    add_css( dw, '/static/final.css' );
+
+    dw.body.style.overflow = 'auto';
+    dw.body.style['-webkit-print-color-adjust'] = 'exact';
+    dw.body.style['margin'] = '10px';
+    
+    if( opts.cb ) {
+        opts.cb( ww, dw );
+    }
+    
+    // ww.print(); // needs to be called after all styles are loaded
+}
+
+Baseliner.grid_scroller = function( grid ) {
+    // from Ext.GridView
+     var Element  = Ext.Element,
+        el       = Ext.get(grid.getGridEl().dom.firstChild),
+        mainWrap = new Element(el.child('div.x-grid3-viewport')),
+        scroller = new Element(mainWrap.child('div.x-grid3-scroller'));
+    return scroller;
+}
+
+Baseliner.whereami = function(cons){
+    var e = new Error('dummy');
+    var stack = e.stack.replace(/^[^\(]+?[\n$]/gm, '')
+        .replace(/^\s+at\s+/gm, '')
+        .replace(/^Object.<anonymous>\s*\(/gm, '{anonymous}()@')
+        .split('\n');
+    if( cons ) console.log(stack);
+    return stack;
+}

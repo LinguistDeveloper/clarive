@@ -1,8 +1,5 @@
-@font-face {
-  font-family: "OpenSans",
-  font-weight: bold,
-  src: url("/static/fonts/open-sans/OpenSans-Regular.ttf");
-}
+@import url(/static/fonts/opensans/opensans.css);
+/* @import url(/static/fonts/lato/lato.css); */
 
 /* Used to hide TreePanel icons - node.setIconCls('no-icon') */
 .bali-icon-active {

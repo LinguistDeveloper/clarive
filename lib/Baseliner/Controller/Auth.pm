@@ -10,6 +10,39 @@ register 'action.surrogate' => {
     name => 'Become a different user',
 };
 
+=head2 logout 
+
+Hardcore, url based logout. Always redirects otherwise 
+we get into a /logout loop
+
+=cut
+sub logout : Global {
+    my ( $self, $c ) = @_;
+    $c->full_logout;
+    $c->res->redirect( $c->req->params->{redirect} || $c->uri_for('/') );
+}
+
+=head2 logoff 
+
+JSON based logoff, used by the logout menu option 
+
+=cut
+sub logoff : Global {
+    my ( $self, $c ) = @_;
+    $c->full_logout;
+    $c->stash->{json} = { success=>\1 };
+    $c->forward('View::JSON');
+}
+
+sub logon : Global{
+    my ( $self, $c ) = @_;
+    if( my $redirect = $c->req->params->{redirect} ) {
+        $c->res->redirect( $redirect );
+    } else {
+        $c->stash->{template} = $c->config->{login_page} || '/site/login.html';
+    }
+}
+
 sub login_from_url : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
@@ -99,6 +132,7 @@ sub authenticate : Private {
             $auth = $c->authenticate({ id=>$login }, 'none');
         } else {
             $auth = try {
+                # see the password: _debug $c->model('Users')->encrypt_password( $login, $password ) ;
                 $c->authenticate({ id=>$login, password=>$c->model('Users')->encrypt_password( $login, $password ) }, 'local');
             } catch {
                 $c->log->error( "**** LOGIN ERROR: " . shift() );
@@ -180,23 +214,6 @@ sub error : Private {
     $c->stash->{error_msg} = _loc( 'Invalid User.' );
     $c->stash->{error_msg} .= ' '._loc( "User '%1' not found", $username ) if( $username );
     $c->stash->{template} = $c->config->{error_page} || '/site/error.html';
-}
-
-sub logout : Global {
-    my ( $self, $c ) = @_;
-
-    $c->delete_session;
-    $c->logout;
-}
-
-sub logoff : Global {
-    my ( $self, $c ) = @_;
-    $c->delete_session;
-}
-
-sub logon : Global {
-    my ( $self, $c ) = @_;
-    $c->stash->{template} = $c->config->{login_page} || '/site/login.html';
 }
 
 sub saml_check : Private {
