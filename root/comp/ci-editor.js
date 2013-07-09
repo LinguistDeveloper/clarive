@@ -1,7 +1,18 @@
+<%args>
+    $save
+</%args>
 (function(params){
+    var menu_services = new Ext.Button({
+        text: _('Services'),
+        icon:'/static/images/icons/service.png',
+        cls: 'x-btn-icon-text',
+        menu: { items:[] }
+    });
+        
     var load_form = function(params){
         if( params.rec == undefined ) params.rec = {};            // master row record
         //if( params.rec.data == undefined ) params.rec.data = {};  //  yaml ci data
+        var can_save = <% $save %>;
         var mid = params.mid;
         var beforesubmit = [];
         var is_active = params.rec.active == undefined ? true : params.rec.active;
@@ -26,7 +37,7 @@
                             params.action = 'edit';
                             set_txt();
                             Baseliner.message(_('Success: %1', mid), a.result.msg );
-                            if( close_form ) form.destroy();
+                            if( close_form ) cardpanel.destroy();
                             activate_save();
                        },
                        failure: function(f,a){
@@ -76,28 +87,16 @@
             }
         };
 
-        Baseliner.CIDepends = Ext.extend( Ext.Panel, {
-            layout: 'fit', 
-            initComponent: function(){
-                //this.layoutConfig = { columns:2, rows:2 };
-                Baseliner.CIDepends.superclass.initComponent.call(this);
-                /*
-                this.ci_grid = new Ext.GridPanel({ 
-                    title: _('CIs'), region:'west', split: true,
-                    store: new Baseliner.CIStore({}), 
-                    columns: [
-                    ]
-                });
-                */
-                var to_mid = new Baseliner.CIGrid({ ci: { role:'CI' }, from_mid: mid });
-                this.add( to_mid );
-            }
-        });
         var depend_panel;
         var show_depends = function(){
             if( btn_depends.pressed ) {
                 if( ! depend_panel ) {
-                    depend_panel = new Baseliner.CIDepends({ data: params.rec });
+                    //depend_panel = new Baseliner.CIDepends({ data: params.rec });
+                    depend_panel = new Baseliner.CIGrid({ ci: { role:'CI' }, 
+                        from_mid: params.mid, 
+                        collection: params.collection,
+                        field: children,
+                        columns: ['mid','name','version','collection','rel_type'] });
                     cardpanel.add( depend_panel );
                     cardpanel.getLayout().setActiveItem( depend_panel );
                 } else {
@@ -121,6 +120,7 @@
             icon:'/static/images/icons/save.png',
             cls: 'x-btn-icon-text',
             type: 'submit',
+            hidden: !can_save,
             handler: function() { 
                 btn_form_save.disable();
                 submit_form( false )
@@ -152,17 +152,23 @@
         });
 
         cardpanel.getTopToolbar().add([
-            btn_form_ok, btn_form_save, '-', btn_depends, btn_form_calendar, btn_data //btn_form_reset
+            btn_form_ok, btn_form_save, '-', btn_depends, btn_form_calendar, btn_data, menu_services //btn_form_reset
         ]);
         var fieldset = new Ext.form.FieldSet({
             defaults: { 
-               //anchor: '90%',
                msgTarget: 'under'
             },
             hidden: true,
-            style: { 'margin-top':'30px' },
-            title: _(params.collection),
-            collapsible: true,
+            margin: 0,
+            padding: 10,
+            style: { 
+                margin: '30px 0px 0px -20px'
+                //'border-top' : '#eee 1px solid', 
+                //'border-left' : '#f5f0f0 6px solid' }
+                },
+            //title: _(params.collection),
+            collapsible: false,
+            border: false,
             autoHeight : true
         });
         var set_txt = function(){
@@ -170,8 +176,9 @@
             txt_cont.update( _( txt, params.item, params.mid ) );
         };
         var txt_cont = new Ext.Container({ style:{'font-size': '20px', 'margin-bottom':'20px'} });
-        var bl_combo = new Baseliner.model.SelectBaseline({ value: ['TEST'], colspan: 1 });
-        var desc = { xtype:'textarea', fieldLabel: _('Description'), name:'description', allowBlank: true, value: params.rec.description, height: 150 };
+        var bl_combo = new Baseliner.model.SelectBaseline({ value: ['*'], colspan: 1 });
+        var children = new Ext.form.Hidden({ name: 'children', value: params.rec.children });
+        var desc = { xtype:'textarea', fieldLabel: _('Description'), name:'description', allowBlank: true, value: params.rec.description, height: 80 };
         var form = new Ext.FormPanel({
             url:'/ci/update',
             defaults: {
@@ -182,6 +189,7 @@
             bodyStyle:'padding: 10px 0px 0px 15px',
             items: [
                 txt_cont,
+                children,
                 { layout:'column', border: false, defaults:{ border: false}, items:[
                     { layout:'form', columnWidth : .65, defaults: { anchor: '96%' }, items:[
                         { xtype: 'textfield', fieldLabel: _('Name'), name:'name', allowBlank: false, value: params.rec.name, height: 30, style:'font-size: 18px;' },
@@ -190,11 +198,21 @@
                     { layout:'form', columnWidth : .35, defaults: { anchor: '100%' }, items:[
                         { xtype: 'checkbox', colspan: 1, fieldLabel: _('Active'), name:'active', checked: is_active, allowBlank: true },
                         { xtype: 'textfield', colspan: 1, fieldLabel: _('Moniker'), name:'moniker', value: params.rec.moniker, allowBlank: true },
+                        { xtype: 'textfield', colspan: 1, fieldLabel: _('Version'), name:'versionid', value: params.rec.versionid, allowBlank: true },
                         ( params.has_bl > 0 ? bl_combo : [] )
                     ]}
                 ]},
                 fieldset
-            ]
+            ],
+            listeners: {
+                'afterrender':function(){
+                    if( !can_save ) {
+                        var mask = this.el.mask();
+                        mask.setStyle( 'opacity', 0);
+                        mask.setStyle( 'height', 5000 );
+                    }
+                }
+            }
         });
         txt_cont.on('afterrender', function(){
             set_txt();
@@ -206,27 +224,48 @@
                 bl_combo.setValue( params.rec.bl );
             });
             if( params.ci_form ) {
-                Baseliner.ajaxEval( params.ci_form, params, function(res){
-                    if( res != undefined ) {
-                        var fields;
-                        if( Ext.isObject( res ) ) {
-                            fields = res.fields;
-                            if( res.beforesubmit ) beforesubmit.push( res.beforesubmit );
-                        } else {
-                            fields = res;
+                Ext.each( params.ci_form, function(form_url){
+                    Baseliner.ajaxEval( form_url, params, function(res){
+                        if( res != undefined ) {
+                            var fields;
+                            if( Ext.isObject( res ) ) {
+                                fields = res.fields;
+                                if( res.beforesubmit ) beforesubmit.push( res.beforesubmit );
+                            } else {
+                                fields = res;
+                            }
+                            fieldset.show();
+                            fieldset.add( fields );
+                            fieldset.doLayout();
+                            //form.getForm().loadRecord( params.rec );
+                            form.getForm().setValues( params.rec );
                         }
-                        fieldset.show();
-                        fieldset.add( fields );
-                        fieldset.doLayout();
-                        //form.getForm().loadRecord( params.rec );
-                        form.getForm().setValues( params.rec );
-                    }
+                    });
                 });
             } else {
                 //form.getForm().loadRecord( params.rec );
             }
         });
-        form.on('destroy', function(){
+        var destroying=false;
+        var beforedestroy = function(){
+            bl_combo.originalValue = bl_combo.getValue();  // XXX multibox reports isDirty always
+            if( children.getValue() == '' ) children.originalValue = children.getValue();  // XXX always dirty
+            // deactivated save protection for now
+            if( false && !destroying && form.getForm().isDirty() ) {
+                Baseliner.confirm( _('You are about to lose your changes. Save now?'), function(){
+                    submit_form( false );
+                    destroying = true;
+                    //cardpanel.destroy();
+                }, function(){
+                    destroying = true;
+                    //cardpanel.destroy();
+                });
+                return false;
+            }
+        }
+        //cardpanel.on('beforedestroy', function(){ return beforedestroy() });
+        form.on('beforedestroy', function(){ return beforedestroy(); });
+        cardpanel.on('destroy', function(){
             // reload parent grid
             var grid_id = params._parent_grid;
             if( ! grid_id ) return;
@@ -268,6 +307,16 @@
                         tab_icon: rec.icon,
                         action: 'edit'
                 }, params );
+                if( rec.services == undefined || rec.services.length < 1 ) {
+                    menu_services.disable();
+                    menu_services.setText( _('No Services') );
+                } else {
+                    Ext.each( rec.services, function(service) {
+                        menu_services.menu.add({ text: service.name, key: service.key, icon: service.icon, handler:function(){
+                            Baseliner.run_service( { mid: rec.mid, classname: rec.classname }, service );
+                        }});
+                    });
+                }
                 var f = load_form( c );
                 //f.on('afterrender', function(){ f.body.setStyle({ overflow: 'hidden' }); });
                 cardpanel.add( f );
@@ -286,6 +335,7 @@
             cardpanel.doLayout();
         }
     });
+    Baseliner.edit_check( cardpanel, true );  // block window closing from the beginning
     return cardpanel;
 })
 
