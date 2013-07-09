@@ -40,15 +40,15 @@ class_has '_registrar_enabled' => ( is=>'rw', isa=>'HashRef', );
     package Baseliner::Core::RegistryNode;
     use Moose;
 
-    has 'key'=> (is=>'rw', isa=>'Str', required=>1 );
-    has 'id'=> (is=>'rw', isa=>'Str', required=>1 );
-    has 'module' => (is=>'rw', isa=>'Str', required=>1 );
-    has 'version' => (is=>'rw', isa=>'Str', default=>'1.0');
-    has 'init_rc' => (is=>'rw', isa=>'Int', default=> 5 );
-    has 'param' => (is=>'rw', isa=>'HashRef', default=>sub{{}} );
-    has 'instance'=> (is=>'rw', isa=>'Object' );
-    has 'actions' => (is=>'rw', isa=>'ArrayRef' );
-    
+    has key     => ( is => 'rw', isa => 'Str',     required => 1 );
+    has id      => ( is => 'rw', isa => 'Str',     required => 1 );
+    has module  => ( is => 'rw', isa => 'Str',     required => 1 );
+    has version => ( is => 'rw', isa => 'Str',     default  => '1.0' );
+    has init_rc => ( is => 'rw', isa => 'Int',     default  => 5 );
+    has param   => ( is => 'rw', isa => 'HashRef', default  => sub { {} } );
+    has instance => ( is => 'rw', isa => 'Object' );
+    has actions  => ( is => 'rw', isa => 'ArrayRef' );  # TODO deprecated
+    has all_actions  => ( is => 'rw', isa => 'HashRef' );   # my actions, parent actions, etc. (cache)
 }	
 
 sub _registrar {

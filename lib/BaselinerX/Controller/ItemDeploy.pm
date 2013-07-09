@@ -37,10 +37,18 @@ sub submit : Local {
             $err=~s{ at /.*$}{}g;
             _fail _loc( "Error in regex: %1", $err );
         };
-        kv->set(
-            $ns ?  (ns=>$ns) : ( provider=> DOMAIN ),
-            data => $p
-        );
+        _log _dump $p;
+        my %ns = $ns ?  (ns=>$ns) : ( provider=> DOMAIN );
+        if( ! defined $p->{mid} ) {
+            # new
+            master_new 'mapping' => $p->{name} => sub{
+                $p->{mid} = shift;
+                kv->set( %ns, data => $p);
+            };
+        } else {
+            # update
+            kv->set( %ns, data => $p);
+        }
         { msg=>'ok', success=>\1 };
     } catch {
         my $err = shift;

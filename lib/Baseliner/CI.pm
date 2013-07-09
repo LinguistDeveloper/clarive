@@ -39,7 +39,6 @@ sub new {
     }
     if( $args{uri} && ! exists $args{resource} ) {
         require Baseliner::URI;
-        _error( \%args );
         $args{resource} = Baseliner::URI->new( $args{uri} );
     }
     ref $args{resource} or do {

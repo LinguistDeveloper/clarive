@@ -20,9 +20,6 @@ service 'scan' => 'Run Scanner' => sub {
 around table_update_or_create => sub {
    my ($orig, $self, $rs, $mid, $data, @rest ) = @_;
  
-   _log _dump $orig;
-   _log _dump $data;
-
    my $temp_data; 
    delete $data->{versionid};
    if( $data->{data} ) {

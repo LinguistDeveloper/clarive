@@ -25,7 +25,12 @@ __PACKAGE__->add_columns(
   "id_rule", { data_type => "number", is_nullable => 0, },
   "return_code", { data_type => "number", is_nullable => 1, default_value=>'0' },
   "stash_data", { data_type => "clob", is_nullable => 1 },
-  "ts", { data_type     => "datetime", default_value => \"SYSDATE", is_nullable   => 0, },
+  "ts",   {
+    data_type     => "datetime",
+    is_nullable   => 0,
+    set_on_create => 1,
+    timezone => Util->_tz,
+  },
   "dsl", { data_type => "clob", is_nullable => 1 },
   "log_output", { data_type => "clob", is_nullable => 1 },
 );

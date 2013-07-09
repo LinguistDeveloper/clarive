@@ -3756,6 +3756,10 @@ msgstr "Servidor"
 msgid "Password"
 msgstr "Contraseña"
 
+# root/ci/ftp_agent.js (17)
+msgid "Confirm Password"
+msgstr "Confirmar contraseña"
+
 # root/ci/oracle_connection.js (17)
 msgid "SID"
 msgstr "SID"
