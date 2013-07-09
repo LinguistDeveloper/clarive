@@ -404,7 +404,7 @@
 						    ,items:[{
 							    // left column
 							    defaults:{anchor:'100%'}
-							    ,items: [ dashboard_main_check ],
+							    ,items: [ dashboard_main_check ]
 							    },
 							    {
 							    // right column
@@ -424,7 +424,7 @@
 						    ]
 						    },						
 						    roles_box,
-						    dashlets_box,
+						    dashlets_box
 					    ]
 		    });
 		    
