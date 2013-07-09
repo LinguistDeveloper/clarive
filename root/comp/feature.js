@@ -114,7 +114,6 @@
                 getCellEditor: function( col, row) {
                     var rec = self.store.getAt( row );
                     var arr = [];
-                    console.log( rec );
                     Ext.each(rec.data.versions, function(v){ 
                         // rename refs/heads/ to branch:
                         var name = v.replace('refs/heads/', 'branch: ');
