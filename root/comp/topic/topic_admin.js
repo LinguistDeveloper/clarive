@@ -1,9 +1,5 @@
-<%perl>
-    use Baseliner::Utils;
-    my $id = _nowstamp;
-</%perl>
-
 (function(){
+    var id = Ext.id();
     var store_status = new Baseliner.Topic.StoreStatus();
     var store_category = new Baseliner.Topic.StoreCategory({ baseParams: { swnotranslate : 1 } });
     
@@ -162,7 +158,6 @@
 
         if(rec){
             var ff = form_status.getForm();
-            //console.log( rec );
             ff.loadRecord( rec );
             ff.findField('bind_releases').setValue(rec.data.bind_releases);
             ff.findField('ci_update').setValue(rec.data.ci_update);
@@ -295,6 +290,7 @@
             check_status_sm,
             { header: _('Topics: Status'), dataIndex: 'name', width:100, sortable: false, renderer: render_status },
             { header: _('Description'), dataIndex: 'description', sortable: false },
+            { header: _('Order'), width: 40, dataIndex: 'seq', sortable: false },
             { header: _('Baseline'), dataIndex: 'bl', sortable: false, renderer: Baseliner.render_bl },
             { header: _('Type'), dataIndex: 'type', width:50, sortable: false, renderer: render_status_type }
         ],
@@ -385,25 +381,43 @@
             fieldLabel: _('Description'),
             emptyText: _('A brief description of the category')
         });     
-        
+        var category_name_field = new Ext.form.TextField({ 
+            name:'name', fieldLabel:_('Category'),
+            allowBlank:false, emptyText:_('Name of category'),
+            regex: /^[^\.]+$/,
+            regexText: _('Character dot not allowed')
+        });
         //   Color settings 
         var category_color = new Ext.form.Hidden({ name:'category_color' });
-        category_color.setValue(rec ? rec.data.color : '');
+        category_color.setValue(rec ? rec.data.color : '#999');
+        var color = rec ? rec.data.color : '';
 
         var color_pick = new Ext.ColorPalette({ 
-            value: rec ? rec.data.color : '',
-            listeners: {
-                select: function(cp, color){
-                   category_color.setRawValue( '#' + color.toLowerCase() ); 
-                }
-            },
+            value: color, 
             colors: [
-                'FF43B8', '30BED0', 'A01515', 'A83030', '003366', '000080', '333399', '333333',
+                '8E44AD', '30BED0', 'A01515', 'A83030', '003366', '000080', '333399', '333333',
                 '800000', 'FF6600', '808000', '008000', '008080', '0000FF', '666699', '808080',
                 'FF0000', 'FF9900', '99CC00', '339966', '33CCCC', '3366FF', '800080', '969696',
-                'FF00FF', 'FFCC00', 'FFFF00', '00ACFF', '20BCFF', '00CCFF', '993366', 'C0C0C0',
-                'FF99CC', 'DDAA55', 'BBBB77', '88CC88', 'CCFFFF', '99CCFF', 'CC99FF', '11B411'
+                'FF00FF', 'FFCC00', 'F1C40F', '00ACFF', '20BCFF', '00CCFF', '993366', 'C0C0C0',
+                'FF99CC', 'DDAA55', 'BBBB77', '88CC88', 'D35400', '99CCFF', 'CC99FF', '11B411',
+                '1ABC9C', '16A085', '2ECC71', '27AE60', '3498DB', '2980B9', 'E74C3C', 'C0392B'
             ]
+        });
+        color_pick.on('select', function(pal,color){
+            var cl = '#' + color.toLowerCase();
+            category_color.setRawValue( cl ); 
+            color_button.setText( color_btn_gen(cl) );
+        });
+        
+        var color_btn_gen = function(color){
+            return String.format('<div id="boot" style="margin-top: -3px; background: transparent"><span class="label" style="background: {0}">{1}</span></div>', 
+                color, category_name_field.getValue() || ( rec ? rec.data.name : _('Sample') ) );
+        };
+        var color_button = new Ext.Button({ 
+            text: color_btn_gen( color ), 
+            fieldLabel: _('Pick a Color'),
+            height: 30,
+            menu: { items: [color_pick] }
         });
         
         // Main Edit for Categories
@@ -415,11 +429,7 @@
             items: [
                 { xtype: 'hidden', name: 'id', value: -1 },
                 category_color,
-                { xtype:'textfield', name:'name', fieldLabel:_('Category'),
-                  allowBlank:false, emptyText:_('Name of category'),
-                  regex: /^[^\.]+$/,
-                  regexText: _('Character dot not allowed')
-                },
+                category_name_field,
                 ta,
                 {
                     xtype: 'radiogroup',
@@ -431,8 +441,8 @@
                         {boxLabel: _('Changeset'), inputValue: 'C'},
                         {boxLabel: _('Release'), inputValue: 'R'}
                     ]
-                }
-                ,{ xtype:'button', text:'Select Color', menu:{ items: color_pick } },
+                },
+                color_button,
                 { xtype: 'panel', style: { 'margin-top': '20px' }, layout: 'form', items: [ combo_providers ] },
                 { xtype:'checkboxgroup', name:'readonly', fieldLabel:_('Options'),
                     items:[
@@ -583,6 +593,7 @@
     //});
     
     var btn_add_category = new Baseliner.Grid.Buttons.Add({    
+        text: null,
         handler: function() {
             add_edit_category();
         }
@@ -627,13 +638,12 @@
                 
                 );                
             } else {
-                Ext.Msg.alert('Error', '<% _loc('Select at least one row') %>');    
+                Ext.Msg.alert('Error',  _('Select at least one row'));    
             };
         }
     });     
 
     var btn_delete_category = new Ext.Toolbar.Button({
-        text: _('Delete'),
         icon:'/static/images/icons/delete.gif',
         cls: 'x-btn-text-icon',
         disabled: true,
@@ -693,7 +703,7 @@
         var store_admin_status = new Baseliner.Topic.StoreCategoryStatus({
                 listeners: {
                     'load': function( store, rec, obj ) {
-                        statusCbx = Ext.getCmp('status-combo_<%$id%>');
+                        statusCbx = Ext.getCmp('status-combo_' + id);
                         store.filter( { fn   : function(record) {
                         
                                                                     return record.get('name') != statusCbx.getRawValue();
@@ -776,7 +786,7 @@
         
         var combo_status = new Ext.form.ComboBox({
             mode: 'local',
-            id: 'status-combo_<%$id%>',
+            id: 'status-combo_' + id,
             forceSelection: true,
             triggerAction: 'all',
             emptyText: _('select status...'),
@@ -963,7 +973,7 @@
             url:'/topicadmin/update_category_admin',
             buttons: [
                     {
-                        text: _('Add'),
+                        //text: _('Add'),
                         type: 'submit',
                         cls: 'btn-text-icon',
                         icon: '/static/images/icons/down.png',
@@ -1006,8 +1016,9 @@
                             }
                         }
                     },
+                    '-',
                     {
-                        text: _('Delete'),
+                        //text: _('Delete'),
                         cls: 'btn-text-icon',
                         icon: '/static/images/icons/remove.png',
                         handler: function() {
@@ -1040,6 +1051,7 @@
                             }
                         }
                     },
+                    '-',
                     {
                     text: _('Close'),
                     handler: function(){ 
@@ -1051,7 +1063,7 @@
             items: [
                 { xtype: 'hidden', name: 'id', value: -1 },
                 { xtype: 'container', style: { padding: '10px' },
-                        html: String.format( '<span id="boot"><span class="badge" style="background-color: {0}">{1}</span></span>',
+                        html: String.format( '<span id="boot"><span class="label" style="background-color: {0}">{1}</span></span>',
                                                                 rec.data.color, rec.data.name ) },
                 {
                     // column layout with 2 columns
@@ -1104,7 +1116,8 @@
     
     var edit_fields = function(rec) {
         var win;
-        var title = _('Edit fields');
+        var id_drag_drop = Ext.id();
+        var title = render_category( rec.data.name, {}, rec);
 
         var treeRoot = new Ext.tree.AsyncTreeNode({
             expanded: true,
@@ -1123,7 +1136,7 @@
             height:300,         
             rootVisible: false,
             enableDD: true,
-            ddGroup: 'tree_fields_dd',          
+            ddGroup: 'tree_fields_dd' + id_drag_drop,          
             root: treeRoot
         });
         
@@ -1141,7 +1154,6 @@
             s.each( function(row){
                 if( row.data.id == id ) {
                     var data = row.data.params;
-                    //console.log(data);
                     var parent_id;
                     switch (data.origin){
                         case 'system':  parent_id = 'S';
@@ -1152,10 +1164,12 @@
                                         break;
                     }                   
                     var parent_node = tree_fields.getNodeById(parent_id);
-                    if(!parent_node.expanded){
-                        parent_node.expand();   
-                    }                   
-                    parent_node.appendChild({id:row.data.id, id_field: row.data.id_field, text: row.data.name, params:  row.data.params, icon: row.data.img, leaf: true});
+                    if(parent_node!=undefined) {
+                        if( !parent_node.expanded){
+                            parent_node.expand();   
+                        }                   
+                        parent_node.appendChild({id:row.data.id, id_field: row.data.id_field, text: row.data.name, params:  row.data.params, icon: row.data.img, leaf: true});
+                    }
                     s.remove( row );
                 }
             });
@@ -1244,7 +1258,7 @@
             title: _('Fields category'),
             hideHeaders: true,
             enableDragDrop : true,
-            ddGroup : 'mygrid-dd',  
+            ddGroup : 'mygrid-dd' + id_drag_drop,  
             viewConfig: {
                 headersDisabled: true,
                 enableRowBody: true,
@@ -1266,7 +1280,7 @@
             var el = this.el.dom; 
             var fields_box_dt = new Baseliner.DropTarget(el, {
                 comp: this,
-                ddGroup: 'tree_fields_dd',
+                ddGroup: 'tree_fields_dd' + id_drag_drop,
                 copy: true,
                 notifyDrop: function(dd, e, id) {
                     var n = dd.dragData.node;
@@ -1279,7 +1293,6 @@
                                 root: 'data' , 
                                 remoteSort: true,
                                 totalProperty:"totalCount", 
-                                id: 'id', 
                                 url: '/topicadmin/list_filters',
                                 fields: [
                                     {  name: 'name' },
@@ -1340,24 +1353,22 @@
                                             }
                                             if ( objTemp.single_mode != undefined){
                                                 var value = form.findField("valuesgroup").getValue().getGroupValue();
-                                                 objTemp.single_mode = (value ==  'M') ? false : true ;
+                                                 objTemp.single_mode = ( value == 'S' || value ==  'single') ? true : false ;
+                                                 objTemp.list_type = value=='S' ? 'single' : value=='M' ? 'multiple' : value=='G' ? 'grid' : value;
                                             }
                                             
                                             var d = { id: id, id_field: id_field, name: name_field, params: objTemp , img: '/static/images/icons/icon_wand.gif' };
                                         }else{
-                                            //console.log(attr);
                                             //attr.params.id_field = id_field;
                                             //attr.params.name_field = name_field;
                                             //attr.params.bd_field = id_field;
                                             //attr.params.origin = 'custom';
                                             var objTemp = attr.params;
                                             objTemp = Ext.util.JSON.decode( Ext.util.JSON.encode( objTemp ) );
-                                            //console.log(objTemp);
                                             objTemp.id_field = id_field;
                                             objTemp.name_field = name_field;
                                             objTemp.bd_field = id_field;
                                             objTemp.origin = 'custom';
-                                            //console.log(attr);
                                             
                                             var d = { id: id, id_field: id_field, name: name_field, params: objTemp, img: '/static/images/icons/icon_wand.gif' };
                                         }
@@ -1436,14 +1447,15 @@
                                                 hidden: true,
                                                 defaults: {xtype: "radio",name: "type"},
                                                 items: [
-                                                    {boxLabel: _('Single'), inputValue: 'S', checked: true},
-                                                    {boxLabel: _('Multiple'), inputValue: 'M'}
+                                                    {boxLabel: _('Single'), inputValue: 'single', checked: true},
+                                                    {boxLabel: _('Multiple'), inputValue: 'multiple'},
+                                                    {boxLabel: _('Grid'), inputValue: 'grid'}
                                                 ]
                                             },                                          
                                             combo_filters
                                         ]
                             });
-                            
+        
                             var winCustomField = new Baseliner.Window({
                                 modal: true,
                                 width: 500,
@@ -1475,7 +1487,7 @@
         category_fields_grid.on('viewready', function() {
             var ddrow = new Baseliner.DropTarget(category_fields_grid.getView().mainBody, {  
                 comp: category_fields_grid,
-                ddGroup : 'mygrid-dd',  
+                ddGroup : 'mygrid-dd' + id_drag_drop,  
                 notifyDrop : function(dd, e, data){  
                     var sm = category_fields_grid.getSelectionModel();  
                     var rows = sm.getSelections();  
@@ -1493,8 +1505,6 @@
         
         category_fields_grid.on("rowdblclick", function(grid, rowIndex, e ) {
             var sel = grid.getStore().getAt(rowIndex);
-            //console.log(sel.data.params);
-            //console.log(sel.data.meta);
             var tree = new Baseliner.DataEditor({
                 data: sel.data.params,
                 metadata: sel.data.meta
@@ -1504,7 +1514,6 @@
             var w = new Baseliner.Window({ layout:'fit',width:600, height:450, items: tree });
             w.show();
             tree.on('destroy', function(){
-               //console.log( tree.data );
                sel.data.params = tree.data;
                w.close();
             });
@@ -1768,6 +1777,32 @@
         }
     });     
     
+    var btn_tools_category = new Ext.Toolbar.Button({
+        icon:'/static/images/icons/wrench.png',
+        cls: 'x-btn-text-icon',
+        disabled: false,
+        menu: [
+            { text: _('Import'), 
+                icon: '/static/images/icons/import.png',
+                handler: function(){
+                    category_import();
+                 }
+            },
+            { text: _('Export'), 
+                icon: '/static/images/icons/export.png',
+                handler: function(){ 
+                    var sm = grid_categories.getSelectionModel();
+                    if (sm.hasSelection()) {
+                        var sel = sm.getSelected();
+                        category_export(sel);
+                    } else {
+                        Baseliner.message( _('ERROR'), _('Select at least one row'));    
+                    };          
+                 }
+            }
+        ]
+    });     
+    
     var check_categories_sm = new Ext.grid.CheckboxSelectionModel({
         singleSelect: false,
         sortable: false,
@@ -1776,14 +1811,14 @@
     
     var render_category = function(value,metadata,rec,rowIndex,colIndex,store){
         var color = rec.data.color;
-        var ret = '<div id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: '+ color + '">' + value + '</span></div>';
+        var ret = '<div id="boot"><span class="label" style="float:left;padding:2px 8px 2px 8px;background: '+ color + '">' + value + '</span></div>';
         return ret;
     };
 
     var grid_categories = new Ext.grid.GridPanel({
         title : _('Categories'),
         sm: check_categories_sm,
-        height: 350,
+        height: 400,
         header: true,
         stripeRows: true,
         autoScroll: true,
@@ -1802,15 +1837,18 @@
         deferredRender:true,    
         tbar: [ 
                 btn_add_category,
+                '-',
+                btn_delete_category,
+                '-',
                 btn_edit_category,
                 btn_duplicate_category,
-                btn_delete_category,
                 '->',
                 btn_update_fields,
                 btn_edit_fields,
                 //btn_form_category,
                 btn_admin_category,
-                btn_admin_priority
+                btn_admin_priority,
+                btn_tools_category
         ]       
     }); 
     
@@ -1973,7 +2011,6 @@
 
     var color_lbl = '000000';
     var color_label = new Ext.form.TextField({
-        id:'color_label_<%$id%>',
         width: 25,
         readOnly: true,
         style:'background:#' + color_lbl
@@ -1981,7 +2018,7 @@
     
     var colorMenu = new Ext.menu.ColorMenu({
         handler: function(cm, color) {
-            eval("Ext.get('color_label_<%$id%>').setStyle('background','#" + color + "')");
+            color_label.el.setStyle('background','#' + color );
             color_lbl = color ;
         }
     });
@@ -2108,7 +2145,6 @@
                     }
                 });             
                 
-                //console.log( projects_checked );
                 projects_box.setValue( projects_checked );
                 w.close();
             });         
@@ -2709,6 +2745,61 @@
         }
         ]
     });
+    
+    var category_export = function(sel){
+        var sel = check_categories_sm.getSelections();
+        var ids = [];
+        Ext.each( sel, function(s){
+            ids.push( s.data.id );
+        });
+        Baseliner.ajaxEval('/topicadmin/export', { id_category: ids }, function(res){
+            if( !res.success ) {
+                Baseliner.error( _('Export'), res.msg );
+                return;
+            }
+            var data_paste = new Baseliner.MonoTextArea({ value: res.yaml });
+            var win = new Baseliner.Window({
+                title: _('Export'),
+                width: 800, height: 400, layout:'fit',
+                items: data_paste
+            });
+            win.show();
+        });
+    };
+    
+    var category_import = function(){
+        var data_paste = new Baseliner.MonoTextArea({ flex:1 });
+        var results = new Baseliner.MonoTextArea({ flex:1 });
+        var win = new Baseliner.Window({
+            title: _('Import'),
+            width: 800, height: 400, layout:'vbox',
+            layout: { type: 'vbox', align: 'stretch' },
+            items: [ data_paste, results ],
+            tbar:[
+                { text:_('Import'), 
+                    icon: '/static/images/icons/import.png',
+                    handler: function(){
+                        Baseliner.ajaxEval('/topicadmin/import', { yaml: data_paste.getValue() }, function(res){
+                            if( !res.success ) {
+                                Baseliner.error( _('Import'), res.msg );
+                                if( ! Ext.isArray( res.log ) ) res.log=[];
+                                results.setValue( res.log.join("\n") + "\n" + res.msg )
+                                results.el.setStyle('font-color', 'red');
+                                return;
+                            } else {
+                                if( ! Ext.isArray( res.log ) ) res.log=[];
+                                results.setValue( res.log.join("\n") + "\n" + res.msg )
+                                results.el.setStyle('font-color', 'green');
+                                Baseliner.message(_('Import'), res.msg );
+                                grid_categories.getStore().reload();
+                            }
+                        });
+                    }
+                }
+            ]
+        });
+        win.show();
+    };
 
     store_status.load();
     store_category.load();

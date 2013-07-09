@@ -4,18 +4,27 @@
 </%perl>
 
 (function(params){
-    var ps = 25; //page_size
+    var ps_maxi = 25; //page_size for !mini mode
+    var ps_mini = 50; //page_size for mini mode
+    var ps = ps_maxi; // current page_size
     var filter_current;
     var stop_filters = false;
 	var typeApplication = '<% $c->stash->{typeApplication} %>';
 	var parse_typeApplication = (typeApplication != '') ? '/' + typeApplication : '';
     var query_id = '<% $c->stash->{query_id} %>';
 	var id_project = '<% $c->stash->{id_project} %>';
-    var base_params = { start: 0, limit: ps, typeApplication: typeApplication, id_project: id_project ? id_project : undefined };  // for store_topics
-    // this grid may be limited for a given category category id
+    
+    var base_params = { start: 0, limit: ps, typeApplication: typeApplication, 
+        from_mid: params.from_mid,
+        to_mid: params.to_mid,
+        id_project: id_project ? id_project : undefined, 
+        topic_list: params.topic_list ? params.topic_list : undefined 
+    };  // for store_topics
+
+    // this grid may be limited for a given category category id 
     var category_id = '<% $c->stash->{category_id} %>';
     if( category_id ) {
-        //params.category_id = category_id;
+        params.id_category = category_id;
         base_params.categories = category_id;
     }
 
@@ -47,7 +56,13 @@
             selNodes = tree_filters.getChecked();
             stop_filters = true;  // avoid constant firing
             Ext.each(selNodes, function(node){
-                node.getUI().toggleCheck(false);
+				if(node.attributes.checked3){
+					node.attributes.checked3 = -1;
+					node.getUI().toggleCheck(node.attributes.checked3);
+				}
+				else{
+					node.getUI().toggleCheck(true);
+				}
             });
             stop_filters = false;
             loadfilters();
@@ -389,7 +404,20 @@
         cls: 'x-btn-text-icon',
         enableToggle: true, pressed: false, allowDepress: true,
         handler: function() {
-            store_topics.reload();
+            if( btn_mini.pressed && ptool.pageSize == ps_maxi ) {
+                ptool.pageSize =  ps_mini;
+                store_topics.baseParams.limit = ps_mini;
+                ps = ps_mini;
+                ps_plugin.setValue( ps_mini );
+            }
+            else if( !btn_mini.pressed && ptool.pageSize == ps_mini ) {
+                ptool.pageSize =  ps_maxi;
+                store_topics.baseParams.limit = ps_maxi;
+                ps = ps_maxi;
+                ps_plugin.setValue( ps_maxi );
+            }
+            //store_topics.reload();
+            ptool.doRefresh();
         }       
     }); 
     
@@ -418,11 +446,13 @@
 
     var render_title = function(value,metadata,rec,rowIndex,colIndex,store) {
         var tag_color_html;
-        var date_created_on;
+        //var date_created_on;
+		var date_modified_on;
         tag_color_html = '';
-        date_created_on =  rec.data.created_on.dateFormat('M j, Y, g:i a');
+        //date_created_on =  rec.data.created_on.dateFormat('M j, Y, g:i a');
+		date_modified_on =  rec.data.modified_on.dateFormat('M j, Y, g:i a');
         var strike = ( rec.data.is_closed ? 'text-decoration: line-through' : '' );
-        
+
         if(rec.data.labels){
             for(i=0;i<rec.data.labels.length;i++){
                 var label = rec.data.labels[i].split(';');
@@ -434,9 +464,16 @@
             }
         }
         if(btn_mini.pressed){
-            return tag_color_html + "<div style='font-weight:bold; font-size: 12px; "+strike+"' >" + value + "</div>";          
+            return tag_color_html 
+                + String.format("<span style='font-weight:bold; font-size: 12px; cursor: pointer; "+strike+"' onclick='javascript:Baseliner.show_topic_colored({1},\"{2}\", \"{3}\", \"{4}\");'>{0}</span>", 
+                        value, rec.data.topic_mid, rec.data.category_name, rec.data.category_color, grid_topics.id ); 
         }else{
-            return tag_color_html + "<div style='font-weight:bold; font-size: 14px; "+strike+"' >" + value + "</div><br><div><b>" + date_created_on + "</b> <font color='808080'></br>" + _('by %1', rec.data.created_by) + "</font ></div>";                        
+            return tag_color_html + 
+                String.format( "<span style='font-weight:bold; font-size: 14px; cursor: pointer; "+strike+"' onclick='javascript:Baseliner.show_topic_colored({3},\"{4}\",\"{5}\", \"{6}\")'>{0}</span>"
+                        + "<br><div style='margin-top: 5px'>{1}<font color='808080'></br>{2}</font ></div>", 
+                        //value, date_created_on, _('by %1',rec.data.created_by),
+						value, date_modified_on, _('by %1',rec.data.modified_by), 
+                        rec.data.topic_mid, rec.data.category_name, rec.data.category_color, grid_topics.id );                        
         }
         
     };
@@ -456,38 +493,63 @@
         return tag_color_html + "<div style='font-weight:bold; font-size: 14px; "+strike+"' >" + value + "</div>";
     };  
     
-    var render_comment = function(value,metadata,rec,rowIndex,colIndex,store) {
-        var tag_comment_html;
-        var tag_comment_html = new Array();
+    var shorten_title = function(t){
+        if( !t || t.length==0 ) {
+            t = '';
+        } else if( t.length > 12 ) {
+            t = t.substring(0,12) + '\u2026'; 
+        } 
+        return t;
+    }
+    Baseliner.open_topic_grid = function(dir,title,mid){
+       var gridp ={ tab_icon: '/static/images/icons/topic.png' } ;
+       if( dir ) {
+           gridp[ dir=='in' ? 'to_mid' : 'from_mid' ] = mid;
+           gridp[ 'tab_icon' ] = '/static/images/icons/topic_' + dir + '.png';
+       }
+       Baseliner.add_tabcomp('/comp/topic/topic_grid.js',  _('#%1 %2', mid, shorten_title( title )), gridp ); 
+    };
+    var render_actions = function(value,metadata,rec,rowIndex,colIndex,store) {
+        var actions_html = new Array();
         var swGo = false;
+        actions_html.push("<span id='boot' style='background: transparent'>");
+        
+        var ref_html = function(dir, refs){
+            var img = dir =='in' ? 'referenced_in' : 'references';
+            var ret = [];
+            // open children
+            ret.push("<a href='#' onclick='javascript:Baseliner.open_topic_grid(\""+dir+"\", \""+rec.data.title+"\", "+rec.data.topic_mid+"); return false'>");
+            ret.push("<span class='label' style='cursor:pointer; color:#333; borderx: 1px #2ECC71 solid; padding-left: 0px; background-color: transparent; font-size:10px; margin-top:0px'>");
+            ret.push("<img src='/static/images/icons/"+img+".png'>");
+            ret.push( refs.length );
+            ret.push("</span>");
+            ret.push("</a>&nbsp;");           
+            return ret.join('');
+        }
+        if( Ext.isArray( rec.data.references ) && rec.data.references.length > 0 ) {
+            swGo = true;
+            actions_html.push( ref_html( 'out', rec.data.references ) );
+        }
         if(rec.data.numcomment){
             swGo = true;
-            tag_comment_html.push("<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> ");
-            tag_comment_html.push('<span style="font-size:9px">' + rec.data.numcomment + '</span>');
-            tag_comment_html.push("</span>");
+            actions_html.push("<span style='float: right; color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> ");
+            actions_html.push('<span style="font-size:9px">' + rec.data.numcomment + '</span>&nbsp;');
+            actions_html.push("</span>");
         }
         if(rec.data.num_file){
             swGo = true;
-            tag_comment_html.push("<span style='color: #808080'><img border=0 src='/static/images/icons/paperclip.gif' /> ");
-            tag_comment_html.push('<span style="font-size:9px">' + rec.data.num_file + '</span>');
-            tag_comment_html.push("</span>");           
+            actions_html.push("<span style='float: right; color: #808080'><img border=0 src='/static/images/icons/paperclip.gif' /> ");
+            actions_html.push('<span style="font-size:9px">' + rec.data.num_file + '</span>&nbsp;');
+            actions_html.push("</span>");           
         }
-        var str = swGo ? tag_comment_html.join(""):'';
+        if( Ext.isArray( rec.data.referenced_in ) && rec.data.referenced_in.length > 0 ) {
+            if( swGo )  actions_html.push( '<br>' );
+            swGo = true;
+            actions_html.push( ref_html( 'in', rec.data.referenced_in ) );
+        }
         
-//        if(rec.data.numcomment || rec.data.num_file){
-//            tag_comment_html = [
-//                "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /> ",
-//                rec.data.numcomment ? rec.data.numcomment: '',
-//                "</span>",
-//                "<span style='color: #808080'><img border=0 src='/static/images/icons/paperclip.gif' /> ",
-//                rec.data.numfile ? rec.data.num_file: '',
-//                "</span>"
-//            ].join("");
-//          //tag_comment_html = "<span style='color: #808080'><img border=0 src='/static/images/icons/comment_blue.gif' /></span>";
-//        } else {       
-//            tag_comment_html='';
-//        }
-        
+        actions_html.push("</span>");
+        var str = swGo ? actions_html.join(""):'';
         return str;
     };
     
@@ -523,7 +585,7 @@
                 '<div class="bar" style="width: '+value+'%">',
                 '</div>',
             '</div>',
-            '</span>',
+            '</span>'
         ].join('');
         return ret;
     };
@@ -547,32 +609,34 @@
         params: {start: 0 },
         emptyText: _('<Enter your search string>')
     });
+
+    var ps_plugin = new Ext.ux.PageSizePlugin({
+        editable: false,
+        width: 90,
+        data: [
+            ['5', 5], ['10', 10], ['15', 15], ['20', 20], ['25', 25], ['50', 50],
+            ['100', 100], ['200',200], ['500', 500], ['1000', 1000], [_('all rows'), -1 ]
+        ],
+        beforeText: _('Show'),
+        afterText: _('rows/page'),
+        value: ps,
+        listeners: {
+            'select':function(c,rec) {
+                ps = rec.data.value;
+                if( rec.data.value < 0 ) {
+                    ptool.afterTextItem.hide();
+                } else {
+                    ptool.afterTextItem.show();
+                }
+            }
+        },
+        forceSelection: true
+    });
     var ptool = new Ext.PagingToolbar({
             store: store_topics,
             pageSize: ps,
             plugins:[
-                new Ext.ux.PageSizePlugin({
-                    editable: false,
-                    width: 90,
-                    data: [
-                        ['5', 5], ['10', 10], ['15', 15], ['20', 20], ['25', 25], ['50', 50],
-                        ['100', 100], ['200',200], ['500', 500], ['1000', 1000], [_('all rows'), -1 ]
-                    ],
-                    beforeText: _('Show'),
-                    afterText: _('rows/page'),
-                    value: ps,
-                    listeners: {
-                        'select':function(c,rec) {
-                            ps = rec.data.value;
-                            if( rec.data.value < 0 ) {
-                                ptool.afterTextItem.hide();
-                            } else {
-                                ptool.afterTextItem.show();
-                            }
-                        }
-                    },
-                    forceSelection: true
-                }),
+                ps_plugin,
 				new Ext.ux.ProgressBarPager()
             ],
             displayInfo: true,
@@ -587,12 +651,29 @@
         checkOnly: true
     });
 
+    var dragger = {     
+        header : '',
+        id : 'dragger',
+        menuDisabled : true,
+        fixed : true,
+        hideable: false,
+        dataIndex: '', 
+        width: 7, 
+        sortable: false,
+        renderer: function(v,m,rec){
+            var div = document.createElement('div');
+            div.innerHTML = 'abc';
+            m.tdCls = m.tdCls + ' dragger-target';
+            return ' '; //'<div>aaa</div>';
+        }
+    };
+
     var grid_topics = new Ext.grid.GridPanel({
         title: _('Topics'),
         header: false,
         stripeRows: true,
         autoScroll: true,
-        stateful: true, 
+        stateful: !Baseliner.DEBUG,
         stateId: 'topic-grid',
         //enableHdMenu: false,
         store: store_topics,
@@ -607,6 +688,7 @@
 %}
         loadMask:'true',
         columns: [
+            dragger,
 %if ( !$c->stash->{typeApplication} ){
             check_sm,
 %}
@@ -615,10 +697,17 @@
             { header: _('Status'), sortable: true, dataIndex: 'category_status_name', width: 50, renderer: render_status },
             { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title},
             { header: _('%'), dataIndex: 'progress', width: 25, sortable: true, renderer: render_progress },
-            { header: '', report_header: _('Comments'), sortable: true, dataIndex: 'numcomment', width: 45, renderer: render_comment },         
+            { header: '', report_header: _('Comments'), sortable: true, dataIndex: 'numcomment', width: 45, renderer: render_actions },         
             { header: _('Projects'), dataIndex: 'projects', width: 60, renderer: render_project },
             { header: _('ID'), hidden: true, sortable: true, dataIndex: 'topic_mid'},    
+            { header: _('Moniker'), hidden: true, sortable: true, dataIndex: 'moniker'},    
+            { header: _('CIs Referenced'), hidden: true, sortable: false, dataIndex: 'cis_out'},    
+            { header: _('CIs Referenced In'), hidden: true, sortable: false, dataIndex: 'cis_in'},    
+            { header: _('References'), hidden: true, sortable: false, dataIndex: 'references'},    
+            { header: _('Referenced In'), hidden: true, sortable: false, dataIndex: 'referenced_in'},    
             { header: _('Assigned To'), hidden: true, sortable: true, dataIndex: 'assignee'},
+            { header: _('Modified By'), hidden: true, sortable: true, dataIndex: 'modified_by'},
+            { header: _('Modified On'), hidden: true, sortable: true, dataIndex: 'modified_on'},
             { header: _('Created On'), hidden: true, sortable: true, dataIndex: 'created_on'},
             { header: _('Created By'), hidden: true, sortable: true, dataIndex: 'created_by'}
         ],
@@ -647,14 +736,118 @@
 //    });
     
     grid_topics.on('cellclick', function(grid, rowIndex, columnIndex, e) {
-        if(columnIndex == 0){
+        if(columnIndex == 1){
             topicsSelected();
         }
     });
     
     grid_topics.on('headerclick', function(grid, columnIndex, e) {
-        if(columnIndex == 0){
+        if(columnIndex == 1){
             topicsSelected();
+        }
+    });
+
+/*
+    node: Ext.tree.AsyncTreeNode
+    allowChildren: true
+    attributes: Object
+    attributes: 
+        calevent: Object
+        children: Array[1]
+        data:
+            click: Object
+            topic_mid: "67183"
+        expandable: true
+        icon: "/static/images/icons/topic.png"
+        iconCls: "no-icon"
+        id: "xnode-2696"
+        leaf: false
+        loader: Baseliner.TreeLoader.Ext.extend.constructor
+        text: "<span unselectable="on" style="font-size:0px;padding: 8px 8px 0px 0px;margin : 0px 4px 0px 0px;border : 2px solid #20bcff;background-color: transparent;color:#20bcff;border-radius:0px"></span><b>Funcionalidad #67183</b>: NAT:BIZTALK"
+        topic_name: 
+            category_color: "#20bcff"
+            category_name: "Funcionalidad"
+            is_changeset: "0"
+            is_release: "0"
+            mid: "67183"
+        url: "/lifecycle/tree_topic_get_files"
+    childNodes: Array[0]
+    childrenRendered: false
+    disabled: false
+    draggable: true
+    events: Object
+    expanded: false
+    firstChild: null
+    hidden: false
+    id: "xnode-2696"
+    isTarget: true
+    lastChild: null
+    leaf: false
+    listeners: undefined
+    loaded: false
+    loading: false
+    nextSibling: null
+    ownerTree: sb
+    parentNode: Ext.tree.AsyncTreeNode
+    previousSibling: Ext.tree.AsyncTreeNode
+    rendered: true
+    text: "<span unselectable="on" style="font-size:0px;padding: 8px 8px 0px 0px;margin : 0px 4px 0px 0px;border : 2px solid #20bcff;background-color: transparent;color:#20bcff;border-radius:0px"></span><b>Funcionalidad #67183</b>: NAT:BIZTALK"
+    ui: sb
+*/
+
+
+    grid_topics.store.on('load', function() {
+        for( var ix=0; ix < grid_topics.store.getCount(); ix++ ) {
+            //var rec = grid_topics.store.getAt( ix );
+            var cell = grid_topics.view.getCell( ix, 0 );
+            var el = Ext.fly( cell );
+            el.setStyle( 'background-color', '#ddd' );
+            new Ext.dd.DragZone( el, {
+                ddGroup: 'explorer_dd',
+                index: ix,
+                getDragData: function(e){
+                    var sourceEl = e.getTarget();
+                    var data = grid_topics.store.getAt( this.index ).data;
+                    var d = sourceEl.cloneNode(true);
+                    d.id = Ext.id();
+                    var mid = data.topic_mid;
+                    // TODO create topic node using the original data from attributes
+                      // inject into loader? Loader.newNode or something?
+                    var text = String.format('<span unselectable="on" style="font-size:0px;padding: 8px 8px 0px 0px;margin : 0px 4px 0px 0px;border : 2px solid #{1};background-color: transparent;color:#{1};border-radius:0px"></span><b>{0}</b>{2}', data.topic_name, data.category_color, '' );
+                    d.innerHTML = text;
+                    //text = data.topic_name;
+                    var node = {
+                            contains: Ext.emptyFn,
+                            text: text,
+                            leaf: true,
+                            parentNode: Ext.emptyFn,
+                            attributes: {
+                                text: text,
+                                icon: "/static/images/icons/topic.png",
+                                iconCls: "no-icon",
+                                leaf: true,
+                                data: {
+                                    topic_mid: mid
+                                },
+                                topic_name: {
+                                    category_color: data.category_color,
+                                    category_name: data.category_name,
+                                    is_changeset: data.is_changeset,
+                                    is_release: data.is_release,
+                                    mid: mid
+                                }
+                            }
+                        };
+                    return {
+                        ddel: d,
+                        sourceEl: sourceEl,
+                        repairXY: Ext.fly(sourceEl).getXY(),
+                        node: node,
+                        sourceStore: null,
+                        draggedRecord: { }
+                    };
+                }
+            });
         }
     });
 
@@ -691,8 +884,7 @@
 
     grid_topics.on("rowdblclick", function(grid, rowIndex, e ) {
         var r = grid.getStore().getAt(rowIndex);
-        var title = _(r.get( 'category_name' )) + ' #' + r.get('topic_mid');
-        Baseliner.add_tabcomp('/topic/view?topic_mid=' + r.get('topic_mid') + '&app=' + typeApplication , title , { topic_mid: r.get('topic_mid'), title: title, _parent_grid: grid } );
+        Baseliner.show_topic_from_row( r, grid_topics );
     });
     
     grid_topics.on( 'render', function(){
@@ -849,45 +1041,46 @@
         var priorities_checked = new Array();
         var type;
         var selected_views = { };
-        selNodes = tree_filters.getChecked();
-        if( selNodes.length > 0 ) button_no_filter.show();
-          else button_no_filter.hide();
+		
+		selNodes = tree_filters.getChecked();
+		if( selNodes.length > 0 ) button_no_filter.show();
+		  else button_no_filter.hide();
 		  
 
-        for( var i=0; i<selNodes.length; i++ ) {
-            var node = selNodes[ i ];
-            type = node.parentNode.attributes.id;
+		for( var i=0; i<selNodes.length; i++ ) {
+			var node = selNodes[ i ];
+			type = node.parentNode.attributes.id;
 			//if (type == 'C') console.log(node);
 			var node_value = node.attributes.checked3 == -1 ? -1 * (node.attributes.idfilter) : node.attributes.idfilter;
-            switch (type){
-                //Views
-                case 'V':   
-                            var d = Ext.util.JSON.decode(node.attributes.filter);
-                            if( d.query !=undefined && selected_views.query !=undefined ) {
-                                d.query = d.query + ' ' + selected_views.query;
-                            }
-                            selected_views = Baseliner.merge(selected_views, d );
-                            break;
-                //Labels
-                case 'L':	labels_checked.push(node_value);
+			switch (type){
+				//Views
+				case 'V':   
+							var d = Ext.util.JSON.decode(node.attributes.filter);
+							if( d.query !=undefined && selected_views.query !=undefined ) {
+								d.query = d.query + ' ' + selected_views.query;
+							}
+							selected_views = Baseliner.merge(selected_views, d );
+							break;
+				//Labels
+				case 'L':	labels_checked.push(node_value);
 							//labels_checked.push(node.attributes.idfilter);
-                            break;
-                //Statuses
-                case 'S':   statuses_checked.push(node_value);
+							break;
+				//Statuses
+				case 'S':   statuses_checked.push(node_value);
 							//statuses_checked.push(node.attributes.idfilter);
-                            break;
-                //Categories
-                case 'C':	categories_checked.push(node_value);
+							break;
+				//Categories
+				case 'C':	categories_checked.push(node_value);
 							//categories_checked.push(node.attributes.idfilter);
-                            break;
-                //Priorities
-                case 'P':	priorities_checked.push(node_value);
+							break;
+				//Priorities
+				case 'P':	priorities_checked.push(node_value);
 							//priorities_checked.push(node.attributes.idfilter);
-                            break;
-            }
-        }
-        //alert('merge views: ' + Ext.util.JSON.encode(selected_views));
-        filtrar_topics(selected_views, labels_checked, categories_checked, statuses_checked, priorities_checked, unselected_node);
+							break;
+			}
+		}
+		//alert('merge views: ' + Ext.util.JSON.encode(selected_views));
+		filtrar_topics(selected_views, labels_checked, categories_checked, statuses_checked, priorities_checked, unselected_node);
     }
     
     function filtrar_topics(selected_views, labels_checked, categories_checked, statuses_checked, priorities_checked, unselected_node){
@@ -895,8 +1088,7 @@
         var bp = store_topics.baseParams;
         var base_params;
         if( bp !== undefined )
-            base_params= { start: bp.start, limit: ps, sort: bp.sort, dir: bp.dir, typeApplication: typeApplication, topic_list: params.topic_list, id_project: id_project ? id_project : undefined, categories: category_id ? category_id : undefined  };
-        // object for merging with views 
+            base_params= { start: bp.start, limit: ps, sort: bp.sort, dir: bp.dir, typeApplication: typeApplication, topic_list: params.topic_list, id_project: id_project ? id_project : undefined, categories: category_id ? category_id : undefined  };        // object for merging with views 
         var selected_filters = {labels: labels_checked, categories: categories_checked, statuses: statuses_checked, priorities: priorities_checked};
         
         //alert('selected_views ' + Ext.util.JSON.encode(selected_views));
@@ -908,27 +1100,34 @@
         // now merge baseparams (query, limit and start) over the resulting filters
         var filter_final = Baseliner.merge( merge_filters, base_params );
         // query and unselected
-        if( unselected_node != undefined ) {
-            var unselected_type = unselected_node.parentNode.attributes.id;
-            var unselected_filter = Ext.util.JSON.decode(unselected_node.attributes.filter);
-            if( unselected_type == 'V' ) {
-                if( bp.query == unselected_filter.query ) {
-                    filter_final.query = '';
-                } else {
-                    filter_final.query = bp.query.replace( unselected_filter.query, '' );
-                    filter_final.query = filter_final.query.replace( /^ +/, '' );
-                    filter_final.query = filter_final.query.replace( / +$/, '' );
-                }
-            }
-        }
-        else if( selected_views.query != undefined  && bp.query != undefined ) {
-            //filter_final.query = bp.query + ' ' + selected_views.query;
-        }
+		
+		
+        //if( unselected_node != undefined ) {
+        //    var unselected_type = unselected_node.parentNode.attributes.id;
+        //    var unselected_filter = Ext.util.JSON.decode(unselected_node.attributes.filter);
+        //    if( unselected_type == 'V' ) {
+        //        if( bp.query == unselected_filter.query ) {
+        //            filter_final.query = '';
+        //        } else {
+        //            filter_final.query = bp.query.replace( unselected_filter.query, '' );
+					filter_final.query = bp.query;
+                    //filter_final.query = filter_final.query.replace( /^ +/, '' );
+                    //filter_final.query = filter_final.query.replace( / +$/, '' );
+        //        }
+        //    }
+        //}
+        //else if( selected_views.query != undefined  && bp.query != undefined ) {
+        //    //filter_final.query = bp.query + ' ' + selected_views.query;
+        //}
 
         //alert('curr ' + Ext.util.JSON.encode(filter_final));
         //if( base_params.query !== filter_final.query ) {
             //delete filter_final['query'];    
         //}
+		//console.dir(filter_final);
+		
+		if (statuses_checked.length == 0) filter_final.clear_filter = 1
+		
         store_topics.baseParams = filter_final;
         search_field.setValue( filter_final.query );
         store_topics.load();
@@ -984,13 +1183,13 @@
 	
 	function checkchange(node_selected, checked) {
 		var type = node_selected.parentNode.attributes.id;
-		if (!changing || type == 'V' ) {
-			if (type != 'V') {
+		if (!changing  ) {
+			//if (type != 'V') {
 				changing = true;
 				var c3 = node_selected.attributes.checked3;
 				node_selected.getUI().toggleCheck( c3 );
 				changing = false;
-			}
+			//}
 		
 		
 			if( stop_filters ) return;
@@ -998,26 +1197,26 @@
 			var swDisable = true;
 			var selNodes = tree_filters.getChecked();
 			var tot_view_defaults = 1;
-			Ext.each(selNodes, function(node){
-				
-				var type = node.parentNode.attributes.id;
-				if(type == 'V'){
-					//if(!eval('node.attributes.default')){   //Eval, I.E
-					if(!node.attributes['default']){   // I.E 8.0
-						button_delete_view.enable();
-						swDisable = false;
-						return false;
-					}else{
-						if(selNodes.length == tot_view_defaults){
-							swDisable = true;
-						}else{
-							swDisable = false;
-						}
-					}
-				}else{
-					swDisable = true;
-				}
-			});
+			//Ext.each(selNodes, function(node){
+			//	
+			//	var type = node.parentNode.attributes.id;
+			//	if(type == 'V'){
+			//		//if(!eval('node.attributes.default')){   //Eval, I.E
+			//		if(!node.attributes['default']){   // I.E 8.0
+			//			button_delete_view.enable();
+			//			swDisable = false;
+			//			return false;
+			//		}else{
+			//			if(selNodes.length == tot_view_defaults){
+			//				swDisable = true;
+			//			}else{
+			//				swDisable = false;
+			//			}
+			//		}
+			//	}else{
+			//		swDisable = true;
+			//	}
+			//});
 			
 			if (swDisable)
 				button_delete_view.disable();
@@ -1084,16 +1283,17 @@
     var panel = new Ext.Panel({
         layout : "border",
         defaults: {layout:'fit'},
+        title: _('Topics'),
+        //tab_icon: '/static/images/icons/topic.png',
         items : [
-             
-                    {
-                        region:'center',
-                        collapsible: false,
-                        items: [
-                            grid_topics
-                        ]
-                    },   
-                    tree_filters
+            {
+                region:'center',
+                collapsible: false,
+                items: [
+                    grid_topics
+                ]
+            },   
+            tree_filters
         ]
     });
     
@@ -1108,5 +1308,8 @@
     });
     //store_label.load();
     
+    panel.print_hook = function(){
+        return { title: grid_topics.title, id: Baseliner.grid_scroller( grid_topics ).id };
+    };
     return panel;
 })

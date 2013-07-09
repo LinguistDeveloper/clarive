@@ -60,7 +60,7 @@ register 'event.topic.create' => {
     description => 'User created a topic',
     vars => ['username', 'category', 'ts'],
     notify => {
-        scope => ['project', 'category', 'category_status', 'priority','baseline'],
+        scope => ['project', 'category', 'category_status'],
     },
 };
 
@@ -155,6 +155,10 @@ register 'registor.action.topic_category_fields' => {
             my $meta = Baseliner::Model::Topic->get_meta( undef, $category->{id} );    
             my @statuses = Baseliner->model('Baseliner::BaliTopicCategoriesStatus')
                 ->search({id_category => $category->{id}}, {join=>'status', 'select'=>'status.name', 'as'=>'name'})->hashref->all;
+            my $msg_edit = _loc('Can not edit the field');
+            my $msg_view = _loc('Can not view the field');
+            my $msg_in_category = _loc('in the category');
+            my $msg_for_status = _loc('for the status');                
             for my $field (_array $meta){
                 if ($field->{fields}) {
                 	my @fields_form = _array $field->{fields};
@@ -163,27 +167,28 @@ register 'registor.action.topic_category_fields' => {
                         for my $status (@statuses){
                             my $id_action = 'action.topicsfield.' . _name_to_id($category->{name}) . '.' 
                                     . _name_to_id($field->{name_field}) . '.' . _name_to_id($field_form->{id_field}) . '.' . _name_to_id($status->{name}) . '.write';
-                            my $description = _loc('Can not edit the field') . ' ' . lc $field_form->{id_field} . ' ' . _loc('in the category') . ' ' . lc $category->{name} . ' ' . _loc('for the status') . ' ' . lc $status->{name};
+                            my $description = $msg_edit . ' ' . lc $field_form->{id_field} . ' ' . $msg_in_category . ' ' . lc $category->{name} . ' ' . $msg_for_status . ' ' . lc $status->{name};
                             
                             $actions_category_fields{$id_action} = { name => $id_action, description => $description };
                             
                             $id_action = 'action.topicsfield.' . _name_to_id($category->{name}) . '.' 
                                     . _name_to_id($field->{name_field}) . '.' . _name_to_id($field_form->{id_field}) . '.' . _name_to_id($status->{name}) . '.read';
-                            $description = _loc('Can not view the field') . ' ' . lc $field_form->{id_field} . ' ' . _loc('in the category') . ' ' . lc $category->{name} . ' ' . _loc('for the status') . ' ' . lc $status->{name};
+                            $description = $msg_view . ' ' . lc $field_form->{id_field} . ' ' . $msg_in_category . ' ' . lc $category->{name} . ' ' . $msg_for_status . ' ' . lc $status->{name};
                             
                             $actions_category_fields{$id_action} = { name => $id_action, description => $description };
                         }                    
                     }
                 }
                 else{
+
                     for my $status (@statuses){
                         my $id_action = 'action.topicsfield.' . _name_to_id($category->{name}) . '.' . _name_to_id($field->{name_field}) . '.' . _name_to_id($status->{name}) . '.write';
-                        my $description = _loc('Can not edit the field') . ' ' . lc $field->{name_field} . ' ' . _loc('in the category') . ' ' . lc $category->{name} . ' ' . _loc('for the status') . ' ' . lc $status->{name};
+                        my $description = $msg_edit . ' ' . lc $field->{name_field} . ' ' . $msg_in_category . ' ' . lc $category->{name} . ' ' . $msg_for_status . ' ' . lc $status->{name};
                         
                         $actions_category_fields{$id_action} = { name => $id_action, description => $description };
                         
                         $id_action = 'action.topicsfield.' . _name_to_id($category->{name}) . '.' . _name_to_id($field->{name_field}) . '.' . _name_to_id($status->{name}) . '.read';
-                        $description = _loc('Can not view the field') . ' ' . lc $field->{name_field} . ' ' . _loc('in the category') . ' ' . lc $category->{name} . ' ' . _loc('for the status') . ' ' . lc $status->{name};
+                        $description = $msg_view . ' ' . lc $field->{name_field} . ' ' . $msg_in_category . ' ' . lc $category->{name} . ' ' . $msg_for_status . ' ' . lc $status->{name};
                         
                         $actions_category_fields{$id_action} = { name => $id_action, description => $description };
                     }
@@ -237,10 +242,17 @@ sub topics_for_user {
         label_color
         project_id
         project_name
+        moniker
+        cis_out
+        cis_in
+        references
+        referenced_in
         file_name
         description
         text
         progress
+        modified_on
+        modified_by        
         /
     });
 
@@ -261,15 +273,16 @@ sub topics_for_user {
         
         ($select,$order_by, $as, $group_by) = $sort
         ? ([{ distinct=>'me.topic_mid'} ,$sort], [{ "-$dir" => $sort}, {-desc => 'me.topic_mid' }], ['topic_mid', $sort], ['topic_mid', $sort] )
-        : ([{ distinct=>'me.topic_mid'}], [{ "-$dir" => 'me.topic_mid' } ], ['topic_mid'], ['topic_mid'] );
+        : ([{ distinct=>'me.topic_mid'},'modified_on'], [{ "-$dir" => 'modified_on' } ], ['topic_mid','modified_on'], ['topic_mid','modified_on'] );
     }
 
     #Filtramos por las aplicaciones a las que tenemos permisos.
     if( $username && ! $perm->is_root( $username )){
-        #my @user_apps = $perm->user_projects_ids( username => $username );
-        #push @user_apps, undef; #Insertamos valor null para los topicos que no llevan proyectos
-        #$where->{'project_id'} =  \@user_apps;
-        $where->{'project_id'} = [{-in => Baseliner->model('Permissions')->user_projects_query( username=>$username )}, { "=", undef }];
+        #$where->{'project_id'} = [{-in => Baseliner->model('Permissions')->user_projects_query( username=>$username )}, { "=", undef }];
+        $where->{'-or'} = [
+            'exists'   =>  Baseliner->model( 'Permissions' )->user_projects_query( username=>$username, join_id=>'project_id' ),
+            project_id => { '=' => undef },
+        ];
     }
     
     if( $topic_list ) {
@@ -293,7 +306,7 @@ sub topics_for_user {
                     $sSQL .= '(SELECT ROWNUM AS FILA, LEVEL AS NIVEL, FROM_MID FROM BALI_MASTER_REL A START WITH TO_MID = ? CONNECT BY PRIOR FROM_MID = TO_MID AND FROM_MID <> TO_MID) B ';
                     $sSQL .= 'LEFT JOIN BALI_MASTER A ON A.MID = B.FROM_MID';
                     @usuarios_n1 = map {$_->{dni}} $db->array_hash( $sSQL, $usuario_gdi->{mid} );            
-                    Baseliner->cache_set( $usuario_gdi->{mid}, \@usuarios_n1 );
+                    Baseliner->cache_set( $usuario_gdi->{mid}, \@usuarios_n1 ) if $usuario_gdi->{mid};
                 }
                 
                 push (@usuarios_n1, $username);                
@@ -360,8 +373,10 @@ sub topics_for_user {
         }        
         #$where->{'category_id'} = \@categories;
     }else{
+        # all categories, but limited by user permissions
+        #   XXX consider removing this check on root and other special permissions
         my @categories  = map { $_->{id}} Baseliner::Model::Topic->get_categories_permissions( username => $username, type => 'view' );
-        $where->{'category_id'} = \@categories;
+        $where->{'category_id'} = { -in => \@categories };
     }
     
     my $default_filter;
@@ -381,21 +396,23 @@ sub topics_for_user {
 
         #$where->{'category_status_id'} = \@statuses;
         
-    }else{
-        ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
-        my %tmp;
-        map { $tmp{$_->{id_status_from}} = 1 && $tmp{$_->{id_status_to}} = 1 } 
-            $self->user_workflow( $username );
-
-        my @status_ids = keys %tmp;
-        $where->{'category_status_id'} = \@status_ids;
-        
-        #$where->{'category_status_type'} = {'!=', 'F'};
-        #Nueva funcionalidad (todos los tipos de estado que enpiezan por F son estado finalizado)
-        $where->{'category_status_type'} = {-not_like, '%F%'}
+    }else {
+        if (!$p->{clear_filter}){
+            ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
+            my %tmp;
+            map { $tmp{$_->{id_status_from}} = 1 && $tmp{$_->{id_status_to}} = 1 } 
+                $self->user_workflow( $username );
+    
+            my @status_ids = keys %tmp;
+            $where->{'category_status_id'} = { -in=>\@status_ids };
+            
+            #$where->{'category_status_type'} = {'!=', 'F'};
+            #Nueva funcionalidad (todos los tipos de estado que enpiezan por F son estado finalizado)
+            $where->{'category_status_type'} = {-not_like, 'F%'}
+        }
     }
       
-    if($p->{priorities}){
+    if( $p->{priorities}){
         my @priorities = _array $p->{priorities};
         my @not_in = map { abs $_ } grep { $_ < 0 } @priorities;
         my @in = @not_in ? grep { $_ > 0 } @priorities : @priorities;
@@ -409,6 +426,13 @@ sub topics_for_user {
             }
         }          
         #$where->{'priority_id'} = \@priorities;
+    }
+
+    if( $p->{from_mid} || $p->{to_mid} ){
+        my $rel_where = {};
+        my $dir = length $p->{from_mid} ? ['from_mid','to_mid'] : ['to_mid','from_mid'];
+        $rel_where->{$dir->[0]} = $p->{$dir->[0]};
+        $where->{topic_mid} = { -in => DB->BaliMasterRel->search( $rel_where,{ select=>$dir->[1]})->as_query };
     }
 
     #*****************************************************************************************************************************
@@ -436,16 +460,27 @@ sub topics_for_user {
     if( $limit >= 0 ) {
         my $pager = $rs->pager;
         $cnt = $pager->total_entries;
-    } 
+    } else {
+        $cnt = $rs->count;
+    }
     rs_hashref( $rs );
     my @mids = map { $_->{topic_mid} } $rs->all;
     my $rs_sub = $rs->search(undef, { select=>'topic_mid' });
             # _log _dump $rs_sub->as_query;
     
     # SELECT MID DATA:
-    my @mid_data = DB->TopicView->search({ topic_mid=>{ -in =>$rs_sub->as_query  } })->hashref->all;
+    my @mid_data = grep { defined } map { Baseliner->cache_get("topic:view:$_") } @mids; 
+    my $mids_in_cache = { map { $_->{topic_mid} => 1 } @mid_data };
+    my @db_mids = grep { !exists $mids_in_cache->{$_} } @mids; 
+    _debug( "CACHE==============================> MIDS: @mids, DBMIDS: @db_mids, MIDS_IN_CACHE: " . join',',keys %$mids_in_cache );
+    my @db_mid_data = DB->TopicView->search({ topic_mid=>{ -in =>\@db_mids  } })->hashref->all if @db_mids > 0;
+    Baseliner->cache_set( "topic:view:".$_->{topic_mid}, $_ ) for @db_mid_data;
+    @mid_data = ( @mid_data, @db_mid_data );
+
     my @rows;
     my %id_label;
+    my (%cis_out, %cis_in );
+    my (%references, %referenced_in );
     my %projects;
     my %projects_report;
     my %assignee;
@@ -458,7 +493,7 @@ sub topics_for_user {
     for (@mid_data) {
         my $mid = $_->{topic_mid};
         $mid_data{ $mid } = $_ unless exists $mid_data{ $_->{topic_mid} };
-        $mid_data{ $mid }{is_closed} = $_->{status} eq 'C' ? \1 : \0;
+        $mid_data{ $mid }{is_closed} = defined $_->{status} && $_->{status} eq 'C' ? \1 : \0;
         $mid_data{ $mid }{sw_edit} = 1 if exists $categories_edit{ lc $_->{category_name}};
         $_->{label_id}
             ? $id_label{ $mid }{ $_->{label_id} . ";" . $_->{label_name} . ";" . $_->{label_color} } = ()
@@ -469,6 +504,18 @@ sub topics_for_user {
         } else {
             $projects{ $mid } = {};
             $projects_report{ $mid } = {};
+        }
+        if( $_->{cis_out} ) {
+            $cis_out{ $mid }{ $_->{cis_out} } = ();
+        }
+        if( $_->{cis_in} ) {
+            $cis_in{ $mid }{ $_->{cis_in} } = ();
+        }
+        if( $_->{references} ) {
+            $references{ $mid }{ $_->{references} } = ();
+        }
+        if( $_->{referenced_in} ) {
+            $referenced_in{ $mid }{ $_->{referenced_in} } = ();
         }
         $assignee{ $mid }{ $_->{assignee} } = () if defined $_->{assignee};
     }
@@ -487,13 +534,16 @@ sub topics_for_user {
             topic_name => sprintf("%s #%d", $data->{category_name}, $mid),
             labels   => [ keys %{ $id_label{$mid} || {} } ],
             projects => [ keys %{ $projects{$mid} || {} } ],
+            cis_out => [ keys %{ $cis_out{$mid} || {} } ],
+            cis_in => [ keys %{ $cis_in{$mid} || {} } ],
+            references => [ keys %{ $references{$mid} || {} } ],
+            referenced_in => [ keys %{ $referenced_in{$mid} || {} } ],
             assignee => [ keys %{ $assignee{$mid} || {} } ],
             report_data => {
                 projects => join( ', ', keys %{ $projects_report{$mid} || {} } )
             }
         };
     }
-    $cnt //= scalar @rows;
     return $cnt, @rows ;
 }
 
@@ -504,6 +554,7 @@ sub update {
     my $return;
     my $topic_mid;
     my $status;
+    my $category;
     
     given ( $action ) {
         #Casos especiales, por ejemplo la aplicacion GDI
@@ -526,7 +577,8 @@ sub update {
                     $topic_mid    = $topic->mid;
                     $status = $topic->id_category_status;
                     $return = 'Topic added';
-                   { mid => $topic->mid, topic => $topic->title, , category=> $topic->categories->name }   # to the event
+                    $category = { $topic->categories->get_columns };
+                   { mid => $topic->mid, topic => $topic->title, , category=> $category->{name} }   # to the event
                 });                   
             } 
             => sub { # catch
@@ -544,7 +596,7 @@ sub update {
                 Baseliner->model('Baseliner')->txn_do(sub{
                     my @field;
                     $topic_mid = $p->{topic_mid};
-                    
+
                     my $meta = $self->get_meta ($topic_mid, $p->{category});
                     my $topic = $self->save_data ($meta, $topic_mid, $p);
                     
@@ -594,7 +646,7 @@ sub update {
             }
         } ## end when ( 'close' )
     } ## end given
-    return ( $return, $topic_mid, $status, $p->{title} );
+    return ( $return, $topic_mid, $status, $p->{title}, $category );
 } ## end sub update
 
 sub append_category {
@@ -641,6 +693,7 @@ sub get_system_fields {
                 html             => $pathHTML . 'field_title.html',
                 js               => '/fields/templates/js/textfield.js',
                 field_order      => -1,
+                font_weigth      => 'bold',
                 section          => 'head',
                 field_order_html => 1
             }
@@ -693,6 +746,14 @@ sub get_system_fields {
             id_field => 'created_on',
             params   => { name_field => 'Created On', bd_field => 'created_on', origin => 'default' }
         },
+        {
+            id_field => 'modified_by',
+            params   => { name_field => 'Modified By', bd_field => 'modified_by', origin => 'default' }
+        },
+        {
+            id_field => 'modified_on',
+            params   => { name_field => 'Modified On', bd_field => 'modified_on', origin => 'default' }
+        },        
         {
             id_field => 'labels',
             params   => {
@@ -885,6 +946,9 @@ sub get_update_system_fields {
 sub get_meta {
     my ($self, $topic_mid, $id_category) = @_;
 
+    my $cached = Baseliner->cache_get( "topic:meta:$topic_mid") if $topic_mid;
+    return $cached if $cached;
+
     my $id_cat =  $id_category
         // DB->BaliTopic->search({ mid=>$topic_mid }, { select=>'id_category' })->as_query;
         
@@ -913,15 +977,19 @@ sub get_meta {
     #push @meta, @form_fields;                
     
     @meta = sort { $a->{field_order} <=> $b->{field_order} } @meta;
+
+    Baseliner->cache_set( "topic:meta:$topic_mid", \@meta ) if $topic_mid;
     
     return \@meta;
 }
 
 sub get_data {
-    my ($self, $meta, $topic_mid) = @_;
+    my ($self, $meta, $topic_mid, %opts ) = @_;
     
     my $data;
     if ($topic_mid){
+        my $cached = Baseliner->cache_get( "topic:data:$topic_mid" ); 
+        return $cached if defined $cached;
         
         ##************************************************************************************************************************
         ##CAMPOS DE SISTEMA ******************************************************************************************************
@@ -930,13 +998,13 @@ sub get_data {
         #my $rs = Baseliner->model('Baseliner::BaliTopic')->search({ mid => $topic_mid },{ select=>\@std_fields });
         
         my @select_fields = ('title', 'id_category', 'categories.name', 'categories.color',
-                             'id_category_status', 'status.name', 'created_by', 'created_on',
+                             'id_category_status', 'status.name', 'created_by', 'created_on', 'modified_by', 'modified_on',
                              'id_priority','priorities.name', 'deadline_min', 'description','progress', 'status.type', 'master.moniker' );
         my @as_fields = ('title', 'id_category', 'name_category', 'color_category', 'id_category_status', 'name_status',
-                         'created_by', 'created_on', 'id_priority', 'name_priority', 'deadline_min', 'description', 'progress','type_status', 'moniker' );
+                         'created_by', 'created_on', 'modified_by', 'modified_on', 'id_priority', 'name_priority', 'deadline_min', 'description', 'progress','type_status', 'moniker' );
         
         my $rs = Baseliner->model('Baseliner::BaliTopic')
-                ->search({ mid => $topic_mid },{ join => ['categories','status','priorities','master'], select => \@select_fields, as => \@as_fields});
+                ->search({ 'me.mid' => $topic_mid },{ join => ['categories','status','priorities','master'], select => \@select_fields, as => \@as_fields});
         my $row = $rs->first;
         
         $data = { topic_mid => $topic_mid, $row->get_columns };
@@ -944,6 +1012,9 @@ sub get_data {
 
         $data->{action_status} = $self->getAction($data->{type_status});
         $data->{created_on} = $row->created_on->dmy . ' ' . $row->created_on->hms;
+        $data->{created_on_epoch} = $row->created_on->epoch;
+        $data->{modified_on} = $row->modified_on->dmy . ' ' . $row->modified_on->hms;
+        $data->{modified_on_epoch} = $row->modified_on->epoch;
         #$data->{deadline} = $row->deadline_min ? $row->created_on->clone->add( minutes => $row->deadline_min ):_loc('unassigned');
         $data->{deadline} = _loc('unassigned');
         
@@ -962,21 +1033,22 @@ sub get_data {
         }
         
         foreach my $key  (keys %method_fields){
-            my $method = $method_fields{ $key };
-            $data->{ $key } =  $self->$method( $topic_mid, $key, $meta );
+            my $method_get = $method_fields{ $key };
+            $data->{ $key } =  $self->$method_get( $topic_mid, $key, $meta, %opts );
         }
         
         my @custom_fields = map { $_->{id_field} } grep { $_->{origin} eq 'custom' && !$_->{relation} } _array( $meta  );
-        my %custom_data = {};
+        my %custom_data = ();
+        # get data from value_clob if value is not available. 
         map { $custom_data{ $_->{name} } = $_->{value} ? $_->{value} : $_->{value_clob} }
             Baseliner->model('Baseliner::BaliTopicFieldsCustom')->search( { topic_mid => $topic_mid } )->hashref->all;
         
         push @custom_fields, map { map { $_->{id_field} } _array $_->{fields}; } grep { defined $_->{type} && $_->{type} eq 'form' } _array($meta);
-                             
 
         for (@custom_fields){
             $data->{ $_ } = $custom_data{$_};
         }
+        Baseliner->cache_set( "topic:data:$topic_mid", $data ); 
     }
     
     return $data;
@@ -996,10 +1068,8 @@ sub get_release {
 }
 
 sub get_projects {
-    my ($self, $topic_mid ) = @_;
-    my $topic = Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid );
-    my @projects = $topic->projects->search(undef,{select=>['mid','name']})->hashref->all;
-
+    my ($self, $topic_mid, $id_field ) = @_;
+    my @projects = Baseliner->model('Baseliner::BaliTopic')->find(  $topic_mid )->projects->search( {rel_field => $id_field}, { select=>['mid','name'], order_by => { '-asc' => ['mid'] }} )->hashref->all;
     return @projects ? \@projects : [];
 }
 
@@ -1048,11 +1118,22 @@ sub get_dates {
 }
 
 sub get_topics{
-    my ($self, $topic_mid, $id_field) = @_;
-    my $rs_rel_topic = Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid )->topics->search( {rel_field => $id_field}, { order_by => { '-asc' => ['categories.name', 'mid'] }, prefetch=>['categories'] } );
+    my ($self, $topic_mid, $id_field, $meta, %opts) = @_;
+    my $rs_rel_topic = Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid )
+        ->topics->search( {rel_field => $id_field}, { order_by=>'rel_seq', prefetch=>['categories'] } );
     rs_hashref ( $rs_rel_topic );
     my @topics = $rs_rel_topic->all;
     @topics = Baseliner->model('Topic')->append_category( @topics );
+    if( $opts{topic_child_data} ) {
+        @topics = map {
+            #my $meta = $self->get_meta( $_->{mid} );
+            my $data = $self->get_data( undef, $_->{mid} ) ;
+            $_->{description} //= $data->{description};
+            $_->{name_status} //= $data->{name_status};
+            $_->{data} //= $data;
+            $_
+        } @topics;
+    }
     return @topics ? \@topics : [];    
 }
 
@@ -1068,8 +1149,11 @@ sub get_files{
 }
 
 sub save_data {
-    my ($self, $meta, $topic_mid, $data ) = @_;
+    my ($self, $meta, $topic_mid, $data, %opts ) = @_;
 
+    Baseliner->cache_remove( "topic:view:$topic_mid") if length $topic_mid;
+    Baseliner->cache_remove( "topic:data:$topic_mid") if length $topic_mid;
+    
     my @std_fields =
         map { +{ name => $_->{id_field}, column => $_->{bd_field}, method => $_->{set_method}, relation => $_->{relation} } }
         grep { $_->{origin} eq 'system' } _array($meta);
@@ -1091,8 +1175,8 @@ sub save_data {
             $relation{ $_->{column} } = $_ -> {relation};
             if ($_->{method}){
                 #my $extra_fields = eval( '$self->' . $_->{method} . '( $data->{ $_ -> {name}}, $data, $meta )' );
-                my $meth = $_->{method};
-                my $extra_fields = $self->$meth( $data->{ $_->{name} }, $data, $meta );
+                my $method_set = $_->{method};
+                my $extra_fields = $self->$method_set( $data->{ $_->{name} }, $data, $meta, %opts );
                 foreach my $column (keys %{ $extra_fields || {} } ){
                      $row{ $column } = $extra_fields->{$column};
                 }
@@ -1122,6 +1206,7 @@ sub save_data {
             #Defaults
             $row{ mid } = $topic_mid;
             $row{ created_by } = $data->{username};
+            $row{ modified_by } = $data->{username};
             
             $topic = DB->BaliTopic->create( \%row );
 
@@ -1140,9 +1225,9 @@ sub save_data {
             my $method = $relation{ $field };
             $old_text{$field} = $method ? try { $topic->$method->name } : $topic->$field,
         }
-        
+        $topic->modified_by( $data->{username} );
         $topic->update( \%row );
-        _ci( $topic_mid )->save( moniker=>$moniker, name=>$row{title} );
+        _ci( $topic_mid )->update( moniker=>$moniker, name=>$row{title} );
 
         for my $field (keys %row){
             next if $field eq 'response_time_min' || $field eq 'expr_response_time';
@@ -1150,7 +1235,7 @@ sub save_data {
 
             my $method = $relation{ $field };
 
-            if ($row{$field} != $old_value{$field}){
+            if ($row{$field} ne $old_value{$field}){
                 if($field eq 'id_category_status'){
                     
                     my @projects = $topic->projects->hashref->all;
@@ -1246,8 +1331,10 @@ sub save_data {
             if ($_->{data}){ ##Cuando el tipo de dato es CLOB
                 
             	$record->{value_clob} = $data->{ $_ -> {name}};
+            	$record->{value} = ''; # cleanup old data, so that we read from clob 
             }else{
             	$record->{value} = $data->{ $_ -> {name}};
+            	$record->{value_clob} = ''; # cleanup old data so we read from value
             }
             
             if(!$row){
@@ -1262,12 +1349,14 @@ sub save_data {
                         $modified = 1;    
                     }
                     $row->value_clob($data->{$_->{name}});
+                    $row->value(''); # cleanup old data in case of change data: 1
                 }else{
                     if ($row->value ne $data->{$_->{name}}){
                         $modified = 1;
                         $old_value = $row->value;
                     }
                     $row->value($data->{$_->{name}});
+                    $row->value_clob('');   # cleanup old data in case of change data: 1
                 }
                 $row->update;
                 
@@ -1356,54 +1445,51 @@ sub set_topics {
     my @all_topics = ();
     
     # related topics
-    my @new_topics = _array( $topics ) ;
+    my @new_topics = map { split /,/, $_ } _array( $topics ) ;
     my @old_topics = map {$_->{to_mid}} DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_type => 'topic_topic', rel_field => $id_field})->hashref->all;
     
-    # check if arrays contain same members
-    if ( array_diff(@new_topics, @old_topics) ) {
-        if( @new_topics ) {
-            if(@old_topics){
-                my $rs_old_topics = DB->BaliMasterRel->search({from_mid => $rs_topic->mid, to_mid => \@old_topics});
-                $rs_old_topics->delete();
-            }
-            
-            for (@new_topics){
-                DB->BaliMasterRel->update_or_create({from_mid => $rs_topic->mid, to_mid => $_, rel_type =>'topic_topic', rel_field => $id_field });
-            }
-            
-            my $topics = join(',', @new_topics);
-    
-            event_new 'event.topic.modify_field' => { username   => $user,
-                                                field      => _loc( 'attached topics' ),
-                                                old_value      => '',
-                                                new_value  => $topics,
-                                                text_new      => '%1 modified topic: %2 ( %4 )',
-                                               } => sub {
-                { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
-            } ## end try
-            => sub {
-                _throw _loc( 'Error modifying Topic: %1', shift() );
-            };        
-            
-        }else{
-            event_new 'event.topic.modify_field' => { username   => $user,
-                                                field      => '',
-                                                old_value      => '',
-                                                new_value  => '',
-                                                text_new      => '%1 deleted all attached topics of ' . $id_field ,
-                                               } => sub {
-                { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
-            } ## end try
-            => sub {
-                _throw _loc( 'Error modifying Topic: %1', shift() );
-            };
-
-            #$rs_topic->set_topics( undef, { rel_type=>'topic_topic', rel_field => $id_field});
-            my $rs_old_topics = DB->BaliMasterRel->search({from_mid => $rs_topic->mid, to_mid => \@old_topics});
-            $rs_old_topics->delete();            
+    if( @new_topics ) {
+        if(@old_topics){
+            my $rs_old_topics = DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_field=>$id_field });
+            $rs_old_topics->delete();
         }
+        
+        for (@new_topics){
+            DB->BaliMasterRel->update_or_create({from_mid => $rs_topic->mid, to_mid => $_, rel_type =>'topic_topic', rel_field => $id_field });
+        }
+        
+        my $topics = join(',', @new_topics);
+
+        event_new 'event.topic.modify_field' => { username   => $user,
+                                            field      => _loc( 'attached topics' ),
+                                            old_value      => '',
+                                            new_value  => $topics,
+                                            text_new      => '%1 modified topic: %2 ( %4 )',
+                                           } => sub {
+            { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
+        } ## end try
+        => sub {
+            _throw _loc( 'Error modifying Topic: %1', shift() );
+        };        
+        
+    }else{
+        event_new 'event.topic.modify_field' => { username   => $user,
+                                            field      => '',
+                                            old_value      => '',
+                                            new_value  => '',
+                                            text_new      => '%1 deleted all attached topics of ' . $id_field ,
+                                           } => sub {
+            { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
+        } ## end try
+        => sub {
+            _throw _loc( 'Error modifying Topic: %1', shift() );
+        };
+
+        #$rs_topic->set_topics( undef, { rel_type=>'topic_topic', rel_field => $id_field});
+        my $rs_old_topics = DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_field => $id_field });
+        $rs_old_topics->delete();            
     }
-    
+
 }
 
 sub set_cis {
@@ -1552,22 +1638,27 @@ sub set_release {
 }
 
 sub set_projects {
-    my ($self, $rs_topic, $projects, $user ) = @_;
+    my ($self, $rs_topic, $projects, $user, $id_field ) = @_;
     my $topic_mid = $rs_topic->mid;
     
     my @new_projects = _array( $projects ) ;
-    my @old_projects = map {$_->{to_mid}} DB->BaliMasterRel->search({from_mid => $topic_mid, rel_type => 'topic_project'})->hashref->all;
+
+    #my @old_projects = map {$_->{mid}} Baseliner->model('Baseliner::BaliTopic')->find(  $topic_mid )->projects->search( {rel_field => $id_field}, { order_by => { '-asc' => ['mid'] }} )->hashref->all;
+    my @old_projects =  Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid )->
+                projects->search( {rel_field => $id_field }, { select => ['mid'], order_by => { '-asc' => ['mid'] }} )->hashref->all;
+
     
     # check if arrays contain same members
     if ( array_diff(@new_projects, @old_projects) ) {
-        my $del_projects = DB->BaliMasterRel->search({from_mid => $topic_mid, rel_type => 'topic_project'})->delete;
+        my $del_projects = DB->BaliMasterRel->search({from_mid => $topic_mid, rel_type => 'topic_project', rel_field => $id_field})->delete;
+        
         # projects
         if (@new_projects){
             my @name_projects;
             my $rs_projects = Baseliner->model('Baseliner::BaliProject')->search({mid =>\@new_projects});
             while( my $project = $rs_projects->next){
                 push @name_projects,  $project->name;
-                $rs_topic->add_to_projects( $project, { rel_type=>'topic_project' } );
+                $rs_topic->add_to_projects( $project, { rel_type=>'topic_project', rel_field => $id_field } );
             }
             
             my $projects = join(',', @name_projects);
@@ -1670,13 +1761,31 @@ sub get_categories_permissions{
     my $username = delete $param{username};
     my $type = delete $param{type};
     
+    my $re_action;
+
+    if ( $type eq 'view') {
+        $re_action = qr/^action\.topics\.(.*?)\.(view|edit|create)$/;
+    } elsif ($type eq 'edit') {
+        $re_action = qr/^action\.topics\.(.*?)\.(edit|create)$/;
+    } else {
+        $re_action = qr/^action\.topics\.(.*?)\.(create)$/;
+    }
+
     my @permission_categories;
     my @categories  = Baseliner->model('Baseliner::BaliTopicCategories')->search()->hashref->all;
-    push @permission_categories,    grep { Baseliner->model('Permissions')->user_has_action( username => $username, action => 'action.topics.' . $_ . '.' . $type) } 
-                                    map { lc $_->{name} } @categories;
+
+    if ( Baseliner->model('Permissions')->is_root( $username) ) {
+        return @categories;
+    }
     
-    my %permission_categories = map { $_ => 1} @permission_categories;
-    @categories = grep { $permission_categories{lc $_->{name}}} @categories;
+    push @permission_categories, _unique map { 
+        $_ =~ $re_action;
+        $1;
+    } Baseliner->model('Permissions')->user_actions_list( username => $username, action => $re_action);
+    
+    my %granted_categories = map { $_ => 1 } @permission_categories;
+    @categories = grep { $granted_categories{_name_to_id( $_->{name} )}} @categories;
+
     return @categories;
 }
 
@@ -1703,13 +1812,14 @@ sub search_query {
             map { _array( $_ ) }
             grep { defined }
             map { $r->{$_} }
-            qw/created_on category_name projects 
-                assignee file_name category_status_name created_by 
-                labels /;
+            qw/category_name projects 
+                assignee file_name category_status_name 
+                labels modified_on modified_by created_on created_by 
+                references referenced_in cis_out cis_in/;  # consider put references in separate, lower priority field
         push @text, _loc('Release') if $r->{is_release};
         push @text, _loc('Changeset') if $r->{is_changeset};
         my $info = join(', ',@text);
-        my $desc = _strip_html( sprintf "%s %s", $r->{description}, $r->{text} );
+        my $desc = _strip_html( sprintf "%s %s", ($r->{description} // ''), ($r->{text} // '') );
         if( length $desc ) {
             $desc = _utf8 $desc;  # strip html messes up utf8
             $desc =~ s/[^\w\s]//g; 
@@ -1720,7 +1830,9 @@ sub search_query {
             text  => $desc,
             info  => $info,
             url   => [ $_->{topic_mid}, $_->{topic_name}, $_->{category_color} ],
-            type  => 'topic'
+            type  => 'topic',
+            mid   => $r->{topic_mid},
+            id    => $r->{topic_mid},
         }
     } _array( $json->{data} );
 }

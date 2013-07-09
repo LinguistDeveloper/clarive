@@ -89,7 +89,7 @@ sub grid : Local {
     $c->stash->{id_project} = $p->{id_project};
     $c->stash->{project} = $p->{project}; 
     $c->stash->{query_id} = $p->{query};
-    if ($c->stash->{category_id} != $p->{category_id}) {
+    if ($p->{category_id} && $c->stash->{category_id} != $p->{category_id}) {
         $c->stash->{category_id} = $p->{category_id};
     }
     $c->stash->{template} = '/comp/topic/topic_grid.js';
@@ -113,12 +113,13 @@ sub update : Local {
     $p->{username} = $c->username;
     
     try  {    
-        my ($msg, $topic_mid, $status, $title) = $c->model('Topic')->update( $p );
+        my ($msg, $topic_mid, $status, $title, $category) = $c->model('Topic')->update( $p );
         $c->stash->{json} = {
             success      => \1,
             msg          => _loc( $msg, scalar( _array( $p->{topic_mid} ) ) ),
             topic_mid    => $topic_mid,
             topic_status => $status,
+            category     => $category,
             title        => $title
         };
     } catch {
@@ -134,6 +135,22 @@ sub related : Local {
     my $mid = $p->{mid};
     my $show_release = $p->{show_release} // '0';
     my $where = {};
+    my $query = $p->{query};
+    length($query) and $where = query_sql_build( query=>$query, fields=>{
+        map { $_ => "me.$_" } qw/
+        mid 
+        title
+        created_on
+        created_by
+        modified_on
+        modified_by        
+        /
+    });
+
+    if ($p->{mids}){
+         my @mids = _array $p->{mids};
+         $where->{mid} = \@mids;
+    }
     $where->{mid} = { '<>' => $mid } if length $mid;
     $where->{'categories.is_release'} = $show_release;
     
@@ -198,10 +215,15 @@ sub related : Local {
         
         }        
     }
-    
-    my $rs_topic = $c->model('Baseliner::BaliTopic')->search($where, { order_by=>['categories.name', 'mid' ], prefetch=>['categories'] });
-    rs_hashref( $rs_topic );
+    my $rs_topic = DB->BaliTopic->search($where, { order_by=>['categories.name', 'mid' ], prefetch=>['categories'] })->hashref;
     my @topics = map {
+        if( $p->{topic_child_data} ) {
+            #my $meta = $c->model('Topic')->get_meta( $_->{mid} );
+            $_->{data} = $c->model('Topic')->get_data( undef, $_->{mid} );
+            $_->{description} //= $_->{data}{description};
+            $_->{name_status} ||= $_->{data}{name_status};
+        }
+
         $_->{name} = $_->{categories}{is_release} eq '1' 
             ?  $_->{title}
             :  _loc($_->{categories}->{name}) . ' #' . $_->{mid};
@@ -261,7 +283,7 @@ sub json : Local {
     my $ret = {};
     
     my $meta = $c->model('Topic')->get_meta( $topic_mid );
-    my $data = $c->model('Topic')->get_data( $meta, $topic_mid );
+    my $data = $c->model('Topic')->get_data( $meta, $topic_mid, %$p );
 
     $meta = get_meta_permissions ($c, $meta, $data);
     
@@ -342,7 +364,7 @@ sub get_meta_permissions : Local {
         $meta = [grep { !($hidden_field{ $_->{id_field} }) } _array $meta];
         
     }
-    
+    _log _dump $meta;
     return $meta
 }
 
@@ -350,73 +372,80 @@ sub new_topic : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
     
-    my $id_category = $p->{new_category_id};
-    my $name_category = $p->{new_category_name};
-    my $rs_status = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $id_category, type => 'I'},
-                                                                                        {
-                                                                                        prefetch=>['status'],
-                                                                                        }                                                                                 
-                                                                                     )->first; 
-    my $name_status = $rs_status->status->name;
-    my $meta = $c->model('Topic')->get_meta( undef, $id_category );
-    $meta = $self->get_field_bodies( $meta );
-    
-    my $data;
-    
-    if ($p->{ci}){
-        $data = _ci($p->{ci})->{_ci};
-        $data->{title} = $data->{gdi_perfil_dni};
-        if ($p->{clonar} && $p->{clonar} == -1){
-            $data = $self->init_values_topic($data);
-            if ($p->{dni}){
-                $data->{gdi_perfil_dni} = $p->{dni};
-            }
-            my $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $id_category, type => 'I'},
-                                                                                    {
-                                                                                    prefetch=>['status'],
-                                                                                    }                                                                                 
-                                                                                 )->first;
-            
-            my $action = $c->model('Topic')->getAction($statuses->status->type);
-            $data->{id_category_status} = $statuses->status->id;
-            $data->{name_status} = $statuses->status->name;
-            $data->{type_status} = $statuses->status->type;
-            $data->{action_status} = $action;
-        }
-    }else{
-        $data = $c->model('Topic')->get_data( $meta, undef );
-        #Cetelem
-        if($p->{dni}){
-            if ($p->{clonar}){
-                $data = $c->model('Topic')->get_data( $meta, $p->{clonar} );
+    my $ret = try {
+        my $id_category = $p->{new_category_id};
+        my $name_category = $p->{new_category_name};
+        my $rs_status = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $id_category, type => 'I'},
+                                                                                            {
+                                                                                            prefetch=>['status'],
+                                                                                            }                                                                                 
+                                                                                         )->first; 
+        _fail( _loc('The topic category %1 does not have any initial status assigned. Contact your administrator.', $name_category) ) 
+            unless $rs_status;
+        my $name_status = $rs_status->status->name;
+        my $meta = $c->model('Topic')->get_meta( undef, $id_category );
+        $meta = $self->get_field_bodies( $meta );
+        
+        my $data;
+        
+        if ($p->{ci}){
+            $data = _ci($p->{ci})->{_ci};
+            $data->{title} = $data->{gdi_perfil_dni};
+            if ($p->{clonar} && $p->{clonar} == -1){
                 $data = $self->init_values_topic($data);
-                my $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $data->{id_category}, type => 'I'},
+                if ($p->{dni}){
+                    $data->{gdi_perfil_dni} = $p->{dni};
+                }
+                my $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $id_category, type => 'I'},
                                                                                         {
                                                                                         prefetch=>['status'],
                                                                                         }                                                                                 
                                                                                      )->first;
                 
-                
                 my $action = $c->model('Topic')->getAction($statuses->status->type);
                 $data->{id_category_status} = $statuses->status->id;
                 $data->{name_status} = $statuses->status->name;
                 $data->{type_status} = $statuses->status->type;
-                $data->{action_status} = $action;                    
+                $data->{action_status} = $action;
             }
-            $data->{gdi_perfil_dni} = $p->{dni};
-            $data->{title} = $data->{gdi_perfil_dni};
+        }else{
+            $data = $c->model('Topic')->get_data( $meta, undef );
+            #Cetelem
+            if($p->{dni}){
+                if ($p->{clonar}){
+                    $data = $c->model('Topic')->get_data( $meta, $p->{clonar} );
+                    $data = $self->init_values_topic($data);
+                    my $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $data->{id_category}, type => 'I'},
+                                                                                            {
+                                                                                            prefetch=>['status'],
+                                                                                            }                                                                                 
+                                                                                         )->first;
+                    
+                    
+                    my $action = $c->model('Topic')->getAction($statuses->status->type);
+                    $data->{id_category_status} = $statuses->status->id;
+                    $data->{name_status} = $statuses->status->name;
+                    $data->{type_status} = $statuses->status->type;
+                    $data->{action_status} = $action;                    
+                }
+                $data->{gdi_perfil_dni} = $p->{dni};
+                $data->{title} = $data->{gdi_perfil_dni};
+            }
         }
-    }
-    
-    map{ $data->{$_} = 'off'}  grep {$_ =~ '_done' && $data->{$_} eq 'on' } _array $data;
-    
-    $meta = get_meta_permissions ($c, $meta, $data, $name_category, $name_status);
-    
-    my $ret = {
-        new_category_id     => $id_category,
-        new_category_name   => $name_category,
-        topic_meta          => $meta,
-        topic_data          => $data,
+        
+        map{ $data->{$_} = 'off'}  grep {$_ =~ '_done' && $data->{$_} eq 'on' } _array $data;
+        
+        $meta = get_meta_permissions ($c, $meta, $data, $name_category, $name_status);
+        
+        {
+            success => \1,
+            new_category_id     => $id_category,
+            new_category_name   => $name_category,
+            topic_meta          => $meta,
+            topic_data          => $data,
+        };
+    } catch {
+        { success=>\0, msg=>"".shift() } 
     };
     
     $c->stash->{json} = $ret;
@@ -445,6 +474,10 @@ sub view : Local {
     my $topic_mid = $p->{topic_mid} || $p->{action};
     my $id_category;
     
+    my $category;
+    
+    try {
+    
     $c->stash->{ii} = $p->{ii};    
     $c->stash->{swEdit} =  ref($p->{swEdit}) eq 'ARRAY' ? $p->{swEdit}->[0]:$p->{swEdit} ;
     $c->stash->{permissionEdit} = 0;
@@ -460,44 +493,25 @@ sub view : Local {
     
     if($topic_mid || $c->stash->{topic_mid} ){
  
-        my $category = DB->BaliTopicCategories->search({ mid=>$topic_mid }, { prefetch=>{'topics' => 'status'} })->first;
-        $c->stash->{permissionEdit} = 1 if exists $categories_edit{ $category->id };
+        $category = DB->BaliTopicCategories->search({ mid=>$topic_mid }, { prefetch=>{'topics' => 'status'} })->first;
+        _fail( _loc('Category not found or topic deleted: %1', $topic_mid) ) unless $category;
+        
         $c->stash->{category_meta} = $category->forms;
         
-        #if ($c->is_root){
-        #    $c->stash->{permissionEdit} = 1;     
-        #}
-        #else{
-            my $id_category_status = $category->topics->id_category_status;
-            #Miramos los estados que tiene en el workflow.
-            my %tmp;
-            ##map { $tmp{$_->{id_status_from}} = 'id' && $tmp{$_->{id_status_to}} = 'id' }
-            map { $tmp{$_->{id_status_from}} = 'id' } 
-                Baseliner->model('Topic')->user_workflow( $c->username );
-            
-            if ((substr $category->topics->status->type, 0, 1) eq "F"){
-                $c->stash->{permissionEdit} = 0;
-            }
-            else{
-                if ($c->is_root){
-                    $c->stash->{permissionEdit} = 1;     
-                }else{
-                    if (exists($tmp{$id_category_status})){
-                        $c->stash->{permissionEdit} = 1;
-                    }
-                    else{
-                        $c->stash->{permissionEdit} = 0;
-                    }
+        my %tmp;
+        if ((substr $category->topics->status->type, 0, 1) eq "F"){
+            $c->stash->{permissionEdit} = 0;
+        }
+        else{
+            if ($c->is_root){
+                $c->stash->{permissionEdit} = 1;     
+            }else{
+                if (exists ($categories_edit{ $category->id })){
+                    $c->stash->{permissionEdit} = 1;
                 }
             }
-            
-            #if ((substr $category->topics->status->type, 0, 1) ne "F" && exists($tmp{$id_category_status})){
-            #    $c->stash->{permissionEdit} = 1;    
-            #}else{
-            #    $c->stash->{permissionEdit} = 0;
-            #}
-        #}
-         
+        }
+                         
         # comments
         $self->list_posts( $c );  # get comments into stash        
         $c->stash->{events} = events_by_mid( $topic_mid, min_level => 2 );
@@ -525,7 +539,7 @@ sub view : Local {
     
     if( $p->{html} ) {
         my $meta = $c->model('Topic')->get_meta( $topic_mid, $id_category );
-        my $data = $c->model('Topic')->get_data( $meta, $topic_mid );
+        my $data = $c->model('Topic')->get_data( $meta, $topic_mid, %$p );
         $meta = get_meta_permissions ($c, $meta, $data);        
 
         $c->stash->{topic_meta} = $meta;
@@ -535,8 +549,23 @@ sub view : Local {
     } else {
         $c->stash->{template} = '/comp/topic/topic_main.js';
     }
+    } catch {
+        $c->stash->{json} = { success=>\0, msg=>"". shift() };
+        $c->forward('View::JSON');
+    };
 }
 
+sub title_row : Local {
+    my ($self, $c ) = @_;
+    my $mid = $c->req->params->{mid};
+    my $row = DB->BaliTopic->search(
+        { mid => $mid }, { join=>'categories', 
+        select=>[qw/mid title categories.name categories.color/], 
+        as=>[qw/mid title category_name category_color/] } );
+    $row = $row->hashref->first;
+    $c->stash->{json} = { success=>$row ? \1 : \0, row => $row };
+    $c->forward('View::JSON');
+}
 
 sub comment : Local {
     my ($self, $c, $action) = @_;
@@ -569,6 +598,7 @@ sub comment : Local {
                         post     => substr( $text, 0, 30 ) . ( length $text > 30 ? "..." : "" )
                     };
                     my $topic = $c->model('Baseliner::BaliTopic')->find( $topic_mid );
+                    _fail( _loc("Topic with id %1 not found (deleted?)", $topic_mid ) ) unless $topic;
                     $topic->add_to_posts( $post, { rel_type=>'topic_post' });
                     #master_rel->create({ rel_type=>'topic_post', from_mid=>$id_topic, to_mid=>$mid });
                 };
@@ -582,6 +612,7 @@ sub comment : Local {
                 #});
             } else {
                 my $post = $c->model('Baseliner::BaliPost')->find( $id_com );
+                _fail( _loc("This comment does not exist anymore") ) unless $post;
                 $post->text( $text );
                 $post->content_type( $content_type );
                 # TODO modified_on ?
@@ -600,6 +631,7 @@ sub comment : Local {
             my $id_com = $p->{id_com};
             _throw( _loc( 'Missing id' ) ) unless defined $id_com;
             my $post = $c->model('Baseliner::BaliPost')->find( $id_com );
+            _fail( _loc("This comment does not exist anymore") ) unless $post;
             my $text = $post->text;
             # find my parents to notify via events
             my @mids = map { $_->from_mid } $post->parents->all; 
@@ -616,15 +648,16 @@ sub comment : Local {
     } elsif( $action eq 'view' )  {
         try {
             my $id_com = $p->{id_com};
-            my $topic = $c->model('Baseliner::BaliPost')->find($id_com);
+            my $post = $c->model('Baseliner::BaliPost')->find($id_com);
+            _fail( _loc("This comment does not exist anymore") ) unless $post;
             # check if youre the owner
-            _fail _loc( "You're not the owner (%1) of the comment.", $topic->created_by ) 
-                if $topic->created_by ne $c->username;
+            _fail _loc( "You're not the owner (%1) of the comment.", $post->created_by ) 
+                if $post->created_by ne $c->username;
             $c->stash->{json} = {
                 failure=>\0,
-                text       => $topic->text,
-                created_by => $topic->created_by,
-                created_on => $topic->created_on->dmy . ' ' . $topic->created_on->hms
+                text       => $post->text,
+                created_by => $post->created_by,
+                created_on => $post->created_on->dmy . ' ' . $post->created_on->hms
             };
         } catch {
             $c->stash->{json} = { msg => _loc('Error viewing comment: %1', shift() ), failure => \1 }
@@ -866,7 +899,9 @@ sub filters_list : Local {
         cls     => 'forum default',
         iconCls => 'icon-no',
         checked => \0,
-        leaf    => 'true'
+        leaf    => 'true',
+        uiProvider => 'Baseliner.CBTreeNodeUI_system'
+        
     };
     
     if(!$typeApplication){
@@ -879,10 +914,11 @@ sub filters_list : Local {
             cls     => 'forum default',
             iconCls => 'icon-no',
             checked => \0,
-            leaf    => 'true'
+            leaf    => 'true',
+            uiProvider => 'Baseliner.CBTreeNodeUI_system'
         };
     }
-    ##################################################################################
+    #################################################################################
 
     $row = $c->model('Baseliner::BaliTopicView')->search();
     
@@ -897,7 +933,8 @@ sub filters_list : Local {
                 cls     => 'forum',
                 iconCls => 'icon-no',
                 checked => \0,
-                leaf    => 'true'
+                leaf    => 'true',
+                uiProvider => 'Baseliner.CBTreeNodeUI_system'
             };	
         }  
     }   
@@ -985,17 +1022,6 @@ sub filters_list : Local {
     
     # Filter: Status #############################################################################################################
     my @statuses;
-    
-    my $where = undef;
-    my $arg = {order_by=>'seq'};
-    
-    if($category_id){
-        $arg->{join} = ['categories_status'];
-        $where->{'categories_status.id_category'} = $category_id;
-    }
-    $row = $c->model('Baseliner::BaliTopicStatus')->search($where,$arg);
-    
-    #$row = $c->model('Baseliner::BaliTopicStatus')->search(undef, { order_by=>'seq' });
     
     my $where = undef;
     my $arg = {order_by=>'seq'};

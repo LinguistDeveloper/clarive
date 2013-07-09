@@ -37,6 +37,7 @@ sub update_category : Local {
     my $idsstatus = $p->{idsstatus};
     my $type = $p->{type};
     
+    Baseliner->cache_remove_like( qr/^topic:meta:/ );
     my $assign_type = sub {
         my ($category) = @_;
         given ($type) {
@@ -177,6 +178,7 @@ sub update_status : Local {
     my $p = $c->req->params;
     my $action = $p->{action};
 
+    Baseliner->cache_remove_like( qr/^topic:meta:/ );
     given ($action) {
         when ('add') {
             try{
@@ -240,7 +242,7 @@ sub update_status : Local {
                 $c->stash->{json} = { success => \1, msg=>_loc('Statuses deleted') };
             }
             catch{
-                $c->stash->{json} = { success => \0, msg=>_loc('Error deleting Statuses') };
+                $c->stash->{json} = { success => \0, msg=>_loc('Error deleting Statuses: %1', shift()) };
             }
         }
     }
@@ -255,6 +257,7 @@ sub update_priority : Local {
     my @rsptime = _array $p->{rsptime};
     my @deadline = _array $p->{deadline};
     
+    Baseliner->cache_remove_like( qr/^topic:meta:/ );
     given ($action) {
         when ('add') {
             try{
@@ -328,6 +331,7 @@ sub update_label : Local {
     my @projects = split ",", $p->{projects};
     my $username = $c->username;
     
+    Baseliner->cache_remove_like( qr/^topic:meta:/ );
     given ($action) {
         when ('add') {
             try{
@@ -403,6 +407,7 @@ sub update_category_admin : Local {
     my $idsstatus_to = $p->{idsstatus_to};
     my $job_type = $p->{job_type};
 
+    Baseliner->cache_remove_like( qr/^topic:meta:/ );
     foreach my $role (_array $idsroles){
         my $rs = $c->model('Baseliner::BaliTopicCategoriesAdmin')
             ->search( { id_category => $idcategory, id_role => $role, id_status_from => $status_from, id_status_to=>$idsstatus_to} );
@@ -447,6 +452,7 @@ sub list_categories_admin : Local {
     my $cnt;
     my @rows;
 
+    Baseliner->cache_remove_like( qr/^topic:meta:/ );
     my $rows = $c->model('Baseliner::BaliTopicCategoriesAdmin')->search(
         { id_category => $p->{categoryId} },
         {   
@@ -703,6 +709,7 @@ sub update_fields : Local {
     my @ids_field = _array $p->{fields};
     my @values_field = _array $p->{params};
     
+    Baseliner->cache_remove_like( qr/^topic:meta:/ );
     my $category = $c->model('Baseliner::BaliTopicFieldsCategory')->search( {id_category => $id_category} );
     if($category->count > 0){
         $category->delete;
@@ -854,6 +861,7 @@ sub update_category_priority : Local {
     my $priority_id = $p->{id};
     my $category_id = $p->{id_category};    
     
+    Baseliner->cache_remove_like( qr/^topic:meta:/ );
     given ($action) {
         when ('add') {
 
@@ -892,6 +900,7 @@ sub create_clone : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     
+    Baseliner->cache_remove_like( qr/^topic:meta:/ );
     try{
         my $row = $c->model('Baseliner::BaliTopicFieldsCategory')->search({id_field => $p->{name_field}})->first;
         if(!$row){
@@ -947,6 +956,7 @@ sub list_filters : Local {
 sub duplicate : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
+    Baseliner->cache_remove_like( qr/^topic:meta:/ );
     try{
         my $rs_category = $c->model('Baseliner::BaliTopicCategories')->find({ id => $p->{id_category} });
         if( $rs_category ){
@@ -1006,6 +1016,7 @@ sub delete_row : Local {
     my $id_role = $p->{id_role};
     my $id_status_from = $p->{id_status_from};    
     
+    Baseliner->cache_remove_like( qr/^topic:meta:/ );
     try{
         my $category_admin = $c->model('Baseliner::BaliTopicCategoriesAdmin')->search({id_category => $id_category, id_role => $id_role, id_status_from => $id_status_from});
         $category_admin->delete();
@@ -1021,12 +1032,125 @@ sub delete_row : Local {
 sub update_system : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
+    Baseliner->cache_remove_like( qr/^topic:meta:/ );
     try{
         Baseliner::Model::Topic->get_update_system_fields;
         $c->stash->{json} = { success => \1, msg => _loc("System updated") };  
     }
     catch{
         $c->stash->{json} = { success => \0, msg => _loc('Error updating system') };
+    };
+    $c->forward('View::JSON');  
+}
+
+sub export : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    try{
+        $p->{id_category} or _fail( _loc('Missing parameter id') );
+        my $export;
+        my @cats; 
+        for my $id (  _array( $p->{id_category} ) ) {
+            # TODO prefetch states and workflow
+            my $status = DB->BaliTopicStatus->search()->hashref->hash_unique_on('id');
+            my $topic = DB->BaliTopicCategories->search({ id=> $id }, { prefetch=>['fields', 'statuses'] })->hashref->first;
+            my $ss = delete $topic->{statuses};
+            for my $st ( @$ss ) {
+                push @{ $topic->{statuses} }, $status->{$st->{id_status} }; #{ name=>'rrr' };
+            }
+            _fail _loc('Category not found for id %1', $id) unless $topic;
+            push @cats, $topic;
+        }
+        if( @cats > 1 ) {
+            my $yaml = _dump( \@cats );
+            utf8::decode( $yaml );
+            $c->stash->{json} = { success => \1, yaml=>$yaml };  
+        } else {
+            my $yaml = _dump( $cats[0] );
+            utf8::decode( $yaml );
+            $c->stash->{json} = { success => \1, yaml=>$yaml };  
+        }
+    }
+    catch{
+        $c->stash->{json} = { success => \0, msg => _loc('Error exporting: %1', shift()) };
+    };
+    $c->forward('View::JSON');  
+}
+
+sub import : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    my @log;
+    Baseliner->cache_remove_like( qr/^topic:meta:/ );
+    try{
+        Baseliner->model('Baseliner')->txn_do( sub {
+            my $yaml = $p->{yaml} or _fail _loc('Missing parameter yaml');
+            my $import = _load( $yaml );
+            $import = [ $import ] unless ref $import eq 'ARRAY';
+            for my $data ( _array( $import ) ) {
+                next if !defined $data;
+                my $is_new;
+                my $topic_cat;
+                delete $data->{id};
+                my $fields = delete $data->{fields};
+                my $statuses = delete $data->{statuses};
+                push @log => "----------------| Category: $data->{name} |----------------";
+                $topic_cat = DB->BaliTopicCategories->search({ name=>$data->{name} })->first;
+                $is_new = !$topic_cat;
+                if( $is_new ) {
+                    $topic_cat = DB->BaliTopicCategories->create( $data );
+                    push @log => _loc('Created category %1', $data->{name} );
+                } else {
+                    $topic_cat->update( $data );
+                    push @log => _loc('Updated category %1', $data->{name} );
+                }
+               
+                # fields
+                for my $field ( _array( $fields ) ) {
+                    next if !defined $field;
+                    delete $field->{id_category};
+                    my $params_field = _load( $field->{params_field} );
+                    my $frow = $topic_cat->fields->search({ id_field=>$field->{id_field} })->first;
+                    if( $frow ) {
+                        $frow->update( $field );
+                        push @log => _loc('Updated field %1 (%2)', $field->{id_field}, $params_field->{name_field} );
+                    } else {
+                        $topic_cat->fields->create( $field );
+                        push @log => _loc('Created field %1 (%2)', $field->{id_field}, $params_field->{name_field} );
+                    }
+                }
+                
+                # statuses
+                for my $status ( _array( $statuses ) ) {
+                    next if !defined $status;
+                    delete $status->{id};
+                    my $srow = DB->BaliTopicStatus->search({ name=>$status->{name} })->first;
+                    if( !$srow ) {
+                        $srow = DB->BaliTopicStatus->create( $status );
+                        $topic_cat->statuses->create({ id_status=>$srow->id });
+                        push @log => _loc('Created status %1', $status->{name} );
+                    } else { 
+                        push @log => _loc('Status %1 found. Statuses are not updated by this import.', $status->{name} );
+                        my $srel = $topic_cat->statuses->search({ id_status=>$srow->id })->first;
+                        if( !$srel ) {
+                            $topic_cat->statuses->create({ id_status=>$srow->id });
+                            push @log => _loc("Status '%1' included in category", $status->{name} );
+                        } else {
+                            push @log => _loc("Status '%1' was already included.", $status->{name} );
+                        }
+                    }
+                }
+                # TODO workflow ? 
+                push @log => $is_new 
+                    ? _loc('Topic category created with id %1 and name %2:', $topic_cat->id, $topic_cat->name) 
+                    : _loc('Topic category %1 updated', $topic_cat->name) ;
+            }
+        });   # txn_do end
+        
+        $c->stash->{json} = { success => \1, log=>\@log, msg=>_loc('finished') };  
+    }
+    catch{
+        $c->stash->{json} = { success => \0, log=>\@log, msg => _loc('Error exporting: %1', shift()) };
     };
     $c->forward('View::JSON');  
 }
