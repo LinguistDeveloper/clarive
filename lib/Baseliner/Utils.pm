@@ -86,7 +86,6 @@ use Exporter::Tidy default => [
     _pathxs
     _uacc
     _markup
-    _markdown
     zip_files
     hash_flatten
     parse_vars
@@ -110,6 +109,9 @@ use Exporter::Tidy default => [
 )],
 other => [qw(
     _load_yaml_from_comment
+    _markdown
+    hash_shallow
+    ago
 )];
 
 # setup I18n
@@ -259,8 +261,7 @@ sub _loc {
     my @args = @_;
     my $c = try { Baseliner->app };
     if( $ENV{BALI_CMD} || !ref($c) ) {
-        my $default_lang = try { Baseliner->config->{default_lang} } catch { undef } ;
-        $default_lang //= 'en';
+        my $default_lang = try { Baseliner->config->{default_lang} } catch { 'en' } ;
         loc_lang( $default_lang );
         return loc( @args );
     } else {
@@ -412,7 +413,7 @@ sub _throw_stack {
 }
 
 sub _whereami {
-    Carp::longmess @_;
+    Carp::longmess(@_);
 }
 
 sub _say {
@@ -881,7 +882,7 @@ sub _pathxs {
 
 sub _markdown {
     require Text::Markdown;
-    my $txt = Text::Markdown::markdown( shift );
+    my $txt = Text::Markdown::markdown( @_ );
     $txt =~ s{^\<p\>}{};
     $txt =~ s{\</p\>\n?$}{};
     $txt ;
@@ -987,6 +988,56 @@ sub hash_flatten {
     }
     return wantarray ? %flat : \%flat;
 }
+
+=head2 hash_shallow
+
+Turns a deeply nested hash into a very flat one:
+
+    my $h = {};
+    hash_shallow( { ss=>{ aa=>[11,{ bb=>22 }] }, dd=>{ rr=>{ xx=>[99], ff=>98 } }, rr=>13 }, $h );
+    _dump( $h );
+
+Turns into:
+
+    aa:
+    - 11
+    bb: 22
+    ff: 98
+    rr: 13
+    xx:
+    - 99
+
+=cut
+sub hash_shallow {
+    my ($h, $ret ) = @_;
+    $ret //= {};
+    my $r = ref $h;
+    if( $r eq 'HASH' ) {
+        while( my($k,$v) = each %$h ) {
+           my $vv = hash_shallow( $v, $ret );
+           next unless defined $vv;
+           if( exists $ret->{$k} ) {
+               $ret->{$k} = [ $ret->{$k} ] unless ref $ret->{$k} eq 'ARRAY';
+               push( @{ $ret->{$k} }, $vv );
+           } else {
+               $ret->{$k} = $vv;
+           }
+        }
+        return undef;
+    }
+    elsif( $r eq 'ARRAY' ) {
+        my @res;
+        for( @$h ) {
+            push @res => hash_shallow( $_, $ret );        
+        }
+        return [ grep { defined } @res ];
+    }
+    elsif( defined $h ){
+        return $h ;
+    }
+    return undef;
+}
+
 
 =head2 parse_vars
 
@@ -1204,9 +1255,53 @@ sub _package_is_loaded {
     exists $INC{ $cl };
 }
 
+sub _reload_dir {
+    my ($dir, $pattern) = @_;
+    my $d = _dir( Baseliner->path_to( $dir ) );
+    _fail( _loc('%1 is not a dir', $d) ) unless $d->is_dir && -e $d;
+    my $re = $pattern ? qr/$pattern/i : qr/\.pl|\.pm$/i;
+    my @reloaded;
+    $d->recurse( callback=>sub{
+        my $f = shift;
+        return if $f->is_dir || $f !~ $re;
+        local $SIG{__WARN__} = sub{};
+        push @reloaded, "$f";
+        do "$f";
+        if( $@ ) {
+            _fail( _loc('Error while reloading %1: %2', $f, $@ ) );
+        }
+    });
+    return @reloaded; 
+}
+
 sub _load_yaml_from_comment {
     my ($y,$rest) = $_[0] =~ m{^(?:<!--+|/\*)(.*?)(?:---|-->+|\*/)}gs;
     return $y;
+}
+
+sub ago {
+    my ($date) = @_;
+    my $now = Class::Date->now();
+    if( ref $date eq 'DateTime' ) {
+        $date = Class::Date->new( $date->epoch );
+    } elsif( ref $date ne 'Class::Date' ) {
+        $date = Class::Date->new( $date );
+    }
+    my $d = $now-$date;
+    my $v = 
+       $d <= 1 ? _loc('just now')
+      : $d < 60 ? _loc('%1 seconds ago', int $d )
+      : $d < 120 ? _loc('1 minute ago' )
+      : $d < 3600 ? _loc('%1 minutes ago', int $d/60 )
+      : $d < 7200 ? _loc('1 hour ago' )
+      : $date > $now-'1D' ? _loc('%1 hours ago', int $d/3600 )
+      : $date > $now-'7D' ? _loc('%1 days ago', int $d/(3600*24) )
+      : $date > $now-'1M' ? _loc('%1 weeks ago', int $d/(3600*24*7) )
+      : $date > $now-'1Y' ? _loc('%1 months ago', int $d/(3600*24*7*4.33) )
+      : $date > $now-'2Y' ? _loc('1 year ago')
+      : _loc('%1 years ago', int $d/(2_629_744*12) )
+    ;
+    $v;
 }
 
 {

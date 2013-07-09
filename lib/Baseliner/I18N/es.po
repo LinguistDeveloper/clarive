@@ -3,17 +3,107 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "1 month ago"
+msgstr ""
+
+msgid "just now"
+msgstr "hace un instante"
+
+msgid "%1 seconds ago"
+msgstr "hace %1 segundos"
+
+msgid "1 minute ago"
+msgstr "hace 1 minuto"
+
+msgid "%1 minutes ago"
+msgstr "hace %1 minutos"
+
+msgid "1 hour ago"
+msgstr "hace 1 hora"
+
+msgid "%1 hours ago"
+msgstr "hace %1 horas"
+
+msgid "%1 days ago"
+msgstr "hace %1 días"
+
+msgid "%1 weeks ago"
+msgstr "hace %1 semanas"
+
+msgid "%1 months ago"
+msgstr "hace %1 meses"
+
+msgid "1 year ago"
+msgstr "hace 1 año"
+
+msgid "%1 years ago"
+msgstr "hace %1 años"
+
+msgid "Loading Error"
+msgstr "Error de Carga"
+
+msgid "Error loading topic"
+msgstr "Error cargando el tópico"
+
+msgid "Category not found or topic deleted: %1"
+msgstr "Tópico borrado o categoría ya no existe: %1"
+
+msgid "Discussion"
+msgstr "Discusión"
+
 msgid "To Open"
 msgstr "Abrir"
 
+msgid "Notification"
+msgstr "Notificación"
+
+msgid "Notifications"
+msgstr "Notificaciones"
+
+msgid "None"
+msgstr "No hay"
+
+msgid "Pattern"
+msgstr "Patrón"
+
+msgid "Server not available. Retry?"
+msgstr "Servidor no disponible. ¿Reintentar?"
+
+msgid "Sending Request..."
+msgstr "Enviando Petición..."
+
+msgid "This comment does not exist anymore"
+msgstr "El comentario ha sido borrado"
+
+msgid "The topic category %1 does not have any initial status assigned. Contact your administrator."
+msgstr "La categoría %1 no tiene un estado inicial asignado. Contacte al administrador."
+
 msgid "Progress"
 msgstr "Avance"
+
+msgid "Referenced In"
+msgstr "Referenciado En"
+
+msgid "References"
+msgstr "Referencias"
 
 msgid "Refresh Node"
 msgstr "Refrescar"
 
 msgid "Job Slots"
 msgstr "Ventanas de Pase"
+
+msgid "grammar"
+msgstr "gramática"
+
+msgid "Moniker"
+msgstr "Nemónico"
+
+msgid "moniker"
+msgstr "nemónico"
+
+msgid "Remove from folder"
+msgstr "Quitar de carpeta"
 
 msgid "Repositories"
 msgstr "Repositorios"
@@ -860,6 +950,9 @@ msgstr "Modificado"
 
 msgid "Created By"
 msgstr "Creado Por"
+
+msgid "Created by"
+msgstr "Creado por"
 
 msgid "Assignee"
 msgstr "Asignado A"
@@ -3367,8 +3460,8 @@ msgstr "Error modificando estado: %1"
 msgid "Statuses deleted"
 msgstr "Estados borrados"
 
-msgid "Error deleting Statuses"
-msgstr "Error borrando estados"
+msgid "Error deleting Statuses: %1"
+msgstr "Error borrando estados: %1"
 
 msgid "Are you sure you want to delete the statuses selected?"
 msgstr "¿Seguro que quiere borrar los estados seleccionados?"

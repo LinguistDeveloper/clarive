@@ -7,7 +7,7 @@ has root_dir   => qw(is rw isa Str required 1); # base path for relative dirs
 has start_path => qw(is rw isa Str), default=>sub { '.' };  # where we start searching from
 
 sub collection { 'filesys_repo' }
-sub icon       { '/static/images/icons/gitrepository.gif' }
+sub icon       { '/static/images/icons/drive.png' }
 
 sub checkout { }
 sub list_elements { }
@@ -18,9 +18,23 @@ has items => qw(is rw isa Baseliner::Role::CI::Group lazy 1), default=>sub{
     $_[0]->load_items;
 };
 
+service scan => 'Scan files' => sub {
+    my ($self,$c,$p) =@_;
+    $self->method_scan( $p );
+};
+
+service load => 'Load files as items' => sub {
+    my ($self,$c,$p) =@_;
+    my $itset = $self->load_items();
+    $self->children( $itset->children );
+    $self->save;
+    return $itset;
+};
+
 sub load_items {
     my ( $self, %p ) = @_;
     my $d = Util->_dir( $self->root_dir, $self->start_path );
+    Util->_fail( Util->_loc('Directory does not exist or is not accesible %1', $d ) ) unless -e $d;
     my @items;
     $d->recurse(
         callback => sub {

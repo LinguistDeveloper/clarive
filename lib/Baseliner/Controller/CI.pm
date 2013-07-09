@@ -18,7 +18,7 @@ BEGIN { extends 'Catalyst::Controller' }
 sub gridtree : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
-
+    $p->{user} = $c->username;
     my ($total, @tree ) = $self->dispatch( $p );
     $c->stash->{json} = { total=>$total, totalCount=>$total, data=>\@tree, success=>\1 };
     $c->forward('View::JSON');
@@ -41,7 +41,7 @@ sub list : Local {
         $n->{url} = '/ci/list';
         $n->{data} = $_;
         $n->{data}{click} = {
-            url  => '/comp/ci-gridtree.js',
+            url  => '/ci/grid',
             type => 'comp',
             icon => $_->{icon}
         };
@@ -51,7 +51,6 @@ sub list : Local {
     $c->stash->{json} = \@tree;
     $c->forward('View::JSON');
 }
-
 
 sub dispatch {
     my ($self, $p) = @_;
@@ -68,11 +67,12 @@ sub dispatch {
     } elsif ( $p->{type} eq 'class' ) {
         ( $total, @tree ) = $self->tree_objects(
             class  => $p->{class},
+            classname  => $p->{class},
             parent => $p->{anode},
             start  => $p->{start},
             limit  => $p->{limit},
             pretty => $p->{pretty},
-            query  => $p->{query},
+            query  => $p->{query}
         );
     } elsif ( $p->{type} eq 'object' ) {
         @tree = $self->tree_object_info( mid => $p->{mid}, parent => $p->{anode} );
@@ -108,7 +108,6 @@ sub dispatch {
         );
     }
     
-    #_debug _dump( \@tree );
     $total = scalar( @tree ) unless defined $total;
     return ($total,@tree);
 }
@@ -125,7 +124,7 @@ sub tree_roles {
         my $role = $_->{role};
         my $name = $_->{name};
         if ( Baseliner->model( 'Permissions' )
-            ->user_has_any_action( username => $user, action => 'action.ci.admin.' . $name . '.%') )
+            ->user_has_any_action( username => $user, action => 'action.ci.%.' . $name . '.%') )
         {
             $role = 'Generic' if $name eq '';
             push @tree, {
@@ -136,6 +135,7 @@ sub tree_roles {
                 mid        => $cnt,
                 item       => $name,
                 class      => $role,
+                classname  => $role,
                 icon       => '/static/images/ci/class.gif',
                 versionid  => 1,
                 ts         => '-',
@@ -147,11 +147,10 @@ sub tree_roles {
         } ## end if ( Baseliner->model(...))
     } $self->list_roles;
     return @tree;
-
-} ## end sub tree_roles
+}
 
 sub tree_classes {
-    my ( $self, %p ) = @_;
+    my ($self, %p)=@_;
     my $role = $p{role};
     my $user = $p{user};
     my $cnt = substr( _nowstamp(), -6 ) . ( $p{parent} * 1 );
@@ -159,10 +158,11 @@ sub tree_classes {
     map {
         my $item       = $_;
         my $collection = $_->collection;
-        my $ci_form = $self->form_for_collection( $collection );
+        my $ci_form = $self->form_for_ci( $item, $collection );
         $item =~ s/^BaselinerX::CI:://g;
-        if ( Baseliner->model( 'Permissions' )
-            ->user_has_action( username => $user, action => 'action.ci.admin.' .$p{role_name}.'.'. $item ) )
+        my $has_permission = Baseliner->model( 'Permissions' )
+            ->user_has_any_action( username => $user, action => 'action.ci.%.' .$p{role_name}.'.'. $item );
+        if ( $has_permission )
         {
 
             $cnt++;
@@ -177,6 +177,7 @@ sub tree_classes {
                 collection      => $collection,
                 ci_form         => $ci_form,
                 class           => $_,
+                classname       => $_,
                 icon            => $_->icon,
                 has_bl          => $_->has_bl,
                 has_description => $_->has_description,
@@ -186,12 +187,14 @@ sub tree_classes {
             };
         } 
     } packages_that_do( $role );
-    return @tree;
+    return @tree; 
 }
 
-sub form_for_collection {
-    my ($self, $collection )=@_;
-    my $ci_form = sprintf "/ci/%s.js", $collection;
+sub form_for_ci {
+    my ($self, $class, $collection )=@_;
+    my $ci_form = $class && $class->can('form') 
+        ? $class->form 
+        : sprintf( "/ci/%s.js", $collection );
     my $component_exists = -e Baseliner->path_to( 'root', $ci_form );
     return $component_exists ? $ci_form : '';
 }
@@ -247,8 +250,10 @@ sub tree_objects {
     my @tree = map {
         my $row = $_;
         my $data = $p{no_yaml} ? {} : _load( $row->{yaml} );
+        my $row_class = $class_coll{ $row->{collection} };
+        # the form may be in cache, otherwise ask the class for a sub form {} formname, otherwise use the collection name
         my $ci_form = $forms{ $row->{collection} } 
-            // ( $forms{ $row->{collection} } = $self->form_for_collection( $row->{collection} ) );
+            // ( $forms{ $row->{collection} } = $self->form_for_ci( $row_class, $row->{collection} ) );
         
         # list properties: field: value, field: value ...
         my $pretty = $p{pretty} && !$p{no_yaml}
@@ -258,7 +263,6 @@ sub tree_objects {
                 "$_: $d"
                 } grep { length $data->{$_} } keys %$data ) }
             : '';
-        my $row_class = $class_coll{ $row->{collection} };
         my $noname = $row->{collection}.':'.$row->{mid};
         +{
             _id               => $row->{mid},
@@ -270,6 +274,7 @@ sub tree_objects {
             ci_form           => $ci_form,
             type              => 'object',
             class             => $row_class, 
+            classname         => $row_class, 
             collection        => $row->{collection},
             moniker           => $row->{moniker},
             icon              => ( $icons{ $row_class } // ( $icons{$row_class} = $row_class ? $row_class->icon : $generic_icon ) ),
@@ -283,7 +288,6 @@ sub tree_objects {
             versionid         => $row->{versionid},
         }
     } $rs->hashref->all;
-
     ( $total, @tree );
 }
 
@@ -321,6 +325,7 @@ sub tree_object_depend {
             item       => ( $_->{$rel_type}{name} // $data->{name} // $_->{$rel_type}{collection} ),
             type       => 'object',
             class      => $class,
+            classname  => $class,
             bl         => $bl,
             collection => $_->{rel_type},
             icon       => $class->icon,
@@ -330,7 +335,6 @@ sub tree_object_depend {
             versionid    => $_->{versionid},
             }
     } $rs->hashref->all;
-    _debug \@tree;
     ( $total, @tree );
 }
 
@@ -364,7 +368,6 @@ sub tree_ci_request {
             versionid    => '',
         }
     } @rs;
-    _debug \@tree;
     ( $total, @tree );
 }
 
@@ -382,6 +385,7 @@ sub tree_object_info {
             item     => _loc('Depends On'), 
             type     => 'depend_from',
             class    => '-',
+            classname    => '-',
             icon     => '/static/images/ci/out.png',
             ts       => '-',
             versionid  => '',
@@ -394,6 +398,7 @@ sub tree_object_info {
             item     => _loc('Depend On Me'), 
             type     => 'depend_to',
             class    => '-',
+            classname    => '-',
             icon     => '/static/images/ci/in.png',
             ts       => '-',
             versionid  => '',
@@ -406,6 +411,7 @@ sub tree_object_info {
             item     => _loc('Requests'), 
             type     => 'ci_request',
             class    => '-',
+            classname    => '-',
             icon     => '/static/images/icons/topic.png',
             ts       => '-',
             versionid  => '',
@@ -419,9 +425,10 @@ sub list_roles {
     sub name_transform {
         my $name = shift;
         ($name) = $name =~ /^.*::CI::(.*)$/;
-        $name =~ s{::}{}g;
-        $name =~ s{([a-z])([A-Z])}{$1_$2}g; 
-        lc $name || 'ci';
+        $name =~ s{::}{}g if $name;
+        $name =~ s{([a-z])([A-Z])}{$1_$2}g if $name; 
+        my $return = $name || 'ci';
+        return lc $return;
     }
     my %cl=Class::MOP::get_all_metaclasses;
     map {
@@ -450,10 +457,6 @@ sub store : Local {
     my $name = delete $p->{name};
     my $collection = delete $p->{collection};
     my $action = delete $p->{action};
-    my $no_yaml = exists $p->{no_yaml} ? $p->{no_yaml} : 1;
-    
-    _log ">>>>>>>>>>>>>" . $no_yaml;
-
     my $where = {};
     local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
 
@@ -483,29 +486,30 @@ sub store : Local {
 
     if( my $class = $p->{class} ) {
         $class = "BaselinerX::CI::$class" if $class !~ /^Baseliner/;
-        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=> $no_yaml);
+        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>1);
     }
     elsif( my $role = $p->{role} ) {
         my @roles;
         for my $r ( _array $role ) {
             if( $r !~ /^Baseliner/ ) {
-                $r = $r eq 'CI' ? "Baseliner::Role::CI" : "Baseliner::Role::CI::$r" ;
+                $r = uc($r) eq 'CI' ? "Baseliner::Role::CI" : "Baseliner::Role::CI::$r" ;
             }
             push @roles, $r;
         }
         my $classes = [ packages_that_do( @roles ) ];
-        ($total, @data) = $self->tree_objects( class=>$classes, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty}, no_yaml=> $no_yaml);
+        ($total, @data) = $self->tree_objects( class=>$classes, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty}, no_yaml=>1);
     }
     else {
         ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>1);
         #_fail( 'No class or role supplied' );
     }
+
+    _log \@data if $mids;
     
     if( ref $mids ) { 
         # return data ordered like the mids
         my @data_ordered;
         my %h = map { $_->{mid} => $_ } @data;
-
         push @data_ordered, delete $h{ $_ } for @$mids;
         push @data_ordered, values %h; # the rest of them at the bottom
         @data = @data_ordered; 
@@ -516,10 +520,37 @@ sub store : Local {
     $c->forward('View::JSON');
 }
 
+# used by CIGrid to get dependents
+#   
+
+sub children : Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+    my @chi = _ci( $p->{mid} // $p->{from_mid} )->children;
+    my @data = map {
+        my $d = $_;
+        my $edge = delete $_->{_edge};
+        my $ci = delete $_->{_ci};
+        +{
+            mid        =>$d->mid,
+            rel_type   =>$edge->{rel_type},
+            icon       =>$d->icon,
+            class      => ref $d,
+            collection => $d->collection,
+            depth      => $edge->{depth},
+            name       => $d->name,
+            versionid  => $d->versionid,
+        }
+    } @chi;
+    $c->stash->{json} = { data=>\@data, totalCount=>scalar @data };
+    $c->forward('View::JSON');
+}
+
 ## adds/updates foreign CIs
 
 sub ci_create_or_update {
     my %p = @_;
+    return $p{mid} if length $p{mid};
     my $ns = $p{ns} || delete $p{data}{ns};
     my $class = $p{class};
 
@@ -586,6 +617,7 @@ sub sync : Local {
         while( my ($k,$v) = each %$data ) {
             if( $k eq 'ci_pre' ) {
                 for my $ci ( _array $v ) {
+                    _log( _dump( $ci ) );
                     push @ci_pre_mid, ci_create_or_update( %$ci ) ;
                 }
             }
@@ -597,7 +629,6 @@ sub sync : Local {
                 $ci_data{ $k } = $v;
             }
         }
-
 
         $mid = ci_create_or_update( name=>$name, class=>$class, ns=>$ns, collection=>$collection, mid=>$mid, data=>\%ci_data );
 
@@ -632,8 +663,8 @@ sub update : Local {
     $p->{active} = $active = $active eq 'on' ? 1 : 0;
     my $collection = delete $p->{collection};
     $action ||= delete $p->{action};
-    my $class = "BaselinerX::CI::$collection";
-
+    my $class = "BaselinerX::CI::$collection";    # XXX what?? fix the class vs. collection mess
+    my $chi = delete $p->{children};
     try {
         if( $action eq 'add' ) {
             $mid = $class->save( name=>$name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), data=> $p ); 
@@ -643,6 +674,14 @@ sub update : Local {
         }
         else {
             _fail _loc("Undefined action");
+        }
+        if( $chi ) {
+            my $cis = ref $chi eq 'ARRAY' ? $chi : [ split /,/, $chi ]; 
+            DB->BaliMasterRel->search({ from_mid=>$mid })->delete;
+            for my $to_mid ( _array( $cis ) ) {
+                my $rel_type = $collection . '_' . _ci( $to_mid )->collection;   # XXX consider sending the rel_type from js 
+                DB->BaliMasterRel->create({ from_mid=>$mid, to_mid=>$to_mid, rel_type=>$rel_type });
+            }
         }
         $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 saved ok', $name) };
         $c->stash->{json}{mid} = $mid;
@@ -763,38 +802,50 @@ sub url : Local {
 sub json_tree : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
-    my $mid = delete $p->{mid};
+    my $mids = delete $p->{mid} || delete $p->{mids};
     my $direction = delete $p->{direction} || 'related';
     my $k = 1;
+    local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
     $c->stash->{json} = try {
-        my $ci = _ci( $mid );
-        my @rels = $ci->$direction( depth=>2, mode=>'tree', %$p );
-        my $recurse;
-        $recurse = sub {
-            my $chi = shift;
-            $k++;
-            +{
-                id       => $k . '-' . $chi->{mid},
-                name     => $chi->{name},
+        my @all;
+        for my $mid ( _array( $mids ) ) { 
+            my $ci = _ci( $mid );
+            my @rels = $ci->$direction( depth=>2, mode=>$p->{mode} || 'tree', unique=>1, %$p );
+            my $recurse;
+            $recurse = sub {
+                my $chi = shift;
+                $k++;
+                +{
+                    id       => $k . '-' . $chi->{mid},
+                    name     => '#' . $chi->{mid} . ' ' . $chi->{name},
+                    data => {
+                        '$type' => 'icon',
+                        icon     => $chi->{_ci}{ci_icon},
+                    },
+                    #data     => { '$type' => 'arrow' },
+                    children => [ map { $recurse->($_) } _array( $chi->{ci_rel} ) ]
+                }
+            };
+            my @data = map { $recurse->( $_ ) } @rels;
+            my $d = {
+                id => $mid, 
+                name => $ci->name, 
                 data => {
-                    '$type' => 'icon',
-                    icon     => $chi->{_ci}{ci_icon},
+                    icon => $ci->icon
                 },
-                #data     => { '$type' => 'arrow' },
-                children => [ map { $recurse->($_) } _array( $chi->{ci_rel} ) ]
-            }
-        };
-        my @data = map { $recurse->( $_ ) } @rels; 
-        my $d = {
-            id => $mid, 
-            name => $ci->name, 
-            data => {
-                icon => $ci->icon
-            },
-            children => \@data,
-        };
-        _debug $d;
-        { success=>\1, data=>$d };
+                children => \@data,
+            };
+            push @all, $d;
+        }
+        my $ret = @all == 1 
+            ? $all[0]
+            : {
+                id=>_nowstamp,
+                name=>'search', 
+                data => { icon=>'/static/images/icons/ci.png' },
+                children => \@all
+            };
+        { success=>\1, data=>$ret };
     } catch {
         my $err = shift;
         _error( $err );
@@ -830,7 +881,7 @@ sub ping : Local {
 sub services : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
-    my $class = $p->{class} || _fail( _loc('Missing parameter class') );
+    my $class = $p->{classname} || _fail( _loc('Missing parameter classname') );
     $c->stash->{json} = try {
         my @services = $class->services;
         {success => \1, data=>\@services};
@@ -841,7 +892,97 @@ sub services : Local {
         {success => \0, msg => $err};
     };
     $c->forward('View::JSON');
+}
 
+sub service_run : Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+    my $class = $p->{classname} || _fail( _loc('Missing parameter classname') );
+    $c->stash->{json} = try {
+        my $service = $c->registry->get( $p->{key} );
+        require Baseliner::Core::Logger::Quiet;
+        my $logger = Baseliner::Core::Logger::Quiet->new;
+        my $ci = _ci( $p->{mid} );
+        my $ret = $c->model('Services')->launch( $service->key, obj=>$ci, c=>$c, logger=>$logger );
+        _error( $ret );
+        {success => \1, ret=>_dump($logger->data), msg=>$logger->msg };
+    } ## end try
+    catch {
+        my $err = shift;
+        _error( $err );
+        {success => \0, msg => $err};
+    };
+    $c->forward('View::JSON');
+
+}
+
+sub edit : Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+
+
+    my $has_permission;
+    if ( $p->{mid} ) {
+        my $ci = _ci($p->{mid});
+        $has_permission = Baseliner->model('Permissions')->user_has_any_action( action => 'action.ci.admin.%.'. $ci->{_ci}->{collection}, username => $c->username );
+    } else {
+        $has_permission = 1;
+    }
+
+    $c->stash->{save} = $has_permission ? 'true' : 'false';
+    $c->stash->{template} = '/comp/ci-editor.js';
+}
+
+sub import : Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+    my $yaml = $p->{yaml};
+    $c->stash->{json} = try {
+        my $d = _load( $yaml );
+        my @mids;
+        if( ref $d eq 'ARRAY' ) {
+            push @mids, $self->import_one_ci( $_ ) for @$d;
+        } else {
+            push @mids, $self->import_one_ci( $d );
+        }
+        {success => \1, msg=>_loc('CIs created: %1', join',',@mids), mids=>\@mids };
+    } 
+    catch {
+        my $err = shift;
+        _error( $err );
+        {success => \0, msg => $err};
+    };
+    $c->forward('View::JSON');
+}
+
+sub import_one_ci {
+    my ($self,$d) = @_;
+    my $mid = delete $d->{mid};
+    if( my $cn = ref $d ) {
+        if( my $row = DB->BaliMaster->search({ name=>$d->{name}, collection=>$d->collection })->first ) {
+            my $now = Class::Date->now() ;
+            $d->{name} = $d->{name} . ' (' . $now . ')';
+        }
+        return $d->save; 
+    } else {
+        _fail _loc 'No class name defined for ci %1 (%2)', $d->{name}, $mid;
+    }
+}
+
+sub grid : Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+
+    my $has_permission;
+   
+    if ( $p->{collection} ) {
+        $has_permission = Baseliner->model('Permissions')->user_has_any_action( action => 'action.ci.admin.%.'. $p->{collection}, username => $c->username );
+    } else {
+        $has_permission = 0;
+    }
+
+    $c->stash->{save} = $has_permission ? 'true' : 'false';
+    $c->stash->{template} = '/comp/ci-gridtree.js';
 }
 
 1;

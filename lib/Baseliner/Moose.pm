@@ -89,6 +89,8 @@ sub service {
         "$basepkg.$key";
     };
     my $r = ref $value;
+    # give it a Service role
+    Moose::Util::apply_all_roles( $pkg, 'Baseliner::Role::Service' );
     if( $r eq 'HASH' ) {
         Baseliner::Core::Registry->add( $pkg, "service.$longkey", { type=>'ci', %$value } );
     }
@@ -99,7 +101,7 @@ sub service {
         Baseliner::Core::Registry->add( $pkg, "service.$longkey", { type=>'ci', name=>$longkey, handler=>$value } );
     }
     else {
-        Util->_fail( _loc('Invalid type for service in %1: %2 (%3)', $pkg, $r, $longkey ) );
+        Util->_fail( Util->_loc('Invalid type for service in %1: %2 (%3)', $pkg, $r, $longkey ) );
     }
 }
 

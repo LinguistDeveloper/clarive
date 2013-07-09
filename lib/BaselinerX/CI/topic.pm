@@ -7,6 +7,14 @@ has id_category => qw(is rw isa Any);
 has name        => qw(is rw isa Any);
 has category    => qw(is rw isa Any);
 
+#has_ci 'projects';
+sub rel_type {
+    { 
+        projects => [ from_mid => 'topic_project' ] ,
+    };
+}
+
+
 sub icon { '/static/images/icons/topic.png' }
 
 sub storage { 'BaliTopic' }
@@ -20,9 +28,12 @@ around load => sub {
 
 around table_update_or_create => sub {
     my ( $orig, $self, $rs, $mid, $data, @rest ) = @_;
-    $data->{title} = delete $data->{name};
-    $data->{created_by} = 'internal';
+    my $name = delete $data->{name};
+    #$data->{title} //= $name; 
+    $data->{created_by} //= 'internal';
+    delete $data->{title};
     delete $data->{active};
+    delete $data->{versionid};
     delete $data->{moniker};
     delete $data->{data};
     delete $data->{ns};

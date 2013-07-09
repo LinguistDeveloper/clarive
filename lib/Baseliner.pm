@@ -118,24 +118,6 @@ if( $ENV{BALI_CMD} ) {
     require Baseliner::Standalone;
 }
 
-our $ccache = eval {
-    require CHI;
-    CHI->new(
-    #driver     => 'FastMmap', root_dir   => '/tmp', cache_size => '20m'
-    #driver =>'Memory'
-    #driver => 'RawMemory', datastore => {}, max_size => 1000,
-    #driver => 'SharedMem', size => 1_000_000, shmkey=>93894384,
-    driver => 'Redis', namespace => 'foo', server => '127.0.0.1:6379', debug => 0
-    );
-}; 
-if( !Baseliner->config->{cache} || $@ ) {
-   { package Nop; sub AUTOLOAD{ } };
-   $ccache = bless {} => 'Nop';
-}
-sub cache_set { $ccache->set( $_[1], $_[2] ) }
-sub cache_get { $ccache->get( $_[1] ) }
-sub cache_clear { $ccache->clear }
-
 
 #__PACKAGE__->config->{authentication}{dbic} = {
 #    user_class     => 'Bali::BaliUser',
@@ -292,6 +274,46 @@ around 'debug' => sub {
         #}
         #$_->meta->make_immutable for keys %pkgs;
     }
+
+    # CHI cache setup
+    our $ccache;
+    my $setup_fake_cache = sub {
+       { package Nop; sub AUTOLOAD{ } };
+       $ccache = bless {} => 'Nop';
+    };
+    if( !Baseliner->config->{cache} ) {
+        $setup_fake_cache->();
+    } else {
+        my $cache_type = Baseliner->config->{cache};
+        my $cache_defaults = {
+                fastmmap  => [ driver => 'FastMmap', root_dir   => "$ENV{BASELINER_TEMP}/bali-cache", cache_size => '120m' ],
+                memory    => [ driver => 'Memory' ],
+                rawmemory => [ driver => 'RawMemory', datastore => {}, max_size => 1000 ],
+                sharedmem => [ driver => 'SharedMem', size => 1_000_000, shmkey=>93894384 ],
+                redis     => [ driver => 'Redis', namespace => 'foo', server => '127.0.0.1:6379', debug => 0 ],
+        };
+        my $cache_config = ref $cache_type eq 'ARRAY' 
+            ? $cache_type :  ( $cache_defaults->{ $cache_type } // $cache_defaults->{fastmmap} );
+        $ccache = eval {
+            require CHI;
+            CHI->new( @$cache_config );
+        }; 
+        if( $@ ) {
+            Util->_error( Util->_loc( "Error configuring cache: %1", $@ ) );
+            $setup_fake_cache->();
+        } else {
+            Util->_debug( "CACHE Setup ok: " . join' ', @$cache_config );
+        }
+    }
+
+    sub cache_set { $ccache->set( $_[1], $_[2] ) }
+    sub cache_get { $ccache->get( $_[1] ) }
+    sub cache_remove { $ccache->remove( $_[1] ) }
+    sub cache_keys { $ccache->get_keys( @_ ) }
+    sub cache_compute { $ccache->compute( @_ ) }
+    sub cache_clear { $ccache->clear }
+    sub cache_remove_like { my $re=$_[1]; Baseliner->cache_remove($_) for Baseliner->cache_keys_like($re); } 
+    sub cache_keys_like { my $re=$_[1]; grep /$re/ => Baseliner->cache_keys; }
 
     # Beep
     my $bali_env = $ENV{CATALYST_CONFIG_LOCAL_SUFFIX} // $ENV{BASELINER_CONFIG_LOCAL_SUFFIX};

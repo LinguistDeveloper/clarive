@@ -10,7 +10,7 @@ use v5.10;
 
 BEGIN { extends 'Catalyst::Model' }
 
-register 'registor.action.admin_ci' => {
+register 'registor.action.ci' => {
     generator => sub {
 		my %actions_admin_cis;
 		for my $role ( Baseliner::Controller::CI->list_roles ) {
@@ -18,8 +18,10 @@ register 'registor.action.admin_ci' => {
 			my $name = $role->{role};
 			for my $class ( packages_that_do( $role->{role} ) ) {
 		    	my ($collection) = $class =~ /::CI::(.*?)$/;
-		    	my $id_action = "action.ci.admin.".$role->{name}.".".$collection;
-		    	$actions_admin_cis{$id_action} = { name => $id_action };
+		    	my $id_action_admin = "action.ci.admin.".$role->{name}.".".$collection;
+		    	$actions_admin_cis{$id_action_admin} = { name => $id_action_admin };
+		    	my $id_action_view = "action.ci.view.".$role->{name}.".".$collection;
+		    	$actions_admin_cis{$id_action_view} = { name => $id_action_view };
 		    }
 		}
         return \%actions_admin_cis;    

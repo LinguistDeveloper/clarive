@@ -28,9 +28,11 @@ has active   => qw(is rw isa Bool);
 #has _ci      => qw(is rw isa Any);          # the original DB record returned by load() XXX conflicts with Utils::_ci
 
 requires 'icon';
+#sub icon { '/static/images/icons/ci.png' }
 
 has name    => qw(is rw isa Maybe[Str]);
 has ns      => qw(is rw isa Maybe[Str]);
+has versionid => qw(is rw isa Maybe[Str]);
 has moniker  => qw(is rw isa Maybe[Str] lazy 1), 
     default=>sub{   
         my $self = shift; 
@@ -109,6 +111,12 @@ sub save {
         }
     }
 
+    # cleanup 
+    if( $self->does( 'Baseliner::Role::Service' ) ) {
+        delete $data->{log};
+        delete $data->{job};
+    }
+
     Baseliner->cache_clear;
     # transaction bound, in case there are foreign tables
     Baseliner->model('Baseliner')->txn_do(sub{
@@ -119,7 +127,7 @@ sub save {
                 $row->bl( join ',', _array $bl ) if defined $bl; # TODO mid rel bl (bl) 
                 $row->name( $name ) if defined $name;
                 $row->active( $active ) if defined $active;
-                $row->versionid( $versionid ) if defined $versionid;
+                $row->versionid( $versionid ) if defined $versionid && length $versionid;
                 $row->moniker( $moniker ) if defined $moniker;
                 $row->ns( $ns ) if defined $ns;
                 $row->update;  # save bali_master data
@@ -180,10 +188,13 @@ sub save_data {
         my $attr = $meta->get_attribute( $field );
         next unless $attr;
         my $type = $attr->type_constraint->name;
-        if( $type eq 'CI' || $type eq 'CIs') {
-            my $rel_type = $self->rel_type->{ $field };
+        if( $type eq 'CI' || $type eq 'CIs' || $type =~ /^Baseliner::Role::CI/ ) {
+            my $rel_type = $self->rel_type->{ $field } or _fail _loc( "Missing rel_type definition for %1 (class %2)", $field, ref $self || $self );
             next unless $rel_type;
-            push @master_rel, { field=>$field, type=>$type, rel_type=>$rel_type, value=>delete($data->{$field}) };
+            my $v = delete($data->{$field});  # consider a split on ,  
+            $v = [ split /,/, $v ] unless ref $v;
+            push @master_rel, { field=>$field, type=>$type, rel_type=>$rel_type, value=>$v }; 
+            #_error( \@master_rel );
             #_fail( "$field is $type - $rel_type" );
         }
     }
@@ -218,7 +229,8 @@ sub save_data {
         my $rel_type_name = $rel->{rel_type}->[1];
         DB->BaliMasterRel->search({ $my_rel, $master_row->mid, rel_type=>$rel_type_name })->delete;
         for my $other_mid ( _array $rel->{value} ) {
-            DB->BaliMasterRel->create({ $my_rel => $master_row->mid, $other_rel => $other_mid, rel_type=>$rel_type_name })
+            $other_mid = $other_mid->mid if ref( $other_mid ) =~ /^BaselinerX::CI::/;
+            DB->BaliMasterRel->find_or_create({ $my_rel => $master_row->mid, $other_rel => $other_mid, rel_type=>$rel_type_name })
         }
     }
     return $master_row->mid;
@@ -314,7 +326,7 @@ sub load {
 
 sub ci_form {
     my ($self) = @_;
-    my $component = sprintf "/ci/%s.js", $self->collection;
+    my $component = $self->can('form') ? $self->form : sprintf( "/ci/%s.js", $self->collection );
     my $fullpath = Baseliner->path_to( 'root', $component );
     return -e $fullpath  ? $component : '';
 }
@@ -419,8 +431,11 @@ Options:
     does_all => ['Server', 'Project']
         filters CIs that do all of the roles (AND)
 
-    filter_early => 1|0
+    filter_early => 1|0 (default:0)
         checks CIs filters (does) before recursing. 
+
+    unique => 1|0 (default:0)
+        no duplicate cis in the list, useful to avoid recursive trees
 
 =cut
 sub related {
@@ -432,6 +447,7 @@ sub related {
         return @$cached if ref $cached eq 'ARRAY';
     }
     my $depth = $opts{depth} // 1;
+    $opts{depth} //= 1;
     $opts{depth_original} //= $depth;
     $opts{mode} //= 'flat';
     $opts{visited} //= {};
@@ -440,9 +456,13 @@ sub related {
     return () if exists $opts{visited}{$mid};
     local $Baseliner::CI::_no_record = $opts{no_record} // 0; # make sure we include a _ci 
     $opts{visited}{ $mid } = 1;
+    local $Baseliner::ci_unique = {} unless defined $Baseliner::ci_unique;
     
     # get my related cis
     my @cis = $self->related_cis( %opts );
+    # unique?
+    @cis = grep { !exists $Baseliner::ci_unique->{$_->{mid}} && ($Baseliner::ci_unique->{$_->{mid}}=1) } @cis
+        if $opts{unique} ;
     # filter before
     @cis = $self->_filter_cis( %opts, _cis=>\@cis ) if $opts{filter_early};
     # now delve deeper if needed
@@ -589,11 +609,13 @@ sub service_list {
     my ($self)=@_;
     my @services;
     for my $reg_node ( _array( Baseliner::Core::Registry->module_index->{ ref($self) || $self } ) ) {
+        my $instance = $reg_node->instance;
+        next unless ref $instance;
         push @services,
             {
-            name => $reg_node->instance->name,
+            name => $instance->name,
             key  => $reg_node->key,
-            icon => $reg_node->instance->icon,
+            icon => $instance->icon,
             };
     }
     return @services;
@@ -667,6 +689,7 @@ around initialize_instance_slot => sub {
                         $params->{$init_arg} = $arr;
                         $weaken = 0;
                     },
+                    # => sub { _fail 'not found...' } 
                 );
             }
             else {

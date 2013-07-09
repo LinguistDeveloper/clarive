@@ -3,7 +3,7 @@ use Baseliner::Moose;
 
 has path => qw(is rw isa Any);
 
-extends 'BaselinerX::CI::ssh_agent';   # XXX not sure, use delegation instead
+#extends 'BaselinerX::CI::ssh_agent';   # XXX not sure, use delegation instead
 with 'Baseliner::Role::CI::Destination';
 
 # inherited from ssh_agent: has server => 'CI'

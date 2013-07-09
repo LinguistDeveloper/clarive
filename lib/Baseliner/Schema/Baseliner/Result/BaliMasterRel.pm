@@ -35,6 +35,12 @@ __PACKAGE__->add_columns(
     is_nullable => 1,
     size => 255,
   },
+  "rel_seq",
+  { data_type => "number", default_value => undef, 
+      is_nullable       => 1,
+      is_auto_increment => 1,
+      sequence          => "bali_master_rel_seq"
+  },
 );
 __PACKAGE__->set_primary_key("from_mid", "to_mid", "rel_type");
 

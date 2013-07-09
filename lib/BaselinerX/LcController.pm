@@ -7,6 +7,8 @@ BEGIN { extends 'Catalyst::Controller' };
 
 __PACKAGE__->config->{namespace} = 'lifecycle';
 
+register 'action.project.see_lc' => { name => 'User can access the project lifecycle' };
+
 sub tree_topic_get_files : Local {
     my ($self,$c) = @_;
     my @tree;
@@ -54,6 +56,7 @@ sub tree_project_releases : Local {
     my ($self,$c) = @_;
     my %seen = ();
     my @rels = grep {!$seen{$_->{mid}}++} DB->BaliProject->find( $c->req->params->{id_project} )->releases->search(undef,{ prefetch=>['categories'] })->hashref->all;
+    my @menu_related = $self->menu_related();
     my @tree = map {
        +{
             text => $_->{title},
@@ -67,7 +70,9 @@ sub tree_project_releases : Local {
             },
             data => {
                 topic_mid    => $_->{mid},
+                click       => $self->click_for_topic(  $_->{categories}{name}, $_->{mid} ),
             },
+            menu => \@menu_related
        }
     } @rels;
     #$c->stash->{release_only} = 1;
@@ -124,9 +129,10 @@ sub tree_topics_project : Local {
 
     my $project = $c->req->params->{project} ;
     my $id_project = $c->req->params->{id_project} ;
-    my @topics = $c->model('Baseliner::BaliMasterRel')->search(
-        { to_mid => $id_project },
-        { prefetch => {'topic_project'=>'categories'} }
+    my @categories  = map { $_->{id}} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'view' );
+    my @topics = DB->BaliMasterRel->search(
+        { to_mid => $id_project, 'categories.id' => \@categories, rownum => {'<=',30}, -not => ['status.type' => { -like => 'F%' }] },
+        { prefetch => {'topic_project'=> ['categories','status']}, order_by => { -desc => 'modified_on'} }
     )->hashref->all;
     for( @topics ) {
         my $is_release = $_->{topic_project}{categories}{is_release};
@@ -169,6 +175,7 @@ sub topic_contents : Local {
         my $icon = $is_release ? '/static/images/icons/release_lc.png'
             : $is_changeset ? '/static/images/icons/changeset_lc.png' :'/static/images/icons/topic.png' ;
 
+        my @menu_related = $self->menu_related();
         push @tree, {
             text       => $_->{topic_topic2}{title},
             topic_name => {
@@ -185,7 +192,8 @@ sub topic_contents : Local {
             },
             icon       => $icon, 
             leaf       => \1,
-            expandable => \1
+            expandable => \1,
+            menu => \@menu_related
         };
     }
 
@@ -198,9 +206,8 @@ sub tree_projects : Local {
     my ( $self, $c ) = @_;
     my @tree;
     my $where = { active=> 1, id_parent=>[undef,''] };
-    #my $rsallprjs = DB->BaliRoleuser->search({ username=>$c->username, ns=>'/' });
-    if( ! $c->is_root ){ #}  && ! $rsallprjs->count ) {
-        $where->{mid} = { -in => Baseliner->model('Permissions')->user_projects_query( username=>$c->username ) };
+    if( ! $c->is_root ){ 
+        $where->{'exists'} =  $c->model( 'Permissions' )->user_projects_query( username=>$c->username, join_id=>'mid' );
     }
     my $rs = Baseliner->model('Baseliner::BaliProject')->search( 
         $where ,
@@ -237,7 +244,7 @@ sub tree_project : Local {
 
     # load project lifecycle configuration
     require BaselinerX::Lc;
-    my $lc = BaselinerX::Lc->new->lc_for_project( $id_project, $project );
+    my $lc = BaselinerX::Lc->new->lc_for_project( $id_project, $project, $c->username );
     for my $node ( @$lc ) {
         next if exists $node->{active} && ! $node->{active};
         my $type = $node->{type};
@@ -583,6 +590,8 @@ sub cs_menu {
     return [] if $bl_state eq '*';
     my ( @menu, @menu_p, @menu_d );
     my $sha = ''; #try { $self->head->{commit}->id } catch {''};
+
+    push @menu, $self->menu_related();
 
     push @menu, {
         text => 'Deploy',
@@ -1001,9 +1010,12 @@ sub click_for_topic {
     };
 }
 
+
 sub build_topic_tree {
     my $self = shift;
     my %p    = @_;
+    my @menu_related = $self->menu_related();
+
     return +{
         text     => $p{topic}{title},
         calevent => {
@@ -1036,10 +1048,36 @@ sub build_topic_tree {
             topic_mid => $p{mid},
             click     => $self->click_for_topic( $p{topic}{categories}{name}, $p{mid} )
         },
-        icon       => $p{icon} // '/static/images/icons/topic.png',
+        icon       => $p{icon} // q{/static/images/icons/topic.png},
         leaf       => \0,
-        expandable => \1
+        expandable => \1,
+        menu => \@menu_related
     };
+}
+
+sub topics_for_release : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+
+    my @cis = _ci($p->{id_release})->children( rel_type => "topic_topic", depth => -1);
+
+    my @topics = _unique map { $_->{_ci}->{mid} } @cis;
+    push @topics, $p->{id_release};        
+
+    $c->stash->{json} = { success=>\1, topics=>\@topics };
+    $c->forward('View::JSON');
+}
+
+sub menu_related {
+    my ($self, $mid ) = @_;
+    my @menu;
+        push @menu, {  text => _loc('Related'),
+                        icon => '/static/images/icons/topic.png',
+                        eval => {
+                            handler => 'Baseliner.open_topic_grid_from_release'
+                        }
+                    };    
+    return @menu;
 }
 
 1;

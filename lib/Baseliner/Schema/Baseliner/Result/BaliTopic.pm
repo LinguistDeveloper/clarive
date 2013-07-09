@@ -9,9 +9,10 @@ Baseliner::Schema::Baseliner::Result::BaliTopic
 
 use strict;
 use warnings;
-use Baseliner::Utils;
+require Baseliner::Utils;
 
 use base 'DBIx::Class::Core';
+__PACKAGE__->load_components(qw( TimeStamp Core ));
 __PACKAGE__->load_components("InflateColumn::DateTime");
 __PACKAGE__->load_components("+Baseliner::Schema::Master");
 __PACKAGE__->table("bali_topic");
@@ -29,12 +30,22 @@ __PACKAGE__->add_columns(
   "created_on",
   {
     data_type     => "datetime",
-    default_value => \"current_timestamp",
     is_nullable   => 0,
-    original      => { data_type => "date", default_value => \"sysdate" },
+    set_on_create => 1,
+    timezone => Util->_tz,
   },
   "created_by",
   { data_type => "varchar2", is_nullable => 0, size => 255 },
+  "modified_on",
+  {
+    data_type     => "datetime",
+    is_nullable   => 1,
+    set_on_create => 1, 
+    set_on_update => 1,
+    timezone => Util->_tz,
+  },
+  "modified_by",
+  { data_type => "varchar2", is_nullable => 1, size => 255 },
   "status",
   { data_type => "char", default_value => "O", is_nullable => 0, size => 1 },
   "id_category",
@@ -75,7 +86,6 @@ __PACKAGE__->add_columns(
   "active",
   { data_type => "char", is_nullable => 0, size => 1, default_value => 1 },    
 );
-
 
 __PACKAGE__->set_primary_key("mid");
 

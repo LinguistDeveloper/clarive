@@ -38,4 +38,10 @@ __PACKAGE__->has_many(
   "Baseliner::Schema::Baseliner::Result::BaliTopicFieldsCategory",
   { 'foreign.id_category' => "self.id" },
 );
+
+__PACKAGE__->has_many(
+  "statuses",
+  "Baseliner::Schema::Baseliner::Result::BaliTopicCategoriesStatus",
+  { 'foreign.id_category' => "self.id" },
+);
 1;

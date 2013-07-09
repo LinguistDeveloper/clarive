@@ -13,16 +13,18 @@ __PACKAGE__->result_source_instance->is_virtual(1);
 __PACKAGE__->result_source_instance->view_definition(q{
 
     SELECT  T.MID TOPIC_MID,
-            TITLE,
+            T.TITLE,
             T.CREATED_ON,
             T.CREATED_BY,
+            T.MODIFIED_ON,
+            T.MODIFIED_BY,
             T.DESCRIPTION,
             STATUS, 
             NUMCOMMENT,
             C.ID CATEGORY_ID,
             C.NAME CATEGORY_NAME,
-            PROGRESS,
-            ID_CATEGORY_STATUS CATEGORY_STATUS_ID,
+            T.PROGRESS,
+            T.ID_CATEGORY_STATUS CATEGORY_STATUS_ID,
             S.NAME CATEGORY_STATUS_NAME,
             S.SEQ CATEGORY_STATUS_SEQ,
             S.TYPE CATEGORY_STATUS_TYPE,
@@ -43,8 +45,14 @@ __PACKAGE__->result_source_instance->view_definition(q{
             F.FILENAME AS FILE_NAME,
             PS.TEXT AS TEXT,
             NUM_FILE,
-            U.USERNAME ASSIGNEE
+            U.USERNAME ASSIGNEE,
+            MA.MONIKER,
+            cis_out.NAME CIS_OUT,
+            cis_in.NAME CIS_IN,
+            topics_in.TITLE REFERENCED_IN,
+            topics_out.TITLE REFERENCES
             FROM  BALI_TOPIC T
+                    RIGHT JOIN BALI_MASTER MA ON T.MID = MA.MID
                     LEFT JOIN BALI_TOPIC_CATEGORIES C ON ID_CATEGORY = C.ID
                     LEFT JOIN BALI_TOPIC_LABEL TL ON TL.ID_TOPIC = T.MID
                     LEFT JOIN BALI_LABEL L ON L.ID = TL.ID_LABEL
@@ -70,6 +78,21 @@ __PACKAGE__->result_source_instance->view_definition(q{
                     LEFT JOIN BALI_POST PS ON PS.MID = REL_PS.TO_MID
                     LEFT JOIN BALI_MASTER_REL REL_USER ON REL_USER.FROM_MID = T.MID AND REL_USER.REL_TYPE = 'topic_users'
                     LEFT JOIN BALI_USER U ON U.MID = REL_USER.TO_MID
+                    
+                    LEFT JOIN BALI_MASTER_REL rel_topics_out ON rel_topics_out.FROM_MID = T.MID AND rel_topics_out.REL_TYPE = 'topic_topic'
+                    LEFT JOIN BALI_TOPIC topics_out ON topics_out.MID = rel_topics_out.TO_MID
+                    
+                    LEFT JOIN BALI_MASTER_REL rel_topics_in ON rel_topics_in.TO_MID = T.MID AND rel_topics_in.REL_TYPE = 'topic_topic'
+                    LEFT JOIN BALI_TOPIC topics_in ON topics_in.MID = rel_topics_in.FROM_MID
+                    
+                    LEFT JOIN BALI_MASTER_REL rel_cis_out ON rel_cis_out.FROM_MID = T.MID AND rel_cis_out.REL_TYPE NOT IN( 
+                        'topic_post','topic_file_version','topic_project','topic_users','topic_topic' )
+                    LEFT JOIN BALI_MASTER cis_out ON cis_out.MID = rel_cis_out.TO_MID
+                    
+                    LEFT JOIN BALI_MASTER_REL rel_cis_in ON rel_cis_in.TO_MID = T.MID AND rel_cis_in.REL_TYPE NOT IN( 
+                        'topic_post','topic_file_version','topic_project','topic_users','topic_topic' )
+                    LEFT JOIN BALI_MASTER cis_in ON cis_in.MID = rel_cis_in.FROM_MID
+                    
             WHERE T.ACTIVE = 1
 });
 
@@ -79,6 +102,8 @@ __PACKAGE__->add_columns(
         title
         created_on
         created_by
+        modified_on
+        modified_by
         description
         status
         numcomment
@@ -107,6 +132,11 @@ __PACKAGE__->add_columns(
         progress
         num_file
         assignee
+        moniker
+        cis_out
+        cis_in
+        references
+        referenced_in
     )
 );
 

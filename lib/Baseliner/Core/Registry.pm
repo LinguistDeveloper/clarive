@@ -15,6 +15,12 @@ class_has registrar =>
       default => sub { {} },
     );
 
+class_has registors =>
+    ( is      => 'rw',
+      isa     => 'HashRef',
+      default => sub { {} },
+    );
+
 class_has classes =>
     ( is      => 'rw',
       isa     => 'HashRef',
@@ -94,7 +100,17 @@ sub add_class {
 sub setup {
     my $self= shift; 
     $self->load_enabled_list;
+    $self->load_config_registry;
     $self->initialize( @_ );
+}
+
+sub load_config_registry {
+    my $self= shift; 
+    my $keys = Baseliner->config->{registry}{'keys'};
+    return unless ref $keys eq 'HASH';
+    for my $key ( keys %$keys ) {
+        $self->add( 'config', $key, $keys->{$key} );
+    }
 }
 
 ## blesses all registered objects into their registrable classes (new Service, new Config, etc.)
@@ -241,6 +257,15 @@ sub search_for_node {
     my $disabled_keys = Baseliner->config->{registry}->{disabled_key} if $check_enabled;  # cannot use config_get here, infinite loop..
     $disabled_keys = { map { $_ => 1 } _array $disabled_keys };
 
+    my @allowed;
+    foreach my $action ( _array $allowed_actions ) {
+        if( blessed $action ) {
+            #FIXME ???
+            #push @allowed, $action->
+            #warn "--------------ACTION=" . _dump $action;
+        }
+    }
+
     # loop thru services
     $q_depth //= 99; 
     OUTER: for my $key ( $self->starts_with( $key_prefix ) ) {
@@ -253,7 +278,7 @@ sub search_for_node {
 
         # skip nodes that the user has no access to
         my $has_permission = 0;
-        if ( !$username  || (!$node_instance->actions && !$node_instance->action)) {
+        if ( !$username  || (!$node_instance->actions && !$node_instance->action) || $key_prefix eq 'action.') {
             $has_permission = 1;
         } else {        
             for ( _array( $node_instance->action, $node_instance->actions ) ) {
@@ -326,8 +351,12 @@ sub registor_keys {
     ($key_prefix) = split /\./, $key_prefix; # look for registor like 'registor.menu', 'registor.action', ...
     return () unless $key_prefix; 
     for my $key ( grep /^registor\.$key_prefix\./, keys %{ $self->registrar || {} } ) {
+        if ( ! $self->registors->{$key}) {
+            $self->registors->{$key} = 1;
         my $registor = $self->get( $key );
-        push @registor_data, { registor=>$registor, data=>$registor->generator->($key_prefix) };
+            push @registor_data,
+                {registor => $registor, data => $registor->generator->( $key_prefix )};
+        }
     }
     my $flag = 0;
     for my $regs ( @registor_data ) {
