@@ -808,75 +808,28 @@ Baseliner.TopicCombo = Ext.extend( Ext.form.ComboBox, {
 
 Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
     height: 200,
-    //enableDragDrop: true,   // XXX this is breaking checkboxes
-    initComponent: function(){
-        var self = this;
-        self.sm = new Baseliner.CheckboxSelectionModel({
+    enableDragDrop: true,   
+    constructor: function(c){  // needs to declare the selection model in a constructor, otherwise incompatible with DD
+        var sm = new Baseliner.CheckboxSelectionModel({
             checkOnly: true,
             singleSelect: false
         });
-        self.combo_store = self.combo_store || new Baseliner.store.Topics({});
-        if( self.topic_grid == undefined ) self.topic_grid = {};
-  
-        self.combo = new Baseliner.TopicCombo({
-            store: self.combo_store, 
-            width: 600,
-            height: 80,
-            singleMode: true, 
-            fieldLabel: _('Topic'),
-            name: 'topic',
-            hiddenName: 'topic', 
-            allowBlank: true
-        }); 
-
-        self.combo.on('beforequery', function(qe){
-            delete qe.combo.lastQuery;
-        });
-        self.field = new Ext.form.Hidden({ name: self.name, value: self.value });
-        var btn_delete = new Baseliner.Grid.Buttons.Delete({
-            disabled: false,
-            handler: function() {
-                var sm = self.getSelectionModel();
-                if (sm.hasSelection()) {
-                    Ext.each( sm.getSelections(), function( sel ){
-                        self.getStore().remove( sel );
-                    });
-                    self.refresh_field();
-                } else {
-                    Baseliner.message( _('ERROR'), _('Select at least one row'));    
-                };                
-            }
-        });
-        var btn_reload = new Ext.Button({
-            icon: '/static/images/icons/refresh.gif',
-            handler: function(){ self.refresh() }
-        });
-        self.tbar = [ self.field, self.combo, btn_reload, btn_delete ];
-        self.combo.on('select', function(combo,rec,ix) {
-            self.add_to_grid( rec.data );
-        });
-        self.ddGroup = 'bali-grid-data-' + self.id;
-        self.viewConfig = {
-            headersDisabled: true,
-            enableRowBody: true,
-            forceFit: true
-        };
-
+        
         var render_text_field = function(v){
             if( !v ) v ='';
             return '<pre>'+v+'</pre>';
         };
         
-        var cols = [ self.sm ];
+        var cols = [ sm ];
         var store_fields = ['mid'];
         var cols_keys = ['name', 'title'];
         var cols_templates = {
             mid: { header:_('id'), dataindex:'mid', hidden: true },
-            name: { header:_('Name'), dataindex:'name', width: 80, renderer: self.render_topic_name },
+            name: { header:_('Name'), dataindex:'name', width: 80, renderer: this.render_topic_name },
             title: { header:_('Title'), dataindex:'title', renderer: function(v){ return '<b>'+v+'</b>'; } },
             name_status: { header:_('Status'), dataindex:'name_status', width: 80, renderer: Baseliner.render_status }
         };
-        var col_prefs = Ext.isArray( self.columns ) ? self.columns : Ext.isString(self.columns) ? self.columns.split(';') : [];
+        var col_prefs = Ext.isArray( c.columns ) ? c.columns : Ext.isString(c.columns) ? c.columns.split(';') : [];
         if( col_prefs.length > 0 ) {
             // from get_topics, which puts a lot of values
             Ext.each( col_prefs, function(ck){
@@ -909,13 +862,62 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
                 }
             });
         }
-        //self.on('rowclick', function(grid, rowIndex, e) { btn_delete.enable(); });		
-        self.columns = cols;
+        delete c['columns'];
 
-        self.store = new Ext.data.SimpleStore({
+        var store = new Ext.data.SimpleStore({
             fields: store_fields,
             data: []
         });
+
+        Baseliner.TopicGrid.superclass.constructor.call( this, Ext.apply({
+            store: store,
+            viewConfig: {
+                headersDisabled: true,
+                enableRowBody: true,
+                forceFit: true
+            },
+            columns: cols
+        },c) );
+    },
+    initComponent: function(){
+        var self = this;
+        self.combo_store = self.combo_store || new Baseliner.store.Topics({});
+        if( self.topic_grid == undefined ) self.topic_grid = {};
+        self.combo = new Baseliner.TopicCombo({
+            store: self.combo_store, 
+            width: 600,
+            height: 80,
+            singleMode: true, 
+            fieldLabel: _('Topic'),
+            name: 'topic',
+            hiddenName: 'topic', 
+            allowBlank: true
+        }); 
+        self.combo.on('beforequery', function(qe){ delete qe.combo.lastQuery });
+        self.field = new Ext.form.Hidden({ name: self.name, value: self.value });
+        var btn_delete = new Baseliner.Grid.Buttons.Delete({
+            disabled: false,
+            handler: function() {
+                var sm = self.getSelectionModel();
+                if (sm.hasSelection()) {
+                    Ext.each( sm.getSelections(), function( sel ){
+                        self.getStore().remove( sel );
+                    });
+                    self.refresh_field();
+                } else {
+                    Baseliner.message( _('ERROR'), _('Select at least one row'));    
+                };                
+            }
+        });
+        var btn_reload = new Ext.Button({
+            icon: '/static/images/icons/refresh.gif',
+            handler: function(){ self.refresh() }
+        });
+        self.tbar = [ self.field, self.combo, btn_reload, btn_delete ];
+        self.combo.on('select', function(combo,rec,ix) {
+            self.add_to_grid( rec.data );
+        });
+        self.ddGroup = 'bali-topic-grid-data-' + self.id;
         
         self.refresh(true);
         self.on("rowdblclick", function(grid, rowIndex, e ) {

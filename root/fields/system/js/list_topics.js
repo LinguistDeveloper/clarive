@@ -14,6 +14,7 @@ params:
     single_mode: 'false'    
 ---
 */
+
 (function(params){
 	var meta = params.topic_meta;
 	var data = params.topic_data;

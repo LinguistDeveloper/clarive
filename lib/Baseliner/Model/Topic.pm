@@ -1119,7 +1119,8 @@ sub get_dates {
 
 sub get_topics{
     my ($self, $topic_mid, $id_field, $meta, %opts) = @_;
-    my $rs_rel_topic = Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid )->topics->search( {rel_field => $id_field}, { order_by => { '-asc' => ['categories.name', 'mid'] }, prefetch=>['categories'] } );
+    my $rs_rel_topic = Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid )
+        ->topics->search( {rel_field => $id_field}, { order_by=>'rel_seq', prefetch=>['categories'] } );
     rs_hashref ( $rs_rel_topic );
     my @topics = $rs_rel_topic->all;
     @topics = Baseliner->model('Topic')->append_category( @topics );
@@ -1447,51 +1448,48 @@ sub set_topics {
     my @new_topics = map { split /,/, $_ } _array( $topics ) ;
     my @old_topics = map {$_->{to_mid}} DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_type => 'topic_topic', rel_field => $id_field})->hashref->all;
     
-    # check if arrays contain same members
-    if ( array_diff(@new_topics, @old_topics) ) {
-        if( @new_topics ) {
-            if(@old_topics){
-                my $rs_old_topics = DB->BaliMasterRel->search({from_mid => $rs_topic->mid, to_mid => \@old_topics});
-                $rs_old_topics->delete();
-            }
-            
-            for (@new_topics){
-                DB->BaliMasterRel->update_or_create({from_mid => $rs_topic->mid, to_mid => $_, rel_type =>'topic_topic', rel_field => $id_field });
-            }
-            
-            my $topics = join(',', @new_topics);
-    
-            event_new 'event.topic.modify_field' => { username   => $user,
-                                                field      => _loc( 'attached topics' ),
-                                                old_value      => '',
-                                                new_value  => $topics,
-                                                text_new      => '%1 modified topic: %2 ( %4 )',
-                                               } => sub {
-                { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
-            } ## end try
-            => sub {
-                _throw _loc( 'Error modifying Topic: %1', shift() );
-            };        
-            
-        }else{
-            event_new 'event.topic.modify_field' => { username   => $user,
-                                                field      => '',
-                                                old_value      => '',
-                                                new_value  => '',
-                                                text_new      => '%1 deleted all attached topics of ' . $id_field ,
-                                               } => sub {
-                { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
-            } ## end try
-            => sub {
-                _throw _loc( 'Error modifying Topic: %1', shift() );
-            };
-
-            #$rs_topic->set_topics( undef, { rel_type=>'topic_topic', rel_field => $id_field});
-            my $rs_old_topics = DB->BaliMasterRel->search({from_mid => $rs_topic->mid, to_mid => \@old_topics});
-            $rs_old_topics->delete();            
+    if( @new_topics ) {
+        if(@old_topics){
+            my $rs_old_topics = DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_field=>$id_field });
+            $rs_old_topics->delete();
         }
+        
+        for (@new_topics){
+            DB->BaliMasterRel->update_or_create({from_mid => $rs_topic->mid, to_mid => $_, rel_type =>'topic_topic', rel_field => $id_field });
+        }
+        
+        my $topics = join(',', @new_topics);
+
+        event_new 'event.topic.modify_field' => { username   => $user,
+                                            field      => _loc( 'attached topics' ),
+                                            old_value      => '',
+                                            new_value  => $topics,
+                                            text_new      => '%1 modified topic: %2 ( %4 )',
+                                           } => sub {
+            { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
+        } ## end try
+        => sub {
+            _throw _loc( 'Error modifying Topic: %1', shift() );
+        };        
+        
+    }else{
+        event_new 'event.topic.modify_field' => { username   => $user,
+                                            field      => '',
+                                            old_value      => '',
+                                            new_value  => '',
+                                            text_new      => '%1 deleted all attached topics of ' . $id_field ,
+                                           } => sub {
+            { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
+        } ## end try
+        => sub {
+            _throw _loc( 'Error modifying Topic: %1', shift() );
+        };
+
+        #$rs_topic->set_topics( undef, { rel_type=>'topic_topic', rel_field => $id_field});
+        my $rs_old_topics = DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_field => $id_field });
+        $rs_old_topics->delete();            
     }
-    
+
 }
 
 sub set_cis {
