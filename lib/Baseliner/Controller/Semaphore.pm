@@ -225,6 +225,72 @@ sub activate : Local {
     $c->forward('View::JSON');
 }
 
+# Baseliner::Sem methods
+
+sub begin : Private {
+    my ($self,$c) = @_;
+    if( $c->req->path =~ /sem_/ ) {
+        $c->stash->{auth_skip} = 1;
+    }
+    $c->forward('/begin');
+}
+
+sub sem_lock : Local {
+    my($self, $c) = @_;
+    my $p = $c->request->parameters;
+    my $key = $p->{key};
+    require Baseliner::Sem;
+    $c->stash->{json} = try {
+        my $sem = Baseliner::Sem->new( key => $key );
+        _debug "Taking";
+        $sem->take;
+        _debug "Sleeping";
+        sleep 10;
+        _debug "Done";
+        { success=>\1, msg => _loc('Semaphore %1 locked', $key ) };
+    } catch {
+        my $err = shift;
+        _error $err;
+        { success=>\0, msg => $err };
+    };
+    $c->forward('View::JSON');
+}
+
+sub sem_del : Local {
+    my($self, $c) = @_;
+    my $p = $c->request->parameters;
+    my $key = $p->{key};
+    require Baseliner::Sem;
+    $c->stash->{json} = try {
+        my $sem = Baseliner::Sem->new( key => $key );
+        $sem->sem->remove;
+        { success=>\1, msg => _loc('Semaphore %1 removed', $key ) };
+    } catch {
+        my $err = shift;
+        _error $err;
+        { success=>\0, msg => $err };
+    };
+    $c->forward('View::JSON');
+}
+
+sub sem_slots : Local {
+    my($self, $c) = @_;
+    my $p = $c->request->parameters;
+    my $key = $p->{key};
+    my $slots = $p->{slots};
+    require Baseliner::Sem;
+    $c->stash->{json} = try {
+        my $sem = Baseliner::Sem->new( key => $key );
+        my $curr = $sem->slots( $slots );
+        { success=>\1, msg => _loc('Semaphore %1 slots changed to', $curr ) };
+    } catch {
+        my $err = shift;
+        _error $err;
+        { success=>\0, msg => $err };
+    };
+    $c->forward('View::JSON');
+}
+
 1;
 
 

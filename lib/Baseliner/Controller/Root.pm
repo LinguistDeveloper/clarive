@@ -33,21 +33,6 @@ All root / urls are installed here.
 
 =cut
 
-=head2 begin
-
-/begin gets called every time, by every controller
-EXCEPT when the controller has its own /begin, in 
-which case would be wise to forward to this root
-begin with:
-
-    sub begin {
-        # your controller begin stuff
-        #
-        
-        $c->forward('/begin');
-    }
-
-=cut 
 sub begin : Private {
     my ( $self, $c ) = @_;
     $c->res->headers->header( 'Cache-Control' => 'no-cache');

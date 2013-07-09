@@ -50,10 +50,13 @@ sub launch {
     #
     # put logfile in the stash
     #
-    if( length $data->{logfile} ) {
+    if( defined $data->{logfile} && length $data->{logfile} ) {
         _log _loc "Service logfile '%1'", $data->{logfile};
         $c->stash->{logfile} = $data->{logfile};
     }
+    
+    # maybe we have an object that should be the main instance
+    $config_data->{obj} = $p{obj} if ref $p{obj};
 
     #
     # ******************** RUN *****************
