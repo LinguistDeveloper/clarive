@@ -1,5 +1,5 @@
 (function(){
-    var id = Ext.id();
+    //var id = Ext.id();
     var store_status = new Baseliner.Topic.StoreStatus();
     var store_category = new Baseliner.Topic.StoreCategory({ baseParams: { swnotranslate : 1 } });
     
@@ -698,6 +698,7 @@
     var add_edit_admin_category = function(rec) {
         var win;
         var title = _('Workflow: %1', rec.data.name );
+        var id = Ext.id();
 
         var store_category_status = new Baseliner.Topic.StoreCategoryStatus();
         var store_admin_status = new Baseliner.Topic.StoreCategoryStatus({
