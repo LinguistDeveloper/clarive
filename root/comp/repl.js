@@ -294,7 +294,8 @@ To do:
     function set_output( data ) {
         output.setValue( data );
         cons.setActiveTab( output );
-        cons.expand(true);
+        if( data && data != '' ) 
+           cons.expand(true);
     }
 
     var save = function(params) {
@@ -626,6 +627,29 @@ To do:
                 icon:'/static/images/icons/config.gif',
                 cls: 'x-btn-text-icon',
                 menu: config_menu
+            },
+            { xtype:'button',
+                icon: '/static/images/icons/fullscreen.png',
+                tooltip:_('Fullscreen'),
+                enableToggle: true,
+                pressed: false,
+                toggleGroup: 'x-fullscreen-repl',
+                handler:function(){
+                    if( this.pressed ) {
+                        //$(form.el.dom).css({ position:'absolute', top:0, left:0, bottom:0, right:0, 'z-index':9999 });
+                        form.$lastParent = form.el.dom.parentElement;
+                        document.body.appendChild( form.el.dom );
+                        $(form.el.dom).css({ width:'', left:0, right:0, 'z-index':9999 });
+                        form.setWidth( $(document).width() );
+                        form.setHeight( $(document).height() );
+                        //form.doLayout();
+                    } else {
+                        //$(form.el.dom).css({ position:'', top:'', left:'', bottom:'', right:'' });
+                        form.$lastParent.appendChild( form.el.dom );
+                        form.doLayout();
+                        form.ownerCt.doLayout();
+                    }
+                }
             }
     ];
 

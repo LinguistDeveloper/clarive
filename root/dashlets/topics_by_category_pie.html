@@ -3,7 +3,6 @@ name: Topics by category
 description: Chart pie (Topics by category)
 url: /dashboard/topics_by_category
 html: /dashlets/topics_by_category_pie.html
-
 -->
 <%perl>
     use Baseliner::Utils;
@@ -66,7 +65,8 @@ function pieClick(event, pos, obj)
 {
 	if (!obj)
                 return;
-    Baseliner.addNewTabComp('/topic/grid?category_id=' + obj.series.category_id[obj.series.label], _('Topics'));
+	var title_category = '<div id="boot" style="background:transparent;height:14px"><span class="label" style="background-color:' + obj.series.color  + '">' + obj.series.label + '</span></div>';
+    Baseliner.addNewTabComp('/topic/grid?category_id=' + obj.series.category_id[obj.series.label], _(title_category));
 }
 
 </script>

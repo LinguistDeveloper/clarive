@@ -9,7 +9,7 @@ Baseliner::Schema::Baseliner::Result::BaliTopic
 
 use strict;
 use warnings;
-use Baseliner::Utils;
+require Baseliner::Utils;
 
 use base 'DBIx::Class::Core';
 __PACKAGE__->load_components(qw( TimeStamp Core ));
@@ -32,7 +32,7 @@ __PACKAGE__->add_columns(
     data_type     => "datetime",
     is_nullable   => 0,
     set_on_create => 1,
-    timezone => _tz,
+    timezone => Util->_tz,
   },
   "created_by",
   { data_type => "varchar2", is_nullable => 0, size => 255 },
@@ -42,7 +42,7 @@ __PACKAGE__->add_columns(
     is_nullable   => 1,
     set_on_create => 1, 
     set_on_update => 1,
-    timezone => _tz,
+    timezone => Util->_tz,
   },
   "modified_by",
   { data_type => "varchar2", is_nullable => 1, size => 255 },

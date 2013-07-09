@@ -273,7 +273,6 @@ sub roleusers : Local {
         } sort keys %user_projects;
         $c->stash->{json} = { success => \1, data=>\@data, totalCount=>scalar @data };
     } catch { 
-        _log shift;
         $c->stash->{json} = { success => \0, msg => _loc("Error deleting the role ").$@  };
     };
     $c->forward('View::JSON');  
