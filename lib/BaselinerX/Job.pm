@@ -43,6 +43,7 @@ register 'config.job' => {
 };
 
 register 'action.job.create' => { name=>'Create New Jobs' };
+register 'action.job.cancel' => { name=>'Cancel Jobs' };
 register 'action.job.view_monitor' => { name=>'View job monitor' };
 
 register 'menu.job' => { label => 'Jobs', index=>110, actions => ['action.job.%','action.calendar.%']};

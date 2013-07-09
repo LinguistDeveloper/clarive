@@ -5,6 +5,7 @@ use Baseliner::Utils;
 # otro comentario
 
 register 'action.admin.default' =>  { name=>'Administrator' };
+register 'action.reports.view' => { name=>'View Reports' };
 
 register 'menu.admin' => { label => 'Admin', actions=>['action.admin.%'], index=>10 };
 register 'menu.reports' => { label => 'Reports', actions=>['action.reports.%'] };

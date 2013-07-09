@@ -95,14 +95,15 @@ sub query_lucy : Local {
         resultclass => 'LucyX::Simple::Result::Hash',
         entries_per_page => $config->{max_results},
         schema     => [
-            { name  => 'title', 'boost' => 3, highlightable=>1 },
-            { name  => 'text', highlightable=>1 },
-            { name  => 'info', highlightable=>1 },
+            { name  => 'title', 'boost' => 3, type=>'fulltext', highlightable=>1 },
+            { name  => 'text', highlightable=>1, type=>'fulltext' },
+            { name  => 'info', highlightable=>1, type=>'fulltext', boost=>1 },
             { name  => 'type' },
+            { name  => 'mid', type=>'string', boost=>4 },
             { name  => 'id', type => 'string', },
         ],
         highlighter => 'Baseliner::Lucy::Highlighter',
-        search_fields => ['title', 'text'],
+        search_fields => ['title', 'text', 'mid','info'],
         search_boolop => $config->{lucy_boolop} // 'OR',
     );
      
