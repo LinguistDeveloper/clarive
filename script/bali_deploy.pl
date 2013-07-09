@@ -74,6 +74,7 @@ Options:
   -run                    : Run DB statements interactively or from STDIN
   -quote                  : quote table names
   -drop                   : add drop statements
+  -grep                   : grep a string or re in the generated sql
   -env                    : sets BALI_ENV (local, test, prod, t, etc...)
   -schema                 : schemas to deploy (does not work for migrations)
                                 bali deploy --schema BaliRepo --schema BaliRepoKeys 
