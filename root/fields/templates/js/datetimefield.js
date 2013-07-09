@@ -14,13 +14,18 @@ params:
 (function(params){
 	var meta = params.topic_meta;
 	var data = params.topic_data;
+
+    var df = meta.format || 'Y-m-d';
+
+    var value = data ? data[meta.bd_field]: ''; 
+    if( meta.default_today ) value = new Date( Date.now() ).format(df);
 	
     return [
 		{
 			xtype:'datefield',
 			fieldLabel: _(meta.name_field),
 			name: meta.id_field,
-			value: data ? eval('data.' + meta.bd_field): '',
+			value: value, 
 			//style: { 'font-size': '16px' },
 			format:  meta.format,
 			width: 165,

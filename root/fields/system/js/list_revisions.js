@@ -97,7 +97,6 @@ params:
                 var attr = n.attributes;
                 var data = attr.data || {};
                 var ci = data.ci;
-                ci.data.repo = ci.data.ci_pre[0].mid;
                 var mid = data.mid;
                 if( mid==undefined && ( ci == undefined || ci.role != 'Revision') ) { 
                     Baseliner.message( _('Error'), _('Node is not a revision'));

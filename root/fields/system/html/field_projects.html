@@ -9,10 +9,10 @@
             <% _loc($meta->{name_field}) %>
         </li>
     </ul>
-    <ul class="" style="margin-left: 20px">
+    <ul style="margin-left: 20px">
 % foreach my $project ( _array( $data->{$meta->{id_field}} ) ) {
         <li style="margin: 6px 0px 6px 0px">
-            <% $project->{name} %>
+            <h4><img src="/static/images/icons/project.png"><% $project->{name} %></h4>
         </li>
 % }
     </ul>

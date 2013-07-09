@@ -190,6 +190,7 @@ params:
 			xtype: 'panel',
 			border: false,
 			layout: 'form',
+            style: 'margin-top: 10px', 
 			disabled: meta ? meta.readonly : true,
 			//hidden: rec.fields_form.show_files ? false : true,
 			items: [

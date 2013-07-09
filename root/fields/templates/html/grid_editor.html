@@ -1,0 +1,63 @@
+<%args>
+    $meta
+    $data
+</%args>
+% if( !$meta->{hidden} ) {
+    <tr>
+        <th colspan="2" style="padding: 10px 0 10px 0"><h5 style="border-bottom: 1px solid #bbb"><% _loc($meta->{name_field}) %></h5></th>
+    </tr>
+% }     
+<%perl>
+    my $json = $data->{$meta->{bd_field}} ;
+    $json = Encode::encode('UTF-8', $json);
+    #my $json_utf8 = Encode::encode('UTF-8', $json);
+    #$json = Util->_unac( $json ); # XXX
+    my $ix = 0;
+    my $cols = ref $meta->{columns} ? $meta->{columns} : do {
+        [ map { [ split /,/ ] } split /;/, $meta->{columns} ]
+    };
+    
+    if( !$meta->{hidden} && length $json ) {
+        my $d = Util->_from_json( $json ); 
+        my @rows = Util->_array( $d );
+        my @head = map { +{ key=>_name_to_id($_->[0]), name=>$_->[0], width=>$_->[2], type=>$_->[1] }  } @$cols; 
+        @head = map { +{ key=>$_, name=>$_ } } keys %{ $rows[0] || {} }
+            if ! @head;
+</%perl>
+    <tr>
+      <td style="<% $meta->{framed} and 'text-transform: uppercase; font-size: 10px; font-weight:bold; background-color: #eee; text-align: center' %>" >
+     
+% if( @rows && scalar @rows > 0 ) {
+          <table class="table table-bordered" style="margin-top: 10px; width: 100%">
+              <thead>
+                <tr>
+% foreach my $h ( @head ) {
+                    <th width="<% $$h{width} %>"><% _loc( $$h{name} ) %></th>
+% }
+                </tr>
+              </thead>
+              <tbody>
+% foreach my $row ( @rows ) {
+                <tr>
+% foreach my $h ( @head  ) {
+%    my $val = $row->{ $$h{key} };
+                        <td style="font-size: <% $meta->{td_font_size} // 12 %>px" class="fieldlet-html"><% 
+                            $$h{type} eq 'checkbox' 
+                            ? ( !$val || $val eq 'false' ? '<img src="/static/images/icons/delete.gif">' : '<img src="/static/images/icons/checkbox.png">')
+                            : $$h{type} eq 'index' 
+                                ? ++$ix
+                                : Util->_markdown($val, { tab_width=>2 })
+                        %></td>
+% }
+                </tr>
+% }
+              </tbody>
+          </table>
+      </td>
+    </tr>
+% } # if 
+% else { 
+    <tr>
+        <td colspan="2"><% _loc( 'None' ) %></td>
+    </tr>
+% }}# if json

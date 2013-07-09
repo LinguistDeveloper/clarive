@@ -1,0 +1,19 @@
+<%args>
+    $meta
+    $data
+</%args>
+<%perl>
+    my %opts = map { my @a = split/,/; $a[0] => $a[1] // '#2980B9' } 
+        split /;/, $meta->{options};
+    my $val = $data->{$meta->{display_field}}  || $data->{$meta->{bd_field}};
+</%perl>
+% if( defined $val && !$meta->{hidden} ) {
+    <tr>
+      <th><% _loc($meta->{name_field}) %>:</th>
+      <td> 
+         <span class="badge" style="font-size: 12px; color: #fff; background-color: <% $opts{$val} %>" >
+                <% _loc( $val ) %>
+         </span></td>
+    </tr>
+% }
+
