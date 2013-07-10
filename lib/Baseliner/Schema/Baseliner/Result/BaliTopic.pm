@@ -9,7 +9,7 @@ Baseliner::Schema::Baseliner::Result::BaliTopic
 
 use strict;
 use warnings;
-require Baseliner::Utils;
+use Baseliner::Utils;
 
 use base 'DBIx::Class::Core';
 __PACKAGE__->load_components(qw( TimeStamp Core ));
@@ -143,6 +143,13 @@ sub badge_name {
 sub full_name {
     my ($self) =@_;
     sprintf '[%s] %s', $self->badge_name, $self->title;
+}
+
+sub full_name_monitor {
+    my ($self) =@_;
+    my $cat = $self->categories;
+    my $name = sprintf '%s #%s', _loc($cat->name), $self->mid;
+    sprintf '[%s] %s', $name, $self->title;
 }
 
 sub my_releases {
