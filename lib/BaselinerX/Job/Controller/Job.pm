@@ -341,7 +341,7 @@ sub monitor_json : Path('/job/monitor_json') {
                   my ( $dom,$nsid) = ns_split( $_->{item} );
                   my $ret;
                   if( $dom eq 'changeset' ) {
-                    $ret = try { $c->model('Baseliner::BaliTopic')->find( $nsid )->full_name } catch { $nsid };
+                    $ret = try { $c->model('Baseliner::BaliTopic')->find( $nsid )->full_name_monitor } catch { $nsid };
                   } elsif( $dom !~ /nature/ ) {
                     my $icon = $CACHE_ICON{ $dom } // do {
                         my $m = try { $c->registry->get( $dom )->module }
