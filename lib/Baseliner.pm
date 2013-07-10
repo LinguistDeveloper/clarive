@@ -51,8 +51,8 @@ use Time::HiRes qw(gettimeofday tv_interval);
 use Baseliner::CI;
 use Try::Tiny;
 my $t0 = [ gettimeofday ];
-extends 'Catalyst';
 $DB::deep = 500; # makes the Perl Debugger Happier
+extends 'Catalyst';
 
 # determine version with a GIT DESCRIBE
 our $FULL_VERSION = do {
