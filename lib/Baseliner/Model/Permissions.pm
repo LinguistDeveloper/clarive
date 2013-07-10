@@ -198,6 +198,38 @@ sub deny_role {
     return $denied;
 }
 
+=head2 user_address_for_action username=>Str, action=>Str, bl=>Str
+
+Returns a list of address to notify for a user and an action
+
+=cut
+sub user_address_for_action {
+  my ($self, %p ) = @_;
+  my $ret=undef;
+  _check_parameters( \%p, qw/username action bl cam/ );
+
+  my @rs=Baseliner->model('Baseliner::BaliRoleUser')->search(
+     {  
+       'me.username'=>$p{username}, 
+       'bali_roleactions.action'=>$p{action},
+       'bali_roleactions.bl'=>{in=>[$p{bl},'*']
+     }
+     },{ 
+       join=>[{'role'=>'bali_roleactions'},'projects'], 
+       select=>['me.ns','role.mailbox', 'projects.name'], 
+       as=>['ns','address', 'cam'] 
+     }
+     )->hashref->all;
+  my %address;
+  
+  map { my $pattern=$_->{cam};( grep /$pattern/, @{$p{cam}} ) ? $address{$_->{cam}}=$_->{address}//$p{username} : $_->{ns} eq '/' ? $address{'/'}=$_->{address}//$p{username} : undef } @rs;
+  
+  for (keys %address) {
+     $ret=$address{$_} unless $_ eq '/';
+  }
+
+  return defined $ret ? $ret : $address{"/"};
+}
 
 =head2 user_baselines_for_action username=>Str, action=>Str
 
@@ -247,19 +279,52 @@ sub user_has_any_action {
     _check_parameters( \%p, qw/username action/ ); 
     my $username = $p{username};
     my $action = $p{action};
-    push my @bl, _array $p{bl}, '*';
+    my $bl = $p{bl} // '*';
     
     return 1 if $self->is_root( $username );
 
-    return Baseliner->model('Baseliner')->dbi->value(qq{
-        select count(*)
-        from bali_roleuser ru, bali_roleaction ra
-        where ru.USERNAME = ?
-          and ru.ID_ROLE = ra.ID_ROLE
-          and ra.ACTION like ?
-          and ra.bl in (} . join( ',', map { '?' } @bl ) . qq{)
-    },$username, $p{action}, @bl);
+    my @actions = $self->user_actions_list( username => $username, bl => $bl, action => $action );
+    return scalar @actions;
 }
+
+sub user_actions_list {
+    my ( $self, %p ) = @_;
+    _check_parameters( \%p, qw/username/ );
+    my $username = $p{username};
+    my $action   = $p{action} // qr/.*/;
+    my $regexp_action;
+
+    if ( !ref $action ) {
+        $action =~ s/\./\\\./g;
+        $action =~ s/%/\.\*/g;
+        $regexp_action = qr/$action/;
+    } elsif ( ref $action eq 'Regexp' ) {
+        $regexp_action = $action;
+    } else {
+        return ();
+    }
+    push my @bl, _array $p{bl}, '*';
+
+    my @actions;
+    if ( $self->is_root( $username ) ) {
+        @actions = map { $_->{key} } Baseliner->model( 'Actions' )->list;
+
+    } else {
+        @actions = map { $_->{action} } DB->BaliRoleuser->search(
+            {
+                'me.username'    => $username,
+                'actions.bl'     => \@bl
+            },
+            {
+                distinct => 1,
+                join     => [ 'actions' ],
+                select   => [ 'actions.action' ],
+                as       => [ 'action' ]
+            }
+        )->hashref->all;
+    } ## end else [ if ( $self->is_root( $username...))]
+    return grep { $_ =~ $regexp_action } @actions;
+} ## end sub user_actions_list
 
 # sub user_has_action {
     # my ($self, %p ) = @_;
@@ -290,14 +355,19 @@ Returns an array of ns for the projects the user has access to.
 sub user_has_project {
     my ( $self, %p ) = @_;
     _throw 'Missing username' unless exists $p{username};
+    my $qr=qr{^\/$};
 
     # is root?
     return 1 if $self->is_root( $p{username} );
 
     if( my $name = delete $p{project_name} ) {
-        return scalar grep /^$name$/, $self->user_projects_names( %p );
+        my @ns=$self->user_projects_names( %p );
+        return 1 if scalar grep /$qr/, @ns;
+        return scalar grep /^$name$/, @ns;
     } elsif( my $id = delete $p{project_id} ) {
-        return scalar grep /$id/, $self->user_projects_ids( %p );
+        my @ns=$self->user_projects_ids( %p );
+        return 1 if scalar grep /$qr/, @ns;
+        return scalar grep /$id/,@ns
     }
     return 0;
 }
@@ -408,6 +478,7 @@ sub user_projects_names {
             }
         }
     }
+    push @ret, '/' if scalar grep /^\/$/, @ns;
     return sort { $a cmp $b } _unique( @ret );
     # _unique map { $_->{name} } $rs->all;
 }
@@ -419,6 +490,67 @@ List of projects for which a user has a given action.
 =cut
 
 sub user_projects_with_action {
+    my ( $self, %p ) = @_;
+    _check_parameters( \%p, qw/username action/ );
+    my $username  = $p{username};
+    my $action    = $p{action};
+    my $bl        = $p{bl} || '*';
+    my $level     = $p{level} || 'all';
+    my $bl_filter = '';
+    $bl_filter = qq{ AND ra.bl in ('$bl','*') } if $bl ne '*';
+    my @granted_projects = [];
+
+    my $rs;
+
+    # check if all
+    my $roles_all = DB->BaliRoleuser->search(
+        { username=>$username, action=>$action, ns=>'/' },
+        { join=>['actions', 'role' ], select=>'id_project' }
+    );
+    if( $self->is_root($username) || $roles_all->count ) {
+        $rs = DB->BaliProject->search({ id_parent=>undef },{ select=>'mid' });
+    } else {
+        my $roles = DB->BaliRoleuser->search(
+            { username=>$username, action=>$action, ns=>{ '!='=>'/' } },
+            { join=>['actions', 'role' ], select=>'id_project' }
+        );
+
+        # app
+        $rs = DB->BaliProject->search(
+            { mid => {-in => $roles->as_query }, id_parent=>undef }, 
+            { select=>'mid', distinct=>1 }
+        );
+    }
+
+    my ($lev2, $lev3);
+    if ( $level eq 'all' || $level ge 2 ) {
+        # supapp
+        $lev2 = DB->BaliProject->search(
+            { id_parent => {-in => $rs->as_query }, nature=>undef }, 
+            { select=>'mid', distinct=>1 }
+        );
+        $rs = $rs->union( $lev2 );
+    }
+
+    if ( $level eq 'all' || $level ge 3 ) {
+        # nature
+        $lev3 = DB->BaliProject->search(
+            { id_parent => {-in => $lev2->as_query }, nature=>{ '!=' => undef } }, 
+            { select=>'mid', distinct=>1 }
+        );
+        $rs = $rs->union( $lev3 );
+    }
+
+    if( $p{as_query} ) {
+        return $rs->as_query ;
+    } else {
+        my @mids = map { $_->{mid} } $rs->hashref->all;
+        return wantarray ? @mids : \@mids; 
+    }
+}
+
+# XXX deprecated: 
+sub user_projects_with_action_old {
     my ( $self, %p ) = @_;
     _check_parameters( \%p, qw/username action/ );
     my $username  = $p{username};
