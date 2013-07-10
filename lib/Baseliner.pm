@@ -52,6 +52,7 @@ use Baseliner::CI;
 use Try::Tiny;
 my $t0 = [ gettimeofday ];
 $DB::deep = 500; # makes the Perl Debugger Happier
+
 extends 'Catalyst';
 
 # determine version with a GIT DESCRIBE
