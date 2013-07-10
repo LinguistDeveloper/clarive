@@ -653,8 +653,7 @@ sub list_lastjobs: Private{
     my ( $self, $c, $dashboard_id ) = @_;
     my $order_by = 'STARTTIME DESC'; 
 
-    my $rs_search = DB->BaliJob->search( {
-        id_project => { -in => $c->model( 'Permissions' )->user_projects_query( username => $c->username, join_id=>'id_project' ) } }, 
+    my $rs_search = DB->BaliJob->search( { 'exists' => $c->model( 'Permissions' )->user_projects_query( username => $c->username, join_id=>'id_project' ) }, 
         { 
             join => 'bali_job_items', 
             order_by => $order_by,

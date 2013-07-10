@@ -343,7 +343,12 @@ sub user_projects_query {
     my ( $self, %p ) = @_;
     _throw 'Missing username' unless exists $p{username};
     _throw 'Missing join_id' unless exists $p{join_id};
-    DB->BaliRoleuser->search({ username=>$p{username}, id_project=>{ '=' => \"$p{join_id}" } }, { select=>\'1' })->as_query
+    if ( $self->is_root( $p{username} )) {
+        DB->BaliRoleuser->search({}, { select=>\'1' })->as_query        
+    } else {
+        DB->BaliRoleuser->search({ username=>$p{username}, id_project=>{ '=' => \"$p{join_id}" } }, { select=>\'1' })->as_query        
+    }
+    
 } 
 
 =head2 user_projects_ids( username=>Str )
