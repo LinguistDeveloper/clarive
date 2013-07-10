@@ -364,7 +364,7 @@ sub get_meta_permissions : Local {
         $meta = [grep { !($hidden_field{ $_->{id_field} }) } _array $meta];
         
     }
-    _log _dump $meta;
+    #_log _dump $meta;
     return $meta
 }
 
