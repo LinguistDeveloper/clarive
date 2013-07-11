@@ -474,7 +474,9 @@ sub topics_for_user {
     my @db_mids = grep { !exists $mids_in_cache->{$_} } @mids; 
     _debug( "CACHE==============================> MIDS: @mids, DBMIDS: @db_mids, MIDS_IN_CACHE: " . join',',keys %$mids_in_cache );
     my @db_mid_data = DB->TopicView->search({ topic_mid=>{ -in =>\@db_mids  } })->hashref->all if @db_mids > 0;
-    Baseliner->cache_set( "topic:view:".$_->{topic_mid}, $_ ) for @db_mid_data;
+    for( @db_mid_data ) {
+        Baseliner->cache_set( "topic:view:".$_->{topic_mid}, $_ ) if length $_->{topic_mid};
+    }
     @mid_data = ( @mid_data, @db_mid_data );
 
     my @rows;
@@ -978,7 +980,7 @@ sub get_meta {
     
     @meta = sort { $a->{field_order} <=> $b->{field_order} } @meta;
 
-    Baseliner->cache_set( "topic:meta:$topic_mid", \@meta ) if $topic_mid;
+    Baseliner->cache_set( "topic:meta:$topic_mid", \@meta ) if length $topic_mid;
     
     return \@meta;
 }
@@ -1048,7 +1050,7 @@ sub get_data {
         for (@custom_fields){
             $data->{ $_ } = $custom_data{$_};
         }
-        Baseliner->cache_set( "topic:data:$topic_mid", $data ); 
+        Baseliner->cache_set( "topic:data:$topic_mid", $data ) if length $topic_mid; 
     }
     
     return $data;
