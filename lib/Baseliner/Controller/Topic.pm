@@ -225,8 +225,7 @@ sub related : Local {
     my $rs_topic = DB->BaliTopic->search($where, $from)->hashref;
     my @topics = map {
         if( $p->{topic_child_data} ) {
-            #my $meta = $c->model('Topic')->get_meta( $_->{mid} );
-            $_->{data} = $c->model('Topic')->get_data( undef, $_->{mid} );
+            $_->{data} = $c->model('Topic')->get_data( undef, $_->{mid}, with_meta=>1 ); # without the meta, no fieldlets will come
             $_->{description} //= $_->{data}{description};
             $_->{name_status} ||= $_->{data}{name_status};
         }
@@ -553,7 +552,7 @@ sub view : Local {
     
     if( $p->{html} ) {
         my $meta = $c->model('Topic')->get_meta( $topic_mid, $id_category );
-        my $data = $c->model('Topic')->get_data( $meta, $topic_mid, %$p );
+        my $data = $c->model('Topic')->get_data( $meta, $topic_mid, topic_child_data=>$p->{topic_child_data} );
         $meta = get_meta_permissions ($c, $meta, $data);        
 
         $c->stash->{topic_meta} = $meta;

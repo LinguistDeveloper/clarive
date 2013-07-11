@@ -187,7 +187,6 @@ Baseliner.CLEditorField = Ext.extend(Ext.form.TextArea, {
 		fields: fields
 	});
 	
-    var loading_field = true;
 	var records = data && data[ meta.bd_field ]? data[ meta.bd_field ] : '[]';
 
 	var store = new Ext.data.Store({
@@ -222,11 +221,9 @@ Baseliner.CLEditorField = Ext.extend(Ext.form.TextArea, {
                 grid.store.remove( r );
 				var rows = Ext.util.JSON.decode( field_hidden.getValue());
 				rows.splice(index, 1);
-                loading_field = true;
 				field_hidden.setValue(Ext.util.JSON.encode( rows ));
 				grid.store.commitChanges();
 				grid.getView().refresh();
-                loading_field = false;
             });
         }
     });
@@ -245,9 +242,7 @@ Baseliner.CLEditorField = Ext.extend(Ext.form.TextArea, {
 				var rows = Ext.util.JSON.decode( field_hidden.getValue());
                 if( !Ext.isArray( rows ) ) rows = [];
 				rows[rowIndex] = record.data;
-                loading_field = true;
-				field_hidden.setValue(Ext.util.JSON.encode( rows ));
-                loading_field = false;
+				field_hidden.setRawValue(Ext.util.JSON.encode( rows ));
 			}
 		}		
     });	
@@ -273,7 +268,6 @@ Baseliner.CLEditorField = Ext.extend(Ext.form.TextArea, {
     var self = grid;
  
     grid.on( 'afterrender', function(){
-        loading_field = false;
         //self.ddGroup = 'bali-grid-html-' + self.id;
         var ddrow = new Baseliner.DropTarget(self.container, {
             comp: self,
@@ -291,10 +285,10 @@ Baseliner.CLEditorField = Ext.extend(Ext.form.TextArea, {
 							var index = ds.indexOf(ds.getById(rows_grid[i].id));
                             ds.remove(ds.getById(rows_grid[i].id));
 							delete rows[index];
-							field_hidden.setValue(Ext.util.JSON.encode( rows ));
+							field_hidden.setRawValue(Ext.util.JSON.encode( rows ));
 							rows = Ext.util.JSON.decode( field_hidden.getValue());
 							rows.splice(cindex, 0, rows_grid[i].data);
-							field_hidden.setValue(Ext.util.JSON.encode( rows ));	
+							field_hidden.setRawValue(Ext.util.JSON.encode( rows ));	
                         }
                         ds.insert(cindex,data.selections);
                         sm.clearSelections();

@@ -988,10 +988,23 @@ sub get_meta {
 sub get_data {
     my ($self, $meta, $topic_mid, %opts ) = @_;
     
+    # normalize to improve cache_hits:
+    my $no_cache = delete( $opts{no_cache} ) || 0;
+    my $with_meta = delete $opts{with_meta};
+    $opts{topic_child_data} = !! $opts{topic_child_data};
+    $opts{has_meta} = !!( $meta || $with_meta ); # normalize the cache only
+
     my $data;
     if ($topic_mid){
-        my $cached = Baseliner->cache_get( "topic:data:$topic_mid" ); 
-        return $cached if defined $cached;
+        if( !$meta && $with_meta ) {
+            $meta = $self->get_meta( $topic_mid );  
+        }
+        my $cache_key = ["topic:data:$topic_mid:", \%opts];
+        my $cached = Baseliner->cache_get( $cache_key ) unless $no_cache; 
+        if( defined $cached ) {
+            _debug( "CACHE HIT get_data: topic_mid = $topic_mid" );
+            return $cached;
+        }
         
         ##************************************************************************************************************************
         ##CAMPOS DE SISTEMA ******************************************************************************************************
@@ -1050,7 +1063,7 @@ sub get_data {
         for (@custom_fields){
             $data->{ $_ } = $custom_data{$_};
         }
-        Baseliner->cache_set( "topic:data:$topic_mid", $data ) if length $topic_mid; 
+        Baseliner->cache_set( $cache_key, $data );
     }
     
     return $data;

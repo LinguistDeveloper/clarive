@@ -297,9 +297,26 @@ around 'debug' => sub {
         }
     }
 
-    sub cache_set { $ccache->set( $_[1], $_[2] ) }
-    sub cache_get { $ccache->get( $_[1] ) }
-    sub cache_remove { $ccache->remove( $_[1] ) }
+    sub cache_keyify { 
+        my ($self,$key)=@_;
+        return ref $key ? Storable::freeze( $key ) : $key;
+    }
+    sub cache_set { 
+        my ($self,$key,$value)=@_;
+        #$key = Baseliner->cache_keyify( $key );
+        $ccache->set( $key, $value ) 
+    }
+    sub cache_get { 
+        my ($self,$key)=@_;
+        #$key = Baseliner->cache_keyify( $key );
+        #Util->_debug("CACHE GET: " . $self->cache_keyify($key) ); 
+        $ccache->get( $key ) 
+    }
+    sub cache_remove { 
+        my ($self,$key)=@_;
+        #$key = Baseliner->cache_keyify( $key );
+        $ccache->remove( $key ) 
+    }
     sub cache_keys { $ccache->get_keys( @_ ) }
     sub cache_compute { $ccache->compute( @_ ) }
     sub cache_clear { $ccache->clear }
