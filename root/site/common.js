@@ -2791,3 +2791,16 @@ Baseliner.ComboSingle = Ext.extend( Ext.form.ComboBox, {
         Baseliner.ComboSingle.superclass.initComponent(this); 
     }
 });
+
+// a hidden field that updates the store for a grid, used in list_topics
+Baseliner.HiddenGridField = Ext.extend( Ext.form.Hidden, {
+    setValue : function(v) {
+        //if( loading_field ) return; // control so that we don't go into an infinite loop
+        Baseliner.HiddenGridField.superclass.setValue.call(this, v);
+        if( !Ext.isString( v ) ) return;
+        var nv = Ext.decode( v );
+        this.store.removeAll();
+        this.store.loadData( nv );
+    }
+});
+

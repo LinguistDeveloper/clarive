@@ -79,7 +79,9 @@ Baseliner.TopicBox = Ext.extend( Ext.ux.form.SuperBoxSelect, {
     }
 });
 
-// Baseliner.model.Topics is deprecated.
+//
+// XXX **************** WARNING Baseliner.model.Topics is deprecated. Use TopicBox instead
+//
 Baseliner.model.Topics = function(c) {
     //var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name} - {title}</div></tpl>' );
     var tpl_list = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">',

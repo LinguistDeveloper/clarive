@@ -187,13 +187,14 @@ Baseliner.CLEditorField = Ext.extend(Ext.form.TextArea, {
 		fields: fields
 	});
 	
+    var loading_field = true;
 	var records = data && data[ meta.bd_field ]? data[ meta.bd_field ] : '[]';
-	var field_hidden = new Ext.form.Hidden({ name: meta.id_field, value: records });
-	
+
 	var store = new Ext.data.Store({
 		reader: reader,
 		data:  records ? Ext.util.JSON.decode(records) : []
 	});
+	var field_hidden = new Baseliner.HiddenGridField({ name: meta.id_field, value: records, store: store });
      	
     var button_add = new Baseliner.Grid.Buttons.Add({
 		text:'',
@@ -209,8 +210,6 @@ Baseliner.CLEditorField = Ext.extend(Ext.form.TextArea, {
         }
     });
 	
-	
-	
     var button_delete = new Baseliner.Grid.Buttons.Delete({
         text: '',
         tooltip: _('Delete'),
@@ -223,12 +222,12 @@ Baseliner.CLEditorField = Ext.extend(Ext.form.TextArea, {
                 grid.store.remove( r );
 				var rows = Ext.util.JSON.decode( field_hidden.getValue());
 				rows.splice(index, 1);
+                loading_field = true;
 				field_hidden.setValue(Ext.util.JSON.encode( rows ));
 				grid.store.commitChanges();
 				grid.getView().refresh();
+                loading_field = false;
             });
-		
-			
         }
     });
 	
@@ -246,7 +245,9 @@ Baseliner.CLEditorField = Ext.extend(Ext.form.TextArea, {
 				var rows = Ext.util.JSON.decode( field_hidden.getValue());
                 if( !Ext.isArray( rows ) ) rows = [];
 				rows[rowIndex] = record.data;
+                loading_field = true;
 				field_hidden.setValue(Ext.util.JSON.encode( rows ));
+                loading_field = false;
 			}
 		}		
     });	
@@ -272,6 +273,7 @@ Baseliner.CLEditorField = Ext.extend(Ext.form.TextArea, {
     var self = grid;
  
     grid.on( 'afterrender', function(){
+        loading_field = false;
         //self.ddGroup = 'bali-grid-html-' + self.id;
         var ddrow = new Baseliner.DropTarget(self.container, {
             comp: self,
