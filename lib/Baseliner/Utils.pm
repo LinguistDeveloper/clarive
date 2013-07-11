@@ -675,7 +675,7 @@ sub _name_to_id {
 # returns the official tmp dir
 sub _tmp_dir {
     my $tmp_dir = try { Baseliner->config->{tempdir} } catch {};
-    $tmp_dir || $ENV{BASELINER_TEMP} || File::Spec->tmpdir || $ENV{TEMP};
+    $tmp_dir || $ENV{BASELINER_TEMP} || $ENV{BASELINER_TMPHOME} || File::Spec->tmpdir || $ENV{TEMP};
 }
 
 =head2 _mktmp( suffix=>$str )
