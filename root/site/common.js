@@ -2682,7 +2682,7 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
     initComponent : function(){
         Baseliner.Pills.superclass.initComponent.apply(this, arguments);
     },
-    defaultAutoCreate : {tag: 'div', id: 'boot', 'class':'', style:'margin-top: 0px; height: 30px;' },
+    defaultAutoCreate : {tag: 'div', 'class':'', style:'margin-top: 0px; height: 30px;' },
     onRender : function(){
         Baseliner.Pills.superclass.onRender.apply(this, arguments);
         this.list = [];
@@ -2714,17 +2714,25 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
                     return false;
                 }
                 anchor.innerHTML = v;
+                anchor.style['marginTop'] = '0px';
+                anchor.style['lineHeight'] = '6px';
+                //anchor.style['fontWeight'] = 'bold';
                 li.appendChild( anchor );
                 self.list.push( li );
                 self.anchors.push( anchor );
             });
         }
         
+        // a boot, for styling 
+        var boot = document.createElement('span');
+        boot.id = 'boot';
+        this.el.dom.appendChild( boot );
+
         // the main navbar
         var ul = document.createElement('ul');
         ul.className = "nav nav-pills";
         for( var i=0; i<self.list.length; i++) ul.appendChild( self.list[i] );
-        this.el.dom.appendChild( ul );
+        boot.appendChild( ul );
         
         // the hidden field
         self.$field = document.createElement('input');

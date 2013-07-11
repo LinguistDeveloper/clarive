@@ -344,7 +344,8 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         self.view_is_dirty = false;
         self.form_is_loaded = false;
         self.ii = Ext.id();  // used by the detail page
-        
+        self.toggle_group = 'form_btns_' + self.ii;
+
         self.btn_save_form = new Ext.Button({
             name: 'grabar',
             text: _('Save'),
@@ -426,7 +427,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             var btn_html = {
                 xtype: 'button',
                 text: _('HTML'),
-                enableToggle: true, pressed: true, allowDepress: false, toggleGroup: 'comment_edit',
+                enableToggle: true, pressed: true, allowDepress: false, toggleGroup: 'comment_edit_' + ii,
                 handler: function(){
                     cardcom.getLayout().setActiveItem( 0 );
                 }
@@ -434,7 +435,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             var btn_code = {
                 xtype: 'button',
                 text: _('Code'),
-                enableToggle: true, pressed: false, allowDepress: false, toggleGroup: 'comment_edit',
+                enableToggle: true, pressed: false, allowDepress: false, toggleGroup: 'comment_edit_' + ii,
                 handler: function(){
                     cardcom.getLayout().setActiveItem( 1 );
                     var com = code_field.getEl().dom;
@@ -493,7 +494,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             cls: 'x-btn-icon',
             enableToggle: true, pressed: true, allowDepress: false, 
             handler: function(){ self.show_detail() }, 
-            toggleGroup: 'form'
+            toggleGroup: self.toggle_group
         });
         
         self.btn_edit = new Ext.Toolbar.Button({
@@ -503,7 +504,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             cls: 'x-btn-text-icon',
             enableToggle: true, 
             handler: function(){ return self.show_form() }, 
-            allowDepress: false, toggleGroup: 'form'
+            allowDepress: false, toggleGroup: self.toggle_group
         });
             
         self.btn_kanban = new Ext.Toolbar.Button({
@@ -511,13 +512,13 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             cls: 'x-btn-icon',
             enableToggle: true, 
             handler: function(){ self.show_kanban() }, 
-            allowDepress: false, toggleGroup: 'form'
+            allowDepress: false, toggleGroup: self.toggle_group
         });
             
         self.btn_graph = new Ext.Toolbar.Button({
             icon:'/static/images/ci/ci-grey.png',
             cls: 'x-btn-icon',
-            enableToggle: true, handler: show_graph, allowDepress: false, toggleGroup: 'form'
+            enableToggle: true, handler: show_graph, allowDepress: false, toggleGroup: self.toggle_group
         });
             
         self.loading_panel = Baseliner.loading_panel();
