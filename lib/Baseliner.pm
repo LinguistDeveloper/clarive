@@ -277,7 +277,7 @@ around 'debug' => sub {
     } else {
         my $cache_type = Baseliner->config->{cache};
         my $cache_defaults = {
-                fastmmap  => [ driver => 'FastMmap', root_dir   => "$ENV{BASELINER_TEMP}/bali-cache", cache_size => '120m' ],
+                fastmmap  => [ driver => 'FastMmap', root_dir   => Util->_tmp_dir . '/bali-cache', cache_size => '120m' ],
                 memory    => [ driver => 'Memory' ],
                 rawmemory => [ driver => 'RawMemory', datastore => {}, max_size => 1000 ],
                 sharedmem => [ driver => 'SharedMem', size => 1_000_000, shmkey=>93894384 ],
