@@ -947,8 +947,10 @@ if( Prefs.routing ) {
         var emsg = String.format('name: {0}\nmessage: {1}\nline: {2}\ncode: {3}\nfile: {4}\nstack: {5}', eo.name, eo.msg, eo.line, eo.code, eo.file, eo.stack );
         var msg = ""+e; 
         var main_field;
-        if( /^<!DOCTYPE html/.test(msg) ) {
+        var collapsed = !Baseliner.DEBUG;
+        if( /^(<!DOCTYPE html|<head)/.test(msg) ) {
             main_field = { xtype:'panel', html: msg, layout:'fit', region:'center', frame:false, readOnly: true };
+            collapsed = true;
         } else {
             main_field = { xtype:'textarea', border:false, region:'center', layout:'fit', frame:false,
                     readOnly: true,
@@ -962,7 +964,7 @@ if( Prefs.routing ) {
             items:[
                 main_field,
                 { xtype:'tabpanel', height: 160, region:'south', split:true, activeTab:0, margins: '2 0 0 0', collapsible: true,
-                  collapsed: !Baseliner.DEBUG,  items: [
+                  collapsed: collapsed,  items: [
                       { xtype:'textarea', title: _('Response'), value: xhr.responseText, style: Baseliner.error_win_textarea_style },
                       { xtype:'panel', title: _('Code'), items: new Baseliner.CodeMirror({ value: xhr.responseText }) },
                       { xtype:'textarea', title: _('Error'), value: emsg, style: Baseliner.error_win_textarea_style },
