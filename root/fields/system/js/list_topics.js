@@ -21,7 +21,7 @@ params:
 	var form = params.form.getForm();
 	
 	var topics = new Array();
-    var ps = meta.page_size || 20;
+    var ps = meta.page_size || 10;  // for combos, 10 is a much nicer on a combo
 	
 	if(data && data[ meta.bd_field] ){
 		var eval_topics = data[ meta.bd_field ];
@@ -35,6 +35,7 @@ params:
     var topic_box;
     var topic_box_store = new Baseliner.store.Topics({
         baseParams: { 
+            limit: ps,
             topic_child_data: true, 
             mid: data ? data.topic_mid : '', 
             show_release: 0, 
@@ -47,6 +48,8 @@ params:
             fieldLabel:_( meta.name_field ), 
             combo_store: topic_box_store,
             columns: meta.columns,
+            mode: 'remote',
+            pageSize: ps,
             name: meta.id_field, 
             height: meta.height || 250,
             value: data[ meta.id_field ]

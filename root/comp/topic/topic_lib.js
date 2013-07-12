@@ -788,7 +788,7 @@ Baseliner.TopicCombo = Ext.extend( Ext.form.ComboBox, {
     resizable: true,
     allowBlank: false,
     lazyRender: false,
-    pageSize: 20,
+    pageSize: true,
     triggerAction: 'all',
     itemSelector: 'div.search-item',
     initComponent: function(){
@@ -798,16 +798,11 @@ Baseliner.TopicCombo = Ext.extend( Ext.form.ComboBox, {
                 delete qe.combo.lastQuery;
             }
         };
-        //self.xxtpl = new Ext.XTemplate( '<tpl for="."><div class="search-item">{name} {title}</div></tpl>');
         self.tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item">',
             '<span id="boot" style="width:200px"><span class="label" ', 
             ' style="float:left;padding:2px 8px 2px 8px;background: {color}"',
             ' >{name}</span></span>',
             '&nbsp;&nbsp;<b>{title}</b></div></tpl>' );
-        //self.xdisplayFieldTpl = new Ext.XTemplate( '<tpl for=".">',
-        //    '<span id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}; cursor:pointer;"',
-        //    ' onclick="javascript:Baseliner.show_topic({mid}, \'{name}\');">{name}</span></span>',
-        //    '</tpl>' );
         Baseliner.TopicCombo.superclass.initComponent.call(this);
     }
 });
@@ -815,6 +810,7 @@ Baseliner.TopicCombo = Ext.extend( Ext.form.ComboBox, {
 Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
     height: 200,
     enableDragDrop: true,   
+    pageSize: 10, // used by the combo 
     constructor: function(c){  // needs to declare the selection model in a constructor, otherwise incompatible with DD
         var sm = new Baseliner.CheckboxSelectionModel({
             checkOnly: true,
@@ -893,6 +889,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
             store: self.combo_store, 
             width: 600,
             height: 80,
+            pageSize: self.pageSize,
             singleMode: true, 
             fieldLabel: _('Topic'),
             name: 'topic',

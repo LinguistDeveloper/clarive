@@ -217,11 +217,10 @@ sub related : Local {
             }
         
         }        
-        $start = $filter->{start} if $filter->{start};
-        $limit = $filter->{limit} if $filter->{limit};
     }
     my $from = { order_by=>['categories.name', 'mid' ], prefetch=>['categories'] };
     $from->{page} //= to_pages( start=>$start, limit=>$limit );
+    $from->{rows} = $limit;
     my $rs_topic = DB->BaliTopic->search($where, $from)->hashref;
     my @topics = map {
         if( $p->{topic_child_data} ) {
