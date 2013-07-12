@@ -448,11 +448,11 @@ sub store : Local {
     my $p = $c->req->params;
     
     # in cache ?
-    my $cache_key = Storable::freeze($p);
-    #  if( my $cc = $c->cache_get( $cache_key ) ) {   # not good during testing mode
-    #      $c->stash->{json} = $cc;
-    #      return $c->forward('View::JSON');
-    #  }
+    my $cache_key = $p;
+    if( my $cc = $c->cache_get( $cache_key ) ) {   # not good during testing mode
+        $c->stash->{json} = $cc;
+        return $c->forward('View::JSON');
+    }
     
     my $name = delete $p->{name};
     my $collection = delete $p->{collection};

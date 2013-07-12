@@ -304,6 +304,7 @@ around 'debug' => sub {
     sub cache_set { 
         my ($self,$key,$value)=@_;
         #$key = Baseliner->cache_keyify( $key );
+        Util->_debug("+++ CACHE SET: " . ( ref $key ? Util->_to_json($key) : $key ) ); 
         $ccache->set( $key, $value ) 
     }
     sub cache_get { 
@@ -314,8 +315,7 @@ around 'debug' => sub {
     }
     sub cache_remove { 
         my ($self,$key)=@_;
-        #$key = Baseliner->cache_keyify( $key );
-        $ccache->remove( $key ) 
+        ref $key eq 'Regexp' ?  $self->cache_remove_like($key) : $ccache->remove( $key ) ;
     }
     sub cache_keys { $ccache->get_keys( @_ ) }
     sub cache_compute { $ccache->compute( @_ ) }

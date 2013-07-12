@@ -469,58 +469,57 @@ sub topics_for_user {
             # _log _dump $rs_sub->as_query;
     
     # SELECT MID DATA:
-    my @mid_data = grep { defined } map { Baseliner->cache_get("topic:view:$_") } @mids; 
-    my $mids_in_cache = { map { $_->{topic_mid} => 1 } @mid_data };
-    my @db_mids = grep { !exists $mids_in_cache->{$_} } @mids; 
-    _debug( "CACHE==============================> MIDS: @mids, DBMIDS: @db_mids, MIDS_IN_CACHE: " . join',',keys %$mids_in_cache );
-    my @db_mid_data = DB->TopicView->search({ topic_mid=>{ -in =>\@db_mids  } })->hashref->all if @db_mids > 0;
-    for( @db_mid_data ) {
-        Baseliner->cache_set( "topic:view:".$_->{topic_mid}, $_ ) if length $_->{topic_mid};
-    }
-    @mid_data = ( @mid_data, @db_mid_data );
+    my %mid_data = map { $_->{topic_mid} => $_ } grep { defined } map { Baseliner->cache_get("topic:view:$_") } @mids; 
+    if( my @db_mids = grep { !exists $mid_data{$_} } @mids ) {
+        _debug( "CACHE==============================> MIDS: @mids, DBMIDS: @db_mids, MIDS_IN_CACHE: " . join',',keys %mid_data );
+        my @db_mid_data = DB->TopicView->search({ topic_mid=>{ -in =>\@db_mids  } })->hashref->all if @db_mids > 0;
+        
+        # Controlar que categorias son editables.
+        my %categories_edit = map { lc $_->{name} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $username, type => 'edit' );
+        
+        for (@db_mid_data) {
+            my $mid = $_->{topic_mid};
+            $mid_data{ $mid } = $_ unless exists $mid_data{ $_->{topic_mid} };
+            $mid_data{ $mid }{is_closed} = defined $_->{status} && $_->{status} eq 'C' ? \1 : \0;
+            $mid_data{ $mid }{sw_edit} = 1 if exists $categories_edit{ lc $_->{category_name}};
 
-    my @rows;
-    my %id_label;
-    my (%cis_out, %cis_in );
-    my (%references, %referenced_in );
-    my %projects;
-    my %projects_report;
-    my %assignee;
-    my %mid_data;
-    
-    # Controlar que categorias son editables.
-    my %categories_edit = map { lc $_->{name} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $username, type => 'edit' );
-    
-    
-    for (@mid_data) {
-        my $mid = $_->{topic_mid};
-        $mid_data{ $mid } = $_ unless exists $mid_data{ $_->{topic_mid} };
-        $mid_data{ $mid }{is_closed} = defined $_->{status} && $_->{status} eq 'C' ? \1 : \0;
-        $mid_data{ $mid }{sw_edit} = 1 if exists $categories_edit{ lc $_->{category_name}};
-        $_->{label_id}
-            ? $id_label{ $mid }{ $_->{label_id} . ";" . $_->{label_name} . ";" . $_->{label_color} } = ()
+        }
+        for my $db_mid ( @db_mids ) {
+            Baseliner->cache_set( "topic:view:$db_mid", $mid_data{$db_mid} );
+        }
+    } else {
+        _debug "CACHE =========> ALL TopicView data MIDS in CACHE";
+    }
+
+    # fill out hash indexes
+    my (%id_label, %projects, %projects_report, %assignee, %cis_out, %cis_in, %references, %referenced_in );
+    while( my($mid,$v) = each %mid_data ) {
+        $v->{label_id}
+            ? $id_label{ $mid }{ $v->{label_id} . ";" . $v->{label_name} . ";" . $v->{label_color} } = ()
             : $id_label{ $mid } = {};
-        if( $_->{project_id} ) {
-            $projects{ $mid }{ $_->{project_id} . ";" . $_->{project_name} } = ();
-            $projects_report{ $mid }{ $_->{project_name} } = ();
+        if( $v->{project_id} ) {
+            $projects{ $mid }{ $v->{project_id} . ";" . $v->{project_name} } = ();
+            $projects_report{ $mid }{ $v->{project_name} } = ();
         } else {
             $projects{ $mid } = {};
             $projects_report{ $mid } = {};
         }
-        if( $_->{cis_out} ) {
-            $cis_out{ $mid }{ $_->{cis_out} } = ();
+        if( $v->{cis_out} ) {
+            $cis_out{ $mid }{ $v->{cis_out} } = ();
         }
-        if( $_->{cis_in} ) {
-            $cis_in{ $mid }{ $_->{cis_in} } = ();
+        if( $v->{cis_in} ) {
+            $cis_in{ $mid }{ $v->{cis_in} } = ();
         }
-        if( $_->{references} ) {
-            $references{ $mid }{ $_->{references} } = ();
+        if( $v->{references} ) {
+            $references{ $mid }{ $v->{references} } = ();
         }
-        if( $_->{referenced_in} ) {
-            $referenced_in{ $mid }{ $_->{referenced_in} } = ();
+        if( $v->{referenced_in} ) {
+            $referenced_in{ $mid }{ $v->{referenced_in} } = ();
         }
-        $assignee{ $mid }{ $_->{assignee} } = () if defined $_->{assignee};
+        $assignee{ $mid }{ $v->{assignee} } = () if defined $v->{assignee};
     }
+
+    my @rows;
     for my $mid (@mids) {
         my $data = $mid_data{$mid};
         $data->{calevent} = {
@@ -1166,8 +1165,8 @@ sub get_files{
 sub save_data {
     my ($self, $meta, $topic_mid, $data, %opts ) = @_;
 
-    Baseliner->cache_remove( "topic:view:$topic_mid") if length $topic_mid;
-    Baseliner->cache_remove( "topic:data:$topic_mid") if length $topic_mid;
+    Baseliner->cache_remove( qr/topic:view:$topic_mid/ ) if length $topic_mid;
+    Baseliner->cache_remove( qr/topic:data:$topic_mid/ ) if length $topic_mid;
     
     my @std_fields =
         map { +{ name => $_->{id_field}, column => $_->{bd_field}, method => $_->{set_method}, relation => $_->{relation} } }
