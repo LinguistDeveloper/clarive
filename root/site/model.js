@@ -69,6 +69,34 @@ Baseliner.model.Projects = function(c) {
 };
 Ext.extend( Baseliner.model.Projects, Ext.ux.form.SuperBoxSelect );
 
+Baseliner.PagingProjects = Ext.extend( Ext.ux.form.SuperBoxSelect, {
+    minChars: 2,
+    pageSize: ps,
+    typeAhead: false,
+    loadingText: _('Searching...'),
+    resizable: true,
+    allowBlank: true,
+    lazyRender: false,
+    triggerAction: 'all',
+    msgTarget: 'under',
+    emptyText: _('Select a project'),
+    mode: 'remote',
+    fieldLabel: _('Projects'),
+    displayField: 'name',
+    name: 'projects',
+    hiddenName: 'projects',
+    valueField: 'mid',
+    extraItemCls: 'x-tag',
+    queryValuesDelimiter: ' ', // important, so that the query parameter gets all mids in a searcheable manner, otherwise multivalues do not load
+    initComponent: function(){
+        var self = this;
+        if( !self.store ) self.store = Baseliner.store.UserProjects(Ext.apply({},self.store_config));
+        self.tpl = self.tpl || new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><strong>{name}</strong> {description}</span></div></tpl>' );
+        self.displayFieldTpl = self.displayFieldTpl || new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
+        Baseliner.PagingProjects.superclass.initComponent.call(this);
+    }
+});
+
 
 Baseliner.model.Users = function(c) {
     var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}"><span id="boot" style="background: transparent"><strong>{username}</strong> {realname}</span></div></tpl>' );

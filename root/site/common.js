@@ -207,6 +207,13 @@ Baseliner.error_msg = function( msg ){
 
 Baseliner.message = function(title, msg, config){
     if( ! config ) config = {};
+    if( !msg ) {
+        msg = title;
+        title = _('Notification');
+    }
+    if( !msg ) {
+        msg = _('(empty message)');
+    }
     
     msg = Baseliner.error_msg( msg );
     var id = $.gritter.add( Ext.apply({
