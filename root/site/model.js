@@ -71,7 +71,7 @@ Ext.extend( Baseliner.model.Projects, Ext.ux.form.SuperBoxSelect );
 
 Baseliner.PagingProjects = Ext.extend( Ext.ux.form.SuperBoxSelect, {
     minChars: 2,
-    pageSize: ps,
+    pageSize: 20,
     typeAhead: false,
     loadingText: _('Searching...'),
     resizable: true,
@@ -96,7 +96,6 @@ Baseliner.PagingProjects = Ext.extend( Ext.ux.form.SuperBoxSelect, {
         Baseliner.PagingProjects.superclass.initComponent.call(this);
     }
 });
-
 
 Baseliner.model.Users = function(c) {
     var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}"><span id="boot" style="background: transparent"><strong>{username}</strong> {realname}</span></div></tpl>' );
