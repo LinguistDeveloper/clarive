@@ -804,6 +804,7 @@ sub json_tree : Local {
     my $p = $c->req->params;
     my $mids = delete $p->{mid} || delete $p->{mids};
     my $direction = delete $p->{direction} || 'related';
+    $p->{limit} //= 40;  
     my $k = 1;
     local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
     $c->stash->{json} = try {
