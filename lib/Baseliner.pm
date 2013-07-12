@@ -323,6 +323,10 @@ around 'debug' => sub {
     sub cache_remove_like { my $re=$_[1]; Baseliner->cache_remove($_) for Baseliner->cache_keys_like($re); } 
     sub cache_keys_like { my $re=$_[1]; grep /$re/ => Baseliner->cache_keys; }
 
+    if( Baseliner->debug ) {
+        Baseliner->cache_clear;  # clear cache on restart
+    }
+
     # Beep
     my $bali_env = $ENV{CATALYST_CONFIG_LOCAL_SUFFIX} // $ENV{BASELINER_CONFIG_LOCAL_SUFFIX};
     print STDERR "Baseliner $Baseliner::VERSION_STRING. Startup time: " . tv_interval($t0) . "s.\n";
