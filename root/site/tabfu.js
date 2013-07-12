@@ -948,7 +948,7 @@ if( Prefs.routing ) {
         var msg = ""+e; 
         var main_field;
         var collapsed = !Baseliner.DEBUG;
-        if( /^(<!DOCTYPE html|<head)/.test(msg) ) {
+        if( /^(<!DOCTYPE html|<html)/.test(msg) ) {
             main_field = { xtype:'panel', html: msg, layout:'fit', region:'center', frame:false, readOnly: true };
             collapsed = true;
         } else {
