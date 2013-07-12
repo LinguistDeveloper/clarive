@@ -343,7 +343,7 @@ sub related_cis {
     # in cache ?
     my $cache_key = [ "ci:$mid:", \%opts ];
     if( my $cached = Baseliner->cache_get( $cache_key ) ) {
-        return $cached;
+        return @$cached if ref $cached eq 'ARRAY';
     }
     my $where = {};
     my $edge = $opts{edge} // '';

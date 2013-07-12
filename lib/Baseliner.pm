@@ -303,14 +303,12 @@ around 'debug' => sub {
     }
     sub cache_set { 
         my ($self,$key,$value)=@_;
-        #$key = Baseliner->cache_keyify( $key );
         Util->_debug("+++ CACHE SET: " . ( ref $key ? Util->_to_json($key) : $key ) ); 
         $ccache->set( $key, $value ) 
     }
     sub cache_get { 
         my ($self,$key)=@_;
-        #$key = Baseliner->cache_keyify( $key );
-        #Util->_debug("CACHE GET: " . $self->cache_keyify($key) ); 
+        Util->_debug("--- CACHE GET: " . ( ref $key ? Util->_to_json($key) : $key ) ); 
         $ccache->get( $key ) 
     }
     sub cache_remove { 

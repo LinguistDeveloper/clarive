@@ -477,46 +477,42 @@ sub topics_for_user {
         # Controlar que categorias son editables.
         my %categories_edit = map { lc $_->{name} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $username, type => 'edit' );
         
-        for (@db_mid_data) {
-            my $mid = $_->{topic_mid};
-            $mid_data{ $mid } = $_ unless exists $mid_data{ $_->{topic_mid} };
-            $mid_data{ $mid }{is_closed} = defined $_->{status} && $_->{status} eq 'C' ? \1 : \0;
-            $mid_data{ $mid }{sw_edit} = 1 if exists $categories_edit{ lc $_->{category_name}};
+        for my $row (@db_mid_data) {
+            my $mid = $row->{topic_mid};
+            $mid_data{ $mid } = $row unless exists $mid_data{ $row->{topic_mid} };
+            $mid_data{ $mid }{is_closed} = defined $row->{status} && $row->{status} eq 'C' ? \1 : \0;
+            $mid_data{ $mid }{sw_edit} = 1 if exists $categories_edit{ lc $row->{category_name}};
 
+            # fill out hash indexes
+            $row->{label_id}
+                ? $mid_data{$mid}{group_id_label}{ $row->{label_id} . ";" . $row->{label_name} . ";" . $row->{label_color} } = ()
+                : $mid_data{$mid}{group_id_label} = {};
+            if( $row->{project_id} ) {
+                $mid_data{$mid}{group_projects}{ $row->{project_id} . ";" . $row->{project_name} } = ();
+                $mid_data{$mid}{group_projects_report}{ $row->{project_name} } = ();
+            } else {
+                $mid_data{$mid}{group_projects} = {};
+                $mid_data{$mid}{group_projects_report} = {};
+            }
+            if( $row->{cis_out} ) {
+                $mid_data{$mid}{group_cis_out}{ $row->{cis_out} } = ();
+            }
+            if( $row->{cis_in} ) {
+                $mid_data{$mid}{group_cis_in}{ $row->{cis_in} } = ();
+            }
+            if( $row->{references} ) {
+                $mid_data{$mid}{group_references}{ $row->{references} } = ();
+            }
+            if( $row->{referenced_in} ) {
+                $mid_data{$mid}{group_referenced_in}{ $row->{referenced_in} } = ();
+            }
+            $mid_data{$mid}{group_assignee}{ $row->{assignee} } = () if defined $row->{assignee};
         }
         for my $db_mid ( @db_mids ) {
             Baseliner->cache_set( "topic:view:$db_mid", $mid_data{$db_mid} );
         }
     } else {
         _debug "CACHE =========> ALL TopicView data MIDS in CACHE";
-    }
-
-    # fill out hash indexes
-    my (%id_label, %projects, %projects_report, %assignee, %cis_out, %cis_in, %references, %referenced_in );
-    while( my($mid,$v) = each %mid_data ) {
-        $v->{label_id}
-            ? $id_label{ $mid }{ $v->{label_id} . ";" . $v->{label_name} . ";" . $v->{label_color} } = ()
-            : $id_label{ $mid } = {};
-        if( $v->{project_id} ) {
-            $projects{ $mid }{ $v->{project_id} . ";" . $v->{project_name} } = ();
-            $projects_report{ $mid }{ $v->{project_name} } = ();
-        } else {
-            $projects{ $mid } = {};
-            $projects_report{ $mid } = {};
-        }
-        if( $v->{cis_out} ) {
-            $cis_out{ $mid }{ $v->{cis_out} } = ();
-        }
-        if( $v->{cis_in} ) {
-            $cis_in{ $mid }{ $v->{cis_in} } = ();
-        }
-        if( $v->{references} ) {
-            $references{ $mid }{ $v->{references} } = ();
-        }
-        if( $v->{referenced_in} ) {
-            $referenced_in{ $mid }{ $v->{referenced_in} } = ();
-        }
-        $assignee{ $mid }{ $v->{assignee} } = () if defined $v->{assignee};
     }
 
     my @rows;
@@ -530,18 +526,13 @@ sub topics_for_user {
         };
         $data->{category_status_name} = _loc($data->{category_status_name});
         $data->{category_name} = _loc($data->{category_name});
+        map { $data->{$_} = [ keys %{ delete($data->{"group_$_"}) || {} } ] } qw/labels projects cis_out cis_in references referenced_in assignee/;
+        my @projects_report = keys %{ delete $data->{projects_report} || {} };
         push @rows, {
             %$data,
             topic_name => sprintf("%s #%d", $data->{category_name}, $mid),
-            labels   => [ keys %{ $id_label{$mid} || {} } ],
-            projects => [ keys %{ $projects{$mid} || {} } ],
-            cis_out => [ keys %{ $cis_out{$mid} || {} } ],
-            cis_in => [ keys %{ $cis_in{$mid} || {} } ],
-            references => [ keys %{ $references{$mid} || {} } ],
-            referenced_in => [ keys %{ $referenced_in{$mid} || {} } ],
-            assignee => [ keys %{ $assignee{$mid} || {} } ],
             report_data => {
-                projects => join( ', ', keys %{ $projects_report{$mid} || {} } )
+                projects => join( ', ', @projects_report )
             }
         };
     }
