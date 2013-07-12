@@ -1131,8 +1131,7 @@ sub get_topics{
     @topics = Baseliner->model('Topic')->append_category( @topics );
     if( $opts{topic_child_data} ) {
         @topics = map {
-            #my $meta = $self->get_meta( $_->{mid} );
-            my $data = $self->get_data( undef, $_->{mid} ) ;
+            my $data = $self->get_data( undef, $_->{mid}, with_meta=>1 ) ;
             $_->{description} //= $data->{description};
             $_->{name_status} //= $data->{name_status};
             $_->{data} //= $data;
@@ -1864,3 +1863,5 @@ sub user_workflow {
 }
 
 1;
+
+

@@ -467,7 +467,8 @@ sub related {
     # filter before
     @cis = $self->_filter_cis( %opts, _cis=>\@cis ) if $opts{filter_early};
     # now delve deeper if needed
-    if( $depth<0 || ( $depth>0 && --$depth ) ) {
+    $depth --;
+    if( $depth<0 || $depth>0 ) {
         my $path = [ _array $opts{path} ];  # need another ref in order to preserve opts{path}
         if( $opts{mode} eq 'tree' ) {
             for my $ci( @cis ) {
