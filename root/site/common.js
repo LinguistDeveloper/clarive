@@ -667,9 +667,11 @@ Baseliner.ArrayGrid = Ext.extend( Ext.grid.EditorGridPanel, {
                     }
                     // save 
                     self.fieldset.add( self.fdata_factory( self.value ) );
+                    self.raw_value =  self.value;
                 } else if( self.value.length > 0 ) {  // just one element
                     self.push_item( 0, self.name, self.value ); 
                     self.fieldset.add( self.fdata_factory([ self.value ]) );
+                    self.raw_value =  [self.value];
                 }
             } catch(e) {}
         }
@@ -748,6 +750,10 @@ Baseliner.ArrayGrid = Ext.extend( Ext.grid.EditorGridPanel, {
         self.fieldset.removeAll();
         self.fieldset.add( self.fdata_factory( arr ) );
         self.fieldset.doLayout();
+        self.raw_value = arr;
+    }, 
+    getValue : function() {
+        return self.raw_value;
     }
 });
 
@@ -2819,3 +2825,17 @@ Baseliner.HiddenGridField = Ext.extend( Ext.form.Hidden, {
     }
 });
 
+Baseliner.field_label_top = function( label, hidden ) {
+    return [
+		{
+		  xtype: 'box',
+		  autoEl: {cn: '<br>' + _(label) + ':'},
+		  hidden: hidden!=undefined ? hidden : false
+		},
+		{
+		  xtype: 'box',
+		  autoEl: {cn: '<br>'},
+		  hidden: hidden!=undefined ? hidden : false
+		}
+    ]
+};

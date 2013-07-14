@@ -112,206 +112,207 @@ Baseliner.CLEditorField = Ext.extend(Ext.form.TextArea, {
         this.cleditor.focus();  // focus con cleditor instead of textarea
     }
 });
-    /*
-    var groupRow = [
-		{colspan: 2},
-        {header: 'Datos Entrada', colspan: 2, align: 'center'},
-		{colspan: 2}
-    ];
 
-    var group = new Ext.ux.grid.ColumnHeaderGroup({
-        rows: [groupRow]
-    });
-    */
-    
-    var render_checkbox = function(v){
-        return v 
-            ? '<img src="/static/images/icons/checkbox.png">'
-            : '<img src="/static/images/icons/delete.gif">';
-    }
-    
-    var sm = new Baseliner.RowSelectionModel({ singleSelect: true }); 
-    //var sm = new Baseliner.CheckboxSelectionModel({ checkOnly: true, singleSelect: false });
-    
-	
-    var cols, fields;
-    var cols_templates = {
-          id : function(){ return {width: 10 } },
-          index : function(){ return {width: 10, renderer:function(v,m,r,i){return i+1} } },
-          htmleditor: function(){ return { editor: new Ext.form.HtmlEditor(), default_value:'' } },
-          cleditor: function(){ return { editor: new Baseliner.CLEditorField(), default_value:'' } },
-          textfield : function(){ return { width: 100, editor: new Ext.form.TextField({}), default_value:'' } },
-          checkbox  : function(){ return { align: 'center', width: 10, editor: new Ext.form.Checkbox({}), default_value:false, renderer: render_checkbox } },
-          textarea  : function(){ return { editor: new Ext.form.TextArea({}), default_value:'', renderer: Baseliner.render_wrap } }
-    };
-    if( meta.columns != undefined ) {
-        cols=[]; fields=[];
-        var cc = Ext.isArray( meta.columns ) ? meta.columns : meta.columns.split(';');
-        Ext.each( cc, function(col){
-            var ct;
-            if( Ext.isObject( col ) ) {
-                ct = col;
-            } else {
-                var col_s = col.split(',');
-                if( col_s[0] == undefined ) return;
-                ct = cols_templates[ col_s[1] ] || cols_templates['textarea'];
-                ct = ct();
-                ct.header = col_s[0];
-                if( col_s[2] != undefined ) ct.width = col_s[2];
-                ct.sortable = true;
-                if( col_s[3] ) ct.default_value = col_s[3];
-                ct.dataIndex = Baseliner.name_to_id( col_s[0] );
-            }
-            cols.push( ct );
-            fields.push( ct.dataIndex );
+Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
+    width: '100%',
+    height: 250,
+    enableDragDrop: true,
+    initComponent: function(){
+        var self = this;
+        /*
+        var groupRow = [
+            {colspan: 2},
+            {header: 'Datos Entrada', colspan: 2, align: 'center'},
+            {colspan: 2}
+        ];
+
+        var group = new Ext.ux.grid.ColumnHeaderGroup({
+            rows: [groupRow]
         });
-    } else {
-        cols = [
-          {dataIndex: 'description', header: _('Description'), width: 100, editor: new Ext.form.TextArea({}) }
-        ];
-        fields = [
-            {name: 'description'}
-        ];
-    }
-    
-    // default record for adding
-    var rec_default = {};
-    Ext.each( cols, function(col){
-        rec_default[ col.dataIndex ] = col.default_value || '';
-    });
-	
-	var reader = new Ext.data.JsonReader({
-		totalProperty: 'total',
-		successProperty: 'success',
-		idProperty: 'id',
-		fields: fields
-	});
-	
-	var records = data && data[ meta.bd_field ]? data[ meta.bd_field ] : '[]';
-
-	var store = new Ext.data.Store({
-		reader: reader,
-		data:  records ? Ext.util.JSON.decode(records) : []
-	});
-	var field_hidden = new Baseliner.HiddenGridField({ name: meta.id_field, value: records, store: store });
-     	
-    var button_add = new Baseliner.Grid.Buttons.Add({
-		text:'',
-        tooltip: _('Create'),
-        disabled: false,
-        handler: function() {
-			var u = new grid.store.recordType(rec_default);
-			var index = grid.store.getCount();
-			editor.stopEditing();
-			grid.store.insert(index, u);
-			grid.getSelectionModel().selectRow(index);			
-			editor.startEditing(index);
+        */
+        
+        var render_checkbox = function(v){
+            return v 
+                ? '<img src="/static/images/icons/checkbox.png">'
+                : '<img src="/static/images/icons/delete.gif">';
         }
-    });
-	
-    var button_delete = new Baseliner.Grid.Buttons.Delete({
-        text: '',
-        tooltip: _('Delete'),
-        cls: 'x-btn-icon',	
-        disabled: false,		
-        handler: function() {
-            var sm = grid.getSelectionModel();
-            Ext.each( sm.getSelections(), function(r) {
-				var index =store.indexOf(r);
-                grid.store.remove( r );
-				var rows = Ext.util.JSON.decode( field_hidden.getValue());
-				rows.splice(index, 1);
-				field_hidden.setValue(Ext.util.JSON.encode( rows ));
-				grid.store.commitChanges();
-				grid.getView().refresh();
+        
+        self.sm = new Baseliner.RowSelectionModel({ singleSelect: true }); 
+        //var sm = new Baseliner.CheckboxSelectionModel({ checkOnly: true, singleSelect: false });
+        
+        var cols, fields;
+        var cols_templates = {
+              id : function(){ return {width: 10 } },
+              index : function(){ return {width: 10, renderer:function(v,m,r,i){return i+1} } },
+              htmleditor: function(){ return { editor: new Ext.form.HtmlEditor(), default_value:'' } },
+              cleditor: function(){ return { editor: new Baseliner.CLEditorField(), default_value:'' } },
+              textfield : function(){ return { width: 100, editor: new Ext.form.TextField({}), default_value:'' } },
+              checkbox  : function(){ return { align: 'center', width: 10, editor: new Ext.form.Checkbox({}), default_value:false, renderer: render_checkbox } },
+              textarea  : function(){ return { editor: new Ext.form.TextArea({}), default_value:'', renderer: Baseliner.render_wrap } }
+        };
+        if( self.columns != undefined ) {
+            cols=[]; fields=[];
+            var cc = Ext.isArray( self.columns ) ? self.columns : self.columns.split(';');
+            Ext.each( cc, function(col){
+                var ct;
+                if( Ext.isObject( col ) ) {
+                    ct = col;
+                } else {
+                    var col_s = col.split(',');
+                    if( col_s[0] == undefined ) return;
+                    ct = cols_templates[ col_s[1] ] || cols_templates['textarea'];
+                    ct = ct();
+                    ct.header = col_s[0];
+                    if( col_s[2] != undefined ) ct.width = col_s[2];
+                    ct.sortable = true;
+                    if( col_s[3] ) ct.default_value = col_s[3];
+                    ct.dataIndex = Baseliner.name_to_id( col_s[0] );
+                }
+                cols.push( ct );
+                fields.push( ct.dataIndex );
             });
+        } else {
+            cols = [
+              {dataIndex: 'description', header: _('Description'), width: 100, editor: new Ext.form.TextArea({}) }
+            ];
+            fields = [
+                {name: 'description'}
+            ];
         }
-    });
-	
-	
-    // use RowEditor for editing
-	
-    var editor = new Ext.ux.grid.RowEditor({
-        clicksToMoveEditor: 1,
-        autoCancel: false,
-        enableDragDrop: true, 
-		listeners: {
-			afteredit: function(roweditor, changes, record, rowIndex){
-				roweditor.grid.store.commitChanges();
-				delete record.data.id;
-				var rows = Ext.util.JSON.decode( field_hidden.getValue());
-                if( !Ext.isArray( rows ) ) rows = [];
-				rows[rowIndex] = record.data;
-				field_hidden.setRawValue(Ext.util.JSON.encode( rows ));
-			}
-		}		
-    });	
-	
-    var grid = new Ext.grid.GridPanel({
+        
+        // default record for adding
+        var rec_default = {};
+        Ext.each( cols, function(col){
+            rec_default[ col.dataIndex ] = col.default_value || '';
+        });
+        
+        var reader = new Ext.data.JsonReader({
+            totalProperty: 'total',
+            successProperty: 'success',
+            idProperty: 'id',
+            fields: fields
+        });
+        
+        self.store = new Ext.data.Store({
+            reader: reader,
+            data: self.records 
+                ? Ext.isString(self.records) ? Ext.util.JSON.decode(self.records) : self.records 
+                : []
+        });
+        var field_hidden = new Baseliner.HiddenGridField({ name: self.id_field, value: records, store: self.store });
+            
+        var button_add = new Baseliner.Grid.Buttons.Add({
+            text:'',
+            tooltip: _('Create'),
+            disabled: false,
+            handler: function() {
+                var u = new self.store.recordType(rec_default);
+                var index = self.store.getCount();
+                editor.stopEditing();
+                self.store.insert(index, u);
+                self.getSelectionModel().selectRow(index);			
+                editor.startEditing(index);
+            }
+        });
+        
+        var button_delete = new Baseliner.Grid.Buttons.Delete({
+            text: '',
+            tooltip: _('Delete'),
+            cls: 'x-btn-icon',	
+            disabled: false,		
+            handler: function() {
+                var sm = self.getSelectionModel();
+                Ext.each( sm.getSelections(), function(r) {
+                    var index = self.store.indexOf(r);
+                    self.store.remove( r );
+                    var rows = Ext.util.JSON.decode( field_hidden.getValue());
+                    rows.splice(index, 1);
+                    field_hidden.setValue(Ext.util.JSON.encode( rows ));
+                    self.store.commitChanges();
+                    self.getView().refresh();
+                });
+            }
+        });
+        
+        // use RowEditor for editing
+        var editor = new Ext.ux.grid.RowEditor({
+            clicksToMoveEditor: 1,
+            autoCancel: false,
+            enableDragDrop: true, 
+            listeners: {
+                afteredit: function(roweditor, changes, record, rowIndex){
+                    self.store.commitChanges();
+                    delete record.data.id;
+                    var rows = Ext.util.JSON.decode(field_hidden.getValue());
+                    if( !Ext.isArray( rows ) ) rows = [];
+                    rows[rowIndex] = record.data;
+                    field_hidden.setRawValue(Ext.util.JSON.encode( rows ));
+                }
+            }		
+        });	
+        
+        self.columns = cols;
+        self.ddGroup = 'grid_editor_' + Ext.id();
+        self.plugins = [ editor ];
+        self.tbar = [
+            field_hidden,
+            button_add,
+            '-',
+            button_delete
+        ];
+
+        Baseliner.GridEditor.superclass.initComponent.call(this);
+
+        self.on( 'afterrender', function(){
+            //self.ddGroup = 'bali-grid-html-' + self.id;
+            var ddrow = new Baseliner.DropTarget(self.container, {
+                comp: self,
+                ddGroup : self.ddGroup,
+                copy: false,
+                notifyDrop : function(dd, e, data){
+                    var ds = self.store;
+                    var sm = self.getSelectionModel();
+                    var rows_grid = sm.getSelections();
+                    if(dd.getDragData(e)) {
+                        var rows = Ext.util.JSON.decode( field_hidden.getValue());
+                        var cindex=dd.getDragData(e).rowIndex;
+                        if(typeof(cindex) != "undefined") {
+                            for(i = 0; i <  rows_grid.length; i++) {
+                                var index = ds.indexOf(ds.getById(rows_grid[i].id));
+                                ds.remove(ds.getById(rows_grid[i].id));
+                                delete rows[index];
+                                field_hidden.setRawValue(Ext.util.JSON.encode( rows ));
+                                rows = Ext.util.JSON.decode( field_hidden.getValue());
+                                rows.splice(cindex, 0, rows_grid[i].data);
+                                field_hidden.setRawValue(Ext.util.JSON.encode( rows ));	
+                            }
+                            ds.insert(cindex,data.selections);
+                            sm.clearSelections();
+                        }
+                        ds.commitChanges();
+                        self.getView().refresh();	
+                    }
+                }
+            }); 
+        });
+    }
+});
+
+    var records = data && data[ meta.bd_field ]? data[ meta.bd_field ] : '[]';
+    var grid = new Baseliner.GridEditor({
         width: meta.width || '100%',
         height: meta.height || 300,
-		store: store,
-        columns: cols,
-        sm: sm,
-        enableDragDrop: true,
-		ddGroup : 'grid_editor_' + Ext.id(), 
+        id_field: meta.id_field,
+        bd_field: meta.bd_field,
+        records: records, 
+        columns: meta.columns,
         viewConfig: {
             forceFit: meta.forceFit || true
         },
-        plugins: [ editor],
-        tbar: [
-			button_add,
-			'-',
-			button_delete
-		]
-    });
-    var self = grid;
- 
-    grid.on( 'afterrender', function(){
-        //self.ddGroup = 'bali-grid-html-' + self.id;
-        var ddrow = new Baseliner.DropTarget(self.container, {
-            comp: self,
-            ddGroup : self.ddGroup,
-            copy: false,
-            notifyDrop : function(dd, e, data){
-                var ds = self.store;
-                var sm = self.getSelectionModel();
-                var rows_grid = sm.getSelections();
-                if(dd.getDragData(e)) {
-					var rows = Ext.util.JSON.decode( field_hidden.getValue());
-                    var cindex=dd.getDragData(e).rowIndex;
-                    if(typeof(cindex) != "undefined") {
-                        for(i = 0; i <  rows_grid.length; i++) {
-							var index = ds.indexOf(ds.getById(rows_grid[i].id));
-                            ds.remove(ds.getById(rows_grid[i].id));
-							delete rows[index];
-							field_hidden.setRawValue(Ext.util.JSON.encode( rows ));
-							rows = Ext.util.JSON.decode( field_hidden.getValue());
-							rows.splice(cindex, 0, rows_grid[i].data);
-							field_hidden.setRawValue(Ext.util.JSON.encode( rows ));	
-                        }
-                        ds.insert(cindex,data.selections);
-                        sm.clearSelections();
-                    }
-					ds.commitChanges();
-					self.getView().refresh();	
-                }
-            }
-        }); 
     });
 	return [
-        field_hidden,
-		{
-		  xtype: 'box',
-		  autoEl: {cn: '<br>' + _(meta.name_field) + ':'},
-		  hidden: meta ? (meta.hidden ? meta.hidden : false): true
-		},
-		{
-		  xtype: 'box',
-		  autoEl: {cn: '<br>'},
-		  hidden: meta ? (meta.hidden ? meta.hidden : false): true		  
-		},				
-		grid
+        Baseliner.field_label_top( meta.name_field, meta.hidden ),
+        grid
     ]
 })
 
