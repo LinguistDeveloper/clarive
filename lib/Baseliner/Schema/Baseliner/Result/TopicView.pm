@@ -28,7 +28,7 @@ __PACKAGE__->result_source_instance->view_definition(q{
             S.NAME CATEGORY_STATUS_NAME,
             S.SEQ CATEGORY_STATUS_SEQ,
             S.TYPE CATEGORY_STATUS_TYPE,
-            ID_PRIORITY AS PRIORITY_ID,
+            T.ID_PRIORITY AS PRIORITY_ID,
             TP.NAME PRIORITY_NAME,
             TP.RESPONSE_TIME_MIN,
             TP.EXPR_RESPONSE_TIME,

@@ -393,9 +393,6 @@ sub topics_for_user {
                 $where->{'category_status_id'} = \@in;
             }
         }
-
-        #$where->{'category_status_id'} = \@statuses;
-        
     }else {
         if (!$p->{clear_filter}){
             ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
@@ -404,7 +401,7 @@ sub topics_for_user {
                 $self->user_workflow( $username );
     
             my @status_ids = keys %tmp;
-            $where->{'category_status_id'} = { -in=>\@status_ids };
+            $where->{'category_status_id'} = { -in=>\@status_ids } if @status_ids > 0;
             
             #$where->{'category_status_type'} = {'!=', 'F'};
             #Nueva funcionalidad (todos los tipos de estado que enpiezan por F son estado finalizado)
@@ -1458,8 +1455,9 @@ sub set_topics {
             $rs_old_topics->delete();
         }
         
+        my $rel_seq = 1;  # oracle may resolve this with a seq, but sqlite doesn't 
         for (@new_topics){
-            DB->BaliMasterRel->update_or_create({from_mid => $rs_topic->mid, to_mid => $_, rel_type =>'topic_topic', rel_field => $id_field });
+            DB->BaliMasterRel->update_or_create({from_mid => $rs_topic->mid, to_mid => $_, rel_type =>'topic_topic', rel_field => $id_field, rel_seq=>$rel_seq++ });
         }
         
         my $topics = join(',', @new_topics);

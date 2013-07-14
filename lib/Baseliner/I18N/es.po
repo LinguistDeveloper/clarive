@@ -43,7 +43,7 @@ msgid "Loading Error"
 msgstr "Error de Carga"
 
 msgid "No items found"
-msgstr "No se han encotrado datos"
+msgstr "No se han encontrado datos"
 
 msgid "Select field %1 first or reload"
 msgstr "Seleccione el campo %1 primero o recargue"
