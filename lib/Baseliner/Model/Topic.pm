@@ -245,7 +245,7 @@ sub topics_for_user {
         moniker
         cis_out
         cis_in
-        references
+        references_out
         referenced_in
         file_name
         description
@@ -500,8 +500,8 @@ sub topics_for_user {
             if( $row->{cis_in} ) {
                 $mid_data{$mid}{group_cis_in}{ $row->{cis_in} } = ();
             }
-            if( $row->{references} ) {
-                $mid_data{$mid}{group_references}{ $row->{references} } = ();
+            if( $row->{references_out} ) {
+                $mid_data{$mid}{group_references_out}{ $row->{references_out} } = ();
             }
             if( $row->{referenced_in} ) {
                 $mid_data{$mid}{group_referenced_in}{ $row->{referenced_in} } = ();
@@ -526,7 +526,7 @@ sub topics_for_user {
         };
         $data->{category_status_name} = _loc($data->{category_status_name});
         $data->{category_name} = _loc($data->{category_name});
-        map { $data->{$_} = [ keys %{ delete($data->{"group_$_"}) || {} } ] } qw/labels projects cis_out cis_in references referenced_in assignee/;
+        map { $data->{$_} = [ keys %{ delete($data->{"group_$_"}) || {} } ] } qw/labels projects cis_out cis_in references_out referenced_in assignee/;
         my @projects_report = keys %{ delete $data->{projects_report} || {} };
         push @rows, {
             %$data,
@@ -1819,7 +1819,7 @@ sub search_query {
             qw/category_name projects 
                 assignee file_name category_status_name 
                 labels modified_on modified_by created_on created_by 
-                references referenced_in cis_out cis_in/;  # consider put references in separate, lower priority field
+                references_out referenced_in cis_out cis_in/;  # consider put references in separate, lower priority field
         push @text, _loc('Release') if $r->{is_release};
         push @text, _loc('Changeset') if $r->{is_changeset};
         my $info = join(', ',@text);

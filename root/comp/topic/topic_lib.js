@@ -253,7 +253,7 @@ Baseliner.Topic.StoreList = Ext.extend( Baseliner.JsonStore, {
                 {  name: 'moniker' },
                 {  name: 'cis_in' },
                 {  name: 'cis_out' },
-                {  name: 'references' },
+                {  name: 'references_out' },
                 {  name: 'referenced_in' },
                 {  name: 'sw_edit'},
                 {  name: 'modified_on', type: 'date', dateFormat: 'c' },        
