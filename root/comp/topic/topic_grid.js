@@ -543,7 +543,7 @@
             actions_html.push("</span>");           
         }
         if( Ext.isArray( rec.data.referenced_in ) && rec.data.referenced_in.length > 0 ) {
-            if( swGo )  actions_html.push( '<br>' );
+            if( swGo && !btn_mini.pressed )  actions_html.push( '<br>' );
             swGo = true;
             actions_html.push( ref_html( 'in', rec.data.referenced_in ) );
         }
@@ -575,7 +575,7 @@
     };
 
     var render_progress = function(value,metadata,rec,rowIndex,colIndex,store){
-        if( value == 0 ) return '';
+        if( value==undefined || value == 0 ) return '';
         if( rec.data.category_status_type == 'I'  ) return '';  // no progress if its in a initial state
 
         var cls = ( value < 20 ? 'danger' : ( value < 40 ? 'warning' : ( value < 80 ? 'info' : 'success' ) ) );

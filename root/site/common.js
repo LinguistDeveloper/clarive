@@ -2662,6 +2662,7 @@ Baseliner.tmpl = function tmpl(str, data){
 
 Baseliner.Pills = Ext.extend(Ext.form.Field, {
     //shouldLayout: true,
+    value: '',
     initComponent : function(){
         Baseliner.Pills.superclass.initComponent.apply(this, arguments);
     },
@@ -2732,10 +2733,10 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
     },
     // These are all private overrides
     getValue: function(){
-        return this.value;
+        return this.value || '';
     },
     setValue: function( v ){
-        this.value = v;
+        this.value = v || '';
         this.redraw();
     },
     setSize : Ext.emptyFn,

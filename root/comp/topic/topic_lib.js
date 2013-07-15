@@ -427,7 +427,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             var btn_html = {
                 xtype: 'button',
                 text: _('HTML'),
-                enableToggle: true, pressed: true, allowDepress: false, toggleGroup: 'comment_edit_' + ii,
+                enableToggle: true, pressed: true, allowDepress: false, toggleGroup: 'comment_edit_' + self.ii,
                 handler: function(){
                     cardcom.getLayout().setActiveItem( 0 );
                 }
@@ -435,7 +435,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             var btn_code = {
                 xtype: 'button',
                 text: _('Code'),
-                enableToggle: true, pressed: false, allowDepress: false, toggleGroup: 'comment_edit_' + ii,
+                enableToggle: true, pressed: false, allowDepress: false, toggleGroup: 'comment_edit_' + self.ii,
                 handler: function(){
                     cardcom.getLayout().setActiveItem( 1 );
                     var com = code_field.getEl().dom;
