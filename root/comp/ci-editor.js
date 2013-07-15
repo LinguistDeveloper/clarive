@@ -19,7 +19,7 @@
 
         var activate_save = function(){
             setTimeout( function(){
-                btn_form_save.enable();
+                if( Ext.getCmp(btn_form_save.id) ) btn_form_save.enable();
             }, 1000);
         };
         var submit_form = function( close_form ){
@@ -47,7 +47,7 @@
                    });
                 }
                 else {
-                    btn_form_save.enable();
+                    if( Ext.getCmp(btn_form_save.id) ) btn_form_save.enable();
                 }
         };
 
