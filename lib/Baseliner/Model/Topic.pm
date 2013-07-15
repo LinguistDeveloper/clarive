@@ -1577,7 +1577,9 @@ sub set_revisions {
             => sub {
                 _throw _loc( 'Error modifying Topic: %1', shift() );
             };
-            $rs_topic->set_revisions( undef, { rel_type=>'topic_revision'});
+            my $rs_old_revisions = DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_type => 'topic_revision' });
+            $rs_old_revisions->delete(); 
+            #$rs_topic->set_revisions( undef, { rel_type=>'topic_revision'});
             #$rs_topic->revisions->delete;
         }
     }
