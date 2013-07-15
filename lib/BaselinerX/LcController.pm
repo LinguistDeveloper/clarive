@@ -425,7 +425,7 @@ sub changeset : Local {
     # topic changes
     my $where = { is_changeset => 1, rel_type=>'topic_project', to_mid=>$id_project };
     my @changes;
-    my $bind_releases;
+    my $bind_releases = 0;
     if( defined $p->{id_status} ) {
         $where->{id_category_status} = $p->{id_status};
         @changes = $c->model('Baseliner::BaliTopic')->search(
@@ -435,9 +435,10 @@ sub changeset : Local {
         $bind_releases = DB->BaliTopicStatus->find( $p->{id_status} )->bind_releases;
     } else {
         # Available 
+        my $first_bl = DB->BaliBaseline->search( { bl => {'<>', '*'}}, { order_by => 'seq' } )->first->bl;
         $where->{'status.bl'} = '*';
         $where->{id_category_status} = { -in => $c->model('Baseliner::BaliTopicCategoriesAdmin')->search(
-                { 'statuses_to.bl' => { '<>' => '*' } },
+                { 'statuses_to.bl' => $first_bl },
                 { +select=>['id_status_from'], join=>['statuses_to'] }
             )->as_query };
         @changes = $c->model('Baseliner::BaliTopic')->search(
@@ -446,75 +447,73 @@ sub changeset : Local {
             )->all;
     }
 
-    if ( $bl ne '*' ) {
-        my @rels;
-        for my $topic (@changes) {
-            my @releases = $topic->my_releases->hashref->all;
-            push @rels, @releases;  # slow! join me!
-            next if $bind_releases && @releases;
-            my $td = { $topic->get_columns() };  # TODO no prefetch comes thru
-            # get the menus for the changeset
-            my ( $promotable, $demotable, $menu ) = $self->cs_menu( $td, $bl, $state_name );
+    my @rels;
+    for my $topic (@changes) {
+        my @releases = $topic->my_releases->hashref->all;
+        push @rels, @releases;  # slow! join me!
+        next if $bind_releases && @releases;
+        my $td = { $topic->get_columns() };  # TODO no prefetch comes thru
+        # get the menus for the changeset
+        my ( $promotable, $demotable, $menu ) = $self->cs_menu( $td, $bl, $state_name );
+        my $node = {
+            url  => '/lifecycle/topic_contents',
+            icon => '/static/images/icons/changeset_lc.png',
+            text => $td->{title},
+            leaf => \1,
+            menu => $menu,
+            topic_name => {
+                mid             => $td->{mid},
+                category_color  => $topic->categories->color,
+                category_name   => _loc($topic->categories->name),
+                is_release      => $topic->categories->is_release,
+                is_changeset    => $topic->categories->is_changeset,
+            },
+            data => {
+                ns           => 'changeset/' . $td->{mid},
+                bl           => $bl,
+                name         => $td->{title},
+                promotable   => $promotable,
+                demotable    => $demotable,
+                state_name   => _loc($state_name),
+                topic_mid    => $td->{mid},
+                topic_status => $td->{id_category_status},
+                click        => $self->click_for_topic(  _loc($topic->categories->name), $td->{mid} )
+            },
+        };
+        # push @tree, $node if ! @rels;
+        push @tree, $node;
+    }
+    if( $bl ne "new" && @rels ) {
+        my %unique = map { $_->{topic_topic}{mid} => $_ } @rels;
+        for my $rel ( values %unique ) {
+            $rel = $rel->{topic_topic};
+            my ( $promotable, $demotable, $menu ) = $self->cs_menu( $rel, $bl, $state_name, $p->{id_status} );
             my $node = {
                 url  => '/lifecycle/topic_contents',
-                icon => '/static/images/icons/changeset_lc.png',
-                text => $td->{title},
-                leaf => \1,
+                icon => '/static/images/icons/release_lc.png',
+                text => $rel->{title},
+                leaf => \0,
                 menu => $menu,
                 topic_name => {
-                    mid             => $td->{mid},
-                    category_color  => $topic->categories->color,
-                    category_name   => _loc($topic->categories->name),
-                    is_release      => $topic->categories->is_release,
-                    is_changeset    => $topic->categories->is_changeset,
+                    mid             => $rel->{mid},
+                    category_color  => $rel->{categories}{color},
+                    category_name   => $rel->{categories}{name},
+                    is_release      => \1,
                 },
                 data => {
-                    ns           => 'changeset/' . $td->{mid},
+                    ns           => 'changeset/' . $rel->{mid},
                     bl           => $bl,
-                    name         => $td->{title},
+                    name         => $rel->{title},
                     promotable   => $promotable,
                     demotable    => $demotable,
                     state_name   => _loc($state_name),
-                    topic_mid    => $td->{mid},
-                    topic_status => $td->{id_category_status},
-                    click        => $self->click_for_topic(  _loc($topic->categories->name), $td->{mid} )
+                    state_id     => $p->{id_status},
+                    topic_mid    => $rel->{mid},
+                    topic_status => $rel->{id_category_status},
+                    click        => $self->click_for_topic(  _loc($rel->{categories}{name}), $rel->{mid} )
                 },
             };
-            # push @tree, $node if ! @rels;
             push @tree, $node;
-        }
-        if( @rels ) {
-            my %unique = map { $_->{topic_topic}{mid} => $_ } @rels;
-            for my $rel ( values %unique ) {
-                $rel = $rel->{topic_topic};
-                my ( $promotable, $demotable, $menu ) = $self->cs_menu( $rel, $bl, $state_name, $p->{id_status} );
-                my $node = {
-                    url  => '/lifecycle/topic_contents',
-                    icon => '/static/images/icons/release_lc.png',
-                    text => $rel->{title},
-                    leaf => \0,
-                    menu => $menu,
-                    topic_name => {
-                        mid             => $rel->{mid},
-                        category_color  => $rel->{categories}{color},
-                        category_name   => $rel->{categories}{name},
-                        is_release      => \1,
-                    },
-                    data => {
-                        ns           => 'changeset/' . $rel->{mid},
-                        bl           => $bl,
-                        name         => $rel->{title},
-                        promotable   => $promotable,
-                        demotable    => $demotable,
-                        state_name   => _loc($state_name),
-                        state_id     => $p->{id_status},
-                        topic_mid    => $rel->{mid},
-                        topic_status => $rel->{id_category_status},
-                        click        => $self->click_for_topic(  _loc($rel->{categories}{name}), $rel->{mid} )
-                    },
-                };
-                push @tree, $node;
-            }
         }
     }
     $c->stash->{ json } = \@tree;
