@@ -1203,7 +1203,7 @@ sub save_data {
     my $moniker = delete $row{moniker};
     
     if (!$topic_mid){
-        my $rstopic = master_new 'topic' => { name=>$data->{title}, moniker=>$moniker } => sub {
+        master_new 'topic' => { name=>$data->{title}, moniker=>$moniker, data=>{ %row } } => sub {
             $topic_mid = shift;
 
             #Defaults
@@ -1230,7 +1230,7 @@ sub save_data {
         }
         $topic->modified_by( $data->{username} );
         $topic->update( \%row );
-        _ci( $topic_mid )->update( moniker=>$moniker, name=>$row{title} );
+        _ci( $topic_mid )->update( name=>$row{title}, moniker=>$moniker, %row );
 
         for my $field (keys %row){
             next if $field eq 'response_time_min' || $field eq 'expr_response_time';
