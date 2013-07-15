@@ -188,12 +188,12 @@ Baseliner.CLEditorField = Ext.extend(Ext.form.TextArea, {
 	});
 	
 	var records = data && data[ meta.bd_field ]? data[ meta.bd_field ] : '[]';
-	var field_hidden = new Ext.form.Hidden({ name: meta.id_field, value: records });
-	
+
 	var store = new Ext.data.Store({
 		reader: reader,
 		data:  records ? Ext.util.JSON.decode(records) : []
 	});
+	var field_hidden = new Baseliner.HiddenGridField({ name: meta.id_field, value: records, store: store });
      	
     var button_add = new Baseliner.Grid.Buttons.Add({
 		text:'',
@@ -208,8 +208,6 @@ Baseliner.CLEditorField = Ext.extend(Ext.form.TextArea, {
 			editor.startEditing(index);
         }
     });
-	
-	
 	
     var button_delete = new Baseliner.Grid.Buttons.Delete({
         text: '',
@@ -227,8 +225,6 @@ Baseliner.CLEditorField = Ext.extend(Ext.form.TextArea, {
 				grid.store.commitChanges();
 				grid.getView().refresh();
             });
-		
-			
         }
     });
 	
@@ -246,7 +242,7 @@ Baseliner.CLEditorField = Ext.extend(Ext.form.TextArea, {
 				var rows = Ext.util.JSON.decode( field_hidden.getValue());
                 if( !Ext.isArray( rows ) ) rows = [];
 				rows[rowIndex] = record.data;
-				field_hidden.setValue(Ext.util.JSON.encode( rows ));
+				field_hidden.setRawValue(Ext.util.JSON.encode( rows ));
 			}
 		}		
     });	
@@ -289,10 +285,10 @@ Baseliner.CLEditorField = Ext.extend(Ext.form.TextArea, {
 							var index = ds.indexOf(ds.getById(rows_grid[i].id));
                             ds.remove(ds.getById(rows_grid[i].id));
 							delete rows[index];
-							field_hidden.setValue(Ext.util.JSON.encode( rows ));
+							field_hidden.setRawValue(Ext.util.JSON.encode( rows ));
 							rows = Ext.util.JSON.decode( field_hidden.getValue());
 							rows.splice(cindex, 0, rows_grid[i].data);
-							field_hidden.setValue(Ext.util.JSON.encode( rows ));	
+							field_hidden.setRawValue(Ext.util.JSON.encode( rows ));	
                         }
                         ds.insert(cindex,data.selections);
                         sm.clearSelections();

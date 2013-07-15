@@ -16,83 +16,80 @@ params:
     var data = params.topic_data;
     var meta = params.topic_meta;
     
-    var projects = new Array();
+    var projects = [];
     
-    if(data && eval('data.' + meta.bd_field)){
-        var eval_projects = eval('data.' + meta.bd_field);
-        for(i=0; i<eval_projects.length;i++){
-            projects.push(eval_projects[i].mid);
+    if(data && data[meta.bd_field] ){
+        var val_projects = data[meta.bd_field];
+        for(i=0; i<val_projects.length;i++){
+            var p = val_projects[i];
+            if( p==undefined || p.mid == undefined ) continue;
+            projects.push(p.mid);
         }
     } else {
         projects = meta.default_value ? [ meta.default_value ] : [];
     }
-    
+
     var ps = meta.page_size || 20;
     var project_box_store = new Baseliner.store.UserProjects({ id: 'id', baseParams: {
         tree_level: meta.tree_level || '',
         limit: ps, include_root: true, level: meta.level 
     } });
     
-    Baseliner.PagingProjects = Ext.extend( Ext.ux.form.SuperBoxSelect, {
-        minChars: 2,
-        //forceSelection: true,
-        typeAhead: false,
-        loadingText: _('Searching...'),
-        resizable: true,
-        allowBlank: true,
-        lazyRender: false,
-        triggerAction: 'all',
-        pageSize: 20,
-        //allowBlank: true,
-        msgTarget: 'under',
-        emptyText: _('Select a project'),
-        //store: new Baseliner.store.UserProjects({}),
-        //mode: 'remote',
-        fieldLabel: _('Projects'),
-        name: 'projects',
-        displayField: 'name',
-        hiddenName: 'projects',
-        valueField: 'mid',
-        extraItemCls: 'x-tag',
-        initComponent: function(){
-            var self = this;
-            self.tpl = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><strong>{name}</strong> {description}</span></div></tpl>' );
-            self.displayFieldTpl = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
-            Baseliner.PagingProjects.superclass.initComponent.call(this);
-        }
-    });
-
+    var no_items = _('No items found');
     var project_box = new Baseliner.PagingProjects({
         fieldLabel: _(meta.name_field),
         pageSize: ps,
         name: meta.id_field,
         hiddenName: meta.id_field,          
+        listEmptyText: no_items, 
+        field_ready: false,
         emptyText: _( meta.emptyText ),
         allowBlank: meta.allowBlank==undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true ),          
         store: project_box_store,
-        disabled: meta ? meta.readonly : true,
+        value: projects,
+        disabled: meta.readonly==undefined ? meta.readonly : true,
         singleMode: meta.single_mode == 'false' || !meta.single_mode ? false : true
     });
     
+    project_box.field_ready = false;
     project_box_store.on('load',function(){
-        project_box.setValue (projects ) ;            
+        project_box.field_ready = true;
     });
-    
+   
+    if( meta.parent_field ) {
+        var form = params.form.getForm();
+        var parent_field = form.findField( meta.parent_field );
+        if( parent_field ) {
+            var parent_last = parent_field.value;
+            project_box_store.baseParams['root_mid'] = parent_last;
+            var parent_foo = function(){ 
+                if( !project_box.field_ready || !parent_field.field_ready ) return;
+                //Baseliner.message( 'nada', String.format('parent changed = {0}, {1} = {2}', parent_last, parent_field.getValue(), parent_last != parent_field.getValue() ) );
+                var cvalue = project_box.getValue();
+                if( parent_last != parent_field.getValue() ) {
+                    if( cvalue!=undefined && cvalue!='' ) {
+                        Baseliner.warning( _('Warning'), _('Field %1 reset due to change in %2', _(meta.name_field), _(parent_field.fieldLabel) ) );
+                        project_box.setValue(null);
+                        project_box.removeAllItems();
+                        project_box.killItems();
+                        // FIXME - should reset store everytime, so a new dataview is shown
+                    }
+                    parent_last = parent_field.getValue();
+                    if( parent_last==undefined || parent_last=='' ) {   // parent is unselected, make an impossible query with -1
+                        project_box_store.baseParams['root_mid'] = -1;
+                        project_box.listEmptyText = _('Select field %1 first or reload', _(parent_field.fieldLabel) );
+                    } else {
+                        project_box_store.baseParams['root_mid'] = parent_last;
+                        project_box_store.removeAll();
+                        project_box.listEmptyText = no_items;
+                    }
+                }
+            };
+            parent_field.on( 'additem', function(){ return parent_foo.call(this,arguments) } );
+            parent_field.on( 'removeitem', function(){ return parent_foo.call(this,arguments) } );
+        }
+    }
 
-// Habria que ver como tratar dependencias entre campos 
-//    project_box.on('blur',function(obj){
-//        var projects = new Array();
-//        projects = (obj.getValue()).split(",");
-//      var form = params.form.getForm();
-//
-//      var user_box = form.findField("users");
-//      if (user_box){
-//          user_box.store.load({
-//              params:{ projects: projects}
-//          });
-//      }
-//    });   
-    
     var pb_panel = new Ext.Panel({
         layout: 'form',
         enableDragDrop: true,

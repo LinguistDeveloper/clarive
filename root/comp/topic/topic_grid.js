@@ -515,7 +515,7 @@
         actions_html.push("<span id='boot' style='background: transparent'>");
         
         var ref_html = function(dir, refs){
-            var img = dir =='in' ? 'referenced_in' : 'references';
+            var img = dir =='in' ? 'referenced_in' : 'references_out';
             var ret = [];
             // open children
             ret.push("<a href='#' onclick='javascript:Baseliner.open_topic_grid(\""+dir+"\", \""+rec.data.title+"\", "+rec.data.topic_mid+"); return false'>");
@@ -526,9 +526,9 @@
             ret.push("</a>&nbsp;");           
             return ret.join('');
         }
-        if( Ext.isArray( rec.data.references ) && rec.data.references.length > 0 ) {
+        if( Ext.isArray( rec.data.references_out ) && rec.data.references_out.length > 0 ) {
             swGo = true;
-            actions_html.push( ref_html( 'out', rec.data.references ) );
+            actions_html.push( ref_html( 'out', rec.data.references_out ) );
         }
         if(rec.data.numcomment){
             swGo = true;
@@ -703,7 +703,7 @@
             { header: _('Moniker'), hidden: true, sortable: true, dataIndex: 'moniker'},    
             { header: _('CIs Referenced'), hidden: true, sortable: false, dataIndex: 'cis_out'},    
             { header: _('CIs Referenced In'), hidden: true, sortable: false, dataIndex: 'cis_in'},    
-            { header: _('References'), hidden: true, sortable: false, dataIndex: 'references'},    
+            { header: _('References'), hidden: true, sortable: false, dataIndex: 'references_out'},    
             { header: _('Referenced In'), hidden: true, sortable: false, dataIndex: 'referenced_in'},    
             { header: _('Assigned To'), hidden: true, sortable: true, dataIndex: 'assignee'},
             { header: _('Modified By'), hidden: true, sortable: true, dataIndex: 'modified_by'},

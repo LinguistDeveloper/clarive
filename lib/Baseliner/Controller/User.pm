@@ -977,7 +977,12 @@ sub identicon {
             return $user->avatar;
         } else {
             _debug "Generating and saving avatar";
-            my $png = $generate->();
+            my $png = try { 
+                $generate->();
+            } catch {
+                my $user_png = $c->path_to( "/root/static/images/icons/user.png");
+                $user_png->slurp;
+            };
             # save to user
             $user->avatar( $png );
             $user->update;

@@ -24,6 +24,7 @@ Baseliner.CLEditor = Ext.extend(Ext.form.TextArea, {
     initComponent : function(){
         Baseliner.CLEditor.superclass.initComponent.call(this);
         var self = this;
+        self.loading_field = false;
         this.on('afterrender', function(){
             $.cleditor.buttons.fullscreen = {
                 name: 'fullscreen',
@@ -60,7 +61,7 @@ Baseliner.CLEditor = Ext.extend(Ext.form.TextArea, {
                 "indent | alignleft center alignright justify | undo redo | " +
                 "rule image link unlink | cut copy paste pastetext | print source fullscreen"
             }, self );
-            this.cleditor = $( self.el.dom ).cleditor(c)[0];
+            self.cleditor = $( self.el.dom ).cleditor(c)[0];
             self.on('resize', function(){
                 self.cleditor.refresh();
                 if( this.autofocus ) self.cleditor.focus();
@@ -90,6 +91,11 @@ Baseliner.CLEditor = Ext.extend(Ext.form.TextArea, {
             };
             foo_load(5);
         }
+    },
+    setValue : function(v){
+        if( this.loading_field ) return;
+        Baseliner.CLEditor.superclass.setValue.call(this, v );
+        if( this.cleditor ) this.cleditor.updateFrame( true );
     },
     editor_dom : function(){
         return this.cleditor ? this.cleditor.$main[0] : null;

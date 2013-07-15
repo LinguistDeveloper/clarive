@@ -154,13 +154,16 @@ sub related : Local {
     $where->{mid} = { '<>' => $mid } if length $mid;
     $where->{'categories.is_release'} = $show_release;
     
+    my $start = $p->{start} // 0;
+    my $limit = $p->{limit} // 20;
+
     if($p->{filter} && $p->{filter} ne 'none'){
         ##Tratamos todos los tópicos, independientemente si son releases o no.
         delete $where->{'categories.is_release'}; 
-        my $p = _decode_json($p->{filter});
+        my $filter = _decode_json($p->{filter});
         
-        if($p->{categories}){
-            my @categories = _array $p->{categories};
+        if($filter->{categories}){
+            my @categories = _array $filter->{categories};
             if(@categories){
                 my @not_in = map { abs $_ } grep { $_ < 0 } @categories;
                 my @in = @not_in ? grep { $_ > 0 } @categories : @categories;
@@ -178,8 +181,8 @@ sub related : Local {
             }
         }
         
-        if($p->{statuses}){
-            my @statuses = _array $p->{statuses};
+        if($filter->{statuses}){
+            my @statuses = _array $filter->{statuses};
             if(@statuses){
                 my @not_in = map { abs $_ } grep { $_ < 0 } @statuses;
                 my @in = @not_in ? grep { $_ > 0 } @statuses : @statuses;
@@ -196,8 +199,8 @@ sub related : Local {
             }
         }
           
-        if($p->{priorities}){
-            my @priorities = _array $p->{priorities};
+        if($filter->{priorities}){
+            my @priorities = _array $filter->{priorities};
             if(@priorities){
                 my @not_in = map { abs $_ } grep { $_ < 0 } @priorities;
                 my @in = @not_in ? grep { $_ > 0 } @priorities : @priorities;
@@ -215,11 +218,13 @@ sub related : Local {
         
         }        
     }
-    my $rs_topic = DB->BaliTopic->search($where, { order_by=>['categories.name', 'mid' ], prefetch=>['categories'] })->hashref;
+    my $from = { order_by=>['categories.name', 'mid' ], prefetch=>['categories'] };
+    $from->{page} //= to_pages( start=>$start, limit=>$limit );
+    $from->{rows} = $limit;
+    my $rs_topic = DB->BaliTopic->search($where, $from)->hashref;
     my @topics = map {
         if( $p->{topic_child_data} ) {
-            #my $meta = $c->model('Topic')->get_meta( $_->{mid} );
-            $_->{data} = $c->model('Topic')->get_data( undef, $_->{mid} );
+            $_->{data} = $c->model('Topic')->get_data( undef, $_->{mid}, with_meta=>1 ); # without the meta, no fieldlets will come
             $_->{description} //= $_->{data}{description};
             $_->{name_status} ||= $_->{data}{name_status};
         }
@@ -230,7 +235,14 @@ sub related : Local {
         $_->{color} = $_->{categories}->{color};
         $_
     } $rs_topic->all;
-    $c->stash->{json} = { totalCount=>scalar(@topics), data=>\@topics };
+
+    my $cnt = try {
+        my $pager = $rs_topic->pager;
+        $pager->total_entries ;
+    } catch { 
+        scalar @topics;
+    };
+    $c->stash->{json} = { totalCount=>$cnt, data=>\@topics };
     $c->forward('View::JSON');
 }
 
@@ -539,7 +551,7 @@ sub view : Local {
     
     if( $p->{html} ) {
         my $meta = $c->model('Topic')->get_meta( $topic_mid, $id_category );
-        my $data = $c->model('Topic')->get_data( $meta, $topic_mid, %$p );
+        my $data = $c->model('Topic')->get_data( $meta, $topic_mid, topic_child_data=>$p->{topic_child_data} );
         $meta = get_meta_permissions ($c, $meta, $data);        
 
         $c->stash->{topic_meta} = $meta;

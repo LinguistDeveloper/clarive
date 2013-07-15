@@ -79,7 +79,9 @@ Baseliner.TopicBox = Ext.extend( Ext.ux.form.SuperBoxSelect, {
     }
 });
 
-// Baseliner.model.Topics is deprecated.
+//
+// XXX **************** WARNING Baseliner.model.Topics is deprecated. Use TopicBox instead
+//
 Baseliner.model.Topics = function(c) {
     //var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name} - {title}</div></tpl>' );
     var tpl_list = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">',
@@ -251,7 +253,7 @@ Baseliner.Topic.StoreList = Ext.extend( Baseliner.JsonStore, {
                 {  name: 'moniker' },
                 {  name: 'cis_in' },
                 {  name: 'cis_out' },
-                {  name: 'references' },
+                {  name: 'references_out' },
                 {  name: 'referenced_in' },
                 {  name: 'sw_edit'},
                 {  name: 'modified_on', type: 'date', dateFormat: 'c' },        
@@ -342,8 +344,9 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         self.view_is_dirty = false;
         self.form_is_loaded = false;
         self.ii = Ext.id();  // used by the detail page
-        
-        self.btn_form_ok = new Ext.Button({
+        self.toggle_group = 'form_btns_' + self.ii;
+
+        self.btn_save_form = new Ext.Button({
             name: 'grabar',
             text: _('Save'),
             icon:'/static/images/icons/save.png',
@@ -424,7 +427,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             var btn_html = {
                 xtype: 'button',
                 text: _('HTML'),
-                enableToggle: true, pressed: true, allowDepress: false, toggleGroup: 'comment_edit',
+                enableToggle: true, pressed: true, allowDepress: false, toggleGroup: 'comment_edit_' + ii,
                 handler: function(){
                     cardcom.getLayout().setActiveItem( 0 );
                 }
@@ -432,7 +435,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             var btn_code = {
                 xtype: 'button',
                 text: _('Code'),
-                enableToggle: true, pressed: false, allowDepress: false, toggleGroup: 'comment_edit',
+                enableToggle: true, pressed: false, allowDepress: false, toggleGroup: 'comment_edit_' + ii,
                 handler: function(){
                     cardcom.getLayout().setActiveItem( 1 );
                     var com = code_field.getEl().dom;
@@ -491,7 +494,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             cls: 'x-btn-icon',
             enableToggle: true, pressed: true, allowDepress: false, 
             handler: function(){ self.show_detail() }, 
-            toggleGroup: 'form'
+            toggleGroup: self.toggle_group
         });
         
         self.btn_edit = new Ext.Toolbar.Button({
@@ -501,7 +504,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             cls: 'x-btn-text-icon',
             enableToggle: true, 
             handler: function(){ return self.show_form() }, 
-            allowDepress: false, toggleGroup: 'form'
+            allowDepress: false, toggleGroup: self.toggle_group
         });
             
         self.btn_kanban = new Ext.Toolbar.Button({
@@ -509,13 +512,13 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             cls: 'x-btn-icon',
             enableToggle: true, 
             handler: function(){ self.show_kanban() }, 
-            allowDepress: false, toggleGroup: 'form'
+            allowDepress: false, toggleGroup: self.toggle_group
         });
             
         self.btn_graph = new Ext.Toolbar.Button({
             icon:'/static/images/ci/ci-grey.png',
             cls: 'x-btn-icon',
-            enableToggle: true, handler: show_graph, allowDepress: false, toggleGroup: 'form'
+            enableToggle: true, handler: show_graph, allowDepress: false, toggleGroup: self.toggle_group
         });
             
         self.loading_panel = Baseliner.loading_panel();
@@ -582,7 +585,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             }
 
             // now show/hide buttons
-            self.btn_form_ok.show();
+            self.btn_save_form.show();
 
             if(self.topic_mid){
                 self.btn_comment.show();
@@ -614,7 +617,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 }else{
                     self.getLayout().setActiveItem( self.form_topic );
     
-                    self.btn_form_ok.show();
+                    self.btn_save_form.show();
                     
                     if(self.topic_mid){
                         self.btn_comment.show();
@@ -645,7 +648,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 self.btn_edit,
                 '-',
                 self.btn_comment,
-                self.btn_form_ok,
+                self.btn_save_form,
                 '->',
                 self.btn_kanban,
                 self.btn_graph
@@ -676,7 +679,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         var id = panel.getId();
         var info = Baseliner.tabInfo[id];
         if( info!=undefined ) info.params.swEdit = 0;        
-        self.btn_form_ok.hide();
+        self.btn_save_form.hide();
         if( self.view_is_dirty ) {
             self.view_is_dirty = false;
             self.detail_reload();
@@ -716,10 +719,12 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         var custom_form = '';
 
         if (form2.isValid()) {
+            self.btn_save_form.disable();
             form2.submit({
                url: self.form_topic.url,
                params: {action: action, form: custom_form, _cis: Ext.util.JSON.encode( self._cis ) },
                success: function(f,a){
+                    self.btn_save_form.enable();
                     Baseliner.message(_('Success'), a.result.msg );
                     if( self._parent_grid != undefined && ! Ext.isObject( self._parent_grid ) ) {
                         self._parent_grid = Ext.getCmp( self._parent_grid ); 
@@ -761,6 +766,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     self.view_is_dirty = true;
                },
                failure: function(f,action){
+                  self.btn_save_form.enable();
                   var res = action.response;
                   Baseliner.error_win('',{},res,res.responseText );
                }
@@ -782,7 +788,7 @@ Baseliner.TopicCombo = Ext.extend( Ext.form.ComboBox, {
     resizable: true,
     allowBlank: false,
     lazyRender: false,
-    pageSize: 20,
+    pageSize: true,
     triggerAction: 'all',
     itemSelector: 'div.search-item',
     initComponent: function(){
@@ -792,16 +798,11 @@ Baseliner.TopicCombo = Ext.extend( Ext.form.ComboBox, {
                 delete qe.combo.lastQuery;
             }
         };
-        //self.xxtpl = new Ext.XTemplate( '<tpl for="."><div class="search-item">{name} {title}</div></tpl>');
         self.tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item">',
             '<span id="boot" style="width:200px"><span class="label" ', 
             ' style="float:left;padding:2px 8px 2px 8px;background: {color}"',
             ' >{name}</span></span>',
             '&nbsp;&nbsp;<b>{title}</b></div></tpl>' );
-        //self.xdisplayFieldTpl = new Ext.XTemplate( '<tpl for=".">',
-        //    '<span id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: {color}; cursor:pointer;"',
-        //    ' onclick="javascript:Baseliner.show_topic({mid}, \'{name}\');">{name}</span></span>',
-        //    '</tpl>' );
         Baseliner.TopicCombo.superclass.initComponent.call(this);
     }
 });
@@ -809,6 +810,7 @@ Baseliner.TopicCombo = Ext.extend( Ext.form.ComboBox, {
 Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
     height: 200,
     enableDragDrop: true,   
+    pageSize: 10, // used by the combo 
     constructor: function(c){  // needs to declare the selection model in a constructor, otherwise incompatible with DD
         var sm = new Baseliner.CheckboxSelectionModel({
             checkOnly: true,
@@ -887,6 +889,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
             store: self.combo_store, 
             width: 600,
             height: 80,
+            pageSize: self.pageSize,
             singleMode: true, 
             fieldLabel: _('Topic'),
             name: 'topic',
@@ -1045,6 +1048,7 @@ Baseliner.TopicForm = Ext.extend( Ext.FormPanel, {
     url:'/topic/update',
     autoHeight: true,
     overflow: 'hidden',
+    form_columns: 12,
     //layout:'table',
     //layoutConfig: { columns: form_columns },
     //cls: 'bali-form-table',
@@ -1058,8 +1062,6 @@ Baseliner.TopicForm = Ext.extend( Ext.FormPanel, {
         var on_submit_events = [];
         
         var unique_id_form = Ext.getCmp('main-panel').getActiveTab().id + '_form_topic';
-        
-        var form_columns = 12;   // TODO get this from config
         
         Ext.form.Action.prototype.constructor = Ext.form.Action.prototype.constructor.createSequence(function() {
             Ext.applyIf(this.options, {
@@ -1083,7 +1085,7 @@ Baseliner.TopicForm = Ext.extend( Ext.FormPanel, {
                 ev();
             });
         };
-        
+
        
         // if we have an id, then async load the form
         self.on('afterrender', function(){
@@ -1091,103 +1093,111 @@ Baseliner.TopicForm = Ext.extend( Ext.FormPanel, {
             self.ownerCt.doLayout();  // so we get a scrollbar from the parent, XXX consider putting this in parent
         });
 
+        self.render_fields(data);
+    },
+    render_fields : function(data) {
+        var self = this;
+        var rec = self.rec;
+        if( rec.topic_meta == undefined ) return;
         ///*****************************************************************************************************************************
-        if (rec.topic_meta != undefined){
-            var fields = rec.topic_meta;
+        var fields = rec.topic_meta;
+        
+        for( var i = 0; i < fields.length; i++ ) {
+            var field = fields[i];
+            if( field.active!=undefined && ( !field.active || field.active=='false') ) continue;
             
-            for( var i = 0; i < fields.length; i++ ) {
-                var field = fields[i];
-                if( field.active!=undefined && ( !field.active || field.active=='false') ) continue;
-                
-                if( field.body) {// some fields only have an html part
-                    if( field.body.length==0  ) continue; 
-                    var comp = Baseliner.eval_response(
-                         field.body,
-                        {form: self, topic_data: data, topic_meta:  field, value: '', _cis: rec._cis, id_panel: rec.id_panel, admin: rec.can_admin, html_buttons: rec.html_buttons }
-                    );
-                    
-                    if( !comp ) continue; // invalid field?
-
-                    if( comp.xtype == 'hidden' ) {
-                            self.add( comp );
-                    } else {
-                        var all_hidden = true;
-                        Ext.each( comp, function(f){
-                            if( f.hidden!=undefined && !f.hidden ) all_hidden = false;
-                        });
-                        var colspan =  field.colspan || form_columns;
-                        var cw = field.colWidth || ( colspan / form_columns );
-                        var p_style = {};
-                        if( Ext.isIE ) p_style['margin-top'] = '8px';
-                        p_style['padding-right'] = '10px';
-                        var p = new Ext.Container({ layout:'form', hidden: all_hidden, style: p_style, border: false, columnWidth: cw });
-                        if( comp.items ) {
-                            if( comp.on_submit ) on_submit_events.push( comp.on_submit );
-                            p.add( comp.items ); 
-                            self.add ( p );
-                        } else {
-                            p.add( comp ); 
-                            self.add ( p );
-                        }
+            if( field.body) {// some fields only have an html part
+                if( field.body.length==0  ) continue; 
+                var comp = Baseliner.eval_response(
+                    field.body,
+                    { 
+                        form: self, topic_data: data, topic_meta:  field, value: '', 
+                        _cis: rec._cis, id_panel: rec.id_panel, admin: rec.can_admin, 
+                        html_buttons: rec.html_buttons 
                     }
-                }
-            }  // for fields
+                );
+                
+                if( !comp ) continue; // invalid field?
 
-            self.on( 'afterrender', function(){
-                var form2 = self.getForm();
-                var id_category = rec.new_category_id ? rec.new_category_id : data.id_category;
-            
-                var obj_combo_category = form2.findField("category");
-                var obj_store_category;
-                if(obj_combo_category){
-                    obj_store_category = form2.findField("category").getStore();
-                    obj_store_category.on("load", function() {
-                       obj_combo_category.setValue(id_category);
+                if( comp.xtype == 'hidden' ) {
+                        self.add( comp );
+                } else {
+                    var all_hidden = true;
+                    Ext.each( comp, function(f){
+                        if( f.hidden!=undefined && !f.hidden ) all_hidden = false;
                     });
-                    obj_store_category.load();
-                }
-            
-                var obj_combo_status = form2.findField("status_new");
-                var obj_store_category_status;                
-                
-                if( rec.new_category_id != undefined ) {
-                    if(obj_combo_status){
-                        obj_store_category_status = obj_combo_status.getStore();
-                        obj_store_category_status.on('load', function(){
-                            if( obj_store_category_status != undefined && obj_store_category_status.getAt(0) != undefined )
-                                obj_combo_status.setValue( obj_store_category_status.getAt(0).id );
-                        });
-                        obj_store_category_status.load({
-                            params:{ 'change_categoryId': id_category }
-                        });                         
-                    }
-                    form2.findField("topic_mid").setValue(-1);
-                }else {
-                    if(obj_combo_status){
-                        obj_store_category_status = obj_combo_status.getStore();
-                        obj_store_category_status.on("load", function() {
-                            obj_combo_status.setValue( data ? data.id_category_status : '' );
-                        });
-                        obj_store_category_status.load({
-                                params:{ 'categoryId': id_category, 'statusId': data ? data.id_category_status : '', 'statusName': data ? data.name_status : '' }
-                        });                         
+                    var colspan =  field.colspan || self.form_columns;
+                    var cw = field.colWidth || ( colspan / self.form_columns );
+                    var p_style = {};
+                    if( Ext.isIE && !all_hidden ) p_style['margin-top'] = '8px';
+                    p_style['padding-right'] = '10px';
+                    var p_opts = { layout:'form', style: p_style, border: false, columnWidth: cw };
+                    var p = new Ext.Container( p_opts );
+                    if( comp.items ) {
+                        if( comp.on_submit ) on_submit_events.push( comp.on_submit );
+                        p.add( comp.items ); 
+                        self.add ( p );
+                    } else {
+                        p.add( comp ); 
+                        self.add ( p );
                     }
                 }
-                
-                var obj_combo_priority = form2.findField("priority");
-                var obj_store_category_priority;
+            }
+        }  // for fields
+
+        self.on( 'afterrender', function(){
+            var form2 = self.getForm();
+            var id_category = rec.new_category_id ? rec.new_category_id : data.id_category;
+        
+            var obj_combo_category = form2.findField("category");
+            var obj_store_category;
+            if(obj_combo_category){
+                obj_store_category = form2.findField("category").getStore();
+                obj_store_category.on("load", function() {
+                   obj_combo_category.setValue(id_category);
+                });
+                obj_store_category.load();
+            }
+        
+            var obj_combo_status = form2.findField("status_new");
+            var obj_store_category_status;                
             
-                if(obj_combo_priority){
-                    obj_store_category_priority = obj_combo_priority.getStore();
-                    obj_store_category_priority.on("load", function() {
-                        obj_combo_priority.setValue(data ? data.id_priority : '');                            
-                    });                    
-                    obj_store_category_priority.load({params:{'active':1, 'category_id': id_category}});
+            if( rec.new_category_id != undefined ) {
+                if(obj_combo_status){
+                    obj_store_category_status = obj_combo_status.getStore();
+                    obj_store_category_status.on('load', function(){
+                        if( obj_store_category_status != undefined && obj_store_category_status.getAt(0) != undefined )
+                            obj_combo_status.setValue( obj_store_category_status.getAt(0).id );
+                    });
+                    obj_store_category_status.load({
+                        params:{ 'change_categoryId': id_category }
+                    });                         
                 }
-                self.doLayout();
-            });
-        } // if rec.meta
-                
+                form2.findField("topic_mid").setValue(-1);
+            }else {
+                if(obj_combo_status){
+                    obj_store_category_status = obj_combo_status.getStore();
+                    obj_store_category_status.on("load", function() {
+                        obj_combo_status.setValue( data ? data.id_category_status : '' );
+                    });
+                    obj_store_category_status.load({
+                            params:{ 'categoryId': id_category, 'statusId': data ? data.id_category_status : '', 'statusName': data ? data.name_status : '' }
+                    });                         
+                }
+            }
+            
+            var obj_combo_priority = form2.findField("priority");
+            var obj_store_category_priority;
+        
+            if(obj_combo_priority){
+                obj_store_category_priority = obj_combo_priority.getStore();
+                obj_store_category_priority.on("load", function() {
+                    obj_combo_priority.setValue(data ? data.id_priority : '');                            
+                });                    
+                obj_store_category_priority.load({params:{'active':1, 'category_id': id_category}});
+            }
+            self.doLayout();
+        });
     }
 })
 

@@ -18,9 +18,10 @@ params:
 (function(params){
 	var meta = params.topic_meta;
 	var data = params.topic_data;
+	var form = params.form.getForm();
 	
 	var topics = new Array();
-    var ps = meta.page_size || 20;
+    var ps = meta.page_size || 10;  // for combos, 10 is a much nicer on a combo
 	
 	if(data && data[ meta.bd_field] ){
 		var eval_topics = data[ meta.bd_field ];
@@ -32,13 +33,23 @@ params:
 	}
 	
     var topic_box;
-    var topic_box_store = new Baseliner.store.Topics({ baseParams: { mid: data ? data.topic_mid : '', show_release: 0, filter: meta.filter ? meta.filter : ''} });
+    var topic_box_store = new Baseliner.store.Topics({
+        baseParams: { 
+            limit: ps,
+            topic_child_data: true, 
+            mid: data ? data.topic_mid : '', 
+            show_release: 0, 
+            filter: meta.filter ? meta.filter : ''
+        } 
+    });
     if( meta.list_type == 'grid' ) {
         // Grid
         topic_box = new Baseliner.TopicGrid({ 
             fieldLabel:_( meta.name_field ), 
             combo_store: topic_box_store,
             columns: meta.columns,
+            mode: 'remote',
+            pageSize: ps,
             name: meta.id_field, 
             height: meta.height || 250,
             value: data[ meta.id_field ]
@@ -60,6 +71,31 @@ params:
         topic_box_store.on('load',function(){
             topic_box.setValue(topics) ;            
         });
+
+        if( meta.copy_fields ) {
+            topic_box.on( 'additem', function(sb,val,rec){
+                var rec_data = rec.json.data;
+                if( !rec_data ) return;
+
+                // copy fields?
+                //    [["description","descripcion"], ["precondiciones", "precondiciones" ], ["pasos", "pasos"] ]
+                var ct;
+                if( Ext.isString(meta.copy_fields) ) {
+                    ct = Ext.decode( meta.copy_fields );
+                } else if ( Ext.isArray( meta.copy_fields ) ) {
+                    ct = meta.copy_fields;
+                }
+                Ext.each( ct, function(frel){
+                    var from_field = frel[0];
+                    var to_field = frel[1] || from_field;
+                    var fdata = rec_data[ from_field ];
+                    //console.log( [from_field,to_field,fdata].join('\n') );
+                    if( fdata == undefined ) return;
+                    var ff = form.findField( to_field );
+                    if( ff ) ff.setValue( fdata );
+                });
+            });
+        }
     }
 	return [
 		topic_box

@@ -42,8 +42,17 @@ msgstr "hace %1 años"
 msgid "Loading Error"
 msgstr "Error de Carga"
 
+msgid "No items found"
+msgstr "No se han encotrado datos"
+
+msgid "Select field %1 first or reload"
+msgstr "Seleccione el campo %1 primero o recargue"
+
 msgid "Error loading topic"
 msgstr "Error cargando el tópico"
+
+msgid "Field %1 reset due to change in %2"
+msgstr "Campo %1 reiniciado debido a un cambio en %2"
 
 msgid "Category not found or topic deleted: %1"
 msgstr "Tópico borrado o categoría ya no existe: %1"
@@ -62,6 +71,9 @@ msgstr "Notificaciones"
 
 msgid "None"
 msgstr "No hay"
+
+msgid "(empty message)"
+msgstr "(sin mensaje)"
 
 msgid "Pattern"
 msgstr "Patrón"

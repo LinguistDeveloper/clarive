@@ -277,7 +277,7 @@ around 'debug' => sub {
     } else {
         my $cache_type = Baseliner->config->{cache};
         my $cache_defaults = {
-                fastmmap  => [ driver => 'FastMmap', root_dir   => "$ENV{BASELINER_TEMP}/bali-cache", cache_size => '120m' ],
+                fastmmap  => [ driver => 'FastMmap', root_dir   => Util->_tmp_dir . '/bali-cache', cache_size => '120m' ],
                 memory    => [ driver => 'Memory' ],
                 rawmemory => [ driver => 'RawMemory', datastore => {}, max_size => 1000 ],
                 sharedmem => [ driver => 'SharedMem', size => 1_000_000, shmkey=>93894384 ],
@@ -297,14 +297,33 @@ around 'debug' => sub {
         }
     }
 
-    sub cache_set { $ccache->set( $_[1], $_[2] ) }
-    sub cache_get { $ccache->get( $_[1] ) }
-    sub cache_remove { $ccache->remove( $_[1] ) }
+    sub cache_keyify { 
+        my ($self,$key)=@_;
+        return ref $key ? Storable::freeze( $key ) : $key;
+    }
+    sub cache_set { 
+        my ($self,$key,$value)=@_;
+        Util->_debug("+++ CACHE SET: " . ( ref $key ? Util->_to_json($key) : $key ) ); 
+        $ccache->set( $key, $value ) 
+    }
+    sub cache_get { 
+        my ($self,$key)=@_;
+        Util->_debug("--- CACHE GET: " . ( ref $key ? Util->_to_json($key) : $key ) ); 
+        $ccache->get( $key ) 
+    }
+    sub cache_remove { 
+        my ($self,$key)=@_;
+        ref $key eq 'Regexp' ?  $self->cache_remove_like($key) : $ccache->remove( $key ) ;
+    }
     sub cache_keys { $ccache->get_keys( @_ ) }
     sub cache_compute { $ccache->compute( @_ ) }
     sub cache_clear { $ccache->clear }
     sub cache_remove_like { my $re=$_[1]; Baseliner->cache_remove($_) for Baseliner->cache_keys_like($re); } 
     sub cache_keys_like { my $re=$_[1]; grep /$re/ => Baseliner->cache_keys; }
+
+    if( Baseliner->debug ) {
+        Baseliner->cache_clear;  # clear cache on restart
+    }
 
     # Beep
     my $bali_env = $ENV{CATALYST_CONFIG_LOCAL_SUFFIX} // $ENV{BASELINER_CONFIG_LOCAL_SUFFIX};

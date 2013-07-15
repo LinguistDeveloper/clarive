@@ -255,11 +255,12 @@ sub load {
     my ( $self, $mid ) = @_;
     $mid ||= $self->mid;
     # in scope ? 
-    my $cached = $Baseliner::CI::mid_scope->{ $mid } if $Baseliner::CI::mid_scope;
+    my $scoped = $Baseliner::CI::mid_scope->{ $mid } if $Baseliner::CI::mid_scope;
     #say STDERR "----> SCOPE $mid =" . join( ', ', keys( $Baseliner::CI::mid_scope ) );
-    return $cached if $cached;
+    return $scoped if $scoped;
     # in cache ?
-    $cached = Baseliner->cache_get($mid);
+    my $cache_key = "ci:$mid";
+    my $cached = Baseliner->cache_get( $cache_key );
     return $cached if $cached;
     _fail _loc( "Missing mid %1", $mid ) unless length $mid;
     my $row = Baseliner->model('Baseliner::BaliMaster')->find( $mid );
@@ -321,7 +322,7 @@ sub load {
     $data->{ci_form} //= $self->ci_form;
     $data->{ci_class} //= $class;
     $Baseliner::CI::mid_scope->{ "$mid" } = $data if $Baseliner::CI::mid_scope;
-    Baseliner->cache_set($mid, $data);
+    Baseliner->cache_set($cache_key, $data);
     return $data;
 }
 
@@ -341,9 +342,9 @@ sub related_cis {
     my $scoped = $Baseliner::CI::mid_scope->{ $scope_key } if $Baseliner::CI::mid_scope;
     return @$scoped if $scoped;
     # in cache ?
-    my $cache_key = Storable::freeze(\%opts);
-    if( my $cached = Baseliner->cache_get( "$mid-$cache_key" ) ) {
-        return $cached;
+    my $cache_key = [ "ci:$mid:", \%opts ];
+    if( my $cached = Baseliner->cache_get( $cache_key ) ) {
+        return @$cached if ref $cached eq 'ARRAY';
     }
     my $where = {};
     my $edge = $opts{edge} // '';
@@ -369,7 +370,7 @@ sub related_cis {
         $ci;
     } @data;
     $Baseliner::CI::mid_scope->{ $scope_key } = \@ret if $Baseliner::CI::mid_scope;
-    Baseliner->cache_set( "$mid-$cache_key", \@ret );
+    Baseliner->cache_set( $cache_key, \@ret );
     return @ret;
 }
 
@@ -443,7 +444,7 @@ sub related {
     my ($self, %opts)=@_;
     my $mid = $self->mid;
     # in cache ? 
-    my $cache_key = "$mid-" . Storable::freeze( \%opts );
+    my $cache_key = [ "ci:$mid:",  \%opts ];
     if( my $cached = Baseliner->cache_get( $cache_key ) ) {
         return @$cached if ref $cached eq 'ARRAY';
     }
@@ -467,7 +468,8 @@ sub related {
     # filter before
     @cis = $self->_filter_cis( %opts, _cis=>\@cis ) if $opts{filter_early};
     # now delve deeper if needed
-    if( $depth<0 || ( $depth>0 && --$depth ) ) {
+    $depth --;
+    if( $depth<0 || $depth>0 ) {
         my $path = [ _array $opts{path} ];  # need another ref in order to preserve opts{path}
         if( $opts{mode} eq 'tree' ) {
             for my $ci( @cis ) {

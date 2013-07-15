@@ -46,7 +46,7 @@ if( ! $meta->{hidden} ) {
 % foreach my $topic ( @topics ) {
                 <tr>
 % foreach my $h ( @head  ) {
-%    my $val =  $topic->{ $$h{key} };
+%    my $val =  $topic->{ $$h{key} } // $topic->{data}{ $$h{key} };
 %    if( $$h{key} eq 'name' ) {
             <td style="font-size: <% $meta->{td_font_size} // 12 %>px" class="fieldlet-html">
                 <& /partial/topic_name.html, topic=>$topic, show_title=>0  &>

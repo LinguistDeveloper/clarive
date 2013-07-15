@@ -207,6 +207,13 @@ Baseliner.error_msg = function( msg ){
 
 Baseliner.message = function(title, msg, config){
     if( ! config ) config = {};
+    if( !msg ) {
+        msg = title;
+        title = _('Notification');
+    }
+    if( !msg ) {
+        msg = _('(empty message)');
+    }
     
     msg = Baseliner.error_msg( msg );
     var id = $.gritter.add( Ext.apply({
@@ -2682,7 +2689,7 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
     initComponent : function(){
         Baseliner.Pills.superclass.initComponent.apply(this, arguments);
     },
-    defaultAutoCreate : {tag: 'div', id: 'boot', 'class':'', style:'margin-top: 0px; height: 30px;' },
+    defaultAutoCreate : {tag: 'div', 'class':'', style:'margin-top: 0px; height: 30px;' },
     onRender : function(){
         Baseliner.Pills.superclass.onRender.apply(this, arguments);
         this.list = [];
@@ -2714,17 +2721,25 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
                     return false;
                 }
                 anchor.innerHTML = v;
+                anchor.style['marginTop'] = '0px';
+                anchor.style['lineHeight'] = '6px';
+                //anchor.style['fontWeight'] = 'bold';
                 li.appendChild( anchor );
                 self.list.push( li );
                 self.anchors.push( anchor );
             });
         }
         
+        // a boot, for styling 
+        var boot = document.createElement('span');
+        boot.id = 'boot';
+        this.el.dom.appendChild( boot );
+
         // the main navbar
         var ul = document.createElement('ul');
         ul.className = "nav nav-pills";
         for( var i=0; i<self.list.length; i++) ul.appendChild( self.list[i] );
-        this.el.dom.appendChild( ul );
+        boot.appendChild( ul );
         
         // the hidden field
         self.$field = document.createElement('input');
@@ -2791,3 +2806,16 @@ Baseliner.ComboSingle = Ext.extend( Ext.form.ComboBox, {
         Baseliner.ComboSingle.superclass.initComponent(this); 
     }
 });
+
+// a hidden field that updates the store for a grid, used in list_topics
+Baseliner.HiddenGridField = Ext.extend( Ext.form.Hidden, {
+    setValue : function(v) {
+        //if( loading_field ) return; // control so that we don't go into an infinite loop
+        Baseliner.HiddenGridField.superclass.setValue.call(this, v);
+        if( !Ext.isString( v ) ) return;
+        var nv = Ext.decode( v );
+        this.store.removeAll();
+        this.store.loadData( nv );
+    }
+});
+

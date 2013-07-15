@@ -33,7 +33,7 @@ params:
 					name: meta.id_field,
 					fieldLabel: _('Description'),
 					width: '100%',
-					value: data ? eval('data.' + meta.bd_field): '',
+					value: data ? data[meta.bd_field] : '',
 					height: 350,
 					disabled: meta ? meta.readonly : true
 				})
