@@ -174,9 +174,10 @@ sub save {
             }
             # moniker
             if( ! defined $moniker ) {
-#                $row->moniker( $self->moniker ); ## Fails for git revisions
-                $row->moniker( 'mid_'.$mid );
+                $row->moniker( $self->moniker ) if ref $self;
             }
+            #Util->_error( { $row->get_columns } );
+            #Util->_error( $data );
             # now save the rest of the ci data
             $self->save_data( $row, $data );
         }

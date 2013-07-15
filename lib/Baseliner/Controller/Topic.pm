@@ -595,6 +595,7 @@ sub comment : Local {
             if( ! length $id_com ) {  # optional, if exists then is not add, it's an edit
                 $topic = master_new 'post' => substr($text,0,10) => sub { 
                     my $mid = shift;
+                    $id_com = $mid;
                     my $post = $c->model('Baseliner::BaliPost')->create(
                         {   mid   => $mid,
                             text       => $text,
@@ -632,11 +633,14 @@ sub comment : Local {
             }
             $c->stash->{json} = {
                 msg     => _loc('Comment added'),
+                id      => $id_com,
                 success => \1
             };
         }
         catch{
-            $c->stash->{json} = { msg => _loc('Error adding Comment: %1', shift()), failure => \1 }
+            my $err = shift;
+            _error( $err );
+            $c->stash->{json} = { msg => _loc('Error adding Comment: %1', $err ), failure => \1 }
         };
     } elsif( $action eq 'delete' )  {
         try {
@@ -655,7 +659,9 @@ sub comment : Local {
             } for @mids;
             $c->stash->{json} = { msg => _loc('Delete comment ok'), failure => \0 };
         } catch {
-            $c->stash->{json} = { msg => _loc('Error deleting Comment: %1', shift() ), failure => \1 }
+            my $err = shift;
+            _error( $err );
+            $c->stash->{json} = { msg => _loc('Error deleting Comment: %1', $err ), failure => \1 }
         };
     } elsif( $action eq 'view' )  {
         try {
@@ -672,7 +678,9 @@ sub comment : Local {
                 created_on => $post->created_on->dmy . ' ' . $post->created_on->hms
             };
         } catch {
-            $c->stash->{json} = { msg => _loc('Error viewing comment: %1', shift() ), failure => \1 }
+            my $err = shift;
+            _error( $err );
+            $c->stash->{json} = { msg => _loc('Error viewing comment: %1', $err ), failure => \1 }
         };
     }
     $c->forward('View::JSON');

@@ -335,6 +335,100 @@ Baseliner.Topic.StoreUsers = Ext.extend( Baseliner.JsonStore, {
     }
 });
 
+// if id_com is undefined, then its add, otherwise it's an edit
+Baseliner.Topic.comment_edit = function(topic_mid, id_com, cb) {
+    var win_comment;    
+    //var comment_field = new Baseliner.MultiEditor
+    var comment_field = new Baseliner.HtmlEditor({
+        listeners: { 'initialize': function(){ comment_field.focus() } }
+    });
+    var btn_submit = {
+        xtype: 'button',
+        text: _('Add Comment'),
+        handler: function(){
+            var text, content_type;
+            var id = cardcom.getLayout().activeItem.id;
+            if( id == comment_field.getId() ) {
+                text = comment_field.getValue();
+                content_type = 'html';
+            } else {
+                text = code.getValue();
+                content_type = 'code';
+            }
+            Baseliner.ajaxEval( '/topic/comment/add',
+                { topic_mid: topic_mid, id_com: id_com, text: text, content_type: content_type },
+                function(res) {
+                   if( ! res.failure ) { 
+                       Baseliner.message(_('Success'), res.msg );
+                       win_comment.close();
+                       if( Ext.isFunction(cb) ) cb( res.id_com );
+                   } else {
+                       Baseliner.error( _('Error'), res.msg );
+                    }
+                 }
+            );
+        }
+    };
+
+    var code_field = new Ext.form.TextArea({});
+    var code;
+
+    var btn_html = {
+        xtype: 'button',
+        text: _('HTML'),
+        enableToggle: true, pressed: true, allowDepress: false, toggleGroup: 'comment_edit_' + self.ii,
+        handler: function(){
+            cardcom.getLayout().setActiveItem( 0 );
+        }
+    };
+    var btn_code = {
+        xtype: 'button',
+        text: _('Code'),
+        enableToggle: true, pressed: false, allowDepress: false, toggleGroup: 'comment_edit_' + self.ii,
+        handler: function(){
+            cardcom.getLayout().setActiveItem( 1 );
+            var com = code_field.getEl().dom;
+            code = CodeMirror(function(elt) {
+                com.parentNode.replaceChild( elt, com );
+            }, { 
+                value: comment_field.getValue(),
+                lineNumbers: true, tabMode: "indent", smartIndent: true, matchBrackets: true
+            });
+        }
+    };
+    var cardcom = new Ext.Panel({ 
+        layout: 'card', 
+        activeItem: 0,
+        items: [ comment_field, code_field ]
+    });
+
+    win_comment = new Ext.Window({
+        title: _('Add Comment'),
+        layout: 'fit',
+        height: 450,
+        width: 700,
+        closeAction: 'close',
+        maximizable: true,
+        autoHeight: true,
+        bbar: [ 
+            btn_html,
+            btn_code, '->', btn_submit],
+        items: cardcom
+    });
+    if( id_com != undefined ) {
+        Baseliner.ajaxEval('/topic/comment/view', { id_com: id_com }, function(res) {
+            if( res.failure ) {
+                Baseliner.message( _('Error'), res.msg );
+            } else {
+                comment_field.setValue( res.text );
+                win_comment.show();
+            }
+        });
+    } else {
+        win_comment.show();
+    }
+};
+
 Baseliner.TopicMain = Ext.extend( Ext.Panel, {
     initComponent: function(c){
         var self = this;
@@ -347,7 +441,6 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         self.toggle_group = 'form_btns_' + self.ii;
 
         self.btn_save_form = new Ext.Button({
-            name: 'grabar',
             text: _('Save'),
             icon:'/static/images/icons/save.png',
             cls: 'x-btn-icon-text',
@@ -386,106 +479,13 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             });
         };
     
-        // if id_com is undefined, then its add, otherwise it's an edit
-        Baseliner.Topic.comment_edit = function(topic_mid, id_com) {
-            var win_comment;    
-            //var comment_field = new Baseliner.MultiEditor({
-            var comment_field = new Baseliner.HtmlEditor({
-                listeners: { 'initialize': function(){ comment_field.focus() } }
-            });
-            var btn_submit = {
-                xtype: 'button',
-                text: _('Add Comment'),
-                handler: function(){
-                    var text, content_type;
-                    var id = cardcom.getLayout().activeItem.id;
-                    if( id == comment_field.getId() ) {
-                        text = comment_field.getValue();
-                        content_type = 'html';
-                    } else {
-                        text = code.getValue();
-                        content_type = 'code';
-                    }
-                    Baseliner.ajaxEval( '/topic/comment/add',
-                        { topic_mid: topic_mid, id_com: id_com, text: text, content_type: content_type },
-                        function(res) {
-                           if( ! res.failure ) { 
-                               Baseliner.message(_('Success'), res.msg );
-                               win_comment.close();
-                               self.detail_reload();
-                           } else {
-                               Baseliner.message( _('Error'), res.msg );
-                            }
-                         }
-                    );
-                }
-            };
-    
-            var code_field = new Ext.form.TextArea({});
-            var code;
-    
-            var btn_html = {
-                xtype: 'button',
-                text: _('HTML'),
-                enableToggle: true, pressed: true, allowDepress: false, toggleGroup: 'comment_edit_' + self.ii,
-                handler: function(){
-                    cardcom.getLayout().setActiveItem( 0 );
-                }
-            };
-            var btn_code = {
-                xtype: 'button',
-                text: _('Code'),
-                enableToggle: true, pressed: false, allowDepress: false, toggleGroup: 'comment_edit_' + self.ii,
-                handler: function(){
-                    cardcom.getLayout().setActiveItem( 1 );
-                    var com = code_field.getEl().dom;
-                    code = CodeMirror(function(elt) {
-                        com.parentNode.replaceChild( elt, com );
-                    }, { 
-                        value: comment_field.getValue(),
-                        lineNumbers: true, tabMode: "indent", smartIndent: true, matchBrackets: true
-                    });
-                }
-            };
-            var cardcom = new Ext.Panel({ 
-                layout: 'card', 
-                activeItem: 0,
-                items: [ comment_field, code_field ]
-            });
-    
-            win_comment = new Ext.Window({
-                title: _('Add Comment'),
-                layout: 'fit',
-                height: 450,
-                width: 700,
-                closeAction: 'close',
-                maximizable: true,
-                autoHeight: true,
-                bbar: [ 
-                    btn_html,
-                    btn_code, '->', btn_submit],
-                items: cardcom
-            });
-            if( id_com !== undefined ) {
-                Baseliner.ajaxEval('/topic/comment/view', { id_com: id_com }, function(res) {
-                    if( res.failure ) {
-                        Baseliner.message( _('Error'), res.msg );
-                    } else {
-                        comment_field.setValue( res.text );
-                        win_comment.show();
-                    }
-                });
-            } else {
-                win_comment.show();
-            }
-        };
     
         self.btn_comment = new Ext.Toolbar.Button({
             text: _('Add Comment'),
             icon:'/static/images/icons/comment_new.gif',
             cls: 'x-btn-icon-text',
             handler: function() {
-                Baseliner.Topic.comment_edit( params.topic_mid );
+                Baseliner.Topic.comment_edit( params.topic_mid, null, function(id_com){ self.detail_reload() });
             }
         });
     
