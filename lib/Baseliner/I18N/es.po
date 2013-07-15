@@ -3072,7 +3072,10 @@ msgstr "Error cerrando tópico: %1"
 
 # root/comp/topic_grid.js (116)
 msgid "Are you sure you want to delete the topic(s)"
-msgstr "¿Seguro que quiere borrar tópico"
+msgstr "¿Seguro que quiere borrar el/los tópico(s)"
+
+msgid "Are you sure you want to delete the topic?"
+msgstr "¿Seguro que quiere borrar el tópico?"
 
 msgid " (and %1 more)"
 msgstr " (y %1 más)"

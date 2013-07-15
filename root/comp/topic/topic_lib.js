@@ -449,6 +449,15 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             handler: function(){ return self.save_topic() }
         });
     
+        self.btn_delete_form = new Ext.Button({
+            text: _('Delete'),
+            icon:'/static/images/icons/delete.gif',
+            cls: 'x-btn-icon-text',
+            type: 'submit',
+            hidden: self.topic_mid!=undefined ? false : true,
+            handler: function(){ return self.delete_topic() }
+        });
+    
         // Detail Panel
         self.detail = new Ext.Panel({ 
             layout:'fit'
@@ -536,9 +545,11 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             if( self.swEdit ) {
                 if( !self.permEdit ) {
                     self.btn_edit.hide();
+                    self.btn_delete_form.hide();
                 } else {
                     self.btn_edit.toggle(true);
                     self.btn_detail.toggle(false);
+                    self.btn_delete_form.show();
                     self.show_form();
                     if (self.activarEdit) self.view_is_dirty = true;
                 }
@@ -591,9 +602,11 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 self.btn_comment.show();
                 //Baseliner.TopicExtension.toolbar.length > 0 ? self.btn_detail.hide(): self.btn_detail.show();
                 self.btn_detail.show();
+                self.btn_delete_form.show();
             }else{
                 self.btn_comment.hide();
                 self.btn_detail.hide();
+                self.btn_delete_form.hide();
             }
         });            
     },
@@ -622,9 +635,11 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     if(self.topic_mid){
                         self.btn_comment.show();
                         self.btn_detail.show();
+                        self.btn_delete_form.show();
                     }else{
                         self.btn_comment.hide();
                         self.btn_detail.hide();
+                        self.btn_delete_form.hide();
                     }                
                 }
             } else {
@@ -648,6 +663,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 self.btn_edit,
                 '-',
                 self.btn_comment,
+                self.btn_delete_form,
                 self.btn_save_form,
                 '->',
                 self.btn_kanban,
@@ -720,18 +736,15 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
 
         if (form2.isValid()) {
             self.btn_save_form.disable();
+            self.btn_delete_form.disable();
             form2.submit({
                url: self.form_topic.url,
                params: {action: action, form: custom_form, _cis: Ext.util.JSON.encode( self._cis ) },
                success: function(f,a){
                     self.btn_save_form.enable();
+                    self.btn_delete_form.enable();
                     Baseliner.message(_('Success'), a.result.msg );
-                    if( self._parent_grid != undefined && ! Ext.isObject( self._parent_grid ) ) {
-                        self._parent_grid = Ext.getCmp( self._parent_grid ); 
-                    }
-                    if( Ext.isObject( self._parent_grid )  && self._parent_grid.getStore()!=undefined ) {
-                        self._parent_grid.getStore().reload();
-                    }
+                    self.reload_parent_grid();
                         
                     form2.findField("topic_mid").setValue(a.result.topic_mid);
                     form2.findField("status").setValue(a.result.topic_status);
@@ -750,6 +763,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     self.topic_mid = a.result.topic_mid;
                     self.btn_comment.show();
                     self.btn_detail.show();
+                    self.btn_delete_form.show();
                     
                     if(action == 'add'){
                         var res = a.result;
@@ -767,13 +781,52 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                },
                failure: function(f,action){
                   self.btn_save_form.enable();
+                  self.btn_delete_form.enable();
                   var res = action.response;
                   Baseliner.error_win('',{},res,res.responseText );
                }
             });
         }        
+    },
+    delete_topic : function(){
+        var self = this;
+        if( self.topic_mid == undefined ) return;
+        Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the topic?'),
+            function(btn){ 
+                if(btn=='yes') {
+                    Baseliner.Topic.delete_topic({ topic_mids: self.topic_mid, success:function(){ 
+                        self.reload_parent_grid();
+                        self.destroy();
+                    }});
+                }
+            }
+        );
+    },
+    reload_parent_grid : function(){
+        var self = this;
+        if( self._parent_grid != undefined && ! Ext.isObject( self._parent_grid ) ) {
+            self._parent_grid = Ext.getCmp( self._parent_grid ); 
+        }
+        if( Ext.isObject( self._parent_grid )  && self._parent_grid.getStore()!=undefined ) {
+            self._parent_grid.getStore().reload();
+        }
     }
 });
+
+Baseliner.Topic.delete_topic = function(opts){
+    Baseliner.ajaxEval( '/topic/update?action=delete',{ topic_mid: opts.topic_mids },
+        function(res) {
+            if ( res.success ) {
+                Baseliner.message( _('Success'), res.msg );
+                if( Ext.isFunction(opts.success) ) opts.success(res);
+            } else {
+                Baseliner.error( _('Error'), res.msg );
+                if( Ext.isFunction(opts.failure) ) opts.failure(res);
+            }
+        }
+    
+    );
+};
 
 Baseliner.TopicCombo = Ext.extend( Ext.form.ComboBox, {
     minChars: 2,
