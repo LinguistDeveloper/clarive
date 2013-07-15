@@ -1376,6 +1376,16 @@ sub save_data {
             }
         }
     }    
+
+    # refresh cache for related stuff 
+    for my $rel ( 
+        map { +{mid=>$_->{mid}, type=>$_->{_edge}{rel_type} } } 
+        _ci( $topic_mid )->related( depth=>1 ) ) 
+    {
+        my $mid = $rel->{mid};
+        Baseliner->cache_remove( qr/topic:.*:$mid/ ) if $rel->{type} eq 'topic_topic';
+        Baseliner->cache_remove( qr/ci:$mid/ ) if $rel->{type} ne 'topic_topic';
+    }
     
     return $topic;
 }
