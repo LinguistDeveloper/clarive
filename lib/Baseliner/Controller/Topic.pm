@@ -525,7 +525,7 @@ sub view : Local {
         }
                          
         # comments
-        $self->list_posts( $c );  # get comments into stash        
+        $c->stash->{comments} = $c->model('Topic')->list_posts( mid=>$topic_mid );
         $c->stash->{events} = events_by_mid( $topic_mid, min_level => 2 );
         
         #$c->stash->{forms} = [
@@ -676,27 +676,6 @@ sub comment : Local {
         };
     }
     $c->forward('View::JSON');
-}
-
-sub list_posts : Local {
-    my ($self, $c) = @_;
-    my $p = $c->request->parameters;
-    my $topic_mid = $p->{topic_mid};
-
-    my $rs = $c->model('Baseliner::BaliTopic')->find( $topic_mid )
-        ->posts->search( undef, { order_by => { '-desc' => 'created_on' } } );
-    my @rows;
-    while( my $r = $rs->next ) {
-        push @rows,
-            {
-            created_on   => $r->created_on,
-            created_by   => $r->created_by,
-            text         => $r->text,
-            content_type => $r->content_type,
-            id           => $r->id,
-            };
-    }
-    $c->stash->{comments} = \@rows;
 }
 
 sub list_category : Local {

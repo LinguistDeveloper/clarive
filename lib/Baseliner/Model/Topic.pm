@@ -1860,6 +1860,26 @@ sub user_workflow {
     return @rows;
 }
 
+sub list_posts {
+    my ($self, %p) = @_;
+    my $mid = $p{mid};
+
+    my $rs = DB->BaliTopic->find( $mid )
+        ->posts->search( undef, { order_by => { '-desc' => 'created_on' } } );
+    my @rows;
+    while( my $r = $rs->next ) {
+        push @rows,
+            {
+            created_on   => $r->created_on,
+            created_by   => $r->created_by,
+            text         => $r->text,
+            content_type => $r->content_type,
+            id           => $r->id,
+            };
+    }
+    return \@rows;
+}
+
 1;
 
 
