@@ -216,45 +216,47 @@ sub topics_for_user {
     my $perm = Baseliner->model('Permissions');
     my $username = $p->{username};
     my $topic_list = $p->{topic_list};
+
+    length($query) and $where = Util->build_master_search( query=>$query );
     
-    $query and $where = query_sql_build( query=>$query, fields=>{
-        map { $_ => "me.$_" } qw/
-        topic_mid 
-        title
-        created_on
-        created_by
-        status
-        numcomment
-        category_id
-        category_name
-        category_status_id
-        category_status_name        
-        category_status_seq
-        priority_id
-        priority_name
-        response_time_min
-        expr_response_time
-        deadline_min
-        expr_deadline
-        category_color
-        label_id
-        label_name
-        label_color
-        project_id
-        project_name
-        moniker
-        cis_out
-        cis_in
-        references_out
-        referenced_in
-        file_name
-        description
-        text
-        progress
-        modified_on
-        modified_by        
-        /
-    });
+    #$query and $where = query_sql_build( query=>$query, fields=>{
+    #    map { $_ => "me.$_" } qw/
+    #    topic_mid 
+    #    title
+    #    created_on
+    #    created_by
+    #    status
+    #    numcomment
+    #    category_id
+    #    category_name
+    #    category_status_id
+    #    category_status_name        
+    #    category_status_seq
+    #    priority_id
+    #    priority_name
+    #    response_time_min
+    #    expr_response_time
+    #    deadline_min
+    #    expr_deadline
+    #    category_color
+    #    label_id
+    #    label_name
+    #    label_color
+    #    project_id
+    #    project_name
+    #    moniker
+    #    cis_out
+    #    cis_in
+    #    references_out
+    #    referenced_in
+    #    file_name
+    #    description
+    #    text
+    #    progress
+    #    modified_on
+    #    modified_by        
+    #    /
+    #});
 
     my ($select,$order_by, $as, $group_by);
     if( $sort && $sort eq 'category_status_name' ) {
@@ -1248,11 +1250,9 @@ sub save_data {
                             my $status_new = DB->BaliTopicStatus->find( $row{id_category_status} );
                             my $ci_update = $status_new->ci_update;
                             if( $ci_update && ( my $cis = $data->{_cis} ) ) {
-                                _debug $cis;
                                 for my $ci ( _array $cis ) {
                                     my $ci_data = $ci->{ci_data} // { map { $_ => $data->{$_} } grep { length } _array( $ci->{ci_fields} // @custom_fields ) };
                                     my $ci_master = $ci->{ci_master} // $ci_data;
-                                    _debug $ci_data;
                                     given( $ci->{ci_action} ) {
                                         when( 'create' ) {
                                             my $ci_class = $ci->{ci_class};

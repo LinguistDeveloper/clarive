@@ -161,6 +161,8 @@ use Term::ANSIColor;
 use strict;
 
 BEGIN {
+    # enable a TO_JSON converter
+    sub DateTime::TO_JSON  {  $_[0] . '' };
     # include all features I18N files
 eval <<"";
     package Baseliner::Utils::I18N;
@@ -833,6 +835,30 @@ sub query_sql_build {
         ( @ors ? [ -or => \@ors ] : () ),
         ( map { \[ "trim($col) LIKE '%'||?||'%' ", [ value => substr($_,1) ] ] } @terms_plus ),
         ( map { \[ "trim($col) NOT LIKE '%'||?||'%' ", [ value => substr($_,1) ] ] } @terms_minus )
+    ];
+    return $where;
+}
+
+sub build_master_search {
+    my (%p) = @_;
+    return {} unless $p{query};
+    my $query = $p{query};
+    my $where = {};
+    $query =~ s{\*}{%}g;
+    $query =~ s{\?}{_}g;
+    # take care of keeping quoted terms together
+    my $no_spaces = sub{ (my$r=$_[0])=~ s/\s+//g; $r };  # quote terms cannot have spaces, so that they don't get splited on term split
+    $query =~ s/"(.*?)"/$no_spaces->($1)/eg;   
+    my @terms = grep { defined($_) && length($_) } map { Util->_unac($_) } split /\s+/, lc $query; # split terms and all lowercase 
+    my $clean_terms = sub { s/[^\w|:|,|-]//g for @_; @_  };  # terms can only have a few special chars
+    my @terms_normal = $clean_terms->(  grep(!/^\+|^\-/,@terms) ); # ORed
+    my @terms_plus = $clean_terms->( grep(/^\+/,@terms) ); # ANDed
+    my @terms_minus = $clean_terms->(  grep(/^\-/,@terms) ); # NOTed
+    my @ors = map { \[ " EXISTS (select 1 from bali_master_search ss where ss.mid=me.mid and ss.search_data LIKE ? ) ", '%'.$_.'%' ] } @terms_normal;
+    $where->{'-and'} = [
+        ( @ors ? [ -or => \@ors ] : () ),
+        ( map { \[ " EXISTS (select 1 from bali_master_search ss where ss.mid=me.mid and ss.search_data LIKE ? ) ", '%'.$_.'%' ] } @terms_plus ),
+        ( map { \[ " NOT EXISTS (select 1 from bali_master_search ss where ss.mid=me.mid and ss.search_data LIKE ? ) ", '%'.$_.'%' ] } @terms_minus ),
     ];
     return $where;
 }
