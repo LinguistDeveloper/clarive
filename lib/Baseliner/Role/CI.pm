@@ -8,6 +8,17 @@ require Baseliner::CI;
 subtype CI    => as 'Baseliner::Role::CI';
 subtype CIs   => as 'ArrayRef[CI]';
 subtype BoolCheckbox   => as 'Bool';
+subtype TS    => as 'Str';
+subtype DT    => as 'DateTime';
+
+coerce 'TS' => 
+    from 'DT' => via { Class::Date->new( $_->set_time_zone( Util->_tz ) )->string },
+    from 'Num' => via { Class::Date->new( $_ )->string },
+    from 'Undef' => via { Class::Date->now->string },
+    from 'Any' => via { Class::Date->now->string };
+
+coerce 'BoolCheckbox' =>
+  from 'Str' => via { $_ eq 'on' ? 1 : 0 };
 
 # deprecated, but kept for future reference
 #coerce 'CI' =>
@@ -20,11 +31,9 @@ subtype BoolCheckbox   => as 'Bool';
 #  from 'ArrayRef[Num]' => via { my $v = $_; [ map { Baseliner::CI->new( $_ ) } _array( $v ) ] },
 #  from 'Num' => via { [ Baseliner::CI->new( $_ ) ] }; 
 
-coerce 'BoolCheckbox' =>
-  from 'Str' => via { $_ eq 'on' ? 1 : 0 };
-
 has mid      => qw(is rw isa Num);
 has active   => qw(is rw isa Bool);
+has ts       => qw(is rw isa TS coerce 1), default => sub { Class::Date->now->string };
 #has _ci      => qw(is rw isa Any);          # the original DB record returned by load() XXX conflicts with Utils::_ci
 
 requires 'icon';
@@ -131,6 +140,7 @@ sub save {
                 $row->versionid( $versionid ) if defined $versionid && length $versionid;
                 $row->moniker( $moniker ) if defined $moniker;
                 $row->ns( $ns ) if defined $ns;
+                $row->ts( Util->_dt );
                 $row->update;  # save bali_master data
                 $self->save_data( $row, $data );
             }
@@ -147,6 +157,7 @@ sub save {
                     collection => $collection,
                     name       => $name,
                     ns         => $ns,
+                    ts         => Util->_dt,
                     moniker    => $moniker,
                     active     => $active // 1,
                     versionid  => $versionid // 1
