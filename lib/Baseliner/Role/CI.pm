@@ -33,7 +33,7 @@ requires 'icon';
 has name    => qw(is rw isa Maybe[Str]);
 has ns      => qw(is rw isa Maybe[Str]);
 has versionid => qw(is rw isa Maybe[Str]);
-has moniker  => qw(is rw isa Maybe[Str] lazy 1), 
+has moniker  => qw(is rw isa Maybe[Str]);# lazy 1);#, 
     default=>sub{   
         my $self = shift; 
         if( ref $self ) {
@@ -162,7 +162,8 @@ sub save {
             }
             # moniker
             if( ! defined $moniker ) {
-                $row->moniker( $self->moniker );
+#                $row->moniker( $self->moniker ); ## Fails for git revisions
+                $row->moniker( 'mid_'.$mid );
             }
             # now save the rest of the ci data
             $self->save_data( $row, $data );
