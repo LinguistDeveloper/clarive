@@ -2911,7 +2911,7 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
             reader: reader,
             data: self.records 
         });
-        var field_hidden = new Baseliner.HiddenGridField({ name: self.id_field, value: self.records_json, store: self.store });
+        self.field_hidden = new Baseliner.HiddenGridField({ name: self.id_field, value: self.records_json, store: self.store });
             
         var button_add = new Baseliner.Grid.Buttons.Add({
             text:'',
@@ -2937,9 +2937,9 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
                 Ext.each( sm.getSelections(), function(r) {
                     var index = self.store.indexOf(r);
                     self.store.remove( r );
-                    var rows = Ext.util.JSON.decode( field_hidden.getValue());
+                    var rows = Ext.util.JSON.decode( self.field_hidden.getValue());
                     rows.splice(index, 1);
-                    field_hidden.setValue(Ext.util.JSON.encode( rows ));
+                    self.field_hidden.setValue(Ext.util.JSON.encode( rows ));
                     self.store.commitChanges();
                     self.getView().refresh();
                 });
@@ -2955,10 +2955,10 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
                 afteredit: function(roweditor, changes, record, rowIndex){
                     self.store.commitChanges();
                     delete record.data.id;
-                    var rows = Ext.util.JSON.decode(field_hidden.getValue());
+                    var rows = Ext.util.JSON.decode(self.field_hidden.getValue());
                     if( !Ext.isArray( rows ) ) rows = [];
                     rows[rowIndex] = record.data;
-                    field_hidden.setRawValue(Ext.util.JSON.encode( rows ));
+                    self.field_hidden.setRawValue(Ext.util.JSON.encode( rows ));
                 }
             }		
         });	
@@ -2967,7 +2967,7 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         self.ddGroup = 'grid_editor_' + Ext.id();
         self.plugins = [ editor ];
         self.tbar = [
-            field_hidden,
+            self.field_hidden,
             button_add,
             '-',
             button_delete
@@ -2986,17 +2986,17 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
                     var sm = self.getSelectionModel();
                     var rows_grid = sm.getSelections();
                     if(dd.getDragData(e)) {
-                        var rows = Ext.util.JSON.decode( field_hidden.getValue());
+                        var rows = Ext.util.JSON.decode( self.field_hidden.getValue());
                         var cindex=dd.getDragData(e).rowIndex;
                         if(typeof(cindex) != "undefined") {
                             for(i = 0; i <  rows_grid.length; i++) {
                                 var index = ds.indexOf(ds.getById(rows_grid[i].id));
                                 ds.remove(ds.getById(rows_grid[i].id));
                                 delete rows[index];
-                                field_hidden.setRawValue(Ext.util.JSON.encode( rows ));
-                                rows = Ext.util.JSON.decode( field_hidden.getValue());
+                                self.field_hidden.setRawValue(Ext.util.JSON.encode( rows ));
+                                rows = Ext.util.JSON.decode( self.field_hidden.getValue());
                                 rows.splice(cindex, 0, rows_grid[i].data);
-                                field_hidden.setRawValue(Ext.util.JSON.encode( rows ));	
+                                self.field_hidden.setRawValue(Ext.util.JSON.encode( rows ));	
                             }
                             ds.insert(cindex,data.selections);
                             sm.clearSelections();

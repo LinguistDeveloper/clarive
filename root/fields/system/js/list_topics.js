@@ -91,8 +91,12 @@ params:
                     var fdata = rec_data[ from_field ];
                     //console.log( [from_field,to_field,fdata].join('\n') );
                     if( fdata == undefined ) return;
-                    var ff = form.findField( to_field );
+                    var ff = $(form.el.dom).find('[name="'+to_field+'"]');
+                    ff = Ext.getCmp( ff.attr('id') );
+
+                    //var ff = form.findField( to_field ); // this wont find fields within tbar
                     if( ff ) ff.setValue( fdata );
+                    //if( ff ) ff.val( fdata ); // this does not fire the setValue()
                 });
             });
         }
