@@ -274,7 +274,7 @@ sub load {
     #say STDERR "----> SCOPE $mid =" . join( ', ', keys( $Baseliner::CI::mid_scope ) );
     return $scoped if $scoped;
     # in cache ?
-    my $cache_key = "ci:$mid";
+    my $cache_key = "ci:$mid:";
     my $cached = Baseliner->cache_get( $cache_key );
     return $cached if $cached;
     _fail _loc( "Missing mid %1", $mid ) unless length $mid;

@@ -468,7 +468,7 @@ sub topics_for_user {
             # _log _dump $rs_sub->as_query;
     
     # SELECT MID DATA:
-    my %mid_data = map { $_->{topic_mid} => $_ } grep { defined } map { Baseliner->cache_get("topic:view:$_") } @mids; 
+    my %mid_data = map { $_->{topic_mid} => $_ } grep { defined } map { Baseliner->cache_get("topic:view:$_:") } @mids; 
     if( my @db_mids = grep { !exists $mid_data{$_} } @mids ) {
         _debug( "CACHE==============================> MIDS: @mids, DBMIDS: @db_mids, MIDS_IN_CACHE: " . join',',keys %mid_data );
         my @db_mid_data = DB->TopicView->search({ topic_mid=>{ -in =>\@db_mids  } })->hashref->all if @db_mids > 0;
@@ -508,7 +508,7 @@ sub topics_for_user {
             $mid_data{$mid}{group_assignee}{ $row->{assignee} } = () if defined $row->{assignee};
         }
         for my $db_mid ( @db_mids ) {
-            Baseliner->cache_set( "topic:view:$db_mid", $mid_data{$db_mid} );
+            Baseliner->cache_set( "topic:view:$db_mid:", $mid_data{$db_mid} );
         }
     } else {
         _debug "CACHE =========> ALL TopicView data MIDS in CACHE";
@@ -937,7 +937,7 @@ sub get_update_system_fields {
 sub get_meta {
     my ($self, $topic_mid, $id_category) = @_;
 
-    my $cached = Baseliner->cache_get( "topic:meta:$topic_mid") if $topic_mid;
+    my $cached = Baseliner->cache_get( "topic:meta:$topic_mid:") if $topic_mid;
     return $cached if $cached;
 
     my $id_cat =  $id_category
@@ -969,7 +969,7 @@ sub get_meta {
     
     @meta = sort { $a->{field_order} <=> $b->{field_order} } @meta;
 
-    Baseliner->cache_set( "topic:meta:$topic_mid", \@meta ) if length $topic_mid;
+    Baseliner->cache_set( "topic:meta:$topic_mid:", \@meta ) if length $topic_mid;
     
     return \@meta;
 }
@@ -1154,8 +1154,7 @@ sub get_files{
 sub save_data {
     my ($self, $meta, $topic_mid, $data, %opts ) = @_;
 
-    Baseliner->cache_remove( qr/topic:view:$topic_mid/ ) if length $topic_mid;
-    Baseliner->cache_remove( qr/topic:data:$topic_mid/ ) if length $topic_mid;
+    Baseliner->cache_remove( qr/:$topic_mid:/ ) if length $topic_mid;
     
     my @std_fields =
         map { +{ name => $_->{id_field}, column => $_->{bd_field}, method => $_->{set_method}, relation => $_->{relation} } }
@@ -1383,8 +1382,8 @@ sub save_data {
         _ci( $topic_mid )->related( depth=>1 ) ) 
     {
         my $mid = $rel->{mid};
-        Baseliner->cache_remove( qr/topic:.*:$mid/ ) if $rel->{type} eq 'topic_topic';
-        Baseliner->cache_remove( qr/ci:$mid/ ) if $rel->{type} ne 'topic_topic';
+        _debug "TOPIC CACHE REL remove :$mid:";
+        Baseliner->cache_remove( qr/:$mid:/ );
     }
     
     return $topic;
