@@ -1055,10 +1055,10 @@ if( Prefs.routing ) {
                     if( Ext.isObject( comp ) && comp.logged_out ) {
                         login_or_error();
                     }
-                    else if( Ext.isObject( comp ) && comp.success!=undefined && !comp.success ) {
+                    else if( !params._handle_res && Ext.isObject( comp ) && comp.success!=undefined && !comp.success ) {  // XXX this should come after the next else
                         Baseliner.error( _('Loading Error'), comp.msg );
                     }
-                    else if( Ext.isFunction( foo ) ) {
+                    else if( Ext.isFunction( foo ) ) {  // XXX this should come before the next else
                         foo( comp, scope );
                     }
                     else {
@@ -1067,8 +1067,10 @@ if( Prefs.routing ) {
                 }
                 catch(e){
                     Baseliner.error_win(url,params,xhr,e);
-                    if( Baseliner.DEBUG ) 
-                        Baseliner.loadFile( url, 'js' );  // hopefully this will generate a legit error for debugging
+                    if( Baseliner.DEBUG ) {
+                        Baseliner.loadFile( url, 'js' );  // hopefully this will generate a legit error for debugging, but it may give strange console errors
+                        throw e;
+                    }
                     //if( Baseliner.DEBUG && ! Ext.isIE && console != undefined ) { console.log( xhr ) }
                 }
             }
