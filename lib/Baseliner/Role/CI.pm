@@ -516,7 +516,8 @@ sub children {
 
 sub index_search_data {
     my( $self, %p ) = @_;
-    my $mid = $p{mid} or _throw 'Missing mid for index search';
+    $p{data} = { %{ $self->{_ci} }, %{ $p{data} || {} } } if ref $self && ref $self->{_ci};
+    my $mid = $p{mid} // $p{data}{mid} // _throw 'Missing mid for index search';
     my $data = $p{data} || {};
     my $row = $p{row} ? { $p{row}->get_columns } : {}; # master row
     my $enc = JSON::XS->new->convert_blessed(1);
