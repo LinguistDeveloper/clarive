@@ -1309,16 +1309,7 @@ sub save_data {
         }
     }
      
-    my %rel_fields = map { $_->{id_field} => $_->{set_method} }  grep { $_->{relation} eq 'system' } _array( $meta  );
-    
-    foreach my $id_field  (keys %rel_fields){
-        if($rel_fields{$id_field}){
-            my $meth = $rel_fields{$id_field};
-            $self->$meth( $topic, $data->{$id_field}, $data->{username}, $id_field, $meta );
-            #eval( '$self->' . $rel_fields{$id_field} . '( $topic, $data->{$id_field}, $data->{username}, $id_field, $meta )' );    
-        }
-    } 
-     
+    # save custom fields
     for( @custom_fields ) {
         if  (exists $data->{ $_ -> {name}} && $data->{ $_ -> {name}} ne '' ){
 
@@ -1376,6 +1367,16 @@ sub save_data {
         }
     }    
 
+    # save relationship fields
+    my %rel_fields = map { $_->{id_field} => $_->{set_method} }  grep { $_->{relation} eq 'system' } _array( $meta  );
+    foreach my $id_field  (keys %rel_fields){
+        if($rel_fields{$id_field}){
+            my $meth = $rel_fields{$id_field};
+            $self->$meth( $topic, $data->{$id_field}, $data->{username}, $id_field, $meta );
+            #eval( '$self->' . $rel_fields{$id_field} . '( $topic, $data->{$id_field}, $data->{username}, $id_field, $meta )' );    
+        }
+    } 
+     
     # refresh cache for related stuff 
     for my $rel ( 
         map { +{mid=>$_->{mid}, type=>$_->{_edge}{rel_type} } } 

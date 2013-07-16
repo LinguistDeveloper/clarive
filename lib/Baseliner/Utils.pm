@@ -352,7 +352,8 @@ sub _error {
 
 #TODO check that global DEBUG flag is active
 sub _debug {
-    my ($cl,$fi,$li) = caller(0);
+    my $cal = $_[0] < 0 ? shift : 0;
+    my ($cl,$fi,$li) = caller( -$cal );
     return unless Baseliner->debug;
     _log_me( 'debug', $cl,$fi,$li,@_);
 }
