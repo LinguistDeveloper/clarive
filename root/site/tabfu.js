@@ -580,7 +580,7 @@ if( Prefs.routing ) {
                             Baseliner.login({ no_reload: 1, on_login: function(){ Baseliner.addNewTab(purl,ptitle,params)} });
                         } else {
                             //Baseliner.message( _('Error %1', res.status), res.responseText );
-                            Baseliner.message( 'Error', '<% _loc('Server unavailable') %>' );
+                            Baseliner.message( 'Error', '<% _loc('Server unavailable') %>' ); // XXX necessary? 
                         }
                     }
                 }
@@ -616,7 +616,7 @@ if( Prefs.routing ) {
                         Baseliner.login({ no_reload: 1, on_login: function(){ Baseliner.addNewWindow(purl,ptitle,params)} });
                     } else {
                         //Baseliner.message( _('Error %1', res.status), res.responseText );
-                        Baseliner.message( 'Error', '<% _loc('Server unavailable') %>' );
+                        Baseliner.message( 'Error', '<% _loc('Server unavailable') %>' ); // XXX necessary? centralize?
                     }
                 }
 
@@ -1036,7 +1036,7 @@ if( Prefs.routing ) {
                         return;
                     } else if( xhr.status==404 ) {
                         msg = _("Not found: %1", url );
-                    } else if( xhr.status==0 ) {
+                    } else if( xhr.status==0 || xhr.status==502) {
                         var yn = confirm( _('Server not available. Retry?') );  // an alert does not ask for images from the server
                         if( yn ) {
                             the_request();
