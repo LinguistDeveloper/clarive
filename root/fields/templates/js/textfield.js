@@ -13,7 +13,8 @@ params:
 (function(params){
     var meta = params.topic_meta;
     var data = params.topic_data;
-    var style = { 'font-size': '16px', float: 'left', 'font-weight': meta.font_weight || 'normal', 
+    var style = { 'font-size': '16px', float: 'left', 
+            'font-weight': meta.font_weight || ( meta.id_field == 'title' ? 'bold' : 'normal' ), 
             'font-family':'Helvetica Neue,Helvetica,Arial,sans-serif' };
     if( Ext.isIE ) style['margin-top'] = '1px';
 

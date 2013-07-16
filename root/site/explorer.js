@@ -878,12 +878,7 @@ Baseliner.open_kanban_from_folder = function(n){
             Baseliner.message( _('Kanban'), _('Folder does not contain any topics') );
             return;
         }
-        var store_topics = new Baseliner.Topic.StoreList({
-            baseParams: { start: 0, topic_list: res.topics }
-        });
-        store_topics.load();
-        store_topics.on('load', function(){
-            Baseliner.kanban_from_store({ store: store_topics }); 
-        });
+        var kanban = new Baseliner.Kanban({ topics: res.topics }); 
+        kanban.fullscreen();
     });
 }

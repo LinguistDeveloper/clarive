@@ -18,6 +18,7 @@ register 'registor.menu.topics' => {
        # action.topics.<category_name>.[create|edit|view]
        my @cats = DB->BaliTopicCategories->search(undef,{ select=>[qw/name id color/] })->hashref->all;
        my $seq = 10;
+       my $pad_for_tab = 'margin: 0 0 -3px 0; padding: 2px 4px 2px 4px; line-height: 12px;';
        my %menu_view = map {
            my $data = $_;
            my $name = _loc( $_->{name} );
@@ -25,7 +26,7 @@ register 'registor.menu.topics' => {
            $data->{color} //= 'transparent';
            "menu.topic.$id" => {
                 label    => qq[<div id="boot" style="background:transparent"><span class="label" style="background-color:$data->{color}">$name</span></div>],
-                title    => qq[<div id="boot" style="background:transparent;height:14px"><span class="label" style="background-color:$data->{color}">$name</span></div>],
+                title    => qq[<div id="boot" style="background:transparent;height:14px;margin-bottom:0px"><span class="label" style="$pad_for_tab;background-color:$data->{color}">$name</span></div>],
                 index    => $seq++,
                 actions  => ["action.topics.$id.view"],
                 url_comp => "/topic/grid?category_id=" . $data->{id},
@@ -526,6 +527,7 @@ sub view : Local {
                          
         # comments
         $c->stash->{comments} = $c->model('Topic')->list_posts( mid=>$topic_mid );
+        # activity (events)
         $c->stash->{events} = events_by_mid( $topic_mid, min_level => 2 );
         
         #$c->stash->{forms} = [
@@ -1625,6 +1627,24 @@ sub img : Local {
         my $broken = $c->path_to('/root/static/images/icons/help.png')->slurp;
         $c->res->body( $broken );
     }
+}
+
+sub change_status : Local {
+    my ($self, $c ) = @_;
+    my $p = $c->req->params;
+    $c->stash->{json} = try {
+        $c->model('Topic')->change_status( 
+            change=>1, username=>$c->username, 
+            id_status=>$p->{new_status}, id_old_status=>$p->{old_status}, 
+            mid=>$p->{mid} 
+        );
+        { success=>\1, msg=>'ok' };
+    } catch {
+        my $err = shift;
+        _error( $err );
+        { success=>\0, msg=>$err };
+    }; 
+    $c->forward('View::JSON');
 }
 
 1;

@@ -219,6 +219,7 @@ sub topics_for_user {
 
     length($query) and $where = Util->build_master_search( query=>$query );
     
+    # XXX consider enabling this for quick searches on mid+title+description
     #$query and $where = query_sql_build( query=>$query, fields=>{
     #    map { $_ => "me.$_" } qw/
     #    topic_mid 
@@ -1162,7 +1163,7 @@ sub save_data {
     
     my %row;
     my %description;
-    my %old_value;
+    my %old_values;
     my %old_text;
     my %relation;
 
@@ -1223,7 +1224,7 @@ sub save_data {
         $topic = DB->BaliTopic->find( $topic_mid, { prefetch =>['categories','status','priorities'] } );
 
         for my $field (keys %row){
-            $old_value{$field} = $topic->$field,
+            $old_values{$field} = $topic->$field,
             my $method = $relation{ $field };
             $old_text{$field} = $method ? try { $topic->$method->name } : $topic->$field,
         }
@@ -1236,65 +1237,68 @@ sub save_data {
             next if $field eq 'deadline_min' || $field eq 'expr_deadline';
 
             my $method = $relation{ $field };
+            my $new_value = $row{$field};
+            my $old_value = $old_values{$field};
 
-            if ($row{$field} ne $old_value{$field}){
+            if ( $new_value ne $old_value ){
                 if($field eq 'id_category_status'){
-                    
-                    my @projects = $topic->projects->hashref->all;
-                    event_new 'event.topic.change_status'
-                        #=> { username => $data->{username}, old_status => $old_text{$field}, status => $method ? $topic->$method->name : undef }
-                        => { username => $data->{username}, old_status => $old_text{$field}, status => $method ? map {$_->{name}} DB->BaliTopicStatus->search({id => $row{$field}})->hashref->first : undef }
-                        => sub {
-                            # check if it's a CI update
-                            my $status_new = DB->BaliTopicStatus->find( $row{id_category_status} );
-                            my $ci_update = $status_new->ci_update;
-                            if( $ci_update && ( my $cis = $data->{_cis} ) ) {
-                                for my $ci ( _array $cis ) {
-                                    my $ci_data = $ci->{ci_data} // { map { $_ => $data->{$_} } grep { length } _array( $ci->{ci_fields} // @custom_fields ) };
-                                    my $ci_master = $ci->{ci_master} // $ci_data;
-                                    given( $ci->{ci_action} ) {
-                                        when( 'create' ) {
-                                            my $ci_class = $ci->{ci_class};
-                                            $ci_class = 'BaselinerX::CI::' . $ci_class unless $ci_class =~ /^Baseliner/;
-                                            $ci->{ci_mid} = $ci_class->save( %$ci_master, data=>$ci_data );
-                                            $ci->{_ci_updated} = 1;
-                                        }
-                                        when( 'update' ) {
-                                            _debug "ci update $ci->{ci_mid}";
-                                            my $ci_mid = $ci->{ci_mid} // $ci_data->{ci_mid};
-                                            #_ci( $ci->{ci_mid} )->save( %$ci_master, data=>$ci_data );
-                                            _ci( $ci_mid )->save( %$ci_master, data=>$ci_data );
-                                            $ci->{_ci_updated} = 1;
-                                        }
-                                        when( 'delete' ) {
-                                            my $ci_mid = $ci->{ci_mid} // $ci_data->{ci_mid};
-                                            _ci( $ci_mid )->save( %$ci_master, data=>$ci_data );
-                                            DB->BaliMaster->find( $ci_mid )->delete; 
-                                            $ci->{_ci_updated} = 1;
-                                        }
-                                        default {
-                                            _throw _loc "Invalid ci action '%1' for mid '%2'", $ci->{ci_action}, $ci->{ci_mid};
-                                        }
+                    # change status
+                    my $id_status = $new_value;
+                    my $cb_ci_update = sub {
+                        # check if it's a CI update
+                        my $status_new = DB->BaliTopicStatus->find( $id_status );
+                        my $ci_update = $status_new->ci_update;
+                        if( $ci_update && ( my $cis = $data->{_cis} ) ) {
+                            for my $ci ( _array $cis ) {
+                                my $ci_data = $ci->{ci_data} // { map { $_ => $data->{$_} } grep { length } _array( $ci->{ci_fields} // @custom_fields ) };
+                                my $ci_master = $ci->{ci_master} // $ci_data;
+                                given( $ci->{ci_action} ) {
+                                    when( 'create' ) {
+                                        my $ci_class = $ci->{ci_class};
+                                        $ci_class = 'BaselinerX::CI::' . $ci_class unless $ci_class =~ /^Baseliner/;
+                                        $ci->{ci_mid} = $ci_class->save( %$ci_master, data=>$ci_data );
+                                        $ci->{_ci_updated} = 1;
+                                    }
+                                    when( 'update' ) {
+                                        _debug "ci update $ci->{ci_mid}";
+                                        my $ci_mid = $ci->{ci_mid} // $ci_data->{ci_mid};
+                                        #_ci( $ci->{ci_mid} )->save( %$ci_master, data=>$ci_data );
+                                        _ci( $ci_mid )->save( %$ci_master, data=>$ci_data );
+                                        $ci->{_ci_updated} = 1;
+                                    }
+                                    when( 'delete' ) {
+                                        my $ci_mid = $ci->{ci_mid} // $ci_data->{ci_mid};
+                                        _ci( $ci_mid )->save( %$ci_master, data=>$ci_data );
+                                        DB->BaliMaster->find( $ci_mid )->delete; 
+                                        $ci->{_ci_updated} = 1;
+                                    }
+                                    default {
+                                        _throw _loc "Invalid ci action '%1' for mid '%2'", $ci->{ci_action}, $ci->{ci_mid};
                                     }
                                 }
                             }
-
-                            { mid => $topic->mid, topic => $topic->title } 
+                        }
+                    };
+                    $self->change_status( mid=>$topic_mid, title=>$topic->{title}, 
+                        old_status=>$old_text{$field}, id_old_status =>$old_value,
+                        id_status=>$id_status, callback=>$cb_ci_update
+                    );
+                }
+                else {
+                    # report event
+                    event_new 'event.topic.modify_field' 
+                        => { 
+                             username   => $data->{username},
+                             field      => _loc ($description{ $field }),
+                             old_value  => $old_text{$field},
+                             new_value  => $method ? $topic->$method->name : $topic->$field,
+                           } 
+                        => sub {
+                            { mid => $topic->mid, topic => $topic->title }   # to the event
                         } 
                         => sub {
                             _throw _loc( 'Error modifying Topic: %1', shift() );
-                        };                    
-                }else {
-                    event_new 'event.topic.modify_field' => { username   => $data->{username},
-                                                        field      => _loc ($description{ $field }),
-                                                        old_value  => $old_text{$field},
-                                                        new_value  => $method ? $topic->$method->name : $topic->$field,
-                                                       } => sub {
-                        { mid => $topic->mid, topic => $topic->title }   # to the event
-                    } ## end try
-                    => sub {
-                        _throw _loc( 'Error modifying Topic: %1', shift() );
-                    };
+                        };
                 }
             }
         }        
@@ -1377,15 +1381,7 @@ sub save_data {
         }
     } 
      
-    # refresh cache for related stuff 
-    for my $rel ( 
-        map { +{mid=>$_->{mid}, type=>$_->{_edge}{rel_type} } } 
-        _ci( $topic_mid )->related( depth=>1 ) ) 
-    {
-        my $mid = $rel->{mid};
-        _debug "TOPIC CACHE REL remove :$mid:";
-        Baseliner->cache_remove( qr/:$mid:/ );
-    }
+    $self->cache_topic_remove( $topic_mid );
     
     return $topic;
 }
@@ -1459,49 +1455,50 @@ sub set_topics {
     my @new_topics = map { split /,/, $_ } _array( $topics ) ;
     my @old_topics = map {$_->{to_mid}} DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_type => 'topic_topic', rel_field => $id_field})->hashref->all;
     
-    if ( array_diff(@new_topics, @old_topics) ) {
-        if( @new_topics ) {
-            if(@old_topics){
-                my $rs_old_topics = DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_field=>$id_field });
-                $rs_old_topics->delete();
-            }
-            
-            my $rel_seq = 1;  # oracle may resolve this with a seq, but sqlite doesn't 
-            for (@new_topics){
-                DB->BaliMasterRel->update_or_create({from_mid => $rs_topic->mid, to_mid => $_, rel_type =>'topic_topic', rel_field => $id_field, rel_seq=>$rel_seq++ });
-            }
-            
-            my $topics = join(',', @new_topics);
+    # no diferences, get out
+    return if !array_diff(@new_topics, @old_topics);
 
-            event_new 'event.topic.modify_field' => { username   => $user,
-                                                field      => _loc( 'attached topics' ),
-                                                old_value      => '',
-                                                new_value  => $topics,
-                                                text_new      => '%1 modified topic: %2 ( %4 )',
-                                               } => sub {
-                { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
-            } ## end try
-            => sub {
-                _throw _loc( 'Error modifying Topic: %1', shift() );
-            };        
-            
-        }else{
-            event_new 'event.topic.modify_field' => { username   => $user,
-                                                field      => '',
-                                                old_value      => '',
-                                                new_value  => '',
-                                                text_new      => '%1 deleted all attached topics of ' . $id_field ,
-                                               } => sub {
-                { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
-            } ## end try
-            => sub {
-                _throw _loc( 'Error modifying Topic: %1', shift() );
-            };
-
-            #$rs_topic->set_topics( undef, { rel_type=>'topic_topic', rel_field => $id_field});
-            my $rs_old_topics = DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_field => $id_field });
-            $rs_old_topics->delete();            
+    if( @new_topics ) {
+        if(@old_topics){
+            my $rs_old_topics = DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_field=>$id_field });
+            $rs_old_topics->delete();
         }
+
+        my $rel_seq = 1;  # oracle may resolve this with a seq, but sqlite doesn't
+        for (@new_topics){
+            DB->BaliMasterRel->update_or_create({from_mid => $rs_topic->mid, to_mid => $_, rel_type =>'topic_topic', rel_field => $id_field, rel_seq=>$rel_seq++ });
+        }
+
+        my $topics = join(',', @new_topics);
+
+        event_new 'event.topic.modify_field' => { username   => $user,
+                                            field      => _loc( 'attached topics' ),
+                                            old_value      => '',
+                                            new_value  => $topics,
+                                            text_new      => '%1 modified topic: %2 ( %4 )',
+                                           } => sub {
+            { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
+        } ## end try
+        => sub {
+            _throw _loc( 'Error modifying Topic: %1', shift() );
+        };
+
+    } elsif( @old_topics ) {
+        event_new 'event.topic.modify_field' => { username   => $user,
+                                            field      => '',
+                                            old_value      => '',
+                                            new_value  => '',
+                                            text_new      => '%1 deleted all attached topics of ' . $id_field ,
+                                           } => sub {
+            { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
+        } ## end try
+        => sub {
+            _throw _loc( 'Error modifying Topic: %1', shift() );
+        };
+
+        #$rs_topic->set_topics( undef, { rel_type=>'topic_topic', rel_field => $id_field});
+        my $rs_old_topics = DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_field => $id_field });
+        $rs_old_topics->delete();
     }
 }
 
@@ -1892,6 +1889,56 @@ sub list_posts {
             };
     }
     return \@rows;
+}
+sub find_status_name {
+    my ($self, $id_status ) = @_;
+    [ map {$_->{name}} DB->BaliTopicStatus->search({id =>$id_status},{select=>'name'})->hashref->first ]->[0];
+}
+
+sub cache_topic_remove {
+    my ($self, $topic_mid ) = @_;
+    # my own first
+    Baseliner->cache_remove( qr/:$topic_mid:/ );
+    # refresh cache for related stuff 
+    for my $rel ( 
+        map { +{mid=>$_->{mid}, type=>$_->{_edge}{rel_type} } } 
+        _ci( $topic_mid )->related( depth=>1 ) ) 
+    {
+        my $rel_mid = $rel->{mid};
+        _debug "TOPIC CACHE REL remove :$rel_mid:";
+        Baseliner->cache_remove( qr/:$rel_mid:/ );
+    }
+}
+
+sub change_status {
+    my ($self, %p) = @_;
+    my $mid = $p{mid} or _throw 'Missing parameter mid';
+    $p{id_status} or _throw 'Missing parameter id_status';
+    $p{id_old_status} or _throw 'Missing parameter id_old_status';
+    my $status = $p{status} || $self->find_status_name($p{id_status});
+    my $old_status = $p{old_status} || $self->find_status_name($p{id_old_status});
+    my $callback = $p{callback};
+    event_new 'event.topic.change_status'
+        => { username => $p{username}, old_status => $old_status, id_old_status=>$p{id_old_status}, id_status=>$p{id_status}, status => $status }
+        => sub {
+            # should I change the status?
+            if( $p{change} ) {
+                my $row = DB->BaliTopic->find( $mid );
+                _fail( _loc('Id not found: %1', $mid) ) unless $row;
+                _fail _loc "Current topic status '%1' does not match the real status '%2'. Please refresh.", $row->status->name, $old_status if $row->id_category_status != $p{id_old_status};
+                # XXX check workflow for user
+                # change and cleanup
+                $row->update({ id_category_status => $p{id_status} });
+                $self->cache_topic_remove( $mid );
+            }
+            # callback, if any
+            $callback->() if ref $callback eq 'CODE';
+
+            +{ mid => $mid, title => $p{title} } ;
+        } 
+        => sub {
+            _throw _loc( 'Error modifying Topic: %1', shift() );
+        };                    
 }
 
 1;

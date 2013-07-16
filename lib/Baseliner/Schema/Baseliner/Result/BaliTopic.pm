@@ -46,7 +46,7 @@ __PACKAGE__->add_columns(
   },
   "modified_by",
   { data_type => "varchar2", is_nullable => 1, size => 255 },
-  "status",
+  "status",  # XXX is the same as id_category_status and the relationship... delete?
   { data_type => "char", default_value => "O", is_nullable => 0, size => 1 },
   "id_category",
   {

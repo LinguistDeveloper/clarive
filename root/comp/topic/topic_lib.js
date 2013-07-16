@@ -14,9 +14,10 @@ Baseliner.show_topic = function(topic_mid, title, params) {
 
 Baseliner.topic_title = function( mid, category, color) {
     var uppers = category ? category.replace( /[^A-Z]/g, '' ) : '';
+    var pad_for_tab = 'margin: 0 0 -3px 0; padding: 2px 4px 2px 4px; line-height: 12px;'; // so that tabs stay aligned
     return color 
-        ? String.format( '<span id="boot" style="background:transparent"><span class="label" style="background-color:{1}">{2} #{0}</span></span>', mid, color, uppers )
-        : String.format( '<span id="boot" style="background:transparent"><span class="label" style="background-color:{2}">{0} #{1}</span></span>', uppers, mid, color )
+        ? String.format( '<span id="boot" style="background:transparent; margin-bottom: 0px"><span class="label" style="{3}; background-color:{1}">{2} #{0}</span></span>', mid, color, uppers, pad_for_tab )
+        : String.format( '<span id="boot" style="background:transparent; margin-bottom: 0px"><span class="label" style="{3}; background-color:{2}">{0} #{1}</span></span>', uppers, mid, color, pad_for_tab )
         ;
 }
 
@@ -526,6 +527,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
     
         // Detail Panel
         self.detail = new Ext.Panel({ 
+            padding: 15,
             layout:'fit'
         });
         
@@ -638,7 +640,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             tbar: tb,
             autoScroll: true,
             //frame: true,
-            padding: '15px 15px 15px 15px',
+            //padding: '15px 15px 15px 15px',
             defaults: {border: false},
             items: [ self.loading_panel, self.detail ]
         });
@@ -654,7 +656,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         }
         rec.id_panel = self.id;
 
-        self.form_topic = new Baseliner.TopicForm({ rec: rec, main: self });
+        self.form_topic = new Baseliner.TopicForm({ rec: rec, main: self, padding: 15 });
         
         if( ! self.form_is_loaded ) {
             self.add( self.form_topic );
@@ -730,21 +732,34 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 self.btn_delete_form,
                 self.btn_save_form,
                 '->',
-                self.btn_kanban,
-                self.btn_graph
+                self.btn_graph,
+                self.btn_kanban
             ]
         });
         return tb;
     },
-    show_kanban: function(){
+    show_kanban : function(){
         var self = this;
+        if( self.kanban ) {
+            self.getLayout().setActiveItem( self.kanban );
+            return;
+        }  
         Baseliner.ajaxEval('/topic/children', { mid: self.topic_mid, _whoami: 'show_kanban' }, function(res){
             var topics = res.children;
-            self.kanban = Baseliner.kanban({ topics: topics, background: '#888',
-                on_tab: function(){
-                    self.getLayout().setActiveItem( self.detail );
-                    self.btn_detail.toggle( true );
-                }
+            self.kanban = new Baseliner.Kanban({ 
+                //background: '#888',
+                title: self.title,
+                topics: topics
+            });
+            self.kanban.on('beforeclose', function(tabid){
+                self.getLayout().setActiveItem( self.detail );
+                self.btn_detail.toggle( true );
+                self.kanban = null;
+            });
+            self.kanban.on('tab', function(tabid){
+                self.getLayout().setActiveItem( self.detail );
+                self.btn_detail.toggle( true );
+                self.kanban = null;
             });
             self.add( self.kanban );
             self.getLayout().setActiveItem( self.kanban );

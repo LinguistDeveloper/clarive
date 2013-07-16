@@ -424,8 +424,13 @@
                 Ext.each( sm.getSelections(), function(r) {
                     mids.push( r.get('topic_mid') );
                 });
+            } else {
+               store_topics.each( function(r){
+                    mids.push( r.get('topic_mid') );
+               });
             }
-            Baseliner.kanban_from_store({ mids: mids, store: store_topics });
+            var kanban = new Baseliner.Kanban({ topics: mids });
+            kanban.fullscreen();
         }
     }); 
     
