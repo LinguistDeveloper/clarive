@@ -418,7 +418,14 @@
         pressed: false,
         handler: function(){
             // kanban fullscreen 
-            Baseliner.kanban_from_store({ store: store_topics });
+            var mids = [];
+            var sm = grid_topics.getSelectionModel();
+            if (sm.hasSelection()) {
+                Ext.each( sm.getSelections(), function(r) {
+                    mids.push( r.get('topic_mid') );
+                });
+            }
+            Baseliner.kanban_from_store({ mids: mids, store: store_topics });
         }
     }); 
     
