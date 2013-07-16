@@ -1449,49 +1449,50 @@ sub set_topics {
     my @new_topics = map { split /,/, $_ } _array( $topics ) ;
     my @old_topics = map {$_->{to_mid}} DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_type => 'topic_topic', rel_field => $id_field})->hashref->all;
     
-    if( @new_topics ) {
-        if(@old_topics){
-            my $rs_old_topics = DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_field=>$id_field });
-            $rs_old_topics->delete();
-        }
-        
-        my $rel_seq = 1;  # oracle may resolve this with a seq, but sqlite doesn't 
-        for (@new_topics){
-            DB->BaliMasterRel->update_or_create({from_mid => $rs_topic->mid, to_mid => $_, rel_type =>'topic_topic', rel_field => $id_field, rel_seq=>$rel_seq++ });
-        }
-        
-        my $topics = join(',', @new_topics);
+    if ( array_diff(@new_topics, @old_topics) ) {
+        if( @new_topics ) {
+            if(@old_topics){
+                my $rs_old_topics = DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_field=>$id_field });
+                $rs_old_topics->delete();
+            }
+            
+            my $rel_seq = 1;  # oracle may resolve this with a seq, but sqlite doesn't 
+            for (@new_topics){
+                DB->BaliMasterRel->update_or_create({from_mid => $rs_topic->mid, to_mid => $_, rel_type =>'topic_topic', rel_field => $id_field, rel_seq=>$rel_seq++ });
+            }
+            
+            my $topics = join(',', @new_topics);
 
-        event_new 'event.topic.modify_field' => { username   => $user,
-                                            field      => _loc( 'attached topics' ),
-                                            old_value      => '',
-                                            new_value  => $topics,
-                                            text_new      => '%1 modified topic: %2 ( %4 )',
-                                           } => sub {
-            { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
-        } ## end try
-        => sub {
-            _throw _loc( 'Error modifying Topic: %1', shift() );
-        };        
-        
-    }else{
-        event_new 'event.topic.modify_field' => { username   => $user,
-                                            field      => '',
-                                            old_value      => '',
-                                            new_value  => '',
-                                            text_new      => '%1 deleted all attached topics of ' . $id_field ,
-                                           } => sub {
-            { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
-        } ## end try
-        => sub {
-            _throw _loc( 'Error modifying Topic: %1', shift() );
-        };
+            event_new 'event.topic.modify_field' => { username   => $user,
+                                                field      => _loc( 'attached topics' ),
+                                                old_value      => '',
+                                                new_value  => $topics,
+                                                text_new      => '%1 modified topic: %2 ( %4 )',
+                                               } => sub {
+                { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
+            } ## end try
+            => sub {
+                _throw _loc( 'Error modifying Topic: %1', shift() );
+            };        
+            
+        }else{
+            event_new 'event.topic.modify_field' => { username   => $user,
+                                                field      => '',
+                                                old_value      => '',
+                                                new_value  => '',
+                                                text_new      => '%1 deleted all attached topics of ' . $id_field ,
+                                               } => sub {
+                { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
+            } ## end try
+            => sub {
+                _throw _loc( 'Error modifying Topic: %1', shift() );
+            };
 
-        #$rs_topic->set_topics( undef, { rel_type=>'topic_topic', rel_field => $id_field});
-        my $rs_old_topics = DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_field => $id_field });
-        $rs_old_topics->delete();            
+            #$rs_topic->set_topics( undef, { rel_type=>'topic_topic', rel_field => $id_field});
+            my $rs_old_topics = DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_field => $id_field });
+            $rs_old_topics->delete();            
+        }
     }
-
 }
 
 sub set_cis {
@@ -1645,10 +1646,11 @@ sub set_projects {
     my ($self, $rs_topic, $projects, $user, $id_field ) = @_;
     my $topic_mid = $rs_topic->mid;
     
-    my @new_projects = _array( $projects ) ;
+    my @new_projects = sort { $a <=> $b } _array( $projects ) ;
 
     #my @old_projects = map {$_->{mid}} Baseliner->model('Baseliner::BaliTopic')->find(  $topic_mid )->projects->search( {rel_field => $id_field}, { order_by => { '-asc' => ['mid'] }} )->hashref->all;
-    my @old_projects =  Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid )->
+    _log "RRRRRR: ".$id_field;
+    my @old_projects =  map { $_->{mid} } Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid )->
                 projects->search( {rel_field => $id_field }, { select => ['mid'], order_by => { '-asc' => ['mid'] }} )->hashref->all;
 
     
