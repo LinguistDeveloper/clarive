@@ -304,7 +304,7 @@ around 'debug' => sub {
     sub cache_set { 
         my ($self,$key,$value)=@_;
         Util->_debug(-1, "+++ CACHE SET: " . ( ref $key ? Util->_to_json($key) : $key ) ) if $ENV{BALI_CACHE_TRACE}; 
-        Util->_debug( Util->_whereami ) if $ENV{BALI_CACHE_TRACE} > 1 ;
+        Util->_debug( Util->_whereami ) if defined $ENV{BALI_CACHE_TRACE} && $ENV{BALI_CACHE_TRACE} > 1 ;
         $ccache->set( $key, $value ) 
     }
     sub cache_get { 
