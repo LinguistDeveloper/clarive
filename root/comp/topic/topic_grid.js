@@ -42,8 +42,8 @@
     });
    
     var init_buttons = function(action) {
-        eval('btn_edit.' + action + '()');
-        eval('btn_delete.' + action + '()');
+        btn_edit[ action ]();
+        btn_delete[ action ]();
     }
     
     var button_no_filter = new Ext.Button({
@@ -351,9 +351,7 @@
             var sm = grid_topics.getSelectionModel();
                 if (sm.hasSelection()) {
                     Ext.each( sm.getSelections(), function(r) {
-                        var topic_mid = r.get('topic_mid');
-                        var title = _(r.get( 'category_name' )) + ' #' + topic_mid;
-                        Baseliner.add_tabcomp('/topic/view?topic_mid=' + topic_mid + '&swEdit=1', title , { topic_mid: topic_mid, title: title } );
+                        Baseliner.show_topic_from_row( r, grid_topics );
                     });
                 } else {
                     Baseliner.message( _('ERROR'), _('Select at least one row'));    
@@ -585,6 +583,8 @@
     var render_topic_name = function(value,metadata,rec,rowIndex,colIndex,store){
         var d = rec.data;
         return Baseliner.topic_name({
+            link: true,
+            parent_id: grid_topics.id,
             mid: d.topic_mid, 
             mini: btn_mini.pressed,
             size: btn_mini.pressed ? '9' : '11',
@@ -724,7 +724,6 @@
     
 //    grid_topics.on('rowclick', function(grid, rowIndex, columnIndex, e) {
 //        //init_buttons('enable');
-//      alert('pasa');
 //    });
     
     grid_topics.on('cellclick', function(grid, rowIndex, columnIndex, e) {
@@ -845,7 +844,7 @@
 
     function topicsSelected(){
         var topics_checked = getTopics();
-        if (topics_checked.length == 1){
+        if (topics_checked.length > 0 ){
             var sw_edit;
             check_sm.each(function(rec){
                 sw_edit = (rec.get('sw_edit'));

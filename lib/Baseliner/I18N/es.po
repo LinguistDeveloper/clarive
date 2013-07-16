@@ -4326,6 +4326,9 @@ msgstr "Error creando carpeta: %1"
 msgid "You must save the topic before add new files"
 msgstr "Debes guardar el tópico antes de añadir nuevos ficheros"
 
+msgid "To upload files, the form needs to be created. Save form before submitting?"
+msgstr "Para poder subir ficheros, el formulario tiene que estar creado. Crear formulario ahora?"
+
 msgid "status_new"
 msgstr "Estados"
 

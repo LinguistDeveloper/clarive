@@ -32,6 +32,72 @@ Baseliner.show_topic_from_row = function(r, grid) {
     //Baseliner.add_tabcomp('/topic/view?topic_mid=' + r.get('topic_mid') + '&app=' + typeApplication , title ,  );
 }
 
+/*
+    parameters:
+         {
+            mid:
+            category_name:
+            category_color: 
+            category_icon:
+            is_changeset: 1|0
+            is_release: 1|0
+         }
+*/
+Baseliner.topic_name = function(args) {
+        var mid = args.mid; //Cambiarlo en un futuro por un contador de categorias
+        if( ! mid ) 
+            mid = args.topic_mid; 
+        if( mid )
+            mid = '#' + mid;
+        else
+		    mid = '';
+        var cat_name = _(args.category_name); //Cambiarlo en un futuro por un contador de categorias
+        if( cat_name )
+            cat_name = cat_name + ' ';
+        else
+            cat_name = ''
+        var color = args.category_color;
+        var cls = 'label';
+        var icon = args.category_icon;
+        var size = args.size ? args.size : '10';
+
+        var top,bot,img;
+        top=2, bot=4, img=2;
+
+        if( ! color ) 
+            color = '#999';
+
+        // set default icons
+        if( icon==undefined ) {
+            if( args.is_changeset > 0  ) {
+                icon = '/static/images/icons/package-white.png';
+            }
+            else if( args.is_release > 0  ) {
+                icon = '/static/images/icons/release-white.png';
+            }
+        }
+
+        // prepare icon background
+        var style_str;
+        if( icon && ! args.mini ) {
+            style_str = "padding:{2}px 8px {3}px 18px;background: {0} url('{1}') no-repeat left {4}px; font-size: {5}px";
+        }
+        else {
+            style_str = "padding:{2}px 8px {3}px 8px;background-color: {0}; font-size: {5}px";
+        }
+        var style = String.format( style_str, color, icon, top, bot, img, size );
+        //if( color == undefined ) color = '#777';
+        var on_click = args.link ? String.format('javascript:Baseliner.show_topic_colored({0},"{1}", "{2}", "{3}");', args.mid, cat_name, color, args.parent_id ) : '';  
+        var cursor = args.link ? 'cursor:pointer' : '';
+
+        var ret = args.mini 
+            ? String.format('<span id="boot" onclick=\'{4}\' style="{5};background: transparent" ><span class="{0}" style="{5};{1};padding: 1px 1px 1px 1px; margin: 0px 4px -10px 0px;border-radius:0px">&nbsp;</span><span style="{5};font-weight:bolder;font-size:11px">{2}{3}</span></span>', 
+                cls, [style,args.style].join(';'), cat_name, mid, on_click, cursor )
+            : String.format('<span id="boot" onclick=\'{4}\'><span class="{0}" style="{1};{5}">{2}{3}</span></span>', 
+                cls, [style,args.style].join(';'), cat_name, mid, on_click, cursor );
+        return ret;
+};
+
 Baseliner.store.Topics = function(c) {
      Baseliner.store.Topics.superclass.constructor.call(this, Ext.apply({
         root: 'data' , 
@@ -587,72 +653,70 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             rec._cis = self._cis;
         }
         rec.id_panel = self.id;
-        Baseliner.ajaxEval( '/comp/topic/topic_form.js', rec, function(comp) {
-            if( ! self.form_is_loaded ) {
-                self.form_topic = comp;
-                self.add( self.form_topic );
-                self.getLayout().setActiveItem( self.form_topic );
-                self.form_is_loaded = true;
-            }
 
-            // now show/hide buttons
-            self.btn_save_form.show();
+        self.form_topic = new Baseliner.TopicForm({ rec: rec, main: self });
+        
+        if( ! self.form_is_loaded ) {
+            self.add( self.form_topic );
+            self.getLayout().setActiveItem( self.form_topic );
+            self.form_is_loaded = true;
+        }
 
-            if(self.topic_mid){
-                self.btn_comment.show();
-                //Baseliner.TopicExtension.toolbar.length > 0 ? self.btn_detail.hide(): self.btn_detail.show();
-                self.btn_detail.show();
-                self.btn_delete_form.show();
-            }else{
-                self.btn_comment.hide();
-                self.btn_detail.hide();
-                self.btn_delete_form.hide();
-            }
-        });            
+        // now show/hide buttons
+        self.btn_save_form.show();
+
+        if(self.topic_mid){
+            self.btn_comment.show();
+            //Baseliner.TopicExtension.toolbar.length > 0 ? self.btn_detail.hide(): self.btn_detail.show();
+            self.btn_detail.show();
+            self.btn_delete_form.show();
+        }else{
+            self.btn_comment.hide();
+            self.btn_detail.hide();
+            self.btn_delete_form.hide();
+        }
     },
     show_form : function(){
         var self = this;
         self.getLayout().setActiveItem( self.loading_panel );
-            if( self!==undefined && self.topic_mid !== undefined ) {
-                
-                var tabpanel = Ext.getCmp('main-panel');
-                var panel = tabpanel.getActiveTab();
-                var activeTabIndex = tabpanel.items.findIndex('id', panel.id );
-                var id = panel.getId();
-                var info = Baseliner.tabInfo[id];
-                if( info!=undefined ) info.params.swEdit = 1;
-                
-                if (!self.form_is_loaded){
-    
-                    Baseliner.ajaxEval( '/topic/json', { topic_mid: self.topic_mid, topic_child_data : true }, function(rec) {
-                        self.load_form( rec );         
-                    });
-                }else{
-                    self.getLayout().setActiveItem( self.form_topic );
-    
-                    self.btn_save_form.show();
-                    
-                    if(self.topic_mid){
-                        self.btn_comment.show();
-                        self.btn_detail.show();
-                        self.btn_delete_form.show();
-                    }else{
-                        self.btn_comment.hide();
-                        self.btn_detail.hide();
-                        self.btn_delete_form.hide();
-                    }                
-                }
-            } else {
-                Baseliner.ajaxEval( '/topic/new_topic', { new_category_id: self.new_category_id, new_category_name: self.new_category_name, ci: self.ci, dni: self.dni, clonar: self.clonar}, function(rec) {
-                    if( rec.success ) {
-                        self.load_form( rec );
-                    } else {
-                        Baseliner.error( _('Error'), rec.msg );
-                        self.destroy();
-                    }
+        if( self!==undefined && self.topic_mid !== undefined ) {
+            var tabpanel = Ext.getCmp('main-panel');
+            var panel = tabpanel.getActiveTab();
+            var activeTabIndex = tabpanel.items.findIndex('id', panel.id );
+            var id = panel.getId();
+            var info = Baseliner.tabInfo[id];
+            if( info!=undefined ) info.params.swEdit = 1;
+            
+            if (!self.form_is_loaded){
+
+                Baseliner.ajaxEval( '/topic/json', { topic_mid: self.topic_mid, topic_child_data : true }, function(rec) {
+                    self.load_form( rec );         
                 });
+            }else{
+                self.getLayout().setActiveItem( self.form_topic );
+
+                self.btn_save_form.show();
+                
+                if(self.topic_mid){
+                    self.btn_comment.show();
+                    self.btn_detail.show();
+                    self.btn_delete_form.show();
+                }else{
+                    self.btn_comment.hide();
+                    self.btn_detail.hide();
+                    self.btn_delete_form.hide();
+                }                
             }
-              
+        } else {
+            Baseliner.ajaxEval( '/topic/new_topic', { new_category_id: self.new_category_id, new_category_name: self.new_category_name, ci: self.ci, dni: self.dni, clonar: self.clonar}, function(rec) {
+                if( rec.success ) {
+                    self.load_form( rec );
+                } else {
+                    Baseliner.error( _('Error'), rec.msg );
+                    self.destroy();
+                }
+            });
+        }
     },
     create_toolbar : function(){
         var self = this;
@@ -726,9 +790,10 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         });
         self.detail.body.setStyle('overflow', 'auto');
     },
-    save_topic : function(){
+    save_topic : function(opts){
         var self = this;
         self.form_topic.on_submit();
+        if( !opts ) opts = {};
         
         var form2 = self.form_topic.getForm();
         var action = form2.getValues()['topic_mid'] >= 0 ? 'update' : 'add';
@@ -778,12 +843,14 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                         self.setTitle( title );    
                     }
                     self.view_is_dirty = true;
+                    if( Ext.isFunction(opts.success) ) opts.success(a.result);
                },
                failure: function(f,action){
-                  self.btn_save_form.enable();
-                  self.btn_delete_form.enable();
-                  var res = action.response;
-                  Baseliner.error_win('',{},res,res.responseText );
+                   self.btn_save_form.enable();
+                   self.btn_delete_form.enable();
+                   var res = action.response;
+                   Baseliner.error_win('',{},res,res.responseText );
+                   if( Ext.isFunction(opts.failure) ) opts.failure(res);
                }
             });
         }        

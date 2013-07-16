@@ -381,68 +381,6 @@ Baseliner.render_bytes = function(value,metadata,rec,rowIndex,colIndex,store) {
     return Baseliner.byte_format( value );
 }
 
-/*
-    parameters:
-         {
-            mid:
-            category_name:
-            category_color: 
-            category_icon:
-            is_changeset: 1|0
-            is_release: 1|0
-         }
-*/
-Baseliner.topic_name = function(args) {
-        var mid = args.mid; //Cambiarlo en un futuro por un contador de categorias
-        if( ! mid ) 
-            mid = args.topic_mid; 
-        if( mid )
-            mid = '#' + mid;
-        else
-		    mid = '';
-        var cat_name = _(args.category_name); //Cambiarlo en un futuro por un contador de categorias
-        if( cat_name )
-            cat_name = cat_name + ' ';
-        else
-            cat_name = ''
-        var color = args.category_color;
-        var cls = 'label';
-        var icon = args.category_icon;
-        var size = args.size ? args.size : '10';
-
-        var top,bot,img;
-        top=2, bot=4, img=2;
-
-        if( ! color ) 
-            color = '#999';
-
-        // set default icons
-        if( icon==undefined ) {
-            if( args.is_changeset > 0  ) {
-                icon = '/static/images/icons/package-white.png';
-            }
-            else if( args.is_release > 0  ) {
-                icon = '/static/images/icons/release-white.png';
-            }
-        }
-
-        // prepare icon background
-        var style_str;
-        if( icon && ! args.mini ) {
-            style_str = "padding:{2}px 8px {3}px 18px;background: {0} url('{1}') no-repeat left {4}px; font-size: {5}px";
-        }
-        else {
-            style_str = "padding:{2}px 8px {3}px 8px;background-color: {0}; font-size: {5}px";
-        }
-        var style = String.format( style_str, color, icon, top, bot, img, size );
-        //if( color == undefined ) color = '#777';
-
-        var ret = args.mini 
-            ? String.format('<span id="boot" style="background: transparent"><span class="{0}" style="{1};padding: 1px 1px 1px 1px; margin: 0px 4px -10px 0px;border-radius:0px">&nbsp;</span><span style="font-weight:bolder;font-size:11px">{2}{3}</span></span>', cls, [style,args.style].join(';'), cat_name, mid )
-            : String.format('<span id="boot"><span class="{0}" style="{1}">{2}{3}</span></span>', cls, [style,args.style].join(';'), cat_name, mid );
-        return ret;
-};
-
 
 //return String.format('<a href="javascript:Baseliner.show_ci({3})">{2}</a>', mid, value );
 
