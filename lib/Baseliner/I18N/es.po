@@ -1204,10 +1204,10 @@ msgid "Services"
 msgstr "Servicios"
 
 msgid "Comment"
-msgstr "Observación"
+msgstr "Comentario"
 
 msgid "Comments"
-msgstr "Observaciones"
+msgstr "Comentarios"
 
 msgid "Please, click on the following links"
 msgstr "Por favor, haga clic en los siguientes enlaces"
@@ -2992,12 +2992,12 @@ msgstr "¿Seguro que quiere borrar el entorno"
 
 # lib/Baseliner/Controller/Topic.pm (171)
 msgid "Comment added"
-msgstr "Observación añadida"
+msgstr "Comentario añadido"
 
 
 # lib/Baseliner/Controller/Topic.pm (175)
 msgid "Error adding Comment: %1"
-msgstr "Error añadiendo observación: %1"
+msgstr "Error añadiendo comentario: %1"
 
 
 # lib/Baseliner/Controller/Topic.pm (235)
@@ -3072,7 +3072,10 @@ msgstr "Error cerrando tópico: %1"
 
 # root/comp/topic_grid.js (116)
 msgid "Are you sure you want to delete the topic(s)"
-msgstr "¿Seguro que quiere borrar tópico"
+msgstr "¿Seguro que quiere borrar el/los tópico(s)"
+
+msgid "Are you sure you want to delete the topic?"
+msgstr "¿Seguro que quiere borrar el tópico?"
 
 msgid " (and %1 more)"
 msgstr " (y %1 más)"
@@ -3102,7 +3105,7 @@ msgstr "Editar tópico"
 
 # root/comp/topic_grid.js (275)
 msgid "Create comment"
-msgstr "Crear observación"
+msgstr "Crear comentario"
 
 
 # root/comp/topic_grid.js (537)

@@ -22,22 +22,24 @@ sub storage { 'BaliTopic' }
 around load => sub {
     my ($orig, $self ) = @_;
     my $data = $self->$orig();
+    $data = { %$data, %{ Baseliner->model('Topic')->get_data( undef, $self->mid, with_meta=>1 ) || {} } };
     #$data->{category} = { DB->BaliTopic->find( $self->mid )->categories->get_columns };
     return $data;
 };
 
 around table_update_or_create => sub {
     my ( $orig, $self, $rs, $mid, $data, @rest ) = @_;
-    my $name = delete $data->{name};
+    #my $name = delete $data->{name};
     #$data->{title} //= $name; 
     $data->{created_by} //= 'internal';
-    delete $data->{title};
-    delete $data->{active};
-    delete $data->{versionid};
-    delete $data->{moniker};
-    delete $data->{data};
-    delete $data->{ns};
-    $self->$orig( $rs, $mid, $data, @rest );
+    #delete $data->{title};
+    #delete $data->{active};
+    #delete $data->{versionid};
+    #delete $data->{moniker};
+    #delete $data->{data};
+    #delete $data->{ns};
+    #delete $data->{ts};
+    #$self->$orig( $rs, $mid, $data, @rest );
 };
 
 sub files {

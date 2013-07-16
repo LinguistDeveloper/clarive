@@ -525,7 +525,7 @@ sub view : Local {
         }
                          
         # comments
-        $self->list_posts( $c );  # get comments into stash        
+        $c->stash->{comments} = $c->model('Topic')->list_posts( mid=>$topic_mid );
         $c->stash->{events} = events_by_mid( $topic_mid, min_level => 2 );
         
         #$c->stash->{forms} = [
@@ -595,6 +595,7 @@ sub comment : Local {
             if( ! length $id_com ) {  # optional, if exists then is not add, it's an edit
                 $topic = master_new 'post' => substr($text,0,10) => sub { 
                     my $mid = shift;
+                    $id_com = $mid;
                     my $post = $c->model('Baseliner::BaliPost')->create(
                         {   mid   => $mid,
                             text       => $text,
@@ -632,11 +633,14 @@ sub comment : Local {
             }
             $c->stash->{json} = {
                 msg     => _loc('Comment added'),
+                id      => $id_com,
                 success => \1
             };
         }
         catch{
-            $c->stash->{json} = { msg => _loc('Error adding Comment: %1', shift()), failure => \1 }
+            my $err = shift;
+            _error( $err );
+            $c->stash->{json} = { msg => _loc('Error adding Comment: %1', $err ), failure => \1 }
         };
     } elsif( $action eq 'delete' )  {
         try {
@@ -655,7 +659,9 @@ sub comment : Local {
             } for @mids;
             $c->stash->{json} = { msg => _loc('Delete comment ok'), failure => \0 };
         } catch {
-            $c->stash->{json} = { msg => _loc('Error deleting Comment: %1', shift() ), failure => \1 }
+            my $err = shift;
+            _error( $err );
+            $c->stash->{json} = { msg => _loc('Error deleting Comment: %1', $err ), failure => \1 }
         };
     } elsif( $action eq 'view' )  {
         try {
@@ -672,31 +678,12 @@ sub comment : Local {
                 created_on => $post->created_on->dmy . ' ' . $post->created_on->hms
             };
         } catch {
-            $c->stash->{json} = { msg => _loc('Error viewing comment: %1', shift() ), failure => \1 }
+            my $err = shift;
+            _error( $err );
+            $c->stash->{json} = { msg => _loc('Error viewing comment: %1', $err ), failure => \1 }
         };
     }
     $c->forward('View::JSON');
-}
-
-sub list_posts : Local {
-    my ($self, $c) = @_;
-    my $p = $c->request->parameters;
-    my $topic_mid = $p->{topic_mid};
-
-    my $rs = $c->model('Baseliner::BaliTopic')->find( $topic_mid )
-        ->posts->search( undef, { order_by => { '-desc' => 'created_on' } } );
-    my @rows;
-    while( my $r = $rs->next ) {
-        push @rows,
-            {
-            created_on   => $r->created_on,
-            created_by   => $r->created_by,
-            text         => $r->text,
-            content_type => $r->content_type,
-            id           => $r->id,
-            };
-    }
-    $c->stash->{comments} = \@rows;
 }
 
 sub list_category : Local {

@@ -13,6 +13,7 @@ __PACKAGE__->result_source_instance->is_virtual(1);
 __PACKAGE__->result_source_instance->view_definition(q{
 
     SELECT  T.MID TOPIC_MID,
+            T.MID,
             T.TITLE,
             T.CREATED_ON,
             T.CREATED_BY,
@@ -99,6 +100,7 @@ __PACKAGE__->result_source_instance->view_definition(q{
 __PACKAGE__->add_columns(
     qw(
         topic_mid 
+        mid
         title
         created_on
         created_by

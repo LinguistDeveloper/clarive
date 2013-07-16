@@ -96,18 +96,14 @@ Or:
 sub master_new {
     my ($collection, $name, $code ) =@_;
     my $master_data = ref $name eq 'HASH' ? $name : { name=>$name };
+    my $class = 'BaselinerX::CI::'.$collection;
     if( ref $code eq 'HASH' ) {
-        my $row = { collection => $collection, %$master_data, yaml => Baseliner::Utils::_dump($code) };
-        $row->{bl} = $code->{bl} if defined $code->{bl};
-        my $master = Baseliner->model('Baseliner::BaliMaster')->create( $row );
-        return $master;
+        return $class->save( %$master_data, data=>$code );   # this returns a mid
     } elsif( ref $code eq 'CODE' ) {
         my $ret;
         Baseliner->model('Baseliner')->txn_do(sub{
-            my $master = Baseliner->model('Baseliner::BaliMaster')->create({
-                collection => $collection, %$master_data, 
-            });
-            $ret = $code->( $master->mid, $master );
+            my $mid = $class->save( %$master_data ); 
+            $ret = $code->( $mid );
         });
         return $ret;
     } else {

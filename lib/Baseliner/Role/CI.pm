@@ -8,6 +8,17 @@ require Baseliner::CI;
 subtype CI    => as 'Baseliner::Role::CI';
 subtype CIs   => as 'ArrayRef[CI]';
 subtype BoolCheckbox   => as 'Bool';
+subtype TS    => as 'Str';
+subtype DT    => as 'DateTime';
+
+coerce 'TS' => 
+    from 'DT' => via { Class::Date->new( $_->set_time_zone( Util->_tz ) )->string },
+    from 'Num' => via { Class::Date->new( $_ )->string },
+    from 'Undef' => via { Class::Date->now->string },
+    from 'Any' => via { Class::Date->now->string };
+
+coerce 'BoolCheckbox' =>
+  from 'Str' => via { $_ eq 'on' ? 1 : 0 };
 
 # deprecated, but kept for future reference
 #coerce 'CI' =>
@@ -20,11 +31,9 @@ subtype BoolCheckbox   => as 'Bool';
 #  from 'ArrayRef[Num]' => via { my $v = $_; [ map { Baseliner::CI->new( $_ ) } _array( $v ) ] },
 #  from 'Num' => via { [ Baseliner::CI->new( $_ ) ] }; 
 
-coerce 'BoolCheckbox' =>
-  from 'Str' => via { $_ eq 'on' ? 1 : 0 };
-
 has mid      => qw(is rw isa Num);
 has active   => qw(is rw isa Bool);
+has ts       => qw(is rw isa TS coerce 1), default => sub { Class::Date->now->string };
 #has _ci      => qw(is rw isa Any);          # the original DB record returned by load() XXX conflicts with Utils::_ci
 
 requires 'icon';
@@ -48,7 +57,7 @@ has job     => qw(is rw isa Baseliner::Role::JobRunner),
         };
 
 sub storage { 'yaml' }   # ie. yaml, fields, BaliUser, BaliProject
-sub storage_pk { 'mid' }  # primary key (mid) column for foreing table
+sub storage_pk { 'mid' }  # primary key (mid) column for foreign table
 
 # from Node (deprected)
 # has uri      => qw(is rw isa Str);   # maybe a URI someday...
@@ -117,12 +126,13 @@ sub save {
         delete $data->{job};
     }
 
-    Baseliner->cache_clear;
+    Baseliner->cache_remove( qr/^ci:/ );
     # transaction bound, in case there are foreign tables
     Baseliner->model('Baseliner')->txn_do(sub{
+        my $row;
         if( $exists ) { 
             ######## UPDATE CI
-            my $row = Baseliner->model('Baseliner::BaliMaster')->find( $mid );
+            $row = Baseliner->model('Baseliner::BaliMaster')->find( $mid );
             if( $row ) {
                 $row->bl( join ',', _array $bl ) if defined $bl; # TODO mid rel bl (bl) 
                 $row->name( $name ) if defined $name;
@@ -130,6 +140,7 @@ sub save {
                 $row->versionid( $versionid ) if defined $versionid && length $versionid;
                 $row->moniker( $moniker ) if defined $moniker;
                 $row->ns( $ns ) if defined $ns;
+                $row->ts( Util->_dt );
                 $row->update;  # save bali_master data
                 $self->save_data( $row, $data );
             }
@@ -141,11 +152,12 @@ sub save {
             }
         } else {
             ######## NEW CI
-            my $row = Baseliner->model('Baseliner::BaliMaster')->create(
+            $row = Baseliner->model('Baseliner::BaliMaster')->create(
                 {
                     collection => $collection,
                     name       => $name,
                     ns         => $ns,
+                    ts         => Util->_dt,
                     moniker    => $moniker,
                     active     => $active // 1,
                     versionid  => $versionid // 1
@@ -162,12 +174,15 @@ sub save {
             }
             # moniker
             if( ! defined $moniker ) {
-#                $row->moniker( $self->moniker ); ## Fails for git revisions
-                $row->moniker( 'mid_'.$mid );
+                $row->moniker( $self->moniker ) if ref $self;
             }
+            #Util->_error( { $row->get_columns } );
+            #Util->_error( $data );
             # now save the rest of the ci data
             $self->save_data( $row, $data );
         }
+        # now index for searches 
+        $self->index_search_data( mid=>$mid, row=>$row, data=>$data) unless $p{no_index};
     });
     return $mid; 
 }
@@ -190,7 +205,7 @@ sub save_data {
         next unless $attr;
         my $type = $attr->type_constraint->name;
         if( $type eq 'CI' || $type eq 'CIs' || $type =~ /^Baseliner::Role::CI/ ) {
-            my $rel_type = $self->rel_type->{ $field } or _fail _loc( "Missing rel_type definition for %1 (class %2)", $field, ref $self || $self );
+            my $rel_type = $self->rel_type->{ $field } or Util->_fail( Util->_loc( "Missing rel_type definition for %1 (class %2)", $field, ref $self || $self ) );
             next unless $rel_type;
             my $v = delete($data->{$field});  # consider a split on ,  
             $v = [ split /,/, $v ] unless ref $v;
@@ -209,7 +224,7 @@ sub save_data {
     }
     # now store the data
     if( $storage eq 'yaml' ) {
-        $master_row->yaml( _dump( $data ) );
+        $master_row->yaml( Util->_dump( $data ) );
         $master_row->update;
     }
     elsif( $storage eq 'fields' ) {
@@ -259,7 +274,7 @@ sub load {
     #say STDERR "----> SCOPE $mid =" . join( ', ', keys( $Baseliner::CI::mid_scope ) );
     return $scoped if $scoped;
     # in cache ?
-    my $cache_key = "ci:$mid";
+    my $cache_key = "ci:$mid:";
     my $cached = Baseliner->cache_get( $cache_key );
     return $cached if $cached;
     _fail _loc( "Missing mid %1", $mid ) unless length $mid;
@@ -495,6 +510,20 @@ sub children {
     my ($self, %opts)=@_;
     local $Baseliner::CI::mid_scope = {} unless defined $Baseliner::CI::mid_scope;
     return $self->related( %opts, edge=>'out' );
+}
+
+# search utilities
+
+sub index_search_data {
+    my( $self, %p ) = @_;
+    my $mid = $p{mid} or _throw 'Missing mid for index search';
+    my $data = $p{data} || {};
+    my $row = $p{row} ? { $p{row}->get_columns } : {}; # master row
+    my $enc = JSON::XS->new->convert_blessed(1);
+    my $j = lc $enc->encode({ %$row, %$data });
+    $j = Util->_unac( $j );
+    $j =~ s/[^\w|:|,|-]//g;
+    DB->BaliMasterSearch->update_or_create({ mid=>$mid, search_data=>$j, ts=>Util->_dt });
 }
 
 sub searcher {

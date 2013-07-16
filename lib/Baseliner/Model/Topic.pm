@@ -216,45 +216,47 @@ sub topics_for_user {
     my $perm = Baseliner->model('Permissions');
     my $username = $p->{username};
     my $topic_list = $p->{topic_list};
+
+    length($query) and $where = Util->build_master_search( query=>$query );
     
-    $query and $where = query_sql_build( query=>$query, fields=>{
-        map { $_ => "me.$_" } qw/
-        topic_mid 
-        title
-        created_on
-        created_by
-        status
-        numcomment
-        category_id
-        category_name
-        category_status_id
-        category_status_name        
-        category_status_seq
-        priority_id
-        priority_name
-        response_time_min
-        expr_response_time
-        deadline_min
-        expr_deadline
-        category_color
-        label_id
-        label_name
-        label_color
-        project_id
-        project_name
-        moniker
-        cis_out
-        cis_in
-        references_out
-        referenced_in
-        file_name
-        description
-        text
-        progress
-        modified_on
-        modified_by        
-        /
-    });
+    #$query and $where = query_sql_build( query=>$query, fields=>{
+    #    map { $_ => "me.$_" } qw/
+    #    topic_mid 
+    #    title
+    #    created_on
+    #    created_by
+    #    status
+    #    numcomment
+    #    category_id
+    #    category_name
+    #    category_status_id
+    #    category_status_name        
+    #    category_status_seq
+    #    priority_id
+    #    priority_name
+    #    response_time_min
+    #    expr_response_time
+    #    deadline_min
+    #    expr_deadline
+    #    category_color
+    #    label_id
+    #    label_name
+    #    label_color
+    #    project_id
+    #    project_name
+    #    moniker
+    #    cis_out
+    #    cis_in
+    #    references_out
+    #    referenced_in
+    #    file_name
+    #    description
+    #    text
+    #    progress
+    #    modified_on
+    #    modified_by        
+    #    /
+    #});
 
     my ($select,$order_by, $as, $group_by);
     if( $sort && $sort eq 'category_status_name' ) {
@@ -466,7 +468,7 @@ sub topics_for_user {
             # _log _dump $rs_sub->as_query;
     
     # SELECT MID DATA:
-    my %mid_data = map { $_->{topic_mid} => $_ } grep { defined } map { Baseliner->cache_get("topic:view:$_") } @mids; 
+    my %mid_data = map { $_->{topic_mid} => $_ } grep { defined } map { Baseliner->cache_get("topic:view:$_:") } @mids; 
     if( my @db_mids = grep { !exists $mid_data{$_} } @mids ) {
         _debug( "CACHE==============================> MIDS: @mids, DBMIDS: @db_mids, MIDS_IN_CACHE: " . join',',keys %mid_data );
         my @db_mid_data = DB->TopicView->search({ topic_mid=>{ -in =>\@db_mids  } })->hashref->all if @db_mids > 0;
@@ -506,7 +508,7 @@ sub topics_for_user {
             $mid_data{$mid}{group_assignee}{ $row->{assignee} } = () if defined $row->{assignee};
         }
         for my $db_mid ( @db_mids ) {
-            Baseliner->cache_set( "topic:view:$db_mid", $mid_data{$db_mid} );
+            Baseliner->cache_set( "topic:view:$db_mid:", $mid_data{$db_mid} );
         }
     } else {
         _debug "CACHE =========> ALL TopicView data MIDS in CACHE";
@@ -935,7 +937,7 @@ sub get_update_system_fields {
 sub get_meta {
     my ($self, $topic_mid, $id_category) = @_;
 
-    my $cached = Baseliner->cache_get( "topic:meta:$topic_mid") if $topic_mid;
+    my $cached = Baseliner->cache_get( "topic:meta:$topic_mid:") if $topic_mid;
     return $cached if $cached;
 
     my $id_cat =  $id_category
@@ -967,7 +969,7 @@ sub get_meta {
     
     @meta = sort { $a->{field_order} <=> $b->{field_order} } @meta;
 
-    Baseliner->cache_set( "topic:meta:$topic_mid", \@meta ) if length $topic_mid;
+    Baseliner->cache_set( "topic:meta:$topic_mid:", \@meta ) if length $topic_mid;
     
     return \@meta;
 }
@@ -1152,8 +1154,7 @@ sub get_files{
 sub save_data {
     my ($self, $meta, $topic_mid, $data, %opts ) = @_;
 
-    Baseliner->cache_remove( qr/topic:view:$topic_mid/ ) if length $topic_mid;
-    Baseliner->cache_remove( qr/topic:data:$topic_mid/ ) if length $topic_mid;
+    Baseliner->cache_remove( qr/:$topic_mid:/ ) if length $topic_mid;
     
     my @std_fields =
         map { +{ name => $_->{id_field}, column => $_->{bd_field}, method => $_->{set_method}, relation => $_->{relation} } }
@@ -1201,7 +1202,7 @@ sub save_data {
     my $moniker = delete $row{moniker};
     
     if (!$topic_mid){
-        my $rstopic = master_new 'topic' => { name=>$data->{title}, moniker=>$moniker } => sub {
+        master_new 'topic' => { name=>$data->{title}, moniker=>$moniker, data=>{ %row } } => sub {
             $topic_mid = shift;
 
             #Defaults
@@ -1228,7 +1229,7 @@ sub save_data {
         }
         $topic->modified_by( $data->{username} );
         $topic->update( \%row );
-        _ci( $topic_mid )->update( moniker=>$moniker, name=>$row{title} );
+        _ci( $topic_mid )->update( name=>$row{title}, moniker=>$moniker, %row );
 
         for my $field (keys %row){
             next if $field eq 'response_time_min' || $field eq 'expr_response_time';
@@ -1248,11 +1249,9 @@ sub save_data {
                             my $status_new = DB->BaliTopicStatus->find( $row{id_category_status} );
                             my $ci_update = $status_new->ci_update;
                             if( $ci_update && ( my $cis = $data->{_cis} ) ) {
-                                _debug $cis;
                                 for my $ci ( _array $cis ) {
                                     my $ci_data = $ci->{ci_data} // { map { $_ => $data->{$_} } grep { length } _array( $ci->{ci_fields} // @custom_fields ) };
                                     my $ci_master = $ci->{ci_master} // $ci_data;
-                                    _debug $ci_data;
                                     given( $ci->{ci_action} ) {
                                         when( 'create' ) {
                                             my $ci_class = $ci->{ci_class};
@@ -1376,6 +1375,16 @@ sub save_data {
             }
         }
     }    
+
+    # refresh cache for related stuff 
+    for my $rel ( 
+        map { +{mid=>$_->{mid}, type=>$_->{_edge}{rel_type} } } 
+        _ci( $topic_mid )->related( depth=>1 ) ) 
+    {
+        my $mid = $rel->{mid};
+        _debug "TOPIC CACHE REL remove :$mid:";
+        Baseliner->cache_remove( qr/:$mid:/ );
+    }
     
     return $topic;
 }
@@ -1862,6 +1871,26 @@ sub user_workflow {
         ? DB->BaliTopicCategoriesAdmin->search(undef, { select=>['id_status_to', 'id_status_from'], distinct=>1 })->hashref->all
         : DB->BaliTopicCategoriesAdmin->search({username => $username}, { join=>'user_role' })->hashref->all;
     return @rows;
+}
+
+sub list_posts {
+    my ($self, %p) = @_;
+    my $mid = $p{mid};
+
+    my $rs = DB->BaliTopic->find( $mid )
+        ->posts->search( undef, { order_by => { '-desc' => 'created_on' } } );
+    my @rows;
+    while( my $r = $rs->next ) {
+        push @rows,
+            {
+            created_on   => $r->created_on,
+            created_by   => $r->created_by,
+            text         => $r->text,
+            content_type => $r->content_type,
+            id           => $r->id,
+            };
+    }
+    return \@rows;
 }
 
 1;

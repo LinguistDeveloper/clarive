@@ -208,7 +208,7 @@
         
         var render_category = function(value,metadata,rec,rowIndex,colIndex,store){
             var color = rec.data.color;
-            var ret = '<div id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: '+ color + '">' + value + '</span></div>';
+            var ret = '<div id="boot"><span class="label" style="float:left;padding:2px 8px 2px 8px;background: '+ color + '">' + value + '</span></div>';
             return ret;
         };
         
@@ -231,7 +231,7 @@
         topic_category_grid.on("rowdblclick", function(grid, rowIndex, e ) {
             var r = grid.getStore().getAt(rowIndex);
             var title = _(r.get( 'name' ));
-            Baseliner.add_tabcomp('/topic/view?swEdit=1', title , { title: title, new_category_id: r.get( 'id' ), new_category_name: r.get( 'name' ) } );
+            Baseliner.add_tabcomp('/topic/view?swEdit=1', title , { title: title, new_category_id: r.get( 'id' ), new_category_name: r.get( 'name' ), _parent_grid: grid_topics.id } );
             win.close();
         });     
         
@@ -380,18 +380,10 @@
                 Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the topic(s)') + ': <br /><b>' + names + '</b>?', 
                     function(btn){ 
                         if(btn=='yes') {
-                            Baseliner.ajaxEval( '/topic/update?action=delete',{ topic_mid: topic_mids },
-                                function(response) {
-                                    if ( response.success ) {
-                                        grid_topics.getStore().remove(sm.getSelections());
-                                        Baseliner.message( _('Success'), response.msg );
-                                        init_buttons('disable');
-                                    } else {
-                                        Baseliner.message( _('ERROR'), response.msg );
-                                    }
-                                }
-                            
-                            );
+                            Baseliner.Topic.delete_topic({ topic_mids: topic_mids, success: function(){ 
+                                grid_topics.getStore().remove(sm.getSelections());
+                                init_buttons('disable') 
+                            }});
                         }
                     }
                 );
@@ -543,7 +535,7 @@
             actions_html.push("</span>");           
         }
         if( Ext.isArray( rec.data.referenced_in ) && rec.data.referenced_in.length > 0 ) {
-            if( swGo )  actions_html.push( '<br>' );
+            if( swGo && !btn_mini.pressed )  actions_html.push( '<br>' );
             swGo = true;
             actions_html.push( ref_html( 'in', rec.data.referenced_in ) );
         }
@@ -575,7 +567,7 @@
     };
 
     var render_progress = function(value,metadata,rec,rowIndex,colIndex,store){
-        if( value == 0 ) return '';
+        if( value==undefined || value == 0 ) return '';
         if( rec.data.category_status_type == 'I'  ) return '';  // no progress if its in a initial state
 
         var cls = ( value < 20 ? 'danger' : ( value < 40 ? 'warning' : ( value < 80 ? 'info' : 'success' ) ) );
