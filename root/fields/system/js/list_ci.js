@@ -2,12 +2,14 @@
 name: CIs
 params:
     js: '/fields/system/js/list_ci.js'
+    html: '/fields/templates/html/ci_grid.html'
     relation: 'system'
     type: 'listbox'
     get_method: 'get_cis'    
     set_method: 'set_cis'
     field_order: 100
-    section: 'details'
+    field_order_html: 1000
+    section: 'head'
     single_mode: false
     ci_role: 'Server'
 ---

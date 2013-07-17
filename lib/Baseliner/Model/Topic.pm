@@ -1507,7 +1507,7 @@ sub set_cis {
 
     my $field_meta = [ grep { $_->{id_field} eq $id_field } _array($meta) ]->[0];
 
-    my $rel_type = $field_meta->{rel_type} or _fail 'Missing rel_type';
+    my $rel_type = $field_meta->{rel_type} or _fail "Missing rel_type for field $id_field";
 
     # related topics
     my @new_cis = _array( $cis ) ;
