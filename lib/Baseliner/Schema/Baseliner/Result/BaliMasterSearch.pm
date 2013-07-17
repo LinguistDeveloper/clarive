@@ -27,7 +27,10 @@ __PACKAGE__->add_columns(
 );
 __PACKAGE__->set_primary_key("mid");
 
-__PACKAGE__->belongs_to("master", "Baseliner::Schema::Baseliner::Result::BaliMaster", { 'foreign.mid' => 'self.mid' });
+__PACKAGE__->belongs_to("master", "Baseliner::Schema::Baseliner::Result::BaliMaster", 
+    { 'foreign.mid' => 'self.mid' },
+    { cascade_delete => 1, on_delete=>'cascade', is_foreign_key_constraint=>1, },
+);
 
 1;
 

@@ -9,6 +9,10 @@ Baseliner.topic_category_class = {};
 
 Baseliner.show_topic = function(topic_mid, title, params) {
     Baseliner.add_tabcomp('/topic/view', title , Ext.apply({ topic_mid: topic_mid, title: title }, params) );
+    var grid = Ext.getCmp(params._parent_grid);
+    if( grid ) {
+        Baseliner.user_seen_row( grid, topic_mid );
+    }
 };
 
 
@@ -29,10 +33,27 @@ Baseliner.show_topic_colored = function(mid, category, color, grid_id) {
 
 Baseliner.show_topic_from_row = function(r, grid) {
     var title = Baseliner.topic_title( r.get('topic_mid'), _(r.get( 'category_name' )), r.get('category_color') );
-    Baseliner.show_topic( r.data.topic_mid, title, { topic_mid: r.get('topic_mid'), title: title, _parent_grid: grid } );
+    Baseliner.show_topic( r.data.topic_mid, title, { topic_mid: r.get('topic_mid'), title: title, _parent_grid: grid.id } );
     //Baseliner.add_tabcomp('/topic/view?topic_mid=' + r.get('topic_mid') + '&app=' + typeApplication , title ,  );
 }
 
+Baseliner.user_seen_row = function(grid,mid){
+    var store = grid.getStore();
+    if( !store ) return;
+    var row;
+    if( Ext.isObject( mid ) ) {
+        row = mid;
+    } else {
+        var ix = store.find('topic_mid', mid );
+        if( ix<0 ) return;
+        var row = store.getAt( ix );
+        if( !row ) return;
+    }
+    row.data.user_seen = true;
+    grid.getStore().commitChanges();
+    grid.getView().refresh();
+};
+    
 /*
     parameters:
          {
@@ -322,6 +343,7 @@ Baseliner.Topic.StoreList = Ext.extend( Baseliner.JsonStore, {
                 {  name: 'cis_out' },
                 {  name: 'references_out' },
                 {  name: 'referenced_in' },
+                {  name: 'user_seen' },
                 {  name: 'sw_edit'},
                 {  name: 'modified_on', type: 'date', dateFormat: 'c' },        
                 {  name: 'modified_by' }
@@ -632,6 +654,13 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         if( ! params.title ) {
             self.setTitle( Baseliner.topic_title( params.topic_mid, params.category, params.category_color ) ) 
         }
+        
+        // update row 
+        /*
+        setTimeout( function(){
+            Baseliner.ajaxEval('/topic/user_seen', { _handle_res: true, mid: params.topic_mid }, function(res){});     
+        }, 4000);
+        */
           
         Ext.apply(this, {
             layout: 'card',

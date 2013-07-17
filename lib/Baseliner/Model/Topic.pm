@@ -514,6 +514,13 @@ sub topics_for_user {
     } else {
         _debug "CACHE =========> ALL TopicView data MIDS in CACHE";
     }
+    
+    # get user seen 
+    my @mid_prefs = DB->BaliMasterPrefs->search({ mid=>{ -in => \@mids }, username=>$username })->hashref->all;
+    for( @mid_prefs ) {
+        my $d = $mid_data{$_->{mid}};
+        $d->{user_seen} = "$d->{modified_on}" gt "$_->{last_seen}" ? \0 : \1;
+    }
 
     my @rows;
     for my $mid (@mids) {
@@ -1381,6 +1388,9 @@ sub save_data {
         }
     } 
      
+    # user seen
+    my $row = DB->BaliMasterPrefs->update_or_create({ username=>$data->{username}, mid=>$topic_mid, last_seen=>_dt() });
+    
     $self->cache_topic_remove( $topic_mid );
     
     return $topic;

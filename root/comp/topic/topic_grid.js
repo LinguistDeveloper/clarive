@@ -454,6 +454,7 @@
         //date_created_on =  rec.data.created_on.dateFormat('M j, Y, g:i a');
 		date_modified_on =  rec.data.modified_on.dateFormat('M j, Y, g:i a');
         var strike = ( rec.data.is_closed ? 'text-decoration: line-through' : '' );
+        var font_weight = rec.data.user_seen===true ? 'normal' : 'bold';
 
         if(rec.data.labels){
             for(i=0;i<rec.data.labels.length;i++){
@@ -467,15 +468,15 @@
         }
         if(btn_mini.pressed){
             return tag_color_html 
-                + String.format("<span style='font-weight:bold; font-size: 12px; cursor: pointer; "+strike+"' onclick='javascript:Baseliner.show_topic_colored({1},\"{2}\", \"{3}\", \"{4}\");'>{0}</span>", 
-                        value, rec.data.topic_mid, rec.data.category_name, rec.data.category_color, grid_topics.id ); 
+                + String.format("<span style='font-weight:{5}; font-size: 12px; cursor: pointer; "+strike+"' onclick='javascript:Baseliner.show_topic_colored({1},\"{2}\", \"{3}\", \"{4}\");'>{0}</span>", 
+                        value, rec.data.topic_mid, rec.data.category_name, rec.data.category_color, grid_topics.id, font_weight ); 
         }else{
             return tag_color_html + 
-                String.format( "<span style='font-weight:bold; font-size: 14px; cursor: pointer; "+strike+"' onclick='javascript:Baseliner.show_topic_colored({3},\"{4}\",\"{5}\", \"{6}\")'>{0}</span>"
+                String.format( "<span style='font-weight:{7}; font-size: 14px; cursor: pointer; "+strike+"' onclick='javascript:Baseliner.show_topic_colored({3},\"{4}\",\"{5}\", \"{6}\")'>{0}</span>"
                         + "<br><div style='margin-top: 5px'>{1}<font color='808080'></br>{2}</font ></div>", 
                         //value, date_created_on, _('by %1',rec.data.created_by),
 						value, date_modified_on, _('by %1',rec.data.modified_by), 
-                        rec.data.topic_mid, rec.data.category_name, rec.data.category_color, grid_topics.id );                        
+                        rec.data.topic_mid, rec.data.category_name, rec.data.category_color, grid_topics.id, font_weight );                        
         }
         
     };

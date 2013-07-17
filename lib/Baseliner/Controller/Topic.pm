@@ -506,6 +506,9 @@ sub view : Local {
     
     if($topic_mid || $c->stash->{topic_mid} ){
  
+        # user seen
+        my $row = DB->BaliMasterPrefs->update_or_create({ username=>$c->username, mid=>$topic_mid, last_seen=>_dt() });
+        
         $category = DB->BaliTopicCategories->search({ mid=>$topic_mid }, { prefetch=>{'topics' => 'status'} })->first;
         _fail( _loc('Category not found or topic deleted: %1', $topic_mid) ) unless $category;
         
@@ -1638,6 +1641,21 @@ sub change_status : Local {
             id_status=>$p->{new_status}, id_old_status=>$p->{old_status}, 
             mid=>$p->{mid} 
         );
+        { success=>\1, msg=>'ok' };
+    } catch {
+        my $err = shift;
+        _error( $err );
+        { success=>\0, msg=>$err };
+    }; 
+    $c->forward('View::JSON');
+}
+
+# XXX not used, update is done in sub view
+sub user_seen : Local {
+    my ($self, $c ) = @_;
+    my $p = $c->req->params;
+    $c->stash->{json} = try {
+        my $row = DB->BaliMasterPrefs->update_or_create({ username=>$c->username, mid=>$p->{mid}, last_seen=>_dt() });
         { success=>\1, msg=>'ok' };
     } catch {
         my $err = shift;
