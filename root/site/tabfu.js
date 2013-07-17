@@ -517,11 +517,15 @@ if( Prefs.routing ) {
                 tabpanel.changeTabIcon( tab, "/static/images/loading-fast.gif" );
                 title = '&nbsp;';
             }
-            tab.setTitle( title ) 
+            tab.setTitle( title );
         } else { 
-            tab.setTitle( title ) 
+            tab.setTitle( title );
         }
-        return tab.getId();
+        var tab_id = tab.getId();
+        if( comp!=undefined && comp.tab_info!=undefined ) {
+            Baseliner.tabInfo[tab_id] = comp.tab_info;
+        }
+        return tab_id; 
     };
 
     Baseliner.is_logged_on = function() {
@@ -1140,6 +1144,12 @@ if( Prefs.routing ) {
                 tabpanel.remove( panel );
                 Baseliner.addNewTab( info.url, info.title, info.params );
             } 
+            else if( info.type == 'object' ) {  // created with a addNewTabItem directly, like the kanban in tab
+                var clone = panel.cloneConfig(); 
+                tabpanel.remove( panel );
+                var new_id = Baseliner.addNewTabItem( clone, clone.title, info.params );
+                Baseliner.tabInfo[new_id] = info;
+            }
         } else {
             // non-components: portal, dashboard, etc.
             var closable = panel.initialConfig.closable;

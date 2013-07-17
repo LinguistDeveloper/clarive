@@ -1350,6 +1350,18 @@ Ext.extend( Baseliner.flot.Area, Baseliner.flot.Base );
 
   Kanban Panel 
 
+  There are 3 usage modes:
+
+  topic mids list:
+      new Baseliner.Kanban({ topics: [ 1,2,3 ] }).fullscreen();
+
+
+  topic store:
+      new Baseliner.Kanban({ store: store }).fullscreen();
+
+  topic store provided, but filtered:
+      new Baseliner.Kanban({ store: store, topics: [ 1,2,3 ] }).fullscreen();
+
 */
 
 Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
@@ -1510,7 +1522,9 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
     goto_tab : function(){
         var self = this;
         self.is_tab = true;
-        var id = Baseliner.addNewTabItem( self, self.title, { tab_icon: '/static/images/icons/kanban.png' } );
+        var params = { tab_icon: '/static/images/icons/kanban.png' };  
+        self.tab_info = { type: 'object', params: params }; // XXX this should be simplified
+        var id = Baseliner.addNewTabItem( self, self.title, params );
         if( self.is_fullscreen ) {
             Baseliner.viewport.remove( self, false );
             Baseliner.main.getEl().show();
@@ -1541,7 +1555,7 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
     },
     load_data : function() {
         var self = this;
-        var topics_with_data = [];
+        self.el.mask( _('Loading...'), 'x-mask-loading');
         if( ! self.store ) {
             if( Ext.isArray( self.topics ) && self.topics.length > 0 ) {
                 // create my own store
@@ -1549,10 +1563,7 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
                     baseParams: { start: 0, topic_list: self.topics }   // query_id
                 });
                 self.store.on('load', function(){
-                    self.store.each( function(rec) {
-                        topics_with_data.push( rec.data.topic_mid );
-                    });
-                    self.load_workflow( topics_with_data );
+                    self.load_workflow( self.topics );
                 });
                 self.store.load();
             } else {
@@ -1561,10 +1572,15 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
             }
         }
         else {
+            var filtered_mids = {};
+            var filtered_mode = Ext.isArray(self.topics) && self.topics.length > 0 ? true : false;
+            Ext.each( self.topics, function(mid){ filtered_mids[mid] = true; });
             self.store.each( function(rec) {
-                topics_with_data.push( rec.data.topic_mid );
+                // if we have a list of mids, check if row is in list
+                if( filtered_mode && !mids_hash[mid] ) return;
+                self.topics.push( rec.data.topic_mid );
             });
-            self.load_workflow( topics_with_data );
+            self.load_workflow( self.topics );
         }
     },
     load_workflow : function(topics) {
@@ -1607,16 +1623,10 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
             }
         });
     },
-    load_topics : function( id_status ){
+    create_portlets : function( id_status ){
         var self = this;
-        var mids_hash = {};
-        Ext.each( self.mids, function(mid){ mids_hash[mid] = true; });
         self.store.each( function(rec) {
             var mid = rec.data.topic_mid;
-            // if we have a list of mids, check if row is in list
-            if( Ext.isArray(self.mids) && self.mids.length > 0 ) {
-                if( !mids_hash[mid] ) return;
-            }
             if( id_status != undefined && rec.data.category_status_id != id_status ) return;
             var t = String.format('{0} #{1}', rec.data.category_name, mid );
             var cat = '<div id="boot"><span class="label" style="float:left;width:95%;background: '+ rec.data.category_color + '">' + rec.data.category_name + ' #' + mid + '</span></div>';
@@ -1680,7 +1690,7 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
     },
     render_me : function(){
         var self = this;
-        self.load_topics();
+        self.create_portlets();
         self.doLayout();
 
         // show/hide tools for the column 
@@ -1707,6 +1717,7 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
                 if( col_obj != undefined ) col_obj.getTool('close').hide();
             });
         };
+        self.el.unmask();
     },
     add_portlet : function( params ) {
         var self = this;
