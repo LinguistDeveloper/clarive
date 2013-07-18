@@ -30,29 +30,13 @@ sub parse {
     
     if( $source =~ $rg ) {
         my $tree = { %/ };    
+        Util->_debug( $tree );
         if( my $root = [ keys %$tree ]->[0] ) {
-            $tree = $tree->{$root}; # delete root node 'grammar name'
-            # make sure we have our module name
-            my $module;
-            for my $entry ( Util->_array( $tree ) ) {
-                $module //= $entry->{module}; 
-            }
-            my $ext = $item->extension;
-            # determine module name 
-            if( ! defined $module ) {
-                $module = $item->basename;
-                if( my $fb = $self->path_capture ) {
-                    $module = $+{module} if $item->path =~ qr/$fb/ && length $+{module};
-                } else {
-                    $module = $item->moniker // $item->basename;
-                }
-                push @$tree => { module=>$module  };
-            }
-            $item->{parse_tree} = $tree;
-            #my $ret = {};
-            #$self->collect_vars( $tree, $ret );
-            return $tree;
+            $tree = $tree->{$root} || []; # delete root node 'grammar name'
         }
+        $tree = $self->process_item_tree( $item, $tree ); 
+        $item->{parse_tree} = $tree;
+        return $tree;
     } else {
         return { msg=>'not found' };
     }
