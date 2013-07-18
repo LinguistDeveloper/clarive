@@ -24,6 +24,9 @@ msgstr "hace 1 hora"
 msgid "%1 hours ago"
 msgstr "hace %1 horas"
 
+msgid "1 day ago"
+msgstr "hace 1 día"
+
 msgid "%1 days ago"
 msgstr "hace %1 días"
 
