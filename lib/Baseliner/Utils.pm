@@ -1322,6 +1322,7 @@ sub ago {
       : $d < 3600 ? _loc('%1 minutes ago', int $d/60 )
       : $d < 7200 ? _loc('1 hour ago' )
       : $date > $now-'1D' ? _loc('%1 hours ago', int $d/3600 )
+      : $date > $now-'2D' ? _loc('1 day ago')
       : $date > $now-'7D' ? _loc('%1 days ago', int $d/(3600*24) )
       : $date > $now-'1M' ? _loc('%1 weeks ago', int $d/(3600*24*7) )
       : $date > $now-'1Y' ? _loc('%1 months ago', int $d/(3600*24*7*4.33) )
