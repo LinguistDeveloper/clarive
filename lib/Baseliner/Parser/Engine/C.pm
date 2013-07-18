@@ -8,7 +8,7 @@ sub parse {
     
     my $t = { depends=>[] };
     my @tree;
-    while( $s =~  m{#include [<"]([^">]*?)[<"]}gms ) {
+    while( $s =~  m{#include\s+[<"]([^">]*?)[<"]}gms ) {
         push @tree, { depends=>$1, line=>pos($s) };  
         #push $t->{depends}, $1;
     }

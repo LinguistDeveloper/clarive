@@ -6,21 +6,22 @@ sub parse {
     my $f = "$p{file}";
     my $s = $p{source};
     
-    my $t = { depends=>[] };
+    my @tree;
     while( $s =~  m{<jsp:include page="(.+?)"(?:.*?)\/>}gms ) {
-        push $t->{depends}, $1;
+        push @tree, { depends=>$1, line=>pos($s) };  
     }
     while( $s =~ m{<%@\s+page\s+import\s*=\s*"(.+?)"\s*%>}gms ) {
         my $m = $1;
         $m =~ s{[\r\n\s]*}{}g;
-        push $t->{depends}, split/,+/, $m;  
+        $m = split/,+/, $m;  
+        push @tree, { depends=>$m, line=>pos($s) };  
     }
     while( $s =~ m{<script.*src="(.*?)"></script>}g ) {
         my $m = $1;
         $m =~ s{<%.*%>}{}g;
-        push $t->{depends}, $m;
+        push @tree, { depends=>$m, line=>pos($s) };  
     }
-    return $t; 
+    return \@tree;
 }
 
 1;
