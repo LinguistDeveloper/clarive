@@ -42,6 +42,12 @@ msgstr "hace %1 años"
 msgid "Loading Error"
 msgstr "Error de Carga"
 
+msgid "Mark as read"
+msgstr "Marcar como leído"
+
+msgid "Mark as unread"
+msgstr "Marcar como no leído"
+
 msgid "Current topic status '%1' does not match the real status '%2'. Please refresh."
 msgstr "Estado actual del tópico '%1' no coincide con el estado real '%2'. Por favor, recargue antes de reintentar."
 
