@@ -507,7 +507,9 @@ sub view : Local {
     if($topic_mid || $c->stash->{topic_mid} ){
  
         # user seen
-        my $row = DB->BaliMasterPrefs->update_or_create({ username=>$c->username, mid=>$topic_mid, last_seen=>_dt() });
+        for my $mid ( _array( $topic_mid ) ) {
+            DB->BaliMasterPrefs->update_or_create({ username=>$c->username, mid=>$mid, last_seen=>_dt() });
+        }
         
         $category = DB->BaliTopicCategories->search({ mid=>$topic_mid }, { prefetch=>{'topics' => 'status'} })->first;
         _fail( _loc('Category not found or topic deleted: %1', $topic_mid) ) unless $category;
@@ -595,6 +597,9 @@ sub comment : Local {
             _throw( _loc( 'Missing id' ) ) unless defined $topic_mid;
             my $text = $p->{text};
             _log $text;
+
+            my $topic_row = $c->model('Baseliner::BaliTopic')->find( $topic_mid );
+            _fail( _loc("Topic with id %1 not found (deleted?)", $topic_mid ) ) unless $topic_row;
             
             my $topic;
             if( ! length $id_com ) {  # optional, if exists then is not add, it's an edit
@@ -615,9 +620,7 @@ sub comment : Local {
                         id_post  => $mid,
                         post     => substr( $text, 0, 30 ) . ( length $text > 30 ? "..." : "" )
                     };
-                    my $topic = $c->model('Baseliner::BaliTopic')->find( $topic_mid );
-                    _fail( _loc("Topic with id %1 not found (deleted?)", $topic_mid ) ) unless $topic;
-                    $topic->add_to_posts( $post, { rel_type=>'topic_post' });
+                    $topic_row->add_to_posts( $post, { rel_type=>'topic_post' });
                     #master_rel->create({ rel_type=>'topic_post', from_mid=>$id_topic, to_mid=>$mid });
                 };
                 #$c->model('Event')->create({
@@ -636,6 +639,10 @@ sub comment : Local {
                 # TODO modified_on ?
                 $post->update;
             }
+
+            # modified_on 
+            $topic_row->update({ modified_on => _dt() });
+
             $c->stash->{json} = {
                 msg     => _loc('Comment added'),
                 id      => $id_com,

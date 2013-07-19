@@ -1599,6 +1599,11 @@ Baseliner.createRange = function(panel, id_cal, id, pdia, date) {
 
 Baseliner.Window = Ext.extend( Ext.Window, {
     initComponent: function(){
+        var self = this;
+        self.addTool({
+            id: 'tabify',
+            handler: function(a,b,c){ self.tabify(a,b,c) }
+        });
         Baseliner.Window.superclass.initComponent.call(this);
     },
     minimizable: true,
@@ -1621,6 +1626,16 @@ Baseliner.Window = Ext.extend( Ext.Window, {
         }
         this.fireEvent('minimize', this);
         return this;
+    },
+    tabify : function(a,b,c){
+        var self = this;
+        var comp = self.items.items[0]; 
+        if( comp ) {
+            comp.title = null;
+            comp.header = false;
+            Baseliner.addNewTabItem( comp, self.title, {});
+            self.close();
+        }
     }
 });
 

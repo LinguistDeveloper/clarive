@@ -186,8 +186,8 @@ padding: 2px 4px 2px 7px;
 
 %   if( $c->username eq $com->{created_by} ) {
 
-                    | <a href="javascript:Baseliner.Topic.comment_edit( undefined, <% $com->{id} %>)"><% _loc("edit") %></a>
-                    | <a href="javascript:Baseliner.Topic.comment_delete(<% $com->{id} %>, '<% $id_div_com %>')"><% _loc("delete") %></a>
+                    | <a href="javascript:Baseliner.Topic.comment_edit( <% $topic_mid %>, <% $com->{id} %>)"><% _loc("edit") %></a>
+                    | <a href="javascript:Baseliner.Topic.comment_delete(<% $topic_mid %>, <% $com->{id} %>, '<% $id_div_com %>')"><% _loc("delete") %></a>
 
 %   }
 

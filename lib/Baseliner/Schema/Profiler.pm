@@ -14,7 +14,7 @@ sub query_start {
 
     my $lev = substr( $ENV{DBIC_TRACE}, 0, 1 );
     $self->print("\n::: $sql: ".join(', ', @params)."\n");
-    $self->print( Util->_whereami ) if $lev > 2;
+    $self->print( Util->_whereami ) if defined $lev && $lev > 2;
     $start = time();
 }
 

@@ -390,7 +390,7 @@ Baseliner.Topic.StorePriority = Ext.extend( Baseliner.JsonStore, {
     }
 });
 
-Baseliner.Topic.comment_delete = function(id_com, id_div ) {
+Baseliner.Topic.comment_delete = function(topic_mid, id_com, id_div ) {
     Baseliner.ajaxEval( '/topic/comment/delete', { id_com: id_com }, function(res) {
         if( res.failure ) {
             Baseliner.message( _('Error'), res.msg );
@@ -505,7 +505,7 @@ Baseliner.Topic.comment_edit = function(topic_mid, id_com, cb) {
         items: cardcom
     });
     if( id_com != undefined ) {
-        Baseliner.ajaxEval('/topic/comment/view', { id_com: id_com }, function(res) {
+        Baseliner.ajaxEval('/topic/comment/view', { topic_mid: topic_mid, id_com: id_com }, function(res) {
             if( res.failure ) {
                 Baseliner.message( _('Error'), res.msg );
             } else {
