@@ -1601,7 +1601,7 @@ Baseliner.Window = Ext.extend( Ext.Window, {
     initComponent: function(){
         var self = this;
         self.addTool({
-            id: 'tabify',
+            id: 'down',
             handler: function(a,b,c){ self.tabify(a,b,c) }
         });
         Baseliner.Window.superclass.initComponent.call(this);

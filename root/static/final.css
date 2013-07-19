@@ -1,5 +1,8 @@
 /* Last css to be executed by Baseliner */
 
+.x-tool-tabify{background-position:0 -75px;}
+.x-tool-tabify-over{background-position:-15px -75px;}
+
 .x-grid3-body .x-grid3-td-checker {
     background: none repeat-y scroll right center transparent;
 }
