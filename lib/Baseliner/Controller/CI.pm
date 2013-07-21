@@ -804,23 +804,26 @@ sub json_tree : Local {
     my $p = $c->req->params;
     my $mids = delete $p->{mid} || delete $p->{mids};
     my $direction = delete $p->{direction} || 'related';
-    $p->{limit} //= 40;  
-    my $k = 1;
+    my $d = length $p->{node_data} ? _from_json( $p->{node_data} ) : {};
+    my %node_data = %$d if ref $d eq 'HASH';
+    $p->{limit} //= 50;  
+    my $prefix = $p->{id_prefix} || _nowstamp;
     local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
     $c->stash->{json} = try {
         my @all;
         for my $mid ( _array( $mids ) ) { 
+            $mid =~ s{^.+-(.+)$}{$1}; 
             my $ci = _ci( $mid );
             my @rels = $ci->$direction( depth=>2, mode=>$p->{mode} || 'tree', unique=>1, %$p );
             my $recurse;
             $recurse = sub {
                 my $chi = shift;
-                $k++;
                 +{
-                    id       => $k . '-' . $chi->{mid},
+                    id       => $prefix . '-' . $chi->{mid},
                     name     => '#' . $chi->{mid} . ' ' . $chi->{name},
                     data => {
                         '$type' => 'icon',
+                        %node_data,
                         icon     => $chi->{_ci}{ci_icon},
                     },
                     #data     => { '$type' => 'arrow' },
@@ -829,9 +832,10 @@ sub json_tree : Local {
             };
             my @data = map { $recurse->( $_ ) } @rels;
             my $d = {
-                id => $mid, 
+                id => $prefix . '-' . $mid, 
                 name => $ci->name, 
                 data => {
+                    %node_data,
                     icon => $ci->icon
                 },
                 children => \@data,
@@ -843,7 +847,7 @@ sub json_tree : Local {
             : {
                 id=>_nowstamp,
                 name=>'search', 
-                data => { icon=>'/static/images/icons/ci.png' },
+                data => { icon=>'/static/images/icons/ci.png', %node_data },
                 children => \@all
             };
         { success=>\1, data=>$ret };
