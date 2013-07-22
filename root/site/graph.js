@@ -1,208 +1,129 @@
-Baseliner.JitTree = function(c){
-    var self = this;
-    Baseliner.JitTree.superclass.constructor.call( this, Ext.apply( {
-        layout: 'fit' ,
-        bodyCfg: { style:{ 'background-color':'#111' } }
-    }, c ) );
-
-    self.on( 'afterrender', function(cont){
-        setTimeout( function(){
-            do_tree( self.body );
-        }, 500);
-    });
-    
-    var do_tree = function( el ) {
-        var json = {id:"node02", name:"0.2", data:{},
-                children:[{id:"node13", name:"1.3", data:{},
-                children:[{id:"node24", name:"2.4", data:{}, children:[]}]}]};
-        json = [
-            { "id": "1", "name": "1", "adjacencies": [
-                    { "nodeTo": "2", "data": { "$direction": ["1", "2"] } },
-                    { "nodeTo": "3", "data": { "$direction": ["1", "3"] } }
-                ]
-            },
-            { "id": "2", "name": "2", "adjacencies": [
-                    { "nodeTo": "4", "data": { "$direction": ["2", "4"] } }
-                ]
-            },
-            { "id": "3", "name": "3", "adjacencies": [
-                    { "nodeTo": "4", "data": { "$direction": ["3", "4"] } }
-                ]
-            },
-            { "id": "4", "name": "4", "adjacencies": [
-                    { "nodeTo": "2", "data": { "$direction": ["2", "4"] } },
-                    { "nodeTo": "3", "data": { "$direction": ["3", "4"] } }
-                ]
-            }
-        ];
-        //A client-side tree generator
-        var getTree = (function() {
-            var i = 0;
-            return function(nodeId, level) {
-                var json_str = Ext.util.JSON.encode( json );
-                var subtree = eval('(' + json_str.replace(/id:\"([a-zA-Z0-9]+)\"/g, 
-                            function(all, match) {
-                                return "id:\"" + match + "_" + i + "\""  
-                            }) + ')');
-                $jit.json.prune(subtree, level); i++;
-                return {
-                    'id': nodeId,
-                    'children': subtree.children
-                };
-            };
-        })();
-    
-
-        //Implement a node rendering function called 'nodeline' that plots a straight line
-        //when contracting or expanding a subtree.
-        $jit.ST.Plot.NodeTypes.implement({
-            'nodeline': {
-              'render': function(node, canvas, animating) {
-                    if(animating === 'expand' || animating === 'contract') {
-                      var pos = node.pos.getc(true), nconfig = this.node, data = node.data;
-                      var width  = nconfig.width, height = nconfig.height;
-                      var algnPos = this.getAlignedPos(pos, width, height);
-                      var ctx = canvas.getCtx();
-                      var ort = 'top';
-                      ctx.beginPath();
-                      if(ort == 'left' || ort == 'right') {
-                          ctx.moveTo(algnPos.x, algnPos.y + height / 2);
-                          ctx.lineTo(algnPos.x + width, algnPos.y + height / 2);
-                      } else {
-                          ctx.moveTo(algnPos.x + width / 2, algnPos.y);
-                          ctx.lineTo(algnPos.x + width / 2, algnPos.y + height);
-                      }
-                      ctx.stroke();
-                  } 
-              }
-            }
-              
-        });
-
-        //init Spacetree
-        //Create a new ST instance
-        //alert( self.body.getHeight() );
-        //console.log( self.body );
-
-        var st = new $jit.ST({
-            'injectInto': el.id,
-            height: el.getHeight(),
-            //set duration for the animation
-            duration: 500,
-            //set animation transition type
-            transition: $jit.Trans.Quart.easeInOut,
-            //set distance between node and its children
-            levelDistance: 50,
-            //set max levels to show. Useful when used with
-            //the request method for requesting trees of specific depth
-            levelsToShow: 2,
-            //set node and edge styles
-            //set overridable=true for styling individual
-            //nodes or edges
-            Node: {
-                height: 20,
-                width: 40,
-                //use a custom
-                //node rendering function
-                type: 'nodeline',
-                color:'#23A4FF',
-                lineWidth: 2,
-                align:"center",
-                overridable: true
-            },
-            
-            Edge: {
-                type: 'bezier',
-                lineWidth: 2,
-                color:'#23A4FF',
-                overridable: true
-            },
-            
-            //Add a request method for requesting on-demand json trees. 
-            //This method gets called when a node
-            //is clicked and its subtree has a smaller depth
-            //than the one specified by the levelsToShow parameter.
-            //In that case a subtree is requested and is added to the dataset.
-            //This method is asynchronous, so you can make an Ajax request for that
-            //subtree and then handle it to the onComplete callback.
-            //Here we just use a client-side tree generator (the getTree function).
-            request: function(nodeId, level, onComplete) {
-              var ans = getTree(nodeId, level);
-              onComplete.onComplete(nodeId, ans);  
-            },
-            
-            onBeforeCompute: function(node){
-               // Log.write("loading " + node.name);
-            },
-            
-            onAfterCompute: function(){
-                //Log.write("done");
-            },
-            
-            //This method is called on DOM label creation.
-            //Use this method to add event handlers and styles to
-            //your node.
-            onCreateLabel: function(label, node){
-                label.id = node.id;            
-                label.innerHTML = node.name;
-                label.onclick = function(){
-                    st.onClick(node.id);
-                };
-                //set label styles
-                var style = label.style;
-                style.width = 40 + 'px';
-                style.height = 17 + 'px';            
-                style.cursor = 'pointer';
-                style.color = '#fff';
-                //style.backgroundColor = '#1a1a1a';
-                style.fontSize = '0.8em';
-                style.textAlign= 'center';
-                style.textDecoration = 'underline';
-                style.paddingTop = '3px';
-            },
-            
-            //This method is called right before plotting
-            //a node. It's useful for changing an individual node
-            //style properties before plotting it.
-            //The data properties prefixed with a dollar
-            //sign will override the global node style properties.
-            onBeforePlotNode: function(node){
-                //add some color to the nodes in the path between the
-                //root node and the selected node.
-                if (node.selected) {
-                    node.data.$color = "#ff7";
-                }
-                else {
-                    delete node.data.$color;
-                }
-            },
-            
-            //This method is called right before plotting
-            //an edge. It's useful for changing an individual edge
-            //style properties before plotting it.
-            //Edge data proprties prefixed with a dollar sign will
-            //override the Edge global style properties.
-            onBeforePlotLine: function(adj){
-                if (adj.nodeFrom.selected && adj.nodeTo.selected) {
-                    adj.data.$color = "#eed";
-                    adj.data.$lineWidth = 3;
-                }
-                else {
-                    delete adj.data.$color;
-                    delete adj.data.$lineWidth;
-                }
+Baseliner.D3Graph = Ext.extend( Ext.Panel, {
+    mid: -1,
+    mode: 'tree', 
+    depth: 3, 
+    unique: true,
+    direction: 'related',
+    linkDistance: 90,
+    charge: -100,
+    initComponent : function(){
+        var self = this;
+        Baseliner.D3Graph.superclass.initComponent.call(this);
+         
+        self.on('resize', function(p,w,h){
+            if( this.svg ) {
+                //this.svg.trigger('resizeEnd');
+                //this.svg.attr('width', w).attr('height', h);
+                //self.draw();
             }
         });
-        //load json data
-        st.loadJSON( json );
-        //compute node positions and layout
-        st.compute();
-        //emulate a click on the root node.
-        st.onClick(st.root);
-        //st.switchPosition('top', "animate", { });
-    };
-};
-Ext.extend( Baseliner.JitTree, Ext.Panel ); 
+        self.on('afterrender', function(){
+            Baseliner.ajaxEval('/ci/json_tree', { mid:self.mid, direction: self.direction, depth:self.depth, mode:self.mode, unique:self.unique }, function(res){
+                self.links = [];
+                
+                var link = function(source){
+                    Ext.each( source.children, function(chi){
+                        self.links.push({ source: source.name, target: chi.name, type:"child" });
+                        link( chi );
+                    });
+                }
+                link( res.data );
+
+                self.nodes = {};
+
+                // Compute the distinct nodes from the links.
+                self.links.forEach(function(link) {
+                  link.source = self.nodes[link.source] || (self.nodes[link.source] = {name: link.source});
+                  link.target = self.nodes[link.target] || (self.nodes[link.target] = {name: link.target});
+                });
+                
+                self.draw();
+
+            });
+        });
+    },
+    draw: function(){
+        var self = this;
+
+        var id = self.body.id; 
+        var height = self.body.getHeight();
+        var width = self.body.getWidth();
+        
+        self.force = d3.layout.force()
+            .nodes(d3.values(self.nodes))
+            .links(self.links)
+            .size([width, height])
+            .linkDistance( self.linkDistance )
+            .charge( self.charge )
+            .on("tick", function() { self.tick() })
+            .start();
+
+        self.svg = d3.select("#"+ id ).append("svg:svg").attr("width", '100%').attr("height", '100%')
+            //.attr("viewBox", "0 0 "+height+" "+width )
+            .attr("preserveAspectRatio", "xMinYMin meet");
+
+        // Per-type markers, as they don't inherit styles.
+        self.svg.append("svg:defs").selectAll("marker")
+            .data(["suit", "child", "parent"])
+            .enter().append("svg:marker")
+            .attr("id", String)
+            .attr("viewBox", "0 -5 10 10")
+            .attr("refX", 15)
+            .attr("refY", -1.5)
+            .attr("markerWidth", 6)
+            .attr("markerHeight", 6)
+            .attr("orient", "auto")
+            .append("svg:path")
+            .attr("d", "M0,-5L10,0L0,5");
+
+        self.path = self.svg.append("svg:g").selectAll("path")
+            .data(self.force.links())
+          .enter().append("svg:path")
+            .attr("class", function(d) { return "link " + d.type; })
+            .attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
+
+        self.circle = self.svg.append("svg:g").selectAll("circle")
+            .data(self.force.nodes())
+          .enter().append("svg:circle")
+            .attr("r", 6)
+            .call(self.force.drag);
+
+        self.text = self.svg.append("svg:g").selectAll("g")
+            .data(self.force.nodes())
+          .enter().append("svg:g");
+
+        // A copy of the text with a thick white stroke for legibility.
+        self.text.append("svg:text")
+            .attr("x", 8)
+            .attr("y", ".31em")
+            .attr("class", "shadow")
+            .text(function(d) { return d.name; });
+
+        self.text.append("svg:text")
+            .attr("x", 8)
+            .attr("y", ".31em")
+            .text(function(d) { return d.name; });
+
+    },
+    tick : function(){
+        var self = this;
+        // Use elliptical arc path segments to doubly-encode directionality.
+        self.path.attr("d", function(d) {
+            var dx = d.target.x - d.source.x,
+                dy = d.target.y - d.source.y,
+                dr = Math.sqrt(dx * dx + dy * dy);
+            return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
+        });
+
+        self.circle.attr("transform", function(d) {
+            return "translate(" + d.x + "," + d.y + ")";
+        });
+
+        self.text.attr("transform", function(d) {
+            return "translate(" + d.x + "," + d.y + ")";
+        });
+    }
+});
 
 
 Baseliner.JitRGraph = Ext.extend( Ext.Panel, {
@@ -248,7 +169,10 @@ Baseliner.JitRGraph = Ext.extend( Ext.Panel, {
     redraw : function(){
         var self = this;
         self.body.update('');
-        self.do_tree( self.body ); 
+        self.request(null, null, { onComplete:function(id, data){
+            self.data = data;
+            self.do_tree( self.body ); 
+        }});
     },
     do_tree : function( el ) {
         var self = this;
@@ -277,14 +201,22 @@ Baseliner.JitRGraph = Ext.extend( Ext.Panel, {
             
             Edge: {
               color: '#C17878',
-              lineWidth:1.5
+              lineWidth: 1.5
             },
 
             onBeforeCompute: function(node){
-                //Log.write("centering " + node.name + "...");
-                //Add the relation list in the right column.
-                //This list is taken from the data property of each JSON node.
-                //$jit.id('inner-details').innerHTML = node.data.relation;
+                self.request( node.id, null, { onComplete:function(id, data){
+                    rgraph.op.sum( data, {  
+                        type: 'fade:seq', //'replot', // fade:seq
+                        fps: 30,
+                        duration: 200,
+                        hideLabels: true,
+                        onComplete: function(){  
+                            //rgraph.refresh();
+                            rgraph.compute('end');
+                        }  
+                    });
+                }});
             },
             
             //Add the name of the node in the correponding label
@@ -322,7 +254,6 @@ Baseliner.JitRGraph = Ext.extend( Ext.Panel, {
                    // style.display = 'none';
                 //}
 
-                //console.log( node );
                 //style.background = String.format("#fff url('{0}') no-repeat", icon );
 
                 var left = parseInt(style.left);
@@ -346,6 +277,10 @@ Baseliner.JitRGraph = Ext.extend( Ext.Panel, {
           modes:['polar'],
           duration: 500
         });
+    },
+    request : function( id, lev, onComplete) {
+        if( this.data ) 
+            onComplete.onComplete( id, this.data );
     }
 });
 
@@ -400,21 +335,14 @@ Baseliner.ST = Ext.extend( Ext.Panel, {
     },
     load_data : function(data){
         var self = this;
-        //load JSON data
         self.jit.loadJSON(data);
-        //trigger small animation
-        /* rgraph.graph.eachNode(function(n) {
+        //trigger small animation (arrival of first node from off)
+        self.jit.graph.eachNode(function(n) {
           var pos = n.getPos();
           pos.setc(-200, -200);
-        }); */
+        });
         self.jit.compute('end');
         self.jit.onClick(self.jit.root);
-        /*
-        rgraph.fx.animate({
-          modes:['polar'],
-          duration: 500
-        });
-        */
     },
     gen_tree : function( el ) {
         var self = this;
@@ -430,7 +358,7 @@ Baseliner.ST = Ext.extend( Ext.Panel, {
             //set animation transition type
             transition: $jit.Trans.Quart.easeInOut,
             //set distance between node and its children
-            levelDistance: 150,
+            levelDistance: 100,
             //set max levels to show. Useful when used with
             //the request method for requesting trees of specific depth
             levelsToShow: 2,
@@ -468,10 +396,11 @@ Baseliner.ST = Ext.extend( Ext.Panel, {
                 //set label styles
                 var style = label.style;
                 style.width = 120 + 'px';
-                style.height = 17 + 'px';            
+                style.height = 21 + 'px';            
                 style.cursor = 'pointer';
                 style.color = '#fff';
                 //style.backgroundColor = '#1a1a1a';
+                style.fontFamily = 'OpenSans,monotype';
                 style.fontSize = '0.8em';
                 style.textAlign= 'left';
                 style.textWrap = 'none';
@@ -529,88 +458,197 @@ Baseliner.ST = Ext.extend( Ext.Panel, {
 Baseliner.CIGraph = Ext.extend( Ext.Panel, {
     layout: 'card',
     activeItem : 0,
-    mid: 124,
+    mid: -1,
+    direction: 'related', 
     depth: 1,
+    title: _('CI Graph'),
+    header: false,
     limit: 50,
+    which: 'st',
     constructor : function(c){
         var self = this;
-        var ii = Ext.id();
-        var btn_redraw = new Ext.Button({
-            icon:'/static/images/icons/redraw.png', handler: function(){ self.redraw() } 
-        });
-        var btn_st = new Ext.Button({
-            allowDepress: false, enableToggle: true, toggleGroup:'cigraph_btns' + ii,
-            text: _('SpaceTree'), pressed: true, handler: function(){ self.load_st() }
-        });
-        var btn_rg = new Ext.Button({
-            allowDepress: false, enableToggle: true, toggleGroup:'cigraph_btns' + ii,
-            text: _('RGraph'), handler: function(){ self.load_rg() }
-        });
-        // depth
-        var field_depth = new Ext.ux.form.SpinnerField({ fieldLabel:'dth',value: self.depth, width: 60 });
-        field_depth.on('spin', function(){
-            self.remove( self.getLayout().activeItem );
-            self.depth = field_depth.getValue();
-            self.rg = null;
-            self.load_rg();
-        });
-        // limit
-        var field_limit = new Ext.ux.form.SpinnerField({ fieldLabel:'lim',value: self.limit, width: 60 });
-        field_limit.on('spin', function(){
-            self.remove( self.getLayout().activeItem );
-            self.limit = field_limit.getValue();
-            self.rg = null;
-            self.load_rg();
-        });
-        var tbar = [
-            btn_redraw, '-', btn_st, btn_rg, '-',
-            field_depth, field_limit
-        ];
         Baseliner.CIGraph.superclass.constructor.call(this, Ext.apply({
-            tbar : tbar,
             items: []
         },c));
         
-        self.load_st();
+    },
+    initComponent : function(){
+        var self = this;
+        var ii = Ext.id();
+        var btn_redraw = new Ext.Button({
+            tooltip: _('Redraw'),
+            icon:'/static/images/icons/redraw.png', handler: function(){ self.redraw() } 
+        });
+        self.btn_to_img = new Ext.Button({
+            tooltip: _('Generate Image'),
+            icon:'/static/images/icons/printer.png', hidden: Ext.isIE9m, handler: function(){ self.to_img() } 
+        });
+        self.btn_st = new Ext.Button({
+            allowDepress: false, enableToggle: true, toggleGroup:'cigraph_btns' + ii,
+            icon: '/static/images/icons/spacetree.png',
+            text: _('SpaceTree'), handler: function(){ self.load_st() }
+        });
+        self.btn_rg = new Ext.Button({
+            allowDepress: false, enableToggle: true, toggleGroup:'cigraph_btns' + ii,
+            icon: '/static/images/icons/rgraph.png',
+            text: _('RGraph'), handler: function(){ self.load_rg() }
+        });
+        self.btn_d3g = new Ext.Button({
+            allowDepress: false, enableToggle: true, toggleGroup:'cigraph_btns' + ii,
+            icon: '/static/images/icons/d3graph.png', hidden: Ext.isIE9m, 
+            text: _('d3G'), handler: function(){ self.load_d3g() }
+        });
+        // depth
+        self.field_depth = new Ext.ux.form.SpinnerField({ hidden: true, value: self.depth, width: 60 });
+        self.field_depth.on('spin', function(){
+            self.depth = self.field_depth.getValue();
+            self.reload_current();
+        });
+        // limit
+        var field_limit = new Ext.ux.form.SpinnerField({ value: self.limit, width: 60 });
+        field_limit.on('spin', function(){
+            self.limit = field_limit.getValue();
+            self.reload_current();
+        });
+        // direction
+        self.field_direction = new Baseliner.ComboSingle({ data:['parents','children','related'], value: self.direction });
+        self.field_direction.on('select', function(){
+            self.direction = self.field_direction.getValue();
+            self.reload_current();
+        });
+        // recenter on last mid
+        self.btn_recenter = new Ext.Button({
+            icon: '/static/images/icons/startlast.png',
+            tooltip: _('Start on Last'), handler: function(){ self.mid = self.last_mid; self.reload_current(); }, hidden: true
+        });
+        self.lab_depth = new Ext.Container({ hidden: true, html:_('dph')+':' });
+        self.tbar = [
+            self.btn_st, self.btn_rg, self.btn_d3g,
+            '-',
+            btn_redraw, self.btn_recenter, 
+            '-', 
+            //{ xtype:'container', labelWidth: 20, layout:'form', items:[self.field_depth, field_limit] },
+            self.lab_depth, self.field_depth, 
+            _('lim')+':', field_limit,
+            self.field_direction, '-',
+            '->', 
+            self.btn_to_img
+        ];
+        self.title = _('%1: %2', self.title, self.mid );
+        Baseliner.CIGraph.superclass.initComponent.call(this);
+        var first = true ;
+        self.on( 'resize', function(){
+            if( first ) {
+                eval("self.load_"+self.which+"();");
+                first = false;
+            }
+        });
+    },
+    reload_current : function(){
+        var self = this;
+        var ai = this.getLayout().activeItem;
+        if( !ai ) return;
+        var which = ai.which;
+        self.remove( ai );
+        if( which != undefined ) {
+            self[ which ] = null; 
+            eval("self.load_" + which + "();");
+        }
     },
     redraw : function(){
         var ai = this.getLayout().activeItem;
         if( ai ) ai.redraw();
     },
-    show : function() {
-        var graph_win = new Baseliner.Window({ layout:'fit', width: 800, height: 600, items: this });
+    window_show : function() {
+        var graph_win = new Baseliner.Window({ title: this.title, layout:'fit', width: 1000, height: 600, items: this });
         graph_win.show();
-        this.doLayout();
+        return graph_win; 
     },
     load_st : function(){
-       var self = this; 
-       if( self.st ) {
-           self.getLayout().setActiveItem( self.st );
-           return;
-       }
-       self.st = new Baseliner.ST({ request: function(id,lev,onComplete){
+        var self = this; 
+        self.btn_st.toggle(true);
+        self.field_depth.hide(); self.lab_depth.hide();
+        self.btn_recenter.show();
+        if( self.st ) {
+            self.getLayout().setActiveItem( self.st );
+            return;
+        }
+        self.st = new Baseliner.ST({ request: function(id,lev,onComplete){
             var mid = id || self.mid;
-            Baseliner.ajaxEval( '/ci/json_tree', { mid: mid, node_data:'{ "$type":"nodeline" }',
-                         direction:'related', depth: self.depth, limit: self.limit }, function(res){
-                if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return }
-                //console.log( res.data );        
-                onComplete.onComplete(id, res.data);    
-            });
-       }});
-       self.add( self.st );
+            self.last_mid = mid;
+            Baseliner.ajaxEval( '/ci/json_tree', { mid: mid, node_data:'{ "$type":"nodeline" }', 
+                direction: self.direction, 
+                depth: 1, limit: self.limit }, function(res){
+                    if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return }
+                    onComplete.onComplete(id, res.data);    
+                });
+        }});
+        self.st.which = 'st';
+        self.add( self.st );
+        self.getLayout().setActiveItem( self.st );
     },
     load_rg : function(){
-       var self = this; 
-       console.log( self.rg );
-       if( self.rg ) {
-           self.getLayout().setActiveItem( self.rg );
-           return;
-       }
-       Baseliner.ajaxEval( '/ci/json_tree', { mid: self.mid, direction:'related', depth: self.depth, limit: self.limit }, function(res){
-           if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return }
-           self.rg = new Baseliner.JitRGraph({ json: res.data });
-           self.add( self.rg );
-           self.getLayout().setActiveItem( self.rg );
-       });
-    }
+        var self = this; 
+        self.btn_rg.toggle(true);
+        self.field_depth.show(); self.lab_depth.show();
+        self.btn_recenter.hide();
+        if( self.rg ) {
+            self.getLayout().setActiveItem( self.rg );
+            return;
+        }
+        self.rg = new Baseliner.JitRGraph({ request: function(id,lev,onComplete){
+            var mid = id || self.mid;
+            Baseliner.ajaxEval( '/ci/json_tree', { mid: mid, 
+                add_prefix: 0,
+                direction: self.direction,
+                depth: self.depth, limit: self.limit }, function(res){
+                    if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return }
+                    if( res.count > self.limit ) {
+                        Baseliner.confirm( _('graph_high_load %1', res.count ), function(){
+                            onComplete.onComplete(id, res.data);    
+                        });
+                    } else {
+                        onComplete.onComplete(id, res.data);    
+                    }
+                });
+        }});
+        self.rg.which = 'rg';
+        self.add( self.rg );
+        self.getLayout().setActiveItem( self.rg );
+    },
+    load_d3g : function(){
+        var self = this;
+        self.btn_d3g.toggle(true);
+        self.field_depth.show(); self.lab_depth.show();
+        self.btn_recenter.hide();
+        if( self.d3g ) {
+            self.getLayout().setActiveItem( self.d3g );
+            return;
+        }
+        var w = 960, h = 500;
+        Baseliner.loadFile('/static/d3/d3.css', 'css' );
+        require(['d3'], function(){
+            self.d3g = new Baseliner.D3Graph({ mid: self.mid, depth: self.depth, direction: self.direction });
+            self.add( self.d3g );
+            self.d3g.which = 'd3g';
+            self.getLayout().setActiveItem( self.d3g );
+        });
+    },
+    to_img : function(){
+        var self = this;
+        require(['/static/html2canvas/html2canvas.js'], function(){
+            html2canvas(self.getLayout().activeItem.el.dom, {
+              onrendered: function(canvas) {
+                  var ww = window.open('about:blank', '_blank'); //, 'resizable=yes, scrollbars=yes' );
+                  var dw = ww.document;
+                  canvas.style['backgroundColor'] = '#000';
+                  var image = dw.createElement('image');
+                  image.src = canvas.toDataURL("image/png");
+                  dw.body.appendChild( image );
+              }
+            });
+        });
+        // jquery version doesn't work: not everything is in the canvas, or d3 has no canvas apparently
+        // $(self.getLayout().activeItem.el.dom).find('canvas').each(function(){ var canvas = this;
+    } 
 });

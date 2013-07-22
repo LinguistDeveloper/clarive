@@ -803,12 +803,14 @@ sub json_tree : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
     my $mids = delete $p->{mid} || delete $p->{mids};
+    my $show_root = delete $p->{root} // 1;
     my $direction = delete $p->{direction} || 'related';
-    my $d = length $p->{node_data} ? _from_json( $p->{node_data} ) : {};
+    my $d = length $p->{node_data} ? _from_json( delete $p->{node_data} ) : {};
     my %node_data = %$d if ref $d eq 'HASH';
     $p->{limit} //= 50;  
-    my $prefix = $p->{id_prefix} || _nowstamp;
+    my $prefix = $p->{add_prefix} // 1 ? $p->{id_prefix} || _nowstamp . int(rand 99999) . '-' : '';
     local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
+    my $k=0;
     $c->stash->{json} = try {
         my @all;
         for my $mid ( _array( $mids ) ) { 
@@ -818,9 +820,12 @@ sub json_tree : Local {
             my $recurse;
             $recurse = sub {
                 my $chi = shift;
+                my $name = $chi->{name};
+                $name = substr($name,0,30).'...' if length $name > 30;
+                $k++;
                 +{
-                    id       => $prefix . '-' . $chi->{mid},
-                    name     => '#' . $chi->{mid} . ' ' . $chi->{name},
+                    id       => $prefix . $chi->{mid},
+                    name     => '#' . $chi->{mid} . ' ' . $name,
                     data => {
                         '$type' => 'icon',
                         %node_data,
@@ -832,7 +837,7 @@ sub json_tree : Local {
             };
             my @data = map { $recurse->( $_ ) } @rels;
             my $d = {
-                id => $prefix . '-' . $mid, 
+                id => $prefix . $mid, 
                 name => $ci->name, 
                 data => {
                     %node_data,
@@ -840,7 +845,11 @@ sub json_tree : Local {
                 },
                 children => \@data,
             };
-            push @all, $d;
+            if( $show_root ) {
+                push @all, $d;
+            } else {
+                push @all, @data;
+            }
         }
         my $ret = @all == 1 
             ? $all[0]
@@ -850,7 +859,7 @@ sub json_tree : Local {
                 data => { icon=>'/static/images/icons/ci.png', %node_data },
                 children => \@all
             };
-        { success=>\1, data=>$ret };
+        { success=>\1, data=>$ret, count=>$k };
     } catch {
         my $err = shift;
         _error( $err );

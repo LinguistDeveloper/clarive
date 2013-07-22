@@ -70,6 +70,7 @@ Baseliner.js_reload = function() {
     Baseliner.loadFile( '/site/model.js', 'js' );
     Baseliner.loadFile( '/site/explorer.js', 'js' ); 
     Baseliner.loadFile( '/site/editors.js', 'js' ); 
+    Baseliner.loadFile( '/site/graph.js', 'js' );
     Baseliner.loadFile( '/site/portal/Portal.js', 'js' );
     Baseliner.loadFile( '/site/portal/Portlet.js', 'js' );
     Baseliner.loadFile( '/site/portal/PortalColumn.js', 'js' );
@@ -1248,16 +1249,19 @@ Baseliner.createRange = function(panel, id_cal, id, pdia, date) {
 }	
 
 Baseliner.Window = Ext.extend( Ext.Window, {
-    initComponent: function(){
-        var self = this;
-        self.addTool({
-            id: 'down',
-            handler: function(a,b,c){ self.tabify(a,b,c) }
-        });
-        Baseliner.Window.superclass.initComponent.call(this);
-    },
+    tabifiable: false,
     minimizable: true,
     maximizable: true,
+    initComponent: function(){
+        var self = this;
+        if( self.tabifiable ) {
+            self.addTool({
+                id: 'down',
+                handler: function(a,b,c){ self.tabify(a,b,c) }
+            });
+        }
+        Baseliner.Window.superclass.initComponent.call(this);
+    },
     minimize: function(){
         var self = this;
         if( Baseliner.main_toolbar ) {
@@ -2363,7 +2367,7 @@ Baseliner.ComboSingle = Ext.extend( Ext.form.ComboBox, {
     anchor: '100%',
     forceSelection: true,
     allowBlank: false,
-    selectOnFocus: true,
+    selectOnFocus: false,
     initComponent: function(){
         var data = [];
         if( this.data ) {
