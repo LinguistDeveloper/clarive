@@ -519,6 +519,7 @@ sub topics_for_user {
     my @mid_prefs = DB->BaliMasterPrefs->search({ mid=>{ -in => \@mids }, username=>$username })->hashref->all;
     for( @mid_prefs ) {
         my $d = $mid_data{$_->{mid}};
+        next if !defined $d->{last_seen} || !defined $d->{modified_on};
         $d->{user_seen} = "$d->{modified_on}" gt "$_->{last_seen}" ? \0 : \1;
     }
 
@@ -1018,6 +1019,7 @@ sub get_data {
         my $rs = Baseliner->model('Baseliner::BaliTopic')
                 ->search({ 'me.mid' => $topic_mid },{ join => ['categories','status','priorities','master'], select => \@select_fields, as => \@as_fields});
         my $row = $rs->first;
+        _error( "topic mid $topic_mid row not found" ) unless $row;
         
         $data = { topic_mid => $topic_mid, $row->get_columns };
         

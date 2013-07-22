@@ -3192,6 +3192,9 @@ msgstr "Error asignando etiquetas: %1"
 msgid "Topic"
 msgstr "Tópico"
 
+msgid "Topics: %1"
+msgstr "Tópicos: %1"
+
 # root/comp/topic_grid.js (654)
 msgid "Open"
 msgstr "Abiertas"

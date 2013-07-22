@@ -343,7 +343,7 @@ sub move_topic : Local {
             }
             
         }else{
-            my $row = $c->model('Baseliner::BaliProjectDirectoriesFiles')->create({
+            my $row = $c->model('Baseliner::BaliProjectDirectoriesFiles')->find_or_create({
                                                                                 id_file => $topic_mid,
                                                                                 id_directory =>  $p->{to_directory},
                                                                             });        
