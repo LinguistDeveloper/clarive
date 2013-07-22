@@ -4,8 +4,8 @@ Baseliner.D3Graph = Ext.extend( Ext.Panel, {
     depth: 3, 
     unique: true,
     direction: 'related',
-    linkDistance: 90,
-    charge: -100,
+    linkDistance: 190,
+    charge: -500,
     initComponent : function(){
         var self = this;
         Baseliner.D3Graph.superclass.initComponent.call(this);
@@ -14,36 +14,41 @@ Baseliner.D3Graph = Ext.extend( Ext.Panel, {
             if( this.svg ) {
                 //this.svg.trigger('resizeEnd');
                 //this.svg.attr('width', w).attr('height', h);
-                //self.draw();
+                //self.redraw();
             }
         });
         self.on('afterrender', function(){
-            Baseliner.ajaxEval('/ci/json_tree', { mid:self.mid, direction: self.direction, depth:self.depth, mode:self.mode, unique:self.unique }, function(res){
-                self.links = [];
-                
-                var link = function(source){
-                    Ext.each( source.children, function(chi){
-                        self.links.push({ source: source.name, target: chi.name, type:"child" });
-                        link( chi );
-                    });
-                }
-                link( res.data );
-
-                self.nodes = {};
-
-                // Compute the distinct nodes from the links.
-                self.links.forEach(function(link) {
-                  link.source = self.nodes[link.source] || (self.nodes[link.source] = {name: link.source});
-                  link.target = self.nodes[link.target] || (self.nodes[link.target] = {name: link.target});
+            self.redraw();
+        });
+    },
+    redraw: function(){
+        var self = this;
+        Baseliner.ajaxEval('/ci/json_tree', { mid:self.mid, direction: self.direction, depth:self.depth, mode:self.mode, unique:self.unique }, function(res){
+            self.links = [];
+            
+            var link = function(source){
+                Ext.each( source.children, function(chi){
+                    self.links.push({ source: source.name, target: chi.name, type:"child" });
+                    link( chi );
                 });
-                
-                self.draw();
+            }
+            link( res.data );
 
+            self.nodes = {};
+
+            // Compute the distinct nodes from the links.
+            self.links.forEach(function(link) {
+              link.source = self.nodes[link.source] || (self.nodes[link.source] = {name: link.source});
+              link.target = self.nodes[link.target] || (self.nodes[link.target] = {name: link.target});
             });
+            
+            self.draw();
+
         });
     },
     draw: function(){
         var self = this;
+        self.body.update('');
 
         var id = self.body.id; 
         var height = self.body.getHeight();
@@ -55,6 +60,7 @@ Baseliner.D3Graph = Ext.extend( Ext.Panel, {
             .size([width, height])
             .linkDistance( self.linkDistance )
             .charge( self.charge )
+            .gravity( 0.05 )
             .on("tick", function() { self.tick() })
             .start();
 
@@ -78,13 +84,13 @@ Baseliner.D3Graph = Ext.extend( Ext.Panel, {
 
         self.path = self.svg.append("svg:g").selectAll("path")
             .data(self.force.links())
-          .enter().append("svg:path")
+            .enter().append("svg:path")
             .attr("class", function(d) { return "link " + d.type; })
             .attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
 
         self.circle = self.svg.append("svg:g").selectAll("circle")
             .data(self.force.nodes())
-          .enter().append("svg:circle")
+            .enter().append("svg:circle")
             .attr("r", 6)
             .call(self.force.drag);
 
@@ -207,7 +213,7 @@ Baseliner.JitRGraph = Ext.extend( Ext.Panel, {
             onBeforeCompute: function(node){
                 self.request( node.id, null, { onComplete:function(id, data){
                     rgraph.op.sum( data, {  
-                        type: 'fade:seq', //'replot', // fade:seq
+                        type: 'replot', //'replot', // fade:seq
                         fps: 30,
                         duration: 200,
                         hideLabels: true,
@@ -368,7 +374,7 @@ Baseliner.ST = Ext.extend( Ext.Panel, {
             //
             Node: {
                 height: 20,
-                width: 120,
+                width: 140,
                 //use a custom
                 //node rendering function
                 type: 'nodeline',
@@ -389,18 +395,18 @@ Baseliner.ST = Ext.extend( Ext.Panel, {
             //your node.
             onCreateLabel: function(label, node){
                 label.id = node.id;            
-                label.innerHTML = String.format('<table><tr><td style="align:top"><img src="{1}"></td><td>{0}</td></tr></table>', node.name, node.data.icon );
+                label.innerHTML = String.format('<table><tr><td style="vertical-align: top"><img src="{1}"></td><td style="vertical-align: top">{0}</td></tr></table>', node.name, node.data.icon );
                 label.onclick = function(){
                     self.jit.onClick(node.id);
                 };
                 //set label styles
                 var style = label.style;
-                style.width = 120 + 'px';
+                style.width = 140 + 'px';
                 style.height = 21 + 'px';            
                 style.cursor = 'pointer';
                 style.color = '#fff';
                 //style.backgroundColor = '#1a1a1a';
-                style.fontFamily = 'OpenSans,monotype';
+                style.fontFamily = 'Tahoma, Consolas, Courier New, Arial, monotype';
                 style.fontSize = '0.8em';
                 style.textAlign= 'left';
                 style.textWrap = 'none';
@@ -530,7 +536,7 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
             //{ xtype:'container', labelWidth: 20, layout:'form', items:[self.field_depth, field_limit] },
             self.lab_depth, self.field_depth, 
             _('lim')+':', field_limit,
-            self.field_direction, '-',
+            _('dir')+':', self.field_direction, '-',
             '->', 
             self.btn_to_img
         ];
@@ -580,6 +586,7 @@ Baseliner.CIGraph = Ext.extend( Ext.Panel, {
                 direction: self.direction, 
                 depth: 1, limit: self.limit }, function(res){
                     if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return }
+                    if( res.count < 1 ) { Baseliner.warning( _('No nodes available') ); onComplete.onComplete(id, {}); return }
                     onComplete.onComplete(id, res.data);    
                 });
         }});

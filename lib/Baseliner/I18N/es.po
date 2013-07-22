@@ -84,6 +84,9 @@ msgstr "Notificación"
 msgid "Notifications"
 msgstr "Notificaciones"
 
+msgid "No nodes available"
+msgstr "No hay nodos disponibles"
+
 msgid "None"
 msgstr "No hay"
 
