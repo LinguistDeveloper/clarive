@@ -448,10 +448,14 @@ sub store : Local {
     my $p = $c->req->params;
     
     # in cache ?
-    my $cache_key = $p;
-    if( my $cc = $c->cache_get( $cache_key ) ) {   # not good during testing mode
-        $c->stash->{json} = $cc;
-        return $c->forward('View::JSON');
+    my $mid_param =  $p->{mid} || $p->{from_mid} || $p->{to_mid} ;
+    my $cache_key;
+    if( defined $mid_param ) {
+        $cache_key = ["ci:store:$mid_param:", $p ];
+        if( my $cc = $c->cache_get( $cache_key ) ) {   # not good during testing mode
+            #$c->stash->{json} = $cc;
+            #return $c->forward('View::JSON');
+        }
     }
     
     my $name = delete $p->{name};
@@ -460,7 +464,7 @@ sub store : Local {
     my $where = {};
     local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
 
-    if ( $p->{mid} || $p->{from_mid} || $p->{to_mid} ) {
+    if ( defined $mid_param ) {
         my $w = {};
         $w->{from_mid} = $p->{mid} if $p->{mid};
         $w->{from_mid} = $p->{from_mid} if $p->{from_mid};
@@ -516,7 +520,7 @@ sub store : Local {
     }
 
     $c->stash->{json} = { data=>\@data, totalCount=>$total };
-    $c->cache_set( $cache_key, $c->stash->{json} ); 
+    $c->cache_set( $cache_key, $c->stash->{json} ) if $cache_key; 
     $c->forward('View::JSON');
 }
 
@@ -670,6 +674,7 @@ sub update : Local {
             $mid = $class->save( name=>$name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), data=> $p ); 
         }
         elsif( $action eq 'edit' && defined $mid ) {
+            $c->cache_remove( qr/:$mid:/ );
             $mid = $class->save( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), data => $p ); 
         }
         else {
@@ -681,6 +686,7 @@ sub update : Local {
             for my $to_mid ( _array( $cis ) ) {
                 my $rel_type = $collection . '_' . _ci( $to_mid )->collection;   # XXX consider sending the rel_type from js 
                 DB->BaliMasterRel->create({ from_mid=>$mid, to_mid=>$to_mid, rel_type=>$rel_type });
+                $c->cache_remove( qr/:$to_mid:/ );
             }
         }
         $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 saved ok', $name) };
@@ -702,12 +708,15 @@ Load a CI row.
 sub load : Local {
     my ($self, $c, $action) = @_;
     my $p = $c->req->params;
-    my $cache_key = Storable::freeze($p);
-    if( my $cc = $c->cache_get( $cache_key ) ) {
-        $c->stash->{json} = $cc;
-        return $c->forward('View::JSON');
-    }
     my $mid = $p->{mid};
+    my $cache_key;
+    if( length $mid ) {
+        $cache_key = [ "ci:load:$mid:", $p ];
+        if( my $cc = $c->cache_get( $cache_key ) ) {
+            $c->stash->{json} = $cc;
+            return $c->forward('View::JSON');
+        }
+    }
     local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
     try {
         my $obj = Baseliner::CI->new( $mid );
@@ -725,7 +734,7 @@ sub load : Local {
         _error( $err );
         $c->stash->{json} = { success=>\0, msg=>_loc('CI load error: %1', $err ) };
     };
-    $c->cache_set( $cache_key, $c->stash->{json} );
+    $c->cache_set( $cache_key, $c->stash->{json} ) if defined $cache_key;
     $c->forward('View::JSON');
 }
 
