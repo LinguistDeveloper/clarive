@@ -63,6 +63,9 @@ msgstr "Seleccione el campo %1 primero o recargue"
 msgid "Error loading topic"
 msgstr "Error cargando el tópico"
 
+msgid "graph_high_load %1"
+msgstr "%1 nodos recibidos. Procesarlos puede tardar. ¿Desea continuar?"
+
 msgid "Field %1 reset due to change in %2"
 msgstr "Campo %1 reiniciado debido a un cambio en %2"
 
@@ -80,6 +83,9 @@ msgstr "Notificación"
 
 msgid "Notifications"
 msgstr "Notificaciones"
+
+msgid "No nodes available"
+msgstr "No hay nodos disponibles"
 
 msgid "None"
 msgstr "No hay"
@@ -3185,6 +3191,9 @@ msgstr "Error asignando etiquetas: %1"
 # root/comp/topic_grid.js (605)
 msgid "Topic"
 msgstr "Tópico"
+
+msgid "Topics: %1"
+msgstr "Tópicos: %1"
 
 # root/comp/topic_grid.js (654)
 msgid "Open"

@@ -1647,6 +1647,7 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
                         Baseliner.ajaxEval( '/topic/view?topic_mid=' + mid, params, function(topic_panel) {
                             var win = new Baseliner.Window({
                                 layout: 'fit', 
+                                tabifiable : true,
                                 //modal: true,
                                 autoScroll: true,
                                 style: { overflow: 'hide' },

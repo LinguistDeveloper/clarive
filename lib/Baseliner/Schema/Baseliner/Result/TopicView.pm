@@ -51,7 +51,8 @@ __PACKAGE__->result_source_instance->view_definition(q{
             cis_out.NAME CIS_OUT,
             cis_in.NAME CIS_IN,
             topics_in.TITLE REFERENCED_IN,
-            topics_out.TITLE REFERENCES_OUT
+            topics_out.TITLE REFERENCES_OUT,
+            DS.NAME directory
             FROM  BALI_TOPIC T
                     JOIN BALI_MASTER MA ON T.MID = MA.MID
                     LEFT JOIN BALI_TOPIC_CATEGORIES C ON T.ID_CATEGORY = C.ID
@@ -94,6 +95,8 @@ __PACKAGE__->result_source_instance->view_definition(q{
                         'topic_post','topic_file_version','topic_project','topic_users','topic_topic' )
                     LEFT JOIN BALI_MASTER cis_in ON cis_in.MID = rel_cis_in.FROM_MID
                     
+                    LEFT JOIN BALI_PROJECT_DIRECTORIES_FILES DF ON DF.ID_FILE = T.MID
+                    LEFT JOIN BALI_PROJECT_DIRECTORIES DS ON DF.ID_DIRECTORY = DS.ID
             WHERE T.ACTIVE = 1
 });
 
@@ -139,6 +142,7 @@ __PACKAGE__->add_columns(
         cis_in
         referenced_in
         references_out
+        directory
     )
 );
 
