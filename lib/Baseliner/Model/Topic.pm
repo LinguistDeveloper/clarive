@@ -506,6 +506,9 @@ sub topics_for_user {
             if( $row->{referenced_in} ) {
                 $mid_data{$mid}{group_referenced_in}{ $row->{referenced_in} } = ();
             }
+            if( $row->{directory} ) {
+                $mid_data{$mid}{group_directory}{ $row->{directory} } = ();
+            }
             $mid_data{$mid}{group_assignee}{ $row->{assignee} } = () if defined $row->{assignee};
         }
         for my $db_mid ( @db_mids ) {
@@ -519,8 +522,8 @@ sub topics_for_user {
     my @mid_prefs = DB->BaliMasterPrefs->search({ mid=>{ -in => \@mids }, username=>$username })->hashref->all;
     for( @mid_prefs ) {
         my $d = $mid_data{$_->{mid}};
-        next if !defined $d->{last_seen} || !defined $d->{modified_on};
-        $d->{user_seen} = "$d->{modified_on}" gt "$_->{last_seen}" ? \0 : \1;
+        #next if !defined $d->{last_seen} || !defined $d->{modified_on};
+        $d->{user_seen} = !defined $_->{last_seen} || "$d->{modified_on}" gt "$_->{last_seen}" ? \0 : \1;
     }
 
     my @rows;
@@ -534,7 +537,7 @@ sub topics_for_user {
         };
         $data->{category_status_name} = _loc($data->{category_status_name});
         $data->{category_name} = _loc($data->{category_name});
-        map { $data->{$_} = [ keys %{ delete($data->{"group_$_"}) || {} } ] } qw/labels projects cis_out cis_in references_out referenced_in assignee/;
+        map { $data->{$_} = [ keys %{ delete($data->{"group_$_"}) || {} } ] } qw/labels projects cis_out cis_in references_out referenced_in assignee directory/;
         my @projects_report = keys %{ delete $data->{projects_report} || {} };
         push @rows, {
             %$data,
