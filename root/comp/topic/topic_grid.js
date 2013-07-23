@@ -457,9 +457,11 @@
         var font_weight = rec.data.user_seen===true ? 'normal' : 'bold';
 
         // folders tags
-        var folders = '';
+        var folders;
         if( rec.data.directory && rec.data.directory.length>0 ) {
-            folders = '<span id="boot"><span class="label topictag">' + rec.data.directory.join('</span><span class="label topictag">') + '</span></span>';
+            folders = '<span id="boot" style="background: transparent"><span class="label topictag">' + rec.data.directory.join('</span><span class="label topictag">') + '</span></span>';
+        } else {
+            folders = '';
         }
 
         if(rec.data.labels){
