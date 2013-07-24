@@ -184,19 +184,12 @@ sub execute {
 
 sub _build_uri {
     my ($self) = @_;
-    my $uri = $self->uri;
-    if( $uri ) {
-        my ($conn) = $uri =~ m{//(.*?)(/.*)?$};
-        return $conn if $conn;
-    } else {
-        if( $self->{user} ) {
-            return sprintf('%s@%s', $self->{user}, $self->server->hostname ); 
-        } 
-        else {
-            return $self->server->hostname; 
-        }
+    if( $self->{user} ) {
+        return sprintf('%s@%s', $self->{user}, $self->server->hostname ); 
+    } 
+    else {
+        return $self->server->hostname; 
     }
-    _throw _loc "Could not create connection from uri %1", $self->uri;
 }
 
 1;
