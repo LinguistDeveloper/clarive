@@ -1106,7 +1106,7 @@ sub get_labels {
     my ($self, $topic_mid ) = @_;
     my @labels = Baseliner->model('Baseliner::BaliTopicLabel')->search( { id_topic => $topic_mid },
                                                                         {prefetch =>['label']})->hashref->all;
-    @labels = map {$_->{label}} @labels;
+    @labels = _unique map {$_->{label}} @labels;
     return @labels ? \@labels : [];
 }
 
