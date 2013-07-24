@@ -73,7 +73,7 @@ register 'event.topic.modify' => {
 
 
 register 'event.topic.modify_field' => {
-    text => '%1 modified topic %2 from %3 to %4',
+    text => '%1 modified the field %2 from %3 to %4',
     description => 'User modified a topic',
     vars => ['username', 'field', 'old_value', 'new_value', 'text_new', 'ts',],
     filter=>sub{
@@ -97,21 +97,25 @@ register 'event.topic.modify_field' => {
         else {
             #$txt = '';
             require Algorithm::Diff::XS;
-            my $brk = sub { [ $_[0] =~ m{(\w+)}gs ] };
-            my $d =Algorithm::Diff::XS::sdiff( $brk->($vars[2]), $brk->($vars[3]), );
+            my $brk = sub { my $x=_strip_html(shift); [ $x =~ m{(\w+)}gs ] };
+            my $aa = $brk->($vars[2]);
+            my $bb = $brk->($vars[3]);
+            my $d =Algorithm::Diff::XS::sdiff( $aa, $bb );
             my @diff;
             my @bef;
             my @aft;
             for my $ix ( 0..$#{ $d } ) {
                 my ($st,$bef,$aft) = @{ $d->[$ix] };
                 unless( $st eq 'u' ) {
-                    push @bef, "<code>$bef</code>" if length $bef;
-                    push @aft, "<code>$aft</code>" if length $aft;
+                    push @bef, "$bef" if length $bef;
+                    push @aft, "$aft" if length $aft;
                 }
             }
             if( @bef || @aft ) {
-                $vars[2] = @bef ? join( ' ', @bef ) : '<code>-</code>';
-                $vars[3] = @aft ? join( ' ', @aft ) : '<code>-</code>';
+                $vars[2] = @bef ? '<code>' . join( ' ', @bef ) . '</code>' : '<code>-</code>';
+                $vars[3] = @aft ? '<code>' . join( ' ', @aft ) . '</code>' : '<code>-</code>';
+            } else {
+                $txt = '%1 modified the field %2';
             }
         }
         return ($txt, @vars);

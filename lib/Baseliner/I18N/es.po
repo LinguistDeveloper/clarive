@@ -4362,8 +4362,11 @@ msgstr "Personalizar campo"
 msgid "Field"
 msgstr "Campo"
 
-msgid "%1 modified topic %2 from %3 to %4"
+msgid "%1 modified the field %2 from %3 to %4"
 msgstr "%1 modificó el campo %2  de %3 a %4"
+
+msgid "%1 modified the field %2"
+msgstr "%1 modificó el campo %2"
 
 msgid "%1 modified topic"
 msgstr "%1 modificó el tópico"
