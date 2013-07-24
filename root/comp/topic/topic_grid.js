@@ -465,15 +465,19 @@
         }
 
         if(rec.data.labels){
+			tag_color_html = "";
             for(i=0;i<rec.data.labels.length;i++){
                 var label = rec.data.labels[i].split(';');
                 var label_name = label[1];
                 var label_color = label[2];
                 tag_color_html = tag_color_html
                     + "<div id='boot'><span class='label' style='font-size: 9px; float:left;padding:1px 4px 1px 4px;margin-right:4px;color:" 
-                    + returnOpposite(label_color.substr(1)) + ";background-color:" + label_color + "'>" + label_name + "</span></div>";              
+                    + returnOpposite(label_color.substr(1)) + ";background-color:" + label_color + "'>" + label_name + "</span></div>";
             }
         }
+		
+		
+		
         if(btn_mini.pressed){
             return tag_color_html 
                 + String.format("<span style='font-weight:{5}; font-size: 12px; cursor: pointer; "+strike+"' onclick='javascript:Baseliner.show_topic_colored({1},\"{2}\", \"{3}\", \"{4}\");'>{0}{6}</span>", 

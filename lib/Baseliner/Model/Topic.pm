@@ -488,9 +488,9 @@ sub topics_for_user {
             $mid_data{ $mid }{sw_edit} = 1 if exists $categories_edit{ lc $row->{category_name}};
 
             # fill out hash indexes
-            $row->{label_id}
-                ? $mid_data{$mid}{group_id_label}{ $row->{label_id} . ";" . $row->{label_name} . ";" . $row->{label_color} } = ()
-                : $mid_data{$mid}{group_id_label} = {};
+            if( $row->{label_id} ) {
+                $mid_data{$mid}{group_labels}{ $row->{label_id} . ";" . $row->{label_name} . ";" . $row->{label_color} } = ();
+            }
             if( $row->{project_id} ) {
                 $mid_data{$mid}{group_projects}{ $row->{project_id} . ";" . $row->{project_name} } = ();
                 $mid_data{$mid}{group_projects_report}{ $row->{project_name} } = ();
