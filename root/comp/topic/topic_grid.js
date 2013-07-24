@@ -1181,7 +1181,8 @@
         autoScroll: true,
         rootVisible: false,
         root: tree_root,
-        enableDD: true,
+		enableDrag: true,
+        enableDrop: false,
         ddGroup: 'explorer_dd',
 		listeners: {
 			'checkchange': checkchange
