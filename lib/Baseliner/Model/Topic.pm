@@ -1030,7 +1030,6 @@ sub get_data {
         
         $data = { topic_mid => $topic_mid, $row->get_columns };
         
-
         $data->{action_status} = $self->getAction($data->{type_status});
         $data->{created_on} = $row->created_on->dmy . ' ' . $row->created_on->hms;
         $data->{created_on_epoch} = $row->created_on->epoch;
@@ -1106,7 +1105,7 @@ sub get_labels {
     my ($self, $topic_mid ) = @_;
     my @labels = Baseliner->model('Baseliner::BaliTopicLabel')->search( { id_topic => $topic_mid },
                                                                         {prefetch =>['label']})->hashref->all;
-    @labels = _unique map {$_->{label}} @labels;
+    @labels = map {$_->{label}} @labels;
     return @labels ? \@labels : [];
 }
 
