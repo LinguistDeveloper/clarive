@@ -23,7 +23,7 @@ my $post_filter = sub {
 register 'event.post.create' => {
     text => '%1 posted a comment: %3',
     description => 'User posted a comment',
-    vars => ['username', 'ts', 'post'],
+    vars => ['username', 'ts', 'data', 'post'],
     filter => $post_filter,
 };
 
