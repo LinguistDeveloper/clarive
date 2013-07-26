@@ -1155,4 +1155,17 @@ sub import : Local {
     $c->forward('View::JSON');  
 }
 
+sub delete_topic_label : Local {
+    my ($self,$c, $topic_mid, $label_id)=@_;
+    try{
+        Baseliner->model("Baseliner::BaliTopicLabel")->search( {id_topic => $topic_mid, id_label => $label_id } )->delete;
+        $c->stash->{json} = { msg=>_loc('Label deleted'), success=>\1, id=> $label_id };
+    }
+    catch{
+        $c->stash->{json} = { msg=>_loc('Error deleting label: %1', shift()), failure=>\1 }
+    };
+    
+    $c->forward('View::JSON');    
+}
+
 1;

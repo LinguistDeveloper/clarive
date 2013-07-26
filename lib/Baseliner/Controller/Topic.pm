@@ -560,9 +560,12 @@ sub view : Local {
         my $meta = $c->model('Topic')->get_meta( $topic_mid, $id_category );
         my $data = $c->model('Topic')->get_data( $meta, $topic_mid, topic_child_data=>$p->{topic_child_data} );
         $meta = get_meta_permissions ($c, $meta, $data);        
-
+        
+        $data->{admin_labels} = $c->model('Permissions')->user_has_any_action( username=> $c->username, action=>'action.admin.topics' );
+        
         $c->stash->{topic_meta} = $meta;
         $c->stash->{topic_data} = $data;
+        
 
         $c->stash->{template} = '/comp/topic/topic_msg.html';
     } else {
