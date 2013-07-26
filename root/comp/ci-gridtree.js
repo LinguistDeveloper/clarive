@@ -31,12 +31,16 @@
         Ext.each( check_sm.getSelections(), function(r){
             mids.push( r.data.mid );
         });
+        var gr = new Baseliner.CIGraph({ mid: mids });
+        gr.window_show();
+        /*
         Baseliner.ajaxEval( '/ci/json_tree', { mid: mids, direction:'related', depth:2 }, function(res){
             if( ! res.success ) { Baseliner.message( 'Error', res.msg ); return }
             var rg = new Baseliner.JitRGraph({ json: res.data });
             var graph_win = new Baseliner.Window({ layout:'fit', width: 800, height: 600, items: rg });
             graph_win.show();
         });
+        */
     };
     // only globals can be seen from grid
     Baseliner.ci_edit = function( gridid, ix ){

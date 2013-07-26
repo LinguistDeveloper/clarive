@@ -227,6 +227,21 @@ sub duplicate : Local {
                 $role->bali_roleactions->find_or_create({ action=>$ra->action });
             }
             $role->update;
+            
+            my @rs_dashboards = $r->dashboard_roles->hashref->all;
+            foreach my $dashboard (@rs_dashboards){
+                $dashboard->{id_role} = $role->id;
+            	$role->dashboard_roles->find_or_create($dashboard);   
+            }
+            $role->update;
+            
+            my @rs_workflows =  $r->roles->hashref->all;
+            foreach my $workflow (@rs_workflows){
+                delete $workflow->{id};
+                $workflow->{id_role} = $role->id;
+            	$role->roles->create($workflow);   
+            }
+            $role->update;
         }
     };
     if( $@ ) {

@@ -841,6 +841,8 @@ sub update_topic_labels : Local {
     my $label_ids = $p->{label_ids};
     
     try{
+        Baseliner->cache_remove( qr/:$topic_mid:/ ) if length $topic_mid;
+        
         $c->model("Baseliner::BaliTopicLabel")->search( {id_topic => $topic_mid} )->delete;
         
         foreach my $label_id (_array $label_ids){

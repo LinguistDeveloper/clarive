@@ -17,7 +17,7 @@ has ssh     => (
     lazy     => 1,
     default  => sub {
         my $self = shift;
-        $self->debug and $Net::OpenSSH::debug |= 8;
+        Baseliner->debug and $Net::OpenSSH::debug |= 8;
         my $uri = $self->_build_uri;
         my $n = Net::OpenSSH->new( $uri );
         $n->error and _throw "ssh: Could not connect to $uri: " . $n->error;
@@ -92,7 +92,7 @@ sub get_dir {
     my $ret = $self->ssh->$method( \%p, $remote, $local ); 
     my $out = _slurp $p{stdout_file};
     unlink $p{stdout_file};
-    $self->ret( $out );
+    $self->ret( "$out" );
     $self->_throw_on_error;
     $ret;
 }
@@ -166,37 +166,32 @@ sub execute {
 
     use Try::Tiny;
     try {
-        local $SIG{ALRM} = sub { die "alarm\n" };
+        local $SIG{ALRM} = sub { die "ssh timeout alarm\n" };
         alarm $timeout; 
         $ret = $self->ssh->system( \%p, @cmd );
         $rc = $?;
         alarm 0;
     } catch {
         alarm 0;
-        _fail _loc( 'Timeout %1 (%2)', $self->_build_uri, "@cmd" ); 
+        my $err = shift;
+        _fail _loc( 'Timeout %1 (%2)', $self->_build_uri, "@cmd" ) if $err =~ /ssh timeout alarm/; 
+        _fail _loc( 'ssh_agent execute error %1 (%2): %3', $self->_build_uri, "@cmd", $err ) if $err =~ /ssh timeout alarm/; 
     };
     my $out = _slurp $p{stdout_file};
     unlink $p{stdout_file};
-    $self->ret( $out );
+    $self->ret( "$out" );
     $self->_throw_on_error;
     $ret;
 }
 
 sub _build_uri {
     my ($self) = @_;
-    my $uri = $self->uri;
-    if( $uri ) {
-        my ($conn) = $uri =~ m{//(.*?)(/.*)?$};
-        return $conn if $conn;
-    } else {
-        if( $self->{user} ) {
-            return sprintf('%s@%s', $self->{user}, $self->server->hostname ); 
-        } 
-        else {
-            return $self->server->hostname; 
-        }
+    if( $self->{user} ) {
+        return sprintf('%s@%s', $self->{user}, $self->server->hostname ); 
+    } 
+    else {
+        return $self->server->hostname; 
     }
-    _throw _loc "Could not create connection from uri %1", $self->uri;
 }
 
 1;

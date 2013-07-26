@@ -73,7 +73,7 @@ register 'event.topic.modify' => {
 
 
 register 'event.topic.modify_field' => {
-    text => '%1 modified topic %2 from %3 to %4',
+    text => '%1 modified the field %2 from %3 to %4',
     description => 'User modified a topic',
     vars => ['username', 'field', 'old_value', 'new_value', 'text_new', 'ts',],
     filter=>sub{
@@ -97,21 +97,25 @@ register 'event.topic.modify_field' => {
         else {
             #$txt = '';
             require Algorithm::Diff::XS;
-            my $brk = sub { [ $_[0] =~ m{(\w+)}gs ] };
-            my $d =Algorithm::Diff::XS::sdiff( $brk->($vars[2]), $brk->($vars[3]), );
+            my $brk = sub { my $x=_strip_html(shift); [ $x =~ m{(\w+)}gs ] };
+            my $aa = $brk->($vars[2]);
+            my $bb = $brk->($vars[3]);
+            my $d =Algorithm::Diff::XS::sdiff( $aa, $bb );
             my @diff;
             my @bef;
             my @aft;
             for my $ix ( 0..$#{ $d } ) {
                 my ($st,$bef,$aft) = @{ $d->[$ix] };
                 unless( $st eq 'u' ) {
-                    push @bef, "<code>$bef</code>" if length $bef;
-                    push @aft, "<code>$aft</code>" if length $aft;
+                    push @bef, "$bef" if length $bef;
+                    push @aft, "$aft" if length $aft;
                 }
             }
             if( @bef || @aft ) {
-                $vars[2] = @bef ? join( ' ', @bef ) : '<code>-</code>';
-                $vars[3] = @aft ? join( ' ', @aft ) : '<code>-</code>';
+                $vars[2] = @bef ? '<code>' . join( ' ', @bef ) . '</code>' : '<code>-</code>';
+                $vars[3] = @aft ? '<code>' . join( ' ', @aft ) . '</code>' : '<code>-</code>';
+            } else {
+                $txt = '%1 modified the field %2';
             }
         }
         return ($txt, @vars);
@@ -484,9 +488,9 @@ sub topics_for_user {
             $mid_data{ $mid }{sw_edit} = 1 if exists $categories_edit{ lc $row->{category_name}};
 
             # fill out hash indexes
-            $row->{label_id}
-                ? $mid_data{$mid}{group_id_label}{ $row->{label_id} . ";" . $row->{label_name} . ";" . $row->{label_color} } = ()
-                : $mid_data{$mid}{group_id_label} = {};
+            if( $row->{label_id} ) {
+                $mid_data{$mid}{group_labels}{ $row->{label_id} . ";" . $row->{label_name} . ";" . $row->{label_color} } = ();
+            }
             if( $row->{project_id} ) {
                 $mid_data{$mid}{group_projects}{ $row->{project_id} . ";" . $row->{project_name} } = ();
                 $mid_data{$mid}{group_projects_report}{ $row->{project_name} } = ();
@@ -506,6 +510,9 @@ sub topics_for_user {
             if( $row->{referenced_in} ) {
                 $mid_data{$mid}{group_referenced_in}{ $row->{referenced_in} } = ();
             }
+            if( $row->{directory} ) {
+                $mid_data{$mid}{group_directory}{ $row->{directory} } = ();
+            }
             $mid_data{$mid}{group_assignee}{ $row->{assignee} } = () if defined $row->{assignee};
         }
         for my $db_mid ( @db_mids ) {
@@ -519,7 +526,8 @@ sub topics_for_user {
     my @mid_prefs = DB->BaliMasterPrefs->search({ mid=>{ -in => \@mids }, username=>$username })->hashref->all;
     for( @mid_prefs ) {
         my $d = $mid_data{$_->{mid}};
-        $d->{user_seen} = "$d->{modified_on}" gt "$_->{last_seen}" ? \0 : \1;
+        #next if !defined $d->{last_seen} || !defined $d->{modified_on};
+        $d->{user_seen} = !defined $_->{last_seen} || "$d->{modified_on}" gt "$_->{last_seen}" ? \0 : \1;
     }
 
     my @rows;
@@ -533,7 +541,7 @@ sub topics_for_user {
         };
         $data->{category_status_name} = _loc($data->{category_status_name});
         $data->{category_name} = _loc($data->{category_name});
-        map { $data->{$_} = [ keys %{ delete($data->{"group_$_"}) || {} } ] } qw/labels projects cis_out cis_in references_out referenced_in assignee/;
+        map { $data->{$_} = [ keys %{ delete($data->{"group_$_"}) || {} } ] } qw/labels projects cis_out cis_in references_out referenced_in assignee directory/;
         my @projects_report = keys %{ delete $data->{projects_report} || {} };
         push @rows, {
             %$data,
@@ -1018,10 +1026,10 @@ sub get_data {
         my $rs = Baseliner->model('Baseliner::BaliTopic')
                 ->search({ 'me.mid' => $topic_mid },{ join => ['categories','status','priorities','master'], select => \@select_fields, as => \@as_fields});
         my $row = $rs->first;
+        _error( "topic mid $topic_mid row not found" ) unless $row;
         
         $data = { topic_mid => $topic_mid, $row->get_columns };
         
-
         $data->{action_status} = $self->getAction($data->{type_status});
         $data->{created_on} = $row->created_on->dmy . ' ' . $row->created_on->hms;
         $data->{created_on_epoch} = $row->created_on->epoch;

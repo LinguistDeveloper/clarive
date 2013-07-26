@@ -456,27 +456,40 @@
         var strike = ( rec.data.is_closed ? 'text-decoration: line-through' : '' );
         var font_weight = rec.data.user_seen===true ? 'normal' : 'bold';
 
+        // folders tags
+        var folders;
+        if( rec.data.directory && rec.data.directory.length>0 ) {
+            folders = '<span id="boot" style="background: transparent"><span class="label topictag">' + rec.data.directory.join('</span><span class="label topictag">') + '</span></span>';
+        } else {
+            folders = '';
+        }
+
         if(rec.data.labels){
+			tag_color_html = "";
             for(i=0;i<rec.data.labels.length;i++){
                 var label = rec.data.labels[i].split(';');
                 var label_name = label[1];
                 var label_color = label[2];
                 tag_color_html = tag_color_html
-                    + "<div id='boot'><span class='label' style='font-size: 9px; float:left;padding:1px 4px 1px 4px;margin-right:4px;color:" 
-                    + returnOpposite(label_color.substr(1)) + ";background-color:" + label_color + "'>" + label_name + "</span></div>";              
+                    //+ "<div id='boot'><span class='label' style='font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;float:left;padding:1px 4px 1px 4px;margin-right:4px;color:"
+					+ "<span style='font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;float:left;padding:1px 4px 1px 4px;margin-right:4px;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;color:" 
+                    + returnOpposite(label_color.substr(1)) + ";background-color:" + label_color + "'>" + label_name + "</span>";
             }
         }
+		
+		
+		
         if(btn_mini.pressed){
             return tag_color_html 
-                + String.format("<span style='font-weight:{5}; font-size: 12px; cursor: pointer; "+strike+"' onclick='javascript:Baseliner.show_topic_colored({1},\"{2}\", \"{3}\", \"{4}\");'>{0}</span>", 
-                        value, rec.data.topic_mid, rec.data.category_name, rec.data.category_color, grid_topics.id, font_weight ); 
+                + String.format("<span style='font-weight:{5}; font-size: 12px; cursor: pointer; "+strike+"' onclick='javascript:Baseliner.show_topic_colored({1},\"{2}\", \"{3}\", \"{4}\");'>{0}{6}</span>", 
+                        value, rec.data.topic_mid, rec.data.category_name, rec.data.category_color, grid_topics.id, font_weight, folders ); 
         }else{
             return tag_color_html + 
                 String.format( "<span style='font-weight:{7}; font-size: 14px; cursor: pointer; "+strike+"' onclick='javascript:Baseliner.show_topic_colored({3},\"{4}\",\"{5}\", \"{6}\")'>{0}</span>"
-                        + "<br><div style='margin-top: 5px'>{1}<font color='808080'></br>{2}</font ></div>", 
+                        + "<br><div style='margin-top: 5px'>{1}{8}<font color='808080'></br>{2}</font ></div>", 
                         //value, date_created_on, _('by %1',rec.data.created_by),
 						value, date_modified_on, _('by %1',rec.data.modified_by), 
-                        rec.data.topic_mid, rec.data.category_name, rec.data.category_color, grid_topics.id, font_weight );                        
+                        rec.data.topic_mid, rec.data.category_name, rec.data.category_color, grid_topics.id, font_weight, folders );                        
         }
         
     };
@@ -1168,7 +1181,8 @@
         autoScroll: true,
         rootVisible: false,
         root: tree_root,
-        enableDD: true,
+		enableDrag: true,
+        enableDrop: false,
         ddGroup: 'explorer_dd',
 		listeners: {
 			'checkchange': checkchange

@@ -339,25 +339,25 @@ sub update_label : Local {
                 if(!$row){
                     my $rslabel;
                     my $label = { name => $label, color => $color};
-                    if (!@projects){
-                        if ($username eq 'root'){
+                    #if (!@projects){
+                    #    if ($username eq 'root'){
                             $label->{sw_allprojects} = 1;
-                        }else{
-                            my $rs_user = $c->model('Baseliner::BaliUser')->search({username => $username}, {select => 'mid'})->hashref->first;
-                            $label->{mid_user} = $rs_user->{mid};
-                        }
+                    #    }else{
+                    #        my $rs_user = $c->model('Baseliner::BaliUser')->search({username => $username}, {select => 'mid'})->hashref->first;
+                    #        $label->{mid_user} = $rs_user->{mid};
+                    #    }
                         $rslabel = $c->model('Baseliner::BaliLabel')->create($label);
                         
-                    }else{
-                        if ($projects[0] eq 'todos'){
-                            $label->{sw_allprojects} = 1;
-                        }
-                        $rslabel = $c->model('Baseliner::BaliLabel')->create($label);
-                        foreach my $project (@projects){
-                            next if $project eq 'todos';
-                            $c->model('Baseliner::BaliLabelProject')->create({id_label => $rslabel->id, mid_project => $project});
-                        }                        
-                    }
+                    #}else{
+                    #    if ($projects[0] eq 'todos'){
+                    #        $label->{sw_allprojects} = 1;
+                    #    }
+                    #    $rslabel = $c->model('Baseliner::BaliLabel')->create($label);
+                    #    foreach my $project (@projects){
+                    #        next if $project eq 'todos';
+                    #        $c->model('Baseliner::BaliLabelProject')->create({id_label => $rslabel->id, mid_project => $project});
+                    #    }                        
+                    #}
                     $c->stash->{json} = { msg=>_loc('Label added'), success=>\1, label_id=> $rslabel->id };
                 }
                 else{

@@ -161,8 +161,12 @@ sub delete_folder : Local {
         }
         @directories = map {$_->{id} } @directories;
         my $directories = $c->model("Baseliner::BaliProjectDirectories")->search({id => \@directories});
-        $directories->delete();
         my $directories_files = $c->model("Baseliner::BaliProjectDirectoriesFiles")->search({id_directory => \@directories});
+        for my $row_file( $directories_files->all ) {
+            my $mid = $row_file->id_file;
+            $c->cache_remove( qr/:$mid:/ );
+        }
+        $directories->delete();
         $directories_files->delete();
         #$sth->bind_param( 1, $directory_id );
         #$sth->execute();
@@ -275,6 +279,10 @@ sub rename_folder : Local {
         my $row = $c->model('Baseliner::BaliProjectDirectories')->search({id => $id})->first;
         if( $row ){
             $row->update({ name => $name });    
+            for my $row_file ( $row->files->hashref->all ) {
+                my $mid = $row_file->{id_file};
+                $c->cache_remove( qr/:$mid:/ ) if defined $mid;
+            }
         }
         $c->stash->{json} = { success=>\1, msg=>_loc('Folder renamed'), name=>$name };
     } catch {
@@ -307,12 +315,15 @@ sub move_file : Local {
                                                                         })->first;
         $rs->id_directory( $p->{to_directory} );
         $rs->update();        
+        $c->cache_remove( qr/:$p->{from_file}:/ );
         
     }else{
         my $rs = $c->model('Baseliner::BaliProjectDirectoriesFiles')->create({
                                                                             id_file => $p->{from_file},
                                                                             id_directory =>  $p->{to_directory},
                                                                         });        
+
+        $c->cache_remove( qr/:$p->{from_file}:/ );
     }
     $c->stash->{json} = { success=>\1, msg=>_loc('File moved') };
     $c->forward('View::JSON');
@@ -325,6 +336,7 @@ sub move_topic : Local {
 
     try {
         if($p->{from_directory}){
+            $c->cache_remove( qr/:$topic_mid:/ );
             my $old_row = $c->model('Baseliner::BaliProjectDirectoriesFiles')->search({ id_file => $topic_mid,
                                                                                    id_directory =>  $p->{from_directory},
                                                                             })->first;
@@ -343,10 +355,11 @@ sub move_topic : Local {
             }
             
         }else{
-            my $row = $c->model('Baseliner::BaliProjectDirectoriesFiles')->create({
+            my $row = $c->model('Baseliner::BaliProjectDirectoriesFiles')->find_or_create({
                                                                                 id_file => $topic_mid,
                                                                                 id_directory =>  $p->{to_directory},
                                                                             });        
+            $c->cache_remove( qr/:$topic_mid:/ );
         }
         $c->stash->{json} = { success=>\1, msg=>_loc('OK') };
     } catch {
@@ -365,6 +378,7 @@ sub remove_topic : Local {
                                                                            id_directory =>  $p->{id_directory},
                                                                     })->first;
         $rs->delete if $rs;
+        $c->cache_remove( qr/:$topic_mid:/ );
     }
     $c->stash->{json} = { success=>\1, msg=>_loc('OK') };
     $c->forward('View::JSON');
