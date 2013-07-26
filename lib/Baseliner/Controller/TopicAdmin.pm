@@ -1158,6 +1158,8 @@ sub import : Local {
 sub delete_topic_label : Local {
     my ($self,$c, $topic_mid, $label_id)=@_;
     try{
+        Baseliner->cache_remove( qr/:$topic_mid:/ ) if length $topic_mid;
+        
         Baseliner->model("Baseliner::BaliTopicLabel")->search( {id_topic => $topic_mid, id_label => $label_id } )->delete;
         $c->stash->{json} = { msg=>_loc('Label deleted'), success=>\1, id=> $label_id };
     }
