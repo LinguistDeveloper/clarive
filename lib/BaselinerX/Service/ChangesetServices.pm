@@ -400,6 +400,7 @@ sub update_baselines {
                 $row->update;
                 $log->info( _loc( "%1 %2 to %3", $job_type, $row->title, $status_name ) );
                 return { mid => $row->mid, topic => $row->title };
+                Baseliner->cache_remove( qr/:$row->mid:/ );
             }         
     } ## end while ( my $row = $rs_changesets...)
     } catch {
