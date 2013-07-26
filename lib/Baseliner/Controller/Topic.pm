@@ -620,6 +620,7 @@ sub comment : Local {
                     event_new 'event.post.create' => {
                         username => $c->username,
                         mid      => $topic_mid,
+                        data     => _ci($topic_mid)->{_ci};
                         id_post  => $mid,
                         post     => substr( $text, 0, 30 ) . ( length $text > 30 ? "..." : "" )
                     };
