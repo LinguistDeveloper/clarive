@@ -386,10 +386,10 @@ sub update_baselines {
         }
     } ## end for my $item ( _array $stash...)
     # XXX - quitar try-catch
-    my @chi = DB->BaliMasterRel->search({ from_mid=>\@changesets, rel_type=>'topic_topic' })->hashref->all;
-    if( @chi ) {
-        push @changesets, map { $_->{to_mid} } @chi;
-    }
+    # my @chi = DB->BaliMasterRel->search({ from_mid=>\@changesets, rel_type=>'topic_topic' })->hashref->all;
+    # if( @chi ) {
+    #     push @changesets, map { $_->{to_mid} } @chi;
+    # }
     try {
         my $rs_changesets = DB->BaliTopic->search( {mid => \@changesets}, { prefetch => 'status'} );
 
