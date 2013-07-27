@@ -9,7 +9,7 @@ use Array::Utils qw(:all);
 use v5.10;
 
 
-#Una prueba de commit
+#Una prueba
 
 BEGIN { extends 'Catalyst::Model' }
 
