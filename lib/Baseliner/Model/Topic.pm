@@ -9,7 +9,7 @@ use Array::Utils qw(:all);
 use v5.10;
 
 
-#Una prueba
+#Una prueba de commit
 
 BEGIN { extends 'Catalyst::Model' }
 
@@ -23,7 +23,7 @@ my $post_filter = sub {
 register 'event.post.create' => {
     text => '%1 posted a comment: %3',
     description => 'User posted a comment',
-    vars => ['username', 'ts', 'data', 'post'],
+    vars => ['username', 'ts', 'post'],
     filter => $post_filter,
 };
 
