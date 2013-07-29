@@ -112,8 +112,12 @@ register 'event.topic.modify_field' => {
                 }
             }
             if( @bef || @aft ) {
-                $vars[2] = @bef ? '<code>' . join( ' ', @bef ) . '</code>' : '<code>-</code>';
-                $vars[3] = @aft ? '<code>' . join( ' ', @aft ) . '</code>' : '<code>-</code>';
+                my $bef = join( ' ', @bef );
+                my $aft = join( ' ', @aft );
+                $bef = substr( $bef, 0, 50 ) . '...' if length $bef > 50;
+                $aft = substr( $aft, 0, 50 ) . '...' if length $aft > 50;
+                $vars[2] = @bef ? '<code>' . $bef . '</code>' : '<code>-</code>';
+                $vars[3] = @aft ? '<code>' . $aft . '</code>' : '<code>-</code>';
             } else {
                 $txt = '%1 modified the field %2';
             }
