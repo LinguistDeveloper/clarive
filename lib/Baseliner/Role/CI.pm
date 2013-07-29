@@ -181,8 +181,8 @@ sub save {
             # now save the rest of the ci data
             $self->save_data( $row, $data );
         }
-        # now index for searches 
-        $self->index_search_data( mid=>$mid, row=>$row, data=>$data) unless $p{no_index};
+        # now index for searches  XXX this should be handled by the inner_save data, which should use mdb->save instead 
+        #$self->index_search_data( mid=>$mid, row=>$row, data=>$data) unless $p{no_index};
     });
     return $mid; 
 }
@@ -224,11 +224,9 @@ sub save_data {
     }
     # now store the data
     if( $storage eq 'yaml' ) {
-        $master_row->yaml( Util->_dump( $data ) );
-        $master_row->update;
-    }
-    elsif( $storage eq 'fields' ) {
-       # TODO  
+        mdb->save( $master_row, $data );
+        #$master_row->yaml( Util->_dump( $data ) );
+        #$master_row->update;
     }
     else {  # dbic result source
         my $rs = Baseliner->model("Baseliner::$storage");
@@ -267,8 +265,9 @@ sub table_update { $_[1]->update( $_[2] ) }
 
 sub load {
     use Baseliner::Utils;
-    my ( $self, $mid ) = @_;
+    my ( $self, $mid, $row, $data, $yaml ) = @_;
     $mid ||= $self->mid;
+    _fail _loc( "Missing mid %1", $mid ) unless length $mid;
     # in scope ? 
     my $scoped = $Baseliner::CI::mid_scope->{ $mid } if $Baseliner::CI::mid_scope;
     #say STDERR "----> SCOPE $mid =" . join( ', ', keys( $Baseliner::CI::mid_scope ) );
@@ -277,21 +276,25 @@ sub load {
     my $cache_key = "ci:$mid:";
     my $cached = Baseliner->cache_get( $cache_key );
     return $cached if $cached;
-    _fail _loc( "Missing mid %1", $mid ) unless length $mid;
-    my $row = Baseliner->model('Baseliner::BaliMaster')->find( $mid );
-    _fail _loc( "Master row not found for mid %1", $mid ) unless ref $row;
+
+    if( !$data ) {
+        $row //= Baseliner->model('Baseliner::BaliMaster')->find( $mid );
+        _fail _loc( "Master row not found for mid %1", $mid ) unless ref $row;
+        # setup the base data from master row
+        $data = ref $row eq 'HASH' ? $row : { $row->get_columns }; # row may come already hashref'ed
+    }
+
     # find class, so that we are subclassed correctly
-    my $class = "BaselinerX::CI::" . $row->collection;
+    my $class = "BaselinerX::CI::" . $data->{collection};
     # fix static generic calling from Baseliner::CI
     $self = $class if $self eq 'Baseliner::Role::CI';
     # check class is available, otherwise use a dummy ci class
     $self = $class = 'BaselinerX::CI::Empty' unless _package_is_loaded( $class );
     # get my storage type
     my $storage = $class->storage;
-    # setup the base data from master row
-    my $data = { $row->get_columns };
     if( $storage eq 'yaml' ) {
-        my $y = _load( $row->yaml );
+        $data->{yaml} //= $yaml;
+        my $y = _load( $data->{yaml} );
         $data = { %$data, %{ ref $y ? $y : {} } };
     }
     elsif( $storage eq 'fields' ) {
@@ -321,11 +324,11 @@ sub load {
                     { -or=>[ to_mid=>$mid, from_mid=>$mid ], rel_type => \@fields },
                     { select=> ['from_mid', 'to_mid', 'rel_type' ] } )->hashref->all;
                 
-        for my $row ( @rel_type_data ) {
-            my $f = $field_rel_mids{ $row->{rel_type} }; 
+        for my $rel_row ( @rel_type_data ) {
+            my $f = $field_rel_mids{ $rel_row->{rel_type} }; 
             next unless $f;
-            next if $row->{ $f->{my_mid} } ne $mid;
-            my $other_mid = $row->{ $f->{other_mid} };
+            next if $rel_row->{ $f->{my_mid} } ne $mid;
+            my $other_mid = $rel_row->{ $f->{other_mid} };
             next unless $other_mid;
             my $prev_value = $data->{ $f->{field} };
             push @{ $data->{ $f->{field} } }, $other_mid;
@@ -512,21 +515,8 @@ sub children {
     return $self->related( %opts, edge=>'out' );
 }
 
-# search utilities
 
-sub index_search_data {
-    my( $self, %p ) = @_;
-    $p{data} = { %{ $self->{_ci} }, %{ $p{data} || {} } } if ref $self && ref $self->{_ci};
-    my $mid = $p{mid} // $p{data}{mid} // _throw 'Missing mid for index search';
-    my $data = $p{data} || {};
-    my $row = $p{row} ? { $p{row}->get_columns } : {}; # master row
-    my $enc = JSON::XS->new->convert_blessed(1);
-    my $j = lc $enc->encode({ %$row, %$data });
-    $j = Util->_unac( $j );
-    $j =~ s/[^\w|:|,|-]//g;
-    DB->BaliMasterSearch->update_or_create({ mid=>$mid, search_data=>$j, ts=>Util->_dt });
-}
-
+# XXX deprecated:
 sub searcher {
     my ($self, %p ) = @_;
     my $coll = $self->collection;

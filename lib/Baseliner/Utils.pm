@@ -559,6 +559,10 @@ sub is_number {
     return $_[0] =~ /^(?=[-+.]*\d)[-+]?\d*\.?\d*(?:e[-+ ]?\d+)?$/i;
 }
 
+sub is_int {
+    return $_[0] =~ /^\d+$/;
+}
+
 sub _trim {
     my $str = shift;
     $str =~ s{^\s*}{}g;
@@ -1212,8 +1216,10 @@ sub _size_unit {
 }
 
 sub _dbis {
+    my( $model ) = @_;
+    $model ||= 'Baseliner';
     require DBIx::Simple;
-    return DBIx::Simple->connect( Baseliner->model('Baseliner')->storage->dbh );
+    return DBIx::Simple->connect( Baseliner->model($model)->storage->dbh );
 }
 
 =head2 _hook

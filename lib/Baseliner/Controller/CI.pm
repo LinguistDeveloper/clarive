@@ -1008,5 +1008,53 @@ sub grid : Local {
     $c->stash->{template} = '/comp/ci-gridtree.js';
 }
 
+# Global search
+
+with 'Baseliner::Role::Search';
+sub search_provider_name { 'CIs' };
+sub search_provider_type { 'CI' };
+sub search_query {
+    my ($self, %p ) = @_;
+    my $query = $p{query};
+    my $c = $p{c};
+    my $limit = 50; #$p{limit} // 1000;
+    my $where = {};
+    length($query) and $where = Util->build_master_search( query=>$query );
+    $where->{'-not'} = { collection=>{-in=>['topic','job']} };
+    my @rows = DB->BaliMaster->search(
+        $where,
+        { join=>'search_data', 
+            select=>['mid','name','collection','bl','search_data.search_data','ts'], 
+            as=>['mid','name','collection','bl', 'search_data','ts'], 
+            rows=>$limit, order_by=>{ -desc=>'ts' } })->hashref->all;
+    _error( \@rows );
+    my @mids = map { $_->{mid} } @rows;
+    return map {
+        my $r = $_;
+        my $json = $r->{search_data};
+        #my $text = join ',', map { "$_: $r->{$_}" } grep { defined $_ && defined $r->{$_} } keys %$r;
+        #my @text = $json;
+
+        my $info = sprintf "%s - %s (%s)", $r->{collection}, $r->{bl}, $r->{ts};
+        my $text = join(' ', split(/,/, $json ) );
+        $text =~ s{:}{: }g;
+        my $desc = _strip_html( sprintf "%s", ($r->{name} // '') );
+        if( length $desc ) {
+            $desc = _utf8 $desc;  # strip html messes up utf8
+            $desc =~ s/[^\w\s]//g; 
+            #$desc =~ s/[^\x{21}-\x{7E}\s\t\n\r]//g; 
+        }
+        +{
+            title => sprintf( '%s - %s', $r->{mid}, $r->{name} ),
+            info  => $info,
+            text  => $text, 
+            url   => [ $r->{mid}, $r->{name}, '#999' ],
+            type  => 'ci',
+            mid   => $r->{mid},
+            id    => $r->{mid},
+        }
+    } @rows;
+}
+
 1;
 

@@ -266,6 +266,29 @@ around 'debug' => sub {
         #$_->meta->make_immutable for keys %pkgs;
     }
 
+    # master db setup
+    {
+        package mdb;
+        our $AUTOLOAD;
+        sub AUTOLOAD {
+            my $self = shift;
+            my $name = $AUTOLOAD;
+            my @a = reverse( split(/::/, $name));
+            my $db = $Baseliner::_mdb //( $Baseliner::_mdb = do{
+                my $conf = Baseliner->config->{mdb} // {};
+                # XXX make this optional - mongo, elasticsearch, etc
+                my $class = 'Baseliner::Schema::KV';
+                eval "require $class"; 
+                Util->_fail('Error loading mdb class: '. $@ ) if $@ ;
+                $class->new( $conf );
+            });
+            my $class = ref $db;
+            my $method = $class . '::' . $a[0];
+            @_ = ( $db, @_ );
+            goto &$method;
+        }
+    }
+
     # CHI cache setup
     our $ccache;
     my $setup_fake_cache = sub {
