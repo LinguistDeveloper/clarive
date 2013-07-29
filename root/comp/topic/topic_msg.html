@@ -81,6 +81,7 @@ padding: 2px 4px 2px 7px;
 
 </style>
 % my @form = grep { $_->{fields} } _array( $topic_meta );
+% my @head = sort { $a->{field_order_html} <=> $b->{field_order_html} } grep { $_->{section} eq 'head' } _array( $topic_meta );
 % my @details = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} eq 'details' } _array( $topic_meta );
 % my @body = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} eq 'body' } _array( $topic_meta ) ;
 % if (@form) {
@@ -98,7 +99,7 @@ padding: 2px 4px 2px 7px;
         <!-- div class="span7" style="xwidth: 60%" -->
             <table style="width: 100%">
                 <tbody>
-% foreach my $field ( sort { $a->{field_order_html} <=> $b->{field_order_html} } grep { $_->{section} eq 'head' } _array( $topic_meta ) ) {
+% foreach my $field ( @head ) {
 % if ($field->{html}){
     <!-- <% $field->{html} %> -->
     <& $field->{html}, data=>$topic_data, meta=>$field &>

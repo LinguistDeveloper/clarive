@@ -1282,6 +1282,16 @@ sub _package_is_loaded {
     exists $INC{ $cl };
 }
 
+sub _reload_file {
+    my ($file) = @_;
+    $file = Baseliner->path_to($file) if !-e "$file";
+    local $SIG{__WARN__} = sub{};
+    do "$file";
+    if( $@ ) {
+        _fail( _loc('Error while reloading %1: %2', $file, $@ ) );
+    }
+}
+
 sub _reload_dir {
     my ($dir, $pattern) = @_;
     my $d = _dir( Baseliner->path_to( $dir ) );
@@ -1291,7 +1301,7 @@ sub _reload_dir {
     $d->recurse( callback=>sub{
         my $f = shift;
         return if $f->is_dir || $f !~ $re;
-        local $SIG{__WARN__} = sub{};
+        _reload_file( $f );
         push @reloaded, "$f";
         do "$f";
         if( $@ ) {
