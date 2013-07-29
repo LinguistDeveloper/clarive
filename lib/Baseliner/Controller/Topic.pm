@@ -560,9 +560,12 @@ sub view : Local {
         my $meta = $c->model('Topic')->get_meta( $topic_mid, $id_category );
         my $data = $c->model('Topic')->get_data( $meta, $topic_mid, topic_child_data=>$p->{topic_child_data} );
         $meta = get_meta_permissions ($c, $meta, $data);        
-
+        
+        $data->{admin_labels} = $c->model('Permissions')->user_has_any_action( username=> $c->username, action=>'action.admin.topics' );
+        
         $c->stash->{topic_meta} = $meta;
         $c->stash->{topic_data} = $data;
+        
 
         $c->stash->{template} = '/comp/topic/topic_msg.html';
     } else {
@@ -617,6 +620,7 @@ sub comment : Local {
                     event_new 'event.post.create' => {
                         username => $c->username,
                         mid      => $topic_mid,
+                        data     => _ci($topic_mid)->{_ci},
                         id_post  => $mid,
                         post     => substr( $text, 0, 30 ) . ( length $text > 30 ? "..." : "" )
                     };
@@ -841,6 +845,8 @@ sub update_topic_labels : Local {
     my $label_ids = $p->{label_ids};
     
     try{
+        Baseliner->cache_remove( qr/:$topic_mid:/ ) if length $topic_mid;
+        
         $c->model("Baseliner::BaliTopicLabel")->search( {id_topic => $topic_mid} )->delete;
         
         foreach my $label_id (_array $label_ids){

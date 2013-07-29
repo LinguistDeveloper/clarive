@@ -339,25 +339,25 @@ sub update_label : Local {
                 if(!$row){
                     my $rslabel;
                     my $label = { name => $label, color => $color};
-                    if (!@projects){
-                        if ($username eq 'root'){
+                    #if (!@projects){
+                    #    if ($username eq 'root'){
                             $label->{sw_allprojects} = 1;
-                        }else{
-                            my $rs_user = $c->model('Baseliner::BaliUser')->search({username => $username}, {select => 'mid'})->hashref->first;
-                            $label->{mid_user} = $rs_user->{mid};
-                        }
+                    #    }else{
+                    #        my $rs_user = $c->model('Baseliner::BaliUser')->search({username => $username}, {select => 'mid'})->hashref->first;
+                    #        $label->{mid_user} = $rs_user->{mid};
+                    #    }
                         $rslabel = $c->model('Baseliner::BaliLabel')->create($label);
                         
-                    }else{
-                        if ($projects[0] eq 'todos'){
-                            $label->{sw_allprojects} = 1;
-                        }
-                        $rslabel = $c->model('Baseliner::BaliLabel')->create($label);
-                        foreach my $project (@projects){
-                            next if $project eq 'todos';
-                            $c->model('Baseliner::BaliLabelProject')->create({id_label => $rslabel->id, mid_project => $project});
-                        }                        
-                    }
+                    #}else{
+                    #    if ($projects[0] eq 'todos'){
+                    #        $label->{sw_allprojects} = 1;
+                    #    }
+                    #    $rslabel = $c->model('Baseliner::BaliLabel')->create($label);
+                    #    foreach my $project (@projects){
+                    #        next if $project eq 'todos';
+                    #        $c->model('Baseliner::BaliLabelProject')->create({id_label => $rslabel->id, mid_project => $project});
+                    #    }                        
+                    #}
                     $c->stash->{json} = { msg=>_loc('Label added'), success=>\1, label_id=> $rslabel->id };
                 }
                 else{
@@ -1153,6 +1153,21 @@ sub import : Local {
         $c->stash->{json} = { success => \0, log=>\@log, msg => _loc('Error exporting: %1', shift()) };
     };
     $c->forward('View::JSON');  
+}
+
+sub delete_topic_label : Local {
+    my ($self,$c, $topic_mid, $label_id)=@_;
+    try{
+        Baseliner->cache_remove( qr/:$topic_mid:/ ) if length $topic_mid;
+        
+        Baseliner->model("Baseliner::BaliTopicLabel")->search( {id_topic => $topic_mid, id_label => $label_id } )->delete;
+        $c->stash->{json} = { msg=>_loc('Label deleted'), success=>\1, id=> $label_id };
+    }
+    catch{
+        $c->stash->{json} = { msg=>_loc('Error deleting label: %1', shift()), failure=>\1 }
+    };
+    
+    $c->forward('View::JSON');    
 }
 
 1;

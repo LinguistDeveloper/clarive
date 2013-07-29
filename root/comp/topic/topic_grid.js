@@ -471,8 +471,9 @@
                 var label_name = label[1];
                 var label_color = label[2];
                 tag_color_html = tag_color_html
-                    + "<div id='boot'><span class='label' style='font-size: 9px; float:left;padding:1px 4px 1px 4px;margin-right:4px;color:" 
-                    + returnOpposite(label_color.substr(1)) + ";background-color:" + label_color + "'>" + label_name + "</span></div>";
+                    //+ "<div id='boot'><span class='label' style='font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;float:left;padding:1px 4px 1px 4px;margin-right:4px;color:"
+					+ "<span style='font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;float:left;padding:1px 4px 1px 4px;margin-right:4px;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;color:" 
+                    + returnOpposite(label_color.substr(1)) + ";background-color:" + label_color + "'>" + label_name + "</span>";
             }
         }
 		
@@ -1180,7 +1181,8 @@
         autoScroll: true,
         rootVisible: false,
         root: tree_root,
-        enableDD: true,
+		enableDrag: true,
+        enableDrop: false,
         ddGroup: 'explorer_dd',
 		listeners: {
 			'checkchange': checkchange

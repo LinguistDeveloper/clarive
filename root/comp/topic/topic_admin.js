@@ -1892,44 +1892,6 @@
     });
     
     
-//    var btn_add_label = new Ext.Toolbar.Button({
-//        text: _('New'),
-//        icon:'/static/images/icons/add.gif',
-//        cls: 'x-btn-text-icon',
-//        handler: function() {
-//            if(label_box.getValue() != ''){
-//              if ( btn_by_project.pressed ) {
-//                  if (!projects_box.getValue()){
-//                      Ext.Msg.show({
-//                                title: _('Information'), 
-//                                msg: _('There are not projects selected'), 
-//                                buttons: Ext.Msg.OK, 
-//                                icon: Ext.Msg.INFO
-//                            });
-//                      return
-//                  }       
-//              }
-//              
-//                Baseliner.ajaxEval( '/topicadmin/update_label?action=add',{ label: label_box.getValue(), color: '#' + color_lbl, projects: projects_box.getValue()},
-//                    function(response) {
-//                        if ( response.success ) {
-//                            store_label.load();
-//                            Baseliner.message( _('Success'), response.msg );
-//                        } else {
-//                            //Baseliner.message( _('ERROR'), response.msg );
-//                            Ext.Msg.show({
-//                                title: _('Information'), 
-//                                msg: response.msg , 
-//                                buttons: Ext.Msg.OK, 
-//                                icon: Ext.Msg.INFO
-//                            });     
-//                        }
-//                    }
-//                );
-//            }
-//        }
-//    });
-    
     var btn_add_label = new Baseliner.Grid.Buttons.Add({    
         handler: function() {
             if(label_box.getValue() != ''){
@@ -2167,8 +2129,8 @@
                 btn_delete_label,
                 '->',
 % if ($c->stash->{can_admin_labels}) {              
-                btn_by_project,
-                btn_choose_projects
+                //btn_by_project,
+                //btn_choose_projects
 % }             
         ]
     });

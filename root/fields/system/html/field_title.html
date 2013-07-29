@@ -2,14 +2,7 @@
     $meta
     $data
 </%args>
-
-%use Date::Parse;
-%use DateTime;
-
-%#my $date = $data->{created_on};
-%#my $epoch = str2time( $date );
-%#my $datetime = DateTime->from_epoch(epoch => $epoch);
-
+% _log ">>>>>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump $data;
     <tr>
         <td style="vertical-align: middle">
             <span class="label" style="background: <% $data->{color_category} %>"><% _loc($data->{name_category}) %> #<% $data->{topic_mid} %></span>
@@ -26,11 +19,38 @@
             <% $data->{modified_by}%>, <small><%$data->{modified_on}%></small> &nbsp; | &nbsp;            
             <% lc _loc('Created')%>: <img  width=16 src="/user/avatar/<% $data->{created_by} %>/image.png" />
             <% $data->{created_by}%>, <small><%$data->{created_on}%></small>    
-% my $id = Baseliner::Utils::_nowstamp();
-% if( _array( $data->{labels} ) ) {        
+% if( _array( $data->{labels} ) ) {
+
 % foreach my $label ( _array( $data->{labels} ) ) {
-        <span class='label' style='font-size: 9px;padding:1px 4px 1px 4px;margin-right:4px;color:white;background-color:<% $label->{color} %>'><% $label->{name} %></span>
+        <!--<div class='alert' style='font-size: 9px;padding:1px 4px 1px 4px;margin-right:4px;color:white;background-color:<% $label->{color} %>'>-->
+        <span class='label' style='padding:1px 4px 1px 4px;background-color:<% $label->{color} %>'>
+            <% $label->{name} %>
+% if($data->{admin_labels}){        
+            <img id='<% $label->{id} %>' class='label_click' src='/static/images/icons/close.png' style='vertical-align: middle;'></img>
+%}
+        </span>
 % }
 % }
         </td>
     </tr>
+
+    <script>
+    $(".label_click").click(function() {
+        var topic_mid = '<%$data->{topic_mid}%>';
+        Baseliner.ajaxEval( '/topicadmin/delete_topic_label/' + topic_mid + '/' + this.id,{},
+            function(response) {
+                if ( response.success ) {
+                    $("#" + response.id).parent().hide();
+                    Baseliner.message( _('Success'), response.msg );
+                } else {
+                    Ext.Msg.show({
+                        title: _('Information'), 
+                        msg: response.msg , 
+                        buttons: Ext.Msg.OK, 
+                        icon: Ext.Msg.INFO
+                    });     
+                }
+            }
+        );
+    });
+    </script>
