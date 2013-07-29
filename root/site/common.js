@@ -2222,7 +2222,7 @@ Baseliner.run_service = function(params, service){
     var mask = { xtype:'panel', items: Baseliner.loading_panel() };
     var win = new Baseliner.Window({ width: 800, height: 400, layout:'fit', items:[ mask ], title: service.name });
     win.show();
-    Baseliner.ajaxEval( '/ci/service_run', Ext.apply( {}, service, params ), function(res){
+    Baseliner.ajaxEval( '/ci/service_run', Ext.apply( { timeout:0 }, service, params ), function(res){
         win.removeAll();
         if( !res.success ) {
             win.add(new Baseliner.MonoTextArea({ value: res.msg, style:'color:#f23' }) );
