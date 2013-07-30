@@ -3323,7 +3323,7 @@ msgid "Rename Folder"
 msgstr "Renombrar Carpeta"
 
 msgid "Assigned To Me"
-msgstr "Assignadas a Mí"
+msgstr "Asignadas a Mí"
 
 msgid "Created Today"
 msgstr "Creadas Hoy"
@@ -4617,4 +4617,8 @@ msgstr "Error añadiendo notificación"
 msgid "Related"
 msgstr "Relacionados"
 
+msgid "Unread"
+msgstr "No leídas"
 
+msgid "Created for Me"
+msgstr "Creadas por Mí"

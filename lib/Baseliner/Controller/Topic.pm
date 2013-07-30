@@ -935,6 +935,32 @@ sub filters_list : Local {
             uiProvider => 'Baseliner.CBTreeNodeUI_system'
         };
     }
+    
+    push @views, {
+        id  => $i++,
+        idfilter      => 3,
+        text    => _loc('Unread'),
+        filter  => '{"unread":true}',
+        default    => \1,
+        cls     => 'forum default',
+        iconCls => 'icon-no',
+        checked => \0,
+        leaf    => 'true',
+        uiProvider => 'Baseliner.CBTreeNodeUI_system'
+    };
+            
+    push @views, {
+        id  => $i++,
+        idfilter      => 4,
+        text    => _loc('Created for Me'),
+        filter  => '{"created_for_me":true}',
+        default    => \1,
+        cls     => 'forum default',
+        iconCls => 'icon-no',
+        checked => \0,
+        leaf    => 'true',
+        uiProvider => 'Baseliner.CBTreeNodeUI_system'
+    };            
     #################################################################################
 
     $row = $c->model('Baseliner::BaliTopicView')->search();

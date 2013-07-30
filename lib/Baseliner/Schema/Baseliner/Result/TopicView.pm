@@ -52,9 +52,12 @@ __PACKAGE__->result_source_instance->view_definition(q{
             cis_in.NAME CIS_IN,
             topics_in.TITLE REFERENCED_IN,
             topics_out.TITLE REFERENCES_OUT,
-            DS.NAME directory
+            DS.NAME directory,
+            MA_PREFS.USERNAME username,
+            MA_PREFS.LAST_SEEN last_seen
             FROM  BALI_TOPIC T
                     JOIN BALI_MASTER MA ON T.MID = MA.MID
+                    LEFT JOIN BALI_MASTER_PREFS MA_PREFS ON T.MID = MA_PREFS.MID
                     LEFT JOIN BALI_TOPIC_CATEGORIES C ON T.ID_CATEGORY = C.ID
                     LEFT JOIN BALI_TOPIC_LABEL TL ON TL.ID_TOPIC = T.MID
                     LEFT JOIN BALI_LABEL L ON L.ID = TL.ID_LABEL
@@ -143,6 +146,8 @@ __PACKAGE__->add_columns(
         referenced_in
         references_out
         directory
+        username
+        last_seen
     )
 );
 
