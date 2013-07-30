@@ -1,9 +1,30 @@
+=head1 DESCRIPTION
+
+This is the generic KV based CRUD system
+
+=head1 SYNOPSIS
+
+    my $ci = mdb->find( 1234 );
+    mdb->delete( 1234 );
+    mdb->save( 1234, { key1=>'value', key2=>2, ... }, { options... }  );
+    mdb->load( 1234, { options...} );
+    my @cis = mdb->query({ where... }, { opts... });
+    my @cis = mdb->search( query=>'fulltext search +query' ); 
+
+=cut
 package Baseliner::Schema::KV;
 use Moose;
 use Try::Tiny;
-use Baseliner::Utils qw(_fail _loc _error _debug _throw);
+use Baseliner::Utils qw(_fail _loc _error _debug _throw _log _array);
 
+has index_name => ( is=>'ro', isa=>'Str', default=>'bali_master_kv_full' );
+has index_sync_type => ( is=>'ro', isa=>'Str', default=>'commit' );
 has rs => ( is=>'ro', lazy=>1, default=>sub{ DB->BaliMasterKV } );
+
+sub find {
+    my ($self,$mid) = @_;
+    return $self->load( $mid );
+}
 
 sub load {
     my ($self,$mid, $opts) = @_;
@@ -23,16 +44,26 @@ sub update {
     $self->save( $mid, $doc, $opts );
 }
 
+sub delete {
+    my ($self,$mid) = @_;
+    my $row = DB->BaliMaster->find( $mid );
+    _fail _loc 'Master row not found for mid %1', $mid unless $row;
+    $row->delete;
+}
+
 sub save {
     my ($self,$mid, $doc, $opts) = @_;
     $mid = $mid->mid if ref $mid;  #  mid may be a BaliMaster row also
     Util->_fail( 'Missing mid' ) unless length $mid;
     my $m = Baseliner->model('Baseliner');
-    my $sql = 'insert into bali_master_kv (mid,ts,mtype,mpos,mkey,mvalue,mvalue_num) values (?,?,?,?,?,?,?)';
+    my $sql = 'insert into bali_master_kv (mid,mtype,mpos,mkey,mvalue_num,mvalue_date,mvalue) values (?,?,?,?,?,?,?)';
     #my @flat = $self->_break_varchar( 2000, $self->_flatten( $doc ) );
     my @flat = $self->_flatten( $doc );
     return @flat if $opts->{flat_only};
     my @tuple_status;
+    my $hint = $opts->{hint} // {};
+    use DBD::Oracle qw/:ora_types/;
+    my @flat_final;  # after modifications
     try {
         $m->txn_do( sub {
             # create yaml data for topic 
@@ -44,26 +75,46 @@ sub save {
             # now index fields flat
             DB->BaliMasterKV->search({ mid=>$mid })->delete unless $opts->{no_delete};
             my $stmt = $m->storage->dbh->prepare($sql);
-            my (@mid, @ts, @mtype, @mpos, @mkey, @mvalue, @mvalue_num );
-            my $ts = Util->_now();
+            my (@mid, @mtype, @mpos, @mkey, @mvalue, @mvalue_date, @mvalue_num );
             for my $row ( @flat ) {
+                my $mkey = $row->{mkey};
                 push @mid, $mid;
-                push @ts, $ts;
                 push @mtype, $row->{mtype} // 'str';
                 push @mpos, $row->{mpos} // 0;
                 push @mkey, $row->{mkey} // Util->_fail('Missing key for row: ' . Util->_dump( $row ) );
-                push @mvalue, $row->{mvalue} // '';
                 push @mvalue_num, $row->{mvalue_num} // ( Util->is_int( $row->{mvalue} ) ? $row->{mvalue} : undef );
+                if( ( exists $hint->{$mkey} && $hint->{$mkey} eq 'date' ) || $self->_is_date( $row->{mvalue} ) ) {
+                    my $date_str = $self->_date_to_string( $row->{mvalue} );
+                    $row->{mvalue_date} //= $date_str;
+                    $row->{mvalue} = $date_str;
+                }
+                push @mvalue_date, $row->{mvalue_date};
+                push @mvalue, $row->{mvalue} // '';
+                push @flat_final, $row;
             }
-            $stmt->execute_array({ ArrayTupleStatus => \@tuple_status }, \@mid, \@ts, \@mtype, \@mpos, \@mkey, \@mvalue, \@mvalue_num );
+            $stmt->execute_array({ ArrayTupleStatus => \@tuple_status }, \@mid, \@mtype, \@mpos, \@mkey, \@mvalue_num, \@mvalue_date, \@mvalue  );
         });
     } catch {
         my $err = shift;
         Util->_throw( Util->_loc('Error inserting into master kv: %1. Doc: %2', $err, Util->_dump($doc) ) );
     };
-    return @flat; #@tuple_status;
+    return @flat_final; #@tuple_status;
 }
 
+sub _date_to_string {
+    my ($self,$v) = @_;
+    my $ref = ref $v;
+    my $s = "$v";
+    $s =~ s{T}{ }g if $ref eq 'DateTime';  
+    $s;
+}
+
+sub _is_date {
+    my ($self,$v) = @_;
+    return 1 if ref $v eq 'DateTime';
+    return 1 if ref $v eq 'Class::Date';
+    return 0;
+}
 
 sub _break_varchar {
     my ($self, $siz, @flat )=@_;
@@ -84,7 +135,7 @@ sub _break_varchar {
 }
 
 sub _is_special { 
-    $_[1] =~ m/^(\>|\<|\!|\=|-in|-and|-or|-not|-like|-not_like|\!\=)/;
+    $_[1] =~ m/^(\>|\<|\!|\=|-in|-and|-or|-bool|-not_bool|-not|-like|-not_like|\!\=)/;
 }
 
 sub _split_special {
@@ -137,7 +188,8 @@ sub _flatten {
         return { mkey=>$prefix, mvalue=> $$where };
     }
     else {
-        die 'invalid type: ' . $ref;
+        return { mkey=>$prefix, mvalue=> $where };
+        #die 'invalid type: ' . $ref;
     }
     return @flat;
 }
@@ -164,6 +216,30 @@ sub _quote_keys {
         }
     }
     return $where;
+}
+
+sub _apply_hints {
+    my ($self, $where, $hint) = @_;
+    $hint ||= {};
+    my $ref = ref $where;
+    if( $ref eq 'HASH' ) {
+        for my $k ( keys %$where ) {
+            my $v = $where->{$k};
+            my $type = $hint->{$k};
+            if( $type eq 'text' ) {   # fulltext search
+                delete $where->{$k};
+                $k =~ s/"|'//g;
+                my ($str,$score) = ref $v eq 'ARRAY' ? @$v : ( $v, 0 );
+                $where->{'-bool'} = \[ 'contains( "' . $k . '", ? ) > ? ', $v, $score ];
+            }
+            $self->_apply_hints( $v, $hint );
+        }
+    }
+    elsif( $ref eq 'ARRAY' ) {
+        for my $v ( @$where ) {
+            $self->_apply_hints( $v, $hint );
+        }
+    }
 }
 
 sub _take_keys {
@@ -226,19 +302,89 @@ sub _flatten_as_hash {
 
 =head2 query
 
-This is a term search query.
+This is a pivoted kv to column search query runner.
+
+    my @rows = mdb->query( $where, $opts ) ;
+
+Where:
+    
+    Read about L<SQL::Abstract> syntax.
+    
+Options:
+    
+    hint => { 'column' => 'type', ... }  
+        ensures that WHERE and ORDER_BY clauses search data correctly. 
+        
+    select => ['description', 'username', ... ]
+        selects only the columns listed from KV. Does not load CI.
+   
+    order_by => [ 'columns asc', { -desc => 'column' }, ... ]
+        adds to order by list. Warning: use hint for better comparison control.
+
+    start => 999
+    limit => 999
+        paging, rownum based overquery
+
+    hash_on => 'key'    
+        returns data hashed on key. Does not load CI. 
+        
+    as_query => 1 
+        returns a bind array: [ $sql, @binds ]
+
+    as_full_query => 1 
+        returns the complete build_pivot_query object
+
+    as_rs => 1 
+        returns the DBIx::Simple result set from ->query
+
+=head3 Hint system
+
+These are the type conversions available:
+
+        str         => 'to_char(mvalue)',
+        text        => 'mvalue',   # special, full text type
+        number      => 'mvalue_num',
+        date        => 'mvalue_date',
+        to_date     => 'to_date(mvalue)',
+        to_number   => 'to_number(mvalue)',
+        mvalue      => 'mvalue',
+        mvalue_date => 'mvalue_date',
+        mvalue_num  => 'mvalue_num'
+
+Full text search on columns using the hint system:
+    
+    mdb->query({ description=>'etc' }, { hint=>{ description=>'text' } } );
+    # becomes context( description, 'etc' ) > 0 
+    
+    mdb->query({ description=>['etc',99] }, { hint=>{ description=>'text' } } );
+    # becomes context( description, 'etc' ) > 99 
+
+Hint for literal conversions:
+
+    mdb->query({ topic_mid=>12 }, { hint=>{ topic_mid=>\'nvl(mvalue_num,0)' } } );
+    
+TODO 
+    
+    - create a resultset type and return that
+    - return a dynamic DBIC schema on demand
+    - merge with full search so that aditional filtering can be done here
+    - return hash built from kv instead of yaml on demand
+    - return master_rel data built-in
 
 =cut
 
 sub query {
     my ($self, $where, $opts) = @_;
 
-    my $q = $self->build_query_findall( $where, $opts );
+    my $q = $self->build_pivot_query( $where, $opts );
     return \( $q->{query} ) if $opts->{as_query};
     return $q if $opts->{as_full_query};
-    my $dbs = $Baseliner::_dbis // ( $Baseliner::_dbis = Util->_dbis() );
+    my $dbs = $self->_dbis;
     my $rs = $dbs->query( @{ $q->{query} || {} });
     return $rs if $opts->{as_rs};
+    return map { $_->{ $opts->{hash_on} } => $_ } $rs->hashes if exists $opts->{hash_on};
+    return $rs->hashes if defined $opts->{select} || $opts->{hashes};
+    # TODO run a query on KV itself to return kv rows
     my @cis;
     for my $row ( $rs->hashes ) {
         my $rec = Baseliner::Role::CI->load( $row->{mid}, $row, undef, $row->{yaml} );   
@@ -255,6 +401,8 @@ sub query {
 =head2 search
 
 This is a full text search, not the same as query.
+
+TODO consider sending results to mdb->query for common return strategy
 
 =cut
 sub search {
@@ -289,9 +437,40 @@ sub search {
             } @rows;
         }
     }
-    return wantarray ? @rows : \@rows;
+    return @rows;
 }
 
+sub rebuild_index {
+    my ($self,%p) = @_;
+    my $index_name = $self->index_name;
+    my $dbs = $self->_dbis;
+    my $sync_type = $p{sync_type} || $self->index_sync_type;  # commit, manual, every
+    $p{drop} = 1 if $p{sync_type};  # sync_type param means drop me
+    my $msg;
+    eval { $msg = $dbs->dbh->do(qq{alter index $index_name rebuild}) } unless $p{drop};
+    if( $p{drop} || $@ ) {
+        _error( _loc "Error rebuilding index: %1", $@ ) if $@;
+        eval { $dbs->dbh->do(qq{drop index $index_name}) };
+        _error( _loc "Error droping index: %1", $@ ) if $@;
+        # sync on commit, may be expensive:
+        if( $sync_type eq 'commit' ) {
+            $msg = $dbs->dbh->do(qq{create index $index_name on bali_master_kv( mvalue ) indextype is ctxsys.context parameters('sync ( on commit )') parallel 4});
+        }
+        elsif( $sync_type eq 'every' ) {
+            # sync every 20 seconds:
+            $msg = $dbs->dbh->do(qq{create index $index_name on bali_master_kv( mvalue ) indextype is ctxsys.context parameters('sync ( every "sysdate+(1/24/60/3)" )') parallel 4});
+        }
+        else {
+            # manual sync:
+            $msg = $dbs->dbh->do(qq{create index $index_name on bali_master_kv( mvalue ) indextype is ctxsys.context parallel 4});
+        }
+    }
+    return $msg;
+}
+
+sub _dbis { 
+    $Baseliner::_dbis // ( $Baseliner::_dbis = Util->_dbis() ) 
+}
 
 # XXX this could use full oracle semantics
 sub build_search {
@@ -332,7 +511,7 @@ sub index_search_data {
     DB->BaliMasterSearch->update_or_create({ mid=>$mid, search_data=>$j, ts=>Util->_dt });
 }
 
-sub build_query_findall {
+sub build_pivot_query {
     my ($self, $where, $opts ) = @_;
     my $db_name = $self->{db_name};
     #my $query_head = "SELECT DISTINCT oid FROM ${db_name}_kv ";
@@ -347,6 +526,7 @@ sub build_query_findall {
     # where?
     for my $key ( keys %{ $self->_take_keys($where) || {} } ) {
         next unless length $key;
+        $key =~ s/"//g;  # cleanup in case it's quoted
         $pivot_cols{ $key } = ();
     }
     # order_by ?
@@ -354,60 +534,94 @@ sub build_query_findall {
         ref $opts->{order_by} eq 'ARRAY' ? @{$opts->{order_by}} : ( $opts->{order_by} ) ) {
         for my $order_by_column ( @order_by_param ) {
             next unless defined $order_by_column;
-            my $quoted = qq{"$order_by_column"};
-            # cast type on hint?
-            if( my $type = $hint->{ $order_by_column } ) {
-                $quoted = "to_number( $quoted )" if $type eq 'number';
+            my $dir;
+            if( ref $order_by_column eq 'HASH' ) {
+                $dir = [ keys %$order_by_column ]->[0]; 
+                $dir =~ s/^-//g;
+                $order_by_column = [ values %$order_by_column ]->[0]; 
+            } elsif( $order_by_column =~ /^(.+)\s+(asc|desc)\s*$/ )  {
+                $order_by_column = $1;
+                $dir = $2;
             }
+            $dir ||= 'ASC';
+            $order_by_column =~ s/"//g; # cleanup
+            my $quoted = qq{"$order_by_column"};
+            # cast type on hint?  - XXX not needed, types are resolved on pivot
+            #  if( my $type = $hint->{ $order_by_column } ) {
+            #      push @order_by, "to_number( $quoted ) $dir" if $type eq 'number';
+            #  } else {
+            #      push @order_by, "$quoted $dir";
+            #  }
+            
             # add to order by
-            push @order_by, $quoted;
+            push @order_by, "$quoted $dir";
             # add to pivot column select
-            $quoted =~ s{ |DESC|ASC}{}gi;
             $pivot_cols{ $order_by_column } = ()
                 unless exists $pivot_cols{ $order_by_column };
         }
     }
 
-    # where
+    # where sql abstract
+    $self->_apply_hints( $where, $hint ) if exists $opts->{hint};
     my $where_quoted = $self->_quote_keys( $where );
-    my @columns_quoted = keys %{ $self->_take_keys($where_quoted) || {} }; 
-
     my ( $wh, @binds ) = keys %$where ? $self->_abstract( $where_quoted ) : ('WHERE 1=1');
 
     # select?
-    my $select_filter_str;
-    my $select_filter = $opts->{select} ? [ $self->_abstract( mkey => $opts->{select} ) ] : [];
-    if( @$select_filter && $select_filter->[0] =~ s/WHERE/and/ig ) {
-        push @binds, splice @{ $select_filter || [] },1;
-        $select_filter_str = $select_filter->[0];
-    } else {
-        $select_filter_str = '';
-    }
+    my @select = _array( $opts->{select} );  # user defined select
+    @select = map {
+        my $col = $_;
+        # add to pivot column select
+        if( /^master\./ ) { # if it starts with master. don't quote
+            $col
+        } else {
+            $pivot_cols{ $col } = ()
+                unless exists $pivot_cols{ $col };
+            # quote
+            /"/ ? $col : qq{"$col"} ;  
+        }
+    } @select;
 
     # pivots
     my $pivots = join ',' => qw/mid/,
     my $pivots_with = join ',' =>
         map {
+            my $col = $_;
+            # solve hints
+            my $type = $hint->{$col} || 'str';
+            my $type_defs = {
+                str         => 'to_char(mvalue)',
+                text        => 'mvalue',
+                number      => 'mvalue_num',
+                date        => 'mvalue_date',
+                to_date     => 'to_date(mvalue)',
+                to_number   => 'to_number(mvalue)',
+                mvalue      => 'mvalue',
+                mvalue_date => 'mvalue_date',
+                mvalue_num  => 'mvalue_num'
+            };
+            my $type_func = ref $type eq 'SCALAR' ? $$type : $type_defs->{$type} || $type_defs->{str};
             #unshift @binds, $collname;
             qq{"pivot_$_" as (
-                    select kv.mid, to_char(mvalue) as "$_" from bali_master_kv kv
-                    where mkey='$_'
+                    select kv.mid, $type_func as "$col" from bali_master_kv kv
+                    where mkey='$col'
                 )}
         } keys %pivot_cols;
     $pivots_with and $pivots_with = "WITH $pivots_with";
-    my $pivots_from = join ',' => 'bali_master me', map { qq{ "pivot_$_" } } keys %pivot_cols;
-    my $pivots_outer = join ' and ' => map { qq{me.mid = "pivot_$_".mid (+)} } keys %pivot_cols;
+    my $pivots_from = join ',' => 'bali_master master', map { qq{ "pivot_$_" } } keys %pivot_cols;
+    my $pivots_outer = join ' and ' => map { qq{master.mid = "pivot_$_".mid (+)} } keys %pivot_cols;
     $pivots_outer ||= '1=1';
 
-    my $selects = join ',' => qw/me.mid me.name me.collection me.moniker me.yaml/, map { qq{"$_"} } keys %pivot_cols;
+    my $selects = join ',' => @select 
+        ? @select 
+        : ( qw/master.mid master.name master.collection master.moniker master.yaml/, map { qq{"$_"} } keys %pivot_cols );
     my $order_by_pivot = @order_by ? 'order by ' . join ',', @order_by : '';
-    my $order_by = join ',', @order_by, 'me.mid';
+    my $order_by = join ',', @order_by, 'master.mid';
 
     my $sql = qq{
         $pivots_with
         SELECT $selects
         FROM $pivots_from
-         $wh $select_filter_str
+         $wh 
            and $pivots_outer
          ORDER BY $order_by
     };
@@ -439,10 +653,12 @@ sub _abstract {
 
 
 sub load_cis {
-    my ($self)=@_;
+    my ($self, %p)=@_;
     my $i=0;
     my $cats = DB->BaliTopicCategories->hashref->hash_unique_on('id');
-    DB->BaliTopic->search({})->hashref->each(sub{
+    my $where1 = {};
+    $where1->{mid} = $p{mid} if $p{mid};
+    DB->BaliTopic->search($where1)->hashref->each(sub{
         my $r = $_;
         my $t = Baseliner->model('Topic')->get_data(undef, $r->{mid}, with_meta=>1,);
         my $mid = $t->{topic_mid};
@@ -457,7 +673,9 @@ sub load_cis {
     $i=0;
     local $Baseliner::CI::_record_only=1;
     local $Baseliner::CI::_no_form = 1;
-    DB->BaliMaster->search({ -not=>{ collection=>'topic' } }, { select=>'mid' })->hashref->each(sub{
+    my $where2 = { -not=>{ collection=>'topic' } };
+    $where2->{mid} = $p{mid} if $p{mid};
+    DB->BaliMaster->search( $where2, { select=>'mid' })->hashref->each(sub{
         my $d = _ci( $_->{mid} );
         $self->save($d->{mid}, $d, { kv_only=>1 });
     });
