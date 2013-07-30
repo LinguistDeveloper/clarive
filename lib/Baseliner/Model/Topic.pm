@@ -355,7 +355,7 @@ sub topics_for_user {
     }
     
     if ( $p->{unread} ){
-        $where->{-and} = [-or => [ username=> undef, -not=>{username => $username}, -and=>[username => $username, last_seen => undef]]];
+        $where->{-and} = [last_seen => undef, -or => [ username=> undef, -not=>{username => $username}, -and=>[username => $username, last_seen => undef]]];
     }
     
     if ( $p->{created_for_me} ) {
@@ -473,9 +473,6 @@ sub topics_for_user {
         $args->{page} = $p->{page};
         $args->{rows} = $limit;
     }
-    
-    my $rs = DB->TopicView->search(  $where, $args )->as_query;
-    _log ">>>>>>>>>>>>>>Consulta: " . _dump $rs;
     
     my $rs = DB->TopicView->search(  $where, $args );                                                             
     
