@@ -281,6 +281,14 @@ Ext.onReady(function(){
     };  
     */
        
+    // socket io better loaded via require js
+    /*  deactivated: requires nginx with websockets
+    if( ! Ext.isIE9m ) {
+        Baseliner.require("/static/socketio/socket.js", function(){
+            Baseliner.socket = io.connect({});
+        });
+    }
+    */
 });
         
 if( ! Ext.isIE ) {  // ie shows this for javascript: links and all sort of weird stuff
