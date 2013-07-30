@@ -8,7 +8,7 @@ with 'Baseliner::Role::Service';
 # guardamos aqui el config que recibimos en el run
 register 'service.restart_server' => { handler => \&run, }; 
 
-sub run { # bucle de demonio aqui
+sub run {
     my ($self,$c) = @_;
 
     if( defined $ENV{BASELINER_PARENT_PID} ) {
