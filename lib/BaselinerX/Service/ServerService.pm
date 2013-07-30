@@ -2,6 +2,7 @@ package BaselinerX::Service::ServerService;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Path::Class;
+use File::Slurp;
 #use Try::Tiny;
 
 with 'Baseliner::Role::Service';
@@ -10,7 +11,6 @@ register 'service.restart_server' => { name => 'Restarts Clarive server', handle
 
 sub run {
     my ($self,$c,$config) = @_;
-    use File::Slurp;
  
     my $port = $config->{port};
 
@@ -20,8 +20,10 @@ sub run {
         my $pid=read_file( $ENV{CLARIVE_HOME}."/tmp/cla-web-$port.pid" ) ;
         _log _loc "Server restart requested. Using kill HUP $pid"; 
         kill HUP => $pid;
+        return 1;
     } else {
-        _log _loc "Can't restart server. cla-web-$port.pid file not found"; 
+        _log _loc "Can't restart server. cla-web-$port.pid file not found";
+        return 0;
     }
 }
 
