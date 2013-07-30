@@ -9,15 +9,19 @@ with 'Baseliner::Role::Service';
 register 'service.restart_server' => { name => 'Restarts Clarive server', handler => \&run, }; 
 
 sub run {
-    my ($self,$c) = @_;
+    my ($self,$c,$config) = @_;
+    use File::Slurp;
+ 
+    my $port = $config->{port};
 
-    if( defined $ENV{BASELINER_PARENT_PID} ) {
-        # normally, this tells a start_server process to restart children
-        _log _loc "Server restart requested. Using kill HUP $ENV{BASELINER_PARENT_PID}"; 
-        kill HUP => $ENV{BASELINER_PARENT_PID};
+    _log _loc("Trying to restart server in port $port");
+
+    if ( -e $ENV{CLARIVE_HOME}."/tmp/cla-web-$port.pid") {
+        my $pid=read_file( $ENV{CLARIVE_HOME}."/tmp/cla-web-$port.pid" ) ;
+        _log _loc "Server restart requested. Using kill HUP $pid"; 
+        kill HUP => $pid;
     } else {
-        _log _loc "Server restart requested. Using bali-web restart";
-        `bali-web restart`;  # TODO this is brute force
+        _log _loc "Can't restart server. cla-web-$port.pid file not found"; 
     }
 }
 
