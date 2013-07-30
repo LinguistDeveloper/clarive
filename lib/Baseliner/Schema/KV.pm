@@ -18,7 +18,7 @@ use Try::Tiny;
 use Baseliner::Utils qw(_fail _loc _error _debug _throw _log _array);
 
 has index_name => ( is=>'ro', isa=>'Str', default=>'bali_master_kv_full' );
-has index_sync_type => ( is=>'ro', isa=>'Str', default=>'commit' );
+has index_sync_type => ( is=>'ro', isa=>'Str', default=>'manual' );
 has rs => ( is=>'ro', lazy=>1, default=>sub{ DB->BaliMasterKV } );
 
 sub find {
@@ -57,7 +57,6 @@ sub save {
     Util->_fail( 'Missing mid' ) unless length $mid;
     my $m = Baseliner->model('Baseliner');
     my $sql = 'insert into bali_master_kv (mid,mtype,mpos,mkey,mvalue_num,mvalue_date,mvalue) values (?,?,?,?,?,?,?)';
-    #my @flat = $self->_break_varchar( 2000, $self->_flatten( $doc ) );
     my @flat = $self->_flatten( $doc );
     return @flat if $opts->{flat_only};
     my @tuple_status;
@@ -93,11 +92,17 @@ sub save {
                 push @flat_final, $row;
             }
             $stmt->execute_array({ ArrayTupleStatus => \@tuple_status }, \@mid, \@mtype, \@mpos, \@mkey, \@mvalue_num, \@mvalue_date, \@mvalue  );
+
+            # now reindex
+            $self->index_sync unless $opts->{no_sync} || $opts->{defer_sync};
         });
     } catch {
         my $err = shift;
         Util->_throw( Util->_loc('Error inserting into master kv: %1. Doc: %2', $err, Util->_dump($doc) ) );
     };
+    if( my $tms = $opts->{defer_sync} ) {
+        Util->async_request( '/index_sync' );
+    }
     return @flat_final; #@tuple_status;
 }
 
@@ -114,24 +119,6 @@ sub _is_date {
     return 1 if ref $v eq 'DateTime';
     return 1 if ref $v eq 'Class::Date';
     return 0;
-}
-
-sub _break_varchar {
-    my ($self, $siz, @flat )=@_;
-    return map {
-        my $r = $_;
-        if( defined $r->{mvalue} && length($r->{mvalue}) > $siz ) {
-            my @chunks;
-            # TODO dont split words, but also store searcheable version
-            my $i=1;
-            for my $chk ( unpack( "(A$siz)*", $r->{mvalue} ) ) {
-                push @chunks, { %$r, mpos=>$i++, mvalue=>$chk }; 
-            }
-            @chunks;
-        } else {
-            $_ 
-        }
-    } @flat;
 }
 
 sub _is_special { 
@@ -181,7 +168,7 @@ sub _flatten {
         } else {
             my $kk = {};
             #push @flat, map{ +{ mkey=>$prefix, mpos=>$i++, mtype=>'array', mvalue=>$_ } } @$where;
-            push @flat, map { $_->{mpos} = $kk->{ $_->{mkey} }++; $_ } map{ $self->_flatten($_, $prefix) } @$where;
+            push @flat, map { $_->{mtype} = 'array'; $_->{mpos} = $kk->{ $_->{mkey} }++; $_ } map{ $self->_flatten($_, $prefix) } @$where;
         }
     }
     elsif( $ref eq 'SCALAR' ) {
@@ -468,6 +455,13 @@ sub rebuild_index {
     return $msg;
 }
 
+sub index_sync {
+    my ($self,%p) = @_;
+    my $index_name = $self->index_name;
+    # this will not be available in Oracle >= 12, then use ctx_ddl.sync_index('index')
+    $self->_dbis->dbh->do(qq{alter index $index_name rebuild parameters ('sync')});
+}
+
 sub _dbis { 
     $Baseliner::_dbis // ( $Baseliner::_dbis = Util->_dbis() ) 
 }
@@ -687,6 +681,8 @@ sub load_cis {
     #});
 }
 
+# deprecations:
+
 # XXX not useful, needs to be imported into schema
 sub build_dynamic_view {
     my $self = shift;
@@ -709,6 +705,24 @@ sub build_dynamic_view {
     $pkg->add_columns( @cols ); 
     $pkg->set_primary_key( $p{pk} ) if $p{pk};
     $pkg;
+}
+
+sub _break_varchar {
+    my ($self, $siz, @flat )=@_;
+    return map {
+        my $r = $_;
+        if( defined $r->{mvalue} && length($r->{mvalue}) > $siz ) {
+            my @chunks;
+            # TODO dont split words, but also store searcheable version
+            my $i=1;
+            for my $chk ( unpack( "(A$siz)*", $r->{mvalue} ) ) {
+                push @chunks, { %$r, mpos=>$i++, mvalue=>$chk }; 
+            }
+            @chunks;
+        } else {
+            $_ 
+        }
+    } @flat;
 }
 
 1;

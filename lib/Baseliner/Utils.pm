@@ -1348,6 +1348,33 @@ sub ago {
     $v;
 }
 
+=head2
+
+Make an async request to myself.
+
+    async_request( '/service/test.run', header=>value, header=>value, [$content] );
+
+=cut
+sub async_request {
+    my ( @req ) = @_;
+    #require HTTP::Async;
+    # object needs to be alive, although no responses are needed
+    #  XXX consider checking the object on later requests, if there is data, include on json for retrieve by ajaxEval()
+    #my $as = $Baseliner::_http_as // ( $Baseliner::_http_as = HTTP::Async->new );
+    #my $req = HTTP::Request->new( @req );
+    #$as->add( $req ); #GET => 'http://localhost:3000/sleepme' ) );
+
+    require Net::HTTP::NB;
+    my $cf = Baseliner->config;
+    my $host = $cf->{web_queue};
+    $host //= $cf->{web_host} && $cf->{web_port} 
+        ? sprintf('%s:%s', $cf->{web_host}, $cf->{web_port} ) 
+        : _throw(_loc("Missing or invalid queue configuration: either configure web_queue to 'host:port', or web_host and web_port"));
+    _debug( $host );
+    my $s = Net::HTTP::NB->new( Host=>$host ) or _throw $!;
+    $s->write_request( POST => @req );         
+}
+
 {
     package Util;
     our $AUTOLOAD;
