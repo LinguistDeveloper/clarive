@@ -101,6 +101,7 @@ sub save {
         Util->_throw( Util->_loc('Error inserting into master kv: %1. Doc: %2', $err, Util->_dump($doc) ) );
     };
     if( my $tms = $opts->{defer_sync} ) {
+        #Baseliner->app->enqueue( sub{ mdb->index_sync } );
         Util->async_request( '/index_sync' );
     }
     return @flat_final; #@tuple_status;

@@ -1352,7 +1352,9 @@ sub ago {
 
 Make an async request to myself.
 
-    async_request( '/service/test.run', header=>value, header=>value, [$content] );
+    async_request( '/service/test.run', { key1=>value... } );
+    async_request( '/service/test.run', json => { key1=>value... } );
+    async_request( '/service/test.run', yaml => { key1=>value... } );
 
 =cut
 sub async_request {
@@ -1365,14 +1367,41 @@ sub async_request {
     #$as->add( $req ); #GET => 'http://localhost:3000/sleepme' ) );
 
     require Net::HTTP::NB;
+    my $request = ref $_[0] eq 'HTTP::Request' ? $_[0] : do {
+        if( $_[1] eq 'json' ) {
+            my $r = HTTP::Request->new( POST=>$_[0]);
+            $r->header( 'Content-Type' => 'application/json' );
+            $r->content( _to_json( $_[2] ) );
+            $r;
+        } 
+        elsif( $_[1] eq 'yaml' ) {
+            my $r = HTTP::Request->new( POST=>$_[0] );
+            $r->header( 'Content-Type' => 'application/yaml' );
+            $r->content( _dump( $_[2] ) );
+            $r;
+        }
+        else {
+            require HTTP::Request::Common;
+            HTTP::Request::Common::POST( @req );
+        }
+    };
+    # make sure the offline request is with this same user
+    my $cookie = Baseliner->app->req->headers->{cookie};
+    $request->header( 'cookie' => $cookie );  
+    my $uri = $request->uri;
     my $cf = Baseliner->config;
-    my $host = $cf->{web_queue};
+    my $host = $cf->{web_queue} // $ENV{BALI_WEB_QUEUE};
     $host //= $cf->{web_host} && $cf->{web_port} 
         ? sprintf('%s:%s', $cf->{web_host}, $cf->{web_port} ) 
         : _throw(_loc("Missing or invalid queue configuration: either configure web_queue to 'host:port', or web_host and web_port"));
     _debug( $host );
     my $s = Net::HTTP::NB->new( Host=>$host ) or _throw $!;
-    $s->write_request( POST => @req );         
+    my %headers = map { $_ => $request->header( $_ ) } $request->{_headers}->header_field_names;
+    # create run token, put it in headers, put it in session
+    my $run_token = 'run_token='. _md5( int(rand($$)) . int(rand(9999999)) . _nowstamp . $$ );
+    $headers{'run-token'} = $run_token;
+    Baseliner->app->session->{$run_token} = 1;
+    $s->write_request( $request->method, "$uri", %headers, $request->content );
 }
 
 {

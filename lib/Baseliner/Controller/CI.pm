@@ -1008,6 +1008,13 @@ sub grid : Local {
     $c->stash->{template} = '/comp/ci-gridtree.js';
 }
 
+sub index_sync : Local {
+    my ($self, $c) = @_;
+    _throw _loc('Missing run token') unless $c->stash->{run_token};
+    mdb->index_sync;
+    $c->res->body( 'ok' ); 
+}
+
 # Global search
 
 with 'Baseliner::Role::Search';
