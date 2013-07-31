@@ -144,19 +144,23 @@ sub authenticate : Private {
         
         if ( lc( $c->config->{authentication}->{default_realm} ) eq 'none' ) {
             # BaliUser (internal) auth when realm is 'none'
-            my $row = $c->model('Baseliner::BaliUser')->search( { username => $login } )->first;
-            if ($row) {
-                if ( ! $row->active ) {
-                    $c->stash->{auth_message} = _loc( 'User is not active');
+            if ( !$password ) {
+                    $auth = undef;                
+            } else {                
+                my $row = $c->model('Baseliner::BaliUser')->search( { username => $login } )->first;
+                if ($row) {
+                    if ( ! $row->active ) {
+                        $c->stash->{auth_message} = _loc( 'User is not active');
+                        $auth = undef;
+                    }
+                    if ( $c->model('Users')->encrypt_password( $login, $password ) ne $row->password 
+                        && $row->api_key ne $password )
+                    {
+                        $auth = undef;
+                    }
+                } else {
                     $auth = undef;
                 }
-                if ( $c->model('Users')->encrypt_password( $login, $password ) ne $row->password 
-                    && $row->api_key ne $password )
-                {
-                    $auth = undef;
-                }
-            } else {
-                $auth = undef;
             }
         }
     }
