@@ -644,6 +644,27 @@ sub service_list {
     return @services;
 }
 
+=head2 all_cis
+
+Returns all CIs of a given role class:
+
+    my @natures = Baseliner::Role::Nature->all_cis;
+    $natures[0]->scan;
+
+=cut
+sub all_cis {
+    my ($class,%p) = @_;
+    my @cis;
+    for my $pkg ( Util->packages_that_do( $class ) ) {
+        my $coll = $pkg->collection;
+        DB->BaliMaster->search({ collection=>$coll })->each( sub {
+            my ($row)=@_;
+            Util->_log( $row->mid );
+            push @cis, Baseliner::CI->new( $row->mid );
+        });
+    }
+    return @cis;
+}
 
 1;
 

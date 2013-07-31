@@ -61,6 +61,8 @@ sub save {
     return @flat if $opts->{flat_only};
     my @tuple_status;
     my $hint = $opts->{hint} // {};
+    $opts->{defer_sync} //= $Baseliner::CI::_defer_sync;
+    $opts->{no_sync} //= $Baseliner::CI::_no_sync;
     use DBD::Oracle qw/:ora_types/;
     my @flat_final;  # after modifications
     try {
@@ -102,7 +104,7 @@ sub save {
     };
     if( my $tms = $opts->{defer_sync} ) {
         #Baseliner->app->enqueue( sub{ mdb->index_sync } );
-        Util->async_request( '/index_sync' );
+        Util->async_request( '/ci/index_sync' );
     }
     return @flat_final; #@tuple_status;
 }

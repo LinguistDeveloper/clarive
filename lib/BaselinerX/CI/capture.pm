@@ -44,9 +44,7 @@ sub parse {
     Util->_debug( Util->_loc("CAPTURE for item %1 with regex %2", $item->path, $regex ) );
     Util->_debug( \@found );
     if( %tree ) {
-        $item->{parse_tree} ||= [];
-        push @{ $item->{parse_tree} } => @found;
-        #$item->{parse_tree} = { %{ $item->{parse_tree} || {} }, %tree };
+        $item->add_parse_tree( \@found );
         return \%tree;
     } else {
         return { msg=>'not found' };
