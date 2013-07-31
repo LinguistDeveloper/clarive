@@ -1,7 +1,15 @@
 (function(params){
     if( !params.rec ) params.rec = {};
+    var token_case = new Baseliner.ComboSingle({
+        name: 'token_case',
+        fieldLabel: _('Token Case'),
+        data: [ 'case-sensitive', 'uppercase', 'lowercase' ],
+        value: params.rec.token_case || 'case-sensitive'
+    });
+    
     return [
         { xtype:'textfield', fieldLabel:_('Options'), name:'regex_options', value: params.rec.regex_options || 'xmsi', anchor:'100%' },
+        token_case,
         { xtype:'textfield', fieldLabel:_('Timeout'), name:'timeout', value: params.rec.timeout || '10', anchor:'100%' },
         { xtype:'textfield', fieldLabel:_('Path Capture'), name:'path_capture', 
                value: params.rec.path_capture || params.rec.module_fallback || '', anchor:'100%' }, // module_fallback kept for backwardity

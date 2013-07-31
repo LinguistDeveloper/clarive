@@ -367,7 +367,10 @@ Baseliner.AceEditor = Ext.extend( Ext.BoxComponent, {
         }
         session.doc.on('change', function(e){ if( e.data.action[0] == 'i' ) session._emit('changeBackMarker') });
         self.initialized = true;
-        if( self.data ) {
+        if( self.value ) {
+            self.editor_value( self.value );
+        }
+        else if( self.data ) {
             self.editor_value( self.data );
         }
         else if( self.file ) {

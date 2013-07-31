@@ -921,19 +921,26 @@ sub service_run : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
     my $class = $p->{classname} || _fail( _loc('Missing parameter classname') );
+    require Baseliner::Core::Logger::Quiet;
+    my $logger = Baseliner::Core::Logger::Quiet->new;
+    my $ret;
     $c->stash->{json} = try {
         my $service = $c->registry->get( $p->{key} );
-        require Baseliner::Core::Logger::Quiet;
-        my $logger = Baseliner::Core::Logger::Quiet->new;
         my $ci = _ci( $p->{mid} );
-        my $ret = $c->model('Services')->launch( $service->key, obj=>$ci, c=>$c, logger=>$logger );
-        _error( $ret );
-        {success => \1, ret=>_dump($logger->data), msg=>$logger->msg };
-    } ## end try
+        my $ret = $c->model('Services')->launch( $service->key, obj=>$ci, c=>$c, logger=>$logger, capture=>1 );
+        _debug( $ret );
+        _debug( $logger );
+        my $console = delete $logger->{console};
+        my $data = delete $logger->{data};
+        $data = ref $data ? Util->_dump( $data ) : "$data";
+        my $service_js_output = $service->js_output;
+        {success => \1, console=>$console, data=>$data, ret=>Util->_dump($ret), js_output=>$service_js_output };
+    } 
     catch {
         my $err = shift;
         _error( $err );
-        {success => \0, msg => $err};
+        my $console = delete $logger->{console};
+        {success => \0, msg => "$err", console=>$console, log=>Util->_dump($logger) };
     };
     $c->forward('View::JSON');
 

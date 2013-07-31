@@ -1990,6 +1990,7 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
             allowBlank: true
         }); 
         self.ci_box.on('select', function(combo,rec,ix) {
+            if( combo.id != self.ci_box.id ) return; // strange bug: this event gets fired with TopicGrid and CIGrid in the same page
             self.add_to_grid( rec.data );
         });
         self.ddGroup = 'bali-grid-data-' + self.id;
@@ -2219,18 +2220,47 @@ Baseliner.CICheckBox = Ext.extend( Baseliner.CheckBoxField, {
 });
 
 Baseliner.run_service = function(params, service){
-    var mask = { xtype:'panel', items: Baseliner.loading_panel() };
-    var win = new Baseliner.Window({ width: 800, height: 400, layout:'fit', items:[ mask ], title: service.name });
+    var mask = { xtype:'panel', items: Baseliner.loading_panel(), flex: 1 };
+    var initial_data = Ext.apply( { timeout:0 }, service, params );
+    var deditor = new Baseliner.DataEditor({ data: initial_data, hide_cancel:true, hide_save:true });
+    var btn_run = new Ext.Button({ icon:'/static/images/icons/run.png', text:_('Run'), handler: function(){ 
+            btn_run.disable();
+            run_it( deditor.getData() );
+            win.removeAll();
+            win.add( mask );
+            win.doLayout();
+        } })
+    var run_it = function(data){
+        Baseliner.ajaxEval( '/ci/service_run', data, function(res){
+            btn_run.enable();
+            win.removeAll();
+            var tabp = new Ext.TabPanel({ activeTab:0 });
+            win.add( tabp );
+            if( !res.success ) {
+                tabp.add(new Baseliner.MonoTextArea({ title: 'Message', value: res.msg, style:'color:#f23' }) );
+                tabp.add(new Baseliner.MonoTextArea({ title: 'Console', value: res.console, style:'color:#f23' }) );
+                tabp.add(new Baseliner.MonoTextArea({ title: 'Log', value: res.log }) );
+            } else {
+                if( res.js_output ) {
+                    Baseliner.ajaxEval( res.js_output, { data: res.data }, function(comp){
+                        comp.title = _('Data');
+                        tabp.insert(0, comp );
+                        tabp.doLayout();
+                        win.doLayout();
+                        tabp.setActiveTab( comp );
+                    });
+                } else {
+                    tabp.add(new Baseliner.MonoTextArea({ title: 'Data', value: res.data }) );
+                }
+                tabp.add(new Baseliner.MonoTextArea({ title: 'Console', value: res.console }) );
+                tabp.add(new Baseliner.MonoTextArea({ title: 'Return', value: res.ret }) );
+            }
+            win.doLayout();
+        });
+    };
+    var tbar = [ btn_run ];
+    var win = new Baseliner.Window({ width: 800, tbar: tbar, height: 400, layout:'fit', items:[ deditor ], title: service.name });
     win.show();
-    Baseliner.ajaxEval( '/ci/service_run', Ext.apply( { timeout:0 }, service, params ), function(res){
-        win.removeAll();
-        if( !res.success ) {
-            win.add(new Baseliner.MonoTextArea({ value: res.msg, style:'color:#f23' }) );
-        } else {
-            win.add(new Baseliner.MonoTextArea({ value: res.ret }) );
-        }
-        win.doLayout();
-    });
 }
 
 // Simple JavaScript Templating
@@ -2356,7 +2386,7 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
 });
 
 Baseliner.MonoTextArea = Ext.extend( Ext.form.TextArea, {
-    style: 'font-family: Consolas, Courier New, monotype'
+    style: 'font-size: 13px; font-family: Consolas, Courier New, monotype'
 });
     
 Baseliner.ComboSingle = Ext.extend( Ext.form.ComboBox, {
