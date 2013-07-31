@@ -1,5 +1,8 @@
 (function(){
-    //var id = Ext.id();
+    var ps_maxi = 15; //page_size for !mini mode
+    var ps_mini = 50; //page_size for mini mode
+    var ps = ps_maxi; // current page_size
+    
     var store_status = new Baseliner.Topic.StoreStatus();
     var store_category = new Baseliner.Topic.StoreCategory({ baseParams: { swnotranslate : 1 } });
     
@@ -272,6 +275,15 @@
         return '<img src="/static/images/icons/right-arrow.png" />';
     };
     
+    
+    var ptool = new Ext.PagingToolbar({
+            store: store_status,
+            pageSize: ps,
+            displayInfo: true,
+            displayMsg: _('Rows {0} - {1} of {2}'),
+            emptyMsg: _('There are no rows available')
+    });
+    
     var grid_status = new Ext.grid.GridPanel({
         title : _('Topics: Statuses'),
         sm: check_status_sm,
@@ -288,11 +300,11 @@
         columns: [
             { hidden: true, dataIndex:'id' },
             check_status_sm,
-            { header: _('Topics: Status'), dataIndex: 'name', width:100, sortable: false, renderer: render_status },
-            { header: _('Description'), dataIndex: 'description', sortable: false },
-            { header: _('Order'), width: 40, dataIndex: 'seq', sortable: false },
-            { header: _('Baseline'), dataIndex: 'bl', sortable: false, renderer: Baseliner.render_bl },
-            { header: _('Type'), dataIndex: 'type', width:50, sortable: false, renderer: render_status_type }
+            { header: _('Topics: Status'), dataIndex: 'name', width:100, sortable: true, renderer: render_status },
+            { header: _('Description'), dataIndex: 'description', sortable: true },
+            { header: _('Order'), width: 40, dataIndex: 'seq', sortable: true },
+            { header: _('Baseline'), dataIndex: 'bl', sortable: true, renderer: Baseliner.render_bl },
+            { header: _('Type'), dataIndex: 'type', width:50, sortable: true, renderer: render_status_type }
         ],
         autoSizeColumns: true,
         deferredRender:true,    
@@ -301,7 +313,8 @@
                 btn_edit_status,
                 btn_delete_status,
                 '->'
-        ]       
+        ],
+        bbar: ptool
     }); 
 
     grid_status.on('cellclick', function(grid, rowIndex, columnIndex, e) {
@@ -472,8 +485,8 @@
             columns: [
                 { hidden: true, dataIndex:'id' },
                 check_category_status_sm,
-                { header: _('Topics: Status'), dataIndex: 'name', width:50, sortable: false },
-                { header: _('Description'), dataIndex: 'description', sortable: false } 
+                { header: _('Topics: Status'), dataIndex: 'name', width:50, sortable: true },
+                { header: _('Description'), dataIndex: 'description', sortable: true } 
             ],
             autoSizeColumns: true,
             deferredRender:true,
@@ -1830,9 +1843,9 @@
         columns: [
             { hidden: true, dataIndex:'id' },
             check_categories_sm,
-            { header: 'Category', dataIndex: 'name', width:50, sortable: false, renderer: render_category },
-            { header: _('Description'), dataIndex: 'description', sortable: false },
-            { header: _('Type'), dataIndex: 'type', width:50, sortable: false, renderer: render_category_type }
+            { header: 'Category', dataIndex: 'name', width:50, sortable: true, renderer: render_category },
+            { header: _('Description'), dataIndex: 'description', sortable: true },
+            { header: _('Type'), dataIndex: 'type', width:50, sortable: true, renderer: render_category_type }
         ],
         autoSizeColumns: true,
         deferredRender:true,    
@@ -2161,7 +2174,7 @@
             { hidden: true, dataIndex:'id' },
             check_labels_sm,
             { header: _('Color'), dataIndex: 'color', width:15, sortable: false, renderer: render_color },
-            { header: _('Label'), dataIndex: 'name', sortable: false },
+            { header: _('Label'), dataIndex: 'name', sortable: true },
             { hidden: true, dataIndex:'active' }
         ],
         autoSizeColumns: true,
