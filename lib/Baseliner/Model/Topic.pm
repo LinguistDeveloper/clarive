@@ -1809,6 +1809,8 @@ sub get_categories_permissions{
     my $order = delete $param{order};
     
     my ($dir, $sort) = ( $order->{dir}, $order->{sort} );
+    $dir ||= 'asc';
+    $sort ||= 'name';
     
     my $re_action;
 
