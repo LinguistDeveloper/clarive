@@ -35,7 +35,7 @@ sub parse {
             $tree = $tree->{$root} || []; # delete root node 'grammar name'
         }
         $tree = $self->process_item_tree( $item, $tree ); 
-        $item->{parse_tree} = $tree;
+        $tree = $item->add_parse_tree( $tree );
         return $tree;
     } else {
         return { msg=>'not found' };

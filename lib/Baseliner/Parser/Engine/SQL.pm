@@ -6,7 +6,7 @@ sub parse {
     my $f = "$p{file}";
     my $source = $p{source};
     
-    my $t = { depends=>[] };
+    my $tree = { depends=>[] };
     
     my @lines = split /\r?\n/, $source ;
     my ( $fc, @select_list, @update_list, @insert_list, @delete_list );
@@ -112,10 +112,10 @@ sub parse {
         next if /[\|:'"]/;
         next if /^0-9+$/;
         next unless length;
-        push $t->{depends}, $_ ;
+        push $tree->{depends}, uc $_ ;
     }
 
-    return $t;
+    return $tree;
 }   
 
 1;

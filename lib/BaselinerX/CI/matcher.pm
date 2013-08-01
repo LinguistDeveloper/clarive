@@ -67,9 +67,7 @@ sub parse {
     _log \%tree ;
     
     if( %tree ) {
-        $item->{parse_tree} ||= [];
-        push @{ $item->{parse_tree} } => @found;
-        #$item->{parse_tree} = { %{ $item->{parse_tree} || {} }, %tree };
+        $item->add_parse_tree( \@found );
         return \%tree;
     } else {
         return { msg=>'not found' };

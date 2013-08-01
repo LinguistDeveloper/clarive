@@ -62,7 +62,18 @@ sub launch {
     # ******************** RUN *****************
     # 
     _debug "Running service $service_name...";
-    my $ret = $service->run( $c, $config_data );
+    my $ret;
+    if( $p{capture} ) {
+        require IO::CaptureOutput;
+        my $output;
+        IO::CaptureOutput::capture( sub {
+            $ret = $service->run( $c, $config_data );
+        }, \$output, \$output );
+        utf8::downgrade( $output );
+        $service->logger->console( $output );
+    } else {
+        $ret = $service->run( $c, $config_data );
+    }
     _debug "Done running service $service_name";
 
     # save stash at the end -- default: no

@@ -28,6 +28,9 @@ has 'verbose' => ( is=>'rw', isa=>'Bool', default=>0 );
 # fatal function
 has 'fatal_method' => ( is=>'rw', isa=>'Any', default=>'Carp::confess'  );
 
+# stdout + stderr
+has console => ( is=>'rw', isa=>'Maybe[Str]', default=>'' );
+
 # fatal callback sub
 has 'fatal_callback' => (
     is      => 'rw',

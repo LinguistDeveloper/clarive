@@ -559,6 +559,10 @@ sub is_number {
     return $_[0] =~ /^(?=[-+.]*\d)[-+]?\d*\.?\d*(?:e[-+ ]?\d+)?$/i;
 }
 
+sub is_int {
+    return $_[0] =~ /^\d+$/;
+}
+
 sub _trim {
     my $str = shift;
     $str =~ s{^\s*}{}g;
@@ -1212,8 +1216,10 @@ sub _size_unit {
 }
 
 sub _dbis {
+    my( $model ) = @_;
+    $model ||= 'Baseliner';
     require DBIx::Simple;
-    return DBIx::Simple->connect( Baseliner->model('Baseliner')->storage->dbh );
+    return DBIx::Simple->connect( Baseliner->model($model)->storage->dbh );
 }
 
 =head2 _hook
@@ -1340,6 +1346,62 @@ sub ago {
       : _loc('%1 years ago', int $d/(2_629_744*12) )
     ;
     $v;
+}
+
+=head2
+
+Make an async request to myself.
+
+    async_request( '/service/test.run', { key1=>value... } );
+    async_request( '/service/test.run', json => { key1=>value... } );
+    async_request( '/service/test.run', yaml => { key1=>value... } );
+
+=cut
+sub async_request {
+    my ( @req ) = @_;
+    #require HTTP::Async;
+    # object needs to be alive, although no responses are needed
+    #  XXX consider checking the object on later requests, if there is data, include on json for retrieve by ajaxEval()
+    #my $as = $Baseliner::_http_as // ( $Baseliner::_http_as = HTTP::Async->new );
+    #my $req = HTTP::Request->new( @req );
+    #$as->add( $req ); #GET => 'http://localhost:3000/sleepme' ) );
+
+    require Net::HTTP::NB;
+    my $request = ref $_[0] eq 'HTTP::Request' ? $_[0] : do {
+        if( $_[1] eq 'json' ) {
+            my $r = HTTP::Request->new( POST=>$_[0]);
+            $r->header( 'Content-Type' => 'application/json' );
+            $r->content( _to_json( $_[2] ) );
+            $r;
+        } 
+        elsif( $_[1] eq 'yaml' ) {
+            my $r = HTTP::Request->new( POST=>$_[0] );
+            $r->header( 'Content-Type' => 'application/yaml' );
+            $r->content( _dump( $_[2] ) );
+            $r;
+        }
+        else {
+            require HTTP::Request::Common;
+            HTTP::Request::Common::POST( @req );
+        }
+    };
+    # make sure the offline request is with this same user
+    my $cookie = Baseliner->app->req->headers->{cookie};
+    $request->header( 'cookie' => $cookie );  
+    my $uri = $request->uri;
+    my $cf = Baseliner->config;
+    my $host = $cf->{web_queue} // $ENV{BALI_WEB_QUEUE};
+    $host //= $cf->{web_host} && $cf->{web_port} 
+        ? sprintf('%s:%s', $cf->{web_host}, $cf->{web_port} ) 
+        : _throw(_loc("Missing or invalid queue configuration: either configure web_queue to 'host:port', or web_host and web_port"));
+    _debug( $host );
+    my $s = Net::HTTP::NB->new( Host=>$host ) or _throw $!;
+    my %headers = map { $_ => $request->header( $_ ) } $request->{_headers}->header_field_names;
+    # create run token, put it in headers, put it in session
+    my $run_token = 'run_token='. _md5( int(rand($$)) . int(rand(9999999)) . _nowstamp . $$ );
+    $headers{'run-token'} = $run_token;
+    Baseliner->app->session->{$run_token} = 1;
+    $s->write_request( $request->method, "$uri", %headers, $request->content );
 }
 
 {

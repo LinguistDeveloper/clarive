@@ -1025,9 +1025,12 @@ if( Prefs.routing ) {
         }
     
         if( Ext.isIE7 || Ext.isIE8 ) Ext.fly( document.body ).mask( _('Sending Request...') );  // so slow, better to mask the whole thing
+        var timeout = params.timeout || 120000; // in milliseconds, use zero 0 to disable
         var the_request = function() { Ext.Ajax.request({
             url: url,
+            timeout: timeout,
             params: params,
+            //jsonData: params,  // sends application/json, goes in the body
             callback: function(opts,success,xhr) {
                 if( Ext.isIE7 || Ext.isIE8 ) Ext.fly( document.body ).unmask();
                 if( !success ) {

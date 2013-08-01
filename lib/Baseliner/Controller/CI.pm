@@ -921,19 +921,26 @@ sub service_run : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
     my $class = $p->{classname} || _fail( _loc('Missing parameter classname') );
+    require Baseliner::Core::Logger::Quiet;
+    my $logger = Baseliner::Core::Logger::Quiet->new;
+    my $ret;
     $c->stash->{json} = try {
         my $service = $c->registry->get( $p->{key} );
-        require Baseliner::Core::Logger::Quiet;
-        my $logger = Baseliner::Core::Logger::Quiet->new;
         my $ci = _ci( $p->{mid} );
-        my $ret = $c->model('Services')->launch( $service->key, obj=>$ci, c=>$c, logger=>$logger );
-        _error( $ret );
-        {success => \1, ret=>_dump($logger->data), msg=>$logger->msg };
-    } ## end try
+        my $ret = $c->model('Services')->launch( $service->key, obj=>$ci, c=>$c, logger=>$logger, capture=>1 );
+        _debug( $ret );
+        _debug( $logger );
+        my $console = delete $logger->{console};
+        my $data = delete $logger->{data};
+        $data = ref $data ? Util->_dump( $data ) : "$data";
+        my $service_js_output = $service->js_output;
+        {success => \1, console=>$console, data=>$data, ret=>Util->_dump($ret), js_output=>$service_js_output };
+    } 
     catch {
         my $err = shift;
         _error( $err );
-        {success => \0, msg => $err};
+        my $console = delete $logger->{console};
+        {success => \0, msg => "$err", console=>$console, log=>Util->_dump($logger) };
     };
     $c->forward('View::JSON');
 
@@ -1006,6 +1013,61 @@ sub grid : Local {
 
     $c->stash->{save} = $has_permission ? 'true' : 'false';
     $c->stash->{template} = '/comp/ci-gridtree.js';
+}
+
+sub index_sync : Local {
+    my ($self, $c) = @_;
+    _throw _loc('Missing run token') unless $c->stash->{run_token};
+    mdb->index_sync;
+    $c->res->body( 'ok' ); 
+}
+
+# Global search
+
+with 'Baseliner::Role::Search';
+sub search_provider_name { 'CIs' };
+sub search_provider_type { 'CI' };
+sub search_query {
+    my ($self, %p ) = @_;
+    my $query = $p{query};
+    my $c = $p{c};
+    my $limit = 50; #$p{limit} // 1000;
+    my $where = {};
+    length($query) and $where = Util->build_master_search( query=>$query );
+    $where->{'-not'} = { collection=>{-in=>['topic','job']} };
+    my @rows = DB->BaliMaster->search(
+        $where,
+        { join=>'search_data', 
+            select=>['mid','name','collection','bl','search_data.search_data','ts'], 
+            as=>['mid','name','collection','bl', 'search_data','ts'], 
+            rows=>$limit, order_by=>{ -desc=>'ts' } })->hashref->all;
+    _error( \@rows );
+    my @mids = map { $_->{mid} } @rows;
+    return map {
+        my $r = $_;
+        my $json = $r->{search_data};
+        #my $text = join ',', map { "$_: $r->{$_}" } grep { defined $_ && defined $r->{$_} } keys %$r;
+        #my @text = $json;
+
+        my $info = sprintf "%s - %s (%s)", $r->{collection}, $r->{bl}, $r->{ts};
+        my $text = join(' ', split(/,/, $json ) );
+        $text =~ s{:}{: }g;
+        my $desc = _strip_html( sprintf "%s", ($r->{name} // '') );
+        if( length $desc ) {
+            $desc = _utf8 $desc;  # strip html messes up utf8
+            $desc =~ s/[^\w\s]//g; 
+            #$desc =~ s/[^\x{21}-\x{7E}\s\t\n\r]//g; 
+        }
+        +{
+            title => sprintf( '%s - %s', $r->{mid}, $r->{name} ),
+            info  => $info,
+            text  => $text, 
+            url   => [ $r->{mid}, $r->{name}, '#999' ],
+            type  => 'ci',
+            mid   => $r->{mid},
+            id    => $r->{mid},
+        }
+    } @rows;
 }
 
 1;

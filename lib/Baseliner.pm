@@ -266,6 +266,29 @@ around 'debug' => sub {
         #$_->meta->make_immutable for keys %pkgs;
     }
 
+    # master db setup
+    {
+        package mdb;
+        our $AUTOLOAD;
+        sub AUTOLOAD {
+            my $self = shift;
+            my $name = $AUTOLOAD;
+            my @a = reverse( split(/::/, $name));
+            my $db = $Baseliner::_mdb //( $Baseliner::_mdb = do{
+                my $conf = Baseliner->config->{mdb} // {};
+                # XXX make this optional - mongo, elasticsearch, etc
+                my $class = 'Baseliner::Schema::KV';
+                eval "require $class"; 
+                Util->_fail('Error loading mdb class: '. $@ ) if $@ ;
+                $class->new( $conf );
+            });
+            my $class = ref $db;
+            my $method = $class . '::' . $a[0];
+            @_ = ( $db, @_ );
+            goto &$method;
+        }
+    }
+
     # CHI cache setup
     our $ccache;
     my $setup_fake_cache = sub {
@@ -553,6 +576,35 @@ if( Baseliner->debug ) {
         return @ret;
     };
 }
+
+sub enqueue {
+    my $c = shift;
+    my $jobid = ! ref $_[0] ? shift : 'jobid='. Util->_md5( int(rand($$)) . int(rand(9999999)) . Util->_nowstamp . $$ );
+    $c->stash->{finalize_queue} //= [];
+    push @{ $c->stash->{finalize_queue} }, ( $jobid => [ @_ ] );
+    $jobid;
+}
+
+around 'finalize' => sub {
+    my $orig = shift;
+    my $c = shift;
+    $c->$orig( @_ );
+
+    my $queue = $c->stash->{finalize_queue};
+    if( ref $queue eq 'ARRAY' ) {
+        while( @$queue ) {
+            my ($job_name, $job) = ( shift @$queue, shift @$queue );
+            Util->_debug( "Running finalize job $job_name" );
+            try { 
+                my ($code, @data) = @$job;
+                $code->( $c, @data );
+                Util->_debug( "DONE Running finalize job $job_name" );
+            } catch {
+                Util->_debug( "ERROR Running finalize job $job_name" );
+            };
+        }
+    }
+};
 
 =head1 NAME
 

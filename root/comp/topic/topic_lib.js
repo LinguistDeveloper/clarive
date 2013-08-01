@@ -1079,6 +1079,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
         });
         self.tbar = [ self.field, self.combo, btn_reload, btn_delete ];
         self.combo.on('select', function(combo,rec,ix) {
+            if( combo.id != self.combo.id ) return; // strange bug with TopicGrid and CIGrid in the same page
             self.add_to_grid( rec.data );
         });
         self.ddGroup = 'bali-topic-grid-data-' + self.id;
@@ -1165,7 +1166,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
         });
         self.field.setValue( mids.join(',') );
     },
-    add_to_grid: function(rec){
+    add_to_grid : function(rec){
         var self = this;
         var f = self.store.find( 'mid', rec.mid );
         if( f != -1 ) {

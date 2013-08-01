@@ -27,7 +27,7 @@ sub parse {
     
     $tree = $self->process_item_tree( $item, $tree ); 
 
-    $item->{parse_tree} = $tree;
+    $item->add_parse_tree( $tree );
     #my $ret = {};
     #$self->collect_vars( $tree, $ret );
     return $tree;

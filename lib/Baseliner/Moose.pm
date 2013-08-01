@@ -92,7 +92,9 @@ sub service {
     # give it a Service role
     Moose::Util::apply_all_roles( $pkg, 'Baseliner::Role::Service' );
     if( $r eq 'HASH' ) {
-        Baseliner::Core::Registry->add( $pkg, "service.$longkey", { type=>'ci', %$value } );
+        my $h = { type=>'ci', %$value };
+        $h->{handler} = $code if ref $code eq 'CODE';
+        Baseliner::Core::Registry->add( $pkg, "service.$longkey", $h );
     }
     elsif( !$r && ref( $code ) eq 'CODE' ) {
         Baseliner::Core::Registry->add( $pkg, "service.$longkey", { type=>'ci', name=>$value, handler=>$code } );

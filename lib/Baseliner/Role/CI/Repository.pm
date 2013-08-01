@@ -12,26 +12,38 @@ requires 'repository';
 sub method_scan {
     my($self,$stash)=@_;
 
+    $Baseliner::CI::_no_sync = 1; # don't refresh index until the end
+
     # get natures
-    my @natures;
-    for my $natclass ( Util->packages_that_do( 'Baseliner::Role::CI::Nature' ) ) {
-        my $coll = $natclass->collection;
-        DB->BaliMaster->search({ collection=>$coll })->each( sub {
-            my ($row)=@_;
-            Util->_log( $row->mid );
-            push @natures, Util->_ci( $row->mid );
-        });
-    }
+    my @natures = Baseliner::Role::CI::Nature->all_cis;
 
     _fail _loc('No natures available to scan. Please, define some nature CIs before continuing.') unless @natures;
     my $its = $self->load_items;
     my @items = @{ $its->children };
 
-    for my $nat ( @natures ) {
-        # should return/update nature accepted items
-        $nat->scan( items=>\@items );   
+    # cleanup parse trees for items, but no commit
+    for my $it ( @items ) {
+        $it->parse_tree([]);
     }
-    $_->save for @items;
+
+    # scan 
+    for my $nat ( @natures ) {
+        $nat->scan( items=>\@items );   
+        # TODO should return/update nature accepted items, and filter on that if nature has the option
+    }
+
+    # commit items 
+    for my $it( @items ) {
+        $it->save;  
+    }
+
+    # tie into related cis
+    for my $it( @items ) {
+        $it->tree_resolve; 
+    }
+
+    mdb->index_sync;
+
     return @items;
 }
 
