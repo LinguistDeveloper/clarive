@@ -705,16 +705,22 @@ sub comment : Local {
 sub list_category : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
-    my $cnt;
+    my ($dir, $sort, $cnt) = ( @{$p}{qw/dir sort/}, 0 );
+    $dir ||= 'asc';
+    $sort ||= 'name';
+    
+    my $order = { dir=> $dir,
+                  sort=> $sort};
+
     my @rows;
     
     if( !$p->{categoryId} ){    
         
         my @categories;
         if( $p->{action} && $p->{action} eq 'create' ){
-            @categories  = $c->model('Topic')->get_categories_permissions( username => $c->username, type => $p->{action} );
+            @categories  = $c->model('Topic')->get_categories_permissions( username => $c->username, type => $p->{action}, order => $order);
         } else {
-            @categories  = $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view' );
+            @categories  = $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view', order => $order);
         }
         
         if(@categories){
@@ -785,10 +791,13 @@ sub list_category : Local {
 sub list_priority : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
-    my $cnt;
+    my ($dir, $sort, $cnt) = ( @{$p}{qw/dir sort/}, 0 );
+    $dir ||= 'asc';
+    $sort ||= 'name';
+
     my $row;
     my @rows;
-    $row = $c->model('Baseliner::BaliTopicPriority')->search();
+    $row = $c->model('Baseliner::BaliTopicPriority')->search(undef, { order_by => { "-$dir" => ["$sort" ] }});
     
     if($row){
         while( my $r = $row->next ) {
@@ -813,24 +822,28 @@ sub list_priority : Local {
 sub list_label : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
+    my ($dir, $sort, $cnt) = ( @{$p}{qw/dir sort/}, 0 );
+    $dir ||= 'asc';
+    $sort ||= 'name';
+    
     my $cnt;
     my $row;
     my @rows;
     
-    #$row = $c->model('Baseliner::BaliLabel')->search();
-    #
-    #if($row){
-    #    while( my $r = $row->next ) {
-    #        push @rows,
-    #          {
-    #            id          => $r->id,
-    #            name        => $r->name,
-    #            color       => $r->color
-    #          };
-    #    }  
-    #}
+    $row = $c->model('Baseliner::BaliLabel')->search(undef, { order_by => { "-$dir" => ["$sort" ] }});
     
-    @rows = Baseliner::Model::Label->get_labels( $c->username, 'admin' );
+    if($row){
+        while( my $r = $row->next ) {
+            push @rows,
+              {
+                id          => $r->id,
+                name        => $r->name,
+                color       => $r->color
+              };
+        }  
+    }
+    
+    #@rows = Baseliner::Model::Label->get_labels( $c->username, 'admin' );
     
     $cnt = $#rows + 1 ; 
     

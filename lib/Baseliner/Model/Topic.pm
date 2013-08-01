@@ -1806,6 +1806,9 @@ sub get_categories_permissions{
     
     my $username = delete $param{username};
     my $type = delete $param{type};
+    my $order = delete $param{order};
+    
+    my ($dir, $sort) = ( $order->{dir}, $order->{sort} );
     
     my $re_action;
 
@@ -1818,7 +1821,7 @@ sub get_categories_permissions{
     }
 
     my @permission_categories;
-    my @categories  = Baseliner->model('Baseliner::BaliTopicCategories')->search()->hashref->all;
+    my @categories  = Baseliner->model('Baseliner::BaliTopicCategories')->search(undef, { order_by => { "-$order->{dir}" => ["$order->{sort}" ] }})->hashref->all;
 
     if ( Baseliner->model('Permissions')->is_root( $username) ) {
         return @categories;
