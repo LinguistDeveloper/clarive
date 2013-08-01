@@ -1005,6 +1005,14 @@ if( Prefs.routing ) {
         }
     };
 
+    // sends request with application/json
+            // TODO consider making this a RESTful engine, with GET, PUT, POST, DELETE, etc.., and changing the CI interface too
+    Baseliner.ajax_json = function( url, params, foo, scope ){
+        if( Ext.isObject( params ) ) 
+            params.as_json = true;
+        Baseliner.ajaxEval( url, params, foo, scope );
+    }
+
     Baseliner.ajaxEval = function( url, params, foo, scope ){
         if(params == undefined ) params = {};
 
@@ -1026,11 +1034,9 @@ if( Prefs.routing ) {
     
         if( Ext.isIE7 || Ext.isIE8 ) Ext.fly( document.body ).mask( _('Sending Request...') );  // so slow, better to mask the whole thing
         var timeout = params.timeout || 120000; // in milliseconds, use zero 0 to disable
-        var the_request = function() { Ext.Ajax.request({
+        var request_data = {
             url: url,
             timeout: timeout,
-            params: params,
-            //jsonData: params,  // sends application/json, goes in the body
             callback: function(opts,success,xhr) {
                 if( Ext.isIE7 || Ext.isIE8 ) Ext.fly( document.body ).unmask();
                 if( !success ) {
@@ -1081,8 +1087,16 @@ if( Prefs.routing ) {
                     //if( Baseliner.DEBUG && ! Ext.isIE && console != undefined ) { console.log( xhr ) }
                 }
             }
-        });
         };
+
+        if( params.as_json ) {
+            request_data.jsonData = params; //jsonData: params,  // sends application/json, goes in the body
+            // TODO consider sending _merge_with_params: true, to make ajax_json a full replacement for current ajaxEval without touching controllers
+        } else {
+            request_data.params = params;
+        }
+            
+        var the_request = function() { Ext.Ajax.request(request_data); };
         if( params.confirm != undefined ) {
             var msg = params.confirm;
             delete params['confirm'];

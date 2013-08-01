@@ -1070,5 +1070,46 @@ sub search_query {
     } @rows;
 }
 
+=head2
+
+Support the following CI specific calls:
+
+    /ci/8394/mymethod     => becomes _ci( 8394 )->rest_mymethod( $c, $json_and_param_data );
+    /ci/grammar/mymethod  => becomes BaselinerX::CI::grammar->rest_mymethod( $c, $json_and_param_data );
+
+    TODO: missing RESTful support: GET, PUT, POST
+    TODO: check security to Class, CI right here based on REST method
+
+=cut
+sub default : Path Args(2) {
+    my ($self,$c,$arg,$meth) = @_;
+    my $p = $c->req->params;
+    my $json = $c->req->{body_data};
+    my $data = { %{ $p || {} }, %{ $json || {} } };
+    _fail( _loc "Missing param method" ) unless length $meth;
+    try {
+        my $ret;
+        if( Util->is_number( $arg ) ) {
+            $meth = "rest_$meth";
+            my $ci = _ci( $arg );
+            _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
+            $ret = $ci->$meth( $c, $data );
+        } else {
+            $meth = "rest_$meth";
+            my $pkg = "BaselinerX::CI::$arg";
+            _fail( _loc "Method '%1' not found in class '%2'", $meth, $pkg) unless $pkg->can( $meth) ;
+            $ret = $pkg->$meth( $c, $data );
+        }
+        Util->_unbless( $ret );
+        $c->stash->{json} = $ret;
+        $c->stash->{json}{success} //= \1 if ref $ret eq 'HASH';
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { msg=>"$err", success=>\0 }; 
+    };
+    $c->forward('View::JSON');
+}
+
+
 1;
 

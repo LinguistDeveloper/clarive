@@ -2405,22 +2405,39 @@ Baseliner.ComboSingle = Ext.extend( Ext.form.ComboBox, {
                 data.push( [v] );
             });
         }
-        this.store = new Ext.data.ArrayStore({
-            fields: [ this.name ],
-            data : data 
-        });  
+        this.store = this.buildStore(data);
         var f = Ext.apply({
             name: this.name,
             fieldLabel: this.name,
-            valueField: this.name,
-            displayField: this.name,
-            value: data[0][0]
+            valueField: this.field || this.name,
+            displayField: this.field || this.name,
+            value: data.length>0 ? data[0][0] : null
         }, this);
         Ext.apply( this, f );
         Baseliner.ComboSingle.superclass.initComponent(this); 
+    },
+    buildStore : function(data){
+        return new Ext.data.ArrayStore({
+            fields: [ this.name ],
+            data : data 
+        });  
     }
 });
 
+Baseliner.ComboSingleRemote = Ext.extend( Baseliner.ComboSingle, {
+    mode: 'remote',
+    buildStore : function(){
+        return new Ext.data.JsonStore({
+            root: this.root || 'data', 
+            remoteSort: true,
+            totalProperty: this.totalProperty || 'totalCount', 
+            id: 'id', 
+            baseParams: {  start: 0, limit: this.ps || 99999999 },
+            url: this.url,
+            fields: this.fields || [ this.name ]
+        });  
+    }
+});
 // a hidden field that updates the store for a grid, used in list_topics
 Baseliner.HiddenGridField = Ext.extend( Ext.form.Hidden, {
     setValue : function(v) {
