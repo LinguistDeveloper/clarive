@@ -355,7 +355,7 @@ sub topics_for_user {
     }
     
     if ( $p->{unread} ){
-        $where->{-bool} = \["not exists (select 1 from bali_master_prefs where username='$username' and last_seen is not null and mid = me.mid)"];
+        $where->{-bool} = \["not exists (select 1 from bali_master_prefs where username=? and last_seen is not null and mid = me.mid)", $username];
     }
     
     if ( $p->{created_for_me} ) {
