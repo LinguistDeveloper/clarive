@@ -144,17 +144,13 @@ sub update_category : Local {
 sub list_status : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
-    my ($start, $limit, $dir, $sort, $cnt) = ( @{$p}{qw/start limit dir sort/}, 0 );
+    my ($dir, $sort, $cnt) = ( @{$p}{qw/dir sort/}, 0 );
     $dir ||= 'asc';
-    $start||= 0;
-    $limit ||= 100;
     $sort ||= 'seq';
 
-    $p->{page} //= to_pages( start=>$start, limit=>$limit );    
-    
     my $row;
     my @rows;
-    $row = $c->model('Baseliner::BaliTopicStatus')->search(undef, { order_by => { "-$dir" => ["$sort" ] }, page=> $p->{page}, rows=> $limit});
+    $row = $c->model('Baseliner::BaliTopicStatus')->search(undef, { order_by => { "-$dir" => ["$sort" ] }});
     
     if($row){
         while( my $r = $row->next ) {

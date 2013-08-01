@@ -1,8 +1,4 @@
 (function(){
-    var ps_maxi = 15; //page_size for !mini mode
-    var ps_mini = 50; //page_size for mini mode
-    var ps = ps_maxi; // current page_size
-    
     var store_status = new Baseliner.Topic.StoreStatus();
     var store_category = new Baseliner.Topic.StoreCategory({ baseParams: { swnotranslate : 1 } });
     
@@ -275,15 +271,6 @@
         return '<img src="/static/images/icons/right-arrow.png" />';
     };
     
-    
-    var ptool = new Ext.PagingToolbar({
-            store: store_status,
-            pageSize: ps,
-            displayInfo: true,
-            displayMsg: _('Rows {0} - {1} of {2}'),
-            emptyMsg: _('There are no rows available')
-    });
-    
     var grid_status = new Ext.grid.GridPanel({
         title : _('Topics: Statuses'),
         sm: check_status_sm,
@@ -313,8 +300,7 @@
                 btn_edit_status,
                 btn_delete_status,
                 '->'
-        ],
-        bbar: ptool
+        ]
     }); 
 
     grid_status.on('cellclick', function(grid, rowIndex, columnIndex, e) {
@@ -1845,7 +1831,7 @@
             check_categories_sm,
             { header: 'Category', dataIndex: 'name', width:50, sortable: true, renderer: render_category },
             { header: _('Description'), dataIndex: 'description', sortable: true },
-            { header: _('Type'), dataIndex: 'type', width:50, sortable: true, renderer: render_category_type }
+            { header: _('Type'), dataIndex: 'type', width:50, sortable: false, renderer: render_category_type }
         ],
         autoSizeColumns: true,
         deferredRender:true,    
