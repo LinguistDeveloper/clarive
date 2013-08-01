@@ -16,14 +16,15 @@ params:
     
     var value = data[ meta.bd_field ] || meta.default_value ;
     var editor = new Baseliner.Pagedown({
-        fieldLabel: _(meta.name_field),
         name: meta.id_field,
+        font: meta.font,
         anchor: meta.anchor || '100%',
         height: meta.height || 30,
         value: value || ''
     });
     return [
-        editor
+        Baseliner.field_label_top( _(meta.name_field), meta.hidden ),
+        new Ext.Panel({ layout:'fit', anchor: meta.anchor || '100%', height: meta.height, border: false, items: editor })
     ]
 })
 

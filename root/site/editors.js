@@ -745,19 +745,32 @@ Baseliner.Pagedown = Ext.extend(Ext.form.Field, {
         var div_btn = document.createElement('div');
         div_btn.id = 'wmd-button-bar-' + self.id;
         this.el.dom.appendChild( div_btn );
+        
+        var width_parent = self.container.getWidth() - 8;
 
         self.$field = document.createElement('textarea');
         self.$field.className = 'wmd-input';
-        //self.$field.style['width'] = self.el.getWidth() + 'px';
+        self.$field.style['height'] = self.height + 'px';
+        self.$field.style['width'] = width_parent + 'px'; 
+        if( self.font ) 
+            self.$field.style['font'] = self.font;
         self.$field.id = 'wmd-input-' + self.id;
         self.$field.value =  self.value ;
+        self.$field.name =  self.name ;
         this.el.dom.appendChild( self.$field );
         
-        self.boot = document.createElement('span');
+        self.label_preview = document.createElement('p');
+        self.label_preview.innerHTML = _('Preview') + ':';
+        this.el.dom.appendChild( self.label_preview );
+
+        // boot based preview
+        self.boot = document.createElement('div');
         self.boot.id = 'boot';
         self.preview = document.createElement('div');
         self.preview.id = "wmd-preview-" + self.id;
-        self.preview.className = "wmd-panel wmd-preview";
+        self.preview.className = "well fieldlet-html";
+        self.preview.style['paddingRight'] = '40px'; 
+        // original classes for preview: self.preview.className = "wmd-panel wmd-preview";
         self.boot.appendChild( self.preview );   
         this.el.dom.appendChild( self.boot );   
         
@@ -785,7 +798,11 @@ Baseliner.Pagedown = Ext.extend(Ext.form.Field, {
         this.redraw();
     },
     onResize : function( w,r ) {
-       //this.$field.style['width'] = ( w - 200 ) + 'px';
+        //this.$field.style['width'] = ( w - 200 ) + 'px';
+        alert( w );
+        var width_parent = self.container.getWidth() - 8;
+        this.$field.style['width'] = width_parent + 'px'; 
+        this.preview.style['width'] = width_parent + 'px';
     },
     setSize : Ext.emptyFn,
     setWidth : Ext.emptyFn,
