@@ -71,12 +71,15 @@ sub save_relationships {
 Go over an items parse_tree and detect parse_tree relationships
 to topics and among dependencies.
 
+Saves item in the process.
+
 =cut
 sub tree_resolve {
     my ($self,%p) = @_;
     my $tag_relationship = $p{tag_relationship} // $self->tag_relationship; 
     my $item_relationship = $p{item_relationship} // $self->item_relationship; 
     my @rel_cis;
+    my @rel_topics;
     for my $t ( Util->_array( $self->parse_tree ) ) {
         # moniker should be a modulename
         if( my $module = $t->{module} ) {
@@ -88,9 +91,10 @@ sub tree_resolve {
         # tags for topics, etc
         if( my $tag = $t->{tag} ) {
             my @targets =  map { $_->{mid} } DB->BaliMaster->search({ -bool=>\['lower(moniker)=?', lc($tag) ], collection=>{ '='=>'topic' } }, { select=>'mid' })->hashref->all;
-            push @rel_cis, @targets;
+            push @rel_topics, @targets;
             for my $mid ( @targets ) {
                 Baseliner->cache_remove( qr/:$mid:/ );
+                # XXX missing rel_field...
                 DB->BaliMasterRel->find_or_create({ to_mid=>$self->mid, from_mid=>$mid, rel_type=>$tag_relationship });
             }
         }
@@ -100,14 +104,14 @@ sub tree_resolve {
             push @rel_cis, @targets;
             for my $mid ( @rel_cis ) {
                 Baseliner->cache_remove( qr/:$mid:/ );
+                # XXX missing rel_field...
                 DB->BaliMasterRel->find_or_create({ to_mid=>$self->mid, from_mid=>$mid, rel_type=>$item_relationship });
             }
         }
         # XXX compare my parse tree (functions, etc) with other parse trees
         # XXX consider having a function/procedure CI, prepended by its source name
     }
-    Util->_debug( \@rel_cis );
-    return { cis=>\@rel_cis };
+    return { rels=>[ @rel_cis, @rel_topics ], cis=>\@rel_cis, topics=>\@rel_topics };
 }
 
 sub scan {

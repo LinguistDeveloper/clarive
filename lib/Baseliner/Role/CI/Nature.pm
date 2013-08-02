@@ -41,6 +41,7 @@ sub scan {
             Util->_debug( "PARSER $parser->{name} (" . ref($parser) . "): " . Util->_dump( $res ) );
             
             # TODO this is the place to take or reject items based on parse results and a flag
+            #   only_parsed goes here
             $nature_items{ $item->ns // ( $item->path .';'. $item->version ) } = $item; # avoid duplicates, mid is not good, it could be blank
         }
     }
