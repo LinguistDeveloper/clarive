@@ -230,12 +230,14 @@ sub tree_objects {
         $opts->{page} = $page;
     }
     my $where = {};
-    $p{query} and $where = query_sql_build(
+    length $p{query} and $where = query_sql_build(
            query  => $p{query},
            fields => {
                name => 'name',
-            }
+           }
     );
+    # XXX full search? maybe too much for this grid
+    # length $p{query} and $where->{'-bool'} = mdb->query( "%$p{query}%", { returns=>'exists' });
     $where->{collection} = $collection if $collection;
     $where = { %$where, %{ $p{where} } } if $p{where};
     
@@ -1033,12 +1035,12 @@ sub search_query {
     my $c = $p{c};
     my $limit = 50; #$p{limit} // 1000;
     my $where = {};
-    length($query) and $where = Util->build_master_search( query=>$query );
+    length($query) and $where->{'-bool'} = mdb->query( $query, { returns=>'exists' } );
     $where->{'-not'} = { collection=>{-in=>['topic','job']} };
     my @rows = DB->BaliMaster->search(
         $where,
-        { join=>'search_data', 
-            select=>['mid','name','collection','bl','search_data.search_data','ts'], 
+        { join=>'kv', 
+            select=>['mid','name','collection','bl','kv.mvalue','ts'], 
             as=>['mid','name','collection','bl', 'search_data','ts'], 
             rows=>$limit, order_by=>{ -desc=>'ts' } })->hashref->all;
     _error( \@rows );

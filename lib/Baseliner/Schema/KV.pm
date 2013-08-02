@@ -298,7 +298,17 @@ This is a pivoted kv to column search query runner.
 
 Where:
     
-    Read about L<SQL::Abstract> syntax.
+The where can take 2 kinds of options:
+
+    STRING : a full text search on all MVALUE columns
+    HASH   : a SQL::Abstract search.
+
+Read about L<SQL::Abstract> syntax for more info.
+
+    mdb->query( 'this | that', { order_by=>'id_category desc' });    
+    mdb->query( '%nada%' );
+    mdb->query( 'hello*' );  # becomes hello%
+    mdb->query({ 'project.name' => 'PROY' }, { order_by=>'id_category desc' });    
     
 Options:
     
@@ -318,14 +328,21 @@ Options:
     hash_on => 'key'    
         returns data hashed on key. Does not load CI. 
         
-    as_query => 1 
-        returns a bind array: [ $sql, @binds ]
+    returns => query | raw | rs | exists | not_exists | hashes
+        query
+            returns a bind array: [ $sql, @binds ]
 
-    as_full_query => 1 
-        returns the complete build_pivot_query object
+        raw 
+            returns the complete build_pivot_query object
 
-    as_rs => 1 
-        returns the DBIx::Simple result set from ->query
+        rs 
+            returns the DBIx::Simple result set from ->query
+
+        exists | not_exists
+            returns a -bool exists expression EXISTS / NOT EXISTS ( select 1 from ( ... ) ) 
+
+        hashes 
+            return an array of hashes of all rows in the query
 
 =head3 Hint system
 
@@ -366,14 +383,31 @@ TODO
 sub query {
     my ($self, $where, $opts) = @_;
 
+    # fulltext ? 
+    if( ( !ref $where && length $where ) || ( ref $where eq 'ARRAY' ) ) {
+        $where = { _fulltext=>$where }; 
+    }
+
     my $q = $self->build_pivot_query( $where, $opts );
-    return \( $q->{query} ) if $opts->{as_query};
-    return $q if $opts->{as_full_query};
+
+    my $rets = $opts->{returns} // 'cis' ;
+    return \( $q->{query} ) 
+        if $rets eq 'query';
+    if( $rets =~ /exists$/ ) {   # EXISTS, NOT EXISTS
+        my $sql = shift $q->{query};
+        my @binds = @{ $q->{query} };
+        return \[ uc($rets) . " (SELECT 1 FROM ( $sql ) kv WHERE me.mid = kv.mid )", @binds ] ;
+    }
+    return $q 
+        if $rets eq 'raw';
     my $dbs = $self->_dbis;
     my $rs = $dbs->query( @{ $q->{query} || {} });
-    return $rs if $opts->{as_rs};
-    return map { $_->{ $opts->{hash_on} } => $_ } $rs->hashes if exists $opts->{hash_on};
-    return $rs->hashes if defined $opts->{select} || $opts->{hashes};
+    return $rs 
+        if $rets eq 'rs';
+    return map { $_->{ $opts->{hash_on} } => $_ } $rs->hashes 
+        if exists $opts->{hash_on};
+    return $rs->hashes 
+        if $rets eq 'hashes' || defined $opts->{select};
     # TODO run a query on KV itself to return kv rows
     my @cis;
     for my $row ( $rs->hashes ) {
@@ -516,7 +550,15 @@ sub build_pivot_query {
     #my $where_flat = $self->_flatten_as_hash( $where );
     #return $where_flat;
 
+    my $yaml = $opts->{yaml} ? 'master.yaml' : undef; # select yaml ?
+
     my $hint = $opts->{hint};
+
+    my $fulltext = delete $where->{_fulltext}; # search on mvalue
+    my $fullscore = 0;
+    ($fulltext, $fullscore) = @{ $fulltext } if ref $fulltext eq 'ARRAY';
+    $fulltext =~ s/\*/%/g;
+    $fulltext =~ s/\?/_/g;
 
     my %pivot_cols;
     my @order_by;
@@ -541,8 +583,11 @@ sub build_pivot_query {
                 $dir = $2;
             }
             $dir ||= 'ASC';
+
             $order_by_column =~ s/"//g; # cleanup
+            next if substr( $order_by_column, 0,1) eq '_';  # no order by if it starts with underscore
             my $quoted = qq{"$order_by_column"};
+
             # cast type on hint?  - XXX not needed, types are resolved on pivot
             #  if( my $type = $hint->{ $order_by_column } ) {
             #      push @order_by, "to_number( $quoted ) $dir" if $type eq 'number';
@@ -562,6 +607,10 @@ sub build_pivot_query {
     $self->_apply_hints( $where, $hint ) if exists $opts->{hint};
     my $where_quoted = $self->_quote_keys( $where );
     my ( $wh, @binds ) = keys %$where ? $self->_abstract( $where_quoted ) : ('WHERE 1=1');
+    if( defined $fulltext ) {
+        $wh .= ' AND contains( kv_full.mvalue, ?, 1 ) > ? AND kv_full.mid=master.mid';
+        push @binds, ( $fulltext, $fullscore );
+    }
 
     # select?
     my @select = _array( $opts->{select} );  # user defined select
@@ -604,31 +653,50 @@ sub build_pivot_query {
                 )}
         } keys %pivot_cols;
     $pivots_with and $pivots_with = "WITH $pivots_with";
-    my $pivots_from = join ',' => 'bali_master master', map { qq{ "pivot_$_" } } keys %pivot_cols;
+    my $pivots_from = join ',' => grep { length } ( 
+        'bali_master master', 
+        ( defined $fulltext and 'bali_master_kv kv_full' ),
+        map { qq{ "pivot_$_" } } keys %pivot_cols
+    );
     my $pivots_outer = join ' and ' => map { qq{master.mid = "pivot_$_".mid (+)} } keys %pivot_cols;
     $pivots_outer ||= '1=1';
 
-    my $selects = join ',' => @select 
+    my @selects = @select 
         ? @select 
-        : ( qw/master.mid master.name master.collection master.moniker master.yaml/, map { qq{"$_"} } keys %pivot_cols );
+        : ( 
+            qw/master.mid master.name master.collection master.moniker/, $yaml, 
+            map { qq{"$_"} } keys %pivot_cols 
+          );
     my $order_by_pivot = @order_by ? 'order by ' . join ',', @order_by : '';
     my $order_by = join ',', @order_by, 'master.mid';
+
+    my $group_by = join ',' => grep { length } (
+        $opts->{group_by} // '',
+        ( defined $fulltext and @selects )
+    );
+    $group_by = "GROUP BY $group_by" if length $group_by; 
+    
+    push @selects, 'SUM(SCORE(1)) "_score"' if defined $fulltext;
+    my $selects = join ',' => grep { length } @selects;
 
     my $sql = qq{
         $pivots_with
         SELECT $selects
-        FROM $pivots_from
-         $wh 
+        FROM $pivots_from 
+            $wh
            and $pivots_outer
+         $group_by
          ORDER BY $order_by
     };
     # limit? (0 indexed)
     my $start = $opts->{start};
     my $limit = $opts->{limit};
     $sql = do {
+        $start //= 0;
+        
         #my $page_num = int( $start / $limit ) + 1 ;
-        my $limit_sql = $limit ? "where rownum < " . ( $limit + $start ) : "";
-        my $start_sql = $start ? "where rownum__ >= $start" : "";
+        my $limit_sql = defined $limit ? do { push @binds, $limit + $start; "where rownum <= ? " } : "";
+        my $start_sql = defined $start ? do { push @binds, $start + 1; "where rownum__ >= ? " } : "";
         qq{
             select * from (
                 select m__.*, rownum rownum__ from ( $sql ) m__
