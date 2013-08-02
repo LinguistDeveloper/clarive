@@ -53,6 +53,7 @@ sub parse {
     }
 
     _debug _loc "%1 has match? %2", $file, $has_match;
+
     if( $has_match ) {
         $item->save;
         for my $topic ( _array $self->topics ) {
@@ -62,10 +63,9 @@ sub parse {
             my $coll = $ci->collection || 'ci';
             DB->BaliMasterRel->create({ from_mid=>$ci->mid, to_mid=>$item->mid, rel_type=> $coll . '_item' });
         }
+        Baseliner->cache_clear;
     }
 
-    _log \%tree ;
-    
     if( %tree ) {
         $item->add_parse_tree( \@found );
         return \%tree;

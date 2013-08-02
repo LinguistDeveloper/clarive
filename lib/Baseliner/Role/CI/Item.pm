@@ -130,5 +130,43 @@ sub scan {
 }
 
 
+=head2 moniker_from_tree_or_name
+
+Check if we have a 'module' in the parse tree.
+
+If we do, don't do anything.
+
+If we don't, set moniker from filename
+
+
+=cut
+sub moniker_from_tree_or_name {
+    my ($self)=@_;
+
+    # first check if we have a module in the tree
+    my $module;
+    for my $entry ( @{ $self->parse_tree } ) {
+        $module = $entry->{module} if defined $entry->{module}; 
+    }
+
+    # determine module name 
+    if( ! defined $module ) {
+        $module = $self->basename;
+        if( my $fb = $self->path_capture ) {
+            $module = $+{module} if $self->path =~ qr/$fb/ && length $+{module};
+        } else {
+            $module = $self->moniker // $self->basename;
+        }
+        $module = $self->change_case( $module );
+        $self->moniker( $module );
+        return $module;
+    }
+    elsif ( ! length $self->moniker ) {
+        # we dont have a moniker but we have a module, keep it
+        return $self->moniker( $module );
+    }
+    return $module;
+}
+
 1;
 

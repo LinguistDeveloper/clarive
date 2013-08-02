@@ -27,7 +27,9 @@ sub parse {
     my $tmout = $self->timeout;
     my $grammar = $self->grammar; 
     $grammar =~ s{\r\n}{\n}g;
-    Util->_fail( 'Grammar not found' ) unless $grammar;
+
+    Util->_fail( Util->_loc('Grammar not found in %1', $self->name) ) unless $grammar;
+
     my $rg = do {
         use Regexp::Grammars;
         eval "qr{
@@ -37,7 +39,7 @@ sub parse {
     
     if( $source =~ $rg ) {
         my $tree = { %/ };    
-        Util->_debug( $tree );
+
         if( my $root = [ keys %$tree ]->[0] ) {
             $tree = $tree->{$root} || []; # delete root node 'grammar name'
         }

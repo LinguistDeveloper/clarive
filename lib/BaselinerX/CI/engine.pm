@@ -23,10 +23,8 @@ sub parse {
     return { success=>0, msg=>Util->_loc("Could not require package %1: %2", $pkg, $@) } if $@;
     
     my $tree = $pkg->parse( file=>$file, source=>$source );
-    Util->_debug( $tree );
     
     $tree = $self->process_item_tree( $item, $tree ); 
-
     $item->add_parse_tree( $tree );
     #my $ret = {};
     #$self->collect_vars( $tree, $ret );

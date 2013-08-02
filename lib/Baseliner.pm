@@ -332,6 +332,7 @@ around 'debug' => sub {
     }
     sub cache_get { 
         my ($self,$key)=@_;
+        return if $Baseliner::_no_cache;
         Util->_debug(-1, "--- CACHE GET: " . ( ref $key ? Util->_to_json($key) : $key ) ) if $ENV{BALI_CACHE_TRACE}; 
         $ccache->get( $key ) 
     }
