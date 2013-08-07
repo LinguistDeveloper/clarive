@@ -133,6 +133,9 @@ CGI
 CGI::Carp
 CGI::Fast
 CGI::Util
+CHI
+CHI::Driver::FastMmap
+CHI::Driver::Redis
 Cache::FastMmap
 Calendar::Slots
 Capture::Tiny
@@ -187,6 +190,7 @@ DBIx::Class::TimeStamp
 DBIx::Simple
 Data::Page
 Data::Random
+Data::Structure::Util
 Date::Calc
 DateTime
 DateTime::Format::DateParse
@@ -209,6 +213,7 @@ Getopt::Mini
 Git::Wrapper
 Graph
 HTML::Mason
+HTML::Strip
 IO::All
 IO::Compress::Gzip
 Image::Identicon
@@ -224,6 +229,7 @@ Math::Base36
 MIME::Base64
 MIME::Lite
 MIME::Types
+MongoDB
 MRO::Compat
 MVS::JESFTP
 Module::Loaded
@@ -246,9 +252,11 @@ PadWalker
 Path::Class
 Perl::Tidy
 Plack
+PocketIO
 Pod::Simple::HTML
 Proc::Background
 Proc::Exists
+Regexp::Grammars
 SQL::Abstract
 SQL::Translator
 SQL::Translator::Diff
@@ -260,6 +268,7 @@ String::ShellQuote
 Switch
 Term::ANSIColor
 Term::ReadKey
+Text::CSV
 Text::CSV_XS
 Text::Markdown
 Text::Template
@@ -268,6 +277,7 @@ Text::Unaccent::PurePerl
 Time::Interval
 Try::Tiny
 Twiggy
+Twiggy::Prefork
 XML::Smart
 YAML
 YAML::Syck

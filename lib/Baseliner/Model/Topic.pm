@@ -228,7 +228,8 @@ sub topics_for_user {
     my $username = $p->{username};
     my $topic_list = $p->{topic_list};
 
-    length($query) and $where = Util->build_master_search( query=>$query );
+    #length($query) and $where = Util->build_master_search( query=>$query );
+    length($query) and $where->{'-bool'} = mdb->query( "$query", { returns=>'exists' });
     
     # XXX consider enabling this for quick searches on mid+title+description
     #$query and $where = query_sql_build( query=>$query, fields=>{
@@ -1849,10 +1850,8 @@ sub search_provider_type { 'Topic' };
 sub search_query {
     my ($self, %p ) = @_;
     my $c = $p{c};
-    $c->request->params->{limit} = $p{limit} // 1000;
-    $c->forward( '/topic/list');
-    my $json = delete $c->stash->{json};
-    my @mids = map { $_->{topic_mid} } _array( $json->{data} ); 
+    my ($cnt, @rows ) =  $self->topics_for_user({ username=>$c->username, limit=>$p{limit} // 1000, query=>$p{query} });
+    my @mids = map { $_->{topic_mid} } @rows;
     #my %descs = DB->BaliTopic->search({ mid=>\@mids }, { select=>['mid', 'description'] })->hash_on('mid');
     return map {
         my $r = $_;
@@ -1885,7 +1884,7 @@ sub search_query {
             mid   => $r->{topic_mid},
             id    => $r->{topic_mid},
         }
-    } _array( $json->{data} );
+    } @rows;
 }
 
 sub getAction {

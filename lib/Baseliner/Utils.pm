@@ -718,6 +718,11 @@ sub _tmp_file {
     return $file;
 }
 
+sub _unbless {
+    require Data::Structure::Util;
+    Data::Structure::Util::unbless( @_ );
+}
+
 sub _damn {
     my $blessed = shift;
     my $damned;
@@ -1402,6 +1407,50 @@ sub async_request {
     $headers{'run-token'} = $run_token;
     Baseliner->app->session->{$run_token} = 1;
     $s->write_request( $request->method, "$uri", %headers, $request->content );
+}
+
+=head2 package_and_instance
+
+Little finder of packages not loaded. Lists and loads them temporarily from root
+and features. 
+    
+Just a list of files and package names (deduced from filename):
+
+    package_and_instance( 'lib/Baseliner/Parser/Grammar' ) 
+
+A instance + method call, with params, if any 
+
+    package_and_instance( 'lib/Baseliner/Parser/Grammar','grammar', [ param1=>val1 ... ], [  meth param1... ] ) 
+
+If method name is "new", only the instance created with C<new> is returned. 
+
+Returns HASHREF:
+
+    $file => { package=>Package::Name, file=>$file, instance=>$self, ret=>$return_value_from_method }
+
+TODO 
+
+    - recursivity
+
+=cut
+sub package_and_instance {
+    my ($path,$method, $new_params, $method_params) = @_;
+    local %INC = %INC; 
+    my $root = Baseliner->path_to('/')->stringify;
+    +{ map {
+        my $f = $_;
+        s{^.*lib/}{}g;
+        s{/}{::}g;
+        s{\.pm$}{}g;
+        if( $method ) {
+            do $f;
+            my $ins = $_->new( Util->_array( $new_params) );
+            my $ret = $_->new->$method( Util->_array( $method_params) ) unless $method eq 'new';
+            $f => { package => $_, file => $f, instance=>$ins, ret=>$ret };
+        } else {
+            $f => { package => $_, file => $f };
+        }
+    } <$root/$path/* $root/features/*/lib/$path/*> }
 }
 
 {

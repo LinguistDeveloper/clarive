@@ -6,6 +6,14 @@ sub icon { '/static/images/icons/parser.png' }
 
 has token_case => qw(is rw isa Any default case-sensitive);
 
+=head2 process_item_tree
+
+Turns a hash tree into array.
+Ensures that moniker (module) is found.
+
+Sets moniker and find.
+
+=cut
 sub process_item_tree {
     my ($self, $item, $tree ) = @_;    
     
@@ -27,23 +35,26 @@ sub process_item_tree {
     $tree = \@tree_entries;  # updated with lower/upper, etc
 
     # make sure we have our module name
+    #   last is more important
     my $module;
     for my $entry ( Util->_array( $tree ) ) {
-        $module //= $entry->{module}; 
+        if( length $entry->{module} ) {
+            $entry->{module} = $self->change_case( $entry->{module} );
+            $module //= $entry->{module}; 
+        }
+
+        # make sure dependencies go with correct case
+        for( qw/depend depends/ ) {
+            if( length $entry->{$_} ) {
+                $entry->{$_} = $self->change_case( $entry->{$_} );
+            }
+        }
     }
     my $ext = $item->extension;
     
-    # determine module name 
-    if( ! defined $module ) {
-        $module = $item->basename;
-        if( my $fb = $self->path_capture ) {
-            $module = $+{module} if $item->path =~ qr/$fb/ && length $+{module};
-        } else {
-            $module = $item->moniker // $item->basename;
-        }
-        $module = $self->change_case( $module );
-        push @$tree => { module=>$module  };
-    }
+    # set moniker 
+    $item->moniker( $module ) if length $module;
+
     return $tree;
 }
 

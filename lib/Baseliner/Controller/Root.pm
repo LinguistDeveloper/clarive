@@ -44,10 +44,13 @@ sub begin : Private {
     # process json data, if any
     if( $content_type eq 'application/json' ) {
         my $body = $c->req->body;
-        $c->req->{body_data} = Util->_from_json(<$body>);
-        #my $json = Util->_from_json(<$body>);
-        #my $p = $c->req->params || {};
-        #$c->req->params( { %$p, %$json } ); 
+        my $json = Util->_from_json(<$body>);
+        if( ref $json eq 'HASH' && delete $json->{_merge_with_params} ) {
+            my $p = $c->req->params || {};
+            $c->req->params( { %$p, %$json } ); 
+        } else {
+            $c->req->{body_data} = $json;
+        }
     }
     elsif( $content_type eq 'application/yaml' ) {
         my $body = $c->req->body;

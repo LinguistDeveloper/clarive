@@ -14,11 +14,11 @@ sub grammar {
         <rule: body>                               <[statement]>+ % ; 
         <rule: variables>                          <[variable]>+ % (;) 
         <rule: variable>                           <identifier> <type> <default>?
-        <rule: arguments>                          \( <[variable]> + % (,) \)
+        <rule: arguments>                          \( <[MATCH=variable]> + % (,) \)
         <rule: return>                             RETURN <identifier>
-        <rule: default>                            DEFAULT <anything> 
+        <rule: default>                            DEFAULT <MATCH=anything> 
         <rule: type>                               <data_type> (?: \( <size> \) )?
-        <rule: declaration>                        <module_type=keyword_declare> <moniker=identifier>
+        <rule: declaration>                        <module_type=keyword_declare> <module=identifier>
         <rule: keyword_declare>                    FUNCTION | PROCEDURE | TRIGGER
         <token: data_type>                         VARCHAR2 | NUMBER | DATE | VARCHAR | CHAR | INTEGER | BOOLEAN
         <rule: statement>                          <[word]>+ % (\s) 
@@ -27,6 +27,7 @@ sub grammar {
         <token: anything>                          \S+
         <token: size>                              [0-9]+
         <rule: identifier>                         [_a-zA-Z][_a-zA-Z0-9]* 
+        <token: ws>                                (?: \s+ | --[^\n]* )* 
     }
 }
 
