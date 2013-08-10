@@ -517,11 +517,15 @@ if( Prefs.routing ) {
                 tabpanel.changeTabIcon( tab, "/static/images/loading-fast.gif" );
                 title = '&nbsp;';
             }
-            tab.setTitle( title ) 
+            tab.setTitle( title );
         } else { 
-            tab.setTitle( title ) 
+            tab.setTitle( title );
         }
-        return tab.getId();
+        var tab_id = tab.getId();
+        if( comp!=undefined && comp.tab_info!=undefined ) {
+            Baseliner.tabInfo[tab_id] = comp.tab_info;
+        }
+        return tab_id; 
     };
 
     Baseliner.is_logged_on = function() {
@@ -580,7 +584,7 @@ if( Prefs.routing ) {
                             Baseliner.login({ no_reload: 1, on_login: function(){ Baseliner.addNewTab(purl,ptitle,params)} });
                         } else {
                             //Baseliner.message( _('Error %1', res.status), res.responseText );
-                            Baseliner.message( 'Error', '<% _loc('Server unavailable') %>' );
+                            Baseliner.message( 'Error', '<% _loc('Server unavailable') %>' ); // XXX necessary? 
                         }
                     }
                 }
@@ -616,7 +620,7 @@ if( Prefs.routing ) {
                         Baseliner.login({ no_reload: 1, on_login: function(){ Baseliner.addNewWindow(purl,ptitle,params)} });
                     } else {
                         //Baseliner.message( _('Error %1', res.status), res.responseText );
-                        Baseliner.message( 'Error', '<% _loc('Server unavailable') %>' );
+                        Baseliner.message( 'Error', '<% _loc('Server unavailable') %>' ); // XXX necessary? centralize?
                     }
                 }
 
@@ -1001,6 +1005,14 @@ if( Prefs.routing ) {
         }
     };
 
+    // sends request with application/json
+            // TODO consider making this a RESTful engine, with GET, PUT, POST, DELETE, etc.., and changing the CI interface too
+    Baseliner.ajax_json = function( url, params, foo, scope ){
+        if( Ext.isObject( params ) ) 
+            params.as_json = true;
+        Baseliner.ajaxEval( url, params, foo, scope );
+    }
+
     Baseliner.ajaxEval = function( url, params, foo, scope ){
         if(params == undefined ) params = {};
 
@@ -1021,9 +1033,10 @@ if( Prefs.routing ) {
         }
     
         if( Ext.isIE7 || Ext.isIE8 ) Ext.fly( document.body ).mask( _('Sending Request...') );  // so slow, better to mask the whole thing
-        var the_request = function() { Ext.Ajax.request({
+        var timeout = params.timeout || 120000; // in milliseconds, use zero 0 to disable
+        var request_data = {
             url: url,
-            params: params,
+            timeout: timeout,
             callback: function(opts,success,xhr) {
                 if( Ext.isIE7 || Ext.isIE8 ) Ext.fly( document.body ).unmask();
                 if( !success ) {
@@ -1036,7 +1049,7 @@ if( Prefs.routing ) {
                         return;
                     } else if( xhr.status==404 ) {
                         msg = _("Not found: %1", url );
-                    } else if( xhr.status==0 ) {
+                    } else if( xhr.status==0 || xhr.status==502) {
                         var yn = confirm( _('Server not available. Retry?') );  // an alert does not ask for images from the server
                         if( yn ) {
                             the_request();
@@ -1055,10 +1068,10 @@ if( Prefs.routing ) {
                     if( Ext.isObject( comp ) && comp.logged_out ) {
                         login_or_error();
                     }
-                    else if( Ext.isObject( comp ) && comp.success!=undefined && !comp.success ) {
+                    else if( !params._handle_res && Ext.isObject( comp ) && comp.success!=undefined && !comp.success ) {  // XXX this should come after the next else
                         Baseliner.error( _('Loading Error'), comp.msg );
                     }
-                    else if( Ext.isFunction( foo ) ) {
+                    else if( Ext.isFunction( foo ) ) {  // XXX this should come before the next else
                         foo( comp, scope );
                     }
                     else {
@@ -1067,13 +1080,23 @@ if( Prefs.routing ) {
                 }
                 catch(e){
                     Baseliner.error_win(url,params,xhr,e);
-                    if( Baseliner.DEBUG ) 
-                        Baseliner.loadFile( url, 'js' );  // hopefully this will generate a legit error for debugging
+                    if( Baseliner.DEBUG ) {
+                        Baseliner.loadFile( url, 'js' );  // hopefully this will generate a legit error for debugging, but it may give strange console errors
+                        throw e;
+                    }
                     //if( Baseliner.DEBUG && ! Ext.isIE && console != undefined ) { console.log( xhr ) }
                 }
             }
-        });
         };
+
+        if( params.as_json ) {
+            request_data.jsonData = params; //jsonData: params,  // sends application/json, goes in the body
+            // TODO consider sending _merge_with_params: true, to make ajax_json a full replacement for current ajaxEval without touching controllers
+        } else {
+            request_data.params = params;
+        }
+            
+        var the_request = function() { Ext.Ajax.request(request_data); };
         if( params.confirm != undefined ) {
             var msg = params.confirm;
             delete params['confirm'];
@@ -1138,6 +1161,12 @@ if( Prefs.routing ) {
                 tabpanel.remove( panel );
                 Baseliner.addNewTab( info.url, info.title, info.params );
             } 
+            else if( info.type == 'object' ) {  // created with a addNewTabItem directly, like the kanban in tab
+                var clone = panel.cloneConfig(); 
+                tabpanel.remove( panel );
+                var new_id = Baseliner.addNewTabItem( clone, clone.title, info.params );
+                Baseliner.tabInfo[new_id] = info;
+            }
         } else {
             // non-components: portal, dashboard, etc.
             var closable = panel.initialConfig.closable;

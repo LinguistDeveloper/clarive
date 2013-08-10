@@ -42,8 +42,8 @@
     });
    
     var init_buttons = function(action) {
-        eval('btn_edit.' + action + '()');
-        eval('btn_delete.' + action + '()');
+        btn_edit[ action ]();
+        btn_delete[ action ]();
     }
     
     var button_no_filter = new Ext.Button({
@@ -208,7 +208,7 @@
         
         var render_category = function(value,metadata,rec,rowIndex,colIndex,store){
             var color = rec.data.color;
-            var ret = '<div id="boot"><span class="badge" style="float:left;padding:2px 8px 2px 8px;background: '+ color + '">' + value + '</span></div>';
+            var ret = '<div id="boot"><span class="label" style="float:left;padding:2px 8px 2px 8px;background: '+ color + '">' + value + '</span></div>';
             return ret;
         };
         
@@ -231,7 +231,7 @@
         topic_category_grid.on("rowdblclick", function(grid, rowIndex, e ) {
             var r = grid.getStore().getAt(rowIndex);
             var title = _(r.get( 'name' ));
-            Baseliner.add_tabcomp('/topic/view?swEdit=1', title , { title: title, new_category_id: r.get( 'id' ), new_category_name: r.get( 'name' ) } );
+            Baseliner.add_tabcomp('/topic/view?swEdit=1', title , { title: title, new_category_id: r.get( 'id' ), new_category_name: r.get( 'name' ), _parent_grid: grid_topics.id } );
             win.close();
         });     
         
@@ -351,9 +351,7 @@
             var sm = grid_topics.getSelectionModel();
                 if (sm.hasSelection()) {
                     Ext.each( sm.getSelections(), function(r) {
-                        var topic_mid = r.get('topic_mid');
-                        var title = _(r.get( 'category_name' )) + ' #' + topic_mid;
-                        Baseliner.add_tabcomp('/topic/view?topic_mid=' + topic_mid + '&swEdit=1', title , { topic_mid: topic_mid, title: title } );
+                        Baseliner.show_topic_from_row( r, grid_topics );
                     });
                 } else {
                     Baseliner.message( _('ERROR'), _('Select at least one row'));    
@@ -380,18 +378,10 @@
                 Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the topic(s)') + ': <br /><b>' + names + '</b>?', 
                     function(btn){ 
                         if(btn=='yes') {
-                            Baseliner.ajaxEval( '/topic/update?action=delete',{ topic_mid: topic_mids },
-                                function(response) {
-                                    if ( response.success ) {
-                                        grid_topics.getStore().remove(sm.getSelections());
-                                        Baseliner.message( _('Success'), response.msg );
-                                        init_buttons('disable');
-                                    } else {
-                                        Baseliner.message( _('ERROR'), response.msg );
-                                    }
-                                }
-                            
-                            );
+                            Baseliner.Topic.delete_topic({ topic_mids: topic_mids, success: function(){ 
+                                grid_topics.getStore().remove(sm.getSelections());
+                                init_buttons('disable') 
+                            }});
                         }
                     }
                 );
@@ -428,7 +418,19 @@
         pressed: false,
         handler: function(){
             // kanban fullscreen 
-            Baseliner.kanban_from_store({ store: store_topics });
+            var mids = [];
+            var sm = grid_topics.getSelectionModel();
+            if (sm.hasSelection()) {
+                Ext.each( sm.getSelections(), function(r) {
+                    mids.push( r.get('topic_mid') );
+                });
+            } else {
+               store_topics.each( function(r){
+                    mids.push( r.get('topic_mid') );
+               });
+            }
+            var kanban = new Baseliner.Kanban({ topics: mids });
+            kanban.fullscreen();
         }
     }); 
     
@@ -452,28 +454,42 @@
         //date_created_on =  rec.data.created_on.dateFormat('M j, Y, g:i a');
 		date_modified_on =  rec.data.modified_on.dateFormat('M j, Y, g:i a');
         var strike = ( rec.data.is_closed ? 'text-decoration: line-through' : '' );
+        var font_weight = rec.data.user_seen===true ? 'normal' : 'bold';
+
+        // folders tags
+        var folders;
+        if( rec.data.directory && rec.data.directory.length>0 ) {
+            folders = '<span id="boot" style="background: transparent"><span class="label topictag">' + rec.data.directory.join('</span><span class="label topictag">') + '</span></span>';
+        } else {
+            folders = '';
+        }
 
         if(rec.data.labels){
+			tag_color_html = "";
             for(i=0;i<rec.data.labels.length;i++){
                 var label = rec.data.labels[i].split(';');
                 var label_name = label[1];
                 var label_color = label[2];
                 tag_color_html = tag_color_html
-                    + "<div id='boot'><span class='label' style='font-size: 9px; float:left;padding:1px 4px 1px 4px;margin-right:4px;color:" 
-                    + returnOpposite(label_color.substr(1)) + ";background-color:" + label_color + "'>" + label_name + "</span></div>";              
+                    //+ "<div id='boot'><span class='label' style='font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;float:left;padding:1px 4px 1px 4px;margin-right:4px;color:"
+					+ "<span style='font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;float:left;padding:1px 4px 1px 4px;margin-right:4px;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;color:" 
+                    + returnOpposite(label_color.substr(1)) + ";background-color:" + label_color + "'>" + label_name + "</span>";
             }
         }
+		
+		
+		
         if(btn_mini.pressed){
             return tag_color_html 
-                + String.format("<span style='font-weight:bold; font-size: 12px; cursor: pointer; "+strike+"' onclick='javascript:Baseliner.show_topic_colored({1},\"{2}\", \"{3}\", \"{4}\");'>{0}</span>", 
-                        value, rec.data.topic_mid, rec.data.category_name, rec.data.category_color, grid_topics.id ); 
+                + String.format("<span style='font-weight:{5}; font-size: 12px; cursor: pointer; "+strike+"' onclick='javascript:Baseliner.show_topic_colored({1},\"{2}\", \"{3}\", \"{4}\");'>{0}{6}</span>", 
+                        value, rec.data.topic_mid, rec.data.category_name, rec.data.category_color, grid_topics.id, font_weight, folders ); 
         }else{
             return tag_color_html + 
-                String.format( "<span style='font-weight:bold; font-size: 14px; cursor: pointer; "+strike+"' onclick='javascript:Baseliner.show_topic_colored({3},\"{4}\",\"{5}\", \"{6}\")'>{0}</span>"
-                        + "<br><div style='margin-top: 5px'>{1}<font color='808080'></br>{2}</font ></div>", 
+                String.format( "<span style='font-weight:{7}; font-size: 14px; cursor: pointer; "+strike+"' onclick='javascript:Baseliner.show_topic_colored({3},\"{4}\",\"{5}\", \"{6}\")'>{0}</span>"
+                        + "<br><div style='margin-top: 5px'>{1}{8}<font color='808080'></br>{2}</font ></div>", 
                         //value, date_created_on, _('by %1',rec.data.created_by),
 						value, date_modified_on, _('by %1',rec.data.modified_by), 
-                        rec.data.topic_mid, rec.data.category_name, rec.data.category_color, grid_topics.id );                        
+                        rec.data.topic_mid, rec.data.category_name, rec.data.category_color, grid_topics.id, font_weight, folders );                        
         }
         
     };
@@ -543,7 +559,7 @@
             actions_html.push("</span>");           
         }
         if( Ext.isArray( rec.data.referenced_in ) && rec.data.referenced_in.length > 0 ) {
-            if( swGo )  actions_html.push( '<br>' );
+            if( swGo && !btn_mini.pressed )  actions_html.push( '<br>' );
             swGo = true;
             actions_html.push( ref_html( 'in', rec.data.referenced_in ) );
         }
@@ -575,7 +591,7 @@
     };
 
     var render_progress = function(value,metadata,rec,rowIndex,colIndex,store){
-        if( value == 0 ) return '';
+        if( value==undefined || value == 0 ) return '';
         if( rec.data.category_status_type == 'I'  ) return '';  // no progress if its in a initial state
 
         var cls = ( value < 20 ? 'danger' : ( value < 40 ? 'warning' : ( value < 80 ? 'info' : 'success' ) ) );
@@ -593,6 +609,8 @@
     var render_topic_name = function(value,metadata,rec,rowIndex,colIndex,store){
         var d = rec.data;
         return Baseliner.topic_name({
+            link: true,
+            parent_id: grid_topics.id,
             mid: d.topic_mid, 
             mini: btn_mini.pressed,
             size: btn_mini.pressed ? '9' : '11',
@@ -732,7 +750,6 @@
     
 //    grid_topics.on('rowclick', function(grid, rowIndex, columnIndex, e) {
 //        //init_buttons('enable');
-//      alert('pasa');
 //    });
     
     grid_topics.on('cellclick', function(grid, rowIndex, columnIndex, e) {
@@ -853,7 +870,7 @@
 
     function topicsSelected(){
         var topics_checked = getTopics();
-        if (topics_checked.length == 1){
+        if (topics_checked.length > 0 ){
             var sw_edit;
             check_sm.each(function(rec){
                 sw_edit = (rec.get('sw_edit'));
@@ -1164,7 +1181,8 @@
         autoScroll: true,
         rootVisible: false,
         root: tree_root,
-        enableDD: true,
+		enableDrag: true,
+        enableDrop: false,
         ddGroup: 'explorer_dd',
 		listeners: {
 			'checkchange': checkchange

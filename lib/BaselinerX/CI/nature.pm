@@ -19,47 +19,12 @@ sub rel_type {
     };
 }
 
-service scan => 'Scan files' => sub {
+service scan => 'Scan Nature Items' => sub {
     my ($self,$c,$p) =@_;
+    $self->scan;  # asssumes the nature already has items 
     return "ok scan: " . Util->_dump( $self );
 };
 
 sub has_bl { 0 }
-
-sub scan {
-    my ($self, %p )=@_;
-    my $stash = {};
-    my @includes = map { qr/$_/i } Util->_array( $self->include );
-    my @excludes = map { qr/$_/i } Util->_array( $self->exclude );
-    #my %nature_items = map { $_->mid => $_ } Util->_array( $self->items );
-    my @nature_items = Util->_array( $self->items );
-    for my $parser ( Util->_array( $self->parsers ) ) {
-        ITEM: for my $item ( Util->_array( $p{items} ) ) {
-            my $inc_flag = 0;
-            # continue on first include matched ok
-            for my $i ( @includes ) {
-                if( $item->path =~ $i ) {
-                    $inc_flag = 1;
-                    my $captures = \%+;
-                    if( keys %$captures ) {
-                        $item->variables({ %{ $item->variables }, %$captures });
-                    }
-                    last;
-                }
-            }
-            next ITEM unless $inc_flag;
-            # next on first exclude matched
-            for my $i ( @excludes ) {
-                next ITEM if $item->path =~ $i;
-            }
-            _debug( "parsing item " . $item->path . " with parser " . $parser->name );
-            my $res = $parser->parse( $item );
-            
-            push @nature_items, $item ; 
-        }
-    }
-    # keep track of my items
-    $self->items( \@nature_items );
-}
 
 1;

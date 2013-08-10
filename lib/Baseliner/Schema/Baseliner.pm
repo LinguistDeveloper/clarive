@@ -28,7 +28,7 @@ sub connection {
      }
 
      my $lev = substr( $ENV{DBIC_TRACE}, 0, 1 );
-     if( $lev > 1 ) {
+     if( defined $lev && $lev > 1 ) {
          require Baseliner::Schema::Profiler;
          $rv->storage->debugobj( Baseliner::Schema::Profiler->new );
          $rv->storage->debug(1);

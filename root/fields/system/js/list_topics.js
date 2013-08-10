@@ -65,15 +65,13 @@ params:
             allowBlank: meta.allowBlank==undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true ),          
             store: topic_box_store,
             disabled: meta ? meta.readonly : true,
+            value: topics,
             singleMode: meta.single_mode == 'false' || !meta.single_mode ? false : true
         });
         
-        topic_box_store.on('load',function(){
-            topic_box.setValue(topics) ;            
-        });
-
         if( meta.copy_fields ) {
             topic_box.on( 'additem', function(sb,val,rec){
+                if( topic_box.getValue() == topics ) return;
                 var rec_data = rec.json.data;
                 if( !rec_data ) return;
 
@@ -91,8 +89,12 @@ params:
                     var fdata = rec_data[ from_field ];
                     //console.log( [from_field,to_field,fdata].join('\n') );
                     if( fdata == undefined ) return;
-                    var ff = form.findField( to_field );
+                    var ff = $(form.el.dom).find('[name="'+to_field+'"]');
+                    ff = Ext.getCmp( ff.attr('id') );
+
+                    //var ff = form.findField( to_field ); // this wont find fields within tbar
                     if( ff ) ff.setValue( fdata );
+                    //if( ff ) ff.val( fdata ); // this does not fire the setValue()
                 });
             });
         }

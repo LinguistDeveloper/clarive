@@ -1,5 +1,17 @@
 /* Last css to be executed by Baseliner */
 
+#boot .topictag {
+    font-size: 9px;
+    font-family: Arial, Helvetica;
+    background: #998; /* 2c3e50; */
+    color: #fff;
+    padding: 2px 4px 2px 4px;
+    margin-left: 5px;
+}
+
+.x-tool-tabify{background-position:0 -75px;}
+.x-tool-tabify-over{background-position:-15px -75px;}
+
 .x-grid3-body .x-grid3-td-checker {
     background: none repeat-y scroll right center transparent;
 }
@@ -44,7 +56,7 @@
 }
 
 .bali-topic-editor-image {
-	width: 100%;
+	/* width: 100%; */
 }
 
 .bali-topic-status {

@@ -15,7 +15,7 @@ params:
     var meta = params.topic_meta;
     var data = params.topic_data;
     
-    var value = data[ meta.bd_field ] || meta.default_value ;
+    var value = data[ meta.bd_field ] || meta.default_value || '';
     var options = meta[ 'options' ];
     
     var pills = new Baseliner.Pills({

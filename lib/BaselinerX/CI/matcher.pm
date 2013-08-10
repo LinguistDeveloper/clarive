@@ -32,8 +32,8 @@ sub parse {
     _debug ( _loc "Matcher scanning file %1...", $file );
     
     # TODO allow for more options, to run just %+ (run once) and %- (keep last)
-    my %tree;
-    my @found;
+
+    my $tree = [];
     my $path_mode = $self->parse_type =~ /Path/i;
     my $has_match = 0;
     if( $path_mode ) {
@@ -53,24 +53,25 @@ sub parse {
     }
 
     _debug _loc "%1 has match? %2", $file, $has_match;
+
     if( $has_match ) {
         $item->save;
         for my $topic ( _array $self->topics ) {
-            DB->BaliMasterRel->create({ from_mid=>$topic->mid, to_mid=>$item->mid, rel_type=>'topic_item' });
+            push @$tree, { tag => $topic->moniker };
+            #DB->BaliMasterRel->update_or_create({ from_mid=>$topic->mid, to_mid=>$item->mid, rel_type=>'topic_item' });
         }
         for my $ci ( _array $self->cis ) {
-            my $coll = $ci->collection || 'ci';
-            DB->BaliMasterRel->create({ from_mid=>$ci->mid, to_mid=>$item->mid, rel_type=> $coll . '_item' });
+            push @$tree, { tag => $ci->moniker };
+            #my $coll = $ci->collection || 'ci';
+            #DB->BaliMasterRel->update_or_create({ from_mid=>$ci->mid, to_mid=>$item->mid, rel_type=> $coll . '_item' });
         }
+        Baseliner->cache_clear;
     }
 
-    _log \%tree ;
-    
-    if( %tree ) {
-        $item->{parse_tree} ||= [];
-        push @{ $item->{parse_tree} } => @found;
-        #$item->{parse_tree} = { %{ $item->{parse_tree} || {} }, %tree };
-        return \%tree;
+    if( @$tree ) {
+        $tree = $self->process_item_tree( $item, $tree ); 
+        $tree = $item->add_parse_tree( $tree );
+        return $tree;
     } else {
         return { msg=>'not found' };
     }

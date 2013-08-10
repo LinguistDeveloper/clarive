@@ -237,23 +237,28 @@ sub update : Local {
             my $row = $c->model('Baseliner::BaliUser')->search({username => $p->{username}, active => 1})->first;
             if(!$row){
                 my $user_mid;
-                my $user;
-                $user_mid = master_new 'user' => $p->{username} => sub {
-                    my $mid = shift;
-                    
-                    $user = Baseliner->model('Baseliner::BaliUser')->create(
-                        {
-                            mid			=> $mid,
-                            username    => $p->{username},
-                            realname  	=> $p->{realname},
-                            password	=> $c->model('Users')->encrypt_password ( $p->{username}, $p->{pass} ),
-                            alias	=> $p->{alias},
-                            email	=> $p->{email},
-                            phone	=> $p->{phone}
-                        }
-                    );
+               
+                my $ci_class_user = 'user';
+                $ci_class_user = 'BaselinerX::CI::' . $ci_class_user;
+                
+                my $ci_master = {
+                    name 		=> $p->{username},
+                    bl 			=> '*',
                 };
-                $c->stash->{json} = { msg=>_loc('User added'), success=>\1, user_id=> $user->mid };
+                
+                my $ci_data = {
+                    username	=> $p->{username},
+                    realname  	=> $p->{realname},
+                    alias       => $p->{alias},
+                    email     	=> $p->{email},
+                    phone      	=> $p->{phone},            
+                    active 		=> '1',
+                    password    => $c->model('Users')->encrypt_password( $p->{username}, $p->{pass} )
+                };           
+                
+                $user_mid = $ci_class_user->save( %$ci_master, data => $ci_data );
+                $c->stash->{json} = { msg=>_loc('User added'), success=>\1, user_id=> $user_mid };
+                
             }else{
                 $c->stash->{json} = { msg=>_loc('User name already exists, introduce another user name'), failure=>\1 };
             }
@@ -268,11 +273,9 @@ sub update : Local {
             if ($type_save eq 'user') {
                 my $user = $c->model('Baseliner::BaliUser')->find( $p->{id} );
                 my $old_username = $user->username;
-                #my $swDo = 1;
                 if ($old_username ne $p->{username}){
                     my $row = $c->model('Baseliner::BaliUser')->search({username => $p->{username}, active => 1})->first;
                     if ($row) {
-                        #$swDo = 0;
                         $c->stash->{json} = { msg=>_loc('User name already exists, introduce another user name'), failure=>\1 };    
                     }else{
                         my $user_mid;
@@ -321,26 +324,7 @@ sub update : Local {
                 
                 $c->stash->{json} = { msg=>_loc('User modified'), success=>\1, user_id=> $p->{id} };
                 
-                ###if ( $swDo ){
-                ###    ##BaliRoleUser
-                ###    my $rs_role_user = $c->model('Baseliner::BaliRoleUser')->search({username => $old_username });
-                ###    $rs_role_user->update( {username => $p->{username}} );
-                ###    ##Master
-                ###    my $row_master = $c->model('Baseliner::BaliMaster')->find({mid => $user->mid });
-                ###    $row_master->name( $p->{username} );
-                ###    $row_master->update();
-                ###    ##BaliUser
-                ###    $user->username( $p->{username} );
-                ###    $user->realname( $p->{realname} );
-                ###    if($p->{pass} ne ''){
-                ###        $user->password( $c->model('Users')->encrypt_password( $p->{pass}, $user_key ));
-                ###    }
-                ###    $user->alias( $p->{alias} );
-                ###    $user->email( $p->{email} );
-                ###    $user->phone( $p->{phone} );                      
-                ###    $user->update();
-                ###    
-                ###}
+
             }
             else{
                 tratar_proyectos($c, $p->{username}, $roles_checked, $projects_checked);

@@ -16,6 +16,10 @@ sub new {
     } elsif( @_ == 1 && is_number( $_[0] ) ) {   # mid! a CI!
         local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
         my $rec = Baseliner::Role::CI->load( $_[0] );
+        if( $Baseliner::CI::_record_only ) {
+            delete $rec->{yaml};
+            return $rec;
+        }
         my $ci_class = $rec->{ci_class}; 
         # instantiate
         my $obj = $ci_class->new( $rec );
@@ -24,6 +28,12 @@ sub new {
             delete $rec->{yaml}; # lots of useless data
             $obj->{_ci} = $rec; 
             $obj->{_ci}{ci_icon} = $obj->icon;
+        }
+        if( $Baseliner::CI::_merge_record ) {
+            my $_ci = delete $obj->{_ci};
+            if( ref $_ci eq 'HASH' ) { 
+                $obj->{$_} //= $_ci->{$_} for keys %$_ci;
+            }
         }
 
         return $obj;

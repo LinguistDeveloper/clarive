@@ -14,7 +14,7 @@ params:
 (function(params){
 	var meta = params.topic_meta;
 	var data = params.topic_data;
-	
+    var form = params.form;
 	var ff;
     ff = params.form.getForm();
 	var obj_topic_mid = ff .findField("topic_mid");
@@ -142,7 +142,6 @@ params:
                 '<ul class="qq-upload-list"></ul>' + 
              '</div>',
             onComplete: function(fu, filename, res){
-                //Baseliner.message(_('Upload File'), _('File %1 uploaded ok', filename) );
                 Baseliner.message(_('Upload File'), _(res.msg, filename) );
                 if(res.file_uploaded_mid){
                     var form2 = params.form.getForm();
@@ -160,7 +159,28 @@ params:
                 }
             },
             onSubmit: function(id, filename){
-				uploader.setParams({topic_mid: data ? data.topic_mid : obj_topic_mid.getValue(), filter: meta.id_field });
+                var mid = data && data.topic_mid ? data.topic_mid : obj_topic_mid.getValue();
+                var config_parms = function(mid) { uploader.setParams({topic_mid: mid, filter: meta.id_field }); };
+                if( mid == undefined || mid<0 ) {
+                    Ext.Msg.confirm( _('Confirmation'), _('To upload files, the form needs to be created. Save form before submitting?'),
+                        function(btn){ 
+                            if(btn=='yes') {
+                                form.main.save_topic({ success: function(res){
+                                    // resubmit form hack
+                                    config_parms(res.topic_mid);
+                                    var fc = uploader._handler._files[0];
+                                    var id = uploader._handler.add(fc);
+                                    var fileName = uploader._handler.getName(id);
+                                    uploader._onSubmit(id, fileName);
+                                    uploader._handler.upload(id, uploader._options.params);
+                                }});
+                            };
+                        }
+                    );
+                    return false;
+                } else {
+                    config_parms(mid);
+                }
             },
             onProgress: function(id, filename, loaded, total){},
             onCancel: function(id, filename){ },

@@ -23,6 +23,10 @@ Baseliner.loadFile = function(filename, filetype){
        document.getElementsByTagName("head")[0].appendChild(fileref)
 };
 
+Baseliner.require = function(url, cb){
+    require([url + '?' + Date.now()], cb );
+};
+
 // In-edit counter - keep the window for closing if it's more than > 0
 Baseliner.is_in_edit = function(){
     var flag = false;
@@ -66,6 +70,7 @@ Baseliner.js_reload = function() {
     Baseliner.loadFile( '/site/model.js', 'js' );
     Baseliner.loadFile( '/site/explorer.js', 'js' ); 
     Baseliner.loadFile( '/site/editors.js', 'js' ); 
+    Baseliner.loadFile( '/site/graph.js', 'js' );
     Baseliner.loadFile( '/site/portal/Portal.js', 'js' );
     Baseliner.loadFile( '/site/portal/Portlet.js', 'js' );
     Baseliner.loadFile( '/site/portal/PortalColumn.js', 'js' );
@@ -381,68 +386,6 @@ Baseliner.render_bytes = function(value,metadata,rec,rowIndex,colIndex,store) {
     return Baseliner.byte_format( value );
 }
 
-/*
-    parameters:
-         {
-            mid:
-            category_name:
-            category_color: 
-            category_icon:
-            is_changeset: 1|0
-            is_release: 1|0
-         }
-*/
-Baseliner.topic_name = function(args) {
-        var mid = args.mid; //Cambiarlo en un futuro por un contador de categorias
-        if( ! mid ) 
-            mid = args.topic_mid; 
-        if( mid )
-            mid = '#' + mid;
-        else
-		    mid = '';
-        var cat_name = _(args.category_name); //Cambiarlo en un futuro por un contador de categorias
-        if( cat_name )
-            cat_name = cat_name + ' ';
-        else
-            cat_name = ''
-        var color = args.category_color;
-        var cls = 'label';
-        var icon = args.category_icon;
-        var size = args.size ? args.size : '10';
-
-        var top,bot,img;
-        top=2, bot=4, img=2;
-
-        if( ! color ) 
-            color = '#999';
-
-        // set default icons
-        if( icon==undefined ) {
-            if( args.is_changeset > 0  ) {
-                icon = '/static/images/icons/package-white.png';
-            }
-            else if( args.is_release > 0  ) {
-                icon = '/static/images/icons/release-white.png';
-            }
-        }
-
-        // prepare icon background
-        var style_str;
-        if( icon && ! args.mini ) {
-            style_str = "padding:{2}px 8px {3}px 18px;background: {0} url('{1}') no-repeat left {4}px; font-size: {5}px";
-        }
-        else {
-            style_str = "padding:{2}px 8px {3}px 8px;background-color: {0}; font-size: {5}px";
-        }
-        var style = String.format( style_str, color, icon, top, bot, img, size );
-        //if( color == undefined ) color = '#777';
-
-        var ret = args.mini 
-            ? String.format('<span id="boot" style="background: transparent"><span class="{0}" style="{1};padding: 1px 1px 1px 1px; margin: 0px 4px -10px 0px;border-radius:0px">&nbsp;</span><span style="font-weight:bolder;font-size:11px">{2}{3}</span></span>', cls, [style,args.style].join(';'), cat_name, mid )
-            : String.format('<span id="boot"><span class="{0}" style="{1}">{2}{3}</span></span>', cls, [style,args.style].join(';'), cat_name, mid );
-        return ret;
-};
-
 
 //return String.format('<a href="javascript:Baseliner.show_ci({3})">{2}</a>', mid, value );
 
@@ -645,39 +588,21 @@ Baseliner.ArrayGrid = Ext.extend( Ext.grid.EditorGridPanel, {
     initComponent: function(){
         var self = this;
         self.store = new Ext.data.SimpleStore({ fields:[ self.name ] });
-        self.store.on('beforeaction', function(){ self.write_to_field()  });
-        self.store.on('create', function(){ self.write_to_field()  });
-        self.store.on('remove', function(){ self.write_to_field()  });
-        self.store.on('update', function(){ self.write_to_field() } );
+        self.store.on('beforeaction', self.update_fields, self);
+        self.store.on('create', self.update_fields, self);
+        self.store.on('remove', self.update_fields, self);
+        self.store.on('update', self.update_fields, self);
         if( self.description == undefined ) self.description = '';
         self.fieldset = new Ext.Container({ hidden: false });
-        self.fdata_factory = function(arr) {
-            var fields = [];
-            Ext.each( arr, function(v) {
-                fields.push( new Ext.form.Hidden({ hidden: false, name: self.name, value: v, allowBlank: 1 }) );
-            });
-            return fields;
-        };
         if( self.value != undefined ) {
-            try {
-                // if it's an Array or Hash
-                if( Ext.isArray( self.value ) ) {
-                    for( var x=0; x < self.value.length ; x++ ) {
-                        self.push_item( x, self.name, self.value[ x ] ); 
-                    }
-                    // save 
-                    self.fieldset.add( self.fdata_factory( self.value ) );
-                } else if( self.value.length > 0 ) {  // just one element
-                    self.push_item( 0, self.name, self.value ); 
-                    self.fieldset.add( self.fdata_factory([ self.value ]) );
-                }
-            } catch(e) {}
+            if( Ext.isString( self.value ) ) self.value = [self.value];
+            Ext.each( self.value, function(v){
+                self.push_item( self.name, v ); 
+            });
+            self.update_fields();
         }
         
-        self.viewConfig = {
-            scrollOffset: 2,
-            forceFit: true
-        };
+        self.viewConfig = { scrollOffset: 2, forceFit: true };
         self.cm = new Ext.grid.ColumnModel([{
             dataIndex: self.name,
             width: '100%',
@@ -688,31 +613,13 @@ Baseliner.ArrayGrid = Ext.extend( Ext.grid.EditorGridPanel, {
                 renderer: function(v) {  return "a" }
             })
         }]);
-        self.sm = (function () {
-            var rsm = new Ext.grid.RowSelectionModel({
-                singleSelect: true
-            });
-            rsm.addListener('rowselect', function () {
-                var __record = rsm.getSelected();
-                return __record;
-            });
-            return rsm;
-        })();
+        self.sm = new Ext.grid.RowSelectionModel({ singleSelect: true });
         self.tbar = [{
                 text: _('Add'),
                 icon: '/static/images/drop-add.gif',
                 cls: 'x-btn-text-icon',
                 handler: function () {
-                    var ___record = Ext.data.Record.create([{
-                        name: self.name,
-                        type: 'string'
-                    }]);
-                    var h = {};
-                    h[ self.name ] = _( self.default_value );
-                    var p = new ___record( h );
-                    //fgrid.stopEditing();
-                    self.store.add(p);
-                    //fgrid.startEditing(0, 0);
+                    self.push_item( self.name, self.default_value );
                 }
             }, {
                 text: _('Delete'),
@@ -727,7 +634,7 @@ Baseliner.ArrayGrid = Ext.extend( Ext.grid.EditorGridPanel, {
             }, self.fieldset, '->', self.description ];
         Baseliner.ArrayGrid.superclass.initComponent.call( this );
     },
-    push_item : function( i, f, v ) {
+    push_item : function( f, v ) {
         var self = this;
         var rr = new Ext.data.Record.create([{
             name: f,
@@ -736,18 +643,30 @@ Baseliner.ArrayGrid = Ext.extend( Ext.grid.EditorGridPanel, {
         var h = {}; 
         h[ self.name ] = v;
         // put it in the grid store
-        self.store.insert( i, new rr( h ) );
+        //fgrid.stopEditing();
+        self.store.add( new rr( h ) );
+        //fgrid.startEditing(0, 0);
         self.store.commitChanges();
     },
-    write_to_field : function () {
+    update_fields : function () {
         var self = this;
-        var arr = new Array();
+        var arr = [];
         self.store.each( function(r) {
             arr.push( r.data[ self.name ] );
         });
         self.fieldset.removeAll();
-        self.fieldset.add( self.fdata_factory( arr ) );
-        self.fieldset.doLayout();
+        if( arr.length > 0 ) {
+            var fields = [];
+            Ext.each( arr, function(v) {
+                fields.push( new Ext.form.Hidden({ hidden: false, name: self.name, value: v, allowBlank: self.allowBlank || true }) );
+            });
+            self.fieldset.add( fields );
+            self.fieldset.doLayout();
+        }
+        self.raw_value = arr;
+    }, 
+    getValue : function() {
+        return self.raw_value;
     }
 });
 
@@ -1288,212 +1207,6 @@ Baseliner.show_ci = function( mid ) {
     Baseliner.add_tabcomp( '/ci/edit', null, { load: true, mid: mid } );
 };
 
-Baseliner.JitTree = function(c){
-    var self = this;
-    Baseliner.JitTree.superclass.constructor.call( this, Ext.apply( {
-        layout: 'fit' ,
-        bodyCfg: { style:{ 'background-color':'#111' } }
-    }, c ) );
-
-    self.on( 'afterrender', function(cont){
-        setTimeout( function(){
-            do_tree( self.body );
-        }, 500);
-    });
-    
-    var do_tree = function( el ) {
-        var json = {id:"node02", name:"0.2", data:{},
-                children:[{id:"node13", name:"1.3", data:{},
-                children:[{id:"node24", name:"2.4", data:{}, children:[]}]}]};
-        json = [
-            { "id": "1", "name": "1", "adjacencies": [
-                    { "nodeTo": "2", "data": { "$direction": ["1", "2"] } },
-                    { "nodeTo": "3", "data": { "$direction": ["1", "3"] } }
-                ]
-            },
-            { "id": "2", "name": "2", "adjacencies": [
-                    { "nodeTo": "4", "data": { "$direction": ["2", "4"] } }
-                ]
-            },
-            { "id": "3", "name": "3", "adjacencies": [
-                    { "nodeTo": "4", "data": { "$direction": ["3", "4"] } }
-                ]
-            },
-            { "id": "4", "name": "4", "adjacencies": [
-                    { "nodeTo": "2", "data": { "$direction": ["2", "4"] } },
-                    { "nodeTo": "3", "data": { "$direction": ["3", "4"] } }
-                ]
-            }
-        ];
-        //A client-side tree generator
-        var getTree = (function() {
-            var i = 0;
-            return function(nodeId, level) {
-                var json_str = Ext.util.JSON.encode( json );
-                var subtree = eval('(' + json_str.replace(/id:\"([a-zA-Z0-9]+)\"/g, 
-                            function(all, match) {
-                                return "id:\"" + match + "_" + i + "\""  
-                            }) + ')');
-                $jit.json.prune(subtree, level); i++;
-                return {
-                    'id': nodeId,
-                    'children': subtree.children
-                };
-            };
-        })();
-    
-
-        //Implement a node rendering function called 'nodeline' that plots a straight line
-        //when contracting or expanding a subtree.
-        $jit.ST.Plot.NodeTypes.implement({
-            'nodeline': {
-              'render': function(node, canvas, animating) {
-                    if(animating === 'expand' || animating === 'contract') {
-                      var pos = node.pos.getc(true), nconfig = this.node, data = node.data;
-                      var width  = nconfig.width, height = nconfig.height;
-                      var algnPos = this.getAlignedPos(pos, width, height);
-                      var ctx = canvas.getCtx();
-                      var ort = 'top';
-                      ctx.beginPath();
-                      if(ort == 'left' || ort == 'right') {
-                          ctx.moveTo(algnPos.x, algnPos.y + height / 2);
-                          ctx.lineTo(algnPos.x + width, algnPos.y + height / 2);
-                      } else {
-                          ctx.moveTo(algnPos.x + width / 2, algnPos.y);
-                          ctx.lineTo(algnPos.x + width / 2, algnPos.y + height);
-                      }
-                      ctx.stroke();
-                  } 
-              }
-            }
-              
-        });
-
-        //init Spacetree
-        //Create a new ST instance
-        //alert( self.body.getHeight() );
-        //console.log( self.body );
-
-        var st = new $jit.ST({
-            'injectInto': el.id,
-            height: el.getHeight(),
-            //set duration for the animation
-            duration: 500,
-            //set animation transition type
-            transition: $jit.Trans.Quart.easeInOut,
-            //set distance between node and its children
-            levelDistance: 50,
-            //set max levels to show. Useful when used with
-            //the request method for requesting trees of specific depth
-            levelsToShow: 2,
-            //set node and edge styles
-            //set overridable=true for styling individual
-            //nodes or edges
-            Node: {
-                height: 20,
-                width: 40,
-                //use a custom
-                //node rendering function
-                type: 'nodeline',
-                color:'#23A4FF',
-                lineWidth: 2,
-                align:"center",
-                overridable: true
-            },
-            
-            Edge: {
-                type: 'bezier',
-                lineWidth: 2,
-                color:'#23A4FF',
-                overridable: true
-            },
-            
-            //Add a request method for requesting on-demand json trees. 
-            //This method gets called when a node
-            //is clicked and its subtree has a smaller depth
-            //than the one specified by the levelsToShow parameter.
-            //In that case a subtree is requested and is added to the dataset.
-            //This method is asynchronous, so you can make an Ajax request for that
-            //subtree and then handle it to the onComplete callback.
-            //Here we just use a client-side tree generator (the getTree function).
-            request: function(nodeId, level, onComplete) {
-              var ans = getTree(nodeId, level);
-              onComplete.onComplete(nodeId, ans);  
-            },
-            
-            onBeforeCompute: function(node){
-               // Log.write("loading " + node.name);
-            },
-            
-            onAfterCompute: function(){
-                //Log.write("done");
-            },
-            
-            //This method is called on DOM label creation.
-            //Use this method to add event handlers and styles to
-            //your node.
-            onCreateLabel: function(label, node){
-                label.id = node.id;            
-                label.innerHTML = node.name;
-                label.onclick = function(){
-                    st.onClick(node.id);
-                };
-                //set label styles
-                var style = label.style;
-                style.width = 40 + 'px';
-                style.height = 17 + 'px';            
-                style.cursor = 'pointer';
-                style.color = '#fff';
-                //style.backgroundColor = '#1a1a1a';
-                style.fontSize = '0.8em';
-                style.textAlign= 'center';
-                style.textDecoration = 'underline';
-                style.paddingTop = '3px';
-            },
-            
-            //This method is called right before plotting
-            //a node. It's useful for changing an individual node
-            //style properties before plotting it.
-            //The data properties prefixed with a dollar
-            //sign will override the global node style properties.
-            onBeforePlotNode: function(node){
-                //add some color to the nodes in the path between the
-                //root node and the selected node.
-                if (node.selected) {
-                    node.data.$color = "#ff7";
-                }
-                else {
-                    delete node.data.$color;
-                }
-            },
-            
-            //This method is called right before plotting
-            //an edge. It's useful for changing an individual edge
-            //style properties before plotting it.
-            //Edge data proprties prefixed with a dollar sign will
-            //override the Edge global style properties.
-            onBeforePlotLine: function(adj){
-                if (adj.nodeFrom.selected && adj.nodeTo.selected) {
-                    adj.data.$color = "#eed";
-                    adj.data.$lineWidth = 3;
-                }
-                else {
-                    delete adj.data.$color;
-                    delete adj.data.$lineWidth;
-                }
-            }
-        });
-        //load json data
-        st.loadJSON( json );
-        //compute node positions and layout
-        st.compute();
-        //emulate a click on the root node.
-        st.onClick(st.root);
-        //st.switchPosition('top', "animate", { });
-    };
-};
-Ext.extend( Baseliner.JitTree, Ext.Panel ); 
-
 function returnOpposite(hexcolor) {
     var r = parseInt(hexcolor.substr(0,2),16);
     var g = parseInt(hexcolor.substr(2,2),16);
@@ -1501,154 +1214,6 @@ function returnOpposite(hexcolor) {
     var yiq = ((r*299)+(g*587)+(b*114))/1000;
     return (yiq >= 128) ? '#000000' : '#FFFFFF';
 }    
-
-
-Baseliner.JitRGraph = function(c){
-    var self = this;
-    var json = c.json;
-
-    Baseliner.JitRGraph.superclass.constructor.call( this, Ext.apply( {
-        layout: 'fit' ,
-        bodyCfg: { style:{ 'background-color':'#fff' } }
-    }, c ) );
-
-    /*
-    self.on( 'afterrender', function(cont){
-        setTimeout( function(){
-            do_tree( self.body );
-        }, 500);
-    });
-    */
-
-    self.on( 'resize', function(panel,w,h,rw,rh){
-        //if( self._resize ) self._resize( args ); 
-        self.body.update('');
-        do_tree( self.body ); 
-    });
-
-    self.images = {}; // indexed by mid
-
-    $jit.RGraph.Plot.NodeTypes.implement({
-       'icon': {
-           'render': function(node, canvas) { 
-               var ctx = canvas.getCtx(); 
-               var pos = node.getPos().getc(); 
-               var img = self.images[ node.id ];
-               if( !img ) { 
-                   img = new Image(); 
-                   img.src = node.data.icon;
-                   self.images[ node.id ] = img;
-               }
-               //img.onload = function(){ 
-               ctx.drawImage(img, pos.x-8, pos.y-8 );
-               //} 
-           },
-           'contains': function(node, pos) { 
-                var npos = node.pos.getc(true), 
-                    dim = node.getData('dim'); 
-                    return this.nodeHelper.square.contains(npos, pos, dim); 
-           } 
-       } 
-    });
-    
-    var do_tree = function( el ) {
-        var rgraph = new $jit.RGraph({
-            //Where to append the visualization
-            injectInto: el.id,
-            //Optional: create a background canvas that plots
-            //concentric circles.
-            background: {
-              CanvasStyles: {
-                strokeStyle: '#bbb'
-              }
-            },
-            //Add navigation capabilities:
-            //zooming by scrolling and panning.
-            Navigation: {
-              enable: true,
-              panning: true,
-              zooming: 20
-            },
-            //Set Node and Edge styles.
-            Node: {
-                type: 'icon',
-                color: '#ddeeff'
-            },
-            
-            Edge: {
-              color: '#C17878',
-              lineWidth:1.5
-            },
-
-            onBeforeCompute: function(node){
-                //Log.write("centering " + node.name + "...");
-                //Add the relation list in the right column.
-                //This list is taken from the data property of each JSON node.
-                //$jit.id('inner-details').innerHTML = node.data.relation;
-            },
-            
-            //Add the name of the node in the correponding label
-            //and a click handler to move the graph.
-            //This method is called once, on label creation.
-            onCreateLabel: function(domElement, node){
-                domElement.innerHTML = node.name;
-                domElement.onclick = function(){
-                    rgraph.onClick(node.id, {
-                        onComplete: function() {
-                            //Log.write("done");
-                        }
-                    });
-                };
-            },
-            //Change some label dom properties.
-            //This method is called each time a label is plotted.
-            onPlaceLabel: function(domElement, node){
-                var style = domElement.style;
-                style.display = '';
-                style.cursor = 'pointer';
-                var d = node.data;
-                var icon = d.icon;
-
-                if (node._depth <= 1) {
-                    style.fontSize = "0.8em";
-                    style.color = "#111";
-                
-                } else {
-                    style.fontSize = "0.7em";
-                    style.color = "#333";
-                    //style['margin-top'] = '20px'; 
-                } 
-                //else {
-                   // style.display = 'none';
-                //}
-
-                //console.log( node );
-                //style.background = String.format("#fff url('{0}') no-repeat", icon );
-
-                var left = parseInt(style.left);
-                var w = domElement.offsetWidth;
-                style.left = (left - w / 2) + 'px';
-
-                var top = parseInt(style.top);
-                var h = domElement.offsetHeight;
-                style.top = (top - h / 2 + 15)  + 'px';
-            }
-        });
-        //load JSON data
-        rgraph.loadJSON(json);
-        //trigger small animation
-        /* rgraph.graph.eachNode(function(n) {
-          var pos = n.getPos();
-          pos.setc(-200, -200);
-        }); */
-        rgraph.compute('end');
-        rgraph.fx.animate({
-          modes:['polar'],
-          duration: 500
-        });
-    }
-};
-Ext.extend( Baseliner.JitRGraph, Ext.Panel ); 
 
 Baseliner.loading_panel = function(msg){
     if( ! msg ) 
@@ -1684,11 +1249,19 @@ Baseliner.createRange = function(panel, id_cal, id, pdia, date) {
 }	
 
 Baseliner.Window = Ext.extend( Ext.Window, {
-    initComponent: function(){
-        Baseliner.Window.superclass.initComponent.call(this);
-    },
+    tabifiable: false,
     minimizable: true,
     maximizable: true,
+    initComponent: function(){
+        var self = this;
+        if( self.tabifiable ) {
+            self.addTool({
+                id: 'down',
+                handler: function(a,b,c){ self.tabify(a,b,c) }
+            });
+        }
+        Baseliner.Window.superclass.initComponent.call(this);
+    },
     minimize: function(){
         var self = this;
         if( Baseliner.main_toolbar ) {
@@ -1707,6 +1280,16 @@ Baseliner.Window = Ext.extend( Ext.Window, {
         }
         this.fireEvent('minimize', this);
         return this;
+    },
+    tabify : function(a,b,c){
+        var self = this;
+        var comp = self.items.items[0]; 
+        if( comp ) {
+            comp.title = null;
+            comp.header = false;
+            Baseliner.addNewTabItem( comp, self.title, {});
+            self.close();
+        }
     }
 });
 
@@ -2407,6 +1990,7 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
             allowBlank: true
         }); 
         self.ci_box.on('select', function(combo,rec,ix) {
+            if( combo.id != self.ci_box.id ) return; // strange bug: this event gets fired with TopicGrid and CIGrid in the same page
             self.add_to_grid( rec.data );
         });
         self.ddGroup = 'bali-grid-data-' + self.id;
@@ -2636,18 +2220,47 @@ Baseliner.CICheckBox = Ext.extend( Baseliner.CheckBoxField, {
 });
 
 Baseliner.run_service = function(params, service){
-    var mask = { xtype:'panel', items: Baseliner.loading_panel() };
-    var win = new Baseliner.Window({ width: 800, height: 400, layout:'fit', items:[ mask ], title: service.name });
+    var mask = { xtype:'panel', items: Baseliner.loading_panel(), flex: 1 };
+    var initial_data = Ext.apply( { timeout:0 }, service, params );
+    var deditor = new Baseliner.DataEditor({ data: initial_data, hide_cancel:true, hide_save:true });
+    var btn_run = new Ext.Button({ icon:'/static/images/icons/run.png', text:_('Run'), handler: function(){ 
+            btn_run.disable();
+            run_it( deditor.getData() );
+            win.removeAll();
+            win.add( mask );
+            win.doLayout();
+        } })
+    var run_it = function(data){
+        Baseliner.ajaxEval( '/ci/service_run', data, function(res){
+            btn_run.enable();
+            win.removeAll();
+            var tabp = new Ext.TabPanel({ activeTab:0 });
+            win.add( tabp );
+            if( !res.success ) {
+                tabp.add(new Baseliner.MonoTextArea({ title: 'Message', value: res.msg, style:'color:#f23' }) );
+                tabp.add(new Baseliner.MonoTextArea({ title: 'Console', value: res.console, style:'color:#f23' }) );
+                tabp.add(new Baseliner.MonoTextArea({ title: 'Log', value: res.log }) );
+            } else {
+                if( res.js_output ) {
+                    Baseliner.ajaxEval( res.js_output, { data: res.data }, function(comp){
+                        comp.title = _('Data');
+                        tabp.insert(0, comp );
+                        tabp.doLayout();
+                        win.doLayout();
+                        tabp.setActiveTab( comp );
+                    });
+                } else {
+                    tabp.add(new Baseliner.MonoTextArea({ title: 'Data', value: res.data }) );
+                }
+                tabp.add(new Baseliner.MonoTextArea({ title: 'Console', value: res.console }) );
+                tabp.add(new Baseliner.MonoTextArea({ title: 'Return', value: res.ret }) );
+            }
+            win.doLayout();
+        });
+    };
+    var tbar = [ btn_run ];
+    var win = new Baseliner.Window({ width: 800, tbar: tbar, height: 400, layout:'fit', items:[ deditor ], title: service.name });
     win.show();
-    Baseliner.ajaxEval( '/ci/service_run', Ext.apply( {}, service, params ), function(res){
-        win.removeAll();
-        if( !res.success ) {
-            win.add(new Baseliner.MonoTextArea({ value: res.msg, style:'color:#f23' }) );
-        } else {
-            win.add(new Baseliner.MonoTextArea({ value: res.ret }) );
-        }
-        win.doLayout();
-    });
 }
 
 // Simple JavaScript Templating
@@ -2686,6 +2299,7 @@ Baseliner.tmpl = function tmpl(str, data){
 
 Baseliner.Pills = Ext.extend(Ext.form.Field, {
     //shouldLayout: true,
+    value: '',
     initComponent : function(){
         Baseliner.Pills.superclass.initComponent.apply(this, arguments);
     },
@@ -2756,10 +2370,10 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
     },
     // These are all private overrides
     getValue: function(){
-        return this.value;
+        return this.value || '';
     },
     setValue: function( v ){
-        this.value = v;
+        this.value = v || '';
         this.redraw();
     },
     setSize : Ext.emptyFn,
@@ -2772,7 +2386,7 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
 });
 
 Baseliner.MonoTextArea = Ext.extend( Ext.form.TextArea, {
-    style: 'font-family: Consolas, Courier New, monotype'
+    style: 'font-size: 13px; font-family: Consolas, Courier New, monotype'
 });
     
 Baseliner.ComboSingle = Ext.extend( Ext.form.ComboBox, {
@@ -2783,7 +2397,7 @@ Baseliner.ComboSingle = Ext.extend( Ext.form.ComboBox, {
     anchor: '100%',
     forceSelection: true,
     allowBlank: false,
-    selectOnFocus: true,
+    selectOnFocus: false,
     initComponent: function(){
         var data = [];
         if( this.data ) {
@@ -2791,22 +2405,39 @@ Baseliner.ComboSingle = Ext.extend( Ext.form.ComboBox, {
                 data.push( [v] );
             });
         }
-        this.store = new Ext.data.ArrayStore({
-            fields: [ this.name ],
-            data : data 
-        });  
+        this.store = this.buildStore(data);
         var f = Ext.apply({
             name: this.name,
             fieldLabel: this.name,
-            valueField: this.name,
-            displayField: this.name,
-            value: data[0][0]
+            valueField: this.field || this.name,
+            displayField: this.field || this.name,
+            value: data.length>0 ? data[0][0] : null
         }, this);
         Ext.apply( this, f );
         Baseliner.ComboSingle.superclass.initComponent(this); 
+    },
+    buildStore : function(data){
+        return new Ext.data.ArrayStore({
+            fields: [ this.name ],
+            data : data 
+        });  
     }
 });
 
+Baseliner.ComboSingleRemote = Ext.extend( Baseliner.ComboSingle, {
+    mode: 'remote',
+    buildStore : function(){
+        return new Ext.data.JsonStore({
+            root: this.root || 'data', 
+            remoteSort: true,
+            totalProperty: this.totalProperty || 'totalCount', 
+            id: 'id', 
+            baseParams: {  start: 0, limit: this.ps || 99999999 },
+            url: this.url,
+            fields: this.fields || [ this.name ]
+        });  
+    }
+});
 // a hidden field that updates the store for a grid, used in list_topics
 Baseliner.HiddenGridField = Ext.extend( Ext.form.Hidden, {
     setValue : function(v) {
@@ -2819,3 +2450,216 @@ Baseliner.HiddenGridField = Ext.extend( Ext.form.Hidden, {
     }
 });
 
+Baseliner.field_label_top = function( label, hidden ) {
+    return [
+		{
+		  xtype: 'box',
+		  autoEl: {cn: '<br>' + _(label) + ':'},
+		  hidden: hidden!=undefined ? hidden : false
+		},
+		{
+		  xtype: 'box',
+		  autoEl: {cn: '<br>'},
+		  hidden: hidden!=undefined ? hidden : false
+		}
+    ]
+};
+
+Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
+    width: '100%',
+    height: 250,
+    enableDragDrop: true,
+    initComponent: function(){
+        var self = this;
+        /*
+        var groupRow = [
+            {colspan: 2},
+            {header: 'Datos Entrada', colspan: 2, align: 'center'},
+            {colspan: 2}
+        ];
+
+        var group = new Ext.ux.grid.ColumnHeaderGroup({
+            rows: [groupRow]
+        });
+        */
+        
+        var render_checkbox = function(v){
+            return v 
+                ? '<img src="/static/images/icons/checkbox.png">'
+                : '<img src="/static/images/icons/delete.gif">';
+        }
+        
+        self.sm = new Baseliner.RowSelectionModel({ singleSelect: true }); 
+        //var sm = new Baseliner.CheckboxSelectionModel({ checkOnly: true, singleSelect: false });
+        
+        var cols, fields;
+        var cols_templates = {
+              id : function(){ return {width: 10 } },
+              index : function(){ return {width: 10, renderer:function(v,m,r,i){return i+1} } },
+              htmleditor: function(){ return { editor: new Ext.form.HtmlEditor(), default_value:'' } },
+              cleditor: function(){ return { editor: new Baseliner.CLEditorField(), default_value:'' } },
+              textfield : function(){ return { width: 100, editor: new Ext.form.TextField({}), default_value:'' } },
+              checkbox  : function(){ return { align: 'center', width: 10, editor: new Ext.form.Checkbox({}), default_value:false, renderer: render_checkbox } },
+              textarea  : function(){ return { editor: new Ext.form.TextArea({}), default_value:'', renderer: Baseliner.render_wrap } }
+        };
+        if( self.columns != undefined ) {
+            cols=[]; fields=[];
+            var cc = Ext.isArray( self.columns ) ? self.columns : self.columns.split(';');
+            Ext.each( cc, function(col){
+                var ct;
+                if( Ext.isObject( col ) ) {
+                    ct = col;
+                } else {
+                    var col_s = col.split(',');
+                    if( col_s[0] == undefined ) return;
+                    ct = cols_templates[ col_s[1] ] || cols_templates['textarea'];
+                    ct = ct();
+                    ct.header = col_s[0];
+                    if( col_s[2] != undefined ) ct.width = col_s[2];
+                    ct.sortable = true;
+                    if( col_s[3] ) ct.default_value = col_s[3];
+                    ct.dataIndex = Baseliner.name_to_id( col_s[0] );
+                }
+                cols.push( ct );
+                fields.push( ct.dataIndex );
+            });
+        } else {
+            cols = [
+              {dataIndex: 'description', header: _('Description'), width: 100, editor: new Ext.form.TextArea({}) }
+            ];
+            fields = [
+                {name: 'description'}
+            ];
+        }
+        
+        // default record for adding
+        if( !Ext.isObject(self.default_record) ) {
+            var rec_default = {}; 
+            Ext.each( cols, function(col){
+                rec_default[ col.dataIndex ] = col.default_value || '';
+            });
+            self.default_record = rec_default;
+        } 
+
+        var reader = new Ext.data.JsonReader({
+            totalProperty: 'total',
+            successProperty: 'success',
+            idProperty: 'id',
+            fields: fields
+        });
+       
+        // records is JSON?
+        if( Ext.isString( self.records ) ) {
+            self.records_json = self.records;
+            self.records = Ext.decode( self.records );
+        } 
+        // now recheck
+        if( Ext.isArray(self.records) ) {
+            self.records_json = Ext.encode(self.records);
+        }
+        else {
+            self.records = [];
+            self.records_json = '[]';
+        }
+        self.store = new Ext.data.Store({
+            reader: reader,
+            data: self.records 
+        });
+        self.field_hidden = new Baseliner.HiddenGridField({ name: self.id_field, value: self.records_json, store: self.store });
+            
+        var button_add = new Baseliner.Grid.Buttons.Add({
+            text:'',
+            tooltip: _('Create'),
+            disabled: false,
+            handler: function() {
+                var u = new self.store.recordType( Ext.decode(Ext.encode(self.default_record)) );
+                var index = self.store.getCount();
+                editor.stopEditing();
+                self.store.insert(index, u);
+                self.getSelectionModel().selectRow(index);			
+                editor.startEditing(index);
+            }
+        });
+        
+        var button_delete = new Baseliner.Grid.Buttons.Delete({
+            text: '',
+            tooltip: _('Delete'),
+            cls: 'x-btn-icon',	
+            disabled: false,		
+            handler: function() {
+                var sm = self.getSelectionModel();
+                Ext.each( sm.getSelections(), function(r) {
+                    var index = self.store.indexOf(r);
+                    self.store.remove( r );
+                    var rows = Ext.util.JSON.decode( self.field_hidden.getValue());
+                    rows.splice(index, 1);
+                    self.field_hidden.setValue(Ext.util.JSON.encode( rows ));
+                    self.store.commitChanges();
+                    self.getView().refresh();
+                });
+            }
+        });
+        
+        // use RowEditor for editing
+        var editor = new Ext.ux.grid.RowEditor({
+            clicksToMoveEditor: 1,
+            autoCancel: false,
+            enableDragDrop: true, 
+            listeners: {
+                afteredit: function(roweditor, changes, record, rowIndex){
+                    self.store.commitChanges();
+                    delete record.data.id;
+                    var rows = Ext.util.JSON.decode(self.field_hidden.getValue());
+                    if( !Ext.isArray( rows ) ) rows = [];
+                    rows[rowIndex] = record.data;
+                    self.field_hidden.setRawValue(Ext.util.JSON.encode( rows ));
+                }
+            }		
+        });	
+        
+        self.columns = cols;
+        self.ddGroup = 'grid_editor_' + Ext.id();
+        self.plugins = [ editor ];
+        self.tbar = [
+            self.field_hidden,
+            button_add,
+            '-',
+            button_delete
+        ];
+
+        Baseliner.GridEditor.superclass.initComponent.call(this);
+
+        self.on( 'afterrender', function(){
+            //self.ddGroup = 'bali-grid-html-' + self.id;
+            var ddrow = new Baseliner.DropTarget(self.container, {
+                comp: self,
+                ddGroup : self.ddGroup,
+                copy: false,
+                notifyDrop : function(dd, e, data){
+                    var ds = self.store;
+                    var sm = self.getSelectionModel();
+                    var rows_grid = sm.getSelections();
+                    if(dd.getDragData(e)) {
+                        var rows = Ext.util.JSON.decode( self.field_hidden.getValue());
+                        var cindex=dd.getDragData(e).rowIndex;
+                        if(typeof(cindex) != "undefined") {
+                            for(i = 0; i <  rows_grid.length; i++) {
+                                var index = ds.indexOf(ds.getById(rows_grid[i].id));
+                                ds.remove(ds.getById(rows_grid[i].id));
+                                delete rows[index];
+                                self.field_hidden.setRawValue(Ext.util.JSON.encode( rows ));
+                                rows = Ext.util.JSON.decode( self.field_hidden.getValue());
+                                rows.splice(cindex, 0, rows_grid[i].data);
+                                self.field_hidden.setRawValue(Ext.util.JSON.encode( rows ));	
+                            }
+                            ds.insert(cindex,data.selections);
+                            sm.clearSelections();
+                        }
+                        ds.commitChanges();
+                        self.getView().refresh();	
+                    }
+                }
+            }); 
+        });
+    }
+});

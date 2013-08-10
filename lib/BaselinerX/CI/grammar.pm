@@ -13,6 +13,13 @@ has path_capture     => qw(is rw isa Str);
 
 service 'parse' => 'Parse a file' => \&parse;
 
+sub rest_grammars {
+    my ($self,$c,$p) = @_; 
+    my $grammars = Util->package_and_instance('lib/Baseliner/Parser/Grammar', 'grammar' );
+    my $data = [  values %$grammars ];
+    return { data=>$data, grammars=>$grammars }; 
+}
+
 sub parse {
     my ($self,$item) = @_; 
     my $file = $item->path; 
@@ -20,7 +27,9 @@ sub parse {
     my $tmout = $self->timeout;
     my $grammar = $self->grammar; 
     $grammar =~ s{\r\n}{\n}g;
-    Util->_fail( 'Grammar not found' ) unless $grammar;
+
+    Util->_fail( Util->_loc('Grammar not found in %1', $self->name) ) unless $grammar;
+
     my $rg = do {
         use Regexp::Grammars;
         eval "qr{
@@ -30,29 +39,13 @@ sub parse {
     
     if( $source =~ $rg ) {
         my $tree = { %/ };    
+
         if( my $root = [ keys %$tree ]->[0] ) {
-            $tree = $tree->{$root}; # delete root node 'grammar name'
-            # make sure we have our module name
-            my $module;
-            for my $entry ( Util->_array( $tree ) ) {
-                $module //= $entry->{module}; 
-            }
-            my $ext = $item->extension;
-            # determine module name 
-            if( ! defined $module ) {
-                $module = $item->basename;
-                if( my $fb = $self->path_capture ) {
-                    $module = $+{module} if $item->path =~ qr/$fb/ && length $+{module};
-                } else {
-                    $module = $item->moniker // $item->basename;
-                }
-                push @$tree => { module=>$module  };
-            }
-            $item->{parse_tree} = $tree;
-            #my $ret = {};
-            #$self->collect_vars( $tree, $ret );
-            return $tree;
+            $tree = $tree->{$root} || []; # delete root node 'grammar name'
         }
+        $tree = $self->process_item_tree( $item, $tree ); 
+        $tree = $item->add_parse_tree( $tree );
+        return $tree;
     } else {
         return { msg=>'not found' };
     }

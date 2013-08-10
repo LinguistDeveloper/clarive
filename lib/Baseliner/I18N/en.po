@@ -69,25 +69,25 @@ msgid "Tarea"
 msgstr "Task"
 
 msgid "Solicitud IT"
-msgstr "IT request"
+msgstr "IT Request"
 
 msgid "Entrega"
 msgstr "Sprint"
 
 msgid "Caso de Prueba"
-msgstr "Test case"
+msgstr "Test Case"
 
 msgid "Funcionalidad"
 msgstr "Functionality"
 
 msgid "Petición Especial"
-msgstr "Special request"
+msgstr "Special Request"
 
 msgid "Plan de Pruebas"
-msgstr "Test plan"
+msgstr "Test Plan"
 
 msgid "Cambio BD"
-msgstr "DB change"
+msgstr "DB Change"
 
 msgid "Defecto"
 msgstr "Defect"
@@ -186,7 +186,7 @@ msgid "Bugs"
 msgstr "Bugs"
 
 msgid "Casos de Prueba"
-msgstr "Test cases"
+msgstr "Test Cases"
 
 msgid "Funcionalidades"
 msgstr "Functionalities"
@@ -195,7 +195,7 @@ msgid "Documentos"
 msgstr "Documents"
 
 msgid "Planes_de_pruebas"
-msgstr "Test plans"
+msgstr "Test Plans"
 
 msgid "Solicitudes"
 msgstr "Requests"
@@ -216,7 +216,7 @@ msgid "Repositorios"
 msgstr "Repositories"
 
 msgid "Planes de pruebas"
-msgstr "Test plans"
+msgstr "Test Plans"
 
 msgid "Seguimiento de proyecto"
 msgstr "Project tracking"

@@ -161,6 +161,8 @@ use Term::ANSIColor;
 use strict;
 
 BEGIN {
+    # enable a TO_JSON converter
+    sub DateTime::TO_JSON  {  $_[0] . '' };
     # include all features I18N files
 eval <<"";
     package Baseliner::Utils::I18N;
@@ -350,7 +352,8 @@ sub _error {
 
 #TODO check that global DEBUG flag is active
 sub _debug {
-    my ($cl,$fi,$li) = caller(0);
+    my $cal = $_[0] < 0 ? shift : 0;
+    my ($cl,$fi,$li) = caller( -$cal );
     return unless Baseliner->debug;
     _log_me( 'debug', $cl,$fi,$li,@_);
 }
@@ -556,6 +559,10 @@ sub is_number {
     return $_[0] =~ /^(?=[-+.]*\d)[-+]?\d*\.?\d*(?:e[-+ ]?\d+)?$/i;
 }
 
+sub is_int {
+    return $_[0] =~ /^\d+$/;
+}
+
 sub _trim {
     my $str = shift;
     $str =~ s{^\s*}{}g;
@@ -711,6 +718,11 @@ sub _tmp_file {
     return $file;
 }
 
+sub _unbless {
+    require Data::Structure::Util;
+    Data::Structure::Util::unbless( @_ );
+}
+
 sub _damn {
     my $blessed = shift;
     my $damned;
@@ -833,6 +845,30 @@ sub query_sql_build {
         ( @ors ? [ -or => \@ors ] : () ),
         ( map { \[ "trim($col) LIKE '%'||?||'%' ", [ value => substr($_,1) ] ] } @terms_plus ),
         ( map { \[ "trim($col) NOT LIKE '%'||?||'%' ", [ value => substr($_,1) ] ] } @terms_minus )
+    ];
+    return $where;
+}
+
+sub build_master_search {
+    my (%p) = @_;
+    return {} unless $p{query};
+    my $query = $p{query};
+    my $where = {};
+    $query =~ s{\*}{%}g;
+    $query =~ s{\?}{_}g;
+    # take care of keeping quoted terms together
+    my $no_spaces = sub{ (my$r=$_[0])=~ s/\s+//g; $r };  # quote terms cannot have spaces, so that they don't get splited on term split
+    $query =~ s/"(.*?)"/$no_spaces->($1)/eg;   
+    my @terms = grep { defined($_) && length($_) } map { Util->_unac($_) } split /\s+/, lc $query; # split terms and all lowercase 
+    my $clean_terms = sub { s/[^\w|:|,|-]//g for @_; @_  };  # terms can only have a few special chars
+    my @terms_normal = $clean_terms->(  grep(!/^\+|^\-/,@terms) ); # ORed
+    my @terms_plus = $clean_terms->( grep(/^\+/,@terms) ); # ANDed
+    my @terms_minus = $clean_terms->(  grep(/^\-/,@terms) ); # NOTed
+    my @ors = map { \[ " EXISTS (select 1 from bali_master_search ss where ss.mid=me.mid and ss.search_data LIKE ? ) ", '%'.$_.'%' ] } @terms_normal;
+    $where->{'-and'} = [
+        ( @ors ? [ -or => \@ors ] : () ),
+        ( map { \[ " EXISTS (select 1 from bali_master_search ss where ss.mid=me.mid and ss.search_data LIKE ? ) ", '%'.$_.'%' ] } @terms_plus ),
+        ( map { \[ " NOT EXISTS (select 1 from bali_master_search ss where ss.mid=me.mid and ss.search_data LIKE ? ) ", '%'.$_.'%' ] } @terms_minus ),
     ];
     return $where;
 }
@@ -1185,8 +1221,10 @@ sub _size_unit {
 }
 
 sub _dbis {
+    my( $model ) = @_;
+    $model ||= 'Baseliner';
     require DBIx::Simple;
-    return DBIx::Simple->connect( Baseliner->model('Baseliner')->storage->dbh );
+    return DBIx::Simple->connect( Baseliner->model($model)->storage->dbh );
 }
 
 =head2 _hook
@@ -1255,6 +1293,16 @@ sub _package_is_loaded {
     exists $INC{ $cl };
 }
 
+sub _reload_file {
+    my ($file) = @_;
+    $file = Baseliner->path_to($file) if !-e "$file";
+    local $SIG{__WARN__} = sub{};
+    do "$file";
+    if( $@ ) {
+        _fail( _loc('Error while reloading %1: %2', $file, $@ ) );
+    }
+}
+
 sub _reload_dir {
     my ($dir, $pattern) = @_;
     my $d = _dir( Baseliner->path_to( $dir ) );
@@ -1264,7 +1312,7 @@ sub _reload_dir {
     $d->recurse( callback=>sub{
         my $f = shift;
         return if $f->is_dir || $f !~ $re;
-        local $SIG{__WARN__} = sub{};
+        _reload_file( $f );
         push @reloaded, "$f";
         do "$f";
         if( $@ ) {
@@ -1295,6 +1343,7 @@ sub ago {
       : $d < 3600 ? _loc('%1 minutes ago', int $d/60 )
       : $d < 7200 ? _loc('1 hour ago' )
       : $date > $now-'1D' ? _loc('%1 hours ago', int $d/3600 )
+      : $date > $now-'2D' ? _loc('1 day ago')
       : $date > $now-'7D' ? _loc('%1 days ago', int $d/(3600*24) )
       : $date > $now-'1M' ? _loc('%1 weeks ago', int $d/(3600*24*7) )
       : $date > $now-'1Y' ? _loc('%1 months ago', int $d/(3600*24*7*4.33) )
@@ -1302,6 +1351,106 @@ sub ago {
       : _loc('%1 years ago', int $d/(2_629_744*12) )
     ;
     $v;
+}
+
+=head2
+
+Make an async request to myself.
+
+    async_request( '/service/test.run', { key1=>value... } );
+    async_request( '/service/test.run', json => { key1=>value... } );
+    async_request( '/service/test.run', yaml => { key1=>value... } );
+
+=cut
+sub async_request {
+    my ( @req ) = @_;
+    #require HTTP::Async;
+    # object needs to be alive, although no responses are needed
+    #  XXX consider checking the object on later requests, if there is data, include on json for retrieve by ajaxEval()
+    #my $as = $Baseliner::_http_as // ( $Baseliner::_http_as = HTTP::Async->new );
+    #my $req = HTTP::Request->new( @req );
+    #$as->add( $req ); #GET => 'http://localhost:3000/sleepme' ) );
+
+    require Net::HTTP::NB;
+    my $request = ref $_[0] eq 'HTTP::Request' ? $_[0] : do {
+        if( $_[1] eq 'json' ) {
+            my $r = HTTP::Request->new( POST=>$_[0]);
+            $r->header( 'Content-Type' => 'application/json' );
+            $r->content( _to_json( $_[2] ) );
+            $r;
+        } 
+        elsif( $_[1] eq 'yaml' ) {
+            my $r = HTTP::Request->new( POST=>$_[0] );
+            $r->header( 'Content-Type' => 'application/yaml' );
+            $r->content( _dump( $_[2] ) );
+            $r;
+        }
+        else {
+            require HTTP::Request::Common;
+            HTTP::Request::Common::POST( @req );
+        }
+    };
+    # make sure the offline request is with this same user
+    my $cookie = Baseliner->app->req->headers->{cookie};
+    $request->header( 'cookie' => $cookie );  
+    my $uri = $request->uri;
+    my $cf = Baseliner->config;
+    my $host = $cf->{web_queue} // $ENV{BALI_WEB_QUEUE};
+    $host //= $cf->{web_host} && $cf->{web_port} 
+        ? sprintf('%s:%s', $cf->{web_host}, $cf->{web_port} ) 
+        : _throw(_loc("Missing or invalid queue configuration: either configure web_queue to 'host:port', or web_host and web_port"));
+    _debug( $host );
+    my $s = Net::HTTP::NB->new( Host=>$host ) or _throw $!;
+    my %headers = map { $_ => $request->header( $_ ) } $request->{_headers}->header_field_names;
+    # create run token, put it in headers, put it in session
+    my $run_token = 'run_token='. _md5( int(rand($$)) . int(rand(9999999)) . _nowstamp . $$ );
+    $headers{'run-token'} = $run_token;
+    Baseliner->app->session->{$run_token} = 1;
+    $s->write_request( $request->method, "$uri", %headers, $request->content );
+}
+
+=head2 package_and_instance
+
+Little finder of packages not loaded. Lists and loads them temporarily from root
+and features. 
+    
+Just a list of files and package names (deduced from filename):
+
+    package_and_instance( 'lib/Baseliner/Parser/Grammar' ) 
+
+A instance + method call, with params, if any 
+
+    package_and_instance( 'lib/Baseliner/Parser/Grammar','grammar', [ param1=>val1 ... ], [  meth param1... ] ) 
+
+If method name is "new", only the instance created with C<new> is returned. 
+
+Returns HASHREF:
+
+    $file => { package=>Package::Name, file=>$file, instance=>$self, ret=>$return_value_from_method }
+
+TODO 
+
+    - recursivity
+
+=cut
+sub package_and_instance {
+    my ($path,$method, $new_params, $method_params) = @_;
+    local %INC = %INC; 
+    my $root = Baseliner->path_to('/')->stringify;
+    +{ map {
+        my $f = $_;
+        s{^.*lib/}{}g;
+        s{/}{::}g;
+        s{\.pm$}{}g;
+        if( $method ) {
+            do $f;
+            my $ins = $_->new( Util->_array( $new_params) );
+            my $ret = $_->new->$method( Util->_array( $method_params) ) unless $method eq 'new';
+            $f => { package => $_, file => $f, instance=>$ins, ret=>$ret };
+        } else {
+            $f => { package => $_, file => $f };
+        }
+    } <$root/$path/* $root/features/*/lib/$path/*> }
 }
 
 {

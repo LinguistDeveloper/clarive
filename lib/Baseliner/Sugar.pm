@@ -96,18 +96,14 @@ Or:
 sub master_new {
     my ($collection, $name, $code ) =@_;
     my $master_data = ref $name eq 'HASH' ? $name : { name=>$name };
+    my $class = 'BaselinerX::CI::'.$collection;
     if( ref $code eq 'HASH' ) {
-        my $row = { collection => $collection, %$master_data, yaml => Baseliner::Utils::_dump($code) };
-        $row->{bl} = $code->{bl} if defined $code->{bl};
-        my $master = Baseliner->model('Baseliner::BaliMaster')->create( $row );
-        return $master;
+        return $class->save( %$master_data, data=>$code );   # this returns a mid
     } elsif( ref $code eq 'CODE' ) {
         my $ret;
         Baseliner->model('Baseliner')->txn_do(sub{
-            my $master = Baseliner->model('Baseliner::BaliMaster')->create({
-                collection => $collection, %$master_data, 
-            });
-            $ret = $code->( $master->mid, $master );
+            my $mid = $class->save( %$master_data ); 
+            $ret = $code->( $mid );
         });
         return $ret;
     } else {
@@ -214,8 +210,7 @@ sub event_new {
 
 sub events_by_key {
     my ($key, $args ) = @_;
-    my $evs_rs = Baseliner->model('Baseliner::BaliEvent')->search({ event_key=>$key }, { order_by=>{ '-desc' => 'ts' } });
-    rs_hashref( $evs_rs );
+    my $evs_rs = Baseliner->model('Baseliner::BaliEvent')->search({ event_key=>$key }, { order_by=>{ '-desc' => 'ts' } })->hashref;
     return [ map { 
         # merge 2 hashes
         my $d = { %$_ , %{ _load( $_->{event_data} ) } };
@@ -226,9 +221,13 @@ sub events_by_key {
 sub events_by_mid {
     my ($mid, %p ) = @_;
     my $min_level = $p{min_level} // 0;
+
+    my $cache_key = [ "events:$mid:", \%p ];
+    my $cached = Baseliner->cache_get( $cache_key );
+    return $cached if $cached;
+
     my @evs = DB->BaliEvent->search({ mid=>$mid }, { order_by=>{ '-desc' => 'ts' } })->hashref->all;
-    return [] unless @evs;
-    return [
+    my $ret = !@evs ? [] : [
       grep {
          $_->{ev_level} == 0 || $_->{level} >= $min_level;
       }
@@ -244,6 +243,10 @@ sub events_by_mid {
         };  
         $d; 
     } @evs ];
+
+    Baseliner->cache_set( $cache_key, $ret );
+
+    return $ret;
 }
 
 =head2 event_hook

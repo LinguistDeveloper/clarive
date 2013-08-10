@@ -46,7 +46,7 @@ __PACKAGE__->add_columns(
   },
   "modified_by",
   { data_type => "varchar2", is_nullable => 1, size => 255 },
-  "status",
+  "status",  # XXX is the same as id_category_status and the relationship... delete?
   { data_type => "char", default_value => "O", is_nullable => 0, size => 1 },
   "id_category",
   {
@@ -93,12 +93,14 @@ __PACKAGE__->belongs_to(
   "categories",
   "Baseliner::Schema::Baseliner::Result::BaliTopicCategories",
   { "id" => "id_category" },
+  { join_type => 'left' },
 );
 
 __PACKAGE__->belongs_to(
   "status",
   "Baseliner::Schema::Baseliner::Result::BaliTopicStatus",
   { "id" => "id_category_status" },
+  { join_type => 'left' },
 );
 
 __PACKAGE__->belongs_to(

@@ -79,7 +79,8 @@ __PACKAGE__->has_many(
 __PACKAGE__->has_many(
   "roles",
   "Baseliner::Schema::Baseliner::Result::BaliTopicCategoriesAdmin",
-  { id => "id_role" },
+  { "foreign.id_role" => "self.id" },
+  #{ id => "id_role" },
 );
 
 __PACKAGE__->has_many(

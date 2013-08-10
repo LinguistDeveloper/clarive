@@ -18,6 +18,7 @@ register 'registor.menu.topics' => {
        # action.topics.<category_name>.[create|edit|view]
        my @cats = DB->BaliTopicCategories->search(undef,{ select=>[qw/name id color/] })->hashref->all;
        my $seq = 10;
+       my $pad_for_tab = 'margin: 0 0 -3px 0; padding: 2px 4px 2px 4px; line-height: 12px;';
        my %menu_view = map {
            my $data = $_;
            my $name = _loc( $_->{name} );
@@ -25,7 +26,7 @@ register 'registor.menu.topics' => {
            $data->{color} //= 'transparent';
            "menu.topic.$id" => {
                 label    => qq[<div id="boot" style="background:transparent"><span class="label" style="background-color:$data->{color}">$name</span></div>],
-                title    => qq[<div id="boot" style="background:transparent;height:14px"><span class="label" style="background-color:$data->{color}">$name</span></div>],
+                title    => qq[<div id="boot" style="background:transparent;height:14px;margin-bottom:0px"><span class="label" style="$pad_for_tab;background-color:$data->{color}">$name</span></div>],
                 index    => $seq++,
                 actions  => ["action.topics.$id.view"],
                 url_comp => "/topic/grid?category_id=" . $data->{id},
@@ -505,6 +506,11 @@ sub view : Local {
     
     if($topic_mid || $c->stash->{topic_mid} ){
  
+        # user seen
+        for my $mid ( _array( $topic_mid ) ) {
+            DB->BaliMasterPrefs->update_or_create({ username=>$c->username, mid=>$mid, last_seen=>_dt() });
+        }
+        
         $category = DB->BaliTopicCategories->search({ mid=>$topic_mid }, { prefetch=>{'topics' => 'status'} })->first;
         _fail( _loc('Category not found or topic deleted: %1', $topic_mid) ) unless $category;
         
@@ -525,7 +531,8 @@ sub view : Local {
         }
                          
         # comments
-        $self->list_posts( $c );  # get comments into stash        
+        $c->stash->{comments} = $c->model('Topic')->list_posts( mid=>$topic_mid );
+        # activity (events)
         $c->stash->{events} = events_by_mid( $topic_mid, min_level => 2 );
         
         #$c->stash->{forms} = [
@@ -553,9 +560,12 @@ sub view : Local {
         my $meta = $c->model('Topic')->get_meta( $topic_mid, $id_category );
         my $data = $c->model('Topic')->get_data( $meta, $topic_mid, topic_child_data=>$p->{topic_child_data} );
         $meta = get_meta_permissions ($c, $meta, $data);        
-
+        
+        $data->{admin_labels} = $c->model('Permissions')->user_has_any_action( username=> $c->username, action=>'action.admin.topics' );
+        
         $c->stash->{topic_meta} = $meta;
         $c->stash->{topic_data} = $data;
+        
 
         $c->stash->{template} = '/comp/topic/topic_msg.html';
     } else {
@@ -590,11 +600,15 @@ sub comment : Local {
             _throw( _loc( 'Missing id' ) ) unless defined $topic_mid;
             my $text = $p->{text};
             _log $text;
+
+            my $topic_row = $c->model('Baseliner::BaliTopic')->find( $topic_mid );
+            _fail( _loc("Topic with id %1 not found (deleted?)", $topic_mid ) ) unless $topic_row;
             
             my $topic;
             if( ! length $id_com ) {  # optional, if exists then is not add, it's an edit
                 $topic = master_new 'post' => substr($text,0,10) => sub { 
                     my $mid = shift;
+                    $id_com = $mid;
                     my $post = $c->model('Baseliner::BaliPost')->create(
                         {   mid   => $mid,
                             text       => $text,
@@ -606,12 +620,11 @@ sub comment : Local {
                     event_new 'event.post.create' => {
                         username => $c->username,
                         mid      => $topic_mid,
+                        data     => _ci($topic_mid)->{_ci},
                         id_post  => $mid,
                         post     => substr( $text, 0, 30 ) . ( length $text > 30 ? "..." : "" )
                     };
-                    my $topic = $c->model('Baseliner::BaliTopic')->find( $topic_mid );
-                    _fail( _loc("Topic with id %1 not found (deleted?)", $topic_mid ) ) unless $topic;
-                    $topic->add_to_posts( $post, { rel_type=>'topic_post' });
+                    $topic_row->add_to_posts( $post, { rel_type=>'topic_post' });
                     #master_rel->create({ rel_type=>'topic_post', from_mid=>$id_topic, to_mid=>$mid });
                 };
                 #$c->model('Event')->create({
@@ -630,13 +643,20 @@ sub comment : Local {
                 # TODO modified_on ?
                 $post->update;
             }
+
+            # modified_on 
+            $topic_row->update({ modified_on => _dt() });
+
             $c->stash->{json} = {
                 msg     => _loc('Comment added'),
+                id      => $id_com,
                 success => \1
             };
         }
         catch{
-            $c->stash->{json} = { msg => _loc('Error adding Comment: %1', shift()), failure => \1 }
+            my $err = shift;
+            _error( $err );
+            $c->stash->{json} = { msg => _loc('Error adding Comment: %1', $err ), failure => \1 }
         };
     } elsif( $action eq 'delete' )  {
         try {
@@ -655,7 +675,9 @@ sub comment : Local {
             } for @mids;
             $c->stash->{json} = { msg => _loc('Delete comment ok'), failure => \0 };
         } catch {
-            $c->stash->{json} = { msg => _loc('Error deleting Comment: %1', shift() ), failure => \1 }
+            my $err = shift;
+            _error( $err );
+            $c->stash->{json} = { msg => _loc('Error deleting Comment: %1', $err ), failure => \1 }
         };
     } elsif( $action eq 'view' )  {
         try {
@@ -672,46 +694,33 @@ sub comment : Local {
                 created_on => $post->created_on->dmy . ' ' . $post->created_on->hms
             };
         } catch {
-            $c->stash->{json} = { msg => _loc('Error viewing comment: %1', shift() ), failure => \1 }
+            my $err = shift;
+            _error( $err );
+            $c->stash->{json} = { msg => _loc('Error viewing comment: %1', $err ), failure => \1 }
         };
     }
     $c->forward('View::JSON');
 }
 
-sub list_posts : Local {
-    my ($self, $c) = @_;
-    my $p = $c->request->parameters;
-    my $topic_mid = $p->{topic_mid};
-
-    my $rs = $c->model('Baseliner::BaliTopic')->find( $topic_mid )
-        ->posts->search( undef, { order_by => { '-desc' => 'created_on' } } );
-    my @rows;
-    while( my $r = $rs->next ) {
-        push @rows,
-            {
-            created_on   => $r->created_on,
-            created_by   => $r->created_by,
-            text         => $r->text,
-            content_type => $r->content_type,
-            id           => $r->id,
-            };
-    }
-    $c->stash->{comments} = \@rows;
-}
-
 sub list_category : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
-    my $cnt;
+    my ($dir, $sort, $cnt) = ( @{$p}{qw/dir sort/}, 0 );
+    $dir ||= 'asc';
+    $sort ||= 'name';
+    
+    my $order = { dir=> $dir,
+                  sort=> $sort};
+
     my @rows;
     
     if( !$p->{categoryId} ){    
         
         my @categories;
         if( $p->{action} && $p->{action} eq 'create' ){
-            @categories  = $c->model('Topic')->get_categories_permissions( username => $c->username, type => $p->{action} );
+            @categories  = $c->model('Topic')->get_categories_permissions( username => $c->username, type => $p->{action}, order => $order);
         } else {
-            @categories  = $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view' );
+            @categories  = $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view', order => $order);
         }
         
         if(@categories){
@@ -782,10 +791,13 @@ sub list_category : Local {
 sub list_priority : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
-    my $cnt;
+    my ($dir, $sort, $cnt) = ( @{$p}{qw/dir sort/}, 0 );
+    $dir ||= 'asc';
+    $sort ||= 'name';
+
     my $row;
     my @rows;
-    $row = $c->model('Baseliner::BaliTopicPriority')->search();
+    $row = $c->model('Baseliner::BaliTopicPriority')->search(undef, { order_by => { "-$dir" => ["$sort" ] }});
     
     if($row){
         while( my $r = $row->next ) {
@@ -810,24 +822,28 @@ sub list_priority : Local {
 sub list_label : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
+    my ($dir, $sort, $cnt) = ( @{$p}{qw/dir sort/}, 0 );
+    $dir ||= 'asc';
+    $sort ||= 'name';
+    
     my $cnt;
     my $row;
     my @rows;
     
-    #$row = $c->model('Baseliner::BaliLabel')->search();
-    #
-    #if($row){
-    #    while( my $r = $row->next ) {
-    #        push @rows,
-    #          {
-    #            id          => $r->id,
-    #            name        => $r->name,
-    #            color       => $r->color
-    #          };
-    #    }  
-    #}
+    $row = $c->model('Baseliner::BaliLabel')->search(undef, { order_by => { "-$dir" => ["$sort" ] }});
     
-    @rows = Baseliner::Model::Label->get_labels( $c->username, 'admin' );
+    if($row){
+        while( my $r = $row->next ) {
+            push @rows,
+              {
+                id          => $r->id,
+                name        => $r->name,
+                color       => $r->color
+              };
+        }  
+    }
+    
+    #@rows = Baseliner::Model::Label->get_labels( $c->username, 'admin' );
     
     $cnt = $#rows + 1 ; 
     
@@ -842,6 +858,8 @@ sub update_topic_labels : Local {
     my $label_ids = $p->{label_ids};
     
     try{
+        Baseliner->cache_remove( qr/:$topic_mid:/ ) if length $topic_mid;
+        
         $c->model("Baseliner::BaliTopicLabel")->search( {id_topic => $topic_mid} )->delete;
         
         foreach my $label_id (_array $label_ids){
@@ -930,6 +948,32 @@ sub filters_list : Local {
             uiProvider => 'Baseliner.CBTreeNodeUI_system'
         };
     }
+    
+    push @views, {
+        id  => $i++,
+        idfilter      => 3,
+        text    => _loc('Unread'),
+        filter  => '{"unread":true}',
+        default    => \1,
+        cls     => 'forum default',
+        iconCls => 'icon-no',
+        checked => \0,
+        leaf    => 'true',
+        uiProvider => 'Baseliner.CBTreeNodeUI_system'
+    };
+            
+    push @views, {
+        id  => $i++,
+        idfilter      => 4,
+        text    => _loc('Created for Me'),
+        filter  => '{"created_for_me":true}',
+        default    => \1,
+        cls     => 'forum default',
+        iconCls => 'icon-no',
+        checked => \0,
+        leaf    => 'true',
+        uiProvider => 'Baseliner.CBTreeNodeUI_system'
+    };            
     #################################################################################
 
     $row = $c->model('Baseliner::BaliTopicView')->search();
@@ -1638,6 +1682,39 @@ sub img : Local {
         my $broken = $c->path_to('/root/static/images/icons/help.png')->slurp;
         $c->res->body( $broken );
     }
+}
+
+sub change_status : Local {
+    my ($self, $c ) = @_;
+    my $p = $c->req->params;
+    $c->stash->{json} = try {
+        $c->model('Topic')->change_status( 
+            change=>1, username=>$c->username, 
+            id_status=>$p->{new_status}, id_old_status=>$p->{old_status}, 
+            mid=>$p->{mid} 
+        );
+        { success=>\1, msg=>'ok' };
+    } catch {
+        my $err = shift;
+        _error( $err );
+        { success=>\0, msg=>$err };
+    }; 
+    $c->forward('View::JSON');
+}
+
+# XXX not used, update is done in sub view
+sub user_seen : Local {
+    my ($self, $c ) = @_;
+    my $p = $c->req->params;
+    $c->stash->{json} = try {
+        my $row = DB->BaliMasterPrefs->update_or_create({ username=>$c->username, mid=>$p->{mid}, last_seen=>_dt() });
+        { success=>\1, msg=>'ok' };
+    } catch {
+        my $err = shift;
+        _error( $err );
+        { success=>\0, msg=>$err };
+    }; 
+    $c->forward('View::JSON');
 }
 
 1;

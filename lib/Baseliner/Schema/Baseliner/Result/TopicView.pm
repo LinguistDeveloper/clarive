@@ -13,6 +13,7 @@ __PACKAGE__->result_source_instance->is_virtual(1);
 __PACKAGE__->result_source_instance->view_definition(q{
 
     SELECT  T.MID TOPIC_MID,
+            T.MID,
             T.TITLE,
             T.CREATED_ON,
             T.CREATED_BY,
@@ -28,7 +29,7 @@ __PACKAGE__->result_source_instance->view_definition(q{
             S.NAME CATEGORY_STATUS_NAME,
             S.SEQ CATEGORY_STATUS_SEQ,
             S.TYPE CATEGORY_STATUS_TYPE,
-            ID_PRIORITY AS PRIORITY_ID,
+            T.ID_PRIORITY AS PRIORITY_ID,
             TP.NAME PRIORITY_NAME,
             TP.RESPONSE_TIME_MIN,
             TP.EXPR_RESPONSE_TIME,
@@ -50,9 +51,13 @@ __PACKAGE__->result_source_instance->view_definition(q{
             cis_out.NAME CIS_OUT,
             cis_in.NAME CIS_IN,
             topics_in.TITLE REFERENCED_IN,
-            topics_out.TITLE REFERENCES_OUT
+            topics_out.TITLE REFERENCES_OUT,
+            DS.NAME directory,
+            MA_PREFS.USERNAME username,
+            MA_PREFS.LAST_SEEN last_seen
             FROM  BALI_TOPIC T
                     JOIN BALI_MASTER MA ON T.MID = MA.MID
+                    LEFT JOIN BALI_MASTER_PREFS MA_PREFS ON T.MID = MA_PREFS.MID
                     LEFT JOIN BALI_TOPIC_CATEGORIES C ON T.ID_CATEGORY = C.ID
                     LEFT JOIN BALI_TOPIC_LABEL TL ON TL.ID_TOPIC = T.MID
                     LEFT JOIN BALI_LABEL L ON L.ID = TL.ID_LABEL
@@ -93,12 +98,15 @@ __PACKAGE__->result_source_instance->view_definition(q{
                         'topic_post','topic_file_version','topic_project','topic_users','topic_topic' )
                     LEFT JOIN BALI_MASTER cis_in ON cis_in.MID = rel_cis_in.FROM_MID
                     
+                    LEFT JOIN BALI_PROJECT_DIRECTORIES_FILES DF ON DF.ID_FILE = T.MID
+                    LEFT JOIN BALI_PROJECT_DIRECTORIES DS ON DF.ID_DIRECTORY = DS.ID
             WHERE T.ACTIVE = 1
 });
 
 __PACKAGE__->add_columns(
     qw(
         topic_mid 
+        mid
         title
         created_on
         created_by
@@ -137,7 +145,12 @@ __PACKAGE__->add_columns(
         cis_in
         referenced_in
         references_out
+        directory
+        username
+        last_seen
     )
 );
+
+__PACKAGE__->set_primary_key( 'topic_mid' );
 
 1;

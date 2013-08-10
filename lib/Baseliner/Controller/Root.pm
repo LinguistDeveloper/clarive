@@ -38,7 +38,45 @@ sub begin : Private {
     $c->res->headers->header( 'Cache-Control' => 'no-cache');
     $c->res->headers->header( Pragma => 'no-cache');
     $c->res->headers->header( Expires => 0 );
+
+    my $content_type = $c->req->content_type;
+
+    # process json data, if any
+    if( $content_type eq 'application/json' ) {
+        my $body = $c->req->body;
+        my $json = Util->_from_json(<$body>);
+        if( ref $json eq 'HASH' && delete $json->{_merge_with_params} ) {
+            my $p = $c->req->params || {};
+            $c->req->params( { %$p, %$json } ); 
+        } else {
+            $c->req->{body_data} = $json;
+        }
+    }
+    elsif( $content_type eq 'application/yaml' ) {
+        my $body = $c->req->body;
+        local $/;
+        $c->req->{body_data} = Util->_load(<$body>);
+    }
+    else {
+        $c->req->{body_data} = {};
+    }
     
+    # run_token ?  (used by Util->async_request
+    if( my $run_token = $c->req->headers->{'run-token'} // $c->req->params->{run_token} // $c->req->{body_data}->{run_token} ){
+        _debug "RUN TOKEN $run_token";
+        # often, 
+        for my $att ( 1..5 ) {  # 5 attempts to get it from the session
+            if( delete $c->session->{$run_token} ) {
+                $c->stash->{run_token} = 1;
+                _debug "FOUND RUN TOKEN $run_token";
+                last;
+            } else {
+                _debug "RUN TOKEN $run_token not found in session. Sleeping...";
+                sleep 2 ** $att; # wait... 2s, 4s, 8s, 16s, 32s
+            }
+        }
+    }
+
     $self->_set_user_lang($c);
 
     Baseliner->app( $c );
@@ -116,6 +154,7 @@ sub auto : Private {
         $c->stash->{last_msg} //= $last_msg;
         $c->forward('/auth/logon');
     }
+
     return 0;
 }
 

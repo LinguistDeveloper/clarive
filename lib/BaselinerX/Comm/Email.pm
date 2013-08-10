@@ -6,7 +6,7 @@ use MIME::Lite;
 use Net::SMTP;
 use Try::Tiny;
 use Compress::Zlib;
-use Encode qw( decode_utf8 encode_utf8 is_utf8 );
+use Encode qw( encode decode_utf8 encode_utf8 is_utf8 );
 
 with 'Baseliner::Role::Service';
 
@@ -137,7 +137,7 @@ sub process_queue {
             my $subject = $em->{subject};
             my $body = $em->{body};
 
-            $body = encode("iso-8859-15", $body);
+            $body = Encode::encode("iso-8859-15", $body);
             # _log $body;
             $body =~ s{Ã\?}{Ñ}g;
             $body =~ s{Ã±}{ñ}g;

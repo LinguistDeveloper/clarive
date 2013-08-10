@@ -24,6 +24,9 @@ msgstr "hace 1 hora"
 msgid "%1 hours ago"
 msgstr "hace %1 horas"
 
+msgid "1 day ago"
+msgstr "hace 1 día"
+
 msgid "%1 days ago"
 msgstr "hace %1 días"
 
@@ -42,14 +45,26 @@ msgstr "hace %1 años"
 msgid "Loading Error"
 msgstr "Error de Carga"
 
+msgid "Mark as read"
+msgstr "Marcar como leído"
+
+msgid "Mark as unread"
+msgstr "Marcar como no leído"
+
+msgid "Current topic status '%1' does not match the real status '%2'. Please refresh."
+msgstr "Estado actual del tópico '%1' no coincide con el estado real '%2'. Por favor, recargue antes de reintentar."
+
 msgid "No items found"
-msgstr "No se han encotrado datos"
+msgstr "No se han encontrado datos"
 
 msgid "Select field %1 first or reload"
 msgstr "Seleccione el campo %1 primero o recargue"
 
 msgid "Error loading topic"
 msgstr "Error cargando el tópico"
+
+msgid "graph_high_load %1"
+msgstr "%1 nodos recibidos. Procesarlos puede tardar. ¿Desea continuar?"
 
 msgid "Field %1 reset due to change in %2"
 msgstr "Campo %1 reiniciado debido a un cambio en %2"
@@ -68,6 +83,9 @@ msgstr "Notificación"
 
 msgid "Notifications"
 msgstr "Notificaciones"
+
+msgid "No nodes available"
+msgstr "No hay nodos disponibles"
 
 msgid "None"
 msgstr "No hay"
@@ -1204,10 +1222,10 @@ msgid "Services"
 msgstr "Servicios"
 
 msgid "Comment"
-msgstr "Observación"
+msgstr "Comentario"
 
 msgid "Comments"
-msgstr "Observaciones"
+msgstr "Comentarios"
 
 msgid "Please, click on the following links"
 msgstr "Por favor, haga clic en los siguientes enlaces"
@@ -2992,12 +3010,12 @@ msgstr "¿Seguro que quiere borrar el entorno"
 
 # lib/Baseliner/Controller/Topic.pm (171)
 msgid "Comment added"
-msgstr "Observación añadida"
+msgstr "Comentario añadido"
 
 
 # lib/Baseliner/Controller/Topic.pm (175)
 msgid "Error adding Comment: %1"
-msgstr "Error añadiendo observación: %1"
+msgstr "Error añadiendo comentario: %1"
 
 
 # lib/Baseliner/Controller/Topic.pm (235)
@@ -3072,7 +3090,10 @@ msgstr "Error cerrando tópico: %1"
 
 # root/comp/topic_grid.js (116)
 msgid "Are you sure you want to delete the topic(s)"
-msgstr "¿Seguro que quiere borrar tópico"
+msgstr "¿Seguro que quiere borrar el/los tópico(s)"
+
+msgid "Are you sure you want to delete the topic?"
+msgstr "¿Seguro que quiere borrar el tópico?"
 
 msgid " (and %1 more)"
 msgstr " (y %1 más)"
@@ -3102,7 +3123,7 @@ msgstr "Editar tópico"
 
 # root/comp/topic_grid.js (275)
 msgid "Create comment"
-msgstr "Crear observación"
+msgstr "Crear comentario"
 
 
 # root/comp/topic_grid.js (537)
@@ -3170,6 +3191,9 @@ msgstr "Error asignando etiquetas: %1"
 # root/comp/topic_grid.js (605)
 msgid "Topic"
 msgstr "Tópico"
+
+msgid "Topics: %1"
+msgstr "Tópicos: %1"
 
 # root/comp/topic_grid.js (654)
 msgid "Open"
@@ -3299,7 +3323,7 @@ msgid "Rename Folder"
 msgstr "Renombrar Carpeta"
 
 msgid "Assigned To Me"
-msgstr "Assignadas a Mí"
+msgstr "Asignadas a Mí"
 
 msgid "Created Today"
 msgstr "Creadas Hoy"
@@ -4323,6 +4347,9 @@ msgstr "Error creando carpeta: %1"
 msgid "You must save the topic before add new files"
 msgstr "Debes guardar el tópico antes de añadir nuevos ficheros"
 
+msgid "To upload files, the form needs to be created. Save form before submitting?"
+msgstr "Para poder subir ficheros, el formulario tiene que estar creado. Crear formulario ahora?"
+
 msgid "status_new"
 msgstr "Estados"
 
@@ -4335,8 +4362,11 @@ msgstr "Personalizar campo"
 msgid "Field"
 msgstr "Campo"
 
-msgid "%1 modified topic %2 from %3 to %4"
+msgid "%1 modified the field %2 from %3 to %4"
 msgstr "%1 modificó el campo %2  de %3 a %4"
+
+msgid "%1 modified the field %2"
+msgstr "%1 modificó el campo %2"
 
 msgid "%1 modified topic"
 msgstr "%1 modificó el tópico"
@@ -4584,5 +4614,11 @@ msgstr "Notificación añadida"
 msgid "Error adding notification: "
 msgstr "Error añadiendo notificación"
  
+msgid "Related"
+msgstr "Relacionados"
 
+msgid "Unread"
+msgstr "No leídas"
 
+msgid "Created for Me"
+msgstr "Creadas por Mí"

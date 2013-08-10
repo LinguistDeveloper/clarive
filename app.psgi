@@ -34,8 +34,21 @@ if( $@ ) {
     print "-------------------------\n\n";
     die $@;
 }
- 
+
+#use PocketIO;
+#my $pocket = PocketIO->new(handler=>sub{
+#    my($self,$env) = @_;
+#    warn $cv;
+#    warn "------------| pocketio started\n";
+#    $self->send( PocketIO::Message->new( type=>'event', data=>{ name=>'session_start', args=>[{ aa=>11 }] } ) );
+#    $self->on('nada', sub{ 
+#        my ($self,$msg,$cb) = @_;
+#        $cb->('hello bord');
+#        });
+#}) ; #Baseliner::Pocket->new( app=>Baseliner );
+
 builder {
-    Baseliner->psgi_app;
+    #mount '/socket.io' => $pocket;
+    mount '/' => Baseliner->psgi_app;
 };
 

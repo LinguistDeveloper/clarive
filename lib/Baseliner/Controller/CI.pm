@@ -230,12 +230,14 @@ sub tree_objects {
         $opts->{page} = $page;
     }
     my $where = {};
-    $p{query} and $where = query_sql_build(
+    length $p{query} and $where = query_sql_build(
            query  => $p{query},
            fields => {
                name => 'name',
-            }
+           }
     );
+    # XXX full search? maybe too much for this grid
+    # length $p{query} and $where->{'-bool'} = mdb->query( "%$p{query}%", { returns=>'exists' });
     $where->{collection} = $collection if $collection;
     $where = { %$where, %{ $p{where} } } if $p{where};
     
@@ -448,10 +450,14 @@ sub store : Local {
     my $p = $c->req->params;
     
     # in cache ?
-    my $cache_key = $p;
-    if( my $cc = $c->cache_get( $cache_key ) ) {   # not good during testing mode
-        $c->stash->{json} = $cc;
-        return $c->forward('View::JSON');
+    my $mid_param =  $p->{mid} || $p->{from_mid} || $p->{to_mid} ;
+    my $cache_key;
+    if( defined $mid_param ) {
+        $cache_key = ["ci:store:$mid_param:", $p ];
+        if( my $cc = $c->cache_get( $cache_key ) ) {   # not good during testing mode
+            #$c->stash->{json} = $cc;
+            #return $c->forward('View::JSON');
+        }
     }
     
     my $name = delete $p->{name};
@@ -460,7 +466,7 @@ sub store : Local {
     my $where = {};
     local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
 
-    if ( $p->{mid} || $p->{from_mid} || $p->{to_mid} ) {
+    if ( defined $mid_param ) {
         my $w = {};
         $w->{from_mid} = $p->{mid} if $p->{mid};
         $w->{from_mid} = $p->{from_mid} if $p->{from_mid};
@@ -516,7 +522,7 @@ sub store : Local {
     }
 
     $c->stash->{json} = { data=>\@data, totalCount=>$total };
-    $c->cache_set( $cache_key, $c->stash->{json} ); 
+    $c->cache_set( $cache_key, $c->stash->{json} ) if $cache_key; 
     $c->forward('View::JSON');
 }
 
@@ -670,6 +676,7 @@ sub update : Local {
             $mid = $class->save( name=>$name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), data=> $p ); 
         }
         elsif( $action eq 'edit' && defined $mid ) {
+            $c->cache_remove( qr/:$mid:/ );
             $mid = $class->save( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), data => $p ); 
         }
         else {
@@ -681,6 +688,7 @@ sub update : Local {
             for my $to_mid ( _array( $cis ) ) {
                 my $rel_type = $collection . '_' . _ci( $to_mid )->collection;   # XXX consider sending the rel_type from js 
                 DB->BaliMasterRel->create({ from_mid=>$mid, to_mid=>$to_mid, rel_type=>$rel_type });
+                $c->cache_remove( qr/:$to_mid:/ );
             }
         }
         $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 saved ok', $name) };
@@ -702,12 +710,15 @@ Load a CI row.
 sub load : Local {
     my ($self, $c, $action) = @_;
     my $p = $c->req->params;
-    my $cache_key = Storable::freeze($p);
-    if( my $cc = $c->cache_get( $cache_key ) ) {
-        $c->stash->{json} = $cc;
-        return $c->forward('View::JSON');
-    }
     my $mid = $p->{mid};
+    my $cache_key;
+    if( length $mid ) {
+        $cache_key = [ "ci:load:$mid:", $p ];
+        if( my $cc = $c->cache_get( $cache_key ) ) {
+            $c->stash->{json} = $cc;
+            return $c->forward('View::JSON');
+        }
+    }
     local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
     try {
         my $obj = Baseliner::CI->new( $mid );
@@ -725,7 +736,7 @@ sub load : Local {
         _error( $err );
         $c->stash->{json} = { success=>\0, msg=>_loc('CI load error: %1', $err ) };
     };
-    $c->cache_set( $cache_key, $c->stash->{json} );
+    $c->cache_set( $cache_key, $c->stash->{json} ) if defined $cache_key;
     $c->forward('View::JSON');
 }
 
@@ -803,24 +814,32 @@ sub json_tree : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
     my $mids = delete $p->{mid} || delete $p->{mids};
+    my $show_root = delete $p->{root} // 1;
     my $direction = delete $p->{direction} || 'related';
-    $p->{limit} //= 40;  
-    my $k = 1;
+    my $d = length $p->{node_data} ? _from_json( delete $p->{node_data} ) : {};
+    my %node_data = %$d if ref $d eq 'HASH';
+    $p->{limit} //= 50;  
+    my $prefix = $p->{add_prefix} // 1 ? $p->{id_prefix} || _nowstamp . int(rand 99999) . '-' : '';
     local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
+    my $k=0;
     $c->stash->{json} = try {
         my @all;
         for my $mid ( _array( $mids ) ) { 
+            $mid =~ s{^.+-(.+)$}{$1}; 
             my $ci = _ci( $mid );
             my @rels = $ci->$direction( depth=>2, mode=>$p->{mode} || 'tree', unique=>1, %$p );
             my $recurse;
             $recurse = sub {
                 my $chi = shift;
+                my $name = $chi->{name};
+                $name = substr($name,0,30).'...' if length $name > 30;
                 $k++;
                 +{
-                    id       => $k . '-' . $chi->{mid},
-                    name     => '#' . $chi->{mid} . ' ' . $chi->{name},
+                    id       => $prefix . $chi->{mid},
+                    name     => '#' . $chi->{mid} . ' ' . $name,
                     data => {
                         '$type' => 'icon',
+                        %node_data,
                         icon     => $chi->{_ci}{ci_icon},
                     },
                     #data     => { '$type' => 'arrow' },
@@ -829,24 +848,29 @@ sub json_tree : Local {
             };
             my @data = map { $recurse->( $_ ) } @rels;
             my $d = {
-                id => $mid, 
+                id => $prefix . $mid, 
                 name => $ci->name, 
                 data => {
+                    %node_data,
                     icon => $ci->icon
                 },
                 children => \@data,
             };
-            push @all, $d;
+            if( $show_root ) {
+                push @all, $d;
+            } else {
+                push @all, @data;
+            }
         }
         my $ret = @all == 1 
             ? $all[0]
             : {
                 id=>_nowstamp,
                 name=>'search', 
-                data => { icon=>'/static/images/icons/ci.png' },
+                data => { icon=>'/static/images/icons/ci.png', %node_data },
                 children => \@all
             };
-        { success=>\1, data=>$ret };
+        { success=>\1, data=>$ret, count=>$k };
     } catch {
         my $err = shift;
         _error( $err );
@@ -899,19 +923,26 @@ sub service_run : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
     my $class = $p->{classname} || _fail( _loc('Missing parameter classname') );
+    require Baseliner::Core::Logger::Quiet;
+    my $logger = Baseliner::Core::Logger::Quiet->new;
+    my $ret;
     $c->stash->{json} = try {
         my $service = $c->registry->get( $p->{key} );
-        require Baseliner::Core::Logger::Quiet;
-        my $logger = Baseliner::Core::Logger::Quiet->new;
         my $ci = _ci( $p->{mid} );
-        my $ret = $c->model('Services')->launch( $service->key, obj=>$ci, c=>$c, logger=>$logger );
-        _error( $ret );
-        {success => \1, ret=>_dump($logger->data), msg=>$logger->msg };
-    } ## end try
+        my $ret = $c->model('Services')->launch( $service->key, obj=>$ci, c=>$c, logger=>$logger, capture=>1 );
+        _debug( $ret );
+        _debug( $logger );
+        my $console = delete $logger->{console};
+        my $data = delete $logger->{data};
+        $data = ref $data ? Util->_dump( $data ) : "$data";
+        my $service_js_output = $service->js_output;
+        {success => \1, console=>$console, data=>$data, ret=>Util->_dump($ret), js_output=>$service_js_output };
+    } 
     catch {
         my $err = shift;
         _error( $err );
-        {success => \0, msg => $err};
+        my $console = delete $logger->{console};
+        {success => \0, msg => "$err", console=>$console, log=>Util->_dump($logger) };
     };
     $c->forward('View::JSON');
 
@@ -985,6 +1016,102 @@ sub grid : Local {
     $c->stash->{save} = $has_permission ? 'true' : 'false';
     $c->stash->{template} = '/comp/ci-gridtree.js';
 }
+
+sub index_sync : Local {
+    my ($self, $c) = @_;
+    _throw _loc('Missing run token') unless $c->stash->{run_token};
+    mdb->index_sync;
+    $c->res->body( 'ok' ); 
+}
+
+# Global search
+
+with 'Baseliner::Role::Search';
+sub search_provider_name { 'CIs' };
+sub search_provider_type { 'CI' };
+sub search_query {
+    my ($self, %p ) = @_;
+    my $query = $p{query};
+    my $c = $p{c};
+    my $limit = 50; #$p{limit} // 1000;
+    my $where = {};
+    length($query) and $where->{'-bool'} = mdb->query( $query, { returns=>'exists' } );
+    $where->{'-not'} = { collection=>{-in=>['topic','job']} };
+    my @rows = DB->BaliMaster->search(
+        $where,
+        { join=>'kv', 
+            select=>['mid','name','collection','bl','kv.mvalue','ts'], 
+            as=>['mid','name','collection','bl', 'search_data','ts'], 
+            rows=>$limit, order_by=>{ -desc=>'ts' } })->hashref->all;
+    _error( \@rows );
+    my @mids = map { $_->{mid} } @rows;
+    return map {
+        my $r = $_;
+        my $json = $r->{search_data};
+        #my $text = join ',', map { "$_: $r->{$_}" } grep { defined $_ && defined $r->{$_} } keys %$r;
+        #my @text = $json;
+
+        my $info = sprintf "%s - %s (%s)", $r->{collection}, $r->{bl}, $r->{ts};
+        my $text = join(' ', split(/,/, $json ) );
+        $text =~ s{:}{: }g;
+        my $desc = _strip_html( sprintf "%s", ($r->{name} // '') );
+        if( length $desc ) {
+            $desc = _utf8 $desc;  # strip html messes up utf8
+            $desc =~ s/[^\w\s]//g; 
+            #$desc =~ s/[^\x{21}-\x{7E}\s\t\n\r]//g; 
+        }
+        +{
+            title => sprintf( '%s - %s', $r->{mid}, $r->{name} ),
+            info  => $info,
+            text  => $text, 
+            url   => [ $r->{mid}, $r->{name}, '#999' ],
+            type  => 'ci',
+            mid   => $r->{mid},
+            id    => $r->{mid},
+        }
+    } @rows;
+}
+
+=head2
+
+Support the following CI specific calls:
+
+    /ci/8394/mymethod     => becomes _ci( 8394 )->rest_mymethod( $c, $json_and_param_data );
+    /ci/grammar/mymethod  => becomes BaselinerX::CI::grammar->rest_mymethod( $c, $json_and_param_data );
+
+    TODO: missing RESTful support: GET, PUT, POST
+    TODO: check security to Class, CI right here based on REST method
+
+=cut
+sub default : Path Args(2) {
+    my ($self,$c,$arg,$meth) = @_;
+    my $p = $c->req->params;
+    my $json = $c->req->{body_data};
+    my $data = { %{ $p || {} }, %{ $json || {} } };
+    _fail( _loc "Missing param method" ) unless length $meth;
+    try {
+        my $ret;
+        if( Util->is_number( $arg ) ) {
+            $meth = "rest_$meth";
+            my $ci = _ci( $arg );
+            _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
+            $ret = $ci->$meth( $c, $data );
+        } else {
+            $meth = "rest_$meth";
+            my $pkg = "BaselinerX::CI::$arg";
+            _fail( _loc "Method '%1' not found in class '%2'", $meth, $pkg) unless $pkg->can( $meth) ;
+            $ret = $pkg->$meth( $c, $data );
+        }
+        Util->_unbless( $ret );
+        $c->stash->{json} = $ret;
+        $c->stash->{json}{success} //= \1 if ref $ret eq 'HASH';
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { msg=>"$err", success=>\0 }; 
+    };
+    $c->forward('View::JSON');
+}
+
 
 1;
 

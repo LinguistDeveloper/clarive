@@ -26,6 +26,28 @@ has item_relationship => qw(is rw isa Str default item_item); # rel_type
 has variables => qw(is rw isa HashRef), default=>sub{ +{} };
 has parse_tree => qw(is rw isa ArrayRef), default=>sub{ [] };
 
+sub add_parse_tree {
+    my ($self,$new_tree) = @_;
+    return $new_tree unless defined $new_tree;
+    my @tree = Util->_array( $self->parse_tree );
+    for my $entry ( Util->_array( $new_tree ) ) {
+        push @tree, $entry;
+    }
+    my %uniq;
+    my @uniq_tree;
+    for my $entry ( @tree ) {
+        if( ref $entry eq 'HASH' ) {
+            my $k = join ';', sort values %$entry;
+            next if exists $uniq{$k};
+            $uniq{ $k } = 1;
+            push @uniq_tree, $entry;
+        } else {
+            push @uniq_tree, $entry;
+        }
+    }
+    $self->parse_tree( \@uniq_tree );
+}
+
 sub save_relationships {
     my($self, %p)=@_;
     my $cache = $p{cache} // {};
@@ -49,51 +71,56 @@ sub save_relationships {
 Go over an items parse_tree and detect parse_tree relationships
 to topics and among dependencies.
 
+Saves item in the process.
+
 =cut
 sub tree_resolve {
     my ($self,%p) = @_;
     my $tag_relationship = $p{tag_relationship} // $self->tag_relationship; 
     my $item_relationship = $p{item_relationship} // $self->item_relationship; 
-    my @topics;
+    my @rel_cis;
+    my @rel_topics;
     for my $t ( Util->_array( $self->parse_tree ) ) {
         # moniker should be a modulename
         if( my $module = $t->{module} ) {
             $self->moniker( $module ) ;
+            Util->_error( "---------------------------------> $module ");
+            Util->_error( Util->_whereami );
             $self->save;
         }
         # tags for topics, etc
         if( my $tag = $t->{tag} ) {
-            my @targets =  map { $_->{mid} } DB->BaliMaster->search({ moniker=>$tag }, { select=>'mid' })->hashref->all;
-            push @topics, @targets;
+            my @targets =  map { $_->{mid} } DB->BaliMaster->search({ -bool=>\['lower(moniker)=?', lc($tag) ], collection=>{ '='=>'topic' } }, { select=>'mid' })->hashref->all;
+            push @rel_topics, @targets;
             for my $mid ( @targets ) {
+                Baseliner->cache_remove( qr/:$mid:/ );
+                # XXX missing rel_field...
                 DB->BaliMasterRel->find_or_create({ to_mid=>$self->mid, from_mid=>$mid, rel_type=>$tag_relationship });
             }
         }
         # item_item relationships
-        if( my $tag = $t->{depend} ) {
-            my @targets =  map { $_->{mid} } DB->BaliMaster->search({ moniker=>$tag }, { select=>'mid' })->hashref->all;
-            for my $mid ( @topics ) {
+        if( my $tag = $t->{depend} // $t->{depends} ) {
+            my @targets =  map { $_->{mid} } DB->BaliMaster->search({ -bool=>\['lower(moniker)=?', lc($tag) ], collection=>{ '!='=>'topic' } }, { select=>'mid' })->hashref->all;
+            push @rel_cis, @targets;
+            for my $mid ( @rel_cis ) {
+                Baseliner->cache_remove( qr/:$mid:/ );
+                # XXX missing rel_field...
                 DB->BaliMasterRel->find_or_create({ to_mid=>$self->mid, from_mid=>$mid, rel_type=>$item_relationship });
             }
         }
+        # XXX compare my parse tree (functions, etc) with other parse trees
+        # XXX consider having a function/procedure CI, prepended by its source name
     }
-    return { topics=>\@topics };
+    return { rels=>[ @rel_cis, @rel_topics ], cis=>\@rel_cis, topics=>\@rel_topics };
 }
-
 
 sub scan {
     my($self,$stash)=@_;
 
     # get natures
-    my @natures;
-    for my $natclass ( Util->packages_that_do( 'Baseliner::Role::CI::Nature' ) ) {
-        my $coll = $natclass->collection;
-        DB->BaliMaster->search({ collection=>$coll })->each( sub {
-            my ($row)=@_;
-            Util->_log( $row->mid );
-            push @natures, Util->_ci( $row->mid );
-        });
-    }
+    my @natures = Baseliner::Role::CI::Nature->all_cis;
+
+    $self->parse_tree([]);
 
     my @nature_items;
     _fail _loc('No natures available to scan. Please, define some nature CIs before continuing.') unless @natures;
@@ -106,6 +133,44 @@ sub scan {
     return { parse_tree=>$self->parse_tree  }
 }
 
+
+=head2 moniker_from_tree_or_name
+
+Check if we have a 'module' in the parse tree.
+
+If we do, don't do anything.
+
+If we don't, set moniker from filename
+
+
+=cut
+sub moniker_from_tree_or_name {
+    my ($self)=@_;
+
+    # first check if we have a module in the tree
+    my $module;
+    for my $entry ( @{ $self->parse_tree } ) {
+        $module = $entry->{module} if defined $entry->{module}; 
+    }
+
+    # determine module name 
+    if( ! defined $module ) {
+        $module = $self->basename;
+        if( my $fb = $self->path_capture ) {
+            $module = $+{module} if $self->path =~ qr/$fb/ && length $+{module};
+        } else {
+            $module = $self->moniker // $self->basename;
+        }
+        $module = $self->change_case( $module );
+        $self->moniker( $module );
+        return $module;
+    }
+    elsif ( ! length $self->moniker ) {
+        # we dont have a moniker but we have a module, keep it
+        return $self->moniker( $module );
+    }
+    return $module;
+}
 
 1;
 

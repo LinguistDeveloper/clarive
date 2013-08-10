@@ -1,5 +1,4 @@
 (function(){
-    //var id = Ext.id();
     var store_status = new Baseliner.Topic.StoreStatus();
     var store_category = new Baseliner.Topic.StoreCategory({ baseParams: { swnotranslate : 1 } });
     
@@ -288,11 +287,11 @@
         columns: [
             { hidden: true, dataIndex:'id' },
             check_status_sm,
-            { header: _('Topics: Status'), dataIndex: 'name', width:100, sortable: false, renderer: render_status },
-            { header: _('Description'), dataIndex: 'description', sortable: false },
-            { header: _('Order'), width: 40, dataIndex: 'seq', sortable: false },
-            { header: _('Baseline'), dataIndex: 'bl', sortable: false, renderer: Baseliner.render_bl },
-            { header: _('Type'), dataIndex: 'type', width:50, sortable: false, renderer: render_status_type }
+            { header: _('Topics: Status'), dataIndex: 'name', width:100, sortable: true, renderer: render_status },
+            { header: _('Description'), dataIndex: 'description', sortable: true },
+            { header: _('Order'), width: 40, dataIndex: 'seq', sortable: true },
+            { header: _('Baseline'), dataIndex: 'bl', sortable: true, renderer: Baseliner.render_bl },
+            { header: _('Type'), dataIndex: 'type', width:50, sortable: true, renderer: render_status_type }
         ],
         autoSizeColumns: true,
         deferredRender:true,    
@@ -301,7 +300,7 @@
                 btn_edit_status,
                 btn_delete_status,
                 '->'
-        ]       
+        ]
     }); 
 
     grid_status.on('cellclick', function(grid, rowIndex, columnIndex, e) {
@@ -472,8 +471,8 @@
             columns: [
                 { hidden: true, dataIndex:'id' },
                 check_category_status_sm,
-                { header: _('Topics: Status'), dataIndex: 'name', width:50, sortable: false },
-                { header: _('Description'), dataIndex: 'description', sortable: false } 
+                { header: _('Topics: Status'), dataIndex: 'name', width:50, sortable: true },
+                { header: _('Description'), dataIndex: 'description', sortable: true } 
             ],
             autoSizeColumns: true,
             deferredRender:true,
@@ -1830,8 +1829,8 @@
         columns: [
             { hidden: true, dataIndex:'id' },
             check_categories_sm,
-            { header: 'Category', dataIndex: 'name', width:50, sortable: false, renderer: render_category },
-            { header: _('Description'), dataIndex: 'description', sortable: false },
+            { header: 'Category', dataIndex: 'name', width:50, sortable: true, renderer: render_category },
+            { header: _('Description'), dataIndex: 'description', sortable: true },
             { header: _('Type'), dataIndex: 'type', width:50, sortable: false, renderer: render_category_type }
         ],
         autoSizeColumns: true,
@@ -1891,44 +1890,6 @@
         }
     });
     
-    
-//    var btn_add_label = new Ext.Toolbar.Button({
-//        text: _('New'),
-//        icon:'/static/images/icons/add.gif',
-//        cls: 'x-btn-text-icon',
-//        handler: function() {
-//            if(label_box.getValue() != ''){
-//              if ( btn_by_project.pressed ) {
-//                  if (!projects_box.getValue()){
-//                      Ext.Msg.show({
-//                                title: _('Information'), 
-//                                msg: _('There are not projects selected'), 
-//                                buttons: Ext.Msg.OK, 
-//                                icon: Ext.Msg.INFO
-//                            });
-//                      return
-//                  }       
-//              }
-//              
-//                Baseliner.ajaxEval( '/topicadmin/update_label?action=add',{ label: label_box.getValue(), color: '#' + color_lbl, projects: projects_box.getValue()},
-//                    function(response) {
-//                        if ( response.success ) {
-//                            store_label.load();
-//                            Baseliner.message( _('Success'), response.msg );
-//                        } else {
-//                            //Baseliner.message( _('ERROR'), response.msg );
-//                            Ext.Msg.show({
-//                                title: _('Information'), 
-//                                msg: response.msg , 
-//                                buttons: Ext.Msg.OK, 
-//                                icon: Ext.Msg.INFO
-//                            });     
-//                        }
-//                    }
-//                );
-//            }
-//        }
-//    });
     
     var btn_add_label = new Baseliner.Grid.Buttons.Add({    
         handler: function() {
@@ -2167,8 +2128,8 @@
                 btn_delete_label,
                 '->',
 % if ($c->stash->{can_admin_labels}) {              
-                btn_by_project,
-                btn_choose_projects
+                //btn_by_project,
+                //btn_choose_projects
 % }             
         ]
     });
@@ -2199,7 +2160,7 @@
             { hidden: true, dataIndex:'id' },
             check_labels_sm,
             { header: _('Color'), dataIndex: 'color', width:15, sortable: false, renderer: render_color },
-            { header: _('Label'), dataIndex: 'name', sortable: false },
+            { header: _('Label'), dataIndex: 'name', sortable: true },
             { hidden: true, dataIndex:'active' }
         ],
         autoSizeColumns: true,

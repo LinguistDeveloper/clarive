@@ -2,10 +2,12 @@
     var parsers = new Baseliner.CIGrid({ title:_('Parser'), ci: { 'role': 'Parser' },
         value: params.rec.parsers, name: 'parsers' });
     
+    /*
     var fields = new Baseliner.DataEditor({ title:_('Fields') });
     var rules = new Baseliner.DataEditor({ title:_('Rules') });
     var outputs = new Baseliner.DataEditor({ title:_('Build') });
     var deploy = new Baseliner.DataEditor({ title:_('Deploy') });
+    */
     
     var include = new Baseliner.ArrayGrid({ 
         title:_('Include'), 
@@ -31,14 +33,11 @@
             { xtype:'panel', layout:'vbox', 
                layoutConfig:{ align:'stretch' },
                anchor: '100%', title:_('Paths'), items: [ include, exclude ] },
-            parsers,
-            fields,
-            rules,
-            outputs,
-            deploy
+            parsers
         ]
     });
     return [
+        { xtype:'checkbox', fieldLabel: _('Exclude unparsed items'), name: 'only_parsed', checked: params.rec.only_parsed },
         tabs
     ]; 
 })

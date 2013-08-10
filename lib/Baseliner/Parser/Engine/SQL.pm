@@ -1,17 +1,20 @@
-package Baseliner::Parser::Engine::OraclePLSQL;
+package Baseliner::Parser::Engine::SQL;
 use Baseliner::Moose;
 
 sub parse {
     my ($self,%p) =@_;
+    my $f = "$p{file}";
+    my $source = $p{source};
     
-    my $source = $p{source} // die "Missing parameter source";
+    my $tree = { depends=>[] };
+    
     my @lines = split /\r?\n/, $source ;
-    
-    my $fc, @select_list, @update_list, @insert_list, @delete_list;
+    my ( $fc, @select_list, @update_list, @insert_list, @delete_list );
+    my ( @final_select_list, @sort_nodup_delete_list, @sort_nodup_update_list, @sort_nodup_final_select_list, @sort_nodup_insert_list );
     my ( $sc, $uc, $ic, $dc, $tc, $tl ) = ( 0, 0, 0, 0, 0, 0 );
 
     #Parse the file, remove line feed and store it in variable fc
-    while ( @lines ) {
+    for ( @lines ) {
         chomp;
         s/(.*?)(--)(.*)/\1/;      # Strip -- sql comments
         s/((\/\*).+?(\*\/))//;    # Strip /* */ comments
@@ -20,8 +23,6 @@ sub parse {
         $tl++;
     }
     
-    #print "\n", "Processing file : $ARGV[0]", "\n";
-    print "Total lines : $tl", "\n";
     $_ = $fc;
     s/([\d\D]*)/\U\1/;            #make uppercase
     $fc = $_;
@@ -97,37 +98,27 @@ sub parse {
     }
 
     #Refining the collected information
-    @sort_nodup_insert_list       = sort grep { !$isaw1{$_}++ } @insert_list;
-    @sort_nodup_update_list       = sort grep { !$isaw2{$_}++ } @update_list;
-    @sort_nodup_delete_list       = sort grep { !$isaw3{$_}++ } @delete_list;
-    @sort_nodup_final_select_list = sort grep { !$isaw4{$_}++ } @final_select_list;
-    @sort_nodup_insert_list       = ("There is no insert operation") if !@sort_nodup_insert_list;
-    @sort_nodup_update_list       = ("There is no update operation") if !@sort_nodup_update_list;
-    @sort_nodup_delete_list       = ("There is no delete operation") if !@sort_nodup_delete_list;
-    @sort_nodup_final_select_list = ("There is no select operation") if !@sort_nodup_final_select_list;
+    @sort_nodup_insert_list       = sort keys +{ map { $_=>1 } @insert_list };
+    @sort_nodup_update_list       = sort keys +{ map { $_=>1 } @update_list };
+    @sort_nodup_delete_list       = sort keys +{ map { $_=>1 } @delete_list };
+    @sort_nodup_final_select_list = sort keys +{ map { $_=>1 } @final_select_list };
+    my @deps = sort keys +{ map { $_=>1 } @sort_nodup_delete_list, @sort_nodup_insert_list, @sort_nodup_update_list, @sort_nodup_final_select_list };
+    for( @deps ) { 
+        s/[\(\)]+//g;
+        s/@.+$//g;
+        s/^(.+)\.//g;
+        next if $_ eq 'DUAL';
+        next if /^(DBA_|USER_)/;
+        next if /[\|:'"]/;
+        next if /^0-9+$/;
+        next unless length;
+        push $tree->{depends}, uc $_ ;
+    }
 
-    #if ( $tc gt 0 ) {
-    #    print "\n";
-    #    print "SELECT is done on the following tables : ($sc) operations \n";
-    #    print join ", ", @sort_nodup_final_select_list;
-    #    print "\n\n";
-
-    #    print "UPDATE is done on the following tables : ($uc) operations \n";
-    #    print join ", ", @sort_nodup_update_list;
-    #    print "\n\n";
-
-    #    print "INSERT is done on the following tables : ($ic) operations \n";
-    #    print join ", ", @sort_nodup_insert_list;
-    #    print "\n\n";
-    #    print "DELETE is done on the following tables : ($dc) operations \n";
-    #    print join ", ", @sort_nodup_delete_list;
-    #    print "\n\n";
-    #} else {
-    #    print "The file ($ARGV[0]) is not an SQL file";
-    #}
-}
-
+    return $tree;
+}   
 
 1;
+
 
 
