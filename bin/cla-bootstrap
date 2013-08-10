@@ -3,7 +3,9 @@ use strict;
 use warnings;
 use v5.10;
 use FindBin qw($Bin);
+my %opts;
 BEGIN {
+    %opts = map { /^-[^-]/ ? ($_, 1) : $_ } @ARGV;
     if( ! $ENV{CLARIVE_HOME} ) {
         our $script_home = $Bin . '/..';
         chdir $script_home;
@@ -12,27 +14,31 @@ BEGIN {
         $ENV{CLARIVE_HOME} //= $script_home;
     }
 }
+$opts{-h} and die "usage: cla-bootstrap -g --m <module>\n";
 use lib "$ENV{CLARIVE_HOME}/lib";
-use lib "$ENV{CLARIVE_HOME}/local-lib/lib/perl5";
+use lib $opts{-g} ? '.' : "$ENV{CLARIVE_HOME}/local-lib/lib/perl5";
 
-my %opts = ( @ARGV );
 $| = 1;
 
 my $data = join '', <DATA>;
 my ($modules,$cpanm) = split /@@@/, $data;
 $cpanm = eval $cpanm;
 
-my $llib = './local-lib';
+my $llib = "$ENV{CLARIVE_HOME}/local-lib";
+my @llib = $opts{-g} ? () : ( '-l' => $llib );
 my $app = App::cpanminus::script->new;
+
+$opts{-g} ? say "*** Clarive Bootstrap install to Global Perl"
+          : say "*** Clarive Bootstrap install to local-lib $llib";
 
 cpanm( '-n', 'local::lib' ) and die "error"; 
 cpanm( '-n', 'App::Ack' ) and die "error"; 
 cpanm( '-n', 'App::cpanminus' ) and die "error";
-cpanm( '-n', 'Capture::Tiny', -l => $llib ) and die "error";
+cpanm( '-n', 'Capture::Tiny', @llib ) and die "error";
 
 require Capture::Tiny;
 
-my @modules = $opts{-m} // grep !/^#/, grep { defined && length } split /\r?\n+/, $modules;
+my @modules = $opts{'--m'} // grep !/^#/, grep { defined && length } split /\r?\n+/, $modules;
 @modules = grep { length } map { s/^\s+//g; s/\s+$//g; $_ } @modules;
 @modules = grep { eval("require $_"); $@ } @modules;
 
@@ -62,7 +68,7 @@ if( ! exists $opts{-w} ) {
                     local $SIG{CHLD};  # otherwise cpanm install fails 
                     local $SIG{INT}; 
                     local $SIG{TERM}; 
-                    cpanm_capture( $mod, '-l' => $llib );
+                    cpanm_capture( $mod, @llib );
                     exit 0;
                 }
             }
@@ -80,7 +86,7 @@ if( ! exists $opts{-w} ) {
 }
 
 sub cpanm_bin {
-    system "cpanm", -l => './local-lib', '-n', @_
+    system "cpanm", @llib, '-n', @_
 }
 
 sub cpanm {
@@ -152,6 +158,7 @@ Catalyst::Plugin::Cache
 Catalyst::Plugin::Cache::FastMmap
 Catalyst::Plugin::ConfigLoader
 Catalyst::Plugin::I18N
+Catalyst::Plugin::Log::Colorful
 Catalyst::Plugin::Session
 Catalyst::Plugin::Session::State::Cookie
 Catalyst::Plugin::Session::State:Cookie
@@ -212,6 +219,7 @@ HTML::Mason
 IO::All
 IO::Compress::Gzip
 Image::Identicon
+JE
 JSON
 JSON::XS
 JavaScript::Dumper
@@ -247,8 +255,12 @@ Path::Class
 Perl::Tidy
 Plack
 Pod::Simple::HTML
+PocketIO
 Proc::Background
 Proc::Exists
+Proc::ProcessTable
+Regexp::Grammars
+Server::Starter
 SQL::Abstract
 SQL::Translator
 SQL::Translator::Diff
