@@ -1581,7 +1581,9 @@ sub set_cis {
 }
 
 sub set_revisions {
-    my ($self, $rs_topic, $revisions, $user ) = @_;
+    my ($self, $rs_topic, $revisions, $user, $id_field  ) = @_;
+    
+    _log ">>>>>>>>>>>>>>>>>>>>>REVISIONS: " . $id_field;
     
     # related topics
     my @new_revisions = _array( $revisions ) ;
@@ -1591,7 +1593,7 @@ sub set_revisions {
         if( @new_revisions ) {
             @new_revisions  = split /,/, $new_revisions[0] if $new_revisions[0] =~ /,/ ;
             my @rs_revs = Baseliner->model('Baseliner::BaliMaster')->search({mid =>\@new_revisions});
-            $rs_topic->set_revisions( \@rs_revs, { rel_type=>'topic_revision'});
+            $rs_topic->set_revisions( \@rs_revs, { rel_type=>'topic_revision', rel_field => $id_field});
             
             my $revisions = join(',', map { Baseliner::CI->new($_->mid)->load->{name}} @rs_revs);
     
@@ -1628,7 +1630,8 @@ sub set_revisions {
 }
 
 sub set_release {
-    my ($self, $rs_topic, $release, $user ) = @_;
+    my ($self, $rs_topic, $release, $user, $id_field  ) = @_;
+    
     my $topic_mid = $rs_topic->mid;
     my $release_row = Baseliner->model('Baseliner::BaliTopic')->search(
                             { is_release => 1, rel_type=>'topic_topic', to_mid=> $topic_mid },
@@ -1652,7 +1655,7 @@ sub set_release {
             
             my $row_release = Baseliner->model('Baseliner::BaliTopic')->find( $new_release[0] );
             my $topic_row = Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid );
-            $row_release->add_to_topics( $topic_row, { rel_type=>'topic_topic'} );
+            $row_release->add_to_topics( $topic_row, { rel_type=>'topic_topic', rel_field => $id_field} );
             
             event_new 'event.topic.modify_field' => { username   => $user,
                                                 field      => '',
@@ -1690,7 +1693,7 @@ sub set_projects {
     my @new_projects = sort { $a <=> $b } _array( $projects ) ;
 
     #my @old_projects = map {$_->{mid}} Baseliner->model('Baseliner::BaliTopic')->find(  $topic_mid )->projects->search( {rel_field => $id_field}, { order_by => { '-asc' => ['mid'] }} )->hashref->all;
-    _log "RRRRRR: ".$id_field;
+
     my @old_projects =  map { $_->{mid} } Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid )->
                 projects->search( {rel_field => $id_field }, { select => ['mid'], order_by => { '-asc' => ['mid'] }} )->hashref->all;
 

@@ -137,8 +137,6 @@ sub event_new {
     my $ev = Baseliner->model('Registry')->get( $key ); # this throws an exception if key not found
     my $event_create = sub {
         my ($ed,@rules) = @_;
-        _log ">>>>>>>>>>>>>PAPAPAPAPAP: " . _dump($ed);
-        
         my $ev_row = DB->BaliEvent->create( { event_key => $key, event_data => _dump($ed), mid => $ed->{mid}, username => $ed->{username} } );
         for my $rule (@rules) {
             _debug $rule;
