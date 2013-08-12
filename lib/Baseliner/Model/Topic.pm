@@ -1070,7 +1070,7 @@ sub get_data {
         
         foreach my $key  (keys %method_fields){
             my $method_get = $method_fields{ $key };
-            $data->{ $key } =  $self->$method_get( $topic_mid, $key, $meta, %opts );
+            $data->{ $key } =  $self->$method_get( $topic_mid, $key, $meta, $data, %opts );
         }
         
         my @custom_fields = map { $_->{id_field} } grep { $_->{origin} eq 'custom' && !$_->{relation} } _array( $meta  );
@@ -1104,8 +1104,9 @@ sub get_release {
 }
 
 sub get_projects {
-    my ($self, $topic_mid, $id_field ) = @_;
+    my ($self, $topic_mid, $id_field, $meta, $data ) = @_;
     my @projects = Baseliner->model('Baseliner::BaliTopic')->find(  $topic_mid )->projects->search( {rel_field => $id_field}, { select=>['mid','name'], order_by => { '-asc' => ['mid'] }} )->hashref->all;
+    $data->{"$id_field._project_name_list"} = join ', ', map { $_->{name} } @projects;
     return @projects ? \@projects : [];
 }
 
@@ -1154,7 +1155,7 @@ sub get_dates {
 }
 
 sub get_topics{
-    my ($self, $topic_mid, $id_field, $meta, %opts) = @_;
+    my ($self, $topic_mid, $id_field, $meta, $data, %opts) = @_;
     my $rs_rel_topic = Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid )
         ->topics->search( {rel_field => $id_field}, { order_by=>'rel_seq', prefetch=>['categories'] } );
     rs_hashref ( $rs_rel_topic );
