@@ -137,6 +137,8 @@ sub event_new {
     my $ev = Baseliner->model('Registry')->get( $key ); # this throws an exception if key not found
     my $event_create = sub {
         my ($ed,@rules) = @_;
+        _log ">>>>>>>>>>>>>PAPAPAPAPAP: " . _dump($ed);
+        
         my $ev_row = DB->BaliEvent->create( { event_key => $key, event_data => _dump($ed), mid => $ed->{mid}, username => $ed->{username} } );
         for my $rule (@rules) {
             _debug $rule;
@@ -155,44 +157,45 @@ sub event_new {
         }
     };
     return try {
+        require Baseliner::Core::Event;
+        my $obj = Baseliner::Core::Event->new( data => $data );
+        # PRE rules
+        my $rules_pre = $ev->rules_pre_online( $data );
+        push @rule_log, map { $_->{when} => 'pre-online'; $_ } _array( $rules_pre->{rule_log} );
+        # PRE hooks
+        for my $hk ( $ev->before_hooks ) {
+            my $hk_data = $hk->( $obj );
+            $data = { %$data, %$hk_data } if ref $hk_data eq 'HASH';
+            $obj->data( $data );
+        }
         if( ref $code eq 'CODE' ) {
-            require Baseliner::Core::Event;
-            my $obj = Baseliner::Core::Event->new( data => $data );
-            # PRE rules
-            my $rules_pre = $ev->rules_pre_online( $data );
-            push @rule_log, map { $_->{when} => 'pre-online'; $_ } _array( $rules_pre->{rule_log} );
-            # PRE hooks
-            for my $hk ( $ev->before_hooks ) {
-                my $hk_data = $hk->( $obj );
-                $data = { %$data, %$hk_data } if ref $hk_data eq 'HASH';
-                $obj->data( $data );
-            }
             # RUN
             my $rundata = $code->( $data );
             ref $rundata eq 'HASH' and $data = { %$data, %$rundata };
-            if( !length $data->{mid} ) {
-                _debug 'event_new is missing mid parameter' ;
-                #_throw 'event_new is missing mid parameter' ;
-            } else {
-                try {
-                    my $ci = _ci( $data->{mid} );
-                    my $ci_data = $ci->load;
-                    $data = { %$ci_data, ci=>$ci, %$data };
-                } catch {
-                    _error _loc("Error: Could not instantiate ci data for event: %1", shift() );
-                };
-            }
-            # POST hooks
-            $obj->data( $data );
-            for my $hk ( $ev->after_hooks ) {
-                my $hk_data = $hk->( $obj );
-                $data = { %$data, %$hk_data } if ref $hk_data eq 'HASH';
-                $obj->data( $data );
-            }
-            # POST rules
-            my $rules_post = $ev->rules_post_online( $data );
-            push @rule_log, map { $_->{when} => 'post-online'; $_ } _array( $rules_post->{rule_log} );
         }
+        if( !length $data->{mid} ) {
+            _debug 'event_new is missing mid parameter' ;
+            #_throw 'event_new is missing mid parameter' ;
+        } else {
+            try {
+                my $ci = _ci( $data->{mid} );
+                my $ci_data = $ci->load;
+                $data = { %$ci_data, ci=>$ci, %$data };
+            } catch {
+                _error _loc("Error: Could not instantiate ci data for event: %1", shift() );
+            };
+        }
+        # POST hooks
+        $obj->data( $data );
+        for my $hk ( $ev->after_hooks ) {
+            my $hk_data = $hk->( $obj );
+            $data = { %$data, %$hk_data } if ref $hk_data eq 'HASH';
+            $obj->data( $data );
+        }
+        # POST rules
+        my $rules_post = $ev->rules_post_online( $data );
+        push @rule_log, map { $_->{when} => 'post-online'; $_ } _array( $rules_post->{rule_log} );
+
         # create the event on table
         $event_create->( $data, @rule_log ) if defined $data->{mid};
         return $data; 
