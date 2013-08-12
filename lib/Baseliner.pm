@@ -90,6 +90,9 @@ __PACKAGE__->config( encoding => 'UTF-8' ); # used by Catalyst::Plugin::Unicode:
 
 __PACKAGE__->config( {
         'View::JSON' => {
+            decode_utf8  => 0,
+            allow_blessed => 1,
+            json_driver  => 'JSON::XS',
             expose_stash => 'json',
             encoding     => 'utf-8',
         },
