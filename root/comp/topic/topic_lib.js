@@ -1173,7 +1173,8 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
             Baseliner.warning( _('Warning'), _('Row already exists: %1', rec.name + '(' + rec.mid + ')' ) );
             return;
         }
-        var r = new self.store.recordType( rec );
+        var rec_with_data = Ext.apply(rec,rec.data);
+        var r = new self.store.recordType( rec_with_data );
         self.store.add( r );
         self.store.commitChanges();
         self.refresh_field();

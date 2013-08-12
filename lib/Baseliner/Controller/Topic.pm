@@ -224,19 +224,17 @@ sub related : Local {
     $from->{rows} = $limit;
     my $rs_topic = DB->BaliTopic->search($where, $from)->hashref;
     my @topics = map {
-        my $r = $_;
         if( $p->{topic_child_data} ) {
-            my $d = $c->model('Topic')->get_data( undef, $r->{mid}, with_meta=>1 ); # without the meta, no fieldlets will come
-            $r = { %$r, %$d };
-            #$r->{description} //= $r->{data}{description};
-            #$r->{name_status} ||= $r->{data}{name_status};
+            $_->{data} = $c->model('Topic')->get_data( undef, $_->{mid}, with_meta=>1 ); # without the meta, no fieldlets will come
+            $_->{description} //= $_->{data}{description};
+            $_->{name_status} ||= $_->{data}{name_status};
         }
 
-        $r->{name} = $r->{categories}{is_release} eq '1' 
-            ?  $r->{title}
-            :  _loc($r->{categories}->{name}) . ' #' . $r->{mid};
-        $r->{color} = $r->{categories}->{color};
-        $r
+        $_->{name} = $_->{categories}{is_release} eq '1' 
+            ?  $_->{title}
+            :  _loc($_->{categories}->{name}) . ' #' . $_->{mid};
+        $_->{color} = $_->{categories}->{color};
+        $_
     } $rs_topic->all;
 
     my $cnt = try {
