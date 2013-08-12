@@ -1009,8 +1009,10 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
                         cols.push( ct );
                     } else {
                         // if we dont have the field, create a text column with it
-                        store_fields.push( ck );
-                        ct = { header:_(ck), dataindex: ck, renderer: render_text_field };
+                        
+                        var col_s = ck.split(',');
+                        store_fields.push( col_s[0] || ck );
+                        ct = { header: col_s[1] || _(ck), dataindex: col_s[0] || ck, renderer: render_text_field };
                         cols.push( ct );
                     }
                 }
