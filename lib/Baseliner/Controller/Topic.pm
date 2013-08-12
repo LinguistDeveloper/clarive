@@ -624,7 +624,7 @@ sub comment : Local {
                         id_post  => $mid,
                         post     => substr( $text, 0, 30 ) . ( length $text > 30 ? "..." : "" )
                     };
-                    $topic_row->add_to_posts( $post, { rel_type=>'topic_post' });
+                    $topic_row->add_to_posts( $post, { rel_field => 'topic_post', rel_type=>'topic_post' });
                     #master_rel->create({ rel_type=>'topic_post', from_mid=>$id_topic, to_mid=>$mid });
                 };
                 #$c->model('Event')->create({
