@@ -10,6 +10,10 @@ params:
     field_order: 9
     section: 'details'
     single_mode: 'false'
+    collection: 'project'
+    tree_level: ''
+    include_root: 'true'
+
 ---
 */
 (function(params){
@@ -32,7 +36,7 @@ params:
     var ps = meta.page_size || 20;
     var project_box_store = new Baseliner.store.UserProjects({ id: 'id', baseParams: {
         tree_level: meta.tree_level || '',
-        limit: ps, include_root: true, level: meta.level 
+        limit: ps, include_root: true, level: meta.level, collection: meta.collection
     } });
     
     var no_items = _('No items found');
