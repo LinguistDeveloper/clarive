@@ -4623,5 +4623,9 @@ msgstr "No leídas"
 msgid "Created for Me"
 msgstr "Creadas por Mí"
 
+msgid "Change status"
+msgstr "Cambiar estado"
+
 msgid "Changed status"
 msgstr "Estado cambiado"
+
