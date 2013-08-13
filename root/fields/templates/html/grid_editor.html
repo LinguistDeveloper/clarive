@@ -79,7 +79,9 @@
                                     } elsif( length $val ) {
                                         my $cd = Class::Date->new( $val );
                                         my $st = $row->{overdue} ? 'color: #f34' : '';
-                                        _loc($cd->wdayname) . " " . $cd->string . " - <span style='$st;font-weight: bold'>" . Util->ago( $cd ) . '</span>';
+                                        my $wd = $cd->wdayname;
+                                        $wd = Encode::encode('UTF-8', $wd);
+                                        _loc($wd) . " " . $cd->string . " - <span style='$st;font-weight: bold'>" . Util->ago( $cd ) . '</span>';
                                     } else {
                                         $val
                                     }
