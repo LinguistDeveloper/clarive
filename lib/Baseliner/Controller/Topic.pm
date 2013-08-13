@@ -1705,7 +1705,7 @@ sub change_status : Local {
             id_status=>$p->{new_status}, id_old_status=>$p->{old_status}, 
             mid=>$p->{mid} 
         );
-        { success=>\1, msg=>'ok' };
+        { success=>\1, msg=>_loc ('Changed status') };
     } catch {
         my $err = shift;
         _error( $err );
@@ -1726,21 +1726,6 @@ sub user_seen : Local {
         _error( $err );
         { success=>\0, msg=>$err };
     }; 
-    $c->forward('View::JSON');
-}
-
-sub change_status_topic : Local {
-    my ($self, $c ) = @_;
-    my $p = $c->req->params;
-    my ($username, $topic_mid, $new_status_id) = ($c->username, $p->{topic_mid}, $p->{new_status_id});
-    try {
-        $c->model('Topic')->change_status_topic( {username => $username, topic_mid => $topic_mid, new_status_id => $new_status_id} );
-        $c->stash->{json} = { success => \1, msg => _loc ('Changed status') };
-    } catch {
-        my $err = shift;
-        _error( $err );
-        $c->stash->{json} = { success => \0, msg => $err };
-    };
     $c->forward('View::JSON');
 }
 
