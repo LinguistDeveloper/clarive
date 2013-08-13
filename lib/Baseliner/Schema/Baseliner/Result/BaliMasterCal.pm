@@ -15,7 +15,12 @@ __PACKAGE__->load_components("+Baseliner::Schema::Master");
 __PACKAGE__->table("bali_master_cal");
 
 __PACKAGE__->add_columns(
-  "id", { data_type => "number", is_nullable => 0, },
+  "id", { 
+    data_type => "number",
+    is_auto_increment => 1,
+    is_nullable => 0,
+    sequence => "bali_master_cal_seq",
+  },
   "mid", { data_type => "number", is_nullable => 0, },
   "id_parent", { data_type => "number", is_nullable => 1, },
   "start_date", {
