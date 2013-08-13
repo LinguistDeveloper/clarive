@@ -466,7 +466,7 @@ sub topics_for_user {
     if($p->{id_project}){
         my @topics_project = map {$_->{from_mid}} DB->BaliMasterRel->search({ to_mid=>$p->{id_project}, rel_type =>'topic_project' })->hashref->all;
         $where->{topic_mid} = \@topics_project;
-    }    
+    }
     
     # SELECT GROUP_BY MID:
     my $args = { select=>$select, as=>$as, order_by=>$order_by, group_by=>$group_by };
@@ -507,12 +507,12 @@ sub topics_for_user {
             if( $row->{label_id} ) {
                 $mid_data{$mid}{group_labels}{ $row->{label_id} . ";" . $row->{label_name} . ";" . $row->{label_color} } = ();
             }
-            if( $row->{project_id} ) {
+            if( $row->{project_id} && $row->{collection} eq 'project') {
                 $mid_data{$mid}{group_projects}{ $row->{project_id} . ";" . $row->{project_name} } = ();
                 $mid_data{$mid}{group_projects_report}{ $row->{project_name} } = ();
-            } else {
-                $mid_data{$mid}{group_projects} = {};
-                $mid_data{$mid}{group_projects_report} = {};
+            # } else {
+            #     $mid_data{$mid}{group_projects} = {};
+            #     $mid_data{$mid}{group_projects_report} = {};
             }
             if( $row->{cis_out} ) {
                 $mid_data{$mid}{group_cis_out}{ $row->{cis_out} } = ();
