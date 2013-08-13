@@ -39,11 +39,11 @@ __PACKAGE__->add_columns(
     data_type     => "datetime",
     original      => { data_type => "date" },
   },
-  slottype  => { data_type => "varchar2", is_nullable => 0, size => 255 },
-  slotname  => { data_type => "varchar2", is_nullable => 0, size => 4000 },
-  rel_field => { data_type => "varchar2", is_nullable => 0, size => 2000 },
+  slottype  => { data_type => "varchar2", size => 255 },
+  slotname  => { data_type => "varchar2", size => 4000 },
+  rel_field => { data_type => "varchar2", size => 2000 },
   #"created_by", { data_type => "varchar2", is_nullable => 0, size => 255 },
-  "allday", { data_type => "char", default_value => "0", is_nullable => 0, size => 1 },
+  "allday", { data_type => "char", default_value => "0", size => 1 },
 );
 
 
