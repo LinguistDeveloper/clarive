@@ -942,7 +942,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
     },
     change_status: function(obj){
         var self = this
-        Baseliner.Topic.change_status_topic({ topic_mid: self.topic_mid, new_status_id: obj.id, success:function(){
+        Baseliner.Topic.change_status_topic({ mid: self.topic_mid, new_status: obj.id, success:function(){
             Baseliner.refreshCurrentTab();
             //self.detail_reload();
         }});
@@ -966,7 +966,7 @@ Baseliner.Topic.delete_topic = function(opts){
 
 
 Baseliner.Topic.change_status_topic = function(opts){
-    Baseliner.ajaxEval( '/topic/change_status_topic',{ topic_mid: opts.topic_mid, new_status_id: opts.new_status_id },
+    Baseliner.ajaxEval( '/topic/change_status',{ mid: opts.mid, new_status: opts.new_status },
         function(res) {
             if ( res.success ) {
                 Baseliner.message( _('Success'), res.msg );

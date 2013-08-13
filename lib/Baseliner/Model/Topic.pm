@@ -1957,18 +1957,19 @@ sub change_status {
     my ($self, %p) = @_;
     my $mid = $p{mid} or _throw 'Missing parameter mid';
     $p{id_status} or _throw 'Missing parameter id_status';
-    $p{id_old_status} or _throw 'Missing parameter id_old_status';
+    my $row = DB->BaliTopic->find( $mid );
+    my $id_old_status = $p{id_old_status} || $row->id_category_status;
     my $status = $p{status} || $self->find_status_name($p{id_status});
-    my $old_status = $p{old_status} || $self->find_status_name($p{id_old_status});
+    my $old_status = $p{old_status} || $self->find_status_name($id_old_status);
     my $callback = $p{callback};
     event_new 'event.topic.change_status'
-        => { username => $p{username}, old_status => $old_status, id_old_status=>$p{id_old_status}, id_status=>$p{id_status}, status => $status }
+        => { username => $p{username}, old_status => $old_status, id_old_status=> $id_old_status, id_status=>$p{id_status}, status => $status }
         => sub {
             # should I change the status?
             if( $p{change} ) {
-                my $row = DB->BaliTopic->find( $mid );
+                
                 _fail( _loc('Id not found: %1', $mid) ) unless $row;
-                _fail _loc "Current topic status '%1' does not match the real status '%2'. Please refresh.", $row->status->name, $old_status if $row->id_category_status != $p{id_old_status};
+                _fail _loc "Current topic status '%1' does not match the real status '%2'. Please refresh.", $row->status->name, $old_status if $row->id_category_status != $id_old_status;
                 # XXX check workflow for user
                 # change and cleanup
                 $row->update({ id_category_status => $p{id_status} });
@@ -1982,27 +1983,6 @@ sub change_status {
         => sub {
             _throw _loc( 'Error modifying Topic: %1', shift() );
         };                    
-}
-
-sub change_status_topic {
-    my ($self, $p) = @_;
-    
-    my $username = $p->{username} or _throw 'Missing parameter username';
-    my $topic_mid = $p->{topic_mid} or _throw 'Missing parameter topic_mid';
-    my $new_status_id = $p->{new_status_id} or _throw 'Missing parameter new_status_id';
-    
-    my $topic = DB->BaliTopic->find( $topic_mid, { prefetch =>['status'] } );
-    my $rs_new_status = DB->BaliTopicStatus->find($new_status_id);    
-    event_new 'event.topic.change_status'
-        => { username => $username, old_status => $topic->status->name, status => $rs_new_status->name }
-        => sub {
-            $topic->id_category_status($rs_new_status->id);
-            $topic->update;				
-            { mid => $topic->mid, topic => $topic->title } 
-        } 
-    => sub {
-        _throw _loc( 'Error modifying Topic: %1', shift() );
-    };      
 }
 
 1;
