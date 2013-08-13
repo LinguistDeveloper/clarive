@@ -1053,8 +1053,10 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
                         cols.push( ct );
                     } else {
                         // if we dont have the field, create a text column with it
-                        store_fields.push( ck );
-                        ct = { header:_(ck), dataindex: ck, renderer: render_text_field };
+                        
+                        var col_s = ck.split(',');
+                        store_fields.push( col_s[0] || ck );
+                        ct = { header: col_s[1] || _(ck), dataindex: col_s[0] || ck, renderer: render_text_field };
                         cols.push( ct );
                     }
                 }
@@ -1217,7 +1219,8 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
             Baseliner.warning( _('Warning'), _('Row already exists: %1', rec.name + '(' + rec.mid + ')' ) );
             return;
         }
-        var r = new self.store.recordType( rec );
+        var rec_with_data = Ext.apply(rec,rec.data);
+        var r = new self.store.recordType( rec_with_data );
         self.store.add( r );
         self.store.commitChanges();
         self.refresh_field();
