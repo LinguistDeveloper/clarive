@@ -491,86 +491,98 @@ sub view : Local {
     
     try {
     
-    $c->stash->{ii} = $p->{ii};    
-    $c->stash->{swEdit} =  ref($p->{swEdit}) eq 'ARRAY' ? $p->{swEdit}->[0]:$p->{swEdit} ;
-    $c->stash->{permissionEdit} = 0;
-    $c->stash->{permissionComment} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.GDI.comment' );
-    if ($c->is_root){
-        $c->stash->{HTMLbuttons} = 0;
-    }
-    else{
-        $c->stash->{HTMLbuttons} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.GDI.HTMLbuttons' );
-    }
-    
-    my %categories_edit = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'edit' );
-    
-    if($topic_mid || $c->stash->{topic_mid} ){
- 
-        # user seen
-        for my $mid ( _array( $topic_mid ) ) {
-            DB->BaliMasterPrefs->update_or_create({ username=>$c->username, mid=>$mid, last_seen=>_dt() });
-        }
-        
-        $category = DB->BaliTopicCategories->search({ mid=>$topic_mid }, { prefetch=>{'topics' => 'status'} })->first;
-        _fail( _loc('Category not found or topic deleted: %1', $topic_mid) ) unless $category;
-        
-        $c->stash->{category_meta} = $category->forms;
-        
-        my %tmp;
-        if ((substr $category->topics->status->type, 0, 1) eq "F"){
-            $c->stash->{permissionEdit} = 0;
+        $c->stash->{ii} = $p->{ii};    
+        $c->stash->{swEdit} =  ref($p->{swEdit}) eq 'ARRAY' ? $p->{swEdit}->[0]:$p->{swEdit} ;
+        $c->stash->{permissionEdit} = 0;
+        $c->stash->{permissionComment} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.GDI.comment' );
+        if ($c->is_root){
+            $c->stash->{HTMLbuttons} = 0;
         }
         else{
-            if ($c->is_root){
-                $c->stash->{permissionEdit} = 1;     
-            }else{
-                if (exists ($categories_edit{ $category->id })){
-                    $c->stash->{permissionEdit} = 1;
+            $c->stash->{HTMLbuttons} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.GDI.HTMLbuttons' );
+        }
+        
+        my %categories_edit = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'edit' );
+        
+        if($topic_mid || $c->stash->{topic_mid} ){
+     
+            # user seen
+            for my $mid ( _array( $topic_mid ) ) {
+                DB->BaliMasterPrefs->update_or_create({ username=>$c->username, mid=>$mid, last_seen=>_dt() });
+            }
+            
+            $category = DB->BaliTopicCategories->search({ mid=>$topic_mid }, { prefetch=>{'topics' => 'status'} })->first;
+            _fail( _loc('Category not found or topic deleted: %1', $topic_mid) ) unless $category;
+            
+            $c->stash->{category_meta} = $category->forms;
+            
+            #workflow category-status
+            my $username = $c->is_root ? '' : $c->username;
+            my @statuses = $c->model('Topic')->next_status_for_user(
+                id_category    => $category->id,
+                id_status_from => $category->topics->status->id,
+                username       => $username,
+            );            
+            
+            
+            my %tmp;
+            if ((substr $category->topics->status->type, 0, 1) eq "F"){
+                $c->stash->{permissionEdit} = 0;
+            }
+            else{
+                if ($c->is_root){
+                    $c->stash->{permissionEdit} = 1;     
+                }else{
+                    if (exists ($categories_edit{ $category->id })){
+                        $c->stash->{permissionEdit} = 1;
+                    }
                 }
             }
+                             
+            # comments
+            $c->stash->{comments} = $c->model('Topic')->list_posts( mid=>$topic_mid );
+            # activity (events)
+            $c->stash->{events} = events_by_mid( $topic_mid, min_level => 2 );
+            
+            #$c->stash->{forms} = [
+            #    map { "/forms/$_" } split /,/,$topic->categories->forms
+            #];
+     
+            # jobs for release and changeset
+            if( $category->is_changeset || $category->is_release ) {
+                my @jobs = DB->BaliJob->search({ item=>{ -like => '%/' . $topic_mid } }, 
+                { prefetch=>'bali_job_items', page=>0, rows=>20, order_by=>{ -desc=>'me.id' } })->hashref->all;
+                $c->stash->{jobs} = \@jobs;
+            }
+            
+            $c->stash->{status_items_menu} = _encode_json(\@statuses);
+            
+            
+        }else{
+            $id_category = $p->{new_category_id};
+            my $category = DB->BaliTopicCategories->find( $id_category );
+            $c->stash->{category_meta} = $category->forms;
+            $c->stash->{permissionEdit} = 1 if exists $categories_edit{$id_category};
+            
+            $c->stash->{topic_mid} = '';
+            $c->stash->{events} = '';
+            $c->stash->{comments} = '';
         }
-                         
-        # comments
-        $c->stash->{comments} = $c->model('Topic')->list_posts( mid=>$topic_mid );
-        # activity (events)
-        $c->stash->{events} = events_by_mid( $topic_mid, min_level => 2 );
         
-        #$c->stash->{forms} = [
-        #    map { "/forms/$_" } split /,/,$topic->categories->forms
-        #];
- 
-        # jobs for release and changeset
-        if( $category->is_changeset || $category->is_release ) {
-            my @jobs = DB->BaliJob->search({ item=>{ -like => '%/' . $topic_mid } }, 
-            { prefetch=>'bali_job_items', page=>0, rows=>20, order_by=>{ -desc=>'me.id' } })->hashref->all;
-            $c->stash->{jobs} = \@jobs;
+        if( $p->{html} ) {
+            my $meta = $c->model('Topic')->get_meta( $topic_mid, $id_category );
+            my $data = $c->model('Topic')->get_data( $meta, $topic_mid, topic_child_data=>$p->{topic_child_data} );
+            $meta = get_meta_permissions ($c, $meta, $data);        
+            
+            $data->{admin_labels} = $c->model('Permissions')->user_has_any_action( username=> $c->username, action=>'action.admin.topics' );
+            
+            $c->stash->{topic_meta} = $meta;
+            $c->stash->{topic_data} = $data;
+            
+            $c->stash->{template} = '/comp/topic/topic_msg.html';
+        } else {
+            $c->stash->{template} = '/comp/topic/topic_main.js';
         }
-    }else{
-        $id_category = $p->{new_category_id};
-        my $category = DB->BaliTopicCategories->find( $id_category );
-        $c->stash->{category_meta} = $category->forms;
-        $c->stash->{permissionEdit} = 1 if exists $categories_edit{$id_category};
-        
-        $c->stash->{topic_mid} = '';
-        $c->stash->{events} = '';
-        $c->stash->{comments} = '';
-    }
-    
-    if( $p->{html} ) {
-        my $meta = $c->model('Topic')->get_meta( $topic_mid, $id_category );
-        my $data = $c->model('Topic')->get_data( $meta, $topic_mid, topic_child_data=>$p->{topic_child_data} );
-        $meta = get_meta_permissions ($c, $meta, $data);        
-        
-        $data->{admin_labels} = $c->model('Permissions')->user_has_any_action( username=> $c->username, action=>'action.admin.topics' );
-        
-        $c->stash->{topic_meta} = $meta;
-        $c->stash->{topic_data} = $data;
-        
-
-        $c->stash->{template} = '/comp/topic/topic_msg.html';
-    } else {
-        $c->stash->{template} = '/comp/topic/topic_main.js';
-    }
     } catch {
         $c->stash->{json} = { success=>\0, msg=>"". shift() };
         $c->forward('View::JSON');
@@ -1714,6 +1726,21 @@ sub user_seen : Local {
         _error( $err );
         { success=>\0, msg=>$err };
     }; 
+    $c->forward('View::JSON');
+}
+
+sub change_status_topic : Local {
+    my ($self, $c ) = @_;
+    my $p = $c->req->params;
+    my ($username, $topic_mid, $new_status_id) = ($c->username, $p->{topic_mid}, $p->{new_status_id});
+    try {
+        $c->model('Topic')->change_status_topic( {username => $username, topic_mid => $topic_mid, new_status_id => $new_status_id} );
+        $c->stash->{json} = { success => \1, msg => _loc ('Changed status') };
+    } catch {
+        my $err = shift;
+        _error( $err );
+        $c->stash->{json} = { success => \0, msg => $err };
+    };
     $c->forward('View::JSON');
 }
 
