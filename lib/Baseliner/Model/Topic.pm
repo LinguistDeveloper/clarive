@@ -134,6 +134,10 @@ register 'event.topic.change_status' => {
     vars => ['username', 'old_status', 'status', 'ts'],
 };
 
+register 'action.topic.logical_change_status' => {
+    name => 'Change topic status logically (no deployment)'
+};
+
 register 'registor.action.topic_category' => {
     generator => sub {
         my %type_actions_category = (
