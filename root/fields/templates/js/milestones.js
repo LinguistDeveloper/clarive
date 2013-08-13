@@ -9,8 +9,8 @@ params:
     field_order: 1
     field_order_html: 1000
     allowBlank: 0
-    height: 300,
-    width: 100%,
+    height: 300
+    width: 100%
     columns: 'Milestone[slotname];Planned End Date[plan_end_date],datefield;End Date[end_date],datefield' 
     section: 'head'
     relation: system
