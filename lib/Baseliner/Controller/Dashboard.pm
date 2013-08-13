@@ -1000,18 +1000,28 @@ sub topics_by_category: Local{
     #my $p = $c->request->parameters;
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
     my ($SQL, @topics_by_category, @datas);
+
+    my $user_categories = join ",", map {
+        $_->{id};
+    } $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view' );
     
-    $SQL = "SELECT COUNT(*) AS TOTAL, C.NAME AS CATEGORY, C.COLOR, TP.ID_CATEGORY FROM BALI_TOPIC TP, BALI_TOPIC_CATEGORIES C  WHERE TP.ACTIVE = 1 AND TP.ID_CATEGORY = C.ID GROUP BY NAME, C.COLOR, TP.ID_CATEGORY ORDER BY TOTAL DESC";
+    $SQL = "SELECT COUNT(*) AS TOTAL, C.NAME AS CATEGORY, C.COLOR, TP.ID_CATEGORY 
+            FROM BALI_TOPIC TP, BALI_TOPIC_CATEGORIES C  
+            WHERE TP.ACTIVE = 1 
+                  AND TP.ID_CATEGORY = C.ID 
+                  AND TP.ID_CATEGORY IN ( $user_categories )
+            GROUP BY NAME, C.COLOR, TP.ID_CATEGORY 
+            ORDER BY TOTAL DESC";
     
     @topics_by_category = $db->array_hash( $SQL );
 
     
     foreach my $topic (@topics_by_category){
         push @datas, {
-                    total 			=> $topic->{total},
-                    category		=> $topic->{category},
-                    color			=> $topic->{color},
-                    category_id		=> $topic->{id_category}
+                    total           => $topic->{total},
+                    category        => $topic->{category},
+                    color           => $topic->{color},
+                    category_id     => $topic->{id_category}
                 };
      }
     $c->stash->{topics_by_category} = \@datas;
@@ -1024,10 +1034,20 @@ sub topics_open_by_category: Local{
     #my $p = $c->request->parameters;
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
     my ($SQL, @topics_open_by_category, @datas);
+
+    my $user_categories = join ",", map {
+        $_->{id};
+    } $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view' );
     
-    $SQL = "SELECT COUNT(*) AS TOTAL, C.NAME AS CATEGORY, C.COLOR, TP.ID_CATEGORY FROM BALI_TOPIC TP
-                    INNER JOIN BALI_TOPIC_STATUS S ON ID_CATEGORY_STATUS = S.ID AND TYPE <> 'F'
-                    INNER JOIN BALI_TOPIC_CATEGORIES C ON TP.ID_CATEGORY = C.ID  WHERE TP.ACTIVE = 1 AND TP.ID_CATEGORY = C.ID GROUP BY NAME, C.COLOR, TP.ID_CATEGORY ORDER BY TOTAL DESC";
+    $SQL = "SELECT COUNT(*) AS TOTAL, C.NAME AS CATEGORY, C.COLOR, TP.ID_CATEGORY 
+            FROM BALI_TOPIC TP
+                 INNER JOIN BALI_TOPIC_STATUS S ON ID_CATEGORY_STATUS = S.ID AND TYPE NOT LIKE 'F%'
+                 INNER JOIN BALI_TOPIC_CATEGORIES C ON TP.ID_CATEGORY = C.ID  
+            WHERE TP.ACTIVE = 1 
+                  AND TP.ID_CATEGORY = C.ID 
+                  AND TP.ID_CATEGORY IN ( $user_categories )
+            GROUP BY NAME, C.COLOR, TP.ID_CATEGORY 
+            ORDER BY TOTAL DESC";
     
     @topics_open_by_category = $db->array_hash( $SQL );
 

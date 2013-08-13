@@ -602,6 +602,25 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             handler: function(){ return self.show_form() }, 
             allowDepress: false, toggleGroup: self.toggle_group
         });
+        
+        
+        var obj_status_items_menu = Ext.util.JSON.decode(self.status_items_menu);
+        
+        self.status_items_menu = [];
+        for(i=0; i < obj_status_items_menu.length;i++){
+            self.status_items_menu.push({ id: obj_status_items_menu[i].id_status, text: _(obj_status_items_menu[i].status_name), handler: function(obj){ self.change_status(obj) } });
+        }
+    
+        self.status_menu = new Ext.menu.Menu({
+            items: self.status_items_menu
+        });
+        
+        if (self.status_items_menu.length > 0){
+            self.btn_change_status = new Ext.Toolbar.Button({ text: _("Change status"), menu: self.status_menu }); 
+        }else{
+            self.btn_change_status = {};
+        }
+        
             
         self.btn_kanban = new Ext.Toolbar.Button({
             icon:'/static/images/icons/kanban.png',
@@ -625,6 +644,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         tb = self.create_toolbar();
 
         self.detail.on( 'render', function() {
+            
             if (self.topic_mid > 0 && !self.activarEdit) {
                 self.detail_reload();
             }
@@ -758,6 +778,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 self.btn_delete_form,
                 self.btn_save_form,
                 '->',
+                self.btn_change_status,
                 self.btn_graph,
                 self.btn_kanban
             ]
@@ -919,6 +940,13 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         if( Ext.isObject( self._parent_grid )  && self._parent_grid.getStore()!=undefined ) {
             self._parent_grid.getStore().reload();
         }
+    },
+    change_status: function(obj){
+        var self = this
+        Baseliner.Topic.change_status_topic({ mid: self.topic_mid, new_status: obj.id, success:function(){
+            Baseliner.refreshCurrentTab();
+            //self.detail_reload();
+        }});
     }
 });
 
@@ -936,6 +964,22 @@ Baseliner.Topic.delete_topic = function(opts){
     
     );
 };
+
+
+Baseliner.Topic.change_status_topic = function(opts){
+    Baseliner.ajaxEval( '/topic/change_status',{ mid: opts.mid, new_status: opts.new_status },
+        function(res) {
+            if ( res.success ) {
+                Baseliner.message( _('Success'), res.msg );
+                if( Ext.isFunction(opts.success) ) opts.success(res);
+            } else {
+                Baseliner.error( _('Error'), res.msg );
+                if( Ext.isFunction(opts.failure) ) opts.failure(res);
+            }
+        }
+    );
+};
+
 
 Baseliner.TopicCombo = Ext.extend( Ext.form.ComboBox, {
     minChars: 2,

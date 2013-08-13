@@ -134,6 +134,10 @@ register 'event.topic.change_status' => {
     vars => ['username', 'old_status', 'status', 'ts'],
 };
 
+register 'action.topic.logical_change_status' => {
+    name => 'Change topic status logically (no deployment)'
+};
+
 register 'registor.action.topic_category' => {
     generator => sub {
         my %type_actions_category = (
@@ -466,7 +470,7 @@ sub topics_for_user {
     if($p->{id_project}){
         my @topics_project = map {$_->{from_mid}} DB->BaliMasterRel->search({ to_mid=>$p->{id_project}, rel_type =>'topic_project' })->hashref->all;
         $where->{topic_mid} = \@topics_project;
-    }    
+    }
     
     # SELECT GROUP_BY MID:
     my $args = { select=>$select, as=>$as, order_by=>$order_by, group_by=>$group_by };
@@ -507,12 +511,12 @@ sub topics_for_user {
             if( $row->{label_id} ) {
                 $mid_data{$mid}{group_labels}{ $row->{label_id} . ";" . $row->{label_name} . ";" . $row->{label_color} } = ();
             }
-            if( $row->{project_id} ) {
+            if( $row->{project_id} && $row->{collection} eq 'project') {
                 $mid_data{$mid}{group_projects}{ $row->{project_id} . ";" . $row->{project_name} } = ();
                 $mid_data{$mid}{group_projects_report}{ $row->{project_name} } = ();
-            } else {
-                $mid_data{$mid}{group_projects} = {};
-                $mid_data{$mid}{group_projects_report} = {};
+            # } else {
+            #     $mid_data{$mid}{group_projects} = {};
+            #     $mid_data{$mid}{group_projects_report} = {};
             }
             if( $row->{cis_out} ) {
                 $mid_data{$mid}{group_cis_out}{ $row->{cis_out} } = ();
@@ -1597,8 +1601,6 @@ sub set_cis {
 sub set_revisions {
     my ($self, $rs_topic, $revisions, $user, $id_field  ) = @_;
     
-    _log ">>>>>>>>>>>>>>>>>>>>>REVISIONS: " . $id_field;
-    
     # related topics
     my @new_revisions = _array( $revisions ) ;
     my @old_revisions = map {$_->{to_mid}} DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_type => 'topic_revision'})->hashref->all;    
@@ -1968,18 +1970,19 @@ sub change_status {
     my ($self, %p) = @_;
     my $mid = $p{mid} or _throw 'Missing parameter mid';
     $p{id_status} or _throw 'Missing parameter id_status';
-    $p{id_old_status} or _throw 'Missing parameter id_old_status';
+    my $row = DB->BaliTopic->find( $mid );
+    my $id_old_status = $p{id_old_status} || $row->id_category_status;
     my $status = $p{status} || $self->find_status_name($p{id_status});
-    my $old_status = $p{old_status} || $self->find_status_name($p{id_old_status});
+    my $old_status = $p{old_status} || $self->find_status_name($id_old_status);
     my $callback = $p{callback};
     event_new 'event.topic.change_status'
-        => { username => $p{username}, old_status => $old_status, id_old_status=>$p{id_old_status}, id_status=>$p{id_status}, status => $status }
+        => { username => $p{username}, old_status => $old_status, id_old_status=> $id_old_status, id_status=>$p{id_status}, status => $status }
         => sub {
             # should I change the status?
             if( $p{change} ) {
-                my $row = DB->BaliTopic->find( $mid );
+                
                 _fail( _loc('Id not found: %1', $mid) ) unless $row;
-                _fail _loc "Current topic status '%1' does not match the real status '%2'. Please refresh.", $row->status->name, $old_status if $row->id_category_status != $p{id_old_status};
+                _fail _loc "Current topic status '%1' does not match the real status '%2'. Please refresh.", $row->status->name, $old_status if $row->id_category_status != $id_old_status;
                 # XXX check workflow for user
                 # change and cleanup
                 $row->update({ id_category_status => $p{id_status} });
