@@ -159,6 +159,8 @@
     <script type="text/javascript">
         Prefs.username = '<% $c->username %>';
         Prefs.is_logged_in = true;
+        var df = _('js_date_format');
+        Prefs.js_date_format = df =='js_date_format' ? 'Y-M-d' : df ;    // used by Ext.field.DateTime({ ... format: <format> }) and new Date(..).format(<format>)
         Prefs.logo_file = '<% $c->config->{logo_file} %>';
         Prefs.logo_filename = '<% $c->config->{logo_filename} || "logo.jpg" %>';
         Prefs.site = Ext.apply({

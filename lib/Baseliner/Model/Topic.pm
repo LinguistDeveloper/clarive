@@ -842,18 +842,6 @@ sub get_system_fields {
                 section     => 'details'
             }
         },
-        {
-            id_field => 'dates',
-            params   => {
-                name_field  => 'dates',
-                origin      => 'default',
-                relation    => 'system',
-                get_method  => 'get_dates',
-                html        => $pathHTML . 'field_scheduling.html',
-                field_order => 9999,
-                section     => 'details'
-            }
-        },
     );
     return \@system_fields
 }
@@ -1177,6 +1165,13 @@ sub get_topics{
     return @topics ? \@topics : [];    
 }
 
+sub get_cal {
+    my ($self, $topic_mid, $id_field, $meta, $data, %opts) = @_;
+    my @cal = DB->BaliMasterCal->search({ mid=>$topic_mid, rel_field=>$id_field })
+        ->hashref->all;
+    return \@cal; 
+}
+
 sub get_files{
     my ($self, $topic_mid, $id_field) = @_;
     my @files = map { +{ $_->get_columns } } 
@@ -1484,6 +1479,24 @@ sub set_priority {
             deadline_min       => $deadline[1],
             expr_deadline      => $deadline[0]         
            } 
+}
+
+sub set_cal {
+    my ($self, $rs_topic, $cal_json, $user, $id_field ) = @_;
+    my $mid = $rs_topic->mid;
+    $cal_json = Encode::encode('UTF-8', $cal_json);
+    my $cal_data = _from_json( $cal_json );
+    DB->BaliMasterCal->search({ mid=>$mid, rel_field=>$id_field })->delete;
+   
+    _debug $cal_json;
+    for my $row ( _array( $cal_data ) ) {
+        $row->{rel_field} = $id_field;
+        for( qw/start_date end_date plan_start_date plan_end_date/ ) {
+            $row->{$_} =~ s/T/ /g if defined $row->{$_}; 
+        }
+        $row->{mid} = $mid; 
+        DB->BaliMasterCal->create( $row );
+    }
 }
 
 sub set_topics {

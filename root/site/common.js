@@ -2465,63 +2465,82 @@ Baseliner.field_label_top = function( label, hidden ) {
     ]
 };
 
+Baseliner.render_date = function(v){
+    var d;
+    if( !v ) return '';
+    try { d=new Date(v) } catch(ee){}
+    return Ext.isDate(d) ? d.format( Prefs.js_date_format ) : v;
+};
+Baseliner.render_checkbox = function(v){
+    return v 
+        ? '<img src="/static/images/icons/checkbox.png">'
+        : '<img src="/static/images/icons/delete.gif">';
+};
+        
+Baseliner.cols_templates = {
+      id : function(){ return {width: 10 } },
+      index : function(){ return {width: 10, renderer:function(v,m,r,i){return i+1} } },
+      htmleditor: function(){ return { editor: new Ext.form.HtmlEditor(), default_value:'' } },
+      cleditor: function(){ return { editor: new Baseliner.CLEditorField(), default_value:'' } },
+      textfield : function(){ return { width: 100, editor: new Ext.form.TextField({}), default_value:'' } },
+      datefield : function(){ return { width: 30, 
+          editor: new Ext.form.DateField({ format: Prefs.js_date_format }), 
+          renderer: Baseliner.render_date
+      }},
+      checkbox  : function(){ return { align: 'center', width: 10, editor: new Ext.form.Checkbox({}), default_value: false, renderer: Baseliner.render_checkbox } },
+      textarea  : function(){ return { editor: new Ext.form.TextArea({}), default_value:'', renderer: Baseliner.render_wrap } }
+};
+
 Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
     width: '100%',
     height: 250,
     enableDragDrop: true,
+    use_row_editor: true,
     initComponent: function(){
         var self = this;
-        /*
-        var groupRow = [
-            {colspan: 2},
-            {header: 'Datos Entrada', colspan: 2, align: 'center'},
-            {colspan: 2}
-        ];
-
-        var group = new Ext.ux.grid.ColumnHeaderGroup({
-            rows: [groupRow]
-        });
-        */
-        
-        var render_checkbox = function(v){
-            return v 
-                ? '<img src="/static/images/icons/checkbox.png">'
-                : '<img src="/static/images/icons/delete.gif">';
-        }
+        self.viewConfig = Ext.apply({
+            forceFit: true
+        }, self.viewConfig );
         
         self.sm = new Baseliner.RowSelectionModel({ singleSelect: true }); 
         //var sm = new Baseliner.CheckboxSelectionModel({ checkOnly: true, singleSelect: false });
         
         var cols, fields;
-        var cols_templates = {
-              id : function(){ return {width: 10 } },
-              index : function(){ return {width: 10, renderer:function(v,m,r,i){return i+1} } },
-              htmleditor: function(){ return { editor: new Ext.form.HtmlEditor(), default_value:'' } },
-              cleditor: function(){ return { editor: new Baseliner.CLEditorField(), default_value:'' } },
-              textfield : function(){ return { width: 100, editor: new Ext.form.TextField({}), default_value:'' } },
-              checkbox  : function(){ return { align: 'center', width: 10, editor: new Ext.form.Checkbox({}), default_value:false, renderer: render_checkbox } },
-              textarea  : function(){ return { editor: new Ext.form.TextArea({}), default_value:'', renderer: Baseliner.render_wrap } }
-        };
+        
         if( self.columns != undefined ) {
             cols=[]; fields=[];
             var cc = Ext.isArray( self.columns ) ? self.columns : self.columns.split(';');
             Ext.each( cc, function(col){
                 var ct;
+                var store_field = {};
                 if( Ext.isObject( col ) ) {
                     ct = col;
                 } else {
+                    // Header[dataIndex],Type,Width,DefaultValue
                     var col_s = col.split(',');
                     if( col_s[0] == undefined ) return;
-                    ct = cols_templates[ col_s[1] ] || cols_templates['textarea'];
-                    ct = ct();
-                    ct.header = col_s[0];
+                    ct = Baseliner.cols_templates[ col_s[1] ] || Baseliner.cols_templates['textarea'];
+                    ct = ct();  // templates are functions
                     if( col_s[2] != undefined ) ct.width = col_s[2];
-                    ct.sortable = true;
                     if( col_s[3] ) ct.default_value = col_s[3];
-                    ct.dataIndex = Baseliner.name_to_id( col_s[0] );
+                    ct.sortable = true;
+                    // now test for Header[dataIndex]
+                    var name_and_id = col_s[0].match(/^([^\[]+)\[([^\]]+)\]/);
+                    if( name_and_id ) {
+                        ct.header = _(name_and_id[1]);
+                        ct.dataIndex = name_and_id[2];
+                    } else {
+                        ct.header = _(col_s[0]);
+                        ct.dataIndex = Baseliner.name_to_id( col_s[0] );
+                    }
+                    store_field.name = ct.dataIndex;
+                    if( col_s[1] == 'datefield' )  {
+                        store_field.type =  'date';
+                        store_field.dateFormat = 'Y-m-d 00:00:00';
+                    }
                 }
                 cols.push( ct );
-                fields.push( ct.dataIndex );
+                fields.push( store_field );
             });
         } else {
             cols = [
@@ -2536,7 +2555,11 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         if( !Ext.isObject(self.default_record) ) {
             var rec_default = {}; 
             Ext.each( cols, function(col){
-                rec_default[ col.dataIndex ] = col.default_value || '';
+                rec_default[ col.dataIndex ] = Ext.isFunction(col.default_value) 
+                    ? col.default_value() 
+                    : col.default_value!=undefined 
+                        ? col.default_value 
+                        : '';
             });
             self.default_record = rec_default;
         } 
@@ -2561,6 +2584,12 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
             self.records = [];
             self.records_json = '[]';
         }
+        
+        /*
+        var records_final = [];
+        Ext.each( self.records, function(r){
+        });
+        */
         self.store = new Ext.data.Store({
             reader: reader,
             data: self.records 
@@ -2571,14 +2600,7 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
             text:'',
             tooltip: _('Create'),
             disabled: false,
-            handler: function() {
-                var u = new self.store.recordType( Ext.decode(Ext.encode(self.default_record)) );
-                var index = self.store.getCount();
-                editor.stopEditing();
-                self.store.insert(index, u);
-                self.getSelectionModel().selectRow(index);			
-                editor.startEditing(index);
-            }
+            handler: function() { self.add_row() }
         });
         
         var button_delete = new Baseliner.Grid.Buttons.Delete({
@@ -2586,40 +2608,32 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
             tooltip: _('Delete'),
             cls: 'x-btn-icon',	
             disabled: false,		
-            handler: function() {
-                var sm = self.getSelectionModel();
-                Ext.each( sm.getSelections(), function(r) {
-                    var index = self.store.indexOf(r);
-                    self.store.remove( r );
-                    var rows = Ext.util.JSON.decode( self.field_hidden.getValue());
-                    rows.splice(index, 1);
-                    self.field_hidden.setValue(Ext.util.JSON.encode( rows ));
-                    self.store.commitChanges();
-                    self.getView().refresh();
-                });
-            }
+            handler: function() { self.del_row() }
         });
         
         // use RowEditor for editing
-        var editor = new Ext.ux.grid.RowEditor({
-            clicksToMoveEditor: 1,
-            autoCancel: false,
-            enableDragDrop: true, 
-            listeners: {
-                afteredit: function(roweditor, changes, record, rowIndex){
-                    self.store.commitChanges();
-                    delete record.data.id;
-                    var rows = Ext.util.JSON.decode(self.field_hidden.getValue());
-                    if( !Ext.isArray( rows ) ) rows = [];
-                    rows[rowIndex] = record.data;
-                    self.field_hidden.setRawValue(Ext.util.JSON.encode( rows ));
-                }
-            }		
-        });	
+        if( self.use_row_editor ) {
+            self.editor = new Ext.ux.grid.RowEditor({
+                clicksToMoveEditor: 1,
+                autoCancel: false,
+                enableDragDrop: true, 
+                listeners: {
+                    afteredit: function(roweditor, changes, record, rowIndex){
+                        // after editing a row, serialize data to hidden field
+                        self.store.commitChanges();
+                        delete record.data.id;
+                        var rows = Ext.util.JSON.decode(self.field_hidden.getValue());
+                        if( !Ext.isArray( rows ) ) rows = [];
+                        rows[rowIndex] = record.data;
+                        self.field_hidden.setRawValue(Ext.util.JSON.encode( rows ));
+                    }
+                }		
+            });	
+            self.plugins = [ self.editor ];
+        }
         
         self.columns = cols;
         self.ddGroup = 'grid_editor_' + Ext.id();
-        self.plugins = [ editor ];
         self.tbar = [
             self.field_hidden,
             button_add,
@@ -2661,5 +2675,28 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
                 }
             }); 
         });
+    },
+    add_row : function(){
+        var self = this;
+        var u = new self.store.recordType( Ext.decode(Ext.encode(self.default_record)) );
+        var index = self.store.getCount();
+        if( self.editor ) self.editor.stopEditing();
+        self.store.insert(index, u);
+        self.getSelectionModel().selectRow(index);			
+        if( self.editor ) self.editor.startEditing(index);
+    },
+    del_row : function(){
+        var self = this;
+        var sm = self.getSelectionModel();
+        Ext.each( sm.getSelections(), function(r) {
+            var index = self.store.indexOf(r);
+            self.store.remove( r );
+            var rows = Ext.util.JSON.decode( self.field_hidden.getValue());
+            rows.splice(index, 1);
+            self.field_hidden.setValue(Ext.util.JSON.encode( rows ));
+            self.store.commitChanges();
+            self.getView().refresh();
+        });
     }
 });
+

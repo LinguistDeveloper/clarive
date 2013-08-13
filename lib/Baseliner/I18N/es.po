@@ -3,8 +3,38 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-msgid "1 month ago"
-msgstr ""
+msgid "class_date_format"
+msgstr "%d/%m/%Y"
+
+msgid "js_date_format"
+msgstr "d/m/Y"
+
+msgid "Monday"
+msgstr "Lunes"
+
+msgid "Tuesday"
+msgstr "Martes"
+
+msgid "Wednesday"
+msgstr "Miércoles"
+
+msgid "Thursday"
+msgstr "Jueves"
+
+msgid "Friday"
+msgstr "Viernes"
+
+msgid "Saturday"
+msgstr "Sábado"
+
+msgid "Sunday"
+msgstr "Domingo"
+
+msgid "in 1 day"
+msgstr "en 1 día" 
+
+msgid "in %1 days"
+msgstr "en %1 días" 
 
 msgid "just now"
 msgstr "hace un instante"
@@ -30,8 +60,14 @@ msgstr "hace 1 día"
 msgid "%1 days ago"
 msgstr "hace %1 días"
 
+msgid "1 week ago"
+msgstr "hace 1 semana"
+
 msgid "%1 weeks ago"
 msgstr "hace %1 semanas"
+
+msgid "1 month ago"
+msgstr "hace 1 mes"
 
 msgid "%1 months ago"
 msgstr "hace %1 meses"
@@ -50,6 +86,12 @@ msgstr "Marcar como leído"
 
 msgid "Mark as unread"
 msgstr "Marcar como no leído"
+
+msgid "Milestone"
+msgstr "Hito"
+
+msgid "Milestones"
+msgstr "Hitos"
 
 msgid "Current topic status '%1' does not match the real status '%2'. Please refresh."
 msgstr "Estado actual del tópico '%1' no coincide con el estado real '%2'. Por favor, recargue antes de reintentar."
@@ -846,11 +888,17 @@ msgstr "Error al notificar usuarios"
 msgid "Notifying user %1: %2"
 msgstr "Notificando el usuario %1: %2"
 
+msgid "Planned Start Date"
+msgstr "Fecha de Inicio Planificada"
+
+msgid "Planned End Date"
+msgstr "Fecha Fin Planificada"
+
 msgid "Start Date"
 msgstr "Fecha de Inicio"
 
 msgid "End Date"
-msgstr "Finalización"
+msgstr "Fecha de Finalización"
 
 msgid "Start Time"
 msgstr "Hora Inicio"

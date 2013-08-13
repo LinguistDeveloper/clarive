@@ -415,10 +415,17 @@ sub user_projects_query {
     _throw 'Missing join_id' unless exists $p{join_id};
     if ( $self->is_root( $p{username} )) {
         DB->BaliRoleuser->search({}, { select=>\'1' })->as_query        
-    } else {
-        DB->BaliRoleuser->search({ username=>$p{username}, id_project=>{ '=' => \"$p{join_id}" } }, { select=>\'1' })->as_query        
     }
-    
+    else {
+            if ( DB->BaliRoleuser->search( {username => $p{username}, ns => '/'} )->hashref->first ) {
+                DB->BaliRoleuser->search({}, { select=>\'1' })->as_query        
+            } else {
+                DB->BaliRoleuser->search(
+                    {username => $p{username}, id_project => {'=' => \"$p{join_id}"}},
+                    {select   => \'1'} )->as_query;
+            } ## end else [ if ( DB->BaliRoleuser->search...)]
+    } ## end else
+
 } 
 
 =head2 user_projects_ids( username=>Str )
