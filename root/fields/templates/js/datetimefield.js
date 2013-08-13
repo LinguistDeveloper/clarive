@@ -7,7 +7,6 @@ params:
     js: '/fields/templates/js/datetimefield.js'
     field_order: 1
     section: 'body'
-    format: 'd/m/Y'
 ---
 */
 
@@ -27,7 +26,7 @@ params:
 			name: meta.id_field,
 			value: value, 
 			//style: { 'font-size': '16px' },
-			format:  meta.format,
+			format:  meta.format || Prefs.js_date_format,
 			width: 165,
 			//height: 30,
 			//allowBlank: false,

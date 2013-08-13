@@ -9,20 +9,46 @@
 % }     
 <%perl>
     my $json = $data->{$meta->{bd_field}} ;
-    $json = Encode::encode('UTF-8', $json);
-    #my $json_utf8 = Encode::encode('UTF-8', $json);
-    #$json = Util->_unac( $json ); # XXX
+    
     my $ix = 0;
     my $cols = ref $meta->{columns} ? $meta->{columns} : do {
         [ map { [ split /,/ ] } split /;/, $meta->{columns} ]
     };
     
     if( !$meta->{hidden} && length $json ) {
-        my $d = Util->_from_json( $json ); 
+        my $d = ref $json 
+            ? $json 
+            : do {
+                    $json = Encode::encode('UTF-8', $json);
+                    Util->_from_json( $json ); 
+                };
         my @rows = Util->_array( $d );
-        my @head = map { +{ key=>_name_to_id($_->[0]), name=>$_->[0], width=>$_->[2], type=>$_->[1] }  } @$cols; 
-        @head = map { +{ key=>$_, name=>$_ } } keys %{ $rows[0] || {} }
+        my @head = map { 
+            my ($name,$key) = $_->[0] =~ /^([^\[]+)\[([^\]]+)\]/ ;
+            if( !length $name ) {
+                $name = $_->[0];
+                $key = _name_to_id($name);
+            }
+            +{ key=>$key, name=>$name, width=>$_->[2], type=>$_->[1] }  
+        } @$cols; 
+        @head = map { 
+            +{ key=>$_, name=>$_ } 
+        } keys %{ $rows[0] || {} }
             if ! @head;
+        
+        my $now = Class::Date->now;
+        my $df = _loc('class_date_format');
+        local $Class::Date::DATE_FORMAT=$df eq 'class_date_format' ? "%Y-%m-%d" : $df; 
+        
+        @rows = map {
+            my $r= $_;
+            my ($sd,$ed,$psd,$ped) = @{ $r }{qw/start_date end_date plan_start_date plan_end_date/}; 
+            if( defined $ped && $now>$ped && $now>$ed ) {
+                $r->{end_date} = \'<img src="/static/images/icons/error.png" />' ;
+                $r->{overdue} = 1;
+            }
+            $r;
+        } @rows;
 </%perl>
     <tr>
       <td style="<% $meta->{framed} and 'text-transform: uppercase; font-size: 10px; font-weight:bold; background-color: #eee; text-align: center' %>" >
@@ -41,11 +67,23 @@
                 <tr>
 % foreach my $h ( @head  ) {
 %    my $val = $row->{ $$h{key} };
-                        <td style="font-size: <% $meta->{td_font_size} // 12 %>px" class="fieldlet-html"><% 
+<td style="font-size: <% $meta->{td_font_size} // 12 %>px" class="fieldlet-html"><% 
                             $$h{type} eq 'checkbox' 
-                            ? ( !$val || $val eq 'false' ? '<img src="/static/images/icons/delete.gif">' : '<img src="/static/images/icons/checkbox.png">')
+                                ? ( !$val || $val eq 'false' ? '<img src="/static/images/icons/delete.gif">' : '<img src="/static/images/icons/checkbox.png">')
                             : $$h{type} eq 'index' 
                                 ? ++$ix
+                            : $$h{type} eq 'datefield' 
+                                ? do{ 
+                                    if( ref $val eq 'SCALAR' ) {
+                                        ${ $val };
+                                    } elsif( length $val ) {
+                                        my $cd = Class::Date->new( $val );
+                                        my $st = $row->{overdue} ? 'color: #f34' : '';
+                                        _loc($cd->wdayname) . " " . $cd->string . " - <span style='$st;font-weight: bold'>" . Util->ago( $cd ) . '</span>';
+                                    } else {
+                                        $val
+                                    }
+                                  } 
                                 : Util->_markdown($val, { tab_width=>2 })
                         %></td>
 % }

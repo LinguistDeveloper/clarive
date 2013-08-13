@@ -843,6 +843,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         if (form2.isValid()) {
             self.btn_save_form.disable();
             self.btn_delete_form.disable();
+            //console.log( form2.getValues() );
             form2.submit({
                url: self.form_topic.url,
                params: {action: action, form: custom_form, _cis: Ext.util.JSON.encode( self._cis ) },

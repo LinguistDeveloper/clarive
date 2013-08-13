@@ -1327,6 +1327,11 @@ sub _load_yaml_from_comment {
     return $y;
 }
 
+our $__day = 3600 * 24;
+our $__week = 3600 * 24 * 7;
+our $__month = 3600 * 24 * 4.33;
+our $__year = 2_629_744*12;
+
 sub ago {
     my ($date) = @_;
     my $now = Class::Date->now();
@@ -1337,18 +1342,23 @@ sub ago {
     }
     my $d = $now-$date;
     my $v = 
-       $d <= 1 ? _loc('just now')
+        $d <= -$__day ? _loc('in %1 days', - int $d/$__day )
+      : $d <= -$__day && $d > 2*-$__day ? _loc('in 1 day' )
+      : $d < 0 ? _loc('today')
+      : $d >= 0 && $d <= 1 ? _loc('just now')
       : $d < 60 ? _loc('%1 seconds ago', int $d )
       : $d < 120 ? _loc('1 minute ago' )
       : $d < 3600 ? _loc('%1 minutes ago', int $d/60 )
       : $d < 7200 ? _loc('1 hour ago' )
       : $date > $now-'1D' ? _loc('%1 hours ago', int $d/3600 )
       : $date > $now-'2D' ? _loc('1 day ago')
-      : $date > $now-'7D' ? _loc('%1 days ago', int $d/(3600*24) )
-      : $date > $now-'1M' ? _loc('%1 weeks ago', int $d/(3600*24*7) )
-      : $date > $now-'1Y' ? _loc('%1 months ago', int $d/(3600*24*7*4.33) )
+      : $date > $now-'7D' ? _loc('%1 days ago', int $d/$__day )
+      : $date > $now-'14D' ? _loc('1 week ago' )
+      : $date > $now-'1M' ? _loc('%1 weeks ago', sprintf '%.01d', $d/$__week )
+      : $date > $now-'2M' ? _loc('1 month ago' )
+      : $date > $now-'1Y' ? _loc('%1 months ago', int $d/$__month )
       : $date > $now-'2Y' ? _loc('1 year ago')
-      : _loc('%1 years ago', int $d/(2_629_744*12) )
+      : _loc('%1 years ago', int $d/$__year )
     ;
     $v;
 }
