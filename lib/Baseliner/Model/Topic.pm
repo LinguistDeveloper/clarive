@@ -1584,8 +1584,6 @@ sub set_cis {
 sub set_revisions {
     my ($self, $rs_topic, $revisions, $user, $id_field  ) = @_;
     
-    _log ">>>>>>>>>>>>>>>>>>>>>REVISIONS: " . $id_field;
-    
     # related topics
     my @new_revisions = _array( $revisions ) ;
     my @old_revisions = map {$_->{to_mid}} DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_type => 'topic_revision'})->hashref->all;    
@@ -1980,6 +1978,27 @@ sub change_status {
         => sub {
             _throw _loc( 'Error modifying Topic: %1', shift() );
         };                    
+}
+
+sub change_status_topic {
+    my ($self, $p) = @_;
+    
+    my $username = $p->{username} or _throw 'Missing parameter username';
+    my $topic_mid = $p->{topic_mid} or _throw 'Missing parameter topic_mid';
+    my $new_status_id = $p->{new_status_id} or _throw 'Missing parameter new_status_id';
+    
+    my $topic = DB->BaliTopic->find( $topic_mid, { prefetch =>['status'] } );
+    my $rs_new_status = DB->BaliTopicStatus->find($new_status_id);    
+    event_new 'event.topic.change_status'
+        => { username => $username, old_status => $topic->status->name, status => $rs_new_status->name }
+        => sub {
+            $topic->id_category_status($rs_new_status->id);
+            $topic->update;				
+            { mid => $topic->mid, topic => $topic->title } 
+        } 
+    => sub {
+        _throw _loc( 'Error modifying Topic: %1', shift() );
+    };      
 }
 
 1;
