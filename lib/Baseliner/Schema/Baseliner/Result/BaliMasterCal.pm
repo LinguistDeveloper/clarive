@@ -25,22 +25,18 @@ __PACKAGE__->add_columns(
   "id_parent", { data_type => "number", is_nullable => 1, },
   "start_date", {
     data_type     => "datetime",
-    is_nullable   => 0,
     original      => { data_type => "date" },
   },
   "end_date", {
     data_type     => "datetime",
-    is_nullable   => 0,
     original      => { data_type => "date" },
   },
   "plan_start_date", {
     data_type     => "datetime",
-    is_nullable   => 0,
     original      => { data_type => "date" },
   },
   "plan_end_date", {
     data_type     => "datetime",
-    is_nullable   => 0,
     original      => { data_type => "date" },
   },
   slottype  => { data_type => "varchar2", is_nullable => 0, size => 255 },
