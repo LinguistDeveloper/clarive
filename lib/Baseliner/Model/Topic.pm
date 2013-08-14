@@ -1311,7 +1311,7 @@ sub save_data {
                             }
                         }
                     };
-                    $self->change_status( mid=>$topic_mid, title=>$topic->{title}, 
+                    $self->change_status( mid=>$topic_mid, title=>$topic->{title}, username=>$data->{username},
                         old_status=>$old_text{$field}, id_old_status =>$old_value,
                         id_status=>$id_status, callback=>$cb_ci_update
                     );
