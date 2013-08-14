@@ -1084,7 +1084,6 @@ sub get_data {
 
 sub get_release {
     my ($self, $topic_mid ) = @_;
-    _log "GGGGGGGGGG $topic_mid";
     my $release_row = Baseliner->model('Baseliner::BaliTopic')->search(
                             { is_release => 1, rel_type=>'topic_topic', to_mid=>$topic_mid },
                             { prefetch=>['categories','children','master'] }
@@ -1331,6 +1330,7 @@ sub save_data {
                         => sub {
                             _throw _loc( 'Error modifying Topic: %1', shift() );
                         };
+
                 }
             }
         }        
@@ -1650,7 +1650,6 @@ sub set_release {
     my ($self, $rs_topic, $release, $user, $id_field, $meta  ) = @_;
     
     my @release_meta = grep { $_->{id_field} eq $id_field } _array $meta;
-    _log "RRRRRRRRRRRRRR: ". _dump @release_meta;
 
     my $release_field = @release_meta[0]->{release_field} // 'undef';
 
