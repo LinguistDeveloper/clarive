@@ -1084,6 +1084,7 @@ sub get_data {
 
 sub get_release {
     my ($self, $topic_mid ) = @_;
+    _log "GGGGGGGGGG $topic_mid";
     my $release_row = Baseliner->model('Baseliner::BaliTopic')->search(
                             { is_release => 1, rel_type=>'topic_topic', to_mid=>$topic_mid },
                             { prefetch=>['categories','children','master'] }
@@ -1646,8 +1647,13 @@ sub set_revisions {
 }
 
 sub set_release {
-    my ($self, $rs_topic, $release, $user, $id_field  ) = @_;
+    my ($self, $rs_topic, $release, $user, $id_field, $meta  ) = @_;
     
+    my @release_meta = grep { $_->{id_field} eq $id_field } _array $meta;
+    _log "RRRRRRRRRRRRRR: ". _dump @release_meta;
+
+    my $release_field = @release_meta[0]->{release_field} // 'undef';
+
     my $topic_mid = $rs_topic->mid;
     my $release_row = Baseliner->model('Baseliner::BaliTopic')->search(
                             { is_release => 1, rel_type=>'topic_topic', to_mid=> $topic_mid },
@@ -1671,7 +1677,7 @@ sub set_release {
             
             my $row_release = Baseliner->model('Baseliner::BaliTopic')->find( $new_release[0] );
             my $topic_row = Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid );
-            $row_release->add_to_topics( $topic_row, { rel_type=>'topic_topic', rel_field => $id_field} );
+            $row_release->add_to_topics( $topic_row, { rel_type=>'topic_topic', rel_field => $release_field} );
             
             event_new 'event.topic.modify_field' => { username   => $user,
                                                 field      => '',
