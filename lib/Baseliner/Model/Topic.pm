@@ -144,6 +144,7 @@ register 'registor.action.topic_category' => {
             create => _loc('Can create topic for this category'),
             view   => _loc('Can view topic for this category'),
             edit   => _loc('Can edit topic for this category'),
+            delete => _loc('Can delete topic in this category')
         );
 
         my @categories =
@@ -1084,7 +1085,7 @@ sub get_data {
 
 sub get_release {
     my ($self, $topic_mid ) = @_;
-    _log "GGGGGGGGGG $topic_mid";
+
     my $release_row = Baseliner->model('Baseliner::BaliTopic')->search(
                             { is_release => 1, rel_type=>'topic_topic', to_mid=>$topic_mid },
                             { prefetch=>['categories','children','master'] }
@@ -1650,7 +1651,6 @@ sub set_release {
     my ($self, $rs_topic, $release, $user, $id_field, $meta  ) = @_;
     
     my @release_meta = grep { $_->{id_field} eq $id_field } _array $meta;
-    _log "RRRRRRRRRRRRRR: ". _dump @release_meta;
 
     my $release_field = @release_meta[0]->{release_field} // 'undef';
 
