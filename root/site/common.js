@@ -2700,3 +2700,74 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
     }
 });
 
+Baseliner.timeline = function(args){ 
+    var mid = args.mid;
+    var render_to = args.render_to; 
+    var parent_id = args.parent_id;  // optional
+    
+    if( !'Timeline' in window ) {
+        window.Timeline_ajax_url="/static/timeline/timeline_ajax/simile-ajax-api.js";
+        window.Timeline_urlPrefix='/static/timeline/timeline_js/';       
+        window.Timeline_parameters='bundle=true';
+    }
+    require(['/static/timeline/timeline_js/timeline-api.js?bundle=true&forceLocale=' + Prefs.language], function(){
+        Baseliner.ajaxEval( '/ci/'+mid+'/timeline', { mid: mid }, function(res){
+            if( ! 'Timeline' in window ) return;
+            console.log( res );
+            var data = { "events": res.events };
+            var max_same_date = res.max_same_date;
+            var height = max_same_date <= 8 ? 400 : 400+( max_same_date*30);
+            var eventSource = new Timeline.DefaultEventSource();
+            var bandInfos = [
+                /*
+                Timeline.createBandInfo({
+                    eventSource:    eventSource,
+                    //date:           "Jun 28 2006 00:00:00 GMT",
+                    width:          "60%", 
+                    intervalUnit:   Timeline.DateTime.HOUR, 
+                    intervalPixels: 100
+                }),
+                */
+                Timeline.createBandInfo({
+                    eventSource:    eventSource,
+                    //date:           "Jun 28 2006 00:00:00 GMT",
+                    width:          "90%", 
+                    intervalUnit:   Timeline.DateTime.DAY, 
+                    intervalPixels: 50
+                })
+                ,Timeline.createBandInfo({
+                    overview:       true,
+                    eventSource:    eventSource,
+                    //date:           "Jun 28 2006 00:00:00 GMT",
+                    width:          "10%", 
+                    intervalUnit:   Timeline.DateTime.MONTH, 
+                    intervalPixels: 200
+                })
+            ];
+            bandInfos[1].syncWith = 0;
+            bandInfos[1].highlight = true;
+
+            var el = document.getElementById(render_to);
+            $(el).height( height );
+            $(el).width( $('#'+parent_id).width() - 80 );  // set my width to the topicmain panel width 
+
+            tl = Timeline.create(el, bandInfos);
+            eventSource.loadJSON(data, document.location.href);
+
+            var resizeTimerID = null;
+
+            var parent_comp = Ext.getCmp( parent_id );
+            if( parent_comp && parent_comp.body ) 
+                $(parent_comp.body.dom).animate({ scrollTop: $('#'+parent_id).height() + 3000 }, "slow");
+
+            function xonResize() {
+                if (resizeTimerID == null) {
+                    resizeTimerID = window.setTimeout(function() {
+                        resizeTimerID = null;
+                        tl.layout();
+                    }, 500);
+                }
+            }
+        }); // ajaxeval
+    });  // require
+};

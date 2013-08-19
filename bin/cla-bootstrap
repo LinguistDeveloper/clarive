@@ -157,7 +157,6 @@ Catalyst::Plugin::ConfigLoader
 Catalyst::Plugin::I18N
 Catalyst::Plugin::Session
 Catalyst::Plugin::Session::State::Cookie
-Catalyst::Plugin::Session::State:Cookie
 Catalyst::Plugin::Session::Store::Cache
 Catalyst::Plugin::Session::Store::DBI
 Catalyst::Plugin::Session::Store::DBIC
@@ -256,6 +255,7 @@ PocketIO
 Pod::Simple::HTML
 Proc::Background
 Proc::Exists
+Proc::ProcessTable
 Regexp::Grammars
 SQL::Abstract
 SQL::Translator

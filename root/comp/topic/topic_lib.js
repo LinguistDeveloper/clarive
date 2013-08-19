@@ -527,7 +527,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         
         self.view_is_dirty = false;
         self.form_is_loaded = false;
-        self.ii = Ext.id();  // used by the detail page
+        self.ii = self.id;  // used by the detail page
         self.toggle_group = 'form_btns_' + self.ii;
 
         self.btn_save_form = new Ext.Button({

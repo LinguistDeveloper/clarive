@@ -29,6 +29,7 @@ use Time::HiRes qw( usleep ualarm gettimeofday tv_interval nanosleep stat );
 extends 'Clarive::Cmd';
 use v5.10;
 
+our $CAPTION = 'database diff and deploy tool';
 our $t0;
 
 with 'Clarive::Role::Baseliner';

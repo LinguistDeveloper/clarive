@@ -241,6 +241,9 @@ sub events_by_mid {
             my $ev = Baseliner->model('Registry')->get( $d->{event_key} ); # this throws an exception if key not found
             $d->{text} = $ev->event_text( $d );
             $d->{ev_level} = $ev->level;
+        } catch {
+            my $err = shift;
+            Util->_error( Util->_loc('Error in event text generator: %1', $err) );
         };  
         $d; 
     } @evs ];
