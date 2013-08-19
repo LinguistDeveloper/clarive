@@ -58,6 +58,9 @@
     <!-- Ace -->
     <script type="text/javascript" src="/static/ace/ace.js"></script>
 
+    <!-- Timeline Similes -->
+    <!-- link rel="stylesheet" href="/static/timeline/clarive-timeline.css" / -->
+    
     <!-- CodeMirror -->
     <link rel="stylesheet" href="/static/codemirror/lib/codemirror.css">
     <link rel="stylesheet" href="/static/codemirror/theme/elegant.css">
@@ -158,6 +161,7 @@
 
     <script type="text/javascript">
         Prefs.username = '<% $c->username %>';
+        Prefs.language = '<% [ _array( $c->languages ) ]->[0] %>';
         Prefs.is_logged_in = true;
         var df = _('js_date_format');
         Prefs.js_date_format = df =='js_date_format' ? 'Y-M-d' : df ;    // used by Ext.field.DateTime({ ... format: <format> }) and new Date(..).format(<format>)

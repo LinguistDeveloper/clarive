@@ -66,4 +66,62 @@ sub topic_name {
     return sprintf '%s #%s - %s', 'Cmbio', $self->mid, $self->name; 
 }
 
+sub rest_timeline {
+    my ($self, $p) = @_;
+    
+    my $k = 1;
+    my @data;
+    
+    # master cal entries
+    my @cal =
+        DB->BaliMasterCal->search( { mid => $self->mid }, { order_by => { -asc => 'start_date' } } )->hashref->all;
+    push @data, map {
+        my $start = $_->{plan_end_date};
+        my $end = $_->{end_date} // '';
+        if( $end && $end < $start ) {  # if earlier, switch
+            my $old=$end;
+            $end=$start;
+            $start=$old;
+        }
+        
+        +{
+            start         => $start,
+            $end ? ( end => $end ) : (),
+            instant       => $end ? \0 : \1,
+            durationEvent => $end ? \1 : \0,
+            color         => "#c03020",
+            textColor     => "#000000",
+
+            #classname => "special_event2 aquamarine",
+            trackNum    => $k++,
+            title       => $_->{slotname},
+            caption     => $_->{slotname},
+            description => $_->{slotname},
+        }
+    } grep { $_->{plan_end_date} } @cal;
+    
+    # events
+    my %events = map { $_->{text} => $_ } @{ Baseliner::Sugar::events_by_mid( $self->mid ) };
+    push @data, map {
+        my $start = $_->{ts};
+        +{
+            start         => $start,
+            instant       => \1,
+            durationEvent => \0,
+            color         => "#30c020",
+            textColor     => "#444",
+            #classname => "special_event2 aquamarine",
+            trackNum    => $k++,
+            title       => $_->{text},
+            caption     => $_->{text},
+            description => $_->{text},
+        }
+    } values %events; 
+    
+    my %same_date;
+    $same_date{ substr($_->{start},0,10) }+=1 for grep { $_->{start} } @data;
+    my $max_same_date = ( sort { $b <=> $a } values %same_date )[0]; 
+    return { events => \@data, max_same_date=>$max_same_date }
+}
+
 1;

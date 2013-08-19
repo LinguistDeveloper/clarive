@@ -147,7 +147,7 @@ padding: 2px 4px 2px 7px;
 
 <div class="clear"></div>
     <br><br>
-    <ul class="nav nav-tabs">
+    <ul class="nav nav-tabs" id="nav-tabs-<% $ii %>">
         <li <% $tabactive[0] and 'class="active"' %>>
             <a href="#comments<% $ii %>" data-toggle="tab"><% _loc('Discussion') %></a>
         </li>
@@ -156,6 +156,9 @@ padding: 2px 4px 2px 7px;
         </li>
         <li <% $jobs or 'style="display: none"' %>>
             <a href="#jobs<% $ii %>" data-toggle="tab"><% _loc('Jobs') %></a>
+        </li>
+        <li <% $tabactive[3] and 'class="active"' %>>
+            <a href="#timeline<% $ii %>" id="tab-timeline<% $ii %>" data-toggle="tab"><% _loc('Timeline') %></a>
         </li>
     </ul>
 
@@ -215,8 +218,24 @@ padding: 2px 4px 2px 7px;
                     <hr />
                 </div> 
 %}
-            </div> <!-- activity tab -->
+            </div> <!-- jobs tab -->
 
+            <div class="tab-pane <% $tabactive[3] and 'active' %>" id="timeline<% $ii %>">
+                <div id="topic-timeline<% $ii %>" style="border: 1px solid #aaa"></div>
+            </div> <!-- timeline tab -->
+
+            <script>
+                    //$("#timeline<% $ii %> a").click(function(){
+                    $('#nav-tabs-<% $ii %> a[data-toggle="tab"]').on('shown', function (e) {
+                        if( e.target.id == "tab-timeline<% $ii %>" ) {
+                            Baseliner.timeline({ 
+                                mid: '<% $topic_mid %>', 
+                                render_to: "topic-timeline<% $ii %>",
+                                parent_id:'<% $ii %>' 
+                            });
+                        } // if tab
+                    }); // on shown
+            </script>
         </div> <!-- tab content -->
     </div> <!-- lower grid -->
 </div> <!-- boot container -->
