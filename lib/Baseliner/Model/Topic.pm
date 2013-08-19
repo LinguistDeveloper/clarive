@@ -134,7 +134,7 @@ register 'event.topic.change_status' => {
     vars => ['username', 'old_status', 'status', 'ts'],
 };
 
-register 'action.topic.logical_change_status' => {
+register 'action.topics.logical_change_status' => {
     name => 'Change topic status logically (no deployment)'
 };
 
@@ -144,6 +144,7 @@ register 'registor.action.topic_category' => {
             create => _loc('Can create topic for this category'),
             view   => _loc('Can view topic for this category'),
             edit   => _loc('Can edit topic for this category'),
+            delete => _loc('Can delete topic in this category')
         );
 
         my @categories =
@@ -688,20 +689,55 @@ sub append_category {
 sub next_status_for_user {
     my ($self, %p ) = @_;
     my $user_roles;
+    my $username = $p{username};
     my $where = { id_category => $p{id_category} };
     $where->{id_status_from} = $p{id_status_from} if defined $p{id_status_from};
-    if( $p{username} ) {
-        $user_roles = Baseliner->model('Baseliner::BaliRoleUser')->search({ username => $p{username} },{ select=>'id_role' } )->as_query;
-        $where->{id_role} = { -in => $user_roles };
+    
+    if ( !Baseliner->model('Permissions')->is_root( $username) ) {
+        #if( $p{username} ) {
+            $user_roles = Baseliner->model('Baseliner::BaliRoleUser')->search({ username => $username },{ select=>'id_role' } )->as_query;
+            $where->{id_role} = { -in => $user_roles };
+        #}
     }
-    my @to_status = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
+    
+    #my @to_status = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
+    #    $where,
+    #    {   join     => [ 'roles', 'statuses_to' ],
+    #        distinct => 1,
+    #        +select => [ 'id_status_to', 'statuses_to.name', 'statuses_to.type', 'statuses_to.bl', 'statuses_to.description', 'id_category', 'job_type' ],
+    #        +as     => [ 'id_status',    'status_name', 'status_type', 'status_bl', 'status_description', 'id_category', 'job_type' ]
+    #    }
+    #)->hashref->all;
+    
+   my @all_to_status = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
         $where,
-        {   join     => [ 'roles', 'statuses_to' ],
+        {   join     => [ 'roles', 'statuses_to', 'statuses_from' ],
             distinct => 1,
-            +select => [ 'id_status_to', 'statuses_to.name', 'statuses_to.type', 'statuses_to.bl', 'statuses_to.description', 'id_category' ],
-            +as     => [ 'id_status',    'status_name', 'status_type', 'status_bl', 'status_description', 'id_category' ]
+            +select => [ 'id_status_from', 'statuses_from.name', 'statuses_from.bl', 'id_status_to', 'statuses_to.name', 'statuses_to.type', 'statuses_to.bl', 'statuses_to.description', 'id_category', 'job_type' ],
+            +as     => [ 'id_status_from', 'status_name_from', 'status_bl_from', 'id_status',    'status_name', 'status_type', 'status_bl', 'status_description', 'id_category', 'job_type' ]
         }
     )->hashref->all;
+    
+    my @no_deployable_status = grep {$_->{status_type} ne 'D'} @all_to_status;
+    my @deployable_status = grep {$_->{status_type} eq 'D'} @all_to_status; 
+    
+    
+    my @to_status;
+    push @to_status, @no_deployable_status;
+    
+    foreach my $status (@deployable_status){
+    	if ( $status->{job_type} eq 'promote' ) {
+        	if(Baseliner->model('Permissions')->user_has_action( username=> $username, action => 'action.topics.logical_change_status', bl=> $status->{status_bl} )){
+            	push @to_status, $status;
+            }
+        }else{
+        	if ( $status->{job_type} eq 'demote' ) {
+                if(Baseliner->model('Permissions')->user_has_action( username=> $username, action => 'action.topics.logical_change_status', bl=> $status->{status_bl_from} )){
+                    push @to_status, $status;
+                }            	
+            }
+        }
+    }    
 
     return @to_status;
 }
@@ -1084,6 +1120,7 @@ sub get_data {
 
 sub get_release {
     my ($self, $topic_mid ) = @_;
+
     my $release_row = Baseliner->model('Baseliner::BaliTopic')->search(
                             { is_release => 1, rel_type=>'topic_topic', to_mid=>$topic_mid },
                             { prefetch=>['categories','children','master'] }
@@ -1310,7 +1347,7 @@ sub save_data {
                             }
                         }
                     };
-                    $self->change_status( mid=>$topic_mid, title=>$topic->{title}, 
+                    $self->change_status( mid=>$topic_mid, title=>$topic->{title}, username=>$data->{username},
                         old_status=>$old_text{$field}, id_old_status =>$old_value,
                         id_status=>$id_status, callback=>$cb_ci_update
                     );
@@ -1330,6 +1367,7 @@ sub save_data {
                         => sub {
                             _throw _loc( 'Error modifying Topic: %1', shift() );
                         };
+
                 }
             }
         }        
@@ -1646,8 +1684,12 @@ sub set_revisions {
 }
 
 sub set_release {
-    my ($self, $rs_topic, $release, $user, $id_field  ) = @_;
+    my ($self, $rs_topic, $release, $user, $id_field, $meta  ) = @_;
     
+    my @release_meta = grep { $_->{id_field} eq $id_field } _array $meta;
+
+    my $release_field = @release_meta[0]->{release_field} // 'undef';
+
     my $topic_mid = $rs_topic->mid;
     my $release_row = Baseliner->model('Baseliner::BaliTopic')->search(
                             { is_release => 1, rel_type=>'topic_topic', to_mid=> $topic_mid },
@@ -1671,7 +1713,7 @@ sub set_release {
             
             my $row_release = Baseliner->model('Baseliner::BaliTopic')->find( $new_release[0] );
             my $topic_row = Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid );
-            $row_release->add_to_topics( $topic_row, { rel_type=>'topic_topic', rel_field => $id_field} );
+            $row_release->add_to_topics( $topic_row, { rel_type=>'topic_topic', rel_field => $release_field} );
             
             event_new 'event.topic.modify_field' => { username   => $user,
                                                 field      => '',

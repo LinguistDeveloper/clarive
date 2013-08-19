@@ -615,10 +615,9 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             items: self.status_items_menu
         });
         
-        if (self.status_items_menu.length > 0){
-            self.btn_change_status = new Ext.Toolbar.Button({ text: _("Change status"), menu: self.status_menu }); 
-        }else{
-            self.btn_change_status = {};
+        self.btn_change_status = new Ext.Toolbar.Button({ text: _("Change status"), menu: self.status_menu }); 
+        if (self.status_items_menu.length <= 0){
+            self.btn_change_status.hide();
         }
         
             
@@ -734,7 +733,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             var id = panel.getId();
             var info = Baseliner.tabInfo[id];
             if( info!=undefined ) info.params.swEdit = 1;
-            
+            self.btn_change_status.hide();
             if (!self.form_is_loaded){
 
                 Baseliner.ajaxEval( '/topic/json', { topic_mid: self.topic_mid, topic_child_data : true }, function(rec) {
@@ -742,7 +741,6 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 });
             }else{
                 self.getLayout().setActiveItem( self.form_topic );
-
                 self.btn_save_form.show();
                 
                 if(self.topic_mid){
@@ -820,7 +818,14 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         var activeTabIndex = tabpanel.items.findIndex('id', panel.id );
         var id = panel.getId();
         var info = Baseliner.tabInfo[id];
-        if( info!=undefined ) info.params.swEdit = 0;        
+        if( info!=undefined ) info.params.swEdit = 0;
+        if(self.status_items_menu.length > 0){
+            self.btn_change_status.show();
+        }
+        else{
+            self.btn_change_status.hide();
+        }
+        
         self.btn_save_form.hide();
         if( self.view_is_dirty ) {
             self.view_is_dirty = false;
@@ -876,11 +881,21 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                         
                     form2.findField("topic_mid").setValue(a.result.topic_mid);
                     form2.findField("status").setValue(a.result.topic_status);
-
+                    
                     var store = form2.findField("status_new").getStore();
                     store.on("load", function() {
+
                         form2.findField("status_new").setValue( a.result.topic_status );
+                        self.status_menu.removeAll();
+                        self.status_items_menu = [];
+                        store.each( function(row){
+                            if(a.result.topic_status != row.data.id){
+                                self.status_items_menu.push({ id: row.data.id, text: _(row.data.name), handler: function(obj){ self.change_status(obj) } });                                                    
+                                self.status_menu.addItem({ id: row.data.id, text: _(row.data.name), handler: function(obj){ self.change_status(obj) } });
+                            }
+                        });                        
                     });
+                    
                     store.load({
                         params:{    'categoryId': form2.findField("category").getValue(),
                                     'statusId': form2.findField("status").getValue(),
@@ -888,6 +903,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                                 }
                     });
                     
+                   
                     self.topic_mid = a.result.topic_mid;
                     self.btn_comment.show();
                     self.btn_detail.show();
