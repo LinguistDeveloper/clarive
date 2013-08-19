@@ -4,6 +4,8 @@ extends 'Clarive::Cmd';
 use v5.10;
 use Path::Class;
 
+our $CAPTION = 'config file generator';
+
 with 'Clarive::Role::EnvRequired';
 
 sub run {
