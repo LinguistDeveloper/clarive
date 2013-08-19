@@ -134,7 +134,7 @@ register 'event.topic.change_status' => {
     vars => ['username', 'old_status', 'status', 'ts'],
 };
 
-register 'action.topic.logical_change_status' => {
+register 'action.topics.logical_change_status' => {
     name => 'Change topic status logically (no deployment)'
 };
 
@@ -688,20 +688,55 @@ sub append_category {
 sub next_status_for_user {
     my ($self, %p ) = @_;
     my $user_roles;
+    my $username = $p{username};
     my $where = { id_category => $p{id_category} };
     $where->{id_status_from} = $p{id_status_from} if defined $p{id_status_from};
-    if( $p{username} ) {
-        $user_roles = Baseliner->model('Baseliner::BaliRoleUser')->search({ username => $p{username} },{ select=>'id_role' } )->as_query;
-        $where->{id_role} = { -in => $user_roles };
+    
+    if ( !Baseliner->model('Permissions')->is_root( $username) ) {
+        #if( $p{username} ) {
+            $user_roles = Baseliner->model('Baseliner::BaliRoleUser')->search({ username => $username },{ select=>'id_role' } )->as_query;
+            $where->{id_role} = { -in => $user_roles };
+        #}
     }
-    my @to_status = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
+    
+    #my @to_status = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
+    #    $where,
+    #    {   join     => [ 'roles', 'statuses_to' ],
+    #        distinct => 1,
+    #        +select => [ 'id_status_to', 'statuses_to.name', 'statuses_to.type', 'statuses_to.bl', 'statuses_to.description', 'id_category', 'job_type' ],
+    #        +as     => [ 'id_status',    'status_name', 'status_type', 'status_bl', 'status_description', 'id_category', 'job_type' ]
+    #    }
+    #)->hashref->all;
+    
+   my @all_to_status = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
         $where,
-        {   join     => [ 'roles', 'statuses_to' ],
+        {   join     => [ 'roles', 'statuses_to', 'statuses_from' ],
             distinct => 1,
-            +select => [ 'id_status_to', 'statuses_to.name', 'statuses_to.type', 'statuses_to.bl', 'statuses_to.description', 'id_category' ],
-            +as     => [ 'id_status',    'status_name', 'status_type', 'status_bl', 'status_description', 'id_category' ]
+            +select => [ 'id_status_from', 'statuses_from.name', 'statuses_from.bl', 'id_status_to', 'statuses_to.name', 'statuses_to.type', 'statuses_to.bl', 'statuses_to.description', 'id_category', 'job_type' ],
+            +as     => [ 'id_status_from', 'status_name_from', 'status_bl_from', 'id_status',    'status_name', 'status_type', 'status_bl', 'status_description', 'id_category', 'job_type' ]
         }
     )->hashref->all;
+    
+    my @no_deployable_status = grep {$_->{status_type} ne 'D'} @all_to_status;
+    my @deployable_status = grep {$_->{status_type} eq 'D'} @all_to_status; 
+    
+    
+    my @to_status;
+    push @to_status, @no_deployable_status;
+    
+    foreach my $status (@deployable_status){
+    	if ( $status->{job_type} eq 'promote' ) {
+        	if(Baseliner->model('Permissions')->user_has_action( username=> $username, action => 'action.topics.logical_change_status', bl=> $status->{status_bl} )){
+            	push @to_status, $status;
+            }
+        }else{
+        	if ( $status->{job_type} eq 'demote' ) {
+                if(Baseliner->model('Permissions')->user_has_action( username=> $username, action => 'action.topics.logical_change_status', bl=> $status->{status_bl_from} )){
+                    push @to_status, $status;
+                }            	
+            }
+        }
+    }    
 
     return @to_status;
 }

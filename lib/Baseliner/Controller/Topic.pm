@@ -517,11 +517,12 @@ sub view : Local {
             $c->stash->{category_meta} = $category->forms;
             
             #workflow category-status
-            my $username = $c->is_root ? '' : $c->username;
+            #my $username = $c->is_root ? '' : $c->username;
+            
             my @statuses = $c->model('Topic')->next_status_for_user(
                 id_category    => $category->id,
                 id_status_from => $category->topics->status->id,
-                username       => $username,
+                username       => $c->username,
             );            
             
             
@@ -1269,11 +1270,11 @@ sub list_admin_category : Local {
 
     }else{
         
-        my $username = $c->is_root ? '' : $c->username;
+        #my $username = $c->is_root ? '' : $c->username;
         my @statuses = $c->model('Topic')->next_status_for_user(
             id_category    => $p->{categoryId},
             id_status_from => $p->{statusId},
-            username       => $username,
+            username       => $c->username,
         );
 
 
