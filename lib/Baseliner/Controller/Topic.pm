@@ -338,11 +338,13 @@ sub get_meta_permissions : Local {
                     #print ">>>>>>>>>Accion: " . $write_action . "\n";
                     
                     if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action )){
+                        $field_form->{readonly} = \0;
+                    }else{
                         $field_form->{readonly} = \1;
                     }
                     
                     my $read_action = 'action.topicsfield.' .  $parse_category 
-                    		. '.' .  $parse_id_field . '.' .  $parse_field_form_id  . '.' . $parse_status . '.read';
+                    		. '.' .  $parse_id_field . '.' .  $parse_field_form_id  . '.read';
                     #my $read_action = 'action.topicsfield.read.' . $_->{name_field} if ! $write_action;
                     #_error $read_action;
                     #print ">>>>>>>>>Accion: " . $read_action . "\n";
@@ -359,10 +361,12 @@ sub get_meta_permissions : Local {
                 
                 
                 if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action )){
-                    $_->{readonly} = \1;
+                    $_->{readonly} = \0;
+                }else{
+                    $_->{readonly} = \1;    
                 }
                 
-                my $read_action = 'action.topicsfield.' .  $parse_category . '.' .  $parse_id_field . '.' . $parse_status . '.read';
+                my $read_action = 'action.topicsfield.' .  $parse_category . '.' .  $parse_id_field . '.read';
                 #my $read_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $_->{id_field} . '.' . lc $data->{name_status} . '.read';
                 #my $read_action = 'action.topicsfield.read.' . $_->{name_field} if ! $write_action;
                 #_error $read_action;
