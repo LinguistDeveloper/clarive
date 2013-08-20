@@ -1081,7 +1081,8 @@ if( Prefs.routing ) {
                 catch(e){
                     Baseliner.error_win(url,params,xhr,e);
                     if( Baseliner.DEBUG ) {
-                        Baseliner.loadFile( url, 'js' );  // hopefully this will generate a legit error for debugging, but it may give strange console errors
+                        // XXX dangerous on delete, confusing otherwise: Baseliner.loadFile( url, 'js' );  // hopefully this will generate a legit error for debugging, but it may give strange console errors
+                        //    consider writing the output into an innerHTML of a <script></script> tag 
                         throw e;
                     }
                     //if( Baseliner.DEBUG && ! Ext.isIE && console != undefined ) { console.log( xhr ) }

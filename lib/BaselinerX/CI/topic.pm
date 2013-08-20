@@ -69,7 +69,6 @@ sub topic_name {
 sub rest_timeline {
     my ($self, $p) = @_;
     
-    my $k = 1;
     my @data;
     
     # master cal entries
@@ -93,7 +92,6 @@ sub rest_timeline {
             textColor     => "#000000",
 
             #classname => "special_event2 aquamarine",
-            trackNum    => $k++,
             title       => $_->{slotname},
             caption     => $_->{slotname},
             description => $_->{slotname},
@@ -111,7 +109,6 @@ sub rest_timeline {
             color         => "#30c020",
             textColor     => "#444",
             #classname => "special_event2 aquamarine",
-            trackNum    => $k++,
             title       => $_->{text},
             caption     => $_->{text},
             description => $_->{text},
@@ -121,6 +118,8 @@ sub rest_timeline {
     my %same_date;
     $same_date{ substr($_->{start},0,10) }+=1 for grep { $_->{start} } @data;
     my $max_same_date = ( sort { $b <=> $a } values %same_date )[0]; 
+    my $k = 1;
+    @data = map { $_->{trackNum}=$k++; $_ } sort { $a->{start} cmp $b->{start} } @data;
     return { events => \@data, max_same_date=>$max_same_date }
 }
 
