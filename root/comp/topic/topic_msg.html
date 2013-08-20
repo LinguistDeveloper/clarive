@@ -227,7 +227,7 @@ padding: 2px 4px 2px 7px;
             <script>
                     //$("#timeline<% $ii %> a").click(function(){
                     $('#nav-tabs-<% $ii %> a[data-toggle="tab"]').on('shown', function (e) {
-                        if( e.target.id == "tab-timeline<% $ii %>" ) {
+                        if( e.target.id == "tab-timeline<% $ii %>" && '<% $topic_mid %>' != '' ) {
                             Baseliner.timeline({ 
                                 mid: '<% $topic_mid %>', 
                                 render_to: "topic-timeline<% $ii %>",

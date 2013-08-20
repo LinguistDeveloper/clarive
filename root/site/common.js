@@ -2705,15 +2705,10 @@ Baseliner.timeline = function(args){
     var render_to = args.render_to; 
     var parent_id = args.parent_id;  // optional
     
-    if( !'Timeline' in window ) {
-        window.Timeline_ajax_url="/static/timeline/timeline_ajax/simile-ajax-api.js";
-        window.Timeline_urlPrefix='/static/timeline/timeline_js/';       
-        window.Timeline_parameters='bundle=true';
-    }
-    require(['/static/timeline/timeline_js/timeline-api.js?bundle=true&forceLocale=' + Prefs.language], function(){
+    require(['/static/timeline/jquery.timeline.js'], function(){
+        Timeline.urlPrefix = '/static/timeline/';
         Baseliner.ajaxEval( '/ci/'+mid+'/timeline', { mid: mid }, function(res){
             if( ! 'Timeline' in window ) return;
-            console.log( res );
             var data = { "events": res.events };
             var max_same_date = res.max_same_date;
             var height = max_same_date <= 8 ? 400 : 400+( max_same_date*30);
