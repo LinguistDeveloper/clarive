@@ -14,7 +14,7 @@ has dbic_trace => qw(is rw default 0);
 
 has argv   => qw(is ro isa ArrayRef required 1);  # original command line ARGV
 has args   => qw(is ro isa HashRef required 1);  # original command line args
-has config => qw(is rw isa HashRef required 1);  # full config file (clarive.yml + $env.yml)
+has config => qw(is rw isa HashRef required 1);  # full config file (config/global.yml + $env.yml)
 has opts   => qw(is ro isa HashRef required 1);  # merged config + args
 
 has db => qw(is rw lazy 1 default), sub {

@@ -12,11 +12,11 @@ sub config_load {
     my %ret ;
     
     my $env = $p{env} or exists $p{v} and warn "warn: env is not defined\n";
-    my @files = ( 'config/clarive.yml', 'config/global.yml' );
+    my @files = ( 'config/global.yml' );
     length $env && push @files, "config/$env.yml";
     push @files, $p{config};
     # clarive.yml is the base config
-    for my $file ( 'config/clarive.yml', "config/$env.yml", $p{config} ) {   # most important last
+    for my $file ( 'config/global.yml', "config/$env.yml", $p{config} ) {   # most important last
         next unless $file;
         if( -e $file ) {
             require YAML::XS;
