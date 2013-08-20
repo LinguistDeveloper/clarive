@@ -361,7 +361,8 @@ around 'debug' => sub {
 
     # Beep
     my $bali_env = $ENV{CATALYST_CONFIG_LOCAL_SUFFIX} // $ENV{BASELINER_CONFIG_LOCAL_SUFFIX};
-    print STDERR "Baseliner $Baseliner::VERSION_STRING. Startup time: " . tv_interval($t0) . "s.\n";
+    print STDERR ( Baseliner->config->{name} // 'Baseliner' ) 
+        . " $Baseliner::VERSION_STRING. Startup time: " . tv_interval($t0) . "s.\n";
     $ENV{CATALYST_DEBUG} || $ENV{BASELINER_DEBUG} and do { 
         print STDERR "Environment: $bali_env. Catalyst: $Catalyst::VERSION. DBIC: $DBIx::Class::VERSION. Perl: $^V. OS: $^O\n";
         print STDERR "\7";
