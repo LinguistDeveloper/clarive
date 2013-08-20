@@ -1693,31 +1693,33 @@ sub set_release {
     my $topic_mid = $rs_topic->mid;
     my $release_row = Baseliner->model('Baseliner::BaliTopic')->search(
                             { is_release => 1, rel_type=>'topic_topic', to_mid=> $topic_mid },
-                            { join=>['categories','children','master'], select=>'mid' }
+                            { join=>['categories','children','master'], select=>['mid','title'] }
                             )->first;
-    my @old_release =();
-    if($release_row){
-        @old_release = $release_row->mid;
+    my $old_release = '';
+    my $old_release_name = '';
+    if($release_row) {
+        $old_release = $release_row->mid;
+        $old_release_name = $release_row->title;
         #my $rs = Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => {in => $release_row->mid}, to_mid=>$topic_mid })->delete;
     }        
         
-    my @new_release = _array( $release ) ;
+    my $new_release = $release;
 
     # check if arrays contain same members
-    if ( array_diff(@new_release, @old_release) ) {
+    if ( $new_release ne $old_release ) {
         if($release_row){
-            my $rs = DB->BaliMasterRel->search({from_mid => {in => $release_row->mid}, to_mid=>$topic_mid })->delete;
+            my $rs = DB->BaliMasterRel->search({from_mid => $old_release, to_mid=>$topic_mid })->delete;
         }
         # release
-        if( @new_release ) {
+        if( $new_release ) {
             
-            my $row_release = Baseliner->model('Baseliner::BaliTopic')->find( $new_release[0] );
+            my $row_release = Baseliner->model('Baseliner::BaliTopic')->find( $new_release );
             my $topic_row = Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid );
             $row_release->add_to_topics( $topic_row, { rel_type=>'topic_topic', rel_field => $release_field} );
             
             event_new 'event.topic.modify_field' => { username   => $user,
-                                                field      => '',
-                                                old_value      => '',
+                                                field      => $id_field,
+                                                old_value      => $old_release_name,
                                                 new_value  => $row_release->title,
                                                 text_new      => '%1 modified topic: changed release to %4',
                                                } => sub {
@@ -1728,10 +1730,10 @@ sub set_release {
             };
             
         }else{
-            my $rs = DB->BaliMasterRel->search({from_mid => {in => $release_row->mid}, to_mid=>$topic_mid })->delete;
+            my $rs = DB->BaliMasterRel->search({from_mid => $old_release, to_mid=>$topic_mid })->delete;
             event_new 'event.topic.modify_field' => { username   => $user,
-                                                field      => '',
-                                                old_value      => $release_row->title,
+                                                field      => $id_field,
+                                                old_value      => $old_release_name,
                                                 new_value  => '',
                                                 text_new      => '%1 deleted release %3',
                                                } => sub {
