@@ -4,6 +4,7 @@ use v5.10;
 
 has env     => qw(is rw required 0);
 has home    => qw(is rw required 1);
+has base    => qw(is rw required 1);
 has lang    => qw(is ro required 1);
 has debug   => qw(is rw default 0);
 has verbose => qw(is rw default 0);
@@ -34,6 +35,7 @@ around 'BUILDARGS' => sub {
     $ENV{BASELINER_CONFIG_LOCAL_SUFFIX} = $args{env};
     
     $args{home} //= $ENV{CLARIVE_HOME} // '.';
+    $args{base} //= $ENV{CLARIVE_BASE} // '..';
     
     require Clarive::Config;
     my $config = Clarive::Config->config_load( %args );

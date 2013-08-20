@@ -11,14 +11,22 @@ BEGIN {
         $script_home = Cwd::realpath( $script_home );  # clean up the script_home path 
         $ENV{CLARIVE_HOME} //= $script_home;
     }
+    if( ! $ENV{CLARIVE_BASE} ) {
+        require Cwd;
+        $ENV{CLARIVE_BASE} = Cwd::realpath( $ENV{CLARIVE_HOME} . '/..' );
+    }
 }
-use lib "$ENV{CLARIVE_HOME}/lib";
+
 use lib "$ENV{CLARIVE_HOME}/local-lib/lib/perl5";
+use lib "$ENV{CLARIVE_BASE}/local/lib/perl5";
+use lib "$ENV{CLARIVE_HOME}/lib";
+
 use Getopt::Mini 0.02 later=>1;
+
 select(STDERR); $|=1;
 select(STDOUT); $|=1;
 
-my ($cmd, @pre_opts, );
+my ($cmd, @pre_opts );
 
 # capture cla options from before the command
 while( @ARGV ) {

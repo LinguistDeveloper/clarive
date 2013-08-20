@@ -11,9 +11,15 @@ BEGIN {
         $script_home = Cwd::realpath( $script_home );  # clean up the script_home path 
         $ENV{CLARIVE_HOME} //= $script_home;
     }
+    if( ! $ENV{CLARIVE_BASE} ) {
+        require Cwd;
+        $ENV{CLARIVE_BASE} = Cwd::realpath( $ENV{CLARIVE_HOME} . '/..' );
+    }
 }
-use lib "$ENV{CLARIVE_HOME}/lib";
+
 use lib "$ENV{CLARIVE_HOME}/local-lib/lib/perl5";
+use lib "$ENV{CLARIVE_BASE}/local/lib/perl5";
+use lib "$ENV{CLARIVE_HOME}/lib";
 
 my %opts = ( @ARGV );
 $| = 1;
@@ -22,13 +28,14 @@ my $data = join '', <DATA>;
 my ($modules,$cpanm) = split /@@@/, $data;
 $cpanm = eval $cpanm;
 
-my $llib = './local-lib';
+our $llib = $ENV{CLARIVE_BASE} . '/local';
+say "CLARIVE Local Lib Dir=$llib (CLARIVE_BASE/local)";
 my $app = App::cpanminus::script->new;
 
-cpanm( '-n', 'local::lib' ) and die "error"; 
-cpanm( '-n', 'App::Ack' ) and die "error"; 
-cpanm( '-n', 'App::cpanminus' ) and die "error";
-cpanm( '-n', 'Capture::Tiny', -l => $llib ) and die "error";
+cpanm( '-n', 'local::lib' ) and die "error installing local::lib to base perl"; 
+cpanm( '-n', 'App::Ack' ) and die "error installing App::Ack to base perl"; 
+cpanm( '-n', 'App::cpanminus' ) and die "error install App::cpanminus to base perl";
+cpanm( '-n', 'Capture::Tiny', -l => $llib ) and die "error installing Capture::Tiny to base perl";
 
 require Capture::Tiny;
 
@@ -80,7 +87,7 @@ if( ! exists $opts{-w} ) {
 }
 
 sub cpanm_bin {
-    system "cpanm", -l => './local-lib', '-n', @_
+    system "cpanm", -l => $llib, '-n', @_
 }
 
 sub cpanm {
