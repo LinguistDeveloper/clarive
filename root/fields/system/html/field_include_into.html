@@ -7,11 +7,24 @@
     my $is_release = 0;
     my @parents_topics;
     
-    my $release = $c->model('Baseliner::BaliTopic')->find($data->{topic_mid})->categories->is_release;
+    my $category = $c->model('Baseliner::BaliTopic')->find($data->{topic_mid})->categories;
+
+    my $release = $category->is_release;
+    my $id_category = $category->id;
+    
+    my @fields = 
+        map { 
+            $_->{id_field} 
+        } 
+        grep { 
+            my $params = _load($_->{params_field});
+            $params->{origin} ne "system" 
+        } DB->BaliTopicFieldsCategory->search({id_category => $id_category})->hashref->all;
+
     if($release){
         $is_release = 1;
         @parents_topics = $c->model('Baseliner::BaliTopic')->search(
-                                { rel_type=>'topic_topic', -or => {'categories.is_changeset' => 1, 'categories.is_release' => 1}, from_mid => $data->{topic_mid}, rel_field => {"=",undef} },
+                                { rel_type=>'topic_topic', -or => {'categories.is_changeset' => 1, 'categories.is_release' => 1}, from_mid => $data->{topic_mid}, rel_field => {"<>",\@fields} },
                                 { join=>['categories','parents','master'], select=>['mid','title', 'progress', 'categories.name', 'categories.color'], as=>['mid','title','progress','name','color'] }
                                 )->hashref->all;
         @parents_topics = $c->model('Topic')->append_category( @parents_topics );
