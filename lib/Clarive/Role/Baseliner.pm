@@ -36,6 +36,9 @@ sub setup_baseliner {
     $ENV{BASELINER_LOGHOME} = $self->tmp_dir;
     $ENV{BASELINER_PERL_OPTS} = ''; # XXX 
     $ENV{BASELINER_DEBUG} = $self->debug; 
+    
+    # CONFIG
+    $Baseliner::BASE_OPTS = $self->app->opts->{baseliner};
 }
 
 sub bali_service {

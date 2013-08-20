@@ -59,7 +59,7 @@ our $VERSION = $FULL_VERSION->[0];
 our $VERSION_SHA = $FULL_VERSION->[1];
 
 # find my parent to enable restarts
-$ENV{BASELINER_PARENT_PID} = getppid();
+$ENV{BASELINER_PARENT_PID} //= getppid();
 
 __PACKAGE__->config( name => 'Baseliner', default_view => 'Mason' );
 __PACKAGE__->config( setup_components => { search_extra => [ 'BaselinerX' ] } );
@@ -183,7 +183,14 @@ if( $ENV{BALI_FAST} ) {
     };
 }
 
+# config / options from a supervisor? -- have lower precedence than .conf files
+if( ref $Baseliner::BASE_OPTS eq 'HASH' ) {
+    Baseliner->config(  %{ $Baseliner::BASE_OPTS } );
+}
+
+#############################
 __PACKAGE__->setup();
+#############################
 
 # Capture Signals
 $SIG{INT} = \&signal_interrupt;
