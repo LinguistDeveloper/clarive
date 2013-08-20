@@ -32,7 +32,7 @@
     }
     else{
         @parents_topics = $c->model('Baseliner::BaliTopic')->search(
-                                { rel_type=>'topic_topic', 'categories.is_release' => {'!=',1}, to_mid => $data->{topic_mid}, rel_field => {"=",undef} },
+                                { rel_type=>'topic_topic', 'categories.is_release' => {'!=',1}, to_mid => $data->{topic_mid}, rel_field => {"<>",\@fields} },
                                 { join=>['categories','children','master'], select=>['mid','title', 'progress', 'categories.name', 'categories.color'], as=>['mid','title','progress','name','color'] }
                                 )->hashref->all;
         @parents_topics = $c->model('Topic')->append_category( @parents_topics );
