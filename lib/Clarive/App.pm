@@ -37,7 +37,9 @@ around 'BUILDARGS' => sub {
     $args{home} //= $ENV{CLARIVE_HOME} // '.';
     $args{base} //= $ENV{CLARIVE_BASE} // '..';
     
-    require Clarive::Config;
+    chdir $args{home};
+    
+    require Clarive::Config;   # needs to be chdir in directory
     my $config = Clarive::Config->config_load( %args );
     
     $args{args} = { %args };

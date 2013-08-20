@@ -5,11 +5,11 @@ use warnings;
 use FindBin qw($Bin);
 BEGIN {
     if( ! $ENV{CLARIVE_HOME} ) {
-        our $script_home = $Bin . '/..';
-        chdir $script_home;
+        our $clarive_home = $Bin . '/..';
+        chdir $clarive_home;
         require Cwd;
-        $script_home = Cwd::realpath( $script_home );  # clean up the script_home path 
-        $ENV{CLARIVE_HOME} //= $script_home;
+        $clarive_home = Cwd::realpath( $clarive_home );  # clean up the clarive_home path 
+        $ENV{CLARIVE_HOME} //= $clarive_home;
     }
     if( ! $ENV{CLARIVE_BASE} ) {
         require Cwd;

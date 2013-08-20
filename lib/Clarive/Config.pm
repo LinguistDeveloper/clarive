@@ -15,8 +15,8 @@ sub config_load {
     my @files = ( 'config/global.yml' );
     length $env && push @files, "config/$env.yml";
     push @files, $p{config};
-    # clarive.yml is the base config
-    for my $file ( 'config/global.yml', "config/$env.yml", $p{config} ) {   # most important last
+    # global.yml is the base config
+    for my $file ( @files ) {   # most important last
         next unless $file;
         if( -e $file ) {
             require YAML::XS;
