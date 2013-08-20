@@ -4521,8 +4521,8 @@ msgstr "Puede ver tópicos de la categoría"
 msgid "Can edit topic for this category"
 msgstr "Puede editar tópicos de la categoría"
 
-msgid "Can not edit the field"
-msgstr "No puede editar el campo"
+msgid "Can edit the field"
+msgstr "Puede editar el campo"
 
 msgid "in the category"
 msgstr "en la categoria"
@@ -4677,3 +4677,8 @@ msgstr "Cambiar estado"
 msgid "Changed status"
 msgstr "Estado cambiado"
 
+msgid "Change topic status logically (no deployment)"
+msgstr "Cambiar estado del tópico lógicamente (Sin despliegue)"
+
+msgid "Can delete topic in this category"
+msgstr "Puede borrar tópicos de la categoría"
