@@ -4,6 +4,7 @@ use v5.10;
 
 has env     => qw(is rw required 0);
 has home    => qw(is rw required 1);
+has base    => qw(is rw required 1);
 has lang    => qw(is ro required 1);
 has debug   => qw(is rw default 0);
 has verbose => qw(is rw default 0);
@@ -13,7 +14,7 @@ has dbic_trace => qw(is rw default 0);
 
 has argv   => qw(is ro isa ArrayRef required 1);  # original command line ARGV
 has args   => qw(is ro isa HashRef required 1);  # original command line args
-has config => qw(is rw isa HashRef required 1);  # full config file (clarive.yml + $env.yml)
+has config => qw(is rw isa HashRef required 1);  # full config file (config/global.yml + $env.yml)
 has opts   => qw(is ro isa HashRef required 1);  # merged config + args
 
 has db => qw(is rw lazy 1 default), sub {
@@ -34,8 +35,11 @@ around 'BUILDARGS' => sub {
     $ENV{BASELINER_CONFIG_LOCAL_SUFFIX} = $args{env};
     
     $args{home} //= $ENV{CLARIVE_HOME} // '.';
+    $args{base} //= $ENV{CLARIVE_BASE} // '..';
     
-    require Clarive::Config;
+    chdir $args{home};
+    
+    require Clarive::Config;   # needs to be chdir in directory
     my $config = Clarive::Config->config_load( %args );
     
     $args{args} = { %args };

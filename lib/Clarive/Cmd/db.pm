@@ -56,6 +56,10 @@ sub pre {
     $ret;
 }
 
+sub run {
+    goto &run_deploy;
+}
+
 sub run_deploy {
     my ($self,%opts) = @_;
 
