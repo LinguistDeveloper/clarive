@@ -701,6 +701,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         }
         rec.id_panel = self.id;
 
+
         self.form_topic = new Baseliner.TopicForm({ rec: rec, main: self, padding: 15 });
         
         if( ! self.form_is_loaded ) {
@@ -717,6 +718,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             //Baseliner.TopicExtension.toolbar.length > 0 ? self.btn_detail.hide(): self.btn_detail.show();
             self.btn_detail.show();
             self.btn_delete_form.show();
+            self.modified_on = rec.topic_data.modified_on_epoch;
         }else{
             self.btn_comment.hide();
             self.btn_detail.hide();
@@ -737,7 +739,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             if (!self.form_is_loaded){
 
                 Baseliner.ajaxEval( '/topic/json', { topic_mid: self.topic_mid, topic_child_data : true }, function(rec) {
-                    self.load_form( rec );         
+                    self.load_form( rec );
                 });
             }else{
                 self.getLayout().setActiveItem( self.form_topic );
@@ -865,14 +867,11 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         var form2 = self.form_topic.getForm();
         var action = form2.getValues()['topic_mid'] >= 0 ? 'update' : 'add';
         var custom_form = '';
-
-        if (form2.isValid()) {
-            self.btn_save_form.disable();
-            self.btn_delete_form.disable();
-            //console.log( form2.getValues() );
+        
+        var do_submit = function(){
             form2.submit({
                url: self.form_topic.url,
-               params: {action: action, form: custom_form, _cis: Ext.util.JSON.encode( self._cis ) },
+               params: {action: action, form: custom_form, _cis: Ext.util.JSON.encode( self._cis )},
                success: function(f,a){
                     self.btn_save_form.enable();
                     self.btn_delete_form.enable();
@@ -884,7 +883,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     
                     var store = form2.findField("status_new").getStore();
                     store.on("load", function() {
-
+            
                         form2.findField("status_new").setValue( a.result.topic_status );
                         self.status_menu.removeAll();
                         self.status_items_menu = [];
@@ -903,7 +902,6 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                                 }
                     });
                     
-                   
                     self.topic_mid = a.result.topic_mid;
                     self.btn_comment.show();
                     self.btn_detail.show();
@@ -932,6 +930,41 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                    if( Ext.isFunction(opts.failure) ) opts.failure(res);
                }
             });
+        }
+        
+        if (form2.isValid()) {
+            self.btn_save_form.disable();
+            self.btn_delete_form.disable();
+            
+            if(action == 'update'){
+                Baseliner.ajaxEval( '/topic/check_modified_on/',{ topic_mid: self.topic_mid, modified: self.modified_on },
+                    function(res) {
+                        if ( res.success ) {
+                            if (res.modified_before){
+                                Ext.Msg.confirm( _('Confirmation'), _('Topic was modified before your changes. Are you sure you want to save the topic?'),
+                                    function(btn){ 
+                                        if(btn=='yes') {
+                                            do_submit();
+                                        }else{
+                                            self.btn_save_form.enable();
+                                            self.btn_delete_form.enable();                                    
+                                        }
+                                    }
+                                );
+                            }
+                            else{
+                                do_submit();
+                            }
+                        } else {
+                            Baseliner.error( _('Error'), res.msg );
+                            self.btn_save_form.enable();
+                            self.btn_delete_form.enable();                              
+                        }
+                    }
+                );            
+            }else{
+                do_submit();
+            }
         }        
     },
     delete_topic : function(){

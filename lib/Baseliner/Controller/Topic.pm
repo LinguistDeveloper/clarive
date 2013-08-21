@@ -113,7 +113,7 @@ sub update : Local {
     
     $p->{username} = $c->username;
     
-    try  {    
+    try  {
         my ($msg, $topic_mid, $status, $title, $category) = $c->model('Topic')->update( $p );
         $c->stash->{json} = {
             success      => \1,
@@ -122,11 +122,36 @@ sub update : Local {
             topic_status => $status,
             category     => $category,
             title        => $title
-        };
+        };            
     } catch {
         my $e = shift;
         $c->stash->{json} = { success => \0, msg=>_loc($e) };
     };
+    $c->forward('View::JSON');
+}
+
+sub check_modified_on: Local {
+    my ($self, $c) = @_;
+    my $p = $c->request->parameters;
+    my $modified_before = \0;
+    
+    my $strDate = $p->{modified};
+        
+    use Class::Date;
+    my $date_modified_on =  Class::Date->new( $strDate );
+    
+    my $rs_topic = DB->BaliTopic->find($p->{topic_mid});
+    my $date_actual_modified_on = Class::Date->new( $rs_topic->modified_on );
+    
+    if ( $date_modified_on < $date_actual_modified_on ){
+        $modified_before = \1;
+    }
+  
+    $c->stash->{json} = {
+        success      => \1,
+        modified_before => $modified_before,
+        msg          => _loc( 'Prueba' ),
+    };      
     $c->forward('View::JSON');
 }
 

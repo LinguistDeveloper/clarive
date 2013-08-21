@@ -624,7 +624,8 @@ sub update {
                     my $custom_data = Baseliner->model( 'Baseliner::BaliTopicFieldsCustom' )->search({ topic_mid => $p->{topic_mid} });
                     $custom_data->delete;
                 }
-            }            
+            }
+            
             event_new 'event.topic.modify' => { username=>$p->{username},  } => sub {
                 Baseliner->model('Baseliner')->txn_do(sub{
                     my @field;
