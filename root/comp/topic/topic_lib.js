@@ -921,6 +921,8 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     }
                     self.view_is_dirty = true;
                     if( Ext.isFunction(opts.success) ) opts.success(a.result);
+                    
+                    self.modified_on = a.result.modified_on;
                },
                failure: function(f,action){
                    self.btn_save_form.enable();
@@ -930,6 +932,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                    if( Ext.isFunction(opts.failure) ) opts.failure(res);
                }
             });
+            
         }
         
         if (form2.isValid()) {

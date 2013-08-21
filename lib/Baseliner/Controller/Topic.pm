@@ -121,7 +121,8 @@ sub update : Local {
             topic_mid    => $topic_mid,
             topic_status => $status,
             category     => $category,
-            title        => $title
+            title        => $title,
+            modified_on  => DB->BaliTopic->find($topic_mid)->modified_on->epoch,
         };            
     } catch {
         my $e = shift;
