@@ -22,6 +22,8 @@ sub BUILD {
     $self->instance_name( $self->id . '-' . $self->env );
     $self->setup_pid_file();
     $self->setup_baseliner();
+    
+    $ENV{BASELINER_DISPATCHER_ID} = $self->id;
 }
 
 sub run {
