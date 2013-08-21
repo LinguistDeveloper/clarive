@@ -4684,4 +4684,4 @@ msgid "Can delete topic in this category"
 msgstr "Puede borrar tópicos de la categoría"
 
 msgid "Topic was modified before your changes. Are you sure you want to save the topic?"
-msgid "Tópico fue modificado antes de tus cambios. "¿Seguro que quiere guardar el tópico?"
+msgstr "Tópico fue modificado por otro usuario y se perderán esos cambios. ¿Seguro que quiere guardar el tópico?"
