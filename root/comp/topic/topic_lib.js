@@ -1070,6 +1070,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
     enableDragDrop: true,   
     pageSize: 10, // used by the combo 
     constructor: function(c){  // needs to declare the selection model in a constructor, otherwise incompatible with DD
+        
         var sm = new Baseliner.CheckboxSelectionModel({
             checkOnly: true,
             singleSelect: false
@@ -1154,12 +1155,13 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
             fieldLabel: _('Topic'),
             name: 'topic',
             hiddenName: 'topic', 
-            allowBlank: true
+            allowBlank: true,
+            disabled: self.readOnly ? self.readOnly : false 
         }); 
         self.combo.on('beforequery', function(qe){ delete qe.combo.lastQuery });
         self.field = new Ext.form.Hidden({ name: self.name, value: self.value });
         var btn_delete = new Baseliner.Grid.Buttons.Delete({
-            disabled: false,
+            disabled: self.readOnly ? self.readOnly : false,
             handler: function() {
                 var sm = self.getSelectionModel();
                 if (sm.hasSelection()) {
@@ -1173,6 +1175,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
             }
         });
         var btn_reload = new Ext.Button({
+            disabled: self.readOnly ? self.readOnly : false,
             icon: '/static/images/icons/refresh.gif',
             handler: function(){ self.refresh() }
         });
