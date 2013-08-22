@@ -2498,6 +2498,7 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
     use_row_editor: true,
     initComponent: function(){
         var self = this;
+		
         self.viewConfig = Ext.apply({
             forceFit: true
         }, self.viewConfig );
@@ -2599,7 +2600,7 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         var button_add = new Baseliner.Grid.Buttons.Add({
             text:'',
             tooltip: _('Create'),
-            disabled: false,
+            disabled: self.readOnly ? self.readOnly : false,
             handler: function() { self.add_row() }
         });
         
@@ -2607,7 +2608,7 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
             text: '',
             tooltip: _('Delete'),
             cls: 'x-btn-icon',	
-            disabled: false,		
+            disabled: self.readOnly ? self.readOnly : false,
             handler: function() { self.del_row() }
         });
         

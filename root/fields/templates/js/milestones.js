@@ -27,6 +27,7 @@ params:
         var headers = Ext.isString(meta.headers) ? [ meta.headers.split(';') ] : [ _('Milestone'), _('Planned Date'), _('Real Date') ];
         columns = String.format('{0}[slotname],textfield,400;{1}[plan_end_date],datefield,80;{2}[end_date],datefield,80', headers[0],headers[1],headers[2]);
     }
+    
     var editor = new Baseliner.GridEditor({
         name: meta.id_field,
         id_field: meta.id_field,
@@ -37,7 +38,11 @@ params:
         //anchor: meta.anchor || '100%',
         width: meta.width || '100%',
         height: meta.height || 300,
-        value: value || ''
+        value: value || '',
+        readOnly: meta && meta.readonly ? meta.readonly : false,
+        hidden : meta ? (meta.hidden ? meta.hidden : false): true,
+        enableDragDrop: meta && meta.readonly ? !meta.readonly : true,
+        use_row_editor: meta && meta.readonly ? !meta.readonly : true
     });
     return [
         Baseliner.field_label_top( _(meta.name_field), meta.hidden ),
