@@ -37,6 +37,11 @@ sub setup_baseliner {
     $ENV{BASELINER_PERL_OPTS} = ''; # XXX 
     $ENV{BASELINER_DEBUG} = $self->debug; 
     
+    # TLC
+    $Baseliner::TLC = $Clarive::TLC;
+    $Baseliner::TLC_STATUS = $Clarive::TLC_STATUS;
+    $Baseliner::TLC_MSG = $Clarive::TLC_MSG;
+    
     # CONFIG
     $Baseliner::BASE_OPTS = $self->app->opts->{baseliner};
 }

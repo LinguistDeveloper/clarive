@@ -187,6 +187,7 @@ Config::INI::Writer
 Config::JFDI
 Convert::EBCDIC
 Crypt::Blowfish::Mod
+Crypt::OpenSSL::RSA
 DBD::Oracle
 DBI
 DBIx::Class

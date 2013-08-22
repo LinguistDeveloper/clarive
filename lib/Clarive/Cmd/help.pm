@@ -19,8 +19,8 @@ FIN
     for my $lib ( @INC ) {
         push @cmds, glob "$lib/Clarive/Cmd/*";   
     } 
-    say $subcommand ? "Subcommands available for $subcommand" : 'Commands available:';
-    say '';
+    my @cmd_msg;
+    my $main_caption;
     for my $cmd ( sort { uc $a cmp uc $b } @cmds ) {
         next if -d $cmd;    
         my $pkg = $cmd =~ /Clarive\/Cmd\/(.*).pm$/ ? $1 : undef;
@@ -29,27 +29,35 @@ FIN
             $pkg =~ s{\/+}{::}g;
             $pkg = 'Clarive::Cmd::' . $pkg;
             eval "require $pkg";
-            say $@ if $@;;
+            push @cmd_msg => $@ if $@;;
         }
         no strict 'refs';
         my $fn = file($cmd)->basename =~ /^(.*)\.pm$/ ? $1 : $cmd; 
         if( $subcommand ) {
+            $main_caption = ${$pkg . '::CAPTION'} // '??';
             for ( grep /^run_/, grep { defined &{"$pkg\::$_"} } keys %{"$pkg\::"} ) {
                 s/^run_//g;
                 s/_/-/g;
-                say sprintf "    %s-%s", $fn, $_;
+                push @cmd_msg => sprintf "    %s-%s", $fn, $_;
             }
         } else {
             my $caption = ${$pkg . '::CAPTION'} // '??';
-            say sprintf "    %-12s %-80s", $fn, $caption;
+            push @cmd_msg => sprintf "    %-12s %-80s", $fn, $caption;
         }
     }
-    print <<FIN;
+    if( $subcommand && !@cmd_msg ) {
+        say "No subcommands available for $subcommand ($main_caption)";
+    } else {
+        say $subcommand ? "Subcommands available for $subcommand ($main_caption):" : 'Commands available:';
+        say '';
+        say for @cmd_msg;
+        print <<FIN;
     
 cla help <command> to get all subcommands.
 cla <command> -h for command options.
 
 FIN
+    }
 }
 
 1;

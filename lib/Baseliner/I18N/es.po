@@ -3,6 +3,12 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "Site Information"
+msgstr "Datos de Registro"
+
+msgid "Site License"
+msgstr "Datos de Registro"
+
 msgid "class_date_format"
 msgstr "%d/%m/%Y"
 

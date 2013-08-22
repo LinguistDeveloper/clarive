@@ -278,7 +278,14 @@ sub index:Private {
     if( $c->username ) {
         my @actions = $c->model('Permissions')->list( username=> $c->username, ns=>'any', bl=>'any' );
         $c->stash->{menus} = $c->model('Menus')->menus( allowed_actions=>\@actions, username => $c->username );
-            $c->stash->{can_change_password} = $c->config->{authentication}{default_realm} eq 'none';
+        $c->stash->{can_change_password} = $c->config->{authentication}{default_realm} eq 'none';
+        # TLC
+        if( my $ccc = $Baseliner::TLC_MSG ) {
+            my $tlc_msg = $ccc->( DB->BaliUser->search({ active=>1 })->count );
+            if( $tlc_msg  ) {
+                unshift @{ $c->stash->{menus} }, '"<span style=\'font-weight: bold;color: #f34\'>'.$tlc_msg. '</span>"';
+            }
+        }
         $c->stash->{portlets} = [
                 map {
                     +{

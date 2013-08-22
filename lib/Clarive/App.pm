@@ -42,6 +42,13 @@ around 'BUILDARGS' => sub {
     require Clarive::Config;   # needs to be chdir in directory
     my $config = Clarive::Config->config_load( %args );
     
+    $config //= {} unless ref $config eq 'HASH'; 
+    
+    require Clarive::Util::TLC; 
+    if( my $site = $config->{join '', qw(l i c e n s e) } ) {
+        my $lic = Clarive::Util::TLC::check( $site );
+    }
+    
     $args{args} = { %args };
 
     # merge config and args
