@@ -30,7 +30,7 @@ params:
 			hidden: meta ? (meta.hidden ? meta.hidden : false): true,
 			listeners: {
 				'afterrender':function(){
-					var disable = meta ? meta.readonly : false;
+					var disable = meta && meta.readonly ? meta.readonly : false;
 					if(disable){
 					    var mask = this.el.mask();
 					    mask.setStyle('opacity', 0);
