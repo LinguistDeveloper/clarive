@@ -608,7 +608,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         
         self.status_items_menu = [];
         for(i=0; i < obj_status_items_menu.length;i++){
-            self.status_items_menu.push({ id: obj_status_items_menu[i].id_status, text: _(obj_status_items_menu[i].status_name), handler: function(obj){ self.change_status(obj) } });
+            self.status_items_menu.push({ text: _(obj_status_items_menu[i].status_name), id_status_to: obj_status_items_menu[i].id_status, id_status_from: obj_status_items_menu[i].id_status_from, handler: function(obj){ self.change_status(obj) } });
         }
     
         self.status_menu = new Ext.menu.Menu({
@@ -889,8 +889,8 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                         self.status_items_menu = [];
                         store.each( function(row){
                             if(a.result.topic_status != row.data.id){
-                                self.status_items_menu.push({ id: row.data.id, text: _(row.data.name), handler: function(obj){ self.change_status(obj) } });                                                    
-                                self.status_menu.addItem({ id: row.data.id, text: _(row.data.name), handler: function(obj){ self.change_status(obj) } });
+                                self.status_items_menu.push({ text: _(row.data.name), id_status_to: obj_status_items_menu[i].id_status, id_status_from: obj_status_items_menu[i].id_status_from, handler: function(obj){ self.change_status(obj) } });                                                    
+                                self.status_menu.addItem({ text: _(row.data.name), id_status_to: obj_status_items_menu[i].id_status, id_status_from: obj_status_items_menu[i].id_status_from, handler: function(obj){ self.change_status(obj) } });
                             }
                         });                        
                     });
@@ -994,10 +994,10 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         }
     },
     change_status: function(obj){
-        var self = this
-        Baseliner.Topic.change_status_topic({ mid: self.topic_mid, new_status: obj.id, success:function(){
+        var self = this;
+        
+        Baseliner.Topic.change_status_topic({ mid: self.topic_mid, new_status: obj.id_status_to, old_status: obj.id_status_from, success:function(){
             Baseliner.refreshCurrentTab();
-            //self.detail_reload();
         }});
     }
 });
@@ -1019,11 +1019,21 @@ Baseliner.Topic.delete_topic = function(opts){
 
 
 Baseliner.Topic.change_status_topic = function(opts){
-    Baseliner.ajaxEval( '/topic/change_status',{ mid: opts.mid, new_status: opts.new_status },
+    Baseliner.ajaxEval( '/topic/change_status',{ mid: opts.mid, new_status: opts.new_status, old_status: opts.old_status },
         function(res) {
             if ( res.success ) {
-                Baseliner.message( _('Success'), res.msg );
-                if( Ext.isFunction(opts.success) ) opts.success(res);
+                if(res.change_status_before){
+                    Ext.Msg.confirm( _('Confirmation'), _('Topic changed status before. Do you  want to refresh the topic?'),
+                        function(btn){ 
+                            if(btn=='yes') {
+                                Baseliner.refreshCurrentTab();
+                            }
+                        }
+                    );                    
+                }else{
+                    Baseliner.message( _('Success'), res.msg );
+                    if( Ext.isFunction(opts.success) ) opts.success(res);
+                }
             } else {
                 Baseliner.error( _('Error'), res.msg );
                 if( Ext.isFunction(opts.failure) ) opts.failure(res);

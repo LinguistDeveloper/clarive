@@ -1731,12 +1731,20 @@ sub change_status : Local {
     my ($self, $c ) = @_;
     my $p = $c->req->params;
     $c->stash->{json} = try {
-        $c->model('Topic')->change_status( 
-            change=>1, username=>$c->username, 
-            id_status=>$p->{new_status}, id_old_status=>$p->{old_status}, 
-            mid=>$p->{mid} 
-        );
-        { success=>\1, msg=>_loc ('Changed status') };
+        my $change_status_before;
+        
+        if ($p->{old_status} eq DB->BaliTopic->find($p->{mid})->id_category_status){
+            $change_status_before = \0;
+            $c->model('Topic')->change_status( 
+                change=>1, username=>$c->username, 
+                id_status=>$p->{new_status}, id_old_status=>$p->{old_status}, 
+                mid=>$p->{mid} 
+            );
+        }
+        else{
+            $change_status_before = \1;
+        }
+        { success=>\1, msg=>_loc ('Changed status'), change_status_before=>$change_status_before };
     } catch {
         my $err = shift;
         _error( $err );
