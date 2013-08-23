@@ -33,7 +33,7 @@ sub setup_baseliner {
     $ENV{BASELINER_LANG} = $self->lang;
     $ENV{BASELINER_NLS_LANG} = $self->nls_lang;
     $ENV{NLS_LANG} = $self->nls_lang;
-    $ENV{BASELINER_LOGHOME} = $self->tmp_dir;
+    $ENV{BASELINER_LOGHOME} = $self->log_dir;
     $ENV{BASELINER_PERL_OPTS} = ''; # XXX 
     $ENV{BASELINER_DEBUG} = $self->debug; 
     

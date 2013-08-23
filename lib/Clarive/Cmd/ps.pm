@@ -17,13 +17,13 @@ sub run {
     my %disp;
     my %server;
     my $top = sprintf($FORMAT, "PID", "PPID", "CPU", "MEM", "STAT", "START", "COMMAND");
-    $opts{v} and say "TMPDIR = " . $self->tmp_dir;
+    $opts{v} and say "PID_DIR = " . $self->pid_dir;
     my @pids = map {
         my $pid = file( $_ )->slurp;
         $pid =~ s/^([0-9]+).*$/$1/gs;
         $opts{v} and say "PID detected [$pid] in $_";
         { server=>( $_ =~ /web/ ? 1 : 0 ), pid=>$pid };
-    } glob $self->tmp_dir . '/cla*.pid';
+    } glob $self->pid_dir . '/cla*.pid';
     
     foreach my $p ( @{$t->table} ){
         my $lin = sprintf($FORMAT,

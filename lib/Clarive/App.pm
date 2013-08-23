@@ -35,7 +35,11 @@ around 'BUILDARGS' => sub {
     $ENV{BASELINER_CONFIG_LOCAL_SUFFIX} = $args{env};
     
     $args{home} //= $ENV{CLARIVE_HOME} // '.';
-    $args{base} //= $ENV{CLARIVE_BASE} // '..';
+    $args{base} //= $ENV{CLARIVE_BASE} // ( $ENV{CLARIVE_HOME} ? "$ENV{CLARIVE_HOME}/.." : '..' );
+    
+    require Cwd;
+    $args{home} = Cwd::realpath( $args{home} );  
+    $args{base} = Cwd::realpath( $args{base} );  
     
     chdir $args{home};
     
