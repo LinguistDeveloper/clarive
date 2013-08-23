@@ -8,6 +8,7 @@ sub list {
     
     my $query = {};
     $query->{active} = defined $p{active} ? $p{active} : 1;
+    $query->{hostname} = defined $p{id} ? $p{id} : defined $p{no_id} ? {'<>',$p{no_id}} : [ -or => [ {'like','%'},{"=",undef} ] ];
     $p{all} and delete $query->{active};
 
     my @daemons = Baseliner->model('Baseliner::BaliDaemon')->search($query)->all;
@@ -43,6 +44,7 @@ sub service_start {
     my ( $self, %p ) = @_;
 
     my @services = _array $p{services}, $p{service};
+    my $disp_id = $p{hostname};
     $self->mark_as_pending( id=>$p{id} );
 
     _throw 'No service specified' unless @services;
@@ -60,7 +62,7 @@ sub service_start {
           {
             service => $service_name,
             pid     => $proc->pid,
-            host    => lc( Sys::Hostname::hostname() ),
+            host    => $disp_id,
             owner   => $ENV{USER} || $ENV{USERNAME}
           };
     }
@@ -80,6 +82,7 @@ sub service_start_forked {
 
     _throw 'No service specified' unless @services;
 
+    my $disp_id = $p{hostname};
     my %params = _array $p{params}, $p{param};
     my $params = join ' ', map { "$_=$params{$_}" } keys %params;
 
@@ -106,7 +109,7 @@ sub service_start_forked {
           {
             service => $service_name,
             pid     => $pid,
-            host    => lc( Sys::Hostname::hostname() ),
+            host    => $disp_id,
             owner   => $ENV{USER} || $ENV{USERNAME}
           };
     }

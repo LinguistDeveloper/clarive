@@ -159,6 +159,8 @@ use Text::Unaccent::PurePerl qw/unac_string/;
 use Path::Class;
 use Term::ANSIColor;
 use strict;
+use Scalar::Util qw(looks_like_number);
+
 
 BEGIN {
     # enable a TO_JSON converter
@@ -352,7 +354,6 @@ sub _error {
 
 #TODO check that global DEBUG flag is active
 sub _debug {
-    use Scalar::Util qw(looks_like_number);
     my $cal = looks_like_number($_[0])? ( $_[0] < 0 ? shift : 0) : 0;
     my ($cl,$fi,$li) = caller( -$cal );
     return unless Baseliner->debug;
@@ -557,7 +558,9 @@ sub is_oracle {
 }
 
 sub is_number {
-    return $_[0] =~ /^(?=[-+.]*\d)[-+]?\d*\.?\d*(?:e[-+ ]?\d+)?$/i;
+    #return $_[0] =~ /^(?=[-+.]*\d)[-+]?\d*\.?\d*(?:e[-+ ]?\d+)?$/i;
+    my $val = $_[0];
+    return looks_like_number($val);
 }
 
 sub is_int {
