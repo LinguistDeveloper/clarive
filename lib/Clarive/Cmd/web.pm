@@ -18,7 +18,7 @@ has trace      => qw(is rw default) => sub { 0 };
 
 has pid_web_file  => qw(is rw);
 has instance_name => qw(is rw);
-has id            => qw(is ro default) => sub { 'cla-web' };
+has id            => qw(is ro default) => sub { 'web' };
 
 with 'Clarive::Role::EnvRequired';
 with 'Clarive::Role::Daemon';
@@ -30,7 +30,7 @@ sub BUILD {
     # log file (only created by daemonize/nohup, but used by tail)
     $self->setup_log_dir();
     
-    $self->instance_name( $self->id . '-' . $self->port );
+    $self->instance_name( 'cla-'. $self->id . '-' . $self->port );
     
     $self->setup_pid_file();
     $self->pid_web_file( $self->pid_name . '-web.pid' );
