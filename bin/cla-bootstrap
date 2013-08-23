@@ -227,7 +227,9 @@ options:
 examples:
 
     cla-bootstrap -- --no-lwp --no-wget --curl   # install modules with curl instead
-    cla-bootstrap -m Catalyst,Plack              " install only Catalyst and Plack (if needed)
+    cla-bootstrap -m Catalyst,Plack              # install only Catalyst and Plack (if needed)
+    cla-bootstrap -f -- -f                       # really force reinstall of all modules, no matter what cpanm says
+    cla-bootstrap -m Plack -f -- -f              # really force reinstall of Plack, no matter what cpanm says
     
 EOL
 }
