@@ -21,11 +21,14 @@ use lib "$ENV{CLARIVE_HOME}/local-lib/lib/perl5";
 use lib "$ENV{CLARIVE_BASE}/local/lib/perl5";
 use lib "$ENV{CLARIVE_HOME}/lib";
 
+# read options until --
+my @MY_ARGS = grep { state $gg=1; /^--$/ ? ($gg=0) : $gg } @ARGV;
+
 # any args?
 my %opts = do { 
     no warnings;
     my $lastopt='';
-    my %opts = map { $lastopt=~/^--?/ && $_=~/^--?/ ? (1, $lastopt=$_) : ($lastopt=$_)  } @ARGV;
+    my %opts = map { $lastopt=~/^--?/ && $_=~/^--?/ ? (1, $lastopt=$_) : ($lastopt=$_)  } @MY_ARGS;
     $opts{$lastopt} = 1 if $lastopt =~ /^--?/; # last option does not get 1 otherwise
     %opts;
 };
