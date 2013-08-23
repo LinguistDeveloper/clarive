@@ -171,7 +171,7 @@ say "Done bootstraping.";
 exit 0;
 
 sub cpanm_bin {
-    system "cpanm", -l => $llib, '-n', @_
+    system "cpanm", -l => $llib, '-n', @_, @CPANM_ARGS;
 }
 
 sub cpanm {
