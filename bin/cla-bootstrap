@@ -40,7 +40,7 @@ my $data = join '', <DATA>;
 my ($modules,$cpanm) = split /@@@/, $data;
 
 our $llib = $ENV{CLARIVE_BASE} . '/local';
-say "CLARIVE Local Lib Dir=$llib (CLARIVE_BASE/local)";
+say "CLARIVE_LOCAL_LIB_DIR=$llib (\$CLARIVE_BASE/local)";
 
 if( $opts{'-h'} ) {
     usage() and die "\n";
@@ -231,7 +231,6 @@ EOL
 
 __DATA__
 
-Markaya
 Algorithm::C3
 Algorithm::Diff::XS
 Any::Moose
