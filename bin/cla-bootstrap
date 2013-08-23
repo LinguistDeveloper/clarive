@@ -85,7 +85,7 @@ my @needed = $opts{-m} ? ( split /,/, $opts{-m} )
 @needed = grep { length } map { s/^\s+//g; s/\s+$//g; $_ } @needed;
 
 # list of modules we need to install
-say "Checking if needed modules are installed...";
+say "Checking if required modules are installed...";
 my @pending = $opts{-f}    # force install?
     ? @needed
     : do {
