@@ -21,31 +21,109 @@ use lib "$ENV{CLARIVE_HOME}/local-lib/lib/perl5";
 use lib "$ENV{CLARIVE_BASE}/local/lib/perl5";
 use lib "$ENV{CLARIVE_HOME}/lib";
 
-my %opts = ( @ARGV );
+# any args?
+my %opts = do { 
+    no warnings;
+    my $lastopt='';
+    my %opts = map { $lastopt=~/^--?/ && $_=~/^--?/ ? (1, $lastopt=$_) : ($lastopt=$_)  } @ARGV;
+    $opts{$lastopt} = 1 if $lastopt =~ /^--?/; # last option does not get 1 otherwise
+    %opts;
+};
+
+# read options starting after --
+my @CPANM_ARGS = grep { state $gg=0; /^--$/ ? ($gg=1,0) : $gg } @ARGV;
+
 $| = 1;
 
+# load data
 my $data = join '', <DATA>;
 my ($modules,$cpanm) = split /@@@/, $data;
-$cpanm = eval $cpanm;
 
 our $llib = $ENV{CLARIVE_BASE} . '/local';
 say "CLARIVE Local Lib Dir=$llib (CLARIVE_BASE/local)";
+
+if( $opts{'-h'} ) {
+    usage() and die "\n";
+}
+
+# get installed modules
+say "Loading install module list...";
+use ExtUtils::Installed;
+my $instmod = ExtUtils::Installed->new();
+my %installed;
+foreach my $module ($instmod->modules()) {
+    my $version = $instmod->version($module) || "???";
+    $installed{ $module } = $version;
+}
+if( $opts{'--installed'} ) {
+    for my $m ( sort keys %installed ) {
+        my $v = $installed{$m};
+        say "$m ($v)";
+    }
+    exit 0;
+}
+
+# load my own cpanminus
+$cpanm = eval $cpanm;
 my $app = App::cpanminus::script->new;
 
-cpanm( '-n', 'local::lib' ) and die "error installing local::lib to base perl"; 
-cpanm( '-n', 'App::Ack' ) and die "error installing App::Ack to base perl"; 
-cpanm( '-n', 'App::cpanminus' ) and die "error install App::cpanminus to base perl";
-cpanm( '-n', 'Capture::Tiny', -l => $llib ) and die "error installing Capture::Tiny to base perl";
+# bootstrap the bootstrap
+say "Bootstraping this bootstrap...";
+!$installed{'local::lib'} and cpanm( '-n', 'local::lib' ) and die "error installing local::lib"; 
+!$installed{'ack'} and cpanm( '-n', 'App::Ack' ) and die "error installing App::Ack"; 
+!$installed{'App::cpanminus'} and cpanm( '-n', 'App::cpanminus' ) and die "error install App::cpanminus";
+!$installed{'Capture::Tiny'} and cpanm( '-n', 'Capture::Tiny', -l => $llib ) and die "error installing Capture::Tiny";
 
 require Capture::Tiny;
 
-my @modules = $opts{-m} // grep !/^#/, grep { defined && length } split /\r?\n+/, $modules;
-@modules = grep { length } map { s/^\s+//g; s/\s+$//g; $_ } @modules;
-@modules = grep { eval("require $_"); $@ } @modules;
+# list of required modules
+my @needed = $opts{-m} ? ( split /,/, $opts{-m} ) 
+    : grep !/^#/, grep { defined && length } split /\r?\n+/, $modules;
+@needed = grep { length } map { s/^\s+//g; s/\s+$//g; $_ } @needed;
+
+# list of modules we need to install
+say "Checking if needed modules are installed...";
+my @pending = $opts{-f}    # force install?
+    ? @needed
+    : do {
+    no warnings;
+    grep {
+        print "Checking if module $_ needed..." if $opts{'--verbose'};
+        my $missing = ! exists $installed{ $_ };
+        # try to load it with require before say it's missing (YAML::XS is in YAML::LibYAML for instance...)
+        if( $missing ) {
+            my $out = Capture::Tiny::capture_merged( sub {
+            eval("require $_");
+                $missing = $@;
+            });
+        }
+        say $missing ? 'yes' : 'no' if $opts{'--verbose'};
+        if($missing ) {
+            say "$_ -----> not installed. Scheduled for install." if $opts{'--verbose'};
+            1;
+        }
+    } @needed;
+};
+
+if( !@pending ) {
+    my $num = @needed;
+    say "OK. All required modules ($num) already installed.";
+    exit 0;
+}
+
+if( exists $opts{'--missing'} ) {
+    say "Missing modules:";
+    say "      $_" for @pending;
+    exit 0;
+}
+
+my $cnt = scalar @pending;
+say "Installing $cnt module(s)...";
 
 if( ! exists $opts{-w} ) {
-    cpanm_bin( @modules ); 
+    cpanm_bin( @pending ); 
 } else {
+    # parallel install system - kind of broken, cpanminus not good at forking these
     my %workers = map { $_ => 0 } 1.. ( $opts{-w} // 3 );
     my $killall = sub {
         say "************* Shutting down...";
@@ -56,11 +134,11 @@ if( ! exists $opts{-w} ) {
     $SIG{INT} = $killall;
     $SIG{HUP} = $killall;
     $SIG{CHLD} = 'IGNORE';
-    while ( @modules ) {
+    while ( @pending ) {
         for my $i ( keys %workers ) {
             my $pid = $workers{$i};
             if( $pid==0 || !kill( 0 => $pid ) ) {   # unitialized or dead
-                my $mod = shift @modules;
+                my $mod = shift @pending;
                 last unless $mod;
                 say "==> cpanm worker $i installing $mod";
                 $workers{$i} = fork;
@@ -80,11 +158,14 @@ if( ! exists $opts{-w} ) {
         last if ! grep { kill 0=>$_ } grep { $_ > 0 } values %workers;
     }
 
-    for my $mod ( @modules ) {
+    for my $mod ( @pending ) {
         eval "require $mod";
         say "$mod not installed: $@" if $@;
     }
 }
+
+say "Done bootstraping.";
+exit 0;
 
 sub cpanm_bin {
     system "cpanm", -l => $llib, '-n', @_
@@ -93,7 +174,7 @@ sub cpanm_bin {
 sub cpanm {
     my $mod = shift;
     my $err;
-    $app->parse_options( $mod, @_ );
+    $app->parse_options( $mod, @_, @CPANM_ARGS );
     $app->doit or do {
          my $err = 1;
          say "*** Clarive Bootstrap ERROR: could not install module: $mod";
@@ -124,9 +205,33 @@ sub cpanm_capture {
     die "error. exiting $$" if $err ;
 }
 
+sub usage {
+    print <<EOL
+Clarive Bootstrap - installs Clarive Perl libraries
+
+usage: cla-bootstrap <options> [ -- <cpanm options> ]
+
+options:
+
+    -f              force install
+    -m <modules>    install only these comma separated modules
+    --missing       list your missing modules
+    --installed     list your installed modules (may be incomplete)
+    -w              3 parallel install workers
+    -h              this help
+    --verbose       a little more info on stdout
+
+examples:
+
+    cla-bootstrap -- --no-lwp --no-wget --curl   # install modules with curl instead
+    cla-bootstrap -m Catalyst,Plack              " install only Catalyst and Plack (if needed)
+    
+EOL
+}
 
 __DATA__
 
+Markaya
 Algorithm::C3
 Algorithm::Diff::XS
 Any::Moose
