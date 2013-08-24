@@ -321,6 +321,7 @@ Encode
 Encode::Detect
 Encode::Guess
 Exporter::Tidy
+FCGI
 File::Slurp
 File::Tail
 Filesys::Virtual::SSH
