@@ -28,9 +28,8 @@ sub run {
         try {
             _log _loc "Server restart requested. Using kill HUP $pid"; 
             kill HUP => $pid;
-
         } catch {
-            _error "Error restarting $pid: ". shift;            
+            _error _loc ("Error restarting $pid: "). shift;            
         };
     }
 }
