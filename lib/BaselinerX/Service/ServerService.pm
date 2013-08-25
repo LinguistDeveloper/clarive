@@ -3,7 +3,8 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use Path::Class;
 use File::Slurp;
-#use Try::Tiny;
+use Path::Class;
+use Try::Tiny;
 
 with 'Baseliner::Role::Service';
 # guardamos aqui el config que recibimos en el run
@@ -12,18 +13,25 @@ register 'service.restart_server' => { name => 'Restarts Clarive server', handle
 sub run {
     my ($self,$c,$config) = @_;
  
-    my $port = $config->{port};
+    my $dir = $ENV{BASELINER_LOGHOME};
 
-    _log _loc("Trying to restart server in port $port");
+    my @pids = map {
+        my $pid = file( $_ )->slurp;
+        $pid =~ s/^([0-9]+).*$/$1/gs;
+        _log "PID detected [$pid] in $_";
+        $pid;
+    } grep {
+        $_ !~ /web.pid/;
+    } glob $dir . '/cla-web*.pid';
 
-    if ( -e $ENV{CLARIVE_HOME}."/tmp/cla-web-$port.pid") {
-        my $pid=read_file( $ENV{CLARIVE_HOME}."/tmp/cla-web-$port.pid" ) ;
-        _log _loc "Server restart requested. Using kill HUP $pid"; 
-        kill HUP => $pid;
-        return 1;
-    } else {
-        _log _loc "Can't restart server. cla-web-$port.pid file not found";
-        return 0;
+    for my $pid ( @pids ) {
+        try {
+            _log _loc "Server restart requested. Using kill HUP $pid"; 
+            kill HUP => $pid;
+
+        } catch {
+            _error "Error restarting $pid: ". shift;            
+        };
     }
 }
 

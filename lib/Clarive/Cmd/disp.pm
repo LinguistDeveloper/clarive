@@ -20,7 +20,7 @@ with 'Clarive::Role::Baseliner';  # yes, I run baseliner stuff
 sub BUILD {
     my $self = shift;
     $self->setup_log_dir();
-    $self->instance_name( 'cla-'. $self->id . '-' . $self->env );
+    $self->instance_name( 'cla-disp-'. $self->id . '-' . $self->env );
     $self->setup_pid_file();
     $self->setup_baseliner();
     
