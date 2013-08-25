@@ -31,7 +31,7 @@ sub BUILD {
     # log file (only created by daemonize/nohup, but used by tail)
     $self->setup_log_dir();
     
-    $self->instance_name( 'cla-web'. $self->id . '-' . $self->port );
+    $self->instance_name( 'cla-web-'. $self->id . '-' . $self->port );
     
     $self->setup_pid_file();
     $self->pid_web_file( $self->pid_name . '-web.pid' );
