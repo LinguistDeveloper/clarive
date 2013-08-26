@@ -1694,7 +1694,7 @@ sub set_release {
     
     my @release_meta = grep { $_->{id_field} eq $id_field } _array $meta;
 
-    my $release_field = @release_meta[0]->{release_field} // 'undef';
+    my $release_field = $release_meta[0]->{release_field} // 'undef';
 
     my $topic_mid = $rs_topic->mid;
     my $release_row = Baseliner->model('Baseliner::BaliTopic')->search(

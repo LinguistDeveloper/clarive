@@ -133,6 +133,20 @@ sub auto : Private {
         my $saml_username= $c->forward('/auth/saml_check');
         return 1 if $saml_username;
     }
+    
+    # api_key ?
+    if( my $api_key = $c->request->params->{api_key} ) {
+        my $user = DB->BaliUser->search({ api_key=>$api_key }, { select=>['username'] })->first;
+        if( ref $user && ( my $auth = $c->authenticate({ id=>$user->username }, 'none') ) ) {
+            $c->session->{username} = $user->username;
+            $c->session->{user} = new Baseliner::Core::User( user=>$c->user );
+            return 1;
+        } else {
+            $c->stash->{json} = { success=>\0, msg=>'invalid api-key' };
+            $c->forward('View::JSON');
+        }
+    }
+    
     # reject request
     if( $notify_valid_session ) {
         $c->stash->{auto_stop_processing} = 1;
