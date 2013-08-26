@@ -44,7 +44,8 @@ sub begin : Private {
     # process json data, if any
     if( $content_type eq 'application/json' ) {
         my $body = $c->req->body;
-        my $json = Util->_from_json(<$body>);
+        my $body_data = <$body>;
+        my $json = Util->_from_json( $body_data ) if $body_data;
         if( ref $json eq 'HASH' && delete $json->{_merge_with_params} ) {
             my $p = $c->req->params || {};
             $c->req->params( { %$p, %$json } ); 
