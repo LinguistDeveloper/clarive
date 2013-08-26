@@ -1,5 +1,6 @@
 package Clarive::Cmd::web;
 use Mouse;
+use Sys::Hostname;
 extends 'Clarive::Cmd';
 use v5.10;
 
@@ -18,7 +19,7 @@ has trace      => qw(is rw default) => sub { 0 };
 
 has pid_web_file  => qw(is rw);
 has instance_name => qw(is rw);
-has id            => qw(is ro default) => sub { 'web' };
+has id            => qw(is ro default) => sub { lc( Sys::Hostname::hostname() ) };
 
 with 'Clarive::Role::EnvRequired';
 with 'Clarive::Role::Daemon';
@@ -30,7 +31,7 @@ sub BUILD {
     # log file (only created by daemonize/nohup, but used by tail)
     $self->setup_log_dir();
     
-    $self->instance_name( 'cla-'. $self->id . '-' . $self->port );
+    $self->instance_name( 'cla-web-'. $self->id . '-' . $self->port );
     
     $self->setup_pid_file();
     $self->pid_web_file( $self->pid_name . '-web.pid' );

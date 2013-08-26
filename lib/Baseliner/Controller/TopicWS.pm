@@ -8,7 +8,7 @@ BEGIN { extends 'Catalyst::Controller' }
 # skip authentication for this controller:
 sub begin : Private {
     my ( $self, $c ) = @_;
-    $c->stash->{auth_skip} = 1;
+    $c->stash->{auth_skip} = 0;
     $c->forward( '/begin' );
 }
 
