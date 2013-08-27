@@ -50,7 +50,7 @@ if( $opts{'-h'} ) {
 }
 
 # get installed modules
-say "Loading install module list...";
+say "Loading list of currently installed modules...";
 use ExtUtils::Installed;
 my $instmod = ExtUtils::Installed->new();
 my %installed;
@@ -72,10 +72,10 @@ my $app = App::cpanminus::script->new;
 
 # bootstrap the bootstrap
 say "Bootstraping this bootstrap...";
-!$installed{'local::lib'} and cpanm( '-n', 'local::lib' ) and die "error installing local::lib"; 
-!$installed{'ack'} and cpanm( '-n', 'App::Ack' ) and die "error installing App::Ack"; 
-!$installed{'App::cpanminus'} and cpanm( '-n', 'App::cpanminus' ) and die "error install App::cpanminus";
-!$installed{'Capture::Tiny'} and cpanm( '-n', 'Capture::Tiny', -l => $llib ) and die "error installing Capture::Tiny";
+( !$installed{'local::lib'} or $opts{-f} )  and cpanm( '-n', 'local::lib' ) and die "error installing local::lib"; 
+( !$installed{'ack'} or $opts{-f} )  and cpanm( '-n', 'App::Ack' ) and die "error installing App::Ack"; 
+( !$installed{'App::cpanminus'} or $opts{-f} ) and cpanm( '-n', 'App::cpanminus' ) and die "error install App::cpanminus";
+( !$installed{'Capture::Tiny'} or $opts{-f} ) and cpanm( '-n', 'Capture::Tiny', -l => $llib ) and die "error installing Capture::Tiny";
 
 require Capture::Tiny;
 
