@@ -42,14 +42,13 @@ time_zone [[time_zone_offset:"":hit enter for no offset, otherwise try GMT+1, et
     </local>
     <none>
         <credential>
-        class Password
-        password_field password
-        password_type none
-            </credential>
-            <store>
+        	class Password
+        	password_field password
+        	password_type none
+        </credential>
+        <store>
                 class Null
-            </store>
-        </none>
+        </store>
     </none>
   </realms>
 </authentication>
