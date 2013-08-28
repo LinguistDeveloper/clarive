@@ -71,6 +71,11 @@ sub has_description { 1 }
 sub icon_class { '/static/images/ci/class.gif' }
 sub rel_type { +{} }   # { field => rel_type, ... }
 
+sub dump {
+    my ($self) = @_;
+    return Util->_dump( $self ); 
+}
+
 sub collection {
     my $self = shift;
     ref $self and $self = ref $self;
