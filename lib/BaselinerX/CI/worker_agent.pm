@@ -9,7 +9,7 @@ has workerid   => qw(is rw isa Str lazy 1), default => sub {
     $wid or Util->_throw( Util->_loc( 'Could not find a worker capable of %1', $self->cap ) );
     return $wid;
 };
-has cap        => qw(is rw isa Str required 1);
+has cap        => qw(is rw isa Str default '');
 
 has db => qw(is ro lazy 1), default => sub { 
     require Redis;
@@ -196,7 +196,7 @@ sub execute {
             die $! if $?;
         });
     }, \@cmd );
-    return $res->{ret};
+    return $self->ret;
 }
 
 sub chmod {}
