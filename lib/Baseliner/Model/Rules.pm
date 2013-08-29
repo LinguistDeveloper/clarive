@@ -106,9 +106,9 @@ sub dsl_build {
             Perl::Tidy::perltidy( argv => ' ', source => \$dsl, destination => \$tidied );
         });
         return $tidied;
-    } else {
-        return $dsl;
-    }
+    #} else {
+    #    return $dsl;
+    #}
 }
 
 sub dsl_run {

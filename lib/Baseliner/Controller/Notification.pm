@@ -7,17 +7,6 @@ use v5.10;
 
 BEGIN {  extends 'Catalyst::Controller' }
 
-register 'action.admin.notification' => { name=>'Admin Notifications' };
-
-register 'menu.admin.notifications' => {
-    label    => 'Notifications',
-    title    => _loc ('Notifications'),
-    action   => 'action.admin.notification',
-    url_comp => '/comp/notifications.js',
-    icon     => '/static/images/log_w.gif',
-    tab_icon => '/static/images/log_w.gif'
-};
-
 sub list_notifications : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
@@ -44,7 +33,6 @@ sub list_notifications : Local {
     
     my $pager = $rs->pager;
     $cnt = $pager->total_entries;
-    #my @rows = $rs->hashref->all;
     
     my @rows;
     while( my $r = $rs->next ) {
@@ -65,7 +53,6 @@ sub list_notifications : Local {
 sub list_events : Local {
     my ( $self, $c ) = @_;
     my @events = map { +{key => $_}} Baseliner->registry->starts_with('event.');
-    #my @events = Baseliner->registry->starts_with('event.');
     
     $c->stash->{json} = \@events;
     $c->forward('View::JSON');
@@ -73,7 +60,7 @@ sub list_events : Local {
 
 sub list_actions : Local {
     my ( $self, $c ) = @_;
-    my @actions = map {+{action => $_,  checked => $_ eq 'SEND' ? \1: \0}} ('SEND','EXCLUDE');
+    my @actions = map {+{action => $_,  checked => $_ eq 'SEND' ? \1: \0}} $c->model('Notification')->get_actions;
     
     $c->stash->{json} = \@actions;
     $c->forward('View::JSON');
@@ -81,7 +68,7 @@ sub list_actions : Local {
 
 sub list_carriers : Local {
     my ( $self, $c ) = @_;
-    my @carriers = map {+{carrier => $_}} ('TO','CC','BCC');
+    my @carriers = map {+{carrier => $_}} $c->model('Notification')->get_carriers;
     
     $c->stash->{json} = \@carriers;
     $c->forward('View::JSON');
@@ -89,46 +76,33 @@ sub list_carriers : Local {
 
 sub list_type_recipients : Local {
     my ( $self, $c ) = @_;
-    my @recipients = map {+{type_recipient => $_}} ('Default','Users','Roles','Groups','Emails','Actions');
+    my @recipients = map {+{type_recipient => $_}} $c->model('Notification')->get_type_recipients;
     
     $c->stash->{json} = \@recipients;
     $c->forward('View::JSON');
+}
+
+sub get_type_obj_recipients{
+    my ( $self, $type ) = @_;
+    my $obj;
+
+    given ($type) {
+        when ('Default')    { $obj = 'none'; }
+        when ('Emails')     { $obj = 'textfield'; }
+        default             { $obj = 'combo'; }            
+    };
+    return $obj;
 }
 
 sub get_recipients : Local {
     my ( $self, $c, $type ) = @_;
     
     try{
-        my @recipients;
-        my $obj;
-        given ($type) {
-            when ('Users') {
-                $obj = 'combo';
-                @recipients = map {+{id => $_->{mid}, name => $_->{username}, description => $_->{realname} ? $_->{realname}:''  }}
-                            Baseliner->model('Baseliner::BaliUser')->search(undef,{select=>['mid','username','realname'], order_by=>{-asc=>['realname']}})->hashref->all;
-            }
-            when ('Roles') {
-                $obj = 'combo';
-                @recipients = map {+{id => $_->{id}, name => $_->{role}, description => $_->{description} ? $_->{description}:''  }} 
-                            Baseliner->model('Baseliner::BaliRole')->search(undef,{select=>['id','role','description'], order_by=>{-asc=>['role']}})->hashref->all;
-            }
-            when ('Emails') {
-                $obj = 'textfield';
-                @recipients = ({id => 'Emails', name => 'Emails'});
-            }
-            when ('Actions') {
-                $obj = 'combo';
-                @recipients = map {+{id => $_, name => $_, description => ''  }}
-                            Baseliner->registry->starts_with('action.');
-            }
-            when ('Default') {
-                $obj = 'none';
-                @recipients = ({id => 'Default', name => 'Default'});
-            }            
-        }
-        $c->stash->{json} = { data=> \@recipients, obj=> $obj ,success=>\1 };
+        my $recipients = $c->model('Notification')->get_recipients($type);
+        my $obj = $self->get_type_obj_recipients($type);
+        $c->stash->{json} = { data => $recipients, obj => $obj ,success => \1 };
     }catch{
-        $c->stash->{json} = { msg=> _loc('Se ha producido un error'), success=>\0 };
+        $c->stash->{json} = { msg => _loc('Se ha producido un error'), success => \0 };
     };
     $c->forward('View::JSON');
 }
@@ -161,8 +135,8 @@ sub save_notification : Local {
         if($p->{event}){
             if (Baseliner->registry->get( $p->{event} )->notify){
                 my $scope = Baseliner->registry->get( $p->{event} )->notify->{scope};
-                
-                map {  $scope{$_} = $p->{$_} ? $p->{$_} eq 'on' ? [['*',_loc('All')]]: _decode_json($p->{$_ . '_names'}) : undef } _array $scope;
+        
+                map {  $scope{$_} = $p->{$_} ? $p->{$_} eq 'on' ? {'*' => _loc('All')} : _decode_json($p->{$_ . '_names'}) : undef } grep {$p->{$_} ne ''} _array $scope;
             }
         }
         $data->{scopes} = \%scope;
@@ -178,7 +152,7 @@ sub save_notification : Local {
             }
         );
         
-        $c->stash->{json} = { success => \1, msg => 'Notification added' }; 
+        $c->stash->{json} = { success => \1, msg => 'Notification added', notification_id => $notification->id }; 
     }catch{
         $c->stash->{json} = { success => \0, msg => 'Error adding notification: ' }; 
         _error shift;
@@ -186,8 +160,6 @@ sub save_notification : Local {
     
     $c->forward('View::JSON');
 }
-
-
 
 sub remove_notifications : Local {
     my ( $self, $c ) = @_;
