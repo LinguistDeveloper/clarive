@@ -253,7 +253,7 @@ sub deploy_schema {
         );
 
         return 0;
-    } elsif( $p{diff} eq '2schema' ) {
+    } elsif( $p{diff} && $p{diff} eq '2schema' ) {
         # diff with 2 schema comparison, done via DBIC-Loader
         my $sqltargs = {
             add_drop_table    => $p{drop},
