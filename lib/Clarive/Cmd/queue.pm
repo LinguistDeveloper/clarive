@@ -35,7 +35,7 @@ sub run_workers {
     for my $key ( $self->db->hkeys('queue:workers') ) {
         my $v = $self->db->hget( 'queue:workers', $key);
         my $cy = $self->_format_conf( $v );
-        say BRIGHT_WHITE ON_BRIGHT_BLACK, $key, RESET, "\n$cy\n";
+        say BLACK ON_BRIGHT_BLACK, $key, RESET, "\n$cy\n";
     }
 
 }
