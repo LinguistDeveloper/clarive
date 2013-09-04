@@ -13,10 +13,12 @@
         height: 400,
         data: params.rec.variables
     });
-
+    
     return {
         beforesubmit: on_submit,
         fields: [
+           Baseliner.ci_box({ name:'parent_project', fieldLabel:_('Parent Project'), allowBlank: true,
+               role:'Project', value: params.rec.parent_project, force_set_value: true, singleMode: true }),
            Baseliner.ci_box({ name:'repositories', fieldLabel:_('Repositories'), allowBlank: true,
                role:'Repository', value: params.rec.repositories, singleMode: false, force_set_value: params.rec.repositories ? true: false }),
             variables

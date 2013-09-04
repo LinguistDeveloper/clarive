@@ -780,7 +780,10 @@ sub delete : Local {
 
     try {
         $c->cache_clear();
-        my $cnt = $c->model('Baseliner::BaliMaster')->search( { mid=>$mids })->delete;
+        for( _array( $mids ) ) {
+            my $ci = _ci( $_ );
+            $ci->delete if ref $ci;
+        }
         $c->stash->{json} = { success=>\1, msg=>_loc('CIs deleted ok' ) };
         #$c->stash->{json} = { success=>\1, msg=>_loc('CI does not exist' ) };
     } catch {

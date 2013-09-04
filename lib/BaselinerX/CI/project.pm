@@ -6,44 +6,51 @@ with 'Baseliner::Role::CI::Project';
 with 'Baseliner::Role::CI::VariableStash';
 
 sub icon { '/static/images/icons/project.png' }
-sub storage { 'BaliProject' }
 
 has_cis 'repositories';
+has_ci 'parent_project';
 
 sub rel_type { 
-    { repositories=>[ from_mid => 'project_repository'] }
+    { 
+        repositories=>[ from_mid => 'project_repository'],
+        parent_project =>[ from_mid => 'project_project'] 
+    },
 }
 
 service 'scan' => 'Run Scanner' => sub {
     return 'Project scanner disabled';   
 };
 
-around table_update_or_create => sub {
-    my ($orig, $self, $rs, $mid, $data, @rest ) = @_;
+around save_data => sub {
+    my ($orig, $self, $master_row, $data  ) = @_;
 
-    my $temp_data; 
-    delete $data->{versionid};
-    delete $data->{ts};
+    my $mid = $master_row->mid;
     
-    my $variables = delete $data->{variables};
+	my $ret = $self->$orig($master_row, $data);
     
-    if( $data->{data} ) {
-        # json to yaml
-        $temp_data = _dump( _decode_json( $data->{data} ) );
-        delete $data->{data};
-    }
-
-    my $row_mid = $self->$orig( $rs, $mid, $data, @rest );
-
-    $mid //= $row_mid;  # necessary when creating
-        my $row = DB->BaliProject->find( $mid );
-    $row->ns('project/' . $mid );
-
-    $row->data($temp_data);
-    $row->update;
-    $row_mid;
+    my $row = DB->BaliProject->update_or_create({
+        mid         => $mid,
+        data        => undef,
+        domain      => undef,
+        active      => 1,
+        id_parent   => $data->{parent_project},
+        nature      => undef,
+        name        => $master_row->name,
+        description => $data->{description},
+        bl          => $master_row->bl,
+        ns          => 'project/' . $mid
+    });
+    
+    return $ret;
 };
 
+around delete => sub {
+    my ($orig, $self, $mid ) = @_;
+    my $row = DB->BaliProject->find( $mid // $self->mid );
+    $row->delete if $row; 
+	my $cnt = $self->$orig($mid);
+};
+    
 around load => sub {
     my ($orig, $self ) = @_;
 
