@@ -6,6 +6,7 @@ String.prototype.latinize=String.prototype.latinise;
 String.prototype.isLatin=function(){return this==this.latinise()};
 
 Baseliner.name_to_id = function( s ) {
+    if( s===undefined || s===null ) return s;
     s = s.latinise();
     s = s.toLowerCase();
     s = s.replace( /\s+/g, '_' );

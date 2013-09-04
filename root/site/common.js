@@ -666,6 +666,7 @@ Baseliner.ArrayGrid = Ext.extend( Ext.grid.EditorGridPanel, {
         self.raw_value = arr;
     }, 
     getValue : function() {
+        var self = this;
         return self.raw_value;
     }
 });
@@ -2388,7 +2389,7 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
 Baseliner.MonoTextArea = Ext.extend( Ext.form.TextArea, {
     style: 'font-size: 13px; font-family: Consolas, Courier New, monotype'
 });
-    
+
 Baseliner.ComboSingle = Ext.extend( Ext.form.ComboBox, {
     name: 'item',
     mode: 'local',
@@ -2399,26 +2400,26 @@ Baseliner.ComboSingle = Ext.extend( Ext.form.ComboBox, {
     allowBlank: false,
     selectOnFocus: false,
     initComponent: function(){
+        var self = this;
         var data = [];
-        if( this.data ) {
-            Ext.each( this.data, function(v){
+        if( self.data ) {
+            Ext.each( self.data, function(v){
                 data.push( [v] );
             });
         }
-        this.store = this.buildStore(data);
-        var f = Ext.apply({
-            name: this.name,
-            fieldLabel: this.name,
-            valueField: this.field || this.name,
-            displayField: this.field || this.name,
-            value: data.length>0 ? data[0][0] : null
-        }, this);
-        Ext.apply( this, f );
-        Baseliner.ComboSingle.superclass.initComponent(this); 
+        self.store = self.buildStore(data);
+
+        self.fieldLabel = self.fieldLabel || self.name;
+        self.valueField = self.field || self.name;
+        self.displayField = self.field || self.name;
+        self.value = data.length>0 ? data[0][0] : null;
+        
+        Baseliner.ComboSingle.superclass.initComponent.call(this); 
     },
     buildStore : function(data){
-        return new Ext.data.ArrayStore({
-            fields: [ this.name ],
+        var self = this;
+        return new Ext.data.SimpleStore({
+            fields: [ self.name ],
             data : data 
         });  
     }
@@ -2432,7 +2433,7 @@ Baseliner.ComboSingleRemote = Ext.extend( Baseliner.ComboSingle, {
             remoteSort: true,
             totalProperty: this.totalProperty || 'totalCount', 
             id: 'id', 
-            baseParams: {  start: 0, limit: this.ps || 99999999 },
+            baseParams: Ext.apply({  start: 0, limit: this.ps || 99999999 }, this.baseParams ),
             url: this.url,
             fields: this.fields || [ this.name ]
         });  

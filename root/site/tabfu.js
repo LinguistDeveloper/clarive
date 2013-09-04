@@ -1069,7 +1069,11 @@ if( Prefs.routing ) {
                         login_or_error();
                     }
                     else if( !params._handle_res && Ext.isObject( comp ) && comp.success!=undefined && !comp.success ) {  // XXX this should come after the next else
-                        Baseliner.error( _('Loading Error'), comp.msg );
+                        if( Ext.isFunction(scope) ) {  // scope is catch
+                            scope( comp, foo );
+                        } else {
+                            Baseliner.error( _('Loading Error'), comp.msg );
+                        }
                     }
                     else if( Ext.isFunction( foo ) ) {  // XXX this should come before the next else
                         foo( comp, scope );

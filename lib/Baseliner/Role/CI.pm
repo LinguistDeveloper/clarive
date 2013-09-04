@@ -8,6 +8,7 @@ require Baseliner::CI;
 subtype CI    => as 'Baseliner::Role::CI';
 subtype CIs   => as 'ArrayRef[CI]';
 subtype BoolCheckbox   => as 'Bool';
+subtype HashJSON       => as 'HashRef';
 subtype TS    => as 'Str';
 subtype DT    => as 'DateTime';
 
@@ -19,6 +20,10 @@ coerce 'TS' =>
 
 coerce 'BoolCheckbox' =>
   from 'Str' => via { $_ eq 'on' ? 1 : 0 };
+
+coerce 'HashJSON' =>
+  from 'Str' => via { Util->_from_json($_) },
+  from 'Undef' => via { +{} };
 
 # deprecated, but kept for future reference
 #coerce 'CI' =>
@@ -519,6 +524,15 @@ sub children {
     my ($self, %opts)=@_;
     local $Baseliner::CI::mid_scope = {} unless defined $Baseliner::CI::mid_scope;
     return $self->related( %opts, edge=>'out' );
+}
+
+sub list_by_name {
+    my ($class, $p)=@_;
+    my $where = {};
+    $where->{name} = $p->{names} if defined $p->{names};
+    my $from = { select=>'mid' };
+    $from->{rows} = $p->{rows} if defined $p->{rows};
+    [ map { _ci( $_->{mid} )->{_ci} } DB->BaliMaster->search($where, $from)->hashref->all ];
 }
 
 

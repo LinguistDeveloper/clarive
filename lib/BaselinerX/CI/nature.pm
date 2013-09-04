@@ -4,6 +4,8 @@ use Baseliner::Utils;
 use namespace::autoclean;
 
 with 'Baseliner::Role::CI::Nature';
+with 'Baseliner::Role::CI::VariableStash';
+
 sub icon { '/static/images/icons/nature.gif' }
 
 

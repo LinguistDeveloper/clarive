@@ -112,7 +112,17 @@ other => [qw(
     _markdown
     hash_shallow
     ago
-)];
+)],
+logging => [qw(
+    _log _dump _debug _fail _throw _loc _error
+)],
+basic => [qw(
+    _array _file _dir _now _ci _load :logging 
+)],
+common => [qw(
+    _decode_json _encode_json _to_utf8 _from_json _to_json :basic
+)],
+;
 
 # setup I18n
 our $i18n_path;

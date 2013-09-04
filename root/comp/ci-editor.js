@@ -30,6 +30,7 @@
                       var ret = cb( form2 );
                       if( !ret ) flag = false;
                    });
+                   // XXX submit JSON with ajaxJSON for better depth?
                    form2.submit({
                        params: {action: params.action, mid: params.mid, collection:params.collection },
                        success: function(f,a){

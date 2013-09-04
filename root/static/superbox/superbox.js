@@ -1213,11 +1213,12 @@ Ext.ux.form.SuperBoxSelect = Ext.extend(Ext.ux.form.SuperBoxSelect, Ext.form.Com
             name : (this.hiddenName || this.name)
         };
  
-        if (this.disabled) {
+        if (this.disabled || this.submitValue === false) {  // rgo: disabled prevents submition
             Ext.apply(hConfig, {
                 disabled : 'disabled'
             })
         }
+        
         box.hidden = this.el.insertSibling(hConfig, 'before');
  
         this.items.add(itemKey, box);

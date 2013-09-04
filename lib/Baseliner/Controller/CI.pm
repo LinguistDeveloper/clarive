@@ -422,24 +422,52 @@ sub tree_object_info {
     return @tree;
 }
 
+sub list_classes {
+    my ($self, $role ) = @_;
+    $role //= 'Baseliner::Role::CI';
+    map {
+        my $pkg = $_;
+        ( my $name = $pkg ) =~ s/^BaselinerX::CI:://g;
+        +{ classname=>$pkg, name=>$name };
+    } packages_that_do( $role );
+}
+
 sub list_roles {
-    my ($self, $role) = @_;
-    sub name_transform {
+    my ($self, %p) = @_;
+    $p{name_format} //= 'lc';
+    my $name_transform = sub {
         my $name = shift;
+        return $name if $p{name_format} eq 'full';
         ($name) = $name =~ /^.*::CI::(.*)$/;
+        return length($name) ? $name : 'CI' if $p{name_format} eq 'short';
         $name =~ s{::}{}g if $name;
         $name =~ s{([a-z])([A-Z])}{$1_$2}g if $name; 
         my $return = $name || 'ci';
         return lc $return;
-    }
+    };
     my %cl=Class::MOP::get_all_metaclasses;
     map {
         my $role = $_;
         +{
             role => $role,
-            name => name_transform( $role ),
+            name => $name_transform->( $role ),
         }
     } grep /^Baseliner::Role::CI/, keys %cl;
+}
+
+sub classes : Local {
+    my ($self, $c) = @_;
+    my @classes = sort { $a->{name} cmp $b->{name} } $self->list_classes;
+    $c->stash->{json} = { data=>\@classes, totalCount=>scalar(@classes) };
+    $c->forward('View::JSON');
+}
+
+sub roles : Local {
+    my ($self, $c) = @_;
+    my $name_format = $c->req->params->{name_format};
+    my @roles = sort { $a->{name} cmp $b->{name} } $self->list_roles( name_format=>$name_format );
+    $c->stash->{json} = { data=>\@roles, totalCount=>scalar(@roles) };
+    $c->forward('View::JSON');
 }
 
 # used by Baseliner.store.CI
@@ -460,6 +488,7 @@ sub store : Local {
         }
     }
     
+    my $bl = delete $p->{bl};
     my $name = delete $p->{name};
     my $collection = delete $p->{collection};
     my $action = delete $p->{action};
@@ -474,6 +503,10 @@ sub store : Local {
         $w->{rel_type} = $p->{rel_type}  if defined $p->{rel_type};
         my $rel_query = Baseliner->model('Baseliner::BaliMasterRel')->search( $w , { select=>'to_mid' } )->as_query;
         $where->{mid} = { -in=>$rel_query };
+    }
+
+    if( length $bl && $bl ne '*' ) {
+        $where->{'-or'} = [ { bl =>{-like => '%'.$bl.'%'} }, { bl=>{-like=>'%*%'}} ];  # XXX XXX XXX  use where exists( select rels from master_rel? )
     }
     
     # used by value in a CIGrid
@@ -490,9 +523,9 @@ sub store : Local {
     my @data;
     my $total = 0; 
 
-    if( my $class = $p->{class} ) {
+    if( my $class = $p->{class} // $p->{classname} ) {
         $class = "BaselinerX::CI::$class" if $class !~ /^Baseliner/;
-        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>1);
+        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
     }
     elsif( my $role = $p->{role} ) {
         my @roles;
@@ -503,10 +536,10 @@ sub store : Local {
             push @roles, $r;
         }
         my $classes = [ packages_that_do( @roles ) ];
-        ($total, @data) = $self->tree_objects( class=>$classes, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty}, no_yaml=>1);
+        ($total, @data) = $self->tree_objects( class=>$classes, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty}, no_yaml=>$p->{with_data}?0:1);
     }
     else {
-        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>1);
+        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
         #_fail( 'No class or role supplied' );
     }
 
@@ -1102,7 +1135,7 @@ sub default : Path Args(2) {
             _fail( _loc "Method '%1' not found in class '%2'", $meth, $pkg) unless $pkg->can( $meth) ;
             $ret = $pkg->$meth( $data );
         }
-        if( ref $ret ) {
+        if( Scalar::Util::blessed($ret) ) {
             Util->_unbless( $ret );
             $c->stash->{json} = $ret;
         } else {

@@ -3,6 +3,7 @@ use Baseliner::Moose;
 use Baseliner::Utils;
 
 with 'Baseliner::Role::CI::Project';
+with 'Baseliner::Role::CI::VariableStash';
 
 sub icon { '/static/images/icons/project.png' }
 sub storage { 'BaliProject' }
@@ -23,6 +24,9 @@ around table_update_or_create => sub {
     my $temp_data; 
     delete $data->{versionid};
     delete $data->{ts};
+    
+    my $variables = delete $data->{variables};
+    
     if( $data->{data} ) {
         # json to yaml
         $temp_data = _dump( _decode_json( $data->{data} ) );
@@ -30,6 +34,7 @@ around table_update_or_create => sub {
     }
 
     my $row_mid = $self->$orig( $rs, $mid, $data, @rest );
+
     $mid //= $row_mid;  # necessary when creating
         my $row = DB->BaliProject->find( $mid );
     $row->ns('project/' . $mid );
