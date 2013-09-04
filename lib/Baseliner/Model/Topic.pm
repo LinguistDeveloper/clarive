@@ -588,6 +588,7 @@ sub update {
     my $topic_mid;
     my $status;
     my $category;
+    my $modified_on;
     
     given ( $action ) {
         #Casos especiales, por ejemplo la aplicacion GDI
@@ -611,6 +612,7 @@ sub update {
                     $status = $topic->id_category_status;
                     $return = 'Topic added';
                     $category = { $topic->categories->get_columns };
+                    $modified_on = $topic->modified_on->epoch;
                    { mid => $topic->mid, topic => $topic->title, , category=> $category->{name} }   # to the event
                 });                   
             } 
@@ -636,6 +638,7 @@ sub update {
                     
                     $topic_mid    = $topic->mid;
                     $status = $topic->id_category_status;
+                    $modified_on = $topic->modified_on->epoch;
     
                     $return = 'Topic modified';
                    { mid => $topic->mid, topic => $topic->title }   # to the event
@@ -658,6 +661,8 @@ sub update {
                 
                 $row = Baseliner->model( 'Baseliner::BaliTopicFieldsCustom' )->search({ topic_mid=>$topic_mid });
                 $row->delete;
+
+                $modified_on = Class::Date->new(_now)->epoch;
                 
                 $return = '%1 topic(s) deleted';
             } ## end try
@@ -671,6 +676,7 @@ sub update {
                 my $topic    = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid );
                 $topic->status( 'C' );
                 $topic->update();
+                $modified_on = $topic->modified_on->epoch;
 
                 $topic_mid    = $topic->mid;
                 $return = 'Topic closed'
@@ -680,7 +686,7 @@ sub update {
             }
         } ## end when ( 'close' )
     } ## end given
-    return ( $return, $topic_mid, $status, $p->{title}, $category );
+    return ( $return, $topic_mid, $status, $p->{title}, $category, $modified_on);
 } ## end sub update
 
 sub append_category {
