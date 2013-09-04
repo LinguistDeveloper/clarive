@@ -3,7 +3,7 @@ use Moose::Role;
 
 # error control 
 has throw_errors => qw(is rw isa Bool default 1 lazy 1);
-has ret => qw(is rw isa Str), default => '';
+has ret => qw(is rw isa Any), default => '';
 
 requires 'error';
 requires 'rc';

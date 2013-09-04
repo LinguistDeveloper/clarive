@@ -15,7 +15,7 @@ This is the generic KV based CRUD system
 package Baseliner::Schema::KV;
 use Moose;
 use Try::Tiny;
-use Baseliner::Utils qw(_fail _loc _error _debug _throw _log _array);
+use Baseliner::Utils qw(_fail _loc _error _debug _throw _log _array _dump);
 
 has index_name => ( is=>'ro', isa=>'Str', default=>'bali_master_kv_full' );
 has index_sync_type => ( is=>'ro', isa=>'Str', default=>'manual' );
@@ -90,7 +90,7 @@ sub save {
                     $row->{mvalue} = $date_str;
                 }
                 push @mvalue_date, $row->{mvalue_date};
-                push @mvalue, $row->{mvalue} // '';
+                push @mvalue, "$row->{mvalue}" // '';
                 push @flat_final, $row;
             }
             $stmt->execute_array({ ArrayTupleStatus => \@tuple_status }, \@mid, \@mtype, \@mpos, \@mkey, \@mvalue_num, \@mvalue_date, \@mvalue  );

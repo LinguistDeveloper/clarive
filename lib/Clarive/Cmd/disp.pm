@@ -1,11 +1,12 @@
 package Clarive::Cmd::disp;
 use Mouse;
+use Sys::Hostname;
 extends 'Clarive::Cmd';
 use v5.10;
 
 our $CAPTION = 'Start/Stop dispatcher';
 
-has id         => qw(is ro default) => sub { 'cla-disp' };
+has id         => qw(is ro default) => sub { lc( Sys::Hostname::hostname() ) };
 has host       => qw(is ro default), sub { 'localhost' };
 has daemon     => qw(is ro);
 has restarter  => qw(is rw default) => sub { 0 };
@@ -19,9 +20,11 @@ with 'Clarive::Role::Baseliner';  # yes, I run baseliner stuff
 sub BUILD {
     my $self = shift;
     $self->setup_log_dir();
-    $self->instance_name( $self->id . '-' . $self->env );
+    $self->instance_name( 'cla-disp-'. $self->id . '-' . $self->env );
     $self->setup_pid_file();
     $self->setup_baseliner();
+    
+    $ENV{BASELINER_DISPATCHER_ID} = $self->id;
 }
 
 sub run {

@@ -66,7 +66,7 @@ sub topic_name {
     return sprintf '%s #%s - %s', 'Cmbio', $self->mid, $self->name; 
 }
 
-sub rest_timeline {
+sub timeline {
     my ($self, $p) = @_;
     
     my @data;
@@ -123,4 +123,9 @@ sub rest_timeline {
     return { events => \@data, max_same_date=>$max_same_date }
 }
 
+sub create_topic {
+    my ($class, $p) = @_;
+    my ($msg, $topic_mid, $status, $title) = Baseliner->model('Topic')->update({ action=>'add', %$p });
+    { msg=>$msg, mid=>$topic_mid, status=>$status, title=>$title };
+}
 1;

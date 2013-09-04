@@ -2,7 +2,7 @@ package Baseliner::Moose;
 use Moose::Exporter;
 
 Moose::Exporter->setup_import_methods(
-    with_meta => ['has_ci', 'has_cis'],
+    with_meta => ['has_ci', 'has_cis', 'has_array' ],
     with_caller => ['service'],
     also      => ['Moose'],
 );
@@ -47,6 +47,32 @@ sub has_cis {
         $options{is}  ||= 'rw';
         $options{traits} ||= ['CI'];
     }
+ 
+    $meta->add_attribute( $name, %options, );
+}
+
+sub has_array {
+    my $meta = shift;
+    my $name = shift;
+    my %options;
+    if ( @_ > 0 && @_ % 2 ) {
+        $options{isa} = shift;
+        $options{is}  = 'rw';
+        $options{traits}  = ['Array'];
+        if( @_ > 1 ) {  # allow: has_array 'att' => 'Obj', required=>1;
+            %options = ( %options, @_ );
+        }
+    }
+    else {
+        %options = @_;
+        $options{isa} ||= 'ArrayRef';
+        $options{is}  ||= 'rw';
+        $options{traits} ||= ['Array'];
+    }
+    $options{default} //= sub{ [] };
+    #$options{handles} //= { qw(elements elements push push map map grep grep first first get get join join count count is_empty is_empty sort sort), };
+    $options{handles} //= {};
+    $options{handles}{"${name}_$_"} = $_ for qw/elements push map grep first join count is_empty/;
  
     $meta->add_attribute( $name, %options, );
 }

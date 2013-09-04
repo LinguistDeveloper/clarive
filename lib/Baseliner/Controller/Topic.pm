@@ -869,7 +869,6 @@ sub list_label : Local {
     $dir ||= 'asc';
     $sort ||= 'name';
     
-    my $cnt;
     my $row;
     my @rows;
     

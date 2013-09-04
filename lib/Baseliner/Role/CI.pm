@@ -43,13 +43,13 @@ has name    => qw(is rw isa Maybe[Str]);
 has ns      => qw(is rw isa Maybe[Str]);
 has versionid => qw(is rw isa Maybe[Str]);
 has moniker  => qw(is rw isa Maybe[Str]);# lazy 1);#, 
-    default=>sub{   
-        my $self = shift; 
-        if( ref $self ) {
-            my $nid = Util->_name_to_id( $self->name );
-            return $nid;
-        }
-    };  # a short name for this
+    # default=>sub{   
+    #     my $self = shift; 
+    #     if( ref $self ) {
+    #         my $nid = Util->_name_to_id( $self->name );
+    #         return $nid;
+    #     }
+    # };  # a short name for this
 has job     => qw(is rw isa Baseliner::Role::JobRunner),
         lazy    => 1, default => sub {
             require Baseliner::Core::JobRunner;
@@ -70,6 +70,11 @@ sub has_bl { 1 }
 sub has_description { 1 } 
 sub icon_class { '/static/images/ci/class.gif' }
 sub rel_type { +{} }   # { field => rel_type, ... }
+
+sub dump {
+    my ($self) = @_;
+    return Util->_dump( $self ); 
+}
 
 sub collection {
     my $self = shift;

@@ -589,18 +589,8 @@ sub get_contents {
                     };
                 } @elements_list;
     
-            my $rs_topics =
-                Baseliner->model( 'Baseliner::BaliRelationship' )->search( {from_ns => $ns->{ns_type}.'/'.$ns->{ns_name}} );
-    
-            while ( my $topic = $rs_topics->next ) {
-                my $row_topics =
-                    Baseliner->model( 'Baseliner::BaliTopic' )->search( {mid => $topic->to_id} )->first;
-                ##$topics{$topic->to_id} = $row_topics->title;
-                $topics{$topic->to_id} = $row_topics->title if $row_topics && $row_topics->title;
-            }
         } ## end while ( my $row = $rs->next)
     
-        push @{$result->{topics}}, map { {id => $_, title => $topics{$_}} } keys %topics;
         push @{$result->{technologies}}, keys %technologies;        
     }
     return $result;
@@ -639,7 +629,7 @@ sub get_outputs {
             ? ( $data_name || $self->_select_words( $r->text, 2 ) ) . ".txt"
             : '';
         my $link;
-        if ( $more eq 'link') {
+        if ( $more && $more eq 'link') {
             $link = $data;
         }
         push @{$result->{outputs}}, {

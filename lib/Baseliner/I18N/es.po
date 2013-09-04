@@ -3,6 +3,12 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "Site Information"
+msgstr "Datos de Registro"
+
+msgid "Site License"
+msgstr "Datos de Registro"
+
 msgid "class_date_format"
 msgstr "%d/%m/%Y"
 
@@ -4688,3 +4694,4 @@ msgstr "Tópico fue modificado por otro usuario y se perderán esos cambios. ¿S
 
 msgid "Topic changed status before. Do you  want to refresh the topic?"
 msgstr "Tópico cambió de estado anteriormente. ¿Quieres refrescar el tópico?"
+

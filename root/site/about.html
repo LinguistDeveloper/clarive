@@ -3,6 +3,7 @@
     $environment_vars => []
     $copyright => []
     $licenses => []
+    $tlc => ''
     $third_party => ''
 </%args>
 <div id="boot" class="container_24" style="margin: 30px 10px 10px 30px">
@@ -36,6 +37,23 @@
     </div>
 % }
 
+% if( ref $tlc eq 'HASH' ) {
+    <div class="grid_24">
+        <h1><% _loc('Site Information') %></h1>
+    </div>
+    <div class="grid_24">
+        <table class="table table-bordered">
+            <tr>
+                <td valign='top' style="width:30%"><b><% _loc('Site License') %></b></td>
+                    <td>
+                        <textarea style="height:200px; width:100%; font-family:Consolas,Courier New,Courier,mono;"><% Util->_dump( $tlc )  %></textarea>
+                    </td>
+            </tr>
+        </table>
+    </div>
+% }
+
+    
 % if( @$licenses ) {
     <div class="grid_24">
         <h1><% _loc('Licenses') %></h1>

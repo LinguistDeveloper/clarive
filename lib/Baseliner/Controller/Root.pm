@@ -44,7 +44,8 @@ sub begin : Private {
     # process json data, if any
     if( $content_type eq 'application/json' ) {
         my $body = $c->req->body;
-        my $json = Util->_from_json(<$body>);
+        my $body_data = <$body>;
+        my $json = Util->_from_json( $body_data ) if $body_data;
         if( ref $json eq 'HASH' && delete $json->{_merge_with_params} ) {
             my $p = $c->req->params || {};
             $c->req->params( { %$p, %$json } ); 
@@ -133,6 +134,20 @@ sub auto : Private {
         my $saml_username= $c->forward('/auth/saml_check');
         return 1 if $saml_username;
     }
+    
+    # api_key ?
+    if( my $api_key = $c->request->params->{api_key} ) {
+        my $user = DB->BaliUser->search({ api_key=>$api_key }, { select=>['username'] })->first;
+        if( ref $user && ( my $auth = $c->authenticate({ id=>$user->username }, 'none') ) ) {
+            $c->session->{username} = $user->username;
+            $c->session->{user} = new Baseliner::Core::User( user=>$c->user );
+            return 1;
+        } else {
+            $c->stash->{json} = { success=>\0, msg=>'invalid api-key' };
+            $c->forward('View::JSON');
+        }
+    }
+    
     # reject request
     if( $notify_valid_session ) {
         $c->stash->{auto_stop_processing} = 1;
@@ -278,7 +293,14 @@ sub index:Private {
     if( $c->username ) {
         my @actions = $c->model('Permissions')->list( username=> $c->username, ns=>'any', bl=>'any' );
         $c->stash->{menus} = $c->model('Menus')->menus( allowed_actions=>\@actions, username => $c->username );
-            $c->stash->{can_change_password} = $c->config->{authentication}{default_realm} eq 'none';
+        $c->stash->{can_change_password} = $c->config->{authentication}{default_realm} eq 'none';
+        # TLC
+        if( my $ccc = $Baseliner::TLC_MSG ) {
+            my $tlc_msg = $ccc->( DB->BaliUser->search({ active=>1 })->count );
+            if( $tlc_msg  ) {
+                unshift @{ $c->stash->{menus} }, '"<span style=\'font-weight: bold;color: #f34\'>'.$tlc_msg. '</span>"';
+            }
+        }
         $c->stash->{portlets} = [
                 map {
                     +{

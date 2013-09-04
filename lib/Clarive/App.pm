@@ -35,12 +35,23 @@ around 'BUILDARGS' => sub {
     $ENV{BASELINER_CONFIG_LOCAL_SUFFIX} = $args{env};
     
     $args{home} //= $ENV{CLARIVE_HOME} // '.';
-    $args{base} //= $ENV{CLARIVE_BASE} // '..';
+    $args{base} //= $ENV{CLARIVE_BASE} // ( $ENV{CLARIVE_HOME} ? "$ENV{CLARIVE_HOME}/.." : '..' );
+    
+    require Cwd;
+    $args{home} = Cwd::realpath( $args{home} );  
+    $args{base} = Cwd::realpath( $args{base} );  
     
     chdir $args{home};
     
     require Clarive::Config;   # needs to be chdir in directory
     my $config = Clarive::Config->config_load( %args );
+    
+    $config //= {} unless ref $config eq 'HASH'; 
+    
+    require Clarive::Util::TLC; 
+    if( my $site = $config->{join '', qw(l i c e n s e) } ) {
+        my $lic = Clarive::Util::TLC::check( $site );
+    }
     
     $args{args} = { %args };
 
