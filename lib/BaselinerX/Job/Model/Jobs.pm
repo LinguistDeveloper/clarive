@@ -207,8 +207,8 @@ sub _create {
     $maxstarttime =  $maxstarttime->strftime('%Y-%m-%d %T');
 
     my $type = $p{type} || $p{job_type} || $config->{type};
-
-    my $job = Baseliner->model('Baseliner::BaliJob')->create({
+    
+    my $row_data = {
             name         => 'temp' . $$,
             mid          => $p{mid},
             starttime    => $starttime,
@@ -218,12 +218,19 @@ sub _create {
             step         => $p{step} || 'PRE',
             type         => $type,
             runner       => $p{runner} || $config->{runner},
+            id_rule      => $p{id_rule},
             username     => $p{username} || $config->{username} || 'internal',
             comments     => $p{comments},
             job_key      => _md5(),
             ns           => $ns,
             bl           => $bl,
-    });
+    };
+    
+    # CHECK
+    my $ret = Baseliner->model('Rules')->run_single_rule( id_rule=>$p{id_rule}, stash=>{ %$row_data, job_step=>'CHECK' });
+    
+    # create db row
+    my $job = Baseliner->model('Baseliner::BaliJob')->create($row_data);
 
     # setup name
     my $name = $config->{name}
@@ -317,6 +324,14 @@ sub _create {
     }
     $job->status( 'READY' );
     $job->update;
+    
+    # INIT
+    my $ret = Baseliner->model('Rules')->run_single_rule( id_rule=>$p{id_rule}, 
+        stash=>{ 
+            %$row_data, %{ $p{job_stash} // {} }, 
+            job_step=>'INIT' 
+        });
+    
     return $job;
 }
 

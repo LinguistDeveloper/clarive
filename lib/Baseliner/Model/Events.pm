@@ -51,7 +51,7 @@ sub run_once {
             alarm $data->{timeout} if $data->{timeout};  # 0 turns off timeout
             my $stash = $ev->event_data ? _load( $ev->event_data ) : {};
             # run rules for this event
-            my $ret = $rules->run_rules( event=>$ev->event_key, when=>'post-offline', stash=>$stash, onerror=>1 );
+            my $ret = $rules->run_rules( event=>$ev->event_key, rule_type=>'event', when=>'post-offline', stash=>$stash, onerror=>1 );
             alarm 0 if $data->{timeout};
             my $rc=0;
             # save log

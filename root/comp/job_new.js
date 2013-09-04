@@ -140,6 +140,35 @@
         width: 200
     });
 
+    var store_chain = new Baseliner.JsonStore({
+        url: '/job/chains', root: 'data', totalProperty: 'totalCount', id: 'id', 
+        fields:['id','rule_name','rule_type']
+    });
+    var combo_chain = new Ext.form.ComboBox({
+        fieldLabel: _('Job Chain'),
+            name: 'id_rule',
+            displayField:'rule_name',
+            hiddenName:'id_rule', 
+            valueField: 'id',
+        store: store_chain,
+        anchor: '50%',
+        mode: 'remote',
+        minChars: 0, //min_chars ,
+        loadingText: _('Searching...'),
+        allowBlank: false,
+        editable: false,
+        lazyRender: true
+    });
+    store_chain.on('load', function(){
+        var row = store_chain.getAt(0);
+        if( row ) {
+            combo_chain.setValue( row.data.id );
+        } else {
+            Baseliner.message(_('Job'), _('No job chains available') );
+        }
+    });
+    store_chain.load();
+    
     if( default_baseline.length == 0 ) {
         combo_baseline.on( 'afterrender', function(){
             var rec = store_baselines.getAt(0);
@@ -471,7 +500,7 @@
                 if( s ) {
                     s = s.replace( /\<br\>/g , ', ');
                     p.body = String.format(
-                        '<div style="margin: 0 0 0 32;">{0}</div>'
+                        '<div style="padding: 0px 0px 0px 64px;">{0}</div>'
                         , s );
                     return ' x-grid3-row-expanded';
                 } else {
@@ -798,7 +827,7 @@
     var main_form = new Ext.FormPanel({
         url: '/job/submit',
         //frame: true,
-        bodyStyle: { 'background-color': '#eee', padding: 10 },
+        bodyStyle: { 'background-color': '#eee', padding: '10px 10px 10px 10px' },
         title: _loc('Job Options'),
         forceFit: true,
         labelWidth: 150,
@@ -807,6 +836,7 @@
             msgTarget: 'under'
         },
         items: [
+            combo_chain,
             {
                 xtype: 'radiogroup',
                 name: 'job_type',

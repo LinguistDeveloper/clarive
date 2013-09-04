@@ -118,6 +118,7 @@
             {  name: 'maxstarttime' },
             {  name: 'endtime' },
             {  name: 'runner' },
+            {  name: 'id_rule' },
             {  name: 'rollback' },
             {  name: 'username' },
             {  name: 'step' },
@@ -610,14 +611,14 @@
                 var desc = record.data.comments;
                 if( desc != undefined ) {
                     //desc = desc.replace(/\n|\r|/,'');
-                    p.body +='<div style="color: #333; font-weight: bold; margin: 0 0 5 30;">';
+                    p.body +='<div style="color: #333; font-weight: bold; padding: 0px 0px 5px 30px;">';
                     p.body += '<img style="float:left" src="/static/images/icons/post.gif" />';
                     p.body += '&nbsp;' + desc + '</div>';
                     css += ' x-grid3-row-expanded '; 
                 }
                 var cont = record.data.contents;
                 if( cont != undefined ) {
-                    p.body +='<div style="color: #505050; margin: 0 0 5 30;">';
+                    p.body +='<div style="color: #505050; margin: 0px 0px 5px 20px;">';
                     for( var i=0; i<cont.length; i++ ) {
                         p.body += cont[i] + '<br />';
                     }
@@ -671,6 +672,8 @@
                 { header: _('PID'), width: 50, dataIndex: 'pid', sortable: true, hidden: true },	
                 { header: _('Host'), width: 120, dataIndex: 'host', sortable: true, hidden: true },	
                 { header: _('Owner'), width: 120, dataIndex: 'owner', sortable: true, hidden: true },	
+                { header: _('Runner'), width: 80, dataIndex: 'runner', sortable: true, hidden: true },	
+                { header: _('Rule'), width: 80, dataIndex: 'id_rule', sortable: true, hidden: true },	
                 { header: _('Grouping'), width: 120, dataIndex: 'grouping', hidden: true },	
                 { header: _('Comments'), hidden: true, width: 150, dataIndex: 'comments', sortable: true }
             ],

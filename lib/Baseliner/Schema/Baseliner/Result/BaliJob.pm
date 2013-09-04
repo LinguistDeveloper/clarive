@@ -124,6 +124,11 @@ __PACKAGE__->add_columns(
     is_nullable => 1,
     size => 38,
   },
+  "id_rule",
+  {
+    data_type => "NUMBER",
+    is_nullable => 1,
+  },
   "rollback",
   { data_type => "NUMBER", default_value => 0, is_nullable => 1, size => 126 },
   "now",

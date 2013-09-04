@@ -4,6 +4,7 @@ use Baseliner::Utils;
 use Baseliner::Sugar;
 use Try::Tiny;
 use v5.10;
+BEGIN { extends 'Catalyst::Model' }
 
 with 'Baseliner::Role::Service';
 
@@ -14,13 +15,13 @@ register 'statement.if.var' => {
     type => 'if',
     data => { variable=>'', value=>'' },
     dsl => sub { 
-        my ($self, $n ) = @_;
+        my ($self, $n , %p) = @_;
         sprintf(q{
             if( $stash->{'%s'} eq '%s' ) {
                 %s
             }
             
-        }, $n->{variable}, $n->{value} , $self->dsl_build( $n->{children} ) );
+        }, $n->{variable}, $n->{value} , $self->dsl_build( $n->{children}, %p ) );
     },
 };
 
@@ -29,13 +30,13 @@ register 'statement.try' => {
     type => 'if',
     data => { },
     dsl => sub { 
-        my ($self, $n ) = @_;
+        my ($self, $n , %p) = @_;
         sprintf(q{
             try {
                 %s
             };
             
-        }, $self->dsl_build( $n->{children} ) );
+        }, $self->dsl_build( $n->{children}, %p) );
     },
 };
 
@@ -45,10 +46,10 @@ register 'statement.let.key_value' => {
     holds_children => 0, 
     data => { key=>'', value=>'' },
     dsl => sub { 
-        my ($self, $n ) = @_;
+        my ($self, $n, %p) = @_;
         sprintf(q{
            $stash->{ '%s' } = '%s';
-        }, $n->{key}, $n->{value}, $self->dsl_build( $n->{children} ) );
+        }, $n->{key}, $n->{value}, $self->dsl_build( $n->{children}, %p ) );
     },
 };
 
@@ -58,10 +59,10 @@ register 'statement.let.merge' => {
     holds_children => 0, 
     data => { value=>{} },
     dsl => sub { 
-        my ($self, $n ) = @_;
+        my ($self, $n, %p ) = @_;
         sprintf(q{
            $stash = merge_data( $stash, %s );
-        }, Data::Dumper::Dumper($n->{value}), $self->dsl_build( $n->{children} ) );
+        }, Data::Dumper::Dumper($n->{value}), $self->dsl_build( $n->{children}, %p ) );
     },
 };
 
@@ -71,10 +72,10 @@ register 'statement.delete.key' => {
     holds_children => 0, 
     data => { key=>'' },
     dsl => sub { 
-        my ($self, $n ) = @_;
+        my ($self, $n, %p ) = @_;
         sprintf(q{
            delete $stash->{ '%s' } ;
-        }, $n->{key}, $self->dsl_build( $n->{children} ) );
+        }, $n->{key}, $self->dsl_build( $n->{children}, %p ) );
     },
 };
 
@@ -82,14 +83,40 @@ register 'statement.foreach' => {
     text => 'FOREACH stash[ variable ]', type => 'for', data => { variable=>'' },
     type => 'loop',
     dsl => sub { 
-        my ($self, $n ) = @_;
+        my ($self, $n, %p ) = @_;
         sprintf(q{
             foreach my $item ( _array( $stash->{'%s'} ) ) {
                 %s
             }
             
-        }, $n->{variable}, $self->dsl_build( $n->{children} ) );
+        }, $n->{variable}, $self->dsl_build( $n->{children}, %p ) );
     },
+};
+
+register 'statement.step' => {
+    text => 'JOB STEP',
+    description=> 'a job step section: PRE,RUN,POST...',
+    icon => '/static/images/icons/job.png',
+    dsl=>sub{
+        my ($self, $n, %p ) = @_;
+        sprintf(q{
+            if( $stash->{job_step} eq q{%s} ) {
+                %s
+            }
+        }, $n->{text}, $self->dsl_build( $n->{children}, %p ) );
+    }
+};
+
+register 'statement.fail' => {
+    text => 'FAIL',
+    data => { msg => 'abort here' },
+    icon => '/static/images/icons/delete.gif',
+    dsl=>sub{
+        my ($self, $n, %p ) = @_;
+        sprintf(q{
+            Util->_fail( q{%s} );
+        }, $n->{msg}, $self->dsl_build( $n->{children}, %p ) );
+    }
 };
 
 register 'service.echo' => {
@@ -116,16 +143,44 @@ register 'event.rule.tester' => {
     vars => ['hello'],
 };
 
+register 'statement.nature.block' => {
+    text => 'NATURE BLOCK FOR nature', data => { nature=>'' },
+    type => 'loop',
+    dsl => sub { 
+        my ($self, $n, %p ) = @_;
+        sprintf(q{
+            # check if nature applies 
+            if( stash_has_nature( $stash, '%s') ) {
+                # load nature's config
+                local $config = { %$config, $config->{'%s'} };
+                %s
+            }
+        }, $n->{nature}, $n->{nature}, $self->dsl_build( $n->{children}, %p ) );
+    },
+};
+
 sub build_tree {
-    my ($self, $id_rule, $parent) = @_;
+    my ($self, $id_rule, $parent, %p) = @_;
     my @tree;
     # TODO run query just once and work with a hash ->hash_for( id_parent )
     my @rows = DB->BaliRuleStatement->search( { id_rule => $id_rule, id_parent => $parent },
         { order_by=>{ -asc=>'id' } } )->hashref->all;
+    if( !defined $parent ) {
+        my $rule = DB->BaliRule->find( $id_rule );
+        my $rule_type = $rule->rule_type;
+        if( !@rows && $rule_type eq 'chain' ) {
+            push @tree, { text=>$_, key=>'statement.step', icon=>'/static/images/icons/job.png', 
+                    children=>[], leaf=>\0, expanded=>\1 } 
+                for qw(CHECK INIT PRE RUN POST);
+        }
+    }
     for my $row ( @rows ) {
         my $n = { text=>$row->{stmt_text} };
         $row->{stmt_attr} = _load( $row->{stmt_attr} );
-        $n = { %$n, %{ $row->{stmt_attr} } } if length $row->{stmt_attr};
+        $n = { active=>1, %$n, %{ $row->{stmt_attr} } } if length $row->{stmt_attr};
+        delete $n->{disabled};
+        $n->{active} //= 1;
+        $n->{disabled} = $n->{active} ? \0 : \1;
         my @chi = $self->build_tree( $id_rule, $row->{id} );
         if(  @chi ) {
             $n->{children} = \@chi;
@@ -143,15 +198,19 @@ sub build_tree {
     return @tree;
 }
 
+sub _is_true { 
+    my($self,$v) = @_; 
+    return (ref $v eq 'SCALAR' && !${$v}) || $v eq 'false' || !$v;
+}
+
 sub dsl_build {
-    my ($self,$stmts )=@_;
+    my ($self,$stmts, %p )=@_;
     #_debug $stmts;
     my @dsl = (
         #'my $stash = {};',
         #'my $ret;',
     );
     require Data::Dumper;
-    require Perl::Tidy;
     my $spaces = sub { '   ' x $_[0] };
     my $level = 0;
     local $Data::Dumper::Terse = 1;
@@ -159,26 +218,35 @@ sub dsl_build {
         #_debug( $s );
         my $children = $s->{children} || {};
         my $attr = defined $s->{attributes} ? $s->{attributes} : $s;  # attributes is for a json treepanel
+        # is active ?
+        next if defined $attr->{active} && !$attr->{active}; 
+        #next if (ref $attr->{disabled} eq 'SCALAR' && ${$attr->{disabled}} ) || $attr->{disabled} eq 'true' || $attr->{disabled};
         delete $attr->{loader} ; # node cruft
         delete $attr->{events} ; # node cruft
         #_debug $attr;
-        my $name = $attr->{text};
-        push @dsl, sprintf '# statement: %s', $name; 
-        my $key = $attr->{key};
+        my $name = _strip_html( $attr->{text} );
+        push @dsl, sprintf( '# statement: %s', $name ) . "\n"; 
+        push @dsl, sprintf( '_log(q{Running Rule Statement: %s} );', $name)."\n" if $p{logging}; 
         my $data = $attr->{data} || {};
-        my $reg = Baseliner->registry->get( $attr->{key} );
-        if( $reg->isa( 'BaselinerX::Type::Service' ) ) {
-            push @dsl, $spaces->($level) . sprintf('$stash = merge_data($stash, %s );', Data::Dumper::Dumper( $data ) );
-            push @dsl, $spaces->($level) . sprintf('$stash = launch( "%s", $stash );', $key );
-            #push @dsl, $spaces->($level) . sprintf('merge_data($stash, $ret );', Data::Dumper::Dumper( $data ) );
+        if( length $attr->{key} ) {
+            my $key = $attr->{key};
+            my $reg = Baseliner->registry->get( $key );
+            if( $reg->isa( 'BaselinerX::Type::Service' ) ) {
+                push @dsl, $spaces->($level) . sprintf('$stash = merge_data($stash, %s );', Data::Dumper::Dumper( $data ) );
+                push @dsl, $spaces->($level) . sprintf('$stash = launch( "%s", $stash );', $key );
+                #push @dsl, $spaces->($level) . sprintf('merge_data($stash, $ret );', Data::Dumper::Dumper( $data ) );
+            } else {
+                push @dsl, _array( $reg->{dsl}->($self, { %$attr, %$data, children=>$children }, %p ) );
+            }
         } else {
-            push @dsl, _array( $reg->{dsl}->($self, { %$attr, %$data, children=>$children }) );
+            _fail _loc 'Missing dsl/service key for node %1', $name;
         }
     }
     #push @dsl, sprintf '$stash;';
 
     my $dsl = join "\n", @dsl;
-    if( $self->tidy_up ) {
+    if( $self->tidy_up && !$p{no_tidy} ) {
+        require Perl::Tidy;
         my $tidied = '';
         Perl::Tidy::perltidy( argv => ' ', source => \$dsl, destination => \$tidied );
         return $tidied;
@@ -214,10 +282,13 @@ sub dsl_run {
 
 sub run_rules {
     my ($self, %p) = @_;
-    my @rules = DB->BaliRule->search(
-        { rule_event => $p{event}, rule_type => 'event',      rule_when => $p{when} },
-        { order_by   => [          { -asc    => 'rule_seq' }, { -asc    => 'id' } ] }
-    )->hashref->all;
+    my @rules = 
+        $p{id_rule} 
+            ? ( +{ DB->find( $p{id_rule} )->get_columns } )
+            : DB->BaliRule->search(
+                { rule_event => $p{event}, rule_type => ($p{rule_type} // 'event'), rule_when => $p{when} },
+                { order_by   => [          { -asc    => 'rule_seq' }, { -asc    => 'id' } ] }
+              )->hashref->all;
     my $stash = $p{stash};
     my @rule_log;
     for my $rule ( @rules ) {
@@ -225,7 +296,7 @@ sub run_rules {
         try {
             my @tree = $self->build_tree( $rule->{id}, undef );
             $dsl = try {
-                $self->dsl_build( \@tree ); 
+                $self->dsl_build( \@tree, %p ); 
             } catch {
                 _fail( _loc("Error building DSL for rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, shift() ) ); 
             };
@@ -250,4 +321,33 @@ sub run_rules {
     }
     return { stash=>$stash, rule_log=>\@rule_log }; 
 }
+
+sub run_single_rule {
+    my ($self, %p ) = @_;
+    $p{stash} //= {};
+    my $rule = DB->BaliRule->find( $p{id_rule} );
+    _fail _loc 'Rule with id `%1` not found', $p{id_rule} unless $rule;
+    my @tree = $self->build_tree( $p{id_rule}, undef );
+    #local $self->{tidy_up} = 0;
+    my $dsl = try {
+        $self->dsl_build( \@tree, no_tidy=>0, %p ); 
+    } catch {
+        _fail( _loc("Error building DSL for rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, shift() ) ); 
+    };
+    my $ret = try {
+        ################### RUN THE RULE DSL ######################
+        $self->dsl_run( dsl=>$dsl, stash=>$p{stash}, %p );
+    } catch {
+        _log "DSL:\n". $self->dsl_listing( $dsl );
+        _fail( _loc("Error running rule '%1': %2", $rule->rule_name, shift() ) ); 
+    };
+    return { ret=>$ret, dsl=>$dsl };
+}
+
+sub dsl_listing {
+    my ($self,$dsl)=@_;
+    my $lin = 1;
+    return join '', map { $lin++.": ".$_."\n" } split /\n/, $dsl;
+}
+
 1;
