@@ -157,16 +157,15 @@
         return stmts;
     };
 
-    var show_win = function(item, opts, foo) {
+    var show_win = function(node, item, opts, foo) {
         var win = new Baseliner.Window(Ext.apply({
             layout: 'fit',
-            title: _('Edit'),
+            title: _('Edit: %1', node.text),
             items: item
         }, opts));
         item.on('destroy', function(){
-            //console.log( item.data );
-            if( !Ext.isFunction(foo) ) foo = function(d){ node.attributes.data = d };
-            if( item.data ) foo(item.data); 
+            if( !Ext.isFunction(foo) ) foo = function(d){ node.getOwnerTree().is_dirty=true; node.attributes.data = d };
+            if( item.data ) foo(item.data); // item.data is only set if modified
             win.close();
         });
         win.show();
@@ -209,7 +208,7 @@
     };
     var meta_node = function( node ) {
         var comp = new Baseliner.DataEditor({ data: node.attributes });
-        show_win( comp, { width: 800, height: 400 }, function(d){ 
+        show_win( node, comp, { width: 800, height: 400 }, function(d){ 
             node.attributes=d;
             node.setText( d.text );
         });
@@ -224,29 +223,31 @@
         Baseliner.ajaxEval( '/rule/edit_key', { key: key }, function(res){
             if( res.success ) {
                 if( res.form ) {
-                    Baseliner.ajaxEval( res.form, { data: node.attributes.data }, function(comp){
+                    Baseliner.ajaxEval( res.form, { data: node.attributes.data || {} }, function(comp){
                         var params = {};
                         var save_form = function(){
                             form.data = form.getForm().getValues();
                             form.destroy();
                         };
                         var form = new Ext.FormPanel({ 
-                            frame: false, forceFit: true, defaults: { msgTarget: 'under' },
-                            width: 800,
-                            height: 500,
-                            bodyStyle: { padding: '4px', "background-color": '#eee' },
+                            frame: false, forceFit: true, defaults: { msgTarget: 'under', anchor:'100%' },
+                            width: 800, height: 600,
+                            autoScroll: true,
                             tbar: [
-                                { xtype:'button', text:_('Save'), handler: save_form },
-                                { xtype:'button', text:_('Cancel'), handler: function(){ form.destroy() } }
+                                res.form,
+                                '->',
+                                { xtype:'button', text:_('Cancel'), icon:'/static/images/icons/delete.gif', handler: function(){ form.destroy() } },
+                                { xtype:'button', text:_('Save'), icon:'/static/images/icons/save.png', handler: function(){ save_form() } }
                             ],
+                            bodyStyle: { padding: '4px', "background-color": '#eee' },
                             items: comp
                         });
-                        show_win( form );
+                        show_win( node, form );
                     });
                 } else {
                     var node_data = Ext.apply( res.config, node.attributes.data );
                     var comp = new Baseliner.DataEditor({ data: node_data });
-                    show_win( comp, { width: 800, height: 400 } );
+                    show_win( node, comp, { width: 800, height: 400 } );
                 }
             } else {
                 Baseliner.error( _('Error'), res.msg );
@@ -267,6 +268,7 @@
                 var copy = new Ext.tree.TreeNode( Ext.apply({}, attr1) );
                 copy.attributes.palette = false;
                 copy.setText( copy.attributes.name );  // keep original node text name
+                //n2.getOwnerTree().is_dirty = true;
                 e.dropNode = copy;
             }
             return true;
@@ -295,6 +297,7 @@
             var json = Ext.util.JSON.encode( stmts );
             Baseliner.ajaxEval( '/rule/stmts_save', { id_rule: id_rule, stmts: json }, function(res) {
                 if( res.success ) {
+                    rule_tree.is_dirty = false;
                     Baseliner.message( _('Rule'), res.msg );
                     if( opt.callback ) {
                         opt.callback( res );
@@ -322,14 +325,19 @@
                     var data_txt = new Ext.form.TextArea({ region:'west', width: 140, value: res.data_yaml });
                     var dsl_txt = new Ext.form.TextArea({  value: res.dsl });
                     var style_cons = 'background: black; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", Courier';
-                    var dsl_cons = new Ext.form.TextArea({ style:style_cons });
+                    var dsl_cons = new Ext.form.TextArea({ title:_('Output'), style:style_cons });
+                    var dsl_stash = new Ext.form.TextArea({ title:_('Stash'), style:style_cons });
                     var dsl_run = function(){
-                        Baseliner.ajaxEval( '/rule/dsl_try', { data: data_txt.getValue(), dsl: editor.getValue(), event_key: rule_event }, function(res) {
+                        Baseliner.ajaxEval( '/rule/dsl_try', { stash: data_txt.getValue(), dsl: editor.getValue(), event_key: rule_event }, function(res) {
+                            Baseliner.message( 'DSL', _('Finished OK') );
                             document.getElementById( dsl_cons.getId() ).style.color = "#10c000";  // green
-                            dsl_cons.setValue( res.msg + '\n==============\nOUTPUT:\n' + res.output ); 
+                            dsl_cons.setValue( res.output ); 
+                            dsl_stash.setValue( res.stash_yaml );
                         }, function(res){
+                            Baseliner.message( 'DSL', _('Error during DSL execution: %1', res.msg ) );
                             document.getElementById( dsl_cons.getId() ).style.color = "#f54";  // red
-                            dsl_cons.setValue( res.msg + '\n==============\nOUTPUT:\n' + res.output ); 
+                            dsl_cons.setValue( res.output + '\n\n========= DSL ERROR =======\n\n' + res.msg ); 
+                            dsl_stash.setValue( res.stash_yaml );
                         });
                     };
                     var win = new Baseliner.Window({
@@ -344,8 +352,8 @@
                         }],
                         items: [
                            data_txt,
-                           { region:'center', xtype:'panel', height: 400, items:dsl_txt  },
-                           { xtype:'panel', items:dsl_cons, region:'south', split: true, height:200, layout:'fit' }
+                           { region:'center', xtype:'panel', height: 400, items: dsl_txt  },
+                           { xtype:'tabpanel', items: [dsl_cons, dsl_stash], activeTab:0, region:'south', split: true, height: 200 }
                         ]
                     });
                     dsl_txt.on('afterrender', function(){
@@ -410,7 +418,21 @@
                 id: 'root', 
                 icon: (rule_type=='chain'?'/static/images/icons/job.png':'/static/images/icons/event.png'), expanded: true }
         });
+        rule_tree.make_dirty = function(){ rule_tree.is_dirty = true };
+        rule_tree.on('movenode', rule_tree.make_dirty );
+        rule_tree.on('nodedrop', rule_tree.make_dirty );
+        rule_tree.on('remove', rule_tree.make_dirty );
+        rule_tree.close_me = function(){ 
+            return confirm(_('Rule `%1` has changed, but has not been saved. Leave without saving?', rule_tree.title ));
+        };
+        
         var tab = tabpanel.add( rule_tree ); 
+        tab.on('beforeclose', function(tree){
+            if( tree.is_dirty ) {
+                return tree.close_me();
+            }
+            return true;
+        });
         tabpanel.setActiveTab( tab );
         tabpanel.changeTabIcon( tab, '/static/images/icons/rule.png' );
     };
@@ -480,6 +502,16 @@
         layout: 'border',
         items: [ rules_grid, tabpanel, palette ]
     });
+    panel.on('beforeclose', function(){
+        var close_this;
+        tabpanel.cascade(function(tree){
+            if( close_this!== false && tree.is_dirty ) {
+                close_this = tree.close_me();
+            }
+        });
+        return close_this;
+    });
 
+    Baseliner.edit_check( panel, true );  // block window closing from the beginning
     return panel;
 })

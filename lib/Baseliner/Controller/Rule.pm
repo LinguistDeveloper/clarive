@@ -196,7 +196,9 @@ sub palette : Local {
     #    { text => _loc('if role'), statement=>'if_role', leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1, },
     #    { text => _loc('if project'), statement=>'if_project', leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1, },
     #);
-    my @control = grep { !$query || join(',',%$_) =~ $query } map {
+    my @control = sort { $a->{text} cmp $b->{text} } 
+        grep { !$query || join(',',%$_) =~ $query } 
+        map {
         my $key = $_;
         my $s = $c->registry->get( $key );
         my $n= { palette => 1 };
@@ -377,18 +379,20 @@ sub dsl_try : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     my $dsl = $p->{dsl} or _throw 'Missing parameter dsl';
-    my $data = _load( $p->{data} ) if $p->{data};
+    my $stash = $p->{stash} ? _load( $p->{stash} ) : {};
     my $output;
     try {
-        my $ret;
         require Capture::Tiny;
         $output = Capture::Tiny::capture_merged(sub{
-            $ret = $c->model('Rules')->dsl_run( dsl=>$dsl, stash=>$data );
+            $stash = $c->model('Rules')->dsl_run( dsl=>$dsl, stash=>$stash );
         });
-        $c->stash->{json} = { success=>\1, msg=>_dump( $ret ), output=>$output };
+        my $stash_yaml = _dump( $stash );
+        #$stash = Util->_unbless( $stash );
+        $c->stash->{json} = { success=>\1, msg=>'ok', output=>$output, stash_yaml=>$stash_yaml };
     } catch {
         my $err = shift; _error $err;
-        $c->stash->{json} = { success=>\0, msg=>$err, output=>$output };
+        my $stash_yaml = _dump( $stash );
+        $c->stash->{json} = { success=>\0, msg=>$err, output=>$output, stash_yaml=>$stash_yaml };
     };
     $c->forward("View::JSON");
 }

@@ -16,6 +16,7 @@ sub rule_runner {
     my ($self,$c, $config)=@_;
 
     my $job = $c->stash->{job};
+    my $bl = $job->bl;
     my $id_rule = $job->row->id_rule;
     my $job_stash = $job->job_stash;
     my $log = $job->logger;
@@ -31,6 +32,7 @@ sub rule_runner {
         logging => 1,
         stash=>{ 
             %$job_stash, 
+            bl => $bl, 
             job_step=>$step,
         });
 }
