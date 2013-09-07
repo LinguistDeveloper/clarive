@@ -518,7 +518,7 @@ sub topics_for_user {
             if( $row->{label_id} ) {
                 $mid_data{$mid}{group_labels}{ $row->{label_id} . ";" . $row->{label_name} . ";" . $row->{label_color} } = ();
             }
-            if( $row->{project_id} && $row->{collection} eq 'project') {
+            if( $row->{project_id} && $row->{collection} && $row->{collection} eq 'project') {
                 $mid_data{$mid}{group_projects}{ $row->{project_id} . ";" . $row->{project_name} } = ();
                 $mid_data{$mid}{group_projects_report}{ $row->{project_name} } = ();
             # } else {
