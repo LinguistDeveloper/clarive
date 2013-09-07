@@ -61,8 +61,9 @@ register 'event.topic.file_remove' => {
 register 'event.topic.create' => {
     text => '%1 created a topic of %2',
     description => 'User created a topic',
-    vars => ['username', 'category', 'ts'],
+    vars => ['username', 'category', 'ts', 'scope'],
     notify => {
+        #scope => ['project', 'category', 'category_status', 'priority','baseline'],
         scope => ['project', 'category', 'category_status'],
     },
 };
@@ -611,7 +612,20 @@ sub update {
                     $status = $topic->id_category_status;
                     $return = 'Topic added';
                     $category = { $topic->categories->get_columns };
-                   { mid => $topic->mid, topic => $topic->title, , category=> $category->{name} }   # to the event
+                    
+                    my @projects = map {$_->{mid}} $topic->projects->hashref->all;
+                    my $id_category = $topic->id_category;
+                    my $id_category_status = $topic->id_category_status;
+                    
+                    my $notify_scope = {
+                        project         => \@projects,
+                        category        => $id_category,
+                        category_status => $id_category_status,
+                    };
+                    
+                    $self->check_sistem_notify('event.topic.create', $notify_scope);
+                    
+                    { mid => $topic->mid, topic => $topic->title, category => $category->{name} }   # to the event
                 });                   
             } 
             => sub { # catch
@@ -682,6 +696,14 @@ sub update {
     } ## end given
     return ( $return, $topic_mid, $status, $p->{title}, $category );
 } ## end sub update
+
+sub check_sistem_notify {
+    my ($self, $key_event, $notify_scope) = @_;
+    
+    
+   
+   
+}
 
 sub append_category {
     my ($self, @topics ) =@_;

@@ -2,7 +2,7 @@
     var ps = 30;
 	
 	var fields = ['id', 'event_key', 'action','data', 'is_active', 'username',
-				  'template_path', 'digest_time', 'digest_date', 'digest_freq'];
+				  'template_path' ] //, 'digest_time', 'digest_date', 'digest_freq'];
 	
 	
 	var store_notifications = new Baseliner.JsonStore({
@@ -130,15 +130,13 @@
 										if(rec && rec.data){
 											var ids_project = new Array();
 											
-											if(rec.data.data.scopes.project && rec.data.data.scopes.project.length == 1 && rec.data.data.scopes.project[0][0] == '*'){
+											if(rec.data.data.scopes.project && rec.data.data.scopes.project['*']){
 												chk_projects.setValue(true);
 											}else{
-												if(rec.data.data.scopes.project){
-													for(i=0; i < rec.data.data.scopes.project.length;i++){
-														ids_project.push(rec.data.data.scopes.project[i][0]);
-													}
+												for(var propertyName in rec.data.data.scopes.project) {
+													ids_project.push(propertyName);
 													cb_projects.setValue( ids_project );
-												}
+												}												
 											}
 										}
 									});										
@@ -198,15 +196,13 @@
 										if(rec && rec.data){
 											var ids_category = new Array();
 											
-											if( rec.data.data.scopes.category && rec.data.data.scopes.category.length == 1 && rec.data.data.scopes.category[0][0] == '*'){
+											if( rec.data.data.scopes.category && rec.data.data.scopes.category['*']){
 												chk_categories.setValue(true);
 											}else{
-												if(rec.data.data.scopes.category){												
-													for(i=0; i < rec.data.data.scopes.category.length;i++){
-														ids_category.push(rec.data.data.scopes.category[i][0]);
-													}
+												for(var propertyName in rec.data.data.scopes.category) {
+													ids_category.push(propertyName);
 													cb_categories.setValue( ids_category );
-												}
+												}													
 											}
 										}
 									});									
@@ -278,15 +274,13 @@
 										if(rec && rec.data){
 											var ids_category_status = new Array();
 											
-											if(rec.data.data.scopes.category_status && rec.data.data.scopes.category_status.length == 1 && rec.data.data.scopes.category_status[0][0] == '*'){
+											if(rec.data.data.scopes.category_status && rec.data.data.scopes.category_status['*']){
 												chk_category_status.setValue(true);
 											}else{
-												if(rec.data.data.scopes.category_status){
-													for(i=0; i < rec.data.data.scopes.category_status.length;i++){
-														ids_category_status.push(rec.data.data.scopes.category_status[i][0]);
-													}
-													cb_category_status.setValue( ids_category_status ); 													
-												}
+												for(var propertyName in rec.data.data.scopes.category_status) {
+													ids_category_status.push(propertyName);
+													cb_category_status.setValue( ids_category_status );
+												}													
 											}
 										}
 									});										
@@ -303,7 +297,6 @@
 										valueField: 'id',
 										store: store_category_status,
 										tpl: '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><strong>{name}</strong> {[values.description || ""]}</span></div></tpl>'
-										//displayFieldTpl: tpl_field
 									});
 									
 									cb_category_status.on('additem', function(combo, value, record) {
@@ -355,15 +348,13 @@
 										if(rec && rec.data){
 											var ids_priority = new Array();
 											
-											if(rec.data.data.scopes.priority && rec.data.data.scopes.priority.length == 1 && rec.data.data.scopes.priority[0][0] == '*'){
+											if(rec.data.data.scopes.priority && rec.data.data.scopes.priority['*']){
 												chk_priority.setValue(true);
 											}else{
-												if(rec.data.data.scopes.priority){
-													for(i=0; i < rec.data.data.scopes.priority.length;i++){
-														ids_priority.push(rec.data.data.scopes.priority[i][0]);
-													}
-													cb_priority.setValue( ids_priority );            
-												}
+												for(var propertyName in rec.data.data.scopes.priority) {
+													ids_priority.push(propertyName);
+													cb_priority.setValue( ids_priority );
+												}													
 											}
 										}
 									});										
@@ -380,7 +371,6 @@
 										valueField: 'id',
 										store: store_priority,
 										tpl: '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><strong>{name}</strong> </span></div></tpl>'
-										//displayFieldTpl: tpl_field
 									});
 									
 									cb_priority.on('additem', function(combo, value, record) {
@@ -394,9 +384,9 @@
 											check: function(obj, checked){
 												if(checked){
 													cb_priority.setValue('');
-													cb_priority_status.disable();
+													cb_priority.disable();
 												}else{
-													cb_priority_status.enable();	
+													cb_priority.enable();	
 												}
 											}
 										}
@@ -437,15 +427,13 @@
 										if(rec && rec.data){
 											var ids_baseline = new Array();
 											
-											if(rec.data.data.scopes.baseline && rec.data.data.scopes.baseline.length == 1 && rec.data.data.scopes.baseline[0][0] == '*'){
+											if(rec.data.data.scopes.baseline && rec.data.data.scopes.baseline['*']){
 												chk_baseline.setValue(true);
 											}else{
-												if(rec.data.data.scopes.baseline){
-													for(i=0; i < rec.data.data.scopes.baseline.length;i++){
-														ids_baseline.push(rec.data.data.scopes.baseline[i][0]);
-													}
-													cb_baseline.setValue( ids_baseline );   													
-												}
+												for(var propertyName in rec.data.data.scopes.baseline) {
+													ids_baseline.push(propertyName);
+													cb_baseline.setValue( ids_baseline );
+												}													
 											}
 										}
 									});										
@@ -592,9 +580,13 @@
 			});
 			
 			cb_type_recipient.on('additem', function(combo, value, record) {
-				//Ext.getCmp("pnl_recipient").hide();
-				//col1_recipient.removeAll();
-				//col2_recipient.removeAll();					
+				Ext.getCmp("pnl_recipient").hide();
+				Ext.getCmp("pnl_recipient").removeAll();
+				
+				var obj = Ext.getCmp("obj_recipient");
+				if(obj){
+					Ext.getCmp("obj_recipient").destroy();
+				}				
 	
 				Baseliner.ajaxEval( '/notification/get_recipients/' + value, {}, function(res) {
 					if(res.success){
@@ -624,7 +616,6 @@
 									});
 									
 									var chk_recipient = new Ext.form.Checkbox({
-										//id: 'chk_recipients',
 										name:'chk_recipients',
 										boxLabel:_('All'),
 										listeners: {
@@ -639,9 +630,6 @@
 										}
 									});
 									
-									//col1_recipient.add(obj_recipient);
-									//col2_recipient.add(chk_recipient);
-									
 									Ext.getCmp("pnl_recipient").add(
 										{
 											columnWidth: 0.85,
@@ -652,10 +640,10 @@
 											labelWidth: 5,
 											items: chk_recipient
 									});
+									
 									Ext.getCmp("pnl_recipient").show();
 									break;
 								case 'textfield':
-									Ext.getCmp("pnl_recipient").destroy();
 									form_recipients.add(
 										{ 	id:'obj_recipient',
 											xtype: 'textfield',
@@ -664,7 +652,6 @@
 									)
 									break;
 								case 'none':
-									Ext.getCmp("pnl_recipient").destroy();
 									break;
 							}
 							
@@ -681,11 +668,6 @@
 			
 			store_type_recipients.load();		
 		
-			//var col1_recipient = new Ext.FormPanel();
-			//var col2_recipient = new Ext.FormPanel({
-			//	defaults: {height: 30}
-			//});
-			
 			var add_recipients = function (){
 				if (cb_carriers.getValue() != '' && cb_type_recipient.getValue() != ''){
 					var id, d, r;
@@ -698,7 +680,6 @@
 						ids = form_recipients.getForm().findField("obj_recipient").getValue().split(',');	
 					}
 					
-
 					Ext.each(carriers, function(carrier){
 						if(form_recipients.getForm().findField("obj_recipient") && form_recipients.getForm().findField("obj_recipient").xtype == 'textfield'){
 							is_text = true;
@@ -706,7 +687,7 @@
 					
 						if(ids.length == 0){
 							id = store_recipients.getCount() + 1;
-							d = { id: id, recipients: carrier, type: _(cb_type_recipient.getValue())};
+							d = { id: id, recipients: carrier, type: cb_type_recipient.getValue()};
 							r = new store_recipients.recordType( d, id );
 							store_recipients.add( r );								
 						}
@@ -721,7 +702,7 @@
 									names_recipients[id_recipient] = _('All');
 								}
 							}
-							d = { id: id, recipients: carrier, type: _(cb_type_recipient.getValue()), items_id: id_recipient, items_name: is_text ? id_recipient : names_recipients[id_recipient] };
+							d = { id: id, recipients: carrier, type: cb_type_recipient.getValue(), items_id: id_recipient, items_name: is_text ? id_recipient : names_recipients[id_recipient] };
 							r = new store_recipients.recordType( d, id );
 							store_recipients.add( r );						
 							
@@ -767,18 +748,6 @@
 						defaults:{
 							layout:'form'
 						}
-						//,
-						//items:[
-						//	{
-						//		columnWidth: 0.85,
-						//		items: col1_recipient
-						//	},
-						//	{
-						//		columnWidth: 0.15,
-						//		labelWidth: 5,
-						//		items: col2_recipient
-						//	}
-						//]
 					}					
 				],
 				buttons: [
@@ -843,6 +812,10 @@
 			});
 		};		
 		
+        var render_type = function(value,metadata,rec,rowIndex,colIndex,store){
+            return _(value);
+        };
+		
 		var grid_recipients = new Ext.grid.GridPanel({
 			style: 'border: solid #ccc 1px',
 			store: store_recipients,
@@ -859,7 +832,7 @@
 			],			
 			columns: [
 				{ width: 50, dataIndex: 'recipients'},
-				{ width: 50, dataIndex: 'type'},
+				{ width: 50, dataIndex: 'type', renderer: render_type},
 				{ width: 200, dataIndex: 'items_name'}
 			]
 		});
@@ -876,15 +849,18 @@
 				var params = new Object();
 				params = {};
 
-				if(rec && rec.data){
-					params.id = rec.data.id;
+				//if(rec && rec.data){
+				var notification_id = form.findField('notification_id').getValue();
+				if(notification_id >= 0){
+					//params.id = rec.data.id;
+					params.id = notification_id;
 				};
 								
 				if(form.findField('project') && form.findField('project').getValue() != ''){
 					var projects = form.findField('project').getValue().split(',');
-					var projects_names = new Array();
+					var projects_names = {};
 					Ext.each(projects, function(project){
-						projects_names.push([project, names_projects[project]]);
+						projects_names[project] = names_projects[project];
 					});
 					
 					params.project_names = Ext.util.JSON.encode( projects_names );
@@ -894,9 +870,9 @@
 				
 				if(form.findField('category') && form.findField('category').getValue() != ''){
 					var categories = form.findField('category').getValue().split(',');
-					var categories_names = new Array();
+					var categories_names = {};
 					Ext.each(categories, function(category){
-						categories_names.push([category, names_categories[category]]);
+						categories_names[category] = names_categories[category];
 					});
 					
 					params.category_names = Ext.util.JSON.encode( categories_names );
@@ -906,9 +882,9 @@
 				
 				if(form.findField('category_status') && form.findField('category_status').getValue() != ''){
 					var category_status = form.findField('category_status').getValue().split(',');
-					var category_status_names = new Array();
+					var category_status_names = {};
 					Ext.each(category_status, function(status){
-						category_status_names.push([status, names_categories_status[status]]);
+						category_status_names[status] = names_categories_status[status];
 					});
 					
 					params.category_status_names = Ext.util.JSON.encode( category_status_names );
@@ -918,9 +894,9 @@
 				
 				if(form.findField('priority') && form.findField('priority').getValue() != ''){
 					var priority = form.findField('priority').getValue().split(',');
-					var priority_names = new Array();
+					var priority_names = {};
 					Ext.each(priority, function(pr){
-						priority_names.push([pr, names_priorities[pr]]);
+						priority_names[pr] = names_priorities[pr];
 					});
 					
 					params.priority_names = Ext.util.JSON.encode( priority_names );
@@ -930,9 +906,9 @@
 
 				if(form.findField('baseline') && form.findField('baseline').getValue() != ''){
 					var baseline = form.findField('baseline').getValue().split(',');
-					var baseline_names = new Array();
+					var baseline_names = {};
 					Ext.each(baseline, function(bl){
-						baseline_names.push([bl, names_baselines[bl]]);
+						baseline_names[bl] = names_baselines[bl];
 					});
 					
 					params.baseline_names = Ext.util.JSON.encode( baseline_names );
@@ -943,19 +919,17 @@
 				var recipients = new Object();
 				store_recipients.each( function(row){
 					if (!recipients[row.data.recipients]) recipients[row.data.recipients] = {};
-					if (!recipients[row.data.recipients][row.data.type]) recipients[row.data.recipients][row.data.type] = new Array();
-					recipients[row.data.recipients][row.data.type].push([row.data.items_id, row.data.items_name]);
+					if (!recipients[row.data.recipients][row.data.type]) recipients[row.data.recipients][row.data.type] = {};
+					recipients[row.data.recipients][row.data.type][row.data.items_id] = row.data.items_name;
 				});
 				params.recipients = Ext.util.JSON.encode( recipients );
 						
 				form.submit({
-					//params: {	project_names: Ext.util.JSON.encode( projects_names ),
-					//			recipients: Ext.util.JSON.encode( recipients )
-					//		},
 					params: params,					
 					success: function(f,a){
-						
 						Baseliner.message(_('Success'), a.result.msg );
+						form.findField('notification_id').setValue(a.result.notification_id);
+						win.setTitle('Edit notification');
 						store_notifications.reload();
 					}
 				});
@@ -994,7 +968,8 @@
 					xtype: 'panel',
 					fieldLabel: _('Recipients'),
 					items: grid_recipients
-				}				
+				},
+				{ xtype: 'hidden', name: 'notification_id', value: rec && rec.data ? rec.data.id : -1 }
 			],
 			buttons: [
 				{  text: _('Close') , handler: function(){  win.close(); } },
@@ -1009,20 +984,11 @@
 
 			for (carrier in rec.data.data.recipients){
 				for (type in rec.data.data.recipients[carrier]){
-					
-					if(rec.data.data.recipients[carrier][type].length > 0){
-						for(i=0; i < rec.data.data.recipients[carrier][type].length;i++ ){
-							id = store_recipients.getCount() + 1;
-							d = { id: id, recipients: carrier, type: _(type), items_id: rec.data.data.recipients[carrier][type][i][0], items_name: rec.data.data.recipients[carrier][type][i][1]};
-							r = new store_recipients.recordType( d, id );
-							store_recipients.add( r );							
-						}
-						
-					}else{
+					for (var name in rec.data.data.recipients[carrier][type]){
 						id = store_recipients.getCount() + 1;
-						d = { id: id, recipients: carrier, type: _(type)};
+						d = { id: id, recipients: carrier, type: type, items_id: name, items_name: rec.data.data.recipients[carrier][type][name]};						
 						r = new store_recipients.recordType( d, id );
-						store_recipients.add( r );						
+						store_recipients.add( r );
 					}
 				}
 			}
@@ -1129,11 +1095,10 @@
 			for(var type in value.recipients[carrier]) {
 				ret += '<tr>';
 				ret += '<td style="font-weight: bold;padding: 3px 3px 3px 3px;">' + _(type) + '</td>';
-				for(var i=0;i < value.recipients[carrier][type].length;i++){
-					if(value.recipients[carrier][type][i][1]){
-						items.push(value.recipients[carrier][type][i][1]);	
-					}
+				for(var name in value.recipients[carrier][type]) {
+					items.push(value.recipients[carrier][type][name]);	
 				}
+				
 				if(items.length > 0){
 					ret += '<td width="80%" style=" background: #f5f5f5;padding: 3px 3px 3px 3px;"><code>' + items.join(',') + '</code></td>'
 				}
@@ -1152,8 +1117,8 @@
 			ret += '<tr>';
 			ret += '<td style="font-weight: bold;padding: 3px 3px 3px 3px;">' + _(scope) + '</td>';
 			if(value.scopes[scope]){
-				for(var i=0;i < value.scopes[scope].length;i++){
-					items.push(value.scopes[scope][i][1]);
+				for(var name in value.scopes[scope]){
+					items.push(value.scopes[scope][name]);	
 				}
 			}
 			ret += '<td width="80%" style=" background: #f5f5f5;padding: 3px 3px 3px 3px;"><code>' + items.join(',') + '</code></td>'
@@ -1165,9 +1130,9 @@
     };
 	
     var show_active = function(value,metadata,rec,rowIndex,colIndex,store) {
-    var img =
-        value == '1' ? 'drop-yes.gif' : 'close-small.gif';
-        return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/"+img+"' />" ;
+		var img =
+			value == '1' ? 'drop-yes.gif' : 'close-small.gif';
+			return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/"+img+"' />" ;
     };
 	
     var show_action = function(value,metadata,rec,rowIndex,colIndex,store) {

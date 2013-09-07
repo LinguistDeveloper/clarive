@@ -178,13 +178,18 @@ sub dsl_build {
     #push @dsl, sprintf '$stash;';
 
     my $dsl = join "\n", @dsl;
-    if( $self->tidy_up ) {
+    
+    
+    ##Al hacer referencia a "$self->tidy_up" da un error del tipo:
+    ##Can't use string ("Baseliner::Model::Rules") as a HASH ref while "strict refs" in use at accessor Baseliner::Model::Rules::tidy_up
+    ##REVISAR
+    #if( $self->tidy_up ) {
         my $tidied = '';
         Perl::Tidy::perltidy( argv => ' ', source => \$dsl, destination => \$tidied );
         return $tidied;
-    } else {
-        return $dsl;
-    }
+    #} else {
+    #    return $dsl;
+    #}
 }
 
 sub dsl_run {
