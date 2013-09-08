@@ -91,7 +91,7 @@ sub request {
     #Para incluir las observaciones y asociarlas al wiki del request
     my $id_wiki = undef;	
     if($p{comments_job}){
-        my $rwiki = Baseliner->model('Baseliner::BaliWiki')->create({text=>$p{comments_job}, username=>$username, modified_on=> _now});				
+        my $rwiki = Baseliner->model('Baseliner::BaliRequestPosts')->create({text=>$p{comments_job}, username=>$username, modified_on=> _now});				
         $rwiki->update;
         $id_wiki = $rwiki->id;
     }
@@ -355,7 +355,7 @@ sub status_by_key {
     _throw _loc( 'Request %1 has been %2', $request->id, _loc($request->status) )
       if ( $request->status ne 'pending' );
 
-    my $rwiki = Baseliner->model('Baseliner::BaliWiki')->create({
+    my $rwiki = Baseliner->model('Baseliner::BaliRequestPosts')->create({
             text        => $p{wiki_text},
             username    => $p{username},
             modified_on => _now,
