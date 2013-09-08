@@ -10,7 +10,7 @@ sub run {
 
 	print "Starting Redis server\n";
 	system('redis-server',$self->app->base.'/config/redis.conf');
-	if ( $0 ) {
+	if ( $? ) {
 		print "Error starting Redis server\n";
 		exit 1;
 	}
@@ -18,7 +18,7 @@ sub run {
 
 	print "Starting nginx server\n";
 	system('nginx');
-	if ( $0 ) {
+	if ( $? ) {
 		print "Error starting nginx server\n";
 		exit 1;
 	}
