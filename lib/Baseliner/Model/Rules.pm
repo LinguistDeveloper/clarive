@@ -106,9 +106,9 @@ sub dsl_build {
             Perl::Tidy::perltidy( argv => ' ', source => \$dsl, destination => \$tidied );
         });
         return $tidied;
-    #} else {
-    #    return $dsl;
-    #}
+    } else {
+        return $dsl;
+    }
 }
 
 sub dsl_run {
@@ -226,6 +226,7 @@ sub launch {
         ? $return_data 
         : {}; #!$refr || $refr eq 'ARRAY' ? { service_return=>$return_data } : {} ;
     # merge into stash
+    merge_into_stash( $stash, $app->stash );
     merge_into_stash( $stash, ( length $data_key ? { $data_key => $return_data } : $return_data ) );
     return $return_data;
 }
@@ -496,9 +497,8 @@ register 'statement.project.loop' => {
                 $stash->{project} = $project->name;
                 my $vars = variables_for_bl( $project, $stash->{bl} );
                 $stash->{job}->logger->info( _loc('Current project *%1* (%2)', $project->name, $stash->{bl} ), $vars );
-                _log $stash;
+
                 merge_data $stash, $vars, { _ctx => 'project_loop' }; 
-                _log $stash;
                 
                 %s
             }
