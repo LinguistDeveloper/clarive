@@ -238,6 +238,7 @@ sub palette : Local {
                 isTarget => \0,
                 leaf=>\1,
                 key => $service_key,
+                icon => $n->{icon},
                 palette => \1,
                 text=>$n->{name} // $service_key,
             }
