@@ -1170,10 +1170,16 @@ sub parse_vars {
     parse_vars_raw( data=>$data, vars=>$vars, throw=>$args{throw} );
 }
 
+our $parse_vars_raw_scope;
 sub parse_vars_raw {
     my %args = @_;
     my ( $data, $vars, $throw, $cleanup ) = @args{ qw/data vars throw cleanup/ };
     my $ref = ref $data;
+    # block recursion
+    $parse_vars_raw_scope or local $parse_vars_raw_scope={};
+    return () if $ref && exists $parse_vars_raw_scope->{"$data"};
+    $parse_vars_raw_scope->{"$data"}=() if $ref;
+    
     if( $ref eq 'HASH' ) {
         my %ret;
         for my $k ( keys %$data ) {
