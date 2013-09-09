@@ -259,7 +259,9 @@ sub _load {
 sub _dump {
     my @args = @_;
     return try { 
-        YAML::XS::Dump( @args );
+        my $s = YAML::XS::Dump( @args );
+        Encode::_utf8_on( $s );
+        $s
     } catch { 
         _error( "_dump error: " . shift() );
         require YAML::Syck;
