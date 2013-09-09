@@ -226,7 +226,6 @@ sub launch {
         ? $return_data 
         : {}; #!$refr || $refr eq 'ARRAY' ? { service_return=>$return_data } : {} ;
     # merge into stash
-    merge_into_stash( $stash, $app->stash );
     merge_into_stash( $stash, ( length $data_key ? { $data_key => $return_data } : $return_data ) );
     return $return_data;
 }

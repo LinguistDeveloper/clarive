@@ -322,15 +322,10 @@ sub load {
     my $storage = $class->storage;
     if( $storage eq 'yaml' ) {
         $data->{yaml} //= $yaml;
-        $data->{yaml} =~ s{!!perl/code}{}g;
-        my $y = 
-            try { _load( $data->{yaml}) }
-            catch {
-                my $err = shift;
-                Util->_error( Util->_loc( "Error deserializing CI: %1", $err ) );
-                +{};
-            };
-        $data = { %$data, %{ ref $y ? $y : {} } };
+        my $y = _load( $data->{yaml} );
+        Util->_error( Util->_loc( "Error deserializing CI. Missing or invalid YAML ref: %1", ref $y || '(empty)' ) ) 
+            unless ref $y eq 'HASH';
+        $data = { %$data, %$y };   # TODO yaml should be blessed obj?
     }
     else {  # dbic result source
         Util->_fail( Util->_loc('CI Storage method not supported: %1', $storage) );
