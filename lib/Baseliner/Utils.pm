@@ -1542,6 +1542,86 @@ sub package_and_instance {
     } <$root/$path/* $root/features/*/lib/$path/*> }
 }
 
+=head2 tar_dir 
+
+Tar a directory
+
+    source_dir => directory to tar
+    tarfile    => full path to tar file
+    attributes => [
+        { regex=>'.*', type=>'f|d', mode=>'octal', mtime=>'epoch', uname=>'owner', gname=>'group' }
+    ]
+
+=cut
+sub tar_dir {
+    my (%p) =@_;
+    my $source_dir = $p{source_dir} // _fail _loc 'Missing parameter source_dir'; 
+    my $tarfile = $p{tarfile} // _fail _loc 'Missing parameter tarfile';
+    my $verbose = $p{verbose};
+    my @include = _array $p{include};
+    my @exclude = _array $p{exclude};
+    my %attributes = map { $_->{regex} => $_ } _array( $p{attributes} );
+    # open and close to reset file and attempt write
+    open my $ff, '>', $tarfile 
+       or _fail _loc 'Could not create tar file `%1`: %2', $tarfile, $!;
+    close $ff;
+    
+    require Archive::Tar; 
+    
+    _fail _loc 'Could not find dir `%1` to tar', $source_dir 
+        unless -e $source_dir;
+    
+    # build local tar
+    my $tar = Archive::Tar->new or _throw $!;
+    my $dir = Util->_dir( $source_dir );
+    $dir->recurse( callback=>sub{
+        my $f = shift;
+        return if _file($tarfile) eq $f;
+        my $rel = $f->relative( $dir );
+        my $stat = $f->stat;
+        my $type = $f->is_dir ? 'd' : 'f';
+        my %attr = $type eq 'f' 
+            ? ( mtime=>$stat->mtime, mode=>$stat->mode )
+            : ( mtime => $stat->mtime, mode=>$stat->mode );
+        # look for attributes
+        while( my($re,$re_attr) = each %attributes ){
+            if( "$f" =~ $re && $type =~ $type && ref $re_attr eq 'HASH' ) {
+                say "tar_dir: found attributes for file `$f`" if $verbose;
+                %attr = ( %attr, %$re_attr ); 
+            }
+        }
+        
+        for my $in ( @include ) {
+            return if "$f" !~ $in;
+        }
+        for my $ex ( @exclude ) {
+            return if "$f" =~ $ex;
+        }
+        $attr{mode} = oct( $attr{mode} ) if length $attr{mode};
+        
+        if( $f->is_dir ) {
+            # directory with empty data
+            say "tar_dir: add dir: `$f`: " . _to_json(\%attr) if $verbose;
+            my $tf = Archive::Tar::File->new(
+                data => "$rel", '', { # type 5=DIR, type 0=FILE
+                    type  => 5, %attr
+                });
+            $tar->add_files($tf);
+        } else {
+            # file
+            say "tar_dir: add file `$f`: " . _to_json(\%attr) if $verbose;
+            my $tf = Archive::Tar::File->new( 
+                data=>"$rel", scalar($f->slurp), 
+                { type=>0, %attr }
+            );
+            $tar->add_files( $tf );
+        }
+    });
+    say "tar_dir: writing tar file `$tarfile`" if $verbose;
+    $tar->write( $tarfile );
+    return 1;
+}
+
 {
     package Util;
     our $AUTOLOAD;
