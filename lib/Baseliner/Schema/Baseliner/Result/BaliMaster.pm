@@ -47,10 +47,10 @@ __PACKAGE__->set_primary_key("mid");
 #__PACKAGE__->add_unique_constraint( ns => [ qw/collection ns/ ] );
 #__PACKAGE__->add_unique_constraint( moniker => [ qw/moniker/ ] );
 
-__PACKAGE__->has_many("search_data", "Baseliner::Schema::Baseliner::Result::BaliMasterSearch", 
-    { 'foreign.mid' => 'self.mid' },
-    { join_type=>'left' }
-);
+# __PACKAGE__->has_many("search_data", "Baseliner::Schema::Baseliner::Result::BaliMasterSearch", 
+#     { 'foreign.mid' => 'self.mid' },
+#     { join_type=>'left' }
+# );
 
 __PACKAGE__->has_many(
   "kv",

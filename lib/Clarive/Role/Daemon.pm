@@ -26,9 +26,6 @@ sub nohup {
     # TODO redirect stdout and error somewhere else
     #open STDOUT, '>', '/dev/null' or die "Could not redirect STDOUT: $!";
     #open STDERR, '>&STDOUT' or die "Could not redirect STDERR: $!";
-    open STDIN, '/dev/null' or die "Could not redirect STDIN: $!";
-    open STDOUT, '>>', $self->log_file or die sprintf "Could not redirect STDIN to %s: $!", $self->log_file;
-    open STDERR, '>&STDOUT' or die "Could not redirect STDERR: $!";
     
     require POSIX;
     local $SIG{HUP} = 'IGNORE';
@@ -39,6 +36,9 @@ sub nohup {
         return $pid
     } # parent
     else { # child
+        open STDIN, '/dev/null' or die "Could not redirect STDIN: $!";
+        open STDOUT, '>>', $self->log_file or die sprintf "Could not redirect STDIN to %s: $!", $self->log_file;
+        open STDERR, '>&STDOUT' or die "Could not redirect STDERR: $!";
         POSIX::setsid() or die "Cannot establish session id: $!\n";
         $proc->();
         exit 0;

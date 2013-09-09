@@ -1153,7 +1153,7 @@ sub import : Local {
         $c->stash->{json} = { success => \1, log=>\@log, msg=>_loc('finished') };  
     }
     catch{
-        $c->stash->{json} = { success => \0, log=>\@log, msg => _loc('Error exporting: %1', shift()) };
+        $c->stash->{json} = { success => \0, log=>\@log, msg => _loc('Error importing: %1', shift()) };
     };
     $c->forward('View::JSON');  
 }

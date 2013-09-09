@@ -51,7 +51,7 @@ sub kv { Baseliner->model('KV') }
 
 sub bali_rs { Baseliner->model('Baseliner::Bali' . shift ) }
 
-sub relation { Baseliner->model('Relationships') }
+# sub relation { Baseliner->model('Relationships') }
 
 sub ns_get { Baseliner->model('Namespaces')->get(@_) }
 

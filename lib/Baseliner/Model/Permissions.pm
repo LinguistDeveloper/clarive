@@ -831,7 +831,7 @@ our $root_username;
 sub is_root {
     my ( $self, $username ) = @_;
     $username or die _loc('Missing username');
-    $root_username //= config_value('root_username') || '';
+    $root_username //= Baseliner->config->{root_username} || '';
     return 1 if $username eq 'root' || length $root_username && $username eq $root_username;
 
     return Baseliner->model('Baseliner')->dbi->value(qq{

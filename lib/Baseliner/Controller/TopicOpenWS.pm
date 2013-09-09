@@ -1,4 +1,4 @@
-package Baseliner::Controller::TopicWS;
+package Baseliner::Controller::TopicOpenWS;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Baseliner::Sugar;
@@ -22,7 +22,7 @@ sub list_topics : Path('/openapi/list_topics') {
 
     my @rs =
         Baseliner->model( 'Baseliner::BaliTopic' )
-        ->search( $where, {select => 'me.mid', prefetch => [ 'categories' ]} )
+        ->search( $where, {select => 'me.mid', prefetch => [ 'status', 'categories' ]} )
         ->hashref->all;
 
     my $meta     = Baseliner::Model::Topic->get_meta( $rs[ 0 ]->{id_category} ) if @rs;
@@ -38,6 +38,7 @@ sub list_topics : Path('/openapi/list_topics') {
 
     $self->return( $c, {ret => $ret, list_type => "Topics", format => $p->{format}} );
 } ## end sub list_topics :
+
 
 sub return {
     my ( $self, $c, $p ) = @_;
