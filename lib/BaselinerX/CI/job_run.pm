@@ -7,7 +7,6 @@ extends 'BaselinerX::CI::job';
 
 has exec         => qw(is rw isa Num default 1);
 has logfile      => qw(is rw isa Any);
-has job_stash    => qw(is rw isa HashRef), default=>sub{ +{} };
 has pid          => qw(is rw isa Num lazy 1), default=>sub{ return $$ };
 has host         => qw(is rw isa Str lazy 1), default=>sub{ return lc Sys::Hostname::hostname() };
 has owner        => qw(is rw isa Str lazy 1), default=>sub{ return $ENV{USER} || $ENV{USERNAME} };
@@ -99,7 +98,7 @@ service 'job.run' => {
 
 sub run {
     my ($self, %p) = @_;
-    
+
     $self->status('RUNNING');
     $self->exec( $self->exec + 1) if !$self->same_exec && $self->endtime;  # endtime=job has run before, a way to detect first time
     _log "Setting exec to " . $self->exec;

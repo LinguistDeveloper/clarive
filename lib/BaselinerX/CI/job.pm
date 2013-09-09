@@ -10,6 +10,7 @@ has bl           => qw(is rw isa Any);
 has rollback     => qw(is rw isa Bool default 0);
 has job_key      => qw(is rw isa Any), default => sub { Util->_md5() };
 has job_type     => qw(is rw isa Any default promote);  # promote, demote, static
+has job_stash    => qw(is rw isa HashRef), default=>sub{ +{} };
 has job_dir      => qw(is rw isa Any lazy 1), default => sub { 
     my ($self) = @_;
     my $job_home = $ENV{BASELINER_JOBHOME} || $ENV{BASELINER_TEMP} || File::Spec->tmpdir();
@@ -48,10 +49,15 @@ around load_post_data => sub {
     my ($orig, $class, $mid, $data ) = @_;
     
     return {} unless $mid;
-    my $job_row = DB->BaliJob->search({ mid=>$mid }, {})->hashref->first;
+    
+    my $row = DB->BaliJob->search({ mid=>$mid }, {})->first;
+    my $job_stash = $row->stash;
+    my $job_row = +{ $row->get_columns, job_stash=>$job_stash }; 
+    
     $job_row->{job_type} = $job_row->{type};
     $job_row->{id_job} = $job_row->{id};
     delete $job_row->{mid};
+
     # load stash
     $job_row->{job_stash} = 
         try { 
@@ -61,7 +67,11 @@ around load_post_data => sub {
             _log _loc "Error loading job stash: %1", $err;
             +{};
     } if length $job_row->{job_stash};
-    delete $job_row->{job_stash}{job} if ref $job_row->{job_stash}; # just in case
+    if( ref $job_row->{job_stash} ) {
+        delete $job_row->{job_stash}{job} 
+    } else {
+        $job_row->{job_stash} = {};
+    }
     
     return $job_row;
 };
