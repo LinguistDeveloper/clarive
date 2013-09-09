@@ -1169,6 +1169,10 @@ sub get_release {
 
 sub get_projects {
     my ($self, $topic_mid, $id_field, $meta, $data ) = @_;
+
+    # for safety with legacy, reassign previous unassigned projects (normally from drag-drop
+    DB->BaliMasterRel->search({ from_mid=>$topic_mid, rel_type=>'topic_project', rel_field=>undef })->update({ rel_field=>$id_field });
+    
     my @projects = Baseliner->model('Baseliner::BaliTopic')->find(  $topic_mid )->projects->search( {rel_field => $id_field}, { select=>['mid','name'], order_by => { '-asc' => ['mid'] }} )->hashref->all;
     $data->{"$id_field._project_name_list"} = join ', ', map { $_->{name} } @projects;
     return @projects ? \@projects : [];
@@ -1788,6 +1792,9 @@ sub set_projects {
     my @new_projects = sort { $a <=> $b } _array( $projects ) ;
 
     #my @old_projects = map {$_->{mid}} Baseliner->model('Baseliner::BaliTopic')->find(  $topic_mid )->projects->search( {rel_field => $id_field}, { order_by => { '-asc' => ['mid'] }} )->hashref->all;
+    
+    # for safety with legacy, reassign previous unassigned projects (normally from drag-drop
+    DB->BaliMasterRel->search({ from_mid=>$topic_mid, rel_type=>'topic_project', rel_field=>undef })->update({ rel_field=>$id_field });
 
     my @old_projects =  map { $_->{mid} } Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid )->
                 projects->search( {rel_field => $id_field }, { select => ['mid'], order_by => { '-asc' => ['mid'] }} )->hashref->all;
