@@ -419,7 +419,9 @@ sub related_cis {
             : $_->{from_mid}; 
         my $ci = Baseliner::CI->new( $rel_mid );
         # adhoc ci data with relationship info
-        $ci->{_edge} = { rel=>$rel_edge, rel_type=>$_->{rel_type}, mid=>$mid, depth=>$opts{depth_original}-$opts{depth}, path=>$opts{path} };
+        if( $Baseliner::CI::_edge ) {
+            $ci->{_edge} = { rel=>$rel_edge, rel_type=>$_->{rel_type}, mid=>$mid, depth=>$opts{depth_original}-$opts{depth}, path=>$opts{path} };
+        }
         $ci;
     } @data;
     $Baseliner::CI::mid_scope->{ $scope_key } = \@ret if $Baseliner::CI::mid_scope;

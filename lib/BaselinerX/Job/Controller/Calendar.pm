@@ -410,7 +410,7 @@ that apply to a list of NS.
 sub build_job_window : Path('/job/build_job_window') {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
-
+    $Baseliner::CI::_edge = 1;
     try {
         my $date = $p->{job_date};
         my $date_format = $p->{date_format} or _fail "Missing date format";
