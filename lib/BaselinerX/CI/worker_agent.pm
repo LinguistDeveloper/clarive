@@ -26,6 +26,7 @@ has_array 'destroy_list';
 has chunk_size => qw(is ro lazy 1), default => sub{ 64 * 1024 }; # 64K
 has timeout_file => qw(is ro default 10);  # if we don't get blpop stuff in x seconds, the file is done - careful with large chunk_sizes, may take more
 has wait_frequency => qw(is rw default 5);
+has cap_wait => qw(is rw default 2);   # how long to wait for worker responses
 
 has rc     => qw(is rw isa Maybe[Num] default 0);
 has output => qw(is rw isa Maybe[Str] );
@@ -291,7 +292,7 @@ sub _whos_capable {
    my $reqid = $self->_msgid;
    my $cap64 = MIME::Base64::encode_base64( join ',', @caps );
    $self->db->publish( "queue:capability:$reqid", $cap64 );
-   if( my $who = $self->db->blpop( "queue:capable:$reqid", 5 ) ) {
+   if( my $who = $self->db->blpop( "queue:capable:$reqid", $self->cap_wait ) ) {
        my $workerid = $who->[1];
        say "$workerid can!";
        $self->db->del( "queue:capable:$reqid" );

@@ -114,7 +114,7 @@ other => [qw(
     ago
 )],
 logging => [qw(
-    _log _dump _debug _fail _throw _loc _error
+    _log _dump _debug _fail _throw _loc _error _whereami
 )],
 basic => [qw(
     _array _file _dir _now _ci _load :logging 
@@ -321,10 +321,15 @@ sub isatty { no autodie; return open(my $tty, '+<', '/dev/tty'); }
 # internal log engine used by _log and _debug
 sub _log_me {
     my ($lev, $cl,$fi,$li, @msgs ) = @_;
-    my $logger = Baseliner->app ? Baseliner->app->{_logger} : '';
+    my $logger = $Baseliner::logger // ( Baseliner->app ? Baseliner->app->{_logger} : '' );
+    my $log_out;
     if( ref $logger eq 'CODE' ) { # logger override
-        $logger->($cl,$fi,$li, @msgs );
+        $log_out = $logger->($lev, $cl,$fi,$li, @msgs );  # logger return wheather log out or don't
     } else {
+        $log_out = 1;
+    }
+    
+    if( $log_out ) {
         my $first = shift @msgs;
         if( my $rf = ref $first ) {
             $first = sprintf '[DUMP ref=%s]%s', $rf , "\n" . _dump( $first );
@@ -570,15 +575,18 @@ sub is_oracle {
 sub is_number {
     #return $_[0] =~ /^(?=[-+.]*\d)[-+]?\d*\.?\d*(?:e[-+ ]?\d+)?$/i;
     my $val = $_[0];
+    return 0 unless length $val;
     return looks_like_number($val);
 }
 
 sub is_int {
+    return 0 unless length $_[0];
     return $_[0] =~ /^\d+$/;
 }
 
 sub _trim {
     my $str = shift;
+    return '' unless length $str;
     $str =~ s{^\s*}{}g;
     $str =~ s{\s*$}{}g;
     return $str;
@@ -740,6 +748,9 @@ sub _unbless {
 sub _damn {
     my $blessed = shift;
     my $damned;
+    my $clone = _load( _dump( $blessed ) );
+    return _unbless( $clone );
+    ## deprecated:
     try {
         # recurse
         if( ref($blessed) eq 'HASH' ) {
@@ -754,7 +765,7 @@ sub _damn {
         elsif( ref($blessed) eq 'ARRAY' ) {
             $damned = [ map { _damn($_) } @$blessed ];
         }
-        elsif( ref $blessed ) {
+        elsif( ref $blessed ne 'CODE' ) {
             $damned = _damn( { %$blessed } );
         }
         else {
@@ -763,7 +774,7 @@ sub _damn {
     } catch {
         my $err = shift;
         $damned = $blessed;
-        _error( 'DAMN1=' . $err );
+        #_debug( 'DAMN1=' . $err );
     };
     return $damned;
 }
@@ -794,7 +805,11 @@ Die without line number info.
 =cut
 sub _fail {
     my ($cl,$fi,$li) = caller();
-    _error( "_fail($cl;$li): @_" );
+    if( $Baseliner::logger ) {
+        _debug( "FAIL: $cl;$li: @_" ); # if we are in a job, be a little more discrete
+    } else {
+        _error( "FAIL: $cl;$li: @_" ) 
+    }
     die join(' ',@_) . "\n";
 }
 
@@ -1014,26 +1029,68 @@ Ignores objects.
     $h->{arr} eq '1,2,3';
 
 =cut
+our $hf_scope;
+sub merge_pushing {
+    my ($h1, $h2 ) = @_;
+    my %merged;
+    while( my($k2,$v2) = each %$h2 ) {
+        $merged{ $k2 } = $v2;  
+    }
+    while( my($k1,$v1) = each %$h1 ) {
+        if( exists $merged{$k1} ) {
+            my $v2 = delete $merged{$k1};
+            if( !defined $v2 ) {
+                $merged{$k1}=$v1;
+            }
+            elsif( !defined $v1 ) {
+                $merged{$k1}=$v2;
+            }
+            elsif( $v1 eq $v2 ) {
+                $merged{$k1} = $v2;
+            }
+            else {
+                push @{$merged{$k1}}, $v2 eq $v1 ? $v2 : ( $v2, $v1 );  
+            }
+        }
+        else {
+            $merged{ $k1 } = $v1;  
+        }
+    }
+    %merged;
+}
 sub hash_flatten {
     my ( $stash, $prefix ) = @_;
-    ref $stash eq 'HASH' or _throw "Missing stash hashref parameter";
+    no warnings;
     $prefix ||= '';
     my %flat;
-    while( my ($k,$v) = each %$stash ) {
-        my $ref = ref $v;
-        if( $ref eq 'HASH') {
-            $flat{$prefix . $k} = _dump( $v ); # used to represent complex variables as text
-            my %flat_sub = hash_flatten( $v, "$prefix$k." );
-            %flat = ( %flat, %flat_sub );
-        } elsif( $ref eq 'ARRAY') {
-            $flat{$prefix . $k} = join ',', @$v;
-        } elsif( $ref ) {
-            $flat{$prefix . $k} = _dump( $v ); # used to represent complex variables as text TODO consider JSON or something that shows in oneline
-            $v = _damn( $v );
-            my %flat_sub = hash_flatten( $v, "$prefix$k." );
-            %flat = ( %flat, %flat_sub );
-        } else {
-            $flat{$prefix . $k} = $v;
+    $hf_scope or local $hf_scope = {};
+    my $refstash = ref $stash;
+    return () if $refstash && exists $hf_scope->{"$stash"};
+    $hf_scope->{"$stash"}=() if $refstash;
+    if( $refstash eq 'HASH' ) {
+        while( my ($k,$v) = each %$stash ) {
+            %flat = merge_pushing( \%flat, scalar hash_flatten($v, $prefix ? "$prefix.$k" : $k ) );
+        }
+    } 
+    elsif( $refstash eq 'ARRAY' ) {
+        my $cnt=0;
+        for my $v ( @$stash ) {
+            %flat = merge_pushing( \%flat, scalar hash_flatten($v, "$prefix" ) );
+        }
+    }
+    elsif( $refstash && $refstash !~ /CODE|GLOB|SCALAR/ ) {
+        $stash = _damn( $stash );
+        %flat = merge_pushing( \%flat, scalar hash_flatten ( $stash, "$prefix" ) );
+    }
+    else {
+        $flat{ "$prefix" } = "$stash";
+    }
+    if( !$prefix ) {
+        for my $k ( keys %flat ) {
+            my $v = $flat{$k};
+            if( ref $v eq 'ARRAY' ) {
+                $flat{$k}=join ',', @$v; 
+            }
         }
     }
     return wantarray ? %flat : \%flat;
@@ -1481,7 +1538,7 @@ sub package_and_instance {
     package Util;
     our $AUTOLOAD;
     sub AUTOLOAD {
-        my $self = shift;
+        shift if $_[0] eq 'Util';# allows for Util::method
         my $name = $AUTOLOAD;
         my @a = reverse(split(/::/, $name));
         my $method = 'Baseliner::Utils::' . $a[0];

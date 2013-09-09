@@ -249,14 +249,14 @@ use Try::Tiny;
 use Baseliner::Utils;
 
 sub stash {
-    my ( $self, $data ) = @_;
+    my ( $self, $yaml ) = @_;
 
-    if( defined $data && $data ) {
+    if( defined $yaml && $yaml ) {
         my $stash = $self->id_stash;
         if( ref $stash ) {
-            $stash->stash( $data );
+            $stash->stash( $yaml );
         } else {
-            $stash = $self->bali_job_stashes->create({ stash => $data });
+            $stash = $self->bali_job_stashes->create({ stash => $yaml });
         }
         $stash->update;
         $self->id_stash( $stash->id );

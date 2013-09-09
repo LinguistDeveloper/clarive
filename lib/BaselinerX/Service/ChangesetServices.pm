@@ -7,11 +7,128 @@ use Try::Tiny;
 #with 'Baseliner::Role::Namespace::Create';
 with 'Baseliner::Role::Service';
 
+register 'service.changeset.items' => {
+    name    => 'Load Job Items into Stash',
+    handler => \&job_items,
+};
+
 register 'service.changeset.checkout' => {
-    name    => 'Checkout files of a changeset',
+    name    => 'Checkout Job Items',
     handler => \&checkout,
 };
 
+register 'service.changeset.checkout.bl' => {
+    name    => 'Checkout Job Baseline',
+    handler => \&checkout_bl,
+};
+
+sub job_items {
+    my ( $self, $c, $config ) = @_;
+    my $job   = $c->stash->{job};
+    my $log   = $job->logger;
+    my $stash = $job->job_stash;
+    
+    my $type = $job->job_type;
+    my $bl = $job->bl;
+    
+    my %projects;
+    my @project_changes;
+    my %all_items;
+
+    $log->debug( _loc( "Loading items into stash... (type=%1, bl=%2)", $type, $bl ) );
+    
+    # group changesets by project->repos->revisions
+    for my $cs ( _array( $stash->{changesets} )  ) {
+        my ($project) = $cs->projects;
+        $projects{ $project->mid }{project} //= $project;
+        push @{ $projects{ $project->mid }{changesets} }, $cs;
+        push @{ $projects{ $project->mid }{revisions} }, $cs->revisions;
+        # group revisions by repo
+        for my $rev ( _array( $cs->revisions ) ) {
+            my $repo = $rev->repo;
+            $projects{ $project->mid }{repos}{ $repo->mid }{repo} //= $repo;
+            push @{ $projects{ $project->mid }{repos}{ $repo->mid }{revisions} }, $rev; 
+        }
+    }
+    
+    for my $project_group ( values %projects ) {
+        my ($project,$changesets,$revisions,$repos) = @{ $project_group }{ qw/project changesets revisions repos/ };
+        my $pc = { project => $project };
+        $repos //= {};
+        my @items;
+        for my $repo_group ( values %$repos ) {
+            my ($revs,$repo) = @{ $repo_group }{qw/revisions repo/};
+            my @repo_items = $repo->group_items_for_revisions( revisions=>$revs, type=>$type, tag=>$bl );
+            push @items, map {
+                my $it = $_;
+                $it->path_in_repo( $it->path );  # otherwise source/checkout may not work
+                $it->path( '' . _dir('/', $project->name, $repo->rel_path, $it->path) );  # prepend project name
+                $it;
+            } @repo_items;
+            push @{ $pc->{repo_revisions_items} }, { repo=>$repo, revisions=>$revisions, items=>\@items };
+        }
+        $project->{items} = \@items;
+        $all_items{ $_->path }=$_ for @items;
+        push @project_changes, $pc; 
+    }
+    # put unique items into stash
+    $stash->{items} = [ values %all_items ];
+
+    # save project-repository structure
+    $stash->{project_changes} = \@project_changes;
+    
+    my $cnt = scalar keys %all_items; 
+    $log->info( _loc( "Found %1 items for this job", $cnt ), [ keys %all_items ] ); 
+    
+    { project_count=>scalar keys %projects };
+}
+
+sub checkout_bl {
+    my ( $self, $c, $config ) = @_;
+    my $job   = $c->stash->{job};
+    my $log   = $job->logger;
+    my $stash = $job->job_stash;
+    my $job_dir = $job->job_dir;
+    my $bl = $stash->{bl};
+    _fail _loc 'Missing job_dir' unless length $job_dir;
+    
+    my @project_changes = @{ $stash->{project_changes} || [] };
+    
+    $log->info( _loc('Checking out baseline for %1 project(s)', scalar(@project_changes) ) );
+    for my $pc ( @project_changes ) {
+        my ($project, $repo_revisions_items ) = @{ $pc }{ qw/project repo_revisions_items/ };
+        next unless ref $repo_revisions_items eq 'ARRAY';
+        for my $rri ( @$repo_revisions_items ) {
+            my ($repo, $revisions,$items) = @{ $rri }{ qw/repo revisions items/ };
+            my $dir_prefixed = File::Spec->catdir( $job_dir, $project->name, $repo->rel_path );
+            $log->info( _loc('Checking out baseline %1 for project %2, repository %3: %4', $bl, $project->name, $repo->name, $dir_prefixed ) );
+            $repo->checkout( tag=>$bl, dir=>$dir_prefixed );
+        }
+    }
+}
+
+sub checkout {
+    my ( $self, $c, $config ) = @_;
+    my $job   = $c->stash->{job};
+    my $log   = $job->logger;
+    my $stash = $job->job_stash;
+    my $job_dir = $job->job_dir;
+    _fail _loc 'Missing job_dir' unless length $job_dir;
+    
+    my $cnt = 0;
+    my @item_paths;
+    my @items = _array( $stash->{items} );
+    for my $item ( @items ) {
+        push @item_paths, $item->path;
+        $item->checkout( dir=>$job_dir );
+        $cnt++;
+    }
+    $log->info( _loc('Checked out %1 item(s) to %2', $cnt, $job_dir), [ map { "$_->{path} ($_->{versionid})" } @items ] );
+}
+
+########### DEPRECATED:
+
+## deprecated in favor of service.changeset.items, changesets now included in stash
 register 'service.changeset.job_elements' => {
     name    => 'Fill job_elements',
     handler => \&job_elements,
@@ -22,7 +139,7 @@ register 'service.changeset.update' => {
     handler => \&update_baselines,
 };
 
-sub checkout {
+sub checkout_items {
     my ( $self, $c, $config ) = @_;
     my $job   = $c->stash->{job};
     my $log   = $job->logger;

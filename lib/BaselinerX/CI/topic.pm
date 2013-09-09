@@ -6,6 +6,9 @@ has title       => qw(is rw isa Any);
 has id_category => qw(is rw isa Any);
 has name        => qw(is rw isa Any);
 has category    => qw(is rw isa Any);
+has name_category    => qw(is rw isa Any);
+has id_category_status => qw(is rw isa Any);
+
 #has_ci 'projects';
 
 sub rel_type {
@@ -26,11 +29,12 @@ around delete => sub {
 	my $cnt = $self->$orig($mid);
 };
     
-around load => sub {
-    my ($orig, $self ) = @_;
-    my $data = $self->$orig();
-    $data = { %$data, %{ Baseliner->model('Topic')->get_data( undef, $self->mid, with_meta=>1 ) || {} } };
-    #$data->{category} = { DB->BaliTopic->find( $self->mid )->categories->get_columns };
+# adds extra data to _ci during loading
+around load_post_data => sub {
+    my ($orig, $class, $mid ) = @_;
+    return {} unless $mid;
+    my $data = Baseliner->model('Topic')->get_data( undef, $mid, with_meta=>1 );
+    delete $data->{mid};
     return $data;
 };
 
@@ -55,7 +59,7 @@ sub files {
 
 sub topic_name {
     my ($self) = @_;
-    return sprintf '%s #%s - %s', 'Cmbio', $self->mid, $self->name; 
+    return sprintf '%s #%s - %s', $self->name_category, $self->mid, $self->name; 
 }
 
 sub timeline {
@@ -120,4 +124,50 @@ sub create_topic {
     my ($msg, $topic_mid, $status, $title) = Baseliner->model('Topic')->update({ action=>'add', %$p });
     { msg=>$msg, mid=>$topic_mid, status=>$status, title=>$title };
 }
+
+sub is_changeset {
+    my ($self) = @_;
+    my $row = DB->BaliTopic->search({ mid=> $self->mid},{ join=>'categories', select=>'categories.is_changeset', as=>'is_changeset' })->hashref->first;
+    return $row ? $row->{is_changeset} : 0;
+}
+
+sub projects {
+    my ($self) = @_;
+    $self->related( rel_type=>'topic_project' );
+} 
+
+sub revisions {
+    my ($self) = @_;
+    $self->related( rel_type=>'topic_revision' );
+} 
+
+sub bl {
+    my ($self)=@_;
+    DB->BaliTopicStatus->find( $self->id_category_status )->bl;    
+}
+
+sub items {
+    my ($self, %p) = @_;
+
+    my ($project) = $self->projects;
+    my @revisions = $self->revisions;
+    my $type = $p{type} // 'promote';
+    my $bl   = $p{bl} // $self->bl;
+    
+    my %repos;
+    # group revisions by repo
+    for my $rev ( @revisions ) {
+        push @{ $repos{$rev->repo->mid}{revisions} }, $rev; 
+        $repos{$rev->repo->mid}{repo} //= $rev->repo;
+    }
+
+    # repo by repo, get top items for revs given
+    my @items;
+    for my $repo_group ( values %repos ) {
+        my ($revs,$repo) = @{ $repo_group }{qw/revisions repo/};
+        my @repo_items = $repo->group_items_for_revisions( revisions=>$revs, type=>$type, path_prefix=>$p{path_prefix} );
+    }
+    return @items;
+}
+
 1;

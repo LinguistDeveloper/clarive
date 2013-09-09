@@ -24,7 +24,9 @@ sub new {
         # instantiate
         my $obj = $ci_class->new( $rec );
         # add the original record to _ci
-        unless( $Baseliner::CI::_no_record ) {
+        if( $Baseliner::CI::_no_record ) {
+            delete $rec->{yaml}; # lots of useless data
+        } else {
             delete $rec->{yaml}; # lots of useless data
             $obj->{_ci} = $rec; 
             $obj->{_ci}{ci_icon} = $obj->icon;

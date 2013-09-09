@@ -206,7 +206,8 @@ sub job_stash : Local {
     my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
     $c->stash->{json}  = try {
         my $stash = $job->stash;
-        $c->stash->{job_stash} = $stash;
+        Encode::_utf8_on( $stash );
+        $c->stash->{job_stash} = $stash; 
         { stash=>$stash, success=>\1 };
     } catch {
         { success=>\0 };
@@ -240,7 +241,7 @@ sub monitor_json : Path('/job/monitor_json') {
     $limit||=50;
 
     my ($select,$order_by, $as) = $sort
-        ? (['me.id' ,$sort]         , [ { "-$dir" => $sort }, { -desc => 'me.starttime' } ], [ 'id', $sort ])
+        ? (['me.id' ,$sort]         , [ { "-$dir" => $sort }, { -desc => 'me.starttime' }, { -desc=>'me.id' } ], [ 'id', $sort ])
         : (['me.id' ,'me.starttime'], [ { -desc => "me.starttime" } ] , ['id', 'starttime'] );
 
     $start=$p->{next_start} if $p->{next_start} && $start && $query;
@@ -523,7 +524,7 @@ sub job_submit : Path('/job/submit') {
 
                 event_new 'event.job.delete' => { c=>$c, self=>$self, job=>$job }  => sub {
                     # be careful: may be cancelled already
-                    $p->{mode} ne 'delete' and die _loc('Job already cancelled'); 
+                    $p->{mode} ne 'delete' and _fail _loc('Job already cancelled'); 
                     # cancel pending requests
                     $c->model('Request')->cancel_for_job( id_job=>$job->id );
                     $job->delete;
@@ -533,7 +534,7 @@ sub job_submit : Path('/job/submit') {
             }
             elsif( $job->status =~ /RUNNING/ ) {
                 event_new 'event.job.cancel_running' => { c=>$c, self=>$self, job=>$job } => sub {
-                    $job->status( 'CANCELLED' );
+                    $job->update({ status=> 'CANCELLED' });
                     $c->model('Request')->cancel_for_job( id_job=>$job->id );
 
                     sub job_submit_cancel_running : Private {};
@@ -592,18 +593,18 @@ sub job_submit : Path('/job/submit') {
                     status       => 'IN-EDIT',
                     approval     => $approval,
                     step         => 'PRE',
-                    type         => $job_type,
-                    ns           => '/',
+                    job_type     => $job_type,
                     bl           => $bl,
                     username     => $username,
                     runner       => $runner,
                     id_rule      => $id_rule,
-                    comments     => $comments,
-                    items        => $contents, 
+                    description  => $comments,
+                    contents     => $contents, 
                     job_stash    => $job_stash
             };
             event_new 'event.job.new' => { c=>$c, self=>$self, job_data=>$job_data } => sub {
-                my $job = $c->model('Jobs')->create( %$job_data );
+                my $job = BaselinerX::CI::job->new( $job_data );
+                $job->save;
                 $job_name = $job->name;
                 { job=>$job }; 
             };

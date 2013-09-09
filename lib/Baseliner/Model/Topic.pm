@@ -1342,20 +1342,24 @@ sub save_data {
                                     when( 'create' ) {
                                         my $ci_class = $ci->{ci_class};
                                         $ci_class = 'BaselinerX::CI::' . $ci_class unless $ci_class =~ /^Baseliner/;
-                                        $ci->{ci_mid} = $ci_class->save( %$ci_master, data=>$ci_data );
+                                        my $obj = $ci_class->new( %$ci_master, %$ci_data );
+                                        $ci->{ci_mid} = $obj->save;
                                         $ci->{_ci_updated} = 1;
                                     }
                                     when( 'update' ) {
                                         _debug "ci update $ci->{ci_mid}";
                                         my $ci_mid = $ci->{ci_mid} // $ci_data->{ci_mid};
-                                        #_ci( $ci->{ci_mid} )->save( %$ci_master, data=>$ci_data );
-                                        _ci( $ci_mid )->save( %$ci_master, data=>$ci_data );
+                                        my $obj = _ci( $ci_mid );
+                                        $obj->update( %$ci_master, %$ci_data );
+                                        $obj->save;
                                         $ci->{_ci_updated} = 1;
                                     }
                                     when( 'delete' ) {
                                         my $ci_mid = $ci->{ci_mid} // $ci_data->{ci_mid};
-                                        _ci( $ci_mid )->save( %$ci_master, data=>$ci_data );
-                                        DB->BaliMaster->find( $ci_mid )->delete; 
+                                        my $obj = _ci( $ci_mid );
+                                        $obj->update( %$ci_master, %$ci_data );
+                                        $obj->save;
+                                        $obj->delete; 
                                         $ci->{_ci_updated} = 1;
                                     }
                                     default {

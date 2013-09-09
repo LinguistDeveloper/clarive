@@ -588,6 +588,7 @@ sub children : Local {
 ## adds/updates foreign CIs
 
 sub ci_create_or_update {
+    my $self = shift;
     my %p = @_;
     return $p{mid} if length $p{mid};
     my $ns = $p{ns} || delete $p{data}{ns};
@@ -597,12 +598,10 @@ sub ci_create_or_update {
     
     # check if it's an update, in case of foreign ci
 
-    # my $master_row = master_new $collection => $name => $p{data};
-    # $master_row->ns( $ns ) if $p{ns};
-    # $master_row->update;
-    # return $master_row->mid;
     if ( length $p{mid} ) {
-        _ci( $p{mid} )->save( data => $p{data} );
+        my $ci = _ci( $p{mid} );
+        $ci->update( %{ $p{data} || {} } );
+        $ci->save;
         return $p{mid};
     } else {
         my $name = $p{name};
@@ -622,11 +621,14 @@ sub ci_create_or_update {
             $mid = $same_name_cis[ 0 ]->{mid};
         }
 
-
         if ( !$mid ) {
-            return $class->save( name => $name, data => $p{data} );
+            my $d = { name => $name, %{ $p{data} || {} } };
+            my $ci = $class->new($d);
+            return $ci->save;
         } else {
-            _ci( $mid )->save( data => $p{data} );
+            my $obj = _ci( $mid );
+            $obj->update( %{ $p{data} || {} });
+            $obj->save;
             return $mid;
         }
     } ## end else [ if ( length $p{mid} ) ]
@@ -657,7 +659,7 @@ sub sync : Local {
             if( $k eq 'ci_pre' ) {
                 for my $ci ( _array $v ) {
                     _log( _dump( $ci ) );
-                    push @ci_pre_mid, ci_create_or_update( %$ci ) ;
+                    push @ci_pre_mid, $self->ci_create_or_update( %$ci ) ;
                 }
             }
             elsif( $v =~ /^ci_pre:([0-9]+)$/ ) {
@@ -669,7 +671,7 @@ sub sync : Local {
             }
         }
 
-        $mid = ci_create_or_update( rel_field => $collection, name=>$name, class=>$class, ns=>$ns, collection=>$collection, mid=>$mid, data=>\%ci_data );
+        $mid = $self->ci_create_or_update( rel_field => $collection, name=>$name, class=>$class, ns=>$ns, collection=>$collection, mid=>$mid, data=>\%ci_data );
 
         $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 saved ok', $name) };
         $c->stash->{json}{mid} = $mid;
@@ -704,13 +706,22 @@ sub update : Local {
     $action ||= delete $p->{action};
     my $class = "BaselinerX::CI::$collection";    # XXX what?? fix the class vs. collection mess
     my $chi = delete $p->{children};
+    delete $p->{version}; # form should not set version
     try {
         if( $action eq 'add' ) {
-            $mid = $class->save( name=>$name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), data=> $p ); 
+            my $ci = $class->new( name=>$name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), %$p ); 
+            $ci->save;
+            $mid = $ci->mid;
+            #$mid = $class->save( name=>$name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), data=> $p ); 
         }
         elsif( $action eq 'edit' && defined $mid ) {
             $c->cache_remove( qr/:$mid:/ );
-            $mid = $class->save( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), data => $p ); 
+            #$mid = $class->save( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), data => $p ); 
+            my $ci = $class->new( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), %$p );
+            #my $ci = _ci( $mid );
+            #$ci->update( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), %$p ); 
+            $ci->save;
+            $mid = $ci->mid;
         }
         else {
             _fail _loc("Undefined action");

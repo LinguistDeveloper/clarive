@@ -164,7 +164,13 @@
             items: item
         }, opts));
         item.on('destroy', function(){
-            if( !Ext.isFunction(foo) ) foo = function(d){ node.getOwnerTree().is_dirty=true; node.attributes.data = d };
+            if( !Ext.isFunction(foo) ) foo = function(d){ 
+                node.getOwnerTree().is_dirty=true; 
+                var data_key = d.data_key;
+                delete d.data_key;
+                node.attributes.data = d; 
+                node.attributes.data_key = data_key; 
+            };
             if( item.data ) foo(item.data); // item.data is only set if modified
             win.close();
         });
@@ -225,8 +231,10 @@
                 if( res.form ) {
                     Baseliner.ajaxEval( res.form, { data: node.attributes.data || {} }, function(comp){
                         var params = {};
+                        var data_key = new Ext.form.TextField({ name:'data_key', value: node.attributes.data_key });
                         var save_form = function(){
                             form.data = form.getForm().getValues();
+                            form.data.data_key = data_key.getValue();
                             form.destroy();
                         };
                         var form = new Ext.FormPanel({ 
@@ -234,7 +242,9 @@
                             width: 800, height: 600,
                             autoScroll: true,
                             tbar: [
-                                res.form,
+                                _('Return Key') + ':',
+                                data_key,
+                                //res.form,
                                 '->',
                                 { xtype:'button', text:_('Cancel'), icon:'/static/images/icons/delete.gif', handler: function(){ form.destroy() } },
                                 { xtype:'button', text:_('Save'), icon:'/static/images/icons/save.png', handler: function(){ save_form() } }
@@ -322,13 +332,15 @@
                 if( res.success ) {
                     var editor;
                     var idtxt = Ext.id();
-                    var data_txt = new Ext.form.TextArea({ region:'west', width: 140, value: res.data_yaml });
+                    var stash_txt = new Ext.form.TextArea({ region:'west', split:true, width: 140, value: rule_tree.last_stash || res.data_yaml });
                     var dsl_txt = new Ext.form.TextArea({  value: res.dsl });
                     var style_cons = 'background: black; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", Courier';
                     var dsl_cons = new Ext.form.TextArea({ title:_('Output'), style:style_cons });
                     var dsl_stash = new Ext.form.TextArea({ title:_('Stash'), style:style_cons });
                     var dsl_run = function(){
-                        Baseliner.ajaxEval( '/rule/dsl_try', { stash: data_txt.getValue(), dsl: editor.getValue(), event_key: rule_event }, function(res) {
+                        dsl_cons.setValue( '' );
+                        dsl_stash.setValue( '' );
+                        Baseliner.ajaxEval( '/rule/dsl_try', { stash: stash_txt.getValue(), dsl: editor.getValue(), event_key: rule_event }, function(res) {
                             Baseliner.message( 'DSL', _('Finished OK') );
                             document.getElementById( dsl_cons.getId() ).style.color = "#10c000";  // green
                             dsl_cons.setValue( res.output ); 
@@ -351,10 +363,13 @@
                             fn: dsl_run
                         }],
                         items: [
-                           data_txt,
+                           stash_txt,
                            { region:'center', xtype:'panel', height: 400, items: dsl_txt  },
                            { xtype:'tabpanel', items: [dsl_cons, dsl_stash], activeTab:0, region:'south', split: true, height: 200 }
                         ]
+                    });
+                    win.on('beforeclose', function(){
+                        rule_tree.last_stash = stash_txt.getValue();
                     });
                     dsl_txt.on('afterrender', function(){
                         editor = CodeMirror.fromTextArea( dsl_txt.getEl().dom , Ext.apply({
@@ -483,11 +498,18 @@
         enableDrag: true,
         collapsible: true,
         resizable: true,
-        tbar: [search_palette],
+        tbar: [
+            search_palette,
+            { xtype:'button', icon:'/static/images/icons/refresh.gif', 
+                handler: function(){
+                    palette.loader.load( palette.root ); 
+                }
+            }
+        ],
         dataUrl: '/rule/palette',
         rootVisible: false,
         useArrows: true,
-        root: { nodeType: 'async', text: 'Palette', draggable: false, id: 'root', expanded: true }
+        root: { nodeType: 'async', text: _('Palette'), draggable: false, id: 'root', expanded: true }
     });
     palette.on('beforechildrenrendered', function(node){
         node.eachChild(function(n) {

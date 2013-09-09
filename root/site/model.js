@@ -2612,6 +2612,7 @@ Baseliner.MetaForm = Ext.extend( Ext.Panel, {
             self.add( field_container );
             //self.add( field );
             self.doLayout();
+            return field;
         }
     }, 
     remove_field : function(id){
@@ -2749,12 +2750,14 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
             var d = Ext.apply({}, rec.data);
             d = Ext.apply(d, rec.data.data );
             var meta = self.var_to_meta( d );
-            mf.add_field_from_meta( meta );
+            var field = mf.add_field_from_meta( meta );
+            var value = field.getValue() || meta['default'];
+            if( !self.data[bl] ) self.data[bl]={};
+            self.data[bl][id] = value;
+            self.update_hidden();
+            
             //self.data[bl.id] = mf.serialize();
             //mf.serialize();
-            if( !self.data[bl] ) self.data[bl]={};
-            self.data[bl][id] = meta['default'];
-            self.update_hidden();
             //self.data[ bl ] = meta['default'];
         } else {
             Baseliner.message( _('Variables'), _('Variable `%1` already exists', id) );

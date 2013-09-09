@@ -98,11 +98,16 @@ sub master_new {
     my $master_data = ref $name eq 'HASH' ? $name : { name=>$name };
     my $class = 'BaselinerX::CI::'.$collection;
     if( ref $code eq 'HASH' ) {
-        return $class->save( %$master_data, data=>$code );   # this returns a mid
+        my $ci = $class->new( %$master_data, %$code );
+        return $ci->save;
+        #return $class->save( %$master_data, data=>$code );   # this returns a mid
     } elsif( ref $code eq 'CODE' ) {
         my $ret;
         Baseliner->model('Baseliner')->txn_do(sub{
-            my $mid = $class->save( %$master_data ); 
+            my $ci = $class->new( %$master_data );
+            $ci->save;
+            my $mid = $ci->mid;
+            #my $mid = $class->save( %$master_data ); 
             $ret = $code->( $mid );
         });
         return $ret;

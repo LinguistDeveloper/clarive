@@ -199,7 +199,7 @@
                     { layout:'form', columnWidth : .35, defaults: { anchor: '100%' }, items:[
                         { xtype: 'checkbox', colspan: 1, fieldLabel: _('Active'), name:'active', checked: is_active, allowBlank: true },
                         { xtype: 'textfield', colspan: 1, fieldLabel: _('Moniker'), name:'moniker', value: params.rec.moniker, allowBlank: true },
-                        { xtype: 'textfield', colspan: 1, fieldLabel: _('Version'), name:'versionid', value: params.rec.versionid, allowBlank: true },
+                        { xtype: 'textfield', colspan: 1, fieldLabel: _('Version'), name:'versionid', readOnly: true, submitValue: false, value: params.rec.versionid, allowBlank: true },
                         ( params.has_bl > 0 ? bl_combo : [] )
                     ]}
                 ]},

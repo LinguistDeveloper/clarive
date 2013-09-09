@@ -71,14 +71,14 @@ register 'config.job.runner' => {
     ]
 };
 
-register 'service.job.run' => {
-    name    => 'Job Runner',
+register 'service.job.generic.run' => {
+    name    => 'Job Generic Runner',
     config  => 'config.job',
     handler => \&job_run,
 };
 
-register 'service.job.stash.print' => {
-    name    => 'Job Stash Printer',
+register 'service.job.generic.stash.print' => {
+    name    => 'Job Generic Stash Printer',
     config  => 'config.job',
     handler => \&stash_print,
 };

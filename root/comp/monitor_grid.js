@@ -537,8 +537,8 @@
         }
         if( icon!=undefined ) {
             return div1 
-                + "<img alt='"+status+"' style='vertical-align:middle' border=0 src='/static/images/"+icon+"' />"
-                + value + div2 ;
+                + "<table><tr><td><img alt='"+status+"' border=0 src='/static/images/"+icon+"' /></td>"
+                + '<td>' + value + '</td></tr></table>' + div2 ;
         } else {
             return value;
         }
@@ -651,8 +651,8 @@
         view: gview,
         selModel: row_sel, 
         columns: [
-                { header: _('ID'), width: 30, dataIndex: 'id', sortable: true, hidden: true },
-                { header: _('MID'), width: 30, dataIndex: 'mid', sortable: true, hidden: true },
+                { header: _('ID'), width: 60, dataIndex: 'id', sortable: true, hidden: true },
+                { header: _('MID'), width: 60, dataIndex: 'mid', sortable: true, hidden: true },
                 { header: _('Job'), width: 140, dataIndex: 'name', sortable: true, renderer: render_topic },    
                 { header: _('Job Status'), width: 130, dataIndex: 'status', renderer: render_level, sortable: true },
                 { header: _('Application'), width: 70, dataIndex: 'applications', renderer: render_app, sortable: false, hidden: is_portlet ? true : false },
