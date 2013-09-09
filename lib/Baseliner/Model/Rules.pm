@@ -78,14 +78,14 @@ sub dsl_build {
         my $name = _strip_html( $attr->{text} );
         my $data_key = $attr->{data_key} // _name_to_id( $name );
         push @dsl, sprintf( '# statement: %s', $name ) . "\n"; 
-        push @dsl, sprintf( '_log(q{Running Rule Statement: %s} );', $name)."\n" if $p{logging}; 
+        push @dsl, sprintf( '_debug(q{Current Rule Statement: %s} );', $name)."\n" if $p{logging}; 
         my $data = $attr->{data} || {};
         if( length $attr->{key} ) {
             my $key = $attr->{key};
             my $reg = Baseliner->registry->get( $key );
             if( $reg->isa( 'BaselinerX::Type::Service' ) ) {
-                push @dsl, $spaces->($level) . sprintf(q{$stash = merge_data($stash, %s );}, Data::Dumper::Dumper( $data ) );
-                push @dsl, $spaces->($level) . sprintf(q{launch( "%s", $stash => '%s' );}, $key, $data_key );
+                push @dsl, $spaces->($level) . sprintf(q{my $config = parse_vars %s, $stash;}, Data::Dumper::Dumper( $data ) );
+                push @dsl, $spaces->($level) . sprintf(q{launch( "%s", $stash, $config => '%s' );}, $key, $data_key );
                 #push @dsl, $spaces->($level) . sprintf('merge_data($stash, $ret );', Data::Dumper::Dumper( $data ) );
             } else {
                 push @dsl, _array( $reg->{dsl}->($self, { %$attr, %$data, children=>$children }, %p ) );
@@ -97,16 +97,17 @@ sub dsl_build {
     #push @dsl, sprintf '$stash;';
 
     my $dsl = join "\n", @dsl;
-    ##Al hacer referencia a "$self->tidy_up" da un error del tipo:
-    ##Can't use string ("Baseliner::Model::Rules") as a HASH ref while "strict refs" in use at accessor Baseliner::Model::Rules::tidy_up
-    ##REVISAR
-    #if( $self->tidy_up ) {
+    if( $self->tidy_up && !$p{no_tidy} ) {
+        require Perl::Tidy;
+        require Capture::Tiny;
         my $tidied = '';
-        Perl::Tidy::perltidy( argv => ' ', source => \$dsl, destination => \$tidied );
+        Capture::Tiny::capture(sub{
+            Perl::Tidy::perltidy( argv => ' ', source => \$dsl, destination => \$tidied );
+        });
         return $tidied;
-    #} else {
-    #    return $dsl;
-    #}
+    } else {
+        return $dsl;
+    }
 }
 
 sub dsl_run {
@@ -182,7 +183,7 @@ sub run_single_rule {
         ################### RUN THE RULE DSL ######################
         $self->dsl_run( dsl=>$dsl, stash=>$p{stash}, %p );
     } catch {
-        _log "DSL:\n". $self->dsl_listing( $dsl );
+        _debug "DSL:\n",  $self->dsl_listing( $dsl );
         _fail( _loc("Error running rule '%1': %2", $rule->rule_name, shift() ) ); 
     };
     return { ret=>$ret, dsl=>$dsl };
@@ -206,16 +207,19 @@ sub merge_data {
 
 # launch runs service, merge return into stash and returns what the service returns
 sub launch {  
-    my ($key,$stash, $data_key )=@_;
+    my ($key, $stash, $config, $data_key )=@_;
     
     #my $ret = Baseliner->launch( $key, data=>$stash );  # comes with a dummy job
     my $reg = Baseliner->registry->get( $key );
-    my $ret = $reg->run( Baseliner->app, $stash ); 
+    my $app = Baseliner->app;
+    $app->stash( $stash );  # app->stash is not the same reference, merge neeeded later
+    my $ret = $reg->run( Baseliner->app, $config ); 
     # TODO milestone for service
     #_debug $ret;
     my $return_data = $ret->data // {};
     $return_data = ref $return_data eq 'HASH' ? $return_data : {} ;
     # merge into stash
+    merge_into_stash( $stash, $app->stash );
     merge_into_stash( $stash, ( length $data_key ? { $data_key => $return_data } : $return_data ) );
     return $return_data;
 }
@@ -237,10 +241,32 @@ sub stash_has_nature {
 }
 
 sub changeset_projects {
-    my $s = shift;
-    # for each changesets, get project and group changesets
-    my $project = _ci( 6901 );  # TEF
+    my $stash = shift;
+    # for each changeset, get project and group changesets
+    my %projects;
+    for my $cs ( _array( $stash->{changesets} ) ) {
+        $cs = _ci( $cs ) unless ref $cs;
+        for my $project ( $cs->related( does=>'Project' ) ) {
+            $projects{ $project->mid } = $project;
+        }
+    }
+    #my $project = _ci( 6901 );  # TEF
+    return values %projects;
 }
+
+#sub project_changed {
+#    my $stash = shift;
+#    # for each changeset, get project and group changesets
+#    my %projects;
+#    for my $project ( _array( $stash->{project_changes} ) ) {
+#        $cs = _ci( $cs ) unless ref $cs;
+#        for my $project ( $cs->related( does=>'Project' ) ) {
+#            $projects{ $project->mid } = $project;
+#        }
+#    }
+#    #my $project = _ci( 6901 );  # TEF
+#    return values %projects;
+#}
 
 sub variables_for_bl {
     my ($ci, $bl) = @_; 
@@ -407,7 +433,7 @@ register 'statement.nature.block' => {
 
 register 'statement.stash.local' => {
     text => 'STASH LOCAL', data => {},
-    type => 'statement',
+    type => 'loop',
     dsl => sub { 
         my ($self, $n, %p ) = @_;
         sprintf(q{
@@ -438,13 +464,13 @@ register 'statement.project.block' => {
 };
 
 register 'statement.project.loop' => {
-    text => 'FOR changeset projects DO', data => { },
+    text => 'FOR projects with changes DO', data => { },
     type => 'loop',
     dsl => sub { 
         my ($self, $n, %p ) = @_;
         sprintf(q{
-            for my $project ( changeset_projects( $stash ) ) {
-                $stash->{project} = $project;
+            for my $project ( map { $_->{project} } _array( $stash->{project_changes} ) ) {
+                $stash->{project} = $project->name;
                 $stash = merge_data $stash, variables_for_bl( $project, $stash->{bl} ), { _ctx => 'project_loop' }; 
                 
                 %s
