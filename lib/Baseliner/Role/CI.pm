@@ -309,6 +309,7 @@ sub load {
     my $storage = $class->storage;
     if( $storage eq 'yaml' ) {
         $data->{yaml} //= $yaml;
+        $data->{yaml} =~ s{!!perl/code}{}g;
         my $y = _load( $data->{yaml} );
         $data = { %$data, %{ ref $y ? $y : {} } };
     }
