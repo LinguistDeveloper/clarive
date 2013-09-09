@@ -170,23 +170,6 @@
                         </td>
                     </tr>
 %}
-<%perl>
-    my $tot_topicos;
-    my @topicos = _array $contenido->{topics};
-    $tot_topicos = scalar @topicos;
-</%perl>                        
-                    <tr>
-                        <td rowspan="<%$tot_topicos%>"><b><% _loc( 'Topics') %></b></td>
-%   if (@topicos){
-%       for my $topico ( @topicos){
-                        <td><b><a href="javascript:Baseliner.addNewTabComp('/topic/grid?query=<%$topico->{id}%>', _('Topics'));"><% $topico->{title} %></a></b></td>
-                    </tr>
-%       }
-%   }
-%   else{
-                        <td>&nbsp;</td>
-                    </tr>
-%   }
                 </tbody>    
             </table>
             <!--######FIN TABLA CONTENIDO #######################################################################################-->

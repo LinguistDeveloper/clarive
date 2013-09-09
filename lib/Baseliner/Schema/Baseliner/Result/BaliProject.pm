@@ -59,12 +59,12 @@ __PACKAGE__->add_columns(
 );
 __PACKAGE__->set_primary_key("mid");
 
-__PACKAGE__->has_many(
-  "bali_project_items",
-  "Baseliner::Schema::Baseliner::Result::BaliProjectItems",
-  { "foreign.id_project" => "self.mid" },
-  {},
-);
+# __PACKAGE__->has_many(
+#   "bali_project_items",
+#   "Baseliner::Schema::Baseliner::Result::BaliProjectItems",
+#   { "foreign.id_project" => "self.mid" },
+#   {},
+# );
 
 __PACKAGE__->belongs_to(
   "parent",
@@ -72,7 +72,7 @@ __PACKAGE__->belongs_to(
   { mid => "id_parent" },
 );
 
-__PACKAGE__->belongs_to(
+__PACKAGE__->has_many(
   "roleuser",
   "Baseliner::Schema::Baseliner::Result::BaliRoleuser",
   { id_project => "mid" },

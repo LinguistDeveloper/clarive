@@ -409,7 +409,7 @@ sub list : Local {
                                     { html => '/dashlets/topics.html', url => '/dashboard/list_topics', order => 3},
                                     { html => '/dashlets/emails.html', url => '/dashboard/list_emails', order => 4},
                                     { html => '/dashlets/jobs.html', url => '/dashboard/list_jobs', order=> 5},
-                                    { html=> '/dashlets/sqa.html', url=> '/sqa/grid_json/Dashboard', order=> 6},
+#                                    { html=> '/dashlets/sqa.html', url=> '/sqa/grid_json/Dashboard', order=> 6},
                                 );
                     
                     my $dashboard = $c->model('Baseliner::BaliDashboard')->search({is_system => 1, name => 'Clarive'})->first;
