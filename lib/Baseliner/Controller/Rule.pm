@@ -382,12 +382,22 @@ sub dsl_try : Local {
     my $dsl = $p->{dsl} or _throw 'Missing parameter dsl';
     my $stash = $p->{stash} ? _load( $p->{stash} ) : {};
     my $output;
+    my $dslerr;
     try {
         require Capture::Tiny;
-        $output = Capture::Tiny::capture_merged(sub{
-            $stash = $c->model('Rules')->dsl_run( dsl=>$dsl, stash=>$stash );
+        _log "============================ DSL TRY START ============================";
+        ($output) = Capture::Tiny::tee_merged(sub{
+            try {
+                $stash = $c->model('Rules')->dsl_run( dsl=>$dsl, stash=>$stash );
+            } catch {
+               $dslerr = shift;   
+            };
         });
+        _log "============================ DSL TRY END   ============================";
         my $stash_yaml = _dump( $stash );
+        if( $dslerr ) {
+            _fail "ERROR DSL TRY: $dslerr";
+        }
         #$stash = Util->_unbless( $stash );
         $c->stash->{json} = { success=>\1, msg=>'ok', output=>$output, stash_yaml=>$stash_yaml };
     } catch {

@@ -343,12 +343,14 @@
                         Baseliner.ajaxEval( '/rule/dsl_try', { stash: stash_txt.getValue(), dsl: editor.getValue(), event_key: rule_event }, function(res) {
                             Baseliner.message( 'DSL', _('Finished OK') );
                             document.getElementById( dsl_cons.getId() ).style.color = "#10c000";  // green
-                            dsl_cons.setValue( res.output ); 
+                            var out = res.output != undefined ? res.output : '';
+                            dsl_cons.setValue( out ); 
                             dsl_stash.setValue( res.stash_yaml );
                         }, function(res){
                             Baseliner.message( 'DSL', _('Error during DSL execution: %1', res.msg ) );
                             document.getElementById( dsl_cons.getId() ).style.color = "#f54";  // red
-                            dsl_cons.setValue( res.output + '\n\n========= DSL ERROR =======\n\n' + res.msg ); 
+                            var out = res.output != undefined ? res.output : '';
+                            dsl_cons.setValue( out + '\n\n========= DSL ERROR =======\n\n' + res.msg ); 
                             dsl_stash.setValue( res.stash_yaml );
                         });
                     };

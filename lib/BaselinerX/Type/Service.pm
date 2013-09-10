@@ -8,30 +8,32 @@ with 'Baseliner::Role::Registrable';
 register_class 'service' => __PACKAGE__;
 sub service_noun { 'service' };
 
-has 'id'=> (is=>'rw', isa=>'Str', default=>'');
-has 'name' => ( is=> 'rw', isa=> 'Str' );
-has 'desc' => ( is=> 'rw', isa=> 'Str' );
-has 'handler' => ( is=> 'rw', isa=> 'CodeRef' );
-has 'config' => ( is=> 'rw', isa=> 'Str' );
-has 'form' => ( is=> 'rw', isa=> 'Str', default=>'' );
-has 'logger_class' => ( is=> 'rw', isa=> 'Str', default=>'Baseliner::Core::Logger::Base' );  # class
-has 'logger' => ( is=> 'rw', isa=> 'Any' );
-has 'data' => ( is=> 'rw', isa=> 'HashRef' );
+has id           => ( is => 'rw', isa => 'Str', default => '' );
+has name         => ( is => 'rw', isa => 'Str' );
+has desc         => ( is => 'rw', isa => 'Str' );
+has handler      => ( is => 'rw', isa => 'CodeRef' );
+has config       => ( is => 'rw', isa => 'Str' );
+has form         => ( is => 'rw', isa => 'Str', default => '' );
+has logger_class => ( is => 'rw', isa => 'Str', default => 'Baseliner::Core::Logger::Base' );    # class
+has logger       => ( is => 'rw', isa => 'Any' );
+has data         => ( is => 'rw', isa => 'HashRef' );
 
-has 'frequency' => ( is=> 'rw', isa=> 'Int' );  # frequency value in seconds
-has 'frequency_key' => ( is=> 'rw', isa=> 'Str' );  # frequency config key
-has 'scheduled' => ( is=> 'rw', isa=> 'Bool' );  # true for a scheduled job
+has frequency     => ( is => 'rw', isa => 'Int' );                                               # frequency value in seconds
+has frequency_key => ( is => 'rw', isa => 'Str' );                                               # frequency config key
+has scheduled     => ( is => 'rw', isa => 'Bool' );                                              # true for a scheduled job
 
-has 'log' => ( is=> 'rw', isa=> 'Object' );
-has 'show_in_menu' => ( is=> 'rw', isa=> 'Bool' );
+has log          => ( is => 'rw', isa => 'Object' );
+has show_in_menu => ( is => 'rw', isa => 'Bool' );
+has daemon       => ( is => 'rw', isa => 'Bool', default => 0 );
 
-has 'quiet' => (is=>'rw', isa=>'Bool', default=>0 );
-has 'type' => (is=>'rw', isa=>'Str', default=>'std');
-has 'alias' => ( 
-    is=> 'rw', isa=> 'Str',
-    trigger=> sub {
-        my ($self,$alias,$meta)=@_;
-        my $alias_key = 'alias.'.$alias;
+has quiet => ( is => 'rw', isa => 'Bool', default => 0 );
+has type  => ( is => 'rw', isa => 'Str',  default => 'std' );
+has alias => (
+    is      => 'rw',
+    isa     => 'Str',
+    trigger => sub {
+        my ( $self, $alias, $meta ) = @_;
+        my $alias_key = 'alias.' . $alias;
         register $alias_key => { link => $self->id };
         Baseliner::Plug->registry->initialize($alias_key);
     }

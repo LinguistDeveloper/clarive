@@ -88,7 +88,7 @@ sub dsl_build {
                 push @dsl, $spaces->($level) . sprintf(q{launch( "%s", $stash, $config => '%s' );}, $key, $data_key );
                 #push @dsl, $spaces->($level) . sprintf('merge_data($stash, $ret );', Data::Dumper::Dumper( $data ) );
             } else {
-                push @dsl, _array( $reg->{dsl}->($self, { %$attr, %$data, children=>$children }, %p ) );
+                push @dsl, _array( $reg->{dsl}->($self, { %$attr, %$data, children=>$children, data_key=>$data_key }, %p ) );
             }
         } else {
             _fail _loc 'Missing dsl/service key for node %1', $name;
@@ -327,7 +327,7 @@ register 'statement.let.merge' => {
     dsl => sub { 
         my ($self, $n, %p ) = @_;
         sprintf(q{
-           $stash = merge_data( $stash, %s );
+           merge_data( $stash, %s );
         }, Data::Dumper::Dumper($n->{value}), $self->dsl_build( $n->{children}, %p ) );
     },
 };
@@ -422,7 +422,7 @@ register 'statement.nature.block' => {
                 if( stash_has_nature( $nature, $stash) ) {
                     # load natures config
                     my $variables = $nature->variables->{ $stash->{bl} // '*' } // {};
-                    $stash = merge_data $variables, $stash, variables_for_bl( $nature, $stash->{bl} ), { _ctx => 'nature' }; 
+                    merge_data $variables, $stash, variables_for_bl( $nature, $stash->{bl} ), { _ctx => 'nature' }; 
                     
                     %s
                 }
@@ -455,11 +455,28 @@ register 'statement.project.block' => {
             {
                 my $project = '%s';
                 my $variables = $stash->{$project}->variables->{ $stash->{bl} // '*' } // {};
-                $stash = merge_data $stash, $variables, { _ctx => 'apply_variables' }; 
+                merge_data $stash, $variables, { _ctx => 'apply_variables' }; 
                 
                 %s    
             }
         }, $n->{project} // 'project', $self->dsl_build( $n->{children}, %p ) );
+    },
+};
+
+register 'statement.perl.eval' => {
+    text => 'EVAL', data => { code=>'' },
+    type => 'loop',
+    form => '/forms/stmt_eval.js', 
+    dsl => sub { 
+        my ($self, $n, %p ) = @_;
+        sprintf(q{
+            {
+                $stash->{'%s'} = eval %s;
+                if($@) {
+                    _error $@;
+                }
+            }
+        }, $n->{data_key}, $n->{code} // '', $self->dsl_build( $n->{children}, %p ) );
     },
 };
 
@@ -471,7 +488,7 @@ register 'statement.project.loop' => {
         sprintf(q{
             for my $project ( map { $_->{project} } _array( $stash->{project_changes} ) ) {
                 $stash->{project} = $project->name;
-                $stash = merge_data $stash, variables_for_bl( $project, $stash->{bl} ), { _ctx => 'project_loop' }; 
+                merge_data $stash, variables_for_bl( $project, $stash->{bl} ), { _ctx => 'project_loop' }; 
                 
                 %s
             }

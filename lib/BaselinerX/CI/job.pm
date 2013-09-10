@@ -261,7 +261,8 @@ sub _create {
     $job->update;
     
     # INIT
-    my $ret = Baseliner->model('Rules')->run_single_rule( id_rule=>$p{id_rule}, 
+    # TODO run from CI job->create_runner
+    $ret = Baseliner->model('Rules')->run_single_rule( id_rule=>$p{id_rule}, 
         stash=>{ 
             %$row_data, %{ $p{job_stash} // {} }, 
             job_step=>'INIT' 
