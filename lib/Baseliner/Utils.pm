@@ -1348,13 +1348,15 @@ our $__year = 2_629_744*12;
 
 sub ago {
     my ($date) = @_;
+    _log "Date:".$date;
     my $now = Class::Date->now();
-    if( ref $date eq 'DateTime' ) {
-        $date = Class::Date->new( $date->epoch );
-    } elsif( ref $date ne 'Class::Date' ) {
-        $date = Class::Date->new( $date );
-    }
-    my $d = $now-$date;
+    # if( ref $date eq 'DateTime' ) {
+    #     $date = Class::Date->new( $date->epoch );
+    # } elsif( ref $date ne 'Class::Date' ) {
+    #     $date = Class::Date->new( $date );
+    # }
+    $date = Class::Date->new( $date );
+    my $d = $now - $date;
     my $v = 
         $d <= -$__day ? _loc('in %1 days', - int $d/$__day )
       : $d <= -$__day && $d > 2*-$__day ? _loc('in 1 day' )
@@ -1362,15 +1364,15 @@ sub ago {
       : $d >= 0 && $d <= 1 ? _loc('just now')
       : $d < 60 ? _loc('%1 seconds ago', int $d )
       : $d < 120 ? _loc('1 minute ago' )
-      : $d < 3600 ? _loc('%1 minutes ago', int $d/60 )
+      : $d < 3600 ? _loc('%1 minutes ago', int $d->minute )
       : $d < 7200 ? _loc('1 hour ago' )
-      : $date > $now-'1D' ? _loc('%1 hours ago', int $d/3600 )
+      : $date > $now-'1D' ? _loc('%1 hours ago', int $d->hour )
       : $date > $now-'2D' ? _loc('1 day ago')
-      : $date > $now-'7D' ? _loc('%1 days ago', int $d/$__day )
+      : $date > $now-'7D' ? _loc('%1 days ago', int $d->day )
       : $date > $now-'14D' ? _loc('1 week ago' )
       : $date > $now-'1M' ? _loc('%1 weeks ago', sprintf '%.01d', $d/$__week )
       : $date > $now-'2M' ? _loc('1 month ago' )
-      : $date > $now-'1Y' ? _loc('%1 months ago', int $d/$__month )
+      : $date > $now-'1Y' ? _loc('%1 months ago', int $d->month )
       : $date > $now-'2Y' ? _loc('1 year ago')
       : _loc('%1 years ago', int $d/$__year )
     ;
