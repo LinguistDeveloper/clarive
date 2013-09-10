@@ -9,7 +9,7 @@ sub run {
 	my ($self,%opts) = @_;
 
 	print "Stopping Redis server\n";
-	system('redis-server',$self->app->base.'/config/redis.conf');
+	system('killall redis-server');
 	if ( $? ) {
 		print "Error stopping Redis server\n";
 		exit 1;
