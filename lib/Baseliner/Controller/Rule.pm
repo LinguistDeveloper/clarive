@@ -1,6 +1,6 @@
 package Baseliner::Controller::Rule;
 use Baseliner::Plug;
-use Baseliner::Utils;
+use Baseliner::Utils qw(:basic _decode_json _strip_html);
 use Baseliner::Sugar;
 use Baseliner::Core::DBI;
 use DateTime;
@@ -41,7 +41,6 @@ sub actions : Local {
     );
     foreach my $key ( $c->registry->starts_with( 'service' ) ) {
         my $service = Baseliner::Core::Registry->get( $key );
-        _debug _dump $service;
         push @tree,
           {
             id   => $key,
@@ -93,7 +92,9 @@ sub get : Local {
     try {
         my $row = DB->BaliRule->find( $p->{id_rule} );
         _fail _loc('Row with id %1 not found', $p->{id_rule} ) unless $row;
-        $c->stash->{json} = { success=>\1, rec=>{ $row->get_columns } };
+        my $rec = { $row->get_columns };
+        $rec->{rule_when} = \1 if $rec->{rule_type} eq 'chain' && $rec->{rule_when} eq 'on';
+        $c->stash->{json} = { success=>\1, rec=>$rec };
     } catch {
         my $err = shift;
         $c->stash->{json} = { success=>\0, msg => $err };
@@ -157,9 +158,10 @@ sub save : Local {
     my $p    = $c->req->params;
     my $data = {
         rule_name  => $p->{rule_name},
-        rule_when  => $p->{rule_when},
+        rule_when  => $p->{rule_type} eq 'chain' ? $p->{chain_default} : $p->{rule_when},
         rule_event => $p->{rule_event},
-        rule_type  => $p->{rule_type}
+        rule_type  => $p->{rule_type},
+        rule_desc  => substr($p->{rule_desc},0,2000),
     };
     if ( length $p->{rule_id} ) {
         my $row = $c->model('Baseliner::BaliRule')->find( $p->{rule_id} );
@@ -194,7 +196,9 @@ sub palette : Local {
     #    { text => _loc('if role'), statement=>'if_role', leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1, },
     #    { text => _loc('if project'), statement=>'if_project', leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1, },
     #);
-    my @control = grep { !$query || join(',',%$_) =~ $query } map {
+    my @control = sort { $a->{text} cmp $b->{text} } 
+        grep { !$query || join(',',%$_) =~ $query } 
+        map {
         my $key = $_;
         my $s = $c->registry->get( $key );
         my $n= { palette => 1 };
@@ -203,7 +207,7 @@ sub palette : Local {
         $n->{leaf} = \1;
         $n->{key} = $key;
         $n->{text} = $s->{text} // $key;
-        $n->{icon} = "/static/images/icons/$s->{type}.gif";
+        $n->{icon} = $s->icon // "/static/images/icons/$s->{type}.gif";
         $n;
     } 
     Baseliner->registry->starts_with( 'statement.' );
@@ -234,6 +238,7 @@ sub palette : Local {
                 isTarget => \0,
                 leaf=>\1,
                 key => $service_key,
+                icon => $n->{icon},
                 palette => \1,
                 text=>$n->{name} // $service_key,
             }
@@ -256,7 +261,7 @@ sub stmts_save : Local {
                 delete $stmt->{attributes}{loader}; # treenode cruft
                 my $r = {
                    id_rule   => $id_rule, 
-                   stmt_text => $stmt->{attributes}{text},
+                   stmt_text => _strip_html( $stmt->{attributes}{text} ),
                    stmt_attr => _dump( $stmt->{attributes} ),
                 };
                 $r->{id_parent} = $parent if defined $parent;
@@ -341,14 +346,29 @@ sub edit_key : Local {
 sub dsl : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
+    #_debug "\n\n" . $p->{stmts} . "\n\n";;
     my $stmts = _decode_json( $p->{stmts} ) if $p->{stmts};
-    my $event_key = $p->{event_key} or _throw 'Missing parameter event_key';
     try {
-        #my @rows = DB->BaliRuleS
-        my $event = $c->registry->get( $event_key );
-        my $event_data = { map { $_ => '' } _array( $event->vars ) };
+        my $rule_type = $p->{rule_type} or _throw 'Missing parameter rule_type';
+        my $data;
+        if( $rule_type eq 'chain' ) {
+            $data = {
+                job_step   => 'CHECK',
+                elements   => [],
+                changesets => [], 
+            };
+        } elsif( $rule_type eq 'event' ) {
+            my $event_key = $p->{event_key} or _throw 'Missing parameter event_key';
+            #my @rows = DB->BaliRuleS
+            my $event = $c->registry->get( $event_key );
+            my $event_data = { map { $_ => '' } _array( $event->vars ) };
+            $data = $event_data;
+        } else {
+            # loose rule 
+            $data = {};
+        }
         my $dsl = $c->model('Rules')->dsl_build( $stmts ); 
-        $c->stash->{json} = { success=>\1, dsl=>$dsl, event_data_yaml => _dump( $event_data ) };
+        $c->stash->{json} = { success=>\1, dsl=>$dsl, data_yaml => _dump( $data ) };
     } catch {
         my $err = shift; _error $err;
         $c->stash->{json} = { success=>\0, msg => $err };
@@ -360,14 +380,20 @@ sub dsl_try : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     my $dsl = $p->{dsl} or _throw 'Missing parameter dsl';
-    my $event_key = $p->{event_key} or _throw 'Missing parameter event_key';
-    my $data = _load( $p->{data} ) if $p->{data};
+    my $stash = $p->{stash} ? _load( $p->{stash} ) : {};
+    my $output;
     try {
-        my $ret = $c->model('Rules')->dsl_run( dsl=>$dsl, stash=>$data );
-        $c->stash->{json} = { success=>\1, msg=>_dump( $ret ) };
+        require Capture::Tiny;
+        $output = Capture::Tiny::capture_merged(sub{
+            $stash = $c->model('Rules')->dsl_run( dsl=>$dsl, stash=>$stash );
+        });
+        my $stash_yaml = _dump( $stash );
+        #$stash = Util->_unbless( $stash );
+        $c->stash->{json} = { success=>\1, msg=>'ok', output=>$output, stash_yaml=>$stash_yaml };
     } catch {
         my $err = shift; _error $err;
-        $c->stash->{json} = { success=>\0, msg=>$err };
+        my $stash_yaml = _dump( $stash );
+        $c->stash->{json} = { success=>\0, msg=>$err, output=>$output, stash_yaml=>$stash_yaml };
     };
     $c->forward("View::JSON");
 }

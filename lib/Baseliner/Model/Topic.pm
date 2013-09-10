@@ -589,6 +589,7 @@ sub update {
     my $topic_mid;
     my $status;
     my $category;
+    my $modified_on;
     
     given ( $action ) {
         #Casos especiales, por ejemplo la aplicacion GDI
@@ -612,7 +613,7 @@ sub update {
                     $status = $topic->id_category_status;
                     $return = 'Topic added';
                     $category = { $topic->categories->get_columns };
-                    
+                    $modified_on = $topic->modified_on->epoch;
                     my @projects = map {$_->{mid}} $topic->projects->hashref->all;
                     my $id_category = $topic->id_category;
                     my $id_category_status = $topic->id_category_status;
@@ -650,6 +651,7 @@ sub update {
                     
                     $topic_mid    = $topic->mid;
                     $status = $topic->id_category_status;
+                    $modified_on = $topic->modified_on->epoch;
     
                     $return = 'Topic modified';
                    { mid => $topic->mid, topic => $topic->title }   # to the event
@@ -662,16 +664,20 @@ sub update {
         when ( 'delete' ) {
             $topic_mid = $p->{topic_mid};
             try {
+                # delete master row, do it first to avoid delete cascade for BaliTopic 
+                #      -- delete cascade does not clear up the cache
+                _ci( $topic_mid )->delete;
+                
                 my $row = ref $topic_mid eq 'ARRAY'
                     ? Baseliner->model( 'Baseliner::BaliTopic' )->search({ mid=>$topic_mid })
                     : Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid );
                 _fail _loc('Topic not found') unless ref $row;
-                #my $row2 = Baseliner->model( 'Baseliner::BaliMaster' )->find( $row->mid );
                 $row->delete;
-                $topic_mid    = $topic_mid;
                 
                 $row = Baseliner->model( 'Baseliner::BaliTopicFieldsCustom' )->search({ topic_mid=>$topic_mid });
                 $row->delete;
+
+                $modified_on = Class::Date->new(_now)->epoch;
                 
                 $return = '%1 topic(s) deleted';
             } ## end try
@@ -685,6 +691,7 @@ sub update {
                 my $topic    = Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid );
                 $topic->status( 'C' );
                 $topic->update();
+                $modified_on = $topic->modified_on->epoch;
 
                 $topic_mid    = $topic->mid;
                 $return = 'Topic closed'
@@ -694,7 +701,7 @@ sub update {
             }
         } ## end when ( 'close' )
     } ## end given
-    return ( $return, $topic_mid, $status, $p->{title}, $category );
+    return ( $return, $topic_mid, $status, $p->{title}, $category, $modified_on);
 } ## end sub update
 
 sub check_sistem_notify {
@@ -1162,6 +1169,10 @@ sub get_release {
 
 sub get_projects {
     my ($self, $topic_mid, $id_field, $meta, $data ) = @_;
+
+    # for safety with legacy, reassign previous unassigned projects (normally from drag-drop
+    DB->BaliMasterRel->search({ from_mid=>$topic_mid, rel_type=>'topic_project', rel_field=>undef })->update({ rel_field=>$id_field });
+    
     my @projects = Baseliner->model('Baseliner::BaliTopic')->find(  $topic_mid )->projects->search( {rel_field => $id_field}, { select=>['mid','name'], order_by => { '-asc' => ['mid'] }} )->hashref->all;
     $data->{"$id_field._project_name_list"} = join ', ', map { $_->{name} } @projects;
     return @projects ? \@projects : [];
@@ -1781,6 +1792,9 @@ sub set_projects {
     my @new_projects = sort { $a <=> $b } _array( $projects ) ;
 
     #my @old_projects = map {$_->{mid}} Baseliner->model('Baseliner::BaliTopic')->find(  $topic_mid )->projects->search( {rel_field => $id_field}, { order_by => { '-asc' => ['mid'] }} )->hashref->all;
+    
+    # for safety with legacy, reassign previous unassigned projects (normally from drag-drop
+    DB->BaliMasterRel->search({ from_mid=>$topic_mid, rel_type=>'topic_project', rel_field=>undef })->update({ rel_field=>$id_field });
 
     my @old_projects =  map { $_->{mid} } Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid )->
                 projects->search( {rel_field => $id_field }, { select => ['mid'], order_by => { '-asc' => ['mid'] }} )->hashref->all;

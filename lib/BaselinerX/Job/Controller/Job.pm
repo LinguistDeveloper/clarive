@@ -45,6 +45,19 @@ sub job_create : Path('/job/create')  {
     $c->stash->{template} = '/comp/job_new.js';
 }
 
+sub chains : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    try {
+        my @rules = DB->BaliRule->search({ rule_type=>'chain', rule_active=>1 })->hashref->all;
+        # TODO check action.rule.xxxxx for user
+        $c->stash->{json} = { success => \1, data=>\@rules, totalCount=>scalar(@rules) };
+    } catch {
+        $c->stash->{json} = { success => \0, msg=>"".shift() };
+    };
+    $c->forward('View::JSON');
+}
+
 sub backout : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
@@ -426,6 +439,7 @@ sub monitor_json : Path('/job/monitor_json') {
             type_raw     => $r->{type},
             type         => $type,
             runner       => $r->{runner},
+            id_rule      => $r->{id_rule},
             natures      => \@natures,
             subapps      => \@subapps,   # maybe use _path_xs from Utils.pm?
           }; # if ( ( $cnt++ >= $start ) && ( $limit ? scalar @rows < $limit : 1 ) );
@@ -546,6 +560,7 @@ sub job_submit : Path('/job/submit') {
             my $job_date = $p->{job_date};
             my $job_time = $p->{job_time};
             my $job_type = $p->{job_type};
+            my $id_rule = $p->{id_rule};
             my $job_stash = try { _decode_json( $p->{job_stash} ) } catch { +{} };
             
             my $contents = _decode_json $p->{job_contents};
@@ -582,6 +597,7 @@ sub job_submit : Path('/job/submit') {
                     bl           => $bl,
                     username     => $username,
                     runner       => $runner,
+                    id_rule      => $id_rule,
                     comments     => $comments,
                     items        => $contents, 
                     job_stash    => $job_stash

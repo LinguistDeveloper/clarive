@@ -8,6 +8,7 @@ require Baseliner::CI;
 subtype CI    => as 'Baseliner::Role::CI';
 subtype CIs   => as 'ArrayRef[CI]';
 subtype BoolCheckbox   => as 'Bool';
+subtype HashJSON       => as 'HashRef';
 subtype TS    => as 'Str';
 subtype DT    => as 'DateTime';
 
@@ -19,6 +20,10 @@ coerce 'TS' =>
 
 coerce 'BoolCheckbox' =>
   from 'Str' => via { $_ eq 'on' ? 1 : 0 };
+
+coerce 'HashJSON' =>
+  from 'Str' => via { Util->_from_json($_) },
+  from 'Undef' => via { +{} };
 
 # deprecated, but kept for future reference
 #coerce 'CI' =>
@@ -56,8 +61,7 @@ has job     => qw(is rw isa Baseliner::Role::JobRunner),
             Baseliner::Core::JobRunner->new;
         };
 
-sub storage { 'yaml' }   # ie. yaml, fields, BaliUser, BaliProject
-sub storage_pk { 'mid' }  # primary key (mid) column for foreign table
+sub storage { 'yaml' }   # ie. yaml, deprecated: for now, no other method supported
 
 # from Node (deprected)
 # has uri      => qw(is rw isa Str);   # maybe a URI someday...
@@ -197,6 +201,23 @@ sub update {
     $self->save( data=>\%p, merged=>1 );
 }
 
+sub delete {
+    my ( $self, $mid ) = @_;
+    
+    $mid //= $self->mid;
+    if( $mid ) {
+        my $row = DB->BaliMaster->find( $mid );
+        if( $row ) {
+            Baseliner->cache_remove( qr/^ci:/ );
+            return $row->delete;
+        } else {
+            Util->_fail( Util->_loc( 'Could not delete, master row %1 not found', $mid ) );
+        }
+    } else {
+        return undef;
+    }
+}
+
 # save data to table or yaml
 sub save_data {
     my ( $self, $master_row, $data ) = @_;
@@ -229,16 +250,12 @@ sub save_data {
     }
     # now store the data
     if( $storage eq 'yaml' ) {
-        mdb->save( $master_row, $data );
+        $self->save_fields( $master_row, $data );
         #$master_row->yaml( Util->_dump( $data ) );
         #$master_row->update;
-    }
-    else {  # dbic result source
-        my $rs = Baseliner->model("Baseliner::$storage");
-        $data->{name} //= $master_row->name;
-        my $pk = $self->storage_pk;
-        $data->{ $pk } //= $master_row->mid;
-        $self->table_update_or_create( $rs, $master_row->mid, $data );
+    } else {
+        # temporary: multi-storage deprecated
+        Util->_throw( Util->_loc('CI Storage method not supported: %1', $storage) );
     }
     # master_rel relationships, if any
     for my $rel ( @master_rel ) {
@@ -253,21 +270,13 @@ sub save_data {
             Baseliner->cache_remove( qr/:$other_mid:/ );
         }
     }
-    return $master_row->mid;
+    return $master_row;
 }
 
-sub table_update_or_create {
-    my ($self, $rs, $mid, $data ) = @_;
-    #_error( $data );
-    # find or create
-    if( my $row = $rs->find( $mid ) ) {
-        return $self->table_update( $row, $data );
-    } else {
-        return $self->table_create( $rs, $data );
-    }
-} 
-sub table_create { $_[1]->create( $_[2] ) } 
-sub table_update { $_[1]->update( $_[2] ) } 
+sub save_fields {
+    my $self = shift;
+    mdb->save( @_ );
+}
 
 sub load {
     use Baseliner::Utils;
@@ -300,6 +309,7 @@ sub load {
     my $storage = $class->storage;
     if( $storage eq 'yaml' ) {
         $data->{yaml} //= $yaml;
+        $data->{yaml} =~ s{!!perl/code}{}g;
         my $y = _load( $data->{yaml} );
         $data = { %$data, %{ ref $y ? $y : {} } };
     }
@@ -519,6 +529,15 @@ sub children {
     my ($self, %opts)=@_;
     local $Baseliner::CI::mid_scope = {} unless defined $Baseliner::CI::mid_scope;
     return $self->related( %opts, edge=>'out' );
+}
+
+sub list_by_name {
+    my ($class, $p)=@_;
+    my $where = {};
+    $where->{name} = $p->{names} if defined $p->{names};
+    my $from = { select=>'mid' };
+    $from->{rows} = $p->{rows} if defined $p->{rows};
+    [ map { _ci( $_->{mid} )->{_ci} } DB->BaliMaster->search($where, $from)->hashref->all ];
 }
 
 

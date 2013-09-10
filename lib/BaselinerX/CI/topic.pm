@@ -6,8 +6,8 @@ has title       => qw(is rw isa Any);
 has id_category => qw(is rw isa Any);
 has name        => qw(is rw isa Any);
 has category    => qw(is rw isa Any);
-
 #has_ci 'projects';
+
 sub rel_type {
     { 
         projects => [ from_mid => 'topic_project' ] ,
@@ -17,29 +17,21 @@ sub rel_type {
 
 sub icon { '/static/images/icons/topic.png' }
 
-sub storage { 'BaliTopic' }
-
+around delete => sub {
+    my ($orig, $self, $mid ) = @_;
+    $mid = $mid // $self->mid;
+    # if( DB->BaliTopic->find( $mid ) ) {
+    #     Baseliner->model('Topic')->update({ topic_mid=>$mid, action=>'delete' });
+    # }
+	my $cnt = $self->$orig($mid);
+};
+    
 around load => sub {
     my ($orig, $self ) = @_;
     my $data = $self->$orig();
     $data = { %$data, %{ Baseliner->model('Topic')->get_data( undef, $self->mid, with_meta=>1 ) || {} } };
     #$data->{category} = { DB->BaliTopic->find( $self->mid )->categories->get_columns };
     return $data;
-};
-
-around table_update_or_create => sub {
-    my ( $orig, $self, $rs, $mid, $data, @rest ) = @_;
-    #my $name = delete $data->{name};
-    #$data->{title} //= $name; 
-    $data->{created_by} //= 'internal';
-    #delete $data->{title};
-    #delete $data->{active};
-    #delete $data->{versionid};
-    #delete $data->{moniker};
-    #delete $data->{data};
-    #delete $data->{ns};
-    #delete $data->{ts};
-    #$self->$orig( $rs, $mid, $data, @rest );
 };
 
 sub files {

@@ -26,7 +26,7 @@ register 'config.job' => {
         { id=>'endtime', label => 'EndDate', type=>'text' },
         { id=>'status', label => 'Status', type=>'text', default=>'READY' },
         { id=>'mask', label => 'Job Naming Mask', type=>'text', default=>'%s.%s-%08d' },
-        { id=>'runner', label => 'Registry Entry to run', type=>'text', default=>sub { Baseliner->config->{job_runner} || 'service.job.runner.simple.chain' } }, 
+        { id=>'runner', label => 'Registry Entry to run', type=>'text', default=>sub { Baseliner->config->{job_runner} || 'service.job.runner.rule' } }, 
         { id=>'default_chain_id', label => 'Default Chain ID', type=>'text', default=>1 }, 
         { id=>'comment', label => 'Comment', type=>'text' },
         { id=>'check_rfc', label => 'Check RFC on creation', type=>'text', default=>0 },

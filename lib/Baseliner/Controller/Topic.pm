@@ -114,7 +114,7 @@ sub update : Local {
     $p->{username} = $c->username;
     
     try  {
-        my ($msg, $topic_mid, $status, $title, $category) = $c->model('Topic')->update( $p );
+        my ($msg, $topic_mid, $status, $title, $category, $modified_on) = $c->model('Topic')->update( $p );
         $c->stash->{json} = {
             success      => \1,
             msg          => _loc( $msg, scalar( _array( $p->{topic_mid} ) ) ),
@@ -122,7 +122,7 @@ sub update : Local {
             topic_status => $status,
             category     => $category,
             title        => $title,
-            modified_on  => DB->BaliTopic->find($topic_mid)->modified_on->epoch,
+            modified_on  => $modified_on,
         };            
     } catch {
         my $e = shift;
