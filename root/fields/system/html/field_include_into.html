@@ -21,22 +21,40 @@
             $params->{origin} ne "system" 
         } DB->BaliTopicFieldsCategory->search({id_category => $id_category})->hashref->all;
 
-    if($release){
-        $is_release = 1;
-        @parents_topics = $c->model('Baseliner::BaliTopic')->search(
-                                { rel_type=>'topic_topic', -or => {'categories.is_changeset' => 1, 'categories.is_release' => 1}, from_mid => $data->{topic_mid}, rel_field => {"not in",\@fields} },
-                                { join=>['categories','parents','master'], select=>['mid','title', 'progress', 'categories.name', 'categories.color'], as=>['mid','title','progress','name','color'] }
-                                )->hashref->all;
-        @parents_topics = $c->model('Topic')->append_category( @parents_topics );
+ if ( $release ) {
+    $is_release     = 1;
+    @parents_topics = $c->model( 'Baseliner::BaliTopic' )->search(
+        {
+            rel_type => 'topic_topic',
+            -or      => {'categories.is_changeset' => 1, 'categories.is_release' => 1},
+            from_mid => $data->{topic_mid},
+            -or => { rel_field => {"not in", \@fields}, rel_field => { '=',undef} }
+        },
+        {
+            join => [ 'categories', 'parents', 'master' ],
+            select => [ 'mid', 'title', 'progress', 'categories.name', 'categories.color' ],
+            as => [ 'mid', 'title', 'progress', 'name', 'color' ]
+        }
+    )->hashref->all;
+    @parents_topics = $c->model( 'Topic' )->append_category( @parents_topics );
 
-    }
-    else{
-        @parents_topics = $c->model('Baseliner::BaliTopic')->search(
-                                { rel_type=>'topic_topic', 'categories.is_release' => {'!=',1}, to_mid => $data->{topic_mid}, rel_field => {"not in",\@fields} },
-                                { join=>['categories','children','master'], select=>['mid','title', 'progress', 'categories.name', 'categories.color'], as=>['mid','title','progress','name','color'] }
-                                )->hashref->all;
-        @parents_topics = $c->model('Topic')->append_category( @parents_topics );
-    }    
+} else {
+    @parents_topics = $c->model( 'Baseliner::BaliTopic' )->search(
+        {
+            rel_type                => 'topic_topic',
+            'categories.is_release' => {'!=', 1},
+            to_mid                  => $data->{topic_mid},
+            -or => { rel_field => {"not in", \@fields}, rel_field => { '=',undef} }
+        },
+        {
+            join => [ 'categories', 'children', 'master' ],
+            select => [ 'mid', 'title', 'progress', 'categories.name', 'categories.color' ],
+            as => [ 'mid', 'title', 'progress', 'name', 'color' ]
+        }
+    )->hashref->all;
+    @parents_topics = $c->model( 'Topic' )->append_category( @parents_topics );
+} ## end else [ if ( $release ) ]
+  
 
 </%perl>
 
