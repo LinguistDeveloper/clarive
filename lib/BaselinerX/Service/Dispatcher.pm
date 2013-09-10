@@ -27,6 +27,7 @@ register 'config.dispatcher' => {
 register 'service.dispatcher' => {
     name    => 'Dispatcher Service',
     config  => 'config.dispatcher',
+    daemon => 1,
     handler => \&run,
 };
 

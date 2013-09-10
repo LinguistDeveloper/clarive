@@ -479,4 +479,19 @@ register 'statement.project.loop' => {
     },
 };
 
+# needs the changeset.nature service to fill the stash with natures
+register 'statement.if.nature' => {
+    text => 'IF EXISTS nature THEN',
+    type => 'if',
+    data => { nature=>'', },
+    dsl => sub { 
+        my ($self, $n , %p) = @_;
+        sprintf(q{
+            if( exists $stash->{natures}{'%s'} ) {
+                %s
+            }
+        }, $n->{nature} , $self->dsl_build( $n->{children}, %p ) );
+    },
+};
+
 1;

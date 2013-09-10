@@ -22,6 +22,12 @@ register 'service.changeset.checkout.bl' => {
     handler => \&checkout_bl,
 };
 
+register 'service.changeset.natures' => {
+    name    => 'Load Nature Items',
+    icon    => '/static/images/icons/nature.gif',
+    handler => \&nature_items,
+};
+
 sub job_items {
     my ( $self, $c, $config ) = @_;
     my $job   = $c->stash->{job};
@@ -126,16 +132,51 @@ sub checkout {
     $log->info( _loc('Checked out %1 item(s) to %2', $cnt, $job_dir), [ map { "$_->{path} ($_->{versionid})" } @items ] );
 }
 
+sub nature_items {
+    my ( $self, $c, $config ) = @_;
+    my $job   = $c->stash->{job};
+    my $log   = $job->logger;
+    my $stash = $job->job_stash;
+
+    $stash->{natures} = {}; 
+    my $nat_id = $config->{nature_id} // 'name';  # moniker?
+   
+    my @nat_rows = DB->BaliMaster->search({ collection=>'nature' }, { select=>'mid' })->hashref->all;
+    my @items = @{ $stash->{items} || [] };
+    for my $nature ( map { _ci($_->{mid}) } @nat_rows ) {
+        _debug "nature = " . $nature->name;
+        ITEM: for my $it ( @items ) {
+            _debug "item = " . $it->path;
+            if( $nature->push_item( $it ) ) {
+                my $id =  $nature->$nat_id;
+                my $mid =  $nature->mid;
+                $stash->{natures}{ $id } = $nature;
+                $stash->{natures}{ $mid } = $nature;
+                last ITEM;
+            } else {
+                _debug "no match for " . $it->path;
+            }
+        }
+    }
+    if( my $cnt = scalar keys %{ $stash->{natures} } ) {
+        $log->warn( _loc('%1 nature(s) detected in job items', $cnt ) );
+    } else {
+        $log->warn( _loc('No natures detected in job items') );
+    }
+}    
+    
 ########### DEPRECATED:
 
 ## deprecated in favor of service.changeset.items, changesets now included in stash
 register 'service.changeset.job_elements' => {
     name    => 'Fill job_elements',
+    deprecated => 1,
     handler => \&job_elements,
 };
 
 register 'service.changeset.update' => {
     name    => 'Update Baselines',
+    deprecated => 1,
     handler => \&update_baselines,
 };
 

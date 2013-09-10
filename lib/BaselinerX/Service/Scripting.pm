@@ -4,6 +4,7 @@ use Baseliner::Utils;
 use Baseliner::CI;
 use Baseliner::Sugar;
 use Try::Tiny;
+use utf8::all;
 with 'Baseliner::Role::Service';
 
 
@@ -17,6 +18,12 @@ register 'service.scripting.remote' => {
     name => 'Run a remote script',
     form => '/forms/script_remote.js',
     handler => \&run_remote,
+};
+
+register 'service.scripting.remote_eval' => {
+    name => 'Run a remote eval',
+    #form => '/forms/script_remote.js',
+    handler => \&run_eval,
 };
 
 sub run_local {
@@ -74,6 +81,32 @@ sub run_remote {
     my $ret = $agent->ret;
     if( $rc ) {
         _fail _loc 'Error during script (%1) execution: %1', $path, $out // 'script not found or could not be executed (check chmod or chown)';
+    }
+    
+    { output=>$out, rc=>$rc, ret=>$ret };
+}
+
+sub run_eval {
+    my ($self, $c, $config ) = @_;
+
+    my $job   = $c->stash->{job};
+    my $log   = $job->logger;
+    my $stash = $job->job_stash;
+    
+    my ($server, $code) = @{ $config }{qw/server code/};
+    $server = _ci( $server ) unless ref $server;
+    _log "===========> RUNNING remote eval: \@". $server->name ;
+    
+    my $agent = $server->connect;
+    # TODO some agents may not support eval, check this out first, call exec instead?
+    $agent->eval( $code );
+    my $out = $agent->output;
+    my $rc = $agent->rc;
+    my $ret = $agent->ret;
+    if( $rc ) {
+        _fail _loc 'Error during eval execution: %1', $out;
+    } else {
+        $log->info( _loc('Eval ok') );
     }
     
     { output=>$out, rc=>$rc, ret=>$ret };
