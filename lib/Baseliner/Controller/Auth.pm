@@ -10,6 +10,10 @@ register 'action.surrogate' => {
     name => 'Become a different user',
 };
 
+register 'action.change_password' => {
+    name => 'User can change his password',
+};
+
 =head2 logout 
 
 Hardcore, url based logout. Always redirects otherwise 
