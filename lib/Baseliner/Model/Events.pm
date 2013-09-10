@@ -65,6 +65,9 @@ sub run_once {
                 $rulerow->log_output( $rule->{output} );
                 $rulerow->update;
             }
+            
+            _log ">>>>>>>>>>>>>>>STASH: " . _dump $stash;
+            
             $event_status= $rc ? 'ko' : 'ok';
             $ev->update({ event_status=>$event_status });
         } catch {

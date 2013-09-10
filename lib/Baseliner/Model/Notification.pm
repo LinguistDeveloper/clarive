@@ -145,8 +145,12 @@ sub get_rules_notifications{
         			given ($type) {
             			when ('Users') 	    { 
                         	if ( exists $notification->{$plantilla}->{$carrier}->{$type}->{'*'} ){
-                            	##Contemplar usuarios para los proyectos asignados
-                            	@tmp_users = map { $_->{username} } DB->BaliUser->search( {active => 1}, {select => 'username'} )->hashref->all;
+                                if (exists $notify_scope->{project}){
+                                	@tmp_users = Baseliner->model('Users')->get_users_friends_by_projects($notify_scope->{project});
+                                }
+                                else{
+                                	@tmp_users = Baseliner->model('Users')->get_users_username;
+                                }
                             }
                             else{
                         		@tmp_users = values $notification->{$plantilla}->{$carrier}->{$type};                             
@@ -165,7 +169,12 @@ sub get_rules_notifications{
                         when ('Roles') 	    {
                         	my @roles;
                         	if ( exists $notification->{$plantilla}->{$carrier}->{$type}->{'*'} ){
-                            	@roles = ('*');
+                            	if (exists $notify_scope->{project}){
+                                	@roles = Baseliner->model('Users')->get_roles_from_projects($notify_scope->{project});
+                            	}
+                                else{
+                            		@roles = ('*');
+                                }
                             }
                             else{
                             	@roles = keys $notification->{$plantilla}->{$carrier}->{$type};
@@ -221,28 +230,35 @@ sub get_notifications {
 
     if ($send_notification){
         foreach my $plantilla ( keys $send_notification ){
+            foreach my $carrier ( keys $send_notification->{$plantilla} ){
+                my @totUsers = keys $send_notification->{$plantilla}->{$carrier};
+                if (!@totUsers) {
+                    delete $send_notification->{$plantilla}->{$carrier};
+                }
+                else{
+                    my @users;
+                    foreach my $user ( keys $send_notification->{$plantilla}->{$carrier} ){
+                        push @users, $user;	
+                    }
+                    $send_notification->{$plantilla}->{$carrier} = \@users;
+                }
+            }
             my @totCarrier = keys $send_notification->{$plantilla};
             if (!@totCarrier) {
                 delete $send_notification->{$plantilla};
-            }else{
-                foreach my $carrier ( keys $send_notification->{$plantilla} ){
-                    my @totUsers = keys $send_notification->{$plantilla}->{$carrier};
-                    if (!@totUsers) {
-                        delete $send_notification->{$plantilla}->{$carrier};
-                    }
-                    else{
-                        my @users;
-                        foreach my $user ( keys $send_notification->{$plantilla}->{$carrier} ){
-                            push @users, $user;	
-                        }
-                        $send_notification->{$plantilla}->{$carrier} = \@users;
-                    }
-                }
             }
         }
+        
+        if (keys $send_notification ){
+            return $send_notification ;
+        }
+        else {
+            return undef ;
+        }
     }
-    
-	return $send_notification;
+    else{
+        return undef ;    
+    }
     
 };
 
