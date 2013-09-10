@@ -448,7 +448,7 @@ sub build_job_window : Path('/job/build_job_window') {
         }
         @ns = _unique @ns;
         _debug "------Checking dates for namespaces: " . _dump \@ns;
-        my @rel_cals = $c->model('Baseliner::BaliCalendar')->search({ ns=>[ @ns, '/', undef ], bl=>[$bl,'*'] })->hashref->all;
+        my @rel_cals = $c->model('Baseliner::BaliCalendar')->search({ ns=>[ @ns, 'Global', undef ], bl=>[$bl,'*'] })->hashref->all;
         my @ns_cals = map { $_->{ns} } @rel_cals;
         _debug "Calendars Found: " . _dump( \@rel_cals );
         _debug "NS with Calendar: " . join ',', @ns_cals; 
