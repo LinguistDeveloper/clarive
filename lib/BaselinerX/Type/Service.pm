@@ -119,6 +119,7 @@ sub run {
         unless( ref $c->stash->{job} ) {
             $c->stash->{job} ||= BaselinerX::Job::Service::Runner->new;
             $c->stash->{job}->logger( $logger );
+            $c->stash->{job}->job_stash( $c->stash );
         }
     } catch {};
 

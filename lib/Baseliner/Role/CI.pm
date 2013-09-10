@@ -369,7 +369,7 @@ sub load {
     
     #_log $data;
     $data->{mid} //= $mid;
-    $data->{ci_form} //= $self->ci_form unless $Baseliner::CI::_no_form;
+    $data->{ci_form} //= $self->ci_form if $Baseliner::CI::get_form;
     $data->{ci_class} //= $class;
     $Baseliner::CI::mid_scope->{ "$mid" } = $data if $Baseliner::CI::mid_scope;
     Baseliner->cache_set($cache_key, $data);
