@@ -704,11 +704,11 @@
                 listeners: {
                     'load': function( store, rec, obj ) {
                         statusCbx = Ext.getCmp('status-combo_' + id);
-                        store.filter( { fn   : function(record) {
+                        // store.filter( { fn   : function(record) {
                         
-                                                                    return record.get('name') != statusCbx.getRawValue();
-                                                                }
-                                                    });
+                        //                                             return record.get('name') != statusCbx.getRawValue();
+                        //                                         }
+                        //                             });
                     }
                 }   
         });
@@ -800,10 +800,10 @@
             listeners:{
                 'select': function(combo, r, idx) {
                     if(store_admin_status.getCount()) {
-                        store_admin_status.filter( {    fn   : function(record) {
-                                                                    return record.get('name') != r.data.name;
-                                                                },scope:this
-                                                    });
+                        // store_admin_status.filter( {    fn   : function(record) {
+                        //                                             return record.get('name') != r.data.name;
+                        //                                         },scope:this
+                        //                             });
                     }else{
                         store_admin_status.load({params:{categoryId: rec.data.id}});
                     }

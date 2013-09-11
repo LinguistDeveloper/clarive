@@ -963,6 +963,9 @@ msgstr "Promoción"
 msgid "To Promote"
 msgstr "Promover"
 
+msgid "Deploy to %1"
+msgstr "Distribuir a %1"
+
 msgid "Promote to %1"
 msgstr "Promover a %1"
 

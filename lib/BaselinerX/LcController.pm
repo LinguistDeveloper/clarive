@@ -448,7 +448,7 @@ sub changeset : Local {
         next if $bind_releases && @releases;
         my $td = { $topic->get_columns() };  # TODO no prefetch comes thru
         # get the menus for the changeset
-        my ( $promotable, $demotable, $menu ) = $self->cs_menu( $c, $td, $bl, $state_name );
+        my ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu( $c, $td, $bl, $state_name );
         my $node = {
             url  => '/lifecycle/topic_contents',
             icon => '/static/images/icons/changeset_lc.png',
@@ -468,6 +468,7 @@ sub changeset : Local {
                 name         => $td->{title},
                 promotable   => $promotable,
                 demotable    => $demotable,
+                deployable   => $deployable,
                 state_name   => _loc($state_name),
                 topic_mid    => $td->{mid},
                 topic_status => $td->{id_category_status},
@@ -481,7 +482,7 @@ sub changeset : Local {
         my %unique = map { $_->{topic_topic}{mid} => $_ } @rels;
         for my $rel ( values %unique ) {
             $rel = $rel->{topic_topic};
-            my ( $promotable, $demotable, $menu ) = $self->cs_menu( $c, $rel, $bl, $state_name, $p->{id_status} );
+            my ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu( $c, $rel, $bl, $state_name, $p->{id_status} );
             my $node = {
                 url  => '/lifecycle/topic_contents',
                 icon => '/static/images/icons/release_lc.png',
@@ -500,6 +501,7 @@ sub changeset : Local {
                     name         => $rel->{title},
                     promotable   => $promotable,
                     demotable    => $demotable,
+                    deployable   => $deployable,
                     state_name   => _loc($state_name),
                     state_id     => $p->{id_status},
                     topic_mid    => $rel->{mid},
@@ -516,12 +518,42 @@ sub changeset : Local {
 
 sub promotes_and_demotes {
     my ($self, $c, $topic, $bl_state, $state_name, $id_status_from ) = @_;
-    my ( @menu_p, @menu_d );
-    # Promote
-    _debug( "Buscando promotes y demotes para el estado $id_status_from");
-    my @user_workflow = _unique map {$_->{id_status_to} } Baseliner->model("Topic")->user_workflow( $c->username );
+    my ( @menu_s, @menu_p, @menu_d );
+
+
+    _debug( "Buscando deploys, promotes y demotes para el estado $id_status_from");
 
     my $id_status_from_lc = $id_status_from ? $id_status_from: $topic->{id_category_status};
+    my @user_workflow = _unique map {$_->{id_status_to} } Baseliner->model("Topic")->user_workflow( $c->username );
+    # Deploy
+    my @status_from = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
+        { id_status_to => \@user_workflow, id_category => $topic->{id_category}, id_status_from => $id_status_from_lc, job_type => 'static' },
+        {   join     => [ 'statuses_from', 'statuses_to' ],
+            distinct => 1,
+            +select  => [qw/statuses_to.bl statuses_to.name statuses_to.id statuses_from.bl statuses_to.seq/],
+            order_by => { -asc => 'statuses_to.seq' }
+        }
+    )->hashref->all;
+
+    my $deployable={};
+    for my $status ( @status_from ) {
+        $deployable->{ $status->{statuses_from}{bl} } = \1;
+        push @menu_s, {
+            text => _loc( 'Deploy to %1', _loc( $status->{statuses_to}{name} ) ),
+            eval => {
+                url      => '/comp/lifecycle/deploy.js',
+                title    => 'Deploy',
+                job_type => 'static',
+                bl_to => $status->{statuses_from}{bl},
+                status_to => $status->{statuses_to}{id},
+                status_to_name => _loc($status->{statuses_to}{name}),
+            },
+            id_status_from => $id_status_from_lc,
+            icon => '/static/images/silk/arrow_right.gif'
+        };
+    }
+
+    # Promote
     my @status_to = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
         { id_status_to => \@user_workflow, id_category => $topic->{id_category}, id_status_from => $id_status_from_lc, job_type => 'promote' },
         {   join     => [ 'statuses_from', 'statuses_to' ],
@@ -576,55 +608,60 @@ sub promotes_and_demotes {
             icon => '/static/images/silk/arrow_up.gif'
         };
     }
-    return ( $promotable, $demotable, \@menu_p, \@menu_d );
+    return ( $deployable, $promotable, $demotable, \@menu_s, \@menu_p, \@menu_d );
 }
 
 sub cs_menu {
     my ($self, $c, $topic, $bl_state, $state_name, $id_status_from ) = @_;
     #return [] if $bl_state eq '*';
-    my ( @menu, @menu_p, @menu_d );
+    my ( @menu, @menu_s, @menu_p, @menu_d );
     my $sha = ''; #try { $self->head->{commit}->id } catch {''};
     _log 'Generando menu';
 
     push @menu, $self->menu_related();
 
-    if ( $bl_state ne '*') {
-        push @menu, {
-            text => 'Deploy',
-            eval => {
-                url            => '/comp/lifecycle/deploy.js',
-                title          => 'Deploy',
-                bl_to          => $bl_state,
-                status_to      => $id_status_from,                            # id?
-                status_to_name => $state_name,                            # name?
-                # bl_to          => 'IT',
-                # status_to      => 22,                            # id?
-                # status_to_name => _loc('Integracion'),                            # name?
-                job_type       => 'static'
-            },
-            icon => '/static/images/silk/arrow_right.gif'
-        };        
-    }
+    # if ( $bl_state ne '*') {
+    #     push @menu, {
+    #         text => 'Deploy',
+    #         eval => {
+    #             url            => '/comp/lifecycle/deploy.js',
+    #             title          => 'Deploy',
+    #             bl_to          => $bl_state,
+    #             status_to      => $id_status_from,                            # id?
+    #             status_to_name => $state_name,                            # name?
+    #             # bl_to          => 'IT',
+    #             # status_to      => 22,                            # id?
+    #             # status_to_name => _loc('Integracion'),                            # name?
+    #             job_type       => 'static'
+    #         },
+    #         icon => '/static/images/silk/arrow_right.gif'
+    #     };        
+    # }
 
-    my ($promotable, $demotable ) = ( {}, {} );
+    my ($deployable, $promotable, $demotable ) = ( {}, {}, {} );
     my $row = DB->BaliTopicCategories->find( $topic->{id_category} );
     if( $row->is_release ) {
         my @chi = DB->BaliTopic->search({ rel_type=>'topic_topic', from_mid=>$topic->{mid}, },
            { join=>['parents'] })->hashref->all;
         
-        my ( @rel_promotable, @rel_demotable, @rel_menu_p, @rel_menu_d );
-        my ( %menu_pro, %menu_dem, %pro, %dem );
+        my ( @rel_deployable, @rel_promotable, @rel_demotable, @rel_menu_s, @rel_menu_p, @rel_menu_d );
+        my ( %menu_dep, %menu_pro, %menu_dem, %dep, %pro, %dem );
         _debug( "Generando el menú para la release $topic->{mid} y el estado $id_status_from");
         for my $chi_topic ( @chi ) {
-            my ($pro, $dem, $menu_p, $menu_d ) = $self->promotes_and_demotes( $c, $chi_topic, $bl_state, $state_name, $id_status_from );
+            my ($dep, $pro, $dem, $menu_s, $menu_p, $menu_d ) = $self->promotes_and_demotes( $c, $chi_topic, $bl_state, $state_name, $id_status_from );
+            map { push @{ $menu_dep{ $_->{eval}{status_to} } }, $_ } _array( $menu_s );
             map { push @{ $menu_pro{ $_->{eval}{status_to} } }, $_ } _array( $menu_p );
             map { push @{ $menu_dem{ $_->{eval}{status_to} } }, $_ } _array( $menu_d );
+            %dep = ( %dep, %$dep );
             %pro = ( %pro, %$pro );
             %dem = ( %dem, %$dem );
         }
         if( @chi ) {
             # TODO intersect menus
             #if( values( %menu_pro ) == @chi ) {
+                push @menu_s, map { (_array( $_ ))[0] } values %menu_dep;
+                $deployable = \%dep;
+
                 push @menu_p, map { (_array( $_ ))[0] } values %menu_pro;
                 $promotable = \%pro;
             #}
@@ -634,15 +671,16 @@ sub cs_menu {
             #}
         }
     } else {
-       my ($menu_p, $menu_d );
-       ($promotable, $demotable, $menu_p, $menu_d ) = $self->promotes_and_demotes( $c, $topic, $bl_state, $state_name );
+       my ($menu_s, $menu_p, $menu_d );
+       ($deployable, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) = $self->promotes_and_demotes( $c, $topic, $bl_state, $state_name );
+       push @menu_s, _array( $menu_s );
        push @menu_p, _array( $menu_p );
        push @menu_d, _array( $menu_d );
     }
 
-    push @menu, ( @menu_p, @menu_d );  # promotes, then demotes
+    push @menu, ( @menu_s, @menu_p, @menu_d );  # deploys, promotes, then demotes
 
-    ( $promotable, $demotable, \@menu );
+    ( $deployable, $promotable, $demotable, \@menu );
 }
 
 sub repository : Local {
