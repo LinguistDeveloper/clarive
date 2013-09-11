@@ -136,10 +136,10 @@ sub put_dir {
     say "WRITING $local_tar";
     $tar->write( $local_tar );
     # send to remote tar
-    my $remote_tar = $self->_eval('File::Spec->catfile( File::Spec->tmpdir, $stash )', "remote-$fn" );
+    my $remote_tar = $self->remote_eval('File::Spec->catfile( File::Spec->tmpdir, $stash )', "remote-$fn" );
     $self->put_file({ local=>$local_tar, remote=>$remote_tar });
     # mkpath, untar, delete
-    $self->_eval(q{
+    $self->remote_eval(q{
         if( $stash->{replace} ) {
             rmtree( $stash->{remote} ) if length $stash->{remote} > 4; 
         }
@@ -191,7 +191,7 @@ sub execute {
     my $self = shift;
     my %p = %{ shift() } if ref $_[0] eq 'HASH';
     my @cmd = @_;
-    my $res = $self->_eval( q{ 
+    my $res = $self->remote_eval( q{ 
         my $merged = Capture::Tiny::tee_merged(sub{ 
             system @{ $stash };
             die $! if $?;
@@ -210,7 +210,7 @@ sub _msgid {
     Data::UUID->new->create_from_name_b64( 'clarive', 'worker-agent');
 }
 
-sub _eval {
+sub remote_eval {
     my ($self, $code, $stash ) = @_;
     
     $self->_worker_do( 
