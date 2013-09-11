@@ -22,7 +22,8 @@ register 'service.scripting.remote' => {
 
 register 'service.scripting.remote_eval' => {
     name => 'Run a remote eval',
-    #form => '/forms/script_remote.js',
+    form => '/forms/eval_remote.js',
+    data => { server=>'', code=>'' },
     handler => \&run_eval,
 };
 
