@@ -100,7 +100,7 @@ sub run_eval {
     
     my $agent = $server->connect;
     # TODO some agents may not support eval, check this out first, call exec instead?
-    $agent->eval( $code );
+    $agent->remote_eval( $code );
     my $out = $agent->output;
     my $rc = $agent->rc;
     my $ret = $agent->ret;
