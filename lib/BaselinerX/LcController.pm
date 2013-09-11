@@ -209,27 +209,35 @@ sub tree_projects : Local {
     if( ! $c->is_root ){ 
         $where->{'exists'} =  $c->model( 'Permissions' )->user_projects_query( username=>$c->username, join_id=>'mid' );
     }
+
     my $rs = Baseliner->model('Baseliner::BaliProject')->search( 
         $where ,
         { order_by => { -asc => \'lower(name)' } } );
+    my %projects;
+    my @project_ids = map { $_->{mid} } DB->BaliMaster->search( {collection => 'project'} )->hashref->all;
+
+    map { $projects{$_} = 1 } @project_ids;
+
     while( my $r = $rs->next ) {
-        push @tree, {
-            text       => $r->name,
-            url        => '/lifecycle/tree_project',
-            data       => {
-                id_project => $r->mid,
-                project    => $r->name,
-                click => {
-                    url   => '/dashboard/list/project',
-                    type  => 'html',
-                    icon  => '/static/images/icons/project.png',
-                    title => $r->name,
-                }               
-            },
-            icon       => '/static/images/icons/project.png',
-            leaf       => \0,
-            expandable => \1
-            };
+        if ( $projects{$r->mid} ) {            
+            push @tree, {
+                text       => $r->name,
+                url        => '/lifecycle/tree_project',
+                data       => {
+                    id_project => $r->mid,
+                    project    => $r->name,
+                    click => {
+                        url   => '/dashboard/list/project',
+                        type  => 'html',
+                        icon  => '/static/images/icons/project.png',
+                        title => $r->name,
+                    }               
+                },
+                icon       => '/static/images/icons/project.png',
+                leaf       => \0,
+                expandable => \1
+                };
+        }
     }
     $c->stash->{json} = \@tree;
     $c->forward('View::JSON');
@@ -426,26 +434,12 @@ sub changeset : Local {
     my $where = { is_changeset => 1, rel_type=>'topic_project', to_mid=>$id_project };
     my @changes;
     my $bind_releases = 0;
-    if( defined $p->{id_status} ) {
-        $where->{id_category_status} = $p->{id_status};
-        @changes = $c->model('Baseliner::BaliTopic')->search(
-            $where,
-            { prefetch=>['categories','children','master'] }
-        )->all;
-        $bind_releases = DB->BaliTopicStatus->find( $p->{id_status} )->bind_releases;
-    } else {
-        # Available 
-        my $first_bl = DB->BaliBaseline->search( { bl => {'<>', '*'}}, { order_by => 'seq' } )->first->bl;
-        $where->{'status.bl'} = '*';
-        $where->{id_category_status} = { -in => $c->model('Baseliner::BaliTopicCategoriesAdmin')->search(
-                { 'statuses_to.bl' => $first_bl },
-                { +select=>['id_status_from'], join=>['statuses_to'] }
-            )->as_query };
-        @changes = $c->model('Baseliner::BaliTopic')->search(
-                $where,
-                { prefetch=>['categories','children','master','status'] }
-            )->all;
-    }
+    $where->{id_category_status} = $p->{id_status};
+    @changes = $c->model('Baseliner::BaliTopic')->search(
+        $where,
+        { prefetch=>['categories','children','master'] }
+    )->all;
+    $bind_releases = DB->BaliTopicStatus->find( $p->{id_status} )->bind_releases;
 
     my @rels;
     for my $topic (@changes) {
@@ -454,7 +448,7 @@ sub changeset : Local {
         next if $bind_releases && @releases;
         my $td = { $topic->get_columns() };  # TODO no prefetch comes thru
         # get the menus for the changeset
-        my ( $promotable, $demotable, $menu ) = $self->cs_menu( $td, $bl, $state_name );
+        my ( $promotable, $demotable, $menu ) = $self->cs_menu( $c, $td, $bl, $state_name );
         my $node = {
             url  => '/lifecycle/topic_contents',
             icon => '/static/images/icons/changeset_lc.png',
@@ -487,7 +481,7 @@ sub changeset : Local {
         my %unique = map { $_->{topic_topic}{mid} => $_ } @rels;
         for my $rel ( values %unique ) {
             $rel = $rel->{topic_topic};
-            my ( $promotable, $demotable, $menu ) = $self->cs_menu( $rel, $bl, $state_name, $p->{id_status} );
+            my ( $promotable, $demotable, $menu ) = $self->cs_menu( $c, $rel, $bl, $state_name, $p->{id_status} );
             my $node = {
                 url  => '/lifecycle/topic_contents',
                 icon => '/static/images/icons/release_lc.png',
@@ -521,13 +515,15 @@ sub changeset : Local {
 }
 
 sub promotes_and_demotes {
-    my ($self, $topic, $bl_state, $state_name, $id_status_from ) = @_;
+    my ($self, $c, $topic, $bl_state, $state_name, $id_status_from ) = @_;
     my ( @menu_p, @menu_d );
     # Promote
     _debug( "Buscando promotes y demotes para el estado $id_status_from");
+    my @user_workflow = _unique map {$_->{id_status_to} } Baseliner->model("Topic")->user_workflow( $c->username );
+
     my $id_status_from_lc = $id_status_from ? $id_status_from: $topic->{id_category_status};
     my @status_to = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
-        { id_category => $topic->{id_category}, id_status_from => $id_status_from_lc, job_type => 'promote' },
+        { id_status_to => \@user_workflow, id_category => $topic->{id_category}, id_status_from => $id_status_from_lc, job_type => 'promote' },
         {   join     => [ 'statuses_from', 'statuses_to' ],
             distinct => 1,
             +select  => [qw/statuses_to.bl statuses_to.name statuses_to.id statuses_to.seq/],
@@ -555,7 +551,7 @@ sub promotes_and_demotes {
 
     # Demote
     my @status_from = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
-        { id_category => $topic->{id_category}, id_status_from => $id_status_from_lc, job_type => 'demote' },
+        { id_status_to => \@user_workflow, id_category => $topic->{id_category}, id_status_from => $id_status_from_lc, job_type => 'demote' },
         {   join     => [ 'statuses_from', 'statuses_to' ],
             distinct => 1,
             +select  => [qw/statuses_to.bl statuses_to.name statuses_to.id statuses_from.bl statuses_to.seq/],
@@ -580,33 +576,35 @@ sub promotes_and_demotes {
             icon => '/static/images/silk/arrow_up.gif'
         };
     }
-    _error \@menu_d;
     return ( $promotable, $demotable, \@menu_p, \@menu_d );
 }
 
 sub cs_menu {
-    my ($self, $topic, $bl_state, $state_name, $id_status_from ) = @_;
-    return [] if $bl_state eq '*';
+    my ($self, $c, $topic, $bl_state, $state_name, $id_status_from ) = @_;
+    #return [] if $bl_state eq '*';
     my ( @menu, @menu_p, @menu_d );
     my $sha = ''; #try { $self->head->{commit}->id } catch {''};
+    _log 'Generando menu';
 
     push @menu, $self->menu_related();
 
-    push @menu, {
-        text => 'Deploy',
-        eval => {
-            url            => '/comp/lifecycle/deploy.js',
-            title          => 'Deploy',
-            # bl_to          => $bl_state,
-            # status_to      => '',                            # id?
-            # status_to_name => $state_name,                            # name?
-            bl_to          => 'IT',
-            status_to      => 22,                            # id?
-            status_to_name => _loc('Integracion'),                            # name?
-            job_type       => 'static'
-        },
-        icon => '/static/images/silk/arrow_right.gif'
-    };
+    if ( $bl_state ne '*') {
+        push @menu, {
+            text => 'Deploy',
+            eval => {
+                url            => '/comp/lifecycle/deploy.js',
+                title          => 'Deploy',
+                bl_to          => $bl_state,
+                status_to      => $id_status_from,                            # id?
+                status_to_name => $state_name,                            # name?
+                # bl_to          => 'IT',
+                # status_to      => 22,                            # id?
+                # status_to_name => _loc('Integracion'),                            # name?
+                job_type       => 'static'
+            },
+            icon => '/static/images/silk/arrow_right.gif'
+        };        
+    }
 
     my ($promotable, $demotable ) = ( {}, {} );
     my $row = DB->BaliTopicCategories->find( $topic->{id_category} );
@@ -616,9 +614,9 @@ sub cs_menu {
         
         my ( @rel_promotable, @rel_demotable, @rel_menu_p, @rel_menu_d );
         my ( %menu_pro, %menu_dem, %pro, %dem );
+        _debug( "Generando el menú para la release $topic->{mid} y el estado $id_status_from");
         for my $chi_topic ( @chi ) {
-            _debug( "Generando el menú para la release $topic->{mid} y el estado $id_status_from");
-            my ($pro, $dem, $menu_p, $menu_d ) = $self->promotes_and_demotes( $chi_topic, $bl_state, $state_name, $id_status_from );
+            my ($pro, $dem, $menu_p, $menu_d ) = $self->promotes_and_demotes( $c, $chi_topic, $bl_state, $state_name, $id_status_from );
             map { push @{ $menu_pro{ $_->{eval}{status_to} } }, $_ } _array( $menu_p );
             map { push @{ $menu_dem{ $_->{eval}{status_to} } }, $_ } _array( $menu_d );
             %pro = ( %pro, %$pro );
@@ -637,7 +635,7 @@ sub cs_menu {
         }
     } else {
        my ($menu_p, $menu_d );
-       ($promotable, $demotable, $menu_p, $menu_d ) = $self->promotes_and_demotes( $topic, $bl_state, $state_name );
+       ($promotable, $demotable, $menu_p, $menu_d ) = $self->promotes_and_demotes( $c, $topic, $bl_state, $state_name );
        push @menu_p, _array( $menu_p );
        push @menu_d, _array( $menu_d );
     }
