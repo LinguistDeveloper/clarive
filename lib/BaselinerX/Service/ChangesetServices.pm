@@ -143,26 +143,35 @@ sub nature_items {
    
     my @nat_rows = DB->BaliMaster->search({ collection=>'nature' }, { select=>'mid' })->hashref->all;
     my @items = @{ $stash->{items} || [] };
+    my %nature_names;
+    my @msg;
     for my $nature ( map { _ci($_->{mid}) } @nat_rows ) {
-        _debug "nature = " . $nature->name;
+        push @msg, "nature = " . $nature->name;
         ITEM: for my $it ( @items ) {
-            _debug "item = " . $it->path;
+            push @msg, "item = " . $it->path;
             if( $nature->push_item( $it ) ) {
                 my $id =  $nature->$nat_id;
                 my $mid =  $nature->mid;
-                $stash->{natures}{ $id } = $nature;
-                $stash->{natures}{ $mid } = $nature;
+                $stash->{natures}{ $id } = 'naat';
+                #$stash->{natures}{ $id } = $nature;
+                #$stash->{natures}{ $mid } = $nature;
+                $nature_names{ $nature->name } = ();
+                push @msg, "MATCH = " . $it->path;
                 last ITEM;
             } else {
-                _debug "no match for " . $it->path;
+                push @msg, "NO = " . $it->path;
             }
         }
     }
-    if( my $cnt = scalar keys %{ $stash->{natures} } ) {
-        $log->warn( _loc('%1 nature(s) detected in job items', $cnt ) );
+    $log->debug( _loc('Nature check log'), \@msg );
+    $log->debug( _loc('Natures'), $stash->{natures} );
+    my @nats = keys %nature_names;
+    if( my $cnt = scalar @nats ) {
+        $log->info( _loc('%1 nature(s) detected in job items: %2', $cnt, join ', ',@nats ) );
     } else {
         $log->warn( _loc('No natures detected in job items') );
     }
+    return 0;
 }    
     
 ########### DEPRECATED:

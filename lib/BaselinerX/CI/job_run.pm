@@ -163,20 +163,22 @@ sub run {
     } else {
         $self->logger->info( _loc( 'Job step %1 finished with status %2', $self->step, $self->status ) );
     }
-    $self->status;
+    $self->goto_next_step;
 }
 
 our %next_step   = ( CHECK=>'INIT', INIT=>'PRE', PRE => 'RUN', RUN => 'POST', POST => 'END' );
 our %next_status  = ( CHECK=>'IN-EDIT', INIT=>'READY', PRE => 'READY', RUN => 'READY', POST => 'FINISHED' );
 
-=head2 goto_step
+=head2 goto_next_step
 
 Updates the step in the row following the next_status rules
 
 =cut
-sub goto_step {
-    my ($self, $current_step ) = @_;
+sub goto_next_step {
+    my ($self ) = @_;
     
+    my $current_step = $self->step;
+
     # STATUS
     my $next_status = $next_status{ $current_step };
     $self->status( $next_status ) if defined $next_status;
@@ -186,12 +188,11 @@ sub goto_step {
     $self->logger->debug(
          _loc('Going from step %1 to next step %2', $current_step, $next_step )
     );
+    $self->step( $next_step );
+    
+    # COMMIT
     $self->save;
-}
-
-sub goto_next_step {
-    my $self = shift;
-    $self->goto_step( $self->step );
+    return ( $next_step, $next_status );
 }
 
 sub finish {

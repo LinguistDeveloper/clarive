@@ -497,6 +497,11 @@ sub root {
     };
 }
 
+sub job_dir {
+    my ($self) = @_;
+    return $self->root;
+}
+
 =head2 parse_job_vars ( $str, \%user_data )
 
 Parse a string for variables C<${variable}>, replacing it with:

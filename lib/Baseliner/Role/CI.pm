@@ -38,7 +38,7 @@ coerce 'HashJSON' =>
 #  from 'Num' => via { [ Baseliner::CI->new( $_ ) ] }; 
 
 has mid      => qw(is rw isa Num);
-has active   => qw(is rw isa Bool);
+has active   => qw(is rw isa Bool default 1);
 has ts       => qw(is rw isa TS coerce 1), default => sub { Class::Date->now->string };
 #has _ci      => qw(is rw isa Any);          # the original DB record returned by load() XXX conflicts with Utils::_ci
 
@@ -127,7 +127,9 @@ sub save {
     my $collection = $self->collection;
 
     my $mid = $self->mid;
-    my $exists = !! $mid;
+    my $bl = $self->bl;
+    $bl = '*' if !length $bl; # fix empty submits from web
+    my $exists = ! ! $mid;
     my $ns = $self->ns;
     
     # try to get mid from ns
@@ -148,7 +150,7 @@ sub save {
             ######## UPDATE CI
             $row = Baseliner->model('Baseliner::BaliMaster')->find( $mid );
             if( $row ) {
-                $row->bl( join ',', $self->bl );
+                $row->bl( join( ',', Util->_array( $bl ) ) );
                 $row->name( $self->name );
                 $row->active( $self->active );
                 $row->versionid( $self->versionid );
@@ -174,7 +176,7 @@ sub save {
                     ns         => $self->ns,
                     ts         => Util->_dt,
                     moniker    => $self->moniker,
-                    bl         => join( ',', Util->_array( $self->bl ) ),
+                    bl         => join( ',', Util->_array( $bl ) ),
                     active     => $self->active // 1,
                     versionid  => $self->versionid // 1
                 }
@@ -682,9 +684,10 @@ sub service_list {
         next unless ref $instance;
         push @services,
             {
-            name => $instance->name,
-            key  => $reg_node->key,
-            icon => $instance->icon,
+            name  => $instance->name,
+            key   => $reg_node->key,
+            form  => $instance->form,
+            icon  => $instance->icon,
             };
     }
     return @services;
@@ -711,6 +714,17 @@ sub all_cis {
     }
     return @cis;
 }
+
+
+sub search_cis {
+    my ($class,%p) = @_;
+    my $coll = $class->collection;
+    my @cis = 
+        map { Baseliner::CI->new( $_->{mid} ) }
+        DB->BaliMaster->search({ collection=>$coll, %p }, { select=>'mid' })->hashref->all;
+    return @cis;
+}
+
 
 1;
 

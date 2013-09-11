@@ -5,7 +5,9 @@ use Try::Tiny;
 with 'Baseliner::Role::CI::Internal';
 
 has id_job       => qw(is rw isa Any); 
-has id_rule      => qw(is rw isa Any);
+has id_rule      => qw(is rw isa Any), default=>sub {
+    DB->BaliRule->search->first->id   # TODO get default rule
+};
 has bl           => qw(is rw isa Any);
 has rollback     => qw(is rw isa Bool default 0);
 has job_key      => qw(is rw isa Any), default => sub { Util->_md5() };
@@ -28,9 +30,6 @@ has contents     => qw(is rw isa Any);
 has approval     => qw(is rw isa Any);
 has username     => qw(is rw isa Any);
 has runner       => qw(is rw isa Any);
-
-sub icon { '/static/images/icons/job.png' }
-
 has_cis 'changesets';
 
 sub rel_type {
@@ -38,6 +37,7 @@ sub rel_type {
         changesets => [ from_mid => 'job_changeset' ] ,
     };
 }
+sub icon { '/static/images/icons/job.png' }
 
 before new_ci => sub {
     my ($self, $master_row, $data ) = @_;
@@ -105,7 +105,7 @@ sub _create {
     my $bl = $p{bl} || '*';
 
     my $job_mid = $self->mid;
-    my $contents = $p{contents};
+    my $changesets = $p{changesets};
     my $config = Baseliner->model('ConfigStore')->get( 'config.job' );
     #FIXME this text based stuff needs to go away
     my $jobType = (defined $p{approval}->{reason} && $p{approval}->{reason}=~ m/fuera de ventana/i)
@@ -153,122 +153,76 @@ sub _create {
     my $ret = Baseliner->model('Rules')->run_single_rule( id_rule=>$p{id_rule}, stash=>{ %p, %$row_data, job_step=>'CHECK' });
     
     # create db row
-    my $job = Baseliner->model('Baseliner::BaliJob')->create($row_data);
+    my $job_row = Baseliner->model('Baseliner::BaliJob')->create($row_data);
 
     # setup name
     my $name = $config->{name}
-        || $self->gen_job_name({ mask=>$config->{mask}, type=>$type, bl=>$bl, id=>$job->id });
+        || $self->gen_job_name({ mask=>$config->{mask}, type=>$type, bl=>$bl, id=>$job_row->id });
 
-    _log "****** Creating JOB id=" . $job->id . ", name=$name, mask=" . $config->{mask};
-    $config->{runner} && $job->runner( $config->{runner} );
-    $config->{chain} && $job->chain( $config->{chain} );
+    _log "****** Creating JOB id=" . $job_row->id . ", name=$name, mask=" . $config->{mask};
 
-    $job->name( $name );
-    $job->update;
+    $job_row->name( $name );
+    $job_row->update;
 
     # create a hash stash
 
-    my $log = new BaselinerX::Job::Log({ jobid=>$job->id });
-
-    # publish release names to the log, just in case
-    my @original_contents = Util::_unique Util::_array( $contents );
-    my $original ='';
-    foreach my $it ( Util::_array( $contents ) ) {
-        my $ns = Baseliner->model('Namespaces')->get( $it->{ns} );
-        try {
-            $original .= '<li>' . $ns->ns_type . ": " . $ns->ns_name
-                if( $ns->does('Baseliner::Role::Container') );
-        } catch { };
-    }
-    $log->info( _loc('Job elements requested for this job: %1', '<br>'.$original ) )
-        if $original;
+    my $log = new BaselinerX::Job::Log({ jobid=>$job_row->id });
 
     # create job items
-    my @changesets;  # topic CIs
-    if( ref $contents eq 'ARRAY' ) {
-        #my $contents = $self->container_expand( $contents );
-        my @item_list;
-        for my $cs ( Util::_array( $contents ) ) {
-            
-            # create ci
-            my $cs_ci = Baseliner::CI->new( $cs->{mid} );
-            push @changesets, $cs_ci;
-
-            $cs->{ns} ||= $cs->{item};
-            _throw _loc 'Missing item ns name' unless $cs->{ns};
-            my $ns = Baseliner->model('Namespaces')->get( $cs->{ns} );
-            my $app = try { $ns->application } catch { '' };
-            
-            # check contents job status
-            _log "Checking if in active job: " . $cs->{ns};
-            my $active_job = $self->is_in_active_job( $cs->{ns} );
-            _fail _loc("Job element '%1' is in an active job: %2", $cs->{ns}, $active_job->name)
-                if ref $active_job;
-                    # item => $cs->{ns},
-            my $provider=$1 if $cs->{provider} =~ m/^namespace\.(.*)$/g;
-            my $job_item_row = $job->bali_job_items->create(
-                {
-                    data        => _dump( $cs->{data} || $cs->{ns_data} ),
-                    item        => $ns->does('Baseliner::Role::Container')?"$provider/".$ns->{ns_name}:$cs->{ns},
-                    service     => $cs->{service},
-                    provider    => $cs->{provider},
-                    id_job      => $job->id,
-                    id_project  => $ns->ns_data->{id_project},
-                    application => $app,
-                }
-            );
-            #$items->update;
-            # push @item_list, '<li>'.$item->{ns}.' ('.$item->{ns_type}.')';
-            # push @item_list, '<li>'. ($ns->does('Baseliner::Role::Container')?$ns->{ns_name}:$item->{ns}) . ' ('.$item->{ns_type}.')';
-            push @item_list, $cs_ci->topic_name;
+    my @cs_cis;  # topic CIs
+    if( ref $changesets eq 'ARRAY' ) {
+        my @cs_list;
+        for my $cs ( Util->_array( $changesets ) ) {
+            $cs = _ci( $cs ) unless ref $cs;
+            if( my $active_job = $cs->is_in_active_job ) {
+                _fail _loc("Job element '%1' is in an active job: %2", $cs->name, $active_job->name )
+            }
+            push @cs_cis, $cs;
+            push @cs_list, $cs->topic_name;
         }
-        _fail _loc('Missing job contents') unless @item_list > 0;
+        _fail _loc('Missing job contents') unless @cs_list > 0;
 
         # log job items
-        if( @item_list > 10 ) {
-            my $msg = _loc('Job contents: %1 total items', scalar(@item_list) );
-            $log->info( $msg, data=>'==>'.join("\n==>", @item_list) );
+        if( @cs_list > 10 ) {
+            my $msg = _loc('Job contents: %1 total items', scalar(@cs_list) );
+            $log->info( $msg, data=>'==>'.join("\n==>", @cs_list) );
         } else {
-            # my $item = "";
-            # for ( @item_list ) {
-                # item .= "$_\n";
-                # }
-            $log->info(_loc('Job contents: %1', join("\n", map { "<li><b>$_</b></li>" } @item_list)) );
+            $log->info(_loc('Job contents: %1', join("\n", map { "<li><b>$_</b></li>" } @cs_list)) );
         }
     }
 
     # add attributes to job ci
     #my $job_ci = _ci( $job_mid );
     $self->name( $name );
-    $self->id_job( $job->id );
+    $self->id_job( $job_row->id );
     $self->status( 'IN-EDIT' );
-    $self->changesets( \@changesets );
-    $self->ns( 'job/' . $job->id );
-#$self->save;
+    $self->changesets( \@cs_cis );
+    $self->ns( 'job/' . $job_row->id );
     
     # now let it run
     $log->debug(_loc( 'Approval exists? ' ),data=>_dump  $p{approval});
     if ( exists $p{approval}{reason} ) {
         # approval request executed by runner service
-        $job->stash_key( approval_needed => $p{approval} );
+        $job_row->stash_key( approval_needed => $p{approval} );
     }
     if ( ref $p{job_stash} eq 'HASH' ) {
         while( my ($k,$v) = each %{ $p{job_stash} } ) {
-            $job->stash_key( $k => $v );
+            $job_row->stash_key( $k => $v );
         }
     }
-    $job->status( 'READY' );
-    $job->update;
+    $job_row->status( 'READY' );
+    $job_row->update;
     
     # INIT
-    # TODO run from CI job->create_runner
-    $ret = Baseliner->model('Rules')->run_single_rule( id_rule=>$p{id_rule}, 
-        stash=>{ 
-            %$row_data, %{ $p{job_stash} // {} }, 
-            job_step=>'INIT' 
-        });
-    
-    return $job;
+    # TODO run from CI job->create_runner ERROR cannot set active to null
+    $self->create_runner( step=>'INIT' )->run;
+
+    #$ret = Baseliner->model('Rules')->run_single_rule( id_rule=>$p{id_rule}, 
+    #    stash=>{ 
+    #        %$row_data, %{ $p{job_stash} // {} }, 
+    #        job_step=>'INIT' 
+    #    });
+    return $job_row;
 }
 
 
@@ -278,19 +232,6 @@ sub gen_job_name {
     my $prefix = $p->{type} eq 'promote' || $p->{type} eq 'static' ? 'N' : 'B';
     return sprintf( $p->{mask}, $prefix, $p->{bl} eq '*' ? 'ALL' : $p->{bl} , $p->{id} );
 }
-
-sub is_in_active_job {
-    my ($self, $ns )=@_;
-    
-    my $rs = Baseliner->model('Baseliner::BaliJobItems')->search({ item=> $ns }, { order_by => { '-desc' => 'id_job.id' }, prefetch=>['id_job'] });
-    while( my $r = $rs->next ) {
-        if(  $r->id_job->is_active ) {
-            return $r->id_job;
-        }
-    }
-    return undef;
-}
-
 
 1;
 

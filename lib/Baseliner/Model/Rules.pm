@@ -76,7 +76,7 @@ sub dsl_build {
         delete $attr->{events} ; # node cruft
         #_debug $attr;
         my $name = _strip_html( $attr->{text} );
-        my $data_key = $attr->{data_key} // _name_to_id( $name );
+        my $data_key = length $attr->{data_key} ? $attr->{data_key} : _name_to_id( $name );
         push @dsl, sprintf( '# statement: %s', $name ) . "\n"; 
         push @dsl, sprintf( '_debug(q{Current Rule Statement: %s} );', $name)."\n" if $p{logging}; 
         my $data = $attr->{data} || {};
@@ -211,15 +211,15 @@ sub launch {
     
     #my $ret = Baseliner->launch( $key, data=>$stash );  # comes with a dummy job
     my $reg = Baseliner->registry->get( $key );
-    my $app = Baseliner->app;
-    $app->stash( $stash );  # app->stash is not the same reference, merge neeeded later
-    my $ret = $reg->run( Baseliner->app, $config ); 
+    my $return_data = $reg->run_container( $stash, $config ); 
     # TODO milestone for service
     #_debug $ret;
-    my $return_data = $ret->data // {};
-    $return_data = ref $return_data eq 'HASH' ? $return_data : {} ;
+    my $refr = ref $return_data;
+    $return_data = $refr eq 'HASH' || Scalar::Util::blessed($return_data) 
+        ? $return_data 
+        : {}; #!$refr || $refr eq 'ARRAY' ? { service_return=>$return_data } : {} ;
     # merge into stash
-    merge_into_stash( $stash, $app->stash );
+    _log $stash;
     merge_into_stash( $stash, ( length $data_key ? { $data_key => $return_data } : $return_data ) );
     return $return_data;
 }
@@ -499,6 +499,7 @@ register 'statement.project.loop' => {
 # needs the changeset.nature service to fill the stash with natures
 register 'statement.if.nature' => {
     text => 'IF EXISTS nature THEN',
+    form => '/forms/if_nature.js',
     type => 'if',
     data => { nature=>'', },
     dsl => sub { 

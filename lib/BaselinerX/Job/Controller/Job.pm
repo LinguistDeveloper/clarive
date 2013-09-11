@@ -261,7 +261,6 @@ sub monitor_json : Path('/job/monitor_json') {
         start    =>"me.starttime",
         sched    =>"me.schedtime",
         end      =>"me.endtime",
-        items    =>"bali_job_items.item",
     });
     if( exists $p->{job_state_filter} ) {
         my @job_state_filters = do {
@@ -273,7 +272,7 @@ sub monitor_json : Path('/job/monitor_json') {
 
     # Filter by nature
     if (exists $p->{filter_nature} && $p->{filter_nature} ne 'ALL' ) {      
-      $where->{'bali_job_items_2.item'} = $p->{filter_nature};
+      # TODO nature only exists after PRE executes, "Load natures" $where->{'bali_job_items_2.item'} = $p->{filter_nature};
     }
 
     # Filter by environment name:
@@ -295,7 +294,8 @@ sub monitor_json : Path('/job/monitor_json') {
     # user content
     if( $username && ! $perm->is_root( $username ) && ! $perm->user_has_action( username=>$username, action=>'action.job.viewall' ) ) {
         my @user_apps = $perm->user_projects_names( username=>$username ); # user apps
-        $where->{'bali_job_items.application'} = { -in => \@user_apps } if ! ( grep { $_ eq '/'} @user_apps );
+        # TODO check cs topics relationship with projects
+        # $where->{'bali_job_items.application'} = { -in => \@user_apps } if ! ( grep { $_ eq '/'} @user_apps );
         # username can view jobs where the user has access to view the jobcontents corresponding app
         # username can view jobs if it has action.job.view for the job set of job_contents projects/app/subapl
     }
@@ -305,19 +305,17 @@ sub monitor_json : Path('/job/monitor_json') {
     my $from = {
         select   => 'me.id',
         as       => $as,
-        join     => [ 'bali_job_items', 'bali_job_items' ],  # one for application, another for filter_nature 
+        #join     => [ 'bali_job_items', 'bali_job_items' ],  # one for application, another for filter_nature 
     };
     _debug $from;
     my $rs_search = $c->model('Baseliner::BaliJob')->search( $where, $from );
-    # rs_hashref( $rs_search );
-    # my @ids = map { $_->{id} } $rs_search->all; 
-    my $id_rs = $rs_search->search( undef, { select=>[ 'me.id' ] } );
+    #my $id_rs = $rs_search->search( undef, { select=>[ 'me.id' ] } );
 
     #_error _dump $id_rs->as_query ;
 
     _debug "Job search end.";
     my $rs_paged = $c->model('Baseliner::BaliJob')->search(
-        { 'me.id'=>{ -in => $id_rs->as_query } },
+        {}, #{ 'me.id'=>{ -in => $rs_search->as_query } },  # TODO needs to be able to filter 
         {
             page=>$page, rows=>$limit,
             order_by => $order_by,
@@ -328,11 +326,12 @@ sub monitor_json : Path('/job/monitor_json') {
 
     # Job items cache
     _log "Job data start...";
-    my %job_items = $c->model('Baseliner::BaliJobItems')
-        ->search(
-            { id_job=>{ -in => $rs_paged->search(undef,{ select=>'id'})->as_query } },
-            { select=>[qw/id id_job application item/] }
-    )->hash_on( 'id_job' );
+    my %job_items = ( id => { mid=>11 } );
+    #    = $c->model('Baseliner::BaliJobItems')
+    #        ->search(
+    #            { id_job=>{ -in => $rs_paged->search(undef,{ select=>'id'})->as_query } },
+    #            { select=>[qw/id id_job application item/] }
+    #    )->hash_on( 'id_job' );
     _log "Job data end.";
 
     my @rows;
@@ -348,41 +347,12 @@ sub monitor_json : Path('/job/monitor_json') {
         my $status = _loc( $r->{status} );
         my $type = _loc( $r->{type} );
         my %app;
-        my @items = _array $job_items{ $r->{id} };
-        my $contents = @items ? [
-              grep { defined } map {
-                  $app{ $_->{application} }=() if defined $_->{application};
-                  my ( $dom,$nsid) = ns_split( $_->{item} );
-                  my $ret;
-                  if( $dom eq 'changeset' ) {
-                    $ret = try { $c->model('Baseliner::BaliTopic')->find( $nsid )->full_name_monitor } catch { $nsid };
-                  } elsif( $dom !~ /nature/ ) {
-                    my $icon = $CACHE_ICON{ $dom } // do {
-                        my $m = try { $c->registry->get( $dom )->module }
-                            catch { _error(shift()); { icon=>'/static/images/unknown.gif' } };
-                        $CACHE_ICON{ $dom } = ref $m ? $m->{icon} : '/static/images/unknown.gif';
-                    };
-                    $ret = $icon 
-                          ? qq{<img src="$icon">&nbsp;$nsid}
-                          : $nsid;
-                  }
-                  $ret;
-              } @items
-          ] : [];
+        my @changesets = (); #_array $job_items{ $r->{id} };
+        my $contents = [];
         my $apps = [ map { (ns_split( $_ ))[1] } grep {$_} keys %app ];
         my $last_log_message = $r->{last_log_message};
 
-        my @subapps = _unique map {
-            (ns_split( $_->{item} ))[1];
-        } grep {
-            $_->{item} =~ /^subap/
-        } _array $job_items{ $r->{id} };
-
-        my @natures = _unique map {
-            $_->{item}   # the ns name of the nature
-        } grep {
-            $_->{item} =~ /^nature/
-        } _array $job_items{ $r->{id} };
+        my @natures = ();
 
         # Scheduled, Today, Yesterday, Weekdays 1..7, 1..4 week ago, Last Month, Older
         my $grouping='';
@@ -442,10 +412,11 @@ sub monitor_json : Path('/job/monitor_json') {
             runner       => $r->{runner},
             id_rule      => $r->{id_rule},
             natures      => \@natures,
-            subapps      => \@subapps,   # maybe use _path_xs from Utils.pm?
+            #subapps      => \@subapps,   # maybe use _path_xs from Utils.pm?
           }; # if ( ( $cnt++ >= $start ) && ( $limit ? scalar @rows < $limit : 1 ) );
     }
     _debug "Looping end ";
+    _debug \@rows;
 
     $c->stash->{json} = { 
         totalCount=> $cnt,
@@ -566,6 +537,7 @@ sub job_submit : Path('/job/submit') {
             
             my $contents = _decode_json $p->{job_contents};
             die _loc('No job contents') if( !$contents );
+            $contents = [ map { $_->{mid} } _array($contents) ];  # now use just mids
 
             _debug "*** Job Stash: " . _dump $job_stash;
             # create job
@@ -599,7 +571,7 @@ sub job_submit : Path('/job/submit') {
                     runner       => $runner,
                     id_rule      => $id_rule,
                     description  => $comments,
-                    contents     => $contents, 
+                    changesets   => $contents, 
                     job_stash    => $job_stash
             };
             event_new 'event.job.new' => { c=>$c, self=>$self, job_data=>$job_data } => sub {

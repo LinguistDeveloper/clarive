@@ -1,5 +1,5 @@
 Baseliner.user_can_edit_ci = <% $c->model('Permissions')->user_has_any_action( action => 'action.ci.%', username=>$c->username ) ? 'true' : 'false' %>;
-Baseliner.user_can_job = <% $c->model('Permissions')->user_projects( username=>$c->username ) ? 'true' : 'false' %>;
+Baseliner.user_can_projects = <% $c->model('Permissions')->user_projects( username=>$c->username ) ? 'true' : 'false' %>;
 Baseliner.user_can_workspace = <% $c->model('Permissions')->user_has_any_action( action=>'action.home.view_workspace', username=>$c->username ) ? 'true' : 'false' %>;
 
 
@@ -553,7 +553,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             pressed: false,
             toggleGroup: 'explorer-card',
             allowDepress: false,
-            hidden: ! Baseliner.user_can_job,
+            hidden: ! Baseliner.user_can_projects,
             enableToggle: true,
             refresh_all: function(){ if( self.$tree_projects ) self.$tree_projects.refresh_all() },
             listeners: Baseliner.gen_btn_listener()

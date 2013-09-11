@@ -73,7 +73,7 @@ sub run_remote {
     
     my ($server,$user,$home, $path,$args, $stdin) = @{ $config }{qw/server user home path args stdin/};
     $server = _ci( $server ) unless ref $server;
-    _log "===========> RUNNING remote script `$path $args` ($user\@". $server->name . ')';
+    _log "===========> RUNNING remote script `$path $args` ($user\@". $server->hostname . ')';
     
     my $agent = $server->connect( user=>$user );
     $agent->execute( $path, _array($args) );
@@ -94,21 +94,28 @@ sub run_eval {
     my $log   = $job->logger;
     my $stash = $job->job_stash;
     
-    my ($server, $code) = @{ $config }{qw/server code/};
+    my ($server, $user, $code) = @{ $config }{qw/server user code/};
     $server = _ci( $server ) unless ref $server;
-    _log "===========> RUNNING remote eval: \@". $server->name ;
+    _log _loc "===========> RUNNING remote eval: %1\@%2", $user, $server->hostname ;
     
-    my $agent = $server->connect;
+    my $agent = $server->connect( user=>$user );
     # TODO some agents may not support eval, check this out first, call exec instead?
     $agent->remote_eval( $code );
     my $out = $agent->output;
     my $rc = $agent->rc;
     my $ret = $agent->ret;
-    if( $rc ) {
+    if( $rc == 99 ) {
         _fail _loc 'Error during eval execution: %1', $out;
     } else {
-        $log->info( _loc('Eval ok') );
-    }
+        if( ref $ret eq 'HASH' && ref $ret->{job_logs} eq 'ARRAY' ) {
+            for my $msg ( @{$ret->{job_logs}} ) {
+                my $lev = $msg->{lev} // 'info';
+                $log->$lev( _loc( $msg->{text} // '(no message)' ), $msg->{data} );
+            }
+        } else {
+            $log->info( _loc('Eval ok'), data=>{ output=>$out, rc=>$rc, ret=>$ret } );
+        }
+}
     
     { output=>$out, rc=>$rc, ret=>$ret };
 }

@@ -164,5 +164,42 @@ sub run {
     return $instance->log;
 }
 
+sub run_container {
+    my ($self,$stash,$config,$obj) = @_;
+    my $handler = $self->handler ;
+    _fail _loc 'Service handler missing' unless ref $handler eq 'CODE';
+    _fail _loc 'Missing argument 1, stash' unless ref $stash eq 'HASH';
+    $config //= {};
+    # create dummy job if we don't have one
+    $stash->{job} or local $stash->{job} = BaselinerX::Type::Service::Container::Job->new( job_stash=>$stash );
+    my $container = BaselinerX::Type::Service::Container->new( stash=>$stash, config=>$config ); 
+    return $handler->( $obj // $self, $container, $config );
+}
 
+######################################################################
+package BaselinerX::Type::Service::Container;
+use Baseliner::Moose;
+has stash  => qw(is rw isa HashRef required 1);
+has config => qw(is rw isa HashRef), default=>sub{ +{} };
+sub job { $_[0]->stash->{job} }
+sub logger { $_[0]->job->logger }
+
+package BaselinerX::Type::Service::Container::Job;
+use Baseliner::Moose;
+has job_dir => qw(is rw isa Str lazy 1), default=>sub{ Util->_tmp_dir() };
+has job_stash  => qw(is rw isa HashRef required 1);
+sub logger { 'BaselinerX::Type::Service::Container::Job::Logger' }
+sub job_stash { 'BaselinerX::Type::Service::Container::Job::Logger' }
+
+package BaselinerX::Type::Service::Container::Job::Logger;
+#use Moose;  # no need for a new
+our $AUTOLOAD;
+sub AUTOLOAD {
+    shift;
+    my $name = $AUTOLOAD;
+    my @a = reverse(split(/::/, $name));
+    my $lev = $a[0];
+    my ($cl,$fi,$li) = caller(0);
+    Util->_log_me( $lev // 'info', $cl, $fi, $li, @_ );
+}
 1;

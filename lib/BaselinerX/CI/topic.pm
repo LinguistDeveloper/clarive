@@ -170,4 +170,12 @@ sub items {
     return @items;
 }
 
+sub is_in_active_job {
+    my ($self )=@_;
+     return 0;
+    
+    return undef;
+}
+
+
 1;

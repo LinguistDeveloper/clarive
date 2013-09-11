@@ -26,7 +26,7 @@ sub connect {
     
     # Worker Agent
     my $user = $p{user};
-    my $agent = BaselinerX::CI::worker_agent->new( cap=>$user.'@'.$self->name );
+    my $agent = BaselinerX::CI::worker_agent->new( cap=>$user.'@'.$self->hostname );
 }
 
 1;

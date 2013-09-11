@@ -235,7 +235,8 @@ __PACKAGE__->has_many(
   { "foreign.id_job" => "self.id" },
 );
 
-__PACKAGE__->has_master;
+#__PACKAGE__->has_master;
+__PACKAGE__->master_setup( 'changesets' => ['job','changeset'] => ['changeset', 'BaliMaster','mid'] );  # job changesets
 
 sub sqlt_deploy_hook {
    my ($self, $sqlt_table) = @_;

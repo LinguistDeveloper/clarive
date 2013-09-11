@@ -2220,22 +2220,51 @@ Baseliner.CICheckBox = Ext.extend( Baseliner.CheckBoxField, {
     }
 });
 
+Baseliner.FormEditor = Ext.extend( Ext.FormPanel, {
+    frame: false, forceFit: true, 
+    defaults: { msgTarget: 'under', anchor:'100%' },
+    width: 800, height: 600,
+    autoScroll: true,
+    bodyStyle: { padding: '4px', "background-color": '#eee' },
+    initComponent : function(){
+        var self = this;
+        var data = this.data || {};
+        //var de = new Baseliner.DataEditor({ data: data, hide_cancel: true, hide_save: true });
+        //this.items = [ ];
+        Baseliner.FormEditor.superclass.initComponent.call(this);
+        Baseliner.ajaxEval( self.form_url, data, function(comp){
+            self.add( comp );
+            self.doLayout();
+        }, function(res){
+            Baseliner.error( _('Form Editor'), _('Could not find form `%1`', self.form) );
+        });
+    },
+    getData : function(){
+        return this.getForm().getValues();
+    }
+});
+
 Baseliner.run_service = function(params, service){
     var mask = { xtype:'panel', items: Baseliner.loading_panel(), flex: 1 };
-    var initial_data = Ext.apply( { timeout:0 }, service, params );
-    var deditor = new Baseliner.DataEditor({ data: initial_data, hide_cancel:true, hide_save:true });
+    //var initial_data = Ext.apply( { timeout:0 }, service, params );
+    var initial_data = { service: service, data: service.data };
+    var deditor = service.form 
+        ? new Baseliner.FormEditor({ data: initial_data, form_url: service.form })
+        : new Baseliner.DataEditor({ data: initial_data, hide_cancel:true, hide_save:true });
     var btn_run = new Ext.Button({ icon:'/static/images/icons/run.png', text:_('Run'), handler: function(){ 
             btn_run.disable();
-            run_it( deditor.getData() );
+            if(!params) params = {};
+            var run_data = Ext.apply({ key: service.key, _merge_with_params: 1, as_json: true }, params);
+            run_it( Ext.apply(run_data, { data: deditor.getData() }) );
             win.removeAll();
             win.add( mask );
             win.doLayout();
         } })
     var run_it = function(data){
-        Baseliner.ajaxEval( '/ci/service_run', data, function(res){
+        Baseliner.ajax_json( '/ci/service_run', data, function(res){
             btn_run.enable();
             win.removeAll();
-            var tabp = new Ext.TabPanel({ activeTab:0 });
+            var tabp = new Ext.TabPanel({ activeTab: res.msg ? 0 : 1 });
             win.add( tabp );
             if( !res.success ) {
                 tabp.add(new Baseliner.MonoTextArea({ title: 'Message', value: res.msg, style:'color:#f23' }) );

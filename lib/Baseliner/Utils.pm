@@ -829,7 +829,7 @@ a query string and a list of fields.
         start    =>"me.starttime",
         sched    =>"me.schedtime",
         end      =>"me.endtime",
-        items    =>"bali_job_items.item",
+        items    =>"foreign.item",
     });
 
 You can use an ARRAY for shorthand too:

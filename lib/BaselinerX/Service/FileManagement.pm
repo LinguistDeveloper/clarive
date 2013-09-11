@@ -19,6 +19,7 @@ register 'service.fileman.ship' => {
 
 register 'service.fileman.store' => {
     name => 'Store Local File',
+    form => '/forms/store_file.js',
     handler => \&run_store,
 };
 

@@ -382,7 +382,8 @@ sub user_projects {
     my ( $self, %p ) = @_;
     _throw 'Missing username' unless exists $p{ username };
 	my $all_projects = Baseliner->model( 'Baseliner::BaliRoleUser' )->search({ username => $p{username}, ns => '/'})->first;
-	if($all_projects){
+    my $is_root = $self->is_root( $p{username} );
+	if($all_projects || $is_root){
 		map { $_->{ns} } Baseliner->model( 'Baseliner::BaliProject' )->search()->hashref->all;
 	}else{
 		_array( Baseliner->model( 'Baseliner::BaliRoleuser' )

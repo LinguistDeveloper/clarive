@@ -976,7 +976,7 @@ sub service_run : Local {
     $c->stash->{json} = try {
         my $service = $c->registry->get( $p->{key} );
         my $ci = _ci( $p->{mid} );
-        my $ret = $c->model('Services')->launch( $service->key, obj=>$ci, c=>$c, logger=>$logger, capture=>1 );
+        my $ret = $c->model('Services')->launch( $service->key, obj=>$ci, c=>$c, logger=>$logger, data=>$p->{data}, capture=>1 );
         _debug( $ret );
         _debug( $logger );
         my $console = delete $logger->{console};
@@ -998,7 +998,7 @@ sub service_run : Local {
 sub edit : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
-
+    local $Baseliner::CI::get_form = 1;
 
     my $has_permission;
     if ( $p->{mid} ) {
