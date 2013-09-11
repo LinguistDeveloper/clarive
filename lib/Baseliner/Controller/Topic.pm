@@ -1574,13 +1574,16 @@ sub newjob : Local {
 
         my $job_type = $p->{job_type} || 'static';
 
+        my $id_rule = $p->{id_rule} || DB->BaliRule->search( {rule_active => 1, rule_type => 'chain'},{order_by => 'rule_seq'})->first->id;
+
         my $job = $c->model('Jobs')->create(
             bl       => $bl,
             type     => $job_type,
             username => $c->username || $p->{username} || `whoami`,
             runner   => $p->{runner} || 'service.job.chain.simple',
             comments => $p->{comments},
-            items    => [ @contents ]
+            items    => [ @contents ],
+            id_rule  => $id_rule
         );
         $job->stash_key( status_from => $p->{status_from} );
         $job->stash_key( status_to => $p->{status_to} );

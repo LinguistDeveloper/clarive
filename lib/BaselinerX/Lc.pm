@@ -140,27 +140,35 @@ sub lc_for_project {
     my @states;
     my @projects_with_lc = Baseliner->model('Permissions')->user_projects_with_action( username => $username, action => 'action.project.see_lc');
     if ( @projects_with_lc && $id_prj ~~ @projects_with_lc ) {   
-        @states = (
-             {  node   => _loc('(Stage)'),
-                type   => 'state',
-                active => 1,
-                bl     => 'new',
-                icon   => '/static/images/icons/lc/history.gif'
-            }
-        );
+        # @states = (
+        #      {  node   => _loc('(Stage)'),
+        #         type   => 'state',
+        #         active => 1,
+        #         bl     => 'new',
+        #         icon   => '/static/images/icons/lc/history.gif'
+        #     }
+        # );
 
         # States-Statuses with bl and type = D (Deployable)
+        my @user_workflow = _unique map {$_->{id_status_to} } Baseliner->model("Topic")->user_workflow( $username );
+        my @deployable_statuses = map { $_->{id} } DB->BaliTopicStatus->search( { bl => { '<>' => '*' }, type=>'D', id => \@user_workflow  }, { order_by => { -asc => ['seq'] } } )->hashref->all;
+        my @from_statuses = _unique map { $_->{id_status_from} } DB->BaliTopicCategoriesAdmin->search(
+                { id_status_to => \@deployable_statuses },
+                { distinct => 1 }
+          )->hashref->all; 
+        _log _dump @from_statuses;
         push @states, map {
-                +{  node   => "$_->{name} [$_->{bl}]",
+                +{  node   => $_->{bl} eq "*" ? $_->{name}:"$_->{name} [$_->{bl}]",
                 type   => 'state',
                 active => 1,
                 data => { id_status => $_->{id}, },
                 bl     => $_->{bl},
                 bl_to  => $_->{bl},                               # XXX
-                icon   => '/static/images/icons/lc/history.gif'
-                }
+                icon   => '/static/images/icons/lc/history.gif',
+                seq => $_->{seq}
+                };
             } Baseliner->model('Baseliner::BaliTopicStatus')
-            ->search( { bl => { '<>' => '*' }, type=>'D'  }, { order_by => { -asc => ['seq'] } } )->hashref->all;
+            ->search( { id => \@from_statuses  }, { order_by => { -asc => ['seq'] } } )->hashref->all;
     }     
 
     no strict;
