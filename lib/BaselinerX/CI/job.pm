@@ -1,6 +1,7 @@
 package BaselinerX::CI::job;
 use Baseliner::Moose;
 use Baseliner::Utils qw(:logging);
+use Baseliner::Sugar qw(event_new);
 use Try::Tiny;
 with 'Baseliner::Role::CI::Internal';
 
@@ -12,7 +13,7 @@ has bl           => qw(is rw isa Any);
 has rollback     => qw(is rw isa Bool default 0);
 has job_key      => qw(is rw isa Any), default => sub { Util->_md5() };
 has job_type     => qw(is rw isa Any default promote);  # promote, demote, static
-has job_stash    => qw(is rw isa HashRef), default=>sub{ +{} };
+#has job_stash    => qw(is rw isa HashRef), default=>sub{ +{} };
 has job_dir      => qw(is rw isa Any lazy 1), default => sub { 
     my ($self) = @_;
     my $job_home = $ENV{BASELINER_JOBHOME} || $ENV{BASELINER_TEMP} || File::Spec->tmpdir();
@@ -31,10 +32,12 @@ has approval     => qw(is rw isa Any);
 has username     => qw(is rw isa Any);
 has runner       => qw(is rw isa Any);
 has_cis 'changesets';
+has_cis 'projects';
 
 sub rel_type {
     { 
         changesets => [ from_mid => 'job_changeset' ] ,
+        projects   => [ from_mid => 'job_project' ] ,
     };
 }
 sub icon { '/static/images/icons/job.png' }
@@ -51,30 +54,34 @@ around load_post_data => sub {
     return {} unless $mid;
     
     my $row = DB->BaliJob->search({ mid=>$mid }, {})->first;
-    my $job_stash = $row->stash;
-    my $job_row = +{ $row->get_columns, job_stash=>$job_stash }; 
+    my $job_row = +{ $row->get_columns };
     
     $job_row->{job_type} = $job_row->{type};
     $job_row->{id_job} = $job_row->{id};
     delete $job_row->{mid};
 
-    # load stash
-    $job_row->{job_stash} = 
-        try { 
-            Util->_load($job_row->{job_stash}) 
+    return $job_row;
+};
+
+sub job_stash {
+    my ($self, $new_stash)=@_;
+    my $row = DB->BaliJob->search({ mid=>$self->mid })->first;
+    if( $new_stash ) {
+        delete $new_stash->{job}; # never serialize job
+        $row->stash( Util->_dump($new_stash) );
+        return $new_stash;
+    } else {
+        my $job_stash_yaml = $row->stash;
+        my $job_stash = try { 
+            length $job_stash_yaml ? Util->_load($job_stash_yaml) : +{};
         } catch { 
             my $err = shift;
             _log _loc "Error loading job stash: %1", $err;
             +{};
-    } if length $job_row->{job_stash};
-    if( ref $job_row->{job_stash} ) {
-        delete $job_row->{job_stash}{job} 
-    } else {
-        $job_row->{job_stash} = {};
+        };
+        return $job_stash;
     }
-    
-    return $job_row;
-};
+}
 
 sub jobid { shift->id_job }
 
@@ -197,19 +204,32 @@ sub _create {
     $self->id_job( $job_row->id );
     $self->status( 'IN-EDIT' );
     $self->changesets( \@cs_cis );
+    # add unique projects from changesets
+    my %pp;
+    $self->projects([
+        grep { defined }
+        map { $pp{$_->mid} ? undef : do{ $pp{$_->mid}=1; $_ } }
+        map { $_->projects }
+        @cs_cis 
+    ]);
     $self->ns( 'job/' . $job_row->id );
     
+    # TODO approval detection should be part of INIT, or check calendar for urgent and nojob status
     # now let it run
-    $log->debug(_loc( 'Approval exists? ' ),data=>_dump  $p{approval});
-    if ( exists $p{approval}{reason} ) {
-        # approval request executed by runner service
-        $job_row->stash_key( approval_needed => $p{approval} );
-    }
-    if ( ref $p{job_stash} eq 'HASH' ) {
-        while( my ($k,$v) = each %{ $p{job_stash} } ) {
-            $job_row->stash_key( $k => $v );
-        }
-    }
+    $log->debug( _loc( 'Approval exists? ' ), data=>_dump($p{approval}) );
+    $self->approval( $p{approval} );
+
+    #if ( exists $p{approval}{reason} ) {
+    #    # approval request executed by runner service
+    #    $job_row->stash_key( approval_needed => $p{approval} );
+    #}
+
+    #if ( ref $p{job_stash} eq 'HASH' ) {
+    #    while( my ($k,$v) = each %{ $p{job_stash} } ) {
+    #        $job_row->stash_key( $k => $v );
+    #    }
+    #}
+
     $job_row->status( 'READY' );
     $job_row->update;
     
@@ -217,11 +237,6 @@ sub _create {
     # TODO run from CI job->create_runner ERROR cannot set active to null
     $self->create_runner( step=>'INIT' )->run;
 
-    #$ret = Baseliner->model('Rules')->run_single_rule( id_rule=>$p{id_rule}, 
-    #    stash=>{ 
-    #        %$row_data, %{ $p{job_stash} // {} }, 
-    #        job_step=>'INIT' 
-    #    });
     return $job_row;
 }
 
@@ -232,6 +247,95 @@ sub gen_job_name {
     my $prefix = $p->{type} eq 'promote' || $p->{type} eq 'static' ? 'N' : 'B';
     return sprintf( $p->{mask}, $prefix, $p->{bl} eq '*' ? 'ALL' : $p->{bl} , $p->{id} );
 }
+
+sub is_active {
+    my $self = shift;
+    if( my $row = DB->BaliJob->find( $self->id_job ) ) {
+        my $status = $row->status;
+        return 1 if $status !~ /CANCEL|ERROR|FINISHED/;
+    }
+    return 0;
+}
+
+sub is_running {
+    my $self = shift;
+    if( my $row = DB->BaliJob->find( $self->id_job ) ) {
+        my $status = $row->status;
+        return 1 if $status =~ /RUNNING|PAUSE/;
+    }
+    return 0;
+}
+
+# monitor resties:
+
+sub run_inproc {
+    my ($self, $p) = @_;
+    my $runner = $self->create_runner();
+    require Capture::Tiny;
+    Util->_log('************** Starting JOB IN-PROC %1 ***************', $self->name );
+    my ($err,$out);
+    try {
+        ($out) = Capture::Tiny::tee_merged( sub {
+            $runner->run();
+        });
+    } catch {
+        $err = shift;
+    };
+    Util->_log('************** Finished JOB IN-PROC %1 ***************', $self->name );
+    return { output=>$out, error=>$err };
+}
+
+sub reset {
+    my ($self, $p )=@_;
+    my %p = %{ $p || {} };
+    my $username = $p{username} or _throw 'Missing username';
+    my $realuser = $p{realuser} || $username;
+
+    _fail _loc('Job %1 is currently running (%2) and cannot be rerun', $self->name, $self->status)
+        if $self->is_running;
+
+    my $msg;
+    event_new 'event.job.rerun' => { job=>$self } => sub {
+        if( $p{run_now} ) {
+            my $now = DateTime->now;
+            $now->set_time_zone( Util->_tz );
+            my $end = $now->clone->add( hours => 1 );
+            my $ora_now =  $now->strftime('%Y-%m-%d %T');
+            my $ora_end =  $end->strftime('%Y-%m-%d %T');
+            $self->schedtime( $ora_now );
+            $self->starttime( $ora_now );
+            $self->maxstarttime( $ora_end );
+        }
+        $self->rollback( 0 );
+        $self->status( 'READY' );
+        $self->step( $p{step} || 'PRE' );
+        $self->username( $username );
+        my $exec = $self->exec + 1;
+        $self->exec( $exec );
+        $self->save;
+        my $log = new BaselinerX::Job::Log({ jobid=>$self->id_job });
+        $msg = _loc("Job restarted by user %1, execution %2, step %3", $realuser, $exec, $self->step );
+        $log->info($msg);
+    };
+    return { msg=>$msg };
+}
+
+around update_ci => sub {
+    my $orig = shift;
+    my $self = shift;
+    my ($master_row, $data ) = @_;
+    my $mid = $self->mid;
+    
+    if( my $row = DB->BaliJob->search({ mid=>$mid })->first ) {
+        $row->update({
+            exec        => $self->exec,
+            step        => $self->step,
+            status      => $self->status,
+            endtime     => $self->endtime,
+        });
+    }
+    $self->$orig( @_ ); 
+};
 
 1;
 

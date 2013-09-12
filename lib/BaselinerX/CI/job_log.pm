@@ -122,7 +122,7 @@ sub common_log {
         _log "*** Error writing log entry: $err";
         _log "*** Log text: $text (lev=$lev, jobid=$jobid)";
     };
-    return $row;
+    return $p{return_row} ? $row : undef;
 }
 
 sub comment { shift->common_log('comment',@_) }

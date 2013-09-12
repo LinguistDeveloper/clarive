@@ -52,6 +52,7 @@ sub put_file {
     my $file_size;
     if( exists $p->{local} ) {
         my $f = Util->_file( $local ); 
+        Util->_fail( Util->_loc( 'Local file `%1` not found', $f) ) unless -e $f;
         $file_size = $f->stat->size;
     } else {
         $file_size = length( $p->{data} );
@@ -200,7 +201,31 @@ sub execute {
     return $self->ret;
 }
 
-sub chmod {}
+sub chmod {
+    my ($self,$mode,@files)=@_;
+    $self->remote_eval( q(
+        my $mode = oct($stash->{mode}) || return "Invalid mode: $stash->{mode}\n";
+        my $ret = chmod( $mode, @{$stash->{files}} );
+        return $ret == 0 ? $! : 0;
+    ), 
+    { mode=>$mode, files=>\@files });
+    $self->rc( 1 ) if $self->ret && !ref $self->ret;
+    $self->output( $self->ret ) if $self->ret && !ref $self->ret;
+
+    return $self->tuple;
+}
+
+sub chown {
+    my ($self,$perm,@files)=@_;
+    $self->execute( 'chown', $perm, @files );
+    return $self->tuple;
+}
+
+sub tuple {
+    my ($self)=@_;
+    { ret=>$self->ret, output=>$self->output, rc=>$self->rc };
+}
+
 sub error {}
 sub get_dir {}
 sub mkpath {}

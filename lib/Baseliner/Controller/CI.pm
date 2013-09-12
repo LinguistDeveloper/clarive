@@ -27,6 +27,7 @@ sub gridtree : Local {
 # list - used by the west navigator
 sub list : Local {
     my ($self, $c) = @_;
+    local $Baseliner::CI::get_form = 1;
     my $p = $c->req->params;
     $p->{user} = $c->username;
     my ($total, @tree ) = $self->dispatch( $p );
@@ -192,8 +193,9 @@ sub tree_classes {
 
 sub form_for_ci {
     my ($self, $class, $collection )=@_;
-    my $ci_form = $class && $class->can('form') 
-        ? $class->form 
+    local $Baseliner::CI::get_form = 1;
+    my $ci_form = $class && $class->can('ci_form') 
+        ? $class->ci_form 
         : sprintf( "/ci/%s.js", $collection );
     my $component_exists = -e Baseliner->path_to( 'root', $ci_form );
     return $component_exists ? $ci_form : '';
@@ -755,6 +757,7 @@ sub load : Local {
     my ($self, $c, $action) = @_;
     my $p = $c->req->params;
     my $mid = $p->{mid};
+    local $Baseliner::CI::get_form = 1;
     my $cache_key;
     if( length $mid ) {
         $cache_key = [ "ci:load:$mid:", $p ];
@@ -1126,6 +1129,10 @@ Support the following CI specific calls:
     /ci/8394/mymethod     => becomes _ci( 8394 )->mymethod( $json_and_param_data );
     /ci/grammar/mymethod  => becomes BaselinerX::CI::grammar->mymethod( $json_and_param_data );
 
+    and optionally:
+
+    /ci/grammar/mymethod?mid=1111  => becomes _ci( 1111 )->...
+
     TODO: missing RESTful support: GET, PUT, POST
     TODO: check security to Class, CI right here based on REST method
 
@@ -1133,18 +1140,22 @@ Support the following CI specific calls:
 sub default : Path Args(2) {
     my ($self,$c,$arg,$meth) = @_;
     my $p = $c->req->params;
+    my $mid = $p->{mid};
     my $json = $c->req->{body_data};
     my $data = { username=>$c->username, %{ $p || {} }, %{ $json || {} } };
     _fail( _loc "Missing param method" ) unless length $meth;
     try {
         my $ret;
+        $meth = "$meth";
         if( Util->is_number( $arg ) ) {
-            $meth = "$meth";
             my $ci = _ci( $arg );
             _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
             $ret = $ci->$meth( $data );
+        } elsif( length $mid ) {
+            my $ci = _ci( $mid );
+            _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
+            $ret = $ci->$meth( $data );
         } else {
-            $meth = "$meth";
             my $pkg = "BaselinerX::CI::$arg";
             _fail( _loc "Method '%1' not found in class '%2'", $meth, $pkg) unless $pkg->can( $meth) ;
             $ret = $pkg->$meth( $data );

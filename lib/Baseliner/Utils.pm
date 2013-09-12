@@ -242,14 +242,29 @@ sub _unique {
     keys %{{ map {$_=>1} grep { defined } @_ }};
 }
 
+#use YAML::Syck;
+#sub _load {
+#    my @args = @_;
+#    YAML::Syck::Load( @args );
+#}
+#
+#sub _dump {
+#    my @args = @_;
+#    YAML::Syck::Dump( @args );
+#}
+
 sub _load {
     my @args = @_;
     return try {
-        utf8::encode( $args[0] ) if utf8::valid( $args[0] );  # TODO consider using _to_utf8 - a decode may be needed before
-        YAML::XS::Load( @args )
+        my $str = $args[0]; 
+        utf8::encode( $str ) if utf8::valid( $str );  # TODO consider using _to_utf8 - a decode may be needed before
+        $str =~ s{!!perl/code }{}g;
+        my $obj = YAML::XS::Load( $str );
+        $obj;
     } catch { 
         my $err = shift;
-        _error( "_load error: " . $err );
+        local $Baseliner::Utils::caller_level = 2;
+        _log( "_load error: " . $err );
         _fail( $err ) if $Baseliner::Utils::YAML_LOAD_FAIL; 
         require YAML::Syck;
         YAML::Syck::Load( @args );
@@ -259,9 +274,9 @@ sub _load {
 sub _dump {
     my @args = @_;
     return try { 
-        my $s = YAML::XS::Dump( @args );
-        Encode::_utf8_on( $s );
-        $s
+        my $str = YAML::XS::Dump( @args );
+        Encode::_utf8_on( $str );
+        $str;
     } catch { 
         _error( "_dump error: " . shift() );
         require YAML::Syck;
@@ -365,7 +380,7 @@ sub _log {
 
 sub _error {
     return unless any { $_ } @_;
-    my ($cl,$fi,$li) = caller(0);
+    my ($cl,$fi,$li) = caller( ($Baseliner::Utils::caller_level // 0) );
     _log_me( 'error', $cl, $fi, $li, @_ );
 }
 
@@ -1160,14 +1175,28 @@ Options:
 
 Default action for unresolved variables is to leave them in.
 
+Timeout:
+
+Only 5 seconds (default) are allowed for this operation
+to complete, otherwise it will die.
+
+Set C<$Baseliner::Utils::parse_vars_timeout> to change 
+the timeout secs (or zero to disable);
+
 =cut
 sub parse_vars {
     my ( $data, $vars, %args ) = @_;
+    my $ret;
+    {
+          local $SIG{ALRM} = sub { alarm 0; die "parse_vars timeout - data structure too large?\n" };
+          alarm( $Baseliner::Utils::parse_vars_timeout // 5 );
+          # flatten keys
+          $vars = hash_flatten( $vars );
 
-    # flatten keys
-    $vars = hash_flatten( $vars );
-
-    parse_vars_raw( data=>$data, vars=>$vars, throw=>$args{throw} );
+          $ret = parse_vars_raw( data=>$data, vars=>$vars, throw=>$args{throw} );
+          alarm 0;
+    }
+    return $ret;
 }
 
 our $parse_vars_raw_scope;

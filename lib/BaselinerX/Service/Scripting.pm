@@ -32,7 +32,7 @@ sub run_local {
 
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
-    my $stash = $job->job_stash;
+    my $stash = $c->stash;
 
     my ($user,$home,$path,$args,$stdin) = @{ $config }{qw/user home path args stdin/};
     require Capture::Tiny;
@@ -69,7 +69,7 @@ sub run_remote {
 
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
-    my $stash = $job->job_stash;
+    my $stash = $c->stash;
     
     my ($server,$user,$home, $path,$args, $stdin) = @{ $config }{qw/server user home path args stdin/};
     $server = _ci( $server ) unless ref $server;
@@ -92,7 +92,7 @@ sub run_eval {
 
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
-    my $stash = $job->job_stash;
+    my $stash = $c->stash;
     
     my ($server, $user, $code) = @{ $config }{qw/server user code/};
     $server = _ci( $server ) unless ref $server;

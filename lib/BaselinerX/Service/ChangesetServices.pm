@@ -32,7 +32,7 @@ sub job_items {
     my ( $self, $c, $config ) = @_;
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
-    my $stash = $job->job_stash;
+    my $stash = $c->stash;
     
     my $type = $job->job_type;
     my $bl = $job->bl;
@@ -93,7 +93,7 @@ sub checkout_bl {
     my ( $self, $c, $config ) = @_;
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
-    my $stash = $job->job_stash;
+    my $stash = $c->stash;
     my $job_dir = $job->job_dir;
     my $bl = $stash->{bl};
     _fail _loc 'Missing job_dir' unless length $job_dir;
@@ -108,7 +108,9 @@ sub checkout_bl {
             my ($repo, $revisions,$items) = @{ $rri }{ qw/repo revisions items/ };
             my $dir_prefixed = File::Spec->catdir( $job_dir, $project->name, $repo->rel_path );
             $log->info( _loc('Checking out baseline %1 for project %2, repository %3: %4', $bl, $project->name, $repo->name, $dir_prefixed ) );
-            $repo->checkout( tag=>$bl, dir=>$dir_prefixed );
+            my $co_info = $repo->checkout( tag=>$bl, dir=>$dir_prefixed );
+            my @ls = _array( $co_info->{ls} );
+            $log->info( _loc('Baseline checkout of %1 item(s) completed', scalar(@ls)), join("\n",@ls) );
         }
     }
 }
@@ -117,7 +119,7 @@ sub checkout {
     my ( $self, $c, $config ) = @_;
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
-    my $stash = $job->job_stash;
+    my $stash = $c->stash;
     my $job_dir = $job->job_dir;
     _fail _loc 'Missing job_dir' unless length $job_dir;
     
@@ -136,7 +138,7 @@ sub nature_items {
     my ( $self, $c, $config ) = @_;
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
-    my $stash = $job->job_stash;
+    my $stash = $c->stash;
 
     $stash->{natures} = {}; 
     my $nat_id = $config->{nature_id} // 'name';  # moniker?
@@ -152,9 +154,8 @@ sub nature_items {
             if( $nature->push_item( $it ) ) {
                 my $id =  $nature->$nat_id;
                 my $mid =  $nature->mid;
-                $stash->{natures}{ $id } = 'naat';
-                #$stash->{natures}{ $id } = $nature;
-                #$stash->{natures}{ $mid } = $nature;
+                $stash->{natures}{ $id } = $nature;
+                $stash->{natures}{ $mid } = $nature;
                 $nature_names{ $nature->name } = ();
                 push @msg, "MATCH = " . $it->path;
                 last ITEM;
@@ -193,10 +194,10 @@ sub checkout_items {
     my ( $self, $c, $config ) = @_;
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
-    my $stash = $job->job_stash;
+    my $stash = $c->stash;
     my $bl    = $job->bl;
 
-    my $e = $job->job_stash->{elements};
+    my $e = $stash->{elements};
 
     $log->debug( "Elements", data => _dump $e);
     my @eltos = $e->list( '' );
@@ -261,7 +262,7 @@ sub job_elements {
     my ( $self, $c, $config ) = @_;
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
-    my $stash = $job->job_stash;
+    my $stash = $c->stash;
     my $bl    = $job->bl;
     my @changesets;
 
@@ -364,7 +365,7 @@ sub job_elements {
             push @elems, @git_elements;
             $git_checkouts->{$_}->{rev} = $last_commit;
         } ## end for ( keys %{$revisions_shas...})
-        $job->job_stash->{git_checkouts} = $git_checkouts;
+        $stash->{git_checkouts} = $git_checkouts;
     } ## end if ( @revisions )
 
     #Git revisions fin
@@ -405,7 +406,7 @@ sub job_elements {
             push @elems, @svn_elements;
             $svn_checkouts->{$_}->{rev} = $repo->last_commit( commits => $revisions_shas->{$_}->{shas} );
         } ## end for ( keys %{$revisions_shas...})
-        $job->job_stash->{svn_checkouts} = $svn_checkouts;
+        $stash->{svn_checkouts} = $svn_checkouts;
     } ## end if ( @revisions )
 
     #SVN revisions fin
@@ -446,7 +447,7 @@ sub job_elements {
             push @elems, @cvs_elements;
             $cvs_checkouts->{$_}->{rev} = $repo->last_commit( commits => $revisions_shas->{$_}->{shas} );
         } ## end for ( keys %{$revisions_shas...})
-        $job->job_stash->{cvs_checkouts} = $cvs_checkouts;
+        $stash->{cvs_checkouts} = $cvs_checkouts;
     } ## end if ( @revisions )
 
     #CVS revisions fin
@@ -499,15 +500,15 @@ sub job_elements {
             push @elems, @plastic_elements;
             $plastic_checkouts->{$_}->{rev} = $last_commit;
         } ## end for ( keys %{$revisions_shas...})
-        $job->job_stash->{plastic_checkouts} = $plastic_checkouts;
+        $stash->{plastic_checkouts} = $plastic_checkouts;
     } ## end if ( @revisions )
 
     #End of Plastic Revisions
 
-    my $e = $job->job_stash->{elements} || BaselinerX::Job::Elements->new;
+    my $e = $stash->{elements} || BaselinerX::Job::Elements->new;
     $e->push_elements( @elems );
 
-    $job->job_stash->{elements} = $e;
+    $stash->{elements} = $e;
     $log->info(
         _loc( "Elements included in job" ),
         data => join "\n",
@@ -522,7 +523,7 @@ sub update_baselines {
     my ( $self, $c, $config ) = @_;
     my $job      = $c->stash->{job};
     my $log      = $job->logger;
-    my $stash    = $job->job_stash;
+    my $stash    = $c->stash;
     my $bl       = $job->bl;
     my $job_type = $job->job_type;
     my @changesets;

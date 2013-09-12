@@ -10,10 +10,12 @@ has name_category    => qw(is rw isa Any);
 has id_category_status => qw(is rw isa Any);
 
 #has_ci 'projects';
+#has_cis 'jobs';
 
 sub rel_type {
     { 
         projects => [ from_mid => 'topic_project' ] ,
+        #jobs     => [ to_mid => 'job_changeset' ] ,
     };
 }
 
@@ -170,11 +172,17 @@ sub items {
     return @items;
 }
 
+sub jobs {
+    my ($self )=@_;
+    $self->parents( class=>'job' );
+}
+
 sub is_in_active_job {
     my ($self )=@_;
-     return 0;
-    
-    return undef;
+    for my $job ( $self->jobs ) {
+        return $job if $job->is_active;
+    }
+    return 0;
 }
 
 

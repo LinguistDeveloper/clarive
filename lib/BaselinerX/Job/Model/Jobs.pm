@@ -112,40 +112,6 @@ sub resume {
 
 register 'event.job.rerun';
 
-sub rerun {
-    my ($self, %p )=@_;
-    my $jobid = $p{jobid} or _throw 'Missing job id';
-    my $username = $p{username} or _throw 'Missing username';
-    my $realuser = $p{realuser} || $username;
-
-    my $job = Baseliner->model('Baseliner::BaliJob')->search({ id=> $jobid })->first;
-    _throw _loc('Job %1 not found.', $jobid ) unless ref $job;
-    _throw _loc('Job %1 is currently running (%2) and cannot be rerun', $job->name, $job->status)
-        unless( $job->is_not_running );
-
-    event_new 'event.job.rerun' => { job=>$job } => sub {
-        if( $p{run_now} ) {
-            my $now = DateTime->now;
-            $now->set_time_zone(_tz);
-            my $end = $now->clone->add( hours => 1 );
-            my $ora_now =  $now->strftime('%Y-%m-%d %T');
-            my $ora_end =  $end->strftime('%Y-%m-%d %T');
-            $job->schedtime( $ora_now );
-            $job->starttime( $ora_now );
-            $job->maxstarttime( $ora_end );
-        }
-        $job->rollback( 0 );
-        $job->status( 'READY' );
-        $job->step( $p{step} || 'PRE' );
-        $job->username( $username );
-        my $exec = $job->exec + 1;
-        $job->exec( $exec );
-        $job->update;
-        my $log = new BaselinerX::Job::Log({ jobid=>$job->id });
-        $log->info(_loc("Job restarted by user %1, execution %2", $realuser, $exec));
-    };
-}
-
 sub status {
     my ($self,%p) = @_;
     my $jobid = $p{jobid} or _throw 'Missing jobid';

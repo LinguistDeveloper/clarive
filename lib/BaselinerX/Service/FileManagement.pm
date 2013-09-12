@@ -9,11 +9,13 @@ with 'Baseliner::Role::Service';
 
 register 'service.fileman.tar' => {
     name => 'Tar Local Files',
+    form => '/forms/tar_local.js',
     handler => \&run_tar,
 };
 
 register 'service.fileman.ship' => {
     name => 'Ship a File Remotely',
+    form => '/forms/ship_remote.js',
     handler => \&run_ship,
 };
 
@@ -38,11 +40,11 @@ sub run_tar {
 
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
-    my $stash = $job->job_stash;
+    my $stash = $c->stash;
     
     $log->info( _loc('Tar of directory `%1` into file `%2`', $config->{source_dir}, $config->{tarfile}), 
             $config );
-    tar_dir( %$config ); 
+    Util->tar_dir( %$config ); 
 }
     
 sub run_store {
@@ -50,7 +52,7 @@ sub run_store {
 
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
-    my $stash = $job->job_stash;
+    my $stash = $c->stash;
     
     my $job_dir = $job->job_dir;
     my $file = $config->{file} // _fail _loc 'Missing parameter file';
@@ -73,8 +75,26 @@ sub run_ship {
 
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
-    my $stash = $job->job_stash;
+    my $stash = $c->stash;
 
+    my $remote = $config->{remote_path} // _fail 'Missing parameter remote_file';
+    my $local  = $config->{local_path} // _fail 'Missing parameter local_file';
+    my $user   = $config->{user};
+    my $chmod  = $config->{'chmod'};
+    my $chown  = $config->{'chown'};
+
+    my $server = _ci( $config->{server} );
+    my $agent = $server->connect( user=>$user );
+    $agent->put_file({ 
+        local  => $local,
+        remote => $remote,
+    });
+    $agent->chown( $chmod, $remote ) if length $chown;
+    $log->error( _loc('Error doing a chown `%1` to file `%2`: %3', $chown,$remote, $agent->output ), $agent->tuple ) if $agent->rc && $agent->rc!=512;
+    $agent->chmod( $chmod, $remote ) if length $chmod;
+    $log->error( _loc('Error doing a chmod `%1` to file `%2`: %3', $chmod,$remote, $agent->output ), $agent->tuple ) if $agent->rc && $agent->rc!=512;
+
+    return 1;
 }
 
 sub run_rm {
@@ -82,7 +102,7 @@ sub run_rm {
 
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
-    my $stash = $job->job_stash;
+    my $stash = $c->stash;
 
     my $file = $config->{file} // _fail _loc 'Missing parameter file';
     
@@ -101,7 +121,7 @@ sub run_rmtree {
 
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
-    my $stash = $job->job_stash;
+    my $stash = $c->stash;
 
     my $dir = $config->{dir} // _fail _loc 'Missing parameter dir';
     

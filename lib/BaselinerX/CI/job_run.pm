@@ -17,38 +17,15 @@ has final_status => ( is=>'rw', isa=>'Any' );  # so that services can request a 
 has current_service => qw(is rw isa Any default job_run);
 #  has failing         => ( is=>'rw', isa=>'Bool', default=>0 );  # XXX desirable?
 
-has_cis 'parent_job'; 
-sub rel_type {
-    { 
-        parent_job => [ to_mid => 'job_run' ] ,
-    };
-}
+#has_cis 'parent_job'; 
+#sub rel_type {
+#    { 
+#        parent_job => [ to_mid => 'job_run' ] ,
+#    };
+#}
 
 
 with 'Baseliner::Role::JobRunner';
-
-around update_ci => sub {
-    my $orig = shift;
-    my $self = shift;
-    my ($master_row, $data ) = @_;
-    my $mid = $self->mid;
-    
-    if( my $row = DB->BaliJob->search({ mid=>$mid })->first ) {
-        $row->update({
-            exec        => $self->exec,
-            step        => $self->step,
-            status      => $self->status,
-            endtime     => $self->endtime,
-        });
-        # serialize stash, only if instanciated
-        if( ref $self ) {
-            my $job_obj = delete $self->job_stash->{job};
-            $row->stash( Util->_dump($self->job_stash) );
-            $self->job_stash({ %{ $self->job_stash }, job=>$job_obj });
-        }
-    }
-    $self->$orig( @_ ); 
-};
 
 # change logger service
 around current_service => sub {
@@ -93,7 +70,10 @@ around exec => sub {
 
 service 'job.run' => {
     name    => 'Job CI Runner',
-    handler => \&run,
+    handler => sub{
+        my ($self,$c,$config)=@_;
+        $self->run();
+    },
 };
 
 sub run {
@@ -126,16 +106,16 @@ sub run {
     _debug( _loc('Rule Runner, STEP=%1, PID=%2, RULE_ID', $self->step, $self->pid ) );
 
     # prepare stash for rules
-    #my $prev_stash = delete $job->{job_stash};
+    my $prev_stash = $self->job_stash;
     my $stash = { 
-            %{ $self->job_stash }, 
+            %{ $prev_stash }, 
             job         => $self,
             bl          => $self->bl, 
             job_step    => $self->step,
             job_dir     => $self->job_dir,
             changesets  => $self->changesets,
     };
-    $self->job_stash( $stash );  # make sure they are the same, there are services that get the stash from here
+    #die _dump $stash unless $self->step eq 'INIT';
     
     try {
         my $ret = Baseliner->model('Rules')->run_single_rule( 
@@ -144,7 +124,7 @@ sub run {
             stash   => $stash,
         );
         #$self->logger->debug( 'Stash after rules', $stash );
-        $self->job_stash( $stash );
+        $self->job_stash( $stash ); # saves stash to table
         $self->finish( $self->final_status || 'FINISHED' );
     } catch {
         my $err = shift;   
@@ -163,7 +143,8 @@ sub run {
     } else {
         $self->logger->info( _loc( 'Job step %1 finished with status %2', $self->step, $self->status ) );
     }
-    $self->goto_next_step;
+    $self->goto_next_step unless $self->status eq 'ERROR';
+    return $self->status;
 }
 
 our %next_step   = ( CHECK=>'INIT', INIT=>'PRE', PRE => 'RUN', RUN => 'POST', POST => 'END' );

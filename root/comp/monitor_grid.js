@@ -418,6 +418,54 @@
         } 
     });
 
+    var run_inproc = function(){
+        var sm = grid.getSelectionModel();
+        var sel = sm.getSelected();
+        if( sel ) {
+            var cons_inproc = new Baseliner.MonoTextArea({ value:'' });
+            var cons_pan = new Ext.Panel({ layout:'fit', items: cons_inproc, wait: _('Loading...') });
+            var win = new Baseliner.Window({ title:_('Run In-process: %1', sel.data.name), 
+                layout: 'fit', width: 800, height: 600, items: cons_pan });
+            cons_inproc.on('afterrender', function(){ 
+                Baseliner.showLoadingMask( cons_pan.el );
+                Baseliner.ajaxEval( '/ci/'+sel.data.mid+'/run_inproc', { id_job: sel.data.id }, function(res){
+                    if( !cons_pan.el ) return;
+                    cons_inproc.setValue( res.data ? res.data.output : _('(no data)') );
+                    Baseliner.hideLoadingMask( cons_pan.el );
+                    grid.getStore().reload();
+                }, function(){
+                    Baseliner.hideLoadingMask( cons_pan.el );
+                });
+            });
+            win.show();
+        }
+    }
+    var menu_tools = new Ext.Button({
+      tooltip: _('Tools'),
+      icon: '/static/images/icons/wrench.png',
+      menu: [
+            { text: _('Run In-process'), handler:function(){ run_inproc() },
+              icon: '/static/images/icons/job.png'
+            },
+            {
+                text: _('Export'),
+                icon:'/static/images/download.gif',
+                handler: function() {
+                    var sm = grid.getSelectionModel();
+                    if (sm.hasSelection())
+                    {
+                        var sel = sm.getSelected();
+                        Baseliner.message( _('Job Export'), _('Job export started. Wait a few minutes...') );
+                        var fd = document.all.FD || document.all.FrameDownload;
+                        fd.src =  '/job/export?id_job=' + sel.data.id ;
+                    } else {
+                        Ext.Msg.alert(_('Error'), _('Select a row first'));   
+                    };
+                }
+            }
+      ]
+    });
+
     /*
     var do_backout = function(){
         var sm = grid.getSelectionModel();
@@ -655,15 +703,15 @@
                 { header: _('MID'), width: 60, dataIndex: 'mid', sortable: true, hidden: true },
                 { header: _('Job'), width: 140, dataIndex: 'name', sortable: true, renderer: render_topic },    
                 { header: _('Job Status'), width: 130, dataIndex: 'status', renderer: render_level, sortable: true },
+                { header: _('Step'), width: 80, dataIndex: 'step_code', sortable: true , hidden: false },	
                 { header: _('Application'), width: 70, dataIndex: 'applications', renderer: render_app, sortable: false, hidden: is_portlet ? true : false },
                 { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true },
                 { header: _('Natures'), width: 120, hidden: view_natures, dataIndex: 'natures', sortable: false, renderer: render_nature }, // not in DB
                 { header: _('Subapplications'), width: 120, dataIndex: 'subapps', sortable: false, hidden: true, renderer: render_subapp }, // not in DB
                 { header: _('Job Type'), width: 100, dataIndex: 'type', sortable: true, hidden: false },
                 { header: _('User'), width: 80, dataIndex: 'username', sortable: true , renderer: Baseliner.render_user_field, hidden: is_portlet ? true : false},	
-                { header: _('Step'), width: 80, dataIndex: 'step', sortable: true , hidden: true },	
                 { header: _('Execution'), width: 80, dataIndex: 'exec', sortable: true , hidden: true },	
-                { header: _('Last Message'), width: 180, dataIndex: 'last_log', sortable: true , hidden: is_portlet ? true : false},	
+                { header: _('Last Message'), width: 180, dataIndex: 'last_log', sortable: true , hidden: is_portlet ? true : true },	
                 { header: _('Contents'), width: 100, dataIndex: 'contents', renderer: render_contents, sortable: true, hidden: true },
                 { header: _('Scheduled'), width: 130, dataIndex: 'schedtime', sortable: true , hidden: is_portlet ? true : false},	
                 { header: _('Start Date'), width: 130, dataIndex: 'starttime', sortable: true , hidden: is_portlet ? true : false},	
@@ -765,8 +813,9 @@
                                 displayField: 'step'
                             });
                             var run_now = sel.data.step_code == 'END' ? true : false;
+                            var mid = sel.data.mid;
                             var form_res = new Ext.FormPanel({ 
-                                url: '/job/restart',
+                                url: '/ci/job/reset',
                                 frame: false,
                                 height: 150,
                                 defaults: { width:'100%' },
@@ -774,6 +823,7 @@
                                 items: [
                                     user_combo,
                                     { xtype: 'hidden', name:'id_job', value: sel.data.id },
+                                    { xtype: 'hidden', name:'mid', value: sel.data.mid },
                                     { xtype: 'hidden', name:'job_name', value: sel.data.name },
                                     { xtype: 'hidden', name:'starttime',fieldLabel: _('Start Date'), value: sel.data.starttime },
                                     { xtype: 'checkbox', name: 'run_now', fieldLabel : _("Run Now"), checked: run_now },
@@ -786,7 +836,7 @@
                                                 store.load();
                                                 win_res.close();
                                             },
-                                            failure: function(resp,opt) { Baseliner.message(_('Error'), _('Could not rerun the job.')); }
+                                            failure: function(f,a) { Baseliner.error(_('Error'), _('Could not rerun the job: %1', a.result.msg) ); }
                                     }) }
                                     },
                                     {text:_('Cancel'), handler:function(f){ win_res.close() }}
@@ -841,24 +891,8 @@
                     }
                 }),
 % }
-                new Ext.Toolbar.Button({
-                    text: _('Export'),
-                    icon:'/static/images/download.gif',
-                    cls: 'x-btn-text-icon',
-                    handler: function() {
-                        var sm = grid.getSelectionModel();
-                        if (sm.hasSelection())
-                        {
-                            var sel = sm.getSelected();
-                            Baseliner.message( _('Job Export'), _('Job export started. Wait a few minutes...') );
-                            var fd = document.all.FD || document.all.FrameDownload;
-                            fd.src =  '/job/export?id_job=' + sel.data.id ;
-                        } else {
-                            Ext.Msg.alert(_('Error'), _('Select a row first'));   
-                        };
-                    }
-                }),
                 '->',
+                menu_tools,
                 refresh_button
                 ]
         });

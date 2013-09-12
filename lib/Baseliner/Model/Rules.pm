@@ -30,6 +30,7 @@ sub build_tree {
         $row->{stmt_attr} = _load( $row->{stmt_attr} );
         $n = { active=>1, %$n, %{ $row->{stmt_attr} } } if length $row->{stmt_attr};
         delete $n->{disabled};
+        delete $n->{id};
         $n->{active} //= 1;
         $n->{disabled} = $n->{active} ? \0 : \1;
         my @chi = $self->build_tree( $id_rule, $row->{id} );
@@ -127,6 +128,7 @@ sub dsl_run {
 
 sub run_rules {
     my ($self, %p) = @_;
+    local $Baseliner::_no_cache = 1;
     my @rules = 
         $p{id_rule} 
             ? ( +{ DB->find( $p{id_rule} )->get_columns } )
@@ -169,6 +171,7 @@ sub run_rules {
 
 sub run_single_rule {
     my ($self, %p ) = @_;
+    local $Baseliner::_no_cache = 1;
     $p{stash} //= {};
     my $rule = DB->BaliRule->find( $p{id_rule} );
     _fail _loc 'Rule with id `%1` not found', $p{id_rule} unless $rule;
@@ -198,11 +201,15 @@ sub dsl_listing {
 ######################################## GLOBAL SUBS
 
 sub merge_data {
-    my $d = {};
-    for my $h ( @_ ) {
-        $d = { %$d, %{ $h || {} } };
+    my ($dest,@hashes)=@_;
+    $dest = {} unless ref $dest eq 'HASH';
+    for my $hash ( @hashes ) {
+        next unless ref $hash eq 'HASH';
+        for my $k ( keys %$hash ) {
+            $dest->{$k} = $hash->{$k};
+        }
     }
-    parse_vars( $d, $d );
+    parse_vars( $dest, $dest );
 }
 
 # launch runs service, merge return into stash and returns what the service returns
@@ -219,7 +226,6 @@ sub launch {
         ? $return_data 
         : {}; #!$refr || $refr eq 'ARRAY' ? { service_return=>$return_data } : {} ;
     # merge into stash
-    _log $stash;
     merge_into_stash( $stash, ( length $data_key ? { $data_key => $return_data } : $return_data ) );
     return $return_data;
 }
@@ -270,8 +276,8 @@ sub changeset_projects {
 
 sub variables_for_bl {
     my ($ci, $bl) = @_; 
-    my $vars = $ci->variables // {}; 
-    $vars->{ $bl // '*' } // {};
+    my $vars = $ci->variables // { _no_vars=>1 }; 
+    $vars->{ $bl // '*' } // { _no_vars_for_bl=>1 };
 }
 
 ############################## STATEMENTS
@@ -486,9 +492,13 @@ register 'statement.project.loop' => {
     dsl => sub { 
         my ($self, $n, %p ) = @_;
         sprintf(q{
-            for my $project ( map { $_->{project} } _array( $stash->{project_changes} ) ) {
+            for my $project ( map { _ci($_->{project}->mid) } _array( $stash->{project_changes} ) ) {
                 $stash->{project} = $project->name;
-                merge_data $stash, variables_for_bl( $project, $stash->{bl} ), { _ctx => 'project_loop' }; 
+                my $vars = variables_for_bl( $project, $stash->{bl} );
+                $stash->{job}->logger->info( _loc('Current project *%1* (%2)', $project->name, $stash->{bl} ), $vars );
+                _log $stash;
+                merge_data $stash, $vars, { _ctx => 'project_loop' }; 
+                _log $stash;
                 
                 %s
             }
@@ -505,7 +515,10 @@ register 'statement.if.nature' => {
     dsl => sub { 
         my ($self, $n , %p) = @_;
         sprintf(q{
-            if( exists $stash->{natures}{'%s'} ) {
+            if( my $nature = $stash->{natures}{'%s'} ) {
+                $stash->{current_nature} = $nature;
+                $stash->{job}->logger->info( _loc('Nature Detected *%1*', $nature->name ) );
+
                 %s
             }
         }, $n->{nature} , $self->dsl_build( $n->{children}, %p ) );

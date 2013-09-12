@@ -108,6 +108,7 @@ sub auto : Private {
 
     return 1 if $c->stash->{auth_skip};
     return 1 if $path eq 'i18n/js';
+    return 1 if $path eq 'cla-worker';
     return 1 if try { $c->session->{user} // 0 } catch { 0 };
     
     # auth check skip
@@ -415,6 +416,13 @@ sub from_yaml : Local {
         { success=>\0, msg=>"" . shift() };
     };
     $c->forward('View::JSON');
+}
+
+
+sub cla_worker : Path('cla-worker') {
+    my ( $self, $c ) = @_;
+    $c->res->content_type('text/plain; charset=utf-8');
+    $c->res->body( scalar _file($c->path_to('bin/cla-worker'))->slurp ); 
 }
 
 

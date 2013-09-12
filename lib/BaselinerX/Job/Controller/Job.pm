@@ -346,10 +346,10 @@ sub monitor_json : Path('/job/monitor_json') {
         my $step = _loc( $r->{step} );
         my $status = _loc( $r->{status} );
         my $type = _loc( $r->{type} );
-        my %app;
         my @changesets = (); #_array $job_items{ $r->{id} };
-        my $contents = [];
-        my $apps = [ map { (ns_split( $_ ))[1] } grep {$_} keys %app ];
+        my $ci = _ci( $r->{mid} );
+        my $contents = [ map { $_->topic_name } _array $ci->changesets ];
+        my $apps = [ map { $_->name } _array $ci->projects ];
         my $last_log_message = $r->{last_log_message};
 
         my @natures = ();
@@ -416,7 +416,7 @@ sub monitor_json : Path('/job/monitor_json') {
           }; # if ( ( $cnt++ >= $start ) && ( $limit ? scalar @rows < $limit : 1 ) );
     }
     _debug "Looping end ";
-    _debug \@rows;
+    #_debug \@rows;
 
     $c->stash->{json} = { 
         totalCount=> $cnt,
@@ -523,8 +523,6 @@ sub job_submit : Path('/job/submit') {
                 $msg = "Job %1 cancelled";
             }
             $c->stash->{json} = { success => \1, msg => _loc( $msg, $job_name) };
-        } elsif( $p->{action} eq 'rerun' ) {
-            my $job = $c->model('Jobs')->rerun( jobid=>$p->{id_job}, username=>$username ); 
         }
         else { # new job
             my $bl = $p->{bl};
@@ -586,31 +584,13 @@ sub job_submit : Path('/job/submit') {
     } catch {
         my $err = shift;
         _error "Error during job creation: $err";
+        # clean up dbi transaction stuff
+        $err =~ s({UNKNOWN})()g;
         $err =~ s{DBIx.*\(\):}{}g;
         $err =~ s{ at./.*line.*}{}g;
         $c->stash->{json} = { success => \0, msg => _loc("Error creating the job: %1", $err ) };
     };
     $c->forward('View::JSON');	
-}
-
-sub restart : Local {
-    my ( $self, $c ) = @_;
-    my $p = $c->request->parameters;
-    
-    try {
-        my $job = $c->model('Jobs')->rerun(
-            jobid    =>$p->{id_job},
-            username =>$p->{username},
-            step     => $p->{step},
-            run_now  => $p->{run_now} eq 'on',
-            realuser =>$c->username,
-            starttime=>$p->{starttime} ); 
-        $c->stash->{json} = { success => \1, msg => _loc("Job %1 restart", $p->{job_name} ) };
-    } catch {
-        my $err = shift;
-        $c->stash->{json} = { success => \0, msg => _loc("Error creating the job: %1", $err ) };
-    };
-    $c->forward('View::JSON');
 }
 
 sub natures_json {

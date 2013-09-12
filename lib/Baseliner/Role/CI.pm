@@ -5,6 +5,8 @@ use v5.10;
 use Moose::Util::TypeConstraints;
 use Try::Tiny;
 require Baseliner::CI;
+use Baseliner::Utils qw(_ci _fail _loc _log _debug _unique _array _load _dump _package_is_loaded _any);
+use Baseliner::Sugar;
 
 subtype CI    => as 'Baseliner::Role::CI';
 subtype CIs   => as 'ArrayRef[CI]';
@@ -111,8 +113,6 @@ sub update {
 }
 
 sub save {
-    use Baseliner::Utils;
-    use Baseliner::Sugar;
     my $self = shift;
     #my %p;
     #if( ref $_[0] eq 'HASH' ) {
@@ -290,7 +290,6 @@ sub save_fields {
 }
 
 sub load {
-    use Baseliner::Utils;
     my ( $self, $mid, $row, $data, $yaml ) = @_;
     $mid ||= $self->mid;
     _fail _loc( "Missing mid %1", $mid ) unless length $mid;
@@ -347,7 +346,7 @@ sub load {
         next unless defined $rel_type;
         my $my_mid = $rel_type->[0];
         my $other_mid = $my_mid eq 'to_mid' ? 'from_mid' : 'to_mid';
-        $field_rel_mids{ "$rel_type->[1]" } = { field=>$field, my_mid => $my_mid, other_mid => $other_mid, };
+        $field_rel_mids{ $rel_type->[1] } = { field=>$field, my_mid => $my_mid, other_mid => $other_mid, opts=>{splice @$rel_type,2} };
         delete $data->{$field}; # delete yaml junk
         #$data->{$field} = $prev_value if defined $prev_value && ! _array( $data->{$field} );
     }

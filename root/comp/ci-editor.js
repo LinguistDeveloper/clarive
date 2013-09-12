@@ -224,8 +224,7 @@
             bl_combo.getStore().on( 'load', function(){
                 bl_combo.setValue( params.rec.bl );
             });
-            if( params.ci_form ) {
-                Ext.each( params.ci_form, function(form_url){
+            var add_ci_form = function(form_url, params) {
                     Baseliner.ajaxEval( form_url, params, function(res){
                         if( res != undefined ) {
                             var fields;
@@ -242,8 +241,19 @@
                             form.getForm().setValues( params.rec );
                         }
                     });
+            };
+            if( params.ci_form ) {
+                // XXX deprecated: (ci_form inconsistent with cache)
+                Ext.each( params.ci_form, function(form_url){
+                    add_ci_form( form_url, params );
                 });
             } else {
+                Baseliner.ci_call( params.mid, 'ci_form', {}, function(res){
+                    var forms = res.data;
+                    Ext.each( forms, function(form_url){
+                        add_ci_form( form_url, params );
+                    });
+                });
                 //form.getForm().loadRecord( params.rec );
             }
         });
