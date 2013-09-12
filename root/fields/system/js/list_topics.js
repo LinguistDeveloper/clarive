@@ -44,7 +44,14 @@ params:
     });
     if( meta.list_type == 'grid' ) {
         // Grid
-        topic_box = new Baseliner.TopicGrid({ 
+		
+        var sm = new Baseliner.CheckboxSelectionModel({
+            checkOnly: true,
+            singleSelect: false
+        });
+		
+        topic_box = new Baseliner.TopicGrid({
+			sm: sm ,
             fieldLabel:_( meta.name_field ), 
             combo_store: topic_box_store,
             columns: meta.columns,
