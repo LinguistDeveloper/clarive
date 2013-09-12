@@ -1080,18 +1080,19 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
     enableDragDrop: true,   
     pageSize: 10, // used by the combo 
     constructor: function(c){  // needs to declare the selection model in a constructor, otherwise incompatible with DD
-        
-        var sm = new Baseliner.CheckboxSelectionModel({
-            checkOnly: true,
-            singleSelect: false
-        });
+        //var sm = new Baseliner.CheckboxSelectionModel({
+        //    checkOnly: true,
+        //    singleSelect: false
+        //});
         
         var render_text_field = function(v){
             if( !v ) v ='';
             return '<pre>'+v+'</pre>';
         };
         
-        var cols = [ sm ];
+        //var cols = [ sm ];
+        var cols = [ c.sm ];
+        
         var store_fields = ['mid'];
         var cols_keys = ['name', 'title'];
         var cols_templates = {
@@ -1199,7 +1200,9 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
         self.refresh(true);
         self.on("rowdblclick", function(grid, rowIndex, e ) {
             var r = grid.getStore().getAt(rowIndex);
-            var title = Baseliner.topic_title( r.get('mid'), _(r.get( 'categories' ).name), r.get('color') );
+
+            //var title = Baseliner.topic_title( r.get('mid'), _(r.get( 'categories' ).name), r.get('color') );
+            var title = Baseliner.topic_title( r.get('mid'), _(r.get('name')), r.get('color') );
             Baseliner.show_topic( r.get('mid'), title, { topic_mid: r.get('mid'), title: title, _parent_grid: undefined } );
             
         });        
