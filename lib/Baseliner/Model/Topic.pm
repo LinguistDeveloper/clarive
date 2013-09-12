@@ -618,15 +618,13 @@ sub update {
                     my $id_category = $topic->id_category;
                     my $id_category_status = $topic->id_category_status;
                     
-                    my $notify_scope = {
-                        project         => \@projects,
+                    my $notify = {
                         category        => $id_category,
                         category_status => $id_category_status,
                     };
-                    
-                    $self->check_sistem_notify('event.topic.create', $notify_scope);
-                    
-                    { mid => $topic->mid, topic => $topic->title, category => $category->{name} }   # to the event
+                    $notify->{project} = \@projects if @projects;
+                    my $subject = "Topic created";
+                    { mid => $topic->mid, topic => $topic->title, category => $category->{name}, subject => $subject, notify => $notify }   # to the event
                 });                   
             } 
             => sub { # catch
@@ -704,13 +702,6 @@ sub update {
     return ( $return, $topic_mid, $status, $p->{title}, $category, $modified_on);
 } ## end sub update
 
-sub check_sistem_notify {
-    my ($self, $key_event, $notify_scope) = @_;
-    
-    
-   
-   
-}
 
 sub append_category {
     my ($self, @topics ) =@_;
@@ -1398,7 +1389,7 @@ sub save_data {
                              username   => $data->{username},
                              field      => _loc ($description{ $field }),
                              old_value  => $old_text{$field},
-                             new_value  => $method ? $topic->$method->name : $topic->$field,
+                             new_value  => $method && $topic->$method ? $topic->$method->name : $topic->$field,
                            } 
                         => sub {
                             { mid => $topic->mid, topic => $topic->title }   # to the event

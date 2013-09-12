@@ -66,8 +66,38 @@ sub run_once {
                 $rulerow->update;
             }
             
-            _log ">>>>>>>>>>>>>>>STASH: " . _dump $stash;
+            my $event_key = $ev->event_key;
+            my $notify_scope = $stash->{notify};
             
+            my @notifications = Baseliner->model('Notification')->get_notifications({ event_key => $event_key, notify_scope => $notify_scope });
+            
+            foreach  my $notification ( @notifications ){
+                foreach  my $template (  keys $notification ){
+                    my $model_messaging = {
+                        subject         => $stash->{subject},
+                        sender          => $data->{from},
+                        carrier         => 'email',
+                        template        => $template,
+                        template_engine => 'mason',
+                    };
+                    $model_messaging->{to} = { users => $notification->{$template}->{TO} } if (exists $notification->{$template}->{TO}) ;
+                    $model_messaging->{cc} = { users => $notification->{$template}->{CC} } if (exists $notification->{$template}->{CC}) ;
+                    $model_messaging->{bcc} = { users => $notification->{$template}->{BCC} } if (exists $notification->{$template}->{BCC}) ;
+                    
+                    $model_messaging->{vars} = $stash;
+                    $model_messaging->{vars}->{to} = { users => $notification->{$template}->{TO} } if (exists $notification->{$template}->{TO}) ;
+                    $model_messaging->{vars}->{cc} = { users => $notification->{$template}->{CC} } if (exists $notification->{$template}->{CC}) ;
+                    $model_messaging->{vars}->{bcc} = { users => $notification->{$template}->{BCC} } if (exists $notification->{$template}->{BCC}) ;
+                    
+                    Baseliner->model( 'Messaging' )->notify(%{$model_messaging});
+                    
+                    my $rulerow = DB->BaliEventRules->create({
+                        id_event=> $ev->id, stash_data=> _dump( $model_messaging ), return_code=>0, 
+                    });
+                }
+            }
+            
+
             $event_status= $rc ? 'ko' : 'ok';
             $ev->update({ event_status=>$event_status });
         } catch {
