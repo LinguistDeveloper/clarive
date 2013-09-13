@@ -26,6 +26,7 @@ has_array 'destroy_list';
 has chunk_size => qw(is ro lazy 1), default => sub{ 64 * 1024 }; # 64K
 has timeout_file => qw(is ro default 10);  # if we don't get blpop stuff in x seconds, the file is done - careful with large chunk_sizes, may take more
 has wait_frequency => qw(is rw default 5);
+has cap_wait => qw(is rw default 2);   # how long to wait for worker responses
 
 has rc     => qw(is rw isa Maybe[Num] default 0);
 has output => qw(is rw isa Maybe[Str] );
@@ -51,6 +52,7 @@ sub put_file {
     my $file_size;
     if( exists $p->{local} ) {
         my $f = Util->_file( $local ); 
+        Util->_fail( Util->_loc( 'Local file `%1` not found', $f) ) unless -e $f;
         $file_size = $f->stat->size;
     } else {
         $file_size = length( $p->{data} );
@@ -135,10 +137,10 @@ sub put_dir {
     say "WRITING $local_tar";
     $tar->write( $local_tar );
     # send to remote tar
-    my $remote_tar = $self->_eval('File::Spec->catfile( File::Spec->tmpdir, $stash )', "remote-$fn" );
+    my $remote_tar = $self->remote_eval('File::Spec->catfile( File::Spec->tmpdir, $stash )', "remote-$fn" );
     $self->put_file({ local=>$local_tar, remote=>$remote_tar });
     # mkpath, untar, delete
-    $self->_eval(q{
+    $self->remote_eval(q{
         if( $stash->{replace} ) {
             rmtree( $stash->{remote} ) if length $stash->{remote} > 4; 
         }
@@ -190,7 +192,7 @@ sub execute {
     my $self = shift;
     my %p = %{ shift() } if ref $_[0] eq 'HASH';
     my @cmd = @_;
-    my $res = $self->_eval( q{ 
+    my $res = $self->remote_eval( q{ 
         my $merged = Capture::Tiny::tee_merged(sub{ 
             system @{ $stash };
             die $! if $?;
@@ -199,7 +201,31 @@ sub execute {
     return $self->ret;
 }
 
-sub chmod {}
+sub chmod {
+    my ($self,$mode,@files)=@_;
+    $self->remote_eval( q(
+        my $mode = oct($stash->{mode}) || return "Invalid mode: $stash->{mode}\n";
+        my $ret = chmod( $mode, @{$stash->{files}} );
+        return $ret == 0 ? $! : 0;
+    ), 
+    { mode=>$mode, files=>\@files });
+    $self->rc( 1 ) if $self->ret && !ref $self->ret;
+    $self->output( $self->ret ) if $self->ret && !ref $self->ret;
+
+    return $self->tuple;
+}
+
+sub chown {
+    my ($self,$perm,@files)=@_;
+    $self->execute( 'chown', $perm, @files );
+    return $self->tuple;
+}
+
+sub tuple {
+    my ($self)=@_;
+    { ret=>$self->ret, output=>$self->output, rc=>$self->rc };
+}
+
 sub error {}
 sub get_dir {}
 sub mkpath {}
@@ -209,7 +235,7 @@ sub _msgid {
     Data::UUID->new->create_from_name_b64( 'clarive', 'worker-agent');
 }
 
-sub _eval {
+sub remote_eval {
     my ($self, $code, $stash ) = @_;
     
     $self->_worker_do( 
@@ -291,7 +317,7 @@ sub _whos_capable {
    my $reqid = $self->_msgid;
    my $cap64 = MIME::Base64::encode_base64( join ',', @caps );
    $self->db->publish( "queue:capability:$reqid", $cap64 );
-   if( my $who = $self->db->blpop( "queue:capable:$reqid", 5 ) ) {
+   if( my $who = $self->db->blpop( "queue:capable:$reqid", $self->cap_wait ) ) {
        my $workerid = $who->[1];
        say "$workerid can!";
        $self->db->del( "queue:capable:$reqid" );

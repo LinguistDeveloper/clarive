@@ -1,4 +1,5 @@
-(function(){
+(function(params){
+    if( !params ) params = {};
     var ps = 500; //page_size
     var id_job = '<% $c->stash->{id_job} %>' ;
     var job_exec = '<% $c->stash->{job_exec} %>' ;
@@ -6,7 +7,7 @@
     var filter_key = 'log_filter_<% $c->stash->{id_job} . int(rand(9999999999)) %>' ;
     var annotate_now = <% $c->stash->{annotate_now} ? 'true' : 'false' %> ;
     var filter_cookie; // = Baseliner.cookie.get( filter_key );
-    var filter_obj = filter_cookie || {
+    var filter_obj = filter_cookie || params.filter_obj || {
         info : true,
         comment: true,
         warn : true,
@@ -75,6 +76,7 @@
         cm.setHidden( cm.getIndexById('service_key'), !filter_obj['debug'] );
         cm.setHidden( cm.getIndexById('milestone'), !filter_obj['debug'] );
         Baseliner.cookie.set( filter_key , filter_obj ); 
+        params.filter_obj = filter_obj;
         store_load();
     };
 

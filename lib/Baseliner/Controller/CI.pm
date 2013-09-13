@@ -27,6 +27,7 @@ sub gridtree : Local {
 # list - used by the west navigator
 sub list : Local {
     my ($self, $c) = @_;
+    local $Baseliner::CI::get_form = 1;
     my $p = $c->req->params;
     $p->{user} = $c->username;
     my ($total, @tree ) = $self->dispatch( $p );
@@ -192,8 +193,9 @@ sub tree_classes {
 
 sub form_for_ci {
     my ($self, $class, $collection )=@_;
-    my $ci_form = $class && $class->can('form') 
-        ? $class->form 
+    local $Baseliner::CI::get_form = 1;
+    my $ci_form = $class && $class->can('ci_form') 
+        ? $class->ci_form 
         : sprintf( "/ci/%s.js", $collection );
     my $component_exists = -e Baseliner->path_to( 'root', $ci_form );
     return $component_exists ? $ci_form : '';
@@ -588,6 +590,7 @@ sub children : Local {
 ## adds/updates foreign CIs
 
 sub ci_create_or_update {
+    my $self = shift;
     my %p = @_;
     return $p{mid} if length $p{mid};
     my $ns = $p{ns} || delete $p{data}{ns};
@@ -597,12 +600,10 @@ sub ci_create_or_update {
     
     # check if it's an update, in case of foreign ci
 
-    # my $master_row = master_new $collection => $name => $p{data};
-    # $master_row->ns( $ns ) if $p{ns};
-    # $master_row->update;
-    # return $master_row->mid;
     if ( length $p{mid} ) {
-        _ci( $p{mid} )->save( data => $p{data} );
+        my $ci = _ci( $p{mid} );
+        $ci->update( %{ $p{data} || {} } );
+        $ci->save;
         return $p{mid};
     } else {
         my $name = $p{name};
@@ -622,11 +623,14 @@ sub ci_create_or_update {
             $mid = $same_name_cis[ 0 ]->{mid};
         }
 
-
         if ( !$mid ) {
-            return $class->save( name => $name, data => $p{data} );
+            my $d = { name => $name, %{ $p{data} || {} } };
+            my $ci = $class->new($d);
+            return $ci->save;
         } else {
-            _ci( $mid )->save( data => $p{data} );
+            my $obj = _ci( $mid );
+            $obj->update( %{ $p{data} || {} });
+            $obj->save;
             return $mid;
         }
     } ## end else [ if ( length $p{mid} ) ]
@@ -657,7 +661,7 @@ sub sync : Local {
             if( $k eq 'ci_pre' ) {
                 for my $ci ( _array $v ) {
                     _log( _dump( $ci ) );
-                    push @ci_pre_mid, ci_create_or_update( %$ci ) ;
+                    push @ci_pre_mid, $self->ci_create_or_update( %$ci ) ;
                 }
             }
             elsif( $v =~ /^ci_pre:([0-9]+)$/ ) {
@@ -669,7 +673,7 @@ sub sync : Local {
             }
         }
 
-        $mid = ci_create_or_update( rel_field => $collection, name=>$name, class=>$class, ns=>$ns, collection=>$collection, mid=>$mid, data=>\%ci_data );
+        $mid = $self->ci_create_or_update( rel_field => $collection, name=>$name, class=>$class, ns=>$ns, collection=>$collection, mid=>$mid, data=>\%ci_data );
 
         $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 saved ok', $name) };
         $c->stash->{json}{mid} = $mid;
@@ -704,13 +708,22 @@ sub update : Local {
     $action ||= delete $p->{action};
     my $class = "BaselinerX::CI::$collection";    # XXX what?? fix the class vs. collection mess
     my $chi = delete $p->{children};
+    delete $p->{version}; # form should not set version
     try {
         if( $action eq 'add' ) {
-            $mid = $class->save( name=>$name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), data=> $p ); 
+            my $ci = $class->new( name=>$name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), %$p ); 
+            $ci->save;
+            $mid = $ci->mid;
+            #$mid = $class->save( name=>$name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), data=> $p ); 
         }
         elsif( $action eq 'edit' && defined $mid ) {
             $c->cache_remove( qr/:$mid:/ );
-            $mid = $class->save( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), data => $p ); 
+            #$mid = $class->save( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), data => $p ); 
+            my $ci = $class->new( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), %$p );
+            #my $ci = _ci( $mid );
+            #$ci->update( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), %$p ); 
+            $ci->save;
+            $mid = $ci->mid;
         }
         else {
             _fail _loc("Undefined action");
@@ -744,6 +757,7 @@ sub load : Local {
     my ($self, $c, $action) = @_;
     my $p = $c->req->params;
     my $mid = $p->{mid};
+    local $Baseliner::CI::get_form = 1;
     my $cache_key;
     if( length $mid ) {
         $cache_key = [ "ci:load:$mid:", $p ];
@@ -965,7 +979,7 @@ sub service_run : Local {
     $c->stash->{json} = try {
         my $service = $c->registry->get( $p->{key} );
         my $ci = _ci( $p->{mid} );
-        my $ret = $c->model('Services')->launch( $service->key, obj=>$ci, c=>$c, logger=>$logger, capture=>1 );
+        my $ret = $c->model('Services')->launch( $service->key, obj=>$ci, c=>$c, logger=>$logger, data=>$p->{data}, capture=>1 );
         _debug( $ret );
         _debug( $logger );
         my $console = delete $logger->{console};
@@ -987,7 +1001,7 @@ sub service_run : Local {
 sub edit : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
-
+    local $Baseliner::CI::get_form = 1;
 
     my $has_permission;
     if ( $p->{mid} ) {
@@ -1115,6 +1129,10 @@ Support the following CI specific calls:
     /ci/8394/mymethod     => becomes _ci( 8394 )->mymethod( $json_and_param_data );
     /ci/grammar/mymethod  => becomes BaselinerX::CI::grammar->mymethod( $json_and_param_data );
 
+    and optionally:
+
+    /ci/grammar/mymethod?mid=1111  => becomes _ci( 1111 )->...
+
     TODO: missing RESTful support: GET, PUT, POST
     TODO: check security to Class, CI right here based on REST method
 
@@ -1122,18 +1140,22 @@ Support the following CI specific calls:
 sub default : Path Args(2) {
     my ($self,$c,$arg,$meth) = @_;
     my $p = $c->req->params;
+    my $mid = $p->{mid};
     my $json = $c->req->{body_data};
     my $data = { username=>$c->username, %{ $p || {} }, %{ $json || {} } };
     _fail( _loc "Missing param method" ) unless length $meth;
     try {
         my $ret;
+        $meth = "$meth";
         if( Util->is_number( $arg ) ) {
-            $meth = "$meth";
             my $ci = _ci( $arg );
             _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
             $ret = $ci->$meth( $data );
+        } elsif( length $mid ) {
+            my $ci = _ci( $mid );
+            _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
+            $ret = $ci->$meth( $data );
         } else {
-            $meth = "$meth";
             my $pkg = "BaselinerX::CI::$arg";
             _fail( _loc "Method '%1' not found in class '%2'", $meth, $pkg) unless $pkg->can( $meth) ;
             $ret = $pkg->$meth( $data );

@@ -8,30 +8,32 @@ with 'Baseliner::Role::Registrable';
 register_class 'service' => __PACKAGE__;
 sub service_noun { 'service' };
 
-has 'id'=> (is=>'rw', isa=>'Str', default=>'');
-has 'name' => ( is=> 'rw', isa=> 'Str' );
-has 'desc' => ( is=> 'rw', isa=> 'Str' );
-has 'handler' => ( is=> 'rw', isa=> 'CodeRef' );
-has 'config' => ( is=> 'rw', isa=> 'Str' );
-has 'form' => ( is=> 'rw', isa=> 'Str', default=>'' );
-has 'logger_class' => ( is=> 'rw', isa=> 'Str', default=>'Baseliner::Core::Logger::Base' );  # class
-has 'logger' => ( is=> 'rw', isa=> 'Any' );
-has 'data' => ( is=> 'rw', isa=> 'HashRef' );
+has id           => ( is => 'rw', isa => 'Str', default => '' );
+has name         => ( is => 'rw', isa => 'Str' );
+has desc         => ( is => 'rw', isa => 'Str' );
+has handler      => ( is => 'rw', isa => 'CodeRef' );
+has config       => ( is => 'rw', isa => 'Str' );
+has form         => ( is => 'rw', isa => 'Str', default => '' );
+has logger_class => ( is => 'rw', isa => 'Str', default => 'Baseliner::Core::Logger::Base' );    # class
+has logger       => ( is => 'rw', isa => 'Any' );
+has data         => ( is => 'rw', isa => 'HashRef' );
 
-has 'frequency' => ( is=> 'rw', isa=> 'Int' );  # frequency value in seconds
-has 'frequency_key' => ( is=> 'rw', isa=> 'Str' );  # frequency config key
-has 'scheduled' => ( is=> 'rw', isa=> 'Bool' );  # true for a scheduled job
+has frequency     => ( is => 'rw', isa => 'Int' );                                               # frequency value in seconds
+has frequency_key => ( is => 'rw', isa => 'Str' );                                               # frequency config key
+has scheduled     => ( is => 'rw', isa => 'Bool' );                                              # true for a scheduled job
 
-has 'log' => ( is=> 'rw', isa=> 'Object' );
-has 'show_in_menu' => ( is=> 'rw', isa=> 'Bool' );
+has log          => ( is => 'rw', isa => 'Object' );
+has show_in_menu => ( is => 'rw', isa => 'Bool' );
+has daemon       => ( is => 'rw', isa => 'Bool', default => 0 );
 
-has 'quiet' => (is=>'rw', isa=>'Bool', default=>0 );
-has 'type' => (is=>'rw', isa=>'Str', default=>'std');
-has 'alias' => ( 
-    is=> 'rw', isa=> 'Str',
-    trigger=> sub {
-        my ($self,$alias,$meta)=@_;
-        my $alias_key = 'alias.'.$alias;
+has quiet => ( is => 'rw', isa => 'Bool', default => 0 );
+has type  => ( is => 'rw', isa => 'Str',  default => 'std' );
+has alias => (
+    is      => 'rw',
+    isa     => 'Str',
+    trigger => sub {
+        my ( $self, $alias, $meta ) = @_;
+        my $alias_key = 'alias.' . $alias;
         register $alias_key => { link => $self->id };
         Baseliner::Plug->registry->initialize($alias_key);
     }
@@ -119,6 +121,7 @@ sub run {
         unless( ref $c->stash->{job} ) {
             $c->stash->{job} ||= BaselinerX::Job::Service::Runner->new;
             $c->stash->{job}->logger( $logger );
+            $c->stash->{job}->job_stash( $c->stash );
         }
     } catch {};
 
@@ -161,5 +164,41 @@ sub run {
     return $instance->log;
 }
 
+sub run_container {
+    my ($self,$stash,$config,$obj) = @_;
+    my $handler = $self->handler ;
+    _fail _loc 'Service handler missing' unless ref $handler eq 'CODE';
+    _fail _loc 'Missing argument 1, stash' unless ref $stash eq 'HASH';
+    $config //= {};
+    # create dummy job if we don't have one
+    $stash->{job} or local $stash->{job} = BaselinerX::Type::Service::Container::Job->new( job_stash=>$stash );
+    my $container = BaselinerX::Type::Service::Container->new( stash=>$stash, config=>$config ); 
+    return $handler->( $obj // $self, $container, $config );
+}
 
+######################################################################
+package BaselinerX::Type::Service::Container;
+use Baseliner::Moose;
+has stash  => qw(is rw isa HashRef required 1);
+has config => qw(is rw isa HashRef), default=>sub{ +{} };
+sub job { $_[0]->stash->{job} }
+sub logger { $_[0]->job->logger }
+
+package BaselinerX::Type::Service::Container::Job;
+use Baseliner::Moose;
+has job_dir => qw(is rw isa Str lazy 1), default=>sub{ Util->_tmp_dir() };
+has job_stash  => qw(is rw isa HashRef required 1 weak_ref 1);
+sub logger { 'BaselinerX::Type::Service::Container::Job::Logger' }
+
+package BaselinerX::Type::Service::Container::Job::Logger;
+#use Moose;  # no need for a new
+our $AUTOLOAD;
+sub AUTOLOAD {
+    shift;
+    my $name = $AUTOLOAD;
+    my @a = reverse(split(/::/, $name));
+    my $lev = $a[0];
+    my ($cl,$fi,$li) = caller(0);
+    Util->_log_me( $lev // 'info', $cl, $fi, $li, @_ );
+}
 1;

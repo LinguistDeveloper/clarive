@@ -15,12 +15,12 @@ has 'job_log' => is=>'rw', isa=>'Any';
 sub rule_runner {
     my ($self,$c, $config)=@_;
 
-    my $job = $c->stash->{job};
-    my $bl = $job->bl;
-    my $id_rule = $job->row->id_rule;
+    my $job       = $c->stash->{job};
+    my $bl        = $job->bl;
+    my $id_rule   = $job->row->id_rule;
     my $job_stash = $job->job_stash;
-    my $log = $job->logger;
-    $self->job_log( $log );
+    my $log       = $job->logger;
+    $self->job_log($log);
 
     my $step = $job->step;
     _throw "Missing job chain step" unless $step;
@@ -31,8 +31,9 @@ sub rule_runner {
         id_rule=>$id_rule, 
         logging => 1,
         stash=>{ 
+            job     => $job,
             %$job_stash, 
-            bl => $bl, 
+            bl      => $bl, 
             job_step=>$step,
         });
 }

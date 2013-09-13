@@ -1,5 +1,5 @@
 Baseliner.user_can_edit_ci = <% $c->model('Permissions')->user_has_any_action( action => 'action.ci.%', username=>$c->username ) ? 'true' : 'false' %>;
-Baseliner.user_can_job = <% $c->model('Permissions')->user_projects( username=>$c->username ) ? 'true' : 'false' %>;
+Baseliner.user_can_projects = <% $c->model('Permissions')->user_projects( username=>$c->username ) ? 'true' : 'false' %>;
 Baseliner.user_can_workspace = <% $c->model('Permissions')->user_has_any_action( action=>'action.home.view_workspace', username=>$c->username ) ? 'true' : 'false' %>;
 
 
@@ -462,6 +462,18 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
     }
 });
 
+Baseliner.gen_btn_listener = function() {
+    return {
+        'toggle': function(btn, pressed){
+            btn.one_click = pressed ? 1 : 0;
+        },
+        'click': function(btn){
+            if( btn.one_click >= 2 ) btn.refresh_all();
+            btn.one_click = btn.one_click >= 1 ? 2 : 0;
+            return true;
+        }
+    }
+}
 
 /*
  *
@@ -541,8 +553,10 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             pressed: false,
             toggleGroup: 'explorer-card',
             allowDepress: false,
-            hidden: ! Baseliner.user_can_job,
-            enableToggle: true
+            hidden: ! Baseliner.user_can_projects,
+            enableToggle: true,
+            refresh_all: function(){ if( self.$tree_projects ) self.$tree_projects.refresh_all() },
+            listeners: Baseliner.gen_btn_listener()
         });
 
         var button_favorites = new Ext.Button({
@@ -553,7 +567,9 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             pressed: true,
             allowDepress: false,
             toggleGroup: 'explorer-card',
-            enableToggle: true
+            enableToggle: true,
+            refresh_all: function(){ if( self.$tree_favorites ) self.$tree_favorites.refresh_all() },
+            listeners: Baseliner.gen_btn_listener()
         });
 
         var button_workspaces = new Ext.Button({
@@ -565,7 +581,9 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             pressed: false,
             allowDepress: false,
             enableToggle: true,
-            hidden: ! Baseliner.user_can_workspace
+            hidden: ! Baseliner.user_can_workspace,
+            refresh_all: function(){ if( self.$tree_workspaces ) self.$tree_workspaces.refresh_all() },
+            listeners: Baseliner.gen_btn_listener()
         });
 
         var button_ci = new Ext.Button({
@@ -577,7 +595,9 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             pressed: false,
             allowDepress: false,
             hidden: ! Baseliner.user_can_edit_ci,
-            enableToggle: true
+            enableToggle: true,
+            refresh_all: function(){ if( self.$tree_ci ) self.$tree_ci.refresh_all() },
+            listeners: Baseliner.gen_btn_listener()
         });
 
         var add_to_fav_folder = function() {

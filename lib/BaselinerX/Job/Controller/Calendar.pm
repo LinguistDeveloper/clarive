@@ -410,14 +410,14 @@ that apply to a list of NS.
 sub build_job_window : Path('/job/build_job_window') {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
-
+    $Baseliner::CI::_edge = 1;
     try {
         my $date = $p->{job_date};
         my $date_format = $p->{date_format} or _fail "Missing date format";
         
         my $bl = $p->{bl};
         my $contents = _decode_json $p->{job_contents};
-        $contents = $c->model('Jobs')->container_expand( $contents );
+        #$contents = $c->model('Jobs')->container_expand( $contents );
         my $month_days = 31;	
 
         # get calendar range list

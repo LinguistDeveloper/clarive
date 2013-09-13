@@ -7,29 +7,197 @@ use Try::Tiny;
 #with 'Baseliner::Role::Namespace::Create';
 with 'Baseliner::Role::Service';
 
+register 'service.changeset.items' => {
+    name    => 'Load Job Items into Stash',
+    handler => \&job_items,
+};
+
 register 'service.changeset.checkout' => {
-    name    => 'Checkout files of a changeset',
+    name    => 'Checkout Job Items',
     handler => \&checkout,
 };
 
-register 'service.changeset.job_elements' => {
-    name    => 'Fill job_elements',
-    handler => \&job_elements,
+register 'service.changeset.checkout.bl' => {
+    name    => 'Checkout Job Baseline',
+    handler => \&checkout_bl,
 };
 
-register 'service.changeset.update' => {
-    name    => 'Update Baselines',
-    handler => \&update_baselines,
+register 'service.changeset.natures' => {
+    name    => 'Load Nature Items',
+    icon    => '/static/images/icons/nature.gif',
+    handler => \&nature_items,
 };
+
+sub job_items {
+    my ( $self, $c, $config ) = @_;
+    my $job   = $c->stash->{job};
+    my $log   = $job->logger;
+    my $stash = $c->stash;
+    
+    my $type = $job->job_type;
+    my $bl = $job->bl;
+    
+    my %projects;
+    my @project_changes;
+    my %all_items;
+
+    $log->debug( _loc( "Loading items into stash... (type=%1, bl=%2)", $type, $bl ) );
+    
+    # group changesets by project->repos->revisions
+    for my $cs ( _array( $stash->{changesets} )  ) {
+        my ($project) = $cs->projects;
+        $projects{ $project->mid }{project} //= $project;
+        push @{ $projects{ $project->mid }{changesets} }, $cs;
+        push @{ $projects{ $project->mid }{revisions} }, $cs->revisions;
+        # group revisions by repo
+        for my $rev ( _array( $cs->revisions ) ) {
+            my $repo = $rev->repo;
+            $projects{ $project->mid }{repos}{ $repo->mid }{repo} //= $repo;
+            push @{ $projects{ $project->mid }{repos}{ $repo->mid }{revisions} }, $rev; 
+        }
+    }
+    
+    for my $project_group ( values %projects ) {
+        my ($project,$changesets,$revisions,$repos) = @{ $project_group }{ qw/project changesets revisions repos/ };
+        my $pc = { project => $project };
+        $repos //= {};
+        my @items;
+        for my $repo_group ( values %$repos ) {
+            my ($revs,$repo) = @{ $repo_group }{qw/revisions repo/};
+            my @repo_items = $repo->group_items_for_revisions( revisions=>$revs, type=>$type, tag=>$bl );
+            push @items, map {
+                my $it = $_;
+                $it->path_in_repo( $it->path );  # otherwise source/checkout may not work
+                $it->path( '' . _dir('/', $project->name, $repo->rel_path, $it->path) );  # prepend project name
+                $it;
+            } @repo_items;
+            push @{ $pc->{repo_revisions_items} }, { repo=>$repo, revisions=>$revisions, items=>\@items };
+        }
+        $project->{items} = \@items;
+        $all_items{ $_->path }=$_ for @items;
+        push @project_changes, $pc; 
+    }
+    # put unique items into stash
+    $stash->{items} = [ values %all_items ];
+
+    # save project-repository structure
+    $stash->{project_changes} = \@project_changes;
+    
+    my $cnt = scalar keys %all_items; 
+    $log->info( _loc( "Found %1 items for this job", $cnt ), [ keys %all_items ] ); 
+    
+    { project_count=>scalar keys %projects };
+}
+
+sub checkout_bl {
+    my ( $self, $c, $config ) = @_;
+    my $job   = $c->stash->{job};
+    my $log   = $job->logger;
+    my $stash = $c->stash;
+    my $job_dir = $job->job_dir;
+    my $bl = $stash->{bl};
+    _fail _loc 'Missing job_dir' unless length $job_dir;
+    
+    my @project_changes = @{ $stash->{project_changes} || [] };
+    
+    $log->info( _loc('Checking out baseline for %1 project(s)', scalar(@project_changes) ) );
+    for my $pc ( @project_changes ) {
+        my ($project, $repo_revisions_items ) = @{ $pc }{ qw/project repo_revisions_items/ };
+        next unless ref $repo_revisions_items eq 'ARRAY';
+        for my $rri ( @$repo_revisions_items ) {
+            my ($repo, $revisions,$items) = @{ $rri }{ qw/repo revisions items/ };
+            my $dir_prefixed = File::Spec->catdir( $job_dir, $project->name, $repo->rel_path );
+            $log->info( _loc('Checking out baseline %1 for project %2, repository %3: %4', $bl, $project->name, $repo->name, $dir_prefixed ) );
+            my $co_info = $repo->checkout( tag=>$bl, dir=>$dir_prefixed );
+            my @ls = _array( $co_info->{ls} );
+            $log->info( _loc('Baseline checkout of %1 item(s) completed', scalar(@ls)), join("\n",@ls) );
+        }
+    }
+}
 
 sub checkout {
     my ( $self, $c, $config ) = @_;
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
-    my $stash = $job->job_stash;
+    my $stash = $c->stash;
+    my $job_dir = $job->job_dir;
+    _fail _loc 'Missing job_dir' unless length $job_dir;
+    
+    my $cnt = 0;
+    my @item_paths;
+    my @items = _array( $stash->{items} );
+    for my $item ( @items ) {
+        push @item_paths, $item->path;
+        $item->checkout( dir=>$job_dir );
+        $cnt++;
+    }
+    $log->info( _loc('Checked out %1 item(s) to %2', $cnt, $job_dir), [ map { "$_->{path} ($_->{versionid})" } @items ] );
+}
+
+sub nature_items {
+    my ( $self, $c, $config ) = @_;
+    my $job   = $c->stash->{job};
+    my $log   = $job->logger;
+    my $stash = $c->stash;
+
+    $stash->{natures} = {}; 
+    my $nat_id = $config->{nature_id} // 'name';  # moniker?
+   
+    my @nat_rows = DB->BaliMaster->search({ collection=>'nature' }, { select=>'mid' })->hashref->all;
+    my @items = @{ $stash->{items} || [] };
+    my %nature_names;
+    my @msg;
+    for my $nature ( map { _ci($_->{mid}) } @nat_rows ) {
+        push @msg, "nature = " . $nature->name;
+        ITEM: for my $it ( @items ) {
+            push @msg, "item = " . $it->path;
+            if( $nature->push_item( $it ) ) {
+                my $id =  $nature->$nat_id;
+                my $mid =  $nature->mid;
+                $stash->{natures}{ $id } = $nature;
+                $stash->{natures}{ $mid } = $nature;
+                $nature_names{ $nature->name } = ();
+                push @msg, "MATCH = " . $it->path;
+                last ITEM;
+            } else {
+                push @msg, "NO = " . $it->path;
+            }
+        }
+    }
+    $log->debug( _loc('Nature check log'), \@msg );
+    $log->debug( _loc('Natures'), $stash->{natures} );
+    my @nats = keys %nature_names;
+    if( my $cnt = scalar @nats ) {
+        $log->info( _loc('%1 nature(s) detected in job items: %2', $cnt, join ', ',@nats ) );
+    } else {
+        $log->warn( _loc('No natures detected in job items') );
+    }
+    return 0;
+}    
+    
+########### DEPRECATED:
+
+## deprecated in favor of service.changeset.items, changesets now included in stash
+register 'service.changeset.job_elements' => {
+    name    => 'Fill job_elements',
+    deprecated => 1,
+    handler => \&job_elements,
+};
+
+register 'service.changeset.update' => {
+    name    => 'Update Baselines',
+    deprecated => 1,
+    handler => \&update_baselines,
+};
+
+sub checkout_items {
+    my ( $self, $c, $config ) = @_;
+    my $job   = $c->stash->{job};
+    my $log   = $job->logger;
+    my $stash = $c->stash;
     my $bl    = $job->bl;
 
-    my $e = $job->job_stash->{elements};
+    my $e = $stash->{elements};
 
     $log->debug( "Elements", data => _dump $e);
     my @eltos = $e->list( '' );
@@ -94,7 +262,7 @@ sub job_elements {
     my ( $self, $c, $config ) = @_;
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
-    my $stash = $job->job_stash;
+    my $stash = $c->stash;
     my $bl    = $job->bl;
     my @changesets;
 
@@ -197,7 +365,7 @@ sub job_elements {
             push @elems, @git_elements;
             $git_checkouts->{$_}->{rev} = $last_commit;
         } ## end for ( keys %{$revisions_shas...})
-        $job->job_stash->{git_checkouts} = $git_checkouts;
+        $stash->{git_checkouts} = $git_checkouts;
     } ## end if ( @revisions )
 
     #Git revisions fin
@@ -238,7 +406,7 @@ sub job_elements {
             push @elems, @svn_elements;
             $svn_checkouts->{$_}->{rev} = $repo->last_commit( commits => $revisions_shas->{$_}->{shas} );
         } ## end for ( keys %{$revisions_shas...})
-        $job->job_stash->{svn_checkouts} = $svn_checkouts;
+        $stash->{svn_checkouts} = $svn_checkouts;
     } ## end if ( @revisions )
 
     #SVN revisions fin
@@ -279,7 +447,7 @@ sub job_elements {
             push @elems, @cvs_elements;
             $cvs_checkouts->{$_}->{rev} = $repo->last_commit( commits => $revisions_shas->{$_}->{shas} );
         } ## end for ( keys %{$revisions_shas...})
-        $job->job_stash->{cvs_checkouts} = $cvs_checkouts;
+        $stash->{cvs_checkouts} = $cvs_checkouts;
     } ## end if ( @revisions )
 
     #CVS revisions fin
@@ -332,15 +500,15 @@ sub job_elements {
             push @elems, @plastic_elements;
             $plastic_checkouts->{$_}->{rev} = $last_commit;
         } ## end for ( keys %{$revisions_shas...})
-        $job->job_stash->{plastic_checkouts} = $plastic_checkouts;
+        $stash->{plastic_checkouts} = $plastic_checkouts;
     } ## end if ( @revisions )
 
     #End of Plastic Revisions
 
-    my $e = $job->job_stash->{elements} || BaselinerX::Job::Elements->new;
+    my $e = $stash->{elements} || BaselinerX::Job::Elements->new;
     $e->push_elements( @elems );
 
-    $job->job_stash->{elements} = $e;
+    $stash->{elements} = $e;
     $log->info(
         _loc( "Elements included in job" ),
         data => join "\n",
@@ -355,7 +523,7 @@ sub update_baselines {
     my ( $self, $c, $config ) = @_;
     my $job      = $c->stash->{job};
     my $log      = $job->logger;
-    my $stash    = $job->job_stash;
+    my $stash    = $c->stash;
     my $bl       = $job->bl;
     my $job_type = $job->job_type;
     my @changesets;

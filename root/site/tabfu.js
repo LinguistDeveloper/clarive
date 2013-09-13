@@ -1012,6 +1012,13 @@ if( Prefs.routing ) {
             params.as_json = true;
         Baseliner.ajaxEval( url, params, foo, scope );
     }
+    Baseliner.ci_call = function( coll_or_mid, method, params, foo, scope ){
+        var url = String.format( '/ci/{0}/{1}', coll_or_mid, method );
+        if( !Ext.isObject(params) ) params = {};
+        params.as_json = true;
+        params._merge_with_params = 1;
+        Baseliner.ajaxEval( url, params, foo, scope );
+    }
 
     Baseliner.ajaxEval = function( url, params, foo, scope ){
         if(params == undefined ) params = {};

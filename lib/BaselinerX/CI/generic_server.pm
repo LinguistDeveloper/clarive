@@ -19,4 +19,14 @@ sub ping {
 
 };
 
+sub connect {
+	my ( $self, %p ) = @_;
+    
+    # TODO choose best method 
+    
+    # Worker Agent
+    my $user = $p{user};
+    my $agent = BaselinerX::CI::worker_agent->new( cap=>$user.'@'.$self->hostname );
+}
+
 1;

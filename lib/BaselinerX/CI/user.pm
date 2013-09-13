@@ -30,7 +30,7 @@ around save_data => sub {
         phone       => $data->{phone}, 
         username    => $data->{username} // $master_row->name, 
         email       => $data->{email}, 
-        password    => length $data->{password} ? $data->{password} : _md5(), 
+        password    => length $data->{password} ? $data->{password} : Util->_md5(), 
         realname    => $data->{realname}, 
         alias       => $data->{alias}, 
     });
@@ -40,9 +40,11 @@ around save_data => sub {
 
 around delete => sub {
     my ($orig, $self, $mid ) = @_;
-    my $row = DB->BaliUser->find( $mid // $self->mid );
-    $row->delete if $row; 
-	my $cnt = $self->$orig($mid);
+    my $row = DB->BaliUser->find( $mid // $self->mid );  
+    my $cnt = $row->delete if $row; 
+    Baseliner->cache_remove( qr/^ci:/ );
+    # bali project deletes CI from master, no orig call then 
+    return $cnt;
 };
     
 1;

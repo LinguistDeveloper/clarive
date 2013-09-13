@@ -206,7 +206,8 @@ sub job_stash : Local {
     my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
     $c->stash->{json}  = try {
         my $stash = $job->stash;
-        $c->stash->{job_stash} = $stash;
+        Encode::_utf8_on( $stash );
+        $c->stash->{job_stash} = $stash; 
         { stash=>$stash, success=>\1 };
     } catch {
         { success=>\0 };
@@ -240,7 +241,7 @@ sub monitor_json : Path('/job/monitor_json') {
     $limit||=50;
 
     my ($select,$order_by, $as) = $sort
-        ? (['me.id' ,$sort]         , [ { "-$dir" => $sort }, { -desc => 'me.starttime' } ], [ 'id', $sort ])
+        ? (['me.id' ,$sort]         , [ { "-$dir" => $sort }, { -desc => 'me.starttime' }, { -desc=>'me.id' } ], [ 'id', $sort ])
         : (['me.id' ,'me.starttime'], [ { -desc => "me.starttime" } ] , ['id', 'starttime'] );
 
     $start=$p->{next_start} if $p->{next_start} && $start && $query;
@@ -260,7 +261,6 @@ sub monitor_json : Path('/job/monitor_json') {
         start    =>"me.starttime",
         sched    =>"me.schedtime",
         end      =>"me.endtime",
-        items    =>"bali_job_items.item",
     });
     if( exists $p->{job_state_filter} ) {
         my @job_state_filters = do {
@@ -272,7 +272,7 @@ sub monitor_json : Path('/job/monitor_json') {
 
     # Filter by nature
     if (exists $p->{filter_nature} && $p->{filter_nature} ne 'ALL' ) {      
-      $where->{'bali_job_items_2.item'} = $p->{filter_nature};
+      # TODO nature only exists after PRE executes, "Load natures" $where->{'bali_job_items_2.item'} = $p->{filter_nature};
     }
 
     # Filter by environment name:
@@ -294,7 +294,8 @@ sub monitor_json : Path('/job/monitor_json') {
     # user content
     if( $username && ! $perm->is_root( $username ) && ! $perm->user_has_action( username=>$username, action=>'action.job.viewall' ) ) {
         my @user_apps = $perm->user_projects_names( username=>$username ); # user apps
-        $where->{'bali_job_items.application'} = { -in => \@user_apps } if ! ( grep { $_ eq '/'} @user_apps );
+        # TODO check cs topics relationship with projects
+        # $where->{'bali_job_items.application'} = { -in => \@user_apps } if ! ( grep { $_ eq '/'} @user_apps );
         # username can view jobs where the user has access to view the jobcontents corresponding app
         # username can view jobs if it has action.job.view for the job set of job_contents projects/app/subapl
     }
@@ -304,19 +305,17 @@ sub monitor_json : Path('/job/monitor_json') {
     my $from = {
         select   => 'me.id',
         as       => $as,
-        join     => [ 'bali_job_items', 'bali_job_items' ],  # one for application, another for filter_nature 
+        #join     => [ 'bali_job_items', 'bali_job_items' ],  # one for application, another for filter_nature 
     };
     _debug $from;
     my $rs_search = $c->model('Baseliner::BaliJob')->search( $where, $from );
-    # rs_hashref( $rs_search );
-    # my @ids = map { $_->{id} } $rs_search->all; 
-    my $id_rs = $rs_search->search( undef, { select=>[ 'me.id' ] } );
+    #my $id_rs = $rs_search->search( undef, { select=>[ 'me.id' ] } );
 
     #_error _dump $id_rs->as_query ;
 
     _debug "Job search end.";
     my $rs_paged = $c->model('Baseliner::BaliJob')->search(
-        { 'me.id'=>{ -in => $id_rs->as_query } },
+        {}, #{ 'me.id'=>{ -in => $rs_search->as_query } },  # TODO needs to be able to filter 
         {
             page=>$page, rows=>$limit,
             order_by => $order_by,
@@ -327,11 +326,12 @@ sub monitor_json : Path('/job/monitor_json') {
 
     # Job items cache
     _log "Job data start...";
-    my %job_items = $c->model('Baseliner::BaliJobItems')
-        ->search(
-            { id_job=>{ -in => $rs_paged->search(undef,{ select=>'id'})->as_query } },
-            { select=>[qw/id id_job application item/] }
-    )->hash_on( 'id_job' );
+    my %job_items = ( id => { mid=>11 } );
+    #    = $c->model('Baseliner::BaliJobItems')
+    #        ->search(
+    #            { id_job=>{ -in => $rs_paged->search(undef,{ select=>'id'})->as_query } },
+    #            { select=>[qw/id id_job application item/] }
+    #    )->hash_on( 'id_job' );
     _log "Job data end.";
 
     my @rows;
@@ -346,42 +346,13 @@ sub monitor_json : Path('/job/monitor_json') {
         my $step = _loc( $r->{step} );
         my $status = _loc( $r->{status} );
         my $type = _loc( $r->{type} );
-        my %app;
-        my @items = _array $job_items{ $r->{id} };
-        my $contents = @items ? [
-              grep { defined } map {
-                  $app{ $_->{application} }=() if defined $_->{application};
-                  my ( $dom,$nsid) = ns_split( $_->{item} );
-                  my $ret;
-                  if( $dom eq 'changeset' ) {
-                    $ret = try { $c->model('Baseliner::BaliTopic')->find( $nsid )->full_name_monitor } catch { $nsid };
-                  } elsif( $dom !~ /nature/ ) {
-                    my $icon = $CACHE_ICON{ $dom } // do {
-                        my $m = try { $c->registry->get( $dom )->module }
-                            catch { _error(shift()); { icon=>'/static/images/unknown.gif' } };
-                        $CACHE_ICON{ $dom } = ref $m ? $m->{icon} : '/static/images/unknown.gif';
-                    };
-                    $ret = $icon 
-                          ? qq{<img src="$icon">&nbsp;$nsid}
-                          : $nsid;
-                  }
-                  $ret;
-              } @items
-          ] : [];
-        my $apps = [ map { (ns_split( $_ ))[1] } grep {$_} keys %app ];
+        my @changesets = (); #_array $job_items{ $r->{id} };
+        my $ci = _ci( $r->{mid} );
+        my $contents = [ map { $_->topic_name } _array $ci->changesets ];
+        my $apps = [ map { $_->name } _array $ci->projects ];
         my $last_log_message = $r->{last_log_message};
 
-        my @subapps = _unique map {
-            (ns_split( $_->{item} ))[1];
-        } grep {
-            $_->{item} =~ /^subap/
-        } _array $job_items{ $r->{id} };
-
-        my @natures = _unique map {
-            $_->{item}   # the ns name of the nature
-        } grep {
-            $_->{item} =~ /^nature/
-        } _array $job_items{ $r->{id} };
+        my @natures = ();
 
         # Scheduled, Today, Yesterday, Weekdays 1..7, 1..4 week ago, Last Month, Older
         my $grouping='';
@@ -441,10 +412,11 @@ sub monitor_json : Path('/job/monitor_json') {
             runner       => $r->{runner},
             id_rule      => $r->{id_rule},
             natures      => \@natures,
-            subapps      => \@subapps,   # maybe use _path_xs from Utils.pm?
+            #subapps      => \@subapps,   # maybe use _path_xs from Utils.pm?
           }; # if ( ( $cnt++ >= $start ) && ( $limit ? scalar @rows < $limit : 1 ) );
     }
     _debug "Looping end ";
+    #_debug \@rows;
 
     $c->stash->{json} = { 
         totalCount=> $cnt,
@@ -523,7 +495,7 @@ sub job_submit : Path('/job/submit') {
 
                 event_new 'event.job.delete' => { c=>$c, self=>$self, job=>$job }  => sub {
                     # be careful: may be cancelled already
-                    $p->{mode} ne 'delete' and die _loc('Job already cancelled'); 
+                    $p->{mode} ne 'delete' and _fail _loc('Job already cancelled'); 
                     # cancel pending requests
                     $c->model('Request')->cancel_for_job( id_job=>$job->id );
                     $job->delete;
@@ -533,7 +505,7 @@ sub job_submit : Path('/job/submit') {
             }
             elsif( $job->status =~ /RUNNING/ ) {
                 event_new 'event.job.cancel_running' => { c=>$c, self=>$self, job=>$job } => sub {
-                    $job->status( 'CANCELLED' );
+                    $job->update({ status=> 'CANCELLED' });
                     $c->model('Request')->cancel_for_job( id_job=>$job->id );
 
                     sub job_submit_cancel_running : Private {};
@@ -551,8 +523,6 @@ sub job_submit : Path('/job/submit') {
                 $msg = "Job %1 cancelled";
             }
             $c->stash->{json} = { success => \1, msg => _loc( $msg, $job_name) };
-        } elsif( $p->{action} eq 'rerun' ) {
-            my $job = $c->model('Jobs')->rerun( jobid=>$p->{id_job}, username=>$username ); 
         }
         else { # new job
             my $bl = $p->{bl};
@@ -565,6 +535,7 @@ sub job_submit : Path('/job/submit') {
             
             my $contents = _decode_json $p->{job_contents};
             die _loc('No job contents') if( !$contents );
+            $contents = [ map { $_->{mid} } _array($contents) ];  # now use just mids
 
             _debug "*** Job Stash: " . _dump $job_stash;
             # create job
@@ -592,18 +563,18 @@ sub job_submit : Path('/job/submit') {
                     status       => 'IN-EDIT',
                     approval     => $approval,
                     step         => 'PRE',
-                    type         => $job_type,
-                    ns           => '/',
+                    job_type     => $job_type,
                     bl           => $bl,
                     username     => $username,
                     runner       => $runner,
                     id_rule      => $id_rule,
-                    comments     => $comments,
-                    items        => $contents, 
+                    description  => $comments,
+                    changesets   => $contents, 
                     job_stash    => $job_stash
             };
             event_new 'event.job.new' => { c=>$c, self=>$self, job_data=>$job_data } => sub {
-                my $job = $c->model('Jobs')->create( %$job_data );
+                my $job = BaselinerX::CI::job->new( $job_data );
+                $job->save;
                 $job_name = $job->name;
                 { job=>$job }; 
             };
@@ -613,31 +584,13 @@ sub job_submit : Path('/job/submit') {
     } catch {
         my $err = shift;
         _error "Error during job creation: $err";
+        # clean up dbi transaction stuff
+        $err =~ s({UNKNOWN})()g;
         $err =~ s{DBIx.*\(\):}{}g;
         $err =~ s{ at./.*line.*}{}g;
         $c->stash->{json} = { success => \0, msg => _loc("Error creating the job: %1", $err ) };
     };
     $c->forward('View::JSON');	
-}
-
-sub restart : Local {
-    my ( $self, $c ) = @_;
-    my $p = $c->request->parameters;
-    
-    try {
-        my $job = $c->model('Jobs')->rerun(
-            jobid    =>$p->{id_job},
-            username =>$p->{username},
-            step     => $p->{step},
-            run_now  => $p->{run_now} eq 'on',
-            realuser =>$c->username,
-            starttime=>$p->{starttime} ); 
-        $c->stash->{json} = { success => \1, msg => _loc("Job %1 restart", $p->{job_name} ) };
-    } catch {
-        my $err = shift;
-        $c->stash->{json} = { success => \0, msg => _loc("Error creating the job: %1", $err ) };
-    };
-    $c->forward('View::JSON');
 }
 
 sub natures_json {

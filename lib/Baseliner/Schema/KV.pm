@@ -90,7 +90,7 @@ sub save {
                     $row->{mvalue} = $date_str;
                 }
                 push @mvalue_date, $row->{mvalue_date};
-                push @mvalue, "$row->{mvalue}" // '';
+                push @mvalue, defined $row->{mvalue} ? "$row->{mvalue}" : '';
                 push @flat_final, $row;
             }
             $stmt->execute_array({ ArrayTupleStatus => \@tuple_status }, \@mid, \@mtype, \@mpos, \@mkey, \@mvalue_num, \@mvalue_date, \@mvalue  );
