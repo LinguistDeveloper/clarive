@@ -16367,6 +16367,7 @@ require Sys::Hostname;
     arch           => do { $a=`uname -m`; chomp $a; $a }, 
     home           => $script_home,
     pid_dir        => $script_home,
+    log_dir        => $script_home,
     pid            => $$,
     verbose        => 0,
     timeout        => 600,
@@ -16390,11 +16391,13 @@ my $conf_json = encode_json( \%conf );
 #my $choose_defined = sub { defined $_ and return $_ for @_ };
 $workerid = $conf{id} || do {
     $id_has_pid = 1;
-    sprintf '%s@%s#%d', $conf{user}, $conf{host}, $conf{pid};
+    sprintf '%s@%s/%d', $conf{user}, $conf{host}, $conf{pid};
 };
 $conf{id} = $workerid;
-$conf{pid_file} ||= File::Spec->catfile( $script_home, "cla-worker-$workerid.pid" );
-$conf{log_file} ||= File::Spec->catfile( $script_home, "cla-worker.log" );
+( my $workerid_clean = $workerid ) =~ s/[^-_\w]+/_/g;
+$workerid_clean =~ s/_+/_/g;
+$conf{pid_file} ||= File::Spec->catfile( $conf{pid_dir}, "cla-worker-$workerid_clean.pid" );
+$conf{log_file} ||= File::Spec->catfile( $conf{log_dir}, "cla-worker.log" );
 our ($reconnect_wait, $timeout_file, $daemon, $pid_file, $log_file, $timeout, $chunk_size ) = 
     @conf{ qw/reconnect_wait timeout_file daemon pid_file log_file timeout chunk_size/ };
 
@@ -16529,7 +16532,7 @@ sub start {
 
     # register for capabilities searches
     if( @capabilities ) {
-        _log "capabilities announce: " . join ',', @capabilities;
+        _log "capabilities announced: " . join ',', @capabilities;
         #my @keys = map { "queue:capability.$_" } @capabilities;
         $queue->psubscribe( 'queue:capability:*', sub {
             my ($msg, $topic, $subscribed_topic) = @_;
