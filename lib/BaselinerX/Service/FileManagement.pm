@@ -84,15 +84,23 @@ sub run_ship {
     my $chown  = $config->{'chown'};
 
     my $server = _ci( $config->{server} );
+    _debug "Connecting to server " . $server->name;
     my $agent = $server->connect( user=>$user );
+    $log->info( _loc( 'Sending file `%1` to `%2`', $local, $remote ) );
     $agent->put_file({ 
         local  => $local,
         remote => $remote,
     });
-    $agent->chown( $chmod, $remote ) if length $chown;
-    $log->error( _loc('Error doing a chown `%1` to file `%2`: %3', $chown,$remote, $agent->output ), $agent->tuple ) if $agent->rc && $agent->rc!=512;
-    $agent->chmod( $chmod, $remote ) if length $chmod;
-    $log->error( _loc('Error doing a chmod `%1` to file `%2`: %3', $chmod,$remote, $agent->output ), $agent->tuple ) if $agent->rc && $agent->rc!=512;
+    if( length $chown ) {
+        _debug "chown $chown $remote";
+        $agent->chown( $chmod, $remote );
+        $log->error( _loc('Error doing a chown `%1` to file `%2`: %3', $chown,$remote, $agent->output ), $agent->tuple ) if $agent->rc && $agent->rc!=512;
+    }
+    if( length $chmod ) {
+        _debug "chmod $chmod $remote";
+        $agent->chmod( $chmod, $remote );
+        $log->error( _loc('Error doing a chmod `%1` to file `%2`: %3', $chmod,$remote, $agent->output ), $agent->tuple ) if $agent->rc && $agent->rc!=512;
+    }
 
     return 1;
 }

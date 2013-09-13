@@ -509,6 +509,7 @@
                 var win = new Ext.Window({ layout: 'fit', 
                     autoScroll: true,
                     maximizable: true,
+                    style: 'white-space: pre-wrap; white-space: -moz-pre-wrap; word-wrap: break-word;',
                     title: title,
                     height: 600, width: 700, 
                     html: msg

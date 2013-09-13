@@ -21,7 +21,7 @@ register 'service.scripting.remote' => {
 };
 
 register 'service.scripting.remote_eval' => {
-    name => 'Run a remote eval',
+    name => 'Eval Remote',
     form => '/forms/eval_remote.js',
     data => { server=>'', code=>'' },
     handler => \&run_eval,
@@ -73,15 +73,19 @@ sub run_remote {
     
     my ($server,$user,$home, $path,$args, $stdin) = @{ $config }{qw/server user home path args stdin/};
     $server = _ci( $server ) unless ref $server;
-    _log "===========> RUNNING remote script `$path $args` ($user\@". $server->hostname . ')';
+    $log->info( _loc( 'RUNNING remote script `%1` (%2)', $path . join(' ',_array($args)), $user . '\@' . $server->hostname ) );
     
     my $agent = $server->connect( user=>$user );
-    $agent->execute( $path, _array($args) );
+    #$agent->remote_eval("chdir '$home'");
+    #_debug 'CWD=' . $agent->remote_eval("Cwd::cwd");
+    $agent->execute( { chdir=>$home }, $path, _array($args) );
     my $out = $agent->output;
     my $rc = $agent->rc;
     my $ret = $agent->ret;
     if( $rc ) {
         _fail _loc 'Error during script (%1) execution: %1', $path, $out // 'script not found or could not be executed (check chmod or chown)';
+    } else {
+        $log->info( _loc( 'FINISHED remote script `%1` (%2)', $path . join(' ',_array($args)), $user . '\@' . $server->hostname ), $agent->tuple_str );
     }
     
     { output=>$out, rc=>$rc, ret=>$ret };
@@ -113,11 +117,13 @@ sub run_eval {
                 $log->$lev( _loc( $msg->{text} // '(no message)' ), $msg->{data} );
             }
         } else {
-            $log->info( _loc('Eval ok'), data=>{ output=>$out, rc=>$rc, ret=>$ret } );
+            $log->info( _loc('Eval ret'), $agent->ret );
+            $log->info( _loc('Eval output'), $agent->output );
         }
-}
+    }
     
-    { output=>$out, rc=>$rc, ret=>$ret };
+    #{ output=>$out, rc=>$rc, ret=>$ret };
+    $ret;
 }
 
 1;

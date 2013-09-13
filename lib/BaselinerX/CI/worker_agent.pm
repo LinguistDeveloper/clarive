@@ -194,10 +194,17 @@ sub execute {
     my @cmd = @_;
     my $res = $self->remote_eval( q{ 
         my $merged = Capture::Tiny::tee_merged(sub{ 
-            system @{ $stash };
-            die $! if $?;
+            my $olddir = Cwd::cwd;
+            my $cr = chdir $stash->{chdir};
+            die $! if !$cr; 
+            print "Changed dir to " . $stash->{chdir}, "\n";
+            system @{ $stash->{cmd} };
+            my $rc = $?;
+            print "Changed dir back to " . $olddir, "\n";
+            chdir $olddir;
+            die $! if $rc;
         });
-    }, \@cmd );
+    }, { cmd=>\@cmd, chdir=>$p{chdir} } );
     return $self->ret;
 }
 
@@ -224,6 +231,12 @@ sub chown {
 sub tuple {
     my ($self)=@_;
     { ret=>$self->ret, output=>$self->output, rc=>$self->rc };
+}
+
+sub tuple_str {
+    my ($self)=@_;
+    my $t = $self->tuple;
+    sprintf "RET=%s\nRC=%s\nOUTPUT:\n%s\n", $t->{ret}, $t->{rc}, $t->{output} ;
 }
 
 sub error {}

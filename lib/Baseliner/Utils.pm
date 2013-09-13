@@ -1619,6 +1619,7 @@ sub tar_dir {
             if( "$f" =~ $re && $type =~ $type && ref $re_attr eq 'HASH' ) {
                 say "tar_dir: found attributes for file `$f`" if $verbose;
                 %attr = ( %attr, %$re_attr ); 
+                $attr{mode} = oct( $attr{mode} ) if length $re_attr->{mode};
             }
         }
         
@@ -1628,7 +1629,6 @@ sub tar_dir {
         for my $ex ( @exclude ) {
             return if "$f" =~ $ex;
         }
-        $attr{mode} = oct( $attr{mode} ) if length $attr{mode};
         
         if( $f->is_dir ) {
             # directory with empty data
