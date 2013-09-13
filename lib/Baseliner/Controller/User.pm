@@ -238,15 +238,9 @@ sub update : Local {
             if(!$row){
                 my $user_mid;
                
-                my $ci_class_user = 'user';
-                $ci_class_user = 'BaselinerX::CI::' . $ci_class_user;
-                
-                my $ci_master = {
+                my $ci_data = {
                     name 		=> $p->{username},
                     bl 			=> '*',
-                };
-                
-                my $ci_data = {
                     username	=> $p->{username},
                     realname  	=> $p->{realname},
                     alias       => $p->{alias},
@@ -256,7 +250,8 @@ sub update : Local {
                     password    => $c->model('Users')->encrypt_password( $p->{username}, $p->{pass} )
                 };           
                 
-                $user_mid = $ci_class_user->save( %$ci_master, data => $ci_data );
+                my $ci = BaselinerX::CI::user->new( %$ci_data );
+                $user_mid = $ci->save;
                 $c->stash->{json} = { msg=>_loc('User added'), success=>\1, user_id=> $user_mid };
                 
             }else{

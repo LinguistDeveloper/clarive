@@ -10,6 +10,7 @@ has path       => qw(is rw isa Str default /);  # fullpath
 has size       => qw(is rw isa Num default -1);  
 has mask       => qw(is rw isa Num default 777);  
 has is_dir     => qw(is rw isa Maybe[Bool]);
+has status     => qw(is rw isa Maybe[Str] default A);    # used by jobs to determine create, delete, etc (A,M,D)
 has basename   => qw(is rw isa Str lazy 1), default => sub {
     my ($self)=@_;
     $self->name =~ /^(.*)\.(.*?)$/ ? $1 : $self->name;

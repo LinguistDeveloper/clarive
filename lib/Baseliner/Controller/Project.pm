@@ -11,10 +11,10 @@ use v5.10;
 
 register 'action.admin.project' => { name => 'Administer projects'};
 
-register 'menu.admin.project' => {
-    label => 'Projects', url_comp=>'/project/grid', actions=>['action.admin.project'],
-    title=>'Projects', index=>80,
-    icon=>'/static/images/icons/project.png' };
+# register 'menu.admin.project' => {
+#     label => 'Projects', url_comp=>'/project/grid', actions=>['action.admin.project'],
+#     title=>'Projects', index=>80,
+#     icon=>'/static/images/icons/project.png' };
 
 sub list : Local {
     my ($self,$c) = @_;

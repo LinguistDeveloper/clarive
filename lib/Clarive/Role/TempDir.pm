@@ -15,15 +15,23 @@ has tmp_dir    => qw(is rw lazy 1 default), sub {
 has log_dir    => qw(is rw lazy 1 default), sub {
     my $self = shift;
     # LOG DIR
-    my $logdir = $ENV{CLARIVE_TEMP} || join('/', $self->base, 'logs' );
+    my $logdir = $ENV{CLARIVE_LOGDIR} || join('/', $self->base, 'logs' );
     $self->_ensure_path( $logdir );
     $logdir;
+};
+
+has job_dir    => qw(is rw lazy 1 default), sub {
+    my $self = shift;
+    # LOG DIR
+    my $jobdir = $ENV{CLARIVE_JOBDIR} || join('/', $self->base, 'jobs' );
+    $self->_ensure_path( $jobdir );
+    $jobdir;
 };
 
 has pid_dir    => qw(is rw lazy 1 default), sub {
     my $self = shift;
     # PID DIR uses log dir
-    my $logdir = $ENV{CLARIVE_TEMP} || join('/', $self->base, 'logs' );
+    my $logdir = $ENV{CLARIVE_PIDDIR} || join('/', $self->base, 'logs' );
     $self->_ensure_path( $logdir );
     $logdir;
 };

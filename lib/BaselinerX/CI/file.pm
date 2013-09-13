@@ -9,14 +9,13 @@ use Baseliner::Moose;
 with 'Baseliner::Role::CI::Item';
 
 sub icon { '/static/images/icons/file.gif' }
+sub ci_form { '/ci/item.js' }
 
 has _lines => qw(is rw isa ArrayRef lazy 1), default=>sub{
     my ($self)=@_;
     my @lines = Util->_file( $self->path )->slurp ;
     \@lines;
 };
-
-sub ci_form { '/ci/item.js' }
 
 service 'view_source' => 'View Source' => sub {
     my ($self) = @_;

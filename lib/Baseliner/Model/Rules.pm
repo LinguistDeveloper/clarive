@@ -30,6 +30,7 @@ sub build_tree {
         $row->{stmt_attr} = _load( $row->{stmt_attr} );
         $n = { active=>1, %$n, %{ $row->{stmt_attr} } } if length $row->{stmt_attr};
         delete $n->{disabled};
+        delete $n->{id};
         $n->{active} //= 1;
         $n->{disabled} = $n->{active} ? \0 : \1;
         my @chi = $self->build_tree( $id_rule, $row->{id} );
@@ -76,7 +77,7 @@ sub dsl_build {
         delete $attr->{events} ; # node cruft
         #_debug $attr;
         my $name = _strip_html( $attr->{text} );
-        my $data_key = $attr->{data_key} // _name_to_id( $name );
+        my $data_key = length $attr->{data_key} ? $attr->{data_key} : _name_to_id( $name );
         push @dsl, sprintf( '# statement: %s', $name ) . "\n"; 
         push @dsl, sprintf( '_debug(q{Current Rule Statement: %s} );', $name)."\n" if $p{logging}; 
         my $data = $attr->{data} || {};
@@ -88,7 +89,7 @@ sub dsl_build {
                 push @dsl, $spaces->($level) . sprintf(q{launch( "%s", $stash, $config => '%s' );}, $key, $data_key );
                 #push @dsl, $spaces->($level) . sprintf('merge_data($stash, $ret );', Data::Dumper::Dumper( $data ) );
             } else {
-                push @dsl, _array( $reg->{dsl}->($self, { %$attr, %$data, children=>$children }, %p ) );
+                push @dsl, _array( $reg->{dsl}->($self, { %$attr, %$data, children=>$children, data_key=>$data_key }, %p ) );
             }
         } else {
             _fail _loc 'Missing dsl/service key for node %1', $name;
@@ -127,6 +128,7 @@ sub dsl_run {
 
 sub run_rules {
     my ($self, %p) = @_;
+    local $Baseliner::_no_cache = 1;
     my @rules = 
         $p{id_rule} 
             ? ( +{ DB->find( $p{id_rule} )->get_columns } )
@@ -169,6 +171,7 @@ sub run_rules {
 
 sub run_single_rule {
     my ($self, %p ) = @_;
+    local $Baseliner::_no_cache = 1;
     $p{stash} //= {};
     my $rule = DB->BaliRule->find( $p{id_rule} );
     _fail _loc 'Rule with id `%1` not found', $p{id_rule} unless $rule;
@@ -198,11 +201,15 @@ sub dsl_listing {
 ######################################## GLOBAL SUBS
 
 sub merge_data {
-    my $d = {};
-    for my $h ( @_ ) {
-        $d = { %$d, %{ $h || {} } };
+    my ($dest,@hashes)=@_;
+    $dest = {} unless ref $dest eq 'HASH';
+    for my $hash ( @hashes ) {
+        next unless ref $hash eq 'HASH';
+        for my $k ( keys %$hash ) {
+            $dest->{$k} = $hash->{$k};
+        }
     }
-    parse_vars( $d, $d );
+    parse_vars( $dest, $dest );
 }
 
 # launch runs service, merge return into stash and returns what the service returns
@@ -211,15 +218,14 @@ sub launch {
     
     #my $ret = Baseliner->launch( $key, data=>$stash );  # comes with a dummy job
     my $reg = Baseliner->registry->get( $key );
-    my $app = Baseliner->app;
-    $app->stash( $stash );  # app->stash is not the same reference, merge neeeded later
-    my $ret = $reg->run( Baseliner->app, $config ); 
+    my $return_data = $reg->run_container( $stash, $config ); 
     # TODO milestone for service
     #_debug $ret;
-    my $return_data = $ret->data // {};
-    $return_data = ref $return_data eq 'HASH' ? $return_data : {} ;
+    my $refr = ref $return_data;
+    $return_data = $refr eq 'HASH' || Scalar::Util::blessed($return_data) 
+        ? $return_data 
+        : {}; #!$refr || $refr eq 'ARRAY' ? { service_return=>$return_data } : {} ;
     # merge into stash
-    merge_into_stash( $stash, $app->stash );
     merge_into_stash( $stash, ( length $data_key ? { $data_key => $return_data } : $return_data ) );
     return $return_data;
 }
@@ -270,8 +276,8 @@ sub changeset_projects {
 
 sub variables_for_bl {
     my ($ci, $bl) = @_; 
-    my $vars = $ci->variables // {}; 
-    $vars->{ $bl // '*' } // {};
+    my $vars = $ci->variables // { _no_vars=>1 }; 
+    $vars->{ $bl // '*' } // { _no_vars_for_bl=>1 };
 }
 
 ############################## STATEMENTS
@@ -327,7 +333,7 @@ register 'statement.let.merge' => {
     dsl => sub { 
         my ($self, $n, %p ) = @_;
         sprintf(q{
-           $stash = merge_data( $stash, %s );
+           merge_data( $stash, %s );
         }, Data::Dumper::Dumper($n->{value}), $self->dsl_build( $n->{children}, %p ) );
     },
 };
@@ -422,7 +428,7 @@ register 'statement.nature.block' => {
                 if( stash_has_nature( $nature, $stash) ) {
                     # load natures config
                     my $variables = $nature->variables->{ $stash->{bl} // '*' } // {};
-                    $stash = merge_data $variables, $stash, variables_for_bl( $nature, $stash->{bl} ), { _ctx => 'nature' }; 
+                    merge_data $variables, $stash, variables_for_bl( $nature, $stash->{bl} ), { _ctx => 'nature' }; 
                     
                     %s
                 }
@@ -455,11 +461,28 @@ register 'statement.project.block' => {
             {
                 my $project = '%s';
                 my $variables = $stash->{$project}->variables->{ $stash->{bl} // '*' } // {};
-                $stash = merge_data $stash, $variables, { _ctx => 'apply_variables' }; 
+                merge_data $stash, $variables, { _ctx => 'apply_variables' }; 
                 
                 %s    
             }
         }, $n->{project} // 'project', $self->dsl_build( $n->{children}, %p ) );
+    },
+};
+
+register 'statement.perl.eval' => {
+    text => 'EVAL', data => { code=>'' },
+    type => 'loop',
+    form => '/forms/stmt_eval.js', 
+    dsl => sub { 
+        my ($self, $n, %p ) = @_;
+        sprintf(q{
+            {
+                $stash->{'%s'} = eval %s;
+                if($@) {
+                    _error $@;
+                }
+            }
+        }, $n->{data_key}, $n->{code} // '', $self->dsl_build( $n->{children}, %p ) );
     },
 };
 
@@ -469,13 +492,35 @@ register 'statement.project.loop' => {
     dsl => sub { 
         my ($self, $n, %p ) = @_;
         sprintf(q{
-            for my $project ( map { $_->{project} } _array( $stash->{project_changes} ) ) {
+            for my $project ( map { _ci($_->{project}->mid) } _array( $stash->{project_changes} ) ) {
                 $stash->{project} = $project->name;
-                $stash = merge_data $stash, variables_for_bl( $project, $stash->{bl} ), { _ctx => 'project_loop' }; 
+                my $vars = variables_for_bl( $project, $stash->{bl} );
+                $stash->{job}->logger->info( _loc('Current project *%1* (%2)', $project->name, $stash->{bl} ), $vars );
+
+                merge_data $stash, $vars, { _ctx => 'project_loop' }; 
                 
                 %s
             }
         }, $self->dsl_build( $n->{children}, %p ) );
+    },
+};
+
+# needs the changeset.nature service to fill the stash with natures
+register 'statement.if.nature' => {
+    text => 'IF EXISTS nature THEN',
+    form => '/forms/if_nature.js',
+    type => 'if',
+    data => { nature=>'', },
+    dsl => sub { 
+        my ($self, $n , %p) = @_;
+        sprintf(q{
+            if( my $nature = $stash->{natures}{'%s'} ) {
+                $stash->{current_nature} = $nature;
+                $stash->{job}->logger->info( _loc('Nature Detected *%1*', $nature->name ) );
+
+                %s
+            }
+        }, $n->{nature} , $self->dsl_build( $n->{children}, %p ) );
     },
 };
 

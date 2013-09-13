@@ -46,9 +46,11 @@ around save_data => sub {
 
 around delete => sub {
     my ($orig, $self, $mid ) = @_;
-    my $row = DB->BaliProject->find( $mid // $self->mid );
-    $row->delete if $row; 
-	my $cnt = $self->$orig($mid);
+    my $row = DB->BaliProject->find( $mid // $self->mid );  
+    my $cnt = $row->delete if $row; 
+    Baseliner->cache_remove( qr/^ci:/ );
+    # bali project deletes CI from master, no orig call then 
+    return $cnt;
 };
     
 around load => sub {

@@ -1559,36 +1559,26 @@ sub form_build {
 sub newjob : Local {
     my ($self, $c ) = @_;
     my $p = $c->req->params;
-    my $ns = $p->{ns} or _throw 'Missing parameter ns';
+    my $mids = $p->{mids} or _throw 'Missing parameter mids';
     my $bl = $p->{bl} or _throw 'Missing parameter bl';
 
     $c->stash->{json} = try {
-        my @contents = map {
-            _log _loc "Adding namespace %1 to job", $_;
-            my $item = Baseliner->model('Namespaces')->get( $_ );
-            _throw _loc 'Could not find changeset "%1"', $_ unless ref $item;
-            $item;
-        } ($ns);
-
-        _log _dump \@contents;
-
+        # create job CI
         my $job_type = $p->{job_type} || 'static';
-
-        my $id_rule = $p->{id_rule} || DB->BaliRule->search( {rule_active => 1, rule_type => 'chain'},{order_by => 'rule_seq'})->first->id;
-
-        my $job = $c->model('Jobs')->create(
+        my $job_data = {
             bl       => $bl,
             type     => $job_type,
             username => $c->username || $p->{username} || `whoami`,
-            runner   => $p->{runner} || 'service.job.chain.simple',
             comments => $p->{comments},
-            items    => [ @contents ],
-            id_rule  => $id_rule
-        );
-        $job->stash_key( status_from => $p->{status_from} );
-        $job->stash_key( status_to => $p->{status_to} );
-        $job->stash_key( id_status_from => $p->{id_status_from});
-        $job->update;
+            job_stash => {
+                status_from => $p->{status_from},
+                status_to => $p->{status_to},
+                id_status_from => $p->{id_status_from},
+            },
+            changesets => $mids,
+        };
+        my $job = BaselinerX::CI::job->new( $job_data );
+        $job->save;
         { success=>\1, msg=> _loc( "Job %1 created ok", $job->name ) };
     } catch {
         my $err = shift;

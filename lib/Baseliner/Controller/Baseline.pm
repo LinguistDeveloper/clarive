@@ -13,11 +13,11 @@ register 'menu.admin.core.bl' => { label => _loc('List all Baselines'), url=>'/c
 
 register 'action.admin.baseline' => { name => 'Administer baselines'};
 
-register 'menu.admin.baseline' => { label => _loc('Baselines'),
-    url_comp=>'/baseline/grid', title=>_loc('Baselines'),
-    icon=> '/static/images/icons/baseline.gif',
-    action => 'action.admin.baseline',
-};
+# register 'menu.admin.baseline' => { label => _loc('Baselines'),
+#     url_comp=>'/baseline/grid', title=>_loc('Baselines'),
+#     icon=> '/static/images/icons/baseline.gif',
+#     action => 'action.admin.baseline',
+# };
 
 
 ########################################################################################################################

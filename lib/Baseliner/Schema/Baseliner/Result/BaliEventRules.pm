@@ -22,7 +22,7 @@ __PACKAGE__->table("bali_event_rules");
 __PACKAGE__->add_columns(
   "id", { data_type => "number", is_auto_increment => 1, is_nullable => 0, sequence => "bali_event_rules_seq", },
   "id_event", { data_type => "number", is_nullable => 0, },
-  "id_rule", { data_type => "number", is_nullable => 0, },
+  "id_rule", { data_type => "number", is_nullable => 1, },
   "return_code", { data_type => "number", is_nullable => 1, default_value=>'0' },
   "stash_data", { data_type => "clob", is_nullable => 1 },
   "ts",   {

@@ -114,7 +114,7 @@ other => [qw(
     ago
 )],
 logging => [qw(
-    _log _dump _debug _fail _throw _loc _error
+    _log _dump _debug _fail _throw _loc _error _whereami
 )],
 basic => [qw(
     _array _file _dir _now _ci _load :logging 
@@ -242,14 +242,29 @@ sub _unique {
     keys %{{ map {$_=>1} grep { defined } @_ }};
 }
 
+#use YAML::Syck;
+#sub _load {
+#    my @args = @_;
+#    YAML::Syck::Load( @args );
+#}
+#
+#sub _dump {
+#    my @args = @_;
+#    YAML::Syck::Dump( @args );
+#}
+
 sub _load {
     my @args = @_;
     return try {
-        utf8::encode( $args[0] ) if utf8::valid( $args[0] );  # TODO consider using _to_utf8 - a decode may be needed before
-        YAML::XS::Load( @args )
+        my $str = $args[0]; 
+        utf8::encode( $str ) if utf8::valid( $str );  # TODO consider using _to_utf8 - a decode may be needed before
+        $str =~ s{!!perl/code }{}g;
+        my $obj = YAML::XS::Load( $str );
+        $obj;
     } catch { 
         my $err = shift;
-        _error( "_load error: " . $err );
+        local $Baseliner::Utils::caller_level = 2;
+        _log( "_load error: " . $err );
         _fail( $err ) if $Baseliner::Utils::YAML_LOAD_FAIL; 
         require YAML::Syck;
         YAML::Syck::Load( @args );
@@ -259,7 +274,9 @@ sub _load {
 sub _dump {
     my @args = @_;
     return try { 
-        YAML::XS::Dump( @args );
+        my $str = YAML::XS::Dump( @args );
+        Encode::_utf8_on( $str );
+        $str;
     } catch { 
         _error( "_dump error: " . shift() );
         require YAML::Syck;
@@ -321,10 +338,15 @@ sub isatty { no autodie; return open(my $tty, '+<', '/dev/tty'); }
 # internal log engine used by _log and _debug
 sub _log_me {
     my ($lev, $cl,$fi,$li, @msgs ) = @_;
-    my $logger = Baseliner->app ? Baseliner->app->{_logger} : '';
+    my $logger = $Baseliner::logger // ( Baseliner->app ? Baseliner->app->{_logger} : '' );
+    my $log_out;
     if( ref $logger eq 'CODE' ) { # logger override
-        $logger->($cl,$fi,$li, @msgs );
+        $log_out = $logger->($lev, $cl,$fi,$li, @msgs );  # logger return wheather log out or don't
     } else {
+        $log_out = 1;
+    }
+    
+    if( $log_out ) {
         my $first = shift @msgs;
         if( my $rf = ref $first ) {
             $first = sprintf '[DUMP ref=%s]%s', $rf , "\n" . _dump( $first );
@@ -358,7 +380,7 @@ sub _log {
 
 sub _error {
     return unless any { $_ } @_;
-    my ($cl,$fi,$li) = caller(0);
+    my ($cl,$fi,$li) = caller( ($Baseliner::Utils::caller_level // 0) );
     _log_me( 'error', $cl, $fi, $li, @_ );
 }
 
@@ -570,15 +592,18 @@ sub is_oracle {
 sub is_number {
     #return $_[0] =~ /^(?=[-+.]*\d)[-+]?\d*\.?\d*(?:e[-+ ]?\d+)?$/i;
     my $val = $_[0];
+    return 0 unless length $val;
     return looks_like_number($val);
 }
 
 sub is_int {
+    return 0 unless length $_[0];
     return $_[0] =~ /^\d+$/;
 }
 
 sub _trim {
     my $str = shift;
+    return '' unless length $str;
     $str =~ s{^\s*}{}g;
     $str =~ s{\s*$}{}g;
     return $str;
@@ -740,6 +765,9 @@ sub _unbless {
 sub _damn {
     my $blessed = shift;
     my $damned;
+    my $clone = _load( _dump( $blessed ) );
+    return _unbless( $clone );
+    ## deprecated:
     try {
         # recurse
         if( ref($blessed) eq 'HASH' ) {
@@ -754,7 +782,7 @@ sub _damn {
         elsif( ref($blessed) eq 'ARRAY' ) {
             $damned = [ map { _damn($_) } @$blessed ];
         }
-        elsif( ref $blessed ) {
+        elsif( ref $blessed ne 'CODE' ) {
             $damned = _damn( { %$blessed } );
         }
         else {
@@ -763,7 +791,7 @@ sub _damn {
     } catch {
         my $err = shift;
         $damned = $blessed;
-        _error( 'DAMN1=' . $err );
+        #_debug( 'DAMN1=' . $err );
     };
     return $damned;
 }
@@ -794,7 +822,11 @@ Die without line number info.
 =cut
 sub _fail {
     my ($cl,$fi,$li) = caller();
-    _error( "_fail($cl;$li): @_" );
+    if( $Baseliner::logger ) {
+        _debug( "FAIL: $cl;$li: @_" ); # if we are in a job, be a little more discrete
+    } else {
+        _error( "FAIL: $cl;$li: @_" ) 
+    }
     die join(' ',@_) . "\n";
 }
 
@@ -812,7 +844,7 @@ a query string and a list of fields.
         start    =>"me.starttime",
         sched    =>"me.schedtime",
         end      =>"me.endtime",
-        items    =>"bali_job_items.item",
+        items    =>"foreign.item",
     });
 
 You can use an ARRAY for shorthand too:
@@ -1014,26 +1046,68 @@ Ignores objects.
     $h->{arr} eq '1,2,3';
 
 =cut
+our $hf_scope;
+sub merge_pushing {
+    my ($h1, $h2 ) = @_;
+    my %merged;
+    while( my($k2,$v2) = each %$h2 ) {
+        $merged{ $k2 } = $v2;  
+    }
+    while( my($k1,$v1) = each %$h1 ) {
+        if( exists $merged{$k1} ) {
+            my $v2 = delete $merged{$k1};
+            if( !defined $v2 ) {
+                $merged{$k1}=$v1;
+            }
+            elsif( !defined $v1 ) {
+                $merged{$k1}=$v2;
+            }
+            elsif( $v1 eq $v2 ) {
+                $merged{$k1} = $v2;
+            }
+            else {
+                push @{$merged{$k1}}, $v2 eq $v1 ? $v2 : ( $v2, $v1 );  
+            }
+        }
+        else {
+            $merged{ $k1 } = $v1;  
+        }
+    }
+    %merged;
+}
 sub hash_flatten {
     my ( $stash, $prefix ) = @_;
-    ref $stash eq 'HASH' or _throw "Missing stash hashref parameter";
+    no warnings;
     $prefix ||= '';
     my %flat;
-    while( my ($k,$v) = each %$stash ) {
-        my $ref = ref $v;
-        if( $ref eq 'HASH') {
-            $flat{$prefix . $k} = _dump( $v ); # used to represent complex variables as text
-            my %flat_sub = hash_flatten( $v, "$prefix$k." );
-            %flat = ( %flat, %flat_sub );
-        } elsif( $ref eq 'ARRAY') {
-            $flat{$prefix . $k} = join ',', @$v;
-        } elsif( $ref ) {
-            $flat{$prefix . $k} = _dump( $v ); # used to represent complex variables as text TODO consider JSON or something that shows in oneline
-            $v = _damn( $v );
-            my %flat_sub = hash_flatten( $v, "$prefix$k." );
-            %flat = ( %flat, %flat_sub );
-        } else {
-            $flat{$prefix . $k} = $v;
+    $hf_scope or local $hf_scope = {};
+    my $refstash = ref $stash;
+    return () if $refstash && exists $hf_scope->{"$stash"};
+    $hf_scope->{"$stash"}=() if $refstash;
+    if( $refstash eq 'HASH' ) {
+        while( my ($k,$v) = each %$stash ) {
+            %flat = merge_pushing( \%flat, scalar hash_flatten($v, $prefix ? "$prefix.$k" : $k ) );
+        }
+    } 
+    elsif( $refstash eq 'ARRAY' ) {
+        my $cnt=0;
+        for my $v ( @$stash ) {
+            %flat = merge_pushing( \%flat, scalar hash_flatten($v, "$prefix" ) );
+        }
+    }
+    elsif( $refstash && $refstash !~ /CODE|GLOB|SCALAR/ ) {
+        $stash = _damn( $stash );
+        %flat = merge_pushing( \%flat, scalar hash_flatten ( $stash, "$prefix" ) );
+    }
+    else {
+        $flat{ "$prefix" } = "$stash";
+    }
+    if( !$prefix ) {
+        for my $k ( keys %flat ) {
+            my $v = $flat{$k};
+            if( ref $v eq 'ARRAY' ) {
+                $flat{$k}=join ',', @$v; 
+            }
         }
     }
     return wantarray ? %flat : \%flat;
@@ -1101,20 +1175,40 @@ Options:
 
 Default action for unresolved variables is to leave them in.
 
+Timeout:
+
+Only 5 seconds (default) are allowed for this operation
+to complete, otherwise it will die.
+
+Set C<$Baseliner::Utils::parse_vars_timeout> to change 
+the timeout secs (or zero to disable);
+
 =cut
 sub parse_vars {
     my ( $data, $vars, %args ) = @_;
+    my $ret;
+    {
+          local $SIG{ALRM} = sub { alarm 0; die "parse_vars timeout - data structure too large?\n" };
+          alarm( $Baseliner::Utils::parse_vars_timeout // 5 );
+          # flatten keys
+          $vars = hash_flatten( $vars );
 
-    # flatten keys
-    $vars = hash_flatten( $vars );
-
-    parse_vars_raw( data=>$data, vars=>$vars, throw=>$args{throw} );
+          $ret = parse_vars_raw( data=>$data, vars=>$vars, throw=>$args{throw} );
+          alarm 0;
+    }
+    return $ret;
 }
 
+our $parse_vars_raw_scope;
 sub parse_vars_raw {
     my %args = @_;
     my ( $data, $vars, $throw, $cleanup ) = @args{ qw/data vars throw cleanup/ };
     my $ref = ref $data;
+    # block recursion
+    $parse_vars_raw_scope or local $parse_vars_raw_scope={};
+    return () if $ref && exists $parse_vars_raw_scope->{"$data"};
+    $parse_vars_raw_scope->{"$data"}=() if $ref;
+    
     if( $ref eq 'HASH' ) {
         my %ret;
         for my $k ( keys %$data ) {
@@ -1479,11 +1573,91 @@ sub package_and_instance {
     } <$root/$path/* $root/features/*/lib/$path/*> }
 }
 
+=head2 tar_dir 
+
+Tar a directory
+
+    source_dir => directory to tar
+    tarfile    => full path to tar file
+    attributes => [
+        { regex=>'.*', type=>'f|d', mode=>'octal', mtime=>'epoch', uname=>'owner', gname=>'group' }
+    ]
+
+=cut
+sub tar_dir {
+    my (%p) =@_;
+    my $source_dir = $p{source_dir} // _fail _loc 'Missing parameter source_dir'; 
+    my $tarfile = $p{tarfile} // _fail _loc 'Missing parameter tarfile';
+    my $verbose = $p{verbose};
+    my @include = _array $p{include};
+    my @exclude = _array $p{exclude};
+    my %attributes = map { $_->{regex} => $_ } _array( $p{attributes} );
+    # open and close to reset file and attempt write
+    open my $ff, '>', $tarfile 
+       or _fail _loc 'Could not create tar file `%1`: %2', $tarfile, $!;
+    close $ff;
+    
+    require Archive::Tar; 
+    
+    _fail _loc 'Could not find dir `%1` to tar', $source_dir 
+        unless -e $source_dir;
+    
+    # build local tar
+    my $tar = Archive::Tar->new or _throw $!;
+    my $dir = Util->_dir( $source_dir );
+    $dir->recurse( callback=>sub{
+        my $f = shift;
+        return if _file($tarfile) eq $f;
+        my $rel = $f->relative( $dir );
+        my $stat = $f->stat;
+        my $type = $f->is_dir ? 'd' : 'f';
+        my %attr = $type eq 'f' 
+            ? ( mtime=>$stat->mtime, mode=>$stat->mode )
+            : ( mtime => $stat->mtime, mode=>$stat->mode );
+        # look for attributes
+        while( my($re,$re_attr) = each %attributes ){
+            if( "$f" =~ $re && $type =~ $type && ref $re_attr eq 'HASH' ) {
+                say "tar_dir: found attributes for file `$f`" if $verbose;
+                %attr = ( %attr, %$re_attr ); 
+            }
+        }
+        
+        for my $in ( @include ) {
+            return if "$f" !~ $in;
+        }
+        for my $ex ( @exclude ) {
+            return if "$f" =~ $ex;
+        }
+        $attr{mode} = oct( $attr{mode} ) if length $attr{mode};
+        
+        if( $f->is_dir ) {
+            # directory with empty data
+            say "tar_dir: add dir: `$f`: " . _to_json(\%attr) if $verbose;
+            my $tf = Archive::Tar::File->new(
+                data => "$rel", '', { # type 5=DIR, type 0=FILE
+                    type  => 5, %attr
+                });
+            $tar->add_files($tf);
+        } else {
+            # file
+            say "tar_dir: add file `$f`: " . _to_json(\%attr) if $verbose;
+            my $tf = Archive::Tar::File->new( 
+                data=>"$rel", scalar($f->slurp), 
+                { type=>0, %attr }
+            );
+            $tar->add_files( $tf );
+        }
+    });
+    say "tar_dir: writing tar file `$tarfile`" if $verbose;
+    $tar->write( $tarfile );
+    return 1;
+}
+
 {
     package Util;
     our $AUTOLOAD;
     sub AUTOLOAD {
-        my $self = shift;
+        shift if $_[0] eq 'Util';# allows for Util::method
         my $name = $AUTOLOAD;
         my @a = reverse(split(/::/, $name));
         my $method = 'Baseliner::Utils::' . $a[0];
