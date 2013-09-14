@@ -568,6 +568,7 @@
         else if( status=='FINISHED' && rollback!=1 ) { icon='log_i.gif'; bold=true; }
         else if( status=='IN-EDIT' ) icon='log_w.gif';
         else if( status=='WAITING' ) icon='waiting.png';
+        else if( status=='CANCELLED' ) icon='close.png';
         else { icon='log_e.gif'; bold=true; }
         value = (bold?'<b>':'') + value + (bold?'</b>':'');
 
@@ -585,7 +586,7 @@
         }
         if( icon!=undefined ) {
             return div1 
-                + "<table><tr><td><img alt='"+status+"' border=0 src='/static/images/"+icon+"' /></td>"
+                + "<table><tr><td><img alt='"+status+"' border=0 src='/static/images/icons/"+icon+"' /></td>"
                 + '<td>' + value + '</td></tr></table>' + div2 ;
         } else {
             return value;
