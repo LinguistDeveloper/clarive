@@ -347,9 +347,11 @@ sub monitor_json : Path('/job/monitor_json') {
         my $status = _loc( $r->{status} );
         my $type = _loc( $r->{type} );
         my @changesets = (); #_array $job_items{ $r->{id} };
-        my $ci = _ci( $r->{mid} );
-        my $contents = [ map { $_->topic_name } _array $ci->changesets ];
-        my $apps = [ map { $_->name } _array $ci->projects ];
+        my ($contents,$apps)=([],[]);  # support for legacy jobs without cis
+        if( my $ci = try { _ci( $r->{mid} ) } catch { '' } ) {   # if -- support legacy jobs without cis?
+        $contents = [ map { $_->topic_name } _array $ci->changesets ];
+        $apps = [ map { $_->name } _array $ci->projects ];
+        }
         my $last_log_message = $r->{last_log_message};
 
         my @natures = ();
