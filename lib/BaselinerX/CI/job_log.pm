@@ -95,6 +95,11 @@ sub common_log {
         $p{prefix} and $row->prefix( $p{prefix} );
         $p{milestone} and $row->milestone( $p{milestone} );
         $row->service_key( $self->current_service );
+        
+        # save top level for this statement if higher
+        my $ll = $self->log_levels;
+        my $top_service_level = $self->job->service_levels->{ $self->job->step }{ $self->current_service };
+        $self->job->service_levels->{ $self->job->step }{ $self->current_service } = $lev if $ll->{$lev} > $ll->{$top_service_level} ; 
 
         # print out too
         {

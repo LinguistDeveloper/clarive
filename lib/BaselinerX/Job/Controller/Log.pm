@@ -178,6 +178,7 @@ sub log_rows : Private {
             milestone=> $r->milestone,
             service_key=> $r->service_key,
             exec     => $r->exec,
+            timestamp => $r->get_column('timestamp'),
             ts       => $r->get_column('timestamp'),
             lev      => $r->lev,
             module   => $r->module,
@@ -459,15 +460,12 @@ sub log_elements : Path('/job/log/elements') {
     my $job = $c->model('Baseliner::BaliJob')->find(  $p->{id_job} );
     
     my $job_exec = ref $job ? $job->exec : 1;
-    my $contents = $c->model('Jobs')->get_contents ( jobid => $p->{id_job}, job_exec => $job_exec);	
-    
-    my $data;
-    my @elements = _array ($contents->{elements});
-    for my $element (@elements){
-        $data = $data . $element->{status} . "\t" . $element->{path} . '/' . $element->{name} ."\n";
-    }
+    my $contents = $c->model('Jobs')->get_contents( jobid => $p->{id_job}, job_exec => $job_exec);	
+    my @items = _array ($contents->{items});
+    my $data = join "\n", map { $_->status . "\t" . $_->path . " (" . $_->versionid . ")" } @items;
     $data = _html_escape( $data );
-    $c->res->body( "<pre>" . $data  . " " );	
+    # TODO send this to a comp with a pretty table
+    $c->res->body( qq{<pre style="padding: 10px 10px 10px 10px;">$data</pre>} );	
 }
 
 sub log_delete : Path('/job/log/delete') {

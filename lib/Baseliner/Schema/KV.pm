@@ -409,6 +409,8 @@ sub query {
     return $rs->hashes 
         if $rets eq 'hashes' || defined $opts->{select};
     # TODO run a query on KV itself to return kv rows
+    
+    # TODO this should be Role::CI->load_from_query, not here, mdb should not create CIs:
     my @cis;
     for my $row ( $rs->hashes ) {
         my $rec = Baseliner::Role::CI->load( $row->{mid}, $row, undef, $row->{yaml} );   

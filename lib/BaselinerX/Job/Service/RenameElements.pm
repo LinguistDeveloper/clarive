@@ -13,12 +13,13 @@ register 'service.job.elements.rename' => { name => 'Rename Files by Suffix', ha
 sub run {
     my ($self,$c, $config)=@_;
 
-    my $job = $c->stash->{job};
+    my $stash = $c->stash;
+    my $job = $stash->{job};
     my $log = $job->logger;
     $self->log( $job->logger );
 
     $log->debug( _loc('Running file rename for baseline %1', $job->bl) );
-    $self->rename_files( bl=>$job->bl, path=>$job->job_stash->{path} );
+    $self->rename_files( bl=>$job->bl, path=>$job->job_dir );
 }
 
 sub rename_files {
@@ -26,8 +27,10 @@ sub rename_files {
     my $p = _parameters(@_);
     _check_parameters( $p, qw/path bl/ );
     return if $p->{bl} eq '*'; # WTF?
+    _fail unless length $p->{path};
     
     my $dir = Path::Class::dir( $p->{path} );
+    _fail _loc('Could not find rename root dir %1', $dir) unless -e $dir;
     my ($list, $list_del);
 
     $dir->recurse( callback => sub {
@@ -54,7 +57,7 @@ sub rename_files {
     });
     $self->log->info(_loc('Renamed elements'), data=>$list ) if $list;
     $self->log->info(_loc('Deleted elements that belong to another baseline'), data=>$list_del ) if $list_del;
-    #TODO now rename elements from $job_stash->{elements};
+    #TODO now rename elements from $stash->{elements};
 }
 
 sub rename {

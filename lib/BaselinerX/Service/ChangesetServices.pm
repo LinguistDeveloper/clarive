@@ -150,6 +150,7 @@ sub nature_items {
     for my $nature ( map { _ci($_->{mid}) } @nat_rows ) {
         push @msg, "nature = " . $nature->name;
         ITEM: for my $it ( @items ) {
+            my $nature_clon = Util->_clone( $nature );
             push @msg, "item = " . $it->path;
             if( $nature->push_item( $it ) ) {
                 my $id =  $nature->$nat_id;
@@ -157,6 +158,7 @@ sub nature_items {
                 $stash->{natures}{ $id } = $nature;
                 $stash->{natures}{ $mid } = $nature;
                 $nature_names{ $nature->name } = ();
+                $job->push_ci_unique( 'natures', $nature_clon );
                 push @msg, "MATCH = " . $it->path;
                 last ITEM;
             } else {

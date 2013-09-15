@@ -5,7 +5,7 @@ use v5.10;
 use Moose::Util::TypeConstraints;
 use Try::Tiny;
 require Baseliner::CI;
-use Baseliner::Utils qw(_ci _fail _loc _log _debug _unique _array _load _dump _package_is_loaded _any);
+use Baseliner::Utils qw(_ci _throw _fail _loc _log _debug _unique _array _load _dump _package_is_loaded _any);
 use Baseliner::Sugar;
 
 subtype CI    => as 'Baseliner::Role::CI';
@@ -103,13 +103,16 @@ sub serialize {
 # sets several attributes at once, like DBIC
 sub update {
     my ($self, %data ) = @_;
-    for my $key ( keys %data ) {
-        if( $self->can( $key ) ) {
-            $self->$key( $data{ $key });
-        } else {
-            $self->{$key} = $data{ $key };
-        }
-    }
+    $self->new( %$self, %data );  # merge and recreate object
+    $self->save;
+    # deprecated: does not coerce, relationships wont save
+    #for my $key ( keys %data ) {
+    #    if( $self->can( $key ) ) {
+    #        $self->$key( $data{ $key });
+    #    } else {
+    #        $self->{$key} = $data{ $key };
+    #    }
+    #}
 }
 
 sub save {
@@ -194,7 +197,7 @@ sub save {
         }
         # now index for searches  XXX this should be handled by the inner_save data, which should use mdb->save instead 
         #$self->index_search_data( mid=>$mid, row=>$row, data=>$data) unless $p{no_index};
-    });
+    });  # txn end
     return $mid; 
 }
 
@@ -291,7 +294,7 @@ sub save_fields {
 
 sub load {
     my ( $self, $mid, $row, $data, $yaml ) = @_;
-    $mid ||= $self->mid;
+    $mid ||= $self->mid if $self->can('mid');
     _fail _loc( "Missing mid %1", $mid ) unless length $mid;
     # in scope ? 
     my $scoped = $Baseliner::CI::mid_scope->{ $mid } if $Baseliner::CI::mid_scope;
@@ -373,6 +376,33 @@ sub load {
     return $data;
 }
 
+sub load_from_search {
+    my ($class, $where, %p ) = @_;
+    my @rows = DB->BaliMaster->search( $where )->hashref->all;
+    if( $p{single} ) {
+        _throw _loc('More than one row returned (%1) for CI load %2, mids found: %3', 
+            scalar(@rows), Util->_to_json($where), join(',', map{$_->{mid}} @rows) )
+            if scalar @rows > 1;
+        return unless @rows;
+        return $class->load( $rows[0]->{mid} );
+    } else {
+        return map { $class->load($_->{mid}) } @rows;
+    }
+}
+
+sub load_from_query {
+    my ($class, $where, %p ) = @_;
+    my @rows = DB->BaliMaster->search({ -bool=>mdb->query( $where, { returns=>'exists' }) })->hashref->all;
+    if( $p{single} ) {
+        _throw _loc('More than one row returned (%1) for CI load %2, mids found: %3', 
+            scalar(@rows), Util->_to_json($where), join(',', map{$_->{mid}} @rows) )
+            if scalar @rows > 1;
+        return $class->load( $rows[0]->{mid} );
+    } else {
+        return map { $class->load($_->{mid}) } @rows;
+    }
+}
+        
 sub load_pre_data { +{} }
 sub load_post_data { +{} }
 
@@ -387,7 +417,7 @@ sub related_cis {
     my ($self, %opts )=@_;
     my $mid = $self->mid;
     # in scope ? 
-    local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
+    #local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
     my $scope_key =  "related_cis:$mid:" . Storable::freeze( \%opts );
     my $scoped = $Baseliner::CI::mid_scope->{ $scope_key } if $Baseliner::CI::mid_scope;
     return @$scoped if $scoped;
@@ -558,6 +588,27 @@ sub list_by_name {
     [ map { _ci( $_->{mid} )->{_ci} } DB->BaliMaster->search($where, $from)->hashref->all ];
 }
 
+=head2 push_ci_unique
+
+Adds a ci to a has_cis list, making sure the list remains 
+unique. 
+
+    $self->push_ci_unique( 'field', $ci ); 
+
+All cis must be expanded into objects with ->mid available. 
+
+=cut
+sub push_ci_unique {
+    my ($self,$field,$ci) = @_;
+    my $cis = $self->$field; 
+    my %unique;
+    for my $rel ( @{ $cis || [] } ) {
+        $unique{ $rel->mid } = $rel; 
+    }
+    $unique{ $ci->mid } = $ci; 
+    $self->$field( [ values %unique ] );
+}
+
 
 # XXX deprecated:
 sub searcher {
@@ -686,6 +737,31 @@ sub service_list {
             };
     }
     return @services;
+}
+
+sub run_service {
+    my ($self_or_class, $key, %p ) = @_;
+    _throw 'Missing argument service key' unless $key;
+    my $reg = Baseliner->registry->get( $key );
+    _log "running container for $key";
+    my $stash = {};
+    my $config = \%p;
+    require Capture::Tiny;
+    my ($return_data, $output, $rc); 
+    try {
+        ($output) = Capture::Tiny::tee_merged( sub{
+            $return_data = $reg->run_container( $stash, $config, $self_or_class );
+        });
+    } catch {
+        my $err = shift;
+        if( $p{fail} ) {
+            _fail _loc "Error running service %1 against ci %2: %3", 
+                $key, ( ref $self_or_class ? $self_or_class->mid : $self_or_class ), $err;
+        } else {
+            $output .= "\n$err";  
+        }
+    };
+    { stash=>$stash, return=>$return_data, output=>$output };  
 }
 
 =head2 all_cis

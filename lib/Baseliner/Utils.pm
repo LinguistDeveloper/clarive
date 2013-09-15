@@ -19,6 +19,7 @@ use Exporter::Tidy default => [
     _cut
     _log
     _debug
+    _warn
     _error
     _utf8
     _tz
@@ -114,7 +115,7 @@ other => [qw(
     ago
 )],
 logging => [qw(
-    _log _dump _debug _fail _throw _loc _error _whereami
+    _log _dump _debug _fail _throw _loc _error _whereami _warn
 )],
 basic => [qw(
     _array _file _dir _now _ci _load :logging 
@@ -242,16 +243,17 @@ sub _unique {
     keys %{{ map {$_=>1} grep { defined } @_ }};
 }
 
-#use YAML::Syck;
-#sub _load {
-#    my @args = @_;
-#    YAML::Syck::Load( @args );
-#}
-#
-#sub _dump {
-#    my @args = @_;
-#    YAML::Syck::Dump( @args );
-#}
+# used by job_stash serializer, safer than YAML
+sub _stash_dump {
+    my ($data) = @_;
+    require Storable;
+    Storable::freeze( $data )
+}
+sub _stash_load {
+    my ($str) = @_;
+    require Storable;
+    Storable::thaw( $str );
+}
 
 sub _load {
     my @args = @_;
@@ -360,6 +362,8 @@ sub _log_me {
             if( $lev eq 'error' ) {
                 print STDERR color('red') , $msg , color('reset'), "\n"; 
             } elsif( $lev eq 'debug' ) {
+                print STDERR color('cyan') , $msg , color('reset'), "\n"; 
+            } elsif( $lev eq 'warn' ) {
                 print STDERR color('yellow') , $msg , color('reset'), "\n"; 
             } elsif( $lev eq 'info' ) {
                 print STDERR color('green') , $msg , color('reset'), "\n"; 
@@ -374,7 +378,7 @@ sub _log_me {
 
 sub _log {
     return unless any { $_ } @_;
-    my ($cl,$fi,$li) = caller(0);
+    my ($cl,$fi,$li) = caller( ($Baseliner::Utils::caller_level // 0) );
     _log_me( 'info', $cl, $fi, $li, @_ );
 }
 
@@ -384,7 +388,12 @@ sub _error {
     _log_me( 'error', $cl, $fi, $li, @_ );
 }
 
-#TODO check that global DEBUG flag is active
+sub _warn {
+    return unless any { $_ } @_;
+    my ($cl,$fi,$li) = caller(($Baseliner::Utils::caller_level // 0));
+    _log_me( 'warn', $cl, $fi, $li, @_ );
+}
+
 sub _debug {
     my $cal = looks_like_number($_[0])? ( $_[0] < 0 ? shift : 0) : 0;
     my ($cl,$fi,$li) = caller( -$cal );
@@ -757,9 +766,19 @@ sub _tmp_file {
     return $file;
 }
 
+sub _blessed {
+    require Scalar::Util;
+    Scalar::Util::blessed( @_ );
+}
+
 sub _unbless {
     require Data::Structure::Util;
     Data::Structure::Util::unbless( @_ );
+}
+
+sub _clone {
+    my ($obj) = @_;
+    return Storable::thaw(Storable::freeze($obj));
 }
 
 sub _damn {

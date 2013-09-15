@@ -284,44 +284,52 @@ sub get_summary {
 sub get_services_status {
     my ( $self, %p ) = @_;
     defined $p{jobid} or _throw "Missing jobid";
-    my $rs = 
-        Baseliner->model( 'Baseliner::BaliLog' )
-        ->search( {id_job => $p{jobid}, exec => $p{job_exec}, milestone => {'>', 1}}, {order_by => 'id'} );
-
-    my $row_stash = Baseliner->model( 'Baseliner::BaliJobStash' )->search( {id_job => $p{jobid}} )->first;
-
-    my $job_stash     = $row_stash? _load $row_stash->stash : {};
-
-    my $chain_id = 1;
-    if ( $job_stash->{runner_data}->{chain_id} ) {
-        $chain_id = $job_stash->{runner_data}->{chain_id};
-    }
-    my $chain_rs =
-        Baseliner->model( 'Baseliner::BaliChainedService' )
-        ->search( { chain_id => $chain_id } );
-
-    my $services = {};
-
-    while ( my $chained_service = $chain_rs->next() ) {
-        $services->{$chained_service->step.'-'.$chained_service->key } = $chained_service->description;
-    }
-
-    my $service_statuses = {2 => 'Success', 3 => 'Warning', 4 => 'Error'};
-    my $result;
-    my %added_services;
-    while ( my $row = $rs->next ) {
-        my $info = Baseliner->model( 'Baseliner::BaliLog' )->search( {id_job => $p{jobid}, exec => $p{job_exec}, lev => {'<>','debug'}, service_key => $row->service_key, step => $row->step}, {order_by => 'id'} )->first;
-        if ( $info ) {
-            if ( !$added_services{$row->step.$row->service_key} ) {
-                push @{$result->{$row->step}}, 
-                    { description => $services->{$row->step.'-'.$row->service_key}, service=>$row->service_key, status => $service_statuses->{$row->milestone}, id => $row->id};
-                $added_services{$row->step.$row->service_key} = 1;
-            }
+    my $job = _ci( ns=>'job/'. $p{jobid} );
+    
+    my @keys = DB->BaliLog->search({ id_job=>$p{jobid}, exec => $p{job_exec}, service_key=>{ '<>'=>undef } },
+        { order_by=>{ -asc=>'id' }, select=>[qw(step service_key id)] } ) # ->hash_unique_on('service_key');
+        ->hashref->all;
+    
+    my $result = {};
+    my $ss = $job->service_levels;
+    my %seen;  
+    my $load_results = sub {
+        my @keys = @_; 
+        for my $r ( @keys ) {
+            my ($step, $skey, $id ) = @{ $r }{ qw(step service_key id) };
+            next if $seen{ $skey . '#' . $step };
+            $seen{ $skey . '#' . $step } = 1;
+            my $status = $ss->{$step}{$skey};
+            next if $status eq 'debug';
+            $status = uc( substr $status,0,1 ) . substr $status,1;
+            $status = 'Warning' if $status eq 'Warn';
+            push @{ $result->{$step} }, {
+                service     => $skey,
+                description => $skey,
+                status      => $status,
+                id          => $id,
+            };
         }
-    } ## end while ( my $row = $rs->next)
+    };
+    
+    # load previous exec services, in case we had exec=1, step=PRE, then, exec=2, step=RUN
+    my @keys = DB->BaliLog->search({ id_job=>$p{jobid}, exec =>{ '!=' => $p{job_exec} }, service_key=>{ '<>'=>undef } },
+        { order_by=>{ -asc=>'id' }, select=>[qw(step service_key id)] } ) # ->hash_unique_on('service_key');
+        ->hashref->all;
+    $load_results->( @keys );
 
-    return $result;
-} ## end sub get_services_status
+    # load current keys
+    @keys = DB->BaliLog->search({ id_job=>$p{jobid}, exec => $p{job_exec}, service_key=>{ '<>'=>undef } },
+        { order_by=>{ -asc=>'id' }, select=>[qw(step service_key id)] } ) # ->hash_unique_on('service_key');
+        ->hashref->all;
+    # reset keys for current exec 
+    for my $r ( @keys ) {
+        $result->{$r->{step}}=[];
+    }
+    $load_results->( @keys );
+    
+    return $result;  # {   PRE=>[ {},{} ], RUN=>... }
+} 
 
 sub get_contents {
     my ( $self, %p ) = @_;
@@ -329,38 +337,22 @@ sub get_contents {
     my $result;
 
     my $rs = Baseliner->model( 'Baseliner::BaliJobItems' )->search( {id_job => $p{jobid}} );
-    my $row_stash =
-        Baseliner->model( 'Baseliner::BaliJobStash' )->search( {id_job => $p{jobid}} )->first;
-
-    my $job_stash     = $row_stash? _load $row_stash->stash : {};
-    my $elements      = $job_stash->{elements};
-    my @elements_list;
-    $result = {};
-    if($elements){
-        @elements_list = $elements->list( '' );
-        my %topics;
-        my %technologies;
-    
-        while ( my $row = $rs->next ) {
-            my $ns = ns_get( $row->item );
-            push @{$result->{packages}->{$ns->{ns_data}->{project}}}, { name => $ns->{ns_name}, type => $ns->{ns_type} };
-            push @{$result->{elements}},
-                map { 
-                    try {
-                        $_->path =~ /^\/.*?\/.*?\/(.*?)\/.*?/;
-                        #_log $_->path;
-                        my $tech = $1;
-                        $technologies{$tech} = '';
-                        {name => $_->name, status => $_->status, path => $_->path} 
-                    } catch {
-                        +{}
-                    };
-                } @elements_list;
-    
-        } ## end while ( my $row = $rs->next)
-    
-        push @{$result->{technologies}}, keys %technologies;        
+    my $job = _ci( ns=>'job/' . $p{jobid} );
+    my $job_stash = $job->job_stash;
+    my @changesets = _array( $job->changesets );
+    my $changesets_by_project = {};
+    my @natures = map { $_->name } _array( $job->natures );
+    my $items = $job_stash->{items};
+    for my $cs ( @changesets ) {
+        my ($prj) = $cs->projects;
+        push @{ $changesets_by_project->{$prj->name} }, $cs;
     }
+    $result = {
+        packages => $changesets_by_project,
+        items => $items, 
+        technologies => \@natures,
+    };
+    
     return $result;
 
 } ## end sub get_contents

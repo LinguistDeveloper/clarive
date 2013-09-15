@@ -63,7 +63,7 @@
         
         <div class="grid_12">
             <!--######INICIO TABLA EJECUCION ##################################################################################-->
-            <h3><% _loc( 'Run') %></h3>
+            <h3><% _loc( 'Run Summary') %></h3>
             <table class="table table-bordered table-condensed dashboard">
                 <thead>
                     <tr>
@@ -75,7 +75,7 @@
                 <tbody>
 <%perl>
     my @steps = ( 'PRE', 'RUN', 'POST', 'END' );
-    my $colors = { Success => '#00BB00', Warning => '#00BBBB', Error => '#BB0000'};
+    my $colors = { Success => '#00BB00', Warning => '#E0B500', Error => '#BB0000'};
     for my $step ( @steps ) {
         if ( $servicios->{$step} ) {
             my @services = _array $servicios->{$step};
@@ -137,16 +137,16 @@
                 my @paquetes = _array $contenido->{packages}->{$aplicacion};
                 my $tot_paquetes = scalar @paquetes;
                 my $first = 1;
-                for my $paquete ( @paquetes ) {
+                for my $changeset ( @paquetes ) {
                     if ( $first ) {
 </%perl>                        
                     <tr>
-                        <td rowspan="<%$tot_paquetes%>"><b><% _loc( 'Changesets') %>(<% $aplicacion %>)</b></td>
+                        <td rowspan="<%$tot_paquetes%>"><b><% _loc( 'Changesets') %> (<% $aplicacion %>)</b></td>
 <%perl>
                         $first = 0;
                     }
 </%perl>                            
-                        <td><%$paquete->{type}%>/<%$paquete->{name}%></td>
+                        <td><% $changeset->topic_name %></td>
                     </tr>
 <%perl>
                 }

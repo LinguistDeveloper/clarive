@@ -64,11 +64,10 @@ sub launch {
     _debug "Running service $service_name...";
     my $ret;
     if( $p{capture} ) {
-        require IO::CaptureOutput;
-        my $output;
-        IO::CaptureOutput::capture( sub {
+        require Capture::Tiny;
+        my ($output) = Capture::Tiny::tee_merged(sub {
             $ret = $service->run( $c, $config_data );
-        }, \$output, \$output );
+        });
         utf8::downgrade( $output );
         $service->logger->console( $output );
     } else {

@@ -9,35 +9,40 @@ has id_job       => qw(is rw isa Any);
 has id_rule      => qw(is rw isa Any), default=>sub {
     DB->BaliRule->search->first->id   # TODO get default rule
 };
-has bl           => qw(is rw isa Any);
-has rollback     => qw(is rw isa Bool default 0);
-has job_key      => qw(is rw isa Any), default => sub { Util->_md5() };
-has job_type     => qw(is rw isa Any default promote);  # promote, demote, static
-#has job_stash    => qw(is rw isa HashRef), default=>sub{ +{} };
-has job_dir      => qw(is rw isa Any lazy 1), default => sub { 
+has bl                 => qw(is rw isa Any);
+has rollback           => qw(is rw isa Bool default 0);
+has job_key            => qw(is rw isa Any), default => sub { Util->_md5() };
+has job_type           => qw(is rw isa Any default promote);  # promote, demote, static
+has current_service    => qw(is rw isa Any default job_run);
+has root_dir           => qw(is rw isa Any);
+has schedtime          => qw(is rw isa Any);
+has starttime          => qw(is rw isa Any);
+has endtime            => qw(is rw isa Any);
+has maxstarttime       => qw(is rw isa Any);
+has step               => qw(is rw isa Str default CHECK);
+has exec               => qw(is rw isa Num default 1);
+has status             => qw(is rw isa Any default IN-EDIT);
+has contents           => qw(is rw isa Any);
+has approval           => qw(is rw isa Any);
+has username           => qw(is rw isa Any);
+has runner             => qw(is rw isa Any);
+has milestones         => qw(is rw isa HashRef default), sub { +{} };
+has service_levels     => qw(is rw isa HashRef default), sub { +{} };
+has job_dir            => qw(is rw isa Any lazy 1), default => sub { 
     my ($self) = @_;
     my $job_home = $ENV{BASELINER_JOBHOME} || $ENV{BASELINER_TEMP} || File::Spec->tmpdir();
     File::Spec->catdir( $job_home, $self->name ); 
 };  
-has root_dir     => qw(is rw isa Any);
-has schedtime    => qw(is rw isa Any);
-has starttime    => qw(is rw isa Any);
-has endtime      => qw(is rw isa Any);
-has maxstarttime => qw(is rw isa Any);
-has step         => qw(is rw isa Str default CHECK);
-has exec         => qw(is rw isa Num default 1);
-has status       => qw(is rw isa Any default IN-EDIT);
-has contents     => qw(is rw isa Any);
-has approval     => qw(is rw isa Any);
-has username     => qw(is rw isa Any);
-has runner       => qw(is rw isa Any);
+
 has_cis 'changesets';
 has_cis 'projects';
+has_cis 'natures';
 
 sub rel_type {
     { 
         changesets => [ from_mid => 'job_changeset' ] ,
         projects   => [ from_mid => 'job_project' ] ,
+        natures    => [ from_mid => 'job_nature' ] ,
     };
 }
 sub icon { '/static/images/icons/job.png' }
@@ -63,17 +68,44 @@ around load_post_data => sub {
     return $job_row;
 };
 
+around update_ci => sub {
+    my $orig = shift;
+    my $self = shift;
+    my ($master_row, $data ) = @_;
+    my $mid = $self->mid;
+    
+    if( my $row = DB->BaliJob->search({ mid=>$mid })->first ) {
+        $row->update({
+            exec        => $self->exec,
+            step        => $self->step,
+            status      => $self->status,
+            endtime     => $self->endtime,
+        });
+    }
+    $self->$orig( @_ ); 
+};
+
+
+###### methods 
+#
+
+# get and set the job stash, this does not merge!
 sub job_stash {
     my ($self, $new_stash)=@_;
     my $row = DB->BaliJob->search({ mid=>$self->mid })->first;
     if( $new_stash ) {
+        # set
+        _fail "Invalid stash type ".ref($new_stash) unless ref $new_stash eq 'HASH';
         delete $new_stash->{job}; # never serialize job
-        $row->stash( Util->_dump($new_stash) );
+        delete $new_stash->{$_} for grep /^_state_/, keys %$new_stash;  # no _state_ vars, usually have CODE in them
+        #$row->stash( Util->_dump($new_stash) );
+        $row->stash( Util->_stash_dump($new_stash) );
         return $new_stash;
     } else {
-        my $job_stash_yaml = $row->stash;
+        # get
+        my $job_stash_str = $row->stash;
         my $job_stash = try { 
-            length $job_stash_yaml ? Util->_load($job_stash_yaml) : +{};
+            length $job_stash_str ? Util->_stash_load($job_stash_str) : +{};
         } catch { 
             my $err = shift;
             _log _loc "Error loading job stash: %1", $err;
@@ -114,12 +146,14 @@ sub _create {
     my $job_mid = $self->mid;
     my $changesets = $p{changesets};
     my $config = Baseliner->model('ConfigStore')->get( 'config.job' );
-    #FIXME this text based stuff needs to go away
-    my $jobType = (defined $p{approval}->{reason} && $p{approval}->{reason}=~ m/fuera de ventana/i)
+    
+    my $status = $p{status} || 'IN-EDIT';
+
+    # TODO set urgent somewhere
+    my $jobType = $p{urgent} 
         ? $config->{emer_window}
         : $config->{normal_window};
 
-    my $status = $p{status} || 'IN-EDIT';
     #$now->set_time_zone('CET');
     my $now = DateTime->now(time_zone=>Util->_tz);
     my $end = $now->clone->add( hours => $config->{expiry_time}->{$jobType} || 24 );
@@ -136,7 +170,7 @@ sub _create {
     $starttime =  $starttime->strftime('%Y-%m-%d %T');
     $maxstarttime =  $maxstarttime->strftime('%Y-%m-%d %T');
 
-    my $type = $p{job_type} || $config->{type};
+    my $type = $p{job_type} || $p{type} || $config->{type};
     
     my $row_data = {
             name         => 'temp' . $$,
@@ -169,6 +203,7 @@ sub _create {
     _log "****** Creating JOB id=" . $job_row->id . ", name=$name, mask=" . $config->{mask};
 
     $job_row->name( $name );
+    $job_row->ns( 'job/' . $job_row->id );  # my own id here, which transpires to the CI
     $job_row->update;
 
     # create a hash stash
@@ -177,33 +212,31 @@ sub _create {
 
     # create job items
     my @cs_cis;  # topic CIs
-    if( ref $changesets eq 'ARRAY' ) {
-        my @cs_list;
-        for my $cs ( Util->_array( $changesets ) ) {
-            $cs = _ci( $cs ) unless ref $cs;
-            if( my $active_job = $cs->is_in_active_job ) {
-                _fail _loc("Job element '%1' is in an active job: %2", $cs->name, $active_job->name )
-            }
-            push @cs_cis, $cs;
-            push @cs_list, $cs->topic_name;
+    my @cs_list;
+    for my $cs ( Util->_array( $changesets ) ) {
+        $cs = _ci( $cs ) unless ref $cs;
+        if( my $active_job = $cs->is_in_active_job ) {
+            _fail _loc("Job element '%1' is in an active job: %2", $cs->name, $active_job->name )
         }
-        _fail _loc('Missing job contents') unless @cs_list > 0;
-
-        # log job items
-        if( @cs_list > 10 ) {
-            my $msg = _loc('Job contents: %1 total items', scalar(@cs_list) );
-            $log->info( $msg, data=>'==>'.join("\n==>", @cs_list) );
-        } else {
-            $log->info(_loc('Job contents: %1', join("\n", map { "<li><b>$_</b></li>" } @cs_list)) );
-        }
+        push @cs_cis, $cs;
+        push @cs_list, $cs->topic_name;
     }
+    _fail _loc('Missing job contents') unless @cs_list > 0;
 
+    # log job items
+    if( @cs_list > 10 ) {
+        my $msg = _loc('Job contents: %1 total items', scalar(@cs_list) );
+        $log->info( $msg, data=>'==>'.join("\n==>", @cs_list) );
+    } else {
+        $log->info(_loc('Job contents: %1', join("\n", map { "<li><b>$_</b></li>" } @cs_list)) );
+    }
+    
     # add attributes to job ci
-    #my $job_ci = _ci( $job_mid );
     $self->name( $name );
     $self->id_job( $job_row->id );
     $self->status( 'IN-EDIT' );
     $self->changesets( \@cs_cis );
+
     # add unique projects from changesets
     my %pp;
     $self->projects([
@@ -216,30 +249,17 @@ sub _create {
     
     # TODO approval detection should be part of INIT, or check calendar for urgent and nojob status
     # now let it run
-    $log->debug( _loc( 'Approval exists? ' ), data=>_dump($p{approval}) );
-    $self->approval( $p{approval} );
-
-    #if ( exists $p{approval}{reason} ) {
-    #    # approval request executed by runner service
-    #    $job_row->stash_key( approval_needed => $p{approval} );
-    #}
-
-    #if ( ref $p{job_stash} eq 'HASH' ) {
-    #    while( my ($k,$v) = each %{ $p{job_stash} } ) {
-    #        $job_row->stash_key( $k => $v );
-    #    }
-    #}
+    # $log->debug( _loc( 'Approval exists? ' ), data=>_dump($p{approval}) );
+    # $self->approval( $p{approval} );
 
     $job_row->status( 'READY' );
     $job_row->update;
     
     # INIT
-    # TODO run from CI job->create_runner ERROR cannot set active to null
     $self->create_runner( step=>'INIT' )->run;
 
     return $job_row;
 }
-
 
 sub gen_job_name {
     my $self = shift;
@@ -266,7 +286,29 @@ sub is_running {
     return 0;
 }
 
+sub logger { 
+    my ($self)=@_;
+    return BaselinerX::CI::job_log->new(
+        step            => $self->step,
+        exec            => $self->exec,
+        jobid           => $self->id_job,
+        job             => $self,
+        current_service => $self->current_service
+    );
+}
+
 # monitor resties:
+
+sub resume {
+    my ($self, $p ) = @_;
+    if( $self->status eq 'PAUSED' ) {
+        $self->logger->info( Util->_loc('Job resumed by user %1', $p->{username}) );
+        $self->status( 'RUNNING' );
+        $self->save;
+    } else {
+        Util->_fail( Util->_loc('Job was not paused') );
+    }
+}
 
 sub run_inproc {
     my ($self, $p) = @_;
@@ -319,23 +361,6 @@ sub reset {
     };
     return { msg=>$msg };
 }
-
-around update_ci => sub {
-    my $orig = shift;
-    my $self = shift;
-    my ($master_row, $data ) = @_;
-    my $mid = $self->mid;
-    
-    if( my $row = DB->BaliJob->search({ mid=>$mid })->first ) {
-        $row->update({
-            exec        => $self->exec,
-            step        => $self->step,
-            status      => $self->status,
-            endtime     => $self->endtime,
-        });
-    }
-    $self->$orig( @_ ); 
-};
 
 1;
 

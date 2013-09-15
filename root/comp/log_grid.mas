@@ -44,6 +44,7 @@
             {  name: 'text' },
             {  name: 'datalen' },
             {  name: 'ts' },
+            {  name: 'timestamp' },  // real column name
             {  name: 'lev' },
             {  name: 'section' },
             {  name: 'step' },
@@ -434,7 +435,7 @@
                 { header: _('Step'), width: 60, dataIndex: 'step', sortable: true },
                 { header: _('Execution'), width: 60, dataIndex: 'exec', sortable: true, hidden: true },
                 { header: _('Level'), width: 60, dataIndex: 'lev', renderer: Baseliner.levRenderer, sortable: true },
-                { header: _('Timestamp'), width: 140, dataIndex: 'ts', sortable: true }, 
+                { header: _('Timestamp'), width: 140, dataIndex: 'timestamp', sortable: true }, 
                 { header: _('Message'), width: 450, dataIndex: 'text', sortable: true, cls: 'nowrapgrid', renderer: render_msg  },
                 { header: _('Namespace'), width: 100, dataIndex: 'ns', sortable: true, hidden: true },   
                 { header: _('Provider'), width: 100, dataIndex: 'provider', sortable: true, hidden: true },

@@ -1559,29 +1559,36 @@ sub form_build {
 sub newjob : Local {
     my ($self, $c ) = @_;
     my $p = $c->req->params;
-    my $mids = $p->{mids} or _throw 'Missing parameter mids';
+    my $changesets = $p->{changesets} or _throw 'Missing parameter changesets';
     my $bl = $p->{bl} or _throw 'Missing parameter bl';
 
     $c->stash->{json} = try {
         # create job CI
+        my $job;
         my $job_type = $p->{job_type} || 'static';
         my $job_data = {
-            bl       => $bl,
-            type     => $job_type,
-            username => $c->username || $p->{username} || `whoami`,
-            comments => $p->{comments},
-            job_stash => {
-                status_from => $p->{status_from},
-                status_to => $p->{status_to},
-                id_status_from => $p->{id_status_from},
-            },
-            changesets => $mids,
+            bl         => $bl,
+            type       => $job_type,
+            username   => $c->username || $p->{username} || `whoami`,
+            comments   => $p->{comments},
+            changesets => $changesets,
         };
-        my $job = BaselinerX::CI::job->new( $job_data );
-        $job->save;
+        event_new 'event.job.new' => { c=>$c, self=>$self, job_data=>$job_data } => sub {
+            $job = BaselinerX::CI::job->new( $job_data );
+            $job->save;
+            $job->job_stash({   # job stash autosaves into the stash table
+                status_from    => $p->{status_from},
+                status_to      => $p->{status_to},
+                id_status_from => $p->{id_status_from},
+            });
+            { job=>$job }; 
+        };
         { success=>\1, msg=> _loc( "Job %1 created ok", $job->name ) };
     } catch {
         my $err = shift;
+        $err =~ s({UNKNOWN})()g;
+        $err =~ s{DBIx.*\(\):}{}g;
+        $err =~ s{ at./.*line.*}{}g;
         { success=>\0, msg=> _loc( "Error creating job: %1", "$err" ) };
     };
     $c->forward('View::JSON');

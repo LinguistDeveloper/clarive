@@ -429,10 +429,15 @@
             cons_inproc.on('afterrender', function(){ 
                 Baseliner.showLoadingMask( cons_pan.el );
                 Baseliner.ajaxEval( '/ci/'+sel.data.mid+'/run_inproc', { id_job: sel.data.id }, function(res){
-                    if( !cons_pan.el ) return;
+                    Baseliner.message( _('Run In-Process'), _('Job %1 in-process run finished', sel.data.name ) );
+                    if( !Ext.getCmp(cons_pan.id) ) return;
+                    if( !Ext.getCmp(cons_inproc.id) ) return;
                     cons_inproc.setValue( res.data ? res.data.output : _('(no data)') );
                     Baseliner.hideLoadingMask( cons_pan.el );
-                    grid.getStore().reload();
+                    if( grid ) {
+                        var st =grid.getStore();
+                        if( st ) st.reload();
+                    }
                 }, function(){
                     Baseliner.hideLoadingMask( cons_pan.el );
                 });
@@ -481,6 +486,33 @@
         }
     };
     */
+    var button_resume = new Ext.Toolbar.Button({
+        text: _('Resume'),
+        hidden: true,
+        icon:'/static/images/icons/play.png',
+        cls: 'x-btn-text-icon',
+        handler: function() {
+            var sm = grid.getSelectionModel();
+            var sel = sm.getSelected();
+            var mode;
+            if( sel.data.status_code == 'PAUSED' ) {
+                Ext.Msg.confirm(_('Confirmation'),  '<b>' + sel.data.name + '</b>: ' + _('Are you sure you want to resume the job?'), 
+                    function(btn){ 
+                        if(btn=='yes') {
+                            Baseliner.ci_call( sel.data.mid, 'resume',  {}, function(res){
+                                if( res.success ) {
+                                    grid.getStore().reload();
+                                } else {
+                                    Ext.Msg.alert( _('Error'), _('Could not resume the job: %1', res.msg ) );
+                                }
+                            });
+                        }
+                    }
+                );
+                button_resume.hide();
+            }
+        }
+    });
 
     var msg_cancel_delete = [ _('Cancel Job'), _('Delete Job') ];
     var button_cancel = new Ext.Toolbar.Button({
@@ -525,8 +557,7 @@
     };
 
     var render_app = function(value,metadata,rec,rowIndex,colIndex,store) {
-        if( value.length < 2 ) return value[0];
-        return value.join('<br />');
+        return String.format('<b>{0}</b>', ( !Ext.isArray(value) ? value : value.join('<br />') ) );
     };
 
     var render_nature = function(v,meta,rec,rowIndex,colIndex,store) {
@@ -568,6 +599,7 @@
         else if( status=='FINISHED' && rollback!=1 ) { icon='log_i.gif'; bold=true; }
         else if( status=='IN-EDIT' ) icon='log_w.gif';
         else if( status=='WAITING' ) icon='waiting.png';
+        else if( status=='PAUSED' ) icon='paused.png';
         else if( status=='CANCELLED' ) icon='close.png';
         else { icon='log_e.gif'; bold=true; }
         value = (bold?'<b>':'') + value + (bold?'</b>':'');
@@ -704,7 +736,7 @@
                 { header: _('MID'), width: 60, dataIndex: 'mid', sortable: true, hidden: true },
                 { header: _('Job'), width: 140, dataIndex: 'name', sortable: true, renderer: render_topic },    
                 { header: _('Job Status'), width: 130, dataIndex: 'status', renderer: render_level, sortable: true },
-                { header: _('Step'), width: 80, dataIndex: 'step_code', sortable: true , hidden: false },	
+                { header: _('Step'), width: 50, dataIndex: 'step_code', sortable: true , hidden: false },	
                 { header: _('Application'), width: 70, dataIndex: 'applications', renderer: render_app, sortable: false, hidden: is_portlet ? true : false },
                 { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true },
                 { header: _('Natures'), width: 120, hidden: view_natures, dataIndex: 'natures', sortable: false, renderer: render_nature }, // not in DB
@@ -758,6 +790,9 @@
                         };
                     }
                 }),
+% if( $c->stash->{user_action}->{'action.job.resume'} ) {
+                button_resume,
+% }
 % if( $c->stash->{user_action}->{'action.job.create'} ) {
                 button_cancel,
 % }
@@ -917,6 +952,9 @@
             button_cancel.setText( msg_cancel_delete[1] );
         } else {
             button_cancel.setText( msg_cancel_delete[0] );
+        }
+        if( rec.data.status_code === 'PAUSED' ) {
+            button_resume.show();
         }
     });
     row_sel.on('rowdeselect', function(row, index, rec) {

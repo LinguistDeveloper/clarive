@@ -5,16 +5,18 @@ use Try::Tiny;
 
 extends 'BaselinerX::CI::job';
 
-has exec         => qw(is rw isa Num default 1);
-has logfile      => qw(is rw isa Any);
-has pid          => qw(is rw isa Num lazy 1), default=>sub{ return $$ };
-has host         => qw(is rw isa Str lazy 1), default=>sub{ return lc Sys::Hostname::hostname() };
-has owner        => qw(is rw isa Str lazy 1), default=>sub{ return $ENV{USER} || $ENV{USERNAME} };
-has same_exec    => qw(is rw isa Bool default 0); 
-has step_status  => ( is=>'rw', isa=>'HashRef[Str]', default=>sub{{}} );  # saves statuses at step change
-has prev_status  => ( is=>'rw', isa=>'Any' );  # saves previous status
-has final_status => ( is=>'rw', isa=>'Any' );  # so that services can request a final status like PAUSE
-has current_service => qw(is rw isa Any default job_run);
+has exec               => qw(is rw isa Num default 1);
+has logfile            => qw(is rw isa Any);
+has pid                => qw(is rw isa Num lazy 1), default=>sub{ return $$ };
+has host               => qw(is rw isa Str lazy 1), default=>sub{ return lc Sys::Hostname::hostname() };
+has owner              => qw(is rw isa Str lazy 1), default=>sub{ return $ENV{USER} || $ENV{USERNAME} };
+has same_exec          => qw(is rw isa Bool default 0); 
+has step_status        => ( is=>'rw', isa=>'HashRef[Str]', default=>sub{{}} );  # saves statuses at step change
+has prev_status        => ( is=>'rw', isa=>'Any' );  # saves previous status
+has final_status       => ( is=>'rw', isa=>'Any' );  # so that services can request a final status like PAUSE
+has parent_job         => (is=>'rw', isa=>'Num', required=>1 );
+has pause_timeout      => qw(is rw isa Num default), 3600 * 24;  # 1 day max
+has pause_frequency    => qw(is rw isa Num default 5);  # 5 seconds
 #  has failing         => ( is=>'rw', isa=>'Bool', default=>0 );  # XXX desirable?
 
 #has_cis 'parent_job'; 
@@ -26,17 +28,6 @@ has current_service => qw(is rw isa Any default job_run);
 
 
 with 'Baseliner::Role::JobRunner';
-
-# change logger service
-around current_service => sub {
-    my $orig = shift;
-    my $self = shift;
-    my $service = shift // '';
-    if( $service && $self->{current_service} ne $service ) {
-        $self->logger( current_service=>$service );
-        $self->logger->max_service_level( 2 );  # XXX ???
-    }
-};
 
 # save status for the step
 around status => sub {
@@ -68,6 +59,14 @@ around exec => sub {
         : $self->$orig();
 };
 
+around update_ci => sub {
+    my $orig = shift;
+    my $self = shift;
+    
+    $self->$orig( @_ ); 
+};
+
+
 service 'job.run' => {
     name    => 'Job CI Runner',
     handler => sub{
@@ -80,9 +79,13 @@ sub run {
     my ($self, %p) = @_;
 
     $self->status('RUNNING');
-    $self->exec( $self->exec + 1) if !$self->same_exec && $self->endtime;  # endtime=job has run before, a way to detect first time
-    _log "Setting exec to " . $self->exec;
+    if( !$self->same_exec && $self->endtime && $self->step ) {
+        $self->exec( $self->exec + 1);  # endtime=job has run before, a way to detect first time
+        _log "Setting exec to " . $self->exec;
+    }
     $self->save;
+    
+    $self->service_levels->{ $self->step } = {};  # restart level aggregator
     
     # trap all die signals
     local $SIG{__DIE__} = \&_throw;
@@ -134,6 +137,9 @@ sub run {
         $self->job_stash( $stash );
     };
     $self->save;
+    $self->save_to_parent_job( natures=>$self->natures, service_levels=>$self->service_levels );
+    $self->logger->debug( "Job natures....", $self->natures );
+    $self->logger->debug( "Job children", $self->children );
     
     # last line on log
     if( $self->status eq 'ERROR' ) {
@@ -145,6 +151,21 @@ sub run {
     }
     $self->goto_next_step unless $self->status eq 'ERROR';
     return $self->status;
+}
+
+sub save_to_parent_job {
+    my ($self, %p)=@_;
+    if( my $parent_job = Util->_ci( $self->parent_job ) ) {
+        $parent_job->new( %p );
+        $parent_job->save;
+    }
+}
+
+# called from dsl_run in Rules
+sub start_statement {
+    my ($self,$stmt_name) = @_;
+    $self->current_service( $stmt_name );
+    $self->logger->debug( "$stmt_name", milestone=>2 );
 }
 
 our %next_step   = ( CHECK=>'INIT', INIT=>'PRE', PRE => 'RUN', RUN => 'POST', POST => 'END' );
@@ -182,50 +203,59 @@ sub finish {
     $self->endtime( _now ); 
 }
 
-sub logger { 
-    my ($self)=@_;
-    return BaselinerX::CI::job_log->new(
-        step            => $self->step,
-        exec            => $self->exec,
-        jobid           => $self->id_job,
-        current_service => $self->current_service
-    );
-}
-
 =head2 pause
 
 Pause job.
 
 When pausing, the status changes to PAUSE. Pause means that the job process 
-is still alive, albeit frozen waiting for a change in status.
+is still alive, albeit on stand by waiting for a change in status.
 
 Pause happens on the spot. The job blocks at this same call:
 
     $job->pause;  # may stay here for 10 hours ...
+    
+        reason: "log message"
+        details: "log data"
+        timeout: seconds
+        frequency: seconds
+        verbose: 0|1  - print message to log continously
 
 =cut
 sub pause {
     my ($self, %p ) = @_;
     $self->logger->warn( _loc('Job pausing...') );
-    $self->status('PAUSE');
+    my $saved_status = $self->status;
+    $self->status('PAUSED');
     $self->save;
     
     $p{reason} ||= _loc('unspecified');
-    my $timeout = $p{timeout} || $self->config->{pause_timeout} || 3600 * 24;  # 1 day default
-    my $freq    = $p{frequency} || $self->config->{pause_frequency} || 5;
-    $self->logger->debug( _loc('Pause timeout (%1 seconds)', $timeout ) );
+    $self->logger->info( _loc('Paused. Reason: %1', $p{reason} ), milestone=>1, data=>$p{details} );
+    
+    my $timeout = $p{timeout} || $self->pause_timeout;
+    my $freq    = $p{frequency} || $self->pause_frequency;
     my $t = 0;
+    $self->logger->debug( _loc('Setting pause timeout at %1 seconds', $timeout ) );
     # select continuously
     while( $self->job_row->get_from_storage->status eq 'PAUSED' ) {
-        $self->logger->warn( _loc('Paused. Reason: %1', $p{reason} ) );
+        $self->logger->info( _loc('Paused. Reason: %1', $p{reason} )) if $p{verbose};
         sleep $freq;
         $t += $freq;
         if( defined $timeout && $t > $timeout ) {
-            $self->logger->warn( _loc('Pause timed-out at %1 seconds', $timeout ) );
+            my $msg = _loc('Pause timed-out at %1 seconds', $timeout ) ;
+            $self->logger->error( $msg );
+            _fail $msg unless $p{no_fail}; 
             last;
         }
     }
-    $self->status( $self->job_row->get_from_storage->status );  # resume back to my last real status
+    my $last_status = $self->job_row->get_from_storage->status;
+    $self->logger->debug( _loc('Pause finished due to status %1', $last_status) );
+    if( $last_status =~ /CANCEL/ ) {
+        _fail _loc('Job cancelled while in pause');
+    }
+    elsif( $last_status =~ /ERROR/ ) {
+        _fail _loc('Job error while in pause');
+    }
+    $self->status( $saved_status );  # resume back to my last real status
     $self->save;
 }
 

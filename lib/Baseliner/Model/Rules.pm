@@ -79,14 +79,17 @@ sub dsl_build {
         my $name = _strip_html( $attr->{text} );
         my $data_key = length $attr->{data_key} ? $attr->{data_key} : _name_to_id( $name );
         push @dsl, sprintf( '# statement: %s', $name ) . "\n"; 
-        push @dsl, sprintf( '_debug(q{Current Rule Statement: %s} );', $name)."\n" if $p{logging}; 
+        push @dsl, sprintf( 'current_statement($stash, q{%s});', $name)."\n";
+        push @dsl, sprintf( '_debug(q{=====| Current Rule Statement: %s} );', $name)."\n" if $p{verbose}; 
         my $data = $attr->{data} || {};
         if( length $attr->{key} ) {
             my $key = $attr->{key};
             my $reg = Baseliner->registry->get( $key );
             if( $reg->isa( 'BaselinerX::Type::Service' ) ) {
-                push @dsl, $spaces->($level) . sprintf(q{my $config = parse_vars %s, $stash;}, Data::Dumper::Dumper( $data ) );
-                push @dsl, $spaces->($level) . sprintf(q{launch( "%s", $stash, $config => '%s' );}, $key, $data_key );
+                push @dsl, $spaces->($level) . '{';
+                push @dsl, $spaces->($level) . sprintf(q{   my $config = parse_vars %s, $stash;}, Data::Dumper::Dumper( $data ) );
+                push @dsl, $spaces->($level) . sprintf(q{   launch( "%s", $stash, $config => '%s' );}, $key, $data_key );
+                push @dsl, $spaces->($level) . '}';
                 #push @dsl, $spaces->($level) . sprintf('merge_data($stash, $ret );', Data::Dumper::Dumper( $data ) );
             } else {
                 push @dsl, _array( $reg->{dsl}->($self, { %$attr, %$data, children=>$children, data_key=>$data_key }, %p ) );
@@ -185,6 +188,7 @@ sub run_single_rule {
     my $ret = try {
         ################### RUN THE RULE DSL ######################
         $self->dsl_run( dsl=>$dsl, stash=>$p{stash}, %p );
+        _debug "DSL:\n",  $self->dsl_listing( $dsl ) if $p{logging};
     } catch {
         _debug "DSL:\n",  $self->dsl_listing( $dsl );
         _fail( _loc("Error running rule '%1': %2", $rule->rule_name, shift() ) ); 
@@ -210,6 +214,36 @@ sub merge_data {
         }
     }
     parse_vars( $dest, $dest );
+}
+
+
+sub project_changes {
+    my ($stash)=@_;
+    if( !$stash->{project_changes} ) {
+        _warn _loc('No project changes detected');
+        return ();
+    } else {
+        return map { 
+            my $p = $_->{project};
+            if( Util->_blessed( $p )  ) {
+                $p;
+            } else {
+                if( $p->can('mid') ) {
+                    _ci( $p->mid );
+                } else {
+                    _ci( $p );  # is a number then, or try my luck
+                }
+            }
+        } _array( $stash->{project_changes} );
+    }
+}
+
+sub current_statement {
+    my ($stash,$name)=@_;
+    $stash->{current_statement_name} = $name;
+    if( my $job = $stash->{job} ) {
+        $job->start_statement( $name );
+    }
 }
 
 # launch runs service, merge return into stash and returns what the service returns
@@ -278,7 +312,9 @@ sub changeset_projects {
 sub variables_for_bl {
     my ($ci, $bl) = @_; 
     my $vars = $ci->variables // { _no_vars=>1 }; 
-    $vars->{ $bl // '*' } // { _no_vars_for_bl=>1 };
+    my $vars_common_bl = $vars->{'*'} // {};
+    my $vars_for_bl = $vars->{$bl} // { _no_vars_for_bl=>$bl } if length $bl && $bl ne '*';
+    +{ %$vars_common_bl, %$vars_for_bl };
 }
 
 ############################## STATEMENTS
@@ -426,10 +462,11 @@ register 'statement.nature.block' => {
             {
                 # check if nature applies 
                 my $nature = _ci( '%s' );
-                if( stash_has_nature( $nature, $stash) ) {
+                if( my $nature_items = stash_has_nature( $nature, $stash) ) {
                     # load natures config
                     my $variables = $nature->variables->{ $stash->{bl} // '*' } // {};
                     merge_data $variables, $stash, variables_for_bl( $nature, $stash->{bl} ), { _ctx => 'nature' }; 
+                    $stash->{nature_items} = $nature_items;
                     
                     %s
                 }
@@ -493,7 +530,7 @@ register 'statement.project.loop' => {
     dsl => sub { 
         my ($self, $n, %p ) = @_;
         sprintf(q{
-            for my $project ( map { _ci($_->{project}->mid) } _array( $stash->{project_changes} ) ) {
+            for my $project ( project_changes( $stash ) ) { 
                 $stash->{project} = $project->name;
                 my $vars = variables_for_bl( $project, $stash->{bl} );
                 $stash->{job}->logger->info( _loc('Current project *%1* (%2)', $project->name, $stash->{bl} ), $vars );

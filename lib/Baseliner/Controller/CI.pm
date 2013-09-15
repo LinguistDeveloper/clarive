@@ -969,6 +969,7 @@ sub services : Local {
     $c->forward('View::JSON');
 }
 
+# run_service:
 sub service_run : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
@@ -978,15 +979,19 @@ sub service_run : Local {
     my $ret;
     $c->stash->{json} = try {
         my $service = $c->registry->get( $p->{key} );
-        my $ci = _ci( $p->{mid} );
-        my $ret = $c->model('Services')->launch( $service->key, obj=>$ci, c=>$c, logger=>$logger, data=>$p->{data}, capture=>1 );
-        _debug( $ret );
-        _debug( $logger );
-        my $console = delete $logger->{console};
-        my $data = delete $logger->{data};
-        $data = ref $data ? Util->_dump( $data ) : "$data";
         my $service_js_output = $service->js_output;
-        {success => \1, console=>$console, data=>$data, ret=>Util->_dump($ret), js_output=>$service_js_output };
+        
+        my $ci = _ci( $p->{mid} );
+        # TODO this is the future: 
+        my $ret = $ci->run_service( $p->{key}, %{ $p->{data} || {} } );
+        #my $ret = $c->model('Services')->launch( $service->key, obj=>$ci, c=>$c, logger=>$logger, data=>$p->{data}, capture=>1 );
+        #_debug( $ret );
+        #_debug( $logger );
+        #my $console = delete $logger->{console};
+        my $data = delete $ret->{return};
+        $data = ref $data ? Util->_dump( $data ) : "$data";
+        #{success => \1, console=>$console, data=>$data, ret=>Util->_dump($ret), js_output=>$service_js_output };
+        {success => \1, console=>$ret->{output}, data=>$data, ret=>Util->_dump($ret), js_output=>$service_js_output };
     } 
     catch {
         my $err = shift;

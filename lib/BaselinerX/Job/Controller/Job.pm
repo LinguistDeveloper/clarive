@@ -206,8 +206,9 @@ sub job_stash : Local {
     my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
     $c->stash->{json}  = try {
         my $stash = $job->stash;
-        Encode::_utf8_on( $stash );
-        $c->stash->{job_stash} = $stash; 
+        $stash = _dump( Util->_stash_load( $stash ) );
+        #Encode::_utf8_on( $stash );
+        #$c->stash->{job_stash} = $stash;
         { stash=>$stash, success=>\1 };
     } catch {
         { success=>\0 };
@@ -220,7 +221,8 @@ sub job_stash_save : Local {
     my $p = $c->request->parameters;
     my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
     $c->stash->{json}  = try {
-        $job->stash( $p->{stash} );
+        my $d = _load( $p->{stash} );
+        $job->stash( Util->_stash_dump($d) );
         { msg=>_loc( "Stash saved ok"), success=>\1 };
     } catch {
         { success=>\0, msg=>shift() };
@@ -533,13 +535,16 @@ sub job_submit : Path('/job/submit') {
             my $job_time = $p->{job_time};
             my $job_type = $p->{job_type};
             my $id_rule = $p->{id_rule};
-            my $job_stash = try { _decode_json( $p->{job_stash} ) } catch { +{} };
+            my $job_stash = try { _decode_json( $p->{job_stash} ) } catch { undef };
             
-            my $contents = _decode_json $p->{job_contents};
-            die _loc('No job contents') if( !$contents );
-            $contents = [ map { $_->{mid} } _array($contents) ];  # now use just mids
+            my $contents = $p->{changesets};
+            if( !defined $contents ) {
+                # TODO deprecated, use the changesets parameter only
+                $contents = _decode_json $p->{job_contents};
+                _fail _loc('No job contents') if( !$contents );
+                $contents = [ map { $_->{mid} } _array($contents) ];  # now use just mids
+            }
 
-            _debug "*** Job Stash: " . _dump $job_stash;
             # create job
             #my $start = parse_date('Y-mm-dd hh:mi', "$job_date $job_time");
             my $start = parse_dt( '%Y-%m-%d %H:%M', "$job_date $job_time");
@@ -560,23 +565,26 @@ sub job_submit : Path('/job/submit') {
             }
                 
             my $job_data = {
+                    bl           => $bl,
+                    job_type     => $job_type,
                     starttime    => $start,
                     maxstarttime => $end,
                     status       => 'IN-EDIT',
                     approval     => $approval,
                     step         => 'PRE',
-                    job_type     => $job_type,
-                    bl           => $bl,
                     username     => $username,
                     runner       => $runner,
                     id_rule      => $id_rule,
                     description  => $comments,
                     changesets   => $contents, 
-                    job_stash    => $job_stash
             };
             event_new 'event.job.new' => { c=>$c, self=>$self, job_data=>$job_data } => sub {
                 my $job = BaselinerX::CI::job->new( $job_data );
                 $job->save;
+                if( ref $job_stash ) {
+                    _debug "*** Job Stash before Job Creation: " . _dump $job_stash;
+                    $job->job_stash( $job_stash );
+                }
                 $job_name = $job->name;
                 { job=>$job }; 
             };

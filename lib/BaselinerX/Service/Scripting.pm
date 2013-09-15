@@ -97,6 +97,8 @@ sub run_eval {
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
     my $stash = $c->stash;
+    my $stmt  = $stash->{current_statement_name};
+    
     
     my ($server, $user, $code) = @{ $config }{qw/server user code/};
     $server = _ci( $server ) unless ref $server;
@@ -117,8 +119,8 @@ sub run_eval {
                 $log->$lev( _loc( $msg->{text} // '(no message)' ), $msg->{data} );
             }
         } else {
-            $log->info( _loc('Eval ret'), $agent->ret );
-            $log->info( _loc('Eval output'), $agent->output );
+            $log->debug( _loc('%1 ret', $stmt), $agent->ret );
+            $log->info( _loc('%1 output', $stmt), $agent->output );
         }
     }
     

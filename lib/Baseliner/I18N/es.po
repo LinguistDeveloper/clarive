@@ -696,6 +696,9 @@ msgstr "Formularios de Configuración"
 msgid "Config List"
 msgstr "Configuración"
 
+msgid "Items"
+msgstr "Elementos"
+
 msgid "Configuration Items"
 msgstr "Elementos de Configuración"
 
@@ -2261,6 +2264,9 @@ msgstr "Precedencia"
 msgid "Table"
 msgstr "Tabla"
 
+msgid "Run Summary"
+msgstr "Ejecución"
+
 msgid "Run"
 msgstr "Ejecutar"
 
@@ -2313,7 +2319,7 @@ msgid "Resume Job"
 msgstr "Reanudar Pase"
 
 msgid "unspecified"
-msgstr "Sin espcificar"
+msgstr "Sin especificar"
 
 msgid "Manual Deployment"
 msgstr "Despliegue Manual"
@@ -3522,6 +3528,9 @@ msgstr "¿Seguro que quiere borrar las prioridades seleccionadas?"
 
 msgid "Changeset"
 msgstr "Cambio"
+
+msgid "Changesets"
+msgstr "Cambios"
 
 msgid "Edit status"
 msgstr "Editar estado"
