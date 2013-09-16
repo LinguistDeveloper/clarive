@@ -86,9 +86,10 @@ sub run_ship {
 
     for my $server ( split /,/, $config->{server} ) {
         $server = _ci( $server ) unless ref $server;
-        _debug $stmt . " - Connecting to server " . $server->name;
+        my $server_str = "$user\@".$server->name;
+        _debug $stmt . " - Connecting to server " . $server_str;
         my $agent = $server->connect( user=>$user );
-        $log->info( _loc( '*%1* Sending file `%2` to `%3`', $stmt, $local, $remote ) );
+        $log->info( _loc( '*%1* Sending file `%2` to `%3`', $stmt, $local, $server_str.':'.$remote ) );
         $agent->put_file({ 
             local  => $local,
             remote => $remote,
