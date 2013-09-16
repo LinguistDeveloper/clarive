@@ -841,7 +841,7 @@
         var render_project = function(value,metadata,rec,rowIndex,colIndex,store){
             if(rec.data.projects){
                 for(i=0;i<rec.data.projects.length;i++){
-                    tag_project_html = tag_project_html + "<div id='boot' class='alert' style='float:left'><button class='close' data-dismiss='alert'>×</button>" + rec.data.projects[i].project + "</div>";
+                    tag_project_html = tag_project_html + "<div id='boot' class='alert' style='float:left'><button class='close' data-dismiss='alert'>Ã—</button>" + rec.data.projects[i].project + "</div>";
                 }
             }
             return tag_project_html;
@@ -2126,11 +2126,11 @@
                 projects_box,
                 btn_add_label,
                 btn_delete_label,
-                '->',
-% if ($c->stash->{can_admin_labels}) {              
+                '->'//,
+% #if ($c->stash->{can_admin_labels}) {              
                 //btn_by_project,
                 //btn_choose_projects
-% }             
+% #}             
         ]
     });
     

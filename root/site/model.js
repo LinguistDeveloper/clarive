@@ -7,8 +7,8 @@ http://baseliner.org/license
 
 */ 
 
-Ext.ns('Baseliner.store');
-Ext.ns('Baseliner.model');
+//Ext.ns('Baseliner.store');
+//Ext.ns('Baseliner.model');
 
 Baseliner.store.AllProjects = function(c) {
      Baseliner.store.AllProjects.superclass.constructor.call(this, Ext.apply({
@@ -2791,7 +2791,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
             id: ci.name,
             type: ci.var_type,
             description: ci.description,
-            default: ci.var_default,
+            'default': ci.var_default,
             classname: ci.var_ci_class,
             role: ci.var_ci_role,
             field_attributes: { allowBlank: !ci.var_ci_mandatory, singleMode: !ci.var_ci_multiple },
