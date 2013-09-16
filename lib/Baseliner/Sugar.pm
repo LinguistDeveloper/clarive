@@ -181,7 +181,7 @@ sub event_new {
             #_throw 'event_new is missing mid parameter' ;
         } else {
             try {
-                my $ci = _ci( $data->{mid} );
+                my $ci = Baseliner::CI->new( $data->{mid} );
                 my $ci_data = $ci->load;
                 $data = { %$ci_data, ci=>$ci, %$data };
             } catch {
