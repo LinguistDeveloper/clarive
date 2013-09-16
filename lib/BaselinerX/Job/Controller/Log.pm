@@ -102,9 +102,17 @@ sub log_rows : Private {
     my @rows = ();
     $id_job //= $p->{id_job};
     _fail 'Missing id_job' unless length $id_job;
+
     my $job = $c->model('Baseliner::BaliJob')->find( $id_job );
+
     my $where = $id_job ? { id_job=>$id_job } : {};
-    my $from = {   order_by=> ( $sort ? { "-$dir" => $sort } : { -asc => 'me.id' } ),
+
+    my @select = qw( 
+         id text lev id_job more timestamp ns provider data_name data_length module section step exec prefix milestone service_key
+     );
+    push @select, 'data' if $p->{with_data}; 
+    # from
+    my $from = {  select=>\@select,  order_by=> ( $sort ? { "-$dir" => $sort } : { -asc => 'me.id' } ),
                     #page => to_pages( start=>$start, limit=>$limit ),  
                     #rows => $limit,
                 #	prefetch => ['job']
@@ -147,7 +155,9 @@ sub log_rows : Private {
     }
     #TODO    store filter preferences in a session instead of a cookie, on a by id_job basis
     #my $job = $c->model( 'Baseliner::BaliJob')->search({ id=>$id_job })->first;
+
     my $rs = $c->model( 'Baseliner::BaliLog')->search( $where , $from );
+
     #my $pager = $rs->pager;
     #$cnt = $pager->total_entries;
 
@@ -171,7 +181,7 @@ sub log_rows : Private {
           {
             id       => $r->id,
             id_job   => $r->id_job,
-            job      => $r->job->name,
+            job      => $job->name,
             text     => _markup( $r->text ),
             step     => $r->step,
             prefix   => $r->prefix,

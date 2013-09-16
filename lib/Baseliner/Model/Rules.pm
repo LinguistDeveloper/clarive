@@ -513,14 +513,30 @@ register 'statement.perl.eval' => {
     text => 'EVAL', data => { code=>'' },
     type => 'loop',
     form => '/forms/stmt_eval.js', 
+    icon => '/static/images/circular/cog.png', 
     dsl => sub { 
         my ($self, $n, %p ) = @_;
         sprintf(q{
             {
-                $stash->{'%s'} = eval %s;
+                $stash->{'%s'} = eval { %s };
                 if($@) {
-                    _error $@;
+                    _fail "ERROR in EVAL: $@";
                 }
+            }
+        }, $n->{data_key}, $n->{code} // '', $self->dsl_build( $n->{children}, %p ) );
+    },
+};
+
+register 'statement.perl.do' => {
+    text => 'DO', data => { code=>'' },
+    type => 'loop',
+    icon => '/static/images/circular/cog.png', 
+    form => '/forms/stmt_eval.js', 
+    dsl => sub { 
+        my ($self, $n, %p ) = @_;
+        sprintf(q{
+            {
+                $stash->{'%s'} = do { %s };
             }
         }, $n->{data_key}, $n->{code} // '', $self->dsl_build( $n->{children}, %p ) );
     },
@@ -534,6 +550,8 @@ register 'statement.project.loop' => {
         sprintf(q{
             for my $project ( project_changes( $stash ) ) { 
                 $stash->{project} = $project->name;
+                $stash->{project_lc} = lc $project->name;
+                $stash->{project_uc} = uc $project->name;
                 my $vars = variables_for_bl( $project, $stash->{bl} );
                 $stash->{job}->logger->info( _loc('Current project *%1* (%2)', $project->name, $stash->{bl} ), $vars );
 

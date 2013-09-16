@@ -28,6 +28,48 @@ register 'service.changeset.natures' => {
     handler => \&nature_items,
 };
 
+register 'service.changeset.update' => {
+    name    => 'Update Baselines',
+    icon    => '/static/images/icons/topic.png',
+    handler => \&update_baselines,
+};
+
+sub update_baselines {
+    my ( $self, $c, $config ) = @_;
+
+    my $stash    = $c->stash;
+    my $job      = $c->stash->{job};
+    my $log      = $job->logger;
+    my $bl       = $job->bl;
+    my $job_type = $job->job_type;
+    my @changesets;
+
+
+    if ( $job_type eq 'static' ) {
+        $self->log->info( _loc "Changesets status not updated. Static job." );
+        return;
+    }
+
+    my $status = $stash->{status_to};
+    if ( !$status ) {
+        $status = DB->BaliTopicStatus->search( {bl => $bl} )->first->id;
+    }
+
+    for my $cs ( _array( $job->changesets ) ) {
+        my $status_name = DB->BaliTopicStatus->find( $status )->name;
+        $log->info( _loc( 'Promoting changeset *%1* to stage *%2*', $cs->name, $status_name ) );
+        Baseliner->model('Topic')->change_status(
+           change          => 1, 
+           username        => $job->username,
+           id_status       => $status,
+           #id_old_status   => $
+           mid             => $cs->mid,
+        );
+    }
+
+    #$repo->update_baselines( rev => $git_checkouts->{$_}->{rev} );
+}
+
 sub job_items {
     my ( $self, $c, $config ) = @_;
     my $job   = $c->stash->{job};
@@ -79,6 +121,18 @@ sub job_items {
     }
     # put unique items into stash
     $stash->{items} = [ values %all_items ];
+
+    # create name list
+    my %name_list;
+    for my $i ( _array( $stash->{items} ) ) {
+        my $f = $i->path;
+        next unless $f;
+        $f = _file( $f )->basename;
+        $name_list{ "$f" } = 1;
+    }
+    $stash->{item_name_list} = [ keys %name_list ];
+    $stash->{item_name_list_long} = "'" . join("' '", keys %name_list) . "'";
+    $stash->{item_name_list_comma} = join(",", keys %name_list);
 
     # save project-repository structure
     $stash->{project_changes} = \@project_changes;
@@ -177,6 +231,7 @@ sub nature_items {
     return 0;
 }    
     
+##########################################################################
 ########### DEPRECATED:
 
 ## deprecated in favor of service.changeset.items, changesets now included in stash
@@ -184,12 +239,6 @@ register 'service.changeset.job_elements' => {
     name    => 'Fill job_elements',
     deprecated => 1,
     handler => \&job_elements,
-};
-
-register 'service.changeset.update' => {
-    name    => 'Update Baselines',
-    deprecated => 1,
-    handler => \&update_baselines,
 };
 
 sub checkout_items {
@@ -521,11 +570,12 @@ sub job_elements {
 } ## end sub job_elements
 
 
-sub update_baselines {
+sub update_baselines_old {
     my ( $self, $c, $config ) = @_;
+
+    my $stash    = $c->stash;
     my $job      = $c->stash->{job};
     my $log      = $job->logger;
-    my $stash    = $c->stash;
     my $bl       = $job->bl;
     my $job_type = $job->job_type;
     my @changesets;

@@ -140,7 +140,7 @@ sub combo : Local {
     my ($self,$c)=@_;
     my $list = $c->registry->starts_with( 'service' ) ;
     my $p = $c->req->params;
-    my $query = qr/$p->{query}/ if defined $p->{query};
+    my $query = qr/$p->{query}/ if length $p->{query};
     my @data;
     foreach my $key ( $c->registry->starts_with( 'service' ) ) {
         my $service = Baseliner::Core::Registry->get( $key );

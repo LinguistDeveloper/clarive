@@ -186,11 +186,11 @@ sub rs_filter {
 sub job_logfile : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
-    my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
+    my $job = _ci( ns=>'job/'.$p->{id_job} );
     $c->stash->{json}  = try {
-        my $file = _load( $job->stash )->{logfile};
-        $file //= Baseliner->loghome( $job->name . '.log' ); 
-        _fail _log "Error: logfile not found or invalid: %1", $file unless -f $file;
+        my $file = $job->logfile;
+        #$file //= Baseliner->loghome( $job->name . '.log' ); 
+        _fail _loc( "Error: logfile not found or invalid: %1", $file ) if !$file || ! -f $file;
         my $data = _file( $file )->slurp; 
         { data=>$data, success=>\1 };
     } catch {

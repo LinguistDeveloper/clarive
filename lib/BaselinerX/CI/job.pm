@@ -10,6 +10,8 @@ has id_rule      => qw(is rw isa Any), default=>sub {
     DB->BaliRule->search->first->id   # TODO get default rule
 };
 has bl                 => qw(is rw isa Any);
+has pid                => qw(is rw isa Any);
+has host               => qw(is rw isa Any);
 has rollback           => qw(is rw isa BoolCheckbox default 0);
 has job_key            => qw(is rw isa Any), default => sub { Util->_md5() };
 has job_type           => qw(is rw isa Any default promote);  # promote, demote, static
@@ -19,6 +21,7 @@ has schedtime          => qw(is rw isa Any);
 has starttime          => qw(is rw isa Any);
 has endtime            => qw(is rw isa Any);
 has maxstarttime       => qw(is rw isa Any);
+has logfile            => qw(is rw isa Any);
 has step               => qw(is rw isa Str default CHECK);
 has exec               => qw(is rw isa Num default 1);
 has status             => qw(is rw isa Any default IN-EDIT);
@@ -76,6 +79,7 @@ around update_ci => sub {
     
     if( my $row = DB->BaliJob->search({ mid=>$mid })->first ) {
         $row->update({
+            pid         => $self->pid,
             exec        => $self->exec,
             step        => $self->step,
             status      => $self->status,
@@ -210,15 +214,22 @@ sub _create {
 
     my $log = new BaselinerX::Job::Log({ jobid=>$job_row->id });
 
-    # create job items
-    my @cs_cis;  # topic CIs
+    # expand releases into changesets
+    my @cs_cis = grep { ref } map {
+        my $cs = ref $_ ? $_ :  Baseliner::CI->new( $_ );
+        $cs->is_changeset 
+            ? $cs 
+            : $cs->is_release 
+                ? ( grep { $_->is_changeset } $cs->children( isa=>'topic', depth=>-1 ) )
+                : undef;
+    } Util->_array( $changesets );
+
+    # create job contents
     my @cs_list;
-    for my $cs ( Util->_array( $changesets ) ) {
-        $cs = _ci( $cs ) unless ref $cs;
+    for my $cs ( @cs_cis ) {
         if( my $active_job = $cs->is_in_active_job ) {
             _fail _loc("Job element '%1' is in an active job: %2", $cs->name, $active_job->name )
         }
-        push @cs_cis, $cs;
         push @cs_list, $cs->topic_name;
     }
     _fail _loc('Missing job contents') unless @cs_list > 0;
