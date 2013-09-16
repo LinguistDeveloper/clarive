@@ -31,18 +31,9 @@ delete the whole file.
 
 =cut
 
-register 'config.sed' => {
-    name => 'Sed replace configuration',
-    metadata => [
-        { id=>'map', label=>'Sed map array of hashes', type=>'eval'  },
-        { id=>'paths', label=>'Sed File Path Regex Array (OR)' },    
-        { id=>'excludes', label=>'Sed File Path Exclude Regex Array (OR)' },    
-        { id=>'patterns', label=>'Sed Substitute pattern Regex', type=>'array' },
-    ]
-};
 register 'service.sed' => {
-    name => 'Job Service for Replacing Characters in files',
-    config=> 'config.sed',
+    name => 'Replace Strings',
+    form => '/forms/sed.js',
     handler => \&run 
 };
 
@@ -52,46 +43,56 @@ sub run {
     my $stash = $c->stash;
     my $job = $stash->{job};
     my $log = $job->logger;
-    $log->info( _loc('Starting service Sed') );
-    my $path = $config->{path} || $stash->{path}
-        or _throw 'Invalid job path in stash';
+    my $stmt  = $stash->{current_statement_name};
 
-    -e $path or _throw _loc "Invalid path '%1'", $path;
+    $log->info( _loc('*%1* starting', $stmt ) );
+
+    my $path = $config->{path} 
+        or _fail _loc('*%1* Missing or invalid path in configuration', $stmt);
+
+    -e $path or _fail _loc "*%1* Invalid path '%1'", $stmt, $path;
 
     # check config
-    my $map = $config->{'map'};
-    unless( ref $map  eq 'ARRAY' ) {
-        $log->info('Sed array map not set or incorrect. Exiting');
-        return;
-    }
+    my $sed = {
+        patterns => $config->{patterns},
+        includes => $config->{includes},
+        excludes => $config->{excludes},
+        slurp   => (length $config->{slurp} && $config->{slurp} =~/1|on/ ? 1 : 0) ,
+    };
 
     # recurse
     my $cnt = 0;
     my @mods;
     my $dir = Path::Class::dir( $path );
+    my @log;
     $dir->recurse( callback=>sub{
         my $f = shift;
         return if $f->is_dir;
 
         # find matching sed
-        for my $sed ( _array $map ) {
-            _debug "Checking $f...";
-            my $path_ok = eval {
-                return 1 unless defined $sed->{include};
-                return 1 if $f =~ $sed->{include};
-            };
-            _debug("Not included $f..."), return unless $path_ok;
-            _debug("Excluded $f..."), return
-                if defined $sed->{exclude} && $f =~ $sed->{exclude};
-            my $ret = $self->process_file( file=>$f, patterns=>$sed->{pattern}, slurp=>$sed->{slurp} );
-            $cnt += $ret;
-            push @mods, "$f ($ret)" if $ret;
+        push @log, "Checking $f...";
+        for my $in ( _array( $sed->{includes} ) ) {
+            if( $f !~ /$in/ ) {
+                push( @log, "Not included $f...");
+                return; 
+            }
         }
+        for my $ex ( _array( $sed->{excludes} ) ) {
+            if(  $f =~ /$ex/ ) {
+                push( @log, "Excluded $f...");
+                return;
+            }
+        }
+        push @log, "processing: $f";
+        my $ret = $self->process_file( stash=>$stash, file=>$f, patterns=>$sed->{patterns}, slurp=>$sed->{slurp} );
+        $cnt += $ret;
+        push @mods, "$f ($ret)" if $ret;
     });
 
-    $log->info( _loc('Sed service file changes.', data=>_dump(\@mods) )) if @mods;
+    $log->debug( _loc('*%1* include/exclude.', $stmt), data=>join("\n", @log ) ); 
+    $log->info( _loc('*%1* changes.', $stmt), data=>_dump(\@mods) ) if @mods;
     _debug _dump \@mods if @mods;
-    $log->info( _loc('Sed service finished. Changed %1 file(s).', scalar(@mods) ));
+    $log->info( _loc('*%1* finished. Changed %2 file(s).', $stmt, scalar(@mods)) );
 }
 
 =head2 process_file
@@ -106,19 +107,24 @@ Returns the count of substitutions in the file (0 to n).
 sub process_file {
     my ($self, %p ) = @_;
     my $file = $p{file} or _throw _loc('Missing file parameter');
-    _debug "Changing file $file";
-    #XXX better process line by line on live file to reduce ram
+
     # save date
     my @stat = stat $file;
         # slurp in
     open my $fin, '<', $file or _throw _loc('Sed: failed to open file "%1": %2', $file, $!);
         # process
     my $cnt = 0;
-    my @mods;
 
-    _debug "Processing file $file with $p{patterns}";
+    #_debug "Processing file $file with $p{patterns}";
     my $sed_sub = sub { 
         my $data = shift;
+        
+        # parse vars from stash
+        my $parsed = Util->parse_vars( $data, $p{stash} ) if ref $p{stash};
+        $cnt++ if $data ne $parsed;
+        $data = $parsed;
+
+        # run substitutions on parsed vared values, if any
         for my $re ( _array $p{patterns} ) {
             $cnt += eval q{$data =~ }.$re;
         }
@@ -129,13 +135,13 @@ sub process_file {
         close $fin;
         $data = $sed_sub->($data);
         # slurp out 
-        open my $fout, '>', $file or _throw _loc('Sed: failed to write to file "%1": %2', $file, $!);;
+        open my $fout, '>', $file or _fail _loc('Sed: failed to write to file "%1": %2', $file, $!);;
         print $fout $data;
         close $fout;
     } 
     else {
         my $tmpfile = file $file . '-' . $$ . '.bak';
-        open my $fout, '>', $tmpfile or _throw _loc('Sed: failed to write to file "%1": %2', $tmpfile, $!);;
+        open my $fout, '>', $tmpfile or _fail _loc('Sed: failed to write to file "%1": %2', $tmpfile, $!);;
         while( <$fin> ) {
             print $fout $sed_sub->($_)
         }
