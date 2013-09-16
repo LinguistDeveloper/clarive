@@ -308,9 +308,12 @@ sub _worker_do {
         my $result = $self->db->get( $res_key );
         $self->db->del( $res_key );
         if( length $result ) {
-            $result = substr($result,0,5) eq 'stor:' 
-                ? Storable::thaw($result) 
-                : Util->_from_json( $result );
+            my $msgtype = substr($result,0,5);
+            $result = $msgtype eq 'stor:' 
+                ? Storable::thaw(substr($result,5)) 
+                : $msgtype eq 'yaml:' 
+                    ? Util->_load( substr($result,5) )
+                    : Util->_from_json( $result );
         }
         # load standard receivers
         $self->output( $result->{output} );

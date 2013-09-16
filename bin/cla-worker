@@ -16295,6 +16295,8 @@ use File::Path qw/rmtree mkpath/;
 use MIME::Base64;
 use JSON::PP;
 use YAML::Tiny;
+use Storable;
+use Encode;
 use DateTime::Tiny;
 use File::Copy qw(copy);
 use Time::HiRes qw/gettimeofday tv_interval/;
@@ -16363,6 +16365,7 @@ require Sys::Hostname;
     user           => getlogin(),
     started_on     => DateTime::Tiny->now() . '',
     script_home    => $script_home,
+    encode_format  => 'yaml',
     os             => $^O,
     arch           => do { $a=`uname -m`; chomp $a; $a }, 
     home           => $script_home,
@@ -16385,7 +16388,7 @@ if( -e $config_file ) {
 }
 # merge args
 %conf = ( %conf, %args );
-my $conf_json = encode_json( \%conf );
+my $conf_json = encode_msg( \%conf );
 
 # globals
 #my $choose_defined = sub { defined $_ and return $_ for @_ };
@@ -16675,7 +16678,7 @@ sub process_message {
         output => $output,  # stdout + stderr 
     };
     _log sprintf "$cmd DONE in %0.4fs", tv_interval $t1;
-    $redis->set( "queue:$id_msg:result", encode_json( $result ) );
+    $redis->set( "queue:$id_msg:result", encode_msg( $result ) );
     $redis->publish( "queue:$id_msg:done", '' );
 }
 
@@ -16714,7 +16717,7 @@ sub run_cmd {
         return $bytes;
     }
     elsif( $cmd eq 'ping' ) {
-        $redis->publish( "queue:pong:$workerid", encode_json( \%conf ) );
+        $redis->publish( "queue:pong:$workerid", encode_msg( \%conf ) );
     }
     else {
         die "cla-worker: Invalid command: $cmd\n";
@@ -16728,6 +16731,15 @@ sub aborted {
     exit $code;
 }
 
+sub encode_msg {
+    my ($d) = @_;
+    # json: has problems with utf8, storable: may hit incompatible version binaries
+    return $conf{encode_format} eq 'yaml' 
+        ? 'yaml:' . Dump( $d )  
+        : $conf{encode_format} eq 'stor'
+            ? 'stor:' . Storable::freeze( $d )
+            : encode_json( $d );
+}
 
 exit 0;
 ########## main end
