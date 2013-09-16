@@ -267,9 +267,10 @@ sub DEMOLISH {
        Util->_debug( "DESTROY queue items: @patterns" );
        for my $pattern ( @patterns  ) {
            next unless ref $self->db;
-           my @keys = $self->db->keys( $pattern );
-           Util->_debug( "DELETING keys: @keys" );
-           $self->db->del( @keys );
+           if( my @keys = $self->db->keys( $pattern ) ) {
+               Util->_debug( "DELETING keys: @keys" );
+               $self->db->del( @keys );
+           }
        }
    }
 }
