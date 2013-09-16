@@ -5,7 +5,7 @@ use v5.10;
 use Moose::Util::TypeConstraints;
 use Try::Tiny;
 require Baseliner::CI;
-use Baseliner::Utils qw(_ci _throw _fail _loc _log _debug _unique _array _load _dump _package_is_loaded _any);
+use Baseliner::Utils qw(_throw _fail _loc _log _debug _unique _array _load _dump _package_is_loaded _any);
 use Baseliner::Sugar;
 
 subtype CI    => as 'Baseliner::Role::CI';
@@ -42,7 +42,7 @@ coerce 'HashJSON' =>
 has mid      => qw(is rw isa Num);
 has active   => qw(is rw isa Bool default 1);
 has ts       => qw(is rw isa TS coerce 1), default => sub { Class::Date->now->string };
-#has _ci      => qw(is rw isa Any);          # the original DB record returned by load() XXX conflicts with Utils::_ci
+#has _ci      => qw(is rw isa Any);  # the original DB record returned by load() XXX conflicts with Utils::_ci
 
 requires 'icon';
 #sub icon { '/static/images/icons/ci.png' }
@@ -79,12 +79,17 @@ sub dump {
     return Util->_dump( $self ); 
 }
 
-sub collection {
+sub class_short_name {
     my $self = shift;
     ref $self and $self = ref $self;
-    my ($collection) = $self =~ /^BaselinerX::CI::(.+?)$/;
-    $collection =~ s{::}{/}g;
-    return $collection;
+    my ($classname) = $self =~ /^BaselinerX::CI::(.+?)$/;
+    $classname =~ s{::}{/}g;
+    return $classname;
+}
+
+sub collection {
+    my $self = shift;
+    return $self->class_short_name;
 }
 
 sub serialize {
@@ -329,7 +334,7 @@ sub load {
         my $y = _load( $data->{yaml} );
         Util->_error( Util->_loc( "Error deserializing CI. Missing or invalid YAML ref: %1", ref $y || '(empty)' ) ) 
             unless ref $y eq 'HASH';
-        $data = { %$data, %$y };   # TODO yaml should be blessed obj?
+        $data = { %{ $data || {} }, %{ $y || {} } };   # TODO yaml should be blessed obj?
     }
     else {  # dbic result source
         Util->_fail( Util->_loc('CI Storage method not supported: %1', $storage) );
@@ -405,6 +410,34 @@ sub load_from_query {
         
 sub load_pre_data { +{} }
 sub load_post_data { +{} }
+
+sub _build_ci_instance_from_rec {
+    my ($class,$rec) = @_;
+    local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
+    if( $Baseliner::CI::_record_only ) {
+        delete $rec->{yaml};
+        return $rec;
+    }
+    my $ci_class = $rec->{ci_class}; 
+    # instantiate
+    my $obj = $ci_class->new( $rec );
+    # add the original record to _ci
+    if( $Baseliner::CI::_no_record ) {
+        delete $rec->{yaml}; # lots of useless data
+    } else {
+        delete $rec->{yaml}; # lots of useless data
+        $obj->{_ci} = $rec; 
+        $obj->{_ci}{ci_icon} = $obj->icon;
+    }
+    if( $Baseliner::CI::_merge_record ) {
+        my $_ci = delete $obj->{_ci};
+        if( ref $_ci eq 'HASH' ) { 
+            $obj->{$_} //= $_ci->{$_} for keys %$_ci;
+        }
+    }
+
+    return $obj;
+}
 
 sub ci_form {
     my ($self) = @_;
@@ -585,7 +618,7 @@ sub list_by_name {
     $where->{name} = $p->{names} if defined $p->{names};
     my $from = { select=>'mid' };
     $from->{rows} = $p->{rows} if defined $p->{rows};
-    [ map { _ci( $_->{mid} )->{_ci} } DB->BaliMaster->search($where, $from)->hashref->all ];
+    [ map { Baseliner::CI->new( $_->{mid} )->{_ci} } DB->BaliMaster->search($where, $from)->hashref->all ];
 }
 
 =head2 push_ci_unique
@@ -693,11 +726,11 @@ sub mem_table {
         $self->mem_load( db=>$db, cis=>$p{cis}, cols=>\@cols  );
     }
     elsif( exists $p{mid} ) {
-        $self->mem_load( db=>$db, cis=>[ map { _ci( $_ ) } _array($p{mid}) ], cols=>\@cols  );
+        $self->mem_load( db=>$db, cis=>[ map { Baseliner::CI->new( $_ ) } _array($p{mid}) ], cols=>\@cols  );
     }
     else {   # full collection, from yaml
         #my @mids = map { $_->{mid} } DB->BaliMaster->search({ collection=>$coll }, { select=>'mid' })->hashref->all;
-        #$self->mem_load( db=>$db, cis=>[ map { _ci( $_ ) } @mids ], cols=>\@cols  );
+        #$self->mem_load( db=>$db, cis=>[ map { Baseliner::CI->new( $_ ) } @mids ], cols=>\@cols  );
         my @cis = map {
             my $h = _load( delete $_->{yaml} ) // {};
             +{ %$_, %$h };
@@ -762,6 +795,30 @@ sub run_service {
         }
     };
     { stash=>$stash, return=>$return_data, output=>$output };  
+}
+
+sub variables_like_me {
+    my ($class,%p) = @_;
+    my $cn = $class->class_short_name; 
+    my @recs = Baseliner::Role::CI->load_from_search({ collection=>'variable' });
+    my @vars = map { $class->_build_ci_instance_from_rec($_) } @recs;
+    
+    #filter roles
+    my %roles = map { Util->_strip_last( '::', $_->name ) => 1 } $class->meta->calculate_all_roles_with_inheritance;
+    @vars = grep { defined $_->var_ci_role && $roles{ $_->var_ci_role } } @vars;
+    
+    # filter class
+    my @final;
+    for my $var ( @vars ) {
+        my $var_class = $var->var_ci_class;
+        if( !defined $var_class ) {
+            push @final, $var;
+        }
+        elsif( $var_class eq $cn ) {
+            push @final, $var;
+        }
+    }
+    return @final;
 }
 
 =head2 all_cis

@@ -1411,6 +1411,12 @@ sub _ci {
     return Baseliner::CI->new( @_ );
 }
 
+sub _strip_last {
+    my ($pattern, $str)=@_;
+    my ($ret) = reverse ( split /$pattern/, $str );
+    return $ret;
+}
+
 *_any = \&List::MoreUtils::any;
 
 sub _package_is_loaded {
