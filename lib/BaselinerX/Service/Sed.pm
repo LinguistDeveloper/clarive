@@ -49,10 +49,11 @@ register 'service.sed' => {
 sub run {
     my ($self,$c,$config) =@_;
 
-    my $job = $c->stash->{job};
+    my $stash = $c->stash;
+    my $job = $stash->{job};
     my $log = $job->logger;
     $log->info( _loc('Starting service Sed') );
-    my $path = $config->{path} || $job->job_stash->{path}
+    my $path = $config->{path} || $stash->{path}
         or _throw 'Invalid job path in stash';
 
     -e $path or _throw _loc "Invalid path '%1'", $path;

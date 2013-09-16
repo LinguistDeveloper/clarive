@@ -7,16 +7,19 @@ use Try::Tiny;
 use utf8::all;
 with 'Baseliner::Role::Service';
 
+our $ICON_DEFAULT = '/static/images/icons/step_run.png';
 
 register 'service.scripting.local' => {
     name => 'Run a local script',
     form => '/forms/script_local.js',
+    icon => $ICON_DEFAULT,
     handler => \&run_local,
 };
 
 register 'service.scripting.remote' => {
     name => 'Run a remote script',
     form => '/forms/script_remote.js',
+    icon => $ICON_DEFAULT,
     handler => \&run_remote,
 };
 
@@ -24,6 +27,7 @@ register 'service.scripting.remote_eval' => {
     name => 'Eval Remote',
     form => '/forms/eval_remote.js',
     data => { server=>'', code=>'' },
+    icon => $ICON_DEFAULT,
     handler => \&run_eval,
 };
 
