@@ -261,9 +261,9 @@ sub remote_eval {
     return $self->ret;
 }
 
-sub DEMOLISH {
-   my ($self) = @_;
-   if( my @patterns = $self->destroy_list_elements ) {
+sub cleanup_queue {
+    my ($self) = @_;
+    if( my @patterns = $self->destroy_list_elements ) {
        Util->_debug( "DESTROY queue items: @patterns" );
        for my $pattern ( @patterns  ) {
            next unless ref $self->db;
@@ -271,8 +271,13 @@ sub DEMOLISH {
            Util->_debug( "DELETING keys: @keys" );
            $self->db->del( @keys );
        }
-   }
+    }
 }
+
+#sub DEMOLISH {
+#   my ($self) = @_;
+#   $self->cleanup_queue;
+#}
 
 sub _worker_do {
     my ($self, $cmd, $cmd_data, %p ) = ( @_ ); 
@@ -301,7 +306,11 @@ sub _worker_do {
         my $res_key = "queue:$msg_id:result" ;
         my $result = $self->db->get( $res_key );
         $self->db->del( $res_key );
-        $result = Util->_from_json( $result ) if length $result;
+        if( length $result ) {
+            $result = substr($result,0,5) eq 'stor:' 
+                ? Storable::thaw($result) 
+                : Util->_from_json( $result );
+        }
         # load standard receivers
         $self->output( $result->{output} );
         $self->rc( $result->{rc} );
