@@ -799,23 +799,34 @@ sub run_service {
 
 sub variables_like_me {
     my ($class,%p) = @_;
-    my $cn = $class->class_short_name; 
+
     my @recs = Baseliner::Role::CI->load_from_search({ collection=>'variable' });
     my @vars = map { $class->_build_ci_instance_from_rec($_) } @recs;
     
-    #filter roles
-    my %roles = map { Util->_strip_last( '::', $_->name ) => 1 } $class->meta->calculate_all_roles_with_inheritance;
-    @vars = grep { defined $_->var_ci_role && $roles{ $_->var_ci_role } } @vars;
-    
-    # filter class
     my @final;
-    for my $var ( @vars ) {
-        my $var_class = $var->var_ci_class;
-        if( !defined $var_class ) {
-            push @final, $var;
+    if( $class eq 'Baseliner::Role::CI' ) {
+        if( my $role = $p{role} ) {
+            @final = grep { defined $_->var_ci_role && $_->var_ci_role eq $role } @vars;
+        } elsif( my $classname = $p{classname} ) {
+            @final = grep { defined $_->var_ci_class && $_->var_ci_class eq $classname } @vars;
+        } else {
+            @final = @vars;
         }
-        elsif( $var_class eq $cn ) {
-            push @final, $var;
+    } else {
+        my $cn = $class->class_short_name; 
+        #filter roles
+        my %roles = map { Util->_strip_last( '::', $_->name ) => 1 } $class->meta->calculate_all_roles_with_inheritance;
+        @vars = grep { defined $_->var_ci_role && $roles{ $_->var_ci_role } } @vars;
+        
+        # filter class
+        for my $var ( @vars ) {
+            my $var_class = $var->var_ci_class;
+            if( !defined $var_class ) {
+                push @final, $var;
+            }
+            elsif( $var_class eq $cn ) {
+                push @final, $var;
+            }
         }
     }
     return @final;
@@ -900,7 +911,7 @@ around initialize_instance_slot => sub {
                     },
                     'Num|Str' => sub {
                         if( length $val ) {
-                            $params->{$init_arg} = [ $init->( $val, $weaken ) ];
+                            $params->{$init_arg} = [ map { $init->( $_, $weaken ) } split /,/, $val ];
                             Scalar::Util::weaken( $params->{$init_arg}->[0] ) if $weaken;
                             $weaken = 0;
                         } else {

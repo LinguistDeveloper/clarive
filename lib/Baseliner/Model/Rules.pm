@@ -121,6 +121,8 @@ sub dsl_run {
     my $ret;
     our $stash = $p{stash} // {};
     
+    merge_into_stash( $stash, BaselinerX::CI::variable->default_hash ); 
+    
     ############################## EVAL DSL STATEMENTS
     $ret = eval $dsl;
     ##############################
