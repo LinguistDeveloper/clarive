@@ -854,10 +854,12 @@ Ext.extend( Baseliner.model.CICombo, Ext.form.ComboBox );
 Baseliner.ci_box = function(c) {
     var value = c.value; delete c.value;
     var role = c.role; delete c.role;
+    var with_vars = c.with_vars; delete c.with_vars;
     var cl = c['class']; delete c['class']; // IE - class is syntax errors due to reserved word
     var bp = {};
     if( cl !=undefined ) bp['class'] = cl;
     else bp.role = role;
+    if( with_vars != undefined ) bp.with_vars = with_vars;
     if( c.hiddenName == undefined ) c.hiddenName = c.name;
     var autoload = c.autoLoad != undefined ? c.autoLoad : true;
     var store = new Baseliner.store.CI({ baseParams: bp });

@@ -10,7 +10,7 @@ has id_rule      => qw(is rw isa Any), default=>sub {
     DB->BaliRule->search->first->id   # TODO get default rule
 };
 has bl                 => qw(is rw isa Any);
-has rollback           => qw(is rw isa Bool default 0);
+has rollback           => qw(is rw isa BoolCheckbox default 0);
 has job_key            => qw(is rw isa Any), default => sub { Util->_md5() };
 has job_type           => qw(is rw isa Any default promote);  # promote, demote, static
 has current_service    => qw(is rw isa Any default job_run);

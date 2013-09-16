@@ -243,8 +243,18 @@ sub tree_objects {
     $where->{collection} = $collection if $collection;
     $where = { %$where, %{ $p{where} } } if $p{where};
     
-    if( $p{mids} ) {
-        $where->{mid} = $p{mids};
+    # search for variables in mids 
+    if( defined $p{mids} && length $p{mids} ) {
+        my @where_mids;
+        for my $m ( _array( $p{mids} ) ) {
+            next if $m =~ /^\$\{/;
+            push @where_mids, $m;
+        }
+        if( scalar @where_mids == 1 ) {
+            $where->{mid} = $where_mids[0];
+        } elsif( @where_mids > 1 ) {
+            $where->{mid} = \@where_mids;
+        }
     }
 
     my $rs = Baseliner->model('Baseliner::BaliMaster')->search( $where, $opts );
@@ -545,7 +555,39 @@ sub store : Local {
         #_fail( 'No class or role supplied' );
     }
 
-    _log \@data if $mids;
+    _debug \@data if $mids;
+
+    # variables
+    if( $p->{with_vars} ) {
+        my %vp = ( $p->{role} ? (role=>$p->{role}) : $p->{classname} || $p->{class} ? (classname=>$p->{class}||$p->{classname}) : () );
+        
+        my @vars = Baseliner::Role::CI->variables_like_me( %vp );
+        push @data, map { 
+            my $cn =  $_->var_ci_class ? 'BaselinerX::CI::'.$_->var_ci_class : $_->description;
+            +{
+                  _id=> 'var-'. $_->mid,
+                  _is_leaf=> \1,
+                  _parent=> undef,
+                  active=> \1,
+                  bl=> $_->bl,
+                  class=> $cn, 
+                  classname => $cn,
+                  collection=> 'variable',
+                  data=> {},
+                  description=> '',
+                  icon=> $_->icon,
+                  #item: wtscm1,
+                  mid=> '${'.$_->name.'}',
+                  moniker=> $_->moniker,
+                  name => 'variable: ${' . $_->name . '}',
+                  pretty_properties=> '',
+                  properties=> undef,
+                  ts=>$_->ts, 
+                  type=>  'object',
+                  versionid=> $_->versionid,
+             };
+        } @vars;
+    }
     
     if( ref $mids ) { 
         # return data ordered like the mids
