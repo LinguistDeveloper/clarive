@@ -62,13 +62,19 @@ around load_post_data => sub {
     return {} unless $mid;
     
     my $row = DB->BaliJob->search({ mid=>$mid }, {})->first;
-    my $job_row = +{ $row->get_columns };
-    
-    $job_row->{job_type} = $job_row->{type};
-    $job_row->{id_job} = $job_row->{id};
-    delete $job_row->{mid};
+    if ( $row ) {
 
-    return $job_row;
+        my $job_row = +{ $row->get_columns };
+        
+        $job_row->{job_type} = $job_row->{type};
+        $job_row->{id_job} = $job_row->{id};
+        delete $job_row->{mid};
+        delete $job_row->{ns};
+
+        return $job_row;
+    } else {
+        return {};
+    }
 };
 
 around update_ci => sub {
