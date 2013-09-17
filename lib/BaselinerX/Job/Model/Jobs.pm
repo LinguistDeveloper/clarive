@@ -289,7 +289,10 @@ sub get_summary {
             $endtime = Class::Date->new( $service_endtime );
 
             my $service_time = $service_endtime - $service_starttime;
-            $services_time->{$service->{step}}{$service->{service_key}} = $service_time->sec;
+
+            if ( $service_time->sec ) {
+                $services_time->{$service->{step}}{$service->{service_key}} = $service_time->sec;
+            }
             $active_time += $service_endtime - $service_starttime;
         }
         
@@ -327,7 +330,7 @@ sub get_services_status {
         
     my $result = {};
     my $ss = {};
-    my $log_levels = { 3=>'warn', 4=>'error', 2=>'info'};
+    my $log_levels = { warn => 3, error => 4, debug => 2, info => 2 };
     
     my @log = DB->BaliLog->search(
         {
@@ -338,14 +341,22 @@ sub get_services_status {
             select => [
                 'step',
                 'service_key',
-                {max => 'milestone', -as => 'lev'}
+                'lev'
             ],
-            group_by => ['step','service_key']
         }
     )->hashref->all;
 
     for my $sl ( @log ) {
-        $ss->{ $sl->{step} }{ $sl->{service_key} } = $sl->{lev} ? $log_levels->{$sl->{lev}}: 'debug';
+        if ( !$ss->{ $sl->{step} } ) {
+            $ss->{ $sl->{step} } = {};
+        }
+        if ( !$ss->{ $sl->{step} }->{ $sl->{service_key} }) {
+            $ss->{ $sl->{step} }->{ $sl->{service_key} } = 'info';
+        }
+        if ( $log_levels->{$ss->{ $sl->{step} }->{ $sl->{service_key} }} < $log_levels->{$sl->{lev}} ) {
+
+            $ss->{ $sl->{step} }->{ $sl->{service_key} } = $sl->{lev};
+        }
     }
 
     my %seen;  
@@ -355,7 +366,7 @@ sub get_services_status {
             my ($step, $skey, $id ) = @{ $r }{ qw(step service_key id) };
             next if $seen{ $skey . '#' . $step };
             $seen{ $skey . '#' . $step } = 1;
-            my $status = $ss->{$step}{$skey};
+            my $status = $ss->{$step}->{$skey};
             next if $status eq 'debug';
             $status = uc( substr $status,0,1 ) . substr $status,1;
             $status = 'Warning' if $status eq 'Warn';
@@ -400,7 +411,7 @@ sub get_contents {
     my @natures = map { $_->name } _array( $job->natures );
     my $items = $job_stash->{items};
     for my $cs ( @changesets ) {
-        _log "EEE". _dump $cs;
+        #_log "EEE". _dump $cs;
         my ($prj) = _array $cs->projects;
         push @{ $changesets_by_project->{$prj} }, $cs;
     }

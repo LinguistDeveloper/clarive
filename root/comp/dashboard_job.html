@@ -79,21 +79,22 @@
                 </thead>
                 <tbody>
 <%perl>
-    my @steps = ( 'PRE', 'RUN', 'POST', 'END' );
+    my @steps = ( 'CHECK', 'INIT', 'PRE', 'RUN', 'POST', 'END' );
     my $colors = { Success => '#00BB00', Warning => '#E0B500', Error => '#BB0000'};
     for my $step ( @steps ) {
-        if ( $servicios->{$step} ) {
+        if ( $resumen->{services_time}->{$step} ) {
             my @services = _array $servicios->{$step};
             my $tot_services = scalar @services;
             my $first = 1;
             for my $service ( @services ) {
-        	    if ( $first ) {
+                if ( $resumen->{services_time}->{$step}{$service->{service}}) {
+          	     if ( $first ) {
 </%perl>
                     <tr>
                         <td class="section-paso" rowspan="<%$tot_services%>"><% $step %></td>
 <%perl>
                     $first = 0;
-        	    }
+        	     }
 </%perl>
                         <td class="datos"><b><a href="javascript:Baseliner.addNewTabComp('/job/log/list?id_job=<%$idjob%>&service_name=<%$service->{service}%>', _('Log <%$service->{service}%>'), { tab_icon: '/static/images/icons/moredata.gif' } );"><% $service->{description} || $service->{service} %></a></b></td>
                         <td class="datos" style="color:<% $colors->{$service->{status}} %>;"><b><% _loc($service->{status}) %></b></td>
@@ -101,6 +102,7 @@
 
                     </tr>
 <%perl>
+                }
             }
         }
     }
