@@ -290,8 +290,8 @@ sub get_summary {
 
             my $service_time = $service_endtime - $service_starttime;
 
-            if ( $service_time->sec ) {
-                $services_time->{$service->{step}}{$service->{service_key}} = $service_time->sec;
+            if ( $service_time->sec > 0) {
+                $services_time->{$service->{step}."#".$service->{service_key}} = $service_time->sec;
             }
             $active_time += $service_endtime - $service_starttime;
         }
@@ -327,6 +327,7 @@ sub get_services_status {
     my ( $self, %p ) = @_;
     defined $p{jobid} or _throw "Missing jobid";
     my $job = _ci( ns=>'job/'. $p{jobid} );
+    my $summary = $p{summary};
         
     my $result = {};
     my $ss = {};
@@ -347,15 +348,14 @@ sub get_services_status {
     )->hashref->all;
 
     for my $sl ( @log ) {
-        if ( !$ss->{ $sl->{step} } ) {
-            $ss->{ $sl->{step} } = {};
-        }
-        if ( !$ss->{ $sl->{step} }->{ $sl->{service_key} }) {
-            $ss->{ $sl->{step} }->{ $sl->{service_key} } = 'info';
-        }
-        if ( $log_levels->{$ss->{ $sl->{step} }->{ $sl->{service_key} }} < $log_levels->{$sl->{lev}} ) {
+        if ( $summary->{services_time}->{$sl->{step}."#".$sl->{service_key} }) {
+            if ( !$ss->{ $sl->{step} }->{ $sl->{service_key} }) {
+                $ss->{ $sl->{step} }->{ $sl->{service_key} } = 'info';
+            }
+            if ( $log_levels->{$ss->{ $sl->{step} }->{ $sl->{service_key} }} < $log_levels->{$sl->{lev}} ) {
 
-            $ss->{ $sl->{step} }->{ $sl->{service_key} } = $sl->{lev};
+                $ss->{ $sl->{step} }->{ $sl->{service_key} } = $sl->{lev};
+            }            
         }
     }
 
@@ -365,6 +365,7 @@ sub get_services_status {
         for my $r ( @keys ) {
             my ($step, $skey, $id ) = @{ $r }{ qw(step service_key id) };
             next if $seen{ $skey . '#' . $step };
+            next if ( !$summary->{services_time}->{$step."#".$skey });
             $seen{ $skey . '#' . $step } = 1;
             my $status = $ss->{$step}->{$skey};
             next if $status eq 'debug';
