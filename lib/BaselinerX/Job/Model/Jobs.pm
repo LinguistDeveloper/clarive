@@ -268,7 +268,7 @@ sub get_summary {
                     { min => 'timestamp', -as => 'starttime' },
                     { max => 'timestamp', -as => 'endtime'}
                 ],
-                group_by => 'service_key'
+                group_by => ['step','service_key']
               }
         )->hashref->all;
 
