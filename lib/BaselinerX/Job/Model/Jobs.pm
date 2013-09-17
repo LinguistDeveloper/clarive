@@ -258,8 +258,8 @@ sub get_summary {
     if ( $row ) {
         my @log_all = DB->BaliLog->search( 
             { 
-                id_job => 691, 
-                exec => 1
+                id_job => $p{jobid}, 
+                exec => $p{job_exec}
              },
              {
                 select => [
@@ -371,7 +371,6 @@ sub get_contents {
     defined $p{jobid} or _throw "Missing jobid"; 
     my $result;
 
-    my $rs = Baseliner->model( 'Baseliner::BaliJobItems' )->search( {id_job => $p{jobid}} );
     my $job = _ci( ns=>'job/' . $p{jobid} );
     my $job_stash = $job->job_stash;
     my @changesets = _array( $job->changesets );
@@ -379,8 +378,9 @@ sub get_contents {
     my @natures = map { $_->name } _array( $job->natures );
     my $items = $job_stash->{items};
     for my $cs ( @changesets ) {
-        my ($prj) = $cs->projects;
-        push @{ $changesets_by_project->{$prj->name} }, $cs;
+        _log "EEE". _dump $cs;
+        my ($prj) = _array $cs->projects;
+        push @{ $changesets_by_project->{$prj} }, $cs;
     }
     $result = {
         packages => $changesets_by_project,
