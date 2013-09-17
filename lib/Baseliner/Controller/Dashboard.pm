@@ -818,14 +818,19 @@ sub list_jobs : Private {
                                                     FROM (SELECT  ID, SYSDATE + MY_ROW_NUM/(24*60*60)  AS FECHA, STATUS, ENDTIME, BL 
                                                             FROM (SELECT ID, STARTTIME, ROW_NUMBER() OVER(ORDER BY STARTTIME ASC) AS MY_ROW_NUM, STATUS, ENDTIME, BL 
                                                                         FROM BALI_JOB
-                                                                        WHERE STATUS = 'RUNNING'
+                                                                        WHERE STATUS = 'RUNNING' AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
+                                                                                                                            (SELECT NAME FROM BALI_PROJECT WHERE ACTIVE = 1) B 
+                                                                                                                    WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME))
                                                                         
                                                                         
                                                                         
                                                                         
                                                           UNION
                                                           SELECT  ID, ENDTIME AS FECHA, STATUS, ENDTIME, BL FROM BALI_JOB
-                                                                                    WHERE ENDTIME IS NOT NULL
+                                                                                    WHERE ENDTIME IS NOT NULL AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
+                                                                                                                                        (SELECT NAME FROM BALI_PROJECT WHERE ACTIVE = 1) B 
+                                                                                                                                WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
+                                                         
                                                          
                                                          )
                                                )
