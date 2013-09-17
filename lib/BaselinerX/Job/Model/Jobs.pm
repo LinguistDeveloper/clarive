@@ -348,7 +348,7 @@ sub get_services_status {
     )->hashref->all;
 
     for my $sl ( @log ) {
-        if ( $summary->{services_time}->{$sl->{step}."#".$sl->{service_key} }) {
+        if ( $sl->{service_key} && $summary->{services_time}->{$sl->{step}."#".$sl->{service_key} }) {
             if ( !$ss->{ $sl->{step} }->{ $sl->{service_key} }) {
                 $ss->{ $sl->{step} }->{ $sl->{service_key} } = 'info';
             }
