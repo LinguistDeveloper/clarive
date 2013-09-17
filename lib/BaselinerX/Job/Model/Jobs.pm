@@ -344,7 +344,7 @@ sub get_services_status {
     )->hashref->all;
 
     for my $sl ( @log ) {
-        $ss->{ $sl->{step} }{ $sl->{service_key} } = $sl->{lev} ? $log_levels->{$sl->{lev}}: 'info';
+        $ss->{ $sl->{step} }{ $sl->{service_key} } = $sl->{lev} ? $log_levels->{$sl->{lev}}: 'debug';
     }
 
     my %seen;  
