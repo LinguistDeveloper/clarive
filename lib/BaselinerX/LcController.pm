@@ -582,7 +582,7 @@ sub promotes_and_demotes {
     }
 
     # Demote
-    my @status_from = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
+    @status_from = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
         { id_status_to => \@user_workflow, id_category => $topic->{id_category}, id_status_from => $id_status_from_lc, job_type => 'demote' },
         {   join     => [ 'statuses_from', 'statuses_to' ],
             distinct => 1,

@@ -592,19 +592,27 @@ sub list_baseline : Private {
         my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
 
 
+        # $SQL = "SELECT BL, 'OK' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
+        #         WHERE   TO_NUMBER(SYSDATE - ENDTIME) <= ? AND STATUS = 'FINISHED'
+        #                 AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
+        #                                                 (SELECT NAME FROM BALI_PROJECT WHERE $ids ACTIVE = 1) B 
+        #                 WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
+        #         GROUP BY BL
+        #     UNION               
+        #     SELECT BL, 'ERROR' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
+        #     WHERE   TO_NUMBER(SYSDATE - ENDTIME) <= ? AND STATUS IN ('ERROR','CANCELLED','KILLED')
+        #             AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
+        #                                             (SELECT NAME FROM BALI_PROJECT WHERE $ids ACTIVE = 1) B 
+        #             WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
+        #     GROUP BY BL";
         $SQL = "SELECT BL, 'OK' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
                 WHERE   TO_NUMBER(SYSDATE - ENDTIME) <= ? AND STATUS = 'FINISHED'
-                        AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
-                                                        (SELECT NAME FROM BALI_PROJECT WHERE $ids ACTIVE = 1) B 
-                        WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
                 GROUP BY BL
             UNION               
             SELECT BL, 'ERROR' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
             WHERE   TO_NUMBER(SYSDATE - ENDTIME) <= ? AND STATUS IN ('ERROR','CANCELLED','KILLED')
-                    AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
-                                                    (SELECT NAME FROM BALI_PROJECT WHERE $ids ACTIVE = 1) B 
-                    WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
             GROUP BY BL";
+
 
         @jobs = $db->array_hash( $SQL, $bl_days, $bl_days );
 
