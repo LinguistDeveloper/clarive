@@ -271,7 +271,7 @@ sub get_summary {
               }
         )->hashref->all;
 
-        sort { Class::Date->new($a->{starttime})->epoch <=> Class::Date->new($b->{starttime})->epoch } @log_all;
+        @log_all = sort { Class::Date->new($a->{starttime})->epoch <=> Class::Date->new($b->{starttime})->epoch } @log_all;
 
         my $active_time = 0;
         my $services_time = {};
