@@ -30,7 +30,7 @@ sub dashboard_log : Path('/job/log/dashboard') {
     $c->stash->{job_exec} = ref $job ? $job->exec : 1;
     $self->summary( $c );
     $self->services( $c );
-    # $self->contents( $c );
+    $self->contents( $c );
     # $self->outputs( $c );
 
     $c->stash->{template} = '/comp/dashboard_job.html';
