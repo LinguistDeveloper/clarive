@@ -97,7 +97,7 @@
 </%perl>
                         <td class="datos"><b><a href="javascript:Baseliner.addNewTabComp('/job/log/list?id_job=<%$idjob%>&service_name=<%$service->{service}%>', _('Log <%$service->{service}%>'), { tab_icon: '/static/images/icons/moredata.gif' } );"><% $service->{description} || $service->{service} %></a></b></td>
                         <td class="datos" style="color:<% $colors->{$service->{status}} %>;"><b><% _loc($service->{status}) %></b></td>
-                        <td class="datos"><b><% $resumen->{services_time}->{$service->{service}}." sec." %></b></td>
+                        <td class="datos"><b><% $resumen->{services_time}->{$step}{$service->{service}}." sec." %></b></td>
 
                     </tr>
 <%perl>

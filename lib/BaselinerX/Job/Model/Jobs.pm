@@ -263,6 +263,7 @@ sub get_summary {
              },
              {
                 select => [
+                    'step',
                     'service_key',
                     { min => 'timestamp', -as => 'starttime' },
                     { max => 'timestamp', -as => 'endtime'}
@@ -288,7 +289,7 @@ sub get_summary {
             $endtime = Class::Date->new( $service_endtime );
 
             my $service_time = $service_endtime - $service_starttime;
-            $services_time->{$service->{service_key}} = $service_time->sec;
+            $services_time->{$service->{step}}{$service->{service_key}} = $service_time->sec;
             $active_time += $service_endtime - $service_starttime;
         }
         
