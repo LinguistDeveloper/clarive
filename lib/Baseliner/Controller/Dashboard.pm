@@ -818,25 +818,51 @@ sub list_jobs : Private {
                                                     FROM (SELECT  ID, SYSDATE + MY_ROW_NUM/(24*60*60)  AS FECHA, STATUS, ENDTIME, BL 
                                                             FROM (SELECT ID, STARTTIME, ROW_NUMBER() OVER(ORDER BY STARTTIME ASC) AS MY_ROW_NUM, STATUS, ENDTIME, BL 
                                                                         FROM BALI_JOB
-                                                                        WHERE STATUS = 'RUNNING' AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
-                                                                                                                            (SELECT NAME FROM BALI_PROJECT WHERE $ids_project ACTIVE = 1) B 
-                                                                                                                    WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME))
+                                                                        WHERE STATUS = 'RUNNING'
                                                                         
                                                                         
                                                                         
                                                                         
                                                           UNION
                                                           SELECT  ID, ENDTIME AS FECHA, STATUS, ENDTIME, BL FROM BALI_JOB
-                                                                                    WHERE ENDTIME IS NOT NULL AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
-                                                                                                                                        (SELECT NAME FROM BALI_PROJECT WHERE $ids_project ACTIVE = 1) B 
-                                                                                                                                WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
-                                                         
+                                                                                    WHERE ENDTIME IS NOT NULL
                                                          
                                                          )
                                                )
                                 ) B
                             WHERE A.ID_JOB = B.ID ) D WHERE C.PROJECT1 = D.PROJECT AND C.BL = D.BL) E, BALI_JOB F, BALI_BASELINE G WHERE E.ID = F.ID AND F.BL = G.BL)
                 WHERE MY_ROW_NUM <= ?";
+        # $SQL =
+        #     "SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY PROJECT1, G.ID) AS MY_ROW_NUM, E.ID, E.PROJECT1, F.BL, G.ID AS ORDERBL, F.STATUS, F.ENDTIME, F.STARTTIME, TRUNC(SYSDATE) - TRUNC(F.ENDTIME) AS DIAS, F.NAME, ROUND ((F.ENDTIME - STARTTIME) * 24 * 60) AS DURATION
+        #                 FROM (SELECT * FROM (SELECT MAX(ID_JOB) AS ID, SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) AS PROJECT1, BL
+        #                     FROM BALI_JOB_ITEMS A, BALI_JOB B
+        #                     WHERE A.ID_JOB = B.ID
+        #                     GROUP BY  SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))), BL) C,
+        #                 (SELECT DISTINCT SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) AS PROJECT, BL
+        #                     FROM BALI_JOB_ITEMS A,
+        #                         (SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY FECHA DESC) AS MY_ROW_NUM , ID, FECHA, STATUS, ENDTIME, BL 
+        #                                             FROM (SELECT  ID, SYSDATE + MY_ROW_NUM/(24*60*60)  AS FECHA, STATUS, ENDTIME, BL 
+        #                                                     FROM (SELECT ID, STARTTIME, ROW_NUMBER() OVER(ORDER BY STARTTIME ASC) AS MY_ROW_NUM, STATUS, ENDTIME, BL 
+        #                                                                 FROM BALI_JOB
+        #                                                                 WHERE STATUS = 'RUNNING' AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
+        #                                                                                                                     (SELECT NAME FROM BALI_PROJECT WHERE $ids_project ACTIVE = 1) B 
+        #                                                                                                             WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME))
+                                                                        
+                                                                        
+                                                                        
+                                                                        
+        #                                                   UNION
+        #                                                   SELECT  ID, ENDTIME AS FECHA, STATUS, ENDTIME, BL FROM BALI_JOB
+        #                                                                             WHERE ENDTIME IS NOT NULL AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
+        #                                                                                                                                 (SELECT NAME FROM BALI_PROJECT WHERE $ids_project ACTIVE = 1) B 
+        #                                                                                                                         WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
+                                                         
+                                                         
+        #                                                  )
+        #                                        )
+        #                         ) B
+        #                     WHERE A.ID_JOB = B.ID ) D WHERE C.PROJECT1 = D.PROJECT AND C.BL = D.BL) E, BALI_JOB F, BALI_BASELINE G WHERE E.ID = F.ID AND F.BL = G.BL)
+        #         WHERE MY_ROW_NUM <= ?";
         my @jobs = $db->array_hash( $SQL, $rows )
             if @ids_project;
 
