@@ -6,9 +6,6 @@ use Try::Tiny;
 with 'Baseliner::Role::CI::Internal';
 
 has id_job       => qw(is rw isa Any); 
-has id_rule      => qw(is rw isa Any), default=>sub {
-    DB->BaliRule->search->first->id   # TODO get default rule
-};
 has bl                 => qw(is rw isa Any);
 has pid                => qw(is rw isa Any);
 has host               => qw(is rw isa Any);
@@ -36,6 +33,11 @@ has job_dir            => qw(is rw isa Any lazy 1), default => sub {
     my $job_home = $ENV{BASELINER_JOBHOME} || $ENV{BASELINER_TEMP} || File::Spec->tmpdir();
     File::Spec->catdir( $job_home, $self->name ); 
 };  
+has id_rule      => qw(is rw isa Any ), default=>sub {
+    my $self = shift;
+    my $type = $self->job_type || 'promote';
+    DB->BaliRule->search({ rule_when=>$type }, { order_by=>{-desc=>'id'} })->first->id  
+};
 
 has_cis 'changesets';
 has_cis 'projects';
