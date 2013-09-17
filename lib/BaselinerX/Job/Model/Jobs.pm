@@ -368,7 +368,7 @@ sub get_services_status {
             $seen{ $skey . '#' . $step } = 1;
             my $status = $ss->{$step}->{$skey};
             next if $status eq 'debug';
-            next if ( !$summary->{services_time}->{$step."#".$skey } && $status ne 'error');
+            next if ( !$summary->{services_time}->{$step."#".$skey } && ( $status eq 'debug' || $status eq 'info' ) );
             $status = uc( substr $status,0,1 ) . substr $status,1;
             $status = 'Warning' if $status eq 'Warn';
             $status = 'Success' if $status eq 'Info';
@@ -413,7 +413,7 @@ sub get_contents {
     my $items = $job_stash->{items};
     for my $cs ( @changesets ) {
         my @projs = _array $cs->projects;
-        push @{ $changesets_by_project->{@projs[0]->{name}} }, $cs;
+        push @{ $changesets_by_project->{$projs[0]->{name}} }, $cs;
     }
     $result = {
         packages => $changesets_by_project,
