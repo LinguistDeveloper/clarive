@@ -108,7 +108,11 @@ sub serialize {
 # sets several attributes at once, like DBIC
 sub update {
     my ($self, %data ) = @_;
-    $self->new( %$self, %data );  # merge and recreate object
+    my $d = { %$self, %data };
+
+    my $class = ref $self || $self;
+    $self = $class->new( $d );  # merge and recreate object
+
     $self->save;
     # deprecated: does not coerce, relationships wont save
     #for my $key ( keys %data ) {
