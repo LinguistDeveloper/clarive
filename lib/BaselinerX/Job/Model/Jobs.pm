@@ -310,7 +310,7 @@ sub get_summary {
             active_time => $active_time,
             endtime => $endtime,
             type => $row->type,
-            owner => $row->owner,
+            owner => $row->username,
             last_step => $row->step,
             rollback => $row->rollback,
             services_time => $services_time
@@ -325,7 +325,28 @@ sub get_services_status {
     my $job = _ci( ns=>'job/'. $p{jobid} );
         
     my $result = {};
-    my $ss = $job->service_levels;
+    my $ss = {};
+    my $log_levels = { 3=>'warn', 4=>'error', 2=>'info'};
+    
+    my @log = DB->BaliLog->search(
+        {
+            id_job => $p{jobid},
+            exec   => $p{job_exec}
+        },
+        {
+            select => [
+                'step',
+                'service_key',
+                {max => 'milestone', -as => 'lev'}
+            ],
+            group_by => ['step','service_key']
+        }
+    )->hashref->all;
+
+    for my $sl ( @log ) {
+        $ss->{ $sl->{step} }{ $sl->{service_key} } = $sl->{lev} ? $log_levels->{$sl->{lev}}: 'info';
+    }
+
     my %seen;  
     my $load_results = sub {
         my @keys = @_; 
