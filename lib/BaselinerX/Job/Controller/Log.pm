@@ -44,7 +44,7 @@ sub summary: Private{
 
 sub services: Private{
     my ( $self, $c ) = @_;
-    my $services = $c->model('Jobs')->get_services_status( jobid => $c->stash->{id_job}, job_exec => $c->stash->{job_exec} );
+    my $services = $c->model('Jobs')->get_services_status( jobid => $c->stash->{id_job}, job_exec => $c->stash->{job_exec}, summary => $c->stash->{summary} );
     $c->stash->{services} = $services;
 }
 
