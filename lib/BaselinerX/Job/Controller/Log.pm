@@ -31,7 +31,7 @@ sub dashboard_log : Path('/job/log/dashboard') {
     $self->summary( $c );
     $self->services( $c );
     $self->contents( $c );
-    # $self->outputs( $c );
+    $self->outputs( $c );
 
     $c->stash->{template} = '/comp/dashboard_job.html';
 }

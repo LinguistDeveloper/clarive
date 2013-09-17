@@ -348,7 +348,7 @@ sub get_services_status {
     )->hashref->all;
 
     for my $sl ( @log ) {
-        if ( $summary->{services_time}->{$sl->{step}."#".$sl->{service_key} }) {
+        if ( $sl->{service_key} && $summary->{services_time}->{$sl->{step}."#".$sl->{service_key} }) {
             if ( !$ss->{ $sl->{step} }->{ $sl->{service_key} }) {
                 $ss->{ $sl->{step} }->{ $sl->{service_key} } = 'info';
             }
@@ -412,9 +412,8 @@ sub get_contents {
     my @natures = map { $_->name } _array( $job->natures );
     my $items = $job_stash->{items};
     for my $cs ( @changesets ) {
-        #_log "EEE". _dump $cs;
-        my ($prj) = _array $cs->projects;
-        push @{ $changesets_by_project->{$prj} }, $cs;
+        my @projs = _array $cs->projects;
+        push @{ $changesets_by_project->{@projs[0]->{name}} }, $cs;
     }
     $result = {
         packages => $changesets_by_project,
