@@ -6,7 +6,6 @@ use Try::Tiny;
 extends 'BaselinerX::CI::job';
 
 has exec               => qw(is rw isa Num default 1);
-has logfile            => qw(is rw isa Any);
 has pid                => qw(is rw isa Num lazy 1), default=>sub{ return $$ };
 has host               => qw(is rw isa Str lazy 1), default=>sub{ return lc Sys::Hostname::hostname() };
 has owner              => qw(is rw isa Str lazy 1), default=>sub{ return $ENV{USER} || $ENV{USERNAME} };
@@ -116,6 +115,7 @@ sub run {
             bl          => $self->bl, 
             job_step    => $self->step,
             job_dir     => $self->job_dir,
+            job_name    => $self->name,
             changesets  => $self->changesets,
     };
     #die _dump $stash unless $self->step eq 'INIT';
@@ -137,7 +137,7 @@ sub run {
         $self->job_stash( $stash );
     };
     $self->save;
-    $self->save_to_parent_job( natures=>$self->natures, service_levels=>$self->service_levels );
+    $self->save_to_parent_job( natures=>$self->natures, logfile=>$self->logfile, service_levels=>$self->service_levels );
     $self->logger->debug( "Job natures....", $self->natures );
     $self->logger->debug( "Job children", $self->children );
     
@@ -155,9 +155,8 @@ sub run {
 
 sub save_to_parent_job {
     my ($self, %p)=@_;
-    if( my $parent_job = Util->_ci( $self->parent_job ) ) {
-        $parent_job->new( %p );
-        $parent_job->save;
+    if( my $parent_job = Baseliner::CI->new( $self->parent_job ) ) {
+        $parent_job->update( %p );
     }
 }
 

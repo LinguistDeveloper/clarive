@@ -173,7 +173,9 @@ sub run_container {
     # create dummy job if we don't have one
     $stash->{job} or local $stash->{job} = BaselinerX::Type::Service::Container::Job->new( job_stash=>$stash );
     my $container = BaselinerX::Type::Service::Container->new( stash=>$stash, config=>$config ); 
-    return $handler->( $obj // $self, $container, $config );
+    my $pkg = $self->module;
+    $obj ||= $pkg->new(); 
+    return $handler->( $obj, $container, $config );
 }
 
 ######################################################################

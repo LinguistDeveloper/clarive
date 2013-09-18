@@ -133,6 +133,12 @@ sub is_changeset {
     return $row ? $row->{is_changeset} : 0;
 }
 
+sub is_release {
+    my ($self) = @_;
+    my $row = DB->BaliTopic->search({ mid=> $self->mid},{ join=>'categories', select=>'categories.is_release', as=>'is_release' })->hashref->first;
+    return $row ? $row->{is_release} : 0;
+}
+
 sub projects {
     my ($self) = @_;
     $self->related( rel_type=>'topic_project' );
@@ -174,13 +180,13 @@ sub items {
 
 sub jobs {
     my ($self )=@_;
-    $self->parents( class=>'job' );
+    $self->parents( isa=>'job' );
 }
 
 sub is_in_active_job {
     my ($self )=@_;
     for my $job ( $self->jobs ) {
-        return $job if $job->is_active;
+        return $job if ref $job eq 'BaselinerX::CI::job' && $job->is_active;
     }
     return 0;
 }

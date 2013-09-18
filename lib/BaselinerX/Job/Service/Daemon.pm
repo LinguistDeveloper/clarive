@@ -110,10 +110,10 @@ sub job_daemon {
                 # launch the job proc
                 if( $mode eq 'spawn' ) {
                     _log "Spawning job (mode=$mode)";
-                    my $pid = $self->runner_spawn( runner=>$r->runner, step=>$step, jobid=>$r->id, logfile=>$logfile );
+                    my $pid = $self->runner_spawn( mid=>$r->mid, runner=>$r->runner, step=>$step, jobid=>$r->id, logfile=>$logfile );
                 } elsif( $mode =~ /fork|detach/i ) {
                     _log "Forking job " . $r->id . " (mode=$mode), logfile=$logfile";
-                    $self->runner_fork( runner=>$r->runner, step=>$step, jobid=>$r->id, logfile=>$logfile, mode=>$mode, unified_log=>$config->{unified_log} );
+                    $self->runner_fork( mid=>$r->mid, runner=>$r->runner, step=>$step, jobid=>$r->id, logfile=>$logfile, mode=>$mode, unified_log=>$config->{unified_log} );
                 } else {
                     _throw _loc("Unrecognized mode '%1'", $mode );
                 }
@@ -158,6 +158,7 @@ sub reap_children {
 
 sub runner_fork {
     my ($self, %p ) =@_;
+    my $mid = $p{mid} or _throw 'Missing parameter job `mid`';
     require POSIX;
     my $pid = fork;
     if( $pid ) { # parent
@@ -178,7 +179,10 @@ sub runner_fork {
             open (STDOUT, ">>", $p{logfile} ) or die "Can't open STDOUT: $!";
             open (STDERR, ">>", $p{logfile} ) or die "Can't open STDERR: $!";
         }
-        Baseliner->model('Services')->launch( 'job.run', data=>{ runner=>$p{runner}, step=>$p{step}, jobid=>$p{jobid}, logfile=>$p{logfile} } );
+        my $job = Baseliner::CI->new( $mid );
+        my $job_run = $job->create_runner( same_exec=>1, logfile=>$p{logfile} );
+        $job_run->run();
+        #Baseliner->model('Services')->launch( 'job.run', data=>{ runner=>$p{runner}, step=>$p{step}, jobid=>$p{jobid}, logfile=>$p{logfile} } );
         exit 0;
     } else {
         _log _loc("***** ERROR: Could not fork job '%1'", $p{jobid} );

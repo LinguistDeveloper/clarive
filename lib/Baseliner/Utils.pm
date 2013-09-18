@@ -768,7 +768,7 @@ sub _tmp_file {
 
 sub _blessed {
     require Scalar::Util;
-    Scalar::Util::blessed( @_ );
+    Scalar::Util::blessed( shift() );
 }
 
 sub _unbless {

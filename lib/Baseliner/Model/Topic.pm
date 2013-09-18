@@ -2042,7 +2042,7 @@ sub cache_topic_remove {
         _ci( $topic_mid )->related( depth=>1 ) ) 
     {
         my $rel_mid = $rel->{mid};
-        _debug "TOPIC CACHE REL remove :$rel_mid:";
+        #_debug "TOPIC CACHE REL remove :$rel_mid:";
         Baseliner->cache_remove( qr/:$rel_mid:/ );
     }
 }

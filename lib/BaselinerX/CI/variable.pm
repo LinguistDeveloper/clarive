@@ -16,5 +16,22 @@ sub icon { '/static/images/icons/element_copy.png' }
 
 sub has_bl { 0 }
 
+sub default_hash {
+    my ($class, $bl)=@_;
+    $bl //= '*';
+    my %vars;
+    my @all = BaselinerX::CI::variable->search_cis;
+    for my $var ( @all ) {
+        next unless ! length($var->bl) || $var->bl eq '*' || $var->bl eq $bl;
+        if( $var->var_type eq 'ci' ) {
+            my $def = $var->var_default;
+            $vars{ $var->name } = $def; #Baseliner::CI->new( $def ) if length $def;   
+        } else {
+            $vars{ $var->name } = $var->var_default;
+        }
+    } 
+    \%vars;
+}
+
 1;
 

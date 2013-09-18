@@ -76,6 +76,7 @@ sub run_ship {
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
     my $stash = $c->stash;
+    my $stmt  = $stash->{current_statement_name};
 
     my $remote = $config->{remote_path} // _fail 'Missing parameter remote_file';
     my $local  = $config->{local_path} // _fail 'Missing parameter local_file';
@@ -83,23 +84,26 @@ sub run_ship {
     my $chmod  = $config->{'chmod'};
     my $chown  = $config->{'chown'};
 
-    my $server = _ci( $config->{server} );
-    _debug "Connecting to server " . $server->name;
-    my $agent = $server->connect( user=>$user );
-    $log->info( _loc( 'Sending file `%1` to `%2`', $local, $remote ) );
-    $agent->put_file({ 
-        local  => $local,
-        remote => $remote,
-    });
-    if( length $chown ) {
-        _debug "chown $chown $remote";
-        $agent->chown( $chmod, $remote );
-        $log->error( _loc('Error doing a chown `%1` to file `%2`: %3', $chown,$remote, $agent->output ), $agent->tuple ) if $agent->rc && $agent->rc!=512;
-    }
-    if( length $chmod ) {
-        _debug "chmod $chmod $remote";
-        $agent->chmod( $chmod, $remote );
-        $log->error( _loc('Error doing a chmod `%1` to file `%2`: %3', $chmod,$remote, $agent->output ), $agent->tuple ) if $agent->rc && $agent->rc!=512;
+    for my $server ( split /,/, $config->{server} ) {
+        $server = _ci( $server ) unless ref $server;
+        my $server_str = "$user\@".$server->name;
+        _debug $stmt . " - Connecting to server " . $server_str;
+        my $agent = $server->connect( user=>$user );
+        $log->info( _loc( '*%1* Sending file `%2` to `%3`', $stmt, $local, $server_str.':'.$remote ) );
+        $agent->put_file({ 
+            local  => $local,
+            remote => $remote,
+        });
+        if( length $chown ) {
+            _debug "chown $chown $remote";
+            $agent->chown( $chmod, $remote );
+            $log->error( _loc('*%1* Error doing a chown `%2` to file `%3`: %4', $stmt, $chown,$remote, $agent->output ), $agent->tuple ) if $agent->rc && $agent->rc!=512;
+        }
+        if( length $chmod ) {
+            _debug "chmod $chmod $remote";
+            $agent->chmod( $chmod, $remote );
+            $log->error( _loc('*%1* Error doing a chmod `%2` to file `%3`: %4', $stmt, $chmod,$remote, $agent->output ), $agent->tuple ) if $agent->rc && $agent->rc!=512;
+        }
     }
 
     return 1;

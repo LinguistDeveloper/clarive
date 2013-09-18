@@ -91,6 +91,7 @@ params:
             comp: this,
             ddGroup: 'explorer_dd',
             copy: true,
+            available: meta ? meta.readonly : false,
             notifyDrop: function(dd, e, id) {
                 var n = dd.dragData.node;
                 //var s = project_box.store;

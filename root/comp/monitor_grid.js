@@ -522,12 +522,13 @@
         handler: function() {
             var sm = grid.getSelectionModel();
             var sel = sm.getSelected();
+            var sc = sel.data.status_code;
             var mode;
-            if( sel.data.status_code == 'RUNNING' ) {
+            if( sc == 'RUNNING' ) {
                 msg = _('Killing the job will interrupt current local processing but no remote processes');
                 msg += "\n" + _('Are you sure you want to %1 the job?', _('kill') );
                 mode = 'kill';
-            } else if( sel.data.status_code == 'CANCELLED' ) {
+            } else if( sc == 'FINISHED' || sc == 'ERROR' || sc == 'CANCELLED' ) {
                 msg = _('Are you sure you want to %1 the job?', _('delete') );
                 mode = 'delete';
             } else {
@@ -948,7 +949,8 @@
     // Yellow row selection
         row_sel.on('rowselect', function(row, index, rec) {
         Ext.fly(grid.getView().getRow(index)).addClass('x-grid3-row-selected-yellow');
-        if( rec.data.status_code === 'CANCELLED' ) {
+        var sc = rec.data.status_code;
+        if( sc == 'CANCELLED' || sc == 'ERROR' || sc == 'FINISHED' ) {
             button_cancel.setText( msg_cancel_delete[1] );
         } else {
             button_cancel.setText( msg_cancel_delete[0] );

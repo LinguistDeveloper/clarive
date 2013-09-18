@@ -38,6 +38,8 @@
 
         field.columnWidth = .9;
         field.allowBlank = true;
+        field.submitValue = true;
+        
         var_default.add({ 
             layout:'column', 
             border: false, items:[
