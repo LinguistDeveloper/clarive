@@ -868,8 +868,8 @@ sub list_jobs : Private {
         #                         ) B
         #                     WHERE A.ID_JOB = B.ID ) D WHERE C.PROJECT1 = D.PROJECT AND C.BL = D.BL) E, BALI_JOB F, BALI_BASELINE G WHERE E.ID = F.ID AND F.BL = G.BL)
         #         WHERE MY_ROW_NUM <= ?";
-        my @jobs = $db->array_hash( $SQL, $rows )
-            if @ids_project;
+        my @jobs = $db->array_hash( $SQL, $rows );
+            #if @ids_project;
 
         foreach my $job ( @jobs ) {
             my ( $lastError, $lastOk, $idError, $idOk, $nameOk, $nameError, $lastDuration );
