@@ -368,7 +368,9 @@ sub get_services_status {
             $seen{ $skey . '#' . $step } = 1;
             my $status = $ss->{$step}->{$skey};
             next if $status eq 'debug';
-            next if ( !$summary->{services_time}->{$step."#".$skey } && ( $status eq 'debug' || $status eq 'info' ) );
+            if ( $status ne 'error') {
+                next if ( !$summary->{services_time}->{$step."#".$skey } );
+            }
             $status = uc( substr $status,0,1 ) . substr $status,1;
             $status = 'Warning' if $status eq 'Warn';
             $status = 'Success' if $status eq 'Info';
