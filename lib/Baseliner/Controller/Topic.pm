@@ -1341,7 +1341,14 @@ sub upload : Local {
     my $filename = $p->{qqfile};
     my ($extension) =  $filename =~ /\.(\S+)$/;
     $extension //= '';
-    my $f =  _file( $c->req->body );
+    
+    my $f;    
+    if( $c->req->body eq ''){
+        my $x = $c->req->upload('qqfile');
+        $f =  _file( $x->tempname );
+    }else{
+        $f =  _file( $c->req->body );
+    }
     _log "Uploading file " . $filename;
     try {
         if($p->{topic_mid} && $p->{topic_mid} > 0){
@@ -1391,7 +1398,9 @@ sub upload : Local {
                                 created_on => DateTime->now,
                             }
                         );
+
                         $file_mid = $mid;
+                        
                         if ($p->{topic_mid}){
                             event_new 'event.file.create' => {
                                 username => $c->username,
@@ -1407,10 +1416,12 @@ sub upload : Local {
                     
                 #$file_mid = $existing->mid;
             }
-            $c->stash->{ json } = { success => \1, msg => _loc( 'Uploaded file %1', $filename ), file_uploaded_mid => $p->{topic_mid}? '': $file_mid, };            
+            $c->res->body('{"success": "true", "msg":"' . _loc( 'Uploaded file %1', $filename ) . '", "file_uploaded_mid":"' . $file_mid . '"}');
+            #$c->stash->{ json } = { success => \1, msg => _loc( 'Uploaded file %1', $filename ), file_uploaded_mid => $file_mid };            
         }
         else{
-            $c->stash->{ json } = { success => \0, msg => _loc( 'You must save the topic before add new files' )};
+            $c->res->body('{"success": "false", "msg":"' . _loc( 'You must save the topic before add new files' ) . '"}');
+            #$c->stash->{ json } = { success => \0, msg => _loc( 'You must save the topic before add new files' )};
         }
     }
     catch {
@@ -1418,15 +1429,16 @@ sub upload : Local {
         _log "Error uploading file: " . $err;
         $c->stash->{ json } = { success => \0, msg => $err };
     };
-    #$c->res->body('{success: true}');
-    $c->forward( 'View::JSON' );
+    
     #$c->res->content_type( 'text/html' );    # fileupload: true forms need this
+    #$c->forward( 'View::JSON' );
 }
 
 sub file : Local {
     my ( $self, $c, $action ) = @_;
     my $p      = $c->req->params;
     my $topic_mid = $p->{topic_mid};
+    
     try {
         my $msg; 
         if( $action eq 'delete' ) {
