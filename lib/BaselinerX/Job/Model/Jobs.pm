@@ -290,7 +290,7 @@ sub get_summary {
 
             my $service_time = $service_endtime - $service_starttime;
 
-            if ( $service_time->sec > 0) {
+            if ( $service_time && $service_time->sec > 0) {
                 $services_time->{$service->{step}."#".$service->{service_key}} = $service_time->sec;
             }
             $active_time += $service_endtime - $service_starttime;
@@ -413,7 +413,7 @@ sub get_contents {
     my $items = $job_stash->{items};
     for my $cs ( @changesets ) {
         my @projs = _array $cs->projects;
-        push @{ $changesets_by_project->{$projs[0]->{name}} }, $cs;
+        push @{ $changesets_by_project->{$  projs[0]->{name}} }, $cs;
     }
     $result = {
         packages => $changesets_by_project,
