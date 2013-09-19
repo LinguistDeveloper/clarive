@@ -1,0 +1,181 @@
+#!/usr/bin/env perl
+
+use strict;
+use v5.10;
+use YAML::XS;
+use Term::ANSIColor qw(:constants);
+
+sub ask;
+
+die "usage: cherryme <from_branch> <to_branch> <options> -- <filters>\noptions:\n
+    --until <sha>       start from top and stop on this sha (inclusive)
+    --start <sha>       start from this sha and stop on top (inclusive)
+    -y                  don't ask if status is +++
+    -n                  no cherry-pick
+    --max <num|500>     max number of commits to compare
+    --log <file>        save commits to file too
+" unless @ARGV >= 2;
+
+my $orig = shift @ARGV;
+my $dest = shift @ARGV;
+
+# read options until --
+my @MY_ARGS = grep { state $gg=1; /^--$/ ? ($gg=0) : $gg } @ARGV;
+
+# any args?
+my %opts = do { 
+    no warnings;
+    my $lastopt='';
+    my %opts = map { $lastopt=~/^--?/ && $_=~/^--?/ ? (1, $lastopt=$_) : ($lastopt=$_)  } @MY_ARGS;
+    $opts{$lastopt} = 1 if $lastopt =~ /^--?/; # last option does not get 1 otherwise
+    %opts;
+};
+
+# read options starting after --
+my @filters = grep { state $gg=0; /^--$/ ? ($gg=1,0) : $gg } @ARGV;
+
+my $filters_re = @filters ? join( '|',map { "($_ )" } @filters ) : 'bde ';
+
+my $max = $opts{'--max'} || 500;
+my $cmd = qq{git log --pretty=oneline -$max "%s"};
+my ($dmap,@dests) = run_cmd( $cmd, $dest );
+my ($omap,@origs)= run_cmd( $cmd, $orig );
+#my ($all,@alls)= run_cmd( $cmd, "$dest..$orig" );
+#die Dump( \$dmap );
+
+my %color_status = ( '+++'=>GREEN, '---'=>RED, '==='=>YELLOW );
+
+my $cp = "git cherry-pick '%s'";
+my @chosen;
+my $until = 0;
+my $reversed = $opts{'--start'};
+if( $reversed ) {
+    @origs = reverse @origs;
+    @origs = grep {
+        state $f=0; 
+        my $sha = $omap->{$_};
+        $f=1 if $sha =~ /^$reversed/;
+        $f
+    } @origs;
+}
+
+ORIG: for my $msg ( @origs ) {
+    my $sha = $omap->{$msg};
+    my $sha7 = substr( $sha, 0, 7);
+    
+    if( $until && !$reversed ) {
+        say "UNTIL match: $until";
+        last;
+    }
+
+    my $ask_maybe = sub{
+        my ($status,$force) = @_; 
+        my $default = { '+++'=>'y', '---'=>'y', '==='=>'n' }->{ $status };
+        my $s = $color_status{$status} . "$status $msg ($sha7)" . RESET;
+        $opts{'-y'} && !$force 
+            ? say $s
+            : ask( 
+                "$s\n View (v)? Skip and Start (s)? Exclude (n)? Include commit (y)?",
+                $default => '', 
+                y=>sub{ push( @chosen, $msg), next ORIG },
+                s=>sub{ last ORIG },
+                q=>sub{ exit 1 },
+                v=>sub{ system 'git', 'show', '--source', $sha; say ''; 0 },
+                # diffs all, not useful, needs to filter on files: d=>sub{ system 'git', '--no-pager', 'diff', $sha; 0 },
+                c=>sub{ system "git show --source $sha7 | git apply --check"; say ''; 0 },
+                n=>sub{ next ORIG } 
+            );
+    };
+
+    if( length $opts{'--until'} && $sha =~ /^$opts{'--until'}/ ) {
+        $until = $sha;
+    }
+    if( $msg =~ /^$filters_re/i ) {
+        $ask_maybe->( '---' );
+        next;
+    } elsif( $dmap->{$msg} ) {
+        $ask_maybe->( '===', 1 );
+        last;
+    } else {
+        $ask_maybe->( '+++' );
+        push @chosen, $msg;
+    }
+}
+
+say "=================| Chosen Commits |===================";
+
+my $log;
+open $log, '>>', $opts{'--log'} if $opts{'--log'};
+for( reverse @chosen ) {
+    my $sha = substr($omap->{$_},0,7);
+    say "*** $_ ($sha)";
+    print $log `git show --source $sha` if $opts{'--log'};
+}
+close($log),say "Log file written: ".$opts{'--log'} if $opts{'--log'};
+
+if( $opts{'-n'} ) {
+    say "Dry-run (-n) done.";
+    exit 1;
+}
+
+@chosen = reverse @chosen unless $reversed;
+CHOSEN: for my $msg ( @chosen ) {
+    AGAIN:
+    my $sha = $omap->{$msg};
+    my $msg2 = substr($msg, 0,80);
+    say '=' x 80;
+    system 'git', 'show', $sha, '--name-only';
+    ask( "\ncherry-pick? s=show ", 
+        y => sub {
+            system 'git', 'cherry-pick', $sha;
+            if( $? ) {
+                system 'git', 'status';
+                ask "===> ERROR during cherry-pick. y: Resolve and go to next commit / a: try to cherry-pick again\n", 
+                    y =>sub { next CHOSEN },
+                    a =>sub { goto AGAIN },
+                    q => sub { die "Aborted\n" };
+            }
+            1; 
+        }, 
+        n => sub {
+            1; 
+        }, 
+        s => sub {
+            system 'git', 'show', $omap->{$msg};
+            system 'git', 'show', $sha, '--name-only';
+            0;
+        },
+    );
+}
+
+sub run_cmd {
+    my $x = sprintf shift, @_;
+    my @arr = map { /^(\w+) (.*)$/; [$1,$2] } `$x`;
+    return ( { map { $_->[1] => $_->[0] } @arr }, map { $_->[1] } @arr );
+}
+
+sub ask {
+    my ($question, %p ) = @_;
+    my $default = $_[1];
+    my $opts = join ',', keys %p;
+    while( 1 ) {
+        print "$question ($opts) [$default] ";
+        my $ans = <STDIN>;
+        chomp $ans;
+        $ans =~ s{^\s+}{}g;
+        $ans =~ s{\s+$}{}g;
+        $ans = $default unless length $ans;
+        if( exists $p{$ans} ) {
+            my $r = $p{$ans}->($ans);
+            last if $r;
+        } elsif( $ans eq 'q' ) {
+            die "Quitting.\n";
+        } else {
+            print "Invalid answer: $ans\n";
+        }
+    }
+}
+
+
+
+#for my $dest
