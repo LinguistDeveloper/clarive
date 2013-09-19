@@ -346,33 +346,35 @@ sub load {
     # load post-data and merge
     $data = { %$data, %{ $self->load_post_data($mid, $data) || {} } };
     # look for relationships
-    my $rel_types = $self->rel_type;
-    my %field_rel_mids;
-    for my $field ( keys %$rel_types ) {
-        #my $prev_value = $data->{$field};  # save in case there is no relationship, useful for changed cis
-        my $rel_type = $rel_types->{ $field };
-        next unless defined $rel_type;
-        my $my_mid = $rel_type->[0];
-        my $other_mid = $my_mid eq 'to_mid' ? 'from_mid' : 'to_mid';
-        $field_rel_mids{ $rel_type->[1] } = { field=>$field, my_mid => $my_mid, other_mid => $other_mid, opts=>{splice @$rel_type,2} };
-        delete $data->{$field}; # delete yaml junk
-        #$data->{$field} = $prev_value if defined $prev_value && ! _array( $data->{$field} );
-    }
-    # get rel data
-    if( my @fields = keys %field_rel_mids ) {
-        my @rel_type_data = DB->BaliMasterRel->search( 
-                    { -or=>[ to_mid=>$mid, from_mid=>$mid ], rel_type => \@fields },
-                    { select=> ['from_mid', 'to_mid', 'rel_type' ] } )->hashref->all;
-                
-        for my $rel_row ( @rel_type_data ) {
-            my $f = $field_rel_mids{ $rel_row->{rel_type} }; 
-            next unless $f;
-            next if $rel_row->{ $f->{my_mid} } ne $mid;
-            my $other_mid = $rel_row->{ $f->{other_mid} };
-            next unless $other_mid;
-            my $prev_value = $data->{ $f->{field} };
-            # add mid to field array
-            push @{ $data->{ $f->{field} } }, $other_mid;
+    if( ! $Baseliner::CI::no_rels ) {
+        my $rel_types = $self->rel_type;
+        my %field_rel_mids;
+        for my $field ( keys %$rel_types ) {
+            #my $prev_value = $data->{$field};  # save in case there is no relationship, useful for changed cis
+            my $rel_type = $rel_types->{ $field };
+            next unless defined $rel_type;
+            my $my_mid = $rel_type->[0];
+            my $other_mid = $my_mid eq 'to_mid' ? 'from_mid' : 'to_mid';
+            $field_rel_mids{ $rel_type->[1] } = { field=>$field, my_mid => $my_mid, other_mid => $other_mid, opts=>{splice @$rel_type,2} };
+            delete $data->{$field}; # delete yaml junk
+            #$data->{$field} = $prev_value if defined $prev_value && ! _array( $data->{$field} );
+        }
+        # get rel data
+        if( my @fields = keys %field_rel_mids ) {
+            my @rel_type_data = DB->BaliMasterRel->search( 
+                        { -or=>[ to_mid=>$mid, from_mid=>$mid ], rel_type => \@fields },
+                        { select=> ['from_mid', 'to_mid', 'rel_type' ] } )->hashref->all;
+                    
+            for my $rel_row ( @rel_type_data ) {
+                my $f = $field_rel_mids{ $rel_row->{rel_type} }; 
+                next unless $f;
+                next if $rel_row->{ $f->{my_mid} } ne $mid;
+                my $other_mid = $rel_row->{ $f->{other_mid} };
+                next unless $other_mid;
+                my $prev_value = $data->{ $f->{field} };
+                # add mid to field array
+                push @{ $data->{ $f->{field} } }, $other_mid;
+            }
         }
     }
     
@@ -451,8 +453,9 @@ sub ci_form {
 }
 
 sub related_cis {
-    my ($self, %opts )=@_;
-    my $mid = $self->mid;
+    my ($self_or_class, %opts )=@_;
+    my $mid = ref $self_or_class ? $self_or_class->mid : $opts{mid};
+    $mid // _fail 'Missing parameter `mid`';
     # in scope ? 
     #local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
     my $scope_key =  "related_cis:$mid:" . Storable::freeze( \%opts );
@@ -473,7 +476,16 @@ sub related_cis {
         $where->{'-or'} = [ from_mid=>$mid, to_mid=>$mid ];
     }
     $where->{rel_type} = { -like=>$opts{rel_type} } if defined $opts{rel_type};
-    my @data = DB->BaliMasterRel->search( $where, { } )->hashref->all;
+    # paging support
+    $opts{rows} = delete $opts{limit} if exists $opts{limit};
+    $opts{page} = Util->to_pages( start=>$opts{start}, limit=>($opts{rows}//20) ) if exists $opts{start};
+    my $from = $opts{from} // +{ map { $_ => $opts{$_} } grep { exists $opts{$_} } qw(select order_by rows page) };
+    ######### rel query
+    my $rs = DB->BaliMasterRel->search( $where, $from );
+    ########
+    local $Baseliner::CI::no_rels = 1 if $opts{no_rels};
+
+    my @data = $rs->hashref->all;
     my @ret = map {
         my $rel_edge = $_->{from_mid} == $mid
             ? 'child'
@@ -494,7 +506,7 @@ sub related_cis {
 }
 
 sub _filter_cis {
-    my ($self, %opts) = @_;
+    my ($self_or_class, %opts) = @_;
     return () unless ref $opts{_cis} eq 'ARRAY';
     my @cis = @{ delete $opts{_cis} };
     if( $opts{does} || $opts{does_any} || $opts{does_all} ) {
@@ -558,10 +570,23 @@ Options:
     unique => 1|0 (default:0)
         no duplicate cis in the list, useful to avoid recursive trees
 
+    no_rels => 1|0 (default:0) 
+        don't load relationships into CIs
+
+    start => Num
+        start row for MasterRel query
+    
+    rows => Num
+        how many rows to retrieve from MasterRel
+
+    order_by => { ... }
+        MasterRel order by
+
 =cut
 sub related {
-    my ($self, %opts)=@_;
-    my $mid = $self->mid;
+    my ($self_or_class, %opts)=@_;
+    my $mid = ref $self_or_class ? $self_or_class->mid : $opts{mid};
+    $mid // _fail 'Missing parameter `mid`';
     # in cache ? 
     my $cache_key = [ "ci:$mid:",  \%opts ];
     if( my $cached = Baseliner->cache_get( $cache_key ) ) {
@@ -580,12 +605,12 @@ sub related {
     local $Baseliner::ci_unique = {} unless defined $Baseliner::ci_unique;
     
     # get my related cis
-    my @cis = $self->related_cis( %opts );
+    my @cis = $self_or_class->related_cis( %opts );
     # unique?
     @cis = grep { !exists $Baseliner::ci_unique->{$_->{mid}} && ($Baseliner::ci_unique->{$_->{mid}}=1) } @cis
         if $opts{unique} ;
     # filter before
-    @cis = $self->_filter_cis( %opts, _cis=>\@cis ) if $opts{filter_early};
+    @cis = $self_or_class->_filter_cis( %opts, _cis=>\@cis ) if $opts{filter_early};
     # now delve deeper if needed
     $depth --;
     if( $depth<0 || $depth>0 ) {
@@ -599,21 +624,21 @@ sub related {
         }
     }
     # filter
-    @cis = $self->_filter_cis( %opts, _cis=>\@cis ) unless $opts{filter_early};
+    @cis = $self_or_class->_filter_cis( %opts, _cis=>\@cis ) unless $opts{filter_early};
     Baseliner->cache_set( $cache_key, \@cis );
     return @cis;
 }
 
 sub parents {
-    my ($self, %opts)=@_;
+    my ($self_or_class, %opts)=@_;
     local $Baseliner::CI::mid_scope = {} unless defined $Baseliner::CI::mid_scope;
-    return $self->related( %opts, edge=>'in' );
+    return $self_or_class->related( %opts, edge=>'in' );
 }
 
 sub children {
-    my ($self, %opts)=@_;
+    my ($self_or_class, %opts)=@_;
     local $Baseliner::CI::mid_scope = {} unless defined $Baseliner::CI::mid_scope;
-    return $self->related( %opts, edge=>'out' );
+    return $self_or_class->related( %opts, edge=>'out' );
 }
 
 sub list_by_name {

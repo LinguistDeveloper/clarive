@@ -2295,33 +2295,36 @@ Baseliner.run_service = function(params, service){
 
 // Simple JavaScript Templating
 // John Resig - http://ejohn.org/ - MIT Licensed
+// rgo: heredoc quote fix
+Function.prototype.heredoc = function(s){ return this.toString().slice(14,-3) };
+Function.prototype.tmpl = function(data){ return Baseliner.tmpl(this.heredoc(),data) };
 Baseliner.tmpl_cache = {};
-
-Baseliner.tmpl = function tmpl(str, data){
+Baseliner.tmpl = function (str, data){
     // Figure out if we're getting a template, or if we need to
     // load the template - and be sure to cache the result.
+    var he = ['function(){/*', '*/}.toString().slice(14,-3)']; 
     var fn = !/\W/.test(str) ?
       Baseliner.tmpl_cache[str] = Baseliner.tmpl_cache[str] ||
-        tmpl(document.getElementById(str).innerHTML) :
+        Baseliner.tmpl(document.getElementById(str).innerHTML) :
      
       // Generate a reusable function that will serve as a template
       // generator (and which will be cached).
-      new Function("obj",
+     new Function("obj",
         "var p=[],print=function(){p.push.apply(p,arguments);};" +
-       
+
         // Introduce the data as local variables using with(){}
-        "with(obj){p.push('" +
-       
+        "with(obj){p.push("+he[0]+
+
         // Convert the template into pure JavaScript
-        str
-          .replace(/[\r\t\n]/g, " ")
+         str
+          .replace(/[\r\t\n]/g, " ")    
           .split("[%").join("\t")
-          .replace(/((^|%])[^\t]*)'/g, "$1\r")
-          .replace(/\t=(.*?)%]/g, "',$1,'")
-          .split("\t").join("');")
-          .split("%]").join("p.push('")
-          .split("\r").join("\\'")
-      + "');}return p.join('');");
+          .replace(/((^|%\])[^\t]*)/g, "$1\r")
+          .replace(/\t=(.*?)%\]/g, he[1]+",$1,"+he[0])
+          .split("\t").join(he[1]+");")
+          .split("%]").join("p.push("+he[0])
+          .split("\r").join("")
+      + he[1]+");}return p.join('');");
 
     // Provide some basic currying to the user
     return data ? fn( data ) : fn;

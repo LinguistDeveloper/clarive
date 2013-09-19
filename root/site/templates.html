@@ -1,0 +1,6 @@
+<!-- Templates -->
+% my $rel = $c->path_to('root');
+% for my $tmpl ( map { $_->relative($rel) } $c->path_to('root/tmpl')->children ) {
+<& "/$tmpl" &>
+% }
+

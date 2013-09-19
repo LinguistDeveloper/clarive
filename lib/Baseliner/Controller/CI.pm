@@ -1207,9 +1207,12 @@ sub default : Path Args(2) {
             _fail( _loc "Method '%1' not found in class '%2'", $meth, $pkg) unless $pkg->can( $meth) ;
             $ret = $pkg->$meth( $data );
         }
-        if( Scalar::Util::blessed($ret) ) {
+        if( ref $ret eq 'HASH' && Scalar::Util::blessed($ret) ) {
             Util->_unbless( $ret );
             $c->stash->{json} = $ret;
+        } elsif( ref $ret eq 'ARRAY' ) {
+            Util->_unbless( $ret );
+            $c->stash->{json} = { data=> $ret };
         } else {
             $c->stash->{json} = { data => $ret };
         }

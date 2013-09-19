@@ -179,8 +179,9 @@ sub items {
 }
 
 sub jobs {
-    my ($self )=@_;
-    $self->parents( isa=>'job' );
+    my ($self, $p )=@_;
+    my @jobs = $self->parents( isa=>'job', %$p );
+    wantarray ? @jobs : \@jobs;
 }
 
 sub is_in_active_job {

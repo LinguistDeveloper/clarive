@@ -1477,6 +1477,30 @@ Baseliner.TopicForm = Ext.extend( Ext.FormPanel, {
             self.doLayout();
         });
     }
-})
+});
+
+Baseliner.jobs_for_topic = function(args) {
+    Baseliner.ci_call( args.mid, 'jobs', { no_rels: 1 }, function(res){
+        var div = document.getElementById( args.render_to );
+        var jh = '';
+        if( div ) {
+            Ext.each( res.data, function(job){
+                //jh += Baseliner.tmpl( 'tmpl_topic_jobs', job ); 
+                jh += function(){/*
+                    <div style="margin-left: 20px">
+                        <p><a href="javascript:Baseliner.addNewTab('/job/log/dashboard?id_job=[%= id_job %]&name=[%= name %]',
+                            '[%= name %]')">
+                                [%= name %]
+                           </a> 
+                           - [%= _(status) %]  <small>[%= ts %]</small>
+                        </p>
+                        <hr />
+                    </div> 
+                */}.tmpl( job );
+            });
+            div.innerHTML = jh;
+        }
+    });
+};
 
 

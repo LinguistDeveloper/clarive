@@ -581,8 +581,12 @@ sub view : Local {
      
             # jobs for release and changeset
             if( $category->is_changeset || $category->is_release ) {
-                my @jobs = DB->BaliJob->search({ item=>{ -like => '%/' . $topic_mid } }, 
-                { prefetch=>'bali_job_items', page=>0, rows=>20, order_by=>{ -desc=>'me.id' } })->hashref->all;
+                my @jobs = ci->parents( 
+                    mid=>$topic_mid, 
+                    rel_type=>'job_' . ( $category->is_changeset ? 'changeset' : 'release' ),
+                    no_rels=>1,
+                    order_by=>{-desc=>'from_mid'} );
+
                 $c->stash->{jobs} = \@jobs;
             }
             

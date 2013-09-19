@@ -3,6 +3,7 @@ use Baseliner::Moose;
 use Baseliner::Utils qw(:logging);
 use Baseliner::Sugar qw(event_new);
 use Try::Tiny;
+use v5.10;
 with 'Baseliner::Role::CI::Internal';
 
 has id_job       => qw(is rw isa Any); 
@@ -17,6 +18,7 @@ has root_dir           => qw(is rw isa Any);
 has schedtime          => qw(is rw isa Any);
 has starttime          => qw(is rw isa Any);
 has endtime            => qw(is rw isa Any);
+has ts                 => qw(is rw isa Any);
 has maxstarttime       => qw(is rw isa Any);
 has comments           => qw(is rw isa Any);
 has logfile            => qw(is rw isa Any);
@@ -40,12 +42,14 @@ has id_rule      => qw(is rw isa Any ), default=>sub {
     DB->BaliRule->search({ rule_when=>$type }, { order_by=>{-desc=>'id'} })->first->id  
 };
 
+has_cis 'releases';
 has_cis 'changesets';
 has_cis 'projects';
 has_cis 'natures';
 
 sub rel_type {
     { 
+        releases   => [ from_mid => 'job_release' ] ,
         changesets => [ from_mid => 'job_changeset' ] ,
         projects   => [ from_mid => 'job_project' ] ,
         natures    => [ from_mid => 'job_nature' ] ,
@@ -225,13 +229,17 @@ sub _create {
     my $log = new BaselinerX::Job::Log({ jobid=>$job_row->id });
 
     # expand releases into changesets
+    my @releases; 
     my @cs_cis = grep { ref } map {
         my $cs = ref $_ ? $_ :  Baseliner::CI->new( $_ );
-        $cs->is_changeset 
-            ? $cs 
-            : $cs->is_release 
-                ? ( grep { $_->is_changeset } $cs->children( isa=>'topic', depth=>-1 ) )
-                : undef;
+        if( $cs->is_release ) {
+            push @releases, $cs if $cs->is_release;
+            grep { $_->is_changeset } $cs->children( isa=>'topic', depth=>-1, no_rels=>1 );
+        } elsif( $cs->is_changeset ) {
+            $cs
+        } else {
+            undef; 
+        }
     } Util->_array( $changesets );
 
     # create job contents
@@ -257,6 +265,7 @@ sub _create {
     $self->id_job( $job_row->id );
     $self->status( 'IN-EDIT' );
     $self->changesets( \@cs_cis );
+    $self->releases( \@releases ) if @releases;
 
     # add unique projects from changesets
     my %pp;
@@ -268,11 +277,6 @@ sub _create {
     ]);
     $self->ns( 'job/' . $job_row->id );
     
-    # TODO approval detection should be part of INIT, or check calendar for urgent and nojob status
-    # now let it run
-    # $log->debug( _loc( 'Approval exists? ' ), data=>_dump($p{approval}) );
-    # $self->approval( $p{approval} );
-
     $job_row->status( 'READY' );
     $job_row->update;
     
@@ -426,6 +430,21 @@ sub reject {
     $self->status( 'REJECTED' );
     $self->save;
     1;
+}
+
+sub status_icon {
+    my ($self, $status, $rollback) = @_; 
+    given( $status || $self->status) {
+        when( 'RUNNING' ) { 'gears.gif'; }
+        when( 'READY' ) { 'waiting.png'; }
+        when( 'APPROVAL' ) { 'user_delete.gif'; }
+        when( 'FINISHED' && !( $rollback || $self->rollback) ) { 'log_i.gif' }
+        when( 'IN-EDIT' ) { 'log_w.gif'; }
+        when( 'WAITING' ) { 'waiting.png'; }
+        when( 'PAUSED' ) { 'paused.png'; }
+        when( 'CANCELLED' ) { 'close.png'; }
+        default { 'log_e.gif' }
+    }
 }
 
 1;

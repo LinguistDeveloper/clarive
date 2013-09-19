@@ -275,7 +275,7 @@ around 'debug' => sub {
         #$_->meta->make_immutable for keys %pkgs;
     }
 
-    # master db setup
+    # mdb : master db setup
     {
         package mdb;
         our $AUTOLOAD;
@@ -294,6 +294,21 @@ around 'debug' => sub {
             my $class = ref $db;
             my $method = $class . '::' . $a[0];
             @_ = ( $db, @_ );
+            goto &$method;
+        }
+    }
+
+    # ci : ci utilities setup
+    {
+        package ci;
+        our $AUTOLOAD;
+        sub AUTOLOAD {
+            my $self = shift;
+            my $name = $AUTOLOAD;
+            my ($method) = reverse( split(/::/, $name));
+            my $class = $method eq 'new' ? 'Baseliner::CI' : 'Baseliner::Role::CI';
+            $method = $class . '::' . $method;
+            @_ = ( $class, @_ );
             goto &$method;
         }
     }
