@@ -6,9 +6,6 @@ use Try::Tiny;
 with 'Baseliner::Role::CI::Internal';
 
 has id_job       => qw(is rw isa Any); 
-has id_rule      => qw(is rw isa Any), default=>sub {
-    DB->BaliRule->search->first->id   # TODO get default rule
-};
 has bl                 => qw(is rw isa Any);
 has pid                => qw(is rw isa Any);
 has host               => qw(is rw isa Any);
@@ -21,6 +18,7 @@ has schedtime          => qw(is rw isa Any);
 has starttime          => qw(is rw isa Any);
 has endtime            => qw(is rw isa Any);
 has maxstarttime       => qw(is rw isa Any);
+has comments           => qw(is rw isa Any);
 has logfile            => qw(is rw isa Any);
 has step               => qw(is rw isa Str default CHECK);
 has exec               => qw(is rw isa Num default 1);
@@ -36,6 +34,11 @@ has job_dir            => qw(is rw isa Any lazy 1), default => sub {
     my $job_home = $ENV{BASELINER_JOBHOME} || $ENV{BASELINER_TEMP} || File::Spec->tmpdir();
     File::Spec->catdir( $job_home, $self->name ); 
 };  
+has id_rule      => qw(is rw isa Any ), default=>sub {
+    my $self = shift;
+    my $type = $self->job_type || 'promote';
+    DB->BaliRule->search({ rule_when=>$type }, { order_by=>{-desc=>'id'} })->first->id  
+};
 
 has_cis 'changesets';
 has_cis 'projects';
@@ -62,13 +65,19 @@ around load_post_data => sub {
     return {} unless $mid;
     
     my $row = DB->BaliJob->search({ mid=>$mid }, {})->first;
-    my $job_row = +{ $row->get_columns };
-    
-    $job_row->{job_type} = $job_row->{type};
-    $job_row->{id_job} = $job_row->{id};
-    delete $job_row->{mid};
+    if ( $row ) {
 
-    return $job_row;
+        my $job_row = +{ $row->get_columns };
+        
+        $job_row->{job_type} = $job_row->{type};
+        $job_row->{id_job} = $job_row->{id};
+        delete $job_row->{mid};
+        delete $job_row->{ns};
+
+        return $job_row;
+    } else {
+        return {};
+    }
 };
 
 around update_ci => sub {
@@ -81,6 +90,7 @@ around update_ci => sub {
         $row->update({
             pid         => $self->pid,
             exec        => $self->exec,
+            rollback    => $self->rollback,
             step        => $self->step,
             status      => $self->status,
             endtime     => $self->endtime,
@@ -283,7 +293,7 @@ sub is_active {
     my $self = shift;
     if( my $row = DB->BaliJob->find( $self->id_job ) ) {
         my $status = $row->status;
-        return 1 if $status !~ /CANCEL|ERROR|FINISHED/;
+        return 1 if $status !~ /REJECTED|CANCEL|ERROR|FINISHED|KILLED|EXPIRED/;
     }
     return 0;
 }
@@ -371,6 +381,51 @@ sub reset {
         $log->info($msg);
     };
     return { msg=>$msg };
+}
+
+sub find_rollback_deps {
+    my ($self)=@_;
+    my @prjs = Util->_array( $self->projects );
+    my ($prj) = @prjs;
+    my @jobs = map { Baseliner::CI->new($_->{mid}) } 
+        DB->BaliMaster->search({ collection=>'job', bl=>$self->bl, mid=>{'>'=>$self->mid } }, { select=>'mid' })
+        ->hashref->all;
+    
+    # TODO check if there are later jobs for the same repository
+    return ();
+}
+
+sub contract {
+    my ($self, $p)=@_;
+    my @prjs = Util->_array( $self->projects );
+    my ($prj) = @prjs;
+    _debug $prj;
+    _fail _loc 'Missing project for job %1', $self->name unless $prj;
+    my $vars = $prj->variables // {};
+    my $bl = $self->bl;
+    return { 
+        schedtime => $self->schedtime,
+        comments => $self->comments,
+        projects=>join(' ', map { $_->name } @prjs),
+        cs=>join(' ', map { $_->name } Util->_array( $self->changesets ) ),
+        bl=>$bl, 
+        vars=>{ $bl => { %{ $vars->{'*'} || {} }, %{ $vars->{$bl} || {} } } } 
+    };
+    #return $vars;
+}
+
+sub approve {
+    my ($self, $p)=@_;
+    $self->status( 'READY' );
+    $self->save;
+    1;
+}
+
+sub reject {
+    my ($self, $p)=@_;
+    $self->status( 'REJECTED' );
+    $self->save;
+    1;
 }
 
 1;

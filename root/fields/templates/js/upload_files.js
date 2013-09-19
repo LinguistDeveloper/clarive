@@ -66,7 +66,7 @@ params:
                     Baseliner.message(_('Deleted'), res.msg );
                     var rows = check_sm.getSelections();
                     Ext.each(rows, function(row){ store_file.remove(row); })                    
-                    //store_file.load();
+                    store_file.reload();
                 });
             });
         } 
@@ -150,12 +150,11 @@ params:
                     form2.findField("files_uploaded_mid").setValue(files_uploaded_mid);
                     var files_mid = files_uploaded_mid.split(',');
                     store_file.baseParams = { files_mid: files_mid };
-                    store_file.load();
-                    
+                    store_file.reload();
                 }
                 else{
 					store_file.baseParams = {topic_mid: data ? data.topic_mid : obj_topic_mid.getValue() == -1 ? '' : obj_topic_mid.getValue(), filter: meta.id_field };
-                    store_file.load();                    
+                    store_file.reload();                    
                 }
             },
             onSubmit: function(id, filename){

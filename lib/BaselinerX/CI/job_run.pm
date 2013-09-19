@@ -78,7 +78,7 @@ sub run {
     my ($self, %p) = @_;
 
     $self->status('RUNNING');
-    if( !$self->same_exec && $self->endtime && $self->step ) {
+    if( !$self->same_exec && ( ($self->endtime && $self->step) || $self->rollback ) ) {
         $self->exec( $self->exec + 1);  # endtime=job has run before, a way to detect first time
         _log "Setting exec to " . $self->exec;
     }
@@ -103,7 +103,7 @@ sub run {
         return 0;
     };
 
-    _log "=========| Starting JOB " . $self->id_job;
+    _log "=========| Starting JOB " . $self->id_job . ", rollback=" . $self->rollback;
 
     _debug( _loc('Rule Runner, STEP=%1, PID=%2, RULE_ID', $self->step, $self->pid ) );
 
@@ -116,10 +116,16 @@ sub run {
             job_step    => $self->step,
             job_dir     => $self->job_dir,
             job_name    => $self->name,
+            job_type    => $self->job_type,
+            job_mode    => $self->rollback ? 'forward' : 'rollback',
+            rollback    => $self->rollback,
+            username    => $self->username,
             changesets  => $self->changesets,
     };
     #die _dump $stash unless $self->step eq 'INIT';
     
+    ROLLBACK:
+    my $job_error = 0;
     try {
         my $ret = Baseliner->model('Rules')->run_single_rule( 
             id_rule => $self->id_rule, 
@@ -135,10 +141,34 @@ sub run {
         $self->finish( 'ERROR' );
         $self->logger->error( _loc( 'Job failure: %1', $err ) );
         $self->job_stash( $stash );
+        $job_error = 1;
     };
+
+    my $rollback_now = 0;
+    my @needing_rollback = grep /_needs?_rollback/, keys %$stash;
+    my $needs_rollback = List::MoreUtils::any { $stash->{$_} } @needing_rollback;
+    if( $job_error ) {
+        if( $needs_rollback && !$self->rollback ) {
+            # repeat
+            $stash->{rollback} = 1;
+            $stash->{job} = $self;
+            $self->rollback( 1 );
+            $self->status( 'RUNNING' );
+            $self->exec( $self->exec + 1);
+            $rollback_now = 1;
+            $self->logger->info( "Starting *Rollback*", \@needing_rollback );
+        } elsif( !$needs_rollback && !$self->rollback ) {
+            $self->logger->info( _loc( 'No need to rollback anything.' ) );
+        } else {
+            $self->logger->error( _loc( 'Error during rollback. Baselines are incosistent, manual intervention required.' ) );
+        }
+    }
+
     $self->save;
     $self->save_to_parent_job( natures=>$self->natures, logfile=>$self->logfile, service_levels=>$self->service_levels );
-    $self->logger->debug( "Job natures....", $self->natures );
+    goto ROLLBACK if $rollback_now;
+
+    #$self->logger->debug( "Job natures....", $self->natures );
     $self->logger->debug( "Job children", $self->children );
     
     # last line on log
@@ -149,7 +179,7 @@ sub run {
     } else {
         $self->logger->info( _loc( 'Job step %1 finished with status %2', $self->step, $self->status ) );
     }
-    $self->goto_next_step unless $self->status eq 'ERROR';
+    $self->goto_next_step( $self->final_status ) unless $self->status eq 'ERROR';
     return $self->status;
 }
 
@@ -176,13 +206,13 @@ Updates the step in the row following the next_status rules
 
 =cut
 sub goto_next_step {
-    my ($self ) = @_;
+    my ($self, $no_status_change ) = @_;
     
     my $current_step = $self->step;
 
     # STATUS
     my $next_status = $next_status{ $current_step };
-    $self->status( $next_status ) if defined $next_status;
+    $self->status( $next_status ) if defined $next_status && !$no_status_change;
     
     # STEP
     my $next_step = $next_step{ $current_step };
@@ -198,7 +228,16 @@ sub goto_next_step {
 
 sub finish {
     my ($self, $status ) = @_;
-    $self->status( $status || 'FINISHED' );
+    my $next = $status || 'FINISHED';
+    #if( $self->rollback ) {
+    #    if( $next eq 'FINISHED' ) {
+    #        $next = 'ROLLEDBACK';
+    #    } elsif( $next eq 'ERROR' ) {
+    #        $next = 'ROLLEDBACKFAIL';
+    #    }
+    #}
+    _debug "JOB FINISHED=$next, rollback=". $self->rollback;
+    $self->status( $next );
     $self->endtime( _now ); 
 }
 

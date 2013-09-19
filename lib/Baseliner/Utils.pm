@@ -1604,6 +1604,9 @@ Tar a directory
 
     source_dir => directory to tar
     tarfile    => full path to tar file
+    files      => [] 
+    include    => []
+    exclude    => []
     attributes => [
         { regex=>'.*', type=>'f|d', mode=>'octal', mtime=>'epoch', uname=>'owner', gname=>'group' }
     ]
@@ -1614,6 +1617,7 @@ sub tar_dir {
     my $source_dir = $p{source_dir} // _fail _loc 'Missing parameter source_dir'; 
     my $tarfile = $p{tarfile} // _fail _loc 'Missing parameter tarfile';
     my $verbose = $p{verbose};
+    my %files = map { $_ => 1 } _array $p{files};
     my @include = _array $p{include};
     my @exclude = _array $p{exclude};
     my %attributes = map { $_->{regex} => $_ } _array( $p{attributes} );
@@ -1634,6 +1638,7 @@ sub tar_dir {
         my $f = shift;
         return if _file($tarfile) eq $f;
         my $rel = $f->relative( $dir );
+        return if %files && !exists $files{$rel}; # check if file is in list
         my $stat = $f->stat;
         my $type = $f->is_dir ? 'd' : 'f';
         my %attr = $type eq 'f' 

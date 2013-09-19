@@ -2633,6 +2633,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
     bl: '*', 
     layout: 'card',
     activeItem: 0,
+    show_tbar: true,
     constructor: function(c){
         Baseliner.VariableForm.superclass.constructor.call(this, Ext.apply({
         }, c));
@@ -2688,7 +2689,8 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
         }});
         
         self.hidden_field = new Ext.form.Hidden({ name: self.name, value: self.json });
-        self.tbar = [ self.combo_vars, self.btn_add, self.btn_del, self.hidden_field ];
+        if( self.show_tbar ) self.tbar = [ self.combo_vars, self.btn_add, self.btn_del, self.hidden_field ];
+        else self.tbar = [];
         
         Baseliner.VariableForm.superclass.initComponent.call(this);
 
@@ -2698,6 +2700,8 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
             callback: function(records){
                 var tbar = self.getTopToolbar();
                 tbar.add('->');
+                if( self.force_bl ) records=[ { id: self.force_bl } ];
+                var def_bl = self.force_bl || '*';
                 Ext.each(records, function(bl){
                     var name = bl.id == '*' ? 'Common' : bl.id; 
                     // create metaform
@@ -2723,7 +2727,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                     self.add( mf ); 
                     // add to toolbar
                     tbar.add({ xtype:'button', enableToggle: true, 
-                        pressed: (bl.id=='*'?true:false), 
+                        pressed: (bl.id==def_bl ?true:false), 
                         width: '30',
                         bl_id: bl.id,
                         toggleGroup: 'vf-bls-'+self.id, 
@@ -2732,7 +2736,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                         },
                         text: _(name)
                     });
-                    if( bl.id == '*' ) self.getLayout().setActiveItem( mf );
+                    if( bl.id == def_bl ) self.getLayout().setActiveItem( mf );
                     // load form
                     self.meta_for_data( mf, bl.id );
                 });

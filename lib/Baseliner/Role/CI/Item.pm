@@ -27,6 +27,18 @@ has item_relationship => qw(is rw isa Str default item_item); # rel_type
 has variables => qw(is rw isa HashRef), default=>sub{ +{} };
 has parse_tree => qw(is rw isa ArrayRef), default=>sub{ [] };
 
+sub path_cut {
+    my ($self, $regex)=@_;
+    my $path = $self->path;
+    my ($part) = $path =~ /$regex/;
+    return $part;
+}
+
+sub path_tail {
+    my ($self, $head)=@_;
+    $self->path_cut( qr/^$head(.*)$/ );
+}
+
 sub add_parse_tree {
     my ($self,$new_tree) = @_;
     return $new_tree unless defined $new_tree;

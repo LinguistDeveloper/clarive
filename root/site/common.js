@@ -2441,7 +2441,7 @@ Baseliner.ComboSingle = Ext.extend( Ext.form.ComboBox, {
         self.fieldLabel = self.fieldLabel || self.name;
         self.valueField = self.field || self.name;
         self.displayField = self.field || self.name;
-        self.value = data.length>0 ? data[0][0] : null;
+        if( !self.value ) self.value = data.length>0 ? data[0][0] : null;
         
         Baseliner.ComboSingle.superclass.initComponent.call(this); 
     },

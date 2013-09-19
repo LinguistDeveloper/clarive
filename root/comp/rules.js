@@ -33,6 +33,25 @@
             });
         }
     };
+
+    var rule_export = function(){
+        var sm = rules_grid.getSelectionModel();
+        if( sm.hasSelection() ) {
+            var activate = sm.getSelected().data.rule_active > 0 ? 0 : 1;
+            Baseliner.ajaxEval( '/rule/export', { id_rule: sm.getSelected().data.id }, function(res){
+                if( res.success ) {
+                    var win = new Baseliner.Window({ height: 400, width: 800, items: new Baseliner.MonoTextArea({ value: res.yaml }), 
+                         layout:'fit' });       
+                    win.show();
+                } else {
+                    Baseliner.error( _('Rule Export'), res.msg );
+                }
+            });
+        } else {
+            Baseliner.message( _('Error'), _('Select rows first') );
+        }
+    };
+    
     var rule_activate = function(){
         var sm = rules_grid.getSelectionModel();
         if( sm.hasSelection() ) {
@@ -114,7 +133,7 @@
                 } else if( rec.data.rule_type == 'chain' ) {
                     caption =  _('job chain');
                 } else {
-                    caption =  _('loose');
+                    caption =  _('independent');
                 }
                 p.body = String.format( '<div style="margin: 0 0 0 32px;color: #999">{0}</div>', caption );
                 return ' x-grid3-row-expanded';
@@ -133,7 +152,7 @@
             { xtype:'button', icon: '/static/images/icons/edit.gif', cls: 'x-btn-icon', handler: rule_edit },
             { xtype:'button', icon: '/static/images/icons/delete.gif', cls: 'x-btn-icon', handler: rule_del },
             { xtype:'button', icon: '/static/images/icons/activate.png', cls: 'x-btn-icon', handler: rule_activate },
-            { xtype:'button', icon: '/static/images/icons/downloads_favicon.png', cls: 'x-btn-icon' }
+            { xtype:'button', icon: '/static/images/icons/downloads_favicon.png', cls: 'x-btn-icon', handler: rule_export }
         ]
     });
     rules_store.load();
@@ -187,6 +206,9 @@
             copy.appendChild( clone_node( chi ) );
         });
         return copy;
+    };
+    var dsl_node = function( node ) {
+        node.getOwnerTree().rule_dsl(node);
     };
     var copy_node = function( node ) {
         var copy = clone_node( node ); 
@@ -304,6 +326,7 @@
         var rule_save = function(opt){
             var root = rule_tree.root;
             var stmts = encode_tree( root );
+            Baseliner.message( _('Rules'), _('Validating and saving rule...') );
             var json = Ext.util.JSON.encode( stmts );
             Baseliner.ajaxEval( '/rule/stmts_save', { id_rule: id_rule, stmts: json }, function(res) {
                 if( res.success ) {
@@ -317,14 +340,80 @@
                 }
             });
         };
-        var rule_load = function(btn){
+        var rule_load_do = function(btn){
             btn.disable();
             rule_tree_loader.load( rule_tree.root );
             rule_tree.root.expand();
             btn.enable();
         };
-        var rule_dsl = function(){
-            var root = rule_tree.root;
+        var rule_load = function(btn){
+            if( rule_tree.is_dirty ) {
+                if( rule_tree.close_me() ) {
+                    rule_load_do(btn);
+                }
+            } else {
+                rule_load_do(btn);
+            }
+        };
+        var short_name = name.length > 10 ? name.substring(0,20) : name;
+        var menu_click = function(node,event){
+            node.select();
+            var stmts_menu = new Ext.menu.Menu({
+                items: [
+                    { text: _('Edit'), handler: function(){ edit_node( node ) }, icon:'/static/images/icons/edit.gif' },
+                    { text: _('Rename'), handler: function(){ rename_node( node ) }, icon:'/static/images/icons/item_rename.png' },
+                    { text: _('Metadata'), handler: function(){ meta_node( node ) }, icon:'/static/images/icons/leaf.gif' },
+                    { text: _('Copy'), handler: function(item){ copy_node( node ) }, icon:'/static/images/icons/copy.gif' },
+                    { text: _('Cut'), handler: function(item){ cut_node( node ) }, icon:'/static/images/icons/cut.gif' },
+                    { text: _('Paste'), handler: function(item){ paste_node( node ) }, icon:'/static/images/icons/paste.png' },
+                    { text: _('DSL'), handler: function(item){ dsl_node( node ) }, icon:'/static/images/icons/edit.png' },
+                    { text: _('Toggle'), handler: function(item){ toggle_node(node) }, icon:'/static/images/icons/activate.png' },
+                    { text: _('Delete'), handler: function(item){ node.remove() }, icon:'/static/images/icons/delete.gif' } 
+                ]
+            });
+            stmts_menu.showAt(event.xy);
+        };
+        var rule_tree = new Ext.tree.TreePanel({
+            region: 'center',
+            id_rule: id_rule,
+            closable: true,
+            title: String.format('{0}: {1}', id_rule, short_name), 
+            autoScroll: true,
+            useArrows: true,
+            animate: true,
+            lines: true,
+            //stripeRows: true,
+            enableSort: true,
+            enableDD: true,
+            ddScroll: true,
+            loader: rule_tree_loader,
+            listeners: {
+                beforenodedrop: { fn: drop_handler },
+                contextmenu: menu_click
+            },
+            rootVisible: true,
+            tbar: [ 
+                { xtype:'button', text: _('Save'), icon:'/static/images/icons/save.png', handler: rule_save },
+                { xtype:'button', text: _('Reload'), icon:'/static/images/icons/refresh.gif', handler: rule_load },
+                { xtype:'button', text: _('DSL'), icon:'/static/images/icons/edit.png', handler: function() { rule_tree.rule_dsl() } }
+            ],
+            root: { 
+                text: String.format('<strong>{0}</strong>', _('Start: %1', event_name || short_name) ), 
+                name: _('Start: %1', event_name || short_name),
+                draggable: false, 
+                id: 'root', 
+                icon: (rule_type=='chain'?'/static/images/icons/job.png':'/static/images/icons/event.png'), expanded: true }
+        });
+        rule_tree.make_dirty = function(){ rule_tree.is_dirty = true };
+        rule_tree.on('movenode', rule_tree.make_dirty );
+        rule_tree.on('nodedrop', rule_tree.make_dirty );
+        rule_tree.on('remove', rule_tree.make_dirty );
+        rule_tree.close_me = function(){ 
+            return confirm(_('Rule `%1` has changed, but has not been saved. Leave without saving?', rule_tree.title ));
+        };
+        
+        rule_tree.rule_dsl = function(from){
+            var root = from || rule_tree.root;
             //rule_save({ callback: function(res) { } });
             var stmts = encode_tree( root );
             var json = Ext.util.JSON.encode( stmts );
@@ -387,62 +476,6 @@
                 }
             });
         };
-        var short_name = name.length > 10 ? name.substring(0,20) : name;
-        var menu_click = function(node,event){
-            node.select();
-            var stmts_menu = new Ext.menu.Menu({
-                items: [
-                    { text: _('Edit'), handler: function(){ edit_node( node ) }, icon:'/static/images/icons/edit.gif' },
-                    { text: _('Rename'), handler: function(){ rename_node( node ) }, icon:'/static/images/icons/item_rename.png' },
-                    { text: _('Metadata'), handler: function(){ meta_node( node ) }, icon:'/static/images/icons/leaf.gif' },
-                    { text: _('Copy'), handler: function(item){ copy_node( node ) }, icon:'/static/images/icons/copy.gif' },
-                    { text: _('Cut'), handler: function(item){ cut_node( node ) }, icon:'/static/images/icons/cut.gif' },
-                    { text: _('Paste'), handler: function(item){ paste_node( node ) }, icon:'/static/images/icons/paste.png' },
-                    { text: _('Toggle'), handler: function(item){ toggle_node(node) }, icon:'/static/images/icons/activate.png' },
-                    { text: _('Delete'), handler: function(item){ node.remove() }, icon:'/static/images/icons/delete.gif' } 
-                ]
-            });
-            stmts_menu.showAt(event.xy);
-        };
-        var rule_tree = new Ext.tree.TreePanel({
-            region: 'center',
-            id_rule: id_rule,
-            closable: true,
-            title: String.format('{0}: {1}', id_rule, short_name), 
-            autoScroll: true,
-            useArrows: true,
-            animate: true,
-            lines: true,
-            //stripeRows: true,
-            enableSort: true,
-            enableDD: true,
-            ddScroll: true,
-            loader: rule_tree_loader,
-            listeners: {
-                beforenodedrop: { fn: drop_handler },
-                contextmenu: menu_click
-            },
-            rootVisible: true,
-            tbar: [ 
-                { xtype:'button', text: _('Save'), icon:'/static/images/icons/save.png', handler: rule_save },
-                { xtype:'button', text: _('Reload'), icon:'/static/images/icons/refresh.gif', handler: rule_load },
-                { xtype:'button', text: _('DSL'), icon:'/static/images/icons/edit.png', handler: rule_dsl }
-            ],
-            root: { 
-                text: String.format('<strong>{0}</strong>', _('Start: %1', event_name || short_name) ), 
-                name: _('Start: %1', event_name || short_name),
-                draggable: false, 
-                id: 'root', 
-                icon: (rule_type=='chain'?'/static/images/icons/job.png':'/static/images/icons/event.png'), expanded: true }
-        });
-        rule_tree.make_dirty = function(){ rule_tree.is_dirty = true };
-        rule_tree.on('movenode', rule_tree.make_dirty );
-        rule_tree.on('nodedrop', rule_tree.make_dirty );
-        rule_tree.on('remove', rule_tree.make_dirty );
-        rule_tree.close_me = function(){ 
-            return confirm(_('Rule `%1` has changed, but has not been saved. Leave without saving?', rule_tree.title ));
-        };
-        
         var tab = tabpanel.add( rule_tree ); 
         tab.on('beforeclose', function(tree){
             if( tree.is_dirty ) {

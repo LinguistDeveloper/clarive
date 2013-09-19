@@ -5,8 +5,8 @@
 <%perl>
     my @status_changes;
     use Try::Tiny;
-    DB->BaliEvent->search({ event_key=>'event.topic.change_status', mid=>$data->{topic_mid} },
-    { order_by=>{ -asc=>'ts' } })->hashref->each( sub {
+    DB->BaliEvent->search({ event_key=>'event.topic.change_status', mid=>$data->{topic_mid}, rownum => {'<',10} },
+    { order_by=>{ -desc=>'ts' } })->hashref->each( sub {
             try {
             my $ed = _load( $_->{event_data} );
             push @status_changes, { old_status=>$ed->{old_status}, status=>$ed->{status}, username=>$ed->{username}, when=>Class::Date->new( $_->{ts} ) };
@@ -23,11 +23,6 @@
     <ul class="" style="margin-left: 20px">
       <table class="table table-bordered table-condensed">
       <tbody>
-         <tr>
-             <td style="font: 13px OpenSans, Lato, Calibxri, Tahoma; background-color: #fff; color: #111;"><% Util->ago( $data->{created_on_epoch} )   %></td>
-             <td><img style="margin: 0px 5px 2px 0px" width=16 src="/user/avatar/<% $data->{created_by} %>/image.png" /><% $data->{created_by}  %></td>
-             <td colspan=3 class="status-html" style="font-size: 10px; font-weight: bold"><% _loc('Created') %></td>
-        </tr>
 % for my $ch ( @status_changes ) {
          <tr>
              <td style="font: 13px OpenSans, Lato, Calibxri, Tahoma; background-color: #fff; color: #111; "><% Util->ago( $ch->{when} )  %></td>
@@ -37,6 +32,12 @@
              <td class="status-html" style="font-size: 10px; font-weight: bold"><% $ch->{status}  %></td>
          </tr>
 % }
+         <tr>
+             <td style="font: 13px OpenSans, Lato, Calibxri, Tahoma; background-color: #fff; color: #111;"><% Util->ago( $data->{created_on_epoch} )   %></td>
+             <td><img style="margin: 0px 5px 2px 0px" width=16 src="/user/avatar/<% $data->{created_by} %>/image.png" /><% $data->{created_by}  %></td>
+             <td colspan=3 class="status-html" style="font-size: 10px; font-weight: bold"><% _loc('Created') %></td>
+        </tr>
+
       </tbody>
       </table>
     </ul>

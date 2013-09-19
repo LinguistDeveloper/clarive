@@ -605,6 +605,7 @@
                     if( ix > -1 ) wt = store_time.getAt( ix ).get('type');
                 }
                 button_submit.disable();
+                Baseliner.message( _('Job'), _('Starting job check and initialization...') );
                 form.submit({
                     params: { job_contents: json_res, window_type: wt  },
                     success: function(form,action){

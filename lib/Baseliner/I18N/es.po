@@ -1701,6 +1701,12 @@ msgstr "Esperando CHM"
 msgid "DONE"
 msgstr "Finalizado"
 
+msgid "ROLLBACKFAIL"
+msgstr "Error en Marcha Atrás"
+
+msgid "ROLLEDBACK"
+msgstr "Marcha Atrás OK"
+
 msgid "Rollback OK"
 msgstr "Rollback OK"
 

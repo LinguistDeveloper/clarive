@@ -252,30 +252,72 @@ sub log_this {
 sub get_summary {
     my ($self, %p) = @_;
     my $row = Baseliner->model( 'Baseliner::BaliJob' )->search( {id => $p{jobid}, exec => $p{job_exec}} )->first;
+
     my $result = {};
 
     if ( $row ) {
-        my $execution_time;
+        my @log_all = DB->BaliLog->search( 
+            { 
+                id_job => $p{jobid}, 
+                exec => $p{job_exec}
+             },
+             {
+                select => [
+                    'step',
+                    'service_key',
+                    { min => 'timestamp', -as => 'starttime' },
+                    { max => 'timestamp', -as => 'endtime'}
+                ],
+                group_by => ['step','service_key']
+              }
+        )->hashref->all;
+
+        @log_all = sort { Class::Date->new($a->{starttime})->epoch <=> Class::Date->new($b->{starttime})->epoch } @log_all;
+
+        my $active_time = 0;
+        my $services_time = {};
+
         my $endtime;
         my $starttime;
-        $starttime = Class::Date->new( $row->starttime);
+        
+        for my $service ( @log_all ) {
+            
+            my $service_starttime = Class::Date->new($service->{starttime});
+            my $service_endtime = Class::Date->new($service->{endtime});
+
+            $starttime = Class::Date->new( $service_starttime ) if !$starttime;
+            $endtime = Class::Date->new( $service_endtime );
+
+            my $service_time = $service_endtime - $service_starttime;
+
+            if ( $service_time && $service_time->sec > 0) {
+                $services_time->{$service->{step}."#".$service->{service_key}} = $service_time->sec;
+            }
+            $active_time += $service_endtime - $service_starttime;
+        }
+        
+        my $execution_time;
         if ($row->endtime){
-            $endtime = Class::Date->new( $row->endtime);
+            $endtime = Class::Date->new( $row->endtime );
             $execution_time = $endtime - $starttime;
         } else {
-            my $now = Class::Date->new( _now);
-            $execution_time = $now - $row->starttime;
+            my $now = Class::Date->now;
+            $execution_time = $now - $starttime;
         }
+
+        # Fill services time
         $result = {
             bl => $row->bl,
             status => $row->status,
             starttime => $starttime,
             execution_time => $execution_time,
+            active_time => $active_time,
             endtime => $endtime,
             type => $row->type,
-            owner => $row->owner,
+            owner => $row->username,
             last_step => $row->step,
-            rollback => $row->rollback
+            rollback => $row->rollback,
+            services_time => $services_time
         }
     }
     return $result;
@@ -285,13 +327,38 @@ sub get_services_status {
     my ( $self, %p ) = @_;
     defined $p{jobid} or _throw "Missing jobid";
     my $job = _ci( ns=>'job/'. $p{jobid} );
-    
-    my @keys = DB->BaliLog->search({ id_job=>$p{jobid}, exec => $p{job_exec}, service_key=>{ '<>'=>undef } },
-        { order_by=>{ -asc=>'id' }, select=>[qw(step service_key id)] } ) # ->hash_unique_on('service_key');
-        ->hashref->all;
-    
+    my $summary = $p{summary};
+        
     my $result = {};
-    my $ss = $job->service_levels;
+    my $ss = {};
+    my $log_levels = { warn => 3, error => 4, debug => 2, info => 2 };
+    
+    my @log = DB->BaliLog->search(
+        {
+            id_job => $p{jobid},
+            exec   => $p{job_exec}
+        },
+        {
+            select => [
+                'step',
+                'service_key',
+                'lev'
+            ],
+        }
+    )->hashref->all;
+
+    for my $sl ( @log ) {
+        if ( $sl->{service_key} && $summary->{services_time}->{$sl->{step}."#".$sl->{service_key} }) {
+            if ( !$ss->{ $sl->{step} }->{ $sl->{service_key} }) {
+                $ss->{ $sl->{step} }->{ $sl->{service_key} } = 'info';
+            }
+            if ( $log_levels->{$ss->{ $sl->{step} }->{ $sl->{service_key} }} < $log_levels->{$sl->{lev}} ) {
+
+                $ss->{ $sl->{step} }->{ $sl->{service_key} } = $sl->{lev};
+            }            
+        }
+    }
+
     my %seen;  
     my $load_results = sub {
         my @keys = @_; 
@@ -299,10 +366,14 @@ sub get_services_status {
             my ($step, $skey, $id ) = @{ $r }{ qw(step service_key id) };
             next if $seen{ $skey . '#' . $step };
             $seen{ $skey . '#' . $step } = 1;
-            my $status = $ss->{$step}{$skey};
+            my $status = $ss->{$step}->{$skey};
             next if $status eq 'debug';
+            if ( $status ne 'error') {
+                next if ( !$summary->{services_time}->{$step."#".$skey } );
+            }
             $status = uc( substr $status,0,1 ) . substr $status,1;
             $status = 'Warning' if $status eq 'Warn';
+            $status = 'Success' if $status eq 'Info';
             push @{ $result->{$step} }, {
                 service     => $skey,
                 description => $skey,
@@ -312,14 +383,14 @@ sub get_services_status {
         }
     };
     
-    # load previous exec services, in case we had exec=1, step=PRE, then, exec=2, step=RUN
-    my @keys = DB->BaliLog->search({ id_job=>$p{jobid}, exec =>{ '!=' => $p{job_exec} }, service_key=>{ '<>'=>undef } },
-        { order_by=>{ -asc=>'id' }, select=>[qw(step service_key id)] } ) # ->hash_unique_on('service_key');
-        ->hashref->all;
-    $load_results->( @keys );
+    # # load previous exec services, in case we had exec=1, step=PRE, then, exec=2, step=RUN
+    # my @keys = DB->BaliLog->search({ id_job=>$p{jobid}, exec =>{ '!=' => $p{job_exec} }, service_key=>{ '<>'=>undef } },
+    #     { order_by=>{ -asc=>'id' }, select=>[qw(step service_key id)] } ) # ->hash_unique_on('service_key');
+    #     ->hashref->all;
+    # $load_results->( @keys );
 
     # load current keys
-    @keys = DB->BaliLog->search({ id_job=>$p{jobid}, exec => $p{job_exec}, service_key=>{ '<>'=>undef } },
+    my @keys = DB->BaliLog->search({ id_job=>$p{jobid}, exec => $p{job_exec}, service_key=>{ '<>'=>undef } },
         { order_by=>{ -asc=>'id' }, select=>[qw(step service_key id)] } ) # ->hash_unique_on('service_key');
         ->hashref->all;
     # reset keys for current exec 
@@ -336,7 +407,6 @@ sub get_contents {
     defined $p{jobid} or _throw "Missing jobid"; 
     my $result;
 
-    my $rs = Baseliner->model( 'Baseliner::BaliJobItems' )->search( {id_job => $p{jobid}} );
     my $job = _ci( ns=>'job/' . $p{jobid} );
     my $job_stash = $job->job_stash;
     my @changesets = _array( $job->changesets );
@@ -344,8 +414,8 @@ sub get_contents {
     my @natures = map { $_->name } _array( $job->natures );
     my $items = $job_stash->{items};
     for my $cs ( @changesets ) {
-        my ($prj) = $cs->projects;
-        push @{ $changesets_by_project->{$prj->name} }, $cs;
+        my @projs = _array $cs->projects;
+        push @{ $changesets_by_project->{$  projs[0]->{name}} }, $cs;
     }
     $result = {
         packages => $changesets_by_project,

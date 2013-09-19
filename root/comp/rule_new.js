@@ -48,7 +48,7 @@
                store: [
                   [ 'event', _('Event') ],
                   [ 'chain', _('Job Chain') ],
-                  [ 'loose', _('Loose') ]
+                  [ 'independent', _('Independent') ]
                ],
                editable: false, forceSelection: true, triggerAction: 'all',
                allowBlank: false
@@ -66,6 +66,13 @@
             msg_job.show();
             msg_ev.hide();
             grid_events.hide();
+        } else if( v == 'independent' ) {
+            wiz.last = wiz.current;
+            wiz.button_setup();
+            job_chain_form.hide();
+            msg_job.hide();
+            msg_ev.hide();
+            grid_events.hide();
         } else {
             wiz.last = wiz.current + 1;
             wiz.button_setup();
@@ -80,7 +87,12 @@
     var job_chain_form = new Ext.form.FieldSet({
         hidden: true, border: false,
         items: [
-            { xtype:'checkbox', anchor:'100%', fieldLabel:_('Default Chain?'), name: 'chain_default', value: params.rec.rule_when },
+            new Baseliner.ComboSingle({ fieldLabel: _('Default'), name:'chain_default', value: params.rec.chain_default, data: [
+                '-',
+                'promote',
+                'demote',
+                'static'
+            ]}),
             { xtype:'textarea', height: 180, anchor:'100%', fieldLabel:_('Chain Description'), name: 'rule_desc', value: params.rec.rule_desc }
         ]
     });

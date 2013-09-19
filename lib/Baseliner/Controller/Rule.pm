@@ -70,6 +70,26 @@ sub activate : Local {
     $c->forward("View::JSON");
 }
 
+sub export : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+    my $id_rule = $p->{id_rule};
+    try {
+        my $row = DB->BaliRule->find( $id_rule );
+        _fail _loc('Row with id %1 not found', $p->{id_rule} ) unless $row;
+        my @stmts = map { delete $_->{id}; delete $_->{id_rule}; $_ } 
+            DB->BaliRuleStatement->search({ id_rule=> $id_rule }, { order_by=>'id' })->hashref->all;
+        my $rule = +{ $row->get_columns };
+        delete $rule->{id};
+        my $yaml = _dump({ rule=>$rule, stmts=>\@stmts });
+        $c->stash->{json} = { success=>\1, yaml=>$yaml };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { success=>\0, msg => $err };
+    };
+    $c->forward("View::JSON");
+}
+
 sub delete : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
@@ -93,7 +113,7 @@ sub get : Local {
         my $row = DB->BaliRule->find( $p->{id_rule} );
         _fail _loc('Row with id %1 not found', $p->{id_rule} ) unless $row;
         my $rec = { $row->get_columns };
-        $rec->{rule_when} = \1 if $rec->{rule_type} eq 'chain' && $rec->{rule_when} eq 'on';
+        $rec->{chain_default} = $rec->{rule_type} eq 'chain' ? $rec->{rule_when} : '-';
         $c->stash->{json} = { success=>\1, rec=>$rec };
     } catch {
         my $err = shift;
@@ -158,7 +178,9 @@ sub save : Local {
     my $p    = $c->req->params;
     my $data = {
         rule_name  => $p->{rule_name},
-        rule_when  => $p->{rule_type} eq 'chain' ? $p->{chain_default} : $p->{rule_when},
+        rule_when  => ( $p->{rule_type} eq 'chain' 
+            ? $p->{chain_default}  
+            : $p->{rule_when} ),
         rule_event => $p->{rule_event},
         rule_type  => $p->{rule_type},
         rule_desc  => substr($p->{rule_desc},0,2000),
@@ -243,6 +265,30 @@ sub palette : Local {
                 text=>$n->{name} // $service_key,
             }
         } @services ]
+    };
+
+    my @rules = DB->BaliRule->search(undef,{ order_by=>[ { -asc=>'rule_seq' }, { -desc=>'id' }] })->hashref->all;
+    push @tree, {
+        id=>$cnt++,
+        leaf=>\0,
+        text=>_loc('Rules'),
+        draggable => \0,
+        expanded => \1,
+        children=> [ 
+          sort { uc $a->{text} cmp uc $b->{text} }
+          grep { !$query || join(',', values %$_) =~ $query }
+          map {
+            +{
+                isTarget => \0,
+                leaf=>\1,
+                key => 'statement.include',
+                icon => '/static/images/icons/rule.png',
+                palette => \1,
+                id_rule => $_->{id},
+                data=>{ id_rule => $_->{id} },
+                text=>$_->{rule_name},
+            }
+        } @rules ]
     };
     $c->stash->{json} = \@tree;
     $c->forward("View::JSON");

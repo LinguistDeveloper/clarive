@@ -75,7 +75,7 @@ sub run_once {
                 if ($notification){
                     foreach  my $template (  keys $notification ){
                         my $model_messaging = {
-                            subject         => $stash->{subject},
+                            subject         => $stash->{subject} || $event_key,
                             sender          => $data->{from},
                             carrier         => 'email',
                             template        => $template,
