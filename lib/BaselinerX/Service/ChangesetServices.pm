@@ -55,14 +55,28 @@ sub update_baselines {
         $status = DB->BaliTopicStatus->search( {bl => $bl} )->first->id;
     }
 
-    for my $cs ( _array( $job->changesets ) ) {
+    $stash->{update_baselines_changesets} //= {};
+
+    for my $cs ( _array( $stash->{changesets} ) ) {
+        if( $stash->{rollback} ) {
+            # rollback to previous status
+            $status = $stash->{update_baselines_changesets}{ $cs->mid };
+            if( ! defined $status ) {
+                _debug _loc 'No last status data for changeset %1. Skipped.', $cs->name;
+                next;
+            }
+        } else {
+            # save for rollback
+            _debug "Saving changeset status for rollback: " . $cs->mid . " = " . $cs->id_category_status;
+            $stash->{update_baselines_changesets}{ $cs->mid } = $cs->id_category_status;
+        }
         my $status_name = DB->BaliTopicStatus->find( $status )->name;
-        $log->info( _loc( 'Promoting changeset *%1* to stage *%2*', $cs->name, $status_name ) );
+        $log->info( _loc( 'Moving changeset *%1* to stage *%2*', $cs->name, $status_name ) );
         Baseliner->model('Topic')->change_status(
            change          => 1, 
            username        => $job->username,
            id_status       => $status,
-           #id_old_status   => $
+           #id_old_status   => $cs->id_category_status,
            mid             => $cs->mid,
         );
     }
@@ -72,9 +86,10 @@ sub update_baselines {
 
 sub job_items {
     my ( $self, $c, $config ) = @_;
-    my $job   = $c->stash->{job};
-    my $log   = $job->logger;
+
     my $stash = $c->stash;
+    my $job   = $stash->{job};
+    my $log   = $job->logger;
     
     my $type = $job->job_type;
     my $bl = $job->bl;
@@ -88,6 +103,7 @@ sub job_items {
     # group changesets by project->repos->revisions
     for my $cs ( _array( $stash->{changesets} )  ) {
         my ($project) = $cs->projects;
+        _fail _loc('No project assigned to changeset %1', $cs->topic_name) unless $project;
         $projects{ $project->mid }{project} //= $project;
         push @{ $projects{ $project->mid }{changesets} }, $cs;
         push @{ $projects{ $project->mid }{revisions} }, $cs->revisions;
@@ -106,6 +122,7 @@ sub job_items {
         my @items;
         for my $repo_group ( values %$repos ) {
             my ($revs,$repo) = @{ $repo_group }{qw/revisions repo/};
+            $log->debug( _loc('Grouping items for revision'), { revisions=>$revs, repository=>$repo } );
             my @repo_items = $repo->group_items_for_revisions( revisions=>$revs, type=>$type, tag=>$bl );
             push @items, map {
                 my $it = $_;
@@ -116,6 +133,7 @@ sub job_items {
             push @{ $pc->{repo_revisions_items} }, { repo=>$repo, revisions=>$revisions, items=>\@items };
         }
         $project->{items} = \@items;
+        $stash->{project_items}{ $project->mid }{items} = \@items;
         $all_items{ $_->path }=$_ for @items;
         push @project_changes, $pc; 
     }
@@ -131,7 +149,7 @@ sub job_items {
         $name_list{ "$f" } = 1;
     }
     $stash->{item_name_list} = [ keys %name_list ];
-    $stash->{item_name_list_long} = "'" . join("' '", keys %name_list) . "'";
+    $stash->{item_name_list_quote} = "'" . join("' '", keys %name_list) . "'";
     $stash->{item_name_list_comma} = join(",", keys %name_list);
 
     # save project-repository structure
@@ -198,39 +216,70 @@ sub nature_items {
     my $nat_id = $config->{nature_id} // 'name';  # moniker?
    
     my @nat_rows = DB->BaliMaster->search({ collection=>'nature' }, { select=>'mid' })->hashref->all;
-    my @items = @{ $stash->{items} || [] };
-    my %nature_names;
-    my @msg;
-    for my $nature ( map { _ci($_->{mid}) } @nat_rows ) {
-        push @msg, "nature = " . $nature->name;
-        ITEM: for my $it ( @items ) {
-            my $nature_clon = Util->_clone( $nature );
-            push @msg, "item = " . $it->path;
-            if( $nature->push_item( $it ) ) {
-                my $id =  $nature->$nat_id;
-                my $mid =  $nature->mid;
-                $stash->{natures}{ $id } = $nature;
-                $stash->{natures}{ $mid } = $nature;
-                $nature_names{ $nature->name } = ();
-                $job->push_ci_unique( 'natures', $nature_clon );
-                push @msg, "MATCH = " . $it->path;
-                last ITEM;
-            } else {
-                push @msg, "NO = " . $it->path;
+    my @projects = _array( $job->projects );
+    for my $project ( @projects ) {
+        #my @items = @{ $stash->{items} || [] };
+        my @items = @{ $stash->{project_items}{ $project->mid }{items} || [] };
+        $log->debug( _loc('Project items before for %1', $project->name), \@items );
+        my %nature_names;
+        my @msg;
+        for my $nature ( map { _ci($_->{mid}) } @nat_rows ) {
+            my @chosen;
+            push @msg, "nature = " . $nature->name;
+            ITEM: for my $it ( @items ) {
+                my $nature_clon = Util->_clone( $nature );
+                push @msg, "item = " . $it->path;
+                if( $nature->push_item( $it ) ) {
+                    my $id =  $nature->$nat_id;
+                    my $mid =  $nature->mid;
+                    $stash->{natures}{ $id } = $nature;
+                    $stash->{natures}{ $mid } = $nature;
+                    $nature_names{ $nature->name } = ();
+                    $job->push_ci_unique( 'natures', $nature_clon );
+                    push @chosen, $it;
+                    
+                    push @msg, "MATCH = " . $it->path;
+                    #last ITEM;
+                } else {
+                    push @msg, "NO = " . $it->path;
+                }
             }
+            $stash->{project_items}{ $project->mid }{natures}{ $nature->mid } = \@chosen;
         }
-    }
-    $log->debug( _loc('Nature check log'), \@msg );
-    $log->debug( _loc('Natures'), $stash->{natures} );
-    my @nats = keys %nature_names;
-    if( my $cnt = scalar @nats ) {
-        $log->info( _loc('%1 nature(s) detected in job items: %2', $cnt, join ', ',@nats ) );
-    } else {
-        $log->warn( _loc('No natures detected in job items') );
+        #$log->debug( _loc('Job natures after push'), $job->natures );
+        $log->debug( _loc('Project items for %1', $project->name), $stash->{project_items}{ $project->mid }{items} );
+        $log->debug( _loc('Project natures for %1', $project->name), $stash->{project_items}{ $project->mid }{natures} );
+        $log->debug( _loc('Nature check log'), \@msg );
+        $log->debug( _loc('Natures'), $stash->{natures} );
+        my @nats = keys %nature_names;
+        if( my $cnt = scalar @nats ) {
+            $log->info( _loc('%1 nature(s) detected in job items: %2', $cnt, join ', ',@nats ) );
+        } else {
+            $log->warn( _loc('No natures detected in job items') );
+        }
     }
     return 0;
 }    
     
+register 'service.approval.request' => {
+    name    => 'Request Approval',
+    icon => '/static/images/icons/user_delete.gif', 
+    form => '/form/approval_request.js',
+    handler => \&request_approval,
+};
+
+sub request_approval {
+    my ( $self, $c, $config ) = @_;
+
+    my $stash    = $c->stash;
+    my $job      = $c->stash->{job};
+    my $log      = $job->logger;
+    my $bl       = $job->bl;
+
+    $job->final_status( 'APPROVAL' );
+    1;
+}
+
 ##########################################################################
 ########### DEPRECATED:
 

@@ -471,21 +471,31 @@
       ]
     });
 
-    /*
     var do_backout = function(){
         var sm = grid.getSelectionModel();
         var sel = sm.getSelected();
         if( sel ) {
-            Baseliner.ajaxEval('/job/backout', sel.data, function(res){
-                if( res.success ) {
-                    Baseliner.message( _('Backout', _(res.msg) ) ;
-                } else {
-                    Baseliner.error( _('Backout', _(res.msg) ) ;
+            Ext.Msg.confirm(_('Confirmation'),  '<b>' + sel.data.name + '</b>: ' + _('Are you sure you want to rollback the job?'), 
+                function(btn){ 
+                    if(btn=='yes') {
+                        Baseliner.ajaxEval('/job/rollback', sel.data, function(res){
+                            Baseliner.message( _('Rollback'), res.msg ) ;
+                            }, function(res){
+                                var win = new Baseliner.Window({
+                                    width: 800, height: 600, layout:'fit',
+                                    title: _('Dependencies'), 
+                                    items: new Baseliner.DataEditor({ data: res.deps })
+                                });
+                                win.show();
+                                Baseliner.message( _('Rollback'), res.msg ) ;
+                            }
+                        );
+                    }
                 }
-            });
+            );
         }
     };
-    */
+
     var button_resume = new Ext.Toolbar.Button({
         text: _('Resume'),
         hidden: true,
@@ -596,7 +606,7 @@
         var rollback = rec.data.rollback;
         if( status=='RUNNING' ) { icon='gears.gif'; bold=true }
         else if( status=='READY' ) icon='waiting.png';
-        else if( status=='APPROVAL' ) icon='verify.gif';
+        else if( status=='APPROVAL' ) icon='user_delete.gif';
         else if( status=='FINISHED' && rollback!=1 ) { icon='log_i.gif'; bold=true; }
         else if( status=='IN-EDIT' ) icon='log_w.gif';
         else if( status=='WAITING' ) icon='waiting.png';
@@ -609,13 +619,17 @@
         if( status == 'FINISHED' && rollback == 1 )  {
             value += ' (' + _('Rollback OK') + ')';
             icon = 'log_e.gif';
-        }
+        } 
         else if( status == 'ERROR' && rollback == 1 )  {
             value += ' (' + _('Rollback Failed') + ')';
         }
+        else if( rollback == 1 )  {
+            value += ' (' + _('Rollback') + ')';
+        }
+
         //else if( type == 'demote' || type == 'rollback' ) value += ' ' + _('(Rollback)');
         if( status == 'APPROVAL' ) { // add a link to the approval main
-            value = String.format("<a href='javascript:Baseliner.addNewTabComp(\"{0}\", \"{1}\");'>{2}</a>", "/request/main", _('Approvals'), value ); 
+            value = String.format("<a href='javascript:Baseliner.request_approval({0});'><b>{1}</b></a>", rec.data.mid, value ); 
         }
         if( icon!=undefined ) {
             return div1 
@@ -624,6 +638,60 @@
         } else {
             return value;
         }
+    };
+
+    Baseliner.request_approval = function(mid){
+    
+        Baseliner.ci_call( mid, 'contract', { }, function(res){
+            console.log( res );
+            var btn_approve = new Ext.Button({
+                text: _('Approve'),
+                icon: '/static/images/yes.png',
+                handler: function(){
+                    Baseliner.ci_call(mid,'approve', {}, function(res){
+                        if( Ext.getCmp(grid.id) ) grid.getStore().reload();
+                        Baseliner.message( _('Approval'), _('Job Approved') );
+                        win.close();
+                    });
+                }
+            });
+            var btn_deny = new Ext.Button({
+                text: _('Reject'),
+                icon: '/static/images/del.gif',
+                handler: function(){
+                    Baseliner.ci_call(mid,'reject', {}, function(res){
+                        if( Ext.getCmp(grid.id) ) grid.getStore().reload();
+                        Baseliner.message( _('Approval'), _('Job Rejected') );
+                        win.close();
+                    });
+                }
+            });
+            var variables = new Baseliner.VariableForm({
+                name: 'variables',
+                fieldLabel: _('Variables'),
+                show_tbar: false,
+                force_bl: res.data.bl,
+                height: 400,
+                data: res.data.vars
+            });
+            var form = new Ext.FormPanel({
+                padding: 10,
+                defaults: { anchor: '100%' },
+                frame: false, border: false,
+                items: [ 
+                    { xtype:'textfield', fieldLabel:_('Scheduled Time'), value:res.data.schedtime },
+                    { xtype:'textfield', fieldLabel:_('Projects'), value:res.data.projects },
+                    { xtype:'textfield', fieldLabel:_('Changes'), value: res.data.cs },
+                    { xtype:'textarea', fieldLabel:_('Comments'), value: res.data.comments },
+                    variables 
+                ]
+            });
+            var win = new Baseliner.Window({ width: 800, height: 600, layout:'fit', 
+                tbar: [ btn_approve, btn_deny ],
+                items:[ form ] 
+             });
+            win.show();
+        });
     };
 
     Baseliner.openLogTab = function(id, name) {
@@ -768,7 +836,7 @@
                 // end
 % if( $c->stash->{user_action}->{'action.job.create'} ) {
                 new Ext.Toolbar.Button({
-                    text: _('New Job'),
+                    text: _('New'),
                     icon:'/static/images/icons/job.png',
                     cls: 'x-btn-text-icon',
                     handler: function() {
@@ -799,7 +867,7 @@
 % }
 % if( $c->stash->{user_action}->{'action.job.restart'} ) {
                 new Ext.Toolbar.Button({
-                    text: _('Backout'),
+                    text: _('Rollback'),
                     icon:'/static/images/icons/left.png',
                     cls: 'x-btn-text-icon',
                     handler: function() { do_backout() }
@@ -950,6 +1018,7 @@
         row_sel.on('rowselect', function(row, index, rec) {
         Ext.fly(grid.getView().getRow(index)).addClass('x-grid3-row-selected-yellow');
         var sc = rec.data.status_code;
+        button_resume.hide();
         if( sc == 'CANCELLED' || sc == 'ERROR' || sc == 'FINISHED' ) {
             button_cancel.setText( msg_cancel_delete[1] );
         } else {

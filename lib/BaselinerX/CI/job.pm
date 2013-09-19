@@ -18,6 +18,7 @@ has schedtime          => qw(is rw isa Any);
 has starttime          => qw(is rw isa Any);
 has endtime            => qw(is rw isa Any);
 has maxstarttime       => qw(is rw isa Any);
+has comments           => qw(is rw isa Any);
 has logfile            => qw(is rw isa Any);
 has step               => qw(is rw isa Str default CHECK);
 has exec               => qw(is rw isa Num default 1);
@@ -89,6 +90,7 @@ around update_ci => sub {
         $row->update({
             pid         => $self->pid,
             exec        => $self->exec,
+            rollback    => $self->rollback,
             step        => $self->step,
             status      => $self->status,
             endtime     => $self->endtime,
@@ -291,7 +293,7 @@ sub is_active {
     my $self = shift;
     if( my $row = DB->BaliJob->find( $self->id_job ) ) {
         my $status = $row->status;
-        return 1 if $status !~ /CANCEL|ERROR|FINISHED/;
+        return 1 if $status !~ /REJECTED|CANCEL|ERROR|FINISHED|KILLED|EXPIRED/;
     }
     return 0;
 }
@@ -379,6 +381,51 @@ sub reset {
         $log->info($msg);
     };
     return { msg=>$msg };
+}
+
+sub find_rollback_deps {
+    my ($self)=@_;
+    my @prjs = Util->_array( $self->projects );
+    my ($prj) = @prjs;
+    my @jobs = map { Baseliner::CI->new($_->{mid}) } 
+        DB->BaliMaster->search({ collection=>'job', bl=>$self->bl, mid=>{'>'=>$self->mid } }, { select=>'mid' })
+        ->hashref->all;
+    
+    # TODO check if there are later jobs for the same repository
+    return ();
+}
+
+sub contract {
+    my ($self, $p)=@_;
+    my @prjs = Util->_array( $self->projects );
+    my ($prj) = @prjs;
+    _debug $prj;
+    _fail _loc 'Missing project for job %1', $self->name unless $prj;
+    my $vars = $prj->variables // {};
+    my $bl = $self->bl;
+    return { 
+        schedtime => $self->schedtime,
+        comments => $self->comments,
+        projects=>join(' ', map { $_->name } @prjs),
+        cs=>join(' ', map { $_->name } Util->_array( $self->changesets ) ),
+        bl=>$bl, 
+        vars=>{ $bl => { %{ $vars->{'*'} || {} }, %{ $vars->{$bl} || {} } } } 
+    };
+    #return $vars;
+}
+
+sub approve {
+    my ($self, $p)=@_;
+    $self->status( 'READY' );
+    $self->save;
+    1;
+}
+
+sub reject {
+    my ($self, $p)=@_;
+    $self->status( 'REJECTED' );
+    $self->save;
+    1;
 }
 
 1;

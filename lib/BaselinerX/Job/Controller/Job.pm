@@ -58,18 +58,32 @@ sub chains : Local {
     $c->forward('View::JSON');
 }
 
-sub backout : Local {
+sub rollback : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     try {
-        my $old = DB->BaliJob->find( $p->{id} );
-        if( $old ) {
-            my $d = { $old->get_columns };
-            delete $d->{id};
-            #$d->{name} =  
-            #DB->BaliJob->create()
+        ## get old
+        #my $old = _ci( $p->{mid} ) // _fail _loc 'Job %1 not found', $p->{name};
+        #my $stash = $old->job_stash;
+        #delete $old->{$_} for qw(mid _ci id_job name ns starttime endtime schedtime maxstarttime exec milestones);
+        ## create
+        #my $job = BaselinerX::CI::job->new( %$old, rollback=>1 );
+        #$job->step( 'RUN');
+        #$job->status( 'IN-EDIT' );
+        #$job->save;
+        #$job->job_stash( $stash );
+        #$job->save;
+        #$c->stash->{json} = { success => \1, msg=>_loc('Job %1 created', $job->name ) };
+
+        my $job = _ci( $p->{mid} ) // _fail _loc 'Job %1 not found', $p->{name};
+        if( my $deps = $job->find_rollback_deps ) {
+            $c->stash->{json} = { success => \0, msg=>_loc('Job has dependencies due to later jobs. Baseline cannot be updated.'), deps=>$deps };
+            return;
         }
-        $c->stash->{json} = { success => \1, msg=>_('Job created') };
+        $job->update( step=>'RUN', rollback=>1, status=>'READY' );
+        my $jj = _ci( $p->{mid} );
+        _debug $jj;
+        $c->stash->{json} = { success => \1, msg=>_loc('Job %1 backout scheduled', $job->name ) };
     } catch {
         $c->stash->{json} = { success => \0, msg=>"".shift() };
     };
@@ -495,7 +509,7 @@ sub job_submit : Path('/job/submit') {
         if( $p->{action} eq 'delete' ) {
             my $job = $c->model('Baseliner::BaliJob')->search({ id=> $p->{id_job} })->first;
             my $msg = '';
-            if( $job->status =~ /CANCELLED|KILLED/ ) {
+            if( $job->status =~ /CANCELLED|KILLED|FINISHED|ERROR/ ) {
 
                 event_new 'event.job.delete' => { c=>$c, self=>$self, job=>$job }  => sub {
                     # be careful: may be cancelled already
