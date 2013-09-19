@@ -106,7 +106,7 @@ sub get_rules_notifications{
 	my ( $self, $p ) = @_;
     my $event_key = $p->{event_key} or _throw 'Missing parameter event_key';
     my $action = $p->{action} or _throw 'Missing parameter action';
-    my $notify_scope = $p->{notify_scope} or _throw 'Missing parameter notify_scope';
+    my $notify_scope = $p->{notify_scope}; # or _throw 'Missing parameter notify_scope';
     
     my $notification = {};
     
@@ -116,7 +116,12 @@ sub get_rules_notifications{
 		foreach my $row_send ( @rs_notify ){
 			my $data = _load($row_send->{data});
     
-    		my $valid = $self->isValid({ data => $data, notify_scope => $notify_scope});
+            my $valid = 0;
+    		if ($notify_scope) {
+                $valid = $self->isValid({ data => $data, notify_scope => $notify_scope});    
+            }else{
+                $valid = 1 unless keys $data->{scopes};
+            }
     
     		if ($valid == 1){
         		my $actions;
@@ -211,7 +216,7 @@ sub get_rules_notifications{
 sub get_notifications {
 	my ( $self, $p ) = @_;
     my $event_key = $p->{event_key} or _throw 'Missing parameter event_key';
-    my $notify_scope = $p->{notify_scope} or _throw 'Missing parameter notify_scope';
+    my $notify_scope = $p->{notify_scope}; #or _throw 'Missing parameter notify_scope';
     
 	my $send_notification;
     $send_notification = $self->get_rules_notifications( { event_key => $event_key, action => 'SEND', notify_scope => $notify_scope } );
