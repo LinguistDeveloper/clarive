@@ -78,8 +78,13 @@ sub dsl_build {
         #_debug $attr;
         my $name = _strip_html( $attr->{text} );
         my $data_key = length $attr->{data_key} ? $attr->{data_key} : _name_to_id( $name );
+        my $closure = $attr->{closure};
         push @dsl, sprintf( '# statement: %s', $name ) . "\n"; 
-        push @dsl, sprintf( 'current_statement($stash, q{%s});', $name)."\n";
+        if( $closure ) {
+            push @dsl, sprintf( 'current_statement($stash, q{%s}, sub{', $name)."\n";
+        } else {
+            push @dsl, sprintf( 'current_statement($stash, q{%s});', $name)."\n";
+        }
         push @dsl, sprintf( '_debug(q{=====| Current Rule Statement: %s} );', $name)."\n" if $p{verbose}; 
         my $data = $attr->{data} || {};
         if( length $attr->{key} ) {
@@ -94,6 +99,7 @@ sub dsl_build {
             } else {
                 push @dsl, _array( $reg->{dsl}->($self, { %$attr, %$data, children=>$children, data_key=>$data_key }, %p ) );
             }
+            push @dsl, '});' if $closure; # current_statement close
         } else {
             _fail _loc 'Missing dsl/service key for node %1', $name;
         }
@@ -106,7 +112,7 @@ sub dsl_build {
         require Capture::Tiny;
         my $tidied = '';
         Capture::Tiny::capture(sub{
-            Perl::Tidy::perltidy( argv => ' ', source => \$dsl, destination => \$tidied );
+            Perl::Tidy::perltidy( argv => '--maximum-line-length=160 ', source => \$dsl, destination => \$tidied );
         });
         return $tidied;
     } else {
@@ -241,11 +247,21 @@ sub project_changes {
 }
 
 sub current_statement {
-    my ($stash,$name)=@_;
+    my ($stash,$name, $code)=@_;
     $stash->{current_statement_name} = $name;
     if( my $job = $stash->{job} ) {
         $job->start_statement( $name );
     }
+    $code->() if $code;
+}
+
+sub cut_nature_items {
+    my ($stash,$tail)=@_;
+    my @items = _array( $stash->{nature_items} );
+    my @paths = grep { length } map { $_->path_tail( $tail ) } @items;
+    _fail _loc 'Could not find any paths in nature items that match cut path `%1`', $tail 
+        unless @paths;
+    return @paths;
 }
 
 # launch runs service, merge return into stash and returns what the service returns
@@ -351,19 +367,6 @@ register 'statement.try' => {
     },
 };
 
-register 'statement.let.key_value' => {
-    text => 'LET key => value', 
-    type => 'let',
-    holds_children => 0, 
-    data => { key=>'', value=>'' },
-    dsl => sub { 
-        my ($self, $n, %p) = @_;
-        sprintf(q{
-           $stash->{ '%s' } = '%s';
-        }, $n->{key}, $n->{value}, $self->dsl_build( $n->{children}, %p ) );
-    },
-};
-
 register 'statement.let.merge' => {
     text => 'MERGE value INTO stash', 
     type => 'let',
@@ -454,6 +457,19 @@ register 'event.rule.tester' => {
     vars => ['hello'],
 };
 
+register 'statement.var.set' => {
+    text => 'SET VAR', data => {},
+    type => 'let',
+    holds_children => 0, 
+    form => '/forms/set_var.js', 
+    dsl => sub { 
+        my ($self, $n, %p ) = @_;
+        sprintf(q{
+            $stash->{'%s'} = parse_vars( q{%s}, $stash ); 
+        }, $n->{variable}, $n->{value}, $self->dsl_build( $n->{children}, %p ) );
+    },
+};
+
 register 'statement.nature.block' => {
     text => 'APPLY NATURE', data => { nature=>'' },
     type => 'loop',
@@ -511,7 +527,6 @@ register 'statement.project.block' => {
 
 register 'statement.perl.eval' => {
     text => 'EVAL', data => { code=>'' },
-    type => 'loop',
     form => '/forms/stmt_eval.js', 
     icon => '/static/images/circular/cog.png', 
     dsl => sub { 
@@ -539,6 +554,19 @@ register 'statement.perl.do' => {
                 $stash->{'%s'} = do { %s };
             }
         }, $n->{data_key}, $n->{code} // '', $self->dsl_build( $n->{children}, %p ) );
+    },
+};
+
+register 'statement.perl.code' => {
+    text => 'CODE', data => { code=>'' },
+    type => 'loop',
+    icon => '/static/images/circular/cog.png', 
+    form => '/forms/stmt_eval.js', 
+    dsl => sub { 
+        my ($self, $n, %p ) = @_;
+        sprintf(q{
+            %s;
+        }, $n->{code} // '', $self->dsl_build( $n->{children}, %p ) );
     },
 };
 
@@ -573,13 +601,62 @@ register 'statement.if.nature' => {
         my ($self, $n , %p) = @_;
         sprintf(q{
             if( my $nature = $stash->{natures}{'%s'} ) {
-                $stash->{current_nature} = $nature;
-                $stash->{job}->logger->info( _loc('Nature Detected *%1*', $nature->name ) );
+                NAT: {  
+                    $stash->{current_nature} = $nature;
+                    #local $stash->{nature_items} = $nature->items;
+                    local $stash->{nature_items} = $stash->{project_items}{ $project->mid }{natures}{ $nature->mid };
+                    last NAT if !_array( $stash->{nature_items} );
+                    my @nat_paths = cut_nature_items( $stash, parse_vars(q{%s},$stash) );
+                    local $stash->{ nature_item_paths } = \@nat_paths;
+                    local $stash->{ nature_items_comma } = join(',', @nat_paths );
+                    local $stash->{ nature_items_quote } = "'" . join("' '", @nat_paths ) . "'";
+                    #merge_into_stash( $stash, $nat_data );
+                    $stash->{job}->logger->info( _loc('Nature Detected *%1*', $nature->name ), 
+                        +{ map { $_=>$stash->{$_} } qw/nature_items nature_item_paths nature_items_comma nature_items_quote/ } );
 
-                %s
+                    %s
+                };
             }
-        }, $n->{nature} , $self->dsl_build( $n->{children}, %p ) );
+        }, $n->{nature}, $n->{cut_path} , $self->dsl_build( $n->{children}, %p ) );
     },
 };
+
+register 'statement.if.rollback' => {
+    text => 'IF ROLLBACK',
+    type => 'if',
+    data => { rollback=>'1', },
+    dsl => sub { 
+        my ($self, $n , %p) = @_;
+        sprintf(q{
+            if( $stash->{rollback} eq '%s' ) {
+                %s
+            }
+        }, $n->{rollback}, $self->dsl_build( $n->{children}, %p ) );
+    },
+};
+
+register 'statement.include' => {
+    text => 'INCLUDE rule',
+    icon => '/static/images/circular/cog.png', 
+    data => { id_rule=>'', },
+    dsl => sub { 
+        my ($self, $n , %p) = @_;
+        my $dsl = $self->include_rule( $n->{id_rule}, %p );
+        sprintf(q{
+                %s;
+        }, $dsl );
+    },
+};
+
+sub include_rule {
+    my ($self, $id_rule, %p) = @_;
+    my @tree = $self->build_tree( $id_rule, undef );
+    my $dsl = try {
+        $self->dsl_build( \@tree, %p ); 
+    } catch {
+        _fail( _loc("Error building DSL for rule '%1': %2", $id_rule, shift() ) ); 
+    };
+    return $dsl;
+}
 
 1;

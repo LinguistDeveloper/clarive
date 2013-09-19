@@ -11,8 +11,13 @@
             description:_('Command arguments'), 
             default_value:'.' 
         }), 
-        { xtype:'textarea', fieldLabel: _('Stdin'), height: 120, name: 'stdin', value: params.data.stdin },
+        new Baseliner.ComboSingle({ fieldLabel: _('Errors'), name:'errors', value: params.data.errors || 'fail', data: [
+            'fail',
+            'warn',
+            'silent'
+        ]}),
         { xtype:'textarea', fieldLabel: _('Home Directory'), height: 80, name: 'home', value: params.data.home }
+        //{ xtype:'textarea', fieldLabel: _('Stdin'), height: 120, name: 'stdin', value: params.data.stdin }
     ]
 })
 
