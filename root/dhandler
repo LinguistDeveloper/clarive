@@ -7,9 +7,9 @@
 %  my $req = $m->make_subrequest( comp => '/site/main.mas');
 %   $req->exec;	
 % } else {
-%  $c->res->status(404) if ref $c;
+%  eval { $c->res->status(404) };
  
-% print _loc('Page not found: %1', $c->req->path ) if ref $c;
+% print eval { _loc('Page not found: %1', $c->req->path ) }; # may fail due to missing $c
 
 % }
 <%filter>
