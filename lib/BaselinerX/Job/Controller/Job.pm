@@ -357,6 +357,7 @@ sub monitor_json : Path('/job/monitor_json') {
     my $ahora = DateTime->new( year=>$now->year, month=>$now->month, day=>$now->day, , hour=>$now->hour, minute=>$now->minute, second=>$now->second ) ; 
 
     #foreach my $r ( _array $results->{data} ) {
+    #local $Baseliner::CI::no_rels = 1;
     _debug "Looping start...";
     for my $r ( $rs_paged->hashref->all ) {
         my $step = _loc( $r->{step} );
@@ -364,7 +365,7 @@ sub monitor_json : Path('/job/monitor_json') {
         my $type = _loc( $r->{type} );
         my @changesets = (); #_array $job_items{ $r->{id} };
         my ($contents,$apps)=([],[]);  # support for legacy jobs without cis
-        if( my $ci = try { _ci( $r->{mid} ) } catch { '' } ) {   # if -- support legacy jobs without cis?
+        if( my $ci = try { ci->new( $r->{mid} ) } catch { '' } ) {   # if -- support legacy jobs without cis?
         $contents = [ map { $_->topic_name } _array $ci->changesets ];
         $apps = [ map { $_->name } _array $ci->projects ];
         }
