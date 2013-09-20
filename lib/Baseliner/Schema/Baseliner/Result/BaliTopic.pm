@@ -110,7 +110,7 @@ __PACKAGE__->belongs_to(
   { join_type => 'left' },
 );
 
-__PACKAGE__->has_many(
+__PACKAGE__->belongs_to(
   "workflow",
   "Baseliner::Schema::Baseliner::Result::BaliTopicCategoriesAdmin",
   { 'foreign.id_category' => 'self.id_category' },

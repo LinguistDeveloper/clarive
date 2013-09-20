@@ -72,7 +72,7 @@ __PACKAGE__->belongs_to(
   { mid => "id_parent" },
 );
 
-__PACKAGE__->has_many(
+__PACKAGE__->belongs_to(
   "roleuser",
   "Baseliner::Schema::Baseliner::Result::BaliRoleuser",
   { id_project => "mid" },

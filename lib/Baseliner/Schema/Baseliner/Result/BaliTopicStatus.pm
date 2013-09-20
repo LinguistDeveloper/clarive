@@ -44,10 +44,10 @@ sub name_with_bl {
         : sprintf '%s [%s]', $self->name, $self->bl;
 }
 
-__PACKAGE__->has_many(
+__PACKAGE__->belongs_to(
   "statuses_to",
   "Baseliner::Schema::Baseliner::Result::BaliTopicCategoriesAdmin",
-  { "foreign.id_status_from" => 'self.id' },
+  { "id_status_from" => 'id' },
 );
 
 __PACKAGE__->has_many(
