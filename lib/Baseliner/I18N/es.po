@@ -3,8 +3,44 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-msgid "1 month ago"
-msgstr ""
+msgid "Site Information"
+msgstr "Datos de Registro"
+
+msgid "Site License"
+msgstr "Datos de Registro"
+
+msgid "class_date_format"
+msgstr "%d/%m/%Y"
+
+msgid "js_date_format"
+msgstr "d/m/Y"
+
+msgid "Monday"
+msgstr "Lunes"
+
+msgid "Tuesday"
+msgstr "Martes"
+
+msgid "Wednesday"
+msgstr "Miércoles"
+
+msgid "Thursday"
+msgstr "Jueves"
+
+msgid "Friday"
+msgstr "Viernes"
+
+msgid "Saturday"
+msgstr "Sábado"
+
+msgid "Sunday"
+msgstr "Domingo"
+
+msgid "in 1 day"
+msgstr "en 1 día" 
+
+msgid "in %1 days"
+msgstr "en %1 días" 
 
 msgid "just now"
 msgstr "hace un instante"
@@ -30,8 +66,14 @@ msgstr "hace 1 día"
 msgid "%1 days ago"
 msgstr "hace %1 días"
 
+msgid "1 week ago"
+msgstr "hace 1 semana"
+
 msgid "%1 weeks ago"
 msgstr "hace %1 semanas"
+
+msgid "1 month ago"
+msgstr "hace 1 mes"
 
 msgid "%1 months ago"
 msgstr "hace %1 meses"
@@ -50,6 +92,12 @@ msgstr "Marcar como leído"
 
 msgid "Mark as unread"
 msgstr "Marcar como no leído"
+
+msgid "Milestone"
+msgstr "Hito"
+
+msgid "Milestones"
+msgstr "Hitos"
 
 msgid "Current topic status '%1' does not match the real status '%2'. Please refresh."
 msgstr "Estado actual del tópico '%1' no coincide con el estado real '%2'. Por favor, recargue antes de reintentar."
@@ -648,6 +696,9 @@ msgstr "Formularios de Configuración"
 msgid "Config List"
 msgstr "Configuración"
 
+msgid "Items"
+msgstr "Elementos"
+
 msgid "Configuration Items"
 msgstr "Elementos de Configuración"
 
@@ -846,11 +897,17 @@ msgstr "Error al notificar usuarios"
 msgid "Notifying user %1: %2"
 msgstr "Notificando el usuario %1: %2"
 
+msgid "Planned Start Date"
+msgstr "Fecha de Inicio Planificada"
+
+msgid "Planned End Date"
+msgstr "Fecha Fin Planificada"
+
 msgid "Start Date"
 msgstr "Fecha de Inicio"
 
 msgid "End Date"
-msgstr "Finalización"
+msgstr "Fecha de Finalización"
 
 msgid "Start Time"
 msgstr "Hora Inicio"
@@ -908,6 +965,9 @@ msgstr "Promoción"
 
 msgid "To Promote"
 msgstr "Promover"
+
+msgid "Deploy to %1"
+msgstr "Distribuir a %1"
 
 msgid "Promote to %1"
 msgstr "Promover a %1"
@@ -1641,6 +1701,12 @@ msgstr "Esperando CHM"
 msgid "DONE"
 msgstr "Finalizado"
 
+msgid "ROLLBACKFAIL"
+msgstr "Error en Marcha Atrás"
+
+msgid "ROLLEDBACK"
+msgstr "Marcha Atrás OK"
+
 msgid "Rollback OK"
 msgstr "Rollback OK"
 
@@ -2204,6 +2270,9 @@ msgstr "Precedencia"
 msgid "Table"
 msgstr "Tabla"
 
+msgid "Run Summary"
+msgstr "Ejecución"
+
 msgid "Run"
 msgstr "Ejecutar"
 
@@ -2256,7 +2325,7 @@ msgid "Resume Job"
 msgstr "Reanudar Pase"
 
 msgid "unspecified"
-msgstr "Sin espcificar"
+msgstr "Sin especificar"
 
 msgid "Manual Deployment"
 msgstr "Despliegue Manual"
@@ -3466,6 +3535,9 @@ msgstr "¿Seguro que quiere borrar las prioridades seleccionadas?"
 msgid "Changeset"
 msgstr "Cambio"
 
+msgid "Changesets"
+msgstr "Cambios"
+
 msgid "Edit status"
 msgstr "Editar estado"
 
@@ -4473,8 +4545,8 @@ msgstr "Puede ver tópicos de la categoría"
 msgid "Can edit topic for this category"
 msgstr "Puede editar tópicos de la categoría"
 
-msgid "Can not edit the field"
-msgstr "No puede editar el campo"
+msgid "Can edit the field"
+msgstr "Puede editar el campo"
 
 msgid "in the category"
 msgstr "en la categoria"
@@ -4622,3 +4694,22 @@ msgstr "No leídas"
 
 msgid "Created for Me"
 msgstr "Creadas por Mí"
+
+msgid "Change status"
+msgstr "Cambiar estado"
+
+msgid "Changed status"
+msgstr "Estado cambiado"
+
+msgid "Change topic status logically (no deployment)"
+msgstr "Cambiar estado del tópico lógicamente (Sin despliegue)"
+
+msgid "Can delete topic in this category"
+msgstr "Puede borrar tópicos de la categoría"
+
+msgid "Topic was modified before your changes. Are you sure you want to save the topic?"
+msgstr "Tópico fue modificado por otro usuario y se perderán esos cambios. ¿Seguro que quiere guardar el tópico?"
+
+msgid "Topic changed status before. Do you  want to refresh the topic?"
+msgstr "Tópico cambió de estado anteriormente. ¿Quieres refrescar el tópico?"
+

@@ -3,7 +3,6 @@
         value: params.rec.parsers, name: 'parsers' });
     
     /*
-    var fields = new Baseliner.DataEditor({ title:_('Fields') });
     var rules = new Baseliner.DataEditor({ title:_('Rules') });
     var outputs = new Baseliner.DataEditor({ title:_('Build') });
     var deploy = new Baseliner.DataEditor({ title:_('Deploy') });
@@ -24,6 +23,12 @@
         value: params.rec.exclude,
         description:_('Element pattern regex to exclude'), 
         default_value:'\\.ext$' }); 
+    
+    var variables = new Baseliner.VariableForm({
+        name: 'variables',
+        title: _('Variables'),
+        data: params.rec.variables
+    });
 
     var tabs = new Ext.TabPanel({
         activeTab: 0,
@@ -33,9 +38,11 @@
             { xtype:'panel', layout:'vbox', 
                layoutConfig:{ align:'stretch' },
                anchor: '100%', title:_('Paths'), items: [ include, exclude ] },
-            parsers
+            variables,
+            parsers 
         ]
     });
+    
     return [
         { xtype:'checkbox', fieldLabel: _('Exclude unparsed items'), name: 'only_parsed', checked: params.rec.only_parsed },
         tabs

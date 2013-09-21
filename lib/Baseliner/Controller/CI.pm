@@ -27,6 +27,7 @@ sub gridtree : Local {
 # list - used by the west navigator
 sub list : Local {
     my ($self, $c) = @_;
+    local $Baseliner::CI::get_form = 1;
     my $p = $c->req->params;
     $p->{user} = $c->username;
     my ($total, @tree ) = $self->dispatch( $p );
@@ -192,8 +193,9 @@ sub tree_classes {
 
 sub form_for_ci {
     my ($self, $class, $collection )=@_;
-    my $ci_form = $class && $class->can('form') 
-        ? $class->form 
+    local $Baseliner::CI::get_form = 1;
+    my $ci_form = $class && $class->can('ci_form') 
+        ? $class->ci_form 
         : sprintf( "/ci/%s.js", $collection );
     my $component_exists = -e Baseliner->path_to( 'root', $ci_form );
     return $component_exists ? $ci_form : '';
@@ -241,8 +243,18 @@ sub tree_objects {
     $where->{collection} = $collection if $collection;
     $where = { %$where, %{ $p{where} } } if $p{where};
     
-    if( $p{mids} ) {
-        $where->{mid} = $p{mids};
+    # search for variables in mids 
+    if( defined $p{mids} && length $p{mids} ) {
+        my @where_mids;
+        for my $m ( _array( $p{mids} ) ) {
+            next if $m =~ /^\$\{/;
+            push @where_mids, $m;
+        }
+        if( scalar @where_mids == 1 ) {
+            $where->{mid} = $where_mids[0];
+        } elsif( @where_mids > 1 ) {
+            $where->{mid} = \@where_mids;
+        }
     }
 
     my $rs = Baseliner->model('Baseliner::BaliMaster')->search( $where, $opts );
@@ -422,24 +434,52 @@ sub tree_object_info {
     return @tree;
 }
 
+sub list_classes {
+    my ($self, $role ) = @_;
+    $role //= 'Baseliner::Role::CI';
+    map {
+        my $pkg = $_;
+        ( my $name = $pkg ) =~ s/^BaselinerX::CI:://g;
+        +{ classname=>$pkg, name=>$name };
+    } packages_that_do( $role );
+}
+
 sub list_roles {
-    my ($self, $role) = @_;
-    sub name_transform {
+    my ($self, %p) = @_;
+    $p{name_format} //= 'lc';
+    my $name_transform = sub {
         my $name = shift;
+        return $name if $p{name_format} eq 'full';
         ($name) = $name =~ /^.*::CI::(.*)$/;
+        return length($name) ? $name : 'CI' if $p{name_format} eq 'short';
         $name =~ s{::}{}g if $name;
         $name =~ s{([a-z])([A-Z])}{$1_$2}g if $name; 
         my $return = $name || 'ci';
         return lc $return;
-    }
+    };
     my %cl=Class::MOP::get_all_metaclasses;
     map {
         my $role = $_;
         +{
             role => $role,
-            name => name_transform( $role ),
+            name => $name_transform->( $role ),
         }
     } grep /^Baseliner::Role::CI/, keys %cl;
+}
+
+sub classes : Local {
+    my ($self, $c) = @_;
+    my @classes = sort { $a->{name} cmp $b->{name} } $self->list_classes;
+    $c->stash->{json} = { data=>\@classes, totalCount=>scalar(@classes) };
+    $c->forward('View::JSON');
+}
+
+sub roles : Local {
+    my ($self, $c) = @_;
+    my $name_format = $c->req->params->{name_format};
+    my @roles = sort { $a->{name} cmp $b->{name} } $self->list_roles( name_format=>$name_format );
+    $c->stash->{json} = { data=>\@roles, totalCount=>scalar(@roles) };
+    $c->forward('View::JSON');
 }
 
 # used by Baseliner.store.CI
@@ -460,6 +500,7 @@ sub store : Local {
         }
     }
     
+    my $bl = delete $p->{bl};
     my $name = delete $p->{name};
     my $collection = delete $p->{collection};
     my $action = delete $p->{action};
@@ -474,6 +515,10 @@ sub store : Local {
         $w->{rel_type} = $p->{rel_type}  if defined $p->{rel_type};
         my $rel_query = Baseliner->model('Baseliner::BaliMasterRel')->search( $w , { select=>'to_mid' } )->as_query;
         $where->{mid} = { -in=>$rel_query };
+    }
+
+    if( length $bl && $bl ne '*' ) {
+        $where->{'-or'} = [ { bl =>{-like => '%'.$bl.'%'} }, { bl=>{-like=>'%*%'}} ];  # XXX XXX XXX  use where exists( select rels from master_rel? )
     }
     
     # used by value in a CIGrid
@@ -490,9 +535,9 @@ sub store : Local {
     my @data;
     my $total = 0; 
 
-    if( my $class = $p->{class} ) {
+    if( my $class = $p->{class} // $p->{classname} ) {
         $class = "BaselinerX::CI::$class" if $class !~ /^Baseliner/;
-        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>1);
+        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
     }
     elsif( my $role = $p->{role} ) {
         my @roles;
@@ -503,14 +548,46 @@ sub store : Local {
             push @roles, $r;
         }
         my $classes = [ packages_that_do( @roles ) ];
-        ($total, @data) = $self->tree_objects( class=>$classes, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty}, no_yaml=>1);
+        ($total, @data) = $self->tree_objects( class=>$classes, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty}, no_yaml=>$p->{with_data}?0:1);
     }
     else {
-        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>1);
+        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
         #_fail( 'No class or role supplied' );
     }
 
-    _log \@data if $mids;
+    _debug \@data if $mids;
+
+    # variables
+    if( $p->{with_vars} ) {
+        my %vp = ( $p->{role} ? (role=>$p->{role}) : $p->{classname} || $p->{class} ? (classname=>$p->{class}||$p->{classname}) : () );
+        
+        my @vars = Baseliner::Role::CI->variables_like_me( %vp );
+        push @data, map { 
+            my $cn =  $_->var_ci_class ? 'BaselinerX::CI::'.$_->var_ci_class : $_->description;
+            +{
+                  _id=> 'var-'. $_->mid,
+                  _is_leaf=> \1,
+                  _parent=> undef,
+                  active=> \1,
+                  bl=> $_->bl,
+                  class=> $cn, 
+                  classname => $cn,
+                  collection=> 'variable',
+                  data=> {},
+                  description=> '',
+                  icon=> $_->icon,
+                  #item: wtscm1,
+                  mid=> '${'.$_->name.'}',
+                  moniker=> $_->moniker,
+                  name => 'variable: ${' . $_->name . '}',
+                  pretty_properties=> '',
+                  properties=> undef,
+                  ts=>$_->ts, 
+                  type=>  'object',
+                  versionid=> $_->versionid,
+             };
+        } @vars;
+    }
     
     if( ref $mids ) { 
         # return data ordered like the mids
@@ -555,6 +632,7 @@ sub children : Local {
 ## adds/updates foreign CIs
 
 sub ci_create_or_update {
+    my $self = shift;
     my %p = @_;
     return $p{mid} if length $p{mid};
     my $ns = $p{ns} || delete $p{data}{ns};
@@ -564,12 +642,10 @@ sub ci_create_or_update {
     
     # check if it's an update, in case of foreign ci
 
-    # my $master_row = master_new $collection => $name => $p{data};
-    # $master_row->ns( $ns ) if $p{ns};
-    # $master_row->update;
-    # return $master_row->mid;
     if ( length $p{mid} ) {
-        _ci( $p{mid} )->save( data => $p{data} );
+        my $ci = _ci( $p{mid} );
+        $ci->update( %{ $p{data} || {} } );
+        $ci->save;
         return $p{mid};
     } else {
         my $name = $p{name};
@@ -589,11 +665,14 @@ sub ci_create_or_update {
             $mid = $same_name_cis[ 0 ]->{mid};
         }
 
-
         if ( !$mid ) {
-            return $class->save( name => $name, data => $p{data} );
+            my $d = { name => $name, %{ $p{data} || {} } };
+            my $ci = $class->new($d);
+            return $ci->save;
         } else {
-            _ci( $mid )->save( data => $p{data} );
+            my $obj = _ci( $mid );
+            $obj->update( %{ $p{data} || {} });
+            $obj->save;
             return $mid;
         }
     } ## end else [ if ( length $p{mid} ) ]
@@ -624,7 +703,7 @@ sub sync : Local {
             if( $k eq 'ci_pre' ) {
                 for my $ci ( _array $v ) {
                     _log( _dump( $ci ) );
-                    push @ci_pre_mid, ci_create_or_update( %$ci ) ;
+                    push @ci_pre_mid, $self->ci_create_or_update( %$ci ) ;
                 }
             }
             elsif( $v =~ /^ci_pre:([0-9]+)$/ ) {
@@ -636,7 +715,7 @@ sub sync : Local {
             }
         }
 
-        $mid = ci_create_or_update( name=>$name, class=>$class, ns=>$ns, collection=>$collection, mid=>$mid, data=>\%ci_data );
+        $mid = $self->ci_create_or_update( rel_field => $collection, name=>$name, class=>$class, ns=>$ns, collection=>$collection, mid=>$mid, data=>\%ci_data );
 
         $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 saved ok', $name) };
         $c->stash->{json}{mid} = $mid;
@@ -671,13 +750,22 @@ sub update : Local {
     $action ||= delete $p->{action};
     my $class = "BaselinerX::CI::$collection";    # XXX what?? fix the class vs. collection mess
     my $chi = delete $p->{children};
+    delete $p->{version}; # form should not set version
     try {
         if( $action eq 'add' ) {
-            $mid = $class->save( name=>$name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), data=> $p ); 
+            my $ci = $class->new( name=>$name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), %$p ); 
+            $ci->save;
+            $mid = $ci->mid;
+            #$mid = $class->save( name=>$name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), data=> $p ); 
         }
         elsif( $action eq 'edit' && defined $mid ) {
             $c->cache_remove( qr/:$mid:/ );
-            $mid = $class->save( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), data => $p ); 
+            #$mid = $class->save( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), data => $p ); 
+            my $ci = $class->new( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), %$p );
+            #my $ci = _ci( $mid );
+            #$ci->update( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), %$p ); 
+            $ci->save;
+            $mid = $ci->mid;
         }
         else {
             _fail _loc("Undefined action");
@@ -711,6 +799,7 @@ sub load : Local {
     my ($self, $c, $action) = @_;
     my $p = $c->req->params;
     my $mid = $p->{mid};
+    local $Baseliner::CI::get_form = 1;
     my $cache_key;
     if( length $mid ) {
         $cache_key = [ "ci:load:$mid:", $p ];
@@ -747,7 +836,10 @@ sub delete : Local {
 
     try {
         $c->cache_clear();
-        my $cnt = $c->model('Baseliner::BaliMaster')->search( { mid=>$mids })->delete;
+        for( _array( $mids ) ) {
+            my $ci = _ci( $_ );
+            $ci->delete if ref $ci;
+        }
         $c->stash->{json} = { success=>\1, msg=>_loc('CIs deleted ok' ) };
         #$c->stash->{json} = { success=>\1, msg=>_loc('CI does not exist' ) };
     } catch {
@@ -919,6 +1011,7 @@ sub services : Local {
     $c->forward('View::JSON');
 }
 
+# run_service:
 sub service_run : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
@@ -928,15 +1021,19 @@ sub service_run : Local {
     my $ret;
     $c->stash->{json} = try {
         my $service = $c->registry->get( $p->{key} );
-        my $ci = _ci( $p->{mid} );
-        my $ret = $c->model('Services')->launch( $service->key, obj=>$ci, c=>$c, logger=>$logger, capture=>1 );
-        _debug( $ret );
-        _debug( $logger );
-        my $console = delete $logger->{console};
-        my $data = delete $logger->{data};
-        $data = ref $data ? Util->_dump( $data ) : "$data";
         my $service_js_output = $service->js_output;
-        {success => \1, console=>$console, data=>$data, ret=>Util->_dump($ret), js_output=>$service_js_output };
+        
+        my $ci = _ci( $p->{mid} );
+        # TODO this is the future: 
+        my $ret = $ci->run_service( $p->{key}, %{ $p->{data} || {} } );
+        #my $ret = $c->model('Services')->launch( $service->key, obj=>$ci, c=>$c, logger=>$logger, data=>$p->{data}, capture=>1 );
+        #_debug( $ret );
+        #_debug( $logger );
+        #my $console = delete $logger->{console};
+        my $data = delete $ret->{return};
+        $data = ref $data ? Util->_dump( $data ) : "$data";
+        #{success => \1, console=>$console, data=>$data, ret=>Util->_dump($ret), js_output=>$service_js_output };
+        {success => \1, console=>$ret->{output}, data=>$data, ret=>Util->_dump($ret), js_output=>$service_js_output };
     } 
     catch {
         my $err = shift;
@@ -951,7 +1048,7 @@ sub service_run : Local {
 sub edit : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
-
+    local $Baseliner::CI::get_form = 1;
 
     my $has_permission;
     if ( $p->{mid} ) {
@@ -1076,8 +1173,12 @@ sub search_query {
 
 Support the following CI specific calls:
 
-    /ci/8394/mymethod     => becomes _ci( 8394 )->rest_mymethod( $c, $json_and_param_data );
-    /ci/grammar/mymethod  => becomes BaselinerX::CI::grammar->rest_mymethod( $c, $json_and_param_data );
+    /ci/8394/mymethod     => becomes _ci( 8394 )->mymethod( $json_and_param_data );
+    /ci/grammar/mymethod  => becomes BaselinerX::CI::grammar->mymethod( $json_and_param_data );
+
+    and optionally:
+
+    /ci/grammar/mymethod?mid=1111  => becomes _ci( 1111 )->...
 
     TODO: missing RESTful support: GET, PUT, POST
     TODO: check security to Class, CI right here based on REST method
@@ -1086,25 +1187,36 @@ Support the following CI specific calls:
 sub default : Path Args(2) {
     my ($self,$c,$arg,$meth) = @_;
     my $p = $c->req->params;
+    my $mid = $p->{mid};
     my $json = $c->req->{body_data};
-    my $data = { %{ $p || {} }, %{ $json || {} } };
+    my $data = { username=>$c->username, %{ $p || {} }, %{ $json || {} } };
     _fail( _loc "Missing param method" ) unless length $meth;
     try {
         my $ret;
+        $meth = "$meth";
         if( Util->is_number( $arg ) ) {
-            $meth = "rest_$meth";
             my $ci = _ci( $arg );
             _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
-            $ret = $ci->$meth( $c, $data );
+            $ret = $ci->$meth( $data );
+        } elsif( length $mid ) {
+            my $ci = _ci( $mid );
+            _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
+            $ret = $ci->$meth( $data );
         } else {
-            $meth = "rest_$meth";
             my $pkg = "BaselinerX::CI::$arg";
             _fail( _loc "Method '%1' not found in class '%2'", $meth, $pkg) unless $pkg->can( $meth) ;
-            $ret = $pkg->$meth( $c, $data );
+            $ret = $pkg->$meth( $data );
         }
-        Util->_unbless( $ret );
-        $c->stash->{json} = $ret;
-        $c->stash->{json}{success} //= \1 if ref $ret eq 'HASH';
+        if( ref $ret eq 'HASH' && Scalar::Util::blessed($ret) ) {
+            Util->_unbless( $ret );
+            $c->stash->{json} = $ret;
+        } elsif( ref $ret eq 'ARRAY' ) {
+            Util->_unbless( $ret );
+            $c->stash->{json} = { data=> $ret };
+        } else {
+            $c->stash->{json} = { data => $ret };
+        }
+        $c->stash->{json}{success} //= \1;
     } catch {
         my $err = shift;
         $c->stash->{json} = { msg=>"$err", success=>\0 }; 

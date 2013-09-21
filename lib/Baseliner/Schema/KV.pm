@@ -15,7 +15,7 @@ This is the generic KV based CRUD system
 package Baseliner::Schema::KV;
 use Moose;
 use Try::Tiny;
-use Baseliner::Utils qw(_fail _loc _error _debug _throw _log _array);
+use Baseliner::Utils qw(_fail _loc _error _debug _throw _log _array _dump);
 
 has index_name => ( is=>'ro', isa=>'Str', default=>'bali_master_kv_full' );
 has index_sync_type => ( is=>'ro', isa=>'Str', default=>'manual' );
@@ -90,7 +90,7 @@ sub save {
                     $row->{mvalue} = $date_str;
                 }
                 push @mvalue_date, $row->{mvalue_date};
-                push @mvalue, $row->{mvalue} // '';
+                push @mvalue, defined $row->{mvalue} ? "$row->{mvalue}" : '';
                 push @flat_final, $row;
             }
             $stmt->execute_array({ ArrayTupleStatus => \@tuple_status }, \@mid, \@mtype, \@mpos, \@mkey, \@mvalue_num, \@mvalue_date, \@mvalue  );
@@ -409,6 +409,8 @@ sub query {
     return $rs->hashes 
         if $rets eq 'hashes' || defined $opts->{select};
     # TODO run a query on KV itself to return kv rows
+    
+    # TODO this should be Role::CI->load_from_query, not here, mdb should not create CIs:
     my @cis;
     for my $row ( $rs->hashes ) {
         my $rec = Baseliner::Role::CI->load( $row->{mid}, $row, undef, $row->{yaml} );   
@@ -522,24 +524,6 @@ sub build_search {
     ];
     #my @score_fields = map { "contains(kv.mvalue, ?
     return $where;
-}
-
-# bali_master_search row
-sub index_search_data {
-    my( $self, %p ) = @_;
-    my $no_save = delete $p{no_save};
-    $p{data} = { %{ $self->{_ci} }, %{ $p{data} || {} } } if ref $self && ref $self->{_ci};
-    my $mid = $p{mid} // $p{data}{mid} // _throw 'Missing mid for index search';
-    my $data = $p{data} || {};
-    my $row = $p{row} ? { $p{row}->get_columns } : {}; # master row
-    my $enc = JSON::XS->new->convert_blessed(1);
-    my $doc = { %$row, %$data };
-    my $j = lc $enc->encode( $doc );
-    $j = Util->_unac( $j );
-    $j =~ s/[^\w|:|,|-]//g;  # remove all special chars, etc
-    $j =~ s/\w+:\s*,//g;   # delete empty keys
-    return $j if $no_save;
-    DB->BaliMasterSearch->update_or_create({ mid=>$mid, search_data=>$j, ts=>Util->_dt });
 }
 
 sub build_pivot_query {
@@ -794,6 +778,24 @@ sub _break_varchar {
             $_ 
         }
     } @flat;
+}
+
+    # bali_master_search row
+sub index_search_data {
+    my( $self, %p ) = @_;
+    my $no_save = delete $p{no_save};
+    $p{data} = { %{ $self->{_ci} }, %{ $p{data} || {} } } if ref $self && ref $self->{_ci};
+    my $mid = $p{mid} // $p{data}{mid} // _throw 'Missing mid for index search';
+    my $data = $p{data} || {};
+    my $row = $p{row} ? { $p{row}->get_columns } : {}; # master row
+    my $enc = JSON::XS->new->convert_blessed(1);
+    my $doc = { %$row, %$data };
+    my $j = lc $enc->encode( $doc );
+    $j = Util->_unac( $j );
+    $j =~ s/[^\w|:|,|-]//g;  # remove all special chars, etc
+    $j =~ s/\w+:\s*,//g;   # delete empty keys
+    return $j if $no_save;
+    DB->BaliMasterSearch->update_or_create({ mid=>$mid, search_data=>$j, ts=>Util->_dt });
 }
 
 1;

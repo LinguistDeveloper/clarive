@@ -92,14 +92,14 @@ __PACKAGE__->set_primary_key("mid");
 __PACKAGE__->belongs_to(
   "categories",
   "Baseliner::Schema::Baseliner::Result::BaliTopicCategories",
-  { "id" => "id_category" },
+  { "foreign.id" => "self.id_category" },
   { join_type => 'left' },
 );
 
 __PACKAGE__->belongs_to(
   "status",
   "Baseliner::Schema::Baseliner::Result::BaliTopicStatus",
-  { "id" => "id_category_status" },
+  { "foreign.id" => "self.id_category_status" },
   { join_type => 'left' },
 );
 

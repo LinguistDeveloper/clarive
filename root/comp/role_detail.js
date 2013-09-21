@@ -36,6 +36,26 @@
         ]
     });
 
+
+    var cm = new Ext.grid.ColumnModel({
+        defaults: {
+            sortable: true // columns are not sortable by default           
+        },
+        columns: [
+                { header: _('Action'), width: 200, dataIndex: 'action', sortable: true },	
+                { header: _('Description'), width: 200, dataIndex: 'description', sortable: true, renderer: Baseliner.render_loc },
+                { header: _('Baseline'), width: 150, dataIndex: 'bl', sortable: true,
+                          renderer: Baseliner.render_bl,
+                          editor: new Baseliner.model.ComboBaseline()
+                }
+        ]
+    });
+
+
+
+
+
+
     //////////////// Actions Tree
     var treeLoader = new Ext.tree.TreeLoader({
         dataUrl: '/role/action_tree',
@@ -169,19 +189,19 @@
     //////////////// Actions belonging to a role
     var action_store=new Ext.data.Store({ fields: [ {  name: 'action' }, {  name: 'description' }, { name: 'bl' } ] });
     
-    var cm = new Ext.grid.ColumnModel({
-        defaults: {
-            sortable: true // columns are not sortable by default           
-        },
-        columns: [
-                { header: _('Action'), width: 200, dataIndex: 'action', sortable: true },	
-                { header: _('Description'), width: 200, dataIndex: 'description', sortable: true, renderer: Baseliner.render_loc },
-                { header: _('Baseline'), width: 150, dataIndex: 'bl', sortable: true,
-                          renderer: Baseliner.render_bl,
-                          editor: new Baseliner.model.ComboBaseline()
-                }
-        ]
-    });
+    //////var cm = new Ext.grid.ColumnModel({
+    //////    defaults: {
+    //////        sortable: true // columns are not sortable by default           
+    //////    },
+    //////    columns: [
+    //////            { header: _('Action'), width: 200, dataIndex: 'action', sortable: true },	
+    //////            { header: _('Description'), width: 200, dataIndex: 'description', sortable: true, renderer: Baseliner.render_loc },
+    //////            { header: _('Baseline'), width: 150, dataIndex: 'bl', sortable: true,
+    //////                      renderer: Baseliner.render_bl,
+    //////                      editor: new Baseliner.model.ComboBaseline()
+    //////            }
+    //////    ]
+    //////});
     
     var grid_role = new Ext.grid.EditorGridPanel({
         title: _('Role Actions'),
@@ -267,18 +287,18 @@
         });
     });
 
-    var win_choose_bl = new Ext.Window({
-        layout: 'border',
-        height: 450, width: 600,
-        closeAction: 'close',
-        autoDestroy: true,
-        title: _('Create Role'),
-          items : [
-             { xtype: 'form',
-              items: new Baseliner.model.ComboBaseline()
-             }
-          ] 
-    });
+    ////////var win_choose_bl = new Ext.Window({
+    ////////    layout: 'border',
+    ////////    height: 450, width: 600,
+    ////////    closeAction: 'close',
+    ////////    autoDestroy: true,
+    ////////    title: _('Create Role'),
+    ////////      items : [
+    ////////         { xtype: 'form',
+    ////////          items: new Baseliner.model.ComboBaseline()
+    ////////         }
+    ////////      ] 
+    ////////});
 
     ////////// Role Single Row
     var role_data_store=new Baseliner.JsonStore({

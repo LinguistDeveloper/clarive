@@ -3,7 +3,7 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use JSON::XS;
-use IO::CaptureOutput;
+#use IO::CaptureOutput;
 use Time::HiRes qw(gettimeofday tv_interval);
 use Try::Tiny;
 
@@ -87,7 +87,9 @@ sub eval : Local {
     my $t0 = [ gettimeofday ];
     my ( $stdout, $stderr );
 
-    IO::CaptureOutput::capture(
+    require Capture::Tiny;
+    _log "================================ REPL START ==========================\n";
+    ($stdout, $stderr) = Capture::Tiny::tee(
         sub {
             if ( $sql ) {
                 eval { $res = $self->sql( $sql, $code ); };
@@ -100,10 +102,10 @@ sub eval : Local {
             #my @arr  = eval $code;
             #$res = @arr > 1 ? \@arr : $arr[0];
             $err = $@;
-        },
-        \$stdout,
-        \$stderr
+        }
     );
+    _log "================================ REPL END ============================\n";
+    
     my $elapsed = tv_interval( $t0 );
     $res = _to_utf8( _dump( $res ) ) if $dump eq 'yaml';
     $res = _to_utf8( JSON::XS->new->pretty->encode( _damn( $res ) ) )

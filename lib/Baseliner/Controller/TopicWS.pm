@@ -8,7 +8,7 @@ BEGIN { extends 'Catalyst::Controller' }
 # skip authentication for this controller:
 sub begin : Private {
     my ( $self, $c ) = @_;
-    $c->stash->{auth_skip} = 1;
+    $c->stash->{auth_skip} = 0;
     $c->forward( '/begin' );
 }
 
@@ -79,7 +79,8 @@ sub topic_change_status : Path('/api/topic_change_status') {
         if ( !$force || $force == 0 ) {
             my @statuses = $c->model( 'Topic' )->next_status_for_user(
                 id_category    => $topic->id_category,
-                id_status_from => $topic->id_category_status
+                id_status_from => $topic->id_category_status,
+                username => 'root',
             );
             my $found = 0;
             for ( @statuses ) {

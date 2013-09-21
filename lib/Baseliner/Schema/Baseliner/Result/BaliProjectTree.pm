@@ -39,4 +39,10 @@ __PACKAGE__->add_columns(
     'id','project_name', 'sp_name', 'spn_name', 'nature','tree_level', 'data', 'mid', 'root_mid'
 );
 
+__PACKAGE__->belongs_to(
+  "master",
+  "Baseliner::Schema::Baseliner::Result::BaliMaster",
+  { 'foreign.mid' => 'self.mid' },
+);
+
 1;

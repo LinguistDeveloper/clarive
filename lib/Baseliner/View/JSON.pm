@@ -1,8 +1,13 @@
 package Baseliner::View::JSON;
 use strict;
 use base 'Catalyst::View::JSON';
-use Baseliner::Utils;
 use Encode;
+
+#sub encode_json {
+#    my($self, $c, $data) = @_;
+#    my $encoder = JSON::XS->new->ascii->pretty->allow_nonref;
+#    $encoder->encode($data);
+#}
 
 sub process {
     my $self = shift;

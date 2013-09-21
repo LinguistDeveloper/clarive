@@ -47,15 +47,57 @@
                typeAhead: false, minChars: 1, mode: 'local', 
                store: [
                   [ 'event', _('Event') ],
-                  [ 'loop', _('Loop') ]
+                  [ 'chain', _('Job Chain') ],
+                  [ 'independent', _('Independent') ]
                ],
                editable: false, forceSelection: true, triggerAction: 'all',
                allowBlank: false
     });
     combo_type.on('select', function(){
         var v = combo_type.getValue();
+        reconfigure_on_type( v );
         store_events.load({ params: { event_type: v } });
     });
+    var reconfigure_on_type = function(v){
+        if( v == 'chain' ) {
+            wiz.last = wiz.current;
+            wiz.button_setup();
+            job_chain_form.show();
+            msg_job.show();
+            msg_ev.hide();
+            grid_events.hide();
+        } else if( v == 'independent' ) {
+            wiz.last = wiz.current;
+            wiz.button_setup();
+            job_chain_form.hide();
+            msg_job.hide();
+            msg_ev.hide();
+            grid_events.hide();
+        } else {
+            wiz.last = wiz.current + 1;
+            wiz.button_setup();
+            job_chain_form.hide();
+            msg_job.hide();
+            msg_ev.show();
+            grid_events.show();
+        }
+    }
+    
+    // job chain form
+    var job_chain_form = new Ext.form.FieldSet({
+        hidden: true, border: false,
+        items: [
+            new Baseliner.ComboSingle({ fieldLabel: _('Default'), name:'chain_default', value: params.rec.chain_default, data: [
+                '-',
+                'promote',
+                'demote',
+                'static'
+            ]}),
+            { xtype:'textarea', height: 180, anchor:'100%', fieldLabel:_('Chain Description'), name: 'rule_desc', value: params.rec.rule_desc }
+        ]
+    });
+    var msg_ev = new Ext.Container({ border:false, html:'<span id="boot"><p><h4>'+_('Select the Event') + ':</h4></p>' });
+    var msg_job = new Ext.Container({ hidden: true, border:false, html:'<span id="boot"><p><h4>'+_('Job Chain Details') + ':</h4></p>' });
     // PAGE 1
     var form_events = new Ext.FormPanel({
         defaults: { anchor: '90%' },
@@ -63,8 +105,8 @@
         items: [
             { xtype:'textfield', fieldLabel:_('Name'), name:'rule_name', value: params.rec.rule_name },
             combo_type,
-            { border:false, html:'<span id="boot"><p><h4>'+_('Select the Event') + ':</h4></p>' },
-            grid_events
+            msg_ev, msg_job,
+            grid_events, job_chain_form
         ]
     });
 
@@ -89,17 +131,20 @@
     });
 
     //------------ Card Navigation 
-    var card = new Baseliner.Wizard({
+    var wiz = new Baseliner.Wizard({
         height: 450,
         done_handler: function(){
             var d = form_events.getForm().getValues();
+            var rule_type = combo_type.getValue();
             d = Ext.apply( d, form_when.getForm().getValues() );
-            if( check_sm_events.hasSelection() ) {
-                var rec = check_sm_events.getSelected();
-                d.rule_event = rec.data.key;
-            } else {
-                Baseliner.error( _('Rule'), _('No events selected') );
-                return;
+            if( rule_type == 'event' ) {
+                if( check_sm_events.hasSelection() ) {
+                    var rec = check_sm_events.getSelected();
+                    d.rule_event = rec.data.key;
+                } else {
+                    Baseliner.error( _('Rule'), _('No events selected') );
+                    return;
+                }
             }
             if( d.rule_name.length < 1 ) {
                 Baseliner.error( _('Rule'), _('Missing rule name') );
@@ -108,16 +153,20 @@
             Baseliner.ajaxEval('/rule/save', d, function(res){
                 if( res.success ) {
                     Baseliner.message(_('Rule'), _('Regla guardada con éxito') );
-                    card.destroy();
+                    wiz.destroy();
                 } else {
                     Baseliner.error(_('Rule'), res.msg );
                 }
             });
-            //card.ownerCt.close();
+            //wiz.ownerCt.close();
         },
         items: [
             form_events, form_when
         ]
     });
-    return card;
+
+    if( params.rec.rule_type ) {
+        reconfigure_on_type( params.rec.rule_type );
+    }
+    return wiz;
 })

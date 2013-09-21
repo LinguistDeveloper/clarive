@@ -31,7 +31,7 @@ __PACKAGE__->set_primary_key("id");
 __PACKAGE__->belongs_to(
   "roles",
   "Baseliner::Schema::Baseliner::Result::BaliRole",
-  { id => "id_role" },
+  { "foreign.id" => "self.id_role" },
   { cascade_delete => 1, on_delete=>'cascade', is_foreign_key_constraint=>1, },
 );
 

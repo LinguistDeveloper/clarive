@@ -5,11 +5,12 @@
     if( node.attributes == undefined ) node.attributes = {};
     if( node.attributes.data == undefined ) node.attributes.data = {};
 
-    var ns = node.attributes.data.ns;
-    if( ns == undefined  ) {
-        Ext.Msg.alert( _('Error'), _('Missing ns') );
+    var mid = node.attributes.data.topic_mid;
+    if( mid == undefined ) {
+        Baseliner.error( _('Job'), _('Missing mid') );
         return;
     }
+
     var bl = node.attributes.data.bl;
     if( bl == undefined  ) {
         Ext.Msg.alert( _('Error'), _('Missing bl') );
@@ -27,7 +28,8 @@
     var status_from = node.attributes.data.topic_status;
     var id_status_from = node.attributes.data.id_topic_status;
     Baseliner.confirm( _('Are you sure you want to deploy/rollback %1 to baseline %2?', String.format("<b>{0}</b>", name), String.format("<b>{0}</b>",_(to_state_name)) ), function() { 
-        Baseliner.ajaxEval( '/topic/newjob', { ns: ns, bl: bl_to, job_type: job_type, status_to: status_to, status_from: status_from, id_status_from: id_status_from }, function(res) {
+        Baseliner.message( _('Job'), _('Starting job check and initialization...') );
+        Baseliner.ajaxEval( '/topic/newjob', { changesets:[mid], bl: bl_to, job_type: job_type, status_to: status_to, status_from: status_from, id_status_from: id_status_from }, function(res) {
             if( res.success ) {
                 Baseliner.message( _('Job'), res.msg );
             } else {

@@ -43,7 +43,11 @@
                         <td><%$resumen->{endtime}?$resumen->{endtime}->dmy.' '.$resumen->{endtime}->hms:''%></td>
                     </tr>
                     <tr>
-                        <td><% _loc( 'Running Time') %></td>
+                        <td><% _loc( 'Active Time') %></td>
+                        <td><%$resumen->{active_time}?sprintf("%s sec.",$resumen->{active_time}):''%></td>
+                    </tr>
+                    <tr>
+                        <td><% _loc( 'Total Time') %></td>
                         <td><%$resumen->{execution_time}?sprintf("%s",$resumen->{execution_time} < 60? ($resumen->{execution_time}->sec . ' seg.') : ($resumen->{execution_time}->min) . ' min.'):''%></td>
                     </tr>
                     <tr>
@@ -63,19 +67,20 @@
         
         <div class="grid_12">
             <!--######INICIO TABLA EJECUCION ##################################################################################-->
-            <h3><% _loc( 'Run') %></h3>
+            <h3><% _loc( 'Run Summary') %></h3>
             <table class="table table-bordered table-condensed dashboard">
                 <thead>
                     <tr>
                         <th>&nbsp;</th>
                         <th><% _loc( 'Service') %></th>
                         <th><% _loc( 'Status') %></th>
+                        <th><% _loc( 'Active Time') %></th>
                     </tr>
                 </thead>
                 <tbody>
 <%perl>
-    my @steps = ( 'PRE', 'RUN', 'POST', 'END' );
-    my $colors = { Success => '#00BB00', Warning => '#00BBBB', Error => '#BB0000'};
+    my @steps = ( 'CHECK', 'INIT', 'PRE', 'RUN', 'POST', 'END' );
+    my $colors = { Success => '#00BB00', Warning => '#E0B500', Error => '#BB0000'};
     for my $step ( @steps ) {
         if ( $servicios->{$step} ) {
             my @services = _array $servicios->{$step};
@@ -92,6 +97,8 @@
 </%perl>
                         <td class="datos"><b><a href="javascript:Baseliner.addNewTabComp('/job/log/list?id_job=<%$idjob%>&service_name=<%$service->{service}%>', _('Log <%$service->{service}%>'), { tab_icon: '/static/images/icons/moredata.gif' } );"><% $service->{description} || $service->{service} %></a></b></td>
                         <td class="datos" style="color:<% $colors->{$service->{status}} %>;"><b><% _loc($service->{status}) %></b></td>
+                        <td class="datos"><b><% $resumen->{services_time}->{$step."#".$service->{service}}." sec." %></b></td>
+
                     </tr>
 <%perl>
             }
@@ -137,16 +144,16 @@
                 my @paquetes = _array $contenido->{packages}->{$aplicacion};
                 my $tot_paquetes = scalar @paquetes;
                 my $first = 1;
-                for my $paquete ( @paquetes ) {
+                for my $changeset ( @paquetes ) {
                     if ( $first ) {
 </%perl>                        
                     <tr>
-                        <td rowspan="<%$tot_paquetes%>"><b><% _loc( 'Changesets') %>(<% $aplicacion %>)</b></td>
+                        <td rowspan="<%$tot_paquetes%>"><b><% _loc( 'Changesets') %> (<% $aplicacion %>)</b></td>
 <%perl>
                         $first = 0;
                     }
 </%perl>                            
-                        <td><%$paquete->{type}%>/<%$paquete->{name}%></td>
+                        <td><% $changeset->topic_name %></td>
                     </tr>
 <%perl>
                 }
@@ -170,23 +177,6 @@
                         </td>
                     </tr>
 %}
-<%perl>
-    my $tot_topicos;
-    my @topicos = _array $contenido->{topics};
-    $tot_topicos = scalar @topicos;
-</%perl>                        
-                    <tr>
-                        <td rowspan="<%$tot_topicos%>"><b><% _loc( 'Topics') %></b></td>
-%   if (@topicos){
-%       for my $topico ( @topicos){
-                        <td><b><a href="javascript:Baseliner.addNewTabComp('/topic/grid?query=<%$topico->{id}%>', _('Topics'));"><% $topico->{title} %></a></b></td>
-                    </tr>
-%       }
-%   }
-%   else{
-                        <td>&nbsp;</td>
-                    </tr>
-%   }
                 </tbody>    
             </table>
             <!--######FIN TABLA CONTENIDO #######################################################################################-->

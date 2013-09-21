@@ -10,11 +10,11 @@ has pid_name => qw(is rw isa Str);
 has pid_file => qw(is rw isa Str);
 has opts_file => qw(is rw isa Str lazy 1 default), sub {
     my ($self)=@_;
-    $self->tmp_dir . '/' . $self->instance_name . '.yml';
+    $self->pid_dir . '/' . $self->instance_name . '.yml';
 };
 has signal     => qw(is rw default) => sub { 'TERM' };  # standard kill signal
 has wait       => qw(is ro default) => sub { 30 };  # seconds to wait for shutdown before killing
-has log_file      => qw(is rw lazy 1 default), sub { $_[0]->tmp_dir . '/' . $_[0]->instance_name . '.log' };
+has log_file      => qw(is rw lazy 1 default), sub { $_[0]->log_dir . '/' . $_[0]->instance_name . '.log' };
 has log_keep      => qw(is rw default) => sub { 10 };
 
 with 'Clarive::Role::TempDir';
@@ -26,9 +26,6 @@ sub nohup {
     # TODO redirect stdout and error somewhere else
     #open STDOUT, '>', '/dev/null' or die "Could not redirect STDOUT: $!";
     #open STDERR, '>&STDOUT' or die "Could not redirect STDERR: $!";
-    open STDIN, '/dev/null' or die "Could not redirect STDIN: $!";
-    open STDOUT, '>>', $self->log_file or die sprintf "Could not redirect STDIN to %s: $!", $self->log_file;
-    open STDERR, '>&STDOUT' or die "Could not redirect STDERR: $!";
     
     require POSIX;
     local $SIG{HUP} = 'IGNORE';
@@ -39,6 +36,9 @@ sub nohup {
         return $pid
     } # parent
     else { # child
+        open STDIN, '/dev/null' or die "Could not redirect STDIN: $!";
+        open STDOUT, '>>', $self->log_file or die sprintf "Could not redirect STDIN to %s: $!", $self->log_file;
+        open STDERR, '>&STDOUT' or die "Could not redirect STDERR: $!";
         POSIX::setsid() or die "Cannot establish session id: $!\n";
         $proc->();
         exit 0;
@@ -81,7 +81,7 @@ sub _log_zip {
 sub setup_pid_file {
     my ($self)=@_;
    
-    $self->pid_name( $self->tmp_dir . '/' . $self->instance_name );
+    $self->pid_name( $self->pid_dir . '/' . $self->instance_name );
     $self->pid_file( $self->pid_name . '.pid' );
     say 'pid_file: ' . $self->pid_file;
 }
@@ -150,7 +150,7 @@ sub run_log {
 sub setup_log_dir {
     my ($self) = @_;
 
-    my $logdir = $ENV{BASELINER_LOGHOME} || join('/', $self->tmp_dir, 'log' );
+    my $logdir = $ENV{BASELINER_LOGHOME} || join('/', $self->log_dir, 'log' );
     unless( -d $logdir ) {
         require File::Path;
         File::Path::make_path( $logdir );

@@ -7,24 +7,24 @@
 # CLARIVE | Software - Copyright(c) 2010-2013 VASS Software Labs
 #
 #==================================================================
-export VASSHOME=/clarive      # root installation directory
-export VASSEXT=$VASSHOME/ext   # home of external libraries and programs
-export PERLHOME=$VASSHOME/perl
-export ORACLE_HOME=$VASSHOME/instantclient_10_2
-export VIMHOME=$VASSHOME/ext
+export CLARIVE_BASE=/clarive      # root installation directory
+export VASSEXT=$CLARIVE_BASE/ext   # home of external libraries and programs
+export PERLHOME=$CLARIVE_BASE/perl
+export ORACLE_HOME=$CLARIVE_BASE/instantclient_10_2
+export VIMHOME=$CLARIVE_BASE/ext
 
 export PATH=/usr/sfw/bin:/usr/ccs/bin:/usr/sbin:$PATH
-export PATH=$VASSHOME/perl/bin:$PATH
-export PATH=$VASSHOME/ext/curl/bin:$PATH
-export PATH=$VASSHOME/ext/bin:$PATH
-export PATH=$VASSHOME/bin:$PATH
+export PATH=$CLARIVE_BASE/perl/bin:$PATH
+export PATH=$CLARIVE_BASE/ext/curl/bin:$PATH
+export PATH=$CLARIVE_BASE/ext/bin:$PATH
+export PATH=$CLARIVE_BASE/bin:$PATH
 
-export PERL_LOCAL_LIB=$VASSHOME/local-lib
+export PERL_LOCAL_LIB=$CLARIVE_BASE/local-lib
 export PERL5LIB=$PERL_LOCAL_LIB/lib/perl5
 export PERL_CPANM_OPT="--local-lib $PERL_LOCAL_LIB"
 export PATH=$PERL_LOCAL_LIB/bin:$PATH
 
-export CLARIVE_HOME=$VASSHOME/clarive
+export CLARIVE_HOME=$CLARIVE_BASE/clarive
 export PATH=$CLARIVE_HOME/bin:$PATH
 
 export LD_LIBRARY_PATH=$VASSEXT/lib:$LD_LIBRARY_PATH

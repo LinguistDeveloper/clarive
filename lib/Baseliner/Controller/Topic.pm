@@ -113,20 +113,46 @@ sub update : Local {
     
     $p->{username} = $c->username;
     
-    try  {    
-        my ($msg, $topic_mid, $status, $title, $category) = $c->model('Topic')->update( $p );
+    try  {
+        my ($msg, $topic_mid, $status, $title, $category, $modified_on) = $c->model('Topic')->update( $p );
         $c->stash->{json} = {
             success      => \1,
             msg          => _loc( $msg, scalar( _array( $p->{topic_mid} ) ) ),
             topic_mid    => $topic_mid,
             topic_status => $status,
             category     => $category,
-            title        => $title
-        };
+            title        => $title,
+            modified_on  => $modified_on,
+        };            
     } catch {
         my $e = shift;
         $c->stash->{json} = { success => \0, msg=>_loc($e) };
     };
+    $c->forward('View::JSON');
+}
+
+sub check_modified_on: Local {
+    my ($self, $c) = @_;
+    my $p = $c->request->parameters;
+    my $modified_before = \0;
+    
+    my $strDate = $p->{modified};
+        
+    use Class::Date;
+    my $date_modified_on =  Class::Date->new( $strDate );
+    
+    my $rs_topic = DB->BaliTopic->find($p->{topic_mid});
+    my $date_actual_modified_on = Class::Date->new( $rs_topic->modified_on );
+    
+    if ( $date_modified_on < $date_actual_modified_on ){
+        $modified_before = \1;
+    }
+  
+    $c->stash->{json} = {
+        success      => \1,
+        modified_before => $modified_before,
+        msg          => _loc( 'Prueba' ),
+    };      
     $c->forward('View::JSON');
 }
 
@@ -338,11 +364,13 @@ sub get_meta_permissions : Local {
                     #print ">>>>>>>>>Accion: " . $write_action . "\n";
                     
                     if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action )){
+                        $field_form->{readonly} = \0;
+                    }else{
                         $field_form->{readonly} = \1;
                     }
                     
                     my $read_action = 'action.topicsfield.' .  $parse_category 
-                    		. '.' .  $parse_id_field . '.' .  $parse_field_form_id  . '.' . $parse_status . '.read';
+                    		. '.' .  $parse_id_field . '.' .  $parse_field_form_id  . '.read';
                     #my $read_action = 'action.topicsfield.read.' . $_->{name_field} if ! $write_action;
                     #_error $read_action;
                     #print ">>>>>>>>>Accion: " . $read_action . "\n";
@@ -359,10 +387,12 @@ sub get_meta_permissions : Local {
                 
                 
                 if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action )){
-                    $_->{readonly} = \1;
+                    $_->{readonly} = \0;
+                }else{
+                    $_->{readonly} = \1;    
                 }
                 
-                my $read_action = 'action.topicsfield.' .  $parse_category . '.' .  $parse_id_field . '.' . $parse_status . '.read';
+                my $read_action = 'action.topicsfield.' .  $parse_category . '.' .  $parse_id_field . '.read';
                 #my $read_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $_->{id_field} . '.' . lc $data->{name_status} . '.read';
                 #my $read_action = 'action.topicsfield.read.' . $_->{name_field} if ! $write_action;
                 #_error $read_action;
@@ -491,86 +521,103 @@ sub view : Local {
     
     try {
     
-    $c->stash->{ii} = $p->{ii};    
-    $c->stash->{swEdit} =  ref($p->{swEdit}) eq 'ARRAY' ? $p->{swEdit}->[0]:$p->{swEdit} ;
-    $c->stash->{permissionEdit} = 0;
-    $c->stash->{permissionComment} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.GDI.comment' );
-    if ($c->is_root){
-        $c->stash->{HTMLbuttons} = 0;
-    }
-    else{
-        $c->stash->{HTMLbuttons} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.GDI.HTMLbuttons' );
-    }
-    
-    my %categories_edit = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'edit' );
-    
-    if($topic_mid || $c->stash->{topic_mid} ){
- 
-        # user seen
-        for my $mid ( _array( $topic_mid ) ) {
-            DB->BaliMasterPrefs->update_or_create({ username=>$c->username, mid=>$mid, last_seen=>_dt() });
-        }
-        
-        $category = DB->BaliTopicCategories->search({ mid=>$topic_mid }, { prefetch=>{'topics' => 'status'} })->first;
-        _fail( _loc('Category not found or topic deleted: %1', $topic_mid) ) unless $category;
-        
-        $c->stash->{category_meta} = $category->forms;
-        
-        my %tmp;
-        if ((substr $category->topics->status->type, 0, 1) eq "F"){
-            $c->stash->{permissionEdit} = 0;
+        $c->stash->{ii} = $p->{ii};    
+        $c->stash->{swEdit} =  ref($p->{swEdit}) eq 'ARRAY' ? $p->{swEdit}->[0]:$p->{swEdit} ;
+        $c->stash->{permissionEdit} = 0;
+        $c->stash->{permissionComment} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.GDI.comment' );
+        if ($c->is_root){
+            $c->stash->{HTMLbuttons} = 0;
         }
         else{
-            if ($c->is_root){
-                $c->stash->{permissionEdit} = 1;     
-            }else{
-                if (exists ($categories_edit{ $category->id })){
-                    $c->stash->{permissionEdit} = 1;
+            $c->stash->{HTMLbuttons} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.GDI.HTMLbuttons' );
+        }
+        
+        my %categories_edit = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'edit' );
+        
+        if($topic_mid || $c->stash->{topic_mid} ){
+     
+            # user seen
+            for my $mid ( _array( $topic_mid ) ) {
+                DB->BaliMasterPrefs->update_or_create({ username=>$c->username, mid=>$mid, last_seen=>_dt() });
+            }
+            
+            $category = DB->BaliTopicCategories->search({ mid=>$topic_mid }, { prefetch=>{'topics' => 'status'} })->first;
+            _fail( _loc('Category not found or topic deleted: %1', $topic_mid) ) unless $category;
+            
+            $c->stash->{category_meta} = $category->forms;
+            
+            #workflow category-status
+            #my $username = $c->is_root ? '' : $c->username;
+            
+            my @statuses = $c->model('Topic')->next_status_for_user(
+                id_category    => $category->id,
+                id_status_from => $category->topics->status->id,
+                username       => $c->username,
+            );            
+            
+            
+            my %tmp;
+            if ((substr $category->topics->status->type, 0, 1) eq "F"){
+                $c->stash->{permissionEdit} = 0;
+            }
+            else{
+                if ($c->is_root){
+                    $c->stash->{permissionEdit} = 1;     
+                }else{
+                    if (exists ($categories_edit{ $category->id })){
+                        $c->stash->{permissionEdit} = 1;
+                    }
                 }
             }
-        }
-                         
-        # comments
-        $c->stash->{comments} = $c->model('Topic')->list_posts( mid=>$topic_mid );
-        # activity (events)
-        $c->stash->{events} = events_by_mid( $topic_mid, min_level => 2 );
-        
-        #$c->stash->{forms} = [
-        #    map { "/forms/$_" } split /,/,$topic->categories->forms
-        #];
- 
-        # jobs for release and changeset
-        if( $category->is_changeset || $category->is_release ) {
-            my @jobs = DB->BaliJob->search({ item=>{ -like => '%/' . $topic_mid } }, 
-            { prefetch=>'bali_job_items', page=>0, rows=>20, order_by=>{ -desc=>'me.id' } })->hashref->all;
-            $c->stash->{jobs} = \@jobs;
-        }
-    }else{
-        $id_category = $p->{new_category_id};
-        my $category = DB->BaliTopicCategories->find( $id_category );
-        $c->stash->{category_meta} = $category->forms;
-        $c->stash->{permissionEdit} = 1 if exists $categories_edit{$id_category};
-        
-        $c->stash->{topic_mid} = '';
-        $c->stash->{events} = '';
-        $c->stash->{comments} = '';
-    }
-    
-    if( $p->{html} ) {
-        my $meta = $c->model('Topic')->get_meta( $topic_mid, $id_category );
-        my $data = $c->model('Topic')->get_data( $meta, $topic_mid, topic_child_data=>$p->{topic_child_data} );
-        $meta = get_meta_permissions ($c, $meta, $data);        
-        
-        $data->{admin_labels} = $c->model('Permissions')->user_has_any_action( username=> $c->username, action=>'action.admin.topics' );
-        
-        $c->stash->{topic_meta} = $meta;
-        $c->stash->{topic_data} = $data;
-        
+                             
+            # comments
+            $c->stash->{comments} = $c->model('Topic')->list_posts( mid=>$topic_mid );
+            # activity (events)
+            $c->stash->{events} = events_by_mid( $topic_mid, min_level => 2 );
+            
+            #$c->stash->{forms} = [
+            #    map { "/forms/$_" } split /,/,$topic->categories->forms
+            #];
+     
+            # jobs for release and changeset
+            if( $category->is_changeset || $category->is_release ) {
+                my @jobs = ci->parents( 
+                    mid=>$topic_mid, 
+                    rel_type=>'job_' . ( $category->is_changeset ? 'changeset' : 'release' ),
+                    no_rels=>1,
+                    order_by=>{-desc=>'from_mid'} );
 
-        $c->stash->{template} = '/comp/topic/topic_msg.html';
-    } else {
-        $c->stash->{template} = '/comp/topic/topic_main.js';
-    }
+                $c->stash->{jobs} = \@jobs;
+            }
+            
+            $c->stash->{status_items_menu} = _encode_json(\@statuses);
+            
+            
+        }else{
+            $id_category = $p->{new_category_id};
+            my $category = DB->BaliTopicCategories->find( $id_category );
+            $c->stash->{category_meta} = $category->forms;
+            $c->stash->{permissionEdit} = 1 if exists $categories_edit{$id_category};
+            
+            $c->stash->{topic_mid} = '';
+            $c->stash->{events} = '';
+            $c->stash->{comments} = '';
+        }
+        
+        if( $p->{html} ) {
+            my $meta = $c->model('Topic')->get_meta( $topic_mid, $id_category );
+            my $data = $c->model('Topic')->get_data( $meta, $topic_mid, topic_child_data=>$p->{topic_child_data} );
+            $meta = get_meta_permissions ($c, $meta, $data);        
+            
+            $data->{admin_labels} = $c->model('Permissions')->user_has_any_action( username=> $c->username, action=>'action.admin.topics' );
+            
+            $c->stash->{topic_meta} = $meta;
+            $c->stash->{topic_data} = $data;
+            
+            $c->stash->{template} = '/comp/topic/topic_msg.html';
+        } else {
+            $c->stash->{template} = '/comp/topic/topic_main.js';
+        }
     } catch {
         $c->stash->{json} = { success=>\0, msg=>"". shift() };
         $c->forward('View::JSON');
@@ -624,7 +671,7 @@ sub comment : Local {
                         id_post  => $mid,
                         post     => substr( $text, 0, 30 ) . ( length $text > 30 ? "..." : "" )
                     };
-                    $topic_row->add_to_posts( $post, { rel_type=>'topic_post' });
+                    $topic_row->add_to_posts( $post, { rel_field => 'topic_post', rel_type=>'topic_post' });
                     #master_rel->create({ rel_type=>'topic_post', from_mid=>$id_topic, to_mid=>$mid });
                 };
                 #$c->model('Event')->create({
@@ -826,7 +873,6 @@ sub list_label : Local {
     $dir ||= 'asc';
     $sort ||= 'name';
     
-    my $cnt;
     my $row;
     my @rows;
     
@@ -1257,11 +1303,11 @@ sub list_admin_category : Local {
 
     }else{
         
-        my $username = $c->is_root ? '' : $c->username;
+        #my $username = $c->is_root ? '' : $c->username;
         my @statuses = $c->model('Topic')->next_status_for_user(
             id_category    => $p->{categoryId},
             id_status_from => $p->{statusId},
-            username       => $username,
+            username       => $c->username,
         );
 
 
@@ -1299,7 +1345,14 @@ sub upload : Local {
     my $filename = $p->{qqfile};
     my ($extension) =  $filename =~ /\.(\S+)$/;
     $extension //= '';
-    my $f =  _file( $c->req->body );
+    
+    my $f;    
+    if( $c->req->body eq ''){
+        my $x = $c->req->upload('qqfile');
+        $f =  _file( $x->tempname );
+    }else{
+        $f =  _file( $c->req->body );
+    }
     _log "Uploading file " . $filename;
     try {
         if($p->{topic_mid} && $p->{topic_mid} > 0){
@@ -1349,7 +1402,9 @@ sub upload : Local {
                                 created_on => DateTime->now,
                             }
                         );
+
                         $file_mid = $mid;
+                        
                         if ($p->{topic_mid}){
                             event_new 'event.file.create' => {
                                 username => $c->username,
@@ -1365,10 +1420,12 @@ sub upload : Local {
                     
                 #$file_mid = $existing->mid;
             }
-            $c->stash->{ json } = { success => \1, msg => _loc( 'Uploaded file %1', $filename ), file_uploaded_mid => $p->{topic_mid}? '': $file_mid, };            
+            $c->res->body('{"success": "true", "msg":"' . _loc( 'Uploaded file %1', $filename ) . '", "file_uploaded_mid":"' . $file_mid . '"}');
+            #$c->stash->{ json } = { success => \1, msg => _loc( 'Uploaded file %1', $filename ), file_uploaded_mid => $file_mid };            
         }
         else{
-            $c->stash->{ json } = { success => \0, msg => _loc( 'You must save the topic before add new files' )};
+            $c->res->body('{"success": "false", "msg":"' . _loc( 'You must save the topic before add new files' ) . '"}');
+            #$c->stash->{ json } = { success => \0, msg => _loc( 'You must save the topic before add new files' )};
         }
     }
     catch {
@@ -1376,15 +1433,16 @@ sub upload : Local {
         _log "Error uploading file: " . $err;
         $c->stash->{ json } = { success => \0, msg => $err };
     };
-    #$c->res->body('{success: true}');
-    $c->forward( 'View::JSON' );
+    
     #$c->res->content_type( 'text/html' );    # fileupload: true forms need this
+    #$c->forward( 'View::JSON' );
 }
 
 sub file : Local {
     my ( $self, $c, $action ) = @_;
     my $p      = $c->req->params;
     my $topic_mid = $p->{topic_mid};
+    
     try {
         my $msg; 
         if( $action eq 'delete' ) {
@@ -1517,36 +1575,36 @@ sub form_build {
 sub newjob : Local {
     my ($self, $c ) = @_;
     my $p = $c->req->params;
-    my $ns = $p->{ns} or _throw 'Missing parameter ns';
+    my $changesets = $p->{changesets} or _throw 'Missing parameter changesets';
     my $bl = $p->{bl} or _throw 'Missing parameter bl';
 
     $c->stash->{json} = try {
-        my @contents = map {
-            _log _loc "Adding namespace %1 to job", $_;
-            my $item = Baseliner->model('Namespaces')->get( $_ );
-            _throw _loc 'Could not find changeset "%1"', $_ unless ref $item;
-            $item;
-        } ($ns);
-
-        _log _dump \@contents;
-
+        # create job CI
+        my $job;
         my $job_type = $p->{job_type} || 'static';
-
-        my $job = $c->model('Jobs')->create(
-            bl       => $bl,
-            type     => $job_type,
-            username => $c->username || $p->{username} || `whoami`,
-            runner   => $p->{runner} || 'service.job.chain.simple',
-            comments => $p->{comments},
-            items    => [ @contents ]
-        );
-        $job->stash_key( status_from => $p->{status_from} );
-        $job->stash_key( status_to => $p->{status_to} );
-        $job->stash_key( id_status_from => $p->{id_status_from});
-        $job->update;
+        my $job_data = {
+            bl         => $bl,
+            type       => $job_type,
+            username   => $c->username || $p->{username} || `whoami`,
+            comments   => $p->{comments},
+            changesets => $changesets,
+        };
+        event_new 'event.job.new' => { c=>$c, self=>$self, job_data=>$job_data } => sub {
+            $job = BaselinerX::CI::job->new( $job_data );
+            $job->save;
+            $job->job_stash({   # job stash autosaves into the stash table
+                status_from    => $p->{status_from},
+                status_to      => $p->{status_to},
+                id_status_from => $p->{id_status_from},
+            });
+            { job=>$job }; 
+        };
         { success=>\1, msg=> _loc( "Job %1 created ok", $job->name ) };
     } catch {
         my $err = shift;
+        $err =~ s({UNKNOWN})()g;
+        $err =~ s{DBIx.*\(\):}{}g;
+        $err =~ s{ at./.*line.*}{}g;
         { success=>\0, msg=> _loc( "Error creating job: %1", "$err" ) };
     };
     $c->forward('View::JSON');
@@ -1688,12 +1746,20 @@ sub change_status : Local {
     my ($self, $c ) = @_;
     my $p = $c->req->params;
     $c->stash->{json} = try {
-        $c->model('Topic')->change_status( 
-            change=>1, username=>$c->username, 
-            id_status=>$p->{new_status}, id_old_status=>$p->{old_status}, 
-            mid=>$p->{mid} 
-        );
-        { success=>\1, msg=>'ok' };
+        my $change_status_before;
+        
+        if ($p->{old_status} eq DB->BaliTopic->find($p->{mid})->id_category_status){
+            $change_status_before = \0;
+            $c->model('Topic')->change_status( 
+                change=>1, username=>$c->username, 
+                id_status=>$p->{new_status}, id_old_status=>$p->{old_status}, 
+                mid=>$p->{mid} 
+            );
+        }
+        else{
+            $change_status_before = \1;
+        }
+        { success=>\1, msg=>_loc ('Changed status'), change_status_before=>$change_status_before };
     } catch {
         my $err = shift;
         _error( $err );

@@ -4,6 +4,8 @@ use Baseliner::Utils;
 use namespace::autoclean;
 
 with 'Baseliner::Role::CI::Nature';
+with 'Baseliner::Role::CI::VariableStash';
+
 sub icon { '/static/images/icons/nature.gif' }
 
 
@@ -26,5 +28,39 @@ service scan => 'Scan Nature Items' => sub {
 };
 
 sub has_bl { 0 }
+
+# checks if an item belongs to this nature
+sub item_match {
+    my ($self, %p ) = @_;
+    my $item = $p{item} // _fail _loc 'Missing parameter item';
+    my @include = Util->_array( $self->include );
+    my @exclude = Util->_array( $self->exclude );
+    my $match = 0;
+    for my $in ( @include ) {
+        next unless length $in;
+        if( $item->path =~ /$in/ ) {
+            $match = 1; 
+        }
+    }
+    for my $ex ( @exclude ) {
+        next unless length $ex;
+        if( $item->path =~ /$ex/ ) {
+            return 0;
+        }
+    }
+    return $match;
+}
+
+# add item to 'items' if it belongs here
+sub push_item {
+    my ($self, $item, %p ) = @_;
+    if( $self->item_match( item=>$item, %p ) ) {
+        # TODO make them items unique
+        $self->items([ _array( $self->items ), $item ]);
+        return 1;
+    } else {
+        return 0;
+    }
+}
 
 1;

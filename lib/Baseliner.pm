@@ -59,7 +59,7 @@ our $VERSION = $FULL_VERSION->[0];
 our $VERSION_SHA = $FULL_VERSION->[1];
 
 # find my parent to enable restarts
-$ENV{BASELINER_PARENT_PID} = getppid();
+$ENV{BASELINER_PARENT_PID} //= getppid();
 
 __PACKAGE__->config( name => 'Baseliner', default_view => 'Mason' );
 __PACKAGE__->config( setup_components => { search_extra => [ 'BaselinerX' ] } );
@@ -90,6 +90,8 @@ __PACKAGE__->config( encoding => 'UTF-8' ); # used by Catalyst::Plugin::Unicode:
 
 __PACKAGE__->config( {
         'View::JSON' => {
+            decode_utf8  => 0,
+            json_driver  => 'JSON::XS',
             expose_stash => 'json',
             encoding     => 'utf-8',
         },
@@ -181,7 +183,14 @@ if( $ENV{BALI_FAST} ) {
     };
 }
 
+# config / options from a supervisor? -- have lower precedence than .conf files
+if( ref $Baseliner::BASE_OPTS eq 'HASH' ) {
+    Baseliner->config(  %{ $Baseliner::BASE_OPTS } );
+}
+
+#############################
 __PACKAGE__->setup();
+#############################
 
 # Capture Signals
 $SIG{INT} = \&signal_interrupt;
@@ -266,7 +275,7 @@ around 'debug' => sub {
         #$_->meta->make_immutable for keys %pkgs;
     }
 
-    # master db setup
+    # mdb : master db setup
     {
         package mdb;
         our $AUTOLOAD;
@@ -285,6 +294,21 @@ around 'debug' => sub {
             my $class = ref $db;
             my $method = $class . '::' . $a[0];
             @_ = ( $db, @_ );
+            goto &$method;
+        }
+    }
+
+    # ci : ci utilities setup
+    {
+        package ci;
+        our $AUTOLOAD;
+        sub AUTOLOAD {
+            my $self = shift;
+            my $name = $AUTOLOAD;
+            my ($method) = reverse( split(/::/, $name));
+            my $class = $method eq 'new' ? 'Baseliner::CI' : 'Baseliner::Role::CI';
+            $method = $class . '::' . $method;
+            @_ = ( $class, @_ );
             goto &$method;
         }
     }
@@ -352,7 +376,8 @@ around 'debug' => sub {
 
     # Beep
     my $bali_env = $ENV{CATALYST_CONFIG_LOCAL_SUFFIX} // $ENV{BASELINER_CONFIG_LOCAL_SUFFIX};
-    print STDERR "Baseliner $Baseliner::VERSION_STRING. Startup time: " . tv_interval($t0) . "s.\n";
+    print STDERR ( Baseliner->config->{name} // 'Baseliner' ) 
+        . " $Baseliner::VERSION_STRING. Startup time: " . tv_interval($t0) . "s.\n";
     $ENV{CATALYST_DEBUG} || $ENV{BASELINER_DEBUG} and do { 
         print STDERR "Environment: $bali_env. Catalyst: $Catalyst::VERSION. DBIC: $DBIx::Class::VERSION. Perl: $^V. OS: $^O\n";
         print STDERR "\7";

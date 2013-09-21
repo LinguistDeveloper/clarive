@@ -704,11 +704,11 @@
                 listeners: {
                     'load': function( store, rec, obj ) {
                         statusCbx = Ext.getCmp('status-combo_' + id);
-                        store.filter( { fn   : function(record) {
+                        // store.filter( { fn   : function(record) {
                         
-                                                                    return record.get('name') != statusCbx.getRawValue();
-                                                                }
-                                                    });
+                        //                                             return record.get('name') != statusCbx.getRawValue();
+                        //                                         }
+                        //                             });
                     }
                 }   
         });
@@ -800,10 +800,10 @@
             listeners:{
                 'select': function(combo, r, idx) {
                     if(store_admin_status.getCount()) {
-                        store_admin_status.filter( {    fn   : function(record) {
-                                                                    return record.get('name') != r.data.name;
-                                                                },scope:this
-                                                    });
+                        // store_admin_status.filter( {    fn   : function(record) {
+                        //                                             return record.get('name') != r.data.name;
+                        //                                         },scope:this
+                        //                             });
                     }else{
                         store_admin_status.load({params:{categoryId: rec.data.id}});
                     }
@@ -841,7 +841,7 @@
         var render_project = function(value,metadata,rec,rowIndex,colIndex,store){
             if(rec.data.projects){
                 for(i=0;i<rec.data.projects.length;i++){
-                    tag_project_html = tag_project_html + "<div id='boot' class='alert' style='float:left'><button class='close' data-dismiss='alert'>×</button>" + rec.data.projects[i].project + "</div>";
+                    tag_project_html = tag_project_html + "<div id='boot' class='alert' style='float:left'><button class='close' data-dismiss='alert'>Ã—</button>" + rec.data.projects[i].project + "</div>";
                 }
             }
             return tag_project_html;
@@ -2126,11 +2126,11 @@
                 projects_box,
                 btn_add_label,
                 btn_delete_label,
-                '->',
-% if ($c->stash->{can_admin_labels}) {              
+                '->'//,
+% #if ($c->stash->{can_admin_labels}) {              
                 //btn_by_project,
                 //btn_choose_projects
-% }             
+% #}             
         ]
     });
     

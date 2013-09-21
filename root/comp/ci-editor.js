@@ -30,6 +30,7 @@
                       var ret = cb( form2 );
                       if( !ret ) flag = false;
                    });
+                   // XXX submit JSON with ajaxJSON for better depth?
                    form2.submit({
                        params: {action: params.action, mid: params.mid, collection:params.collection },
                        success: function(f,a){
@@ -198,7 +199,7 @@
                     { layout:'form', columnWidth : .35, defaults: { anchor: '100%' }, items:[
                         { xtype: 'checkbox', colspan: 1, fieldLabel: _('Active'), name:'active', checked: is_active, allowBlank: true },
                         { xtype: 'textfield', colspan: 1, fieldLabel: _('Moniker'), name:'moniker', value: params.rec.moniker, allowBlank: true },
-                        { xtype: 'textfield', colspan: 1, fieldLabel: _('Version'), name:'versionid', value: params.rec.versionid, allowBlank: true },
+                        { xtype: 'textfield', colspan: 1, fieldLabel: _('Version'), name:'versionid', readOnly: true, submitValue: false, value: params.rec.versionid, allowBlank: true },
                         ( params.has_bl > 0 ? bl_combo : [] )
                     ]}
                 ]},
@@ -223,8 +224,7 @@
             bl_combo.getStore().on( 'load', function(){
                 bl_combo.setValue( params.rec.bl );
             });
-            if( params.ci_form ) {
-                Ext.each( params.ci_form, function(form_url){
+            var add_ci_form = function(form_url, params) {
                     Baseliner.ajaxEval( form_url, params, function(res){
                         if( res != undefined ) {
                             var fields;
@@ -241,8 +241,19 @@
                             form.getForm().setValues( params.rec );
                         }
                     });
+            };
+            if( params.ci_form ) {
+                // XXX deprecated: (ci_form inconsistent with cache)
+                Ext.each( params.ci_form, function(form_url){
+                    add_ci_form( form_url, params );
                 });
             } else {
+                Baseliner.ci_call( params.mid, 'ci_form', {}, function(res){
+                    var forms = res.data;
+                    Ext.each( forms, function(form_url){
+                        add_ci_form( form_url, params );
+                    });
+                });
                 //form.getForm().loadRecord( params.rec );
             }
         });

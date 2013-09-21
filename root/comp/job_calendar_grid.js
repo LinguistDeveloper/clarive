@@ -170,7 +170,7 @@
                     if( s ) {
                         s = s.replace( /\<br\>/g , ', ');
                         p.body = String.format(
-                            '<div style="margin: 0 0 0 35; color:#999">{0}</div>'
+                            '<div style="padding: 0px 0px 0px 30px; color:#999">{0}</div>'
                             , s );
                         return ' x-grid3-row-expanded';
                     } else {

@@ -10,17 +10,13 @@ if( ! $meta->{hidden} ) {
     
     my $ix = 0;
     my @topics = Util->_array( $data->{$meta->{id_field}} );
-    #@topics = map { 
-    #    my $d = Baseliner->model('Topic')->get_data( undef, $_->{mid} ); 
-    #    { %$_, %$d }
-    #} @topics;
     my $cols = ref $meta->{columns} ? $meta->{columns} : do {
         [ map { [ split /,/ ] } split /;/, $meta->{columns} ]
     };
     
     my @head =  map { 
-        my $nid=_name_to_id($_->[0]);
-        +{ key=>$nid, name=>( $names->{$nid} // $_->[0] ), width=>$_->[2], type=>$_->[1] }
+    my $nid= $_->[0];
+        +{ key=>$nid, name=>( $names->{$nid} // $_->[1] || $_->[0] ), width=>$_->[3], type=>$_->[2] }
     } @$cols; 
     if( ! @head ) {
         @head = map { +{ key=>$_, name=>( $names->{$_} // $_ )  } } qw/name title name_status created_by created_on modified_by modified_on/

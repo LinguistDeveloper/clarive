@@ -33,6 +33,25 @@
             });
         }
     };
+
+    var rule_export = function(){
+        var sm = rules_grid.getSelectionModel();
+        if( sm.hasSelection() ) {
+            var activate = sm.getSelected().data.rule_active > 0 ? 0 : 1;
+            Baseliner.ajaxEval( '/rule/export', { id_rule: sm.getSelected().data.id }, function(res){
+                if( res.success ) {
+                    var win = new Baseliner.Window({ height: 400, width: 800, items: new Baseliner.MonoTextArea({ value: res.yaml }), 
+                         layout:'fit' });       
+                    win.show();
+                } else {
+                    Baseliner.error( _('Rule Export'), res.msg );
+                }
+            });
+        } else {
+            Baseliner.message( _('Error'), _('Select rows first') );
+        }
+    };
+    
     var rule_activate = function(){
         var sm = rules_grid.getSelectionModel();
         if( sm.hasSelection() ) {
@@ -108,7 +127,15 @@
             forceFit: true,
             getRowClass : function(rec, index, p, store){
                 //p.body = String.format( '<div style="margin: 0 0 0 32;"><table><tr>'
-                p.body = String.format( '<div style="margin: 0 0 0 32;">{0}</div>', _('%1 for event "%2"', _(rec.data.rule_when), rec.data.rule_event ) );
+                var caption = '';
+                if( rec.data.rule_type == 'event' ) {
+                    caption =  _('%1 for event "%2"', _(rec.data.rule_when), rec.data.rule_event );
+                } else if( rec.data.rule_type == 'chain' ) {
+                    caption =  _('job chain');
+                } else {
+                    caption =  _('independent');
+                }
+                p.body = String.format( '<div style="margin: 0 0 0 32px;color: #999">{0}</div>', caption );
                 return ' x-grid3-row-expanded';
             }
         },
@@ -125,7 +152,7 @@
             { xtype:'button', icon: '/static/images/icons/edit.gif', cls: 'x-btn-icon', handler: rule_edit },
             { xtype:'button', icon: '/static/images/icons/delete.gif', cls: 'x-btn-icon', handler: rule_del },
             { xtype:'button', icon: '/static/images/icons/activate.png', cls: 'x-btn-icon', handler: rule_activate },
-            { xtype:'button', icon: '/static/images/icons/downloads_favicon.png', cls: 'x-btn-icon' }
+            { xtype:'button', icon: '/static/images/icons/downloads_favicon.png', cls: 'x-btn-icon', handler: rule_export }
         ]
     });
     rules_store.load();
@@ -136,7 +163,7 @@
             if( tab_arr.length > 0 ) {
                 tabpanel.setActiveTab( tab_arr[0] );
             } else {
-                rule_flow_show( rec.data.id, rec.data.rule_name, rec.data.event_name, rec.data.rule_event );
+                rule_flow_show( rec.data.id, rec.data.rule_name, rec.data.event_name, rec.data.rule_event, rec.data.rule_type );
             }
         }
     });
@@ -149,6 +176,26 @@
         return stmts;
     };
 
+    var show_win = function(node, item, opts, foo) {
+        var win = new Baseliner.Window(Ext.apply({
+            layout: 'fit',
+            title: _('Edit: %1', node.text),
+            items: item
+        }, opts));
+        item.on('destroy', function(){
+            if( !Ext.isFunction(foo) ) foo = function(d){ 
+                node.getOwnerTree().is_dirty=true; 
+                var data_key = d.data_key;
+                delete d.data_key;
+                node.attributes.data = d; 
+                node.attributes.data_key = data_key; 
+            };
+            if( item.data ) foo(item.data); // item.data is only set if modified
+            win.close();
+        });
+        win.show();
+    };
+    
     var clipboard;
     var cut_node = function( node ) {
         clipboard = { node: node };
@@ -159,6 +206,9 @@
             copy.appendChild( clone_node( chi ) );
         });
         return copy;
+    };
+    var dsl_node = function( node ) {
+        node.getOwnerTree().rule_dsl(node);
     };
     var copy_node = function( node ) {
         var copy = clone_node( node ); 
@@ -172,6 +222,25 @@
         }
         //clipboard = 
     };
+    var toggle_node = function( node ) {
+        node.disabled ? node.enable() : node.disable();
+        node.attributes.active = node.disabled ? 0 : 1;
+        if( node.ui && node.ui.textNode ) node.ui.textNode.style.textDecoration = node.disabled ? 'line-through' : '';
+    };
+    var rename_node = function( node ) {
+        Ext.Msg.prompt(_('Rename'), _('New name:'), function(btn, text){
+            if( btn == 'ok' ) {
+                node.setText( text );
+            }
+        }, this, false, node.text );
+    };
+    var meta_node = function( node ) {
+        var comp = new Baseliner.DataEditor({ data: node.attributes });
+        show_win( node, comp, { width: 800, height: 400 }, function(d){ 
+            node.attributes=d;
+            node.setText( d.text );
+        });
+    };
     var edit_node = function( node ) {
         var key = node.attributes.key;
         if( ! key ) {
@@ -181,50 +250,43 @@
         }
         Baseliner.ajaxEval( '/rule/edit_key', { key: key }, function(res){
             if( res.success ) {
-                var show_win = function(item, opts) {
-                    var win = new Baseliner.Window(Ext.apply({
-                        layout: 'fit',
-                        title: _('Edit'),
-                        items: item
-                    }, opts));
-                    item.on('destroy', function(){
-                        //console.log( item.data );
-                        if( item.data ) node.attributes.data = item.data; 
-                        win.close();
-                    });
-                    win.show();
-                };
                 if( res.form ) {
-                    Baseliner.ajaxEval( res.form, { data: node.attributes.data }, function(comp){
+                    Baseliner.ajaxEval( res.form, { data: node.attributes.data || {} }, function(comp){
                         var params = {};
+                        var data_key = new Ext.form.TextField({ name:'data_key', value: node.attributes.data_key });
                         var save_form = function(){
                             form.data = form.getForm().getValues();
+                            form.data.data_key = data_key.getValue();
                             form.destroy();
                         };
                         var form = new Ext.FormPanel({ 
-                            frame: false, forceFit: true, defaults: { msgTarget: 'under' },
-                            width: 800,
-                            height: 500,
-                            bodyStyle: { padding: '4px', "background-color": '#eee' },
+                            frame: false, forceFit: true, defaults: { msgTarget: 'under', anchor:'100%' },
+                            width: 800, height: 600,
+                            autoScroll: true,
                             tbar: [
-                                { xtype:'button', text:_('Save'), handler: save_form },
-                                { xtype:'button', text:_('Cancel'), handler: function(){ form.destroy() } }
+                                _('Return Key') + ':',
+                                data_key,
+                                //res.form,
+                                '->',
+                                { xtype:'button', text:_('Cancel'), icon:'/static/images/icons/delete.gif', handler: function(){ form.destroy() } },
+                                { xtype:'button', text:_('Save'), icon:'/static/images/icons/save.png', handler: function(){ save_form() } }
                             ],
+                            bodyStyle: { padding: '4px', "background-color": '#eee' },
                             items: comp
                         });
-                        show_win( form );
+                        show_win( node, form );
                     });
                 } else {
                     var node_data = Ext.apply( res.config, node.attributes.data );
                     var comp = new Baseliner.DataEditor({ data: node_data });
-                    show_win( comp, { width: 800, height: 400 } );
+                    show_win( node, comp, { width: 800, height: 400 } );
                 }
             } else {
                 Baseliner.error( _('Error'), res.msg );
             }
         });
     };
-    var rule_flow_show = function( id_rule, name, event_name, rule_event ) {
+    var rule_flow_show = function( id_rule, name, event_name, rule_event, rule_type ) {
         var drop_handler = function(e) {
             var n1 = e.source.dragData.node;
             var n2 = e.target;
@@ -237,6 +299,8 @@
                 } 
                 var copy = new Ext.tree.TreeNode( Ext.apply({}, attr1) );
                 copy.attributes.palette = false;
+                copy.setText( copy.attributes.name );  // keep original node text name
+                //n2.getOwnerTree().is_dirty = true;
                 e.dropNode = copy;
             }
             return true;
@@ -247,12 +311,26 @@
             //requestMethod:'GET',
             //uiProviders: { 'col': Ext.tree.ColumnNodeUI }
         });
+        /* 
+         * strikethrough disabled nodes
+         * XXX causes strange call stack exceeded errors on encode_tree
+         *
+        rule_tree_loader.on('load', function(loader,node){
+            node.cascade(function(n) {
+                var act = n.attributes.active;
+                if( act===undefined || act == '1' ) return;
+                if( n.ui && n.ui.textNode ) n.ui.textNode.style.textDecoration = 'line-through';
+            });
+        });
+        */
         var rule_save = function(opt){
             var root = rule_tree.root;
             var stmts = encode_tree( root );
+            Baseliner.message( _('Rules'), _('Validating and saving rule...') );
             var json = Ext.util.JSON.encode( stmts );
             Baseliner.ajaxEval( '/rule/stmts_save', { id_rule: id_rule, stmts: json }, function(res) {
                 if( res.success ) {
+                    rule_tree.is_dirty = false;
                     Baseliner.message( _('Rule'), res.msg );
                     if( opt.callback ) {
                         opt.callback( res );
@@ -262,49 +340,20 @@
                 }
             });
         };
-        var rule_load = function(){
+        var rule_load_do = function(btn){
+            btn.disable();
             rule_tree_loader.load( rule_tree.root );
             rule_tree.root.expand();
+            btn.enable();
         };
-        var rule_dsl = function(){
-            var root = rule_tree.root;
-            //rule_save({ callback: function(res) { } });
-            var stmts = encode_tree( root );
-            var json = Ext.util.JSON.encode( stmts );
-            Baseliner.ajaxEval( '/rule/dsl', { id_rule: id_rule, stmts: json, event_key: rule_event }, function(res) {
-                if( res.success ) {
-                    var editor;
-                    var idtxt = Ext.id();
-                    var data_txt = new Ext.form.TextArea({ region:'west', width: 140, value: res.event_data_yaml });
-                    var dsl_txt = new Ext.form.TextArea({  value: res.dsl });
-                    var dsl_cons = new Ext.form.TextArea({ style:'color: #191; background-color:#000;' });
-                    var dsl_run = function(){
-                        Baseliner.ajaxEval( '/rule/dsl_try', { data: data_txt.getValue(), dsl: editor.getValue(), event_key: rule_event }, function(res) {
-                            dsl_cons.setValue( res.msg ); 
-                        });
-                    };
-                    var win = new Baseliner.Window({
-                       layout: 'border', width: 800, height: 600, maximizable: true,
-                       tbar: [ { text:_('Run'), icon:'/static/images/icons/run.png', handler: dsl_run } ],
-                       items: [
-                           data_txt,
-                           { region:'center', xtype:'panel', height: 400, items:dsl_txt  },
-                           { xtype:'panel', items:dsl_cons, region:'south', split: true, height:200, layout:'fit' }
-                       ]
-                    });
-                    dsl_txt.on('afterrender', function(){
-                        editor = CodeMirror.fromTextArea( dsl_txt.getEl().dom , Ext.apply({
-                               lineNumbers: true,
-                               tabMode: "indent", smartIndent: true,
-                               matchBrackets: true
-                            }, Baseliner.editor_defaults )
-                        );
-                    });
-                    win.show();
-                } else {
-                    Baseliner.error( _('Error saving rule'), res.msg );
+        var rule_load = function(btn){
+            if( rule_tree.is_dirty ) {
+                if( rule_tree.close_me() ) {
+                    rule_load_do(btn);
                 }
-            });
+            } else {
+                rule_load_do(btn);
+            }
         };
         var short_name = name.length > 10 ? name.substring(0,20) : name;
         var menu_click = function(node,event){
@@ -312,9 +361,13 @@
             var stmts_menu = new Ext.menu.Menu({
                 items: [
                     { text: _('Edit'), handler: function(){ edit_node( node ) }, icon:'/static/images/icons/edit.gif' },
+                    { text: _('Rename'), handler: function(){ rename_node( node ) }, icon:'/static/images/icons/item_rename.png' },
+                    { text: _('Metadata'), handler: function(){ meta_node( node ) }, icon:'/static/images/icons/leaf.gif' },
                     { text: _('Copy'), handler: function(item){ copy_node( node ) }, icon:'/static/images/icons/copy.gif' },
                     { text: _('Cut'), handler: function(item){ cut_node( node ) }, icon:'/static/images/icons/cut.gif' },
                     { text: _('Paste'), handler: function(item){ paste_node( node ) }, icon:'/static/images/icons/paste.png' },
+                    { text: _('DSL'), handler: function(item){ dsl_node( node ) }, icon:'/static/images/icons/edit.png' },
+                    { text: _('Toggle'), handler: function(item){ toggle_node(node) }, icon:'/static/images/icons/activate.png' },
                     { text: _('Delete'), handler: function(item){ node.remove() }, icon:'/static/images/icons/delete.gif' } 
                 ]
             });
@@ -342,11 +395,94 @@
             tbar: [ 
                 { xtype:'button', text: _('Save'), icon:'/static/images/icons/save.png', handler: rule_save },
                 { xtype:'button', text: _('Reload'), icon:'/static/images/icons/refresh.gif', handler: rule_load },
-                { xtype:'button', text: _('DSL'), icon:'/static/images/icons/edit.png', handler: rule_dsl }
+                { xtype:'button', text: _('DSL'), icon:'/static/images/icons/edit.png', handler: function() { rule_tree.rule_dsl() } }
             ],
-            root: { text: _('Start: %1', event_name), draggable: false, id: 'root', expanded: true }
+            root: { 
+                text: String.format('<strong>{0}</strong>', _('Start: %1', event_name || short_name) ), 
+                name: _('Start: %1', event_name || short_name),
+                draggable: false, 
+                id: 'root', 
+                icon: (rule_type=='chain'?'/static/images/icons/job.png':'/static/images/icons/event.png'), expanded: true }
         });
+        rule_tree.make_dirty = function(){ rule_tree.is_dirty = true };
+        rule_tree.on('movenode', rule_tree.make_dirty );
+        rule_tree.on('nodedrop', rule_tree.make_dirty );
+        rule_tree.on('remove', rule_tree.make_dirty );
+        rule_tree.close_me = function(){ 
+            return confirm(_('Rule `%1` has changed, but has not been saved. Leave without saving?', rule_tree.title ));
+        };
+        
+        rule_tree.rule_dsl = function(from){
+            var root = from || rule_tree.root;
+            //rule_save({ callback: function(res) { } });
+            var stmts = encode_tree( root );
+            var json = Ext.util.JSON.encode( stmts );
+            Baseliner.ajaxEval( '/rule/dsl', { id_rule: id_rule, rule_type: rule_type, stmts: json, event_key: rule_event }, function(res) {
+                if( res.success ) {
+                    var editor;
+                    var idtxt = Ext.id();
+                    var stash_txt = new Ext.form.TextArea({ region:'west', split:true, width: 140, value: rule_tree.last_stash || res.data_yaml });
+                    var dsl_txt = new Ext.form.TextArea({  value: res.dsl });
+                    var style_cons = 'background: black; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", Courier';
+                    var dsl_cons = new Ext.form.TextArea({ title:_('Output'), style:style_cons });
+                    var dsl_stash = new Ext.form.TextArea({ title:_('Stash'), style:style_cons });
+                    var dsl_run = function(){
+                        dsl_cons.setValue( '' );
+                        dsl_stash.setValue( '' );
+                        Baseliner.ajaxEval( '/rule/dsl_try', { stash: stash_txt.getValue(), dsl: editor.getValue(), event_key: rule_event }, function(res) {
+                            Baseliner.message( 'DSL', _('Finished OK') );
+                            document.getElementById( dsl_cons.getId() ).style.color = "#10c000";  // green
+                            var out = res.output != undefined ? res.output : '';
+                            dsl_cons.setValue( out ); 
+                            dsl_stash.setValue( res.stash_yaml );
+                        }, function(res){
+                            Baseliner.message( 'DSL', _('Error during DSL execution: %1', res.msg ) );
+                            document.getElementById( dsl_cons.getId() ).style.color = "#f54";  // red
+                            var out = res.output != undefined ? res.output : '';
+                            dsl_cons.setValue( out + '\n\n========= DSL ERROR =======\n\n' + res.msg ); 
+                            dsl_stash.setValue( res.stash_yaml );
+                        });
+                    };
+                    var win = new Baseliner.Window({
+                        layout: 'border', width: 1024, height: 650, maximizable: true,
+                        //tabifiable: true,
+                        title: _('DSL: %1', name ),
+                        tbar: [ { text:_('Run'), icon:'/static/images/icons/run.png', handler: dsl_run } ],
+                        keys: [{
+                            key:[10,13],
+                            ctrl: true,
+                            fn: dsl_run
+                        }],
+                        items: [
+                           stash_txt,
+                           { region:'center', xtype:'panel', height: 400, items: dsl_txt  },
+                           { xtype:'tabpanel', items: [dsl_cons, dsl_stash], activeTab:0, region:'south', split: true, height: 200 }
+                        ]
+                    });
+                    win.on('beforeclose', function(){
+                        rule_tree.last_stash = stash_txt.getValue();
+                    });
+                    dsl_txt.on('afterrender', function(){
+                        editor = CodeMirror.fromTextArea( dsl_txt.getEl().dom , Ext.apply({
+                               lineNumbers: true,
+                               tabMode: "indent", smartIndent: true,
+                               matchBrackets: true
+                            }, Baseliner.editor_defaults )
+                        );
+                    });
+                    win.show();
+                } else {
+                    Baseliner.error( _('Error saving rule'), res.msg );
+                }
+            });
+        };
         var tab = tabpanel.add( rule_tree ); 
+        tab.on('beforeclose', function(tree){
+            if( tree.is_dirty ) {
+                return tree.close_me();
+            }
+            return true;
+        });
         tabpanel.setActiveTab( tab );
         tabpanel.changeTabIcon( tab, '/static/images/icons/rule.png' );
     };
@@ -397,16 +533,42 @@
         enableDrag: true,
         collapsible: true,
         resizable: true,
-        tbar: [search_palette],
+        tbar: [
+            search_palette,
+            { xtype:'button', icon:'/static/images/icons/refresh.gif', 
+                handler: function(){
+                    palette.loader.load( palette.root ); 
+                }
+            }
+        ],
         dataUrl: '/rule/palette',
         rootVisible: false,
         useArrows: true,
-        root: { nodeType: 'async', text: 'Palette', draggable: false, id: 'root', expanded: true }
+        root: { nodeType: 'async', text: _('Palette'), draggable: false, id: 'root', expanded: true }
+    });
+    palette.on('beforechildrenrendered', function(node){
+        node.eachChild(function(n) {
+            var key = n.attributes.key;
+            if( key != undefined ) {
+                n.attributes.name = n.attributes.text; // save original for later
+                n.setText( n.attributes.text + String.format('<span style="padding-left: 5px;color:#bbb">{0}</span>',key) );
+            }
+        });
     });
     var panel = new Ext.Panel({
         layout: 'border',
         items: [ rules_grid, tabpanel, palette ]
     });
+    panel.on('beforeclose', function(){
+        var close_this;
+        tabpanel.cascade(function(tree){
+            if( close_this!== false && tree.is_dirty ) {
+                close_this = tree.close_me();
+            }
+        });
+        return close_this;
+    });
 
+    Baseliner.edit_check( panel, true );  // block window closing from the beginning
     return panel;
 })

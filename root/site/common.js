@@ -666,6 +666,7 @@ Baseliner.ArrayGrid = Ext.extend( Ext.grid.EditorGridPanel, {
         self.raw_value = arr;
     }, 
     getValue : function() {
+        var self = this;
         return self.raw_value;
     }
 });
@@ -2219,22 +2220,51 @@ Baseliner.CICheckBox = Ext.extend( Baseliner.CheckBoxField, {
     }
 });
 
+Baseliner.FormEditor = Ext.extend( Ext.FormPanel, {
+    frame: false, forceFit: true, 
+    defaults: { msgTarget: 'under', anchor:'100%' },
+    width: 800, height: 600,
+    autoScroll: true,
+    bodyStyle: { padding: '4px', "background-color": '#eee' },
+    initComponent : function(){
+        var self = this;
+        var data = this.data || {};
+        //var de = new Baseliner.DataEditor({ data: data, hide_cancel: true, hide_save: true });
+        //this.items = [ ];
+        Baseliner.FormEditor.superclass.initComponent.call(this);
+        Baseliner.ajaxEval( self.form_url, data, function(comp){
+            self.add( comp );
+            self.doLayout();
+        }, function(res){
+            Baseliner.error( _('Form Editor'), _('Could not find form `%1`', self.form) );
+        });
+    },
+    getData : function(){
+        return this.getForm().getValues();
+    }
+});
+
 Baseliner.run_service = function(params, service){
     var mask = { xtype:'panel', items: Baseliner.loading_panel(), flex: 1 };
-    var initial_data = Ext.apply( { timeout:0 }, service, params );
-    var deditor = new Baseliner.DataEditor({ data: initial_data, hide_cancel:true, hide_save:true });
+    //var initial_data = Ext.apply( { timeout:0 }, service, params );
+    var initial_data = { service: service, data: service.data };
+    var deditor = service.form 
+        ? new Baseliner.FormEditor({ data: initial_data, form_url: service.form })
+        : new Baseliner.DataEditor({ data: initial_data, hide_cancel:true, hide_save:true });
     var btn_run = new Ext.Button({ icon:'/static/images/icons/run.png', text:_('Run'), handler: function(){ 
             btn_run.disable();
-            run_it( deditor.getData() );
+            if(!params) params = {};
+            var run_data = Ext.apply({ key: service.key, _merge_with_params: 1, as_json: true }, params);
+            run_it( Ext.apply(run_data, { data: deditor.getData() }) );
             win.removeAll();
             win.add( mask );
             win.doLayout();
         } })
     var run_it = function(data){
-        Baseliner.ajaxEval( '/ci/service_run', data, function(res){
+        Baseliner.ajax_json( '/ci/service_run', data, function(res){
             btn_run.enable();
             win.removeAll();
-            var tabp = new Ext.TabPanel({ activeTab:0 });
+            var tabp = new Ext.TabPanel({ activeTab: res.msg ? 0 : 1 });
             win.add( tabp );
             if( !res.success ) {
                 tabp.add(new Baseliner.MonoTextArea({ title: 'Message', value: res.msg, style:'color:#f23' }) );
@@ -2265,33 +2295,36 @@ Baseliner.run_service = function(params, service){
 
 // Simple JavaScript Templating
 // John Resig - http://ejohn.org/ - MIT Licensed
+// rgo: heredoc quote fix
+Function.prototype.heredoc = function(s){ return this.toString().slice(14,-3) };
+Function.prototype.tmpl = function(data){ return Baseliner.tmpl(this.heredoc(),data) };
 Baseliner.tmpl_cache = {};
-
-Baseliner.tmpl = function tmpl(str, data){
+Baseliner.tmpl = function (str, data){
     // Figure out if we're getting a template, or if we need to
     // load the template - and be sure to cache the result.
+    var he = ['function(){/*', '*/}.toString().slice(14,-3)']; 
     var fn = !/\W/.test(str) ?
       Baseliner.tmpl_cache[str] = Baseliner.tmpl_cache[str] ||
-        tmpl(document.getElementById(str).innerHTML) :
+        Baseliner.tmpl(document.getElementById(str).innerHTML) :
      
       // Generate a reusable function that will serve as a template
       // generator (and which will be cached).
-      new Function("obj",
+     new Function("obj",
         "var p=[],print=function(){p.push.apply(p,arguments);};" +
-       
+
         // Introduce the data as local variables using with(){}
-        "with(obj){p.push('" +
-       
+        "with(obj){p.push("+he[0]+
+
         // Convert the template into pure JavaScript
-        str
-          .replace(/[\r\t\n]/g, " ")
+         str
+          .replace(/[\r\t\n]/g, " ")    
           .split("[%").join("\t")
-          .replace(/((^|%])[^\t]*)'/g, "$1\r")
-          .replace(/\t=(.*?)%]/g, "',$1,'")
-          .split("\t").join("');")
-          .split("%]").join("p.push('")
-          .split("\r").join("\\'")
-      + "');}return p.join('');");
+          .replace(/((^|%\])[^\t]*)/g, "$1\r")
+          .replace(/\t=(.*?)%\]/g, he[1]+",$1,"+he[0])
+          .split("\t").join(he[1]+");")
+          .split("%]").join("p.push("+he[0])
+          .split("\r").join("")
+      + he[1]+");}return p.join('');");
 
     // Provide some basic currying to the user
     return data ? fn( data ) : fn;
@@ -2388,7 +2421,7 @@ Baseliner.Pills = Ext.extend(Ext.form.Field, {
 Baseliner.MonoTextArea = Ext.extend( Ext.form.TextArea, {
     style: 'font-size: 13px; font-family: Consolas, Courier New, monotype'
 });
-    
+
 Baseliner.ComboSingle = Ext.extend( Ext.form.ComboBox, {
     name: 'item',
     mode: 'local',
@@ -2399,26 +2432,26 @@ Baseliner.ComboSingle = Ext.extend( Ext.form.ComboBox, {
     allowBlank: false,
     selectOnFocus: false,
     initComponent: function(){
+        var self = this;
         var data = [];
-        if( this.data ) {
-            Ext.each( this.data, function(v){
+        if( self.data ) {
+            Ext.each( self.data, function(v){
                 data.push( [v] );
             });
         }
-        this.store = this.buildStore(data);
-        var f = Ext.apply({
-            name: this.name,
-            fieldLabel: this.name,
-            valueField: this.field || this.name,
-            displayField: this.field || this.name,
-            value: data.length>0 ? data[0][0] : null
-        }, this);
-        Ext.apply( this, f );
-        Baseliner.ComboSingle.superclass.initComponent(this); 
+        self.store = self.buildStore(data);
+
+        self.fieldLabel = self.fieldLabel || self.name;
+        self.valueField = self.field || self.name;
+        self.displayField = self.field || self.name;
+        if( !self.value ) self.value = data.length>0 ? data[0][0] : null;
+        
+        Baseliner.ComboSingle.superclass.initComponent.call(this); 
     },
     buildStore : function(data){
-        return new Ext.data.ArrayStore({
-            fields: [ this.name ],
+        var self = this;
+        return new Ext.data.SimpleStore({
+            fields: [ self.name ],
             data : data 
         });  
     }
@@ -2432,7 +2465,7 @@ Baseliner.ComboSingleRemote = Ext.extend( Baseliner.ComboSingle, {
             remoteSort: true,
             totalProperty: this.totalProperty || 'totalCount', 
             id: 'id', 
-            baseParams: {  start: 0, limit: this.ps || 99999999 },
+            baseParams: Ext.apply({  start: 0, limit: this.ps || 99999999 }, this.baseParams ),
             url: this.url,
             fields: this.fields || [ this.name ]
         });  
@@ -2465,63 +2498,83 @@ Baseliner.field_label_top = function( label, hidden ) {
     ]
 };
 
+Baseliner.render_date = function(v){
+    var d;
+    if( !v ) return '';
+    try { d=new Date(v) } catch(ee){}
+    return Ext.isDate(d) ? d.format( Prefs.js_date_format ) : v;
+};
+Baseliner.render_checkbox = function(v){
+    return v 
+        ? '<img src="/static/images/icons/checkbox.png">'
+        : '<img src="/static/images/icons/delete.gif">';
+};
+        
+Baseliner.cols_templates = {
+      id : function(){ return {width: 10 } },
+      index : function(){ return {width: 10, renderer:function(v,m,r,i){return i+1} } },
+      htmleditor: function(){ return { editor: new Ext.form.HtmlEditor(), default_value:'' } },
+      cleditor: function(){ return { editor: new Baseliner.CLEditorField(), default_value:'' } },
+      textfield : function(){ return { width: 100, editor: new Ext.form.TextField({}), default_value:'' } },
+      datefield : function(){ return { width: 30, 
+          editor: new Ext.form.DateField({ format: Prefs.js_date_format }), 
+          renderer: Baseliner.render_date
+      }},
+      checkbox  : function(){ return { align: 'center', width: 10, editor: new Ext.form.Checkbox({}), default_value: false, renderer: Baseliner.render_checkbox } },
+      textarea  : function(){ return { editor: new Ext.form.TextArea({}), default_value:'', renderer: Baseliner.render_wrap } }
+};
+
 Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
     width: '100%',
     height: 250,
     enableDragDrop: true,
+    use_row_editor: true,
     initComponent: function(){
         var self = this;
-        /*
-        var groupRow = [
-            {colspan: 2},
-            {header: 'Datos Entrada', colspan: 2, align: 'center'},
-            {colspan: 2}
-        ];
-
-        var group = new Ext.ux.grid.ColumnHeaderGroup({
-            rows: [groupRow]
-        });
-        */
-        
-        var render_checkbox = function(v){
-            return v 
-                ? '<img src="/static/images/icons/checkbox.png">'
-                : '<img src="/static/images/icons/delete.gif">';
-        }
+		
+        self.viewConfig = Ext.apply({
+            forceFit: true
+        }, self.viewConfig );
         
         self.sm = new Baseliner.RowSelectionModel({ singleSelect: true }); 
         //var sm = new Baseliner.CheckboxSelectionModel({ checkOnly: true, singleSelect: false });
         
         var cols, fields;
-        var cols_templates = {
-              id : function(){ return {width: 10 } },
-              index : function(){ return {width: 10, renderer:function(v,m,r,i){return i+1} } },
-              htmleditor: function(){ return { editor: new Ext.form.HtmlEditor(), default_value:'' } },
-              cleditor: function(){ return { editor: new Baseliner.CLEditorField(), default_value:'' } },
-              textfield : function(){ return { width: 100, editor: new Ext.form.TextField({}), default_value:'' } },
-              checkbox  : function(){ return { align: 'center', width: 10, editor: new Ext.form.Checkbox({}), default_value:false, renderer: render_checkbox } },
-              textarea  : function(){ return { editor: new Ext.form.TextArea({}), default_value:'', renderer: Baseliner.render_wrap } }
-        };
+        
         if( self.columns != undefined ) {
             cols=[]; fields=[];
             var cc = Ext.isArray( self.columns ) ? self.columns : self.columns.split(';');
             Ext.each( cc, function(col){
                 var ct;
+                var store_field = {};
                 if( Ext.isObject( col ) ) {
                     ct = col;
                 } else {
+                    // Header[dataIndex],Type,Width,DefaultValue
                     var col_s = col.split(',');
                     if( col_s[0] == undefined ) return;
-                    ct = cols_templates[ col_s[1] ] || cols_templates['textarea'];
-                    ct = ct();
-                    ct.header = col_s[0];
+                    ct = Baseliner.cols_templates[ col_s[1] ] || Baseliner.cols_templates['textarea'];
+                    ct = ct();  // templates are functions
                     if( col_s[2] != undefined ) ct.width = col_s[2];
-                    ct.sortable = true;
                     if( col_s[3] ) ct.default_value = col_s[3];
-                    ct.dataIndex = Baseliner.name_to_id( col_s[0] );
+                    ct.sortable = true;
+                    // now test for Header[dataIndex]
+                    var name_and_id = col_s[0].match(/^([^\[]+)\[([^\]]+)\]/);
+                    if( name_and_id ) {
+                        ct.header = _(name_and_id[1]);
+                        ct.dataIndex = name_and_id[2];
+                    } else {
+                        ct.header = _(col_s[0]);
+                        ct.dataIndex = Baseliner.name_to_id( col_s[0] );
+                    }
+                    store_field.name = ct.dataIndex;
+                    if( col_s[1] == 'datefield' )  {
+                        store_field.type =  'date';
+                        store_field.dateFormat = 'Y-m-d 00:00:00';
+                    }
                 }
                 cols.push( ct );
-                fields.push( ct.dataIndex );
+                fields.push( store_field );
             });
         } else {
             cols = [
@@ -2536,7 +2589,11 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         if( !Ext.isObject(self.default_record) ) {
             var rec_default = {}; 
             Ext.each( cols, function(col){
-                rec_default[ col.dataIndex ] = col.default_value || '';
+                rec_default[ col.dataIndex ] = Ext.isFunction(col.default_value) 
+                    ? col.default_value() 
+                    : col.default_value!=undefined 
+                        ? col.default_value 
+                        : '';
             });
             self.default_record = rec_default;
         } 
@@ -2561,6 +2618,12 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
             self.records = [];
             self.records_json = '[]';
         }
+        
+        /*
+        var records_final = [];
+        Ext.each( self.records, function(r){
+        });
+        */
         self.store = new Ext.data.Store({
             reader: reader,
             data: self.records 
@@ -2570,56 +2633,41 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         var button_add = new Baseliner.Grid.Buttons.Add({
             text:'',
             tooltip: _('Create'),
-            disabled: false,
-            handler: function() {
-                var u = new self.store.recordType( Ext.decode(Ext.encode(self.default_record)) );
-                var index = self.store.getCount();
-                editor.stopEditing();
-                self.store.insert(index, u);
-                self.getSelectionModel().selectRow(index);			
-                editor.startEditing(index);
-            }
+            disabled: self.readOnly ? self.readOnly : false,
+            handler: function() { self.add_row() }
         });
         
         var button_delete = new Baseliner.Grid.Buttons.Delete({
             text: '',
             tooltip: _('Delete'),
             cls: 'x-btn-icon',	
-            disabled: false,		
-            handler: function() {
-                var sm = self.getSelectionModel();
-                Ext.each( sm.getSelections(), function(r) {
-                    var index = self.store.indexOf(r);
-                    self.store.remove( r );
-                    var rows = Ext.util.JSON.decode( self.field_hidden.getValue());
-                    rows.splice(index, 1);
-                    self.field_hidden.setValue(Ext.util.JSON.encode( rows ));
-                    self.store.commitChanges();
-                    self.getView().refresh();
-                });
-            }
+            disabled: self.readOnly ? self.readOnly : false,
+            handler: function() { self.del_row() }
         });
         
         // use RowEditor for editing
-        var editor = new Ext.ux.grid.RowEditor({
-            clicksToMoveEditor: 1,
-            autoCancel: false,
-            enableDragDrop: true, 
-            listeners: {
-                afteredit: function(roweditor, changes, record, rowIndex){
-                    self.store.commitChanges();
-                    delete record.data.id;
-                    var rows = Ext.util.JSON.decode(self.field_hidden.getValue());
-                    if( !Ext.isArray( rows ) ) rows = [];
-                    rows[rowIndex] = record.data;
-                    self.field_hidden.setRawValue(Ext.util.JSON.encode( rows ));
-                }
-            }		
-        });	
+        if( self.use_row_editor ) {
+            self.editor = new Ext.ux.grid.RowEditor({
+                clicksToMoveEditor: 1,
+                autoCancel: false,
+                enableDragDrop: true, 
+                listeners: {
+                    afteredit: function(roweditor, changes, record, rowIndex){
+                        // after editing a row, serialize data to hidden field
+                        self.store.commitChanges();
+                        delete record.data.id;
+                        var rows = Ext.util.JSON.decode(self.field_hidden.getValue());
+                        if( !Ext.isArray( rows ) ) rows = [];
+                        rows[rowIndex] = record.data;
+                        self.field_hidden.setRawValue(Ext.util.JSON.encode( rows ));
+                    }
+                }		
+            });	
+            self.plugins = [ self.editor ];
+        }
         
         self.columns = cols;
         self.ddGroup = 'grid_editor_' + Ext.id();
-        self.plugins = [ editor ];
         self.tbar = [
             self.field_hidden,
             button_add,
@@ -2661,5 +2709,94 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
                 }
             }); 
         });
+    },
+    add_row : function(){
+        var self = this;
+        var u = new self.store.recordType( Ext.decode(Ext.encode(self.default_record)) );
+        var index = self.store.getCount();
+        if( self.editor ) self.editor.stopEditing();
+        self.store.insert(index, u);
+        self.getSelectionModel().selectRow(index);			
+        if( self.editor ) self.editor.startEditing(index);
+    },
+    del_row : function(){
+        var self = this;
+        var sm = self.getSelectionModel();
+        Ext.each( sm.getSelections(), function(r) {
+            var index = self.store.indexOf(r);
+            self.store.remove( r );
+            var rows = Ext.util.JSON.decode( self.field_hidden.getValue());
+            rows.splice(index, 1);
+            self.field_hidden.setValue(Ext.util.JSON.encode( rows ));
+            self.store.commitChanges();
+            self.getView().refresh();
+        });
     }
 });
+
+Baseliner.timeline = function(args){ 
+    var mid = args.mid;
+    var render_to = args.render_to; 
+    var parent_id = args.parent_id;  // optional
+    
+    require(['/static/timeline/jquery.timeline.js'], function(){
+        Timeline.urlPrefix = '/static/timeline/';
+        Baseliner.ajaxEval( '/ci/'+mid+'/timeline', { mid: mid }, function(res){
+            if( ! 'Timeline' in window ) return;
+            var data = { "events": res.events };
+            var max_same_date = res.max_same_date;
+            var height = max_same_date <= 8 ? 400 : 400+( max_same_date*30);
+            var eventSource = new Timeline.DefaultEventSource();
+            var bandInfos = [
+                /*
+                Timeline.createBandInfo({
+                    eventSource:    eventSource,
+                    //date:           "Jun 28 2006 00:00:00 GMT",
+                    width:          "60%", 
+                    intervalUnit:   Timeline.DateTime.HOUR, 
+                    intervalPixels: 100
+                }),
+                */
+                Timeline.createBandInfo({
+                    eventSource:    eventSource,
+                    //date:           "Jun 28 2006 00:00:00 GMT",
+                    width:          "90%", 
+                    intervalUnit:   Timeline.DateTime.DAY, 
+                    intervalPixels: 50
+                })
+                ,Timeline.createBandInfo({
+                    overview:       true,
+                    eventSource:    eventSource,
+                    //date:           "Jun 28 2006 00:00:00 GMT",
+                    width:          "10%", 
+                    intervalUnit:   Timeline.DateTime.MONTH, 
+                    intervalPixels: 200
+                })
+            ];
+            bandInfos[1].syncWith = 0;
+            bandInfos[1].highlight = true;
+
+            var el = document.getElementById(render_to);
+            $(el).height( height );
+            $(el).width( $('#'+parent_id).width() - 80 );  // set my width to the topicmain panel width 
+
+            tl = Timeline.create(el, bandInfos);
+            eventSource.loadJSON(data, document.location.href);
+
+            var resizeTimerID = null;
+
+            var parent_comp = Ext.getCmp( parent_id );
+            if( parent_comp && parent_comp.body ) 
+                $(parent_comp.body.dom).animate({ scrollTop: $('#'+parent_id).height() + 3000 }, "slow");
+
+            function xonResize() {
+                if (resizeTimerID == null) {
+                    resizeTimerID = window.setTimeout(function() {
+                        resizeTimerID = null;
+                        tl.layout();
+                    }, 500);
+                }
+            }
+        }); // ajaxeval
+    });  // require
+};

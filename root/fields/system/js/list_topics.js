@@ -44,7 +44,14 @@ params:
     });
     if( meta.list_type == 'grid' ) {
         // Grid
-        topic_box = new Baseliner.TopicGrid({ 
+		
+        var sm = new Baseliner.CheckboxSelectionModel({
+            checkOnly: true,
+            singleSelect: false
+        });
+		
+        topic_box = new Baseliner.TopicGrid({
+			sm: sm ,
             fieldLabel:_( meta.name_field ), 
             combo_store: topic_box_store,
             columns: meta.columns,
@@ -52,7 +59,10 @@ params:
             pageSize: ps,
             name: meta.id_field, 
             height: meta.height || 250,
-            value: data[ meta.id_field ]
+            value: data[ meta.id_field ],
+			enableDragDrop:  meta && meta.readonly ? !meta.readonly : true,
+			readOnly:  meta && meta.readonly ? meta.readonly : false,
+			hidden: meta ? (meta.hidden ? meta.hidden : false): true
         });
 
     } else {
@@ -66,7 +76,8 @@ params:
             store: topic_box_store,
             disabled: meta ? meta.readonly : true,
             value: topics,
-            singleMode: meta.single_mode == 'false' || !meta.single_mode ? false : true
+            singleMode: meta.single_mode == 'false' || !meta.single_mode ? false : true,
+			hidden: meta ? (meta.hidden ? meta.hidden : false): true
         });
         
         if( meta.copy_fields ) {

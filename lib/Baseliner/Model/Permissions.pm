@@ -382,7 +382,8 @@ sub user_projects {
     my ( $self, %p ) = @_;
     _throw 'Missing username' unless exists $p{ username };
 	my $all_projects = Baseliner->model( 'Baseliner::BaliRoleUser' )->search({ username => $p{username}, ns => '/'})->first;
-	if($all_projects){
+    my $is_root = $self->is_root( $p{username} );
+	if($all_projects || $is_root){
 		map { $_->{ns} } Baseliner->model( 'Baseliner::BaliProject' )->search()->hashref->all;
 	}else{
 		_array( Baseliner->model( 'Baseliner::BaliRoleuser' )
@@ -415,10 +416,17 @@ sub user_projects_query {
     _throw 'Missing join_id' unless exists $p{join_id};
     if ( $self->is_root( $p{username} )) {
         DB->BaliRoleuser->search({}, { select=>\'1' })->as_query        
-    } else {
-        DB->BaliRoleuser->search({ username=>$p{username}, id_project=>{ '=' => \"$p{join_id}" } }, { select=>\'1' })->as_query        
     }
-    
+    else {
+            if ( DB->BaliRoleuser->search( {username => $p{username}, ns => '/'} )->hashref->first ) {
+                DB->BaliRoleuser->search({}, { select=>\'1' })->as_query        
+            } else {
+                DB->BaliRoleuser->search(
+                    {username => $p{username}, id_project => {'=' => \"$p{join_id}"}},
+                    {select   => \'1'} )->as_query;
+            } ## end else [ if ( DB->BaliRoleuser->search...)]
+    } ## end else
+
 } 
 
 =head2 user_projects_ids( username=>Str )
@@ -824,7 +832,7 @@ our $root_username;
 sub is_root {
     my ( $self, $username ) = @_;
     $username or die _loc('Missing username');
-    $root_username //= config_value('root_username') || '';
+    $root_username //= Baseliner->config->{root_username} || '';
     return 1 if $username eq 'root' || length $root_username && $username eq $root_username;
 
     return Baseliner->model('Baseliner')->dbi->value(qq{

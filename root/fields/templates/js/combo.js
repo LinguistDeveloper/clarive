@@ -43,12 +43,10 @@ params:
         mode: 'local',
         anchor: meta.anchor || '100%',
         value: value || meta['default_value'],
-        //style: { 'font-size': '16px', float: 'left' },
         forceSelection: true,
-            //allowBlank: meta ? !!meta.allowBlank : false,
-            // readOnly: meta ? meta.readonly : true,
-            // hidden: meta ? (meta.hidden ? meta.hidden : false): true
-        selectOnFocus: true
+        selectOnFocus: true,
+        hidden: meta ? (meta.hidden ? meta.hidden : false): true,
+        disabled: meta && meta.readonly ? meta.readonly : false
     });  
     
     combo.on('afterrender', function(){

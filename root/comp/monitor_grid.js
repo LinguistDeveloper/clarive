@@ -118,6 +118,7 @@
             {  name: 'maxstarttime' },
             {  name: 'endtime' },
             {  name: 'runner' },
+            {  name: 'id_rule' },
             {  name: 'rollback' },
             {  name: 'username' },
             {  name: 'step' },
@@ -417,21 +418,111 @@
         } 
     });
 
-    /*
+    var run_inproc = function(){
+        var sm = grid.getSelectionModel();
+        var sel = sm.getSelected();
+        if( sel ) {
+            var cons_inproc = new Baseliner.MonoTextArea({ value:'' });
+            var cons_pan = new Ext.Panel({ layout:'fit', items: cons_inproc, wait: _('Loading...') });
+            var win = new Baseliner.Window({ title:_('Run In-process: %1', sel.data.name), 
+                layout: 'fit', width: 800, height: 600, items: cons_pan });
+            cons_inproc.on('afterrender', function(){ 
+                Baseliner.showLoadingMask( cons_pan.el );
+                Baseliner.ajaxEval( '/ci/'+sel.data.mid+'/run_inproc', { id_job: sel.data.id }, function(res){
+                    Baseliner.message( _('Run In-Process'), _('Job %1 in-process run finished', sel.data.name ) );
+                    if( !Ext.getCmp(cons_pan.id) ) return;
+                    if( !Ext.getCmp(cons_inproc.id) ) return;
+                    cons_inproc.setValue( res.data ? res.data.output : _('(no data)') );
+                    Baseliner.hideLoadingMask( cons_pan.el );
+                    if( grid ) {
+                        var st =grid.getStore();
+                        if( st ) st.reload();
+                    }
+                }, function(){
+                    Baseliner.hideLoadingMask( cons_pan.el );
+                });
+            });
+            win.show();
+        }
+    }
+    var menu_tools = new Ext.Button({
+      tooltip: _('Tools'),
+      icon: '/static/images/icons/wrench.png',
+      menu: [
+            { text: _('Run In-process'), handler:function(){ run_inproc() },
+              icon: '/static/images/icons/job.png'
+            },
+            {
+                text: _('Export'),
+                icon:'/static/images/download.gif',
+                handler: function() {
+                    var sm = grid.getSelectionModel();
+                    if (sm.hasSelection())
+                    {
+                        var sel = sm.getSelected();
+                        Baseliner.message( _('Job Export'), _('Job export started. Wait a few minutes...') );
+                        var fd = document.all.FD || document.all.FrameDownload;
+                        fd.src =  '/job/export?id_job=' + sel.data.id ;
+                    } else {
+                        Ext.Msg.alert(_('Error'), _('Select a row first'));   
+                    };
+                }
+            }
+      ]
+    });
+
     var do_backout = function(){
         var sm = grid.getSelectionModel();
         var sel = sm.getSelected();
         if( sel ) {
-            Baseliner.ajaxEval('/job/backout', sel.data, function(res){
-                if( res.success ) {
-                    Baseliner.message( _('Backout', _(res.msg) ) ;
-                } else {
-                    Baseliner.error( _('Backout', _(res.msg) ) ;
+            Ext.Msg.confirm(_('Confirmation'),  '<b>' + sel.data.name + '</b>: ' + _('Are you sure you want to rollback the job?'), 
+                function(btn){ 
+                    if(btn=='yes') {
+                        Baseliner.ajaxEval('/job/rollback', sel.data, function(res){
+                            Baseliner.message( _('Rollback'), res.msg ) ;
+                            }, function(res){
+                                var win = new Baseliner.Window({
+                                    width: 800, height: 600, layout:'fit',
+                                    title: _('Dependencies'), 
+                                    items: new Baseliner.DataEditor({ data: res.deps })
+                                });
+                                win.show();
+                                Baseliner.message( _('Rollback'), res.msg ) ;
+                            }
+                        );
+                    }
                 }
-            });
+            );
         }
     };
-    */
+
+    var button_resume = new Ext.Toolbar.Button({
+        text: _('Resume'),
+        hidden: true,
+        icon:'/static/images/icons/play.png',
+        cls: 'x-btn-text-icon',
+        handler: function() {
+            var sm = grid.getSelectionModel();
+            var sel = sm.getSelected();
+            var mode;
+            if( sel.data.status_code == 'PAUSED' ) {
+                Ext.Msg.confirm(_('Confirmation'),  '<b>' + sel.data.name + '</b>: ' + _('Are you sure you want to resume the job?'), 
+                    function(btn){ 
+                        if(btn=='yes') {
+                            Baseliner.ci_call( sel.data.mid, 'resume',  {}, function(res){
+                                if( res.success ) {
+                                    grid.getStore().reload();
+                                } else {
+                                    Ext.Msg.alert( _('Error'), _('Could not resume the job: %1', res.msg ) );
+                                }
+                            });
+                        }
+                    }
+                );
+                button_resume.hide();
+            }
+        }
+    });
 
     var msg_cancel_delete = [ _('Cancel Job'), _('Delete Job') ];
     var button_cancel = new Ext.Toolbar.Button({
@@ -441,12 +532,13 @@
         handler: function() {
             var sm = grid.getSelectionModel();
             var sel = sm.getSelected();
+            var sc = sel.data.status_code;
             var mode;
-            if( sel.data.status_code == 'RUNNING' ) {
+            if( sc == 'RUNNING' ) {
                 msg = _('Killing the job will interrupt current local processing but no remote processes');
                 msg += "\n" + _('Are you sure you want to %1 the job?', _('kill') );
                 mode = 'kill';
-            } else if( sel.data.status_code == 'CANCELLED' ) {
+            } else if( sc == 'FINISHED' || sc == 'ERROR' || sc == 'CANCELLED' ) {
                 msg = _('Are you sure you want to %1 the job?', _('delete') );
                 mode = 'delete';
             } else {
@@ -476,8 +568,7 @@
     };
 
     var render_app = function(value,metadata,rec,rowIndex,colIndex,store) {
-        if( value.length < 2 ) return value[0];
-        return value.join('<br />');
+        return String.format('<b>{0}</b>', ( !Ext.isArray(value) ? value : value.join('<br />') ) );
     };
 
     var render_nature = function(v,meta,rec,rowIndex,colIndex,store) {
@@ -515,10 +606,12 @@
         var rollback = rec.data.rollback;
         if( status=='RUNNING' ) { icon='gears.gif'; bold=true }
         else if( status=='READY' ) icon='waiting.png';
-        else if( status=='APPROVAL' ) icon='verify.gif';
+        else if( status=='APPROVAL' ) icon='user_delete.gif';
         else if( status=='FINISHED' && rollback!=1 ) { icon='log_i.gif'; bold=true; }
         else if( status=='IN-EDIT' ) icon='log_w.gif';
         else if( status=='WAITING' ) icon='waiting.png';
+        else if( status=='PAUSED' ) icon='paused.png';
+        else if( status=='CANCELLED' ) icon='close.png';
         else { icon='log_e.gif'; bold=true; }
         value = (bold?'<b>':'') + value + (bold?'</b>':'');
 
@@ -526,21 +619,79 @@
         if( status == 'FINISHED' && rollback == 1 )  {
             value += ' (' + _('Rollback OK') + ')';
             icon = 'log_e.gif';
-        }
+        } 
         else if( status == 'ERROR' && rollback == 1 )  {
             value += ' (' + _('Rollback Failed') + ')';
         }
+        else if( rollback == 1 )  {
+            value += ' (' + _('Rollback') + ')';
+        }
+
         //else if( type == 'demote' || type == 'rollback' ) value += ' ' + _('(Rollback)');
         if( status == 'APPROVAL' ) { // add a link to the approval main
-            value = String.format("<a href='javascript:Baseliner.addNewTabComp(\"{0}\", \"{1}\");'>{2}</a>", "/request/main", _('Approvals'), value ); 
+            value = String.format("<a href='javascript:Baseliner.request_approval({0});'><b>{1}</b></a>", rec.data.mid, value ); 
         }
         if( icon!=undefined ) {
             return div1 
-                + "<img alt='"+status+"' style='vertical-align:middle' border=0 src='/static/images/"+icon+"' />"
-                + value + div2 ;
+                + "<table><tr><td><img alt='"+status+"' border=0 src='/static/images/icons/"+icon+"' /></td>"
+                + '<td>' + value + '</td></tr></table>' + div2 ;
         } else {
             return value;
         }
+    };
+
+    Baseliner.request_approval = function(mid){
+    
+        Baseliner.ci_call( mid, 'contract', { }, function(res){
+            console.log( res );
+            var btn_approve = new Ext.Button({
+                text: _('Approve'),
+                icon: '/static/images/yes.png',
+                handler: function(){
+                    Baseliner.ci_call(mid,'approve', {}, function(res){
+                        if( Ext.getCmp(grid.id) ) grid.getStore().reload();
+                        Baseliner.message( _('Approval'), _('Job Approved') );
+                        win.close();
+                    });
+                }
+            });
+            var btn_deny = new Ext.Button({
+                text: _('Reject'),
+                icon: '/static/images/del.gif',
+                handler: function(){
+                    Baseliner.ci_call(mid,'reject', {}, function(res){
+                        if( Ext.getCmp(grid.id) ) grid.getStore().reload();
+                        Baseliner.message( _('Approval'), _('Job Rejected') );
+                        win.close();
+                    });
+                }
+            });
+            var variables = new Baseliner.VariableForm({
+                name: 'variables',
+                fieldLabel: _('Variables'),
+                show_tbar: false,
+                force_bl: res.data.bl,
+                height: 400,
+                data: res.data.vars
+            });
+            var form = new Ext.FormPanel({
+                padding: 10,
+                defaults: { anchor: '100%' },
+                frame: false, border: false,
+                items: [ 
+                    { xtype:'textfield', fieldLabel:_('Scheduled Time'), value:res.data.schedtime },
+                    { xtype:'textfield', fieldLabel:_('Projects'), value:res.data.projects },
+                    { xtype:'textfield', fieldLabel:_('Changes'), value: res.data.cs },
+                    { xtype:'textarea', fieldLabel:_('Comments'), value: res.data.comments },
+                    variables 
+                ]
+            });
+            var win = new Baseliner.Window({ width: 800, height: 600, layout:'fit', 
+                tbar: [ btn_approve, btn_deny ],
+                items:[ form ] 
+             });
+            win.show();
+        });
     };
 
     Baseliner.openLogTab = function(id, name) {
@@ -610,14 +761,14 @@
                 var desc = record.data.comments;
                 if( desc != undefined ) {
                     //desc = desc.replace(/\n|\r|/,'');
-                    p.body +='<div style="color: #333; font-weight: bold; margin: 0 0 5 30;">';
+                    p.body +='<div style="color: #333; font-weight: bold; padding: 0px 0px 5px 30px;">';
                     p.body += '<img style="float:left" src="/static/images/icons/post.gif" />';
                     p.body += '&nbsp;' + desc + '</div>';
                     css += ' x-grid3-row-expanded '; 
                 }
                 var cont = record.data.contents;
                 if( cont != undefined ) {
-                    p.body +='<div style="color: #505050; margin: 0 0 5 30;">';
+                    p.body +='<div style="color: #505050; margin: 0px 0px 5px 20px;">';
                     for( var i=0; i<cont.length; i++ ) {
                         p.body += cont[i] + '<br />';
                     }
@@ -650,19 +801,19 @@
         view: gview,
         selModel: row_sel, 
         columns: [
-                { header: _('ID'), width: 30, dataIndex: 'id', sortable: true, hidden: true },
-                { header: _('MID'), width: 30, dataIndex: 'mid', sortable: true, hidden: true },
+                { header: _('ID'), width: 60, dataIndex: 'id', sortable: true, hidden: true },
+                { header: _('MID'), width: 60, dataIndex: 'mid', sortable: true, hidden: true },
                 { header: _('Job'), width: 140, dataIndex: 'name', sortable: true, renderer: render_topic },    
                 { header: _('Job Status'), width: 130, dataIndex: 'status', renderer: render_level, sortable: true },
+                { header: _('Step'), width: 50, dataIndex: 'step_code', sortable: true , hidden: false },	
                 { header: _('Application'), width: 70, dataIndex: 'applications', renderer: render_app, sortable: false, hidden: is_portlet ? true : false },
                 { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true },
                 { header: _('Natures'), width: 120, hidden: view_natures, dataIndex: 'natures', sortable: false, renderer: render_nature }, // not in DB
                 { header: _('Subapplications'), width: 120, dataIndex: 'subapps', sortable: false, hidden: true, renderer: render_subapp }, // not in DB
                 { header: _('Job Type'), width: 100, dataIndex: 'type', sortable: true, hidden: false },
                 { header: _('User'), width: 80, dataIndex: 'username', sortable: true , renderer: Baseliner.render_user_field, hidden: is_portlet ? true : false},	
-                { header: _('Step'), width: 80, dataIndex: 'step', sortable: true , hidden: true },	
                 { header: _('Execution'), width: 80, dataIndex: 'exec', sortable: true , hidden: true },	
-                { header: _('Last Message'), width: 180, dataIndex: 'last_log', sortable: true , hidden: is_portlet ? true : false},	
+                { header: _('Last Message'), width: 180, dataIndex: 'last_log', sortable: true , hidden: is_portlet ? true : true },	
                 { header: _('Contents'), width: 100, dataIndex: 'contents', renderer: render_contents, sortable: true, hidden: true },
                 { header: _('Scheduled'), width: 130, dataIndex: 'schedtime', sortable: true , hidden: is_portlet ? true : false},	
                 { header: _('Start Date'), width: 130, dataIndex: 'starttime', sortable: true , hidden: is_portlet ? true : false},	
@@ -671,6 +822,8 @@
                 { header: _('PID'), width: 50, dataIndex: 'pid', sortable: true, hidden: true },	
                 { header: _('Host'), width: 120, dataIndex: 'host', sortable: true, hidden: true },	
                 { header: _('Owner'), width: 120, dataIndex: 'owner', sortable: true, hidden: true },	
+                { header: _('Runner'), width: 80, dataIndex: 'runner', sortable: true, hidden: true },	
+                { header: _('Rule'), width: 80, dataIndex: 'id_rule', sortable: true, hidden: true },	
                 { header: _('Grouping'), width: 120, dataIndex: 'grouping', hidden: true },	
                 { header: _('Comments'), hidden: true, width: 150, dataIndex: 'comments', sortable: true }
             ],
@@ -683,7 +836,7 @@
                 // end
 % if( $c->stash->{user_action}->{'action.job.create'} ) {
                 new Ext.Toolbar.Button({
-                    text: _('New Job'),
+                    text: _('New'),
                     icon:'/static/images/icons/job.png',
                     cls: 'x-btn-text-icon',
                     handler: function() {
@@ -706,12 +859,15 @@
                         };
                     }
                 }),
+% if( $c->stash->{user_action}->{'action.job.resume'} ) {
+                button_resume,
+% }
 % if( $c->stash->{user_action}->{'action.job.create'} ) {
                 button_cancel,
 % }
 % if( $c->stash->{user_action}->{'action.job.restart'} ) {
                 new Ext.Toolbar.Button({
-                    text: _('Backout'),
+                    text: _('Rollback'),
                     icon:'/static/images/icons/left.png',
                     cls: 'x-btn-text-icon',
                     handler: function() { do_backout() }
@@ -762,8 +918,9 @@
                                 displayField: 'step'
                             });
                             var run_now = sel.data.step_code == 'END' ? true : false;
+                            var mid = sel.data.mid;
                             var form_res = new Ext.FormPanel({ 
-                                url: '/job/restart',
+                                url: '/ci/job/reset',
                                 frame: false,
                                 height: 150,
                                 defaults: { width:'100%' },
@@ -771,6 +928,7 @@
                                 items: [
                                     user_combo,
                                     { xtype: 'hidden', name:'id_job', value: sel.data.id },
+                                    { xtype: 'hidden', name:'mid', value: sel.data.mid },
                                     { xtype: 'hidden', name:'job_name', value: sel.data.name },
                                     { xtype: 'hidden', name:'starttime',fieldLabel: _('Start Date'), value: sel.data.starttime },
                                     { xtype: 'checkbox', name: 'run_now', fieldLabel : _("Run Now"), checked: run_now },
@@ -783,7 +941,7 @@
                                                 store.load();
                                                 win_res.close();
                                             },
-                                            failure: function(resp,opt) { Baseliner.message(_('Error'), _('Could not rerun the job.')); }
+                                            failure: function(f,a) { Baseliner.error(_('Error'), _('Could not rerun the job: %1', a.result.msg) ); }
                                     }) }
                                     },
                                     {text:_('Cancel'), handler:function(f){ win_res.close() }}
@@ -838,24 +996,8 @@
                     }
                 }),
 % }
-                new Ext.Toolbar.Button({
-                    text: _('Export'),
-                    icon:'/static/images/download.gif',
-                    cls: 'x-btn-text-icon',
-                    handler: function() {
-                        var sm = grid.getSelectionModel();
-                        if (sm.hasSelection())
-                        {
-                            var sel = sm.getSelected();
-                            Baseliner.message( _('Job Export'), _('Job export started. Wait a few minutes...') );
-                            var fd = document.all.FD || document.all.FrameDownload;
-                            fd.src =  '/job/export?id_job=' + sel.data.id ;
-                        } else {
-                            Ext.Msg.alert(_('Error'), _('Select a row first'));   
-                        };
-                    }
-                }),
                 '->',
+                menu_tools,
                 refresh_button
                 ]
         });
@@ -875,10 +1017,15 @@
     // Yellow row selection
         row_sel.on('rowselect', function(row, index, rec) {
         Ext.fly(grid.getView().getRow(index)).addClass('x-grid3-row-selected-yellow');
-        if( rec.data.status_code === 'CANCELLED' ) {
+        var sc = rec.data.status_code;
+        button_resume.hide();
+        if( sc == 'CANCELLED' || sc == 'ERROR' || sc == 'FINISHED' ) {
             button_cancel.setText( msg_cancel_delete[1] );
         } else {
             button_cancel.setText( msg_cancel_delete[0] );
+        }
+        if( rec.data.status_code === 'PAUSED' ) {
+            button_resume.show();
         }
     });
     row_sel.on('rowdeselect', function(row, index, rec) {

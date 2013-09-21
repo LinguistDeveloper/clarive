@@ -1,15 +1,16 @@
 <%args>
 </%args>
 <%perl>
+    my $c = eval '$c'; # may fail due to missing $c
 </%perl>
 % unless( $m->dhandler_arg ) {  ## /
 %#<& /site/main.mas &>
 %  my $req = $m->make_subrequest( comp => '/site/main.mas');
 %   $req->exec;	
 % } else {
-%  $c->res->status(404);
+%    $c->res->status(404) if $c;
  
-% print _loc('Page not found: %1', $c->req->path );
+% print _loc('Page not found: %1', $c->req->path ) if $c; 
 
 % }
 <%filter>

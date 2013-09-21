@@ -27,7 +27,8 @@ sub connection {
          $rv->storage->sql_maker->name_sep('.');
      }
 
-     my $lev = substr( $ENV{DBIC_TRACE}, 0, 1 );
+     my $lev = defined $ENV{DBIC_TRACE} ? substr( $ENV{DBIC_TRACE}, 0, 1 ): 0;
+     
      if( defined $lev && $lev > 1 ) {
          require Baseliner::Schema::Profiler;
          $rv->storage->debugobj( Baseliner::Schema::Profiler->new );
@@ -252,7 +253,7 @@ sub deploy_schema {
         );
 
         return 0;
-    } elsif( $p{diff} eq '2schema' ) {
+    } elsif( $p{diff} && $p{diff} eq '2schema' ) {
         # diff with 2 schema comparison, done via DBIC-Loader
         my $sqltargs = {
             add_drop_table    => $p{drop},

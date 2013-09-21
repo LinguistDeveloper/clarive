@@ -13,7 +13,7 @@ has path_capture     => qw(is rw isa Str);
 
 service 'parse' => 'Parse a file' => \&parse;
 
-sub rest_grammars {
+sub grammars {
     my ($self,$c,$p) = @_; 
     my $grammars = Util->package_and_instance('lib/Baseliner/Parser/Grammar', 'grammar' );
     my $data = [  values %$grammars ];

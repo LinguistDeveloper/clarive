@@ -7,8 +7,8 @@ http://baseliner.org/license
 
 */ 
 
-Ext.ns('Baseliner.store');
-Ext.ns('Baseliner.model');
+//Ext.ns('Baseliner.store');
+//Ext.ns('Baseliner.model');
 
 Baseliner.store.AllProjects = function(c) {
      Baseliner.store.AllProjects.superclass.constructor.call(this, Ext.apply({
@@ -854,10 +854,12 @@ Ext.extend( Baseliner.model.CICombo, Ext.form.ComboBox );
 Baseliner.ci_box = function(c) {
     var value = c.value; delete c.value;
     var role = c.role; delete c.role;
+    var with_vars = c.with_vars; delete c.with_vars;
     var cl = c['class']; delete c['class']; // IE - class is syntax errors due to reserved word
     var bp = {};
     if( cl !=undefined ) bp['class'] = cl;
     else bp.role = role;
+    if( with_vars != undefined ) bp.with_vars = with_vars;
     if( c.hiddenName == undefined ) c.hiddenName = c.name;
     var autoload = c.autoLoad != undefined ? c.autoLoad : true;
     var store = new Baseliner.store.CI({ baseParams: bp });
@@ -958,6 +960,22 @@ Baseliner.model.ComboBaseline = Ext.extend( Ext.form.ComboBox, {
         this.tpl = tpl_list;
         this.displayFieldTpl = new Ext.XTemplate( '<tpl for=".">{[ values.name ? values.bl + " (" + values.name + ")" : ( values.bl == "*" ? _("Common") : values.bl ) ]}</tpl>' );
         Baseliner.model.ComboBaseline.superclass.initComponent.call(this);
+    }
+});
+
+Baseliner.store.Baseline = Ext.extend( Baseliner.JsonStore, {
+    root: 'data' , 
+    remoteSort: true,
+    autoLoad: false,
+    totalProperty:"totalCount", 
+    id: 'id', 
+    url: '/baseline/json',
+    constructor: function(c){
+        Baseliner.store.Baseline.superclass.constructor.call(this,Ext.apply({
+            root: 'data', 
+            baseParams:{}, 
+            fields: ['id','bl','name','bl_name', 'name_bl', 'description', 'active'] 
+        }, c) );
     }
 });
 
@@ -1827,25 +1845,25 @@ Ext.reg('kanbancolumn', Baseliner.KanbanColumn);
 */
 Baseliner.Wizard = function(config) {
     var self = this;
-    var current = config.current==undefined ? 0 : config.current;
-    var first = config.first==undefined ? 0 : config.first;
-    var last = config.last==undefined ? config.items.length-1 : config.last;
+    self.current = config.current==undefined ? 0 : config.current;
+    self.first = config.first==undefined ? 0 : config.first;
+    self.last = config.last==undefined ? config.items.length-1 : config.last;
     self.button_setup = function(){
-        if( current == first ) bback.disable();
-        if( current > first ) bback.enable();
-        if( current == last ) {
+        if( self.current == self.first ) bback.disable();
+        if( self.current > self.first ) bback.enable();
+        if( self.current == self.last ) {
             bdone.show();
             bnext.hide();
         }
     };
     var navHandler = function(direction){
-        current += direction;
+        self.current += direction;
         if( direction < 0 ) {
             bdone.hide();
             bnext.show();
         }
         self.button_setup();
-        this.getLayout().setActiveItem( current ); 
+        this.getLayout().setActiveItem( self.current ); 
     };
     var bback = new Ext.Button({
                 text: _('Back'),
@@ -1900,6 +1918,7 @@ Ext.extend( Baseliner.Wizard, Ext.Panel );
 */
 Baseliner.DataEditor = function(c) {
     var self = this;
+    self.addEvents('save');
     var Record = Ext.data.Record.create([  // Record is a Class
         {name: 'key'},
         {name: 'key_long'},
@@ -1945,17 +1964,18 @@ Baseliner.DataEditor = function(c) {
         flatten( d );
         data = data.sort( function(a,b){ return a._id < b._id ? -1 : 1 });
     }
+
     set_data( c.data );
-    /*[
-    { key: 'aa', type:'array', value: 111, _is_leaf:true, _id:1 },
-    { key: 'bb', type:'array', value: 2, _is_leaf:false, _id:2 },
-    { key: 'cc', type:'array', value: 2, _is_leaf:true, _parent:2, _id:3 }
-    ];
-    */
+    
+    var ci_mids = [];
+    
     var proxy = new Ext.data.MemoryProxy(data);
     var store = new Ext.ux.maximgb.tg.AdjacencyListStore({  
         autoLoad : true,
         reader: new Ext.data.JsonReader({id: '_id'}, Record),
+        //    sorting breaks hashing and array rendering
+        // remoteSort: false,
+        // sortInfo: { field: 'key', direction: 'ASC' },
         proxy: proxy
     });
     self.store = store;
@@ -1974,8 +1994,15 @@ Baseliner.DataEditor = function(c) {
     var render_key = function(v) {
       return '<b>' + v + '</b>'
     };
-    var render_value = function(v){
-      return Baseliner.render_wrap( '<pre>'+v+'</pre>' ); //'<span class="ux-maximgb-tg-mastercol-editorplace">' + v + '</span>'
+    var render_value = function(v,meta,rec){
+        var ty = rec.data.type;
+        if( ty == 'Value' ) {
+            return Baseliner.render_wrap( '<pre>'+v+'</pre>' ); //'<span class="ux-maximgb-tg-mastercol-editorplace">' + v + '</span>'
+        } else if( ty == 'CI' ) {
+            return v;
+        } else {
+            return ''; //Ext.encode( v );  // hide 
+        }
     };
 
     var collapse_data = function( rows, id_parent ){
@@ -2035,6 +2062,7 @@ Baseliner.DataEditor = function(c) {
         self.json = Ext.util.JSON.encode( self.data );
         // call onDestroy
         if( c.on_save ) c.on_save( self, self.data, self.json );
+        self.fireEvent('save', self, self.data, self.json);
         if( ! c.save_only ) self.destroy();
     };
 
@@ -2042,6 +2070,10 @@ Baseliner.DataEditor = function(c) {
         return collapse_data( store.getRange(), 0 );
     };
 
+    self.addSingle = function(k,v){
+        var rec = new Record({ key: k || '???', value: v || '???', type: 'Value', _id: ++id, _is_leaf: true, _parent: 0 });
+        store.add( rec );
+    }
     var add_row = function(){
         var sel = tree.getSelectionModel().getSelected(); 
         if( sel ) {
@@ -2057,9 +2089,11 @@ Baseliner.DataEditor = function(c) {
                 store.add( rec );
                 store.expandNode( sel );
             }
+            else {
+                self.addSingle(sel.data.key, sel.data.value);
+            }
         } else {
-            var rec = new Record({ key: '???', value: '???', type: 'Value', _id: ++id, _is_leaf: true, _parent: 0 });
-            store.add( rec );
+            self.addSingle();
         }
     };
     self.add_var = function( key, type, value ) {
@@ -2077,7 +2111,7 @@ Baseliner.DataEditor = function(c) {
         btn_editor,
         btn_json,
         '-',
-        { icon:'/static/images/icons/add.png', handler: add_row },
+        { icon:'/static/images/icons/add.gif', handler: add_row },
         { icon:'/static/images/icons/delete.gif', handler: self.del_row },
         '->' 
     ];
@@ -2135,12 +2169,26 @@ Baseliner.DataEditor = function(c) {
         if( ! editor ) {
             if( col == 0 ) {
                 var rec = store.getAt(row);
-                editor = new Ext.form.TextField({ value: rec.get('key') });
+                editor = new Ext.form.TextField({ value: rec.get('key'), selectOnFocus: true });
             } 
+            else if( col == 1 ) {
+                var rec = store.getAt(row);
+                editor = new Baseliner.ComboSingle({ value: rec.get('type'), data:['Value', 'Hash','Array', 'CI'] });
+            }
             else if( col == 2 ) {
                 var rec = store.getAt(row);
-                editor = new Ext.form.TextArea({ value: rec.get('value'),
-                    style:{ 'font-family':'Consolas, Courier New' }, readOnly: read_only });
+                if( rec.get('type') == 'Value' ) {
+                    editor = new Ext.form.TextArea({ value: rec.get('value'),
+                        style:{ 'font-family':'Consolas, Courier New' }, 
+                        selectOnFocus: true, readOnly: read_only });
+                } else {
+                    (function(){
+                    var st = new Baseliner.store.CI({ baseParams:{ role: 'Infrastructure' } });
+                    editor = new Baseliner.model.CICombo({ 
+                        store: st, value: rec.get('value'), singleMode: true, allowBlank: false
+                    });
+                    })();
+                }
             }
         }
         this.setEditor( col, editor );
@@ -2148,23 +2196,28 @@ Baseliner.DataEditor = function(c) {
       },
       isCellEditable: function(col, row) {
           if( col == 0 ) return true; // the key is always editable
-          if( col == 1 ) return false; // not sure about the type
+          if( col == 1 ) return true; // not sure about the type
           var rec = store.getAt(row);
-          if( rec.data.type != 'Value' ) return false;
+          if( rec.data.type=='Value' || rec.data.type=='CI' ) return true;
+             else return false;
           return Ext.grid.ColumnModel.prototype.isCellEditable.call(this, col, row);
       }
     });
     var tree = new Ext.ux.maximgb.tg.EditorGridPanel( Ext.apply({
-      store: store,
-      colModel: cm,
-      master_column_id : 'key',
-      stripeRows: true,
-      autoExpandColumn: 'key',
-      //plugins: expander,
-      viewConfig : {
-        forceFit: true,
-        enableRowBody : true
-      }
+        store: store,
+        colModel: cm,
+        master_column_id : 'key',
+        stripeRows: true,
+        cls: 'de-grid',
+        autoExpandColumn: 'key',
+        //plugins: expander,
+        viewConfig : {
+            forceFit: true,
+            enableRowBody : true,
+            getRowClass: function(record, rowIndex, rowParams, store){
+                return 'de-grid'; 
+            }
+        }
     }, c.editorConfig ));
 	
     self.editor = tree;
@@ -2368,3 +2421,434 @@ Ext.extend(Baseliner.CBTreeNodeUI_system, Ext.tree.TreeNodeUI, {
         }
     }
 });
+
+/*
+    MetaForm : dynamic form for arbitrary data and standard metadata    
+
+    var mf = new Baseliner.MetaForm({
+        meta: [
+            { id:'var1', type:'value', default:'xxx' },
+            { id:'var2', type:'ci', role:'Infrastructure', default:'xxx', field_attributes:{ singleMode:false } }
+        ],
+        data: {
+            var1 : 100,
+            var2 : 200
+        }
+    });
+
+    meta attributes:
+    ===============
+
+        id: data hash key
+        label: field label (defaults to id)
+        default: default value
+        type: value|ci|combo
+        field_attributes: attributes to be applied to the field component
+        anchor: '100%' - field anchor
+
+        options: [...] array of options for combo
+        role: '' ci role name 
+        classname: '' ci class name (has precedence over role)
+*/
+Baseliner.MetaForm = Ext.extend( Ext.Panel, {
+    layout: 'form',
+    border: false,
+    frame: false,
+    labelWidth: 160,
+    bodyStyle: 'padding: 10px 10px 10px 10px',
+    constructor: function(c){
+        Baseliner.MetaForm.superclass.constructor.call(this, Ext.apply({
+        }, c));
+    },
+    initComponent: function(){
+        var self = this;
+        if( !self.data ) self.data = {};
+        self.items = self.items || [];
+        self.addEvents('field_changed', 'save', 'delete_field');
+        self.fields_destroyed = {};
+        if( self.tbar === false ) {
+            self.tbar = null;
+        } else {
+            self.tbar = [];
+            if( ! self.hide_save )
+                self.tbar.push({ text:_('Save'), icon:'/static/images/icons/save.png', handler: function(){ self.done(true) } } );
+            if( ! self.hide_cancel )
+                self.tbar.push( { text:_('Cancel'), icon:'/static/images/icons/close.png', handler: function(){ self.done(false) } } );
+        }
+        Baseliner.MetaForm.superclass.initComponent.call(this);
+        
+        // add fields, if any
+        Ext.each( self.meta, function(meta){
+            self.add_field_from_meta( meta );
+        });
+        self.doLayout();
+    },
+    // turn the form into a hash
+    serialize : function(){
+        var self = this;
+        self.cascade( function(obj){
+            if( Ext.isFunction( obj.getValue ) ) {
+                self.data[ obj.name ] = obj.getValue();
+            }
+        });
+        return self.data;
+    },
+    // on close
+    done : function(saving){
+        var self = this;
+        if( saving ) {
+            self.data = self.serialize();
+            self.fireEvent('save', self, self.data );
+        }
+        self.fireEvent('done', self, saving, self.data );
+    },
+    // converts a short meta entry into a form field with a delete button
+    to_field : function(meta){
+        var self = this;
+        var field;
+        var bl = meta.bl || self.bl;
+        var id = Baseliner.name_to_id( meta.id || meta.label );
+        if( !meta.type || meta.type == 'value' ) {
+            field = new Ext.form.TextField(Ext.apply({
+                fieldLabel: _( meta.label || id),
+                id: Ext.id(),
+                name: id,
+                submitValue: false,
+                anchor: meta.anchor || '100%',
+                value: self.data[id]
+            }, meta.field_attributes ));
+        }
+        else if( meta.type == 'ci' ) {
+            var bp = { _whoami:'MetaForm', bl: bl };
+            if( meta.role && meta.role != 'CI' ) bp.role = meta.role;
+            else if( meta.classname ) bp.classname = meta.classname;
+            else bp.role = 'CI';  // avoids a bad store call
+            var store = new Baseliner.store.CI({ baseParams: bp });
+            store.on('load', function(){
+                if( self.data && self.data[id]!== undefined )
+                    field.setValue( self.data[id] );
+            });
+            field = new Baseliner.model.CISelect(Ext.apply({
+                store: store, 
+                anchor: meta.anchor || '100%',
+                submitValue: false,
+                singleMode: true, 
+                fieldLabel: _( meta.label || id),
+                id: Ext.id(),
+                name: id,
+                hiddenName: id,
+                value: self.data[id],
+                allowBlank: false
+            }, meta.field_attributes )); 
+        }
+        else if( meta.type == 'combo' ) {
+            field = new Baseliner.ComboSingle(Ext.apply({ 
+                anchor: meta.anchor || '100%',
+                fieldLabel: _( meta.label || id),
+                id: Ext.id(),
+                name: id,
+                allowBlank: false,
+                submitValue: false,
+                value: self.data[id],
+                data: meta.options 
+            }, meta.field_attributes ));
+        }
+        if( field ) {
+            field.on('blur', function(){
+                self.fireEvent('field_changed', self, field );
+            });
+        }
+        return field;
+    },
+    to_field_container : function(field){
+        var self = this;
+        //return field;
+        var pn = new Ext.Panel({ 
+            layout:'column',
+            width: '100%',
+            frame: false,
+            border: false,
+            items:[
+                { layout:'form', border: false, columnWidth:.9, items:[field],
+                    labelWidth: 200, labelAlign: 'right'
+                },
+                { columnWidth:.1, border: false, padding: '0 0 0 10px', items: new Ext.Button({ 
+                        icon:'/static/images/icons/delete.gif',
+                        handler: function(){
+                            self.deleting = true;
+                            self.remove( pn );
+                            delete self.data[ field.name ];
+                            self.deleting = false;
+                            self.fireEvent('delete_field', self, field.name );
+                        }
+                    })
+                }
+            ]
+        });
+        field.pn = pn.id;
+        return pn;
+    }, 
+    clear_form : function(){
+        var self =this;
+        self.removeAll();
+    },
+    // adds a field to the form
+    add_field_from_meta : function(meta){
+        var self = this;
+        
+        // set default data
+        if( ! self.data ) self.data = {};
+        if( self.data[meta.id]===undefined ) { 
+            // set default value, othewise a null
+            self.data[meta.id] = meta['default']!==undefined ? meta['default'] : null;
+        }
+
+        // create field
+        var field = self.to_field( meta );
+        if( field ) {
+            field.on('beforedestroy', function(){ 
+                if( self.deleting ) return;  // no need to rebuild data on field delete
+                self.serialize(); 
+            });
+            var field_container = self.to_field_container( field );
+            self.add( field_container );
+            //self.add( field );
+            self.doLayout();
+            return field;
+        }
+    }, 
+    remove_field : function(id){
+        var self = this;
+        self.cascade( function(obj){
+            if( obj && obj.name == id ) {
+                if( obj.pn ) self.remove( obj.pn );
+                else self.remove( obj );
+                delete self.data[id];
+            }
+        });
+    }
+});
+
+Baseliner.VariableForm = Ext.extend( Ext.Panel, {
+    bl: '*', 
+    layout: 'card',
+    activeItem: 0,
+    show_tbar: true,
+    constructor: function(c){
+        Baseliner.VariableForm.superclass.constructor.call(this, Ext.apply({
+        }, c));
+    },
+    initComponent: function(){
+        var self = this;
+        if( !self.data ) {
+            self.data = {};
+            self.json = '{}';
+        } else if( Ext.isString(self.data) ) {
+            self.json = self.data;
+            self.data = Ext.decode( self.json );
+        } else if( Ext.isObject(self.data) ) {
+            self.json = Ext.encode( self.data ); 
+        } else {
+            Baseliner.error( 'VariableForm', _('Invalid data type') );
+        }
+        self.vars_cache = {};
+        self.store_vars = new Baseliner.store.CI({ baseParams: { role:'Variable', with_data: 1 } });
+        self.combo_vars = new Ext.form.ComboBox({ 
+               width: 350,
+               submitValue: false,
+               id: self.id + '-combo',
+               name: self.id + '-combo-name',
+               valueField: 'name', 
+               hiddenField: 'name', 
+               displayField: 'name',
+               mode:'remote',
+               emptyText: _('<select variable>'),
+               typeAhead: false,
+               minChars: 1, 
+               store: self.store_vars, 
+               editable: false, forceSelection: true, triggerAction: 'all',
+               allowBlank: true
+        });
+        // adds variable on combo click
+        self.combo_vars.on('select', function(cb,rec){
+            self.add_field_from_rec( rec );
+        });
+        self.btn_add = new Ext.Button({ icon:'/static/images/icons/add.gif', handler:function(){
+            var ix = self.combo_vars.view.getSelectedIndexes()[0];
+            if( ix!==undefined ) {
+                var rec = self.store_vars.getAt(ix);
+                self.add_field_from_rec( rec );
+            }
+        }});
+        self.btn_del = new Ext.Button({ icon:'/static/images/icons/delete.gif', handler:function(){
+            var ix = self.combo_vars.view.getSelectedIndexes()[0];
+            if( ix!==undefined ) {
+                var rec = self.store_vars.getAt(ix);
+                self.del_field_from_rec( rec );
+            }
+        }});
+        
+        self.hidden_field = new Ext.form.Hidden({ name: self.name, value: self.json });
+        if( self.show_tbar ) self.tbar = [ self.combo_vars, self.btn_add, self.btn_del, self.hidden_field ];
+        else self.tbar = [];
+        
+        Baseliner.VariableForm.superclass.initComponent.call(this);
+
+        // load baselines
+        var bls = new Baseliner.store.Baseline(); 
+        bls.load({
+            callback: function(records){
+                var tbar = self.getTopToolbar();
+                tbar.add('->');
+                if( self.force_bl ) records=[ { id: self.force_bl } ];
+                var def_bl = self.force_bl || '*';
+                Ext.each(records, function(bl){
+                    var name = bl.id == '*' ? 'Common' : bl.id; 
+                    // create metaform
+                    var mf = new Baseliner.MetaForm({ 
+                        bl: bl.id,
+                        data: self.data[bl.id] || {}, 
+                        tbar: false
+                    });
+                    mf.on('beforedestroy', function(){ 
+                        self.data[bl.id] = mf.serialize();
+                    });
+                    mf.on('field_changed', function(mf, fi){ 
+                        self.data[bl.id] = mf.serialize();
+                        self.update_hidden(bl.id);
+                        //self.combo_vars.reset();
+                    });
+                    mf.on('delete_field', function(mf){ 
+                        self.data[bl.id] = mf.serialize();
+                        self.update_hidden(bl.id);
+                        //self.combo_vars.reset();
+                    });
+                    // add to card
+                    self.add( mf ); 
+                    // add to toolbar
+                    tbar.add({ xtype:'button', enableToggle: true, 
+                        pressed: (bl.id==def_bl ?true:false), 
+                        width: '30',
+                        bl_id: bl.id,
+                        toggleGroup: 'vf-bls-'+self.id, 
+                        handler: function(btn){
+                            self.getLayout().setActiveItem( mf );
+                        },
+                        text: _(name)
+                    });
+                    if( bl.id == def_bl ) self.getLayout().setActiveItem( mf );
+                    // load form
+                    self.meta_for_data( mf, bl.id );
+                });
+                tbar.doLayout();
+                self.doLayout();
+            }
+        });
+        
+        // get metadata from data variable names
+    },
+    add_field_from_rec : function(rec){
+        var self = this;
+        var id = rec.data.name;
+        var mf = self.current_mf();
+        var bl = mf.bl;
+        if( mf.data==undefined || mf.data[ id ] === undefined ) {
+            var d = Ext.apply({}, rec.data);
+            d = Ext.apply(d, rec.data.data );
+            var meta = self.var_to_meta( d );
+            var field = mf.add_field_from_meta( meta );
+            var value = field.getValue() || meta['default'];
+            if( !self.data[bl] ) self.data[bl]={};
+            self.data[bl][id] = value;
+            self.update_hidden();
+            
+            //self.data[bl.id] = mf.serialize();
+            //mf.serialize();
+            //self.data[ bl ] = meta['default'];
+        } else {
+            Baseliner.message( _('Variables'), _('Variable `%1` already exists', id) );
+        }
+    },
+    del_field_from_rec : function(rec){
+        var self = this;
+        var id = rec.data.name;
+        var mf = self.current_mf();
+        mf.remove_field( id );
+    },
+    current_bl : function(){
+        var self = this;
+        return self.current_mf.bl;
+    },
+    current_mf : function(){
+        var self = this;
+        return self.getLayout().activeItem;
+    },
+    update_hidden : function(bl){
+        var self = this;
+        if( self.data === undefined ) return;
+        //self.data[bl.id] = mf.serialize();
+        //self.getData();
+        //self.hidden_field.setValue( Ext.encode( self.getData(bl) ) );
+        self.hidden_field.setValue( Ext.encode( self.data ) );
+    },
+    var_to_meta : function( ci, bl ){
+        var self = this;
+        var meta = {
+            id: ci.name,
+            type: ci.var_type,
+            description: ci.description,
+            'default': ci.var_default,
+            classname: ci.var_ci_class,
+            role: ci.var_ci_role,
+            field_attributes: { allowBlank: !ci.var_ci_mandatory, singleMode: !ci.var_ci_multiple },
+            options: ci.var_combo_options
+        };
+        return meta;
+    },
+    add_var_ci_field : function(mf,bl, var_ci){
+        var self = this;
+        var meta = self.var_to_meta(var_ci, bl);
+        return mf.add_field_from_meta( meta );
+    },
+    meta_for_data : function(mf,bl){
+        var self = this;
+        var vars=[];
+        if( !self.data ) return;
+        var bl_data = self.data[bl];
+        mf.data = bl_data;
+        // get variable names from hash keys
+        for( v in bl_data ) {
+            vars.push( v ); 
+        }
+        if( vars.length > 0 ) {
+            /*
+            var vars_no_cache = [];
+            Ext.each( vars, function(v) {
+                if( self.vars_cache[v] !== undefined ) 
+                    self.add_var_ci_field( mf, bl, self.vars_cache[v] );
+                else 
+                    vars_no_cache.push(v);
+            });
+            */
+            // get variable CI metadata 
+            Baseliner.ajaxEval('/ci/variable/list_by_name', { names: vars, bl: bl }, function(res){
+                Ext.each( res.data, function(var_ci){
+                    self.add_var_ci_field( mf, bl, var_ci );
+                });
+            });
+        }
+    },
+    getData : function(bl){
+        var self = this;
+        Ext.each( self.items.items, function(mf) {
+            if( bl && mf.bl != bl ) return;
+            self.data[ mf.bl ] = mf.serialize();
+        });
+        return self.data;
+    }, 
+    getValue : function(){
+        alert( 'ggg' );
+    }
+});
+
+

@@ -9,7 +9,8 @@ params:
     set_method: 'set_release'
     field_order: 7
     section: 'body'
-    filter: 'none'    
+    filter: 'none'
+    release_field: '' 
 ---
 */
 (function(params){

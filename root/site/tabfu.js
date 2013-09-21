@@ -1012,6 +1012,13 @@ if( Prefs.routing ) {
             params.as_json = true;
         Baseliner.ajaxEval( url, params, foo, scope );
     }
+    Baseliner.ci_call = function( coll_or_mid, method, params, foo, scope ){
+        var url = String.format( '/ci/{0}/{1}', coll_or_mid, method );
+        if( !Ext.isObject(params) ) params = {};
+        params.as_json = true;
+        params._merge_with_params = 1;
+        Baseliner.ajaxEval( url, params, foo, scope );
+    }
 
     Baseliner.ajaxEval = function( url, params, foo, scope ){
         if(params == undefined ) params = {};
@@ -1069,7 +1076,11 @@ if( Prefs.routing ) {
                         login_or_error();
                     }
                     else if( !params._handle_res && Ext.isObject( comp ) && comp.success!=undefined && !comp.success ) {  // XXX this should come after the next else
-                        Baseliner.error( _('Loading Error'), comp.msg );
+                        if( Ext.isFunction(scope) ) {  // scope is catch
+                            scope( comp, foo );
+                        } else {
+                            Baseliner.error( _('Loading Error'), comp.msg );
+                        }
                     }
                     else if( Ext.isFunction( foo ) ) {  // XXX this should come before the next else
                         foo( comp, scope );
@@ -1081,7 +1092,8 @@ if( Prefs.routing ) {
                 catch(e){
                     Baseliner.error_win(url,params,xhr,e);
                     if( Baseliner.DEBUG ) {
-                        Baseliner.loadFile( url, 'js' );  // hopefully this will generate a legit error for debugging, but it may give strange console errors
+                        // XXX dangerous on delete, confusing otherwise: Baseliner.loadFile( url, 'js' );  // hopefully this will generate a legit error for debugging, but it may give strange console errors
+                        //    consider writing the output into an innerHTML of a <script></script> tag 
                         throw e;
                     }
                     //if( Baseliner.DEBUG && ! Ext.isIE && console != undefined ) { console.log( xhr ) }

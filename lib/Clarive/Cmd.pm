@@ -7,6 +7,7 @@ has app => qw(is ro required 1),
                 lang 
                 env 
                 home 
+                base
                 debug 
                 trace
                 verbose 

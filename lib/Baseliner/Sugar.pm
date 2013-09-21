@@ -51,7 +51,7 @@ sub kv { Baseliner->model('KV') }
 
 sub bali_rs { Baseliner->model('Baseliner::Bali' . shift ) }
 
-sub relation { Baseliner->model('Relationships') }
+# sub relation { Baseliner->model('Relationships') }
 
 sub ns_get { Baseliner->model('Namespaces')->get(@_) }
 
@@ -98,11 +98,16 @@ sub master_new {
     my $master_data = ref $name eq 'HASH' ? $name : { name=>$name };
     my $class = 'BaselinerX::CI::'.$collection;
     if( ref $code eq 'HASH' ) {
-        return $class->save( %$master_data, data=>$code );   # this returns a mid
+        my $ci = $class->new( %$master_data, %$code );
+        return $ci->save;
+        #return $class->save( %$master_data, data=>$code );   # this returns a mid
     } elsif( ref $code eq 'CODE' ) {
         my $ret;
         Baseliner->model('Baseliner')->txn_do(sub{
-            my $mid = $class->save( %$master_data ); 
+            my $ci = $class->new( %$master_data );
+            $ci->save;
+            my $mid = $ci->mid;
+            #my $mid = $class->save( %$master_data ); 
             $ret = $code->( $mid );
         });
         return $ret;
@@ -155,44 +160,45 @@ sub event_new {
         }
     };
     return try {
+        require Baseliner::Core::Event;
+        my $obj = Baseliner::Core::Event->new( data => $data );
+        # PRE rules
+        my $rules_pre = $ev->rules_pre_online( $data );
+        push @rule_log, map { $_->{when} => 'pre-online'; $_ } _array( $rules_pre->{rule_log} );
+        # PRE hooks
+        for my $hk ( $ev->before_hooks ) {
+            my $hk_data = $hk->( $obj );
+            $data = { %$data, %$hk_data } if ref $hk_data eq 'HASH';
+            $obj->data( $data );
+        }
         if( ref $code eq 'CODE' ) {
-            require Baseliner::Core::Event;
-            my $obj = Baseliner::Core::Event->new( data => $data );
-            # PRE rules
-            my $rules_pre = $ev->rules_pre_online( $data );
-            push @rule_log, map { $_->{when} => 'pre-online'; $_ } _array( $rules_pre->{rule_log} );
-            # PRE hooks
-            for my $hk ( $ev->before_hooks ) {
-                my $hk_data = $hk->( $obj );
-                $data = { %$data, %$hk_data } if ref $hk_data eq 'HASH';
-                $obj->data( $data );
-            }
             # RUN
             my $rundata = $code->( $data );
             ref $rundata eq 'HASH' and $data = { %$data, %$rundata };
-            if( !length $data->{mid} ) {
-                _debug 'event_new is missing mid parameter' ;
-                #_throw 'event_new is missing mid parameter' ;
-            } else {
-                try {
-                    my $ci = _ci( $data->{mid} );
-                    my $ci_data = $ci->load;
-                    $data = { %$ci_data, ci=>$ci, %$data };
-                } catch {
-                    _error _loc("Error: Could not instantiate ci data for event: %1", shift() );
-                };
-            }
-            # POST hooks
-            $obj->data( $data );
-            for my $hk ( $ev->after_hooks ) {
-                my $hk_data = $hk->( $obj );
-                $data = { %$data, %$hk_data } if ref $hk_data eq 'HASH';
-                $obj->data( $data );
-            }
-            # POST rules
-            my $rules_post = $ev->rules_post_online( $data );
-            push @rule_log, map { $_->{when} => 'post-online'; $_ } _array( $rules_post->{rule_log} );
         }
+        if( !length $data->{mid} ) {
+            _debug 'event_new is missing mid parameter' ;
+            #_throw 'event_new is missing mid parameter' ;
+        } else {
+            try {
+                my $ci = Baseliner::CI->new( $data->{mid} );
+                my $ci_data = $ci->load;
+                $data = { %$ci_data, ci=>$ci, %$data };
+            } catch {
+                _error _loc("Error: Could not instantiate ci data for event: %1", shift() );
+            };
+        }
+        # POST hooks
+        $obj->data( $data );
+        for my $hk ( $ev->after_hooks ) {
+            my $hk_data = $hk->( $obj );
+            $data = { %$data, %$hk_data } if ref $hk_data eq 'HASH';
+            $obj->data( $data );
+        }
+        # POST rules
+        my $rules_post = $ev->rules_post_online( $data );
+        push @rule_log, map { $_->{when} => 'post-online'; $_ } _array( $rules_post->{rule_log} );
+
         # create the event on table
         $event_create->( $data, @rule_log ) if defined $data->{mid};
         return $data; 
@@ -240,6 +246,9 @@ sub events_by_mid {
             my $ev = Baseliner->model('Registry')->get( $d->{event_key} ); # this throws an exception if key not found
             $d->{text} = $ev->event_text( $d );
             $d->{ev_level} = $ev->level;
+        } catch {
+            my $err = shift;
+            Util->_error( Util->_loc('Error in event text generator: %1', $err) );
         };  
         $d; 
     } @evs ];

@@ -70,13 +70,6 @@ sub check_scheduled {
     }
 }
 
-sub job_name {
-    my $self = shift;
-    my $p = shift;
-    my $prefix = $p->{type} eq 'promote' || $p->{type} eq 'static' ? 'N' : 'B';
-    return sprintf( $p->{mask}, $prefix, $p->{bl} eq '*' ? 'ALL' : $p->{bl} , $p->{id} );
-}
-
 sub top_job {
     my ($self, %p )=@_;
     my $rs = Baseliner->model('Baseliner::BaliJobItems')->search({ %p }, { order_by => { '-desc' => 'id_job.id' }, prefetch=>['id_job'] });
@@ -84,18 +77,6 @@ sub top_job {
     my $row = $rs->next;
     return undef unless ref $row;
     return $row->id_job; # return the job row
-}
-
-sub is_in_active_job {
-    my ($self, $ns )=@_;
-    
-    my $rs = Baseliner->model('Baseliner::BaliJobItems')->search({ item=> $ns }, { order_by => { '-desc' => 'id_job.id' }, prefetch=>['id_job'] });
-    while( my $r = $rs->next ) {
-        if(  $r->id_job->is_active ) {
-            return $r->id_job;
-        }
-    }
-    return undef;
 }
 
 sub cancel {
@@ -130,219 +111,6 @@ sub resume {
 }
 
 register 'event.job.rerun';
-
-sub rerun {
-    my ($self, %p )=@_;
-    my $jobid = $p{jobid} or _throw 'Missing job id';
-    my $username = $p{username} or _throw 'Missing username';
-    my $realuser = $p{realuser} || $username;
-
-    my $job = Baseliner->model('Baseliner::BaliJob')->search({ id=> $jobid })->first;
-    _throw _loc('Job %1 not found.', $jobid ) unless ref $job;
-    _throw _loc('Job %1 is currently running (%2) and cannot be rerun', $job->name, $job->status)
-        unless( $job->is_not_running );
-
-    event_new 'event.job.rerun' => { job=>$job } => sub {
-        if( $p{run_now} ) {
-            my $now = DateTime->now;
-            $now->set_time_zone(_tz);
-            my $end = $now->clone->add( hours => 1 );
-            my $ora_now =  $now->strftime('%Y-%m-%d %T');
-            my $ora_end =  $end->strftime('%Y-%m-%d %T');
-            $job->schedtime( $ora_now );
-            $job->starttime( $ora_now );
-            $job->maxstarttime( $ora_end );
-        }
-        $job->rollback( 0 );
-        $job->status( 'READY' );
-        $job->step( $p{step} || 'PRE' );
-        $job->username( $username );
-        my $exec = $job->exec + 1;
-        $job->exec( $exec );
-        $job->update;
-        my $log = new BaselinerX::Job::Log({ jobid=>$job->id });
-        $log->info(_loc("Job restarted by user %1, execution %2", $realuser, $exec));
-    };
-}
-
-sub create {
-    my ($self, %p )=@_;
-
-    my $job;
-    master_new 'job' => $p{name} => sub { # this is transaction "aware"
-        my $mid = shift;
-        $p{mid} = $mid;
-        $job = $self->_create( %p );
-    };
-    return $job;
-}
-
-sub _create {
-    my ($self, %p )=@_;
-    my $ns = $p{ns} || '/';
-    my $bl = $p{bl} || '*';
-
-    my $contents = $p{items} || $p{contents};
-    my $config = Baseliner->model('ConfigStore')->get( 'config.job' );
-    #FIXME this text based stuff needs to go away
-    my $jobType = (defined $p{approval}->{reason} && $p{approval}->{reason}=~ m/fuera de ventana/i)
-        ? $config->{emer_window}
-        : $config->{normal_window};
-
-    my $status = $p{status} || 'IN-EDIT';
-    #$now->set_time_zone('CET');
-    my $now = DateTime->now(time_zone=>_tz);
-    my $end = $now->clone->add( hours => $config->{expiry_time}->{$jobType} || 24 );
-
-    $p{starttime}||=$now;
-    $p{maxstarttime}||=$end;
-
-    ## allow the creation of jobs executed outside Baseliner, with older dates
-    my ($starttime, $maxstarttime ) = ( $now, $end );
-    ($starttime, $maxstarttime ) = $p{starttime} < $now
-        ? ( $now , $end )
-        : ($p{starttime} , $p{maxstarttime} );
-
-    $starttime =  $starttime->strftime('%Y-%m-%d %T');
-    $maxstarttime =  $maxstarttime->strftime('%Y-%m-%d %T');
-
-    my $type = $p{type} || $p{job_type} || $config->{type};
-
-    my $job = Baseliner->model('Baseliner::BaliJob')->create({
-            name         => 'temp' . $$,
-            mid          => $p{mid},
-            starttime    => $starttime,
-            schedtime    => $starttime,
-            maxstarttime => $maxstarttime,
-            status       => $status,
-            step         => $p{step} || 'PRE',
-            type         => $type,
-            runner       => $p{runner} || $config->{runner},
-            username     => $p{username} || $config->{username} || 'internal',
-            comments     => $p{comments},
-            job_key      => _md5(),
-            ns           => $ns,
-            bl           => $bl,
-    });
-
-    # setup name
-    my $name = $config->{name}
-        || $self->job_name({ mask=>$config->{mask}, type=>$type, bl=>$bl, id=>$job->id });
-
-    _log "****** Creating JOB id=" . $job->id . ", name=$name, mask=" . $config->{mask};
-    $config->{runner} && $job->runner( $config->{runner} );
-    $config->{chain} && $job->chain( $config->{chain} );
-
-    $job->name( $name );
-    $job->update;
-
-    # create a hash stash
-
-    my $log = new BaselinerX::Job::Log({ jobid=>$job->id });
-
-    # publish release names to the log, just in case
-    my @original_contents = _unique _array  $contents;
-    my $original ='';
-    foreach my $it ( _array $contents ) {
-        my $ns = Baseliner->model('Namespaces')->get( $it->{ns} );
-        try {
-            $original .= '<li>' . $ns->ns_type . ": " . $ns->ns_name
-                if( $ns->does('Baseliner::Role::Container') );
-        } catch { };
-    }
-    $log->info( _loc('Job elements requested for this job: %1', '<br>'.$original ) )
-        if $original;
-
-    # create job items
-    if( ref $contents eq 'ARRAY' ) {
-        my $contents = $self->container_expand( $contents );
-        my @item_list;
-        for my $item ( _array $contents ) {
-            $item->{ns} ||= $item->{item};
-            _throw _loc 'Missing item ns name' unless $item->{ns};
-            my $ns = Baseliner->model('Namespaces')->get( $item->{ns} );
-            my $app = try { $ns->application } catch { '' };
-            # check rfc
-            Baseliner->model('RFC')->check_rfc( $app, $ns->rfc )
-                if $config->{check_rfc};
-            # check contents job status
-            _log "Checking if in active job: " . $item->{ns};
-            my $active_job = $self->is_in_active_job( $item->{ns} );
-            _fail _loc("Job element '%1' is in an active job: %2", $item->{ns}, $active_job->name)
-                if ref $active_job;
-                    # item => $item->{ns},
-            my $provider=$1 if $item->{provider} =~ m/^namespace\.(.*)$/g;
-            my $items = $job->bali_job_items->create(
-                {
-                    data        => _dump( $item->{data} || $item->{ns_data} ),
-                    item        => $ns->does('Baseliner::Role::Container')?"$provider/".$ns->{ns_name}:$item->{ns},
-                    service     => $item->{service},
-                    provider    => $item->{provider},
-                    id_job      => $job->id,
-                    id_project  => $ns->ns_data->{id_project},
-                    application => $app,
-                }
-            );
-            #$items->update;
-            # push @item_list, '<li>'.$item->{ns}.' ('.$item->{ns_type}.')';
-            # push @item_list, '<li>'. ($ns->does('Baseliner::Role::Container')?$ns->{ns_name}:$item->{ns}) . ' ('.$item->{ns_type}.')';
-            push @item_list, '<li><b>'.$item->{ns_type}.':</b> '.$ns->{ns_name};
-        }
-        _throw 'No hay contenido de pase' unless @item_list > 0;
-
-        # log job items
-        if( @item_list > 10 ) {
-            my $msg = _loc('Job contents: %1 total items', scalar(@item_list) );
-            $log->info( $msg, data=>join("\n",@item_list) );
-        } else {
-            # my $item = "";
-            # for ( @item_list ) {
-                # item .= "$_\n";
-                # }
-            $log->info(_loc('Job contents: %1', join("\n",@item_list)) );
-        }
-    }
-
-    # now let it run
-    # if(  $p{approval}  ) {
-    $log->debug(_loc( 'Approval exists? ' ),data=>_dump  $p{approval});
-    if ( exists $p{approval}{reason} ) {
-        # approval request executed by runner service
-        $job->stash_key( approval_needed => $p{approval} );
-    }
-    if ( ref $p{job_stash} eq 'HASH' ) {
-        while( my ($k,$v) = each %{ $p{job_stash} } ) {
-            $job->stash_key( $k => $v );
-        }
-    }
-    $job->status( 'READY' );
-    $job->update;
-    return $job;
-}
-
-sub container_expand {
-    my ($self, $contents ) = @_;
-    my @ret;
-    for my $job_item ( _array $contents ) {
-        _throw _loc 'Missing item ns name' unless $job_item->{ns};
-        _log "Checking if this is a container: " . $job_item->{ns};
-        my $ns = Baseliner->model('Namespaces')->get( $job_item->{ns} );
-        try {
-            if( $ns->does('Baseliner::Role::Container') ) {
-                push @ret, $job_item;
-                _log "Checking contents of " . $job_item->{ns};
-                my $contents = [ $ns->contents ];
-                push @ret, @{ $self->container_expand( $contents ) || [] };
-            } else {
-                push @ret, $job_item;
-            }
-        } catch {
-            my $err = shift;
-            _log "Error retrieving release contents: $err";
-        };
-    }
-    return \@ret;
-}
 
 sub status {
     my ($self,%p) = @_;
@@ -484,30 +252,72 @@ sub log_this {
 sub get_summary {
     my ($self, %p) = @_;
     my $row = Baseliner->model( 'Baseliner::BaliJob' )->search( {id => $p{jobid}, exec => $p{job_exec}} )->first;
+
     my $result = {};
 
     if ( $row ) {
-        my $execution_time;
+        my @log_all = DB->BaliLog->search( 
+            { 
+                id_job => $p{jobid}, 
+                exec => $p{job_exec}
+             },
+             {
+                select => [
+                    'step',
+                    'service_key',
+                    { min => 'timestamp', -as => 'starttime' },
+                    { max => 'timestamp', -as => 'endtime'}
+                ],
+                group_by => ['step','service_key']
+              }
+        )->hashref->all;
+
+        @log_all = sort { Class::Date->new($a->{starttime})->epoch <=> Class::Date->new($b->{starttime})->epoch } @log_all;
+
+        my $active_time = 0;
+        my $services_time = {};
+
         my $endtime;
         my $starttime;
-        $starttime = Class::Date->new( $row->starttime);
+        
+        for my $service ( @log_all ) {
+            
+            my $service_starttime = Class::Date->new($service->{starttime});
+            my $service_endtime = Class::Date->new($service->{endtime});
+
+            $starttime = Class::Date->new( $service_starttime ) if !$starttime;
+            $endtime = Class::Date->new( $service_endtime );
+
+            my $service_time = $service_endtime - $service_starttime;
+
+            if ( $service_time && $service_time->sec > 0) {
+                $services_time->{$service->{step}."#".$service->{service_key}} = $service_time->sec;
+            }
+            $active_time += $service_endtime - $service_starttime;
+        }
+        
+        my $execution_time;
         if ($row->endtime){
-            $endtime = Class::Date->new( $row->endtime);
+            $endtime = Class::Date->new( $row->endtime );
             $execution_time = $endtime - $starttime;
         } else {
-            my $now = Class::Date->new( _now);
-            $execution_time = $now - $row->starttime;
+            my $now = Class::Date->now;
+            $execution_time = $now - $starttime;
         }
+
+        # Fill services time
         $result = {
             bl => $row->bl,
             status => $row->status,
             starttime => $starttime,
             execution_time => $execution_time,
+            active_time => $active_time,
             endtime => $endtime,
             type => $row->type,
-            owner => $row->owner,
+            owner => $row->username,
             last_step => $row->step,
-            rollback => $row->rollback
+            rollback => $row->rollback,
+            services_time => $services_time
         }
     }
     return $result;
@@ -516,93 +326,103 @@ sub get_summary {
 sub get_services_status {
     my ( $self, %p ) = @_;
     defined $p{jobid} or _throw "Missing jobid";
-    my $rs = 
-        Baseliner->model( 'Baseliner::BaliLog' )
-        ->search( {id_job => $p{jobid}, exec => $p{job_exec}, milestone => {'>', 1}}, {order_by => 'id'} );
-
-    my $row_stash = Baseliner->model( 'Baseliner::BaliJobStash' )->search( {id_job => $p{jobid}} )->first;
-
-    my $job_stash     = $row_stash? _load $row_stash->stash : {};
-
-    my $chain_id = 1;
-    if ( $job_stash->{runner_data}->{chain_id} ) {
-        $chain_id = $job_stash->{runner_data}->{chain_id};
-    }
-    my $chain_rs =
-        Baseliner->model( 'Baseliner::BaliChainedService' )
-        ->search( { chain_id => $chain_id } );
-
-    my $services = {};
-
-    while ( my $chained_service = $chain_rs->next() ) {
-        $services->{$chained_service->step.'-'.$chained_service->key } = $chained_service->description;
-    }
-
-    my $service_statuses = {2 => 'Success', 3 => 'Warning', 4 => 'Error'};
-    my $result;
-    my %added_services;
-    while ( my $row = $rs->next ) {
-        my $info = Baseliner->model( 'Baseliner::BaliLog' )->search( {id_job => $p{jobid}, exec => $p{job_exec}, lev => {'<>','debug'}, service_key => $row->service_key, step => $row->step}, {order_by => 'id'} )->first;
-        if ( $info ) {
-            if ( !$added_services{$row->step.$row->service_key} ) {
-                push @{$result->{$row->step}}, 
-                    { description => $services->{$row->step.'-'.$row->service_key}, service=>$row->service_key, status => $service_statuses->{$row->milestone}, id => $row->id};
-                $added_services{$row->step.$row->service_key} = 1;
-            }
+    my $job = _ci( ns=>'job/'. $p{jobid} );
+    my $summary = $p{summary};
+        
+    my $result = {};
+    my $ss = {};
+    my $log_levels = { warn => 3, error => 4, debug => 2, info => 2 };
+    
+    my @log = DB->BaliLog->search(
+        {
+            id_job => $p{jobid},
+            exec   => $p{job_exec}
+        },
+        {
+            select => [
+                'step',
+                'service_key',
+                'lev'
+            ],
         }
-    } ## end while ( my $row = $rs->next)
+    )->hashref->all;
 
-    return $result;
-} ## end sub get_services_status
+    for my $sl ( @log ) {
+        if ( $sl->{service_key} && $summary->{services_time}->{$sl->{step}."#".$sl->{service_key} }) {
+            if ( !$ss->{ $sl->{step} }->{ $sl->{service_key} }) {
+                $ss->{ $sl->{step} }->{ $sl->{service_key} } = 'info';
+            }
+            if ( $log_levels->{$ss->{ $sl->{step} }->{ $sl->{service_key} }} < $log_levels->{$sl->{lev}} ) {
+
+                $ss->{ $sl->{step} }->{ $sl->{service_key} } = $sl->{lev};
+            }            
+        }
+    }
+
+    my %seen;  
+    my $load_results = sub {
+        my @keys = @_; 
+        for my $r ( @keys ) {
+            my ($step, $skey, $id ) = @{ $r }{ qw(step service_key id) };
+            next if $seen{ $skey . '#' . $step };
+            $seen{ $skey . '#' . $step } = 1;
+            my $status = $ss->{$step}->{$skey};
+            next if $status eq 'debug';
+            if ( $status ne 'error') {
+                next if ( !$summary->{services_time}->{$step."#".$skey } );
+            }
+            $status = uc( substr $status,0,1 ) . substr $status,1;
+            $status = 'Warning' if $status eq 'Warn';
+            $status = 'Success' if $status eq 'Info';
+            push @{ $result->{$step} }, {
+                service     => $skey,
+                description => $skey,
+                status      => $status,
+                id          => $id,
+            };
+        }
+    };
+    
+    # # load previous exec services, in case we had exec=1, step=PRE, then, exec=2, step=RUN
+    # my @keys = DB->BaliLog->search({ id_job=>$p{jobid}, exec =>{ '!=' => $p{job_exec} }, service_key=>{ '<>'=>undef } },
+    #     { order_by=>{ -asc=>'id' }, select=>[qw(step service_key id)] } ) # ->hash_unique_on('service_key');
+    #     ->hashref->all;
+    # $load_results->( @keys );
+
+    # load current keys
+    my @keys = DB->BaliLog->search({ id_job=>$p{jobid}, exec => $p{job_exec}, service_key=>{ '<>'=>undef } },
+        { order_by=>{ -asc=>'id' }, select=>[qw(step service_key id)] } ) # ->hash_unique_on('service_key');
+        ->hashref->all;
+    # reset keys for current exec 
+    for my $r ( @keys ) {
+        $result->{$r->{step}}=[];
+    }
+    $load_results->( @keys );
+    
+    return $result;  # {   PRE=>[ {},{} ], RUN=>... }
+} 
 
 sub get_contents {
     my ( $self, %p ) = @_;
     defined $p{jobid} or _throw "Missing jobid"; 
     my $result;
 
-    my $rs = Baseliner->model( 'Baseliner::BaliJobItems' )->search( {id_job => $p{jobid}} );
-    my $row_stash =
-        Baseliner->model( 'Baseliner::BaliJobStash' )->search( {id_job => $p{jobid}} )->first;
-
-    my $job_stash     = $row_stash? _load $row_stash->stash : {};
-    my $elements      = $job_stash->{elements};
-    my @elements_list;
-    $result = {};
-    if($elements){
-        @elements_list = $elements->list( '' );
-        my %topics;
-        my %technologies;
-    
-        while ( my $row = $rs->next ) {
-            my $ns = ns_get( $row->item );
-            push @{$result->{packages}->{$ns->{ns_data}->{project}}}, { name => $ns->{ns_name}, type => $ns->{ns_type} };
-            push @{$result->{elements}},
-                map { 
-                    try {
-                        $_->path =~ /^\/.*?\/.*?\/(.*?)\/.*?/;
-                        #_log $_->path;
-                        my $tech = $1;
-                        $technologies{$tech} = '';
-                        {name => $_->name, status => $_->status, path => $_->path} 
-                    } catch {
-                        +{}
-                    };
-                } @elements_list;
-    
-            my $rs_topics =
-                Baseliner->model( 'Baseliner::BaliRelationship' )->search( {from_ns => $ns->{ns_type}.'/'.$ns->{ns_name}} );
-    
-            while ( my $topic = $rs_topics->next ) {
-                my $row_topics =
-                    Baseliner->model( 'Baseliner::BaliTopic' )->search( {mid => $topic->to_id} )->first;
-                ##$topics{$topic->to_id} = $row_topics->title;
-                $topics{$topic->to_id} = $row_topics->title if $row_topics && $row_topics->title;
-            }
-        } ## end while ( my $row = $rs->next)
-    
-        push @{$result->{topics}}, map { {id => $_, title => $topics{$_}} } keys %topics;
-        push @{$result->{technologies}}, keys %technologies;        
+    my $job = _ci( ns=>'job/' . $p{jobid} );
+    my $job_stash = $job->job_stash;
+    my @changesets = _array( $job->changesets );
+    my $changesets_by_project = {};
+    my @natures = map { $_->name } _array( $job->natures );
+    my $items = $job_stash->{items};
+    for my $cs ( @changesets ) {
+        my @projs = _array $cs->projects;
+        push @{ $changesets_by_project->{$  projs[0]->{name}} }, $cs;
     }
+    $result = {
+        packages => $changesets_by_project,
+        items => $items, 
+        technologies => \@natures,
+    };
+    
     return $result;
 
 } ## end sub get_contents
@@ -639,7 +459,7 @@ sub get_outputs {
             ? ( $data_name || $self->_select_words( $r->text, 2 ) ) . ".txt"
             : '';
         my $link;
-        if ( $more eq 'link') {
+        if ( $more && $more eq 'link') {
             $link = $data;
         }
         push @{$result->{outputs}}, {

@@ -28,14 +28,23 @@ params:
 		},			
 		{   xtype: 'panel', layout:'fit',
 			hidden: meta ? (meta.hidden ? meta.hidden : false): true,
+			listeners: {
+				'afterrender':function(){
+					var disable = meta && meta.readonly ? meta.readonly : false;
+					if(disable){
+					    var mask = this.el.mask();
+					    mask.setStyle('opacity', 0);
+					    mask.setStyle('height', 5000);
+					}
+				}
+			},  			
 			items: [ //this panel is here to make the htmleditor fit
 			new Baseliner.CLEditor({
 					name: meta.id_field,
 					fieldLabel: _('Description'),
 					width: '100%',
 					value: data ? data[meta.bd_field] : '',
-					height: 350,
-					disabled: meta ? meta.readonly : true
+					height: 350
 				})
 			]
 		},

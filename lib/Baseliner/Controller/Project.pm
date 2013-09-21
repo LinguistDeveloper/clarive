@@ -11,10 +11,10 @@ use v5.10;
 
 register 'action.admin.project' => { name => 'Administer projects'};
 
-register 'menu.admin.project' => {
-    label => 'Projects', url_comp=>'/project/grid', actions=>['action.admin.project'],
-    title=>'Projects', index=>80,
-    icon=>'/static/images/icons/project.png' };
+# register 'menu.admin.project' => {
+#     label => 'Projects', url_comp=>'/project/grid', actions=>['action.admin.project'],
+#     title=>'Projects', index=>80,
+#     icon=>'/static/images/icons/project.png' };
 
 sub list : Local {
     my ($self,$c) = @_;
@@ -511,6 +511,7 @@ returns the user project json
 sub user_projects : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
+    my $collection = $p->{collection} // 'project';
     my $level = $p->{level};
     my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
     my $where;
@@ -551,6 +552,8 @@ sub user_projects : Local {
     #);
     #$where->{id} = { -in => $user_prjs };
     my $from = { order_by=>'project_name' };
+    $from->{ prefetch } = 'master';
+
     my $pager;
     if( $limit ) {
         $from->{page} //= to_pages( start=>$start // 0, limit=>$limit );
@@ -566,6 +569,8 @@ sub user_projects : Local {
         $where->{root_mid} = [ split ',' => $p->{root_mid} ];
     }
     
+    $where->{'master.collection'} = $collection;
+
     #my $rs = $c->model('Baseliner::BaliProject')->search({ mid => { -in => $user_prjs } });
     my $rs = DB->BaliProjectTree->search($where, $from);
     rs_hashref($rs);
@@ -588,7 +593,7 @@ sub user_projects : Local {
         $_->{data}=_load($_->{data});
         $_->{ns} = 'project/' . $_->{mid};
         $_->{name} = $name;
-        $_} $rs->all;
+    $_} $rs->all;
     # @rows = sort { $$a{'name'} cmp $$b{'name'} } @rows;  # Added by Eric (q74613x) 20110719
     #_debug \@rows;
     $cnt = $pager ? $pager->total_entries : scalar @rows;

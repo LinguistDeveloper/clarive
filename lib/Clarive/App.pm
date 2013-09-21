@@ -4,6 +4,7 @@ use v5.10;
 
 has env     => qw(is rw required 0);
 has home    => qw(is rw required 1);
+has base    => qw(is rw required 1);
 has lang    => qw(is ro required 1);
 has debug   => qw(is rw default 0);
 has verbose => qw(is rw default 0);
@@ -13,7 +14,7 @@ has dbic_trace => qw(is rw default 0);
 
 has argv   => qw(is ro isa ArrayRef required 1);  # original command line ARGV
 has args   => qw(is ro isa HashRef required 1);  # original command line args
-has config => qw(is rw isa HashRef required 1);  # full config file (clarive.yml + $env.yml)
+has config => qw(is rw isa HashRef required 1);  # full config file (config/global.yml + $env.yml)
 has opts   => qw(is ro isa HashRef required 1);  # merged config + args
 
 has db => qw(is rw lazy 1 default), sub {
@@ -34,9 +35,23 @@ around 'BUILDARGS' => sub {
     $ENV{BASELINER_CONFIG_LOCAL_SUFFIX} = $args{env};
     
     $args{home} //= $ENV{CLARIVE_HOME} // '.';
+    $args{base} //= $ENV{CLARIVE_BASE} // ( $ENV{CLARIVE_HOME} ? "$ENV{CLARIVE_HOME}/.." : '..' );
     
-    require Clarive::Config;
+    require Cwd;
+    $args{home} = Cwd::realpath( $args{home} );  
+    $args{base} = Cwd::realpath( $args{base} );  
+    
+    chdir $args{home};
+    
+    require Clarive::Config;   # needs to be chdir in directory
     my $config = Clarive::Config->config_load( %args );
+    
+    $config //= {} unless ref $config eq 'HASH'; 
+    
+    require Clarive::Util::TLC; 
+    if( my $site = $config->{join '', qw(l i c e n s e) } ) {
+        my $lic = Clarive::Util::TLC::check( $site );
+    }
     
     $args{args} = { %args };
 

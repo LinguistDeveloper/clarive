@@ -15,23 +15,39 @@ __PACKAGE__->load_components("+Baseliner::Schema::Master");
 __PACKAGE__->table("bali_master_cal");
 
 __PACKAGE__->add_columns(
-  "id", { data_type => "number", is_nullable => 0, },
+  "id", { 
+    data_type => "number",
+    is_auto_increment => 1,
+    is_nullable => 0,
+    sequence => "bali_master_cal_seq",
+  },
   "mid", { data_type => "number", is_nullable => 0, },
+  "id_parent", { data_type => "number", is_nullable => 1, },
   "start_date", {
     data_type     => "datetime",
-    default_value => \"current_timestamp",
-    is_nullable   => 0,
-    original      => { data_type => "date", default_value => \"sysdate" },
+    original      => { data_type => "date" }, 
+    is_nullable => 1,
   },
   "end_date", {
     data_type     => "datetime",
-    default_value => \"current_timestamp",
-    is_nullable   => 0,
-    original      => { data_type => "date", default_value => \"sysdate" },
+    original      => { data_type => "date" }, 
+    is_nullable => 1,
   },
-  slotname => { data_type => "varchar2", is_nullable => 0, size => 255 },
+  "plan_start_date", {
+    data_type     => "datetime",
+    original      => { data_type => "date" }, 
+    is_nullable => 1,
+  },
+  "plan_end_date", {
+    data_type     => "datetime",
+    original      => { data_type => "date" }, 
+    is_nullable => 1,
+  },
+  slottype  => { data_type => "varchar2", size => 255, is_nullable => 1, },
+  slotname  => { data_type => "varchar2", size => 4000,  is_nullable => 1,},
+  rel_field => { data_type => "varchar2", size => 2000, is_nullable => 1, },
   #"created_by", { data_type => "varchar2", is_nullable => 0, size => 255 },
-  "allday", { data_type => "char", default_value => "0", is_nullable => 0, size => 1 },
+  "allday", { data_type => "char", default_value => "0", size => 1 },
 );
 
 

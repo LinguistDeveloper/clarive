@@ -10,6 +10,7 @@ has path       => qw(is rw isa Str default /);  # fullpath
 has size       => qw(is rw isa Num default -1);  
 has mask       => qw(is rw isa Num default 777);  
 has is_dir     => qw(is rw isa Maybe[Bool]);
+has status     => qw(is rw isa Maybe[Str] default A);    # used by jobs to determine create, delete, etc (A,M,D)
 has basename   => qw(is rw isa Str lazy 1), default => sub {
     my ($self)=@_;
     $self->name =~ /^(.*)\.(.*?)$/ ? $1 : $self->name;
@@ -25,6 +26,18 @@ has item_relationship => qw(is rw isa Str default item_item); # rel_type
 
 has variables => qw(is rw isa HashRef), default=>sub{ +{} };
 has parse_tree => qw(is rw isa ArrayRef), default=>sub{ [] };
+
+sub path_cut {
+    my ($self, $regex)=@_;
+    my $path = $self->path;
+    my ($part) = $path =~ /$regex/;
+    return $part;
+}
+
+sub path_tail {
+    my ($self, $head)=@_;
+    $self->path_cut( qr/^$head(.*)$/ );
+}
 
 sub add_parse_tree {
     my ($self,$new_tree) = @_;

@@ -71,14 +71,14 @@ register 'config.job.runner' => {
     ]
 };
 
-register 'service.job.run' => {
-    name    => 'Job Runner',
+register 'service.job.generic.run' => {
+    name    => 'Job Generic Runner',
     config  => 'config.job',
     handler => \&job_run,
 };
 
-register 'service.job.stash.print' => {
-    name    => 'Job Stash Printer',
+register 'service.job.generic.stash.print' => {
+    name    => 'Job Generic Stash Printer',
     config  => 'config.job',
     handler => \&stash_print,
 };
@@ -495,6 +495,11 @@ sub root {
         require BaselinerX::Job::Service::Init;
         BaselinerX::Job::Service::Init->new->root_path( job=>$self );
     };
+}
+
+sub job_dir {
+    my ($self) = @_;
+    return $self->root;
 }
 
 =head2 parse_job_vars ( $str, \%user_data )

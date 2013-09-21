@@ -117,6 +117,16 @@ sub has_master {
       { "mid" => $mid_col },
       { cascade_delete => 1, on_delete=>'cascade', is_foreign_key_constraint=>1, },
     );
+    $self->has_many(
+        'children' => 'Baseliner::Schema::Baseliner::Result::BaliMasterRel',
+        { 'foreign.from_mid' => 'self.mid' },
+        { cascade_delete => 0, on_delete=>undef, is_foreign_key_constraint=>0, },
+    );
+    $self->has_many(
+        'parents' => 'Baseliner::Schema::Baseliner::Result::BaliMasterRel',
+        { 'foreign.to_mid' => 'self.mid' },
+        { cascade_delete => 0, on_delete=>undef, is_foreign_key_constraint=>0, },
+    );
 }
 
 1;

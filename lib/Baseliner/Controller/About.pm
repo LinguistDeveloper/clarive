@@ -53,6 +53,7 @@ sub show : Local {
             }
             grep /BASELINER/i, keys %ENV
         ];
+        $c->stash->{tlc} = $Baseliner::TLC;
     }
     $c->stash->{about} = \@about;
     $c->stash->{licenses} = [ 

@@ -24,6 +24,8 @@ __PACKAGE__->add_columns(
   { data_type => "varchar", size=>4000, is_nullable => 0 },
   "mvalue",
   { data_type => "clob", is_nullable => 1 },
+  "mvalue_str",
+  { data_type => "varchar", size=>4000, is_nullable => 1 },
   "mvalue_date",
   { data_type => "date", is_nullable => 1 },
   "mvalue_num",
@@ -35,7 +37,6 @@ __PACKAGE__->set_primary_key("id");
 
 sub sqlt_deploy_hook {
    my ($self, $sqlt_table) = @_;
-   $sqlt_table->add_index(name =>'bali_master_kvmid_idx', fields=>['mid'] );
    $sqlt_table->add_index(name =>'bali_master_kvmidk_idx', fields=>['mid','mkey'] );
    $sqlt_table->add_index(name =>'bali_master_kvsearch_idx', fields=>['mvalue_str'] );
    $sqlt_table->add_index(name =>'bali_master_kvnum_idx', fields=>['mvalue_num'] );

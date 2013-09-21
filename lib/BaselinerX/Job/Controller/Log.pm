@@ -44,7 +44,7 @@ sub summary: Private{
 
 sub services: Private{
     my ( $self, $c ) = @_;
-    my $services = $c->model('Jobs')->get_services_status( jobid => $c->stash->{id_job}, job_exec => $c->stash->{job_exec} );
+    my $services = $c->model('Jobs')->get_services_status( jobid => $c->stash->{id_job}, job_exec => $c->stash->{job_exec}, summary => $c->stash->{summary} );
     $c->stash->{services} = $services;
 }
 
@@ -102,9 +102,17 @@ sub log_rows : Private {
     my @rows = ();
     $id_job //= $p->{id_job};
     _fail 'Missing id_job' unless length $id_job;
+
     my $job = $c->model('Baseliner::BaliJob')->find( $id_job );
+
     my $where = $id_job ? { id_job=>$id_job } : {};
-    my $from = {   order_by=> ( $sort ? { "-$dir" => $sort } : { -asc => 'me.id' } ),
+
+    my @select = qw( 
+         id text lev id_job more timestamp ns provider data_name data_length module section step exec prefix milestone service_key
+     );
+    push @select, 'data' if $p->{with_data}; 
+    # from
+    my $from = {  select=>\@select,  order_by=> ( $sort ? { "-$dir" => $sort } : { -asc => 'me.id' } ),
                     #page => to_pages( start=>$start, limit=>$limit ),  
                     #rows => $limit,
                 #	prefetch => ['job']
@@ -147,7 +155,9 @@ sub log_rows : Private {
     }
     #TODO    store filter preferences in a session instead of a cookie, on a by id_job basis
     #my $job = $c->model( 'Baseliner::BaliJob')->search({ id=>$id_job })->first;
+
     my $rs = $c->model( 'Baseliner::BaliLog')->search( $where , $from );
+
     #my $pager = $rs->pager;
     #$cnt = $pager->total_entries;
 
@@ -171,13 +181,14 @@ sub log_rows : Private {
           {
             id       => $r->id,
             id_job   => $r->id_job,
-            job      => $r->job->name,
+            job      => $job->name,
             text     => _markup( $r->text ),
             step     => $r->step,
             prefix   => $r->prefix,
             milestone=> $r->milestone,
             service_key=> $r->service_key,
             exec     => $r->exec,
+            timestamp => $r->get_column('timestamp'),
             ts       => $r->get_column('timestamp'),
             lev      => $r->lev,
             module   => $r->module,
@@ -459,15 +470,12 @@ sub log_elements : Path('/job/log/elements') {
     my $job = $c->model('Baseliner::BaliJob')->find(  $p->{id_job} );
     
     my $job_exec = ref $job ? $job->exec : 1;
-    my $contents = $c->model('Jobs')->get_contents ( jobid => $p->{id_job}, job_exec => $job_exec);	
-    
-    my $data;
-    my @elements = _array ($contents->{elements});
-    for my $element (@elements){
-        $data = $data . $element->{status} . "\t" . $element->{path} . '/' . $element->{name} ."\n";
-    }
+    my $contents = $c->model('Jobs')->get_contents( jobid => $p->{id_job}, job_exec => $job_exec);	
+    my @items = _array ($contents->{items});
+    my $data = join "\n", map { $_->status . "\t" . $_->path . " (" . $_->versionid . ")" } @items;
     $data = _html_escape( $data );
-    $c->res->body( "<pre>" . $data  . " " );	
+    # TODO send this to a comp with a pretty table
+    $c->res->body( qq{<pre style="padding: 10px 10px 10px 10px;">$data</pre>} );	
 }
 
 sub log_delete : Path('/job/log/delete') {

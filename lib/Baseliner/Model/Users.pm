@@ -74,22 +74,62 @@ sub get_users_friends_by_username{
 
 sub get_users_friends_by_projects{
     my ($self, $projects ) = @_;
-    my @users_friends = [];
-    
-    if($projects){
-        my @ns_projects = map { 'project/' . $_ } _array $projects;	
-        my $where = { ns => \@ns_projects };
-        my $rs_users = Baseliner->model('Baseliner::BaliRoleuser')->search(
-                                                                    $where,
-                                                                    { select => {distinct => 'username'}, as => ['username'] } #, order_by => 'username asc' }
-                                                            );
+    $projects or _throw 'Missing parameter projects';
+
+    my @ns_projects = map { 'project/' . $_ } _array $projects;	
+    my $where = { ns => \@ns_projects, ns => '/' };
+    my @users_friends = map { $_->{username} } Baseliner->model('Baseliner::BaliRoleuser')->search(
+                                                                $where,
+                                                                { select => {distinct => 'username'}, as => ['username'] } 
+                                                        )->hashref->all;
         
-        while( my $user = $rs_users->next ) {
-            push @users_friends, $user->username;
-        }
-    }
-    
     return wantarray ? @users_friends : \@users_friends;
+}
+
+sub get_roles_from_projects{
+    my ($self, $projects ) = @_;
+    $projects or _throw 'Missing parameter projects';
+
+    my @ns_projects = map { 'project/' . $_ } _array $projects;	
+    my $where = { ns => \@ns_projects, ns => '/' };
+    my @roles = map { $_->{id_role} } Baseliner->model('Baseliner::BaliRoleuser')->search(
+                                                                $where,
+                                                                { select => {distinct => 'id_role'}, as => ['id_role'] } 
+                                                        )->hashref->all;
+        
+    return wantarray ? @roles : \@roles;
+}
+
+sub get_users_from_actions {
+    my ( $self, @actions ) = @_;
+    @actions or _throw 'Missing parameter actions';
+    
+    my $query = { action => \@actions, username => {'!=', undef} };
+    delete $query->{action} if (scalar @actions == 1 && $actions[0] eq '*');    
+    
+    my @users = map{ $_->{username} } DB->BaliRoleaction->search( $query ,
+                                { join => {'id_role' => {'bali_roleusers' => 'bali_user'}}, 
+                                  select => ['bali_roleusers.bali_user.username'], as => ['username'],
+                                  group_by => ['username']} )->hashref->all;
+    return wantarray ? @users : \@users; 
+}
+
+sub get_users_from_mid_roles {
+    my ( $self, @roles ) = @_;
+    @roles or _throw 'Missing parameter roles';
+    
+    my $query = { id_role => \@roles };
+    $query = undef if (scalar @roles == 1 && $roles[0] eq '*');
+    
+    
+    my @users = map{ $_->{username} } DB->BaliRoleuser->search(	$query ,
+                                { select => ['username'], group_by => ['username']} )->hashref->all;
+    return wantarray ? @users : \@users; 
+}
+
+sub get_users_username {
+    my @users = map { $_->{username} } DB->BaliUser->search( {active => 1}, {select => 'username'} )->hashref->all;
+    return wantarray ? @users : \@users; 
 }
 
 1;
