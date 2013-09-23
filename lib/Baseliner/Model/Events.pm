@@ -69,14 +69,14 @@ sub run_once {
             my $event_key = $ev->event_key;
             my $notify_scope = $stash->{notify};
             
-            my @notifications = Baseliner->model('Notification')->get_notifications({ event_key => $event_key, notify_scope => $notify_scope });
+            my @notifications = Baseliner->model('Notification')->get_notifications({ event_key => $event_key, notify_scope => $notify_scope, mid => $stash->{mid} });
             
             foreach  my $notification ( @notifications ){
                 if ($notification){
                     foreach  my $template (  keys $notification ){
                         my $model_messaging = {
                             subject         => $stash->{subject} || $event_key,
-                            sender          => $data->{from},
+                            sender          => $data->{from} || 'clarive@clarive.com',
                             carrier         => 'email',
                             template        => $template,
                             template_engine => 'mason',
@@ -86,10 +86,11 @@ sub run_once {
                         $model_messaging->{bcc} = { users => $notification->{$template}->{BCC} } if (exists $notification->{$template}->{BCC}) ;
                         
                         $model_messaging->{vars} = $stash;
+                        $model_messaging->{vars}->{subject} = $stash->{subject} || $event_key;
                         $model_messaging->{vars}->{to} = { users => $notification->{$template}->{TO} } if (exists $notification->{$template}->{TO}) ;
                         $model_messaging->{vars}->{cc} = { users => $notification->{$template}->{CC} } if (exists $notification->{$template}->{CC}) ;
                         $model_messaging->{vars}->{bcc} = { users => $notification->{$template}->{BCC} } if (exists $notification->{$template}->{BCC}) ;
-                        
+                            
                         Baseliner->model( 'Messaging' )->notify(%{$model_messaging});
                         
                         my $rulerow = DB->BaliEventRules->create({

@@ -560,13 +560,14 @@ register 'statement.perl.do' => {
 register 'statement.perl.code' => {
     text => 'CODE', data => { code=>'' },
     type => 'loop',
-    icon => '/static/images/circular/cog.png', 
+    icon => '/static/images/circular/cog.png',
+    holds_children => 0,
     form => '/forms/stmt_eval.js', 
     dsl => sub { 
         my ($self, $n, %p ) = @_;
         sprintf(q{
             %s;
-        }, $n->{code} // '', $self->dsl_build( $n->{children}, %p ) );
+        }, $n->{code} // '' );
     },
 };
 
