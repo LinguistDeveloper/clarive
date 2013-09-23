@@ -1085,7 +1085,7 @@ sub topics_open_by_category: Local{
             WHERE TP.ACTIVE = 1 
                   AND TP.ID_CATEGORY = C.ID 
                   AND TP.ID_CATEGORY IN ( $user_categories )
-            GROUP BY NAME, C.COLOR, TP.ID_CATEGORY 
+            GROUP BY C.NAME, C.COLOR, TP.ID_CATEGORY 
             ORDER BY TOTAL DESC";
     
     @topics_open_by_category = $db->array_hash( $SQL );

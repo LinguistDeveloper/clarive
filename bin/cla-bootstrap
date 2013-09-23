@@ -3,7 +3,9 @@ use strict;
 use warnings;
 use v5.10;
 use FindBin qw($Bin);
+my %opts;
 BEGIN {
+    %opts = map { /^-[^-]/ ? ($_, 1) : $_ } @ARGV;
     if( ! $ENV{CLARIVE_HOME} ) {
         our $script_home = $Bin . '/..';
         chdir $script_home;
@@ -150,7 +152,7 @@ if( ! exists $opts{-w} ) {
                     local $SIG{CHLD};  # otherwise cpanm install fails 
                     local $SIG{INT}; 
                     local $SIG{TERM}; 
-                    cpanm_capture( $mod, '-l' => $llib );
+                    cpanm_capture( $mod, @llib );
                     exit 0;
                 }
             }
@@ -271,6 +273,7 @@ Catalyst::Plugin::Cache
 Catalyst::Plugin::Cache::FastMmap
 Catalyst::Plugin::ConfigLoader
 Catalyst::Plugin::I18N
+Catalyst::Plugin::Log::Colorful
 Catalyst::Plugin::Session
 Catalyst::Plugin::Session::State::Cookie
 Catalyst::Plugin::Session::Store::Cache
@@ -334,6 +337,7 @@ HTML::Strip
 IO::All
 IO::Compress::Gzip
 Image::Identicon
+JE
 JSON
 JSON::XS
 JavaScript::Dumper
@@ -375,6 +379,7 @@ Proc::Background
 Proc::Exists
 Proc::ProcessTable
 Regexp::Grammars
+Server::Starter
 SQL::Abstract
 SQL::Translator
 SQL::Translator::Diff

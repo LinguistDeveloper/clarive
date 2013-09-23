@@ -101,29 +101,23 @@ sub get_roles_from_projects{
 }
 
 sub get_users_from_actions {
-    my ( $self, @actions ) = @_;
-    @actions or _throw 'Missing parameter actions';
+    my ( $self, %p ) = @_;
+    my @actions = _array $p{actions} or _throw 'Missing parameter actions';
     
-    my $query = { action => \@actions, username => {'!=', undef} };
-    delete $query->{action} if (scalar @actions == 1 && $actions[0] eq '*');    
-    
-    my @users = map{ $_->{username} } DB->BaliRoleaction->search( $query ,
-                                { join => {'id_role' => {'bali_roleusers' => 'bali_user'}}, 
-                                  select => ['bali_roleusers.bali_user.username'], as => ['username'],
-                                  group_by => ['username']} )->hashref->all;
+    my @projects = _array $p{projects};
+
+    my @users = Baseliner->model('Permissions')->users_with_actions( actions => \@actions, projects => \@projects, include_root => 0);
+
     return wantarray ? @users : \@users; 
 }
 
 sub get_users_from_mid_roles {
-    my ( $self, @roles ) = @_;
-    @roles or _throw 'Missing parameter roles';
-    
-    my $query = { id_role => \@roles };
-    $query = undef if (scalar @roles == 1 && $roles[0] eq '*');
-    
-    
-    my @users = map{ $_->{username} } DB->BaliRoleuser->search(	$query ,
-                                { select => ['username'], group_by => ['username']} )->hashref->all;
+    my ( $self, %p ) = @_;
+    my @roles = _array $p{roles} or _throw 'Missing parameter roles';
+    my @projects = _array $p{projects};
+
+    my @users = Baseliner->model('Permissions')->users_with_roles( roles => \@roles, projects => \@projects, include_root => 0);
+
     return wantarray ? @users : \@users; 
 }
 

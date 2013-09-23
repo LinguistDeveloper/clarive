@@ -922,4 +922,75 @@ sub user_has_action_fast {
     return grep { $username eq $_ } $self->list( %p );
 }
 
+sub users_with_actions {
+    my ( $self, %p ) = @_;
+    
+    my @actions = _array $p{actions};
+    my @projects = _array $p{projects};
+    my $include_root = $p{include_root} // 1;
+
+    @projects = map { 'project/'.$_ } @projects;
+    push @projects, '/';
+
+
+    my $query = {};
+    $query->{action} = \@actions;
+    $query->{username} = {'!=', undef};
+    $query->{'bali_roleusers.ns'} = \@projects;
+
+    delete $query->{action} if (scalar @actions == 1 && $actions[0] eq '*');    
+
+    my @users = map{ $_->{username} } DB->BaliRoleaction->search( $query ,
+                                    { join => {'id_role' => {'bali_roleusers' => 'bali_user'}}, 
+                                      select => ['bali_roleusers.username'], as => ['username'],
+                                      group_by => ['username']} )->hashref->all;
+    my @root_users;
+    if ( $include_root ) {        
+        @root_users = map{ $_->{username} } DB->BaliRoleaction->search( { action => 'action.admin.root'} ,
+                                        { join => {'id_role' => {'bali_roleusers' => 'bali_user'}}, 
+                                          select => ['bali_roleusers.username'], as => ['username'],
+                                          group_by => ['username']} )->hashref->all;
+        push @root_users,Baseliner->config->{root_username} if Baseliner->config->{root_username};
+
+    }
+
+    return @users, @root_users;
+}
+
+sub users_with_roles {
+    my ( $self, %p ) = @_;
+    
+    my @roles = _array $p{roles};
+    my @projects = _array $p{projects};
+    my $include_root = $p{include_root} // 1;
+
+
+    @projects = map { 'project/'.$_ } @projects if @projects;
+    push @projects, '/';
+
+
+    my $query = {};
+    $query->{id_role} = \@roles;
+    $query->{username} = {'!=', undef};
+    $query->{'ns'} = \@projects;
+
+    delete $query->{role} if (scalar @roles == 1 && $roles[0] eq '*');    
+
+    my @users = map{ $_->{username} } DB->BaliRoleuser->search( $query ,
+                                    { select => ['username'], as => ['username'],
+        
+                                  group_by => ['username']} )->hashref->all;
+    my @root_users;
+    if ( $include_root ) {        
+        @root_users = map{ $_->{username} } DB->BaliRoleaction->search( { action => 'action.admin.root'} ,
+                                        { join => {'id_role' => {'bali_roleusers' => 'bali_user'}}, 
+                                          select => ['bali_roleusers.username'], as => ['username'],
+                                          group_by => ['username']} )->hashref->all;
+        push @root_users,Baseliner->config->{root_username} if Baseliner->config->{root_username};
+
+    }
+    return @users, @root_users;
+
+}
+
 1;

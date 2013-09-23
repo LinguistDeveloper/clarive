@@ -107,10 +107,13 @@ sub get_rules_notifications{
     my $event_key = $p->{event_key} or _throw 'Missing parameter event_key';
     my $action = $p->{action} or _throw 'Missing parameter action';
     my $notify_scope = $p->{notify_scope}; # or _throw 'Missing parameter notify_scope';
+    my $mid = $p->{mid};
     
     my $notification = {};
     
     my @rs_notify = DB->BaliNotification->search({ event_key => $event_key, is_active => 1, action => $action } )->hashref->all;
+
+    my @prj_mid = map { $_->{mid} } ci->related( mid => $mid, isa => 'project') if $mid;
     
     if ( @rs_notify ) {
 		foreach my $row_send ( @rs_notify ){
@@ -169,7 +172,7 @@ sub get_rules_notifications{
                             else{
                             	@actions = keys $notification->{$plantilla}->{$carrier}->{$type};
                             }
-                            @tmp_users = Baseliner->model('Users')->get_users_from_actions(@actions);
+                            @tmp_users = Baseliner->model('Users')->get_users_from_actions( actions => \@actions, projects => \@prj_mid);
                         }
                         when ('Roles') 	    {
                         	my @roles;
@@ -184,7 +187,7 @@ sub get_rules_notifications{
                             else{
                             	@roles = keys $notification->{$plantilla}->{$carrier}->{$type};
                             }
-                            @tmp_users = Baseliner->model('Users')->get_users_from_mid_roles(@roles);                            
+                            @tmp_users = Baseliner->model('Users')->get_users_from_mid_roles( roles => \@roles, projects => \@prj_mid);                            
                         }
             		};
             		push @users, @tmp_users;
@@ -217,12 +220,13 @@ sub get_notifications {
 	my ( $self, $p ) = @_;
     my $event_key = $p->{event_key} or _throw 'Missing parameter event_key';
     my $notify_scope = $p->{notify_scope}; #or _throw 'Missing parameter notify_scope';
+    my $mid = $p->{mid};
     
 	my $send_notification;
-    $send_notification = $self->get_rules_notifications( { event_key => $event_key, action => 'SEND', notify_scope => $notify_scope } );
+    $send_notification = $self->get_rules_notifications( { event_key => $event_key, action => 'SEND', notify_scope => $notify_scope, mid => $mid } );
     
 	my $exclude_notification;
-    $exclude_notification = $self->get_rules_notifications( { event_key => $event_key, action => 'EXCLUDE', notify_scope => $notify_scope } );    
+    $exclude_notification = $self->get_rules_notifications( { event_key => $event_key, action => 'EXCLUDE', notify_scope => $notify_scope, mid => $mid  } );    
     if ($exclude_notification){
     	foreach my $plantilla ( keys $exclude_notification ){
         	foreach my $carrier ( keys $exclude_notification->{$plantilla} ){
