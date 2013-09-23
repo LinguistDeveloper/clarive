@@ -666,7 +666,7 @@ sub ci_create_or_update {
         }
 
         if ( !$mid ) {
-            my $d = { name => $name, %{ $p{data} || {} } };
+            my $d = { name => $name, %{ $p{data} || {} }, created_by=>$p{username} };
             my $ci = $class->new($d);
             return $ci->save;
         } else {
@@ -703,7 +703,7 @@ sub sync : Local {
             if( $k eq 'ci_pre' ) {
                 for my $ci ( _array $v ) {
                     _log( _dump( $ci ) );
-                    push @ci_pre_mid, $self->ci_create_or_update( %$ci ) ;
+                    push @ci_pre_mid, $self->ci_create_or_update( %$ci, username=>$c->username ) ;
                 }
             }
             elsif( $v =~ /^ci_pre:([0-9]+)$/ ) {
@@ -715,7 +715,7 @@ sub sync : Local {
             }
         }
 
-        $mid = $self->ci_create_or_update( rel_field => $collection, name=>$name, class=>$class, ns=>$ns, collection=>$collection, mid=>$mid, data=>\%ci_data );
+        $mid = $self->ci_create_or_update( rel_field => $collection, name=>$name, class=>$class, username=>$c->username, ns=>$ns, collection=>$collection, mid=>$mid, data=>\%ci_data );
 
         $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 saved ok', $name) };
         $c->stash->{json}{mid} = $mid;
@@ -753,7 +753,7 @@ sub update : Local {
     delete $p->{version}; # form should not set version
     try {
         if( $action eq 'add' ) {
-            my $ci = $class->new( name=>$name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), %$p ); 
+            my $ci = $class->new( name=>$name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), %$p, created_by=>$c->username ); 
             $ci->save;
             $mid = $ci->mid;
             #$mid = $class->save( name=>$name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), data=> $p ); 
@@ -761,7 +761,7 @@ sub update : Local {
         elsif( $action eq 'edit' && defined $mid ) {
             $c->cache_remove( qr/:$mid:/ );
             #$mid = $class->save( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), data => $p ); 
-            my $ci = $class->new( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), %$p );
+            my $ci = $class->new( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), %$p, modified_by=>$c->username );
             #my $ci = _ci( $mid );
             #$ci->update( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), %$p ); 
             $ci->save;
@@ -1223,7 +1223,6 @@ sub default : Path Args(2) {
     };
     $c->forward('View::JSON');
 }
-
 
 1;
 

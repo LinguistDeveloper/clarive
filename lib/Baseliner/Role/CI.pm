@@ -53,6 +53,8 @@ has description => qw(is rw isa Maybe[Str]);
 has ns          => qw(is rw isa Maybe[Str]);
 has versionid   => qw(is rw isa Maybe[Str] default 1);
 has moniker     => qw(is rw isa Maybe[Str]);    # lazy 1);#,
+has created_by  => qw(is rw isa Str);
+has modified_by => qw(is rw isa Str);
     # default=>sub{   
     #     my $self = shift; 
     #     if( ref $self ) {
