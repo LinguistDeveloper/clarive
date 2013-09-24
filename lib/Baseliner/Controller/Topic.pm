@@ -1543,7 +1543,6 @@ sub list_users : Local {
     }else{
         if($p->{roles} && $p->{roles} ne 'none'){
             my @name_roles = map {lc ($_)} split /,/, $p->{roles};
-            _log ">>>>>>>>>>>>>>>>>>>>>" . _dump @name_roles;
             my @id_roles = map {$_->{id}} DB->BaliRole->search( { 'LOWER(role)' => \@name_roles} )->hashref->all;
             if (@id_roles){
                 $users_friends = $c->model('Users')->get_users_from_mid_roles(roles => \@id_roles);    
