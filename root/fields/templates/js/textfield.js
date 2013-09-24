@@ -6,7 +6,7 @@ params:
     html: '/fields/templates/html/row_body.html'
     js: '/fields/templates/js/textfield.js'
     field_order: 1
-    allowBlank: 0
+    allowBlank: true
     section: 'body'
 */
 

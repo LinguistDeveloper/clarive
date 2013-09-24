@@ -11,6 +11,7 @@ params:
     section: 'body'
     filter: 'none'
     release_field: '' 
+    allowBlank: true
 ---
 */
 (function(params){
