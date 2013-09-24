@@ -1542,7 +1542,9 @@ sub list_users : Local {
         $users_friends = $c->model('Users')->get_users_friends_by_projects(\@projects);
     }else{
         if($p->{roles} && $p->{roles} ne 'none'){
-            my @name_roles = map {lc ($_)} split /,/, $p->{roles};
+            my @name_roles;
+            map { my $temp = lc ($_); $temp =~s/ //g; push @name_roles, $temp } split /,/, $p->{roles};
+            
             my @id_roles = map {$_->{id}} DB->BaliRole->search( { 'LOWER(role)' => \@name_roles} )->hashref->all;
             if (@id_roles){
                 $users_friends = $c->model('Users')->get_users_from_mid_roles(roles => \@id_roles);    
