@@ -201,7 +201,7 @@ sub get_rules_notifications{
                         when ('Fields') 	    {
                             my @fields = map {lc($_)} keys $notification->{$plantilla}->{$carrier}->{$type};
                             @tmp_users = map { _ci($_->{to_mid})->name }
-                                                    DB->BaliMasterRel->search(  { lc('rel_field') => \@fields, rel_type => 'topic_users'},
+                                                    DB->BaliMasterRel->search(  { 'LOWER(rel_field)' => \@fields, rel_type => 'topic_users'},
                                                                                 { select => 'to_mid' })->hashref->all;
                         }                        
             		};

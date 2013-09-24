@@ -1536,12 +1536,21 @@ sub list_users : Local {
     my $row;
     my (@rows, $users_friends);
     my $username = $c->username;
+    
     if($p->{projects}){
         my @projects = _array $p->{projects};
         $users_friends = $c->model('Users')->get_users_friends_by_projects(\@projects);
     }else{
-        $users_friends = $c->model('Users')->get_users_friends_by_username($username);
-        
+        if($p->{roles} && $p->{roles} ne 'none'){
+            my @name_roles = map {lc ($_)} split /,/, $p->{roles};
+            _log ">>>>>>>>>>>>>>>>>>>>>" . _dump @name_roles;
+            my @id_roles = map {$_->{id}} DB->BaliRole->search( { 'LOWER(role)' => \@name_roles} )->hashref->all;
+            if (@id_roles){
+                $users_friends = $c->model('Users')->get_users_from_mid_roles(roles => \@id_roles);    
+            }
+        }else{
+            $users_friends = $c->model('Users')->get_users_friends_by_username($username);    
+        }
     }
     $row = $c->model('Baseliner::BaliUser')->search({username => $users_friends},{order_by => 'realname asc'});    
     if($row){

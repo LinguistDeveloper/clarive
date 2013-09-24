@@ -10,6 +10,7 @@ params:
     field_order: 10
     section: 'details'
     single_mode: 'false'
+    filter: 'manual'
 ---
 */
 (function(params){
@@ -29,7 +30,8 @@ params:
 	
     var user_box_store = new Baseliner.Topic.StoreUsers({
         autoLoad: true,
-        baseParams: {projects:[]}
+        baseParams: {projects:[],
+					 roles: meta.filter}
     });
     
     var user_box = new Baseliner.model.Users({

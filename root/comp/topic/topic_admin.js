@@ -1349,7 +1349,12 @@
                                             }
                                             
                                             if ( objTemp.filter != undefined){
-                                                 objTemp.filter = combo_filters.getValue() ? combo_filters.getValue() : 'none' ;
+                                                if(objTemp.filter === 'manual'){
+                                                    objTemp.filter = txt_filters.getValue() ? txt_filters.getValue() : 'none' ;
+                                                }
+                                                else{
+                                                    objTemp.filter = combo_filters.getValue() ? combo_filters.getValue() : 'none' ;
+                                                }
                                             }
                                             if ( objTemp.single_mode != undefined){
                                                 var value = form.findField("valuesgroup").getValue().getGroupValue();
@@ -1388,7 +1393,12 @@
                                 }
                             });
         
-        
+                                            
+                            var txt_filters = new Ext.form.TextField({
+                                emptyText: 'role1, role2, ...',
+                                hidden: true     
+                            });
+                            
                             var combo_filters = new Ext.form.ComboBox({
                                 mode: 'local',
                                 triggerAction: 'all',
@@ -1416,9 +1426,14 @@
                             
                             combo_system_fields.on('select', function(cmb,row,index){
                                 if (attr.data[combo_system_fields.getValue()].filter){
-                                    combo_filters.show();
+                                    if (attr.data[combo_system_fields.getValue()].filter === 'manual'){
+                                        txt_filters.show();    
+                                    }else {
+                                        combo_filters.show();
+                                    }
                                 }else{
                                     combo_filters.hide();
+                                    txt_filters.hide();
                                 };
                                 if (attr.data[combo_system_fields.getValue()].single_mode != undefined){
                                     var form = form_template_field.getForm();
@@ -1452,7 +1467,8 @@
                                                     {boxLabel: _('Grid'), inputValue: 'grid'}
                                                 ]
                                             },                                          
-                                            combo_filters
+                                            combo_filters,
+                                            txt_filters
                                         ]
                             });
         
