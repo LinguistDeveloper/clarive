@@ -664,6 +664,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         
         if( !self.permEdit ) {
             self.btn_edit.hide();
+            self.btn_delete_form.hide();
         }
         
         //self.tab_icon = '/static/images/icons/topic_one.png';
