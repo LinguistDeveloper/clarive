@@ -1,7 +1,6 @@
 package Baseliner::Role::CI::Agent;
 use Moose::Role;
 with 'Baseliner::Role::CI';
-with 'Baseliner::Role::ErrorThrower';
 
 sub icon { '/static/images/ci/agent.png' }
 
@@ -9,6 +8,8 @@ use Moose::Util::TypeConstraints;
 
 has user     => qw(is rw isa Str);
 has password => qw(is rw isa Str);
+
+with 'Baseliner::Role::ErrorThrower';
 
 requires 'put_file';
 requires 'get_file';
@@ -50,6 +51,24 @@ Default: true
 has overwrite_on => qw(is ro isa Bool default 1);
 
 has copy_attrs => qw(is ro isa Bool default 0);
+
+sub tuple {
+    my ($self)=@_;
+    { ret=>$self->ret, output=>$self->output, rc=>$self->rc };
+}
+
+sub tuple_str {
+    my ($self)=@_;
+    my $t = $self->tuple;
+    sprintf "RET=%s\nRC=%s\nOUTPUT:\n%s\n", $t->{ret}, $t->{rc}, $t->{output} ;
+}
+
+sub _quote_cmd {
+    my $self = shift;
+    join ' ', map {
+        ref $_ eq 'SCALAR' ? $$_ : "'$_'";
+    } @_;
+}
 
 1;
 

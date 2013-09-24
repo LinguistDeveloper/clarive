@@ -10,10 +10,16 @@ sub import {
     my $pkg = caller;
     {
         no strict;
+        # with_meta
         for my $meth ( qw(has_ci has_cis has_array) ) {
             *{ $pkg . '::' . $meth } = sub { @_ = ($pkg->meta, @_); goto \&{ __PACKAGE__ . '::' . $meth } };
         }
-        for my $meth( qw(miss service) ) {
+        # with_caller
+        for my $meth( qw(service) ) {
+            *{ $pkg . '::' . $meth } = sub { @_ = (scalar caller(), @_); goto \&{ __PACKAGE__ . '::' . $meth } };
+        }
+        # as_is
+        for my $meth( qw(miss) ) {
             *{ $pkg . '::' . $meth } = \&{ __PACKAGE__ . '::' . $meth };
         }
     }
