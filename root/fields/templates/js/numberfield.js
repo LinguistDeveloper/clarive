@@ -25,7 +25,7 @@ params:
             name: meta.id_field,
             value: data && data[ meta.bd_field ]!=undefined  ? data[ meta.bd_field ] : ( meta.default_value || '' ), 
             style: style,
-            //width: meta.width || '97%',
+            width: meta.width || 100,
             anchor: meta.anchor || '100%',
             height: meta.height || 30,
             allowBlank: meta ? !!meta.allowBlank : false,
