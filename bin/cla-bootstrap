@@ -328,6 +328,7 @@ FCGI
 File::Slurp
 File::Tail
 Filesys::Virtual::SSH
+Function::Parameters;
 GD
 Getopt::Mini
 Git::Wrapper

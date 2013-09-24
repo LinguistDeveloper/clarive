@@ -1,11 +1,42 @@
 package Baseliner::Moose;
+use strict; 
+use v5.14;
 use Moose::Exporter;
+use Moose ();
+use Function::Parameters ();
+#use Baseliner::Role::CI ();
 
-Moose::Exporter->setup_import_methods(
-    with_meta => ['has_ci', 'has_cis', 'has_array' ],
-    with_caller => ['service'],
-    also      => ['Moose'],
-);
+sub import {
+    my $pkg = caller;
+    {
+        no strict;
+        # with_meta
+        for my $meth ( qw(has_ci has_cis has_array) ) {
+            *{ $pkg . '::' . $meth } = sub { @_ = ($pkg->meta, @_); goto \&{ __PACKAGE__ . '::' . $meth } };
+        }
+        # with_caller
+        for my $meth( qw(service) ) {
+            *{ $pkg . '::' . $meth } = sub { @_ = (scalar caller(), @_); goto \&{ __PACKAGE__ . '::' . $meth } };
+        }
+        # as_is
+        for my $meth( qw(miss) ) {
+            *{ $pkg . '::' . $meth } = \&{ __PACKAGE__ . '::' . $meth };
+        }
+    }
+    Function::Parameters->import( ':strict' );
+    goto &Moose::import;
+};
+
+#Moose::Exporter->setup_import_methods(
+#    with_meta => ['has_ci', 'has_cis', 'has_array' ],
+#    with_caller => ['service'],
+#    also      => ['Moose', 'Function::Parameters'],
+#    as_is => ['missing'],
+#);
+
+sub miss {
+    die "Missing parameter " . join ',',@_;
+}
 
 sub has_ci {
     my $meta = shift;
@@ -134,3 +165,5 @@ sub service {
 }
 
 1;
+
+
