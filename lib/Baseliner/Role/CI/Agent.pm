@@ -6,8 +6,14 @@ sub icon { '/static/images/ci/agent.png' }
 
 use Moose::Util::TypeConstraints;
 
-has user     => qw(is rw isa Str);
-has password => qw(is rw isa Str);
+has user        => qw(is rw isa Str);
+has password    => qw(is rw isa Str);
+has os          => qw(is rw isa Str default unix);
+has remote_temp => qw(is rw isa Any lazy 1), default => sub {
+    my $self = shift;
+    return $self->os eq 'win' ? 'C:\TEMP' : '/tmp';
+};
+has remote_perl => qw(is rw isa Str default perl);
 
 with 'Baseliner::Role::ErrorThrower';
 
@@ -68,6 +74,17 @@ sub _quote_cmd {
     join ' ', map {
         ref $_ eq 'SCALAR' ? $$_ : "'$_'";
     } @_;
+}
+
+sub fatpack_perl_code {
+    my ($self, $code)=@_;
+    my $claw_file = Baseliner->path_to( 'bin/cla-worker' );
+    my $claw = scalar $claw_file->slurp;
+    if( my ($fp) = $claw =~ /^(.*END OF FATPACK CODE).*$/s ) {
+        return $fp . "\n\n" . $code;         
+    } else {
+        Util->_fail( Util->_loc( 'Error trying to fatpack perl code. Could not find fatpack code in `%1`', $claw_file) );
+    }
 }
 
 1;

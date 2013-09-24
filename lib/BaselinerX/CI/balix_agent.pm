@@ -17,14 +17,13 @@ has wait_frequency => qw(is rw default 5);
 
 has user   => qw(is rw isa Str);
 has key    => qw(is rw isa Str), default=>sub{
-    return 'TGtkaGZrYWpkaGxma2psS0tKT0tIT0l1a2xrbGRmai5kLC4yLjlka2ozdTQ4N29sa2hqZGtzZmhr';  # XXX
+    return  Baseliner->model('ConfigStore')->get('balix_key', value=>1) 
+        || 'TGtkaGZrYWpkaGxma2psS0tKT0tIT0l1a2xrbGRmai5kLC4yLjlka2ozdTQ4N29sa2hqZGtzZmhr';  
 };
-has os     => qw(is rw isa Str default unix);
-has host   => qw(is rw isa Str), default=>sub{
-    return 'localhost';  # XXX
-};
+has host   => qw(is rw isa Str required 1);
 has port   => qw(is rw isa Num), default=>sub{
-    return 11800;  # XXX
+    return  Baseliner->model('ConfigStore')->get('balix_port', value=>1) 
+        || 11800;
 };
 has blow   => qw(is rw isa Any lazy 1), default => sub {
     my $self = shift;
@@ -96,8 +95,10 @@ method get_dir( :$local, :$remote, :$group='', :$files=undef, :$user=$self->user
     $self->execute( rm => $tarfile_remote );
     my $orig = Cwd::cwd;
     chdir $local;
-    system 'tar', 'xvf', $tarfile;
+    require Capture::Tiny;
+    my ($out) = Capture::Tiny::capture_merged( sub { system 'tar', 'xvf', $tarfile });
     chdir $orig;
+    $self->output( $out ),
     unlink "$tarfile" if -e $tarfile;
     return $self->tuple;  
 }
@@ -115,6 +116,39 @@ method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
 method get_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
     $self->_get_file( $remote, $local );
     return $self->tuple;  
+}
+
+method remote_eval( $code ) {
+    my $id = Util->_nowstamp . "_$$";
+    my $filepath = _file( $self->remote_temp, 'balix_remote_eval_' . $id . '.dump' );
+    my $fpcode = $self->fatpack_perl_code( qq{
+        use Storable;
+        my \@ret = (do {
+            $code 
+        });
+        open my \$ff, ">$filepath" or die "Could not open output file `$filepath`: \$!";
+        binmode \$ff;
+        print \$ff Storable::freeze([\@ret]);
+        close \$ff; 
+    });
+    my $tmp_remote = _file( $self->remote_temp, 'balix_remote_eval_' . $id . ".pl" );
+    $self->put_data( data=>$fpcode, remote=>$tmp_remote ); 
+    $self->execute( $self->remote_perl, $tmp_remote );
+    $self->execute( \'rm', $tmp_remote );
+    my $dump = $self->get_data( remote=>$filepath );
+    $self->execute( \'rm', $filepath );
+    $dump = Storable::thaw( $dump );
+}
+
+method put_data( :$data, :$remote, :$group='', :$user=$self->user  ) {
+    $self->_send_data( $data, $remote );
+    if( $user ) {
+        $self->_execute( 'chown', "${user}:${group}", $remote );
+    }
+}
+
+method get_data( :$remote ) {
+    return $self->_get_file( $remote );
 }
 
 ####### private
@@ -153,6 +187,27 @@ sub _send_file_check {
         $rc = 229 if !$comp;
     }
     return ($rc,$ret);
+}
+
+sub _send_data {
+    my ( $self, $data, $rfile ) = @_;
+
+    my $socket = $self->socket;
+    $socket->print( $self->encodeCMD("F $rfile") . $self->EOL );
+    
+    $self->_checkRC();
+
+    $socket->print( $self->encodeCMD("D") . $self->EOL . $self->encodeDATA($data) . $self->EOL );
+
+    my ( $RC, $RET ) = $self->_checkRC();
+    $socket->print( $self->encodeCMD("C") . $self->EOL );
+
+    ( $RC, $RET );
+}
+
+sub _get_data {
+    my ( $self, $rfile ) = @_;
+    return $self->_get_file( $rfile );
 }
 
 sub _get_file {
@@ -309,14 +364,12 @@ sub _checkRC {
     sysread $socket, $buf, 1024;
     $buf = $self->ebc->toascii( $buf ) if $self->mvs;
     $ret = $buf;
-    #warn "READ OK!!!!!!!!!!!";
     while ( !( $ret =~ /HARAXE=([0-9]*)/ ) ) {
         sysread $socket, $buf, 1024;
         #$ret .= <$socket>;
         $buf = $self->ebc->toascii( $buf ) if $self->mvs;
         $ret .= $buf;
     }
-    #warn "FIN READ OK!!!!!!!!!!!";
     my $rc = 0;
     if ( $ret =~ /HARAXE=([0-9]*)/ ) {
         $rc = $1;
