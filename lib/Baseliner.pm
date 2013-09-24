@@ -400,7 +400,7 @@ around 'debug' => sub {
         print STDERR "Baseliner server interrupt requested.\n";
         eval {
             local $SIG{ALRM} = sub { die "alarm\n" };
-            alarm 3;
+            alarm 5;
             exit 0;
         };
         kill 9,$$;

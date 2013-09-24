@@ -423,6 +423,6 @@ Registry:
     $table .= <<"";
 .----------------------------------------------------------------------------------------.
 
-    print STDERR $table . "\n" if Baseliner->debug;
+    print STDERR $table . "\n" if Baseliner->debug && !$ENV{BALI_CMD};
 }
 1;
