@@ -577,7 +577,7 @@ sub list_tree_fields : Local {
     };
     
 
-    #my @template_dirs;
+    my @template_dirs;
     my @template_dirs = map { $_->root . '/forms/*.js' } Baseliner->features->list;
     
     push @template_dirs, $c->path_to( 'root/fields/templates/js' ) . "/*.js";
@@ -634,7 +634,7 @@ sub list_tree_fields : Local {
 
     my @templates;
     for my $template (  sort { $a->{metadata}->{params}->{field_order} <=> $b->{metadata}->{params}->{field_order} }
-                        grep { $_->{metadata}->{params}->{origin} eq 'template'} @tmp_templates ) {
+                        grep { $_->{metadata}->{params}->{origin} eq 'template' && $_->{metadata}->{params}->{type} ne 'form'} @tmp_templates ) {
         if( $template->{metadata}->{name} ){
             $template->{metadata}->{params}->{name_field} = $template->{metadata}->{name};
             push @templates,
