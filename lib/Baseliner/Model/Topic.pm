@@ -133,9 +133,6 @@ register 'event.topic.modify_field' => {
 register 'event.topic.change_status' => {
     text => '%1 changed topic status from %2 to %3',
     vars => ['username', 'old_status', 'status', 'ts'],
-    notify => {
-        template_default => '/email/generic.html',
-    },    
 };
 
 register 'action.topics.logical_change_status' => {

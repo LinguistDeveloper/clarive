@@ -243,11 +243,11 @@ sub get_notifications {
     $send_notification = $self->get_rules_notifications( { event_key => $event_key, action => 'SEND', notify_scope => $notify_scope, mid => $mid } );
     
     my $template;
-    if (Baseliner->registry->get($event_key)->notify && Baseliner->registry->get($event_key)->notify->{template_default}){
-        $template = Baseliner->registry->get($event_key)->notify->{template_default}    
-    }
-    else {
-        $template = Baseliner->model( 'ConfigStore' )->get( 'config.notifications' )->{'template_default'};
+    my $name_config = $event_key;
+    $name_config =~ s/event.//g;
+    my $template = Baseliner->model( 'ConfigStore' )->get( 'config.notifications.' . $name_config . '.template_default')->{template_default};
+	if ($template eq ''){
+    	$template =  Baseliner->model( 'ConfigStore' )->get( 'config.notifications.template_default' )->{template_default};
     }
     if (exists $send_notification->{$template}){
         map { $send_notification->{$template}->{TO}->{$_} = 1 } @notify_default;        
