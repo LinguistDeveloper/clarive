@@ -73,13 +73,14 @@ sub run_once {
             push @notify_default, $stash->{created_by} if $stash->{created_by};
             
             my @notifications = Baseliner->model('Notification')->get_notifications({ event_key => $event_key, notify_default => \@notify_default, notify_scope => $notify_scope, mid => $stash->{mid} });
+            my $config_email = Baseliner->model( 'ConfigStore' )->get( 'config.comm.email.from' )->{from};
             
             foreach  my $notification ( @notifications ){
                 if ($notification){
                     foreach  my $template (  keys $notification ){
                         my $model_messaging = {
                             subject         => $stash->{subject} || $event_key,
-                            sender          => $data->{from} || 'clarive@clarive.com',
+                            sender          => $config_email || 'clarive@clarive.com',
                             carrier         => 'email',
                             template        => $template,
                             template_engine => 'mason',

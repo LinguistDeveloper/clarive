@@ -1,5 +1,7 @@
 package BaselinerX::CI::generic_server;
 use Baseliner::Moose;
+use Baseliner::Utils qw(:logging _file _dir);
+use Try::Tiny;
 
 has connect_worker => qw(is rw isa Bool default 1);
 has connect_balix  => qw(is rw isa Bool default 1);
@@ -24,19 +26,29 @@ sub ping {
 
 };
 
-method connect( :$user ) {
+method connect( :$user='' ) {
     # Worker Agent
-    my $agent = try {
-        if( $self->connect_worker ) {
-            return BaselinerX::CI::worker_agent->new( cap=>$user.'@'.$self->hostname );       
+    my $err = '';
+    my $agent;
+    if( $self->connect_worker ) {
+        $agent = try { BaselinerX::CI::worker_agent->new( cap=>$user.'@'.$self->hostname ) } catch { $err.=shift . "\n" };       
+    } 
+    if( !$agent && $self->connect_balix ) {
+        $agent = try { BaselinerX::CI::balix_agent->new( user=>$user, host=>$self->hostname )} catch { $err.=shift . "\n" };       
+    }
+    if( !$agent && $self->connect_ssh ) {
+        $agent = try { BaselinerX::CI::ssh_agent->new( user=>$user, host=>$self->hostname )} catch { $err.=shift . "\n" };       
+    }
+    if( $err ) {
+        my $meths = join ',', grep { defined } map { my $m="connect_".$_; ($self->$m ? $_ : undef); } qw(worker balix ssh); 
+        if( !$agent ) {
+            _fail _loc 'ERROR: could not find agent for this server (methods attempted: %1): %2', $meths, $err;
         } 
-        elsif( $self->connect_balix ) {
-            return BaselinerX::CI::balix_agent->new( user=>$user, host=>$self->hostname );       
-        }
-        elsif( $self->connect_ssh ) {
-            return BaselinerX::CI::ssh_agent->new( user=>$user, host=>$self->hostname );       
+        else {
+            _debug 'Some connection methods failed: ' . $err;
         }
     }
+    return $agent;
 }
 
 1;
