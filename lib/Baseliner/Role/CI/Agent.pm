@@ -71,9 +71,12 @@ sub tuple_str {
 
 sub _quote_cmd {
     my $self = shift;
-    join ' ', map {
-        ref $_ eq 'SCALAR' ? $$_ : "'$_'";
-    } @_;
+    map { ref $_ eq 'SCALAR' ? $$_ : "'$_'"; } @_;
+}
+
+sub _double_quote_cmd {
+    my $self = shift;
+    map { ref $_ eq 'SCALAR' ? $$_ : "\"$_\""; } @_;
 }
 
 sub fatpack_perl_code {

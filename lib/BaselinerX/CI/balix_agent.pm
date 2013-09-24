@@ -64,11 +64,14 @@ method mkpath ( $path ) {
 }
 
 method execute( @cmd ) {
-    if( my $user = $self->user ) {
-        my $cmd = @cmd == 1 ? $cmd[0] : $self->_quote_cmd( @cmd ); # join params quoted 
-        @cmd = (\'su', \'-', $user, \'-l', \'-c', \"\"$cmd\"");
+    my $opts = shift @cmd if ref $cmd[0] eq 'HASH';
+    if( $opts->{chdir} ) {
+       @cmd = ( \'cd', $opts->{chdir}, \'&&', @cmd );      
     }
-    # TODO chdir
+    if( my $user = $self->user ) {
+        @cmd = @cmd == 1 ? $cmd[0] : $self->_double_quote_cmd( @cmd ); # join params quoted 
+        @cmd = (\'su', \'-', $user, \'-l', \'-c', "@cmd");
+    }
     my $res = $self->_execute( @cmd );
     return $self->ret;
 }
@@ -349,7 +352,7 @@ sub _crc_match {
 sub _execute {
     my ( $self, @cmd ) = @_;
     @cmd or Util->_fail('Missing argument cmd');
-    my $rcmd = @cmd == 1 ? $cmd[0] : $self->_quote_cmd( @cmd ); 
+    my $rcmd = join ' ', ( @cmd == 1 ? ($cmd[0]) : ($self->_quote_cmd(@cmd)) ); 
     _debug "BALIX CMD=$rcmd";
     $self->socket->print( $self->encodeCMD("X $rcmd") . $self->EOL );
     $self->_checkRC();
