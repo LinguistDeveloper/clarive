@@ -3,7 +3,7 @@ name: Checkbox
 params:
     origin: 'template'
     type: 'checkbox'
-    html: '/fields/templates/html/row_body.html'
+    html: '/fields/system/html/field_checkbox.html'
     js: '/fields/templates/js/checkbox.js'
     field_order: 1
     allowBlank: 0
