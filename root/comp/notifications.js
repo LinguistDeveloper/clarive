@@ -647,7 +647,7 @@
 									form_recipients.add(
 										{ 	id:'obj_recipient',
 											xtype: 'textfield',
-											emptyText: 'test1@clarive.com, test2@clarive.com, ...'
+											emptyText: 'field1, field2, ...'
 										}
 									)
 									break;

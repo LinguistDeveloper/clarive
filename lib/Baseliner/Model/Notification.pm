@@ -20,6 +20,12 @@ register 'menu.admin.notifications' => {
     tab_icon => '/static/images/log_w.gif'
 };
 
+register 'config.notifications' => {
+    metadata => [
+        { id => 'template_default', label => 'Template by default', default => '/email/generic.html'},
+    ]
+};
+
 sub get_actions{
     return ('SEND','EXCLUDE');
 }
@@ -30,7 +36,7 @@ sub get_carriers{
 
 sub get_type_recipients{
     #return ('Default','Users','Roles','Groups','Emails','Actions');
-    return ('Users','Roles','Actions');
+    return ('Users','Roles','Actions','Fields');
 }
 
 sub get_recipients{
@@ -53,6 +59,9 @@ sub get_recipients{
                 @recipients = map {+{id => $_, name => $_, description => ''  }}
                             Baseliner->registry->starts_with('action.');
             }
+            when ('Fields') {
+                @recipients = ({id => 'Fields', name => 'Fields'});
+            }            
             when ('Default') {
                 @recipients = ({id => 'Default', name => 'Default'});
             }            
@@ -189,12 +198,19 @@ sub get_rules_notifications{
                             }
                             @tmp_users = Baseliner->model('Users')->get_users_from_mid_roles( roles => \@roles, projects => \@prj_mid);                            
                         }
+                        when ('Fields') 	    {
+                            my @fields = map {lc($_)} keys $notification->{$plantilla}->{$carrier}->{$type};
+                            @tmp_users = map { _ci($_->{to_mid})->name }
+                                                    DB->BaliMasterRel->search(  { lc('rel_field') => \@fields, rel_type => 'topic_users'},
+                                                                                { select => 'to_mid' })->hashref->all;
+                        }                        
             		};
             		push @users, @tmp_users;
         		}
      			if (@users) {
                 	my %users; 
                     map { $users{$_} = 1 } @users;
+                    
         			$notification->{$plantilla}->{$carrier} = \%users;
         		}
         		else{
@@ -221,9 +237,27 @@ sub get_notifications {
     my $event_key = $p->{event_key} or _throw 'Missing parameter event_key';
     my $notify_scope = $p->{notify_scope}; #or _throw 'Missing parameter notify_scope';
     my $mid = $p->{mid};
+    my @notify_default = _array ($p->{notify_default});
     
 	my $send_notification;
     $send_notification = $self->get_rules_notifications( { event_key => $event_key, action => 'SEND', notify_scope => $notify_scope, mid => $mid } );
+    
+    my $template;
+    if (Baseliner->registry->get($event_key)->notify && Baseliner->registry->get($event_key)->notify->{template_default}){
+        Baseliner->registry->get($event_key)->notify->{template_default}    
+    }
+    else {
+        Baseliner->model( 'ConfigStore' )->get( 'config.notifications' )->{'template_default'};
+    }
+    if (exists $send_notification->{$template}){
+        map { $send_notification->{$template}->{TO}->{$_} = 1 } @notify_default;        
+    }else{
+        if (@notify_default){
+            my %users; 
+            map { $users{$_} = 1 } @notify_default;            
+            $send_notification->{$template}->{TO} = \%users;
+        }
+    }
     
 	my $exclude_notification;
     $exclude_notification = $self->get_rules_notifications( { event_key => $event_key, action => 'EXCLUDE', notify_scope => $notify_scope, mid => $mid  } );    

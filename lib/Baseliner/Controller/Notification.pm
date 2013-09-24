@@ -89,6 +89,7 @@ sub get_type_obj_recipients{
     given ($type) {
         when ('Default')    { $obj = 'none'; }
         when ('Emails')     { $obj = 'textfield'; }
+        when ('Fields')     { $obj = 'textfield'; }
         default             { $obj = 'combo'; }            
     };
     return $obj;

@@ -133,6 +133,9 @@ register 'event.topic.modify_field' => {
 register 'event.topic.change_status' => {
     text => '%1 changed topic status from %2 to %3',
     vars => ['username', 'old_status', 'status', 'ts'],
+    notify => {
+        template_default => '/email/generic.html',
+    },    
 };
 
 register 'action.topics.logical_change_status' => {
@@ -623,6 +626,7 @@ sub update {
                         category_status => $id_category_status,
                     };
                     $notify->{project} = \@projects if @projects;
+                    
                     my $subject = "Topic created";
                     { mid => $topic->mid, topic => $topic->title, category => $category->{name}, subject => $subject, notify => $notify }   # to the event
                 });                   
@@ -2071,8 +2075,19 @@ sub change_status {
             }
             # callback, if any
             $callback->() if ref $callback eq 'CODE';
-
-            +{ mid => $mid, title => $p{title} } ;
+            
+            my $notify_default;
+            my @users;
+            
+            my @roles = map { $_->{id_role} }
+                        DB->BaliTopicCategoriesAdmin->search(   {id_category => $row->id_category, id_status_from => $p{id_status}}, 
+                                                                {select => 'id_role', group_by=> 'id_role'})->hashref->all;
+                       
+            if (@roles){
+                @users = Baseliner->model('Users')->get_users_from_mid_roles( roles => \@roles );
+            }
+            
+            +{ mid => $mid, title => $p{title}, notify_default => \@users } ;
         } 
         => sub {
             _throw _loc( 'Error modifying Topic: %1', shift() );
