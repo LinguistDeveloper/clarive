@@ -244,10 +244,10 @@ sub get_notifications {
     
     my $template;
     if (Baseliner->registry->get($event_key)->notify && Baseliner->registry->get($event_key)->notify->{template_default}){
-        Baseliner->registry->get($event_key)->notify->{template_default}    
+        $template = Baseliner->registry->get($event_key)->notify->{template_default}    
     }
     else {
-        Baseliner->model( 'ConfigStore' )->get( 'config.notifications' )->{'template_default'};
+        $template = Baseliner->model( 'ConfigStore' )->get( 'config.notifications' )->{'template_default'};
     }
     if (exists $send_notification->{$template}){
         map { $send_notification->{$template}->{TO}->{$_} = 1 } @notify_default;        

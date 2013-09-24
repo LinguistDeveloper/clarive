@@ -1395,6 +1395,7 @@
         
                                             
                             var txt_filters = new Ext.form.TextField({
+                                fieldLabel: _('Filter'),
                                 emptyText: 'role1, role2, ...',
                                 hidden: true     
                             });
