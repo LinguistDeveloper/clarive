@@ -2800,3 +2800,25 @@ Baseliner.timeline = function(args){
         }); // ajaxeval
     });  // require
 };
+
+// checkbox with 1 and 0 in a hidden field
+//    new Baseliner.CBox({ fieldLabel: _('Really?'), name: 'really', checked: params.rec.really, default_value: true }),
+Baseliner.CBox = Ext.extend( Ext.form.Checkbox, {
+    submitValue: false,
+    default_value: false,
+    initComponent: function(){
+        var self = this;
+        var value = self.checked;
+        if( value === undefined )  {
+            value= self.default_value;
+            self.checked = value;
+        }
+        this.on('afterrender', function(){
+            self.hidden_field = this.wrap.createChild({tag: 'input', type:'hidden', name: self.name, value: value }, this.el);
+        });
+        this.on('check', function(obj,checked) {
+            if( self.hidden_field ) self.hidden_field.dom.value = checked ? 1 : 0;
+        });
+        Baseliner.CBox.superclass.initComponent.call(this);
+    }
+});
