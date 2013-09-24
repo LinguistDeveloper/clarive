@@ -102,10 +102,10 @@ sub update_category : Local {
                 $category->update();
                 
                 my $rs = Baseliner->model('Baseliner::BaliTopicCategoriesStatus')->search({ id_category => $id_category });
-                $rs->delete;
+                #$rs->delete;
                 if($idsstatus){
                     foreach my $id_status (_array $idsstatus){
-                        $rs = $c->model('Baseliner::BaliTopicCategoriesStatus')->create(
+                        $rs = $c->model('Baseliner::BaliTopicCategoriesStatus')->update_or_create(
                                                                                         {
                                                                                             id_category    =>  $category->id,
                                                                                             id_status   => $id_status,
