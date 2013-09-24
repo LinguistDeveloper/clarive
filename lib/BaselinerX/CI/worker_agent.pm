@@ -28,11 +28,7 @@ has timeout_file => qw(is ro default 10);  # if we don't get blpop stuff in x se
 has wait_frequency => qw(is rw default 5);
 has cap_wait => qw(is rw default 2);   # how long to wait for worker responses
 
-has rc     => qw(is rw isa Maybe[Num] default 0);
-has output => qw(is rw isa Maybe[Str] );
-
 with 'Baseliner::Role::CI::Agent';
-# 'chmod', 'error', 'execute', 'get_dir', 'get_file', 'mkpath', 'put_dir', 'put_file', 'rc', and 'rmpath'
 
 =head2 put_file
 
@@ -226,17 +222,6 @@ sub chown {
     my ($self,$perm,@files)=@_;
     $self->execute( 'chown', $perm, @files );
     return $self->tuple;
-}
-
-sub tuple {
-    my ($self)=@_;
-    { ret=>$self->ret, output=>$self->output, rc=>$self->rc };
-}
-
-sub tuple_str {
-    my ($self)=@_;
-    my $t = $self->tuple;
-    sprintf "RET=%s\nRC=%s\nOUTPUT:\n%s\n", $t->{ret}, $t->{rc}, $t->{output} ;
 }
 
 sub error {}
