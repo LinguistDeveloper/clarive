@@ -702,7 +702,7 @@ sub sync : Local {
         while( my ($k,$v) = each %$data ) {
             if( $k eq 'ci_pre' ) {
                 for my $ci ( _array $v ) {
-                    _log( _dump( $ci ) );
+                    #_log( _dump( $ci ) );
                     push @ci_pre_mid, $self->ci_create_or_update( %$ci, username=>$c->username ) ;
                 }
             }
@@ -813,6 +813,7 @@ sub load : Local {
         my $obj = Baseliner::CI->new( $mid );
         my $class = ref $obj;
         my $rec = $obj->load;
+        Util->_unbless( $rec );
         $rec->{has_bl} = $obj->has_bl;
         $rec->{has_description} = $obj->has_description;
         $rec->{classname} = $rec->{class} = $class;

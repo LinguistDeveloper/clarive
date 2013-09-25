@@ -339,11 +339,14 @@
             });
         } else {
             // someone sent me full row data (DEPRECATED)
-            var f = load_form( params );
-            cardpanel.add( f );
-            cardpanel.getLayout().setActiveItem( f );
-            cardpanel.setTitle( _('CI: %1' , params.name ) );
-            cardpanel.doLayout();
+            Baseliner.ci_call( params.collection, 'attribute_default_values', {}, function(res){
+                params.rec = res.data;
+                var f = load_form( params ); //Ext.apply( res.data, params ) );
+                cardpanel.add( f );
+                cardpanel.getLayout().setActiveItem( f );
+                //cardpanel.setTitle( _('CI: %1' , params.name ) );
+                cardpanel.doLayout();
+            });
         }
     });
     Baseliner.edit_check( cardpanel, true );  // block window closing from the beginning
