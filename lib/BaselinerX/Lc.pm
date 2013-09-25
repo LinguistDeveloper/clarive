@@ -150,8 +150,9 @@ sub lc_for_project {
         # );
 
         # States-Statuses with bl and type = D (Deployable)
-        my @user_workflow = _unique map {$_->{id_status_to} } Baseliner->model("Topic")->user_workflow( $username );
-        my @deployable_statuses = map { $_->{id} } DB->BaliTopicStatus->search( { bl => { '<>' => '*' }, type=>'D', id => \@user_workflow  }, { order_by => { -asc => ['seq'] } } )->hashref->all;
+        #my @user_workflow = _unique map {$_->{id_status_to} } Baseliner->model("Topic")->user_workflow( $username );
+        #my @deployable_statuses = map { $_->{id} } DB->BaliTopicStatus->search( { bl => { '<>' => '*' }, type=>'D', id => \@user_workflow  }, { order_by => { -asc => ['seq'] } } )->hashref->all;
+        my @deployable_statuses = map { $_->{id} } DB->BaliTopicStatus->search( { bl => { '<>' => '*' }, type=>'D'  }, { order_by => { -asc => ['seq'] } } )->hashref->all;
         my @from_statuses = _unique map { $_->{id_status_from} } DB->BaliTopicCategoriesAdmin->search(
                 { id_status_to => \@deployable_statuses },
                 { distinct => 1 }
