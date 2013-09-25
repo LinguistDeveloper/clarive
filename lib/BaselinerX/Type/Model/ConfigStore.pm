@@ -173,7 +173,7 @@ sub get {
     } else {
         my $msg = _loc( "Could not find metadata for the key '%1' in the registry.", $key );
         _throw $msg if($enforce_metadata);
-        _debug $msg;
+        _debug $msg if $ENV{BASELINER_DEBUG_METADATA};
     }
     
     if( $p{value} ) {
