@@ -2,6 +2,8 @@
 	$title 
 	$username
     $subject
+    $mid
+    $to
 </%args>
 <head>
     <meta http-equiv="Content-Language" content="en" />
@@ -13,13 +15,21 @@
 <body>
     <div class='box'>
         <div class="error">
-            <h2>SCM: <% $subject %> : <% $title %></h2>
+            <h2>CLARIVE: <% $subject %></h2>
         </div>
     </div>
     <div class='box'>
         <div class="trace error">
-            <p><% $username %></p>
+            <p>El t&oacute;pico <% $title %> ha sido modificado por <% $username %></p>
+            <p>Pulse <a href="<% Baseliner->config->{web_url}."/tab/topic/view?topic_mid=".${mid} %>">aqu&iacute;</a> para revisarlo</p>
         </div>
     </div>
+        <p>El t&oacute;pico <% $title %> ha sido modificado por <% $username %></p>
+        <p>Pulse <a target="_blank" href="<% Baseliner->config->{web_url}."/tab/topic/view?topic_mid=".${mid} %>">aqu&iacute;</a> para revisarlo</p>
+% if ( $ENV{BASELINER_DEBUG} ) {
+    <div class='box'>
+            <p>Enviado a: <% join ",",@{$to->{users}} %></p>
+    </div>
+%}
 </body>
 
