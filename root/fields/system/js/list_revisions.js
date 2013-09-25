@@ -23,7 +23,7 @@ params:
         store: revision_store,
         layout: 'form',
         height: 120,
-        fieldLabel: _(meta.name_field),
+        //fieldLabel: _(meta.name_field),
         hideHeaders: true,
         disabled: meta ? meta.readonly : true,
         viewConfig: {
@@ -133,6 +133,7 @@ params:
         
     }); 
     return [
+        Baseliner.field_label_top( _(meta.name_field), meta.hidden ),
         revision_grid, field
         //revision_box
     ]
