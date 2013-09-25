@@ -20,7 +20,11 @@ params:
         checked: data && data[ meta.bd_field ]!=undefined  ? true : false,
         default_value: false,
         readOnly: meta ? meta.readonly : true,
-        hidden: meta ? (meta.hidden ? meta.hidden : false): true
+        hidden: meta ? (meta.hidden ? meta.hidden : false): true,
+        labelSeparator: '',
+        hideLabel: true,
+        boxLabel: _(meta.name_field),
+        fieldLabel: _(meta.name_field)    
     });
     
     return checkbox
