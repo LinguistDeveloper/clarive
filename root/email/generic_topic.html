@@ -20,12 +20,10 @@
     </div>
     <div class='box'>
         <div class="trace error">
-            <p>El t&oacute;pico <% $title %> ha sido modificado por <% $username %></p>
+            <p>El t&oacute;pico <% $title %> ha sido modificado/creado por <% $username %></p>
             <p>Pulse <a href="<% Baseliner->config->{web_url}."/tab/topic/view?topic_mid=".${mid} %>">aqu&iacute;</a> para revisarlo</p>
         </div>
     </div>
-        <p>El t&oacute;pico <% $title %> ha sido modificado por <% $username %></p>
-        <p>Pulse <a target="_blank" href="<% Baseliner->config->{web_url}."/tab/topic/view?topic_mid=".${mid} %>">aqu&iacute;</a> para revisarlo</p>
 % if ( $ENV{BASELINER_DEBUG} ) {
     <div class='box'>
             <p>Enviado a: <% join ",",@{$to->{users}} %></p>
