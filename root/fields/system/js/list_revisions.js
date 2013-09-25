@@ -86,47 +86,51 @@ params:
         //if( c.value != undefined ) {
             // TODO no loader from mids yet 
         //}
-        var el = this.el.dom; 
-        var revision_box_dt = new Baseliner.DropTarget(el, {
-            comp: this,
-            ddGroup: 'explorer_dd',
-            copy: true,
-            available: meta ? meta.readonly : false,
-            notifyDrop: function(dd, e, id) {
-                var n = dd.dragData.node;
-                //var s = project_box.store;
-                var attr = n.attributes;
-                var data = attr.data || {};
-                var ci = data.ci;
-                var mid = data.mid;
-                if( mid==undefined && ( ci == undefined || ci.role != 'Revision') ) { 
-                    Baseliner.message( _('Error'), _('Node is not a revision'));
-                } 
-                else if ( mid!=undefined ) {
-                    // TODO
-                }
-                else if ( ci !=undefined ) {
-                    Baseliner.ajaxEval('/ci/sync',
-                        { name: ci.name, 'class': ci['class'], ns: ci.ns, ci_json: Ext.util.JSON.encode( ci.data ) },
-                        function(res) {
-                            if( res.success ) {
-                                var mid = res.mid ;
-                                var d = { name: attr.text, id: mid, mid: mid };
-                                var r = new revision_store.recordType( d, mid );
-
-                                revision_store.add( r );
-                                revision_store.commitChanges();
-                                refresh_field();
+        var read_only = meta && meta.readonly ? meta.readonly : false;
+        if( !read_only ){
+            var el = this.el.dom; 
+            var revision_box_dt = new Baseliner.DropTarget(el, {
+                comp: this,
+                ddGroup: 'explorer_dd',
+                copy: true,
+                available: meta ? meta.readonly : false,
+                notifyDrop: function(dd, e, id) {
+                    var n = dd.dragData.node;
+                    //var s = project_box.store;
+                    var attr = n.attributes;
+                    var data = attr.data || {};
+                    var ci = data.ci;
+                    var mid = data.mid;
+                    if( mid==undefined && ( ci == undefined || ci.role != 'Revision') ) { 
+                        Baseliner.message( _('Error'), _('Node is not a revision'));
+                    } 
+                    else if ( mid!=undefined ) {
+                        // TODO
+                    }
+                    else if ( ci !=undefined ) {
+                        Baseliner.ajaxEval('/ci/sync',
+                            { name: ci.name, 'class': ci['class'], ns: ci.ns, ci_json: Ext.util.JSON.encode( ci.data ) },
+                            function(res) {
+                                if( res.success ) {
+                                    var mid = res.mid ;
+                                    var d = { name: attr.text, id: mid, mid: mid };
+                                    var r = new revision_store.recordType( d, mid );
+    
+                                    revision_store.add( r );
+                                    revision_store.commitChanges();
+                                    refresh_field();
+                                }
+                                else {
+                                    Ext.Msg.alert( _('Error'), _('Error adding revision %1: %2', ci.name, res.msg) );
+                                }
                             }
-                            else {
-                                Ext.Msg.alert( _('Error'), _('Error adding revision %1: %2', ci.name, res.msg) );
-                            }
-                        }
-                    );
-                }
-                return (true); 
-             }
-        });
+                        );
+                    }
+                    return (true); 
+                 }
+            });
+        }
+        
     }); 
     return [
         revision_grid, field
