@@ -3,15 +3,6 @@ use Baseliner::Moose;
 use Baseliner::Utils qw(:logging _file _dir);
 use v5.10;
 
-has_ci 'server';
-has workerid   => qw(is rw isa Str lazy 1), default => sub { 
-    my ($self)=@_;
-    my $wid = $self->_whos_capable( $self->cap );
-    $wid or Util->_throw( Util->_loc( 'Could not find a worker capable of %1', $self->cap ) );
-    return $wid;
-};
-#has cap        => qw(is rw isa Str default '');
-
 has chunk_size     => qw(is ro lazy 1), default => sub{ 1024 * 1024 }; # 1M
 has wait_frequency => qw(is rw default 5);
 
@@ -20,32 +11,32 @@ has key    => qw(is rw isa Str), default=>sub{
     return  Baseliner->model('ConfigStore')->get('balix_key', value=>1) 
         || 'TGtkaGZrYWpkaGxma2psS0tKT0tIT0l1a2xrbGRmai5kLC4yLjlka2ozdTQ4N29sa2hqZGtzZmhr';  
 };
-has host   => qw(is rw isa Str required 1);
 has port   => qw(is rw isa Num), default=>sub{
     return  Baseliner->model('ConfigStore')->get('balix_port', value=>1) 
         || 11800;
 };
-has blow   => qw(is rw isa Any lazy 1), default => sub {
+has _blow   => qw(is rw isa Any lazy 1), default => sub {
     my $self = shift;
     require Crypt::Blowfish::Mod;
     return Crypt::Blowfish::Mod->new( $self->key );
 };
-has socket  => qw(is rw isa Any lazy 1), default => sub {
+has _socket  => qw(is rw isa Any lazy 1), default => sub {
     my $self = shift;
     require IO::Socket;
     my $sock = IO::Socket::INET->new(
-        PeerAddr => $self->host,
+        PeerAddr => $self->hostname,
         PeerPort => $self->port,
         Proto    => "tcp",
         Type     => IO::Socket->SOCK_STREAM
     ) ;
-    _fail( _loc("balix: Error opening socket (host=%1, port=%2): %3", $self->host, $self->port, $!) ) unless $sock;
+    _fail( _loc("balix: Error opening socket (host=%1, port=%2): %3", $self->hostname, $self->port, $!) ) unless $sock;
     return $sock;
 };
+sub socket { $_[0]->_socket };
 
 # MVS configuration and EBCDIC converter
 has mvs    => qw(is rw isa Bool default 0);
-has ebc    => qw(is rw isa Any lazy 1), default=>sub{
+has _ebc    => qw(is rw isa Any lazy 1), default=>sub{
     my $self = shift;
     require Convert::EBCDIC;
     return Convert::EBCDIC->new($Convert::EBCDIC::ccsid1047);
@@ -232,7 +223,7 @@ sub _get_file {
     my ( $RC, $RET ) = $self->_checkRC();
     if ( $RC ne 0 ) {
         chop $RET;
-        Util->_fail( Util->_loc( "Error reading file `%1` from `%2`: %3", $remote, $self->host, $RET ) );
+        Util->_fail( Util->_loc( "Error reading file `%1` from `%2`: %3", $remote, $self->hostname, $RET ) );
     }
 
     $socket->print( $self->encodeCMD("R $remote") . $self->EOL );
@@ -244,7 +235,7 @@ sub _get_file {
     ) = ();
     while ( !$socket->eof() ) {    ##leo el HEADER
         $socket->read( $char, 1 );
-        $char = $self->{ebc}->toascii( $char ) if $self->mvs;
+        $char = $self->_ebc->toascii( $char ) if $self->mvs;
         $header .= $char;
         if ( $header =~ /\$D / ) {
             ( $filename, $filesize, $header ) = split( /\$/, $header );
@@ -282,7 +273,7 @@ sub _get_file {
           ? ( $remaining + 1 )
           : $default_blocksize;
         $socket->read( $block, $blocksize );
-        $block = $self->ebc->toascii( $block ) if $self->mvs;
+        $block = $self->_ebc->toascii( $block ) if $self->mvs;
         $jj += $blocksize;
         $remaining -= $blocksize;
 
@@ -290,7 +281,7 @@ sub _get_file {
 
         my $pos = 0;
         $block = pack 'H*', $block;
-        $block = $self->ebc->toascii( $block ) if $self->mvs;
+        $block = $self->_ebc->toascii( $block ) if $self->mvs;
         if ($local) {
             print $fout $block;
         }
@@ -365,12 +356,12 @@ sub _checkRC {
     #warn "READ....";
     #my $ret    = <$socket>;
     sysread $socket, $buf, 1024;
-    $buf = $self->ebc->toascii( $buf ) if $self->mvs;
+    $buf = $self->_ebc->toascii( $buf ) if $self->mvs;
     $ret = $buf;
     while ( !( $ret =~ /HARAXE=([0-9]*)/ ) ) {
         sysread $socket, $buf, 1024;
         #$ret .= <$socket>;
-        $buf = $self->ebc->toascii( $buf ) if $self->mvs;
+        $buf = $self->_ebc->toascii( $buf ) if $self->mvs;
         $ret .= $buf;
     }
     my $rc = 0;
@@ -396,34 +387,34 @@ sub _parseReturn {
 
 sub EOL {
     my $self = shift;
-    return $self->mvs ? $self->ebc->toebcdic( "\n" ) : "\n";
+    return $self->mvs ? $self->_ebc->toebcdic( "\n" ) : "\n";
 }
 
 sub encodeCMD {
     my ( $self, $cmd ) = @_;
     #print "\nencodeCMD: $cmd\n";
-    my $ret = $self->blow->encrypt($cmd);
+    my $ret = $self->_blow->encrypt($cmd);
     #print "encrypted=[$ret]\n";
-    $ret = $self->mvs ? $self->ebc->toebcdic($ret) : $ret;
+    $ret = $self->mvs ? $self->_ebc->toebcdic($ret) : $ret;
     #print "encoded=[$ret]\n";
     return $ret;
 }
 
 sub decodeCMD {
     my ( $self, $cmd ) = @_;
-    my $ret = $self->blow->decrypt($cmd);
-    $self->mvs ? $self->ebc->toascii($ret) : $ret;
+    my $ret = $self->_blow->decrypt($cmd);
+    $self->mvs ? $self->_ebc->toascii($ret) : $ret;
 }
 
 sub encodeDATA {
     my ($self, $data ) = @_;
     my $RET = "";
     # convert the data
-    $data = $self->ebc->toebcdic( $data ) if $self->mvs;
+    $data = $self->_ebc->toebcdic( $data ) if $self->mvs;
     # from char to HH uppercase hex codes
     my $ret = join( '', unpack( "H*", $data ) );
     # convert the hex stream
-    $self->mvs ? $self->ebc->toebcdic( $ret ) : $ret;
+    $self->mvs ? $self->_ebc->toebcdic( $ret ) : $ret;
 }
 
 
