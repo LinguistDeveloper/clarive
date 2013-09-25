@@ -25,7 +25,7 @@ params:
         height: 120,
         //fieldLabel: _(meta.name_field),
         hideHeaders: true,
-        disabled: meta ? meta.readonly : true,
+        //disabled: meta ? meta.readonly : true,
         viewConfig: {
             headersDisabled: true,
             enableRowBody: true,
@@ -46,7 +46,17 @@ params:
               }
           }
 
-        ]
+        ],
+        listeners: {
+            'afterrender':function(){
+                var read_only = meta && meta.readonly ? meta.readonly : true;
+                if(read_only){
+                    var mask = this.el.mask();
+                    mask.setStyle('opacity', 0);
+                    mask.setStyle('height', 5000);
+                }
+            }
+        }        
     });
     
     // a hidden form field, needed for this to save data in a form

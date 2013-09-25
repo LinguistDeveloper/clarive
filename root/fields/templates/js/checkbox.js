@@ -14,14 +14,12 @@ params:
     var meta = params.topic_meta;
     var data = params.topic_data;
     
-    var read_only = meta && meta.readonly ? meta.readonly : true;
-    
     var checkbox = new Baseliner.CBox({
         fieldLabel: _(meta.name_field),
         name: meta.id_field,
         checked: data && data[ meta.bd_field ]!=undefined  ? true : false,
         default_value: false,
-        disabled: read_only,
+        disabled: meta ? meta.readonly : true,
         hidden: meta ? (meta.hidden ? meta.hidden : false): true,
         labelSeparator: '',
         hideLabel: true,
