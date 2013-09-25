@@ -42,7 +42,7 @@ sub _stop {
     die "\n*********** ERROR: " . (_loc @_ ) . "\n\n";
 }
 
-sub _warn { print STDERR "*********** WARN: " . (_loc @_ ) . "\n"; }
+sub _warn2 { print STDERR "*********** WARN: " . (_loc @_ ) . "\n"; }
 
 my $filter_to_generic =  sub {
     no warnings;
@@ -78,7 +78,7 @@ my $filter_to_generic =  sub {
                 _stop "Invalid column name [%1] in table [%2]", $col_name, $table_name;
             }
             if( $col_name =~ /^(key)$/ ) {
-                _warn "Potential keyword as column name: column [%1] in table [%2]", $col_name, $table_name;
+                _warn2 "Potential keyword as column name: column [%1] in table [%2]", $col_name, $table_name;
             }
         }
     }
