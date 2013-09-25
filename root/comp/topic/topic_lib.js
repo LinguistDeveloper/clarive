@@ -544,7 +544,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             icon:'/static/images/icons/delete.gif',
             cls: 'x-btn-icon-text',
             type: 'submit',
-            hidden: self.permDelete!=undefined ? false : self.permDelete,
+            hidden: self.permDelete,
             handler: function(){ return self.delete_topic() }
         });
     
@@ -657,11 +657,11 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     self.show_form();
                     if (self.activarEdit) self.view_is_dirty = true;
                 }
-                if( !self.permDelete ) {
-                    self.btn_delete_form.hide();
-                } else {
-                    self.btn_delete_form.show();
-                }
+            }
+            if( !self.permDelete ) {
+                self.btn_delete_form.hide();
+            } else {
+                self.btn_delete_form.show();
             }
         });
         
