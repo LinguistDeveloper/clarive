@@ -22,7 +22,7 @@ register 'menu.admin.notifications' => {
 
 register 'config.notifications' => {
     metadata => [
-        { id => 'template_default', label => 'Template by default', default => '/email/generic.html'},
+        { id => 'template_default', label => 'Template by default', default => '/email/generic_topic.html'},
     ]
 };
 
