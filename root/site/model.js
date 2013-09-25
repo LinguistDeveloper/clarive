@@ -1916,6 +1916,14 @@ Ext.extend( Baseliner.Wizard, Ext.Panel );
     });
 
 */
+Baseliner.get_keys = function(obj){
+   var keys = [];
+   for(var key in obj){
+      keys.push(key);
+   }
+   return keys;
+};
+
 Baseliner.DataEditor = function(c) {
     var self = this;
     self.addEvents('save');
@@ -1930,6 +1938,8 @@ Baseliner.DataEditor = function(c) {
     ]);
     var id;
     var data;
+    // recursively flatten data into a adjacency list formatted for the tree
+    //   turns input `d` into global store array `data`
     var flatten = function( d, parent, parent_key ) {
        if( Ext.isArray( d ) ) {
          var cnt=0;
@@ -1943,14 +1953,15 @@ Baseliner.DataEditor = function(c) {
          return ['',_is_leaf,'Array', cnt];
        } else if( Ext.isObject(d) ) {
          var cnt=0;
-         for( var k in d ){
+         var keys = Baseliner.get_keys(d);
+         Ext.each( keys.sort(), function(k){
            var myid = id++;
            var v = flatten(d[k], myid, k);
            var key_long = parent_key ? parent_key + '.' + k : k;
            var row = { key: k, key_long: key_long, type: v[2], value: v[0], _is_leaf: v[1], _id: myid, _parent: parent }; 
            data.push(row);
            cnt++;
-         }
+         });
          var _is_leaf = cnt > 0 ? false : true;
          return ['',_is_leaf,'Hash',cnt];
        } else {
@@ -1973,7 +1984,7 @@ Baseliner.DataEditor = function(c) {
     var store = new Ext.ux.maximgb.tg.AdjacencyListStore({  
         autoLoad : true,
         reader: new Ext.data.JsonReader({id: '_id'}, Record),
-        //    sorting breaks hashing and array rendering
+        // WARN: sorting breaks hashing and array rendering
         // remoteSort: false,
         // sortInfo: { field: 'key', direction: 'ASC' },
         proxy: proxy

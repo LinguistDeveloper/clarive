@@ -31,13 +31,25 @@ method connect( :$user='' ) {
     my $err = '';
     my $agent;
     if( $self->connect_worker ) {
-        $agent = try { BaselinerX::CI::worker_agent->new( cap=>$user.'@'.$self->hostname ) } catch { $err.=shift . "\n" };       
+        $agent = try {
+            my ($chi) = $self->children( isa=>'worker_agent' );
+            return $chi if ref $chi;
+            BaselinerX::CI::worker_agent->new( cap=>$user.'@'.$self->hostname ) 
+        } catch { $err.=shift . "\n" };       
     } 
     if( !$agent && $self->connect_balix ) {
-        $agent = try { BaselinerX::CI::balix_agent->new( user=>$user, host=>$self->hostname )} catch { $err.=shift . "\n" };       
+        $agent = try { 
+            my ($chi) = $self->children( isa=>'balix_agent' );
+            return $chi if ref $chi;
+            BaselinerX::CI::balix_agent->new( user=>$user, server=>$self )
+        } catch { $err.=shift . "\n" };       
     }
     if( !$agent && $self->connect_ssh ) {
-        $agent = try { BaselinerX::CI::ssh_agent->new( user=>$user, host=>$self->hostname )} catch { $err.=shift . "\n" };       
+        $agent = try { 
+            my ($chi) = $self->children( isa=>'ssh_agent' );
+            return $chi if ref $chi;
+            BaselinerX::CI::ssh_agent->new( user=>$user, server=>$self )
+        } catch { $err.=shift . "\n" };       
     }
     if( $err ) {
         my $meths = join ',', grep { defined } map { my $m="connect_".$_; ($self->$m ? $_ : undef); } qw(worker balix ssh); 

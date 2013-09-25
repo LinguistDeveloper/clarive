@@ -8,12 +8,15 @@ use Moose::Util::TypeConstraints;
 
 has user        => qw(is rw isa Str);
 has password    => qw(is rw isa Str);
-has os          => qw(is rw isa Str default unix);
-has remote_temp => qw(is rw isa Any lazy 1), default => sub {
-    my $self = shift;
-    return $self->os eq 'win' ? 'C:\TEMP' : '/tmp';
+
+has server => qw(is rw isa CI required 1),
+    traits => ['CI'],
+    handles=>[qw(remote_temp remote_perl remote_tar hostname)];
+around rel_type => sub {
+    { 
+        server => [ to_mid => 'server_agent' ] ,
+    };
 };
-has remote_perl => qw(is rw isa Str default perl);
 
 with 'Baseliner::Role::ErrorThrower';
 

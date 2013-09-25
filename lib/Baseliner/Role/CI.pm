@@ -198,9 +198,11 @@ sub save {
             # update mid into CI
             $mid = $row->mid;
             $self->mid( $row->mid );
-            # name, just in case
-            if( ! length $self->name ) {
-                $row->name( "${collection}:${mid}" );
+            # put a default name
+            if( !length $row->name ) {
+                my $name = $collection . ':' . $mid;
+                $row->update({ name=> $name });
+                $self->name( $name );
             }
             
             # now save the rest of the ci data (yaml)
@@ -253,9 +255,9 @@ sub save_data {
     my @master_rel;
     my $meta = $self->meta;
     for my $field ( keys %$data ) {
-        my $attr = $meta->get_attribute( $field );
-        next unless $attr;
-        my $type = $attr->type_constraint->name;
+        my $attr = $meta->get_attribute( $field ) or next;
+        my $type_cons = $attr->type_constraint or next;
+        my $type = $type_cons->name;
         if( $type eq 'CI' || $type eq 'CIs' || $type =~ /^Baseliner::Role::CI/ ) {
             my $rel_type = $self->rel_type->{ $field } or Util->_fail( Util->_loc( "Missing rel_type definition for %1 (class %2)", $field, ref $self || $self ) );
             next unless $rel_type;
@@ -268,7 +270,8 @@ sub save_data {
     }
     # attribute specific conversions
     for my $attr ( $meta->get_all_attributes ) {
-        if( $attr->type_constraint->name eq 'BoolCheckbox' ) {
+        my $type_cons = $attr->type_constraint or next;
+        if( $type_cons->name eq 'BoolCheckbox' ) {
             my $attr_name = $attr->name;
             # fix the on versus nothing on form submit
             $data->{ $attr_name } = 0 unless exists $data->{ $attr_name };
@@ -673,6 +676,26 @@ sub push_ci_unique {
     $self->$field( [ values %unique ] );
 }
 
+=head2 attribute_default_values
+
+Return all default values for the CI class'
+attributes that are not C<sub{}>
+
+=cut
+sub attribute_default_values {
+    my ($class)=@_;
+    my %defs =
+        map { 
+            $_->name => $_->default 
+        } 
+        grep { 
+            my $d=$_->default; 
+            defined $d && ref $d ne 'CODE'; 
+        } 
+        $class->meta->get_all_attributes;
+    return \%defs;
+}
+
 
 # XXX deprecated:
 sub searcher {
@@ -988,7 +1011,7 @@ around initialize_instance_slot => sub {
                         }
                     },
                     'ArrayRef[CI]' => sub {
-                        $params->{$init_arg} = [ $init->( $val, $weaken ) ];
+                        $params->{$init_arg} = $init->( $val->[0], $weaken );
                         Scalar::Util::weaken( $params->{$init_arg}->[0] ) if $weaken;
                         $weaken = 0;
                     },

@@ -25,9 +25,7 @@ sub icon { '/static/images/icons/topic.png' }
 around delete => sub {
     my ($orig, $self, $mid ) = @_;
     $mid = $mid // $self->mid;
-    # if( DB->BaliTopic->find( $mid ) ) {
-    #     Baseliner->model('Topic')->update({ topic_mid=>$mid, action=>'delete' });
-    # }
+    DB->BaliTopic->search({ mid=>$mid })->delete if length $mid;
 	my $cnt = $self->$orig($mid);
 };
     

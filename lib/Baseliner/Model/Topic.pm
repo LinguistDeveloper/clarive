@@ -663,18 +663,17 @@ sub update {
         when ( 'delete' ) {
             $topic_mid = $p->{topic_mid};
             try {
-                # delete master row, do it first to avoid delete cascade for BaliTopic 
-                #      -- delete cascade does not clear up the cache
-                _ci( $topic_mid )->delete;
-                
                 my $row = ref $topic_mid eq 'ARRAY'
                     ? Baseliner->model( 'Baseliner::BaliTopic' )->search({ mid=>$topic_mid })
                     : Baseliner->model( 'Baseliner::BaliTopic' )->find( $topic_mid );
                 _fail _loc('Topic not found') unless ref $row;
-                $row->delete;
                 
-                $row = Baseliner->model( 'Baseliner::BaliTopicFieldsCustom' )->search({ topic_mid=>$topic_mid });
-                $row->delete;
+                for my $mid ( _array( $topic_mid ) ) {
+                    # delete master row and bali_topic row
+                    #      -- delete cascade does not clear up the cache
+                    _ci( $mid )->delete;
+                    Baseliner->model( 'Baseliner::BaliTopicFieldsCustom' )->search({ topic_mid=>$mid })->delete;
+                }
 
                 $modified_on = Class::Date->new(_now)->epoch;
                 
