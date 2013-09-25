@@ -544,7 +544,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             icon:'/static/images/icons/delete.gif',
             cls: 'x-btn-icon-text',
             type: 'submit',
-            hidden: self.topic_mid!=undefined ? false : true,
+            hidden: self.permDelete!=undefined ? false : self.permDelete,
             handler: function(){ return self.delete_topic() }
         });
     
@@ -723,7 +723,9 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             self.btn_comment.show();
             //Baseliner.TopicExtension.toolbar.length > 0 ? self.btn_detail.hide(): self.btn_detail.show();
             self.btn_detail.show();
-            self.btn_delete_form.show();
+            if( self.permDelete ) {
+                self.btn_delete_form.show();
+            }
             self.modified_on = rec.topic_data.modified_on_epoch;
         }else{
             self.btn_comment.hide();
@@ -754,7 +756,9 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 if(self.topic_mid){
                     self.btn_comment.show();
                     self.btn_detail.show();
-                    self.btn_delete_form.show();
+                    if( self.permDelete ) {
+                        self.btn_delete_form.show();
+                    }
                 }else{
                     self.btn_comment.hide();
                     self.btn_detail.hide();
@@ -880,7 +884,9 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                params: {action: action, form: custom_form, _cis: Ext.util.JSON.encode( self._cis )},
                success: function(f,a){
                     self.btn_save_form.enable();
-                    self.btn_delete_form.enable();
+                    if( self.permDelete ) {
+                        self.btn_delete_form.enable();
+                    }                    
                     Baseliner.message(_('Success'), a.result.msg );
                     self.reload_parent_grid();
                         
@@ -911,7 +917,9 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     self.topic_mid = a.result.topic_mid;
                     self.btn_comment.show();
                     self.btn_detail.show();
-                    self.btn_delete_form.show();
+                    if( self.permDelete ) {
+                        self.btn_delete_form.show();
+                    }
                     
                     if(action == 'add'){
                         var res = a.result;
@@ -932,7 +940,9 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                },
                failure: function(f,action){
                    self.btn_save_form.enable();
-                   self.btn_delete_form.enable();
+                   if( self.permDelete ) {
+                       self.btn_delete_form.enable();
+                   }
                    var res = action.response;
                    Baseliner.error_win('',{},res,res.responseText );
                    if( Ext.isFunction(opts.failure) ) opts.failure(res);
@@ -956,7 +966,9 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                                             do_submit();
                                         }else{
                                             self.btn_save_form.enable();
-                                            self.btn_delete_form.enable();                                    
+                                            if( self.permDelete ) {
+                                                self.btn_delete_form.enable();                                    
+                                            }
                                         }
                                     }
                                 );
@@ -967,7 +979,9 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                         } else {
                             Baseliner.error( _('Error'), res.msg );
                             self.btn_save_form.enable();
-                            self.btn_delete_form.enable();                              
+                            if( self.permDelete ) {
+                                self.btn_delete_form.enable();                              
+                            }
                         }
                     }
                 );            
