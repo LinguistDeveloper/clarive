@@ -4715,3 +4715,6 @@ msgstr "Tópico cambió de estado anteriormente. ¿Quieres refrescar el tópico?
 
 msgid "Checkbox"
 msgstr "Casilla de verificación"
+
+msgid "Numberfield"
+msgstr "Campo numérico"

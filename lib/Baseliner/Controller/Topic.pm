@@ -524,6 +524,7 @@ sub view : Local {
         $c->stash->{ii} = $p->{ii};    
         $c->stash->{swEdit} =  ref($p->{swEdit}) eq 'ARRAY' ? $p->{swEdit}->[0]:$p->{swEdit} ;
         $c->stash->{permissionEdit} = 0;
+        $c->stash->{permissionDelete} = 0;
         $c->stash->{permissionComment} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.GDI.comment' );
         if ($c->is_root){
             $c->stash->{HTMLbuttons} = 0;
@@ -533,6 +534,7 @@ sub view : Local {
         }
         
         my %categories_edit = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'edit' );
+        my %categories_delete = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'delete' );
         
         if($topic_mid || $c->stash->{topic_mid} ){
      
@@ -559,13 +561,18 @@ sub view : Local {
             my %tmp;
             if ((substr $category->topics->status->type, 0, 1) eq "F"){
                 $c->stash->{permissionEdit} = 0;
+                $c->stash->{permissionDelete} = 0;
             }
             else{
                 if ($c->is_root){
                     $c->stash->{permissionEdit} = 1;     
+                    $c->stash->{permissionDelete} = 1;     
                 }else{
                     if (exists ($categories_edit{ $category->id })){
                         $c->stash->{permissionEdit} = 1;
+                    }
+                    if (exists ($categories_delete{ $category->id })){
+                        $c->stash->{permissionDelete} = 1;
                     }
                 }
             }
@@ -598,6 +605,7 @@ sub view : Local {
             my $category = DB->BaliTopicCategories->find( $id_category );
             $c->stash->{category_meta} = $category->forms;
             $c->stash->{permissionEdit} = 1 if exists $categories_edit{$id_category};
+            $c->stash->{permissionDelete} = 1 if exists $categories_delete{$id_category};
             
             $c->stash->{topic_mid} = '';
             $c->stash->{events} = '';

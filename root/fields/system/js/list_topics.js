@@ -52,7 +52,7 @@ params:
 		
         topic_box = new Baseliner.TopicGrid({
 			sm: sm ,
-            fieldLabel:_( meta.name_field ), 
+            //fieldLabel:_( meta.name_field ), 
             combo_store: topic_box_store,
             columns: meta.columns,
             mode: 'remote',
@@ -110,7 +110,11 @@ params:
             });
         }
     }
-	return [
-		topic_box
-    ]
+	var obj = [];
+	if (meta.list_type == 'grid') {
+		obj.push(Baseliner.field_label_top( _(meta.name_field), meta.hidden ))	;
+	}
+	obj.push(topic_box);
+	
+	return obj
 })

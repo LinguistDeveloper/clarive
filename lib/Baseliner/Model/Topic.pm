@@ -1919,8 +1919,10 @@ sub get_categories_permissions{
         $re_action = qr/^action\.topics\.(.*?)\.(view|edit|create)$/;
     } elsif ($type eq 'edit') {
         $re_action = qr/^action\.topics\.(.*?)\.(edit|create)$/;
-    } else {
+    } elsif ($type eq 'create') {
         $re_action = qr/^action\.topics\.(.*?)\.(create)$/;
+    } else {
+        $re_action = qr/^action\.topics\.(.*?)\.(delete)$/;
     }
 
     my @permission_categories;

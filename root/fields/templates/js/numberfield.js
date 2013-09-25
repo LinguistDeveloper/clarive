@@ -1,10 +1,10 @@
 /*
-name: Textfield
+name: Numberfield
 params:
     origin: 'template'
-    type: 'textfield'
+    type: 'numberfield'
     html: '/fields/templates/html/row_body.html'
-    js: '/fields/templates/js/textfield.js'
+    js: '/fields/templates/js/numberfield.js'
     field_order: 1
     allowBlank: true
     section: 'body'
@@ -20,12 +20,12 @@ params:
 
     return [
         {
-            xtype:'textfield',
+            xtype:'numberfield',
             fieldLabel: _(meta.name_field),
             name: meta.id_field,
             value: data && data[ meta.bd_field ]!=undefined  ? data[ meta.bd_field ] : ( meta.default_value || '' ), 
             style: style,
-            //width: meta.width || '97%',
+            width: meta.width || 100,
             anchor: meta.anchor || '100%',
             height: meta.height || 30,
             allowBlank: meta ? !!meta.allowBlank : false,
