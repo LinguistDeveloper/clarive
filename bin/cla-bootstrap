@@ -3,9 +3,7 @@ use strict;
 use warnings;
 use v5.10;
 use FindBin qw($Bin);
-my %opts;
 BEGIN {
-    %opts = map { /^-[^-]/ ? ($_, 1) : $_ } @ARGV;
     if( ! $ENV{CLARIVE_HOME} ) {
         our $script_home = $Bin . '/..';
         chdir $script_home;
@@ -152,7 +150,7 @@ if( ! exists $opts{-w} ) {
                     local $SIG{CHLD};  # otherwise cpanm install fails 
                     local $SIG{INT}; 
                     local $SIG{TERM}; 
-                    cpanm_capture( $mod, @llib );
+                    cpanm_capture( $mod, '-l' => $llib );
                     exit 0;
                 }
             }
@@ -328,7 +326,7 @@ FCGI
 File::Slurp
 File::Tail
 Filesys::Virtual::SSH
-Function::Parameters;
+Function::Parameters
 GD
 Getopt::Mini
 Git::Wrapper
@@ -402,6 +400,9 @@ Time::Interval
 Try::Tiny
 Twiggy
 Twiggy::Prefork
+XML::Compile::WSDL11
+XML::Compile::SOAP::Util
+XML::Compile::SOAP::Daemon::CGI
 XML::Smart
 YAML
 YAML::Syck
