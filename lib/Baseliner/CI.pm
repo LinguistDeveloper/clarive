@@ -1,7 +1,7 @@
 package Baseliner::CI;
 use strict;
 use Baseliner::Utils;
-use Module::Loaded;
+use Try::Tiny;
 
 our $_no_record = 0;
 our $scope = {};
