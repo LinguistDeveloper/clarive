@@ -51,7 +51,7 @@ params:
         allowBlank: meta.allowBlank==undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true ),          
         store: project_box_store,
         value: projects,
-        disabled: meta.readonly!=undefined ? meta.readonly : true,
+        disabled: meta.readonly!=undefined ? meta.readonly : false,
         singleMode: meta.single_mode == 'false' || !meta.single_mode ? false : true
     });
     
