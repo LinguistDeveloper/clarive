@@ -2,6 +2,7 @@
     $swEdit
     $permissionEdit
     $permissionDelete
+    $permissionGraph
     $category_meta
     $permissionComment
     $HTMLbuttons => 0
@@ -12,6 +13,7 @@
     var swEdit = <% $swEdit == 1 ? 1 : 0 %>;
     var permEdit = <% $permissionEdit ? 'true' : 'false' %>;
     var permDelete = <% $permissionDelete ? 'true' : 'false' %>;
+    var permGraph = <% $permissionGraph ? 'true' : 'false' %>;
     var permComment = <% $permissionComment ? 'true' : 'false' %>;
     var html_buttons = <% $HTMLbuttons == 1 ? 1 : 0 %>;
     var status_items_menu = '<% $status_items_menu %>';
@@ -25,6 +27,7 @@
     Ext.apply( params, {
         swEdit: swEdit,
         permEdit: permEdit,
+        permGraph: permGraph,
         permDelete: permDelete,
         permComment: permComment,
         html_buttons: html_buttons,
