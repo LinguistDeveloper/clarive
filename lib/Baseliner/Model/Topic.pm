@@ -2100,8 +2100,8 @@ sub change_status {
             if (@roles){
                 @users = Baseliner->model('Users')->get_users_from_mid_roles( roles => \@roles );
             }
-            my $subject = _loc("Topic [%1] %2.  Status changed to %3", $mid, $p{title}, $p{status});
-            +{ mid => $mid, title => $p{title}, notify_default => \@users, subject => $subject } ;
+            my $subject = _loc("Topic [%1] %2.  Status changed to %3", $mid, $row->title, $self->find_status_name($p{id_status}));
+            +{ mid => $mid, title => $row->title, notify_default => \@users, subject => $subject } ;       
         } 
         => sub {
             _throw _loc( 'Error modifying Topic: %1', shift() );
