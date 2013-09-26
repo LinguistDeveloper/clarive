@@ -2,7 +2,6 @@
 name: Grid Editor
 params:
     origin: 'template'
-    relation: 'system'
     js: '/fields/templates/js/grid_editor.js'
     html: '/fields/templates/html/grid_editor.html'
     field_order: 100
