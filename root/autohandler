@@ -14,5 +14,5 @@
 
     # this allows mason files to be in UTF-8 format
     #    if taken out, everything is assumed to be ANSI/ISO-8859-1
-    $_ = Encode::decode_utf8( $_ )
+    # $_ = Encode::decode_utf8( $_ )
 </%filter>
