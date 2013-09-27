@@ -12,6 +12,8 @@ our $t0;
 with 'Clarive::Role::Baseliner';
 
 sub run {
+    my ( $self ) = @_;
+    $self->setup_baseliner;
     $SIG{__WARN__} = sub {};
     $ENV{BASELINER_DEBUG}=0;
     say "Starting system test...";

@@ -12,6 +12,7 @@ BEGIN {  extends 'Catalyst::Controller' }
 $ENV{'NLS_DATE_FORMAT'} = 'YYYY-MM-DD HH24:MI:SS';
   
 register 'action.admin.topics' => { name=>'Admin topics' };
+register 'action.topics.view_graph' => { name=>'View related graph in topics' };
 
 register 'registor.menu.topics' => {
     generator => sub {
@@ -525,6 +526,7 @@ sub view : Local {
         $c->stash->{swEdit} =  ref($p->{swEdit}) eq 'ARRAY' ? $p->{swEdit}->[0]:$p->{swEdit} ;
         $c->stash->{permissionEdit} = 0;
         $c->stash->{permissionDelete} = 0;
+        $c->stash->{permissionGraph} = $c->model("Permissions")->user_has_action( username => $c->username, action => 'action.topics.view_graph');
         $c->stash->{permissionComment} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.GDI.comment' );
         if ($c->is_root){
             $c->stash->{HTMLbuttons} = 0;
@@ -1550,8 +1552,8 @@ sub list_users : Local {
         $users_friends = $c->model('Users')->get_users_friends_by_projects(\@projects);
     }else{
         if($p->{roles} && $p->{roles} ne 'none'){
-            my @name_roles;
-            map { my $temp = lc ($_); $temp =~s/ //g; push @name_roles, $temp } split /,/, $p->{roles};
+            my @name_roles = map {lc ($_)} split /,/, $p->{roles};
+            #map { my $temp = lc ($_); $temp =~s/ //g; push @name_roles, $temp } split /,/, $p->{roles};
             
             my @id_roles = map {$_->{id}} DB->BaliRole->search( { 'LOWER(role)' => \@name_roles} )->hashref->all;
             if (@id_roles){

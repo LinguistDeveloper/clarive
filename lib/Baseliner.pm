@@ -25,7 +25,6 @@ BEGIN {
             +CatalystX::Features::Lib
             +CatalystX::Features::Plugin::ConfigLoader
             Authentication
-            Unicode::Encoding
             Session     
             Session::Store::DBI    
             Session::State::Cookie
@@ -48,12 +47,11 @@ $DB::deep = 500; # makes the Perl Debugger Happier
 # determine version with a GIT DESCRIBE
 our $FULL_VERSION = do {
     my $v = eval { 
-        require Git::Wrapper;
-        my $git = Git::Wrapper->new( $ENV{BASELINER_HOME} );
-        my $x = ( $git->describe({ always=>1, tag=>1 }) )[0];
-        $x=~ /^(.*)-(\d+)-(.*)$/ ? $x=["$1_$2", substr($3,1,7) ] : ['?','?','?'];
+        my @x = `cd $ENV{CLARIVE_HOME}; git describe --always --tags --candidates 1`;
+        my $version = $x[0];
+        $version=~ /^(.*)-(\d+)-(.*)$/ ? $version=["$1_$2", substr($3,1,7) ] : ['?','?','?'];
     };
-    $@ ?  ['6.0','??'] : $v;
+    !$v ?  ['6.0','??'] : $v;
 };
 our $VERSION = $FULL_VERSION->[0];
 our $VERSION_SHA = $FULL_VERSION->[1];
@@ -76,15 +74,11 @@ __PACKAGE__->config(
     },
 );
 
-__PACKAGE__->config->{static}->{dirs} = [
+__PACKAGE__->config->{'Plugin::Static::Simple'}->{dirs} = [
         'static',
         qr/images/,
     ];
-# __PACKAGE__->config->{'Plugin::Static::Simple'}->{dirs} = __PACKAGE__->config->{static}->{dirs};
-
-__PACKAGE__->config->{static}->{ignore_extensions} 
-        = [ qw/mas html js json css less/ ];    
-# __PACKAGE__->config->{'Plugin::Static::Simple'}->{ignore_extensions} = __PACKAGE__->config->{static}->{ignore_extensions};
+__PACKAGE__->config->{'Plugin::Static::Simple'}->{ignore_extensions} = [ qw/mas html js json css less/ ];    
 
 __PACKAGE__->config( encoding => 'UTF-8' ); # used by Catalyst::Plugin::Unicode::Encoding
 

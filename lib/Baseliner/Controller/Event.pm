@@ -78,7 +78,7 @@ sub log : Local {
                 _id           => $e->{_id} . '-' . $k++,  # $_->{id} useless and may repeat
                 event_status  => $_->{return_code} ? 'ko' : 'ok',
                 type          => 'rule',
-                event_key     => _loc('rule: %1', $_->{rule}{id} . ': ' . $_->{rule}{rule_name} ),
+                event_key     => $_->{rule} && $_->{rule}{id}?_loc('rule: %1', $_->{rule}{id} . ': ' . $_->{rule}{rule_name} ):_loc("Notifications"),
                 data          => _damn( $_->{stash_data} ?  _load( $_->{stash_data} ) : {} ),
                 dsl           => $_->{dsl},
                 output        => $_->{log_output},

@@ -246,7 +246,7 @@ sub get_notifications {
     my $name_config = $event_key;
     $name_config =~ s/event.//g;
     my $template = Baseliner->model( 'ConfigStore' )->get( 'config.notifications.' . $name_config . '.template_default')->{template_default};
-	if ($template eq ''){
+	if (!$template || $template eq ''){
     	$template =  Baseliner->model( 'ConfigStore' )->get( 'config.notifications.template_default' )->{template_default};
     }
     if (exists $send_notification->{$template}){
