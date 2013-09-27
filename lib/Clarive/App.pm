@@ -53,19 +53,21 @@ around 'BUILDARGS' => sub {
         my $lic = Clarive::Util::TLC::check( $site );
     }
     
-    $args{args} = { %args };
+    $args{args} = $self->clone( \%args );
 
     # merge config and args
     %args = ( %$config, %args );
 
     $args{config} = $config;
-    $args{opts} = \%args;
+    $args{opts} = $self->clone( \%args );
     $args{argv} = \@ARGV;
     $args{lang} //= $ENV{CLARIVE_LANG};
     
-    warn "app args: " . $self->yaml( \%args ) if $args{v};
+    my $parsed_args = $self->parse_vars( { %args }, { %ENV, %args } );
 
-    $self->$orig( %args ); 
+    warn "app args: " . $self->yaml( $parsed_args ) if $args{v};
+    
+    $self->$orig( $parsed_args ); 
 };
 
 sub BUILD {
@@ -177,6 +179,144 @@ sub do_cmd {
     } else {
         $cmd_package->$runsub( app=>$self, opts=>\%opts );
     }
+}
+
+sub parse_vars {
+    my ( $self, $data, $vars, %args ) = @_;
+    my $ret;
+
+    # flatten keys
+    $vars = $self->hash_flatten($vars);
+
+    $ret = $self->parse_vars_raw( data => $data, vars => $vars, throw => $args{throw} );
+    return $ret;
+}
+
+our $hf_scope;
+sub merge_pushing {
+    my ($self, $h1, $h2 ) = @_;
+    my %merged;
+    while( my($k2,$v2) = each %$h2 ) {
+        $merged{ $k2 } = $v2;  
+    }
+    while( my($k1,$v1) = each %$h1 ) {
+        if( exists $merged{$k1} ) {
+            my $v2 = delete $merged{$k1};
+            if( !defined $v2 ) {
+                $merged{$k1}=$v1;
+            }
+            elsif( !defined $v1 ) {
+                $merged{$k1}=$v2;
+            }
+            elsif( $v1 eq $v2 ) {
+                $merged{$k1} = $v2;
+            }
+            else {
+                push @{$merged{$k1}}, $v2 eq $v1 ? $v2 : ( $v2, $v1 );  
+            }
+        }
+        else {
+            $merged{ $k1 } = $v1;  
+        }
+    }
+    %merged;
+}
+sub hash_flatten {
+    my ( $self, $stash, $prefix ) = @_;
+    no warnings;
+    $prefix ||= '';
+    my %flat;
+    $hf_scope or local $hf_scope = {};
+    my $refstash = ref $stash;
+    return () if $refstash && exists $hf_scope->{"$stash"};
+    $hf_scope->{"$stash"}=() if $refstash;
+    if( $refstash eq 'HASH' ) {
+        while( my ($k,$v) = each %$stash ) {
+            %flat = $self->merge_pushing( \%flat, scalar $self->hash_flatten($v, $prefix ? "$prefix.$k" : $k ) );
+        }
+    } 
+    elsif( $refstash eq 'ARRAY' ) {
+        my $cnt=0;
+        for my $v ( @$stash ) {
+            %flat = $self->merge_pushing( \%flat, scalar $self->hash_flatten($v, "$prefix" ) );
+        }
+    }
+    elsif( $refstash && $refstash !~ /CODE|GLOB|SCALAR/ ) {
+        #$stash = _damn( $stash );
+        %flat = $self->merge_pushing( \%flat, scalar $self->hash_flatten ( $stash, "$prefix" ) );
+    }
+    else {
+        $flat{ "$prefix" } = "$stash";
+    }
+    if( !$prefix ) {
+        for my $k ( keys %flat ) {
+            my $v = $flat{$k};
+            if( ref $v eq 'ARRAY' ) {
+                $flat{$k}=join ',', @$v; 
+            }
+        }
+    }
+    return wantarray ? %flat : \%flat;
+}
+
+our $parse_vars_raw_scope;
+sub parse_vars_raw {
+    my $self = shift;
+    my %args = @_;
+    my ( $data, $vars, $throw, $cleanup ) = @args{ qw/data vars throw cleanup/ };
+    my $ref = ref $data;
+    # block recursion
+    $parse_vars_raw_scope or local $parse_vars_raw_scope={};
+    return () if $ref && exists $parse_vars_raw_scope->{"$data"};
+    $parse_vars_raw_scope->{"$data"}=() if $ref;
+    
+    if( $ref eq 'HASH' ) {
+        my %ret;
+        for my $k ( keys %$data ) {
+            my $v = $data->{$k};
+            $ret{$k} = $self->parse_vars_raw( data=>$v, vars=>$vars, throw=>$throw );
+        }
+        return \%ret;
+    } elsif( $ref =~ /Clarive/ ) {
+        my $class = $ref;
+        my %ret;
+        for my $k ( keys %$data ) {
+            my $v = $data->{$k};
+            $ret{$k} = $self->parse_vars_raw( data=>$v, vars=>$vars, throw=>$throw );
+        }
+        return bless \%ret => $class;
+    } elsif( $ref eq 'ARRAY' ) {
+        my @tmp;
+        for my $i ( @$data ) {
+            push @tmp, $self->parse_vars_raw( data=>$i, vars=>$vars, throw=>$throw );
+        }
+        return \@tmp;
+    } elsif($ref) {
+        return $self->parse_vars_raw( data=>_damn( $data ), vars=>$vars, throw=>$throw );
+    } else {
+        # string
+        return $data unless $data && $data =~ m/\{\{.+?\}\}/;
+        my $str = "$data";
+        for my $k ( keys %$vars ) {
+            my $v = $vars->{$k};
+            $str =~ s/\{\{$k\}\}/$v/g;
+        }
+        # cleanup or throw unresolved vars
+        if( $throw ) { 
+            if( my @unresolved = $str =~ m/\{\{(.+?)\}\}/gs ) {
+                die( sprintf "Unresolved vars: '%s' in %s", join( "', '", @unresolved ), $str );
+            }
+        } elsif( $cleanup ) {
+            $str =~ s/\{\{.+?\}\}//g; 
+        }
+        return $str;
+    }
+}
+
+sub clone {
+    my ($self,$obj) = @_;
+    require Storable;
+    return Storable::thaw(Storable::freeze($obj));
 }
 
 1;
