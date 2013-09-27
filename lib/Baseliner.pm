@@ -47,7 +47,7 @@ $DB::deep = 500; # makes the Perl Debugger Happier
 # determine version with a GIT DESCRIBE
 our $FULL_VERSION = do {
     my $v = eval { 
-        my @x = `cd $ENV{CLARIVE_HOME}; git describe --always --tags`;
+        my @x = `cd $ENV{CLARIVE_HOME}; git describe --always --tags --candidates 1`;
         my $version = $x[0];
         $version=~ /^(.*)-(\d+)-(.*)$/ ? $version=["$1_$2", substr($3,1,7) ] : ['?','?','?'];
     };
