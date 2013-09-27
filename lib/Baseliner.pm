@@ -47,7 +47,7 @@ $DB::deep = 500; # makes the Perl Debugger Happier
 # determine version with a GIT DESCRIBE
 our $FULL_VERSION = do {
     my $v = eval { 
-        my @x = `cd $ENV{BASELINER_HOME}; git describe --always --tags`;
+        my @x = `cd $ENV{CLARIVE_HOME}; git describe --always --tags`;
         my $version = $x[0];
         $version=~ /^(.*)-(\d+)-(.*)$/ ? $version=["$1_$2", substr($3,1,7) ] : ['?','?','?'];
     };
@@ -74,15 +74,11 @@ __PACKAGE__->config(
     },
 );
 
-__PACKAGE__->config->{static}->{dirs} = [
+__PACKAGE__->config->{'Plugin::Static::Simple'}->{dirs} = [
         'static',
         qr/images/,
     ];
-# __PACKAGE__->config->{'Plugin::Static::Simple'}->{dirs} = __PACKAGE__->config->{static}->{dirs};
-
-__PACKAGE__->config->{static}->{ignore_extensions} 
-        = [ qw/mas html js json css less/ ];    
-# __PACKAGE__->config->{'Plugin::Static::Simple'}->{ignore_extensions} = __PACKAGE__->config->{static}->{ignore_extensions};
+__PACKAGE__->config->{'Plugin::Static::Simple'}->{ignore_extensions} = [ qw/mas html js json css less/ ];    
 
 __PACKAGE__->config( encoding => 'UTF-8' ); # used by Catalyst::Plugin::Unicode::Encoding
 
