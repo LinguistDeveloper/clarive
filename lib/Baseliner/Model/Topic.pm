@@ -1654,12 +1654,12 @@ sub set_cis {
     if( @add_cis || @del_cis ) {
         my ($del_cis, $add_cis) = ( '', '' );
         if( @del_cis ) {
-            DB->BaliMasterRel->search( { from_mid => $rs_topic->mid, to_mid=>\@del_cis, rel_type => $rel_type } )
+            DB->BaliMasterRel->search( { from_mid => $rs_topic->mid, to_mid=>\@del_cis, rel_type => $rel_type, rel_field => $id_field } )
                 ->delete;
             $del_cis = join(',', map { Baseliner::CI->new($_)->load->{name} . '[-]' } @del_cis );
         }
         if( @add_cis ) {
-            DB->BaliMasterRel->create({ from_mid => $rs_topic->mid, to_mid=>$_, rel_type => $rel_type } )
+            DB->BaliMasterRel->create({ from_mid => $rs_topic->mid, to_mid=>$_, rel_type => $rel_type, rel_field => $id_field } )
                 for @add_cis;
             $add_cis = join(',', map { Baseliner::CI->new($_)->load->{name} . '[+]' } @add_cis );
         }

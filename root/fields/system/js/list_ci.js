@@ -20,6 +20,7 @@ params:
 	var meta = params.topic_meta;
 	var data = params.topic_data;
 	
+  console.dir(data);
     var ci = {};
     if( meta.ci_role ) ci['role'] = meta.ci_role;
     else if( meta.ci_class ) ci['class'] = meta.ci_class;
@@ -28,7 +29,9 @@ params:
        Baseliner.ci_box(Ext.apply({
            fieldLabel: _(meta.name_field),
            name: meta.id_field,
-           singleMode: meta.single_mode
+           singleMode: meta.single_mode,
+           force_set_value: true,
+           value: data[meta.id_field]
        }, ci) )
     ]
 })
