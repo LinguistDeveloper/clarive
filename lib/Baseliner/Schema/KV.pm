@@ -466,6 +466,12 @@ sub search {
     return @rows;
 }
 
+sub flat {
+    my ($self,$mid)=@_;
+    +{ map { $_->{mkey} => $_->{mvalue_date} // $_->{mvalue}  } 
+        DB->BaliMasterKV->search({ mid=>$mid })->hashref->all }
+}
+
 sub rebuild_index {
     my ($self,%p) = @_;
     my $index_name = $self->index_name;

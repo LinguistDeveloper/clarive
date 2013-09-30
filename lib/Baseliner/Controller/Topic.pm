@@ -433,7 +433,8 @@ sub new_topic : Local {
         my $data;
         
         if ($p->{ci}){
-            $data = _ci($p->{ci})->{_ci};
+            local $Baseliner::CI::ci_record = 1;
+            $data = ci->new($p->{ci})->{_ci};
             $data->{title} = $data->{gdi_perfil_dni};
             if ($p->{clonar} && $p->{clonar} == -1){
                 $data = $self->init_values_topic($data);
@@ -454,7 +455,7 @@ sub new_topic : Local {
             }
         }else{
             $data = $c->model('Topic')->get_data( $meta, undef );
-            #Cetelem
+            
             if($p->{dni}){
                 if ($p->{clonar}){
                     $data = $c->model('Topic')->get_data( $meta, $p->{clonar} );
@@ -674,10 +675,11 @@ sub comment : Local {
                             created_on => DateTime->now,
                         }
                     );
+                    local $Baseliner::CI::ci_record = 1;
                     event_new 'event.post.create' => {
                         username => $c->username,
                         mid      => $topic_mid,
-                        data     => _ci($topic_mid)->{_ci},
+                        data     => ci->new($topic_mid)->{_ci},
                         id_post  => $mid,
                         post     => substr( $text, 0, 30 ) . ( length $text > 30 ? "..." : "" )
                     };

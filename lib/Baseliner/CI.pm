@@ -36,9 +36,34 @@ sub new {
     } elsif( @_ == 1 && ! ref $_[0] ) {
         # NOP: could be moniker?
         _throw _loc("Could not instanciate CI from parameter %1", $_[0] );
+    } elsif( @_ == 1 && ref $_[0] eq 'ARRAY' ) {
+        # several CIs at once  TODO optimize loading in load for array, using a BaliMaster->search
+        my $mids = $_[0];
+        # master data
+        my @rows = DB->BaliMaster->search({ mid=>$mids })->hashref->all;
+        my %mids_found = map { $_->{mid} =>$_ } @rows;
+        # check mids were found
+        for( @$mids ) {
+            _throw _loc('CI record not found for mid %1', $_) unless exists $mids_found{$_};
+        }
+        # rel data
+        my @rel_rows = DB->BaliMasterRel->search( 
+            { -or=>[ to_mid=>$mids, from_mid=>$mids ]},
+            { select=> ['from_mid', 'to_mid', 'rel_type' ] } )->hashref->all;
+        my %rel_data;
+        for my $rel_row ( @rel_rows ) { 
+            push @{ $rel_data{ $rel_row->{mid} } }, $rel_row;
+        }
+        # now inflate, making sure order is the same as in the original array
+        my @cis;
+        for my $mid ( keys %mids_found ) {
+            my $rec = Baseliner::Role::CI->load( $mid, undef, $mids_found{$mid}, undef, \%rel_data );
+            push @cis, Baseliner::Role::CI->_build_ci_instance_from_rec( $rec );
+        }
+        return @cis;
     } else {
         %args = @_;
-        my $rec = Baseliner::Role::CI->load_from_search( \%args, single=>1 );
+        my $rec = try { Baseliner::Role::CI->load_from_search( \%args, single=>1 ) };
         _throw _loc('CI record not found for search %1', _to_json(\%args) ) unless ref $rec;
         return Baseliner::Role::CI->_build_ci_instance_from_rec( $rec );
     }
