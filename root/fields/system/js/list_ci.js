@@ -31,7 +31,8 @@ params:
            name: meta.id_field,
            singleMode: meta.single_mode,
            force_set_value: true,
-           value: data[meta.id_field]
+           value: data[meta.id_field],
+           disabled: meta.readonly!=undefined ? meta.readonly : false
        }, ci) )
     ]
 })
