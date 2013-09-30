@@ -1188,6 +1188,9 @@ Support the following CI specific calls:
 sub default : Path Args(2) {
     my ($self,$c,$arg,$meth) = @_;
     my $p = $c->req->params;
+    _log "AAAAAAAAAAAAAAAAAArg: $arg";
+    _log "P: "._dump $p;
+    my $collection = $p->{collection};
     my $mid = $p->{mid};
     my $json = $c->req->{body_data};
     my $data = { username=>$c->username, %{ $p || {} }, %{ $json || {} } };
@@ -1203,6 +1206,10 @@ sub default : Path Args(2) {
             my $ci = _ci( $mid );
             _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
             $ret = $ci->$meth( $data );
+        } elsif ( $arg == 'undefined' && $collection ) {
+            my $pkg = "BaselinerX::CI::$collection";
+            _fail( _loc "Method '%1' not found in class '%2'", $meth, $pkg) unless $pkg->can( $meth) ;
+            $ret = $pkg->$meth( $data );
         } else {
             my $pkg = "BaselinerX::CI::$arg";
             _fail( _loc "Method '%1' not found in class '%2'", $meth, $pkg) unless $pkg->can( $meth) ;
