@@ -13,6 +13,7 @@ params:
     single_mode: false
     ci_role: 'Server'
     ci_class: ''
+    rel_type: topic_ci
 ---
 */
 (function(params){
@@ -26,7 +27,7 @@ params:
 	return [
        Baseliner.ci_box(Ext.apply({
            fieldLabel: _(meta.name_field),
-           name: meta.name_field,
+           name: meta.id_field,
            singleMode: meta.single_mode
        }, ci) )
     ]
