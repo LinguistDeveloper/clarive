@@ -12,6 +12,7 @@ params:
     section: 'head'
     single_mode: false
     ci_role: 'Server'
+    ci_class: ''
 ---
 */
 (function(params){
