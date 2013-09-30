@@ -1,0 +1,12 @@
+<%args>
+    $meta
+    $data
+</%args>
+
+<tr>
+  <th><% _loc($meta->{name_field}) %>:</th>
+  <td 
+      class="fieldlet-html"
+      style="<% $meta->{framed} and 'text-transform: uppercase; font-size: 10px; font-weight:bold; background-color: #eee; text-align: center' %>" >
+      <% _ci((_array( $data->{$meta->{id_field}} ) )[0])->{name} %></td>
+</tr>

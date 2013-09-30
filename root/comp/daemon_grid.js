@@ -168,7 +168,7 @@
 		    value: 'localhost',
 		    triggerAction: 'all',
 		    forceSelection: true,
-		    editable: false,
+		    editable: true,
 		    fieldLabel: _('Host'),
 		    name: 'hostname',
 		    hiddenName: 'hostname',
