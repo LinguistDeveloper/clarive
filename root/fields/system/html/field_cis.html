@@ -8,13 +8,13 @@
   <td 
       class="fieldlet-html"
       style="<% $meta->{framed} and 'text-transform: uppercase; font-size: 10px; font-weight:bold; background-color: #eee; text-align: center' %>" >
-% 	
+<%perl> 	
 	my @cis = _array( $data->{$meta->{id_field}});
 	my $name = "";
 	if ( @cis ) {
 		$name = _ci( $cis[0] )->{name};
 	}
-%
+<%/perl>
 		<% $name %>
 	</td>
 </tr>
