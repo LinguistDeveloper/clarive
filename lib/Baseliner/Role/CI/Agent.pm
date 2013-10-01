@@ -12,6 +12,7 @@ has password    => qw(is rw isa Str);
 has server => qw(is rw isa CI required 1),
     traits => ['CI'],
     handles=>[qw(remote_temp remote_perl remote_tar hostname)];
+    
 around rel_type => sub {
     { 
         server => [ to_mid => 'server_agent' ] ,
@@ -69,7 +70,8 @@ sub tuple {
 sub tuple_str {
     my ($self)=@_;
     my $t = $self->tuple;
-    sprintf "RET=%s\nRC=%s\nOUTPUT:\n%s\n", $t->{ret}, $t->{rc}, $t->{output} ;
+    delete $t->{ret} if $t->{ret} eq $t->{output};
+    sprintf "RC=%s\nRET: %s\nOUTPUT:\n%s\n", $t->{rc}, $t->{ret}, $t->{output} ;
 }
 
 sub _quote_cmd {

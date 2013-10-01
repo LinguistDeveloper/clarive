@@ -39,6 +39,7 @@ sub run_local {
     my $stash = $c->stash;
 
     my ($user,$home,$path,$args,$stdin) = @{ $config }{qw/user home path args stdin/};
+    $args ||= [];
     require Capture::Tiny;
     my $rc;
     my $ret;
@@ -80,15 +81,14 @@ sub run_remote {
     
     my @rets;
     my ($servers,$user,$home, $path,$args, $stdin) = @{ $config }{qw/server user home path args stdin/};
+    $args ||= [];
     for my $server ( split /,/, $servers ) { 
-        $server = _ci( $server ) unless ref $server;
+        $server = ci->new( $server ) unless ref $server;
         for my $hostname ( _array( $server->hostname ) ) {
-            $log->info( _loc( '*%1* RUNNING remote script `%2` (%3)', $stmt, $path . ' '. join(' ',_array($args)), $user . '@' . $hostname ) );
+            $log->info( _loc( '*%1* STARTING remote script `%2` (%3)', $stmt, $path . ' '. join(' ',_array($args)), $user . '@' . $hostname ), $config );
         }
         
         my $agent = $server->connect( user=>$user );
-        #$agent->remote_eval("chdir '$home'");
-        #_debug 'CWD=' . $agent->remote_eval("Cwd::cwd");
         $agent->execute( { chdir=>$home }, $path, _array($args) );
         my $out = $agent->output;
         my $rc = $agent->rc;
@@ -99,6 +99,7 @@ sub run_remote {
             Util->_warn($ms) if $errors eq 'warn';
             Util->_debug($ms) if $errors eq 'silent';
         } else {
+            my $tuple = $agent->tuple_str;
             $log->info( _loc( '*%1* FINISHED remote script `%2` (%3)', $stmt, $path . join(' ',_array($args)), $user . '@' . $server->hostname ), $agent->tuple_str );
         }
         push @rets, { output=>$out, rc=>$rc, ret=>$ret };
@@ -118,7 +119,7 @@ sub run_eval {
     my ($servers, $user, $code) = @{ $config }{qw/server user code/};
     my @rets;
     for my $server ( split /,/, $servers ) {
-        $server = _ci( $server ) unless ref $server;
+        $server = ci->new( $server ) unless ref $server;
         _log _loc "===========> RUNNING remote eval: %1\@%2", $user, $server->hostname ;
         
         my $agent = $server->connect( user=>$user );

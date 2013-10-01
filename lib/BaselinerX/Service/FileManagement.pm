@@ -106,32 +106,40 @@ sub run_ship {
     my $stash = $c->stash;
     my $stmt  = $stash->{current_statement_name};
 
-    my $remote = $config->{remote_path} // _fail 'Missing parameter remote_file';
-    my $local  = $config->{local_path} // _fail 'Missing parameter local_file';
-    my $user   = $config->{user};
-    my $chmod  = $config->{'chmod'};
-    my $chown  = $config->{'chown'};
+    my $remote_path = $config->{remote_path} // _fail 'Missing parameter remote_file';
+    my $local_path  = $config->{local_path}  // _fail 'Missing parameter local_file';
+    my $user        = $config->{user};
+    my $chmod       = $config->{'chmod'};
+    my $chown       = $config->{'chown'};
 
     for my $server ( split /,/, $config->{server} ) {
-        $server = _ci( $server ) unless ref $server;
+        $server = ci->new( $server ) unless ref $server;
         my $server_str = "$user\@".$server->name;
         _debug $stmt . " - Connecting to server " . $server_str;
         my $agent = $server->connect( user=>$user );
-        $log->info( _loc( '*%1* Sending file `%2` to `%3`', $stmt, $local, $server_str.':'.$remote ) );
-        $agent->put_file({ 
-            local  => $local,
-            remote => $remote,
-        });
-        if( length $chown ) {
-            _debug "chown $chown $remote";
-            $agent->chown( $chmod, $remote );
-            $log->error( _loc('*%1* Error doing a chown `%2` to file `%3`: %4', $stmt, $chown,$remote, $agent->output ), $agent->tuple ) if $agent->rc && $agent->rc!=512;
+        my $is_wildcard = $local_path =~ /\*/;
+        my $cnt = 0;
+        for my $local ( grep { -f } glob $local_path ) {
+            $cnt++;
+            my $remote = $is_wildcard ? _file( $remote_path, _file( $local )->basename ) : $remote_path;
+            $log->info( _loc( '*%1* Sending file `%2` to `%3`', $stmt, $local, $server_str.':'.$remote ) );
+            $agent->put_file(
+                local  => "$local",
+                remote => "$remote",
+            );
+            if( length $chown ) {
+                _debug "chown $chown $remote";
+                $agent->chown( $chmod, $remote );
+                $log->error( _loc('*%1* Error doing a chown `%2` to file `%3`: %4', $stmt, $chown,$remote, $agent->output ), $agent->tuple ) if $agent->rc && $agent->rc!=512;
+            }
+            if( length $chmod ) {
+                _debug "chmod $chmod $remote";
+                $agent->chmod( $chmod, $remote );
+                $log->error( _loc('*%1* Error doing a chmod `%2` to file `%3`: %4', $stmt, $chmod,$remote, $agent->output ), $agent->tuple ) if $agent->rc && $agent->rc!=512;
+            }
         }
-        if( length $chmod ) {
-            _debug "chmod $chmod $remote";
-            $agent->chmod( $chmod, $remote );
-            $log->error( _loc('*%1* Error doing a chmod `%2` to file `%3`: %4', $stmt, $chmod,$remote, $agent->output ), $agent->tuple ) if $agent->rc && $agent->rc!=512;
-        }
+        $log->warn( _loc( 'Could not find any file locally to ship to `%1`', $server_str ), $config )
+            unless $cnt > 0;
     }
 
     return 1;
@@ -150,7 +158,7 @@ sub run_retrieve {
     my $user   = $config->{user};
 
     for my $server ( split /,/, $config->{server} ) {
-        $server = _ci( $server ) unless ref $server;
+        $server = ci->new( $server ) unless ref $server;
         my $server_str = "$user\@".$server->name;
         _debug $stmt . " - Connecting to server " . $server_str;
         my $agent = $server->connect( user=>$user );
