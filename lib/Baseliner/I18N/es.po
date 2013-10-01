@@ -4748,3 +4748,7 @@ msgstr "Tópico [%1] %2 actualizado.  Todos los proyectos quitados"
 
 msgid "Topic [%1] %2.  Status changed to %3"
 msgstr "Tópico [%1] %2.  Estado cambiado a %3"
+
+msgid "More info"
+msgstr "Más info"
+

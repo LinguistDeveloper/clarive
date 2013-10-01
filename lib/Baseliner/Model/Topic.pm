@@ -1310,6 +1310,7 @@ sub save_data {
             $row{ mid } = $topic_mid;
             $row{ created_by } = $data->{username};
             $row{ modified_by } = $data->{username};
+            $row{ id_category_status } = $data->{id_category_status} if $data->{id_category_status};
             
             $topic = DB->BaliTopic->create( \%row );
 
