@@ -11,9 +11,15 @@ use Baseliner::Sugar;
 subtype CI    => as 'Baseliner::Role::CI';
 subtype CIs   => as 'ArrayRef[CI]';
 subtype BoolCheckbox   => as 'Bool';
+subtype Date  => as 'Class::Date';
 subtype HashJSON       => as 'HashRef';
 subtype TS    => as 'Str';
 subtype DT    => as 'DateTime';
+
+coerce 'Date' => 
+    from 'Str' => via { Class::Date->new( $_ ) },
+    from 'Num' => via { Class::Date->new( $_ ) },
+    from 'Undef' => via { Class::Date->now };
 
 coerce 'TS' => 
     from 'DT' => via { Class::Date->new( $_->set_time_zone( Util->_tz ) )->string },
@@ -307,7 +313,7 @@ sub save_fields {
 }
 
 sub load {
-    my ( $self, $mid, $row, $data, $yaml ) = @_;
+    my ( $self, $mid, $row, $data, $yaml, $rel_data ) = @_;
     $mid ||= $self->mid if $self->can('mid');
     _fail _loc( "Missing mid %1", $mid ) unless length $mid;
     # in scope ? 
@@ -341,7 +347,7 @@ sub load {
         $data->{yaml} //= $yaml;
         $data->{yaml} =~ s{!!perl/code}{}g;
         my $y = _load( $data->{yaml} );
-        Util->_error( Util->_loc( "Error deserializing CI. Missing or invalid YAML ref: %1", ref $y || '(empty)' ) ) 
+        Util->_error( Util->_loc( "Error deserializing CI %1. Missing or invalid YAML ref: %2", $mid, ref $y || '(empty)' ) ) 
             unless ref $y eq 'HASH';
         $data = { %{ $data || {} }, %{ $y || {} } };   # TODO yaml should be blessed obj?
     }
@@ -366,7 +372,11 @@ sub load {
         }
         # get rel data
         if( my @fields = keys %field_rel_mids ) {
-            my @rel_type_data = DB->BaliMasterRel->search( 
+            my @rel_type_data = ref $rel_data eq 'ARRAY' 
+                ? @$rel_data 
+                : ref $rel_data eq 'HASH' 
+                    ? @{ $rel_data->{$mid} || [] }
+                    : DB->BaliMasterRel->search( 
                         { -or=>[ to_mid=>$mid, from_mid=>$mid ], rel_type => \@fields },
                         { select=> ['from_mid', 'to_mid', 'rel_type' ] } )->hashref->all;
                     
@@ -433,7 +443,7 @@ sub _build_ci_instance_from_rec {
     # instantiate
     my $obj = $ci_class->new( $rec );
     # add the original record to _ci
-    if( $Baseliner::CI::_no_record ) {
+    if( $Baseliner::CI::_no_record ) {   ## TODO change this to $Baseliner::CI::ci_record
         delete $rec->{yaml}; # lots of useless data
     } else {
         delete $rec->{yaml}; # lots of useless data

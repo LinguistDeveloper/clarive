@@ -3,7 +3,7 @@ use Baseliner::Moose;
 use Baseliner::Utils qw(:logging _file _dir);
 use v5.10;
 
-has chunk_size     => qw(is ro lazy 1), default => sub{ 1024 * 1024 }; # 1M
+has chunk_size     => qw(is rw lazy 1), default => sub{ 1024 * 1024 }; # 1M
 has wait_frequency => qw(is rw default 5);
 
 has user   => qw(is rw isa Str);
@@ -44,7 +44,6 @@ has _ebc    => qw(is rw isa Any lazy 1), default=>sub{
 
 with 'Baseliner::Role::CI::Agent';
 
-sub chmod;
 sub error;
 sub rmpath;
 
@@ -54,15 +53,26 @@ method mkpath ( $path ) {
     $self->rc and _fail _loc( 'Could not create remote directory `%1`: %2', $path, $self->output );
 }
 
+method chmod ( $mode, $path ) {
+    $self->execute( \'chmod', \$mode, $path );
+    $self->rc and _fail _loc( 'Could not chmod `%1 %2`: %3', $mode, $path, $self->output );
+}
+
+method chown ( $perms, $path ) {
+    $self->execute( \'chown', \$perms, $path );
+    $self->rc and _fail _loc( 'Could not chown `%1 %2`: %3', $perms, $path, $self->output );
+}
+
 method execute( @cmd ) {
     my $opts = shift @cmd if ref $cmd[0] eq 'HASH';
     if( $opts->{chdir} ) {
-       @cmd = ( \'cd', $opts->{chdir}, \'&&', @cmd );      
+       @cmd = ( \'cd', $opts->{chdir}, \'&&', @cmd == 1 ? \$cmd[0] : @cmd );      
     }
     if( my $user = $self->user ) {
         @cmd = @cmd == 1 ? $cmd[0] : $self->_double_quote_cmd( @cmd ); # join params quoted 
         @cmd = (\'su', \'-', $user, \'-l', \'-c', "@cmd");
     }
+    _debug \@cmd;
     my $res = $self->_execute( @cmd );
     return $self->ret;
 }
@@ -97,6 +107,7 @@ method get_dir( :$local, :$remote, :$group='', :$files=undef, :$user=$self->user
     return $self->tuple;  
 }
 
+# TODO data parameter support
 method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
     $self->_send_file( $local, $remote );
     if( $user ) {
@@ -161,8 +172,8 @@ sub _send_file {
 
     $self->socket->print( $self->encodeCMD("D") . $self->EOL );
 
-    #while (<$fin>) {
     my $chunk;
+    _fail _loc 'Chunk size is zero for agent %1', $self->name unless $self->chunk_size;
     while( sysread $fin, $chunk, $self->chunk_size ) {
         $self->socket->print( $self->encodeDATA($chunk) );
     }

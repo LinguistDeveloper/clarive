@@ -78,7 +78,7 @@ sub master_setup {
       "master",
       "Baseliner::Schema::Baseliner::Result::BaliMaster",
       { "foreign.mid" => "self.mid" },
-      { cascade_delete => 1, on_delete=>'cascade', is_foreign_key_constraint=>1, },
+      { cascade_delete => 1, is_foreign_key_constraint=>1, },
     );
 
     $self->has_many(

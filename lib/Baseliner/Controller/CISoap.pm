@@ -21,6 +21,7 @@ sub ci_soap : Path('/ci-soap') {
     if( -e $f ) {
         _debug( scalar $f->slurp );
 
+        require XML::Compile::SOAP11;
         require XML::Compile::WSDL11;
         require XML::Compile::SOAP::Util;
         require XML::Compile::SOAP::Daemon::CGI;

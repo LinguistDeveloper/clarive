@@ -466,6 +466,12 @@ sub search {
     return @rows;
 }
 
+sub flat {
+    my ($self,$mid)=@_;
+    +{ map { $_->{mkey} => $_->{mvalue_date} // $_->{mvalue}  } 
+        DB->BaliMasterKV->search({ mid=>$mid })->hashref->all }
+}
+
 sub rebuild_index {
     my ($self,%p) = @_;
     my $index_name = $self->index_name;
@@ -498,7 +504,10 @@ sub index_sync {
     my ($self,%p) = @_;
     my $index_name = $self->index_name;
     # this will not be available in Oracle >= 12, then use ctx_ddl.sync_index('index')
-    $self->_dbis->dbh->do(qq{alter index $index_name rebuild parameters ('sync')});
+    eval { $self->_dbis->dbh->do(qq{alter index $index_name rebuild parameters ('sync') online}) };
+    if( $@ ) {
+        _debug _loc "IGNORED ERROR (probably due to double rebuild on index sync): $@";
+    }
 }
 
 sub _dbis { 

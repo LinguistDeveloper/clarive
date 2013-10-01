@@ -38,20 +38,18 @@ Sends file or data over.
     $wa->put_file({ data=>("A" x 10000), remote=>'/tmp/xx' });
 
 =cut
-sub put_file {
-    my ($self, $p ) = ( @_, {} ); 
-    
-    my $local = $p->{local} // $p->{data} or Util->_throw( 'Missing parameter local or data' );
-    my $remote = $p->{remote} or Util->_throw( 'Missing parameter remote' );
+method put_file( :$local=undef, :$remote, :$group='', :$user=$self->user, :$data=undef  ) {
+    defined $local or defined $data or Util->_throw( 'Missing parameter local or data' );
+    $remote or Util->_throw( 'Missing parameter remote' );
     
     my $chunk_size = $self->chunk_size(); 
     my $file_size;
-    if( exists $p->{local} ) {
+    if( defined $local ) {
         my $f = Util->_file( $local ); 
         Util->_fail( Util->_loc( 'Local file `%1` not found', $f) ) unless -e $f;
         $file_size = $f->stat->size;
     } else {
-        $file_size = length( $p->{data} );
+        $file_size = length( $data );
     }
     
     $self->_worker_do( 
@@ -59,7 +57,7 @@ sub put_file {
         start    => sub {
             my ($msg_id) = @_;
             
-            if( exists $p->{local} ) {
+            if( defined $local ) {
                 # send file
                 open my $ff, '<:raw', $local or Util->_throw( "ERROR opening file: $!" );
                 my $chunk;
@@ -74,7 +72,7 @@ sub put_file {
                 # send data
                 for( my $pos=0; $pos<$file_size; $pos+=$chunk_size ) {
                     my $list_len = $self->db->rpush( "queue:$msg_id:file", 
-                        MIME::Base64::encode_base64( substr($p->{data},$pos,$chunk_size) ) );
+                        MIME::Base64::encode_base64( substr($data,$pos,$chunk_size) ) );
                 }
             }
         }
@@ -152,12 +150,7 @@ sub put_dir {
     1;
 }
 
-sub get_file {
-    my ($self,$p) = @_;
-    
-    my $local = $p->{local} or Util->_throw( 'Missing parameter local' );
-    my $remote = $p->{remote} or Util->_throw( 'Missing parameter remote' );
-    
+method get_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
     $self->_worker_do( get_file => { filepath=>$remote },
         start => sub {
             my ($msg_id) = @_;
@@ -311,7 +304,7 @@ sub _worker_do {
 
     # my callbacks are setup, tell agent to fetch file
     $r->publish( "queue:$id:$cmd:$msg_id", 
-       ref $cmd_data ? Util->_to_json( $cmd_data ) : $cmd_data
+       ref $cmd_data ? Util->_to_json( Util->_damn($cmd_data) ) : $cmd_data
     );
 
     # wait for done

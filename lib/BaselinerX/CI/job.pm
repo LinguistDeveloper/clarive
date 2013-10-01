@@ -39,7 +39,12 @@ has job_dir            => qw(is rw isa Any lazy 1), default => sub {
 has id_rule      => qw(is rw isa Any ), default=>sub {
     my $self = shift;
     my $type = $self->job_type || 'promote';
-    DB->BaliRule->search({ rule_when=>$type }, { order_by=>{-desc=>'id'} })->first->id  
+    my $row = DB->BaliRule->search({ rule_when=>$type }, { order_by=>{-desc=>'id'} })->first;
+    if( $row ) {
+        return $row->id;    
+    } else {
+        _fail _loc 'Could not find a default %1 job chain rule', $type;
+    }
 };
 
 has_cis 'releases';
