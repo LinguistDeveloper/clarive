@@ -129,13 +129,13 @@ sub run_ship {
             );
             if( length $chown ) {
                 _debug "chown $chown $remote";
-                $agent->chown( $chmod, $remote );
-                $log->error( _loc('*%1* Error doing a chown `%2` to file `%3`: %4', $stmt, $chown,$remote, $agent->output ), $agent->tuple ) if $agent->rc && $agent->rc!=512;
+                $agent->chown( $chmod, "$remote" );
+                $log->warn( _loc('*%1* Error doing a chown `%2` to file `%3`: %4', $stmt, $chown,$remote, $agent->output ), $agent->tuple_str ) if $agent->rc && $agent->rc!=512;
             }
             if( length $chmod ) {
                 _debug "chmod $chmod $remote";
-                $agent->chmod( $chmod, $remote );
-                $log->error( _loc('*%1* Error doing a chmod `%2` to file `%3`: %4', $stmt, $chmod,$remote, $agent->output ), $agent->tuple ) if $agent->rc && $agent->rc!=512;
+                $agent->chmod( $chmod, "$remote" );
+                $log->warn( _loc('*%1* Error doing a chmod `%2` to file `%3`: %4', $stmt, $chmod,$remote, $agent->output ), $agent->tuple_str ) if $agent->rc && $agent->rc!=512;
             }
         }
         $log->warn( _loc( 'Could not find any file locally to ship to `%1`', $server_str ), $config )
@@ -163,10 +163,10 @@ sub run_retrieve {
         _debug $stmt . " - Connecting to server " . $server_str;
         my $agent = $server->connect( user=>$user );
         $log->info( _loc( '*%1* Retrieving file `%2` to `%3`', $stmt, $local, $server_str.':'.$remote ) );
-        $agent->get_file({ 
+        $agent->get_file(
             local  => $local,
             remote => $remote,
-        });
+        );
     }
 
     return 1;

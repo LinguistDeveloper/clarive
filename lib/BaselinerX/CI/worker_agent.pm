@@ -150,12 +150,7 @@ sub put_dir {
     1;
 }
 
-sub get_file {
-    my ($self,$p) = @_;
-    
-    my $local = $p->{local} or Util->_throw( 'Missing parameter local' );
-    my $remote = $p->{remote} or Util->_throw( 'Missing parameter remote' );
-    
+method get_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
     $self->_worker_do( get_file => { filepath=>$remote },
         start => sub {
             my ($msg_id) = @_;
@@ -309,7 +304,7 @@ sub _worker_do {
 
     # my callbacks are setup, tell agent to fetch file
     $r->publish( "queue:$id:$cmd:$msg_id", 
-       ref $cmd_data ? Util->_to_json( $cmd_data ) : $cmd_data
+       ref $cmd_data ? Util->_to_json( Util->_damn($cmd_data) ) : $cmd_data
     );
 
     # wait for done
