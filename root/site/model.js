@@ -1767,9 +1767,11 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
         };
         var portlet_obj = column_obj.add( portlet );
         portlet_obj.change_status = function(new_status, cb){
-            Baseliner.ajaxEval( '/topic/change_status', { _handle_res: true, mid: portlet_obj.mid, old_status: portlet_obj.id_status, new_status: new_status }, function(res){
-                if( Ext.isFunction(cb) ) cb(res);
-            });
+            if ( new_status != portlet_obj.id_status ){                
+                Baseliner.ajaxEval( '/topic/change_status', { _handle_res: true, mid: portlet_obj.mid, old_status: portlet_obj.id_status, new_status: new_status }, function(res){
+                    if( Ext.isFunction(cb) ) cb(res);
+                });
+            }
         };
         return portlet_obj;
         //column_obj.doLayout();
