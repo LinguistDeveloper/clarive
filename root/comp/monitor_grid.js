@@ -643,7 +643,7 @@
     Baseliner.request_approval = function(mid){
     
         Baseliner.ci_call( mid, 'contract', { }, function(res){
-            console.log( res );
+            //console.log( res );
             var btn_approve = new Ext.Button({
                 text: _('Approve'),
                 icon: '/static/images/yes.png',

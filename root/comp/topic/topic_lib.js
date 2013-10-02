@@ -847,13 +847,13 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
     },
     detail_reload : function(){
         var self = this;
-        self.detail.load({
-            url: '/topic/view',
-            params: { topic_mid: self.topic_mid, ii: self.ii, html: 1, categoryId: self.new_category_id, topic_child_data : true },
-            scripts: true,
-            callback: function(x, success, res){ 
+        // using jquery cos the self.detail.load() method callback is not consistent in IE8
+        $( self.detail.body.dom ).load( '/topic/view', 
+            { topic_mid: self.topic_mid, ii: self.ii, html: 1, categoryId: self.new_category_id, topic_child_data : true },
+            function( responseText, textStatus, req ){
+                var success = textStatus == 'success';
                 if( !success ) {
-                    self.detail.update( res.responseText );
+                    self.detail.update( responseText );
                     var layout = self.getLayout().setActiveItem( self.detail );
                 } else {
                     // loading HTML has finished
@@ -866,8 +866,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     self.detail.body.setStyle('width', null);
                     self.detail.body.setStyle('height', null);
                 }
-            }
-        });
+            });
         self.detail.body.setStyle('overflow', 'auto');
     },
     save_topic : function(opts){

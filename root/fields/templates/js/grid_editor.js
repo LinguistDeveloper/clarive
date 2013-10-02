@@ -25,7 +25,7 @@ params:
         columns: meta.columns,
         viewConfig: {
             forceFit: meta.forceFit || true
-        },
+        }
     });
 	return [
         Baseliner.field_label_top( meta.name_field, meta.hidden ),

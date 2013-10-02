@@ -11,7 +11,7 @@
     my $iid = "div-" . _nowstamp;
     $c->stash->{job_types} = [
         { name=>'job_type', inputValue=> 'promote', boxLabel => _loc('Promote'), checked=>\1 },
-        { name=>'job_type', inputValue=> 'demote', boxLabel => _loc('Demote') },
+        { name=>'job_type', inputValue=> 'demote', boxLabel => _loc('Demote') }
         ];
     my $now = _dt();
     my $date_format = config_value('calendar_date_format') || '%Y-%m-%d';
