@@ -2296,13 +2296,18 @@ Baseliner.run_service = function(params, service){
 // Simple JavaScript Templating
 // John Resig - http://ejohn.org/ - MIT Licensed
 // rgo: heredoc quote fix
-Function.prototype.heredoc = function(s){ return this.toString().slice(14,-3) };
+Baseliner.HEREDOC_SLICE_START = Ext.isSafari ? 15 : 14;
+Baseliner.HEREDOC_SLICE_END   = Ext.isSafari ? -4 : -3;
+Function.prototype.heredoc = function(s){ return this.toString().slice(Baseliner.HEREDOC_SLICE_START,Baseliner.HEREDOC_SLICE_END) };
 Function.prototype.tmpl = function(data){ return Baseliner.tmpl(this.heredoc(),data) };
+String.prototype.tmpl = function(data){ return Baseliner.tmpl(this+"",data) };
 Baseliner.tmpl_cache = {};
 Baseliner.tmpl = function (str, data){
     // Figure out if we're getting a template, or if we need to
     // load the template - and be sure to cache the result.
-    var he = ['function(){/*', '*/}.toString().slice(14,-3)']; 
+    var st = Baseliner.HEREDOC_SLICE_START;
+    var en = Baseliner.HEREDOC_SLICE_END;
+    var he = ['function(){/*', '*/}.toString().slice('+st+','+en+')']; 
     var fn = !/\W/.test(str) ?
       Baseliner.tmpl_cache[str] = Baseliner.tmpl_cache[str] ||
         Baseliner.tmpl(document.getElementById(str).innerHTML) :
