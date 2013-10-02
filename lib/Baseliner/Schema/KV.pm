@@ -17,9 +17,12 @@ use Moose;
 use Try::Tiny;
 use Baseliner::Utils qw(_fail _loc _error _debug _throw _log _array _dump);
 
-has index_name => ( is=>'ro', isa=>'Str', default=>'bali_master_kv_full' );
-has index_sync_type => ( is=>'ro', isa=>'Str', default=>'manual' );
-has rs => ( is=>'ro', lazy=>1, default=>sub{ DB->BaliMasterKV } );
+has index_name      => ( is => 'ro', isa  => 'Str', default => 'bali_master_kv_full' );
+has index_options   => ( is => 'rw', isa  => 'Maybe[Str]', default => '' );
+has no_sync         => ( is => 'rw', isa  => 'Bool', default => 0 );
+has sync_mode       => ( is => 'rw', isa  => 'Maybe[Str]', default => 'default' );  # default, defer, queue
+has index_sync_type => ( is => 'ro', isa  => 'Str', default => 'manual' );
+has rs              => ( is => 'ro', lazy => 1,     default => sub { DB->BaliMasterKV } );
 
 sub find {
     my ($self,$mid) = @_;
@@ -61,8 +64,6 @@ sub save {
     return @flat if $opts->{flat_only};
     my @tuple_status;
     my $hint = $opts->{hint} // {};
-    $opts->{defer_sync} //= $Baseliner::CI::_defer_sync;
-    $opts->{no_sync} //= $Baseliner::CI::_no_sync;
     use DBD::Oracle qw/:ora_types/;
     my @flat_final;  # after modifications
     try {
@@ -96,16 +97,12 @@ sub save {
             $stmt->execute_array({ ArrayTupleStatus => \@tuple_status }, \@mid, \@mtype, \@mpos, \@mkey, \@mvalue_num, \@mvalue_date, \@mvalue  );
 
             # now reindex
-            $self->index_sync unless $opts->{no_sync} || $opts->{defer_sync};
+            $self->index_sync( no_sync=>$opts->{no_sync}, sync_mode=>$opts->{sync_mode} );
         });
     } catch {
         my $err = shift;
         Util->_throw( Util->_loc('Error inserting into master kv: %1. Doc: %2', $err, Util->_dump($doc) ) );
     };
-    if( my $tms = $opts->{defer_sync} ) {
-        #Baseliner->app->enqueue( sub{ mdb->index_sync } );
-        Util->async_request( '/ci/index_sync' );
-    }
     return @flat_final; #@tuple_status;
 }
 
@@ -502,11 +499,23 @@ sub rebuild_index {
 
 sub index_sync {
     my ($self,%p) = @_;
+    # no_sync?
+    return if ( $p{no_sync} // $Baseliner::CI::_no_sync // $self->no_sync );  
+    # defer?
+    my $sync_mode = $p{sync_mode} // $Baseliner::CI::_sync_mode // $self->sync_mode;
+    if( $sync_mode eq 'defer' ) {
+        Util->async_request( '/ci/index_sync' );
+        return;
+    }
+    # TODO queue mode
+    #Baseliner->app->enqueue( sub{ mdb->index_sync } );
+    
     my $index_name = $self->index_name;
+    my $index_options = $self->index_options // '';   # empty str or 'online'
     # this will not be available in Oracle >= 12, then use ctx_ddl.sync_index('index')
-    eval { $self->_dbis->dbh->do(qq{alter index $index_name rebuild parameters ('sync') online}) };
+    eval { $self->_dbis->dbh->do(qq{alter index $index_name rebuild parameters ('sync') $index_options}) };
     if( $@ ) {
-        _debug _loc "IGNORED ERROR (probably due to double rebuild on index sync): $@";
+        _debug _loc "IGNORED KV INDEX ERROR (due to simultaneous alters?): $@" if $ENV{BASELINER_DEBUG} > 1 ;
     }
 }
 
