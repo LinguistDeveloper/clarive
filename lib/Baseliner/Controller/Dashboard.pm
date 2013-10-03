@@ -1051,7 +1051,7 @@ sub topics_by_category: Local{
 
     if ( !Baseliner->model("Permissions")->is_root( $user ) ) {
         my @user_project_ids = Baseliner->model("Permissions")->user_projects_ids( username => $c->username );
-        $in_projects = "AND EXISTS ( SELECT 1 FROM BALI_MASTER_REL WHERE MR.FROM_MID = TP.MID AND MR.REL_TYPE = 'topic_project' AND MR.TO_MID IN (".join ",", @user_project_ids.") )";  
+        $in_projects = "AND EXISTS ( SELECT 1 FROM BALI_MASTER_REL MR WHERE MR.FROM_MID = TP.MID AND MR.REL_TYPE = 'topic_project' AND MR.TO_MID IN (".join ",", @user_project_ids.") )";  
     };
         
     $SQL = "SELECT COUNT(*) AS TOTAL, C.NAME AS CATEGORY, C.COLOR, TP.ID_CATEGORY 
@@ -1097,7 +1097,7 @@ sub topics_open_by_category: Local{
 
     if ( !Baseliner->model("Permissions")->is_root( $user ) ) {
         my @user_project_ids = Baseliner->model("Permissions")->user_projects_ids( username => $c->username );
-        $in_projects = "AND EXISTS ( SELECT 1 FROM BALI_MASTER_REL WHERE MR.FROM_MID = TP.MID AND MR.REL_TYPE = 'topic_project' AND MR.TO_MID IN (".join ",", @user_project_ids.") )";  
+        $in_projects = "AND EXISTS ( SELECT 1 FROM BALI_MASTER_REL MR WHERE MR.FROM_MID = TP.MID AND MR.REL_TYPE = 'topic_project' AND MR.TO_MID IN (".join ",", @user_project_ids.") )";  
     };
         
     $SQL = "SELECT COUNT(*) AS TOTAL, C.NAME AS CATEGORY, C.COLOR, TP.ID_CATEGORY 
