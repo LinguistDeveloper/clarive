@@ -89,7 +89,7 @@ Ext.onReady(function(){
              },
              { text: _('Permissions'), handler: function(){ Baseliner.user_actions(); } },
              // { text=>_('Preferences'), handler: function(){ Baseliner.preferences(); } },
-             { text: _('Preferences'), icon: '/user/avatar/image.png', handler: function(){ Baseliner.change_avatar(); } },
+             { text: _('Preferences'), icon: '/user/avatar/image.png', handler: function(){ Prefs.open_editor(); } },
              { text: _('Logout') , handler: function(){ Baseliner.logout(); }, index: 99, icon: '/static/images/logout.gif' }
         ];
         
@@ -108,7 +108,7 @@ Ext.onReady(function(){
     Baseliner.main_toolbar = new Ext.Toolbar({
         id: 'mainMenu',
         region: 'north',
-        height: Prefs.site.toolbar_height,
+        height: Prefs.toolbar_height,
         items: tbar_items 
     });
 
