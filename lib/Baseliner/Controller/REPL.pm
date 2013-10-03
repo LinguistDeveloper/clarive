@@ -88,6 +88,7 @@ sub eval : Local {
     my ( $stdout, $stderr );
 
     require Capture::Tiny;
+    local $ENV{BASELINER_LOGCOLOR} = 0;
     _log "================================ REPL START ==========================\n";
     ($stdout, $stderr) = Capture::Tiny::tee(
         sub {
