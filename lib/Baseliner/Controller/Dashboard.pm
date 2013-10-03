@@ -1051,7 +1051,6 @@ sub topics_by_category: Local{
 
     if ( !Baseliner->model("Permissions")->is_root( $user ) ) {
         my @user_project_ids = Baseliner->model("Permissions")->user_projects_ids( username => $user );
-        _log join ",", @user_project_ids;
         my $in = join ",", @user_project_ids;
         $in_projects = "AND EXISTS ( SELECT 1 
                                      FROM BALI_MASTER_REL MR 
@@ -1104,7 +1103,6 @@ sub topics_open_by_category: Local{
 
     if ( !Baseliner->model("Permissions")->is_root( $user ) ) {
         my @user_project_ids = Baseliner->model("Permissions")->user_projects_ids( username => $user );
-        _log join ",", @user_project_ids;
         my $in = join ",", @user_project_ids;
         $in_projects = "AND EXISTS ( SELECT 1 
                                      FROM BALI_MASTER_REL MR 
