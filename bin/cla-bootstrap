@@ -363,6 +363,7 @@ MooseX::ClassAttribute
 MooseX::MethodAttributes
 Mouse
 Net::Daemon
+Net::HTTP::NB
 Net::OpenSSH
 Net::SCP
 Net::SSH
