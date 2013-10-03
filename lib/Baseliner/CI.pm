@@ -15,7 +15,7 @@ our $scope = {};
 
 =cut
 
-sub new {
+sub find {
     my $class = shift;
     my %args;
     if( @_ == 0 ) {
@@ -68,6 +68,8 @@ sub new {
         return Baseliner::Role::CI->_build_ci_instance_from_rec( $rec );
     }
 }
+
+*new = \&find;
 
 1;
 
