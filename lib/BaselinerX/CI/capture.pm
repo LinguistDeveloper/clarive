@@ -6,9 +6,10 @@ with 'Baseliner::Role::CI::Parser';
 sub collection { 'capture' }
 sub has_bl { 0 }
 
-has regex          => qw(is rw isa Str);
-has regex_options    => qw(is rw isa Str default xmsi);
-has timeout          => qw(is rw isa Num default 10);
+has regex         => qw(is rw isa Str);
+has regex_options => qw(is rw isa Str default xmsi);
+has timeout       => qw(is rw isa Num default 10);
+has parse_type    => qw(is rw isa Str default Source);
 
 #service 'parse' => 'Parse a file' => \&parse;
 
@@ -18,9 +19,11 @@ sub parse {
     my $source = $item->source; 
     my $tmout = $self->timeout;
     my $regex = $self->regex; 
-    $regex = eval 'qr/' . $regex . '/'. $self->regex_options;
-    Util->_fail( 'Missing regex' ) unless $regex;
+    $regex = eval( 'qr{' . $regex . '}'. $self->regex_options );
+    Util->_fail( 'Missing or invalid regex: %1', $@ ) unless $regex;
 
+    my $path_mode = $self->parse_type =~ /Path/i;
+    $source = "$file" if $path_mode;
     # index line numbers
     my @newline;
     my $i=0;
@@ -35,7 +38,7 @@ sub parse {
     my @found;
     while( $source =~ /$regex/g ) {
         my $lin = [ map { $_->{lin} } grep { ( $_->{from} <= $-[0] ) && ( $+[0] <= $_->{to} ) } @newline ]->[0];
-        push @found => { %+, line=>$lin } if %+;
+        push @found => { %+, line=>($lin//0) } if %+;
         while( my($k,$v) = each %+ ) {
             $tree{ $k } = [] unless exists $tree{$k}; 
             push @{ $tree{ $k } }, $v;
