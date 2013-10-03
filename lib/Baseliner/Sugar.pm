@@ -19,7 +19,6 @@ use Exporter::Tidy default => [qw/
     config_value
     bali_rs
     repo
-    kv
     relation
     user_get
     ns_get
@@ -46,7 +45,6 @@ sub config_get { Baseliner->model('ConfigStore')->get(@_) }
 sub config_value { Baseliner->model('ConfigStore')->get($_[0], value=>1) }
 
 sub repo { Baseliner->model('Repository') }
-sub kv { Baseliner->model('KV') }
 #sub ns { Baseliner->model('Repository') }
 
 sub bali_rs { Baseliner->model('Baseliner::Bali' . shift ) }
