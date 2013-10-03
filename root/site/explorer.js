@@ -581,7 +581,8 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             pressed: false,
             allowDepress: false,
             enableToggle: true,
-            hidden: ! Baseliner.user_can_workspace,
+            //hidden: ! Baseliner.user_can_workspace,
+            hidden: true, // XXX workspaces not ready for primetime
             refresh_all: function(){ if( self.$tree_workspaces ) self.$tree_workspaces.refresh_all() },
             listeners: Baseliner.gen_btn_listener()
         });
@@ -640,8 +641,8 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 { text: _('Add Favorite Folder'), icon: '/static/images/icons/favorite.png', handler: add_to_fav_folder }
             ]
             // menu: [
-            //     { text: _('Add Favorite Folder'), icon: '/static/images/icons/favorite.png', handler: add_to_fav_folder },
-            //     { text: _('Add Workspace'), handler: add_workspace }
+            //     { text: _('Add Workspace'), icon: '/static/images/icons/workspaces.png', handler: add_workspace },
+            //     { text: _('Add Favorite Folder'), icon: '/static/images/icons/favorite.png', handler: add_to_fav_folder }
             // ]
         });
 

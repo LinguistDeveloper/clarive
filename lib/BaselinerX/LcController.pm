@@ -813,13 +813,15 @@ sub tree_favorites : Local {
     my $p = $c->req->params;
     my @tree;
     my $provider;
-    if( my $id_folder = $p->{id_folder} ) {
-        $provider = join '.', 'lifecycle.favorites' , $c->username , $id_folder;
-    } else {
-        $provider = 'lifecycle.favorites.' . $c->username;
-    }
-    my $favs = [ map { $_->kv } sort { $a->{ns} <=> $b->{ns} }
-        kv->find( provider => $provider )->all ];
+    my $user = ci->find( name=>$c->username ); 
+    my $root = length $p->{id_folder} 
+        ? $user->favorites->{ $p->{id_folder} }{contents}
+        : $user->favorites;
+   
+    $root //= {};
+    
+    my $favs = [ map { $root->{$_} } sort { $a <=> $b }
+        keys %$root ];
 
     for my $node ( @$favs ) {
         ! $node->{menu} and delete $node->{menu}; # otherwise menus don't work
@@ -835,105 +837,16 @@ sub tree_favorite_folder : Local {
     $c->forward( 'View::JSON' );
 }
 
-sub agent_ftp : Local {
-    my ($self,$c) = @_;
-    my $p = $c->req->params;
-    my $dir = $p->{dir};
-
-    # TODO : from user workspace repo
-    my ($user, $pass, $host) = ( 'IBMUSER', 'SYS1', '192.168.200.1' );
-
-    my @tree;
-
-    my @path;
-    push @path, $p->{curr} // '//' . $user;
-    push @path, $dir if $dir && $dir ne '/';
-    my $path = join '.', @path;
-    _log "FTP path $path";
-
-    use Net::FTP; 
-    my $ftp=Net::FTP->new( $host );
-    $ftp->login( $user, $pass );
-    $ftp->cwd( $path ); 
-    my $k = 0;
-    for my $i ( $ftp->dir ) {
-        next if $k++ == 0;
-        my @f = split /[\s|\t]+/, $i;
-        
-        next if ($f[0] eq 'Migrated');
-
-        my ($vol, $unit, $ref, $ext, $used, $fmt, $lrecl, $blksz, $dsorg, $dsname ) = @f;
-        _log "FFFFFFFFFFFFFF=" . join ',', @f;
-        
-        my $is_leaf = @f <= 5 || $unit ne '3390' ;
-        my $text = @f < 2 || $unit ne '3390' ? $vol : ( @f <= 5 ? $f[4] : $dsname );
-
-        my $node = {
-            text => $text, 
-            url => 'lifecycle/agent_ftp',
-            data => { curr=>$path, dir=>$text },
-            leaf => $is_leaf,
-        };
-        if( $is_leaf ) {
-            $node->{data}{click} = {
-                url      => '/comp/lifecycle/view_file.js',
-                repo_dir => $node->{repo_dir},
-                type     => 'comp',
-                icon     => '/static/images/icons/page.gif',
-                title    => $text,
-            };
-        }
-        push @tree, $node;
-    }
-    $c->stash->{json} = \@tree;
-    $c->forward( 'View::JSON' );
-}
-
-sub view_file : Local {
-    my ($self, $c) = @_;
-    my $p = $c->req->params;
-    my $path = $p->{curr};
-    my $remote = $p->{dir};
-    my $local = _tmp_file;
-
-    # TODO : from user workspace repo
-    my ($user, $pass, $host) = ( 'IBMUSER', 'SYS1', '192.168.200.1' );
-
-    use Net::FTP; 
-    my $ftp=Net::FTP->new( $host );
-    $ftp->login( $user, $pass );
-    $ftp->cwd( $path );
-    $ftp->get( $remote, $local );
-    my $data = _file( $local )->slurp;
-    unlink $local;
-    $c->stash->{json} = { data=>$data };
-    $c->forward( 'View::JSON' );
-}
-
-sub list_workspaces : Private {
-    my ($self, %args) = @_;
-
-    +{
-        text => 'HERCULES:IBMUSER',
-        leaf => \0,
-        url  => '/lifecycle/agent_ftp',
-        data => { dir=>'/' },
-        icon => '/static/images/icons/workspace.png',
-        expandable => \1,
-    };
-}
-
 sub tree_workspaces : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
     my @tree;
-    my $wks = [ map { $_->kv } sort { $a->{ns} <=> $b->{ns} }
-        kv->find( provider => 'lifecycle.workspaces.' . $c->username )->all ];
-
-    # XXX
-    push @tree, $self->list_workspaces;
-
-    for my $node ( @$wks ) {
+    my $user = ci->find( name=>$c->username ); 
+    my $wks = $user->workspaces;
+    for my $node ( map {$wks->{$_}} sort { $a<=>$b } keys %{$wks||{}} ) {
+        ! $node->{menu} and delete $node->{menu}; # otherwise menus don't work
+        $node->{text} //= $node->{name};
+        $node->{icon} //= '/static/images/icons/workspaces.png';
         push @tree, $node;
     }
     $c->stash->{json} = \@tree;
@@ -943,20 +856,21 @@ sub favorite_add : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
     $c->stash->{json} = try {
-        # create the id for the user
-        my $domain = 'lifecycle.favorites.' . $c->username;
+        # create the favorite id 
         my $id = time . '-' .  int rand(9999);
         # delete empty ones
         $p->{$_} eq 'null' and delete $p->{$_} for qw/data menu/;
         # if its a folder
         if( length $p->{id_folder} ) {
-           $p->{id_folder} = _name_to_id delete $p->{id_folder};
+           $p->{id_folder} = $id; #_name_to_id delete $p->{id_folder};
            $p->{url} //= '/lifecycle/tree_favorite_folder?id_folder=' . $p->{id_folder};
         }
         # decode data structures
         defined $p->{$_} and $p->{$_} = _decode_json( $p->{$_} ) for qw/data menu/;
         $p->{id_favorite} = $id;
-        kv->set( ns=>"$domain/$id", data=>$p );
+        my $user = ci->find( name=>$c->username ); 
+        $user->favorites->{$id} = $p; 
+        $user->save;
         { success=>\1, msg=>_loc("Favorite added ok"), id_folder => $p->{id_folder} }
     } catch {
         { success=>\0, msg=>shift() }
@@ -968,15 +882,15 @@ sub favorite_del : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
     $c->stash->{json} = try {
-        my $domain = 'lifecycle.favorites.' . $c->username;
-        $domain .= '.' . $p->{favorite_folder} if length $p->{favorite_folder};
-        my $ns = "$domain/" . $p->{id} ;
-        # delete children if folder?
-        if( $p->{id_folder} ) {
-            map { kv->delete( ns => $_->{ns} ) } kv->find( provider=>"$domain.$p->{id_folder}" );
-        }
+        my $user = ci->find( name=>$c->username ); 
+        my $favs = $user->favorites;
         # delete node
-        kv->delete( ns=>$ns ) if $p->{id};
+        my $id = $p->{id};
+        if( ! delete $favs->{$id} ) {
+            # search 
+            delete $favs->{$_}{contents}{$id} for keys %$favs;  
+        }
+        $user->save;
         { success=>\1, msg=>_loc("Favorite removed ok") }
     } catch {
         { success=>\0, msg=>shift() }
@@ -989,13 +903,12 @@ sub favorite_rename : Local {
     my $p = $c->req->params;
     $c->stash->{json} = try {
         _fail _loc "Invalid name" unless length $p->{text};
-        my $domain = 'lifecycle.favorites.' . $c->username;
-        $domain .= '.' . $p->{favorite_folder} if length $p->{favorite_folder};
+        
         # TODO rename id_folder in case it's a folder?
-        my $ns = "$domain/" . $p->{id} ;
-        my $d = kv->get( ns=>$ns );
+        my $user = ci->find( name=>$c->username ); 
+        my $d = $user->favorites->{ $p->{id} };
         $d->{text} = $p->{text};
-        kv->set( ns=>$ns, data=>$d );
+        $user->save;
         { success=>\1, msg=>_loc("Favorite renamed ok") }
     } catch {
         { success=>\0, msg=>shift() }
@@ -1007,20 +920,17 @@ sub favorite_add_to_folder : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
     $c->stash->{json} = try {
-        my $from_ns = my $to_ns = 'lifecycle.favorites.' . $c->username;
-        $from_ns .= '.'.$p->{favorite_folder} if length $p->{favorite_folder};
-        $from_ns .= '/' . $p->{id_favorite};
         # get data
-        my $d = kv->get( ns => $from_ns ); 
-        _fail _loc "Not found: %1", $from_ns unless defined $d; 
+        my $user = ci->find( name=>$c->username ); 
+        my $d = $user->favorites->{ $p->{id_folder} }; 
+        _fail _loc "Not found: %1", $p->{id_folder} unless defined $d; 
+        $d->{contents} //= {};
         # delete old
-        kv->delete( ns => $from_ns );
+        my $fav = delete $user->favorites->{ $p->{id_favorite} }; 
         # set new 
         $d->{favorite_folder} = $p->{id_folder};
-        $to_ns .= '.' . $p->{id_folder};
-        $to_ns .= '/' . $p->{id_favorite};
-        _debug "TO_NS $to_ns";
-        kv->set( ns => $to_ns, data=>$d );
+        $d->{contents}{ $p->{id_favorite} } = $fav; 
+        $user->save;
         { success=>\1, msg=>_loc("Favorite moved ok") }
     } catch {
         { success=>\0, msg=>shift() }

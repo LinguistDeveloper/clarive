@@ -2,6 +2,10 @@ package BaselinerX::CI::user;
 use Baseliner::Moose;
 with 'Baseliner::Role::CI::Internal';
 
+has favorites     => qw(is rw isa HashRef), default=>sub{ +{} };
+has workspaces    => qw(is rw isa HashRef), default=>sub{ +{} };
+has prefs         => qw(is rw isa HashRef), default=>sub{ +{} };
+
 sub icon { '/static/images/icons/user.gif' }
 
 sub has_description { 0 }
@@ -47,4 +51,55 @@ around delete => sub {
     return $cnt;
 };
     
+sub workspace_create {
+    my ($self,$p) = @_;
+    # create the favorite id 
+    my $id = time . '-' .  int rand(9999);
+    # delete empty ones
+    $p->{$_} eq 'null' and delete $p->{$_} for qw/data menu/;
+    # decode data structures
+    $p->{id_workspace} = $id;
+    if( $p->{password} ) {
+        my $key = Baseliner->config->{decrypt_key} // Baseliner->config->{dec_key};
+        die "Error: missing 'decrypt_key' config parameter" unless length $key;
+        my $b = Crypt::Blowfish::Mod->new( $key );
+        $p->{password} = $b->encrypt( $p->{password} // '' ); 
+    }
+    my $user = ci->find( name=>$p->{username} ); 
+    $user->workspaces->{$id} = $p; 
+    $user->save;
+    { id_workspace => $p->{id_workspace} }
+}
+
+sub prefs_load {
+    my ($self,$p)=@_;
+    $self = ci->find( name=>$p->{username} ) unless ref $self;
+    my $prefs = $self->prefs;
+    $prefs;
+}
+
+sub prefs_save {
+    my ($self,$p)=@_;
+    $self = ci->find( name=>$p->{username} ) unless ref $self;
+    my $prefs = +{ %{ $self->prefs }, %{ $p->{prefs} } };
+    $self->prefs( $prefs );
+    $self->save;
+    $prefs;
+}
+
 1;
+
+__END__
+
+            username: '<% $c->username %>',
+            language: '<% [ _array( $c->languages ) ]->[0] %>',
+            logo_file: '<% $c->config->{logo_file} %>',
+            logo_filename: '<% $c->config->{logo_filename} || "logo.jpg" %>',
+            site: <% _to_json({ map { $_ => $to_bool->( $c->config->{site}->{$_} ) } keys %{ $c->config->{site} || {} } }) %>,
+            toolbar_height: <% $c->config->{toolbar_height} // 28 %>,
+            menus: [ <% join ',', _array $c->stash->{menus} %> ],
+            stash: <% _to_json({
+                        map { $_ => $to_bool->( $c->stash->{$_} ) }
+                        qw/site_raw can_menu can_change_password can_lifecycle can_surrogate portlets tab_list alert theme_dir/
+                    })
+                %>
