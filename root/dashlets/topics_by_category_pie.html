@@ -38,14 +38,15 @@ html: /dashlets/topics_by_category_pie.html
                 category_id: category_id,
                 pie: {
                     show: true,
-                    radius: 1,
+                    radius: 0.9,
+                    tilt: 0.7,
                     label: {
                         show: true,
                         radius: 3/4,
                         formatter: function(label, series){
                             return '<div style="font-size:8pt;text-align:center;padding:2px;color:white;">'+Math.round(series.percent)+'%</div>';
                         },
-                        background: { opacity: 0.5 }
+                        background: { opacity: 0 }
                     }
                 }
             },
