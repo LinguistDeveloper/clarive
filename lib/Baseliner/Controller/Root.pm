@@ -40,6 +40,9 @@ sub begin : Private {
     $c->res->headers->header( Expires => 0 );
 
     my $content_type = $c->req->content_type;
+    
+    # cleanup 
+    delete $c->req->params->{_login_count}; # used by tabfu to control attempts
 
     # process json data, if any
     if( $content_type eq 'application/json' ) {
