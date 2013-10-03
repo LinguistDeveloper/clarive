@@ -906,6 +906,7 @@ Returns all CIs of a given role class:
 =cut
 sub all_cis {
     my ($class,%p) = @_;
+    $class = ref $class if ref $class;
     my @cis;
     for my $pkg ( Util->packages_that_do( $class ) ) {
         my $coll = $pkg->collection;

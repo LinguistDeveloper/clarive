@@ -1218,13 +1218,15 @@ sub default : Path Args(2) {
         if( ref $ret eq 'HASH' && Scalar::Util::blessed($ret) ) {
             Util->_unbless( $ret );
             $c->stash->{json} = $ret;
+            $c->stash->{json}{success} //= \1;
         } elsif( ref $ret eq 'ARRAY' ) {
-            Util->_unbless( $ret );
-            $c->stash->{json} = { data=> $ret };
+            #Util->_unbless( $ret );
+            $c->stash->{json} = $ret;
         } else {
             $c->stash->{json} = { data => $ret };
+            $c->stash->{json}{success} //= \1;
+            $c->stash->{json}{msg} = $ret->{msg} if ref $ret eq 'HASH' && $ret->{msg};
         }
-        $c->stash->{json}{success} //= \1;
     } catch {
         my $err = shift;
         $c->stash->{json} = { msg=>"$err", success=>\0 }; 
