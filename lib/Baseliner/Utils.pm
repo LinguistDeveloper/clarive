@@ -1543,8 +1543,8 @@ sub async_request {
     my $host = $cf->{web_queue} // $ENV{BALI_WEB_QUEUE};
     $host //= $cf->{web_host} && $cf->{web_port} 
         ? sprintf('%s:%s', $cf->{web_host}, $cf->{web_port} ) 
-        : _throw(_loc("Missing or invalid queue configuration: either configure web_queue to 'host:port', or web_host and web_port"));
-    _debug( $host );
+        : _throw(_loc("async_request: missing or invalid queue configuration: either configure web_queue to 'host:port', or web_host and web_port"));
+        
     my $s = Net::HTTP::NB->new( Host=>$host ) or _throw $!;
     my %headers = map { $_ => $request->header( $_ ) } $request->{_headers}->header_field_names;
     # create run token, put it in headers, put it in session
