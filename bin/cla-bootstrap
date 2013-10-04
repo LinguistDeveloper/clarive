@@ -42,8 +42,11 @@ $| = 1;
 my $data = join '', <DATA>;
 my ($modules,$cpanm) = split /@@@/, $data;
 
-our $llib = $ENV{CLARIVE_BASE} . '/local';
-say "CLARIVE_LOCAL_LIB_DIR=$llib (\$CLARIVE_BASE/local)";
+our $llib = $opts{'-p'} ? '' : ( $opts{'-l'} // $ENV{CLARIVE_BASE} . '/local' );
+$llib 
+   ? say "CLARIVE_LOCAL_LIB_DIR=$llib (\$CLARIVE_BASE/local)"
+   : say "NO LOCAL-LIB. INSTALLING TO PERL DEFAULT";
+our %llib;
 
 if( $opts{'-h'} ) {
     usage() and die "\n";
@@ -75,7 +78,7 @@ say "Bootstraping this bootstrap...";
 ( !$installed{'local::lib'} or $opts{-f} )  and cpanm( '-n', 'local::lib' ) and die "error installing local::lib"; 
 ( !$installed{'ack'} or $opts{-f} )  and cpanm( '-n', 'App::Ack' ) and die "error installing App::Ack"; 
 ( !$installed{'App::cpanminus'} or $opts{-f} ) and cpanm( '-n', 'App::cpanminus' ) and die "error install App::cpanminus";
-( !$installed{'Capture::Tiny'} or $opts{-f} ) and cpanm( '-n', 'Capture::Tiny', -l => $llib ) and die "error installing Capture::Tiny";
+( !$installed{'Capture::Tiny'} or $opts{-f} ) and cpanm( '-n', 'Capture::Tiny', ( $llib ? (-l => $llib) : () ) ) and die "error installing Capture::Tiny";
 
 require Capture::Tiny;
 
@@ -150,7 +153,7 @@ if( ! exists $opts{-w} ) {
                     local $SIG{CHLD};  # otherwise cpanm install fails 
                     local $SIG{INT}; 
                     local $SIG{TERM}; 
-                    cpanm_capture( $mod, '-l' => $llib );
+                    cpanm_capture( $mod, ( $llib ? ('-l' => $llib):()) );
                     exit 0;
                 }
             }
@@ -171,7 +174,7 @@ say "Done bootstraping.";
 exit 0;
 
 sub cpanm_bin {
-    system "cpanm", -l => $llib, '-n', @_, @CPANM_ARGS;
+    system "cpanm", ( $llib ? (-l => $llib) : () ), '-n', @_, @CPANM_ARGS;
 }
 
 sub cpanm {
@@ -222,6 +225,8 @@ options:
     --installed     list your installed modules (may be incomplete)
     -w              3 parallel install workers
     -h              this help
+    -l              local lib dir
+    -p              install to perl/lib, no local-lib
     --verbose       a little more info on stdout
 
 examples:
