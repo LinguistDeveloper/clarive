@@ -394,13 +394,17 @@ sub topics_for_user {
     
     if($p->{categories}){
         my @categories = _array $p->{categories};
+        my @user_categories = map {
+            $_->{id};
+        } Baseliner->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
+
         my @not_in = map { abs $_ } grep { $_ < 0 } @categories;
         my @in = @not_in ? grep { $_ > 0 } @categories : @categories;
         if (@not_in && @in){
             $where->{'category_id'} = [{'not in' => \@not_in},{'in' => \@in}];    
         }else{
             if (@not_in){
-                $where->{'category_id'} = {'not in' => \@not_in};
+                $where->{'category_id'} = [{'not in' => \@not_in},{'in' => \@user_categories}];
             }else{
                 $where->{'category_id'} = \@in;
             }
