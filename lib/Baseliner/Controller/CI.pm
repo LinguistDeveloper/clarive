@@ -1215,10 +1215,10 @@ sub default : Path Args(2) {
             _fail( _loc "Method '%1' not found in class '%2'", $meth, $pkg) unless $pkg->can( $meth) ;
             $ret = $pkg->$meth( $data );
         }
-        if( ref $ret eq 'HASH' && Scalar::Util::blessed($ret) ) {
+        if( ref $ret eq 'HASH' || Scalar::Util::blessed($ret) ) {
             Util->_unbless( $ret );
             $c->stash->{json} = $ret;
-            $c->stash->{json}{success} //= \1;
+            $c->stash->{json}{success} //= \1 if ref $ret eq 'HASH';  # now unblessed, recheck
         } elsif( ref $ret eq 'ARRAY' ) {
             #Util->_unbless( $ret );
             $c->stash->{json} = $ret;
