@@ -300,7 +300,7 @@ around 'debug' => sub {
             my $self = shift;
             my $name = $AUTOLOAD;
             my ($method) = reverse( split(/::/, $name));
-            my $class = $method eq 'new' ? 'Baseliner::CI' : 'Baseliner::Role::CI';
+            my $class = $method =~ /new|find/ ? 'Baseliner::CI' : 'Baseliner::Role::CI';
             $method = $class . '::' . $method;
             @_ = ( $class, @_ );
             goto &$method;

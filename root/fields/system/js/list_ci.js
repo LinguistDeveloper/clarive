@@ -20,7 +20,6 @@ params:
 	var meta = params.topic_meta;
 	var data = params.topic_data;
 	
-  console.dir(data);
     var ci = {};
     if( meta.ci_role ) ci['role'] = meta.ci_role;
     else if( meta.ci_class ) ci['class'] = meta.ci_class;
