@@ -1,11 +1,6 @@
 package BaselinerX::Model::CI;
 use Baseliner::Plug;
-use Baseliner::Utils;
-use Baseliner::Sugar;
-use Path::Class;
-use Try::Tiny;
-use Proc::Exists qw(pexists);
-use Array::Utils qw(:all);
+use Baseliner::Utils qw(packages_that_do);
 use v5.10;
 
 BEGIN { extends 'Catalyst::Model' }
@@ -27,3 +22,5 @@ register 'registor.action.ci' => {
         return \%actions_admin_cis;    
     }
 };
+
+1;

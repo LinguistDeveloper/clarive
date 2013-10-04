@@ -316,8 +316,8 @@ sub stash {  # not just an alias
 sub root {
     my ($self)=@_;
     return $self->job_stash->{root} || $self->job_stash->{path} || do { 
-        require BaselinerX::Job::Service::Init;
-        BaselinerX::Job::Service::Init->new->root_path( job=>$self );
+        require BaselinerX::Service::Init;
+        BaselinerX::Service::Init->new->root_path( job=>$self );
     };
 }
 

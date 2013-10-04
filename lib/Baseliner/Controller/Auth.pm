@@ -229,12 +229,12 @@ sub saml_check : Private {
     my $header = $c->config->{saml_header} || 'samlv20';
     _debug _loc('SAML header: %1', $header );
     _log _loc('Current user: %1', $c->username );
-    use XML::Simple;
+    require XML::Simple;
     return try {
         my $saml = $c->req->headers->{$header};
         _debug "H=$saml";
         defined $saml or _fail "SAML: no header '$header' found in request. Rejected.";
-        my $xml = XMLin( $saml );
+        my $xml = XML::Simple::XMLin( $saml );
         my $username = $xml->{'saml:Subject'}->{'saml:NameID'};
         $username or die 'SAML username not found';
         $username = $username->{content} if ref $username eq 'HASH';

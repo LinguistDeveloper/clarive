@@ -1,7 +1,6 @@
 package BaselinerX::Type::Controller::ConfigList;
 use Baseliner::Plug;
 use Baseliner::Utils;
-use JavaScript::Dumper;
 use Try::Tiny;
 BEGIN { extends 'Catalyst::Controller' };
 

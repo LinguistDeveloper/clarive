@@ -1,7 +1,6 @@
 package BaselinerX::Type::Menu;
 use Baseliner::Plug;
 use Baseliner::Utils;
-use JavaScript::Dumper;
 use utf8;
 with 'Baseliner::Role::Registrable';
 
@@ -29,8 +28,9 @@ has separator          => ( is => 'rw', isa => 'Bool', default => 0 );
 sub ext_menu_json {
     my ($self, %p)=@_;
     my $ref = $self->ext_menu(%p);
+    require JavaScript::Dumper;
     return defined $ref
-        ? js_dumper($ref)
+        ? JavaScript::Dumper::js_dumper($ref)   # TODO this is the only dumper that does bare \'function()' ? 
         : undef;
 }
 

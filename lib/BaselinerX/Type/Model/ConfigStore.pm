@@ -556,7 +556,6 @@ sub variable_parse_config {
     return $value;
 }
 
-use XML::Simple;
 use Config::General;
 use IO::File;
 sub export_to_file {
@@ -582,7 +581,8 @@ sub export_to_file {
 
     #xml
     my $xml_file = IO::File->new( '> ' . $p{file} . '.xml');
-    print $xml_file XMLout( \%data );
+    require XML::Simple;
+    print $xml_file XML::Simple::XMLout( \%data );
     $xml_file->close;
 }
 

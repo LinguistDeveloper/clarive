@@ -1,8 +1,6 @@
 package BaselinerX::Type::Config;
 use Baseliner::Plug;
 use Baseliner::Utils;
-use YAML::Syck;
-use JavaScript::Dumper;
 use Try::Tiny;
 with 'Baseliner::Role::Registrable';
 

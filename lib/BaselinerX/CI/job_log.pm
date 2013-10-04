@@ -1,7 +1,6 @@
 package BaselinerX::CI::job_log;
 use Baseliner::Moose;
 use Baseliner::Utils;
-use JavaScript::Dumper;
 use Compress::Zlib;
 use Try::Tiny;
 

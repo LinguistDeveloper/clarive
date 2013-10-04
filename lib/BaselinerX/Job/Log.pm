@@ -1,7 +1,6 @@
 package BaselinerX::Job::Log;
 use Baseliner::Plug;
 use Baseliner::Utils;
-use JavaScript::Dumper;
 use Compress::Zlib;
 use Try::Tiny;
 
@@ -47,7 +46,7 @@ A file:
 =cut
 
 has jobid           => ( is => 'rw', isa => 'Int' );
-has job             => ( is => 'rw', isa => 'BaselinerX::Job::Service::Runner', weak_ref=>1 );
+has job             => ( is => 'rw', isa => 'BaselinerX::Service::Runner', weak_ref=>1 );
 has exec            => ( is => 'rw', isa => 'Int', default => 1 );
 has current_section => ( is => 'rw', isa => 'Str', default => 'general' );
 has current_service => ( is => 'rw', isa => 'Maybe[Str]', default => '' );

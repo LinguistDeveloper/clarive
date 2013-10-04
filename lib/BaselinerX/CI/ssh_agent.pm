@@ -1,15 +1,13 @@
 package BaselinerX::CI::ssh_agent;
 use Baseliner::Moose;
 use Baseliner::Utils;
-use Cwd;
-use Net::OpenSSH;
-use namespace::autoclean;
+#use namespace::autoclean;
 
 has_ci 'server';
 has port_num   => qw(is rw isa Any);
 has private_key => qw(is rw isa Any);
 
-has 'local' => qw(is rw isa Path::Class::Dir lazy 1), default => sub { _dir( Cwd::cwd() ) };
+has 'local' => qw(is rw isa Path::Class::Dir lazy 1), default => sub { require Cwd; _dir( Cwd::cwd() ) };
 has ssh     => (
     is       => 'rw',
     isa      => 'Net::OpenSSH',
@@ -19,6 +17,7 @@ has ssh     => (
         my $self = shift;
         Baseliner->debug and $Net::OpenSSH::debug |= 8;
         my $uri = $self->_build_uri;
+        require Net::OpenSSH;
         my $n = Net::OpenSSH->new( $uri );
         $n->error and _throw "ssh: Could not connect to $uri: " . $n->error;
         $n;

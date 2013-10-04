@@ -89,13 +89,13 @@ sub launch {
 
 sub job_continue {
     my ($self,%p)=@_;
-    return BaselinerX::Job::Service::Runner->new_from_id( jobid=>$p{jobid}, exec=>$p{exec}, service_name=>$p{service_name} );
+    return BaselinerX::Service::Runner->new_from_id( jobid=>$p{jobid}, exec=>$p{exec}, service_name=>$p{service_name} );
 }
 
 sub job_clone {
     my ($self,$jobid)=@_;
     _throw 'Not implemented yet';
-    #return BaselinerX::Job::Service::Runner->clone_from_id( jobid=>$jobid );
+    #return BaselinerX::Service::Runner->clone_from_id( jobid=>$jobid );
 }
 
 sub job_new {

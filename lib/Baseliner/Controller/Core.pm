@@ -13,10 +13,10 @@ register 'menu.admin.core' => { label => 'Core', actions=>['action.admin.default
 register 'menu.admin.core.registry' => { label => 'List Registry Data', url=>'/core/registry', title=>'Registry', actions=>['action.admin.default'] };
 
 BEGIN { extends 'Catalyst::Controller' }
-use YAML;
+
 sub registry : Path('/core/registry') {
     my ( $self, $c ) = @_;
-    $c->res->body( '<pre>' . YAML::Dump( $c->registry->registrar ) );
+    $c->res->body( '<pre>' . _dump( $c->registry->registrar ) );
 }
 1;
 

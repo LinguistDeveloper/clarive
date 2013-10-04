@@ -99,7 +99,7 @@ sub add_class {
 # everything starts here, called from Baseliner.pm
 sub setup {
     my $self= shift; 
-    $self->load_enabled_list;
+    # XXX DEPRECATED - slow: $self->load_enabled_list;
     $self->load_config_registry;
     $self->initialize( @_ );
 }

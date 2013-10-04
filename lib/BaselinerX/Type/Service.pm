@@ -119,7 +119,7 @@ sub run {
     # setup a dummy job if needed
     try {
         unless( ref $c->stash->{job} ) {
-            $c->stash->{job} ||= BaselinerX::Job::Service::Runner->new;
+            $c->stash->{job} ||= BaselinerX::Service::Runner->new;   # XXX dispatcher is creating this with every service, bummer
             $c->stash->{job}->logger( $logger );
             $c->stash->{job}->job_stash( $c->stash );
         }

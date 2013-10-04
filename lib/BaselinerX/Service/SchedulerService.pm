@@ -8,6 +8,13 @@ with 'Baseliner::Role::Service';
 # guardamos aqui el config que recibimos en el run
 has 'config' => ( is=>'rw', isa=>'Any' );
 
+register 'config.scheduler' => {
+    metadata => [
+       { id=>'frequency', label=>'SQA send_ju Daemon Frequency', default => 60 },
+       { id=>'iterations', label=>'Iteraciones del servicio', default => 1000 }
+    ]
+};
+
 register 'service.scheduler' => {  config   => 'config.scheduler',   handler => \&run, }; 
 
 sub run { # bucle de demonio aqui
@@ -51,7 +58,7 @@ sub run_once {
         exit 0;
     }
     # get rid of zombies
-    BaselinerX::Job::Service::Daemon->reap_children();
+    BaselinerX::Service::Daemon->reap_children();
 }
 
 sub road_kill {

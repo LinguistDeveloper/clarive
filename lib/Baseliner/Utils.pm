@@ -621,7 +621,7 @@ sub _trim {
 sub _parse_template {
     my ( $template, %vars ) = @_;
     my $type = $vars{text_template_type} || 'FILE'; # could use STRING
-    use Text::Template;
+    require Text::Template;
     my $tt = Text::Template->new( 
                     TYPE => "FILE",
                     SOURCE => $template ) or _throw _loc("Could not open template file %1", $template);
