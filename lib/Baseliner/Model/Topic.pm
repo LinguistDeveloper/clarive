@@ -401,12 +401,14 @@ sub topics_for_user {
         my @not_in = map { abs $_ } grep { $_ < 0 } @categories;
         my @in = @not_in ? grep { $_ > 0 } @categories : @categories;
         if (@not_in && @in){
-            $where->{'category_id'} = [{'not in' => \@not_in},{'in' => \@in}];    
+            @user_categories = grep{ not $_ ~~ @not_in } @user_categories;
+            $where->{'category_id'} = [{'in' => \@in},{'in' => \@user_categories}];    
         }else{
             if (@not_in){
-                $where->{'category_id'} = [{'not in' => \@not_in},{'in' => \@user_categories}];
+                @in = grep{ not $_ ~~ @not_in } @user_categories;
+                $where->{'category_id'} = {'in' => \@in};;
             }else{
-                $where->{'category_id'} = \@in;
+                $where->{'category_id'} = {'in' => \@in};
             }
         }        
         #$where->{'category_id'} = \@categories;
