@@ -661,7 +661,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
 
         var button_stick = new Ext.Button({
             cls: 'x-btn-icon',
-            icon: '/static/images/pin_icon.png',
+            icon: '/static/images/icons/pin_icon_grey.png',
             handler: toggle_stick,
             tooltip: _('Fix explorer'),
             pressed: true,
