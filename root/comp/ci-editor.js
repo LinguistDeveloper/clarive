@@ -248,7 +248,6 @@
                     add_ci_form( form_url, params );
                 });
             } else {
-                console.dir(params);
                 Baseliner.ci_call( params.mid, 'ci_form', { collection: params.collection }, function(res){
                     var forms = res.data;
                     Ext.each( forms, function(form_url){

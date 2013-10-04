@@ -17,7 +17,6 @@ html: /dashlets/emails.html
             <thead>
                 <tr>
                     <th colspan="3"><% _loc("Subject") %></th>
-                    <th><% _loc("From") %></th>
                     <th><% _loc("Sent") %></th>
                 </tr>
             </thead>
@@ -25,7 +24,6 @@ html: /dashlets/emails.html
 %foreach my $email (_array @emails){
                 <tr>
                     <td colspan='3'><b><a href="javascript:Baseliner.addNewTabComp('/message/inbox?username=<%$c->username%>&query=<%$email->{id}%>', _('Inbox') );"><%$email->{subject}%></a></b></td>
-                    <td><%$email->{sender}%></td>
                     <td><%$email->{sent}%></td>
                 </tr>
 %}
