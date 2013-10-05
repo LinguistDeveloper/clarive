@@ -42,7 +42,7 @@ sub calendar : Path( '/job/calendar' ) {
         }
     }
     $c->stash->{ ns_query } = { does => [ 'Baseliner::Role::Namespace::Nature', 'Baseliner::Role::Namespace::Application', ] };
-    $c->forward( '/namespace/load_namespaces' );
+    #$c->forward( '/namespace/load_namespaces' );
     $c->forward( '/baseline/load_baselines' );
 
     # load the calendar row data
@@ -94,7 +94,7 @@ sub calendar_grid_json : Path('/job/calendar_grid_json') {
             bl          => $r->bl,
             bl_desc     => Baseliner::Core::Baseline->name( $r->bl ),
             ns          => $r->ns,
-            ns_desc     => $c->model( 'Namespaces' )->find_text( $r->ns )
+            ns_desc     => $r->ns,
             }
             if ( ( $cnt++ >= $start ) && ( $limit ? scalar @rows < $limit : 1 ) );
     }
@@ -116,7 +116,8 @@ sub calendar_grid : Path('/job/calendar_grid') {
         $c->model('Permissions')
             ->user_has_action( username=>$c->username, action=>'action.job.calendar.edit', bl=>'*' );
     $c->stash->{ ns_query } = { does => [ 'Baseliner::Role::Namespace::Nature', 'Baseliner::Role::Namespace::Application', ] };
-    $c->forward( '/namespace/load_namespaces' );
+    $c->stash->{namespaces} = [];
+    #$c->forward( '/namespace/load_namespaces' );
     $c->forward( '/baseline/load_baselines' );
     $c->stash->{ template } = '/comp/job_calendar_grid.js';
 }
