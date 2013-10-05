@@ -103,100 +103,6 @@ Baseliner.error = function(title, format){
     });
 };
 
-Baseliner.change_avatar = function() {
-    var upload = new Ext.Container();
-    upload.on('afterrender', function(){
-        var uploader = new qq.FileUploader({
-            element: upload.el.dom,
-            action: '/user/avatar_upload',
-            allowedExtensions: ['png'],
-            template: '<div class="qq-uploader">' + 
-                '<div class="qq-upload-drop-area"><span>' + _('Drop files here to upload') + '</span></div>' +
-                '<div class="qq-upload-button">' + _('Upload File') + '</div>' +
-                '<ul class="qq-upload-list"></ul>' + 
-             '</div>',
-            onComplete: function(fu, filename, res){
-                //Baseliner.message(_('Upload File'), _('File %1 uploaded ok', filename) );
-                Baseliner.message(_('Upload File'), _(res.msg, filename) );
-                reload_avatar_img();
-            },
-            onSubmit: function(id, filename){
-				//uploader.setParams({topic_mid: data ? data.topic_mid : obj_topic_mid.getValue(), filter: meta.rel_field });
-            },
-            onProgress: function(id, filename, loaded, total){},
-            onCancel: function(id, filename){ },
-            classes: {
-                // used to get elements from templates
-                button: 'qq-upload-button',
-                drop: 'qq-upload-drop-area',
-                dropActive: 'qq-upload-drop-area-active',
-                list: 'qq-upload-list',
-                            
-                file: 'qq-upload-file',
-                spinner: 'qq-upload-spinner',
-                size: 'qq-upload-size',
-                cancel: 'qq-upload-cancel',
-
-                // added to list item when upload completes
-                // used in css to hide progress spinner
-                success: 'qq-upload-success',
-                fail: 'qq-upload-fail'
-            }
-        });
-    });
-    var img_id = Ext.id();
-    var reload_avatar_img = function(){
-            // reload image
-            var el = Ext.get( img_id );
-            var rnd = Math.floor(Math.random()*80000);
-            el.dom.src = '/user/avatar/image.png?' + rnd;
-    };
-    var gen_avatar = function(){
-        Baseliner.ajaxEval('/user/avatar_refresh', {}, function(res){
-            Baseliner.message( _('Avatar'), res.msg );
-            reload_avatar_img();
-        });
-    };
-    var rnd = Math.floor(Math.random()*80000); // avoid caching
-    Baseliner.ajaxEval('/user/user_data', {}, function(res){
-        if( !res.success ) {
-            Baseliner.error( _('User data'), res.msg );
-            return;
-        }
-        var img = String.format('<img width="32" id="{0}" style="border: 2px solid #bbb" src="/user/avatar/image.png?{1}" />', img_id, rnd );
-        var api_key = res.data.api_key;
-        var gen_apikey = function(){
-            Baseliner.ajaxEval('/user/gen_api_key', {}, function(res){
-                Baseliner.message( _('API Key'), res.msg );
-                if( res.success ) {
-                    api_key.setValue( res.api_key );
-                }
-            });
-        };
-        var api_key = new Ext.form.TextArea({ height: 50, anchor:'90%',fieldLabel:_('API Key'), value: api_key });
-        var api_key_form = [
-            api_key,
-            { xtype:'button',  fieldLabel: _('Generate api key'), scale:'large', text:_('Generate API Key'), handler:gen_apikey }
-        ];
-        var win = new Ext.Window({
-            title: _('Manage your Avatar'),
-            layout:'fit', width: 600, height: 400, 
-            bodyStyle: { 'background-color':'#fff', padding: 20 },
-            items: [
-                { xtype:'panel', layout:'form', frame: false,
-                    items: [
-                        api_key_form,
-                        { xtype:'container', fieldLabel:_('Current avatar'), html: img },
-                        { xtype:'button', width: 80, fieldLabel: _('Change avatar'), scale:'large', text:_('Generate Avatar'), handler:gen_avatar },
-                        { xtype:'container', fieldLabel: _('Upload avatar'), items: [ upload ] }
-                      ]
-                }
-            ]
-        });
-        win.show(); 
-    });
-};
-
 $.extend($.gritter.options, { position: 'bottom-right' } );
 
 Baseliner.error_msg = function( msg ){
@@ -1982,8 +1888,8 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
         });
         self.ci_box = new Baseliner.model.CICombo({
             store: self.ci_store, 
-            width: 300,
-            height: 80,
+            height: 400,
+            width: 400,
             singleMode: true, 
             fieldLabel: _('CI'),
             name: 'ci',
@@ -2009,7 +1915,7 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
                 };                
             }
         });
-        var tbar_items = [ self.ci_box, btn_delete ];
+        var tbar_items = []; //[ self.ci_box, btn_delete ];
         if( ! self.field ) {
             self.field = new Ext.form.Hidden({ name: self.name, value: self.value });
             tbar_items.push( self.field );
@@ -2045,6 +1951,11 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
         Baseliner.CIGrid.superclass.initComponent.call( this );
         
         self.on('afterrender', function(){
+            var width = self.el.getWidth();
+            self.ci_box.width = width -100;
+            var tbar = self.getTopToolbar();
+            tbar.add( self.ci_box, btn_delete );
+            tbar.doLayout();
             var ddrow = new Baseliner.DropTarget(self.container, {
                 comp: self,
                 ddGroup : self.ddGroup,

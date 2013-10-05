@@ -6,7 +6,7 @@
         defaults: { width: 550 },
         items: [
             { xtype: 'textfield', name: 'name', fieldLabel: _('Workspace Name'), required: true },
-            { xtype: 'textfield', name: 'host', fieldLabel: _('Host'), required: true },
+            Baseliner.ci_box({ fieldLabel:_('Server'), role:'Server', name:'server' }),
             { xtype: 'textfield', name: 'user', fieldLabel: _('User'), required: true },
             { xtype: 'textfield', name: 'password', inputType: 'password', fieldLabel: _('Password'), required: true },
             { xtype: 'textfield', name: 'remote', fieldLabel: _('Remote Dir'), required: true }
@@ -14,30 +14,16 @@
         buttons: [
             { text: _('Create'),
                 handler: function(){
-                    form.getForm().submit({
-                        url: '/gittree/tag_new',
-                        //params: { selected: sels.ns, names: sels.name },
-                        waitMsg: _('Creating Tag...'),
-                        success: function(fp, o){
-                            var res = Ext.util.JSON.decode(o.response.responseText);
-                            Baseliner.message( _('Create Tag'), res.msg );
-                            win.close();
-                        },
-                        failure:  function(fp, o){
-                            var res = Ext.util.JSON.decode(o.response.responseText);
-                            Ext.MessageBox.show({
-                                title: _('Error during tag create'),
-                                msg: res.msg,
-                                buttons: Ext.MessageBox.OK,
-                                icon: Ext.MessageBox.ERROR
-                            });
-                        }
+                    var fdata = form.getForm().getValues();
+                    Baseliner.ci_call('user', 'workspace_create', fdata, function(res){
+                        Baseliner.message( _('Workspace'), res.msg ); 
+                        win.close();
                     });
                 }
             }
         ]
     });
-    var win = new Ext.Window({ 
+    var win = new Baseliner.Window({ 
         title: _('New Workspace'),
         closeAction: 'destroy',
         items: [ form ]
