@@ -93,8 +93,8 @@ params:
         autoScroll: true,
         autoWidth: true,
         sortable: false,
-        header: false,
-        hideHeaders: true,
+        header: true,
+        hideHeaders: false,
         sm: check_sm,
         store: store_file,
         tbar: [

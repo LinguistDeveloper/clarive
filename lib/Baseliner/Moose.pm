@@ -24,6 +24,7 @@ sub import {
         }
     }
     Function::Parameters->import( ':strict' );
+    #eval "package $pkg; use MooseX::XSAccessor;";
     goto &Moose::import;
 };
 

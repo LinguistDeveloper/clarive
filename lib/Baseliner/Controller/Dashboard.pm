@@ -1040,17 +1040,34 @@ sub topics_by_category: Local{
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
     my ($SQL, @topics_by_category, @datas);
 
+    my $user = $c->username;
+    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+
     my $user_categories = join ",", map {
-        $_->{id};
-    } $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view' );
-    
+            $_->{id};
+        } $c->model('Topic')->get_categories_permissions( username => $user, type => 'view' );
+        
+    my $in_projects;
+
+    if ( !Baseliner->model("Permissions")->is_root( $user ) ) {
+        my @user_project_ids = Baseliner->model("Permissions")->user_projects_ids( username => $user );
+        my $in = join ",", @user_project_ids;
+        $in_projects = "AND EXISTS ( SELECT 1 
+                                     FROM BALI_MASTER_REL MR 
+                                     WHERE MR.FROM_MID = TP.MID 
+                                     AND MR.REL_TYPE = 'topic_project' 
+                                     AND MR.TO_MID IN ( $in ) )";   
+    };
+
+        
     $SQL = "SELECT COUNT(*) AS TOTAL, C.NAME AS CATEGORY, C.COLOR, TP.ID_CATEGORY 
-            FROM BALI_TOPIC TP, BALI_TOPIC_CATEGORIES C  
-            WHERE TP.ACTIVE = 1 
-                  AND TP.ID_CATEGORY = C.ID 
-                  AND TP.ID_CATEGORY IN ( $user_categories )
-            GROUP BY NAME, C.COLOR, TP.ID_CATEGORY 
-            ORDER BY TOTAL DESC";
+                FROM BALI_TOPIC TP, BALI_TOPIC_CATEGORIES C
+                WHERE TP.ACTIVE = 1 
+                      AND TP.ID_CATEGORY = C.ID 
+                      AND TP.ID_CATEGORY IN ( $user_categories )
+                      $in_projects
+                GROUP BY NAME, C.COLOR, TP.ID_CATEGORY 
+                ORDER BY TOTAL DESC";
     
     @topics_by_category = $db->array_hash( $SQL );
 
@@ -1074,10 +1091,27 @@ sub topics_open_by_category: Local{
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
     my ($SQL, @topics_open_by_category, @datas);
 
+
+    my $user = $c->username;
+    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+
     my $user_categories = join ",", map {
-        $_->{id};
-    } $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view' );
-    
+            $_->{id};
+        } $c->model('Topic')->get_categories_permissions( username => $user, type => 'view' );
+        
+    my $in_projects;
+
+    if ( !Baseliner->model("Permissions")->is_root( $user ) ) {
+        my @user_project_ids = Baseliner->model("Permissions")->user_projects_ids( username => $user );
+        my $in = join ",", @user_project_ids;
+        $in_projects = "AND EXISTS ( SELECT 1 
+                                     FROM BALI_MASTER_REL MR 
+                                     WHERE MR.FROM_MID = TP.MID 
+                                     AND MR.REL_TYPE = 'topic_project' 
+                                     AND MR.TO_MID IN ( $in ) )";   
+    };
+
+        
     $SQL = "SELECT COUNT(*) AS TOTAL, C.NAME AS CATEGORY, C.COLOR, TP.ID_CATEGORY 
             FROM BALI_TOPIC TP
                  INNER JOIN BALI_TOPIC_STATUS S ON ID_CATEGORY_STATUS = S.ID AND TYPE NOT LIKE 'F%'
@@ -1085,11 +1119,12 @@ sub topics_open_by_category: Local{
             WHERE TP.ACTIVE = 1 
                   AND TP.ID_CATEGORY = C.ID 
                   AND TP.ID_CATEGORY IN ( $user_categories )
+                  $in_projects
+
             GROUP BY C.NAME, C.COLOR, TP.ID_CATEGORY 
             ORDER BY TOTAL DESC";
     
     @topics_open_by_category = $db->array_hash( $SQL );
-
     
     foreach my $topic (@topics_open_by_category){
         push @datas, {

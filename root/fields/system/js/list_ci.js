@@ -20,7 +20,6 @@ params:
 	var meta = params.topic_meta;
 	var data = params.topic_data;
 	
-  console.dir(data);
     var ci = {};
     if( meta.ci_role ) ci['role'] = meta.ci_role;
     else if( meta.ci_class ) ci['class'] = meta.ci_class;
@@ -32,7 +31,8 @@ params:
            singleMode: meta.single_mode,
            force_set_value: true,
            value: data[meta.id_field],
-           disabled: meta.readonly!=undefined ? meta.readonly : false
+           disabled: meta.readonly!=undefined ? meta.readonly : false,
+           allowBlank: meta.allowBlank==undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true )
        }, ci) )
     ]
 })

@@ -40,12 +40,16 @@ sub begin : Private {
     $c->res->headers->header( Expires => 0 );
 
     my $content_type = $c->req->content_type;
+    
+    # cleanup 
+    delete $c->req->params->{_login_count}; # used by tabfu to control attempts
 
     # process json data, if any
     if( $content_type eq 'application/json' ) {
         my $body = $c->req->body;
         my $body_data = <$body>;
         my $json = Util->_from_json( $body_data ) if $body_data;
+        delete $c->req->params->{as_json}; 
         if( ref $json eq 'HASH' && delete $json->{_merge_with_params} ) {
             my $p = $c->req->params || {};
             $c->req->params( { %$p, %$json } ); 

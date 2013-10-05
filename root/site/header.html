@@ -161,39 +161,25 @@
     <script type="text/javascript" src="/static/ex.ux.form.spinner/Spinner.js"></script> 
     <script type="text/javascript" src="/static/ex.ux.form.spinner/SpinnerStrategy.js"></script> 
 
+    <script type="text/javascript" src="/site/prefs.js"></script>
+    
     <script type="text/javascript">
-        Prefs.username = '<% $c->username %>';
-        Prefs.language = '<% [ _array( $c->languages ) ]->[0] %>';
-        Prefs.is_logged_in = true;
-        var df = _('js_date_format');
-        Prefs.js_date_format = df =='js_date_format' ? 'Y-M-d' : df ;    // used by Ext.field.DateTime({ ... format: <format> }) and new Date(..).format(<format>)
-        Prefs.logo_file = '<% $c->config->{logo_file} %>';
-        Prefs.logo_filename = '<% $c->config->{logo_filename} || "logo.jpg" %>';
-        Prefs.site = Ext.apply({
-                show_menu: true,
-                show_dashboard : true,
-                show_lifecycle : true,
-                show_tabs : true,
-                show_search : true
-            }, 
-            <% _to_json({ map { $_ => $to_bool->( $c->config->{site}->{$_} ) } keys %{ $c->config->{site} || {} } }) %> 
-        );
-        Prefs.site.toolbar_height = <% $c->config->{toolbar_height} // 28 %>;
-        Prefs.menus = [ <% join ',', _array $c->stash->{menus} %> ];
-        Prefs.stash = <% _to_json({
-                    map { $_ => $to_bool->( $c->stash->{$_} ) }
-                    qw/site_raw can_menu can_change_password can_lifecycle can_surrogate portlets tab_list alert theme_dir/
-                })
-            %>;
-        if( Prefs.stash.site_raw ) {
-            Ext.apply(Prefs.site, {
-                    show_tabs : false,
-                    show_portal : false,
-                    show_menu : false,
-                    show_main : false
-            });
-        }
-        
+        // create global Prefs object
+        Prefs = new Baseliner.Prefs({
+            username: '<% $c->username %>',
+            language: '<% [ _array( $c->languages ) ]->[0] %>',
+            logo_file: '<% $c->config->{logo_file} %>',
+            logo_filename: '<% $c->config->{logo_filename} || "logo.jpg" %>',
+            site: <% _to_json({ map { $_ => $to_bool->( $c->config->{site}->{$_} ) } keys %{ $c->config->{site} || {} } }) %>,
+            toolbar_height: <% $c->config->{toolbar_height} // 28 %>,
+            menus: [ <% join ',', _array $c->stash->{menus} %> ],
+            stash: <% _to_json({
+                        map { $_ => $to_bool->( $c->stash->{$_} ) }
+                        qw/site_raw can_menu can_change_password can_lifecycle can_surrogate portlets tab_list alert theme_dir/
+                    })
+                %>
+        });
+
         $('#bali-loading .progress .bar').width('98%');
         require(['/site/main.js'], function(main){
             // after main loaded
