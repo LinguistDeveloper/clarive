@@ -1888,8 +1888,8 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
         });
         self.ci_box = new Baseliner.model.CICombo({
             store: self.ci_store, 
-            width: 300,
-            height: 80,
+            height: 400,
+            width: 400,
             singleMode: true, 
             fieldLabel: _('CI'),
             name: 'ci',
@@ -1915,7 +1915,7 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
                 };                
             }
         });
-        var tbar_items = [ self.ci_box, btn_delete ];
+        var tbar_items = []; //[ self.ci_box, btn_delete ];
         if( ! self.field ) {
             self.field = new Ext.form.Hidden({ name: self.name, value: self.value });
             tbar_items.push( self.field );
@@ -1951,6 +1951,11 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
         Baseliner.CIGrid.superclass.initComponent.call( this );
         
         self.on('afterrender', function(){
+            var width = self.el.getWidth();
+            self.ci_box.width = width -100;
+            var tbar = self.getTopToolbar();
+            tbar.add( self.ci_box, btn_delete );
+            tbar.doLayout();
             var ddrow = new Baseliner.DropTarget(self.container, {
                 comp: self,
                 ddGroup : self.ddGroup,

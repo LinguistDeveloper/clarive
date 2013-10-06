@@ -409,21 +409,23 @@ sub update_category_admin : Local {
     my $status_from = $p->{status_from};
     my $idsstatus_to = $p->{idsstatus_to};
     my $job_type = $p->{job_type};
+    my $mod = $c->model('Baseliner::BaliTopicCategoriesAdmin');
 
     Baseliner->cache_remove_like( qr/^topic:/ );
     foreach my $role (_array $idsroles){
-        my $rs = $c->model('Baseliner::BaliTopicCategoriesAdmin')
-            ->search( { id_category => $idcategory, id_role => $role, id_status_from => $status_from, id_status_to=>$idsstatus_to} );
+        my $rs = $mod->search({ 
+            id_category => $idcategory, id_role => $role, id_status_from => $status_from, id_status_to=>$idsstatus_to
+        });
         if($rs->first){
             $rs->delete;
             if($idsstatus_to){
                 foreach my $idstatus_to (_array $idsstatus_to){
-                    my $category = $c->model('Baseliner::BaliTopicCategoriesAdmin')->create({
-                                                                                            id_category => $idcategory,
-                                                                                            id_role      => $role,
-                                                                                            id_status_from  => $status_from,
-                                                                                            job_type  => $job_type,
-                                                                                            id_status_to => $idstatus_to
+                    my $category = $mod->update_or_create({
+                        id_category => $idcategory,
+                        id_role      => $role,
+                        id_status_from  => $status_from,
+                        job_type  => $job_type,
+                        id_status_to => $idstatus_to
                     });
         
                 }
@@ -433,12 +435,12 @@ sub update_category_admin : Local {
         else{
             if($idsstatus_to){
                 foreach my $idstatus_to (_array $idsstatus_to){
-                    my $category = $c->model('Baseliner::BaliTopicCategoriesAdmin')->create({
-                                                                                            id_category => $idcategory,
-                                                                                            id_role      => $role,
-                                                                                            id_status_from  => $status_from,
-                                                                                            job_type  => $job_type,
-                                                                                            id_status_to => $idstatus_to
+                    my $category = $mod->update_or_create({
+                        id_category => $idcategory,
+                        id_role      => $role,
+                        id_status_from  => $status_from,
+                        job_type  => $job_type,
+                        id_status_to => $idstatus_to
                     });
         
                 }

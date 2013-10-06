@@ -72,7 +72,7 @@ method execute( @cmd ) {
         @cmd = @cmd == 1 ? $cmd[0] : $self->_double_quote_cmd( @cmd ); # join params quoted 
         @cmd = (\'su', \'-', $user, \'-l', \'-c', "@cmd");
     }
-    _debug \@cmd;
+    #_debug \@cmd;
     my $res = $self->_execute( @cmd );
     return $self->ret;
 }
@@ -355,7 +355,7 @@ sub _execute {
     my ( $self, @cmd ) = @_;
     @cmd or Util->_fail('Missing argument cmd');
     my $rcmd = join ' ', ( @cmd == 1 ? ($cmd[0]) : ($self->_quote_cmd(@cmd)) ); 
-    _debug "BALIX CMD=$rcmd";
+    #_debug "BALIX CMD=$rcmd";
     $self->socket->print( $self->encodeCMD("X $rcmd") . $self->EOL );
     $self->_checkRC();
 }

@@ -538,6 +538,7 @@ sub view : Local {
         
         my %categories_edit = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'edit' );
         my %categories_delete = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'delete' );
+        my %categories_view = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view' );
         
         if($topic_mid || $c->stash->{topic_mid} ){
      
@@ -549,6 +550,10 @@ sub view : Local {
             $category = DB->BaliTopicCategories->search({ mid=>$topic_mid }, { prefetch=>{'topics' => 'status'} })->first;
             _fail( _loc('Category not found or topic deleted: %1', $topic_mid) ) unless $category;
             
+            if ( !$categories_view{$category->id } ) {
+                _fail( _loc("User %1 is not allowed to access topic %2 contents", $c->username, $topic_mid) );    
+            }
+
             $c->stash->{category_meta} = $category->forms;
             
             #workflow category-status

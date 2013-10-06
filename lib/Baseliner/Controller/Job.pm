@@ -499,7 +499,7 @@ sub job_submit : Path('/job/submit') {
     my $config = $c->registry->get('config.job')->data;
     my $runner = $config->{runner};
     my $job_name;
-    my $username = $c->user ? $c->user->username || $c->user->id : '';
+    my $username = $c->username;
     
     #TODO move this whole thing to the Model Jobs
     try {
