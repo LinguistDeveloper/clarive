@@ -2,12 +2,21 @@ package Baseliner::View::JSON;
 use strict;
 use base 'Catalyst::View::JSON';
 use Encode;
+use JSON::XS ();
 
-#sub encode_json {
-#    my($self, $c, $data) = @_;
-#    my $encoder = JSON::XS->new->ascii->pretty->allow_nonref;
-#    $encoder->encode($data);
-#}
+# doesn't seem to save _json_encoder into self
+# sub new {
+#     my($class, $c, $arguments) = @_;
+#     my $self = $class->next::method($c);
+#     $self->{_json_encoder} = JSON::XS->new->allow_blessed->convert_blessed;
+#     return $self;
+# }
+
+sub encode_json {
+    my($self, $c, $data) = @_;
+    my $encoder = $self->{_json_encoder} // ( $self->{_json_encoder} = JSON::XS->new->allow_blessed->convert_blessed );
+    $encoder->encode($data);
+}
 
 sub process {
     my $self = shift;
