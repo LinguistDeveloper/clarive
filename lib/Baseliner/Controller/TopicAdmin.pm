@@ -101,8 +101,8 @@ sub update_category : Local {
                 $assign_type ->( $category );
                 $category->update();
                 
-                my $rs = Baseliner->model('Baseliner::BaliTopicCategoriesStatus')->search({ id_category => $id_category });
-                #$rs->delete;
+                my $rs = Baseliner->model('Baseliner::BaliTopicCategoriesStatus')->search({ id_category => $id_category, id_status => { 'not in' => $idsstatus} });
+                $rs->delete;
                 if($idsstatus){
                     foreach my $id_status (_array $idsstatus){
                         $rs = $c->model('Baseliner::BaliTopicCategoriesStatus')->update_or_create(
