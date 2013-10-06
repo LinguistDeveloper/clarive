@@ -14,7 +14,6 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use Path::Class;
-use BaselinerX::Job::Elements;
 use IO::CaptureOutput;
 use Carp;
 use Try::Tiny;

@@ -1,20 +1,13 @@
 package Baseliner::Controller::Root;
-use Baseliner::Plug;
+use Baseliner::PlugMouse;
 BEGIN { extends 'Catalyst::Controller'; };
 use Baseliner::Utils;
-
 
 register 'action.home.show_lifecycle' => { name => 'User can access the lifecycle panel' };
 register 'action.home.show_menu' => { name => 'User can access the menu' } ;
 register 'action.home.view_workspace' => { name => 'User can access the workspace view' } ;
 
 use Try::Tiny;
-
-## JSON stuff
-
-use JSON::XS;
-use constant js_true => JSON::XS::true;
-use constant js_false => JSON::XS::false;
 use MIME::Base64;
 
 #

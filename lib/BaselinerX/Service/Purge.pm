@@ -2,7 +2,6 @@
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Path::Class;
-use BaselinerX::Job::Elements;
 use Carp;
 use Try::Tiny;
 use File::Path;

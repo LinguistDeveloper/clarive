@@ -1,5 +1,5 @@
 package Baseliner::Controller::Calendar;
-use Baseliner::Plug;
+use Baseliner::PlugMouse;
 BEGIN { extends 'Catalyst::Controller' };
 use Baseliner::Core::Baseline;
 use Baseliner::Utils;

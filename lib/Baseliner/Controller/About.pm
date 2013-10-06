@@ -1,10 +1,8 @@
 package Baseliner::Controller::About;
-use strict;
-use warnings;
-use base 'Catalyst::Controller';
-use Baseliner::Plug;
+use Baseliner::PlugMouse;
 use Baseliner::Utils;
 use Try::Tiny;
+BEGIN {  extends 'Catalyst::Controller' }
 
 register 'action.help.server_info' => { name => 'View server info in about window'};
 register 'menu.help' => { label => 'Help', index=>999 };

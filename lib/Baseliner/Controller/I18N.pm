@@ -1,5 +1,5 @@
 package Baseliner::Controller::I18N;
-use Moose;
+use Mouse;
 BEGIN { extends 'Catalyst::Controller' };
 
 use Baseliner::Utils;

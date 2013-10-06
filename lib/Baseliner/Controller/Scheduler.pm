@@ -2,7 +2,6 @@ package Baseliner::Controller::Scheduler;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Baseliner::Core::Baseline;
-use JSON::XS;
 use Try::Tiny;
 use utf8;
 use Encode;

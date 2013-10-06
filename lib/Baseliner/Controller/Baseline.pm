@@ -1,5 +1,5 @@
 package Baseliner::Controller::Baseline;
-use Baseliner::Plug;
+use Baseliner::PlugMouse;
 use Try::Tiny;
 BEGIN {  extends 'Catalyst::Controller' }
 

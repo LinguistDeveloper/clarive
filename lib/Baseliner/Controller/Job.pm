@@ -1,6 +1,6 @@
 package Baseliner::Controller::Job;
 use v5.10;
-use Baseliner::Plug;
+use Baseliner::PlugMouse;
 use Baseliner::Utils;
 use DateTime;
 use JSON::XS;

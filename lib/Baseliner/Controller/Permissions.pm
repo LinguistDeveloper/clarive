@@ -1,5 +1,5 @@
 package Baseliner::Controller::Permissions;
-use Baseliner::Plug;
+use Mouse;
 use Baseliner::Utils;
 BEGIN {  extends 'Catalyst::Controller' }
 

@@ -1,8 +1,6 @@
 package BaselinerX::Service::FootprintElements;
 use Baseliner::Plug;
 use Baseliner::Utils;
-use BaselinerX::Job::Elements;
-use BaselinerX::Job::Element;
 use File::Spec;
 use Path::Class;
 use Try::Tiny;

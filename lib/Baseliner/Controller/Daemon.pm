@@ -1,16 +1,14 @@
 package Baseliner::Controller::Daemon;
-use Baseliner::Plug;
+use Baseliner::PlugMouse;
 use Baseliner::Utils;
 use DateTime;
 use Carp;
 use Try::Tiny;
 use Proc::Exists qw(pexists);
 use v5.10;
-
 BEGIN { extends 'Catalyst::Controller' }
 
 register 'action.admin.daemon' => { name => 'Administer daemons'};
-
 register 'menu.admin.daemon' => { label => 'Daemons', url_comp=>'/daemon/grid', title=>'Daemons', icon=>'/static/images/daemon.gif', action => 'action.admin.daemon'};
 
 sub grid : Local {

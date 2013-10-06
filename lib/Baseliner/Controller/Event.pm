@@ -1,5 +1,5 @@
 package Baseliner::Controller::Event;
-use Baseliner::Plug;
+use Baseliner::PlugMouse;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use Try::Tiny;

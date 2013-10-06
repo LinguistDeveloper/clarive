@@ -1,5 +1,5 @@
 package Baseliner::Controller::Semaphore;
-use Baseliner::Plug;
+use Baseliner::PlugMouse;
 use Baseliner::Utils;
 use DateTime;
 use Try::Tiny;

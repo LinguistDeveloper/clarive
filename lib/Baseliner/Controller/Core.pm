@@ -2,8 +2,6 @@ package Baseliner::Controller::Core;
 use Baseliner::Plug;
 use Baseliner::Utils;
 
-# otro comentario
-
 register 'action.admin.default' =>  { name=>'Administrator' };
 register 'action.reports.view' => { name=>'View Reports' };
 

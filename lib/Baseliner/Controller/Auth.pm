@@ -1,5 +1,5 @@
 package Baseliner::Controller::Auth;
-use Baseliner::Plug;
+use Baseliner::PlugMouse;
 use Baseliner::Utils;
 BEGIN { extends 'Catalyst::Controller'; }
 use Try::Tiny;

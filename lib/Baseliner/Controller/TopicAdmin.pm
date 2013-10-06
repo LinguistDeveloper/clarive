@@ -1,5 +1,5 @@
 package Baseliner::Controller::TopicAdmin;
-use Baseliner::Plug;
+use Baseliner::PlugMouse;
 use Baseliner::Utils;
 use Baseliner::Core::DBI;
 use DateTime;

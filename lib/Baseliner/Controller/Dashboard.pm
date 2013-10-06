@@ -1,5 +1,5 @@
 package Baseliner::Controller::Dashboard;
-use Baseliner::Plug;
+use Baseliner::PlugMouse;
 use Baseliner::Utils qw(:default _load_yaml_from_comment);
 use Baseliner::Sugar;
 use Baseliner::Core::DBI;

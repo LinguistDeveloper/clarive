@@ -1,5 +1,5 @@
 package Baseliner::Controller::Feature;
-use Baseliner::Plug;
+use Baseliner::PlugMouse;
 use Baseliner::Utils;
 BEGIN { extends 'Catalyst::Controller' }
 use Git::Wrapper 0.025;

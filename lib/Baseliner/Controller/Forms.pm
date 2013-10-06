@@ -1,5 +1,5 @@
 package Baseliner::Controller::Forms;
-use Moose;
+use Mouse;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use Try::Tiny;
