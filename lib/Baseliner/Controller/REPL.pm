@@ -84,11 +84,11 @@ sub eval : Local {
     $self->push_to_history( $c->session, $code, $p->{lang} );
 
     my ( $res, $err );
-    my $t0 = [ gettimeofday ];
     my ( $stdout, $stderr );
 
     require Capture::Tiny;
     local $ENV{BASELINER_LOGCOLOR} = 0;
+    my $t0 = [ gettimeofday ];
     _log "================================ REPL START ==========================\n";
     ($stdout, $stderr) = Capture::Tiny::tee(
         sub {
