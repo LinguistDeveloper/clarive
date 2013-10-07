@@ -81,7 +81,7 @@
 
         
 % if($dashboardlets){
-<div id="container2">
+<div style='padding-right:10px;'>
 % for my $dash ( sort { $a->{order} <=> $b->{order} } _array $dashboardlets ) {
 
     <& $dash->{html} &>
