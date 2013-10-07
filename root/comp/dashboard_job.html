@@ -48,7 +48,9 @@
                     </tr>
                     <tr>
                         <td><% _loc( 'Total Time') %></td>
-                        <td><%$resumen->{execution_time}?sprintf("%s",$resumen->{execution_time} < 60? ($resumen->{execution_time}->sec . ' seg.') : ($resumen->{execution_time}->min) . ' min.'):''%></td>
+                        <td><%$resumen->{execution_time}?sprintf("%.02f %s",
+                            $resumen->{execution_time} < 60 ? $resumen->{execution_time} : ($resumen->{execution_time}/60), 
+                            $resumen->{execution_time} < 60? 'seg.' : 'min.'):''%></td>
                     </tr>
                     <tr>
                         <td><% _loc( 'Last Step' ) %></td>
