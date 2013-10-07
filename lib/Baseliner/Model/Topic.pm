@@ -1303,7 +1303,7 @@ sub save_data {
             map {
                 +{ name => $_->{id_field}, column => $_->{id_field}, data=> $_->{data} }
             } _array $_->{fields};
-        } grep { $_->{type} eq 'form' } _array($meta);
+        } grep { $_->{type} && $_->{type} eq 'form' } _array($meta);
     
     my $topic;
     my $moniker = delete $row{moniker};
@@ -1486,7 +1486,7 @@ sub save_data {
     }    
 
     # save relationship fields
-    my %rel_fields = map { $_->{id_field} => $_->{set_method} }  grep { $_->{relation} eq 'system' } _array( $meta  );
+    my %rel_fields = map { $_->{id_field} => $_->{set_method} }  grep { $_->{relation} && $_->{relation} eq 'system' } _array( $meta  );
     foreach my $id_field  (keys %rel_fields){
         if($rel_fields{$id_field}){
             my $meth = $rel_fields{$id_field};
@@ -1568,7 +1568,7 @@ sub set_cal {
     my ($self, $rs_topic, $cal_json, $user, $id_field ) = @_;
     my $mid = $rs_topic->mid;
     $cal_json = Encode::encode('UTF-8', $cal_json);
-    my $cal_data = _from_json( $cal_json );
+    my $cal_data = _from_json( $cal_json ) if $cal_json;
     DB->BaliMasterCal->search({ mid=>$mid, rel_field=>$id_field })->delete;
    
     _debug $cal_json;

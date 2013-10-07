@@ -352,6 +352,46 @@ register 'statement.if.var' => {
     },
 };
 
+register 'statement.if.condition' => {
+    text => 'IF condition THEN',
+    type => 'if',
+    data => { condition =>'' },
+    dsl => sub { 
+        my ($self, $n , %p) = @_;
+        sprintf(q{
+            if( %s ) {
+                %s
+            }
+            
+        }, $n->{condition}, $self->dsl_build( $n->{children}, %p ) );
+    },
+};
+
+register 'statement.if.var.list' => {
+    text => 'IF var in LIST THEN',
+    type => 'if',
+    data => { variable=>'', values=>'' },
+    dsl => sub { 
+        my ($self, $n , %p) = @_;
+        my @conditions;
+        my $complete_condition;
+        my @values = split /,/,$n->{values};
+
+        for ( @values ) {
+            push @conditions, sprintf(q{$stash->{'%s'} eq '%s'},$n->{variable},$_);
+        }
+        $complete_condition = join " || ", @conditions;
+
+        sprintf(q/
+            if( %s ) {
+                %s
+            }
+    
+        /, $complete_condition, $self->dsl_build( $n->{children}, %p ) );
+    },
+};
+
+
 register 'statement.try' => {
     text => 'TRY statement', 
     type => 'if',
