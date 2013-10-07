@@ -27,7 +27,8 @@ html: /dashlets/topics.html
                 <tr>
                     <td colspan='3'><b><a href="javascript:Baseliner.addNewTabComp('/topic/grid?query=<%$topic->{topic_mid}%>', _('Topics'));">
                         <!-- span class="label"><% "$topic->{category_name} #$topic->{topic_mid}" %></span> -->
-                        <% substr($topic->{title},0,30) . ( length( $topic->{title} ) > 30 and '...' ) %>
+                        <% #substr($topic->{title},0,30) . ( length( $topic->{title} ) > 30 and '...' ) %>
+                        <% $topic->{title} %>
                       </a></b></td>
                     <td><span class="bali-topic-status"><% $topic->{category_status_name} .  $numcomment%></span></td>
                     <td><%$topic->{created_on}%></td>
