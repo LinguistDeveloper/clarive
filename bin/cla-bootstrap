@@ -350,6 +350,7 @@ List::MoreUtils
 Locale::Maketext::Simple
 Lucy
 Lucy::Simple
+LucyX::Simple::Result::Hash
 Math::Base36
 MIME::Base64
 MIME::Lite

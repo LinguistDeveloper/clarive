@@ -16,13 +16,17 @@ Ext.onReady(function(){
     var search_box = new Ext.form.TextField({ width: '120', enableKeyEvents: true, name: 'search-box' });
     search_box.on('focus', function(f, e){ search_box.setSize( 300 ); });
     search_box.on('keydown', function(f, e){ search_box.setSize( 300 ); });
-    Baseliner.search_box_go = function(q) {
+    Baseliner.search_box_go = function(q,opts) {
+        if( !q ) q=Baseliner.search_box.getValue();
+        if( q==undefined || q.length== 0 ) return;
         Baseliner.add_tabcomp('/comp/search_results.js', undefined,
-                { query: q || Baseliner.search_box.getValue(), tab_icon: '/static/images/icons/search.png' });
+                { query: q, opts: opts || {}, tab_icon: '/static/images/icons/search.png' });
     };
     search_box.on('specialkey', function(f, e){
         if(e.getKey() == e.ENTER){
-            Baseliner.search_box_go();
+            var opts = {};
+            if( e.ctrlKey || e.altKey || e.shiftKey ) opts.force_new_tab = true;
+            Baseliner.search_box_go(null,opts);
             search_box.setSize( 120 );
         }
     });
