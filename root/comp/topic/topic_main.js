@@ -5,6 +5,7 @@
     $permissionGraph
     $category_meta
     $permissionComment
+    $viewKanban
     $HTMLbuttons => 0
     $status_items_menu => undef
 </%args>
@@ -15,6 +16,7 @@
     var permDelete = <% $permissionDelete ? 'true' : 'false' %>;
     var permGraph = <% $permissionGraph ? 'true' : 'false' %>;
     var permComment = <% $permissionComment ? 'true' : 'false' %>;
+    var viewKanban = <% $viewKanban ? 'true' : 'false' %>;
     var html_buttons = <% $HTMLbuttons == 1 ? 1 : 0 %>;
     var status_items_menu = '<% $status_items_menu %>';
     
@@ -30,6 +32,7 @@
         permGraph: permGraph,
         permDelete: permDelete,
         permComment: permComment,
+        viewKanban: viewKanban,
         html_buttons: html_buttons,
         status_items_menu: status_items_menu
     });

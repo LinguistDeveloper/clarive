@@ -626,6 +626,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             cls: 'x-btn-icon',
             enableToggle: true, 
             handler: function(){ self.show_kanban() }, 
+            hidden: self.viewKanban==undefined?true:!self.viewKanban,
             allowDepress: false, toggleGroup: self.toggle_group
         });
             
