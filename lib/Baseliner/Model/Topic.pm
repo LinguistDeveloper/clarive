@@ -613,6 +613,12 @@ sub update {
             event_new 'event.topic.create' => { username=>$p->{username} } => sub {
                 Baseliner->model('Baseliner')->txn_do(sub{
                     my $meta = $self->get_meta ($topic_mid , $p->{category});
+                    
+                    my @meta_filter;
+                    push @meta_filter, $_
+                       for grep { exists $p->{$_->{id_field}}} _array($meta);
+                    $meta = \@meta_filter;
+                    
                     my $topic = $self->save_data ($meta, undef, $p);
                     
                     $topic_mid    = $topic->mid;
@@ -652,6 +658,12 @@ sub update {
                     $topic_mid = $p->{topic_mid};
 
                     my $meta = $self->get_meta ($topic_mid, $p->{category});
+                    
+                    my @meta_filter;
+                    push @meta_filter, $_
+                       for grep { exists $p->{$_->{id_field}}} _array($meta);
+                    $meta = \@meta_filter;
+                    
                     my $topic = $self->save_data ($meta, $topic_mid, $p);
                     
                     $topic_mid    = $topic->mid;
