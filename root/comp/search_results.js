@@ -6,19 +6,19 @@
     //var panel_prev = Ext.getCmp( id_date );
     var panel_prev;
     var current_tab = Baseliner.tabpanel().getActiveTab();
-    if( current_tab.id && current_tab.id.indexOf('search-') == 0 ) {
+    if( !params.opts.force_new_tab && current_tab.id && current_tab.id.indexOf('search-') == 0 ) {
         panel_prev = current_tab;
         panel_prev.removeAll();
         panel_prev.setTitle( query );
     }
-    //var panel = panel_prev ? panel_prev
-        //: new Ext.Panel({
-    var panel = new Ext.Panel({
+    var panel = panel_prev 
+        ? panel_prev
+        : new Ext.Panel({
         title: query, 
         layout:'column',
         id: 'search-' + Ext.id(),
         overflow:'auto', 
-        style:{ margin: 45, padding: 30 } });
+        style:{ margin: '10px 10px 10px 10px' } });
     
     var toptpl = '<div id="boot"><h6>{0}</h6><h7>{1}</h7></div>';
     Baseliner.ajaxEval( '/search/providers', {}, function(res) {

@@ -4,7 +4,10 @@ use Baseliner::Utils;
 use Try::Tiny;
 
 our $_no_record = 0;
+our $no_throw_on_search = 1;
+
 our $scope = {};
+
 
 =head2
 
@@ -64,7 +67,8 @@ sub find {
     } else {
         %args = @_;
         my $rec = try { Baseliner::Role::CI->load_from_search( \%args, single=>1 ) };
-        _throw _loc('CI record not found for search %1', _to_json(\%args) ) unless ref $rec;
+        _throw _loc('CI record not found for search %1', _to_json(\%args) ) if !ref $rec && !$Baseliner::CI::no_throw_on_search;
+        return undef if !ref $rec;
         return Baseliner::Role::CI->_build_ci_instance_from_rec( $rec );
     }
 }

@@ -868,7 +868,7 @@ sub favorite_add : Local {
         # decode data structures
         defined $p->{$_} and $p->{$_} = _decode_json( $p->{$_} ) for qw/data menu/;
         $p->{id_favorite} = $id;
-        my $user = ci->find( name=>$c->username ); 
+        my $user = ci->find( name=>$c->username, collection=>'user' ); 
         $user->favorites->{$id} = $p; 
         $user->save;
         { success=>\1, msg=>_loc("Favorite added ok"), id_folder => $p->{id_folder} }
