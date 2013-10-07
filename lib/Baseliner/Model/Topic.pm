@@ -1486,7 +1486,7 @@ sub save_data {
     }    
 
     # save relationship fields
-    my %rel_fields = map { $_->{id_field} => $_->{set_method} }  grep { $_->{relation} eq 'system' } _array( $meta  );
+    my %rel_fields = map { $_->{id_field} => $_->{set_method} }  grep { $_->{relation} && $_->{relation} eq 'system' } _array( $meta  );
     foreach my $id_field  (keys %rel_fields){
         if($rel_fields{$id_field}){
             my $meth = $rel_fields{$id_field};
