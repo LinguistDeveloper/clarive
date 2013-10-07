@@ -1303,7 +1303,7 @@ sub save_data {
             map {
                 +{ name => $_->{id_field}, column => $_->{id_field}, data=> $_->{data} }
             } _array $_->{fields};
-        } grep { $_->{type} eq 'form' } _array($meta);
+        } grep { $_->{type} && $_->{type} eq 'form' } _array($meta);
     
     my $topic;
     my $moniker = delete $row{moniker};
