@@ -1568,7 +1568,7 @@ sub set_cal {
     my ($self, $rs_topic, $cal_json, $user, $id_field ) = @_;
     my $mid = $rs_topic->mid;
     $cal_json = Encode::encode('UTF-8', $cal_json);
-    my $cal_data = _from_json( $cal_json );
+    my $cal_data = _from_json( $cal_json ) if $cal_json;
     DB->BaliMasterCal->search({ mid=>$mid, rel_field=>$id_field })->delete;
    
     _debug $cal_json;
