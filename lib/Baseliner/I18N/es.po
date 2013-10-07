@@ -1236,6 +1236,9 @@ msgstr "Pases"
 msgid "Message"
 msgstr "Mensaje"
 
+msgid "Messages"
+msgstr "Mensajes"
+
 msgid "Timestamp"
 msgstr "Fecha-Hora"
 
@@ -4752,3 +4755,5 @@ msgstr "Tópico [%1] %2.  Estado cambiado a %3"
 msgid "More info"
 msgstr "Más info"
 
+msgid "User %1 is not allowed to access topic %2 contents"
+msgstr "El usuario %1 no puede acceder al contenido del tópico %2"
