@@ -17,13 +17,7 @@
 	position:relative;
 	right:50%;
 }
-#col0 {
-	float:left;
-	width:92%;
-	position:relative;
-	left:52%;
-	overflow:hidden;
-}
+
 #col1 {
 	float:left;
 	width:46%;
@@ -81,7 +75,7 @@
 
         
 % if($dashboardlets){
-<div style='padding-right:10px;'>
+<div style='padding: 10px;'>
 % for my $dash ( sort { $a->{order} <=> $b->{order} } _array $dashboardlets ) {
 
     <& $dash->{html} &>

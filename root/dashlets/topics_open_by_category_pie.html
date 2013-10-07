@@ -12,13 +12,11 @@ html: /dashlets/topics_open_by_category_pie.html
     my $title = $c->stash->{topics_open_by_category_title};
 </%perl>
 
-	<div style="width:100%;">
+	<div id="principal" style="clear:left;" >
 		<h2><%$title%></h2><br>
-		<div id="principal" class="grid_10">
-			<div id="<%$graph_id%>" style="height: 250px; width: 250px; float: left"
-				onmouseout="document.body.style.cursor='default';"></div>
-			<div id="<%$graph_id%>legend"  style="float:right;"></div>
-		</div>
+		<div id="<%$graph_id%>" style="height: 250px; width: 250px; float: left"
+			onmouseout="document.body.style.cursor='default';"></div>
+		<div id="<%$graph_id%>legend" ></div>
 	</div>
 
 
