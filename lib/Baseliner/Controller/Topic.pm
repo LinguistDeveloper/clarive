@@ -529,7 +529,11 @@ sub view : Local {
         $c->stash->{permissionDelete} = 0;
         $c->stash->{permissionGraph} = $c->model("Permissions")->user_has_action( username => $c->username, action => 'action.topics.view_graph');
         $c->stash->{permissionComment} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.GDI.comment' );
-        $c->stash->{viewKanban} = _ci( $topic_mid )->children( isa => 'topic' );
+        if ( $topic_mid ) {
+            $c->stash->{viewKanban} = _ci( $topic_mid )->children( isa => 'topic' );
+        } else {
+            $c->stash->{viewKanban} = 0;
+        }
 
         if ($c->is_root){
             $c->stash->{HTMLbuttons} = 0;
