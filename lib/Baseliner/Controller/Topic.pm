@@ -1057,24 +1057,24 @@ sub filters_list : Local {
     };            
     #################################################################################
 
-    $row = $c->model('Baseliner::BaliTopicView')->search();
-    
-    if($row){
-        while( my $r = $row->next ) {
-            push @views, {
-                id  => $i++,
-                idfilter      => $r->id,
-                text    => _loc($r->name),
-                filter  => $r->filter_json,
-                default    => \0,
-                cls     => 'forum',
-                iconCls => 'icon-no',
-                checked => \0,
-                leaf    => 'true',
-                uiProvider => 'Baseliner.CBTreeNodeUI_system'
-            };	
-        }  
-    }   
+    ##$row = $c->model('Baseliner::BaliTopicView')->search();
+    ##
+    ##if($row){
+    ##    while( my $r = $row->next ) {
+    ##        push @views, {
+    ##            id  => $i++,
+    ##            idfilter      => $r->id,
+    ##            text    => _loc($r->name),
+    ##            filter  => $r->filter_json,
+    ##            default    => \0,
+    ##            cls     => 'forum',
+    ##            iconCls => 'icon-no',
+    ##            checked => \0,
+    ##            leaf    => 'true',
+    ##            uiProvider => 'Baseliner.CBTreeNodeUI_system'
+    ##        };	
+    ##    }  
+    ##}   
     
     push @tree, {
         id          => 'V',
