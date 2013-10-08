@@ -759,12 +759,16 @@ sub update : Local {
             #$mid = $class->save( name=>$name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), data=> $p ); 
         }
         elsif( $action eq 'edit' && defined $mid ) {
-            $c->cache_remove( qr/:$mid:/ );
+            #$c->cache_remove( qr/:$mid:/ );
             #$mid = $class->save( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), data => $p ); 
-            my $ci = $class->new( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), %$p, modified_by=>$c->username );
+
+            #my $ci = $class->new( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), %$p, modified_by=>$c->username );
+            my $ci = ci->find( $mid ) || _fail _loc 'CI %1 not found', $mid;
+            $ci->update( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), %$p, modified_by=>$c->username );
+            
             #my $ci = _ci( $mid );
             #$ci->update( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), %$p ); 
-            $ci->save;
+            #$ci->save;
             $mid = $ci->mid;
         }
         else {

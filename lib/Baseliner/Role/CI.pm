@@ -15,7 +15,7 @@ subtype Date  => as 'Class::Date';
 subtype HashJSON       => as 'HashRef';
 subtype TS    => as 'Str';
 subtype DT    => as 'DateTime';
-
+    
 coerce 'Date' => 
     from 'Str' => via { Class::Date->new( $_ ) },
     from 'Num' => via { Class::Date->new( $_ ) },
@@ -114,36 +114,25 @@ sub serialize {
 }
 
 # sets several attributes at once, like DBIC
+#   the ci must exist (self=ref)
 sub update {
     my ($self, %data ) = @_;
-    my $d = { %$self, %data };
 
-    my $class = ref $self || $self;
-    $self = $class->new( $d );  # merge and recreate object
-
-    $self->save;
-    # deprecated: does not coerce, relationships wont save
-    #for my $key ( keys %data ) {
-    #    if( $self->can( $key ) ) {
-    #        $self->$key( $data{ $key });
-    #    } else {
-    #        $self->{$key} = $data{ $key };
-    #    }
-    #}
+    my $class = ref $self;
+    
+    # detect changed fields, in case its a new row then all data is changed
+    my $changed = +{ map { $_ => $data{$_} } grep { $self->{$_} ne $data{$_} } keys %data } ;
+        
+    # merge and recreate object
+    my $d = { %$self, %data };  
+    $self = $class->new( $d );  
+    
+    $self->save( changed=>$changed );
 }
 
 sub save {
-    my $self = shift;
-    #my %p;
-    #if( ref $_[0] eq 'HASH' ) {
-    #    %p = %{ $_[0] };
-    #} else {
-    #    %p = @_;
-    #}
+    my ($self,%opts) = @_;
     
-    # merge self with current values, ignore underscore
-    #my ($mid,$name,$data,$bl,$active,$versionid,$ns,$moniker) = @{\%p}{qw/mid name data bl active versionid ns moniker/};
-
     my $collection = $self->collection;
 
     my $mid = $self->mid;
@@ -153,7 +142,7 @@ sub save {
     my $ns = $self->ns;
     
     # try to get mid from ns
-    if( !$exists && length $ns && $ns ne '/' ) {  
+    if( !$exists && length $ns && $ns ne '/' ) {
         my $ns_row = DB->BaliMaster->search({ collection=>$collection, ns=>$ns }, {select=>'mid' })->first;
         if( $ns_row ) {
             $mid = $ns_row->mid;
@@ -162,6 +151,8 @@ sub save {
     }
 
     Baseliner->cache_remove( qr/^ci:/ );
+    Baseliner->cache_remove( qr/ci:[0-9]+:/ );
+    Baseliner->cache_remove( qr/:$mid:/ ) if length $mid;
     
     # transaction bound, in case there are foreign tables
     Baseliner->model('Baseliner')->txn_do(sub{
@@ -179,7 +170,7 @@ sub save {
                 $row->ts( Util->_dt );
                 $row->update;  # save bali_master data
                 
-                $self->update_ci( $row );
+                $self->update_ci( $row, undef, \%opts );
             }
             else {
                 _fail _loc "Could not find master row for mid %1", $mid;
@@ -212,7 +203,7 @@ sub save {
             }
             
             # now save the rest of the ci data (yaml)
-            $self->new_ci( $row );
+            $self->new_ci( $row, undef, \%opts );
         }
         # now index for searches  XXX this should be handled by the inner_save data, which should use mdb->save instead 
         #$self->index_search_data( mid=>$mid, row=>$row, data=>$data) unless $p{no_index};
@@ -239,22 +230,26 @@ sub delete {
 
 # hook
 sub update_ci {
-    my ( $self, $master_row, $data ) = @_;
+    my ( $self, $master_row, $data, $opts ) = @_;
     # if no data=> supplied, save myself
+    $opts //= {}; # maybe lost during bad arounds
+    $opts->{save_type} = 'update';
     $data = $self->serialize if !defined $data;
-    $self->save_data( $master_row, $data );
+    $self->save_data( $master_row, $data, $opts );
 }
 
 sub new_ci {
-    my ( $self, $master_row, $data ) = @_;
+    my ( $self, $master_row, $data, $opts ) = @_;
     # if no data=> supplied, save myself
+    $opts //= {}; # maybe lost during bad arounds
+    $opts->{save_type} = 'new';
     $data = $self->serialize if !defined $data;
-    $self->save_data( $master_row, $data );
+    $self->save_data( $master_row, $data, $opts);
 }
 
 # save data to yaml and mdb, does not use self
 sub save_data {
-    my ( $self, $master_row, $data ) = @_;
+    my ( $self, $master_row, $data, $opts ) = @_;
     return unless ref $data;
     my $storage = $self->storage;
     # peek into if we need to store the relationship
