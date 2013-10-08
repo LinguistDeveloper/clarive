@@ -19,7 +19,7 @@
     <script type="text/javascript" src="/static/livegrid/livegrid-all.js"></script>
     <!-- script type="text/javascript" src="/static/pdfjs/pdf.min.js"></script -->
 
-    <script>$('#bali-loading .progress .bar').width('40%');</script>
+    <script>if( !Ext.isIE ) { $('#bali-loading .progress .bar').width('40%');}</script>
 
     <!-- DatePickerPlus - Ext -->
     <script type="text/javascript" src="/static/datepickerplus/ext.ux.datepickerplus-min.js"></script> 
@@ -106,7 +106,7 @@
     <!-- Graph libraries, Jit -->
     <script type="text/javascript" src="/site/graph.js"></script>
 
-    <script>$('#bali-loading .progress .bar').width('60%');</script>
+    <script>if( !Ext.isIE ) { $('#bali-loading .progress .bar').width('60%'); }</script>
     
     <!--  -->
     <script type="text/javascript" src="/site/explorer.js"></script>
@@ -129,24 +129,24 @@
     <link rel="stylesheet" type="text/css" href="/static/superbox/superbox.css" /> 
 
     <!-- model depends on superbox -->
-    <script type='text/javascript' src='/static/latinise.js'></script>
+    <script type="text/javascript" src="/static/latinise.js"></script>
     <script type="text/javascript" src="/site/model.js"></script>
     <script type="text/javascript" src="/comp/topic/topic_lib.js"></script>
 
     <!-- Cal -->
-    <link rel='stylesheet' type='text/css' href='/static/fullcalendar/fullcalendar.css' />
-    <link rel='stylesheet' type='text/css' href='/static/fullcalendar/fullcalendar.print.css' media='print' />
-    <script type='text/javascript' src='/static/fullcalendar/fullcalendar.min.js'></script>
+    <link rel="stylesheet" type="text/css" href="/static/fullcalendar/fullcalendar.css" />
+    <link rel="stylesheet" type="text/css" href="/static/fullcalendar/fullcalendar.print.css" media="print" />
+    <script type="text/javascript" src="/static/fullcalendar/fullcalendar.min.js"></script>
 
     <!-- Treegrid -->
-    <link rel='stylesheet' type='text/css' href='/static/gridtree/css/treegrid.css' />
-    <script type='text/javascript' src='/static/gridtree/treegrid.js'></script>
+    <link rel="stylesheet" type="text/css" href="/static/gridtree/css/treegrid.css" />
+    <script type="text/javascript" src="/static/gridtree/treegrid.js"></script>
     
     <!-- final css override -->
     <link rel="stylesheet" type="text/css" href="/static/final.css" />
     <link rel="stylesheet" type="text/css" href="/static/sprites.css" />
     
-    <script>$('#bali-loading .progress .bar').width('80%');</script>
+    <script>if( !Ext.isIE ) { $('#bali-loading .progress .bar').width('80%');}</script>
     
     <!-- Hooks -->
 % for my $include ( _array $c->stash->{header_include} ) {
@@ -180,7 +180,7 @@
                 %>
         });
 
-        $('#bali-loading .progress .bar').width('98%');
+        if( !Ext.isIE ) { $('#bali-loading .progress .bar').width('98%');}
         require(['/site/main.js'], function(main){
             // after main loaded
             if( Ext.get('bali-loading') )

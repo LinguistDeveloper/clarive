@@ -764,15 +764,32 @@ Ext.extend( Baseliner.store.CI, Baseliner.JsonStore );
 
 Baseliner.model.CISelect = function(c) {
     //var tpl_list = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">{name} ({class})</div></tpl>' );
-    var tpl_list = new Ext.XTemplate(
-        '<tpl for="."><div class="search-item">',
-            //'<h3><span>{ns_type}<br />{user}</span><img src="{icon}" />{name}</h3>',
-        '<span id="boot" style="background: transparent"><strong>{name}</strong> ({class})</span>',
-        '<tpl if="pretty_properties">',
-            '<br />{pretty_properties}',
-        '</tpl>',
-        '</div></tpl>'
-    );
+    var show_class = c.showClass;
+    var tpl_list;
+
+    if ( show_class ) {
+
+        tpl_list = new Ext.XTemplate(
+            '<tpl for="."><div class="search-item">',
+                //'<h3><span>{ns_type}<br />{user}</span><img src="{icon}" />{name}</h3>',
+            '<span id="boot" style="background: transparent"><strong>{name}</strong> ({class})</span>',
+            '<tpl if="pretty_properties">',
+                '<br />{pretty_properties}',
+            '</tpl>',
+            '</div></tpl>'
+        );
+    } else {
+        tpl_list = new Ext.XTemplate(
+            '<tpl for="."><div class="search-item">',
+                //'<h3><span>{ns_type}<br />{user}</span><img src="{icon}" />{name}</h3>',
+            '<span id="boot" style="background: transparent"><strong>{name}</strong></span>',
+            '<tpl if="pretty_properties">',
+                '<br />{pretty_properties}',
+            '</tpl>',
+            '</div></tpl>'
+        );
+
+    }
     var tpl_field = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
     Baseliner.model.CISelect.superclass.constructor.call(this, Ext.apply({
         allowBlank: true,
@@ -854,6 +871,7 @@ Ext.extend( Baseliner.model.CICombo, Ext.form.ComboBox );
 Baseliner.ci_box = function(c) {
     var value = c.value; delete c.value;
     var role = c.role; delete c.role;
+    var show_class = c.showClass; delete c.showClass;
     var with_vars = c.with_vars; delete c.with_vars;
     var cl = c['class']; delete c['class']; // IE - class is syntax errors due to reserved word
     var bp = {};
@@ -873,7 +891,8 @@ Baseliner.ci_box = function(c) {
         fieldLabel: _('CI'),
         name: 'ci',
         hiddenName: 'ci', 
-        allowBlank: true
+        allowBlank: true,
+        showClass: show_class
     }, c )); 
     if( autoload ) {
         if( value != undefined && value.length > 0 )  {

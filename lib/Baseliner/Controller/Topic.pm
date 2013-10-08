@@ -529,6 +529,12 @@ sub view : Local {
         $c->stash->{permissionDelete} = 0;
         $c->stash->{permissionGraph} = $c->model("Permissions")->user_has_action( username => $c->username, action => 'action.topics.view_graph');
         $c->stash->{permissionComment} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.GDI.comment' );
+        if ( $topic_mid ) {
+            $c->stash->{viewKanban} = _ci( $topic_mid )->children( isa => 'topic' );
+        } else {
+            $c->stash->{viewKanban} = 0;
+        }
+
         if ($c->is_root){
             $c->stash->{HTMLbuttons} = 0;
         }
@@ -606,12 +612,24 @@ sub view : Local {
             }
             
             $c->stash->{status_items_menu} = _encode_json(\@statuses);
-            
-            
         }else{
             $id_category = $p->{new_category_id};
+            
             my $category = DB->BaliTopicCategories->find( $id_category );
             $c->stash->{category_meta} = $category->forms;
+            
+            my @category = DB->BaliTopicCategories->search( 
+                {id_category => $id_category, 'statuses.status.type' => 'I'} , 
+                { join => {'statuses' => 'status'} , +select =>[ 'forms','statuses.status.id'], as =>['forms','id_status'] } )->hashref->first;
+            
+            my @statuses = $c->model('Topic')->next_status_for_user(
+                id_category    => $id_category,
+                id_status_from => $category[0]->{id_status},
+                username       => $c->username,
+            );               
+            $c->stash->{status_items_menu} = _encode_json(\@statuses);
+            $c->stash->{category_meta} = $category[0]->{forms};
+            
             $c->stash->{permissionEdit} = 1 if exists $categories_edit{$id_category};
             $c->stash->{permissionDelete} = 1 if exists $categories_delete{$id_category};
             

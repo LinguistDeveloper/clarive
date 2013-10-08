@@ -4,13 +4,42 @@
     my $dashboardlets = $c->stash->{dashboardlets};
 </%perl>
 
-<div id="boot" style="margin:0 auto 0 auto; width:90%;">
+<style>
+#container2 {
+	clear:left;
+	float:left;
+	width:100%;
+	overflow:hidden;
+}
+#container1 {
+	float:left;
+	width:100%;
+	position:relative;
+	right:50%;
+}
+
+#col1 {
+	float:left;
+	width:46%;
+	position:relative;
+	left:52%;
+	overflow:hidden;
+}
+#col2 {
+	float:left;
+	width:46%;
+	position:relative;
+	left:56%;
+	overflow:hidden;
+}
+</style>
+
+
+<div id="boot" style="width:100%;">
     
 % if($dashboards){
 % if(scalar @{$dashboards} > 0){
-    <div class="container_24" style="padding-top:12px;padding-left:10px;">
-            <div class="grid_19">&nbsp;</div>
-            <div class="grid_3 btn-group">
+            <div class="btn-group" style="float:right;margin-right:10px;">
               <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown">Dashboards <span class="caret"></span></button>
               <ul class="dropdown-menu">
 % for my $dashboard (_array $dashboards) {
@@ -18,14 +47,14 @@
 %}
               </ul>
             </div>
-    </div>
 %}
 %}
     
 
 %if($c->stash->{is_columns}){
-<div class="container_24" style="padding-top:10px;padding-left:10px;">
-        <div class="grid_10" style="margin-bottom: 5px;">
+<div id="container2">
+	<div id="container1">
+        <div id="col1">
 % if($dashboardlets){        
 % for my $dash ( sort { $a->{order} <=> $b->{order} } _array $dashboardlets ) {
 % if ($dash->{order} % 2 != 0){
@@ -33,9 +62,7 @@
 % }}
         </div> 
 
-        <div class="grid_1">&nbsp;</div>
-        
-        <div class="grid_11">
+        <div id="col2">
             
 % for my $dash ( sort { $a->{order} <=> $b->{order} } _array $dashboardlets ) {
 % if ($dash->{order} % 2 == 0){
@@ -47,14 +74,13 @@
 %}else{
 
         
-% if($dashboardlets){        
+% if($dashboardlets){
+<div style='padding: 10px;'>
 % for my $dash ( sort { $a->{order} <=> $b->{order} } _array $dashboardlets ) {
-<div class="container_22" style="padding-top:10px;padding-left:10px;">
-    <div class="grid_22" style="margin-bottom: 5px;">
+
     <& $dash->{html} &>
-    </div>
 % }
-         
+</div>         
 %}
 
 %}

@@ -14,7 +14,7 @@ html: /dashlets/baselines.html
     my $projects = $c->stash->{projects};
 </%perl>
 
-    <div>
+    <div style="clear:left;">
         <h2><% _loc("Baselines") %></h2>
 %foreach my $entorno (_array @entornos){
         <h4><%$entorno->{bl}%></h4>

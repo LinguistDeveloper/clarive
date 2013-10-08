@@ -11,14 +11,15 @@ html: /dashlets/topics.html
     my @topics = $c->stash->{topics};
 </%perl>
 
-    <div>
+    <div style="clear:left;">
         <h2><% _loc('Topics') %></h2>
         <table class="table table-bordered table-condensed dashboard">
             <thead>
                 <tr>
                     <th colspan="3"><% _loc('Title') %></th>
+                    <th><% _loc('Category') %></th> 
                     <th><% _loc('Status') %></th>            
-                    <th>Creada</th>
+                    <th>Creado</th>
                 </tr>
             </thead>
             <tbody>
@@ -26,9 +27,10 @@ html: /dashlets/topics.html
 % my $numcomment = $topic->{numcomment} ? " ($topic->{numcomment})" : '';
                 <tr>
                     <td colspan='3'><b><a href="javascript:Baseliner.addNewTabComp('/topic/grid?query=<%$topic->{topic_mid}%>', _('Topics'));">
-                        <!-- span class="label"><% "$topic->{category_name} #$topic->{topic_mid}" %></span> -->
-                        <% substr($topic->{title},0,30) . ( length( $topic->{title} ) > 30 and '...' ) %>
+                        <% #substr($topic->{title},0,30) . ( length( $topic->{title} ) > 30 and '...' ) %>
+                        <% $topic->{title} %>
                       </a></b></td>
+                     <td>   <span class="bali-topic-status"><% "$topic->{category_name}" %></span> </td>
                     <td><span class="bali-topic-status"><% $topic->{category_status_name} .  $numcomment%></span></td>
                     <td><%$topic->{created_on}%></td>
                 </tr>
