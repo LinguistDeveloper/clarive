@@ -468,6 +468,11 @@ sub username {
     } and return $user;
 }
 
+sub user_ci {
+    my ($c,$username) = @_;
+    ci->find( name=>$username // $c->username, collection=>'user' );
+}
+
 sub has_action {
     my ($c,$action) = @_;
     # memoization for the same request

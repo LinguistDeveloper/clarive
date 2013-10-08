@@ -2,7 +2,6 @@ package Baseliner::Model::Users;
 use Baseliner::Plug;
 extends qw/Catalyst::Model/;
 use Baseliner::Utils;
-use Crypt::Blowfish::Mod;
 
 sub get {
     my ($self, $username ) = @_;
@@ -40,13 +39,6 @@ sub populate_from_ldap {
         $r->realname( $u->{realname} );
         $r->update;
     }
-}
-
-sub encrypt_password {
-    my ($self, $username, $password) = @_;
-    my $user_key = ( Baseliner->config->{decrypt_key} // Baseliner->config->{dec_key} ) .reverse ( $username );
-    my $b = Crypt::Blowfish::Mod->new( $user_key );
-    return Digest::MD5::md5_hex( $b->encrypt($password) );    
 }
 
 sub get_users_friends_by_username{

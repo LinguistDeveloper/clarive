@@ -813,7 +813,7 @@ sub tree_favorites : Local {
     my $p = $c->req->params;
     my @tree;
     my $provider;
-    my $user = ci->find( name=>$c->username ); 
+    my $user = $c->user_ci; 
     my $root = length $p->{id_folder} 
         ? $user->favorites->{ $p->{id_folder} }{contents}
         : $user->favorites;
@@ -841,7 +841,7 @@ sub tree_workspaces : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
     my @tree;
-    my $user = ci->find( name=>$c->username ); 
+    my $user = $c->user_ci; 
     my $wks = $user->workspaces;
     for my $node ( map {$wks->{$_}} sort { $a<=>$b } keys %{$wks||{}} ) {
         ! $node->{menu} and delete $node->{menu}; # otherwise menus don't work
@@ -868,7 +868,7 @@ sub favorite_add : Local {
         # decode data structures
         defined $p->{$_} and $p->{$_} = _decode_json( $p->{$_} ) for qw/data menu/;
         $p->{id_favorite} = $id;
-        my $user = ci->find( name=>$c->username, collection=>'user' ); 
+        my $user = $c->user_ci; 
         $user->favorites->{$id} = $p; 
         $user->save;
         { success=>\1, msg=>_loc("Favorite added ok"), id_folder => $p->{id_folder} }
@@ -882,7 +882,7 @@ sub favorite_del : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
     $c->stash->{json} = try {
-        my $user = ci->find( name=>$c->username ); 
+        my $user = $c->user_ci; 
         my $favs = $user->favorites;
         # delete node
         my $id = $p->{id};
@@ -905,7 +905,7 @@ sub favorite_rename : Local {
         _fail _loc "Invalid name" unless length $p->{text};
         
         # TODO rename id_folder in case it's a folder?
-        my $user = ci->find( name=>$c->username ); 
+        my $user = $c->user_ci; 
         my $d = $user->favorites->{ $p->{id} };
         $d->{text} = $p->{text};
         $user->save;
@@ -921,7 +921,7 @@ sub favorite_add_to_folder : Local {
     my $p = $c->req->params;
     $c->stash->{json} = try {
         # get data
-        my $user = ci->find( name=>$c->username ); 
+        my $user = $c->user_ci; 
         my $d = $user->favorites->{ $p->{id_folder} }; 
         _fail _loc "Not found: %1", $p->{id_folder} unless defined $d; 
         $d->{contents} //= {};
