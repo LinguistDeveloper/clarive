@@ -336,33 +336,6 @@ sub topics_for_user {
         $where->{topic_mid} = $topic_list;
     }
     
-    #Filtros especificos para GDI
-    if( $p->{typeApplication} && $p->{typeApplication} eq 'gdi'){
-        my @usuarios_n1;
-        if (!$perm->is_root( $username )){
-            if(!Baseliner->model('Permissions')->user_has_action( username => $username, action => 'action.GDI.admin')){
-                my $usuario_gdi = Baseliner->model('Baseliner::BaliMaster')->search({-or => [name => uc $username, name => lc $username], collection => 'UsuarioGDI'})->hashref->first;
-                if( my $cached = Baseliner->cache_get( $usuario_gdi->{mid} ) ) {
-                    @usuarios_n1 = @$cached;
-                     
-                } else {
-                    #my @usuarios_n1 = map {$_->{name}} _ci( $usuario_gdi->{mid} )->parents( depth=>-1, mode=>'flat' );
-                    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-                    my $sSQL;
-                    $sSQL  = 'SELECT MID,  A.NAME AS DNI FROM ';
-                    $sSQL .= '(SELECT ROWNUM AS FILA, LEVEL AS NIVEL, FROM_MID FROM BALI_MASTER_REL A START WITH TO_MID = ? CONNECT BY PRIOR FROM_MID = TO_MID AND FROM_MID <> TO_MID) B ';
-                    $sSQL .= 'LEFT JOIN BALI_MASTER A ON A.MID = B.FROM_MID';
-                    @usuarios_n1 = map {$_->{dni}} $db->array_hash( $sSQL, $usuario_gdi->{mid} );            
-                    Baseliner->cache_set( $usuario_gdi->{mid}, \@usuarios_n1 ) if $usuario_gdi->{mid};
-                }
-                
-                push (@usuarios_n1, $username);                
-                $where->{'created_by'} = \@usuarios_n1;
-                #$where->{'created_by'} = $username;
-            }
-        }
-    }
-
     #DEFAULT VIEWS***************************************************************************************************************
     if($p->{today}){
         my $today = DateTime->now();
