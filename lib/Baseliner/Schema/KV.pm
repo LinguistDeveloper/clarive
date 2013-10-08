@@ -558,9 +558,13 @@ sub build_pivot_query {
 
     my $fulltext = delete $where->{_fulltext}; # search on mvalue
     my $fullscore = 0;
-    ($fulltext, $fullscore) = @{ $fulltext } if ref $fulltext eq 'ARRAY';
-    $fulltext =~ s/\*/%/g;
-    $fulltext =~ s/\?/_/g;
+    if( ref $fulltext eq 'ARRAY' ) {
+        ($fulltext, $fullscore) = @{ $fulltext };
+    }
+    elsif( defined $fulltext )  {
+        $fulltext =~ s/\*/%/g;
+        $fulltext =~ s/\?/_/g;
+    }
 
     my %pivot_cols;
     my @order_by;
@@ -707,7 +711,7 @@ sub build_pivot_query {
         }
     } if defined $start || defined $limit;
 
-    Util->_debug( $sql );
+    Util->_debug( $sql ) if $ENV{BASELINER_DEBUG}>1;
     { query=>[ $sql, @binds ], sql=>$sql, binds=>\@binds, columns=>[ keys %pivot_cols ] };
 }
 
