@@ -2,6 +2,15 @@ package BaselinerX::CI::user;
 use Baseliner::Moose;
 with 'Baseliner::Role::CI::Internal';
 
+has api_key       => qw(is rw isa Any);
+has email         => qw(is rw isa Any);
+has avatar        => qw(is rw isa Any);
+has phone         => qw(is rw isa Any);
+has username      => qw(is rw isa Any);
+has password      => qw(is rw isa Any);
+has realname      => qw(is rw isa Any);
+has alias         => qw(is rw isa Any);
+
 has favorites     => qw(is rw isa HashRef), default=>sub{ +{} };
 has workspaces    => qw(is rw isa HashRef), default=>sub{ +{} };
 has prefs         => qw(is rw isa HashRef), default=>sub{ +{} };
@@ -10,21 +19,33 @@ sub icon { '/static/images/icons/user.gif' }
 
 sub has_description { 0 }
 
-around load => sub {
-    my ($orig, $self ) = @_;
-    my $data = $self->$orig() // {};
-    $data = { %$data, %{ +{ DB->BaliUser->find( $self->mid )->get_columns } || {} } };
-    # $data = { %$data, %{ Baseliner->model('Topic')->get_data( undef, $self->mid, with_meta=>1 ) || {} } };
-    #$data->{category} = { DB->BaliTopic->find( $self->mid )->categories->get_columns };
+around load_post_data => sub {
+    my ($orig, $class, $mid, $data ) = @_;
+    #my $data = $self->$orig() // {};
+    my $row = DB->BaliUser->find( $mid );
+    my $row_data = $row ? +{ $row->get_columns } : {};
+    $data = { %$data, %$row_data };
     return $data;
 };
 
 around save_data => sub {
-    my ($orig, $self, $master_row, $data  ) = @_;
+    my ($orig, $self, $master_row, $data, $opts ) = @_;
 
     my $mid = $master_row->mid;
-	my $ret = $self->$orig($master_row, $data);
     
+    # TODO encrypt here too? if $self->password . " == " . $data->{password};    
+    if( $opts->{save_type} eq 'new' ) {
+        $data->{password} = $self->encrypt_password( $data->{name}, $data->{password} );
+    }
+    elsif( exists $opts->{changed}{password} ) {  # its an update, and the password has changed
+        $data->{password} = $self->encrypt_password( $data->{name}, $data->{password} );
+        $self->password( $data->{password} );
+    }
+    Util->_debug( $data->{name} );
+    Util->_debug( $data->{password} );
+            
+    my $ret = $self->$orig($master_row, $data, $opts);
+
     my $row = DB->BaliUser->update_or_create({
         mid         => $mid,
         active      => $master_row->active // 1, 
@@ -34,7 +55,7 @@ around save_data => sub {
         phone       => $data->{phone}, 
         username    => $data->{username} // $master_row->name, 
         email       => $data->{email}, 
-        password    => length $data->{password} ? $data->{password} : Util->_md5(), 
+        password    => length $data->{password} ? $data->{password} : Util->_md5(rand(9999999).time()), 
         realname    => $data->{realname}, 
         alias       => $data->{alias}, 
     });
@@ -47,6 +68,7 @@ around delete => sub {
     my $row = DB->BaliUser->find( $mid // $self->mid );  
     my $cnt = $row->delete if $row; 
     Baseliner->cache_remove( qr/^ci:/ );
+    #$self->$orig( $mid );  # BaliUser deletes its master automatically
     # bali project deletes CI from master, no orig call then 
     return $cnt;
 };
@@ -85,6 +107,30 @@ sub prefs_save {
     $self->prefs( $prefs );
     $self->save;
     $prefs;
+}
+
+sub encrypt_password {
+    my ($self, $username, $password) = @_;
+    if( my $password_rule = Baseliner->config->{password_rule} ) {
+        Util->_fail( Util->_loc('Password does not comply. Rule: %1', Baseliner->config->{password_rule_description} // $password_rule ) )
+            unless $password =~ qr/$password_rule/;
+    }
+    if( my $password_len = Baseliner->config->{password_min_length} ) {
+        Util->_fail( Util->_loc('Password length is less than %1 characters. Rule: %1', $password_len ) )
+           if $password_len > 0 && length($password)<$password_len;
+    }
+    my $user_key = ( Baseliner->config->{decrypt_key} // Baseliner->config->{dec_key} ) .reverse ( $username );
+    require Crypt::Blowfish::Mod;
+    my $b = Crypt::Blowfish::Mod->new( $user_key );
+    return Digest::MD5::md5_hex( $b->encrypt($password) );    
+}
+
+sub save_api_key  {
+    my ($self, $p) = @_;
+    $self = ref $self ? $self : Baseliner->user_ci( $p->{username} );
+    my $new_key = $p->{api_key} // Util->_md5( $p->{username} . ( int ( rand( 32 * 32 ) % time ) ) );
+    $self->update( api_key=>$new_key );
+    { api_key=>$new_key, msg=>'ok', success=>\1 };
 }
 
 1;

@@ -160,21 +160,6 @@ sub user_data : Local {
     $c->forward('View::JSON');    
 }
 
-sub gen_api_key : Local {
-    my ($self, $c) = @_;
-    try {
-        my $user = DB->BaliUser->search({ username => $c->username })->first;
-        _fail _loc('User not found: %1', $c->username ) unless $user;
-        my $new_key = _md5 $c->username . ( int ( rand( 32 * 32 ) % time ) ) ;
-        $user->update({ api_key => $new_key });
-        $c->stash->{json} = { api_key=>$new_key, msg=>'ok', success=>\1 };
-    } catch {
-        my $err = shift;
-        $c->stash->{json} = { msg=>"$err", success=>\0 };
-    };
-    $c->forward('View::JSON');    
-}
-
 sub infoactions : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
@@ -247,7 +232,7 @@ sub update : Local {
                     email     	=> $p->{email},
                     phone      	=> $p->{phone},            
                     active 		=> '1',
-                    password    => $c->model('Users')->encrypt_password( $p->{username}, $p->{pass} )
+                    password    => BaselinerX::CI::user->encrypt_password( $p->{username}, $p->{pass} )
                 };           
                 
                 my $ci = BaselinerX::CI::user->new( %$ci_data );
@@ -283,7 +268,7 @@ sub update : Local {
                                     mid			=> $mid,
                                     username    => $p->{username},
                                     realname  	=> $p->{realname},
-                                    password	=> $c->model('Users')->encrypt_password( $p->{username}, $p->{pass} ),
+                                    password	=> BaselinerX::CI::user->encrypt_password( $p->{username}, $p->{pass} ),
                                     alias	=> $p->{alias},
                                     email	=> $p->{email},
                                     phone	=> $p->{phone}
@@ -309,7 +294,7 @@ sub update : Local {
                 else{
                     $user->realname( $p->{realname} );
                     if($p->{pass} ne ''){
-                        $user->password( $c->model('Users')->encrypt_password( $p->{username}, $p->{pass} ));
+                        $user->password( BaselinerX::CI::user->encrypt_password( $p->{username}, $p->{pass} ));
                     }
                     $user->alias( $p->{alias} );
                     $user->email( $p->{email} );
@@ -845,9 +830,9 @@ sub change_pass : Local {
     my $row = $c->model('Baseliner::BaliUser')->search({username => $username, active => 1})->first;
     
     if ($row) {
-        if ( $c->model('Users')->encrypt_password( $username, $p->{oldpass} ) eq $row->password ) {
+        if ( BaselinerX::CI::user->encrypt_password( $username, $p->{oldpass} ) eq $row->password ) {
             if ( $p->{newpass} ) {
-                $row->password( $c->model('Users')->encrypt_password( $username, $p->{newpass} ) );
+                $row->password( BaselinerX::CI::user->encrypt_password( $username, $p->{newpass} ) );
                 $row->update();
                 $c->stash->{json} = { msg => _loc('Password changed'), success => \1 };
             } else {

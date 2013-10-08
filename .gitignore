@@ -47,3 +47,4 @@ root/static/dhtmlx*
 root/static/sch*
 root/static/images/glyph*
 nohup.out
+config/clarive.yml
