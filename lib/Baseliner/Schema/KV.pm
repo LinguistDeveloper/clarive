@@ -713,6 +713,7 @@ sub build_pivot_query {
 
 sub _abstract {
     my $self = shift;
+    require SQL::Abstract;
     my $sa = SQL::Abstract->new; 
     my ($q, @binds) = $sa->where( @_ );
     return ($q,@binds);

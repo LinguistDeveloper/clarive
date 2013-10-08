@@ -428,6 +428,12 @@ sub load_from_query {
         return map { $class->load($_->{mid}) } @rows;
     }
 }
+
+sub query {
+    my $self = shift;
+    my @recs = map { Baseliner::Role::CI->_build_ci_instance_from_rec( $_ ) }  Baseliner::Role::CI->load_from_query( @_ );
+    return @recs;
+}
         
 sub load_pre_data { +{} }
 sub load_post_data { +{} }
