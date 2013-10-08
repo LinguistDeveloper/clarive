@@ -1587,6 +1587,7 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
             } else {
                 // no topics to show
                 Baseliner.warning( _('Kanban'), _('No topics available') );
+                self.el.unmask();
             }
         }
         else {
