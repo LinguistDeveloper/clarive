@@ -615,7 +615,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             items: self.status_items_menu
         });
         
-        self.btn_change_status = new Ext.Toolbar.Button({ text: _("Change status"), menu: self.status_menu }); 
+        self.btn_change_status = new Ext.Toolbar.Button({ text: _("Change status"), menu: self.status_menu, hidden: true }); 
         if (self.status_items_menu.length <= 0){
             self.btn_change_status.hide();
         }
@@ -645,7 +645,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         tb = self.create_toolbar();
 
         self.detail.on( 'render', function() {
-            
+            self.topic_mid > 0 ? self.btn_change_status.show(): self.btn_change_status.hide();
             if (self.topic_mid > 0 && !self.activarEdit) {
                 self.detail_reload();
             }
@@ -833,7 +833,6 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         var id = panel.getId();
         var info = Baseliner.tabInfo[id];
         if( info!=undefined ) info.params.swEdit = 0;
-        
         if(self.status_items_menu.length > 0){
             self.btn_change_status.show();
         }
@@ -897,16 +896,17 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     
                     var store = form2.findField("status_new").getStore();
                     store.on("load", function() {
-                        var obj_status_items_menu = Ext.util.JSON.decode(self.status_items_menu);
                         form2.findField("status_new").setValue( a.result.topic_status );
-                        self.status_menu.removeAll();
-                        self.status_items_menu = [];
-                        store.each( function(row){
-                            if(a.result.topic_status != row.data.id){
-                                self.status_items_menu.push({ text: _(row.data.name), id_status_to: obj_status_items_menu[i].id_status, id_status_from: obj_status_items_menu[i].id_status_from, handler: function(obj){ self.change_status(obj) } });                                                    
-                                self.status_menu.addItem({ text: _(row.data.name), id_status_to: obj_status_items_menu[i].id_status, id_status_from: obj_status_items_menu[i].id_status_from, handler: function(obj){ self.change_status(obj) } });
-                            }
-                        });                        
+                        //var obj_status_items_menu = Ext.util.JSON.decode(self.status_items_menu);
+                        //
+                        //self.status_menu.removeAll();
+                        //self.status_items_menu = [];
+                        //store.each( function(row){
+                        //    if(a.result.topic_status != row.data.id){
+                        //        self.status_items_menu.push({ text: _(row.data.name), id_status_to: obj_status_items_menu[i].id_status, id_status_from: obj_status_items_menu[i].id_status_from, handler: function(obj){ self.change_status(obj) } });                                                    
+                        //        self.status_menu.addItem({ text: _(row.data.name), id_status_to: obj_status_items_menu[i].id_status, id_status_from: obj_status_items_menu[i].id_status_from, handler: function(obj){ self.change_status(obj) } });
+                        //    }
+                        //});                              
                     });
                     
                     store.load({
