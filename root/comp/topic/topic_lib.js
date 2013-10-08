@@ -832,6 +832,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         var id = panel.getId();
         var info = Baseliner.tabInfo[id];
         if( info!=undefined ) info.params.swEdit = 0;
+        
         if(self.status_items_menu.length > 0){
             self.btn_change_status.show();
         }
@@ -895,7 +896,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     
                     var store = form2.findField("status_new").getStore();
                     store.on("load", function() {
-            
+                        var obj_status_items_menu = Ext.util.JSON.decode(self.status_items_menu);
                         form2.findField("status_new").setValue( a.result.topic_status );
                         self.status_menu.removeAll();
                         self.status_items_menu = [];
