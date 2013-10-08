@@ -50,6 +50,8 @@ params:
         listeners: {
             'afterrender':function(){
                 var read_only = meta && meta.readonly ? meta.readonly : false;
+                console.dir("mask");
+                console.dir(read_only);                
                 if(read_only){
                     var mask = this.el.mask();
                     mask.setStyle('opacity', 0);
@@ -97,7 +99,11 @@ params:
             // TODO no loader from mids yet 
         //}
         var read_only = meta && meta.readonly ? meta.readonly : false;
+        
+        console.dir(read_only);
+        
         if( !read_only ){
+            console.log("pasa");
             var el = this.el.dom; 
             var revision_box_dt = new Baseliner.DropTarget(el, {
                 comp: this,
