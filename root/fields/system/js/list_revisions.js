@@ -96,7 +96,7 @@ params:
         //if( c.value != undefined ) {
             // TODO no loader from mids yet 
         //}
-        var read_only = meta && meta.readonly ? meta.readonly : false;
+        var read_only = meta && meta.readonly ? meta.readonly : true;
         if( !read_only ){
             var el = this.el.dom; 
             var revision_box_dt = new Baseliner.DropTarget(el, {
