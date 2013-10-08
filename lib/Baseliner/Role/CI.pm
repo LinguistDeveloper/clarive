@@ -431,7 +431,7 @@ sub load_from_query {
 
 sub query {
     my $self = shift;
-    my @recs = map { Baseliner::Role::CI->_build_ci_instance_from_rec( $_ ) }  Baseliner::Role::CI->load_from_query( @_ ) };
+    my @recs = map { Baseliner::Role::CI->_build_ci_instance_from_rec( $_ ) }  Baseliner::Role::CI->load_from_query( @_ );
     return @recs;
 }
         
