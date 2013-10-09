@@ -645,7 +645,14 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         tb = self.create_toolbar();
 
         self.detail.on( 'render', function() {
-            self.topic_mid > 0 ? self.btn_change_status.show(): self.btn_change_status.hide();
+            if (self.topic_mid > 0){
+                if (self.status_items_menu.length <= 0){
+                    self.btn_change_status.hide();
+                }else{
+                    self.btn_change_status.show();
+                }
+            }
+            
             if (self.topic_mid > 0 && !self.activarEdit) {
                 self.detail_reload();
             }
