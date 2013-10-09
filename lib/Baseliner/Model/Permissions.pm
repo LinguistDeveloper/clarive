@@ -283,7 +283,7 @@ sub user_has_any_action {
     
     return 1 if $self->is_root( $username );
 
-    my @actions = $self->user_actions_list( username => $username, bl => $bl, action => $action );
+    my @actions = $self->user_actions_list( username => $username, action => $action ); #removed bl temporarily ... 
     return scalar @actions;
 }
 
