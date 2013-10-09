@@ -33,6 +33,7 @@
     //var store_label = new Baseliner.Topic.StoreLabel();
     var store_topics = new Baseliner.Topic.StoreList({
         baseParams: base_params,
+        remoteSort: false,
         listeners: {
             'beforeload': function( obj, opt ) {
                 if( opt !== undefined && opt.params !== undefined )
@@ -716,7 +717,7 @@
             { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title},
             { header: _('%'), dataIndex: 'progress', width: 25, sortable: true, renderer: render_progress },
             { header: _('More info'), report_header: _('Comments'), sortable: true, dataIndex: 'numcomment', width: 45, renderer: render_actions },         
-            { header: _('Projects'), dataIndex: 'projects', width: 60, renderer: render_project },
+            { header: _('Projects'), dataIndex: 'projects', sortable: true, width: 60, renderer: render_project },
             { header: _('ID'), hidden: true, sortable: true, dataIndex: 'topic_mid'},    
             { header: _('Moniker'), hidden: true, sortable: true, dataIndex: 'moniker'},    
             { header: _('CIs Referenced'), hidden: true, sortable: false, dataIndex: 'cis_out'},    
