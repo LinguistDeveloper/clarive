@@ -2151,18 +2151,22 @@ sub change_status {
 sub check_fields_required {
     my ($self, %p) = @_;
     my $mid = $p{mid} or _throw 'Missing parameter mid';
+    my $username = $p{username} or _throw 'Missing parameter username';
     
-    my $meta = Baseliner->model('Topic')->get_meta( $mid );
-    my @fields_required =  map { $_->{bd_field} } grep { $_->{allowBlank} && !${$_->{allowBlank}} && $_->{origin} ne 'system' } _array(Baseliner->model('Topic')->get_meta( $mid ));
-    my $data = Baseliner->model('Topic')->get_data( $meta, $mid );  
-    
+    my $is_root = Baseliner->model('Permissions')->is_root( $username );
     my $isValid = 1;
-    for my $field (@fields_required){
-    	next if defined $data->{$field};
-       	$isValid = 0;
-        last;
+    if (!$is_root){     
+        my $meta = Baseliner->model('Topic')->get_meta( $mid );
+        my @fields_required =  map { $_->{bd_field} } grep { $_->{allowBlank} && !${$_->{allowBlank}} && $_->{origin} ne 'system' } _array(Baseliner->model('Topic')->get_meta( $mid ));
+        my $data = Baseliner->model('Topic')->get_data( $meta, $mid );  
+        
+        for my $field (@fields_required){
+            next if defined $data->{$field};
+            $isValid = 0;
+            last;
+        }
     }
-    
+
     return $isValid;
 }
 

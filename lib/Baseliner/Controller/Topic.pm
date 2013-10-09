@@ -1796,22 +1796,22 @@ sub change_status : Local {
         if ($p->{old_status} eq DB->BaliTopic->find($p->{mid})->id_category_status){
             $change_status_before = \0;
             
-            my $isValid = $c->model('Topic')->check_fields_required( mid => $p->{mid});
+            my $isValid = $c->model('Topic')->check_fields_required( mid => $p->{mid}, username => $c->username);
             
             if ($isValid){
                 $c->model('Topic')->change_status( 
-                    change=>1, username=>$c->username, 
-                    id_status=>$p->{new_status}, id_old_status=>$p->{old_status}, 
-                    mid=>$p->{mid} 
+                    change => 1, username => $c->username, 
+                    id_status => $p->{new_status}, id_old_status => $p->{old_status}, 
+                    mid => $p->{mid} 
                 );
-                { success=>\1, msg=>_loc ('Changed status'), change_status_before=>$change_status_before };
+                { success => \1, msg => _loc ('Changed status'), change_status_before => $change_status_before };
             }else{
-                { success=>\0, msg=>_loc ('Fields required are missing') };    
+                { success => \0, msg => _loc ('Fields required are missing') };    
             }
         }
         else{
             $change_status_before = \1;
-            { success=>\1, msg=>_loc ('Changed status'), change_status_before=>$change_status_before };
+            { success => \1, msg => _loc ('Changed status'), change_status_before => $change_status_before };
         }
         
     } catch {
