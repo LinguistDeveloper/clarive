@@ -25,6 +25,10 @@ register 'event.post.create' => {
     description => 'User posted a comment',
     vars => ['username', 'ts', 'post'],
     filter => $post_filter,
+    notify => {
+        #scope => ['project', 'category', 'category_status', 'priority','baseline'],
+        scope => ['project', 'category', 'category_status'],
+    },
 };
 
 register 'event.post.delete' => {
@@ -32,6 +36,10 @@ register 'event.post.delete' => {
     description => 'User deleted a comment',
     vars => ['username', 'ts', 'post'],
     filter => $post_filter,
+    notify => {
+        #scope => ['project', 'category', 'category_status', 'priority','baseline'],
+        scope => ['project', 'category', 'category_status'],
+    },
 };
 
 register 'event.file.create' => {
@@ -73,6 +81,11 @@ register 'event.topic.modify' => {
     description => 'User modified a topic',
     vars => ['username', 'topic_name', 'ts'],
     level => 1,
+    notify => {
+        #scope => ['project', 'category', 'category_status', 'priority','baseline'],
+        scope => ['project', 'category', 'category_status'],
+    },
+
 };
 
 
@@ -127,12 +140,20 @@ register 'event.topic.modify_field' => {
             }
         }
         return ($txt, @vars);
-    }      
+    },
+    notify => {
+        #scope => ['project', 'category', 'category_status', 'priority','baseline'],
+        scope => ['project', 'category', 'category_status'],
+    }    
 };
 
 register 'event.topic.change_status' => {
     text => '%1 changed topic status from %2 to %3',
     vars => ['username', 'old_status', 'status', 'ts'],
+    notify => {
+        #scope => ['project', 'category', 'category_status', 'priority','baseline'],
+        scope => ['project', 'category', 'category_status'],
+    }
 };
 
 register 'action.topics.logical_change_status' => {

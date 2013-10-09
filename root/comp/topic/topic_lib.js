@@ -1109,18 +1109,17 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
     enableDragDrop: true,   
     pageSize: 10, // used by the combo 
     constructor: function(c){  // needs to declare the selection model in a constructor, otherwise incompatible with DD
-        //var sm = new Baseliner.CheckboxSelectionModel({
-        //    checkOnly: true,
-        //    singleSelect: false
-        //});
+        var sm = c.sm || new Baseliner.CheckboxSelectionModel({
+            checkOnly: true,
+            singleSelect: false
+        });
         
         var render_text_field = function(v){
             if( !v ) v ='';
             return '<pre>'+v+'</pre>';
         };
         
-        //var cols = [ sm ];
-        var cols = [ c.sm ];
+        var cols = [ sm ];
         
         var store_fields = ['mid'];
         var cols_keys = ['name', 'title'];

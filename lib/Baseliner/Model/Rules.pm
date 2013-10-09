@@ -144,7 +144,7 @@ sub run_rules {
         $p{id_rule} 
             ? ( +{ DB->find( $p{id_rule} )->get_columns } )
             : DB->BaliRule->search(
-                { rule_event => $p{event}, rule_type => ($p{rule_type} // 'event'), rule_when => $p{when} },
+                { rule_event => $p{event}, rule_type => ($p{rule_type} // 'event'), rule_when => $p{when}, rule_active => 1 },
                 { order_by   => [          { -asc    => 'rule_seq' }, { -asc    => 'id' } ] }
               )->hashref->all;
     my $stash = $p{stash};

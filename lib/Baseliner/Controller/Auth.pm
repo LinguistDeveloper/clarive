@@ -136,8 +136,8 @@ sub authenticate : Private {
             $auth = $c->authenticate({ id=>$login }, 'none');
         } else {
             $auth = try {
-                # see the password: _debug $c->model('Users')->encrypt_password( $login, $password ) ;
-                $c->authenticate({ id=>$login, password=>$c->model('Users')->encrypt_password( $login, $password ) }, 'local');
+                # see the password: _debug BaselinerX::CI::user->encrypt_password( $login, $password ) ;
+                $c->authenticate({ id=>$login, password=>BaselinerX::CI::user->encrypt_password( $login, $password ) }, 'local');
             } catch {
                 $c->log->error( "**** LOGIN ERROR: " . shift() );
             }; # realm may not exist
@@ -157,7 +157,7 @@ sub authenticate : Private {
                         $c->stash->{auth_message} = _loc( 'User is not active');
                         $auth = undef;
                     }
-                    if ( $c->model('Users')->encrypt_password( $login, $password ) ne $row->password 
+                    if ( BaselinerX::CI::user->encrypt_password( $login, $password ) ne $row->password 
                         && $row->api_key ne $password )
                     {
                         $auth = undef;

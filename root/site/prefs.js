@@ -3,6 +3,7 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
     is_logged_in: true,
     toolbar_height: 28,
     constructor: function(config){
+        if( !config ) config = {};
         // site options
         config.site = Ext.apply({
             show_menu: true,
@@ -106,11 +107,16 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
             var img = String.format('<img width="32" id="{0}" style="border: 2px solid #bbb" src="/user/avatar/image.png?{1}" />', img_id, rnd );
             var api_key = res.data.api_key;
             var gen_apikey = function(){
-                Baseliner.ajaxEval('/user/gen_api_key', {}, function(res){
+                Baseliner.ci_call('user', 'save_api_key', {}, function(res){
                     Baseliner.message( _('API Key'), res.msg );
                     if( res.success ) {
                         api_key.setValue( res.api_key );
                     }
+                });
+            };
+            var save_apikey = function(){
+                Baseliner.ci_call('user', 'save_api_key', { api_key: api_key.getValue() }, function(res){
+                    Baseliner.message( _('API Key'), res.msg );
                 });
             };
             var api_key = new Ext.form.TextArea({ height: 50, anchor:'90%',fieldLabel:_('API Key'), value: api_key });
@@ -130,7 +136,8 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                         bodyStyle: { 'background-color':'#fff', padding: '10px 10px 10px 10px' },
                         items: [
                             api_key,
-                            { xtype:'button',  fieldLabel: _('Generate api key'), scale:'large', text:_('Generate API Key'), handler:gen_apikey }
+                            { xtype:'button',  fieldLabel: _('Save API Key'), width: 150, scale:'large', text:_('Save'), handler: save_apikey },
+                            { xtype:'button',  fieldLabel: _('Generate API Key'), width: 150, scale:'large', text:_('Generate API Key'), handler: gen_apikey }
                         ]
                     }
                 ]

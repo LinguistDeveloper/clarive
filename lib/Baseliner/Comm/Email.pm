@@ -7,33 +7,6 @@ use Encode qw( encode decode_utf8 encode_utf8 is_utf8 );
 
 with 'Baseliner::Role::Service';
 
-register 'config.comm.email' => {
-    name => 'Email configuration',
-    metadata => [
-        { id=>'frequency', name=>'Email daemon frequency', default=>10 },
-        { id=>'timeout', name=>'Email daemon process_queue timeout', default=>30 },
-        { id=>'max_message_size', name=>'Max message size in bytes', default=>(1024 * 1024) },
-        { id=>'server', name=>'Email server', default=>'smtp.example.com' },
-        { id=>'from', name=>'Email default sender', default=>'user <user@mailserver>' },
-        { id=>'domain', name=>'Email domain', default=>'exchange.local' },
-        { id=>'max_attempts', name=>'Max attempts', default=>10 },
-        { id=>'baseliner_url', name=>'Base URL to access baseliner', default=>'http://localhost:3000' },
-        { id=>'default_template', name=>'Default template for emails', default=>'' },
-    ]
-};
-
-register 'service.daemon.email' => {
-    name => 'Email Daemon',
-    config => 'config.comm.email',
-    handler => \&daemon,
-};
-
-register 'service.email.flush' => {
-    name => 'Email Flush Queue Once',
-    config => 'config.comm.email',
-    handler => \&process_queue,
-};
-
 sub daemon {
     my ( $self, $c, $config ) = @_;
 
