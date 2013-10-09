@@ -44,7 +44,7 @@
             rel_type                => 'topic_topic',
             'categories.is_release' => {'!=', 1},
             to_mid                  => $data->{topic_mid},
-            -or => { rel_field => {"not in", \@fields}, rel_field => { '=',undef} }
+            #-or => { rel_field => {"not in", \@fields}, rel_field => { '=',undef} }
         },
         {
             join => [ 'categories', 'children', 'master' ],
