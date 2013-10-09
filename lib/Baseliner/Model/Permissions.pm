@@ -309,7 +309,7 @@ sub user_actions_list {
 
     $where->{'me.username'} = $username;
     
-    $where->{'actions.bl'} = \@bl unless '*' ~~ @bl;
+    #$where->{'actions.bl'} = \@bl unless '*' ~~ @bl;
 
     my @actions;
     if ( $self->is_root( $username ) ) {
