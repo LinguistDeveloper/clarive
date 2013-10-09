@@ -307,9 +307,8 @@ sub user_actions_list {
 
     my $where = {};
 
-    $where{'me.username'} = $username;
-    
-    $where{'actions.bl'} = \@bl unless '*' ~~ @bl;
+    $where->{'me.username'} = $username;
+    $where->{'actions.bl'} = \@bl unless '*' ~~ @bl;
 
     my @actions;
     if ( $self->is_root( $username ) ) {
@@ -317,9 +316,8 @@ sub user_actions_list {
 
     } else {
         @actions = map { $_->{action} } DB->BaliRoleuser->search(
-            {
-                $where
-            },
+
+            $where,
             {
                 distinct => 1,
                 join     => [ 'actions' ],
