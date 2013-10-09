@@ -283,7 +283,7 @@ sub user_has_any_action {
     
     return 1 if $self->is_root( $username );
 
-    my @actions = $self->user_actions_list( username => $username, action => $action ); #removed bl temporarily ... 
+    my @actions = $self->user_actions_list( username => $username, bl => $bl, action => $action );
     return scalar @actions;
 }
 
@@ -305,6 +305,12 @@ sub user_actions_list {
     }
     push my @bl, _array $p{bl}, '*';
 
+    my $where = {};
+
+    $where->{'me.username'} = $username;
+    
+    $where->{'actions.bl'} = \@bl unless '*' ~~ @bl;
+
     my @actions;
     if ( $self->is_root( $username ) ) {
         @actions = map { $_->{key} } Baseliner->model( 'Actions' )->list;
@@ -312,8 +318,7 @@ sub user_actions_list {
     } else {
         @actions = map { $_->{action} } DB->BaliRoleuser->search(
             {
-                'me.username'    => $username,
-                'actions.bl'     => \@bl
+                $where
             },
             {
                 distinct => 1,
