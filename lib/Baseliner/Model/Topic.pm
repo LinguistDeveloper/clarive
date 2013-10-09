@@ -2153,7 +2153,7 @@ sub check_fields_required {
     my $mid = $p{mid} or _throw 'Missing parameter mid';
     
     my $meta = Baseliner->model('Topic')->get_meta( $mid );
-    my @fields_required =  map { $_->{bd_field} } grep { $_->{allowBlank} && ${$_->{allowBlank}} && $_->{origin} ne 'system' } _array(Baseliner->model('Topic')->get_meta( $mid ));
+    my @fields_required =  map { $_->{bd_field} } grep { $_->{allowBlank} && !${$_->{allowBlank}} && $_->{origin} ne 'system' } _array(Baseliner->model('Topic')->get_meta( $mid ));
     my $data = Baseliner->model('Topic')->get_data( $meta, $mid );  
     
     my $isValid = 1;
