@@ -2065,7 +2065,7 @@ sub getAction {
 sub user_workflow {
     my ( $self, $username ) = @_;
     my @rows = Baseliner->model('Permissions')->is_root( $username ) 
-        ? DB->BaliTopicCategoriesAdmin->search(undef, { select=>['id_status_to', 'id_status_from'], distinct=>1 })->hashref->all
+        ? DB->BaliTopicCategoriesAdmin->search(undef, { select=>['id_status_to', 'id_status_from', 'id_category'], distinct=>1 })->hashref->all
         : DB->BaliTopicCategoriesAdmin->search({username => $username}, { join=>'user_role' })->hashref->all;
     return @rows;
 }
