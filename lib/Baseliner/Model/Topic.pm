@@ -2159,6 +2159,7 @@ sub check_fields_required {
     
     my $is_root = Baseliner->model('Permissions')->is_root( $username );
     my $isValid = 1;
+    my $field_name;
     if (!$is_root){     
         my $meta = Baseliner->model('Topic')->get_meta( $mid );
         my @fields_required =  map { $_->{bd_field} } grep { $_->{allowBlank} && $_->{allowBlank} eq 'false' && $_->{origin} ne 'system' } _array( $meta );
@@ -2171,11 +2172,12 @@ sub check_fields_required {
             );
             my $v = $data->{$field};
             $isValid = (ref $v eq 'ARRAY' ? @$v : ref $v eq 'HASH' ? keys %$v : defined $v ) ? 1 : 0;
+            $field_name = $_->{name_field};
             last if $isValid = 0;
         }
     }
 
-    return $isValid;
+    return ($isValid,$field_name);
 }
 
 1;
