@@ -2167,11 +2167,11 @@ sub check_fields_required {
         for my $field (@fields_required){
             next if !Baseliner->model('Permissions')->user_has_action( 
                 username => $username, 
-                action => 'action.topicsfield.'._name_to_id($data->{name_category}).'.'._name_to_id($data->{name_status}.'.write')
+                action => 'action.topicsfield.'._name_to_id($data->{name_category}).'.'.$field.'.'._name_to_id($data->{name_status}).'.write'
             );
-            next if defined $data->{$field};
-            $isValid = 0;
-            last;
+            my $v = $data->{$field};
+            $isValid = (ref $v eq 'ARRAY' ? @$v : ref $v eq 'HASH' ? keys %$v : defined $v ) ? 1 : 0;
+            last if $isValid = 0;
         }
     }
 
