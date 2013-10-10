@@ -16,13 +16,17 @@ Baseliner.show_topic = function(topic_mid, title, params) {
 };
 
 
-Baseliner.topic_title = function( mid, category, color) {
+Baseliner.topic_title = function( mid, category, color, literal_only) {
     var uppers = category ? category.replace( /[^A-Z]/g, '' ) : '';
     var pad_for_tab = 'margin: 0 0 -3px 0; padding: 2px 4px 2px 4px; line-height: 12px;'; // so that tabs stay aligned
-    return color 
-        ? String.format( '<span id="boot" style="background:transparent; margin-bottom: 0px"><span class="label" style="{3}; background-color:{1}">{2} #{0}</span></span>', mid, color, uppers, pad_for_tab )
-        : String.format( '<span id="boot" style="background:transparent; margin-bottom: 0px"><span class="label" style="{3}; background-color:{2}">{0} #{1}</span></span>', uppers, mid, color, pad_for_tab )
-        ;
+    if (literal_only){
+        return uppers + ' #' + mid;   
+    }else{
+        return color 
+            ? String.format( '<span id="boot" style="background:transparent; margin-bottom: 0px"><span class="label" style="{3}; background-color:{1}">{2} #{0}</span></span>', mid, color, uppers, pad_for_tab )
+            : String.format( '<span id="boot" style="background:transparent; margin-bottom: 0px"><span class="label" style="{3}; background-color:{2}">{0} #{1}</span></span>', uppers, mid, color, pad_for_tab )
+            ;
+    }
 }
 
 Baseliner.show_topic_colored = function(mid, category, color, grid_id) {

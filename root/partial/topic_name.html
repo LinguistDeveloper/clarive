@@ -15,8 +15,8 @@
     };
 </%perl>
 
-            <span class="label" onclick="javascript:Baseliner.show_topic_colored(<% $topic->{mid} %>, '<% $topic->{name} %>', '<% $topic->{color} %>')" 
-            style="float:left;padding:2px 8px 2px 8px;cursor:pointer;background: <% $topic->{color} %>"><% $topic->{name} %></span>
+            <span id="topic<% $topic->{mid} %>" class="label" onclick="javascript:Baseliner.show_topic_colored(<% $topic->{mid} %>, '<% $topic->{name} %>', '<% $topic->{color} %>')" 
+            style="cursor:pointer;background: <% $topic->{color} %>"><% $topic->{name} %></span>
 % my $cls = ( $topic->{progress} < 20 ? 'important' : ( $topic->{progress} < 40 ? 'warning' : ( $topic->{progress} < 80 ? 'info' : 'success' ) ) );
 % if( $show_title ) {
             &nbsp;&nbsp;<span style="font-weight: bold; font-size: <% $title_font_size %>"><% $title_short->($topic->{title}) %></span>&nbsp;&nbsp;
@@ -24,3 +24,9 @@
 % if( $show_progress && $topic->{progress}){
             <span class="badge badge-<%$cls%>" style="float:right;"><%$topic->{progress}%>%</span>
 %}
+
+<script>
+    var obj_topic_name = Ext.query('#topic<% $topic->{mid} %>');
+    obj_topic_name[0].innerHTML = Baseliner.topic_title( '<% $topic->{mid} %>', '<% $topic->{name} %>', '<% $topic->{color} %>', true );
+
+</script>
