@@ -518,10 +518,11 @@ sub promotes_and_demotes {
 
     my $id_status_from_lc = $id_status_from ? $id_status_from: $topic->{id_category_status};
     my @user_workflow = _unique map {$_->{id_status_to} } Baseliner->model("Topic")->user_workflow( $c->username );
-    # Deploy
+
+    # Static
     my @status_from = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
-        { id_status_to => \@user_workflow, id_category => $topic->{id_category}, id_status_from => $id_status_from_lc, job_type => 'static' },
-        {   join     => [ 'statuses_from', 'statuses_to' ],
+        { id_status_to => \@user_workflow, id_category => $topic->{id_category}, id_status_from => $id_status_from_lc, job_type => 'static', username => $c->username },
+        {   join     => [ 'statuses_from', 'statuses_to', 'user_role' ],
             distinct => 1,
             +select  => [qw/statuses_to.bl statuses_to.name statuses_to.id statuses_from.bl statuses_to.seq/],
             order_by => { -asc => 'statuses_to.seq' }
@@ -548,8 +549,8 @@ sub promotes_and_demotes {
 
     # Promote
     my @status_to = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
-        { id_status_to => \@user_workflow, id_category => $topic->{id_category}, id_status_from => $id_status_from_lc, job_type => 'promote' },
-        {   join     => [ 'statuses_from', 'statuses_to' ],
+        { id_status_to => \@user_workflow, id_category => $topic->{id_category}, id_status_from => $id_status_from_lc, job_type => 'promote' , username => $c->username },
+        {   join     => [ 'statuses_from', 'statuses_to', 'user_role' ],
             distinct => 1,
             +select  => [qw/statuses_to.bl statuses_to.name statuses_to.id statuses_to.seq/],
             order_by => { -asc => 'statuses_to.seq' }
@@ -576,8 +577,8 @@ sub promotes_and_demotes {
 
     # Demote
     @status_from = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
-        { id_status_to => \@user_workflow, id_category => $topic->{id_category}, id_status_from => $id_status_from_lc, job_type => 'demote' },
-        {   join     => [ 'statuses_from', 'statuses_to' ],
+        { id_status_to => \@user_workflow, id_category => $topic->{id_category}, id_status_from => $id_status_from_lc, job_type => 'demote' , username => $c->username },
+        {   join     => [ 'statuses_from', 'statuses_to', 'user_role' ],
             distinct => 1,
             +select  => [qw/statuses_to.bl statuses_to.name statuses_to.id statuses_from.bl statuses_to.seq/],
             order_by => { -asc => 'statuses_to.seq' }

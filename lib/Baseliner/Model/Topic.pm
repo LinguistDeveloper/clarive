@@ -458,14 +458,18 @@ sub topics_for_user {
         if (!$p->{clear_filter}){
             ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
             my %tmp;
-            map { $tmp{$_->{id_status_from}} = 1 && $tmp{$_->{id_status_to}} = 1 } 
+            map { $tmp{$_->{id_status_from}} = $_->{id_category} } 
                 $self->user_workflow( $username );
-    
+            # map { $tmp{$_->{id_status_from}} = $_->{id_category} && $tmp{$_->{id_status_to} = $_->{id_category}} } 
+            #             $self->user_workflow( $username );
+            
             my @status_ids = keys %tmp;
-            $where->{'category_status_id'} = { -in=>\@status_ids } if @status_ids > 0;
+            #$where->{'category_status_id || category_id)'} = \@status_ids if @status_ids > 0;
+            my @conditions = map { +{'-and' => [ 'category_status_id' => $_, 'category_id' => $tmp{$_} ] }} @status_ids;
+            $where->{-or} = \@conditions;
             
             #$where->{'category_status_type'} = {'!=', 'F'};
-            #Nueva funcionalidad (todos los tipos de estado que enpiezan por F son estado finalizado)
+            #Nueva funcionalidad (todos los tipos de estado que empiezan por F son estado finalizado)
             $where->{'category_status_type'} = {-not_like, 'F%'}
         }
     }
@@ -2061,7 +2065,7 @@ sub getAction {
 sub user_workflow {
     my ( $self, $username ) = @_;
     my @rows = Baseliner->model('Permissions')->is_root( $username ) 
-        ? DB->BaliTopicCategoriesAdmin->search(undef, { select=>['id_status_to', 'id_status_from'], distinct=>1 })->hashref->all
+        ? DB->BaliTopicCategoriesAdmin->search(undef, { select=>['id_status_to', 'id_status_from', 'id_category'], distinct=>1 })->hashref->all
         : DB->BaliTopicCategoriesAdmin->search({username => $username}, { join=>'user_role' })->hashref->all;
     return @rows;
 }
@@ -2155,19 +2159,26 @@ sub check_fields_required {
     
     my $is_root = Baseliner->model('Permissions')->is_root( $username );
     my $isValid = 1;
+    my $field_name;
     if (!$is_root){     
         my $meta = Baseliner->model('Topic')->get_meta( $mid );
-        my @fields_required =  map { $_->{bd_field} } grep { $_->{allowBlank} && !${$_->{allowBlank}} && $_->{origin} ne 'system' } _array(Baseliner->model('Topic')->get_meta( $mid ));
+        my $meta = Baseliner->model('Topic')->get_meta( $mid );
+        my %fields_required =  map { $_->{bd_field} => $_->{name_field} } grep { $_->{allowBlank} && $_->{allowBlank} eq 'false' && $_->{origin} ne 'system' } _array( $meta );
         my $data = Baseliner->model('Topic')->get_data( $meta, $mid );  
         
-        for my $field (@fields_required){
-            next if defined $data->{$field};
-            $isValid = 0;
-            last;
+        for my $field ( keys %fields_required){
+            next if !Baseliner->model('Permissions')->user_has_action( 
+                username => $username, 
+                action => 'action.topicsfield.'._name_to_id($data->{name_category}).'.'.$field.'.'._name_to_id($data->{name_status}).'.write'
+            );
+            my $v = $data->{$field};
+            $isValid = (ref $v eq 'ARRAY' ? @$v : ref $v eq 'HASH' ? keys %$v : defined $v ) ? 1 : 0;
+            $field_name = $fields_required{$field};
+            last if $isValid = 0;
         }
     }
 
-    return $isValid;
+    return ($isValid,$field_name);
 }
 
 1;

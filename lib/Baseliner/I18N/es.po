@@ -4757,3 +4757,6 @@ msgstr "Más info"
 
 msgid "User %1 is not allowed to access topic %2 contents"
 msgstr "El usuario %1 no puede acceder al contenido del tópico %2"
+
+msgid "Required field %1 is empty"
+msgstr "El campo %1 es obligatorio"

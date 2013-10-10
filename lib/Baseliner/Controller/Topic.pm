@@ -1796,7 +1796,7 @@ sub change_status : Local {
         if ($p->{old_status} eq DB->BaliTopic->find($p->{mid})->id_category_status){
             $change_status_before = \0;
             
-            my $isValid = $c->model('Topic')->check_fields_required( mid => $p->{mid}, username => $c->username);
+            my ($isValid, $field_name) = $c->model('Topic')->check_fields_required( mid => $p->{mid}, username => $c->username);
             
             if ($isValid){
                 $c->model('Topic')->change_status( 
@@ -1806,7 +1806,7 @@ sub change_status : Local {
                 );
                 { success => \1, msg => _loc ('Changed status'), change_status_before => $change_status_before };
             }else{
-                { success => \0, msg => _loc ('Fields required are missing') };    
+                { success => \0, msg => _loc ('Required field %1 is empty', $field_name) };    
             }
         }
         else{
