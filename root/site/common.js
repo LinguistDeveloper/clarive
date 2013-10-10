@@ -2743,7 +2743,7 @@ Baseliner.CBox = Ext.extend( Ext.form.Checkbox, {
 
 
 Ext.apply(Ext.layout.FormLayout.prototype, {
-    originalRenderItem: Ext.layout.FormLayout.prototype.renderItem,
+    originalRenderItem: Ext.layout.FormLayout.prototype.originalRenderItem || Ext.layout.FormLayout.prototype.renderItem,
     renderItem: function(c, position, target){
         if (c && !c.rendered &&  c.fieldLabel && !c.allowBlank) {
             c.fieldLabel = c.fieldLabel + " <span " +
