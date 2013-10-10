@@ -22,7 +22,7 @@ sub body : Local {
     my $message = $c->model('Baseliner::BaliMessage')->find( $id );
     my $body = $message->body;
     #$body = Encode::decode_utf8( $body );
-    Encode::from_to( $body, 'utf-8', 'iso-8859-1' );
+    #Encode::from_to( $body, 'utf-8', 'iso-8859-1' );
     $c->response->body( $body );
 }
 
