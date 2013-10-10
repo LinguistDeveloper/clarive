@@ -2174,7 +2174,7 @@ sub check_fields_required {
             my $v = $data->{$field};
             $isValid = (ref $v eq 'ARRAY' ? @$v : ref $v eq 'HASH' ? keys %$v : defined $v ) ? 1 : 0;
             $field_name = $fields_required{$field};
-            last if $isValid = 0;
+            last if !$isValid;
         }
     }
 
