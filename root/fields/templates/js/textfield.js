@@ -20,6 +20,7 @@ params:
 
     return [
         {
+            labelAlign: 'top',
             xtype:'textfield',
             fieldLabel: _(meta.name_field),
             name: meta.id_field,

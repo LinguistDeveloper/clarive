@@ -68,7 +68,7 @@
     <ul class="" style="margin-left: 20px">
 % foreach my $topic ( @parents_topics ) {
         <li style="margin: 6px 0px 6px 0px">
-            <& /partial/topic_name.html, topic=>$topic &>
+            <& /partial/topic_name.html, topic => $topic, show_short_name => 0 &>
         </li>
 % }
     </ul>
@@ -83,7 +83,7 @@
     <ul class="" style="margin-left: 20px">
 % foreach my $topic ( @parents_topics ) {
         <li style="margin: 6px 0px 6px 0px">
-            <& /partial/topic_name.html, topic=>$topic &>
+            <& /partial/topic_name.html, topic => $topic, show_short_name => 0 &>
         </li>
 % }
     </ul>

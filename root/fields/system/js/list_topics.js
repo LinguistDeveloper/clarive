@@ -72,7 +72,7 @@ params:
             name: meta.id_field,
             hiddenName: meta.id_field,          
             emptyText: _( meta.emptyText ),
-            allowBlank: meta.allowBlank==undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true ),          
+            allowBlank: meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true ),          
             store: topic_box_store,
             disabled: meta ? meta.readonly : true,
             value: topics,
@@ -112,7 +112,7 @@ params:
     }
 	var obj = [];
 	if (meta.list_type == 'grid') {
-		obj.push(Baseliner.field_label_top( _(meta.name_field), meta.hidden ))	;
+		obj.push(Baseliner.field_label_top( _(meta.name_field), meta.hidden, meta.allowBlank ))	;
 	}
 	obj.push(topic_box);
 	

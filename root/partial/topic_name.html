@@ -4,7 +4,8 @@
     $title_font_size => '11px'
     $show_title => 0
     $show_progress => 1
-    $show_short_name => 0
+    $show_short_name => '0'
+    $soy => 'nadie'
     $show_name_tooltip => 1
 </%args>
 <%perl>
@@ -36,7 +37,6 @@
 % if( $show_name_tooltip ) {
 <script>
     var obj_topic_name = Ext.query('#topic<% $topic->{mid} %>');
-    obj_topic_name[0].innerHTML = Baseliner.topic_title( '<% $topic->{mid} %>', '<% $topic->{name} %>', '<% $topic->{color} %>', true );
     obj_topic_name[0].setAttribute("title", "<% $title_short->($topic->{title}) %>");
 </script>
 % }

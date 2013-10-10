@@ -1357,6 +1357,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
 });
 
 Baseliner.TopicForm = Ext.extend( Ext.FormPanel, {
+    labelAlign: 'top',
     layout:'column',
     url:'/topic/update',
     autoHeight: true,
@@ -1387,6 +1388,7 @@ Baseliner.TopicForm = Ext.extend( Ext.FormPanel, {
             bodyStyle: {
               'padding': '5px 50px 5px 10px'
             },
+            
             items: [
                 { xtype: 'hidden', name: 'topic_mid', value: data ? data.topic_mid : -1 }
             ]

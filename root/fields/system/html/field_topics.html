@@ -19,7 +19,7 @@
 % #if($topic->{progress}){                            
             <!--<span class="badge badge-<%$cls%>" style="float:right;"><%$topic->{progress}%>%</span>-->
 % #}            
-            <& /partial/topic_name.html, topic=>$topic &>
+            <& /partial/topic_name.html, topic => $topic, show_short_name => 0 &>
 
         </li>
 % }
