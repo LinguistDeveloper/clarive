@@ -44,14 +44,14 @@ if( ! $meta->{hidden} ) {
 % foreach my $h ( @head  ) {
 %    my $val =  $topic->{ $$h{key} } // $topic->{data}{ $$h{key} };
 %    if( $$h{key} eq 'name' ) {
-            <td style="font-size: <% $meta->{td_font_size} // 12 %>px" class="fieldlet-html">
-                <& /partial/topic_name.html, topic=>$topic, show_title=>0  &>
+            <td style="font-size: <% $meta->{td_font_size} // 12 %>px;" class="fieldlet-html">
+                <& /partial/topic_name.html, topic=>$topic, show_title=>0, show_short_name=>1, show_progress => 0, show_name_tooltip => 0 &>
 %    } elsif( $$h{key} eq 'title' ) {
             <td class="fieldlet-html" style="font-size: 11px; font-weight:bold;"><% $topic->{title} %></td>
 %    } elsif( $$h{key} eq 'name_status' ) {
             <& /partial/topic_status.html, topic=>$topic &>
 %    } else {
-            <td style="font-size: <% $meta->{td_font_size} // 12 %>px" class="fieldlet-html">
+            <td style="font-size: <% $meta->{td_font_size} // 10 %>px" class="fieldlet-html">
 <%
                             $$h{type} eq 'checkbox' 
                             ? ( !$val || $val eq 'false' ? '<img src="/static/images/icons/delete.gif">' : '<img src="/static/images/icons/checkbox.png">')
