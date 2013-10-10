@@ -462,7 +462,7 @@ sub topics_for_user {
                 $self->user_workflow( $username );
     
             my @status_ids = keys %tmp;
-            $where->{'category_status_id || category_id'} = \@status_ids } if @status_ids > 0;
+            $where->{'category_status_id || category_id'} = \@status_ids if @status_ids > 0;
             
             #$where->{'category_status_type'} = {'!=', 'F'};
             #Nueva funcionalidad (todos los tipos de estado que empiezan por F son estado finalizado)
