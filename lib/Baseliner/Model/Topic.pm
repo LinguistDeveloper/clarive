@@ -468,7 +468,6 @@ sub topics_for_user {
             my @conditions = map { +{'-and' => [ 'category_status_id' => $_, 'category_id' => $tmp{$_} ] }} @status_ids;
             $where->{-or} = \@conditions;
             
-            _log "GGGGGGGGGG". _dump $where;
             #$where->{'category_status_type'} = {'!=', 'F'};
             #Nueva funcionalidad (todos los tipos de estado que empiezan por F son estado finalizado)
             $where->{'category_status_type'} = {-not_like, 'F%'}
@@ -2162,10 +2161,14 @@ sub check_fields_required {
     my $isValid = 1;
     if (!$is_root){     
         my $meta = Baseliner->model('Topic')->get_meta( $mid );
-        my @fields_required =  map { $_->{bd_field} } grep { $_->{allowBlank} && !${$_->{allowBlank}} && $_->{origin} ne 'system' } _array(Baseliner->model('Topic')->get_meta( $mid ));
+        my @fields_required =  map { $_->{bd_field} } grep { $_->{allowBlank} && $_->{allowBlank} eq 'false' && $_->{origin} ne 'system' } _array( $meta );
         my $data = Baseliner->model('Topic')->get_data( $meta, $mid );  
         
         for my $field (@fields_required){
+            next if !Baseliner->model('Permissions')->user_has_action( 
+                username => $username, 
+                action => 'action.topicsfield.'._name_to_id($data->{name_category}).'.'._name_to_id($data->{name_status}.'.write')
+            );
             next if defined $data->{$field};
             $isValid = 0;
             last;
