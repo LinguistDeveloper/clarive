@@ -11,6 +11,7 @@ params:
 */
 
 (function(params){
+    Ext.BLANK_IMAGE_URL = '/static/ext/resources/images/default/s.gif';
     var meta = params.topic_meta;
     var data = params.topic_data;
     var style = { 'font-size': '16px', float: 'left', 
@@ -37,7 +38,8 @@ params:
                     //this.el.setWidth( Math.floor( this.ownerCt.ownerCt.el.getWidth() / 2 ) - 125 );
                 }
             },
-            hidden: meta ? (meta.hidden ? meta.hidden : false): true
+            hidden: meta ? (meta.hidden ? meta.hidden : false): true,
+            msgTarget: 'under'
         }
     ]
 })
