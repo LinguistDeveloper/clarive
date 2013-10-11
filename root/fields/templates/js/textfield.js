@@ -31,14 +31,18 @@ params:
             height: meta.height || 30,
             allowBlank: meta ? !!meta.allowBlank : false,
             readOnly: meta ? meta.readonly : true,
+            preventMark: true,
             listeners: {
                 'resize': function(a,b,v,d,e){
                     //this.el.setWidth( Math.floor( this.ownerCt.el.getWidth() / 2 ) );
                     //this.el.setWidth( Math.floor( this.ownerCt.ownerCt.el.getWidth() / 2 ) - 125 );
+                },
+                'focus': function() {
+                    this.preventMark = false;
                 }
             },
             hidden: meta ? (meta.hidden ? meta.hidden : false): true,
-            msgTarget: 'under'
+            msgTarget: 'under',
         }
     ]
 })
