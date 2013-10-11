@@ -1171,13 +1171,25 @@ sub filters_list : Local {
     
     #$row = $c->model('Baseliner::BaliTopicStatus')->search(undef, { order_by=>'seq' });
     
+    my $is_root = Baseliner->model('Permissions')->is_root( $c->username );
     ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
     my %tmp;
-    map { $tmp{$_->{id_status_from}} = 'id'; $tmp{$_->{id_status_to}} = 'id' } 
-                Baseliner->model('Topic')->user_workflow( $c->username );
+
+
+    if ( !$is_root ) {
+        map { $tmp{$_->{id_status_from}} = 'id'; $tmp{$_->{id_status_to}} = 'id' } 
+                    Baseliner->model('Topic')->user_workflow( $c->username );        
+    };
 
     if($row->count() gt 0){
         while( my $r = $row->next ) {
+            my $checked;
+
+            if ( $is_root ) {
+                $checked = \1;
+            } else {
+                $checked = exists $tmp{$r->id} && (substr ($r->type, 0 , 1) ne 'F')? \1: \0;
+            }
             push @statuses,
                 {
                     id  => $i++,
@@ -1185,7 +1197,7 @@ sub filters_list : Local {
                     text    => _loc($r->name),
                     cls     => 'forum status',
                     iconCls => 'icon-no',
-                    checked => exists $tmp{$r->id} && (substr ($r->type, 0 , 1) ne 'F')? \1: \0,
+                    checked => $checked,
                     leaf    => 'true',
                     uiProvider => 'Baseliner.CBTreeNodeUI'                    
                 };
