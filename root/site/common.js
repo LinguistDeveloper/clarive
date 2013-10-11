@@ -2399,14 +2399,15 @@ Baseliner.HiddenGridField = Ext.extend( Ext.form.Hidden, {
     }
 });
 
-Baseliner.field_label_top = function( label, hidden ) {
+Baseliner.field_label_top = function( label, hidden, allowBlank ) {
 
     return [
 		{
 		  xtype: 'label',
 		  //autoEl: {cn: style_label},
 		  fieldLabel: _(label),
-		  hidden: hidden!=undefined ? hidden : false
+		  hidden: hidden!=undefined ? hidden : false,
+          allowBlank: allowBlank
 		}/*,
 		{
 		  xtype: 'box',
@@ -2745,7 +2746,7 @@ Baseliner.CBox = Ext.extend( Ext.form.Checkbox, {
 Ext.apply(Ext.layout.FormLayout.prototype, {
     originalRenderItem: Ext.layout.FormLayout.prototype.originalRenderItem || Ext.layout.FormLayout.prototype.renderItem,
     renderItem: function(c, position, target){
-        if (c && !c.rendered &&  c.fieldLabel && !c.allowBlank) {
+        if (c && !c.rendered &&  c.fieldLabel && !c.allowBlank && c.allowBlank != undefined) {
             c.fieldLabel = c.fieldLabel + " <span " +
             ((c.requiredFieldCls !== undefined) ? 'class="' + c.requiredFieldCls + '"' : 'style="color:red;"') +
             " ext:qtip=\"" +
