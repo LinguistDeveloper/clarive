@@ -19,6 +19,12 @@ params:
             'font-family':'Helvetica Neue,Helvetica,Arial,sans-serif' };
     if( Ext.isIE ) style['margin-top'] = '1px';
     
+    
+    var allowBlank;
+    if (meta.allowBlank == 'false') allowBlank = false;
+    if (meta.allowBlank == 'true') allowBlank = true;
+    if (meta.allowBlank == 'undefined') allowBlank = true;
+    
     return [
         {
             xtype:'textfield',
@@ -29,7 +35,7 @@ params:
             //width: meta.width || '97%',
             anchor: meta.anchor || '100%',
             height: meta.height || 30,
-            allowBlank: meta ? !!meta.allowBlank : false,
+            allowBlank: allowBlank,
             readOnly: meta ? meta.readonly : true,
             preventMark: true,
             listeners: {
@@ -42,7 +48,7 @@ params:
                 }
             },
             hidden: meta ? (meta.hidden ? meta.hidden : false): true,
-            msgTarget: 'under',
+            msgTarget: 'under'
         }
     ]
 })
