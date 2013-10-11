@@ -160,6 +160,19 @@ sub user_data : Local {
     $c->forward('View::JSON');    
 }
 
+sub user_info : Local {
+    my ($self, $c) = @_;
+    try {
+        my $user = DB->BaliUser->search({ username => $c->username }, {select=>[qw(username realname alias email active phone mid)]})->first;
+        _fail _loc('User not found: %1', $c->username ) unless $user;
+        $c->stash->{json} = { $user->get_columns, msg=>'ok', success=>\1 };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { msg=>"$err", success=>\0 };
+    };
+    $c->forward('View::JSON');    
+}
+
 sub infoactions : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
