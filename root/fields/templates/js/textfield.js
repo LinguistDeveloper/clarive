@@ -14,14 +14,13 @@ params:
     Ext.BLANK_IMAGE_URL = '/static/ext/resources/images/default/s.gif';
     var meta = params.topic_meta;
     var data = params.topic_data;
-    var style = { 'font-size': '16px', float: 'left', 
+    var style = { 'font-size': '16px',  
             'font-weight': meta.font_weight || ( meta.id_field == 'title' ? 'bold' : 'normal' ), 
             'font-family':'Helvetica Neue,Helvetica,Arial,sans-serif' };
     if( Ext.isIE ) style['margin-top'] = '1px';
-
+    
     return [
         {
-            labelAlign: 'top',
             xtype:'textfield',
             fieldLabel: _(meta.name_field),
             name: meta.id_field,
