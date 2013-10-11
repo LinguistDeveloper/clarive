@@ -17,15 +17,11 @@ params:
 	
 	return [
 		{
-		  xtype: 'box',
-		  autoEl: {cn: '<br>' + _(meta.name_field) + ':'},
+		  xtype: 'label',
+		  //autoEl: {cn: style_label},
+		  fieldLabel: _(meta.name_field),
 		  hidden: meta ? (meta.hidden ? meta.hidden : false): true
-		},
-		{
-		  xtype: 'box',
-		  autoEl: {cn: '<br>'},
-		  hidden: meta ? (meta.hidden ? meta.hidden : false): true		  
-		},			
+		},		
 		{   xtype: 'panel', layout:'fit',
 			hidden: meta ? (meta.hidden ? meta.hidden : false): true,
 			listeners: {
@@ -47,11 +43,6 @@ params:
 					height: 350
 				})
 			]
-		},
-		{
-		  xtype: 'box',
-		  autoEl: {cn: '<br>'},
-		  hidden: meta ? (meta.hidden ? meta.hidden : false): true		  
-		}					
+		}				
     ]
 })
