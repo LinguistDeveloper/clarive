@@ -23,7 +23,7 @@ params:
     var allowBlank;
     if (meta.allowBlank == 'false') allowBlank = false;
     if (meta.allowBlank == 'true') allowBlank = true;
-    if (meta.allowBlank == 'undefined') allowBlank = true;
+    if (meta.allowBlank == undefined) allowBlank = true;
     
     return [
         {

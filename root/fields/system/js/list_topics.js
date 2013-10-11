@@ -112,7 +112,10 @@ params:
     }
 	var obj = [];
 	if (meta.list_type == 'grid') {
-		obj.push(Baseliner.field_label_top( _(meta.name_field), meta.hidden, meta.allowBlank ))	;
+        var allow;
+        allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
+        // alert(meta.name_field + " " + allow);
+		obj.push(Baseliner.field_label_top( _(meta.name_field), meta.hidden, allow ))	;
 	}
 	obj.push(topic_box);
 	

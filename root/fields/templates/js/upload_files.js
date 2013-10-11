@@ -9,6 +9,7 @@ params:
     get_method: 'get_files'    
     field_order: 3
     section: 'details'
+    allowBlank: true
 ---
 */
 (function(params){
@@ -202,10 +203,12 @@ params:
             }
         });
     });	
+    var allow;
+    allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
 	
 	return [
 		{ xtype: 'hidden', name: 'files_uploaded_mid' },
-		Baseliner.field_label_top( _(meta.name_field), meta.hidden ),
+		Baseliner.field_label_top( _(meta.name_field), meta.hidden, allow ),
 		{
 			xtype: 'panel',
 			border: false,
