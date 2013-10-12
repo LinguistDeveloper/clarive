@@ -15,7 +15,10 @@ params:
         fieldLabel: _(meta.name_field),
         name: meta.id_field,
         labelSeparator: '',
-        autoEl: {tag:'hr'}
+        labelStyle: 'color:#0099FF;font-weight:bold',
+        hidden: meta ? (meta.hidden ? meta.hidden : false): true,
+        autoEl: {html:'<hr style="color:#0099FF;height:3px;>"'}
+
     });
     
     return separator
