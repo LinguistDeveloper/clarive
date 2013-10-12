@@ -4760,3 +4760,6 @@ msgstr "El usuario %1 no puede acceder al contenido del tópico %2"
 
 msgid "Required field %1 is empty"
 msgstr "El campo %1 es obligatorio"
+
+msgid "Separator"
+msgstr "Separador de campos"
