@@ -17,7 +17,7 @@ params:
         labelSeparator: '',
         labelStyle: 'color:#0099FF;font-weight:bold',
         hidden: meta ? (meta.hidden ? meta.hidden : false): true,
-        autoEl: {html:'<hr style="color:#0099FF;height:3px;>"'}
+        autoEl: {html:'<hr style="background-color:#0099FF;height:2px;border:none;>"'}
 
     });
     
