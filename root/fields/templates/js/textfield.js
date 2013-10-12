@@ -43,7 +43,7 @@ params:
                     //this.el.setWidth( Math.floor( this.ownerCt.el.getWidth() / 2 ) );
                     //this.el.setWidth( Math.floor( this.ownerCt.ownerCt.el.getWidth() / 2 ) - 125 );
                 },
-                'focus': function() {
+                'afterrender': function() {
                     this.preventMark = false;
                 }
             },
