@@ -455,20 +455,18 @@ sub topics_for_user {
             }
         }
     }else {
-        if (!$p->{clear_filter}){
-            if ( !Baseliner->model('Permissions')->is_root( $username )) {            
-                ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
-                my %tmp;
-                map { $tmp{$_->{id_status_from}} = $_->{id_category} } 
-                    $self->user_workflow( $username );
-                # map { $tmp{$_->{id_status_from}} = $_->{id_category} && $tmp{$_->{id_status_to} = $_->{id_category}} } 
-                #             $self->user_workflow( $username );
-                
-                my @status_ids = keys %tmp;
-                #$where->{'category_status_id || category_id)'} = \@status_ids if @status_ids > 0;
-                my @conditions = map { +{'-and' => [ 'category_status_id' => $_, 'category_id' => $tmp{$_} ] }} @status_ids;
-                $where->{-or} = \@conditions;
-            }
+        if (!$p->{clear_filter}){          
+            ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
+            my %tmp;
+            map { $tmp{$_->{id_status_from}} = $_->{id_category} } 
+                $self->user_workflow( $username );
+            # map { $tmp{$_->{id_status_from}} = $_->{id_category} && $tmp{$_->{id_status_to} = $_->{id_category}} } 
+            #             $self->user_workflow( $username );
+            
+            my @status_ids = keys %tmp;
+            $where->{'category_status_id'} = \@status_ids if @status_ids > 0;
+            #my @conditions = map { +{'-and' => [ 'category_status_id' => $_, 'category_id' => $tmp{$_} ] }} @status_ids;
+            #$where->{-or} = \@conditions;
             
             #$where->{'category_status_type'} = {'!=', 'F'};
             #Nueva funcionalidad (todos los tipos de estado que empiezan por F son estado finalizado)
