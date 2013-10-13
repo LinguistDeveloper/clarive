@@ -19,6 +19,7 @@ params:
     var grid = new Baseliner.GridEditor({
         width: meta.width || '100%',
         height: meta.height || 300,
+        style: 'margin-bottom: 10px',
         id_field: meta.id_field,
         bd_field: meta.bd_field,
         records: records, 
