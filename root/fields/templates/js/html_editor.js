@@ -27,7 +27,7 @@ params:
 					var disable = meta && meta.readonly ? meta.readonly : false;
 					if(disable){
 					    var mask = this.el.mask();
-					    mask.setStyle('opacity', 0.5);
+					    mask.setStyle('opacity', 0);
 					    mask.setStyle('height', 5000);
 					}
 				}
