@@ -2746,7 +2746,10 @@ Baseliner.CBox = Ext.extend( Ext.form.Checkbox, {
 Ext.apply(Ext.layout.FormLayout.prototype, {
     originalRenderItem: Ext.layout.FormLayout.prototype.originalRenderItem || Ext.layout.FormLayout.prototype.renderItem,
     renderItem: function(c, position, target){
-        if (c && !c.rendered &&  c.fieldLabel && !c.allowBlank && c.allowBlank != undefined) {
+        c.labelSeparator = '';
+        // alert(c.fieldLabel + ' ' + c.readOnly );
+        var readOnly = c.readOnly == undefined ? true:c.readOnly;
+        if (c && !c.rendered &&  c.fieldLabel && !c.allowBlank && c.allowBlank != undefined && readOnly ) {
             c.fieldLabel = c.fieldLabel + " <span " +
             ((c.requiredFieldCls !== undefined) ? 'class="' + c.requiredFieldCls + '"' : 'style="color:red;"') +
             " ext:qtip=\"" +
