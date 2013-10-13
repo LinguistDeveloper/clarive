@@ -23,7 +23,8 @@ params:
         bd_field: meta.bd_field,
         records: records, 
         columns: meta.columns,
-        readOnly: meta && meta.readonly ? meta.readonly : true,
+        readOnly: meta.readonly!=undefined ? meta.readonly : true,
+        disabled: meta.readonly!=undefined ? meta.readonly : true,
         viewConfig: {
             forceFit: meta.forceFit || true
         }
