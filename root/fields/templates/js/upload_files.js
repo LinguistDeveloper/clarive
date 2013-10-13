@@ -208,7 +208,7 @@ params:
 	
 	return [
 		{ xtype: 'hidden', name: 'files_uploaded_mid' },
-		Baseliner.field_label_top( _(meta.name_field), meta.hidden, allow ),
+		Baseliner.field_label_top( _(meta.name_field), meta.hidden, allow, meta.readOnly ),
 		{
 			xtype: 'panel',
 			border: false,

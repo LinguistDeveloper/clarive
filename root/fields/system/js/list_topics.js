@@ -115,7 +115,7 @@ params:
         var allow;
         allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
         // alert(meta.name_field + " " + allow);
-		obj.push(Baseliner.field_label_top( _(meta.name_field), meta.hidden, allow ))	;
+		obj.push(Baseliner.field_label_top( _(meta.name_field), meta.hidden, allow, meta.readOnly ))	;
 	}
 	obj.push(topic_box);
 	
