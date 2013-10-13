@@ -39,7 +39,8 @@ params:
         width: meta.width || '100%',
         height: meta.height || 300,
         value: value || '',
-        readOnly: meta && meta.readonly ? meta.readonly : true,
+        readOnly: meta.readonly!=undefined ? meta.readonly : true,
+        disabled: meta.readonly!=undefined ? meta.readonly : true,
         hidden : meta ? (meta.hidden ? meta.hidden : false): true,
         enableDragDrop: meta && meta.readonly ? !meta.readonly : true,
         use_row_editor: meta && meta.readonly ? !meta.readonly : true
