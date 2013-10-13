@@ -23,6 +23,7 @@ params:
         bd_field: meta.bd_field,
         records: records, 
         columns: meta.columns,
+        readOnly: meta && meta.readonly ? meta.readonly : true,
         viewConfig: {
             forceFit: meta.forceFit || true
         }
