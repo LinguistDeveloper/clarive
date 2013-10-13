@@ -351,64 +351,75 @@ sub get_meta_permissions : Local {
     
     my $is_root = $c->model('Permissions')->is_root( $c->username );
 
-    if (!$is_root) {
-        for (_array $meta){
-            my $parse_id_field = _name_to_id($_->{name_field});
-            
-            if($_->{fields}){
-            	my @fields_form = _array $_->{fields};
-                for my $field_form ( @fields_form ){
-                    my $parse_field_form_id = $field_form->{id_field};
-                    my $write_action = 'action.topicsfield.' .  $parse_category 
-                    		. '.' .  $parse_id_field . '.' .  $parse_field_form_id . '.' . $parse_status . '.write';
-                    #my $write_action = 'action.topicsfield.write.' . $_->{name_field};
-                    #print ">>>>>>>>>Accion: " . $write_action . "\n";
-                    
-                    _log "TTTTTTTTTTTTTTTTTTT -> ".$write_action;
+    for (_array $meta){
+        my $parse_id_field = _name_to_id($_->{name_field});
+        
+        if($_->{fields}){
+        	my @fields_form = _array $_->{fields};
+            for my $field_form ( @fields_form ){
+                my $parse_field_form_id = $field_form->{id_field};
+                my $write_action = 'action.topicsfield.' .  $parse_category 
+                		. '.' .  $parse_id_field . '.' .  $parse_field_form_id . '.' . $parse_status . '.write';
+                #my $write_action = 'action.topicsfield.write.' . $_->{name_field};
+                #print ">>>>>>>>>Accion: " . $write_action . "\n";
+                
+                if ( $is_root ) {
+                        $field_form->{readonly} = \0;
+                } else {
                     if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action )){
                         $field_form->{readonly} = \0;
                     }else{
                         $field_form->{readonly} = \1;
                     }
-                    
-                    my $read_action = 'action.topicsfield.' .  $parse_category 
-                    		. '.' .  $parse_id_field . '.' .  $parse_field_form_id  . '.read';
-                    #my $read_action = 'action.topicsfield.read.' . $_->{name_field} if ! $write_action;
-                    #_error $read_action;
-                    #print ">>>>>>>>>Accion: " . $read_action . "\n";
-            
+                }                    
+                my $read_action = 'action.topicsfield.' .  $parse_category 
+                		. '.' .  $parse_id_field . '.' .  $parse_field_form_id  . '.read';
+                #my $read_action = 'action.topicsfield.read.' . $_->{name_field} if ! $write_action;
+                #_error $read_action;
+                #print ">>>>>>>>>Accion: " . $read_action . "\n";
+        
+                if ( $is_root ) {
+                        $field_form->{hidden} = \0;
+                } else {
+
                     if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $read_action )){
                     	$field_form->{hidden} = \1;
                         #push @hidden_field, $field_form->{id_field};
                     }
                 }
-            }else{
-                my $write_action = 'action.topicsfield.' .  $parse_category . '.' .  $parse_id_field . '.' . $parse_status . '.write';
-                #my $write_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $_->{id_field} . '.' . lc $data->{name_status} . '.write';
-                #my $write_action = 'action.topicsfield.write.' . $_->{name_field};
-                
-                _log "TTTTTTTTTTTTTTTTTTT -> ".$write_action;
+            }
+        }else{
+            my $write_action = 'action.topicsfield.' .  $parse_category . '.' .  $parse_id_field . '.' . $parse_status . '.write';
+            #my $write_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $_->{id_field} . '.' . lc $data->{name_status} . '.write';
+            #my $write_action = 'action.topicsfield.write.' . $_->{name_field};
+            
+            if ( $is_root ) {
+                    $_->{readonly} = \0;
+            } else {
                 if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action )){
                     $_->{readonly} = \0;
                 }else{
                     $_->{readonly} = \1;    
                 }
-                
-                my $read_action = 'action.topicsfield.' .  $parse_category . '.' .  $parse_id_field . '.read';
-                #my $read_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $_->{id_field} . '.' . lc $data->{name_status} . '.read';
-                #my $read_action = 'action.topicsfield.read.' . $_->{name_field} if ! $write_action;
-                #_error $read_action;
-        
+            }
+            
+            my $read_action = 'action.topicsfield.' .  $parse_category . '.' .  $parse_id_field . '.read';
+            #my $read_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $_->{id_field} . '.' . lc $data->{name_status} . '.read';
+            #my $read_action = 'action.topicsfield.read.' . $_->{name_field} if ! $write_action;
+            #_error $read_action;
+
+            if ( !$is_root ) {
                 if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $read_action )){
                     push @hidden_field, $_->{id_field};
                 }
-            }
+            } 
+
         }
-        
-        my %hidden_field = map { $_ => 1} @hidden_field;
-        $meta = [grep { !($hidden_field{ $_->{id_field} }) } _array $meta];
-        
     }
+    
+    my %hidden_field = map { $_ => 1} @hidden_field;
+    $meta = [grep { !($hidden_field{ $_->{id_field} }) } _array $meta];
+        
     #_log _dump $meta;
     return $meta
 }

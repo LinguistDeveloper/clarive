@@ -58,9 +58,10 @@ params:
     };
     Ext.extend( Baseliner.model.Status, Ext.ux.form.SuperBoxSelect );
 	
+	
 	var status_box = new Baseliner.model.Status({
 		store: store_category_status,
-		readOnly: meta ? meta.readonly : true,
+		disabled: meta.readonly!=undefined ? meta.readonly : false,
         hidden: meta ? (meta.hidden ? meta.hidden : false): true,
 		singleMode: true
 	});

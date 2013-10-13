@@ -205,10 +205,11 @@ params:
     });	
     var allow;
     allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
+    readonly = meta.readonly == undefined ? true : meta.readonly;
 	
 	return [
 		{ xtype: 'hidden', name: 'files_uploaded_mid' },
-		Baseliner.field_label_top( _(meta.name_field), meta.hidden, allow, meta.readOnly ),
+		Baseliner.field_label_top( _(meta.name_field), meta.hidden, allow, readonly ),
 		{
 			xtype: 'panel',
 			border: false,

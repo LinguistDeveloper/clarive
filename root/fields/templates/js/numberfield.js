@@ -11,13 +11,20 @@ params:
 */
 
 (function(params){
+    Ext.BLANK_IMAGE_URL = '/static/ext/resources/images/default/s.gif';
     var meta = params.topic_meta;
     var data = params.topic_data;
-    var style = { 'font-size': '16px', float: 'left', 
+    var style = { 'font-size': '16px',  
             'font-weight': meta.font_weight || ( meta.id_field == 'title' ? 'bold' : 'normal' ), 
             'font-family':'Helvetica Neue,Helvetica,Arial,sans-serif' };
     if( Ext.isIE ) style['margin-top'] = '1px';
-
+    
+    
+    var allowBlank;
+    if (meta.allowBlank == 'false') allowBlank = false;
+    if (meta.allowBlank == 'true') allowBlank = true;
+    if (meta.allowBlank == undefined) allowBlank = true;
+    
     return [
         {
             xtype:'numberfield',
@@ -25,18 +32,23 @@ params:
             name: meta.id_field,
             value: data && data[ meta.bd_field ]!=undefined  ? data[ meta.bd_field ] : ( meta.default_value || '' ), 
             style: style,
-            width: meta.width || 100,
+            //width: meta.width || '97%',
             anchor: meta.anchor || '100%',
             height: meta.height || 30,
-            allowBlank: meta ? !!meta.allowBlank : false,
+            allowBlank: allowBlank,
             readOnly: meta ? meta.readonly : true,
+            preventMark: true,
             listeners: {
                 'resize': function(a,b,v,d,e){
                     //this.el.setWidth( Math.floor( this.ownerCt.el.getWidth() / 2 ) );
                     //this.el.setWidth( Math.floor( this.ownerCt.ownerCt.el.getWidth() / 2 ) - 125 );
+                },
+                'afterrender': function() {
+                    this.preventMark = false;
                 }
             },
-            hidden: meta ? (meta.hidden ? meta.hidden : false): true
+            hidden: meta ? (meta.hidden ? meta.hidden : false): true,
+            msgTarget: 'under'
         }
     ]
 })
