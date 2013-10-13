@@ -15,13 +15,11 @@ params:
 	var data = params.topic_data;
 	var meta = params.topic_meta;
 	
+    allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
+    readonly = meta.readonly == undefined ? true : meta.readonly;
+
 	return [
-		{
-		  xtype: 'label',
-		  //autoEl: {cn: style_label},
-		  fieldLabel: _(meta.name_field),
-		  hidden: meta ? (meta.hidden ? meta.hidden : false): true
-		},		
+        Baseliner.field_label_top( meta.name_field, meta.hidden, allow, readonly ),		
 		{   xtype: 'panel', layout:'fit',
 			hidden: meta ? (meta.hidden ? meta.hidden : false): true,
 			listeners: {
@@ -29,7 +27,7 @@ params:
 					var disable = meta && meta.readonly ? meta.readonly : false;
 					if(disable){
 					    var mask = this.el.mask();
-					    mask.setStyle('opacity', 0);
+					    mask.setStyle('opacity', 0.5);
 					    mask.setStyle('height', 5000);
 					}
 				}

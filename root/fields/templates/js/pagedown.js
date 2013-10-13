@@ -22,8 +22,11 @@ params:
         height: meta.height || 30,
         value: value || ''
     });
+    allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
+    readonly = meta.readonly == undefined ? true : meta.readonly;
+
     return [
-        Baseliner.field_label_top( _(meta.name_field), meta.hidden ),
+        Baseliner.field_label_top( meta.name_field, meta.hidden, allow, readonly ),
         new Ext.Panel({ layout:'fit', anchor: meta.anchor || '100%', height: meta.height, border: false, items: editor })
     ]
 })

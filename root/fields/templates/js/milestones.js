@@ -44,8 +44,11 @@ params:
         enableDragDrop: meta && meta.readonly ? !meta.readonly : true,
         use_row_editor: meta && meta.readonly ? !meta.readonly : true
     });
+    allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
+    readonly = meta.readonly == undefined ? true : meta.readonly;
+
     return [
-        Baseliner.field_label_top( _(meta.name_field), meta.hidden ),
+        Baseliner.field_label_top( meta.name_field, meta.hidden, allow, readonly ),
         new Ext.Panel({ layout:'fit', style: 'padding-bottom: 12px', anchor: meta.anchor || '100%', height: meta.height, border: false, items: editor })
     ]
 })

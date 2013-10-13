@@ -27,8 +27,11 @@ params:
             forceFit: meta.forceFit || true
         }
     });
+    allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
+    readonly = meta.readonly == undefined ? true : meta.readonly;
+
 	return [
-        Baseliner.field_label_top( meta.name_field, meta.hidden ),
+        Baseliner.field_label_top( meta.name_field, meta.hidden, allow, readonly ),
         grid
     ]
 })
