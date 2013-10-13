@@ -106,6 +106,7 @@ use Exporter::Tidy default => [
     _load_features
     _ci
     _any
+    _ixhash
     _package_is_loaded
 )],
 other => [qw(
@@ -1418,6 +1419,11 @@ sub _strip_last {
 }
 
 *_any = \&List::MoreUtils::any;
+
+sub _ixhash {
+    require Tie::IxHash;
+    Tie::IxHash->new( @_ );
+}
 
 sub _package_is_loaded {
     my $cl = shift;

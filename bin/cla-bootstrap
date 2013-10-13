@@ -403,6 +403,7 @@ Text::Markdown
 Text::Template
 Text::Textile
 Text::Unaccent::PurePerl
+Tie::IxHash
 Time::Interval
 Try::Tiny
 Twiggy
