@@ -2749,7 +2749,7 @@ Ext.apply(Ext.layout.FormLayout.prototype, {
         c.labelSeparator = '';
         // alert(c.fieldLabel + ' ' + c.readOnly );
         var readOnly = c.readOnly == undefined ? true:c.readOnly;
-        if (c && !c.rendered &&  c.fieldLabel && !c.allowBlank && c.allowBlank != undefined && readOnly ) {
+        if (c && !c.rendered &&  c.fieldLabel && !c.allowBlank && c.allowBlank != undefined && !readOnly ) {
             c.fieldLabel = c.fieldLabel + " <span " +
             ((c.requiredFieldCls !== undefined) ? 'class="' + c.requiredFieldCls + '"' : 'style="color:red;"') +
             " ext:qtip=\"" +
