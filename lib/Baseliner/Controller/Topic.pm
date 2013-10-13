@@ -365,6 +365,7 @@ sub get_meta_permissions : Local {
                 
                 if ( $is_root ) {
                         $field_form->{readonly} = \0;
+                        $field_form->{allowBlank} = 'true';
                 } else {
                     if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action )){
                         $field_form->{readonly} = \0;
@@ -373,7 +374,7 @@ sub get_meta_permissions : Local {
                     }
                 }                    
                 my $read_action = 'action.topicsfield.' .  $parse_category 
-                		. '.' .  $parse_id_field . '.' .  $parse_field_form_id  . '.read';
+                        . '.' .  $parse_id_field . '.' .  $parse_field_form_id  . '.read';
                 #my $read_action = 'action.topicsfield.read.' . $_->{name_field} if ! $write_action;
                 #_error $read_action;
                 #print ">>>>>>>>>Accion: " . $read_action . "\n";
@@ -383,7 +384,7 @@ sub get_meta_permissions : Local {
                 } else {
 
                     if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $read_action )){
-                    	$field_form->{hidden} = \1;
+                        $field_form->{hidden} = \1;
                         #push @hidden_field, $field_form->{id_field};
                     }
                 }
@@ -395,6 +396,7 @@ sub get_meta_permissions : Local {
             
             if ( $is_root ) {
                     $_->{readonly} = \0;
+                    $_->{allowBlank} = 'true';
             } else {
                 if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action )){
                     $_->{readonly} = \0;
