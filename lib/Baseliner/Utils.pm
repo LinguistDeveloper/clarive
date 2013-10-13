@@ -581,13 +581,14 @@ sub _parameters {
 }
 
 # creates an array from whatever arrays
+# rgo: fix the hash to hash-items problem
 sub _array {
     my @array;
     for my $item ( @_ ) {
         if( ref $item eq 'ARRAY' ) {
             push @array, @{ $item };
         } elsif( ref $item eq 'HASH' ) {
-            push @array, %{ $item };
+            push @array, $item;
         } else {
             push @array, $item if $item;
         }
