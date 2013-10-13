@@ -353,7 +353,7 @@ sub get_meta_permissions : Local {
 
     if (!$is_root) {
         for (_array $meta){
-            my $parse_id_field = _name_to_id($_->{id_field});
+            my $parse_id_field = _name_to_id($_->{name_field});
             
             if($_->{fields}){
             	my @fields_form = _array $_->{fields};
@@ -364,6 +364,7 @@ sub get_meta_permissions : Local {
                     #my $write_action = 'action.topicsfield.write.' . $_->{name_field};
                     #print ">>>>>>>>>Accion: " . $write_action . "\n";
                     
+                    _log "TTTTTTTTTTTTTTTTTTT -> ".$write_action;
                     if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action )){
                         $field_form->{readonly} = \0;
                     }else{
@@ -386,7 +387,7 @@ sub get_meta_permissions : Local {
                 #my $write_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $_->{id_field} . '.' . lc $data->{name_status} . '.write';
                 #my $write_action = 'action.topicsfield.write.' . $_->{name_field};
                 
-                
+                _log "TTTTTTTTTTTTTTTTTTT -> ".$write_action;
                 if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action )){
                     $_->{readonly} = \0;
                 }else{
