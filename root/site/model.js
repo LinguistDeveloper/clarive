@@ -2667,8 +2667,8 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
     layout: 'card',
     activeItem: 0,
     show_tbar: true,
-    readOnly: meta.readonly!=undefined ? meta.readonly : true,
-    disabled: meta.readonly!=undefined ? meta.readonly : true,
+    readOnly: meta.readonly!=undefined ? meta.readonly : false,
+    disabled: meta.readonly!=undefined ? meta.readonly : false,
 
     constructor: function(c){
         Baseliner.VariableForm.superclass.constructor.call(this, Ext.apply({
