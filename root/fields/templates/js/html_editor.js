@@ -22,6 +22,7 @@ params:
         Baseliner.field_label_top( meta.name_field, meta.hidden, allow, readonly ),		
 		{   xtype: 'panel', layout:'fit',
 			hidden: meta ? (meta.hidden ? meta.hidden : false): true,
+			style: 'margin-bottom: 15px',
 			listeners: {
 				'afterrender':function(){
 					var disable = meta && meta.readonly ? meta.readonly : false;
