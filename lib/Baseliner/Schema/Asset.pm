@@ -43,6 +43,7 @@ around BUILDARGS => sub {
 sub insert {         
     my ($self,%p) = @_;
     # $grid->insert($fh, {"filename" => "mydbfile"});
+    # TODO match md5, add mid to asset in case it exists
     my $id = $self->grid->insert($self->fh, { filename=>$self->filename, %p } );
     $self->id( $id );
 }

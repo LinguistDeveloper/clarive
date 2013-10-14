@@ -4,11 +4,6 @@ use Moose;
 has _collection => ( is=>'ro', isa=>'MongoDB::Collection', required=>1, handles=>qr/.*/ );
 has _db => ( is=>'ro', isa=>'Object', weak_ref=>1 );
 
-sub get {
-    my ($self,$mid)=@_;
-    return $self->find_one({ mid=>"$mid" });
-}
-
 sub search {
     my ($self,%p) = @_;
     my $query = delete $p{query} or Util->_throw( 'Missing query');
@@ -41,10 +36,28 @@ sub merge_into {
     return $doc;
 }
 
-sub save_mid {
+sub get {
+    my ($self,$mid)=@_;
+    return ref $mid eq 'ARRAY' 
+        ? $self->find_one({ mid=>{ '$in'=>$mid } })
+        : $self->find_one({ mid=>"$mid" });
+}
+
+sub set {
     my ($self,$mid,$doc) = @_;
     $doc //= {};
     $self->update({ mid=>"$mid" },$doc,{ upsert=>1 });
+}
+    
+sub find_or_create {
+    my ($self,$doc) = @_;
+    return if $self->find($doc)->count;
+    $self->update($doc,$doc,{ upsert=>1 });
+}
+    
+sub update_or_create {
+    my ($self,$doc) = @_;
+    $self->update($doc,$doc,{ upsert=>1 });
 }
     
 1;

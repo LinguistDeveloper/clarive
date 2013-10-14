@@ -4,6 +4,7 @@ use MongoDB;
 use Baseliner::MongoCursor;
 use Baseliner::MongoCollection;
 use Try::Tiny;
+use Function::Parameters qw(:strict);
 use Baseliner::Utils qw(_fail _loc _error _debug _throw _log _array _dump _ixhash);
 
 # mongo connection
@@ -49,7 +50,8 @@ sub asset {
 }
 
 sub ts { Util->_now() }
-sub in { { '$in' => [ map { ref $_ eq 'HASH' ? "$_->{mid}" : "$_" } Util->_array( @_ ) ] } }
+sub in  { {  '$in' => [ map { ref $_ eq 'HASH' ? "$_->{mid}" : "$_" } Util->_array( @_ ) ] } }
+sub nin { { '$nin' => [ map { ref $_ eq 'HASH' ? "$_->{mid}" : "$_" } Util->_array( @_ ) ] } }
 
 sub find {
     my ($self,$mid)=@_;
@@ -65,8 +67,10 @@ sub find_master {
     return $row;
 }
 
-sub master { $_[0]->collection('master') }
+sub master     { $_[0]->collection('master') }
 sub master_rel { $_[0]->collection('master_rel') }
+sub master_cal { $_[0]->collection('master_cal') }
+sub master_doc { $_[0]->collection('master_doc') }
 
 sub master_all {
     my ($self,$where)=@_;
@@ -89,13 +93,82 @@ sub master_query {
     return @rows;
 }
 
+=head2 joins 
+
+    my @revisions = mdb->joins(
+        { merge=>'flat' },
+        ['master_rel','dad'] => { rel_type => 'topic_topic' },
+        to_mid     => 'from_mid',
+        master_rel => { rel_type => 'topic_topic' },
+        to_mid     => 'mid',
+        master     => {}
+    );
+
+=cut
+sub joins {
+    my $self = shift;
+    my %opts = %{ shift() } if ref $_[0] eq 'HASH';
+    my ( %res, %in, @merges );
+    while( @_ ) {
+        my ($coll,$where,$from,$to,$as) = (shift,shift,shift,shift);
+        ($coll,$as) = @$coll if ref $coll eq 'ARRAY'; 
+        my $rs = $self->collection( $coll )->find({ %$where, %in });
+        if( ! $from ) {
+            $res{coll} = $coll;
+            $res{where} = $where;
+            last;
+        }
+        my @docs;
+        if( $opts{merge} ) {
+            @docs = $rs->all; 
+            my %merge;
+            for my $doc ( @docs ) {
+                $merge{ $doc->{ $from } } = $doc;
+            }
+            push @merges, [ $as // $coll,$from,$to, \%merge ];
+        } else {
+            $rs->fields({ _id=>-1, $from => 1 });
+            @docs = $rs->all; 
+        }
+        %in = ( $to => mdb->in(map{ $_->{$from} } @docs ) );
+    }
+    my $rs = $self->collection( $res{coll} )->find({ %{ $res{where} }, %in });
+    if( $opts{merge} ) {
+        my @docs = $rs->all;
+        my (%join_keys,$last_key);
+        my $k = 1;
+        for my $merge ( reverse @merges ) {
+            my ($coll_or_as,$from,$to,$m) = @$merge;
+            my $doc_key = '_join#'.$k;
+            my $join_key = $join_keys{$coll_or_as} ? $coll_or_as . '_' . $join_keys{$coll_or_as}++ : $coll_or_as;
+            $join_keys{$coll_or_as} //= 1;
+            $k++;
+            for my $doc ( @docs ) {
+                $doc->{$doc_key} = $doc->{$to} unless $last_key;
+                $opts{merge} eq 'flat' 
+                ? do{ $doc = { %{ $m->{ $last_key ? $doc->{$last_key} : $doc->{$to} } }, %$doc } }
+                : do{ $doc = { $join_key=>$m->{ $last_key ? $doc->{$last_key} : $doc->{$to} }, %$doc } };
+            }
+            $last_key = $doc_key;
+        }
+        return @docs;
+    } else {
+        return wantarray ? $rs->all : $rs;
+    }
+}
+
+
 sub save {
     my ($self,$mid, $doc, $opts) = @_;
     $mid = $mid->{mid} if ref $mid;  #  mid may be a BaliMaster row also
     Util->_fail( 'Missing mid' ) unless length $mid;
-    my $m = $self->collection('master');
+    my $m = $self->master;
     my $row = $m->find_one();
-    return $m->merge_into({ mid=>"$mid" },{ yaml=>Util->_dump($doc) });
+    my $final = $m->merge_into({ mid=>"$mid" },{ yaml=>Util->_dump($doc) });
+    # create the searcheable version of the doc
+    Util->_unbless( $doc );
+    $self->master_doc->update({ mid=>"$mid" }, $doc );
+    return $final;
 }
 
 # deprecated:
@@ -104,6 +177,10 @@ sub index_sync { }
 sub index_all {
     my ($self, $collection)=@_;
     my $idx = {
+        topic => [
+            [{ mid=>1 },{ unique=>1 }],
+            [{'$**'=> "text"}],
+        ],
         topic_image => [
             [{ id_hash => 1 }]
         ],
@@ -113,6 +190,12 @@ sub index_all {
         ],
         master_rel => [
             [{ from_mid=>1, to_mid=>1, rel_type=>1, rel_field=>1 },{ unique=>1 }],
+            [{ from_mid=>1, rel_type=>1 }],
+            [{ to_mid  =>1, rel_type=>1 }],
+            [{ rel_type=>1 }],
+        ],
+        master_doc => [
+            [{'$**'=> "text"}],
         ],
     };
     for my $cn ( keys %$idx ) {
@@ -130,6 +213,7 @@ sub AUTOLOAD {
     my $self = shift;
     my $name = $AUTOLOAD;
     my ($coll) = reverse( split(/::/, $name));
+    Util->_fail('The method is `joins` not `join`') if $coll eq 'join';
     return $self->collection( $coll );
 }
 
