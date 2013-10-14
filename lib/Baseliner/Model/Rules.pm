@@ -597,6 +597,41 @@ register 'statement.perl.do' => {
     },
 };
 
+register 'statement.perl.for' => {
+    text => 'FOR eval', data => { varname=>'x', code=>'()' },
+    type => 'loop',
+    icon => '/static/images/circular/cog.png', 
+    form => '/forms/stmt_for.js', 
+    dsl => sub { 
+        my ($self, $n, %p ) = @_;
+        sprintf(q{
+            for( %s ) {
+                local $stash->{'%s'} = $_;
+                %s;
+            }
+        }, $n->{code} // '()', $n->{varname} // 'x',  $self->dsl_build( $n->{children}, %p ) );
+    },
+};
+
+register 'statement.js.code' => {
+    text => 'EVAL JavaScript', data => { code=>'' },
+    type => 'loop',
+    icon => '/static/images/icons/javascript.png', 
+    form => '/forms/stmt_for.js', 
+    dsl => sub { 
+        my ($self, $n, %p ) = @_;
+        sprintf(q{
+            require JE;
+            my $je = JE->new;
+            my $jstash = Util->_clone($stash);
+            Util->_unbless($jstash);
+            $je->new_function( stash => sub { defined $_[1] ? $jstash->{$_[0]} = $_[1]->value : $jstash->{$_[0]} } );
+            $je->eval(q{%s});
+            do { $stash->{$_} = $jstash->{$_} if !exists $stash->{$_} } for keys $jstash;
+        }, $n->{code} // '()',  $self->dsl_build( $n->{children}, %p ) );
+    },
+};
+
 register 'statement.perl.code' => {
     text => 'CODE', data => { code=>'' },
     type => 'loop',
