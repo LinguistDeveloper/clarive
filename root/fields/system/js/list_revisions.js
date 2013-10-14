@@ -25,6 +25,7 @@ params:
         height: 120,
         //fieldLabel: _(meta.name_field),
         hideHeaders: true,
+        style: 'margin-bottom: 15px',
         //disabled: meta ? meta.readonly : true,
         viewConfig: {
             headersDisabled: true,
