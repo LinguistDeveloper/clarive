@@ -581,6 +581,8 @@ sub list_tree_fields : Local {
 
     my @template_dirs;
     my @template_dirs = map { $_->root . '/forms/*.js' } Baseliner->features->list;
+    push @template_dirs, map { $_->root . '/fields/templates/js/*.js' } Baseliner->features->list;
+    push @template_dirs, map { $_->root . '/fields/system/js/*.js' } Baseliner->features->list;
     
     push @template_dirs, $c->path_to( 'root/fields/templates/js' ) . "/*.js";
     push @template_dirs, $c->path_to( 'root/fields/system/js' ) . "/list*.js";
