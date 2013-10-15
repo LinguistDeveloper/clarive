@@ -2752,7 +2752,8 @@ Ext.apply(Ext.layout.FormLayout.prototype, {
             var readonly = c.readOnly !=undefined ? c.readOnly:true;
             readonly = readonly || c.disabled;
             // c.fieldLabel = "(RO:" + c.readOnly + ",DIS:" + c.disabled + ",AB:" + c.allowBlank + "= " + readonly + ") " + c.fieldLabel;
-            // c.disabled = readonly;
+            console.dir(c);
+            //c.disabled = readonly;
 
             if (c && !c.rendered &&  c.fieldLabel && !c.allowBlank && c.allowBlank != undefined && !readonly ) {
                 c.fieldLabel = c.fieldLabel + " <span " +
