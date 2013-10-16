@@ -49,9 +49,22 @@ register 'action.job.view_monitor' => { name=>'View job monitor' };
 
 register 'menu.job' => { label => 'Jobs', index=>110, actions => ['action.job.%','action.calendar.%']};
 
-register 'menu.job.create' => { label => 'Create a new Job', url_comp=>'/job/create', title=>'New Job',
-    icon=>'/static/images/icons/job.png', actions=>['action.job.create'] };
-register 'menu.job.list' => { label => 'Monitor', url_comp => '/job/monitor', title=>'Monitor', icon=>'/static/images/icons/television.gif', actions=>['action.job.view_monitor'] };
+register 'menu.job.create' => {
+    label    => 'Create a new Job',
+    url_comp => '/job/create',
+    title    => 'New Job',
+    icon     => '/static/images/icons/job.png',
+    actions  => ['action.job.create'],
+    index    => 10,
+};
+register 'menu.job.list' => {
+    label    => 'Monitor',
+    url_comp => '/job/monitor',
+    title    => 'Monitor',
+    icon     => '/static/images/icons/television.gif',
+    actions  => ['action.job.view_monitor'],
+    index    => 20,
+};
 
 #register 'menu.job.list' => { label => 'List Current Jobs', url=>'/maqueta/list.mas', title=>'Job Monitor' };
 #register 'menu.job.exec' => { label => 'Exec Current Jobs', url_run=>'/maqueta/list.mas', title=>'Job Monitor' };

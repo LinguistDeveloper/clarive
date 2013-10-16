@@ -16,7 +16,6 @@ register 'menu.admin.scheduler' => {
     url_comp => '/scheduler/grid',
     actions  => ['action.admin.scheduler'],
     title    => 'Scheduler',
-    index    => 85,
     icon     => '/static/images/silk/clock.png'
 };
 

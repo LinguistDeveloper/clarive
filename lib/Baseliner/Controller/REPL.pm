@@ -27,24 +27,28 @@ register 'menu.development.repl' => {
     title    => 'REPL',
     action   => 'action.development.repl',
     icon     => '/static/images/icons/console.png',
+    index    => 10,
 };
 register 'menu.development.ext_api' => {
     label      => 'ExtJS API',
     url_iframe => '/static/ext/docs/index.html',
     title      => 'ExtJS API',
-    action     => 'action.development.ext_api'
+    action     => 'action.development.ext_api',
+    index      => 1000,
 };
 register 'menu.development.ext_examples' => {
     label      => 'ExtJS Examples',
     url_iframe => '/static/ext/examples/index.html',
     title      => 'ExtJS Examples',
-    action     => 'action.development.ext_examples'
+    action     => 'action.development.ext_examples',
+    index      => 1000,
 };
 register 'menu.development.gui_designer' => {
     label      => 'GUI Designer',
     url_iframe => '/static/gui/index.html',
     title      => 'GUI Designer',
     action     => 'action.development.gui_designer',
+    index      => 1000,
 };
 register 'menu.development.baliref' => {
     label              => 'Baseliner Reference',
@@ -52,6 +56,7 @@ register 'menu.development.baliref' => {
     title              => 'Baseliner Reference',
     index              => 999,
     action => 'action.development.baliref',
+    index      => 100,
 };
 
 register 'menu.development.js_reload' => {
@@ -60,6 +65,7 @@ register 'menu.development.js_reload' => {
     title    => 'JS Reload',
     action   => 'action.development.js_reload',
     icon     => '/static/images/icons/js-reload.png',
+    index      => 20,
 };
 
 sub test : Local {
