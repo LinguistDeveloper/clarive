@@ -423,6 +423,11 @@ sub cla_worker : Path('cla-worker') {
     $c->res->body( scalar _file($c->path_to('bin/cla-worker'))->slurp ); 
 }
 
+sub cache_clear : Local {
+    my ($self,$c) = @_; 
+    _fail 'No permission' unless $c->has_action('action.development.cache_clear');
+    $c->cache_clear;
+}
 
 =head2 end
 

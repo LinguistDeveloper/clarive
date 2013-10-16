@@ -428,11 +428,11 @@
                 layout: 'fit', width: 800, height: 600, items: cons_pan });
             cons_inproc.on('afterrender', function(){ 
                 Baseliner.showLoadingMask( cons_pan.el );
-                Baseliner.ajaxEval( '/ci/'+sel.data.mid+'/run_inproc', { id_job: sel.data.id }, function(res){
+                Baseliner.ci_call( sel.data.mid, 'run_inproc', { id_job: sel.data.id }, function(res){
                     Baseliner.message( _('Run In-Process'), _('Job %1 in-process run finished', sel.data.name ) );
                     if( !Ext.getCmp(cons_pan.id) ) return;
                     if( !Ext.getCmp(cons_inproc.id) ) return;
-                    cons_inproc.setValue( res.data ? res.data.output : _('(no data)') );
+                    cons_inproc.setValue( res ? res.output : _('(no data)') );
                     Baseliner.hideLoadingMask( cons_pan.el );
                     if( grid ) {
                         var st =grid.getStore();
