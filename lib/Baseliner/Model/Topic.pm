@@ -747,8 +747,8 @@ sub next_status_for_user {
             $where,
             {   join     => [ 'roles', 'statuses_to', 'statuses_from' ],
                 distinct => 1,
-                +select => [ 'id_status_from', 'statuses_from.name', 'statuses_from.bl', 'id_status_to', 'statuses_to.name', 'statuses_to.type', 'statuses_to.bl', 'statuses_to.description', 'id_category', 'job_type' ],
-                +as     => [ 'id_status_from', 'status_name_from', 'status_bl_from', 'id_status',    'status_name', 'status_type', 'status_bl', 'status_description', 'id_category', 'job_type' ]
+                +select => [ 'id_status_from', 'statuses_from.name', 'statuses_from.bl', 'id_status_to', 'statuses_to.name', 'statuses_to.type', 'statuses_to.bl', 'statuses_to.description', 'id_category', 'job_type','statuses_to.seq' ],
+                +as     => [ 'id_status_from', 'status_name_from', 'status_bl_from', 'id_status',    'status_name', 'status_type', 'status_bl', 'status_description', 'id_category', 'job_type','seq' ]
             }
         )->hashref->all;
         
@@ -2061,7 +2061,7 @@ sub root_workflow {
             push @wf, { 
                 id_status_from => $from, 
                 status_name_from => $from_name,
-                id_status_to => $_->{id_status},
+                id_status => $_->{id_status},
                 status_name => $_->{status}->{name},
                 id_category => $cat->{id},
                 seq => $_->{seq}
