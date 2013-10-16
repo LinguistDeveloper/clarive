@@ -51,6 +51,7 @@ params:
         });
 		
         topic_box = new Baseliner.TopicGrid({
+			fieldLabel: _(meta.name_field),
 			sm: sm ,
             //fieldLabel:_( meta.name_field ), 
             combo_store: topic_box_store,
@@ -112,12 +113,12 @@ params:
         }
     }
 	var obj = [];
-	if (meta.list_type == 'grid') {
-        var allow;
-        allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
-        // alert(meta.name_field + " " + allow);
-		obj.push(Baseliner.field_label_top( _(meta.name_field), meta.hidden, allow, meta.readonly ))	;
-	}
+//	if (meta.list_type == 'grid') {
+//        var allow;
+//        allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
+//        // alert(meta.name_field + " " + allow);
+//		obj.push(Baseliner.field_label_top( _(meta.name_field), meta.hidden, allow, meta.readonly ))	;
+//	}
 	obj.push(topic_box);
 	
 	return obj
