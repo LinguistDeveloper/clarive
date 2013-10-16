@@ -78,7 +78,7 @@ sub master_setup {
       "master",
       "Baseliner::Schema::Baseliner::Result::BaliMaster",
       { "foreign.mid" => "self.mid" },
-      { cascade_delete => 1, is_foreign_key_constraint=>1, },
+      { cascade_delete => 0, is_foreign_key_constraint=>1, },
     );
 
     $self->has_many(
@@ -107,6 +107,7 @@ sub master_setup {
 
 }
 
+# simple master relation, but no master_rels, used by bali_post, file_version, baselines...
 sub has_master {
     my ($self, $mid_col ) = @_;
     $mid_col ||= 'mid'; 
