@@ -8,6 +8,7 @@ params:
     field_order_html: 1000
     allowBlank: 0
     section: 'head'
+    height: 400
 */
 
 (function(params){

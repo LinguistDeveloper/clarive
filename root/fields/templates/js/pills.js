@@ -9,6 +9,7 @@ params:
     allowBlank: 0
     section: 'body'
     options: 'option1,#ddb;option2,#bdd;option3,#dbd'
+    default_value: option1
 */
 
 (function(params){

@@ -5,7 +5,7 @@
             'Baseliner::Parser::Engine::C',
             'Baseliner::Parser::Engine::NET',
             'Baseliner::Parser::Engine::JSP',
-            'Baseliner::Parser::Engine::SQL',
+            'Baseliner::Parser::Engine::SQL'
         ] 
         }), 
     ]
