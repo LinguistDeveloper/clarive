@@ -28,6 +28,9 @@ params:
         columns = String.format('{0}[slotname],textfield,400;{1}[plan_end_date],datefield,80;{2}[end_date],datefield,80', headers[0],headers[1],headers[2]);
     }
     
+    var allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
+    var readonly = meta.readonly == undefined ? true : meta.readonly;
+    
     var editor = new Baseliner.GridEditor({
         name: meta.id_field,
         id_field: meta.id_field,
@@ -45,12 +48,21 @@ params:
         enableDragDrop: meta && meta.readonly ? !meta.readonly : true,
         use_row_editor: meta && meta.readonly ? !meta.readonly : true
     });
-    allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
-    readonly = meta.readonly == undefined ? true : meta.readonly;
+
 
     return [
-        Baseliner.field_label_top( meta.name_field, meta.hidden, allow, readonly ),
-        new Ext.Panel({ layout:'fit', style: 'padding-bottom: 12px', anchor: meta.anchor || '100%', height: meta.height, border: false, items: editor })
+        //Baseliner.field_label_top( meta.name_field, meta.hidden, allow, readonly ),
+        new Ext.Panel({
+            layout:'fit',
+            fieldLabel: _(meta.name_field),
+            readOnly: readonly,
+            allowBlank: allow,
+            style: 'padding-bottom: 12px',
+            anchor: meta.anchor || '100%',
+            height: meta.height,
+            border: false,
+            items: editor
+        })
     ]
 })
 

@@ -8,6 +8,7 @@ params:
     field_order: 1
     section: 'body'
     relation: 'categories'
+    anchor: 30%
 ---
 */
 (function(params){
@@ -29,6 +30,7 @@ params:
         name: 'category',
         valueField: 'category',
         hiddenName: 'category',
+        anchor: data.anchor,
         displayField: 'category_name',
         store: store_category,
         allowBlank: false,

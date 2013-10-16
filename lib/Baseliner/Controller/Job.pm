@@ -515,7 +515,6 @@ sub job_submit : Path('/job/submit') {
                     # cancel pending requests
                     $c->model('Request')->cancel_for_job( id_job=>$job->id );
                     $job->delete;
-                    $job->update;
                 };
                 $msg = "Job %1 deleted";
             }

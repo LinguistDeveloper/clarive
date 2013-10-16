@@ -51,7 +51,7 @@ dir($dir)->recurse(callback=>sub{
         say "*** IE keyword default in $f (line $lin): $err";
     }
     
-    while ( $d =~ /( \n [^\n]* console.log )/xgsm ) {
+    while ( $d =~ /( \n [^\n]* console\.\w+ )/xgsm ) {
         my $err = $1;
         my $lin = $find_line->( $+[1] );
         say "*** IE console.log in $f (line $lin): $err";

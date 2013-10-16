@@ -17,6 +17,7 @@ register 'menu.admin.upgrade' => {
     label => 'Upgrades',
     icon  => '/static/images/icons/upgrade.png',
     url_comp => '/comp/feature.js',
+    index => 1000,
 };
 
 sub restart_server : Local {

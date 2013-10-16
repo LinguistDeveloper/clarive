@@ -106,6 +106,7 @@ use Exporter::Tidy default => [
     _load_features
     _ci
     _any
+    _ixhash
     _package_is_loaded
 )],
 other => [qw(
@@ -580,13 +581,14 @@ sub _parameters {
 }
 
 # creates an array from whatever arrays
+# rgo: fix the hash to hash-items problem
 sub _array {
     my @array;
     for my $item ( @_ ) {
         if( ref $item eq 'ARRAY' ) {
             push @array, @{ $item };
         } elsif( ref $item eq 'HASH' ) {
-            push @array, %{ $item };
+            push @array, $item;
         } else {
             push @array, $item if $item;
         }
@@ -1418,6 +1420,11 @@ sub _strip_last {
 }
 
 *_any = \&List::MoreUtils::any;
+
+sub _ixhash {
+    require Tie::IxHash;
+    Tie::IxHash->new( @_ );
+}
 
 sub _package_is_loaded {
     my $cl = shift;

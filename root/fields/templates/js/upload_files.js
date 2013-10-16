@@ -20,6 +20,9 @@ params:
     ff = params.form.getForm();
 	var obj_topic_mid = ff .findField("topic_mid");
 	
+    var allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
+    var readonly = meta.readonly == undefined ? true : meta.readonly;
+	
     var check_sm = new Ext.grid.CheckboxSelectionModel({
         singleSelect: false,
         sortable: false,
@@ -89,6 +92,9 @@ params:
     };
 	
     var filelist = new Ext.ux.maximgb.tg.GridPanel({
+		fieldLabel:  _(meta.name_field),
+		allowBlank: allow,
+		readOnly: readonly,		
         height: 120,
         stripeRows: true,
         autoScroll: true,
@@ -203,13 +209,10 @@ params:
             }
         });
     });	
-    var allow;
-    allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
-    readonly = meta.readonly == undefined ? true : meta.readonly;
-	
+
 	return [
 		{ xtype: 'hidden', name: 'files_uploaded_mid' },
-		Baseliner.field_label_top( _(meta.name_field), meta.hidden, allow, readonly ),
+		//Baseliner.field_label_top( _(meta.name_field), meta.hidden, allow, readonly ),
 		{
 			xtype: 'panel',
 			border: false,

@@ -14,9 +14,15 @@ params:
 	var meta = params.topic_meta;
 	var data = params.topic_data;
 	var ff = params.form.getForm();
-    
+
+    var allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
+    var readonly = meta.readonly == undefined ? true : meta.readonly;
+	
     var records = data && data[ meta.bd_field ]? data[ meta.bd_field ] : '[]';
     var grid = new Baseliner.GridEditor({
+		fieldLabel: _(meta.name_field),
+		allowBlank: allow,
+		readOnly: readonly,
         width: meta.width || '100%',
         height: meta.height || 300,
         style: 'margin-bottom: 10px',
@@ -30,11 +36,10 @@ params:
             forceFit: meta.forceFit || true
         }
     });
-    allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
-    readonly = meta.readonly == undefined ? true : meta.readonly;
+
 
 	return [
-        Baseliner.field_label_top( meta.name_field, meta.hidden, allow, readonly ),
+        //Baseliner.field_label_top( meta.name_field, meta.hidden, allow, readonly ),
         grid
     ]
 })

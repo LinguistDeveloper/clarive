@@ -8,6 +8,7 @@ params:
     field_order: 3
     section: 'body'
     relation: 'status'
+    anchor: 30%
 ---
 */
 (function(params){
@@ -61,6 +62,7 @@ params:
 	
 	var status_box = new Baseliner.model.Status({
 		store: store_category_status,
+        anchor: data.anchor,
 		disabled: meta.readonly!=undefined ? meta.readonly : false,
         hidden: meta ? (meta.hidden ? meta.hidden : false): true,
 		singleMode: true
