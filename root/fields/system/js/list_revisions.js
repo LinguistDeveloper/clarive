@@ -15,11 +15,17 @@ params:
     var data = params.topic_data;
     var meta = params.topic_meta;
     
+    var allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
+    var readonly = meta.readonly == undefined ? true : meta.readonly;
+    
     var revision_store = new Ext.data.SimpleStore({
         fields: ['mid','name','id']
     });
     
     var revision_grid = new Ext.grid.GridPanel({
+        fieldLabel: _(meta.name_field),
+        allowBlank: allow,
+        readOnly: readonly,
         store: revision_store,
         layout: 'form',
         height: 120,
@@ -144,10 +150,9 @@ params:
         }
         
     }); 
-    allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
-    readonly = meta.readonly == undefined ? true : meta.readonly;
+
     return [
-        Baseliner.field_label_top( _(meta.name_field), meta.hidden, allow, readonly ),
+        //Baseliner.field_label_top( _(meta.name_field), meta.hidden, allow, readonly ),
         revision_grid, field
         //revision_box
     ]

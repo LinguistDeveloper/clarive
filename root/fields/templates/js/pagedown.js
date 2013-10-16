@@ -22,12 +22,22 @@ params:
         height: meta.height || 30,
         value: value || ''
     });
-    allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
-    readonly = meta.readonly == undefined ? true : meta.readonly;
+    
+    var allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
+    var readonly = meta.readonly == undefined ? true : meta.readonly;
 
     return [
-        Baseliner.field_label_top( meta.name_field, meta.hidden, allow, readonly ),
-        new Ext.Panel({ layout:'fit', anchor: meta.anchor || '100%', height: meta.height, border: false, items: editor })
+        //Baseliner.field_label_top( meta.name_field, meta.hidden, allow, readonly ),
+        new Ext.Panel({
+            layout:'fit',
+            fieldLabel: _(meta.name_field),
+            allowBlank: allow,
+            readOnly: readonly,
+            anchor: meta.anchor || '100%',
+            height: meta.height,
+            border: false,
+            items: editor
+        })
     ]
 })
 
