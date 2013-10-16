@@ -57,6 +57,7 @@ sub _is_true {
 
 sub dsl_build {
     my ($self,$stmts, %p )=@_;
+    return '' if !$stmts || ( ref $stmts eq 'HASH' && !%$stmts );
     #_debug $stmts;
     my @dsl = (
         #'my $stash = {};',
