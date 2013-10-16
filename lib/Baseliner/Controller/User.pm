@@ -162,8 +162,14 @@ sub user_data : Local {
 
 sub user_info : Local {
     my ($self, $c) = @_;
+    my $p = $c->request->parameters;
+    my $username = $p->{username};
+
     try {
-        my $user = DB->BaliUser->search({ username => $c->username }, {select=>[qw(username realname alias email active phone mid)]})->first;
+        if ( !$username ) {
+            _fail _loc('Missing parameter username');
+        }
+        my $user = DB->BaliUser->search({ username => $username }, {select=>[qw(username realname alias email active phone mid)]})->first;
         _fail _loc('User not found: %1', $c->username ) unless $user;
         $c->stash->{json} = { $user->get_columns, msg=>'ok', success=>\1 };
     } catch {
@@ -264,7 +270,15 @@ sub update : Local {
         try{
             my $type_save = $p ->{type};
             if ($type_save eq 'user') {
-                my $user = $c->model('Baseliner::BaliUser')->find( $p->{id} );
+                my $user;
+                my $user_id = $p->{id};
+                if ( $p->{id} ) {
+                    $user = $c->model('Baseliner::BaliUser')->find( $p->{id} );
+                } else {
+                    $user = $c->model('Baseliner::BaliUser')->search( { username => $p->{username} } )->first;
+                    _fail _loc("User not found") if !$user;
+                    $user_id = $user->id;
+                }
                 my $old_username = $user->username;
                 if ($old_username ne $p->{username}){
                     my $row = $c->model('Baseliner::BaliUser')->search({username => $p->{username}, active => 1})->first;
@@ -305,21 +319,19 @@ sub update : Local {
                     }
                 }
                 else{
-                    $user->realname( $p->{realname} );
-                    if($p->{pass} ne ''){
+                    $user->realname( $p->{realname} ) if $p->{realname};
+                    if( $p->{pass} ){
                         $user->password( BaselinerX::CI::user->encrypt_password( $p->{username}, $p->{pass} ));
                     }
-                    $user->alias( $p->{alias} );
-                    $user->email( $p->{email} );
-                    $user->phone( $p->{phone} );                      
+                    $user->alias( $p->{alias} ) if $p->{alias};
+                    $user->email( $p->{email} ) if $p->{email};
+                    $user->phone( $p->{phone} ) if $p->{phone};                      
                     $user->update();                    
                 }
                 
-                $c->stash->{json} = { msg=>_loc('User modified'), success=>\1, user_id=> $p->{id} };
-                
-
+                $c->stash->{json} = { msg=>_loc('User modified'), success=>\1, user_id=> $user_id };
             }
-            else{
+            else {
                 tratar_proyectos($c, $p->{username}, $roles_checked, $projects_checked);
                 tratar_proyectos_padres($c, $p->{username}, $roles_checked, $projects_parents_checked, 'update');
                 $c->stash->{json} = { msg=>_loc('User modified'), success=>\1, user_id=> $p->{id} };
@@ -329,20 +341,34 @@ sub update : Local {
             $c->stash->{json} = { msg=>_loc('Error modifying User: %1', shift()), failure=>\1 }
         }
     }
-    when ('delete') {
-        try{
-        my $row = $c->model('Baseliner::BaliUser')->find( $p->{id} );
-        $row->active(0);
-        $row->update();
-        
-        my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$p->{username} });
-        $rs->delete;
-        $c->stash->{json} = {  success => 1, msg=>_loc('User deleted') };
+    when ( 'delete' ) {
+        try {
+            my $user;
+            my $user_id = $p->{id};
+            if ( $p->{id} ) {
+                $user = $c->model( 'Baseliner::BaliUser' )->find( $p->{id} );
+            } else {
+                $user =
+                    $c->model( 'Baseliner::BaliUser' )->search( {username => $p->{username}} )
+                    ->first;
+                _fail _loc( "User not found" ) if !$user;
+                $user_id = $user->id;
+            } ## end else [ if ( $p->{id} ) ]
+            $user->active( 0 );
+            $user->update();
+
+            my $rs =
+                Baseliner->model( 'Baseliner::BaliRoleuser' )
+                ->search( {username => $p->{username}} );
+            $rs->delete;
+            $c->stash->{json} = {success => \1, msg => _loc( 'User deleted' )};
+        } ## end try
+        catch {
+            $c->stash->{json} = {
+                failure => \1, msg => _loc( 'Error deleting User: %1', shift() )
+            };
         }
-        catch{
-        $c->stash->{json} = {  success => 0, msg=>_loc('Error deleting User') };
-        }
-    }
+    } ## end when ( 'delete' )
     when ('delete_roles_projects') {
         try{
         
