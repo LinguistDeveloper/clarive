@@ -736,38 +736,43 @@ Create or update a CI.
 sub update : Local {
     my ($self, $c, $action) = @_;
     my $p = $c->req->params;
+    _debug $p;
+    my $form_data = $p->{form_data};
+    _fail _loc 'Invalid data format: form data is not hash' unless ref $form_data eq 'HASH';
     # cleanup
-    for my $k ( keys %$p ) {
+    for my $k ( keys %$form_data ) {
         delete $p->{$k} if $k =~ /^ext-comp-/
     }
     # don't store in yaml
-    my $name = delete $p->{name};
-    my $bl = delete $p->{bl};
+    my $name = delete $form_data->{name};
+    my $bl = delete $form_data->{bl};
+    my $active = $form_data->{active};
+    $form_data->{active} = $active = $active eq 'on' ? 1 : 0;
+    
     my $mid = delete $p->{mid};
-    my $active = $p->{active};
-    $p->{active} = $active = $active eq 'on' ? 1 : 0;
     my $collection = delete $p->{collection};
     $action ||= delete $p->{action};
     my $class = "BaselinerX::CI::$collection";    # XXX what?? fix the class vs. collection mess
-    my $chi = delete $p->{children};
-    delete $p->{version}; # form should not set version
+    my $chi = delete $form_data->{children};
+    delete $form_data->{version}; # form should not set version
+
     try {
         if( $action eq 'add' ) {
-            my $ci = $class->new( name=>$name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), %$p, created_by=>$c->username ); 
+            my $ci = $class->new( name=>$name, bl=>$bl, active=>$active, moniker=>delete($form_data->{moniker}), %$form_data, created_by=>$c->username ); 
             $ci->save;
             $mid = $ci->mid;
-            #$mid = $class->save( name=>$name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), data=> $p ); 
+            #$mid = $class->save( name=>$name, bl=>$bl, active=>$active, moniker=>delete($form_data->{moniker}), data=> $form_data ); 
         }
         elsif( $action eq 'edit' && defined $mid ) {
             #$c->cache_remove( qr/:$mid:/ );
-            #$mid = $class->save( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), data => $p ); 
+            #$mid = $class->save( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($form_data->{moniker}), data => $form_data ); 
 
-            #my $ci = $class->new( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), %$p, modified_by=>$c->username );
+            #my $ci = $class->new( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($form_data->{moniker}), %$form_data, modified_by=>$c->username );
             my $ci = ci->find( $mid ) || _fail _loc 'CI %1 not found', $mid;
-            $ci->update( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), %$p, modified_by=>$c->username );
+            $ci->update( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($form_data->{moniker}), %$form_data, modified_by=>$c->username );
             
             #my $ci = _ci( $mid );
-            #$ci->update( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($p->{moniker}), %$p ); 
+            #$ci->update( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($form_data->{moniker}), %$form_data ); 
             #$ci->save;
             $mid = $ci->mid;
         }
@@ -1192,13 +1197,14 @@ Support the following CI specific calls:
 sub default : Path Args(2) {
     my ($self,$c,$arg,$meth) = @_;
     my $p = $c->req->params;
-    _log "AAAAAAAAAAAAAAAAAArg: $arg";
-    _log "P: "._dump $p;
     my $collection = $p->{collection};
     my $mid = $p->{mid};
     my $json = $c->req->{body_data};
     my $data = { username=>$c->username, %{ $p || {} }, %{ $json || {} } };
     _fail( _loc "Missing param method" ) unless length $meth;
+    if( my $field = $p->{_file_field} ) {
+        $p->{$field} = $self->upload_file( $field );
+    }
     try {
         my $ret;
         $meth = "$meth";

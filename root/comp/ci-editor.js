@@ -23,33 +23,34 @@
             }, 1000);
         };
         var submit_form = function( close_form ){
-                var form2 = form.getForm();
-                if ( form2.isValid() ) {
-                   var flag = true;
-                   Ext.each( beforesubmit, function( cb ){
-                      var ret = cb( form2 );
-                      if( !ret ) flag = false;
-                   });
-                   // XXX submit JSON with ajaxJSON for better depth?
-                   form2.submit({
-                       params: {action: params.action, mid: params.mid, collection:params.collection },
-                       success: function(f,a){
-                            mid = params.mid = a.result.mid;
-                            params.action = 'edit';
-                            set_txt();
-                            Baseliner.message(_('Success: %1', mid), a.result.msg );
-                            if( close_form ) cardpanel.destroy();
-                            activate_save();
-                       },
-                       failure: function(f,a){
-                           activate_save();
-                           Ext.Msg.alert( _('Error'), a.result.msg );
-                       }
-                   });
-                }
-                else {
-                    if( Ext.getCmp(btn_form_save.id) ) btn_form_save.enable();
-                }
+            var form2 = form.getForm();
+            if ( form2.isValid() ) {
+               var flag = true;
+               Ext.each( beforesubmit, function( cb ){
+                  var ret = cb( form2 );
+                  if( !ret ) flag = false;
+               });
+               var form_data = form2.getValues();
+               form.cascade(function(obj){
+                   if( obj.name && obj.get_save_data ) {
+                       form_data[ obj.name ] = obj.get_save_data();
+                   }
+               });
+               Baseliner.ajax_json('/ci/update', {action: params.action, mid: params.mid, collection:params.collection, form_data:form_data },function(res){
+                    mid = params.mid = res.mid;
+                    params.action = 'edit';
+                    set_txt();
+                    Baseliner.message(_('Success: %1', mid), res.msg );
+                    if( close_form ) cardpanel.destroy();
+                    activate_save();
+               }, function(res){
+                    activate_save();
+                    Ext.Msg.alert( _('Error'), res.msg );
+               });
+            }
+            else {
+                if( Ext.getCmp(btn_form_save.id) ) btn_form_save.enable();
+            }
         };
 
         var calendar;

@@ -1008,8 +1008,10 @@ if( Prefs.routing ) {
     // sends request with application/json
             // TODO consider making this a RESTful engine, with GET, PUT, POST, DELETE, etc.., and changing the CI interface too
     Baseliner.ajax_json = function( url, params, foo, scope ){
-        if( Ext.isObject( params ) ) 
+        if( Ext.isObject( params ) ) { 
+            params._merge_with_params = 1;
             params.as_json = true;
+        }
         Baseliner.ajaxEval( url, params, foo, scope );
     }
     Baseliner.ci_call = function( coll_or_mid, method, params, foo, scope ){
