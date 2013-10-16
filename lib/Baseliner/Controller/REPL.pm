@@ -10,11 +10,12 @@ use Try::Tiny;
 BEGIN { extends 'Catalyst::Controller' }
 
 register 'action.development.repl' => {name => 'Baseliner REPL'};
+register 'action.development.js_reload', => { name => 'JS Reload'};
+register 'action.development.cache_clear', => { name => 'Wipe Cache'};
 register 'action.development.ext_api' => { name => 'ExtJS API Reference'};
 register 'action.development.ext_examples' => { name => 'ExtJS Examples'};
 register 'action.development.gui_designer', => { name => 'GUI Designer'};
 register 'action.development.baliref', => { name => 'Baseliner Reference'};
-register 'action.development.js_reload', => { name => 'JS Reload'};
 
 register 'menu.development' => {
     label => 'Development', 
@@ -29,6 +30,24 @@ register 'menu.development.repl' => {
     icon     => '/static/images/icons/console.png',
     index    => 10,
 };
+register 'menu.development.js_reload' => {
+    label    => 'JS Reload',
+    url_eval => '/site/js-reload.js',
+    title    => 'JS Reload',
+    icon     => '/static/images/icons/js-reload.png',
+    action   => 'action.development.js_reload',
+    index      => 20,
+};
+
+register 'menu.development.cache_clear' => {
+    label    => 'Wipe Cache',
+    url_run  => '/cache_clear',
+    title    => 'Wipe Cache',
+    action   => 'action.development.cache_clear',
+    icon     => '/static/images/icons/asterisk_orange.png',
+    index      => 30,
+};
+
 register 'menu.development.ext_api' => {
     label      => 'ExtJS API',
     url_iframe => '/static/ext/docs/index.html',
@@ -57,15 +76,6 @@ register 'menu.development.baliref' => {
     index              => 999,
     action => 'action.development.baliref',
     index      => 100,
-};
-
-register 'menu.development.js_reload' => {
-    label    => 'JS Reload',
-    url_eval => '/site/js-reload.js',
-    title    => 'JS Reload',
-    action   => 'action.development.js_reload',
-    icon     => '/static/images/icons/js-reload.png',
-    index      => 20,
 };
 
 sub test : Local {
