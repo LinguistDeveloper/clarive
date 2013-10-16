@@ -365,7 +365,7 @@ sub get_meta_permissions : Local {
                 
                 if ( $is_root ) {
                         $field_form->{readonly} = \0;
-                        $field_form->{allowBlank} = 'true';
+                        $field_form->{allowBlank} = 'true' unless $field_form->{id_field} eq 'title';
                 } else {
                     if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action )){
                         $field_form->{readonly} = \0;
@@ -396,7 +396,7 @@ sub get_meta_permissions : Local {
             
             if ( $is_root ) {
                     $_->{readonly} = \0;
-                    $_->{allowBlank} = 'true';
+                    $_->{allowBlank} = 'true' unless $_->{id_field} eq 'title';
             } else {
                 if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action )){
                     $_->{readonly} = \0;
