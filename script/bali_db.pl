@@ -37,15 +37,73 @@ my %args = _get_options( @ARGV );
 
 # setup DB env
 my $env = $args{env} || $ENV{BALI_ENV} || 't';
-$env = @$env if ref $env eq 'ARRAY';
+($env) = @$env if ref $env eq 'ARRAY';
 $ENV{BALI_ENV} = $env;
+$ENV{BASELINER_ENV} = $env;
+$ENV{BASELINER_CONFIG_LOCAL_SUFFIX} = $env;
+$ENV{CATALYST_CONFIG_LOCAL_SUFFIX} = $env;
+say "env: $env";
 
-require Baseliner;
+{
+    local $SIG{__WARN__} = sub{};
+    require Baseliner;
+}
 
 my $dir = _dir( $args{dir} ) ||  _dir( Baseliner->path_to('db/sample') );
 my $format = 'yaml';
+my $commit_num = $args{commit} // 100;  # insert/replace at 100 rows
+my $inserting = exists $args{insert};
 say "dir: $dir";
 say "format: $format";
+say "commit: each $commit_num rows";
+my $dbh = Baseliner->model('Baseliner')->storage->dbh;
+$dbh->{AutoCommit} = $args{autocommit} // 0;
+say "autocommit: $dbh->{AutoCommit}";
+my $conn = _dump( Baseliner->model('Baseliner')->storage->{_connect_info} );
+$conn =~ s/password:(.*?)\n/password: **************\n/g;
+say "connect info: ". $conn;
+my $db = _dbis();
+my @enabled_constraints = $db->query(q{select * from user_constraints where status ='ENABLED' and table_name like 'BALI_%'})->hashes;
+say sprintf "Disabling %d constraints...", scalar @enabled_constraints;
+for my $cons ( @enabled_constraints ) {
+    $db->query( sprintf q{alter table %s disable constraint %s}, $cons->{table_name}, $cons->{constraint_name} );
+}
+say "OK Disabling constraints.";
+
+my $replace = _build_replace( %args );
+if( $action eq 'dump' ) {
+    say pre . "Starting Dump...";
+    db_dump( %args );
+}
+elsif( $action eq 'load' ) {
+    say pre . "Starting Load...";
+    
+    my $m = Baseliner->model('Baseliner');
+    if( $args{transactional} ) {
+        $m->txn_do( sub {
+             db_load( %args );
+        });
+    } else {
+        db_load( %args );
+    }
+}
+else {
+    _fail "Option not found";
+    exit 1;
+}
+
+finish();
+say pre . "Done.";
+exit 0;
+
+########################################
+sub finish {
+    say sprintf "Enabling %d constraints...", scalar @enabled_constraints;
+    for my $cons ( @enabled_constraints ) {
+        $db->query( sprintf q{alter table %s enable constraint %s}, $cons->{table_name}, $cons->{constraint_name} );
+    }
+    say "OK enabling constraints.";
+}
 
 sub db_dump {
     my %args = @_;
@@ -105,7 +163,6 @@ sub db_load {
         @schemas = map { $_->basename } $dir->children
     }
     my $sch = Baseliner->model('Baseliner')->schema;
-    my $replace = _build_replace( %args );
     for my $schema ( @schemas ) {
         ( my $schema_name = $schema ) =~ s{\.\w+}{};
         my $src = $sch->source( $schema_name );
@@ -115,48 +172,116 @@ sub db_load {
         }
         say pre . "===> Loading $schema_name ($schema)";
         open my $f, '<:raw', _file( $dir, $schema ) or die $!;
-        my $s = join '',<$f>;
-        utf8::encode( $s );
-        my $rows = YAML::XS::Load( $s );
-        # if its insert mode, delete ids and mids
-        if( exists $args{insert} ) {
-            $rows = [
-                map {
-                    delete $_->{id};
-                    delete $_->{mid};
-                    $_
-                } _array $rows
-            ];
+        my @yml;
+        my $k=0;
+        while ( my $s = <$f> ) {
+            next if $s =~ /^---$/;
+            utf8::encode($s);
+            if ( @yml && substr( $s, 0, 1 ) eq '-' ) {
+                my $row = YAML::XS::Load( join '', @yml );
+                $row = $row->[0];
+                $k++;
+                insert_row( $schema_name,$sch,$src, $row );
+                @yml=();
+            }
+            push @yml, $s;
         }
-        # replace keys
-        if( $replace ) {
-            $rows = [
-                map {
-                    { %$_, %$replace }
-                } _array $rows
-            ];
-        }
-        _log _dump $rows if exists $args{v};
-        $sch->populate( $schema_name, $rows );
+        say "Rows: $k";
+        $k ?  insert_row($schema_name,$sch,$src) : _warn("No rows detected for $schema_name");
     }
 }
 
-if( $action eq 'dump' ) {
-    say pre . "Starting Dump...";
-    db_dump( %args );
-}
-elsif( $action eq 'load' ) {
-    say pre . "Starting Load...";
-    db_load( %args );
-}
-else {
-    _fail "Option not found";
-    exit 1;
+sub insert_row {
+    my ($schema_name,$sch,$src,$row)=@_;
+    state @rows;
+    if( $row ) {
+        # if its insert mode, delete ids and mids
+        if( $inserting ) {
+            delete $row->{id};
+            delete $row->{mid};
+        }
+        # replace keys
+        if( $replace ) {
+            $row = { %$row, %$replace };
+        }
+        push @rows, $row;
+    }
+    if( !$row || @rows >= $commit_num ) {
+        _log _dump( \@rows ) if exists $args{v};
+        
+        my @cols = grep { $inserting ? $_ ne 'id' && $_ ne 'mid' : 1 } $src->columns;
+        my $table = $src->name;
+        say "Calculating row sizes...";
+        my %sizes;
+        for my $row ( @rows ) {
+            for my $col ( @cols ) {
+                $sizes{$col} //= 0; 
+                $sizes{$col} += length( $row->{$col} );
+            }
+        }
+        say _dump \%sizes;
+        my $sum = 0;
+        _log sprintf "Committing %d rows (%d KB)...", scalar(@rows), [reverse map { $sum+=$_; $sum } values %sizes ]->[0];
+        
+        # metadata to find blobs
+        my $sql = 'SELECT column_name, data_type FROM user_tab_columns WHERE table_name=?';
+        my %meta = map { lc $_->{column_name} => lc $_->{data_type} } _array $db->query($sql, uc $table)->hashes;
+        my @blobs = grep { $meta{ lc $_ } eq 'blob' } @cols;
+        my @clobs = grep { $meta{ lc $_ } eq 'clob' } @cols;
+        @cols = grep { $meta{ lc $_ } !~ /lob/ } @cols; # filter blobs out
+        my @cols_no_lob = @cols;
+        #my ($lob,@lobs) = sort { $sizes{$b} <=> $sizes{$a} } (@clobs,@blobs); # only one lob per insert, the one with more data
+        my ($lob,@lobs) = ( @clobs );
+        push @cols, $lob if $lob;  # lobs last
+        say "BLOBS=@blobs, CLOBS=@clobs, INSERTED=$lob, UPDATED=@lobs";
+
+        _log \@cols if $args{v};
+        my $sql = sprintf 'INSERT INTO %s (%s) values (%s)', $table, join(',',@cols), join(',',(map {'?'} @cols));
+        my @tuple_status;
+        say $sql;
+        my @data;
+        for my $col ( @cols ) {
+            push @data, [ map { $_->{$col} } grep { exists $_->{$col} } @rows ];
+        }
+        #$sch->populate( $schema_name, \@rows );
+        $dbh->do(qq{ALTER TABLE $table DISABLE ALL TRIGGERS});
+        my $stmt = $dbh->prepare($sql);
+        my $ret = eval { $stmt->execute_array({ ArrayTupleStatus => \@tuple_status }, @data ) };
+        my $res = $@;
+        my $failing = sub {
+            my( $res ) = @_;
+            $dbh->do(qq{ALTER TABLE $table ENABLE ALL TRIGGERS});
+            _error $res;
+            my @tt = grep { $_ ne '-1' } @tuple_status;
+            _error(\@tt) if @tt;
+            finish(); # reenable constraints, etc - constraints are global due to foreign keys, etc
+            _fail $stmt->errstr unless $ret;
+            $dbh->rollback;
+        };
+        $failing->( $res ) if $res;
+        say "Inserted.";
+        unless( $args{nolobs} ) {
+            for my $lob ( @lobs ) {
+                say "Updating LOB $lob...";
+                @data = ();
+                my $sql = sprintf 'UPDATE %s SET %s=? WHERE %s', $table, $lob, join(' AND ',(map {"$_ = ?"} @cols_no_lob ));
+                my $stmt2 = $dbh->prepare($sql);
+                say $sql;
+                for my $col ( $lob, @cols_no_lob ) {
+                    push @data, [ map { $_->{$col} } @rows ];
+                }
+                eval { $stmt2->execute_array({ ArrayTupleStatus => \@tuple_status }, @data ) };
+                my $res = $@;
+                $failing->( $res ) if $res;
+                say "OK Updated LOB $lob";
+            }
+        }
+        $dbh->do(qq{ALTER TABLE $table ENABLE ALL TRIGGERS});
+        $dbh->commit unless $args{autocommit};
+        @rows = ();
+    }
 }
 
-say pre . "Done.";
-
-exit 0;
 
 __DATA__
 Usage:
@@ -164,6 +289,7 @@ Usage:
 
 Options:
   -v                      : verbose - print data dumps
+  -transactional          : run the whole thing in a single transaction
   -insert                 : insert mode, deletes ids and tries to insert rows
   -truncate               : delete table before load
   -replace-json           : replace column values in rows using a json hash in a string
