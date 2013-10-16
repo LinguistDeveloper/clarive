@@ -169,7 +169,7 @@ sub user_info : Local {
         if ( !$username ) {
             _fail _loc('Missing parameter username');
         }
-        my $user = DB->BaliUser->search({ username => $username }, {select=>[qw(username realname alias email active phone mid)]})->first;
+        my $user = DB->BaliUser->search({ username => $username }, {select=>[qw(username active realname alias email active phone mid)]})->first;
         _fail _loc('User not found: %1', $c->username ) unless $user;
         $c->stash->{json} = { $user->get_columns, msg=>'ok', success=>\1 };
     } catch {
