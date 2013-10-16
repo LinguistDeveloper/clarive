@@ -1198,25 +1198,27 @@ sub default : Path Args(2) {
     my ($self,$c,$arg,$meth) = @_;
     my $p = $c->req->params;
     my $collection = $p->{collection};
+    my $res_key = delete $p->{_res_key}; # return call response in this hash key
     my $mid = $p->{mid};
     my $json = $c->req->{body_data};
     my $data = { username=>$c->username, %{ $p || {} }, %{ $json || {} } };
     _fail( _loc "Missing param method" ) unless length $meth;
-    if( my $field = $p->{_file_field} ) {
-        $p->{$field} = $self->upload_file( $field );
-    }
+    # if( my $field = $p->{_file_field} ) {
+    #     $p->{$field} = $self->upload_file( $field );
+    # }
+    local $Baseliner::CI::_no_record = 1;
     try {
         my $ret;
         $meth = "$meth";
         if( Util->is_number( $arg ) ) {
-            my $ci = _ci( $arg );
+            my $ci = ci->new( $arg );
             _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
             $ret = $ci->$meth( $data );
         } elsif( length $mid ) {
-            my $ci = _ci( $mid );
+            my $ci = ci->find( $mid );
             _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
             $ret = $ci->$meth( $data );
-        } elsif ( $arg == 'undefined' && $collection ) {
+        } elsif ( $arg eq 'undefined' && $collection ) {
             my $pkg = "BaselinerX::CI::$collection";
             _fail( _loc "Method '%1' not found in class '%2'", $meth, $pkg) unless $pkg->can( $meth) ;
             $ret = $pkg->$meth( $data );
@@ -1225,17 +1227,27 @@ sub default : Path Args(2) {
             _fail( _loc "Method '%1' not found in class '%2'", $meth, $pkg) unless $pkg->can( $meth) ;
             $ret = $pkg->$meth( $data );
         }
+        # prepare response
+        my $json_res = {};
+        my $call_res = { success=>\1 };
         if( ref $ret eq 'HASH' || Scalar::Util::blessed($ret) ) {
             Util->_unbless( $ret );
-            $c->stash->{json} = $ret;
-            $c->stash->{json}{success} //= \1 if ref $ret eq 'HASH';  # now unblessed, recheck
+            $json_res = $ret;
         } elsif( ref $ret eq 'ARRAY' ) {
-            #Util->_unbless( $ret );
-            $c->stash->{json} = $ret;
+            Util->_unbless( $ret );
+            $json_res = $ret;
         } else {
-            $c->stash->{json} = { data => $ret };
-            $c->stash->{json}{success} //= \1;
-            $c->stash->{json}{msg} = $ret->{msg} if ref $ret eq 'HASH' && $ret->{msg};
+            $json_res = { data => $ret };
+        }
+        # direct response or into a key (like 'data'?)
+        if( $res_key ) {
+            $c->stash->{json} = { %$call_res, $res_key => $json_res };
+        # merged
+        } elsif( $json_res eq 'HASH' ) {  
+            $c->stash->{json} = { %$call_res, %$json_res };
+        # not a HASH, pure response
+        } else { 
+            $c->stash->{json} = $json_res;
         }
     } catch {
         my $err = shift;

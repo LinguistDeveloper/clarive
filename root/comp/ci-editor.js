@@ -341,7 +341,7 @@
         } else {
             // someone sent me full row data (DEPRECATED)
             Baseliner.ci_call( params.collection, 'attribute_default_values', {}, function(res){
-                params.rec = res.data;
+                params.rec = res;
                 var f = load_form( params ); //Ext.apply( res.data, params ) );
                 cardpanel.add( f );
                 cardpanel.getLayout().setActiveItem( f );

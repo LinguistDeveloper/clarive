@@ -1521,7 +1521,7 @@ Baseliner.jobs_for_topic = function(args) {
         var div = document.getElementById( args.render_to );
         var jh = '';
         if( div ) {
-            Ext.each( res.data, function(job){
+            Ext.each( res, function(job){
                 //jh += Baseliner.tmpl( 'tmpl_topic_jobs', job ); 
                 jh += function(){/*
                     <div style="margin-left: 20px">

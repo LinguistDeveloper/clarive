@@ -33,7 +33,7 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
     }, 
     load: function(){
         var self = this;
-        Baseliner.ci_call( 'user', 'prefs_load', {}, function(res){
+        Baseliner.ci_call( 'user', 'prefs_load', { _res_key:'data' }, function(res){
             Ext.apply( self, res.data );
         });
     }, 

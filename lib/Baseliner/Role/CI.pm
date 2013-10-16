@@ -664,7 +664,7 @@ sub list_by_name {
     $where->{name} = $p->{names} if defined $p->{names};
     my $from = { select=>'mid' };
     $from->{rows} = $p->{rows} if defined $p->{rows};
-    [ map { Baseliner::CI->new( $_->{mid} )->{_ci} } DB->BaliMaster->search($where, $from)->hashref->all ];
+    [ map { ci->new( $_->{mid} ) } DB->BaliMaster->search($where, $from)->hashref->all ];
 }
 
 =head2 push_ci_unique

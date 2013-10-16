@@ -2672,7 +2672,6 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
     layout: 'card',
     activeItem: 0,
     show_tbar: true,
-    
     constructor: function(c){
         Baseliner.VariableForm.superclass.constructor.call(this, Ext.apply({
         }, c));
@@ -2727,8 +2726,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
             }
         }});
         
-        self.hidden_field = new Ext.form.Hidden({ name: self.name, value: self.json });
-        if( self.show_tbar ) self.tbar = [ self.combo_vars, self.btn_add, self.btn_del, self.hidden_field ];
+        if( self.show_tbar ) self.tbar = [ self.combo_vars, self.btn_add, self.btn_del ];
         else self.tbar = [];
         
         Baseliner.VariableForm.superclass.initComponent.call(this);
@@ -2754,12 +2752,10 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                     });
                     mf.on('field_changed', function(mf, fi){ 
                         self.data[bl.id] = mf.serialize();
-                        self.update_hidden(bl.id);
                         //self.combo_vars.reset();
                     });
                     mf.on('delete_field', function(mf){ 
                         self.data[bl.id] = mf.serialize();
-                        self.update_hidden(bl.id);
                         //self.combo_vars.reset();
                     });
                     // add to card
@@ -2799,7 +2795,6 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
             var value = field.getValue() || meta['default'];
             if( !self.data[bl] ) self.data[bl]={};
             self.data[bl][id] = value;
-            self.update_hidden();
             
             //self.data[bl.id] = mf.serialize();
             //mf.serialize();
@@ -2822,13 +2817,10 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
         var self = this;
         return self.getLayout().activeItem;
     },
-    update_hidden : function(bl){
+    get_save_data : function(bl){
         var self = this;
-        if( self.data === undefined ) return;
-        //self.data[bl.id] = mf.serialize();
-        //self.getData();
-        //self.hidden_field.setValue( Ext.encode( self.getData(bl) ) );
-        self.hidden_field.setValue( Ext.encode( self.data ) );
+        if( self.data === undefined ) return {};
+        return Ext.encode( self.data );
     },
     var_to_meta : function( ci, bl ){
         var self = this;
@@ -2870,8 +2862,8 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
             });
             */
             // get variable CI metadata 
-            Baseliner.ajaxEval('/ci/variable/list_by_name', { names: vars, bl: bl }, function(res){
-                Ext.each( res.data, function(var_ci){
+            Baseliner.ci_call('variable', 'list_by_name', { names: vars, bl: bl }, function(res){
+                Ext.each( res, function(var_ci){
                     self.add_var_ci_field( mf, bl, var_ci );
                 });
             });
