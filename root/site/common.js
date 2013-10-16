@@ -2747,23 +2747,25 @@ Baseliner.CBox = Ext.extend( Ext.form.Checkbox, {
 Ext.apply(Ext.layout.FormLayout.prototype, {
     originalRenderItem: Ext.layout.FormLayout.prototype.originalRenderItem || Ext.layout.FormLayout.prototype.renderItem,
     renderItem: function(c, position, target){
+        console.dir(c);
         if ( c.fieldLabel != undefined ) {
-            c.labelSeparator = '';
-            var readonly = c.readOnly !=undefined ? c.readOnly:true;
-            readonly = readonly || c.disabled;
-            // c.fieldLabel = "(RO:" + c.readOnly + ",DIS:" + c.disabled + ",AB:" + c.allowBlank + "= " + readonly + ") " + c.fieldLabel;
-            // console.dir(c);
-            //c.disabled = readonly;
+            if ( c.labelAlign != undefined && c.labelAlign == 'top') {            
+                c.labelSeparator = '';
+                var readonly = c.readOnly !=undefined ? c.readOnly:true;
+                readonly = readonly || c.disabled;
+                // c.fieldLabel = "(RO:" + c.readOnly + ",DIS:" + c.disabled + ",AB:" + c.allowBlank + "= " + readonly + ") " + c.fieldLabel;
+                c.disabled = readonly;
 
-            if (c && !c.rendered &&  c.fieldLabel && !c.allowBlank && c.allowBlank != undefined && !readonly ) {
-                c.fieldLabel = c.fieldLabel + " <span " +
-                ((c.requiredFieldCls !== undefined) ? 'class="' + c.requiredFieldCls + '"' : 'style="color:red;"') +
-                " ext:qtip=\"" +
-                ((c.blankText !== undefined) ? c.blankText : "This field is required") +
-                "\">*</span>";
-            }
-            if ( readonly && c.fieldLabel != undefined ) {
-                c.fieldLabel = "<span style='color:#AAAAAA'>" + c.fieldLabel + "</span>";
+                if (c && !c.rendered &&  c.fieldLabel && !c.allowBlank && c.allowBlank != undefined && !readonly ) {
+                    c.fieldLabel = c.fieldLabel + " <span " +
+                    ((c.requiredFieldCls !== undefined) ? 'class="' + c.requiredFieldCls + '"' : 'style="color:red;"') +
+                    " ext:qtip=\"" +
+                    ((c.blankText !== undefined) ? c.blankText : "This field is required") +
+                    "\">*</span>";
+                }
+                if ( readonly && c.fieldLabel != undefined ) {
+                    c.fieldLabel = "<span style='color:#AAAAAA'>" + c.fieldLabel + "</span>";
+                }
             }
         }
         this.originalRenderItem.apply(this, arguments);
