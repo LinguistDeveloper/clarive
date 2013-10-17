@@ -2052,7 +2052,7 @@ sub root_workflow {
     my @wf;
 
     for my $cat ( @categories ) {
-      my @stats = DB->BaliTopicCategoriesStatus->search( { id_category => $cat->{id} },{ join => ['status'], select => ['id_status','id_category','status.name']} )->hashref->all;
+      my @stats = DB->BaliTopicCategoriesStatus->search( { id_category => $cat->{id} },{ join => ['status'], select => ['id_status','id_category','status.name','status.bl']} )->hashref->all;
       
       map { 
         my $from = $_->{id_status};
@@ -2063,6 +2063,7 @@ sub root_workflow {
                 status_name_from => $from_name,
                 id_status => $_->{id_status},
                 status_name => $_->{status}->{name},
+                status_bl => $_->{status}->{bl},
                 id_category => $cat->{id},
                 seq => $_->{seq}
             }     
