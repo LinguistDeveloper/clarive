@@ -461,8 +461,8 @@ sub list_categories_admin : Local {
     my $rows = $c->model('Baseliner::BaliTopicCategoriesAdmin')->search(
         { id_category => $p->{categoryId} },
         {   
-            select   => [qw/id_role id_status_from /],
-            group_by => [qw/id_role id_status_from /],
+            select   => [qw/id_role id_status_from statuses_from.name/],
+            group_by => [qw/id_role id_status_from statuses_from.name/],
             distinct => 1,
             join     => ['statuses_from'],
             orderby  => { -asc => [ 'id_role', 'id_status_from', 'statuses_from.seq' ] }
