@@ -1101,6 +1101,12 @@ msgstr "acción"
 msgid "actions"
 msgstr "acciones"
 
+msgid "Task"
+msgstr "Tarea"
+
+msgid "Tasks"
+msgstr "Tareas"
+
 msgid "Action"
 msgstr "Acción"
 
