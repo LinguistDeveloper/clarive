@@ -2062,6 +2062,7 @@ sub root_workflow {
                 id_status_from => $from, 
                 status_name_from => $from_name,
                 id_status => $_->{id_status},
+                id_status_to => $_->{id_status},
                 status_name => $_->{status}->{name},
                 status_bl => $_->{status}->{bl},
                 id_category => $cat->{id},
