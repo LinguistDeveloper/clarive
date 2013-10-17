@@ -581,7 +581,7 @@ sub _parameters {
 }
 
 # creates an array from whatever arrays
-# rgo: fix the hash to hash-items problem
+# rgo: fix the hash to hash-items problem, use Util->_array_all for legacy
 sub _array {
     my @array;
     for my $item ( @_ ) {
@@ -589,6 +589,20 @@ sub _array {
             push @array, @{ $item };
         } elsif( ref $item eq 'HASH' ) {
             push @array, $item;
+        } else {
+            push @array, $item if $item;
+        }
+    }
+    return @array;
+}
+
+sub _array_all {
+    my @array;
+    for my $item ( @_ ) {
+        if( ref $item eq 'ARRAY' ) {
+            push @array, @{ $item };
+        } elsif( ref $item eq 'HASH' ) {
+            push @array, %{ $item };
         } else {
             push @array, $item if $item;
         }

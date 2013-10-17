@@ -43,13 +43,13 @@ Start a separate perl process for a background service.
 sub service_start {
     my ( $self, %p ) = @_;
 
-    my @services = _array $p{services}, $p{service};
+    my @services = Util->_array_all( $p{services}, $p{service} );
     my $disp_id = $p{hostname};
     $self->mark_as_pending( id=>$p{id} );
 
     _throw 'No service specified' unless @services;
 
-    my %params = _array $p{params}, $p{param};
+    my %params = Util->_array_all( $p{params}, $p{param} );
 
     my @started;
     for my $service_name ( @services ) {
@@ -77,13 +77,13 @@ Pure forking service starter. See service_start for options.
 sub service_start_forked {
     my ( $self, %p ) = @_;
 
-    my @services = _array $p{services}, $p{service};
+    my @services = Util->_array_all( $p{services}, $p{service} );
     $self->mark_as_pending( id=>$p{id} );
 
     _throw 'No service specified' unless @services;
 
     my $disp_id = $p{hostname};
-    my %params = _array $p{params}, $p{param};
+    my %params = Util->_array_all( $p{params}, $p{param} );
     my $params = join ' ', map { "$_=$params{$_}" } keys %params;
 
     my @started;
