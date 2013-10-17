@@ -464,7 +464,7 @@ sub list_categories_admin : Local {
             select   => [qw/id_role id_status_from statuses_from.name/],
             group_by => [qw/id_role id_status_from statuses_from.name/],
             distinct => 1,
-            join     => ['statuses_from'],
+            join     => ['statuses_from','roles'],
             orderby  => { -asc => [ 'id_role', 'id_status_from', 'statuses_from.seq' ] }
         }
     );
