@@ -24,7 +24,8 @@ params:
         labelSeparator: '',
         hideLabel: true,
         boxLabel: _(meta.name_field),
-        fieldLabel: _(meta.name_field)    
+        fieldLabel: _(meta.name_field),
+        style: 'margin-bottom: 15px'
     });
     
     return checkbox
