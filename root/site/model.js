@@ -2690,7 +2690,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
             Baseliner.error( 'VariableForm', _('Invalid data type') );
         }
         self.vars_cache = {};
-        self.store_vars = new Baseliner.store.CI({ baseParams: { role:'Variable', with_data: 1 } });
+        self.store_vars = new Baseliner.store.CI({ baseParams: { role:'Variable', with_data: 1, order_by:'name' } });
         self.combo_vars = new Ext.form.ComboBox({ 
                width: 350,
                submitValue: false,

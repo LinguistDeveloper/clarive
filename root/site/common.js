@@ -554,6 +554,14 @@ Baseliner.ArrayGrid = Ext.extend( Ext.grid.EditorGridPanel, {
         //fgrid.startEditing(0, 0);
         self.store.commitChanges();
     },
+    get_save_data : function(){
+        var self = this;
+        var arr = [];
+        self.store.each( function(r) {
+            arr.push( r.data[ self.name ] );
+        });
+        return arr;
+    },
     update_fields : function () {
         var self = this;
         var arr = [];
@@ -921,65 +929,65 @@ Baseliner.Grid.Buttons = {};
 
 Baseliner.Grid.Buttons.Add = Ext.extend( Ext.Toolbar.Button, {
     constructor: function(config) {
-	    config = Ext.apply({
-		    text: _('New'),
-		    //icon:'/static/images/icons/add.gif',
-		    //cls: 'x-btn-text-icon'
-			iconCls: 'sprite add'
-	    }, config);
-	    Baseliner.Grid.Buttons.Add.superclass.constructor.call(this, config);
+        config = Ext.apply({
+            text: _('New'),
+            //icon:'/static/images/icons/add.gif',
+            //cls: 'x-btn-text-icon'
+            iconCls: 'sprite add'
+        }, config);
+        Baseliner.Grid.Buttons.Add.superclass.constructor.call(this, config);
     }
 });
 
 Baseliner.Grid.Buttons.Edit = Ext.extend( Ext.Toolbar.Button, {
     constructor: function(config) {
-	    config = Ext.apply({
-		    text: _('Edit'),
-		    //icon: '/static/images/icons/edit.gif',
-		    //cls: 'x-btn-text-icon',
-		    disabled: true,
-			iconCls: 'sprite edit'
-	    }, config);
-	    Baseliner.Grid.Buttons.Edit.superclass.constructor.call(this, config);
+        config = Ext.apply({
+            text: _('Edit'),
+            //icon: '/static/images/icons/edit.gif',
+            //cls: 'x-btn-text-icon',
+            disabled: true,
+            iconCls: 'sprite edit'
+        }, config);
+        Baseliner.Grid.Buttons.Edit.superclass.constructor.call(this, config);
     }
 });
 
 Baseliner.Grid.Buttons.Delete = Ext.extend( Ext.Toolbar.Button, {
     constructor: function(config) {
-	    config = Ext.apply({
-		    text: _('Delete'),
-		    //icon:'/static/images/icons/delete.gif',
-		    //cls: 'x-btn-text-icon',
-		    disabled: true,
-			iconCls: 'sprite delete'
-	    }, config);
-	    Baseliner.Grid.Buttons.Delete.superclass.constructor.call(this, config);
+        config = Ext.apply({
+            text: _('Delete'),
+            //icon:'/static/images/icons/delete.gif',
+            //cls: 'x-btn-text-icon',
+            disabled: true,
+            iconCls: 'sprite delete'
+        }, config);
+        Baseliner.Grid.Buttons.Delete.superclass.constructor.call(this, config);
     }
 });
 
 Baseliner.Grid.Buttons.Start = Ext.extend( Ext.Toolbar.Button, {
     constructor: function(config) {
-	    config = Ext.apply({
-		    text: _('Activate'),
-		    icon:'/static/images/start.gif',
-		    cls: 'x-btn-text-icon',			
-		    disabled: true
-			//iconCls: 'sprite delete'
-	    }, config);
-	    Baseliner.Grid.Buttons.Start.superclass.constructor.call(this, config);
+        config = Ext.apply({
+            text: _('Activate'),
+            icon:'/static/images/start.gif',
+            cls: 'x-btn-text-icon',         
+            disabled: true
+            //iconCls: 'sprite delete'
+        }, config);
+        Baseliner.Grid.Buttons.Start.superclass.constructor.call(this, config);
     }
 });
 
 Baseliner.Grid.Buttons.Stop = Ext.extend( Ext.Toolbar.Button, {
     constructor: function(config) {
-	    config = Ext.apply({
-			text: _('Deactivate'),
-			icon:'/static/images/stop.gif',
-			disabled: true,
-			cls: 'x-btn-text-icon'
-				//iconCls: 'sprite delete'
-	    }, config);
-	    Baseliner.Grid.Buttons.Stop.superclass.constructor.call(this, config);
+        config = Ext.apply({
+            text: _('Deactivate'),
+            icon:'/static/images/stop.gif',
+            disabled: true,
+            cls: 'x-btn-text-icon'
+                //iconCls: 'sprite delete'
+        }, config);
+        Baseliner.Grid.Buttons.Stop.superclass.constructor.call(this, config);
     }
 });
 
@@ -1153,7 +1161,7 @@ Baseliner.editId = function( panel, id_cal, id, date) {
 Baseliner.createRange = function(panel, id_cal, id, pdia, date) {
     var comp = Baseliner.showAjaxComp( '/job/calendar_slot_edit',
         { id: id,  pdia: 'day-'+pdia, id_cal: id_cal, panel: panel, date: date, pini: "00:00", pfin: "24:00"} );
-}	
+}   
 
 Baseliner.Window = Ext.extend( Ext.Window, {
     tabifiable: false,
@@ -1880,8 +1888,8 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
     initComponent: function(){
         var self = this;
         if( self.ci == undefined ) self.ci = {};
-		if( self.ci_role) self.ci.role = self.ci_role;
-		if( self.ci_class) self.ci['class'] = self.ci_class;
+        if( self.ci_role) self.ci.role = self.ci_role;
+        if( self.ci_class) self.ci['class'] = self.ci_class;
         if( self.ci_grid == undefined ) self.ci_grid = {};
         self.ci_store = new Baseliner.store.CI({ 
             baseParams: Ext.apply({ _whoami: 'CIGrid_combo_store' }, self.ci )
@@ -1923,7 +1931,7 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
         self.tbar = new Ext.Toolbar({ hidden: self.readOnly, items: tbar_items });
         self.on('rowclick', function(grid, rowIndex, e) {
             btn_delete.enable();
-        });		
+        });     
 
         var val = self.value;
         if( Ext.num(val) != undefined ) val=[val];
@@ -2043,8 +2051,8 @@ Baseliner.CheckBoxField = Ext.extend( Ext.grid.GridPanel, {
         self.ps = 100;
         self.tbar = self.tbar || new Ext.Toolbar({});
         self.search = new Baseliner.SearchField({
-				    store: self.store, params: {start: 0, limit: self.ps}
-			    });
+                    store: self.store, params: {start: 0, limit: self.ps}
+                });
         self.tbar.insert( 0, self.search );
         self.tbar.add( self.field );
         
@@ -2402,19 +2410,19 @@ Baseliner.HiddenGridField = Ext.extend( Ext.form.Hidden, {
 Baseliner.field_label_top = function( label, hidden, allowBlank, readOnly ) {
 
     return [
-		{
-		  xtype: 'label',
-		  //autoEl: {cn: style_label},
-		  fieldLabel: _(label),
-		  hidden: hidden!=undefined ? hidden : false,
+        {
+          xtype: 'label',
+          //autoEl: {cn: style_label},
+          fieldLabel: _(label),
+          hidden: hidden!=undefined ? hidden : false,
           allowBlank: allowBlank,
           readOnly: readOnly == undefined ? false: readOnly
-		}/*,
-		{
-		  xtype: 'box',
-		  autoEl: {cn: '<br>'},
-		  hidden: hidden!=undefined ? hidden : false
-		}*/
+        }/*,
+        {
+          xtype: 'box',
+          autoEl: {cn: '<br>'},
+          hidden: hidden!=undefined ? hidden : false
+        }*/
     ]
 };
 
@@ -2451,7 +2459,7 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
     use_row_editor: true,
     initComponent: function(){
         var self = this;
-		
+        
         self.viewConfig = Ext.apply({
             forceFit: true
         }, self.viewConfig );
@@ -2560,7 +2568,7 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         var button_delete = new Baseliner.Grid.Buttons.Delete({
             text: '',
             tooltip: _('Delete'),
-            cls: 'x-btn-icon',	
+            cls: 'x-btn-icon',  
             disabled: self.readOnly ? self.readOnly : false,
             handler: function() { self.del_row() }
         });
@@ -2581,8 +2589,8 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
                         rows[rowIndex] = record.data;
                         self.field_hidden.setRawValue(Ext.util.JSON.encode( rows ));
                     }
-                }		
-            });	
+                }       
+            }); 
             self.plugins = [ self.editor ];
         }
         
@@ -2618,13 +2626,13 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
                                 self.field_hidden.setRawValue(Ext.util.JSON.encode( rows ));
                                 rows = Ext.util.JSON.decode( self.field_hidden.getValue());
                                 rows.splice(cindex, 0, rows_grid[i].data);
-                                self.field_hidden.setRawValue(Ext.util.JSON.encode( rows ));	
+                                self.field_hidden.setRawValue(Ext.util.JSON.encode( rows ));    
                             }
                             ds.insert(cindex,data.selections);
                             sm.clearSelections();
                         }
                         ds.commitChanges();
-                        self.getView().refresh();	
+                        self.getView().refresh();   
                     }
                 }
             }); 
@@ -2636,7 +2644,7 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         var index = self.store.getCount();
         if( self.editor ) self.editor.stopEditing();
         self.store.insert(index, u);
-        self.getSelectionModel().selectRow(index);			
+        self.getSelectionModel().selectRow(index);          
         if( self.editor ) self.editor.startEditing(index);
     },
     del_row : function(){
@@ -2747,7 +2755,7 @@ Baseliner.CBox = Ext.extend( Ext.form.Checkbox, {
 Ext.apply(Ext.layout.FormLayout.prototype, {
     originalRenderItem: Ext.layout.FormLayout.prototype.originalRenderItem || Ext.layout.FormLayout.prototype.renderItem,
     renderItem: function(c, position, target){
-        console.dir(c);
+        //console.dir(c);
         if ( c.fieldLabel != undefined ) {
             if ( c.labelAlign != undefined && c.labelAlign == 'top') {            
                 c.labelSeparator = '';

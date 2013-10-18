@@ -223,7 +223,7 @@ sub tree_objects {
             #  consider creating a %class_coll of all classes
         }
     }
-    my $opts = { order_by=>{ -asc=>['mid'] } };
+    my $opts = { order_by=>( $p{order_by} // +{ -asc=>['mid'] } ) };
     $opts->{select} = [ grep !/yaml/, DB->BaliMaster->result_source->columns ] if $p{no_yaml}; 
     my $page;
     if( length $p{start} && length $p{limit} && $p{limit}>-1 ) {
@@ -535,9 +535,9 @@ sub store : Local {
     my @data;
     my $total = 0; 
 
-    if( my $class = $p->{class} // $p->{classname} ) {
+    if( my $class = $p->{class} // $p->{classname} // $p->{isa} ) {
         $class = "BaselinerX::CI::$class" if $class !~ /^Baseliner/;
-        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
+        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
     }
     elsif( my $role = $p->{role} ) {
         my @roles;
@@ -548,14 +548,14 @@ sub store : Local {
             push @roles, $r;
         }
         my $classes = [ packages_that_do( @roles ) ];
-        ($total, @data) = $self->tree_objects( class=>$classes, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty}, no_yaml=>$p->{with_data}?0:1);
+        ($total, @data) = $self->tree_objects( class=>$classes, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty}, no_yaml=>$p->{with_data}?0:1);
     }
     else {
-        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
+        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
         #_fail( 'No class or role supplied' );
     }
 
-    _debug \@data if $mids;
+    #_debug \@data if $mids;
 
     # variables
     if( $p->{with_vars} ) {
