@@ -8,8 +8,8 @@ use Function::Parameters qw(:strict);
 use Baseliner::Utils qw(_fail _loc _error _debug _throw _log _array _dump _ixhash);
 
 # mongo connection
-has mongo_config  => qw(is rw isa Any), default=>sub{+{}};
-has mongo_db_name => qw(is rw isa Any default clarive);
+has mongo_config  => qw(is rw isa Any), default =>sub{ Baseliner->config->{mongo}{config} // +{} };
+has mongo_db_name => qw(is rw isa Any), default => sub { Baseliner->config->{mongo}{db_name} // 'clarive' };
 has mongo         => ( is=>'ro', isa=>'MongoDB::MongoClient', lazy=>1, default=>sub{
        my $self = shift;
        require MongoDB;
