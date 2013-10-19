@@ -920,7 +920,6 @@
                             var run_now = sel.data.step_code == 'END' ? true : false;
                             var mid = sel.data.mid;
                             var form_res = new Ext.FormPanel({ 
-                                url: '/ci/job/reset',
                                 frame: false,
                                 height: 150,
                                 defaults: { width:'100%' },
@@ -935,15 +934,19 @@
                                     step_combo
                                 ],
                                 buttons: [
-                                    {text:_('Rerun'), handler:function(f){ form_res.getForm().submit({
-                                            success: function(resp,opt) {
+                                    {text:_('Rerun'), handler:function(f){ 
+                                        var form_data = form_res.getForm().getValues();                                     
+                                        Baseliner.ci_call( 'job', 'reset', form_data, 
+                                            function(res){ 
                                                 Baseliner.message( sel.data.name, _('Job Restarted') );
                                                 store.load();
                                                 win_res.close();
                                             },
-                                            failure: function(f,a) { Baseliner.error(_('Error'), _('Could not rerun the job: %1', a.result.msg) ); }
-                                    }) }
-                                    },
+                                            function(res) { 
+                                                Baseliner.error(_('Error'), _('Could not rerun the job: %1', res.msg) );
+                                            }
+                                        );
+                                     }},
                                     {text:_('Cancel'), handler:function(f){ win_res.close() }}
                                 ]
                             });
