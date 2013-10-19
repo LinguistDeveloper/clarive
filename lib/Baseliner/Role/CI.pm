@@ -914,7 +914,8 @@ Returns all CIs of a given role class:
 =cut
 sub all_cis {
     my ($class,%p) = @_;
-    $class = ref $class if ref $class;
+    $class = $p{class} // ( ref $class || $class );
+    $class = 'BaselinerX::CI::' . $class unless $class =~ /::/;
     my @cis;
     for my $pkg ( Util->packages_that_do( $class ) ) {
         my $coll = $pkg->collection;
@@ -930,9 +931,11 @@ sub all_cis {
 
 sub search_cis {
     my ($class,%p) = @_;
+    $class = $p{class} // $class;
+    $class = 'BaselinerX::CI::' . $class unless $class =~ /::/ || ref $class;
     my $coll = $class->collection;
     my @cis = 
-        map { Baseliner::CI->new( $_->{mid} ) }
+        map { ci->new( $_->{mid} ) }
         DB->BaliMaster->search({ collection=>$coll, %p }, { select=>'mid' })->hashref->all;
     return @cis;
 }
