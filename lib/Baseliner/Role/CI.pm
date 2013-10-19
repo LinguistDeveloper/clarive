@@ -462,6 +462,12 @@ sub _build_ci_instance_from_rec {
     return $obj;
 }
 
+sub TO_JSON {
+    my ($self) = @_;
+    my $clone = Util->_clone( $self );
+    return Util->_unbless( $clone );
+}
+
 sub ci_form {
     my ($self) = @_;
     my $component = $self->can('form') ? $self->form : sprintf( "/ci/%s.js", $self->collection );
