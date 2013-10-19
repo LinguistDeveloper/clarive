@@ -25,6 +25,7 @@ register 'service.changeset.checkout.bl' => {
 register 'service.changeset.natures' => {
     name    => 'Load Nature Items',
     icon    => '/static/images/icons/nature.gif',
+    form    => '/forms/nature_items.js',
     handler => \&nature_items,
 };
 
@@ -211,6 +212,8 @@ sub nature_items {
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
     my $stash = $c->stash;
+    
+    my $commit_items = $config->{commit_items};
 
     $stash->{natures} = {}; 
     my $nat_id = $config->{nature_id} // 'name';  # moniker?
@@ -228,6 +231,9 @@ sub nature_items {
             push @msg, "nature = " . $nature->name;
             ITEM: for my $it ( @items ) {
                 my $nature_clon = Util->_clone( $nature );
+                if( $commit_items && $it->ns && !ci->find( ns=>$it->ns) ) {
+                    $it->save;
+                }
                 push @msg, "item = " . $it->path;
                 if( $nature->push_item( $it ) ) {
                     my $id =  $nature->$nat_id;
