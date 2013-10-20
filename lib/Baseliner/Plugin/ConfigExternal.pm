@@ -7,6 +7,7 @@ sub setup {
     if( ref $Baseliner::BASE_OPTS eq 'HASH' ) {
         $c->config( %{ $c->config }, %{ $Baseliner::BASE_OPTS } );
     }
+    $c->next::method(@_);
 }
 
 1;
