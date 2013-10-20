@@ -12,6 +12,7 @@ params:
     field_order_html: 100
     rel_type: topic_ci
     ci_role: 'ci'
+    ci_class: ''
 ---
 */
 (function(params){
