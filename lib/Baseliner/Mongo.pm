@@ -5,7 +5,7 @@ use Baseliner::MongoCursor;
 use Baseliner::MongoCollection;
 use Try::Tiny;
 use Function::Parameters qw(:strict);
-use Baseliner::Utils qw(_fail _loc _error _debug _throw _log _array _dump _ixhash);
+use Baseliner::Utils qw(_fail _loc _error _warn _debug _throw _log _array _dump _ixhash);
 
 # mongo connection
 has mongo_config  => qw(is rw isa Any), default =>sub{ Baseliner->config->{mongo}{config} // +{} };
@@ -50,8 +50,8 @@ sub asset {
 }
 
 sub ts { Util->_now() }
-sub in  { {  '$in' => [ map { ref $_ eq 'HASH' ? "$_->{mid}" : "$_" } Util->_array( @_ ) ] } }
-sub nin { { '$nin' => [ map { ref $_ eq 'HASH' ? "$_->{mid}" : "$_" } Util->_array( @_ ) ] } }
+sub in  { shift; {  '$in' => [ map { ref $_ eq 'HASH' ? "$_->{mid}" : "$_" } Util->_array( @_ ) ] } }
+sub nin { shift; { '$nin' => [ map { ref $_ eq 'HASH' ? "$_->{mid}" : "$_" } Util->_array( @_ ) ] } }
 
 sub find {
     my ($self,$mid)=@_;
@@ -130,9 +130,12 @@ sub joins {
             $rs->fields({ _id=>-1, $from => 1 });
             @docs = $rs->all; 
         }
+        _warn [ map{ $_->{$from} } @docs ];
         %in = ( $to => mdb->in(map{ $_->{$from} } @docs ) );
     }
-    my $rs = $self->collection( $res{coll} )->find({ %{ $res{where} }, %in });
+    my $where = +{ %{ $res{where} }, %in };
+    #_debug "final join = collection $res{coll}, where = " . _dump $where;
+    my $rs = $self->collection( $res{coll} )->find($where);
     if( $opts{merge} ) {
         my @docs = $rs->all;
         my (%join_keys,$last_key);
