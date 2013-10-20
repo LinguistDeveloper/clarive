@@ -2807,11 +2807,10 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
     style: 'margin-top: 10px', 
     readonly: false,
     id_field: 'upload_files_panel',
-    xxxconstructor : function(config){
-        Baseliner.UploadFilesPanel.superclass.constructor.call(this,Ext.apply({
-            disabled: this.readonly,
-        },config));
-    },
+    url_delete : '/topic/file/delete', 
+    url_list : '/topic/file_tree',
+    url_download : '/topic/download_file',
+    url_upload : '/topic/upload',
     get_mid : function(){ // the form may not have a mid in the beginning, but later it does, so this is dynamic
         var self = this;
         if( self.mid ) return self.mid;
@@ -2857,9 +2856,9 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
             {name: '_is_leaf', type: 'bool'}
         ]);     
         
-        var store_file = new Ext.ux.maximgb.tg.AdjacencyListStore({  
+        self.store_file = new Ext.ux.maximgb.tg.AdjacencyListStore({  
            autoLoad : true,  
-           url: '/topic/file_tree',
+           url: self.url_list, 
            baseParams: { topic_mid: self.get_mid() == -1 ? '' : self.get_mid(), filter: self.id_field },
            reader: new Ext.data.JsonReader({ id: '_id', root: 'data', totalProperty: 'total', successProperty: 'success' }, record )
         });
@@ -2867,7 +2866,7 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
         var render_file = function(value,metadata,rec,rowIndex,colIndex,store) {
             var md5 = rec.data.md5;
             if( md5 != undefined ) {
-                value = String.format('<a target="FrameDownload" href="/topic/download_file/{1}">{0}</a>', value, md5 );
+                value = String.format('<a target="FrameDownload" href="{2}/{1}">{0}</a>', value, md5, self.url_download );
             }
             value = '<div style="height: 20px; font-family: Consolas, Courier New, monospace; font-size: 12px; font-weight: bold; vertical-align: middle;">' 
                 //+ '<input type="checkbox" class="ux-maximgb-tg-mastercol-cb" ext:record-id="' + record.id +  '"/>&nbsp;'
@@ -2882,11 +2881,11 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
                 var sel = check_sm.getSelected();
                 Baseliner.confirm( _('Are you sure you want to delete these artifacts?'), function(){
                     var sels = checked_selections();
-                    Baseliner.ajaxEval( '/topic/file/delete', { md5 : sels.md5, topic_mid: self.get_mid() }, function(res) {
+                    Baseliner.ajaxEval( self.url_delete, { md5 : sels.md5, topic_mid: self.get_mid() }, function(res) {
                         Baseliner.message(_('Deleted'), res.msg );
                         var rows = check_sm.getSelections();
-                        Ext.each(rows, function(row){ store_file.remove(row); })                    
-                        store_file.reload();
+                        Ext.each(rows, function(row){ self.store_file.remove(row); })                    
+                        self.store_file.reload();
                     });
                 });
             } 
@@ -2919,7 +2918,7 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
             header: true,
             hideHeaders: false,
             sm: check_sm,
-            store: store_file,
+            store: self.store_file,
             tbar: [
                 { xtype: 'checkbox', handler: function(){ if( this.getValue() ) check_sm.selectAll(); else check_sm.clearSelections() } },
                 '->',
@@ -2953,7 +2952,7 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
             var el = filedrop.el.dom;
             var uploader = new qq.FileUploader({
                 element: el,
-                action: '/topic/upload',
+                action: self.url_upload,
                 //debug: true,  
                 // additional data to send, name-value pairs
                 //params: {
@@ -2972,12 +2971,12 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
                         files_uploaded_mid = files_uploaded_mid ? files_uploaded_mid + ',' + res.file_uploaded_mid : res.file_uploaded_mid;
                         form2.findField("files_uploaded_mid").setValue(files_uploaded_mid);
                         var files_mid = files_uploaded_mid.split(',');
-                        store_file.baseParams = { files_mid: files_mid };
-                        store_file.reload();
+                        self.store_file.baseParams = { files_mid: files_mid };
+                        self.store_file.reload();
                     }
                     else{
-                        store_file.baseParams = {topic_mid: self.get_mid() == -1 ? '' : self.get_mid(), filter: self.id_field };
-                        store_file.reload();                    
+                        self.store_file.baseParams = {topic_mid: self.get_mid() == -1 ? '' : self.get_mid(), filter: self.id_field };
+                        self.store_file.reload();                    
                     }
                 },
                 onSubmit: function(id, filename){
