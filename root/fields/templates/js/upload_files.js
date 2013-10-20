@@ -228,3 +228,24 @@ params:
 		}
     ]
 })
+
+/* 
+
+
+(function(params){
+    var meta = params.topic_meta;
+    var data = params.topic_data;
+    var form = params.form;
+    var up = new Baseliner.UploadFilesPanel({
+        allowBlank  : meta.allowBlank,
+        readonly    : meta.readonly,
+        id_field    : meta.id_field,
+        name_field  : meta.name_field,
+        form : form
+    });
+    return [
+        up
+    ]
+})
+
+*/

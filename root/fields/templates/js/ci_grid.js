@@ -25,14 +25,14 @@ params:
     
     var value = data[ meta.id_field ];
     var cis = new Baseliner.CIGrid({ 
+        fieldLabel: _( meta.name_field ),
         ci: ci_meta,
         title: null,
         columns: meta.columns || [],
         //labelAlign: 'top', 
         readOnly: ( meta.readOnly == 'true' ? true : false ),
-        style: 'margin-top: 20px', 
+        //style: 'margin-top: 20px', 
         height: meta.height || 200,
-        fieldLabel: meta.name_field,
         value: value , 
         name: meta.id_field 
     });

@@ -862,6 +862,7 @@ sub _fail {
     } else {
         _error( "FAIL: $cl;$li: @_" ) 
     }
+    _throw( @_ ) if $ENV{BASELINER_THROW} || $ENV{BASELINER_DEBUG} > 1;
     die join(' ',@_) . "\n";
 }
 

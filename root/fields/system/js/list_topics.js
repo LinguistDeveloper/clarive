@@ -57,7 +57,7 @@ params:
             combo_store: topic_box_store,
             columns: meta.columns,
             mode: 'remote',
-            style: 'margin-bottom: 15px',
+            style: 'margin-bottom: 8px',
             pageSize: ps,
             name: meta.id_field, 
             height: meta.height || 250,

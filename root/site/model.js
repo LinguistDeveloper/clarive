@@ -479,6 +479,7 @@ Baseliner.combo_revision = function(params) {
     return combo;
 };
 
+// TODO deprecated (controller is gone)
 Baseliner.combo_tasks = function(params) {
     if( params == undefined ) params = {};
     var store_tasks =new Baseliner.JsonStore({

@@ -259,7 +259,8 @@ sub save_data {
         my $attr = $meta->get_attribute( $field ) or next;
         my $type_cons = $attr->type_constraint or next;
         my $type = $type_cons->name;
-        if( $type eq 'CI' || $type eq 'CIs' || $type =~ /^Baseliner::Role::CI/ ) {
+        my $has_ci_trait = grep /Baseliner::Role::CI::Trait/, _array( $attr->applied_traits );
+        if( $has_ci_trait || $type eq 'CI' || $type eq 'CIs' || $type =~ /^Baseliner::Role::CI/ ) {
             my $rel_type = $self->rel_type->{ $field } or Util->_fail( Util->_loc( "Missing rel_type definition for %1 (class %2)", $field, ref $self || $self ) );
             next unless $rel_type;
             my $v = delete($data->{$field});  # consider a split on ,  
@@ -460,6 +461,12 @@ sub _build_ci_instance_from_rec {
     }
 
     return $obj;
+}
+
+sub TO_JSON {
+    my ($self) = @_;
+    my $clone = Util->_clone( $self );
+    return Util->_unbless( $clone );
 }
 
 sub ci_form {
@@ -908,7 +915,8 @@ Returns all CIs of a given role class:
 =cut
 sub all_cis {
     my ($class,%p) = @_;
-    $class = ref $class if ref $class;
+    $class = $p{class} // ( ref $class || $class );
+    $class = 'BaselinerX::CI::' . $class unless $class =~ /::/;
     my @cis;
     for my $pkg ( Util->packages_that_do( $class ) ) {
         my $coll = $pkg->collection;
@@ -924,9 +932,11 @@ sub all_cis {
 
 sub search_cis {
     my ($class,%p) = @_;
+    $class = $p{class} // $class;
+    $class = 'BaselinerX::CI::' . $class unless $class =~ /::/ || ref $class;
     my $coll = $class->collection;
     my @cis = 
-        map { Baseliner::CI->new( $_->{mid} ) }
+        map { ci->new( $_->{mid} ) }
         DB->BaliMaster->search({ collection=>$coll, %p }, { select=>'mid' })->hashref->all;
     return @cis;
 }
@@ -935,7 +945,7 @@ sub search_cis {
 1;
 
 # Attribute Trait 
-package Baseliner::Role::CI::Trait;
+package Baseliner::Role::CI::TraitCI;
 use Moose::Role;
 use Moose::Util::TypeConstraints;
 use Scalar::Util; # 'looks_like_number', 'weaken';
@@ -1035,5 +1045,15 @@ around initialize_instance_slot => sub {
     $self->$orig( @_ );
     $self->_weaken_value($instance) if $weaken;
 };
+
+# CIs
+package Baseliner::Role::CI::TraitCIs;
+use Moose::Role;
+use Moose::Util::TypeConstraints;
+use Scalar::Util; # 'looks_like_number', 'weaken';
+
+with 'Baseliner::Role::CI::TraitCI';
+
+Moose::Util::meta_attribute_alias('CIs');
 
 1;
