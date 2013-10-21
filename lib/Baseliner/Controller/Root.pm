@@ -42,11 +42,15 @@ sub begin : Private {
         my $body = $c->req->body;
         my $body_data = <$body>;
         my $json = Util->_from_json( $body_data ) if $body_data;
-        delete $c->req->params->{as_json}; 
         if( ref $json eq 'HASH' && delete $json->{_merge_with_params} ) {
             my $p = $c->req->params || {};
-            $c->req->params( { %$p, %$json } ); 
+            my $d = { %$p, %$json };
+            delete $d->{as_json};
+            $c->req->params( $d ); 
+            Util->_debug( $d );
         } else {
+            $json //= {};
+            delete $json->{as_json};
             $c->req->{body_data} = $json;
         }
     }

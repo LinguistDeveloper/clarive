@@ -30,12 +30,7 @@
                   var ret = cb( form2 );
                   if( !ret ) flag = false;
                });
-               var form_data = form2.getValues();
-               form.cascade(function(obj){
-                   if( obj.name && obj.get_save_data ) {
-                       form_data[ obj.name ] = obj.get_save_data();
-                   }
-               });
+               var form_data = form.getValues();
                Baseliner.ajax_json('/ci/update', {action: params.action, mid: params.mid, collection:params.collection, form_data:form_data },function(res){
                     mid = params.mid = res.mid;
                     params.action = 'edit';
@@ -181,7 +176,7 @@
         var bl_combo = new Baseliner.model.SelectBaseline({ value: ['*'], colspan: 1 });
         var children = new Ext.form.Hidden({ name: 'children', value: params.rec.children });
         var desc = { xtype:'textarea', fieldLabel: _('Description'), name:'description', allowBlank: true, value: params.rec.description, height: 80 };
-        var form = new Ext.FormPanel({
+        var form = new Baseliner.FormPanel({
             url:'/ci/update',
             defaults: {
                allowBlank: false,

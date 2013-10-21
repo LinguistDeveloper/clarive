@@ -1147,8 +1147,8 @@ sub get_data {
         
         push @custom_fields, map { map { $_->{id_field} } _array $_->{fields}; } grep { defined $_->{type} && $_->{type} eq 'form' } _array($meta);
 
-        for (@custom_fields){
-            $data->{ $_ } = $custom_data{$_};
+        for my $fi (@custom_fields){
+            $data->{ $fi } = try { _load($custom_data{$fi}) } catch { $custom_data{$fi} };
         }
         Baseliner->cache_set( $cache_key, $data );
     }
@@ -1440,12 +1440,13 @@ sub save_data {
             my $record = {};
             $record->{topic_mid} = $topic->mid;
             $record->{name} = $_->{column};
-            if ($_->{data}){ ##Cuando el tipo de dato es CLOB
+            my $v = $data->{ $_ -> {name}};
+            if ($_->{data} || ref $v ){ ##Cuando el tipo de dato es CLOB
                 
-            	$record->{value_clob} = $data->{ $_ -> {name}};
+            	$record->{value_clob} = ref $v ? _dump($v) : $v;
             	$record->{value} = ''; # cleanup old data, so that we read from clob 
             }else{
-            	$record->{value} = $data->{ $_ -> {name}};
+            	$record->{value} = $v;
             	$record->{value_clob} = ''; # cleanup old data so we read from value
             }
             

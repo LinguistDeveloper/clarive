@@ -886,34 +886,36 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         self.form_topic.on_submit();
         if( !opts ) opts = {};
         
+        var form_data = self.form_topic.getValues();
         var form2 = self.form_topic.getForm();
-        var action = form2.getValues()['topic_mid'] >= 0 ? 'update' : 'add';
+        var action = form_data['topic_mid'] >= 0 ? 'update' : 'add';
         var custom_form = '';
         
         var do_submit = function(){
-            form2.submit({
-               url: self.form_topic.url,
-               params: {action: action, form: custom_form, _cis: Ext.util.JSON.encode( self._cis )},
-               success: function(f,a){
+            Baseliner.ajax_json( 
+                self.form_topic.url,
+                Ext.apply({ action: action, form: custom_form, _cis: Ext.util.JSON.encode( self._cis ) }, form_data), 
+                // success
+                function(res){
                     self.btn_save_form.enable();
                     if( self.permDelete ) {
                         self.btn_delete_form.enable();
                     }                    
-                    Baseliner.message(_('Success'), a.result.msg );
+                    Baseliner.message(_('Success'), res.msg );
                     self.reload_parent_grid();
                         
-                    form2.findField("topic_mid").setValue(a.result.topic_mid);
-                    form2.findField("status").setValue(a.result.topic_status);
+                    form2.findField("topic_mid").setValue(res.topic_mid);
+                    form2.findField("status").setValue(res.topic_status);
                     
                     var store = form2.findField("status_new").getStore();
                     store.on("load", function() {
-                        form2.findField("status_new").setValue( a.result.topic_status );
+                        form2.findField("status_new").setValue( res.topic_status );
                         //var obj_status_items_menu = Ext.util.JSON.decode(self.status_items_menu);
                         //
                         //self.status_menu.removeAll();
                         //self.status_items_menu = [];
                         //store.each( function(row){
-                        //    if(a.result.topic_status != row.data.id){
+                        //    if(res.topic_status != row.data.id){
                         //        self.status_items_menu.push({ text: _(row.data.name), id_status_to: obj_status_items_menu[i].id_status, id_status_from: obj_status_items_menu[i].id_status_from, handler: function(obj){ self.change_status(obj) } });                                                    
                         //        self.status_menu.addItem({ text: _(row.data.name), id_status_to: obj_status_items_menu[i].id_status, id_status_from: obj_status_items_menu[i].id_status_from, handler: function(obj){ self.change_status(obj) } });
                         //    }
@@ -927,7 +929,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                                 }
                     });
                     
-                    self.topic_mid = a.result.topic_mid;
+                    self.topic_mid = res.topic_mid;
                     self.btn_comment.show();
                     self.btn_detail.show();
                     if( self.permDelete ) {
@@ -935,7 +937,6 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     }
                     
                     if(action == 'add'){
-                        var res = a.result;
                         var tabpanel = Ext.getCmp('main-panel');
                         var objtab = tabpanel.getActiveTab();
                         var category = res.category;
@@ -947,22 +948,21 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                         self.setTitle( title );    
                     }
                     self.view_is_dirty = true;
-                    if( Ext.isFunction(opts.success) ) opts.success(a.result);
+                    if( Ext.isFunction(opts.success) ) opts.success(res);
                     
-                    self.modified_on = a.result.modified_on;
-               },
-               failure: function(f,action){
+                    self.modified_on = res.modified_on;
+                },
+                // failure
+                function(res){
                    self.btn_save_form.enable();
                    if( self.permDelete ) {
                        self.btn_delete_form.enable();
                    }
-                   var res = action.response;
                    Baseliner.error_win('',{},res,res.responseText );
                    if( Ext.isFunction(opts.failure) ) opts.failure(res);
-               }
-            });
-            
-        }
+                }
+            );
+        };
         
         if (form2.isValid()) {
             self.btn_save_form.disable();
@@ -1356,7 +1356,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
     }    
 });
 
-Baseliner.TopicForm = Ext.extend( Ext.FormPanel, {
+Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
     labelAlign: 'top',
     layout:'column',
     url:'/topic/update',
