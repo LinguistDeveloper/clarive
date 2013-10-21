@@ -513,7 +513,12 @@ sub store : Local {
         $w->{from_mid} = $p->{from_mid} if $p->{from_mid};
         $w->{to_mid}   = $p->{to_mid} if $p->{to_mid};
         $w->{rel_type} = $p->{rel_type}  if defined $p->{rel_type};
-        my $rel_query = Baseliner->model('Baseliner::BaliMasterRel')->search( $w , { select=>'to_mid' } )->as_query;
+
+        my $s = {};
+        $s->{select} = 'to_mid' if $p->{mid} || $p->{from_mid};
+        $s->{select} = 'from_mid' if $p->{to_mid};
+        
+        my $rel_query = Baseliner->model('Baseliner::BaliMasterRel')->search( $w , $s )->as_query;
         $where->{mid} = { -in=>$rel_query };
     }
 
