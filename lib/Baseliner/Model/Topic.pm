@@ -2168,7 +2168,6 @@ sub check_fields_required {
     my $field_name;
     if (!$is_root){     
         my $meta = Baseliner->model('Topic')->get_meta( $mid );
-        my $meta = Baseliner->model('Topic')->get_meta( $mid );
         my %fields_required =  map { $_->{bd_field} => $_->{name_field} } grep { $_->{allowBlank} && $_->{allowBlank} eq 'false' && $_->{origin} ne 'system' } _array( $meta );
         my $data = Baseliner->model('Topic')->get_data( $meta, $mid );  
         
