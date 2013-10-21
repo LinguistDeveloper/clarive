@@ -2782,7 +2782,8 @@ Ext.apply(Ext.layout.FormLayout.prototype, {
  
 Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
     getValues : function(a,b,c){
-        var form_data = Baseliner.FormPanel.superclass.getValues.call(a,b,c);
+        var form2 = this.getForm();
+        var form_data = form2.getValues() || {};
         this.cascade(function(obj){
             if( obj.name && obj.get_save_data ) {
                 form_data[ obj.name ] = obj.get_save_data();
