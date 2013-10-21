@@ -3,6 +3,7 @@ use strict;
 use base 'Catalyst::View::JSON';
 use Encode;
 use JSON::XS ();
+use Baseliner::Utils;
 
 # doesn't seem to save _json_encoder into self
 # sub new {
@@ -15,6 +16,7 @@ use JSON::XS ();
 sub encode_json {
     my($self, $c, $data) = @_;
     my $encoder = $self->{_json_encoder} // ( $self->{_json_encoder} = JSON::XS->new->allow_blessed->convert_blessed );
+    _log _dump $data;
     $encoder->encode($data);
 }
 
