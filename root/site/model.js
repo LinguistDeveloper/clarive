@@ -2342,7 +2342,6 @@ Baseliner.CBTreeNodeUI = function () {
 
 Ext.extend(Baseliner.CBTreeNodeUI, Ext.tree.TreeNodeUI, {
     renderElements: function (n, a, targetNode, bulkRender) {
-
         // add some indent caching, this helps performance when rendering a large tree
         this.indentMarkup = n.parentNode ? n.parentNode.ui.getChildIndent() : '';
         a.checked3 = a.checked3 ? a.checked3 : a.checked ? 1 : 0;
@@ -2881,5 +2880,6 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
         alert( 'ggg' );
     }
 });
+
 
 

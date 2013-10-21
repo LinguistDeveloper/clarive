@@ -171,7 +171,7 @@
 }
 
 .icon-no {
-    background-image:url('') !important;
+	display:none;
 }
 
 .priority a span {
@@ -215,3 +215,18 @@
     font-weight:bold;
 }
 */
+
+.bl-label {
+  font-size: 10.998px;
+  font-weight: bold;
+  line-height: 14px;
+
+  white-space: nowrap;
+  vertical-align: baseline;
+  background-color: #999999;
+  padding: 1px 4px 2px;
+  -webkit-border-radius: 3px;
+     -moz-border-radius: 3px;
+          border-radius: 3px;
+  color: #FFFFFF !important;
+}
