@@ -1417,7 +1417,6 @@ sub upload : Local {
     _log "Uploading file " . $filename;
     try {
         if($p->{topic_mid} && $p->{topic_mid} > 0){
-            my $config = config_get( 'config.uploader' );
             my ($topic, $topic_mid, $file_mid);
             #if($p->{topic_mid}){
                 $topic = $c->model('Baseliner::BaliTopic')->find( $p->{topic_mid} );

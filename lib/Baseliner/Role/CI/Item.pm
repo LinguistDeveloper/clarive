@@ -27,6 +27,11 @@ has item_relationship => qw(is rw isa Str default item_item); # rel_type
 has variables => qw(is rw isa HashRef), default=>sub{ +{} };
 has parse_tree => qw(is rw isa ArrayRef), default=>sub{ [] };
 
+sub filepath {
+    my ($self)=@_;
+    return $self->path;
+}
+
 sub path_cut {
     my ($self, $regex)=@_;
     my $path = $self->path;

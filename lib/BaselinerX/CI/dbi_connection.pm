@@ -27,11 +27,17 @@ service ping => {
 
 sub connect {
 	my ( $self ) = @_;
+    Util->_fail( 'Missing server attribute' ) unless $self->server;
     return $self->_connection if ref $self->_connection;
     require DBIx::Simple;
-    my $conn = DBIx::Simple->connect( $self->data_source, $self->user, $self->password, $self->options );
+    my $conn = DBIx::Simple->connect( $self->data_source_parsed, $self->user, $self->password, $self->options );
     $self->_connection( $conn );
     return $conn; 
+}
+
+sub data_source_parsed {
+    my ($self)=@_;
+    return Util->parse_vars( $self->data_source, +{ host=>$self->server->hostname, %$self } );
 }
 
 sub ping {

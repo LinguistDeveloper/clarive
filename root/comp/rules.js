@@ -255,11 +255,11 @@
                         var params = {};
                         var data_key = new Ext.form.TextField({ name:'data_key', value: node.attributes.data_key });
                         var save_form = function(){
-                            form.data = form.getForm().getValues();
+                            form.data = form.getValues();
                             form.data.data_key = data_key.getValue();
                             form.destroy();
                         };
-                        var form = new Ext.FormPanel({ 
+                        var form = new Baseliner.FormPanel({ 
                             frame: false, forceFit: true, defaults: { msgTarget: 'under', anchor:'100%' },
                             width: 800, height: 600,
                             autoScroll: true,

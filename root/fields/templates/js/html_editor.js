@@ -21,7 +21,7 @@ params:
 	return [
         //Baseliner.field_label_top( meta.name_field, meta.hidden, allow, readonly ),		
 		{   xtype: 'panel', layout:'fit',
-			fieldLabel: _('Description'),
+			fieldLabel: meta.name_field,
 			hidden: meta ? (meta.hidden ? meta.hidden : false): true,
 			style: 'margin-bottom: 15px',
 			readOnly : readonly,

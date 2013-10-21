@@ -66,9 +66,11 @@ sub has_cis {
     my $name = shift;
     my %options;
     if ( @_ > 0 && @_ % 2 ) {
-        $options{isa} = shift;
+        my $cn = shift;  # class name
+        $cn = "ArrayRef[$cn]" unless $cn=~/^ArrayRef\[/;
+        $options{isa} = $cn;
         $options{is}  = 'rw';
-        $options{traits}  = ['CI'];
+        $options{traits}  = ['CIs'];
         if( @_ > 1 ) {  # allow: has_ci 'att' => 'Obj', required=>1;
             %options = ( %options, @_ );
         }
@@ -77,7 +79,7 @@ sub has_cis {
         %options = @_;
         $options{isa} ||= 'CIs';
         $options{is}  ||= 'rw';
-        $options{traits} ||= ['CI'];
+        $options{traits} ||= ['CIs'];
     }
  
     $meta->add_attribute( $name, %options, );

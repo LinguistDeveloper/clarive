@@ -59,5 +59,9 @@ sub update_or_create {
     my ($self,$doc) = @_;
     $self->update($doc,$doc,{ upsert=>1 });
 }
+
+sub delete { 
+    die "->delete does not exist. Use ->remove";
+}
     
 1;

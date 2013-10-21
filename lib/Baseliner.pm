@@ -36,7 +36,7 @@ BEGIN {
     #unshift @modules, '-Debug' if $ENV{BASELINER_DEBUG};
 }
 
-use Catalyst @modules;
+use Catalyst (@modules,'+Baseliner::Plugin::ConfigExternal');
 use Time::HiRes qw(gettimeofday tv_interval);
 use Baseliner::CI;
 use Try::Tiny;
@@ -175,11 +175,6 @@ if( $ENV{BALI_FAST} ) {
 
         return @comps;
     };
-}
-
-# config / options from a supervisor? -- have lower precedence than .conf files
-if( ref $Baseliner::BASE_OPTS eq 'HASH' ) {
-    Baseliner->config(  %{ $Baseliner::BASE_OPTS } );
 }
 
 #############################

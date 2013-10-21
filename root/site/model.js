@@ -479,6 +479,7 @@ Baseliner.combo_revision = function(params) {
     return combo;
 };
 
+// TODO deprecated (controller is gone)
 Baseliner.combo_tasks = function(params) {
     if( params == undefined ) params = {};
     var store_tasks =new Baseliner.JsonStore({
@@ -873,9 +874,13 @@ Baseliner.ci_box = function(c) {
     var role = c.role; delete c.role;
     var show_class = c.showClass; delete c.showClass;
     var with_vars = c.with_vars; delete c.with_vars;
+    var from_mid = c.from_mid; delete c.from_mid;
+    var to_mid = c.to_mid; delete c.to_mid;
     var cl = c['class']; delete c['class']; // IE - class is syntax errors due to reserved word
     var bp = {};
     if( cl !=undefined ) bp['class'] = cl;
+    if( from_mid != undefined ) bp.from_mid = from_mid;
+    if( to_mid != undefined ) bp.to_mid = to_mid;
     else bp.role = role;
     if( with_vars != undefined ) bp.with_vars = with_vars;
     if( c.hiddenName == undefined ) c.hiddenName = c.name;

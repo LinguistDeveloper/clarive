@@ -29,16 +29,14 @@ sub name {
     my $self = shift; 
     my $bl = shift;
     return $bl_text_cache{$bl} if defined $bl_text_cache{$bl}; 
-    my $r = Baseliner->model('Baseliner::BaliBaseline')->search({ bl=> $bl })->first;
+    my $r = ci->find( moniker=>$bl );
     return $bl unless ref $r;
     return $bl_text_cache{$bl} = _loc($r->name) || $bl;
 }
 
 sub baselines {
     my $self = shift; 
-    my $rs = Baseliner->model('Baseliner::BaliBaseline')->search({}, { order_by => { -asc =>'seq'  } });
-    rs_hashref $rs;
-    return $rs->all;
+    return sort { $a->seq <=> $b->seq } ci->search_cis( collection=>'bl' );
 }
 
 sub baselines_no_root {
