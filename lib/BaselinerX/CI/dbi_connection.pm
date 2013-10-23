@@ -76,7 +76,10 @@ sub dosql {
                 { sql=>$st, rc=>0, err=>'', ret=>join('', @ret) };
             } catch {
                 my $err = shift;
-                _fail _loc 'Database error: %1', $db->error unless $p{ignore};
+                my @ret = $dbh->func( 'dbms_output_get' );
+                my $msg = _loc 'Database error: %1', $db->error;
+                _error( $msg, "SQL:\n$st\n\n" . join('',@ret) );
+                _fail $msg unless $p{ignore}; 
                 { sql=>$st, rc=>1, err=>$db->error, catch=>$err, ret=>'' };
             };
             push @queries, $ret;
