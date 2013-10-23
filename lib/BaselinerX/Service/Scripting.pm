@@ -66,17 +66,17 @@ sub run_local {
     if( $rc ) {
         my $msg = _loc('Error running command %1', join ' ', @cmd);
         $job->logger->error( $msg , $r ); 
-        $self->publish_output_files( $job, $output_files );
+        $self->publish_output_files( 'error', $job, $output_files );
         _fail $msg if $fail_on_error; 
     } else {
-        $self->publish_output_files( $job,$output_files );
+        $self->publish_output_files( 'info', $job,$output_files );
         $job->logger->info( _loc('Finished command %1' , join ' ', @cmd ), $r ); 
     }
     return $r;
 }
 
 sub publish_output_files {
-    my ($self, $job, $output_files ) = @_;
+    my ($self, $lev, $job, $output_files ) = @_;
     for my $file ( _array( $output_files ) ) {
         if( !-e $file ) {
             _debug "Output file not found: $file";
@@ -84,7 +84,7 @@ sub publish_output_files {
             my $f = _file($file);
             my $body = $f->slurp;
             my $bn = $f->basename;
-            $job->logger->info( "Output File: $bn", data => $body, data_name => $bn );
+            $job->logger->$lev( "Output File: $bn", data => $body, data_name => $bn );
         }
     }
 }
