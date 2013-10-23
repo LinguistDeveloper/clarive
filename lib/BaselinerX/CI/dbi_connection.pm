@@ -59,12 +59,20 @@ sub dosql {
     for my $sql ( _array( $p{sql} ) ) {
         my @stmts = $p{split} ?  split( $p{split}, $sql) : ($sql);
         for my $st ( @stmts ) {
-            _debug "Running sql $st against the database", $st;
             my $ret = try {
                 $dbh->func( 1000000, 'dbms_output_enable' );
-                $dbh->do( qq{begin $st; end;} );
+                if( $p{mode} eq 'exec' ) {
+                    _debug "Running sql $st against the database (mode $p{mode})", $st;
+                    $db->query( q{BEGIN EXECUTE IMMEDIATE(?); END;}, $st );
+                } elsif( $p{mode} eq 'plsql' ) {
+                    $st = qq{begin\n$st;\nend;};
+                    _debug "Running sql $st against the database (mode $p{mode})", $st;
+                    $dbh->do( $st ); 
+                } else {
+                    _debug "Running sql $st against the database (mode $p{mode})", $st;
+                    $dbh->do( $st ); 
+                }
                 my @ret = $dbh->func( 'dbms_output_get' );
-                # my $d = $db->query($st);
                 { sql=>$st, rc=>0, err=>'', ret=>join('', @ret) };
             } catch {
                 my $err = shift;
