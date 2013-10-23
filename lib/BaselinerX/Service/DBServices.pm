@@ -25,6 +25,7 @@ sub deploy_sql {
     my $job_dir = $stash->{job_dir};
     my $items = $stash->{nature_items} // $stash->{items};
     my $db = _ci( $config->{db} );
+    my $split = $config->{split} // 1;
     
     $stash->{_db_transaction_count} //= 0;
     my $tran_cnt = $stash->{_db_transaction_count} + 1;

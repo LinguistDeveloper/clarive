@@ -53,15 +53,19 @@ sub rollback { $_[0]->connect->rollback }
 sub dosql {
 	my ( $self, %p ) = @_;
     my $db = $self->connect;
+    my $dbh = $db->dbh;
     my $split = $p{split};
     my @queries;
     for my $sql ( _array( $p{sql} ) ) {
         my @stmts = $p{split} ?  split( $p{split}, $sql) : ($sql);
         for my $st ( @stmts ) {
-            _debug "Running sql $st against the database";
+            _debug "Running sql $st against the database", $st;
             my $ret = try {
-                my $d = $db->query($st);
-                { sql=>$st, rc=>0, err=>'', ret=>$d };
+                $dbh->func( 1000000, 'dbms_output_enable' );
+                $dbh->do( qq{begin $st; end;} );
+                my @ret = $dbh->func( 'dbms_output_get' );
+                # my $d = $db->query($st);
+                { sql=>$st, rc=>0, err=>'', ret=>join('', @ret) };
             } catch {
                 my $err = shift;
                 _fail _loc 'Database error: %1', $db->error unless $p{ignore};
