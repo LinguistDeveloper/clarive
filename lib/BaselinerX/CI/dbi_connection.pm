@@ -77,8 +77,8 @@ sub dosql {
             } catch {
                 my $err = shift;
                 my @ret = $dbh->func( 'dbms_output_get' );
-                my $msg = _loc 'Database error: %1', $db->error;
-                _error( $msg, "SQL:\n$st\n\n" . join('',@ret) );
+                my $msg = _loc 'Database error: %1 %2', $db->error, $err;
+                _error( $msg, "SQL:\n$st\n\n$msg\n\n" . join('',@ret) );
                 _fail $msg unless $p{ignore}; 
                 { sql=>$st, rc=>1, err=>$db->error, catch=>$err, ret=>'' };
             };
