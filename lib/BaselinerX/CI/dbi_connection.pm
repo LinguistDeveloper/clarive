@@ -9,6 +9,7 @@ has_ci 'server';
 has data_source => qw(is rw isa Any);
 has user        => qw(is rw isa Any);
 has password    => qw(is rw isa Any);
+has envvars     => qw(is rw isa HashRef), default=>sub{ +{} };
 has options     => qw(is rw isa Any), default=>sub{ +{} };
 
 has _connection => qw(is rw isa Any);
@@ -52,6 +53,12 @@ sub rollback { $_[0]->connect->rollback }
 
 sub dosql {
 	my ( $self, %p ) = @_;
+    my %ENV_ORIG = %ENV;
+    for my $env_key ( keys %{ $self->envvars || {} } ) {
+        my $v = $self->envvars->{ $env_key };
+        next if ref $v;
+        $ENV{ $env_key } = $v;
+    }
     my $db = $self->connect;
     my $dbh = $db->dbh;
     my $split = $p{split};
@@ -78,6 +85,7 @@ sub dosql {
             } catch {
                 my $err = shift;
                 my @ret = $dbh->func( 'dbms_output_get' );
+                %ENV = %ENV_ORIG;
                 my $msg = _loc 'Database error: %1 %2', $db->error, $err;
                 _error( $msg, "SQL:\n$st\n\n$msg\n\n" . join('',@ret) );
                 _fail _loc 'SQL Error' unless $p{ignore}; 
@@ -86,6 +94,7 @@ sub dosql {
             push @queries, $ret;
         }
     }
+    %ENV = %ENV_ORIG;
     return { queries=>\@queries };
 }
 
