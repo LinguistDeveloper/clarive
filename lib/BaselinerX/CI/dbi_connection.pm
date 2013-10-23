@@ -59,6 +59,7 @@ sub dosql {
     for my $sql ( _array( $p{sql} ) ) {
         my @stmts = $p{split} ?  split( $p{split}, $sql) : ($sql);
         for my $st ( @stmts ) {
+            next if $st =~ /^\s*$/;
             my $ret = try {
                 $dbh->func( 1000000, 'dbms_output_enable' );
                 if( $p{mode} eq 'exec' ) {
