@@ -36,7 +36,7 @@ sub deploy_sql {
     
     for my $item ( _array( $items ) ) {
         my $file = _file( $job_dir, $item->path );
-        my $sql = $file->source;
+        my $sql = $file->slurp;
         $sql =~ s{--[^\n]*\r?\n}{\n}sg;
         my $ret = $db->dosql( sql => $sql, split => qr/;/, ignore => $config->{ignore} eq 'on' ? 1 : 0 );
         my $k=0;
