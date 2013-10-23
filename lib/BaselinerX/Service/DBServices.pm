@@ -35,6 +35,7 @@ sub deploy_sql {
     
     for my $item ( _array( $items ) ) {
         my $sql = $item->source;
+        $sql =~ s{--[^\n]*\r?\n}{\n}sg;
         my $ret = $db->dosql( sql => $sql, split => qr/;/, ignore => $config->{ignore} eq 'on' ? 1 : 0 );
         my $k=0;
         for my $st ( _array $ret->{queries} ) {
