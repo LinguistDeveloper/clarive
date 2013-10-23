@@ -6,6 +6,7 @@ params:
     relation: system
     type: 'listbox'    
     field_order: 12
+    height: 200
     section: 'details'
     get_method: 'get_revisions'    
     set_method: 'set_revisions'
@@ -28,7 +29,7 @@ params:
         readOnly: readonly,
         store: revision_store,
         layout: 'form',
-        height: 120,
+        height: meta.height || 200,
         //fieldLabel: _(meta.name_field),
         hideHeaders: true,
         style: 'margin-bottom: 15px',
