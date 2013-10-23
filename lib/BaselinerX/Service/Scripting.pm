@@ -37,6 +37,7 @@ sub run_local {
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
     my $stash = $c->stash;
+    my $fail_on_error = $config->{fail_on_error} // 1;
 
     my ($user,$home,$path,$args,$stdin) = @{ $config }{qw/user home path args stdin/};
     $args ||= [];
@@ -62,7 +63,9 @@ sub run_local {
     }
     my $r = { output=>$out, rc=>$rc, ret=>$ret };
     if( $rc ) {
-        $job->logger->error( _loc('Error running command %1', join ' ', @cmd), $r ); 
+        my $msg = _loc('Error running command %1', join ' ', @cmd);
+        $job->logger->error( $msg , $r ); 
+        _fail $msg if $fail_on_error; 
     } else {
         $job->logger->info( _loc('Finished command %1' , join ' ', @cmd ), $r ); 
     }
