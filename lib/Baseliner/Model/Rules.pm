@@ -529,6 +529,19 @@ register 'statement.var.set' => {
     },
 };
 
+register 'statement.var.set_to_ci' => {
+    text => 'SET VAR to CI', data => {},
+    type => 'let',
+    holds_children => 0, 
+    data => { variable=>'my_varname', from_code=>'', prepend=>'' },
+    dsl => sub { 
+        my ($self, $n, %p ) = @_;
+        sprintf(q{
+            $stash->{'%s'} = ci->new( '%s' . parse_vars( %s, $stash ) ); 
+        }, $n->{variable}, $n->{prepend}, $n->{from_code} || sprintf(q{$stash->{'%s'}},$n->{variable}) );
+    },
+};
+
 register 'statement.nature.block' => {
     text => 'APPLY NATURE', data => { nature=>'' },
     type => 'loop',
