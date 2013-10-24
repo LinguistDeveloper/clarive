@@ -2560,6 +2560,28 @@ Baseliner.MetaForm = Ext.extend( Ext.Panel, {
                 value: self.data[id]
             }, meta.field_attributes ));
         }
+        else if( meta.type == 'password' ) {
+            field = new Ext.form.TextField(Ext.apply({
+                fieldLabel: _( meta.label || id),
+                id: Ext.id(),
+                name: id,
+                submitValue: false,
+                inputType: 'password',
+                anchor: meta.anchor || '100%',
+                value: self.data[id]
+            }, meta.field_attributes ));
+        }
+        else if( meta.type == 'textarea' ) {
+            field = new Ext.form.TextArea(Ext.apply({
+                fieldLabel: _( meta.label || id),
+                id: Ext.id(),
+                name: id,
+                submitValue: false,
+                height: '80',
+                anchor: meta.anchor || '100%',
+                value: self.data[id]
+            }, meta.field_attributes ));
+        }
         else if( meta.type == 'ci' ) {
             var bp = { _whoami:'MetaForm', bl: bl };
             if( meta.role && meta.role != 'CI' ) bp.role = meta.role;
