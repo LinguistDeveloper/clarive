@@ -278,6 +278,11 @@ Baseliner.CodeMirror = Ext.extend( Ext.form.TextArea, {
             // self.editor.setSize( '100%', fcode.getEl().getHeight() );
         });
     },
+    get_save_data : function(){
+        return this.editor 
+            ? this.editor.getValue() 
+            : Baseliner.CodeMirror.superclass.getValue.call(this);
+    },
     getValue : function(){
         return this.editor 
             ? this.editor.getValue() 
@@ -346,7 +351,13 @@ Baseliner.AceEditor = Ext.extend( Ext.BoxComponent, {
             self.fireEvent('aftereditor');
         });
         self.on('resize', function(){
-            self.editor.resize();
+            //if( !self.height_orig ) self.height_orig = self.el.getHeight();
+            if( self.editor && self.editor.resize ) {
+                //var h = self.ownerCt.getHeight();
+                //var curr_h = self.el.getHeight();
+                //self.el.setHeight( curr_h + ( h - self.height_orig ) );
+                self.editor.resize();
+            }
         });
     },
     create_editor : function(){
@@ -386,6 +397,9 @@ Baseliner.AceEditor = Ext.extend( Ext.BoxComponent, {
         });
     },
     getValue : function(){
+        return this.editor.getValue();
+    },
+    get_save_data : function(){
         return this.editor.getValue();
     },
     setValue : function(v){
