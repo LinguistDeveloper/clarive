@@ -435,16 +435,18 @@ register 'statement.delete.key' => {
 };
 
 register 'statement.foreach' => {
-    text => 'FOREACH stash[ variable ]', type => 'for', data => { variable=>'' },
+    text => 'FOREACH stash[ variable ]', type => 'for', 
     type => 'loop',
+    data => { variable=>'stash_var', local_var=>'value' },
     dsl => sub { 
         my ($self, $n, %p ) = @_;
         sprintf(q{
             foreach my $item ( _array( $stash->{'%s'} ) ) {
+                local $stash->{'%s'} = $item;
                 %s
             }
             
-        }, $n->{variable}, $self->dsl_build( $n->{children}, %p ) );
+        }, $n->{variable}, $n->{local_var} // 'value', $self->dsl_build( $n->{children}, %p ) );
     },
 };
 
