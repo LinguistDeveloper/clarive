@@ -29,6 +29,12 @@ register 'action.admin.users' => {
     name => 'User Admin',
 };
 
+register 'event.user.create' => {
+    text => 'New user created: %2',
+    description => 'User posted a comment',
+    vars => ['username', 'realname', 'email']
+};
+
 sub preferences : Local {
     my ($self, $c) = @_;
     my @config = $c->model('Registry')->search_for(key=>'config', preference=>1 );
@@ -298,7 +304,8 @@ sub update : Local {
                                     password	=> BaselinerX::CI::user->encrypt_password( $p->{username}, $p->{pass} ),
                                     alias	=> $p->{alias},
                                     email	=> $p->{email},
-                                    phone	=> $p->{phone}
+                                    phone	=> $p->{phone},
+                                    active  => '1'
                                 }
                             );
                         };
@@ -325,7 +332,8 @@ sub update : Local {
                     }
                     $user->alias( $p->{alias} ) if $p->{alias};
                     $user->email( $p->{email} ) if $p->{email};
-                    $user->phone( $p->{phone} ) if $p->{phone};                      
+                    $user->phone( $p->{phone} ) if $p->{phone};                 
+                    $user->phone( $p->{active} ) if $p->{active};                 
                     $user->update();                    
                 }
                 
