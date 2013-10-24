@@ -758,7 +758,7 @@ Baseliner.store.CI = function(c) {
         remoteSort: true,
         autoLoad: true,
         totalProperty: 'totalCount', 
-        fields: ['mid','item', 'name','collection','class','classname', 'versionid', 'description', 'properties', 'pretty_properties','data', 'icon'] 
+        fields: ['mid','item', 'name','collection','class','classname', 'versionid', 'description', 'properties', 'pretty_properties','data', 'icon','moniker'] 
      }, c));
 };
 Ext.extend( Baseliner.store.CI, Baseliner.JsonStore );
@@ -876,7 +876,7 @@ Baseliner.ci_box = function(c) {
     var with_vars = c.with_vars; delete c.with_vars;
     var from_mid = c.from_mid; delete c.from_mid;
     var to_mid = c.to_mid; delete c.to_mid;
-    var cl = c['class']; delete c['class']; // IE - class is syntax errors due to reserved word
+    var cl = c['class'] || c['isa'] || c['classname']; delete c['class']; // IE - class is syntax errors due to reserved word
     var bp = {};
     if( cl !=undefined ) bp['class'] = cl;
     if( from_mid != undefined ) bp.from_mid = from_mid;
