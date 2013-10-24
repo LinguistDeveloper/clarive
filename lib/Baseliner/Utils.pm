@@ -740,6 +740,7 @@ sub _name_to_id {
     $name =~ s{_+}{_}g;
     $name =~ s{_$}{}g;
     $name =~ s{^_}{}g;
+    $name =~ s/[^[:ascii:]]+//g;
     return $name;
 }
 
