@@ -68,7 +68,6 @@ use Exporter::Tidy default => [
     _trim
     _array
     ns_split
-    domain_match
     to_pages
     to_base64
     from_base64
@@ -201,13 +200,6 @@ sub ns_split {
     else {
         return ( '', $ns );  
     }
-}
-
-# check if search is part of domain
-sub domain_match {
-    my ( $domain, $search ) = @_;
-    return 1 if $domain eq $search;
-    return $domain =~ m{\.\Q$search\E$}; 
 }
 
 ## base standard utilities subs
