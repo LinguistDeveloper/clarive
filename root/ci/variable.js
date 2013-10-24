@@ -15,10 +15,13 @@
         creating_field = true;
         var_default.removeAll();
         if( field ) {
-            if( Ext.isFunction( field.getValue ) ) 
+            if( Ext.isFunction( field.get_save_data ) ) {
+                data[ 'var_default' ] = field.get_save_data();
+            } else if( Ext.isFunction( field.getValue ) ) {
                 data[ 'var_default' ] = field.getValue();
-            else 
+            } else {
                 delete data['var_default'];
+            }
         }
         // create field
         meta = Ext.apply({
@@ -67,6 +70,12 @@
             var_ci_mandatory.disable(); var_ci_mandatory.hide();
             var_ci_multiple.disable(); var_ci_multiple.hide();
             combo_opts.enable(); combo_opts.show();
+        } else if( ty == 'array' ) {
+            ci_class.disable(); ci_class.hide();
+            ci_role.disable(); ci_role.hide();
+            var_ci_mandatory.disable(); var_ci_mandatory.hide();
+            var_ci_multiple.disable(); var_ci_multiple.hide();
+            combo_opts.disable(); combo_opts.hide();
         } else {
             ci_class.disable(); ci_class.hide();
             ci_role.disable(); ci_role.hide();
@@ -91,7 +100,7 @@
         name: 'var_type',
         allowBlank: false,
         value: params.rec.var_type,
-        data: ['value','combo','ci']
+        data: ['value','combo','array','ci']
     });
     
     var var_default = new Ext.Container({ fieldLabel: _('Default') });

@@ -2595,6 +2595,17 @@ Baseliner.MetaForm = Ext.extend( Ext.Panel, {
                 data: meta.options 
             }, meta.field_attributes ));
         }
+        else if( meta.type == 'array' ) {
+            var vv = self.data[id];
+            field = new Baseliner.ArrayGrid({ 
+                height: 150,
+                fieldLabel: _( meta.label || id),
+                name: id,
+                value: vv || [],
+                description: '',
+                default_value:'???' 
+            }); 
+        }
         if( field ) {
             field.on('blur', function(){
                 self.fireEvent('field_changed', self, field );
@@ -2684,14 +2695,9 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
         var self = this;
         if( !self.data ) {
             self.data = {};
-            self.json = '{}';
-        } else if( Ext.isString(self.data) ) {
-            self.json = self.data;
-            self.data = Ext.decode( self.json );
-        } else if( Ext.isObject(self.data) ) {
-            self.json = Ext.encode( self.data ); 
-        } else {
-            Baseliner.error( 'VariableForm', _('Invalid data type') );
+        } else if( !Ext.isObject(self.data) ) {
+            Baseliner.error( 'VariableForm', _('Invalid or corrupt data for variables') );
+            self.data = {};
         }
         self.vars_cache = {};
         self.store_vars = new Baseliner.store.CI({ baseParams: { role:'Variable', with_data: 1, order_by:'lower(name)' } });
@@ -2823,8 +2829,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
     },
     get_save_data : function(bl){
         var self = this;
-        if( self.data === undefined ) return {};
-        return Ext.encode( self.data );
+        return self.getData();
     },
     var_to_meta : function( ci, bl ){
         var self = this;
