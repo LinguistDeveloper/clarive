@@ -156,48 +156,6 @@ sub grant_role {
     return 1 if ref $row;
 }
 
-=head2 deny_role  username=>Str, role=>Str, [ ns=>Str, bl=>Str ]
-
-Takes a role away (revoke) from user. 
-
-=cut
-sub deny_role {
-    my ($self, %p ) = @_;
-
-    my $role = Baseliner->model('Baseliner::BaliRole')->search({ role=>$p{role} })->first;
-
-    die _loc( 'Role %1 not found', $p{role} ) unless ref $role;
-
-    my $deniable = Baseliner->model('Baseliner::BaliRoleuser')->search({
-        username => $p{username},
-        id_role => $role->id,
-    });
-
-    die _loc( 'User %1 does not have role %2', $p{username}, $p{role} ) unless ref $role;
-
-    my $denied;
-    while( my $row = $deniable->next ) {
-        if( $p{ns} && !$p{bl} ) {
-            $row->delete if ns_match( $row->ns, $p{ns} );
-            $denied++; 
-        }
-        elsif( ! $p{ns} && $p{bl} ) {
-            $row->delete if $row->bl eq $p{bl};
-            $denied++; 
-        }
-        elsif( $p{ns} && $p{bl} ) {
-            $row->delete
-                if ( $row->bl eq $p{bl} && ns_match( $row->ns, $p{ns} ) );
-            $denied++; 
-        }
-        else {
-            $row->delete;
-            $denied++; 
-        }
-    }
-    return $denied;
-}
-
 =head2 user_address_for_action username=>Str, action=>Str, bl=>Str
 
 Returns a list of address to notify for a user and an action
@@ -788,13 +746,6 @@ sub list {
         push @list,
             # map { $p{action} ? $_->{username} : $_->{action} }
             map { $p{action} ? ( $role->{mailbox} ? split ",",$role->{mailbox} : $_->{username} ) : $_->{action} }
-            
-            ####
-            # Ricardo 2011/11/03 ... no hace falta quitar los ns.  Ya están filtrados en la query
-            #
-            #grep { $p{username} ? 1 : $ns eq 'any' || $ns eq '/' ? 1 : ns_match( $_->{ns}, $ns) }
-            #####
-            
             _array( $data );
     }
 
