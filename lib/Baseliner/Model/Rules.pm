@@ -435,7 +435,7 @@ register 'statement.delete.key' => {
 };
 
 register 'statement.foreach' => {
-    text => 'FOREACH stash[ variable ]', type => 'for', 
+    text => 'FOREACH stash[ variable ]',
     type => 'loop',
     data => { variable=>'stash_var', local_var=>'value' },
     dsl => sub { 
@@ -447,6 +447,22 @@ register 'statement.foreach' => {
             }
             
         }, $n->{variable}, $n->{local_var} // 'value', $self->dsl_build( $n->{children}, %p ) );
+    },
+};
+
+register 'statement.foreach.split' => {
+    text => 'FOREACH SPLIT /re/', 
+    type => 'loop',
+    data => { split=>',', variable=>'stash_var', local_var=>'value' },
+    dsl => sub { 
+        my ($self, $n, %p ) = @_;
+        sprintf(q{
+            foreach my $item ( split _regex('%s'), $stash->{'%s'} ) {
+                local $stash->{'%s'} = $item;
+                %s
+            }
+            
+        }, $n->{split} // ',', $n->{variable}, $n->{local_var} // 'value', $self->dsl_build( $n->{children}, %p ) );
     },
 };
 
