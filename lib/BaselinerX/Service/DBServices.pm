@@ -22,8 +22,10 @@ sub deploy_sql {
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
     my $stash = $c->stash;
+    my $job_dir = $stash->{job_dir};
     my $items = $stash->{nature_items} // $stash->{items};
     my $db = _ci( $config->{db} );
+    my $split = $config->{split} // 1;
     
     $stash->{_db_transaction_count} //= 0;
     my $tran_cnt = $stash->{_db_transaction_count} + 1;
@@ -34,8 +36,10 @@ sub deploy_sql {
     }
     
     for my $item ( _array( $items ) ) {
-        my $sql = $item->source;
-        my $ret = $db->dosql( sql => $sql, split => qr/;/, ignore => $config->{ignore} eq 'on' ? 1 : 0 );
+        my $file = _file( $job_dir, $item->path );
+        my $sql = $file->slurp;
+        $sql =~ s{--[^\n]*\r?\n}{\n}sg;
+        my $ret = $db->dosql( sql => $sql, mode=>'exec', split => qr/;/, ignore => $config->{ignore} eq 'on' ? 1 : 0 );
         my $k=0;
         for my $st ( _array $ret->{queries} ) {
             $k++;

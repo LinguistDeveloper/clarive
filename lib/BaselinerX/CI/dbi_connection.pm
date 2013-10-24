@@ -9,6 +9,7 @@ has_ci 'server';
 has data_source => qw(is rw isa Any);
 has user        => qw(is rw isa Any);
 has password    => qw(is rw isa Any);
+has envvars     => qw(is rw isa HashRef), default=>sub{ +{} };
 has options     => qw(is rw isa Any), default=>sub{ +{} };
 
 has _connection => qw(is rw isa Any);
@@ -52,24 +53,48 @@ sub rollback { $_[0]->connect->rollback }
 
 sub dosql {
 	my ( $self, %p ) = @_;
+    my %ENV_ORIG = %ENV;
+    for my $env_key ( keys %{ $self->envvars || {} } ) {
+        my $v = $self->envvars->{ $env_key };
+        next if ref $v;
+        $ENV{ $env_key } = $v;
+    }
     my $db = $self->connect;
+    my $dbh = $db->dbh;
     my $split = $p{split};
     my @queries;
     for my $sql ( _array( $p{sql} ) ) {
         my @stmts = $p{split} ?  split( $p{split}, $sql) : ($sql);
         for my $st ( @stmts ) {
-            _debug "Running sql $st against the database";
+            next if $st =~ /^\s*$/;
             my $ret = try {
-                my $d = $db->query($st);
-                { sql=>$st, rc=>0, err=>'', ret=>$d };
+                $dbh->func( 1000000, 'dbms_output_enable' );
+                if( $p{mode} eq 'exec' ) {
+                    _debug "Running sql $st against the database (mode $p{mode})", $st;
+                    $db->query( q{BEGIN EXECUTE IMMEDIATE(?); END;}, $st );
+                } elsif( $p{mode} eq 'plsql' ) {
+                    $st = qq{begin\n$st;\nend;};
+                    _debug "Running sql $st against the database (mode $p{mode})", $st;
+                    $dbh->do( $st ); 
+                } else {
+                    _debug "Running sql $st against the database (mode $p{mode})", $st;
+                    $dbh->do( $st ); 
+                }
+                my @ret = $dbh->func( 'dbms_output_get' );
+                { sql=>$st, rc=>0, err=>'', ret=>join('', @ret) };
             } catch {
                 my $err = shift;
-                _fail _loc 'Database error: %1', $db->error unless $p{ignore};
+                my @ret = $dbh->func( 'dbms_output_get' );
+                %ENV = %ENV_ORIG;
+                my $msg = _loc 'Database error: %1 %2', $db->error, $err;
+                _error( $msg, "SQL:\n$st\n\n$msg\n\n" . join('',@ret) );
+                _fail _loc 'SQL Error' unless $p{ignore}; 
                 { sql=>$st, rc=>1, err=>$db->error, catch=>$err, ret=>'' };
             };
             push @queries, $ret;
         }
     }
+    %ENV = %ENV_ORIG;
     return { queries=>\@queries };
 }
 

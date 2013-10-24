@@ -2549,7 +2549,7 @@ Baseliner.MetaForm = Ext.extend( Ext.Panel, {
         var self = this;
         var field;
         var bl = meta.bl || self.bl;
-        var id = Baseliner.name_to_id( meta.id || meta.label );
+        var id = meta.id || meta.label; //Baseliner.name_to_id( meta.id || meta.label );
         if( !meta.type || meta.type == 'value' ) {
             field = new Ext.form.TextField(Ext.apply({
                 fieldLabel: _( meta.label || id),
@@ -2694,7 +2694,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
             Baseliner.error( 'VariableForm', _('Invalid data type') );
         }
         self.vars_cache = {};
-        self.store_vars = new Baseliner.store.CI({ baseParams: { role:'Variable', with_data: 1, order_by:'name' } });
+        self.store_vars = new Baseliner.store.CI({ baseParams: { role:'Variable', with_data: 1, order_by:'lower(name)' } });
         self.combo_vars = new Ext.form.ComboBox({ 
                width: 350,
                submitValue: false,
