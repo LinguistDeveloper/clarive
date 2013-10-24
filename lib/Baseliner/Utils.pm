@@ -106,6 +106,7 @@ use Exporter::Tidy default => [
     _any
     _ixhash
     _package_is_loaded
+    _regex
 )],
 other => [qw(
     _load_yaml_from_comment
@@ -222,6 +223,17 @@ sub slashSingle {
 sub _unique {
     return () unless @_ > 0;
     keys %{{ map {$_=>1} grep { defined } @_ }};
+}
+
+# detect regex auto, use this instead of qr//
+sub _regex {
+    my ($s) = @_;
+    if( $s =~ m{^!!(.*)!!(\w*)$} ) {
+        my ($re,$opt)=($1,$2);
+        return eval "qr{$re}$opt";
+    } else {
+        return qr/$s/;
+    }
 }
 
 # used by job_stash serializer, safer than YAML
