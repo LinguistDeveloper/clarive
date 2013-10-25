@@ -566,8 +566,6 @@ sub store : Local {
     if( 1 || $p->{with_vars} ) {  # show variables always, with_vars deprecated
         my %vp = ( $p->{role} ? (role=>$p->{role}) : ($p->{classname} || $p->{class} || $p->{isa}) ? (classname=>$p->{class}||$p->{classname}) : () );
         
-        _warn \%vp;
-        
         my @vars = Baseliner::Role::CI->variables_like_me( %vp );
         push @data, map { 
             my $cn =  $_->var_ci_class ? 'BaselinerX::CI::'.$_->var_ci_class : $_->description;
