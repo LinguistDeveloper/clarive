@@ -1422,6 +1422,18 @@ sub _ci {
     return Baseliner::CI->new( @_ );
 }
 
+sub to_role_class {
+    my($cn)=@_;
+    return $cn if $cn =~ /::/;
+    return 'Baseliner::Role::CI::'.$cn;
+}
+
+sub to_ci_class {
+    my($cn)=@_;
+    return $cn if $cn =~ /::/;
+    return 'BaselinerX::CI::'.$cn;
+}
+
 sub _strip_last {
     my ($pattern, $str)=@_;
     my ($ret) = reverse ( split /$pattern/, $str );

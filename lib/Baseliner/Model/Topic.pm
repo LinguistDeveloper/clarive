@@ -796,7 +796,7 @@ sub get_system_fields {
                 font_weigth      => 'bold',
                 section          => 'head',
                 field_order_html => 1,
-                allowBlank       => 'false'
+                allowBlank       => \0
             }
         },
         {
@@ -809,7 +809,7 @@ sub get_system_fields {
                 html          => '/fields/templates/html/row_body.html',
                 field_order      => -8,
                 section          => 'body',
-                allowBlank       => 'true'
+                allowBlank       => \1
             }
         },
         {
@@ -821,7 +821,8 @@ sub get_system_fields {
                 js          => $pathJS . 'field_category.js',
                 field_order => -2,
                 section     => 'body',
-                relation    => 'categories'
+                relation    => 'categories',
+                allowBlank       => \0
             }
         },
         {
@@ -837,6 +838,7 @@ sub get_system_fields {
                 section       => 'body',
                 relation      => 'status',
                 framed        => 1,
+                allowBlank    => \0
             }
         },
         {
@@ -1126,6 +1128,7 @@ sub get_data {
         
         my %rel_fields = map { $_->{id_field} => 1  } grep { defined $_->{relation} && $_->{relation} eq 'system' } _array( $meta );
         my %method_fields = map { $_->{id_field} => $_->{get_method}  } grep { $_->{get_method} } _array( $meta );
+        my %metadata = map { $_->{id_field} => $_  } _array( $meta );
 
         my @rels = DB->BaliMasterRel->search({ from_mid=>$topic_mid })->hashref->all;
         for my $rel ( @rels ) {
@@ -1148,7 +1151,9 @@ sub get_data {
         push @custom_fields, map { map { $_->{id_field} } _array $_->{fields}; } grep { defined $_->{type} && $_->{type} eq 'form' } _array($meta);
 
         for my $fi (@custom_fields){
-            $data->{ $fi } = try { _load($custom_data{$fi}) } catch { $custom_data{$fi} };
+            $data->{ $fi } = $metadata{$fi}{as_string} 
+                ? $custom_data{$fi} 
+                : try { _load($custom_data{$fi}) } catch { $custom_data{$fi} };
         }
         Baseliner->cache_set( $cache_key, $data );
     }

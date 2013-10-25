@@ -1,6 +1,6 @@
 package Baseliner::Role::CI::ApplicationServer;
 use Moose::Role;
-with 'Baseliner::Role::CI';
+with 'Baseliner::Role::CI::Server';
 
 sub icon { '/static/images/ci/appserver.png' }
 

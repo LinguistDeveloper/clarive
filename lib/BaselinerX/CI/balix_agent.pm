@@ -107,8 +107,19 @@ method get_dir( :$local, :$remote, :$group='', :$files=undef, :$user=$self->user
     return $self->tuple;  
 }
 
+method is_remote_dir( $dir ) {
+    return $self->_execute( 'ls', $dir );
+}
+
 # TODO data parameter support
 method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
+    if( my $remote_dir = ''. _file($remote)->dir ) {
+        my ($rc,$ret) = $self->is_remote_dir($remote_dir);
+        _fail _loc("balix: can't send file: could not find remote dir `%1` (rc: %2)", $remote_dir, $rc)
+            if $rc;
+    } else {
+        _fail _loc "balix: can't send file: missing remote dir in `%1`", $remote;
+    }
     $self->_send_file( $local, $remote );
     if( $user ) {
         $self->_execute( 'chown', "${user}:${group}", $remote );

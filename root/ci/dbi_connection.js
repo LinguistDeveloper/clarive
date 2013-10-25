@@ -19,7 +19,7 @@
        { xtype:'tabpanel', height: 300, fieldLabel: _('Configuration'), activeTab:0, items:[
            new Baseliner.DataEditor({ name:'parameters', title: _('Driver Parameters'), 
                hide_save: true, hide_cancel: true,
-               data: data.parameters || {} }),
+               data: data.parameters || { AutoCommit: 0, RaiseError: 1 } }),
            new Baseliner.DataEditor({ name:'envvars', title: _('Environment Variables'), 
                hide_save: true, hide_cancel: true,
                data: data.envvars || {} })

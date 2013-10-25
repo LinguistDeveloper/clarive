@@ -34,9 +34,11 @@
             'strip',
             'keep'
         ]}),
-        new Baseliner.ComboSingle({ fieldLabel: _('Drop Mode'), name:'drop_mode', value: params.data.drop_mode || 'drop', data: [
+        new Baseliner.ComboSingle({ fieldLabel: _('Exists Action'), name:'exists_action', value: params.data.exists_action || 'drop', data: [
             'drop',
-            'no-drop'
+            'skip',
+            'fail',
+            'ignore'
         ]}),
         { xtype:'tabpanel', fieldLabel: _('Filters'), height: 200, activeTab:0, items:[
             new Baseliner.ArrayGrid({ 
