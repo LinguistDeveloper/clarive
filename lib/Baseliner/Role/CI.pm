@@ -885,6 +885,7 @@ sub variables_like_me {
             @final = grep {
                 defined $_->var_ci_role
                     && ( $_->var_ci_role eq $role 
+                        || $consumers{ Util->to_ci_class($_->var_ci_class) }
                         || $consumers{ Util->to_role_class( $_->var_ci_role ) } )
             } @vars;
         } else {

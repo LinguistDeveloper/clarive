@@ -1422,6 +1422,16 @@ sub _ci {
     return Baseliner::CI->new( @_ );
 }
 
+sub to_base_class {
+    my($cn)=@_;
+    $cn = ref $cn if ref $cn;
+    if( $cn =~ /^.+::(.+?)$/ ) {
+        return $1;
+    } else {
+        return $cn;
+    }
+}
+
 sub to_role_class {
     my($cn)=@_;
     return $cn if $cn =~ /::/;

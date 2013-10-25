@@ -210,7 +210,7 @@ sub tree_objects {
     if( ! $collection ) {
         if( ref $class eq 'ARRAY' ) {
             $collection = { -in=>[ map { 
-                my $coll= $_->collection;
+                my $coll= $_->can('collection') ? $_->collection : Util->to_base_class($_);
                 $class_coll{ $coll } = $_ ; # for later decoding it from a table
                 $coll } @$class ] };
         } 
