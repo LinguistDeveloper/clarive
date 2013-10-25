@@ -114,15 +114,26 @@ sub dosql {
             : $p{split_mode} eq 'auto' ? split( /;(?=(?:[^'"]|'[^']*'|"[^"]*")*$)/, $sql)  
             # manual - user defined split
             : split( $p{split}, ($sql) );
-        for my $st ( @stmts ) {
+        STMT: for my $st ( @stmts ) {
             next if $st =~ /^\s*$/;  # empty ? 
-            my @drops;
-            if( $p{drop_mode} eq 'drop' ) {
+            my (@drops,@skips);
+            if( $p{exists_action} eq 'drop' ) {
                 @drops =  $self->gen_drop( $st );
                 for my $st_drop ( @drops ) {
                     _log "Running Drop Statement: $st_drop";
                     try { $dbh->do( $st_drop ); }
                     catch { _error "AUTO DROP failed, but ignored.", shift() };
+                }
+            } elsif( $p{exists_action} =~ /skip|ignore/ ) {
+                @skips =  $self->gen_drop( $st );
+                if( @skips ) {
+                    _log "SQL OBJECT ALREDY EXISTS (action: $p{exists_action}): $st";
+                    next STMT if $p{exists_action} eq 'skip';
+                }
+            } elsif( $p{exists_action} eq 'fail' ) {
+                @skips =  $self->gen_drop( $st );
+                if( @skips ) {
+                    _fail "SQL OBJECT ALREADY EXISTS (action: fail): $st"
                 }
             }
             my $ret = try {
@@ -138,7 +149,7 @@ sub dosql {
                     $dbh->do( $st ); 
                 }
                 my @ret = $dbh->func( 'dbms_output_get' );
-                { sql=>$st, rc=>0, err=>'', ret=>join('', @ret), drops=>join("\n",@drops), mode=>$p{mode} };
+                { sql=>$st, rc=>0, err=>'', ret=>join('', @ret), skips=>join("\n",@skips), drops=>join("\n",@drops), mode=>$p{mode} };
             } catch {
                 my $err = shift;
                 my @ret = $dbh->func( 'dbms_output_get' );
@@ -146,7 +157,7 @@ sub dosql {
                 my $msg = _loc 'Database error: %1 %2', $db->error, $err;
                 my @errlog = ( $msg, "SQL:\n$st\n\n$msg\n\n" . join('',@ret) );
                 _log( @errlog );
-                { sql=>$st, rc=>1, err=>$db->error, catch=>$err, ret=>join('', @ret), drops=>join("\n",@drops), mode=>$p{mode} };
+                { sql=>$st, rc=>1, err=>$db->error, catch=>$err, ret=>join('', @ret), skips=>join("\n",@skips), drops=>join("\n",@drops), mode=>$p{mode} };
             };
             push @queries, $ret;
         }

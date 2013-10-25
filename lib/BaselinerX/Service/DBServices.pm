@@ -19,18 +19,18 @@ sub deploy_sql {
     my ( $self, $c, $config ) = @_;
     _fail 'Missing db connection' unless length $config->{db};
     
-    my $job        = $c->stash->{job};
-    my $log        = $job->logger;
-    my $stash      = $c->stash;
-    my $job_dir    = $stash->{job_dir};
-    my $items      = $stash->{nature_items} // $stash->{items};
-    my $db         = ci->new( $config->{db} );
-    my $split      = $config->{split} // ';';
-    my $split_mode = $config->{split_mode} // 'auto';
-    my $comment    = $config->{comment} // 'strip';
-    my $mode       = $config->{mode} // 'direct';
-    my $drop_mode  = $config->{drop_mode} // 'drop';
-    my $error_mode = $config->{error_mode} // 'fail';
+    my $job          = $c->stash->{job};
+    my $log          = $job->logger;
+    my $stash        = $c->stash;
+    my $job_dir      = $stash->{job_dir};
+    my $items        = $stash->{nature_items} // $stash->{items};
+    my $db           = ci->new( $config->{db} );
+    my $split        = $config->{split} // ';';
+    my $split_mode   = $config->{split_mode} // 'auto';
+    my $comment      = $config->{comment} // 'strip';
+    my $mode         = $config->{mode} // 'direct';
+    my $exists_action = $config->{exists_action} // 'drop';
+    my $error_mode   = $config->{error_mode} // 'fail';
     my ($include_path,$exclude_path,$include_content,$exclude_content) = 
         @{ $config }{qw(include_path exclude_path include_content exclude_content)};
     
@@ -39,7 +39,7 @@ sub deploy_sql {
     
     if( $config->{transactional} ) {
         push @{ $stash->{_state_db_transactions} }, { id=>$tran_cnt, db=>$db };
-        $db->begin_work;
+        try { $db->begin_work } catch { _debug "BEGIN WORK WARNING: " . shift() };
     }
     
     ITEM: for my $item ( _array( $items ) ) {
@@ -48,10 +48,11 @@ sub deploy_sql {
         my $path = $item->path;
         my $file = _file( $job_dir, $path );
         my $flag;
-        for my $in ( _array( $include_path ) ) {
+        IN: for my $in ( _array( $include_path ) ) {
             $flag //= 0;
             if( $path =~ _regex($in) ) {
                 $flag =$in;
+                last IN;
             }
         }
         if( defined $flag && !$flag ) {
@@ -91,13 +92,13 @@ sub deploy_sql {
         
         # call connection do
         my $ret = $db->dosql(
-            sql        => $sql,
-            mode       => $mode,
-            split_mode => $split_mode,
-            comment    => $comment,
-            drop_mode  => $drop_mode,
-            split      => _regex($split),
-            error_mode => $error_mode,
+            sql          => $sql,
+            mode         => $mode,
+            split_mode   => $split_mode,
+            comment      => $comment,
+            exists_action => $exists_action,
+            split        => _regex($split),
+            error_mode   => $error_mode,
         );
         my $k=0;
         for my $st ( _array $ret->{queries} ) {
@@ -108,6 +109,9 @@ $st->{sql}
 
 =========| DROPS |=======
 $st->{drops}
+
+=========| SKIPS |=======
+$st->{skips}
 
 ========| ERR |=========
 $st->{err}
