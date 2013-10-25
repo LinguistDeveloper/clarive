@@ -85,7 +85,7 @@ register 'event.topic.modify' => {
         #scope => ['project', 'category', 'category_status', 'priority','baseline'],
         scope => ['project', 'category', 'category_status'],
     },
-
+    #Contemplar scope field y excluir por defecto.
 };
 
 
