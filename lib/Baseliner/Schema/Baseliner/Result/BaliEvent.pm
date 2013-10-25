@@ -30,7 +30,7 @@ __PACKAGE__->add_columns(
   "mid",
   {
     data_type => "number",
-    is_nullable => 0,
+    is_nullable => 1,
   },
   "event_key",
   { data_type => "varchar2", is_nullable => 0, size => 1024 },

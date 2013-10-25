@@ -174,18 +174,22 @@ sub event_new {
             my $rundata = $code->( $data );
             ref $rundata eq 'HASH' and $data = { %$data, %$rundata };
         }
-        if( !length $data->{mid} ) {
-            _debug 'event_new is missing mid parameter' ;
+        #if( !length $data->{mid} ) {
+        #    _debug 'event_new is missing mid parameter' ;
             #_throw 'event_new is missing mid parameter' ;
-        } else {
+        #} else {
             try {
-                my $ci = Baseliner::CI->new( $data->{mid} );
-                my $ci_data = $ci->load;
-                $data = { %$ci_data, ci=>$ci, %$data };
+                if( length $data->{mid} ){
+                    my $ci = Baseliner::CI->new( $data->{mid} );
+                    my $ci_data = $ci->load;
+                    $data = { %$ci_data, ci=>$ci, %$data };
+                }else{
+                    $data = { %$data };    
+                }
             } catch {
                 _error _loc("Error: Could not instantiate ci data for event: %1", shift() );
             };
-        }
+        #}
         # POST hooks
         $obj->data( $data );
         for my $hk ( $ev->after_hooks ) {
@@ -198,7 +202,7 @@ sub event_new {
         push @rule_log, map { $_->{when} => 'post-online'; $_ } _array( $rules_post->{rule_log} );
 
         # create the event on table
-        $event_create->( $data, @rule_log ) if defined $data->{mid};
+        $event_create->( $data, @rule_log ); #if defined $data->{mid};
         return $data; 
     } catch {  # no event if fails
         my $err = shift;

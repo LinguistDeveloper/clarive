@@ -164,7 +164,7 @@ sub save {
                 $row->bl( join( ',', Util->_array( $bl ) ) );
                 $row->name( $self->name );
                 $row->active( $self->active );
-                $row->versionid( $self->versionid );
+                $row->versionid( $self->versionid || '1' );
                 $row->moniker( $self->moniker );
                 $row->ns( $self->ns );
                 $row->ts( Util->_dt );
@@ -189,7 +189,7 @@ sub save {
                     moniker    => $self->moniker,
                     bl         => join( ',', Util->_array( $bl ) ),
                     active     => $self->active // 1,
-                    versionid  => $self->versionid // 1
+                    versionid  => $self->versionid || 1,
                 }
             );
             # update mid into CI

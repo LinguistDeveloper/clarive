@@ -85,7 +85,7 @@ register 'event.topic.modify' => {
         #scope => ['project', 'category', 'category_status', 'priority','baseline'],
         scope => ['project', 'category', 'category_status'],
     },
-
+    #Contemplar scope field y excluir por defecto.
 };
 
 
@@ -1128,6 +1128,7 @@ sub get_data {
         
         my %rel_fields = map { $_->{id_field} => 1  } grep { defined $_->{relation} && $_->{relation} eq 'system' } _array( $meta );
         my %method_fields = map { $_->{id_field} => $_->{get_method}  } grep { $_->{get_method} } _array( $meta );
+        my %metadata = map { $_->{id_field} => $_  } _array( $meta );
 
         my @rels = DB->BaliMasterRel->search({ from_mid=>$topic_mid })->hashref->all;
         for my $rel ( @rels ) {
@@ -1150,7 +1151,9 @@ sub get_data {
         push @custom_fields, map { map { $_->{id_field} } _array $_->{fields}; } grep { defined $_->{type} && $_->{type} eq 'form' } _array($meta);
 
         for my $fi (@custom_fields){
-            $data->{ $fi } = try { _load($custom_data{$fi}) } catch { $custom_data{$fi} };
+            $data->{ $fi } = $metadata{$fi}{as_string} 
+                ? $custom_data{$fi} 
+                : try { _load($custom_data{$fi}) } catch { $custom_data{$fi} };
         }
         Baseliner->cache_set( $cache_key, $data );
     }
