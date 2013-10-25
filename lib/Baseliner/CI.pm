@@ -3,7 +3,7 @@ use strict;
 use Baseliner::Utils;
 use Try::Tiny;
 
-our $_no_record = 0;
+our $_no_record = 1;
 our $no_throw_on_search = 1;
 
 our $scope = {};

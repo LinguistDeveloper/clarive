@@ -37,6 +37,8 @@ sub run_local {
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
     my $stash = $c->stash;
+    my $fail_on_error = $config->{fail_on_error} // 1;
+    my $output_files = $config->{output_files};
 
     my ($user,$home,$path,$args,$stdin) = @{ $config }{qw/user home path args stdin/};
     $args ||= [];
@@ -62,11 +64,29 @@ sub run_local {
     }
     my $r = { output=>$out, rc=>$rc, ret=>$ret };
     if( $rc ) {
-        $job->logger->error( _loc('Error running command %1', join ' ', @cmd), $r ); 
+        my $msg = _loc('Error running command %1', join ' ', @cmd);
+        $job->logger->error( $msg , $r ); 
+        $self->publish_output_files( 'error', $job, $output_files );
+        _fail $msg if $fail_on_error; 
     } else {
+        $self->publish_output_files( 'info', $job,$output_files );
         $job->logger->info( _loc('Finished command %1' , join ' ', @cmd ), $r ); 
     }
     return $r;
+}
+
+sub publish_output_files {
+    my ($self, $lev, $job, $output_files ) = @_;
+    for my $file ( _array( $output_files ) ) {
+        if( !-e $file ) {
+            _debug "Output file not found: $file";
+        } else {
+            my $f = _file($file);
+            my $body = $f->slurp;
+            my $bn = $f->basename;
+            $job->logger->$lev( "Output File: $bn", data => $body, data_name => $bn );
+        }
+    }
 }
 
 sub run_remote {

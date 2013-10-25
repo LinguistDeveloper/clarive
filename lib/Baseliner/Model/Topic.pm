@@ -1441,8 +1441,7 @@ sub save_data {
             $record->{topic_mid} = $topic->mid;
             $record->{name} = $_->{column};
             my $v = $data->{ $_ -> {name}};
-            if ($_->{data} || ref $v ){ ##Cuando el tipo de dato es CLOB
-                
+            if ($_->{data} || ref $v ){ ##Cuando el tipo de dato es CLOB 
             	$record->{value_clob} = ref $v ? _dump($v) : $v;
             	$record->{value} = ''; # cleanup old data, so that we read from clob 
             }else{
@@ -1456,12 +1455,12 @@ sub save_data {
             else{
                 my $modified = 0;
                 my $old_value;
-                if ($_->{data}){ ##Cuando el tipo de dato es CLOB
-                    if ($row->value ne $data->{$_->{name}}){
+                if ($_->{data} || ref $v){ ##Cuando el tipo de dato es CLOB
+                    if ($row->value ne $v && !ref $v){
                         $old_value = $row->value;
                         $modified = 1;    
                     }
-                    $row->value_clob($data->{$_->{name}});
+                    $row->value_clob( ref $v ? _dump($v) : $v );
                     $row->value(''); # cleanup old data in case of change data: 1
                 }else{
                     if ($row->value ne $data->{$_->{name}}){

@@ -582,6 +582,14 @@ Baseliner.ArrayGrid = Ext.extend( Ext.grid.EditorGridPanel, {
     getValue : function() {
         var self = this;
         return self.raw_value;
+    },
+    get_save_data : function(){
+        var self = this;
+        var arr = [];
+        self.store.each( function(r) {
+            arr.push( r.data[ self.name ] );
+        });
+        return arr;
     }
 });
 

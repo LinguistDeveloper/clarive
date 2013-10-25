@@ -435,16 +435,34 @@ register 'statement.delete.key' => {
 };
 
 register 'statement.foreach' => {
-    text => 'FOREACH stash[ variable ]', type => 'for', data => { variable=>'' },
+    text => 'FOREACH stash[ variable ]',
     type => 'loop',
+    data => { variable=>'stash_var', local_var=>'value' },
     dsl => sub { 
         my ($self, $n, %p ) = @_;
         sprintf(q{
             foreach my $item ( _array( $stash->{'%s'} ) ) {
+                local $stash->{'%s'} = $item;
                 %s
             }
             
-        }, $n->{variable}, $self->dsl_build( $n->{children}, %p ) );
+        }, $n->{variable}, $n->{local_var} // 'value', $self->dsl_build( $n->{children}, %p ) );
+    },
+};
+
+register 'statement.foreach.split' => {
+    text => 'FOREACH SPLIT /re/', 
+    type => 'loop',
+    data => { split=>',', variable=>'stash_var', local_var=>'value' },
+    dsl => sub { 
+        my ($self, $n, %p ) = @_;
+        sprintf(q{
+            foreach my $item ( split _regex('%s'), $stash->{'%s'} ) {
+                local $stash->{'%s'} = $item;
+                %s
+            }
+            
+        }, $n->{split} // ',', $n->{variable}, $n->{local_var} // 'value', $self->dsl_build( $n->{children}, %p ) );
     },
 };
 
@@ -508,6 +526,19 @@ register 'statement.var.set' => {
         sprintf(q{
             $stash->{'%s'} = parse_vars( q{%s}, $stash ); 
         }, $n->{variable}, $n->{value}, $self->dsl_build( $n->{children}, %p ) );
+    },
+};
+
+register 'statement.var.set_to_ci' => {
+    text => 'SET VAR to CI', data => {},
+    type => 'let',
+    holds_children => 0, 
+    data => { variable=>'my_varname', from_code=>'', prepend=>'' },
+    dsl => sub { 
+        my ($self, $n, %p ) = @_;
+        sprintf(q{
+            $stash->{'%s'} = ci->new( '%s' . parse_vars( %s, $stash ) ); 
+        }, $n->{variable}, $n->{prepend}, $n->{from_code} || sprintf(q{$stash->{'%s'}},$n->{variable}) );
     },
 };
 

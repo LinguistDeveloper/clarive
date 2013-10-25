@@ -10,7 +10,7 @@
     var variables = new Baseliner.VariableForm({
         name: 'variables',
         fieldLabel: _('Variables'),
-        height: 400,
+        height: 800,
         data: params.rec.variables
     });
     

@@ -67,9 +67,7 @@ use Exporter::Tidy default => [
     _load
     _trim
     _array
-    ns_match
     ns_split
-    domain_match
     to_pages
     to_base64
     from_base64
@@ -108,6 +106,7 @@ use Exporter::Tidy default => [
     _any
     _ixhash
     _package_is_loaded
+    _regex
 )],
 other => [qw(
     _load_yaml_from_comment
@@ -204,24 +203,6 @@ sub ns_split {
     }
 }
 
-# check if the first ns string contains the second
-sub ns_match {
-    my ( $ns, $search ) = @_;
-
-    my ( $domain, $item ) = ns_split( $ns );
-    my ( $search_domain, $search_item ) = ns_split( $search );
-    return 1 if domain_match( $domain , $search_domain ) && !$search_item;
-    return 1 if domain_match( $domain , $search_domain ) && $item eq $search_item;
-    return 1 if !$search_domain && $item eq $search_item;
-}
-
-# check if search is part of domain
-sub domain_match {
-    my ( $domain, $search ) = @_;
-    return 1 if $domain eq $search;
-    return $domain =~ m{\.\Q$search\E$}; 
-}
-
 ## base standard utilities subs
 sub slashFwd {
     (my $path = $_[0]) =~ s{\\}{/}g ;
@@ -242,6 +223,17 @@ sub slashSingle {
 sub _unique {
     return () unless @_ > 0;
     keys %{{ map {$_=>1} grep { defined } @_ }};
+}
+
+# detect regex auto, use this instead of qr//
+sub _regex {
+    my ($s) = @_;
+    if( $s =~ m{^!!(.*)!!(\w*)$} ) {
+        my ($re,$opt)=($1,$2);
+        return eval "qr{$re}$opt";
+    } else {
+        return qr/$s/;
+    }
 }
 
 # used by job_stash serializer, safer than YAML
@@ -740,6 +732,7 @@ sub _name_to_id {
     $name =~ s{_+}{_}g;
     $name =~ s{_$}{}g;
     $name =~ s{^_}{}g;
+    $name =~ s/[^[:ascii:]]+//g;
     return $name;
 }
 
@@ -1425,6 +1418,7 @@ sub _load_features {
 }
 
 sub _ci {
+    local $Baseliner::CI::_no_record = 1;
     return Baseliner::CI->new( @_ );
 }
 

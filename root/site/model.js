@@ -758,7 +758,7 @@ Baseliner.store.CI = function(c) {
         remoteSort: true,
         autoLoad: true,
         totalProperty: 'totalCount', 
-        fields: ['mid','item', 'name','collection','class','classname', 'versionid', 'description', 'properties', 'pretty_properties','data', 'icon'] 
+        fields: ['mid','item', 'name','collection','class','classname', 'versionid', 'description', 'properties', 'pretty_properties','data', 'icon','moniker'] 
      }, c));
 };
 Ext.extend( Baseliner.store.CI, Baseliner.JsonStore );
@@ -876,7 +876,7 @@ Baseliner.ci_box = function(c) {
     var with_vars = c.with_vars; delete c.with_vars;
     var from_mid = c.from_mid; delete c.from_mid;
     var to_mid = c.to_mid; delete c.to_mid;
-    var cl = c['class']; delete c['class']; // IE - class is syntax errors due to reserved word
+    var cl = c['class'] || c['isa'] || c['classname']; delete c['class']; // IE - class is syntax errors due to reserved word
     var bp = {};
     if( cl !=undefined ) bp['class'] = cl;
     if( from_mid != undefined ) bp.from_mid = from_mid;
@@ -2549,13 +2549,35 @@ Baseliner.MetaForm = Ext.extend( Ext.Panel, {
         var self = this;
         var field;
         var bl = meta.bl || self.bl;
-        var id = Baseliner.name_to_id( meta.id || meta.label );
+        var id = meta.id || meta.label; //Baseliner.name_to_id( meta.id || meta.label );
         if( !meta.type || meta.type == 'value' ) {
             field = new Ext.form.TextField(Ext.apply({
                 fieldLabel: _( meta.label || id),
                 id: Ext.id(),
                 name: id,
                 submitValue: false,
+                anchor: meta.anchor || '100%',
+                value: self.data[id]
+            }, meta.field_attributes ));
+        }
+        else if( meta.type == 'password' ) {
+            field = new Ext.form.TextField(Ext.apply({
+                fieldLabel: _( meta.label || id),
+                id: Ext.id(),
+                name: id,
+                submitValue: false,
+                inputType: 'password',
+                anchor: meta.anchor || '100%',
+                value: self.data[id]
+            }, meta.field_attributes ));
+        }
+        else if( meta.type == 'textarea' ) {
+            field = new Ext.form.TextArea(Ext.apply({
+                fieldLabel: _( meta.label || id),
+                id: Ext.id(),
+                name: id,
+                submitValue: false,
+                height: '80',
                 anchor: meta.anchor || '100%',
                 value: self.data[id]
             }, meta.field_attributes ));
@@ -2594,6 +2616,17 @@ Baseliner.MetaForm = Ext.extend( Ext.Panel, {
                 value: self.data[id],
                 data: meta.options 
             }, meta.field_attributes ));
+        }
+        else if( meta.type == 'array' ) {
+            var vv = self.data[id];
+            field = new Baseliner.ArrayGrid({ 
+                height: 150,
+                fieldLabel: _( meta.label || id),
+                name: id,
+                value: vv || [],
+                description: '',
+                default_value:'???' 
+            }); 
         }
         if( field ) {
             field.on('blur', function(){
@@ -2684,17 +2717,12 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
         var self = this;
         if( !self.data ) {
             self.data = {};
-            self.json = '{}';
-        } else if( Ext.isString(self.data) ) {
-            self.json = self.data;
-            self.data = Ext.decode( self.json );
-        } else if( Ext.isObject(self.data) ) {
-            self.json = Ext.encode( self.data ); 
-        } else {
-            Baseliner.error( 'VariableForm', _('Invalid data type') );
+        } else if( !Ext.isObject(self.data) ) {
+            Baseliner.error( 'VariableForm', _('Invalid or corrupt data for variables') );
+            self.data = {};
         }
         self.vars_cache = {};
-        self.store_vars = new Baseliner.store.CI({ baseParams: { role:'Variable', with_data: 1, order_by:'name' } });
+        self.store_vars = new Baseliner.store.CI({ baseParams: { role:'Variable', with_data: 1, order_by:'lower(name)' } });
         self.combo_vars = new Ext.form.ComboBox({ 
                width: 350,
                submitValue: false,
@@ -2823,8 +2851,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
     },
     get_save_data : function(bl){
         var self = this;
-        if( self.data === undefined ) return {};
-        return Ext.encode( self.data );
+        return self.getData();
     },
     var_to_meta : function( ci, bl ){
         var self = this;
