@@ -114,6 +114,8 @@ sub run_ship {
 
     for my $server ( split /,/, $config->{server} ) {
         $server = ci->new( $server ) unless ref $server;
+        $local_path = $server->parse_vars( $local_path );
+        $remote_path = $server->parse_vars( $remote_path );
         my $server_str = "$user\@".$server->name;
         _debug $stmt . " - Connecting to server " . $server_str;
         my $agent = $server->connect( user=>$user );

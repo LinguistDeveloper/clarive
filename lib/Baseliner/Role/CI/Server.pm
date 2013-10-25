@@ -14,5 +14,14 @@ has remote_temp => qw(is rw isa Any lazy 1), default => sub {
 has remote_perl => qw(is rw isa Str default perl);
 has remote_tar  => qw(is rw isa Str default tar);
 
+sub parse_vars {
+    my ($self,$str, %parameters) = @_;
+    my $wl_config = Baseliner->model('ConfigStore')->get('config.weblogic');
+    my $instance_parameters = $self->can('parameters') ? ( $self->parameters // {} ) : {};
+    my %vars = ( %$wl_config, %{ +{%$self} }, %$instance_parameters, %parameters );
+    return Util->parse_vars(\%vars,\%vars) unless length $str;
+    return Util->parse_vars( $str, \%vars );
+}
+
 1;
 
