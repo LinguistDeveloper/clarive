@@ -215,7 +215,7 @@ sub tree_objects {
                 $coll } @$class ] };
         } 
         elsif( $class ) {
-            $collection = $class->collection;
+            $collection = $class->can('collection') ? $class->collection : Util->to_base_class($class);
             %class_coll = ( $collection => $class );  # for later decoding it from a table
         }
         else {
