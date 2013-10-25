@@ -1449,6 +1449,13 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
                     p_style['padding-right'] = '10px';
                     var p_opts = { layout:'form', style: p_style, border: false, columnWidth: cw };
                     var p = new Ext.Container( p_opts );
+                    p.on('afterrender',function(){
+                        if(field.readonly){
+                            var mask = this.el.mask();
+                            mask.setStyle('opacity', 0);
+                            mask.setStyle('height', 5000);
+                        };            
+                    });
                     if( comp.items ) {
                         if( comp.on_submit ) on_submit_events.push( comp.on_submit );
                         p.add( comp.items ); 
