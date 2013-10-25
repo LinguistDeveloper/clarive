@@ -1440,6 +1440,7 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
                     var all_hidden = true;
                     Ext.each( comp, function(f){
                         if( f.hidden!=undefined && !f.hidden ) all_hidden = false;
+                        f.origin = 'custom';
                     });
                     var colspan =  field.colspan || self.form_columns;
                     var cw = field.colWidth || ( colspan / self.form_columns );
