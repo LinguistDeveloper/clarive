@@ -796,7 +796,7 @@ sub get_system_fields {
                 font_weigth      => 'bold',
                 section          => 'head',
                 field_order_html => 1,
-                allowBlank       => \0
+                allowBlank       => 'false'
             }
         },
         {
@@ -809,7 +809,7 @@ sub get_system_fields {
                 html          => '/fields/templates/html/row_body.html',
                 field_order      => -8,
                 section          => 'body',
-                allowBlank       => \1
+                allowBlank       => 'true'
             }
         },
         {
@@ -822,7 +822,7 @@ sub get_system_fields {
                 field_order => -2,
                 section     => 'body',
                 relation    => 'categories',
-                allowBlank       => \0
+                allowBlank       => 'false'
             }
         },
         {
@@ -838,7 +838,7 @@ sub get_system_fields {
                 section       => 'body',
                 relation      => 'status',
                 framed        => 1,
-                allowBlank    => \0
+                allowBlank    => 'false'
             }
         },
         {
