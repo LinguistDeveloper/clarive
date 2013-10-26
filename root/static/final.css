@@ -63,8 +63,8 @@
     font-size: 8px;
     text-transform:uppercase;
     font-family:Helvetica Neue,Verdana,Helvetica,Arial,sans-serif;
-    color:#555;
 }
+
 
 .bali-moniker {
     background-color: #f0f9f2;
@@ -127,7 +127,7 @@
 .status-html {
       text-transform: uppercase;
       font-size: 10px;
-      font-weight: bold; 
+      font-weight: bold !important;  
       background-color: #eee; 
       text-align: center
 }
@@ -229,4 +229,8 @@
      -moz-border-radius: 3px;
           border-radius: 3px;
   color: #FFFFFF !important;
+}
+
+.bali-td-special {
+
 }
