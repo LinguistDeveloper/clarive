@@ -77,10 +77,20 @@
             height: 70,
             hidden: true,
             enableKeyEvents: true,
-            fieldLabel: _('Description'),
             emptyText: _('A brief description of the status')
+            fieldLabel: _('Description'),
         });     
         
+        var bls = new Baseliner.ci_box({ 
+                    name:'bls', 
+                    hiddenName:'bls', 
+                    class:'BaselinerX::CI::bl', 
+                    allowBlank:false, 
+                    singleMode:false, 
+                    fieldLabel:_('BLs'), 
+//                    value: params.rec.bls, 
+                    force_set_value: true 
+        });
     
         var form_status = new Ext.FormPanel({
             frame: true,
@@ -146,7 +156,7 @@
                         {boxLabel: _('Final'), inputValue: 'F'}
                     ]
                 },
-                Baseliner.combo_baseline(),
+                bls,
                 { xtype:'textfield', name:'seq', fieldLabel:_('Position') },
                 { xtype:'checkbox', name:'frozen', boxLabel:_('Frozen') },
                 { xtype:'checkbox', name:'readonly', boxLabel:_('Readonly') },
@@ -185,7 +195,8 @@
     
     var btn_add_status = new Baseliner.Grid.Buttons.Add({    
         handler: function() {
-            add_edit_status();
+            //add_edit_status();
+            alert("Gestión de estados en CIs");
         }
     }); 
     
