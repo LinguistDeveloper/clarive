@@ -29,6 +29,7 @@ params:
         fieldLabel: _(meta.name_field),
         singleMode: true,
         hidden: meta ? (meta.hidden ? meta.hidden : false): true,
+        disabled: meta.readonly!=undefined ? meta.readonly : false,
         store: release_box_store
     });
 	
