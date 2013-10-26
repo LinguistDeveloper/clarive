@@ -32,8 +32,8 @@ params:
            singleMode: meta.single_mode,
            force_set_value: true,
            value: data[meta.id_field],
+           allowBlank: meta.allowBlank=='false' ? false : true,
            disabled: meta.readonly!=undefined ? meta.readonly : false,
-           allowBlank: meta.allowBlank==undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true ),
            showClass: meta.show_class==undefined ? false : meta.show_class
        }, ci) )
     ]

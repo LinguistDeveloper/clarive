@@ -2764,14 +2764,14 @@ Ext.apply(Ext.layout.FormLayout.prototype, {
     originalRenderItem: Ext.layout.FormLayout.prototype.originalRenderItem || Ext.layout.FormLayout.prototype.renderItem,
     renderItem: function(c, position, target){
         if ( c.fieldLabel != undefined ) {
-		    //c.fieldLabel = "(LA: " + c.labelAlign + ", RO:" + c.readOnly + ",DIS:" + c.disabled + ",AB:" + c.allowBlank + "= " + readonly + ") " + c.fieldLabel;
+		    //c.fieldLabel = "(SF: "+ c.system_force + ", LA: " + c.labelAlign + ", RO:" + c.readOnly + ",DIS:" + c.disabled + ",AB:" + c.allowBlank + "= " + readonly + ") " + c.fieldLabel;
             //if ( c.labelAlign != undefined && c.labelAlign == 'top') {
 			if ( c.origin == 'custom') {
                 c.labelSeparator = '';
                 var readonly = c.readOnly !=undefined ? c.readOnly:true;
                 readonly = readonly || c.disabled;
                 
-                //c.disabled = readonly;
+                if ( !c.system_force) c.disabled = readonly;
 
                 if (c && !c.rendered &&  c.fieldLabel && !c.allowBlank && c.allowBlank != undefined && !readonly ) {
                     c.fieldLabel = c.fieldLabel + " <span " +

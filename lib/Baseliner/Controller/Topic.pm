@@ -398,7 +398,9 @@ sub get_meta_permissions : Local {
                     $_->{readonly} = \0;
                     $_->{allowBlank} = 'true' unless $_->{id_field} eq 'title';
             } else {
-                if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action )){
+                my $has_action = $c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action );
+                # _log "Comprobando ".$write_action."= ".$has_action;
+                if ( $has_action ){
                     $_->{readonly} = \0;
                 }else{
                     $_->{readonly} = \1;    

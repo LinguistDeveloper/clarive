@@ -17,7 +17,6 @@ params:
     var meta = params.topic_meta;
     
     var allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
-    var readonly = meta.readonly == undefined ? true : meta.readonly;
     
     var revision_store = new Ext.data.SimpleStore({
         fields: ['mid','name','id']
@@ -26,14 +25,12 @@ params:
     var revision_grid = new Ext.grid.GridPanel({
         fieldLabel: _(meta.name_field),
         allowBlank: allow,
-        readOnly: readonly,
         store: revision_store,
         layout: 'form',
         height: meta.height || 200,
         //fieldLabel: _(meta.name_field),
         hideHeaders: true,
         style: 'margin-bottom: 15px',
-        //disabled: meta ? meta.readonly : true,
         viewConfig: {
             headersDisabled: true,
             enableRowBody: true,
@@ -54,17 +51,7 @@ params:
               }
           }
 
-        ],
-        listeners: {
-            'afterrender':function(){
-                var read_only = meta && meta.readonly ? meta.readonly : false;
-                if(read_only){
-                    var mask = this.el.mask();
-                    mask.setStyle('opacity', 0);
-                    mask.setStyle('height', 5000);
-                }
-            }
-        }        
+        ]        
     });
     
     // a hidden form field, needed for this to save data in a form
