@@ -77,7 +77,7 @@ Baseliner.topic_name = function(args) {
             mid = '#' + mid;
         else
 		    mid = '';
-        var cat_name = _(args.category_name); //Cambiarlo en un futuro por un contador de categorias
+        var cat_name = args.short_name ? _(args.category_name).replace( /[^A-Z]/g, '' ) : _(args.category_name); //Cambiarlo en un futuro por un contador de categorias
         if( cat_name )
             cat_name = cat_name + ' ';
         else

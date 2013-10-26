@@ -4,10 +4,10 @@ description: List of topics
 config: config.dashlet.topics
 url: /dashboard/list_topics
 html: /dashlets/topics.html
-
 -->
 <%perl>
     use Baseliner::Utils;
+    use Class::Date;
     my @topics = $c->stash->{topics};
 </%perl>
 
@@ -16,8 +16,8 @@ html: /dashlets/topics.html
         <table class="table table-bordered table-condensed dashboard">
             <thead>
                 <tr>
-                    <th colspan="3"><% _loc('Title') %></th>
-                    <th><% _loc('Category') %></th> 
+                    <th><% _loc('Name') %></th>
+                    <th><% _loc('Title') %></th>
                     <th><% _loc('Status') %></th>            
                     <th>Creado</th>
                 </tr>
@@ -25,18 +25,31 @@ html: /dashlets/topics.html
             <tbody>
 %foreach my $topic (_array @topics){
 % my $numcomment = $topic->{numcomment} ? " ($topic->{numcomment})" : '';
+% my $date = Util->ago(Class::Date->new($topic->{created_on}));
                 <tr>
-                    <td colspan='3'><b><a href="javascript:Baseliner.addNewTabComp('/topic/grid?query=<%$topic->{topic_mid}%>', _('Topics'));">
-                        <% #substr($topic->{title},0,30) . ( length( $topic->{title} ) > 30 and '...' ) %>
-                        <% $topic->{title} %>
-                      </a></b></td>
-                     <td>   <span class="bali-topic-status"><% "$topic->{category_name}" %></span> </td>
-                    <td><span class="bali-topic-status"><% $topic->{category_status_name} .  $numcomment%></span></td>
-                    <td><%$topic->{created_on}%></td>
+                    <td id="<%$topic->{topic_mid}%>"><% "$topic->{category_name}" %></td>
+    
+                    <script>
+                        var name = Baseliner.topic_name({ link: true,
+                            mid: '<%$topic->{topic_mid}%>', 
+                            size: '10',
+                            category_name: '<% "$topic->{category_name}" %>',
+                            category_color: '<% "$topic->{category_color}" %>',
+                            short_name: true
+                        });
+                        
+                        document.getElementById('<%$topic->{topic_mid}%>').innerHTML = name;
+                    </script>                    
+                    
+                    <td><% $topic->{title} %></td>
+                    
+                    <td class="status-html"><span><% $topic->{category_status_name} .  $numcomment%></span></td>
+                    <td><img  width=16 src="/user/avatar/<% $topic->{created_by} %>/image.png" /> <% $topic->{created_by}%>, <%$date%></td>
                 </tr>
 %}
             </tbody>
         </table>
     </div>
+
 
 
