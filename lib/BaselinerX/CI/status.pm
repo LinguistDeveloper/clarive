@@ -54,11 +54,11 @@ before save => sub {
     $self->id_status( $row->id );  
 };
     
-# after delete => sub {
-#     my ($self, $mid ) = @_;
-#     if( my $row = DB->BaliTopicStatus->find( $self->id_status ) ) {
-#         $row->delete;
-#     }
-# };
+after delete => sub {
+    my ($self, $mid ) = @_;
+    if( my $row = DB->BaliTopicStatus->find( $self->id_status ) ) {
+        $row->delete;
+    }
+};
 
 1;
