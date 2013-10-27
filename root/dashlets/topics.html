@@ -42,7 +42,7 @@ html: /dashlets/topics.html
                         document.getElementById('<%$topic->{topic_mid}%>').innerHTML = name;
                     </script>                    
                     
-                    <td class="title-html" ><% $topic->{title} %> est  djkfd ssssss sasdasd sadasdasd  werwerrew ewr</td>
+                    <td class="title-html" title="<% $topic->{title} %>" ><% $topic->{title} %></td>
                     <td class="status-html"><span><% $topic->{category_status_name} .  $numcomment%></span></td>
                     <td class="created-html"><img  width=16 src="/user/avatar/<% $topic->{created_by} %>/image.png" /> <% $topic->{created_by}%>, <%$date%></td>
                     
