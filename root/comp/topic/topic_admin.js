@@ -77,20 +77,10 @@
             height: 70,
             hidden: true,
             enableKeyEvents: true,
-            emptyText: _('A brief description of the status')
             fieldLabel: _('Description'),
+            emptyText: _('A brief description of the status')
         });     
         
-        var bls = new Baseliner.ci_box({ 
-                    name:'bls', 
-                    hiddenName:'bls', 
-                    class:'BaselinerX::CI::bl', 
-                    allowBlank:false, 
-                    singleMode:false, 
-                    fieldLabel:_('BLs'), 
-//                    value: params.rec.bls, 
-                    force_set_value: true 
-        });
     
         var form_status = new Ext.FormPanel({
             frame: true,
@@ -156,7 +146,7 @@
                         {boxLabel: _('Final'), inputValue: 'F'}
                     ]
                 },
-                bls,
+                Baseliner.combo_baseline(),
                 { xtype:'textfield', name:'seq', fieldLabel:_('Position') },
                 { xtype:'checkbox', name:'frozen', boxLabel:_('Frozen') },
                 { xtype:'checkbox', name:'readonly', boxLabel:_('Readonly') },
@@ -195,8 +185,7 @@
     
     var btn_add_status = new Baseliner.Grid.Buttons.Add({    
         handler: function() {
-            //add_edit_status();
-            alert("Gestión de estados en CIs");
+            add_edit_status();
         }
     }); 
     
@@ -297,7 +286,7 @@
         loadMask:'true',
         columns: [
             { hidden: true, dataIndex:'id' },
-            check_status_sm,
+            // check_status_sm,
             { header: _('Topics: Status'), dataIndex: 'name', width:100, sortable: true, renderer: render_status },
             { header: _('Description'), dataIndex: 'description', sortable: true },
             { header: _('Order'), width: 40, dataIndex: 'seq', sortable: true },
@@ -307,9 +296,9 @@
         autoSizeColumns: true,
         deferredRender:true,    
         tbar: [ 
-                btn_add_status,
-                btn_edit_status,
-                btn_delete_status,
+                // btn_add_status,
+                // btn_edit_status,
+                // btn_delete_status,
                 '->'
         ]
     }); 
