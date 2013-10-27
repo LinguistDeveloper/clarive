@@ -623,62 +623,30 @@ sub cs_menu {
 
     push @menu, $self->menu_related();
 
-    # if ( $bl_state ne '*') {
-    #     push @menu, {
-    #         text => 'Deploy',
-    #         eval => {
-    #             url            => '/comp/lifecycle/deploy.js',
-    #             title          => 'Deploy',
-    #             bl_to          => $bl_state,
-    #             status_to      => $id_status_from,                            # id?
-    #             status_to_name => $state_name,                            # name?
-    #             # bl_to          => 'IT',
-    #             # status_to      => 22,                            # id?
-    #             # status_to_name => _loc('Integracion'),                            # name?
-    #             job_type       => 'static'
-    #         },
-    #         icon => '/static/images/silk/arrow_right.gif'
-    #     };        
-    # }
-
     my ($deployable, $promotable, $demotable ) = ( {}, {}, {} );
     my $row = DB->BaliTopicCategories->find( $topic->{id_category} );
     if( $row->is_release ) {
-        my @chi = DB->BaliTopic->search({ rel_type=>'topic_topic', from_mid=>$topic->{mid}, },
-           { join=>['parents'] })->hashref->all;
-        
-        my ( @rel_deployable, @rel_promotable, @rel_demotable, @rel_menu_s, @rel_menu_p, @rel_menu_d );
-        my ( %menu_dep, %menu_pro, %menu_dem, %dep, %pro, %dem );
-        _debug( "Generando el menú para la release $topic->{mid} y el estado $id_status_from");
-        for my $chi_topic ( @chi ) {
-            my ($dep, $pro, $dem, $menu_s, $menu_p, $menu_d ) = $self->promotes_and_demotes( $c, $chi_topic, $bl_state, $state_name, $id_status_from );
-            map { push @{ $menu_dep{ $_->{eval}{status_to} } }, $_ } _array( $menu_s );
-            map { push @{ $menu_pro{ $_->{eval}{status_to} } }, $_ } _array( $menu_p );
-            map { push @{ $menu_dem{ $_->{eval}{status_to} } }, $_ } _array( $menu_d );
-            %dep = ( %dep, %$dep );
-            %pro = ( %pro, %$pro );
-            %dem = ( %dem, %$dem );
-        }
-        if( @chi ) {
-            # TODO intersect menus
-            #if( values( %menu_pro ) == @chi ) {
-                push @menu_s, map { (_array( $_ ))[0] } values %menu_dep;
-                $deployable = \%dep;
+        # my @chi = DB->BaliTopic->search({ rel_type=>'topic_topic', from_mid=>$topic->{mid}, },
+        #    { join=>['parents'] })->hashref->all;
+        my @chi;
 
-                push @menu_p, map { (_array( $_ ))[0] } values %menu_pro;
-                $promotable = \%pro;
-            #}
-            #if( values( %menu_dem ) == @chi ) {
-                push @menu_d, map { (_array( $_ ))[0] } values %menu_dem;
-                $demotable = \%dem;
-            #}
+        for ( ci->new($topic->{mid})->children( isa => 'topic') ) {
+            push @chi, $_ if DB->BaliTopicCategories->find($_->{id_category})->is_changeset
+        };
+        
+        if( @chi ) {
+           my ($menu_s, $menu_p, $menu_d );
+           ($deployable, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) = $self->promotes_and_demotes( $c, $chi[0], $bl_state, $state_name );
+           push @menu_s, _array( $menu_s );
+           push @menu_p, _array( $menu_p );
+           push @menu_d, _array( $menu_d );
         }
     } else {
        my ($menu_s, $menu_p, $menu_d );
        ($deployable, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) = $self->promotes_and_demotes( $c, $topic, $bl_state, $state_name );
        push @menu_s, _array( $menu_s );
        push @menu_p, _array( $menu_p );
-       push @menu_d, _array( $menu_d );
+       push @menu_d, _array( $menu_d );       
     }
 
     push @menu, ( @menu_s, @menu_p, @menu_d );  # deploys, promotes, then demotes
