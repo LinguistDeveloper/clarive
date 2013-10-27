@@ -286,7 +286,7 @@
         loadMask:'true',
         columns: [
             { hidden: true, dataIndex:'id' },
-            check_status_sm,
+            // check_status_sm,
             { header: _('Topics: Status'), dataIndex: 'name', width:100, sortable: true, renderer: render_status },
             { header: _('Description'), dataIndex: 'description', sortable: true },
             { header: _('Order'), width: 40, dataIndex: 'seq', sortable: true },
@@ -296,9 +296,9 @@
         autoSizeColumns: true,
         deferredRender:true,    
         tbar: [ 
-                btn_add_status,
-                btn_edit_status,
-                btn_delete_status,
+                // btn_add_status,
+                // btn_edit_status,
+                // btn_delete_status,
                 '->'
         ]
     }); 

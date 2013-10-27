@@ -358,6 +358,7 @@ sub changeset : Local {
     my @tree;
 
     my $p = $c->req->params;
+
     my $bl = $p->{bl} or _throw "Missing bl";
     my $project = $p->{project} or _throw 'missing project';
     my $state_name = $p->{state_name} or _throw 'missing state name';
@@ -532,19 +533,23 @@ sub promotes_and_demotes {
     my $deployable={};
     for my $status ( @status_from ) {
         $deployable->{ $status->{statuses_from}{bl} } = \1;
-        push @menu_s, {
-            text => _loc( 'Deploy to %1', _loc( $status->{statuses_to}{name} ) ),
-            eval => {
-                url      => '/comp/lifecycle/deploy.js',
-                title    => 'Deploy',
-                job_type => 'static',
-                bl_to => $status->{statuses_from}{bl},
-                status_to => $status->{statuses_to}{id},
-                status_to_name => _loc($status->{statuses_to}{name}),
-            },
-            id_status_from => $id_status_from_lc,
-            icon => '/static/images/silk/arrow_right.gif'
-        };
+        my ($ci_status) = ci->query( { id_status => $status->{statuses_to}{id}, name => $status->{statuses_to}{name} } );
+
+        for my $bl ( _array $ci_status->{bls} ) {        
+            push @menu_s, {
+                text => _loc( 'Deploy to %1 (%2)', _loc( $status->{statuses_to}{name} ), $bl->{bl} ),
+                eval => {
+                    url      => '/comp/lifecycle/deploy.js',
+                    title    => 'Deploy',
+                    job_type => 'static',
+                    bl_to => $bl->{bl},
+                    status_to => $status->{statuses_to}{id},
+                    status_to_name => _loc($status->{statuses_to}{name}),
+                },
+                id_status_from => $id_status_from_lc,
+                icon => '/static/images/silk/arrow_right.gif'
+            };
+        }
     }
 
     # Promote
@@ -560,19 +565,23 @@ sub promotes_and_demotes {
     my $promotable={};
     for my $status ( @status_to ) {
         $promotable->{ $status->{statuses_to}{bl} } = \1;
-        push @menu_p, {
-            text => _loc( 'Promote to %1', _loc( $status->{statuses_to}{name} ) ),
-            eval => {
-                url      => '/comp/lifecycle/deploy.js',
-                title    => 'To Promote',
-                job_type => 'promote',
-                bl_to => $status->{statuses_to}{bl},
-                status_to => $status->{statuses_to}{id},
-                status_to_name => _loc($status->{statuses_to}{name}),
-            },
-            id_status_from => $id_status_from_lc,
-            icon => '/static/images/silk/arrow_down.gif'
-        };
+        my ($ci_status) = ci->query( { id_status => $status->{statuses_to}{id}, name => $status->{statuses_to}{name} } );
+
+        for my $bl ( _array $ci_status->{bls} ) {        
+            push @menu_p, {
+                text => _loc( 'Promote to %1 (%2)', _loc( $status->{statuses_to}{name} ), $bl->{bl} ),
+                eval => {
+                    url      => '/comp/lifecycle/deploy.js',
+                    title    => 'To Promote',
+                    job_type => 'promote',
+                    bl_to => $bl->{bl},
+                    status_to => $status->{statuses_to}{id},
+                    status_to_name => _loc($status->{statuses_to}{name}),
+                },
+                id_status_from => $id_status_from_lc,
+                icon => '/static/images/silk/arrow_down.gif'
+            };
+        }
     }
 
     # Demote

@@ -139,37 +139,42 @@ sub lc_for_project {
     
     my @states;
     my @projects_with_lc = Baseliner->model('Permissions')->user_projects_with_action( username => $username, action => 'action.project.see_lc');
+    my @user_workflow = _unique map {$_->{id_status_from} } Baseliner->model("Topic")->user_workflow( $username );
+
     if ( @projects_with_lc && $id_prj ~~ @projects_with_lc ) {   
-        # @states = (
-        #      {  node   => _loc('(Stage)'),
-        #         type   => 'state',
-        #         active => 1,
-        #         bl     => 'new',
-        #         icon   => '/static/images/icons/lc/history.gif'
-        #     }
-        # );
 
         # States-Statuses with bl and type = D (Deployable)
-        #my @user_workflow = _unique map {$_->{id_status_to} } Baseliner->model("Topic")->user_workflow( $username );
-        #my @deployable_statuses = map { $_->{id} } DB->BaliTopicStatus->search( { bl => { '<>' => '*' }, type=>'D', id => \@user_workflow  }, { order_by => { -asc => ['seq'] } } )->hashref->all;
-        my @deployable_statuses = map { $_->{id} } DB->BaliTopicStatus->search( { bl => { '<>' => '*' }, type=>'D'  }, { order_by => { -asc => ['seq'] } } )->hashref->all;
+        my @deployable_statuses = map { $_->{id} } DB->BaliTopicStatus->search( { type=>'D' }, { order_by => { -asc => ['seq'] } } )->hashref->all;
+        # my @from_statuses = _unique map { $_->{id_status_from} } DB->BaliTopicCategoriesAdmin->search(
+        #         { id_status_to => \@deployable_statuses },
+        #         { distinct => 1 }
+        #   )->hashref->all; 
         my @from_statuses = _unique map { $_->{id_status_from} } DB->BaliTopicCategoriesAdmin->search(
-                { id_status_to => \@deployable_statuses },
+                { id_status_to => \@deployable_statuses, id_status_from => \@user_workflow },
                 { distinct => 1 }
           )->hashref->all; 
-        _log _dump @from_statuses;
+
+
         push @states, map {
-                +{  node   => $_->{bl} eq "*" ? $_->{name}:"$_->{name} [$_->{bl}]",
+                my @bls = map { $_->{bl} } sort { $a->{seq} <=> $b->{seq} } _array $_->{bls};
+                my $bls_text = join ",", @bls;
+                +{  node   => $_->{type} ne "D" ? $_->{name}:"$_->{name} [$bls_text]",
                 type   => 'state',
                 active => 1,
-                data => { id_status => $_->{id}, },
-                bl     => $_->{bl},
-                bl_to  => $_->{bl},                               # XXX
+                data => { id_status => $_->{id_status}, },
+                bl     => $bls[0],
+                bl_to  => $bls[0],                               # XXX
                 icon   => '/static/images/icons/lc/history.gif',
                 seq => $_->{seq}
                 };
-            } Baseliner->model('Baseliner::BaliTopicStatus')
-            ->search( { id => \@from_statuses  }, { order_by => { -asc => ['seq'] } } )->hashref->all;
+            } sort {
+                $a->{seq} <=> $b->{seq}
+            } grep { 
+                ref $_ eq 'BaselinerX::CI::status'
+            } 
+            ci->query( { id_status => \@from_statuses } );
+            # Baseliner->model('Baseliner::BaliTopicStatus')
+            # ->search( { id => \@from_statuses  }, { order_by => { -asc => ['seq'] } } )->hashref->all;
     }     
 
     no strict;

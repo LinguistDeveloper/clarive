@@ -41,6 +41,7 @@ params:
     
     var no_items = _('No items found');
     var project_box = new Baseliner.PagingProjects({
+        origin: 'custom',
         fieldLabel: _(meta.name_field),
         pageSize: ps,
         name: meta.id_field,
@@ -48,10 +49,10 @@ params:
         listEmptyText: no_items, 
         field_ready: false,
         emptyText: _( meta.emptyText ),
-        allowBlank: meta.allowBlank==undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true ),          
+        allowBlank: meta.allowBlank == 'false' ? false : true,
+        disabled: meta.readonly!=undefined ? meta.readonly : false,
         store: project_box_store,
         value: projects,
-        disabled: meta.readonly!=undefined ? meta.readonly : false,
         singleMode: meta.single_mode == 'false' || !meta.single_mode ? false : true
     });
     
