@@ -532,10 +532,10 @@ sub promotes_and_demotes {
 
     my $deployable={};
     for my $status ( @status_from ) {
-        $deployable->{ $status->{statuses_from}{bl} } = \1;
         my ($ci_status) = ci->query( { id_status => $status->{statuses_to}{id}, name => $status->{statuses_to}{name} } );
 
         for my $bl ( _array $ci_status->{bls} ) {        
+            $deployable->{ $bl->{bl} } = \1;
             push @menu_s, {
                 text => _loc( 'Deploy to %1 (%2)', _loc( $status->{statuses_to}{name} ), $bl->{bl} ),
                 eval => {
@@ -564,10 +564,10 @@ sub promotes_and_demotes {
 
     my $promotable={};
     for my $status ( @status_to ) {
-        $promotable->{ $status->{statuses_to}{bl} } = \1;
         my ($ci_status) = ci->query( { id_status => $status->{statuses_to}{id}, name => $status->{statuses_to}{name} } );
 
         for my $bl ( _array $ci_status->{bls} ) {        
+            $promotable->{ $bl->{bl} } = \1;
             push @menu_p, {
                 text => _loc( 'Promote to %1 (%2)', _loc( $status->{statuses_to}{name} ), $bl->{bl} ),
                 eval => {

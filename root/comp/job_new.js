@@ -11,6 +11,7 @@
     my $iid = "div-" . _nowstamp;
     $c->stash->{job_types} = [
         { name=>'job_type', inputValue=> 'promote', boxLabel => _loc('Promote'), checked=>\1 },
+        { name=>'job_type', inputValue=> 'static', boxLabel => _loc('Static') },
         { name=>'job_type', inputValue=> 'demote', boxLabel => _loc('Demote') }
         ];
     my $now = _dt();
@@ -532,6 +533,7 @@
                 var n = dd.dragData.node;
                 var add_node = function(node) {
                     var data = node.attributes.data;
+                    console.dir(data);
                     var mid = data.mid || data.topic_mid;
                     var rec = new Ext.data.Record({
                         ns: data.ns,
@@ -572,7 +574,7 @@
                 var bl = combo_baseline.getValue();
 
                 //if( data.promotable[ bl ] == 1  || data.demot) {
-                var bl_item = ( job_type == 'promote' ) ? data.promotable[bl] : data.demotable[bl];
+                var bl_item = ( job_type == 'promote' ) ? data.promotable[bl] : ( job_type == 'demote') ? data.demotable[bl]: data.deployable[bl];
                 if ( bl_item == undefined ) {  
                     Ext.Msg.alert( _('Error'),
                         _("Cannot promote/demote changeset %1 to baseline %2 (job type %3)", '<b>' + n.text + '</b>', bl, job_type ) );

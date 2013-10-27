@@ -184,10 +184,11 @@ sub jobs {
 
 sub is_in_active_job {
     my ($self )=@_;
-    for my $job ( $self->jobs ) {
-        return $job if ref $job eq 'BaselinerX::CI::job' && $job->is_active;
+    my @active_jobs;
+    if ( $self->jobs ) {
+        @active_jobs = grep { ref $_ eq 'BaselinerX::CI::job' && $_->is_active } $self->jobs;
     }
-    return 0;
+    return @active_jobs;
 }
 
 

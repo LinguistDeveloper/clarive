@@ -1756,6 +1756,9 @@ msgstr "Normal"
 msgid "static"
 msgstr "Estático"
 
+msgid "Static"
+msgstr "Estático"
+
 msgid "promote"
 msgstr "Promoción"
 
@@ -4278,6 +4281,9 @@ msgstr "No es posible promover/devolver el cambio %1 al entorno %2 (tipo de pase
 msgid "Job element '%1' is in an active job: %2"
 msgstr "Item de pase '%1' está en un pase activo: %2"
 
+msgid "Job element '%1' is in an active job to bl %3: %2"
+msgstr "Item de pase '%1' está en un pase activo al entorno %3: %2"
+
 msgid "select or drop repository revisions"
 msgstr "seleccione o arrastre revisiones de repositorio"
 
@@ -4769,3 +4775,4 @@ msgstr "El campo %1 es obligatorio"
 
 msgid "Separator"
 msgstr "Separador de campos"
+
