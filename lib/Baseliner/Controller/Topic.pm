@@ -1675,7 +1675,7 @@ sub newjob : Local {
                 status_to      => $p->{status_to},
                 id_status_from => $p->{id_status_from},
             });
-            $job_name = $job->name;
+            my $job_name = $job->name;
             { jobname => $job_name, id_job=>$job->{id_job} };
         };
         { success=>\1, msg=> _loc( "Job %1 created ok", $job->name ) };
