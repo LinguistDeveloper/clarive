@@ -881,13 +881,16 @@ sub variables_like_me {
         if( my $classname = $p{classname} ) {
             @final = grep { defined $_->var_ci_class && $_->var_ci_class eq $classname } @vars;
         } elsif( my $role = $p{role} ) {
-            my %consumers = map { $_=>1 } Util->to_role_class($role)->meta->consumers; 
-            @final = grep {
-                defined $_->var_ci_role
-                    && ( $_->var_ci_role eq $role 
-                        || $consumers{ Util->to_ci_class($_->var_ci_class) }
-                        || $consumers{ Util->to_role_class( $_->var_ci_role ) } )
-            } @vars;
+            my $cn = Util->to_role_class($role);
+            if( $cn->can('meta') ) {
+                my %consumers = map { $_=>1 } $cn->meta->consumers; 
+                @final = grep {
+                    defined $_->var_ci_role
+                        && ( $_->var_ci_role eq $role 
+                            || $consumers{ Util->to_ci_class($_->var_ci_class) }
+                            || $consumers{ Util->to_role_class( $_->var_ci_role ) } )
+                } @vars;
+            }
         } else {
             @final = @vars;
         }
