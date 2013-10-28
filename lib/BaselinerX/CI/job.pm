@@ -338,6 +338,7 @@ sub resume {
     } else {
         Util->_fail( Util->_loc('Job was not paused') );
     }
+    return {};
 }
 
 sub run_inproc {
