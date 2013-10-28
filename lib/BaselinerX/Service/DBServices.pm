@@ -24,7 +24,6 @@ sub deploy_sql {
     my $stash        = $c->stash;
     my $job_dir      = $stash->{job_dir};
     my $items        = $stash->{nature_items} // $stash->{items};
-    my $db           = ci->new( $config->{db} );
     my $split        = $config->{split} // ';';
     my $split_mode   = $config->{split_mode} // 'auto';
     my $comment      = $config->{comment} // 'strip';
@@ -33,6 +32,9 @@ sub deploy_sql {
     my $error_mode   = $config->{error_mode} // 'fail';
     my ($include_path,$exclude_path,$include_content,$exclude_content) = 
         @{ $config }{qw(include_path exclude_path include_content exclude_content)};
+    
+    # get db CI
+    my $db  = ci->new( $config->{db} );
     
     $stash->{_db_transaction_count} //= 0;
     my $tran_cnt = $stash->{_db_transaction_count} + 1;

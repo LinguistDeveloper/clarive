@@ -42,16 +42,21 @@ sub connect {
     Util->_fail( 'Missing server attribute' ) unless $self->server;
     my $tmout = $self->timeout;
     return $self->_connection if ref $self->_connection;
-    require DBIx::Simple;
     my $conn;
     if( $tmout ) {
         local $SIG{ALRM} = sub { _fail _loc 'timeout connecting to database %1 (timeout=%2)', $self->name, $tmout };
         alarm $tmout;
     }
-    $conn = DBIx::Simple->connect( $self->data_source_parsed, $self->user, $self->password, $self->parameters);
+    $conn = DBI->connect( $self->data_source_parsed, $self->user, $self->password, $self->parameters);
     alarm 0 if $tmout;
     $self->_connection( $conn );
     return $conn; 
+}
+
+sub dbis {
+    my ($self)=@_;
+    require DBIx::Simple;
+    return DBIx::Simple->connect( $self->connect );
 }
 
 sub all_vars {
@@ -89,58 +94,57 @@ sub ping {
 	return 'connected';
 };
 
-sub begin_work { $_[0]->connect->begin_work }
-sub commit { $_[0]->connect->commit }
-sub rollback { $_[0]->connect->rollback }
+sub begin_work { my $dbh = $_[0]->connect; $dbh->begin_work if $dbh->{AutoCommit} }
+sub commit     { $_[0]->connect->commit }
+sub rollback   { $_[0]->connect->rollback }
 
-sub dosql {
-	my ( $self, %p ) = @_;
+method dosql( :$sql, :$comment='strip', :$split_mode='auto', :$split=';', :$mode='direct', :$exists_action='drop', :$error_mode='fail' ) {
+    #my ( $self, %p ) = @_;
     my %ENV_ORIG = %ENV;
     for my $env_key ( keys %{ $self->envvars || {} } ) {
         my $v = $self->envvars->{ $env_key };
         next if ref $v;
         $ENV{ $env_key } = $v;
     }
-    my $db = $self->connect;
-    my $dbh = $db->dbh;
+    my $dbh = $self->connect;
     my @queries;
     $dbh->func( 1000000, 'dbms_output_enable' );
-    for my $sql ( _array( $p{sql} ) ) {
+    for my $sql ( _array( $sql ) ) {
         # comments?
-        $sql =~ s{--[^\n]*\r?\n}{\n}sg if $p{comment} eq 'strip';
+        $sql =~ s{--[^\n]*\r?\n}{\n}sg if $comment eq 'strip';
         
-        my @stmts = $p{split_mode} eq 'none' ? ($sql)
+        my @stmts = $split_mode eq 'none' ? ($sql)
             # auto = split on ; but not if its inside quotes '',"" - may be in comment, better if used with "strip"
-            : $p{split_mode} eq 'auto' ? split( /;(?=(?:[^'"]|'[^']*'|"[^"]*")*$)/, $sql)  
+            : $split_mode eq 'auto' ? split( /;(?=(?:[^'"]|'[^']*'|"[^"]*")*$)/, $sql)  
             # manual - user defined split
-            : split( $p{split}, ($sql) );
+            : split( $split, ($sql) );
         STMT: for my $st ( @stmts ) {
             next if $st =~ /^\s*$/;  # empty ? 
             my (@drops,@skips);
-            if( $p{exists_action} eq 'drop' ) {
+            if( $exists_action eq 'drop' ) {
                 @drops =  $self->gen_drop( $st );
                 for my $st_drop ( @drops ) {
                     _log "Running Drop Statement: $st_drop";
                     try { $dbh->do( $st_drop ); }
                     catch { _error "AUTO DROP failed, but ignored.", shift() };
                 }
-            } elsif( $p{exists_action} =~ /skip|ignore/ ) {
+            } elsif( $exists_action =~ /skip|ignore/ ) {
                 @skips =  $self->gen_drop( $st );
                 if( @skips ) {
-                    _log "SQL OBJECT ALREDY EXISTS (action: $p{exists_action}): $st";
-                    next STMT if $p{exists_action} eq 'skip';
+                    _log "SQL OBJECT ALREDY EXISTS (action: $exists_action): $st";
+                    next STMT if $exists_action eq 'skip';
                 }
-            } elsif( $p{exists_action} eq 'fail' ) {
+            } elsif( $exists_action eq 'fail' ) {
                 @skips =  $self->gen_drop( $st );
                 if( @skips ) {
                     _fail "SQL OBJECT ALREADY EXISTS (action: fail): $st"
                 }
             }
             my $ret = try {
-                if( $p{mode} eq 'execute' ) {
+                if( $mode eq 'execute' ) {
                     _debug "Running sql $st against the database (mode execute)", $st;
-                    $db->query( q{BEGIN EXECUTE IMMEDIATE(?); END;}, $st );
-                } elsif( $p{mode} eq 'block' ) {
+                    $dbh->do( q{BEGIN EXECUTE IMMEDIATE(?); END;}, undef, $st );
+                } elsif( $mode eq 'block' ) {
                     $st = qq{begin\n$st;\nend;};
                     _debug "Running sql $st against the database (mode block)", $st;
                     $dbh->do( $st ); 
@@ -149,15 +153,15 @@ sub dosql {
                     $dbh->do( $st ); 
                 }
                 my @ret = $dbh->func( 'dbms_output_get' );
-                { sql=>$st, rc=>0, err=>'', ret=>join('', @ret), skips=>join("\n",@skips), drops=>join("\n",@drops), mode=>$p{mode} };
+                { sql=>$st, rc=>0, err=>'', ret=>join('', @ret), skips=>join("\n",@skips), drops=>join("\n",@drops), mode=>$mode };
             } catch {
                 my $err = shift;
                 my @ret = $dbh->func( 'dbms_output_get' );
                 %ENV = %ENV_ORIG;
-                my $msg = _loc 'Database error: %1 %2', $db->error, $err;
+                my $msg = _loc 'Database error: %1 %2', $dbh->errstr, $err;
                 my @errlog = ( $msg, "SQL:\n$st\n\n$msg\n\n" . join('',@ret) );
                 _log( @errlog );
-                { sql=>$st, rc=>1, err=>$db->error, catch=>$err, ret=>join('', @ret), skips=>join("\n",@skips), drops=>join("\n",@drops), mode=>$p{mode} };
+                { sql=>$st, rc=>1, err=>$dbh->errstr, catch=>$err, ret=>join('', @ret), skips=>join("\n",@skips), drops=>join("\n",@drops), mode=>$mode };
             };
             push @queries, $ret;
         }
@@ -169,7 +173,8 @@ sub dosql {
 sub gen_drop {
     my ( $self, $st ) = @_;
     my @drops;
-    my $db        = $self->connect;
+    my $db= $self->connect;
+    my $dbis = $self->dbis;
     my $obj_types = join( '|',
         'CONSUMER GROUP', 'INDEX PARTITION', 'SEQUENCE',  'SCHEDULE',           'TABLE PARTITION',
         'RULE',           'JAVA DATA',       'PROCEDURE', 'OPERATOR',           'WINDOW',
@@ -190,7 +195,7 @@ sub gen_drop {
         _debug( "SQL drop checking $sch.$name" );
 
         # check if object exists
-        my $cnt = $db->query( 
+        my $cnt = $dbis->query( 
             'select count(*) from all_objects where object_name=? and object_type=? and owner=?',
             uc $name, uc $type, uc $sch )->list;
         if ( $cnt > 0 ) {
