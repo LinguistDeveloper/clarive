@@ -1,4 +1,4 @@
-﻿package BaselinerX::Service::RenameElements;
+﻿package BaselinerX::Service::RenameItems;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Carp;
@@ -8,7 +8,12 @@ use utf8;
 
 with 'Baseliner::Role::Service';
 
-register 'service.job.elements.rename' => { name => 'Rename Files by Suffix', handler => \&run, };
+register 'service.job.rename_items' => { 
+    name    => 'Rename Baseline Items and Files',
+    data    => { rename_items=>1, rename_files=>1 },
+    icon    => '/static/images/icons/baseline.gif',
+    handler => \&run, 
+};
 
 sub run {
     my ($self,$c, $config)=@_;
@@ -17,9 +22,35 @@ sub run {
     my $job = $stash->{job};
     my $log = $job->logger;
     $self->log( $job->logger );
+    my $bl = $job->bl;
+    my $all_bls = join '}|{', grep !/^\*$/, map { $_->bl } BaselinerX::CI::bl->search_cis;
 
-    $log->debug( _loc('Running file rename for baseline %1', $job->bl) );
-    $self->rename_files( bl=>$job->bl, path=>$job->job_dir );
+    my @files_renamed;
+    if( $config->{rename_files} ) {
+        $log->debug( _loc('Running file rename for baseline %1', $job->bl) );
+        @files_renamed = $self->rename_files( bl=>$bl, all_bls=>$all_bls, path=>$job->job_dir );
+    }
+    
+    my @items_renamed;
+    if( $config->{rename_items} ) {
+        my @items;
+        for my $item ( _array( $stash->{items} ) ) {
+            my $path = $item->path; 
+            if( $path =~ /{$bl}/ ) {
+                my $old_path = $path;
+                $item->rename( sub{ s/{$bl}//g } );
+                push @items_renamed, { old=>$old_path, new=>$item->path };
+                push @items, $item;
+            }
+            elsif( $path !~ /{($all_bls)}/ ) {
+                push @items, $item;
+            }
+        }
+        $log->info( _loc( 'Renamed %1 item(s)', scalar(@items_renamed)), \@items_renamed )
+            if @items_renamed;
+        $stash->{items} = \@items;
+    }
+    return { files=>\@files_renamed, items=>\@items_renamed };
 }
 
 sub rename_files {
@@ -28,18 +59,22 @@ sub rename_files {
     _check_parameters( $p, qw/path bl/ );
     return if $p->{bl} eq '*'; # WTF?
     _fail unless length $p->{path};
+    my $bl = $p->{bl};
+    my $all_bls = $p->{all_bls};
     
     my $dir = Path::Class::dir( $p->{path} );
     _fail _loc('Could not find rename root dir %1', $dir) unless -e $dir;
     my ($list, $list_del);
+    my $cnt = 0;
 
+    my @files_renamed;
     $dir->recurse( callback => sub {
             my $f = shift;
             my $path = $f->stringify;
             return if $path =~ m/system volume/i;
             return if $f->is_dir;
             my $file = $f->stringify ;
-            my $new_name = $self->rename( $p->{bl}, $file );
+            my $new_name = $self->rename( $bl, $file );
             if( $file ne $new_name ) {
                 if( -e $new_name ) {
                     unlink $new_name
@@ -47,17 +82,20 @@ sub rename_files {
                 }
                 rename $file, $new_name
                      or _throw _loc 'Could not rename element %1 to %2: %3', $file, $new_name, $!;
-                $list .= "File '$file' renamed to '$new_name'\n";
+                $list .= "'$file' ==> '$new_name'\n";
+                push @files_renamed, { old=>"$file", new=>"$new_name" };
+                $cnt++;
             } 
-            elsif( $file =~ /{[A-Z]+}/ ) {
+            elsif( $file =~ /{($all_bls)}/ ) {
                 # delete files from other baselines
                 unlink $file or _throw _loc 'Could not delete file that belongs to another baseline %1: %2', $file, $!;
                 $list_del .= "File '$file' deleted.\n";
             }
     });
-    $self->log->info(_loc('Renamed elements'), data=>$list ) if $list;
+
+    $self->log->info(_loc('Renamed %1 file(s)',$cnt), data=>$list ) if $list;
     $self->log->info(_loc('Deleted elements that belong to another baseline'), data=>$list_del ) if $list_del;
-    #TODO now rename elements from $stash->{elements};
+    return @files_renamed;
 }
 
 sub rename {

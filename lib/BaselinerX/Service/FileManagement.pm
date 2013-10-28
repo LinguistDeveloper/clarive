@@ -104,6 +104,7 @@ sub run_ship {
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
     my $stash = $c->stash;
+    my $job_dir = $stash->{job_dir};
     my $stmt  = $stash->{current_statement_name};
 
     my $remote_path = $config->{remote_path} // _fail 'Missing parameter remote_file';
@@ -111,19 +112,42 @@ sub run_ship {
     my $user        = $config->{user};
     my $chmod       = $config->{'chmod'};
     my $chown       = $config->{'chown'};
+    my $local_mode  = $config->{local_mode} // 'local_files';  # local_files, nature_items
+    my $rel_path    = $config->{rel_path} // 'file_only'; # file_only, rel_path_job, rel_path_anchor 
+    my $anchor_path = $config->{anchor_path} // ''; 
 
     for my $server ( split /,/, $config->{server} ) {
         $server = ci->new( $server ) unless ref $server;
-        $local_path = $server->parse_vars( $local_path );
         $remote_path = $server->parse_vars( $remote_path );
         my $server_str = "$user\@".$server->name;
         _debug $stmt . " - Connecting to server " . $server_str;
         my $agent = $server->connect( user=>$user );
-        my $is_wildcard = $local_path =~ /\*/;
         my $cnt = 0;
-        for my $local ( grep { -f } glob $local_path ) {
+
+        my @locals;
+        my $is_wildcard = 0;
+        if( $local_mode eq 'nature_items' ) {
+            @locals = map { _file($job_dir,$_) } _array( $stash->{nature_item_paths} ); 
+        } else {
+            # local_files (with or without wildcard)
+            $local_path = $server->parse_vars( $local_path );
+            $is_wildcard = $local_path =~ /\*/;
+            @locals = grep { -f } glob $local_path;
+        }
+        $log->debug( _loc('local_mode=%1, local list', $local_mode), \@locals );
+        
+        for my $local ( @locals ) {
             $cnt++;
-            my $remote = $is_wildcard ? _file( $remote_path, _file( $local )->basename ) : $remote_path;
+            # local path relative or pure filename?
+            my $local_path = 
+                $rel_path eq 'file_only' ? _file( $local )->basename : 
+                $rel_path eq 'rel_path_job' ? _file( $local )->relative( $job_dir ) 
+                : _file($local)->relative( $anchor_path );
+            $local_path = $server->parse_vars($local_path);
+            $log->debug( _loc('rel path mode `%1`, local_path=%2', $rel_path, $local_path ) );
+            # set remote to remote + local_path, except on local_files w/ wildcard
+            #my $remote = $is_wildcard ? _file( $remote_path, $local_path ) : $remote_path;
+            my $remote = _file( $remote_path, $local_path );
             $log->info( _loc( '*%1* Sending file `%2` to `%3`', $stmt, $local, $server_str.':'.$remote ) );
             $agent->put_file(
                 local  => "$local",

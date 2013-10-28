@@ -64,6 +64,9 @@ method chown ( $perms, $path ) {
 }
 
 method execute( @cmd ) {
+    my $tmout = $self->timeout;
+    alarm $tmout if $tmout; 
+    local $SIG{ALRM} = sub { _fail _loc 'balix agent error: timeout during execute (tmout=%1 sec)', $tmout } if $tmout;
     my $opts = shift @cmd if ref $cmd[0] eq 'HASH';
     if( $opts->{chdir} ) {
        @cmd = ( \'cd', $opts->{chdir}, \'&&', @cmd == 1 ? \$cmd[0] : @cmd );      
@@ -74,6 +77,7 @@ method execute( @cmd ) {
     }
     #_debug \@cmd;
     my $res = $self->_execute( @cmd );
+    alarm 0;
     return $self->ret;
 }
 
@@ -111,15 +115,22 @@ method is_remote_dir( $dir ) {
     return $self->_execute( 'ls', $dir );
 }
 
+method check_writeable( $dir ) {
+    return $self->_execute( 'test', '-w', $dir );
+}
+
 # TODO data parameter support
 method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
     if( my $remote_dir = ''. _file($remote)->dir ) {
-        my ($rc,$ret) = $self->is_remote_dir($remote_dir);
+        my ($rc,$ret) = $self->check_writeable($remote_dir);
         _fail _loc("balix: can't send file: could not find remote dir `%1` (rc: %2)", $remote_dir, $rc)
             if $rc;
     } else {
         _fail _loc "balix: can't send file: missing remote dir in `%1`", $remote;
     }
+    # check file writeable
+    my ($rc,$ret) = $self->check_writeable($remote);
+    _fail _loc("balix: can't send file: file not writeable `%1` (rc: %2)", $remote, $rc) if $rc;
     $self->_send_file( $local, $remote );
     if( $user ) {
         $self->_execute( 'chown', "${user}:${group}", $remote );

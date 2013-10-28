@@ -2677,17 +2677,19 @@
             ,xtype:'panel'
             ,bodyStyle:'padding:10px 10px 10px 10px'
         }
-        ,items:[{
-            // left column
-            columnWidth:0.50,
-            defaults:{anchor:'100%'}
-            ,items:[
-                grid_status
-            ]
-            },
+        ,items:[
+            
+            ////////////{
+            ////////////// left column
+            ////////////columnWidth:0.50,
+            ////////////defaults:{anchor:'100%'}
+            ////////////,items:[
+            ////////////    grid_status
+            ////////////]
+            ////////////},
             {
             // right column             
-            columnWidth:0.50,
+            columnWidth:1,
             defaults:{anchor:'100%'},
             items:[
                 grid_categories
