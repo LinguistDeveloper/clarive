@@ -48,7 +48,7 @@ sub log : Local {
     my $page = to_pages( start=>$start, limit=>$limit );
     
     my $where={};
-    $query and $where = query_sql_build( query=>$query, fields=>[qw(event_key)] );
+    $query and $where = query_sql_build( query=>$query, fields=>[qw(id event_key )] );
     my $rs = DB->BaliEvent->search($where, 
         { page => $page, rows => $limit,
             #prefetch => [{ 'rules' => 'rule' }],
@@ -62,7 +62,7 @@ sub log : Local {
     my @rows = $rs->hashref->all;
     my @eventids = map { $_->{id} } @rows;
     my @rule_data =
-        DB->BaliEventRules->search( { id_event => \@eventids }, { select => [qw(id id_event id_rule return_code ts)] } )
+        DB->BaliEventRules->search( { id_event => \@eventids }, { prefetch=>'rule', select => [qw(id id_event id_rule return_code ts)] } )
         ->hashref->all;
     my @final;
     EVENT: for my $e ( @rows ) {
