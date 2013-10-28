@@ -1511,7 +1511,12 @@ sub save_data {
     my $row = DB->BaliMasterPrefs->update_or_create({ username=>$data->{username}, mid=>$topic_mid, last_seen=>_dt() });
     
     $self->cache_topic_remove( $topic_mid );
-    
+    my @related_topics = ci->new($topic_mid)->related( isa => 'topic');
+
+    for ( @related_topics ) {
+        $self->cache_topic_remove( $_->{mid} );
+    }
+
     return $topic;
 }
 
