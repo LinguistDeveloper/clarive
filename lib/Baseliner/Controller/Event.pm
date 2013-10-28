@@ -124,4 +124,21 @@ sub status : Local {
     $c->forward("View::JSON");
 }
 
+sub event_data : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+    my $type = $p->{type};
+    given( $type ) {
+        when( 'stash' ) {
+            
+        }
+        when( 'dsl' ) {
+            
+        }
+        when( 'output' ) {
+            
+        }
+    }
+    $c->forward("View::JSON");
+}
 1;
