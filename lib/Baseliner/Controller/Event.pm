@@ -143,11 +143,11 @@ sub event_data : Local {
             $data = $p->{id_rule_log} ? $row->{stash_data} : $row->{event_data} if $row;
         }
         when( 'dsl' ) {
-            my $row = DB->BaliEventRules->search({ id=>$id }, { select=>'dsl' })->first;
+            my $row = DB->BaliEventRules->search({ id=>$id }, { select=>'dsl' })->hashref->first;
             $data = $row->{dsl} if $row;
         }
         when( 'output' ) {
-            my $row = DB->BaliEventRules->search({ id=>$id }, { select=>'log_output' })->first;
+            my $row = DB->BaliEventRules->search({ id=>$id }, { select=>'log_output' })->hashref->first;
             $data = $row->{log_output} if $row;
         }
     }
