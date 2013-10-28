@@ -29,6 +29,7 @@ params:
         id_field: meta.id_field,
         bd_field: meta.bd_field,
         records: records, 
+        preventMark: false,        
         columns: meta.columns,
         readOnly: meta.readonly!=undefined ? meta.readonly : true,
         disabled: meta.readonly!=undefined ? meta.readonly : true,

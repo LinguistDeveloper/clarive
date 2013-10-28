@@ -488,10 +488,22 @@ sub refresh_now : Local {
     $c->forward('View::JSON');
 }
 
-register 'event.job.new';
-register 'event.job.delete';
-register 'event.job.cancel';
-register 'event.job.cancel_running';
+register 'event.job.new' => {
+    description => 'New job',
+    vars => ['username', 'bl', 'jobname', 'id_job']
+};
+register 'event.job.delete' => {
+    description => 'Job deleted',
+    vars => ['username', 'bl', 'jobname', 'id_job']
+};
+register 'event.job.cancel' => {
+    description => 'Job cancelled',
+    vars => ['username', 'bl', 'jobname', 'id_job']
+};
+register 'event.job.cancel_running' => {
+    description => 'Running job cancelled',
+    vars => ['username', 'bl', 'jobname', 'id_job']
+};
 
 sub job_submit : Path('/job/submit') {
     my ( $self, $c ) = @_;
@@ -509,7 +521,7 @@ sub job_submit : Path('/job/submit') {
             my $msg = '';
             if( $job->status =~ /CANCELLED|KILLED|FINISHED|ERROR/ ) {
 
-                event_new 'event.job.delete' => { c=>$c, self=>$self, job=>$job }  => sub {
+                event_new 'event.job.delete' => { username => $c->username, bl => $job->bl, id_job=>$job->id, jobname => $job->name  }  => sub {
                     # be careful: may be cancelled already
                     $p->{mode} ne 'delete' and _fail _loc('Job already cancelled'); 
                     # cancel pending requests
@@ -519,7 +531,7 @@ sub job_submit : Path('/job/submit') {
                 $msg = "Job %1 deleted";
             }
             elsif( $job->status =~ /RUNNING/ ) {
-                event_new 'event.job.cancel_running' => { c=>$c, self=>$self, job=>$job } => sub {
+                event_new 'event.job.cancel_running' => { username => $c->username, bl => $job->bl, id_job=>$job->id, jobname => $job->name  } => sub {
                     $job->update({ status=> 'CANCELLED' });
                     $c->model('Request')->cancel_for_job( id_job=>$job->id );
 
@@ -528,12 +540,11 @@ sub job_submit : Path('/job/submit') {
                 };
                 $msg = "Job %1 cancelled";
             } else {
-                event_new 'event.job.cancel'  => { c=>$c, self=>$self, job=>$job } => sub {
+                event_new 'event.job.cancel'  => { username => $c->username, bl => $job->bl, id_job=>$job->id, jobname => $job->name  } => sub {
                     $job->status( 'CANCELLED' );
                     $job->update;
                     # cancel pending requests
                     $c->model('Request')->cancel_for_job( id_job=>$job->id );
-
                 };
                 $msg = "Job %1 cancelled";
             }
@@ -589,7 +600,7 @@ sub job_submit : Path('/job/submit') {
                     description  => $comments,
                     changesets   => $contents, 
             };
-            event_new 'event.job.new' => { c=>$c, self=>$self, job_data=>$job_data } => sub {
+            event_new 'event.job.new' => { username => $c->username, bl => $job_data->{bl}  } => sub {
                 my $job = BaselinerX::CI::job->new( $job_data );
                 $job->save;
                 if( ref $job_stash ) {
@@ -597,7 +608,7 @@ sub job_submit : Path('/job/submit') {
                     $job->job_stash( $job_stash );
                 }
                 $job_name = $job->name;
-                { job=>$job }; 
+                { jobname => $job_name, id_job=>$job->{id_job} };
             };
             
             $c->stash->{json} = { success => \1, msg => _loc("Job %1 created", $job_name) };

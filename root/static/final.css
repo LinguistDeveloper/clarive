@@ -124,12 +124,34 @@
     font-size: 13px;
 }
 
+
+.name-html {
+	width: 20px;
+	white-space:nowrap;
+}
+
+.title-html {
+	max-width: 50px;
+	white-space:nowrap;
+	overflow:hidden;	
+	text-overflow:ellipsis;
+}
+
 .status-html {
-      text-transform: uppercase;
-      font-size: 10px;
-      font-weight: bold !important;  
-      background-color: #eee; 
-      text-align: center
+	width: 20px;
+    text-transform: uppercase;
+    font-size: 10px;
+    font-weight: bold !important;  
+    background-color: #eee; 
+    text-align: center;
+	white-space:nowrap;
+}
+
+.created-html {
+	width: 130px;
+	white-space:nowrap;
+	overflow:hidden;	
+	text-overflow:ellipsis;	
 }
 
 .x-tree-node div.forum-ct{
