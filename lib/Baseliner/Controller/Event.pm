@@ -58,7 +58,6 @@ sub log : Local {
     );
     my $pager = $rs->pager;
     $cnt = $pager->total_entries;
-    my $k = 1;
     my @rows = $rs->hashref->all;
     my @eventids = map { $_->{id} } @rows;
     my @rule_data =
@@ -74,6 +73,7 @@ sub log : Local {
         $e->{_parent}     = undef;
         $e->{type}        = 'event';
         $e->{id_event}    = $e->{id};
+        my $k = 1;
         my $rules = [ grep { $_->{id_event} == $e->{id} } @rule_data ];
         my @rules = map {
             my $rule = $_;
