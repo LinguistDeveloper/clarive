@@ -52,11 +52,13 @@ sub log : Local {
     my $rs = DB->BaliEvent->search($where, 
         { page => $page, rows => $limit,
           prefetch => [{ 'rules' => 'rule' }],
+          select => [qw(id mid event_key event_status ts username)], # everything but event_data
           order_by => { "-$dir" => $sort }, 
         }
     );
     my $pager = $rs->pager;
     $cnt = $pager->total_entries;
+    my $k = 1;
     my @rows = $rs->hashref->all;
     @rows = map {
         # event_key event_status event_data 
@@ -67,24 +69,24 @@ sub log : Local {
         $e->{_id} = $e->{id};
         $e->{_parent} = undef;
         $e->{type} = 'event';
-        #_error "EV=$e->{event_data}";
-#        $e->{data} = _damn( _load( $e->{event_data} ) ) if length $e->{event_data};
+        $e->{id_event} = $e->{id};
         my $rules = delete $e->{rules};
-        my $k = 1;
         my @rules = map {
-            #_error $_->{stash_data};
+            my $rule = $_;
+            delete $rule->{stash_data};
+            delete $rule->{log_output};
+            delete $rule->{dsl};
             +{
-                %$_, 
-                id_rule => $_->{id},
+                %$rule, 
                 _parent       => $e->{_id},
-                _id           => $e->{_id} . '-' . $k++,  # $_->{id} useless and may repeat
-                event_status  => $_->{return_code} ? 'ko' : 'ok',
-                type          => 'rule',
-                event_key     => $_->{rule} && $_->{rule}{id}?_loc('rule: %1', $_->{rule}{id} . ': ' . $_->{rule}{rule_name} ):_loc("Notifications"),
- #               data          => {},#_damn( $_->{stash_data} ?  _load( $_->{stash_data} ) : {} ),
-                dsl           => $_->{dsl},
-                output        => $_->{log_output},
+                _id           => $e->{_id} . '-' . $k++,  # $rule->{id} useless and may repeat
                 _is_leaf      => \1,
+                id_rule       => $rule->{id},
+                event_status  => $rule->{return_code} ? 'ko' : 'ok',
+                type          => 'rule',
+                event_key     => $rule->{rule} && $rule->{rule}{id}
+                    ? _loc('rule: %1', $rule->{rule}{id} . ': ' . $rule->{rule}{rule_name} )
+                    : _loc("Notifications"),
             }
         } @$rules;
         $e->{_is_leaf} = @rules ? \0 : \1;
@@ -130,17 +132,25 @@ sub event_data : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     my $type = $p->{type};
+    my $data='';
+    my $id = $p->{id_rule} || $p->{id_event};
     given( $type ) {
         when( 'stash' ) {
-            
+            my $row = $p->{id_rule} 
+                ? DB->BaliEventRules->search({ id=>$id },{ select=>'stash_data' })->hashref->first 
+                : DB->BaliEvent->search({ id=>$id }, { select=>'event_data' })->hashref->first; 
+            $data = $p->{id_rule} ? $row->{stash_data} : $row->{event_data} if $row;
         }
         when( 'dsl' ) {
-            
+            my $row = DB->BaliEventRules->search({ id=>$id }, { select=>'dsl' })->first;
+            $data = $row->{dsl} if $row;
         }
         when( 'output' ) {
-            
+            my $row = DB->BaliEventRules->search({ id=>$id }, { select=>'log_output' })->first;
+            $data = $row->{log_output} if $row;
         }
     }
+    $c->stash->{json} = { success=>\1, data=>$data };
     $c->forward("View::JSON");
 }
 1;

@@ -2,7 +2,7 @@
     var ps = 30;
     var Record = Ext.data.Record.create(
         [ 'event_key', 'event_status', 'event_data', 'description', 'ts',
-            'data', 'type', 'dsl', 'output',
+            'data', 'type', 'id_rule', 'id_event', 
             'mid', 'id', '_id', '_is_leaf', '_parent' ]
     );
      var store_events = new Ext.ux.maximgb.tg.AdjacencyListStore({  
@@ -15,24 +15,30 @@
     Baseliner.event_data = function( id_grid, rownum ) {
         var g = Ext.getCmp( id_grid );
         var rec = g.getStore().getAt( rownum );
-        var dataedit = new Baseliner.DataEditor({ data: rec.data.data });
-        var win = new Ext.Window({ layout:'fit', width:800, height: 400, items:dataedit });
-        win.show();
+        Baseliner.ajaxEval('/event/event_data', { id_event: rec.data.id_event, id_rule: rec.data.id_rule, type: 'stash' }, function(res){
+            var output = new Ext.form.TextArea({ value: res.data, style:'font-family:Consolas, Courier New, Courier' });
+            var win = new Baseliner.Window({ layout:'fit', width:800, height: 400, items: output });
+            win.show();
+        });
     };
     Baseliner.event_dsl = function( id_grid, rownum ) {
         var g = Ext.getCmp( id_grid );
         var rec = g.getStore().getAt( rownum );
-        var dataedit = new Ext.form.TextArea({ value: rec.data.dsl });
-        var win = new Ext.Window({ layout:'fit', width:800, height: 400, items:dataedit });
-        win.show();
+        Baseliner.ajaxEval('/event/event_data', { id_rule: rec.data.id_rule, type:'dsl' }, function(res){
+            var dsl = new Ext.form.TextArea({ value: res.dsl });
+            var win = new Baseliner.Window({ layout:'fit', width:800, height: 400, items: dsl });
+            win.show();
+        });
     };
 
     Baseliner.event_output = function( id_grid, rownum ) {
         var g = Ext.getCmp( id_grid );
         var rec = g.getStore().getAt( rownum );
-        var dataedit = new Ext.form.TextArea({ value: rec.data.output, style:'font-family:Consolas, Courier New, Courier' });
-        var win = new Ext.Window({ layout:'fit', width:800, height: 400, items: dataedit, maximizable:true });
-        win.show();
+        Baseliner.ajaxEval('/event/event_data', { id_rule: rec.data.id_rule, type:'output' }, function(res){
+            var output = new Ext.form.TextArea({ value: res.output, style:'font-family:Consolas, Courier New, Courier' });
+            var win = new Baseliner.Window({ layout:'fit', width: 800, height: 400, items: output, maximizable:true });
+            win.show();
+        });
     };
 
     var render_data = function(value,metadata,rec,rowIndex,colIndex,store) {
