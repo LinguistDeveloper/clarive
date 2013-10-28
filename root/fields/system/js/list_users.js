@@ -17,7 +17,12 @@ params:
 	var data = params.topic_data;
 	var meta = params.topic_meta;
 	
-	var users = new Array();
+    var allowBlank;
+    if (meta.allowBlank == 'false') allowBlank = false;
+    if (meta.allowBlank == 'true') allowBlank = true;
+    if (meta.allowBlank == undefined) allowBlank = true;
+	
+    var users = new Array();
 	
 	if(data && eval('data.' + meta.bd_field)){
 		var eval_users = eval('data.' + meta.bd_field);
@@ -40,8 +45,8 @@ params:
         hiddenName: meta.id_field,		
         store: user_box_store,
 		disabled: meta ? meta.readonly : true,
-		singleMode: meta.single_mode
-		
+		singleMode: meta.single_mode,
+		allowBlank: allowBlank
     });
     
     user_box_store.on('load',function(){
