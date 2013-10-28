@@ -8,7 +8,10 @@ use utf8;
 
 with 'Baseliner::Role::Service';
 
-register 'service.job.elements.rename' => { name => 'Rename Files by Suffix', handler => \&run, };
+register 'service.job.elements.rename' => { 
+    name    => 'Rename Files by Suffix', 
+    handler => \&run, 
+};
 
 sub run {
     my ($self,$c, $config)=@_;
@@ -17,9 +20,22 @@ sub run {
     my $job = $stash->{job};
     my $log = $job->logger;
     $self->log( $job->logger );
+    my $bl = $job->bl;
 
     $log->debug( _loc('Running file rename for baseline %1', $job->bl) );
-    $self->rename_files( bl=>$job->bl, path=>$job->job_dir );
+    $self->rename_files( bl=>$bl, path=>$job->job_dir );
+    
+    my @items_renamed;
+    for my $item ( _array( $stash->{items} ) ) {
+        if( $item->path =~ /{$bl}/ ) {
+            my $old_path = $item->path;
+            $item->rename( sub{ s/{$bl}//g } );
+            push @items_renamed, { old=>$old_path, new=>$item->path };
+        }
+    }
+    $log->info( _loc( 'Renamed %1 items', scalar(@items_renamed)), \@items_renamed )
+        if @items_renamed;
+    return \@items_renamed;
 }
 
 sub rename_files {
@@ -28,6 +44,7 @@ sub rename_files {
     _check_parameters( $p, qw/path bl/ );
     return if $p->{bl} eq '*'; # WTF?
     _fail unless length $p->{path};
+    my $bl = $p->{bl};
     
     my $dir = Path::Class::dir( $p->{path} );
     _fail _loc('Could not find rename root dir %1', $dir) unless -e $dir;
@@ -39,7 +56,7 @@ sub rename_files {
             return if $path =~ m/system volume/i;
             return if $f->is_dir;
             my $file = $f->stringify ;
-            my $new_name = $self->rename( $p->{bl}, $file );
+            my $new_name = $self->rename( $bl, $file );
             if( $file ne $new_name ) {
                 if( -e $new_name ) {
                     unlink $new_name
@@ -55,9 +72,9 @@ sub rename_files {
                 $list_del .= "File '$file' deleted.\n";
             }
     });
+
     $self->log->info(_loc('Renamed elements'), data=>$list ) if $list;
     $self->log->info(_loc('Deleted elements that belong to another baseline'), data=>$list_del ) if $list_del;
-    #TODO now rename elements from $stash->{elements};
 }
 
 sub rename {
