@@ -2375,7 +2375,7 @@ Baseliner.ComboSingle = Ext.extend( Ext.form.ComboBox, {
 
         self.fieldLabel = self.fieldLabel || self.name;
         self.valueField = self.field || self.name;
-        self.displayField = self.field || self.name;
+        self.displayField = self.displayField || self.field || self.name;
         if( !self.value ) self.value = data.length>0 ? data[0][0] : null;
         
         Baseliner.ComboSingle.superclass.initComponent.call(this); 
@@ -2384,6 +2384,45 @@ Baseliner.ComboSingle = Ext.extend( Ext.form.ComboBox, {
         var self = this;
         return new Ext.data.SimpleStore({
             fields: [ self.name ],
+            data : data 
+        });  
+    }
+});
+
+Baseliner.ComboDouble = Ext.extend( Ext.form.ComboBox, {
+    name: 'item',
+    mode: 'local',
+    triggerAction: 'all',
+    editable: false,
+    anchor: '100%',
+    forceSelection: true,
+    allowBlank: false,
+    selectOnFocus: false,
+    initComponent: function(){
+        var self = this;
+        var data = [];
+        if( self.data ) {
+            Ext.each( self.data, function(v){
+                data.push(v);
+            });
+        }
+        self.store = self.buildStore(data);
+
+        self.fieldLabel = self.fieldLabel || self.name;
+        self.valueField = self.name;
+        self.displayField = 'display_name';
+        self.hiddenField = self.name;
+        if( !self.value ) self.value = data.length>0 ? data[0][0] : null;
+        
+        Baseliner.ComboDouble.superclass.initComponent.call(this); 
+    },
+    get_save_data : function(){  // otherwise, getForm().getValues() returns the displayField
+        return this.getValue();
+    },
+    buildStore : function(data){
+        var self = this;
+        return new Ext.data.SimpleStore({
+            fields: [ self.name, 'display_name' ],
             data : data 
         });  
     }
@@ -2403,6 +2442,7 @@ Baseliner.ComboSingleRemote = Ext.extend( Baseliner.ComboSingle, {
         });  
     }
 });
+
 // a hidden field that updates the store for a grid, used in list_topics
 Baseliner.HiddenGridField = Ext.extend( Ext.form.Hidden, {
     setValue : function(v) {
