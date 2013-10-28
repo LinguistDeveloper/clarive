@@ -164,6 +164,9 @@ sub related : Local {
     my $show_release = $p->{show_release} // '0';
     my $where = {};
     my $query = $p->{query};
+    
+        
+    
     length($query) and $where = query_sql_build( query=>$query, fields=>{
         map { $_ => "me.$_" } qw/
         mid 
@@ -189,6 +192,8 @@ sub related : Local {
         ##Tratamos todos los tópicos, independientemente si son releases o no.
         delete $where->{'categories.is_release'}; 
         my $filter = _decode_json($p->{filter});
+        
+        $limit = $filter->{limit};
         
         if($filter->{categories}){
             my @categories = _array $filter->{categories};
