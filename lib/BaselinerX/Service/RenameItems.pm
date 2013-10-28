@@ -10,7 +10,8 @@ with 'Baseliner::Role::Service';
 
 register 'service.job.rename_items' => { 
     name    => 'Rename Baseline Items and Files',
-    data    => { rename_items=>1, rename_files=>2 },
+    data    => { rename_items=>1, rename_files=>1 },
+    icon    => '/static/images/icons/baseline.gif',
     handler => \&run, 
 };
 
