@@ -9,7 +9,7 @@
        autoLoad : true,  
        url: '/event/log',
 	   //baseParams: { topic_mid: data ? data.topic_mid : obj_topic_mid.getValue() == -1 ? '' : obj_topic_mid.getValue() },
-       reader: new Ext.data.JsonReader({ id: '_id', root: 'data', totalProperty: 'total', successProperty: 'success' }, Record )
+       reader: new Ext.data.JsonReader({ id: '_id', root: 'data', totalProperty: 'totalCount', successProperty: 'success' }, Record )
     });
 
     Baseliner.event_data = function( id_grid, rownum ) {
