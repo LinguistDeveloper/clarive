@@ -124,6 +124,9 @@ method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
     } else {
         _fail _loc "balix: can't send file: missing remote dir in `%1`", $remote;
     }
+    # check file writeable
+    my ($rc,$ret) = $self->check_writeable($remote);
+    _fail _loc("balix: can't send file: file not writeable `%1` (rc: %2)", $remote, $rc) if $rc;
     $self->_send_file( $local, $remote );
     if( $user ) {
         $self->_execute( 'chown', "${user}:${group}", $remote );
