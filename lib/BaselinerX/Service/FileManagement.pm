@@ -146,7 +146,8 @@ sub run_ship {
             $local_path = $server->parse_vars($local_path);
             $log->debug( _loc('rel path mode `%1`, local_path=%2', $rel_path, $local_path ) );
             # set remote to remote + local_path, except on local_files w/ wildcard
-            my $remote = $is_wildcard ? _file( $remote_path, $local_path ) : $remote_path;
+            #my $remote = $is_wildcard ? _file( $remote_path, $local_path ) : $remote_path;
+            my $remote = _file( $remote_path, $local_path );
             $log->info( _loc( '*%1* Sending file `%2` to `%3`', $stmt, $local, $server_str.':'.$remote ) );
             $agent->put_file(
                 local  => "$local",

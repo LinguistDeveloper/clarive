@@ -44,8 +44,8 @@
         rel_path,
         anchor_path,
         { xtype:'textarea', fieldLabel: _('Remote Path'), height: 80, name: 'remote_path', value: params.data.remote_path },
-        { xtype:'textarea', fieldLabel: _('Chown'), height: 80, name: 'chown', value: params.data.chown },
-        { xtype:'textarea', fieldLabel: _('Chmod'), height: 80, name: 'chmod', value: params.data.chmod }
+        { xtype:'textfield', fieldLabel: _('Chown'), name: 'chown', value: params.data.chown },
+        { xtype:'textfield', fieldLabel: _('Chmod'), name: 'chmod', value: params.data.chmod }
     ]
 })
 
