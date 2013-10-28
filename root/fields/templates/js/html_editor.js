@@ -42,7 +42,7 @@ params:
 					fieldLabel: _('Description'),
 					width: '100%',
 					value: data ? data[meta.bd_field] : '',
-					height: 350
+					height: meta.height ? parseInt(meta.height) : 350
 				})
 			]
 		}				

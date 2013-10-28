@@ -27,7 +27,7 @@ params:
         allowBlank: allow,
         store: revision_store,
         layout: 'form',
-        height: meta.height || 200,
+        height: meta.height ? parseInt(meta.height) : 200,
         readOnly:  meta && meta.readonly ? meta.readonly : false,
         //fieldLabel: _(meta.name_field),
         hideHeaders: true,
