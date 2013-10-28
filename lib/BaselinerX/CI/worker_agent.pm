@@ -1,5 +1,6 @@
 package BaselinerX::CI::worker_agent;
 use Baseliner::Moose;
+use Baseliner::Utils qw(:logging _file _dir);
 use v5.10;
 
 has_ci 'server';
@@ -179,6 +180,9 @@ the merged stdin + stderr.
 =cut
 sub execute {
     my $self = shift;
+    my $tmout = $self->timeout;
+    alarm $tmout if $tmout; 
+    local $SIG{ALRM} = sub { _fail _loc 'worker agent error: timeout during execute (tmout=%1 sec)', $tmout } if $tmout;
     my %p = %{ shift() } if ref $_[0] eq 'HASH';
     my @cmd = @_;
     my $res = $self->remote_eval( q{ 
@@ -194,6 +198,7 @@ sub execute {
             die $! if $rc;
         });
     }, { cmd=>\@cmd, chdir=>$p{chdir} } );
+    alarm 0;
     return $self->ret;
 }
 

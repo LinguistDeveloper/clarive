@@ -14,6 +14,7 @@ has remote_temp => qw(is rw isa Any lazy 1), default => sub {
     };
 has remote_perl => qw(is rw isa Str default perl);
 has remote_tar  => qw(is rw isa Str default tar);
+has agent_timeout => qw(is rw isa Num default 0);  # timeout for executes, send_file, etc., disabled by default
 has connect_timeout => qw(is rw isa Num), default => sub{
     30; # 30 seconds
 };
