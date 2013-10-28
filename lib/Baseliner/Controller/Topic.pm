@@ -193,7 +193,7 @@ sub related : Local {
         delete $where->{'categories.is_release'}; 
         my $filter = _decode_json($p->{filter});
         
-        $limit = $filter->{limit};
+        #$limit = $filter->{limit};
         
         if($filter->{categories}){
             my @categories = _array $filter->{categories};
@@ -262,9 +262,10 @@ sub related : Local {
             $_->{name_status} ||= $_->{data}{name_status};
         }
 
-        $_->{name} = $_->{categories}{is_release} eq '1' 
-            ?  $_->{title}
-            :  _loc($_->{categories}->{name}) . ' #' . $_->{mid};
+        #$_->{name} = $_->{categories}{is_release} eq '1' 
+        #    ?  $_->{title}
+        #    :  _loc($_->{categories}->{name}) . ' #' . $_->{mid};
+        $_->{name} = _loc($_->{categories}->{name}) . ' #' . $_->{mid};
         $_->{color} = $_->{categories}->{color};
         $_
     } $rs_topic->all;
