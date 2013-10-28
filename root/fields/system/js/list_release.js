@@ -26,17 +26,6 @@ params:
 	
     var release_box_store = new Baseliner.store.Topics({ baseParams: {  limit: ps, mid: topic_mid, show_release: 1, filter: meta.filter ? meta.filter : ''} });
 
-	var tpl = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">',
-            '<span id="boot" style="width:200px"><span class="label" ', 
-            ' style="float:left;padding:2px 8px 2px 8px;background: {color}"',
-            ' >{name}</span></span>',
-            '&nbsp;&nbsp;<b>{title}</b></div></tpl>' );
-	
-	var displayFieldTpl = new Ext.XTemplate( '<tpl for=".">',
-            '<span id="boot" style="background:transparent; margin-right: 8px"><span class="label" style="float:left;padding:2px 8px 2px 8px;background: {color}; cursor:pointer;margin-right: 8px"',
-            ' onclick="javascript:Baseliner.show_topic_colored({mid}, \'{name}\', \'{color}\');">{name}</span>{title}11</span>',
-            '</tpl>' );	
-	
 	var release_box = new Baseliner.TopicBox({
 		fieldLabel: _(meta.name_field),
 		pageSize: ps,
