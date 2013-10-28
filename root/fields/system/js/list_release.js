@@ -36,9 +36,7 @@ params:
 		store: release_box_store,
 		disabled: meta ? meta.readonly : true,
 		singleMode: meta.single_mode == 'false' || !meta.single_mode ? false : true,
-		hidden: meta ? (meta.hidden ? meta.hidden : false): true,
-		tpl: tpl,
-		displayFieldTpl: displayFieldTpl
+		hidden: meta ? (meta.hidden ? meta.hidden : false): true
 	});	
 	
     release_box_store.on('load',function(){
