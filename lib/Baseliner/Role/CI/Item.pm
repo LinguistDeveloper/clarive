@@ -37,10 +37,13 @@ sub rename {
     if( ref $expr eq 'CODE' ) {
         local $_ = $self->path;
         $expr->();
-        return $self->path( $_ );
+        $self->path( $_ );
     } else {
-        return $self->path( $expr );
+        $self->path( $expr );
     }
+    my $name = Util->_file($self->path)->basename;
+    $self->name( $name );
+    return $self->path;
 }
 
 sub path_cut {
