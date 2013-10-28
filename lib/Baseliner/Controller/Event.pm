@@ -61,25 +61,27 @@ sub log : Local {
     @rows = map {
         # event_key event_status event_data 
         my $e  = $_;
+        delete $e->{event_data};
         my $ev = $c->registry->get( $_->{event_key} );
         $e->{description} = $ev->description;
         $e->{_id} = $e->{id};
         $e->{_parent} = undef;
         $e->{type} = 'event';
         #_error "EV=$e->{event_data}";
-        $e->{data} = _damn( _load( $e->{event_data} ) ) if length $e->{event_data};
+#        $e->{data} = _damn( _load( $e->{event_data} ) ) if length $e->{event_data};
         my $rules = delete $e->{rules};
         my $k = 1;
         my @rules = map {
             #_error $_->{stash_data};
             +{
                 %$_, 
+                id_rule => $_->{id},
                 _parent       => $e->{_id},
                 _id           => $e->{_id} . '-' . $k++,  # $_->{id} useless and may repeat
                 event_status  => $_->{return_code} ? 'ko' : 'ok',
                 type          => 'rule',
                 event_key     => $_->{rule} && $_->{rule}{id}?_loc('rule: %1', $_->{rule}{id} . ': ' . $_->{rule}{rule_name} ):_loc("Notifications"),
-                data          => {},#_damn( $_->{stash_data} ?  _load( $_->{stash_data} ) : {} ),
+ #               data          => {},#_damn( $_->{stash_data} ?  _load( $_->{stash_data} ) : {} ),
                 dsl           => $_->{dsl},
                 output        => $_->{log_output},
                 _is_leaf      => \1,
