@@ -2,7 +2,7 @@
     var ps = 30;
     var Record = Ext.data.Record.create(
         [ 'event_key', 'event_status', 'event_data', 'description', 'ts',
-            'data', 'type', 'id_rule', 'id_event', 
+            'data', 'type', 'id_rule', 'id_rule_log', 'id_event', 
             'mid', 'id', '_id', '_is_leaf', '_parent' ]
     );
      var store_events = new Ext.ux.maximgb.tg.AdjacencyListStore({  
@@ -15,7 +15,7 @@
     Baseliner.event_data = function( id_grid, rownum ) {
         var g = Ext.getCmp( id_grid );
         var rec = g.getStore().getAt( rownum );
-        Baseliner.ajaxEval('/event/event_data', { id_event: rec.data.id_event, id_rule: rec.data.id_rule, type: 'stash' }, function(res){
+        Baseliner.ajaxEval('/event/event_data', { id_event: rec.data.id_event, id_rule_log: rec.data.id_rule_log, type: 'stash' }, function(res){
             var output = new Ext.form.TextArea({ value: res.data, style:'font-family:Consolas, Courier New, Courier' });
             var win = new Baseliner.Window({ layout:'fit', width:800, height: 400, items: output });
             win.show();
@@ -24,7 +24,7 @@
     Baseliner.event_dsl = function( id_grid, rownum ) {
         var g = Ext.getCmp( id_grid );
         var rec = g.getStore().getAt( rownum );
-        Baseliner.ajaxEval('/event/event_data', { id_rule: rec.data.id_rule, type:'dsl' }, function(res){
+        Baseliner.ajaxEval('/event/event_data', { id_rule_log: rec.data.id_rule_log, type:'dsl' }, function(res){
             var dsl = new Ext.form.TextArea({ value: res.dsl });
             var win = new Baseliner.Window({ layout:'fit', width:800, height: 400, items: dsl });
             win.show();
@@ -34,7 +34,7 @@
     Baseliner.event_output = function( id_grid, rownum ) {
         var g = Ext.getCmp( id_grid );
         var rec = g.getStore().getAt( rownum );
-        Baseliner.ajaxEval('/event/event_data', { id_rule: rec.data.id_rule, type:'output' }, function(res){
+        Baseliner.ajaxEval('/event/event_data', { id_rule_log: rec.data.id_rule_log, type:'output' }, function(res){
             var output = new Ext.form.TextArea({ value: res.output, style:'font-family:Consolas, Courier New, Courier' });
             var win = new Baseliner.Window({ layout:'fit', width: 800, height: 400, items: output, maximizable:true });
             win.show();
@@ -108,6 +108,9 @@
             { id:'_id', header: _("ID"), width: 60, sortable: false, dataIndex: '_id' },
             { header: _('Timestamp'), width: 80, dataIndex: 'ts' },
             { header: _('Event Key'), width: 160, dataIndex: 'event_key' },
+            { header: _('Rule Log ID'), width: 40, hidden: true, dataIndex: 'id_rule_log' },
+            { header: _('Event ID'), width: 40, hidden: true, dataIndex: 'id_event' },
+            { header: _('Rule ID'), width: 40, hidden: true, dataIndex: 'id_rule' },
             { header: _('Description'), width: 160, dataIndex: 'description' },
             { header: _('Status'), width: 40, dataIndex: 'event_status', renderer: render_status },
             { header: _('Actions'), width: 120, dataIndex: 'id', renderer: render_data }
