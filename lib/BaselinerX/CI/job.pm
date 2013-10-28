@@ -250,8 +250,13 @@ sub _create {
     # create job contents
     my @cs_list;
     for my $cs ( @cs_cis ) {
-        if( my $active_job = $cs->is_in_active_job ) {
-            _fail _loc("Job element '%1' is in an active job: %2", $cs->name, $active_job->name )
+        my @active_jobs = $cs->is_in_active_job;
+        for my $active_job ( @active_jobs ) {
+            if ( $active_job->job_type ne 'static') {
+                _fail _loc("Job element '%1' is in an active job: %2", $cs->name, $active_job->name )
+            } elsif ( $active_job->bl eq $self->bl ) {
+                _fail _loc("Job element '%1' is in an active job to bl %3: %2", $cs->name, $active_job->name, $self->bl )
+            }
         }
         push @cs_list, $cs->topic_name;
     }
@@ -302,7 +307,7 @@ sub is_active {
     my $self = shift;
     if( my $row = DB->BaliJob->find( $self->id_job ) ) {
         my $status = $row->status;
-        return 1 if $status !~ /REJECTED|CANCEL|ERROR|FINISHED|KILLED|EXPIRED/;
+        return 1 if $status !~ /REJECTED|CANCELLED|ERROR|FINISHED|KILLED|EXPIRED/;
     }
     return 0;
 }

@@ -17,7 +17,6 @@ sub encode_json {
     my($self, $c, $data) = @_;
     my $encoder = $self->{_json_encoder} // ( $self->{_json_encoder} = JSON::XS->new->allow_blessed->convert_blessed );
     $encoder->max_depth([1024]);
-    _log "EJSON: ". $encoder->get_max_depth();
     $encoder->encode($data);
 }
 

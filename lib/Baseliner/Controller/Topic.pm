@@ -1198,7 +1198,7 @@ sub filters_list : Local {
 
 
     if ( !$is_root ) {
-        map { $tmp{$_->{id_status_from}} = 'id'; $tmp{$_->{id_status_to}} = 'id' } 
+        map { $tmp{$_->{id_status_from}} = 'id' } 
                     Baseliner->model('Topic')->user_workflow( $c->username );        
     };
 
