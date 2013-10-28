@@ -21,20 +21,28 @@ sub run {
     my $log = $job->logger;
     $self->log( $job->logger );
     my $bl = $job->bl;
+    my $all_bls = join '}|{', grep !/^\*$/, map { $_->bl } BaselinerX::CI::bl->search_cis;
 
     $log->debug( _loc('Running file rename for baseline %1', $job->bl) );
-    $self->rename_files( bl=>$bl, path=>$job->job_dir );
+    $self->rename_files( bl=>$bl, all_bls=>$all_bls, path=>$job->job_dir );
     
     my @items_renamed;
+    my @items;
     for my $item ( _array( $stash->{items} ) ) {
-        if( $item->path =~ /{$bl}/ ) {
-            my $old_path = $item->path;
+        my $path = $item->path; 
+        if( $path =~ /{$bl}/ ) {
+            my $old_path = $path;
             $item->rename( sub{ s/{$bl}//g } );
             push @items_renamed, { old=>$old_path, new=>$item->path };
+            push @items, $item;
+        }
+        elsif( $path !~ /{($all_bls)}/ ) {
+            push @items, $item;
         }
     }
     $log->info( _loc( 'Renamed %1 items', scalar(@items_renamed)), \@items_renamed )
         if @items_renamed;
+    $stash->{items} = \@items;
     return \@items_renamed;
 }
 
@@ -45,10 +53,12 @@ sub rename_files {
     return if $p->{bl} eq '*'; # WTF?
     _fail unless length $p->{path};
     my $bl = $p->{bl};
+    my $all_bls = $p->{all_bls};
     
     my $dir = Path::Class::dir( $p->{path} );
     _fail _loc('Could not find rename root dir %1', $dir) unless -e $dir;
     my ($list, $list_del);
+    my $cnt = 0;
 
     $dir->recurse( callback => sub {
             my $f = shift;
@@ -65,15 +75,16 @@ sub rename_files {
                 rename $file, $new_name
                      or _throw _loc 'Could not rename element %1 to %2: %3', $file, $new_name, $!;
                 $list .= "File '$file' renamed to '$new_name'\n";
+                $cnt++;
             } 
-            elsif( $file =~ /{[A-Z]+}/ ) {
+            elsif( $file =~ /{($all_bls)}/ ) {
                 # delete files from other baselines
                 unlink $file or _throw _loc 'Could not delete file that belongs to another baseline %1: %2', $file, $!;
                 $list_del .= "File '$file' deleted.\n";
             }
     });
 
-    $self->log->info(_loc('Renamed elements'), data=>$list ) if $list;
+    $self->log->info(_loc('Renamed %1 files',$cnt), data=>$list ) if $list;
     $self->log->info(_loc('Deleted elements that belong to another baseline'), data=>$list_del ) if $list_del;
 }
 
