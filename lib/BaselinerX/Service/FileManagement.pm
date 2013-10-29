@@ -120,7 +120,7 @@ sub run_ship {
         $server = ci->new( $server ) unless ref $server;
         $remote_path = $server->parse_vars( $remote_path );
         my $server_str = "$user\@".$server->name;
-        _debug $stmt . " - Connecting to server " . $server_str;
+        _debug "Connecting to server " . $server_str;
         my $agent = $server->connect( user=>$user );
         my $cnt = 0;
 
@@ -148,7 +148,7 @@ sub run_ship {
             # set remote to remote + local_path, except on local_files w/ wildcard
             #my $remote = $is_wildcard ? _file( $remote_path, $local_path ) : $remote_path;
             my $remote = _file( $remote_path, $local_path );
-            $log->info( _loc( '*%1* Sending file `%2` to `%3`', $stmt, $local, $server_str.':'.$remote ) );
+            $log->info( _loc( 'Sending file `%1` to `%2`', $local, "*$server_str*".':'.$remote ) );
             $agent->put_file(
                 local  => "$local",
                 remote => "$remote",
@@ -156,12 +156,12 @@ sub run_ship {
             if( length $chown ) {
                 _debug "chown $chown $remote";
                 $agent->chown( $chmod, "$remote" );
-                $log->warn( _loc('*%1* Error doing a chown `%2` to file `%3`: %4', $stmt, $chown,$remote, $agent->output ), $agent->tuple_str ) if $agent->rc && $agent->rc!=512;
+                $log->warn( _loc('Error doing a chown `%1` to file `%2`: %3', $chown,$remote, $agent->output ), $agent->tuple_str ) if $agent->rc && $agent->rc!=512;
             }
             if( length $chmod ) {
                 _debug "chmod $chmod $remote";
                 $agent->chmod( $chmod, "$remote" );
-                $log->warn( _loc('*%1* Error doing a chmod `%2` to file `%3`: %4', $stmt, $chmod,$remote, $agent->output ), $agent->tuple_str ) if $agent->rc && $agent->rc!=512;
+                $log->warn( _loc('Error doing a chmod `%1` to file `%2`: %3', $chmod,$remote, $agent->output ), $agent->tuple_str ) if $agent->rc && $agent->rc!=512;
             }
         }
         $log->warn( _loc( 'Could not find any file locally to ship to `%1`', $server_str ), $config )
@@ -186,9 +186,9 @@ sub run_retrieve {
     for my $server ( split /,/, $config->{server} ) {
         $server = ci->new( $server ) unless ref $server;
         my $server_str = "$user\@".$server->name;
-        _debug $stmt . " - Connecting to server " . $server_str;
+        _debug "Connecting to server " . $server_str;
         my $agent = $server->connect( user=>$user );
-        $log->info( _loc( '*%1* Retrieving file `%2` to `%3`', $stmt, $local, $server_str.':'.$remote ) );
+        $log->info( _loc( 'Retrieving file `%1` to `%2`', $local, "*$server_str".'*:'.$remote ) );
         $agent->get_file(
             local  => $local,
             remote => $remote,
