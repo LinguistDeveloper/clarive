@@ -238,9 +238,9 @@ sub project_changes {
                 $p;
             } else {
                 if( $p->can('mid') ) {
-                    _ci( $p->mid );
+                    ci->new( $p->mid );
                 } else {
-                    _ci( $p );  # is a number then, or try my luck
+                    ci->new( $p );  # is a number then, or try my luck
                 }
             }
         } _array( $stash->{project_changes} );
@@ -295,7 +295,7 @@ sub merge_into_stash {
 
 sub stash_has_nature {
     my ($nature,$stash) = @_;
-    $nature = _ci( $nature ) unless ref $nature;
+    $nature = ci->new( $nature ) unless ref $nature;
     my $nature_items = $nature->filter_items( items=>$stash->{items} ); # save => 1 ??  
     return $nature_items; 
 }
@@ -305,12 +305,12 @@ sub changeset_projects {
     # for each changeset, get project and group changesets
     my %projects;
     for my $cs ( _array( $stash->{changesets} ) ) {
-        $cs = _ci( $cs ) unless ref $cs;
+        $cs = ci->new( $cs ) unless ref $cs;
         for my $project ( $cs->related( does=>'Project' ) ) {
             $projects{ $project->mid } = $project;
         }
     }
-    #my $project = _ci( 6901 );  # TEF
+    #my $project = ci->new( 6901 );  # TEF
     return values %projects;
 }
 
@@ -319,12 +319,12 @@ sub changeset_projects {
 #    # for each changeset, get project and group changesets
 #    my %projects;
 #    for my $project ( _array( $stash->{project_changes} ) ) {
-#        $cs = _ci( $cs ) unless ref $cs;
+#        $cs = ci->new( $cs ) unless ref $cs;
 #        for my $project ( $cs->related( does=>'Project' ) ) {
 #            $projects{ $project->mid } = $project;
 #        }
 #    }
-#    #my $project = _ci( 6901 );  # TEF
+#    #my $project = ci->new( 6901 );  # TEF
 #    return values %projects;
 #}
 
@@ -551,7 +551,7 @@ register 'statement.nature.block' => {
         sprintf(q{
             {
                 # check if nature applies 
-                my $nature = _ci( '%s' );
+                my $nature = ci->new( '%s' );
                 if( my $nature_items = stash_has_nature( $nature, $stash) ) {
                     # load natures config
                     my $variables = $nature->variables->{ $stash->{bl} // '*' } // {};
