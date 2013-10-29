@@ -2179,26 +2179,28 @@ sub check_fields_required {
     my $isValid = 1;
     my (@fields_form, @fields_required);
     my $field_name;
-    if (!$is_root){     
-        my $meta = Baseliner->model('Topic')->get_meta( $mid );
-        my %fields_required =  map { $_->{bd_field} => $_->{name_field} } grep { $_->{allowBlank} && $_->{allowBlank} eq 'false' && $_->{origin} ne 'system' } _array( $meta );
-        my $data = Baseliner->model('Topic')->get_data( $meta, $mid );  
-        
-        for my $field ( keys %fields_required){
-            next if !Baseliner->model('Permissions')->user_has_action( 
-                username => $username, 
-                action => 'action.topicsfield.'._name_to_id($data->{name_category}).'.'.$field.'.'._name_to_id($data->{name_status}).'.write'
-            );
-            my $v = $data->{$field};
-            $isValid = (ref $v eq 'ARRAY' ? @$v : ref $v eq 'HASH' ? keys %$v : defined $v && $v ne '' ) ? 1 : 0;
-            if($p{data}){
-                $v = $p{data}->{$field};
-                $isValid = (ref $v eq 'ARRAY' ? @$v : ref $v eq 'HASH' ? keys %$v : defined $v && $v ne '' ) ? 1 : 0;                
-            }
+    if (!$is_root){
+        if($mid != -1){
+            my $meta = Baseliner->model('Topic')->get_meta( $mid );
+            my %fields_required =  map { $_->{bd_field} => $_->{name_field} } grep { $_->{allowBlank} && $_->{allowBlank} eq 'false' && $_->{origin} ne 'system' } _array( $meta );
+            my $data = Baseliner->model('Topic')->get_data( $meta, $mid );  
             
-            push @fields_required , $fields_required{$field} if !$isValid;
-            #$field_name = $fields_required{$field};
-            #last if !$isValid;
+            for my $field ( keys %fields_required){
+                next if !Baseliner->model('Permissions')->user_has_action( 
+                    username => $username, 
+                    action => 'action.topicsfield.'._name_to_id($data->{name_category}).'.'.$field.'.'._name_to_id($data->{name_status}).'.write'
+                );
+                my $v = $data->{$field};
+                $isValid = (ref $v eq 'ARRAY' ? @$v : ref $v eq 'HASH' ? keys %$v : defined $v && $v ne '' ) ? 1 : 0;
+                if($p{data}){
+                    $v = $p{data}->{$field};
+                    $isValid = (ref $v eq 'ARRAY' ? @$v : ref $v eq 'HASH' ? keys %$v : defined $v && $v ne '' ) ? 1 : 0;                
+                }
+                
+                push @fields_required , $fields_required{$field} if !$isValid;
+                #$field_name = $fields_required{$field};
+                #last if !$isValid;
+            }
         }
         
         #if($p{data}){
