@@ -1789,6 +1789,7 @@ sub set_release {
             event_new 'event.topic.modify_field' => { username   => $user,
                                                 field      => $id_field,
                                                 old_value      => $old_release_name,
+                                                new_value_mid   => $new_release,
                                                 new_value  => $row_release->title,
                                                 text_new      => '%1 modified topic: changed release to %4',
                                                } => sub {
@@ -1804,6 +1805,7 @@ sub set_release {
             event_new 'event.topic.modify_field' => { username   => $user,
                                                 field      => $id_field,
                                                 old_value      => $old_release_name,
+                                                new_value_mid   => '',
                                                 new_value  => '',
                                                 text_new      => '%1 deleted release %3',
                                                } => sub {
