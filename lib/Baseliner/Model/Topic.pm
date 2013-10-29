@@ -2119,7 +2119,7 @@ sub cache_topic_remove {
     # my own first
     Baseliner->cache_remove( qr/:$topic_mid:/ );
     # refresh cache for related stuff 
-    if $topic_mid {    
+    if ($topic_mid) {    
         for my $rel ( 
             map { +{mid=>$_->{mid}, type=>$_->{_edge}{rel_type} } } 
             _ci( $topic_mid )->related( depth=>1 ) ) 
