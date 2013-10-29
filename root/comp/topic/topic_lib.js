@@ -954,12 +954,25 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 },
                 // failure
                 function(res){
-                   self.btn_save_form.enable();
-                   if( self.permDelete ) {
-                       self.btn_delete_form.enable();
-                   }
-                   Baseliner.error_win('',{},res,res.responseText );
-                   if( Ext.isFunction(opts.failure) ) opts.failure(res);
+                    self.btn_save_form.enable();
+                    if( self.permDelete ) {
+                        self.btn_delete_form.enable();
+                    }
+                    if(res.fields_required){
+                        for(i=0;i<res.fields_required.length;i++){
+                            var name = form2.findField("ctrl_required").getValue();
+                            //console.dir(Ext.getCmp(name));
+                            var obj = Ext.getCmp(name);
+                            obj.getEl().applyStyles('border: solid 1px #c0272b; margin_bottom: 0px');
+                            Ext.getCmp(obj.label_required).show();                               
+                        }
+                        Baseliner.message(_('Error'), _('This fields are required: ') + res.fields_required.join(',') );
+                    }else{
+                        Baseliner.message(_('Error'), res.msg );
+                    }
+
+                    
+                    if( Ext.isFunction(opts.failure) ) opts.failure(res);
                 }
             );
         };
@@ -1205,7 +1218,11 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
             disabled: self.readOnly ? self.readOnly : false 
         }); 
         self.combo.on('beforequery', function(qe){ delete qe.combo.lastQuery });
-        self.field = new Ext.form.Hidden({ name: self.name, value: self.value });
+        self.field = new Ext.form.TextField({ name: self.name, value: self.value, allowBlank: self.allowBlank, hidden: true});
+        self.field.on('invalid', function(obj, msg){
+            Ext.getCmp('ctrl_required').setValue(self.id);
+        });
+        
         var btn_delete = new Baseliner.Grid.Buttons.Delete({
             disabled: self.readOnly ? self.readOnly : false,
             handler: function() {
@@ -1229,6 +1246,8 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
         self.combo.on('select', function(combo,rec,ix) {
             if( combo.id != self.combo.id ) return; // strange bug with TopicGrid and CIGrid in the same page
             self.add_to_grid( rec.data );
+            self.getEl().applyStyles('border: none');
+            Ext.getCmp(self.label_required).hide();
         });
         self.ddGroup = 'bali-topic-grid-data-' + self.id;
         
@@ -1315,6 +1334,12 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
             mids.push( row.data.mid ); 
         });
         self.field.setValue( mids.join(',') );
+        if(!self.field.allowBlank){
+            if(mids.length == 0){
+                self.getEl().applyStyles('border: solid 1px #c0272b; margin_bottom: 0px');
+                Ext.getCmp(self.label_required).show();
+            }
+        };
     },
     add_to_grid : function(rec){
         var self = this;

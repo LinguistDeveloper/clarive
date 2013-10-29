@@ -114,17 +114,26 @@ sub update : Local {
     
     $p->{username} = $c->username;
     
+    _log ">>>>>>>>>>>>>>>>>>>>>>>>Parametros: " . _dump $p;
+    
     try  {
-        my ($msg, $topic_mid, $status, $title, $category, $modified_on) = $c->model('Topic')->update( $p );
-        $c->stash->{json} = {
-            success      => \1,
-            msg          => _loc( $msg, scalar( _array( $p->{topic_mid} ) ) ),
-            topic_mid    => $topic_mid,
-            topic_status => $status,
-            category     => $category,
-            title        => $title,
-            modified_on  => $modified_on,
-        };            
+        my ($isValid, @field_name) = $c->model('Topic')->check_fields_required( mid => $p->{topic_mid}, username => $c->username, data => $p);
+
+        if($isValid == 1){
+            my ($msg, $topic_mid, $status, $title, $category, $modified_on) = $c->model('Topic')->update( $p );
+            $c->stash->{json} = {
+                success      => \1,
+                msg          => _loc( $msg, scalar( _array( $p->{topic_mid} ) ) ),
+                topic_mid    => $topic_mid,
+                topic_status => $status,
+                category     => $category,
+                title        => $title,
+                modified_on  => $modified_on,
+            };            
+        }
+        else{
+            $c->stash->{json} = { success => \0, fields_required=> \@field_name };    
+        }
     } catch {
         my $e = shift;
         $c->stash->{json} = { success => \0, msg=>_loc($e) };
