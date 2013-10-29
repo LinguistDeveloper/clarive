@@ -897,6 +897,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 Ext.apply({ action: action, form: custom_form, _cis: Ext.util.JSON.encode( self._cis ) }, form_data), 
                 // success
                 function(res){
+                    alert(res.success);
                     self.btn_save_form.enable();
                     if( self.permDelete ) {
                         self.btn_delete_form.enable();
@@ -959,6 +960,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                         self.btn_delete_form.enable();
                     }
                     if(res.fields_required){
+                        alert("En error");
                         for(i=0;i<res.fields_required.length;i++){
                             var name = form2.findField("ctrl_required").getValue();
                             //console.dir(Ext.getCmp(name));
