@@ -1760,6 +1760,8 @@ sub set_release {
     my $release_field = $release_meta[0]->{release_field} // 'undef';
 
     my $topic_mid = $rs_topic->mid;
+    cache_topic_remove($topic_mid);
+
     my $release_row = Baseliner->model('Baseliner::BaliTopic')->search(
                             { is_release => 1, rel_type=>'topic_topic', to_mid=> $topic_mid },
                             { join=>['categories','children','master'], select=>['mid','title'] }
