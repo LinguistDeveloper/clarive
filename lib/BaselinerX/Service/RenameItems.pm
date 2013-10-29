@@ -31,7 +31,7 @@ sub run {
         @files_renamed = $self->rename_files( bl=>$bl, all_bls=>$all_bls, path=>$job->job_dir );
     }
     
-    my @items_renamed;
+    my (@items_renamed, @items_removed );
     if( $config->{rename_items} ) {
         my @items;
         for my $item ( _array( $stash->{items} ) ) {
@@ -41,12 +41,15 @@ sub run {
                 $item->rename( sub{ s/{$bl}//g } );
                 push @items_renamed, { old=>$old_path, new=>$item->path };
                 push @items, $item;
-            }
-            elsif( $path !~ /{($all_bls)}/ ) {
+            } elsif( $path !~ /{($all_bls)}/ ) {
                 push @items, $item;
+            } else {
+                push @items_removed, $item;
             }
         }
-        $log->info( _loc( 'Renamed %1 item(s)', scalar(@items_renamed)), \@items_renamed )
+        $log->info( 
+            _loc( 'Renamed %1 item(s), removed %2 item(s)', scalar(@items_renamed), scalar(@items_removed)), 
+            { renamed=>\@items_renamed, removed=>\@items_removed } )
             if @items_renamed;
         $stash->{items} = \@items;
     }

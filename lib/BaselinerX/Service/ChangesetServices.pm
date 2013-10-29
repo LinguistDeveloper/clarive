@@ -226,7 +226,7 @@ sub nature_items {
         $log->debug( _loc('Project items before for %1', $project->name), \@items );
         my %nature_names;
         my @msg;
-        for my $nature ( map { _ci($_->{mid}) } @nat_rows ) {
+        for my $nature ( map { ci->new($_->{mid}) } @nat_rows ) {
             my @chosen;
             push @msg, "nature = " . $nature->name;
             ITEM: for my $it ( @items ) {
