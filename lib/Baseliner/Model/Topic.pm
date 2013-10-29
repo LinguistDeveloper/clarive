@@ -2117,7 +2117,7 @@ sub find_status_name {
 sub cache_topic_remove {
     my ($self, $topic_mid ) = @_;
     # my own first
-    Baseliner->cache_remove( qr/:$topic_mid:/ );
+    Baseliner->cache_remove( qr/:$topic_mid:/ ) if $topic_mid;
     # refresh cache for related stuff 
     for my $rel ( 
         map { +{mid=>$_->{mid}, type=>$_->{_edge}{rel_type} } } 
