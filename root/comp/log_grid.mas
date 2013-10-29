@@ -29,7 +29,9 @@
         };
         store.load( params );
     };
+    
     // La fuente de Datos JSON con todos el listado:
+    /*
     var store=new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
@@ -60,6 +62,45 @@
             {  name: 'more' }
         ]
     });
+    */
+    var reader = new Ext.data.JsonReader({
+        root: 'data' , 
+        remoteSort: true,
+        totalProperty:"totalCount", 
+        id: 'id'
+        }, [ 
+            {  name: 'id' },
+            {  name: 'id_job' },
+            {  name: 'job' },
+            {  name: 'text' },
+            {  name: 'datalen' },
+            {  name: 'ts' },
+            {  name: 'timestamp' },  // real column name
+            {  name: 'lev' },
+            {  name: 'section' },
+            {  name: 'step' },
+            {  name: 'exec' },
+            {  name: 'prefix' },
+            {  name: 'milestone' },
+            {  name: 'module' },
+            {  name: 'ns' },
+            {  name: 'provider' },
+            {  name: 'service_key' },
+            {  name: 'file' },
+            {  name: 'data' },
+            {  name: 'more' }
+        ]
+    );
+    var grouping = 'step';
+    var store = new Baseliner.GroupingStore({
+            reader: reader,
+            url: '/job/log/json',
+            baseParams: {  start: 0, limit: ps, id_job: '<% $c->stash->{id_job} %>', service_name: '<% $c->stash->{service_name} %>', filter: {} },
+            remoteSort: true,
+            //sortInfo: { field: 'starttime', direction: "DESC" },
+            groupField: grouping
+    });
+    
 
     var current_job = function() { return store.reader.jsonData.job }
     var current_hash = function() { return store.reader.jsonData.job_key }
@@ -264,6 +305,7 @@
         return value + ' ('+exec+')';
     };
     var render_task = function(value,metadata,rec,rowIndex,colIndex,store) {
+        if(!value) value=_('General');
         return '<b>'+value+'</b>';
     };
     var onemeg = 1024 * 1024;
@@ -413,22 +455,35 @@
             });
         } 
     });
+    
+    var gview = new Ext.grid.GroupingView({
+        forceFit: true,
+        enableRowBody: true,
+        enableGrouping: true,
+        autoWidth: true,
+        autoSizeColumns: true,
+        deferredRender: true,
+        startCollapsed: false,
+        //groupTextTpl: '{[ values.rs[0].data[grouping] || _("General") ]}',
+        hideGroupedColumn: true
+    });
 
     var row_sel = new Ext.grid.RowSelectionModel({singleSelect:true});
         // create the grid
         var grid = new Ext.grid.EditorGridPanel({
-            title: '<% _loc('Job Log') %>',
+            title: _('Job Log'),
             header: false,
             /* stripeRows: true, */
             autoScroll: true,
             autoWidth: true,
             autoSizeColumns: true,
-            deferredRender:true,
+            deferredRender: true,
             clicksToEdit: 'auto',
             store: store,
+            view: gview,
             viewConfig: {
-                    scrollOffset: 2,
-                    forceFit: true
+                scrollOffset: 2,
+                forceFit: true
             },
             selModel: row_sel, 
             loadMask: true,

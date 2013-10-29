@@ -91,7 +91,6 @@ sub auto_refresh : Path('/job/log/auto_refresh') {
 
 sub log_rows : Private {
     my ( $self,$c, $id_job )=@_;
-    _db_setup;
     my $p = $c->request->parameters;
     my ($start, $limit, $query, $dir, $sort, $service_name, $filter, $cnt ) = @{$p}{qw/start limit query dir sort service_name filter/};
     $limit||=50;
@@ -112,7 +111,7 @@ sub log_rows : Private {
      );
     push @select, 'data' if $p->{with_data}; 
     # from
-    my $from = {  select=>\@select,  order_by=> ( $sort ? { "-$dir" => $sort } : { -asc => 'me.id' } ),
+    my $from = {  select=>\@select,  order_by=> ( $sort ? [{ "-$dir" => $sort },{ -asc => 'me.id' }] : { -asc => 'me.id' } ),
                     #page => to_pages( start=>$start, limit=>$limit ),  
                     #rows => $limit,
                 #	prefetch => ['job']
@@ -265,7 +264,6 @@ sub logs_json : Path('/job/log/json') {
 
 sub jesSpool : Path('/job/log/jesSpool') {
     my ( $self, $c ) = @_;
-    _db_setup;
     my $p = $c->req->params;
     #_log _dump $p;
     $c->stash->{jobStore} = '/job/log/jobList?logId='.$p->{id}.'&jobId='.$p->{jobId}.'&jobName='.$p->{jobName};
@@ -286,7 +284,6 @@ sub jobList : Path('/job/log/jobList') {
     my $jobIcon   = '/static/images/book.gif';
     my $spoolIcon = '/static/images/page.gif';
     my $infoIcon  = '/static/images/log_i.gif';
-    _db_setup;
 
     if ( ref $p->{logId} ) {
         $log = $c->model('Baseliner::BaliLogData')->search( { id_log => $p->{logId} }, { order_by => 'path, id' } );
@@ -446,7 +443,6 @@ sub jobList : Path('/job/log/jobList') {
 
 sub jesFile : Path('/job/log/jesFile') {
     my ( $self, $c ) = @_;
-    _db_setup;
     my $p = $c->req->params;
     my $log = $c->model('Baseliner::BaliLogData')->search({ id=>$p->{id} })->first;
     my $data=$log->data;
@@ -456,7 +452,6 @@ sub jesFile : Path('/job/log/jesFile') {
 
 sub log_data : Path('/job/log/data') {
     my ( $self, $c, $id ) = @_;
-    _db_setup;
     my $p = $c->req->params;
     my $log = $c->model('Baseliner::BaliLog')->search({ id=> $id || $p->{id} })->first;
     my $data = uncompress($log->data) || $log->data;
@@ -492,7 +487,6 @@ sub log_delete : Path('/job/log/delete') {
 
 sub log_highlight : Path('/job/log/highlight') {
     my ( $self, $c, $id ) = @_;
-    _db_setup;
     my $p = $c->req->params;
     my $log = $c->model('Baseliner::BaliLog')->search({ id=> $id || $p->{id} })->first;
     if( my $viewer_key = $log->provider ) {
@@ -508,7 +502,6 @@ sub log_highlight : Path('/job/log/highlight') {
 
 sub log_data_search : Path('/job/log/data_search') {
     my ( $self, $c ) = @_;
-    _db_setup;
     my $p = $c->req->params;
     my $log = $c->model('Baseliner::BaliLog')->search({ id=> $p->{id} })->first;
     $c->stash->{log_data} = uncompress($log->data) || $log->data;
@@ -517,7 +510,6 @@ sub log_data_search : Path('/job/log/data_search') {
 
 sub log_file : Path('/job/log/download_data') {
     my ( $self, $c ) = @_;
-    _db_setup;
     my $p = $c->req->params;
     my $log = $c->model('Baseliner::BaliLog')->search({ id=> $p->{id} })->first;
     my $file_id = $log->id_job.'-'.$p->{id};
