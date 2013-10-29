@@ -1760,6 +1760,8 @@ sub set_release {
     my $release_field = $release_meta[0]->{release_field} // 'undef';
 
     my $topic_mid = $rs_topic->mid;
+    cache_topic_remove($topic_mid);
+
     my $release_row = Baseliner->model('Baseliner::BaliTopic')->search(
                             { is_release => 1, rel_type=>'topic_topic', to_mid=> $topic_mid },
                             { join=>['categories','children','master'], select=>['mid','title'] }
@@ -1789,7 +1791,6 @@ sub set_release {
             event_new 'event.topic.modify_field' => { username   => $user,
                                                 field      => $id_field,
                                                 old_value      => $old_release_name,
-                                                new_value_mid   => $new_release,
                                                 new_value  => $row_release->title,
                                                 text_new      => '%1 modified topic: changed release to %4',
                                                } => sub {
@@ -1805,7 +1806,6 @@ sub set_release {
             event_new 'event.topic.modify_field' => { username   => $user,
                                                 field      => $id_field,
                                                 old_value      => $old_release_name,
-                                                new_value_mid   => '',
                                                 new_value  => '',
                                                 text_new      => '%1 deleted release %3',
                                                } => sub {
