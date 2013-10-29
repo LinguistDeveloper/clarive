@@ -17,7 +17,7 @@
        autoLoad : true,  
        url: '/ci/gridtree',
        baseParams: Ext.apply( { pretty: true }, params ),
-       reader: new Ext.data.JsonReader({ id: '_id', root: 'data', totalProperty: 'total', successProperty: 'success' }, record )
+       reader: new Ext.data.JsonReader({ id: '_id', root: 'data', totalProperty: 'totalCount', successProperty: 'success' }, record )
     }); 
 
     var search_field = new Baseliner.SearchField({
