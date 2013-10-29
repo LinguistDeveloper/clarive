@@ -94,6 +94,9 @@ sub job_items {
     
     my $type = $job->job_type;
     my $bl = $job->bl;
+    my $all_bls = join '|', grep !/^\*$/, map { $_->bl } BaselinerX::CI::bl->search_cis;
+    my $rename_mode = $config->{rename_mode} // 'on';
+    
     
     my %projects;
     my @project_changes;
@@ -127,9 +130,14 @@ sub job_items {
             my @repo_items = $repo->group_items_for_revisions( revisions=>$revs, type=>$type, tag=>$bl );
             push @items, map {
                 my $it = $_;
+                $it->rename( sub{ s/{$bl}//g } ) if $rename_mode;
                 $it->path_in_repo( $it->path );  # otherwise source/checkout may not work
                 $it->path( '' . _dir('/', $project->name, $repo->rel_path, $it->path) );  # prepend project name
                 $it;
+            } grep {
+                $rename_mode 
+                ? ( $_->path =~ /{$bl}/ || $_->path !~ /{$all_bls}/ )
+                : 1 
             } @repo_items;
             push @{ $pc->{repo_revisions_items} }, { repo=>$repo, revisions=>$revisions, items=>\@items };
         }
@@ -226,7 +234,7 @@ sub nature_items {
         $log->debug( _loc('Project items before for %1', $project->name), \@items );
         my %nature_names;
         my @msg;
-        for my $nature ( map { _ci($_->{mid}) } @nat_rows ) {
+        for my $nature ( map { ci->new($_->{mid}) } @nat_rows ) {
             my @chosen;
             push @msg, "nature = " . $nature->name;
             ITEM: for my $it ( @items ) {

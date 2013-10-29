@@ -1418,7 +1418,7 @@ sub _load_features {
 }
 
 sub _ci {
-    local $Baseliner::CI::_no_record = 1;
+    local $Baseliner::CI::_no_record = 0;
     return Baseliner::CI->new( @_ );
 }
 

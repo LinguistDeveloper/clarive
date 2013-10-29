@@ -2375,7 +2375,7 @@ Baseliner.ComboSingle = Ext.extend( Ext.form.ComboBox, {
 
         self.fieldLabel = self.fieldLabel || self.name;
         self.valueField = self.field || self.name;
-        self.displayField = self.field || self.name;
+        self.displayField = self.displayField || self.field || self.name;
         if( !self.value ) self.value = data.length>0 ? data[0][0] : null;
         
         Baseliner.ComboSingle.superclass.initComponent.call(this); 
@@ -2384,6 +2384,45 @@ Baseliner.ComboSingle = Ext.extend( Ext.form.ComboBox, {
         var self = this;
         return new Ext.data.SimpleStore({
             fields: [ self.name ],
+            data : data 
+        });  
+    }
+});
+
+Baseliner.ComboDouble = Ext.extend( Ext.form.ComboBox, {
+    name: 'item',
+    mode: 'local',
+    triggerAction: 'all',
+    editable: false,
+    anchor: '100%',
+    forceSelection: true,
+    allowBlank: false,
+    selectOnFocus: false,
+    initComponent: function(){
+        var self = this;
+        var data = [];
+        if( self.data ) {
+            Ext.each( self.data, function(v){
+                data.push(v);
+            });
+        }
+        self.store = self.buildStore(data);
+
+        self.fieldLabel = self.fieldLabel || self.name;
+        self.valueField = self.name;
+        self.displayField = 'display_name';
+        self.hiddenField = self.name;
+        if( !self.value ) self.value = data.length>0 ? data[0][0] : null;
+        
+        Baseliner.ComboDouble.superclass.initComponent.call(this); 
+    },
+    get_save_data : function(){  // otherwise, getForm().getValues() returns the displayField
+        return this.getValue();
+    },
+    buildStore : function(data){
+        var self = this;
+        return new Ext.data.SimpleStore({
+            fields: [ self.name, 'display_name' ],
             data : data 
         });  
     }
@@ -2403,6 +2442,7 @@ Baseliner.ComboSingleRemote = Ext.extend( Baseliner.ComboSingle, {
         });  
     }
 });
+
 // a hidden field that updates the store for a grid, used in list_topics
 Baseliner.HiddenGridField = Ext.extend( Ext.form.Hidden, {
     setValue : function(v) {
@@ -2543,28 +2583,17 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
        
         // records is JSON?
         if( Ext.isString( self.records ) ) {
-            self.records_json = self.records;
             self.records = Ext.decode( self.records );
         } 
         // now recheck
-        if( Ext.isArray(self.records) ) {
-            self.records_json = Ext.encode(self.records);
-        }
-        else {
+        if( !Ext.isArray(self.records) ) {
             self.records = [];
-            self.records_json = '[]';
         }
         
-        /*
-        var records_final = [];
-        Ext.each( self.records, function(r){
-        });
-        */
         self.store = new Ext.data.Store({
             reader: reader,
             data: self.records 
         });
-        self.field_hidden = new Baseliner.HiddenGridField({ name: self.id_field, value: self.records_json, store: self.store });
             
         var button_add = new Baseliner.Grid.Buttons.Add({
             text:'',
@@ -2592,10 +2621,6 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
                         // after editing a row, serialize data to hidden field
                         self.store.commitChanges();
                         delete record.data.id;
-                        var rows = Ext.util.JSON.decode(self.field_hidden.getValue());
-                        if( !Ext.isArray( rows ) ) rows = [];
-                        rows[rowIndex] = record.data;
-                        self.field_hidden.setRawValue(Ext.util.JSON.encode( rows ));
                     }
                 }       
             }); 
@@ -2605,7 +2630,6 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         self.columns = cols;
         self.ddGroup = 'grid_editor_' + Ext.id();
         self.tbar = [
-            self.field_hidden,
             button_add,
             '-',
             button_delete
@@ -2624,17 +2648,13 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
                     var sm = self.getSelectionModel();
                     var rows_grid = sm.getSelections();
                     if(dd.getDragData(e)) {
-                        var rows = Ext.util.JSON.decode( self.field_hidden.getValue());
+                        var rows = self.get_save_data();
                         var cindex=dd.getDragData(e).rowIndex;
                         if(typeof(cindex) != "undefined") {
                             for(i = 0; i <  rows_grid.length; i++) {
                                 var index = ds.indexOf(ds.getById(rows_grid[i].id));
                                 ds.remove(ds.getById(rows_grid[i].id));
                                 delete rows[index];
-                                self.field_hidden.setRawValue(Ext.util.JSON.encode( rows ));
-                                rows = Ext.util.JSON.decode( self.field_hidden.getValue());
-                                rows.splice(cindex, 0, rows_grid[i].data);
-                                self.field_hidden.setRawValue(Ext.util.JSON.encode( rows ));    
                             }
                             ds.insert(cindex,data.selections);
                             sm.clearSelections();
@@ -2661,12 +2681,19 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         Ext.each( sm.getSelections(), function(r) {
             var index = self.store.indexOf(r);
             self.store.remove( r );
-            var rows = Ext.util.JSON.decode( self.field_hidden.getValue());
+            var rows = self.get_save_data();
             rows.splice(index, 1);
-            self.field_hidden.setValue(Ext.util.JSON.encode( rows ));
             self.store.commitChanges();
             self.getView().refresh();
         });
+    },
+    get_save_data : function(){
+        var self = this;
+        var arr = [];
+        self.store.each( function(r) {
+            arr.push( r.data );
+        });
+        return arr;
     }
 });
 

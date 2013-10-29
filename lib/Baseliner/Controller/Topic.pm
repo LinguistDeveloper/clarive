@@ -1676,7 +1676,7 @@ sub newjob : Local {
             comments   => $p->{comments},
             changesets => $changesets,
         };
-        event_new 'event.job.new' => { c=>$c, self=>$self, job_data=>$job_data } => sub {
+        event_new 'event.job.new' => { username => $job_data->{username}, bl => $job_data->{bl}  } => sub {
             $job = BaselinerX::CI::job->new( $job_data );
             $job->save;
             $job->job_stash({   # job stash autosaves into the stash table
@@ -1684,7 +1684,8 @@ sub newjob : Local {
                 status_to      => $p->{status_to},
                 id_status_from => $p->{id_status_from},
             });
-            { job=>$job }; 
+            my $job_name = $job->name;
+            { jobname => $job_name, id_job=>$job->{id_job} };
         };
         { success=>\1, msg=> _loc( "Job %1 created ok", $job->name ) };
     } catch {

@@ -486,6 +486,9 @@ msgstr "Revisión"
 msgid "Revisions"
 msgstr "Revisiones"
 
+msgid "revisions"
+msgstr "revisiones"
+
 msgid "Login Failed"
 msgstr "Login Inválido"
 

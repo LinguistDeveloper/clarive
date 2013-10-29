@@ -64,6 +64,9 @@ method chown ( $perms, $path ) {
 }
 
 method execute( @cmd ) {
+    my $tmout = $self->timeout;
+    alarm $tmout if $tmout; 
+    local $SIG{ALRM} = sub { _fail _loc 'balix agent error: timeout during execute (tmout=%1 sec)', $tmout } if $tmout;
     my $opts = shift @cmd if ref $cmd[0] eq 'HASH';
     if( $opts->{chdir} ) {
        @cmd = ( \'cd', $opts->{chdir}, \'&&', @cmd == 1 ? \$cmd[0] : @cmd );      
@@ -74,6 +77,7 @@ method execute( @cmd ) {
     }
     #_debug \@cmd;
     my $res = $self->_execute( @cmd );
+    alarm 0;
     return $self->ret;
 }
 

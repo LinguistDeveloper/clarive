@@ -32,6 +32,20 @@ sub filepath {
     return $self->path;
 }
 
+sub rename {
+    my ($self, $expr)=@_;
+    if( ref $expr eq 'CODE' ) {
+        local $_ = $self->path;
+        $expr->();
+        $self->path( $_ );
+    } else {
+        $self->path( $expr );
+    }
+    my $name = Util->_file($self->path)->basename;
+    $self->name( $name );
+    return $self->path;
+}
+
 sub path_cut {
     my ($self, $regex)=@_;
     my $path = $self->path;

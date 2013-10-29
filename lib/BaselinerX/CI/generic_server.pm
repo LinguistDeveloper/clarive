@@ -30,25 +30,31 @@ method connect( :$user='' ) {
     # Worker Agent
     my $err = '';
     my $agent;
+    my $tmout;
+    if( $tmout = $self->connect_timeout ) {
+        alarm $tmout;
+    }
+    local $SIG{ALRM} = sub { _fail _loc("Agent connection timeout (> %1 sec)", $tmout); }
+        if $tmout;
     if( $self->connect_worker ) {
         $agent = try {
             my ($chi) = $self->children( isa=>'worker_agent' );
-            return $chi if ref $chi;
-            BaselinerX::CI::worker_agent->new( cap=>$user.'@'.$self->hostname ) 
+            do { alarm 0; return $chi } if ref $chi;
+            BaselinerX::CI::worker_agent->new( timeout=>$self->agent_timeout, cap=>$user.'@'.$self->hostname );
         } catch { $err.=shift . "\n" };       
     } 
     if( !$agent && $self->connect_balix ) {
         $agent = try { 
             my ($chi) = $self->children( isa=>'balix_agent' );
-            return $chi if ref $chi;
-            BaselinerX::CI::balix_agent->new( user=>$user, server=>$self )
+            do { alarm 0; return $chi } if ref $chi;
+            BaselinerX::CI::balix_agent->new( user=>$user, server=>$self, timeout=>$self->agent_timeout );
         } catch { $err.=shift . "\n" };       
     }
     if( !$agent && $self->connect_ssh ) {
         $agent = try { 
             my ($chi) = $self->children( isa=>'ssh_agent' );
-            return $chi if ref $chi;
-            BaselinerX::CI::ssh_agent->new( user=>$user, server=>$self )
+            do { alarm 0; return $chi } if ref $chi;
+            BaselinerX::CI::ssh_agent->new( user=>$user, server=>$self, timeout=>$self->agent_timeout );
         } catch { $err.=shift . "\n" };       
     }
     if( $err ) {
@@ -60,6 +66,7 @@ method connect( :$user='' ) {
             _debug 'Some connection methods failed: ' . $err;
         }
     }
+    alarm 0;
     return $agent;
 }
 

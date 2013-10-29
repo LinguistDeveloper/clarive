@@ -1359,6 +1359,7 @@ sub save_data {
             my $new_value = $row{$field};
             my $old_value = $old_values{$field};
 
+
             if ( $new_value ne $old_value ){
                 if($field eq 'id_category_status'){
                     # change status
@@ -1454,7 +1455,7 @@ sub save_data {
             	$record->{value} = ''; # cleanup old data, so that we read from clob 
             }else{
             	$record->{value} = $v;
-            	$record->{value_clob} = ''; # cleanup old data so we read from value
+            	$record->{value_clob} = undef; # cleanup old data so we read from value
             }
             
             if(!$row){
@@ -1462,10 +1463,9 @@ sub save_data {
             }
             else{
                 my $modified = 0;
-                my $old_value;
+                my $old_value = $row->value;
                 if ($_->{data} || ref $v){ ##Cuando el tipo de dato es CLOB
                     if ($row->value ne $v && !ref $v){
-                        $old_value = $row->value;
                         $modified = 1;    
                     }
                     $row->value_clob( ref $v ? _dump($v) : $v );
@@ -1473,13 +1473,12 @@ sub save_data {
                 }else{
                     if ($row->value ne $data->{$_->{name}}){
                         $modified = 1;
-                        $old_value = $row->value;
                     }
                     $row->value($data->{$_->{name}});
-                    $row->value_clob('');   # cleanup old data in case of change data: 1
+                    $row->value_clob(undef);   # cleanup old data in case of change data: 1
                 }
                 $row->update;
-                
+
                 if ( $modified ){
                     event_new 'event.topic.modify_field' => { username   => $data->{username},
                                                         field      => _loc ($_->{column}),
@@ -1582,13 +1581,10 @@ sub set_priority {
 }
 
 sub set_cal {
-    my ($self, $rs_topic, $cal_json, $user, $id_field ) = @_;
+    my ($self, $rs_topic, $cal_data, $user, $id_field ) = @_;
     my $mid = $rs_topic->mid;
-    $cal_json = Encode::encode('UTF-8', $cal_json);
-    my $cal_data = _from_json( $cal_json ) if $cal_json;
     DB->BaliMasterCal->search({ mid=>$mid, rel_field=>$id_field })->delete;
    
-    _debug $cal_json;
     for my $row ( _array( $cal_data ) ) {
         $row->{rel_field} = $id_field;
         for( qw/start_date end_date plan_start_date plan_end_date/ ) {
@@ -1760,6 +1756,8 @@ sub set_release {
     my $release_field = $release_meta[0]->{release_field} // 'undef';
 
     my $topic_mid = $rs_topic->mid;
+    cache_topic_remove($topic_mid);
+
     my $release_row = Baseliner->model('Baseliner::BaliTopic')->search(
                             { is_release => 1, rel_type=>'topic_topic', to_mid=> $topic_mid },
                             { join=>['categories','children','master'], select=>['mid','title'] }
@@ -2117,14 +2115,16 @@ sub cache_topic_remove {
     # my own first
     Baseliner->cache_remove( qr/:$topic_mid:/ );
     # refresh cache for related stuff 
-    for my $rel ( 
-        map { +{mid=>$_->{mid}, type=>$_->{_edge}{rel_type} } } 
-        _ci( $topic_mid )->related( depth=>1 ) ) 
-    {
-        my $rel_mid = $rel->{mid};
-        #_debug "TOPIC CACHE REL remove :$rel_mid:";
-        Baseliner->cache_remove( qr/:$rel_mid:/ );
-    }
+    if ($topic_mid) {    
+        for my $rel ( 
+            map { +{mid=>$_->{mid}, type=>$_->{_edge}{rel_type} } } 
+            _ci( $topic_mid )->related( depth=>1 ) ) 
+        {
+            my $rel_mid = $rel->{mid};
+            #_debug "TOPIC CACHE REL remove :$rel_mid:";
+            Baseliner->cache_remove( qr/:$rel_mid:/ );
+        }
+    };
 }
 
 sub change_status {
