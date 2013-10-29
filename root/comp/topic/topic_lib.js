@@ -960,7 +960,6 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                         self.btn_delete_form.enable();
                     }
                     if(res.fields_required){
-                        alert("En error");
                         for(i=0;i<res.fields_required.length;i++){
                             var name = form2.findField("ctrl_required").getValue();
                             //console.dir(Ext.getCmp(name));
