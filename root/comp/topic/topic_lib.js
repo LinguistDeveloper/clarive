@@ -897,7 +897,6 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 Ext.apply({ action: action, form: custom_form, _cis: Ext.util.JSON.encode( self._cis ) }, form_data), 
                 // success
                 function(res){
-                    alert(res.success);
                     self.btn_save_form.enable();
                     if( self.permDelete ) {
                         self.btn_delete_form.enable();
