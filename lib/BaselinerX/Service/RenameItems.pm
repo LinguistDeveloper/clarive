@@ -23,7 +23,7 @@ sub run {
     my $log = $job->logger;
     $self->log( $job->logger );
     my $bl = $job->bl;
-    my $all_bls = join '}|{', grep !/^\*$/, map { $_->bl } BaselinerX::CI::bl->search_cis;
+    my $all_bls = join '|', grep !/^\*$/, map { $_->bl } BaselinerX::CI::bl->search_cis;
 
     my @files_renamed;
     if( $config->{rename_files} ) {
@@ -44,12 +44,12 @@ sub run {
             } elsif( $path !~ /{($all_bls)}/ ) {
                 push @items, $item;
             } else {
-                push @items_removed, $item;
+                push @items_removed, $path;
             }
         }
         $log->info( 
             _loc( 'Renamed %1 item(s), removed %2 item(s)', scalar(@items_renamed), scalar(@items_removed)), 
-            { renamed=>\@items_renamed, removed=>\@items_removed } )
+            { renamed=>\@items_renamed, removed=>\@items_removed, items=>[ map { $_->path } @items ] } )
             if @items_renamed;
         $stash->{items} = \@items;
     }

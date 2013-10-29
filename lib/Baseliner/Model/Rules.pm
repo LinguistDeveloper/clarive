@@ -699,7 +699,7 @@ register 'statement.project.loop' => {
     },
 };
 
-# needs the changeset.nature service to fill the stash with natures
+# needs the changeset.nature service to fill the stash with natures (create a dependency check?)
 register 'statement.if.nature' => {
     text => 'IF EXISTS nature THEN',
     form => '/forms/if_nature.js',
@@ -711,14 +711,12 @@ register 'statement.if.nature' => {
             if( my $nature = $stash->{natures}{'%s'} ) {
                 NAT: {  
                     $stash->{current_nature} = $nature;
-                    #local $stash->{nature_items} = $nature->items;
                     local $stash->{nature_items} = $stash->{project_items}{ $project->mid }{natures}{ $nature->mid };
                     last NAT if !_array( $stash->{nature_items} );
                     my @nat_paths = cut_nature_items( $stash, parse_vars(q{%s},$stash) );
                     local $stash->{ nature_item_paths } = \@nat_paths;
                     local $stash->{ nature_items_comma } = join(',', @nat_paths );
                     local $stash->{ nature_items_quote } = "'" . join("' '", @nat_paths ) . "'";
-                    #merge_into_stash( $stash, $nat_data );
                     $stash->{job}->logger->info( _loc('Nature Detected *%1*', $nature->name ), 
                         +{ map { $_=>$stash->{$_} } qw/nature_items nature_item_paths nature_items_comma nature_items_quote/ } );
 
@@ -728,6 +726,22 @@ register 'statement.if.nature' => {
         }, $n->{nature}, $n->{cut_path} , $self->dsl_build( $n->{children}, %p ) );
     },
 };
+
+register 'statement.if.any_nature' => {
+    text => 'IF ANY nature THEN',
+    form => '/forms/if_any_nature.js',
+    type => 'if',
+    data => { natures=>'', },
+    dsl => sub { 
+        my ($self, $n , %p) = @_;
+        sprintf(q{
+            if( _any { exists $stash->{natures}{$_} } split /,/, '%s' ) {
+                %s
+            }
+        }, join(',',_array($n->{natures})), $self->dsl_build( $n->{children}, %p ) );
+    },
+};
+
 
 register 'statement.if.rollback' => {
     text => 'IF ROLLBACK',
