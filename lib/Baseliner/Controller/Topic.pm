@@ -117,9 +117,7 @@ sub update : Local {
     _log ">>>>>>>>>>>>>>>>>>>>>>>>Parametros: " . _dump $p;
     
     try  {
-
-        my ($isValid, @field_name) = (1, ());
-        #my ($isValid, @field_name) = $c->model('Topic')->check_fields_required( mid => $p->{topic_mid}, username => $c->username, data => $p);
+        my ($isValid, @field_name) = $c->model('Topic')->check_fields_required( mid => $p->{topic_mid}, username => $c->username, data => $p);
 
         if($isValid == 1){
             my ($msg, $topic_mid, $status, $title, $category, $modified_on) = $c->model('Topic')->update( $p );
