@@ -972,53 +972,44 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             );
         };
         
-        //if (form2.isValid()) {
         if ( self.form_topic.is_valid() ) {
-            //var fields_required = self.check_required();
-            //if(fields_required.length == 0){
-                self.btn_save_form.disable();
-                self.btn_delete_form.disable();
-                
-                if(action == 'update'){
-                    Baseliner.ajaxEval( '/topic/check_modified_on/',{ topic_mid: self.topic_mid, modified: self.modified_on },
-                        function(res) {
-                            if ( res.success ) {
-                                if (res.modified_before){
-                                    Ext.Msg.confirm( _('Confirmation'), _('Topic was modified before your changes. Are you sure you want to save the topic?'),
-                                        function(btn){ 
-                                            if(btn=='yes') {
-                                                do_submit();
-                                            }else{
-                                                self.btn_save_form.enable();
-                                                if( self.permDelete ) {
-                                                    self.btn_delete_form.enable();                                    
-                                                }
+            self.btn_save_form.disable();
+            self.btn_delete_form.disable();
+            
+            if(action == 'update'){
+                Baseliner.ajaxEval( '/topic/check_modified_on/',{ topic_mid: self.topic_mid, modified: self.modified_on },
+                    function(res) {
+                        if ( res.success ) {
+                            if (res.modified_before){
+                                Ext.Msg.confirm( _('Confirmation'), _('Topic was modified before your changes. Are you sure you want to save the topic?'),
+                                    function(btn){ 
+                                        if(btn=='yes') {
+                                            do_submit();
+                                        }else{
+                                            self.btn_save_form.enable();
+                                            if( self.permDelete ) {
+                                                self.btn_delete_form.enable();                                    
                                             }
                                         }
-                                    );
-                                }
-                                else{
-                                    do_submit();
-                                }
-                            } else {
-                                Baseliner.error( _('Error'), res.msg );
-                                self.btn_save_form.enable();
-                                if( self.permDelete ) {
-                                    self.btn_delete_form.enable();                              
-                                }
+                                    }
+                                );
+                            }
+                            else{
+                                do_submit();
+                            }
+                        } else {
+                            Baseliner.error( _('Error'), res.msg );
+                            self.btn_save_form.enable();
+                            if( self.permDelete ) {
+                                self.btn_delete_form.enable();                              
                             }
                         }
-                    );            
-                }else{
-                    do_submit();
-                }
-            //}else{
-                //self.render_required(fields_required);
+                    }
+                );            
+            }else{
+                do_submit();
+            }
         }
-        //}else{
-         //   var fields_required = self.check_required();
-          //  self.render_required(fields_required);
-        //}
     },
     delete_topic : function(){
         var self = this;
@@ -1261,8 +1252,6 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
         self.combo.on('select', function(combo,rec,ix) {
             if( combo.id != self.combo.id ) return; // strange bug with TopicGrid and CIGrid in the same page
             self.add_to_grid( rec.data );
-            // self.getEl().applyStyles('border: none');
-            // Ext.getCmp('lbl_required_' + self.id_required).hide();
         });
         self.ddGroup = 'bali-topic-grid-data-' + self.id;
         
@@ -1389,7 +1378,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
     is_valid : function(){
         var self = this;
         return self.store.getCount() > 0 ;
-    }
+    }   
 });
 
 Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
