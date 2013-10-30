@@ -47,6 +47,7 @@ __PACKAGE__->belongs_to(
   "rule",
   "Baseliner::Schema::Baseliner::Result::BaliRule",
   { "foreign.id" => "self.id_rule" },
+  { join_type => 'left' }
 );
 
 1;
