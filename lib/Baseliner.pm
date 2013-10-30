@@ -339,18 +339,21 @@ around 'debug' => sub {
     }
     sub cache_set { 
         my ($self,$key,$value)=@_;
+        return if !$ccache;
         Util->_debug(-1, "+++ CACHE SET: " . ( ref $key ? Util->_to_json($key) : $key ) ) if $ENV{BALI_CACHE_TRACE}; 
         Util->_debug( Util->_whereami ) if defined $ENV{BALI_CACHE_TRACE} && $ENV{BALI_CACHE_TRACE} > 1 ;
         $ccache->set( $key, $value ) 
     }
     sub cache_get { 
         my ($self,$key)=@_;
+        return if !$ccache;
         return if $Baseliner::_no_cache;
         Util->_debug(-1, "--- CACHE GET: " . ( ref $key ? Util->_to_json($key) : $key ) ) if $ENV{BALI_CACHE_TRACE}; 
         $ccache->get( $key ) 
     }
     sub cache_remove { 
         my ($self,$key)=@_;
+        return if !$ccache;
         ref $key eq 'Regexp' ?  $self->cache_remove_like($key) : $ccache->remove( $key ) ;
     }
     sub cache_keys { $ccache->get_keys( @_ ) }
@@ -362,6 +365,7 @@ around 'debug' => sub {
     if( Baseliner->debug ) {
         Baseliner->cache_clear;  # clear cache on restart
     }
+    Baseliner->cache_remove( qr/registry:/ );
 
     # Beep
     my $bali_env = $ENV{CATALYST_CONFIG_LOCAL_SUFFIX} // $ENV{BASELINER_CONFIG_LOCAL_SUFFIX};
