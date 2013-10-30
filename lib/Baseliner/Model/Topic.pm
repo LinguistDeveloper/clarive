@@ -2115,7 +2115,7 @@ sub cache_topic_remove {
     # my own first
     Baseliner->cache_remove( qr/:$topic_mid:/ );
     # refresh cache for related stuff 
-    if ($topic_mid) {    
+    if ($topic_mid && $topic_mid ne -1) {    
         for my $rel ( 
             map { +{mid=>$_->{mid}, type=>$_->{_edge}{rel_type} } } 
             _ci( $topic_mid )->related( depth=>1 ) ) 
@@ -2177,25 +2177,47 @@ sub check_fields_required {
     
     my $is_root = Baseliner->model('Permissions')->is_root( $username );
     my $isValid = 1;
+    my (@fields_form, @fields_required);
     my $field_name;
-    if (!$is_root){     
-        my $meta = Baseliner->model('Topic')->get_meta( $mid );
-        my %fields_required =  map { $_->{bd_field} => $_->{name_field} } grep { $_->{allowBlank} && $_->{allowBlank} eq 'false' && $_->{origin} ne 'system' } _array( $meta );
-        my $data = Baseliner->model('Topic')->get_data( $meta, $mid );  
-        
-        for my $field ( keys %fields_required){
-            next if !Baseliner->model('Permissions')->user_has_action( 
-                username => $username, 
-                action => 'action.topicsfield.'._name_to_id($data->{name_category}).'.'.$field.'.'._name_to_id($data->{name_status}).'.write'
-            );
-            my $v = $data->{$field};
-            $isValid = (ref $v eq 'ARRAY' ? @$v : ref $v eq 'HASH' ? keys %$v : defined $v ) ? 1 : 0;
-            $field_name = $fields_required{$field};
-            last if !$isValid;
+    if (!$is_root){
+        if($mid != -1){
+            my $meta = Baseliner->model('Topic')->get_meta( $mid );
+            my %fields_required =  map { $_->{bd_field} => $_->{name_field} } grep { $_->{allowBlank} && $_->{allowBlank} eq 'false' && $_->{origin} ne 'system' } _array( $meta );
+            my $data = Baseliner->model('Topic')->get_data( $meta, $mid );  
+            
+            for my $field ( keys %fields_required){
+                next if !Baseliner->model('Permissions')->user_has_action( 
+                    username => $username, 
+                    action => 'action.topicsfield.'._name_to_id($data->{name_category}).'.'.$field.'.'._name_to_id($data->{name_status}).'.write'
+                );
+                my $v = $data->{$field};
+                $isValid = (ref $v eq 'ARRAY' ? @$v : ref $v eq 'HASH' ? keys %$v : defined $v && $v ne '' ) ? 1 : 0;
+                if($p{data}){
+                    $v = $p{data}->{$field};
+                    $isValid = (ref $v eq 'ARRAY' ? @$v : ref $v eq 'HASH' ? keys %$v : defined $v && $v ne '' ) ? 1 : 0;                
+                }
+                
+                push @fields_required , $fields_required{$field} if !$isValid;
+                #$field_name = $fields_required{$field};
+                #last if !$isValid;
+            }
         }
+        
+        #if($p{data}){
+        #    for my $field (@fields_required){
+        #        my $v = $p{data}->{$field};
+        #        $isValid = (ref $v eq 'ARRAY' ? @$v : ref $v eq 'HASH' ? keys %$v : defined $v && $v ne '' ) ? 1 : 0;
+        #        push @fields_form , $fields_required{$field} if !$isValid;                
+        #    }
+        #    _log ">>>>>>>>>>>>>>>>>>Campos invalidos formulario: " . _dump @fields_form; 
+        #    return ($isValid, @fields_form);
+        #       
+        #}else{
+            _log ">>>>>>>>>>>>>>>>>>Campos invalidos base de datos: " . _dump @fields_required;    
+            return ($isValid, @fields_required);
+            
+        #}
     }
-
-    return ($isValid,$field_name);
 }
 
 1;

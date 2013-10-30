@@ -2815,6 +2815,18 @@ Ext.apply(Ext.layout.FormLayout.prototype, {
         this.originalRenderItem.apply(this, arguments);
     }
 });
+
+//////Baseliner.RequiredFieldInfo = Ext.extend(Ext.form.Label, {
+//////    constructor: function(config){
+//////        Baseliner.RequiredFieldInfo.superclass.constructor.call(this, Ext.apply({
+//////            html: "<span " +
+//////            ((this.requiredFieldCls !== undefined) ? 'class="' + this.requiredFieldCls + '"' : 'style="color:red;"') +
+//////            '>*</span> ' +
+//////            ((this.requiredFieldText !== undefined) ? this.requiredFieldText : 'Required field')
+//////        }, config));
+//////    }
+//////});
+//////Ext.reg('reqFieldInfo', Baseliner.RequiredFieldInfo);
  
 Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
     getValues : function(a,b,c){
