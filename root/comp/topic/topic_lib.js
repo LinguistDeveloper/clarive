@@ -972,9 +972,10 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             );
         };
         
-        if (form2.isValid()) {
-            var fields_required = self.check_required();
-            if(fields_required.length == 0){
+        //if (form2.isValid()) {
+        if ( self.form_topic.is_valid() ) {
+            //var fields_required = self.check_required();
+            //if(fields_required.length == 0){
                 self.btn_save_form.disable();
                 self.btn_delete_form.disable();
                 
@@ -1011,13 +1012,13 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 }else{
                     do_submit();
                 }
-            }else{
-                self.render_required(fields_required);
-            }
-        }else{
-            var fields_required = self.check_required();
-            self.render_required(fields_required);
+            //}else{
+                //self.render_required(fields_required);
         }
+        //}else{
+         //   var fields_required = self.check_required();
+          //  self.render_required(fields_required);
+        //}
     },
     delete_topic : function(){
         var self = this;
@@ -1059,13 +1060,6 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             }
         }
         return fields_required;
-    },
-    render_required: function(fields){
-        for(i=0;i<fields.length;i++){
-            var obj = Ext.getCmp(fields[i]);
-            obj.getEl().applyStyles('border: solid 1px #c0272b; margin_bottom: 0px');
-            Ext.getCmp('lbl_required_' + obj.id_required).show();
-        }        
     }
 });
 
@@ -1241,20 +1235,10 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
             disabled: self.readOnly ? self.readOnly : false 
         }); 
         self.combo.on('beforequery', function(qe){ delete qe.combo.lastQuery });
-        self.field = new Ext.form.TextField({ name: self.name, value: self.value, allowBlank: self.allowBlank, hidden: true});
-        self.field.on('invalid', function(obj, msg){
-            Ext.getCmp('ctrl_required_' + self.id_required).setValue(self.id);
-        });
-        self.field.on('valid', function(obj, msg){
-            
-            Ext.getCmp('ctrl_required_' + self.id_required).setValue('');
-        });        
-        self.field.on('afterrender', function(){
-            if(!this.allowBlank && (self.value == '' || self.value == undefined)){
-                Ext.getCmp('ctrl_required_' + self.id_required).setValue(self.id);    
-            }
-        })        
         
+        self.store.on('add', function(){ self.fireEvent( 'change', self ) });
+        self.store.on('remove', function(){ self.fireEvent( 'change', self ) });
+
         var btn_delete = new Baseliner.Grid.Buttons.Delete({
             disabled: self.readOnly ? self.readOnly : false,
             handler: function() {
@@ -1263,7 +1247,6 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
                     Ext.each( sm.getSelections(), function( sel ){
                         self.getStore().remove( sel );
                     });
-                    self.refresh_field();
                 } else {
                     Baseliner.message( _('ERROR'), _('Select at least one row'));    
                 };                
@@ -1274,12 +1257,12 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
             icon: '/static/images/icons/refresh.gif',
             handler: function(){ self.refresh() }
         });
-        self.tbar = [ self.field, self.combo, btn_reload, btn_delete ];
+        self.tbar = [ self.combo, btn_reload, btn_delete ];
         self.combo.on('select', function(combo,rec,ix) {
             if( combo.id != self.combo.id ) return; // strange bug with TopicGrid and CIGrid in the same page
             self.add_to_grid( rec.data );
-            self.getEl().applyStyles('border: none');
-            Ext.getCmp('lbl_required_' + self.id_required).hide();
+            // self.getEl().applyStyles('border: none');
+            // Ext.getCmp('lbl_required_' + self.id_required).hide();
         });
         self.ddGroup = 'bali-topic-grid-data-' + self.id;
         
@@ -1310,7 +1293,6 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
                             ds.insert(cindex,data.selections);
                             sm.clearSelections();
                         }
-                        self.refresh_field();
                     }
                 }
             }); 
@@ -1359,19 +1341,13 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
             });
         }
     },
-    refresh_field: function(){
+    get_save_data : function(){
         var self = this;
         var mids = [];
         self.store.each(function(row){
             mids.push( row.data.mid ); 
         });
-        self.field.setValue( mids.join(',') );
-        if(!self.field.allowBlank){
-            if(mids.length == 0){
-                self.getEl().applyStyles('border: solid 1px #c0272b; margin_bottom: 0px');
-                Ext.getCmp(self.label_required).show();
-            }
-        };
+        return mids;
     },
     add_to_grid : function(rec){
         var self = this;
@@ -1384,7 +1360,6 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
         var r = new self.store.recordType( rec_with_data );
         self.store.add( r );
         self.store.commitChanges();
-        self.refresh_field();
     },
     render_topic_name: function(value,metadata,rec,rowIndex,colIndex,store){
         var d = rec.data;
@@ -1410,7 +1385,11 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
                 //is_changeset: d.is_changeset,
                 //is_release: d.is_release
             }) );
-    }    
+    }, 
+    is_valid : function(){
+        var self = this;
+        return self.store.getCount() > 0 ;
+    }
 });
 
 Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {

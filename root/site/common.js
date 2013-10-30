@@ -2829,6 +2829,39 @@ Ext.apply(Ext.layout.FormLayout.prototype, {
 //////Ext.reg('reqFieldInfo', Baseliner.RequiredFieldInfo);
  
 Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
+    is_valid : function(){
+        var self = this;
+        var form2 = this.getForm();
+        var is_valid = form2.isValid();
+        this.cascade(function(obj){
+            //console.log( [ obj.name, obj.allowBlank, obj.is_valid ].join(',') );
+            var sty = 'border: solid 1px rgb(255,120,112); margin_bottom: 0px';
+            if( obj.name && !obj.allowBlank && obj.is_valid ) {
+                if( !obj.is_valid() ) {
+                    is_valid = false;
+                    obj.getEl().applyStyles(sty);
+                    //Ext.getCmp('lbl_required_' + obj.id_required).show();
+                    /* 
+                    var ix = self.getIndex( obj );
+                    self.add( ix+1, {
+                            style: 'margin-bottom: 8px',
+                            hidden: true,
+                            border: false,
+                            html: '<div class="x-form-invalid-msg">Este campo es obligatorio</div>'
+                    });
+                    */
+                    obj.on('change', function(){
+                        if( obj.is_valid() ) {
+                            obj.getEl().applyStyles('border: none; margin_bottom: 0px');
+                        } else {
+                            obj.getEl().applyStyles(sty);
+                        }
+                    });
+                }
+            }
+        });
+        return is_valid;
+    },
     getValues : function(a,b,c){
         var form2 = this.getForm();
         var form_data = form2.getValues() || {};

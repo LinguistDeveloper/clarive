@@ -23,6 +23,7 @@ params:
     });
     
     var revision_grid = new Ext.grid.GridPanel({
+        name: meta.id_field,
         fieldLabel: _(meta.name_field),
         allowBlank: allow,
         store: revision_store,
@@ -55,15 +56,20 @@ params:
         ]        
     });
     
-    // a hidden form field, needed for this to save data in a form
-    var field = new Ext.form.TextField({ hidden: true, name: meta.id_field });
-    var refresh_field = function(){
+    revision_grid.get_save_data = function(){
         var mids = [];
         revision_store.each(function(row){
             mids.push( row.data.mid ); 
         });
-        field.setValue( mids.join(',') );
+        return mids;
     };
+    
+    revision_grid.is_valid = function(){
+        return revision_store.getCount() > 0;
+    };
+    
+    revision_store.on('add', function() { revision_grid.fireEvent('change', revision_grid ) });
+    revision_store.on('remove', function() { revision_grid.fireEvent('change', revision_grid ) });
 
     // Load data
     if( ! params ) params = {};
@@ -74,7 +80,6 @@ params:
         var r = new revision_store.recordType( row, row.mid );
         revision_store.add( r );
         revision_store.commitChanges();
-        refresh_field();
     });
     
     Baseliner.delete_revision_row = function( id_grid, mid ) {
@@ -85,7 +90,6 @@ params:
                 s.remove( row );
             }
         });
-        refresh_field();
     };
 
     revision_grid.on( 'afterrender', function(){
@@ -125,7 +129,6 @@ params:
     
                                     revision_store.add( r );
                                     revision_store.commitChanges();
-                                    refresh_field();
                                 }
                                 else {
                                     Ext.Msg.alert( _('Error'), _('Error adding revision %1: %2', ci.name, res.msg) );
@@ -142,7 +145,7 @@ params:
 
     return [
         //Baseliner.field_label_top( _(meta.name_field), meta.hidden, allow, readonly ),
-        revision_grid, field
+        revision_grid
         //revision_box
     ]
 })
