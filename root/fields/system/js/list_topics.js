@@ -22,8 +22,8 @@ params:
 	
 	var topics = new Array();
     var ps = meta.page_size || 10;  // for combos, 10 is a much nicer on a combo
-	var id = Ext.id()
-	var lbl_required = 'lbl_' + meta.id_field + '_' + id
+	var id_required = Ext.id()
+	//var lbl_required = 'lbl_' + meta.id_field + '_' + id
 	
 	if(data && data[ meta.bd_field] ){
 		var eval_topics = data[ meta.bd_field ];
@@ -68,7 +68,7 @@ params:
 			readOnly:  meta && meta.readonly ? meta.readonly : false,
 			hidden: meta ? (meta.hidden ? meta.hidden : false): true,
 			allowBlank: meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true ),
-			label_required: lbl_required
+			id_required: id_required
         });
 		
 
@@ -133,7 +133,7 @@ params:
 					   
 	if (meta.list_type == 'grid') {
 		obj.push( 		{
-			id: lbl_required,
+			id: 'lbl_required_' + id_required,
 			style: 'margin-bottom: 8px',
 			hidden: true,
 			border: false,
@@ -141,7 +141,7 @@ params:
         });
 		obj.push(
 			new Ext.form.TextField(
-				{ id: 'ctrl_required',
+				{ id: 'ctrl_required_' + id_required,
 				  hidden: true
 				}
 			)		
