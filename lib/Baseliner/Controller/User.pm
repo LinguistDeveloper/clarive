@@ -761,6 +761,8 @@ sub projects_list : Local {
     }
 
     foreach $data(@datas){
+
+
     push @tree, {
         text        => $data->{name} . ($data->{nature}?" (" . $data->{nature} . ")":''),
         nature	=> $data->{nature}?$data->{nature}:"",
@@ -771,7 +773,7 @@ sub projects_list : Local {
             project    => $data->{name},
             parent_checked => 0,
         },	    
-        icon       => '/static/images/icons/project.gif',
+        icon       => ci->new($data->{mid})->icon,
         leaf       => \$data->{leaf},
         checked    => \$parent_checked
     };	
