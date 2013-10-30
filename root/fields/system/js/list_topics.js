@@ -24,7 +24,6 @@ params:
     var ps = meta.page_size || 10;  // for combos, 10 is a much nicer on a combo
 	var id = Ext.id()
 	var lbl_required = 'lbl_' + meta.id_field + '_' + id
-	var ctrl_required = 'ctl_' + meta.id_field + '_' + id
 	
 	if(data && data[ meta.bd_field] ){
 		var eval_topics = data[ meta.bd_field ];
@@ -135,6 +134,7 @@ params:
 	if (meta.list_type == 'grid') {
 		obj.push( 		{
 			id: lbl_required,
+			style: 'margin-bottom: 8px',
 			hidden: true,
 			border: false,
             html: '<div class="x-form-invalid-msg">Este campo es obligatorio</div>'
@@ -142,7 +142,6 @@ params:
 		obj.push(
 			new Ext.form.TextField(
 				{ id: 'ctrl_required',
-				  value: '',
 				  hidden: true
 				}
 			)		
