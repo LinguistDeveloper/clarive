@@ -388,8 +388,6 @@ sub registor_keys {
             $self->registors->{$key} = 1;
             my $registor = $self->get($key);
             push @registor_data, { registor => $registor, data => $registor->generator->($key_prefix) };
-        } else {
-            _debug "Registor data ok $key...";
         }
     }
     my $flag = 0;
