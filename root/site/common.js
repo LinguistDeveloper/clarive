@@ -1900,7 +1900,7 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
         if( self.ci_class) self.ci['class'] = self.ci_class;
         if( self.ci_grid == undefined ) self.ci_grid = {};
         self.ci_store = new Baseliner.store.CI({ 
-            baseParams: Ext.apply({ _whoami: 'CIGrid_combo_store' }, self.ci )
+            baseParams: Ext.apply({ _whoami: 'CIGrid_combo_store', no_vars: 1 }, self.ci )
         });
         self.ci_box = new Baseliner.model.CICombo({
             store: self.ci_store, 
