@@ -56,6 +56,7 @@ before save => sub {
     
 after delete => sub {
     my ($self, $mid ) = @_;
+    Baseliner::Core::Registry->reload_all;
     if( my $row = DB->BaliTopicStatus->find( $self->id_status ) ) {
         $row->delete;
     }

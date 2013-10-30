@@ -15,7 +15,13 @@ class_has registrar =>
       default => sub { {} },
     );
 
-class_has registors =>
+class_has registor_data =>
+    ( is      => 'rw',
+      isa     => 'HashRef',
+      default => sub { {} },
+    );
+    
+class_has registor_keys_added =>
     ( is      => 'rw',
       isa     => 'HashRef',
       default => sub { {} },
@@ -50,6 +56,26 @@ class_has '_registrar_enabled' => ( is=>'rw', isa=>'HashRef', );
     has actions  => ( is => 'rw', isa => 'ArrayRef' );  # TODO deprecated
     has all_actions  => ( is => 'rw', isa => 'HashRef' );   # my actions, parent actions, etc. (cache)
 }	
+
+sub registors {
+    my ($self)=@_;
+    my $reg = $self->registrar;
+    if( Baseliner->cache_get('registry:reload:all') && !Baseliner->cache_get('registry:reload_registor:'.$$) ) {
+        _debug "Reload Registry Registor requested for $$";
+        Baseliner->cache_set('registry:reload_registor:'.$$, 1);
+        my @keys = keys %{ $self->registor_keys_added || {} };
+        delete $reg->{$_} for @keys;
+        $self->registor_data({});
+        return $self->registor_data;
+    } else {
+        return $self->registor_data;
+    }
+}
+
+sub reload_all {
+    Baseliner->cache_remove( qr/registry:/ );
+    Baseliner->cache_set( 'registry:reload:all', 1 );
+}
 
 sub _registrar {
     my $self = shift;
@@ -121,8 +147,9 @@ sub initialize {
     my @namespaces = ( @_ ? @_ : keys %{ $self->registrar || {} } );
 
     ## order by init_rc
+    my $reg = $self->registrar;
     for my $key ( @namespaces ) {
-        my $node = $self->registrar->{$key};
+        my $node = $reg->{$key};
         next if( ref $node->instance );  ## already initialized
         push @{ $init_rc{ $node->init_rc } } , [ $key, $node ];
     }
@@ -187,7 +214,8 @@ sub get_instance {
 
 sub get_partial {
     my ($self,$key)=@_;
-    my @found = map { $self->registrar->{$_} } grep /$key$/, keys %{ $self->registrar || {} };
+    my $reg = $self->registrar;
+    my @found = map { $reg->{$_} } grep /$key$/, keys %{ $reg || {} };
     return wantarray ? @found : $found[0];
 }
 
@@ -257,6 +285,8 @@ sub search_for_node {
     my $disabled_keys = Baseliner->config->{registry}->{disabled_key} if $check_enabled;  # cannot use config_get here, infinite loop..
     $disabled_keys = { map { $_ => 1 } _array $disabled_keys };
 
+    my $reg = $self->registrar;
+    
     my @allowed;
     foreach my $action ( _array $allowed_actions ) {
         if( blessed $action ) {
@@ -273,7 +303,7 @@ sub search_for_node {
         next if( $depth > $q_depth );
         next if $check_enabled && exists $disabled_keys->{ $key };
 
-        my $node = $self->registrar->{$key};
+        my $node = $reg->{$key};
         my $node_instance = $node->instance;
 
         # skip nodes that the user has no access to
@@ -348,14 +378,18 @@ sub registor_keys {
 
     my @registor_data;
     my @dynamic_keys;
+    my $reg = $self->registrar;
+
     ($key_prefix) = split /\./, $key_prefix; # look for registor like 'registor.menu', 'registor.action', ...
     return () unless $key_prefix; 
-    for my $key ( grep /^registor\.$key_prefix\./, keys %{ $self->registrar || {} } ) {
-        if ( ! $self->registors->{$key}) {
+    for my $key ( grep /^registor\.$key_prefix\./, keys %{ $reg || {} } ) {
+        if ( !$self->registors->{$key} ) {
+            _debug "Registor data needed $key...";
             $self->registors->{$key} = 1;
-        my $registor = $self->get( $key );
-            push @registor_data,
-                {registor => $registor, data => $registor->generator->( $key_prefix )};
+            my $registor = $self->get($key);
+            push @registor_data, { registor => $registor, data => $registor->generator->($key_prefix) };
+        } else {
+            _debug "Registor data ok $key...";
         }
     }
     my $flag = 0;
@@ -364,9 +398,10 @@ sub registor_keys {
         my $registor = $regs->{registor};
         next unless ref $data eq 'HASH'; 
         for my $key ( keys %$data ) {
-            next if exists $self->registrar->{$key} && ! $data->{$key}->{_overwrite};
+            next if exists $reg->{$key} && ! $data->{$key}->{_overwrite};
             #  register( $key, $data->{$key} );
             Baseliner::Core::Registry->add( $registor->module, $key, $data->{$key} );
+            $self->registor_keys_added->{$key} = 1;  # so we can delete from registry on remove
             push @dynamic_keys, $key;
             $flag = 1 unless $flag;
         }
@@ -378,8 +413,9 @@ sub registor_keys {
 sub starts_with {
     my ($self, $key_prefix )=@_;
     my @keys;
+    my $reg = $self->registrar;
     my @dynamic = $self->registor_keys( $key_prefix );
-    for my $key ( keys %{ $self->registrar || {} } ) {
+    for my $key ( keys %{ $reg || {} } ) {
         push @keys, $key if index( $key, $key_prefix ) == 0;
     }
     return @keys;
@@ -389,7 +425,8 @@ sub get_all {
     my ($self, $key_prefix )=@_;
     my @ret;
     #warn "GETALL=$key_prefix";
-    for( keys %{ $self->registrar || {} } ) {
+    my $reg = $self->registrar;
+    for( keys %{ $reg || {} } ) {
         push @ret, $self->get($_) if( /^\Q$key_prefix/ );
     }
     return @ret;
@@ -405,14 +442,15 @@ sub write_registry_file {
 sub print_table {
     my $self = shift;
 
+    my $reg = $self->registrar;
     my $table = <<"";
 Registry:
 .----------------------------------------+-----------------------------------------------.
 | Key                                    | Package                                       |
 +----------------------------------------+-----------------------------------------------+
 
-    for( sort keys %{ $self->registrar || {} } ) {
-        my $node = $self->registrar->{$_};
+    for( sort keys %{ $reg || {} } ) {
+        my $node = $reg->{$_};
         $table .= sprintf("| %-38s ", $node->key );
         #$table .= sprintf("| %-22s ", $_->module );
         ( my $module = $node->module ) =~ s/BaselinerX/BX/g;
@@ -426,3 +464,4 @@ Registry:
     print STDERR $table . "\n" if Baseliner->debug && !$ENV{BALI_CMD};
 }
 1;
+
