@@ -317,7 +317,7 @@ around 'debug' => sub {
                 memory    => [ driver => 'Memory' ],
                 rawmemory => [ driver => 'RawMemory', datastore => {}, max_size => 1000 ],
                 sharedmem => [ driver => 'SharedMem', size => 1_000_000, shmkey=>93894384 ],
-                redis     => [ driver => 'Redis', namespace => 'foo', server => '127.0.0.1:6379', debug => 0 ],
+                redis     => [ driver => 'BaselinerRedis', namespace => 'foo', server => '127.0.0.1:6379', debug => 0 ],
         };
         my $cache_config = ref $cache_type eq 'ARRAY' 
             ? $cache_type :  ( $cache_defaults->{ $cache_type } // $cache_defaults->{fastmmap} );

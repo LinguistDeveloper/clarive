@@ -85,7 +85,7 @@ sub log : Local {
                 id_rule_log   => $rule->{id},
                 event_status  => $rule->{return_code} ? 'ko' : 'ok',
                 type          => 'rule',
-                event_key     => $rule->{rule} && $rule->{rule}{id}
+                event_key     => $rule->{rule} && $rule->{id_rule}
                     ? _loc('rule: %1', $rule->{rule}{id} . ': ' . $rule->{rule}{rule_name} )
                     : _loc("Notifications"),
             }
