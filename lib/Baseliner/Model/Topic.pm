@@ -2177,7 +2177,7 @@ sub check_fields_required {
     
     my $is_root = Baseliner->model('Permissions')->is_root( $username );
     my $isValid = 1;
-    my (@fields_form, @fields_required);
+    my @fields_required = ();
     my $field_name;
     if (!$is_root){
         if($mid != -1){
@@ -2198,26 +2198,27 @@ sub check_fields_required {
                 }
                 
                 push @fields_required , $fields_required{$field} if !$isValid;
-                #$field_name = $fields_required{$field};
-                #last if !$isValid;
             }
-        }
-        
-        #if($p{data}){
-        #    for my $field (@fields_required){
-        #        my $v = $p{data}->{$field};
-        #        $isValid = (ref $v eq 'ARRAY' ? @$v : ref $v eq 'HASH' ? keys %$v : defined $v && $v ne '' ) ? 1 : 0;
-        #        push @fields_form , $fields_required{$field} if !$isValid;                
-        #    }
-        #    _log ">>>>>>>>>>>>>>>>>>Campos invalidos formulario: " . _dump @fields_form; 
-        #    return ($isValid, @fields_form);
-        #       
-        #}else{
-            _log ">>>>>>>>>>>>>>>>>>Campos invalidos base de datos: " . _dump @fields_required;    
-            return ($isValid, @fields_required);
+        }else{
+            my $data = $p{data} or _throw 'Missing parameter data';
+            my $meta = Baseliner->model('Topic')->get_meta(undef, $data->{category} );
+            my $category = DB->BaliTopicCategories->find($data->{category});
+            my $status = DB->BaliTopicStatus->find($data->{status_new});
             
-        #}
+            my %fields_required =  map { $_->{bd_field} => $_->{name_field} } grep { $_->{allowBlank} && $_->{allowBlank} eq 'false' && $_->{origin} ne 'system' } _array( $meta );
+            for my $field ( keys %fields_required){
+                next if !Baseliner->model('Permissions')->user_has_action( 
+                    username => $username, 
+                    action => 'action.topicsfield.'._name_to_id($category->name).'.'.$field.'.'._name_to_id($status->name).'.write'
+                );
+                my $v = $data->{$field};
+                $isValid = (ref $v eq 'ARRAY' ? @$v : ref $v eq 'HASH' ? keys %$v : defined $v && $v ne '' ) ? 1 : 0;
+                
+                push @fields_required , $fields_required{$field} if !$isValid;
+            }            
+        }
     }
+    return ($isValid, @fields_required);
 }
 
 1;
