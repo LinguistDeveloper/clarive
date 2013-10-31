@@ -67,8 +67,7 @@ params:
 			enableDragDrop:  meta && meta.readonly ? !meta.readonly : true,
 			readOnly:  meta && meta.readonly ? meta.readonly : false,
 			hidden: meta ? (meta.hidden ? meta.hidden : false): true,
-			allowBlank: meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true ),
-			id_required: id_required
+			allowBlank: meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true )
         });
 		
 

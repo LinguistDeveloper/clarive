@@ -2594,6 +2594,9 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
             reader: reader,
             data: self.records 
         });
+		
+        self.store.on('add', function(){ self.fireEvent( 'change', self ) });
+        self.store.on('remove', function(){ self.fireEvent( 'change', self ) });
             
         var button_add = new Baseliner.Grid.Buttons.Add({
             text:'',
@@ -2694,6 +2697,10 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
             arr.push( r.data );
         });
         return arr;
+    }, 
+    is_valid : function(){
+        var self = this;
+        return self.store.getCount() > 0 ;
     }
 });
 
@@ -2824,6 +2831,7 @@ Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
         var is_valid = form2.isValid();
         this.cascade(function(obj){
             var sty = 'border: solid 1px rgb(255,120,112); margin_bottom: 0px';
+			console.dir(obj.name, obj.allowBlank, obj.is_valid);
             if( obj.name && !obj.allowBlank && obj.is_valid ) {
                 if( !obj.is_valid() ) {
                     is_valid = false;
