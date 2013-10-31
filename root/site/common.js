@@ -3105,3 +3105,72 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
     }
 });
 
+Baseliner.request_approval = function(mid){
+    var user_comments = new Ext.form.TextArea({ title: _('Comments'), value:'' });
+    Baseliner.ci_call( mid, 'contract', { }, function(res){
+        //console.log( res );
+        var btn_approve = new Ext.Button({
+            text: _('Approve'),
+            icon: '/static/images/yes.png',
+            handler: function(){
+                var comments = user_comments.getValue();
+                Baseliner.ci_call(mid,'approve', { comments: comments }, function(res){
+                    if( Ext.getCmp(grid.id) ) grid.getStore().reload();
+                    Baseliner.message( _('Approved'), _('Job Approved') );
+                    win.close();
+                });
+            }
+        });
+        var btn_reject = new Ext.Button({
+            text: _('Reject'),
+            icon: '/static/images/del.gif',
+            handler: function(){
+                var comments = user_comments.getValue();
+                if( comments.length == 0 ) {
+                    Baseliner.error( _('Reject'), _('Rejection requires a commentary') );
+                    return;
+                }
+                Baseliner.ci_call(mid,'reject', { comments: comments }, function(res){
+                    if( Ext.getCmp(grid.id) ) grid.getStore().reload();
+                    Baseliner.message( _('Rejected'), _('Job Rejected') );
+                    win.close();
+                });
+            }
+        });
+        var variables = new Baseliner.VariableForm({
+            name: 'variables',
+            fieldLabel: _('Variables'),
+            show_tbar: false,
+            force_bl: ['*', res.bl],
+            height: 400,
+            data: res.vars
+        });
+        var form = new Ext.FormPanel({
+            title: _('Details'),
+            padding: 10,
+            labelAlign: 'right',
+            defaults: { anchor: '100%' },
+            frame: false, border: false,
+            items: [ 
+                { xtype:'textfield', fieldLabel:_('User'), value:res.username },
+                { xtype:'textfield', fieldLabel:_('Scheduled Time'), value:res.schedtime },
+                { xtype:'textfield', fieldLabel:_('Projects'), value:res.projects },
+                { xtype:'textfield', fieldLabel:_('Changes'), value: res.cs },
+                { xtype:'textarea', fieldLabel:_('Comments'), value: res.comments },
+                variables 
+            ]
+        });
+        var tab_approve = new Ext.TabPanel({ activeTab:0, items: [ user_comments, form ] });
+        tab_approve.on('afterrender', function(){
+            tab_approve.changeTabIcon( form, '/static/images/icons/log_16.png' ); 
+            tab_approve.changeTabIcon( user_comments, '/static/images/icons/comment_blue.gif' ); 
+        });
+        var win = new Baseliner.Window({ width: 800, height: 600, layout:'fit', 
+            title: _('Job') + ': ' + _('Approve') + ' / ' + _('Reject'), 
+            tbar: [ btn_approve, btn_reject ],
+            items:[ tab_approve ] 
+         });
+        win.show();
+    });
+};
+
