@@ -278,7 +278,7 @@ sub nature_items {
 register 'service.approval.request' => {
     name    => 'Request Approval',
     icon => '/static/images/icons/user_delete.gif', 
-    form => '/form/approval_request.js',
+    form => '/forms/approval_request.js',
     handler => \&request_approval,
 };
 

@@ -70,8 +70,7 @@ has modified_by => qw(is rw isa Maybe[Str]);
     # };  # a short name for this
 has job     => qw(is rw isa Baseliner::Role::JobRunner),
         lazy    => 1, default => sub {
-            require Baseliner::Core::JobRunner;
-            Baseliner::Core::JobRunner->new;
+            BaselinerX::CI::job_run->new;
         };
 
 sub storage { 'yaml' }   # ie. yaml, deprecated: for now, no other method supported
