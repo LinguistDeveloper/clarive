@@ -85,20 +85,22 @@ sub run {
     $self->save;
     
     $self->service_levels->{ $self->step } = {};  # restart level aggregator
+    #$self->service_levels->{ _loc('Core') } = {};  # restart level aggregator
     
     # trap all die signals
     local $SIG{__DIE__} = \&_throw;
 
     local $Baseliner::logger = sub {
         my ($lev, $cl,$fi,$li, @msgs ) = @_;
+        #my $cal = $Baseliner::Utils::caller_level // 2;
         
         #die "calling logger: $lev";
         $lev = 'debug' if $lev eq 'info';
         my $text = $msgs[0];
         if( ref $text ) {    # _log { ... }
-            $self->logger->common_log( [$lev,2], _loc('Data dump'), @msgs ); 
+            $self->logger->common_log( [$lev,3], _loc('Data dump'), @msgs ); 
         } else {
-            $self->logger->common_log( [$lev,2], @msgs ); 
+            $self->logger->common_log( [$lev,3], @msgs ); 
         }
         return 0;
     };
@@ -195,6 +197,11 @@ sub start_statement {
     my ($self,$stmt_name) = @_;
     $self->current_service( $stmt_name );
     $self->logger->debug( "$stmt_name", milestone=>2 );
+}
+
+sub back_to_core {
+    my ($self)=@_;
+    $self->current_service( "\x{2205}" );
 }
 
 our %next_step   = ( CHECK=>'INIT', INIT=>'PRE', PRE => 'RUN', RUN => 'POST', POST => 'END' );

@@ -336,7 +336,7 @@ sub _log_me {
     my $logger = $Baseliner::logger // ( Baseliner->app ? Baseliner->app->{_logger} : '' );
     my $log_out;
     if( ref $logger eq 'CODE' ) { # logger override
-        $log_out = $logger->($lev, $cl,$fi,$li, @msgs );  # logger return wheather log out or don't
+        $log_out = $logger->($lev, $cl,$fi,$li, @msgs );  # logger return if we should continue logging
     } else {
         $log_out = 1;
     }
@@ -388,8 +388,8 @@ sub _warn {
 }
 
 sub _debug {
-    my $cal = looks_like_number($_[0])? ( $_[0] < 0 ? shift : 0) : 0;
-    my ($cl,$fi,$li) = caller( -$cal );
+    my $cal = looks_like_number($_[0]) && $_[0] < 0 ? -(shift()) : ($Baseliner::Utils::caller_level // 0);
+    my ($cl,$fi,$li) = caller( $cal );
     return unless Baseliner->debug;
     _log_me( 'debug', $cl,$fi,$li,@_);
 }
