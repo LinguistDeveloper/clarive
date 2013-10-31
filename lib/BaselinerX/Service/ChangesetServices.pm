@@ -283,12 +283,24 @@ register 'service.approval.request' => {
 };
 
 register 'event.job.approval_request' => {
-    text => 'Approval requested for job %1 (user %2)',
+    text => 'Approval requested for job %3 (user %1)',
     description => 'approval requested for job',
     vars => ['username', 'ts', 'name', 'bl', 'status','step'],
     notify => {
         scope => ['project'],
     },
+};
+register 'event.job.approved' => {
+    text        => 'Job %3 Approved',
+    description => 'Job Approved',
+    vars        => [ 'username', 'ts', 'name', 'bl', 'status', 'step', 'comments' ],
+    notify => { scope => ['project'] },
+};
+register 'event.job.rejected' => {
+    text        => 'Job %3 Rejected',
+    description => 'Job Rejected',
+    vars        => [ 'username', 'ts', 'name', 'bl', 'status', 'step', 'comments' ],
+    notify => { scope => ['project'] },
 };
 sub request_approval {
     my ( $self, $c, $config ) = @_;
@@ -299,7 +311,7 @@ sub request_approval {
     my $bl       = $job->bl;
 
     event_new 'event.job.approval_request' => 
-        { username => $job->username, step=>$job->step, status=>$job->status, bl=>$job->bl } => sub {
+        { username => $job->username, name=>$job->name, step=>$job->step, status=>$job->status, bl=>$job->bl } => sub {
         $job->final_status( 'APPROVAL' );
     };
     1;

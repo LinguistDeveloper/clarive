@@ -2769,7 +2769,12 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
             callback: function(records){
                 var tbar = self.getTopToolbar();
                 tbar.add('->');
-                if( self.force_bl ) records=[ { id: self.force_bl } ];
+                if( self.force_bl ) {
+                    records=[];
+                    Ext.each( self.force_bl, function(fbl){
+                        records.push({ id: fbl });
+                    });
+                }
                 var def_bl = self.force_bl || '*';
                 Ext.each(records, function(bl){
                     var name = bl.id == '*' ? 'Common' : bl.id; 

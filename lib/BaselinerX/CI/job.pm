@@ -419,6 +419,7 @@ sub contract {
     my $vars = $prj->variables // {};
     my $bl = $self->bl;
     return { 
+        username => $self->username, 
         schedtime => $self->schedtime,
         comments => $self->comments,
         projects=>join(' ', map { $_->name } @prjs),
@@ -431,15 +432,25 @@ sub contract {
 
 sub approve {
     my ($self, $p)=@_;
-    $self->status( 'READY' );
-    $self->save;
+    my $comments = $p->{comments};
+    event_new 'event.job.approved' => 
+        { username => $self->username, name=>$self->name, step=>$self->step, status=>$self->status, bl=>$self->bl, comments=>$comments } => sub {
+        $self->logger->info( _loc('*Job Approved by %1*: %2', $p->{username}, $comments), data=>$comments, username=>$p->{username} );
+        $self->status( 'READY' );
+        $self->save;
+    };
     1;
 }
 
 sub reject {
     my ($self, $p)=@_;
-    $self->status( 'REJECTED' );
-    $self->save;
+    my $comments = $p->{comments};
+    event_new 'event.job.rejected' => 
+        { username => $self->username, name=>$self->name, step=>$self->step, status=>$self->status, bl=>$self->bl, comments=>$comments } => sub {
+        $self->logger->error( _loc('*Job Rejected by %1*: %2', $p->{username}, $comments), data=>$comments, username=>$p->{username} );
+        $self->status( 'REJECTED' );
+        $self->save;
+    };
     1;
 }
 
