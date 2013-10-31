@@ -18,14 +18,22 @@ params:
     allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
     readonly = meta.readonly == undefined ? true : meta.readonly;
 
+	var editor = new Baseliner.CLEditor({
+		width: '99.6%',
+		value: data ? data[meta.bd_field] : '',
+		height: meta.height ? parseInt(meta.height) : 350,
+		submitValue: false
+	});
+
 	return [
-        //Baseliner.field_label_top( meta.name_field, meta.hidden, allow, readonly ),		
-		{   xtype: 'panel', layout:'fit',
-			fieldLabel: meta.name_field,
-			hidden: meta ? (meta.hidden ? meta.hidden : false): true,
-			style: 'margin-bottom: 15px',
-			readOnly : readonly,
+		{   xtype: 'panel',
+			border: false,	
+			name: meta.id_field,
+			fieldLabel: _(meta.name_field),
 			allowBlank: allow,
+			hidden: meta ? (meta.hidden ? meta.hidden : false): true,
+			//style: 'margin-bottom: 15px',
+			readOnly : readonly,
 			listeners: {
 				'afterrender':function(){
 					var disable = meta && meta.readonly ? meta.readonly : false;
@@ -35,16 +43,21 @@ params:
 					    mask.setStyle('height', 5000);
 					}
 				}
-			},  			
-			items: [ //this panel is here to make the htmleditor fit
-			new Baseliner.CLEditor({
-					name: meta.id_field,
-					fieldLabel: _('Description'),
-					width: '100%',
-					value: data ? data[meta.bd_field] : '',
-					height: meta.height ? parseInt(meta.height) : 350
-				})
-			]
+			},
+			items: editor,
+			get_save_data : function(){
+				return editor.getValue();
+			}, 			
+			is_valid : function(){
+				var is_valid = editor.getValue() != '' ? true : false;
+				if (is_valid && this.on_change_lab){
+					this.getEl().applyStyles('border: none; margin_bottom: 0px');
+					this.on_change_lab.style.display = 'none';
+				}
+												
+								
+				return is_valid;
+			}				
 		}				
     ]
 })

@@ -17,7 +17,7 @@ sub logs_list : Path('/job/log/list') {
     my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
     $c->stash->{job_exec} = ref $job ? $job->exec : 1;
     $c->forward('/permissions/load_user_actions');
-    $c->stash->{template} = '/comp/log_grid.mas';
+    $c->stash->{template} = '/comp/log_grid.js';
 }
 
 sub dashboard_log : Path('/job/log/dashboard') {

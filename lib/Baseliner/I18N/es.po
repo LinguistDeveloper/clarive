@@ -4779,3 +4779,9 @@ msgstr "El campo %1 es obligatorio"
 msgid "Separator"
 msgstr "Separador de campos"
 
+msgid "This field is required"
+msgstr "Este campo es obligatorio"
+
+msgid "Description"
+msgstr "Descripción"
+

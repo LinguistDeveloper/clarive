@@ -278,10 +278,30 @@ sub nature_items {
 register 'service.approval.request' => {
     name    => 'Request Approval',
     icon => '/static/images/icons/user_delete.gif', 
-    form => '/form/approval_request.js',
+    form => '/forms/approval_request.js',
     handler => \&request_approval,
 };
 
+register 'event.job.approval_request' => {
+    text => 'Approval requested for job %3 (user %1)',
+    description => 'approval requested for job',
+    vars => ['username', 'ts', 'name', 'bl', 'status','step'],
+    notify => {
+        scope => ['project'],
+    },
+};
+register 'event.job.approved' => {
+    text        => 'Job %3 Approved',
+    description => 'Job Approved',
+    vars        => [ 'username', 'ts', 'name', 'bl', 'status', 'step', 'comments' ],
+    notify => { scope => ['project'] },
+};
+register 'event.job.rejected' => {
+    text        => 'Job %3 Rejected',
+    description => 'Job Rejected',
+    vars        => [ 'username', 'ts', 'name', 'bl', 'status', 'step', 'comments' ],
+    notify => { scope => ['project'] },
+};
 sub request_approval {
     my ( $self, $c, $config ) = @_;
 
@@ -290,7 +310,10 @@ sub request_approval {
     my $log      = $job->logger;
     my $bl       = $job->bl;
 
-    $job->final_status( 'APPROVAL' );
+    event_new 'event.job.approval_request' => 
+        { username => $job->username, name=>$job->name, step=>$job->step, status=>$job->status, bl=>$job->bl } => sub {
+        $job->final_status( 'APPROVAL' );
+    };
     1;
 }
 
@@ -684,7 +707,7 @@ sub update_baselines_old {
                 $log->info( _loc( "%1 %2 to %3", $job_type, $row->title, $status_name ) );
                 return { mid => $row->mid, topic => $row->title };
                 Baseliner->cache_remove( qr/:$row->mid:/ );
-            }         
+            };
     } ## end while ( my $row = $rs_changesets...)
     } catch {
         _error( shift() );

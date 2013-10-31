@@ -21,7 +21,7 @@ has endtime            => qw(is rw isa Any);
 has ts                 => qw(is rw isa Any);
 has maxstarttime       => qw(is rw isa Any);
 has comments           => qw(is rw isa Any);
-has logfile            => qw(is rw isa Any);
+has logfile            => qw(is rw isa Any lazy 1), default => sub { my $self=shift; ''.Util->_file($ENV{BASELINER_LOGHOME}, $self->name . '.log') };
 has step               => qw(is rw isa Str default CHECK);
 has exec               => qw(is rw isa Num default 1);
 has status             => qw(is rw isa Any default IN-EDIT);
@@ -360,7 +360,15 @@ sub run_inproc {
         $err = shift;
     };
     Util->_log('************** Finished JOB IN-PROC %1 ***************', $self->name );
+    try { $self->write_to_logfile( $out ) } catch { _error shift() };
     return { output=>$out, error=>$err };
+}
+
+method write_to_logfile( $txt ) {
+    open my $ff, '>>', $self->logfile 
+        or _fail _log "Could not open logfile %1 for writing", $self->logfile;
+    print $ff $txt;
+    close $ff;
 }
 
 sub reset {
@@ -419,6 +427,7 @@ sub contract {
     my $vars = $prj->variables // {};
     my $bl = $self->bl;
     return { 
+        username => $self->username, 
         schedtime => $self->schedtime,
         comments => $self->comments,
         projects=>join(' ', map { $_->name } @prjs),
@@ -431,15 +440,25 @@ sub contract {
 
 sub approve {
     my ($self, $p)=@_;
-    $self->status( 'READY' );
-    $self->save;
+    my $comments = $p->{comments};
+    event_new 'event.job.approved' => 
+        { username => $self->username, name=>$self->name, step=>$self->step, status=>$self->status, bl=>$self->bl, comments=>$comments } => sub {
+        $self->logger->info( _loc('*Job Approved by %1*: %2', $p->{username}, $comments), data=>$comments, username=>$p->{username} );
+        $self->status( 'READY' );
+        $self->save;
+    };
     1;
 }
 
 sub reject {
     my ($self, $p)=@_;
-    $self->status( 'REJECTED' );
-    $self->save;
+    my $comments = $p->{comments};
+    event_new 'event.job.rejected' => 
+        { username => $self->username, name=>$self->name, step=>$self->step, status=>$self->status, bl=>$self->bl, comments=>$comments } => sub {
+        $self->logger->error( _loc('*Job Rejected by %1*: %2', $p->{username}, $comments), data=>$comments, username=>$p->{username} );
+        $self->status( 'REJECTED' );
+        $self->save;
+    };
     1;
 }
 

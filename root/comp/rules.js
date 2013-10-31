@@ -262,6 +262,7 @@
                         var form = new Baseliner.FormPanel({ 
                             frame: false, forceFit: true, defaults: { msgTarget: 'under', anchor:'100%' },
                             width: 800, height: 600,
+                            labelAlign: 'right',
                             autoScroll: true,
                             tbar: [
                                 _('Return Key') + ':',
@@ -325,6 +326,9 @@
         */
         var rule_save = function(opt){
             var root = rule_tree.root;
+            root.cascade(function(nc){
+                nc.attributes.expanded = nc.isExpanded();
+            });
             var stmts = encode_tree( root );
             Baseliner.message( _('Rules'), _('Validating and saving rule...') );
             var json = Ext.util.JSON.encode( stmts );

@@ -37,10 +37,10 @@ sub build_tree {
         if(  @chi ) {
             $n->{children} = \@chi;
             $n->{leaf} = \0;
-            $n->{expanded} = \1;
+            $n->{expanded} = $n->{expanded} eq 'false' ? \0 : \1;
         } elsif( ! ${$n->{leaf} // \1} ) {  # may be a folder with no children
             $n->{children} = []; 
-            $n->{expanded} = \1;
+            $n->{expanded} = $n->{expanded} eq 'false' ? \0 : \1;
         }
         delete $n->{loader};  
         delete $n->{isTarget};  # otherwise you cannot drag-drop around a node
@@ -129,10 +129,14 @@ sub dsl_run {
     our $stash = $p{stash} // {};
     
     merge_into_stash( $stash, BaselinerX::CI::variable->default_hash ); 
-    
+    ## local $Baseliner::Utils::caller_level = 3;
     ############################## EVAL DSL STATEMENTS
     $ret = eval $dsl;
     ##############################
+    
+    if( my $job = $stash->{job} ) {
+        $job->back_to_core;
+    }
 
     _fail( _loc("Error during DSL Execution: %1", $@) ) if $@;
     return $stash;

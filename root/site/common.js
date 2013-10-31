@@ -1295,6 +1295,13 @@ Baseliner.button.CSVExport = Ext.extend( Ext.Toolbar.Button, {
         }
 });
 
+Baseliner.open_pre_page = function(title,txt) {
+    var ww = window.open('about:blank', '_blank' );
+    ww.document.title = title || _('Text');
+    ww.document.write( '<pre>' + txt + '</pre>' );
+    ww.document.close();
+}
+
 Baseliner.Base64 = (function() {
     "use strict";
 
@@ -2594,6 +2601,9 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
             reader: reader,
             data: self.records 
         });
+		
+        self.store.on('add', function(){ self.fireEvent( 'change', self ) });
+        self.store.on('remove', function(){ self.fireEvent( 'change', self ) });
             
         var button_add = new Baseliner.Grid.Buttons.Add({
             text:'',
@@ -2694,6 +2704,10 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
             arr.push( r.data );
         });
         return arr;
+    }, 
+    is_valid : function(){
+        var self = this;
+        return self.store.getCount() > 0 ;
     }
 });
 
@@ -2816,19 +2830,37 @@ Ext.apply(Ext.layout.FormLayout.prototype, {
     }
 });
 
-//////Baseliner.RequiredFieldInfo = Ext.extend(Ext.form.Label, {
-//////    constructor: function(config){
-//////        Baseliner.RequiredFieldInfo.superclass.constructor.call(this, Ext.apply({
-//////            html: "<span " +
-//////            ((this.requiredFieldCls !== undefined) ? 'class="' + this.requiredFieldCls + '"' : 'style="color:red;"') +
-//////            '>*</span> ' +
-//////            ((this.requiredFieldText !== undefined) ? this.requiredFieldText : 'Required field')
-//////        }, config));
-//////    }
-//////});
-//////Ext.reg('reqFieldInfo', Baseliner.RequiredFieldInfo);
  
 Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
+    is_valid : function(){
+        var self = this;
+        var form2 = this.getForm();
+        var is_valid = form2.isValid();
+        this.cascade(function(obj){
+            var sty = 'border: solid 1px rgb(255,120,112); margin_bottom: 0px';
+			console.dir(obj.name, obj.allowBlank, obj.is_valid);
+            if( obj.name && !obj.allowBlank && obj.is_valid ) {
+                if( !obj.is_valid() ) {
+                    is_valid = false;
+                    obj.getEl().applyStyles(sty);
+					if( !obj.on_change_lab ) {
+						var lab = Ext.DomHelper.insertAfter(obj.getEl(),{id: 'lbl_required_'+obj.name, html:'<div class="x-form-invalid-msg">'+_('This field is required')+'</div>'});
+						obj.on_change_lab = lab;
+						obj.on('change', function(){
+							if( obj.is_valid() ) {
+								obj.getEl().applyStyles('border: none; margin_bottom: 0px');
+								obj.on_change_lab.style.display = 'none';
+							} else {
+								obj.getEl().applyStyles(sty);
+								obj.on_change_lab.style.display = 'block';
+							}
+						});
+					}
+                }
+            }
+        });
+        return is_valid;
+    },
     getValues : function(a,b,c){
         var form2 = this.getForm();
         var form_data = form2.getValues() || {};
@@ -3079,4 +3111,74 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
         Baseliner.UploadFilesPanel.superclass.initComponent.call(this);
     }
 });
+
+Baseliner.request_approval = function(mid,id_grid){
+    var grid = Ext.getCmp( id_grid );
+    var user_comments = new Ext.form.TextArea({ title: _('Comments'), value:'' });
+    Baseliner.ci_call( mid, 'contract', { }, function(res){
+        //console.log( res );
+        var btn_approve = new Ext.Button({
+            text: _('Approve'),
+            icon: '/static/images/yes.png',
+            handler: function(){
+                var comments = user_comments.getValue();
+                Baseliner.ci_call(mid,'approve', { comments: comments }, function(res){
+                    if( grid ) grid.getStore().reload();
+                    Baseliner.message( _('Approved'), _('Job Approved') );
+                    win.close();
+                });
+            }
+        });
+        var btn_reject = new Ext.Button({
+            text: _('Reject'),
+            icon: '/static/images/del.gif',
+            handler: function(){
+                var comments = user_comments.getValue();
+                if( comments.length == 0 ) {
+                    Baseliner.error( _('Reject'), _('Rejection requires a commentary') );
+                    return;
+                }
+                Baseliner.ci_call(mid,'reject', { comments: comments }, function(res){
+                    if( grid ) grid.getStore().reload();
+                    Baseliner.message( _('Rejected'), _('Job Rejected') );
+                    win.close();
+                });
+            }
+        });
+        var variables = new Baseliner.VariableForm({
+            name: 'variables',
+            fieldLabel: _('Variables'),
+            show_tbar: false,
+            force_bl: ['*', res.bl],
+            height: 400,
+            data: res.vars
+        });
+        var form = new Ext.FormPanel({
+            title: _('Details'),
+            padding: 10,
+            labelAlign: 'right',
+            defaults: { anchor: '100%' },
+            frame: false, border: false,
+            items: [ 
+                { xtype:'textfield', fieldLabel:_('User'), value:res.username },
+                { xtype:'textfield', fieldLabel:_('Scheduled Time'), value:res.schedtime },
+                { xtype:'textfield', fieldLabel:_('Projects'), value:res.projects },
+                { xtype:'textfield', fieldLabel:_('Changes'), value: res.cs },
+                { xtype:'textarea', fieldLabel:_('Comments'), value: res.comments },
+                variables 
+            ]
+        });
+        var tab_approve = new Ext.TabPanel({ activeTab:0, items: [ user_comments, form ] });
+        tab_approve.on('afterrender', function(){
+            tab_approve.changeTabIcon( form, '/static/images/icons/log_16.png' ); 
+            tab_approve.changeTabIcon( user_comments, '/static/images/icons/comment_blue.gif' ); 
+        });
+        var win = new Baseliner.Window({ width: 800, height: 600, layout:'fit', 
+            title: _('Job') + ': ' + _('Approve') + ' / ' + _('Reject'), 
+            tbar: [ btn_approve, btn_reject ],
+            items:[ tab_approve ] 
+         });
+        win.show();
+    });
+};
 
