@@ -262,6 +262,7 @@
                         var form = new Baseliner.FormPanel({ 
                             frame: false, forceFit: true, defaults: { msgTarget: 'under', anchor:'100%' },
                             width: 800, height: 600,
+                            labelAlign: 'right',
                             autoScroll: true,
                             tbar: [
                                 _('Return Key') + ':',
