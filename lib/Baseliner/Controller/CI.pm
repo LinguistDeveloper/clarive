@@ -563,7 +563,7 @@ sub store : Local {
     #_debug \@data if $mids;
 
     # variables
-    unless( $p->{no_vars} ) {  # show variables always, with_vars deprecated
+    if( $p->{with_vars} ) {  # $p->{no_vars} ) {  # show variables always, with_vars deprecated
         my %vp = ( $p->{role} ? (role=>$p->{role}) : ($p->{classname} || $p->{class} || $p->{isa}) ? (classname=>$p->{class}||$p->{classname}) : () );
         
         my @vars = Baseliner::Role::CI->variables_like_me( %vp );
