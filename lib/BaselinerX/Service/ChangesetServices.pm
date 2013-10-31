@@ -282,6 +282,14 @@ register 'service.approval.request' => {
     handler => \&request_approval,
 };
 
+register 'event.job.approval_request' => {
+    text => 'Approval requested for job %1 (user %2)',
+    description => 'approval requested for job',
+    vars => ['username', 'ts', 'name', 'bl', 'status','step'],
+    notify => {
+        scope => ['project'],
+    },
+};
 sub request_approval {
     my ( $self, $c, $config ) = @_;
 
@@ -290,7 +298,10 @@ sub request_approval {
     my $log      = $job->logger;
     my $bl       = $job->bl;
 
-    $job->final_status( 'APPROVAL' );
+    event_new 'event.job.approval_request' => 
+        { username => $job->username, step=>$job->step, status=>$job->status, bl=>$job->bl } => sub {
+        $job->final_status( 'APPROVAL' );
+    };
     1;
 }
 
@@ -684,7 +695,7 @@ sub update_baselines_old {
                 $log->info( _loc( "%1 %2 to %3", $job_type, $row->title, $status_name ) );
                 return { mid => $row->mid, topic => $row->title };
                 Baseliner->cache_remove( qr/:$row->mid:/ );
-            }         
+            };
     } ## end while ( my $row = $rs_changesets...)
     } catch {
         _error( shift() );
