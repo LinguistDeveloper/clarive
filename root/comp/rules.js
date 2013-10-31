@@ -325,6 +325,9 @@
         */
         var rule_save = function(opt){
             var root = rule_tree.root;
+            root.cascade(function(nc){
+                nc.attributes.expanded = nc.isExpanded();
+            });
             var stmts = encode_tree( root );
             Baseliner.message( _('Rules'), _('Validating and saving rule...') );
             var json = Ext.util.JSON.encode( stmts );

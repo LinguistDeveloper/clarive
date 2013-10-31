@@ -37,10 +37,10 @@ sub build_tree {
         if(  @chi ) {
             $n->{children} = \@chi;
             $n->{leaf} = \0;
-            $n->{expanded} = \1;
+            $n->{expanded} = $n->{expanded} eq 'false' ? \0 : \1;
         } elsif( ! ${$n->{leaf} // \1} ) {  # may be a folder with no children
             $n->{children} = []; 
-            $n->{expanded} = \1;
+            $n->{expanded} = $n->{expanded} eq 'false' ? \0 : \1;
         }
         delete $n->{loader};  
         delete $n->{isTarget};  # otherwise you cannot drag-drop around a node
