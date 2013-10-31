@@ -518,6 +518,7 @@ sub job_submit : Path('/job/submit') {
         use Baseliner::Sugar;
         if( $p->{action} eq 'delete' ) {
             my $job = $c->model('Baseliner::BaliJob')->search({ id=> $p->{id_job} })->first;
+            my $job_ci = ci->new( ns=>'job/'.$p->{id_job} );
             my $msg = '';
             if( $job->status =~ /CANCELLED|KILLED|FINISHED|ERROR/ ) {
 
@@ -534,6 +535,7 @@ sub job_submit : Path('/job/submit') {
                 event_new 'event.job.cancel_running' => { username => $c->username, bl => $job->bl, id_job=>$job->id, jobname => $job->name  } => sub {
                     $job->update({ status=> 'CANCELLED' });
                     $c->model('Request')->cancel_for_job( id_job=>$job->id );
+                    $job_ci->logger->error( _loc('Job cancelled by user %1', $c->username ) );
 
                     sub job_submit_cancel_running : Private {};
                     $c->forward( 'job_submit_cancel_running', $job, $job_name, $username );
@@ -543,6 +545,7 @@ sub job_submit : Path('/job/submit') {
                 event_new 'event.job.cancel'  => { username => $c->username, bl => $job->bl, id_job=>$job->id, jobname => $job->name  } => sub {
                     $job->status( 'CANCELLED' );
                     $job->update;
+                    $job_ci->logger->error( _loc('Job cancelled by user %1', $c->username ) );
                     # cancel pending requests
                     $c->model('Request')->cancel_for_job( id_job=>$job->id );
                 };
