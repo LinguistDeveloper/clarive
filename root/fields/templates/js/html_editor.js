@@ -29,7 +29,7 @@ params:
 		{   xtype: 'panel',
 			border: false,	
 			name: meta.id_field,
-			fieldLabel: meta.name_field,
+			fieldLabel: _(meta.name_field),
 			allowBlank: allow,
 			hidden: meta ? (meta.hidden ? meta.hidden : false): true,
 			//style: 'margin-bottom: 15px',
