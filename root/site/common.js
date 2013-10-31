@@ -2816,17 +2816,6 @@ Ext.apply(Ext.layout.FormLayout.prototype, {
     }
 });
 
-//////Baseliner.RequiredFieldInfo = Ext.extend(Ext.form.Label, {
-//////    constructor: function(config){
-//////        Baseliner.RequiredFieldInfo.superclass.constructor.call(this, Ext.apply({
-//////            html: "<span " +
-//////            ((this.requiredFieldCls !== undefined) ? 'class="' + this.requiredFieldCls + '"' : 'style="color:red;"') +
-//////            '>*</span> ' +
-//////            ((this.requiredFieldText !== undefined) ? this.requiredFieldText : 'Required field')
-//////        }, config));
-//////    }
-//////});
-//////Ext.reg('reqFieldInfo', Baseliner.RequiredFieldInfo);
  
 Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
     is_valid : function(){
@@ -2834,29 +2823,24 @@ Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
         var form2 = this.getForm();
         var is_valid = form2.isValid();
         this.cascade(function(obj){
-            //console.log( [ obj.name, obj.allowBlank, obj.is_valid ].join(',') );
             var sty = 'border: solid 1px rgb(255,120,112); margin_bottom: 0px';
             if( obj.name && !obj.allowBlank && obj.is_valid ) {
                 if( !obj.is_valid() ) {
                     is_valid = false;
                     obj.getEl().applyStyles(sty);
-                    //Ext.getCmp('lbl_required_' + obj.id_required).show();
-                    /* 
-                    var ix = self.getIndex( obj );
-                    self.add( ix+1, {
-                            style: 'margin-bottom: 8px',
-                            hidden: true,
-                            border: false,
-                            html: '<div class="x-form-invalid-msg">Este campo es obligatorio</div>'
-                    });
-                    */
-                    obj.on('change', function(){
-                        if( obj.is_valid() ) {
-                            obj.getEl().applyStyles('border: none; margin_bottom: 0px');
-                        } else {
-                            obj.getEl().applyStyles(sty);
-                        }
-                    });
+					if( !obj.on_change_lab ) {
+						var lab = Ext.DomHelper.insertAfter(obj.getEl(),{id: 'lbl_required_'+obj.name, html:'<div class="x-form-invalid-msg">'+_('This field is required')+'</div>'});
+						obj.on_change_lab = lab;
+						obj.on('change', function(){
+							if( obj.is_valid() ) {
+								obj.getEl().applyStyles('border: none; margin_bottom: 0px');
+								obj.on_change_lab.style.display = 'none';
+							} else {
+								obj.getEl().applyStyles(sty);
+								obj.on_change_lab.style.display = 'block';
+							}
+						});
+					}
                 }
             }
         });
