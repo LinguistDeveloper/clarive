@@ -1295,6 +1295,13 @@ Baseliner.button.CSVExport = Ext.extend( Ext.Toolbar.Button, {
         }
 });
 
+Baseliner.open_pre_page = function(title,txt) {
+    var ww = window.open('about:blank', '_blank' );
+    ww.document.title = title || _('Text');
+    ww.document.write( '<pre>' + txt + '</pre>' );
+    ww.document.close();
+}
+
 Baseliner.Base64 = (function() {
     "use strict";
 

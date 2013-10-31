@@ -197,7 +197,7 @@ sub rs_filter {
 sub job_logfile : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
-    my $job = _ci( ns=>'job/'.$p->{id_job} );
+    my $job = ci->new( ns=>'job/'.$p->{id_job} );
     $c->stash->{json}  = try {
         my $file = $job->logfile;
         #$file //= Baseliner->loghome( $job->name . '.log' ); 

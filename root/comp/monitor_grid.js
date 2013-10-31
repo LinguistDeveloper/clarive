@@ -642,7 +642,7 @@
 
     Baseliner.openLogTab = function(id, name) {
         //Baseliner.addNewTabComp('/job/log/list?id_job=' + id, _('Log') + ' ' + name, { tab_icon: '/static/images/icons/moredata.gif' } );
-        Baseliner.addNewTab('/job/log/dashboard?id_job=' + id + '&name=' + name , _('Log') + ' ' + name, { tab_icon: '/static/images/icons/job.png' });
+        Baseliner.addNewTab('/job/log/dashboard?id_job=' + id + '&name=' + name , name, { tab_icon: '/static/images/icons/job.png' });
     };
 
     var render_topic = function(value, p, record){
@@ -799,7 +799,7 @@
                         if (sm.hasSelection())
                         {
                             var sel = sm.getSelected();
-                            Baseliner.addNewTabComp('/job/log/list?id_job=' + sel.data.id, _('Log') + ' ' + sel.data.name );
+                            Baseliner.addNewTabComp('/job/log/list?id_job=' + sel.data.id, sel.data.name );
                         } else {
                             Ext.Msg.alert(_('Error'), _('Select a row first'));   
                         };

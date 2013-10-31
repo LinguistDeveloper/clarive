@@ -550,7 +550,8 @@
 </%doc>
                 '->',
                 button_autorefresh
-                ]
+                ],
+                tab_icon: '/static/images/icons/moredata.gif'
         });
 
     grid.on("rowdblclick", function(grid, rowIndex, e ) {

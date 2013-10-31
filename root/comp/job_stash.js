@@ -1,9 +1,6 @@
 (function(params) {
         var stash = new Ext.form.TextArea({
-            height: '100%',
-            width: '100%',
             style: 'font-family: Consolas, monospace',
-            name: 'stash',
             value: ''
         });
         var load_stash = function() {
@@ -23,11 +20,18 @@
         };
         load_stash();
         var panel = new Ext.Panel({
+            layout: 'fit',
             tbar: [
-                { xtype: 'button', text: _('Save'), handler: save_stash },
-                { xtype: 'button', text: _('Reload'), handler: load_stash }
+                { xtype: 'button', icon: '/static/images/icons/html.gif', style: 'width: 30px', cls: 'x-btn-icon',
+                    text: _('H'), handler: function(){ Baseliner.open_pre_page( panel.title, stash.getValue() ) } },
+                { xtype: 'button', text: _('Save'), icon: '/static/images/icons/save.png', handler: save_stash },
+                { xtype: 'button', text: _('Reload'), icon: '/static/images/icons/refresh.gif', handler: load_stash }
             ],
+            tab_icon: '/static/images/icons/stash.gif',
             items: [ stash ]
+        });
+        panel.on('afterrender', function(){
+            panel.body.setStyle({ 'overflow': 'hidden' });
         });
         return panel;
 })
