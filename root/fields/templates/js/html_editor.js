@@ -49,8 +49,14 @@ params:
 				return editor.getValue();
 			}, 			
 			is_valid : function(){
-				var value = editor.getValue();
-				return value != '' ? 1: 0;
+				var is_valid = editor.getValue() != '' ? true : false;
+				if (is_valid && this.on_change_lab){
+					this.getEl().applyStyles('border: none; margin_bottom: 0px');
+					this.on_change_lab.style.display = 'none';
+				}
+												
+								
+				return is_valid;
 			}				
 		}				
     ]
