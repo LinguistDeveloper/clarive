@@ -3105,7 +3105,8 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
     }
 });
 
-Baseliner.request_approval = function(mid){
+Baseliner.request_approval = function(mid,id_grid){
+    var grid = Ext.getCmp( id_grid );
     var user_comments = new Ext.form.TextArea({ title: _('Comments'), value:'' });
     Baseliner.ci_call( mid, 'contract', { }, function(res){
         //console.log( res );
@@ -3115,7 +3116,7 @@ Baseliner.request_approval = function(mid){
             handler: function(){
                 var comments = user_comments.getValue();
                 Baseliner.ci_call(mid,'approve', { comments: comments }, function(res){
-                    if( Ext.getCmp(grid.id) ) grid.getStore().reload();
+                    if( grid ) grid.getStore().reload();
                     Baseliner.message( _('Approved'), _('Job Approved') );
                     win.close();
                 });
@@ -3131,7 +3132,7 @@ Baseliner.request_approval = function(mid){
                     return;
                 }
                 Baseliner.ci_call(mid,'reject', { comments: comments }, function(res){
-                    if( Ext.getCmp(grid.id) ) grid.getStore().reload();
+                    if( grid ) grid.getStore().reload();
                     Baseliner.message( _('Rejected'), _('Job Rejected') );
                     win.close();
                 });

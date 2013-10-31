@@ -629,7 +629,7 @@
 
         //else if( type == 'demote' || type == 'rollback' ) value += ' ' + _('(Rollback)');
         if( status == 'APPROVAL' ) { // add a link to the approval main
-            value = String.format("<a href='javascript:Baseliner.request_approval({0});'><b>{1}</b></a>", rec.data.mid, value ); 
+            value = String.format("<a href='javascript:Baseliner.request_approval({0},\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id ); 
         }
         if( icon!=undefined ) {
             return div1 
