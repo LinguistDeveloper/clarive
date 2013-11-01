@@ -352,16 +352,22 @@
             var stmts = encode_tree( root );
             Baseliner.message( _('Rules'), _('Validating and saving rule...') );
             var json = Ext.util.JSON.encode( stmts );
+            btn_save_tree.disable();
+            btn_refresh_tree.disable();
             Baseliner.ajaxEval( '/rule/stmts_save', { id_rule: id_rule, stmts: json }, function(res) {
+                if( btn_save_tree ) btn_save_tree.enable();
+                if( btn_refresh_tree ) btn_refresh_tree.enable();
                 if( res.success ) {
                     rule_tree.is_dirty = false;
                     Baseliner.message( _('Rule'), res.msg );
                     if( opt.callback ) {
                         opt.callback( res );
                     }
-                } else {
-                    Baseliner.error( _('Error saving rule'), res.msg );
                 }
+            },function(res){
+                if( btn_save_tree ) btn_save_tree.enable();
+                if( btn_refresh_tree ) btn_refresh_tree.enable();
+                Baseliner.error( _('Error saving rule'), res.msg );
             });
         };
         var rule_load_do = function(btn){
@@ -397,6 +403,8 @@
             });
             stmts_menu.showAt(event.xy);
         };
+        var btn_save_tree = new Ext.Button({ text: _('Save'), icon:'/static/images/icons/save.png', handler: rule_save });
+        var btn_refresh_tree = new Ext.Button({ text: _('Reload'), icon:'/static/images/icons/refresh.gif', handler: rule_load });
         var rule_tree = new Ext.tree.TreePanel({
             region: 'center',
             id_rule: id_rule,
@@ -417,8 +425,8 @@
             },
             rootVisible: true,
             tbar: [ 
-                { xtype:'button', text: _('Save'), icon:'/static/images/icons/save.png', handler: rule_save },
-                { xtype:'button', text: _('Reload'), icon:'/static/images/icons/refresh.gif', handler: rule_load },
+                btn_save_tree,
+                btn_refresh_tree,
                 { xtype:'button', text: _('DSL'), icon:'/static/images/icons/edit.png', handler: function() { rule_tree.rule_dsl() } }
             ],
             root: { 

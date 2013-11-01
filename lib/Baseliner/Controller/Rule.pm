@@ -337,7 +337,7 @@ sub stmts_save : Local {
         $c->stash->{json} = { success=>\1, msg => _loc('Rule statements saved ok') };
     } catch {
         my $err = shift;
-        $c->stash->{json} = { success=>\0, msg => $err };
+        $c->stash->{json} = { success=>\0, msg => "$err" };
     };
     $c->forward("View::JSON");
 }
