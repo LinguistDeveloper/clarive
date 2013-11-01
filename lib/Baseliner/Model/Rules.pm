@@ -99,6 +99,15 @@ sub _is_true {
     return (ref $v eq 'SCALAR' && !${$v}) || $v eq 'false' || !$v;
 }
 
+sub dsl_build_and_test {
+    my ($self,$stmts, %p )=@_;
+    my $dsl = $self->dsl_build( $stmts, %p ); 
+    my $stash = {};
+    eval "sub{ $dsl }";
+    die $@ if $@; 
+    return $dsl;
+}
+
 sub dsl_build {
     my ($self,$stmts, %p )=@_;
     return '' if !$stmts || ( ref $stmts eq 'HASH' && !%$stmts );

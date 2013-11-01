@@ -321,7 +321,18 @@ sub stmts_save : Local {
 
     try {
         my $id_rule = $p->{id_rule} or _throw 'Missing rule id';
-        my $stmts = _decode_json( $p->{stmts} );
+        # check json valid
+        my $stmts = try { 
+            _decode_json( $p->{stmts} );
+        } catch {
+            _fail _loc "Corrupt or incorrect json rule tree: %1", shift(); 
+        };
+        # check if DSL is buildable
+        try { 
+            $c->model('Rules')->dsl_build_and_test( $stmts ); 
+        } catch {
+            _fail _loc "Error testing DSL build: %1", shift(); 
+        };
         DB->BaliRule->find($id_rule)->update({ rule_tree=>$p->{stmts} });
         $c->stash->{json} = { success=>\1, msg => _loc('Rule statements saved ok') };
     } catch {
