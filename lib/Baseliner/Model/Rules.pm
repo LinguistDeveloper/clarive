@@ -121,6 +121,7 @@ sub dsl_build {
     my $level = 0;
     local $Data::Dumper::Terse = 1;
     for my $s ( _array $stmts ) {
+        local $p{no_tidy} = 1; # just one tidy is enough
         #_debug( $s );
         my $children = $s->{children} || {};
         my $attr = defined $s->{attributes} ? $s->{attributes} : $s;  # attributes is for a json treepanel
