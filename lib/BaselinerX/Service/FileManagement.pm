@@ -113,7 +113,7 @@ sub run_ship {
     my $chmod       = $config->{'chmod'};
     my $chown       = $config->{'chown'};
     my $local_mode  = $config->{local_mode} // 'local_files';  # local_files, nature_items
-    my $rel_path    = $config->{rel_path} // 'file_only'; # file_only, rel_path_job, rel_path_anchor 
+    my $rel_mode    = $config->{rel_path} // 'file_only'; # file_only, rel_path_job, rel_path_anchor 
     my $anchor_path = $config->{anchor_path} // ''; 
 
     for my $server ( split /,/, $config->{server} ) {
@@ -139,12 +139,13 @@ sub run_ship {
         for my $local ( @locals ) {
             $cnt++;
             # local path relative or pure filename?
+            $log->debug( _loc('rel path mode `%1`, local=%2', $rel_mode, $local ) );
             my $local_path = 
-                $rel_path eq 'file_only' ? _file( $local )->basename : 
-                $rel_path eq 'rel_path_job' ? _file( $local )->relative( $job_dir ) 
+                $rel_mode eq 'file_only' ? _file( $local )->basename : 
+                $rel_mode eq 'rel_path_job' ? _file( $local )->relative( $job_dir ) 
                 : _file($local)->relative( $anchor_path );
             $local_path = $server->parse_vars($local_path);
-            $log->debug( _loc('rel path mode `%1`, local_path=%2', $rel_path, $local_path ) );
+            $log->debug( _loc('rel path mode `%1`, local_path=%2', $rel_mode, $local_path ) );
             # set remote to remote + local_path, except on local_files w/ wildcard
             #my $remote = $is_wildcard ? _file( $remote_path, $local_path ) : $remote_path;
             my $remote = _file( $remote_path, $local_path );
