@@ -132,6 +132,7 @@ sub job_items {
                 my $it = $_;
                 $it->rename( sub{ s/{$bl}//g } ) if $rename_mode;
                 $it->path_in_repo( $it->path );  # otherwise source/checkout may not work
+                $it->path_rel( '' . _dir('/', $repo->rel_path, $it->path) );  # no project name, good for deploying
                 $it->path( '' . _dir('/', $project->name, $repo->rel_path, $it->path) );  # prepend project name
                 $it;
             } grep {

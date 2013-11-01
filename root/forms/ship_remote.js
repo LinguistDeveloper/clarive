@@ -1,12 +1,12 @@
 (function(params){
     var data = params.data || {};
-    var local_path = new Ext.form.TextArea({ fieldLabel: _('Local Path'), height: 80, name: 'local_path', 
-        value: data.local_path,
-        hidden: ( data.local_mode && data.local_mode!='local_files' )
+    var local_path = new Baseliner.MonoTextArea({ fieldLabel: _('Local Path'), height: 80, name: 'local_path', 
+        value: data.local_path!=undefined ? data.local_path : '${job_dir}/${project}',
+        hidden: !( data.local_mode && data.local_mode=='local_files' )
     });
-    var anchor_path = new Ext.form.TextArea({ fieldLabel: _('Anchor Path'), height: 40, name: 'anchor_path', 
-        value: data.anchor_path,
-        hidden: ( data.rel_path && data.rel_path!='rel_path_anchor' )
+    var anchor_path = new Baseliner.MonoTextArea({ fieldLabel: _('Anchor Path'), height: 40, name: 'anchor_path', 
+        value: data.anchor_path!=undefined ? data.anchor_path : '${job_dir}/${project}',
+        hidden: !( data.rel_path && data.rel_path=='rel_path_anchor' )
     });
     var local_mode = new Baseliner.ComboDouble({ 
         fieldLabel: _('Local Mode'), name:'local_mode', value: data.local_mode || 'local_files', 

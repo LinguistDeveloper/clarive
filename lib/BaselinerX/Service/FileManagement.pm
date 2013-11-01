@@ -118,7 +118,7 @@ sub run_ship {
 
     for my $server ( split /,/, $config->{server} ) {
         $server = ci->new( $server ) unless ref $server;
-        $remote_path = $server->parse_vars( $remote_path );
+        $remote_path = $server->parse_vars( "$remote_path" );
         my $server_str = "$user\@".$server->name;
         _debug "Connecting to server " . $server_str;
         my $agent = $server->connect( user=>$user );
@@ -130,7 +130,7 @@ sub run_ship {
             @locals = map { _file($job_dir,$_) } _array( $stash->{nature_item_paths} ); 
         } else {
             # local_files (with or without wildcard)
-            $local_path = $server->parse_vars( $local_path );
+            $local_path = $server->parse_vars( "$local_path" );
             $is_wildcard = $local_path =~ /\*/;
             @locals = grep { -f } glob $local_path;
         }
@@ -139,16 +139,16 @@ sub run_ship {
         for my $local ( @locals ) {
             $cnt++;
             # local path relative or pure filename?
-            $log->debug( _loc('rel path mode `%1`, local=%2', $rel_mode, $local ) );
+            $log->debug( _loc('rel path mode `%1`, local=`%2`, anchor=`%3`', $rel_mode, $local, $anchor_path ) );
             my $local_path = 
                 $rel_mode eq 'file_only' ? _file( $local )->basename : 
                 $rel_mode eq 'rel_path_job' ? _file( $local )->relative( $job_dir ) 
                 : _file($local)->relative( $anchor_path );
-            $local_path = $server->parse_vars($local_path);
+            $local_path = $server->parse_vars("$local_path");
             $log->debug( _loc('rel path mode `%1`, local_path=%2', $rel_mode, $local_path ) );
             # set remote to remote + local_path, except on local_files w/ wildcard
             #my $remote = $is_wildcard ? _file( $remote_path, $local_path ) : $remote_path;
-            my $remote = _file( $remote_path, $local_path );
+            my $remote = _file( "$remote_path", "$local_path" );
             $log->info( _loc( 'Sending file `%1` to `%2`', $local, "*$server_str*".':'.$remote ) );
             $agent->put_file(
                 local  => "$local",

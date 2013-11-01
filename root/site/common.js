@@ -2838,7 +2838,7 @@ Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
         var is_valid = form2.isValid();
         this.cascade(function(obj){
             var sty = 'border: solid 1px rgb(255,120,112); margin_bottom: 0px';
-			console.dir(obj.name, obj.allowBlank, obj.is_valid);
+			//console.dir(obj.name, obj.allowBlank, obj.is_valid);
             if( obj.name && !obj.allowBlank && obj.is_valid ) {
                 if( !obj.is_valid() ) {
                     is_valid = false;

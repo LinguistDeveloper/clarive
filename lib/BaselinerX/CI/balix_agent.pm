@@ -112,7 +112,8 @@ method get_dir( :$local, :$remote, :$group='', :$files=undef, :$user=$self->user
 }
 
 method is_remote_dir( $dir ) {
-    return $self->_execute( 'test', '-d', $dir );
+    my ($rc,$ret) = $self->_execute( 'test', '-d', $dir );
+    return !$rc;
 }
 
 method check_writeable( $dir ) {
@@ -132,8 +133,8 @@ method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
     my ($rc,$ret) = $self->check_writeable($remote);
     _fail _loc("balix: can't send file: file not writeable `%1` (rc: %2)", $remote, $rc) if $rc;
     # check we are not trying to write a directory 
-    ($rc,$ret) = $self->is_remote_dir($remote);
-    _fail _loc("balix: can't send file: destination is a directory `%1` (rc: %2)", $remote, $rc) if $rc;
+    my $is_dir = $self->is_remote_dir($remote);
+    _fail _loc("balix: can't send file: destination is a directory `%1`", $remote) if $is_dir;
     # send
     $self->_send_file( $local, $remote );
     if( $user ) {

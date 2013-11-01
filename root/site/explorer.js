@@ -70,7 +70,7 @@ Baseliner.TreeLoader = Ext.extend( Ext.tree.TreeLoader, {
                     loader.load( node );
                 }});
             } else if( ! obj.success )  {
-                Baseliner.error( _('Error'), res.responseText );
+                Baseliner.error( _('Error'), obj.msg || res.responseText );
             } else if( res.status == 0 ) {
                 alert( _('Server not available') );  // an alert does not ask for images from the server
             } else {
