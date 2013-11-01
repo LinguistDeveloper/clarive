@@ -52,6 +52,23 @@
         }
     };
     
+    var rule_import = function(){
+        var data = new Baseliner.MonoTextArea({ value:'' });
+        var btn_imp = new Ext.Button({ text: _('Import YAML'), handler: function(){
+            Baseliner.ajaxEval('/rule/import', { data: data.getValue(), type:'yaml' }, function(res){
+                if( res.success ) { 
+                    rules_store.reload();
+                    Baseliner.message( _('Import'), _('Imported rule: %1', res.rule_name) );
+                    win.close();
+                }
+            },function(res){
+                Baseliner.error( _('Rule Export'), res.msg );
+            });
+        }});
+        var win = new Baseliner.Window({ title:_('Import'), layout:'fit', width: 800, height: 600, tbar:[btn_imp], items:data });
+        win.show();
+    };
+    
     var rule_activate = function(){
         var sm = rules_grid.getSelectionModel();
         if( sm.hasSelection() ) {
@@ -152,7 +169,10 @@
             { xtype:'button', icon: '/static/images/icons/edit.gif', cls: 'x-btn-icon', handler: rule_edit },
             { xtype:'button', icon: '/static/images/icons/delete.gif', cls: 'x-btn-icon', handler: rule_del },
             { xtype:'button', icon: '/static/images/icons/activate.png', cls: 'x-btn-icon', handler: rule_activate },
-            { xtype:'button', icon: '/static/images/icons/downloads_favicon.png', cls: 'x-btn-icon', handler: rule_export }
+            { xtype:'button', icon: '/static/images/icons/wrench.png', cls: 'x-btn-icon', menu:[
+                { text: _('Import'), icon: '/static/images/icons/import.png', handler: rule_import },
+                { text: _('Export'), icon: '/static/images/icons/export.png', handler: rule_export }
+            ]}
         ]
     });
     rules_store.load();

@@ -10,31 +10,28 @@ with 'Baseliner::Role::Service';
 
 has tidy_up => qw(is rw isa Bool default 1);
 
-sub build_tree {
-    my ($self, $id_rule, $parent, %p) = @_;
-    my @tree;
-    # TODO run query just once and work with a hash ->hash_for( id_parent )
-    my @rows = DB->BaliRuleStatement->search( { id_rule => $id_rule, id_parent => $parent },
-        { order_by=>{ -asc=>'id' } } )->hashref->all;
-    if( !defined $parent ) {
-        my $rule = DB->BaliRule->find( $id_rule );
-        my $rule_type = $rule->rule_type;
-        if( !@rows && $rule_type eq 'chain' ) {
-            push @tree, { text=>$_, key=>'statement.step', icon=>'/static/images/icons/job.png', 
-                    children=>[], leaf=>\0, expanded=>\1 } 
-                for qw(CHECK INIT PRE RUN POST);
-        }
-    }
-    for my $row ( @rows ) {
-        my $n = { text=>$row->{stmt_text} };
-        $row->{stmt_attr} = _load( $row->{stmt_attr} );
-        $n = { active=>1, %$n, %{ $row->{stmt_attr} } } if length $row->{stmt_attr};
+sub init_job_tasks {
+    my ($self)=@_;
+    return map { +{ text=>$_, key=>'statement.step', icon=>'/static/images/icons/job.png', 
+            children=>[], leaf=>\0, expanded=>\1 } 
+    } qw(CHECK INIT PRE RUN POST);
+}
+
+sub tree_format {
+    my ($self, @tree_in)=@_;
+    my @tree_out;
+    for my $n ( @tree_in ) {
+        my $chi = delete $n->{children};
+        $n = $n->{attributes} if $n->{attributes};
+        $chi = delete $n->{children} unless ref $chi eq 'ARRAY' && @$chi;
+        delete $n->{attributes};
         delete $n->{disabled};
         delete $n->{id};
         $n->{active} //= 1;
         $n->{disabled} = $n->{active} ? \0 : \1;
-        my @chi = $self->build_tree( $id_rule, $row->{id} );
-        if(  @chi ) {
+        my @chi = $self->tree_format( _array($chi) );
+        #$n->{children} = \@chi;
+        if( @chi ) {
             $n->{children} = \@chi;
             $n->{leaf} = \0;
             $n->{expanded} = $n->{expanded} eq 'false' ? \0 : \1;
@@ -45,9 +42,56 @@ sub build_tree {
         delete $n->{loader};  
         delete $n->{isTarget};  # otherwise you cannot drag-drop around a node
         #_log $n;
-        push @tree, $n;
+        push @tree_out, $n;
     }
-    return @tree;
+    return @tree_out;
+}
+
+sub build_tree {
+    my ($self, $id_rule, $parent, %p) = @_;
+    # TODO run query just once and work with a hash ->hash_for( id_parent )
+    my $rule = DB->BaliRule->find( $id_rule );
+    my $rule_tree_json = $rule->rule_tree;
+    if( $rule_tree_json ) {
+        my $rule_tree = Util->_decode_json( $rule_tree_json );
+        _fail _loc 'Invalid rule tree json data: not an array' unless ref $rule_tree eq 'ARRAY';
+        return $self->tree_format( @$rule_tree );
+        return @$rule_tree;
+    } else {
+        # no json rule_tree, look for legacy data
+        my @tree;
+        my @rows = DB->BaliRuleStatement->search( { id_rule => $id_rule, id_parent => $parent },
+            { order_by=>{ -asc=>'id' } } )->hashref->all;
+        if( !defined $parent ) {
+            my $rule_type = $rule->rule_type;
+            if( !@rows && $rule_type eq 'chain' ) {
+                push @tree, $self->init_job_tasks;
+            }
+        }
+        for my $row ( @rows ) {
+            my $n = { text=>$row->{stmt_text} };
+            $row->{stmt_attr} = _load( $row->{stmt_attr} );
+            $n = { active=>1, %$n, %{ $row->{stmt_attr} } } if length $row->{stmt_attr};
+            delete $n->{disabled};
+            delete $n->{id};
+            $n->{active} //= 1;
+            $n->{disabled} = $n->{active} ? \0 : \1;
+            my @chi = $self->build_tree( $id_rule, $row->{id} );
+            if(  @chi ) {
+                $n->{children} = \@chi;
+                $n->{leaf} = \0;
+                $n->{expanded} = $n->{expanded} eq 'false' ? \0 : \1;
+            } elsif( ! ${$n->{leaf} // \1} ) {  # may be a folder with no children
+                $n->{children} = []; 
+                $n->{expanded} = $n->{expanded} eq 'false' ? \0 : \1;
+            }
+            delete $n->{loader};  
+            delete $n->{isTarget};  # otherwise you cannot drag-drop around a node
+            #_log $n;
+            push @tree, $n;
+        }
+        return @tree;
+    }
 }
 
 sub _is_true { 
@@ -102,6 +146,7 @@ sub dsl_build {
             }
             push @dsl, '});' if $closure; # current_statement close
         } else {
+            _debug $s;
             _fail _loc 'Missing dsl/service key for node %1', $name;
         }
     }
@@ -147,7 +192,7 @@ sub run_rules {
     local $Baseliner::_no_cache = 1;
     my @rules = 
         $p{id_rule} 
-            ? ( +{ DB->find( $p{id_rule} )->get_columns } )
+            ? ( +{ DB->BaliRule->find( $p{id_rule} )->get_columns } )
             : DB->BaliRule->search(
                 { rule_event => $p{event}, rule_type => ($p{rule_type} // 'event'), rule_when => $p{when}, rule_active => 1 },
                 { order_by   => [          { -asc    => 'rule_seq' }, { -asc    => 'id' } ] }
@@ -196,7 +241,7 @@ sub run_single_rule {
     my $dsl = try {
         $self->dsl_build( \@tree, no_tidy=>0, %p ); 
     } catch {
-        _fail( _loc("Error building DSL for rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, shift() ) ); 
+        _fail( _loc("Error building DSL for rule '%1' (%2): %3", $rule->rule_name, $rule->rule_when, shift() ) ); 
     };
     my $ret = try {
         ################### RUN THE RULE DSL ######################
