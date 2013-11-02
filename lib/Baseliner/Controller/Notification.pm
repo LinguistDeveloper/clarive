@@ -52,7 +52,7 @@ sub list_notifications : Local {
 
 sub list_events : Local {
     my ( $self, $c ) = @_;
-    my @events = map { +{key => $_}} Baseliner->registry->starts_with('event.');
+    my @events = map { +{key => $_}} sort Baseliner->registry->starts_with('event.');
     
     $c->stash->{json} = \@events;
     $c->forward('View::JSON');
