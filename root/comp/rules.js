@@ -255,6 +255,7 @@
                 props.push('NO RUN');
             }
         }
+        if( node.attributes.note ) node.setTooltip( node.attributes.note );
         var nel = node.ui.getTextEl();
         if( nel ) {
             var nn = node.id;
@@ -283,6 +284,7 @@
         var attr = node.attributes;
         var data = attr.data || {};
         var de = new Baseliner.DataEditor({ title:_('Metadata'), data: attr, hide_save: true, hide_cancel: true  });
+        var note = new Baseliner.MonoTextArea({ title:_('Note'), value: attr.note || '' });
         var data_key = new Ext.form.TextField({ fieldLabel:_('Return Key'), name:'data_key', value: node.attributes.data_key || '' });
         var needs_rollback_mode = new Baseliner.ComboDouble({ 
             fieldLabel: _('Needs Rollback?'), name:'needs_rollback_mode', value: data.needs_rollback_mode || 'nb_after', 
@@ -318,6 +320,7 @@
             node.attributes.run_rollback = run_rollback.checked;
             node_decorate( node );  // change the node's look
             node.attributes.semaphore_key = semaphore_key.getValue();
+            node.attributes.note = note.getValue();
             node.attributes.parallel_mode = parallel_mode.checked;
             node.setText( node.attributes.text );
             // data save
@@ -328,7 +331,7 @@
         var tbar = [ '->', 
             { xtype:'button', text:_('Cancel'), icon:'/static/images/icons/delete.gif', handler: function(){ win.close() } },
             btn_save_meta ];
-        var tabs = new Ext.TabPanel({ activeTab:0, items:[ opts,de ] });
+        var tabs = new Ext.TabPanel({ activeTab:0, items:[ opts,de,note ] });
         var win = show_win( node, tabs, { width: 800, height: 600, tbar:tbar }, function(d){ 
             //node.attributes=d;
             //node.setText( d.text );
@@ -460,7 +463,7 @@
             node.select();
             var stmts_menu = new Ext.menu.Menu({
                 items: [
-                    { text: _('Edit'), handler: function(){ edit_node( node ) }, icon:'/static/images/icons/edit.gif' },
+                    { text: _('Configuration'), handler: function(){ edit_node( node ) }, icon:'/static/images/icons/edit.gif' },
                     { text: _('Properties'), handler: function(){ meta_node( node ) }, icon:'/static/images/icons/leaf.gif' },
                     { text: _('Rename'), handler: function(){ rename_node( node ) }, icon:'/static/images/icons/item_rename.png' },
                     { text: _('Copy'), handler: function(item){ copy_node( node ) }, icon:'/static/images/icons/copy.gif' },
