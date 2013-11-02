@@ -281,7 +281,7 @@
     // Properties window:
     var meta_node = function( node ) {
         var attr = node.attributes;
-        var data = attr.data;
+        var data = attr.data || {};
         var de = new Baseliner.DataEditor({ title:_('Metadata'), data: attr, hide_save: true, hide_cancel: true  });
         var data_key = new Ext.form.TextField({ fieldLabel:_('Return Key'), name:'data_key', value: node.attributes.data_key || '' });
         var needs_rollback_mode = new Baseliner.ComboDouble({ 
@@ -325,7 +325,9 @@
             Ext.apply(node.attributes.data, opts.getValues() );
             win.close(); 
         }});
-        var tbar = [ '->', btn_save_meta ];
+        var tbar = [ '->', 
+            { xtype:'button', text:_('Cancel'), icon:'/static/images/icons/delete.gif', handler: function(){ win.close() } },
+            btn_save_meta ];
         var tabs = new Ext.TabPanel({ activeTab:0, items:[ opts,de ] });
         var win = show_win( node, tabs, { width: 800, height: 600, tbar:tbar }, function(d){ 
             //node.attributes=d;
@@ -350,6 +352,7 @@
                         };
                         var form = new Baseliner.FormPanel({ 
                             frame: false, forceFit: true, defaults: { msgTarget: 'under', anchor:'100%' },
+                            labelWidth: 150,
                             width: 800, height: 600,
                             labelAlign: 'right',
                             autoScroll: true,

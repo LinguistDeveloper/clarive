@@ -141,6 +141,7 @@ sub run {
     } catch {
         my $err = shift;   
         #$self->logger->debug( 'Stash after rules', $stash );
+        $stash->{failing} = 1;
         $self->finish( 'ERROR' );
         $self->logger->error( _loc( 'Job failure: %1', $err ) );
         $self->job_stash( $stash );
