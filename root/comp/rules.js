@@ -374,6 +374,7 @@
             btn.disable();
             rule_tree_loader.load( rule_tree.root );
             rule_tree.root.expand();
+            rule_tree.is_dirty = false;
             btn.enable();
         };
         var rule_load = function(btn){
