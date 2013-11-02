@@ -3,6 +3,23 @@ Baseliner.cookie = new Ext.state.CookieProvider({
         expires: new Date(new Date().getTime()+(1000*60*60*24*300)) //300 days
 });
 
+
+window._bool = function(v,undef){
+    if( undef===undefined ) undef=false;
+    return v==undefined ? undef
+        : v===true ? true
+        : v===false ? false
+        : v===1 ? true
+        : v==='1' ? true
+        : v===0 ? false
+        : v==='0' ? false
+        : v==='' ? false
+        : v=='true' ? true
+        : v=='false' ? false
+        : v=='on' ? true
+        : undef;
+}
+
 // File loader
 Baseliner.loadFile = function(filename, filetype){
 
@@ -2832,6 +2849,7 @@ Ext.apply(Ext.layout.FormLayout.prototype, {
 
  
 Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
+    labelAlign: 'right',
     is_valid : function(){
         var self = this;
         var form2 = this.getForm();
@@ -2869,6 +2887,9 @@ Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
                 form_data[ obj.name ] = obj.get_save_data();
             }
         });
+        for( var k in form_data ) {
+            if( k.indexOf('ext-comp-')==0 ) delete form_data[k];
+        }
         return form_data;
     }
 });

@@ -118,6 +118,9 @@ sub run_ship {
     my $anchor_path = $config->{anchor_path} // ''; 
     my $backup_mode = $config->{backup_mode} // 'backup'; 
     my $rollback_mode = $config->{rollback_mode} // 'rollback'; 
+    my $needs_rollback_mode = $config->{needs_rollback_mode} // 'nb_after'; 
+    my $needs_rollback_key = $config->{needs_rollback_key} // $stmt;
+    $stash->{needs_rollback}{ $needs_rollback_key } = 1 if $needs_rollback_mode eq 'nb_always';
 
     for my $server ( split /,/, $config->{server} ) {
         $server = ci->new( $server ) unless ref $server;
@@ -172,10 +175,14 @@ sub run_ship {
                 }
             }
             $log->info( _loc( 'Sending file `%1` to `%2`', $local, "*$server_str*".':'.$remote ) );
+            # done here
+            $stash->{needs_rollback}{ $needs_rollback_key } = 1 if $needs_rollback_mode eq 'nb_before';
             $agent->put_file(
                 local  => "$local",
                 remote => "$remote",
             );
+            $stash->{needs_rollback}{ $needs_rollback_key } = 1 if $needs_rollback_mode eq 'nb_after';
+            
             if( length $chown ) {
                 _debug "chown $chown $remote";
                 $agent->chown( $chmod, "$remote" );
