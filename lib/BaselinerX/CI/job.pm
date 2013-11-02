@@ -36,6 +36,10 @@ has job_dir            => qw(is rw isa Any lazy 1), default => sub {
     my $job_home = $ENV{BASELINER_JOBHOME} || $ENV{BASELINER_TEMP} || File::Spec->tmpdir();
     File::Spec->catdir( $job_home, $self->name ); 
 };  
+has backup_dir         => qw(is rw isa Any lazy 1), default => sub { 
+    my ($self) = @_;
+    return ''.Util->_file( $self->job_dir, '_backups' );
+};
 has id_rule      => qw(is rw isa Any ), default=>sub {
     my $self = shift;
     my $type = $self->job_type || 'promote';

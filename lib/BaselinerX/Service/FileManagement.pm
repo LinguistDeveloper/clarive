@@ -105,6 +105,7 @@ sub run_ship {
     my $log   = $job->logger;
     my $stash = $c->stash;
     my $job_dir = $stash->{job_dir};
+    my $job_mode = $stash->{job_mode};
     my $stmt  = $stash->{current_statement_name};
 
     my $remote_path = $config->{remote_path} // _fail 'Missing parameter remote_file';
@@ -115,6 +116,8 @@ sub run_ship {
     my $local_mode  = $config->{local_mode} // 'local_files';  # local_files, nature_items
     my $rel_mode    = $config->{rel_path} // 'file_only'; # file_only, rel_path_job, rel_path_anchor 
     my $anchor_path = $config->{anchor_path} // ''; 
+    my $backup_mode = $config->{backup_mode} // 'backup'; 
+    my $rollback_mode = $config->{rollback_mode} // 'rollback'; 
 
     for my $server ( split /,/, $config->{server} ) {
         $server = ci->new( $server ) unless ref $server;
@@ -124,7 +127,7 @@ sub run_ship {
         my $agent = $server->connect( user=>$user );
         my $cnt = 0;
 
-        my @locals;
+        my ( @locals, @backup_files );
         my $is_wildcard = 0;
         if( $local_mode eq 'nature_items' ) {
             @locals = map { _file($job_dir,$_) } _array( $stash->{nature_item_paths} ); 
@@ -149,6 +152,25 @@ sub run_ship {
             # set remote to remote + local_path, except on local_files w/ wildcard
             #my $remote = $is_wildcard ? _file( $remote_path, $local_path ) : $remote_path;
             my $remote = _file( "$remote_path", "$local_path" );
+            my $bkp_local = _file( $job->backup_dir, $server_str, $remote );
+            # make a backup?
+            if( $job_mode eq 'forward' && $backup_mode eq 'backup' ) {
+                if( ! -e $bkp_local ) {
+                    $log->debug( _loc('Getting backup file from remote `%1` to `%2`', $remote, $bkp_local) );
+                    push @backup_files, "$bkp_local";
+                    my $bkp_dir = _file( $bkp_local )->dir->mkpath;
+                    $agent->get_file( local=>"$bkp_local", remote=>"$remote" );
+                }
+            }
+            # rollback 
+            if( $job_mode eq 'rollback' && $rollback_mode =~ /^rollback/ ) {
+                if( -e $bkp_local ) {
+                    $log->debug( _loc( 'Rollback switch to local file `%1`', $bkp_local ) );
+                    $local = $bkp_local;
+                } elsif( $rollback_mode eq 'rollback_force' ) {
+                    _fail _loc 'Could not find rollback file %1', $bkp_local;
+                }
+            }
             $log->info( _loc( 'Sending file `%1` to `%2`', $local, "*$server_str*".':'.$remote ) );
             $agent->put_file(
                 local  => "$local",

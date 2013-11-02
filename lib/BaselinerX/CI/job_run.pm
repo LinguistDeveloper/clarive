@@ -119,7 +119,7 @@ sub run {
             job_dir     => $self->job_dir,
             job_name    => $self->name,
             job_type    => $self->job_type,
-            job_mode    => $self->rollback ? 'forward' : 'rollback',
+            job_mode    => $self->rollback ? 'rollback' : 'forward',
             rollback    => $self->rollback,
             username    => $self->username,
             changesets  => $self->changesets,
@@ -187,7 +187,8 @@ sub run {
 
 sub save_to_parent_job {
     my ($self, %p)=@_;
-    if( my $parent_job = Baseliner::CI->new( $self->parent_job ) ) {
+    _debug( sprintf "Save to parent job '%s'", $self->parent_job );
+    if( my $parent_job = ci->new( $self->parent_job ) ) {
         $parent_job->update( %p );
     }
 }

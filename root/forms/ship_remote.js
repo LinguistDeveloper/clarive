@@ -36,6 +36,21 @@
             anchor_path.hide();
         }
     });
+    var backup_mode = new Baseliner.ComboDouble({ 
+        fieldLabel: _('Backup Mode'), name:'backup_mode', value: data.backup_mode || 'backup', 
+        data: [ 
+          ['none',_('No Backup')], 
+          ['backup',_('Backup Files')]
+        ]
+    });
+    var rollback_mode = new Baseliner.ComboDouble({ 
+        fieldLabel: _('Rollback Mode'), name:'rollback_mode', value: data.rollback_mode || 'rollback', 
+        data: [ 
+          ['none',_('No Rollback')], 
+          ['rollback',_('Rollback from local files if exist')],
+          ['rollback_force',_('Must Rollback from local files')]
+        ]
+    });
     return [
         Baseliner.ci_box({ name: 'server', role:'Baseliner::Role::HasAgent', fieldLabel:_('Server'), with_vars: 1, value: data.server, force_set_value: true }),
         { xtype:'textfield', fieldLabel: _('User'), name: 'user', value: data.user },
@@ -44,6 +59,8 @@
         rel_path,
         anchor_path,
         { xtype:'textarea', fieldLabel: _('Remote Path'), height: 80, name: 'remote_path', value: data.remote_path },
+        backup_mode,
+        rollback_mode,
         { xtype:'textfield', fieldLabel: _('Chown'), name: 'chown', value: data.chown },
         { xtype:'textfield', fieldLabel: _('Chmod'), name: 'chmod', value: data.chmod }
     ]
