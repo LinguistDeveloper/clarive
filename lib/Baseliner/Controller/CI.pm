@@ -239,7 +239,7 @@ sub tree_objects {
            }
     );
     # XXX full search? maybe too much for this grid
-    # length $p{query} and $where->{'-bool'} = mdb->query( "%$p{query}%", { returns=>'exists' });
+    # length $p{query} and $where->{'-bool'} = mkv->query( "%$p{query}%", { returns=>'exists' });
     $where->{collection} = $collection if $collection;
     $where = { %$where, %{ $p{where} } } if $p{where};
     
@@ -1132,7 +1132,7 @@ sub grid : Local {
 sub index_sync : Local {
     my ($self, $c) = @_;
     _throw _loc('Missing run token') unless $c->stash->{run_token};
-    mdb->index_sync;
+    mkv->index_sync;
     $c->res->body( 'ok' ); 
 }
 
@@ -1147,7 +1147,7 @@ sub search_query {
     my $c = $p{c};
     my $limit = 50; #$p{limit} // 1000;
     my $where = {};
-    length($query) and $where->{'-bool'} = mdb->query( $query, { returns=>'exists' } );
+    length($query) and $where->{'-bool'} = mkv->query( $query, { returns=>'exists' } );
     $where->{'-not'} = { collection=>{-in=>['topic','job']} };
     my @rows = DB->BaliMaster->search(
         $where,

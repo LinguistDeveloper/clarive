@@ -264,20 +264,20 @@ around 'debug' => sub {
         #$_->meta->make_immutable for keys %pkgs;
     }
 
-    # mdb : master db setup
+    # mkv : KV db setup
     {
-        package mdb;
+        package mkv;
         our $AUTOLOAD;
         sub AUTOLOAD {
             my $self = shift;
             my $name = $AUTOLOAD;
             my @a = reverse( split(/::/, $name));
-            my $db = $Baseliner::_mdb //( $Baseliner::_mdb = do{
-                my $conf = Baseliner->config->{mdb} // {};
+            my $db = $Baseliner::_mkv //( $Baseliner::_mkv = do{
+                my $conf = Baseliner->config->{mkv} // {};
                 # XXX make this optional - mongo, elasticsearch, etc
                 my $class = 'Baseliner::Schema::KV';
                 eval "require $class"; 
-                Util->_fail('Error loading mdb class: '. $@ ) if $@ ;
+                Util->_fail('Error loading mkv class: '. $@ ) if $@ ;
                 $class->new( $conf );
             });
             my $class = ref $db;

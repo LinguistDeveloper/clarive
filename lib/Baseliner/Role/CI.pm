@@ -204,7 +204,7 @@ sub save {
             # now save the rest of the ci data (yaml)
             $self->new_ci( $row, undef, \%opts );
         }
-        # now index for searches  XXX this should be handled by the inner_save data, which should use mdb->save instead 
+        # now index for searches  XXX this should be handled by the inner_save data, which should use mkv->save instead 
         #$self->index_search_data( mid=>$mid, row=>$row, data=>$data) unless $p{no_index};
     });  # txn end
     return $mid; 
@@ -246,7 +246,7 @@ sub new_ci {
     $self->save_data( $master_row, $data, $opts);
 }
 
-# save data to yaml and mdb, does not use self
+# save data to yaml and mkv, does not use self
 sub save_data {
     my ( $self, $master_row, $data, $opts ) = @_;
     return unless ref $data;
@@ -304,7 +304,7 @@ sub save_data {
 
 sub save_fields {
     my $self = shift;
-    mdb->save( @_ );
+    mkv->save( @_ );
 }
 
 sub load {
@@ -413,7 +413,7 @@ sub load_from_search {
 
 sub load_from_query {
     my ($class, $where, %p ) = @_;
-    my @rows = DB->BaliMaster->search({ -bool=>mdb->query( $where, { returns=>'exists' }) })->hashref->all;
+    my @rows = DB->BaliMaster->search({ -bool=>mkv->query( $where, { returns=>'exists' }) })->hashref->all;
     if( $p{single} ) {
         _throw _loc('More than one row returned (%1) for CI load %2, mids found: %3', 
             scalar(@rows), Util->_to_json($where), join(',', map{$_->{mid}} @rows) )
