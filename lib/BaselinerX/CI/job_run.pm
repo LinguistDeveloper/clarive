@@ -113,16 +113,17 @@ sub run {
     my $prev_stash = $self->job_stash;
     my $stash = { 
             %{ $prev_stash }, 
-            job         => $self,
-            bl          => $self->bl, 
-            job_step    => $self->step,
-            job_dir     => $self->job_dir,
-            job_name    => $self->name,
-            job_type    => $self->job_type,
-            job_mode    => $self->rollback ? 'rollback' : 'forward',
-            rollback    => $self->rollback,
-            username    => $self->username,
-            changesets  => $self->changesets,
+            job            => $self,
+            bl             => $self->bl, 
+            job_step       => $self->step,
+            job_dir        => $self->job_dir,
+            job_name       => $self->name,
+            job_type       => $self->job_type,
+            job_mode       => $self->rollback ? 'rollback' : 'forward',
+            rollback       => $self->rollback,
+            username       => $self->username,
+            changesets     => $self->changesets,
+            needs_rollback => {},
     };
     #die _dump $stash unless $self->step eq 'INIT';
     
@@ -140,6 +141,7 @@ sub run {
     } catch {
         my $err = shift;   
         #$self->logger->debug( 'Stash after rules', $stash );
+        $stash->{failing} = 1;
         $self->finish( 'ERROR' );
         $self->logger->error( _loc( 'Job failure: %1', $err ) );
         $self->job_stash( $stash );
@@ -147,10 +149,10 @@ sub run {
     };
 
     my $rollback_now = 0;
-    my @needing_rollback = grep /_needs?_rollback/, keys %$stash;
-    my $needs_rollback = List::MoreUtils::any { $stash->{$_} } @needing_rollback;
+    my $nr = $stash->{needs_rollback} // {};
+    my @needing_rollback = map { $_ } grep { $nr->{$_} } keys %$nr;
     if( $job_error ) {
-        if( $needs_rollback && !$self->rollback ) {
+        if( @needing_rollback && !$self->rollback ) {
             # repeat
             $stash->{rollback} = 1;
             $stash->{job} = $self;
@@ -159,7 +161,7 @@ sub run {
             $self->exec( $self->exec + 1);
             $rollback_now = 1;
             $self->logger->info( "Starting *Rollback*", \@needing_rollback );
-        } elsif( !$needs_rollback && !$self->rollback ) {
+        } elsif( !@needing_rollback && !$self->rollback ) {
             $self->logger->info( _loc( 'No need to rollback anything.' ) );
         } else {
             $self->logger->error( _loc( 'Error during rollback. Baselines are incosistent, manual intervention required.' ) );

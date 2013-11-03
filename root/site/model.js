@@ -134,6 +134,24 @@ Baseliner.model.Users = function(c) {
 };
 Ext.extend( Baseliner.model.Users, Ext.ux.form.SuperBoxSelect );
 
+Baseliner.ComboUsers = Ext.extend( Baseliner.model.Users,{
+    disabled: false,
+    singleMode: false,
+    allowBlank: true,
+    name: 'users',
+    hiddenName: 'users',		
+    initComponent: function(){
+        var self = this;
+        self.store = new Baseliner.Topic.StoreUsers({
+            autoLoad: true,
+            baseParams: { projects: self.projects || [], roles: self.roles }
+        });
+        self.store.on('load',function(){
+            if( self.value ) self.setValue( self.value );
+        });
+        Baseliner.ComboUsers.superclass.initComponent.call(this);
+    }
+});
 /*
 Ext.form.Action.prototype.constructor = Ext.form.Action.prototype.constructor.createSequence(function() {
     Ext.applyIf(this.options, {

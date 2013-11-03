@@ -112,13 +112,12 @@ sub dsl_build {
     my ($self,$stmts, %p )=@_;
     return '' if !$stmts || ( ref $stmts eq 'HASH' && !%$stmts );
     #_debug $stmts;
-    my @dsl = (
-        #'my $stash = {};',
-        #'my $ret;',
-    );
+    my @dsl;
     require Data::Dumper;
     my $spaces = sub { '   ' x $_[0] };
     my $level = 0;
+    my $stash = $p{stash};
+    my $is_rollback = $stash->{rollback};
     local $Data::Dumper::Terse = 1;
     for my $s ( _array $stmts ) {
         local $p{no_tidy} = 1; # just one tidy is enough
@@ -132,6 +131,11 @@ sub dsl_build {
         delete $attr->{events} ; # node cruft
         #_debug $attr;
         my $name = _strip_html( $attr->{text} );
+        my $run_forward = _bool($attr->{run_forward},1);  # if !defined, default is true
+        my $run_rollback = _bool($attr->{run_rollback},1); 
+        do{ _debug _loc("*Skipped* task %1 in run forward", $name); next; } if !$is_rollback && !$run_forward;
+        do{ _debug _loc("*Skipped* task %1 in run rollback", $name); next; } if $is_rollback && !$run_rollback;
+        my $data = $attr->{data} || {};
         my $data_key = length $attr->{data_key} ? $attr->{data_key} : _name_to_id( $name );
         my $closure = $attr->{closure};
         push @dsl, sprintf( '# statement: %s', $name ) . "\n"; 
@@ -141,7 +145,6 @@ sub dsl_build {
             push @dsl, sprintf( 'current_statement($stash, q{%s});', $name)."\n";
         }
         push @dsl, sprintf( '_debug(q{=====| Current Rule Statement: %s} );', $name)."\n" if $p{verbose}; 
-        my $data = $attr->{data} || {};
         if( length $attr->{key} ) {
             my $key = $attr->{key};
             my $reg = Baseliner->registry->get( $key );

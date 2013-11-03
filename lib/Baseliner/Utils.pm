@@ -51,6 +51,7 @@ use Exporter::Tidy default => [
     _decode_json
     _encode_json
     _check_parameters
+    _bool
     _mkpath
     _rmpath
     _mktmp
@@ -712,6 +713,18 @@ sub _check_parameters {
     }
 }
 
+sub _bool {
+    my ($v,$default)=@_;
+    $default //= 0; 
+    return !defined $v ? $default
+        : ref $v eq 'SCALAR' ? !!$$v
+        : "$v" eq 'true' ? 1
+        : "$v" eq 'on' ? 1
+        : "$v" eq 'off' ? 0
+        : "$v" eq 'false' ? 0
+        : "$v" eq '' ? $default
+        : !!$v;
+}
 sub _mkpath {
     my $dir = File::Spec->catfile( @_ );
     return if( -e $dir );

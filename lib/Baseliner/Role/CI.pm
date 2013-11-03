@@ -434,21 +434,23 @@ sub query {
 sub load_pre_data { +{} }
 sub load_post_data { +{} }
 
+=head2 _build_ci_instance_from_rec
+
+Creates a CI obj from a hash.
+
+=cut
 sub _build_ci_instance_from_rec {
     my ($class,$rec) = @_;
     local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
+    my $yaml = delete $rec->{yaml}; # useless from here
     if( $Baseliner::CI::_record_only ) {
-        delete $rec->{yaml};
         return $rec;
     }
     my $ci_class = $rec->{ci_class}; 
     # instantiate
     my $obj = $ci_class->new( $rec );
     # add the original record to _ci
-    if( $Baseliner::CI::_no_record ) {   ## TODO change this to $Baseliner::CI::ci_record
-        delete $rec->{yaml}; # lots of useless data
-    } else {
-        delete $rec->{yaml}; # lots of useless data
+    if( ! $Baseliner::CI::_no_record ) {   ## TODO change this to $Baseliner::CI::ci_record
         $obj->{_ci} = $rec; 
         $obj->{_ci}{ci_icon} = $obj->icon;
     }

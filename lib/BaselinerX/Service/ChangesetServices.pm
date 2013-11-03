@@ -30,12 +30,13 @@ register 'service.changeset.natures' => {
 };
 
 register 'service.changeset.update' => {
-    name    => 'Update Baselines',
+    name    => 'Update Changesets',
     icon    => '/static/images/icons/topic.png',
-    handler => \&update_baselines,
+    form    => '/forms/changeset_update.js',
+    handler => \&changeset_update,
 };
 
-sub update_baselines {
+sub changeset_update {
     my ( $self, $c, $config ) = @_;
 
     my $stash    = $c->stash;
@@ -44,25 +45,32 @@ sub update_baselines {
     my $bl       = $job->bl;
     my $job_type = $job->job_type;
     my @changesets;
-
+    
+    my $category       = $config->{category};
+    my $status_on_ok   = $stash->{failing} ? $config->{status_on_fail} : $config->{status_on_ok};
+    my $status_on_rollback = $stash->{failing} ? $config->{status_on_rollback_fail} : $config->{status_on_rollback_ok};
 
     if ( $job_type eq 'static' ) {
         $self->log->info( _loc "Changesets status not updated. Static job." );
         return;
     }
 
-    my $status = $stash->{status_to};
+    my $status = $status_on_ok || $stash->{status_to};
     if ( !$status ) {
-        $status = DB->BaliTopicStatus->search( {bl => $bl} )->first->id;
+        $status = DB->BaliTopicStatus->search({ bl => $bl })->first->id;
     }
 
     $stash->{update_baselines_changesets} //= {};
 
     for my $cs ( _array( $stash->{changesets} ) ) {
+        if( length $category && $cs->id_category_status == $category) {
+            $log->debug( _loc('Topic %1 does not match category %2. Skipped', $cs->name, $category) );
+            next;
+        }
         if( $stash->{rollback} ) {
             # rollback to previous status
-            $status = $stash->{update_baselines_changesets}{ $cs->mid };
-            if( ! defined $status ) {
+            $status = $status_on_rollback || $stash->{update_baselines_changesets}{ $cs->mid };
+            if( !length $status ) {
                 _debug _loc 'No last status data for changeset %1. Skipped.', $cs->name;
                 next;
             }

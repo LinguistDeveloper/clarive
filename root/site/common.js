@@ -3,6 +3,23 @@ Baseliner.cookie = new Ext.state.CookieProvider({
         expires: new Date(new Date().getTime()+(1000*60*60*24*300)) //300 days
 });
 
+
+window._bool = function(v,undef){
+    if( undef===undefined ) undef=false;
+    return v==undefined ? undef
+        : v===true ? true
+        : v===false ? false
+        : v===1 ? true
+        : v==='1' ? true
+        : v===0 ? false
+        : v==='0' ? false
+        : v==='' ? false
+        : v=='true' ? true
+        : v=='false' ? false
+        : v=='on' ? true
+        : undef;
+}
+
 // File loader
 Baseliner.loadFile = function(filename, filetype){
 
@@ -389,24 +406,6 @@ Baseliner.new_jsonstore = function(params) {
     });
     return store;
 };
-
-Baseliner.combo_remote = Ext.extend( Ext.form.ComboBox, {
-       name: this.value,
-       hiddenName: this.value,
-       //fieldLabel: _("Providers"),
-       mode: 'remote', 
-       //store: this.store,
-       valueField: this.value,
-       displayField: this.display,
-       editable: false,
-       forceSelection: true,
-       triggerAction: 'all',
-       allowBlank: false,
-       width: 300
-});
-//combo_create.store.on('load',function(store) {
-    //combo_create.setValue(store.getAt(0).get('url'));
-//});
 
 Baseliner.button = function(text,icon,handler){ 
     return new Ext.Button({
@@ -2396,6 +2395,21 @@ Baseliner.ComboSingle = Ext.extend( Ext.form.ComboBox, {
     }
 });
 
+Baseliner.ComboSingleRemote = Ext.extend( Baseliner.ComboSingle, {
+    mode: 'remote',
+    buildStore : function(){
+        return new Ext.data.JsonStore({
+            root: this.root || 'data', 
+            remoteSort: true,
+            totalProperty: this.totalProperty || 'totalCount', 
+            id: 'id', 
+            baseParams: Ext.apply({  start: 0, limit: this.ps || 99999999 }, this.baseParams ),
+            url: this.url,
+            fields: this.fields || [ this.name ]
+        });  
+    }
+});
+
 Baseliner.ComboDouble = Ext.extend( Ext.form.ComboBox, {
     name: 'item',
     mode: 'local',
@@ -2416,8 +2430,8 @@ Baseliner.ComboDouble = Ext.extend( Ext.form.ComboBox, {
         self.store = self.buildStore(data);
 
         self.fieldLabel = self.fieldLabel || self.name;
-        self.valueField = self.name;
-        self.displayField = 'display_name';
+        self.valueField = self.field || self.name;
+        self.displayField = self.displayField || self.field || 'display_name';
         self.hiddenField = self.name;
         if( !self.value ) self.value = data.length>0 ? data[0][0] : null;
         
@@ -2435,17 +2449,32 @@ Baseliner.ComboDouble = Ext.extend( Ext.form.ComboBox, {
     }
 });
 
-Baseliner.ComboSingleRemote = Ext.extend( Baseliner.ComboSingle, {
+Baseliner.ComboDoubleRemote = Ext.extend( Baseliner.ComboDouble, {
     mode: 'remote',
+    initComponent: function(){
+        var self = this;
+        var value = self.value;
+        delete self.value;
+        Baseliner.ComboDoubleRemote.superclass.initComponent.call(this); 
+        self.store.on('load', function(){
+            if( value != undefined ) {
+                var ix = self.store.find( self.valueField, value ); 
+                if( ix > -1 ) self.setValue(self.store.getAt(ix).get( self.valueField ));
+            } else {
+                self.setValue(self.store.getAt(0).get( self.valueField ));
+            }
+        })
+    },
     buildStore : function(){
         return new Ext.data.JsonStore({
             root: this.root || 'data', 
             remoteSort: true,
+            autoLoad: true,
             totalProperty: this.totalProperty || 'totalCount', 
             id: 'id', 
             baseParams: Ext.apply({  start: 0, limit: this.ps || 99999999 }, this.baseParams ),
             url: this.url,
-            fields: this.fields || [ this.name ]
+            fields: this.fields || [ self.name, 'display_name' ]
         });  
     }
 });
@@ -2832,6 +2861,7 @@ Ext.apply(Ext.layout.FormLayout.prototype, {
 
  
 Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
+    labelAlign: 'right',
     is_valid : function(){
         var self = this;
         var form2 = this.getForm();
@@ -2869,6 +2899,9 @@ Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
                 form_data[ obj.name ] = obj.get_save_data();
             }
         });
+        for( var k in form_data ) {
+            if( k.indexOf('ext-comp-')==0 ) delete form_data[k];
+        }
         return form_data;
     }
 });

@@ -308,7 +308,7 @@
             displayMsg: _('Rows {0} - {1} of {2}'),
             emptyMsg: "No hay registros disponibles"
     });
-    paging.on('beforechange', function(){ refresh_stop(); });
+    //paging.on('beforechange', function(){ refresh_stop(); });
 
     var next_start = 0;
     store.on('load', function(s,recs,opt) {
