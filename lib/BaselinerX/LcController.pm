@@ -532,7 +532,7 @@ sub promotes_and_demotes {
 
     my $deployable={};
     for my $status ( @status_from ) {
-        my ($ci_status) = ci->query( { id_status => $status->{statuses_to}{id}, name => $status->{statuses_to}{name} } );
+        my ($ci_status) = BaselinerX::CI::status->query( { id_status => $status->{statuses_to}{id}, name => $status->{statuses_to}{name} } );
 
         for my $bl ( _array $ci_status->{bls} ) {        
             $deployable->{ $bl->{bl} } = \1;
@@ -564,7 +564,7 @@ sub promotes_and_demotes {
 
     my $promotable={};
     for my $status ( @status_to ) {
-        my ($ci_status) = ci->query( { id_status => $status->{statuses_to}{id}, name => $status->{statuses_to}{name} } );
+        my ($ci_status) = BaselinerX::CI::status->query( { id_status => $status->{statuses_to}{id}, name => $status->{statuses_to}{name} } );
 
         for my $bl ( _array $ci_status->{bls} ) {        
             $promotable->{ $bl->{bl} } = \1;
