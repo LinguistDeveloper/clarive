@@ -37,7 +37,7 @@ baseliner:
     web_url: 'http://localhost:3000'
     create_user_session: 0
     mdb:
-      lazy: 0
+      lazy: 1
     ldap: no
     header_init:
         show_lifecycle: 1
