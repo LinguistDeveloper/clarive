@@ -18,7 +18,7 @@ around rel_type => sub {
         server => [ to_mid => 'server_agent' ] ,
     };
 };
-has timeout => qw(is rw isa Num default 0);  # timeout for executes, send_file, etc., disabled by default
+has timeout => qw(is rw isa Maybe[Num|Str] default 0);  # timeout for executes, send_file, etc., disabled by default
 
 with 'Baseliner::Role::ErrorThrower';
 

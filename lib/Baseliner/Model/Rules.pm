@@ -10,6 +10,11 @@ with 'Baseliner::Role::Service';
 
 has tidy_up => qw(is rw isa Bool default 1);
 
+register 'event.rule.failed' => {
+    description => 'Rule failed',
+    vars => ['dsl', 'rc', 'ret', 'rule', 'rule_name', 'stash', 'output']
+};
+
 sub init_job_tasks {
     my ($self)=@_;
     return map { +{ text=>$_, key=>'statement.step', icon=>'/static/images/icons/job.png', 
@@ -227,12 +232,14 @@ sub run_rules {
                     $self->dsl_run( dsl=>$dsl, stash=>$stash );
                 }, \$runner_output, \$runner_output );
             } catch {
+                event_new 'event.rule.failed' => { username => 'internal', dsl => $dsl, rule => $rule->{id}, rule_name => $rule->{rule_name}, stash => $stash, output => $runner_output } => sub {};
                 _fail( _loc("Error running rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, shift() ) ); 
             };
         } catch {
             my $err = shift;
             $rc = 1;
             if( ref $p{onerror} eq 'CODE') {
+                event_new 'event.rule.failed' => { username => 'internal', dsl => $dsl, rc => $rc, ret => $ret, rule => $rule->{id}, rule_name => $rule->{rule_name}, stash => $stash, output => $runner_output } => sub {};
                 $p{onerror}->( { err=>$err, ret=>$ret, id=>$rule->{id}, dsl=>$dsl, stash=>$stash, output=>$runner_output, rc=>$rc } );
             } elsif( ! $p{onerror} ) {
                 _fail $err;
