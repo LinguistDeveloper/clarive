@@ -118,6 +118,7 @@ sub delete : Local {
         my $row = DB->BaliRule->find( $p->{id_rule} );
         _fail _loc('Row with id %1 not found', $p->{id_rule} ) unless $row;
         my $name = $row->rule_name;
+        DB->BaliRuleStatement->search({ id_rule=>$row->id })->delete; # legacy: no foreign key
         $row->delete;
         $c->stash->{json} = { success=>\1, msg=>_loc('Rule %1 deleted', $name) };
     } catch {
