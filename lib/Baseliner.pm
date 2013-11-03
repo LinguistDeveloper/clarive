@@ -308,7 +308,7 @@ around 'debug' => sub {
         }
     }
     # mdb: establish connection now?
-    mdb->db unless Baseliner->config->{mdb}{lazy};
+    #mdb->db if Baseliner->config->{mdb}{lazy} eq '0';  # default is lazy=1
 
     # ci : ci utilities setup
     {
