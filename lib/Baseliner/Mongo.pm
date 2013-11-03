@@ -8,12 +8,13 @@ use Function::Parameters qw(:strict);
 use Baseliner::Utils qw(_fail _loc _error _warn _debug _throw _log _array _dump _ixhash);
 
 # mongo connection
-has mongo_config  => qw(is rw isa Any), default =>sub{ Baseliner->config->{mongo}{config} // +{} };
-has mongo_db_name => qw(is rw isa Any), default => sub { Baseliner->config->{mongo}{db_name} // 'clarive' };
+has mongo_client  => qw(is rw isa Any), default=>sub{ Baseliner->config->{mongo}{client} // {} };
+has mongo_db_name => qw(is rw isa Any), default=>sub{ Baseliner->config->{mongo}{dbname} // 'clarive' };
 has mongo         => ( is=>'ro', isa=>'MongoDB::MongoClient', lazy=>1, default=>sub{
        my $self = shift;
        require MongoDB;
-       MongoDB::MongoClient->new($self->mongo_config);
+       _debug "Mongo: new connection";
+       MongoDB::MongoClient->new($self->mongo_client);
     });
 has db => ( is=>'ro', isa=>'MongoDB::Database', lazy=>1, default=>sub{
        my $self = shift;
@@ -26,14 +27,19 @@ sub oid {
     return MongoDB::OID->new( $oid );
 }
 
+=head2
+
+Returns the next seq num as STRING
+
+=cut
 sub seq {
     my($self,$name,$seq)=@_;
     my $coll = $self->collection('master_seq');
-    $coll->update({ _id=>$name }, { seq=>$seq },{ upsert=>1 }), return($seq) if defined $seq;
+    $coll->update({ _id=>$name }, { _id=>$name, seq=>$seq+0 },{ upsert=>1 }), return("$seq") if defined $seq;
     my $doc = $coll->find_and_modify({ query=>{ _id=>$name }, update=>{ '$inc'=>{ seq=>1 } }, new=>1 });
-    return $doc->{seq} if $doc->{seq};
+    return "$doc->{seq}" if $doc->{seq};
     $coll->insert({ _id=>$name, seq=>1 });
-    return 1;
+    return "1";
 }
 
 sub collection {
@@ -42,6 +48,8 @@ sub collection {
     #require Baseliner::MongoCollection;
     Baseliner::MongoCollection->new( _collection=>$coll, _db=>$self );
 }
+
+sub grid { $_[0]->db->get_gridfs }
 
 sub asset {
     my ($self, $in, %opts) = @_;
@@ -61,9 +69,9 @@ sub find {
 
 sub find_master {
     my ($self,$mid)=@_;
-    _fail( _loc( 'Missing mid for row' ) ) unless length $mid;
-    my $row = $self->collection('master')->find_one({ mid=>"$mid" });
-    _fail( _loc( 'Master row not found for mid `%1`', $mid ) ) unless ref $row;
+    _throw( _loc( 'Missing mid for row' ) ) unless length $mid;
+    my $row = $self->collection('master')->find_one({ '$or'=>[ {mid=>"$mid"},{mid=>0+$mid} ] });
+    _throw( _loc( 'Master row not found for mid `%1`', $mid ) ) unless ref $row;
     return $row;
 }
 
@@ -165,6 +173,7 @@ sub save {
     my ($self,$mid, $doc, $opts) = @_;
     $mid = $mid->{mid} if ref $mid;  #  mid may be a BaliMaster row also
     Util->_fail( 'Missing mid' ) unless length $mid;
+    # save into master
     my $m = $self->master;
     my $row = $m->find_one();
     my $final = $m->merge_into({ mid=>"$mid" },{ yaml=>Util->_dump($doc) });
@@ -210,6 +219,35 @@ sub index_all {
     }
 }
 
+sub migra {
+    my ($self,%p)=@_;
+    require Baseliner::Schema::Migra::MongoMigration;
+    return 'Baseliner::Schema::Migra::MongoMigration';
+}
+
+# default 20MB capped collection
+sub create_capped {
+    my ($self,$coll, %p) = @_;
+    mdb->db->run_command([ create=> $coll, capped=>boolean::true, size=>$p{size}//(1024*1024*20), %p ]);
+}
+
+# remove all dots and _ci from an unblessed doc
+sub clean_doc {
+    my ($self,$doc) = @_;
+    
+    return unless ref $doc eq 'HASH';
+    delete $doc->{_ci};
+    delete $doc->{$_} for grep /\./,keys $doc;
+    for my $k ( keys %$doc ) {
+        my $v = $doc->{$k};
+        if( ref $v eq 'HASH' ) {
+            $self->clean_doc( $v ); 
+        }
+        elsif( ref $v eq 'ARRAY' ) {
+            $self->clean_doc( $_ ) for _array( $v ); 
+        }
+    }
+}
 
 our $AUTOLOAD;
 sub AUTOLOAD {

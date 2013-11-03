@@ -53,21 +53,22 @@ around 'BUILDARGS' => sub {
         my $lic = Clarive::Util::TLC::check( $site );
     }
     
-    $args{args} = $self->clone( \%args );
-
-    # merge config and args
-    %args = ( %$config, %args );
-
-    $args{config} = $config;
-    $args{opts} = $self->clone( \%args );
     $args{argv} = \@ARGV;
     $args{lang} //= $ENV{CLARIVE_LANG};
-    
-    my $parsed_args = $self->parse_vars( { %args }, { %ENV, %args } );
+    $args{args} = $self->clone( \%args );
 
+    # resolve variables
+    my $parsed_config = $self->parse_vars( $config, { %ENV, %$config, %args } );
+    my $parsed_args   = $self->parse_vars( \%args, { %ENV, %$config, %args } );
+
+    # merge config and args
+    my %opts = ( %$parsed_config, %$parsed_args );
+    $opts{config} = $parsed_config;
+    $opts{opts}   = $self->clone( \%opts );
+    
     warn "app args: " . $self->yaml( $parsed_args ) if $args{v};
     
-    $self->$orig( $parsed_args ); 
+    $self->$orig( \%opts ); 
 };
 
 sub BUILD {

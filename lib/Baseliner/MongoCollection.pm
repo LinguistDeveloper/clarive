@@ -4,9 +4,17 @@ use Moose;
 has _collection => ( is=>'ro', isa=>'MongoDB::Collection', required=>1, handles=>qr/.*/ );
 has _db => ( is=>'ro', isa=>'Object', weak_ref=>1 );
 
+=head2 search
+
+    my $res = mdb->master_doc->search( query=>$query, limit=>1000,
+        #project=>{name=>1,collection=>1}, 
+        filter=>{ collection=>mdb->nin('topic','job') }
+    );
+
+=cut
 sub search {
     my ($self,%p) = @_;
-    my $query = delete $p{query} or Util->_throw( 'Missing query');
+    my $query = delete $p{query} or Util->_throw( 'search: missing query');
     my $limit = delete $p{limit} // 1000;
     $self->_db->run_command([ text=>$self->name, search=>$query, limit=>$limit, %p ]) ; #->{results} ;
 }
@@ -14,11 +22,16 @@ sub search {
 sub search_re {
     my ($self,%p) = @_;
     my $query = delete $p{query} or Util->_throw( 'Missing query');
-    my $coll_name = delete $p{collection} || 'master';
-    my $coll = $self->get_collection( $coll_name );
-    $coll or Util->_throw( Util->_loc( 'collection %1 not found', $coll_name ) );
-    $coll->find({ descripcion=>qr/$query/i  },{ limit=>10 })->all; 
-    $coll->find->all
+    my @cols = Util->_array( $p{fields} );
+    @cols or @cols = do {
+        my $doc = $self->find_one;
+        $doc
+        ? ( $p{deep} ? keys(%{ scalar Util->hash_flatten($doc) }) : keys(%$doc) )   # deep is not working, fields with _id fail in hash_flatten
+        : Util->_fail("search_re failed: don't know which fields to look");
+    };
+    my @ors =  map { +{ $_ => $query } } @cols;
+    my $rs = $self->find({ '$or'=>\@ors },{ limit=>$p{limit}//1000 });
+    return wantarray ? $rs->all : $rs; 
 }
 
 sub search_index {
@@ -61,7 +74,7 @@ sub update_or_create {
 }
 
 sub delete { 
-    die "->delete does not exist. Use ->remove";
+    Util->_throw( "mdb...->delete does not exist. Use ->remove");
 }
     
 1;

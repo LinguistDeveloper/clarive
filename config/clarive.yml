@@ -1,0 +1,144 @@
+lang: en_US.UTF-8
+port: 3000
+redis:
+    server: 'localhost:6379'
+mongo:
+    dbname: clarive
+    client:
+        host: 'localhost:27017'
+        #w
+        #wtimeout
+        #j
+        #auto_reconnect: 1
+        #auto_connect: 1
+        #timeout: 20000
+        #username
+        #password
+        #db_name
+        #query_timeout: -1
+        #max_bson_size
+        #find_master
+        #ssl
+        #sasl
+        #sasl_mechanism
+        #dt_type
+        #inflate_dbrefs 1
+
+# Baseliner Framework default config
+baseliner:
+    default_lang: en
+    default_theme: clarive
+    decrypt_key: 1234567
+    time_zone: CET
+    host: localhost
+    web_host: '{{baseliner.host}}'
+    web_port: '{{port}}'
+    job_runner: service.job.runner.rule
+    web_url: 'http://localhost:3000'
+    create_user_session: 0
+    mdb:
+      lazy: 0
+    ldap: no
+    header_init:
+        show_lifecycle: 1
+    # cache: redis
+    # toolbar_height: 45
+            
+    'Plugin::Session':
+        host: '{{mongo.host}}'
+        expires: 2592000 # One month
+        dbname: '{{mongo.dbname}}'
+        collectioname: 'session'
+    
+    PluginNamespace:
+        prefix: BaselinerX
+
+    'Plugin::I18N':
+        languages: es en
+        maketext_options:
+            Style: gettext
+            Decode: 1
+
+#
+# RDBMS configuration
+#
+    # 'Model::Baseliner':
+    #    connect_info:
+    #    - dbi:Oracle:host=localhost;sid=scm;port=1521
+    #    - clarive
+    #    - clarive
+    #    - LongReadLen: '100000000'
+    #      LongTruncOk: '1'
+#
+# Authentication Configuration
+#
+    #
+    # Password checking configuration:
+    #
+    # password_rule: '(?=.*[A-Z]+)(?=.*[0-9]+)(?=.*\W+)'
+    # password_min_length: 6
+    # password_rule_description: 'Needs at least one uppercase, one number and one special character (dot,comma,etc.)
+                
+    # Authentication Realms (ldap, local, etc)
+    authentication:
+      default_realm: none
+      realms:
+          local:
+            credential:
+              class: Password
+              password_field: password
+              password_type: clear
+            store:
+              class: Minimal
+              users:
+                root:
+                  api_key: 567ef8bd1ac500757e8be5b2d4c97e08
+                  password: f7ef7cb69c38a5e888a9cc5824fe8398
+          none:
+            credential:
+              class: Password
+              password_field: password
+              password_type: none
+            store:
+              class: Null
+# 
+# Licensing - this is a default license for 5 users max
+#
+license:
+  end_date: 2014-12-31
+  id: trial_customer
+  lic_data: jOQ13CTUZqxDpqGuTCYbrAOBuwGoJBn4bNsCsJdnWCHNn+aAk4tIJBhSc1XB5K8UtBQE9qwB0LZjAAKTXKUBJo8ePA1aB31BYLKa6BZRPuECDRpqEDghAL2BCET+PA4URynB
+  lic_key: dyJVUabhxlKvrWZVxjL2FrALip6u4dc2tTSSsN3sFg7IGSVGcIrj/FBOcJ0GAIGguXiTvYlAc1xGYNiNLagQUTlLWSo7Ww2KmUzNFaCtnpgotf8/B2IKMWI/sC0NIGg3JLSyrP+wyQMI258xdWnoKiPP8owWQHEDVkw5LFW1yL0=
+  name: Trial Customer
+  users: 5
+  private_key: '-----BEGIN RSA PRIVATE KEY-----
+
+    MIICXAIBAAKBgQDdf3HLmPfRF+QrnWFPOV89kCHzPCY71ha4AG6Zx2U3kT1jtMu5
+
+    vuNWfYkV2DhNsvWojKGhVGudFKld1J7o+XMa1fxZlapk7awHKI/DcKvPheKfk9sA
+
+    jz63pQ6fNqB1NQxdHBAUp9e0FFSUXhvPcrWiPkHLOnRivlcrLQZ2kdUwvwIDAQAB
+
+    AoGAeWgrpZ845oEj7cwb1GLsE0B3e21Sv6V/WmfSN7QVhLm1Xntw12UMExJIG5Mi
+
+    eWRIRpSe22D8g2MZ2nZ6i9R/BAdwYEFlCo0NngcPqmRfyu8RRw/TIxU7akAq4256
+
+    kP+Un6Rrs72FNJ2bAqYRUuhZ84QTVfNgVAbcnur8Z5ixkRECQQD1ceu0PWDW1xpu
+
+    QQR+mzAu1ylPR/nQC7Lcaj5GS6Lc+NKK9HF/4vcEWVbgA0hiy97r4m1QjcChil5W
+
+    Q1VSHopFAkEA5wXkTAeiT+2wXGyyD3tluQwwHthN4ajlQkUdIIVmY9Z8jHAHYAyr
+
+    I/eIV5ku86hJAF5MNMyKQjIORxiEHWXhMwJAI5gBtoGwKXfIPXTwUevvcNuDAhxN
+
+    /f20UoKVxVvyoljzL3ODgihH6jmKf7H6LVmjWlHbyHLGHKcURy48kUwcgQJAT8P1
+
+    A1tPa5GB5yeQg0/z22Sd6Mh+e3+5SJxcZjIpHCeecU7s/PjizlRVOwmk8HQWYI4u
+
+    ebx1sE1gKKQKWawniQJBAKwnz5i8lXe9W7jl5D0fYQQ4xnINdfVKhPrq/GKUGh3u
+
+    Y2OZooedzh9GM0Wst9CGrOXithn0Ts5O8US0TjbcT5s=
+
+    -----END RSA PRIVATE KEY-----
+
+'

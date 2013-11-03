@@ -17,6 +17,7 @@ BEGIN {
             +CatalystX::Features
             +CatalystX::Features::Lib
             +CatalystX::Features::Plugin::ConfigLoader
+            +Baseliner::Plugin::ConfigExternal
             +CatalystX::Features::Plugin::I18N/;
     } else {
         @modules = qw/
@@ -24,9 +25,10 @@ BEGIN {
             +CatalystX::Features
             +CatalystX::Features::Lib
             +CatalystX::Features::Plugin::ConfigLoader
+            +Baseliner::Plugin::ConfigExternal
             Authentication
             Session     
-            Session::Store::DBI    
+            +Baseliner::MongoSession
             Session::State::Cookie
             Singleton           
             +CatalystX::Features::Plugin::I18N
@@ -36,7 +38,7 @@ BEGIN {
     #unshift @modules, '-Debug' if $ENV{BASELINER_DEBUG};
 }
 
-use Catalyst (@modules,'+Baseliner::Plugin::ConfigExternal');
+use Catalyst (@modules);
 use Time::HiRes qw(gettimeofday tv_interval);
 use Baseliner::CI;
 use Try::Tiny;
@@ -63,16 +65,12 @@ __PACKAGE__->config( name => 'Baseliner', default_view => 'Mason' );
 __PACKAGE__->config( setup_components => { search_extra => [ 'BaselinerX' ] } );
 __PACKAGE__->config( xmlrpc => { xml_encoding => 'utf-8' } );
 
-__PACKAGE__->config(
-    'Plugin::Session' => {
-        expires    => 2592000, # One month
-        dbi_dbh   => 'Baseliner', # which means MyApp::Model::DBIC
-        dbi_table => 'bali_session',
-        dbi_id_field => 'id',
-        dbi_data_field => 'session_data',
-        dbi_expires_field => 'expires',    
-    },
-);
+#__PACKAGE__->config(
+#    'Plugin::Session' => {
+#        dbname   => 'clarive',
+#        expires  => 2592000, # One month
+#    },
+#);
 
 __PACKAGE__->config->{'Plugin::Static::Simple'}->{dirs} = [
         'static',
@@ -286,6 +284,31 @@ around 'debug' => sub {
             goto &$method;
         }
     }
+    
+    # mdb : master db setup
+    Baseliner->config->{mdb} //= {};
+    {
+        package mdb;
+        our $AUTOLOAD;
+        sub AUTOLOAD {
+            my $self = shift;
+            my $name = $AUTOLOAD;
+            my @a = reverse( split(/::/, $name));
+            my $db = $Baseliner::_mdb //( $Baseliner::_mdb = do{
+                my $conf = Baseliner->config->{mdb};
+                my $class = $conf->{class} // 'Baseliner::Mongo'; #'Baseliner::Schema::KV';
+                eval "require $class";
+                Util->_fail('Error loading mdb class: '. $@ ) if $@ ;
+                $class->new( $conf );
+            });
+            my $class = ref $db;
+            my $method = $class . '::' . $a[0];
+            @_ = ( $db, @_ );
+            goto &$method;
+        }
+    }
+    # mdb: establish connection now?
+    mdb->db unless Baseliner->config->{mdb}{lazy};
 
     # ci : ci utilities setup
     {
@@ -317,7 +340,7 @@ around 'debug' => sub {
                 memory    => [ driver => 'Memory' ],
                 rawmemory => [ driver => 'RawMemory', datastore => {}, max_size => 1000 ],
                 sharedmem => [ driver => 'SharedMem', size => 1_000_000, shmkey=>93894384 ],
-                redis     => [ driver => 'BaselinerRedis', namespace => 'foo', server => '127.0.0.1:6379', debug => 0 ],
+                redis     => [ driver => 'BaselinerRedis', namespace => 'cache', server => ( Baseliner->config->{redis}{server} // 'localhost:6379' ), debug => 0 ],
         };
         my $cache_config = ref $cache_type eq 'ARRAY' 
             ? $cache_type :  ( $cache_defaults->{ $cache_type } // $cache_defaults->{fastmmap} );
@@ -348,6 +371,7 @@ around 'debug' => sub {
         my ($self,$key)=@_;
         return if !$ccache;
         return if $Baseliner::_no_cache;
+        return if !$ccache;
         Util->_debug(-1, "--- CACHE GET: " . ( ref $key ? Util->_to_json($key) : $key ) ) if $ENV{BALI_CACHE_TRACE}; 
         $ccache->get( $key ) 
     }
