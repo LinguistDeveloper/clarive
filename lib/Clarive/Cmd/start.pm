@@ -9,7 +9,7 @@ sub run {
 	my ($self,%opts) = @_;
 
 	print "Starting mongo server\n";
-	system('mongod','-f ', $self->app->base.'/config/mongod.conf');
+	system('mongod -f '.$self->app->base.'/config/mongod.conf');
 	if ( $? ) {
 		print "Error starting mongo server\n";
 		exit 1;
