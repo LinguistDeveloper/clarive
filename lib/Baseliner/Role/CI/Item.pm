@@ -4,14 +4,16 @@ with 'Baseliner::Role::CI';
 
 sub icon { '/static/images/icons/page.png' }
 
-has name       => qw(is rw isa Maybe[Str]);    # basename
-has dir        => qw(is rw isa Str default /);  # my parent
-has path       => qw(is rw isa Str default /);  # fullpath
-has size       => qw(is rw isa Num default -1);  
-has mask       => qw(is rw isa Num default 777);  
-has is_dir     => qw(is rw isa Maybe[Bool]);
-has status     => qw(is rw isa Maybe[Str] default A);    # used by jobs to determine create, delete, etc (A,M,D)
-has basename   => qw(is rw isa Str lazy 1), default => sub {
+has name         => qw(is rw isa Maybe[Str]);              # basename
+has dir          => qw(is rw isa Str default /);           # my parent
+has path         => qw(is rw isa Str default /);           # fullpath, with project, prefix
+has path_rel     => qw(is rw isa Str);                     # with prefix only 
+has path_in_repo => qw(is rw isa Str);                     # in case someone changes path, set this here
+has size         => qw(is rw isa Num default -1);
+has mask         => qw(is rw isa Num default 777);
+has is_dir       => qw(is rw isa Maybe[Bool]);
+has status       => qw(is rw isa Maybe[Str] default A);    # used by jobs to determine create, delete, etc (A,M,D)
+has basename     => qw(is rw isa Str lazy 1), default => sub {
     my ($self)=@_;
     $self->name =~ /^(.*)\.(.*?)$/ ? $1 : $self->name;
 };

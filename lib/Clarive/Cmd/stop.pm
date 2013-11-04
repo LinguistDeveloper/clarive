@@ -8,6 +8,14 @@ our $CAPTION = 'stop all server tasks';
 sub run {
 	my ($self,%opts) = @_;
 
+	print "Stopping mongo server\n";
+	system('killall mongod');
+	if ( $? ) {
+		print "Error stopping mongo server\n";
+		exit 1;
+	}
+	print "Mongo server stopped\n";
+
 	print "Stopping Redis server\n";
 	system('killall redis-server');
 	if ( $? ) {

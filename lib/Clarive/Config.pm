@@ -12,10 +12,10 @@ sub config_load {
     my %ret ;
     
     my $env = $p{env} or exists $p{v} and warn "warn: env is not defined\n";
-    my @files = ( 'config/global.yml' );
+    my @files = ( 'config/clarive.yml', 'config/global.yml' );
     length $env && push @files, "config/$env.yml";
     push @files, $p{config};
-    # global.yml is the base config
+    # clarive.yml has product defaults, global.yml is a User Defined base config
     for my $file ( @files ) {   # most important last
         next unless $file;
         if( -e $file ) {

@@ -1,6 +1,11 @@
 ﻿package BaselinerX::Service::ApprovalRequest;
 =head1 DESCRIPTION
 
+
+*************** DEPRECATED ********************
+
+*************** job approval request handled in ChangesetServices for now
+
 This is a service designed to be chained in PRE, that checks if a job needs approval before running in RUN.
 
 If it does, sends the request to users with action.job.approve permissions. 

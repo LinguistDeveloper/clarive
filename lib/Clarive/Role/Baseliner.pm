@@ -47,7 +47,11 @@ sub setup_baseliner {
     $Baseliner::TLC_MSG = $Clarive::TLC_MSG;
     
     # CONFIG
-    $Baseliner::BASE_OPTS = $self->app->opts->{baseliner};
+    my $baseliner_config = $self->app->opts->{baseliner} // {};
+    $baseliner_config->{mongo} //= $self->app->config->{mongo};
+    $baseliner_config->{redis} //= $self->app->config->{redis};
+    
+    $Baseliner::BASE_OPTS = $baseliner_config; 
 }
 
 sub bali_service {

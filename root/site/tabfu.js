@@ -1049,6 +1049,7 @@ if( Prefs.routing ) {
             callback: function(opts,success,xhr) {
                 if( Ext.isIE7 || Ext.isIE8 ) Ext.fly( document.body ).unmask();
                 if( !success ) {
+                    if( params._ignore_conn_errors ) return;
                     var msg;
                     if( xhr.status==401 ) {
                         var comp = Baseliner.eval_response( xhr.responseText, params, url );
@@ -1074,7 +1075,7 @@ if( Prefs.routing ) {
                     // this is for js components that return a component
                     var comp = Baseliner.eval_response( xhr.responseText, params, url );
                     // detect logout
-                    if( Ext.isObject( comp ) && comp.logged_out ) {
+                    if( Ext.isObject( comp ) && comp.logged_out && !params._ignore_conn_errors ) {
                         login_or_error();
                     }
                     else if( !params._handle_res && Ext.isObject( comp ) && comp.success!=undefined && !comp.success ) {  // XXX this should come after the next else
@@ -1087,11 +1088,12 @@ if( Prefs.routing ) {
                     else if( Ext.isFunction( foo ) ) {  // XXX this should come before the next else
                         foo( comp, scope );
                     }
-                    else {
+                    else if( !params._ignore_conn_errors ) {
                         Baseliner.error_win(url,params,xhr,e);
                     }
                 }
                 catch(e){
+                    if( params._ignore_conn_errors ) return;
                     Baseliner.error_win(url,params,xhr,e);
                     if( Baseliner.DEBUG ) {
                         // XXX dangerous on delete, confusing otherwise: Baseliner.loadFile( url, 'js' );  // hopefully this will generate a legit error for debugging, but it may give strange console errors

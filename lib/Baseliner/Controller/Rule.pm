@@ -75,14 +75,35 @@ sub export : Local {
     my $p = $c->req->params;
     my $id_rule = $p->{id_rule};
     try {
-        my $row = DB->BaliRule->find( $id_rule );
+        my $row = +{ DB->BaliRule->find( $id_rule )->get_columns };
         _fail _loc('Row with id %1 not found', $p->{id_rule} ) unless $row;
-        my @stmts = map { delete $_->{id}; delete $_->{id_rule}; $_ } 
-            DB->BaliRuleStatement->search({ id_rule=> $id_rule }, { order_by=>'id' })->hashref->all;
-        my $rule = +{ $row->get_columns };
-        delete $rule->{id};
-        my $yaml = _dump({ rule=>$rule, stmts=>\@stmts });
+        $row->{rule_tree} = $row->{rule_tree} ? _decode_json($row->{rule_tree}) : [];
+        my $yaml = _dump($row);
         $c->stash->{json} = { success=>\1, yaml=>$yaml };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { success=>\0, msg => $err };
+    };
+    $c->forward("View::JSON");
+}
+
+sub import : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+    my $data = $p->{data};
+    my $type = $p->{type};
+    _fail _loc('Missing data') if !length $data;
+    
+    try {
+        my $rule = $type eq 'yaml' ? _load( $data ) : {} ;
+        delete $rule->{id};
+        delete $rule->{rule_id};
+        if( DB->BaliRule->search({ rule_name=>$rule->{rule_name} })->first ) {
+            $rule->{rule_name} = sprintf '%s (%s)', $rule->{rule_name}, _now();
+        }
+        $rule->{rule_tree} = Util->_encode_json($rule->{rule_tree});
+        my $row = DB->BaliRule->create( $rule );
+        $c->stash->{json} = { success=>\1, name=>$row->rule_name };
     } catch {
         my $err = shift;
         $c->stash->{json} = { success=>\0, msg => $err };
@@ -97,6 +118,7 @@ sub delete : Local {
         my $row = DB->BaliRule->find( $p->{id_rule} );
         _fail _loc('Row with id %1 not found', $p->{id_rule} ) unless $row;
         my $name = $row->rule_name;
+        DB->BaliRuleStatement->search({ id_rule=>$row->id })->delete; # legacy: no foreign key
         $row->delete;
         $c->stash->{json} = { success=>\1, msg=>_loc('Rule %1 deleted', $name) };
     } catch {
@@ -300,29 +322,23 @@ sub stmts_save : Local {
 
     try {
         my $id_rule = $p->{id_rule} or _throw 'Missing rule id';
-        my $flatten_tree;
-        $flatten_tree = sub {
-            my ($parent, $stmts) = @_;
-            for my $stmt ( _array $stmts ) {
-                delete $stmt->{attributes}{loader}; # treenode cruft
-                my $r = {
-                   id_rule   => $id_rule, 
-                   stmt_text => _strip_html( $stmt->{attributes}{text} ),
-                   stmt_attr => _dump( $stmt->{attributes} ),
-                };
-                $r->{id_parent} = $parent if defined $parent;
-                my $row = DB->BaliRuleStatement->create( $r );
-                my $chi = delete $stmt->{children};
-                $flatten_tree->( $row->id, $chi ) if _array( $chi );
-            }
+        # check json valid
+        my $stmts = try { 
+            _decode_json( $p->{stmts} );
+        } catch {
+            _fail _loc "Corrupt or incorrect json rule tree: %1", shift(); 
         };
-        my $stmts = _decode_json( $p->{stmts} );
-        DB->BaliRuleStatement->search({ id_rule=> $id_rule })->delete;
-        $stmts = $flatten_tree->( undef, $stmts );
+        # check if DSL is buildable
+        try { 
+            $c->model('Rules')->dsl_build_and_test( $stmts ); 
+        } catch {
+            _fail _loc "Error testing DSL build: %1", shift(); 
+        };
+        DB->BaliRule->find($id_rule)->update({ rule_tree=>$p->{stmts} });
         $c->stash->{json} = { success=>\1, msg => _loc('Rule statements saved ok') };
     } catch {
         my $err = shift;
-        $c->stash->{json} = { success=>\0, msg => $err };
+        $c->stash->{json} = { success=>\0, msg => "$err" };
     };
     $c->forward("View::JSON");
 }

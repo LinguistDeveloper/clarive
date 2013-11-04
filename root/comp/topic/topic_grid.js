@@ -13,6 +13,20 @@
 	var parse_typeApplication = (typeApplication != '') ? '/' + typeApplication : '';
     var query_id = '<% $c->stash->{query_id} %>';
 	var id_project = '<% $c->stash->{id_project} %>';
+    var id_report = params.id_report;
+    var fields = params.fields;
+    var report_columns;
+    if( fields ) {
+        report_columns = fields.columns.map(function(r){ 
+            return { 
+                header: _(r.as || r.id), sortable: true, 
+                dataIndex: r.id,
+                hidden: false, width: 80, sortable: true 
+            }
+        });
+        //console.log( report_columns );
+    }
+    //console.log( params );
     
     var base_params = { start: 0, limit: ps, typeApplication: typeApplication, 
         from_mid: params.from_mid,
@@ -27,11 +41,11 @@
         params.id_category = category_id;
         base_params.categories = category_id;
     }
-
-    // Create store instances
-    var store_category = new Baseliner.Topic.StoreCategory();
-    //var store_label = new Baseliner.Topic.StoreLabel();
-    var store_topics = new Baseliner.Topic.StoreList({
+    
+    if( id_report ) {
+        base_params.id_report = id_report;
+    }
+    var store_config = {
         baseParams: base_params,
         remoteSort: false,
         listeners: {
@@ -40,7 +54,15 @@
                     filter_current = Baseliner.merge( filter_current, opt.params );
             }
         }
-    });
+    };
+    if( fields ) {
+        store_config.fields = fields.ids.map(function(r){ return { name: r } });
+    }
+
+    // Create store instances
+    var store_category = new Baseliner.Topic.StoreCategory();
+    //var store_label = new Baseliner.Topic.StoreLabel();
+    var store_topics = new Baseliner.Topic.StoreList(store_config);
    
     var init_buttons = function(action) {
         btn_edit[ action ]();
@@ -706,7 +728,7 @@
         sm: check_sm,
 %}
         loadMask:'true',
-        columns: [
+        columns: report_columns || [
             dragger,
 %if ( !$c->stash->{typeApplication} ){
             check_sm,

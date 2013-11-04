@@ -8,6 +8,14 @@ our $CAPTION = 'start all server tasks';
 sub run {
 	my ($self,%opts) = @_;
 
+	print "Starting mongo server\n";
+	system('mongod -f '.$self->app->base.'/config/mongod.conf');
+	if ( $? ) {
+		print "Error starting mongo server\n";
+		exit 1;
+	}
+	print "Mongo server started\n";
+
 	print "Starting Redis server\n";
 	system('redis-server',$self->app->base.'/config/redis.conf');
 	if ( $? ) {

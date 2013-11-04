@@ -52,6 +52,23 @@
         }
     };
     
+    var rule_import = function(){
+        var data = new Baseliner.MonoTextArea({ value:'' });
+        var btn_imp = new Ext.Button({ text: _('Import YAML'), handler: function(){
+            Baseliner.ajaxEval('/rule/import', { data: data.getValue(), type:'yaml' }, function(res){
+                if( res.success ) { 
+                    rules_store.reload();
+                    Baseliner.message( _('Import'), _('Imported rule: %1', res.rule_name) );
+                    win.close();
+                }
+            },function(res){
+                Baseliner.error( _('Rule Export'), res.msg );
+            });
+        }});
+        var win = new Baseliner.Window({ title:_('Import'), layout:'fit', width: 800, height: 600, tbar:[btn_imp], items:data });
+        win.show();
+    };
+    
     var rule_activate = function(){
         var sm = rules_grid.getSelectionModel();
         if( sm.hasSelection() ) {
@@ -152,7 +169,10 @@
             { xtype:'button', icon: '/static/images/icons/edit.gif', cls: 'x-btn-icon', handler: rule_edit },
             { xtype:'button', icon: '/static/images/icons/delete.gif', cls: 'x-btn-icon', handler: rule_del },
             { xtype:'button', icon: '/static/images/icons/activate.png', cls: 'x-btn-icon', handler: rule_activate },
-            { xtype:'button', icon: '/static/images/icons/downloads_favicon.png', cls: 'x-btn-icon', handler: rule_export }
+            { xtype:'button', icon: '/static/images/icons/wrench.png', cls: 'x-btn-icon', menu:[
+                { text: _('Import'), icon: '/static/images/icons/import.png', handler: rule_import },
+                { text: _('Export'), icon: '/static/images/icons/export.png', handler: rule_export }
+            ]}
         ]
     });
     rules_store.load();
@@ -185,15 +205,13 @@
         item.on('destroy', function(){
             if( !Ext.isFunction(foo) ) foo = function(d){ 
                 node.getOwnerTree().is_dirty=true; 
-                var data_key = d.data_key;
-                delete d.data_key;
                 node.attributes.data = d; 
-                node.attributes.data_key = data_key; 
             };
             if( item.data ) foo(item.data); // item.data is only set if modified
             win.close();
         });
         win.show();
+        return win;
     };
     
     var clipboard;
@@ -222,6 +240,33 @@
         }
         //clipboard = 
     };
+    var node_decorate = function( node ) {
+        var rf = _bool(node.attributes.run_forward,true);
+        var rr = _bool(node.attributes.run_rollback,true);
+        var props = [];
+        if( !node.attributes.disabled ) {
+            if( rf && !rr ) {
+                props.push('NO ROLLBACK');
+            }
+            else if( rr && !rf ) {
+                props.push('ROLLBACK');
+            }
+            else if( !rr && !rf ) {
+                props.push('NO RUN');
+            }
+        }
+        if( node.attributes.note ) node.setTooltip( node.attributes.note );
+        var nel = node.ui.getTextEl();
+        if( nel ) {
+            var nn = node.id;
+            // cleanup if no properties, needed by save on properties panel
+            $( "[parent-node-props='"+nn+"']" ).remove();
+            if( props.length ) {
+                var labs = props.map(function(r){ return '<span class="badge" style="font-size: 9px;">'+r+'</span>' }).join('');
+                nel.insertAdjacentHTML( 'afterEnd', '<span id="boot" parent-node-props="'+nn+'" style="margin: 0px 0px 0px 4px; background: transparent">'+labs+'</span>');
+            }
+        }
+    };
     var toggle_node = function( node ) {
         node.disabled ? node.enable() : node.disable();
         node.attributes.active = node.disabled ? 0 : 1;
@@ -234,11 +279,62 @@
             }
         }, this, false, node.text );
     };
+    // Properties window:
     var meta_node = function( node ) {
-        var comp = new Baseliner.DataEditor({ data: node.attributes });
-        show_win( node, comp, { width: 800, height: 400 }, function(d){ 
-            node.attributes=d;
-            node.setText( d.text );
+        var attr = node.attributes;
+        var data = attr.data || {};
+        var de = new Baseliner.DataEditor({ title:_('Metadata'), data: attr, hide_save: true, hide_cancel: true  });
+        var note = new Baseliner.MonoTextArea({ title:_('Note'), value: attr.note || '' });
+        var data_key = new Ext.form.TextField({ fieldLabel:_('Return Key'), name:'data_key', value: node.attributes.data_key || '' });
+        var needs_rollback_mode = new Baseliner.ComboDouble({ 
+            fieldLabel: _('Needs Rollback?'), name:'needs_rollback_mode', value: data.needs_rollback_mode || 'nb_after', 
+            data: [ ['nb_after',_('Rollback Needed After')], ['nb_before',_('Rollback Needed Before')], 
+                    ['nb_always',_('Rollback Needed Always')], ['none',_('No Rollback Necessary')] ]
+        });
+        needs_rollback_mode.on('select', function(){ needs_rollback_mode.getValue()!='none' ? needs_rollback_key.show() : needs_rollback_key.hide() }); 
+        var needs_rollback_key = new Ext.form.TextField({ 
+            name: 'needs_rollback_key', fieldLabel:_('Needs Rollback Key'), 
+            hidden: !( !data.needs_rollback_mode || data.needs_rollback_mode!='none' ),
+            value: Baseliner.name_to_id(node.text) 
+        });
+        var enabled = new Ext.form.Checkbox({ fieldLabel:_('Enabled'), checked: !_bool(attr.disabled,true) });
+        var run_forward = new Ext.form.Checkbox({ fieldLabel:_('Run Forward'), checked: _bool(attr.run_forward,true) });
+        var run_rollback = new Ext.form.Checkbox({ fieldLabel:_('Run Rollback'), checked: _bool(attr.run_rollback,true) });
+        var parallel_mode = new Baseliner.ComboDouble({ 
+            fieldLabel: _('Parallel Mode'), name:'parallel_mode', value: attr.parallel_mode || 'none', 
+            data: [ ['none',_('No Parallel')], ['fork',_('Fork and Wait')], ['nohup', _('Fork and Leave')] ]
+        });
+        var semaphore_key = new Ext.form.TextField({ fieldLabel:_('Semaphore Key'), name:'semaphore_key', value: attr.semaphore_key });
+        var opts = new Baseliner.FormPanel({ title:_('Options'), labelWidth: 150, style:{ padding:'5px 5px 5px 5px'}, defaults:{ anchor:'100%' }, items:[
+            enabled, data_key, needs_rollback_mode, needs_rollback_key, run_forward, run_rollback, semaphore_key, parallel_mode
+        ]});
+        var btn_save_meta = new Ext.Button({ text:_('Save'), icon:'/static/images/icons/save.png', handler:function(){
+            node.attributes = de.getData();
+            var dk = data_key.getValue(); 
+            if( dk!=undefined ) { node.attributes.data_key = dk; node.attributes.data.data_key=dk }
+            // attribute save
+            node.attributes.active = enabled.checked ? 1 : 0;
+            node.attributes.disabled = enabled.checked ? false : true;
+            enabled.checked ? node.enable() : node.disable();
+            node.attributes.run_forward = run_forward.checked;
+            node.attributes.run_rollback = run_rollback.checked;
+            node_decorate( node );  // change the node's look
+            node.attributes.semaphore_key = semaphore_key.getValue();
+            node.attributes.note = note.getValue();
+            node.attributes.parallel_mode = parallel_mode.checked;
+            node.setText( node.attributes.text );
+            // data save
+            if( !node.attributes.data ) node.attributes.data={};
+            Ext.apply(node.attributes.data, opts.getValues() );
+            win.close(); 
+        }});
+        var tbar = [ '->', 
+            { xtype:'button', text:_('Cancel'), icon:'/static/images/icons/delete.gif', handler: function(){ win.close() } },
+            btn_save_meta ];
+        var tabs = new Ext.TabPanel({ activeTab:0, items:[ opts,de,note ] });
+        var win = show_win( node, tabs, { width: 800, height: 600, tbar:tbar }, function(d){ 
+            //node.attributes=d;
+            //node.setText( d.text );
         });
     };
     var edit_node = function( node ) {
@@ -253,20 +349,17 @@
                 if( res.form ) {
                     Baseliner.ajaxEval( res.form, { data: node.attributes.data || {} }, function(comp){
                         var params = {};
-                        var data_key = new Ext.form.TextField({ name:'data_key', value: node.attributes.data_key });
                         var save_form = function(){
                             form.data = form.getValues();
-                            form.data.data_key = data_key.getValue();
                             form.destroy();
                         };
                         var form = new Baseliner.FormPanel({ 
                             frame: false, forceFit: true, defaults: { msgTarget: 'under', anchor:'100%' },
+                            labelWidth: 150,
                             width: 800, height: 600,
+                            labelAlign: 'right',
                             autoScroll: true,
                             tbar: [
-                                _('Return Key') + ':',
-                                data_key,
-                                //res.form,
                                 '->',
                                 { xtype:'button', text:_('Cancel'), icon:'/static/images/icons/delete.gif', handler: function(){ form.destroy() } },
                                 { xtype:'button', text:_('Save'), icon:'/static/images/icons/save.png', handler: function(){ save_form() } }
@@ -325,25 +418,35 @@
         */
         var rule_save = function(opt){
             var root = rule_tree.root;
+            root.cascade(function(nc){
+                nc.attributes.expanded = nc.isExpanded();
+            });
             var stmts = encode_tree( root );
             Baseliner.message( _('Rules'), _('Validating and saving rule...') );
             var json = Ext.util.JSON.encode( stmts );
+            btn_save_tree.disable();
+            btn_refresh_tree.disable();
             Baseliner.ajaxEval( '/rule/stmts_save', { id_rule: id_rule, stmts: json }, function(res) {
+                if( btn_save_tree ) btn_save_tree.enable();
+                if( btn_refresh_tree ) btn_refresh_tree.enable();
                 if( res.success ) {
                     rule_tree.is_dirty = false;
                     Baseliner.message( _('Rule'), res.msg );
                     if( opt.callback ) {
                         opt.callback( res );
                     }
-                } else {
-                    Baseliner.error( _('Error saving rule'), res.msg );
                 }
+            },function(res){
+                if( btn_save_tree ) btn_save_tree.enable();
+                if( btn_refresh_tree ) btn_refresh_tree.enable();
+                Baseliner.error( _('Error saving rule'), res.msg );
             });
         };
         var rule_load_do = function(btn){
             btn.disable();
             rule_tree_loader.load( rule_tree.root );
             rule_tree.root.expand();
+            rule_tree.is_dirty = false;
             btn.enable();
         };
         var rule_load = function(btn){
@@ -360,9 +463,9 @@
             node.select();
             var stmts_menu = new Ext.menu.Menu({
                 items: [
-                    { text: _('Edit'), handler: function(){ edit_node( node ) }, icon:'/static/images/icons/edit.gif' },
+                    { text: _('Configuration'), handler: function(){ edit_node( node ) }, icon:'/static/images/icons/edit.gif' },
+                    { text: _('Properties'), handler: function(){ meta_node( node ) }, icon:'/static/images/icons/leaf.gif' },
                     { text: _('Rename'), handler: function(){ rename_node( node ) }, icon:'/static/images/icons/item_rename.png' },
-                    { text: _('Metadata'), handler: function(){ meta_node( node ) }, icon:'/static/images/icons/leaf.gif' },
                     { text: _('Copy'), handler: function(item){ copy_node( node ) }, icon:'/static/images/icons/copy.gif' },
                     { text: _('Cut'), handler: function(item){ cut_node( node ) }, icon:'/static/images/icons/cut.gif' },
                     { text: _('Paste'), handler: function(item){ paste_node( node ) }, icon:'/static/images/icons/paste.png' },
@@ -373,6 +476,8 @@
             });
             stmts_menu.showAt(event.xy);
         };
+        var btn_save_tree = new Ext.Button({ text: _('Save'), icon:'/static/images/icons/save.png', handler: rule_save });
+        var btn_refresh_tree = new Ext.Button({ text: _('Reload'), icon:'/static/images/icons/refresh.gif', handler: rule_load });
         var rule_tree = new Ext.tree.TreePanel({
             region: 'center',
             id_rule: id_rule,
@@ -393,8 +498,8 @@
             },
             rootVisible: true,
             tbar: [ 
-                { xtype:'button', text: _('Save'), icon:'/static/images/icons/save.png', handler: rule_save },
-                { xtype:'button', text: _('Reload'), icon:'/static/images/icons/refresh.gif', handler: rule_load },
+                btn_save_tree,
+                btn_refresh_tree,
                 { xtype:'button', text: _('DSL'), icon:'/static/images/icons/edit.png', handler: function() { rule_tree.rule_dsl() } }
             ],
             root: { 
@@ -411,6 +516,10 @@
         rule_tree.close_me = function(){ 
             return confirm(_('Rule `%1` has changed, but has not been saved. Leave without saving?', rule_tree.title ));
         };
+        // best place to decorate
+        rule_tree.on('append', function(t,p,n){
+            setTimeout( function(){ node_decorate(n) }, 500 ) ;
+        });
         
         rule_tree.rule_dsl = function(from){
             var root = from || rule_tree.root;

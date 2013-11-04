@@ -6,18 +6,19 @@ use strict;
 
 our $CAPTION = 'show all inherited config & options';
 
-sub run {
+sub run_show {
+    my ($self, %opts)=@_;
+    say $self->app->yaml( $opts{key} ? $self->app->config->{ $opts{key} } : $self->app->config );
+}
+
+sub run_opts {
     my ($self)=@_;
     say $self->app->yaml( $self->app->opts );
 }
 
-sub run_config {
+sub run {
     my ($self)=@_;
-    say $self->app->yaml( $self->app->config );
-}
-
-sub run_opts {
-    goto &run;
+    goto &run_config;
 }
 
 1;

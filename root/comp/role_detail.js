@@ -63,6 +63,7 @@
         preloadChildren:true
     });
 
+
     var tree_check_folder_enabled = function(root) { // checks if parent folder has children
             var flag= action_store.getCount()<1 ? false : true;
             root.eachChild( function(child) {
@@ -113,9 +114,11 @@
             }
     });
 
+    
     var new_role_tree = new Ext.tree.TreePanel({
         title: _('Available Actions'),
         loader: treeLoader,
+        loadMask: true,
         useArrows: true,
         ddGroup: 'secondGridDDGroup',
         animate: true,
@@ -123,8 +126,18 @@
         containerScroll: true,
         autoScroll: true,
         rootVisible: false,
-        root: treeRoot
+        root: treeRoot,
+        listeners: {
+            'render': function() {
+                this.getEl().mask(_("Loading"), 'x-mask-loading').setHeight( 99999 );
+            },
+            'load': function() {
+                new_role_tree.getEl().unmask();
+            }          
+        }
     });
+    
+    // Baseliner.showLoadingMask( new_role_tree.getEl() , _('Loading...') );
 
     var store_role_users=new Baseliner.JsonStore({ 
         root: 'data',

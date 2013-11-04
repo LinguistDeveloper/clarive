@@ -3,6 +3,23 @@ Baseliner.cookie = new Ext.state.CookieProvider({
         expires: new Date(new Date().getTime()+(1000*60*60*24*300)) //300 days
 });
 
+
+window._bool = function(v,undef){
+    if( undef===undefined ) undef=false;
+    return v==undefined ? undef
+        : v===true ? true
+        : v===false ? false
+        : v===1 ? true
+        : v==='1' ? true
+        : v===0 ? false
+        : v==='0' ? false
+        : v==='' ? false
+        : v=='true' ? true
+        : v=='false' ? false
+        : v=='on' ? true
+        : undef;
+}
+
 // File loader
 Baseliner.loadFile = function(filename, filetype){
 
@@ -389,24 +406,6 @@ Baseliner.new_jsonstore = function(params) {
     });
     return store;
 };
-
-Baseliner.combo_remote = Ext.extend( Ext.form.ComboBox, {
-       name: this.value,
-       hiddenName: this.value,
-       //fieldLabel: _("Providers"),
-       mode: 'remote', 
-       //store: this.store,
-       valueField: this.value,
-       displayField: this.display,
-       editable: false,
-       forceSelection: true,
-       triggerAction: 'all',
-       allowBlank: false,
-       width: 300
-});
-//combo_create.store.on('load',function(store) {
-    //combo_create.setValue(store.getAt(0).get('url'));
-//});
 
 Baseliner.button = function(text,icon,handler){ 
     return new Ext.Button({
@@ -1294,6 +1293,13 @@ Baseliner.button.CSVExport = Ext.extend( Ext.Toolbar.Button, {
             ww.document.close();
         }
 });
+
+Baseliner.open_pre_page = function(title,txt) {
+    var ww = window.open('about:blank', '_blank' );
+    ww.document.title = title || _('Text');
+    ww.document.write( '<pre>' + txt + '</pre>' );
+    ww.document.close();
+}
 
 Baseliner.Base64 = (function() {
     "use strict";
@@ -2389,6 +2395,21 @@ Baseliner.ComboSingle = Ext.extend( Ext.form.ComboBox, {
     }
 });
 
+Baseliner.ComboSingleRemote = Ext.extend( Baseliner.ComboSingle, {
+    mode: 'remote',
+    buildStore : function(){
+        return new Ext.data.JsonStore({
+            root: this.root || 'data', 
+            remoteSort: true,
+            totalProperty: this.totalProperty || 'totalCount', 
+            id: 'id', 
+            baseParams: Ext.apply({  start: 0, limit: this.ps || 99999999 }, this.baseParams ),
+            url: this.url,
+            fields: this.fields || [ this.name ]
+        });  
+    }
+});
+
 Baseliner.ComboDouble = Ext.extend( Ext.form.ComboBox, {
     name: 'item',
     mode: 'local',
@@ -2409,8 +2430,8 @@ Baseliner.ComboDouble = Ext.extend( Ext.form.ComboBox, {
         self.store = self.buildStore(data);
 
         self.fieldLabel = self.fieldLabel || self.name;
-        self.valueField = self.name;
-        self.displayField = 'display_name';
+        self.valueField = self.field || self.name;
+        self.displayField = self.displayField || self.field || 'display_name';
         self.hiddenField = self.name;
         if( !self.value ) self.value = data.length>0 ? data[0][0] : null;
         
@@ -2428,17 +2449,32 @@ Baseliner.ComboDouble = Ext.extend( Ext.form.ComboBox, {
     }
 });
 
-Baseliner.ComboSingleRemote = Ext.extend( Baseliner.ComboSingle, {
+Baseliner.ComboDoubleRemote = Ext.extend( Baseliner.ComboDouble, {
     mode: 'remote',
+    initComponent: function(){
+        var self = this;
+        var value = self.value;
+        delete self.value;
+        Baseliner.ComboDoubleRemote.superclass.initComponent.call(this); 
+        self.store.on('load', function(){
+            if( value != undefined ) {
+                var ix = self.store.find( self.valueField, value ); 
+                if( ix > -1 ) self.setValue(self.store.getAt(ix).get( self.valueField ));
+            } else {
+                self.setValue(self.store.getAt(0).get( self.valueField ));
+            }
+        })
+    },
     buildStore : function(){
         return new Ext.data.JsonStore({
             root: this.root || 'data', 
             remoteSort: true,
+            autoLoad: true,
             totalProperty: this.totalProperty || 'totalCount', 
             id: 'id', 
             baseParams: Ext.apply({  start: 0, limit: this.ps || 99999999 }, this.baseParams ),
             url: this.url,
-            fields: this.fields || [ this.name ]
+            fields: this.fields || [ self.name, 'display_name' ]
         });  
     }
 });
@@ -2705,6 +2741,21 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
     }
 });
 
+Baseliner.encode_tree = function( root ){
+    var arr = [];
+    root.eachChild( function(n){
+        var d = Ext.apply({}, n.attributes);
+        d.leaf = n.isLeaf();
+        d.expanded = n.isExpanded();
+        delete d.loader;
+        delete d.id;
+        Ext.apply(d, { children: Baseliner.encode_tree( n ) });
+        arr.push(d);
+    });
+    return arr;
+};
+
+
 Baseliner.timeline = function(args){ 
     var mid = args.mid;
     var render_to = args.render_to; 
@@ -2826,6 +2877,7 @@ Ext.apply(Ext.layout.FormLayout.prototype, {
 
  
 Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
+    labelAlign: 'right',
     is_valid : function(){
         var self = this;
         var form2 = this.getForm();
@@ -2863,6 +2915,9 @@ Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
                 form_data[ obj.name ] = obj.get_save_data();
             }
         });
+        for( var k in form_data ) {
+            if( k.indexOf('ext-comp-')==0 ) delete form_data[k];
+        }
         return form_data;
     }
 });
@@ -3113,4 +3168,74 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
 		return self.store_file.getCount();
 	}	
 });
+
+Baseliner.request_approval = function(mid,id_grid){
+    var grid = Ext.getCmp( id_grid );
+    var user_comments = new Ext.form.TextArea({ title: _('Comments'), value:'' });
+    Baseliner.ci_call( mid, 'contract', { }, function(res){
+        //console.log( res );
+        var btn_approve = new Ext.Button({
+            text: _('Approve'),
+            icon: '/static/images/yes.png',
+            handler: function(){
+                var comments = user_comments.getValue();
+                Baseliner.ci_call(mid,'approve', { comments: comments }, function(res){
+                    if( grid ) grid.getStore().reload();
+                    Baseliner.message( _('Approved'), _('Job Approved') );
+                    win.close();
+                });
+            }
+        });
+        var btn_reject = new Ext.Button({
+            text: _('Reject'),
+            icon: '/static/images/del.gif',
+            handler: function(){
+                var comments = user_comments.getValue();
+                if( comments.length == 0 ) {
+                    Baseliner.error( _('Reject'), _('Rejection requires a commentary') );
+                    return;
+                }
+                Baseliner.ci_call(mid,'reject', { comments: comments }, function(res){
+                    if( grid ) grid.getStore().reload();
+                    Baseliner.message( _('Rejected'), _('Job Rejected') );
+                    win.close();
+                });
+            }
+        });
+        var variables = new Baseliner.VariableForm({
+            name: 'variables',
+            fieldLabel: _('Variables'),
+            show_tbar: false,
+            force_bl: ['*', res.bl],
+            height: 400,
+            data: res.vars
+        });
+        var form = new Ext.FormPanel({
+            title: _('Details'),
+            padding: 10,
+            labelAlign: 'right',
+            defaults: { anchor: '100%' },
+            frame: false, border: false,
+            items: [ 
+                { xtype:'textfield', fieldLabel:_('User'), value:res.username },
+                { xtype:'textfield', fieldLabel:_('Scheduled Time'), value:res.schedtime },
+                { xtype:'textfield', fieldLabel:_('Projects'), value:res.projects },
+                { xtype:'textfield', fieldLabel:_('Changes'), value: res.cs },
+                { xtype:'textarea', fieldLabel:_('Comments'), value: res.comments },
+                variables 
+            ]
+        });
+        var tab_approve = new Ext.TabPanel({ activeTab:0, items: [ user_comments, form ] });
+        tab_approve.on('afterrender', function(){
+            tab_approve.changeTabIcon( form, '/static/images/icons/log_16.png' ); 
+            tab_approve.changeTabIcon( user_comments, '/static/images/icons/comment_blue.gif' ); 
+        });
+        var win = new Baseliner.Window({ width: 800, height: 600, layout:'fit', 
+            title: _('Job') + ': ' + _('Approve') + ' / ' + _('Reject'), 
+            tbar: [ btn_approve, btn_reject ],
+            items:[ tab_approve ] 
+         });
+        win.show();
+    });
+};
 

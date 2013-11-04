@@ -42,7 +42,7 @@ sub method_scan {
         $it->tree_resolve; 
     }
 
-    mdb->index_sync;
+    mkv->index_sync;
 
     return @items;
 }

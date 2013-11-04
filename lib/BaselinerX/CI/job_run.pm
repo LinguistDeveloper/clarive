@@ -85,20 +85,22 @@ sub run {
     $self->save;
     
     $self->service_levels->{ $self->step } = {};  # restart level aggregator
+    #$self->service_levels->{ _loc('Core') } = {};  # restart level aggregator
     
     # trap all die signals
     local $SIG{__DIE__} = \&_throw;
 
     local $Baseliner::logger = sub {
         my ($lev, $cl,$fi,$li, @msgs ) = @_;
+        #my $cal = $Baseliner::Utils::caller_level // 2;
         
         #die "calling logger: $lev";
         $lev = 'debug' if $lev eq 'info';
         my $text = $msgs[0];
         if( ref $text ) {    # _log { ... }
-            $self->logger->common_log( [$lev,2], _loc('Data dump'), @msgs ); 
+            $self->logger->common_log( [$lev,3], _loc('Data dump'), @msgs ); 
         } else {
-            $self->logger->common_log( [$lev,2], @msgs ); 
+            $self->logger->common_log( [$lev,3], @msgs ); 
         }
         return 0;
     };
@@ -111,16 +113,17 @@ sub run {
     my $prev_stash = $self->job_stash;
     my $stash = { 
             %{ $prev_stash }, 
-            job         => $self,
-            bl          => $self->bl, 
-            job_step    => $self->step,
-            job_dir     => $self->job_dir,
-            job_name    => $self->name,
-            job_type    => $self->job_type,
-            job_mode    => $self->rollback ? 'forward' : 'rollback',
-            rollback    => $self->rollback,
-            username    => $self->username,
-            changesets  => $self->changesets,
+            job            => $self,
+            bl             => $self->bl, 
+            job_step       => $self->step,
+            job_dir        => $self->job_dir,
+            job_name       => $self->name,
+            job_type       => $self->job_type,
+            job_mode       => $self->rollback ? 'rollback' : 'forward',
+            rollback       => $self->rollback,
+            username       => $self->username,
+            changesets     => $self->changesets,
+            needs_rollback => {},
     };
     #die _dump $stash unless $self->step eq 'INIT';
     
@@ -138,6 +141,7 @@ sub run {
     } catch {
         my $err = shift;   
         #$self->logger->debug( 'Stash after rules', $stash );
+        $stash->{failing} = 1;
         $self->finish( 'ERROR' );
         $self->logger->error( _loc( 'Job failure: %1', $err ) );
         $self->job_stash( $stash );
@@ -145,10 +149,10 @@ sub run {
     };
 
     my $rollback_now = 0;
-    my @needing_rollback = grep /_needs?_rollback/, keys %$stash;
-    my $needs_rollback = List::MoreUtils::any { $stash->{$_} } @needing_rollback;
+    my $nr = $stash->{needs_rollback} // {};
+    my @needing_rollback = map { $_ } grep { $nr->{$_} } keys %$nr;
     if( $job_error ) {
-        if( $needs_rollback && !$self->rollback ) {
+        if( @needing_rollback && !$self->rollback ) {
             # repeat
             $stash->{rollback} = 1;
             $stash->{job} = $self;
@@ -157,7 +161,7 @@ sub run {
             $self->exec( $self->exec + 1);
             $rollback_now = 1;
             $self->logger->info( "Starting *Rollback*", \@needing_rollback );
-        } elsif( !$needs_rollback && !$self->rollback ) {
+        } elsif( !@needing_rollback && !$self->rollback ) {
             $self->logger->info( _loc( 'No need to rollback anything.' ) );
         } else {
             $self->logger->error( _loc( 'Error during rollback. Baselines are incosistent, manual intervention required.' ) );
@@ -185,7 +189,8 @@ sub run {
 
 sub save_to_parent_job {
     my ($self, %p)=@_;
-    if( my $parent_job = Baseliner::CI->new( $self->parent_job ) ) {
+    _debug( sprintf "Save to parent job '%s'", $self->parent_job );
+    if( my $parent_job = ci->new( $self->parent_job ) ) {
         $parent_job->update( %p );
     }
 }
@@ -195,6 +200,11 @@ sub start_statement {
     my ($self,$stmt_name) = @_;
     $self->current_service( $stmt_name );
     $self->logger->debug( "$stmt_name", milestone=>2 );
+}
+
+sub back_to_core {
+    my ($self)=@_;
+    $self->current_service( "\x{2205}" );
 }
 
 our %next_step   = ( CHECK=>'INIT', INIT=>'PRE', PRE => 'RUN', RUN => 'POST', POST => 'END' );

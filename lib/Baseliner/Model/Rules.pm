@@ -10,44 +10,93 @@ with 'Baseliner::Role::Service';
 
 has tidy_up => qw(is rw isa Bool default 1);
 
-sub build_tree {
-    my ($self, $id_rule, $parent, %p) = @_;
-    my @tree;
-    # TODO run query just once and work with a hash ->hash_for( id_parent )
-    my @rows = DB->BaliRuleStatement->search( { id_rule => $id_rule, id_parent => $parent },
-        { order_by=>{ -asc=>'id' } } )->hashref->all;
-    if( !defined $parent ) {
-        my $rule = DB->BaliRule->find( $id_rule );
-        my $rule_type = $rule->rule_type;
-        if( !@rows && $rule_type eq 'chain' ) {
-            push @tree, { text=>$_, key=>'statement.step', icon=>'/static/images/icons/job.png', 
-                    children=>[], leaf=>\0, expanded=>\1 } 
-                for qw(CHECK INIT PRE RUN POST);
-        }
-    }
-    for my $row ( @rows ) {
-        my $n = { text=>$row->{stmt_text} };
-        $row->{stmt_attr} = _load( $row->{stmt_attr} );
-        $n = { active=>1, %$n, %{ $row->{stmt_attr} } } if length $row->{stmt_attr};
+register 'event.rule.failed' => {
+    description => 'Rule failed',
+    vars => ['dsl', 'rc', 'ret', 'rule', 'rule_name', 'stash', 'output']
+};
+
+sub init_job_tasks {
+    my ($self)=@_;
+    return map { +{ text=>$_, key=>'statement.step', icon=>'/static/images/icons/job.png', 
+            children=>[], leaf=>\0, expanded=>\1 } 
+    } qw(CHECK INIT PRE RUN POST);
+}
+
+sub tree_format {
+    my ($self, @tree_in)=@_;
+    my @tree_out;
+    for my $n ( @tree_in ) {
+        my $chi = delete $n->{children};
+        $n = $n->{attributes} if $n->{attributes};
+        $chi = delete $n->{children} unless ref $chi eq 'ARRAY' && @$chi;
+        delete $n->{attributes};
         delete $n->{disabled};
         delete $n->{id};
         $n->{active} //= 1;
         $n->{disabled} = $n->{active} ? \0 : \1;
-        my @chi = $self->build_tree( $id_rule, $row->{id} );
-        if(  @chi ) {
+        my @chi = $self->tree_format( _array($chi) );
+        #$n->{children} = \@chi;
+        if( @chi ) {
             $n->{children} = \@chi;
             $n->{leaf} = \0;
-            $n->{expanded} = \1;
+            $n->{expanded} = $n->{expanded} eq 'false' ? \0 : \1;
         } elsif( ! ${$n->{leaf} // \1} ) {  # may be a folder with no children
             $n->{children} = []; 
-            $n->{expanded} = \1;
+            $n->{expanded} = $n->{expanded} eq 'false' ? \0 : \1;
         }
         delete $n->{loader};  
         delete $n->{isTarget};  # otherwise you cannot drag-drop around a node
         #_log $n;
-        push @tree, $n;
+        push @tree_out, $n;
     }
-    return @tree;
+    return @tree_out;
+}
+
+sub build_tree {
+    my ($self, $id_rule, $parent, %p) = @_;
+    # TODO run query just once and work with a hash ->hash_for( id_parent )
+    my $rule = DB->BaliRule->find( $id_rule );
+    my $rule_tree_json = $rule->rule_tree;
+    if( $rule_tree_json ) {
+        my $rule_tree = Util->_decode_json( $rule_tree_json );
+        _fail _loc 'Invalid rule tree json data: not an array' unless ref $rule_tree eq 'ARRAY';
+        return $self->tree_format( @$rule_tree );
+        return @$rule_tree;
+    } else {
+        # no json rule_tree, look for legacy data
+        my @tree;
+        my @rows = DB->BaliRuleStatement->search( { id_rule => $id_rule, id_parent => $parent },
+            { order_by=>{ -asc=>'id' } } )->hashref->all;
+        if( !defined $parent ) {
+            my $rule_type = $rule->rule_type;
+            if( !@rows && $rule_type eq 'chain' ) {
+                push @tree, $self->init_job_tasks;
+            }
+        }
+        for my $row ( @rows ) {
+            my $n = { text=>$row->{stmt_text} };
+            $row->{stmt_attr} = _load( $row->{stmt_attr} );
+            $n = { active=>1, %$n, %{ $row->{stmt_attr} } } if length $row->{stmt_attr};
+            delete $n->{disabled};
+            delete $n->{id};
+            $n->{active} //= 1;
+            $n->{disabled} = $n->{active} ? \0 : \1;
+            my @chi = $self->build_tree( $id_rule, $row->{id} );
+            if(  @chi ) {
+                $n->{children} = \@chi;
+                $n->{leaf} = \0;
+                $n->{expanded} = $n->{expanded} eq 'false' ? \0 : \1;
+            } elsif( ! ${$n->{leaf} // \1} ) {  # may be a folder with no children
+                $n->{children} = []; 
+                $n->{expanded} = $n->{expanded} eq 'false' ? \0 : \1;
+            }
+            delete $n->{loader};  
+            delete $n->{isTarget};  # otherwise you cannot drag-drop around a node
+            #_log $n;
+            push @tree, $n;
+        }
+        return @tree;
+    }
 }
 
 sub _is_true { 
@@ -55,19 +104,28 @@ sub _is_true {
     return (ref $v eq 'SCALAR' && !${$v}) || $v eq 'false' || !$v;
 }
 
+sub dsl_build_and_test {
+    my ($self,$stmts, %p )=@_;
+    my $dsl = $self->dsl_build( $stmts, %p ); 
+    my $stash = {};
+    eval "sub{ $dsl }";
+    die $@ if $@; 
+    return $dsl;
+}
+
 sub dsl_build {
     my ($self,$stmts, %p )=@_;
     return '' if !$stmts || ( ref $stmts eq 'HASH' && !%$stmts );
     #_debug $stmts;
-    my @dsl = (
-        #'my $stash = {};',
-        #'my $ret;',
-    );
+    my @dsl;
     require Data::Dumper;
     my $spaces = sub { '   ' x $_[0] };
     my $level = 0;
+    my $stash = $p{stash};
+    my $is_rollback = $stash->{rollback};
     local $Data::Dumper::Terse = 1;
     for my $s ( _array $stmts ) {
+        local $p{no_tidy} = 1; # just one tidy is enough
         #_debug( $s );
         my $children = $s->{children} || {};
         my $attr = defined $s->{attributes} ? $s->{attributes} : $s;  # attributes is for a json treepanel
@@ -78,6 +136,11 @@ sub dsl_build {
         delete $attr->{events} ; # node cruft
         #_debug $attr;
         my $name = _strip_html( $attr->{text} );
+        my $run_forward = _bool($attr->{run_forward},1);  # if !defined, default is true
+        my $run_rollback = _bool($attr->{run_rollback},1); 
+        do{ _debug _loc("*Skipped* task %1 in run forward", $name); next; } if !$is_rollback && !$run_forward;
+        do{ _debug _loc("*Skipped* task %1 in run rollback", $name); next; } if $is_rollback && !$run_rollback;
+        my $data = $attr->{data} || {};
         my $data_key = length $attr->{data_key} ? $attr->{data_key} : _name_to_id( $name );
         my $closure = $attr->{closure};
         push @dsl, sprintf( '# statement: %s', $name ) . "\n"; 
@@ -87,7 +150,6 @@ sub dsl_build {
             push @dsl, sprintf( 'current_statement($stash, q{%s});', $name)."\n";
         }
         push @dsl, sprintf( '_debug(q{=====| Current Rule Statement: %s} );', $name)."\n" if $p{verbose}; 
-        my $data = $attr->{data} || {};
         if( length $attr->{key} ) {
             my $key = $attr->{key};
             my $reg = Baseliner->registry->get( $key );
@@ -102,6 +164,7 @@ sub dsl_build {
             }
             push @dsl, '});' if $closure; # current_statement close
         } else {
+            _debug $s;
             _fail _loc 'Missing dsl/service key for node %1', $name;
         }
     }
@@ -129,10 +192,14 @@ sub dsl_run {
     our $stash = $p{stash} // {};
     
     merge_into_stash( $stash, BaselinerX::CI::variable->default_hash ); 
-    
+    ## local $Baseliner::Utils::caller_level = 3;
     ############################## EVAL DSL STATEMENTS
     $ret = eval $dsl;
     ##############################
+    
+    if( my $job = $stash->{job} ) {
+        $job->back_to_core;
+    }
 
     _fail( _loc("Error during DSL Execution: %1", $@) ) if $@;
     return $stash;
@@ -143,7 +210,7 @@ sub run_rules {
     local $Baseliner::_no_cache = 1;
     my @rules = 
         $p{id_rule} 
-            ? ( +{ DB->find( $p{id_rule} )->get_columns } )
+            ? ( +{ DB->BaliRule->find( $p{id_rule} )->get_columns } )
             : DB->BaliRule->search(
                 { rule_event => $p{event}, rule_type => ($p{rule_type} // 'event'), rule_when => $p{when}, rule_active => 1 },
                 { order_by   => [          { -asc    => 'rule_seq' }, { -asc    => 'id' } ] }
@@ -165,12 +232,14 @@ sub run_rules {
                     $self->dsl_run( dsl=>$dsl, stash=>$stash );
                 }, \$runner_output, \$runner_output );
             } catch {
+                event_new 'event.rule.failed' => { username => 'internal', dsl => $dsl, rule => $rule->{id}, rule_name => $rule->{rule_name}, stash => $stash, output => $runner_output } => sub {};
                 _fail( _loc("Error running rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, shift() ) ); 
             };
         } catch {
             my $err = shift;
             $rc = 1;
             if( ref $p{onerror} eq 'CODE') {
+                event_new 'event.rule.failed' => { username => 'internal', dsl => $dsl, rc => $rc, ret => $ret, rule => $rule->{id}, rule_name => $rule->{rule_name}, stash => $stash, output => $runner_output } => sub {};
                 $p{onerror}->( { err=>$err, ret=>$ret, id=>$rule->{id}, dsl=>$dsl, stash=>$stash, output=>$runner_output, rc=>$rc } );
             } elsif( ! $p{onerror} ) {
                 _fail $err;
@@ -192,7 +261,7 @@ sub run_single_rule {
     my $dsl = try {
         $self->dsl_build( \@tree, no_tidy=>0, %p ); 
     } catch {
-        _fail( _loc("Error building DSL for rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, shift() ) ); 
+        _fail( _loc("Error building DSL for rule '%1' (%2): %3", $rule->rule_name, $rule->rule_when, shift() ) ); 
     };
     my $ret = try {
         ################### RUN THE RULE DSL ######################
@@ -346,6 +415,21 @@ register 'statement.if.var' => {
         my ($self, $n , %p) = @_;
         sprintf(q{
             if( $stash->{'%s'} eq '%s' ) {
+                %s
+            }
+            
+        }, $n->{variable}, $n->{value} , $self->dsl_build( $n->{children}, %p ) );
+    },
+};
+
+register 'statement.if_not.var' => {
+    text => 'IF var ne xxx THEN',
+    type => 'if',
+    data => { variable=>'', value=>'' },
+    dsl => sub { 
+        my ($self, $n , %p) = @_;
+        sprintf(q{
+            if( $stash->{'%s'} ne '%s' ) {
                 %s
             }
             

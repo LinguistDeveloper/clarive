@@ -280,6 +280,7 @@ Catalyst::Plugin::Log::Colorful
 Catalyst::Plugin::Session
 Catalyst::Plugin::Session::State::Cookie
 Catalyst::Plugin::Session::Store::Cache
+Catalyst::Plugin::Session::Store::Redis
 Catalyst::Plugin::Session::Store::DBI
 Catalyst::Plugin::Session::Store::DBIC
 Catalyst::Plugin::Session::Store::File

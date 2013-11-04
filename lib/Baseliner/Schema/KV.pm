@@ -4,12 +4,12 @@ This is the generic KV based CRUD system
 
 =head1 SYNOPSIS
 
-    my $ci = mdb->find( 1234 );
-    mdb->delete( 1234 );
-    mdb->save( 1234, { key1=>'value', key2=>2, ... }, { options... }  );
-    mdb->load( 1234, { options...} );
-    my @cis = mdb->query({ where... }, { opts... });
-    my @cis = mdb->search( query=>'fulltext search +query' ); 
+    my $ci = mkv->find( 1234 );
+    mkv->delete( 1234 );
+    mkv->save( 1234, { key1=>'value', key2=>2, ... }, { options... }  );
+    mkv->load( 1234, { options...} );
+    my @cis = mkv->query({ where... }, { opts... });
+    my @cis = mkv->search( query=>'fulltext search +query' ); 
 
 =cut
 package Baseliner::Schema::KV;
@@ -291,7 +291,7 @@ sub _flatten_as_hash {
 
 This is a pivoted kv to column search query runner.
 
-    my @rows = mdb->query( $where, $opts ) ;
+    my @rows = mkv->query( $where, $opts ) ;
 
 Where:
     
@@ -302,10 +302,10 @@ The where can take 2 kinds of options:
 
 Read about L<SQL::Abstract> syntax for more info.
 
-    mdb->query( 'this | that', { order_by=>'id_category desc' });    
-    mdb->query( '%nada%' );
-    mdb->query( 'hello*' );  # becomes hello%
-    mdb->query({ 'project.name' => 'PROY' }, { order_by=>'id_category desc' });    
+    mkv->query( 'this | that', { order_by=>'id_category desc' });    
+    mkv->query( '%nada%' );
+    mkv->query( 'hello*' );  # becomes hello%
+    mkv->query({ 'project.name' => 'PROY' }, { order_by=>'id_category desc' });    
     
 Options:
     
@@ -357,15 +357,15 @@ These are the type conversions available:
 
 Full text search on columns using the hint system:
     
-    mdb->query({ description=>'etc' }, { hint=>{ description=>'text' } } );
+    mkv->query({ description=>'etc' }, { hint=>{ description=>'text' } } );
     # becomes context( description, 'etc' ) > 0 
     
-    mdb->query({ description=>['etc',99] }, { hint=>{ description=>'text' } } );
+    mkv->query({ description=>['etc',99] }, { hint=>{ description=>'text' } } );
     # becomes context( description, 'etc' ) > 99 
 
 Hint for literal conversions:
 
-    mdb->query({ topic_mid=>12 }, { hint=>{ topic_mid=>\'nvl(mvalue_num,0)' } } );
+    mkv->query({ topic_mid=>12 }, { hint=>{ topic_mid=>\'nvl(mvalue_num,0)' } } );
     
 TODO 
     
@@ -407,7 +407,7 @@ sub query {
         if $rets eq 'hashes' || defined $opts->{select};
     # TODO run a query on KV itself to return kv rows
     
-    # TODO this should be Role::CI->load_from_query, not here, mdb should not create CIs:
+    # TODO this should be Role::CI->load_from_query, not here, mkv should not create CIs:
     my @cis;
     for my $row ( $rs->hashes ) {
         my $rec = Baseliner::Role::CI->load( $row->{mid}, $row, undef, $row->{yaml} );   
@@ -425,7 +425,7 @@ sub query {
 
 This is a full text search, not the same as query.
 
-TODO consider sending results to mdb->query for common return strategy
+TODO consider sending results to mkv->query for common return strategy
 
 =cut
 sub search {
@@ -508,7 +508,7 @@ sub index_sync {
         return;
     }
     # TODO queue mode
-    #Baseliner->app->enqueue( sub{ mdb->index_sync } );
+    #Baseliner->app->enqueue( sub{ mkv->index_sync } );
     
     my $index_name = $self->index_name;
     my $index_options = $self->index_options // '';   # empty str or 'online'
@@ -752,7 +752,6 @@ sub load_cis {
         $self->save($d->{mid}, $d, { kv_only=>1 });
     });
 
-    #my $rels = mdb->get_collection('master_rel');
     #$rels->drop;
     #DB->BaliMasterRel->search->hashref->each(sub{
     #    $rels->insert( $_ );

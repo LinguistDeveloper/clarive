@@ -152,7 +152,7 @@
             }
             Baseliner.ajaxEval('/rule/save', d, function(res){
                 if( res.success ) {
-                    Baseliner.message(_('Rule'), _('Regla guardada con éxito') );
+                    Baseliner.message(_('Rule'), _('Rule saved successfully') );
                     wiz.destroy();
                 } else {
                     Baseliner.error(_('Rule'), res.msg );

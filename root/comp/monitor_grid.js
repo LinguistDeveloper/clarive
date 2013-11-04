@@ -308,7 +308,7 @@
             displayMsg: _('Rows {0} - {1} of {2}'),
             emptyMsg: "No hay registros disponibles"
     });
-    paging.on('beforechange', function(){ refresh_stop(); });
+    //paging.on('beforechange', function(){ refresh_stop(); });
 
     var next_start = 0;
     store.on('load', function(s,recs,opt) {
@@ -329,6 +329,10 @@
         emptyText: _('<Enter your search string>')
     });
     //---------- Refreshments
+    var task_interval_base = 5000;  // start with 5 seconds and grow from there
+    var task_interval_increment = 2000;  
+    var task_interval_max = 60000;  
+    var task_interval = task_interval_base;
     var task = {
         run: function() {
             var ids=[];
@@ -336,13 +340,25 @@
             //var q = store.baseParams['query']; //current search query 
             //if( q != undefined && q !='' ) { return; } //no refresh while querying
             refresh_button_wait_on();
+            var flag_running = false;
             store.each( function(rec) {
                 var id = rec.data.id;
                 if( parseInt(id) > parseInt( top_id ) ) {
                     top_id = id;
                 }
                 ids.push(id);
+                // anything live and running?
+                if( rec.data.status_code == 'RUNNING' ) {
+                    flag_running = true;
+                }
             });
+            var last_interval = task_interval;
+            if( flag_running ) {
+                task_interval = task_interval_base;
+            } else {
+                task_interval = task_interval < task_interval_max ? task_interval+task_interval_increment : task_interval_max;
+            }
+            
             // send from and where, to determine if there's a more recent job
             Baseliner.ajaxEval( '/job/refresh_now',
                 { ids: ids, top: top_id, real_top: real_top, last_magic: last_magic, _ignore_conn_errors: true  }, function(res) {
@@ -357,40 +373,34 @@
                     real_top = res.real_top;
                 }
             });
+            
+            if( last_interval != task_interval ) {
+                autorefresh.stop(task);
+                task.interval = task_interval;
+                autorefresh.start(task);
+            }
+            return true;
         },
-        interval: 30000
+        interval: task_interval
     };
     var autorefresh = new Ext.util.TaskRunner();
-    var refresh_set = function( item, checked ) {
-        if( checked && item.value>0 ) {
-            task.interval = item.value * 1000;
-            autorefresh.start(task); 
-            item.parentMenu.ownerCt.setText( '<b>' + _('Refresh: %1s', item.value ) + '</b>' );
-        } 
-        else if( checked && item.value<1 ) {
-            refresh_stop();
-        }
-    };
     var refresh_button_wait_on = function() { refresh_button.getEl().setOpacity( .3 ); };
     var refresh_button_wait_off = function() { refresh_button.getEl().setOpacity( 1 ); };
-    var refresh_menu = new Ext.menu.Menu({
-            items: [
-                { text: _('Stopped'), value: 0, checked: true, group: 'refresh', checkHandler: refresh_set },
-                { text: _('%1 seconds', 15), value: 15, checked: true, group: 'refresh', checkHandler: refresh_set },
-                { text: _('%1 seconds', 30), value: 30, checked: true, group: 'refresh', checkHandler: refresh_set },
-                { text: _('%1 minute', 1), value: 60, checked: true, group: 'refresh', checkHandler: refresh_set },
-                { text: _('%1 minutes', 5), value: 300, checked: true, group: 'refresh', checkHandler: refresh_set }
-            ]
-    });
-    var refresh_button = new Ext.Toolbar.Button({
-                    text: _('Refresh'),
-                    icon: '/static/images/icons/time.gif', 
-                    cls: 'x-btn-text-icon',
-                    menu: refresh_menu
+    var refresh_button = new Ext.Button({ text: _('Auto Refresh'),
+        icon: '/static/images/icons/time.gif', 
+        enableToggle: true,
+        pressed: false,
+        cls: 'x-btn-text-icon',
+        handler: function(t) {
+            if( t.pressed ) {
+                autorefresh.start(task);
+            } else {
+                autorefresh.stop(task);
+            }
+        }
     });
     var refresh_stop = function() {
-        refresh_menu.items.first().setChecked(true);
-        refresh_button.setText( _('Refresh') );
+        refresh_button.toggle(false);
         autorefresh.stop(task);
     };
 
@@ -629,7 +639,7 @@
 
         //else if( type == 'demote' || type == 'rollback' ) value += ' ' + _('(Rollback)');
         if( status == 'APPROVAL' ) { // add a link to the approval main
-            value = String.format("<a href='javascript:Baseliner.request_approval({0});'><b>{1}</b></a>", rec.data.mid, value ); 
+            value = String.format("<a href='javascript:Baseliner.request_approval({0},\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id ); 
         }
         if( icon!=undefined ) {
             return div1 
@@ -640,63 +650,9 @@
         }
     };
 
-    Baseliner.request_approval = function(mid){
-    
-        Baseliner.ci_call( mid, 'contract', { }, function(res){
-            //console.log( res );
-            var btn_approve = new Ext.Button({
-                text: _('Approve'),
-                icon: '/static/images/yes.png',
-                handler: function(){
-                    Baseliner.ci_call(mid,'approve', {}, function(res){
-                        if( Ext.getCmp(grid.id) ) grid.getStore().reload();
-                        Baseliner.message( _('Approval'), _('Job Approved') );
-                        win.close();
-                    });
-                }
-            });
-            var btn_deny = new Ext.Button({
-                text: _('Reject'),
-                icon: '/static/images/del.gif',
-                handler: function(){
-                    Baseliner.ci_call(mid,'reject', {}, function(res){
-                        if( Ext.getCmp(grid.id) ) grid.getStore().reload();
-                        Baseliner.message( _('Approval'), _('Job Rejected') );
-                        win.close();
-                    });
-                }
-            });
-            var variables = new Baseliner.VariableForm({
-                name: 'variables',
-                fieldLabel: _('Variables'),
-                show_tbar: false,
-                force_bl: res.data.bl,
-                height: 400,
-                data: res.data.vars
-            });
-            var form = new Ext.FormPanel({
-                padding: 10,
-                defaults: { anchor: '100%' },
-                frame: false, border: false,
-                items: [ 
-                    { xtype:'textfield', fieldLabel:_('Scheduled Time'), value:res.data.schedtime },
-                    { xtype:'textfield', fieldLabel:_('Projects'), value:res.data.projects },
-                    { xtype:'textfield', fieldLabel:_('Changes'), value: res.data.cs },
-                    { xtype:'textarea', fieldLabel:_('Comments'), value: res.data.comments },
-                    variables 
-                ]
-            });
-            var win = new Baseliner.Window({ width: 800, height: 600, layout:'fit', 
-                tbar: [ btn_approve, btn_deny ],
-                items:[ form ] 
-             });
-            win.show();
-        });
-    };
-
     Baseliner.openLogTab = function(id, name) {
         //Baseliner.addNewTabComp('/job/log/list?id_job=' + id, _('Log') + ' ' + name, { tab_icon: '/static/images/icons/moredata.gif' } );
-        Baseliner.addNewTab('/job/log/dashboard?id_job=' + id + '&name=' + name , _('Log') + ' ' + name, { tab_icon: '/static/images/icons/job.png' });
+        Baseliner.addNewTab('/job/log/dashboard?id_job=' + id + '&name=' + name , name, { tab_icon: '/static/images/icons/job.png' });
     };
 
     var render_topic = function(value, p, record){
@@ -853,7 +809,7 @@
                         if (sm.hasSelection())
                         {
                             var sel = sm.getSelected();
-                            Baseliner.addNewTabComp('/job/log/list?id_job=' + sel.data.id, _('Log') + ' ' + sel.data.name );
+                            Baseliner.addNewTabComp('/job/log/list?id_job=' + sel.data.id, sel.data.name );
                         } else {
                             Ext.Msg.alert(_('Error'), _('Select a row first'));   
                         };

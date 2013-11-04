@@ -51,6 +51,7 @@ use Exporter::Tidy default => [
     _decode_json
     _encode_json
     _check_parameters
+    _bool
     _mkpath
     _rmpath
     _mktmp
@@ -336,7 +337,7 @@ sub _log_me {
     my $logger = $Baseliner::logger // ( Baseliner->app ? Baseliner->app->{_logger} : '' );
     my $log_out;
     if( ref $logger eq 'CODE' ) { # logger override
-        $log_out = $logger->($lev, $cl,$fi,$li, @msgs );  # logger return wheather log out or don't
+        $log_out = $logger->($lev, $cl,$fi,$li, @msgs );  # logger return if we should continue logging
     } else {
         $log_out = 1;
     }
@@ -388,8 +389,8 @@ sub _warn {
 }
 
 sub _debug {
-    my $cal = looks_like_number($_[0])? ( $_[0] < 0 ? shift : 0) : 0;
-    my ($cl,$fi,$li) = caller( -$cal );
+    my $cal = looks_like_number($_[0]) && $_[0] < 0 ? -(shift()) : ($Baseliner::Utils::caller_level // 0);
+    my ($cl,$fi,$li) = caller( $cal );
     return unless Baseliner->debug;
     _log_me( 'debug', $cl,$fi,$li,@_);
 }
@@ -712,6 +713,18 @@ sub _check_parameters {
     }
 }
 
+sub _bool {
+    my ($v,$default)=@_;
+    $default //= 0; 
+    return !defined $v ? $default
+        : ref $v eq 'SCALAR' ? !!$$v
+        : "$v" eq 'true' ? 1
+        : "$v" eq 'on' ? 1
+        : "$v" eq 'off' ? 0
+        : "$v" eq 'false' ? 0
+        : "$v" eq '' ? $default
+        : !!$v;
+}
 sub _mkpath {
     my $dir = File::Spec->catfile( @_ );
     return if( -e $dir );

@@ -4,12 +4,15 @@ extends 'Clarive::Cmd';
 use v5.10;
 use Term::ANSIColor qw/:constants/;
 
-has server => qw(is rw isa Str default localhost:6379);
+has server => qw(is rw isa Str), default => sub { 
+    my ($self)=@_;
+    return $self->app->config->{redis}{server} // 'localhost:6379';
+};
 
 has db => qw(is ro lazy 1), default => sub { 
     my ( $self ) = @_;
     require Redis;
-    Redis->new( %$self );
+    Redis->new( %{ $self->app->config->{redis} || {} }, server=>$self->server );
 };
 
 has queue => qw(is ro lazy 1), default => sub { 

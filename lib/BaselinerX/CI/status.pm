@@ -16,13 +16,13 @@ with 'Baseliner::Role::CI::Internal';
 #   type: G
 
 has_cis "bls";
-has id_status   => qw(is rw isa Any);
+has id_status     => qw(is rw isa Any);
 has bind_releases => qw(is rw isa Any);
-has ci_update => qw(is rw isa Any);
-has frozen => qw(is rw isa Any);
-has readonly => qw(is rw isa Any);
-has seq => qw(is rw isa Any);
-has type => qw(is rw isa Any);
+has ci_update     => qw(is rw isa Any);
+has frozen        => qw(is rw isa Any);
+has readonly      => qw(is rw isa Any);
+has seq           => qw(is rw isa Any);
+has type          => qw(is rw isa Any);
 
 sub icon { '/static/images/icons/baseline.gif' }
 sub collection { 'status' }
@@ -61,5 +61,10 @@ after delete => sub {
         $row->delete;
     }
 };
+
+sub combo_list {
+    my ($self)=@_;
+    { data=>[ map { +{ id_status=> $_->id_status, name=>$_->name } } sort { $a->name <=> $b->name } $self->search_cis ] };
+}
 
 1;

@@ -28,11 +28,12 @@ params:
         columns = String.format('{0}[slotname],textfield,400;{1}[plan_end_date],datefield,80;{2}[end_date],datefield,80', headers[0],headers[1],headers[2]);
     }
     
-    var allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
+    var allow = meta.allowBlank == 'false' ? false : true;
     var readonly = meta.readonly == undefined ? true : meta.readonly;
     
     var editor = new Baseliner.GridEditor({
         fieldLabel: _(meta.name_field),
+        allowBlank: allow,
         name: meta.id_field,
         id_field: meta.id_field,
         bd_field: meta.bd_field,

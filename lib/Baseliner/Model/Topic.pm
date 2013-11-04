@@ -261,7 +261,7 @@ sub topics_for_user {
     my $topic_list = $p->{topic_list};
 
     #length($query) and $where = Util->build_master_search( query=>$query );
-    length($query) and $where->{'-bool'} = mdb->query( "$query", { returns=>'exists' });
+    length($query) and $where->{'-bool'} = mkv->query( "$query", { returns=>'exists' });
     
     # XXX consider enabling this for quick searches on mid+title+description
     #$query and $where = query_sql_build( query=>$query, fields=>{

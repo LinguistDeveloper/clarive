@@ -41,7 +41,7 @@ html: /dashlets/lastjobs.html
                 }
                 //else if( type == 'demote' || type == 'rollback' ) value += ' ' + _('(Rollback)');
                 if( status == 'APPROVAL' ) { // add a link to the approval main
-                    value = String.format("<a href='javascript:Baseliner.addNewTabComp(\"{0}\", \"{1}\");'>{2}</a>", "/request/main", _(status), _(status) ); 
+                    value = String.format("<a href='javascript:Baseliner.request_approval({0});'><b>{1}</b></a>", obj.mid, _(status) ); 
                 }
                 
                 
@@ -80,6 +80,7 @@ html: /dashlets/lastjobs.html
                     details_job.status = '<%$lastjob->{status}%>';
                     details_job.type = '<%$lastjob->{type}%>';
                     details_job.rollback = <%$lastjob->{rollback}%>;
+                    details_job.mid = '<%$lastjob->{mid}%>';
                     render_level(details_job, 'row<%$row%>_<%$status_id%>');
                 </script>
 %}            
