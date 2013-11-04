@@ -17,7 +17,6 @@ params:
     
     var value = data[ meta.bd_field ] || meta.default_value ;
     var editor = new Baseliner.Pagedown({
-        name: meta.id_field,
         font: meta.font,
         anchor: meta.anchor || '100%',
         height: meta.height || 30,
@@ -31,13 +30,25 @@ params:
         //Baseliner.field_label_top( meta.name_field, meta.hidden, allow, readonly ),
         new Ext.Panel({
             layout:'fit',
+            name: meta.id_field,
             fieldLabel: _(meta.name_field),
             allowBlank: allow,
             readOnly: readonly,
             anchor: meta.anchor || '100%',
             height: meta.height,
             border: false,
-            items: editor
+            items: editor,
+            get_save_data : function(){
+                return editor.getValue();
+            },
+            is_valid : function(){
+				var is_valid = editor.getValue() != '' ? true : false;
+				if (is_valid && this.on_change_lab){
+					this.getEl().applyStyles('border: none; margin_bottom: 0px');
+					this.on_change_lab.style.display = 'none';
+				}
+				return is_valid;
+            }             
         })
     ]
 })
