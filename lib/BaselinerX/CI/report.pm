@@ -211,9 +211,10 @@ sub field_tree {
 } 
 
 our %field_map = (
-    status => 'category.status',       
-    status_new => 'category.status',       
-    name_status => 'category.status',       
+    status => 'category_status_name',       
+    status_new => 'category_status_name',       
+    name_status => 'category_status_name',       
+    'category_status.name' => 'category_status_name',       
 );
 
 sub selected_fields {

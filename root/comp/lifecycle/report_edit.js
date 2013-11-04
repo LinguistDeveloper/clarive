@@ -96,13 +96,16 @@
         var flag = true;
         var target = ev.target;
         var ttype = target.attributes.type; // || target.attributes.where_field ? 'where_field' : target.attributes.category ? 'select_field' : null;
-        Baseliner.message( 'Target Type', ttype );
-        if( ttype!='select_field' && ev.point!='append' ) { alert('yikes!' + [ttype,ev.point].join(',') ); return false; }
+        //Baseliner.message( 'Target Type', ttype );
+        if( ttype!='select_field' && ev.point!='append' ) { 
+            //alert('yikes!' + [ttype,ev.point].join(',') ); 
+            return false; 
+        }
         Ext.each( ev.dropNode, function(n){
             var type = n.attributes.type;
-            Baseliner.message( 'Type', type );
+            //Baseliner.message( 'Type', type );
             if( !type=='where_field' && ev.point=='append' ) {
-                flag = false; alert('no no'); 
+                flag = false; //alert('no no'); 
                 return; 
             }
             if( ttype=='select' || ttype=='select_field' ) {
