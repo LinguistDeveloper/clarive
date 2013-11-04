@@ -29,6 +29,7 @@ params:
     }
     
     var allow = meta.allowBlank == 'false' ? false : true;
+    var readonly = meta.readonly == undefined ? true : meta.readonly;
     
     var editor = new Baseliner.GridEditor({
         allowBlank: allow,
