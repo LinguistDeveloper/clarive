@@ -181,6 +181,7 @@ sub convert_schemas {
            my $r = shift;
            my $rs = $db->query( $self->topic_view, $r->{mid} );
            my $row = $rs->hash;
+           return if !$row;
            my $doc = { %$row, %$r };
            $doc->{category} = mdb->category->find_one({ id=>$r->{id_category} });
            $doc->{category_status} = mdb->status->find_one({ id=>$r->{id_category_status} });
@@ -189,11 +190,22 @@ sub convert_schemas {
            #$doc->{modified_on} = Class::Date->new( $doc->{modified_on_epoch} )."";
            delete $doc->{$_} for grep /\./,keys $doc;
            my @fields = $db->query('select * from bali_topic_fields_custom where topic_mid=?', $r->{mid})->hashes;
+           my @rels = $db->query('select r.rel_field, m.collection, m.name from bali_master_rel r,bali_master m where (m.mid=r.to_mid) and r.from_mid=?', $r->{mid})->hashes;
+           my @rels2 = $db->query('select r.rel_field, m.collection, m.name from bali_master_rel r,bali_master m where (m.mid=r.from_mid) and r.to_mid=?', $r->{mid})->hashes;
+           _debug \@rels;
            say "found custom fields for $r->{mid}: " . join ',', map { $_->{name} } @fields if @fields;
-           $doc = { %$doc, map { 
-               my $v = $_->{value_clob} || $_->{value};
-               $v = try { _load($v) } catch { $v } if $v;
-               $_->{name} => $v } @fields }; 
+           $doc = {
+                %$doc,
+                map( {
+                    my $v = $_->{value_clob} || $_->{value};
+                    $v = try { _load($v) } catch { $v } if $v;
+                    $_->{name} => $v
+                } @fields ),
+                map( {
+                    my $v = $_->{name};
+                    $_->{rel_field} => $v
+                } @rels, @rels2)
+            };
            delete $doc->{$_} for qw(sw_edit last_seen label_color label_name label_id);
            $coll->insert($doc);
            $k++;

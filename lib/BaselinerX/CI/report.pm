@@ -56,6 +56,7 @@ sub report_list {
                     #columns        => $folder->fields,
                     fields         => $folder->selected_fields,
                     id_report      => $folder->mid,
+                    report_rows    => $folder->rows,
                     #column_mode    => 'full', #$folder->mode,
                     hide_tree      => \1,
                 },
@@ -210,9 +211,10 @@ sub field_tree {
 } 
 
 our %field_map = (
-    status => 'category.status',       
-    status_new => 'category.status',       
-    name_status => 'category.status',       
+    status => 'category_status_name',       
+    status_new => 'category_status_name',       
+    name_status => 'category_status_name',       
+    'category_status.name' => 'category_status_name',       
 );
 
 sub selected_fields {
@@ -229,9 +231,8 @@ sub selected_fields {
     return \%ret;
 }
 
-sub run {
-    my ($self, $p ) = @_; 
-    my $rows = $self->rows;
+method run( :$start=0, :$limit=undef ) {
+    my $rows = $limit // $self->rows;
     my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
     my @selects = map { ( $field_map{$_->{id_field}} // $_->{id_field} )  => 1 } _array($fields{select});
     my @sort = map { $_->{id_field} => -1 } _array($fields{order_by});
@@ -241,6 +242,7 @@ sub run {
       $rs
       ->fields({ @selects, _id=>0, mid=>1 })
       ->sort({ @sort })
+      ->skip( $start )
       ->limit($rows)
       ->all;
     return ( $cnt, @topics );
