@@ -103,7 +103,8 @@ sub list : Local {
     $p->{username} = $c->username;
 
     if( $p->{id_report} ) {
-        my ($cnt, @rows ) = ci->new( $p->{id_report} )->run;
+        my $start = $p->{start} // 0;
+        my ($cnt, @rows ) = ci->new( $p->{id_report} )->run( start=>$start );
         $c->stash->{json} = { data=>\@rows, totalCount=>$cnt };
     } else {
         my ($cnt, @rows ) = $c->model('Topic')->topics_for_user( $p );

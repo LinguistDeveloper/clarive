@@ -16,16 +16,6 @@
     var id_report = params.id_report;
     var fields = params.fields;
     var report_columns;
-    if( fields ) {
-        report_columns = fields.columns.map(function(r){ 
-            return { 
-                header: _(r.as || r.id), sortable: true, 
-                dataIndex: r.id,
-                hidden: false, width: 80, sortable: true 
-            }
-        });
-        //console.log( report_columns );
-    }
     //console.log( params );
     
     var base_params = { start: 0, limit: ps, typeApplication: typeApplication, 
@@ -709,6 +699,17 @@
         }
     };
 
+    if( fields ) {
+        report_columns = [ dragger ];
+        Ext.each( fields.columns, function(r){ 
+            report_columns.push({ 
+                header: _(r.as || r.id), sortable: true, 
+                dataIndex: r.id,
+                hidden: false, width: 80, sortable: true 
+            });
+        });
+        //console.log( report_columns );
+    }
     var grid_topics = new Ext.grid.GridPanel({
         title: _('Topics'),
         header: false,
@@ -1189,6 +1190,7 @@
     var tree_filters = new Ext.tree.TreePanel({
                         region : 'east',
                         header: false,
+                        hidden: !!fields,
                         width: 210,
                         split: true,
                         collapsible: true,

@@ -229,8 +229,7 @@ sub selected_fields {
     return \%ret;
 }
 
-sub run {
-    my ($self, $p ) = @_; 
+method run( :$start=0 ) {
     my $rows = $self->rows;
     my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
     my @selects = map { ( $field_map{$_->{id_field}} // $_->{id_field} )  => 1 } _array($fields{select});
@@ -241,6 +240,7 @@ sub run {
       $rs
       ->fields({ @selects, _id=>0, mid=>1 })
       ->sort({ @sort })
+      ->skip( $start )
       ->limit($rows)
       ->all;
     return ( $cnt, @topics );
