@@ -76,5 +76,32 @@ sub update_or_create {
 sub delete { 
     Util->_throw( "mdb...->delete does not exist. Use ->remove");
 }
+
+sub all_keys {
+    my ($self)=@_;
+    my $tmp = $self->name . '_keys_' . Util->_nowstamp();
+    mdb->run_command([   
+      "mapreduce"=> $self->name, 
+      "map"=> q{
+           function() {
+            var ff=function(obj,pf){
+                for (var key in obj) { 
+                    if( key == '_id' ) continue;
+                    if( typeof obj[key] != 'function' ) emit(pf+key, null);
+                    if( typeof obj[key] == 'object' ) {
+                        ff(obj[key],key+'.'); 
+                    }
+                }
+            }
+            ff(this,'');
+           }
+      },
+      "reduce"=> q{function(key, stuff) { return null; }}, 
+      "out"=> $tmp,
+    ]);
+    my @ky = grep !/^_id/, map { $_->{_id} } mdb->$tmp->find->all;
+    mdb->$tmp->drop;
+    return @ky;
+}
     
 1;

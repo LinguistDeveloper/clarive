@@ -1,6 +1,7 @@
 Baseliner.user_can_edit_ci = <% $c->model('Permissions')->user_has_any_action( action => 'action.ci.%', username=>$c->username ) ? 'true' : 'false' %>;
 Baseliner.user_can_projects = <% $c->model('Permissions')->user_projects( username=>$c->username ) ? 'true' : 'false' %>;
 Baseliner.user_can_workspace = <% $c->model('Permissions')->user_has_any_action( action=>'action.home.view_workspace', username=>$c->username ) ? 'true' : 'false' %>;
+Baseliner.user_can_reports = <% $c->model('Permissions')->user_has_any_action( action=>'action.reports.view', username=>$c->username ) ? 'true' : 'false' %>;
 
 
 Baseliner.tree_topic_style = [
@@ -532,6 +533,32 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             }
             self.getLayout().setActiveItem( self.$tree_ci );
         };
+        
+        var show_reports = function() {
+            var treeRoot = new Ext.tree.AsyncTreeNode({
+                cls: 'x-btn-icon',
+                icon: '/static/images/icons/report.png',
+                text: _('Search folders'),
+                mid: -1,
+                draggable: false,
+                data: [],
+                menu: [
+                    {   text: _('New search folder') + '...',
+                        icon: '/static/images/icons/report.png',
+                        eval: { handler: 'Baseliner.open_new_search_folder'}
+                    } 
+                ],
+                expanded: true
+            });
+            
+            if( !self.$tree_reports ) {
+                self.$tree_reports = new Baseliner.ExplorerTree({ dataUrl : '/ci/report/report_list', baseParams: { show_reports: true } , root: treeRoot, rootVisible: true });
+                self.add( self.$tree_reports );
+                self.$tree_reports.on('favorite_added', function() { self.$tree_favorites.refresh() } );
+            }
+            self.getLayout().setActiveItem( self.$tree_reports );
+        };
+        
 
         var toggle_stick = function( button, e) {
             if ( button_stick.enableToggle ) {
@@ -600,6 +627,20 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             refresh_all: function(){ if( self.$tree_ci ) self.$tree_ci.refresh_all() },
             listeners: Baseliner.gen_btn_listener()
         });
+        
+        var button_search_folders = new Ext.Button({
+            cls: 'x-btn-icon',
+            icon: '/static/images/icons/report_grey.png',
+            handler: show_reports,
+            tooltip: _('Reports'),
+            toggleGroup: 'explorer-card',
+            pressed: false,
+            allowDepress: false,
+            hidden: ! Baseliner.user_can_reports,
+            enableToggle: true,
+            refresh_all: function(){ if( self.$tree_reports ) self.$tree_reports.refresh_all() },
+            listeners: Baseliner.gen_btn_listener()
+        });        
 
         var add_to_fav_folder = function() {
             Ext.Msg.prompt(_('Favorite'), _('Folder name:'), function(btn, folder){
@@ -683,6 +724,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 button_favorites,
                 button_workspaces,
                 button_ci,
+                button_search_folders,
                 '->',
                 button_menu,
                 button_collapse,
@@ -901,5 +943,26 @@ Baseliner.open_kanban_from_folder = function(n){
         }
         var kanban = new Baseliner.Kanban({ topics: res.topics }); 
         kanban.fullscreen();
+    });
+}
+
+Baseliner.open_new_search_folder = function(n){
+    var node = n;
+    Baseliner.ajaxEval( '/comp/lifecycle/report_edit.js', {node: node}, function(res){});
+}
+
+Baseliner.delete_search_folder = function(n){
+    var node = n;
+    Baseliner.confirm( _('Are you sure you want to delete the search folder %1?', n.text), function(){
+        Baseliner.ci_call( node.attributes.mid, 'report_update', { action:'delete' }, 
+            function(response) {
+                if ( response.success ) {
+                    Baseliner.message( _('Success'), response.msg );
+                    node.remove();
+                } else {
+                    Baseliner.message( _('ERROR'), response.msg );
+                }
+            }
+        );    
     });
 }

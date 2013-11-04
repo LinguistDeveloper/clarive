@@ -2740,6 +2740,21 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
     }
 });
 
+Baseliner.encode_tree = function( root ){
+    var arr = [];
+    root.eachChild( function(n){
+        var d = Ext.apply({}, n.attributes);
+        d.leaf = n.isLeaf();
+        d.expanded = n.isExpanded();
+        delete d.loader;
+        delete d.id;
+        Ext.apply(d, { children: Baseliner.encode_tree( n ) });
+        arr.push(d);
+    });
+    return arr;
+};
+
+
 Baseliner.timeline = function(args){ 
     var mid = args.mid;
     var render_to = args.render_to; 

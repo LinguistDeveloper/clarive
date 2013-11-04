@@ -1256,6 +1256,8 @@ sub default : Path Args(2) {
         }
     } catch {
         my $err = shift;
+        my $json = try { Util->_encode_json($p) } catch { '{ ... }' };
+        _error "Error in CI call '$arg/$meth': $json\n$err";
         $c->stash->{json} = { msg=>"$err", success=>\0 }; 
     };
     $c->forward('View::JSON');

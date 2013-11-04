@@ -102,9 +102,13 @@ sub list : Local {
     my $p = $c->request->parameters;
     $p->{username} = $c->username;
 
-    my ($cnt, @rows ) = $c->model('Topic')->topics_for_user( $p );
-
-    $c->stash->{json} = { data=>\@rows, totalCount=>$cnt };
+    if( $p->{id_report} ) {
+        my ($cnt, @rows ) = ci->new( $p->{id_report} )->run;
+        $c->stash->{json} = { data=>\@rows, totalCount=>$cnt };
+    } else {
+        my ($cnt, @rows ) = $c->model('Topic')->topics_for_user( $p );
+        $c->stash->{json} = { data=>\@rows, totalCount=>$cnt };
+    }
     $c->forward('View::JSON');
 }
 
