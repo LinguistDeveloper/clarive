@@ -48,8 +48,7 @@ params:
         disabled: readonly,
         hidden : meta ? (meta.hidden ? meta.hidden : false): true,
         enableDragDrop: !readonly,
-        use_row_editor: !readonly,
-        allowBlank: allow
+        use_row_editor: !readonly
     });
 
     return [
