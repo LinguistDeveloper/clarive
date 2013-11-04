@@ -422,6 +422,21 @@ register 'statement.if.var' => {
     },
 };
 
+register 'statement.if_not.var' => {
+    text => 'IF var ne xxx THEN',
+    type => 'if',
+    data => { variable=>'', value=>'' },
+    dsl => sub { 
+        my ($self, $n , %p) = @_;
+        sprintf(q{
+            if( $stash->{'%s'} ne '%s' ) {
+                %s
+            }
+            
+        }, $n->{variable}, $n->{value} , $self->dsl_build( $n->{children}, %p ) );
+    },
+};
+
 register 'statement.if.condition' => {
     text => 'IF condition THEN',
     type => 'if',
