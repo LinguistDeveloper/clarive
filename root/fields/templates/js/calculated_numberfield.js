@@ -35,7 +35,6 @@ params:
             xtype:'numberfield',
             fieldLabel: _(meta.name_field),
             name: meta.id_field,
-            id: meta.id_field,
             value: data && data[ meta.bd_field ]!=undefined  ? data[ meta.bd_field ] : ( meta.default_value || '' ), 
             style: style,
             //width: meta.width || '97%',
