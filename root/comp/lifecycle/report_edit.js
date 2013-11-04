@@ -180,7 +180,7 @@
           handler: function(){
                 var dd = options.getValues();
                 if( tree_selected_is_loaded ) dd.selected = Baseliner.encode_tree( tree_selected.root );
-                dd.sql = sql.getValue();
+                if( sql.editor ) dd.sql = sql.getValue();
                 var action = report_mid > 0 ? 'update':'add';
                 var data = { action:action, data:dd };
                 if( report_mid>0 ) data.mid = report_mid;

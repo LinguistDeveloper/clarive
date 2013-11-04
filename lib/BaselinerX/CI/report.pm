@@ -250,6 +250,10 @@ sub run {
 
 __END__
 
+- Save does not work when SQL no visible
+- group all categories in select fields and filter them
+- add mid column as hidden
+- columns have: width, hidden, 
 - set sort direction in sort fields
 - return data with dots instead of nested 
 - set alias Header on select_field
