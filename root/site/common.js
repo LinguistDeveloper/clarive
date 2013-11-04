@@ -2525,15 +2525,15 @@ Baseliner.render_checkbox = function(v){
 Baseliner.cols_templates = {
       id : function(){ return {width: 10 } },
       index : function(){ return {width: 10, renderer:function(v,m,r,i){return i+1} } },
-      htmleditor: function(){ return { editor: new Ext.form.HtmlEditor(), default_value:'' } },
-      cleditor: function(){ return { editor: new Baseliner.CLEditorField(), default_value:'' } },
-      textfield : function(){ return { width: 100, editor: new Ext.form.TextField({}), default_value:'' } },
+      htmleditor: function(){ return { editor: new Ext.form.HtmlEditor({submitValue: false}), default_value:'' } },
+      cleditor: function(){ return { editor: new Baseliner.CLEditorField({submitValue: false}), default_value:'' } },
+      textfield : function(){ return { width: 100, editor: new Ext.form.TextField({submitValue: false}), default_value:'' } },
       datefield : function(){ return { width: 30, 
-          editor: new Ext.form.DateField({ format: Prefs.js_date_format }), 
+          editor: new Ext.form.DateField({ format: Prefs.js_date_format, submitValue: false }), 
           renderer: Baseliner.render_date
       }},
-      checkbox  : function(){ return { align: 'center', width: 10, editor: new Ext.form.Checkbox({}), default_value: false, renderer: Baseliner.render_checkbox } },
-      textarea  : function(){ return { editor: new Ext.form.TextArea({}), default_value:'', renderer: Baseliner.render_wrap } }
+      checkbox  : function(){ return { align: 'center', width: 10, editor: new Ext.form.Checkbox({submitValue: false}), default_value: false, renderer: Baseliner.render_checkbox } },
+      textarea  : function(){ return { editor: new Ext.form.TextArea({submitValue: false}), default_value:'', renderer: Baseliner.render_wrap } }
 };
 
 Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
@@ -2566,6 +2566,7 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
                     var col_s = col.split(',');
                     if( col_s[0] == undefined ) return;
                     ct = Baseliner.cols_templates[ col_s[1] ] || Baseliner.cols_templates['textarea'];
+					//console.dir(ct);
                     ct = ct();  // templates are functions
                     if( col_s[2] != undefined ) ct.width = col_s[2];
                     if( col_s[3] ) ct.default_value = col_s[3];
@@ -2934,7 +2935,6 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
     border: false,
     layout: 'form',
     style: 'margin-top: 10px', 
-    readonly: false,
     id_field: 'upload_files_panel',
     url_delete : '/topic/file/delete', 
     url_list : '/topic/file_tree',
@@ -2961,11 +2961,8 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
     initComponent : function(){
         var self = this;
         var form = self.form;
-        self.disabled = self.readonly;
-        if( !self.name_field ) self.name_field = self.fieldLabel;
-        
-        var allow = self.allowBlank == undefined ? true : ( self.allowBlank == 'false' || !self.allowBlank ? false : true );
-        var readonly = self.readonly == undefined ? true : self.readonly;
+        //self.disabled = self.readonly;
+        //if( !self.name ) self.name_field = self.fieldLabel;
         
         var check_sm = new Ext.grid.CheckboxSelectionModel({
             singleSelect: false,
@@ -2992,6 +2989,9 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
            reader: new Ext.data.JsonReader({ id: '_id', root: 'data', totalProperty: 'total', successProperty: 'success' }, record )
         });
         
+        self.store_file.on('load', function(){ self.fireEvent( 'change', self ) });
+        //self.store_file.on('remove', function(){ self.fireEvent( 'change', self ) });
+		
         var render_file = function(value,metadata,rec,rowIndex,colIndex,store) {
             var md5 = rec.data.md5;
             if( md5 != undefined ) {
@@ -3036,9 +3036,6 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
         };
         
         var filelist = new Ext.ux.maximgb.tg.GridPanel({
-            fieldLabel:  _(self.name_field),
-            allowBlank: allow,
-            readOnly: readonly,     
             height: 120,
             stripeRows: true,
             autoScroll: true,
@@ -3068,7 +3065,7 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
               { header: _('Id'), hidden: true, dataIndex: '_id' },
               { header: _('Size'), width: 40, dataIndex: 'size' },
               { header: _('Version'), width: 40, dataIndex: 'versionid' }
-            ]
+            ]			
         });
         
         var filedrop = new Ext.Panel({
@@ -3094,19 +3091,19 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
                  '</div>',
                 onComplete: function(fu, filename, res){
                     Baseliner.message(_('Upload File'), _(res.msg, filename) );
-                    if(res.file_uploaded_mid){
-                        var form2 = self.form.getForm();
-                        var files_uploaded_mid = form2.findField("files_uploaded_mid").getValue();
-                        files_uploaded_mid = files_uploaded_mid ? files_uploaded_mid + ',' + res.file_uploaded_mid : res.file_uploaded_mid;
-                        form2.findField("files_uploaded_mid").setValue(files_uploaded_mid);
-                        var files_mid = files_uploaded_mid.split(',');
-                        self.store_file.baseParams = { files_mid: files_mid };
-                        self.store_file.reload();
-                    }
-                    else{
+                    //if(res.file_uploaded_mid){
+                        //var form2 = self.form.getForm();
+                        //var files_uploaded_mid = form2.findField("files_uploaded_mid").getValue();
+                        //files_uploaded_mid = files_uploaded_mid ? files_uploaded_mid + ',' + res.file_uploaded_mid : res.file_uploaded_mid;
+                        //form2.findField("files_uploaded_mid").setValue(files_uploaded_mid);
+                        //var files_mid = files_uploaded_mid.split(',');
+                        //self.store_file.baseParams = { files_mid: files_mid };
+                    //    self.store_file.reload();
+                    //}
+                    //else{
                         self.store_file.baseParams = {topic_mid: self.get_mid() == -1 ? '' : self.get_mid(), filter: self.id_field };
-                        self.store_file.reload();                    
-                    }
+                        self.store_file.reload();
+                    //}
                 },
                 onSubmit: function(id, filename){
                     var mid = self.get_mid(); // data && data.topic_mid ? data.topic_mid : self.get_mid();
@@ -3157,7 +3154,19 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
         //{ xtype: 'hidden', name: 'files_uploaded_mid' },
         self.items = [ filelist, filedrop ];
         Baseliner.UploadFilesPanel.superclass.initComponent.call(this);
-    }
+    },
+	get_save_data : function(){
+		var self = this;
+		var mids = [];
+		self.store_file.each(function(row){
+			mids.push( row.id ); 
+		});
+		return mids;
+	}, 
+	is_valid : function(){
+		var self = this;
+		return self.store_file.getCount();
+	}	
 });
 
 Baseliner.request_approval = function(mid,id_grid){

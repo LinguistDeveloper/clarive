@@ -32,6 +32,7 @@ params:
     var readonly = meta.readonly == undefined ? true : meta.readonly;
     
     var editor = new Baseliner.GridEditor({
+        fieldLabel: _(meta.name_field),
         allowBlank: allow,
         name: meta.id_field,
         id_field: meta.id_field,
@@ -43,27 +44,28 @@ params:
         width: meta.width || '100%',
         height: meta.height || 300,
         value: value || '',
-        readOnly: meta.readonly!=undefined ? meta.readonly : true,
-        disabled: meta.readonly!=undefined ? meta.readonly : true,
+        readOnly: readonly,
+        disabled: readonly,
         hidden : meta ? (meta.hidden ? meta.hidden : false): true,
-        enableDragDrop: meta && meta.readonly ? !meta.readonly : true,
-        use_row_editor: meta && meta.readonly ? !meta.readonly : true
+        enableDragDrop: !readonly,
+        use_row_editor: !readonly,
+        allowBlank: allow
     });
-
 
     return [
         //Baseliner.field_label_top( meta.name_field, meta.hidden, allow, readonly ),
-        new Ext.Panel({
-            layout:'fit',
-            fieldLabel: _(meta.name_field),
-            readOnly: readonly,
-            allowBlank: allow,
-            style: 'padding-bottom: 12px',
-            anchor: meta.anchor || '100%',
-            height: meta.height,
-            border: false,
-            items: editor
-        })
+        //new Ext.Panel({
+        //    layout:'fit',
+        //    fieldLabel: _(meta.name_field),
+        //    readOnly: readonly,
+        //    allowBlank: allow,
+        //    style: 'padding-bottom: 12px',
+        //    anchor: meta.anchor || '100%',
+        //    height: meta.height,
+        //    border: false,
+        //    items: editor
+        //})
+        editor
     ]
 })
 
