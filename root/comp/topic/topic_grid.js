@@ -14,6 +14,12 @@
     var query_id = '<% $c->stash->{query_id} %>';
 	var id_project = '<% $c->stash->{id_project} %>';
     var id_report = params.id_report;
+    var report_rows = params.report_rows;
+    if( report_rows ) {
+        ps_maxi=report_rows;
+        ps_mini=report_rows;
+        ps=report_rows;
+    }
     var fields = params.fields;
     var report_columns;
     //console.log( params );

@@ -56,6 +56,7 @@ sub report_list {
                     #columns        => $folder->fields,
                     fields         => $folder->selected_fields,
                     id_report      => $folder->mid,
+                    report_rows    => $folder->rows,
                     #column_mode    => 'full', #$folder->mode,
                     hide_tree      => \1,
                 },
@@ -229,8 +230,8 @@ sub selected_fields {
     return \%ret;
 }
 
-method run( :$start=0 ) {
-    my $rows = $self->rows;
+method run( :$start=0, :$limit=undef ) {
+    my $rows = $limit // $self->rows;
     my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
     my @selects = map { ( $field_map{$_->{id_field}} // $_->{id_field} )  => 1 } _array($fields{select});
     my @sort = map { $_->{id_field} => -1 } _array($fields{order_by});
