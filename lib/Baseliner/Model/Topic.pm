@@ -1050,6 +1050,9 @@ sub get_meta {
         sort { $a->{field_order} <=> $b->{field_order} }
         map  { 
             my $d = _load $_->{params_field};
+            if( length $d->{default_value} && $d->{default_value}=~/^#!perl:(.*)$/ ) {
+                $d->{default_value} = eval $1;
+            }                
             $d->{field_order} //= 1;
             $d
         }

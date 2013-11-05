@@ -138,6 +138,7 @@ sub dsl_build {
         my $name = _strip_html( $attr->{text} );
         my $run_forward = _bool($attr->{run_forward},1);  # if !defined, default is true
         my $run_rollback = _bool($attr->{run_rollback},1); 
+        my $timeout = _bool($attr->{timeout},0); 
         do{ _debug _loc("*Skipped* task %1 in run forward", $name); next; } if !$is_rollback && !$run_forward;
         do{ _debug _loc("*Skipped* task %1 in run rollback", $name); next; } if $is_rollback && !$run_rollback;
         my $data = $attr->{data} || {};
@@ -145,9 +146,12 @@ sub dsl_build {
         my $closure = $attr->{closure};
         push @dsl, sprintf( '# statement: %s', $name ) . "\n"; 
         if( $closure ) {
-            push @dsl, sprintf( 'current_statement($stash, q{%s}, sub{', $name)."\n";
+            push @dsl, sprintf( 'current_statement($stash, q{%s}, sub{', $name )."\n";
         } else {
-            push @dsl, sprintf( 'current_statement($stash, q{%s});', $name)."\n";
+            push @dsl, sprintf( 'current_statement($stash, q{%s});', $name )."\n";
+        }
+        if( $timeout > 0 ) {
+            push @dsl, sprintf( 'alarm %s;', $timeout )."\n";
         }
         push @dsl, sprintf( '_debug(q{=====| Current Rule Statement: %s} );', $name)."\n" if $p{verbose}; 
         if( length $attr->{key} ) {
@@ -191,11 +195,15 @@ sub dsl_run {
     my $ret;
     our $stash = $p{stash} // {};
     
+    local $SIG{ALRM} = sub { die "Timeout running rule\n" };
+    alarm 0;
+    
     merge_into_stash( $stash, BaselinerX::CI::variable->default_hash ); 
     ## local $Baseliner::Utils::caller_level = 3;
     ############################## EVAL DSL STATEMENTS
     $ret = eval $dsl;
     ##############################
+    alarm 0;
     
     if( my $job = $stash->{job} ) {
         $job->back_to_core;

@@ -1206,6 +1206,7 @@ sub default : Path Args(2) {
     my $res_key = delete $p->{_res_key}; # return call response in this hash key
     my $mid = $p->{mid};
     my $json = $c->req->{body_data};
+    delete $p->{api_key};
     my $data = { username=>$c->username, %{ $p || {} }, %{ $json || {} } };
     _fail( _loc "Missing param method" ) unless length $meth;
     # if( my $field = $p->{_file_field} ) {
@@ -1215,22 +1216,23 @@ sub default : Path Args(2) {
     try {
         my $ret;
         $meth = "$meth";
+        my $to_args = sub { my ($obj)=@_; ( Function::Parameters::info( (ref $obj || $obj).'::'.$meth ) ? %$data : $data ) };
         if( Util->is_number( $arg ) ) {
             my $ci = ci->new( $arg );
             _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
-            $ret = $ci->$meth( $data );
+            $ret = $ci->$meth( $to_args->($ci) );
         } elsif( length $mid ) {
             my $ci = ci->find( $mid );
             _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
-            $ret = $ci->$meth( $data );
+            $ret = $ci->$meth( $to_args->($ci) );
         } elsif ( $arg eq 'undefined' && $collection ) {
             my $pkg = "BaselinerX::CI::$collection";
             _fail( _loc "Method '%1' not found in class '%2'", $meth, $pkg) unless $pkg->can( $meth) ;
-            $ret = $pkg->$meth( $data );
+            $ret = $pkg->$meth( $to_args->($pkg) );
         } else {
             my $pkg = "BaselinerX::CI::$arg";
             _fail( _loc "Method '%1' not found in class '%2'", $meth, $pkg) unless $pkg->can( $meth) ;
-            $ret = $pkg->$meth( $data );
+            $ret = $pkg->$meth( $to_args->($pkg) );
         }
         # prepare response
         my $json_res = {};

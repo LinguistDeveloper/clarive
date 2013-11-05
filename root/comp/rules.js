@@ -305,8 +305,9 @@
             data: [ ['none',_('No Parallel')], ['fork',_('Fork and Wait')], ['nohup', _('Fork and Leave')] ]
         });
         var semaphore_key = new Ext.form.TextField({ fieldLabel:_('Semaphore Key'), name:'semaphore_key', value: attr.semaphore_key });
+        var timeout = new Ext.form.TextField({ fieldLabel:_('Timeout'), name:'timeout', value: attr.timeout });
         var opts = new Baseliner.FormPanel({ title:_('Options'), labelWidth: 150, style:{ padding:'5px 5px 5px 5px'}, defaults:{ anchor:'100%' }, items:[
-            enabled, data_key, needs_rollback_mode, needs_rollback_key, run_forward, run_rollback, semaphore_key, parallel_mode
+            enabled, data_key, needs_rollback_mode, needs_rollback_key, run_forward, run_rollback, timeout, semaphore_key, parallel_mode
         ]});
         var btn_save_meta = new Ext.Button({ text:_('Save'), icon:'/static/images/icons/save.png', handler:function(){
             node.attributes = de.getData();
@@ -320,6 +321,7 @@
             node.attributes.run_rollback = run_rollback.checked;
             node_decorate( node );  // change the node's look
             node.attributes.semaphore_key = semaphore_key.getValue();
+            node.attributes.timeout = timeout.getValue();
             node.attributes.note = note.getValue();
             node.attributes.parallel_mode = parallel_mode.checked;
             node.setText( node.attributes.text );
