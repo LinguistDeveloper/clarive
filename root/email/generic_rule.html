@@ -1,0 +1,41 @@
+<%args>
+	$subject 
+	$message
+    $dsl
+    $rule_name
+    $output
+    $stash
+</%args>
+<head>
+    <meta http-equiv="Content-Language" content="en" />
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <title>Accion</title>
+	<& /email/style.css &>
+</head>
+
+<body>
+    <div class='box'>
+        <div class="error">
+            <h2>SCM: La regla <% $rule_name %> ha fallado</h2>
+        </div>
+    </div>
+    DSL:
+    <div class='box'>
+        <div class="trace error">
+            <p><% $dsl %></p>
+        </div>
+    </div>
+    Stash:
+    <div class='box'>
+        <div class="trace error">
+            <p><% $stash %></p>
+        </div>
+    </div>
+    Output:
+    <div class='box'>
+        <div class="trace error">
+            <p><% $output %></p>
+        </div>
+    </div>
+</body>
+
