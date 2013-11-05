@@ -1133,7 +1133,7 @@
             animate: true,
             containerScroll: true,
             autoScroll: true,
-            height:300,         
+            height:500,         
             rootVisible: false,
             enableDD: true,
             ddGroup: 'tree_fields_dd' + id_drag_drop,          
@@ -1254,7 +1254,7 @@
         var category_fields_grid = new Ext.grid.GridPanel({
             store: category_fields_store,
             layout: 'form',
-            height: 300,
+            height: 500,
             title: _('Fields category'),
             hideHeaders: true,
             enableDragDrop : true,
