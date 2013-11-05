@@ -223,6 +223,7 @@ sub selected_fields {
     my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
     for ( _array($fields{select}) ) {
         my $id = $field_map{$_->{id_field}} // $_->{id_field};
+        $id =~ s/\.+/-/g;  # convert dot to dash to avoid JsonStore id problems
         my $as = $_->{as} // $_->{name_field};
         push @{ $ret{ids} }, $id;
         push @{ $ret{names} }, $as; 
@@ -231,14 +232,19 @@ sub selected_fields {
     return \%ret;
 }
 
-method run( :$start=0, :$limit=undef ) {
+method run( :$start=0, :$limit=undef, :$username=undef ) {
     my $rows = $limit // $self->rows;
     my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
     my @selects = map { ( $field_map{$_->{id_field}} // $_->{id_field} )  => 1 } _array($fields{select});
     my @sort = map { $_->{id_field} => -1 } _array($fields{order_by});
     my $rs = mdb->topic->find();
     my $cnt = $rs->count;
-    my @topics = map { +{ hash_flatten($_) } } 
+    my @topics = map { 
+        my %f = hash_flatten($_);
+        # convert dots to dash
+        %f = map { my $k=$_; my $k2=$_; $k2=~s/\.+/-/g; $k2 => $f{$k} } keys %f;
+        \%f;
+      } 
       $rs
       ->fields({ @selects, _id=>0, mid=>1 })
       ->sort({ @sort })
@@ -251,6 +257,12 @@ method run( :$start=0, :$limit=undef ) {
 1;
 
 __END__
+
+X No filters on grid 
+- Meta dynamic, que se guarde en el campo solo el id de meta
+- Topic agregador, añadir pases 
+- Permitir text query in grid 
+X Páginacion en grid
 
 - Save does not work when SQL no visible
 - group all categories in select fields and filter them
