@@ -4,12 +4,12 @@ params:
     origin: 'template'
     type: 'calculated_numberfield'
     html: '/fields/templates/html/row_body.html'
-    js: '/fields/templates/js/numberfield.js'
+    js: '/fields/templates/js/calculated_numberfield.js'
     field_order: 1
     allowBlank: true
     section: 'body'
     operation: '$1 + $2'
-    operation_fields: id_field1,id_field2
+    operation_fields: ''
 */
 
 (function(params){
