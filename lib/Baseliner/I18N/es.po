@@ -4635,6 +4635,9 @@ msgstr "Ámbitos"
 msgid "project"
 msgstr "Proyecto"
 
+msgid "field"
+msgstr "Campo"
+
 msgid "category_status"
 msgstr "Categoría/Estado"
 
