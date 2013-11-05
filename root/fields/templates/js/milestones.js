@@ -33,7 +33,7 @@ params:
     
     var editor = new Baseliner.GridEditor({
         fieldLabel: _(meta.name_field),
-        allowBlank: allow,
+        allowBlank: readonly ? true : allow,
         name: meta.id_field,
         id_field: meta.id_field,
         bd_field: meta.bd_field,
@@ -48,8 +48,7 @@ params:
         disabled: readonly,
         hidden : meta ? (meta.hidden ? meta.hidden : false): true,
         enableDragDrop: !readonly,
-        use_row_editor: !readonly,
-        allowBlank: allow
+        use_row_editor: !readonly
     });
 
     return [

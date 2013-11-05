@@ -245,6 +245,7 @@ params:
 		fieldLabel: _(meta.name_field),
         allowBlank  : allow,
         readOnly    : readonly,
+		disabled: readonly,
         id_field    : meta.id_field,
         form : form
     });
