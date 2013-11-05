@@ -3,6 +3,9 @@
     $subject
     $to
     $rule_name
+    $dsl
+    $output
+    $stash
 </%args>
 <head>
     <meta http-equiv="Content-Language" content="en" />
@@ -20,6 +23,21 @@
     <div class='box'>
         <div class="trace error">
             <p> <% $rule_name %></p>
+        </div>
+    </div>
+    <div class='box'>
+        <div class="trace error">
+            <p> <% $dsl %></p>
+        </div>
+    </div>
+    <div class='box'>
+        <div class="trace error">
+            <p> <% $output %></p>
+        </div>
+    </div>
+    <div class='box'>
+        <div class="trace error">
+            <p> <% _dump($stash) %></p>
         </div>
     </div>
 % if ( $ENV{BASELINER_DEBUG} ) {
