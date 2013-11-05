@@ -341,7 +341,12 @@ sub load {
     if( $storage eq 'yaml' ) {
         $data->{yaml} //= $yaml;
         $data->{yaml} =~ s{!!perl/code}{}g;
-        my $y = _load( $data->{yaml} );
+        my $y = try { _load( $data->{yaml} ) } catch {
+            my $err = shift;
+            Util->_error( Util->_loc( "Error deserializing CI %1. Error YAML ref: %2", $mid, $err) );
+            Util->_error( Util->_whereami );
+            undef;
+        };
         Util->_error( Util->_loc( "Error deserializing CI %1. Missing or invalid YAML ref: %2", $mid, ref $y || '(empty)' ) ) 
             unless ref $y eq 'HASH';
         $data = { %{ $data || {} }, %{ $y || {} } };   # TODO yaml should be blessed obj?
