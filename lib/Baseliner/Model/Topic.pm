@@ -143,7 +143,7 @@ register 'event.topic.modify_field' => {
     },
     notify => {
         #scope => ['project', 'category', 'category_status', 'priority','baseline'],
-        scope => ['project', 'category', 'category_status'],
+        scope => ['project', 'category', 'category_status', 'field'],
     }    
 };
 
@@ -1410,6 +1410,15 @@ sub save_data {
                 }
                 else {
                     # report event
+                    
+                    my @projects = map {$_->{mid}} $topic->projects->hashref->all;                    
+                    my $notify = {
+                        category        => $topic->id_category,
+                        category_status => $topic->id_category_status,
+                        field           => $field
+                    };                    
+                    $notify->{project} = \@projects if @projects;
+                    
                     event_new 'event.topic.modify_field' 
                         => { 
                              username   => $data->{username},
@@ -1419,7 +1428,7 @@ sub save_data {
                            } 
                         => sub {
                             my $subject = _loc("Topic [%1] %2: Field '%3' updated", $topic->mid, $topic->title, $description{ $field });
-                            { mid => $topic->mid, topic => $topic->title, subject => $subject }   # to the event
+                            { mid => $topic->mid, topic => $topic->title, subject => $subject, notify => $notify }   # to the event
                         } 
                         => sub {
                             _throw _loc( 'Error modifying Topic: %1', shift() );
@@ -1480,13 +1489,21 @@ sub save_data {
                 $row->update;
 
                 if ( $modified ){
+                    my @projects = map {$_->{mid}} $topic->projects->hashref->all;
+                    my $notify = {
+                        category        => $topic->id_category,
+                        category_status => $topic->id_category_status,
+                        field           => $_->{column}
+                    };
+                    $notify->{project} = \@projects if @projects;
+                    
                     event_new 'event.topic.modify_field' => { username   => $data->{username},
                                                         field      => _loc ($_->{column}),
                                                         old_value  => $old_value,
                                                         new_value  => $data->{ $_ -> {name}},
                                                        } => sub {
                             my $subject = _loc("Topic [%1] %2: Field '%3' updated", $topic->mid, $topic->title, $_->{column});
-                            { mid => $topic->mid, topic => $topic->title, subject => $subject }   # to the event
+                            { mid => $topic->mid, topic => $topic->title, subject => $subject, notify => $notify }   # to the event
                     } ## end try
                     => sub {
                         _throw _loc( 'Error modifying Topic: %1', shift() );
@@ -1606,6 +1623,14 @@ sub set_topics {
     # no diferences, get out
     return if !array_diff(@new_topics, @old_topics);
 
+    my @projects = map {$_->{mid}} $rs_topic->projects->hashref->all;
+    my $notify = {
+        category        => $rs_topic->id_category,
+        category_status => $rs_topic->id_category_status,
+        field           => $id_field
+    };
+    $notify->{project} = \@projects if @projects;
+        
     if( @new_topics ) {
         if(@old_topics){
             my $rs_old_topics = DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_field=>$id_field });
@@ -1618,30 +1643,34 @@ sub set_topics {
         }
 
         my $topics = join(',', @new_topics);
+        
+      
 
-        event_new 'event.topic.modify_field' => { username   => $user,
-                                            field      => _loc( 'attached topics' ),
-                                            old_value      => '',
-                                            new_value  => $topics,
-                                            text_new      => '%1 modified topic: %2 ( %4 )',
+        event_new 'event.topic.modify_field' => { username      => $user,
+                                            field               => _loc( 'attached topics' ),
+                                            old_value           => '',
+                                            new_value           => $topics,
+                                            text_new            => '%1 modified topic: %2 ( %4 )',
                                            } => sub {
                             my $subject = _loc("Topic [%1] %2 updated", $rs_topic->mid, $rs_topic->title);
 
-                            { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject }   # to the event
+                            { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
         } ## end try
         => sub {
             _throw _loc( 'Error modifying Topic: %1', shift() );
         };
 
     } elsif( @old_topics ) {
-        event_new 'event.topic.modify_field' => { username   => $user,
-                                            field      => '',
-                                            old_value      => '',
-                                            new_value  => '',
-                                            text_new      => '%1 deleted all attached topics of ' . $id_field ,
+        
+        
+        event_new 'event.topic.modify_field' => { username      => $user,
+                                            field               => '',
+                                            old_value           => '',
+                                            new_value           => '',
+                                            text_new            => '%1 deleted all attached topics of ' . $id_field ,
                                            } => sub {
                             my $subject = _loc("Topic [%1] %2 updated", $rs_topic->mid, $rs_topic->title);
-            { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject }   # to the event
+            { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
         } ## end try
         => sub {
             _throw _loc( 'Error modifying Topic: %1', shift() );
@@ -1683,6 +1712,15 @@ sub set_cis {
                 for @add_cis;
             $add_cis = join(',', map { Baseliner::CI->new($_)->name . '[+]' } @add_cis );
         }
+        
+        my @projects = map {$_->{mid}} $rs_topic->projects->hashref->all;
+        my $notify = {
+            category        => $rs_topic->id_category,
+            category_status => $rs_topic->id_category_status,
+            field           => $id_field
+        };
+        $notify->{project} = \@projects if @projects;
+        
         event_new 'event.topic.modify_field' => {
             username  => $user,
             field     => _loc( $field_meta->{field_msg} // $field_meta->{name_field} // _loc('attached cis') ),
@@ -1691,7 +1729,7 @@ sub set_cis {
             text_new  => ( $field_meta->{modify_text_new} // '%1 modified topic (%2): %4 ' ),
         } => sub {
             my $subject = _loc("Topic [%1] %2 updated", $rs_topic->mid, $rs_topic->title);
-            { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject }    # to the event
+            { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }    # to the event
         } => sub {
             _throw _loc( 'Error modifying Topic: %1', shift() );
         };
@@ -1705,6 +1743,14 @@ sub set_revisions {
     my @new_revisions = _array( $revisions ) ;
     my @old_revisions = map {$_->{to_mid}} DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_type => 'topic_revision'})->hashref->all;    
    
+    my @projects = map {$_->{mid}} $rs_topic->projects->hashref->all;  
+    my $notify = {
+        category        => $rs_topic->id_category,
+        category_status => $rs_topic->id_category_status,
+        field           => $id_field
+    };
+    $notify->{project} = \@projects if @projects;
+            
     if ( array_diff(@new_revisions, @old_revisions) ) {
         if( @new_revisions ) {
             @new_revisions  = split /,/, $new_revisions[0] if $new_revisions[0] =~ /,/ ;
@@ -1721,7 +1767,7 @@ sub set_revisions {
                                                } => sub {
                                                 my $subject = _loc("Topic [%1] %2 updated.  New revisions", $rs_topic->mid, $rs_topic->title);
 
-                { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject }   # to the event
+                { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
             } ## end try
             => sub {
                 _throw _loc( 'Error modifying Topic: %1', shift() );
@@ -1735,7 +1781,7 @@ sub set_revisions {
                                                 text_new      => '%1 deleted all revisions',
                                                } => sub {
                                                 my $subject = _loc("Topic [%1] %2 updated.  All revisions removed", $rs_topic->mid, $rs_topic->title);
-                { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject }   # to the event
+                { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
             } ## end try
             => sub {
                 _throw _loc( 'Error modifying Topic: %1', shift() );
@@ -1772,6 +1818,14 @@ sub set_release {
         
     my $new_release = $release;
 
+    my @projects = map {$_->{mid}} $rs_topic->projects->hashref->all;
+    my $notify = {
+        category        => $rs_topic->id_category,
+        category_status => $rs_topic->id_category_status,
+        field           => $id_field
+    };
+    $notify->{project} = \@projects if @projects;
+
     # check if arrays contain same members
     if ( $new_release ne $old_release ) {
         if($release_row){
@@ -1791,7 +1845,7 @@ sub set_release {
                                                 text_new      => '%1 modified topic: changed release to %4',
                                                } => sub {
                                                 my $subject = _loc("Topic [%1] %2 updated.  Release changed to %3", $rs_topic->mid, $rs_topic->title, $row_release->title);
-                { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject }   # to the event
+                { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
             } ## end try
             => sub {
                 _throw _loc( 'Error modifying Topic: %1', shift() );
@@ -1807,7 +1861,7 @@ sub set_release {
                                                } => sub {
                                                 my $subject = _loc("Topic [%1] %2 updated.  Removed from release %3", $rs_topic->mid, $rs_topic->title, $old_release_name);
 
-                { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject}   # to the event
+                { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify}   # to the event
             } ## end try
             => sub {
                 _throw _loc( 'Error modifying Topic: %1', shift() );
@@ -1830,6 +1884,13 @@ sub set_projects {
     my @old_projects =  map { $_->{mid} } Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid )->
                 projects->search( {rel_field => $id_field }, { select => ['mid'], order_by => { '-asc' => ['mid'] }} )->hashref->all;
 
+    my @projects = map {$_->{mid}} $rs_topic->projects->hashref->all;
+    my $notify = {
+        category        => $rs_topic->id_category,
+        category_status => $rs_topic->id_category_status,
+        field           => $id_field
+    };
+    $notify->{project} = \@projects if @projects;
     
     # check if arrays contain same members
     if ( array_diff(@new_projects, @old_projects) ) {
@@ -1853,7 +1914,7 @@ sub set_projects {
                                                 text_new      => '%1 modified topic: %2 ( %4 )',
                                                } => sub {
                                                 my $subject = _loc("Topic [%1] %2 updated.  Attached projects (%3)", $rs_topic->mid, $rs_topic->title, $projects);
-                { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject }   # to the event
+                { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
             } ## end try
             => sub {
                 _throw _loc( 'Error modifying Topic: %1', shift() );
@@ -1867,7 +1928,7 @@ sub set_projects {
                                                 text_new      => '%1 deleted all projects',
                                                } => sub {
                                                 my $subject = _loc("Topic [%1] %2 updated.  All projects removed", $rs_topic->mid );
-                { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject }   # to the event
+                { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
             } ## end try
             => sub {
                 _throw _loc( 'Error modifying Topic: %1', shift() );
@@ -1883,6 +1944,14 @@ sub set_users{
     my @new_users = _array( $users ) ;
     my @old_users = map {$_->{to_mid}} DB->BaliMasterRel->search( {from_mid => $topic_mid, rel_type => 'topic_users', rel_field=>$id_field })->hashref->all;
 
+    my @projects = map {$_->{mid}} $rs_topic->projects->hashref->all;
+    my $notify = {
+        category        => $rs_topic->id_category,
+        category_status => $rs_topic->id_category_status,
+        field           => $id_field
+    };
+    $notify->{project} = \@projects if @projects;
+    
     # check if arrays contain same members
     if ( array_diff(@new_users, @old_users) ) {
         my $del_users =  DB->BaliMasterRel->search( {from_mid => $topic_mid, rel_type => 'topic_users', rel_field=>$id_field })->delete;
@@ -1902,7 +1971,7 @@ sub set_users{
                                                 new_value  => $users,
                                                 text_new      => '%1 modified topic: %2 ( %4 )',
                                                } => sub {
-                { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
+                { mid => $rs_topic->mid, topic => $rs_topic->title, notify => $notify }   # to the event
             } ## end try
             => sub {
                 _throw _loc( 'Error modifying Topic: %1', shift() );
@@ -1918,7 +1987,7 @@ sub set_users{
                                                 new_value  => '',
                                                 text_new      => '%1 deleted all users',
                                                } => sub {
-                { mid => $rs_topic->mid, topic => $rs_topic->title }   # to the event
+                { mid => $rs_topic->mid, topic => $rs_topic->title, notify => $notify }   # to the event
             } ## end try
             => sub {
                 _throw _loc( 'Error modifying Topic: %1', shift() );

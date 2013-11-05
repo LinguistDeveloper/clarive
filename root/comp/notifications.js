@@ -142,7 +142,7 @@
 									});										
 		
 									var cb_projects = new Baseliner.model.Projects({
-										id: 'project',
+										//id: 'project',
 										name: 'project',
 										hiddenName: 'project',
 										store: store_projects
@@ -216,7 +216,7 @@
 										triggerAction: 'all',
 										forceSelection: true,
 										fieldLabel: _('Categories'),
-										id: 'category',
+										//id: 'category',
 										name: 'category',
 										hiddenName: 'category',
 										displayField : 'name',
@@ -290,7 +290,7 @@
 										triggerAction: 'all',
 										forceSelection: true,
 										fieldLabel: _('Status'),
-										id: 'category_status',
+										//id: 'category_status',
 										name: 'category_status',
 										hiddenName: 'category_status',
 										displayField : 'name',
@@ -364,7 +364,7 @@
 										triggerAction: 'all',
 										forceSelection: true,
 										fieldLabel: _('Priority'),
-										id: 'priority',
+										//id: 'priority',
 										name: 'priority',
 										hiddenName: 'priority',
 										displayField : 'name',
@@ -418,7 +418,7 @@
 										root: 'data' , 
 										remoteSort: true,
 										totalProperty:"totalCount", 
-										id: 'id', 
+										//id: 'id', 
 										url: '/baseline/list',
 										fields: ['id', 'name', 'description'] 
 									});
@@ -443,7 +443,7 @@
 										triggerAction: 'all',
 										forceSelection: true,
 										fieldLabel: _('Baseline'),
-										id: 'baseline',
+										//id: 'baseline',
 										name: 'baseline',
 										hiddenName: 'baseline',
 										displayField : 'name',
@@ -492,6 +492,65 @@
 									};
 									form_notification.insert(indice++,columns);
 									store_baseline.load();
+									break;
+								case 'field':
+									var txt_field = new Ext.form.TextField({
+										//id: 'field',
+										fieldLabel: _('Fields'), name: 'field',
+										xtype: 'textfield',
+										height: 30
+									});
+									
+									var chk_field = new Ext.form.Checkbox({
+										name:'field',
+										boxLabel:_('All'),
+										listeners: {
+											check: function(obj, checked){
+												if(checked){
+													txt_field.setValue('');
+													txt_field.disable();
+												}else{
+													txt_field.enable();	
+												}
+											}
+										}
+									});
+									
+									if(rec && rec.data){
+										var ids_field = new Array();
+										
+										if(rec.data.data.scopes.field && rec.data.data.scopes.field['*']){
+											chk_field.setValue(true);
+										}else{
+											for(var propertyName in rec.data.data.scopes.field) {
+												ids_field.push(propertyName);
+												txt_field.setValue( ids_field.join(',') );
+											}													
+										}
+									}									
+									
+									columns = {
+										id: 'pnl_field',
+										layout:'column',
+										defaults:{
+											layout:'form'
+										},
+										items:[
+											{
+												columnWidth: 0.85,
+												defaults:{
+													anchor: '100%'
+												},
+												items: txt_field
+											},
+											{
+												columnWidth: 0.15,
+												labelWidth: 5,
+												items: chk_field
+											}
+										]
+									};
+									form_notification.insert(indice++,columns);
 									break;
 							}
 							
@@ -916,6 +975,17 @@
 				
 				delete names_baselines;
 				
+				if(form.findField('field') && form.findField('field').getValue() != ''){
+					var fields = form.findField('field').getValue().split(',');
+					var field_names = {};
+					Ext.each(fields, function(field){
+						field_names[field] = field;
+					});
+					
+					params.field_names = Ext.util.JSON.encode( field_names );
+				};
+				
+				
 				var recipients = new Object();
 				store_recipients.each( function(row){
 					if (!recipients[row.data.recipients]) recipients[row.data.recipients] = {};
@@ -931,6 +1001,9 @@
 						form.findField('notification_id').setValue(a.result.notification_id);
 						win.setTitle('Edit notification');
 						store_notifications.reload();
+					},
+					failure: function(f,a){
+						Baseliner.message(_('Success'), a.result.msg );	
 					}
 				});
 			}
