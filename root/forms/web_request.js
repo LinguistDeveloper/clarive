@@ -8,8 +8,8 @@
             'DELETE',
             'POST'
         ]}),
-        { xtype:'textfield', fieldLabel: _('Encoding'), name: 'encoding', value: _bool(data.encoding,'utf-8')  },
-        { xtype:'textfield', fieldLabel: _('Timeout'), name: 'timeout', value: _bool(data.timeout,0)  },
+        { xtype:'textfield', fieldLabel: _('Encoding'), name: 'encoding', value: (data.encoding ? data.encoding : 'utf-8' )  },
+        { xtype:'textfield', fieldLabel: _('Timeout'), name: 'timeout', value: (data.timeout!=undefined ? data.timeout : 0 )  },
         { xtype:'textfield', fieldLabel: _('User'), name: 'username', value: data.username },
         { xtype:'textfield', fieldLabel: _('Password'), name: 'password', value: data.password, inputType:'password' },
         { xtype:'tabpanel', activeTab:0, fieldLabel:_('Data'),  items:[

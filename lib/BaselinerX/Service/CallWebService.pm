@@ -29,7 +29,16 @@ sub web_request {
 
     if( $encoding ne 'utf-8' ) {
         Encode::from_to($url, 'utf-8', $encoding ) if $url;
-        Encode::from_to($args, 'utf-8', $encoding ) if ref $args;
+        if( ref $args ) {
+            my $x = _dump($args);
+            Encode::from_to( $x, 'utf-8', $encoding );
+            $args = _load( $x );
+        }
+        if( ref $headers ) {
+            my $x = _dump($headers);
+            Encode::from_to( $x, 'utf-8', $encoding );
+            $headers = _load( $x );
+        }
     }
 
     my $uri = URI->new( $url );
@@ -47,10 +56,10 @@ sub web_request {
 
     _fail sprintf qq/HTTP request failed: %s\nUrl: %s\nArgs: %s/, $response->status_line, $url, _to_json($args)
         unless $response->is_success;
-    if( $encoding ne 'utf-8' ) {
-        Encode::from_to($response, $encoding, 'utf-8' ) if $response;
-    }
-    my $content = $response->content;
+    my $content = $response->decoded_content;
+        #if( $encoding ne 'utf-8' ) {
+        #Encode::from_to($content, $encoding, 'utf-8' ) if $content;
+        #}
     return { response=>$response, content=>$content };
 } 
 
