@@ -1168,10 +1168,13 @@ sub get_data {
 }
 
 sub get_release {
-    my ($self, $topic_mid ) = @_;
+    my ($self, $topic_mid, $key, $meta ) = @_;
 
+    my $where = { is_release => 1, rel_type=>'topic_topic', to_mid=>$topic_mid };
+    $where->{rel_field} = $meta->{release_field} if $meta->{release_field};
+    
     my $release_row = Baseliner->model('Baseliner::BaliTopic')->search(
-                            { is_release => 1, rel_type=>'topic_topic', to_mid=>$topic_mid },
+                            $where,
                             { prefetch=>['categories','children','master'] }
                             )->hashref->first; 
     return  {
