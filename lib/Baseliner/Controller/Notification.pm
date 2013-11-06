@@ -140,6 +140,7 @@ sub save_notification : Local {
                 map {  $scope{$_} = $p->{$_} ? $p->{$_} eq 'on' ? {'*' => _loc('All')} : _decode_json($p->{$_ . '_names'}) : undef } grep {$p->{$_} ne ''} _array $scope;
             }
         }
+        
         $data->{scopes} = \%scope;
         $data->{recipients} = _decode_json($p->{recipients});
         
@@ -155,8 +156,9 @@ sub save_notification : Local {
         
         $c->stash->{json} = { success => \1, msg => 'Notification added', notification_id => $notification->id }; 
     }catch{
-        $c->stash->{json} = { success => \0, msg => 'Error adding notification: ' }; 
-        _error shift;
+        my $err = shift;
+        _error( $err );        
+        $c->stash->{json} = { success => \0, msg => _loc('Error adding notification: %1', $err )}; 
     };
     
     $c->forward('View::JSON');

@@ -119,8 +119,6 @@ sub update : Local {
     
     $p->{username} = $c->username;
     
-    _log ">>>>>>>>>>>>>>>>>>>>>>>>Parametros: " . _dump $p;
-    
     try  {
         my ($isValid, @field_name) = (1,());
         #my ($isValid, @field_name) = $c->model('Topic')->check_fields_required( mid => $p->{topic_mid}, username => $c->username, data => $p);
