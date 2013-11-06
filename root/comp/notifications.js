@@ -725,7 +725,10 @@
 				})
 			});		
 			
-			store_type_recipients.load();		
+		    var ff = form_notification.getForm();
+			var obj_action = ff.findField('rd_actions').getValue();
+		
+			store_type_recipients.load({params: {action: obj_action.inputValue}});		
 		
 			var add_recipients = function (){
 				if (cb_carriers.getValue() != '' && cb_type_recipient.getValue() != ''){
@@ -1057,9 +1060,17 @@
 
 			for (carrier in rec.data.data.recipients){
 				for (type in rec.data.data.recipients[carrier]){
+					var is_empty = true;
 					for (var name in rec.data.data.recipients[carrier][type]){
+						is_empty = false;
 						id = store_recipients.getCount() + 1;
 						d = { id: id, recipients: carrier, type: type, items_id: name, items_name: rec.data.data.recipients[carrier][type][name]};						
+						r = new store_recipients.recordType( d, id );
+						store_recipients.add( r );
+					}
+					if(is_empty){
+						id = store_recipients.getCount() + 1;
+						d = { id: id, recipients: carrier, type: type, items_id: undefined, items_name: undefined};						
 						r = new store_recipients.recordType( d, id );
 						store_recipients.add( r );
 					}
