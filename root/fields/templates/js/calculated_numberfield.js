@@ -73,7 +73,9 @@ params:
                                 operation = operation.replace(cad, field_value);
                             }
                         }
-                        return eval(operation);
+                        if ( operation != meta.operation) {
+                            return eval(operation);
+                        }
                     }
                     calculatedValue();
                 }
