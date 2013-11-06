@@ -62,7 +62,23 @@
         backup_mode,
         rollback_mode,
         { xtype:'textfield', fieldLabel: _('Chown'), name: 'chown', value: data.chown },
-        { xtype:'textfield', fieldLabel: _('Chmod'), name: 'chmod', value: data.chmod }
+        { xtype:'textfield', fieldLabel: _('Chmod'), name: 'chmod', value: data.chmod },
+        { xtype:'tabpanel', fieldLabel: _('Filters'), height: 200, activeTab:0, items:[
+            new Baseliner.ArrayGrid({ 
+                title:_('Include Paths'), 
+                name: 'include_path', 
+                value: data.include_path,
+                description:_('Include Path Regex'), 
+                default_value:'.*' 
+            }), 
+            new Baseliner.ArrayGrid({ 
+                title:_('Exclude Path'), 
+                name: 'exclude_path', 
+                value: data.exclude_path,
+                description:_('Exclude Path Regex'), 
+                default_value:'.*' 
+            })
+        ]}
     ]
 })
 
