@@ -9,8 +9,8 @@
         hidden: !( data.rel_path && data.rel_path=='rel_path_anchor' )
     });
     var local_mode = new Baseliner.ComboDouble({ 
-        fieldLabel: _('Local Mode'), name:'local_mode', value: data.local_mode || 'local_files', 
-        data: [ ['local_files',_('Local Files')], ['nature_items',_('Nature Items')] ]
+        fieldLabel: _('Local Mode'), name:'local_mode', value: data.local_mode || 'nature_items', 
+        data: [ ['nature_items',_('Nature Items')], ['local_files',_('Local Files')] ]
     });
     local_mode.on('select', function(){
         var v = local_mode.getValue();
