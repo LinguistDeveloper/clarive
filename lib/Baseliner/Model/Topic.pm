@@ -1819,8 +1819,10 @@ sub set_release {
     my $topic_mid = $rs_topic->mid;
     cache_topic_remove($topic_mid);
 
+    my $where = { is_release => 1, rel_type=>'topic_topic', to_mid=> $topic_mid };
+    $where->{rel_field} = $release_field if $release_field;
     my $release_row = Baseliner->model('Baseliner::BaliTopic')->search(
-                            { is_release => 1, rel_type=>'topic_topic', to_mid=> $topic_mid },
+                            $where,
                             { join=>['categories','children','master'], select=>['mid','title'] }
                             )->first;
     my $old_release = '';
@@ -1844,7 +1846,7 @@ sub set_release {
     # check if arrays contain same members
     if ( $new_release ne $old_release ) {
         if($release_row){
-            my $rs = DB->BaliMasterRel->search({from_mid => $old_release, to_mid=>$topic_mid })->delete;
+            my $rs = DB->BaliMasterRel->search({from_mid => $old_release, to_mid=>$topic_mid, rel_field => $release_field})->delete;
         }
         # release
         if( $new_release ) {
