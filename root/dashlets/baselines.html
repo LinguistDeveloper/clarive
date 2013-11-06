@@ -96,7 +96,7 @@ html: /dashlets/baselines.html
         
         <div class="progress">
           <div class="progress-bar progress-bar-success" style="width: <%$entorno->{porcentOk}%>%" onmouseover="this.style.cursor='pointer'" onClick="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs/<%$dashboard_id%>/<%$projects%>/ok/<%$entorno->{bl}%>', _('<%$entorno->{bl}%> - <%$entorno->{totOk}%>/<%$entorno->{total}%> OK'));">>
-            <span class="sr-only" <%$entorno->{totOk}%></span>
+            <span class="sr-only"><%$entorno->{totOk}%></span>
           </div>
           <div class="progress-bar progress-bar-danger" style="width: <%$entorno->{porcentError}%>%" onmouseover="this.style.cursor='pointer'" onClick="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs/<%$dashboard_id%>/<%$projects%>/nook/<%$entorno->{bl}%>', _('<%$entorno->{bl}%> - <%$entorno->{totError}%>/<%$entorno->{total}%> ERROR'));">
             <span class="sr-only" ><%$entorno->{totError}%></span>
