@@ -708,6 +708,7 @@ sub title_row : Local {
 sub comment : Local {
     my ($self, $c, $action) = @_;
     my $p = $c->request->parameters;
+    
     if( $action eq 'add' ) {
         try{
             my $topic_mid = $p->{topic_mid};
@@ -734,12 +735,18 @@ sub comment : Local {
                         }
                     );
                     local $Baseliner::CI::ci_record = 1;
+                    
+                    my @projects = map {$_->{mid}} $topic_row->projects->hashref->all;
+                    my @users = Baseliner->model("Topic")->get_users_friend(id_category => $topic_row->id_category, id_status => $topic_row->id_category_status, projects => \@projects);
+                    my $subject = _loc("%1 created a post for topic [%2] %3", $c->username, $topic_row->mid, $topic_row->title);
                     event_new 'event.post.create' => {
-                        username => $c->username,
-                        mid      => $topic_mid,
-                        data     => ci->new($topic_mid)->{_ci},
-                        id_post  => $mid,
-                        post     => substr( $text, 0, 30 ) . ( length $text > 30 ? "..." : "" )
+                        username        => $c->username,
+                        mid             => $topic_mid,
+                        data            => ci->new($topic_mid)->{_ci},
+                        id_post         => $mid,
+                        post            => substr( $text, 0, 30 ) . ( length $text > 30 ? "..." : "" ),
+                        notify_default  => \@users,
+                        subject         => $subject
                     };
                     $topic_row->add_to_posts( $post, { rel_field => 'topic_post', rel_type=>'topic_post' });
                     #master_rel->create({ rel_type=>'topic_post', from_mid=>$id_topic, to_mid=>$mid });
@@ -787,8 +794,17 @@ sub comment : Local {
             # delete the record
             $post->delete;
             # now notify my parents
+            
+
+            my $topic_row = $c->model('Baseliner::BaliTopic')->find( $mids[0] );
+            my @projects = map {$_->{mid}} $topic_row->projects->hashref->all;
+            my @users = Baseliner->model("Topic")->get_users_friend(id_category => $topic_row->id_category, id_status => $topic_row->id_category_status, projects => \@projects);
+            my $subject = _loc("%1 deleted a post from topic [%2] %3", $c->username, $topic_row->mid, $topic_row->title);
+            
             event_new 'event.post.delete' => { username => $c->username, mid => $_, id_post=>$id_com,
-                post     => substr( $text, 0, 30 ) . ( length $text > 30 ? "..." : "" )
+                post            => substr( $text, 0, 30 ) . ( length $text > 30 ? "..." : "" ),
+                notify_default  => \@users,
+                subject         => $subject
             } for @mids;
             $c->stash->{json} = { msg => _loc('Delete comment ok'), failure => \0 };
         } catch {
@@ -1446,16 +1462,24 @@ sub upload : Local {
             my $body = scalar $f->slurp;
             my $md5 = _md5( $body );
             my $existing = Baseliner->model('Baseliner::BaliFileVersion')->search({ md5=>$md5 })->first;
+
+            my @projects = map {$_->{mid}} $topic->projects->hashref->all;
+            my @users = Baseliner->model("Topic")->get_users_friend(id_category => $topic->id_category, id_status => $topic->id_category_status, projects => \@projects);
+            
+            
             if( $existing && $p->{topic_mid}) {
                 # file already exists
                 if( $topic->files->search({ md5=>$md5 })->count > 0 ) {
                     _fail _loc "File already attached to topic";
                 } else {
+                    my $subject = _loc("Attached file %1 to topic [%2] %3", $filename, $topic->mid, $topic->title);                    
                     event_new 'event.file.attach' => {
-                        username => $c->username,
-                        mid      => $topic_mid,
-                        id_file  => $existing->mid,
-                        filename     => $filename,
+                        username        => $c->username,
+                        mid             => $topic_mid,
+                        id_file         => $existing->mid,
+                        filename        => $filename,
+                        notify_default  => \@users,
+                        subject         => $subject
                     };                
                     $topic->add_to_files( $existing, { rel_type=>'topic_file_version', rel_field=> $p->{filter} });
                 }
@@ -1487,11 +1511,14 @@ sub upload : Local {
                         $file_mid = $mid;
                         
                         if ($p->{topic_mid}){
+                            my $subject = _loc("Created file %1 to topic [%2] %3", $filename, $topic->mid, $topic->title);                            
                             event_new 'event.file.create' => {
                                 username => $c->username,
                                 mid      => $topic_mid,
                                 id_file  => $mid,
                                 filename     => $filename,
+                                notify_default => \@users,
+                                subject         => $subject
                             };
                             # tie file to topic
                             $topic->add_to_files( $file, { rel_type=>'topic_file_version', rel_field=> $p->{filter} });
@@ -1531,22 +1558,33 @@ sub file : Local {
                 my $file = Baseliner->model('Baseliner::BaliFileVersion')->search({ md5=>$md5 })->first;
                 ref $file or _fail _loc("File id %1 not found", $md5 );
                 my $count = Baseliner->model('Baseliner::BaliMasterRel')->search({ to_mid => $file->mid })->count;
+                
+                my $topic = $c->model('Baseliner::BaliTopic')->find( $p->{topic_mid} );
+                my @projects = map {$_->{mid}} $topic->projects->hashref->all;
+                my @users = $self->get_users_friend(id_category => $topic->id_category, id_status => $topic->id_category_status, projects => \@projects);
+                
                 if( $count < 2 ) {
                     _log "Deleting file " . $file->mid;
+                    my $subject = _loc("Deleted file %1", $file->filename);
                     event_new 'event.file.remove' => {
-                        username => $c->username,
-                        mid      => $topic_mid,
-                        id_file  => $file->mid,
-                        filename => $file->filename,
+                        username        => $c->username,
+                        mid             => $topic_mid,
+                        id_file         => $file->mid,
+                        filename        => $file->filename,
+                        notify_default  => \@users,
+                        subject         => $subject
                     };                  
                     $file->delete;
                     $msg = _loc( "File deleted ok" );
                 } else {
+                    my $subject = _loc("Detached file %1 from topic [%2] %3", $file->filename, $topic->mid, $topic->title,);
                     event_new 'event.topic.file_remove' => {
                         username => $c->username,
                         mid      => $topic_mid,
                         id_file  => $file->mid,
                         filename => $file->filename,
+                        notify_default => \@users,
+                        subject         => $subject
                         }
                     => sub {
                         my $rel = Baseliner->model('Baseliner::BaliMasterRel')->search({ from_mid=>$topic_mid, to_mid => $file->mid })->first;

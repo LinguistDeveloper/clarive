@@ -628,6 +628,8 @@ sub update {
                     my $id_category = $topic->id_category;
                     my $id_category_status = $topic->id_category_status;
                     
+                    my @users = $self->get_users_friend(id_category => $id_category, id_status => $id_category_status, projects => \@projects);
+                    
                     my $notify = {
                         category        => $id_category,
                         category_status => $id_category_status,
@@ -635,7 +637,7 @@ sub update {
                     $notify->{project} = \@projects if @projects;
                     
                     my $subject = _loc("New topic (%1): [%2] %3", $category->{name}, $topic->mid, $topic->title);
-                    { mid => $topic->mid, topic => $topic->title, category => $category->{name}, subject => $subject, notify => $notify }   # to the event
+                    { mid => $topic->mid, topic => $topic->title, category => $category->{name}, notify_default => \@users, subject => $subject, notify => $notify }   # to the event
                 });                   
             } 
             => sub { # catch
@@ -668,10 +670,13 @@ sub update {
                     $status = $topic->id_category_status;
                     $modified_on = $topic->modified_on->epoch;
                     $category = { $topic->categories->get_columns };
+                    
+                    my @projects = map {$_->{mid}} $topic->projects->hashref->all;
+                    my @users = $self->get_users_friend(id_category => $topic->id_category, id_status => $topic->id_category_status, projects => \@projects);
     
                     $return = 'Topic modified';
                     my $subject = _loc("Topic updated (%1): [%2] %3", $category->{name}, $topic->mid, $topic->title);
-                   { mid => $topic->mid, topic => $topic->title, subject => $subject }   # to the event
+                   { mid => $topic->mid, topic => $topic->title, subject => $subject, notify_default => \@users }   # to the event
                 });
             } ## end try
             => sub {
@@ -1168,10 +1173,17 @@ sub get_data {
 }
 
 sub get_release {
-    my ($self, $topic_mid ) = @_;
+    my ($self, $topic_mid, $key, $meta ) = @_;
+    _log _dump $meta;
 
+    my @meta_local = _array($meta);
+    my ($field_meta) = grep { $_->{id_field} eq $key } @meta_local;
+    _log "RRRRRRRRRRRRRRRRRR"._dump $field_meta;
+    my $where = { is_release => 1, rel_type=>'topic_topic', to_mid=>$topic_mid };
+    $where->{rel_field} = $field_meta->{release_field} if $field_meta->{release_field};
+    
     my $release_row = Baseliner->model('Baseliner::BaliTopic')->search(
-                            { is_release => 1, rel_type=>'topic_topic', to_mid=>$topic_mid },
+                            $where,
                             { prefetch=>['categories','children','master'] }
                             )->hashref->first; 
     return  {
@@ -1807,8 +1819,10 @@ sub set_release {
     my $topic_mid = $rs_topic->mid;
     cache_topic_remove($topic_mid);
 
+    my $where = { is_release => 1, rel_type=>'topic_topic', to_mid=> $topic_mid };
+    $where->{rel_field} = $release_field if $release_field;
     my $release_row = Baseliner->model('Baseliner::BaliTopic')->search(
-                            { is_release => 1, rel_type=>'topic_topic', to_mid=> $topic_mid },
+                            $where,
                             { join=>['categories','children','master'], select=>['mid','title'] }
                             )->first;
     my $old_release = '';
@@ -1832,7 +1846,7 @@ sub set_release {
     # check if arrays contain same members
     if ( $new_release ne $old_release ) {
         if($release_row){
-            my $rs = DB->BaliMasterRel->search({from_mid => $old_release, to_mid=>$topic_mid })->delete;
+            my $rs = DB->BaliMasterRel->search({from_mid => $old_release, to_mid=>$topic_mid, rel_field => $release_field})->delete;
         }
         # release
         if( $new_release ) {
@@ -2223,23 +2237,37 @@ sub change_status {
             }
             # callback, if any
             $callback->() if ref $callback eq 'CODE';
+            my @projects = map {$_->{mid}} $row->projects->hashref->all;
+            my @users = $self->get_users_friend(id_category => $row->id_category, id_status => $p{id_status}, projects => \@projects);
             
-            my $notify_default;
-            my @users;
+            ###my @roles = map { $_->{id_role} }
+            ###            DB->BaliTopicCategoriesAdmin->search(   {id_category => $row->id_category, id_status_from => $p{id_status}}, 
+            ###                                                    {select => 'id_role', group_by=> 'id_role'})->hashref->all;
+            ###           
+            ###if (@roles){
+            ###    @users = Baseliner->model('Users')->get_users_from_mid_roles( roles => \@roles );
+            ###}
             
-            my @roles = map { $_->{id_role} }
-                        DB->BaliTopicCategoriesAdmin->search(   {id_category => $row->id_category, id_status_from => $p{id_status}}, 
-                                                                {select => 'id_role', group_by=> 'id_role'})->hashref->all;
-                       
-            if (@roles){
-                @users = Baseliner->model('Users')->get_users_from_mid_roles( roles => \@roles );
-            }
             my $subject = _loc("Topic [%1] %2.  Status changed to %3", $mid, $row->title, $self->find_status_name($p{id_status}));
             +{ mid => $mid, title => $row->title, notify_default => \@users, subject => $subject } ;       
         } 
         => sub {
             _throw _loc( 'Error modifying Topic: %1', shift() );
         };                    
+}
+
+sub get_users_friend {
+    my ($self, %p) = @_;
+
+    my @users;
+    my @projects = _array $p{projects};
+    my @roles = map { $_->{id_role} }
+                DB->BaliTopicCategoriesAdmin->search(   {id_category => $p{id_category}, id_status_from => $p{id_status}}, 
+                                                        {select => 'id_role', group_by=> 'id_role'})->hashref->all;
+    if (@roles){
+        @users = Baseliner->model('Users')->get_users_from_mid_roles( roles => \@roles, projects => \@projects );
+    }
+    return @users
 }
 
 sub check_fields_required {
