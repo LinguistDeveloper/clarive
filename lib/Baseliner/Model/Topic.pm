@@ -1174,9 +1174,11 @@ sub get_data {
 
 sub get_release {
     my ($self, $topic_mid, $key, $meta ) = @_;
-    _log _dump $key;
+    _log _dump $meta;
 
-    my $field_meta = grep { $_->{id_field} eq $key } _array $meta;
+    my @meta_local = _array($meta);
+    my ($field_meta) = grep { $_->{id_field} eq $key } @meta_local;
+    _log "RRRRRRRRRRRRRRRRRR"._dump $field_meta;
     my $where = { is_release => 1, rel_type=>'topic_topic', to_mid=>$topic_mid };
     $where->{rel_field} = $field_meta->{release_field} if $field_meta->{release_field};
     
