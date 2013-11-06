@@ -160,7 +160,7 @@ sub dsl_build {
             if( $reg->isa( 'BaselinerX::Type::Service' ) ) {
                 push @dsl, $spaces->($level) . '{';
                 push @dsl, $spaces->($level) . sprintf(q{   my $config = parse_vars %s, $stash;}, Data::Dumper::Dumper( $data ) );
-                push @dsl, $spaces->($level) . sprintf(q{   launch( "%s", $stash, $config => '%s' );}, $key, $data_key );
+                push @dsl, $spaces->($level) . sprintf(q{   launch( "%s", q{%s}, $stash, $config => '%s' );}, $key, $name, $data_key );
                 push @dsl, $spaces->($level) . '}';
                 #push @dsl, $spaces->($level) . sprintf('merge_data($stash, $ret );', Data::Dumper::Dumper( $data ) );
             } else {
@@ -348,12 +348,16 @@ sub cut_nature_items {
 
 # launch runs service, merge return into stash and returns what the service returns
 sub launch {  
-    my ($key, $stash, $config, $data_key )=@_;
+    my ($key, $task, $stash, $config, $data_key )=@_;
     
-    #my $ret = Baseliner->launch( $key, data=>$stash );  # comes with a dummy job
     my $reg = Baseliner->registry->get( $key );
     #_log "running container for $key";
-    my $return_data = $reg->run_container( $stash, $config ); 
+    my $return_data = try { 
+        $reg->run_container( $stash, $config );
+    } catch {
+        my $err = shift;
+        _fail _loc 'Error running task %1: %2', $err;
+    };
     # TODO milestone for service
     #_debug $ret;
     my $refr = ref $return_data;
