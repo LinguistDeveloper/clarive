@@ -351,6 +351,7 @@ sub cut_nature_items {
 sub launch {  
     my ($key, $task, $stash, $config, $data_key )=@_;
     
+    $task = parse_vars( $task, $stash );
     my $reg = Baseliner->registry->get( $key );
     #_log "running container for $key";
     my $return_data = try { 

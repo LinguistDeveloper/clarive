@@ -191,7 +191,7 @@ sub run_ship {
                         $agent->get_file( local=>"$bkp_local", remote=>"$remote" );
                     } catch {
                         my $err = shift;
-                        $log->warn( _loc('No backup file `%1` found in remote. Ignored.', $remote), "$err" );
+                        $log->warn( _loc('No backup file found in remote. Ignored: `%1`', $remote), "$err" );
                     };
                 }
             }
