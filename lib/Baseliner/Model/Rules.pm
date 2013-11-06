@@ -356,7 +356,7 @@ sub launch {
         $reg->run_container( $stash, $config );
     } catch {
         my $err = shift;
-        _fail _loc 'Error running task %1: %2', $err;
+        _fail _loc 'Error running task %1: %2', $task, $err;
     };
     # TODO milestone for service
     #_debug $ret;
