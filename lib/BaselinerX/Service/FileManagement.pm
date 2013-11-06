@@ -187,7 +187,12 @@ sub run_ship {
                     $log->debug( _loc('Getting backup file from remote `%1` to `%2`', $remote, $bkp_local) );
                     push @backup_files, "$bkp_local";
                     my $bkp_dir = _file( $bkp_local )->dir->mkpath;
-                    $agent->get_file( local=>"$bkp_local", remote=>"$remote" );
+                    try {
+                        $agent->get_file( local=>"$bkp_local", remote=>"$remote" );
+                    } catch {
+                        my $err = shift;
+                        $log->warn( _loc('No backup file `%1` found in remote. Ignored.', $remote), "$err" );
+                    };
                 }
             }
 
