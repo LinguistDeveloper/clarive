@@ -712,7 +712,6 @@ register 'statement.perl.eval' => {
 
 register 'statement.perl.do' => {
     text => 'DO', data => { code=>'' },
-    type => 'loop',
     icon => '/static/images/circular/cog.png', 
     form => '/forms/stmt_eval.js', 
     dsl => sub { 

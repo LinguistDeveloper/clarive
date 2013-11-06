@@ -4,18 +4,22 @@
             value: ''
         });
         var load_logfile = function() {
+            if( panel.el ) panel.el.mask();
             Baseliner.ajaxEval( '/job/job_logfile', { id_job: params.id_job || 0 },
                 function(res) {
+                    panel.el.unmask();
                     if( res.success )
                         logfile.setValue( res.data );
                     else
                         Ext.Msg.show({icon: 'ext-mb-error', buttons: { cancel: true },
                                 title: _("Logfile Open Error"),
                                 msg: res.msg });
+                },
+                function(){
+                    panel.el.unmask();
                 }
             ); 
         };
-        load_logfile();
         var panel = new Ext.Panel({
             layout: 'fit',
             tbar: [
@@ -28,6 +32,7 @@
         });
         panel.on('afterrender', function(){
             panel.body.setStyle({ 'overflow': 'hidden' });
+            load_logfile();
         });
         return panel;
 })
