@@ -622,7 +622,7 @@ sub list_baseline : Private {
 
         foreach my $entorno ( @entornos ) {
             my ( $totError, $totOk, $total, $porcentError, $porcentOk, $bl ) = ( 0, 0, 0, 0, 0);
-            @temps = grep { ( $_->{bl} ) =~ $entorno } @jobs;
+            @temps = grep { $_->{bl} eq $entorno } @jobs;
             foreach my $temp ( @temps ) {
                 $bl = $temp->{bl};
                 if ( $temp->{result} eq 'OK' ) {
