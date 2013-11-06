@@ -43,14 +43,13 @@ sub run {
     my $stash = $c->stash;
     my $job = $stash->{job};
     my $log = $job->logger;
-    my $stmt  = $stash->{current_statement_name};
 
-    $log->info( _loc('*%1* starting', $stmt ) );
+    $log->info( _loc('Sed: starting' ) );
 
     my $path = $config->{path} 
-        or _fail _loc('*%1* Missing or invalid path in configuration', $stmt);
+        or _fail _loc('Sed: Missing or invalid path in configuration');
 
-    -e $path or _fail _loc "*%1* Invalid path '%1'", $stmt, $path;
+    -e $path or _fail _loc "Sed: Invalid path '%1'", $path;
 
     # check config
     my $sed = {
@@ -89,10 +88,10 @@ sub run {
         push @mods, "$f ($ret)" if $ret;
     });
 
-    $log->debug( _loc('*%1* include/exclude.', $stmt), data=>join("\n", @log ) ); 
-    $log->info( _loc('*%1* changes.', $stmt), data=>_dump(\@mods) ) if @mods;
+    $log->debug( _loc('Sed include/exclude.'), data=>join("\n", @log ) ); 
+    $log->info( _loc('Sed changes'), data=>_dump(\@mods) ) if @mods;
     _debug _dump \@mods if @mods;
-    $log->info( _loc('*%1* finished. Changed %2 file(s).', $stmt, scalar(@mods)) );
+    $log->info( _loc('Sed finished. Changed %1 file(s).', scalar(@mods)) );
 }
 
 =head2 process_file

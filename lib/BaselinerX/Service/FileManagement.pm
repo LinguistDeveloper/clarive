@@ -106,7 +106,7 @@ sub run_ship {
     my $stash = $c->stash;
     my $job_dir = $stash->{job_dir};
     my $job_mode = $stash->{job_mode};
-    my $stmt  = $stash->{current_statement_name};
+    my $task  = $stash->{current_task_name};
 
     my $remote_path = $config->{remote_path} // _fail 'Missing parameter remote_file';
     my $local_path  = $config->{local_path}  // _fail 'Missing parameter local_file';
@@ -119,7 +119,7 @@ sub run_ship {
     my $backup_mode = $config->{backup_mode} // 'backup'; 
     my $rollback_mode = $config->{rollback_mode} // 'rollback'; 
     my $needs_rollback_mode = $config->{needs_rollback_mode} // 'nb_after'; 
-    my $needs_rollback_key = $config->{needs_rollback_key} // $stmt;
+    my $needs_rollback_key = $config->{needs_rollback_key} // $task;
     $stash->{needs_rollback}{ $needs_rollback_key } = 1 if $needs_rollback_mode eq 'nb_always';
     my ($include_path,$exclude_path) = @{ $config }{qw(include_path exclude_path)};
     
@@ -234,7 +234,6 @@ sub run_retrieve {
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
     my $stash = $c->stash;
-    my $stmt  = $stash->{current_statement_name};
 
     my $remote = $config->{remote_path} // _fail 'Missing parameter remote_file';
     my $local  = $config->{local_path} // _fail 'Missing parameter local_file';

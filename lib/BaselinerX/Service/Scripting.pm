@@ -95,7 +95,6 @@ sub run_remote {
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
     my $stash = $c->stash;
-    my $stmt  = $stash->{current_statement_name};
 
     my $errors = $config->{errors} || 'fail';
     
@@ -106,7 +105,7 @@ sub run_remote {
     for my $server ( split /,/, $servers ) { 
         $server = ci->new( $server ) unless ref $server;
         for my $hostname ( _array( $server->hostname ) ) {
-            $log->info( _loc( '*%1* STARTING remote script `%2` (%3)', $stmt, $path . ' '. join(' ',_array($args)), $user . '@' . $hostname ), $config );
+            $log->info( _loc( 'STARTING remote script `%1` (%2)', $path . ' '. join(' ',_array($args)), $user . '@' . $hostname ), $config );
         }
         
         my $agent = $server->connect( user=>$user );
@@ -115,7 +114,7 @@ sub run_remote {
         my $rc = $agent->rc;
         my $ret = $agent->ret;
         if( List::MoreUtils::any {$_} _array($rc) ) {
-            my $ms = _loc '*%1* Error during script (%2) execution: %3', $stmt, $path, ($out // 'script not found or could not be executed (check chmod or chown)');
+            my $ms = _loc 'Error during script (%1) execution: %2', $path, ($out // 'script not found or could not be executed (check chmod or chown)');
             Util->_fail($ms) if $errors eq 'fail';
             Util->_warn($ms) if $errors eq 'warn';
             Util->_debug($ms) if $errors eq 'silent';
@@ -155,7 +154,7 @@ sub run_remote {
                    }
                 }
             }
-            $log->info( _loc( '*%1* FINISHED remote script `%2` (%3)', $stmt, $path . join(' ',_array($args)), $user . '@' . $server->hostname ), $agent->tuple_str );
+            $log->info( _loc( 'FINISHED remote script `%1` (%2)', $path . join(' ',_array($args)), $user . '@' . $server->hostname ), $agent->tuple_str );
         }
         push @rets, { output=>$out, rc=>$rc, ret=>$ret };
     }
@@ -168,8 +167,6 @@ sub run_eval {
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
     my $stash = $c->stash;
-    my $stmt  = $stash->{current_statement_name};
-    
     
     my ($servers, $user, $code) = @{ $config }{qw/server user code/};
     my @rets;
@@ -192,8 +189,8 @@ sub run_eval {
                     $log->$lev( _loc( $msg->{text} // '(no message)' ), $msg->{data} );
                 }
             } else {
-                $log->debug( _loc('%1 (ret)', $stmt), $agent->ret );
-                $log->info( _loc('%1 (output)', $stmt), $agent->output );
+                $log->debug( _loc('return'), $agent->ret );
+                $log->info( _loc('output'), $agent->output );
             }
         }
         push @rets, $ret;
