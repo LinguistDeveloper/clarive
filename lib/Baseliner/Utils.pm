@@ -1272,6 +1272,8 @@ sub parse_vars_raw {
             push @tmp, parse_vars_raw( data=>$i, vars=>$vars, throw=>$throw );
         }
         return \@tmp;
+    } elsif( $ref eq 'SCALAR' ) {
+        return parse_vars_raw( data=>$$data, vars=>$vars, throw=>$throw );
     } elsif($ref) {
         return parse_vars_raw( data=>_damn( $data ), vars=>$vars, throw=>$throw );
     } else {
