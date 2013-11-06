@@ -76,7 +76,15 @@ sub list_carriers : Local {
 
 sub list_type_recipients : Local {
     my ( $self, $c ) = @_;
-    my @recipients = map {+{type_recipient => $_}} $c->model('Notification')->get_type_recipients;
+    my $p = $c->request->parameters;
+    
+    my @type_recipients;
+    if ($p->{action} eq 'SEND'){
+        @type_recipients = grep {$_ ne 'Default'} $c->model('Notification')->get_type_recipients;    
+    }else {
+        @type_recipients = $c->model('Notification')->get_type_recipients;    
+    }
+    my @recipients = map {+{type_recipient => $_}} @type_recipients;
     
     $c->stash->{json} = \@recipients;
     $c->forward('View::JSON');

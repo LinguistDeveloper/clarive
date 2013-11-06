@@ -73,7 +73,7 @@ sub get_carriers{
 
 sub get_type_recipients{
     #return ('Default','Users','Roles','Groups','Emails','Actions');
-    return ('Users','Roles','Actions','Fields');
+    return ('Default','Users','Roles','Actions','Fields');
 }
 
 sub get_recipients{
@@ -146,6 +146,25 @@ sub isValid {
     	}
     }   
     return $valid;
+}
+
+sub exclude_default{
+    my ( $self, $p ) = @_;
+    my $event_key = $p->{event_key} or _throw 'Missing parameter event_key';
+    my $exclude_default = 0;
+    my @recipients = map { (_load $_->{data})->{recipients} } DB->BaliNotification->search({ event_key => $event_key, is_active => 1, action => 'EXCLUDE' } )->hashref->all;
+    
+    foreach my $recipient (@recipients){
+        foreach my $carrier (keys $recipient){
+            foreach my $key (keys $recipient->{$carrier}){
+                $exclude_default = 1;
+                last;
+            }
+            last if $exclude_default;
+        }
+        last if $exclude_default;
+    }
+    return $exclude_default;
 }
 
 sub get_rules_notifications{
@@ -286,13 +305,16 @@ sub get_notifications {
 	if (!$template || $template eq ''){
     	$template =  Baseliner->model( 'ConfigStore' )->get( 'config.notifications.template_default' )->{template_default};
     }
-    if (exists $send_notification->{$template}){
-        map { $send_notification->{$template}->{TO}->{$_} = 1 } @notify_default;        
-    }else{
-        if (@notify_default){
-            my %users; 
-            map { $users{$_} = 1 } @notify_default;            
-            $send_notification->{$template}->{TO} = \%users;
+    
+    if(!$self->exclude_default( {event_key => $event_key} )){
+        if (exists $send_notification->{$template}){
+            map { $send_notification->{$template}->{TO}->{$_} = 1 } @notify_default;        
+        }else{
+            if (@notify_default){
+                my %users; 
+                map { $users{$_} = 1 } @notify_default;            
+                $send_notification->{$template}->{TO} = \%users;
+            }
         }
     }
     
