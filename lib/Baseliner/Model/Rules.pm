@@ -352,7 +352,7 @@ sub launch {
     
     #my $ret = Baseliner->launch( $key, data=>$stash );  # comes with a dummy job
     my $reg = Baseliner->registry->get( $key );
-    _log "running container for $key";
+    #_log "running container for $key";
     my $return_data = $reg->run_container( $stash, $config ); 
     # TODO milestone for service
     #_debug $ret;

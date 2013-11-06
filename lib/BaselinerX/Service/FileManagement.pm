@@ -121,6 +121,8 @@ sub run_ship {
     my $needs_rollback_mode = $config->{needs_rollback_mode} // 'nb_after'; 
     my $needs_rollback_key = $config->{needs_rollback_key} // $stmt;
     $stash->{needs_rollback}{ $needs_rollback_key } = 1 if $needs_rollback_mode eq 'nb_always';
+    
+    _fail _loc "Server not configured" unless length $config->{server};
 
     for my $server ( split /,/, $config->{server} ) {
         $server = ci->new( $server ) unless ref $server;
