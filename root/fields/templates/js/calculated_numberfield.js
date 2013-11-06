@@ -60,16 +60,18 @@ params:
                             var cad = i+1;
                             cad = "$" + cad;
                             var obj_field = form.findField(name_fields[i]);
-                            if ( !obj_field.on_change ) {
-                                obj_field.on_change = true;            
-                                obj_field.on('change', function() {
-                                    var obj_this = form.findField(meta.id_field);
-                                    obj_this.setValue(calculatedValue());
-                                    console.dir(obj_field);
-                                });
+                            if ( obj_field ) {                            
+                                if ( !obj_field.on_change ) {
+                                    obj_field.on_change = true;            
+                                    obj_field.on('change', function() {
+                                        var obj_this = form.findField(meta.id_field);
+                                        obj_this.setValue(calculatedValue());
+                                        console.dir(obj_field);
+                                    });
+                                }
+                                var field_value = obj_field.getValue() != '' ? obj_field.getValue():0;
+                                operation = operation.replace(cad, field_value);
                             }
-                            var field_value = obj_field.getValue() != '' ? obj_field.getValue():0;
-                            operation = operation.replace(cad, field_value);
                         }
                         return eval(operation);
                     }
