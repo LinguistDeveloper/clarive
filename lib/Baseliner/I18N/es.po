@@ -1708,7 +1708,7 @@ msgid "SUSPENDED"
 msgstr "Suspendido"
 
 msgid "WAITING"
-msgstr "Esperando CHM"
+msgstr "Esperando"
 
 msgid "DONE"
 msgstr "Finalizado"
