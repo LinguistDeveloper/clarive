@@ -220,7 +220,7 @@ sub run_ship {
                     $log->debug( _loc('Getting backup file from remote `%1` to `%2`', $remote, $bkp_local) );
                     push @backup_files, "$bkp_local";
                     my $bkp_dir = _file( $bkp_local )->dir->mkpath;
-                    if( !$agent->file_exists( local=>"$bkp_local", remote=>"$remote" ) ) {
+                    if( !$agent->file_exists( "$remote" ) ) {
                         $log->debug( _loc('No existing file detected to backup: `%1`', $remote) );
                     } else {
                         try {
