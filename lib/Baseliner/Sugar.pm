@@ -160,6 +160,17 @@ sub event_new {
     return try {
         require Baseliner::Core::Event;
         my $obj = Baseliner::Core::Event->new( data => $data );
+        try {
+            if( length $data->{mid} ){
+                my $ci = Baseliner::CI->new( $data->{mid} );
+                my $ci_data = $ci->load;
+                $data = { %$ci_data, ci=>$ci, %$data };
+            }else{
+                $data = { %$data };    
+            }
+        } catch {
+            _error _loc("Error: Could not instantiate ci data for event: %1", shift() );
+        };
         # PRE rules
         my $rules_pre = $ev->rules_pre_online( $data );
         push @rule_log, map { $_->{when} => 'pre-online'; $_ } _array( $rules_pre->{rule_log} );
@@ -178,17 +189,6 @@ sub event_new {
         #    _debug 'event_new is missing mid parameter' ;
             #_throw 'event_new is missing mid parameter' ;
         #} else {
-            try {
-                if( length $data->{mid} ){
-                    my $ci = Baseliner::CI->new( $data->{mid} );
-                    my $ci_data = $ci->load;
-                    $data = { %$ci_data, ci=>$ci, %$data };
-                }else{
-                    $data = { %$data };    
-                }
-            } catch {
-                _error _loc("Error: Could not instantiate ci data for event: %1", shift() );
-            };
         #}
         # POST hooks
         $obj->data( $data );
