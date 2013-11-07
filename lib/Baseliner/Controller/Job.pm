@@ -275,6 +275,7 @@ sub monitor_json : Path('/job/monitor_json') {
         sched    =>"me.schedtime",
         end      =>"me.endtime",
     });
+    
     if( exists $p->{job_state_filter} ) {
         my @job_state_filters = do {
                 my $job_state_filter = decode_json $p->{job_state_filter};
@@ -284,8 +285,13 @@ sub monitor_json : Path('/job/monitor_json') {
     }
 
     # Filter by nature
-    if (exists $p->{filter_nature} && $p->{filter_nature} ne 'ALL' ) {      
-      # TODO nature only exists after PRE executes, "Load natures" $where->{'bali_job_items_2.item'} = $p->{filter_nature};
+    if (exists $p->{filter_nature} && $p->{filter_nature} ne 'ALL' ) {
+        # TODO nature only exists after PRE executes, "Load natures" $where->{'bali_job_items_2.item'} = $p->{filter_nature};
+        my @natures = _array $p->{filter_nature};
+
+        my $rs_jobs = Baseliner->model('Baseliner::BaliMasterRel')->search({rel_type => 'job_nature', to_mid => \@natures}
+                                                                           ,{select=>'from_mid'})->as_query;
+        $where->{'mid'} = {-in => $rs_jobs };
     }
 
     # Filter by environment name:
@@ -299,6 +305,7 @@ sub monitor_json : Path('/job/monitor_json') {
     }
 
     #dashboard
+    
     if($query_id){
         my @arreglo = split(",",$query_id);
         $where->{'me.id'} = \@arreglo;
@@ -314,21 +321,21 @@ sub monitor_json : Path('/job/monitor_json') {
     }
     _debug $where;
 
-    ### FROM 
-    my $from = {
-        select   => 'me.id',
-        as       => $as,
-        #join     => [ 'bali_job_items', 'bali_job_items' ],  # one for application, another for filter_nature 
-    };
-    _debug $from;
-    my $rs_search = $c->model('Baseliner::BaliJob')->search( $where, $from );
+    #### FROM 
+    #my $from = {
+    #    select   => 'me.id',
+    #    as       => $as,
+    #    #join     => [ 'bali_job_items', 'bali_job_items' ],  # one for application, another for filter_nature 
+    #};
+    #_debug $from;
+    #my $rs_search = $c->model('Baseliner::BaliJob')->search( $where, $from );
     #my $id_rs = $rs_search->search( undef, { select=>[ 'me.id' ] } );
 
     #_error _dump $id_rs->as_query ;
 
-    _debug "Job search end.";
+    #_debug "Job search end.";
     my $rs_paged = $c->model('Baseliner::BaliJob')->search(
-        {}, #{ 'me.id'=>{ -in => $rs_search->as_query } },  # TODO needs to be able to filter 
+        $where, #{ 'me.id'=>{ -in => $rs_search->as_query } },  # TODO needs to be able to filter 
         {
             page=>$page, rows=>$limit,
             order_by => $order_by,
@@ -338,14 +345,14 @@ sub monitor_json : Path('/job/monitor_json') {
     $cnt = $pager->total_entries;
 
     # Job items cache
-    _log "Job data start...";
-    my %job_items = ( id => { mid=>11 } );
-    #    = $c->model('Baseliner::BaliJobItems')
-    #        ->search(
-    #            { id_job=>{ -in => $rs_paged->search(undef,{ select=>'id'})->as_query } },
-    #            { select=>[qw/id id_job application item/] }
-    #    )->hash_on( 'id_job' );
-    _log "Job data end.";
+    #_log "Job data start...";
+    #my %job_items = ( id => { mid=>11 } );
+    ##    = $c->model('Baseliner::BaliJobItems')
+    ##        ->search(
+    ##            { id_job=>{ -in => $rs_paged->search(undef,{ select=>'id'})->as_query } },
+    ##            { select=>[qw/id id_job application item/] }
+    ##    )->hash_on( 'id_job' );
+    #_log "Job data end.";
 
     my @rows;
     #while( my $r = $rs->next ) {
@@ -629,10 +636,15 @@ sub job_submit : Path('/job/submit') {
 }
 
 sub natures_json {
-  my @data = sort { uc $a->{name} cmp uc $b->{name} } 
-             map { { key=>$_->{key}, id=>$_->{id}, name => $_->{name}, ns => $_->{ns}, icon => $_->{icon}} }
-             map { Baseliner::Core::Registry->get($_) }
-             Baseliner->registry->starts_with('nature');
+    #my @data = sort { uc $a->{name} cmp uc $b->{name} } 
+    #         map { { key=>$_->{key}, id=>$_->{id}, name => $_->{name}, ns => $_->{ns}, icon => $_->{icon}} }
+    #         map { Baseliner::Core::Registry->get($_) }
+    #         Baseliner->registry->starts_with('nature');
+             
+    my @data = sort { uc $a->{name} cmp uc $b->{name} } 
+            map { { id=>$_->{mid}, name => $_->{name}, ns => $_->{ns}, icon => $_->{icon}} }
+            BaselinerX::CI::nature->search_cis;             
+  
   _encode_json \@data;
 }
 
@@ -643,7 +655,8 @@ sub job_states_json {
 }
 
 sub envs_json {
-  my @data =  grep { ! $_->{bl} eq '*' } Baseliner::Core::Baseline->baselines;
+  #my @data =  grep { ! $_->{bl} eq '*' } Baseliner::Core::Baseline->baselines;
+    my @data = sort { $a->{seq} <=> $b->{seq} } map { {name => $_->{name}, bl => $_->{bl}}}  grep {$_->{moniker} ne '*'}  BaselinerX::CI::bl->search_cis;
   _encode_json \@data;
 }
 

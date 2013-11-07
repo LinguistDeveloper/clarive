@@ -142,11 +142,16 @@
     // Nature Filters
 
     var natures = <% $natures_json %>;
+    
+    
     var nature_hash = {}; // this is used by the render_nature
     Ext.each( natures, function(nat) {
         nature_hash[ nat.ns ] = nat; 
     });
+    
+            
     var nature_menu = natures.map(function (x) {
+
       // Por defecto siempre se van a mostrar en uppercase, pero tampoco est￡ de m￡s filtrar un poco esto.
       var nature_name = x.name == 'ZOS'      ? 'z/OS' 
                       : x.name == 'FICHEROS' ? 'Ficheros'
@@ -155,15 +160,17 @@
                       ;
       return {
         text: nature_name,
-        icon: '/static/images/nature/' + x.icon + '.png',
+        //icon: '/static/images/nature/' + x.icon + '.png',
         handler: function (item) { 
           item.parentMenu.ownerCt.setText( '<b>' + _('Natures: %1',  nature_name) + '</b>' );
-          store.baseParams.filter_nature = x.ns ;
+          //store.baseParams.filter_nature = x.ns ;
+          store.baseParams.filter_nature = x.id ;
           store.reload();
           return;
         }
       }
     });
+    
     nature_menu.push({
       icon: '/static/images/icons/all.png',
       text: _('All-f'),
@@ -277,6 +284,14 @@
                store.baseParams.filter_type = 'demote';
                store.reload();
             }
+          },{
+            text: _('static'),
+            //icon: '/static/images/icons/arrow_left.gif',
+            handler: function (item) {
+               item.parentMenu.ownerCt.setText( '<b>' + _('Type: %1', _('static')) + '</b>' );
+               store.baseParams.filter_type = 'static';
+               store.reload();
+            }            
           },{
             text: _('All'),
             icon: '/static/images/icons/all.png',
