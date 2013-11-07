@@ -92,16 +92,18 @@ sub run_write {
     my $file_encoding = $config->{file_encoding};
     my $body_encoding = $config->{body_encoding};
     my $body = $config->{body};
+    my $log_body = $config->{log_body};
     
     require Encode;
     Encode::from_to( $body, $body_encoding, $file_encoding )
         if $body_encoding && ( $file_encoding ne $body_encoding );
     
-    my $open_str = $file_encoding ? ">encoding($file_encoding)" : '>';
+    my $open_str = $file_encoding ? ">:encoding($file_encoding)" : '>';
     open my $ff, $open_str, $filepath
         or _fail _loc 'Could not open file for writing (%1): %2', $!;
     print $ff $body;
     close $ff;
+    $log->info( _loc('File `%1` written'), $log_body eq 'yes' ? ( data=>$body ) : () ); 
     return $filepath;
 }
     
