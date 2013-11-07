@@ -36,7 +36,15 @@ register 'service.fileman.retrieve' => {
 register 'service.fileman.store' => {
     name => 'Store Local File',
     form => '/forms/store_file.js',
+    icon => '/static/images/icons/drive_disk.png',
     handler => \&run_store,
+};
+
+register 'service.fileman.write' => {
+    name => 'Write Local File',
+    form => '/forms/write_file.js',
+    icon => '/static/images/icons/drive_edit.png',
+    handler => \&run_write,
 };
 
 register 'service.fileman.rm' => {
@@ -72,6 +80,31 @@ sub run_tar_nature {
     $log->info( _loc('Tar of directory `%1` into file `%2`', $config->{source_dir}, $config->{tarfile}), 
             $config );
     Util->tar_dir( %$config, files=>\@files ); 
+}
+    
+sub run_write {
+    my ($self, $c, $config ) = @_;
+
+    my $job   = $c->stash->{job};
+    my $log   = $job->logger;
+    my $stash = $c->stash;
+    my $filepath = $config->{filepath};
+    my $file_encoding = $config->{file_encoding};
+    my $body_encoding = $config->{body_encoding};
+    my $body = $config->{body};
+    my $log_body = $config->{log_body};
+    
+    require Encode;
+    Encode::from_to( $body, $body_encoding, $file_encoding )
+        if $body_encoding && ( $file_encoding ne $body_encoding );
+    
+    my $open_str = $file_encoding ? ">:encoding($file_encoding)" : '>';
+    open my $ff, $open_str, $filepath
+        or _fail _loc 'Could not open file for writing (%1): %2', $!;
+    print $ff $body;
+    close $ff;
+    $log->info( _loc('File `%1` written', $filepath), $log_body eq 'yes' ? ( data=>$body ) : () ); 
+    return $filepath;
 }
     
 sub run_store {
@@ -187,12 +220,21 @@ sub run_ship {
                     $log->debug( _loc('Getting backup file from remote `%1` to `%2`', $remote, $bkp_local) );
                     push @backup_files, "$bkp_local";
                     my $bkp_dir = _file( $bkp_local )->dir->mkpath;
-                    try {
-                        $agent->get_file( local=>"$bkp_local", remote=>"$remote" );
-                    } catch {
-                        my $err = shift;
-                        $log->warn( _loc('No backup file found in remote. Ignored: `%1`', $remote), "$err" );
-                    };
+                    if( !$agent->file_exists( "$remote" ) ) {
+                        $log->debug( _loc('No existing file detected to backup: `%1`', $remote) );
+                    } else {
+                        try {
+                            $agent->get_file( local=>"$bkp_local", remote=>"$remote" );
+                        } catch {
+                            my $err = shift;
+                            if( $backup_mode eq 'backup_fail' ) {
+                                $log->error( _loc('Error reading backup file from remote. Ignored: `%1`', $remote), "$err" );
+                                _fail _loc 'Error during file backup';
+                            } else {
+                                $log->warn( _loc('Error reading backup file from remote. Ignored: `%1`', $remote), "$err" );
+                            }
+                        };
+                    }
                 }
             }
 

@@ -167,6 +167,11 @@ method get_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
     );
 }
 
+method file_exists( $file_or_dir ) {
+    $self->execute( 'test', '-e', $file_or_dir ); # check it exists
+    return !$self->rc; 
+}
+
 =head2
 
 Execute a command remotely with system. Returns 

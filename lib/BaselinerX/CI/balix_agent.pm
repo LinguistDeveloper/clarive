@@ -116,6 +116,11 @@ method is_remote_dir( $dir ) {
     return !$rc;
 }
 
+method file_exists( $file_or_dir ) {
+    my ($rc,$ret) = $self->_execute( 'test', '-e', $file_or_dir ); # check it exists
+    return !$rc; 
+}
+
 method check_writeable( $file_or_dir ) {
     my ($rc,$ret) = $self->_execute( 'test', '-e', $file_or_dir ); # check it exists
     return (0,'') if $rc; # doesnt exist, it's writeable
