@@ -1038,6 +1038,7 @@ sub service_run : Local {
         my $service = $c->registry->get( $p->{key} );
         my $service_js_output = $service->js_output;
         
+        local $ENV{BASELINER_LOGCOLOR} = 0;
         my $ci = _ci( $p->{mid} );
         # TODO this is the future: 
         my $ret = $ci->run_service( $p->{key}, %{ $p->{data} || {} } );
