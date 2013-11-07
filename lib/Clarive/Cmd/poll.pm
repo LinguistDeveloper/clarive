@@ -19,10 +19,13 @@ use DateTime;
 extends 'Clarive::Cmd';
 with 'Clarive::Role::TempDir';
 
-has url_web   => qw(is rw isa Any);
-has url_nginx => qw(is rw isa Any);
-has api_key   => qw(is rw isa Any);
-has timeout   => qw(is rw isa Num default 5);
+has url_web       => qw(is rw isa Any);
+has url_nginx     => qw(is rw isa Any);
+has api_key       => qw(is rw isa Any);
+has mongo         => qw(is rw isa Any);
+has redis         => qw(is rw isa Any);
+has timeout       => qw(is rw isa Num default 5);
+has error_rc      => qw(is rw isa Num default 10);
 
 our $CAPTION = 'monitoring tool';
 
@@ -65,13 +68,42 @@ sub run {
         sayts "checking pid exists=$pid";
         if( ! pexists($pid) ) {
             errts "KO: pid $pid not found.";
-            $rc = 10;
+            $rc = $self->error_rc;
         } else {
             sayts "OK: pid exists=$pid";
         }
     }
 
     $rc += $self->call_web( %opts ); 
+    
+    if( $self->mongo ) {
+        require MongoDB;
+        try {
+            sayts "connecting to MongoDB...";
+            my $m = MongoDB::MongoClient->new( $self->app->config->{mongo}{client});
+            my $db_name = $self->app->config->{mongo}{dbname} // 'clarive';
+            my $db = $m->get_database( $db_name ); 
+            sayts "OK: connected to Mongo database $db_name";
+        } catch {
+            my $err = shift;
+            errts( "KO: could not connect to mongo: " . $err );
+            $rc += $self->error_rc;
+        };
+    }
+    
+    if( $self->redis ) {
+        require Redis;
+        try {
+            sayts "connecting to Redis...";
+            my $s = $self->app->config->{redis} // { server=>'localhost:6379' };
+            my $r = Redis->new( %$s );
+            sayts "OK: connected to Redis: " . $s->{server};
+        } catch {
+            my $err = shift;
+            errts( "KO: could not connect to Redis: " . $err );
+            $rc += $self->error_rc;
+        };
+    }
     
     sayts "poll finished with rc=$rc";
     exit $rc;
