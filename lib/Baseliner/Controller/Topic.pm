@@ -1609,7 +1609,9 @@ sub download_file : Local {
     my $p      = $c->req->params;
     my $file = $c->model('Baseliner::BaliFileVersion')->search({ md5=>$md5 })->first;
     if( defined $file ) {
-        $c->stash->{serve_filename} = $file->filename;
+        my $filename = $file->filename;
+        Encode::from_to( $filename, 'utf-8', 'iso-8859-1' );
+        $c->stash->{serve_filename} = $filename;
         $c->stash->{serve_body} = $file->filedata;
         $c->forward('/serve_file');
     } else {
