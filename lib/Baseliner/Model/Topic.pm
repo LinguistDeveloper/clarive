@@ -1174,11 +1174,10 @@ sub get_data {
 
 sub get_release {
     my ($self, $topic_mid, $key, $meta ) = @_;
-    _log _dump $meta;
 
     my @meta_local = _array($meta);
     my ($field_meta) = grep { $_->{id_field} eq $key } @meta_local;
-    _log "RRRRRRRRRRRRRRRRRR"._dump $field_meta;
+    
     my $where = { is_release => 1, rel_type=>'topic_topic', to_mid=>$topic_mid };
     $where->{rel_field} = $field_meta->{release_field} if $field_meta->{release_field};
     
@@ -2223,7 +2222,7 @@ sub change_status {
     my $old_status = $p{old_status} || $self->find_status_name($id_old_status);
     my $callback = $p{callback};
     event_new 'event.topic.change_status'
-        => { username => $p{username}, old_status => $old_status, id_old_status=> $id_old_status, id_status=>$p{id_status}, status => $status }
+        => { mid => $mid, username => $p{username}, old_status => $old_status, id_old_status=> $id_old_status, id_status=>$p{id_status}, status => $status }
         => sub {
             # should I change the status?
             if( $p{change} ) {

@@ -9,6 +9,21 @@ use utf8;
 
 with 'Baseliner::Role::Service';
 
+register 'service.purge.daemon' => {
+    name => 'Purge Daemon',
+    config => 'config.purge',
+    handler => \&run_purge ,
+};
+
+register 'config.purge' => {
+    metadata => [
+        { id => 'keep_log_files', default => 30, name=> 'Number of days to keep /log files' },
+        { id => 'keep_job_files', default => 30, name=> 'Number of days to keep job files' },
+        { id => 'keep_jobs_ok', default => 30, name=> 'Number of days to keep OK job logs' },
+        { id => 'keep_jobs_ko', default => 30, name=> 'Number of days to keep KO job logs' },
+    ]
+};
+
 register 'service.job.purge.files' => {
     name => 'Purge job directories',
     scheduled => 1,
@@ -16,6 +31,11 @@ register 'service.job.purge.files' => {
     config => 'config.job',
     handler => \&run,
 };
+
+sub run_purge  {
+    my ($self,$c,$config)=@_;
+    sleep 600;
+}
 
 sub run {
     my ($self,$c,$config)=@_;

@@ -122,7 +122,7 @@ sub lc_for_project {
     for my $id_repo ( @repos ) {
         my $repo = Baseliner::CI->new( $id_repo );
         push @$nodes, {
-          node => _loc("Branches").": ".$repo->name,
+          node => $repo->name,
           type => 'changeset',
           url => '/lifecycle/branches',
           active => 1,

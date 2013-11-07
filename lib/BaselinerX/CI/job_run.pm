@@ -196,7 +196,7 @@ sub save_to_parent_job {
 }
 
 # called from dsl_run in Rules
-sub start_statement {
+sub start_task {
     my ($self,$stmt_name) = @_;
     $self->current_service( $stmt_name );
     $self->logger->debug( "$stmt_name", milestone=>2 );

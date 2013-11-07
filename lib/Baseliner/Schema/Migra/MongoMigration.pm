@@ -63,7 +63,7 @@ sub run {
         bali_roleaction     => 'role_action',
         bali_roleuser       => 'role_user',
         bali_rule           => 'rule',
-        bali_rule_statement => 'rule_statement',
+        #  bali_rule_statement => 'rule_statement', deprecated
         bali_scheduler      => 'scheduler',
         bali_sem            => 'sem',
         bali_sem_queue      => 'sem_queue',
