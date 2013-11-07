@@ -118,6 +118,7 @@ sub run {
         };
     }
     
+    $rc = $self->error_rc if $rc > $self->error_rc;
     sayts "poll finished. RC = $rc";
     exit $rc;
 }
