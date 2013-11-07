@@ -22,6 +22,9 @@ with 'Clarive::Role::TempDir';
 has url_web       => qw(is rw isa Any);
 has url_nginx     => qw(is rw isa Any);
 has api_key       => qw(is rw isa Any);
+has pid_filter    => qw(is rw isa Any);
+has web           => qw(is rw isa Any default 1);
+has nginx         => qw(is rw isa Any default 1);
 has mongo         => qw(is rw isa Any default 1);
 has redis         => qw(is rw isa Any default 1);
 has timeout_web   => qw(is rw isa Num default 5);
@@ -40,10 +43,13 @@ Options:
   --url_web               clarive web url
   --url_nginx             nginx web url
   --api_key               api key to login to clarive
-  --mongo                 1=try mongo connection, 0=ignore mongo
-  --redis                 1=try redis connection, 0=ignore redis status
+  --web                   1=try clarive web connection, 0=skip
+  --nginx                 1=try nginx connection, 0=skip nginx
+  --mongo                 1=try mongo connection, 0=skip mongo
+  --redis                 1=try redis connection, 0=skip redis status
   --timeout_web           seconds to wait for clarive/nginx web response, 0=no timeout
   --error_rc              return code for fatal errors
+  --pid_filter            regular expression to filter in pid files
 
 =cut
 
@@ -69,7 +75,11 @@ sub run {
 
     my $rc = 0;
 
+    my $pid_filter = $self->pid_filter;
+    $pid_filter = qr/$pid_filter/i if $pid_filter;
+    
     for my $pidfile ( glob(file($self->pid_dir,'*.pid')), glob(file($self->app->base,'data','mongo','*.lock')) ) { 
+        next if $pid_filter && $pidfile !~ $pid_filter;
         sayts "pid_file=$pidfile";
         my $pid = $self->_find_pid( $pidfile );
         sayts "checking pid exists=$pid";
@@ -81,7 +91,15 @@ sub run {
         }
     }
 
-    $rc += $self->call_web( %opts ); 
+    if( $self->web ) {
+        sayts "connecting to Clarive Web Server...";
+        $rc += $self->call_web( %opts, url=>$self->url_web );
+    }
+    
+    if( $self->nginx  && $self->url_nginx) {
+        sayts "connecting to Nginx...";
+        $rc += $self->call_web( %opts, url=>$self->url_nginx ) if $self->nginx;  
+    }
     
     if( $self->mongo ) {
         require MongoDB;
@@ -112,6 +130,7 @@ sub run {
         };
     }
     
+    $rc = $self->error_rc if $rc > $self->error_rc;
     sayts "poll finished. RC = $rc";
     exit $rc;
 }
@@ -123,7 +142,7 @@ sub call_web {
     require HTTP::Request;
     require Encode;
     
-    my $url = $self->url_web || sprintf "http://%s:%s", $opts{host} // 'localhost', $opts{port} // 3000;
+    my $url = $opts{url} || sprintf "http://%s:%s", $opts{host} // 'localhost', $opts{port} // 3000;
     sayts "checking web server at url $url";
     my $uri = URI->new( $url );
     $uri->query_form({ api_key=>$self->api_key });
