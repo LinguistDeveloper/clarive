@@ -91,7 +91,15 @@ sub run {
         }
     }
 
-    $rc += $self->call_web( %opts ) if $self->web; 
+    if( $self->web ) {
+        sayts "connecting to Clarive Web Server...";
+        $rc += $self->call_web( %opts, url=>$self->url_web );
+    }
+    
+    if( $self->nginx  && $self->url_nginx) {
+        sayts "connecting to Nginx...";
+        $rc += $self->call_web( %opts, url=>$self->url_nginx ) if $self->nginx;  
+    }
     
     if( $self->mongo ) {
         require MongoDB;
@@ -134,7 +142,7 @@ sub call_web {
     require HTTP::Request;
     require Encode;
     
-    my $url = $self->url_web || sprintf "http://%s:%s", $opts{host} // 'localhost', $opts{port} // 3000;
+    my $url = $opts{url} || sprintf "http://%s:%s", $opts{host} // 'localhost', $opts{port} // 3000;
     sayts "checking web server at url $url";
     my $uri = URI->new( $url );
     $uri->query_form({ api_key=>$self->api_key });
