@@ -59,7 +59,7 @@ sub run {
 
     my $rc = 0;
 
-    for my $pidfile ( glob file($self->pid_dir,'*.pid') ) { 
+    for my $pidfile ( glob(file($self->pid_dir,'*.pid')), glob(file($self->app->base,'data','mongo','*.lock')) ) { 
         sayts "pid_file=$pidfile";
         my $pid = $self->_find_pid( $pidfile );
         sayts "checking pid exists=$pid";
