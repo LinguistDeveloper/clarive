@@ -103,7 +103,7 @@ sub run_write {
         or _fail _loc 'Could not open file for writing (%1): %2', $!;
     print $ff $body;
     close $ff;
-    $log->info( _loc('File `%1` written'), $log_body eq 'yes' ? ( data=>$body ) : () ); 
+    $log->info( _loc('File `%1` written', $filepath), $log_body eq 'yes' ? ( data=>$body ) : () ); 
     return $filepath;
 }
     
@@ -220,12 +220,21 @@ sub run_ship {
                     $log->debug( _loc('Getting backup file from remote `%1` to `%2`', $remote, $bkp_local) );
                     push @backup_files, "$bkp_local";
                     my $bkp_dir = _file( $bkp_local )->dir->mkpath;
-                    try {
-                        $agent->get_file( local=>"$bkp_local", remote=>"$remote" );
-                    } catch {
-                        my $err = shift;
-                        $log->warn( _loc('No backup file found in remote. Ignored: `%1`', $remote), "$err" );
-                    };
+                    if( !$agent->file_exists( local=>"$bkp_local", remote=>"$remote" ) ) {
+                        $log->debug( _loc('No existing file detected to backup: `%1`', $remote) );
+                    } else {
+                        try {
+                            $agent->get_file( local=>"$bkp_local", remote=>"$remote" );
+                        } catch {
+                            my $err = shift;
+                            if( $backup_mode eq 'backup_fail' ) {
+                                $log->error( _loc('Error reading backup file from remote. Ignored: `%1`', $remote), "$err" );
+                                _fail _loc 'Error during file backup';
+                            } else {
+                                $log->warn( _loc('Error reading backup file from remote. Ignored: `%1`', $remote), "$err" );
+                            }
+                        };
+                    }
                 }
             }
 

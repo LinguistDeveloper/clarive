@@ -40,7 +40,8 @@
         fieldLabel: _('Backup Mode'), name:'backup_mode', value: data.backup_mode || 'backup', 
         data: [ 
           ['none',_('No Backup')], 
-          ['backup',_('Backup Files')]
+          ['backup',_('Backup Existing Files')],
+          ['backup_fail',_('Backup Existing Files or Fail')]
         ]
     });
     var rollback_mode = new Baseliner.ComboDouble({ 
