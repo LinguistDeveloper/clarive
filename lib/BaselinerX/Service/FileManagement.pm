@@ -103,7 +103,7 @@ sub run_write {
         or _fail _loc 'Could not open file for writing (%1): %2', $!;
     print $ff $body;
     close $ff;
-    $log->info( _loc('File `%1` written', $filepath), $log_body eq 'yes' ? ( data=>$body ) : () ); 
+    $log->info( _loc('File content written: `%1`', $filepath), $log_body eq 'yes' ? ( data=>$body ) : () ); 
     return $filepath;
 }
     

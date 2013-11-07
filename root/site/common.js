@@ -2153,7 +2153,7 @@ Baseliner.CICheckBox = Ext.extend( Baseliner.CheckBoxField, {
     }
 });
 
-Baseliner.FormEditor = Ext.extend( Ext.FormPanel, {
+Baseliner.FormEditor = Ext.extend( Baseliner.FormPanel, {
     frame: false, forceFit: true, 
     defaults: { msgTarget: 'under', anchor:'100%' },
     width: 800, height: 600,
@@ -2173,7 +2173,7 @@ Baseliner.FormEditor = Ext.extend( Ext.FormPanel, {
         });
     },
     getData : function(){
-        return this.getForm().getValues();
+        return this.getValues();
     }
 });
 
