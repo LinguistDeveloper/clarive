@@ -36,14 +36,14 @@ register 'service.fileman.retrieve' => {
 register 'service.fileman.store' => {
     name => 'Store Local File',
     form => '/forms/store_file.js',
-    icon => '/static/images/icons/drive_edit.png',
+    icon => '/static/images/icons/drive_disk.png',
     handler => \&run_store,
 };
 
 register 'service.fileman.write' => {
     name => 'Write Local File',
     form => '/forms/write_file.js',
-    icon => '/static/images/icons/drive_disk.png',
+    icon => '/static/images/icons/drive_edit.png',
     handler => \&run_write,
 };
 
