@@ -19,7 +19,7 @@ register 'action.job.restart' => { name=>'Restart Jobs' };
 register 'config.job.states' => {
   metadata => [
     { id      => "states",
-      default => [qw/EXPIRED RUNNING FINISHED CANCELLED ERROR KILLED WAITING/]
+      default => [qw/EXPIRED RUNNING FINISHED CANCELLED ERROR KILLED WAITING IN-EDIT READY APPROVAL ROLLBACK REJECTED PAUSED RESUME SUSPENDED ROLLBACKFAIL ROLLEDBACK PENDING SUPERSEDED/]
     }
   ]
 };

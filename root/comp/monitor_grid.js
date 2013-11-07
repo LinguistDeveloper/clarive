@@ -191,15 +191,22 @@
     // Job Status Filter
 
     var job_states_json = <% $job_states_json %>;
-    var job_states_check_state = {
-      CANCELLED: true,
-      ERROR: true,
-      EXPIRED: true,
-      FINISHED: true,
-      KILLED: true,
-      RUNNING: true,
-      WAITING: true
-    };
+    
+    //var job_states_check_state = {
+    //  CANCELLED: true,
+    //  ERROR: true,
+    //  EXPIRED: true,
+    //  FINISHED: true,
+    //  KILLED: true,
+    //  RUNNING: true,
+    //  WAITING: true,
+    //};
+    
+    var job_states_check_state = {};
+    for (i=0; i<job_states_json.length;i++){
+        job_states_check_state[job_states_json[i].name] = true;
+    }
+
     var to_perl_bool = function (obj) { // Object -> Object
       // Converts Javascript booleans to Perl's C-like notation. Just in case. 
       var ret = obj;
