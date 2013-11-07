@@ -21,7 +21,7 @@ params:
     var records = data && data[ meta.bd_field ]? data[ meta.bd_field ] : '[]';
     var grid = new Baseliner.GridEditor({
 		fieldLabel: _(meta.name_field),
-		allowBlank: allow,
+		allowBlank: readonly ? true : allow,
 		readOnly: readonly,
         width: meta.width || '100%',
         height: meta.height || 300,
@@ -32,8 +32,7 @@ params:
         records: records, 
         preventMark: false,        
         columns: meta.columns,
-        readOnly: meta.readonly!=undefined ? meta.readonly : true,
-        disabled: meta.readonly!=undefined ? meta.readonly : true,
+        disabled: readonly,
         viewConfig: {
             forceFit: meta.forceFit || true
         }
