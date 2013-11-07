@@ -466,8 +466,8 @@
             var stmts_menu = new Ext.menu.Menu({
                 items: [
                     { text: _('Configuration'), handler: function(){ edit_node( node ) }, icon:'/static/images/icons/edit.gif' },
-                    { text: _('Properties'), handler: function(){ meta_node( node ) }, icon:'/static/images/icons/leaf.gif' },
                     { text: _('Rename'), handler: function(){ rename_node( node ) }, icon:'/static/images/icons/item_rename.png' },
+                    { text: _('Properties'), handler: function(){ meta_node( node ) }, icon:'/static/images/icons/leaf.gif' },
                     { text: _('Copy'), handler: function(item){ copy_node( node ) }, icon:'/static/images/icons/copy.gif' },
                     { text: _('Cut'), handler: function(item){ cut_node( node ) }, icon:'/static/images/icons/cut.gif' },
                     { text: _('Paste'), handler: function(item){ paste_node( node ) }, icon:'/static/images/icons/paste.png' },

@@ -106,7 +106,7 @@ sub run_ship {
     my $stash = $c->stash;
     my $job_dir = $stash->{job_dir};
     my $job_mode = $stash->{job_mode};
-    my $stmt  = $stash->{current_statement_name};
+    my $task  = $stash->{current_task_name};
 
     my $remote_path = $config->{remote_path} // _fail 'Missing parameter remote_file';
     my $local_path  = $config->{local_path}  // _fail 'Missing parameter local_file';
@@ -119,8 +119,11 @@ sub run_ship {
     my $backup_mode = $config->{backup_mode} // 'backup'; 
     my $rollback_mode = $config->{rollback_mode} // 'rollback'; 
     my $needs_rollback_mode = $config->{needs_rollback_mode} // 'nb_after'; 
-    my $needs_rollback_key = $config->{needs_rollback_key} // $stmt;
+    my $needs_rollback_key = $config->{needs_rollback_key} // $task;
     $stash->{needs_rollback}{ $needs_rollback_key } = 1 if $needs_rollback_mode eq 'nb_always';
+    my ($include_path,$exclude_path) = @{ $config }{qw(include_path exclude_path)};
+    
+    _fail _loc "Server not configured" unless length $config->{server};
 
     for my $server ( split /,/, $config->{server} ) {
         $server = ci->new( $server ) unless ref $server;
@@ -142,8 +145,9 @@ sub run_ship {
         }
         $log->debug( _loc('local_mode=%1, local list', $local_mode), \@locals );
         
-        for my $local ( @locals ) {
+        ITEM: for my $local ( @locals ) {
             $cnt++;
+
             # local path relative or pure filename?
             $log->debug( _loc('rel path mode `%1`, local=`%2`, anchor=`%3`', $rel_mode, $local, $anchor_path ) );
             my $local_path = 
@@ -152,20 +156,47 @@ sub run_ship {
                 : _file($local)->relative( $anchor_path );
             $local_path = $server->parse_vars("$local_path");
             $log->debug( _loc('rel path mode `%1`, local_path=%2', $rel_mode, $local_path ) );
+            
+            # filters?
+            my $flag;
+            IN: for my $in ( _array( $include_path ) ) {
+                $flag //= 0;
+                if( $local_path =~ _regex($in) ) {
+                    $flag =$in;
+                    last IN;
+                }
+            }
+            if( defined $flag && !$flag ) {
+                _debug "File not included path `$local_path` due to rule `$flag`";
+                next ITEM;
+            }
+            for my $ex ( _array( $exclude_path ) ) {
+                if( $local_path =~ _regex($ex) ) {
+                    _debug "File excluded path `$local_path` due to rule `$ex`";
+                    next ITEM;
+                }
+            }
+            
             # set remote to remote + local_path, except on local_files w/ wildcard
-            #my $remote = $is_wildcard ? _file( $remote_path, $local_path ) : $remote_path;
             my $remote = _file( "$remote_path", "$local_path" );
             my $bkp_local = _file( $job->backup_dir, $server_str, $remote );
+
             # make a backup?
             if( $job_mode eq 'forward' && $backup_mode eq 'backup' ) {
                 if( ! -e $bkp_local ) {
                     $log->debug( _loc('Getting backup file from remote `%1` to `%2`', $remote, $bkp_local) );
                     push @backup_files, "$bkp_local";
                     my $bkp_dir = _file( $bkp_local )->dir->mkpath;
-                    $agent->get_file( local=>"$bkp_local", remote=>"$remote" );
+                    try {
+                        $agent->get_file( local=>"$bkp_local", remote=>"$remote" );
+                    } catch {
+                        my $err = shift;
+                        $log->warn( _loc('No backup file found in remote. Ignored: `%1`', $remote), "$err" );
+                    };
                 }
             }
-            # rollback 
+
+            # rollback ?
             if( $job_mode eq 'rollback' && $rollback_mode =~ /^rollback/ ) {
                 if( -e $bkp_local ) {
                     $log->debug( _loc( 'Rollback switch to local file `%1`', $bkp_local ) );
@@ -175,7 +206,8 @@ sub run_ship {
                 }
             }
             $log->info( _loc( 'Sending file `%1` to `%2`', $local, "*$server_str*".':'.$remote ) );
-            # done here
+            
+            # ship done here
             $stash->{needs_rollback}{ $needs_rollback_key } = 1 if $needs_rollback_mode eq 'nb_before';
             $agent->put_file(
                 local  => "$local",
@@ -207,7 +239,6 @@ sub run_retrieve {
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
     my $stash = $c->stash;
-    my $stmt  = $stash->{current_statement_name};
 
     my $remote = $config->{remote_path} // _fail 'Missing parameter remote_file';
     my $local  = $config->{local_path} // _fail 'Missing parameter local_file';

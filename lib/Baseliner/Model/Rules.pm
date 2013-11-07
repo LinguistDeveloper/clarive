@@ -65,7 +65,7 @@ sub build_tree {
     } else {
         # no json rule_tree, look for legacy data
         my @tree;
-        my @rows = DB->BaliRuleStatement->search( { id_rule => $id_rule, id_parent => $parent },
+        my @rows = DB->BaliRuleStatement->search( { id_rule => $id_rule, id_parent => $parent }, # XXX legacy, deprecated
             { order_by=>{ -asc=>'id' } } )->hashref->all;
         if( !defined $parent ) {
             my $rule_type = $rule->rule_type;
@@ -144,29 +144,29 @@ sub dsl_build {
         my $data = $attr->{data} || {};
         my $data_key = length $attr->{data_key} ? $attr->{data_key} : _name_to_id( $name );
         my $closure = $attr->{closure};
-        push @dsl, sprintf( '# statement: %s', $name ) . "\n"; 
+        push @dsl, sprintf( '# task: %s', $name ) . "\n"; 
         if( $closure ) {
-            push @dsl, sprintf( 'current_statement($stash, q{%s}, sub{', $name )."\n";
+            push @dsl, sprintf( 'current_task($stash, q{%s}, sub{', $name )."\n";
         } else {
-            push @dsl, sprintf( 'current_statement($stash, q{%s});', $name )."\n";
+            push @dsl, sprintf( 'current_task($stash, q{%s});', $name )."\n";
         }
         if( $timeout > 0 ) {
             push @dsl, sprintf( 'alarm %s;', $timeout )."\n";
         }
-        push @dsl, sprintf( '_debug(q{=====| Current Rule Statement: %s} );', $name)."\n" if $p{verbose}; 
+        push @dsl, sprintf( '_debug(q{=====| Current Rule Task: %s} );', $name)."\n" if $p{verbose}; 
         if( length $attr->{key} ) {
             my $key = $attr->{key};
             my $reg = Baseliner->registry->get( $key );
             if( $reg->isa( 'BaselinerX::Type::Service' ) ) {
                 push @dsl, $spaces->($level) . '{';
                 push @dsl, $spaces->($level) . sprintf(q{   my $config = parse_vars %s, $stash;}, Data::Dumper::Dumper( $data ) );
-                push @dsl, $spaces->($level) . sprintf(q{   launch( "%s", $stash, $config => '%s' );}, $key, $data_key );
+                push @dsl, $spaces->($level) . sprintf(q{   launch( "%s", q{%s}, $stash, $config => '%s' );}, $key, $name, $data_key );
                 push @dsl, $spaces->($level) . '}';
                 #push @dsl, $spaces->($level) . sprintf('merge_data($stash, $ret );', Data::Dumper::Dumper( $data ) );
             } else {
                 push @dsl, _array( $reg->{dsl}->($self, { %$attr, %$data, children=>$children, data_key=>$data_key }, %p ) );
             }
-            push @dsl, '});' if $closure; # current_statement close
+            push @dsl, '});' if $closure; # current_task close
         } else {
             _debug $s;
             _fail _loc 'Missing dsl/service key for node %1', $name;
@@ -200,7 +200,7 @@ sub dsl_run {
     
     merge_into_stash( $stash, BaselinerX::CI::variable->default_hash ); 
     ## local $Baseliner::Utils::caller_level = 3;
-    ############################## EVAL DSL STATEMENTS
+    ############################## EVAL DSL Tasks
     $ret = eval $dsl;
     ##############################
     alarm 0;
@@ -328,11 +328,12 @@ sub project_changes {
     }
 }
 
-sub current_statement {
+sub current_task {
     my ($stash,$name, $code)=@_;
-    $stash->{current_statement_name} = $name;
+    $name = parse_vars( $name, $stash );  # so we can have vars in task names
+    $stash->{current_task_name} = $name;
     if( my $job = $stash->{job} ) {
-        $job->start_statement( $name );
+        $job->start_task( $name );
     }
     $code->() if $code;
 }
@@ -348,12 +349,17 @@ sub cut_nature_items {
 
 # launch runs service, merge return into stash and returns what the service returns
 sub launch {  
-    my ($key, $stash, $config, $data_key )=@_;
+    my ($key, $task, $stash, $config, $data_key )=@_;
     
-    #my $ret = Baseliner->launch( $key, data=>$stash );  # comes with a dummy job
+    $task = parse_vars( $task, $stash );
     my $reg = Baseliner->registry->get( $key );
-    _log "running container for $key";
-    my $return_data = $reg->run_container( $stash, $config ); 
+    #_log "running container for $key";
+    my $return_data = try { 
+        $reg->run_container( $stash, $config );
+    } catch {
+        my $err = shift;
+        die _loc( 'Error running task * %1 *: %2', $task, $err ) . "\n"; # there's another catch later, so no need to _fail here
+    };
     # TODO milestone for service
     #_debug $ret;
     my $refr = ref $return_data;
@@ -435,7 +441,7 @@ register 'statement.if.var' => {
 };
 
 register 'statement.if_not.var' => {
-    text => 'IF var ne xxx THEN',
+    text => 'IF var ne value THEN',
     type => 'if',
     data => { variable=>'', value=>'' },
     dsl => sub { 
@@ -712,7 +718,6 @@ register 'statement.perl.eval' => {
 
 register 'statement.perl.do' => {
     text => 'DO', data => { code=>'' },
-    type => 'loop',
     icon => '/static/images/circular/cog.png', 
     form => '/forms/stmt_eval.js', 
     dsl => sub { 
