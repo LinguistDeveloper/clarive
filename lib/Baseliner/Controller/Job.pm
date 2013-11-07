@@ -379,13 +379,15 @@ sub monitor_json : Path('/job/monitor_json') {
         my $type = _loc( $r->{type} );
         my @changesets = (); #_array $job_items{ $r->{id} };
         my ($contents,$apps)=([],[]);  # support for legacy jobs without cis
+        my @natures;
         if( my $ci = try { ci->new( $r->{mid} ) } catch { '' } ) {   # if -- support legacy jobs without cis?
-        $contents = [ map { $_->topic_name } _array $ci->changesets ];
-        $apps = [ map { $_->name } _array $ci->projects ];
+            $contents = [ map { $_->topic_name } _array $ci->changesets ];
+            $apps = [ map { $_->name } _array $ci->projects ];
+            @natures = map { $_->name } _array $ci->natures;
         }
         my $last_log_message = $r->{last_log_message};
 
-        my @natures = ();
+         
 
         # Scheduled, Today, Yesterday, Weekdays 1..7, 1..4 week ago, Last Month, Older
         my $grouping='';
