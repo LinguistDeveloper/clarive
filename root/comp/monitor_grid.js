@@ -3,6 +3,7 @@
   $job_states_json => $ARGS{job_states_json}
   $envs_json       => $ARGS{envs_json}
   $types_json      => $ARGS{types_json}
+  $query_id        => '-1'
 </%args>
 <%perl>
     use Baseliner::Sugar;
@@ -310,7 +311,7 @@
     var store = new Baseliner.GroupingStore({
             reader: reader,
             url: '/job/monitor_json',
-            baseParams: { limit: ps },
+            baseParams: { limit: ps, query_id: '<% $query_id %>' },
             remoteSort: true,
             sortInfo: { field: 'starttime', direction: "DESC" },
             groupField: group_field
