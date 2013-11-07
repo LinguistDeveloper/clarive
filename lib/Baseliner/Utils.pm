@@ -253,10 +253,12 @@ sub _load {
     my @args = @_;
     return try {
         my $str = $args[0]; 
-        utf8::encode( $str ) if utf8::valid( $str );  # TODO consider using _to_utf8 - a decode may be needed before
-        $str =~ s{!!perl/code }{}g;
-        my $obj = YAML::XS::Load( $str );
-        $obj;
+        if ( $str ) {
+            utf8::encode( $str ) if utf8::valid( $str );  # TODO consider using _to_utf8 - a decode may be needed before
+            $str =~ s{!!perl/code }{}g;
+            my $obj = YAML::XS::Load( $str );
+            return $obj;
+        } 
     } catch { 
         my $err = shift;
         local $Baseliner::Utils::caller_level = 2;
