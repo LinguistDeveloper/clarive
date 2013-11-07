@@ -276,49 +276,59 @@ sub monitor_json : Path('/job/monitor_json') {
         end      =>"me.endtime",
     });
     
-    if( exists $p->{job_state_filter} ) {
-        my @job_state_filters = do {
-                my $job_state_filter = decode_json $p->{job_state_filter};
-                _unique grep { $job_state_filter->{$_} } keys %$job_state_filter;
-        };
-        $where->{status} = \@job_state_filters;
-    }
-
-    # Filter by nature
-    if (exists $p->{filter_nature} && $p->{filter_nature} ne 'ALL' ) {
-        # TODO nature only exists after PRE executes, "Load natures" $where->{'bali_job_items_2.item'} = $p->{filter_nature};
-        my @natures = _array $p->{filter_nature};
-
-        my $rs_jobs = Baseliner->model('Baseliner::BaliMasterRel')->search({rel_type => 'job_nature', to_mid => \@natures}
-                                                                           ,{select=>'from_mid'})->as_query;
-        $where->{'mid'} = {-in => $rs_jobs };
-    }
-
-    # Filter by environment name:
-    if (exists $p->{filter_bl}) {      
-      $where->{bl} = $p->{filter_bl};
-    }
-
-    # Filter by job_type
-    if (exists $p->{filter_type}) {      
-      $where->{type} = $p->{filter_type};
-    }
-
-    #dashboard
-    
-    if($query_id){
-        my @arreglo = split(",",$query_id);
-        $where->{'me.id'} = \@arreglo;
-    }  
-
     # user content
-    if( $username && ! $perm->is_root( $username ) && ! $perm->user_has_action( username=>$username, action=>'action.job.viewall' ) ) {
-        my @user_apps = $perm->user_projects_names( username=>$username ); # user apps
-        # TODO check cs topics relationship with projects
-        # $where->{'bali_job_items.application'} = { -in => \@user_apps } if ! ( grep { $_ eq '/'} @user_apps );
-        # username can view jobs where the user has access to view the jobcontents corresponding app
-        # username can view jobs if it has action.job.view for the job set of job_contents projects/app/subapl
+    #if( $username && ! $perm->is_root( $username ) && ! $perm->user_has_action( username=>$username, action=>'action.job.viewall' ) ) {
+    #    my @user_apps = $perm->user_projects_names( username=>$username ); # user apps
+    #    # TODO check cs topics relationship with projects
+    #    # $where->{'bali_job_items.application'} = { -in => \@user_apps } if ! ( grep { $_ eq '/'} @user_apps );
+    #    # username can view jobs where the user has access to view the jobcontents corresponding app
+    #    # username can view jobs if it has action.job.view for the job set of job_contents projects/app/subapl
+    #}
+    
+    if($query_id eq '-1'){
+        my @ids_project = $perm->user_projects_with_action(username => $username,
+                                                                            action => 'action.job.viewall',
+                                                                            level => 1);
+        
+        my $rs_jobs1 = Baseliner->model('Baseliner::BaliMasterRel')->search({rel_type => 'job_project', to_mid => \@ids_project}
+                                                                           ,{select=>'from_mid'})->as_query;
+        $where->{'mid'} = {-in => $rs_jobs1 };
+        
+        
+        if( exists $p->{job_state_filter} ) {
+            my @job_state_filters = do {
+                    my $job_state_filter = decode_json $p->{job_state_filter};
+                    _unique grep { $job_state_filter->{$_} } keys %$job_state_filter;
+            };
+            $where->{status} = \@job_state_filters;
+        }
+    
+        # Filter by nature
+        if (exists $p->{filter_nature} && $p->{filter_nature} ne 'ALL' ) {
+            # TODO nature only exists after PRE executes, "Load natures" $where->{'bali_job_items_2.item'} = $p->{filter_nature};
+            my @natures = _array $p->{filter_nature};
+    
+            my $rs_jobs2 = Baseliner->model('Baseliner::BaliMasterRel')->search({rel_type => 'job_nature', to_mid => \@natures, from_mid => {-in => $rs_jobs1}}
+                                                                               ,{select=>'from_mid'})->as_query;
+          
+            $where->{'mid'} = {-in => $rs_jobs2 };
+        }
+    
+        # Filter by environment name:
+        if (exists $p->{filter_bl}) {      
+          $where->{bl} = $p->{filter_bl};
+        }
+    
+        # Filter by job_type
+        if (exists $p->{filter_type}) {      
+          $where->{type} = $p->{filter_type};
+        }
+    }else{
+        #Cuando viene por el dashboard
+        my @jobs = split(",",$query_id);
+        $where->{'mid'} = \@jobs;
     }
+    
     _debug $where;
 
     #### FROM 
@@ -369,13 +379,15 @@ sub monitor_json : Path('/job/monitor_json') {
         my $type = _loc( $r->{type} );
         my @changesets = (); #_array $job_items{ $r->{id} };
         my ($contents,$apps)=([],[]);  # support for legacy jobs without cis
+        my @natures;
         if( my $ci = try { ci->new( $r->{mid} ) } catch { '' } ) {   # if -- support legacy jobs without cis?
-        $contents = [ map { $_->topic_name } _array $ci->changesets ];
-        $apps = [ map { $_->name } _array $ci->projects ];
+            $contents = [ map { $_->topic_name } _array $ci->changesets ];
+            $apps = [ map { $_->name } _array $ci->projects ];
+            @natures = map { $_->name } _array $ci->natures;
         }
         my $last_log_message = $r->{last_log_message};
 
-        my @natures = ();
+         
 
         # Scheduled, Today, Yesterday, Weekdays 1..7, 1..4 week ago, Last Month, Older
         my $grouping='';
@@ -675,7 +687,7 @@ sub monitor : Path('/job/monitor') {
     if($dashboard){
         $c->stash->{query_id} = $c->stash->{jobs};
     }
-
+    
     $c->stash->{natures_json}    = $self->natures_json;
     $c->stash->{job_states_json} = $self->job_states_json;
     $c->stash->{envs_json}       = $self->envs_json;
