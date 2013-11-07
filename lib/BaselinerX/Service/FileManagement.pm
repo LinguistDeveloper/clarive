@@ -36,7 +36,15 @@ register 'service.fileman.retrieve' => {
 register 'service.fileman.store' => {
     name => 'Store Local File',
     form => '/forms/store_file.js',
+    icon => '/static/images/icons/drive_edit.png',
     handler => \&run_store,
+};
+
+register 'service.fileman.write' => {
+    name => 'Write Local File',
+    form => '/forms/write_file.js',
+    icon => '/static/images/icons/drive_disk.png',
+    handler => \&run_write,
 };
 
 register 'service.fileman.rm' => {
@@ -72,6 +80,29 @@ sub run_tar_nature {
     $log->info( _loc('Tar of directory `%1` into file `%2`', $config->{source_dir}, $config->{tarfile}), 
             $config );
     Util->tar_dir( %$config, files=>\@files ); 
+}
+    
+sub run_write {
+    my ($self, $c, $config ) = @_;
+
+    my $job   = $c->stash->{job};
+    my $log   = $job->logger;
+    my $stash = $c->stash;
+    my $filepath = $config->{filepath};
+    my $file_encoding = $config->{file_encoding};
+    my $body_encoding = $config->{body_encoding};
+    my $body = $config->{body};
+    
+    require Encode;
+    Encode::from_to( $body, $body_encoding, $file_encoding )
+        if $body_encoding && ( $file_encoding ne $body_encoding );
+    
+    my $open_str = $file_encoding ? ">encoding($file_encoding)" : '>';
+    open my $ff, $open_str, $filepath
+        or _fail _loc 'Could not open file for writing (%1): %2', $!;
+    print $ff $body;
+    close $ff;
+    return $filepath;
 }
     
 sub run_store {
