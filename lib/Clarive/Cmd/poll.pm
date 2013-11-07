@@ -23,6 +23,8 @@ has url_web       => qw(is rw isa Any);
 has url_nginx     => qw(is rw isa Any);
 has api_key       => qw(is rw isa Any);
 has pid_filter    => qw(is rw isa Any);
+has web           => qw(is rw isa Any default 1);
+has nginx         => qw(is rw isa Any default 1);
 has mongo         => qw(is rw isa Any default 1);
 has redis         => qw(is rw isa Any default 1);
 has timeout_web   => qw(is rw isa Num default 5);
@@ -41,8 +43,10 @@ Options:
   --url_web               clarive web url
   --url_nginx             nginx web url
   --api_key               api key to login to clarive
-  --mongo                 1=try mongo connection, 0=ignore mongo
-  --redis                 1=try redis connection, 0=ignore redis status
+  --web                   1=try clarive web connection, 0=skip
+  --nginx                 1=try nginx connection, 0=skip nginx
+  --mongo                 1=try mongo connection, 0=skip mongo
+  --redis                 1=try redis connection, 0=skip redis status
   --timeout_web           seconds to wait for clarive/nginx web response, 0=no timeout
   --error_rc              return code for fatal errors
   --pid_filter            regular expression to filter in pid files
@@ -87,7 +91,7 @@ sub run {
         }
     }
 
-    $rc += $self->call_web( %opts ); 
+    $rc += $self->call_web( %opts ) if $self->web; 
     
     if( $self->mongo ) {
         require MongoDB;
