@@ -2153,6 +2153,52 @@ Baseliner.CICheckBox = Ext.extend( Baseliner.CheckBoxField, {
     }
 });
 
+Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
+    labelAlign: 'right',
+    is_valid : function(){
+        var self = this;
+        var form2 = this.getForm();
+        var is_valid = form2.isValid();
+        this.cascade(function(obj){
+            var sty = 'border: solid 1px rgb(255,120,112); margin_bottom: 0px';
+			//console.dir(obj.name, obj.allowBlank, obj.is_valid);
+            if( obj.name && !obj.allowBlank && obj.is_valid ) {
+                if( !obj.is_valid() ) {
+                    is_valid = false;
+                    obj.getEl().applyStyles(sty);
+					if( !obj.on_change_lab ) {
+						var lab = Ext.DomHelper.insertAfter(obj.getEl(),{id: 'lbl_required_'+obj.name, html:'<div class="x-form-invalid-msg">'+_('This field is required')+'</div>'});
+						obj.on_change_lab = lab;
+						obj.on('change', function(){
+							if( obj.is_valid() ) {
+								obj.getEl().applyStyles('border: none; margin_bottom: 0px');
+								obj.on_change_lab.style.display = 'none';
+							} else {
+								obj.getEl().applyStyles(sty);
+								obj.on_change_lab.style.display = 'block';
+							}
+						});
+					}
+                }
+            }
+        });
+        return is_valid;
+    },
+    getValues : function(a,b,c){
+        var form2 = this.getForm();
+        var form_data = form2.getValues() || {};
+        this.cascade(function(obj){
+            if( obj.name && obj.get_save_data ) {
+                form_data[ obj.name ] = obj.get_save_data();
+            }
+        });
+        for( var k in form_data ) {
+            if( k.indexOf('ext-comp-')==0 ) delete form_data[k];
+        }
+        return form_data;
+    }
+});
+
 Baseliner.FormEditor = Ext.extend( Baseliner.FormPanel, {
     frame: false, forceFit: true, 
     defaults: { msgTarget: 'under', anchor:'100%' },
@@ -2876,52 +2922,6 @@ Ext.apply(Ext.layout.FormLayout.prototype, {
 });
 
  
-Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
-    labelAlign: 'right',
-    is_valid : function(){
-        var self = this;
-        var form2 = this.getForm();
-        var is_valid = form2.isValid();
-        this.cascade(function(obj){
-            var sty = 'border: solid 1px rgb(255,120,112); margin_bottom: 0px';
-			//console.dir(obj.name, obj.allowBlank, obj.is_valid);
-            if( obj.name && !obj.allowBlank && obj.is_valid ) {
-                if( !obj.is_valid() ) {
-                    is_valid = false;
-                    obj.getEl().applyStyles(sty);
-					if( !obj.on_change_lab ) {
-						var lab = Ext.DomHelper.insertAfter(obj.getEl(),{id: 'lbl_required_'+obj.name, html:'<div class="x-form-invalid-msg">'+_('This field is required')+'</div>'});
-						obj.on_change_lab = lab;
-						obj.on('change', function(){
-							if( obj.is_valid() ) {
-								obj.getEl().applyStyles('border: none; margin_bottom: 0px');
-								obj.on_change_lab.style.display = 'none';
-							} else {
-								obj.getEl().applyStyles(sty);
-								obj.on_change_lab.style.display = 'block';
-							}
-						});
-					}
-                }
-            }
-        });
-        return is_valid;
-    },
-    getValues : function(a,b,c){
-        var form2 = this.getForm();
-        var form_data = form2.getValues() || {};
-        this.cascade(function(obj){
-            if( obj.name && obj.get_save_data ) {
-                form_data[ obj.name ] = obj.get_save_data();
-            }
-        });
-        for( var k in form_data ) {
-            if( k.indexOf('ext-comp-')==0 ) delete form_data[k];
-        }
-        return form_data;
-    }
-});
-
 /* 
  *  new Baseliner.UploadFilesPanel({
  *      allowBlank  : meta.allowBlank,
