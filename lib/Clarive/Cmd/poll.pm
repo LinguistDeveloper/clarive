@@ -1,6 +1,6 @@
 =head1 NAME
 
-poll - check if processes are started, start if not
+poll - check if processes are started
 
 =cut
 
@@ -22,30 +22,37 @@ with 'Clarive::Role::TempDir';
 has url_web       => qw(is rw isa Any);
 has url_nginx     => qw(is rw isa Any);
 has api_key       => qw(is rw isa Any);
-has mongo         => qw(is rw isa Any);
-has redis         => qw(is rw isa Any);
-has timeout       => qw(is rw isa Num default 5);
+has mongo         => qw(is rw isa Any default 1);
+has redis         => qw(is rw isa Any default 1);
+has timeout_web   => qw(is rw isa Num default 5);
 has error_rc      => qw(is rw isa Num default 10);
 
 our $CAPTION = 'monitoring tool';
 
-sub _help {
-    print << 'EOF';
+=head1 Clarive Poll Monitoring
+
 Usage:
   cla poll
 
 Options:
-  -h                      : this help
 
-EOF
-}
+  -h                      this help
+  --url_web               clarive web url
+  --url_nginx             nginx web url
+  --api_key               api key to login to clarive
+  --mongo                 1=try mongo connection, 0=ignore mongo
+  --redis                 1=try redis connection, 0=ignore redis status
+  --timeout_web           seconds to wait for clarive/nginx web response, 0=no timeout
+  --error_rc              return code for fatal errors
+
+=cut
 
 sub sayts { print DateTime->now( time_zone=>'CET' ), ' - ', @_, "\n" }
 sub errts { print STDERR DateTime->now( time_zone=>'CET' ), ' - ', @_, "\n" }
 
 sub _find_pid {
     my ($self, $pidfile, $cnt )  = @_;
-    my $pidfile = $pidfile . ($cnt ? $cnt : '' );
+    $pidfile = $pidfile . ($cnt ? $cnt : '' );
     my $clean_pid = sub { $_[0] =~ /^([0-9]+)/ ? $1 : $_[0] };
     if( defined $self->opts->{pid} ) {
         return $clean_pid->( $self->opts->{pid} );
@@ -105,7 +112,7 @@ sub run {
         };
     }
     
-    sayts "poll finished with rc=$rc";
+    sayts "poll finished. RC = $rc";
     exit $rc;
 }
 
@@ -122,7 +129,7 @@ sub call_web {
     $uri->query_form({ api_key=>$self->api_key });
     my $request = HTTP::Request->new( 'GET' => $uri );
     my $ua = LWP::UserAgent->new();
-    $ua->timeout( $self->timeout ) if $self->timeout;
+    $ua->timeout( $self->timeout_web ) if $self->timeout_web;
     #for my $k ( keys %$headers ) {
     #    $ua->default_header( $k => $headers->{$k} );
     #}
