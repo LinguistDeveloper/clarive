@@ -778,7 +778,11 @@ sub next_status_for_user {
         }    
     } else {
         my @user_wf = $self->user_workflow( $username );
-        @to_status = sort { $a->{seq} <=> $b->{seq} } grep { $_->{id_category} eq $p{id_category} && $_->{id_status_from} eq $p{id_status_from} && $_->{id_status_to} ne $p{id_status_from} } @user_wf; 
+        @to_status = sort { ($a->{seq} // 0 ) <=> ( $b->{seq} // 0 ) } grep {
+            $_->{id_category} eq $p{id_category}
+                && $_->{id_status_from} eq $p{id_status_from}
+                && $_->{id_status_to} ne $p{id_status_from}
+        } @user_wf;
     }
 
     return @to_status;

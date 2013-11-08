@@ -600,7 +600,7 @@ sub view : Local {
             #workflow category-status
             #my $username = $c->is_root ? '' : $c->username;
             
-            my @statuses = sort { $a->{seq} cmp $b->{seq} } $c->model('Topic')->next_status_for_user(
+            my @statuses = sort { ( $a->{seq} // 0 ) cmp ( $b->{seq} // 0 ) } $c->model('Topic')->next_status_for_user(
                 id_category    => $category->id,
                 id_status_from => $category->topics->status->id,
                 username       => $c->username,
