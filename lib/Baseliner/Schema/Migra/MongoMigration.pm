@@ -46,7 +46,7 @@ sub run {
         bali_dashboard_role  => 'dashboard_role',
         bali_event           => { coll=>'event', capped=>1, size=>(1024*1024*50), max=>1000 },
         bali_job             => 'job',
-        bali_job_items       => 'job_items',
+        # bali_job_items       => 'job_items',
         bali_label           => 'label',
         bali_label_project   => 'label_project',
 
@@ -155,9 +155,12 @@ sub convert_schemas {
         mdb->master_doc->drop;
         $self->each('bali_master', sub{
             my $r = shift;
-            my $doc = Util->_load( delete $r->{yaml} );
+            #my $doc = Util->_load( delete $r->{yaml} ) // {};
+            my $doc = try { ci->new( $r->{mid} ) } catch { undef };
+            return unless $doc;
             $doc = { %$doc, %$r }; # merge yaml with master row, so that doc has all attributes for searching
             Util->_unbless( $doc );
+            delete $doc->{yaml};
             $doc->{mid} = "$r->{mid}";
             mdb->clean_doc( $doc );
             mdb->master_doc->insert( $doc );
@@ -381,6 +384,16 @@ sub each {
     while( my $row = $rs->hash ) {
         $code->( $row ); 
     }
+}
+
+sub clean_master_topic {
+   for ( _dbis->query(q{select name,mid from bali_master m where m.collection='topic' and not exists 
+    (select 1 from bali_topic t where t.mid=m.mid)})->hashes ){
+        warn "Deleting master mid $_->{mid} not found in topic...";
+        my $x = DB->BaliMaster->find($_->{mid});
+        next unless $x;
+        $x->delete
+    } 
 }
 
 sub topic_view {

@@ -193,6 +193,9 @@ sub index_all {
             [{ mid=>1 },{ unique=>1 }],
             [{'$**'=> "text"}],
         ],
+        job => [
+            [{ mid=>1 },{ unique=>1 }],
+        ],
         topic_image => [
             [{ id_hash => 1 }]
         ],
@@ -245,6 +248,12 @@ sub clean_doc {
         }
         elsif( ref $v eq 'ARRAY' ) {
             $self->clean_doc( $_ ) for _array( $v ); 
+        }
+        elsif( ref $v eq 'SCALAR' ) {
+            $doc->{$k} = $$v;
+        }
+        elsif( ref $v eq 'GLOB' ) {
+            delete $doc->{$k};
         }
     }
 }
