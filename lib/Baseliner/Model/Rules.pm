@@ -475,6 +475,7 @@ register 'statement.if.condition' => {
 register 'statement.if.var.list' => {
     text => 'IF var in LIST THEN',
     type => 'if',
+    form => '/forms/variable_values.js',
     data => { variable=>'', values=>'' },
     dsl => sub { 
         my ($self, $n , %p) = @_;
