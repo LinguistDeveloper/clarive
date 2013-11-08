@@ -4790,3 +4790,6 @@ msgstr "Descripción"
 
 msgid "Topics by status"
 msgstr "Tópicos por estado"
+
+msgid "Topics open by status"
+msgstr "Tópicos abiertos por estado"

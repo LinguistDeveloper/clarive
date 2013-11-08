@@ -1,14 +1,14 @@
 <!--
-name: Statuses 
-description: Chart pie (Statuses by categories)
-url: /dashboard/statuses_by_categories
-html: /dashlets/statuses_by_categories_pie.html
+name: Topics open by status 
+description: Chart pie (Topics open by status)
+url: /dashboard/topics_open_by_status
+html: /dashlets/topics_open_by_status_pie.html
 -->
 <%perl>
     use Baseliner::Utils;
-    my $graph_id = "statuses_pie". _nowstamp;
-    my @statuses_by_categories = $c->stash->{statuses_by_categories};
-    my $title = $c->stash->{statuses_by_categories_title};
+    my $graph_id = "topics_open_by_status_pie". _nowstamp;
+    my @topics_open_by_status = $c->stash->{topics_open_by_status};
+    my $title = $c->stash->{topics_open_by_status_title};
 </%perl>
 
 	
@@ -26,9 +26,9 @@ html: /dashlets/statuses_by_categories_pie.html
     var data = new Array();
     var status_id = new Array();
 
-%foreach my $status (_array @statuses_by_categories){
-        data.push({ label: "<% _loc($status->{status}) %>", status_id: "<%$status->{status_id}%>", data: [[1,<%$status->{total}%>]]});
-        status_id["<%$status->{status}%>"] = <%$status->{status_id}%>;
+%foreach my $topic (_array @topics_open_by_status){
+        data.push({ label: "<% _loc($topic->{status}) %>", status_id: "<%$topic->{status_id}%>", color:"<%$topic->{color}%>", data: [[1,<%$topic->{total}%>]]});
+        status_id["<%$topic->{status}%>"] = <%$topic->{status_id}%>;
 %}
 
         // DEFAULT
