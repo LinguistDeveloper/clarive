@@ -195,10 +195,22 @@ sub convert_schemas {
            my @fields = $db->query('select * from bali_topic_fields_custom where topic_mid=?', $r->{mid})->hashes;
            my @rels = $db->query('select r.rel_field, m.collection, m.name from bali_master_rel r,bali_master m where (m.mid=r.to_mid) and r.from_mid=?', $r->{mid})->hashes;
            my @rels2 = $db->query('select r.rel_field, m.collection, m.name from bali_master_rel r,bali_master m where (m.mid=r.from_mid) and r.to_mid=?', $r->{mid})->hashes;
+           my %cals = map {
+                my $slot = Util->_name_to_id($_->{slotname});
+                $_->{rel_field} => {
+                      $slot => {
+                        start_date      => $_->{start_date},
+                        end_date        => $_->{end_date},
+                        plan_start_date => $_->{plan_start_date},
+                        plan_end_date   => $_->{plan_end_date}
+                    }
+                    }
+            } $db->query( 'select * from bali_master_cal c where c.mid=?', $r->{mid} )->hashes;
            _debug \@rels;
            say "found custom fields for $r->{mid}: " . join ',', map { $_->{name} } @fields if @fields;
            $doc = {
                 %$doc,
+                %cals,
                 map( {
                     my $v = $_->{value_clob} || $_->{value};
                     $v = try { _load($v) } catch { $v } if $v;
