@@ -156,9 +156,11 @@ sub convert_schemas {
         $self->each('bali_master', sub{
             my $r = shift;
             #my $doc = Util->_load( delete $r->{yaml} ) // {};
-            my $doc = ci->new( $r->{mid} );
+            my $doc = try { ci->new( $r->{mid} ) } catch { undef };
+            return unless $doc;
             $doc = { %$doc, %$r }; # merge yaml with master row, so that doc has all attributes for searching
             Util->_unbless( $doc );
+            delete $doc->{yaml};
             $doc->{mid} = "$r->{mid}";
             mdb->clean_doc( $doc );
             mdb->master_doc->insert( $doc );
