@@ -76,8 +76,8 @@ html: /dashlets/statuses_by_categories_pie.html
     {
         if (!obj)
                     return;
-       //var title_category = '<div id="boot" style="background:transparent;height:14px"><span class="label" style="background-color:' + obj.series.color  + '">' + obj.series.label + '</span></div>';
-        //Baseliner.addNewTabComp('/topic/grid?category_id=' + obj.series.category_id[obj.series.label], _(title_category));
+        var title_status = '<div id="boot" style="background:transparent;height:14px"><span class="label" style="background-color:' + obj.series.color  + '">' + obj.series.label + '</span></div>';
+        Baseliner.addNewTabComp('/topic/grid?status_id=' + obj.series.status_id[obj.series.label], _(title_status));
     }
 
 </script>

@@ -37,7 +37,11 @@
         params.id_category = category_id;
         base_params.categories = category_id;
     }
-    
+	var status_id = '<% $c->stash->{status_id} %>';
+    if( status_id ) {
+        base_params.statuses = status_id;
+    }	
+	
     if( id_report ) {
         base_params.id_report = id_report;
     }
@@ -1135,7 +1139,7 @@
         var bp = store_topics.baseParams;
         var base_params;
         if( bp !== undefined )
-            base_params= { start: bp.start, limit: ps, sort: bp.sort, dir: bp.dir, typeApplication: typeApplication, topic_list: params.topic_list, id_project: id_project ? id_project : undefined, categories: category_id ? category_id : undefined  };        // object for merging with views 
+            base_params= { start: bp.start, limit: ps, sort: bp.sort, dir: bp.dir, typeApplication: typeApplication, topic_list: params.topic_list, id_project: id_project ? id_project : undefined, categories: category_id ? category_id : undefined, statuses: status_id ? status_id : undefined  };        // object for merging with views 
         var selected_filters = {labels: labels_checked, categories: categories_checked, statuses: statuses_checked, priorities: priorities_checked};
         
         //alert('selected_views ' + Ext.util.JSON.encode(selected_views));
@@ -1227,6 +1231,9 @@
 		if(category_id){
 			loader.baseParams = {category_id: category_id};	
 		}
+		if(status_id){
+			loader.baseParams = {status_id: status_id};	
+		}		
 		
 	});	
 	

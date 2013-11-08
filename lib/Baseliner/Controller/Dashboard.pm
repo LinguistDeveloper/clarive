@@ -1196,7 +1196,7 @@ sub statuses_by_categories: Local{
                 };
      }
     $c->stash->{statuses_by_categories} = \@datas;
-    $c->stash->{statuses_by_categories_title} = _loc('Statuses by categories');
+    $c->stash->{statuses_by_categories_title} = _loc('Topics by status');
 
 }
 
