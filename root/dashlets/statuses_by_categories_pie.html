@@ -1,0 +1,84 @@
+<!--
+name: Statuses 
+description: Chart pie (Statuses by categories)
+url: /dashboard/statuses_by_categories
+html: /dashlets/statuses_by_categories_pie.html
+-->
+<%perl>
+    use Baseliner::Utils;
+    my $graph_id = "statuses_pie". _nowstamp;
+    my @statuses_by_categories = $c->stash->{statuses_by_categories};
+    my $title = $c->stash->{statuses_by_categories_title};
+</%perl>
+
+	
+	<div id="principal" style="clear:left;" >
+		<h2><%$title%></h2><br>
+		<div id="<%$graph_id%>" 
+			style="width: 250px; height: 250px; float: left; " 
+			onmouseout="document.body.style.cursor='default';"></div>
+		<div id="<%$graph_id%>legend" ></div>
+	</div>
+
+
+<script type="text/javascript">
+    $(function () {
+    var data = new Array();
+    var status_id = new Array();
+
+%foreach my $status (_array @statuses_by_categories){
+        data.push({ label: "<% _loc($status->{status}) %>", status_id: "<%$status->{status_id}%>", data: [[1,<%$status->{total}%>]]});
+        status_id["<%$status->{status}%>"] = <%$status->{status_id}%>;
+%}
+
+        // DEFAULT
+        $.plot($("#<%$graph_id%>"), data, 
+        {
+            series: {
+                status_id: status_id,
+                pie: {
+                    show: true,
+                    radius: 0.9,
+                    tilt: 0.7,
+                    label: {
+                        show: true,
+                        radius: 3/4,
+                        formatter: function(label, series){
+                            return '<div style="font-size:8pt;text-align:center;padding:2px;color:white;">'+Math.round(series.percent)+'%</div>';
+                        },
+                        background: { opacity: 0 },
+                        threshold: 0.03
+                    }
+                }
+            },
+            legend: {
+                show: true,
+                container: '#<%$graph_id%>legend'
+
+            },
+            grid: {
+                hoverable: true,
+                clickable: true
+            }        
+        });
+        $("#<%$graph_id%>").bind("plothover", pieHover);
+        $("#<%$graph_id%>").bind("plotclick", pieClick);    
+    });
+
+    function pieHover(event, pos, obj) 
+    {
+        if (!obj)
+                    return;
+        document.body.style.cursor='pointer';
+    }
+
+    function pieClick(event, pos, obj) 
+    {
+        if (!obj)
+                    return;
+       //var title_category = '<div id="boot" style="background:transparent;height:14px"><span class="label" style="background-color:' + obj.series.color  + '">' + obj.series.label + '</span></div>';
+        //Baseliner.addNewTabComp('/topic/grid?category_id=' + obj.series.category_id[obj.series.label], _(title_category));
+    }
+
+</script>
+ 
