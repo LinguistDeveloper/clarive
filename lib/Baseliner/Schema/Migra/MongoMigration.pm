@@ -155,7 +155,8 @@ sub convert_schemas {
         mdb->master_doc->drop;
         $self->each('bali_master', sub{
             my $r = shift;
-            my $doc = Util->_load( delete $r->{yaml} ) // {};
+            #my $doc = Util->_load( delete $r->{yaml} ) // {};
+            my $doc = ci->new( $r->{mid} );
             $doc = { %$doc, %$r }; # merge yaml with master row, so that doc has all attributes for searching
             Util->_unbless( $doc );
             $doc->{mid} = "$r->{mid}";
