@@ -209,7 +209,14 @@ sub dsl_run {
         $job->back_to_core;
     }
 
-    _fail( _loc("Error during DSL Execution: %1", $@) ) if $@;
+    if( $@ ) {
+        if( $p{simple_error} ) {
+            _error( _loc("Error during DSL Execution: %1", $@) );
+            _fail $@;
+        } else {
+            _fail( _loc("Error during DSL Execution: %1", $@) );
+        }
+    }
     return $stash;
 }
 
@@ -240,7 +247,7 @@ sub run_rules {
             require Capture::Tiny;
             ($runner_output) = Capture::Tiny::tee_merged(sub{
                 try {
-                    $ret = $self->dsl_run( dsl=>$dsl, stash=>$stash );
+                    $ret = $self->dsl_run( dsl=>$dsl, stash=>$stash, simple_error=>$p{simple_error} );
                 } catch {
                     $err = shift // _loc('Unknown error running rule: %1', $rule->{id} ); 
                 };
@@ -249,7 +256,12 @@ sub run_rules {
                 if ( $rule->{rule_when} !~ /online/ ) {
                     event_new 'event.rule.failed' => { username => 'internal', dsl => $dsl, rule => $rule->{id}, rule_name => $rule->{rule_name}, stash => $stash, output => $runner_output } => sub {};
                 }           
-                _fail( _loc("Error running rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, $err ) ); 
+                if( $p{simple_error} ) {
+                    _error( _loc("Error running rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, $err ) ); 
+                    _fail $err; 
+                } else {
+                    _fail( _loc("Error running rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, $err ) ); 
+                }
             }
         } catch {
             my $err_global = shift;
