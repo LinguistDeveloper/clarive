@@ -4788,3 +4788,5 @@ msgstr "Este campo es obligatorio"
 msgid "Description"
 msgstr "Descripción"
 
+msgid "Statuses by categories"
+msgstr "Estados por categorías"
