@@ -210,7 +210,7 @@ sub dsl_run {
         $job->back_to_core;
     }
 
-    if( defined $err ) {
+    if( length $err ) {
         if( $p{simple_error} ) {
             _error( _loc("Error during DSL Execution: %1", $err) );
             _fail $err;
