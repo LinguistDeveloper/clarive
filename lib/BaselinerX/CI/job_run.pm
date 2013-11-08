@@ -134,7 +134,7 @@ sub run {
             id_rule => $self->id_rule, 
             logging => 1,
             stash   => $stash,
-            simple_error => 1,  # hide "Error Running Rule...Error DSL"
+            simple_error => 2,  # hide "Error Running Rule...Error DSL" even as _error
         );
         #$self->logger->debug( 'Stash after rules', $stash );
         $self->job_stash( $stash ); # saves stash to table

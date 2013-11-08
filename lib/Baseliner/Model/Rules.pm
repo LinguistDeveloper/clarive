@@ -212,7 +212,7 @@ sub dsl_run {
 
     if( length $err ) {
         if( $p{simple_error} ) {
-            _error( _loc("Error during DSL Execution: %1", $err) );
+            _error( _loc("Error during DSL Execution: %1", $err) ) unless $p{simple_error} > 1;
             _fail $err;
         } else {
             _fail( _loc("Error during DSL Execution: %1", $err) );
@@ -258,7 +258,7 @@ sub run_rules {
                     event_new 'event.rule.failed' => { username => 'internal', dsl => $dsl, rule => $rule->{id}, rule_name => $rule->{rule_name}, stash => $stash, output => $runner_output } => sub {};
                 }           
                 if( $p{simple_error} ) {
-                    _error( _loc("Error running rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, $err ) ); 
+                    _error( _loc("Error running rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, $err ) ) unless $p{simple_error} > 1; 
                     _fail $err; 
                 } else {
                     _fail( _loc("Error running rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, $err ) ); 
