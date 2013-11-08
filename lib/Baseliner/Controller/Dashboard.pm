@@ -1141,11 +1141,11 @@ sub topics_open_by_category: Local{
 
 }
 
-sub statuses_by_categories: Local{
+sub topics_by_status: Local{
     my ( $self, $c, $action ) = @_;
     #my $p = $c->request->parameters;
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-    my ($SQL, @statuses_by_categories, @datas);
+    my ($SQL, @topics_by_status, @datas);
 
     my $user = $c->username;
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
@@ -1177,28 +1177,88 @@ sub statuses_by_categories: Local{
     ##            ORDER BY TOTAL DESC";
     
     
-    $SQL = "SELECT COUNT(*) AS TOTAL, S.NAME AS STATUS, S.ID  
+    $SQL = "SELECT COUNT(*) AS TOTAL, S.NAME AS STATUS, S.ID, S.COLOR  
                 FROM BALI_TOPIC TP INNER JOIN BALI_TOPIC_STATUS S ON TP.ID_CATEGORY_STATUS = S.ID
                 WHERE TP.ACTIVE = 1
                       AND TP.ID_CATEGORY IN ( $user_categories )
                       $in_projects                
-                GROUP BY S.NAME, S.ID
+                GROUP BY S.NAME, S.ID, S.COLOR 
                 ORDER BY TOTAL DESC";
     
-    @statuses_by_categories = $db->array_hash( $SQL );
+    @topics_by_status = $db->array_hash( $SQL );
 
     
-    foreach my $status (@statuses_by_categories){
+    foreach my $topic (@topics_by_status){
         push @datas, {
-                    total         => $status->{total},
-                    status        => $status->{status},
-                    status_id     => $status->{id}
+                    total         => $topic->{total},
+                    status        => $topic->{status},
+                    color		  => $topic->{color},
+                    status_id     => $topic->{id}
                 };
      }
-    $c->stash->{statuses_by_categories} = \@datas;
-    $c->stash->{statuses_by_categories_title} = _loc('Topics by status');
+    $c->stash->{topics_by_status} = \@datas;
+    $c->stash->{topics_by_status_title} = _loc('Topics by status');
 
 }
 
+sub topics_open_by_status: Local{
+    my ( $self, $c, $action ) = @_;
+    #my $p = $c->request->parameters;
+    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+    my ($SQL, @topics_open_by_status, @datas);
+
+    my $user = $c->username;
+    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+
+    my $user_categories = join ",", map {
+            $_->{id};
+        } $c->model('Topic')->get_categories_permissions( username => $user, type => 'view' );
+        
+    my $in_projects;
+
+    if ( !Baseliner->model("Permissions")->is_root( $user ) ) {
+        my @user_project_ids = Baseliner->model("Permissions")->user_projects_ids( username => $user );
+        my $in = join ",", @user_project_ids;
+        $in_projects = "AND EXISTS ( SELECT 1 
+                                     FROM BALI_MASTER_REL MR 
+                                     WHERE MR.FROM_MID = TP.MID 
+                                     AND MR.REL_TYPE = 'topic_project' 
+                                     AND MR.TO_MID IN ( $in ) )";   
+    };
+
+        
+    ##$SQL = "SELECT COUNT(*) AS TOTAL, C.NAME AS CATEGORY, C.COLOR, TP.ID_CATEGORY 
+    ##            FROM BALI_TOPIC TP, BALI_TOPIC_CATEGORIES C
+    ##            WHERE TP.ACTIVE = 1 
+    ##                  AND TP.ID_CATEGORY = C.ID 
+    ##                  AND TP.ID_CATEGORY IN ( $user_categories )
+    ##                  $in_projects
+    ##            GROUP BY NAME, C.COLOR, TP.ID_CATEGORY 
+    ##            ORDER BY TOTAL DESC";
+    
+    
+    $SQL = "SELECT COUNT(*) AS TOTAL, S.NAME AS STATUS, S.ID, S.COLOR   
+                FROM BALI_TOPIC TP INNER JOIN BALI_TOPIC_STATUS S ON TP.ID_CATEGORY_STATUS = S.ID AND TYPE NOT LIKE 'F%'
+                WHERE TP.ACTIVE = 1
+                      AND TP.ID_CATEGORY IN ( $user_categories )
+                      $in_projects                
+                GROUP BY S.NAME, S.ID, S.COLOR 
+                ORDER BY TOTAL DESC";
+    
+    @topics_open_by_status = $db->array_hash( $SQL );
+
+    
+    foreach my $topic (@topics_open_by_status){
+        push @datas, {
+                    total         => $topic->{total},
+                    status        => $topic->{status},
+                    color		  => $topic->{color},
+                    status_id     => $topic->{id}
+                };
+     }
+    $c->stash->{topics_open_by_status} = \@datas;
+    $c->stash->{topics_open_by_status_title} = _loc('Topics open by status');
+
+}
 
 1;

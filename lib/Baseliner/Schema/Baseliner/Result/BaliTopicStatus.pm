@@ -34,6 +34,7 @@ __PACKAGE__->add_columns(
   { data_type => "char", is_nullable => 0, size => 1, default_value=>'0' },
   "ci_update",
   { data_type => "char", is_nullable => 0, size => 1, default_value=>'0' },
+  "color", { data_type => "varchar2", is_nullable => 1, size => 255 },
 );
 __PACKAGE__->set_primary_key("id");
 
