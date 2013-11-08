@@ -386,6 +386,16 @@ sub each {
     }
 }
 
+sub clean_master_topic {
+   for ( _dbis->query(q{select name,mid from bali_master m where m.collection='topic' and not exists 
+    (select 1 from bali_topic t where t.mid=m.mid)})->hashes ){
+        warn "Deleting master mid $_->{mid} not found in topic...";
+        my $x = DB->BaliMaster->find($_->{mid});
+        next unless $x;
+        $x->delete
+    } 
+}
+
 sub topic_view {
     qq{
     SELECT  T.MID TOPIC_MID,
