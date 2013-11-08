@@ -428,6 +428,7 @@ sub variables_for_bl {
 register 'statement.if.var' => {
     text => 'IF var THEN',
     type => 'if',
+    form => '/forms/variable_value.js',
     data => { variable=>'', value=>'' },
     dsl => sub { 
         my ($self, $n , %p) = @_;
@@ -443,6 +444,7 @@ register 'statement.if.var' => {
 register 'statement.if_not.var' => {
     text => 'IF var ne value THEN',
     type => 'if',
+    form => '/forms/variable_value.js',
     data => { variable=>'', value=>'' },
     dsl => sub { 
         my ($self, $n , %p) = @_;
@@ -493,7 +495,6 @@ register 'statement.if.var.list' => {
         /, $complete_condition, $self->dsl_build( $n->{children}, %p ) );
     },
 };
-
 
 register 'statement.try' => {
     text => 'TRY statement', 
