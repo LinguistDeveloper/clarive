@@ -249,6 +249,12 @@ sub clean_doc {
         elsif( ref $v eq 'ARRAY' ) {
             $self->clean_doc( $_ ) for _array( $v ); 
         }
+        elsif( ref $v eq 'SCALAR' ) {
+            $doc->{$k} = $$v;
+        }
+        elsif( ref $v eq 'GLOB' ) {
+            delete $doc->{$k};
+        }
     }
 }
 
