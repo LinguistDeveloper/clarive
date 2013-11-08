@@ -209,12 +209,12 @@ sub dsl_run {
         $job->back_to_core;
     }
 
-    if( $@ ) {
+    if( my $err = "$@" ) {
         if( $p{simple_error} ) {
-            _error( _loc("Error during DSL Execution: %1", $@) );
-            _fail $@;
+            _error( _loc("Error during DSL Execution: %1", $err) );
+            _fail $err;
         } else {
-            _fail( _loc("Error during DSL Execution: %1", $@) );
+            _fail( _loc("Error during DSL Execution: %1", $err) );
         }
     }
     return $stash;
