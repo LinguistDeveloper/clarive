@@ -202,6 +202,7 @@ sub dsl_run {
     ## local $Baseliner::Utils::caller_level = 3;
     ############################## EVAL DSL Tasks
     $ret = eval $dsl;
+    my $err = $@;
     ##############################
     alarm 0;
     
@@ -209,10 +210,18 @@ sub dsl_run {
         $job->back_to_core;
     }
 
-    _fail( _loc("Error during DSL Execution: %1", $@) ) if $@;
+    if( defined $err ) {
+        if( $p{simple_error} ) {
+            _error( _loc("Error during DSL Execution: %1", $err) );
+            _fail $err;
+        } else {
+            _fail( _loc("Error during DSL Execution: %1", $err) );
+        }
+    }
     return $stash;
 }
 
+# used by events
 sub run_rules {
     my ($self, %p) = @_;
     local $Baseliner::_no_cache = 1;
@@ -225,8 +234,9 @@ sub run_rules {
               )->hashref->all;
     my $stash = $p{stash};
     my @rule_log;
+    local $ENV{BASELINER_LOGCOLOR} = 0;
     for my $rule ( @rules ) {
-        my ($runner_output, $rc, $dsl, $ret);
+        my ($runner_output, $rc, $dsl, $ret,$err);
         try {
             my @tree = $self->build_tree( $rule->{id}, undef );
             $dsl = try {
@@ -234,27 +244,36 @@ sub run_rules {
             } catch {
                 _fail( _loc("Error building DSL for rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, shift() ) ); 
             };
-            $ret = try {
-                ################### RUN THE RULE DSL ######################
-                IO::CaptureOutput::capture( sub {
-                    $self->dsl_run( dsl=>$dsl, stash=>$stash );
-                }, \$runner_output, \$runner_output );
-            } catch {
+            ################### RUN THE RULE DSL ######################
+            require Capture::Tiny;
+            ($runner_output) = Capture::Tiny::tee_merged(sub{
+                try {
+                    $ret = $self->dsl_run( dsl=>$dsl, stash=>$stash, simple_error=>$p{simple_error} );
+                } catch {
+                    $err = shift // _loc('Unknown error running rule: %1', $rule->{id} ); 
+                };
+            });
+            if( $err ) {
                 if ( $rule->{rule_when} !~ /online/ ) {
                     event_new 'event.rule.failed' => { username => 'internal', dsl => $dsl, rule => $rule->{id}, rule_name => $rule->{rule_name}, stash => $stash, output => $runner_output } => sub {};
                 }           
-                _fail( _loc("Error running rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, shift() ) ); 
-            };
+                if( $p{simple_error} ) {
+                    _error( _loc("Error running rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, $err ) ); 
+                    _fail $err; 
+                } else {
+                    _fail( _loc("Error running rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, $err ) ); 
+                }
+            }
         } catch {
-            my $err = shift;
+            my $err_global = shift;
             $rc = 1;
             if( ref $p{onerror} eq 'CODE') {
                 if ( $rule->{rule_when} !~ /online/ ) {
                     event_new 'event.rule.failed' => { username => 'internal', dsl => $dsl, rc => $rc, ret => $ret, rule => $rule->{id}, rule_name => $rule->{rule_name}, stash => $stash, output => $runner_output } => sub {};
                 }
-                $p{onerror}->( { err=>$err, ret=>$ret, id=>$rule->{id}, dsl=>$dsl, stash=>$stash, output=>$runner_output, rc=>$rc } );
+                $p{onerror}->( { err=>$err_global, ret=>$ret, id=>$rule->{id}, dsl=>$dsl, stash=>$stash, output=>$runner_output, rc=>$rc } );
             } elsif( ! $p{onerror} ) {
-                _fail $err;
+                _fail $err_global;
             }
         };
         push @rule_log, { ret=>$ret, id => $rule->{id}, dsl=>$dsl, stash=>$stash, output=>$runner_output, rc=>$rc };
@@ -262,6 +281,7 @@ sub run_rules {
     return { stash=>$stash, rule_log=>\@rule_log }; 
 }
 
+# used by job_chain
 sub run_single_rule {
     my ($self, %p ) = @_;
     local $Baseliner::_no_cache = 1;
