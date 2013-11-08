@@ -226,6 +226,7 @@ sub run_rules {
               )->hashref->all;
     my $stash = $p{stash};
     my @rule_log;
+    local $ENV{BASELINER_LOGCOLOR} = 0;
     for my $rule ( @rules ) {
         my ($runner_output, $rc, $dsl, $ret,$err);
         try {
