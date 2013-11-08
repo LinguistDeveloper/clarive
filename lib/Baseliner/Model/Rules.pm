@@ -202,6 +202,7 @@ sub dsl_run {
     ## local $Baseliner::Utils::caller_level = 3;
     ############################## EVAL DSL Tasks
     $ret = eval $dsl;
+    my $err = $@;
     ##############################
     alarm 0;
     
@@ -209,7 +210,7 @@ sub dsl_run {
         $job->back_to_core;
     }
 
-    if( my $err = "$@" ) {
+    if( defined $err ) {
         if( $p{simple_error} ) {
             _error( _loc("Error during DSL Execution: %1", $err) );
             _fail $err;
