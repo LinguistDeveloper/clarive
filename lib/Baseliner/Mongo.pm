@@ -193,6 +193,9 @@ sub index_all {
             [{ mid=>1 },{ unique=>1 }],
             [{'$**'=> "text"}],
         ],
+        job => [
+            [{ mid=>1 },{ unique=>1 }],
+        ],
         topic_image => [
             [{ id_hash => 1 }]
         ],

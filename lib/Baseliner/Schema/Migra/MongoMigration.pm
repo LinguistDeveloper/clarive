@@ -46,7 +46,7 @@ sub run {
         bali_dashboard_role  => 'dashboard_role',
         bali_event           => { coll=>'event', capped=>1, size=>(1024*1024*50), max=>1000 },
         bali_job             => 'job',
-        bali_job_items       => 'job_items',
+        # bali_job_items       => 'job_items',
         bali_label           => 'label',
         bali_label_project   => 'label_project',
 
@@ -155,7 +155,7 @@ sub convert_schemas {
         mdb->master_doc->drop;
         $self->each('bali_master', sub{
             my $r = shift;
-            my $doc = Util->_load( delete $r->{yaml} );
+            my $doc = Util->_load( delete $r->{yaml} ) // {};
             $doc = { %$doc, %$r }; # merge yaml with master row, so that doc has all attributes for searching
             Util->_unbless( $doc );
             $doc->{mid} = "$r->{mid}";
