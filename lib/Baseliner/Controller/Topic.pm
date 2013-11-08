@@ -1210,8 +1210,10 @@ sub filters_list : Local {
     
     # Filter: Status #############################################################################################################
     my @statuses;
+    my $status_id = $c->req->params->{status_id};
     
     my $where = undef;
+    $where->{id} = $status_id if $status_id;
     my $arg = {order_by=>'seq'};
     
     if($category_id){
@@ -1232,7 +1234,9 @@ sub filters_list : Local {
                     Baseliner->model('Topic')->user_workflow( $c->username );        
     };
 
-    if($row->count() gt 0){
+    _log ">>>>>>>>>>>>>>>>>>>: " . $row->count();
+
+    if($row->count() gt 1){
         while( my $r = $row->next ) {
             my $checked;
 
