@@ -154,6 +154,10 @@
 	text-overflow:ellipsis;	
 }
 
+.sent-html {
+	white-space:nowrap;
+}
+
 .x-tree-node div.forum-ct{
     background:#eee url(/static/images/icons/cmp-bg.gif) repeat-x;
     margin-top:1px;
@@ -254,5 +258,5 @@
 }
 
 .bali-td-special {
-
+	border: none;
 }

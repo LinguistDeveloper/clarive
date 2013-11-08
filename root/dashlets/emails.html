@@ -8,6 +8,7 @@ html: /dashlets/emails.html
 -->
 <%perl>
     use Baseliner::Utils;
+    use Class::Date;
     my @emails = $c->stash->{emails};
 </%perl>
 
@@ -22,9 +23,10 @@ html: /dashlets/emails.html
             </thead>
             <tbody>
 %foreach my $email (_array @emails){
+% my $date = Util->ago(Class::Date->new($email->{sent}));
                 <tr>
-                    <td colspan='3'><b><a href="javascript:Baseliner.addNewTabComp('/message/inbox?username=<%$c->username%>&query=<%$email->{id}%>', _('Inbox') );"><%$email->{subject}%></a></b></td>
-                    <td><%$email->{sent}%></td>
+                    <td class="title-html" title="<% $email->{subject} %>" colspan='3'><b><a href="javascript:Baseliner.addNewTabComp('/message/inbox?username=<%$c->username%>&query=<%$email->{id}%>', _('Inbox') );"><%$email->{subject}%></a></b></td>
+                    <td class="sent-html"><%$date%></td>
                 </tr>
 %}
             </tbody>
