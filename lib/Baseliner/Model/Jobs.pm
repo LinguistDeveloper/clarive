@@ -12,6 +12,217 @@ use Data::Dumper;
 use utf8;
 use Class::Date;
 
+sub monitor {
+    my ($self,$p) = @_;
+    my $perm = Baseliner->model('Permissions');
+    my $username = $p->{username};
+
+    my ($start, $limit, $query, $query_id, $dir, $sort, $cnt ) = @{$p}{qw/start limit query query_id dir sort/};
+    $start||=0;
+    $limit||=50;
+
+    my ($select,$order_by, $as) = $sort
+        ? (['me.id' ,$sort]         , [ { "-$dir" => $sort }, { -desc => 'me.starttime' }, { -desc=>'me.id' } ], [ 'id', $sort ])
+        : (['me.id' ,'me.starttime'], [ { -desc => "me.starttime" } ] , ['id', 'starttime'] );
+
+    $start=$p->{next_start} if $p->{next_start} && $start && $query;
+
+    my $page = to_pages( start=>$start, limit=>$limit );
+
+    ### WHERE
+    _log "Job search...";
+    my $where = {};
+    my @mid_filters;
+    if( length($query) ) {
+        $query =~ s{(\w+)\*}{job "$1"}g;  # apparently "<str>" does a partial, but needs something else, so we put the collection name "job"
+        $query =~ s{\+(\S+)}{"$1"}g;
+        my @mids_query = map { $_->{obj}{mid} } 
+            _array( mdb->master_doc->search( query=>$query, limit=>1000, project=>{mid=>1}, filter=>{ collection=>'job' })->{results} );
+        push @mid_filters, { mid=>\@mids_query };
+    }
+    
+    # user content
+    #if( $username && ! $perm->is_root( $username ) && ! $perm->user_has_action( username=>$username, action=>'action.job.viewall' ) ) {
+    #    my @user_apps = $perm->user_projects_names( username=>$username ); # user apps
+    #    # TODO check cs topics relationship with projects
+    #    # $where->{'bali_job_items.application'} = { -in => \@user_apps } if ! ( grep { $_ eq '/'} @user_apps );
+    #    # username can view jobs where the user has access to view the jobcontents corresponding app
+    #    # username can view jobs if it has action.job.view for the job set of job_contents projects/app/subapl
+    #}
+    
+    if($query_id eq '-1'){
+        my @ids_project = $perm->user_projects_with_action(username => $username,
+                                                                            action => 'action.job.viewall',
+                                                                            level => 1);
+        
+        my $rs_jobs1 = Baseliner->model('Baseliner::BaliMasterRel')->search({rel_type => 'job_project', to_mid => \@ids_project}
+                                                                           ,{select=>'from_mid'})->as_query;
+        push @mid_filters, { mid=>{-in => $rs_jobs1 } };
+        
+        
+        if( exists $p->{job_state_filter} ) {
+            my @job_state_filters = do {
+                    my $job_state_filter = decode_json $p->{job_state_filter};
+                    _unique grep { $job_state_filter->{$_} } keys %$job_state_filter;
+            };
+            $where->{status} = \@job_state_filters;
+        }
+    
+        # Filter by nature
+        if (exists $p->{filter_nature} && $p->{filter_nature} ne 'ALL' ) {
+            # TODO nature only exists after PRE executes, "Load natures" $where->{'bali_job_items_2.item'} = $p->{filter_nature};
+            my @natures = _array $p->{filter_nature};
+    
+            my $rs_jobs2 = Baseliner->model('Baseliner::BaliMasterRel')->search({rel_type => 'job_nature', to_mid => \@natures, from_mid => {-in => $rs_jobs1}}
+                                                                               ,{select=>'from_mid'})->as_query;
+          
+            push @mid_filters = { mid=>{ -in=>$rs_jobs2 } };
+        }
+    
+        # Filter by environment name:
+        if (exists $p->{filter_bl}) {      
+          $where->{bl} = $p->{filter_bl};
+        }
+    
+        # Filter by job_type
+        if (exists $p->{filter_type}) {      
+          $where->{type} = $p->{filter_type};
+        }
+    }else{
+        #Cuando viene por el dashboard
+        my @jobs = split(",",$query_id);
+        $where->{'mid'} = \@jobs;
+    }
+    
+    $where->{'-and'} = \@mid_filters;
+    
+    _debug $where;
+
+    #### FROM 
+    #my $from = {
+    #    select   => 'me.id',
+    #    as       => $as,
+    #    #join     => [ 'bali_job_items', 'bali_job_items' ],  # one for application, another for filter_nature 
+    #};
+    #_debug $from;
+    #my $rs_search = $c->model('Baseliner::BaliJob')->search( $where, $from );
+    #my $id_rs = $rs_search->search( undef, { select=>[ 'me.id' ] } );
+
+    #_error _dump $id_rs->as_query ;
+
+    #_debug "Job search end.";
+    my $rs_paged = Baseliner->model('Baseliner::BaliJob')->search(
+        $where, #{ 'me.id'=>{ -in => $rs_search->as_query } },  # TODO needs to be able to filter 
+        {
+            page=>$page, rows=>$limit,
+            order_by => $order_by,
+        }
+    );
+    my $pager = $rs_paged->pager;
+    $cnt = $pager->total_entries;
+
+    # Job items cache
+    #_log "Job data start...";
+    #my %job_items = ( id => { mid=>11 } );
+    ##    = $c->model('Baseliner::BaliJobItems')
+    ##        ->search(
+    ##            { id_job=>{ -in => $rs_paged->search(undef,{ select=>'id'})->as_query } },
+    ##            { select=>[qw/id id_job application item/] }
+    ##    )->hash_on( 'id_job' );
+    #_log "Job data end.";
+
+    my @rows;
+    #while( my $r = $rs->next ) {
+    my $now = _dt();
+    my $today = DateTime->new( year=>$now->year, month=>$now->month, day=>$now->day, , hour=>0, minute=>0, second=>0) ; 
+    my $ahora = DateTime->new( year=>$now->year, month=>$now->month, day=>$now->day, , hour=>$now->hour, minute=>$now->minute, second=>$now->second ) ; 
+
+    #foreach my $r ( _array $results->{data} ) {
+    #local $Baseliner::CI::no_rels = 1;
+    _debug "Looping start...";
+    for my $r ( $rs_paged->hashref->all ) {
+        my $step = _loc( $r->{step} );
+        my $status = _loc( $r->{status} );
+        my $type = _loc( $r->{type} );
+        my @changesets = (); #_array $job_items{ $r->{id} };
+        my ($contents,$apps)=([],[]);  # support for legacy jobs without cis
+        my @natures;
+        if( my $ci = try { ci->new( $r->{mid} ) } catch { '' } ) {   # if -- support legacy jobs without cis?
+            $contents = [ map { $_->topic_name } _array $ci->changesets ];
+            $apps = [ map { $_->name } _array $ci->projects ];
+            @natures = map { $_->name } _array $ci->natures;
+        }
+        my $last_log_message = $r->{last_log_message};
+
+         
+
+        # Scheduled, Today, Yesterday, Weekdays 1..7, 1..4 week ago, Last Month, Older
+        my $grouping='';
+        my $day;  
+        my $sdt = parse_dt( '%Y-%m-%d %H:%M', $r->{starttime}  );
+        my $dur =  $today - $sdt; 
+        $sdt->{locale} = DateTime::Locale->load( $p->{language} || 'en' ); # day names in local language
+        $day =
+            $dur->{months} > 3 ? [ 90, _loc('Older') ]
+          : $dur->{months} > 2 ? [ 80, _loc( '%1 Months', 3 ) ]
+          : $dur->{months} > 1 ? [ 70, _loc( '%1 Months', 2 ) ]
+          : $dur->{months} > 0 ? [ 60, _loc( '%1 Month',  1 ) ]
+          : $dur->{days} >= 21  ? [ 50, _loc( '%1 Weeks',  3 ) ]
+          : $dur->{days} >= 14  ? [ 40, _loc( '%1 Weeks',  2 ) ]
+          : $dur->{days} >= 7   ? [ 30, _loc( '%1 Week',   1 ) ]
+          : $dur->{days} == 6   ? [ 7,  _loc( $sdt->day_name ) ]
+          : $dur->{days} == 5   ? [ 6,  _loc( $sdt->day_name ) ]
+          : $dur->{days} == 4   ? [ 5,  _loc( $sdt->day_name ) ]
+          : $dur->{days} == 3   ? [ 4,  _loc( $sdt->day_name ) ]
+          : $dur->{days} == 2   ? [ 3,  _loc( $sdt->day_name ) ]
+          : $dur->{days} == 1   ? [ 2,  _loc( $sdt->day_name ) ]
+          : $dur->{days} == 0  ? $sdt < $today ? [ 2,  _loc( $sdt->day_name ) ]
+                               : $sdt > $ahora ? [ 0,  _loc('Upcoming') ] : [ 1,  _loc('Today') ]
+          :                      [ 0,  _loc('Upcoming') ];
+        $grouping = $day->[0];
+
+        push @rows, {
+            id           => $r->{id},
+            mid           => $r->{mid},
+            name         => $r->{name},
+            bl           => $r->{bl},
+            bl_text      => $r->{bl},                        #TODO resolve bl name
+            ts           => $r->{ts},
+            starttime    => $r->{starttime},
+            schedtime    => $r->{schedtime},
+            maxstarttime => $r->{maxstarttime},
+            endtime      => $r->{endtime},
+            comments     => $r->{comments},
+            username     => $r->{username},
+            rollback     => $r->{rollback},
+            key          => $r->{job_key},
+            last_log     => $last_log_message,
+            grouping     => $grouping,
+            day          => ucfirst( $day->[1] ),
+            contents     => $contents,
+            applications => $apps,
+            step         => $step,
+            step_code    => $r->{step},
+            exec         => $r->{'exec'},
+            pid          => $r->{pid},
+            owner        => $r->{owner},
+            host         => $r->{host},
+            status       => $status,
+            status_code  => $r->{status},
+            type_raw     => $r->{type},
+            type         => $type,
+            runner       => $r->{runner},
+            id_rule      => $r->{id_rule},
+            natures      => \@natures,
+            #subapps      => \@subapps,   # maybe use _path_xs from Utils.pm?
+          }; # if ( ( $cnt++ >= $start ) && ( $limit ? scalar @rows < $limit : 1 ) );
+    }
+    _debug "Looping end ";
+    #_debug \@rows;
+
+    return ( $cnt, @rows );
+}
+
 with 'Baseliner::Role::Search';
 with 'Baseliner::Role::Service';
 
@@ -19,10 +230,9 @@ sub search_provider_name { 'Jobs' };
 sub search_provider_type { 'Job' };
 sub search_query {
     my ($self, %p ) = @_;
-    my $c = $p{c};
-    $c->request->params->{limit} = $p{limit} // 1000;
-    $c->forward( '/job/monitor_json');
-    my $json = delete $c->stash->{json};
+    
+    $p{limit} //= 1000;
+    my ($cnt, @rows ) = Baseliner->model('Jobs')->monitor(\%p);
     return map {
         my $r = $_;
         #my $summary = join ',', map { "$_: $r->{$_}" } grep { defined $_ && defined $r->{$_} } keys %$r;
@@ -41,7 +251,7 @@ sub search_query {
             url   => [ $r->{id}, $r->{name} ],
             type  => 'log'
         }
-    } _array( $json->{data} );
+    } @rows;
 }
 
 sub get {
