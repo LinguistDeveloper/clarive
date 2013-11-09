@@ -109,7 +109,8 @@ sub query_lucy : Local {
     );
      
     # create Lucy docs
-    my @results  = $provider->search_query( c => $c, limit=>$config->{max_results_provider} ); # query => $query don't send a query, its faster
+    my @results  = $provider->search_query( username=>$c->username, query=>$query, language=>$c->languages->[0], limit=>$config->{max_results_provider} ); # query => $query don't send a query, its faster
+    _debug \@results;
 
     #push @results, @results for 1..8;
     my $id=0;

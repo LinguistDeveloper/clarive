@@ -260,8 +260,12 @@ sub topics_for_user {
     my $username = $p->{username};
     my $topic_list = $p->{topic_list};
 
-    #length($query) and $where = Util->build_master_search( query=>$query );
-    length($query) and $where->{'-bool'} = mkv->query( "$query", { returns=>'exists' });
+    if( length($query) ) {
+        #$query =~ s{(\w+)\*}{topic "$1"}g;  # apparently "<str>" does a partial, but needs something else, so we put the collection name "job"
+        my @mids_query = map { $_->{obj}{mid} } 
+            _array( mdb->topic->search( query=>$query, limit=>1000, project=>{mid=>1})->{results} );
+        $where->{mid}=\@mids_query;
+    }
     
     # XXX consider enabling this for quick searches on mid+title+description
     #$query and $where = query_sql_build( query=>$query, fields=>{
@@ -2078,8 +2082,7 @@ sub search_provider_name { 'Topics' };
 sub search_provider_type { 'Topic' };
 sub search_query {
     my ($self, %p ) = @_;
-    my $c = $p{c};
-    my ($cnt, @rows ) =  $self->topics_for_user({ username=>$c->username, limit=>$p{limit} // 1000, query=>$p{query} });
+    my ($cnt, @rows ) =  $self->topics_for_user({ username=>$p{username}, limit=>$p{limit} // 1000, query=>$p{query} });
     my @mids = map { $_->{topic_mid} } @rows;
     #my %descs = DB->BaliTopic->search({ mid=>\@mids }, { select=>['mid', 'description'] })->hash_on('mid');
     return map {

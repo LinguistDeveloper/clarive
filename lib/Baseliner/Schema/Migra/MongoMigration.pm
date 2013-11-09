@@ -205,22 +205,20 @@ sub convert_schemas {
                         plan_end_date   => $_->{plan_end_date}
                     }
                     }
-            } $db->query( 'select * from bali_master_cal c where c.mid=?', $r->{mid} )->hashes;
-           _debug \@rels;
+           } $db->query( 'select * from bali_master_cal c where c.mid=?', $r->{mid} )->hashes;
+           #_debug \@rels;
            say "found custom fields for $r->{mid}: " . join ',', map { $_->{name} } @fields if @fields;
-           $doc = {
-                %$doc,
-                %cals,
-                map( {
-                    my $v = $_->{value_clob} || $_->{value};
-                    $v = try { _load($v) } catch { $v } if $v;
-                    $_->{name} => $v
-                } @fields ),
-                map( {
-                    my $v = $_->{name};
-                    $_->{rel_field} => $v
-                } @rels, @rels2)
-            };
+           
+           my %fieldlets = map( {
+                my $v = $_->{value_clob} || $_->{value};
+                $v = try { _load($v) } catch { $v } if $v;
+                ( $_->{name} => $v )
+                } @fields );
+           my %relations = map( {
+                my $v = $_->{name};
+                ( $_->{rel_field} => $v )
+                } @rels, @rels2);
+           $doc = { %$doc, %cals, %fieldlets, %relations };
            delete $doc->{$_} for qw(sw_edit last_seen label_color label_name label_id);
            $coll->insert($doc);
            $k++;

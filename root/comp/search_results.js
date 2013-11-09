@@ -30,7 +30,7 @@
                 style: 'border-bottom: 1px solid #ddd; margin: 0 0 15 10'
                 
             });
-            var prov_panel = new Ext.Container({ columnWidth: 1/provs.length, style:{ margin:'0 70 0 7' } });
+            var prov_panel = new Ext.Container({ columnWidth: 1/provs.length, style:{ margin:'0px 7px 0px 7px' } });
             prov_panel.add( prov_wait );
             panel.add( prov_panel );
             panel.doLayout();
@@ -76,8 +76,11 @@
                                     if( r.type == 'log' ) {
                                         Baseliner.openLogTab( r.url[0], r.url[1] );
                                     }
+                                    else if( r.type == 'ci' ) {
+                                        Baseliner.add_tabcomp( "/ci/edit", r.url[1], { mid: r.url[0], load: true, action:'edit' } );
+                                    }
                                     else if( r.type == 'topic' ) {
-                                        Baseliner.add_tabcomp( "/topic/view?topic_mid=" + r.url[0] , r.url[1], { topic_mid: r.url[0], title:r.url[1] } );
+                                        Baseliner.add_tabcomp( "/topic/view", r.url[1], { topic_mid: r.url[0], title:r.url[1] } );
                                     }
                                 }
                             });

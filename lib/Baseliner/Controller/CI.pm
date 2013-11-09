@@ -232,14 +232,15 @@ sub tree_objects {
         $opts->{page} = $page;
     }
     my $where = {};
-    length $p{query} and $where = query_sql_build(
-           query  => $p{query},
-           fields => {
-               name => 'name',
-           }
-    );
-    # XXX full search? maybe too much for this grid
-    # length $p{query} and $where->{'-bool'} = mkv->query( "%$p{query}%", { returns=>'exists' });
+    
+    if( length $p{query} ) {
+        my $filter = {};
+        $filter->{collection} = $collection if $collection;
+        my @mids_query = map { $_->{obj}{mid} } 
+            _array( mdb->master_doc->search( query=>$p{query}, limit=>1000, project=>{mid=>1}, filter=>$filter )->{results} );
+        $where->{mid}=\@mids_query;
+    }
+    
     $where->{collection} = $collection if $collection;
     $where = { %$where, %{ $p{where} } } if $p{where};
     
@@ -1145,28 +1146,22 @@ sub search_provider_type { 'CI' };
 sub search_query {
     my ($self, %p ) = @_;
     my $query = $p{query};
-    my $c = $p{c};
     my $limit = 50; #$p{limit} // 1000;
     my $where = {};
-    length($query) and $where->{'-bool'} = mkv->query( $query, { returns=>'exists' } );
-    $where->{'-not'} = { collection=>{-in=>['topic','job']} };
-    my @rows = DB->BaliMaster->search(
-        $where,
-        { join=>'kv', 
-            select=>['mid','name','collection','bl','kv.mvalue','ts'], 
-            as=>['mid','name','collection','bl', 'search_data','ts'], 
-            rows=>$limit, order_by=>{ -desc=>'ts' } })->hashref->all;
-    _error( \@rows );
-    my @mids = map { $_->{mid} } @rows;
+    
+    return () if ! length $query;
+    my $res = mdb->master_doc->search( query=>$query, limit=>1000,
+        #project=>{name=>1,collection=>1}, 
+        project=>{ _id=>0 },
+        filter=>{ collection=>mdb->nin('topic','job') }
+    );
+    #my @mids = map { $_->{obj}{mid} } _array $res->{results};
+    #$where->{'me.mid'} = mdb->in(@mids);
     return map {
-        my $r = $_;
-        my $json = $r->{search_data};
-        #my $text = join ',', map { "$_: $r->{$_}" } grep { defined $_ && defined $r->{$_} } keys %$r;
-        #my @text = $json;
-
+        my $r = $_->{obj};
+        my $text = Util->_encode_json( $r );
+        $text =~ s/"|\{|\}|\'|\[|\]//g;
         my $info = sprintf "%s - %s (%s)", $r->{collection}, $r->{bl}, $r->{ts};
-        my $text = join(' ', split(/,/, $json ) );
-        $text =~ s{:}{: }g;
         my $desc = _strip_html( sprintf "%s", ($r->{name} // '') );
         if( length $desc ) {
             $desc = _utf8 $desc;  # strip html messes up utf8
@@ -1174,15 +1169,15 @@ sub search_query {
             #$desc =~ s/[^\x{21}-\x{7E}\s\t\n\r]//g; 
         }
         +{
-            title => sprintf( '%s - %s', $r->{mid}, $r->{name} ),
+            title => sprintf( '%s #%s %s', $r->{collection}, $r->{mid}, $r->{name} ),
             info  => $info,
             text  => $text, 
-            url   => [ $r->{mid}, $r->{name}, '#999' ],
+            url   => [ $r->{mid}, $r->{name}, '#999', $r->{collection} ],
             type  => 'ci',
             mid   => $r->{mid},
             id    => $r->{mid},
         }
-    } @rows;
+    } _array $res->{results};
 }
 
 =head2

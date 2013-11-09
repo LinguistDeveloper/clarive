@@ -565,7 +565,7 @@ sub view : Local {
         $c->stash->{permissionGraph} = $c->model("Permissions")->user_has_action( username => $c->username, action => 'action.topics.view_graph');
         $c->stash->{permissionComment} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.GDI.comment' );
         if ( $topic_mid ) {
-            $c->stash->{viewKanban} = _ci( $topic_mid )->children( isa => 'topic' );
+            $c->stash->{viewKanban} = ci->new( $topic_mid )->children( isa => 'topic' );
         } else {
             $c->stash->{viewKanban} = 0;
         }

@@ -25,6 +25,7 @@ has logfile            => qw(is rw isa Any lazy 1), default => sub { my $self=sh
 has step               => qw(is rw isa Str default CHECK);
 has exec               => qw(is rw isa Num default 1);
 has status             => qw(is rw isa Any default IN-EDIT);
+has status_trans       => qw(is rw isa Any);  # translation of status so that it shows in searches
 has contents           => qw(is rw isa Any);
 has approval           => qw(is rw isa Any);
 has username           => qw(is rw isa Any);

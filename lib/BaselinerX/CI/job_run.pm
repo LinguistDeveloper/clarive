@@ -41,6 +41,7 @@ around status => sub {
         my @who = caller(3) ;
         _debug "Status has changed to $status by " . join(', ', $who[0], $who[2] );
     }
+    $self->status_trans( Util->_loc($status) );
     return defined $status 
         ? $self->$orig( $status )
         : $self->$orig();
