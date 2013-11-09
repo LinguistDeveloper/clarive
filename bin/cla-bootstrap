@@ -337,6 +337,7 @@ GD
 Getopt::Mini
 Git::Wrapper
 Graph
+Hash::Diff
 HTML::Mason
 HTML::Strip
 IO::All
