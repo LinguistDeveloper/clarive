@@ -42,8 +42,6 @@ sub method_scan {
         $it->tree_resolve; 
     }
 
-    mkv->index_sync;
-
     return @items;
 }
 

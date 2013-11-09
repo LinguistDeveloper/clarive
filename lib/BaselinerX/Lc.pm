@@ -172,7 +172,7 @@ sub lc_for_project {
             } grep { 
                 ref $_ eq 'BaselinerX::CI::status'
             } 
-            BaselinerX::CI::status->query( { id_status => \@from_statuses } );
+            BaselinerX::CI::status->query( { id_status =>mdb->in(@from_statuses) } );
             # Baseliner->model('Baseliner::BaliTopicStatus')
             # ->search( { id => \@from_statuses  }, { order_by => { -asc => ['seq'] } } )->hashref->all;
     }     

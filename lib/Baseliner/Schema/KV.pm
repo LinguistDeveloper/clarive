@@ -55,25 +55,32 @@ sub delete {
 }
 
 sub save {
-    my ($self,$mid, $doc, $opts) = @_;
-    $mid = $mid->mid if ref $mid;  #  mid may be a BaliMaster row also
+    my ($self,$mid_or_master, $doc, $opts) = @_;
+    my $master_row;
+    my $mid = ref $mid_or_master  #  mid may be a BaliMaster row also
+        ? do { $master_row=$mid_or_master; $master_row->mid }
+        : $mid_or_master;
     Util->_fail( 'Missing mid' ) unless length $mid;
     my $m = Baseliner->model('Baseliner');
-    my $sql = 'insert into bali_master_kv (mid,mtype,mpos,mkey,mvalue_num,mvalue_date,mvalue) values (?,?,?,?,?,?,?)';
-    my @flat = $self->_flatten( $doc );
-    return @flat if $opts->{flat_only};
-    my @tuple_status;
     my $hint = $opts->{hint} // {};
     use DBD::Oracle qw/:ora_types/;
     my @flat_final;  # after modifications
-    try {
+    return try {
         $m->txn_do( sub {
             # create yaml data for topic 
             unless( $opts->{kv_only} ) {
-                my $master_row = DB->BaliMaster->find($mid);
+                $master_row //= DB->BaliMaster->find($mid);
                 _fail _loc( 'Master row not found for mid %1', $mid ) unless $master_row;
                 $master_row->update({ yaml=>Util->_dump($doc) });
+                return $mid if $opts->{master_only};
             }
+
+            # now kv...
+            my $sql = 'insert into bali_master_kv (mid,mtype,mpos,mkey,mvalue_num,mvalue_date,mvalue) values (?,?,?,?,?,?,?)';
+            my @flat = $self->_flatten( $doc );
+            return @flat if $opts->{flat_only};
+            my @tuple_status;
+            
             # now index fields flat
             DB->BaliMasterKV->search({ mid=>$mid })->delete unless $opts->{no_delete};
             my $stmt = $m->storage->dbh->prepare($sql);
@@ -99,11 +106,11 @@ sub save {
             # now reindex
             $self->index_sync( no_sync=>$opts->{no_sync}, sync_mode=>$opts->{sync_mode} );
         });
+        return @flat_final; #@tuple_status;
     } catch {
         my $err = shift;
         Util->_throw( Util->_loc('Error inserting into master kv: %1. Doc: %2', $err, Util->_dump($doc) ) );
     };
-    return @flat_final; #@tuple_status;
 }
 
 sub _date_to_string {

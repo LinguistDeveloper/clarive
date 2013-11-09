@@ -204,8 +204,6 @@ sub save {
             # now save the rest of the ci data (yaml)
             $self->new_ci( $row, undef, \%opts );
         }
-        # now index for searches  XXX this should be handled by the inner_save data, which should use mkv->save instead 
-        #$self->index_search_data( mid=>$mid, row=>$row, data=>$data) unless $p{no_index};
     });  # txn end
     return $mid; 
 }
@@ -246,7 +244,7 @@ sub new_ci {
     $self->save_data( $master_row, $data, $opts);
 }
 
-# save data to yaml and mkv, does not use self
+# save data to yaml and mongo_doc, does not use self
 sub save_data {
     my ( $self, $master_row, $data, $opts ) = @_;
     return unless ref $data;
@@ -303,8 +301,25 @@ sub save_data {
 }
 
 sub save_fields {
-    my $self = shift;
-    mkv->save( @_ );
+    my ($self, $master_row, $data, $opts ) = @_;
+    $opts //={};
+    $opts->{master_only} //= 1;
+    my $mid = $master_row->mid;
+    _fail _loc( 'Master row not found for mid %1', $mid ) unless $master_row;
+    $master_row->update({ yaml=>Util->_dump($data) });
+    my $md = mdb->master_doc;
+    if( my $row = $md->find_one({ mid=>"$mid" }) ) {
+        my $doc = { %$row, %{ $data || {} } };
+        mdb->clean_doc($doc);
+        _debug $doc;
+        $md->save($doc);
+    } else {
+        my $doc = { ( $master_row ? $master_row->get_columns : () ), %{ $data || {} }, mid=>"$mid" };
+        delete $doc->{yaml};
+        mdb->clean_doc($doc);
+        _debug $doc;
+        $md->insert($doc);
+    }
 }
 
 sub load {
@@ -418,7 +433,8 @@ sub load_from_search {
 
 sub load_from_query {
     my ($class, $where, %p ) = @_;
-    my @rows = DB->BaliMaster->search({ -bool=>mkv->query( $where, { returns=>'exists' }) })->hashref->all;
+    my @mids = map { $_->{mid} } mdb->master_doc->find($where)->fields({ mid=>1 })->limit(1000)->all;
+    my @rows = DB->BaliMaster->search({ mid=>\@mids })->hashref->all;
     if( $p{single} ) {
         _throw _loc('More than one row returned (%1) for CI load %2, mids found: %3', 
             scalar(@rows), Util->_to_json($where), join(',', map{$_->{mid}} @rows) )
@@ -430,9 +446,14 @@ sub load_from_query {
 }
 
 sub query {
-    my $self = shift;
+    my ($self, $where, %p ) = @_;
+    $where //= {};
+    if( !$where->{collection} && $self->can('collection') ) {
+        my $coll = $self->collection;
+        $where->{collection} = $coll if length $coll; 
+    }
     local $Baseliner::CI::_no_record = 1;
-    my @recs = map { Baseliner::Role::CI->_build_ci_instance_from_rec( $_ ) }  Baseliner::Role::CI->load_from_query( @_ );
+    my @recs = map { Baseliner::Role::CI->_build_ci_instance_from_rec( $_ ) }  Baseliner::Role::CI->load_from_query( $where, %p );
     return @recs;
 }
         

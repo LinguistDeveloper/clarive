@@ -1133,9 +1133,7 @@ sub grid : Local {
 
 sub index_sync : Local {
     my ($self, $c) = @_;
-    _throw _loc('Missing run token') unless $c->stash->{run_token};
-    mkv->index_sync;
-    $c->res->body( 'ok' ); 
+    _debug 'Deprecated';
 }
 
 # Global search
