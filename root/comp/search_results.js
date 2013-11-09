@@ -27,7 +27,7 @@
             var provider = provs[ i ];
             var prov_wait = new Ext.Container({
                 html: String.format( toptpl, _(provider.name), _('searching...') ),
-                style: 'border-bottom: 1px solid #ddd; margin: 0 0 15 10'
+                style: 'border-bottom: 1px solid #ddd; margin: 0px 0px 0px 0px'
                 
             });
             var prov_panel = new Ext.Container({ columnWidth: 1/provs.length, style:{ margin:'0px 7px 0px 7px' } });
@@ -51,11 +51,11 @@
                                 '&nbsp;</td><td><h4>', r.title, '</h4></td></tr></table>' ].join(''); 
                         }
                         var block = '<div id="boot" style="margin:4"><div id="search-result-block">'
-                            + '<div id="search-result-block-title"><h4>'
+                            + '<div id="search-result-block-title"><h4 style="color: #2260e0">'
                             + r.title
                             + '</h4>'
                             + '</div>';
-                        block +=  '<p style="color:#aaa;margin: 6 0 0 100">' + r.info + '</p>';
+                        block +=  '<p style="color:#aaa;margin: 0px 0px 0px 0px">' + r.info + '</p>';
                         block +=  '<p>' + ( r.excerpt ? r.excerpt : r.text ) + '</p>'
                             + '</div></div>'
                             ;

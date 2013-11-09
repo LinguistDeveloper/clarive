@@ -224,7 +224,7 @@ td.slot_hover { border: #000 1px dashed }
 
 #search-result-block-title {
     font-size: 16px;
-    color: #0033e0;
+    color: #111;  /* blue link no more #0033e0; */
 }
 
 /*************************************************
