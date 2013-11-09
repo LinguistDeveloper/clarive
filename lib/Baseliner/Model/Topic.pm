@@ -605,12 +605,6 @@ sub update {
         $p->{_cis} = _decode_json( $p->{_cis} ) if $p->{_cis};
 
         when ( 'add' ) {
-            given ( $form ){
-                when ( 'gdi' ) {
-                    my $numSolicitud = Baseliner->model( 'Baseliner::BaliTopicFieldsCustom' )->search({ name => 'gdi_perfil_dni', -or => [value => lc $p->{gdi_perfil_dni}, value => uc $p->{gdi_perfil_dni}] })->count;
-                    $p->{title} = $p->{gdi_perfil_dni} . '.' . ++$numSolicitud;
-                }
-            }
             
             event_new 'event.topic.create' => { username=>$p->{username} } => sub {
                 Baseliner->model('Baseliner')->txn_do(sub{
@@ -649,12 +643,6 @@ sub update {
             }; # event_new
         } ## end when ( 'add' )
         when ( 'update' ) {
-            given ( $form ){
-                when ( 'gdi' ) {
-                    my $custom_data = Baseliner->model( 'Baseliner::BaliTopicFieldsCustom' )->search({ topic_mid => $p->{topic_mid} });
-                    $custom_data->delete;
-                }
-            }
             
             event_new 'event.topic.modify' => { username=>$p->{username},  } => sub {
                 Baseliner->model('Baseliner')->txn_do(sub{
@@ -699,7 +687,7 @@ sub update {
                     # delete master row and bali_topic row
                     #      -- delete cascade does not clear up the cache
                     _ci( $mid )->delete;
-                    Baseliner->model( 'Baseliner::BaliTopicFieldsCustom' )->search({ topic_mid=>$mid })->delete;
+                    mdb->topic->remove({ mid=>"$mid" });
                 }
 
                 $modified_on = Class::Date->new(_now)->epoch;
@@ -1050,6 +1038,17 @@ sub get_update_system_fields {
     }
 }
 
+our %meta_types = (
+    set_projects   => 'project',
+    set_topics     => 'topic',
+    set_release    => 'release',
+    set_revisions  => 'revision',
+    set_cal        => 'calendar',
+    set_cis        => 'ci',
+    set_users      => 'user',
+    set_priority   => 'priority',
+);
+
 sub get_meta {
     my ($self, $topic_mid, $id_category) = @_;
 
@@ -1065,29 +1064,15 @@ sub get_meta {
             my $d = _load $_->{params_field};
             if( length $d->{default_value} && $d->{default_value}=~/^#!perl:(.*)$/ ) {
                 $d->{default_value} = eval $1;
-            }                
+            }
             $d->{field_order} //= 1;
+            $d->{meta_type} ||= $d->{set_method} 
+                ? ($meta_types{ $d->{set_method} } // _fail("Unknown set_method $d->{set_method} for field $d->{name_field}") ) 
+                : '';
             $d
         }
-        #grep { my $d = _load $_->{params_field};
-        #       $d->{type} ne 'form'}
-        
-        DB->BaliTopicFieldsCategory->search( { id_category => { -in => $id_cat } } )->hashref->all;
+        DB->BaliTopicFieldsCategory->search({ id_category=>{ -in => $id_cat } })->hashref->all;
     
-    #my @form_fields =       map  { 
-    #           my $d = _load $_->{params_field};
-    #           $d->{field_order} //= 1;
-    #           $d->{fields}
-    #       }        
-    #       
-    #       grep { my $d = _load $_->{params_field};
-    #              $d->{type} eq 'form'}
-    #       DB->BaliTopicFieldsCategory->search( { id_category => { -in => 81 } } )->hashref->all;
-    #
-    #push @meta, @form_fields;                
-    
-    @meta = sort { $a->{field_order} <=> $b->{field_order} } @meta;
-
     Baseliner->cache_set( "topic:meta:$topic_mid:", \@meta ) if length $topic_mid;
     
     return \@meta;
@@ -1161,18 +1146,10 @@ sub get_data {
             $data->{ $key } =  $self->$method_get( $topic_mid, $key, $meta, $data, %opts );
         }
         
-        my @custom_fields = map { $_->{id_field} } grep { $_->{origin} eq 'custom' && !$_->{relation} } _array( $meta  );
-        my %custom_data = ();
-        # get data from value_clob if value is not available. 
-        map { $custom_data{ $_->{name} } = $_->{value} ? $_->{value} : $_->{value_clob} }
-            Baseliner->model('Baseliner::BaliTopicFieldsCustom')->search( { topic_mid => $topic_mid } )->hashref->all;
-        
-        push @custom_fields, map { map { $_->{id_field} } _array $_->{fields}; } grep { defined $_->{type} && $_->{type} eq 'form' } _array($meta);
-
-        for my $fi (@custom_fields){
-            $data->{ $fi } = $metadata{$fi}{as_string} 
-                ? $custom_data{$fi} 
-                : try { _load($custom_data{$fi}) } catch { $custom_data{$fi} };
+        my %custom_fields = map { $_->{id_field} => 1 } grep { $_->{origin} eq 'custom' && !$_->{relation} } _array( $meta  );
+        my $doc = mdb->topic->find_one({ mid=>"$topic_mid" });
+        for my $f ( grep { exists $custom_fields{$_} } keys %{ $doc || {} } ) {
+            $data->{ $f } = $doc->{$f}; 
         }
         Baseliner->cache_set( $cache_key, $data );
     }
@@ -1469,93 +1446,94 @@ sub save_data {
             }
         }
     }
-     
-    # save custom fields
-    for( @custom_fields ) {
-        if  (exists $data->{ $_ -> {name}} && $data->{ $_ -> {name}} ne '' ){
-
-            $data->{ $_ -> {name}} = $self->deal_with_images({topic_mid => $topic_mid, field => $data->{ $_ -> {name}}});
-
-            my $row = Baseliner->model('Baseliner::BaliTopicFieldsCustom')->search( {topic_mid=> $topic->mid, name => $_->{column}} )->first;
-            my $record = {};
-            $record->{topic_mid} = $topic->mid;
-            $record->{name} = $_->{column};
-            my $v = $data->{ $_ -> {name}};
-            if ($_->{data} || ref $v ){ ##Cuando el tipo de dato es CLOB 
-            	$record->{value_clob} = ref $v ? _dump($v) : $v;
-            	$record->{value} = ''; # cleanup old data, so that we read from clob 
-            }else{
-            	$record->{value} = $v;
-            	$record->{value_clob} = undef; # cleanup old data so we read from value
-            }
-            
-            if(!$row){
-                my $field_custom = Baseliner->model('Baseliner::BaliTopicFieldsCustom')->create($record);                 
-            }
-            else{
-                my $modified = 0;
-                my $old_value = $row->value;
-                if ($_->{data} || ref $v){ ##Cuando el tipo de dato es CLOB
-                    if ($row->value ne $v && !ref $v){
-                        $modified = 1;    
-                    }
-                    $row->value_clob( ref $v ? _dump($v) : $v );
-                    $row->value(''); # cleanup old data in case of change data: 1
-                }else{
-                    if ($row->value ne $data->{$_->{name}}){
-                        $modified = 1;
-                    }
-                    $row->value($data->{$_->{name}});
-                    $row->value_clob(undef);   # cleanup old data in case of change data: 1
-                }
-                $row->update;
-
-                if ( $modified ){
-                    my @projects = map {$_->{mid}} $topic->projects->hashref->all;
-                    my $notify = {
-                        category        => $topic->id_category,
-                        category_status => $topic->id_category_status,
-                        field           => $_->{column}
-                    };
-                    $notify->{project} = \@projects if @projects;
-                    
-                    event_new 'event.topic.modify_field' => { username   => $data->{username},
-                                                        field      => _loc ($_->{column}),
-                                                        old_value  => $old_value,
-                                                        new_value  => $data->{ $_ -> {name}},
-                                                       } => sub {
-                            my $subject = _loc("Topic [%1] %2: Field '%3' updated", $topic->mid, $topic->title, $_->{column});
-                            { mid => $topic->mid, topic => $topic->title, subject => $subject, notify => $notify }   # to the event
-                    } ## end try
-                    => sub {
-                        _throw _loc( 'Error modifying Topic: %1', shift() );
-                    };
-                }
-            }
-        }
-    }    
-
+    
     # save relationship fields
     my %rel_fields = map { $_->{id_field} => $_->{set_method} }  grep { $_->{relation} && $_->{relation} eq 'system' } _array( $meta  );
     foreach my $id_field  (keys %rel_fields){
         if($rel_fields{$id_field}){
             my $meth = $rel_fields{$id_field};
             $self->$meth( $topic, $data->{$id_field}, $data->{username}, $id_field, $meta );
-            #eval( '$self->' . $rel_fields{$id_field} . '( $topic, $data->{$id_field}, $data->{username}, $id_field, $meta )' );    
         }
     } 
      
+    # save to mongo
+    $self->save_doc( $meta, $data, custom_fields=>\@custom_fields );
+
     # user seen
     my $row = DB->BaliMasterPrefs->update_or_create({ username=>$data->{username}, mid=>$topic_mid, last_seen=>_dt() });
     
+    # cache clear
     $self->cache_topic_remove( $topic_mid );
     my @related_topics = ci->new($topic_mid)->related( isa => 'topic');
-
     for ( @related_topics ) {
         $self->cache_topic_remove( $_->{mid} );
     }
 
     return $topic;
+}
+
+sub save_doc {
+    my ($self,$meta,$doc, %p) = @_;
+    #my $doc = Util->_clone($data); # so that we don't change the original
+    my $mid = ''. $doc->{topic_mid};
+    _fail _loc 'save_doc failed: no mid' unless length $mid; 
+    $doc->{mid} = $mid;
+    my @custom_fields = @{ $p{custom_fields} };
+    my %meta = map { $_->{id_field} => $_ } @$meta;
+    
+    # take images out
+    for( @custom_fields ) {
+        $doc->{ $_->{name} } = $self->deal_with_images({ topic_mid => $mid, field => $doc->{ $_->{name} } });
+    }
+    
+    # detect modified fields
+    require Hash::Diff;
+    my $old_doc = mdb->topic->find_one({ mid=>$mid });
+    my $diff = Hash::Diff::left_diff( $old_doc, $doc ); # hash has only changed and deleted fields
+    my $projects = [ map { $_->{mid} } () ] if %$diff; # data from doc in meta_type=project fields $topic->projects->hashref->all;
+    for my $changed ( keys %$diff ){
+        my $old_value = $diff->{ $changed };
+        my $md = $meta{ $changed };
+        my $notify = {
+            category        => $doc->{id_category},
+            category_status => $doc->{id_category_status},
+            field           => $md->{name_field},
+        };
+        $notify->{project} = $projects if @$projects;
+        
+        event_new 'event.topic.modify_field' => { 
+            username   => $doc->{username},
+            field      => _loc( $md->{name_field} ),
+            old_value  => $old_value,
+            new_value  => $doc->{ $changed },
+        }, 
+        sub {
+            my $subject = _loc("Topic [%1] %2: Field '%3' updated", $mid, $doc->{title}, $md->{name_field} );
+            { mid => $mid, topic => $doc->{title}, subject=>$subject, notify=>$notify }   # to the event
+        }, 
+        sub {
+            _throw _loc( 'Error modifying Topic: %1', shift() );
+        };
+    }
+    
+    # calendar info
+    _error \%meta;
+    for my $field ( grep { $meta{$_}{meta_type} eq 'calendar' } keys %meta ) {
+        my $arr = $doc->{$field} or next;
+        $doc->{$field} = {};
+        for my $cal ( _array($arr) ) {
+            _fail "field $field is not a calendar?" unless ref $cal;
+            my $slot = delete $cal->{slotname};
+            $doc->{$field}{$slot} = $cal;
+        }
+    }
+    
+    # expanded data
+    $doc->{category} = $p{category} if $p{category};
+    $doc->{category_status} = $p{category_status} if $p{category_status};
+
+    # create/update mongo doc
+    mdb->topic->update({ mid=>"$doc->{mid}" }, $doc, { upsert=>1 });
 }
 
 sub deal_with_images{

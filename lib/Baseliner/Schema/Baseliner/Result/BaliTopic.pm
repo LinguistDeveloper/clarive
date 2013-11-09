@@ -122,12 +122,6 @@ __PACKAGE__->has_many(
   { "topic_mid" => "mid" },
 );
 
-__PACKAGE__->belongs_to(
-  "topicsfields",
-  "Baseliner::Schema::Baseliner::Result::BaliTopicFieldsCustom",
-  { 'foreign.topic_mid' => 'self.mid' },
-);
-
 __PACKAGE__->master_setup( 'posts', ['topic','mid'] => ['post', 'BaliPost','mid'] );
 __PACKAGE__->master_setup( 'files', ['topic','mid'] => ['file_version', 'BaliFileVersion','mid'] );
 __PACKAGE__->master_setup( 'users', ['topic','mid'] => ['users', 'BaliUser','mid'] );

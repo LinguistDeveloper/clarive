@@ -18,6 +18,11 @@ sub cleanup {
     mdb->master->remove({ mid=>undef }); 
 }
 
+sub current {
+    my ($self,%p) = @_;
+    $self->run( tables=>[qw(bali_master bali_topic)], no_assets=>1 );
+}
+
 sub run {
     my ($self,%p) = @_;
     $self->drop_all if $p{drop_all};
@@ -179,48 +184,9 @@ sub convert_schemas {
         my $k = 0;
         mdb->topic->drop;
         my $coll = mdb->topic;
-        my $db = Util->_dbis;
         $self->each('bali_topic', sub{
            my $r = shift;
-           my $rs = $db->query( $self->topic_view, $r->{mid} );
-           my $row = $rs->hash;
-           return if !$row;
-           my $doc = { %$row, %$r };
-           $doc->{category} = mdb->category->find_one({ id=>$r->{id_category} });
-           $doc->{category_status} = mdb->status->find_one({ id=>$r->{id_category_status} });
-           $doc->{calevent} = '';
-           #$doc->{created_on} = Class::Date->new( $doc->{created_on_epoch} ).""; # not needed, dates are correct comming out of oraclej
-           #$doc->{modified_on} = Class::Date->new( $doc->{modified_on_epoch} )."";
-           delete $doc->{$_} for grep /\./,keys $doc;
-           my @fields = $db->query('select * from bali_topic_fields_custom where topic_mid=?', $r->{mid})->hashes;
-           my @rels = $db->query('select r.rel_field, m.collection, m.name from bali_master_rel r,bali_master m where (m.mid=r.to_mid) and r.from_mid=?', $r->{mid})->hashes;
-           my @rels2 = $db->query('select r.rel_field, m.collection, m.name from bali_master_rel r,bali_master m where (m.mid=r.from_mid) and r.to_mid=?', $r->{mid})->hashes;
-           my %cals = map {
-                my $slot = Util->_name_to_id($_->{slotname});
-                $_->{rel_field} => {
-                      $slot => {
-                        start_date      => $_->{start_date},
-                        end_date        => $_->{end_date},
-                        plan_start_date => $_->{plan_start_date},
-                        plan_end_date   => $_->{plan_end_date}
-                    }
-                    }
-           } $db->query( 'select * from bali_master_cal c where c.mid=?', $r->{mid} )->hashes;
-           #_debug \@rels;
-           say "found custom fields for $r->{mid}: " . join ',', map { $_->{name} } @fields if @fields;
-           
-           my %fieldlets = map( {
-                my $v = $_->{value_clob} || $_->{value};
-                $v = try { _load($v) } catch { $v } if $v;
-                ( $_->{name} => $v )
-                } @fields );
-           my %relations = map( {
-                my $v = $_->{name};
-                ( $_->{rel_field} => $v )
-                } @rels, @rels2);
-           $doc = { %$doc, %cals, %fieldlets, %relations };
-           delete $doc->{$_} for qw(sw_edit last_seen label_color label_name label_id);
-           $coll->insert($doc);
+           $self->topic( coll=>$coll, row=>$r );
            $k++;
         });
         say "$k rows migrated.";
@@ -394,6 +360,63 @@ sub each {
     while( my $row = $rs->hash ) {
         $code->( $row ); 
     }
+}
+
+sub topic {
+    my ( $self, %p ) = @_;
+    
+    my $db = Util->_dbis;
+    my $coll = $p{coll} // mdb->topic;
+    my $r = $p{row} // $db->query('select * from bali_topic where mid=?', $p{mid} )->hash;
+
+    my $rs = $db->query( $self->topic_view, $r->{mid} );
+    my $row = $rs->hash;
+    return if !$row;
+    my $doc = { %$row, %$r };
+    $doc->{category} = mdb->category->find_one( { id => $r->{id_category} } );
+    $doc->{category_status} = mdb->status->find_one( { id => $r->{id_category_status} } );
+    $doc->{calevent} = '';
+
+    #$doc->{created_on} = Class::Date->new( $doc->{created_on_epoch} ).""; # not needed, dates are correct comming out of oraclej
+    #$doc->{modified_on} = Class::Date->new( $doc->{modified_on_epoch} )."";
+    delete $doc->{$_} for grep /\./, keys $doc;
+    my @fields = $db->query( 'select * from bali_topic_fields_custom where topic_mid=?', $r->{mid} )->hashes;
+    my @rels = $db->query(
+        'select r.rel_field, m.collection, m.name from bali_master_rel r,bali_master m where (m.mid=r.to_mid) and r.from_mid=?',
+        $r->{mid}
+    )->hashes;
+    my @rels2 = $db->query(
+        'select r.rel_field, m.collection, m.name from bali_master_rel r,bali_master m where (m.mid=r.from_mid) and r.to_mid=?',
+        $r->{mid}
+    )->hashes;
+    my %cals = map {
+        my $slot = Util->_name_to_id( $_->{slotname} );
+        $_->{rel_field} => {
+            $slot => {
+                start_date      => $_->{start_date},
+                end_date        => $_->{end_date},
+                plan_start_date => $_->{plan_start_date},
+                plan_end_date   => $_->{plan_end_date}
+            }
+            }
+    } $db->query( 'select * from bali_master_cal c where c.mid=?', $r->{mid} )->hashes;
+
+    #_debug \@rels;
+    say "found custom fields for $r->{mid}: " . join ',', map { $_->{name} } @fields if @fields;
+
+    my %fieldlets = map( {
+            my $v = $_->{value_clob} || $_->{value};
+                $v = try { _load($v) } catch { $v } if $v;
+                ( $_->{name} => $v )
+    } @fields );
+    my %relations = map( {
+            my $v = $_->{name};
+                ( $_->{rel_field} => $v )
+        } @rels,
+        @rels2 );
+    $doc = { %$doc, %cals, %fieldlets, %relations };
+    delete $doc->{$_} for qw(sw_edit last_seen label_color label_name label_id);
+    $coll->insert($doc);
 }
 
 sub clean_master_topic {
