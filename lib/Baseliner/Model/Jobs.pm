@@ -76,7 +76,7 @@ sub monitor {
             my $rs_jobs2 = Baseliner->model('Baseliner::BaliMasterRel')->search({rel_type => 'job_nature', to_mid => \@natures, from_mid => {-in => $rs_jobs1}}
                                                                                ,{select=>'from_mid'})->as_query;
           
-            push @mid_filters = { mid=>{ -in=>$rs_jobs2 } };
+            push @mid_filters, { mid=>{ -in=>$rs_jobs2 } };
         }
     
         # Filter by environment name:
