@@ -1158,6 +1158,9 @@ sub search_query {
     return map {
         my $r = $_->{obj};
         my $text = Util->_encode_json( $r );
+        my $coll = $r->{collection};
+        my $class = Util->to_ci_class($coll);
+        my $icon = $class->icon if $coll && $class->can('icon');
         $text =~ s/"|\{|\}|\'|\[|\]//g;
         my $info = sprintf "%s - %s (%s)", $r->{collection}, $r->{bl}, $r->{ts};
         my $desc = _strip_html( sprintf "%s", ($r->{name} // '') );
@@ -1170,7 +1173,7 @@ sub search_query {
             title => sprintf( '%s #%s %s', $r->{collection}, $r->{mid}, $r->{name} ),
             info  => $info,
             text  => $text, 
-            url   => [ $r->{mid}, $r->{name}, '#999', $r->{collection} ],
+            url   => [ $r->{mid}, $r->{name}, '#999', $r->{collection}, $icon ],
             type  => 'ci',
             mid   => $r->{mid},
             id    => $r->{mid},

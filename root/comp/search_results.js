@@ -51,7 +51,8 @@
                                 '&nbsp;</td><td><h4>', r.title, '</h4></td></tr></table>' ].join(''); 
                         }
                         var block = '<div id="boot" style="margin:4"><div id="search-result-block">'
-                            + '<div id="search-result-block-title"><h4 style="color: #2260e0">'
+                            + ( r.url[4] ? String.format('<img style="float: left; margin-right: 3px" src="{0}">', r.url[4]) : '' )
+                            + '<div id="search-result-block-title"><h4 style="color: #111">'
                             + r.title
                             + '</h4>'
                             + '</div>';

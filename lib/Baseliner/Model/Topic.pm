@@ -2108,7 +2108,7 @@ sub search_query {
             #$desc =~ s/[^\x{21}-\x{7E}\s\t\n\r]//g; 
         }
         +{
-            title => sprintf( '%s - %s', $_->{topic_name}, $_->{title} ),
+            title => sprintf( '%s', $_->{title} ),
             text  => $desc,
             info  => $info,
             url   => [ $_->{topic_mid}, $_->{topic_name}, $_->{category_color} ],

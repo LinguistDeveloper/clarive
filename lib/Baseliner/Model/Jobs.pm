@@ -232,6 +232,7 @@ sub search_query {
     my ($self, %p ) = @_;
     
     $p{limit} //= 1000;
+    $p{query_id} = -1;
     my ($cnt, @rows ) = Baseliner->model('Jobs')->monitor(\%p);
     return map {
         my $r = $_;
@@ -248,7 +249,7 @@ sub search_query {
             title => $r->{name},
             info  => $r->{ts},
             text  => join(', ', @text ),
-            url   => [ $r->{id}, $r->{name} ],
+            url   => [ $r->{id}, $r->{name}, undef, undef, '/static/images/icons/job.png' ],
             type  => 'log'
         }
     } @rows;
