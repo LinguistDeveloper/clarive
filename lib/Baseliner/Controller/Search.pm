@@ -86,8 +86,9 @@ sub query_lucy : Local {
     my $lang = $c->languages->[0] || 'en';
 
     #my $dir = _dir _tmp_dir(), 'search_index_' . _md5( join ',', $c->username , $$ , time );
+    my $case_folder = Lucy::Analysis::CaseFolder->new;
     my $string_tokenizer = Lucy::Analysis::RegexTokenizer->new( pattern => $p->{tokenizer_pattern} // '\w');
-    my $analyzer = Lucy::Analysis::PolyAnalyzer->new( analyzers => [$string_tokenizer]);
+    my $analyzer = Lucy::Analysis::PolyAnalyzer->new( analyzers => [$case_folder, $string_tokenizer]);
     my $searcher = Baseliner::Lucy->new(
         index_path => Lucy::Store::RAMFolder->new, # in-memory files "$dir",
         language   => $lang || $c->config->{default_lang} || 'en', 
