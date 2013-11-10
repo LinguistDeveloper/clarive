@@ -262,7 +262,8 @@ method run( :$start=0, :$limit=undef, :$username=undef ) {
     _debug \@where;
 
     my @sort = map { $_->{id_field} => -1 } _array($fields{order_by});
-    my $rs = mdb->topic->find({ '$and'=>[ @where ] });
+    my $find = @where ? { '$and'=>[ @where ] } : {};
+    my $rs = mdb->topic->find($find);
     my $cnt = $rs->count;
     my @topics = map { 
         my %f = hash_flatten($_);
