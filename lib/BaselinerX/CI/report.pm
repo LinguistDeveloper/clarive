@@ -282,6 +282,9 @@ method run( :$start=0, :$limit=undef, :$username=undef ) {
       ->skip( $start )
       ->limit($rows)
       ->all;
+      #->fields({ @selects, _id=>0, mid=>1 })
+    
+    _debug \@topics;
     return ( $cnt, @topics );
 }
 

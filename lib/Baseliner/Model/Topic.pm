@@ -1493,7 +1493,7 @@ sub save_doc {
     my $projects = [ map { $_->{mid} } () ] if %$diff; # data from doc in meta_type=project fields $topic->projects->hashref->all;
     for my $changed ( keys %$diff ){
         my $old_value = $diff->{ $changed };
-        delete $old_value->{_id};
+        delete $old_value->{_id} if ref $old_value eq 'HASH';
         my $md = $meta{ $changed };
         my $notify = {
             category        => $doc->{id_category},
