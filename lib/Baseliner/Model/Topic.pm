@@ -1457,7 +1457,7 @@ sub save_data {
     } 
      
     # save to mongo
-    $self->save_doc( $meta, $data, custom_fields=>\@custom_fields );
+    $self->save_doc( $meta, $data, mid=>$topic_mid, custom_fields=>\@custom_fields );
 
     # user seen
     my $row = DB->BaliMasterPrefs->update_or_create({ username=>$data->{username}, mid=>$topic_mid, last_seen=>_dt() });
@@ -1475,7 +1475,7 @@ sub save_data {
 sub save_doc {
     my ($self,$meta,$doc, %p) = @_;
     #my $doc = Util->_clone($data); # so that we don't change the original
-    my $mid = ''. $doc->{topic_mid};
+    my $mid = ''. $p{mid};
     _fail _loc 'save_doc failed: no mid' unless length $mid; 
     $doc->{mid} = $mid;
     my @custom_fields = @{ $p{custom_fields} };
@@ -1529,13 +1529,54 @@ sub save_doc {
     }
     
     # expanded data
-    $doc->{category} = $p{category} if $p{category};
-    $doc->{category_status} = $p{category_status} if $p{category_status};
+    $self->update_category( $doc, ref $doc->{category} ? $doc->{category}{id} : $doc->{category} ); 
+    $self->update_category_status( $doc, $doc->{id_category_status} // $doc->{status_new} );
 
     # create/update mongo doc
     mdb->topic->update({ mid=>"$doc->{mid}" }, $doc, { upsert=>1 });
 }
 
+sub update_category {
+    my ($self,$mid_or_doc, $id_cat ) = @_; 
+    my $doc = ref $mid_or_doc ? $mid_or_doc : mdb->topic->find_one({ mid=>$mid_or_doc });
+    _fail _loc "Cannot update topic category, topic not found: %1", $mid_or_doc unless ref $doc;
+    
+    $id_cat //= $doc->{id_category};
+    
+    $doc->{category} = DB->BaliTopicCategories->search({ id=>$id_cat })->hashref->first 
+        || _fail _loc 'Category %1 not found', $id_cat;
+    $doc = {
+        %$doc,
+        color_category       => $doc->{category}{color},
+        category_color       => $doc->{category}{color},
+        category_id          => $doc->{category}{id},
+        category_name        => $doc->{category}{name},
+        name_category        => $doc->{category}{name},
+        is_changeset         => $doc->{category}{is_changeset},
+        is_release           => $doc->{category}{is_release},
+    };
+}
+
+sub update_category_status {
+    my ($self,$mid_or_doc, $id_category_status ) = @_; 
+    my $doc = ref $mid_or_doc ? $mid_or_doc : mdb->topic->find_one({ mid=>$mid_or_doc });
+    _fail _loc "Cannot update topic category status, topic not found: %1", $mid_or_doc unless ref $doc;
+
+    $id_category_status //= $doc->{id_category_status};
+    $doc->{category_status} = DB->BaliTopicStatus->search({ id=>$id_category_status })->hashref->first
+        || _fail _loc 'Status %1 not found', $id_category_status;
+        
+    $doc = {
+        %$doc,
+        id_category_status   => $id_category_status,
+        category_status_id   => $doc->{category_status}{id},
+        category_status_seq  => $doc->{category_status}{seq},
+        category_status_type => $doc->{category_status}{type},
+        category_status_name => $doc->{category_status}{name},
+        name_status          => $doc->{category_status}{name},
+    };
+}
+    
 sub deal_with_images{
     #params:  topic_mid, field
     my ($self, $params ) = @_;

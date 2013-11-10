@@ -44,12 +44,60 @@
     });
     
     var edit_value = function(node){
+        var attr = node.attributes;
         var pn = node.parentNode; // should be where_field
         //console.log( pn );
         //form_value.show();
         //console.log( node );
+        var oper_all = [ ['','='], ['$ne','<>'],['$lt','<'],['$lte','<='],['$gt','>'],['$gte','>='] ];
+        var oper_in = [ ['$in','IN'], ['$nin','NOT IN'] ];
+        var oper_by_type = oper_all;
+        var field = { xtype:'textarea', name:'value', fieldLabel: pn.text, height:60, value:attr.value==undefined?'':attr.value };
+        var ftype = attr.field || attr.where;
+        switch( ftype ) {
+            case 'number': 
+                  field={ xtype:'textfield', name:'value', maskRe:/[0-9]/, fieldLabel: pn.text, value: attr.value==undefined ? 0 : attr.value };
+                  break;
+            case 'date': 
+                  field={ xtype:'datefield', dateFormat:'Y-m-d', name:'value', fieldLabel: pn.text, value: attr.value==undefined ? '' : attr.value };
+                  break;
+            case 'status': 
+                  field=new Baseliner.SuperBox({ fieldLabel:_('Status'), name:'value', 
+                      valueField:'id', value: attr.value, singleMode: false, store: new Baseliner.Topic.StoreStatus() });
+                  //field=Baseliner.ci_box({ value: attr.value, isa:'status', force_set_value:true });
+                  oper_by_type = oper_in;
+                  break;
+            case 'ci': 
+                  field=Baseliner.ci_box({ value: attr.value, name:'value', singleMode: false, force_set_value:true });
+                  oper_by_type = oper_in;
+                  break;
+        }
         form_value.removeAll();
-        form_value.add({ xtype:'textarea', fieldLabel: pn.text, height:60, value:'nnnnna' });
+        var oper = new Baseliner.ComboDouble({
+            value: attr.oper || '', 
+            fieldLabel: _('Operator'), data: oper_by_type });
+        form_value.add(oper);
+        var fcomp = form_value.add(field);
+        var set_value = function(){
+            attr.oper = oper.get_save_data();
+            var val;
+            var label;
+            switch( ftype ) {
+                case 'date': val = val.format('Y-m-d').trim(); break;
+                case 'ci': 
+                case 'status': 
+                    label = fcomp.get_labels().join(',');
+                default:
+                    val = fcomp.get_save_data ? fcomp.get_save_data() : fcomp.getValue();
+            }
+            attr.value = val;
+            node.setText( String.format('{0} {1}', oper.getRawValue(), label || attr.value) );
+        };
+        oper.on('blur', function(f){ set_value() });
+        fcomp.on('blur', function(f){ set_value() });
+        fcomp.on('change', function(f){ set_value() });
+        oper.on('change', function(f){ set_value() });
+        form_value.setTitle( String.format('{0} - {1}', node.text, pn.text ) );
         if( form_value.collapsed ) form_value.toggleCollapse(true);
         form_value.doLayout();
     };
@@ -87,7 +135,7 @@
         enableDD: true,
         ddScroll: true,
         loader: tree_selected_loader,
-        listeners: { contextmenu: tree_menu_click },
+        listeners: { contextmenu: tree_menu_click, click: function(n){ if(n.attributes.type=='value') edit_value(n); } },
         root: { text: '', expanded: true, draggable: false }, 
         rootVisible: false
     });

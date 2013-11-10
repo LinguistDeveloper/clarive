@@ -630,7 +630,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
         
         var button_search_folders = new Ext.Button({
             cls: 'x-btn-icon',
-            icon: '/static/images/icons/report_grey.png',
+            icon: '/static/images/icons/search_grey.png',
             handler: show_reports,
             tooltip: _('Reports'),
             toggleGroup: 'explorer-card',

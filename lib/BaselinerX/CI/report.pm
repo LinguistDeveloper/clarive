@@ -1,6 +1,6 @@
 package BaselinerX::CI::report;
 use Baseliner::Moose;
-use Baseliner::Utils qw(_array _loc _fail hash_flatten);
+use Baseliner::Utils qw(:logging _array _loc _fail hash_flatten);
 use v5.10;
 use Try::Tiny;
 with 'Baseliner::Role::CI::Internal';
@@ -152,15 +152,12 @@ sub all_fields {
             children=>[
                 map { $_->{icon}='/static/images/icons/where.png'; $_->{type}='value'; $_->{leaf}=\1; $_ } 
                 (
-                    { text=>_loc('Is String'), where=>'string', },
-                    { text=>_loc('Like'), where=>'like' },
-                    { text=>_loc('Is Number'), where=>'number' },
-                    { text=>_loc('Number'), where=>'number' },
-                    { text=>_loc('Number From'), where=>'number_from' },
-                    { text=>_loc('Number To'), where=>'number_to' },
-                    { text=>_loc('Date From'), where=>'date_from' },
-                    { text=>_loc('Date To'), where=>'date_to' },
-                    { text=>_loc('CIs'), where=>'cis' },
+                    { text=>_loc('String'), where=>'string', field=>'string', },
+                    { text=>_loc('Like'), where=>'like', field=>'string' },
+                    { text=>_loc('Number'), where=>'number', field=>'number' },
+                    { text=>_loc('Date'), where=>'date', field=>'date' },
+                    { text=>_loc('CIs'), where=>'cis', field=>'ci' },
+                    { text=>_loc('Status'), where=>'status', field=>'status' },
                 )
             ]
         }
@@ -210,19 +207,27 @@ sub field_tree {
     return $self->selected;
 } 
 
-our %field_map = (
-    status => 'category_status_name',       
-    status_new => 'category_status_name',       
+our %data_field_map = (
+    status => 'category_status_name',
+    status_new => 'category_status_name',
     name_status => 'category_status_name',       
     'category_status.name' => 'category_status_name',       
 );
+
+our %select_field_map = (
+    status => 'category_status.name',
+    status_new => 'category_status.name',
+    name_status => 'category_status.name',       
+);
+
+our %where_field_map = ();
 
 sub selected_fields {
     my ($self, $p ) = @_; 
     my %ret = ( ids=>['mid'], names=>[] );
     my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
     for ( _array($fields{select}) ) {
-        my $id = $field_map{$_->{id_field}} // $_->{id_field};
+        my $id = $data_field_map{$_->{id_field}} // $_->{id_field};
         $id =~ s/\.+/-/g;  # convert dot to dash to avoid JsonStore id problems
         my $as = $_->{as} // $_->{name_field};
         push @{ $ret{ids} }, $id;
@@ -235,19 +240,44 @@ sub selected_fields {
 method run( :$start=0, :$limit=undef, :$username=undef ) {
     my $rows = $limit // $self->rows;
     my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
-    my @selects = map { ( $field_map{$_->{id_field}} // $_->{id_field} )  => 1 } _array($fields{select});
+    
+    my @selects = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) => 1 } _array($fields{select});
+    _debug \@selects;
+
+    my @where = grep { defined } map { 
+        my $field=$_;
+        #_debug $field->{id_field};
+        #my $id = $field_map{$field->{id_field}} // $field->{id_field};
+        my $id = $field->{meta_where_id} // $where_field_map{$_->{id_field}} // $field->{id_field};
+        my @chi = _array($field->{children});
+        my @ors;
+        for my $val ( @chi ) {
+            my $cond = $val->{oper} 
+                ? { $id => { $val->{oper} => $val->{value} } }
+                : { $id => $val->{value} };
+            push @ors, $cond; 
+        }
+        @ors ? { '$or' => \@ors } : undef;
+    } _array($fields{where});
+    _debug \@where;
+
     my @sort = map { $_->{id_field} => -1 } _array($fields{order_by});
-    my $rs = mdb->topic->find();
+    my $rs = mdb->topic->find({ '$and'=>[ @where ] });
     my $cnt = $rs->count;
     my @topics = map { 
         my %f = hash_flatten($_);
-        # convert dots to dash
-        %f = map { my $k=$_; my $k2=$_; $k2=~s/\.+/-/g; $k2 => $f{$k} } keys %f;
+        # convert dots to underscore
+        %f = map { 
+            my $k = $_; my $k2 = $_; 
+            $k2 =~ s/\.+/_/g; 
+            #$k2 = $data_field_map{$k2} // $k2;
+            $k2 => $f{$k}; 
+        } keys %f;
         \%f;
       } 
       $rs
-      ->fields({ @selects, _id=>0, mid=>1 })
       ->sort({ @sort })
+      ->fields({ _id=>0 })
       ->skip( $start )
       ->limit($rows)
       ->all;
@@ -258,24 +288,6 @@ method run( :$start=0, :$limit=undef, :$username=undef ) {
 
 __END__
 
-X No filters on grid 
-- Meta dynamic, que se guarde en el campo solo el id de meta
-- Topic agregador, añadir pases 
-- Permitir text query in grid 
-X Páginacion en grid
-
-- Save does not work when SQL no visible
-- group all categories in select fields and filter them
-- add mid column as hidden
-- columns have: width, hidden, 
-- set sort direction in sort fields
-- return data with dots instead of nested 
-- set alias Header on select_field
-- fieldlet "attribute" tells the mongo dot attribute (but for now, we can just map some of them manually)
-- fieldlet "meta_type" tells what type it is: text,date,number 
-- statements OR ($or), AND ($and), NOT ($not) ... in? nin?
-- sql post filter with SQLite
-- topic returns data from run (no post processing), topic store gets dot.fields 
 
 
 

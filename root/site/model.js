@@ -10,6 +10,35 @@ http://baseliner.org/license
 //Ext.ns('Baseliner.store');
 //Ext.ns('Baseliner.model');
 
+Baseliner.SuperBox = Ext.extend( Ext.ux.form.SuperBoxSelect, {
+    minChars: 2,
+    pageSize: 20,
+    typeAhead: false,
+    loadingText: _('Searching...'),
+    resizable: true,
+    allowBlank: true,
+    lazyRender: false,
+    triggerAction: 'all',
+    msgTarget: 'under',
+    emptyText: _('Select one'),
+    mode: 'remote',
+    displayField: 'name',
+    hiddenName: 'projects',
+    valueField: 'mid',
+    extraItemCls: 'x-tag',
+    queryValuesDelimiter: ' ', // important, so that the query parameter gets all mids in a searcheable manner, otherwise multivalues do not load
+    get_save_data: function(){
+         var arr=[];
+         this.items.each(function(r){ arr.push(r.value) });
+         return arr;
+    },
+    get_labels: function(){
+         var arr=[];
+         this.items.each(function(r){ arr.push(r.display) });
+         return arr;
+    }
+});
+
 Baseliner.store.AllProjects = function(c) {
      Baseliner.store.AllProjects.superclass.constructor.call(this, Ext.apply({
         root: 'data' , 
@@ -835,7 +864,7 @@ Baseliner.model.CISelect = function(c) {
         extraItemCls: 'x-tag'
     }, c));
 };
-Ext.extend( Baseliner.model.CISelect, Ext.ux.form.SuperBoxSelect );
+Ext.extend( Baseliner.model.CISelect, Baseliner.SuperBox);
 
 
 Baseliner.model.CICombo = function(c) {
