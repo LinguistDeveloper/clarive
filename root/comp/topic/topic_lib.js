@@ -897,7 +897,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 Ext.apply({ action: action, form: custom_form, _cis: Ext.util.JSON.encode( self._cis ) }, form_data), 
                 // success
                 function(res){
-                    self.btn_save_form.enable();
+                    self.getTopToolbar().enable();
                     if( self.permDelete ) {
                         self.btn_delete_form.enable();
                     }                    
@@ -931,6 +931,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     
                     self.topic_mid = res.topic_mid;
                     self.btn_comment.show();
+                    self.getTopToolbar().enable();
                     self.btn_detail.show();
                     if( self.permDelete ) {
                         self.btn_delete_form.show();
@@ -954,7 +955,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 },
                 // failure
                 function(res){
-                    self.btn_save_form.enable();
+                    self.getTopToolbar().enable();
                     if( self.permDelete ) {
                         self.btn_delete_form.enable();
                     }
@@ -973,7 +974,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         };
         
         if ( self.form_topic.is_valid() ) {
-            self.btn_save_form.disable();
+            self.getTopToolbar().disable();
             self.btn_delete_form.disable();
             
             if(action == 'update'){
@@ -986,7 +987,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                                         if(btn=='yes') {
                                             do_submit();
                                         }else{
-                                            self.btn_save_form.enable();
+                                            self.getTopToolbar().enable();
                                             if( self.permDelete ) {
                                                 self.btn_delete_form.enable();                                    
                                             }
@@ -999,7 +1000,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                             }
                         } else {
                             Baseliner.error( _('Error'), res.msg );
-                            self.btn_save_form.enable();
+                            self.getTopToolbar().enable();
                             if( self.permDelete ) {
                                 self.btn_delete_form.enable();                              
                             }

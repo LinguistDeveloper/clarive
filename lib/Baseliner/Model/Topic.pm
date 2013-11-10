@@ -1486,39 +1486,8 @@ sub save_doc {
         $doc->{ $_->{name} } = $self->deal_with_images({ topic_mid => $mid, field => $doc->{ $_->{name} } });
     }
     
-    # detect modified fields
-    require Hash::Diff;
-    my $old_doc = mdb->topic->find_one({ mid=>$mid });
-    my $diff = Hash::Diff::left_diff( $old_doc, $doc ); # hash has only changed and deleted fields
-    my $projects = [ map { $_->{mid} } () ] if %$diff; # data from doc in meta_type=project fields $topic->projects->hashref->all;
-    for my $changed ( keys %$diff ){
-        my $old_value = $diff->{ $changed };
-        delete $old_value->{_id} if ref $old_value eq 'HASH';
-        my $md = $meta{ $changed };
-        my $notify = {
-            category        => $doc->{id_category},
-            category_status => $doc->{id_category_status},
-            field           => $md->{name_field},
-        };
-        $notify->{project} = $projects if @$projects;
-        
-        event_new 'event.topic.modify_field' => { 
-            username   => $doc->{username},
-            field      => _loc( $md->{name_field} ),
-            old_value  => $old_value,
-            new_value  => $doc->{ $changed },
-        }, 
-        sub {
-            my $subject = _loc("Topic [%1] %2: Field '%3' updated", $mid, $doc->{title}, $md->{name_field} );
-            { mid => $mid, topic => $doc->{title}, subject=>$subject, notify=>$notify }   # to the event
-        }, 
-        sub {
-            _throw _loc( 'Error modifying Topic: %1', shift() );
-        };
-    }
-    
     # calendar info
-    _error \%meta;
+    #_error \%meta;
     for my $field ( grep { $meta{$_}{meta_type} eq 'calendar' } keys %meta ) {
         my $arr = $doc->{$field} or next;
         $doc->{$field} = {};
@@ -1533,6 +1502,37 @@ sub save_doc {
     $self->update_category( $doc, ref $doc->{category} ? $doc->{category}{id} : $doc->{category} ); 
     $self->update_category_status( $doc, $doc->{id_category_status} // $doc->{status_new} );
 
+    # detect modified fields
+    require Hash::Diff;
+    my $old_doc = mdb->topic->find_one({ mid=>"$mid" });
+    my $diff = Hash::Diff::left_diff( $old_doc, $doc ); # hash has only changed and deleted fields
+    my $projects = [ map { $_->{mid} } () ] if %$diff; # data from doc in meta_type=project fields $topic->projects->hashref->all;
+    for my $changed ( grep { exists $diff->{$_} } map { $_->{column} } @custom_fields ){
+        next if ref $doc->{$changed} || ref $old_doc->{$changed};
+        next if $doc->{$changed} eq $old_doc->{$changed};
+        my $md = $meta{ $changed };
+        my $notify = {
+            category        => $doc->{id_category},
+            category_status => $doc->{id_category_status},
+            field           => $md->{name_field},
+        };
+        $notify->{project} = $projects if @$projects;
+        
+        event_new 'event.topic.modify_field' => { 
+            username   => $doc->{username},
+            field      => _loc( $md->{name_field} ),
+            old_value  => $old_doc->{$changed},
+            new_value  => $doc->{$changed},
+        }, 
+        sub {
+            my $subject = _loc("Topic [%1] %2: Field '%3' updated", $mid, $doc->{title}, $md->{name_field} );
+            { mid => $mid, topic => $doc->{title}, subject=>$subject, notify=>$notify }   # to the event
+        }, 
+        sub {
+            _throw _loc( 'Error modifying Topic: %1', shift() );
+        };
+    }
+    
     # create/update mongo doc
     mdb->topic->update({ mid=>"$doc->{mid}" }, $doc, { upsert=>1 });
 }
