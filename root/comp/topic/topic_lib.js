@@ -306,53 +306,64 @@ Baseliner.Topic.StoreCategoryStatus = Ext.extend( Baseliner.JsonStore, {
 
 Baseliner.Topic.StoreList = Ext.extend( Baseliner.JsonStore, {
     constructor: function(config) {
+        var fields = [ 
+            {  name: 'topic_mid' },
+            {  name: 'topic_name' },
+            {  name: 'title' },
+            //{  name: 'description' },
+            {  name: 'created_on', type: 'date', dateFormat: 'c' },        
+            {  name: 'created_by' },
+            {  name: 'numcomment' },
+            {  name: 'category_id' },
+            {  name: 'category_color' },
+            {  name: 'is_release' },
+            {  name: 'is_changeset' },
+            {  name: 'category_name' },
+            {  name: 'calevent' },
+            {  name: 'projects' },          
+            {  name: 'labels' },
+            {  name: 'status' },
+            {  name: 'progress' },
+            {  name: 'revisions' },
+            {  name: 'report_data' },
+            {  name: 'category_status_name' },
+            {  name: 'category_status_seq' },
+            {  name: 'category_status_id' },
+            {  name: 'category_status_type' },
+            {  name: 'priority_id' },
+            {  name: 'response_time_min' },
+            {  name: 'expr_response_time' },
+            {  name: 'deadline_min' },
+            {  name: 'expr_deadline' },
+            {  name: 'num_file' },
+            {  name: 'assignee' },
+            {  name: 'moniker' },
+            {  name: 'cis_in' },
+            {  name: 'cis_out' },
+            {  name: 'references_out' },
+            {  name: 'referenced_in' },
+            {  name: 'directory' },
+            {  name: 'user_seen' },
+            {  name: 'sw_edit'},
+            {  name: 'modified_on', type: 'date', dateFormat: 'c' },        
+            {  name: 'modified_by' }
+        ];
+        if( config.add_fields ) {
+            var ff = {};
+            Ext.each(fields, function(f){ 
+                return ff[f.name]=true });
+            Ext.each( config.add_fields, function(f){
+                if( !ff[f.name] ) fields.push(f);
+                //console.log( f );
+            });
+            delete config.add_fields;
+        }
         config = Ext.apply({
             root: 'data' , 
             remoteSort: true,
             totalProperty:"totalCount", 
             url: '/topic/list',
-            fields: [ 
-                {  name: 'topic_mid' },
-                {  name: 'topic_name' },
-                {  name: 'title' },
-                //{  name: 'description' },
-                {  name: 'created_on', type: 'date', dateFormat: 'c' },        
-                {  name: 'created_by' },
-                {  name: 'numcomment' },
-                {  name: 'category_id' },
-                {  name: 'category_color' },
-                {  name: 'is_release' },
-                {  name: 'is_changeset' },
-                {  name: 'category_name' },
-                {  name: 'calevent' },
-                {  name: 'projects' },          
-                {  name: 'labels' },
-                {  name: 'status' },
-                {  name: 'progress' },
-                {  name: 'revisions' },
-                {  name: 'report_data' },
-                {  name: 'category_status_name' },
-                {  name: 'category_status_seq' },
-                {  name: 'category_status_id' },
-                {  name: 'category_status_type' },
-                {  name: 'priority_id' },
-                {  name: 'response_time_min' },
-                {  name: 'expr_response_time' },
-                {  name: 'deadline_min' },
-                {  name: 'expr_deadline' },
-                {  name: 'num_file' },
-                {  name: 'assignee' },
-                {  name: 'moniker' },
-                {  name: 'cis_in' },
-                {  name: 'cis_out' },
-                {  name: 'references_out' },
-                {  name: 'referenced_in' },
-                {  name: 'directory' },
-                {  name: 'user_seen' },
-                {  name: 'sw_edit'},
-                {  name: 'modified_on', type: 'date', dateFormat: 'c' },        
-                {  name: 'modified_by' }
-            ]
+            fields: fields
         },config);
         Baseliner.Topic.StoreList.superclass.constructor.call(this, config);
     }

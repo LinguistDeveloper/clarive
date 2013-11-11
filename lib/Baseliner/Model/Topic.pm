@@ -1056,8 +1056,11 @@ sub get_meta {
     return $cached if $cached;
 
     my $id_cat =  $id_category
-        // DB->BaliTopic->search({ mid=>$topic_mid }, { select=>'id_category' })->as_query;
+        // ( $topic_mid ? DB->BaliTopic->search({ mid=>$topic_mid }, { select=>'id_category' })->as_query : undef );
         
+    my @cat_fields = $id_cat 
+        ? DB->BaliTopicFieldsCategory->search({ id_category=>{ -in => $id_cat } })->hashref->all
+        : DB->BaliTopicFieldsCategory->hashref->all;
     my @meta =
         sort { $a->{field_order} <=> $b->{field_order} }
         map  { 
@@ -1070,8 +1073,7 @@ sub get_meta {
                 ? ($meta_types{ $d->{set_method} } // _fail("Unknown set_method $d->{set_method} for field $d->{name_field}") ) 
                 : '';
             $d
-        }
-        DB->BaliTopicFieldsCategory->search({ id_category=>{ -in => $id_cat } })->hashref->all;
+        } @cat_fields;
     
     Baseliner->cache_set( "topic:meta:$topic_mid:", \@meta ) if length $topic_mid;
     
@@ -1320,6 +1322,7 @@ sub save_data {
     my $moniker = delete $row{moniker};
     
     if (!$topic_mid){
+        # new topic
         master_new 'topic' => { name=>$data->{title}, moniker=>$moniker, data=>{ %row } } => sub {
             $topic_mid = shift;
 
@@ -1335,10 +1338,9 @@ sub save_data {
             for( @imgs ) {
                 $_->update({ topic_mid => $topic_mid });
             }
-
         }        
-        
     }else{
+        # update topic
         $topic = DB->BaliTopic->find( $topic_mid, { prefetch =>['categories','status','priorities'] } );
 
         for my $field (keys %row){
@@ -1357,7 +1359,6 @@ sub save_data {
             my $method = $relation{ $field };
             my $new_value = $row{$field};
             my $old_value = $old_values{$field};
-
 
             if ( $new_value ne $old_value ){
                 if($field eq 'id_category_status'){
@@ -1457,7 +1458,7 @@ sub save_data {
     } 
      
     # save to mongo
-    $self->save_doc( $meta, $data, mid=>$topic_mid, custom_fields=>\@custom_fields );
+    $self->save_doc( $meta, +{ $topic->get_columns }, $data, mid=>$topic_mid, custom_fields=>\@custom_fields );
 
     # user seen
     my $row = DB->BaliMasterPrefs->update_or_create({ username=>$data->{username}, mid=>$topic_mid, last_seen=>_dt() });
@@ -1473,7 +1474,7 @@ sub save_data {
 }
 
 sub save_doc {
-    my ($self,$meta,$doc, %p) = @_;
+    my ($self,$meta,$row, $doc, %p) = @_;
     #my $doc = Util->_clone($data); # so that we don't change the original
     my $mid = ''. $p{mid};
     _fail _loc 'save_doc failed: no mid' unless length $mid; 
@@ -1499,8 +1500,8 @@ sub save_doc {
     }
     
     # expanded data
-    $self->update_category( $doc, ref $doc->{category} ? $doc->{category}{id} : $doc->{category} ); 
-    $self->update_category_status( $doc, $doc->{id_category_status} // $doc->{status_new} );
+    $self->update_category( $doc, $row->{id_category} // ( ref $doc->{category} ? $doc->{category}{id} : $doc->{category} ) ); 
+    $self->update_category_status( $doc, $row->{id_category_status} // $doc->{id_category_status} // $doc->{status_new} );
 
     # detect modified fields
     require Hash::Diff;
@@ -1534,7 +1535,25 @@ sub save_doc {
     }
     
     # create/update mongo doc
-    mdb->topic->update({ mid=>"$doc->{mid}" }, $doc, { upsert=>1 });
+    mdb->topic->update({ mid=>"$doc->{mid}" }, { %$row, %$doc }, { upsert=>1 });
+}
+
+sub migrate_docs {
+    my ($self,$mid)=@_;
+    my $db = _dbis;
+    DB->BaliTopic->hashref->each(sub{
+        my $r = shift;
+        _debug $r;
+        my @meta = _array( Baseliner->model('Topic')->get_meta(undef,$r->{id_category}) ); 
+        my %meta = map { $_->{id_field} => $_ } @meta; 
+        my @fields = $db->query( 'select * from bali_topic_fields_custom where topic_mid=?', $r->{mid} )->hashes;
+        my %fieldlets = map( {
+            my $v = $_->{value_clob} || $_->{value};
+            $v = try { _load($v) } catch { $v } if $v && !$meta{$_->{name}}{as_string};
+            ( $_->{name} => $v )
+        } @fields );
+        $self->save_doc( \@meta, $r, \%fieldlets, mid=>$r->{mid}, custom_fields=>[] );
+    });
 }
 
 sub update_category {

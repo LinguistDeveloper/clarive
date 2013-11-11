@@ -23,25 +23,27 @@ sub rel_type {
 sub report_list {
     my ($self,$p) = @_;
     
+    my $username = $p->{username};
     my @folders = $self->search_cis; 
-    my @tree;
+    my @mine;
+    my @public;
     
     for my $folder ( @folders ){
-        push @tree,
+        push @mine,
             {
                 mid     => $folder->mid,
                 text    => $folder->name,
-                icon    => '/static/images/icons/report.png',
+                icon    => '/static/images/icons/topic.png',
                 menu    => [
                     {
                         text   => _loc('Edit') . '...',
                         icon   => '/static/images/icons/report.png',                        
-                        eval   => { handler => 'Baseliner.open_new_search_folder' }
+                        eval   => { handler => 'Baseliner.edit_search' }
                     },
                     {
-                        text   => _loc('Delete search folder') . '...',
+                        text   => _loc('Delete') . '...',
                         icon   => '/static/images/icons/folder_delete.gif',
-                        eval   => { handler => 'Baseliner.delete_search_folder' }
+                        eval   => { handler => 'Baseliner.delete_search' }
                     }                    
                 ],
                 data    => {
@@ -51,7 +53,6 @@ sub report_list {
                         type    => 'comp',
                         title   => $folder->name,
                     },
-                    #selecs         => $folder->fields,
                     #store_fields   => $folder->fields,
                     #columns        => $folder->fields,
                     fields         => $folder->selected_fields,
@@ -63,8 +64,36 @@ sub report_list {
                 leaf    => \1,
             };
     }    
-    
-    return \@tree; 
+   
+    my @trees = (
+            {
+                cls => 'x-btn-icon',
+                icon => '/static/images/icons/report.png',
+                text => _loc('My Searches'),
+                mid => -1,
+                draggable => \0,
+                children => \@mine,
+                data => [],
+                menu => [
+                    {   text=> _loc('New search') . '...',
+                        icon=> '/static/images/icons/report.png',
+                        eval=> { handler=> 'Baseliner.new_search'},
+                    } 
+                ],
+                expanded => \1,
+            },
+            {
+                cls => 'x-btn-icon',
+                icon => '/static/images/icons/report.png',
+                text => _loc('Public Searches'),
+                mid => -1,
+                draggable => \0,
+                children => \@public,
+                data => [],
+                expanded => \1,
+            },
+    );
+    return \@trees; 
 }
 
 sub report_update {
@@ -93,20 +122,20 @@ sub report_update {
                     $self->rows( $data->{rows} );
                     $self->sql( $data->{sql} );
                     $self->save;
-                    $ret = { msg=>_loc('Search folder added'), success=>\1, mid=>$self->mid };
+                    $ret = { msg=>_loc('Search added'), success=>\1, mid=>$self->mid };
                 } else {
-                    _fail _loc('Folder name already exists, introduce another folder name');
+                    _fail _loc('Search name already exists, introduce another search name');
                 }
             }
             catch{
-                _fail _loc('Error adding folder: %1', shift());
+                _fail _loc('Error adding search: %1', shift());
             };
         }
         when ('update') {
             try{
                 my @cis = $self->search_cis( name=>$data->{name} );
                 if( @cis && $cis[0]->mid != $self->mid ) {
-                    _fail _loc('Folder name already exists, introduce another folder name');
+                    _fail _loc('Search name already exists, introduce another search name');
                 }
                 else {
                     $self->name( $data->{name} );
@@ -114,19 +143,19 @@ sub report_update {
                     $self->sql( $data->{sql} );
                     $self->selected( $data->{selected} ) if ref $data->{selected}; # if the selector tab has not been show, this is submitted undef
                     $self->save;
-                    $ret = { msg=>_loc('Search folder modified'), success=>\1, mid=>$self->mid };
+                    $ret = { msg=>_loc('Search modified'), success=>\1, mid=>$self->mid };
                 }
             }
             catch{
-                _fail _loc('Error modifing folder: %1', shift());
+                _fail _loc('Error modifing search: %1', shift());
             };
         }
         when ('delete') {
             try {
                 $self->delete;
-                $ret = { msg=>_loc('Search folder deleted'), success=>\1 };
+                $ret = { msg=>_loc('Search deleted'), success=>\1 };
             } catch {
-                _fail _loc('Error deleting folder: %1', shift());
+                _fail _loc('Error deleting search: %1', shift());
             };
         }
     }
@@ -224,7 +253,7 @@ our %where_field_map = ();
 
 sub selected_fields {
     my ($self, $p ) = @_; 
-    my %ret = ( ids=>['mid'], names=>[] );
+    my %ret = ( ids=>['mid','topic_mid','category_name','category_color','modified_on'], names=>[] );
     my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
     for ( _array($fields{select}) ) {
         my $id = $data_field_map{$_->{id_field}} // $_->{id_field};
@@ -241,6 +270,8 @@ method run( :$start=0, :$limit=undef, :$username=undef ) {
     my $rows = $limit // $self->rows;
     my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
     
+    my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta() );  # XXX should be by category, same id fields may step on each other
+
     my @selects = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) => 1 } _array($fields{select});
     _debug \@selects;
 
@@ -259,21 +290,24 @@ method run( :$start=0, :$limit=undef, :$username=undef ) {
         }
         @ors ? { '$or' => \@ors } : undef;
     } _array($fields{where});
-    _debug \@where;
+    #_debug \@where;
 
-    my @sort = map { $_->{id_field} => -1 } _array($fields{order_by});
+    my @sort = map { $_->{id_field} => 1 } _array($fields{sort});
+    
     my $find = @where ? { '$and'=>[ @where ] } : {};
     my $rs = mdb->topic->find($find);
     my $cnt = $rs->count;
     my @topics = map { 
         my %f = hash_flatten($_);
-        # convert dots to underscore
         %f = map { 
             my $k = $_; my $k2 = $_; 
-            $k2 =~ s/\.+/_/g; 
+            $k2 =~ s/\.+/_/g; # convert dots to underscore, otherwise javascript unhappy
             #$k2 = $data_field_map{$k2} // $k2;
-            $k2 => $f{$k}; 
+            my $v = $f{$k}; 
+            $v = Class::Date->new($v)->string if $k2 =~ /modified_on|created_on/;
+            $k2 => $v; 
         } keys %f;
+        $f{topic_mid} = $f{mid};
         \%f;
       } 
       $rs
@@ -284,7 +318,7 @@ method run( :$start=0, :$limit=undef, :$username=undef ) {
       ->all;
       #->fields({ @selects, _id=>0, mid=>1 })
     
-    _debug \@topics;
+      #_debug \@topics;
     return ( $cnt, @topics );
 }
 

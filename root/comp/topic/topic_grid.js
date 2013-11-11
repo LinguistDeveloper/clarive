@@ -15,13 +15,14 @@
 	var id_project = '<% $c->stash->{id_project} %>';
     var id_report = params.id_report;
     var report_rows = params.report_rows;
+    var mini_mode = false;
     if( report_rows ) {
         ps_maxi=report_rows;
         ps_mini=report_rows;
         ps=report_rows;
+        mini_mode = params.mini_mode==undefined ? true : params.mini_mode;
     }
     var fields = params.fields;
-    var report_columns;
     //console.log( params );
     
     var base_params = { start: 0, limit: ps, typeApplication: typeApplication, 
@@ -56,7 +57,8 @@
         }
     };
     if( fields ) {
-        store_config.fields = fields.ids.map(function(r){ return { name: r } });
+        store_config.add_fields = fields.ids.map(function(r){ return { name: r } });
+        //alert( fields.ids );
     }
 
     // Create store instances
@@ -254,7 +256,9 @@
         topic_category_grid.on("rowdblclick", function(grid, rowIndex, e ) {
             var r = grid.getStore().getAt(rowIndex);
             var title = _(r.get( 'name' ));
-            Baseliner.add_tabcomp('/topic/view?swEdit=1', title , { title: title, new_category_id: r.get( 'id' ), new_category_name: r.get( 'name' ), _parent_grid: grid_topics.id } );
+            Baseliner.add_tabcomp('/topic/view?swEdit=1', title , { 
+                title: title, new_category_id: r.get( 'id' ), 
+                new_category_name: r.get( 'name' ), _parent_grid: grid_topics.id } );
             win.close();
         });     
         
@@ -415,7 +419,7 @@
     var btn_mini = new Ext.Toolbar.Button({
         icon:'/static/images/icons/updown_.gif',
         cls: 'x-btn-text-icon',
-        enableToggle: true, pressed: false, allowDepress: true,
+        enableToggle: true, pressed: mini_mode || false, allowDepress: true,
         handler: function() {
             if( btn_mini.pressed && ptool.pageSize == ps_maxi ) {
                 ptool.pageSize =  ps_mini;
@@ -709,17 +713,49 @@
         }
     };
 
+    var columns = [];
+    var col_map = {
+        topic_name : { header: _('Name'), sortable: true, dataIndex: 'topic_name', width: 90, sortable: true, renderer: render_topic_name  },
+        category_name : { header: _('Category'), sortable: true, dataIndex: 'category_name', hidden: true, width: 80, sortable: true },
+        category_status_name : { header: _('Status'), sortable: true, dataIndex: 'category_status_name', width: 50, renderer: render_status },
+        title : { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title},
+        progress : { header: _('%'), dataIndex: 'progress', width: 25, sortable: true, renderer: render_progress },
+        numcomment : { header: _('More info'), report_header: _('Comments'), sortable: true, dataIndex: 'numcomment', width: 45, renderer: render_actions },         
+        projects : { header: _('Projects'), dataIndex: 'projects', sortable: true, width: 60, renderer: render_project },
+        topic_mid : { header: _('ID'), hidden: true, sortable: true, dataIndex: 'topic_mid'},    
+        moniker : { header: _('Moniker'), hidden: true, sortable: true, dataIndex: 'moniker'},    
+        cis_out : { header: _('CIs Referenced'), hidden: true, sortable: false, dataIndex: 'cis_out'},    
+        cis_in : { header: _('CIs Referenced In'), hidden: true, sortable: false, dataIndex: 'cis_in'},    
+        references_out : { header: _('References'), hidden: true, sortable: false, dataIndex: 'references_out'},    
+        references_in : { header: _('Referenced In'), hidden: true, sortable: false, dataIndex: 'referenced_in'},    
+        assignee : { header: _('Assigned To'), hidden: true, sortable: true, dataIndex: 'assignee'},
+        modified_by : { header: _('Modified By'), hidden: true, sortable: true, dataIndex: 'modified_by'},
+        modified_on : { header: _('Modified On'), hidden: true, sortable: true, dataIndex: 'modified_on'},
+        created_on : { header: _('Created On'), hidden: true, sortable: true, dataIndex: 'created_on'},
+        created_by : { header: _('Created By'), hidden: true, sortable: true, dataIndex: 'created_by'}
+    };
     if( fields ) {
-        report_columns = [ dragger ];
+        columns = [ dragger, check_sm, col_map['topic_name'] ];
         Ext.each( fields.columns, function(r){ 
-            report_columns.push({ 
-                header: _(r.as || r.id), sortable: true, 
+            var col = col_map[ r.id ] || { 
                 dataIndex: r.id,
                 hidden: false, width: 80, sortable: true 
-            });
+            };
+            col.hidden = false; 
+            col.header = _(r.as || r.id);
+            //console.log( col );
+            columns.push( col );
         });
-        //console.log( report_columns );
-    }
+        //console.log( columns );
+    } else {
+         columns = [ dragger, check_sm ];
+         var cols = ['topic_name', 'category_name', 'category_status_name', 'title', 'progress',
+            'numcomment', 'projects', 'topic_mid', 'moniker', 'cis_out', 'cis_in', 'references_out',
+            'references_in', 'assignee', 'modified_by', 'modified_on', 'created_on', 'created_by'];
+         Ext.each( cols, function(col){
+             columns.push( col_map[col] );
+         });
+    }  
     var grid_topics = new Ext.grid.GridPanel({
         title: _('Topics'),
         header: false,
@@ -739,30 +775,7 @@
         sm: check_sm,
 %}
         loadMask:'true',
-        columns: report_columns || [
-            dragger,
-%if ( !$c->stash->{typeApplication} ){
-            check_sm,
-%}
-            { header: _('Name'), sortable: true, dataIndex: 'topic_name', width: 90, sortable: true, renderer: render_topic_name  },
-            { header: _('Category'), sortable: true, dataIndex: 'category_name', hidden: true, width: 80, sortable: true },
-            { header: _('Status'), sortable: true, dataIndex: 'category_status_name', width: 50, renderer: render_status },
-            { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title},
-            { header: _('%'), dataIndex: 'progress', width: 25, sortable: true, renderer: render_progress },
-            { header: _('More info'), report_header: _('Comments'), sortable: true, dataIndex: 'numcomment', width: 45, renderer: render_actions },         
-            { header: _('Projects'), dataIndex: 'projects', sortable: true, width: 60, renderer: render_project },
-            { header: _('ID'), hidden: true, sortable: true, dataIndex: 'topic_mid'},    
-            { header: _('Moniker'), hidden: true, sortable: true, dataIndex: 'moniker'},    
-            { header: _('CIs Referenced'), hidden: true, sortable: false, dataIndex: 'cis_out'},    
-            { header: _('CIs Referenced In'), hidden: true, sortable: false, dataIndex: 'cis_in'},    
-            { header: _('References'), hidden: true, sortable: false, dataIndex: 'references_out'},    
-            { header: _('Referenced In'), hidden: true, sortable: false, dataIndex: 'referenced_in'},    
-            { header: _('Assigned To'), hidden: true, sortable: true, dataIndex: 'assignee'},
-            { header: _('Modified By'), hidden: true, sortable: true, dataIndex: 'modified_by'},
-            { header: _('Modified On'), hidden: true, sortable: true, dataIndex: 'modified_on'},
-            { header: _('Created On'), hidden: true, sortable: true, dataIndex: 'created_on'},
-            { header: _('Created By'), hidden: true, sortable: true, dataIndex: 'created_by'}
-        ],
+        columns: columns,
         tbar:   [ 
                 search_field
 				,

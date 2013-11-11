@@ -648,7 +648,7 @@ sub view : Local {
             
             $c->stash->{status_items_menu} = _encode_json(\@statuses);
         }else{
-            $id_category = $p->{new_category_id};
+            $id_category = $p->{new_category_id} // $p->{category_id};
             
             my $category = DB->BaliTopicCategories->find( $id_category );
             $c->stash->{category_meta} = $category->forms;

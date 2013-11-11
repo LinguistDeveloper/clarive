@@ -1,11 +1,12 @@
 (function(d) {
     var win;
     var lc_node = d.node;
+    var is_new = d.is_new;
     var data = lc_node.attributes.data;
     var report_mid = lc_node.attributes.mid;
     var fields = data.fields;
     var ds_fields = [];
-    var title = _('New search folder');
+    var title = is_new ? _('New search folder') : lc_node.text;
     var lc_tree = lc_node.ownerTree;
     var tree_all_loader = new Baseliner.TreeLoader({
         dataUrl: '/ci/report/all_fields',
@@ -80,15 +81,13 @@
         var fcomp = form_value.add(field);
         var set_value = function(){
             attr.oper = oper.get_save_data();
-            var val;
+            var val = fcomp.get_save_data ? fcomp.get_save_data() : fcomp.getValue();
             var label;
             switch( ftype ) {
                 case 'date': val = val.format('Y-m-d').trim(); break;
                 case 'ci': 
                 case 'status': 
                     label = fcomp.get_labels().join(',');
-                default:
-                    val = fcomp.get_save_data ? fcomp.get_save_data() : fcomp.getValue();
             }
             attr.value = val;
             node.setText( String.format('{0} {1}', oper.getRawValue(), label || attr.value) );
@@ -183,7 +182,7 @@
         title: _('Options'),
         bodyStyle: { 'padding':'10px 10px 10px 10px' },
         items : [
-            { fieldLabel: _('Name'), name: 'name', xtype: 'textfield', anchor:'50%', allowBlank: false, value: lc_node.text },
+            { fieldLabel: _('Name'), name: 'name', xtype: 'textfield', anchor:'50%', allowBlank: false, value: is_new ? _('New search') : lc_node.text },
             { fieldLabel: _('Rows'), name: 'rows', xtype: 'textfield', anchor:'50%', allowBlank: false, value: lc_node.attributes.rows || 100 }
         ]
     });

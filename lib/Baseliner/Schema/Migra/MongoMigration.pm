@@ -368,6 +368,10 @@ sub topic {
     my $db = Util->_dbis;
     my $coll = $p{coll} // mdb->topic;
     my $r = $p{row} // $db->query('select * from bali_topic where mid=?', $p{mid} )->hash;
+    my $mid = ''. ( $p{mid} // $r->{mid} );
+    if( $mid && $p{replace} ) {
+        $coll->remove({ mid=>$mid });
+    }
 
     my $rs = $db->query( $self->topic_view, $r->{mid} );
     my $row = $rs->hash;

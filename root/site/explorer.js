@@ -535,24 +535,8 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
         };
         
         var show_reports = function() {
-            var treeRoot = new Ext.tree.AsyncTreeNode({
-                cls: 'x-btn-icon',
-                icon: '/static/images/icons/report.png',
-                text: _('Search folders'),
-                mid: -1,
-                draggable: false,
-                data: [],
-                menu: [
-                    {   text: _('New search folder') + '...',
-                        icon: '/static/images/icons/report.png',
-                        eval: { handler: 'Baseliner.open_new_search_folder'}
-                    } 
-                ],
-                expanded: true
-            });
-            
             if( !self.$tree_reports ) {
-                self.$tree_reports = new Baseliner.ExplorerTree({ dataUrl : '/ci/report/report_list', baseParams: { show_reports: true } , root: treeRoot, rootVisible: true });
+                self.$tree_reports = new Baseliner.ExplorerTree({ dataUrl : '/ci/report/report_list', baseParams: { show_reports: true } });
                 self.add( self.$tree_reports );
                 self.$tree_reports.on('favorite_added', function() { self.$tree_favorites.refresh() } );
             }
@@ -946,14 +930,19 @@ Baseliner.open_kanban_from_folder = function(n){
     });
 }
 
-Baseliner.open_new_search_folder = function(n){
+Baseliner.new_search = function(n){
     var node = n;
-    Baseliner.ajaxEval( '/comp/lifecycle/report_edit.js', {node: node}, function(res){});
+    Baseliner.ajaxEval( '/comp/lifecycle/report_edit.js', {node: node, is_new: true }, function(res){});
+}
+
+Baseliner.edit_search = function(n){
+    var node = n;
+    Baseliner.ajaxEval( '/comp/lifecycle/report_edit.js', {node: node }, function(res){});
 }
 
 Baseliner.delete_search_folder = function(n){
     var node = n;
-    Baseliner.confirm( _('Are you sure you want to delete the search folder %1?', n.text), function(){
+    Baseliner.confirm( _('Are you sure you want to delete the search %1?', n.text), function(){
         Baseliner.ci_call( node.attributes.mid, 'report_update', { action:'delete' }, 
             function(response) {
                 if ( response.success ) {
