@@ -965,6 +965,15 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     if (form2.findField("status").getValue() != res.topic_status && form2.findField("status").getValue() != ''){
                         self.form_is_loaded = false;
                         self.show_form();
+                        self.view_is_dirty = true;
+                        var items = [];
+                        
+                        Ext.each( self.status_items_menu, function(status){
+                            if(status.id_status_to != res.topic_status){
+                                items.push(status);
+                            }  
+                        });
+                        self.status_items_menu = items;
                     }else{
                     
                         form2.findField("status").setValue(res.topic_status);
