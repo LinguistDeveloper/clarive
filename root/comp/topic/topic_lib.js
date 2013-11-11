@@ -729,13 +729,8 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 }
             });
         });
-        self.on('beforeclose', function(){
-            if( self.btn_save_form && !self.btn_save_form.hidden && self.is_dirty() ) {
-                self.closing();
-                return false;
-            }
-            return true;
-        });
+        self.on('beforeclose', function(){ return self.closing() });
+        self.on('beforedestroy', function(){ return self.closing() });
     },
     is_dirty : function(){
         var self = this;
@@ -763,6 +758,14 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         return true; // self.form_topic.getForm().isDirty();
     },
     closing : function(){
+        var self = this; 
+        if( self.btn_save_form && !self.btn_save_form.hidden && self.is_dirty() ) {
+            self.close_check();
+            return false;
+        }
+        return true;
+    },
+    close_check : function(){
         var self = this;
         var msg = _('Topic has changed but has not been saved (changed fields: %1). Save topic now?', self.changed_fields.join(', ') );
         Ext.Msg.show({
