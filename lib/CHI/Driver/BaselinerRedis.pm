@@ -1,5 +1,5 @@
 package CHI::Driver::BaselinerRedis;
-use Mouse;
+use Moose;
 use Check::ISA;
 extends 'CHI::Driver::Redis';
 
