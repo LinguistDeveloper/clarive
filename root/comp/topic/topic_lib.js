@@ -730,7 +730,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             });
         });
         self.on('beforeclose', function(){ return self.closing() });
-        self.on('beforedestroy', function(){ return self.closing() });
+        self.on('beforedestroy', function(){ self.closing('destroy'); return true }); // destroy cannot be stopped
     },
     is_dirty : function(){
         var self = this;
@@ -757,32 +757,35 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         });
         return true; // self.form_topic.getForm().isDirty();
     },
-    closing : function(){
+    closing : function(mode){
         var self = this; 
         if( self.btn_save_form && !self.btn_save_form.hidden && self.is_dirty() ) {
-            self.close_check();
+            self.close_check(mode);
             return false;
         }
         return true;
     },
-    close_check : function(){
+    close_check : function(mode){
         var self = this;
         var msg = _('Topic has changed but has not been saved (changed fields: %1). Save topic now?', self.changed_fields.join(', ') );
         Ext.Msg.show({
            title: _('Save Changes?'),
            msg: msg,
-           buttons: Ext.Msg.YESNOCANCEL,
+           buttons: mode=='destroy' ? Ext.Msg.YESNO : Ext.Msg.YESNOCANCEL,
            closable: false,
            modal: true,
            fn: function(btn){
                if( btn=='cancel' ) {
                    return;
                } 
+               else if( btn=='yes' && mode=='destroy' ) {
+                   self.save_topic({ return_on_save : true }); 
+               }
                else if( btn=='yes' ) {
-                   self.save_topic({ close_on_save: true }); 
+                   self.save_topic({ close_on_save : true }); 
                }
                else {
-                   self.destroy();
+                   if( mode!='destroy' ) self.destroy(); // if its a beforedestroy, the form is gone by now
                }
            },
            animEl: 'elId',
@@ -1001,6 +1004,9 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     self.reload_parent_grid();
                     if( opts.close_on_save ) {
                         self.destroy();
+                        return;
+                    }
+                    if( opts.return_on_save ) {
                         return;
                     }
                         
