@@ -696,18 +696,10 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             self.btn_delete_form.hide();
         }
         
-        //self.tab_icon = '/static/images/icons/topic_one.png';
         if( ! params.title ) {
             self.setTitle( Baseliner.topic_title( params.topic_mid, params.category, params.category_color ) ) 
         }
         
-        // update row 
-        /*
-        setTimeout( function(){
-            Baseliner.ajaxEval('/topic/user_seen', { _handle_res: true, mid: params.topic_mid }, function(res){});     
-        }, 4000);
-        */
-          
         Ext.apply(this, {
             layout: 'card',
             activeItem: 0,
@@ -720,6 +712,18 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             items: [ self.loading_panel, self.detail ]
         });
         Baseliner.TopicMain.superclass.initComponent.call(this);
+        self.on('afterrender', function(){
+            new Ext.KeyMap( self.el, {
+                key: 's', ctrl: true, scope: self.el,
+                stopEvent: true,
+                fn: function(){  
+                    if( self.btn_save_form && !self.btn_save_form.hidden && !self.btn_save_form.disabled ) {
+                        self.save_topic(); 
+                    }
+                    return false;
+                }
+            });
+        });
     },
     load_form : function(rec) {
         var self = this;
