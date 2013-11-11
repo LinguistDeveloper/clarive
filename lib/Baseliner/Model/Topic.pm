@@ -1274,6 +1274,8 @@ sub get_files{
 sub save_data {
     my ($self, $meta, $topic_mid, $data, %opts ) = @_;
 
+    _debug "Removing *$topic_mid* from cache";
+    
     if ( length $topic_mid ) {        
         Baseliner->cache_remove( qr/:$topic_mid:/ );
     }
