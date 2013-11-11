@@ -940,7 +940,7 @@ Baseliner.edit_search = function(n){
     Baseliner.ajaxEval( '/comp/lifecycle/report_edit.js', {node: node }, function(res){});
 }
 
-Baseliner.delete_search_folder = function(n){
+Baseliner.delete_search = function(n){
     var node = n;
     Baseliner.confirm( _('Are you sure you want to delete the search %1?', n.text), function(){
         Baseliner.ci_call( node.attributes.mid, 'report_update', { action:'delete' }, 
