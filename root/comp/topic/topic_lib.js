@@ -16,15 +16,16 @@ Baseliner.show_topic = function(topic_mid, title, params) {
 };
 
 
-Baseliner.topic_title = function( mid, category, color, literal_only) {
+Baseliner.topic_title = function( mid, category, color, literal_only, id) {
     var uppers = category ? category.replace( /[^A-Z]/g, '' ) : '';
     var pad_for_tab = 'margin: 0 0 -3px 0; padding: 2px 4px 2px 4px; line-height: 12px;'; // so that tabs stay aligned
+    if(!id) id = Ext.id();
     if (literal_only){
         return uppers + ' #' + mid;   
     }else{
         return color 
-            ? String.format( '<span id="boot" style="background:transparent; margin-bottom: 0px"><span class="label" style="{3}; background-color:{1}">{2} #{0}</span></span>', mid, color, uppers, pad_for_tab )
-            : String.format( '<span id="boot" style="background:transparent; margin-bottom: 0px"><span class="label" style="{3}; background-color:{2}">{0} #{1}</span></span>', uppers, mid, color, pad_for_tab )
+            ? String.format( '<span id="boot" style="background:transparent; margin-bottom: 0px"><span id="{4}" class="label" style="{3}; background-color:{1}">{2} #{0}</span></span>', mid, color, uppers, pad_for_tab, id )
+            : String.format( '<span id="boot" style="background:transparent; margin-bottom: 0px"><span id="{4}" class="label" style="{3}; background-color:{2}">{0} #{1}</span></span>', uppers, mid, color, pad_for_tab, id )
             ;
     }
 }
@@ -543,6 +544,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         self.form_is_loaded = false;
         self.ii = self.id;  // used by the detail page
         self.toggle_group = 'form_btns_' + self.ii;
+        self.id_title = Ext.id(); // so that we can set the tooltip to the tab 
 
         self.btn_save_form = new Ext.Button({
             text: _('Save'),
@@ -702,7 +704,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         }
         
         if( ! params.title ) {
-            self.setTitle( Baseliner.topic_title( params.topic_mid, params.category, params.category_color ) ) 
+            self.setTitle( Baseliner.topic_title( params.topic_mid, params.category, params.category_color, null, self.id_title ) ) 
         }
         
         Ext.apply(this, {
@@ -729,8 +731,15 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 }
             });
         });
-        self.on('beforeclose', function(){ return self.closing() });
-        self.on('beforedestroy', function(){ self.closing('destroy'); return true }); // destroy cannot be stopped
+        self.on('beforeclose', function(){ 
+            self.close_answer=''; 
+            return self.closing() 
+        });
+        self.on('beforedestroy', function(){ 
+              if( self.close_answer ) return true; 
+              self.closing('destroy'); 
+              return true; // destroy cannot be stopped
+        }); 
     },
     is_dirty : function(){
         var self = this;
@@ -782,9 +791,11 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                    self.save_topic({ return_on_save : true }); 
                }
                else if( btn=='yes' ) {
+                   self.close_answer = 'yes';  // avoid firing again on destroy
                    self.save_topic({ close_on_save : true }); 
                }
                else {
+                   self.close_answer = 'no';
                    if( mode!='destroy' ) self.destroy(); // if its a beforedestroy, the form is gone by now
                }
            },
@@ -817,7 +828,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         }
         rec.id_panel = self.id;
 
-        self.form_topic = new Baseliner.TopicForm({ rec: rec, main: self, padding: 15 });
+        self.form_topic = new Baseliner.TopicForm({ rec: rec, main: self, padding: 15, id_title: self.id_title });
         
         if( ! self.form_is_loaded ) {
             self.add( self.form_topic );
@@ -1063,7 +1074,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                             var tabpanel = Ext.getCmp('main-panel');
                             var objtab = tabpanel.getActiveTab();
                             var category = res.category;
-                            var title = Baseliner.topic_title( res.topic_mid, category.name, category.color );
+                            var title = Baseliner.topic_title( res.topic_mid, category.name, category.color, null, self.id_field );
                             //objtab.setTitle( title );
                             var info = Baseliner.panel_info( objtab );
                             info.params.topic_mid = res.topic_mid;
@@ -1514,6 +1525,7 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
     overflow: 'hidden',
     form_columns: 12,
     is_loaded: true,
+    id_title: null,
     //layout:'table',
     //layoutConfig: { columns: form_columns },
     //cls: 'bali-form-table',
@@ -1572,6 +1584,14 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
         for( var i = 0; i < fields.length; i++ ) {
             var field = fields[i];
             self.field_map[ field.id_field ] = field;
+            // rgo: use this to set a tooltip on the tab with the topic title, probably best if we
+            //   get the ext id of the tab here then set the tooltip with bootstrap
+            // if( field.meta_goal=='title' || ( field.id_field=='title' ) ) { 
+            //     if( self.id_title ) {
+            //         $( '#' + self.id_title ).attr('title', data[field.id_field]);
+            //     }
+            // }
+            
             if( field.active!=undefined && ( !field.active || field.active=='false') ) continue;
             
             if( field.body) {// some fields only have an html part
