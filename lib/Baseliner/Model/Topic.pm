@@ -1274,7 +1274,11 @@ sub get_files{
 sub save_data {
     my ($self, $meta, $topic_mid, $data, %opts ) = @_;
 
-    Baseliner->cache_remove( qr/:$topic_mid:/ ) if length $topic_mid;
+    
+    if ( length $topic_mid ) {        
+        _debug "Removing *$topic_mid* from cache";
+        Baseliner->cache_remove( qr/:$topic_mid:/ );
+    }
     
     my @std_fields =
         map { +{ name => $_->{id_field}, column => $_->{bd_field}, method => $_->{set_method}, relation => $_->{relation} } }
@@ -2245,9 +2249,10 @@ sub find_status_name {
 sub cache_topic_remove {
     my ($self, $topic_mid ) = @_;
     # my own first
-    Baseliner->cache_remove( qr/:$topic_mid:/ );
+
     # refresh cache for related stuff 
     if ($topic_mid && $topic_mid ne -1) {    
+        Baseliner->cache_remove( qr/:$topic_mid:/ );
         for my $rel ( 
             map { +{mid=>$_->{mid}, type=>$_->{_edge}{rel_type} } } 
             _ci( $topic_mid )->related( depth=>1 ) ) 
