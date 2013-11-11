@@ -10,6 +10,10 @@ msgstr "%m/%d/%Y"
 msgid "js_date_format"
 msgstr "m/d/Y"
 
+# topic form keys for better is_dirty messages
+msgid "status_new"
+msgstr "Status"
+
 # Job Status Codes
 msgid "IN EDIT"
 msgstr "In Edit"
