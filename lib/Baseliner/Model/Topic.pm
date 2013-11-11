@@ -615,7 +615,7 @@ sub update {
                        for grep { exists $p->{$_->{id_field}}} _array($meta);
                     $meta = \@meta_filter;
                     
-                    my $topic = $self->save_data ($meta, undef, $p);
+                    my $topic = $self->save_data($meta, undef, $p);
                     
                     $topic_mid    = $topic->mid;
                     $status = $topic->id_category_status;
@@ -1475,7 +1475,8 @@ sub save_data {
 
 sub save_doc {
     my ($self,$meta,$row, $doc, %p) = @_;
-    #my $doc = Util->_clone($data); # so that we don't change the original
+    $doc = Util->_clone($doc); # so that we don't change the original
+    Util->_unbless( $doc );
     my $mid = ''. $p{mid};
     _fail _loc 'save_doc failed: no mid' unless length $mid; 
     $doc->{mid} = $mid;
