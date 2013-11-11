@@ -1274,7 +1274,9 @@ sub get_files{
 sub save_data {
     my ($self, $meta, $topic_mid, $data, %opts ) = @_;
 
-    Baseliner->cache_remove( qr/:$topic_mid:/ ) if length $topic_mid;
+    if ( length $topic_mid ) {        
+        Baseliner->cache_remove( qr/:$topic_mid:/ );
+    }
     
     my @std_fields =
         map { +{ name => $_->{id_field}, column => $_->{bd_field}, method => $_->{set_method}, relation => $_->{relation} } }
