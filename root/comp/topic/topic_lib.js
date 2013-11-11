@@ -724,10 +724,50 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 }
             });
         });
+        self.on('beforeclose', function(){
+            if( self.is_dirty() ) {
+                return self.closing();
+            }
+            return true;
+        });
+    },
+    is_dirty : function(){
+        var self = this;
+        if( !self.form_topic || !self.form_topic.getForm() ) return false;
+        if( !self.original_record ) return false;
+        var diff = objectDiff.diff( self.original_record, self.form_topic.getValues() );
+        if( diff.changed == 'equal' ) return false;
+        self.changed_fields = [];
+        for( var k in diff.value ) {
+            var field = diff.value[k];
+            if( k==undefined || k=='undefined' ) continue;
+            if( /^(mid|status|status_new|category)$/.test(k) ) continue;
+            if( field.changed == 'equal' ) continue;
+            self.changed_fields.push( _(_(k)) );  // translate keys to english, then translate again
+        }
+        // topic status changes automatically, but should not be considered dirty
+        if( self.changed_fields.length==0 ) return false;
+        return true; // self.form_topic.getForm().isDirty();
+    },
+    closing : function(){
+        var self = this;
+        return confirm(_('Topic has changed but has not been saved (changed fields: %1). Leave without saving?', self.changed_fields ));
+    },
+    set_original_record : function(data){
+        var self = this;
+        setTimeout( function(){
+            if( !self.form_topic ) return;
+            if( self.form_topic.is_loaded ) {
+                self.original_record = data || self.form_topic.getValues();
+            } else {
+                self.set_original_record(); // retry
+            }
+        }, 2000);
     },
     load_form : function(rec) {
         var self = this;
         rec.html_buttons = self.html_buttons;
+        
         if( rec._cis ) {
             self._cis = rec._cis;
         } else {
@@ -735,11 +775,11 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         }
         rec.id_panel = self.id;
 
-
         self.form_topic = new Baseliner.TopicForm({ rec: rec, main: self, padding: 15 });
         
         if( ! self.form_is_loaded ) {
             self.add( self.form_topic );
+            self.set_original_record();
             self.getLayout().setActiveItem( self.form_topic );
             self.form_is_loaded = true;
         }
@@ -902,6 +942,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         if( !opts ) opts = {};
         
         var form_data = self.form_topic.getValues();
+        self.set_original_record(form_data); // reset save status for is_dirty
         var form2 = self.form_topic.getForm();
         var action = form_data['topic_mid'] >= 0 ? 'update' : 'add';
         var custom_form = '';
@@ -1413,6 +1454,7 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
     autoHeight: true,
     overflow: 'hidden',
     form_columns: 12,
+    is_loaded: true,
     //layout:'table',
     //layoutConfig: { columns: form_columns },
     //cls: 'bali-form-table',
@@ -1572,6 +1614,7 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
             }
             self.doLayout();
         });
+        self.is_loaded = true;
     }
 });
 
