@@ -1372,6 +1372,7 @@ sub list_admin_category : Local {
             $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $p->{change_categoryId}, id_status => $p->{statusId}},
                                                                                         {
                                                                                         prefetch=>['status'],
+                                                                                        order_by => {'-asc' => 'seq'}
                                                                                         }                                                                                 
                                                                                      );
             if($statuses->count){
@@ -1412,14 +1413,13 @@ sub list_admin_category : Local {
             username       => $c->username,
         );
 
-
-        my $rs_current_status = $c->model('Baseliner::BaliTopicStatus')->find({id => $p->{statusId}});
-        
-        push @rows, { id => $p->{statusId},
-                     name => _loc($p->{statusName}),
-                     status => $p->{statusId},
-                     status_name => _loc($p->{statusName}),
-                     action => $c->model('Topic')->getAction($rs_current_status->type)};
+        #my $rs_current_status = $c->model('Baseliner::BaliTopicStatus')->find({id => $p->{statusId}});
+        #
+        #push @rows, { id => $p->{statusId},
+        #             name => _loc($p->{statusName}),
+        #             status => $p->{statusId},
+        #             status_name => _loc($p->{statusName}),
+        #             action => $c->model('Topic')->getAction($rs_current_status->type)};
         
         push @rows , map {
             my $action = $c->model('Topic')->getAction($_->{status_type});
