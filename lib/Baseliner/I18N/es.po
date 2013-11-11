@@ -225,6 +225,9 @@ msgstr "Licencias"
 msgid "Copyright Notices"
 msgstr "Notificaciones de Copyright"
 
+msgid "Topic has changed but has not been saved (changed fields: %1). Save topic now?"
+msgstr "El tópico ha cambiado pero no se ha guardado (campos: %1). ¿Desea guardar el tópico?"
+
 msgid "Remote"
 msgstr "Remoto"
 

@@ -354,7 +354,6 @@ Baseliner.Topic.StoreList = Ext.extend( Baseliner.JsonStore, {
                 return ff[f.name]=true });
             Ext.each( config.add_fields, function(f){
                 if( !ff[f.name] ) fields.push(f);
-                //console.log( f );
             });
             delete config.add_fields;
         }
@@ -603,7 +602,10 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         self.btn_detail = new Ext.Toolbar.Button({
             icon:'/static/images/icons/detail.png',
             cls: 'x-btn-icon',
-            enableToggle: true, pressed: true, allowDepress: false, 
+            enableToggle: true, 
+            hidden: self.topic_mid==undefined,
+            pressed: self.topic_mid!=undefined, 
+            allowDepress: false, 
             handler: function(){ self.show_detail() }, 
             toggleGroup: self.toggle_group
         });
@@ -614,7 +616,10 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             icon:'/static/images/icons/edit.png',
             cls: 'x-btn-text-icon',
             enableToggle: true, 
-            handler: function(){ return self.show_form() }, 
+            pressed: self.topic_mid==undefined,
+            handler: function(){ 
+                //if( self.btn_edit.toggle ) return; 
+                return self.show_form() }, 
             allowDepress: false, toggleGroup: self.toggle_group
         });
         
@@ -725,8 +730,9 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             });
         });
         self.on('beforeclose', function(){
-            if( self.is_dirty() ) {
-                return self.closing();
+            if( self.btn_save_form && !self.btn_save_form.hidden && self.is_dirty() ) {
+                self.closing();
+                return false;
             }
             return true;
         });
@@ -735,32 +741,62 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         var self = this;
         if( !self.form_topic || !self.form_topic.getForm() ) return false;
         if( !self.original_record ) return false;
-        var diff = objectDiff.diff( self.original_record, self.form_topic.getValues() );
+        var values = self.form_topic.getValues();
+        var diff = objectDiff.diff( self.original_record, values );
         if( diff.changed == 'equal' ) return false;
-        self.changed_fields = [];
+        var fields = [];
         for( var k in diff.value ) {
             var field = diff.value[k];
             if( k==undefined || k=='undefined' ) continue;
-            if( /^(mid|status|status_new|category)$/.test(k) ) continue;
+            if( /^(mid|topic|status|status_new|category)$/.test(k) ) continue;
             if( field.changed == 'equal' ) continue;
-            self.changed_fields.push( _(_(k)) );  // translate keys to english, then translate again
+            fields.push( k );  // translate keys to english, then translate again
         }
         // topic status changes automatically, but should not be considered dirty
-        if( self.changed_fields.length==0 ) return false;
+        if( fields.length==0 ) return false;
+        self.changed_fields = [];
+        Ext.each( fields, function(k){
+            var meta = self.form_topic.field_map[ k ];
+            label = meta && meta.name_field;
+            self.changed_fields.push( _(label || k) );
+        });
         return true; // self.form_topic.getForm().isDirty();
     },
     closing : function(){
         var self = this;
-        return confirm(_('Topic has changed but has not been saved (changed fields: %1). Leave without saving?', self.changed_fields ));
+        var msg = _('Topic has changed but has not been saved (changed fields: %1). Save topic now?', self.changed_fields.join(', ') );
+        Ext.Msg.show({
+           title: _('Save Changes?'),
+           msg: msg,
+           buttons: Ext.Msg.YESNOCANCEL,
+           closable: false,
+           modal: true,
+           fn: function(btn){
+               if( btn=='cancel' ) {
+                   return;
+               } 
+               else if( btn=='yes' ) {
+                   self.save_topic({ close_on_save: true }); 
+               }
+               else {
+                   self.destroy();
+               }
+           },
+           animEl: 'elId',
+           icon: Ext.MessageBox.QUESTION
+        });
     },
-    set_original_record : function(data){
+    set_original_record : function(data,retry){
         var self = this;
+        if( retry == undefined ) retry=0;
+        if( retry>10 ) return; // we're done
         setTimeout( function(){
             if( !self.form_topic ) return;
-            if( self.form_topic.is_loaded ) {
+            var is_ready = self.form_topic.is_ready();
+            if( is_ready ) {
                 self.original_record = data || self.form_topic.getValues();
             } else {
-                self.set_original_record(); // retry
+                self.set_original_record(data,retry+1); // retry
             }
         }, 2000);
     },
@@ -803,6 +839,8 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
     },
     show_form : function(){
         var self = this;
+        var ai = self.getLayout().activeItem;
+        if( ai && self.form_topic && ai.id==self.form_topic.id ) return;
         self.getLayout().setActiveItem( self.loading_panel );
         if( self!==undefined && self.topic_mid !== undefined ) {
             var tabpanel = Ext.getCmp('main-panel');
@@ -813,7 +851,6 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             if( info!=undefined ) info.params.swEdit = 1;
             self.btn_change_status.hide();
             if (!self.form_is_loaded){
-
                 Baseliner.ajaxEval( '/topic/json', { topic_mid: self.topic_mid, topic_child_data : true }, function(rec) {
                     self.load_form( rec );
                 });
@@ -942,7 +979,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         if( !opts ) opts = {};
         
         var form_data = self.form_topic.getValues();
-        self.set_original_record(form_data); // reset save status for is_dirty
+        self.original_record = form_data; // reset save status for is_dirty
         var form2 = self.form_topic.getForm();
         var action = form_data['topic_mid'] >= 0 ? 'update' : 'add';
         var custom_form = '';
@@ -959,6 +996,10 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     }                    
                     Baseliner.message(_('Success'), res.msg );
                     self.reload_parent_grid();
+                    if( opts.close_on_save ) {
+                        self.destroy();
+                        return;
+                    }
                         
                     form2.findField("topic_mid").setValue(res.topic_mid);
                     
@@ -1475,6 +1516,7 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
         var data = rec.topic_data;
         if( data == undefined ) data = {};
         var on_submit_events = [];
+        self.field_map = {};
         
         var unique_id_form = Ext.getCmp('main-panel').getActiveTab().id + '_form_topic';
         
@@ -1520,6 +1562,7 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
         
         for( var i = 0; i < fields.length; i++ ) {
             var field = fields[i];
+            self.field_map[ field.id_field ] = field;
             if( field.active!=undefined && ( !field.active || field.active=='false') ) continue;
             
             if( field.body) {// some fields only have an html part
@@ -1624,6 +1667,24 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
             self.doLayout();
         });
         self.is_loaded = true;
+    }, 
+    is_ready : function(){  // if field has is_ready attribute and is true
+        var self = this;
+        if( !self.is_loaded ) return false;
+        var flag = true;
+        self.cascade(function(obj){
+            if( obj.name!=undefined ) {
+                if( obj.is_ready!=undefined && obj.is_ready===false ) {
+                    // object has the is_ready property and the property is false (superbox.js)
+                    flag = false;
+                }
+                else if( obj.store != undefined && obj.store.is_loaded!=undefined && !obj.store.is_loaded ) {
+                    // object has a store (a Baseliner.JsonStore) and load has not finished
+                    flag = false;
+                }
+            }
+        });
+        return flag;
     }
 });
 
