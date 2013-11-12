@@ -1413,6 +1413,7 @@ sub list_admin_category : Local {
             username       => $c->username,
         );
 
+
         my $rs_current_status = $c->model('Baseliner::BaliTopicStatus')->find({id => $p->{statusId}});
         
         push @rows, { id => $p->{statusId},
@@ -1420,6 +1421,7 @@ sub list_admin_category : Local {
                      status => $p->{statusId},
                      status_name => _loc($p->{statusName}),
                      action => $c->model('Topic')->getAction($rs_current_status->type)};
+        
         
         push @rows , map {
             my $action = $c->model('Topic')->getAction($_->{status_type});
@@ -1433,7 +1435,8 @@ sub list_admin_category : Local {
                 bl          => $_->{status_bl},
                 description => $_->{status_description},
             }
-        } grep { $_->{id_status} ne $p->{statusId} } @statuses;
+        }  @statuses;            
+        #} grep { $_->{id_status} ne $p->{statusId} } @statuses;
         
     }
         

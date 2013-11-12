@@ -1037,31 +1037,37 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                         self.status_items_menu = items;
                     }else{
                     
-                        form2.findField("status").setValue(res.topic_status);
+                        //alert('1:' + form2.findField("status").getValue());
+                        //alert('2:' + form2.findField("status_new").getValue());
+                        
     
                         var store = form2.findField("status_new").getStore();
-                        store.on("load", function() {
-                            
-                            form2.findField("status_new").setValue( res.topic_status );
-                            //var obj_status_items_menu = Ext.util.JSON.decode(self.status_items_menu);
-                            //
-                            //self.status_menu.removeAll();
-                            //self.status_items_menu = [];
-                            //store.each( function(row){
-                            //    if(res.topic_status != row.data.id){
-                            //        self.status_items_menu.push({ text: _(row.data.name), id_status_to: obj_status_items_menu[i].id_status, id_status_from: obj_status_items_menu[i].id_status_from, handler: function(obj){ self.change_status(obj) } });                                                    
-                            //        self.status_menu.addItem({ text: _(row.data.name), id_status_to: obj_status_items_menu[i].id_status, id_status_from: obj_status_items_menu[i].id_status_from, handler: function(obj){ self.change_status(obj) } });
-                            //    }
-                            //});                              
-                        });
-                        
-                        store.load({
-                            params:{    'categoryId': form2.findField("category").getValue(),
-                                        'statusId': form2.findField("status").getValue(),
-                                        'statusName': form2.findField("status_new").getRawValue()
-                                    }
-                        });
-                        
+                        ////store.on("load", function() {
+                        ////    
+                        ////    form2.findField("status_new").setValue( res.topic_status );
+                        ////    //var obj_status_items_menu = Ext.util.JSON.decode(self.status_items_menu);
+                        ////    //
+                        ////    //self.status_menu.removeAll();
+                        ////    //self.status_items_menu = [];
+                        ////    //store.each( function(row){
+                        ////    //    if(res.topic_status != row.data.id){
+                        ////    //        self.status_items_menu.push({ text: _(row.data.name), id_status_to: obj_status_items_menu[i].id_status, id_status_from: obj_status_items_menu[i].id_status_from, handler: function(obj){ self.change_status(obj) } });                                                    
+                        ////    //        self.status_menu.addItem({ text: _(row.data.name), id_status_to: obj_status_items_menu[i].id_status, id_status_from: obj_status_items_menu[i].id_status_from, handler: function(obj){ self.change_status(obj) } });
+                        ////    //    }
+                        ////    //});                              
+                        ////});
+                        ////
+                        if(form2.findField("status").getValue()==''){
+                            store.load({
+                                params:{    'categoryId': form2.findField("category").getValue(),
+                                            //'statusId': form2.findField("status").getValue(),
+                                            'statusId': res.topic_status,
+                                            'statusName': form2.findField("status_new").getRawValue()
+                                        }
+                            });                            
+                        }
+                       
+                        form2.findField("status").setValue(res.topic_status);
                         self.topic_mid = res.topic_mid;
                         self.btn_comment.show();
                         self.getTopToolbar().enable();
