@@ -27,7 +27,7 @@ params:
     if (meta.allowBlank == 'true') allowBlank = true;
     if (meta.allowBlank == undefined) allowBlank = true;
 
-    console.dir(meta);
+    //console.dir(meta);
 
     
     return [
@@ -66,7 +66,7 @@ params:
                                     obj_field.on('change', function() {
                                         var obj_this = form.findField(meta.id_field);
                                         obj_this.setValue(calculatedValue());
-                                        console.dir(obj_field);
+//                                        console.dir(obj_field);
                                     });
                                 }
                                 var field_value = obj_field.getValue() != '' ? obj_field.getValue():0;

@@ -533,7 +533,7 @@
                 var n = dd.dragData.node;
                 var add_node = function(node) {
                     var data = node.attributes.data;
-                    console.dir(data);
+//                    console.dir(data);
                     var mid = data.mid || data.topic_mid;
                     var rec = new Ext.data.Record({
                         ns: data.ns,
