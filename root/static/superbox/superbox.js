@@ -75,6 +75,7 @@ Ext.ux.form.SuperBoxSelect = function(config) {
  * @private hide from doc gen
  */
 Ext.ux.form.SuperBoxSelect = Ext.extend(Ext.ux.form.SuperBoxSelect, Ext.form.ComboBox, {
+    is_ready : false,  // rgo: control if store has loaded and value set
     /**
      * @cfg {Boolean} allowAddNewData When set to true, allows items to be added (via the setValueEx and addItem methods) that do not already exist in the data store. Defaults to false.
      */
@@ -229,6 +230,8 @@ Ext.ux.form.SuperBoxSelect = Ext.extend(Ext.ux.form.SuperBoxSelect, Ext.form.Com
         Ext.ux.form.SuperBoxSelect.superclass.initComponent.call(this);
         if (this.mode === 'remote' && this.store) {
             this.store.on('load', this.onStoreLoad, this);
+        } else {
+            this.is_ready = true;  // rgo : if no store, then it's ready
         }
     },
     onRender:function(ct, position) {
@@ -262,7 +265,7 @@ Ext.ux.form.SuperBoxSelect = Ext.extend(Ext.ux.form.SuperBoxSelect, Ext.form.Com
             this.setupFieldButtons().manageClearBtn();
         }
  
-        this.setupFormInterception();
+        // rgo : this.setupFormInterception();
     },
     onStoreLoad : function(store, records, options) {
         //accomodating for bug in Ext 3.0.0 where options.params are empty
@@ -344,7 +347,8 @@ Ext.ux.form.SuperBoxSelect = Ext.extend(Ext.ux.form.SuperBoxSelect, Ext.form.Com
         if (store.getCount() === 0 && this.isExpanded()) {
             this.collapse();
         }
- 
+        
+        this.is_ready = true;  // rgo
     },
     doTransform : function() {
         var s = Ext.getDom(this.transform), transformValues = [];
@@ -706,7 +710,6 @@ Ext.ux.form.SuperBoxSelect = Ext.extend(Ext.ux.form.SuperBoxSelect, Ext.form.Com
             }
         });
         if (form) {
- 
             var formGet = form.getValues;
             form.getValues = function(asString) {
                 this.el.dom.disabled = true;

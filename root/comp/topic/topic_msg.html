@@ -84,6 +84,7 @@ padding: 2px 4px 2px 7px;
 % my @form = grep { $_->{fields} } _array( $topic_meta );
 % my @head = sort { $a->{field_order_html} <=> $b->{field_order_html} } grep { $_->{section} eq 'head' } _array( $topic_meta );
 % my @details = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} eq 'details' } _array( $topic_meta );
+% my @between = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} eq 'between' } _array( $topic_meta );
 % my @body = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} eq 'body' } _array( $topic_meta ) ;
 % if (@form) {
 <div id="boot" >
@@ -121,6 +122,20 @@ padding: 2px 4px 2px 7px;
     <& $field->{html}, data=>$topic_data, meta=>$field &>
 %}    
 % }
+
+% if( @between ) {
+                    <tr>
+                        <td colspan=2 >
+% foreach my $field ( @between ) {
+% if ($field->{html}){
+    <!-- <% $field->{html} %> -->
+    <& $field->{html}, data=>$topic_data, meta=>$field &>
+%}
+% }                                 
+                            
+                        </td>
+                    </tr>
+% } 
 
 % if( @details ) {
 %    my $did = int rand 999999;

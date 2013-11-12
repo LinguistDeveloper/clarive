@@ -369,10 +369,13 @@ Baseliner.store_exception_params = function( store, opts ) {
 }
 
 Baseliner.JsonStore = Ext.extend( Ext.data.JsonStore, {
+    is_loaded: false,
     constructor: function(c){
         Baseliner.JsonStore.superclass.constructor.call(this,c);
+        var self =this;
         this.on('exception', Baseliner.store_exception_handler );
         this.on('beforeload', Baseliner.store_exception_params );
+        this.on('load', function(){ self.is_loaded=true });
     }
 });
 
