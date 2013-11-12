@@ -1095,6 +1095,26 @@ Baseliner.model.SelectBaseline = function(c) {
 };
 Ext.extend( Baseliner.model.SelectBaseline, Ext.ux.form.SuperBoxSelect );
 
+Baseliner.model.Status = function(c) {
+    Baseliner.model.Status.superclass.constructor.call(this, Ext.apply({
+        allowBlank: false,
+        msgTarget: 'under',
+        allowAddNewData: true,
+        addNewDataOnBlur: false, 
+        //emptyText: _('Enter or select topics'),
+        triggerAction: 'all',
+        resizable: true,
+        mode: 'local',
+        fieldLabel: _('Status'),
+        typeAhead: true,
+        name: 'status_new',
+        displayField: 'name',
+        hiddenName: 'status_new',
+        valueField: 'id',
+        extraItemCls: 'x-tag'
+    }, c));
+};
+Ext.extend( Baseliner.model.Status, Ext.ux.form.SuperBoxSelect );
 /*
 
 A Revision draganddrop superbox inside a form-ready panel.

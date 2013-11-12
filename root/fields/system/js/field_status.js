@@ -35,44 +35,41 @@ params:
 //        store: store_category_status
 //    });
 	
-    Baseliner.model.Status = function(c) {
-	    Baseliner.model.Status.superclass.constructor.call(this, Ext.apply({
-		    allowBlank: false,
-		    msgTarget: 'under',
-		    allowAddNewData: true,
-		    addNewDataOnBlur: false, 
-		    //emptyText: _('Enter or select topics'),
-		    triggerAction: 'all',
-		    resizable: true,
-		    mode: 'local',
-		    fieldLabel: _('Status'),
-		    typeAhead: true,
-		    name: 'status_new',
-		    displayField: 'name',
-		    hiddenName: 'status_new',
-		    valueField: 'id',
-		    value: data ? data.name_status : '',
-		    readOnly: meta ? meta.readonly : true,
-		    extraItemCls: 'x-tag'
-			
-	    }, c));
-    };
-    Ext.extend( Baseliner.model.Status, Ext.ux.form.SuperBoxSelect );
-	
-	
-	var status_box = new Baseliner.model.Status({
-		store: store_category_status,
+    var status_box = new Baseliner.model.Status({
+        store: store_category_status,
         anchor: data.anchor,
+        value: data ? data.name_status : '',
+        readOnly: meta ? meta.readonly : true,
         hidden: meta ? (meta.hidden ? meta.hidden : false): true,
-		singleMode: true
-	});
-	
-	store_category_status.on('load',function(){
-		status_box.setValue( data.name_status ) ;            
-	});	
-	
+        singleMode: true
+    });
+    
+    store_category_status.on('load',function(){
+        status_box.setValue( data.name_status ) ;            
+    });	
+    var comp = status_box;
+    
+    if( meta.readonly  ) {
+        var status_cont = new Ext.Panel({ 
+            fieldLabel:_('Status'), 
+            allowBlank: false,
+            border: false,
+            items: status_box, layout:'fit',
+                listeners: {
+                    'afterrender':function(){
+                        if(meta.readonly){
+                            var el = this.el;
+                            var mask = el.mask();
+                            mask.setStyle('opacity', 0.2);
+                            mask.setStyle('height', 5000);
+                        }
+                    }
+                }
+        });
+        comp = status_cont;
+    }
 	return [
 		{ xtype: 'hidden', name: 'status', value: data ? data.id_category_status : -1 },		
-		status_box
+		comp
     ]
 })
