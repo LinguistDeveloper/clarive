@@ -857,7 +857,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
     show_form : function(){
         var self = this;
         var ai = self.getLayout().activeItem;
-        if( ai && self.form_topic && ai.id==self.form_topic.id ) return;
+        if( ai && self.form_topic && self.form_is_loaded && ai.id==self.form_topic.id ) return;
         self.getLayout().setActiveItem( self.loading_panel );
         if( self!==undefined && self.topic_mid !== undefined ) {
             var tabpanel = Ext.getCmp('main-panel');
