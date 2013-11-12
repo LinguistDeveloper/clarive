@@ -1479,7 +1479,7 @@ sub save_data {
 
 sub save_doc {
     my ($self,$meta,$row, $doc, %p) = @_;
-    $doc = Util->_clone($doc); # so that we don't change the original
+    # not necessary, noboody cares about the original? $doc = Util->_clone($doc); # so that we don't change the original
     Util->_unbless( $doc );
     my $mid = ''. $p{mid};
     _fail _loc 'save_doc failed: no mid' unless length $mid; 
@@ -1540,7 +1540,8 @@ sub save_doc {
     }
     
     # create/update mongo doc
-    mdb->topic->update({ mid=>"$doc->{mid}" }, { %$row, %$doc }, { upsert=>1 });
+    my $write_doc = { %$row, %$doc };
+    mdb->topic->update({ mid=>"$doc->{mid}" }, $write_doc, { upsert=>1 });
 }
 
 sub migrate_docs {
