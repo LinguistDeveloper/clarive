@@ -31,7 +31,7 @@
 </%perl>
 
 % if(@topics_by_status){
-	<div style="clear:left;" >
+	<div id='boot' style="clear:left;" >
 		<b><%$meta->{name_field}%></b><br>
 		<div id="<%$graph_id%>" 
 			style="width: 150px; height: 150px; float: left; " 
@@ -62,9 +62,9 @@
                     tilt: 0.7,
                     label: {
                         show: true,
-                        radius: 3/4,
+                        radius: 0.5,
                         formatter: function(label, series){
-                            return '<div style="font-size:8pt;text-align:center;padding:2px;color:white;">'+Math.round(series.percent)+'%</div>';
+                            return '<div style="font-size:8pt;color:white;">'+Math.round(series.percent)+'%</div>';
                         },
                         background: { opacity: 0 },
                         threshold: 0.03
