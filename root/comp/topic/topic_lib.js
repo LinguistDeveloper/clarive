@@ -1026,21 +1026,23 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     if (form2.findField("status").getValue() != res.topic_status && form2.findField("status").getValue() != ''){
                         self.form_is_loaded = false;
                         self.show_form();
-                        self.view_is_dirty = true;
-                        var items = [];
-                        
-                        Ext.each( self.status_items_menu, function(status){
-                            if(status.id_status_to != res.topic_status){
-                                items.push(status);
-                            }  
+                        //self.view_is_dirty = true;                          
+                        var store = form2.findField("status_new").getStore();
+                        store.load({
+                            params:{    'categoryId': form2.findField("category").getValue(),
+                                        'statusId': res.topic_status,
+                                        'statusName': form2.findField("status_new").getRawValue()
+                                    }
+                        });  
+                        store.on("load", function() {
+                            self.status_menu.removeAll();
+                            store.each( function(row){
+                                 self.status_menu.addItem({ text: _(row.data.name), id_status_to: row.data.id, id_status_from:  res.topic_status, handler: function(obj){ self.change_status(obj) } });
+                            });
                         });
-                        self.status_items_menu = items;
-                    }else{
-                    
-                        //alert('1:' + form2.findField("status").getValue());
-                        //alert('2:' + form2.findField("status_new").getValue());
                         
-    
+
+                    }else{
                         var store = form2.findField("status_new").getStore();
                         ////store.on("load", function() {
                         ////    
@@ -1058,7 +1060,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                         ////});
                         ////
                         if(form2.findField("status").getValue()==''){
-                            store.load({
+                            store.reload({
                                 params:{    'categoryId': form2.findField("category").getValue(),
                                             //'statusId': form2.findField("status").getValue(),
                                             'statusId': res.topic_status,
@@ -1213,6 +1215,7 @@ Baseliner.Topic.delete_topic = function(opts){
 
 
 Baseliner.Topic.change_status_topic = function(opts){
+    
     Baseliner.ajaxEval( '/topic/change_status',{ mid: opts.mid, new_status: opts.new_status, old_status: opts.old_status },
         function(res) {
             //if ( res.success ) {
