@@ -752,7 +752,8 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         for( var k in diff.value ) {
             var field = diff.value[k];
             if( k==undefined || k=='undefined' ) continue;
-            if( /^(mid|topic|status|status_new|category)$/.test(k) ) continue;
+            if( /^(mid|topic|topic_mid|status|status_new|category)$/.test(k) ) continue;
+            if( /ext-gen/.test(k) ) continue;
             if( field.changed == 'equal' ) continue;
             fields.push( k );  // translate keys to english, then translate again
         }
