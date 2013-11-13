@@ -4796,3 +4796,9 @@ msgstr "Tópicos por estado"
 
 msgid "Topics open by status"
 msgstr "Tópicos abiertos por estado"
+
+msgid "An error ocurred. UCM msg is: %1"
+msgstr "Ha ocurrido un error. El mensaje de UCM es: %1"
+
+msgid "Remedy error: %1"
+msgstr "Error remedy: %1"
