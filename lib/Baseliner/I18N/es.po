@@ -1014,6 +1014,12 @@ msgstr "¿Está seguro de que quiere borrar el pase"
 msgid "Job %1 is currently running and cannot be deleted"
 msgstr "Pase %1 está actualmente en ejecución y no puede borrarse"
 
+msgid "My Searches"
+msgstr "Mis Búsquedas"
+
+msgid "Public Searches"
+msgstr "Búsquedas Públicas"
+
 msgid "Cancel"
 msgstr "Cancelar"
 
