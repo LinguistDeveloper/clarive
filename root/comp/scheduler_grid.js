@@ -381,7 +381,48 @@
         }
     });
       
-    var schedule_service = Baseliner.combo_services({ hiddenName: 'service' });
+    //var schedule_service = Baseliner.combo_services({ hiddenName: 'service' });
+    var store_chain = new Baseliner.JsonStore({
+        url: '/rule/list', root: 'data', totalProperty: 'totalCount', id: 'id', 
+        fields:['id','rule_name','rule_type', 'rule_desc']
+    });
+    var resultTpl = new Ext.XTemplate(
+        '<tpl for="."><div class="x-combo-list-item">',
+        '<span id="boot" style="background: transparent;">',
+        '<strong>{rule_name}</strong>',
+        '<tpl if="rule_desc">',
+            '<br /><span style="color: #ccc">{rule_desc}<span>',
+        '</tpl>',
+        '</span>',
+        '</div></tpl>'
+    );
+    var schedule_service = new Baseliner.SuperBox({
+        singleMode: true,
+        fieldLabel: _('Rule'),
+            name: 'id_rule',
+            displayField:'rule_name',
+            hiddenName:'id_rule', 
+            valueField: 'id',
+        store: store_chain,
+        //anchor: '50%',
+        mode: 'remote',
+        minChars: 0, //min_chars ,
+        loadingText: _('Searching...'),
+        tpl: resultTpl,
+        allowBlank: false,
+        editable: false,
+        lazyRender: true
+    });
+    /* store_chain.on('load', function(){
+        var row = store_chain.getAt(0);
+        if( row ) {
+            combo_chain.setValue( row.data.id );
+        } else {
+            Baseliner.message(_('Job'), _('No job chains available') );
+        }
+    });
+    */
+    store_chain.load();
     
     function check_configuration(id_service){
         Baseliner.ajaxEval( '/chain/getconfig', {id: id_service}, function(res) {
@@ -408,7 +449,7 @@
         check_configuration(newValue.data.id);
     });
     
-    var schedule_form = new Ext.FormPanel({
+    var schedule_form = new Baseliner.FormPanel({
         frame: true,
         url:'/scheduler/save_schedule',
         buttons: [
