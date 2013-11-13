@@ -1756,6 +1756,6 @@ Baseliner.whereami = function(cons){
         .replace(/^\s+at\s+/gm, '')
         .replace(/^Object.<anonymous>\s*\(/gm, '{anonymous}()@')
         .split('\n');
-    if( cons ) console.log(stack);
+    //if( cons ) console.log(stack);
     return stack;
 }

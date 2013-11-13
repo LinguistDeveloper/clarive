@@ -425,22 +425,22 @@
     store_chain.load();
     
     function check_configuration(id_service){
-        Baseliner.ajaxEval( '/chain/getconfig', {id: id_service}, function(res) {
-            if( !res.success ) {
-                //Baseliner.error( _('YAML'), res.msg );
-            } else {
-                // saved ok
-                //Baseliner.message( _('YAML'), res.msg );
-                if(res.yaml){
-                    txtconfig = res.yaml;
-                    btn_config_service.enable();
-                }
-                else{
-                    btn_config_service.disable();
-                }
+        // Baseliner.ajaxEval( '/chain/getconfig', {id: id_service}, function(res) {
+        //     if( !res.success ) {
+        //         //Baseliner.error( _('YAML'), res.msg );
+        //     } else {
+        //         // saved ok
+        //         //Baseliner.message( _('YAML'), res.msg );
+        //         if(res.yaml){
+        //             txtconfig = res.yaml;
+        //             btn_config_service.enable();
+        //         }
+        //         else{
+        //             btn_config_service.disable();
+        //         }
                 
-            }
-        });
+        //     }
+        // });
     };
 
     schedule_service.on('select', function(field, newValue, oldValue) {
