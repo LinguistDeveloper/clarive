@@ -51,14 +51,16 @@ sub monitor {
     #}
     
     if($query_id eq '-1'){
-        my @ids_project = $perm->user_projects_with_action(username => $username,
-                                                                            action => 'action.job.viewall',
-                                                                            level => 1);
-        
-        my $rs_jobs1 = Baseliner->model('Baseliner::BaliMasterRel')->search({rel_type => 'job_project', to_mid => \@ids_project}
-                                                                           ,{select=>'from_mid'})->as_query;
-        push @mid_filters, { mid=>{-in => $rs_jobs1 } };
-        
+        my $rs_jobs1;
+        if( !Baseliner->is_root($username) ) {
+            my @ids_project = $perm->user_projects_with_action(username => $username,
+                                                                action => 'action.job.viewall',
+                                                                level => 1);
+            
+            $rs_jobs1 = Baseliner->model('Baseliner::BaliMasterRel')->search({rel_type => 'job_project', to_mid => \@ids_project}
+                                                                               ,{select=>'from_mid'})->as_query;
+            push @mid_filters, { mid=>{-in => $rs_jobs1 } };
+        }
         
         if( exists $p->{job_state_filter} ) {
             my @job_state_filters = do {
@@ -73,8 +75,9 @@ sub monitor {
             # TODO nature only exists after PRE executes, "Load natures" $where->{'bali_job_items_2.item'} = $p->{filter_nature};
             my @natures = _array $p->{filter_nature};
     
-            my $rs_jobs2 = Baseliner->model('Baseliner::BaliMasterRel')->search({rel_type => 'job_nature', to_mid => \@natures, from_mid => {-in => $rs_jobs1}}
-                                                                               ,{select=>'from_mid'})->as_query;
+            my $where2 = {rel_type => 'job_nature', to_mid => \@natures };
+            $where2->{from_mid} = {-in => $rs_jobs1} if $rs_jobs1;
+            my $rs_jobs2 = Baseliner->model('Baseliner::BaliMasterRel')->search($where2,{select=>'from_mid'})->as_query;
           
             push @mid_filters, { mid=>{ -in=>$rs_jobs2 } };
         }
@@ -94,7 +97,7 @@ sub monitor {
         $where->{'mid'} = \@jobs;
     }
     
-    $where->{'-and'} = \@mid_filters;
+    $where->{'-and'} = \@mid_filters if @mid_filters;
     
     _debug $where;
 
