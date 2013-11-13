@@ -506,8 +506,8 @@ sub has_action {
 }
 
 sub is_root {
-    my $c = shift;
-    Baseliner->model('Permissions')->is_root( $c->username );
+    my ($c,$username) = @_;
+    Baseliner->model('Permissions')->is_root( $username || $c->username );
 }
 
 sub loghome {
