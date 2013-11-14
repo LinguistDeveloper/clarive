@@ -29,7 +29,7 @@
                 {boxLabel: _('Canceled'), inputValue: 'FC', checked: params.rec.type == 'FC'},
                 {boxLabel: _('Final'), inputValue: 'F', checked: params.rec.type == 'F'}
             ]
-        },
+        }
     ]
 })
 

@@ -7,7 +7,7 @@
             'Baseliner::Parser::Engine::JSP',
             'Baseliner::Parser::Engine::SQL'
         ] 
-        }), 
+        })
     ]
 })
 
