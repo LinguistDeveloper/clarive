@@ -954,7 +954,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         var id = panel.getId();
         var info = Baseliner.tabInfo[id];
         if( info!=undefined ) info.params.swEdit = 0;
-        if(self.status_items_menu.length > 0){
+        if(self.status_menu.items.length > 0){
             self.btn_change_status.show();
         }
         else{
