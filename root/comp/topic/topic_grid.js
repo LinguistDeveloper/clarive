@@ -1263,6 +1263,54 @@
 
     var tree_filters = {};
     
+    function checkchange(node_selected, checked) {
+        var type = node_selected.parentNode.attributes.id;
+        if (!changing  ) {
+            //if (type != 'V') {
+                changing = true;
+                var c3 = node_selected.attributes.checked3;
+                node_selected.getUI().toggleCheck( c3 );
+                changing = false;
+            //}
+        
+        
+            if( stop_filters ) return;
+            
+            var swDisable = true;
+            var selNodes = tree_filters.getChecked();
+            var tot_view_defaults = 1;
+            //Ext.each(selNodes, function(node){
+            //	
+            //	var type = node.parentNode.attributes.id;
+            //	if(type == 'V'){
+            //		//if(!eval('node.attributes.default')){   //Eval, I.E
+            //		if(!node.attributes['default']){   // I.E 8.0
+            //			button_delete_view.enable();
+            //			swDisable = false;
+            //			return false;
+            //		}else{
+            //			if(selNodes.length == tot_view_defaults){
+            //				swDisable = true;
+            //			}else{
+            //				swDisable = false;
+            //			}
+            //		}
+            //	}else{
+            //		swDisable = true;
+            //	}
+            //});
+            
+            if (swDisable)
+                button_delete_view.disable();
+                
+            if( checked ) {
+                loadfilters();
+            } else {
+                loadfilters( node_selected );
+            }
+        }
+    }	
+
     if( !id_report ) {
         var id_collapse = Ext.id();
         tree_filters = new Ext.tree.TreePanel({
@@ -1307,54 +1355,6 @@
         
         var changing = false;
         
-        function checkchange(node_selected, checked) {
-            var type = node_selected.parentNode.attributes.id;
-            if (!changing  ) {
-                //if (type != 'V') {
-                    changing = true;
-                    var c3 = node_selected.attributes.checked3;
-                    node_selected.getUI().toggleCheck( c3 );
-                    changing = false;
-                //}
-            
-            
-                if( stop_filters ) return;
-                
-                var swDisable = true;
-                var selNodes = tree_filters.getChecked();
-                var tot_view_defaults = 1;
-                //Ext.each(selNodes, function(node){
-                //	
-                //	var type = node.parentNode.attributes.id;
-                //	if(type == 'V'){
-                //		//if(!eval('node.attributes.default')){   //Eval, I.E
-                //		if(!node.attributes['default']){   // I.E 8.0
-                //			button_delete_view.enable();
-                //			swDisable = false;
-                //			return false;
-                //		}else{
-                //			if(selNodes.length == tot_view_defaults){
-                //				swDisable = true;
-                //			}else{
-                //				swDisable = false;
-                //			}
-                //		}
-                //	}else{
-                //		swDisable = true;
-                //	}
-                //});
-                
-                if (swDisable)
-                    button_delete_view.disable();
-                    
-                if( checked ) {
-                    loadfilters();
-                } else {
-                    loadfilters( node_selected );
-                }
-            }
-        }	
-
         tree_filters.on('beforechildrenrendered', function(node){
             /* Changing node text
             node.setText( String.format('<span>{0}</span><span style="float:right; margin-right:1px">{1}</span>',
