@@ -3629,7 +3629,7 @@ msgid "topics"
 msgstr "Tópicos"
 
 msgid "revisions"
-msgstr "Revisions"
+msgstr "revisiones"
 
 msgid "files"
 msgstr "Ficheros"
