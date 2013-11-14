@@ -981,6 +981,15 @@ msgstr "Promover a %1"
 msgid "Demote to %1"
 msgstr "Devolver a %1"
 
+msgid "Deploy to %1 (%2)"
+msgstr "Distribuir a %1 (%2)"
+
+msgid "Promote to %1 (%2)"
+msgstr "Promover a %1 (%2)"
+
+msgid "Demote to %1 (%2)"
+msgstr "Devolver a %1 (%2)"
+
 msgid "Position"
 msgstr "Posición"
 
