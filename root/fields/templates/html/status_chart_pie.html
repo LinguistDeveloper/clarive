@@ -6,20 +6,22 @@
     use Baseliner::Utils;
     my $graph_id = "graph1". _nowstamp;
     
-    my $topics = $c->model( 'Baseliner::BaliTopic' )->search(
-        {
-            rel_type => 'topic_topic',
-            from_mid => $data->{topic_mid},
-        },
-        {
-            join => [ 'parents', 'master' ],
-            select => [ 'mid' ],
-            as => [ 'mid' ]
-        }
-    )->as_query;    
+    my @topics = map { $_->{mid} }
+                $c->model( 'Baseliner::BaliTopic' )->search(
+                        {
+                            rel_type => 'topic_topic',
+                            from_mid => $data->{topic_mid},
+                        },
+                        {
+                            join => [ 'parents', 'master' ],
+                            select => [ 'mid' ],
+                            as => [ 'mid' ]
+                        }
+                )->hashref->all;     
     
+    my @status_names =  map {lc ($_)} split(',', $meta->{filter});    
     my @topics_by_status = DB->BaliTopic->search(
-                        {mid => { -in => $topics }},
+                        {mid => \@topics ,  'LOWER(status.name)' => \@status_names},
                         {
                           join     => [qw/ status /],
                           select   => [ 'status.name', { count => 'status.id' }, 'status.color','status.id' ],
@@ -96,8 +98,19 @@
     {
         if (!obj)
                     return;
-        var title_status = '<div id="boot" style="background:transparent;height:14px"><span class="label" style="background-color:' + obj.series.color  + '">' + obj.series.label + '</span></div>';
-        Baseliner.addNewTabComp('/topic/grid?status_id=' + obj.series.status_id[obj.series.label], _(title_status));
+                
+        var topic_list = new Array();
+        
+%foreach my $mid (@topics){
+    topic_list.push(<% $mid %>);
+%}                   
+                
+
+        var name = Baseliner.topic_title( '<%$data->{topic_mid}%>', '<% $data->{name_category} %>', '<% $data->{color_category} %>', true); //, literal_only, id) {        
+                
+        var title_status = '<div id="boot" style="background:transparent;height:14px"><span class="label" style="background-color:' + obj.series.color  + '">' + name + ' => ' + obj.series.label + '</span></div>';
+        //Baseliner.addNewTabComp('/topic/grid?status_id=' + obj.series.status_id[obj.series.label] + '&release=<%$data->{topic_mid}%>', _(title_status));
+        Baseliner.add_tabcomp('/comp/topic/topic_grid.js', title_status , { status_id: obj.series.status_id[obj.series.label] , topic_list: topic_list });
     }
 </script>
 

@@ -1232,8 +1232,6 @@ sub filters_list : Local {
                     Baseliner->model('Topic')->user_workflow( $c->username );        
     };
 
-    _log ">>>>>>>>>>>>>>>>>>>: " . $row->count();
-
     if($row->count() gt 1){
         while( my $r = $row->next ) {
             my $checked;
