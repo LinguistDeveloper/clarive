@@ -1099,7 +1099,7 @@ Baseliner.model.Status = function(c) {
     Baseliner.model.Status.superclass.constructor.call(this, Ext.apply({
         allowBlank: false,
         msgTarget: 'under',
-        allowAddNewData: true,
+        allowAddNewData: false,
         addNewDataOnBlur: false, 
         //emptyText: _('Enter or select topics'),
         triggerAction: 'all',
