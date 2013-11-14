@@ -54,7 +54,6 @@ sub calendar : Path( '/job/calendar' ) {
             : { $c->model( 'Baseliner::BaliCalendar' )->search( { id => $id_cal } )->first->get_columns() };  # regular existing calendar
 
     $c->stash->{ id_cal } = $id_cal;
-    _debug $c->stash;
     $c->stash->{ template } = '/comp/job_calendar_editor.js';
 }
 
