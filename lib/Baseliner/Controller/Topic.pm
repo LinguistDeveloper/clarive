@@ -178,8 +178,6 @@ sub related : Local {
     my $where = {};
     my $query = $p->{query};
     
-        
-    
     length($query) and $where = query_sql_build( query=>$query, fields=>{
         map { $_ => "me.$_" } qw/
         mid 
