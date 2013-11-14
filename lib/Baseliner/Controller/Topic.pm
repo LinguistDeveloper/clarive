@@ -1433,7 +1433,7 @@ sub list_admin_category : Local {
                 bl          => $_->{status_bl},
                 description => $_->{status_description},
             }
-        }  @statuses;            
+        }  sort { ( $a->{seq} // 0 ) <=> ( $b->{seq} // 0 ) } @statuses;            
         #} grep { $_->{id_status} ne $p->{statusId} } @statuses;
         
     }
