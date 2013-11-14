@@ -66,6 +66,27 @@
     //var store_label = new Baseliner.Topic.StoreLabel();
     var store_topics = new Baseliner.Topic.StoreList(store_config);
    
+    var loading;
+    store_topics.on('beforeload',function(){
+        //loading = new Ext.LoadMask(panel.el, {msg:"Please wait..."});
+        //loading = Ext.Msg.wait(_('Loading'), _('Loading'), { modal: false } );
+        /*
+        loading = Ext.Msg.show({
+                title : _('Loading'),
+                msg : _('Loading'),
+                buttons: false,
+                closable:false,
+                wait: true,
+                modal: false,
+                minWidth: Ext.Msg.minProgressWidth,
+                waitConfig: {}
+            });
+            */
+    });
+    store_topics.on('load',function(){
+        if( loading ) loading.hide();
+    });
+    
     var init_buttons = function(action) {
         btn_edit[ action ]();
         // btn_delete[ action ]();
@@ -536,6 +557,33 @@
         return tag_color_html + "<div style='font-weight:bold; font-size: 14px; "+strike+"' >" + value + "</div>";
     };  
     
+    var render_ci = function(value,metadata,rec,rowIndex,colIndex,store) {
+        if( !value ) return '';
+        return "[" + value + "]";
+    };
+    var render_date = function(value,metadata,rec,rowIndex,colIndex,store) {
+        if( !value ) return '';
+		return value.dateFormat(Prefs.js_date_format);
+    };
+    var render_topic_rel = function(value,metadata,rec,rowIndex,colIndex,store) {
+        if( !value ) return '';
+        var arr = [];
+        Ext.each( value, function(topic){
+            arr.push( Baseliner.topic_name({
+                link: true,
+                parent_id: grid_topics.id,
+                mid: topic.mid, 
+                mini: btn_mini.pressed,
+                size: btn_mini.pressed ? '9' : '11',
+                category_name: topic.category.name,
+                category_color: topic.category.color,
+                //category_icon: topic.category.icon,
+                is_changeset: topic.is_changeset,
+                is_release: topic.is_release
+            }) ); 
+        });
+        return arr.join("\n");
+    }
     var shorten_title = function(t){
         if( !t || t.length==0 ) {
             t = '';
@@ -730,17 +778,25 @@
         references_in : { header: _('Referenced In'), hidden: true, sortable: false, dataIndex: 'referenced_in'},    
         assignee : { header: _('Assigned To'), hidden: true, sortable: true, dataIndex: 'assignee'},
         modified_by : { header: _('Modified By'), hidden: true, sortable: true, dataIndex: 'modified_by'},
-        modified_on : { header: _('Modified On'), hidden: true, sortable: true, dataIndex: 'modified_on'},
-        created_on : { header: _('Created On'), hidden: true, sortable: true, dataIndex: 'created_on'},
-        created_by : { header: _('Created By'), hidden: true, sortable: true, dataIndex: 'created_by'}
+        modified_on : { header: _('Modified On'), hidden: true, sortable: true, dataIndex: 'modified_on', renderer: render_date },
+        created_on : { header: _('Created On'), width: 80, hidden: true, sortable: true, dataIndex: 'created_on', renderer: render_date },
+        created_by : { header: _('Created By'), width: 40, hidden: true, sortable: true, dataIndex: 'created_by'}
+    };
+    var meta_types = {
+        date : { sortable: false, width: 40, renderer: render_date  },
+        ci : { sortable: false, width: 90, renderer: render_ci  },
+        topic : { sortable: false, width: 90, renderer: render_topic_rel  },
+        release : { sortable: false, width: 90, renderer: render_topic_rel  }
     };
     if( fields ) {
         columns = [ dragger, check_sm, col_map['topic_name'] ];
         Ext.each( fields.columns, function(r){ 
-            var col = col_map[ r.id ] || { 
+            var meta_type = r.meta_type;
+            var col = col_map[ r.id ] || meta_types[ meta_type ] || { 
                 dataIndex: r.id,
                 hidden: false, width: 80, sortable: true 
             };
+            if( !col.dataIndex ) col.dataIndex = r.id;
             col.hidden = false; 
             col.header = _(r.as || r.id);
             //console.log( col );
@@ -774,7 +830,7 @@
 %if ( !$c->stash->{typeApplication} ){
         sm: check_sm,
 %}
-        loadMask:'true',
+        //loadMask:'true',
         columns: columns,
         tbar:   [ 
                 search_field
@@ -810,6 +866,7 @@
             topicsSelected();
         }
     });
+    
 
 /*
     node: Ext.tree.AsyncTreeNode
@@ -1201,155 +1258,155 @@
 
     var tree_root = new Ext.tree.AsyncTreeNode({
                 text: 'Filters',
-                expanded:true
+                expanded: true
             });
 
-    this.collapse_me = function(obj) {
-        //alert( 121 );
-        //Baseliner.ooo = obj;
-        ///console.log( obj );
-    };
-    var id_collapse = Ext.id();
-    var tree_filters = new Ext.tree.TreePanel({
-                        region : 'east',
-                        header: false,
-                        hidden: !!fields,
-                        width: 210,
-                        split: true,
-                        collapsible: true,
-        tbar: [
-            button_no_filter, '->',
-			//button_create_view,
-			//button_delete_view,
-            '<div class="x-tool x-tool-expand-west" style="margin:-2px -4px 0px 0px" id="'+id_collapse+'"></div>'
-        ],
-        dataUrl: "/topic/filters_list" + parse_typeApplication,
-        split: true,
-        colapsible: true,
-        useArrows: true,
-        animate: true,
-        autoScroll: true,
-        rootVisible: false,
-        root: tree_root,
-		enableDrag: true,
-        enableDrop: false,
-        ddGroup: 'explorer_dd',
-		listeners: {
-			'checkchange': checkchange
-		}		
-    });
-	
-	tree_filters.getLoader().on("beforeload", function(treeLoader, node) {
-		var loader = tree_filters.getLoader();
-		if(category_id){
-			loader.baseParams = {category_id: category_id};	
-		}
-		if(status_id){
-			loader.baseParams = {status_id: status_id};	
-		}		
-		
-	});	
-	
-	var changing = false;
-	
-	function checkchange(node_selected, checked) {
-		var type = node_selected.parentNode.attributes.id;
-		if (!changing  ) {
-			//if (type != 'V') {
-				changing = true;
-				var c3 = node_selected.attributes.checked3;
-				node_selected.getUI().toggleCheck( c3 );
-				changing = false;
-			//}
-		
-		
-			if( stop_filters ) return;
-			
-			var swDisable = true;
-			var selNodes = tree_filters.getChecked();
-			var tot_view_defaults = 1;
-			//Ext.each(selNodes, function(node){
-			//	
-			//	var type = node.parentNode.attributes.id;
-			//	if(type == 'V'){
-			//		//if(!eval('node.attributes.default')){   //Eval, I.E
-			//		if(!node.attributes['default']){   // I.E 8.0
-			//			button_delete_view.enable();
-			//			swDisable = false;
-			//			return false;
-			//		}else{
-			//			if(selNodes.length == tot_view_defaults){
-			//				swDisable = true;
-			//			}else{
-			//				swDisable = false;
-			//			}
-			//		}
-			//	}else{
-			//		swDisable = true;
-			//	}
-			//});
-			
-			if (swDisable)
-				button_delete_view.disable();
-				
-			if( checked ) {
-				loadfilters();
-			} else {
-				loadfilters( node_selected );
-			}
-		}
-	}	
-
-    tree_filters.on('beforechildrenrendered', function(node){
-        /* Changing node text
-        node.setText( String.format('<span>{0}</span><span style="float:right; margin-right:1px">{1}</span>',
-            node.text,
-            '<img src="/static/images/icons/config.gif" onclick="Baseliner.aaa()" />'  )
-        );
-        */
-        if(node.attributes.id == 'C' || node.attributes.id == 'L'){
-            node.eachChild(function(n) {
-				//console.log(n.getUI());
-                var color = n.attributes.color;
-                if( ! color ) color = '#999';
-                var style = document.createElement('style');
-                var head = document.getElementsByTagName('head')[0];
-                var rules = document.createTextNode(
-                    '.forum.dinamic' + n.id + ' a span { margin-left: 5px; padding: 1px 4px 2px;;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;color: #fff;' 
-                     + ';background: ' + color +
-                    ';font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;}'
-                );
-                style.type = 'text/css';
-                if(style.styleSheet) {
-                    style.styleSheet.cssText = rules.nodeValue;
-                } else {
-                    style.appendChild(rules);
-                }
-                head.appendChild(style);
-                n.attributes.cls = 'forum dinamic' + n.id;
-            });
-        }
-    });
+    var tree_filters = {};
     
-    // expand the whole tree
-    tree_filters.getLoader().on( 'load', function(){
-        tree_root.expandChildNodes();
+    if( !id_report ) {
+        var id_collapse = Ext.id();
+        tree_filters = new Ext.tree.TreePanel({
+            region : 'east',
+            header: false,
+            hidden: !!id_report,
+            width: 210,
+            split: true,
+            collapsible: true,
+            tbar: [
+                button_no_filter, '->',
+                //button_create_view,
+                //button_delete_view,
+                '<div class="x-tool x-tool-expand-west" style="margin:-2px -4px 0px 0px" id="'+id_collapse+'"></div>'
+            ],
+            dataUrl: "/topic/filters_list" + parse_typeApplication,
+            split: true,
+            colapsible: true,
+            useArrows: true,
+            animate: true,
+            autoScroll: true,
+            rootVisible: false,
+            root: tree_root,
+            enableDrag: true,
+            enableDrop: false,
+            ddGroup: 'explorer_dd',
+            listeners: {
+                'checkchange': checkchange
+            }		
+        });
+        
+        tree_filters.getLoader().on("beforeload", function(treeLoader, node) {
+            var loader = tree_filters.getLoader();
+            if(category_id){
+                loader.baseParams = {category_id: category_id};	
+            }
+            if(status_id){
+                loader.baseParams = {status_id: status_id};	
+            }		
+            
+        });	
+        
+        var changing = false;
+        
+        function checkchange(node_selected, checked) {
+            var type = node_selected.parentNode.attributes.id;
+            if (!changing  ) {
+                //if (type != 'V') {
+                    changing = true;
+                    var c3 = node_selected.attributes.checked3;
+                    node_selected.getUI().toggleCheck( c3 );
+                    changing = false;
+                //}
+            
+            
+                if( stop_filters ) return;
+                
+                var swDisable = true;
+                var selNodes = tree_filters.getChecked();
+                var tot_view_defaults = 1;
+                //Ext.each(selNodes, function(node){
+                //	
+                //	var type = node.parentNode.attributes.id;
+                //	if(type == 'V'){
+                //		//if(!eval('node.attributes.default')){   //Eval, I.E
+                //		if(!node.attributes['default']){   // I.E 8.0
+                //			button_delete_view.enable();
+                //			swDisable = false;
+                //			return false;
+                //		}else{
+                //			if(selNodes.length == tot_view_defaults){
+                //				swDisable = true;
+                //			}else{
+                //				swDisable = false;
+                //			}
+                //		}
+                //	}else{
+                //		swDisable = true;
+                //	}
+                //});
+                
+                if (swDisable)
+                    button_delete_view.disable();
+                    
+                if( checked ) {
+                    loadfilters();
+                } else {
+                    loadfilters( node_selected );
+                }
+            }
+        }	
 
-        // draw the collapse button onclick event 
-        var el_collapse = Ext.get( id_collapse );
-        if( el_collapse ){
-            el_collapse.dom.onclick = function(){ 
-                panel.body.dom.style.overflow = 'hidden'; // collapsing shows overflow, so we hide it
-                tree_filters.collapse();
-            };
-        }
-        // select filter for current category
-        //////if( params.id_category ){
-        //////    var chi = tree_filters.root.findChild('idfilter', params.id_category, true );
-        //////    if( chi ) chi.getUI().toggleCheck(true);
-        //////
-        //////}
-    });
+        tree_filters.on('beforechildrenrendered', function(node){
+            /* Changing node text
+            node.setText( String.format('<span>{0}</span><span style="float:right; margin-right:1px">{1}</span>',
+                node.text,
+                '<img src="/static/images/icons/config.gif" onclick="Baseliner.aaa()" />'  )
+            );
+            */
+            if(node.attributes.id == 'C' || node.attributes.id == 'L'){
+                node.eachChild(function(n) {
+                    //console.log(n.getUI());
+                    var color = n.attributes.color;
+                    if( ! color ) color = '#999';
+                    var style = document.createElement('style');
+                    var head = document.getElementsByTagName('head')[0];
+                    var rules = document.createTextNode(
+                        '.forum.dinamic' + n.id + ' a span { margin-left: 5px; padding: 1px 4px 2px;;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;color: #fff;' 
+                         + ';background: ' + color +
+                        ';font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;}'
+                    );
+                    style.type = 'text/css';
+                    if(style.styleSheet) {
+                        style.styleSheet.cssText = rules.nodeValue;
+                    } else {
+                        style.appendChild(rules);
+                    }
+                    head.appendChild(style);
+                    n.attributes.cls = 'forum dinamic' + n.id;
+                });
+            }
+        });
+        
+        // expand the whole tree
+        tree_filters.getLoader().on( 'load', function(){
+            tree_root.expandChildNodes();
+
+            // draw the collapse button onclick event 
+            var el_collapse = Ext.get( id_collapse );
+            if( el_collapse ){
+                el_collapse.dom.onclick = function(){ 
+                    panel.body.dom.style.overflow = 'hidden'; // collapsing shows overflow, so we hide it
+                    tree_filters.collapse();
+                };
+            }
+            // select filter for current category
+            //////if( params.id_category ){
+            //////    var chi = tree_filters.root.findChild('idfilter', params.id_category, true );
+            //////    if( chi ) chi.getUI().toggleCheck(true);
+            //////
+            //////}
+        });
+            
+    } // if !id_report
         
     var panel = new Ext.Panel({
         layout : "border",
@@ -1364,18 +1421,21 @@
                     grid_topics
                 ]
             },   
-            tree_filters
+            tree_filters  // show only if not report
         ]
     });
-    
-    store_topics.load({
-        params: {
-            start:0 , limit: ps,
-            topic_list: params.topic_list,
-            //query_id: '<% $c->stash->{query_id} %>', id_project: '<% $c->stash->{id_project} %>',
-			query_id: '<% $c->stash->{query_id} %>', 
-            typeApplication: typeApplication
-        }
+        
+    grid_topics.on('afterrender', function(){
+        grid_topics.loadMask = new Ext.LoadMask(grid_topics.bwrap, { msg: _('Loading'), store: store_topics });
+        store_topics.load({
+            params: {
+                start:0 , limit: ps,
+                topic_list: params.topic_list,
+                //query_id: '<% $c->stash->{query_id} %>', id_project: '<% $c->stash->{id_project} %>',
+                query_id: '<% $c->stash->{query_id} %>', 
+                typeApplication: typeApplication
+            }
+        });
     });
     //store_label.load();
     

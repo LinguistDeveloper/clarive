@@ -20,7 +20,8 @@ sub cleanup {
 
 sub current {
     my ($self,%p) = @_;
-    $self->run( tables=>[qw(bali_master bali_topic)], no_assets=>1 );
+    $self->run( tables=>[qw(bali_master)], no_assets=>1 );
+    Baseliner->model('Topic')->migrate_docs();
 }
 
 sub run {

@@ -104,15 +104,19 @@ sub eval : Local {
 
     require Capture::Tiny;
     local $ENV{BASELINER_LOGCOLOR} = 0;
-    my $t0 = [ gettimeofday ];
+    my $t0; # = [ gettimeofday ];
+    my $elapsed; # = tv_interval( $t0 );
     _log "================================ REPL START ==========================\n";
     ($stdout, $stderr) = Capture::Tiny::tee(
         sub {
             if ( $sql ) {
+                $t0=[gettimeofday];
                 eval { $res = $self->sql( $sql, $code ); };
+                $elapsed = tv_interval( $t0 );
             } else {
-                $code = "use v5.10;$code";
+                $code = "use v5.10;\$t0=[gettimeofday];$code";
                 $res  = [ eval $code ];
+                $elapsed = tv_interval( $t0 );
                 $res  = $res->[ 0 ] if @$res <= 1;
             }
 
@@ -123,7 +127,6 @@ sub eval : Local {
     );
     _log "================================ REPL END ============================\n";
     
-    my $elapsed = tv_interval( $t0 );
     $res = _to_utf8( _dump( $res ) ) if $dump eq 'yaml';
     $res = _to_utf8( JSON::XS->new->pretty->encode( _damn( $res ) ) )
         if $dump eq 'json' && ref $res && !blessed $res;
@@ -132,7 +135,7 @@ sub eval : Local {
     $c->stash->{json} = {
         stdout  => $stdout,
         stderr  => $stderr,
-        elapsed => "$elapsed",
+        elapsed => sprintf('%.08f', $elapsed),
         result  => "$res",
         error   => "$err",
         line    => $line,

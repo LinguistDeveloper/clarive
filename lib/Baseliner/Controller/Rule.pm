@@ -24,8 +24,8 @@ register 'menu.admin.rule' => {
 sub list : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
-    my @rows;
-    $c->stash->{json} = \@rows;
+    my @rows = DB->BaliRule->search({ rule_active=>1 },{ order_by=>'rule_name' })->hashref->all;
+    $c->stash->{json} = { data=>\@rows, totalCount=>scalar(@rows) };
     $c->forward('View::JSON');
 }
 

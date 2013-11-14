@@ -21,6 +21,8 @@ sub monitor {
     $start||=0;
     $limit||=50;
 
+    $sort = 'step' if $sort && $sort eq 'step_code';
+
     my ($select,$order_by, $as) = $sort
         ? (['me.id' ,$sort]         , [ { "-$dir" => $sort }, { -desc => 'me.starttime' }, { -desc=>'me.id' } ], [ 'id', $sort ])
         : (['me.id' ,'me.starttime'], [ { -desc => "me.starttime" } ] , ['id', 'starttime'] );

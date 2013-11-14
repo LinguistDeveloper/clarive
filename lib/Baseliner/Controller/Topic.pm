@@ -104,7 +104,7 @@ sub list : Local {
 
     if( $p->{id_report} ) {
         my $start = $p->{start} // 0;
-        my ($cnt, @rows ) = ci->new( $p->{id_report} )->run( start=>$start );
+        my ($cnt, @rows ) = ci->new( $p->{id_report} )->run( start=>$start, username=>$c->username );
         $c->stash->{json} = { data=>\@rows, totalCount=>$cnt };
     } else {
         my ($cnt, @rows ) = $c->model('Topic')->topics_for_user( $p );
@@ -177,8 +177,6 @@ sub related : Local {
     my $show_release = $p->{show_release} // '0';
     my $where = {};
     my $query = $p->{query};
-    
-        
     
     length($query) and $where = query_sql_build( query=>$query, fields=>{
         map { $_ => "me.$_" } qw/

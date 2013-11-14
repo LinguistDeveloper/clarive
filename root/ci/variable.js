@@ -99,7 +99,7 @@
             classname: params.rec.var_ci_class,
             role: params.rec.var_ci_role,
             field_attributes: {
-                singleMode: !( params.rec.var_ci_multiple ),
+                singleMode: !( params.rec.var_ci_multiple )
             },
             options: params.rec.var_combo_options
         });

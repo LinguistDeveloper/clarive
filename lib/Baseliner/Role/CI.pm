@@ -214,6 +214,7 @@ sub delete {
     $mid //= $self->mid;
     if( $mid ) {
         my $row = DB->BaliMaster->find( $mid );
+        mdb->master_doc->remove({ mid=>"$mid" });
         if( $row ) {
             Baseliner->cache_remove( qr/^ci:/ );
             return $row->delete;
@@ -310,15 +311,17 @@ sub save_fields {
     my $md = mdb->master_doc;
     if( my $row = $md->find_one({ mid=>"$mid" }) ) {
         my $doc = { %$row, %{ $data || {} } };
-        mdb->clean_doc($doc);
-        _debug $doc;
-        $md->save($doc);
+        my $final_doc = Util->_clone($doc);
+        Util->_unbless($final_doc);
+        mdb->clean_doc($final_doc);
+        $md->save($final_doc);
     } else {
         my $doc = { ( $master_row ? $master_row->get_columns : () ), %{ $data || {} }, mid=>"$mid" };
         delete $doc->{yaml};
-        mdb->clean_doc($doc);
-        _debug $doc;
-        $md->insert($doc);
+        my $final_doc = Util->_clone($doc);
+        Util->_unbless($final_doc);
+        mdb->clean_doc($final_doc);
+        $md->insert($final_doc);
     }
 }
 
@@ -973,7 +976,7 @@ sub search_cis {
     my $coll = $class->collection;
     my @cis = 
         map { ci->new( $_->{mid} ) }
-        DB->BaliMaster->search({ collection=>$coll, %p }, { select=>'mid' })->hashref->all;
+        mdb->master_doc->find({ collection=>$coll, %p })->fields({ mid=>1 })->sort({ mid=>1 })->all;
     return @cis;
 }
 

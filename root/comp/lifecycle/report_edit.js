@@ -183,7 +183,10 @@
         bodyStyle: { 'padding':'10px 10px 10px 10px' },
         items : [
             { fieldLabel: _('Name'), name: 'name', xtype: 'textfield', anchor:'50%', allowBlank: false, value: is_new ? _('New search') : lc_node.text },
-            { fieldLabel: _('Rows'), name: 'rows', xtype: 'textfield', anchor:'50%', allowBlank: false, value: lc_node.attributes.rows || 100 }
+            { fieldLabel: _('Rows'), name: 'rows', xtype: 'textfield', anchor:'50%', allowBlank: false, value: lc_node.attributes.rows || 100 },
+            new Baseliner.ComboDouble({
+                value: lc_node.attributes.permissions || 'private', name:'permissions', 
+                fieldLabel: _('Permissions'), data: [ ['private',_('Private')],['public',_('Public')] ] })
         ]
     });
     

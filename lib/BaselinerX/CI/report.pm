@@ -7,8 +7,10 @@ with 'Baseliner::Role::CI::Internal';
 
 has selected    => qw(is rw isa ArrayRef), default => sub{ [] };
 has rows        => qw(is rw isa Num default 100);
+has permissions => qw(is rw isa Any default private);
 has sql         => qw(is rw isa Any);
 has mode        => qw(is rw isa Maybe[Str] default lock);
+has owner       => qw(is rw isa Maybe[Str]);
 has_ci 'user';
 
 sub icon { '/static/images/icons/report.png' }
@@ -23,12 +25,49 @@ sub rel_type {
 sub report_list {
     my ($self,$p) = @_;
     
-    my $username = $p->{username};
-    my @folders = $self->search_cis; 
-    my @mine;
-    my @public;
+    my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta() );  # XXX should be by category, same id fields may step on each other
+    my $mine = $self->my_searches({ username=>$p->{username}, meta=>\%meta });
+    my $public = $self->public_searches({ meta=>\%meta });
     
-    for my $folder ( @folders ){
+    my @trees = (
+            {
+                text => _loc('My Searches'),
+                icon => '/static/images/icons/report.png',
+                mid => -1,
+                draggable => \0,
+                children => $mine,
+                url => '/ci/report/my_searches',
+                data => [],
+                menu => [
+                    {   text=> _loc('New search') . '...',
+                        icon=> '/static/images/icons/report.png',
+                        eval=> { handler=> 'Baseliner.new_search'},
+                    } 
+                ],
+                expanded => \1,
+            },
+            {
+                text => _loc('Public Searches'),
+                icon => '/static/images/icons/report.png',
+                url => '/ci/report/public_searches',
+                mid => -1,
+                draggable => \0,
+                children => $public,
+                data => [],
+                expanded => \1,
+            },
+    );
+    return \@trees; 
+}
+
+sub my_searches {
+    my ($self,$p) = @_;
+    my $userci = Baseliner->user_ci( $p->{username} );
+    my $username = $p->{username};
+    #DB->BaliMasterRel->search({ to_mid=>$userci->mid, rel_field=>'report_user' });
+    my @searches = $self->search_cis({ '$or' => [{ permissions=>'private' }, { permissions=>undef } ] }); 
+    my @mine;
+    for my $folder ( @searches ){
         push @mine,
             {
                 mid     => $folder->mid,
@@ -55,7 +94,41 @@ sub report_list {
                     },
                     #store_fields   => $folder->fields,
                     #columns        => $folder->fields,
-                    fields         => $folder->selected_fields,
+                    fields         => $folder->selected_fields({ meta=>$p->{meta} }),
+                    id_report      => $folder->mid,
+                    report_rows    => $folder->rows,
+                    #column_mode    => 'full', #$folder->mode,
+                    hide_tree      => \1,
+                },
+                rows    => $folder->rows,
+                permissions => $folder->permissions,
+                leaf    => \1,
+            };
+    }    
+    return \@mine;
+}
+
+sub public_searches {
+    my ($self,$p) = @_;
+    my @searches = $self->search_cis( permissions=>'public' ); 
+    my @public;
+    for my $folder ( @searches ){
+        push @public,
+            {
+                mid     => $folder->mid,
+                text    => sprintf( '%s (%s)', $folder->name, $folder->owner ), 
+                icon    => '/static/images/icons/topic.png',
+                #menu    => [ ],
+                data    => {
+                    click   => {
+                        icon    => '/static/images/icons/topic.png',
+                        url     => '/comp/topic/topic_grid.js',
+                        type    => 'comp',
+                        title   => $folder->name,
+                    },
+                    #store_fields   => $folder->fields,
+                    #columns        => $folder->fields,
+                    fields         => $folder->selected_fields({ meta=>$p->{meta} }),
                     id_report      => $folder->mid,
                     report_rows    => $folder->rows,
                     #column_mode    => 'full', #$folder->mode,
@@ -64,36 +137,7 @@ sub report_list {
                 leaf    => \1,
             };
     }    
-   
-    my @trees = (
-            {
-                cls => 'x-btn-icon',
-                icon => '/static/images/icons/report.png',
-                text => _loc('My Searches'),
-                mid => -1,
-                draggable => \0,
-                children => \@mine,
-                data => [],
-                menu => [
-                    {   text=> _loc('New search') . '...',
-                        icon=> '/static/images/icons/report.png',
-                        eval=> { handler=> 'Baseliner.new_search'},
-                    } 
-                ],
-                expanded => \1,
-            },
-            {
-                cls => 'x-btn-icon',
-                icon => '/static/images/icons/report.png',
-                text => _loc('Public Searches'),
-                mid => -1,
-                draggable => \0,
-                children => \@public,
-                data => [],
-                expanded => \1,
-            },
-    );
-    return \@trees; 
+    return \@public;
 }
 
 sub report_update {
@@ -103,7 +147,7 @@ sub report_update {
     my $mid = $p->{mid};
     my $data = $p->{data};
     
-    my $user = ci->find( name=> $username, collection=>'user' );
+    my $user = Baseliner->user_ci( $username );
     if(!$user){
         _fail _loc('Error user does not exist. ');
     }
@@ -119,6 +163,8 @@ sub report_update {
                     $self->selected( $data->{selected} ) if ref $data->{selected};
                     $self->name( $data->{name} );
                     $self->user( $user );
+                    $self->owner( $username );
+                    $self->permissions( $data->{permissions} );
                     $self->rows( $data->{rows} );
                     $self->sql( $data->{sql} );
                     $self->save;
@@ -141,6 +187,8 @@ sub report_update {
                     $self->name( $data->{name} );
                     $self->rows( $data->{rows} );
                     $self->sql( $data->{sql} );
+                    $self->owner( $username );
+                    $self->permissions( $data->{permissions} );
                     $self->selected( $data->{selected} ) if ref $data->{selected}; # if the selector tab has not been show, this is submitted undef
                     $self->save;
                     $ret = { msg=>_loc('Search modified'), success=>\1, mid=>$self->mid };
@@ -255,13 +303,14 @@ sub selected_fields {
     my ($self, $p ) = @_; 
     my %ret = ( ids=>['mid','topic_mid','category_name','category_color','modified_on'], names=>[] );
     my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
+    my $meta = $p->{meta};
     for ( _array($fields{select}) ) {
         my $id = $data_field_map{$_->{id_field}} // $_->{id_field};
         $id =~ s/\.+/-/g;  # convert dot to dash to avoid JsonStore id problems
         my $as = $_->{as} // $_->{name_field};
         push @{ $ret{ids} }, $id;
         push @{ $ret{names} }, $as; 
-        push @{ $ret{columns} }, { as=>$as, id=>$id };
+        push @{ $ret{columns} }, { as=>$as, id=>$id, meta_type=>$meta->{$id}{meta_type} };
     }
     return \%ret;
 }
@@ -273,7 +322,7 @@ method run( :$start=0, :$limit=undef, :$username=undef ) {
     my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta() );  # XXX should be by category, same id fields may step on each other
 
     my @selects = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) => 1 } _array($fields{select});
-    _debug \@selects;
+    #_debug \@selects;
 
     my @where = grep { defined } map { 
         my $field=$_;
@@ -291,12 +340,33 @@ method run( :$start=0, :$limit=undef, :$username=undef ) {
         @ors ? { '$or' => \@ors } : undef;
     } _array($fields{where});
     #_debug \@where;
+    
+    if( $username && !Baseliner->is_root($username) ) {
+        my @ids_project = Baseliner->model('Permissions')->user_projects_with_action(
+            username => $username,
+            action   => 'action.job.viewall',
+            level    => 1
+        );
+        my @and_project;
+        for my $field_project ( grep { $_->{meta_type} eq 'project' } values %meta ) {
+            push @where, { $field_project->{id_field} => mdb->in(@ids_project) };  
+        }
+    }
 
     my @sort = map { $_->{id_field} => 1 } _array($fields{sort});
     
     my $find = @where ? { '$and'=>[ @where ] } : {};
     my $rs = mdb->topic->find($find);
     my $cnt = $rs->count;
+    _debug \%meta;
+    my @data = $rs
+      ->sort({ @sort })
+      ->fields({ _id=>0 })
+      ->skip( $start )
+      ->limit($rows)
+      ->all;
+    #->fields({ @selects, _id=>0, mid=>1 })
+    my %cache_topics;
     my @topics = map { 
         my %f = hash_flatten($_);
         %f = map { 
@@ -305,29 +375,22 @@ method run( :$start=0, :$limit=undef, :$username=undef ) {
             #$k2 = $data_field_map{$k2} // $k2;
             my $v = $f{$k}; 
             $v = Class::Date->new($v)->string if $k2 =~ /modified_on|created_on/;
+            my $mt = $meta{$k}{meta_type} // '';
+            if( $mt =~ /release|ci/ ) { 
+                $v = $cache_topics{$v} 
+                    // ( $cache_topics{$v} = mdb->topic->find_one({ mid=>"$v" },
+                        { title=>1, mid=>1, is_changeset=>1, is_release=>1, category=>1 }) );
+            }
             $k2 => $v; 
         } keys %f;
         $f{topic_mid} = $f{mid};
         \%f;
-      } 
-      $rs
-      ->sort({ @sort })
-      ->fields({ _id=>0 })
-      ->skip( $start )
-      ->limit($rows)
-      ->all;
-      #->fields({ @selects, _id=>0, mid=>1 })
-    
-      #_debug \@topics;
+    } @data; 
+    #_debug \@topics;
     return ( $cnt, @topics );
 }
 
 1;
 
 __END__
-
-
-
-
-
 
