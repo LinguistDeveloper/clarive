@@ -206,7 +206,7 @@ sub start_task {
 
 sub back_to_core {
     my ($self)=@_;
-    $self->current_service( "\x{2205}" );
+    $self->current_service( _loc('Core') ); #"\x{2205}" );
 }
 
 our %next_step   = ( CHECK=>'INIT', INIT=>'PRE', PRE => 'RUN', RUN => 'POST', POST => 'END' );

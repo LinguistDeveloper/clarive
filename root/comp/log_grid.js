@@ -305,7 +305,7 @@
         return value + ' ('+exec+')';
     };
     var render_task = function(value,metadata,rec,rowIndex,colIndex,store) {
-        if(!value) value= '\u2205'; //_('Core');
+        if(!value) value= _('Core'); //'\u2205'; //_('Core');
         return '<b>'+value+'</b>';
     };
     var onemeg = 1024 * 1024;
