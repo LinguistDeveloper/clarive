@@ -51,7 +51,7 @@
         } @others_topics_by_status;
         
         $others_id = join ',', @others_id;
-        push @filter_topics_by_status, { color => '#000000', status => 'Others', status_id => $others_id, total => $others_total};
+        push @filter_topics_by_status, { color => '#FF9933', status => 'Others', status_id => $others_id, total => $others_total};
     }
     else{
         @filter_topics_by_status = @topics_by_status;
@@ -77,7 +77,7 @@
 
 %foreach my $topic (_array @filter_topics_by_status){
         data.push({ label: "<% _loc($topic->{status}) %>", status_id: "<%$topic->{status_id}%>", color:"<%$topic->{color}%>", data: [[1,<%$topic->{total}%>]]});
-        status_id["<%$topic->{status}%>"] = '<%$topic->{status_id}%>';
+        status_id["<% _loc($topic->{status}) %>"] = '<%$topic->{status_id}%>';
 %}
 
         // DEFAULT
@@ -131,9 +131,9 @@
 %foreach my $mid (@topics){
     topic_list.push(<% $mid %>);
 %}                   
-                
+               
         var name = Baseliner.topic_title( '<%$data->{topic_mid}%>', '<% $data->{name_category} %>', '<% $data->{color_category} %>', true); //, literal_only, id) {        
-                
+          
         var title_status = '<div id="boot" style="background:transparent;height:14px"><span class="label" style="background-color:' + obj.series.color  + '">' + name + ' => ' + obj.series.label + '</span></div>';
         //Baseliner.addNewTabComp('/topic/grid?status_id=' + obj.series.status_id[obj.series.label] + '&release=<%$data->{topic_mid}%>', _(title_status));
         Baseliner.add_tabcomp('/comp/topic/topic_grid.js', title_status , { status_id: obj.series.status_id[obj.series.label] , topic_list: topic_list });
