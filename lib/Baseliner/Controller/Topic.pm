@@ -1218,10 +1218,14 @@ sub filters_list : Local {
     
     my $arg = {order_by=>'seq'};
     
-    if($category_id){
+    #if($category_id){
+    my @id_categories = map { $_->{id} } @categories_permissions;
+    
         $arg->{join} = ['categories_status'];
-        $where->{'categories_status.id_category'} = $category_id;
-    }
+        $arg->{distinct} = 1;
+        #$where->{'categories_status.id_category'} = $category_id;
+        $where->{'categories_status.id_category'} = \@id_categories;
+    #}
     $row = $c->model('Baseliner::BaliTopicStatus')->search($where,$arg);
     
     #$row = $c->model('Baseliner::BaliTopicStatus')->search(undef, { order_by=>'seq' });
