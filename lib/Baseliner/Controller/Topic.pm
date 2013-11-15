@@ -1208,10 +1208,14 @@ sub filters_list : Local {
     
     # Filter: Status #############################################################################################################
     my @statuses;
-    my $status_id = $c->req->params->{status_id};
-    
     my $where = undef;
-    $where->{id} = $status_id if $status_id;
+    
+    my $status_id = $c->req->params->{status_id};
+    if ($status_id) {
+        my @status_id = _array $status_id;
+        $where->{id} = \@status_id;
+    }
+    
     my $arg = {order_by=>'seq'};
     
     if($category_id){
