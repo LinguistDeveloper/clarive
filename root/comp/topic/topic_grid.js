@@ -94,7 +94,7 @@
     var button_no_filter = new Ext.Button({
         icon:'/static/images/icons/clear-all.png',
         tooltip: _('Clear filters'),
-        hidden: true,
+        hidden: false,
         cls: 'x-btn-icon',
         disabled: false,
         handler: function(){
@@ -1163,8 +1163,8 @@
         var selected_views = { };
 		
 		selNodes = tree_filters.getChecked();
-		if( selNodes.length > 0 ) button_no_filter.show();
-		  else button_no_filter.hide();
+		if( selNodes.length > 0 ) button_no_filter.enable();
+		  else button_no_filter.disable();
 		  
 
 		for( var i=0; i<selNodes.length; i++ ) {
