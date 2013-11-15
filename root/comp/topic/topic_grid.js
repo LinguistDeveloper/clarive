@@ -39,7 +39,7 @@
         base_params.categories = category_id;
     }
 	var status_id = [];
-	status_id = params.status_id ? params.status_id.split(',') : undefined;
+	status_id = params.status_id ? params.status_id.split(',') : '<% $c->stash->{status_id} %>' ? '<% $c->stash->{status_id} %>' : undefined;
     base_params.statuses = status_id;
 	
     if( id_report ) {
