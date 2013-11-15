@@ -158,7 +158,7 @@ sub run_ship {
     
     _fail _loc "Server not configured" unless length $config->{server};
 
-    for my $server ( split /,/, $config->{server} ) {
+    for my $server ( _array( split /,/, $config->{server} ) ) {
         $server = ci->new( $server ) unless ref $server;
         $remote_path = $server->parse_vars( "$remote_path" );
         my $server_str = "$user\@".$server->name;
