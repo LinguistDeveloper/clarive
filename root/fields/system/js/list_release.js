@@ -19,9 +19,7 @@ params:
 	var data = params.topic_data;
 	var meta = params.topic_meta;
 
-	var ff = params.form.getForm();
-	var topic_mid = ff.findField("topic_mid").getValue();
-	
+	var topic_mid = data.topic_mid;
 	var ps = meta.page_size || 10;  // for combos, 10 is a much nicer on a combo
 	
     var release_box_store = new Baseliner.store.Topics({ baseParams: {  limit: ps, mid: topic_mid, show_release: 1, filter: meta.filter ? meta.filter : ''} });
