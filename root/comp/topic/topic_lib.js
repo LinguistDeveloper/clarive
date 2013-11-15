@@ -1105,13 +1105,13 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     if( self.permDelete ) {
                         self.btn_delete_form.enable();
                     }
-                    if(res.fields_required){
-                        var fields_required = self.check_required();
-                        self.render_required(fields_required);
-                        Baseliner.message(_('Error'), _('This fields are required: ') + res.fields_required.join(',') );
-                    }else{
+                    //if(res.fields_required){
+                    //    var fields_required = self.check_required();
+                    //    self.render_required(fields_required);
+                    //    Baseliner.message(_('Error'), _('This fields are required: ') + res.fields_required.join(',') );
+                    //}else{
                         Baseliner.message(_('Error'), res.msg );
-                    }
+                    //}
 
                     
                     if( Ext.isFunction(opts.failure) ) opts.failure(res);
@@ -1185,7 +1185,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         var self = this;
         
         Baseliner.Topic.change_status_topic({ mid: self.topic_mid, new_status: obj.id_status_to, old_status: obj.id_status_from});
-    },
+    }/*,
     check_required: function(){
         var fields_required = [];
         //var schResults = Ext.query("#ctrl_required");
@@ -1198,7 +1198,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             }
         }
         return fields_required;
-    }
+    }*/
 });
 
 Baseliner.Topic.delete_topic = function(opts){
