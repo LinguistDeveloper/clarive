@@ -118,36 +118,37 @@ params:
             });
         }
     }
-	var obj = [];
+	//var obj = [];
 //	if (meta.list_type == 'grid') {
 //        var allow;
 //        allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
 //        // alert(meta.name_field + " " + allow);
 //		obj.push(Baseliner.field_label_top( _(meta.name_field), meta.hidden, allow, meta.readonly ))	;
 //	}
-	obj.push(topic_box);
-	
-    var body_style = { 'color': '#c0272b',
-                       'margin': '0px',
-                       'border': 'none'
-                     };
+//	obj.push(topic_box);
+//	
+//    var body_style = { 'color': '#c0272b',
+//                       'margin': '0px',
+//                       'border': 'none'
+//                     };
 					   
-	if (meta.list_type == 'grid') {
-		obj.push( 		{
-			id: 'lbl_required_' + id_required,
-			style: 'margin-bottom: 8px',
-			hidden: true,
-			border: false,
-            html: '<div class="x-form-invalid-msg">Este campo es obligatorio</div>'
-        });
-		obj.push(
-			new Ext.form.TextField(
-				{ id: 'ctrl_required_' + id_required,
-				  hidden: true
-				}
-			)		
-		);
-	}		
+//	if (meta.list_type == 'grid') {
+//		obj.push( 		{
+//			id: 'lbl_required_' + id_required,
+//			style: 'margin-bottom: 8px',
+//			hidden: true,
+//			border: false,
+//            html: '<div class="x-form-invalid-msg">Este campo es obligatorio</div>'
+//        });
+//		obj.push(
+//			new Ext.form.TextField(
+//				{ id: 'ctrl_required_' + id_required,
+//				  hidden: true
+//				}
+//			)		
+//		);
+//	}		
 	
-	return obj
+	//return obj
+	return topic_box
 })
