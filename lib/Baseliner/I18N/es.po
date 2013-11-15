@@ -4817,3 +4817,6 @@ msgstr "Ha ocurrido un error. El mensaje de UCM es: %1"
 
 msgid "Remedy error: %1"
 msgstr "Error remedy: %1"
+
+msgid "Others"
+msgstr "Otros"

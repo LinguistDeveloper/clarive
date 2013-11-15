@@ -1208,16 +1208,24 @@ sub filters_list : Local {
     
     # Filter: Status #############################################################################################################
     my @statuses;
-    my $status_id = $c->req->params->{status_id};
-    
     my $where = undef;
-    $where->{id} = $status_id if $status_id;
+    
+    my $status_id = $c->req->params->{status_id};
+    if ($status_id) {
+        my @status_id = _array $status_id;
+        $where->{id} = \@status_id;
+    }
+    
     my $arg = {order_by=>'seq'};
     
-    if($category_id){
+    #if($category_id){
+    my @id_categories = map { $_->{id} } @categories_permissions;
+    
         $arg->{join} = ['categories_status'];
-        $where->{'categories_status.id_category'} = $category_id;
-    }
+        $arg->{distinct} = 1;
+        #$where->{'categories_status.id_category'} = $category_id;
+        $where->{'categories_status.id_category'} = \@id_categories;
+    #}
     $row = $c->model('Baseliner::BaliTopicStatus')->search($where,$arg);
     
     #$row = $c->model('Baseliner::BaliTopicStatus')->search(undef, { order_by=>'seq' });
@@ -1231,8 +1239,6 @@ sub filters_list : Local {
         map { $tmp{$_->{id_status_from}} = 'id' } 
                     Baseliner->model('Topic')->user_workflow( $c->username );        
     };
-
-    _log ">>>>>>>>>>>>>>>>>>>: " . $row->count();
 
     if($row->count() gt 1){
         while( my $r = $row->next ) {
