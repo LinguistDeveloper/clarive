@@ -38,8 +38,7 @@ params:
 	});	
 	
     release_box_store.on('load',function(){
-		release_box.setValue (data ? (eval('data.' + meta.bd_field + '.mid') ? eval('data.' + meta.bd_field + '.mid') : '') : '');
-		
+		release_box.setValue (data ? (eval('data.' + meta.id_field + '.mid') ? eval('data.' + meta.id_field + '.mid') : '') : '');
     });
 
 	return [
