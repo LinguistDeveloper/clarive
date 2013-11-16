@@ -409,7 +409,7 @@ Baseliner.Topic.StorePriority = Ext.extend( Baseliner.JsonStore, {
 Baseliner.Topic.comment_delete = function(topic_mid, id_com, id_div ) {
     Baseliner.ajaxEval( '/topic/comment/delete', { id_com: id_com }, function(res) {
         if( res.failure ) {
-            Baseliner.message( _('Error'), res.msg );
+            Baseliner.error( _('Error'), res.msg );
         } else {
             // no need to report anything
             // delete div if any
@@ -523,7 +523,7 @@ Baseliner.Topic.comment_edit = function(topic_mid, id_com, cb) {
     if( id_com != undefined ) {
         Baseliner.ajaxEval('/topic/comment/view', { topic_mid: topic_mid, id_com: id_com }, function(res) {
             if( res.failure ) {
-                Baseliner.message( _('Error'), res.msg );
+                Baseliner.error( _('Error'), res.msg );
             } else {
                 comment_field.setValue( res.text );
                 win_comment.show();
@@ -577,7 +577,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     Ext.fly( id_row ).remove();
                 }
                 else {
-                    Baseliner.message( _('Error'), res.msg );
+                    Baseliner.error( _('Error'), res.msg );
                 }
             });
         };
@@ -1110,7 +1110,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     //    self.render_required(fields_required);
                     //    Baseliner.message(_('Error'), _('This fields are required: ') + res.fields_required.join(',') );
                     //}else{
-                        Baseliner.message(_('Error'), res.msg );
+                        Baseliner.error(_('Error'), res.msg );
                     //}
 
                     
@@ -1241,7 +1241,7 @@ Baseliner.Topic.change_status_topic = function(opts){
             //}
         },
         function(res) {
-            Baseliner.message( _('Error'), res.msg );
+            Baseliner.error( _('Error'), res.msg );
             if( Ext.isFunction(opts.failure) ) opts.failure(res);
         }        
     );
@@ -1387,7 +1387,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
                         self.getStore().remove( sel );
                     });
                 } else {
-                    Baseliner.message( _('ERROR'), _('Select at least one row'));    
+                    Baseliner.error( _('ERROR'), _('Select at least one row'));    
                 };                
             }
         });
