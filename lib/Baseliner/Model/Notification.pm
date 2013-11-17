@@ -18,8 +18,8 @@ register 'menu.admin.notifications' => {
     title    => _loc ('Notifications'),
     action   => 'action.admin.notification',
     url_comp => '/comp/notifications.js',
-    icon     => '/static/images/log_w.gif',
-    tab_icon => '/static/images/log_w.gif'
+    icon     => '/static/images/icons/email.png',
+    tab_icon => '/static/images/icons/email.png'
 };
 
 register 'config.notifications' => {
