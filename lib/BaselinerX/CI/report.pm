@@ -65,7 +65,7 @@ sub my_searches {
     my $userci = Baseliner->user_ci( $p->{username} );
     my $username = $p->{username};
     #DB->BaliMasterRel->search({ to_mid=>$userci->mid, rel_field=>'report_user' });
-    my @searches = $self->search_cis({ '$or' => [{ permissions=>'private' }, { permissions=>undef } ] }); 
+    my @searches = $self->search_cis({ owner=>$username, '$or' => [{ permissions=>'private' }, { permissions=>undef } ] }); 
     my @mine;
     for my $folder ( @searches ){
         push @mine,
@@ -221,7 +221,23 @@ sub all_fields {
     my ($self,$p) = @_;
     
     my @cats = DB->BaliTopicCategories->search(undef,{ order_by=>{ -asc=>'name' } })->hashref->all;
-    my @tree = (
+    my @tree;
+    push @tree, (
+        { text=>_loc('Categories'),
+            leaf=>\0,
+            expanded => \1,
+            icon => '/static/images/icons/topic_one.png',
+            children=>[
+                map { 
+                    $_->{text} = $_->{name};
+                    $_->{icon}='/static/images/icons/topic_one.png'; 
+                    $_->{id_category}= delete $_->{id};
+                    $_->{type}='category'; $_->{leaf}=\1; $_ } 
+                DB->BaliTopicCategories->hashref->all
+            ]
+        }
+    );
+    push @tree, (
         { text=>_loc('Values'),
             leaf=>\0,
             expanded => \1,
@@ -256,6 +272,32 @@ sub all_fields {
             } mdb->topic->all_keys
         ],
     };
+
+    # Fields that are common to every topic (system fields)
+    my %common_fields = map { $_->{id_field} => $_ } grep { $_->{origin} eq 'system' } 
+        _array( Baseliner->model('Topic')->get_meta() );
+
+    push @tree, {
+        text => _loc('Commons'),
+        leaf => \0,
+        icon     => '/static/images/icons/topic.png',
+        #url  => '/ci/report/dynamic_fields',
+        children => [
+            map {
+                {
+                    text     => _loc($_->{name_field}),
+                    icon     => '/static/images/icons/field-add.png',
+                    id_field => $_->{id_field},
+                    meta_type => $_->{meta_type},
+                    gridlet => $_->{gridlet},
+                    type     => 'select_field',
+                    leaf     => \1
+                }
+            } sort { lc $a->{name_field} cmp lc $b->{name_field} } values %common_fields
+        ],
+    };
+
+    # Custom Fields, separated by topic
     push @tree, map { 
         my $cat = $_;
         my @chi = map { +{ 
@@ -263,10 +305,12 @@ sub all_fields {
                 text => _loc($_->{name_field}), 
                 icon => '/static/images/icons/field-add.png',
                 type => 'select_field',
+                meta_type => $_->{meta_type},
+                gridlet => $_->{gridlet},
                 category => $cat,
                 leaf=>\1, 
              } } 
-            _array( Baseliner->model('Topic')->get_meta( undef, $cat->{id} ) ); 
+            grep { $_->{origin} ne 'system' } _array( Baseliner->model('Topic')->get_meta( undef, $cat->{id} ) ); 
         +{  text => _loc($cat->{name}),
             data => $cat, 
             icon => '/static/images/icons/topic.png',
@@ -304,14 +348,14 @@ sub selected_fields {
     my %ret = ( ids=>['mid','topic_mid','category_name','category_color','modified_on'], names=>[] );
     my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
     my $meta = $p->{meta};
-    for ( _array($fields{select}) ) {
-        my $id = $data_field_map{$_->{id_field}} // $_->{id_field};
+    for my $select_field ( _array($fields{select}) ) {
+        my $id = $data_field_map{$select_field->{id_field}} // $select_field->{id_field};
         $id =~ s/\.+/-/g;  # convert dot to dash to avoid JsonStore id problems
-        my $as = $_->{as} // $_->{name_field};
-        push @{ $ret{ids} }, $id;
-        push @{ $ret{names} }, $as; 
-        push @{ $ret{columns} }, { as=>$as, id=>$id, meta_type=>$meta->{$id}{meta_type} };
+        my $as = $select_field->{as} // $select_field->{name_field};
+        push @{ $ret{ids} }, $id;   # sent to the Topic Store as report data keys
+        push @{ $ret{columns} }, { as=>$as, id=>$id, meta_type=>$meta->{$id}{meta_type}, %$select_field };
     }
+    _debug \%ret;
     return \%ret;
 }
 
@@ -322,12 +366,9 @@ method run( :$start=0, :$limit=undef, :$username=undef ) {
     my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta() );  # XXX should be by category, same id fields may step on each other
 
     my @selects = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) => 1 } _array($fields{select});
-    #_debug \@selects;
 
     my @where = grep { defined } map { 
         my $field=$_;
-        #_debug $field->{id_field};
-        #my $id = $field_map{$field->{id_field}} // $field->{id_field};
         my $id = $field->{meta_where_id} // $where_field_map{$_->{id_field}} // $field->{id_field};
         my @chi = _array($field->{children});
         my @ors;
@@ -339,8 +380,8 @@ method run( :$start=0, :$limit=undef, :$username=undef ) {
         }
         @ors ? { '$or' => \@ors } : undef;
     } _array($fields{where});
-    #_debug \@where;
     
+    # filter user projects
     if( $username && !Baseliner->is_root($username) ) {
         my @ids_project = Baseliner->model('Permissions')->user_projects_with_action(
             username => $username,
@@ -353,12 +394,16 @@ method run( :$start=0, :$limit=undef, :$username=undef ) {
         }
     }
 
+    # filter categories
+    if( my @categories = map { {'id_category' => $_->{id_category}} } _array($fields{categories}) ) {
+        push @where, { '$or'=>\@categories };
+    }
     my @sort = map { $_->{id_field} => 1 } _array($fields{sort});
     
     my $find = @where ? { '$and'=>[ @where ] } : {};
     my $rs = mdb->topic->find($find);
     my $cnt = $rs->count;
-    _debug \%meta;
+    #_debug \%meta;
     my @data = $rs
       ->sort({ @sort })
       ->fields({ _id=>0 })
@@ -366,25 +411,33 @@ method run( :$start=0, :$limit=undef, :$username=undef ) {
       ->limit($rows)
       ->all;
     #->fields({ @selects, _id=>0, mid=>1 })
-    my %cache_topics;
+    my %scope_topics;
+    my %scope_cis;
     my @topics = map { 
-        my %f = hash_flatten($_);
-        %f = map { 
+        my %row = hash_flatten($_);
+        %row = map { 
             my $k = $_; my $k2 = $_; 
             $k2 =~ s/\.+/_/g; # convert dots to underscore, otherwise javascript unhappy
             #$k2 = $data_field_map{$k2} // $k2;
-            my $v = $f{$k}; 
+            my $v = $row{$k}; 
             $v = Class::Date->new($v)->string if $k2 =~ /modified_on|created_on/;
             my $mt = $meta{$k}{meta_type} // '';
-            if( $mt =~ /release|ci/ ) { 
-                $v = $cache_topics{$v} 
-                    // ( $cache_topics{$v} = mdb->topic->find_one({ mid=>"$v" },
-                        { title=>1, mid=>1, is_changeset=>1, is_release=>1, category=>1 }) );
+            #  get additional fields ?   
+            #  TODO for sorting, do this before and save to report_results collection (capped?) 
+            #       with query id and query ts, then sort
+            if( $mt =~ /ci|project|revision|user/ ) { 
+                $v = $scope_cis{$v} 
+                    // ( $scope_cis{$v} = mdb->master_doc->find_one({ mid=>"$v" },
+                        { _id=>0 }) );
+            } elsif( $mt =~ /release|topic/ ) { 
+                $v = $scope_topics{$v} 
+                    // ( $scope_topics{$v} = mdb->topic->find_one({ mid=>"$v" },
+                        { title=>1, mid=>1, is_changeset=>1, is_release=>1, category=>1, _id=>0 }) );
             }
             $k2 => $v; 
-        } keys %f;
-        $f{topic_mid} = $f{mid};
-        \%f;
+        } keys %row;
+        $row{topic_mid} = $row{mid};
+        \%row;
     } @data; 
     #_debug \@topics;
     return ( $cnt, @topics );

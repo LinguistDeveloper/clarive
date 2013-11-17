@@ -558,7 +558,18 @@
     
     var render_ci = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( !value ) return '';
-        return "[" + value + "]";
+        return typeof value=='object' ? value.name : value;
+    };
+    var render_custom_data = function(data_key, value,metadata,rec,rowIndex,colIndex,store) {
+        //if( !value ) return '';
+        if( !rec.data ) return;
+        try {
+            eval('var xx= rec.data.'+data_key);
+            return xx;
+        }
+        catch(ecd) {
+            return '';
+        }
     };
     var render_date = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( !value ) return '';
@@ -781,24 +792,33 @@
         created_on : { header: _('Created On'), width: 80, hidden: true, sortable: true, dataIndex: 'created_on', renderer: render_date },
         created_by : { header: _('Created By'), width: 40, hidden: true, sortable: true, dataIndex: 'created_by'}
     };
+    var gridlets = {
+    };
     var meta_types = {
+        custom_data : { sortable: false, width: 40, renderer: render_custom_data  },
         date : { sortable: false, width: 40, renderer: render_date  },
         ci : { sortable: false, width: 90, renderer: render_ci  },
+        revision : { sortable: false, width: 90, renderer: render_ci  },
+        project : { sortable: false, width: 90, renderer: render_ci  },
         topic : { sortable: false, width: 90, renderer: render_topic_rel  },
         release : { sortable: false, width: 90, renderer: render_topic_rel  }
     };
     if( fields ) {
         columns = [ dragger, check_sm, col_map['topic_name'] ];
         Ext.each( fields.columns, function(r){ 
-            var meta_type = r.meta_type;
-            var col = col_map[ r.id ] || meta_types[ meta_type ] || { 
+            // r.meta_type, r.id, r.as, r.width, r.header
+            //console.log( r );
+            var col = gridlets[ r.gridlet ] || col_map[ r.id ] || meta_types[ r.meta_type ] || { 
                 dataIndex: r.id,
                 hidden: false, width: 80, sortable: true 
             };
-            if( !col.dataIndex ) col.dataIndex = r.id;
+            if( !col.dataIndex ) col.dataIndex = r.data_key || r.id;
+            if( r.meta_type == 'custom_data' && r.data_key ) {
+                col.renderer = function(v,m,row,ri){ return render_custom_data(r.data_key,v,m,row,ri) };
+            }
             col.hidden = false; 
-            col.header = _(r.as || r.id);
-            //console.log( col );
+            col.header = _(r.header || r.as || r.id);
+            col.width = r.width || col.width;
             columns.push( col );
         });
         //console.log( columns );
