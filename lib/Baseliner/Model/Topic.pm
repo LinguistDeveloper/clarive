@@ -1493,13 +1493,12 @@ sub save_doc {
     }
     
     # calendar info
-    #_error \%meta;
     for my $field ( grep { $meta{$_}{meta_type} eq 'calendar' } keys %meta ) {
         my $arr = $doc->{$field} or next;
         $doc->{$field} = {};
         for my $cal ( _array($arr) ) {
             _fail "field $field is not a calendar?" unless ref $cal;
-            my $slot = delete $cal->{slotname};
+            my $slot = Util->_name_to_id( delete $cal->{slotname} );
             $doc->{$field}{$slot} = $cal;
         }
     }
