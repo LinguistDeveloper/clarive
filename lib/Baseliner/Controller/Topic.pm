@@ -1867,7 +1867,7 @@ sub report_csv : Local {
     my $body = join "\n", @csv;
     #$c->res->body( $body );
     $c->stash->{serve_body} = $body;
-    $c->stash->{serve_filename} = 'topics.csv';
+    $c->stash->{serve_filename} = length $p->{title} ? Util->_name_to_id($p->{title}).'.csv' : 'topics.csv';
     $c->forward('/serve_file');
 }
 

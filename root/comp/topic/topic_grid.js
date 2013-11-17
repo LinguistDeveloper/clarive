@@ -332,38 +332,39 @@
         // find current columns
         var cfg = grid_topics.getColumnModel().config;
         
-        var row=0, col=0;
-        var gv = grid_topics.getView();
-        for( var row=0; row<9999; row++ ) {
-            if( !gv.getRow(row) ) break;
-            var d = {};
-            for( var col=0; col<9999; col++ ) {
-                if( !cfg[col] ) break;
-                if( cfg[col].hidden || cfg[col]._checker ) continue; 
-                var cell = gv.getCell(row,col); 
-                if( !cell ) break;
-                console.log( cell.innerHTML );
-                d[ cfg[col].dataIndex ] = cell.innerHTML;
+        if( ! args.store_data ) { 
+            var row=0, col=0;
+            var gv = grid_topics.getView();
+            for( var row=0; row<9999; row++ ) {
+                if( !gv.getRow(row) ) break;
+                var d = {};
+                for( var col=0; col<9999; col++ ) {
+                    if( !cfg[col] ) break;
+                    if( cfg[col].hidden || cfg[col]._checker ) continue; 
+                    var cell = gv.getCell(row,col); 
+                    if( !cell ) break;
+                    console.log( cell.innerHTML );
+                    d[ cfg[col].dataIndex ] = cell.innerHTML;
+                }
+                data.rows.push( d ); 
             }
-            data.rows.push( d ); 
+        } else {
+            // get the grid store data
+            store_topics.each( function(rec) {
+                var d = rec.data;
+                var topic_name = String.format('{0} #{1}', d.category_name, d.topic_mid )
+                d.topic_name = topic_name;
+                data.rows.push( d ); 
+            });
         }
-        //Baseliner.xx = grid_topics.getView();
-        // console.log( grid_topics.getView() );
         
         for( var i=0; i<cfg.length; i++ ) {
             //console.log( cfg[i] );
             if( ! cfg[i].hidden && ! cfg[i]._checker ) 
                 data.columns.push({ id: cfg[i].dataIndex, name: cfg[i].report_header || cfg[i].header });
         }
-        /*
-        // get the grid store data
-        store_topics.each( function(rec) {
-            var d = rec.data;
-            var topic_name = String.format('{0} #{1}', d.category_name, d.topic_mid )
-            d.topic_name = topic_name;
-            data.rows.push( d ); 
-        });
-        */
+        
+        // report so that it opens cleanly in another window/download
         var form = form_report.getForm(); 
         form.findField('data_json').setValue( Ext.util.JSON.encode( data ) );
         form.findField('title').setValue( make_title() );
@@ -389,7 +390,7 @@
         icon: '/static/images/icons/yaml.png',
         text: _('YAML'),
         handler: function() {
-            form_report_submit({ url: '/topic/report_yaml' });
+            form_report_submit({ store_data: true, url: '/topic/report_yaml' });
         }
     };
 
@@ -397,7 +398,7 @@
         icon: '/static/images/icons/csv.png',
         text: _('CSV'),
         handler: function() {
-            form_report_submit({ url: '/topic/report_csv', target: 'FrameDownload' });
+            form_report_submit({ store_data: true, url: '/topic/report_csv', target: 'FrameDownload' });
         }
     };
 
@@ -627,6 +628,10 @@
         if( !value ) return '';
 		return value.dateFormat(Prefs.js_date_format);
     };
+    var render_bool = function(value) {
+        if( !value ) return '';
+		return '<input type="checkbox" '+ ( value ? 'checked' : '' ) + '></input>'; 
+    };
     var render_topic_rel = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( !value ) return '';
         var arr = [];
@@ -850,6 +855,7 @@
         custom_data : { sortable: false, width: 40, renderer: render_custom_data  },
         calendar : { sortable: false, width: 250, renderer: render_cal  },
         date : { sortable: false, width: 40, renderer: render_date  },
+        bool : { sortable: false, width: 40, renderer: render_bool  },
         ci : { sortable: false, width: 90, renderer: render_ci  },
         revision : { sortable: false, width: 90, renderer: render_ci  },
         project : { sortable: false, width: 90, renderer: render_ci  },

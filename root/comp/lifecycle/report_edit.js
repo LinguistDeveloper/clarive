@@ -112,7 +112,8 @@
             value: attr.meta_type || '', 
             name: 'meta_type',
             fieldLabel: _('Meta Type'), data: [
-             ['',_('Default')], ['custom_data',_('Custom Data')], ['topic',_('Topic')], ['ci',_('CI')], ['date',_('Date')], 
+             ['',_('Default')], ['custom_data',_('Custom Data')], ['topic',_('Topic')], ['ci',_('CI')], 
+                ['date',_('Date')], ['bool', _('Boolean')],
                 ['calendar',_('Calendar')], ['project',_('Project')], 
                 ['release',_('Release')], ['revision',_('Revision')], ['user',_('Usuario')]
         ]});
