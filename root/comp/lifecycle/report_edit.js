@@ -112,10 +112,14 @@
             value: attr.meta_type || '', 
             name: 'meta_type',
             fieldLabel: _('Meta Type'), data: [
-             ['',_('Default')], ['custom_data',_('Custom Data')], ['topic',_('Topic')], ['ci',_('CI')], ['date',_('Date')], ['project',_('Project')], 
+             ['',_('Default')], ['custom_data',_('Custom Data')], ['topic',_('Topic')], ['ci',_('CI')], ['date',_('Date')], 
+                ['calendar',_('Calendar')], ['project',_('Project')], 
                 ['release',_('Release')], ['revision',_('Revision')], ['user',_('Usuario')]
         ]});
-        meta_type.on('change', function(){  if( meta_type.get_save_data()=='custom_data' ) data_key.show() });
+        meta_type.on('change', function(){  
+            var mt=meta_type.get_save_data();
+            mt =='custom_data' ? data_key.show() : date_key.hide();
+        });
         
         var set_select = function(){
             var vals = form_value.getValues();
@@ -222,7 +226,7 @@
         bodyStyle: { 'padding':'10px 10px 10px 10px' },
         items : [
             { fieldLabel: _('Name'), name: 'name', xtype: 'textfield', anchor:'50%', allowBlank: false, value: is_new ? _('New search') : lc_node.text },
-            { fieldLabel: _('Rows'), name: 'rows', xtype: 'textfield', anchor:'50%', allowBlank: false, value: lc_node.attributes.rows || 100 },
+            { fieldLabel: _('Rows'), name: 'rows', xtype: 'textfield', anchor:'50%', allowBlank: false, value: lc_node.attributes.rows || 50 },
             new Baseliner.ComboDouble({
                 value: lc_node.attributes.permissions || 'private', name:'permissions', 
                 fieldLabel: _('Permissions'), data: [ ['private',_('Private')],['public',_('Public')] ] })

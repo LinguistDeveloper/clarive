@@ -1498,7 +1498,7 @@ sub save_doc {
         $doc->{$field} = {};
         for my $cal ( _array($arr) ) {
             _fail "field $field is not a calendar?" unless ref $cal;
-            my $slot = Util->_name_to_id( delete $cal->{slotname} );
+            my $slot = Util->_name_to_id( $cal->{slotname} );
             $doc->{$field}{$slot} = $cal;
         }
     }

@@ -15,11 +15,12 @@
 	var id_project = '<% $c->stash->{id_project} %>';
     var id_report = params.id_report;
     var report_rows = params.report_rows;
+    var report_name = params.report_name;
     var mini_mode = false;
     if( report_rows ) {
         ps_maxi=report_rows;
         ps_mini=report_rows;
-        ps=report_rows;
+        ps= parseInt(report_rows);
         mini_mode = params.mini_mode==undefined ? true : params.mini_mode;
     }
     var fields = params.fields;
@@ -305,6 +306,9 @@
     
     var make_title = function(){
         var title = [];
+        if( report_name ) {
+            return report_name; 
+        }
         var selNodes = tree_filters.getChecked();
         Ext.each(selNodes, function(node){
             //var type = node.parentNode.attributes.id;
@@ -327,13 +331,31 @@
         var data = { rows:[], columns:[] };
         // find current columns
         var cfg = grid_topics.getColumnModel().config;
+        
+        var row=0, col=0;
+        var gv = grid_topics.getView();
+        for( var row=0; row<9999; row++ ) {
+            if( !gv.getRow(row) ) break;
+            var d = {};
+            for( var col=0; col<9999; col++ ) {
+                if( !cfg[col] ) break;
+                if( cfg[col].hidden || cfg[col]._checker ) continue; 
+                var cell = gv.getCell(row,col); 
+                if( !cell ) break;
+                console.log( cell.innerHTML );
+                d[ cfg[col].dataIndex ] = cell.innerHTML;
+            }
+            data.rows.push( d ); 
+        }
         //Baseliner.xx = grid_topics.getView();
-        //console.log( grid_topics.getView() );
+        // console.log( grid_topics.getView() );
+        
         for( var i=0; i<cfg.length; i++ ) {
             //console.log( cfg[i] );
             if( ! cfg[i].hidden && ! cfg[i]._checker ) 
                 data.columns.push({ id: cfg[i].dataIndex, name: cfg[i].report_header || cfg[i].header });
         }
+        /*
         // get the grid store data
         store_topics.each( function(rec) {
             var d = rec.data;
@@ -341,6 +363,7 @@
             d.topic_name = topic_name;
             data.rows.push( d ); 
         });
+        */
         var form = form_report.getForm(); 
         form.findField('data_json').setValue( Ext.util.JSON.encode( data ) );
         form.findField('title').setValue( make_title() );
@@ -356,17 +379,9 @@
 
     var btn_html = {
         icon: '/static/images/icons/html.png',
-        text: _('Basic HTML Report'),
+        text: _('HTML Report'),
         handler: function() {
             form_report_submit({ url: '/topic/report_html' });
-        }
-    };
-
-    var btn_html_desc = {
-        icon: '/static/images/icons/html.png',
-        text: _('Basic HTML Report (Description)'),
-        handler: function() {
-            form_report_submit({ url: '/topic/report_html?show_desc=1' });
         }
     };
 
@@ -387,9 +402,9 @@
     };
 
     var btn_reports = new Ext.Button({
-        icon: '/static/images/icons/reports.png',
+        icon: '/static/images/icons/exports.png',
         iconCls: 'x-btn-icon',
-        menu: [ btn_html, btn_html_desc, btn_csv, btn_yaml ]
+        menu: [ btn_html, btn_csv, btn_yaml ]
     });
     
     var btn_edit = new Baseliner.Grid.Buttons.Edit({
@@ -558,18 +573,55 @@
     
     var render_ci = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( !value ) return '';
-        return typeof value=='object' ? value.name : value;
+        var arr=[];
+        Ext.each( value, function(v){
+            arr.push( typeof v=='object' ? v.name : v );
+        });
+        return arr.join('\n');
+    };
+    
+    // calendar meta_type, a little table precompiled
+    var html_cal = function(){/*
+         <table style="background: transparent">
+         <tbody>
+         <tr>
+            <td style="font-size:9px; font-weight: bold">[%= slotname %]: </td>
+            [% if(start_date) { %]
+            <td style="font-size:9px">[%= start_date + ' (' + _('start') + ')' %]</td>
+            [% } if(plan_start_date) { %]
+            <td style="font-size:9px">[%= plan_start_date + ' (' + _('planned start') + ')' %]</td>
+            [% } if(end_date) { %]
+            <td style="font-size:9px">[%= end_date + ' (' + _('end') + ')'%]</td>
+            [% } if(plan_end_date) { %]
+            <td style="font-size:9px">[%= plan_end_date + ' (' + _('planned end') + ')'%]</td>
+            [% } %]
+         </tr>
+         </tbody>
+         </table>
+    */}.tmpl();
+    var render_cal = function(value,metadata,rec,rowIndex,colIndex,store) {
+        if( typeof value != 'object' ) return '';
+        var arr=[];
+        for( var slot in value ) {
+            var cal = value[slot];
+            if( !cal ) continue;
+            if(cal.start_date) cal.start_date = Date.parseDate(cal.start_date,'Y-m-d h:m:s').format( Prefs.js_date_format );
+            if(cal.plan_start_date) cal.plan_start_date = Date.parseDate(cal.plan_start_date,'Y-m-d h:m:s').format( Prefs.js_date_format );
+            if(cal.end_date) cal.end_date = Date.parseDate(cal.end_date,'Y-m-d h:m:s').format( Prefs.js_date_format );
+            if(cal.plan_end_date) cal.plan_end_date = Date.parseDate(cal.plan_end_date,'Y-m-d h:m:s').format( Prefs.js_date_format );
+            arr.push( html_cal(cal) );
+        }
+        return arr.join('\n');
     };
     var render_custom_data = function(data_key, value,metadata,rec,rowIndex,colIndex,store) {
-        //if( !value ) return '';
-        if( !rec.data ) return;
-        try {
-            eval('var xx= rec.data.'+data_key);
-            return xx;
-        }
-        catch(ecd) {
-            return '';
-        }
+        var arr=[];
+        Ext.each( value, function(v){
+            try {
+                eval('var xx= v.'+data_key);
+                arr.push(xx);
+            } catch(e) {};
+        });
+        return arr.join('\n');
     };
     var render_date = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( !value ) return '';
@@ -796,6 +848,7 @@
     };
     var meta_types = {
         custom_data : { sortable: false, width: 40, renderer: render_custom_data  },
+        calendar : { sortable: false, width: 250, renderer: render_cal  },
         date : { sortable: false, width: 40, renderer: render_date  },
         ci : { sortable: false, width: 90, renderer: render_ci  },
         revision : { sortable: false, width: 90, renderer: render_ci  },
@@ -805,23 +858,24 @@
     };
     if( fields ) {
         columns = [ dragger, check_sm, col_map['topic_name'] ];
+        //console.log( fields );
         Ext.each( fields.columns, function(r){ 
             // r.meta_type, r.id, r.as, r.width, r.header
-            //console.log( r );
             var col = gridlets[ r.gridlet ] || col_map[ r.id ] || meta_types[ r.meta_type ] || { 
                 dataIndex: r.id,
                 hidden: false, width: 80, sortable: true 
             };
-            if( !col.dataIndex ) col.dataIndex = r.data_key || r.id;
+            col = Ext.apply({},col);  // clone the column
+            if( !col.dataIndex ) col.dataIndex = r.id;
             if( r.meta_type == 'custom_data' && r.data_key ) {
-                col.renderer = function(v,m,row,ri){ return render_custom_data(r.data_key,v,m,row,ri) };
+                var dk = r.data_key;
+                col.renderer = function(v,m,row,ri){ return render_custom_data(dk,v,m,row,ri) };
             }
             col.hidden = false; 
             col.header = _(r.header || r.as || r.id);
             col.width = r.width || col.width;
             columns.push( col );
         });
-        //console.log( columns );
     } else {
          columns = [ dragger, check_sm ];
          var cols = ['topic_name', 'category_name', 'category_status_name', 'title', 'progress',

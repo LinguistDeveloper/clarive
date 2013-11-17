@@ -86,7 +86,7 @@ sub all_keys {
            function() {
             var ff=function(obj,pf){
                 for (var key in obj) { 
-                    if( key == '_id' ) continue;
+                    if( key == '_id' || key==undefined ) continue;
                     if( typeof obj[key] != 'function' ) emit(pf+key, null);
                     if( typeof obj[key] == 'object' ) {
                         ff(obj[key],key+'.'); 

@@ -96,6 +96,7 @@ sub my_searches {
                     #columns        => $folder->fields,
                     fields         => $folder->selected_fields({ meta=>$p->{meta} }),
                     id_report      => $folder->mid,
+                    report_name    => $folder->name,
                     report_rows    => $folder->rows,
                     #column_mode    => 'full', #$folder->mode,
                     hide_tree      => \1,
@@ -131,6 +132,7 @@ sub public_searches {
                     fields         => $folder->selected_fields({ meta=>$p->{meta} }),
                     id_report      => $folder->mid,
                     report_rows    => $folder->rows,
+                    report_name    => $folder->name,
                     #column_mode    => 'full', #$folder->mode,
                     hide_tree      => \1,
                 },
@@ -262,14 +264,20 @@ sub all_fields {
         #url  => '/ci/report/dynamic_fields',
         children => [
             map {
+                my $key = $_;
+                my ($prefix,$data_key) = split( /\./, $key, 2);
                 {
-                    text     => $_,
+                    text     => $key,
                     icon     => '/static/images/icons/field-add.png',
-                    id_field => $_,
+                    id_field => $prefix,
+                    data_key => $data_key,
                     type     => 'select_field',
                     leaf     => \1
                 }
-            } mdb->topic->all_keys
+            } 
+            grep !/^_/, 
+            grep !/\.[0-9]+$/, 
+            mdb->topic->all_keys
         ],
     };
 
@@ -345,7 +353,7 @@ our %where_field_map = ();
 
 sub selected_fields {
     my ($self, $p ) = @_; 
-    my %ret = ( ids=>['mid','topic_mid','category_name','category_color','modified_on'], names=>[] );
+    my %ret = ( ids=>['mid','topic_mid','category_name','category_color','modified_on'] );
     my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
     my $meta = $p->{meta};
     for my $select_field ( _array($fields{select}) ) {
@@ -355,7 +363,7 @@ sub selected_fields {
         push @{ $ret{ids} }, $id;   # sent to the Topic Store as report data keys
         push @{ $ret{columns} }, { as=>$as, id=>$id, meta_type=>$meta->{$id}{meta_type}, %$select_field };
     }
-    _debug \%ret;
+    #_debug \%ret;
     return \%ret;
 }
 
@@ -414,33 +422,35 @@ method run( :$start=0, :$limit=undef, :$username=undef ) {
     my %scope_topics;
     my %scope_cis;
     my @topics = map { 
-        my %row = hash_flatten($_);
-        %row = map { 
-            my $k = $_; my $k2 = $_; 
-            $k2 =~ s/\.+/_/g; # convert dots to underscore, otherwise javascript unhappy
-            #$k2 = $data_field_map{$k2} // $k2;
-            my $v = $row{$k}; 
-            $v = Class::Date->new($v)->string if $k2 =~ /modified_on|created_on/;
+        my %row = %$_;
+        while( my($k,$v) = each %row ) {
+            $row{$k} = Class::Date->new($v)->string if $k =~ /modified_on|created_on/;
             my $mt = $meta{$k}{meta_type} // '';
             #  get additional fields ?   
             #  TODO for sorting, do this before and save to report_results collection (capped?) 
             #       with query id and query ts, then sort
             if( $mt =~ /ci|project|revision|user/ ) { 
-                $v = $scope_cis{$v} 
-                    // ( $scope_cis{$v} = mdb->master_doc->find_one({ mid=>"$v" },
-                        { _id=>0 }) );
+                $row{$k} = $scope_cis{$v} 
+                    // ( $scope_cis{$v} = [ mdb->master_doc->find({ mid=>mdb->in($v) },
+                        { _id=>0 })->all ] );
             } elsif( $mt =~ /release|topic/ ) { 
-                $v = $scope_topics{$v} 
-                    // ( $scope_topics{$v} = mdb->topic->find_one({ mid=>"$v" },
-                        { title=>1, mid=>1, is_changeset=>1, is_release=>1, category=>1, _id=>0 }) );
+                $row{$k} = $scope_topics{$v} 
+                    // ( $scope_topics{$v} = [ mdb->topic->find({ mid=>mdb->in($v) },
+                        { title=>1, mid=>1, is_changeset=>1, is_release=>1, category=>1, _id=>0 })->all ] );
+            } elsif( $mt eq 'calendar' && ( my $cal = ref $row{$k} ? $row{$k} : undef ) ) { 
+                for my $slot ( keys %$cal ) {
+                    $cal->{$slot}{$_} //= '' for qw(end_date plan_end_date start_date plan_start_date);
+                }
             }
-            $k2 => $v; 
-        } keys %row;
+        }
         $row{topic_mid} = $row{mid};
+        $row{category_color} = $row{category}{color};
+        $row{category_name} = $row{category}{name};
+        $row{category_id} = $row{category}{id};
         \%row;
     } @data; 
     #_debug \@topics;
-    return ( $cnt, @topics );
+    return ( 0+$cnt, @topics );
 }
 
 1;
