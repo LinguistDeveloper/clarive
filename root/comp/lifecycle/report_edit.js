@@ -6,7 +6,7 @@
     var report_mid = lc_node.attributes.mid;
     var fields = data.fields;
     var ds_fields = [];
-    var title = is_new ? _('New search folder') : lc_node.text;
+    var title = is_new ? _('New Search') : lc_node.text;
     var lc_tree = lc_node.ownerTree;
     var tree_all_loader = new Baseliner.TreeLoader({
         dataUrl: '/ci/report/all_fields',
@@ -101,6 +101,39 @@
         form_value.doLayout();
     };
     
+    // selected fields editor
+    var edit_select = function(node){
+        var attr = node.attributes;
+        var header = { xtype:'textfield', name:'header', fieldLabel: _('Header'), value: attr.header||node.text };
+        var width = { xtype:'textfield', name:'width', fieldLabel: _('Width'), value: attr.width||'' };
+        var data_key = new Ext.form.TextField({ name:'data_key', fieldLabel: _('Data Key'), value: attr.data_key||attr.id_field, hidden: attr.meta_type!='custom_data' });
+        var gridlet = { xtype:'textfield', name:'gridlet', fieldLabel: _('Gridlet'), value: attr.gridlet||'' };
+        var meta_type = new Baseliner.ComboDouble({
+            value: attr.meta_type || '', 
+            name: 'meta_type',
+            fieldLabel: _('Meta Type'), data: [
+             ['',_('Default')], ['custom_data',_('Custom Data')], ['topic',_('Topic')], ['ci',_('CI')], ['date',_('Date')], ['project',_('Project')], 
+                ['release',_('Release')], ['revision',_('Revision')], ['user',_('Usuario')]
+        ]});
+        meta_type.on('change', function(){  if( meta_type.get_save_data()=='custom_data' ) data_key.show() });
+        
+        var set_select = function(){
+            var vals = form_value.getValues();
+            Ext.apply( node.attributes, vals );
+            node.setText( String.format('{0}', vals.header ) );
+        };
+
+        form_value.removeAll();
+        form_value.add([ header, width, gridlet, meta_type, data_key ]);
+        form_value.items.each(function(fi){
+            fi.on('blur', function(){ set_select() });
+            fi.on('change', function(){ set_select() });
+        });
+        form_value.setTitle( String.format('{0}', node.text) );
+        if( form_value.collapsed ) form_value.toggleCollapse(true);
+        form_value.doLayout();
+    };
+    
     var node_properties = function(n){
         var attr = n.attributes;
         // XXX max stack size error ?
@@ -112,6 +145,8 @@
         node.select();
         var its = [];
         var type = node.attributes.type;
+        if( type =='select_field' ) 
+            its.push({ text: _('Edit'), handler: function(item){ edit_select(node) }, icon:'/static/images/icons/edit.gif' });
         if( type =='value' ) 
             its.push({ text: _('Edit'), handler: function(item){ edit_value(node) }, icon:'/static/images/icons/edit.gif' });
         if( !/^(select|where|sort)$/.test(type) ) 
@@ -134,7 +169,11 @@
         enableDD: true,
         ddScroll: true,
         loader: tree_selected_loader,
-        listeners: { contextmenu: tree_menu_click, click: function(n){ if(n.attributes.type=='value') edit_value(n); } },
+        listeners: { contextmenu: tree_menu_click, click: function(n){ 
+                if(n.attributes.type=='value') edit_value(n); 
+                else if( n.attributes.type=='select_field') edit_select(n);
+            } 
+        },
         root: { text: '', expanded: true, draggable: false }, 
         rootVisible: false
     });
@@ -192,9 +231,10 @@
     
     var initialize_folders = function(){
         tree_selected.root.appendChild([ 
-            { text:_('Fields'), expanded: true, type:'select', leaf: false, children:[] },
-            { text:_('Filters'), expanded: true, type:'where', leaf: false, children:[] },
-            { text:_('Sort'), expanded: true, type:'sort', leaf: false, children:[] }
+            { text:_('Categories'), expanded: true, type:'categories', leaf: false, children:[], icon:'/static/images/icons/folder_database.png' },
+            { text:_('Fields'), expanded: true, type:'select', leaf: false, children:[], icon:'/static/images/icons/folder_magnify.png' },
+            { text:_('Filters'), expanded: true, type:'where', leaf: false, children:[], icon:'/static/images/icons/folder_find.png' },
+            { text:_('Sort'), expanded: true, type:'sort', leaf: false, children:[], icon:'/static/images/icons/folder_go.png' }
         ]);
     };
     var reload_all = new Ext.Button({ icon:'/static/images/icons/refresh.gif', handler: function(){ 

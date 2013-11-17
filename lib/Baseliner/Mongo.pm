@@ -211,6 +211,7 @@ sub index_all {
         ],
         master_doc => [
             [{'$**'=> "text"}],
+            [{ mid=>1 },{ unique=>1 }],
         ],
     };
     for my $cn ( keys %$idx ) {
@@ -256,6 +257,19 @@ sub clean_doc {
             delete $doc->{$k};
         }
     }
+}
+
+sub integrity {
+    my($self) = @_;
+
+    # master_docs not in BaliMaster
+    for ( mdb->master_doc->find->all ) {
+       DB->BaliMaster->find({ mid=>$_->{mid} }) or do {
+        warn "Not found: $_->{mid}";
+        mdb->master_doc->remove({ mid=>$_->{mid} });
+        };
+    }
+    
 }
 
 our $AUTOLOAD;

@@ -219,6 +219,7 @@ sub delete {
             Baseliner->cache_remove( qr/^ci:/ );
             return $row->delete;
         } else {
+            mdb->mongo_doc->remove({ mid=>"$mid" });
             Util->_fail( Util->_loc( 'Could not delete, master row %1 not found', $mid ) );
         }
     } else {
@@ -306,14 +307,19 @@ sub save_fields {
     $opts //={};
     $opts->{master_only} //= 1;
     my $mid = $master_row->mid;
-    _fail _loc( 'Master row not found for mid %1', $mid ) unless $master_row;
+    if( !$master_row ) {
+        mdb->mongo_doc->remove({ mid=>"$mid" });
+        _fail _loc( 'Master row not found for mid %1', $mid );
+    }
     $master_row->update({ yaml=>Util->_dump($data) });
     my $md = mdb->master_doc;
     if( my $row = $md->find_one({ mid=>"$mid" }) ) {
+        my $id = $row->{_id};
         my $doc = { %$row, %{ $data || {} } };
         my $final_doc = Util->_clone($doc);
         Util->_unbless($final_doc);
         mdb->clean_doc($final_doc);
+        $final_doc->{_id} = $id;  # preserve OID object
         $md->save($final_doc);
     } else {
         my $doc = { ( $master_row ? $master_row->get_columns : () ), %{ $data || {} }, mid=>"$mid" };
@@ -340,7 +346,10 @@ sub load {
 
     if( !$data ) {
         $row //= Baseliner->model('Baseliner::BaliMaster')->find( $mid );
-        _fail _loc( "Master row not found for mid %1", $mid ) unless ref $row;
+        if( ! ref $row ) {
+            mdb->mongo_doc->remove({ mid=>"$mid" });
+            _fail _loc( "Master row not found for mid %1", $mid );
+        }
         # setup the base data from master row
         $data = ref $row eq 'HASH' ? $row : { $row->get_columns }; # row may come already hashref'ed
     }

@@ -105,6 +105,27 @@ msgstr "Estado actual del tópico '%1' no coincide con el estado real '%2'. Por 
 msgid "No items found"
 msgstr "No se han encontrado datos"
 
+msgid "Header"
+msgstr "Cabecera"
+
+msgid "Width"
+msgstr "Ancho"
+
+msgid "Data Key"
+msgstr "Clave del Dato"
+
+msgid "Meta Type"
+msgstr "Tipo Dato"
+
+msgid "Commons"
+msgstr "Comunes"
+
+msgid "Dynamic"
+msgstr "Dinámico"
+
+msgid "New search"
+msgstr "Nueva búsqueda"
+
 msgid "Select field %1 first or reload"
 msgstr "Seleccione el campo %1 primero o recargue"
 
