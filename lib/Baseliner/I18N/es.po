@@ -4820,3 +4820,9 @@ msgstr "Error remedy: %1"
 
 msgid "Others"
 msgstr "Otros"
+
+msgid "%1 must match reg-exp %2"
+msgstr "%1 debe cumplir la expresión regular %2"
+
+msgid "%1 must be filled"
+msgstr "%1 es obligatoria"
