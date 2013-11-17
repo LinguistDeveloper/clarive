@@ -36,7 +36,11 @@ params:
     var ps = meta.page_size || 20;
     var project_box_store = new Baseliner.store.UserProjects({ id: 'id', baseParams: {
         tree_level: meta.tree_level || '',
-        limit: ps, include_root: true, level: meta.level, collection: meta.collection
+        limit: ps, 
+        include_root: true, 
+        level: meta.level, 
+        collection: meta.collection,
+        autoLoad: false
     } });
     
     var no_items = _('No items found');
