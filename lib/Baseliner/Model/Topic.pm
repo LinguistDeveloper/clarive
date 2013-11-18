@@ -1527,6 +1527,7 @@ sub save_doc {
         event_new 'event.topic.modify_field' => { 
             username   => $doc->{username},
             field      => $md->{id_field},
+            name_field => _loc( $md->{name_field} ),
             old_value  => $old_doc->{$changed},
             new_value  => $doc->{$changed},
             mid => $mid,
