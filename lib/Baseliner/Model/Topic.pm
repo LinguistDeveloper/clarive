@@ -1429,6 +1429,7 @@ sub save_data {
                              field      => _loc ($description{ $field }),
                              old_value  => $old_text{$field},
                              new_value  => $method && $topic->$method ? $topic->$method->name : $topic->$field,
+                             mid => $topic->mid,
                            } 
                         => sub {
                             my $subject = _loc("Topic [%1] %2: Field '%3' updated", $topic->mid, $topic->title, $description{ $field });
@@ -1525,7 +1526,7 @@ sub save_doc {
         
         event_new 'event.topic.modify_field' => { 
             username   => $doc->{username},
-            field      => _loc( $md->{name_field} ),
+            field      => $md->{id_field},
             old_value  => $old_doc->{$changed},
             new_value  => $doc->{$changed},
             mid => $mid,
@@ -1714,10 +1715,11 @@ sub set_topics {
       
 
         event_new 'event.topic.modify_field' => { username      => $user,
-                                            field               => _loc( 'attached topics' ),
+                                            field               => $id_field,
                                             old_value           => '',
                                             new_value           => $topics,
                                             text_new            => '%1 modified topic: %2 ( %4 )',
+                                            mid => $rs_topic->mid,
                                            } => sub {
                             my $subject = _loc("Topic [%1] %2 updated", $rs_topic->mid, $rs_topic->title);
 
@@ -1731,10 +1733,11 @@ sub set_topics {
         
         
         event_new 'event.topic.modify_field' => { username      => $user,
-                                            field               => '',
+                                            field               => $id_field,
                                             old_value           => '',
                                             new_value           => '',
                                             text_new            => '%1 deleted all attached topics of ' . $id_field ,
+                                            mid => $rs_topic->mid,
                                            } => sub {
                             my $subject = _loc("Topic [%1] %2 updated", $rs_topic->mid, $rs_topic->title);
             { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
@@ -1790,10 +1793,11 @@ sub set_cis {
         
         event_new 'event.topic.modify_field' => {
             username  => $user,
-            field     => _loc( $field_meta->{field_msg} // $field_meta->{name_field} // _loc('attached cis') ),
+            field     => $field_meta->{id_field},
             old_value => $del_cis,
             new_value => join(',', grep { length } $add_cis, $del_cis ),
             text_new  => ( $field_meta->{modify_text_new} // '%1 modified topic (%2): %4 ' ),
+            mid => $rs_topic->mid,
         } => sub {
             my $subject = _loc("Topic [%1] %2 updated", $rs_topic->mid, $rs_topic->title);
             { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }    # to the event
@@ -1827,10 +1831,11 @@ sub set_revisions {
             my $revisions = join(',', map { Baseliner::CI->new($_->mid)->load->{name}} @rs_revs);
     
             event_new 'event.topic.modify_field' => { username   => $user,
-                                                field      => _loc( 'attached revisions' ),
+                                                field      => $id_field,
                                                 old_value      => '',
                                                 new_value  => $revisions,
                                                 text_new      => '%1 modified topic: %2 ( %4 )',
+                                                mid => $rs_topic->mid,
                                                } => sub {
                                                 my $subject = _loc("Topic [%1] %2 updated.  New revisions", $rs_topic->mid, $rs_topic->title);
 
@@ -1842,10 +1847,11 @@ sub set_revisions {
             
         } else {
             event_new 'event.topic.modify_field' => { username   => $user,
-                                                field      => '',
+                                                field      => $id_field,
                                                 old_value      => '',
                                                 new_value  => '',
                                                 text_new      => '%1 deleted all revisions',
+                                                mid => $rs_topic->mid,
                                                } => sub {
                                                 my $subject = _loc("Topic [%1] %2 updated.  All revisions removed", $rs_topic->mid, $rs_topic->title);
                 { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
@@ -1912,6 +1918,7 @@ sub set_release {
                                                 old_value      => $old_release_name,
                                                 new_value  => $row_release->title,
                                                 text_new      => '%1 modified topic: changed release to %4',
+                                                mid => $rs_topic->mid,
                                                } => sub {
                                                 my $subject = _loc("Topic [%1] %2 updated.  Release changed to %3", $rs_topic->mid, $rs_topic->title, $row_release->title);
                 { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
@@ -1927,6 +1934,7 @@ sub set_release {
                                                 old_value      => $old_release_name,
                                                 new_value  => '',
                                                 text_new      => '%1 deleted release %3',
+                                                mid => $rs_topic->mid,
                                                } => sub {
                                                 my $subject = _loc("Topic [%1] %2 updated.  Removed from release %3", $rs_topic->mid, $rs_topic->title, $old_release_name);
 
@@ -1977,10 +1985,11 @@ sub set_projects {
             my $projects = join(',', @name_projects);
     
             event_new 'event.topic.modify_field' => { username   => $user,
-                                                field      => _loc( 'attached projects' ),
+                                                field      => $id_field,
                                                 old_value      => '',
                                                 new_value  => $projects,
                                                 text_new      => '%1 modified topic: %2 ( %4 )',
+                                                mid => $rs_topic->mid,
                                                } => sub {
                                                 my $subject = _loc("Topic [%1] %2 updated.  Attached projects (%3)", $rs_topic->mid, $rs_topic->title, $projects);
                 { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
@@ -1991,10 +2000,11 @@ sub set_projects {
         }
         else{
             event_new 'event.topic.modify_field' => { username   => $user,
-                                                field      => '',
+                                                field      => $id_field,
                                                 old_value      => '',
                                                 new_value  => '',
                                                 text_new      => '%1 deleted all projects',
+                                                mid => $rs_topic->mid,
                                                } => sub {
                                                 my $subject = _loc("Topic [%1] %2 updated.  All projects removed", $rs_topic->mid );
                 { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
@@ -2035,10 +2045,11 @@ sub set_users{
 
             my $users = join(',', @name_users);
             event_new 'event.topic.modify_field' => { username   => $user,
-                                                field      => _loc( 'attached users' ),
+                                                field      => $id_field,
                                                 old_value      => '',
                                                 new_value  => $users,
                                                 text_new      => '%1 modified topic: %2 ( %4 )',
+                                                mid => $rs_topic->mid,
                                                } => sub {
                 { mid => $rs_topic->mid, topic => $rs_topic->title, notify => $notify }   # to the event
             } ## end try
@@ -2051,10 +2062,11 @@ sub set_users{
             
         }else{
             event_new 'event.topic.modify_field' => { username   => $user,
-                                                field      => '',
+                                                field      => $id_field,
                                                 old_value      => '',
                                                 new_value  => '',
                                                 text_new      => '%1 deleted all users',
+                                                mid => $rs_topic->mid,
                                                } => sub {
                 { mid => $rs_topic->mid, topic => $rs_topic->title, notify => $notify }   # to the event
             } ## end try
