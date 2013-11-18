@@ -1528,6 +1528,7 @@ sub save_doc {
             field      => _loc( $md->{name_field} ),
             old_value  => $old_doc->{$changed},
             new_value  => $doc->{$changed},
+            mid => $mid,
         }, 
         sub {
             my $subject = _loc("Topic [%1] %2: Field '%3' updated", $mid, $doc->{title}, $md->{name_field} );
