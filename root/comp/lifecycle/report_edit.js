@@ -44,6 +44,14 @@
             initialize_folders();
     });
     
+    var sort_direction = function(dir, node){
+        var attr = node.attributes;
+        attr.sort_direction = dir;
+        var icon = dir > 0 ? 'up' : 'down';
+        attr.icon = '/static/images/icons/arrow-'+icon+'.gif';
+        node.setIcon( attr.icon );
+    }
+
     var edit_value = function(node){
         var attr = node.attributes;
         var pn = node.parentNode; // should be where_field
@@ -154,6 +162,10 @@
             its.push({ text: _('Edit'), handler: function(item){ edit_select(node) }, icon:'/static/images/icons/edit.gif' });
         if( type =='value' ) 
             its.push({ text: _('Edit'), handler: function(item){ edit_value(node) }, icon:'/static/images/icons/edit.gif' });
+        if( type =='sort_field' ) {
+            its.push({ text: _('Ascending'), handler: function(item){ sort_direction(1,node) }, icon:'/static/images/icons/arrow-up.gif' });
+            its.push({ text: _('Descending'), handler: function(item){ sort_direction(-1,node) }, icon:'/static/images/icons/arrow-down.gif' });
+        }
         if( !/^(select|where|sort)$/.test(type) ) 
             its.push({ text: _('Delete'), handler: function(item){ node.remove() }, icon:'/static/images/icons/delete.gif' });
         var stmts_menu = new Ext.menu.Menu({
@@ -208,13 +220,16 @@
             } else {
                 var nn = Ext.apply({ id: Ext.id(), expanded: ttype=='where' }, n.attributes);
                 if( type!='value' ) nn.type = ttype+'_field';
-                nn.icon = type=='value' ? '/static/images/icons/search.png' : '/static/images/icons/field.png';
+                var icon = type=='value' ? '/static/images/icons/search.png' 
+                    : type=='sort' ? '/static/images/icons/arrow-down.gif' 
+                    : '/static/images/icons/field.png';
                 nn.leaf = ttype=='where' ? false : true;
                 var copy = new Ext.tree.TreeNode(nn);
                 if( ttype=='where_field' ) {
                 } else if( n.attributes.category ) {
                     copy.setText( String.format('{0}: {1}', n.attributes.category.name, n.attributes.name_field ) );
                 }
+                //copy.setIcon( icon );
                 //console.log( copy );
                 ev.dropNode = copy;
             }

@@ -372,7 +372,6 @@ method run( :$start=0, :$limit=undef, :$username=undef ) {
     my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
     
     my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta() );  # XXX should be by category, same id fields may step on each other
-
     my @selects = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) => 1 } _array($fields{select});
 
     my @where = grep { defined } map { 
@@ -406,7 +405,7 @@ method run( :$start=0, :$limit=undef, :$username=undef ) {
     if( my @categories = map { {'id_category' => $_->{id_category}} } _array($fields{categories}) ) {
         push @where, { '$or'=>\@categories };
     }
-    my @sort = map { $_->{id_field} => 1 } _array($fields{sort});
+    my @sort = map { $_->{id_field} => 0+($_->{sort_direction} // 1) } _array($fields{sort});
     
     my $find = @where ? { '$and'=>[ @where ] } : {};
     my $rs = mdb->topic->find($find);
@@ -429,14 +428,22 @@ method run( :$start=0, :$limit=undef, :$username=undef ) {
             #  get additional fields ?   
             #  TODO for sorting, do this before and save to report_results collection (capped?) 
             #       with query id and query ts, then sort
+            #_error "MT===$mt, K==$k";
             if( $mt =~ /ci|project|revision|user/ ) { 
                 $row{$k} = $scope_cis{$v} 
-                    // ( $scope_cis{$v} = [ mdb->master_doc->find({ mid=>mdb->in($v) },
-                        { _id=>0 })->all ] );
+                    // do{ 
+                        my @objs = mdb->master_doc->find({ mid=>mdb->in($v) },{ _id=>0 })->all;
+                        $scope_cis{$_->{mid}} = $_ for @objs; 
+                        \@objs;
+                        };
             } elsif( $mt =~ /release|topic/ ) { 
                 $row{$k} = $scope_topics{$v} 
-                    // ( $scope_topics{$v} = [ mdb->topic->find({ mid=>mdb->in($v) },
-                        { title=>1, mid=>1, is_changeset=>1, is_release=>1, category=>1, _id=>0 })->all ] );
+                    // do {
+                        my @objs = mdb->topic->find({ mid=>mdb->in($v) },
+                                { title=>1, mid=>1, is_changeset=>1, is_release=>1, category=>1, _id=>0 })->all;
+                        $scope_cis{$_->{mid}} = $_ for @objs; 
+                        \@objs;   
+                    };
             } elsif( $mt eq 'calendar' && ( my $cal = ref $row{$k} ? $row{$k} : undef ) ) { 
                 for my $slot ( keys %$cal ) {
                     $cal->{$slot}{$_} //= '' for qw(end_date plan_end_date start_date plan_start_date);
