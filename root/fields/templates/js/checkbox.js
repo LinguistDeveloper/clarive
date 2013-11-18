@@ -15,12 +15,13 @@ params:
     var data = params.topic_data;
     
     var checkbox = new Baseliner.CBox({
-        fieldLabel: _(meta.name_field),
         name: meta.id_field,
         checked: data && data[ meta.bd_field ]=='1'  ? true : false,
         default_value: false,
         disabled: meta ? meta.readonly : true,
         hidden: meta ? (meta.hidden ? meta.hidden : false): true,
+        anchor: meta.anchor || '100%',
+        width: meta.width || '100%',
         labelSeparator: '',
         hideLabel: true,
         boxLabel: _(meta.name_field),
@@ -28,5 +29,5 @@ params:
         style: 'margin-bottom: 15px'
     });
     
-    return checkbox
+    return [checkbox]
 })

@@ -119,8 +119,12 @@ sub update {
 
     my $class = ref $self;
     
-    # detect changed fields, in case its a new row then all data is changed
-    my $changed = +{ map { $_ => $data{$_} } grep { $self->{$_} ne $data{$_} } keys %data } ;
+    # detect changed fields, in case it's a new row then all data is changed
+    my $changed = +{ map { $_ => $data{$_} } grep { 
+        ( defined $self->{$_} && !defined $data{$_} ) 
+        || ( !defined $self->{$_} && defined $data{$_} ) 
+        || $self->{$_} ne $data{$_} 
+        } keys %data } ;
         
     # merge and recreate object
     my $d = { %$self, %data };  
