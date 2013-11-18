@@ -303,13 +303,13 @@ sub all_fields {
         children => [
             map {
                 {
-                    text     => _loc($_->{name_field}),
-                    icon     => '/static/images/icons/field-add.png',
-                    id_field => $_->{id_field},
+                    text      => _loc( $_->{name_field} ),
+                    icon      => '/static/images/icons/field-add.png',
+                    id_field  => $_->{id_field},
                     meta_type => $_->{meta_type},
-                    gridlet => $_->{gridlet},
-                    type     => 'select_field',
-                    leaf     => \1
+                    gridlet   => $_->{gridlet},
+                    type      => 'select_field',
+                    leaf      => \1,
                 }
             } sort { lc $a->{name_field} cmp lc $b->{name_field} } values %common_fields
         ],
@@ -377,7 +377,7 @@ sub selected_fields {
     return \%ret;
 }
 
-method run( :$start=0, :$limit=undef, :$username=undef ) {
+method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef ) {
     my $rows = $limit // $self->rows;
     my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
     
@@ -409,6 +409,11 @@ method run( :$start=0, :$limit=undef, :$username=undef ) {
         for my $field_project ( grep { $_->{meta_type} eq 'project' } values %meta ) {
             push @where, { $field_project->{id_field} => mdb->in(@ids_project) };  
         }
+    }
+    
+    if( length $query ) {
+        my @qmids = map { $_->{obj}{mid} } _array(mdb->topic->search( query=>$query, limit=>999999, project=>{ mid=>1 } )->{results});
+        push @where, { mid=>mdb->in(@qmids) };
     }
 
     # filter categories

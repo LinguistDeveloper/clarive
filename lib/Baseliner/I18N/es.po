@@ -1047,6 +1047,15 @@ msgstr "Pase %1 está actualmente en ejecución y no puede borrarse"
 msgid "My Searches"
 msgstr "Mis Búsquedas"
 
+msgid "Public"
+msgstr "Público"
+
+msgid "Private"
+msgstr "Privado"
+
+msgid "Rows"
+msgstr "Filas"
+
 msgid "Public Searches"
 msgstr "Búsquedas Públicas"
 
