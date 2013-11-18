@@ -27,7 +27,7 @@ sub report_list {
     
     my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta() );  # XXX should be by category, same id fields may step on each other
     my $mine = $self->my_searches({ username=>$p->{username}, meta=>\%meta });
-    my $public = $self->public_searches({ meta=>\%meta });
+    my $public = $self->public_searches({ meta=>\%meta, username=>$p->{username} });
     
     my @trees = (
             {
@@ -112,8 +112,17 @@ sub my_searches {
 sub public_searches {
     my ($self,$p) = @_;
     my @searches = $self->search_cis( permissions=>'public' ); 
+    my %user_categories = map {
+        $_->{id} => 1;
+    } Baseliner->model('Topic')->get_categories_permissions( username => $p->{username}, type => 'view' );
+    
     my @public;
     for my $folder ( @searches ){
+        my %fields = map { $_->{type}=>$_->{children} } _array( $folder->selected );
+        # check categories permissions
+        my @categories = map { $_->{id_category} } _array($fields{categories});
+        my @user_cats = grep { exists $user_categories{ $_ } } @categories;
+        next if @categories > @user_cats;  # user cannot see category, skip this search
         push @public,
             {
                 mid     => $folder->mid,
@@ -235,12 +244,13 @@ sub all_fields {
                     $_->{icon}='/static/images/icons/topic_one.png'; 
                     $_->{id_category}= delete $_->{id};
                     $_->{type}='category'; $_->{leaf}=\1; $_ } 
+                sort { $a->{name_field} cmp $b->{name_field} }
                 DB->BaliTopicCategories->hashref->all
             ]
         }
     );
     push @tree, (
-        { text=>_loc('Values'),
+        { text=>_loc('Filters'),
             leaf=>\0,
             expanded => \1,
             icon => '/static/images/icons/search.png',
