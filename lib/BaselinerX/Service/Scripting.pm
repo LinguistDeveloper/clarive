@@ -13,6 +13,7 @@ register 'service.scripting.local' => {
     name => 'Run a local script',
     form => '/forms/script_local.js',
     icon => $ICON_DEFAULT,
+    job_service  => 1,
     handler => \&run_local,
 };
 
@@ -20,6 +21,7 @@ register 'service.scripting.remote' => {
     name => 'Run a remote script',
     form => '/forms/script_remote.js',
     icon => $ICON_DEFAULT,
+    job_service  => 1,
     handler => \&run_remote,
 };
 
@@ -28,6 +30,7 @@ register 'service.scripting.remote_eval' => {
     form => '/forms/eval_remote.js',
     data => { server=>'', code=>'' },
     icon => $ICON_DEFAULT,
+    job_service  => 1,
     handler => \&run_eval,
 };
 
@@ -102,7 +105,7 @@ sub run_remote {
     my ($servers,$user,$home, $path,$args, $stdin, $output_error, $output_warn, $output_capture, $output_ok) = 
         @{ $config }{qw/server user home path args stdin output_error output_warn output_capture output_ok/};
     $args ||= [];
-    for my $server ( split /,/, $servers ) { 
+    for my $server ( ref $servers ? _array($servers) :  split /,/, $servers ) {
         $server = ci->new( $server ) unless ref $server;
         for my $hostname ( _array( $server->hostname ) ) {
             $log->info( _loc( 'STARTING remote script `%1` (%2)', $path . ' '. join(' ',_array($args)), $user . '@' . $hostname ), $config );
@@ -170,7 +173,7 @@ sub run_eval {
     
     my ($servers, $user, $code) = @{ $config }{qw/server user code/};
     my @rets;
-    for my $server ( split /,/, $servers ) {
+    for my $server ( ref $servers ? _array($servers) :  split /,/, $servers ) {
         $server = ci->new( $server ) unless ref $server;
         _log _loc "===========> RUNNING remote eval: %1\@%2", $user, $server->hostname ;
         

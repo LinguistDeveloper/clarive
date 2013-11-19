@@ -10,12 +10,14 @@ with 'Baseliner::Role::Service';
 register 'service.fileman.tar' => {
     name => 'Tar Local Files',
     form => '/forms/tar_local.js',
+    job_service  => 1,
     handler => \&run_tar,
 };
 
 register 'service.fileman.tar_nature' => {
     name => 'Tar Nature Files',
     form => '/forms/tar_local_nature.js',
+    job_service  => 1,
     handler => \&run_tar_nature,
 };
 
@@ -23,6 +25,7 @@ register 'service.fileman.ship' => {
     name => 'Ship a File Remotely',
     form => '/forms/ship_remote.js',
     icon => '/static/images/icons/ship.gif',
+    job_service  => 1,
     handler => \&run_ship,
 };
 
@@ -30,6 +33,7 @@ register 'service.fileman.retrieve' => {
     name => 'Retrieve a Remote File',
     icon => '/static/images/icons/retrieve.gif',
     form => '/forms/retrieve_remote.js',
+    job_service  => 1,
     handler => \&run_retrieve,
 };
 
@@ -37,6 +41,7 @@ register 'service.fileman.store' => {
     name => 'Store Local File',
     form => '/forms/store_file.js',
     icon => '/static/images/icons/drive_disk.png',
+    job_service  => 1,
     handler => \&run_store,
 };
 
@@ -44,17 +49,29 @@ register 'service.fileman.write' => {
     name => 'Write Local File',
     form => '/forms/write_file.js',
     icon => '/static/images/icons/drive_edit.png',
+    job_service  => 1,
     handler => \&run_write,
 };
 
 register 'service.fileman.rm' => {
     name => 'Delete Local File',
+    icon => '/static/images/icons/drive_delete.png',
+    job_service  => 1,
     handler => \&run_rm,
 };
 
 register 'service.fileman.rmtree' => {
     name => 'Delete Local Directory',
+    icon => '/static/images/icons/drive_delete.png',
+    job_service  => 1,
     handler => \&run_rmtree,
+};
+
+register 'service.fileman.parse_config' => {
+    name => 'Parse a Config File',
+    icon => '/static/images/icons/drive_go.png',
+    job_service  => 1,
+    handler => \&run_parse_config,
 };
 
 sub run_tar {
@@ -158,7 +175,8 @@ sub run_ship {
     
     _fail _loc "Server not configured" unless length $config->{server};
 
-    for my $server ( ref $config->{server} ? _array($config->{server}) : split /,/, $config->{server} ) {
+    my $servers = $config->{server};
+    for my $server ( ref $servers ? _array($servers) : split /,/, $servers ) {
         $server = ci->new( $server ) unless ref $server;
         $remote_path = $server->parse_vars( "$remote_path" );
         my $server_str = "$user\@".$server->name;
@@ -286,7 +304,8 @@ sub run_retrieve {
     my $local  = $config->{local_path} // _fail 'Missing parameter local_file';
     my $user   = $config->{user};
 
-    for my $server ( split /,/, $config->{server} ) {
+    my $servers = $config->{server};
+    for my $server ( ref $servers ? _array($servers) : split /,/, $servers ) {
         $server = ci->new( $server ) unless ref $server;
         my $server_str = "$user\@".$server->name;
         _debug "Connecting to server " . $server_str;
@@ -337,6 +356,34 @@ sub run_rmtree {
     } else {
         _fail( _loc('Error deleting directory `%1`: %2', $f, $!) ); 
     }
+}
+
+sub run_parse_config {
+    my ($self, $c, $config ) = @_;
+
+    my $job   = $c->stash->{job};
+    my $log   = $job->logger;
+    my $stash = $c->stash;
+    my $config_file = $config->{config_file};
+    my $root_key    = $config->{root_key};
+    my $fail_if_not_found  = $config->{fail_if_not_found};
+    
+    if( !-e $config_file ) {
+        my $msg = _loc( 'Config file not found in `%1`', $config_file );
+        if( $fail_if_not_found ) {
+            _fail $msg; 
+        } else {
+            _warn $msg;
+        }
+    }
+    
+    my $body = _file($config_file)->slurp;
+    if( !length $body ) {
+        _fail _loc('Config file is empty: `%1`', $config_file);
+        return;
+    }
+    my $vars = _load( $body );
+    return $vars;
 }
 
 1;

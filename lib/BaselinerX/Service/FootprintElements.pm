@@ -12,6 +12,7 @@ with 'Baseliner::Role::Service';
 ## COMPILA 
 register 'service.job.footprint' => {
     name    => _loc( 'Footprint elements' ),
+    job_service  => 1,
     handler => sub {
         my ( $self, $c ) = @_;
 

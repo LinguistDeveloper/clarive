@@ -9,16 +9,19 @@ with 'Baseliner::Role::Service';
 
 register 'service.changeset.items' => {
     name    => 'Load Job Items into Stash',
+    job_service  => 1,
     handler => \&job_items,
 };
 
 register 'service.changeset.checkout' => {
     name    => 'Checkout Job Items',
+    job_service  => 1,
     handler => \&checkout,
 };
 
 register 'service.changeset.checkout.bl' => {
     name    => 'Checkout Job Baseline',
+    job_service  => 1,
     handler => \&checkout_bl,
 };
 
@@ -26,6 +29,7 @@ register 'service.changeset.natures' => {
     name    => 'Load Nature Items',
     icon    => '/static/images/icons/nature.gif',
     form    => '/forms/nature_items.js',
+    job_service  => 1,
     handler => \&nature_items,
 };
 
@@ -33,6 +37,7 @@ register 'service.changeset.update' => {
     name    => 'Update Changesets',
     icon    => '/static/images/icons/topic.png',
     form    => '/forms/changeset_update.js',
+    job_service  => 1,
     handler => \&changeset_update,
 };
 
@@ -288,6 +293,7 @@ register 'service.approval.request' => {
     name    => 'Request Approval',
     icon => '/static/images/icons/user_delete.gif', 
     form => '/forms/approval_request.js',
+    job_service  => 1,
     handler => \&request_approval,
 };
 
@@ -325,6 +331,10 @@ sub request_approval {
     };
     1;
 }
+
+1;
+
+__END__
 
 ##########################################################################
 ########### DEPRECATED:

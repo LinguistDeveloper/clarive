@@ -311,8 +311,12 @@
         ]});
         var btn_save_meta = new Ext.Button({ text:_('Save'), icon:'/static/images/icons/save.png', handler:function(){
             node.attributes = de.getData();
+            if( !node.attributes.data ) node.attributes.data={}; 
             var dk = data_key.getValue(); 
-            if( dk!=undefined ) { node.attributes.data_key = dk; node.attributes.data.data_key=dk }
+            if( dk!=undefined ) { 
+                node.attributes.data_key = dk; 
+                node.attributes.data.data_key=dk 
+            }
             // attribute save
             node.attributes.active = enabled.checked ? 1 : 0;
             node.attributes.disabled = enabled.checked ? false : true;

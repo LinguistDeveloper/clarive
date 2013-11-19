@@ -269,15 +269,16 @@ sub palette : Local {
     push @tree, {
         id=>$cnt++,
         leaf=>\0,
-        text=>_loc('Services'),
+        text=>_loc('Job Services'),
+        icon => '/static/images/icons/job.png',
         draggable => \0,
         expanded => \1,
         children=> [ 
           sort { uc $a->{text} cmp uc $b->{text} }
           grep { !$query || join(',', values %$_) =~ $query }
           map {
-            my $service_key = $_;
-            my $n = $c->registry->get( $service_key );
+            my $n = $_;
+            my $service_key = $n->{key};
             +{
                 isTarget => \0,
                 leaf=>\1,
@@ -286,7 +287,45 @@ sub palette : Local {
                 palette => \1,
                 text=>$n->{name} // $service_key,
             }
-        } @services ]
+        } 
+        grep {
+            $_->{job_service}
+        }
+        map { 
+            $c->registry->get( $_ );
+        }
+        @services ]
+    };
+
+    push @tree, {
+        id=>$cnt++,
+        leaf=>\0,
+        text=>_loc('Generic Services'),
+        icon => '/static/images/icons/service.png',
+        draggable => \0,
+        expanded => \0,
+        children=> [ 
+          sort { uc $a->{text} cmp uc $b->{text} }
+          grep { !$query || join(',', values %$_) =~ $query }
+          map {
+            my $n = $_;
+            my $service_key = $n->{key};
+            +{
+                isTarget => \0,
+                leaf=>\1,
+                key => $service_key,
+                icon => $n->{icon},
+                palette => \1,
+                text=>$n->{name} // $service_key,
+            }
+        } 
+        grep {
+            ! $_->{job_service}
+        }
+        map { 
+            $c->registry->get( $_ );
+        }
+        @services ]
     };
 
     my @rules = DB->BaliRule->search(undef,{ order_by=>[ { -asc=>'rule_seq' }, { -desc=>'id' }] })->hashref->all;
@@ -294,6 +333,7 @@ sub palette : Local {
         id=>$cnt++,
         leaf=>\0,
         text=>_loc('Rules'),
+        icon => '/static/images/icons/rule.png',
         draggable => \0,
         expanded => \1,
         children=> [ 

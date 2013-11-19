@@ -25,6 +25,7 @@ has scheduled     => ( is => 'rw', isa => 'Bool' );                             
 has log          => ( is => 'rw', isa => 'Object' );
 has show_in_menu => ( is => 'rw', isa => 'Bool' );
 has daemon       => ( is => 'rw', isa => 'Bool', default => 0 );
+has job_service  => ( is => 'rw', isa => 'Bool', default => 0 );  # service is meant to be used in a job
 
 has quiet => ( is => 'rw', isa => 'Bool', default => 0 );
 has type  => ( is => 'rw', isa => 'Str',  default => 'std' );

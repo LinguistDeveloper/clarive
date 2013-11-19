@@ -13,6 +13,7 @@ with 'Baseliner::Role::Service';
 
 register 'service.job.init' => { 
     name => 'Init Job Home',
+    job_service  => 1,
     handler => \&job_init, 
 };
 

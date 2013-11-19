@@ -34,6 +34,7 @@ delete the whole file.
 register 'service.sed' => {
     name => 'Replace Strings',
     form => '/forms/sed.js',
+    job_service  => 1,
     handler => \&run 
 };
 

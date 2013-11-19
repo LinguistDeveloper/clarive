@@ -10,6 +10,7 @@ with 'Baseliner::Role::Service';
 
 register 'service.job.pause' => { 
     name => 'Pause a Job', 
+    job_service  => 1,
     form => '/forms/pause_job.js',
     handler => \&run_pause, };
 

@@ -1044,6 +1044,12 @@ msgstr "¿Está seguro de que quiere borrar el pase"
 msgid "Job %1 is currently running and cannot be deleted"
 msgstr "Pase %1 está actualmente en ejecución y no puede borrarse"
 
+msgid "Generic Services"
+msgstr "Servicios Genéricos"
+
+msgid "Job Services"
+msgstr "Servicios de Job"
+
 msgid "My Searches"
 msgstr "Mis Búsquedas"
 
@@ -1055,6 +1061,12 @@ msgstr "Privado"
 
 msgid "Rows"
 msgstr "Filas"
+
+msgid "Ascending"
+msgstr "Ascendente"
+
+msgid "Descending"
+msgstr "Descendente"
 
 msgid "Public Searches"
 msgstr "Búsquedas Públicas"
