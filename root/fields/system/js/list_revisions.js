@@ -33,7 +33,6 @@ params:
         readOnly:  meta && meta.readonly ? meta.readonly : false,
         //fieldLabel: _(meta.name_field),
         hideHeaders: true,
-        style: 'margin-bottom: 15px',
         viewConfig: {
             headersDisabled: true,
             enableRowBody: true,
