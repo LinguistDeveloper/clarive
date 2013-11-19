@@ -1671,7 +1671,7 @@ Ext.tree.TreeLoader.override({
     }
 });
 
-Baseliner.print_current_tab = function(){
+Baseliner.print_current_tab = function(share){
     var tabpanel = Ext.getCmp('main-panel');
     var comp = tabpanel.getActiveTab();
     var title = comp.title;
@@ -1679,13 +1679,13 @@ Baseliner.print_current_tab = function(){
         return Ext.isFunction(i.getGridEl) ? Baseliner.grid_scroller(i) : i;
     }
     if( Ext.isFunction( comp.print_hook ) ) {
-        Baseliner.print(comp.print_hook());
+        Baseliner.print(comp.print_hook(), share);
     } else if( Ext.isObject( comp.print_hook ) ) {
-        Baseliner.print(comp.print_hook);
+        Baseliner.print(comp.print_hook, share);
     } else {
         comp = grid_trans(comp);
         var id = comp.id;
-        Baseliner.print({ title: title, id: id });
+        Baseliner.print({ title: title, id: id }, share);
     }
 }
 
@@ -1693,7 +1693,7 @@ Baseliner.print_current_tab = function(){
  *  Baseliner.print({ title: title, id: el.id });
  *
  */
-Baseliner.print = function(opts) {
+Baseliner.print = function(opts, share) {
     function add_css(doc,url){ 
         var boot = doc.createElement( 'link' );
         boot.rel = 'stylesheet';
@@ -1706,6 +1706,19 @@ Baseliner.print = function(opts) {
             var head = doc.createElement('head');
             doc.appendChild( head );
             head.appendChild( boot );
+        }
+    }
+    var add_script = function(doc,url){
+        var obj = dw.createElement( 'script' );
+        obj.src = url;
+        obj.type = 'text/javascript';
+        if( doc.head ) {
+            doc.head.appendChild( obj );
+        } else {
+            // needed by IE apparently
+            var head = doc.createElement('head');
+            doc.appendChild( head );
+            head.appendChild( obj );
         }
     }
 
@@ -1721,13 +1734,13 @@ Baseliner.print = function(opts) {
     dw.write( html );
     dw.close();
     dw.title = title;
+    //add_script( dw, '/site/graph.js' );
     add_css( dw, '/site/960-Grid-System/code/css/960_24_col.css' );
     add_css( dw, '/site/boot.css' );
     add_css( dw, '/static/ext/resources/css/ext-all.css');
     add_css( dw, '/static/ext/examples/ux/css/ux-all.css');
-    add_css( dw, '/site/site.css' );
+    add_css( dw, '/static/site.css' );
     add_css( dw, '/static/gritter/css/jquery.gritter.css' );
-    add_css( dw, '/static/themes/bde/style.css' );
 
     add_css( dw, "/static/datepickerplus/datepickerplus.css" );
     add_css( dw, "/static/pagedown/pagedown.css" );
@@ -1759,7 +1772,7 @@ Baseliner.print = function(opts) {
         opts.cb( ww, dw );
     }
     
-    if( opts.share ) {
+    if( share ) {
         var html_final = $(dw).contents().html();
         ww.close();
         Baseliner.ajax_json('/share_html', { title: title, html: html_final }, function(res){
