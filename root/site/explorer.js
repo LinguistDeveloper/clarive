@@ -1,6 +1,7 @@
 Baseliner.user_can_edit_ci = <% $c->model('Permissions')->user_has_any_action( action => 'action.ci.%', username=>$c->username ) ? 'true' : 'false' %>;
 Baseliner.user_can_projects = <% $c->model('Permissions')->user_projects( username=>$c->username ) ? 'true' : 'false' %>;
 Baseliner.user_can_workspace = <% $c->model('Permissions')->user_has_any_action( action=>'action.home.view_workspace', username=>$c->username ) ? 'true' : 'false' %>;
+Baseliner.user_can_releases = <% $c->model('Permissions')->user_has_any_action( action=>'action.home.view_releases', username=>$c->username ) ? 'true' : 'false' %>;
 Baseliner.user_can_reports = <% $c->model('Permissions')->user_has_any_action( action=>'action.reports.view', username=>$c->username ) ? 'true' : 'false' %>;
 
 
@@ -218,7 +219,12 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
                 var topic = n.attributes.topic_name;
                 var title = Baseliner.topic_title( topic.mid, _(topic.category_name), topic.category_color );
                 Baseliner.show_topic( topic.mid, title, { topic_mid: topic.mid, title: title, _parent_grid: undefined } );
+            } else if(n.attributes.category_name) {
+                var category = n.attributes.category_name;
+                var title = Baseliner.category_title( category.category_id, category.category_name, category.category_color );
+                Baseliner.show_category( category.category_id, title, { category_id: category.category_id, title: title } );
             }
+
             else Baseliner.add_tabcomp( c.url, _(c.title), params );
             
         } else if( c.type == 'html' ) {
@@ -273,8 +279,15 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
 
                     n.setText( String.format( '{0}<b>{1} #{2}</b>: {3}', span, tn.category_name, tn.mid, n.text ) );
                     n.ui = new Baseliner.TreeMultiTextNode( n );  // DD support for the whole node
+                } else if(n.attributes.category_name ) {
+                    var tn = n.attributes.category_name;
+                    n.setIconCls('no-icon');  // no icon on this node
 
+                    var span = String.format( Baseliner.tree_topic_style, tn.category_color );
+
+                    n.setText( String.format( '{0}<b>{1}</b>', span, tn.category_name ) );
                 }
+
             });
         });
     },
@@ -534,6 +547,15 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             self.getLayout().setActiveItem( self.$tree_ci );
         };
         
+        var show_releases = function() {
+            if( !self.$tree_releases ) {
+                self.$tree_releases = new Baseliner.ExplorerTree({ dataUrl : '/lifecycle/tree', baseParams: { show_releases: true } });
+                self.add( self.$tree_releases );
+                self.$tree_releases.on('favorite_added', function() { self.$tree_favorites.refresh() } );
+            }
+            self.getLayout().setActiveItem( self.$tree_releases );
+        };
+        
         var show_reports = function() {
             if( !self.$tree_reports ) {
                 self.$tree_reports = new Baseliner.ExplorerTree({ dataUrl : '/ci/report/report_list', baseParams: { show_reports: true } });
@@ -612,6 +634,20 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             listeners: Baseliner.gen_btn_listener()
         });
         
+        var button_releases = new Ext.Button({
+            cls: 'x-btn-icon',
+            icon: '/static/images/icons/release.gif',
+            handler: show_releases,
+            tooltip: _('Releases'),
+            toggleGroup: 'explorer-card',
+            pressed: false,
+            allowDepress: false,
+            hidden: ! Baseliner.user_can_releases,
+            enableToggle: true,
+            refresh_all: function(){ if( self.$tree_releases ) self.$tree_releases.refresh_all() },
+            listeners: Baseliner.gen_btn_listener()
+        });        
+
         var button_search_folders = new Ext.Button({
             cls: 'x-btn-icon',
             icon: '/static/images/icons/search_grey.png',
@@ -708,6 +744,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 button_favorites,
                 button_workspaces,
                 button_ci,
+                button_releases,
                 button_search_folders,
                 '->',
                 button_menu,

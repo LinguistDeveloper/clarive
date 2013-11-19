@@ -81,6 +81,35 @@ sub tree_project_releases : Local {
     $c->forward( 'View::JSON' );
 }
 
+sub category_contents : Local {
+    my ($self,$c) = @_;
+    my %seen = ();
+    my @rels = grep {!$seen{$_->{mid}}++} DB->BaliTopic->search( { id_category => $c->req->params->{category_id} },{ prefetch=>['categories'] })->hashref->all;
+    my @menu_related = $self->menu_related();
+    my @tree = map {
+       +{
+            text => $_->{title},
+            icon => '/static/images/icons/release.png',
+            url  => '/lifecycle/topic_contents',
+            topic_name => {
+                mid            => $_->{mid},
+                category_color => $_->{categories}{color},
+                category_name  => $_->{categories}{name},
+                is_release     => 1,
+            },
+            data => {
+                topic_mid    => $_->{mid},
+                click       => $self->click_for_topic(  $_->{categories}{name}, $_->{mid} ),
+            },
+            menu => \@menu_related
+       }
+    } @rels;
+    #$c->stash->{release_only} = 1;
+    #$c->forward('tree_topics_project');
+    $c->stash->{ json } = \@tree;
+    $c->forward( 'View::JSON' );
+}
+
 sub tree_project_jobs : Local {
     my ($self,$c) = @_;
     my $id_project = $c->req->params->{id_project} ;
@@ -194,6 +223,31 @@ sub topic_contents : Local {
     $c->forward( 'View::JSON' );
 }
 
+sub tree_releases : Local {
+    my ($self,$c) = @_;
+    my %seen = ();
+    my @rels = DB->BaliTopicCategories->search( {is_release => 1} )->hashref->all;
+    my @tree = map {
+       +{
+            text => $_->{name},
+            icon => '/static/images/icons/release.png',
+            url  => '/lifecycle/category_contents?category_id='.$_->{id},
+            category_name => {
+                category_id => $_->{id},
+                category_color => $_->{color},
+                category_name  => $_->{name},
+            },
+            data => {
+                category_id    => $_->{id},
+                click       => $self->click_category(  $_->{name}, $_->{id} ),
+            }
+       }
+    } @rels;
+    #$c->stash->{release_only} = 1;
+    #$c->forward('tree_topics_project');
+    $c->stash->{ json } = \@tree;
+    $c->forward( 'View::JSON' );
+} 
 
 sub tree_projects : Local {
     my ( $self, $c ) = @_;
@@ -752,7 +806,9 @@ sub tree : Local {
     if( $p->{favorites} && $p->{favorites} eq 'true' ) {
         $c->forward( 'tree_favorites' );
     } elsif( $p->{show_workspaces} && $p->{show_workspaces} eq 'true' ) {
-        $c->forward( 'tree_workspaces' );
+        $c->forward( 'tree_workspaces' );    
+    } elsif( $p->{show_releases} && $p->{show_releases} eq 'true' ) {
+        $c->forward( 'tree_releases' );
     } elsif( $p->{show_ci} && $p->{show_ci} eq 'true' ) {
         $c->forward( '/ci/list' );
     } else {
@@ -923,6 +979,16 @@ sub click_for_topic {
         type  => 'comp',
         icon  => '/static/images/icons/topic.png',
         title => sprintf( "%s #%d", _loc($catname), $mid ),
+    };
+}
+
+sub click_category {
+    my ($self, $catname, $id ) = @_;
+    +{ 
+        url   => sprintf("/topic/grid?category_id=".$id),
+        type  => 'comp',
+        icon  => '/static/images/icons/topic.png',
+        title => sprintf( "%s #%d", _loc($catname), $id ),
     };
 }
 
