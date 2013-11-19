@@ -483,6 +483,8 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef ) {
         $row{category_color} = $row{category}{color};
         $row{category_name} = $row{category}{name};
         $row{category_id} = $row{category}{id};
+        $row{status_new} = $row{category_status}{name};
+        $row{category_status_name} = $row{category_status}{name};
         \%row;
     } @data; 
     #_debug \@topics;

@@ -622,7 +622,7 @@
                 arr.push(xx);
             } catch(e) {};
         });
-        return arr.join('\n');
+        return arr.join('<br>');
     };
     var render_date = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( !value ) return '';
@@ -649,7 +649,7 @@
                 is_release: topic.is_release
             }) ); 
         });
-        return arr.join("\n");
+        return arr.join("<br>");
     }
     var shorten_title = function(t){
         if( !t || t.length==0 ) {
