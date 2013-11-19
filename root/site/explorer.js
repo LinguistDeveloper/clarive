@@ -636,7 +636,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
         
         var button_releases = new Ext.Button({
             cls: 'x-btn-icon',
-            icon: '/static/images/icons/release.gif',
+            icon: '/static/images/icons/release_explorer.png',
             handler: show_releases,
             tooltip: _('Releases'),
             toggleGroup: 'explorer-card',
@@ -741,10 +741,10 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                     }
                 },
                 button_projects,
+                button_releases,
                 button_favorites,
                 button_workspaces,
                 button_ci,
-                button_releases,
                 button_search_folders,
                 '->',
                 button_menu,
