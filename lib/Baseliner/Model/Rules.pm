@@ -724,7 +724,7 @@ register 'statement.project.block' => {
 register 'statement.perl.eval' => {
     text => 'EVAL', data => { code=>'' },
     form => '/forms/stmt_eval.js', 
-    icon => '/static/images/circular/cog.png', 
+    icon => '/static/images/icons/cog.png', 
     dsl => sub { 
         my ($self, $n, %p ) = @_;
         sprintf(q{
@@ -740,7 +740,7 @@ register 'statement.perl.eval' => {
 
 register 'statement.perl.do' => {
     text => 'DO', data => { code=>'' },
-    icon => '/static/images/circular/cog.png', 
+    icon => '/static/images/icons/cog.png', 
     form => '/forms/stmt_eval.js', 
     dsl => sub { 
         my ($self, $n, %p ) = @_;
@@ -755,7 +755,7 @@ register 'statement.perl.do' => {
 register 'statement.perl.for' => {
     text => 'FOR eval', data => { varname=>'x', code=>'()' },
     type => 'loop',
-    icon => '/static/images/circular/cog.png', 
+    icon => '/static/images/icons/cog.png', 
     form => '/forms/stmt_for.js', 
     dsl => sub { 
         my ($self, $n, %p ) = @_;
@@ -790,7 +790,7 @@ register 'statement.js.code' => {
 register 'statement.perl.code' => {
     text => 'CODE', data => { code=>'' },
     type => 'loop',
-    icon => '/static/images/circular/cog.png',
+    icon => '/static/images/icons/cog.png',
     holds_children => 0,
     form => '/forms/stmt_eval.js', 
     dsl => sub { 
@@ -882,7 +882,7 @@ register 'statement.if.rollback' => {
 
 register 'statement.include' => {
     text => 'INCLUDE rule',
-    icon => '/static/images/circular/cog.png', 
+    icon => '/static/images/icons/cog.png', 
     data => { id_rule=>'', },
     dsl => sub { 
         my ($self, $n , %p) = @_;

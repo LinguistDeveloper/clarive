@@ -191,6 +191,7 @@ sub grid : Local {
         $_->{event_name} = $c->registry->get( $_->{rule_event} )->name if $_->{rule_event};
         $_
     } @rules;
+    @rules = grep { join(',',values %$_) =~ qr/$p->{query}/ } @rules if length $p->{query}; 
     $c->stash->{json} = { totalCount=>scalar(@rules), data => \@rules };
     $c->forward("View::JSON");
 }
@@ -377,7 +378,15 @@ sub stmts_save : Local {
             return if $p->{ignore_dsl_errors};
             _fail _loc "Error testing DSL build: %1", shift(); 
         };
-        DB->BaliRule->find($id_rule)->update({ rule_tree=>$p->{stmts} });
+        my $row = DB->BaliRule->find($id_rule);
+        $row->update({ rule_tree=>$p->{stmts} });
+        # now, version
+        # check if collection exists
+        if( ! mdb->collection('system.namespaces')->find({ name=>qr/rule_version/ })->count ) {
+            mdb->create_capped( 'rule_version' );
+        }
+        mdb->rule_version->insert({ $row->get_columns, ts=>mdb->ts, username=>$c->username, id_rule=>$id_rule, rule_tree=>$p->{stmts} });
+        
         $c->stash->{json} = { success=>\1, msg => _loc('Rule statements saved ok') };
     } catch {
         my $err = shift;

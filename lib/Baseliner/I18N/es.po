@@ -1050,6 +1050,12 @@ msgstr "Servicios Genéricos"
 msgid "Job Services"
 msgstr "Servicios de Job"
 
+msgid "Expand All"
+msgstr "Expandir Todo"
+
+msgid "Collapse All"
+msgstr "Colapsar Todo"
+
 msgid "My Searches"
 msgstr "Mis Búsquedas"
 
