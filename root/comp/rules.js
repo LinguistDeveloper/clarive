@@ -519,7 +519,9 @@
             tbar: [ 
                 btn_save_tree,
                 btn_refresh_tree,
-                { xtype:'button', text: _('DSL'), icon:'/static/images/icons/edit.png', handler: function() { rule_tree.rule_dsl() } }
+                { xtype:'button', text: _('DSL'), icon:'/static/images/icons/edit.png', handler: function() { rule_tree.rule_dsl() } },
+                '->',
+                { xtype:'button', icon:'/static/images/icons/html.png', handler: function() { rule_tree.view_docs() } }
             ],
             root: { 
                 text: String.format('<strong>{0}</strong>', _('Start: %1', event_name || short_name) ), 
@@ -604,6 +606,52 @@
                 }
             });
         };
+        
+        // ========= rule documentation 
+        var md_converter = new Markdown.Converter();
+        var doc_gen = function(node,depth,doc){
+            if( depth==undefined ) depth=0
+            if( doc==undefined ) doc=[];
+            node.eachChild(function(n){
+                var attr = n.attributes;
+                var note_html = attr.note!=undefined ? md_converter.makeHtml(attr.note) : _('no info');
+                var rf = attr.run_forward, rb = attr.run_rollback;
+                doc.push({ text:n.text, 
+                    depth:depth, 
+                    icon: attr.icon,
+                    run_mode: rf && !rb ? _('NO ROLLBACK') 
+                        : !rf && rb ? _('ROLLBACK')
+                        : rf===false && rb===false ? _('NO RUN') : '',
+                    disabled: attr.disabled,
+                    key:attr.key, 
+                    name: attr.name||attr.text, note: note_html });
+                doc_gen(n,depth+1,doc);
+            });
+        }
+        var doc_title = function(){/*
+            <h1>[%= name %]</h1>
+        */}.tmpl();
+        var doc_tmpl = function(){/*
+            <div style="padding-left: [%= depth * 24 %]px">
+            <h3 class="rule" style="text-decoration: [%= disabled ? 'line-through' : 'none' %]">
+                <img style="float: left" src="[%= icon %]"> [%= text %]
+            [% if( run_mode ) { %]<span class="badge">[%= run_mode %]</span>[% } %]
+            </h3>
+            <small class="rule" style="color:#999">[%= name %] - [%= key %]</small>
+            <p>[%= note %]</p>
+            </div>
+        */}.tmpl();
+        rule_tree.view_docs = function(from,depth,doc){
+            var root = from || rule_tree.root;
+            var doc = [];
+            doc_gen(root,0,doc);
+            var html = [ doc_title({ name: Ext.util.Format.capitalize(name) }) ];
+            Ext.each( doc, function(d){
+                html.push( doc_tmpl(d) ); 
+            });
+            Baseliner.print({ share:true, title: name, html: '<div id="boot">'+html.join('')+'</div>' });
+        };
+
         var tab = tabpanel.add( rule_tree ); 
         tab.on('beforeclose', function(tree){
             if( tree.is_dirty ) {
