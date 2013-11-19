@@ -1691,12 +1691,14 @@ Baseliner.print = function(opts) {
     }
 
     var title = opts.title || _('Print');
-    var el = opts.el || Ext.get(opts.id).dom;
     
     var ww = window.open('about:blank', '_blank'); //, 'resizable=yes, scrollbars=yes' );
     var dw = ww.document;
-    //dw.write( style_html( el.innerHTML ));
-    var html = el.innerHTML;
+    var html = opts.html;
+    if( html == undefined ) {
+        var el = opts.el || Ext.get(opts.id).dom;
+        html = el.innerHTML;
+    }
     dw.write( html );
     dw.close();
     dw.title = title;
@@ -1736,6 +1738,14 @@ Baseliner.print = function(opts) {
     
     if( opts.cb ) {
         opts.cb( ww, dw );
+    }
+    
+    if( opts.share ) {
+        var html_final = $(dw).contents().html();
+        ww.close();
+        Baseliner.ajax_json('/share_html', { title: title, html: html_final }, function(res){
+            window.open( res.url, title );
+        });
     }
     
     // ww.print(); // needs to be called after all styles are loaded

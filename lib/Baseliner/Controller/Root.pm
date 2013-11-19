@@ -118,6 +118,7 @@ sub auto : Private {
     return 1 if $path eq 'logoff';
     return 1 if $path =~ /(^site\/)|(^login)|(^auth)/;
     return 1 if $path =~ /\.(css)$/;
+    return 1 if $path =~ /^shared\//;
 
     # sessionid param?
     my $sid = $c->req->params->{sessionid} // $c->req->headers->{sessionid};
@@ -431,6 +432,33 @@ sub cache_clear : Local {
     my ($self,$c) = @_; 
     _fail 'No permission' unless $c->has_action('action.development.cache_clear');
     $c->cache_clear;
+}
+
+sub share_html : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    $c->stash->{json} = try {
+        my $id = $p->{url} // Util->_md5( rand(99999) + _nowstamp );
+        # check if collection exists
+        if( ! mdb->collection('system.namespaces')->find({ name=>qr/shared_html/ })->count ) {
+            mdb->create_capped( 'shared_html' );
+        }
+        mdb->shared_html->insert({ _id=>$id, html=>$p->{html}, 
+                content_type => $p->{content_type} || 'text/html',
+                title=>$p->{title}, username=>$c->username });
+        { success=>\1, msg=>'ok', url=>'/shared/'.$id };
+    } catch {
+        { success=>\0, msg=>"" . shift() };
+    };
+    $c->forward('View::JSON');
+}
+
+sub shared : Local {
+    my ( $self, $c, @id ) = @_;
+    _debug \@id;
+    my $doc = mdb->shared_html->find_one({ _id=>join('/',@id) });
+    $c->res->content_type( $doc->{content_type} || 'text/html' );
+    $c->res->body( $doc->{html} );
 }
 
 =head2 end
