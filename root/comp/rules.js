@@ -428,21 +428,34 @@
             var json = Ext.util.JSON.encode( stmts );
             btn_save_tree.disable();
             btn_refresh_tree.disable();
-            Baseliner.ajaxEval( '/rule/stmts_save', { id_rule: id_rule, stmts: json }, function(res) {
-                if( btn_save_tree ) btn_save_tree.enable();
-                if( btn_refresh_tree ) btn_refresh_tree.enable();
-                if( res.success ) {
-                    rule_tree.is_dirty = false;
-                    Baseliner.message( _('Rule'), res.msg );
-                    if( opt.callback ) {
-                        opt.callback( res );
+            var save_action = function(opts){
+                if( !opts ) opts={};
+                var args = { id_rule: id_rule, stmts: json };
+                Ext.apply(args, opts);
+                Baseliner.ajaxEval( '/rule/stmts_save', args, function(res) {
+                    if( btn_save_tree ) btn_save_tree.enable();
+                    if( btn_refresh_tree ) btn_refresh_tree.enable();
+                    if( res.success ) {
+                        rule_tree.is_dirty = false;
+                        Baseliner.message( _('Rule'), res.msg );
+                        if( opt.callback ) {
+                            opt.callback( res );
+                        }
                     }
-                }
-            },function(res){
-                if( btn_save_tree ) btn_save_tree.enable();
-                if( btn_refresh_tree ) btn_refresh_tree.enable();
-                Baseliner.error( _('Error saving rule'), res.msg );
-            });
+                },function(res){
+                    if( btn_save_tree ) btn_save_tree.enable();
+                    if( btn_refresh_tree ) btn_refresh_tree.enable();
+                    if( res.error_checking_dsl ) {
+                        Baseliner.confirm( _('DSL validation failed, save it anyway? Error: %1', res.msg ), function(){
+                            save_action({ ignore_dsl_errors: 1 }); // repeat    
+                        });
+                    } else {
+                        Baseliner.error( _('Error saving rule'), res.msg );
+                    }
+                });
+            };
+            // ignore dsl errors if the rule is independent
+            save_action({ ignore_dsl_errors: rule_type=='independent' ? 1 : 0 });
         };
         var rule_load_do = function(btn){
             btn.disable();

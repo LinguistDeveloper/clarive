@@ -332,7 +332,7 @@
         // find current columns
         var cfg = grid_topics.getColumnModel().config;
         
-        if( ! args.store_data ) { 
+        if( !args.store_data ) { 
             var row=0, col=0;
             var gv = grid_topics.getView();
             for( var row=0; row<9999; row++ ) {
@@ -343,8 +343,8 @@
                     if( cfg[col].hidden || cfg[col]._checker ) continue; 
                     var cell = gv.getCell(row,col); 
                     if( !cell ) break;
-                    console.log( cell.innerHTML );
-                    d[ cfg[col].dataIndex ] = cell.innerHTML;
+                    //console.log( cell.innerHTML );
+                    d[ cfg[col].dataIndex ] = args.no_html ? $(cell.innerHTML).text() : cell.innerHTML;
                 }
                 data.rows.push( d ); 
             }
@@ -390,7 +390,7 @@
         icon: '/static/images/icons/yaml.png',
         text: _('YAML'),
         handler: function() {
-            form_report_submit({ store_data: true, url: '/topic/report_yaml' });
+            form_report_submit({ no_html: true, url: '/topic/report_yaml' });
         }
     };
 
@@ -398,7 +398,7 @@
         icon: '/static/images/icons/csv.png',
         text: _('CSV'),
         handler: function() {
-            form_report_submit({ store_data: true, url: '/topic/report_csv', target: 'FrameDownload' });
+            form_report_submit({ no_html: true, url: '/topic/report_csv', target: 'FrameDownload' });
         }
     };
 

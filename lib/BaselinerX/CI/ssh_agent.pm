@@ -57,13 +57,14 @@ sub rmpath {
     }
 }
 
-sub chmod {
-    my $self = shift;
-    if( $self->os eq 'Win32' ) {
-        _throw 'Unimplemented';
-    } else {
-        $self->execute( 'chmod',  @_ );
-    }
+method chmod ( $mode, $path ) {
+    $self->execute( 'chmod', $mode, $path );
+    $self->rc and _fail _loc( 'Could not chmod `%1 %2`: %3', $mode, $path, $self->output );
+}
+
+method chown ( $perms, $path ) {
+    $self->execute( 'chown', $perms, $path );
+    $self->rc and _fail _loc( 'Could not chown `%1 %2`: %3', $perms, $path, $self->output );
 }
 
 sub make_writable {
@@ -71,12 +72,18 @@ sub make_writable {
     $self->chmod( '-R', 'u+w', @_ );
 }
 
+method file_exists( $file_or_dir ) {
+    my ($rc,$ret) = $self->execute( 'test', '-e', $file_or_dir ); # check it exists
+    return !$rc; 
+}
+
 sub get_file {
-    shift->get_dir( @_ );
+    shift->get_dir( @_, file_to_file=>1 );
 }
 
 sub get_dir {
     my ($self, %p) = @_;
+    my $file_to_file = delete $p{file_to_file};
     my $local = delete $p{local} || $self->local || _throw "Missing parameter local";
     my $remote = delete $p{remote} || $self->home || _throw "Missing parameter remote";
     $p{recursive} = 1;
@@ -85,7 +92,7 @@ sub get_dir {
     $p{stderr_to_stdout} = 1;
     $p{stdout_file} = _tmp_file;  # send output to tmp file
     ( $local, $remote ) = map { "$_" } $local, $remote;  # strigify possible Path::Class
-    _mkpath( $local ) if ! -d $local && $self->mkpath_on; # create local path
+    _mkpath( $local ) if !-d $local && !$file_to_file && $self->mkpath_on; # create local path
     my $method = $self->_method . "_get";
     my $ret = $self->ssh->$method( \%p, $remote, $local ); 
     my $out = _slurp $p{stdout_file};
@@ -100,7 +107,7 @@ sub get_dir {
 =cut
 sub put_file {
     my $self = shift;
-    $self->put_dir( @_ );
+    $self->put_dir( @_, file_to_file=>1 );
 }
 
 
@@ -118,6 +125,7 @@ Parameters:
 =cut
 sub put_dir {
     my ($self, %p) = @_;
+    my $file_to_file = delete $p{file_to_file};
     my $local = delete $p{local} || $self->local || _throw "Missing local";
     my $remote = delete $p{remote} || $self->home || _throw "Missing remote";
     if( ! (-e $local) && ($local !~ /.*\*$/) ) {
@@ -132,7 +140,7 @@ sub put_dir {
     $p{stderr_to_stdout} //= 1;
     $p{stdout_file} //= _tmp_file;  # send output to tmp file
     ( $local, $remote ) = map { "$_" } $local, $remote;  # strigify possible Path::Class
-    $self->mkpath( $remote ) if $self->mkpath_on; # create remote path
+    $self->mkpath( $remote ) if !$file_to_file && $self->mkpath_on; # create remote path
     #$self->make_writable( $remote ) if $self->overwrite_on;
     my $method = $self->_method . "_put";
 
@@ -172,14 +180,17 @@ sub execute {
     } catch {
         alarm 0;
         my $err = shift;
-        _fail _loc( 'Timeout %1 (%2)', $self->_build_uri, "@cmd" ) if $err =~ /ssh timeout alarm/; 
-        _fail _loc( 'ssh_agent execute error %1 (%2): %3', $self->_build_uri, "@cmd", $err ) if $err =~ /ssh timeout alarm/; 
+        my $msg = _loc( 'ssh_agent execute error %1 (%2): %3', $self->_build_uri, "@cmd", $err );
+        _fail $msg if $self->_throw_on_error;
+        #_fail _loc( 'Timeout %1 (%2)', $self->_build_uri, "@cmd" ) if $err =~ /ssh timeout alarm/; 
+        #_fail _loc( 'ssh_agent execute error %1 (%2): %3', $self->_build_uri, "@cmd", $err ) if $err =~ /ssh timeout alarm/; 
     };
     my $out = _slurp $p{stdout_file};
     unlink $p{stdout_file};
     $self->ret( "$out" );
+    $self->rc( $rc );
     $self->_throw_on_error;
-    $ret;
+    ($rc, $ret);
 }
 
 sub _build_uri {

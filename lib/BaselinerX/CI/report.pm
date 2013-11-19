@@ -27,7 +27,7 @@ sub report_list {
     
     my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta() );  # XXX should be by category, same id fields may step on each other
     my $mine = $self->my_searches({ username=>$p->{username}, meta=>\%meta });
-    my $public = $self->public_searches({ meta=>\%meta });
+    my $public = $self->public_searches({ meta=>\%meta, username=>$p->{username} });
     
     my @trees = (
             {
@@ -112,8 +112,17 @@ sub my_searches {
 sub public_searches {
     my ($self,$p) = @_;
     my @searches = $self->search_cis( permissions=>'public' ); 
+    my %user_categories = map {
+        $_->{id} => 1;
+    } Baseliner->model('Topic')->get_categories_permissions( username => $p->{username}, type => 'view' );
+    
     my @public;
     for my $folder ( @searches ){
+        my %fields = map { $_->{type}=>$_->{children} } _array( $folder->selected );
+        # check categories permissions
+        my @categories = map { $_->{id_category} } _array($fields{categories});
+        my @user_cats = grep { exists $user_categories{ $_ } } @categories;
+        next if @categories > @user_cats;  # user cannot see category, skip this search
         push @public,
             {
                 mid     => $folder->mid,
@@ -235,12 +244,13 @@ sub all_fields {
                     $_->{icon}='/static/images/icons/topic_one.png'; 
                     $_->{id_category}= delete $_->{id};
                     $_->{type}='category'; $_->{leaf}=\1; $_ } 
+                sort { $a->{name_field} cmp $b->{name_field} }
                 DB->BaliTopicCategories->hashref->all
             ]
         }
     );
     push @tree, (
-        { text=>_loc('Values'),
+        { text=>_loc('Filters'),
             leaf=>\0,
             expanded => \1,
             icon => '/static/images/icons/search.png',
@@ -293,13 +303,13 @@ sub all_fields {
         children => [
             map {
                 {
-                    text     => _loc($_->{name_field}),
-                    icon     => '/static/images/icons/field-add.png',
-                    id_field => $_->{id_field},
+                    text      => _loc( $_->{name_field} ),
+                    icon      => '/static/images/icons/field-add.png',
+                    id_field  => $_->{id_field},
                     meta_type => $_->{meta_type},
-                    gridlet => $_->{gridlet},
-                    type     => 'select_field',
-                    leaf     => \1
+                    gridlet   => $_->{gridlet},
+                    type      => 'select_field',
+                    leaf      => \1,
                 }
             } sort { lc $a->{name_field} cmp lc $b->{name_field} } values %common_fields
         ],
@@ -367,12 +377,11 @@ sub selected_fields {
     return \%ret;
 }
 
-method run( :$start=0, :$limit=undef, :$username=undef ) {
+method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef ) {
     my $rows = $limit // $self->rows;
     my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
     
     my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta() );  # XXX should be by category, same id fields may step on each other
-
     my @selects = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) => 1 } _array($fields{select});
 
     my @where = grep { defined } map { 
@@ -401,12 +410,17 @@ method run( :$start=0, :$limit=undef, :$username=undef ) {
             push @where, { $field_project->{id_field} => mdb->in(@ids_project) };  
         }
     }
+    
+    if( length $query ) {
+        my @qmids = map { $_->{obj}{mid} } _array(mdb->topic->search( query=>$query, limit=>999999, project=>{ mid=>1 } )->{results});
+        push @where, { mid=>mdb->in(@qmids) };
+    }
 
     # filter categories
     if( my @categories = map { {'id_category' => $_->{id_category}} } _array($fields{categories}) ) {
         push @where, { '$or'=>\@categories };
     }
-    my @sort = map { $_->{id_field} => 1 } _array($fields{sort});
+    my @sort = map { $_->{id_field} => 0+($_->{sort_direction} // 1) } _array($fields{sort});
     
     my $find = @where ? { '$and'=>[ @where ] } : {};
     my $rs = mdb->topic->find($find);
@@ -429,14 +443,22 @@ method run( :$start=0, :$limit=undef, :$username=undef ) {
             #  get additional fields ?   
             #  TODO for sorting, do this before and save to report_results collection (capped?) 
             #       with query id and query ts, then sort
+            #_error "MT===$mt, K==$k";
             if( $mt =~ /ci|project|revision|user/ ) { 
                 $row{$k} = $scope_cis{$v} 
-                    // ( $scope_cis{$v} = [ mdb->master_doc->find({ mid=>mdb->in($v) },
-                        { _id=>0 })->all ] );
+                    // do{ 
+                        my @objs = mdb->master_doc->find({ mid=>mdb->in($v) },{ _id=>0 })->all;
+                        $scope_cis{$_->{mid}} = $_ for @objs; 
+                        \@objs;
+                        };
             } elsif( $mt =~ /release|topic/ ) { 
                 $row{$k} = $scope_topics{$v} 
-                    // ( $scope_topics{$v} = [ mdb->topic->find({ mid=>mdb->in($v) },
-                        { title=>1, mid=>1, is_changeset=>1, is_release=>1, category=>1, _id=>0 })->all ] );
+                    // do {
+                        my @objs = mdb->topic->find({ mid=>mdb->in($v) },
+                                { title=>1, mid=>1, is_changeset=>1, is_release=>1, category=>1, _id=>0 })->all;
+                        $scope_cis{$_->{mid}} = $_ for @objs; 
+                        \@objs;   
+                    };
             } elsif( $mt eq 'calendar' && ( my $cal = ref $row{$k} ? $row{$k} : undef ) ) { 
                 for my $slot ( keys %$cal ) {
                     $cal->{$slot}{$_} //= '' for qw(end_date plan_end_date start_date plan_start_date);

@@ -320,6 +320,7 @@ sub stmts_save : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
 
+    my $error_checking_dsl = 0;
     try {
         my $id_rule = $p->{id_rule} or _throw 'Missing rule id';
         # check json valid
@@ -332,13 +333,15 @@ sub stmts_save : Local {
         try { 
             $c->model('Rules')->dsl_build_and_test( $stmts ); 
         } catch {
+            $error_checking_dsl = 1; 
+            return if $p->{ignore_dsl_errors};
             _fail _loc "Error testing DSL build: %1", shift(); 
         };
         DB->BaliRule->find($id_rule)->update({ rule_tree=>$p->{stmts} });
         $c->stash->{json} = { success=>\1, msg => _loc('Rule statements saved ok') };
     } catch {
         my $err = shift;
-        $c->stash->{json} = { success=>\0, msg => "$err" };
+        $c->stash->{json} = { success=>\0, msg => "$err", error_checking_dsl=>$error_checking_dsl };
     };
     $c->forward("View::JSON");
 }

@@ -104,7 +104,7 @@ sub list : Local {
 
     if( $p->{id_report} ) {
         my $start = $p->{start} // 0;
-        my ($cnt, @rows ) = ci->new( $p->{id_report} )->run( start=>$start, username=>$c->username );
+        my ($cnt, @rows ) = ci->new( $p->{id_report} )->run( start=>$start, username=>$c->username, limit=>$p->{limit}, query=>$p->{query} );
         $c->stash->{json} = { data=>\@rows, totalCount=>$cnt };
     } else {
         my ($cnt, @rows ) = $c->model('Topic')->topics_for_user( $p );
@@ -1846,25 +1846,33 @@ sub report_csv : Local {
     my ($self, $c ) = @_;
     my $p = $c->req->params;
     my $data = _decode_json $p->{data_json};
-    $data = $self->report_data_replace( $data );
     
     my @csv;
     my @cols;
-    for( _array( $data->{columns} ) ) {
+    for( grep { length $_->{name} } _array( $data->{columns} ) ) {
         push @cols, qq{"$_->{name}"}; #"
     }
     push @csv, join ',', @cols;
 
     for my $row ( _array( $data->{rows} ) ) {
         my @cells;
-        for my $col ( _array( $data->{columns} ) ) {
+        for my $col ( grep { length $_->{name} } _array( $data->{columns} ) ) {
             my $v = $row->{ $col->{id} };
+            if( ref $v eq 'ARRAY' ) {
+                $v = join ',', @$v;
+            } elsif( ref $v eq 'HASH' ) {
+                $v = Util->hash_flatten($v);
+                $v = Util->_encode_json($v);
+                $v =~ s/{|}//g;
+            }
+            #_debug "V=$v," . ref $v;
             $v =~ s{"}{""}g;
             push @cells, qq{"$v"}; 
         }
         push @csv, join ',', @cells; 
     }
     my $body = join "\n", @csv;
+    #_warn $body;
     #$c->res->body( $body );
     $c->stash->{serve_body} = $body;
     $c->stash->{serve_filename} = length $p->{title} ? Util->_name_to_id($p->{title}).'.csv' : 'topics.csv';
