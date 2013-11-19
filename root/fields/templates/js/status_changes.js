@@ -8,6 +8,7 @@ params:
     js: '/fields/templates/js/status_changes.js'
     field_order: 1
     section: 'details'
+    meta_type: history
 ---
 */
 

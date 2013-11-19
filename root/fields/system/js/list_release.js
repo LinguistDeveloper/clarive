@@ -13,6 +13,7 @@ params:
     release_field: '' 
     allowBlank: true
     single_mode: true
+    meta_type: 'release'
 ---
 */
 (function(params){

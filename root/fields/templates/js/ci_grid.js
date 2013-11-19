@@ -13,6 +13,7 @@ params:
     rel_type: topic_ci
     ci_role: 'ci'
     ci_class: ''
+    meta_type: 'ci'
 ---
 */
 (function(params){

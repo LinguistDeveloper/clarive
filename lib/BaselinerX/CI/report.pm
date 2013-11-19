@@ -292,8 +292,17 @@ sub all_fields {
     };
 
     # Fields that are common to every topic (system fields)
-    my %common_fields = map { $_->{id_field} => $_ } grep { $_->{origin} eq 'system' } 
-        _array( Baseliner->model('Topic')->get_meta() );
+    my @fieldlets = _array( Baseliner->model('Topic')->get_meta() );
+    #_error \@fieldlets;
+    my %common_list = ( created_on=>1, created_by=>1, modified_on=>1, modified_by=>1 );
+    my %hidden_list = ( labels=>1, included_into=>1, progress=>1, 
+         ( map {$_->{id_field}=>1} grep {$_->{type} eq 'separator' || $_->{meta_type} eq 'history'} grep {exists $_->{type}} @fieldlets) );
+     
+    my %common_fields = map { $_->{id_field} => $_ } 
+        # any fields that are 'system', or are in the common_list and are not in the hidden list
+        grep { ($_->{origin} eq 'system' || exists $common_list{$_->{id_field}}) 
+            && !exists $hidden_list{$_->{id_field}} } 
+        @fieldlets;
 
     push @tree, {
         text => _loc('Commons'),
@@ -306,12 +315,15 @@ sub all_fields {
                     text      => _loc( $_->{name_field} ),
                     icon      => '/static/images/icons/field-add.png',
                     id_field  => $_->{id_field},
+                    header    => $_->{name_field},
                     meta_type => $_->{meta_type},
                     gridlet   => $_->{gridlet},
                     type      => 'select_field',
                     leaf      => \1,
                 }
-            } sort { lc $a->{name_field} cmp lc $b->{name_field} } values %common_fields
+            } 
+            sort { lc $a->{name_field} cmp lc $b->{name_field} } 
+            values %common_fields
         ],
     };
 
@@ -320,15 +332,17 @@ sub all_fields {
         my $cat = $_;
         my @chi = map { +{ 
                 %$_,
-                text => _loc($_->{name_field}), 
-                icon => '/static/images/icons/field-add.png',
-                type => 'select_field',
-                meta_type => $_->{meta_type},
-                gridlet => $_->{gridlet},
-                category => $cat,
-                leaf=>\1, 
+                text        => _loc($_->{name_field}), 
+                icon        => '/static/images/icons/field-add.png',
+                type        => 'select_field',
+                meta_type   => $_->{meta_type},
+                gridlet     => $_->{gridlet},
+                category    => $cat,
+                leaf        =>\1, 
              } } 
-            grep { $_->{origin} ne 'system' } _array( Baseliner->model('Topic')->get_meta( undef, $cat->{id} ) ); 
+            sort { lc $a->{name_field} cmp lc $b->{name_field} } 
+            grep { !exists $common_fields{$_->{id_field}} && !exists $hidden_list{$_->{id_field}} } 
+            _array( Baseliner->model('Topic')->get_meta( undef, $cat->{id} ) ); 
         +{  text => _loc($cat->{name}),
             data => $cat, 
             icon => '/static/images/icons/topic.png',

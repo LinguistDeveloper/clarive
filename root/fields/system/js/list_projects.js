@@ -13,6 +13,7 @@ params:
     collection: 'project'
     tree_level: ''
     include_root: 'true'
+    meta_type: 'project'
 
 ---
 */

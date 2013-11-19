@@ -12,6 +12,7 @@ params:
     page_size: 20
     filter: 'none'
     single_mode: 'false'    
+    meta_type: 'topic'
 ---
 */
 

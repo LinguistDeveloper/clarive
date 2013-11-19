@@ -9,6 +9,7 @@ params:
     field_order: 4
     section: 'body'
     relation: priorities
+    meta_type: 'priority'
 ---
 */
 (function(params){

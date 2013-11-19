@@ -10,6 +10,7 @@ params:
     field_order: 100
     field_order_html: 1200
     section: 'head'
+    meta_type: 'topic'
 ---
 */
 (function(params){

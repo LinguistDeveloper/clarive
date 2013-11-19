@@ -9,6 +9,7 @@ params:
     section: 'head'
     set_method: 'set_labels'
     method: 'get_labels'
+    meta_type: 'label'
 ---
 */
 (function(params){

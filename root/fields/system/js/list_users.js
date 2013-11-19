@@ -11,6 +11,7 @@ params:
     section: 'details'
     single_mode: 'false'
     filter: 'manual'
+    meta_type: 'user'
 ---
 */
 (function(params){

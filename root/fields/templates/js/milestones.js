@@ -14,6 +14,7 @@ params:
     columns: 'Milestone[slotname];Planned End Date[plan_end_date],datefield;End Date[end_date],datefield' 
     section: 'head'
     relation: system
+    meta_type: 'calendar'
 */
 
 (function(params){

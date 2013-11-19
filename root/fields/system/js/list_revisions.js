@@ -10,6 +10,7 @@ params:
     section: 'details'
     get_method: 'get_revisions'    
     set_method: 'set_revisions'
+    meta_type: 'revision'
 ---
 */
 (function(params){

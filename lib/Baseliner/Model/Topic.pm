@@ -1047,6 +1047,7 @@ our %meta_types = (
     set_cis        => 'ci',
     set_users      => 'user',
     set_priority   => 'priority',
+    set_labels     => 'label',
 );
 
 sub get_meta {
@@ -1069,6 +1070,7 @@ sub get_meta {
                 $d->{default_value} = eval $1;
             }
             $d->{field_order} //= 1;
+            $d->{meta_type} = 'history' if $d->{js} eq '/fields/templates/js/status_changes.js';  # for legacy only
             $d->{meta_type} ||= $d->{set_method} 
                 ? ($meta_types{ $d->{set_method} } // _fail("Unknown set_method $d->{set_method} for field $d->{name_field}") ) 
                 : '';

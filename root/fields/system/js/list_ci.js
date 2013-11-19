@@ -15,6 +15,7 @@ params:
     ci_class: ''
     rel_type: topic_ci
     show_class: false
+    meta_type: 'ci'
 ---
 */
 (function(params){
