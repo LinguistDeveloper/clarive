@@ -2162,12 +2162,14 @@ Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
         var self = this;
         var form2 = this.getForm();
         var is_valid = form2.isValid();
+		var first_novalid_offsetHeight;
         this.cascade(function(obj){
             var sty = 'border: solid 1px rgb(255,120,112); margin_bottom: 0px';
 			//console.dir(obj.name, obj.allowBlank, obj.is_valid);
             if( obj.name && !obj.allowBlank && obj.is_valid ) {
                 if( !obj.is_valid() ) {
                     is_valid = false;
+					if(!first_novalid_offsetHeight) first_novalid_offsetHeight = obj.getEl().dom.offsetHeight + 100;
                     obj.getEl().applyStyles(sty);
 					if( !obj.on_change_lab ) {
 						var lab = Ext.DomHelper.insertAfter(obj.getEl(),{id: 'lbl_required_'+obj.name, html:'<div class="x-form-invalid-msg">'+_('This field is required')+'</div>'});
@@ -2179,12 +2181,14 @@ Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
 							} else {
 								obj.getEl().applyStyles(sty);
 								obj.on_change_lab.style.display = 'block';
+								
 							}
 						});
 					}
                 }
             }
         });
+		Ext.getCmp('main-panel').getActiveTab().body.dom.scrollTop = first_novalid_offsetHeight;
         return is_valid;
     },
     getValues : function(a,b,c){
