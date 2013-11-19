@@ -280,7 +280,7 @@
         }, this, false, node.text );
     };
     // Properties window:
-    var meta_node = function( node ) {
+    var meta_node = function( node, goto_tab ) {
         var attr = node.attributes;
         var data = attr.data || {};
         var de = new Baseliner.DataEditor({ title:_('Metadata'), data: attr, hide_save: true, hide_cancel: true  });
@@ -337,7 +337,9 @@
         var tbar = [ '->', 
             { xtype:'button', text:_('Cancel'), icon:'/static/images/icons/delete.gif', handler: function(){ win.close() } },
             btn_save_meta ];
-        var tabs = new Ext.TabPanel({ activeTab:0, items:[ opts,de,note ] });
+        opts.doLayout();
+        de.doLayout();
+        var tabs = new Ext.TabPanel({ activeTab: goto_tab, items:[ opts,de,note ] });
         var win = show_win( node, tabs, { width: 800, height: 600, tbar:tbar }, function(d){ 
             //node.attributes=d;
             //node.setText( d.text );
@@ -485,6 +487,7 @@
                     { text: _('Configuration'), handler: function(){ edit_node( node ) }, icon:'/static/images/icons/edit.gif' },
                     { text: _('Rename'), handler: function(){ rename_node( node ) }, icon:'/static/images/icons/item_rename.png' },
                     { text: _('Properties'), handler: function(){ meta_node( node ) }, icon:'/static/images/icons/leaf.gif' },
+                    { text: _('Note'), handler: function(){ meta_node( node, 2 ) }, icon:'/static/images/icons/field.png' },
                     { text: _('Copy'), handler: function(item){ copy_node( node ) }, icon:'/static/images/icons/copy.gif' },
                     { text: _('Cut'), handler: function(item){ cut_node( node ) }, icon:'/static/images/icons/cut.gif' },
                     { text: _('Paste'), handler: function(item){ paste_node( node ) }, icon:'/static/images/icons/paste.png' },
@@ -521,6 +524,8 @@
                 btn_refresh_tree,
                 { xtype:'button', text: _('DSL'), icon:'/static/images/icons/edit.png', handler: function() { rule_tree.rule_dsl() } },
                 '->',
+                { xtype:'button', icon:'/static/images/icons/expandall.png', tooltip:_('Expand All'), handler: function() { rule_tree.expandAll() } },
+                { xtype:'button', icon:'/static/images/icons/collapseall.png',tooltip:_('Collapse All'),  handler: function() { rule_tree.collapseAll() } },
                 { xtype:'button', icon:'/static/images/icons/html.png', handler: function() { rule_tree.view_docs() } }
             ],
             root: { 
@@ -609,47 +614,60 @@
         
         // ========= rule documentation 
         var md_converter = new Markdown.Converter();
-        var doc_gen = function(node,depth,doc){
+        var doc_gen = function(node,depth,doc,lev){
             if( depth==undefined ) depth=0
             if( doc==undefined ) doc=[];
+            var k = 1; 
             node.eachChild(function(n){
                 var attr = n.attributes;
                 var note_html = attr.note!=undefined ? md_converter.makeHtml(attr.note) : _('no info');
                 var rf = attr.run_forward, rb = attr.run_rollback;
+                var dd = attr.data!=undefined ? YAML.stringify(attr.data) : '';
+                dd.replace("\n", "<br>");
                 doc.push({ text:n.text, 
                     depth:depth, 
                     icon: attr.icon,
+                    lev: lev.length>0 ? lev.join('.')+'.'+k : k,
                     run_mode: rf && !rb ? _('NO ROLLBACK') 
                         : !rf && rb ? _('ROLLBACK')
                         : rf===false && rb===false ? _('NO RUN') : '',
                     disabled: attr.disabled,
+                    data: dd, 
                     key:attr.key, 
                     name: attr.name||attr.text, note: note_html });
-                doc_gen(n,depth+1,doc);
+                doc_gen(n,depth+1,doc, [].concat(lev,[k]) );
+                k++;
             });
         }
         var doc_title = function(){/*
             <h1>[%= name %]</h1>
+            <hr />
         */}.tmpl();
         var doc_tmpl = function(){/*
             <div style="padding-left: [%= depth * 24 %]px">
             <h3 class="rule" style="text-decoration: [%= disabled ? 'line-through' : 'none' %]">
-                <img style="float: left" src="[%= icon %]"> [%= text %]
+                [%= lev %]
+                <img style="vertical-align: middle; float: left" src="[%= icon %]"> [%= text %]
             [% if( run_mode ) { %]<span class="badge">[%= run_mode %]</span>[% } %]
             </h3>
+            <div style="margin-left: 16px">
             <small class="rule" style="color:#999">[%= name %] - [%= key %]</small>
             <p>[%= note %]</p>
+            [% if( data.length ) { %]
+            <pre><code>[%= data %]</code></pre>
+            [% } %]
+            </div>
             </div>
         */}.tmpl();
         rule_tree.view_docs = function(from,depth,doc){
             var root = from || rule_tree.root;
             var doc = [];
-            doc_gen(root,0,doc);
+            doc_gen(root,0,doc,[]);
             var html = [ doc_title({ name: Ext.util.Format.capitalize(name) }) ];
             Ext.each( doc, function(d){
                 html.push( doc_tmpl(d) ); 
             });
-            Baseliner.print({ share:true, title: name, html: '<div id="boot">'+html.join('')+'</div>' });
+            Baseliner.print({ title: name, html: '<div id="boot">'+html.join('')+'</div>' }, true);
         };
 
         var tab = tabpanel.add( rule_tree ); 
@@ -746,5 +764,10 @@
     });
 
     Baseliner.edit_check( panel, true );  // block window closing from the beginning
+    panel.print_hook = function(){
+        var at = tabpanel.activeTab;
+        if( !at ) return { title: panel.title, id: panel.body.id };
+        return { title: at.title, id: at.body.id };
+    };
     return panel;
 })
