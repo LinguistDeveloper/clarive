@@ -1007,6 +1007,20 @@ if( Prefs.routing ) {
         }
     };
 
+    Baseliner.system_message = function(msg_data) {
+       if( !msg_data ) msg_data={};
+       // control that if the message is visible, don't show it again - but no control against dismissed messages
+       if( msg_data.id && $('#'+msg_data.id).length > 0 ) return; 
+       Ext.apply({ title: _('Warning'), text: _('Unknown') }, msg_data);
+       var msg = function(){/* 
+        <div class="alert" style="margin: 0;">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          <strong>[%= title %]</strong> [%= text %]
+        </div>
+        */}.tmpl(msg_data);
+        $(msg).appendTo("#main-alert").hide().fadeIn();
+    };
+
     // sends request with application/json
             // TODO consider making this a RESTful engine, with GET, PUT, POST, DELETE, etc.., and changing the CI interface too
     Baseliner.ajax_json = function( url, params, foo, scope ){
@@ -1076,11 +1090,16 @@ if( Prefs.routing ) {
                 try {
                     // this is for js components that return a component
                     var comp = Baseliner.eval_response( xhr.responseText, params, url );
+                    var is_object = Ext.isObject( comp );
+                    // system message
+                    if( is_object && comp._system_message ) {
+                        Baseliner.system_message(comp._system_message);
+                    }
                     // detect logout
-                    if( Ext.isObject( comp ) && comp.logged_out && !params._ignore_conn_errors ) {
+                    if( is_object && comp.logged_out && !params._ignore_conn_errors ) {
                         login_or_error();
                     }
-                    else if( !params._handle_res && Ext.isObject( comp ) && comp.success!=undefined && !comp.success ) {  // XXX this should come after the next else
+                    else if( !params._handle_res && is_object && comp.success!=undefined && !comp.success ) {  // XXX this should come after the next else
                         if( Ext.isFunction(scope) ) {  // scope is catch
                             scope( comp, foo );
                         } else {
