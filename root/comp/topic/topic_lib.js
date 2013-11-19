@@ -30,6 +30,17 @@ Baseliner.topic_title = function( mid, category, color, literal_only, id) {
     }
 }
 
+Baseliner.show_category = function(category_id, title, params) {
+    Baseliner.add_tabcomp('/topic/grid', title , Ext.apply({ category_id: category_id, title: title }, params) );
+};
+
+Baseliner.category_title = function( id, category, color, id) {
+    var uppers = category ? category.replace( /[^A-Z]/g, '' ) : '';
+    var pad_for_tab = 'margin: 0 0 -3px 0; padding: 2px 4px 2px 4px; line-height: 12px;'; // so that tabs stay aligned
+    if(!id) id = Ext.id();
+    return String.format( '<span id="boot" style="background:transparent; margin-bottom: 0px"><span id="{4}" class="label" style="{3}; background-color:{1}">{2}</span></span>', id, color, uppers, pad_for_tab, id );
+}
+
 Baseliner.show_topic_colored = function(mid, category, color, grid_id) {
     var title = Baseliner.topic_title( mid, _(category), color );
     Baseliner.show_topic( mid, title, { topic_mid: mid, title: title, _parent_grid: grid_id } );
