@@ -1050,6 +1050,27 @@ msgstr "Servicios Genéricos"
 msgid "Job Services"
 msgstr "Servicios de Job"
 
+msgid "Current: %1 (%2)"
+msgstr "Actual: %1 (%2)"
+
+msgid "Version: %1 (%2)"
+msgstr "Versión: %1 (%2)"
+
+msgid "Current"
+msgstr "Actual"
+
+msgid "Versions"
+msgstr "Versiones"
+
+msgid "History"
+msgstr "Historial"
+
+msgid "Notes"
+msgstr "Notas"
+
+msgid "Note"
+msgstr "Nota"
+
 msgid "Expand All"
 msgstr "Expandir Todo"
 
