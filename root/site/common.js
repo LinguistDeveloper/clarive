@@ -2162,33 +2162,50 @@ Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
         var self = this;
         var form2 = this.getForm();
         var is_valid = form2.isValid();
-		var first_novalid_offsetHeight;
-        this.cascade(function(obj){
-            var sty = 'border: solid 1px rgb(255,120,112); margin_bottom: 0px';
+		var first_novalid_top = -1;
+		Ext.getCmp('main-panel').getActiveTab().body.dom.scrollTop = 0;
+		this.cascade(function(obj){
+			var sty = 'border: solid 1px rgb(255,120,112); margin_bottom: 0px';
 			//console.dir(obj.name, obj.allowBlank, obj.is_valid);
-            if( obj.name && !obj.allowBlank && obj.is_valid ) {
-                if( !obj.is_valid() ) {
-                    is_valid = false;
-					if(!first_novalid_offsetHeight) first_novalid_offsetHeight = obj.getEl().dom.offsetHeight + 100;
-                    obj.getEl().applyStyles(sty);
-					if( !obj.on_change_lab ) {
-						var lab = Ext.DomHelper.insertAfter(obj.getEl(),{id: 'lbl_required_'+obj.name, html:'<div class="x-form-invalid-msg">'+_('This field is required')+'</div>'});
-						obj.on_change_lab = lab;
-						obj.on('change', function(){
-							if( obj.is_valid() ) {
-								obj.getEl().applyStyles('border: none; margin_bottom: 0px');
-								obj.on_change_lab.style.display = 'none';
-							} else {
-								obj.getEl().applyStyles(sty);
-								obj.on_change_lab.style.display = 'block';
-								
-							}
-						});
+			//if( obj.name && !obj.allowBlank && obj.is_valid ) {
+			if( obj.name && !obj.allowBlank ) {
+				if (obj.is_valid) {
+					if( !obj.is_valid() ) {
+						is_valid = false;
+						var id_objHTML = obj.getEl().dom.id;
+						var objHTML = $('#' + id_objHTML);
+						var offset = objHTML.offset();
+						if(first_novalid_top == -1) first_novalid_top = offset.top - obj.getEl().dom.offsetHeight;
+						obj.getEl().applyStyles(sty);
+						if( !obj.on_change_lab ) {
+							var lab = Ext.DomHelper.insertAfter(obj.getEl(),{id: 'lbl_required_'+obj.name, html:'<div class="x-form-invalid-msg">'+_('This field is required')+'</div>'});
+							obj.on_change_lab = lab;
+							obj.on('change', function(){
+								if( obj.is_valid() ) {
+									obj.getEl().applyStyles('border: none; margin_bottom: 0px');
+									obj.on_change_lab.style.display = 'none';
+								} else {
+									obj.getEl().applyStyles(sty);
+									obj.on_change_lab.style.display = 'block';
+									
+								}
+							});
+						}
 					}
-                }
-            }
-        });
-		Ext.getCmp('main-panel').getActiveTab().body.dom.scrollTop = first_novalid_offsetHeight;
+				}
+				else{
+					if(obj.validate && typeof obj.validate == 'function'){
+						if(!obj.validate()){
+							var id_objHTML = obj.getEl().dom.id;
+							var objHTML = $('#' + id_objHTML);
+							var offset = objHTML.offset();
+							if(first_novalid_top == -1) first_novalid_top = offset.top - 125;
+						}
+					}
+				}
+			}
+		});
+		Ext.getCmp('main-panel').getActiveTab().body.dom.scrollTop = first_novalid_top;	
         return is_valid;
     },
     getValues : function(a,b,c){
