@@ -398,12 +398,29 @@ sub stmts_save : Local {
 sub stmts_load : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
-
+    my $load_versions = $p->{load_versions};
     try {
         my $id_rule = $p->{id_rule} or _throw 'Missing rule id';
         # recursive loading from rows to tree:
         my @tree = Baseliner->model('Rules')->build_tree( $id_rule, undef );
         # $c->stash->{json} = [{ text=>_loc('Start'), leaf=>\0, children=>\@tree }];
+        if( $load_versions ) {
+            my $rs = mdb->rule_version->find({ id_rule=>"$id_rule" })->sort({ ts=>-1 });
+            my $current = $rs->next;
+            @tree = ( 
+                {   text => $current ? _loc('Current: %1 (%2)', $current->{ts}, $current->{username}) : _loc('Current'), 
+                    leaf=>\0, 
+                    icon=>'/static/images/icons/history.png',
+                    is_current=>\1, children=>[ @tree ] }, 
+            );
+            while( my $rv = $rs->next ) {
+                my $ver_tree = Util->_decode_json($rv->{rule_tree}); 
+                my @ver_tree = Baseliner->model('Rules')->tree_format( @$ver_tree );
+                push @tree, +{ text=>_loc('Version: %1 (%2)', $rv->{ts}, $rv->{username} ), 
+                    icon=>'/static/images/icons/history.png',
+                    is_version=>\1, leaf=>\0, children=>\@ver_tree };
+            } 
+        }
         $c->stash->{json} = \@tree;
     } catch {
         my $err = shift;

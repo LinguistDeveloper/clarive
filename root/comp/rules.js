@@ -463,24 +463,28 @@
             // ignore dsl errors if the rule is independent
             save_action({ ignore_dsl_errors: rule_type=='independent' ? 1 : 0 });
         };
-        var rule_load_do = function(btn){
+        var rule_load_do = function(btn,load_versions){
             btn.disable();
+            Ext.apply(rule_tree_loader.baseParams, { load_versions: load_versions ? 1 : 0 });
             rule_tree_loader.load( rule_tree.root );
             rule_tree.root.expand();
             rule_tree.is_dirty = false;
             btn.enable();
         };
-        var rule_load = function(btn){
+        var rule_load = function(btn,load_versions){
             if( rule_tree.is_dirty ) {
                 if( rule_tree.close_me() ) {
-                    rule_load_do(btn);
+                    rule_load_do(btn,load_versions);
+                } else {
+                    return false;
                 }
             } else {
-                rule_load_do(btn);
+                rule_load_do(btn,load_versions);
             }
         };
         var short_name = name.length > 10 ? name.substring(0,20) : name;
         var menu_click = function(node,event){
+            if( node.attributes.is_version || node.attributes.is_current ) return false;
             node.select();
             var stmts_menu = new Ext.menu.Menu({
                 items: [
@@ -500,6 +504,26 @@
         };
         var btn_save_tree = new Ext.Button({ text: _('Save'), icon:'/static/images/icons/save.png', handler: rule_save });
         var btn_refresh_tree = new Ext.Button({ text: _('Reload'), icon:'/static/images/icons/refresh.gif', handler: rule_load });
+        var btn_dsl = new Ext.Button({ text: _('DSL'), icon:'/static/images/icons/edit.png', handler: function() { rule_tree.rule_dsl() } });
+        var btn_version_tree = new Ext.Button({ enableToggle: true, pressed: false, icon:'/static/images/icons/history.png', 
+            handler: function() { 
+                if( btn_version_tree.pressed ) {
+                    var ok = rule_load( btn_refresh_tree, true );
+                    if( ok === false ) {  // maybe user hit cancel
+                        btn_version_tree.toggle(false);
+                    } else {
+                        btn_save_tree.disable();
+                        btn_dsl.disable();
+                        btn_refresh_tree.disable();
+                    }
+                } else {
+                    btn_save_tree.enable();
+                    btn_refresh_tree.enable();
+                    btn_dsl.enable();
+                    rule_load_do( btn_refresh_tree, false );
+                }
+            }
+        });
         var rule_tree = new Ext.tree.TreePanel({
             region: 'center',
             id_rule: id_rule,
@@ -522,10 +546,11 @@
             tbar: [ 
                 btn_save_tree,
                 btn_refresh_tree,
-                { xtype:'button', text: _('DSL'), icon:'/static/images/icons/edit.png', handler: function() { rule_tree.rule_dsl() } },
+                btn_dsl,
                 '->',
                 { xtype:'button', icon:'/static/images/icons/expandall.png', tooltip:_('Expand All'), handler: function() { rule_tree.expandAll() } },
                 { xtype:'button', icon:'/static/images/icons/collapseall.png',tooltip:_('Collapse All'),  handler: function() { rule_tree.collapseAll() } },
+                btn_version_tree,
                 { xtype:'button', icon:'/static/images/icons/html.png', handler: function() { rule_tree.view_docs() } }
             ],
             root: { 
@@ -620,10 +645,11 @@
             var k = 1; 
             node.eachChild(function(n){
                 var attr = n.attributes;
-                var note_html = attr.note!=undefined ? md_converter.makeHtml(attr.note) : _('no info');
+                var note_html = attr.note!=undefined ? md_converter.makeHtml(attr.note) : '';
                 var rf = attr.run_forward, rb = attr.run_rollback;
                 var dd = attr.data!=undefined ? YAML.stringify(attr.data) : '';
                 dd.replace("\n", "<br>");
+                dd.replace("\\n", "<br>");
                 doc.push({ text:n.text, 
                     depth:depth, 
                     icon: attr.icon,
