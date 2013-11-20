@@ -1292,9 +1292,6 @@ Baseliner.TopicCombo = Ext.extend( Ext.form.ComboBox, {
 });
 
 Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
-    height: 200,
-    enableDragDrop: true,   
-    pageSize: 10, // used by the combo 
     constructor: function(c){  // needs to declare the selection model in a constructor, otherwise incompatible with DD
         var sm = c.sm || new Baseliner.CheckboxSelectionModel({
             checkOnly: true,
@@ -1359,6 +1356,9 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
         });
 
         Baseliner.TopicGrid.superclass.constructor.call( this, Ext.apply({
+            height: 200,
+            enableDragDrop: true,   
+            pageSize: 10, // used by the combo             
             store: store,
             viewConfig: {
                 headersDisabled: true,
@@ -1376,14 +1376,14 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
             store: self.combo_store, 
             width: 600,
             height: 80,
-            pageSize: self.pageSize,
+            pageSize: parseInt(self.pageSize),
             singleMode: true, 
             fieldLabel: _('Topic'),
             name: 'topic',
             hiddenName: 'topic', 
             allowBlank: true,
             disabled: self.readOnly ? self.readOnly : false 
-        }); 
+        });
         self.combo.on('beforequery', function(qe){ delete qe.combo.lastQuery });
         
         self.store.on('add', function(){ self.fireEvent( 'change', self ) });
