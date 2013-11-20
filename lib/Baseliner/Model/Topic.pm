@@ -1512,7 +1512,7 @@ sub save_doc {
 
     # detect modified fields
     require Hash::Diff;
-    my $old_doc = mdb->topic->find_one({ mid=>"$mid" });
+    my $old_doc = mdb->topic->find_one({ mid=>"$mid" }) // {};
     my $diff = Hash::Diff::left_diff( $old_doc, $doc ); # hash has only changed and deleted fields
     my $projects = [ map { $_->{mid} } () ] if %$diff; # data from doc in meta_type=project fields $topic->projects->hashref->all;
     for my $changed ( grep { exists $diff->{$_} } map { $_->{column} } @custom_fields ){
@@ -1544,7 +1544,7 @@ sub save_doc {
     }
     
     # create/update mongo doc
-    my $write_doc = { %$row, %$doc };
+    my $write_doc = { %$row, %$old_doc, %$doc };
     mdb->topic->update({ mid=>"$doc->{mid}" }, $write_doc, { upsert=>1 });
 }
 
