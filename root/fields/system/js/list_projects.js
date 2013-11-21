@@ -45,7 +45,7 @@ params:
     } });
     
     var no_items = _('No items found');
-    var tpl = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><strong>{name}</strong> {description}</span></div></tpl>' );
+    var tpl = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><strong>{name}</strong> - ({description})</span></div></tpl>' );
     var project_box = new Baseliner.PagingProjects({
         origin: 'custom',
         fieldLabel: _(meta.name_field),

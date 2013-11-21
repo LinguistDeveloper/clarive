@@ -593,6 +593,8 @@ sub user_projects : Local {
         $_->{data}=_load($_->{data});
         $_->{ns} = 'project/' . $_->{mid};
         $_->{name} = $name;
+        my $data = _load $_->{master}->{yaml};
+        $_->{description} = $data->{description};
     $_} $rs->all;
     # @rows = sort { $$a{'name'} cmp $$b{'name'} } @rows;  # Added by Eric (q74613x) 20110719
     #_debug \@rows;
