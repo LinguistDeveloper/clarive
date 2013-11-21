@@ -2,7 +2,7 @@
     if( !params.rec ) params.rec = {};
 
     var contents = new Baseliner.CIGrid({ 
-        fieldLabel:_('Contents'), ci: { 'role': 'CI' },
+        fieldLabel:_('Contents'), ci: { 'class': 'project' },
         anchor:'100%',
         height: 500,
         value: params.rec.contents, name: 'contents' });
