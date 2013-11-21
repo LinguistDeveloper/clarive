@@ -161,6 +161,7 @@ sub put_dir {
 
 sub execute {
     my $self = shift;
+    my $opts = shift @_ if ref $_[0] eq 'HASH';
     local $SIG{CHLD};
     my %p = ( stderr_to_stdout => 1, );
     my @cmd = map { "$_" } @_ ; # stringify possible Path::Class
