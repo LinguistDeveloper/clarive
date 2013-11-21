@@ -4895,3 +4895,12 @@ msgstr "%1 debe cumplir la expresión regular %2"
 
 msgid "%1 must be filled"
 msgstr "%1 es obligatoria"
+
+msgid "Close Tab"
+msgstr "Cerrar Actual"
+
+msgid "Close Other Tabs"
+msgstr "Cerrar Resto"
+
+msgid "Close All Tabs"
+msgstr "Cerrar Todas"
