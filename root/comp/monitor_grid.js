@@ -382,20 +382,28 @@
                 task_interval = task_interval < task_interval_max ? task_interval+task_interval_increment : task_interval_max;
             }
             
-            // send from and where, to determine if there's a more recent job
-            Baseliner.ajaxEval( '/job/refresh_now',
-                { ids: ids, top: top_id, real_top: real_top, last_magic: last_magic, _ignore_conn_errors: true  }, function(res) {
-                refresh_button_wait_off();
-                if( ! res.success ) {
-                    refresh_stop();
-                } else {
-                    if( res.need_refresh  ) {
-                        store.reload();
+            var swRefresh = true;
+            
+            if(Ext.getCmp('main-panel').getActiveTab().title != 'Monitor' && Ext.isIE8 ){
+                swRefresh = false;
+            }
+            
+            if(swRefresh){
+                // send from and where, to determine if there's a more recent job
+                Baseliner.ajaxEval( '/job/refresh_now',
+                    { ids: ids, top: top_id, real_top: real_top, last_magic: last_magic, _ignore_conn_errors: true  }, function(res) {
+                    refresh_button_wait_off();
+                    if( ! res.success ) {
+                        refresh_stop();
+                    } else {
+                        if( res.need_refresh  ) {
+                            store.reload();
+                        }
+                        last_magic = res.magic;
+                        real_top = res.real_top;
                     }
-                    last_magic = res.magic;
-                    real_top = res.real_top;
-                }
-            });
+                });                
+            }
             
             if( last_interval != task_interval ) {
                 autorefresh.stop(task);
