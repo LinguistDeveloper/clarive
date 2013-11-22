@@ -1566,9 +1566,10 @@ sub migrate_docs {
     });
 }
 
+# update categories in mongo
 sub update_category {
     my ($self,$mid_or_doc, $id_cat ) = @_; 
-    my $doc = ref $mid_or_doc ? $mid_or_doc : mdb->topic->find_one({ mid=>$mid_or_doc });
+    my $doc = ref $mid_or_doc ? $mid_or_doc : mdb->topic->find_one({ mid=>"$mid_or_doc" });
     _fail _loc "Cannot update topic category, topic not found: %1", $mid_or_doc unless ref $doc;
     
     $id_cat //= $doc->{id_category};
@@ -1580,13 +1581,22 @@ sub update_category {
         color_category       => $doc->{category}{color},
         category_color       => $doc->{category}{color},
         category_id          => $doc->{category}{id},
+        id_category          => $doc->{category}{id},
         category_name        => $doc->{category}{name},
         name_category        => $doc->{category}{name},
         is_changeset         => $doc->{category}{is_changeset},
         is_release           => $doc->{category}{is_release},
     };
+    
+    if( !ref $mid_or_doc ) {
+        # save back to mongo
+        mdb->topic->save($doc);
+    }
+    
+    return $doc;
 }
 
+# update status in mongo
 sub update_category_status {
     my ($self,$mid_or_doc, $id_category_status ) = @_; 
     my $doc = ref $mid_or_doc ? $mid_or_doc : mdb->topic->find_one({ mid=>$mid_or_doc });
@@ -1605,6 +1615,13 @@ sub update_category_status {
         category_status_name => $doc->{category_status}{name},
         name_status          => $doc->{category_status}{name},
     };
+    
+    if( !ref $mid_or_doc ) {
+        # save back to mongo
+        mdb->topic->save($doc);
+    }
+    
+    return $doc;
 }
     
 sub deal_with_images{
@@ -2284,7 +2301,9 @@ sub change_status {
     my ($self, %p) = @_;
     my $mid = $p{mid} or _throw 'Missing parameter mid';
     $p{id_status} or _throw 'Missing parameter id_status';
+    
     my $row = DB->BaliTopic->find( $mid );
+
     my $id_old_status = $p{id_old_status} || $row->id_category_status;
     my $status = $p{status} || $self->find_status_name($p{id_status});
     my $old_status = $p{old_status} || $self->find_status_name($id_old_status);
@@ -2297,9 +2316,12 @@ sub change_status {
                 
                 _fail( _loc('Id not found: %1', $mid) ) unless $row;
                 _fail _loc "Current topic status '%1' does not match the real status '%2'. Please refresh.", $row->status->name, $old_status if $row->id_category_status != $id_old_status;
-                # XXX check workflow for user
+                # XXX check workflow for user?
                 # change and cleanup
                 $row->update({ id_category_status => $p{id_status} });
+                # update mongo
+                $self->update_category_status( $mid, $p{id_status} );
+                
                 $self->cache_topic_remove( $mid );
             }
             # callback, if any
