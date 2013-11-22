@@ -2320,7 +2320,8 @@ sub change_status {
             +{ mid => $mid, title => $row->title, notify_default => \@users, subject => $subject } ;       
         } 
         => sub {
-            _throw _loc( 'Error modifying Topic: %1', shift() );
+            #_throw _loc( 'Error modifying Topic: %1', shift() );
+            _throw shift ;
         };                    
 }
 
