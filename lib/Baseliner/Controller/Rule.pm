@@ -304,7 +304,7 @@ sub palette : Local {
         text=>_loc('Generic Services'),
         icon => '/static/images/icons/service.png',
         draggable => \0,
-        expanded => \0,
+        expanded => length $query ? \1 : \0,
         children=> [ 
           sort { uc $a->{text} cmp uc $b->{text} }
           grep { !$query || join(',', values %$_) =~ $query }

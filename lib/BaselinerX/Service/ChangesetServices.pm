@@ -9,18 +9,37 @@ with 'Baseliner::Role::Service';
 
 register 'service.changeset.items' => {
     name    => 'Load Job Items into Stash',
+    icon    => '/static/images/icons/baseline.gif',
     job_service  => 1,
     handler => \&job_items,
 };
 
+register 'service.changeset.update_baselines' => {
+    name    => 'Update Baselines',
+    job_service  => 1,
+    icon    => '/static/images/icons/baseline.gif',
+    #form    => '/forms/update_baselines.js',
+    handler => \&update_baselines,
+};
+
+register 'service.changeset.verify_revisions' => {
+    name    => 'Verify Revision Integrity Rules',
+    job_service  => 1,
+    icon    => '/static/images/icons/baseline.gif',
+    #form    => '/forms/update_baselines.js',
+    handler => \&verify_revisions,
+};
+
 register 'service.changeset.checkout' => {
     name    => 'Checkout Job Items',
+    icon    => '/static/images/icons/eclipse/checkout.gif',
     job_service  => 1,
     handler => \&checkout,
 };
 
 register 'service.changeset.checkout.bl' => {
     name    => 'Checkout Job Baseline',
+    icon    => '/static/images/icons/eclipse/checkout.gif',
     job_service  => 1,
     handler => \&checkout_bl,
 };
@@ -95,7 +114,54 @@ sub changeset_update {
         );
     }
 
-    #$repo->update_baselines( rev => $git_checkouts->{$_}->{rev} );
+}
+
+sub update_baselines {
+    my ( $self, $c, $config ) = @_;
+
+    my $stash = $c->stash;
+    my $job   = $stash->{job};
+    my $log   = $job->logger;
+    my $type = $job->job_type;
+    my $bl = $job->bl;
+    
+    my @project_changes = @{ $stash->{project_changes} || [] };
+    $log->info( _loc('Updating baseline for %1 project(s) to %2', scalar(@project_changes), $bl ) );
+    for my $pc ( @project_changes ) {
+        my ($project, $repo_revisions_items ) = @{ $pc }{ qw/project repo_revisions_items/ };
+        next unless ref $repo_revisions_items eq 'ARRAY';
+        for my $rri ( @$repo_revisions_items ) {
+            my ($repo, $revisions,$items) = @{ $rri }{ qw/repo revisions items/ };
+            
+            $log->info( _loc('Updating baseline %1 for project %2, repository %3, job type %4', $bl, $project->name, $repo->name, $type ) );
+            my $out = $repo->update_baselines( revisions => $revisions, tag=>$bl, type=>$type );
+            $log->info( _loc('Baseline update of %1 item(s) completed', $repo->name), $out );
+        }
+    }
+}
+
+sub verify_revisions {
+    my ( $self, $c, $config ) = @_;
+
+    my $stash = $c->stash;
+    my $job   = $stash->{job};
+    my $log   = $job->logger;
+    my $type = $job->job_type;
+    my $bl = $job->bl;
+    
+    my @project_changes = @{ $stash->{project_changes} || [] };
+    $log->info( _loc('Checking job revisions', scalar(@project_changes) ) );
+    for my $pc ( @project_changes ) {
+        my ($project, $repo_revisions_items ) = @{ $pc }{ qw/project repo_revisions_items/ };
+        next unless ref $repo_revisions_items eq 'ARRAY';
+        for my $rri ( @$repo_revisions_items ) {
+            my ($repo, $revisions,$items) = @{ $rri }{ qw/repo revisions items/ };
+            
+            $log->info( _loc('Updating baseline %1 for project %2, repository %3, job type %4', $bl, $project->name, $repo->name, $type ) );
+            my $out = $repo->verify_revisions( revisions=>$revisions, tag=>$bl, type=>$type );
+            $log->info( _loc('Baseline update of %1 item(s) completed', $repo->name), $out );
+        }
+    }
 }
 
 sub job_items {
@@ -109,7 +175,6 @@ sub job_items {
     my $bl = $job->bl;
     my $all_bls = join '|', grep !/^\*$/, map { $_->bl } BaselinerX::CI::bl->search_cis;
     my $rename_mode = $config->{rename_mode} // 'on';
-    
     
     my %projects;
     my @project_changes;
