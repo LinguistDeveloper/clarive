@@ -1438,7 +1438,8 @@ sub save_data {
                             { mid => $topic->mid, topic => $topic->title, subject => $subject, notify => $notify }   # to the event
                         } 
                         => sub {
-                            _throw _loc( 'Error modifying Topic: %1', shift() );
+                            #_throw _loc( 'Error modifying Topic: %1', shift() );
+                            _throw  shift;
                         };
 
                 }
