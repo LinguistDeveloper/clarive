@@ -146,9 +146,16 @@ Ext.onReady(function(){
         tabs.push({title:_('Dashboard'), closable: false, autoLoad: {url:'/dashboard/list', scripts: true}, cls: 'tab-style', tab_icon: '/static/images/icons/dashboard.png' });
     }
 
+    var menuTab = new Ext.ux.TabCloseMenu({
+        closeTabText: _('Close Tab'),
+        closeOtherTabsText: _('Close Other Tabs'),
+        closeAllTabsText: _('Close All Tabs')        
+    });
+
+
     var tab_panel = new Ext.TabPanel({  region: 'center', id:'main-panel',
             defaults: { closable: true, autoScroll: true }, 
-            plugins: ['tabclosemenu'],
+            plugins: [menuTab],
             enableTabScroll: true,
             layoutOnTabChange: true,
             activeTab: 0, 

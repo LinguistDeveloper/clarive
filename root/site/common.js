@@ -2110,7 +2110,7 @@ Baseliner.CheckBoxField = Ext.extend( Ext.grid.GridPanel, {
         Ext.each( arr, function(id){
             // check each one
             var r = self.getStore().getById( id );
-            alert( r );
+            //alert( r );
             recs.push( r );
         });
         self.$updating = true;
@@ -2613,7 +2613,6 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
     use_row_editor: true,
     initComponent: function(){
         var self = this;
-        
         self.viewConfig = Ext.apply({
             forceFit: true
         }, self.viewConfig );
@@ -2738,6 +2737,7 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         }
         
         self.columns = cols;
+		self.fields = fields;
         self.ddGroup = 'grid_editor_' + Ext.id();
         self.tbar = [
             button_add,
@@ -2801,13 +2801,17 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         var self = this;
         var arr = [];
         self.store.each( function(r) {
-            arr.push( r.data );
+			if(r.data[self.fields[0].name] != '') arr.push( r.data );
         });
         return arr;
     }, 
     is_valid : function(){
         var self = this;
-        return self.store.getCount() > 0 ;
+        var cont = 0;
+        self.store.each( function(r) {
+			if(r.data[self.fields[0].name] != '') cont++;
+        });
+        return cont > 0 ;
     }
 });
 

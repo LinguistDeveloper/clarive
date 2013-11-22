@@ -888,7 +888,7 @@ Baseliner.model.CICombo = function(c) {
             valueField: 'mid',
         msgTarget: 'under',
         forceSelection: true,
-        typeAhead: false,
+        typeAhead: true,
         loadingText: _('Searching...'),
         resizable: true,
         allowBlank: false,
