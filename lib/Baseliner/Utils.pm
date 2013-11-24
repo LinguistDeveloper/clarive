@@ -512,9 +512,13 @@ sub parse_date {
 # alternative parsing with strpdate
 sub parse_dt {
     my ( $format, $date ) = @_;
-    use DateTime::Format::Strptime;
+    require DateTime::Format::Strptime;
     my $parser = DateTime::Format::Strptime->new( pattern => $format, on_error=>'croak', time_zone=>_tz() );
-    return $parser->parse_datetime( $date );
+    my $dt = try { 
+        $parser->parse_datetime( "$date" );
+    } catch {
+        _fail( _loc( "Could not parse date %1 with format %2", $date, $format ) );
+    };
 }
 
 # return an array with hashes of data from a resultset
