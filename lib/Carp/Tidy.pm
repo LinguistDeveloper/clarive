@@ -92,7 +92,7 @@ sub _from_sub {
     return $from_sub, $from_sub_name;
 }
 
-sub Carp::ret_backtrace {
+my $backtrace_sub =  sub {
     my ( $i, @error ) = @_;
     my $mess;
     my $err = join '', @error;
@@ -117,7 +117,6 @@ sub Carp::ret_backtrace {
     return $mess unless ref $Carp::Tidy::stack_mess eq 'CODE';
 
     while ( my %i = Carp::caller_info( ++$i ) ) {
-    #use YAML; print Dump \%i;
         $i{tid_msg} = $tid_msg;
         $i{error_loc} = $i;
         ( $i{from_sub}, $i{from_sub_name} ) = _from_sub( $i );
@@ -126,6 +125,10 @@ sub Carp::ret_backtrace {
     }
 
     return $mess;
+};
+
+unless( $ENV{CARP_TIDY_OFF} ) {
+    *Carp::ret_backtrace = $backtrace_sub;
 }
 
 =head1 DESCRIPTION
