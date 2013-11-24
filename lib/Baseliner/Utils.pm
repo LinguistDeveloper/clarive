@@ -783,17 +783,22 @@ Returns a temp file name, creating the temp directory if needed.
 =cut
 sub _tmp_file {
     my $p = _parameters(@_);
-    $p->{prefix} ||= [ caller(0) ]->[2];  # get the subname
-    $p->{prefix} =~ s/\W/_/g;
+    # dir selection
     my $tempdir = $p->{tempdir} || _tmp_dir();
-    $p->{dir}||='';
-    $p->{extension} ||='log';
-    my $dir  = File::Spec->catdir($tempdir, $p->{dir} );
-    unless( -d $tempdir ) {
-    warn "Creating temp dir $tempdir";
-    _mkpath( $tempdir );
+    my $dir  = File::Spec->catdir($tempdir, ($p->{dir}//'') );
+    unless( -d $dir ) {
+        warn "Creating temp dir $dir";
+        _mkpath( $dir );
     }
-    my $file = File::Spec->catfile($dir, $p->{prefix} . "_" . _nowstamp() . "_$$." . $p->{extension} );
+    # file selection
+    my $file = $p->{filename} 
+        ? File::Spec->catfile($dir,$p->{filename}) 
+        : do {
+            $p->{prefix} ||= [ caller(0) ]->[2];  # get the subname
+            $p->{prefix} =~ s/\W/_/g;
+            $p->{extension} ||='log';
+            File::Spec->catfile($dir, $p->{prefix} . "_" . _nowstamp() . "_$$." . $p->{extension} ); 
+        };
     ( $ENV{BASELINER_DEBUG} || $ENV{CATALYST_DEBUG} ) and warn "Created tempfile $file\n";
     return $file;
 }
