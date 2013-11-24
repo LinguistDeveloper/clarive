@@ -74,7 +74,7 @@ sub master_setup {
     $self->many_to_many( $name, $rel_type, $rel_type_inverse );
 
     # generic 
-    $self->has_one(
+    $self->belongs_to(
       "master",
       "Baseliner::Schema::Baseliner::Result::BaliMaster",
       { "foreign.mid" => "self.mid" },
