@@ -73,7 +73,7 @@ sub json : Local {
 sub list : Local {
     my ($self,$c)=@_;
     my $p = $c->request->parameters;
-    my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
+    my ($start, $limit, $query, $dir, $sort) = ( @{$p}{qw/start limit query dir sort/});
     $start ||= 0;
     $limit ||= 100;
     $sort ||= 'seq';

@@ -81,7 +81,7 @@ sub has_cis {
         $options{is}  ||= 'rw';
         $options{traits} ||= ['CIs'];
     }
- 
+    
     $meta->add_attribute( $name, %options, );
 }
 

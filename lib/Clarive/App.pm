@@ -86,8 +86,9 @@ sub BUILD {
         $self->debug(1);
     }
     # carp_always ? 
-    if( $self->carp_always ) {
+    if( my $carpa = $self->carp_always ) {
         require Carp::Always;
+        $ENV{CARP_TIDY_OFF} = 1 if $carpa > 1; # turn off Carp::Tidy filtering
     }
 
     # dbic trace

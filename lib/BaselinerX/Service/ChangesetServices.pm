@@ -32,14 +32,14 @@ register 'service.changeset.verify_revisions' => {
 
 register 'service.changeset.checkout' => {
     name    => 'Checkout Job Items',
-    icon    => '/static/images/icons/eclipse/checkout.gif',
+    icon    => '/static/images/icons/checkout.png',
     job_service  => 1,
     handler => \&checkout,
 };
 
 register 'service.changeset.checkout.bl' => {
     name    => 'Checkout Job Baseline',
-    icon    => '/static/images/icons/eclipse/checkout.gif',
+    icon    => '/static/images/icons/checkout.png',
     job_service  => 1,
     handler => \&checkout_bl,
 };
@@ -157,9 +157,10 @@ sub verify_revisions {
         for my $rri ( @$repo_revisions_items ) {
             my ($repo, $revisions,$items) = @{ $rri }{ qw/repo revisions items/ };
             
-            $log->info( _loc('Updating baseline %1 for project %2, repository %3, job type %4', $bl, $project->name, $repo->name, $type ) );
+            $log->info( _loc('Verifying baseline %1 for project %2, repository %3, job type %4', $bl, $project->name, $repo->name, $type ) );
+            $log->debug( _loc('Revisions selected'), $revisions );
             my $out = $repo->verify_revisions( revisions=>$revisions, tag=>$bl, type=>$type );
-            $log->info( _loc('Baseline update of %1 item(s) completed', $repo->name), $out );
+            $log->info( _loc('Baseline verified for repository %1', $repo->name), $out );
         }
     }
 }
@@ -240,7 +241,7 @@ sub job_items {
     $stash->{item_name_list_quote} = "'" . join("' '", keys %name_list) . "'";
     $stash->{item_name_list_comma} = join(",", keys %name_list);
 
-    # save project-repository structure
+    # save project-repository-revisions structure
     $stash->{project_changes} = \@project_changes;
     
     my $cnt = scalar keys %all_items; 

@@ -40,6 +40,13 @@ sub search_index {
     $self->ensure_index({'$**'=> "text"}, {name=> $self->name . "_index_text"});
 }
 
+sub clone {
+    my ($self,$collname)=@_;
+    my $coll = mdb->collection($collname);
+    Util->_fail( Util->_loc('Collection %1 already has rows in it, cannot clone')) if $coll->count; 
+    $coll->insert($_) for $self->find->all;
+}
+
 sub merge_into {
     my ($self,$where,$partial,@args) = @_;
     my $doc = $self->find_one( $where ) // Util->_fail( Util->_loc('Document not found: %1', Util->_to_json($where) ) );

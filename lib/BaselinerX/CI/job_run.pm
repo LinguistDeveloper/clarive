@@ -7,7 +7,7 @@ extends 'BaselinerX::CI::job';
 
 has exec               => qw(is rw isa Num default 1);
 has pid                => qw(is rw isa Num lazy 1), default=>sub{ return $$ };
-has host               => qw(is rw isa Str lazy 1), default=>sub{ return lc Sys::Hostname::hostname() };
+has host               => qw(is rw isa Str lazy 1), default=>sub{ return Util->my_hostname() };
 has owner              => qw(is rw isa Str lazy 1), default=>sub{ return $ENV{USER} || $ENV{USERNAME} };
 has same_exec          => qw(is rw isa Bool default 0); 
 has step_status        => ( is=>'rw', isa=>'HashRef[Str]', default=>sub{{}} );  # saves statuses at step change

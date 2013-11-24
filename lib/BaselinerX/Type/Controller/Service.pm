@@ -77,23 +77,6 @@ sub rest : Local {
     $c->forward('View::JSON');
 }
 
-sub launch : Regex('^service.') {
-    my ($self,$c)=@_;
-    my $service_name = $c->request->path;
-    my $ns = $c->request->params->{ns} || '/';
-    my $bl = $c->request->params->{bl} || '*';
-    _log "Invoking service '$service_name'";
-    my $service = $c->registry->get($service_name) || die _loc("Could not find service %1",  $service_name);
-    my $config = $c->registry->get( $service->config ) if( $service->{config} );
-    my $config_data;
-    if( $config ) {
-        $config_data = $config->factory( $c, ns=>$ns, bl=>$bl, data=>$c->request->params );
-    }
-    #warn "Configdata:" . Dumper $config_data;
-    my $ret = $service->run( $c, $config_data );
-    $c->res->body( "<h1>Resultado de la ejecución del servicio $service_name: $ret->{rc}</h1><p><pre>$ret->{msg}</pre>" );
-}
-
 sub tree : Local {
     my ($self,$c)=@_;
     my $list = $c->registry->starts_with( 'service' ) ;

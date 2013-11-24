@@ -6,7 +6,6 @@ with 'Baseliner::Role::Service';
 
 use Proc::Background;
 use Proc::Exists qw(pexists);
-use Sys::Hostname;
 
 our $EXIT_NOW = 0;
 
@@ -203,9 +202,9 @@ sub check_job_expired {
         $row->update;
     }
     $rs = $c->model('Baseliner::BaliJob')->search({ status => 'RUNNING', pid=>{'>', 0} });
-    my $hostname = lc Sys::Hostname::hostname();
+    my $hostname = Util->my_hostname();
     while( my $row = $rs->next ) {
-        _log "Checking row pid ". $row->pid;
+        _log sprintf "Checking job row alive: pid=%s, host=%s (my host=%s)", $row->pid, $row->host, $hostname;
         if( $row->pid && $row->host eq $hostname ) {
             unless( pexists( $row->pid ) ) {
                 # recheck
