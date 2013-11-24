@@ -158,7 +158,7 @@ use Locale::Maketext::Simple (
 #use Carp::Clan qw(^Baseliner:: ^BaselinerX::);
 use utf8;
 use v5.10;
-use Carp::Tidy -clan=>['Baseliner']; #,'Catalyst'];
+use Carp::Tidy $ENV{BASELINER_DEBUG} > 1 ? ( -clan=>['Baseliner'] ) : (); #,'Catalyst'];
 use DateTime;
 use Class::Date;
 use YAML::XS;
