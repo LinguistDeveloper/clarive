@@ -298,7 +298,6 @@ sub get_notifications {
 	my $send_notification;
     $send_notification = $self->get_rules_notifications( { event_key => $event_key, action => 'SEND', notify_scope => $notify_scope, mid => $mid } );
     
-    my $template;
     my $name_config = $event_key;
     $name_config =~ s/event.//g;
     my $template = Baseliner->model( 'ConfigStore' )->get( 'config.notifications.' . $name_config . '.template_default')->{template_default};

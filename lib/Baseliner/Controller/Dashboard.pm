@@ -70,7 +70,7 @@ sub list_dashboard : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
 
-    my ($start, $limit, $query, $dir, $sort, $cnt) = ( @{$p}{qw/start limit query dir sort/}, 0 );
+    my ($start, $limit, $query, $dir, $sort) = ( @{$p}{qw/start limit query dir sort/});
     $dir ||= 'desc';
     $start||= 0;
     $limit ||= 100;
@@ -94,7 +94,7 @@ sub list_dashboard : Local {
                                                     );
     
     my $pager = $rs->pager;
-    $cnt = $pager->total_entries;		
+    my $cnt = $pager->total_entries;		
     
     my @rows;
     while( my $r = $rs->next ) {
@@ -1043,8 +1043,6 @@ sub topics_by_category: Local{
     my ($SQL, @topics_by_category, @datas);
 
     my $user = $c->username;
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-
     my $user_categories = join ",", map {
             $_->{id};
         } $c->model('Topic')->get_categories_permissions( username => $user, type => 'view' );
@@ -1095,8 +1093,6 @@ sub topics_open_by_category: Local{
 
 
     my $user = $c->username;
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-
     my $user_categories = join ",", map {
             $_->{id};
         } $c->model('Topic')->get_categories_permissions( username => $user, type => 'view' );
@@ -1148,8 +1144,6 @@ sub topics_by_status: Local{
     my ($SQL, @topics_by_status, @datas);
 
     my $user = $c->username;
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-
     my $user_categories = join ",", map {
             $_->{id};
         } $c->model('Topic')->get_categories_permissions( username => $user, type => 'view' );
@@ -1208,8 +1202,6 @@ sub topics_open_by_status: Local{
     my ($SQL, @topics_open_by_status, @datas);
 
     my $user = $c->username;
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-
     my $user_categories = join ",", map {
             $_->{id};
         } $c->model('Topic')->get_categories_permissions( username => $user, type => 'view' );
