@@ -166,7 +166,6 @@ use List::MoreUtils qw(:all);
 use Try::Tiny;
 use MIME::Lite;
 use Class::MOP;
-use Sys::Hostname;
 use Text::Unaccent::PurePerl qw/unac_string/;
 use Path::Class;
 use Term::ANSIColor;
@@ -664,8 +663,13 @@ sub _parse_template_mason {
     return $body;
 }
 
+sub my_hostname {
+   require Sys::Hostname;
+   return Baseliner->config->{host} || lc( Sys::Hostname::hostname() ); 
+}
+
 sub _notify_address {
-    my $host = Baseliner->config->{web_host} || Baseliner->config->{host} || lc(Sys::Hostname::hostname);
+    my $host = Baseliner->config->{web_host} || my_hostname(); 
     my $port = Baseliner->config->{web_port} || $ENV{BASELINER_PORT} || $ENV{CATALYST_PORT} || 3000;
     return "http://$host:$port";
 }

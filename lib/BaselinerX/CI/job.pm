@@ -103,6 +103,7 @@ around update_ci => sub {
     if( my $row = DB->BaliJob->search({ mid=>$mid })->first ) {
         $row->update({
             pid         => $self->pid,
+            host        => $self->host,
             exec        => $self->exec,
             rollback    => $self->rollback,
             step        => $self->step,
