@@ -101,7 +101,7 @@ sub master_new {
         #return $class->save( %$master_data, data=>$code );   # this returns a mid
     } elsif( ref $code eq 'CODE' ) {
         my $ret;
-        Baseliner->model('Baseliner')->txn_do(sub{
+        Baseliner->model('Baseliner')->schema->txn_do(sub{
             my $ci = $class->new( %$master_data );
             $ci->save;
             my $mid = $ci->mid;

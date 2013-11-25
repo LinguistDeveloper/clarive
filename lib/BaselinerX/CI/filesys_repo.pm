@@ -26,7 +26,7 @@ service scan => 'Scan files' => sub {
 service load => 'Load files as items' => sub {
     my ($self,$c,$p) =@_;
     my $itset = $self->load_items();
-    $self->children( $itset->children );
+    $self->children( $itset->items );
     $self->save;
     return $itset;
 };
@@ -50,7 +50,7 @@ sub load_items {
                 );
         }
     );
-    BaselinerX::CI::itemset->new( children => \@items );
+    BaselinerX::CI::itemset->new( items => \@items );
 }
 
 

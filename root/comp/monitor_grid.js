@@ -565,7 +565,7 @@
         }
     });
 
-    var msg_cancel_delete = [ _('Cancel Job'), _('Delete Job') ];
+    var msg_cancel_delete = [ _('Cancel'), _('Delete') ];
     var button_cancel = new Ext.Toolbar.Button({
         text: msg_cancel_delete[0],
         icon:'/static/images/del.gif',

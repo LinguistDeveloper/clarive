@@ -158,7 +158,7 @@ use Locale::Maketext::Simple (
 #use Carp::Clan qw(^Baseliner:: ^BaselinerX::);
 use utf8;
 use v5.10;
-use Carp::Tidy -clan=>['Baseliner']; #,'Catalyst'];
+use Carp::Tidy $ENV{BASELINER_DEBUG} > 1 ? ( -clan=>['Baseliner'] ) : (); #,'Catalyst'];
 use DateTime;
 use Class::Date;
 use YAML::XS;
@@ -166,7 +166,6 @@ use List::MoreUtils qw(:all);
 use Try::Tiny;
 use MIME::Lite;
 use Class::MOP;
-use Sys::Hostname;
 use Text::Unaccent::PurePerl qw/unac_string/;
 use Path::Class;
 use Term::ANSIColor;
@@ -513,9 +512,13 @@ sub parse_date {
 # alternative parsing with strpdate
 sub parse_dt {
     my ( $format, $date ) = @_;
-    use DateTime::Format::Strptime;
+    require DateTime::Format::Strptime;
     my $parser = DateTime::Format::Strptime->new( pattern => $format, on_error=>'croak', time_zone=>_tz() );
-    return $parser->parse_datetime( $date );
+    my $dt = try { 
+        $parser->parse_datetime( "$date" );
+    } catch {
+        _fail( _loc( "Could not parse date %1 with format %2", $date, $format ) );
+    };
 }
 
 # return an array with hashes of data from a resultset
@@ -664,8 +667,13 @@ sub _parse_template_mason {
     return $body;
 }
 
+sub my_hostname {
+   require Sys::Hostname;
+   return Baseliner->config->{host} || lc( Sys::Hostname::hostname() ); 
+}
+
 sub _notify_address {
-    my $host = Baseliner->config->{web_host} || Baseliner->config->{host} || lc(Sys::Hostname::hostname);
+    my $host = Baseliner->config->{web_host} || my_hostname(); 
     my $port = Baseliner->config->{web_port} || $ENV{BASELINER_PORT} || $ENV{CATALYST_PORT} || 3000;
     return "http://$host:$port";
 }
@@ -775,17 +783,22 @@ Returns a temp file name, creating the temp directory if needed.
 =cut
 sub _tmp_file {
     my $p = _parameters(@_);
-    $p->{prefix} ||= [ caller(0) ]->[2];  # get the subname
-    $p->{prefix} =~ s/\W/_/g;
+    # dir selection
     my $tempdir = $p->{tempdir} || _tmp_dir();
-    $p->{dir}||='';
-    $p->{extension} ||='log';
-    my $dir  = File::Spec->catdir($tempdir, $p->{dir} );
-    unless( -d $tempdir ) {
-    warn "Creating temp dir $tempdir";
-    _mkpath( $tempdir );
+    my $dir  = File::Spec->catdir($tempdir, ($p->{dir}//'') );
+    unless( -d $dir ) {
+        warn "Creating temp dir $dir";
+        _mkpath( $dir );
     }
-    my $file = File::Spec->catfile($dir, $p->{prefix} . "_" . _nowstamp() . "_$$." . $p->{extension} );
+    # file selection
+    my $file = $p->{filename} 
+        ? File::Spec->catfile($dir,$p->{filename}) 
+        : do {
+            $p->{prefix} ||= [ caller(0) ]->[2];  # get the subname
+            $p->{prefix} =~ s/\W/_/g;
+            $p->{extension} ||='log';
+            File::Spec->catfile($dir, $p->{prefix} . "_" . _nowstamp() . "_$$." . $p->{extension} ); 
+        };
     ( $ENV{BASELINER_DEBUG} || $ENV{CATALYST_DEBUG} ) and warn "Created tempfile $file\n";
     return $file;
 }

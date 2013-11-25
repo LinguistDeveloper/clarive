@@ -4,10 +4,10 @@ use Baseliner::Moose;
 with 'Baseliner::Role::CI::Group';
 sub icon       { '/static/images/icons/ci.png' }
 
-has_cis children => 'ArrayRef[Baseliner::Role::CI::Item]'; #qw(is rw isa ArrayRef[Baseliner::Role::CI::Item]);
+has_cis items => 'Baseliner::Role::CI::Item'; #qw(is rw isa ArrayRef[Baseliner::Role::CI::Item]);
 
 sub rel_type {
-    { children=>{ from_mid => 'itemset_item' } } 
+    { items=>{ from_mid => 'itemset_item' } } 
 }
 
 around BUILDARGS => sub {
@@ -25,7 +25,7 @@ sub AUTOLOAD {
     my @a = reverse(split(/::/, $name));
     my $method = $a[0];
     my @results;
-    for my $chi ( @{ $self->children || [] } ) {
+    for my $chi ( @{ $self->items || [] } ) {
         push @results, $chi->$method( @_ );
     }
     return @results;

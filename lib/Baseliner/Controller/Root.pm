@@ -258,22 +258,22 @@ sub models : Local {
 
 }
 
-sub raw : LocalRegex( '^raw/(.*)$' ) {
-    my ( $self, $c, $arg ) = @_;
-    my $path = $c->req->captures->[0];
+sub raw : Local {
+    my ( $self, $c, @args ) = @_;
+    my $path = join '/', @args;
     $c->stash->{site_raw} = 1;
     push @{ $c->stash->{tab_list} }, { url=>"/$path", title=>"/$path", type=>'comp' };
     $c->forward('/index');
 }
 
-sub tab : LocalRegex( '^tab/(.*)$' ) {
-    my ( $self, $c, $arg ) = @_;
-    my $path = $c->req->captures->[0];
+sub tab : Local {
+    my ( $self, $c, @args ) = @_;
+    my $path = join '/', @args;
     push @{ $c->stash->{tab_list} }, { url=>"/$path", title=>"/$path", type=>'comp' };
     $c->forward('/index');
 }
 
-sub index:Private {
+sub index : Private {
     my ( $self, $c ) = @_;
 
     my $p = $c->request->parameters;

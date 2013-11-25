@@ -1,5 +1,5 @@
 package Baseliner::Plugin::ConfigExternal;
-use Mouse;
+use Moose;
 
 sub setup { 
     my $c = shift;
