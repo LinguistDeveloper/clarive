@@ -1039,7 +1039,6 @@ sub viewjobs: Local{
 sub topics_by_category: Local{
     my ( $self, $c, $action ) = @_;
     #my $p = $c->request->parameters;
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
     my ($SQL, @topics_by_category, @datas);
 
     my $user = $c->username;
@@ -1090,7 +1089,6 @@ sub topics_by_category: Local{
 sub topics_open_by_category: Local{
     my ( $self, $c, $action ) = @_;
     #my $p = $c->request->parameters;
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
     my ($SQL, @topics_open_by_category, @datas);
 
 
@@ -1144,7 +1142,6 @@ sub topics_open_by_category: Local{
 sub topics_by_status: Local{
     my ( $self, $c, $action ) = @_;
     #my $p = $c->request->parameters;
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
     my ($SQL, @topics_by_status, @datas);
 
     my $user = $c->username;
@@ -1204,7 +1201,6 @@ sub topics_by_status: Local{
 sub topics_open_by_status: Local{
     my ( $self, $c, $action ) = @_;
     #my $p = $c->request->parameters;
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
     my ($SQL, @topics_open_by_status, @datas);
 
     my $user = $c->username;
