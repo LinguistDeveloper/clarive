@@ -92,7 +92,7 @@ sub list : Local {
             description	=> _loc($r->description),
           };
     } sort { $a->seq <=> $b->seq } ci->search_cis( collection=>'bl' );
-    $cnt = @rows;
+    my $cnt = @rows;
         
     $c->stash->{json} = { totalCount=>$cnt, data=>\@rows };
     $c->forward('View::JSON');    
