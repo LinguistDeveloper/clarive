@@ -1257,4 +1257,37 @@ sub topics_open_by_status: Local{
 
 }
 
+sub list_status_changed: Local{
+    my ( $self, $c ) = @_;
+    
+    my $now = DateTime->now;
+    
+    my $query = {
+        event_key   => 'event.topic.change_status',
+        ts			=> {'between' => [ $now->ymd, $now->add(days=>1)->ymd]},
+    };
+    
+    my @status_changes;
+    my @mid_topics;
+    my @topics = DB->BaliEvent->search( $query, {order_by => {'-desc' => 'ts'}})->hashref->all;
+    map {
+         my $ed = _load( $_->{event_data} );
+         push @status_changes, { old_status => $ed->{old_status}, status => $ed->{status}, username => $ed->{username}, when => $_->{ts}, mid => $ed->{topic_mid} };
+         push @mid_topics, $ed->{topic_mid};
+    } @topics;
+
+    my %topics_categories;
+    map { $topics_categories{$_->{mid}} = { color => $_->{categories}->{color},
+    										name => $_->{categories}->{name}} }  Baseliner->model('Baseliner::BaliTopic')->search(
+                            { mid => \@mid_topics},
+                            { prefetch=>['categories'] }
+                            )->hashref->all;
+    
+    $c->stash->{list_topics} = \%topics_categories;
+    $c->stash->{list_status_changed} = \@status_changes;
+    $c->stash->{list_status_changed_title} = _loc('Status changed');    
+};
+
+
+
 1;
