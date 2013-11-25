@@ -1267,13 +1267,25 @@ sub list_status_changed: Local{
         ts			=> {'between' => [ $now->ymd, $now->add(days=>1)->ymd]},
     };
     
+    my @user_categories =  map { $_->{id} } $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view' );
+    my @user_project_ids = Baseliner->model("Permissions")->user_projects_ids( username => $c->username);
+
+    my $topic_project = DB->BaliMasterRel->search({to_mid=>\@user_project_ids, rel_type=>'topic_project'}, 
+                              {select=>'from_mid', group_by=>'from_mid'} )->as_query;
+
+
+    my %my_topics;
+    map { $my_topics{$_->{mid} = 1} } DB->BaliTopic->search({mid=>{ -in=> $topic_project } , id_category => \@user_categories, modified_on=> {'between' => [ $now->ymd, $now->add(days=>1)->ymd]}})->hashref->all;
+
     my @status_changes;
     my @mid_topics;
     my @topics = DB->BaliEvent->search( $query, {order_by => {'-desc' => 'ts'}})->hashref->all;
     map {
-         my $ed = _load( $_->{event_data} );
-         push @status_changes, { old_status => $ed->{old_status}, status => $ed->{status}, username => $ed->{username}, when => $_->{ts}, mid => $ed->{topic_mid} };
-         push @mid_topics, $ed->{topic_mid};
+        my $ed = _load( $_->{event_data} );
+        if (exists $my_topics{$ed->{topic_mid}} || Baseliner->model("Permissions")->is_root( $c->username )){
+            push @status_changes, { old_status => $ed->{old_status}, status => $ed->{status}, username => $ed->{username}, when => $_->{ts}, mid => $ed->{topic_mid} };
+            push @mid_topics, $ed->{topic_mid};
+        }
     } @topics;
 
     my %topics_categories;
@@ -1285,7 +1297,7 @@ sub list_status_changed: Local{
     
     $c->stash->{list_topics} = \%topics_categories;
     $c->stash->{list_status_changed} = \@status_changes;
-    $c->stash->{list_status_changed_title} = _loc('Status changed');    
+    $c->stash->{list_status_changed_title} = _loc('Changed statuses');    
 };
 
 
