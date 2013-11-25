@@ -1178,6 +1178,7 @@ sub get_release {
                             )->hashref->first; 
     return  {
                 color => $release_row->{categories}{color},
+                name => $release_row->{categories}{name},
                 title => $release_row->{title},
                 mid => $release_row->{mid},
             }
