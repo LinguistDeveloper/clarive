@@ -1260,11 +1260,12 @@ sub topics_open_by_status: Local{
 sub list_status_changed: Local{
     my ( $self, $c ) = @_;
     
-    my $now = DateTime->now;
+    my $now1 = DateTime->now;
+    my $now2 = DateTime->now;
     
     my $query = {
         event_key   => 'event.topic.change_status',
-        ts			=> {'between' => [ $now->ymd, $now->add(days=>1)->ymd]},
+        ts			=> {'between' => [ $now1->ymd, $now1->add(days=>1)->ymd]},
     };
     
     my @user_categories =  map { $_->{id} } $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view' );
@@ -1275,7 +1276,7 @@ sub list_status_changed: Local{
 
 
     my %my_topics;
-    map { $my_topics{$_->{mid} = 1} } DB->BaliTopic->search({mid=>{ -in=> $topic_project } , id_category => \@user_categories, modified_on=> {'between' => [ $now->ymd, $now->add(days=>1)->ymd]}})->hashref->all;
+    map { $my_topics{$_->{mid}} = 1 } DB->BaliTopic->search({mid=>{ -in=> $topic_project } , id_category => \@user_categories, modified_on=> {'between' => [ $now2->ymd, $now2->add(days=>1)->ymd]}})->hashref->all;
 
     my @status_changes;
     my @mid_topics;
@@ -1287,7 +1288,9 @@ sub list_status_changed: Local{
             push @mid_topics, $ed->{topic_mid};
         }
     } @topics;
-
+    
+    @mid_topics = _unique map {$_} @mid_topics ;
+    
     my %topics_categories;
     map { $topics_categories{$_->{mid}} = { color => $_->{categories}->{color},
     										name => $_->{categories}->{name}} }  Baseliner->model('Baseliner::BaliTopic')->search(
