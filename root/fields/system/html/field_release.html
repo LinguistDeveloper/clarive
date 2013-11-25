@@ -6,7 +6,7 @@
     <tr>
       <th><% _loc($meta->{name_field}) %>:</th>
       <td>
-        <span class="arrow_box" style="padding: 3px;cursor:pointer; background-color:<% $data->{$meta->{id_field}}->{color} || 'transparent' %>" 
+        <span class="arrow_box" style="padding: 3px;cursor:pointer; color: white;background-color:<% $data->{$meta->{id_field}}->{color} || 'transparent' %>" 
                 onclick="javascript:Baseliner.show_topic(<% $data->{$meta->{id_field}}->{mid} %>, '<% $data->{$meta->{id_field}}->{title} %>')">
                 <% $data->{$meta->{id_field}}->{title} || '&nbsp;' %>
         </span>
