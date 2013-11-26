@@ -261,3 +261,9 @@
 .bali-td-special {
 	border: none;
 }
+
+.bl-text-over {
+	white-space:nowrap;
+	overflow:hidden;	
+	text-overflow:ellipsis;
+}
