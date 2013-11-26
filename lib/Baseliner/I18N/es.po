@@ -4907,3 +4907,6 @@ msgstr "Cerrar Todas"
 
 msgid "Changed statuses"
 msgstr "Cambios de estado"
+
+msgid "Transition"
+msgstr "Transición"
