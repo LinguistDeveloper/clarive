@@ -1289,6 +1289,7 @@ sub list_status_changed: Local{
         }
     } @topics;
     
+    @status_changes = sort { $a->{mid} <=> $b->{mid} } @status_changes;
     @mid_topics = _unique map {$_} @mid_topics ;
     
     my %topics_categories;

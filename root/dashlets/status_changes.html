@@ -21,7 +21,7 @@ html: /dashlets/status_changes.html
 % for my $ch ( _array @status_changes ) {
          <tr>
 % my $topic_mid = $ch->{mid} . $id . '_status';
-            <td width='5px' id="<%$topic_mid%>">11</td>
+            <td width='5px' id="<%$topic_mid%>"></td>
             <script>
                 var name = Baseliner.topic_name({ link: true,
                     mid: '<%$ch->{mid}%>', 
