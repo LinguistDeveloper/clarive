@@ -70,7 +70,7 @@ sub list_dashboard : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
 
-    my ($start, $limit, $query, $dir, $sort) = ( @{$p}{qw/start limit query dir sort/});
+    my ($start, $limit, $query, $dir, $sort, $cnt) = ( @{$p}{qw/start limit query dir sort/}, 0 );
     $dir ||= 'desc';
     $start||= 0;
     $limit ||= 100;
@@ -94,7 +94,7 @@ sub list_dashboard : Local {
                                                     );
     
     my $pager = $rs->pager;
-    my $cnt = $pager->total_entries;		
+    $cnt = $pager->total_entries;		
     
     my @rows;
     while( my $r = $rs->next ) {
@@ -1039,10 +1039,11 @@ sub viewjobs: Local{
 sub topics_by_category: Local{
     my ( $self, $c, $action ) = @_;
     #my $p = $c->request->parameters;
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
     my ($SQL, @topics_by_category, @datas);
 
     my $user = $c->username;
+    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+
     my $user_categories = join ",", map {
             $_->{id};
         } $c->model('Topic')->get_categories_permissions( username => $user, type => 'view' );
@@ -1088,11 +1089,12 @@ sub topics_by_category: Local{
 sub topics_open_by_category: Local{
     my ( $self, $c, $action ) = @_;
     #my $p = $c->request->parameters;
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
     my ($SQL, @topics_open_by_category, @datas);
 
 
     my $user = $c->username;
+    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+
     my $user_categories = join ",", map {
             $_->{id};
         } $c->model('Topic')->get_categories_permissions( username => $user, type => 'view' );
@@ -1140,10 +1142,11 @@ sub topics_open_by_category: Local{
 sub topics_by_status: Local{
     my ( $self, $c, $action ) = @_;
     #my $p = $c->request->parameters;
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
     my ($SQL, @topics_by_status, @datas);
 
     my $user = $c->username;
+    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+
     my $user_categories = join ",", map {
             $_->{id};
         } $c->model('Topic')->get_categories_permissions( username => $user, type => 'view' );
@@ -1198,10 +1201,11 @@ sub topics_by_status: Local{
 sub topics_open_by_status: Local{
     my ( $self, $c, $action ) = @_;
     #my $p = $c->request->parameters;
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
     my ($SQL, @topics_open_by_status, @datas);
 
     my $user = $c->username;
+    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+
     my $user_categories = join ",", map {
             $_->{id};
         } $c->model('Topic')->get_categories_permissions( username => $user, type => 'view' );
@@ -1252,5 +1256,54 @@ sub topics_open_by_status: Local{
     $c->stash->{topics_open_by_status_title} = _loc('Topics open by status');
 
 }
+
+sub list_status_changed: Local{
+    my ( $self, $c ) = @_;
+    
+    my $now1 = DateTime->now;
+    my $now2 = DateTime->now;
+    
+    my $query = {
+        event_key   => 'event.topic.change_status',
+        ts			=> {'between' => [ $now1->ymd, $now1->add(days=>1)->ymd]},
+    };
+    
+    my @user_categories =  map { $_->{id} } $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view' );
+    my @user_project_ids = Baseliner->model("Permissions")->user_projects_ids( username => $c->username);
+
+    my $topic_project = DB->BaliMasterRel->search({to_mid=>\@user_project_ids, rel_type=>'topic_project'}, 
+                              {select=>'from_mid', group_by=>'from_mid'} )->as_query;
+
+
+    my %my_topics;
+    map { $my_topics{$_->{mid}} = 1 } DB->BaliTopic->search({mid=>{ -in=> $topic_project } , id_category => \@user_categories, modified_on=> {'between' => [ $now2->ymd, $now2->add(days=>1)->ymd]}})->hashref->all;
+
+    my @status_changes;
+    my @mid_topics;
+    my @topics = DB->BaliEvent->search( $query, {order_by => {'-desc' => 'ts'}})->hashref->all;
+    map {
+        my $ed = _load( $_->{event_data} );
+        if (exists $my_topics{$ed->{topic_mid}} || Baseliner->model("Permissions")->is_root( $c->username )){
+            push @status_changes, { old_status => $ed->{old_status}, status => $ed->{status}, username => $ed->{username}, when => $_->{ts}, mid => $ed->{topic_mid} };
+            push @mid_topics, $ed->{topic_mid};
+        }
+    } @topics;
+    
+    @status_changes = sort { $a->{mid} <=> $b->{mid} } @status_changes;
+    @mid_topics = _unique map {$_} @mid_topics ;
+    
+    my %topics_categories;
+    map { $topics_categories{$_->{mid}} = { color => $_->{categories}->{color},
+    										name => $_->{categories}->{name}} }  Baseliner->model('Baseliner::BaliTopic')->search(
+                            { mid => \@mid_topics},
+                            { prefetch=>['categories'] }
+                            )->hashref->all;
+    
+    $c->stash->{list_topics} = \%topics_categories;
+    $c->stash->{list_status_changed} = \@status_changes;
+    $c->stash->{list_status_changed_title} = _loc('Changed statuses');    
+};
+
+
 
 1;

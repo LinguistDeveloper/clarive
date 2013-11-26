@@ -4910,3 +4910,6 @@ msgstr "Cerrar Resto"
 
 msgid "Close All Tabs"
 msgstr "Cerrar Todas"
+
+msgid "Changed statuses"
+msgstr "Cambios de estado"

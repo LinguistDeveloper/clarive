@@ -140,6 +140,7 @@ sub update : Local {
         }
     } catch {
         my $e = shift;
+        _log "EEEE".$e;
         $c->stash->{json} = { success => \0, msg=>_loc($e) };
     };
     $c->forward('View::JSON');

@@ -1,0 +1,46 @@
+<!--
+name: Status changed
+description: List of status changed
+config: ''
+url: /dashboard/list_status_changed
+html: /dashlets/status_changes.html
+-->
+<%perl>
+    use Baseliner::Utils;
+    use Class::Date;
+    my @status_changes = $c->stash->{list_status_changed};
+    my $title = $c->stash->{list_status_changed_title};
+    my $topics = $c->stash->{list_topics};
+    my $id = _nowstamp;
+</%perl>
+
+    <div style="clear:left;">
+        <h2><% _loc($title) %></h2>
+      <table class="table table-bordered table-condensed">
+      <tbody>
+% for my $ch ( _array @status_changes ) {
+         <tr>
+% my $topic_mid = $ch->{mid} . $id . '_status';
+            <td width='5px' id="<%$topic_mid%>"></td>
+            <script>
+                var name = Baseliner.topic_name({ link: true,
+                    mid: '<%$ch->{mid}%>', 
+                    size: '10',
+                    category_name: '<% $topics->{$ch->{mid}}->{name} %>',
+                    category_color: '<% $topics->{$ch->{mid}}->{color} %>',
+                    short_name: true
+                });
+                document.getElementById('<%$topic_mid%>').innerHTML = name;
+            </script> 
+            <td style="font: 13px OpenSans, Lato, Calibxri, Tahoma; background-color: #fff; color: #111; "><% Util->ago( $ch->{when} )  %></td> 
+            <td class="status-html" style="font-size: 10px; font-weight: bold"><% $ch->{old_status}  %></td>
+            <td width='5px'>-</td>
+             <!-- <td><img src="/static/images/icons/right-arrow.png"></td> -->
+            <td class="status-html" style="font-size: 10px; font-weight: bold"><% $ch->{status}  %></td>
+         </tr>
+         
+% }
+
+      </tbody>
+      </table>
+    </div>

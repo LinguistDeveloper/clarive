@@ -114,6 +114,7 @@
             '<div class="search-item">{name}</div>',
         '</tpl>'
     );
+    var changed = false;
     var combo_baseline = new Ext.form.ComboBox({
         name: 'bl',
         hiddenName: 'bl',
@@ -136,6 +137,7 @@
                 store_search.removeAll();
                 jc_grid.getStore().removeAll();
                 combo_baseline.setRawValue( bl );
+                changed = true;
             }
         },
         width: 200
@@ -556,14 +558,14 @@
                 var job_type = main_form.getForm().getValues()['job_type'];
                 var cnt = jc_store.getCount();  // auto set ?
                 var bl = combo_baseline.getValue();
-                if( ! ( data.promotable || data.demotable ) ) {
+                if( ! ( data.promotable || data.demotable || data.deployable ) ) {
                     Ext.Msg.alert( _('Error'),
                         _("Cannot promote/demote this entity type" ) );
                     return true; 
                 }
-                var bl_item = ( job_type == 'promote' ) ? data.promotable[bl] : data.demotable[bl];
-                if( cnt == 0 || bl_item == undefined ) {
-                    var bl_hash = ( job_type == 'promote' ) ? data.promotable : data.demotable;
+                var bl_item = ( job_type == 'promote' ) ? data.promotable[bl] : ( job_type == 'promote' ) ? data.demotable[bl] : data.deployable[bl];
+                if( (cnt == 0 || bl_item == undefined) && !changed ) {
+                    var bl_hash = ( job_type == 'promote' ) ? data.promotable : ( job_type == 'promote' ) ? data.demotable : data.deployable;
                     var first_bl;
                     for( var k in bl_hash ) {
                        first_bl = k;
@@ -573,7 +575,6 @@
                 }
                 var bl = combo_baseline.getValue();
 
-                //if( data.promotable[ bl ] == 1  || data.demot) {
                 var bl_item = ( job_type == 'promote' ) ? data.promotable[bl] : ( job_type == 'demote') ? data.demotable[bl]: data.deployable[bl];
                 if ( bl_item == undefined ) {  
                     Ext.Msg.alert( _('Error'),

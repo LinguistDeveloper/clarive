@@ -645,34 +645,36 @@ sub update {
         when ( 'update' ) {
             
             event_new 'event.topic.modify' => { username=>$p->{username},  } => sub {
-                Baseliner->model('Baseliner')->txn_do(sub{
-                    my @field;
-                    $topic_mid = $p->{topic_mid};
+                Baseliner->model('Baseliner')->schema->txn_begin;
+                my @field;
+                $topic_mid = $p->{topic_mid};
 
-                    my $meta = $self->get_meta ($topic_mid, $p->{category});
-                    
-                    my @meta_filter;
-                    push @meta_filter, $_
-                       for grep { exists $p->{$_->{id_field}}} _array($meta);
-                    $meta = \@meta_filter;
-                    
-                    my $topic = $self->save_data ($meta, $topic_mid, $p);
-                    
-                    $topic_mid    = $topic->mid;
-                    $status = $topic->id_category_status;
-                    $modified_on = $topic->modified_on->epoch;
-                    $category = { $topic->categories->get_columns };
-                    
-                    my @projects = map {$_->{mid}} $topic->projects->hashref->all;
-                    my @users = $self->get_users_friend(id_category => $topic->id_category, id_status => $topic->id_category_status, projects => \@projects);
-    
-                    $return = 'Topic modified';
-                    my $subject = _loc("Topic updated (%1): [%2] %3", $category->{name}, $topic->mid, $topic->title);
-                   { mid => $topic->mid, topic => $topic->title, subject => $subject, notify_default => \@users }   # to the event
-                });
+                my $meta = $self->get_meta ($topic_mid, $p->{category});
+                
+                my @meta_filter;
+                push @meta_filter, $_
+                   for grep { exists $p->{$_->{id_field}}} _array($meta);
+                $meta = \@meta_filter;
+                
+                my $topic = $self->save_data ($meta, $topic_mid, $p);
+                
+                $topic_mid    = $topic->mid;
+                $status = $topic->id_category_status;
+                $modified_on = $topic->modified_on->epoch;
+                $category = { $topic->categories->get_columns };
+                
+                my @projects = map {$_->{mid}} $topic->projects->hashref->all;
+                my @users = $self->get_users_friend(id_category => $topic->id_category, id_status => $topic->id_category_status, projects => \@projects);
+
+                $return = 'Topic modified';
+                my $subject = _loc("Topic updated (%1): [%2] %3", $category->{name}, $topic->mid, $topic->title);
+                Baseliner->model('Baseliner')->schema->txn_commit;
+               { mid => $topic->mid, topic => $topic->title, subject => $subject, notify_default => \@users }   # to the event
             } ## end try
             => sub {
-                _throw _loc( 'Error modifying Topic: %1', shift() );
+                my $e = shift;
+                Baseliner->model('Baseliner')->schema->txn_rollback;
+                _throw $e;
             };
         } ## end when ( 'update' )
         when ( 'delete' ) {
@@ -1176,6 +1178,7 @@ sub get_release {
                             )->hashref->first; 
     return  {
                 color => $release_row->{categories}{color},
+                name => $release_row->{categories}{name},
                 title => $release_row->{title},
                 mid => $release_row->{mid},
             }
@@ -1274,212 +1277,258 @@ sub get_files{
 }
 
 sub save_data {
-    my ($self, $meta, $topic_mid, $data, %opts ) = @_;
+    my ( $self, $meta, $topic_mid, $data, %opts ) = @_;
 
-    
-    if ( length $topic_mid ) {        
-        _debug "Removing *$topic_mid* from cache";
-        Baseliner->cache_remove( qr/:$topic_mid:/ );
-    }
-    
-    my @std_fields =
-        map { +{ name => $_->{id_field}, column => $_->{bd_field}, method => $_->{set_method}, relation => $_->{relation} } }
-        grep { $_->{origin} eq 'system' } _array($meta);
-    
-    my %row;
-    my %description;
-    my %old_values;
-    my %old_text;
-    my %relation;
 
-    my @imgs;
-
-    $data->{description} = $self->deal_with_images({topic_mid => $topic_mid, field => $data->{description}});
-
-    for( @std_fields ) {
-        if  (exists $data->{ $_ -> {name}}){
-            $row{ $_->{column} } = $data->{ $_ -> {name}};
-            $description{ $_->{column} } = $_ -> {name}; ##Contemplar otro parametro mas descriptivo
-            $relation{ $_->{column} } = $_ -> {relation};
-            if ($_->{method}){
-                #my $extra_fields = eval( '$self->' . $_->{method} . '( $data->{ $_ -> {name}}, $data, $meta )' );
-                my $method_set = $_->{method};
-                my $extra_fields = $self->$method_set( $data->{ $_->{name} }, $data, $meta, %opts );
-                foreach my $column (keys %{ $extra_fields || {} } ){
-                     $row{ $column } = $extra_fields->{$column};
-                }
-            }
+    try {
+        if ( length $topic_mid ) {
+            _debug "Removing *$topic_mid* from cache";
+            Baseliner->cache_remove( qr/:$topic_mid:/ );
         }
-    }
 
-    my @custom_fields =
-        map { +{ name => $_->{id_field}, column => $_->{id_field}, data => $_->{data} } }
-        grep { $_->{origin} eq 'custom' && !$_->{relation} } _array($meta);
-
-    push @custom_fields, 
-        map { 
-            my $cf = $_;
+        my @std_fields =
             map {
-                +{ name => $_->{id_field}, column => $_->{id_field}, data=> $_->{data} }
-            } _array $_->{fields};
-        } grep { $_->{type} && $_->{type} eq 'form' } _array($meta);
-    
-    my $topic;
-    my $moniker = delete $row{moniker};
-    
-    if (!$topic_mid){
-        # new topic
-        master_new 'topic' => { name=>$data->{title}, moniker=>$moniker, data=>{ %row } } => sub {
-            $topic_mid = shift;
-
-            #Defaults
-            $row{ mid } = $topic_mid;
-            $row{ created_by } = $data->{username};
-            $row{ modified_by } = $data->{username};
-            $row{ id_category_status } = $data->{id_category_status} if $data->{id_category_status};
-            
-            $topic = DB->BaliTopic->create( \%row );
-
-            # update images
-            for( @imgs ) {
-                $_->update({ topic_mid => $topic_mid });
-            }
-        }        
-    }else{
-        # update topic
-        $topic = DB->BaliTopic->find( $topic_mid, { prefetch =>['categories','status','priorities'] } );
-
-        for my $field (keys %row){
-            $old_values{$field} = $topic->$field,
-            my $method = $relation{ $field };
-            $old_text{$field} = $method ? try { $topic->$method->name } : $topic->$field,
-        }
-        $topic->modified_by( $data->{username} );
-        $topic->update( \%row );
-        _ci( $topic_mid )->update( name=>$row{title}, moniker=>$moniker, %row );
-
-        for my $field (keys %row){
-            next if $field eq 'response_time_min' || $field eq 'expr_response_time';
-            next if $field eq 'deadline_min' || $field eq 'expr_deadline';
-
-            my $method = $relation{ $field };
-            my $new_value = $row{$field};
-            my $old_value = $old_values{$field};
-
-            if ( !defined $old_value || $new_value ne $old_value ){
-                if($field eq 'id_category_status'){
-                    # change status
-                    my $id_status = $new_value;
-                    my $cb_ci_update = sub {
-                        # check if it's a CI update
-                        my $status_new = DB->BaliTopicStatus->find( $id_status );
-                        my $ci_update = $status_new->ci_update;
-                        if( $ci_update && ( my $cis = $data->{_cis} ) ) {
-                            for my $ci ( _array $cis ) {
-                                my $ci_data = $ci->{ci_data} // { map { $_ => $data->{$_} } grep { length } _array( $ci->{ci_fields} // @custom_fields ) };
-                                my $ci_master = $ci->{ci_master} // $ci_data;
-                                given( $ci->{ci_action} ) {
-                                    when( 'create' ) {
-                                        my $ci_class = $ci->{ci_class};
-                                        $ci_class = 'BaselinerX::CI::' . $ci_class unless $ci_class =~ /^Baseliner/;
-                                        my $obj = $ci_class->new( %$ci_master, %$ci_data );
-                                        $ci->{ci_mid} = $obj->save;
-                                        $ci->{_ci_updated} = 1;
-                                    }
-                                    when( 'update' ) {
-                                        _debug "ci update $ci->{ci_mid}";
-                                        my $ci_mid = $ci->{ci_mid} // $ci_data->{ci_mid};
-                                        my $obj = _ci( $ci_mid );
-                                        $obj->update( %$ci_master, %$ci_data );
-                                        $obj->save;
-                                        $ci->{_ci_updated} = 1;
-                                    }
-                                    when( 'delete' ) {
-                                        my $ci_mid = $ci->{ci_mid} // $ci_data->{ci_mid};
-                                        my $obj = _ci( $ci_mid );
-                                        $obj->update( %$ci_master, %$ci_data );
-                                        $obj->save;
-                                        $obj->delete; 
-                                        $ci->{_ci_updated} = 1;
-                                    }
-                                    default {
-                                        _throw _loc "Invalid ci action '%1' for mid '%2'", $ci->{ci_action}, $ci->{ci_mid};
-                                    }
-                                }
-                            }
-                        }
-                    };
-                    $self->change_status( mid=>$topic_mid, title=>$topic->{title}, username=>$data->{username},
-                        old_status=>$old_text{$field}, id_old_status =>$old_value,
-                        id_status=>$id_status, callback=>$cb_ci_update
-                    );
+            +{
+                name     => $_->{id_field},
+                column   => $_->{bd_field},
+                method   => $_->{set_method},
+                relation => $_->{relation}
                 }
-                else {
-                    # report event
-                    
-                    my @projects = map {$_->{mid}} $topic->projects->hashref->all;                    
-                    my $notify = {
-                        category        => $topic->id_category,
-                        category_status => $topic->id_category_status,
-                        field           => $field
-                    };                    
-                    $notify->{project} = \@projects if @projects;
-                    
-                    event_new 'event.topic.modify_field' 
-                        => { 
-                             username   => $data->{username},
-                             field      => _loc ($description{ $field }),
-                             old_value  => $old_text{$field},
-                             new_value  => $method && $topic->$method ? $topic->$method->name : $topic->$field,
-                             mid => $topic->mid,
-                           } 
-                        => sub {
-                            my $subject = _loc("Topic [%1] %2: Field '%3' updated", $topic->mid, $topic->title, $description{ $field });
-                            { mid => $topic->mid, topic => $topic->title, subject => $subject, notify => $notify }   # to the event
-                        } 
-                        => sub {
-                            #_throw _loc( 'Error modifying Topic: %1', shift() );
-                            _throw  shift;
+            }
+            grep {
+            $_->{origin} eq 'system'
+            } _array( $meta );
+
+        my %row;
+        my %description;
+        my %old_values;
+        my %old_text;
+        my %relation;
+
+        my @imgs;
+
+        $data->{description} =
+            $self->deal_with_images( {topic_mid => $topic_mid, field => $data->{description}} );
+
+        for ( @std_fields ) {
+            if ( exists $data->{$_->{name}} ) {
+                $row{$_->{column}} = $data->{$_->{name}};
+                $description{$_->{column}} = $_->{name};     ##Contemplar otro parametro mas descriptivo
+                $relation{$_->{column}}    = $_->{relation};
+                if ( $_->{method} ) {
+
+      #my $extra_fields = eval( '$self->' . $_->{method} . '( $data->{ $_ -> {name}}, $data, $meta )' );
+                    my $method_set = $_->{method};
+                    my $extra_fields = $self->$method_set( $data->{$_->{name}}, $data, $meta, %opts );
+                    foreach my $column ( keys %{$extra_fields || {}} ) {
+                        $row{$column} = $extra_fields->{$column};
+                    }
+                } ## end if ( $_->{method} )
+            } ## end if ( exists $data->{$_...})
+        } ## end for ( @std_fields )
+
+        my @custom_fields =
+            map { +{name => $_->{id_field}, column => $_->{id_field}, data => $_->{data}} }
+            grep { $_->{origin} eq 'custom' && !$_->{relation} } _array( $meta );
+
+        push @custom_fields, map {
+            my $cf = $_;
+            map { +{name => $_->{id_field}, column => $_->{id_field}, data => $_->{data}} }
+                _array $_->{fields};
+            } grep {
+            $_->{type} && $_->{type} eq 'form'
+            } _array( $meta );
+
+        my $topic;
+        my $moniker = delete $row{moniker};
+
+        if ( !$topic_mid ) {
+
+            # new topic
+            master_new 'topic' => {name => $data->{title}, moniker => $moniker, data => {%row}} => sub {
+                $topic_mid = shift;
+
+                #Defaults
+                $row{mid}                = $topic_mid;
+                $row{created_by}         = $data->{username};
+                $row{modified_by}        = $data->{username};
+                $row{id_category_status} = $data->{id_category_status} if $data->{id_category_status};
+
+                $topic = DB->BaliTopic->create( \%row );
+
+                # update images
+                for ( @imgs ) {
+                    $_->update( {topic_mid => $topic_mid} );
+                }
+                }
+        } else {
+
+            # update topic
+            $topic =
+                DB->BaliTopic->find( $topic_mid,
+                {prefetch => [ 'categories', 'status', 'priorities' ]} );
+
+            for my $field ( keys %row ) {
+                $old_values{$field} = $topic->$field, my $method = $relation{$field};
+                $old_text{$field} = $method ? try { $topic->$method->name } : $topic->$field,;
+            }
+            $topic->modified_by( $data->{username} );
+            $topic->update( \%row );
+            _ci( $topic_mid )->update( name => $row{title}, moniker => $moniker, %row );
+
+            for my $field ( keys %row ) {
+                next if $field eq 'response_time_min' || $field eq 'expr_response_time';
+                next if $field eq 'deadline_min'      || $field eq 'expr_deadline';
+
+                my $method    = $relation{$field};
+                my $new_value = $row{$field};
+                my $old_value = $old_values{$field};
+
+                if ( !defined $old_value || $new_value ne $old_value ) {
+                    if ( $field eq 'id_category_status' ) {
+
+                        # change status
+                        my $id_status    = $new_value;
+                        my $cb_ci_update = sub {
+
+                            # check if it's a CI update
+                            my $status_new = DB->BaliTopicStatus->find( $id_status );
+                            my $ci_update  = $status_new->ci_update;
+                            if ( $ci_update && ( my $cis = $data->{_cis} ) ) {
+                                for my $ci ( _array $cis ) {
+                                    my $ci_data = $ci->{ci_data} // {map { $_ => $data->{$_} }
+                                            grep { length }
+                                            _array( $ci->{ci_fields} // @custom_fields )};
+                                    my $ci_master = $ci->{ci_master} // $ci_data;
+                                    given ( $ci->{ci_action} ) {
+                                        when ( 'create' ) {
+                                            my $ci_class = $ci->{ci_class};
+                                            $ci_class = 'BaselinerX::CI::' . $ci_class
+                                                unless $ci_class =~ /^Baseliner/;
+                                            my $obj = $ci_class->new( %$ci_master, %$ci_data );
+                                            $ci->{ci_mid}      = $obj->save;
+                                            $ci->{_ci_updated} = 1;
+                                        } ## end when ( 'create' )
+                                        when ( 'update' ) {
+                                            _debug "ci update $ci->{ci_mid}";
+                                            my $ci_mid = $ci->{ci_mid} // $ci_data->{ci_mid};
+                                            my $obj = _ci( $ci_mid );
+                                            $obj->update( %$ci_master, %$ci_data );
+                                            $obj->save;
+                                            $ci->{_ci_updated} = 1;
+                                        } ## end when ( 'update' )
+                                        when ( 'delete' ) {
+                                            my $ci_mid = $ci->{ci_mid} // $ci_data->{ci_mid};
+                                            my $obj = _ci( $ci_mid );
+                                            $obj->update( %$ci_master, %$ci_data );
+                                            $obj->save;
+                                            $obj->delete;
+                                            $ci->{_ci_updated} = 1;
+                                        } ## end when ( 'delete' )
+                                        default {
+                                            _throw _loc "Invalid ci action '%1' for mid '%2'",
+                                                $ci->{ci_action}, $ci->{ci_mid};
+                                        }
+                                    } ## end given
+                                } ## end for my $ci ( _array $cis)
+                            } ## end if ( $ci_update && ( my...))
                         };
+                        $self->change_status(
+                            mid           => $topic_mid,
+                            title         => $topic->{title},
+                            username      => $data->{username},
+                            old_status    => $old_text{$field},
+                            id_old_status => $old_value,
+                            id_status     => $id_status,
+                            callback      => $cb_ci_update
+                        );
+                    } else {
 
+                        # report event
+
+                        my @projects = map { $_->{mid} } $topic->projects->hashref->all;
+                        my $notify = {
+                            category        => $topic->id_category,
+                            category_status => $topic->id_category_status,
+                            field           => $field
+                        };
+                        $notify->{project} = \@projects if @projects;
+
+                        event_new 'event.topic.modify_field' => {
+                            username  => $data->{username},
+                            field     => _loc( $description{$field} ),
+                            old_value => $old_text{$field},
+                            new_value => $method
+                                && $topic->$method ? $topic->$method->name : $topic->$field,
+                            mid => $topic->mid,
+                            } => sub {
+                            my $subject = _loc( "Topic [%1] %2: Field '%3' updated",
+                                $topic->mid, $topic->title, $description{$field} );
+                            {
+                                mid     => $topic->mid,
+                                topic   => $topic->title,
+                                subject => $subject,
+                                notify  => $notify
+                            }    # to the event
+                            } => sub {
+
+                            #_throw _loc( 'Error modifying Topic: %1', shift() );
+                            _throw shift;
+                            };
+
+                    } ## end else [ if ( $field eq 'id_category_status')]
+                } ## end if ( !defined $old_value...)
+            } ## end for my $field ( keys %row)
+        } ## end else [ if ( !$topic_mid ) ]
+
+
+        if ( my $cis = $data->{_cis} ) {
+            for my $ci ( _array $cis ) {
+                if ( length $ci->{ci_mid} && $ci->{ci_action} eq 'update' ) {
+                    DB->BaliMasterRel->update_or_create(
+                        {rel_type => 'ci_request', from_mid => $ci->{ci_mid}, to_mid => $topic->mid} );
                 }
+            } ## end for my $ci ( _array $cis)
+        } ## end if ( my $cis = $data->...)
+
+        # save relationship fields
+        my %rel_fields =
+            map { $_->{id_field} => $_->{set_method} }
+            grep { $_->{relation} && $_->{relation} eq 'system' } _array( $meta );
+        foreach my $id_field ( keys %rel_fields ) {
+            if ( $rel_fields{$id_field} ) {
+                my $meth = $rel_fields{$id_field};
+                $self->$meth( $topic, $data->{$id_field}, $data->{username}, $id_field, $meta );
             }
-        }        
-    }
+        } ## end foreach my $id_field ( keys...)
 
-    
-    if( my $cis = $data->{_cis} ) {
-        for my $ci ( _array $cis ) {
-            if( length $ci->{ci_mid} && $ci->{ci_action} eq 'update' ) {
-                DB->BaliMasterRel->update_or_create({ rel_type=>'ci_request', from_mid=>$ci->{ci_mid}, to_mid=>$topic->mid });
-            }
+        # save to mongo
+        $self->save_doc(
+            $meta, +{$topic->get_columns}, $data,
+            mid           => $topic_mid,
+            custom_fields => \@custom_fields
+        );
+
+        # user seen
+        my $row = DB->BaliMasterPrefs->update_or_create(
+            {username => $data->{username}, mid => $topic_mid, last_seen => _dt()} );
+
+        # cache clear
+        $self->cache_topic_remove( $topic_mid );
+        my @related_topics = ci->new( $topic_mid )->related( isa => 'topic' );
+        for ( @related_topics ) {
+            $self->cache_topic_remove( $_->{mid} );
         }
-    }
-    
-    # save relationship fields
-    my %rel_fields = map { $_->{id_field} => $_->{set_method} }  grep { $_->{relation} && $_->{relation} eq 'system' } _array( $meta  );
-    foreach my $id_field  (keys %rel_fields){
-        if($rel_fields{$id_field}){
-            my $meth = $rel_fields{$id_field};
-            $self->$meth( $topic, $data->{$id_field}, $data->{username}, $id_field, $meta );
-        }
-    } 
-     
-    # save to mongo
-    $self->save_doc( $meta, +{ $topic->get_columns }, $data, mid=>$topic_mid, custom_fields=>\@custom_fields );
 
-    # user seen
-    my $row = DB->BaliMasterPrefs->update_or_create({ username=>$data->{username}, mid=>$topic_mid, last_seen=>_dt() });
-    
-    # cache clear
-    $self->cache_topic_remove( $topic_mid );
-    my @related_topics = ci->new($topic_mid)->related( isa => 'topic');
-    for ( @related_topics ) {
-        $self->cache_topic_remove( $_->{mid} );
-    }
+        return $topic;
+    } catch {
+        my $e = shift;
+        _log "SSSSSSSSSS$e";
+        _throw $e;
+    };
 
-    return $topic;
-}
+} ## end sub save_data
+
 
 sub save_doc {
     my ($self,$meta,$row, $doc, %p) = @_;
@@ -2342,8 +2391,7 @@ sub change_status {
             +{ mid => $mid, title => $row->title, notify_default => \@users, subject => $subject } ;       
         } 
         => sub {
-            #_throw _loc( 'Error modifying Topic: %1', shift() );
-            _throw shift ;
+            _throw _loc( 'Error modifying Topic: %1', shift() );
         };                    
 }
 
