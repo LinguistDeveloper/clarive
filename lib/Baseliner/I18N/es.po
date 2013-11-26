@@ -489,6 +489,12 @@ msgstr "Nuevo Nombre"
 msgid "About Baseliner"
 msgstr "Acerca del Baseliner"
 
+msgid "Deprecate"
+msgstr "Obsoleto"
+
+msgid "deprecated"
+msgstr "obsoleto"
+
 msgid "Server communication failure. Check your connection."
 msgstr "Error de communicación con el servidor. Compruebe su conexión."
 
