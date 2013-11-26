@@ -279,6 +279,7 @@ sub related : Local {
         #    :  _loc($_->{categories}->{name}) . ' #' . $_->{mid};
         $_->{name} = _loc($_->{categories}->{name}) . ' #' . $_->{mid};
         $_->{color} = $_->{categories}->{color};
+        $_->{short_name} = $c->model('Topic')->get_short_name( name => $_->{categories}->{name} ) . ' #' . $_->{mid};
         $_
     } $rs_topic->all;
 
