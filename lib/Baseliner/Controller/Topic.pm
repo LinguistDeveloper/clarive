@@ -279,6 +279,7 @@ sub related : Local {
         #    :  _loc($_->{categories}->{name}) . ' #' . $_->{mid};
         $_->{name} = _loc($_->{categories}->{name}) . ' #' . $_->{mid};
         $_->{color} = $_->{categories}->{color};
+        $_->{short_name} = $c->model('Topic')->get_short_name( name => $_->{categories}->{name} ) . ' #' . $_->{mid};
         $_
     } $rs_topic->all;
 
@@ -461,7 +462,7 @@ sub new_topic : Local {
         _fail( _loc('The topic category %1 does not have any initial status assigned. Contact your administrator.', $name_category) ) 
             unless $rs_status;
         my $name_status = $rs_status->status->name;
-        my $meta = $c->model('Topic')->get_meta( undef, $id_category );
+        my $meta = $c->model('Topic')->get_meta( undef, $id_category, $c->username );
         $meta = $self->get_field_bodies( $meta );
         
         my $data;

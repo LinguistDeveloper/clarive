@@ -1053,7 +1053,7 @@ our %meta_types = (
 );
 
 sub get_meta {
-    my ($self, $topic_mid, $id_category) = @_;
+    my ($self, $topic_mid, $id_category, $username) = @_;
 
     my $cached = Baseliner->cache_get( "topic:meta:$topic_mid:") if $topic_mid;
     return $cached if $cached;
@@ -2458,6 +2458,13 @@ sub check_fields_required {
         }
     }
     return ($isValid, @fields_required);
+}
+
+sub get_short_name {
+    my ($self, %p) = @_;
+    my $name = $p{name} or _throw 'Missing parameter name';
+    $name =~ s/[^A-Z]//g;    
+    return $name; 
 }
 
 1;
