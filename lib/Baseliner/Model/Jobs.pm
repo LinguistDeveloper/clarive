@@ -64,9 +64,9 @@ sub monitor {
             push @mid_filters, { mid=>{-in => $rs_jobs1 } };
         }
         
-        if( exists $p->{job_state_filter} ) {
+        if( length $p->{job_state_filter} ) {
             my @job_state_filters = do {
-                    my $job_state_filter = decode_json $p->{job_state_filter};
+                    my $job_state_filter = Util->decode_json( $p->{job_state_filter} );
                     _unique grep { $job_state_filter->{$_} } keys %$job_state_filter;
             };
             $where->{status} = \@job_state_filters;
@@ -153,7 +153,7 @@ sub monitor {
         my ($contents,$apps)=([],[]);  # support for legacy jobs without cis
         my @natures;
         if( my $ci = try { ci->new( $r->{mid} ) } catch { '' } ) {   # if -- support legacy jobs without cis?
-            $contents = [ map { $_->topic_name } _array $ci->changesets ];
+            $contents = [ map { $_->topic_name } _array( $ci->changesets ) ];
             $apps = [ map { $_->name } _array $ci->projects ];
             @natures = map { $_->name } _array $ci->natures;
         }

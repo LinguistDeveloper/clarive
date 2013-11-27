@@ -4,17 +4,6 @@ Baseliner.user_can_workspace = <% $c->model('Permissions')->user_has_any_action(
 Baseliner.user_can_releases = <% $c->model('Permissions')->user_has_any_action( action=>'action.home.view_releases', username=>$c->username ) ? 'true' : 'false' %>;
 Baseliner.user_can_reports = <% $c->model('Permissions')->user_has_any_action( action=>'action.reports.view', username=>$c->username ) ? 'true' : 'false' %>;
 
-
-Baseliner.tree_topic_style = [
-    '<span unselectable="on" style="font-size:0px;',
-    'padding: 8px 8px 0px 0px;',
-    'margin : 0px 4px 0px 0px;',
-    'border : 2px solid {0};',
-    'background-color: transparent;',
-    'color:{0};',
-    'border-radius:0px"></span>'
-].join('');
-
 var base_menu_items = [ ];
 
 // only one right click menu showed at once, so create a static entity
@@ -124,140 +113,6 @@ Baseliner.TreeMultiTextNode = Ext.extend( Ext.tree.TreeNodeUI, {
     }
 });
 
-/*
- * Baseliner.Tree
- *
- * Features:
- *
- *   - context menu from node
- *   - drag and drop ready
- *   - paging (TODO)
- *
- */
-
-Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
-    useArrows: true,
-    autoScroll: true,
-    animate: true,
-    enableDD: true,
-    containerScroll: true,
-    rootVisible: false,
-    constructor: function(c){
-        var self = this;
-        
-        Baseliner.Tree.superclass.constructor.call(this, Ext.apply({
-            loader: new Baseliner.TreeLoader({ 
-                        dataUrl: c.dataUrl,
-                        requestMethod: this.requestMethod, 
-                        baseParams: c.baseParams }),
-            root: { nodeType: 'async', text: '/', draggable: false, id: '/' }
-        }, c) );
-        
-        self.on('contextmenu', self.menu_click );
-        self.on('beforenodedrop', self.drop_handler );
-        self.on('dblclick', function(n, ev){     
-            if( n.leaf ) 
-                self.click_handler({ node: n });
-        });
-    },
-    drop_handler : function(e) {
-        var self = this;
-        // from node:1 , to_node:2
-        e.cancel = true;
-        e.dropStatus = true;
-        var n1 = e.source.dragData.node;
-        var n2 = e.target;
-        if( n1 == undefined || n2 == undefined ) return false;
-        
-        var node_data1 = n1.attributes.data;
-        var node_data2 = n2.attributes.data;
-        if( node_data1 == undefined ) node_data1={};
-        if( node_data2 == undefined ) return false;
-        if( node_data2.on_drop != undefined ) {
-            var on_drop = node_data2.on_drop;
-            if( on_drop.url != undefined ) {
-                var p = { tree: self, node1: n1, node2: n2, id_file: node_data1.id_file  };
-                if( n2.parentNode && n2.parentNode.attributes.data ) 
-                    p.id_project = n2.parentNode.attributes.data.id_project
-                        
-                Baseliner.ajaxEval( on_drop.url, p, function(res){
-                    if( res ) {
-                        if( res.success ) {
-                            Baseliner.message(  _('Drop'), res.msg );
-                            //e.target.appendChild( n1 );
-                            //e.target.expand();
-                            self.refresh_node( e.target );
-                        } else {
-                            Baseliner.message( _('Drop'), res.msg );
-                            //Ext.Msg.alert( _('Error'), res.msg );
-                            return false;
-                        }
-                    } else {
-                        return true;
-                    }
-                });
-            }else{
-                if(on_drop.handler != undefined ){
-                    eval(on_drop.handler + '(n1, n2);');                
-                }
-            }
-        }
-        return true;
-    },
-    click_handler: function(item){
-        var n = item.node;
-        var c = n.attributes.data.click;
-        var params = n.attributes.data;
-        
-        if(n.attributes.text == _('Topics')){
-            params.id_project = n.parentNode.attributes.data.id_project;
-        }
-        if( params.tab_icon == undefined ) params.tab_icon = c.icon;
-
-        if( c.type == 'comp' ) {
-            if(n.attributes.topic_name) {
-                var topic = n.attributes.topic_name;
-                var title = Baseliner.topic_title( topic.mid, _(topic.category_name), topic.category_color );
-                Baseliner.show_topic( topic.mid, title, { topic_mid: topic.mid, title: title, _parent_grid: undefined } );
-            } else if(n.attributes.category_name) {
-                var category = n.attributes.category_name;
-                var title = Baseliner.category_title( category.category_id, category.category_name, category.category_color );
-                Baseliner.show_category( category.category_id, title, { category_id: category.category_id, title: title } );
-            }
-
-            else Baseliner.add_tabcomp( c.url, _(c.title), params );
-            
-        } else if( c.type == 'html' ) {
-            Baseliner.add_tab( c.url, _(c.title), params );
-        } else if( c.type == 'iframe' ) {
-            Baseliner.add_iframe( c.url, _(c.title), params );
-        } else {
-            Baseliner.message( 'Invalid or missing click.type', '' );
-        }
-    },
-    refresh : function(){
-        var self = this;
-        var sm = self.getSelectionModel();
-        var node = sm.getSelectedNode();
-        if( node )
-            self.refresh_node( node );
-        else 
-            self.refresh_all();
-    },
-    refresh_all : function(){
-        var self = this;
-        this.loader.load(self.root);
-    },
-    refresh_node : function(node){
-        var self = this;
-        if( node != undefined ) {
-            var is = node.isExpanded();
-            self.loader.load( node );
-            if( is ) node.expand();
-        }
-    }
-});
-
 Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
     ddGroup: 'explorer_dd',
     initComponent : function(){
@@ -267,29 +122,6 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
         
         self.addEvents( 'favorite_added' );
         
-        self.on('beforechildrenrendered', function(node){
-            node.eachChild(function(n) {
-                if(n.attributes.topic_name ) {
-                    var tn = n.attributes.topic_name;
-                    n.setIconCls('no-icon');  // no icon on this node
-
-                    if( !tn.category_color ) 
-                        tn.category_color = '#999';
-                    var span = String.format( Baseliner.tree_topic_style, tn.category_color );
-
-                    n.setText( String.format( '{0}<b>{1} #{2}</b>: {3}', span, tn.category_name, tn.mid, n.text ) );
-                    n.ui = new Baseliner.TreeMultiTextNode( n );  // DD support for the whole node
-                } else if(n.attributes.category_name ) {
-                    var tn = n.attributes.category_name;
-                    n.setIconCls('no-icon');  // no icon on this node
-
-                    var span = String.format( Baseliner.tree_topic_style, tn.category_color );
-
-                    n.setText( String.format( '{0}<b>{1}</b>', span, tn.category_name ) );
-                }
-
-            });
-        });
     },
     menu_favorite_add : function(){
         var self = this;

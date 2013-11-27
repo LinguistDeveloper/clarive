@@ -134,7 +134,7 @@
                
         var name = Baseliner.topic_title( '<%$data->{topic_mid}%>', '<% $data->{name_category} %>', '<% $data->{color_category} %>', true); //, literal_only, id) {        
           
-        var title_status = '<div id="boot" style="background:transparent;height:14px"><span class="label" style="background-color:' + obj.series.color  + '">' + name + ' => ' + obj.series.label + '</span></div>';
+        var title_status = '<div id="boot" style="background:transparent;height:14px"><span class="label" style="background-color:' + obj.series.color  + '">' + name + ' &#10145; ' + obj.series.label + '</span></div>';
         //Baseliner.addNewTabComp('/topic/grid?status_id=' + obj.series.status_id[obj.series.label] + '&release=<%$data->{topic_mid}%>', _(title_status));
         Baseliner.add_tabcomp('/comp/topic/topic_grid.js', title_status , { status_id: obj.series.status_id[obj.series.label] , topic_list: topic_list });
     }

@@ -15,6 +15,15 @@ Baseliner.show_topic = function(topic_mid, title, params) {
     }
 };
 
+Baseliner.tree_topic_style = [
+    '<span unselectable="on" style="font-size:0px;',
+    'padding: 8px 8px 0px 0px;',
+    'margin : 0px 4px 0px 0px;',
+    'border : 2px solid {0};',
+    'background-color: transparent;',
+    'color:{0};',
+    'border-radius:0px"></span>'
+].join('');
 
 Baseliner.topic_title = function( mid, category, color, literal_only, id) {
     var uppers = category ? category.replace( /[^A-Z]/g, '' ) : '';
