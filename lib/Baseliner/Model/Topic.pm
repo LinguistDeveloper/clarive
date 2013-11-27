@@ -2460,6 +2460,13 @@ sub check_fields_required {
     return ($isValid, @fields_required);
 }
 
+sub get_short_name {
+    my ($self, %p) = @_;
+    my $name = $p{name} or _throw 'Missing parameter name';
+    $name =~ s/[^A-Z]//g;    
+    return $name; 
+}
+
 1;
 
 

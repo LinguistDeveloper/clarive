@@ -145,7 +145,7 @@ Baseliner.store.Topics = function(c) {
         baseParams: {},
         id: 'mid', 
         url: '/topic/related',
-        fields: ['mid','name', 'title','description','color'] 
+        fields: ['mid','name', 'title','description','color','short_name'] 
      }, c));
 };
 Ext.extend( Baseliner.store.Topics, Baseliner.JsonStore );
@@ -167,18 +167,21 @@ Baseliner.TopicBox = Ext.extend( Ext.ux.form.SuperBoxSelect, {
     displayField: 'name',
     hiddenName: 'projects',
     valueField: 'mid',
-    extraItemCls: 'x-tag',
+    stackItems: true,
     initComponent: function(){
         var self = this;
-        self.tpl = new Ext.XTemplate( '<tpl for="."><div class="x-combo-list-item">',
-            '<span id="boot" style="width:200px"><span class="label" ', 
-            ' style="float:left;padding:2px 8px 2px 8px;background: {color}"',
-            ' >{name}</span></span>',
-            '&nbsp;&nbsp;<b>{title}</b></div></tpl>' );
+        self.tpl = new Ext.XTemplate( '<tpl for=".">',
+            '<div class="x-combo-list-item">',
+            '<span class="bl-label" style="background: {color}">{short_name}</span>',
+            '<span style="padding-left:4px"><b>{title}</b></span>',
+            '</div></tpl>' );        
+
         self.displayFieldTpl = new Ext.XTemplate( '<tpl for=".">',
-            '<span id="boot" style="background:transparent; margin-right: 8px"><span class="label" style="float:left;padding:2px 8px 2px 8px;background: {color}; cursor:pointer;margin-right: 8px"',
-            ' onclick="javascript:Baseliner.show_topic_colored({mid}, \'{name}\', \'{color}\');">{name}</span>{title}</span>',
-            '</tpl>' );
+            '<div class="bl-text-over" title="{title}">',
+            '<span class="bl-label" style="background: {color}; cursor:pointer;" onclick="javascript:Baseliner.show_topic_colored({mid}, \'{name}\', \'{color}\');">{short_name}</span>',
+            '<span style="padding-left:4px">{title}</span>',
+            '</div></tpl>' );
+        
         Baseliner.TopicBox.superclass.initComponent.call(this);
     }
 });
@@ -1262,7 +1265,7 @@ Baseliner.Topic.change_status_topic = function(opts){
 Baseliner.TopicCombo = Ext.extend( Ext.form.ComboBox, {
     minChars: 2,
     name: 'topic',
-    displayField: 'name',
+    displayField: 'short_name',
     hiddenName: 'topic',
     valueField: 'mid',
     msgTarget: 'under',
@@ -1282,11 +1285,13 @@ Baseliner.TopicCombo = Ext.extend( Ext.form.ComboBox, {
                 delete qe.combo.lastQuery;
             }
         };
-        self.tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item">',
-            '<span id="boot" style="width:200px"><span class="label" ', 
-            ' style="float:left;padding:2px 8px 2px 8px;background: {color}"',
-            ' >{name}</span></span>',
-            '&nbsp;&nbsp;<b>{title}</b></div></tpl>' );
+        
+        self.tpl = new Ext.XTemplate( '<tpl for=".">',
+            '<div class="search-item">',
+            '<span class="bl-label" style="background: {color}">{short_name}</span>',
+            '<span style="padding-left:4px"><b>{title}</b></span>',
+            '</div></tpl>' );
+        
         Baseliner.TopicCombo.superclass.initComponent.call(this);
     }
 });
