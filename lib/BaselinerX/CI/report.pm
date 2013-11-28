@@ -394,8 +394,10 @@ sub selected_fields {
 method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef ) {
     my $rows = $limit // $self->rows;
     my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
-    
-    my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta() );  # XXX should be by category, same id fields may step on each other
+	
+	_log ">>>>>>>>>>>>>>>>>>FIELDS: " . _dump %fields;
+	
+    my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $username) );  # XXX should be by category, same id fields may step on each other
     my @selects = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) => 1 } _array($fields{select});
 
     my @where = grep { defined } map { 
@@ -409,20 +411,25 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef ) {
                 : { $id => $val->{value} };
             push @ors, $cond; 
         }
-        @ors ? { '$or' => \@ors } : undef;
+		_log ">>>>>>>>>>>>>>>>>>>ORS: " . _dump @ors;
+        @ors ? { '$and' => \@ors } : undef ;
     } _array($fields{where});
+	
+	_log ">>>>>>>>>>>>>>>>>>>WHERE: " . _dump @where;
     
     # filter user projects
     if( $username && !Baseliner->is_root($username) ) {
-        my @ids_project = Baseliner->model('Permissions')->user_projects_with_action(
-            username => $username,
-            action   => 'action.job.viewall',
-            level    => 1
-        );
-        my @and_project;
+        #my @ids_project = Baseliner->model('Permissions')->user_projects_with_action(
+        #    username => $username,
+        #    action   => 'action.job.viewall',
+        #    level    => 1
+        #);
+		my @ids_project = Baseliner->model("Permissions")->user_projects_ids( username => $username);
+        my @or_project;
         for my $field_project ( grep { $_->{meta_type} eq 'project' } values %meta ) {
-            push @where, { $field_project->{id_field} => mdb->in(@ids_project) };  
+            push @or_project, { $field_project->{id_field} => mdb->in(@ids_project) };  
         }
+		push @where, { '$or' => \@or_project } if @or_project;
     }
     
     if( length $query ) {
@@ -437,6 +444,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef ) {
     my @sort = map { $_->{id_field} => 0+($_->{sort_direction} // 1) } _array($fields{sort});
     
     my $find = @where ? { '$and'=>[ @where ] } : {};
+	
     my $rs = mdb->topic->find($find);
     my $cnt = $rs->count;
     #_debug \%meta;

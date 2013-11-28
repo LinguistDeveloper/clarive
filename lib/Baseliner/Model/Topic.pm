@@ -1060,10 +1060,24 @@ sub get_meta {
 
     my $id_cat =  $id_category
         // ( $topic_mid ? DB->BaliTopic->search({ mid=>$topic_mid }, { select=>'id_category' })->as_query : undef );
+    
+    my @cat_fields;
+    
+    if ($id_cat){
+        @cat_fields = DB->BaliTopicFieldsCategory->search({ id_category=>{ -in => $id_cat } })->hashref->all    
+    }else{
+        if($username){
+            my @user_categories =  map { $_->{id} } $self->get_categories_permissions( username => $username, type => 'view' );
+            @cat_fields = DB->BaliTopicFieldsCategory->search({ id_category=>{ -in => \@user_categories } })->hashref->all            
+        }else{
+            @cat_fields = DB->BaliTopicFieldsCategory->hashref->all;    
+        }
+    }
+    
+    #my @cat_fields = $id_cat 
+    #    ? DB->BaliTopicFieldsCategory->search({ id_category=>{ -in => $id_cat } })->hashref->all
+    #    : DB->BaliTopicFieldsCategory->hashref->all;
         
-    my @cat_fields = $id_cat 
-        ? DB->BaliTopicFieldsCategory->search({ id_category=>{ -in => $id_cat } })->hashref->all
-        : DB->BaliTopicFieldsCategory->hashref->all;
     my @meta =
         sort { $a->{field_order} <=> $b->{field_order} }
         map  { 
