@@ -121,50 +121,70 @@ sub action_tree_old : Local {
 
 sub action_tree : Local {
     my ( $self, $c ) = @_;
-    my @actions = $c->model('Actions')->list;
+    my $cached = Baseliner->cache_get( "roles:actions:");
+
+    my @actions;
+
+    if ( $cached ) {
+        _log "LO ENCUENTRO";
+        @actions = _array $cached;
+    } else {
+        _log "NO LO ENCUENTRO";
+        @actions = $c->model('Actions')->list;
+        Baseliner->cache_set( "roles:actions:", \@actions);        
+    }
+
     my @tree_final;
     my %tree;
 
-    my $children_of;
+    my $cached_tree = Baseliner->cache_get( "roles:tree:");
 
-    $children_of = sub {
-        my ( $parent, @actions ) = @_;
-        my $children;
+    if ( $cached_tree ) {
+        @tree_final = _array $cached_tree;
+    } else {
 
-        for my $action ( @actions ) {
+        my $children_of;
 
-            my $key = $action->{key};
-            next if $key !~ /^$parent\.(.*)/; # skip if not children
+        $children_of = sub {
+            my ( $parent, @actions ) = @_;
+            my $children;
 
-            my @tokens = split /\./, $1; # split in tokens
-            my $name = shift @tokens;
-            my $id = $parent.".".$name; # add myself to parent
-            
-            next if $tree{$id}; # skip if already in tree
-            $tree{$id}=1; # declarate myself as in tree
+            for my $action ( @actions ) {
 
-            if ( @tokens ) { # not a leaf
-                push @$children, { id=>$id, text => $name, leaf=>\0, children=> $children_of->($id, @actions) };
-            } else { # a leaf
-                push @$children, { id=>$id, text => sprintf( "%s (%s)",_loc_decoded( $action->{name} ), $id) , leaf=>\1 };
+                my $key = $action->{key};
+                next if $key !~ /^$parent\.(.*)/; # skip if not children
+
+                my @tokens = split /\./, $1; # split in tokens
+                my $name = shift @tokens;
+                my $id = $parent.".".$name; # add myself to parent
+                
+                next if $tree{$id}; # skip if already in tree
+                $tree{$id}=1; # declarate myself as in tree
+
+                if ( @tokens ) { # not a leaf
+                    push @$children, { id=>$id, text => $name, leaf=>\0, children=> $children_of->($id, @actions) };
+                } else { # a leaf
+                    push @$children, { id=>$id, text => sprintf( "%s (%s)",_loc_decoded( $action->{name} ), $id) , leaf=>\1 };
+                }
+
             }
+            return [ sort { $a->{id} cmp $b->{id} } _array $children ];
+        };
 
-        }
-        return [ sort { $a->{id} cmp $b->{id} } _array $children ];
+        foreach my $key ( sort map { $_->{key} } @actions ) {
+            ( my $folder = $key ) =~ s{^(\w+\.\w+)\..*$}{$1}g;
+            next if $tree{$folder};
+            $tree{$folder}=1;
+            
+            if ( $folder ne $key ) {
+                my $children = $children_of->( $folder, @actions );
+                push @tree_final, { id=>$folder, text=>$folder, leaf=>\0, children => $children }; 
+            } else {
+                push @tree_final, { id=>$key, text => $key, leaf=>\1 };
+            }
+        };
+        Baseliner->cache_set( "roles:tree:", \@tree_final);
     };
-
-    foreach my $key ( sort map { $_->{key} } @actions ) {
-        ( my $folder = $key ) =~ s{^(\w+\.\w+)\..*$}{$1}g;
-        next if $tree{$folder};
-        $tree{$folder}=1;
-        
-        if ( $folder ne $key ) {
-            my $children = $children_of->( $folder, @actions );
-            push @tree_final, { id=>$folder, text=>$folder, leaf=>\0, children => $children }; 
-        } else {
-            push @tree_final, { id=>$key, text => $key, leaf=>\1 };
-        }
-    }
     $c->stash->{json} = \@tree_final;
     $c->forward("View::JSON");
 }
