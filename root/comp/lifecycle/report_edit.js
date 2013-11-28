@@ -60,10 +60,14 @@
         //console.log( node );
         var oper_all = [ ['','='], ['$ne','<>'],['$lt','<'],['$lte','<='],['$gt','>'],['$gte','>='] ];
         var oper_in = [ ['$in','IN'], ['$nin','NOT IN'] ];
+        var oper_like = [ ['like','LIKE'], ['not_like','NOT LIKE'] ];
         var oper_by_type = oper_all;
         var field = { xtype:'textarea', name:'value', fieldLabel: pn.text, height:60, value:attr.value==undefined?'':attr.value };
         var ftype = attr.field || attr.where;
         switch( ftype ) {
+            case 'like':
+                oper_by_type = oper_like;
+                break;
             case 'number': 
                   field={ xtype:'textfield', name:'value', maskRe:/[0-9]/, fieldLabel: pn.text, value: attr.value==undefined ? 0 : attr.value };
                   break;
@@ -294,6 +298,7 @@
                 var dd = options.getValues();
                 if( tree_selected_is_loaded ) dd.selected = Baseliner.encode_tree( tree_selected.root );
                 if( sql.editor ) dd.sql = sql.getValue();
+                console.dir(dd);
                 var action = report_mid > 0 ? 'update':'add';
                 var data = { action:action, data:dd };
                 if( report_mid>0 ) data.mid = report_mid;
