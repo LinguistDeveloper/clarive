@@ -232,6 +232,29 @@ sub user_has_action {
     },$username, $p{action}, @bl);
 }
 
+=head2 user_has_action username=>Str, action=>Str
+
+Returns true if a user has a given action.
+
+=cut
+sub user_has_read_action {
+    my ($self, %p ) = @_;
+    _check_parameters( \%p, qw/username action/ ); 
+    my $username = $p{username};
+    my $action = $p{action};
+
+    my @roles = _unique map { $_->{id_role} } DB->BaliRoleuser->search({ username => $username })->hashref->all;
+    my @actions = DB->BaliRoleaction->search({ id_role => \@roles, action => $action})->hashref->all;
+
+    my $has_action;
+    if (scalar @roles == scalar @actions) {
+     $has_action = 1;
+    } else {
+     $has_action = 0;
+    }
+    return $has_action;
+}
+
 sub user_has_any_action {
     my ($self, %p ) = @_;
     _check_parameters( \%p, qw/username action/ ); 

@@ -1537,7 +1537,6 @@ sub save_data {
         return $topic;
     } catch {
         my $e = shift;
-        _log "SSSSSSSSSS$e";
         _throw $e;
     };
 
