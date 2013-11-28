@@ -1671,18 +1671,21 @@ sub list_users : Local {
     my $row;
     my (@rows, $users_friends);
     my $username = $c->username;
-    
+
+
     if($p->{projects}){
         my @projects = _array $p->{projects};
         $users_friends = $c->model('Users')->get_users_friends_by_projects(\@projects);
     }else{
+        my $topic_row = $c->model('Baseliner::BaliTopic')->find( $p->{topic_mid} );
+        my @topic_projects = map {$_->{mid}} $topic_row->projects->hashref->all;
         if($p->{roles} && $p->{roles} ne 'none'){
             my @name_roles = map {lc ($_)} split /,/, $p->{roles};
             #map { my $temp = lc ($_); $temp =~s/ //g; push @name_roles, $temp } split /,/, $p->{roles};
             
             my @id_roles = map {$_->{id}} DB->BaliRole->search( { 'LOWER(role)' => \@name_roles} )->hashref->all;
             if (@id_roles){
-                $users_friends = $c->model('Users')->get_users_from_mid_roles(roles => \@id_roles);    
+                $users_friends = $c->model('Users')->get_users_from_mid_roles(roles => \@id_roles, projects => \@topic_projects);    
             }
         }else{
             $users_friends = $c->model('Users')->get_users_friends_by_username($username);    
