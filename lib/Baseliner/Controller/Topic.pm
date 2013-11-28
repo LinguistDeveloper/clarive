@@ -140,7 +140,6 @@ sub update : Local {
         }
     } catch {
         my $e = shift;
-        _log "EEEE".$e;
         $c->stash->{json} = { success => \0, msg=>_loc($e) };
     };
     $c->forward('View::JSON');
@@ -386,7 +385,8 @@ sub get_meta_permissions : Local {
                         $field_form->{readonly} = \0;
                         $field_form->{allowBlank} = 'true' unless $field_form->{id_field} eq 'title';
                 } else {
-                    if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action )){
+                    my $has_action = $c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action );
+                    if ( $has_action ){
                         $field_form->{readonly} = \0;
                     }else{
                         $field_form->{readonly} = \1;
@@ -417,7 +417,8 @@ sub get_meta_permissions : Local {
                     $_->{readonly} = \0;
                     $_->{allowBlank} = 'true' unless $_->{id_field} eq 'title';
             } else {
-                my $has_action = $c->model('Permissions')->user_has_read_action( username=> $c->username, action => $write_action );
+
+                my $has_action = $c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action );
                 # _log "Comprobando ".$write_action."= ".$has_action;
                 if ( $has_action ){
                     $_->{readonly} = \0;
