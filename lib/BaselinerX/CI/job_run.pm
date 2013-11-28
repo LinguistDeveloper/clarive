@@ -10,6 +10,7 @@ has pid                => qw(is rw isa Num lazy 1), default=>sub{ return $$ };
 has host               => qw(is rw isa Str lazy 1), default=>sub{ return Util->my_hostname() };
 has owner              => qw(is rw isa Str lazy 1), default=>sub{ return $ENV{USER} || $ENV{USERNAME} };
 has same_exec          => qw(is rw isa Bool default 0); 
+has last_error         => qw(is rw isa Maybe[Str] default '');
 has step_status        => ( is=>'rw', isa=>'HashRef[Str]', default=>sub{{}} );  # saves statuses at step change
 has prev_status        => ( is=>'rw', isa=>'Any' );  # saves previous status
 has final_status       => ( is=>'rw', isa=>'Any' );  # so that services can request a final status like PAUSE
@@ -146,6 +147,7 @@ sub run {
         $stash->{failing} = 1;
         $self->finish( 'ERROR' );
         $self->logger->error( _loc( 'Job failure: %1', $err ) );
+        $self->last_error( $err );
         $self->job_stash( $stash );
         $job_error = 1;
     };

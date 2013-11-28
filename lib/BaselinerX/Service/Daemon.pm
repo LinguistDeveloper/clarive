@@ -173,7 +173,7 @@ sub runner_fork {
             _log "Detached with session id $sid";
         }
         # change child process name for the ps command
-        $0 = "perl script/bali.pl job.run --runner $p{runner} --step $p{step} --jobid $p{jobid} --logfile '$p{logfile}'";
+        $0 = "clarive job $p{jobid} (#$mid)";
         unless( $p{unified_log} ) {
             open (STDOUT, ">>", $p{logfile} ) or die "Can't open STDOUT: $!";
             open (STDERR, ">>", $p{logfile} ) or die "Can't open STDERR: $!";
@@ -204,7 +204,7 @@ sub check_job_expired {
     $rs = $c->model('Baseliner::BaliJob')->search({ status => 'RUNNING', pid=>{'>', 0} });
     my $hostname = Util->my_hostname();
     while( my $row = $rs->next ) {
-        _log sprintf "Checking job row alive: pid=%s, host=%s (my host=%s)", $row->pid, $row->host, $hostname;
+        _debug sprintf "Checking job row alive: pid=%s, host=%s (my host=%s)", $row->pid, $row->host, $hostname;
         if( $row->pid && $row->host eq $hostname ) {
             unless( pexists( $row->pid ) ) {
                 # recheck
