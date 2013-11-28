@@ -402,7 +402,7 @@ sub get_meta_permissions : Local {
                         $field_form->{hidden} = \0;
                 } else {
 
-                    if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $read_action )){
+                    if ($c->model('Permissions')->user_has_read_action( username=> $c->username, action => $read_action )){
                         $field_form->{hidden} = \1;
                         #push @hidden_field, $field_form->{id_field};
                     }
@@ -417,7 +417,7 @@ sub get_meta_permissions : Local {
                     $_->{readonly} = \0;
                     $_->{allowBlank} = 'true' unless $_->{id_field} eq 'title';
             } else {
-                my $has_action = $c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action );
+                my $has_action = $c->model('Permissions')->user_has_read_action( username=> $c->username, action => $write_action );
                 # _log "Comprobando ".$write_action."= ".$has_action;
                 if ( $has_action ){
                     $_->{readonly} = \0;
@@ -432,7 +432,7 @@ sub get_meta_permissions : Local {
             #_error $read_action;
 
             if ( !$is_root ) {
-                if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $read_action )){
+                if ($c->model('Permissions')->user_has_read_action( username=> $c->username, action => $read_action )){
                     push @hidden_field, $_->{id_field};
                 }
             } 
