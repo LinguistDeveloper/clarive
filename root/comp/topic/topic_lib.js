@@ -1133,6 +1133,9 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     //    self.render_required(fields_required);
                     //    Baseliner.message(_('Error'), _('This fields are required: ') + res.fields_required.join(',') );
                     //}else{
+                        self.form_is_loaded = false;
+                        self.show_form();
+                        self.view_is_dirty = true;  
                         Baseliner.error(_('Error'), res.msg );
                     //}
 

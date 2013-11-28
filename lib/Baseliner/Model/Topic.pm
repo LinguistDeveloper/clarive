@@ -615,7 +615,7 @@ sub update {
                        for grep { exists $p->{$_->{id_field}}} _array($meta);
                     $meta = \@meta_filter;
                     
-                    my $topic = $self->save_data($meta, undef, $p);
+                    my ($topic) = $self->save_data($meta, undef, $p);
                     
                     $topic_mid    = $topic->mid;
                     $status = $topic->id_category_status;
@@ -643,7 +643,7 @@ sub update {
             }; # event_new
         } ## end when ( 'add' )
         when ( 'update' ) {
-            
+            my $rollback = 1;
             event_new 'event.topic.modify' => { username=>$p->{username},  } => sub {
                 Baseliner->model('Baseliner')->schema->txn_begin;
                 my @field;
@@ -656,7 +656,7 @@ sub update {
                    for grep { exists $p->{$_->{id_field}}} _array($meta);
                 $meta = \@meta_filter;
                 
-                my $topic = $self->save_data ($meta, $topic_mid, $p);
+                my ($topic, %change_status) = $self->save_data ($meta, $topic_mid, $p);
                 
                 $topic_mid    = $topic->mid;
                 $status = $topic->id_category_status;
@@ -669,11 +669,16 @@ sub update {
                 $return = 'Topic modified';
                 my $subject = _loc("Topic updated (%1): [%2] %3", $category->{name}, $topic->mid, $topic->title);
                 Baseliner->model('Baseliner')->schema->txn_commit;
+                $rollback = 0;
+                if ( %change_status ) {
+                    $self->change_status( %change_status );
+                }
+
                { mid => $topic->mid, topic => $topic->title, subject => $subject, notify_default => \@users }   # to the event
             } ## end try
             => sub {
                 my $e = shift;
-                Baseliner->model('Baseliner')->schema->txn_rollback;
+                Baseliner->model('Baseliner')->schema->txn_rollback if $rollback;
                 _throw $e;
             };
         } ## end when ( 'update' )
@@ -1341,6 +1346,7 @@ sub save_data {
 
         my $topic;
         my $moniker = delete $row{moniker};
+        my %change_status;
 
         if ( !$topic_mid ) {
 
@@ -1433,7 +1439,7 @@ sub save_data {
                                 } ## end for my $ci ( _array $cis)
                             } ## end if ( $ci_update && ( my...))
                         };
-                        $self->change_status(
+                        %change_status = (
                             mid           => $topic_mid,
                             title         => $topic->{title},
                             username      => $data->{username},
@@ -1520,7 +1526,7 @@ sub save_data {
             $self->cache_topic_remove( $_->{mid} );
         }
 
-        return $topic;
+        return ($topic, %change_status);
     } catch {
         my $e = shift;
         _throw $e;
