@@ -158,7 +158,7 @@ sub run_ship {
     my $job_mode = $stash->{job_mode};
     my $task  = $stash->{current_task_name};
 
-    my $remote_path = $config->{remote_path} // _fail 'Missing parameter remote_file';
+    my $remote_path_orig = $config->{remote_path} // _fail 'Missing parameter remote_file';
     my $local_path  = $config->{local_path}  // _fail 'Missing parameter local_file';
     my $user        = $config->{user};
     my $chmod       = $config->{'chmod'};
@@ -178,7 +178,7 @@ sub run_ship {
     my $servers = $config->{server};
     for my $server ( ref $servers ? _array($servers) : split /,/, $servers ) {
         $server = ci->new( $server ) unless ref $server;
-        $remote_path = $server->parse_vars( "$remote_path" );
+        my $remote_path = $server->parse_vars( "$remote_path_orig" );
         my $server_str = "$user\@".$server->name;
         _debug "Connecting to server " . $server_str;
         my $agent = $server->connect( user=>$user );
