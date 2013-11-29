@@ -1677,8 +1677,12 @@ sub list_users : Local {
         my @projects = _array $p->{projects};
         $users_friends = $c->model('Users')->get_users_friends_by_projects(\@projects);
     }else{
-        my $topic_row = $c->model('Baseliner::BaliTopic')->find( $p->{topic_mid} );
-        my @topic_projects = map {$_->{mid}} $topic_row->projects->hashref->all;
+        my $topic_row;
+        my @topic_projects;
+        if ( $p->{topic_mid}) {
+            $topic_row = $c->model('Baseliner::BaliTopic')->find( $p->{topic_mid} );
+            @topic_projects = map {$_->{mid}} $topic_row->projects->hashref->all;            
+        }
         if($p->{roles} && $p->{roles} ne 'none'){
             my @name_roles = map {lc ($_)} split /,/, $p->{roles};
             #map { my $temp = lc ($_); $temp =~s/ //g; push @name_roles, $temp } split /,/, $p->{roles};
