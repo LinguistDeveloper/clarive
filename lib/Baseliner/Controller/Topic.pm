@@ -140,7 +140,6 @@ sub update : Local {
         }
     } catch {
         my $e = shift;
-        _log "EEEE".$e;
         $c->stash->{json} = { success => \0, msg=>_loc($e) };
     };
     $c->forward('View::JSON');
@@ -386,7 +385,8 @@ sub get_meta_permissions : Local {
                         $field_form->{readonly} = \0;
                         $field_form->{allowBlank} = 'true' unless $field_form->{id_field} eq 'title';
                 } else {
-                    if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action )){
+                    my $has_action = $c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action );
+                    if ( $has_action ){
                         $field_form->{readonly} = \0;
                     }else{
                         $field_form->{readonly} = \1;
@@ -402,7 +402,7 @@ sub get_meta_permissions : Local {
                         $field_form->{hidden} = \0;
                 } else {
 
-                    if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $read_action )){
+                    if ($c->model('Permissions')->user_has_read_action( username=> $c->username, action => $read_action )){
                         $field_form->{hidden} = \1;
                         #push @hidden_field, $field_form->{id_field};
                     }
@@ -417,6 +417,7 @@ sub get_meta_permissions : Local {
                     $_->{readonly} = \0;
                     $_->{allowBlank} = 'true' unless $_->{id_field} eq 'title';
             } else {
+
                 my $has_action = $c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action );
                 # _log "Comprobando ".$write_action."= ".$has_action;
                 if ( $has_action ){
@@ -432,7 +433,7 @@ sub get_meta_permissions : Local {
             #_error $read_action;
 
             if ( !$is_root ) {
-                if ($c->model('Permissions')->user_has_action( username=> $c->username, action => $read_action )){
+                if ($c->model('Permissions')->user_has_read_action( username=> $c->username, action => $read_action )){
                     push @hidden_field, $_->{id_field};
                 }
             } 
@@ -1670,18 +1671,25 @@ sub list_users : Local {
     my $row;
     my (@rows, $users_friends);
     my $username = $c->username;
-    
+
+
     if($p->{projects}){
         my @projects = _array $p->{projects};
         $users_friends = $c->model('Users')->get_users_friends_by_projects(\@projects);
     }else{
+        my $topic_row;
+        my @topic_projects;
+        if ( $p->{topic_mid}) {
+            $topic_row = $c->model('Baseliner::BaliTopic')->find( $p->{topic_mid} );
+            @topic_projects = map {$_->{mid}} $topic_row->projects->hashref->all;            
+        }
         if($p->{roles} && $p->{roles} ne 'none'){
             my @name_roles = map {lc ($_)} split /,/, $p->{roles};
             #map { my $temp = lc ($_); $temp =~s/ //g; push @name_roles, $temp } split /,/, $p->{roles};
             
             my @id_roles = map {$_->{id}} DB->BaliRole->search( { 'LOWER(role)' => \@name_roles} )->hashref->all;
             if (@id_roles){
-                $users_friends = $c->model('Users')->get_users_from_mid_roles(roles => \@id_roles);    
+                $users_friends = $c->model('Users')->get_users_from_mid_roles(roles => \@id_roles, projects => \@topic_projects);    
             }
         }else{
             $users_friends = $c->model('Users')->get_users_friends_by_username($username);    

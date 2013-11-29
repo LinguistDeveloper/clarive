@@ -4,6 +4,7 @@
 </%perl>
 
 (function(params){
+//	console.dir(params);
     var ps_maxi = 25; //page_size for !mini mode
     var ps_mini = 50; //page_size for mini mode
     var ps = ps_maxi; // current page_size

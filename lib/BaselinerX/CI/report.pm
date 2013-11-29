@@ -195,6 +195,7 @@ sub report_update {
                     _fail _loc('Search name already exists, introduce another search name');
                 }
                 else {
+					_log ">>>>>>>>>>>>>>>>>>>DATA: " . _dump $data->{selected};
                     $self->name( $data->{name} );
                     $self->rows( $data->{rows} );
                     $self->sql( $data->{sql} );
@@ -258,7 +259,7 @@ sub all_fields {
                 map { $_->{icon}='/static/images/icons/where.png'; $_->{type}='value'; $_->{leaf}=\1; $_ } 
                 (
                     { text=>_loc('String'), where=>'string', field=>'string', },
-                    { text=>_loc('Like'), where=>'like', field=>'string' },
+                    { text=>_loc('Like'), where=>'like', field=>'like' },
                     { text=>_loc('Number'), where=>'number', field=>'number' },
                     { text=>_loc('Date'), where=>'date', field=>'date' },
                     { text=>_loc('CIs'), where=>'cis', field=>'ci' },
@@ -394,35 +395,47 @@ sub selected_fields {
 method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef ) {
     my $rows = $limit // $self->rows;
     my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
-    
-    my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta() );  # XXX should be by category, same id fields may step on each other
+	
+    my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $username) );  # XXX should be by category, same id fields may step on each other
     my @selects = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) => 1 } _array($fields{select});
 
     my @where = grep { defined } map { 
         my $field=$_;
         my $id = $field->{meta_where_id} // $where_field_map{$_->{id_field}} // $field->{id_field};
         my @chi = _array($field->{children});
+		
         my @ors;
         for my $val ( @chi ) {
-            my $cond = $val->{oper} 
-                ? { $id => { $val->{oper} => $val->{value} } }
-                : { $id => $val->{value} };
-            push @ors, $cond; 
+			if( $val->{oper} =~ /^(like|not_like)$/ ) {
+				$val->{value} = qr/$val->{value}/i;
+				my $cond = $val->{oper} eq 'not_like' 
+					? { $id => { '$not' => $val->{value} } }
+					: { $id => $val->{value} };
+				push @ors, $cond;
+				
+			} else {
+				my $cond = $val->{oper} 
+					? { $id => { $val->{oper} => $val->{value} } }
+					: { $id => $val->{value} };
+				push @ors, $cond;				
+			}
         }
-        @ors ? { '$or' => \@ors } : undef;
+        @ors ? { '$or' => \@ors } : undef ;
     } _array($fields{where});
-    
+	
     # filter user projects
     if( $username && !Baseliner->is_root($username) ) {
-        my @ids_project = Baseliner->model('Permissions')->user_projects_with_action(
-            username => $username,
-            action   => 'action.job.viewall',
-            level    => 1
-        );
-        my @and_project;
+        #my @ids_project = Baseliner->model('Permissions')->user_projects_with_action(
+        #    username => $username,
+        #    action   => 'action.job.viewall',
+        #    level    => 1
+        #);
+		my @ids_project = Baseliner->model("Permissions")->user_projects_ids( username => $username);
+        my @or_project;
         for my $field_project ( grep { $_->{meta_type} eq 'project' } values %meta ) {
-            push @where, { $field_project->{id_field} => mdb->in(@ids_project) };  
+            push @or_project, { $field_project->{id_field} => mdb->in(@ids_project) };  
         }
+		push @where, '$or' => \@or_project  if @or_project;
     }
     
     if( length $query ) {
@@ -437,6 +450,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef ) {
     my @sort = map { $_->{id_field} => 0+($_->{sort_direction} // 1) } _array($fields{sort});
     
     my $find = @where ? { '$and'=>[ @where ] } : {};
+	
     my $rs = mdb->topic->find($find);
     my $cnt = $rs->count;
     #_debug \%meta;
