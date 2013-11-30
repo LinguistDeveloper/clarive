@@ -1791,6 +1791,9 @@ msgstr "Rechazado"
 msgid "CANCELLED"
 msgstr "Cancelado"
 
+msgid "TRAPPED"
+msgstr "Capturado"
+
 msgid "PAUSED"
 msgstr "Retenido"
 
