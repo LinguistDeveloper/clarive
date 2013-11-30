@@ -26,6 +26,7 @@ sub current {
 
 sub run {
     my ($self,%p) = @_;
+    $p{drop} //= 0;  # indicate if we should drop before inserting
     $self->drop_all if $p{drop_all};
     require Tie::IxHash;
     tie( my %ff, 'Tie::IxHash',
@@ -50,7 +51,8 @@ sub run {
         bali_daemon          => 'daemon',
         bali_dashboard       => 'dashboard',
         bali_dashboard_role  => 'dashboard_role',
-        bali_event           => { coll=>'event', capped=>1, size=>(1024*1024*50), max=>1000 },
+        bali_event           => { coll=>'event', seq=>1 },
+        bali_event_rules     => { coll=>'event_log', , seq=>1, capped=>1, size=>(1024*1024*50), max=>1000 },
         bali_job             => 'job',
         # bali_job_items       => 'job_items',
         bali_label           => 'label',
@@ -77,7 +79,6 @@ sub run {
         bali_user           => 'user',
         
         #  bali_topic_image               => 'image',              # convert to asset
-        # bali_event_rules     => 'event_rules',                   # asset
         # bali_file_version    => 'file_version',                  # asset
         # bali_job_stash       => 'job_stash',                     # asset
         # bali_log             => 'log',                           # asset
@@ -95,10 +96,19 @@ sub run {
     for my $table ( grep { $p{tables} ? exists $tables{$_} : 1 } keys %ff ) {
        my $collname = $ff{$table};
        if( ref $collname ) {
-           mdb->collection( $collname->{coll} )->drop;  # drop before creating capped collection
+           my $coll = $collname->{coll};
+           mdb->collection( $coll )->drop if $p{drop};  # drop before creating capped collection
            mdb->db->run_command([ create=> $collname, capped=>boolean::true, size=>$collname->{size}, max=>$collname->{max} ])
                 if( $collname->{capped} );
-           $collname = $collname->{coll};
+           # seq initialize to table or to mdb if exists. In drop mode, use DB top value
+           if( $collname->{seq} ) {
+               my $db_curr = $db->query(sprintf q{select max(id) from %s}, $table)->array->[0] + 1;
+               my $mdb_curr = mdb->seq( $coll );
+               my $seq_value = ($db_curr > $mdb_curr) || $p{drop} ? $db_curr : $mdb_curr;
+               mdb->seq( $coll, "$seq_value" );
+               say "SEQ $coll created with value=$seq_value";
+           }
+           $collname = $coll;
        } else {
            mdb->collection($collname)->drop;
        }
@@ -174,10 +184,14 @@ sub convert_schemas {
     }
     
     # sequences
-    mdb->master_seq->drop; 
-    my $db = Util->_dbis;
-    my ($max_mid) = values %{ $db->query('select max(mid) from bali_master')->hash };
-    mdb->seq('mid', $max_mid+1 );
+    if( !%tables || exists $tables{bali_master_seq} ) {
+        mdb->master_seq->drop; 
+        my $db = Util->_dbis;
+        my $max_mid = $db->query('select max(mid) from bali_master')->array->[0];
+        require List::Util;
+        my $max_mid_mdb = List::Util::max(map { $_->{mid} } mdb->master_doc->find->fields({ mid=>1 })->all );
+        mdb->seq('mid', ($max_mid_mdb > $max_mid ? $max_mid_mdb : $max_mid)+1 );
+    }
     
     # topic
     if( !%tables || exists $tables{bali_topic} ) {
@@ -309,25 +323,6 @@ sub assets {
             $ass->insert;
             $r->{filedata} = $ass->id;
             mdb->file_version->insert( $r );
-            $k++;
-        });
-        say "$k rows migrated.";
-    }
-    
-    # event_rule 
-    if( !%tables || exists $tables{bali_event_rules} ) {
-        my $k=0;
-        print "Migrating event_rules assets...";
-        mdb->event_rules->drop;
-        mdb->db->run_command([ create=> 'event_rules', capped=>boolean::true, size=>(1024*1024*10), max=>1000 ]);
-        mdb->grid->remove({ parent_collection=>'event_rules' });
-        $self->each('bali_event_rules', sub{
-            my $r = shift;
-            my $d = delete $r->{log_output};
-            my $ass = mdb->asset( $d, parent_collection=>'event_rules', parent_id=>$r->{id_event} );
-            $ass->insert;
-            $r->{log_output} = $ass->id;
-            mdb->event_rules->insert( $r );  # this is capped, so not everything may get migrated
             $k++;
         });
         say "$k rows migrated.";

@@ -58,6 +58,7 @@ sub asset {
 }
 
 sub ts { Util->_now() }
+sub now { Class::Date->now->to_tz( Util->_tz() ) }
 sub in  { shift; {  '$in' => [ map { ref $_ eq 'HASH' ? "$_->{mid}" : "$_" } Util->_array( @_ ) ] } }
 sub nin { shift; { '$nin' => [ map { ref $_ eq 'HASH' ? "$_->{mid}" : "$_" } Util->_array( @_ ) ] } }
 
@@ -270,6 +271,61 @@ sub integrity {
         };
     }
     
+}
+
+=head2 query_sql_build
+
+Returns a Mongo query regex based statement
+a query string and a list of fields.
+
+    $query and $where = mdb->query_build( query=>$query, fields=>{
+        name     =>'me.name',
+        id       =>'to_char(me.id)',
+        user     =>'me.username',
+        comments =>'me.comments',
+        status   =>'me.status',
+        start    =>"me.starttime",
+        sched    =>"me.schedtime",
+        end      =>"me.endtime",
+        items    =>"foreign.item",
+    });
+
+You can use an ARRAY for shorthand too:
+
+    $where = mdb->query_build( query=>$query,
+        fields=>[
+            qw/id bl name requested_on requested_by finished_on finished_by/,
+            [ 'age', 'foreign.age' ]     # handles pairs also
+        ]);
+
+=cut
+sub query_build {
+    my ($self,%p) = @_;
+    return {} unless $p{query};
+    _throw 'Fields parameter should be HASH or ARRAY'
+        unless ref( $p{fields} ) =~ m/HASH|ARRAY/i;
+    my @terms;
+    my $where = {};
+    my @fields = _array($p{fields});
+    # build columns   -----    TODO use field:lala
+    $p{query} =~ s{\*}{.*}g;
+    $p{query} =~ s{\?}{.}g;
+    @terms = grep { defined($_) && length($_) } split /\s+/, lc($p{query});  # TODO handle quotes "
+    my $insensitive = 1 unless grep /[A-Z]/, @terms; # case sensitive search?
+    my @terms_normal = grep(!/^\+|^\-/,@terms);
+    my @terms_plus = grep(/^\+/,@terms);
+    my @terms_minus = grep(/^\-/,@terms);
+    my @ors;
+    for my $col ( @fields ) {
+        push @ors, map { { $col => $insensitive ? qr/$_/i : qr/$_/ } } @terms_normal;
+    }
+    #push @ors, { 1=>1 } if ! @terms_normal;
+    $where->{'$and'} = [
+        ( @ors ? {'$or' => \@ors} : () ),
+        ( map { my $v=substr($_,1); map { +{$_ => $insensitive ? qr/$v/i : qr/$v/} } @fields } @terms_plus ),
+        ( map { my $v=substr($_,1); map { +{$_ => {'$not' => $insensitive ? qr/$v/i : qr/$v/} } } @fields } @terms_plus ),
+    ];
+    return $where;
 }
 
 our $AUTOLOAD;
