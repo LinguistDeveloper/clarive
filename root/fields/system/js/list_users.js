@@ -25,8 +25,8 @@ params:
 	
     var users = new Array();
 	
-	if(data && eval('data.' + meta.bd_field)){
-		var eval_users = eval('data.' + meta.bd_field);
+	if(data && eval('data.' + meta.id_field)){
+		var eval_users = eval('data.' + meta.id_field);
 		for(i=0; i<eval_users.length;i++){
 			users.push(eval_users[i].mid);
 		}
