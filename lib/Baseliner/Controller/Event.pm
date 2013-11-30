@@ -40,7 +40,7 @@ sub log : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
-    $sort ||= 'me.id';
+    $sort ||= 'ts';
     $dir ||= 'desc';
     $start||= 0;
     $limit ||= 30;
@@ -48,21 +48,17 @@ sub log : Local {
     my $page = to_pages( start=>$start, limit=>$limit );
     
     my $where={};
-    $query and $where = query_sql_build( query=>$query, fields=>[qw(id event_key )] );
-    my $rs = DB->BaliEvent->search($where, 
-        { page => $page, rows => $limit,
-            #prefetch => [{ 'rules' => 'rule' }],
-          select => [qw(id mid event_key event_status ts username)], # everything but event_data
-          order_by => { "-$dir" => $sort }, 
-        }
-    );
-    my $pager = $rs->pager;
-    $cnt = $pager->total_entries;
-    my @rows = $rs->hashref->all;
+    $query and $where = mdb->query_build( query=>$query, fields=>[qw(id event_key )] );
+    my $rs = mdb->event->find($where);
+    $cnt = $rs->count;
+    $rs->skip($start)->limit($limit)->sort({ $sort=>$dir =~ /desc/i ? -1 : 1 });
+    my @rows = $rs->all;
     my @eventids = map { $_->{id} } @rows;
-    my @rule_data =
-        DB->BaliEventRules->search( { id_event => \@eventids }, { prefetch=>'rule', select => [qw(id id_event id_rule return_code ts)] } )
-        ->hashref->all;
+    my %rule_log;
+    for( mdb->event_log->find({ id_event => mdb->in(@eventids) })->all ) {
+        push @{ $rule_log{$_->{id_event}} }, $_;
+    }
+    my $all_rules = DB->BaliRule->search( undef,{ select=>[qw(id rule_name)]})->hash_unique_on('id');
     my @final;
     EVENT: for my $e ( @rows ) {
         # event_key event_status event_data 
@@ -73,23 +69,25 @@ sub log : Local {
         $e->{_parent}     = undef;
         $e->{type}        = 'event';
         $e->{id_event}    = $e->{id};
+        # now get the log (event_log)
         my $k = 1;
-        my $rules = [ grep { $_->{id_event} == $e->{id} } @rule_data ];
+        my $log_entries = $rule_log{ $e->{id} } // [];
         my @rules = map {
-            my $rule = $_;
+            my $log = $_;
+            my $rule = $all_rules->{$log->{id_rule}};
             +{
-                %$rule, 
+                %$log, 
                 _parent       => $e->{_id},
                 _id           => $e->{_id} . '-' . $k++,  # $rule->{id} useless and may repeat
                 _is_leaf      => \1,
-                id_rule_log   => $rule->{id},
-                event_status  => $rule->{return_code} ? 'ko' : 'ok',
+                id_rule_log   => $log->{id},
+                event_status  => $log->{return_code} ? 'ko' : 'ok',
                 type          => 'rule',
-                event_key     => $rule->{rule} && $rule->{id_rule}
-                    ? _loc('rule: %1', $rule->{rule}{id} . ': ' . $rule->{rule}{rule_name} )
+                event_key     => $rule 
+                    ? _loc('rule: [%1] %2', $rule->{id}, $rule->{rule_name} )
                     : _loc("Notifications"),
             }
-        } @$rules;
+        } @$log_entries;
         $e->{_is_leaf} = @rules ? \0 : \1;
         push @final, ($e, @rules );
     }
@@ -101,12 +99,12 @@ sub log : Local {
 sub del : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
-    my $rs = defined $p->{id}
-        ? DB->BaliEvent->find( $p->{id} )
-        : DB->BaliEvent->search({ id=>$p->{ids} });
-    if( $rs ) {
-        $rs->delete;
-        $c->stash->{json} = { success=>\1, msg => _loc('Event deleted ok') };
+    my $rows = defined $p->{id}
+        ? [ mdb->event->find_one({ id=>$p->{id} },{ id=>1 }) ]
+        : [ mdb->event->find({ id=>mdb->in($p->{ids}) })->fields({ _id=>1 })->all ];
+    if( @$rows ) {
+        mdb->event->remove($_) for @$rows;
+        $c->stash->{json} = { success=>\1, msg => _loc('Event(s) deleted ok') };
     } else {
         $c->stash->{json} = { success=>\1, msg => _loc('Event not found') };
     }
@@ -116,12 +114,15 @@ sub del : Local {
 sub status : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
-    my $rs = defined $p->{id}
-        ? DB->BaliEvent->find( $p->{id} )
-        : DB->BaliEvent->search({ id=>$p->{ids} });
-    if( $rs ) {
+    my $rows = defined $p->{id}
+        ? [ mdb->event->find_one({ id=>$p->{id} }) ]
+        : [ mdb->event->find({ id=>mdb->in($p->{ids}) })->all ];
+    if( @$rows ) {
         $p->{event_status} or _fail 'Missing status';
-        $rs->update({ event_status => $p->{event_status} });
+        for( @$rows ) {
+            $_->{event_status} = $p->{event_status};
+            mdb->event->save( $_ );
+        }
         $c->stash->{json} = { success=>\1, msg => _loc('Event status changed to: %1', $p->{event_status} ) };
     } else {
         $c->stash->{json} = { success=>\1, msg => ''.shift() };
@@ -138,16 +139,16 @@ sub event_data : Local {
     given( $type ) {
         when( 'stash' ) {
             my $row = $p->{id_rule_log} 
-                ? DB->BaliEventRules->search({ id=>$id },{ select=>'stash_data' })->hashref->first 
-                : DB->BaliEvent->search({ id=>$id }, { select=>'event_data' })->hashref->first; 
+                ? mdb->event_log->find_one({ id=>$id },{ stash_data=>1 })
+                : mdb->event->find_one({ id=>$id }, { event_data=>1 });
             $data = $p->{id_rule_log} ? $row->{stash_data} : $row->{event_data} if $row;
         }
         when( 'dsl' ) {
-            my $row = DB->BaliEventRules->search({ id=>$id }, { select=>'dsl' })->hashref->first;
+            my $row = mdb->event_log->find_one({ id=>$id }, { dsl=>1 });
             $data = $row->{dsl} if $row;
         }
         when( 'output' ) {
-            my $row = DB->BaliEventRules->search({ id=>$id }, { select=>'log_output' })->hashref->first;
+            my $row = mdb->event_log->find_one({ id=>$id }, { log_output=>1 });
             $data = $row->{log_output} if $row;
         }
     }
