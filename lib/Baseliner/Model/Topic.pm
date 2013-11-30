@@ -1215,9 +1215,9 @@ sub get_projects {
 }
 
 sub get_users {
-    my ($self, $topic_mid ) = @_;
+    my ($self, $topic_mid, $id_field ) = @_;
     my $topic = Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid );
-    my @users = $topic->users->search(undef,{select=>['mid','username','realname']})->hashref->all;
+    my @users = $topic->users->search({ 'me.rel_field' => $id_field},{select=>['mid','username','realname']})->hashref->all;
 
     return @users ? \@users : [];
 }
