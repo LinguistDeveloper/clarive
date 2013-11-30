@@ -678,7 +678,7 @@ sub update {
             } ## end try
             => sub {
                 my $e = shift;
-                Baseliner->model('Baseliner')->schema->txn_rollback if $rollback;
+                #Baseliner->model('Baseliner')->schema->txn_rollback if $rollback;
                 _throw $e;
             };
         } ## end when ( 'update' )
