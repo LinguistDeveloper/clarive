@@ -1282,7 +1282,7 @@ sub get_topics{
 
     if ( $field_meta->{parent_field} ) {
         my @rel_topics = map { $_->{from_mid} } Baseliner->model('Baseliner::BaliMasterRel')->search({ rel_field => $field_meta->{parent_field}, rel_type => 'topic_topic', to_mid => $topic_mid} )->hashref->all;
-        @topics = map { $_->{categories} = $_->{category}; $_ } mdb->topic->find({ mid=>mdb->in(@rel_topics) })->all;
+        @topics = map { $_->{categories} = $_->{category}; $_ } mdb->topic->find({ mid=>mdb->in(@rel_topics) })->fields({ _id=>0 })->all;
     } else {
         @topics = Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid )
             ->topics->search( {rel_field => $id_field}, { order_by=>'rel_seq', prefetch=>['categories'] } )->hashref->all;
