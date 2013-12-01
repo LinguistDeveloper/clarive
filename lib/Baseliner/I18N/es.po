@@ -1794,6 +1794,12 @@ msgstr "Cancelado"
 msgid "TRAPPED"
 msgstr "Capturado"
 
+msgid "SKIPPING"
+msgstr "Ignorando"
+
+msgid "RETRYING"
+msgstr "Reintentando"
+
 msgid "PAUSED"
 msgstr "Retenido"
 

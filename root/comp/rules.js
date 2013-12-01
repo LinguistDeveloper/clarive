@@ -300,6 +300,10 @@
         var enabled = new Ext.form.Checkbox({ fieldLabel:_('Enabled'), checked: !_bool(attr.disabled,true) });
         var run_forward = new Ext.form.Checkbox({ fieldLabel:_('Run Forward'), checked: _bool(attr.run_forward,true) });
         var run_rollback = new Ext.form.Checkbox({ fieldLabel:_('Run Rollback'), checked: _bool(attr.run_rollback,true) });
+        var error_trap = new Baseliner.ComboDouble({ 
+            fieldLabel: _('Error Trap'), name:'error_trap', value: attr.error_trap || 'none', 
+            data: [ ['none',_('No Trap')], ['trap',_('Trap Errors')] ]
+        });
         var parallel_mode = new Baseliner.ComboDouble({ 
             fieldLabel: _('Parallel Mode'), name:'parallel_mode', value: attr.parallel_mode || 'none', 
             data: [ ['none',_('No Parallel')], ['fork',_('Fork and Wait')], ['nohup', _('Fork and Leave')] ]
@@ -307,7 +311,7 @@
         var semaphore_key = new Ext.form.TextField({ fieldLabel:_('Semaphore Key'), name:'semaphore_key', value: attr.semaphore_key });
         var timeout = new Ext.form.TextField({ fieldLabel:_('Timeout'), name:'timeout', value: attr.timeout });
         var opts = new Baseliner.FormPanel({ title:_('Options'), labelWidth: 150, style:{ padding:'5px 5px 5px 5px'}, defaults:{ anchor:'100%' }, items:[
-            enabled, data_key, needs_rollback_mode, needs_rollback_key, run_forward, run_rollback, timeout, semaphore_key, parallel_mode
+            enabled, data_key, needs_rollback_mode, needs_rollback_key, run_forward, run_rollback, timeout, semaphore_key, parallel_mode, error_trap
         ]});
         var btn_save_meta = new Ext.Button({ text:_('Save'), icon:'/static/images/icons/save.png', handler:function(){
             node.attributes = de.getData();
@@ -327,7 +331,6 @@
             node.attributes.semaphore_key = semaphore_key.getValue();
             node.attributes.timeout = timeout.getValue();
             node.attributes.note = note.getValue();
-            node.attributes.parallel_mode = parallel_mode.checked;
             node.setText( node.attributes.text );
             // data save
             if( !node.attributes.data ) node.attributes.data={};
@@ -339,7 +342,7 @@
             btn_save_meta ];
         opts.doLayout();
         de.doLayout();
-        var tabs = new Ext.TabPanel({ activeTab: goto_tab, items:[ opts,de,note ] });
+        var tabs = new Ext.TabPanel({ activeTab: goto_tab==undefined?0:goto_tab, items:[ opts,de,note ] });
         var win = show_win( node, tabs, { width: 800, height: 600, tbar:tbar }, function(d){ 
             //node.attributes=d;
             //node.setText( d.text );
