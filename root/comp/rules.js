@@ -327,6 +327,8 @@
             enabled.checked ? node.enable() : node.disable();
             node.attributes.run_forward = run_forward.checked;
             node.attributes.run_rollback = run_rollback.checked;
+            node.attributes.parallel_mode = parallel_mode.getValue();
+            node.attributes.error_trap = error_trap.getValue();
             node_decorate( node );  // change the node's look
             node.attributes.semaphore_key = semaphore_key.getValue();
             node.attributes.timeout = timeout.getValue();
