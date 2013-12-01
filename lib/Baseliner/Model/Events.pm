@@ -46,7 +46,7 @@ sub run_once {
         my $event_status = '??';
         _debug _loc 'Running event %1 (id %2)', $ev->{event_key}, $ev->{id};
         try {
-            local $SIG{ALRM} = sub { die "alarm\n" };
+            local $SIG{ALRM} = sub { die "timeout running event rules for post-offline\n" };
             alarm $data->{timeout} if $data->{timeout};  # 0 turns off timeout
             my $stash = $ev->{event_data} ? _load( $ev->{event_data} ) : {};
             # run rules for this event
@@ -55,15 +55,16 @@ sub run_once {
             my $rc=0;
             # save log
             for my $rule ( _array( $ret->{rule_log} ) ) {
-                my $rulerow = mdb->event_log->insert({
+                mdb->event_log->insert({
                     id=>mdb->seq('event_log'), 
-                    id_event=> $ev->{id}, id_rule=> $rule->{id}, stash_data=> _dump( $rule->{ret} ), return_code=>$rule->{rc}, 
+                    id_event=> $ev->{id}, 
+                    id_rule=> $rule->{id}, 
+                    stash_data=> _dump( $rule->{ret} ), 
+                    return_code=>$rule->{rc}, 
+                    dsl => $rule->{dsl},
+                    log_output => $rule->{output},
                 });
                 $rc += $rule->{rc} if $rule->{rc};
-                $rulerow->dsl( $rule->{dsl} );
-                $rulerow->update;
-                $rulerow->log_output( $rule->{output} );
-                $rulerow->update;
             }
             
             my $event_key = $ev->{event_key};
@@ -97,7 +98,7 @@ sub run_once {
                             
                         Baseliner->model( 'Messaging' )->notify(%{$model_messaging});
                         
-                        my $rulerow = mdb->event_log->insert({
+                        mdb->event_log->insert({
                             id=>mdb->seq('event_log'), id_event=> $ev->{id}, stash_data=> _dump( $model_messaging ), return_code=>0, 
                         });
                     }
