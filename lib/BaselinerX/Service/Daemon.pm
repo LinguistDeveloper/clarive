@@ -31,7 +31,7 @@ register 'service.job.dummy' => {
 register 'config.job.daemon' => {
     metadata=> [
         {  id=>'frequency', label=>'Job Server Frequency', type=>'int', default=>10 },
-        {  id=>'mode', label=>'Job Spawn Mode (spawn,fork,detach)', type=>'str', default=>'spawn' },
+        {  id=>'mode', label=>'Job Spawn Mode (spawn,fork,detach)', type=>'str', default=>'detach' },
         {  id=>'unified_log', label=>'Set true to have jobs report to dispatcher log', type=>'bool', default=>0 },
     ]
 };

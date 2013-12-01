@@ -37,6 +37,7 @@ sub setup_baseliner {
     $ENV{BASELINER_TMPHOME} = $self->tmp_dir;
     $ENV{BASELINER_LOGHOME} = $self->log_dir;
     $ENV{BASELINER_JOBHOME} = $self->job_dir;
+    $ENV{BASELINER_PIDHOME} = $self->pid_dir;
     $ENV{BASELINER_PERL_OPTS} = ''; # XXX 
     $ENV{BASELINER_DEBUG} = $self->debug; 
     $ENV{BASELINER_LOGCOLOR} = 1; # force colorize even in log files
