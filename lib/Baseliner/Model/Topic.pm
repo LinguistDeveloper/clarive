@@ -258,6 +258,7 @@ sub topics_for_user {
     my $query_limit = 300;
     my $perm = Baseliner->model('Permissions');
     my $username = $p->{username};
+    my $is_root = Baseliner->model('Permissions')->is_root( $username );
     my $topic_list = $p->{topic_list};
 
     if( length($query) ) {
@@ -328,6 +329,11 @@ sub topics_for_user {
     }
 
     #Filtramos por las aplicaciones a las que tenemos permisos.
+    # if( $username && ! $perm->is_root( $username )){
+    #     my $perm_topics= $perm->user_topics_by_projects( username => $username );
+    #     $where->{topic_mid} = $perm_topics;
+    # }
+
     if( $username && ! $perm->is_root( $username )){
         #$where->{'project_id'} = [{-in => Baseliner->model('Permissions')->user_projects_query( username=>$username )}, { "=", undef }];
         $where->{'-or'} = [
@@ -337,6 +343,10 @@ sub topics_for_user {
     }
     
     if( $topic_list ) {
+        # use Array::Utils qw(:all);
+        # my @a = _array $topic_list;
+        # my @b = _array $where->{topic_mid};
+        # my @final_topics = intersect(@a, @b);
         $where->{topic_mid} = $topic_list;
     }
     
@@ -517,6 +527,7 @@ sub topics_for_user {
         my %categories_edit = map { lc $_->{name} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $username, type => 'edit' );
         
         for my $row (@db_mid_data) {
+            #_log _dump $row if $row->{topic_mid} eq 880;
             my $mid = $row->{topic_mid};
             $mid_data{ $mid } = $row unless exists $mid_data{ $row->{topic_mid} };
             $mid_data{ $mid }{is_closed} = defined $row->{status} && $row->{status} eq 'C' ? \1 : \0;
@@ -526,9 +537,13 @@ sub topics_for_user {
             if( $row->{label_id} ) {
                 $mid_data{$mid}{group_labels}{ $row->{label_id} . ";" . $row->{label_name} . ";" . $row->{label_color} } = ();
             }
-            if( $row->{project_id} && $row->{collection} && $row->{collection} eq 'project') {
-                $mid_data{$mid}{group_projects}{ $row->{project_id} . ";" . $row->{project_name} } = ();
-                $mid_data{$mid}{group_projects_report}{ $row->{project_name} } = ();
+            if( $row->{project_id} && $row->{collection}) {
+                if ( $row ->{collection} eq 'project' ) {                
+                    $mid_data{$mid}{group_projects}{ $row->{project_id} . ";" . $row->{project_name} } = ();
+                    $mid_data{$mid}{group_projects_report}{ $row->{project_name} } = ();
+                }
+                #Structure to check user has access to at least one project in all collections
+                $mid_data{$mid}{sec_projects}{$row->{collection}}{$row->{project_id}} = 1;
             # } else {
             #     $mid_data{$mid}{group_projects} = {};
             #     $mid_data{$mid}{group_projects_report} = {};
@@ -556,7 +571,7 @@ sub topics_for_user {
     } else {
         _debug "CACHE =========> ALL TopicView data MIDS in CACHE";
     }
-    
+
     # get user seen 
     my @mid_prefs = DB->BaliMasterPrefs->search({ mid=>{ -in => \@mids }, username=>$username })->hashref->all;
     for( @mid_prefs ) {
@@ -567,6 +582,7 @@ sub topics_for_user {
 
     my @rows;
     for my $mid (@mids) {
+        next if !$mid_data{$mid};
         my $data = $mid_data{$mid};
         $data->{calevent} = {
             mid    => $mid,
@@ -678,7 +694,7 @@ sub update {
             } ## end try
             => sub {
                 my $e = shift;
-                #Baseliner->model('Baseliner')->schema->txn_rollback if $rollback;
+                Baseliner->model('Baseliner')->schema->txn_rollback if $rollback;
                 _throw $e;
             };
         } ## end when ( 'update' )
