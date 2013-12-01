@@ -9,7 +9,7 @@
     var title = is_new ? _('New Search') : lc_node.text;
     var lc_tree = lc_node.ownerTree;
     var tree_all_loader = new Baseliner.TreeLoader({
-        dataUrl: '/ci/report/all_fields',
+        dataUrl: '/ci/report/all_fields'
         //baseParams: { id_rule: id_rule },
         //requestMethod:'GET',
         //uiProviders: { 'col': Ext.tree.ColumnNodeUI }
@@ -55,9 +55,6 @@
     var edit_value = function(node){
         var attr = node.attributes;
         var pn = node.parentNode; // should be where_field
-        //console.log( pn );
-        //form_value.show();
-        //console.log( node );
         var oper_all = [ ['','='], ['$ne','<>'],['$lt','<'],['$lte','<='],['$gt','>'],['$gte','>='] ];
         var oper_in = [ ['$in','IN'], ['$nin','NOT IN'] ];
         var oper_like = [ ['like','LIKE'], ['not_like','NOT LIKE'] ];
@@ -96,10 +93,12 @@
             var val = fcomp.get_save_data ? fcomp.get_save_data() : fcomp.getValue();
             var label;
             switch( ftype ) {
+                //case 'number': val = parseFloat(val); break;
                 case 'date': val = val.format('Y-m-d').trim(); break;
                 case 'ci': 
                 case 'status': 
                     label = fcomp.get_labels().join(',');
+                    attr.options = fcomp.get_labels();
             }
             attr.value = val;
             node.setText( String.format('{0} {1}', oper.getRawValue(), label || attr.value) );
@@ -233,6 +232,7 @@
                 } else if( n.attributes.category ) {
                     copy.setText( String.format('{0}: {1}', n.attributes.category.name, n.attributes.name_field ) );
                 }
+                
                 //copy.setIcon( icon );
                 //console.log( copy );
                 ev.dropNode = copy;
@@ -267,7 +267,7 @@
     }});
     var btn_clean_all = new Ext.Button({ text: _('Clear'), icon:'/static/images/icons/asterisk_orange.png', handler: function(){ 
         var n;
-        while (n = tree_selected.root.childNodes[0])
+        while (n == tree_selected.root.childNodes[0])
             tree_selected.root.removeChild(n);
         initialize_folders();
     } });

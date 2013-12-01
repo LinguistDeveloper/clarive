@@ -25,7 +25,7 @@ sub rel_type {
 sub report_list {
     my ($self,$p) = @_;
     
-    my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta() );  # XXX should be by category, same id fields may step on each other
+    my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $p->{username}) );  # XXX should be by category, same id fields may step on each other
     my $mine = $self->my_searches({ username=>$p->{username}, meta=>\%meta });
     my $public = $self->public_searches({ meta=>\%meta, username=>$p->{username} });
     
@@ -64,6 +64,7 @@ sub my_searches {
     my ($self,$p) = @_;
     my $userci = Baseliner->user_ci( $p->{username} );
     my $username = $p->{username};
+	
     #DB->BaliMasterRel->search({ to_mid=>$userci->mid, rel_field=>'report_user' });
     my @searches = $self->search_cis({ owner=>$username, '$or' => [{ permissions=>'private' }, { permissions=>undef } ] }); 
     my @mine;
@@ -195,7 +196,6 @@ sub report_update {
                     _fail _loc('Search name already exists, introduce another search name');
                 }
                 else {
-					_log ">>>>>>>>>>>>>>>>>>>DATA: " . _dump $data->{selected};
                     $self->name( $data->{name} );
                     $self->rows( $data->{rows} );
                     $self->sql( $data->{sql} );
@@ -381,23 +381,50 @@ sub selected_fields {
     my %ret = ( ids=>['mid','topic_mid','category_name','category_color','modified_on'] );
     my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
     my $meta = $p->{meta};
+	
+	
+	my %filters;
+	for my $filter ( _array($fields{where}) ) {
+		my %type_filter = map { $_->{type}=>$_->{children} } _array( $filter );
+		for my $type ( _array($type_filter{where_field}) ) {
+			$filters{$filter->{id_field}} = { type => $type->{field}, options => exists $type->{options} ? $type->{options} : undef, values => $type->{value}};
+		}
+	}   
+	
     for my $select_field ( _array($fields{select}) ) {
         my $id = $data_field_map{$select_field->{id_field}} // $select_field->{id_field};
+		my $filter_type = exists $filters{$select_field->{id_field}} ?  $filters{$select_field->{id_field}} : undef;
         $id =~ s/\.+/-/g;  # convert dot to dash to avoid JsonStore id problems
         my $as = $select_field->{as} // $select_field->{name_field};
         push @{ $ret{ids} }, $id;   # sent to the Topic Store as report data keys
-        push @{ $ret{columns} }, { as=>$as, id=>$id, meta_type=>$meta->{$id}{meta_type}, %$select_field };
+        push @{ $ret{columns} }, { as=>$as, id=>$id, meta_type=>$meta->{$id}{meta_type}, %$select_field, filter=> $filter_type };
     }
     #_debug \%ret;
     return \%ret;
 }
 
-method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef ) {
+
+method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=undef ) {
     my $rows = $limit // $self->rows;
     my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
 	
     my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $username) );  # XXX should be by category, same id fields may step on each other
     my @selects = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) => 1 } _array($fields{select});
+
+
+	#filters
+	my %dynamic_filter;
+	if( $filter ){
+		for my $flt ( _array $filter ){
+			_log ">>>>>>Filter: " . _dump $flt;
+			$dynamic_filter{$flt->{field}} =  { oper=> $flt->{comparison} ? $flt->{comparison} : undef , value => $flt->{value}};
+		};
+		#Excepción
+		if ( exists $dynamic_filter{category_status_name} ){
+			$dynamic_filter{status} = $dynamic_filter{category_status_name};
+		}
+	}
+	_log ">>>>>>>>>>>>>>>Dynamic filter: " . _dump %dynamic_filter;
 
     my @where = grep { defined } map { 
         my $field=$_;
@@ -406,6 +433,13 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef ) {
 		
         my @ors;
         for my $val ( @chi ) {
+			_log ">>>>>>>>>>>>>>>>>>>FIELDS: " . _dump $val;
+			my $id_field = $_->{id_field};
+			if(exists $dynamic_filter{$id_field}) {
+				$val->{value} = $dynamic_filter{$id_field}->{value} .'';
+				$val->{oper} = '$' . $dynamic_filter{$id_field}->{oper} if $dynamic_filter{$id_field}->{oper};
+				_log ">>>>>>>>>>>>>Operador: " . $val->{oper};
+			};
 			if( $val->{oper} =~ /^(like|not_like)$/ ) {
 				$val->{value} = qr/$val->{value}/i;
 				my $cond = $val->{oper} eq 'not_like' 
@@ -447,9 +481,13 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef ) {
     if( my @categories = map { {'id_category' => $_->{id_category}} } _array($fields{categories}) ) {
         push @where, { '$or'=>\@categories };
     }
+	
     my @sort = map { $_->{id_field} => 0+($_->{sort_direction} // 1) } _array($fields{sort});
     
+	
     my $find = @where ? { '$and'=>[ @where ] } : {};
+	
+	_log ">>>>>>>>>>>>>>>>>>FIND: " . _dump $find;
 	
     my $rs = mdb->topic->find($find);
     my $cnt = $rs->count;
