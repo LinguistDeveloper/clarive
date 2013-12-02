@@ -78,7 +78,7 @@ __PACKAGE__->result_source_instance->view_definition(q{
                     LEFT JOIN BALI_TOPIC_STATUS S ON T.ID_CATEGORY_STATUS = S.ID
                     LEFT JOIN BALI_MASTER_REL REL_PR ON REL_PR.FROM_MID = T.MID AND REL_PR.REL_TYPE = 'topic_project'
                     LEFT JOIN BALI_PROJECT P ON P.MID = REL_PR.TO_MID
-                    LEFT JOIN BALI_MASTER MP ON REL_PR.TO_MID = MP.MID AND MP.COLLECTION = 'project'
+                    LEFT JOIN BALI_MASTER MP ON REL_PR.TO_MID = MP.MID 
                     LEFT JOIN BALI_MASTER_REL REL_F ON REL_F.FROM_MID = T.MID AND REL_F.REL_TYPE = 'topic_file_version'
                     LEFT JOIN BALI_FILE_VERSION F ON F.MID = REL_F.TO_MID
                     LEFT JOIN BALI_MASTER_REL REL_PS ON REL_PS.FROM_MID = T.MID AND REL_PS.REL_TYPE = 'topic_post'

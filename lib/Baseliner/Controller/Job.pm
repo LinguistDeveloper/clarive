@@ -342,29 +342,24 @@ sub job_submit : Path('/job/submit') {
                 event_new 'event.job.delete' => { username => $c->username, bl => $job->bl, id_job=>$job->id, jobname => $job->name  }  => sub {
                     # be careful: may be cancelled already
                     $p->{mode} ne 'delete' and _fail _loc('Job already cancelled'); 
-                    # cancel pending requests
-                    $c->model('Request')->cancel_for_job( id_job=>$job->id );
                     $job->delete;
                 };
                 $msg = "Job %1 deleted";
             }
             elsif( $job->status =~ /RUNNING/ ) {
                 event_new 'event.job.cancel_running' => { username => $c->username, bl => $job->bl, id_job=>$job->id, jobname => $job->name  } => sub {
-                    $job->update({ status=> 'CANCELLED' });
-                    $c->model('Request')->cancel_for_job( id_job=>$job->id );
+                    $job_ci->status( 'CANCELLED' );
+                    $job_ci->save;
                     $job_ci->logger->error( _loc('Job cancelled by user %1', $c->username ) );
-
                     sub job_submit_cancel_running : Private {};
                     $c->forward( 'job_submit_cancel_running', $job, $job_name, $username );
                 };
                 $msg = "Job %1 cancelled";
             } else {
                 event_new 'event.job.cancel'  => { username => $c->username, bl => $job->bl, id_job=>$job->id, jobname => $job->name  } => sub {
-                    $job->status( 'CANCELLED' );
-                    $job->update;
+                    $job_ci->status( 'CANCELLED' );
+                    $job->save;
                     $job_ci->logger->error( _loc('Job cancelled by user %1', $c->username ) );
-                    # cancel pending requests
-                    $c->model('Request')->cancel_for_job( id_job=>$job->id );
                 };
                 $msg = "Job %1 cancelled";
             }

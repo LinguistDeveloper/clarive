@@ -435,6 +435,47 @@
         autorefresh.stop(task);
     };
 
+    Baseliner.trap_check = function(mid){
+        var trap_win;
+        var trap_do = function(mid,action){
+            trap_win.close();
+            Ext.Msg.prompt(_('Comment'), _('Comment'), function(btn,text){
+                if( btn=='cancel') return ;
+                Baseliner.ci_call( mid, 'trap_action',  { action: action, comments: text }, function(res){
+                    if( res.success ) {
+                        grid.getStore().reload();
+                    } else {
+                        Ext.Msg.alert( _('Error'), _('Could not retry the job: %1', res.msg ) );
+                    }
+                });
+            }, this, 300, '');
+        };
+        trap_win = new Baseliner.Window({
+            title: _('Error trapped'),
+            width: 400, height: 300,
+            padding: 5,
+            modal: true,
+            border: false,
+            layout: 'vbox',
+            layoutConfig: { align:'stretch' },
+            items: [
+                { flex:1, layout:'hbox', padding: 20, 
+                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Retry')+'</b>', icon:'/static/images/icons/refresh.gif', 
+                        handler:function(){trap_do(mid,'retry')} },
+                        { flex:1, border: false, style: 'margin-left:10px', html: _('Retries the job task that failed') }]},
+                { flex:1, layout:'hbox', padding: 20, 
+                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Skip')+'</b>', icon:'/static/images/icons/skip.png', 
+                        handler:function(){trap_do(mid,'skip')}  },
+                        { flex:1, border: false, style: 'margin-left:10px', html: _('Skips the job task that failed, ignoring the error') }]},
+                { flex:1, layout:'hbox', padding: 20, 
+                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Abort')+'</b>', icon:'/static/images/icons/delete.gif', 
+                        handler:function(){trap_do(mid,'abort')}  },
+                        { flex:1, border: false, style: 'margin-left:10px', html: _('The task will fail') }]},
+            ]
+        });
+        trap_win.show();
+    }
+                
     var button_html = new Ext.Toolbar.Button({ icon: '/static/images/icons/html.gif',
         style: 'width: 30px', cls: 'x-btn-icon', hidden: false,
         handler: function(){
@@ -562,9 +603,13 @@
                 );
                 button_resume.hide();
             }
+            else if( sel.data.status_code == 'TRAPPED' ) {
+                Baseliner.trap_check(sel.data.mid);
+                button_resume.hide();
+            }
         }
     });
-
+    
     var msg_cancel_delete = [ _('Cancel'), _('Delete') ];
     var button_cancel = new Ext.Toolbar.Button({
         text: msg_cancel_delete[0],
@@ -652,6 +697,7 @@
         else if( status=='IN-EDIT' ) icon='log_w.gif';
         else if( status=='WAITING' ) icon='waiting.png';
         else if( status=='PAUSED' ) icon='paused.png';
+        else if( status=='TRAPPED' ) icon='paused.png';
         else if( status=='CANCELLED' ) icon='close.png';
         else { icon='log_e.gif'; bold=true; }
         value = (bold?'<b>':'') + value + (bold?'</b>':'');
@@ -671,6 +717,9 @@
         //else if( type == 'demote' || type == 'rollback' ) value += ' ' + _('(Rollback)');
         if( status == 'APPROVAL' ) { // add a link to the approval main
             value = String.format("<a href='javascript:Baseliner.request_approval({0},\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id ); 
+        }
+        else if( status == 'TRAPPED' ) { // add a link to the trap
+            value = String.format("<a href='javascript:Baseliner.trap_check({0},\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id ); 
         }
         if( icon!=undefined ) {
             return div1 
@@ -1014,7 +1063,7 @@
         } else {
             button_cancel.setText( msg_cancel_delete[0] );
         }
-        if( rec.data.status_code === 'PAUSED' ) {
+        if( rec.data.status_code === 'PAUSED' || rec.data.status_code === 'TRAPPED' ) {
             button_resume.show();
         }
     });

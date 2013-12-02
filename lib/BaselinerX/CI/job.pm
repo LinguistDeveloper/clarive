@@ -105,6 +105,7 @@ around update_ci => sub {
             pid         => $self->pid,
             host        => $self->host,
             exec        => $self->exec,
+            job_key     => $self->job_key,
             rollback    => $self->rollback,
             step        => $self->step,
             status      => $self->status,
@@ -399,6 +400,7 @@ sub reset {
             $self->maxstarttime( $ora_end );
         }
         $self->rollback( 0 );
+        $self->pid( 0 );
         $self->status( 'READY' );
         $self->step( $p{step} || 'PRE' );
         $self->username( $username );
@@ -453,7 +455,7 @@ sub approve {
         $self->status( 'READY' );
         $self->save;
     };
-    1;
+    { success=>1 }
 }
 
 sub reject {
@@ -465,7 +467,18 @@ sub reject {
         $self->status( 'REJECTED' );
         $self->save;
     };
-    1;
+    { success=>1 }
+}
+
+sub trap_action {
+    my ($self, $p)=@_;
+    my $comments = $p->{comments} // _('no comment');
+    my $action = $p->{action} // '';
+    my $job_status = $action eq 'retry' ? 'RETRYING' : $action eq 'skip' ? 'SKIPPING' : 'ERROR';
+    $self->logger->warn( _loc('Task response `*%1*` by *%2*: %3', _loc($action), $p->{username}, $comments), data=>$comments, username=>$p->{username} );
+    $self->status( $job_status );
+    $self->save;
+    { success=>1 }
 }
 
 sub status_icon {

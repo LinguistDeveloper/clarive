@@ -1137,8 +1137,11 @@ sub hash_flatten {
     my %flat;
     $hf_scope or local $hf_scope = {};
     my $refstash = ref $stash;
-    return () if $refstash && exists $hf_scope->{"$stash"};
-    $hf_scope->{"$stash"}=() if $refstash;
+    if( $refstash ) {
+        my $refaddr = Scalar::Util::refaddr( $stash );
+        return () if exists $hf_scope->{$refaddr};
+        $hf_scope->{$refaddr}=() if $refstash;
+    }
     if( $refstash eq 'HASH' ) {
         while( my ($k,$v) = each %$stash ) {
             %flat = merge_pushing( \%flat, scalar hash_flatten($v, $prefix ? "$prefix.$k" : $k ) );

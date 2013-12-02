@@ -420,14 +420,73 @@ Returns an array of project ids for the projects the user has access to.
 =cut
 sub user_projects_ids {
     my ( $self, %p ) = @_;
+    _throw 'Missing username' unless exists $p{username};
+    my $is_root = $self->is_root( $p{username} );
+    my $all_projects = Baseliner->model( 'Baseliner::BaliRoleUser' )->search({ username => $p{username}, ns => '/'})->first;
+    if ($all_projects || $is_root){
+        map { $_->{mid} } Baseliner->model( 'Baseliner::BaliProject' )->search()->hashref->all;
+    }else{
+        _unique map { s{^(.*?)/}{}g; $_ } $self->user_projects( %p );   
+    }
+}
+
+=head2 user_projects_ids_with_collection( username=>Str )
+
+Returns an array of project ids for the projects the user has access to with their collection
+
+=cut
+sub user_projects_ids_with_collection {
+    my ( $self, %p ) = @_;
 	_throw 'Missing username' unless exists $p{username};
 	my $is_root = $self->is_root( $p{username} );
 	my $all_projects = Baseliner->model( 'Baseliner::BaliRoleUser' )->search({ username => $p{username}, ns => '/'})->first;
+    my $sec_projects;
 	if ($all_projects || $is_root){
-		map { $_->{mid} } Baseliner->model( 'Baseliner::BaliProject' )->search()->hashref->all;
+		map { $sec_projects->{_ci($_->{mid})->{_ci}->{collection}}->{$_->{mid}} = 1 } Baseliner->model( 'Baseliner::BaliProject' )->search()->hashref->all;
 	}else{
-		_unique map { s{^(.*?)/}{}g; $_ } $self->user_projects( %p );	
+		_unique map { 
+            s{^(.*?)/}{}g; 
+            ($sec_projects->{_ci($_)->{_ci}->{collection}}->{$_} = 1 ) } $self->user_projects( %p );	
 	}
+    return $sec_projects;
+}
+
+sub user_topics_by_projects {
+    my ($self, $username ) = @_;
+    my $user_cols = $self->user_projects_ids_with_collection( username => $username );
+
+
+    my @rels = DB->BaliMasterRel->search(
+        { rel_type => 'topic_project' },
+        {
+            join   => [ 'master_to', 'master_from' ],
+            select => [ 'from_mid',  'to_mid', 'master_to.collection' ],
+            as     => [ 'topic',     'project', 'collection' ]
+        }
+    )->hashref->all;
+    my $topics = {};
+    for my $rel (@rels) {
+        $topics->{ $rel->{topic} }->{ $rel->{collection} }->{ $rel->{project} } = 1;
+    }
+
+    my @final_topics;
+    for my $topic ( keys %{$topics} ) {
+        my $topic_sec = $topics->{$topic};
+        my $valid_topic = 1;
+        for my $col ( keys %{$user_cols} ) {
+            for my $col_project ( keys %{ $user_cols->{$col} } ) {
+                if ( !(  $topic_sec->{$col}
+                    && $topic_sec->{$col}->{$col_project} ) )
+                {
+                    $valid_topic = 0;
+                }
+            }
+        }
+        if ( $valid_topic ) {
+            push @final_topics, $topic;
+        }
+    }
+    return \@final_topics;
 }
 
 =head2 user_projects_names( username=>Str )
