@@ -329,7 +329,7 @@
         height: 600,
         layout:'fit',
         closeAction: 'close',
-        //tbar: tbar,
+        tbar: tbar,
         items: tabs
     });
     
