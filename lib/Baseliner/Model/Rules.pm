@@ -15,11 +15,57 @@ register 'event.rule.failed' => {
     vars => ['dsl', 'rc', 'ret', 'rule', 'rule_name', 'stash', 'output']
 };
 
+register 'event.rule.trap' => {
+    description => 'Rule error trapped',
+    vars => ['stash', 'output']
+};
+
 sub init_job_tasks {
     my ($self)=@_;
     return map { +{ text=>$_, key=>'statement.step', icon=>'/static/images/icons/job.png', 
             children=>[], leaf=>\0, expanded=>\1 } 
     } qw(CHECK INIT PRE RUN POST);
+}
+
+sub parallel_run {
+    my ($name, $mode, $stash, $code)= @_;
+    my $job = $stash->{job};
+    if( my $chi_pid = fork ) {
+        _log _loc 'Forked child task %1 with pid %2', $name, $chi_pid; 
+    } else {
+         $code->();
+         exit 0; # cannot update stash, because it would override the parent run copy
+    }
+}
+
+sub error_trap {
+    my ($stash, $code)= @_;
+    my $job = $stash->{job};
+    RETRY_TRAP:
+    try {
+        $code->();
+    } catch {
+        my $err = shift;
+        $job->logger->error( _loc "Error trapped in rule: %1", $err );    
+        $job->status('TRAPPED');
+        event_new 'event.rule.trap' => { username=>'internal', stash=>$stash, output=>$err } => sub {};
+        $job->save;
+        my $last_status;
+        while( ($last_status = $job->job_row->get_from_storage->status) eq 'TRAPPED' ) {
+            sleep 5;
+        }
+        if( $last_status eq 'RETRYING' ) {
+            $job->logger->info( _loc "Retrying task", $err );    
+            goto RETRY_TRAP;
+        } 
+        elsif( $last_status eq 'SKIPPING' ) {
+            $job->logger->info( _loc "Skipping task", $err );    
+            return;
+        } else { # ERROR
+            $job->logger->info( _loc "Aborting task", $err );    
+            _fail( $err );
+        }
+    };
 }
 
 sub tree_format {
@@ -138,6 +184,8 @@ sub dsl_build {
         my $name = _strip_html( $attr->{text} );
         my $run_forward = _bool($attr->{run_forward},1);  # if !defined, default is true
         my $run_rollback = _bool($attr->{run_rollback},1); 
+        my $error_trap = $attr->{error_trap} eq 'trap';
+        my $parallel_mode = length $attr->{parallel_mode} && $attr->{parallel_mode} ne 'none' ? $attr->{parallel_mode} : '';
         my $timeout = _bool($attr->{timeout},0); 
         do{ _debug _loc("*Skipped* task %1 in run forward", $name); next; } if !$is_rollback && !$run_forward;
         do{ _debug _loc("*Skipped* task %1 in run rollback", $name); next; } if $is_rollback && !$run_rollback;
@@ -155,6 +203,8 @@ sub dsl_build {
         }
         push @dsl, sprintf( '_debug(q{=====| Current Rule Task: %s} );', $name)."\n" if $p{verbose}; 
         if( length $attr->{key} ) {
+            push @dsl, sprintf('parallel_run(q{%s},q{%s},$stash,sub{', $name, $parallel_mode) if $parallel_mode;
+            push @dsl, sprintf( 'error_trap($stash, sub {') if $error_trap; 
             my $key = $attr->{key};
             my $reg = Baseliner->registry->get( $key );
             if( $reg->isa( 'BaselinerX::Type::Service' ) ) {
@@ -166,13 +216,14 @@ sub dsl_build {
             } else {
                 push @dsl, _array( $reg->{dsl}->($self, { %$attr, %$data, children=>$children, data_key=>$data_key }, %p ) );
             }
+            push @dsl, '});' if $error_trap; # current_task close
+            push @dsl, '});' if $parallel_mode; # current_task close
             push @dsl, '});' if $closure; # current_task close
         } else {
             _debug $s;
             _fail _loc 'Missing dsl/service key for node %1', $name;
         }
     }
-    #push @dsl, sprintf '$stash;';
 
     my $dsl = join "\n", @dsl;
     if( $self->tidy_up && !$p{no_tidy} ) {

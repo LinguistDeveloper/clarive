@@ -39,7 +39,7 @@ register 'config.job.daemon' => {
 
 sub check_rollbacks {
     my ($self)=@_;
-    my @rs = Baseliner->model('Baseliner::BaliJob')->search({ 
+    my @rs = DB->BaliJob->search({ 
         status => 'ROLLBACK'
     });
     foreach my $r ( @rs ) {
@@ -89,7 +89,7 @@ sub job_daemon {
                 } 
         );
         for my $roll ( @query_roll ) {
-            my @rs = $c->model('Baseliner::BaliJob')->search($roll);
+            my @rs = DB->BaliJob->search($roll);
             foreach my $r ( @rs ) {
                 _log _loc( "Starting job %1 for step %2", $r->name, $r->step );
                 $r->status('RUNNING');
@@ -120,7 +120,7 @@ sub job_daemon {
                 _log("Reaping children..."), $self->reap_children if $mode =~ /fork|detach/;
             }
         }
-        $self->check_job_expired($c);
+        $self->check_job_expired();
         last if $EXIT_NOW;
         sleep $freq;    
         last if $EXIT_NOW;
@@ -142,6 +142,7 @@ sub Fork {
         if (defined($pid = fork)) {
             return $pid;
         } elsif ($! =~ /No more process/) {
+            _warn "No processes available. Sleeping and retrying in a few seconds...";
             sleep 5;
             redo FORK;
         } else {
@@ -189,9 +190,9 @@ sub runner_fork {
 }
 
 sub check_job_expired {
-    my ($self,$c)=@_;
+    my ($self)=@_;
     #_log( "Checking for expired jobs..." );
-    my $rs = $c->model('Baseliner::BaliJob')->search({ 
+    my $rs = DB->BaliJob->search({ 
             maxstarttime => { '<' , _now }, 
             status => 'READY',
     });
@@ -201,17 +202,22 @@ sub check_job_expired {
         $row->endtime( _now );
         $row->update;
     }
-    $rs = $c->model('Baseliner::BaliJob')->search({ status => 'RUNNING', pid=>{'>', 0} });
+    # some jobs are running with pid, and some without, 
+    #   but if they have any of these statuses, they should have a pid>0 and exist, otherwise their dead
+    $rs = DB->BaliJob->search({ status => ['RUNNING','PAUSED','TRAPPED'] });
     my $hostname = Util->my_hostname();
     while( my $row = $rs->next ) {
-        _debug sprintf "Checking job row alive: pid=%s, host=%s (my host=%s)", $row->pid, $row->host, $hostname;
-        if( $row->pid && $row->host eq $hostname ) {
-            unless( pexists( $row->pid ) ) {
+        _debug sprintf "Checking job row alive: job=%s, pid=%s, host=%s (my host=%s)", $row->name, $row->pid, $row->host, $hostname;
+        if( $row->host eq $hostname ) {
+            if( $row->pid>0 && !pexists($row->pid) ) {
+                _warn "Not alive: " . $row->name;
                 # recheck
-                my $job = $c->model('Baseliner::BaliJob')->search({ id=>$row->id, step=>$row->step, pid=>{'>',0} })->first;
-                next unless ref $job;
-                next unless $job->status eq 'RUNNING';
-                _log _loc("Detected killed job %1 (status %2, pid %3)", $row->name, $row->status, $row->pid ); 
+                if( $row->pid>0 ) {
+                    my $job = DB->BaliJob->search({ id=>$row->id, step=>$row->step, pid=>{'>',0} })->first;
+                    next unless ref $job;
+                    next unless $job->status eq 'RUNNING';
+                }
+                _warn( _loc("Detected killed job %1 (status %2, pid %3)", $row->name, $row->status, $row->pid ) ); 
                 $row->status('KILLED');
                 $row->endtime( _now );
                 $row->update;

@@ -42,7 +42,7 @@ sub service_start {
           {
             service => $service_name,
             pid     => $proc->pid,
-            host    => lc( Sys::Hostname::hostname() ),
+            host    => Util->my_hostname,
             owner   => $ENV{USER} || $ENV{USERNAME}
           };
     }
@@ -80,7 +80,7 @@ sub service_start_forked {
           {
             service => $service_name,
             pid     => $pid,
-            host    => lc( Sys::Hostname::hostname() ),
+            host    => Util->my_hostname,
             owner   => $ENV{USER} || $ENV{USERNAME}
           };
     }

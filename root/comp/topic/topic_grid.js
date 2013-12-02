@@ -4,7 +4,6 @@
 </%perl>
 
 (function(params){
-//	console.dir(params);
     var ps_maxi = 25; //page_size for !mini mode
     var ps_mini = 50; //page_size for mini mode
     var ps = ps_maxi; // current page_size
@@ -828,10 +827,18 @@
             return ' '; //'<div>aaa</div>';
         }
     };
-
+	
+	var type_filters ={
+		string: 'string',
+		number: 'numeric',
+		date: 'date',
+		status: 'list'
+	}
+	var fields_filter = [];
+	
     var columns = [];
     var col_map = {
-        topic_name : { header: _('Name'), sortable: true, dataIndex: 'topic_name', width: 90, sortable: true, renderer: render_topic_name  },
+        topic_name : { header: _('Name'), sortable: true, dataIndex: 'topic_name', width: 90, sortable: true, renderer: render_topic_name },
         category_name : { header: _('Category'), sortable: true, dataIndex: 'category_name', hidden: true, width: 80, sortable: true },
         category_status_name : { header: _('Status'), sortable: true, dataIndex: 'category_status_name', width: 50, renderer: render_status },
         title : { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title},
@@ -865,9 +872,39 @@
     };
     if( fields ) {
         columns = [ dragger, check_sm, col_map['topic_name'] ];
-        //console.log( fields );
         Ext.each( fields.columns, function(r){ 
             // r.meta_type, r.id, r.as, r.width, r.header
+			//console.dir(r);
+			if(r.filter){
+				var filter_params = {type: type_filters[r.filter.type], dataIndex: r.id};
+				switch (filter_params.type){
+					//Views
+					case 'date':   
+						filter_params.dateFormat = 'Y-m-d';
+						filter_params.beforeText = _('Before');
+						filter_params.afterText = _('After'); 
+						filter_params.onText = _('On');	
+						break;
+					case 'numeric':
+						filter_params.menuItemCfgs = {
+							emptyText: _('Enter Number...'),
+						}
+						break;
+					case 'string':
+						filter_params.emptyText = _('Enter Text...');
+						break;					
+				}
+
+				var options = [];
+				if(r.filter.options){
+					for(i=0;i<r.filter.options.length;i++){
+						options.push( [ r.filter.values[i],r.filter.options[i] ]);
+					}
+					filter_params.options = options;
+				}
+				fields_filter.push(filter_params);
+			}
+			
             var col = gridlets[ r.gridlet ] || col_map[ r.id ] || meta_types[ r.meta_type ] || { 
                 dataIndex: r.id,
                 hidden: false, width: 80, sortable: true 
@@ -891,10 +928,20 @@
          Ext.each( cols, function(col){
              columns.push( col_map[col] );
          });
-    }  
+    }
+	
+    var filters = new Ext.ux.grid.GridFilters({
+		menuFilterText: _('Filters'),
+        encode: true,
+        local: false,
+        filters: fields_filter
+	});
+	
+	
     var grid_topics = new Ext.grid.GridPanel({
         title: _('Topics'),
-        header: false,
+        //header: false,
+		plugins: [filters],		
         stripeRows: true,
         autoScroll: true,
         stateful: true,
@@ -930,6 +977,8 @@
         bbar: ptool
     });
 	
+	
+
     
 //    grid_topics.on('rowclick', function(grid, rowIndex, columnIndex, e) {
 //        //init_buttons('enable');

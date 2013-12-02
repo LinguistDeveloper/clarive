@@ -1794,6 +1794,12 @@ msgstr "Cancelado"
 msgid "TRAPPED"
 msgstr "Capturado"
 
+msgid "SKIPPING"
+msgstr "Ignorando"
+
+msgid "RETRYING"
+msgstr "Reintentando"
+
 msgid "PAUSED"
 msgstr "Retenido"
 
@@ -4925,3 +4931,18 @@ msgstr "El cambio tiene que estar asignado a algún proyecto"
 
 msgid "The revision does not belong to any of the changeset projects"
 msgstr "La revisión no pertenece a ningún proyecto del cambio"
+
+msgid "Before"
+msgstr "Antes"
+
+msgid "After"
+msgstr "Despues"
+
+msgid "On"
+msgstr "El"
+
+msgid "Enter Number..."
+msgstr "Introduce Número..."
+
+msgid "Enter Text..."
+msgstr "Introduce Texto..."
