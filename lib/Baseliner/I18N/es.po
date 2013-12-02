@@ -1791,6 +1791,9 @@ msgstr "Rechazado"
 msgid "CANCELLED"
 msgstr "Cancelado"
 
+msgid "TRAPPED"
+msgstr "Capturado"
+
 msgid "PAUSED"
 msgstr "Retenido"
 
@@ -4917,3 +4920,8 @@ msgstr "Cambios de estado"
 msgid "Transition"
 msgstr "Transición"
 
+msgid "The changeset must be assigned to at least one project"
+msgstr "El cambio tiene que estar asignado a algún proyecto"
+
+msgid "The revision does not belong to any of the changeset projects"
+msgstr "La revisión no pertenece a ningún proyecto del cambio"

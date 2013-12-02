@@ -479,9 +479,7 @@ sub _now_log {
 }
 
 sub _now {
-    my $now = DateTime->now(time_zone=>_tz);
-    $now=~s{T}{ }g;
-    return $now;
+    return Class::Date->now()->to_tz(_tz()).''
 }
 
 sub _nowstamp {

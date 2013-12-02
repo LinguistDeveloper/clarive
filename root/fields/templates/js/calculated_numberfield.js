@@ -8,6 +8,7 @@ params:
     field_order: 1
     allowBlank: true
     section: 'body'
+    meta_type: 'number'
     operation: '$1 + $2'
     operation_fields: ''
 */

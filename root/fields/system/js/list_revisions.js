@@ -17,6 +17,8 @@ params:
     var data = params.topic_data;
     var meta = params.topic_meta;
     
+    var topic_data = data;
+
     var allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
     
     var revision_store = new Ext.data.SimpleStore({
@@ -110,6 +112,7 @@ params:
                     //var s = project_box.store;
                     var attr = n.attributes;
                     var data = attr.data || {};
+//                    console.dir(data);
                     var ci = data.ci;
                     var mid = data.mid;
                     if( mid==undefined && ( ci == undefined || ci.role != 'Revision') ) { 
@@ -119,8 +122,9 @@ params:
                         // TODO
                     }
                     else if ( ci !=undefined ) {
+//                        console.dir(topic_data)
                         Baseliner.ajaxEval('/ci/sync',
-                            { name: ci.name, 'class': ci['class'], ns: ci.ns, ci_json: Ext.util.JSON.encode( ci.data ) },
+                            { name: ci.name, 'class': ci['class'], ns: ci.ns, ci_json: Ext.util.JSON.encode( ci.data ), repo: data.click.repo_mid, topic_mid: topic_data.topic_mid },
                             function(res) {
                                 if( res.success ) {
                                     var mid = res.mid ;

@@ -13,6 +13,7 @@ params:
     filter: 'none'
     single_mode: 'false'    
     meta_type: 'topic'
+    parent_field: ''
 ---
 */
 

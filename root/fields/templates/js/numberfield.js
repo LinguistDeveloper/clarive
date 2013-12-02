@@ -6,6 +6,7 @@ params:
     html: '/fields/templates/html/row_body.html'
     js: '/fields/templates/js/numberfield.js'
     field_order: 1
+    meta_type: 'number'
     allowBlank: true
     section: 'body'
 */

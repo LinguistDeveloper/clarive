@@ -80,6 +80,7 @@ sub run {
     my ($self, %p) = @_;
 
     $self->status('RUNNING');
+    $self->write_pid;
     if( !$self->same_exec && ( ($self->endtime && $self->step) || $self->rollback ) ) {
         $self->exec( $self->exec + 1);  # endtime=job has run before, a way to detect first time
         _log "Setting exec to " . $self->exec;
@@ -188,7 +189,21 @@ sub run {
         $self->logger->info( _loc( 'Job step %1 finished with status %2', $self->step, $self->status ) );
     }
     $self->goto_next_step( $self->final_status ) unless $self->status eq 'ERROR';
+    unlink $self->pid_file;
     return $self->status;
+}
+
+sub pid_file {
+    my ($self)=@_;
+    return Util->_file( $ENV{BASELINER_PIDHOME} || $ENV{BASELINER_TMPHOME}, 'cla-job-' . $self->name . '.pid' );
+}
+
+sub write_pid {
+    my ($self) = @_;
+    my $file = $self->pid_file;
+    open my $ff, '>', $file or _error( _loc('Could not write pid file for job: %1', $!) );
+    print $ff $$;
+    close $ff;
 }
 
 sub save_to_parent_job {

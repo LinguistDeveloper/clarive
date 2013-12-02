@@ -131,6 +131,7 @@ sub master_rel {
 
 sub event_new {
     my ($key, $data, $code, $catch ) =@_;
+    my $module = caller;
     if( ref $data eq 'CODE' ) {
         $code = $data;
         $data = {};
@@ -139,22 +140,29 @@ sub event_new {
     $data ||= {};
     my $ev = Baseliner->model('Registry')->get( $key ); # this throws an exception if key not found
     my $event_create = sub {
-        my ($ed,@rules) = @_;
-        my $ev_row = DB->BaliEvent->create( { event_key => $key, event_data => _dump($ed), mid => $ed->{mid}, username => $ed->{username} } );
-        for my $rule (@rules) {
-            _debug $rule;
-            my $rrow = DB->BaliEventRules->create(
-                {
-                    id_event   => $ev_row->id,
-                    id_rule    => $rule->{id},
-                    stash_data => _dump( $rule->{ret} ),
-                    #dsl        => "DSL: $rule->{dsl}",
-                }
-            );
-            $rrow->dsl( $rule->{dsl} );
-            $rrow->update;
-            $rrow->log_output( $rule->{output} );
-            $rrow->update;
+        my ($ed,@event_log) = @_;
+        my $ev_id = mdb->seq('event');
+        mdb->event->insert({
+                id            => $ev_id,
+                ts            => mdb->ts,
+                event_key     => $key,
+                event_data    => _dump($ed),
+                event_status  => 'new',
+                module        => $module,
+                mid           => $ed->{mid},
+                username      => $ed->{username}
+        });
+        for my $log (@event_log) {
+            my $log = {
+                id         => mdb->seq('event_log'),
+                id_event   => $ev_id,
+                id_rule    => $log->{id},
+                ts         => mdb->ts,
+                stash_data => _dump( $log->{ret} ),
+                dsl        => $log->{dsl},
+                log_output => $log->{output},
+            };
+            mdb->event_log->insert($log);
         }
     };
     return try {
@@ -218,7 +226,7 @@ sub event_new {
 
 sub events_by_key {
     my ($key, $args ) = @_;
-    my $evs_rs = Baseliner->model('Baseliner::BaliEvent')->search({ event_key=>$key }, { order_by=>{ '-desc' => 'ts' } })->hashref;
+    my $evs_rs = mdb->event->find({ event_key=>$key })->sort({ ts=>-1 });
     return [ map { 
         # merge 2 hashes
         my $d = { %$_ , %{ _load( $_->{event_data} ) } };
@@ -234,7 +242,7 @@ sub events_by_mid {
     my $cached = Baseliner->cache_get( $cache_key );
     return $cached if $cached;
 
-    my @evs = DB->BaliEvent->search({ mid=>$mid }, { order_by=>{ '-desc' => 'ts' } })->hashref->all;
+    my @evs = mdb->event->find({ mid=>"$mid" })->sort({ ts=>-1 })->all;
     my $ret = !@evs ? [] : [
       grep {
          $_->{ev_level} == 0 || $_->{level} >= $min_level;

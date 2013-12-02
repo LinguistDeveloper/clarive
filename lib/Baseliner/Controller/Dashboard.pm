@@ -1260,12 +1260,10 @@ sub topics_open_by_status: Local{
 sub list_status_changed: Local{
     my ( $self, $c ) = @_;
     
-    my $now1 = DateTime->now;
-    my $now2 = DateTime->now;
-    
+    my $now1 = my $now2 = mdb->now;
     my $query = {
         event_key   => 'event.topic.change_status',
-        ts			=> {'between' => [ $now1->ymd, $now1->add(days=>1)->ymd]},
+        ts			=> { '$lte' => "$now1", '$gte' => ''.($now2-'1D') },
     };
     
     my @user_categories =  map { $_->{id} } $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view' );
@@ -1280,7 +1278,7 @@ sub list_status_changed: Local{
 
     my @status_changes;
     my @mid_topics;
-    my @topics = DB->BaliEvent->search( $query, {order_by => {'-desc' => 'ts'}})->hashref->all;
+    my @topics = mdb->event->find($query)->sort({ ts=>-1 })->all;
     map {
         my $ed = _load( $_->{event_data} );
         if (exists $my_topics{$ed->{topic_mid}} || Baseliner->model("Permissions")->is_root( $c->username )){

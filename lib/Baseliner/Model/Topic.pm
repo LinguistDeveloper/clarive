@@ -678,7 +678,7 @@ sub update {
             } ## end try
             => sub {
                 my $e = shift;
-                Baseliner->model('Baseliner')->schema->txn_rollback if $rollback;
+                #Baseliner->model('Baseliner')->schema->txn_rollback if $rollback;
                 _throw $e;
             };
         } ## end when ( 'update' )
@@ -1215,9 +1215,9 @@ sub get_projects {
 }
 
 sub get_users {
-    my ($self, $topic_mid ) = @_;
+    my ($self, $topic_mid, $id_field ) = @_;
     my $topic = Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid );
-    my @users = $topic->users->search(undef,{select=>['mid','username','realname']})->hashref->all;
+    my @users = $topic->users->search({ 'me.rel_field' => $id_field},{select=>['mid','username','realname']})->hashref->all;
 
     return @users ? \@users : [];
 }
@@ -1260,11 +1260,19 @@ sub get_dates {
 
 sub get_topics{
     my ($self, $topic_mid, $id_field, $meta, $data, %opts) = @_;
-    my $rs_rel_topic = Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid )
-        ->topics->search( {rel_field => $id_field}, { order_by=>'rel_seq', prefetch=>['categories'] } );
-    rs_hashref ( $rs_rel_topic );
-    my @topics = $rs_rel_topic->all;
-    @topics = Baseliner->model('Topic')->append_category( @topics );
+
+    my @topics;
+    my $field_meta = [ grep { $_->{id_field} eq $id_field } _array($meta) ]->[0];
+
+    if ( $field_meta->{parent_field} ) {
+        my @rel_topics = map { $_->{from_mid} } Baseliner->model('Baseliner::BaliMasterRel')->search({ rel_field => $field_meta->{parent_field}, rel_type => 'topic_topic', to_mid => $topic_mid} )->hashref->all;
+        @topics = map { $_->{categories} = $_->{category}; $_ } mdb->topic->find({ mid=>mdb->in(@rel_topics) })->all;
+    } else {
+        @topics = Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid )
+            ->topics->search( {rel_field => $id_field}, { order_by=>'rel_seq', prefetch=>['categories'] } )->hashref->all;
+    }
+
+    @topics = $self->append_category( @topics );
     if( $opts{topic_child_data} ) {
         @topics = map {
             my $data = $self->get_data( undef, $_->{mid}, with_meta=>1 ) ;
@@ -1564,14 +1572,25 @@ sub save_doc {
         $doc->{ $_->{name} } = $self->deal_with_images({ topic_mid => $mid, field => $doc->{ $_->{name} } });
     }
     
-    # calendar info
-    for my $field ( grep { $meta{$_}{meta_type} eq 'calendar' } keys %meta ) {
-        my $arr = $doc->{$field} or next;
-        $doc->{$field} = {};
-        for my $cal ( _array($arr) ) {
-            _fail "field $field is not a calendar?" unless ref $cal;
-            my $slot = Util->_name_to_id( $cal->{slotname} );
-            $doc->{$field}{$slot} = $cal;
+    for my $field ( keys %meta ) {
+        my $mt = $meta{$field}{meta_type};
+        if( $mt eq 'calendar' ) {
+            # calendar info
+            my $arr = $doc->{$field} or next;
+            $doc->{$field} = {};
+            for my $cal ( _array($arr) ) {
+                _fail "field $field is not a calendar?" unless ref $cal;
+                my $slot = Util->_name_to_id( $cal->{slotname} );
+                $doc->{$field}{$slot} = $cal;
+            }
+        }
+        elsif( $mt eq 'number' ) {
+            # numify
+            $doc->{$field} = 0+$doc->{$field};
+        }
+        elsif( $mt eq 'string' ) {
+            # stringify
+            $doc->{$field} = ''.$doc->{$field};
         }
     }
     
@@ -1770,12 +1789,21 @@ sub set_cal {
 }
 
 sub set_topics {
-    my ($self, $rs_topic, $topics, $user, $id_field ) = @_;
+    my ($self, $rs_topic, $topics, $user, $id_field, $meta ) = @_;
     my @all_topics = ();
     
+    my $rel_field = $id_field;
+    my $field_meta = [ grep { $_->{id_field} eq $id_field } _array($meta) ]->[0];
+    my $topic_direction = "from_mid";
+    my $data_direction = "to_mid";
+    if ( $field_meta->{parent_field} ) {
+        $rel_field = $field_meta->{parent_field};
+        $topic_direction = "to_mid";
+        $data_direction = "from_mid";
+    }
     # related topics
     my @new_topics = map { split /,/, $_ } _array( $topics ) ;
-    my @old_topics = map {$_->{to_mid}} DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_type => 'topic_topic', rel_field => $id_field})->hashref->all;
+    my @old_topics = map {$_->{to_mid}} DB->BaliMasterRel->search({$topic_direction => $rs_topic->mid, rel_type => 'topic_topic', rel_field => $rel_field})->hashref->all;
     
     # no diferences, get out
     return if !array_diff(@new_topics, @old_topics);
@@ -1790,13 +1818,13 @@ sub set_topics {
         
     if( @new_topics ) {
         if(@old_topics){
-            my $rs_old_topics = DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_field=>$id_field });
+            my $rs_old_topics = DB->BaliMasterRel->search({$topic_direction => $rs_topic->mid, rel_field=>$rel_field });
             $rs_old_topics->delete();
         }
 
         my $rel_seq = 1;  # oracle may resolve this with a seq, but sqlite doesn't
         for (@new_topics){
-            DB->BaliMasterRel->update_or_create({from_mid => $rs_topic->mid, to_mid => $_, rel_type =>'topic_topic', rel_field => $id_field, rel_seq=>$rel_seq++ });
+            DB->BaliMasterRel->update_or_create({$topic_direction => $rs_topic->mid, $data_direction => $_, rel_type =>'topic_topic', rel_field => $rel_field, rel_seq=>$rel_seq++ });
         }
 
         my $topics = join(',', @new_topics);
@@ -1836,7 +1864,7 @@ sub set_topics {
         };
 
         #$rs_topic->set_topics( undef, { rel_type=>'topic_topic', rel_field => $id_field});
-        my $rs_old_topics = DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_field => $id_field });
+        my $rs_old_topics = DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_field => $rel_field });
         $rs_old_topics->delete();
     }
 }
@@ -2412,6 +2440,25 @@ sub change_status {
         => sub {
             _throw _loc( 'Error modifying Topic: %1', shift() );
         };                    
+}
+
+# fieldlet status_changes
+sub status_changes {
+    my ($self, $data) = @_;
+    my @status_changes;
+    my $cont = 0;
+    for my $ev ( mdb->event->find({ event_key=>'event.topic.change_status', mid=>$data->{topic_mid} })->sort({ ts=>-1 })->limit(20)->all ) {
+        try {
+            my $ed = _load( $ev->{event_data} );
+            push @status_changes, {
+                old_status => $ed->{old_status},
+                status     => $ed->{status},
+                username   => $ed->{username},
+                when       => Class::Date->new( $ev->{ts} )
+            };
+        } catch {};
+    }
+    return @status_changes;
 }
 
 sub get_users_friend {

@@ -14,15 +14,14 @@ sub run {
     my ($self, %opts) = @_;
     my $FORMAT = "%-6s %-6s %-6s %-6s %-8s %-24s %s";
     my $t = new Proc::ProcessTable;
-    my %disp;
-    my %server;
+    my (%disp, %server, %jobs);
     my $top = sprintf($FORMAT, "PID", "PPID", "CPU", "MEM", "STAT", "START", "COMMAND");
     $opts{v} and say "PID_DIR = " . $self->pid_dir;
     my @pids = map {
         my $pid = file( $_ )->slurp;
         $pid =~ s/^([0-9]+).*$/$1/gs;
         $opts{v} and say "PID detected [$pid] in $_";
-        { server=>( $_ =~ /web/ ? 1 : 0 ), pid=>$pid };
+        { type=>( /-web/ ? 'server' : /-job/ ? 'job' : '' ), pid=>$pid };
     } glob $self->pid_dir . '/cla*.pid';
     
     foreach my $p ( @{$t->table} ){
@@ -37,8 +36,10 @@ sub run {
               $p->cmndline);
         for my $pid ( @pids ) {
             if( $pid->{pid} == $p->pid || $pid->{pid} == $p->ppid ) {
-                if( $pid->{server} ) {
+                if( $pid->{type} eq 'server' ) {
                     $server{ $p->pid } = $lin;
+                } elsif( $pid->{type} eq 'job' ) {
+                    $jobs{ $p->pid } = $lin;
                 } else {
                     $disp{ $p->pid } = $lin;
                 }
@@ -46,6 +47,9 @@ sub run {
         }
     }
 
+    say "--------------|    Jobs    |-----------";
+    say $top if %jobs;
+    say $jobs{$_} for sort keys %jobs;
     say "--------------| Dispatcher |-----------";
     say $top if %disp;
     say $disp{$_} for sort keys %disp;

@@ -693,44 +693,71 @@ sub sync : Local {
     my ($self, $c, $action) = @_;
     my $p = $c->req->params;
 
+    _log "SSSSSSSSSSSSS"._dump $p;
     my $collection = delete $p->{collection};
     my $class = delete $p->{class};
     my $name = delete $p->{name};
     my $mid = delete $p->{mid};
     my $ns = delete $p->{ns};
+    my $repo_mid = $p->{repo};
+    my $valid_repo = 1;
 
-    my $data = exists $p->{ci_json} ? _from_json( $p->{ci_json} ) : $p;
+    if ( $p->{topic_mid} ) {
+        my @projects = map { $_->{mid} } DB->BaliTopic->find( $p->{topic_mid} )->projects->hashref->all;
 
-    try {
-        # check for prereq relationships
-        my @ci_pre_mid;
-        my %ci_data;
-        while( my ($k,$v) = each %$data ) {
-            if( $k eq 'ci_pre' ) {
-                for my $ci ( _array $v ) {
-                    #_log( _dump( $ci ) );
-                    push @ci_pre_mid, $self->ci_create_or_update( %$ci, username=>$c->username ) ;
+        if ( !@projects ) {
+            $c->stash->{json} = { success=>\0, msg=>_loc('The changeset must be assigned to at least one project') };
+            $valid_repo = 0;
+        } else {
+            my @repo_projects = map { $_->{mid} } ci->new($repo_mid)->related( isa => 'project');
+
+            my $ok_repo = 0;
+            for ( @repo_projects ) {
+                if ( $_ ~~ @projects ) {
+                    $ok_repo = 1;
+                    last;
                 }
             }
-            elsif( $v =~ /^ci_pre:([0-9]+)$/ ) {
-                my $ix = $1;
-                $ci_data{ $k } = $ci_pre_mid[ $ix ];
-            }
-            else {
-                $ci_data{ $k } = $v;
-            }
+            if (!$ok_repo) {
+                $c->stash->{json} = { success=>\0, msg=>_loc('The revision does not belong to any of the changeset projects' ) };
+                $valid_repo = 0;
+            }             
         }
+    }
 
-        $mid = $self->ci_create_or_update( rel_field => $collection, name=>$name, class=>$class, username=>$c->username, ns=>$ns, collection=>$collection, mid=>$mid, data=>\%ci_data );
+    if ( $valid_repo ) {
+        my $data = exists $p->{ci_json} ? _from_json( $p->{ci_json} ) : $p;
 
-        $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 saved ok', $name) };
-        $c->stash->{json}{mid} = $mid;
-    } catch {
-        my $err = shift;
-        _log( $err );
-        $c->stash->{json} = { success=>\0, msg=>_loc('CI error: %1', $err ) };
-    };
+        try {
+            # check for prereq relationships
+            my @ci_pre_mid;
+            my %ci_data;
+            while( my ($k,$v) = each %$data ) {
+                if( $k eq 'ci_pre' ) {
+                    for my $ci ( _array $v ) {
+                        #_log( _dump( $ci ) );
+                        push @ci_pre_mid, $self->ci_create_or_update( %$ci, username=>$c->username ) ;
+                    }
+                }
+                elsif( $v =~ /^ci_pre:([0-9]+)$/ ) {
+                    my $ix = $1;
+                    $ci_data{ $k } = $ci_pre_mid[ $ix ];
+                }
+                else {
+                    $ci_data{ $k } = $v;
+                }
+            }
 
+            $mid = $self->ci_create_or_update( rel_field => $collection, name=>$name, class=>$class, username=>$c->username, ns=>$ns, collection=>$collection, mid=>$mid, data=>\%ci_data );
+
+            $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 saved ok', $name) };
+            $c->stash->{json}{mid} = $mid;
+        } catch {
+            my $err = shift;
+            _log( $err );
+            $c->stash->{json} = { success=>\0, msg=>_loc('CI error: %1', $err ) };
+        };
+    }
     $c->forward('View::JSON');
 }
 

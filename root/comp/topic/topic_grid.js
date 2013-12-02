@@ -828,37 +828,11 @@
         }
     };
 	
-    ////////var filters = new Ext.ux.grid.GridFilters({
-    ////////    // encode and local configuration options defined previously for easier reuse
-    ////////    encode: false, // json encode the filter query
-    ////////    local: false,   // defaults to false (remote filtering)
-    ////////    filters: [{
-    ////////        type: 'numeric',
-    ////////        dataIndex: 'id'
-    ////////    }, {
-    ////////        type: 'string',
-    ////////        dataIndex: 'company',
-    ////////        disabled: true
-    ////////    }, {
-    ////////        type: 'numeric',
-    ////////        dataIndex: 'price'
-    ////////    }, {
-    ////////        type: 'date',
-    ////////        dataIndex: 'date'
-    ////////    }, {
-    ////////        type: 'list',
-    ////////        dataIndex: 'topic_name',
-    ////////        options: ['small', 'medium', 'large', 'extra large']
-    ////////    }, {
-    ////////        type: 'boolean',
-    ////////        dataIndex: 'visible'
-    ////////    }]
-    ////////});
-	
 	var type_filters ={
-		like: 'string',
-		status: 'list',
-		number: 'numeric'
+		string: 'string',
+		number: 'numeric',
+		date: 'date',
+		status: 'list'
 	}
 	var fields_filter = [];
 	
@@ -900,9 +874,27 @@
         columns = [ dragger, check_sm, col_map['topic_name'] ];
         Ext.each( fields.columns, function(r){ 
             // r.meta_type, r.id, r.as, r.width, r.header
-			console.dir(r);
+			//console.dir(r);
 			if(r.filter){
 				var filter_params = {type: type_filters[r.filter.type], dataIndex: r.id};
+				switch (filter_params.type){
+					//Views
+					case 'date':   
+						filter_params.dateFormat = 'Y-m-d';
+						filter_params.beforeText = _('Before');
+						filter_params.afterText = _('After'); 
+						filter_params.onText = _('On');	
+						break;
+					case 'numeric':
+						filter_params.menuItemCfgs = {
+							emptyText: _('Enter Number...'),
+						}
+						break;
+					case 'string':
+						filter_params.emptyText = _('Enter Text...');
+						break;					
+				}
+
 				var options = [];
 				if(r.filter.options){
 					for(i=0;i<r.filter.options.length;i++){
@@ -939,9 +931,9 @@
     }
 	
     var filters = new Ext.ux.grid.GridFilters({
-        // encode and local configuration options defined previously for easier reuse
-        encode: true, // json encode the filter query
-        local: false,   // defaults to false (remote filtering)
+		menuFilterText: _('Filters'),
+        encode: true,
+        local: false,
         filters: fields_filter
 	});
 	
