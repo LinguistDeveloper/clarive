@@ -897,7 +897,7 @@
         header: false,
         stripeRows: true,
         autoScroll: true,
-        stateful: !Baseliner.DEBUG,
+        stateful: true,
         stateId: 'topic-grid',
         //enableHdMenu: false,
         store: store_topics,
