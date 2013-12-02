@@ -299,7 +299,7 @@
           handler: function(){
                 var dd = options.getValues();
                 if( tree_selected_is_loaded ) dd.selected = Baseliner.encode_tree( tree_selected.root );
-                if( sql.editor ) dd.sql = sql.getValue();
+                //if( sql.editor ) dd.sql = sql.getValue();
                 //console.dir(dd);
                 var action = report_mid > 0 ? 'update':'add';
                 var data = { action:action, data:dd };
@@ -329,7 +329,7 @@
         height: 600,
         layout:'fit',
         closeAction: 'close',
-        //tbar: tbar,
+        tbar: tbar,
         items: tabs
     });
     
