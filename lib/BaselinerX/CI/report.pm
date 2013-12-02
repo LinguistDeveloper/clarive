@@ -66,7 +66,7 @@ sub my_searches {
     my $username = $p->{username};
 	
     #DB->BaliMasterRel->search({ to_mid=>$userci->mid, rel_field=>'report_user' });
-    my @searches = $self->search_cis({ owner=>$username, '$or' => [{ permissions=>'private' }, { permissions=>undef } ] }); 
+    my @searches = $self->search_cis( owner=>$username, '$or' => [{ permissions=>'private' }, { permissions=>undef } ] ); 
     my @mine;
     for my $folder ( @searches ){
         push @mine,
@@ -259,7 +259,6 @@ sub all_fields {
                 map { $_->{icon}='/static/images/icons/where.png'; $_->{type}='value'; $_->{leaf}=\1; $_ } 
                 (
                     { text=>_loc('String'), where=>'string', field=>'string', },
-                    { text=>_loc('Like'), where=>'like', field=>'like' },
                     { text=>_loc('Number'), where=>'number', field=>'number' },
                     { text=>_loc('Date'), where=>'date', field=>'date' },
                     { text=>_loc('CIs'), where=>'cis', field=>'ci' },
@@ -411,85 +410,164 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
     my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $username) );  # XXX should be by category, same id fields may step on each other
     my @selects = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) => 1 } _array($fields{select});
 
-
 	#filters
 	my %dynamic_filter;
 	if( $filter ){
 		for my $flt ( _array $filter ){
 			_log ">>>>>>Filter: " . _dump $flt;
-			$dynamic_filter{$flt->{field}} =  { oper=> $flt->{comparison} ? $flt->{comparison} : undef , value => $flt->{value}};
+			if( exists $dynamic_filter{$flt->{field}} ){
+				push @{$dynamic_filter{$flt->{field}}->{oper}}, $flt->{comparison};
+				push @{$dynamic_filter{$flt->{field}}->{value}}, $flt->{value};
+			}else {
+				given ($flt->{type}) {
+					when ('numeric') {				
+						$dynamic_filter{$flt->{field}} =  { type=> $flt->{type}, oper=> $flt->{comparison} ? [$flt->{comparison}] : undef , value => [$flt->{value}]};
+					};
+					when ('date') {				
+						$dynamic_filter{$flt->{field}} =  { type=> $flt->{type}, oper=> $flt->{comparison} ? [$flt->{comparison}] : undef , value => [$flt->{value}]};
+					};
+					default{
+						$dynamic_filter{$flt->{field}} =  { type=> $flt->{type}, oper=> $flt->{comparison} ? $flt->{comparison} : undef , value => $flt->{value}};
+					};
+				}
+			}
 		};
 		#Excepción
 		if ( exists $dynamic_filter{category_status_name} ){
-			$dynamic_filter{status} = $dynamic_filter{category_status_name};
+			$dynamic_filter{status_new} = $dynamic_filter{category_status_name};
 		}
 	}
 	_log ">>>>>>>>>>>>>>>Dynamic filter: " . _dump %dynamic_filter;
 
-    my @where = grep { defined } map { 
+	my $where;
+	map {
         my $field=$_;
         my $id = $field->{meta_where_id} // $where_field_map{$_->{id_field}} // $field->{id_field};
         my @chi = _array($field->{children});
 		
-        my @ors;
         for my $val ( @chi ) {
-			_log ">>>>>>>>>>>>>>>>>>>FIELDS: " . _dump $val;
+			#_log ">>>>>>>>>>>>>>>>>>>FIELDS: " . _dump $val;
 			my $id_field = $_->{id_field};
+			my $cond;
 			if(exists $dynamic_filter{$id_field}) {
-				$val->{value} = $dynamic_filter{$id_field}->{value} .'';
-				$val->{oper} = '$' . $dynamic_filter{$id_field}->{oper} if $dynamic_filter{$id_field}->{oper};
-				_log ">>>>>>>>>>>>>Operador: " . $val->{oper};
-			};
-			if( $val->{oper} =~ /^(like|not_like)$/ ) {
-				$val->{value} = qr/$val->{value}/i;
-				my $cond = $val->{oper} eq 'not_like' 
-					? { $id => { '$not' => $val->{value} } }
-					: { $id => $val->{value} };
-				push @ors, $cond;
-				
-			} else {
-				my $cond = $val->{oper} 
-					? { $id => { $val->{oper} => $val->{value} } }
-					: { $id => $val->{value} };
-				push @ors, $cond;				
+				_log ">>>>>>>>TYPE: " . $dynamic_filter{$id_field}->{type};
+				given ($dynamic_filter{$id_field}->{type}) {
+					when ('numeric') {
+						for (my $i = 0; $i < scalar @{$dynamic_filter{$id_field}->{oper}}; $i++){
+							if ($dynamic_filter{$id_field}->{oper}[$i] eq 'eq'){
+								$cond = $dynamic_filter{$id_field}->{value}[$i];	
+							}else{
+								$cond->{'$'.$dynamic_filter{$id_field}->{oper}[$i]} = $dynamic_filter{$id_field}->{value}[$i];	
+							}
+						}
+					};
+					when ('list') {
+						$cond = { $val->{oper} => $dynamic_filter{$id_field}->{value} };
+					};
+					when ('string') {
+						if( $val->{oper} =~ /^(like|not_like)$/ ) {
+							$val->{value} = qr/$dynamic_filter{$id_field}->{value}/i;
+							if ($val->{oper} eq 'not_like'){
+								$cond = { '$not' => $val->{value} };	
+							}else{
+								$cond = $val->{value};	
+							}						
+						}else{
+							$val->{value} = $dynamic_filter{$id_field}->{value};
+							if ($val->{oper}){
+								$cond = { $val->{oper} => $val->{value}  };
+							}else{
+								$cond = $val->{value};
+							}
+						}
+					};
+					when ('date') {
+						for (my $i = 0; $i < scalar @{$dynamic_filter{$id_field}->{oper}}; $i++){
+							if ($dynamic_filter{$id_field}->{oper}[$i] eq 'eq'){
+								$cond = $dynamic_filter{$id_field}->{value}[$i];	
+							}else{
+								$cond->{'$'.$dynamic_filter{$id_field}->{oper}[$i]} = $dynamic_filter{$id_field}->{value}[$i];	
+							}
+						}
+					}
+				}
+				$where->{$id_field} = $cond;
+			}
+			else{
+				given ($val->{field}) {
+					when ('number') {
+						if (exists $where->{$id_field}){
+							$where->{$id_field}->{$val->{oper}} = $val->{value} + 0;
+						}else{
+							$cond = { $val->{oper} => $val->{value} + 0 };
+							$where->{$id_field} = $cond;	
+						}
+					}
+					when ('string') {
+						if( $val->{oper} =~ /^(like|not_like)$/ ) {
+							$val->{value} = qr/$val->{value}/i;
+							if ($val->{oper} eq 'not_like'){
+								$cond = { '$not' => $val->{value} };	
+							}else{
+								$cond = $val->{value};	
+							}								
+						}
+						else{
+							if ($val->{oper}){
+								$cond = { $val->{oper} => $val->{value}  };
+							}else{
+								$cond = $val->{value};
+							}
+						}
+						$where->{$id_field} = $cond;
+					}
+					when ('date') {
+						if (exists $where->{$id_field}){
+							$where->{$id_field}->{$val->{oper}} = $val->{value};	
+						}
+						else{
+							$cond = { $val->{oper} => $val->{value} };
+							$where->{$id_field} = $cond;
+						}
+					}
+					default{
+						if ($val->{oper}){
+							$cond = { $val->{oper} => $val->{value} };
+						}else{
+							$cond = $val->{value};
+						}
+						$where->{$id_field} = $cond;
+					}
+				}
 			}
         }
-        @ors ? { '$or' => \@ors } : undef ;
     } _array($fields{where});
 	
     # filter user projects
     if( $username && !Baseliner->is_root($username) ) {
-        #my @ids_project = Baseliner->model('Permissions')->user_projects_with_action(
-        #    username => $username,
-        #    action   => 'action.job.viewall',
-        #    level    => 1
-        #);
 		my @ids_project = Baseliner->model("Permissions")->user_projects_ids( username => $username);
-        my @or_project;
+        my @or_project = ();
         for my $field_project ( grep { $_->{meta_type} eq 'project' } values %meta ) {
             push @or_project, { $field_project->{id_field} => mdb->in(@ids_project) };  
         }
-		push @where, '$or' => \@or_project  if @or_project;
+		$where->{'$or'} = \@or_project  if @or_project;
     }
-    
-    if( length $query ) {
-        my @qmids = map { $_->{obj}{mid} } _array(mdb->topic->search( query=>$query, limit=>999999, project=>{ mid=>1 } )->{results});
-        push @where, { mid=>mdb->in(@qmids) };
-    }
+	
+    ##if( length $query ) {
+    ##    my @qmids = map { $_->{obj}{mid} } _array(mdb->topic->search( query=>$query, limit=>999999, project=>{ mid=>1 } )->{results});
+    ##    push @where, { mid=>mdb->in(@qmids) };
+    ##}
 
     # filter categories
-    if( my @categories = map { {'id_category' => $_->{id_category}} } _array($fields{categories}) ) {
-        push @where, { '$or'=>\@categories };
-    }
+    if( my @categories = map { $_->{id_category} } _array($fields{categories}) ) {
+		$where->{id_category} = {'$in' => \@categories };
+    }	
 	
     my @sort = map { $_->{id_field} => 0+($_->{sort_direction} // 1) } _array($fields{sort});
     
+	_log ">>>>>>>>>>>>>>>>>>FIND: " . _dump $where;
 	
-    my $find = @where ? { '$and'=>[ @where ] } : {};
-	
-	_log ">>>>>>>>>>>>>>>>>>FIND: " . _dump $find;
-	
-    my $rs = mdb->topic->find($find);
+    my $rs = mdb->topic->find($where);
     my $cnt = $rs->count;
     #_debug \%meta;
     my @data = $rs
