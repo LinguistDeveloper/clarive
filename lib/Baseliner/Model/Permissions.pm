@@ -443,11 +443,11 @@ sub user_projects_ids_with_collection {
     my $sec_projects;
 	if ($all_projects || $is_root){
         #map { $sec_projects->{_ci($_->{mid})->{_ci}->{collection}}->{$_->{mid}} = 1 } Baseliner->model( 'Baseliner::BaliProject' )->search()->hashref->all;
-		map { $sec_projects->{$_->{collection}}{$_->{mid}} = 1 } ci->project->find->fields({ mid=>1, collection=>1 })->all;
+		map { $sec_projects->{$_->{collection}}{$_->{mid}} = 1 } mdb->master_doc->find->fields({ mid=>1, collection=>1 })->all;
 	}else{
 		map { 
             s{^(.*?)/}{}g; 
-            my $doc = ci->project->find_one({mid=>"$_"},{ collection=>1, mid=>1,_id=>0 });
+            my $doc = mdb->master_doc->find_one({mid=>"$_"},{ collection=>1, mid=>1,_id=>0 });
             $sec_projects->{$doc->{collection}}{$_} = 1 if $doc;
         } $self->user_projects( %p );	
 	}
