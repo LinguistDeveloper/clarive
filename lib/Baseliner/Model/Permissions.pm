@@ -218,18 +218,23 @@ sub user_has_action {
     _check_parameters( \%p, qw/username action/ ); 
     my $username = $p{username};
     my $action = $p{action};
-    push my @bl, _array $p{bl}, '*';
-    
-    return 1 if $self->is_root( $username ) && $action ne 'action.surrogate';
 
-    return Baseliner->model('Baseliner')->dbi->value(qq{
-        select count(*)
-        from bali_roleuser ru, bali_roleaction ra
-        where ru.USERNAME = ?
-          and ru.ID_ROLE = ra.ID_ROLE
-          and ra.ACTION = ?
-          and ra.bl in (} . join( ',', map { '?' } @bl ) . qq{)
-    },$username, $p{action}, @bl);
+    if ( $p{mid} ) {
+
+    } else {
+        push my @bl, _array $p{bl}, '*';
+        
+        return 1 if $self->is_root( $username ) && $action ne 'action.surrogate';
+
+        return Baseliner->model('Baseliner')->dbi->value(qq{
+            select count(*)
+            from bali_roleuser ru, bali_roleaction ra
+            where ru.USERNAME = ?
+              and ru.ID_ROLE = ra.ID_ROLE
+              and ra.ACTION = ?
+              and ra.bl in (} . join( ',', map { '?' } @bl ) . qq{)
+        },$username, $p{action}, @bl);        
+    }
 }
 
 =head2 user_has_action username=>Str, action=>Str
@@ -434,11 +439,17 @@ Returns an array of project ids for the projects the user has access to with the
 sub user_projects_ids_with_collection {
     my ( $self, %p ) = @_;
     my $sec_projects;
+
+    my @projects;
+    if ( $p{action} ) {
+        @projects = $self->user_projects_with_action( %p );
+    } else {
+        @projects = map {s{^(.*?)/}{}g} $self->user_projects( %p );
+    }
     map { 
-        s{^(.*?)/}{}g; 
         my $doc = mdb->master_doc->find_one({mid=>"$_"},{ collection=>1, mid=>1,_id=>0 });
         $sec_projects->{$doc->{collection}}{$_} = 1 if $doc;
-    } $self->user_projects( %p );	
+    } @projects;	
     return $sec_projects;
 }
 
