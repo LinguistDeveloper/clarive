@@ -394,7 +394,7 @@ around 'debug' => sub {
     sub cache_compute { $ccache->compute( @_ ) }
     sub cache_clear { $ccache->clear }
     sub cache_remove_like { my $re=$_[1]; Baseliner->cache_remove($_) for Baseliner->cache_keys_like($re); } 
-    sub cache_keys_like { my $re=$_[1]; grep /$re/ => Baseliner->cache_keys; }
+    sub cache_keys_like { my $re=$_[1]; $re='.*' unless length $re; grep /$re/ => Baseliner->cache_keys; }
 
     if( Baseliner->debug ) {
         Baseliner->cache_clear;  # clear cache on restart
