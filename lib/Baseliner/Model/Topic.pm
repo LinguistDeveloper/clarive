@@ -286,7 +286,7 @@ sub topics_for_user {
     my %project_sec;
     if( $username && ! $perm->is_root( $username )){
         my $proj_coll_ids = $perm->user_projects_ids_with_collection(username=>$username);
-        while( my ($k,$v) = each $proj_coll_ids ) {
+        while( my ($k,$v) = each %{ $proj_coll_ids || {} } ) {
             $where->{"_project_security.$k"} = mdb->in( keys %{ $v || {} } ); 
         }
     }
@@ -1514,9 +1514,10 @@ sub update_project_security {
     my ($self, $meta, $doc )=@_;
     my %project_collections; 
     for my $field ( grep { $_->{meta_type} eq 'project' && length $_->{collection} } @$meta ) {
-        push @{ $project_collections{ $field->{collection} } }, _array($doc->{ $field->{id_field} });
+        my @secs = _array($doc->{ $field->{id_field} });
+        push @{ $project_collections{ $field->{collection} } }, @secs if @secs;
     }
-    $doc->{_project_security} = \%project_collections;
+    $doc->{_project_security} = \%project_collections if keys %project_collections;
 }
 
 sub save_doc {
