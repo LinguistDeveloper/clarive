@@ -971,7 +971,7 @@
 	
 	
     var grid_topics = new Ext.grid.GridPanel({
-        title: _('Topics'),
+        //title: _('Topics'),
         //header: false,
 		plugins: [filters],		
         stripeRows: true,
@@ -1008,13 +1008,6 @@
         ],      
         bbar: ptool
     });
-<<<<<<< HEAD
-    
-=======
-	
-	
-
->>>>>>> 8b6c8781889588a602fc673579376dc40733f3eb
     
 //    grid_topics.on('rowclick', function(grid, rowIndex, columnIndex, e) {
 //        //init_buttons('enable');
