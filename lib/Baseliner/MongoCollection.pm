@@ -42,9 +42,11 @@ sub search_index {
 
 sub clone {
     my ($self,$collname)=@_;
+    $collname //= $self->name . '_' . Util->_nowstamp;
     my $coll = mdb->collection($collname);
     Util->_fail( Util->_loc('Collection %1 already has rows in it, cannot clone')) if $coll->count; 
     $coll->insert($_) for $self->find->all;
+    return $collname;
 }
 
 sub merge_into {
