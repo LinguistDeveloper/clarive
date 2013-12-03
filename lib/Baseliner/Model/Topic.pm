@@ -1541,7 +1541,7 @@ sub save_doc {
     
     # save topic labels 
     $doc->{id_label} = [ map  { $_->{id_label} } 
-        DB->BaliTopicLabel->search({ id_topic=>7499 },{ select=>'id_label' })->hashref->all ];
+        DB->BaliTopicLabel->search({ id_topic=>"$mid" },{ select=>'id_label' })->hashref->all ];
 
     # clear master_seen for everyone else
     mdb->master_seen->remove({ mid=>"$mid", username=>{ '$ne' => $p{username} } });
