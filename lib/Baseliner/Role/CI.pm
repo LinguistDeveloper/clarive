@@ -983,9 +983,13 @@ sub all_cis {
 }
 
 
+# TODO consider returning a collection for ci->[collection] ? 
 sub find {
     my ($self,$where,@rest) = @_;
     $where //= {};
+    if( ref($where) ne 'HASH' && length $where ) {  
+        $where = { mid=>mdb->in($where) };
+    }
     $where->{collection} //= $self->collection;
     return mdb->master_doc->find($where,@rest);
 }
@@ -993,6 +997,9 @@ sub find {
 sub find_one {
     my ($self,$where,@rest) = @_;
     $where //= {};
+    if( ref($where) ne 'HASH' && length $where ) {
+        $where = { mid=>mdb->in($where) };
+    }
     $where->{collection} //= $self->collection;
     return mdb->master_doc->find_one($where,@rest);
 }

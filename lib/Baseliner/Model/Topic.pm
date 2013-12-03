@@ -505,6 +505,15 @@ _debug( $where );
         my $d = $mid_data{$_->{mid}};
         $d->{user_seen} = \1; 
     }
+    
+    # get active jobs
+    my %mid_jobs;
+    my @jobs =  ci->job->find({ 'changesets.mid'=>mdb->in(@mids), status=>mdb->in('RUNNING') })->fields({ 'changesets.mid'=>1, name=>1 })->all ;
+    for my $job ( @jobs ){ 
+        for my $cs ( _array($job->{changesets}) ) {
+            $mid_jobs{ $cs->{mid} } = $job;
+        }
+    }
 
     my @rows;
     for my $mid (@mids) {
@@ -523,6 +532,7 @@ _debug( $where );
         push @rows, {
             %$data,
             topic_name => sprintf("%s #%d", $data->{category_name}, $mid),
+            current_job => $mid_jobs{ $mid }{name},
             report_data => {
                 projects => join( ', ', @projects_report )
             }

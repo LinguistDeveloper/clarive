@@ -4,16 +4,16 @@
 </%perl>
 
 (function(params){
-//	console.dir(params);
+//  console.dir(params);
     var ps_maxi = 25; //page_size for !mini mode
     var ps_mini = 50; //page_size for mini mode
     var ps = ps_maxi; // current page_size
     var filter_current;
     var stop_filters = false;
-	var typeApplication = '<% $c->stash->{typeApplication} %>';
-	var parse_typeApplication = (typeApplication != '') ? '/' + typeApplication : '';
+    var typeApplication = '<% $c->stash->{typeApplication} %>';
+    var parse_typeApplication = (typeApplication != '') ? '/' + typeApplication : '';
     var query_id = '<% $c->stash->{query_id} %>';
-	var id_project = '<% $c->stash->{id_project} %>';
+    var id_project = '<% $c->stash->{id_project} %>';
     var id_report = params.id_report;
     var report_rows = params.report_rows;
     var report_name = params.report_name;
@@ -40,10 +40,10 @@
         params.id_category = category_id;
         base_params.categories = category_id;
     }
-	var status_id = [];
-	status_id = params.status_id ? params.status_id.split(',') : '<% $c->stash->{status_id} %>' ? '<% $c->stash->{status_id} %>' : undefined;
+    var status_id = [];
+    status_id = params.status_id ? params.status_id.split(',') : '<% $c->stash->{status_id} %>' ? '<% $c->stash->{status_id} %>' : undefined;
     base_params.statuses = status_id;
-	
+    
     if( id_report ) {
         base_params.id_report = id_report;
     }
@@ -103,13 +103,13 @@
             selNodes = tree_filters.getChecked();
             stop_filters = true;  // avoid constant firing
             Ext.each(selNodes, function(node){
-				if(node.attributes.checked3){
-					node.attributes.checked3 = -1;
-					node.getUI().toggleCheck(node.attributes.checked3);
-				}
-				else{
-					node.getUI().toggleCheck(true);
-				}
+                if(node.attributes.checked3){
+                    node.attributes.checked3 = -1;
+                    node.getUI().toggleCheck(node.attributes.checked3);
+                }
+                else{
+                    node.getUI().toggleCheck(true);
+                }
             });
             stop_filters = false;
             loadfilters();
@@ -125,15 +125,15 @@
     //        add_view();
     //    }
     //});
-	
+    
     var button_create_view = new Baseliner.Grid.Buttons.Add({
-		text:'',
+        text:'',
         tooltip: _('Create view'),
-        disabled: false,		
+        disabled: false,        
         handler: function() {
             add_view()
         }
-    });		
+    });     
     
     var button_delete_view = new Baseliner.Grid.Buttons.Delete({
         text: _(''),
@@ -509,14 +509,30 @@
         var yiq = ((r*299)+(g*587)+(b*114))/1000;
         return (yiq >= 128) ? '#000000' : '#FFFFFF';
     }
+    
+    Baseliner.open_monitor_query = function(q){
+        Baseliner.add_tabcomp('/job/monitor', null, { query: q });
+    }
+    
+    var body_mini_tpl = function(){/*
+                  <span style='font-weight:[%=font_weight%]; font-size: 12px; cursor: pointer; [%=strike%]' 
+                  onclick='javascript:Baseliner.show_topic_colored([%=mid%],"[%=category_name%]","[%=category_color%]", "[%=id%]");'>[%=value%][%=folders%]</span>
+          */}.tmpl();
+    
+    var body_tpl = function(){/* 
+                <span style='font-weight:[%=font_weight%]; font-size: 14px; cursor: pointer; [%=strike%]' 
+                onclick='javascript:Baseliner.show_topic_colored([%=mid%],"[%=category_name%]","[%=category_color%]", "[%=id%]")'>[%=value%]</span>
+                        <br><div style='margin-top: 5px'>[%=modified_on%][%=folders%]
+                        <a href='javascript:Baseliner.open_monitor_query("[%=current_job%]")'>[%=current_job%]</a><font color='808080'></br>[%=who%]</font ></div> 
+           */}.tmpl();
 
     var render_title = function(value,metadata,rec,rowIndex,colIndex,store) {
         var tag_color_html;
         //var date_created_on;
-		var date_modified_on;
+        var date_modified_on;
         tag_color_html = '';
         //date_created_on =  rec.data.created_on.dateFormat('M j, Y, g:i a');
-		date_modified_on =  rec.data.modified_on.dateFormat('M j, Y, g:i a');
+        date_modified_on =  rec.data.modified_on.dateFormat('M j, Y, g:i a');
         var strike = ( rec.data.is_closed ? 'text-decoration: line-through' : '' );
         var font_weight = rec.data.user_seen===true ? 'normal' : 'bold';
 
@@ -529,31 +545,46 @@
         }
 
         if(rec.data.labels){
-			tag_color_html = "";
+            tag_color_html = "";
             for(i=0;i<rec.data.labels.length;i++){
                 var label = rec.data.labels[i].split(';');
                 var label_name = label[1];
                 var label_color = label[2];
                 tag_color_html = tag_color_html
                     //+ "<div id='boot'><span class='label' style='font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;float:left;padding:1px 4px 1px 4px;margin-right:4px;color:"
-					+ "<span style='font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;float:left;padding:1px 4px 1px 4px;margin-right:4px;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;color:" 
+                    + "<span style='font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;float:left;padding:1px 4px 1px 4px;margin-right:4px;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;color:" 
                     + returnOpposite(label_color.substr(1)) + ";background-color:" + label_color + "'>" + label_name + "</span>";
             }
         }
-		
-		
-		
+        
+        
+        // rowbody: 
         if(btn_mini.pressed){
-            return tag_color_html 
-                + String.format("<span style='font-weight:{5}; font-size: 12px; cursor: pointer; "+strike+"' onclick='javascript:Baseliner.show_topic_colored({1},\"{2}\", \"{3}\", \"{4}\");'>{0}{6}</span>", 
-                        value, rec.data.topic_mid, rec.data.category_name, rec.data.category_color, grid_topics.id, font_weight, folders ); 
+            return tag_color_html + body_mini_tpl({ 
+                        value: value, 
+                        strike: strike,
+                        modified_on: date_modified_on, 
+                        who: _('by %1',rec.data.modified_by), 
+                        mid: rec.data.topic_mid, 
+                        category_name: rec.data.category_name, 
+                        category_color: rec.data.category_color, 
+                        id: grid_topics.id, 
+                        font_weight: font_weight, 
+                        folders: folders, 
+                        current_job: rec.data.current_job });                        
         }else{
-            return tag_color_html + 
-                String.format( "<span style='font-weight:{7}; font-size: 14px; cursor: pointer; "+strike+"' onclick='javascript:Baseliner.show_topic_colored({3},\"{4}\",\"{5}\", \"{6}\")'>{0}</span>"
-                        + "<br><div style='margin-top: 5px'>{1}{8}<font color='808080'></br>{2}</font ></div>", 
-                        //value, date_created_on, _('by %1',rec.data.created_by),
-						value, date_modified_on, _('by %1',rec.data.modified_by), 
-                        rec.data.topic_mid, rec.data.category_name, rec.data.category_color, grid_topics.id, font_weight, folders );                        
+            return tag_color_html + body_tpl({ 
+                        value: value, 
+                        strike: strike,
+                        modified_on: date_modified_on, 
+                        who: _('by %1',rec.data.modified_by), 
+                        mid: rec.data.topic_mid, 
+                        category_name: rec.data.category_name, 
+                        category_color: rec.data.category_color, 
+                        id: grid_topics.id, 
+                        font_weight: font_weight, 
+                        folders: folders, 
+                        current_job: rec.data.current_job });                        
         }
         
     };
@@ -627,11 +658,11 @@
     };
     var render_date = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( !value ) return '';
-		return value.dateFormat(Prefs.js_date_format);
+        return value.dateFormat(Prefs.js_date_format);
     };
     var render_bool = function(value) {
         if( !value ) return '';
-		return '<input type="checkbox" '+ ( value ? 'checked' : '' ) + '></input>'; 
+        return '<input type="checkbox" '+ ( value ? 'checked' : '' ) + '></input>'; 
     };
     var render_topic_rel = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( !value ) return '';
@@ -798,7 +829,7 @@
             pageSize: ps,
             plugins:[
                 ps_plugin,
-				new Ext.ux.ProgressBarPager()
+                new Ext.ux.ProgressBarPager()
             ],
             displayInfo: true,
             displayMsg: _('Rows {0} - {1} of {2}'),
@@ -845,6 +876,7 @@
         references_out : { header: _('References'), hidden: true, sortable: false, dataIndex: 'references_out'},    
         references_in : { header: _('Referenced In'), hidden: true, sortable: false, dataIndex: 'referenced_in'},    
         assignee : { header: _('Assigned To'), hidden: true, sortable: true, dataIndex: 'assignee'},
+        current_job : { header: _('Current Job'), hidden: true, sortable: true, dataIndex: 'current_job'},
         modified_by : { header: _('Modified By'), hidden: true, sortable: true, dataIndex: 'modified_by'},
         modified_on : { header: _('Modified On'), hidden: true, sortable: true, dataIndex: 'modified_on', renderer: render_date },
         created_on : { header: _('Created On'), width: 80, hidden: true, sortable: true, dataIndex: 'created_on', renderer: render_date },
@@ -887,7 +919,7 @@
          columns = [ dragger, check_sm ];
          var cols = ['topic_name', 'category_name', 'category_status_name', 'title', 'progress',
             'numcomment', 'projects', 'topic_mid', 'moniker', 'cis_out', 'cis_in', 'references_out',
-            'references_in', 'assignee', 'modified_by', 'modified_on', 'created_on', 'created_by'];
+            'references_in', 'assignee', 'modified_by', 'modified_on', 'created_on', 'created_by', 'current_job'];
          Ext.each( cols, function(col){
              columns.push( col_map[col] );
          });
@@ -914,12 +946,12 @@
         columns: columns,
         tbar:   [ 
                 search_field
-				,
-%if ( !$c->stash->{typeApplication} ){				
+                ,
+%if ( !$c->stash->{typeApplication} ){              
                 btn_add,
                 btn_edit,
                 // btn_delete,
-%}				
+%}              
                 //btn_labels
                 '->',
                 btn_reports,
@@ -929,7 +961,7 @@
         ],      
         bbar: ptool
     });
-	
+    
     
 //    grid_topics.on('rowclick', function(grid, rowIndex, columnIndex, e) {
 //        //init_buttons('enable');
@@ -1242,46 +1274,46 @@
         var priorities_checked = new Array();
         var type;
         var selected_views = { };
-		
-		selNodes = tree_filters.getChecked();
-		if( selNodes.length > 0 ) button_no_filter.enable();
-		  else button_no_filter.disable();
-		  
+        
+        selNodes = tree_filters.getChecked();
+        if( selNodes.length > 0 ) button_no_filter.enable();
+          else button_no_filter.disable();
+          
 
-		for( var i=0; i<selNodes.length; i++ ) {
-			var node = selNodes[ i ];
-			type = node.parentNode.attributes.id;
-			//if (type == 'C') console.log(node);
-			var node_value = node.attributes.checked3 == -1 ? -1 * (node.attributes.idfilter) : node.attributes.idfilter;
-			switch (type){
-				//Views
-				case 'V':   
-							var d = Ext.util.JSON.decode(node.attributes.filter);
-							if( d.query !=undefined && selected_views.query !=undefined ) {
-								d.query = d.query + ' ' + selected_views.query;
-							}
-							selected_views = Baseliner.merge(selected_views, d );
-							break;
-				//Labels
-				case 'L':	labels_checked.push(node_value);
-							//labels_checked.push(node.attributes.idfilter);
-							break;
-				//Statuses
-				case 'S':   statuses_checked.push(node_value);
-							//statuses_checked.push(node.attributes.idfilter);
-							break;
-				//Categories
-				case 'C':	categories_checked.push(node_value);
-							//categories_checked.push(node.attributes.idfilter);
-							break;
-				//Priorities
-				case 'P':	priorities_checked.push(node_value);
-							//priorities_checked.push(node.attributes.idfilter);
-							break;
-			}
-		}
-		//alert('merge views: ' + Ext.util.JSON.encode(selected_views));
-		filtrar_topics(selected_views, labels_checked, categories_checked, statuses_checked, priorities_checked, unselected_node);
+        for( var i=0; i<selNodes.length; i++ ) {
+            var node = selNodes[ i ];
+            type = node.parentNode.attributes.id;
+            //if (type == 'C') console.log(node);
+            var node_value = node.attributes.checked3 == -1 ? -1 * (node.attributes.idfilter) : node.attributes.idfilter;
+            switch (type){
+                //Views
+                case 'V':   
+                            var d = Ext.util.JSON.decode(node.attributes.filter);
+                            if( d.query !=undefined && selected_views.query !=undefined ) {
+                                d.query = d.query + ' ' + selected_views.query;
+                            }
+                            selected_views = Baseliner.merge(selected_views, d );
+                            break;
+                //Labels
+                case 'L':   labels_checked.push(node_value);
+                            //labels_checked.push(node.attributes.idfilter);
+                            break;
+                //Statuses
+                case 'S':   statuses_checked.push(node_value);
+                            //statuses_checked.push(node.attributes.idfilter);
+                            break;
+                //Categories
+                case 'C':   categories_checked.push(node_value);
+                            //categories_checked.push(node.attributes.idfilter);
+                            break;
+                //Priorities
+                case 'P':   priorities_checked.push(node_value);
+                            //priorities_checked.push(node.attributes.idfilter);
+                            break;
+            }
+        }
+        //alert('merge views: ' + Ext.util.JSON.encode(selected_views));
+        filtrar_topics(selected_views, labels_checked, categories_checked, statuses_checked, priorities_checked, unselected_node);
     }
     
     function filtrar_topics(selected_views, labels_checked, categories_checked, statuses_checked, priorities_checked, unselected_node){
@@ -1301,8 +1333,8 @@
         // now merge baseparams (query, limit and start) over the resulting filters
         var filter_final = Baseliner.merge( merge_filters, base_params );
         // query and unselected
-		
-		
+        
+        
         //if( unselected_node != undefined ) {
         //    var unselected_type = unselected_node.parentNode.attributes.id;
         //    var unselected_filter = Ext.util.JSON.decode(unselected_node.attributes.filter);
@@ -1311,7 +1343,7 @@
         //            filter_final.query = '';
         //        } else {
         //            filter_final.query = bp.query.replace( unselected_filter.query, '' );
-					filter_final.query = bp.query;
+                    filter_final.query = bp.query;
                     //filter_final.query = filter_final.query.replace( /^ +/, '' );
                     //filter_final.query = filter_final.query.replace( / +$/, '' );
         //        }
@@ -1325,10 +1357,10 @@
         //if( base_params.query !== filter_final.query ) {
             //delete filter_final['query'];    
         //}
-		//console.dir(filter_final);
-		
-		if (statuses_checked.length == 0) filter_final.clear_filter = 1
-		
+        //console.dir(filter_final);
+        
+        if (statuses_checked.length == 0) filter_final.clear_filter = 1
+        
         store_topics.baseParams = filter_final;
         search_field.setValue( filter_final.query );
         store_topics.load();
@@ -1360,24 +1392,24 @@
             var selNodes = tree_filters.getChecked();
             var tot_view_defaults = 1;
             //Ext.each(selNodes, function(node){
-            //	
-            //	var type = node.parentNode.attributes.id;
-            //	if(type == 'V'){
-            //		//if(!eval('node.attributes.default')){   //Eval, I.E
-            //		if(!node.attributes['default']){   // I.E 8.0
-            //			button_delete_view.enable();
-            //			swDisable = false;
-            //			return false;
-            //		}else{
-            //			if(selNodes.length == tot_view_defaults){
-            //				swDisable = true;
-            //			}else{
-            //				swDisable = false;
-            //			}
-            //		}
-            //	}else{
-            //		swDisable = true;
-            //	}
+            //  
+            //  var type = node.parentNode.attributes.id;
+            //  if(type == 'V'){
+            //      //if(!eval('node.attributes.default')){   //Eval, I.E
+            //      if(!node.attributes['default']){   // I.E 8.0
+            //          button_delete_view.enable();
+            //          swDisable = false;
+            //          return false;
+            //      }else{
+            //          if(selNodes.length == tot_view_defaults){
+            //              swDisable = true;
+            //          }else{
+            //              swDisable = false;
+            //          }
+            //      }
+            //  }else{
+            //      swDisable = true;
+            //  }
             //});
             
             if (swDisable)
@@ -1389,7 +1421,7 @@
                 loadfilters( node_selected );
             }
         }
-    }	
+    }   
 
     if( !id_report ) {
         var id_collapse = Ext.id();
@@ -1419,19 +1451,19 @@
             ddGroup: 'explorer_dd',
             listeners: {
                 'checkchange': checkchange
-            }		
+            }       
         });
         
         tree_filters.getLoader().on("beforeload", function(treeLoader, node) {
             var loader = tree_filters.getLoader();
             if(category_id){
-                loader.baseParams = {category_id: category_id};	
+                loader.baseParams = {category_id: category_id}; 
             }
             if(status_id){
-                loader.baseParams = {status_id: status_id};	
-            }		
+                loader.baseParams = {status_id: status_id}; 
+            }       
             
-        });	
+        }); 
         
         var changing = false;
         
