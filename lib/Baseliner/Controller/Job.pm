@@ -323,7 +323,7 @@ register 'event.job.cancel_running' => {
     vars => ['username', 'bl', 'jobname', 'id_job']
 };
 
-sub job_submit : Path('/job/submit') {
+sub submit : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
     my $config = $c->registry->get('config.job')->data;
@@ -417,6 +417,7 @@ sub job_submit : Path('/job/submit') {
                     changesets   => $contents, 
             };
             event_new 'event.job.new' => { username => $c->username, bl => $job_data->{bl}  } => sub {
+                # calls _create in the topic 
                 my $job = BaselinerX::CI::job->new( $job_data );
                 $job->save;
                 if( ref $job_stash ) {
@@ -462,7 +463,7 @@ sub job_states_json {
 
 sub envs_json {
   #my @data =  grep { ! $_->{bl} eq '*' } Baseliner::Core::Baseline->baselines;
-    my @data = sort { $a->{seq} <=> $b->{seq} } map { {name => $_->{name}, bl => $_->{bl}}}  grep {$_->{moniker} ne '*'}  BaselinerX::CI::bl->search_cis;
+    my @data = sort { ($a->{seq}//0) <=> ($b->{seq}//0) } map { {name => $_->{name}, bl => $_->{bl}}}  grep {$_->{moniker} ne '*'}  BaselinerX::CI::bl->search_cis;
   _encode_json \@data;
 }
 
