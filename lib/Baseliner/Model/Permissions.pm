@@ -370,7 +370,7 @@ sub user_projects {
 	if($all_projects || $is_root){
 		return _unique( map { $_->{ns} } Baseliner->model( 'Baseliner::BaliProject' )->search()->hashref->all );
 	}else{
-        my @projects = Baseliner->model( 'Baseliner::BaliRoleuser' )->search({ username => $p{username} }, { select => [ 'ns' ] })->hashref->all;
+        my @projects = map { $_->{ns}} Baseliner->model( 'Baseliner::BaliRoleuser' )->search({ username => $p{username} }, { select => [ 'ns' ] })->hashref->all;
         return _unique( grep { length } @projects );
 	}
 }
