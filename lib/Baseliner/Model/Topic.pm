@@ -287,7 +287,7 @@ sub topics_for_user {
     if( $username && ! $perm->is_root( $username )){
         my $proj_coll_ids = $perm->user_projects_ids_with_collection(username=>$username);
         while( my ($k,$v) = each %{ $proj_coll_ids || {} } ) {
-            $where->{"_project_security.$k"} = mdb->in( keys %{ $v || {} } ); 
+            $where->{"_project_security.$k"} = { '$in'=>[ undef, keys %{ $v || {} } ] }; 
         }
     }
     
@@ -1521,6 +1521,7 @@ sub update_project_security {
         $doc->{_project_security} = \%project_collections;
     } else {
         delete $doc->{_project_security};
+        return undef;
     }
 }
 
