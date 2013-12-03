@@ -243,117 +243,62 @@ register 'registor.action.topic_category_fields' => {
 };
 
 # this is the main topic grid 
-
+# MONGO:
+#
 sub topics_for_user {
     my ($self, $p) = @_;
     
     my ($start, $limit, $query, $query_id, $dir, $sort, $cnt) = ( @{$p}{qw/start limit query query_id dir sort/}, 0 );
-    $dir ||= 'desc';
     $start||= 0;
     $limit ||= 100;
-
-    $p->{page} //= to_pages( start=>$start, limit=>$limit );
+    $dir = !length $dir ? -1 : uc($dir) eq 'DESC' ? -1 : 1;
 
     my $where = {};
     my $query_limit = 300;
     my $perm = Baseliner->model('Permissions');
     my $username = $p->{username};
-    my $is_root = Baseliner->model('Permissions')->is_root( $username );
+    my $is_root = $perm->is_root( $username );
     my $topic_list = $p->{topic_list};
 
     if( length($query) ) {
         #$query =~ s{(\w+)\*}{topic "$1"}g;  # apparently "<str>" does a partial, but needs something else, so we put the collection name "job"
         my @mids_query = map { $_->{obj}{mid} } 
             _array( mdb->topic->search( query=>$query, limit=>1000, project=>{mid=>1})->{results} );
-        $where->{mid}=\@mids_query;
+        $where->{mid}=mdb->in(@mids_query);
     }
     
-    # XXX consider enabling this for quick searches on mid+title+description
-    #$query and $where = query_sql_build( query=>$query, fields=>{
-    #    map { $_ => "me.$_" } qw/
-    #    topic_mid 
-    #    title
-    #    created_on
-    #    created_by
-    #    status
-    #    numcomment
-    #    category_id
-    #    category_name
-    #    category_status_id
-    #    category_status_name        
-    #    category_status_seq
-    #    priority_id
-    #    priority_name
-    #    response_time_min
-    #    expr_response_time
-    #    deadline_min
-    #    expr_deadline
-    #    category_color
-    #    label_id
-    #    label_name
-    #    label_color
-    #    project_id
-    #    project_name
-    #    moniker
-    #    cis_out
-    #    cis_in
-    #    references_out
-    #    referenced_in
-    #    file_name
-    #    description
-    #    text
-    #    progress
-    #    modified_on
-    #    modified_by        
-    #    /
-    #});
-
     my ($select,$order_by, $as, $group_by);
     if( $sort && $sort eq 'category_status_name' ) {
-        $sort = 'category_status_seq'; # status orderby sequence
-        ($select, $order_by, $as, $group_by) = (
-            [{ distinct=>'me.topic_mid'} , 'category_status_seq', 'category_status_name' ],
-            [{ "-$dir" => 'category_status_seq'},{ "-$dir" => 'category_status_name'}, {-desc => 'me.topic_mid' }],
-            ['topic_mid', 'category_status_seq', 'category_status_name' ],
-            ['topic_mid', 'category_status_seq', 'category_status_name' ]
-        );
+        $order_by = { 'category_status.seq' => $dir };
     } else {
         $sort //= '';
         # sort fixups 
         $sort eq 'topic_name' and $sort = ''; # fake column, use mid instead
         $sort eq 'topic_mid' and $sort = '';
-        
-        ($select,$order_by, $as, $group_by) = $sort
-        ? ([{ distinct=>'me.topic_mid'} ,$sort], [{ "-$dir" => $sort}, {-desc => 'me.topic_mid' }], ['topic_mid', $sort], ['topic_mid', $sort] )
-        : ([{ distinct=>'me.topic_mid'},'modified_on'], [{ "-$dir" => 'modified_on' } ], ['topic_mid','modified_on'], ['topic_mid','modified_on'] );
+        if( $sort ) {
+            $order_by = { $sort => $dir };
+        } else {
+            $order_by = { 'modified_on' => -1 };
+        }
     }
 
-    #Filtramos por las aplicaciones a las que tenemos permisos.
-    # if( $username && ! $perm->is_root( $username )){
-    #     my $perm_topics= $perm->user_topics_by_projects( username => $username );
-    #     $where->{topic_mid} = $perm_topics;
-    # }
-
+    # project security - grouped by 
+    my %project_sec;
     if( $username && ! $perm->is_root( $username )){
-        #$where->{'project_id'} = [{-in => Baseliner->model('Permissions')->user_projects_query( username=>$username )}, { "=", undef }];
-        $where->{'-or'} = [
-            'exists'   =>  Baseliner->model( 'Permissions' )->user_projects_query( username=>$username, join_id=>'project_id' ),
-            project_id => { '=' => undef },
-        ];
+        my $proj_coll_ids = $perm->user_projects_ids_with_collection(username=>$username);
+        while( my ($k,$v) = each $proj_coll_ids ) {
+            $where->{"_project_security.$k"} = mdb->in( keys %{ $v || {} } ); 
+        }
     }
     
     if( $topic_list ) {
-        # use Array::Utils qw(:all);
-        # my @a = _array $topic_list;
-        # my @b = _array $where->{topic_mid};
-        # my @final_topics = intersect(@a, @b);
-        $where->{topic_mid} = $topic_list;
+        $where->{topic_mid} = mdb->in($topic_list);
     }
     
     #DEFAULT VIEWS***************************************************************************************************************
     if($p->{today}){
-        my $today = DateTime->now();
-        $where->{created_on} = {'between' => [ $today->ymd, $today->add(days=>1)->ymd]};
+        my $now1 = my $now2 = mdb->now;
+        $where->{created_on} = { '$lte' => "$now1", '$gte' => ''.($now2-'1D') };
     }
     
     if ( $p->{assigned_to_me} ) {
@@ -365,17 +310,18 @@ sub topics_for_user {
                 ->search( { to_mid => $rs_user->mid, rel_type => 'topic_users' }, { select => [qw(from_mid)] } )
                 ->hashref->all;
             if (@topic_mids) {
-                $where->{'me.topic_mid'} = \@topic_mids;
+                $where->{'mid'} = mdb->in(@topic_mids);
             } else {
-                $where->{'me.topic_mid'} = -1;
+                $where->{'mid'} = -1;
             }
         } else {
-            $where->{'me.topic_mid'} = -1;
+            $where->{'mid'} = -1;
         }
     }
     
     if ( $p->{unread} ){
-        $where->{-bool} = \["not exists (select 1 from bali_master_prefs where username=? and last_seen >= me.modified_on and mid = me.mid)", $username];
+        my @seen = map { $_->{mid} } mdb->master_seen->find({ username=>$username })->fields({ mid=>1, _id=>0 })->all;
+        $where->{mid} = mdb->in( @seen );
     }
     
     if ( $p->{created_for_me} ) {
@@ -389,19 +335,18 @@ sub topics_for_user {
         my @not_in = map { abs $_ } grep { $_ < 0 } @labels;
         my @in = @not_in ? grep { $_ > 0 } @labels : @labels;
         if (@not_in && @in){
-            $where->{'label_id'} = [{'not in' => \@not_in},{'in' => \@in}, undef];
+            $where->{'id_label'} = { '$nin' => mdb->str(@not_in), '$in' => mdb->str(@in,undef) };
         }else{
             if (@not_in){
-                $where->{'label_id'} = [{'not in' => \@not_in}, undef];
+                $where->{'id_label'} = {'$nin' => mdb->str(@not_in) };
             }else{
-                $where->{'label_id'} = \@in;
+                $where->{'id_label'} = mdb->in(@in);
             }
         }            
-        #$where->{'label_id'} = \@labels;
     }
     
     if($p->{categories}){
-        my @categories = _array $p->{categories};
+        my @categories = _array( $p->{categories} );
         my @user_categories = map {
             $_->{id};
         } Baseliner->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
@@ -410,21 +355,21 @@ sub topics_for_user {
         my @in = @not_in ? grep { $_ > 0 } @categories : @categories;
         if (@not_in && @in){
             @user_categories = grep{ not $_ ~~ @not_in } @user_categories;
-            $where->{'category_id'} = [{'in' => \@in},{'in' => \@user_categories}];    
+            $where->{'category.id'} = mdb->in(@in,@user_categories);
         }else{
             if (@not_in){
                 @in = grep{ not $_ ~~ @not_in } @user_categories;
-                $where->{'category_id'} = {'in' => \@in};;
+                $where->{'category.id'} = mdb->in(@in);
             }else{
-                $where->{'category_id'} = {'in' => \@in};
+                $where->{'category.id'} = mdb->in(@in);
             }
         }        
-        #$where->{'category_id'} = \@categories;
+        #$where->{'category.id'} = \@categories;
     }else{
         # all categories, but limited by user permissions
         #   XXX consider removing this check on root and other special permissions
         my @categories  = map { $_->{id}} Baseliner::Model::Topic->get_categories_permissions( username => $username, type => 'view' );
-        $where->{'category_id'} = { -in => \@categories };
+        $where->{'category.id'} = mdb->in(@categories);
     }
     
     my $default_filter;
@@ -433,12 +378,12 @@ sub topics_for_user {
         my @not_in = map { abs $_ } grep { $_ < 0 } @statuses;
         my @in = @not_in ? grep { $_ > 0 } @statuses : @statuses;
         if (@not_in && @in){
-            $where->{'category_status_id'} = [{'not in' => \@not_in},{'in' => \@in}];    
+            $where->{'category_status.id'} = {'$nin' => mdb->str(@not_in), '$in' => mdb->str(@in) };    
         }else{
             if (@not_in){
-                $where->{'category_status_id'} = {'not in' => \@not_in};
+                $where->{'category_status.id'} = mdb->nin(@not_in);
             }else{
-                $where->{'category_status_id'} = \@in;
+                $where->{'category_status.id'} = mdb->in(@in);
             }
         }
     }else {
@@ -451,13 +396,8 @@ sub topics_for_user {
             #             $self->user_workflow( $username );
             
             my @status_ids = keys %tmp;
-            $where->{'category_status_id'} = \@status_ids if @status_ids > 0;
-            #my @conditions = map { +{'-and' => [ 'category_status_id' => $_, 'category_id' => $tmp{$_} ] }} @status_ids;
-            #$where->{-or} = \@conditions;
-            
-            #$where->{'category_status_type'} = {'!=', 'F'};
-            #Nueva funcionalidad (todos los tipos de estado que empiezan por F son estado finalizado)
-            $where->{'category_status_type'} = {-not_like, 'F%'}
+            $where->{'category_status.id'} = mdb->in(@status_ids) if @status_ids > 0;
+            $where->{'category_status.type'} = { '$nin' =>['F','FC'] }
         }
     }
       
@@ -466,12 +406,12 @@ sub topics_for_user {
         my @not_in = map { abs $_ } grep { $_ < 0 } @priorities;
         my @in = @not_in ? grep { $_ > 0 } @priorities : @priorities;
         if (@not_in && @in){
-            $where->{'priority_id'} = [{'not in' => \@not_in},{'in' => \@in}, undef];
+            $where->{'id_priority'} = { '$nin'=> mdb->str(@not_in), '$in'=>mdb->str(@in, undef) };
         }else{
             if (@not_in){
-                $where->{'priority_id'} = [{'not in' => \@not_in}, undef];
+                $where->{'id_priority'} = { '$nin' => mdb->str(@not_in,undef) };
             }else{
-                $where->{'priority_id'} = \@in;
+                $where->{'id_priority'} = mdb->in(@in);
             }
         }          
         #$where->{'priority_id'} = \@priorities;
@@ -488,34 +428,21 @@ sub topics_for_user {
     
     #Filtro cuando viene por la parte del Dashboard.
     if($p->{query_id}){
-        $where->{topic_mid} = $p->{query_id};
+        $where->{topic_mid} = mdb->in($p->{query_id});
     }
     
     #Filtro cuando viene por la parte del lifecycle.
     if($p->{id_project}){
         my @topics_project = map {$_->{from_mid}} DB->BaliMasterRel->search({ to_mid=>$p->{id_project}, rel_type =>'topic_project' })->hashref->all;
-        $where->{topic_mid} = \@topics_project;
+        $where->{topic_mid} = mdb->in(@topics_project);
     }
     
-    # SELECT GROUP_BY MID:
-    my $args = { select=>$select, as=>$as, order_by=>$order_by, group_by=>$group_by };
-    if( $limit >= 0 ) {
-        $args->{page} = $p->{page};
-        $args->{rows} = $limit;
-    }
-    
-    my $rs = DB->TopicView->search(  $where, $args );                                                             
-    
-    if( $limit >= 0 ) {
-        my $pager = $rs->pager;
-        $cnt = $pager->total_entries;
-    } else {
-        $cnt = $rs->count;
-    }
-    rs_hashref( $rs );
-    my @mids = map { $_->{topic_mid} } $rs->all;
-    my $rs_sub = $rs->search(undef, { select=>'topic_mid' });
-            # _log _dump $rs_sub->as_query;
+_debug( $where );
+    my $rs = mdb->topic->find( $where )->sort( $order_by );
+    $cnt = $rs->count;
+    $rs->skip( $start ) if $start >= 0 ;
+    $rs->limit( $limit ) if $limit >= 0 ;
+    my @mids = map { $_->{mid} } $rs->all;
     
     # SELECT MID DATA:
     my %mid_data = map { $_->{topic_mid} => $_ } grep { defined } map { Baseliner->cache_get("topic:view:$_:") } @mids; 
@@ -573,11 +500,10 @@ sub topics_for_user {
     }
 
     # get user seen 
-    my @mid_prefs = DB->BaliMasterPrefs->search({ mid=>{ -in => \@mids }, username=>$username })->hashref->all;
+    my @mid_prefs = mdb->master_seen->find({ mid=>mdb->in(@mids), username=>$username })->fields({ _id=>0, mid=>1 })->all;
     for( @mid_prefs ) {
         my $d = $mid_data{$_->{mid}};
-        #next if !defined $d->{last_seen} || !defined $d->{modified_on};
-        $d->{user_seen} = !defined $_->{last_seen} || "$d->{modified_on}" gt "$_->{last_seen}" ? \0 : \1;
+        $d->{user_seen} = \1; 
     }
 
     my @rows;
@@ -1103,6 +1029,7 @@ sub get_meta {
         sort { $a->{field_order} <=> $b->{field_order} }
         map  { 
             my $d = _load $_->{params_field};
+            $d->{id_category} = $_->{id_category};
             if( length $d->{default_value} && $d->{default_value}=~/^#!perl:(.*)$/ ) {
                 $d->{default_value} = eval $1;
             }
@@ -1549,13 +1476,14 @@ sub save_data {
         # save to mongo
         $self->save_doc(
             $meta, +{$topic->get_columns}, $data,
+            username      => $data->{username},
             mid           => $topic_mid,
             custom_fields => \@custom_fields
         );
 
         # user seen
-        my $row = DB->BaliMasterPrefs->update_or_create(
-            {username => $data->{username}, mid => $topic_mid, last_seen => _dt()} );
+        mdb->master_seen->update({ username => $data->{username}, mid => $topic_mid }, 
+                {username => $data->{username}, mid => $topic_mid, last_seen => mdb->ts, type=>'topic' }, { upsert=>1 });
 
         # cache clear
         $self->cache_topic_remove( $topic_mid );
@@ -1572,6 +1500,14 @@ sub save_data {
 
 } ## end sub save_data
 
+sub update_project_security {
+    my ($self, $meta, $doc )=@_;
+    my %project_collections; 
+    for my $field ( grep { $_->{meta_type} eq 'project' && length $_->{collection} } @$meta ) {
+        push @{ $project_collections{ $field->{collection} } }, _array($doc->{ $field->{id_field} });
+    }
+    $doc->{_project_security} = \%project_collections;
+}
 
 sub save_doc {
     my ($self,$meta,$row, $doc, %p) = @_;
@@ -1582,6 +1518,16 @@ sub save_doc {
     $doc->{mid} = $mid;
     my @custom_fields = @{ $p{custom_fields} };
     my %meta = map { $_->{id_field} => $_ } @$meta;
+    
+    # save project collection security
+    $self->update_project_security($meta,$doc);
+    
+    # save topic labels 
+    $doc->{id_label} = [ map  { $_->{id_label} } 
+        DB->BaliTopicLabel->search({ id_topic=>7499 },{ select=>'id_label' })->hashref->all ];
+
+    # clear master_seen for everyone else
+    mdb->master_seen->remove({ mid=>"$mid", username=>{ '$ne' => $p{username} } });
     
     # take images out
     for( @custom_fields ) {
