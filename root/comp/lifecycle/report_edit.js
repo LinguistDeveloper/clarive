@@ -55,6 +55,8 @@
     var edit_value = function(node){
         var attr = node.attributes;
         var pn = node.parentNode; // should be where_field
+        
+        
         var oper_all = [ ['','='], ['$ne','<>'],['$lt','<'],['$lte','<='],['$gt','>'],['$gte','>='] ];
         var oper_in = [ ['$in','IN'], ['$nin','NOT IN'] ];
         var oper_string = [ ['','='], ['$ne','<>'],['like','LIKE'], ['not_like','NOT LIKE'] ];
@@ -77,10 +79,22 @@
                   //field=Baseliner.ci_box({ value: attr.value, isa:'status', force_set_value:true });
                   oper_by_type = oper_in;
                   break;
-            case 'ci': 
-                  field=Baseliner.ci_box({ value: attr.value, name:'value', singleMode: false, force_set_value:true });
-                  oper_by_type = oper_in;
-                  break;
+            case 'ci':
+                var ci_class = pn.attributes.collection || pn.attributes.ci_class;
+                field=new Baseliner.ci_box({ value: attr.value, name:'value', singleMode: false, force_set_value:true, class: ci_class, security: true });
+                oper_by_type = oper_in;
+                var store;
+                store = field.getStore();
+                store.on('load',function(){
+                    var arr_options = [];
+                    var arr_values = [];
+                    this.each( function(r) {
+                        arr_options.push( r.data.name );
+                        arr_values.push( r.data.mid );
+                    });
+                    attr.options = arr_options;
+                });
+                break;
         }
         form_value.removeAll();
         var oper = new Baseliner.ComboDouble({
@@ -96,10 +110,25 @@
                 case 'string': val = val.toString(); break;
                 case 'number': val = parseFloat(val); break;
                 case 'date': val = val.format('Y-m-d').trim(); break;
-                case 'ci': 
+                case 'ci':
                 case 'status': 
                     label = fcomp.get_labels().join(',');
                     attr.options = fcomp.get_labels();
+                    if(attr.options.length == 0){
+                        var arr_options = [];
+                        var arr_values = [];
+                        var store;
+                        store = field.getStore();                        
+                        store.each( function(r) {
+                            arr_options.push( r.data.name );
+                            arr_values.push( r.data.mid );
+                        });
+                        arr_options.push(_('Undefined'));
+                        arr_values.push( '' );
+                        label = arr_options.join(',');
+                        attr.options = arr_options;
+                        val = arr_values;
+                    }
             }
             attr.value = val;
             node.setText( String.format('{0} {1}', oper.getRawValue(), label || attr.value) );

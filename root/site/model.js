@@ -923,6 +923,7 @@ Baseliner.ci_box = function(c) {
     var with_vars = c.with_vars; delete c.with_vars;
     var from_mid = c.from_mid; delete c.from_mid;
     var to_mid = c.to_mid; delete c.to_mid;
+	var security = c.security; delete c.security;
     var cl = c['class'] || c['isa'] || c['classname']; delete c['class']; // IE - class is syntax errors due to reserved word
     var bp = {};
     if( cl !=undefined ) bp['class'] = cl;
@@ -931,6 +932,7 @@ Baseliner.ci_box = function(c) {
     else bp.role = role;
     if( with_vars != undefined ) bp.with_vars = with_vars;
     if( c.hiddenName == undefined ) c.hiddenName = c.name;
+	if( security != undefined ) bp.security = 1;
     var autoload = c.autoLoad != undefined ? c.autoLoad : true;
     var store = new Baseliner.store.CI({ baseParams: bp });
     store.on('load', function(){

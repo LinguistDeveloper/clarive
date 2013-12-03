@@ -542,6 +542,15 @@ sub store : Local {
     my $total = 0; 
 
     if( my $class = $p->{class} // $p->{classname} // $p->{isa} ) {
+        if( $p->{security} ){  #Parámetro desde informes
+            my @security;
+            my $collections = $c->model('Permissions')->user_projects_ids_with_collection( username=>$c->username );
+            if(exists $collections->{$class}){
+                @security = keys $collections->{$class};    
+            }
+            $mids = [ _array($mids), @security];
+        }
+        
         $class = "BaselinerX::CI::$class" if $class !~ /^Baseliner/;
         ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
     }
