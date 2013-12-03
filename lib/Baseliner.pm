@@ -341,12 +341,18 @@ around 'debug' => sub {
                 rawmemory => [ driver => 'RawMemory', datastore => {}, max_size => 1000 ],
                 sharedmem => [ driver => 'SharedMem', size => 1_000_000, shmkey=>93894384 ],
                 redis     => [ driver => 'BaselinerRedis', namespace => 'cache', server => ( Baseliner->config->{redis}{server} // 'localhost:6379' ), debug => 0 ],
+                mongo     => [ driver => 'Mongo' ] # not CHI
         };
         my $cache_config = ref $cache_type eq 'ARRAY' 
             ? $cache_type :  ( $cache_defaults->{ $cache_type } // $cache_defaults->{fastmmap} );
         $ccache = eval {
-            require CHI;
-            CHI->new( @$cache_config );
+            if( $cache_type eq 'mongo' ) {
+                require Baseliner::Cache;
+                Baseliner::Cache->new( @$cache_config );
+            } else {
+                require CHI;
+                CHI->new( @$cache_config );
+            }
         }; 
         if( $@ ) {
             Util->_error( Util->_loc( "Error configuring cache: %1", $@ ) );

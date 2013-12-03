@@ -6,10 +6,10 @@ mongo:
     dbname: clarive
     client:
         host: 'localhost:27017'
+        auto_reconnect: 1
         #w
         #wtimeout
         #j
-        #auto_reconnect: 1
         #auto_connect: 1
         #timeout: 20000
         #username
@@ -41,7 +41,7 @@ baseliner:
     ldap: no
     header_init:
         show_lifecycle: 1
-    # cache: redis
+    cache: mongo
     # toolbar_height: 45
             
     'Plugin::Session':
