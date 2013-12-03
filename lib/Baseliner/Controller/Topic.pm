@@ -1131,7 +1131,7 @@ sub filters_list : Local {
     
     push @tree, {
         id          => 'V',
-        text        => _loc('Views'),
+        text        => _loc('Filters'),
         cls         => 'forum-ct',
         iconCls     => 'forum-parent',
         children    => \@views
