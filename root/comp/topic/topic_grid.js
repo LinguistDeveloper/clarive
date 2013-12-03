@@ -932,6 +932,7 @@
 				var options = [];
 				if(r.filter.options){
 					for(i=0;i<r.filter.options.length;i++){
+						if(r.filter.values[i] == '') r.filter.values[i] = -1;
 						options.push( [ r.filter.values[i],r.filter.options[i] ]);
 					}
 					filter_params.options = options;

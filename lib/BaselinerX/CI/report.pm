@@ -462,8 +462,9 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 						}
 					};
 					when ('list') {
-						_log ">>>>>>>>>>>>>>>>>Filter: " . _dump $dynamic_filter{$id_field}->{value};
-						$cond = { $val->{oper} => $dynamic_filter{$id_field}->{value} };
+						my @parse = map { $_ == '-1' ? '' : $_} _array $dynamic_filter{$id_field}->{value};
+						$cond = { $val->{oper} => \@parse };
+						#$cond = { $val->{oper} => $dynamic_filter{$id_field}->{value} };
 					};
 					when ('string') {
 						if( $val->{oper} =~ /^(like|not_like)$/ ) {
