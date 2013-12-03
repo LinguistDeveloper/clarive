@@ -253,6 +253,7 @@
         var win;
         
         var render_category = function(value,metadata,rec,rowIndex,colIndex,store){
+			
             var color = rec.data.color;
             var ret = '<div id="boot"><span class="label" style="float:left;padding:2px 8px 2px 8px;background: '+ color + '">' + value + '</span></div>';
             return ret;
@@ -863,7 +864,8 @@
 		string: 'string',
 		number: 'numeric',
 		date: 'date',
-		status: 'list'
+		status: 'list',
+		ci: 'list'
 	}
 	var fields_filter = [];
 	
@@ -903,14 +905,14 @@
         release : { sortable: false, width: 90, renderer: render_topic_rel  }
     };
     if( fields ) {
+		//console.dir(fields);
         columns = [ dragger, check_sm, col_map['topic_name'] ];
         Ext.each( fields.columns, function(r){ 
             // r.meta_type, r.id, r.as, r.width, r.header
-			//console.dir(r);
+			console.dir(r);
 			if(r.filter){
 				var filter_params = {type: type_filters[r.filter.type], dataIndex: r.id};
 				switch (filter_params.type){
-					//Views
 					case 'date':   
 						filter_params.dateFormat = 'Y-m-d';
 						filter_params.beforeText = _('Before');

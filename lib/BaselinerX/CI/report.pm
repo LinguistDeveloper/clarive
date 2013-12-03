@@ -450,7 +450,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 			my $id_field = $_->{id_field};
 			my $cond;
 			if(exists $dynamic_filter{$id_field}) {
-				_log ">>>>>>>>TYPE: " . $dynamic_filter{$id_field}->{type};
+				#_log ">>>>>>>>TYPE: " . $dynamic_filter{$id_field}->{type};
 				given ($dynamic_filter{$id_field}->{type}) {
 					when ('numeric') {
 						for (my $i = 0; $i < scalar @{$dynamic_filter{$id_field}->{oper}}; $i++){
@@ -462,6 +462,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 						}
 					};
 					when ('list') {
+						_log ">>>>>>>>>>>>>>>>>Filter: " . _dump $dynamic_filter{$id_field}->{value};
 						$cond = { $val->{oper} => $dynamic_filter{$id_field}->{value} };
 					};
 					when ('string') {
@@ -494,49 +495,51 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 				$where->{$id_field} = $cond;
 			}
 			else{
-				given ($val->{field}) {
-					when ('number') {
-						if (exists $where->{$id_field}){
-							$where->{$id_field}->{$val->{oper}} = $val->{value} + 0;
-						}else{
-							$cond = { $val->{oper} => $val->{value} + 0 };
-							$where->{$id_field} = $cond;	
-						}
-					}
-					when ('string') {
-						if( $val->{oper} =~ /^(like|not_like)$/ ) {
-							$val->{value} = qr/$val->{value}/i;
-							if ($val->{oper} eq 'not_like'){
-								$cond = { '$not' => $val->{value} };	
+				if($val->{value}){
+					given ($val->{field}) {
+						when ('number') {
+							if (exists $where->{$id_field}){
+								$where->{$id_field}->{$val->{oper}} = $val->{value} + 0;
 							}else{
-								$cond = $val->{value};	
-							}								
+								$cond = { $val->{oper} => $val->{value} + 0 };
+								$where->{$id_field} = $cond;	
+							}
 						}
-						else{
+						when ('string') {
+							if( $val->{oper} =~ /^(like|not_like)$/ ) {
+								$val->{value} = qr/$val->{value}/i;
+								if ($val->{oper} eq 'not_like'){
+									$cond = { '$not' => $val->{value} };	
+								}else{
+									$cond = $val->{value};	
+								}								
+							}
+							else{
+								if ($val->{oper}){
+									$cond = { $val->{oper} => $val->{value}  };
+								}else{
+									$cond = $val->{value};
+								}
+							}
+							$where->{$id_field} = $cond;
+						}
+						when ('date') {
+							if (exists $where->{$id_field}){
+								$where->{$id_field}->{$val->{oper}} = $val->{value};	
+							}
+							else{
+								$cond = { $val->{oper} => $val->{value} };
+								$where->{$id_field} = $cond;
+							}
+						}
+						default{
 							if ($val->{oper}){
-								$cond = { $val->{oper} => $val->{value}  };
+								$cond = { $val->{oper} => $val->{value} };
 							}else{
 								$cond = $val->{value};
 							}
-						}
-						$where->{$id_field} = $cond;
-					}
-					when ('date') {
-						if (exists $where->{$id_field}){
-							$where->{$id_field}->{$val->{oper}} = $val->{value};	
-						}
-						else{
-							$cond = { $val->{oper} => $val->{value} };
 							$where->{$id_field} = $cond;
 						}
-					}
-					default{
-						if ($val->{oper}){
-							$cond = { $val->{oper} => $val->{value} };
-						}else{
-							$cond = $val->{value};
-						}
-						$where->{$id_field} = $cond;
 					}
 				}
 			}
@@ -570,17 +573,28 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
     my $rs = mdb->topic->find($where);
     my $cnt = $rs->count;
     #_debug \%meta;
+	
+	my %select_system = (
+		mid			=> 1,
+		category	=> 1,
+		modified_on	=> 1
+		
+	);
+		
     my @data = $rs
       ->sort({ @sort })
-      ->fields({ _id=>0 })
+      ->fields({  %select_system, @selects, _id=>0 })
       ->skip( $start )
       ->limit($rows)
       ->all;
-    #->fields({ @selects, _id=>0, mid=>1 })
+	  
+	#_log ">>>>>>>>>>>>>>Datos: " . _dump @data;
+	
     my %scope_topics;
     my %scope_cis;
     my @topics = map { 
         my %row = %$_;
+		
         while( my($k,$v) = each %row ) {
             $row{$k} = Class::Date->new($v)->string if $k =~ /modified_on|created_on/;
             my $mt = $meta{$k}{meta_type} // '';
