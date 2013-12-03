@@ -1511,14 +1511,14 @@ sub save_data {
 } ## end sub save_data
 
 sub update_project_security {
-    my ($self, $meta, $doc )=@_;
+    my ($self, $meta, $data, $doc )=@_;
     my %project_collections; 
     for my $field ( grep { $_->{meta_type} eq 'project' && length $_->{collection} } @$meta ) {
-        my @secs = _array($doc->{ $field->{id_field} });
+        my @secs = _array($data->{ $field->{id_field} });
         push @{ $project_collections{ $field->{collection} } }, @secs if @secs;
     }
     if( keys %project_collections ) {
-        $doc->{_project_security} = \%project_collections;
+        return $doc->{_project_security} = \%project_collections;
     } else {
         delete $doc->{_project_security};
         return undef;
@@ -1534,9 +1534,10 @@ sub save_doc {
     $doc->{mid} = $mid;
     my @custom_fields = @{ $p{custom_fields} };
     my %meta = map { $_->{id_field} => $_ } @$meta;
+    my $old_doc = mdb->topic->find_one({ mid=>"$mid" }) // {};
     
     # save project collection security
-    $self->update_project_security($meta,$doc);
+    $self->update_project_security($meta, { %$old_doc, %$doc },  $doc);   # we need to send old data merged, in case the user has sent an incomplete topic (due to field security)
     
     # save topic labels 
     $doc->{id_label} = [ map  { $_->{id_label} } 
@@ -1550,6 +1551,7 @@ sub save_doc {
         $doc->{ $_->{name} } = $self->deal_with_images({ topic_mid => $mid, field => $doc->{ $_->{name} } });
     }
     
+    # treat fields based on their meta_type
     for my $field ( keys %meta ) {
         my $mt = $meta{$field}{meta_type};
         if( $mt eq 'calendar' ) {
@@ -1578,7 +1580,6 @@ sub save_doc {
 
     # detect modified fields
     require Hash::Diff;
-    my $old_doc = mdb->topic->find_one({ mid=>"$mid" }) // {};
     my $diff = Hash::Diff::left_diff( $old_doc, $doc ); # hash has only changed and deleted fields
     my $projects = [ map { $_->{mid} } () ] if %$diff; # data from doc in meta_type=project fields $topic->projects->hashref->all;
     for my $changed ( grep { exists $diff->{$_} } map { $_->{column} } @custom_fields ){

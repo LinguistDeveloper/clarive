@@ -480,6 +480,17 @@ sub user_topics_by_projects {
     return \@final_topics;
 }
 
+sub user_can_topic_by_project {
+    my ($self,$mid,$username)=@_; 
+    return 1 if $self->is_root($username);
+    my $proj_coll_ids = $self->user_projects_ids_with_collection(username=>$username);
+    my $where = { mid=>"$mid" };
+    while( my ($k,$v) = each %{ $proj_coll_ids || {} } ) {
+        $where->{"_project_security.$k"} = { '$in'=>[ undef, keys %{ $v || {} } ] }; 
+    }
+    return !!mdb->topic->find($where)->count;
+}
+
 =head2 user_projects_names( username=>Str )
 
 Returns an array of project names to which the user has access.
