@@ -358,6 +358,19 @@ sub each {
     }
 }
 
+sub topic_security {
+    my ( $self, %p ) = @_;
+    for my $doc ( mdb->topic->find->all ) {
+        my $meta = Baseliner->model('Topic')->get_meta( $doc->{mid} );
+        die "Meta not found for $doc->{mid}" unless $meta;
+        warn "Updating topic security for $doc->{mid}\n";
+        my $sec = Baseliner->model('Topic')->update_project_security($meta,$doc);
+        warn _dump($sec);
+        #mdb->topic->save( $doc );
+    }
+}
+    
+    
 sub topic {
     my ( $self, %p ) = @_;
     
