@@ -9,7 +9,7 @@
     var title = is_new ? _('New Search') : lc_node.text;
     var lc_tree = lc_node.ownerTree;
     var tree_all_loader = new Baseliner.TreeLoader({
-        dataUrl: '/ci/report/all_fields',
+        dataUrl: '/ci/report/all_fields'
         //baseParams: { id_rule: id_rule },
         //requestMethod:'GET',
         //uiProviders: { 'col': Ext.tree.ColumnNodeUI }
@@ -51,25 +51,22 @@
         attr.icon = '/static/images/icons/arrow-'+icon+'.gif';
         node.setIcon( attr.icon );
     }
-
+    
     var edit_value = function(node){
         var attr = node.attributes;
         var pn = node.parentNode; // should be where_field
-        //console.log( pn );
-        //form_value.show();
-        //console.log( node );
         var oper_all = [ ['','='], ['$ne','<>'],['$lt','<'],['$lte','<='],['$gt','>'],['$gte','>='] ];
         var oper_in = [ ['$in','IN'], ['$nin','NOT IN'] ];
-        var oper_like = [ ['like','LIKE'], ['not_like','NOT LIKE'] ];
+        var oper_string = [ ['','='], ['$ne','<>'],['like','LIKE'], ['not_like','NOT LIKE'] ];
         var oper_by_type = oper_all;
         var field = { xtype:'textarea', name:'value', fieldLabel: pn.text, height:60, value:attr.value==undefined?'':attr.value };
         var ftype = attr.field || attr.where;
         switch( ftype ) {
-            case 'like':
-                oper_by_type = oper_like;
+            case 'string':
+                oper_by_type = oper_string;
                 break;
             case 'number': 
-                  field={ xtype:'textfield', name:'value', maskRe:/[0-9]/, fieldLabel: pn.text, value: attr.value==undefined ? 0 : attr.value };
+                  field={ xtype:'textfield', name:'value', maskRe:/[0-9]/, fieldLabel: pn.text, value: attr.value==undefined ? 0 :  parseFloat(attr.value) };
                   break;
             case 'date': 
                   field={ xtype:'datefield', dateFormat:'Y-m-d', name:'value', fieldLabel: pn.text, value: attr.value==undefined ? '' : attr.value };
@@ -96,10 +93,13 @@
             var val = fcomp.get_save_data ? fcomp.get_save_data() : fcomp.getValue();
             var label;
             switch( ftype ) {
+                case 'string': val = val.toString(); break;
+                case 'number': val = parseFloat(val); break;
                 case 'date': val = val.format('Y-m-d').trim(); break;
                 case 'ci': 
                 case 'status': 
                     label = fcomp.get_labels().join(',');
+                    attr.options = fcomp.get_labels();
             }
             attr.value = val;
             node.setText( String.format('{0} {1}', oper.getRawValue(), label || attr.value) );
@@ -139,7 +139,7 @@
             Ext.apply( node.attributes, vals );
             node.setText( String.format('{0}', vals.header ) );
         };
-
+    
         form_value.removeAll();
         form_value.add([ header, width, gridlet, meta_type, data_key ]);
         form_value.items.each(function(fi){
@@ -233,6 +233,7 @@
                 } else if( n.attributes.category ) {
                     copy.setText( String.format('{0}: {1}', n.attributes.category.name, n.attributes.name_field ) );
                 }
+                
                 //copy.setIcon( icon );
                 //console.log( copy );
                 ev.dropNode = copy;
@@ -288,17 +289,18 @@
         items: [ tree_all, tree_selected ]
     });
     var seltab = new Ext.Panel({ layout:'border', items:[ form_value, selector ], title: _('Query') });
-    var sql = new Baseliner.AceEditor({ title: _('SQL'), value: lc_node.attributes.sql });
-
+    //var sql = new Baseliner.AceEditor({ title: _('SQL'), value: lc_node.attributes.sql });
+    
     var tabs = new Ext.TabPanel({ height: 600,activeTab: 0, items:[ options, seltab ]});
+    
     var tbar = [ '->',
         { text: _('Close'), icon:'/static/images/icons/close.png', handler: function(){ win.close() } },
         { text: _('Save'),icon:'/static/images/icons/save.png', 
           handler: function(){
                 var dd = options.getValues();
                 if( tree_selected_is_loaded ) dd.selected = Baseliner.encode_tree( tree_selected.root );
-                if( sql.editor ) dd.sql = sql.getValue();
-                console.dir(dd);
+                //if( sql.editor ) dd.sql = sql.getValue();
+                //console.dir(dd);
                 var action = report_mid > 0 ? 'update':'add';
                 var data = { action:action, data:dd };
                 if( report_mid>0 ) data.mid = report_mid;

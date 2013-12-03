@@ -19,9 +19,9 @@ params:
     readonly = meta.readonly == undefined ? true : meta.readonly;
 
 	var editor = new Baseliner.CLEditor({
-		width: '99.5%',
+		width: '99%',
 		value: data ? data[meta.bd_field] : '',
-		height: meta.height ? parseInt(meta.height) : 350,
+		height: meta.height ? parseInt(meta.height) : 397,
 		submitValue: false
 	});
 
