@@ -447,7 +447,7 @@ sub user_projects_ids_with_collection {
 	}else{
 		map { 
             s{^(.*?)/}{}g; 
-            my $doc = ci->project->find_one({mid=>"$_"},{ mid=>1,_id=>0 });
+            my $doc = ci->project->find_one({mid=>"$_"},{ collection=>1, mid=>1,_id=>0 });
             $sec_projects->{$doc->{collection}}{$_} = 1 if $doc;
         } $self->user_projects( %p );	
 	}
