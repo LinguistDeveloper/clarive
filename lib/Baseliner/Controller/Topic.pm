@@ -989,19 +989,20 @@ sub update_topic_labels : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
     my $topic_mid = $p->{topic_mid};
-    my $label_ids = $p->{label_ids};
+    my @label_ids = _array $p->{label_ids};
     
     try{
-        Baseliner->cache_remove( qr/:$topic_mid:/ ) if length $topic_mid;
         
         $c->model("Baseliner::BaliTopicLabel")->search( {id_topic => $topic_mid} )->delete;
         
-        foreach my $label_id (_array $label_ids){
+        foreach my $label_id (@label_ids){
             $c->model('Baseliner::BaliTopicLabel')->create( {   id_topic    => $topic_mid,
                                                                 id_label    => $label_id,
                                                             });     
         }
+        mdb->topic->update({ mid => "$topic_mid"},{ '$set' => {labels => @label_ids}});
         $c->stash->{json} = { msg=>_loc('Labels assigned'), success=>\1 };
+        Baseliner->cache_remove( qr/:$topic_mid:/ ) if length $topic_mid;
     }
     catch{
         $c->stash->{json} = { msg=>_loc('Error assigning Labels: %1', shift()), failure=>\1 }
