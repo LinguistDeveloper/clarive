@@ -1015,26 +1015,31 @@ sub update_project : Local {
     my $p = $c->req->params;
     my $topic_mid = $p->{topic_mid};
     my $id_project = $p->{id_project};
+    my $field;
 
     try{
-        my $project = $c->model('Baseliner::BaliProject')->find($id_project);
-        my $mid;
+        my $project = ci->new( $id_project );
         if( ref $project ) {
-            if($project && $project->mid){
-                $mid = $project->mid
-            }
-            else{
-                my $project_mid = master_new 'project' => $project->name => sub {
-                    my $mid = shift;
-                    $project->mid($mid);
-                    $project->update();
-                }
-            }
-            my $topic = $c->model('Baseliner::BaliTopic')->find( $topic_mid );
-            $topic->add_to_projects( $project, { rel_type=>'topic_project' } );
-        } # TODO invalid
-        
-        $c->stash->{json} = { msg=>_loc('Project added'), success=>\1 };
+            my $meta = $c->model('Topic')->get_meta( $topic_mid );
+            _fail _loc 'No metadata found for this topic (%1)', $topic_mid unless ref $meta eq 'ARRAY';
+            $field = [ 
+                sort { ($a->{field_order}//0) cmp ($b->{field_order}//0) } 
+                grep { !defined $_->{main_field} || $_->{main_field} }  # main_field tells me this is the one to drop on 
+                grep { ( !defined $_->{collection} || $_->{collection} eq 'project') && $_->{meta_type} eq 'project' } 
+                @$meta 
+            ]->[0];
+            _fail _loc 'No project field found for this topic (%1)', $topic_mid unless $field;
+            # get current data
+            my $id_field = $field->{id_field};
+            my $doc = mdb->topic->find_one({ mid=>"$topic_mid" },{ $id_field => 1 }); 
+            _fail _loc 'Topic not found: %1', $topic_mid unless ref $doc;
+            my $fdata = $doc->{$id_field} // [];
+            push $fdata, $id_project;
+            $c->model('Topic')->update({ action=>'update', topic_mid=>$topic_mid, username=>$c->username, $id_field=>$fdata }); 
+        } else {
+            _fail _loc 'Project not found: %1', $id_project;
+        }
+        $c->stash->{json} = { msg=>_loc("Project added to field '%1'", $field->{name_field}), success=>\1 };
     }
     catch{
         $c->stash->{json} = { msg=>_loc('Error adding project: %1', shift()), failure=>\1 }
