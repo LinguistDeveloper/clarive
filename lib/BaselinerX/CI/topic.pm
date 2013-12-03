@@ -191,5 +191,21 @@ sub is_in_active_job {
     return @active_jobs;
 }
 
+sub verify_integrity {
+    my ($self)=@_;
+
+    # delete rows in mongo not found in BaliTopic
+    my $k = 0;
+    my @docs = ci->topic->find->all;
+    for (@docs) {
+      my $row = DB->BaliTopic->find( $_->{mid} );
+      if( !$row ) {
+         warn "$_->{name} (#$_->{mid}) NOT FOUND in BaliTopic\n";
+         $k++;
+         mdb->topic->remove({ _id=> $_->{_id} });
+      }
+    }
+    warn "Integrity check against BaliTopic done (invalid docs=$k).";
+}
 
 1;
