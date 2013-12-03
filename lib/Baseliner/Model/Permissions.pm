@@ -368,14 +368,10 @@ sub user_projects {
 	my $all_projects = Baseliner->model( 'Baseliner::BaliRoleUser' )->search({ username => $p{username}, ns => '/'})->first;
     my $is_root = $self->is_root( $p{username} );
 	if($all_projects || $is_root){
-		map { $_->{ns} } Baseliner->model( 'Baseliner::BaliProject' )->search()->hashref->all;
+		return _unique( map { $_->{ns} } Baseliner->model( 'Baseliner::BaliProject' )->search()->hashref->all );
 	}else{
-		_array( Baseliner->model( 'Baseliner::BaliRoleuser' )
-			->search( { username => $p{username} }, { select => [ 'ns' ] } ) ~~ sub {
-			my $rs = shift;
-			rs_hashref( $rs );
-			[ grep { length } _unique map { $_->{ ns } } $rs->all ];
-		} );
+        my @projects = map { $_->{ns}} Baseliner->model( 'Baseliner::BaliRoleuser' )->search({ username => $p{username} }, { select => [ 'ns' ] })->hashref->all;
+        return _unique( grep { length } @projects );
 	}
 }
 
@@ -437,17 +433,12 @@ Returns an array of project ids for the projects the user has access to with the
 =cut
 sub user_projects_ids_with_collection {
     my ( $self, %p ) = @_;
-	_throw 'Missing username' unless exists $p{username};
-	my $is_root = $self->is_root( $p{username} );
-	my $all_projects = Baseliner->model( 'Baseliner::BaliRoleUser' )->search({ username => $p{username}, ns => '/'})->first;
     my $sec_projects;
-	if ($all_projects || $is_root){
-		map { $sec_projects->{_ci($_->{mid})->{_ci}->{collection}}->{$_->{mid}} = 1 } Baseliner->model( 'Baseliner::BaliProject' )->search()->hashref->all;
-	}else{
-		_unique map { 
-            s{^(.*?)/}{}g; 
-            ($sec_projects->{_ci($_)->{_ci}->{collection}}->{$_} = 1 ) } $self->user_projects( %p );	
-	}
+    map { 
+        s{^(.*?)/}{}g; 
+        my $doc = mdb->master_doc->find_one({mid=>"$_"},{ collection=>1, mid=>1,_id=>0 });
+        $sec_projects->{$doc->{collection}}{$_} = 1 if $doc;
+    } $self->user_projects( %p );	
     return $sec_projects;
 }
 
@@ -487,6 +478,19 @@ sub user_topics_by_projects {
         }
     }
     return \@final_topics;
+}
+
+sub user_can_topic_by_project {
+    my ($self,%p)=@_; 
+    my $username = $p{username};
+    my $mid = $p{mid} // _fail('Missing mid');
+    return 1 if $self->is_root($username);
+    my $proj_coll_ids = $self->user_projects_ids_with_collection(username=>$username);
+    my $where = { mid=>"$mid" };
+    while( my ($k,$v) = each %{ $proj_coll_ids || {} } ) {
+        $where->{"_project_security.$k"} = { '$in'=>[ undef, keys %{ $v || {} } ] }; 
+    }
+    return !!mdb->topic->find($where)->count;
 }
 
 =head2 user_projects_names( username=>Str )

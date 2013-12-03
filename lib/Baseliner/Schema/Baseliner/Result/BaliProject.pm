@@ -83,6 +83,7 @@ __PACKAGE__->master_setup( 'repositories', ['project','mid'] => ['repository','B
 
 sub id { $_[0]->mid; }   # for backwards compatibility
 
+# used in LcController to generate the tree
 sub releases {
     my ($self ) = @_;
 

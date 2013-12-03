@@ -176,7 +176,7 @@ Baseliner.TopicBox = Ext.extend( Ext.ux.form.SuperBoxSelect, {
     displayField: 'name',
     hiddenName: 'projects',
     valueField: 'mid',
-    stackItems: true,
+    // stackItems: true,
     initComponent: function(){
         var self = this;
         self.tpl = new Ext.XTemplate( '<tpl for=".">',
@@ -188,7 +188,7 @@ Baseliner.TopicBox = Ext.extend( Ext.ux.form.SuperBoxSelect, {
         self.displayFieldTpl = new Ext.XTemplate( '<tpl for=".">',
             '<div class="bl-text-over" title="{title}">',
             '<span class="bl-label" style="background: {color}; cursor:pointer;" onclick="javascript:Baseliner.show_topic_colored({mid}, \'{name}\', \'{color}\');">{short_name}</span>',
-            '<span style="padding-left:4px">{title}</span>',
+            // '<span style="padding-left:4px">{title}</span>',
             '</div></tpl>' );
         
         Baseliner.TopicBox.superclass.initComponent.call(this);
@@ -367,6 +367,7 @@ Baseliner.Topic.StoreList = Ext.extend( Baseliner.JsonStore, {
             {  name: 'references_out' },
             {  name: 'referenced_in' },
             {  name: 'directory' },
+            {  name: 'current_job' },
             {  name: 'user_seen' },
             {  name: 'sw_edit'},
             {  name: 'modified_on', type: 'date', dateFormat: 'c' },        

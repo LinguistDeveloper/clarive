@@ -61,6 +61,7 @@ sub ts { Util->_now() }
 sub now { Class::Date->now->to_tz( Util->_tz() ) }
 sub in  { shift; {  '$in' => [ map { ref $_ eq 'HASH' ? "$_->{mid}" : "$_" } Util->_array( @_ ) ] } }
 sub nin { shift; { '$nin' => [ map { ref $_ eq 'HASH' ? "$_->{mid}" : "$_" } Util->_array( @_ ) ] } }
+sub str { shift; [ map { defined $_ ? "$_" : undef } Util->_array( @_ ) ] }
 
 sub find {
     my ($self,$mid)=@_;

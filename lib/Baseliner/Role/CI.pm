@@ -341,11 +341,12 @@ sub load {
     _fail _loc( "Missing mid %1", $mid ) unless length $mid;
     # in scope ? 
     my $scoped = $Baseliner::CI::mid_scope->{ $mid } if $Baseliner::CI::mid_scope;
-    #say STDERR "----> SCOPE $mid =" . join( ', ', keys( $Baseliner::CI::mid_scope ) );
+    say STDERR "----> SCOPE $mid =" . join( ', ', keys( $Baseliner::CI::mid_scope // {}) ) if $Baseliner::CI::mid_scope && Baseliner->debug;
     return $scoped if $scoped;
     # in cache ?
     my $cache_key = "ci:$mid:";
     my $cached = Baseliner->cache_get( $cache_key );
+    Util->_error( "Cached $mid" ) if $cached;
     return $cached if $cached;
 
     if( !$data ) {
@@ -981,6 +982,27 @@ sub all_cis {
     return @cis;
 }
 
+
+# TODO consider returning a collection for ci->[collection] ? 
+sub find {
+    my ($self,$where,@rest) = @_;
+    $where //= {};
+    if( ref($where) ne 'HASH' && length $where ) {  
+        $where = { mid=>mdb->in($where) };
+    }
+    $where->{collection} //= $self->collection;
+    return mdb->master_doc->find($where,@rest);
+}
+
+sub find_one {
+    my ($self,$where,@rest) = @_;
+    $where //= {};
+    if( ref($where) ne 'HASH' && length $where ) {
+        $where = { mid=>mdb->in($where) };
+    }
+    $where->{collection} //= $self->collection;
+    return mdb->master_doc->find_one($where,@rest);
+}
 
 sub search_cis {
     my ($class,%p) = @_;

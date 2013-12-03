@@ -52,7 +52,7 @@ sub run {
         bali_dashboard       => 'dashboard',
         bali_dashboard_role  => 'dashboard_role',
         bali_event           => { coll=>'event', seq=>1 },
-        bali_event_rules     => { coll=>'event_log', , seq=>1, capped=>1, size=>(1024*1024*50), max=>1000 },
+        bali_event_rules     => { coll=>'event_log', seq=>1, capped=>1, size=>(1024*1024*50), max=>1000 },
         bali_job             => 'job',
         # bali_job_items       => 'job_items',
         bali_label           => 'label',
@@ -358,6 +358,19 @@ sub each {
     }
 }
 
+sub topic_security {
+    my ( $self, %p ) = @_;
+    for my $doc ( mdb->topic->find->all ) {
+        my $meta = Baseliner->model('Topic')->get_meta( $doc->{mid} );
+        die "Meta not found for $doc->{mid}" unless $meta;
+        warn "Updating topic security for $doc->{mid}\n";
+        my $sec = Baseliner->model('Topic')->update_project_security($meta,$doc);
+        warn _dump($sec);
+        mdb->topic->save( $doc );
+    }
+}
+    
+    
 sub topic {
     my ( $self, %p ) = @_;
     

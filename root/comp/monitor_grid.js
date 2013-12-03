@@ -9,7 +9,8 @@
     use Baseliner::Sugar;
     my $view_natures = config_value('job_new.view_natures');
 </%perl>
-(function(){
+(function(params){
+    if( !params ) params = {};
     var view_natures = <% $view_natures ? 'false' : 'true' %>; 
    
     // Eric
@@ -318,7 +319,7 @@
     var store = new Baseliner.GroupingStore({
             reader: reader,
             url: '/job/monitor_json',
-            baseParams: { limit: ps, query_id: '<% $query_id %>' },
+            baseParams: { limit: ps, query_id: '<% $query_id %>', query: params.query },
             remoteSort: true,
             sortInfo: { field: 'starttime', direction: "DESC" },
             groupField: group_field
@@ -1085,4 +1086,4 @@
         autorefresh.stop(task);
     });
     return grid;
-})();
+})

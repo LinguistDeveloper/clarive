@@ -496,6 +496,22 @@ sub status_icon {
     }
 }
 
+sub verify_integrity {
+    my ($self)=@_;
+
+    my $k = 0;
+    my @docs = ci->job->find->all;
+    for (@docs) {
+      my $row = DB->BaliJob->find( $_->{id_job} );
+      if( !$row ) {
+         warn "$_->{name} NOT FOUND in BaliJob\n";
+         $k++;
+         mdb->master_doc->remove({ _id=> $_->{_id} });
+      }
+    }
+    warn "Integrity check against BaliTopic done (invalid docs=$k).";
+}
+
 1;
 
 __END__

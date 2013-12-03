@@ -319,9 +319,13 @@ around 'debug' => sub {
             my $name = $AUTOLOAD;
             my ($method) = reverse( split(/::/, $name));
             my $class = $method =~ /new|find/ ? 'Baseliner::CI' : 'Baseliner::Role::CI';
-            $method = $class . '::' . $method;
-            @_ = ( $class, @_ );
-            goto &$method;
+            if( $class->can($method) ) {
+                $method = $class . '::' . $method;
+                @_ = ( $class, @_ );
+                goto &$method;
+            } else {
+                return 'BaselinerX::CI::'.$method;
+            }
         }
     }
 
@@ -341,12 +345,18 @@ around 'debug' => sub {
                 rawmemory => [ driver => 'RawMemory', datastore => {}, max_size => 1000 ],
                 sharedmem => [ driver => 'SharedMem', size => 1_000_000, shmkey=>93894384 ],
                 redis     => [ driver => 'BaselinerRedis', namespace => 'cache', server => ( Baseliner->config->{redis}{server} // 'localhost:6379' ), debug => 0 ],
+                mongo     => [ driver => 'Mongo' ] # not CHI
         };
         my $cache_config = ref $cache_type eq 'ARRAY' 
             ? $cache_type :  ( $cache_defaults->{ $cache_type } // $cache_defaults->{fastmmap} );
         $ccache = eval {
-            require CHI;
-            CHI->new( @$cache_config );
+            if( $cache_type eq 'mongo' ) {
+                require Baseliner::Cache;
+                Baseliner::Cache->new( @$cache_config );
+            } else {
+                require CHI;
+                CHI->new( @$cache_config );
+            }
         }; 
         if( $@ ) {
             Util->_error( Util->_loc( "Error configuring cache: %1", $@ ) );
@@ -384,7 +394,7 @@ around 'debug' => sub {
     sub cache_compute { $ccache->compute( @_ ) }
     sub cache_clear { $ccache->clear }
     sub cache_remove_like { my $re=$_[1]; Baseliner->cache_remove($_) for Baseliner->cache_keys_like($re); } 
-    sub cache_keys_like { my $re=$_[1]; grep /$re/ => Baseliner->cache_keys; }
+    sub cache_keys_like { my $re=$_[1]; $re='.*' unless length $re; grep /$re/ => Baseliner->cache_keys; }
 
     if( Baseliner->debug ) {
         Baseliner->cache_clear;  # clear cache on restart
