@@ -381,6 +381,15 @@ sub topic_labels {
     }
 }
 
+sub topic_status {
+    my ( $self, %p ) = @_;
+    for my $row ( DB->BaliTopic->search->hashref->all ) {
+        warn "Updating status for topic #" . $row->{mid} . "\n";
+        Baseliner->model('Topic')->update_category( $row->{mid}, $row->{id_category} ); 
+        Baseliner->model('Topic')->update_category_status( $row->{mid}, $row->{id_category_status} );
+    }
+}
+
 sub job_status_fix {
     # fix CIs that do not have its job_status correct due to old changes directed to BaliJob, now everything goes through CI
     DB->BaliJob->search->each(sub{
