@@ -664,6 +664,10 @@ around 'finalize' => sub {
     }
 };
 
+# disconnect from mongo global just in case somebody connected during initializacion (like cache_remove)
+# otherwise mongo hell breaks loose
+$Baseliner::_mdb = undef; 
+
 =head1 NAME
 
 Baseliner - A Catalyst-based Release Management Automation framework

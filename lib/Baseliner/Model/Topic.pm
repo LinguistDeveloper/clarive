@@ -321,7 +321,7 @@ sub topics_for_user {
     
     if ( $p->{unread} ){
         my @seen = map { $_->{mid} } mdb->master_seen->find({ username=>$username })->fields({ mid=>1, _id=>0 })->all;
-        $where->{mid} = mdb->in( @seen );
+        $where->{mid} = mdb->nin( @seen );
     }
     
     if ( $p->{created_for_me} ) {

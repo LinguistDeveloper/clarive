@@ -13,7 +13,7 @@ has mongo_db_name => qw(is rw isa Any), default=>sub{ Baseliner->config->{mongo}
 has mongo         => ( is=>'ro', isa=>'MongoDB::MongoClient', lazy=>1, default=>sub{
        my $self = shift;
        require MongoDB;
-       _debug "Mongo: new connection";
+       _log "Mongo: new connection";
        MongoDB::MongoClient->new($self->mongo_client);
     });
 has db => ( is=>'ro', isa=>'MongoDB::Database', lazy=>1, default=>sub{
