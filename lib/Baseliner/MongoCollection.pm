@@ -57,6 +57,11 @@ sub clone {
     return $collname;
 }
 
+sub compact {
+    my ($self, %p) = @_;
+    $self->_db->run_command([ compact=>$self->name, %p ]);
+}
+
 sub merge_into {
     my ($self,$where,$partial,@args) = @_;
     my $doc = $self->find_one( $where ) // Util->_fail( Util->_loc('Document not found: %1', Util->_to_json($where) ) );

@@ -237,6 +237,16 @@ sub create_capped {
     mdb->db->run_command([ create=> $coll, capped=>boolean::true, size=>$p{size}//(1024*1024*20), %p ]);
 }
 
+sub compact {
+    my ($self, %p)=@_;
+    my @colls = sort grep !/\./, $self->db->collection_names;
+    for( @colls ) {
+        Util->_log( sprintf '%s: compacting collection...', $_ );
+        $self->run_command([ compact=>$_,%p ]);
+        Util->_log( sprintf '%s: finished', $_ );
+    }
+}
+
 # remove all dots and _ci from an unblessed doc
 sub clean_doc {
     my ($self,$doc) = @_;
