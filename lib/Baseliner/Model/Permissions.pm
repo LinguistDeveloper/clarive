@@ -481,7 +481,9 @@ sub user_topics_by_projects {
 }
 
 sub user_can_topic_by_project {
-    my ($self,$mid,$username)=@_; 
+    my ($self,%p)=@_; 
+    my $username = $p{username};
+    my $mid = $p{mid} // _fail('Missing mid');
     return 1 if $self->is_root($username);
     my $proj_coll_ids = $self->user_projects_ids_with_collection(username=>$username);
     my $where = { mid=>"$mid" };
