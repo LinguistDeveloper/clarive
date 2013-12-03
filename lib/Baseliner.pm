@@ -319,9 +319,13 @@ around 'debug' => sub {
             my $name = $AUTOLOAD;
             my ($method) = reverse( split(/::/, $name));
             my $class = $method =~ /new|find/ ? 'Baseliner::CI' : 'Baseliner::Role::CI';
-            $method = $class . '::' . $method;
-            @_ = ( $class, @_ );
-            goto &$method;
+            if( $class->can($method) ) {
+                $method = $class . '::' . $method;
+                @_ = ( $class, @_ );
+                goto &$method;
+            } else {
+                return 'BaselinerX::CI::'.$method;
+            }
         }
     }
 
