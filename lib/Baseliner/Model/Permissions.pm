@@ -368,14 +368,10 @@ sub user_projects {
 	my $all_projects = Baseliner->model( 'Baseliner::BaliRoleUser' )->search({ username => $p{username}, ns => '/'})->first;
     my $is_root = $self->is_root( $p{username} );
 	if($all_projects || $is_root){
-		map { $_->{ns} } Baseliner->model( 'Baseliner::BaliProject' )->search()->hashref->all;
+		return _unique( map { $_->{ns} } Baseliner->model( 'Baseliner::BaliProject' )->search()->hashref->all );
 	}else{
-		_array( Baseliner->model( 'Baseliner::BaliRoleuser' )
-			->search( { username => $p{username} }, { select => [ 'ns' ] } ) ~~ sub {
-			my $rs = shift;
-			rs_hashref( $rs );
-			[ grep { length } _unique map { $_->{ ns } } $rs->all ];
-		} );
+        my @projects = Baseliner->model( 'Baseliner::BaliRoleuser' )->search({ username => $p{username} }, { select => [ 'ns' ] })->hashref->all;
+        return _unique( grep { length } @projects );
 	}
 }
 
