@@ -462,8 +462,14 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 						}
 					};
 					when ('list') {
-						my @parse = map { $_ == '-1' ? '' : $_} _array $dynamic_filter{$id_field}->{value};
-						$cond = { $val->{oper} => \@parse };
+						my @parse = map { $_ == '-1' ? '' : $_.''} _array $dynamic_filter{$id_field}->{value};
+						if (scalar @parse > 1){
+							$cond = { $val->{oper} => \@parse };	
+						}else{
+							$cond = $parse[0];	
+						}
+						#$cond = { $val->{oper} => \@parse };
+						#$cond = mdb->in(@parse);
 						#$cond = { $val->{oper} => $dynamic_filter{$id_field}->{value} };
 					};
 					when ('string') {
