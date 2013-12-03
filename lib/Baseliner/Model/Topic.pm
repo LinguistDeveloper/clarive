@@ -1517,7 +1517,11 @@ sub update_project_security {
         my @secs = _array($doc->{ $field->{id_field} });
         push @{ $project_collections{ $field->{collection} } }, @secs if @secs;
     }
-    $doc->{_project_security} = \%project_collections if keys %project_collections;
+    if( keys %project_collections ) {
+        $doc->{_project_security} = \%project_collections;
+    } else {
+        delete $doc->{_project_security};
+    }
 }
 
 sub save_doc {
