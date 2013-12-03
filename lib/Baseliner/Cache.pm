@@ -27,7 +27,7 @@ sub remove {
 
 sub get_keys {
     my ($self,)=@_;
-    map { $_->{_id} } mdb->cache->find->fields({ _id=>1 });
+    map { $_->{_id} } mdb->cache->find->fields({ _id=>1 })->all;
 }
 
 sub compute {
