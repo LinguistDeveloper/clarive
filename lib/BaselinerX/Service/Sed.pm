@@ -84,7 +84,13 @@ sub run {
             }
         }
         push @log, "processing: $f";
-        my $ret = $self->process_file( stash=>$stash, file=>$f, patterns=>$sed->{patterns}, slurp=>$sed->{slurp} );
+        my $ret = $self->process_file(
+            stash      => $stash,
+            file       => $f,
+            output_dir => $config->{output_dir},
+            patterns   => $sed->{patterns},
+            slurp      => $sed->{slurp}
+        );
         $cnt += $ret;
         push @mods, "$f ($ret)" if $ret;
     });
@@ -107,6 +113,13 @@ Returns the count of substitutions in the file (0 to n).
 sub process_file {
     my ($self, %p ) = @_;
     my $file = $p{file} or _throw _loc('Missing file parameter');
+    my $output_file = $file;
+    if( $p{output_dir} ) {
+        Util->_mkpath( $p{output_dir} );
+        my $basename = _file( $output_file )->basename;
+        $output_file = ''. _file( $p{output_dir}, $basename );
+        _debug "sed output_file = $output_file";
+    }
 
     # save date
     my @stat = stat $file;
@@ -135,22 +148,22 @@ sub process_file {
         close $fin;
         $data = $sed_sub->($data);
         # slurp out 
-        open my $fout, '>', $file or _fail _loc('Sed: failed to write to file "%1": %2', $file, $!);;
+        open my $fout, '>', "$output_file" or _fail _loc('Sed: failed to write to file "%1": %2', "$output_file", $!);;
         print $fout $data;
         close $fout;
     } 
     else {
-        my $tmpfile = file $file . '-' . $$ . '.bak';
+        my $tmpfile = file "$output_file" . '-' . $$ . '.bak';
         open my $fout, '>', $tmpfile or _fail _loc('Sed: failed to write to file "%1": %2', $tmpfile, $!);;
         while( <$fin> ) {
             print $fout $sed_sub->($_)
         }
         close $fout;
-        unlink $file;
-        rename $tmpfile, $file;
+        unlink "$output_file";
+        rename $tmpfile, "$output_file";
     }
     # reset date
-    utime $stat[8], $stat[9], $file;
+    utime $stat[8], $stat[9], "$output_file";
     return $cnt;
 }
 
