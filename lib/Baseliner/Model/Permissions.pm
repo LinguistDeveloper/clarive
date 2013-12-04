@@ -456,23 +456,34 @@ sub user_projects_ids_with_collection {
     my ( $self, %p ) = @_;
     my $sec_projects;
     my $with_role = $p{with_role} // 0;
+    my $username = $p{username};
 
     my @projects;
-
-    if ( $p{action} ) {
-        @projects = $self->user_projects_for_action( %p, with_role => 1 );
-    } else {
-        @projects = $self->user_projects( %p, with_role => 1 );
-    }
-    map { 
-        my ($id_role,$id_project) = $_ =~ /^(.*?)\/.*\/(.*)$/;
-        my $doc = mdb->master_doc->find_one({mid=>"$id_project"},{ collection=>1, mid=>1,_id=>0 });
-        $sec_projects->{$id_role}{$doc->{collection}}{$id_project} = 1 if $doc;
-    } @projects;    
-
     my @sec;
-    for my $role ( keys %$sec_projects ) {
-        push @sec, $sec_projects->{$role};
+
+    $sec_projects = Baseliner->cache_get(":user:security:$username:");
+    @sec = Baseliner->cache_get(":user:security:roles:$username:");
+
+    if ( !$sec_projects || !@sec ) {
+        if ( $p{action} ) {
+            @projects = $self->user_projects_for_action( %p, with_role => 1 );
+        } else {
+            @projects = $self->user_projects( %p, with_role => 1 );
+        }
+        map { 
+            my ($id_role,$id_project) = $_ =~ /^(.*?)\/.*\/(.*)$/;
+            my $doc = mdb->master_doc->find_one({mid=>"$id_project"},{ collection=>1, mid=>1,_id=>0 });
+            $sec_projects->{$id_role}{$doc->{collection}}{$id_project} = 1 if $doc;
+        } @projects;    
+
+        for my $role ( keys %$sec_projects ) {
+            push @sec, $sec_projects->{$role};
+        }
+        Baseliner->cache_set(":user:security:$username:",$sec_projects);
+        Baseliner->cache_get(":user:security:roles:$username:", \@sec);
+        _debug "NO CACHE for :user:security:$username:";
+    } else {
+        _debug "CACHE HIT for :user:security:$username:";
     }
 	if ( $with_role ) {
         return $sec_projects;
@@ -535,10 +546,10 @@ sub user_roles_for_topic {
     my ($self,%p)=@_; 
     my $username = $p{username};
     my $mid = $p{mid};
-    my $security = $p{security};
 
+    
+    my $proj_coll_roles = $self->user_projects_ids_with_collection(%p, with_role => 1);
 
-    my $proj_coll_roles = $security || $self->user_projects_ids_with_collection(%p, with_role => 1);
     my @roles;
     for my $role ( keys %{$proj_coll_roles} ) {
         my $where = { mid=>"$mid" };
