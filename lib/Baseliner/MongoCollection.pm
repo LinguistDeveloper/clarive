@@ -1,5 +1,6 @@
 package Baseliner::MongoCollection;
 use Moose;
+use Try::Tiny;
 
 has _collection => ( is=>'ro', isa=>'MongoDB::Collection', required=>1, handles=>qr/.*/ );
 has _db => ( is=>'ro', isa=>'Object', weak_ref=>1 );
@@ -42,9 +43,23 @@ sub search_index {
 
 sub clone {
     my ($self,$collname)=@_;
+    $collname //= $self->name . '_' . Util->_nowstamp;
     my $coll = mdb->collection($collname);
     Util->_fail( Util->_loc('Collection %1 already has rows in it, cannot clone')) if $coll->count; 
-    $coll->insert($_) for $self->find->all;
+    for my $doc ( $self->find->all ) {
+        try {
+            $coll->insert($doc) 
+        } catch {
+            my $err = shift;
+            Util->_error(sprintf 'Could not clone document with id %s (mid=%s). Skipped', $doc->{_id}, $doc->{mid} );
+        };
+    }
+    return $collname;
+}
+
+sub compact {
+    my ($self, %p) = @_;
+    $self->_db->run_command([ compact=>$self->name, %p ]);
 }
 
 sub merge_into {

@@ -558,7 +558,7 @@ _debug( $where );
 
 sub update {
     my ( $self, $p ) = @_;
-    my $action = $p->{action};
+    my $action = delete $p->{action};
     my $return;
     my $topic_mid;
     my $status;
@@ -1556,7 +1556,7 @@ sub save_doc {
     
     # save topic labels 
     $doc->{id_label} = [ map  { $_->{id_label} } 
-        DB->BaliTopicLabel->search({ id_topic=>7499 },{ select=>'id_label' })->hashref->all ];
+        DB->BaliTopicLabel->search({ id_topic=>"$mid" },{ select=>'id_label' })->hashref->all ];
 
     # clear master_seen for everyone else
     mdb->master_seen->remove({ mid=>"$mid", username=>{ '$ne' => $p{username} } });
@@ -1680,7 +1680,7 @@ sub update_category {
 
 # update status in mongo
 sub update_category_status {
-    my ($self,$mid_or_doc, $id_category_status ) = @_; 
+    my ($self, $mid_or_doc, $id_category_status ) = @_; 
     my $doc = ref $mid_or_doc ? $mid_or_doc : mdb->topic->find_one({ mid=>$mid_or_doc });
     _fail _loc "Cannot update topic category status, topic not found: %1", $mid_or_doc unless ref $doc;
 
@@ -1706,6 +1706,19 @@ sub update_category_status {
     return $doc;
 }
     
+sub update_projects {
+    my ($self,$mid) = @_; 
+    my @rels = DB->BaliMasterRel->search({ rel_type=>'topic_project', from_mid=>"$mid" })->hashref->all;
+    my %prjs;
+    for my $d ( @rels ) {
+       push @{ $prjs{ $d->{rel_field} } }, $d->{to_mid}; 
+    }
+    my $doc = mdb->topic->find_one({ mid=>"$mid" });
+    _fail _loc 'Topic document not found for topic mid %1', $mid;
+    $doc = { %$doc, %prjs }; 
+    mdb->topic->save( $doc );
+}
+
 sub deal_with_images{
     #params:  topic_mid, field
     my ($self, $params ) = @_;

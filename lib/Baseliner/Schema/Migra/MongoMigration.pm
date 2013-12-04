@@ -364,9 +364,48 @@ sub topic_security {
         my $meta = Baseliner->model('Topic')->get_meta( $doc->{mid} );
         die "Meta not found for $doc->{mid}" unless $meta;
         warn "Updating topic security for $doc->{mid}\n";
-        my $sec = Baseliner->model('Topic')->update_project_security($meta,$doc);
+        my $sec = Baseliner->model('Topic')->update_project_security($meta,$doc,$doc);
         warn _dump($sec);
         mdb->topic->save( $doc );
+    }
+}
+
+sub topic_labels {
+    my ( $self, %p ) = @_;
+    for my $doc ( mdb->topic->find->all ) {
+        warn "Updating labels for topic #$doc->{mid}\n";
+        $doc->{id_label} = [ 
+            map  { $_->{id_label} } 
+            DB->BaliTopicLabel->search({ id_topic=>"$doc->{mid}" },{ select=>'id_label' })->hashref->all ];
+        mdb->topic->save( $doc );
+    }
+}
+
+sub topic_status {
+    my ( $self, %p ) = @_;
+    for my $row ( DB->BaliTopic->search->hashref->all ) {
+        warn "Updating status for topic #" . $row->{mid} . "\n";
+        Baseliner->model('Topic')->update_category( $row->{mid}, $row->{id_category} ); 
+        Baseliner->model('Topic')->update_category_status( $row->{mid}, $row->{id_category_status} );
+    }
+}
+
+sub job_status_fix {
+    # fix CIs that do not have its job_status correct due to old changes directed to BaliJob, now everything goes through CI
+    DB->BaliJob->search->each(sub{
+       my $r = shift;
+       my $ci = ci->new( ns=>'job/' . $r->id );
+       if( $ci ) {
+           $ci->status( $r->status );
+           $ci->step( $r->step );
+           $ci->save;
+       }
+    });
+}
+    
+sub topic_numify {
+    my ( $self, %p ) = @_;
+    for my $doc ( mdb->topic->find->all ) {
     }
 }
     
