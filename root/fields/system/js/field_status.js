@@ -16,7 +16,8 @@ params:
 	var data = params.topic_data;
 	
     var store_category_status = new Baseliner.Topic.StoreCategoryStatus({
-        url:'/topic/list_admin_category'
+        url:'/topic/list_admin_category',
+        baseParams: { topic_mid: data.topic_mid}
     });
 	
 //    var combo_status = new Ext.form.ComboBox({

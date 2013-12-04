@@ -702,7 +702,7 @@ sub append_category {
 
 sub next_status_for_user {
     my ($self, %p ) = @_;
-    my $user_roles;
+    my @user_roles;
     my $username = $p{username};
     my $topic_mid = $p{topic_mid};
     my $where = { id_category => $p{id_category} };
@@ -711,8 +711,8 @@ sub next_status_for_user {
     my @to_status;
     
     if ( !$is_root ) {
-        $user_roles = Baseliner->model('Baseliner::BaliRoleUser')->search({ username => $username },{ select=>'id_role' } )->as_query;
-        $where->{id_role} = { -in => $user_roles };
+        @user_roles = Baseliner->model('Permissions')->user_roles_for_topic( username => $username, mid => $topic_mid  );
+        $where->{id_role} = { -in => \@user_roles };
         
        my @all_to_status = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
             $where,

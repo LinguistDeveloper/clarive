@@ -526,7 +526,7 @@ sub user_can_topic_by_project {
 sub user_roles_for_topic {
     my ($self,%p)=@_; 
     my $username = $p{username};
-    my $mid = $p{mid} // _fail('Missing mid');
+    my $mid = $p{mid};
     my $security = $p{security};
 
 
