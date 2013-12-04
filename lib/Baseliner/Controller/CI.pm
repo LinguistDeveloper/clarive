@@ -544,9 +544,11 @@ sub store : Local {
     if( my $class = $p->{class} // $p->{classname} // $p->{isa} ) {
         if( $p->{security} ){  #Parámetro desde informes
             my @security;
-            my $collections = $c->model('Permissions')->user_projects_ids_with_collection( username=>$c->username );
-            if(exists $collections->{$class}){
-                @security = keys $collections->{$class};    
+            my @cols_roles = $c->model('Permissions')->user_projects_ids_with_collection( username=>$c->username );
+            for my $collections ( @cols_roles ) {
+                if(exists $collections->{$class}){
+                    push @security, keys $collections->{$class};    
+                }
             }
             $mids = [ _array($mids), @security];
         }
