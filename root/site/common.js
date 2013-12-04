@@ -2765,6 +2765,7 @@ Baseliner.cols_templates = {
       }},
       checkbox  : function(){ return { align: 'center', width: 10, editor: new Ext.form.Checkbox({submitValue: false}), default_value: false, renderer: Baseliner.render_checkbox } },
       ci_box    : function(p){ return { editor: Baseliner.ci_box( p || {} ), default_value:'' } },
+      password  : function(){ return { editor: new Ext.form.TextField({submitValue: false, inputType:'password' }), default_value:'', renderer: function(v){ return '********' } } },
       textarea  : function(){ return { editor: new Ext.form.TextArea({submitValue: false}), default_value:'', renderer: Baseliner.render_wrap } }
 };
 
@@ -2829,16 +2830,17 @@ Baseliner.CSV = Ext.extend( Ext.util.Observable, {
             if( replace ) {
                 self.store.removeAll();
             }
-            var rec={};
             Ext.each( tab, function(row) {
                 var i=0;
+                var rec={};
                 self.store.fields.each(function(field){
                     var v = row[i++];
-                   rec[ field.name ] = v==undefined ? '' : v;
+                    rec[ field.name ] = v==undefined ? '' : v;
                 });
                 var r = new self.store.recordType( rec );
                 self.store.add( r );
             });
+            self.store.commitChanges();
         }
         return tab;
     },
