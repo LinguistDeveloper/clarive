@@ -202,7 +202,7 @@ sub write_pid {
     my ($self) = @_;
     my $file = $self->pid_file;
     open my $ff, '>', $file or _error( _loc('Could not write pid file for job: %1', $!) );
-    print $ff $self->pid;
+    print $ff $$;
     close $ff;
 }
 

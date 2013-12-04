@@ -37,17 +37,6 @@ register 'config.job.daemon' => {
 };
 
 
-sub check_rollbacks {
-    my ($self)=@_;
-    my @rs = DB->BaliJob->search({ 
-        status => 'ROLLBACK'
-    });
-    foreach my $r ( @rs ) {
-        $r->status('READY');
-        $r->update;
-    }
-}
-
 # daemon - listens for new jobs
 sub job_daemon {
     my ($self,$c,$config)=@_;
@@ -76,8 +65,11 @@ sub job_daemon {
         my @query_roll = (
                 # Immediate chain (PRE, POST or now=1 )
                 { 
-                    status => 'READY',
-                    '-or' => [ { step => 'PRE' }, { step => 'POST' }, { now=>1 } ]
+                    '-or' => [ 
+                        { step => 'PRE', status=>'READY' }, 
+                        { step => 'POST', status=>['READY','ERROR','KILLED','EXPIRED'] }, 
+                        { now=>1 } 
+                    ]
                     #step=>{ '-or' => ['PRE', 'POST'] },
                 }, 
                 # Scheduled chain (RUN and now<>0 )
