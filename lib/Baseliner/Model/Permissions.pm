@@ -278,6 +278,7 @@ sub user_actions_list {
     my ( $self, %p ) = @_;
     _check_parameters( \%p, qw/username/ );
     my $username = $p{username};
+    my $actionSQL = $p{action};
     my $action   = delete $p{action} // qr/.*/;
     my $mid = $p{mid};
     my $regexp_action;
@@ -303,8 +304,12 @@ sub user_actions_list {
         @actions = map { $_->{key} } Baseliner->model( 'Actions' )->list;
     } elsif ( $mid ) {
         @actions = $self->user_actions_by_topic( %p );
+        _log "por mid";
     } else {
-        @actions = map { $action } DB->BaliRoleuser->search(
+        _log "sin mid";
+
+        _log $regexp_action;
+        @actions = map { $_->{'action'} } DB->BaliRoleuser->search(
 
             $where,
             {
