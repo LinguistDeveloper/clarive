@@ -1115,6 +1115,9 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                             info.params.topic_mid = res.topic_mid;
                             info.title = title;
                             self.setTitle( title );    
+                            self.form_is_loaded = false;
+                            self.show_form();
+                            self.view_is_dirty = true; 
                         }
                         self.view_is_dirty = true;
                         if( Ext.isFunction(opts.success) ) opts.success(res);
