@@ -2764,8 +2764,109 @@ Baseliner.cols_templates = {
           renderer: Baseliner.render_date
       }},
       checkbox  : function(){ return { align: 'center', width: 10, editor: new Ext.form.Checkbox({submitValue: false}), default_value: false, renderer: Baseliner.render_checkbox } },
+      ci_box    : function(p){ return { editor: Baseliner.ci_box( p || {} ), default_value:'' } },
+      password  : function(){ return { editor: new Ext.form.TextField({submitValue: false, inputType:'password' }), default_value:'', renderer: function(v){ return '********' } } },
       textarea  : function(){ return { editor: new Ext.form.TextArea({submitValue: false}), default_value:'', renderer: Baseliner.render_wrap } }
 };
+
+
+Baseliner.CSV = Ext.extend( Ext.util.Observable, {
+    /*
+     * Andy VanWagoner (http://stackoverflow.com/questions/1293147/javascript-code-to-parse-csv-data)
+     */
+    parse: function(csv, reviver) {
+        reviver = reviver || function(r, c, v) { return v; };
+        var chars = csv.split(''), c = 0, cc = chars.length, start, end, table = [], row;
+        while (c < cc) {
+                table.push(row = []);
+                while (c < cc && '\r' !== chars[c] && '\n' !== chars[c]) {
+                        start = end = c;
+                        if ('"' === chars[c]){
+                                start = end = ++c;
+                                while (c < cc) {
+                                        if ('"' === chars[c]) {
+                                                if ('"' !== chars[c+1]) { break; }
+                                                else { chars[++c] = ''; } // unescape ""
+                                        }
+                                        end = ++c;
+                                }
+                                if ('"' === chars[c]) { ++c; }
+                                while (c < cc && '\r' !== chars[c] && '\n' !== chars[c] && ',' !== chars[c]) { ++c; }
+                        } else {
+                                while (c < cc && '\r' !== chars[c] && '\n' !== chars[c] && ',' !== chars[c]) { end = ++c; }
+                        }
+                        end = reviver(table.length-1, row.length, chars.slice(start, end).join(''));
+                        row.push(isNaN(end) ? end : +end);
+                        if (',' === chars[c]) { ++c; }
+                }
+                if ('\r' === chars[c]) { ++c; }
+                if ('\n' === chars[c]) { ++c; }
+        }
+        return table;
+    },
+    constructor: function(config){
+        Ext.apply(this, config);
+        Baseliner.CSV.superclass.constructor.call(this);
+    },
+    stringify: function(table, replacer) {
+        replacer = replacer || function(r, c, v) { return v; };
+        var csv = '', c, cc, r, rr = table.length, cell;
+        for (r = 0; r < rr; ++r) {
+                if (r) { csv += '\r\n'; }
+                for (c = 0, cc = table[r].length; c < cc; ++c) {
+                        if (c) { csv += ','; }
+                        cell = replacer(r, c, table[r][c]);
+                        if (/[,\r\n"]/.test(cell)) { cell = '"' + cell.replace(/"/g, '""') + '"'; }
+                        csv += (cell || 0 === cell) ? cell : '';
+                }
+        }
+        return csv;
+    },
+    load: function(csv, replace){
+        var self = this;
+        var tab = self.parse( csv ); 
+        // load data into a store ? 
+        if( self.store ) {
+            if( replace ) {
+                self.store.removeAll();
+            }
+            Ext.each( tab, function(row) {
+                var i=0;
+                var rec={};
+                self.store.fields.each(function(field){
+                    var v = row[i++];
+                    rec[ field.name ] = v==undefined ? '' : v;
+                });
+                var r = new self.store.recordType( rec );
+                self.store.add( r );
+            });
+            self.store.commitChanges();
+        }
+        return tab;
+    },
+    show: function(){
+        var self = this;
+        var csv = self.stringify( self.value || '' );
+        var ta = new Baseliner.MonoTextArea({ value: csv || '' });
+        var button_load = new Baseliner.Grid.Buttons.Add({ text: _('Add Rows'),
+            handler: function() { self.load(ta.getValue()) }
+        });
+        var button_replace = new Ext.Button({ text: _('Replace'), icon:'/static/images/icons/edit.png', 
+            handler: function() { self.load(ta.getValue(), true) }
+        });
+        var button_close = new Ext.Button({ text: '', tooltip: _('Close'), icon:'/static/images/icons/close.png', 
+            handler: function() { win.close() }
+        });
+        var win = new Baseliner.Window({
+            modal: true,
+            layout: 'fit',
+            tbar:[ '->', button_load, button_replace, button_close ],
+            width: 800, height: 300,
+            items: ta 
+        });
+        win.show();
+    }
+});
 
 Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
     width: '100%',
@@ -2810,11 +2911,12 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
                         ct.header = _(col_s[0]);
                         ct.dataIndex = Baseliner.name_to_id( col_s[0] );
                     }
-                    store_field.name = ct.dataIndex;
-                    if( col_s[1] == 'datefield' )  {
-                        store_field.type =  'date';
-                        store_field.dateFormat = 'Y-m-d 00:00:00';
-                    }
+                    ct.meta_col = col_s[1];
+                }
+                store_field.name = ct.dataIndex;
+                if( ct.meta_col == 'datefield' )  {
+                    store_field.type =  'date';
+                    store_field.dateFormat = 'Y-m-d 00:00:00';
                 }
                 cols.push( ct );
                 fields.push( store_field );
@@ -2880,6 +2982,14 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
             handler: function() { self.del_row() }
         });
         
+        var button_load = new Ext.Button({
+            text: '',
+            tooltip: _('Load'),
+            icon: '/static/images/icons/csv.png',
+            disabled: self.readOnly ? self.readOnly : false,
+            handler: function() { self.show_load_csv() }
+        });
+        
         // use RowEditor for editing
         if( self.use_row_editor ) {
             self.editor = new Ext.ux.grid.RowEditor({
@@ -2903,7 +3013,9 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
         self.tbar = [
             button_add,
             '-',
-            button_delete
+            button_delete,
+            '-',
+            button_load
         ];
 
         Baseliner.GridEditor.superclass.initComponent.call(this);
@@ -2957,6 +3069,25 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
             self.store.commitChanges();
             self.getView().refresh();
         });
+    },
+    show_load_csv : function(){
+        var self = this;
+        var csv = new Baseliner.CSV({ store: self.store, value: self.get_array_in_array() });
+        csv.show();
+    },
+    get_array_in_array : function(){
+        var self = this;
+        var arr = [];
+        self.store.each( function(r) {
+			if(r.data[self.fields[0].name] != '') {
+                var arr2 = [];
+                Ext.iterate( r.data, function(k,v){
+                    arr2.push( v );
+                });
+                arr.push( arr2 );
+            }
+        });
+        return arr;
     },
     get_save_data : function(){
         var self = this;
