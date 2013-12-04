@@ -860,6 +860,7 @@ register 'statement.project.loop' => {
         sprintf(q{
             for my $project ( project_changes( $stash ) ) { 
                 $stash->{project} = $project->name;
+                $stash->{project_mid} = $project->mid;
                 $stash->{project_lc} = lc $project->name;
                 $stash->{project_uc} = uc $project->name;
                 my $vars = variables_for_bl( $project, $stash->{bl} );
