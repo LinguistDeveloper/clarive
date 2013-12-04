@@ -334,7 +334,7 @@ sub user_actions_by_topic {
         my @actions = _array(Baseliner->cache_get(":role:actions:$role:"));
         if ( !@actions ) {
            @actions = map { $_->{action} } DB->BaliRoleaction->search({ id_role => $role })->hashref->all;
-           Baseliner->cache_set(":role:actions:$role",\@actions);
+           Baseliner->cache_set(":role:actions:$role:",\@actions);
         }
         push @return, @actions;
     }
