@@ -217,19 +217,25 @@ sub user_has_action {
     my ($self, %p ) = @_;
     _check_parameters( \%p, qw/username action/ ); 
     my $username = $p{username};
-    my $action = $p{action};
-    push my @bl, _array $p{bl}, '*';
-    
-    return 1 if $self->is_root( $username ) && $action ne 'action.surrogate';
+    my $action = delete $p{action};
 
-    return Baseliner->model('Baseliner')->dbi->value(qq{
-        select count(*)
-        from bali_roleuser ru, bali_roleaction ra
-        where ru.USERNAME = ?
-          and ru.ID_ROLE = ra.ID_ROLE
-          and ra.ACTION = ?
-          and ra.bl in (} . join( ',', map { '?' } @bl ) . qq{)
-    },$username, $p{action}, @bl);
+    if ( $p{mid} ) {
+        my @return = grep { /$action/ } $self->user_actions_by_topic(%p);
+        return @return;
+    } else {
+        push my @bl, _array $p{bl}, '*';
+        
+        return 1 if $self->is_root( $username ) && $action ne 'action.surrogate';
+
+        return Baseliner->model('Baseliner')->dbi->value(qq{
+            select count(*)
+            from bali_roleuser ru, bali_roleaction ra
+            where ru.USERNAME = ?
+              and ru.ID_ROLE = ra.ID_ROLE
+              and ra.ACTION = ?
+              and ra.bl in (} . join( ',', map { '?' } @bl ) . qq{)
+        },$username, $action, @bl);        
+    }
 }
 
 =head2 user_has_action username=>Str, action=>Str
@@ -264,7 +270,7 @@ sub user_has_any_action {
     
     return 1 if $self->is_root( $username );
 
-    my @actions = $self->user_actions_list( username => $username, bl => $bl, action => $action );
+    my @actions = $self->user_actions_list( %p );
     return scalar @actions;
 }
 
@@ -272,7 +278,8 @@ sub user_actions_list {
     my ( $self, %p ) = @_;
     _check_parameters( \%p, qw/username/ );
     my $username = $p{username};
-    my $action   = $p{action} // qr/.*/;
+    my $action   = delete $p{action} // qr/.*/;
+    my $mid = $p{mid};
     my $regexp_action;
 
     if ( !ref $action ) {
@@ -294,9 +301,10 @@ sub user_actions_list {
     my @actions;
     if ( $self->is_root( $username ) ) {
         @actions = map { $_->{key} } Baseliner->model( 'Actions' )->list;
-
+    } elsif ( $mid ) {
+        @actions = $self->user_actions_by_topic( %p );
     } else {
-        @actions = map { $_->{action} } DB->BaliRoleuser->search(
+        @actions = map { $action } DB->BaliRoleuser->search(
 
             $where,
             {
@@ -310,26 +318,23 @@ sub user_actions_list {
     return grep { $_ =~ $regexp_action } @actions;
 } ## end sub user_actions_list
 
-# sub user_has_action {
-    # my ($self, %p ) = @_;
-    # _check_parameters( \%p, qw/username action/ ); 
-    # my $username = $p{username};
-    # my $action   = $p{action};
-    # return 1 if $self->is_root( $username ) && $action ne 'action.surrogate';
-    # my @users = $self->list( action=> $action, ns=>$p{ns}, bl=>$p{bl} );
+sub user_actions_by_topic {
+    my ( $self, %p ) = @_;
 
-    # my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$username }, { prefetch=>['role'] } );
-    # rs_hashref( $rs );
-    # my $mail="";
-    # if ( my $r=$rs->next ) {
-        # $mail = $r->{role}->{mailbox} ;
-    # }
+    my @return;
 
-    # my $ret = 0;
-    # $ret = scalar grep(/$mail/, @users) if $mail;
-    # $ret += scalar grep /$username/, @users;
-    # return $ret;
-# }
+    my @roles = $self->user_roles_for_topic( %p );
+    
+    for my $role ( @roles ) {
+        my @actions = _array(Baseliner->cache_get(":role:actions:$role:"));
+        if ( !@actions ) {
+           @actions = map { $_->{action} } DB->BaliRoleaction->search({ id_role => $role })->hashref->all;
+           Baseliner->cache_set(":role:actions:$role",\@actions);
+        }
+        push @return, @actions;
+    }
+    return _unique @return;
+}
 
 =head2 user_has_project( username=>Str, project_name=>Str | project_id )
 
@@ -365,12 +370,20 @@ ie, if the user has ANY role in them.
 sub user_projects {
     my ( $self, %p ) = @_;
     _throw 'Missing username' unless exists $p{ username };
-	my $all_projects = Baseliner->model( 'Baseliner::BaliRoleUser' )->search({ username => $p{username}, ns => '/'})->first;
     my $is_root = $self->is_root( $p{username} );
-	if($all_projects || $is_root){
-		return _unique( map { $_->{ns} } Baseliner->model( 'Baseliner::BaliProject' )->search()->hashref->all );
-	}else{
-        my @projects = map { $_->{ns}} Baseliner->model( 'Baseliner::BaliRoleuser' )->search({ username => $p{username} }, { select => [ 'ns' ] })->hashref->all;
+    if($is_root){
+        return _unique( map { $p{with_role}?"1/".$_->{ns}:$_->{ns} } Baseliner->model( 'Baseliner::BaliProject' )->search()->hashref->all );
+    }else{
+        my @projects;
+    	my @all_projects = Baseliner->model( 'Baseliner::BaliRoleUser' )->search({ username => $p{username}, ns => '/'})->hashref->all;
+        if ( @all_projects ) {
+            my @projs = Baseliner->model( 'Baseliner::BaliProject' )->search()->hashref->all;
+            for my $role_all ( @all_projects ) {
+                my $id_role = $role_all->{id_role};
+                push @projects, map { $p{with_role}?$id_role."/".$_->{ns}:$_->{ns} } @projs;
+            }
+        }
+        push @projects, map { $p{with_role}?$_->{id_role}."/".$_->{ns}:$_->{ns}} Baseliner->model( 'Baseliner::BaliRoleuser' )->search({ username => $p{username}, ns => {'<>','/'} }, { select => [ 'ns','id_role' ] })->hashref->all;
         return _unique( grep { length } @projects );
 	}
 }
@@ -434,63 +447,101 @@ Returns an array of project ids for the projects the user has access to with the
 sub user_projects_ids_with_collection {
     my ( $self, %p ) = @_;
     my $sec_projects;
+    my $with_role = $p{with_role} // 0;
+
+    my @projects;
+
+    if ( $p{action} ) {
+        @projects = $self->user_projects_for_action( %p, with_role => 1 );
+    } else {
+        @projects = $self->user_projects( %p, with_role => 1 );
+    }
     map { 
-        s{^(.*?)/}{}g; 
-        my $doc = mdb->master_doc->find_one({mid=>"$_"},{ collection=>1, mid=>1,_id=>0 });
-        $sec_projects->{$doc->{collection}}{$_} = 1 if $doc;
-    } $self->user_projects( %p );	
-    return $sec_projects;
+        my ($id_role,$id_project) = $_ =~ /^(.*?)\/.*\/(.*)$/;
+        my $doc = mdb->master_doc->find_one({mid=>"$id_project"},{ collection=>1, mid=>1,_id=>0 });
+        $sec_projects->{$id_role}{$doc->{collection}}{$id_project} = 1 if $doc;
+    } @projects;    
+
+    my @sec;
+    for my $role ( keys %$sec_projects ) {
+        push @sec, $sec_projects->{$role};
+    }
+	if ( $with_role ) {
+        return $sec_projects;
+    } else {
+        return @sec;
+    }
 }
 
-sub user_topics_by_projects {
-    my ($self, $username ) = @_;
-    my $user_cols = $self->user_projects_ids_with_collection( username => $username );
+sub user_projects_for_action {
+    my ( $self, %p ) = @_;
 
+    my $is_root = $self->is_root( $p{username} );
+    if ( $is_root ) {
+        return _unique( map { "1/".$_->{ns} }
+                Baseliner->model( 'Baseliner::BaliProject' )->search()->hashref->all );
+    } else {
+        _log "AAAAAAAAA".$p{action};
+        my @projects;
+        my @all_projects =
+            Baseliner->model( 'Baseliner::BaliRoleUser' )
+            ->search( {username => $p{username}, ns => '/', 'actions.action' => $p{action}},{join => ['actions']} )->hashref->all;
+        if ( @all_projects ) {
+            my @projs_all = Baseliner->model( 'Baseliner::BaliProject' )->search()->hashref->all;
+            for my $role_all ( @all_projects ) {
+                my $id_role = $role_all->{id_role};
+                push @projects, map { $p{with_role}?$id_role."/".$_->{ns}:$_->{ns} } @projs_all;
+            }            
+        }
+        push @projects,
+            map { $_->{id_role} . "/" . $_->{ns} }
+            Baseliner->model( 'Baseliner::BaliRoleUser' )->search(
+                {username => $p{username}, 'actions.action' => $p{action}},
+                {join => [ 'actions' ], select => [ 'ns', 'id_role' ]}
+            )->hashref->all;
 
-    my @rels = DB->BaliMasterRel->search(
-        { rel_type => 'topic_project' },
-        {
-            join   => [ 'master_to', 'master_from' ],
-            select => [ 'from_mid',  'to_mid', 'master_to.collection' ],
-            as     => [ 'topic',     'project', 'collection' ]
-        }
-    )->hashref->all;
-    my $topics = {};
-    for my $rel (@rels) {
-        $topics->{ $rel->{topic} }->{ $rel->{collection} }->{ $rel->{project} } = 1;
-    }
-
-    my @final_topics;
-    for my $topic ( keys %{$topics} ) {
-        my $topic_sec = $topics->{$topic};
-        my $valid_topic = 1;
-        for my $col ( keys %{$user_cols} ) {
-            for my $col_project ( keys %{ $user_cols->{$col} } ) {
-                if ( !(  $topic_sec->{$col}
-                    && $topic_sec->{$col}->{$col_project} ) )
-                {
-                    $valid_topic = 0;
-                }
-            }
-        }
-        if ( $valid_topic ) {
-            push @final_topics, $topic;
-        }
-    }
-    return \@final_topics;
-}
+        return _unique( grep { length } @projects );
+    } ## end else [ if ( $all_projects || ...)]
+} ## end sub user_projects_for_action
 
 sub user_can_topic_by_project {
     my ($self,%p)=@_; 
     my $username = $p{username};
     my $mid = $p{mid} // _fail('Missing mid');
     return 1 if $self->is_root($username);
-    my $proj_coll_ids = $self->user_projects_ids_with_collection(username=>$username);
+    my @proj_coll_roles = $self->user_projects_ids_with_collection(%p);
     my $where = { mid=>"$mid" };
-    while( my ($k,$v) = each %{ $proj_coll_ids || {} } ) {
-        $where->{"_project_security.$k"} = { '$in'=>[ undef, keys %{ $v || {} } ] }; 
+    my @ors;
+    for my $proj_coll_ids ( @proj_coll_roles ) {
+        my $wh = {};
+        while( my ($k,$v) = each %{ $proj_coll_ids || {} } ) {
+            $wh->{"_project_security.$k"} = { '$in'=>[ undef, keys %{ $v || {} } ] }; 
+        }
+        push @ors, $wh;
     }
+    $where->{'$or'} = \@ors;
     return !!mdb->topic->find($where)->count;
+}
+
+sub user_roles_for_topic {
+    my ($self,%p)=@_; 
+    my $username = $p{username};
+    my $mid = $p{mid} // _fail('Missing mid');
+    my $security = $p{security};
+
+
+    my $proj_coll_roles = $security || $self->user_projects_ids_with_collection(%p, with_role => 1);
+    my @roles;
+    for my $role ( keys %{$proj_coll_roles} ) {
+        my $where = { mid=>"$mid" };
+        my $proj_coll_ids = $proj_coll_roles->{$role};
+        while( my ($k,$v) = each %{ $proj_coll_ids || {} } ) {
+            $where->{"_project_security.$k"} = { '$in'=>[ undef, keys %{ $v || {} } ] }; 
+        }
+        #_log _dump $where;
+        push @roles, $role if !!mdb->topic->find($where)->count;
+    }
+    return @roles;
 }
 
 =head2 user_projects_names( username=>Str )

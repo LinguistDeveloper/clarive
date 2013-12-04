@@ -1106,6 +1106,9 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                         }
                         
                         if(action == 'add'){
+                            self.form_is_loaded = false;
+                            self.show_form();
+                            self.view_is_dirty = true; 
                             var tabpanel = Ext.getCmp('main-panel');
                             var objtab = tabpanel.getActiveTab();
                             var category = res.category;

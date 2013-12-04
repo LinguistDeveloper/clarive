@@ -285,10 +285,16 @@ sub topics_for_user {
     # project security - grouped by 
     my %project_sec;
     if( $username && ! $perm->is_root( $username )){
-        my $proj_coll_ids = $perm->user_projects_ids_with_collection(username=>$username);
-        while( my ($k,$v) = each %{ $proj_coll_ids || {} } ) {
-            $where->{"_project_security.$k"} = { '$in'=>[ undef, keys %{ $v || {} } ] }; 
+        my @proj_coll_roles = Baseliner->model('Permissions')->user_projects_ids_with_collection(username=>$username);
+        my @ors;
+        for my $proj_coll_ids ( @proj_coll_roles ) {
+            my $wh = {};
+            while( my ($k,$v) = each %{ $proj_coll_ids || {} } ) {
+                $wh->{"_project_security.$k"} = { '$in'=>[ undef, keys %{ $v || {} } ] }; 
+            }
+            push @ors, $wh;
         }
+        $where->{'$or'} = \@ors;
     }
     
     if( $topic_list ) {
@@ -451,14 +457,22 @@ _debug( $where );
         my @db_mid_data = DB->TopicView->search({ topic_mid=>{ -in =>\@db_mids  } })->hashref->all if @db_mids > 0;
         
         # Controlar que categorias son editables.
-        my %categories_edit = map { lc $_->{name} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $username, type => 'edit' );
+        #my %categories_edit = map { lc $_->{name} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $username, type => 'edit' );
+        my $user_security = Baseliner->model('Permissions')->user_projects_ids_with_collection(username => $username, with_role => 1);
         
         for my $row (@db_mid_data) {
             #_log _dump $row if $row->{topic_mid} eq 880;
             my $mid = $row->{topic_mid};
             $mid_data{ $mid } = $row unless exists $mid_data{ $row->{topic_mid} };
             $mid_data{ $mid }{is_closed} = defined $row->{status} && $row->{status} eq 'C' ? \1 : \0;
-            $mid_data{ $mid }{sw_edit} = 1 if exists $categories_edit{ lc $row->{category_name}};
+            #$mid_data{ $mid }{sw_edit} = 1 if exists $categories_edit{ lc $row->{category_name}};
+            $mid_data{$mid}{sw_edit} = 1
+                if Baseliner->model( 'Permissions' )->user_has_action(
+                        username => $username,
+                        security => $user_security,
+                        action   => "action.topics.$row->{category_name}.edit",
+                        mid => $mid
+                );
 
             # fill out hash indexes
             if( $row->{label_id} ) {
@@ -690,6 +704,7 @@ sub next_status_for_user {
     my ($self, %p ) = @_;
     my $user_roles;
     my $username = $p{username};
+    my $topic_mid = $p{topic_mid};
     my $where = { id_category => $p{id_category} };
     $where->{id_status_from} = $p{id_status_from} if defined $p{id_status_from};
     my $is_root = Baseliner->model('Permissions')->is_root( $username );
@@ -716,12 +731,12 @@ sub next_status_for_user {
         
         foreach my $status (@deployable_status){
             if ( $status->{job_type} eq 'promote' ) {
-                if(Baseliner->model('Permissions')->user_has_action( username=> $username, action => 'action.topics.logical_change_status', bl=> $status->{status_bl} )){
+                if(Baseliner->model('Permissions')->user_has_action( username=> $username, action => 'action.topics.logical_change_status', bl=> $status->{status_bl}, mid => $topic_mid )){
                     push @to_status, $status;
                 }
             }else{
                 if ( $status->{job_type} eq 'demote' ) {
-                    if(Baseliner->model('Permissions')->user_has_action( username=> $username, action => 'action.topics.logical_change_status', bl=> $status->{status_bl_from} )){
+                    if(Baseliner->model('Permissions')->user_has_action( username=> $username, action => 'action.topics.logical_change_status', bl=> $status->{status_bl_from}, mid => $topic_mid )){
                         push @to_status, $status;
                     }               
                 }
@@ -1024,7 +1039,7 @@ sub get_meta {
         @cat_fields = DB->BaliTopicFieldsCategory->search({ id_category=>{ -in => $id_cat } })->hashref->all    
     }else{
         if($username){
-            my @user_categories =  map { $_->{id} } $self->get_categories_permissions( username => $username, type => 'view' );
+            my @user_categories =  map { $_->{id} } $self->get_categories_permissions( username => $username, type => 'view',  );
             @cat_fields = DB->BaliTopicFieldsCategory->search({ id_category=>{ -in => \@user_categories } })->hashref->all            
         }else{
             @cat_fields = DB->BaliTopicFieldsCategory->hashref->all;    
@@ -2205,6 +2220,7 @@ sub get_categories_permissions{
     my $username = delete $param{username};
     my $type = delete $param{type};
     my $order = delete $param{order};
+    my $topic_mid = delete $param{topic_mid};
     
     my ($dir, $sort) = ( $order->{dir}, $order->{sort} );
     $dir ||= 'asc';
@@ -2232,7 +2248,7 @@ sub get_categories_permissions{
     push @permission_categories, _unique map { 
         $_ =~ $re_action;
         $1;
-    } Baseliner->model('Permissions')->user_actions_list( username => $username, action => $re_action);
+    } Baseliner->model('Permissions')->user_actions_list( username => $username, action => $re_action, mid => $topic_mid);
     
     my %granted_categories = map { $_ => 1 } @permission_categories;
     @categories = grep { $granted_categories{_name_to_id( $_->{name} )}} @categories;
@@ -2485,7 +2501,8 @@ sub check_fields_required {
             for my $field ( keys %fields_required){
                 next if !Baseliner->model('Permissions')->user_has_action( 
                     username => $username, 
-                    action => 'action.topicsfield.'._name_to_id($data->{name_category}).'.'.$field.'.'._name_to_id($data->{name_status}).'.write'
+                    action => 'action.topicsfield.'._name_to_id($data->{name_category}).'.'.$field.'.'._name_to_id($data->{name_status}).'.write',
+                    mid => $mid
                 );
                 my $v = $data->{$field};
                 $isValid = (ref $v eq 'ARRAY' ? @$v : ref $v eq 'HASH' ? keys %$v : defined $v && $v ne '' ) ? 1 : 0;
@@ -2506,7 +2523,8 @@ sub check_fields_required {
             for my $field ( keys %fields_required){
                 next if !Baseliner->model('Permissions')->user_has_action( 
                     username => $username, 
-                    action => 'action.topicsfield.'._name_to_id($category->name).'.'.$field.'.'._name_to_id($status->name).'.write'
+                    action => 'action.topicsfield.'._name_to_id($category->name).'.'.$field.'.'._name_to_id($status->name).'.write',
+                    mid => $mid
                 );
                 my $v = $data->{$field};
                 $isValid = (ref $v eq 'ARRAY' ? @$v : ref $v eq 'HASH' ? keys %$v : defined $v && $v ne '' ) ? 1 : 0;

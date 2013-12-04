@@ -206,6 +206,7 @@ sub update : Local {
             $role->bali_roleactions->find_or_create({ action=> $action->{action}, bl=>$action->{bl} || '*' });  #TODO bl from action list
         }
         $role->update();
+        Baseliner->cache_get(":role:actions:$p->{id}:") if $p->{id};
     };
     if( $@ ) {
         warn $@;

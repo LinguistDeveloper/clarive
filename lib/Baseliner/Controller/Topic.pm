@@ -386,7 +386,7 @@ sub get_meta_permissions : Local {
                         $field_form->{readonly} = \0;
                         $field_form->{allowBlank} = 'true' unless $field_form->{id_field} eq 'title';
                 } else {
-                    my $has_action = $c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action );
+                    my $has_action = $c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action, mid => $data->{topic_mid} );
                     if ( $has_action ){
                         $field_form->{readonly} = \0;
                     }else{
@@ -419,7 +419,7 @@ sub get_meta_permissions : Local {
                     $_->{allowBlank} = 'true' unless $_->{id_field} eq 'title';
             } else {
 
-                my $has_action = $c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action );
+                my $has_action = $c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action, mid => $data->{topic_mid} );
                 # _log "Comprobando ".$write_action."= ".$has_action;
                 if ( $has_action ){
                     $_->{readonly} = \0;
@@ -579,9 +579,9 @@ sub view : Local {
             $c->stash->{HTMLbuttons} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.GDI.HTMLbuttons' );
         }
         
-        my %categories_edit = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'edit' );
-        my %categories_delete = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'delete' );
-        my %categories_view = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view' );
+        my %categories_edit = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'edit', topic_mid => $topic_mid );
+        my %categories_delete = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'delete', topic_mid => $topic_mid );
+        my %categories_view = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view', topic_mid => $topic_mid );
         
         if($topic_mid || $c->stash->{topic_mid} ){
      
@@ -597,6 +597,10 @@ sub view : Local {
                 _fail( _loc("User %1 is not allowed to access topic %2 contents", $c->username, $topic_mid) );    
             }
 
+            if ( !$c->model('Permissions')->user_can_topic_by_project( username => $c->username, mid => $topic_mid ) ) {
+                _fail( _loc("User %1 is not allowed to access topic %2 contents", $c->username, $topic_mid) );    
+            }
+
             $c->stash->{category_meta} = $category->forms;
             
             #workflow category-status
@@ -606,6 +610,7 @@ sub view : Local {
                 id_category    => $category->id,
                 id_status_from => $category->topics->status->id,
                 username       => $c->username,
+                topic_mid      => $topic_mid
             );            
             
             
@@ -663,6 +668,7 @@ sub view : Local {
                 id_category    => $id_category,
                 id_status_from => $category[0]->{id_status},
                 username       => $c->username,
+                topic_mid      => $topic_mid
             );               
             $c->stash->{status_items_menu} = _encode_json(\@statuses);
             $c->stash->{category_meta} = $category[0]->{forms};
@@ -989,19 +995,20 @@ sub update_topic_labels : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
     my $topic_mid = $p->{topic_mid};
-    my $label_ids = $p->{label_ids};
+    my @label_ids = _array $p->{label_ids};
     
     try{
-        Baseliner->cache_remove( qr/:$topic_mid:/ ) if length $topic_mid;
         
         $c->model("Baseliner::BaliTopicLabel")->search( {id_topic => $topic_mid} )->delete;
         
-        foreach my $label_id (_array $label_ids){
+        foreach my $label_id (@label_ids){
             $c->model('Baseliner::BaliTopicLabel')->create( {   id_topic    => $topic_mid,
                                                                 id_label    => $label_id,
                                                             });     
         }
+        mdb->topic->update({ mid => "$topic_mid"},{ '$set' => {labels => @label_ids}});
         $c->stash->{json} = { msg=>_loc('Labels assigned'), success=>\1 };
+        Baseliner->cache_remove( qr/:$topic_mid:/ ) if length $topic_mid;
     }
     catch{
         $c->stash->{json} = { msg=>_loc('Error assigning Labels: %1', shift()), failure=>\1 }
@@ -1378,6 +1385,7 @@ sub list_admin_category : Local {
     my @rows;
     my $statuses;
     my $swStatus = 0;
+    my $topic_mid = $p->{topic_mid};
 
 
     if ($p->{change_categoryId}){
@@ -1424,6 +1432,7 @@ sub list_admin_category : Local {
             id_category    => $p->{categoryId},
             id_status_from => $p->{statusId},
             username       => $c->username,
+            topic_mid     => $topic_mid
         );
 
 
