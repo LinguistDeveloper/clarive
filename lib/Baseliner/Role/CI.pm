@@ -15,11 +15,16 @@ subtype Date  => as 'Class::Date';
 subtype HashJSON       => as 'HashRef';
 subtype TS    => as 'Str';
 subtype DT    => as 'DateTime';
+subtype BL    => as 'Maybe[Str]';
     
 coerce 'Date' => 
     from 'Str' => via { Class::Date->new( $_ ) },
     from 'Num' => via { Class::Date->new( $_ ) },
     from 'Undef' => via { Class::Date->now };
+    
+coerce 'BL' => 
+    from 'ArrayRef' => via { join ',', @$_ },
+    from 'Undef' => via { '*' };
 
 coerce 'TS' => 
     from 'DT' => via { Class::Date->new( $_->set_time_zone( Util->_tz ) )->string },
@@ -54,7 +59,7 @@ requires 'icon';
 #sub icon { '/static/images/icons/ci.png' }
 
 has name        => qw(is rw isa Maybe[Str]);
-has bl          => qw(is rw isa Maybe[Str] default *);
+has bl          => qw(is rw isa BL coerce 1 default *);
 has description => qw(is rw isa Maybe[Str]);
 has ns          => qw(is rw isa Maybe[Str]);
 has versionid   => qw(is rw isa Maybe[Str] default 1);
@@ -282,14 +287,8 @@ sub save_data {
             $data->{ $attr_name } = 0 unless exists $data->{ $attr_name };
         }
     }
-    # now store the data
-    if( $storage eq 'yaml' ) {
-        $self->save_fields( $master_row, $data );
-    } else {
-        # temporary: multi-storage deprecated
-        Util->_fail( Util->_loc('CI Storage method not supported: %1', $storage) );
-    }
     # master_rel relationships, if any
+    my %relations;
     for my $rel ( @master_rel ) {
         # delete previous relationships
         my $my_rel = $rel->{rel_type}->[0];
@@ -299,15 +298,23 @@ sub save_data {
         for my $other_mid ( _array $rel->{value} ) {
             $other_mid = $other_mid->mid if ref( $other_mid ) =~ /^BaselinerX::CI::/;
             next unless $other_mid;
-            DB->BaliMasterRel->find_or_create({ $my_rel => $master_row->mid, $other_rel => $other_mid, rel_type=>$rel_type_name, rel_field=>$rel_type_name });
+            DB->BaliMasterRel->find_or_create({ $my_rel => $master_row->mid, $other_rel => $other_mid, rel_type=>$rel_type_name, rel_field=>$rel->{field} });
+            push @{$relations{ $rel->{field} }}, $other_mid;
             Baseliner->cache_remove( qr/:$other_mid:/ );
         }
+    }
+    # now store the data
+    if( $storage eq 'yaml' ) {
+        $self->save_fields( $master_row, $data, undef, \%relations );
+    } else {
+        # temporary: multi-storage deprecated
+        Util->_fail( Util->_loc('CI Storage method not supported: %1', $storage) );
     }
     return $master_row;
 }
 
 sub save_fields {
-    my ($self, $master_row, $data, $opts ) = @_;
+    my ($self, $master_row, $data, $opts, $relations ) = @_;
     $opts //={};
     $opts->{master_only} //= 1;
     my $mid = $master_row->mid;
@@ -324,14 +331,14 @@ sub save_fields {
         Util->_unbless($final_doc);
         mdb->clean_doc($final_doc);
         $final_doc->{_id} = $id;  # preserve OID object
-        $md->save($final_doc);
+        $md->save({ %$final_doc, %{ $relations || {} } });
     } else {
         my $doc = { ( $master_row ? $master_row->get_columns : () ), %{ $data || {} }, mid=>"$mid" };
         delete $doc->{yaml};
         my $final_doc = Util->_clone($doc);
         Util->_unbless($final_doc);
         mdb->clean_doc($final_doc);
-        $md->insert($final_doc);
+        $md->insert({ %$final_doc, %{ $relations || {} } });
     }
 }
 
