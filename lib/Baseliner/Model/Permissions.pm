@@ -250,7 +250,19 @@ sub user_has_read_action {
     my $action = $p{action};
 
     my @roles = _unique map { $_->{id_role} } DB->BaliRoleuser->search({ username => $username })->hashref->all;
-    my @actions = DB->BaliRoleaction->search({ id_role => \@roles, action => $action})->hashref->all;
+    my @actions;
+
+    for my $role ( @roles ) {
+        my @role_actions = _array(Baseliner->cache_get(":role:actions:$role:"));
+        if (!@role_actions){
+            push @actions, DB->BaliRoleaction->search({ id_role => \@roles, action => $action})->hashref->all;
+            Baseliner->cache_set(":role:actions:$role:",\@actions);
+            _debug "NO CACHE for :role:actions:$role:";
+        } else {
+            push @actions, @role_actions;
+            _debug "CACHE HIT for :role:actions:$role:";
+        }
+    }
 
     my $has_action;
     if (scalar @roles == scalar @actions) {
@@ -415,6 +427,10 @@ sub user_projects_query {
     my ( $self, %p ) = @_;
     _throw 'Missing username' unless exists $p{username};
     _throw 'Missing join_id' unless exists $p{join_id};
+    my @roles = split /,/, $p{roles} || ();
+
+
+
     if ( $self->is_root( $p{username} )) {
         DB->BaliRoleuser->search({}, { select=>\'1' })->as_query        
     }
@@ -422,8 +438,19 @@ sub user_projects_query {
             if ( DB->BaliRoleuser->search( {username => $p{username}, ns => '/'} )->hashref->first ) {
                 DB->BaliRoleuser->search({}, { select=>\'1' })->as_query        
             } else {
+                my $where = {username => $p{username}, id_project => {'=' => \"$p{join_id}"}};
+                if ( @roles ) {                
+                    my $role_ids = Baseliner->cache_get(':role:ids:');
+                    if (!$role_ids){
+                        map { $role_ids->{$_->{role}} = $_->{id} } DB->BaliRole->search()->hashref->all;
+                        Baseliner->cache_set(':role:ids:', $role_ids);
+                    }
+                    my @id_roles;
+                    map { push @id_roles,$role_ids->{$_} } @roles;
+                    $where->{id_role} = \@id_roles;
+                }
                 DB->BaliRoleuser->search(
-                    {username => $p{username}, id_project => {'=' => \"$p{join_id}"}},
+                    $where,
                     {select   => \'1'} )->as_query;
             } ## end else [ if ( DB->BaliRoleuser->search...)]
     } ## end else
