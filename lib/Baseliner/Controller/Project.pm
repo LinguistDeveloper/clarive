@@ -532,17 +532,6 @@ sub user_projects : Local {
     #$query and $query = qr/$query/i;
     #my @rows;
     my $username = $c->username;
-    #my $perm = $c->model('Permissions');
-    #if( $username && ! $perm->is_root( $username ) && ! $perm->user_has_action( username=>$username, action=>'action.job.viewall' ) ) {
-        #$where->{'bali_job_items.application'} = { -in => \@user_apps } if ! ( grep { $_ eq '/'} @user_apps );
-        # username can view jobs where the user has access to view the jobcontents corresponding app
-        # username can view jobs if it has action.job.view for the job set of job_contents projects/app/subapl
-    #}
-    #@rows =  $perm->user_namespaces( $username ); # user apps
-    #@rows = grep { $_ ne '/' } @rows unless $c->is_root || $p->{include_root};
-    #_error \@rows;
-    #@rows = grep { $_ =~ $query } @rows if $query;
-    #my $where = $c->is_root ? {} : { id => { -in => $user_prjs } };
 
     $where->{'exists'} =  $c->model( 'Permissions' )->user_projects_query( username=>$username, join_id=>'id', roles => $roles )
         unless $c->is_root;
