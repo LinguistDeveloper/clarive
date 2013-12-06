@@ -16,22 +16,26 @@ sub run {
 	}
 	print "Mongo server started\n";
 
-	print "Starting Redis server\n";
-	system('redis-server',$self->app->base.'/config/redis.conf');
-	if ( $? ) {
-		print "Error starting Redis server\n";
-		exit 1;
+	if ( !$opts{no_redis} ) {	
+		print "Starting Redis server\n";
+		system('redis-server',$self->app->base.'/config/redis.conf');
+		if ( $? ) {
+			print "Error starting Redis server\n";
+			exit 1;
+		}
+		print "Redis server started\n";
 	}
-	print "Redis server started\n";
 
-	print "Starting nginx server\n";
-	system('nginx');
-	if ( $? ) {
-		print "Error starting nginx server\n";
-		exit 1;
+	if ( !$opts{no_nginx} ) {
+		print "Starting nginx server\n";
+		system('nginx');
+		if ( $? ) {
+			print "Error starting nginx server\n";
+			exit 1;
+		}
+		print "Nginx server started\n";
 	}
-	print "Nginx server started\n";
-
+	
 	#Start Clarive web interface
 	try {
 		print "Starting Clarive web server\n";

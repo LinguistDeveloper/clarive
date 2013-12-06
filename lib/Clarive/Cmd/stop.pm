@@ -16,21 +16,25 @@ sub run {
 	}
 	print "Mongo server stopped\n";
 
-	print "Stopping Redis server\n";
-	system('killall redis-server');
-	if ( $? ) {
-		print "Error stopping Redis server\n";
-		exit 1;
+	if ( !$opts{no_redis} ) {
+		print "Stopping Redis server\n";
+		system('killall redis-server');
+		if ( $? ) {
+			print "Error stopping Redis server\n";
+			exit 1;
+		}
+		print "Redis server stopped\n";
 	}
-	print "Redis server stopped\n";
 
-	print "Stopping nginx server\n";
-	system('nginx -s stop');
-	if ( $? ) {
-		print "Error stopping nginx server\n";
-		exit 1;
-	}
-	print "Nginx server stopped\n";
+	if ( !$opts{no_nginx} ) {
+		print "Stopping nginx server\n";
+		system('nginx -s stop');
+		if ( $? ) {
+			print "Error stopping nginx server\n";
+			exit 1;
+		}
+		print "Nginx server stopped\n";
+	}	
 
 	#Stop Clarive web interface
 	try {
