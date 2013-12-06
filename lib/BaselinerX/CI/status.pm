@@ -1,6 +1,6 @@
 package BaselinerX::CI::status;
 use Baseliner::Moose;
-use Baseliner::Utils qw(:logging);
+use Baseliner::Utils;
 use Try::Tiny;
 with 'Baseliner::Role::CI::Internal';
 
@@ -32,17 +32,25 @@ sub rel_type {
     };
 }
 
-before save => sub {
+after save => sub {
     my ($self, $master_row, $data ) = @_;
+
+    _log _dump @_;
+    my @bls = _array $self->{bls};
+
+    my $bl = $bls[0]->{moniker};
+
+
     my $r = {
-        name          => $self->name,
-        description   => $self->description,
-        bind_releases => $self->bind_releases eq 'on' ? '1' : '0',
-        ci_update     => $self->ci_update eq 'on' ? '1' : '0',
-        readonly      => $self->readonly eq 'on' ? '1' : '0',
-        frozen        => $self->frozen eq 'on' ? '1' : '0',
-        seq           => $self->seq,
-        type          => $self->type
+        name          => $self->{name},
+        description   => $self->{description},
+        bind_releases => $self->{bind_releases} eq 'on' ? '1' : '0',
+        ci_update     => $self->{ci_update} eq 'on' ? '1' : '0',
+        readonly      => $self->{readonly} eq 'on' ? '1' : '0',
+        frozen        => $self->{frozen} eq 'on' ? '1' : '0',
+        seq           => $self->{seq},
+        type          => $self->{type},
+        bl            => $bl
     };
     my $row;
     if( $row = DB->BaliTopicStatus->find( $self->id_status ) || DB->BaliTopicStatus->search({ name=>$r->{name} })->first ) {
