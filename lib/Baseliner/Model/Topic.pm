@@ -341,12 +341,12 @@ sub topics_for_user {
         my @not_in = map { abs $_ } grep { $_ < 0 } @labels;
         my @in = @not_in ? grep { $_ > 0 } @labels : @labels;
         if (@not_in && @in){
-            $where->{'id_label'} = { '$nin' => mdb->str(@not_in), '$in' => mdb->str(@in,undef) };
+            $where->{'labels'} = { '$nin' => mdb->str(@not_in), '$in' => mdb->str(@in,undef) };
         }else{
             if (@not_in){
-                $where->{'id_label'} = {'$nin' => mdb->str(@not_in) };
-            }else{
-                $where->{'id_label'} = mdb->in(@in);
+                $where->{'labels'} = {'$nin' => mdb->str(@not_in) };
+            }elsif (@in) {
+                $where->{'labels'} = { '$in' => mdb->str(@in)};
             }
         }            
     }
@@ -601,7 +601,7 @@ sub update {
                     $notify->{project} = \@projects if @projects;
                     
                     my $subject = _loc("New topic (%1): [%2] %3", $category->{name}, $topic->mid, $topic->title);
-                    { mid => $topic->mid, topic => $topic->title, category => $category->{name}, notify_default => \@users, subject => $subject, notify => $notify }   # to the event
+                    { mid => $topic->mid, title => "Nuevo tópico - ".$topic, topic => $topic->title, name_category => $category->{name}, category => $category->{name}, category_name => $category->{name}, notify_default => \@users, subject => $subject, notify => $notify }   # to the event
                 });                   
             } 
             => sub { # catch
@@ -2317,7 +2317,6 @@ sub getAction {
 sub user_workflow {
     my ( $self, $username ) = @_;
     my @rows = Baseliner->model('Permissions')->is_root( $username ) 
-#        ? DB->BaliTopicCategoriesAdmin->search(undef, { select=>['id_status_to', 'id_status_from', 'id_category'], distinct=>1 })->hashref->all
         ? root_workflow()
         : DB->BaliTopicCategoriesAdmin->search({username => $username}, { join=>'user_role' })->hashref->all;
     return @rows;
