@@ -661,6 +661,7 @@ sub update {
                     #      -- delete cascade does not clear up the cache
                     _ci( $mid )->delete;
                     mdb->topic->remove({ mid=>"$mid" });
+                    $self->cache_topic_remove( $mid );
                 }
 
                 $modified_on = Class::Date->new(_now)->epoch;
