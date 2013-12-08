@@ -4860,14 +4860,14 @@ msgstr "Tópico [%1] %2 actualizado.  Nuevas revisiones"
 msgid "Topic [%1] %2 updated.  All revisions removed"
 msgstr "Tópico [%1] %2 actualizado.  Todas las revisiones eliminadas"
 
-msgid "Topic [%1] %2 updated.  Release changed to %3"
-msgstr "Tópico [%1] %2 actualizado.  Agrupador cambiado a %3"
+msgid "Topic [%1] %2 updated.  %4 changed to %3"
+msgstr "Tópico [%1] %2 actualizado.  %4 cambiado a %3"
 
-msgid "Topic [%1] %2 updated.  Attached projects (%3)"
-msgstr "Tópico [%1] %2 actualizado.  Proyectos adjuntos (%3)"
+msgid "Topic [%1] %2 updated.  %4 (%3)"
+msgstr "Tópico [%1] %2 actualizado.  %4 (%3)"
 
-msgid "Topic [%1] %2 updated.  All projects removed"
-msgstr "Tópico [%1] %2 actualizado.  Todos los proyectos quitados"
+msgid "Topic [%1] %2 updated.  %3 deleted"
+msgstr "Tópico [%1] %2 actualizado.  %3 borrado"
 
 msgid "Topic [%1] %2.  Status changed to %3"
 msgstr "Tópico [%1] %2.  Estado cambiado a %3"

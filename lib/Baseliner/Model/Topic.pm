@@ -2041,10 +2041,10 @@ sub set_release {
                                                 field      => $id_field,
                                                 old_value      => $old_release_name,
                                                 new_value  => $row_release->title,
-                                                text_new      => '%1 modified topic: changed release to %4',
+                                                text_new      => '%1 modified topic: changed %2 to %4',
                                                 mid => $rs_topic->mid,
                                                } => sub {
-                                                my $subject = _loc("Topic [%1] %2 updated.  Release changed to %3", $rs_topic->mid, $rs_topic->title, $row_release->title);
+                                                my $subject = _loc("Topic [%1] %2 updated.  %4 changed to %3", $rs_topic->mid, $rs_topic->title, $row_release->title, $release_field);
                 { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
             } ## end try
             => sub {
@@ -2057,10 +2057,10 @@ sub set_release {
                                                 field      => $id_field,
                                                 old_value      => $old_release_name,
                                                 new_value  => '',
-                                                text_new      => '%1 deleted release %3',
+                                                text_new      => '%1 deleted %2 %3',
                                                 mid => $rs_topic->mid,
                                                } => sub {
-                                                my $subject = _loc("Topic [%1] %2 updated.  Removed from release %3", $rs_topic->mid, $rs_topic->title, $old_release_name);
+                                                my $subject = _loc("Topic [%1] %2 updated.  Removed from %4 %3", $rs_topic->mid, $rs_topic->title, $old_release_name, $release_field);
 
                 { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify}   # to the event
             } ## end try
@@ -2115,7 +2115,7 @@ sub set_projects {
                                                 text_new      => '%1 modified topic: %2 ( %4 )',
                                                 mid => $rs_topic->mid,
                                                } => sub {
-                                                my $subject = _loc("Topic [%1] %2 updated.  Attached projects (%3)", $rs_topic->mid, $rs_topic->title, $projects);
+                                                my $subject = _loc("Topic [%1] %2 updated.  %4 (%3)", $rs_topic->mid, $rs_topic->title, $projects, $id_field);
                 { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
             } ## end try
             => sub {
@@ -2127,10 +2127,10 @@ sub set_projects {
                                                 field      => $id_field,
                                                 old_value      => '',
                                                 new_value  => '',
-                                                text_new      => '%1 deleted all projects',
+                                                text_new      => '%1 deleted %2',
                                                 mid => $rs_topic->mid,
                                                } => sub {
-                                                my $subject = _loc("Topic [%1] %2 updated.  All projects removed", $rs_topic->mid );
+                                                my $subject = _loc("Topic [%1] %2 updated.  %3 deleted", $rs_topic->mid, $rs_topic->title, $id_field );
                 { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
             } ## end try
             => sub {
