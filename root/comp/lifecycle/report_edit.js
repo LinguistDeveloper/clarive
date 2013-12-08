@@ -67,7 +67,7 @@
     var edit_value = function(node){
         var attr = node.attributes;
         var pn = node.parentNode; // should be where_field
-        
+        console.dir(pn );
         
         var oper_all = [ ['','='], ['$ne','<>'],['$lt','<'],['$lte','<='],['$gt','>'],['$gte','>='] ];
         var oper_in = [ ['$in','IN'], ['$nin','NOT IN'] ];
@@ -93,6 +93,7 @@
                   break;
             case 'ci':
                 var ci_class = pn.attributes.collection || pn.attributes.ci_class;
+                alert(ci_class);
                 field=new Baseliner.ci_box({ value: attr.value, name:'value', singleMode: false, force_set_value:true, class: ci_class, security: true });
                 oper_by_type = oper_in;
                 var store;
