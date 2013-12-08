@@ -341,12 +341,12 @@ sub topics_for_user {
         my @not_in = map { abs $_ } grep { $_ < 0 } @labels;
         my @in = @not_in ? grep { $_ > 0 } @labels : @labels;
         if (@not_in && @in){
-            $where->{'id_label'} = { '$nin' => mdb->str(@not_in), '$in' => mdb->str(@in,undef) };
+            $where->{'labels'} = { '$nin' => mdb->str(@not_in), '$in' => mdb->str(@in,undef) };
         }else{
             if (@not_in){
-                $where->{'id_label'} = {'$nin' => mdb->str(@not_in) };
-            }else{
-                $where->{'id_label'} = mdb->in(@in);
+                $where->{'labels'} = {'$nin' => mdb->str(@not_in) };
+            }elsif (@in) {
+                $where->{'labels'} = { '$in' => mdb->str(@in)};
             }
         }            
     }
@@ -601,7 +601,7 @@ sub update {
                     $notify->{project} = \@projects if @projects;
                     
                     my $subject = _loc("New topic (%1): [%2] %3", $category->{name}, $topic->mid, $topic->title);
-                    { mid => $topic->mid, topic => $topic->title, category => $category->{name}, notify_default => \@users, subject => $subject, notify => $notify }   # to the event
+                    { mid => $topic->mid, title => "Nuevo tópico - ".$topic, topic => $topic->title, name_category => $category->{name}, category => $category->{name}, category_name => $category->{name}, notify_default => \@users, subject => $subject, notify => $notify }   # to the event
                 });                   
             } 
             => sub { # catch
@@ -2042,10 +2042,10 @@ sub set_release {
                                                 field      => $id_field,
                                                 old_value      => $old_release_name,
                                                 new_value  => $row_release->title,
-                                                text_new      => '%1 modified topic: changed release to %4',
+                                                text_new      => '%1 modified topic: changed %2 to %4',
                                                 mid => $rs_topic->mid,
                                                } => sub {
-                                                my $subject = _loc("Topic [%1] %2 updated.  Release changed to %3", $rs_topic->mid, $rs_topic->title, $row_release->title);
+                                                my $subject = _loc("Topic [%1] %2 updated.  %4 changed to %3", $rs_topic->mid, $rs_topic->title, $row_release->title, $release_field);
                 { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
             } ## end try
             => sub {
@@ -2058,10 +2058,10 @@ sub set_release {
                                                 field      => $id_field,
                                                 old_value      => $old_release_name,
                                                 new_value  => '',
-                                                text_new      => '%1 deleted release %3',
+                                                text_new      => '%1 deleted %2 %3',
                                                 mid => $rs_topic->mid,
                                                } => sub {
-                                                my $subject = _loc("Topic [%1] %2 updated.  Removed from release %3", $rs_topic->mid, $rs_topic->title, $old_release_name);
+                                                my $subject = _loc("Topic [%1] %2 updated.  Removed from %4 %3", $rs_topic->mid, $rs_topic->title, $old_release_name, $release_field);
 
                 { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify}   # to the event
             } ## end try
@@ -2116,7 +2116,7 @@ sub set_projects {
                                                 text_new      => '%1 modified topic: %2 ( %4 )',
                                                 mid => $rs_topic->mid,
                                                } => sub {
-                                                my $subject = _loc("Topic [%1] %2 updated.  Attached projects (%3)", $rs_topic->mid, $rs_topic->title, $projects);
+                                                my $subject = _loc("Topic [%1] %2 updated.  %4 (%3)", $rs_topic->mid, $rs_topic->title, $projects, $id_field);
                 { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
             } ## end try
             => sub {
@@ -2128,10 +2128,10 @@ sub set_projects {
                                                 field      => $id_field,
                                                 old_value      => '',
                                                 new_value  => '',
-                                                text_new      => '%1 deleted all projects',
+                                                text_new      => '%1 deleted %2',
                                                 mid => $rs_topic->mid,
                                                } => sub {
-                                                my $subject = _loc("Topic [%1] %2 updated.  All projects removed", $rs_topic->mid );
+                                                my $subject = _loc("Topic [%1] %2 updated.  %3 deleted", $rs_topic->mid, $rs_topic->title, $id_field );
                 { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
             } ## end try
             => sub {
@@ -2318,7 +2318,6 @@ sub getAction {
 sub user_workflow {
     my ( $self, $username ) = @_;
     my @rows = Baseliner->model('Permissions')->is_root( $username ) 
-#        ? DB->BaliTopicCategoriesAdmin->search(undef, { select=>['id_status_to', 'id_status_from', 'id_category'], distinct=>1 })->hashref->all
         ? root_workflow()
         : DB->BaliTopicCategoriesAdmin->search({username => $username}, { join=>'user_role' })->hashref->all;
     return @rows;

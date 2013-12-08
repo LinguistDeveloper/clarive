@@ -14,6 +14,7 @@ params:
     tree_level: ''
     include_root: 'true'
     meta_type: 'project'
+    roles: ''
 
 ---
 */
@@ -41,7 +42,8 @@ params:
         include_root: true, 
         level: meta.level, 
         collection: meta.collection,
-        autoLoad: false
+        autoLoad: false,
+        roles: meta.roles
     } });
     
     var no_items = _('No items found');

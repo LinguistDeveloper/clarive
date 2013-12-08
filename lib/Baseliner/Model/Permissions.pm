@@ -250,7 +250,19 @@ sub user_has_read_action {
     my $action = $p{action};
 
     my @roles = _unique map { $_->{id_role} } DB->BaliRoleuser->search({ username => $username })->hashref->all;
-    my @actions = DB->BaliRoleaction->search({ id_role => \@roles, action => $action})->hashref->all;
+    my @actions;
+
+    for my $role ( @roles ) {
+        my @role_actions = _array(Baseliner->cache_get(":role:actions:$role:"));
+        if (!@role_actions){
+            push @actions, DB->BaliRoleaction->search({ id_role => \@roles, action => $action})->hashref->all;
+            Baseliner->cache_set(":role:actions:$role:",\@actions);
+            _debug "NO CACHE for :role:actions:$role:";
+        } else {
+            push @actions, @role_actions;
+            _debug "CACHE HIT for :role:actions:$role:";
+        }
+    }
 
     my $has_action;
     if (scalar @roles == scalar @actions) {
@@ -304,11 +316,7 @@ sub user_actions_list {
         @actions = map { $_->{key} } Baseliner->model( 'Actions' )->list;
     } elsif ( $mid ) {
         @actions = $self->user_actions_by_topic( %p );
-        _log "por mid";
     } else {
-        _log "sin mid";
-
-        _log $regexp_action;
         @actions = map { $_->{'action'} } DB->BaliRoleuser->search(
 
             $where,
@@ -415,19 +423,35 @@ sub user_projects_query {
     my ( $self, %p ) = @_;
     _throw 'Missing username' unless exists $p{username};
     _throw 'Missing join_id' unless exists $p{join_id};
+    my @roles = split /,/, $p{roles} || ();
+
+    my $where;
+    if ( @roles ) {                
+        my $role_ids = Baseliner->cache_get(':role:ids:');
+        if (!$role_ids){
+            map { $role_ids->{$_->{role}} = $_->{id} } DB->BaliRole->search()->hashref->all;
+            Baseliner->cache_set(':role:ids:', $role_ids);
+        }
+        my @id_roles;
+        map { push @id_roles,$role_ids->{$_} } @roles;
+        $where->{id_role} = \@id_roles;
+    }
+    $where->{username} = $p{username};
     if ( $self->is_root( $p{username} )) {
-        DB->BaliRoleuser->search({}, { select=>\'1' })->as_query        
+        DB->BaliRoleuser->search({}, { select=>\'1' })->as_query;
     }
     else {
-            if ( DB->BaliRoleuser->search( {username => $p{username}, ns => '/'} )->hashref->first ) {
+            $where->{ns} = '/';
+            if ( DB->BaliRoleuser->search( $where )->hashref->first ) {
                 DB->BaliRoleuser->search({}, { select=>\'1' })->as_query        
             } else {
+                delete $where->{ns};
+                $where->{id_project} = {'=' => \"$p{join_id}"};
                 DB->BaliRoleuser->search(
-                    {username => $p{username}, id_project => {'=' => \"$p{join_id}"}},
+                    $where,
                     {select   => \'1'} )->as_query;
             } ## end else [ if ( DB->BaliRoleuser->search...)]
     } ## end else
-
 } 
 
 =head2 user_projects_ids( username=>Str )
@@ -457,12 +481,24 @@ sub user_projects_ids_with_collection {
     my $sec_projects;
     my $with_role = $p{with_role} // 0;
     my $username = $p{username};
+    my @roles = split /,/, $p{roles} || ();
+
+    if ( @roles ) {                
+        my $role_ids = Baseliner->cache_get(':role:ids:');
+        if (!$role_ids){
+            map { $role_ids->{$_->{role}} = $_->{id} } DB->BaliRole->search()->hashref->all;
+            Baseliner->cache_set(':role:ids:', $role_ids);
+        }
+        my @id_roles;
+        map { push @id_roles,$role_ids->{$_} } @roles;
+        @roles = @id_roles;
+    }
 
     my @projects;
     my @sec;
 
     $sec_projects = Baseliner->cache_get(":user:security:$username:");
-    @sec = Baseliner->cache_get(":user:security:roles:$username:");
+    @sec = _array(Baseliner->cache_get(":user:security:roles:$username:"));
 
     if ( !$sec_projects || !@sec ) {
         if ( $p{action} ) {
@@ -480,10 +516,17 @@ sub user_projects_ids_with_collection {
             push @sec, $sec_projects->{$role};
         }
         Baseliner->cache_set(":user:security:$username:",$sec_projects);
-        Baseliner->cache_get(":user:security:roles:$username:", \@sec);
+        Baseliner->cache_set(":user:security:roles:$username:", \@sec);
         _debug "NO CACHE for :user:security:$username:";
     } else {
         _debug "CACHE HIT for :user:security:$username:";
+    }
+    if ( @roles ) {
+        @sec = undef;
+        for my $r ( keys %{$sec_projects}) {
+            delete $sec_projects->{$r} if !($r ~~ @roles);
+            push @sec, $sec_projects->{$r} if $r ~~ @roles;       
+        }
     }
 	if ( $with_role ) {
         return $sec_projects;
@@ -500,7 +543,6 @@ sub user_projects_for_action {
         return _unique( map { "1/".$_->{ns} }
                 Baseliner->model( 'Baseliner::BaliProject' )->search()->hashref->all );
     } else {
-        _log "AAAAAAAAA".$p{action};
         my @projects;
         my @all_projects =
             Baseliner->model( 'Baseliner::BaliRoleUser' )
@@ -539,6 +581,7 @@ sub user_can_topic_by_project {
         push @ors, $wh;
     }
     $where->{'$or'} = \@ors;
+    _log "RRRRRRRRRRRRRRR:"._dump $where;
     return !!mdb->topic->find($where)->count;
 }
 

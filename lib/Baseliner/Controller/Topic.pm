@@ -999,14 +999,16 @@ sub update_topic_labels : Local {
     
     try{
         
-        $c->model("Baseliner::BaliTopicLabel")->search( {id_topic => $topic_mid} )->delete;
+
+        my @current_labels = map { $_->{id_label} }$c->model("Baseliner::BaliTopicLabel")->search( {id_topic => $topic_mid} )->hashref->all;
         
         foreach my $label_id (@label_ids){
             $c->model('Baseliner::BaliTopicLabel')->create( {   id_topic    => $topic_mid,
                                                                 id_label    => $label_id,
                                                             });     
         }
-        mdb->topic->update({ mid => "$topic_mid"},{ '$set' => {labels => @label_ids}});
+        push @label_ids,@current_labels;
+        mdb->topic->update({ mid => "$topic_mid"},{ '$set' => {labels => \@label_ids}});
         $c->stash->{json} = { msg=>_loc('Labels assigned'), success=>\1 };
         Baseliner->cache_remove( qr/:$topic_mid:/ ) if length $topic_mid;
     }
