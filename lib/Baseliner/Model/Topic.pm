@@ -816,7 +816,8 @@ sub get_system_fields {
                 relation      => 'status',
                 framed        => 1,
                 allowBlank    => \0,
-                system_force     => \1
+                system_force  => \1,
+                meta_type     => 'status',
             }
         },
         {
@@ -825,7 +826,7 @@ sub get_system_fields {
         },
         {
             id_field => 'created_on',
-            params   => { name_field => 'Created On', bd_field => 'created_on', origin => 'default' }
+            params   => { name_field => 'Created On', bd_field => 'created_on', origin => 'default', meta_type => 'date' }
         },
         {
             id_field => 'modified_by',
@@ -833,7 +834,7 @@ sub get_system_fields {
         },
         {
             id_field => 'modified_on',
-            params   => { name_field => 'Modified On', bd_field => 'modified_on', origin => 'default' }
+            params   => { name_field => 'Modified On', bd_field => 'modified_on', origin => 'default', meta_type => 'date' }
         },        
         {
             id_field => 'labels',
