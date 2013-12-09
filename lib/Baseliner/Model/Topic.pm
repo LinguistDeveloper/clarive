@@ -283,7 +283,6 @@ sub topics_for_user {
     }
 
     # project security - grouped by 
-    my %project_sec;
     if( $username && ! $perm->is_root( $username )){
         my @proj_coll_roles = Baseliner->model('Permissions')->user_projects_ids_with_collection(username=>$username);
         my @ors;

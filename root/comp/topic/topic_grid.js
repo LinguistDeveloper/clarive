@@ -671,8 +671,9 @@
         return arr.join('<br>');
     };
     var render_date = function(value,metadata,rec,rowIndex,colIndex,store) {
-        if( !value ) return '';
-        return value.dateFormat(Prefs.js_date_format);
+        // if( !value ) return '';
+        // return value.dateFormat(Prefs.js_date_format);
+        return value;
     };
     var render_bool = function(value) {
         if( !value ) return '';

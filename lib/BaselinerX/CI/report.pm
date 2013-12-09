@@ -676,15 +676,19 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
     } _array($fields{where});
 	
     # filter user projects
-    if( $username && !Baseliner->is_root($username) ) {
-		my @ids_project = Baseliner->model("Permissions")->user_projects_ids( username => $username);
-        my @or_project = ();
-        for my $field_project ( grep { $_->{meta_type} eq 'project' } values %meta ) {
-            push @or_project, { $field_project->{id_field} => mdb->in(@ids_project) };  
-        }
-		$where->{'$or'} = \@or_project  if @or_project;
+    if( $username && ! Baseliner->model('Permissions')->is_root( $username )){
+      my @proj_coll_roles = Baseliner->model('Permissions')->user_projects_ids_with_collection(username=>$username);
+      my @ors;
+      for my $proj_coll_ids ( @proj_coll_roles ) {
+          my $wh = {};
+          while( my ($k,$v) = each %{ $proj_coll_ids || {} } ) {
+              $wh->{"_project_security.$k"} = { '$in'=>[ undef, keys %{ $v || {} } ] }; 
+          }
+          push @ors, $wh;
+      }
+      $where->{'$or'} = \@ors;
     }
-	
+
     ##if( length $query ) {
     ##    my @qmids = map { $_->{obj}{mid} } _array(mdb->topic->search( query=>$query, limit=>999999, project=>{ mid=>1 } )->{results});
     ##    push @where, { mid=>mdb->in(@qmids) };

@@ -7,6 +7,8 @@ params:
     js: '/fields/templates/js/datetimefield.js'
     field_order: 1
     section: 'body'
+    default_today: 'false'
+    meta_type: 'date'
 ---
 */
 
@@ -26,7 +28,7 @@ params:
 			name: meta.id_field,
 			value: value, 
 			//style: { 'font-size': '16px' },
-			format:  meta.format || Prefs.js_date_format,
+			format:  df || Prefs.js_date_format,
 			width: 165,
 			//height: 30,
 			//allowBlank: false,
