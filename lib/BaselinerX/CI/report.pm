@@ -66,7 +66,7 @@ sub my_searches {
     my $username = $p->{username};
 	
     #DB->BaliMasterRel->search({ to_mid=>$userci->mid, rel_field=>'report_user' });
-    my @searches = $self->search_cis( owner=>$username, '$or' => [{ permissions=>'private' }, { permissions=>undef } ] ); 
+    my @searches = $self->search_cis( owner=>$username ); 
     my @mine;
     for my $folder ( @searches ){
         push @mine,
@@ -121,7 +121,7 @@ sub public_searches {
     for my $folder ( @searches ){
         my %fields = map { $_->{type}=>$_->{children} } _array( $folder->selected );
         # check categories permissions
-        my @categories = map { $_->{id_category} } _array($fields{categories});
+        my @categories = map { $_->{data}->{id_category} } _array($fields{categories});
         my @user_cats = grep { exists $user_categories{ $_ } } @categories;
         next if @categories > @user_cats;  # user cannot see category, skip this search
         push @public,
