@@ -280,8 +280,8 @@ sub _create {
         $self->step('INIT');
         $self->run( same_exec => 1 );
     }
-    $self->status('READY');
     $self->step('PRE');
+    $self->status('READY');
     $self->save;
     return $job_seq;
 }
@@ -458,6 +458,7 @@ sub reject {
         { username => $self->username, name=>$self->name, step=>$self->step, status=>$self->status, bl=>$self->bl, comments=>$comments } => sub {
         $self->logger->error( _loc('*Job Rejected by %1*: %2', $p->{username}, $comments), data=>$comments, username=>$p->{username} );
         $self->status( 'REJECTED' );
+        $self->final_status( '' );
         $self->last_finish_status( 'REJECTED' );  # saved for POST
         $self->step('POST');
         # $self->goto_next_step();
@@ -739,6 +740,7 @@ has last_error         => qw(is rw isa Maybe[Str] default '');
 has prev_status        => ( is=>'rw', isa=>'Any' );  # saves previous status
 has last_finish_status => ( is=>'rw', isa=>'Any' );  # saves ending statuses, so that POST can keep them - done by Daemon
 has final_status       => ( is=>'rw', isa=>'Any' );  # so that services can request a final status like PAUSE
+has final_step         => ( is=>'rw', isa=>'Any' );  # so that we set the next step at the very end
 has pause_timeout      => qw(is rw isa Num default), 3600 * 24;  # 1 day max
 has pause_frequency    => qw(is rw isa Num default 5);  # 5 seconds
 has has_errors         => ( is=>'rw', isa=>'Num', default=>0 ); 
@@ -863,17 +865,18 @@ sub run {
     # last line on log
     if( $self->status eq 'ERROR' ) {
         $self->logger->error( _loc( 'Job step %1 finished with error', $self->step, $self->status ) );
-        $self->step eq 'POST' ? $self->step('END') : $self->step( 'POST' );
+        $self->step eq 'POST' ? $self->final_step('END') : $self->final_step( 'POST' );
     } elsif( $self->status eq 'FINISHED' ) { 
         $self->logger->info( _loc( 'Job step %1 finished ok', $self->step ) );
         $self->goto_next_step( $self->final_status );  # goto_next_step only works for jobs 'FINISHED'
-        $self->step('END') if $self->step eq 'POST'; # from POST we goto END always
+        $self->final_step('END') if $self->step eq 'POST'; # from POST we goto END always
     } else {
         $self->logger->info( _loc( 'Job step %1 finished with status %2', $self->step, $self->status ) );
-        $self->step('END') if $self->step eq 'POST'; # from POST we goto END always
-        # ?? where to go from here?
+        $self->goto_next_step( $self->final_status ); 
+        $self->final_step('END') if $self->step eq 'POST'; # from POST we goto END always
     }
     unlink $self->pid_file;
+    $self->step( $self->final_step );
     $self->save;
     return $self->status;
 }
@@ -931,10 +934,8 @@ sub goto_next_step {
     $self->logger->debug(
          _loc('Going from step %1 to next step %2 (status %3)', $current_step, $next_step, $self->status )
     );
-    $self->step( $next_step );
+    $self->final_step( $next_step );
     
-    # COMMIT
-    $self->save;
     return ( $next_step, $next_status );
 }
 

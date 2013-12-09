@@ -54,48 +54,48 @@ sub monitor {
     #    # username can view jobs if it has action.job.view for the job set of job_contents projects/app/subapl
     #}
     
-    if($query_id eq '-1'){
-        my $rs_jobs1;
-        if( !Baseliner->is_root($username) ) {
-            my @ids_project = $perm->user_projects_with_action(username => $username,
-                                                                action => 'action.job.viewall',
-                                                                level => 1);
-            
-            $rs_jobs1 = Baseliner->model('Baseliner::BaliMasterRel')->search({rel_type => 'job_project', to_mid => \@ids_project}
-                                                                               ,{select=>'from_mid'});
-            push @mid_filters, { mid=>mdb->in( map { $_->{from_mid} } $rs_jobs1->hashref->all ) };
-        }
+    my $rs_jobs1;
+    if( !Baseliner->is_root($username) ) {
+        my @ids_project = $perm->user_projects_with_action(username => $username,
+                                                            action => 'action.job.viewall',
+                                                            level => 1);
         
-        if( length $p->{job_state_filter} ) {
-            my @job_state_filters = do {
-                    my $job_state_filter = Util->decode_json( $p->{job_state_filter} );
-                    _unique grep { $job_state_filter->{$_} } keys %$job_state_filter;
-            };
-            $where->{status} = mdb->in( \@job_state_filters );
-        }
+        $rs_jobs1 = Baseliner->model('Baseliner::BaliMasterRel')->search({rel_type => 'job_project', to_mid => \@ids_project}
+                                                                           ,{select=>'from_mid'});
+        push @mid_filters, { mid=>mdb->in( map { $_->{from_mid} } $rs_jobs1->hashref->all ) };
+    }
     
-        # Filter by nature
-        if (length $p->{filter_nature} && $p->{filter_nature} ne 'ALL' ) {
-            # TODO nature only exists after PRE executes, "Load natures" $where->{'bali_job_items_2.item'} = $p->{filter_nature};
-            my @natures = _array( $p->{filter_nature} );
-    
-            my $where2 = { rel_type=>'job_nature', to_mid=>\@natures };
-            $where2->{from_mid} = mdb->in( map { $rs_jobs1->{mid} } $rs_jobs1->hashref->all );
-            
-            my $rs_jobs2 = Baseliner->model('Baseliner::BaliMasterRel')->search($where2,{select=>'from_mid'});
-            push @mid_filters, { mid=>mdb->in( map { $_->{from_mid} } $rs_jobs2->hashref->all ) };
-        }
-    
-        # Filter by environment name:
-        if (exists $p->{filter_bl}) {      
-          $where->{bl} = $p->{filter_bl};
-        }
-    
-        # Filter by job_type
-        if (exists $p->{filter_type}) {      
-          $where->{type} = $p->{filter_type};
-        }
-    }else{
+    if( length $p->{job_state_filter} ) {
+        my @job_state_filters = do {
+                my $job_state_filter = Util->decode_json( $p->{job_state_filter} );
+                _unique grep { $job_state_filter->{$_} } keys %$job_state_filter;
+        };
+        $where->{status} = mdb->in( \@job_state_filters );
+    }
+
+    # Filter by nature
+    if (length $p->{filter_nature} && $p->{filter_nature} ne 'ALL' ) {
+        # TODO nature only exists after PRE executes, "Load natures" $where->{'bali_job_items_2.item'} = $p->{filter_nature};
+        my @natures = _array( $p->{filter_nature} );
+
+        my $where2 = { rel_type=>'job_nature', to_mid=>\@natures };
+        $where2->{from_mid} = mdb->in( map { $rs_jobs1->{mid} } $rs_jobs1->hashref->all );
+        
+        my $rs_jobs2 = Baseliner->model('Baseliner::BaliMasterRel')->search($where2,{select=>'from_mid'});
+        push @mid_filters, { mid=>mdb->in( map { $_->{from_mid} } $rs_jobs2->hashref->all ) };
+    }
+
+    # Filter by environment name:
+    if (exists $p->{filter_bl}) {      
+      $where->{bl} = $p->{filter_bl};
+    }
+
+    # Filter by job_type
+    if (exists $p->{filter_type}) {      
+      $where->{type} = $p->{filter_type};
+    }
+        
+    if($query_id ne '-1'){
         #Cuando viene por el dashboard
         my @jobs = split(",",$query_id);
         $where->{'mid'} = mdb->in( \@jobs );

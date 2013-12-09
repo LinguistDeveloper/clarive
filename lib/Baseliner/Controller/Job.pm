@@ -268,8 +268,8 @@ sub refresh_now : Local {
 
     try {
         if( exists $p->{top} ) {
-            # are there newer jobs?
-            my $doc = ci->job->find->sort({ id=>-1 })->next; 
+            # are there newer jobs?   
+            my $doc = ci->job->find->sort({ jobid=>-1 })->next; 
             $real_top= $doc->{mid};
             if( $real_top ne $p->{top} && $real_top ne $p->{real_top} ) {
                 $need_refresh = \1;
