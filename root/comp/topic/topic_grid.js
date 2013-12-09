@@ -947,7 +947,7 @@
 						break;
 					case 'list':
 						if (r.filter.options){
-							#console.dir(r.filter.options);
+							//console.dir(r.filter.options);
 							var options = [];
 							for(i=0;i<r.filter.options.length;i++){
 								if(r.filter.values[i] == '') r.filter.values[i] = -1;

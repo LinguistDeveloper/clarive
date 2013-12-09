@@ -25,6 +25,8 @@ sub rel_type {
 sub report_list {
     my ($self,$p) = @_;
     
+	_log ">>>>>>>>>>USUARIO: " . $p->{username};
+	
     my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $p->{username}) );  # XXX should be by category, same id fields may step on each other
     my $mine = $self->my_searches({ username=>$p->{username}, meta=>\%meta });
     my $public = $self->public_searches({ meta=>\%meta, username=>$p->{username} });
