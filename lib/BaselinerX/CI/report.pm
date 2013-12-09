@@ -25,13 +25,9 @@ sub rel_type {
 sub report_list {
     my ($self,$p) = @_;
     
-	_log ">>>>>>>>>>USUARIO: " . $p->{username};
-	
     my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $p->{username}) );  # XXX should be by category, same id fields may step on each other
     my $mine = $self->my_searches({ username=>$p->{username}, meta=>\%meta });
-	_log ">>>>>>>>>>>>>>PASASASASSA";
     my $public = $self->public_searches({ meta=>\%meta, username=>$p->{username} });
-	_log ">>>>>>>>>>>>>>>>>PUBLIC: " . _dump $public;
 	
     my @trees = (
             {
@@ -70,11 +66,9 @@ sub my_searches {
     my $username = $p->{username};
 	
     #DB->BaliMasterRel->search({ to_mid=>$userci->mid, rel_field=>'report_user' });
-    my @searches = $self->search_cis( owner=>$username );
-		
+    my @searches = $self->search_cis( owner=>$username ); 
     my @mine;
     for my $folder ( @searches ){
-		_log ">>>>>>>>>>>>>>>>>>>>>>>>>Folder: " . _dump $folder;
         push @mine,
             {
                 mid     => $folder->mid,
@@ -113,7 +107,6 @@ sub my_searches {
                 leaf    => \1,
             };
     }
-	_log ">>>>>>>>>>>>>>>>>MINE: " . _dump @mine;
     return \@mine;
 }
 
@@ -525,7 +518,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	my %dynamic_filter;
 	if( $filter ){
 		for my $flt ( _array $filter ){
-			_log ">>>>>>Filter: " . _dump $flt;
+			#_log ">>>>>>Filter: " . _dump $flt;
 			if( exists $dynamic_filter{$flt->{field}} ){
 				push @{$dynamic_filter{$flt->{field}}->{oper}}, $flt->{comparison};
 				push @{$dynamic_filter{$flt->{field}}->{value}}, $flt->{value};
@@ -788,5 +781,4 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 
 1;
 
-__END__
 
