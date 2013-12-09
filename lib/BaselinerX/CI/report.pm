@@ -709,7 +709,15 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
     ##    push @where, { mid=>mdb->in(@qmids) };
     ##}
 
+#    for my $id_field ( keys %$where ) {
+#		_log ">>>>>>>>>>>>>>>>>>" . $select_field_map{ $id_field };
+#		my $new_id_field = $select_field_map{ $id_field } // next;
+#		$where->{$new_id_field} = delete $where->{$id_field};
+#	}
 
+	if( exists $where->{'status_new'} ){
+		$where->{'category_status.id'} = delete $where->{'status_new'};
+	}
 	
     my @sort = map { $_->{id_field} => 0+($_->{sort_direction} // 1) } _array($fields{sort});
     
