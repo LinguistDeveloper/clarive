@@ -901,16 +901,26 @@ List users that have an action
 =cut
 sub list {
     my ( $self, %p ) = @_;
+
+    my $cache_key = ["user:permission:list:$p{username}:", %p ];
+    my $cached = Baseliner->cache_get( $cache_key );
+    if( ref $cached eq 'ARRAY' ) {
+        return @$cached;
+    }
+
     my $ns = defined $p{ns} ? $p{ns} : 'any';
     ref $ns eq 'ARRAY' and _throw "Parameter ns: ARRAY of namespaces not supported yet.";
     my $bl = $p{bl} || 'any';
-
+    
     $p{recurse} = defined $p{recurse} ? $p{recurse} : 1;
     $p{action} or $p{username} or die _loc( 'No action or username specified' );
 
     # if its root, gimme all actions period.
-    return map { $_->{key} } Baseliner->model('Actions')->list
-      if $p{username} && $self->is_root( $p{username} );
+    if( $p{username} && $self->is_root( $p{username} ) ) {
+        my @ret = map { $_->{key} } Baseliner->model('Actions')->list;
+        Baseliner->cache_set( $cache_key, \@ret );
+        return @ret;
+    }
 
     # build query
     my $query = $p{action}
@@ -929,9 +939,7 @@ sub list {
         { join     => ['bali_roleusers', 'bali_roleactions'],
           prefetch=>[ $p{action} ? 'bali_roleusers' : 'bali_roleactions']
         }
-    );
-
-    $roles->result_class('DBIx::Class::ResultClass::HashRefInflator');
+    )->hashref;
 
     # now, foreach role
     my @list;
@@ -971,7 +979,9 @@ sub list {
         }
     }
     # _log "LIST: $p{username} got \n";_log Dumper _unique @list;
-    return _unique @list;
+    my @ret = _unique @list;
+    Baseliner->cache_set( $cache_key, \@ret );
+    return @ret;
 }
 
 =head2 is_root

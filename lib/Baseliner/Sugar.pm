@@ -100,15 +100,21 @@ sub master_new {
         return $ci->save;
         #return $class->save( %$master_data, data=>$code );   # this returns a mid
     } elsif( ref $code eq 'CODE' ) {
-        my $ret;
-        Baseliner->model('Baseliner')->schema->txn_do(sub{
+        return try {
+            my $ret;
+            Baseliner->model('Baseliner')->schema->txn_begin;
             my $ci = $class->new( %$master_data );
             $ci->save;
             my $mid = $ci->mid;
             #my $mid = $class->save( %$master_data ); 
             $ret = $code->( $mid );
-        });
-        return $ret;
+            Baseliner->model('Baseliner')->schema->txn_commit;
+            return $ret;
+        } catch {
+            my $e = shift; 
+            Baseliner->model('Baseliner')->schema->txn_rollback;
+            _throw $e;
+        };
     } else {
         _throw 'Invalid master_new syntax';
     }

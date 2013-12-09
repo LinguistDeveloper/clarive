@@ -24,6 +24,7 @@
         mini_mode = params.mini_mode==undefined ? true : params.mini_mode;
     }
     var fields = params.fields;
+    var state_id =id_report ? 'topic-grid-'+id_report : 'topic-grid';
     //console.log( params );
     
     var base_params = { start: 0, limit: ps, typeApplication: typeApplication, 
@@ -420,6 +421,19 @@
                 } else {
                     Baseliner.message( _('ERROR'), _('Select at least one row'));    
                 };
+        }
+    });
+    
+    var btn_clear_state = new Ext.Button({
+        icon: '/static/images/icons/reset-grey.png',
+        tooltip: _('Reset Grid Columns'),
+        iconCls: 'x-btn-icon',
+        handler: function(){
+            // deletes 
+            var cp=new Ext.state.CookieProvider();
+            Ext.state.Manager.setProvider(cp);
+            Ext.state.Manager.clear( state_id );
+            Baseliner.refreshCurrentTab();
         }
     });
     
@@ -989,7 +1003,7 @@
         stripeRows: true,
         autoScroll: true,
         stateful: true,
-        stateId: 'topic-grid',
+        stateId: state_id, 
         //enableHdMenu: false,
         store: store_topics,
         //enableDragDrop: true,
@@ -1013,6 +1027,7 @@
 %}              
                 //btn_labels
                 '->',
+                btn_clear_state,
                 btn_reports,
                 btn_kanban,
                 btn_mini

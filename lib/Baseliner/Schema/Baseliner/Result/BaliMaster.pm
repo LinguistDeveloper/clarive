@@ -44,21 +44,6 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("mid");
 
-#__PACKAGE__->add_unique_constraint( ns => [ qw/collection ns/ ] );
-#__PACKAGE__->add_unique_constraint( moniker => [ qw/moniker/ ] );
-
-# __PACKAGE__->has_many("search_data", "Baseliner::Schema::Baseliner::Result::BaliMasterSearch", 
-#     { 'foreign.mid' => 'self.mid' },
-#     { join_type=>'left' }
-# );
-
-__PACKAGE__->has_many(
-  "kv",
-  "Baseliner::Schema::Baseliner::Result::BaliMasterKV",
-  { "foreign.mid" => "self.mid" },
-);
-
-
 sub sqlt_deploy_hook {
    my ($self, $sqlt_table) = @_;
    $sqlt_table->add_index(name =>'bali_master_idx_name', fields=>['name'] );

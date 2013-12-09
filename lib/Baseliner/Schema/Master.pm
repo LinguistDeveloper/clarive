@@ -116,7 +116,7 @@ sub has_master {
       "master",
       "Baseliner::Schema::Baseliner::Result::BaliMaster",
       { "mid" => $mid_col },
-      { cascade_delete => 0, on_delete=>'cascade', is_foreign_key_constraint=>1, },
+      { cascade_delete => 0, on_delete=>undef, is_foreign_key_constraint=>1, },
     );
     $self->has_many(
         'children' => 'Baseliner::Schema::Baseliner::Result::BaliMasterRel',

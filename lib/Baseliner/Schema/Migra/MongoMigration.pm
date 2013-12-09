@@ -54,6 +54,7 @@ sub run {
         bali_event           => { coll=>'event', seq=>1 },
         bali_event_rules     => { coll=>'event_log', seq=>1, capped=>1, size=>(1024*1024*50), max=>1000 },
         bali_job             => 'job',
+        bali_log             => 'job_log',
         # bali_job_items       => 'job_items',
         bali_label           => 'label',
         bali_label_project   => 'label_project',
@@ -255,7 +256,7 @@ sub assets {
             my $ass = mdb->asset( $d, filename=>$r->{data_name}//'', parent_collection=>'log', parent_mid=>$mid );
             $ass->insert;
             $r->{data} = $ass->id;
-            mdb->log->insert( $r );
+            mdb->job_log->insert( $r );
             $k++;
             print "$k..." if ! $k % 1000;
         });

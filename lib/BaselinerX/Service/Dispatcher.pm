@@ -45,7 +45,6 @@ sub run {
     }
     else {
         _log "Starting daemons...";
-        sleep 3;
         $self->dispatcher( $c, $config );
     }
 }
@@ -139,7 +138,7 @@ sub dispatcher {
         # Block table and start transaction
         my $dbh = Baseliner->model('Baseliner')->storage->dbh;
         $dbh->begin_work();
-        $dbh->do("lock table bali_daemon in exclusive mode");
+        $dbh->do("lock table bali_daemon in exclusive mode");  # BaliDaemon
 
         try {
             # in case of DB failure

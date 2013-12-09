@@ -184,7 +184,7 @@ sub dsl_build {
         my $name = _strip_html( $attr->{text} );
         my $run_forward = _bool($attr->{run_forward},1);  # if !defined, default is true
         my $run_rollback = _bool($attr->{run_rollback},1); 
-        my $error_trap = $attr->{error_trap} eq 'trap';
+        my $error_trap = $attr->{error_trap} && $attr->{error_trap} eq 'trap';
         my $parallel_mode = length $attr->{parallel_mode} && $attr->{parallel_mode} ne 'none' ? $attr->{parallel_mode} : '';
         my $timeout = _bool($attr->{timeout},0); 
         do{ _debug _loc("*Skipped* task %1 in run forward", $name); next; } if !$is_rollback && !$run_forward;

@@ -127,7 +127,7 @@ sub run {
     } catch {};
 
     # logfile
-    $c->stash->{job}->job_stash->{logfile} = $c->stash->{logfile};
+    $c->stash->{job}->job_stash->{logfile} = $c->stash->{logfile} if $c->stash->{job};
 
     $logger->verbose( exists($args->{v}) || exists($args->{debug}) );
     delete $args->{v};  # assume I'm the only one using this

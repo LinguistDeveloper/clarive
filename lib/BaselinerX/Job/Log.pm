@@ -45,8 +45,7 @@ A file:
 
 =cut
 
-has jobid           => ( is => 'rw', isa => 'Int' );
-has job             => ( is => 'rw', isa => 'BaselinerX::Service::Runner', weak_ref=>1 );
+has job             => ( is => 'rw', isa => 'BaselinerX::CI::job', weak_ref=>1 );
 has exec            => ( is => 'rw', isa => 'Int', default => 1 );
 has current_section => ( is => 'rw', isa => 'Str', default => 'general' );
 has current_service => ( is => 'rw', isa => 'Maybe[Str]', default => '' );
@@ -60,13 +59,9 @@ has max_step_level    => ( is => 'rw', isa => 'Int', default => 2 );
 # set the execution number for this log roll
 sub BUILD {
     my ($self,$params) = @_;
-    my $jobid = $self->jobid;
-    my $job_row = Baseliner->model('Baseliner::BaliJob')->find( $jobid );
-    if( my $job = $self->job ) {
-        $self->current_service( $job->current_service ); 
-    }
-    if( ref $job_row ) {
-        $self->exec( $job_row->exec ); # unless defined $self->exec;
+    $self->current_service( $self->job->current_service ); 
+    if( ref $self->job ) {
+        $self->exec( $self->job->exec ); # unless defined $self->exec;
     }
 }
 
@@ -104,6 +99,7 @@ sub common_log {
     }
     try {
         $row = Baseliner->model('Baseliner::BaliLog')->create({ id_job =>$jobid, text=> $text, lev=>$lev, module=>$module, exec=>$job_exec }); 
+        $row = mdb->job_log->create({ id_job =>$jobid, text=> $text, lev=>$lev, module=>$module, exec=>$job_exec }); 
 
         $p{data} && $row->data( compress $p{data} );  ##TODO even with compression, too much data breaks around here - use dbh directly?
         defined $p{more} && $row->more( $p{more} );

@@ -1042,7 +1042,7 @@ sub update_project : Local {
             my $id_field = $field->{id_field};
             my $doc = mdb->topic->find_one({ mid=>"$topic_mid" },{ $id_field => 1 }); 
             _fail _loc 'Topic not found: %1', $topic_mid unless ref $doc;
-            my $fdata = $doc->{$id_field} // [];
+            my $fdata = [ _array( $doc->{$id_field} ) ];
             push $fdata, $id_project;
             $c->model('Topic')->update({ action=>'update', topic_mid=>$topic_mid, username=>$c->username, $id_field=>$fdata }); 
         } else {

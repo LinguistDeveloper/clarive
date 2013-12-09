@@ -9,12 +9,12 @@ use JSON::XS;
 BEGIN { extends 'Catalyst::Controller' }
 
 sub logs_list : Path('/job/log/list') {
-    my ( $self, $c, $id_job ) = @_;
+    my ( $self, $c, $mid ) = @_;
     my $p = $c->req->params;
-    $c->stash->{id_job} = $id_job // $p->{id_job};
+    $c->stash->{mid} = $mid // $p->{mid};
     $c->stash->{service_name} = $p->{service_name};
     $c->stash->{annotate_now} = $p->{annotate_now};
-    my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
+    my $job = ci->new( $p->{mid} );
     $c->stash->{job_exec} = ref $job ? $job->exec : 1;
     $c->forward('/permissions/load_user_actions');
     $c->stash->{template} = '/comp/log_grid.js';
@@ -23,40 +23,39 @@ sub logs_list : Path('/job/log/list') {
 sub dashboard_log : Path('/job/log/dashboard') {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    $c->stash->{id_job} = $p->{id_job};
+    $c->stash->{mid} = $p->{mid};
     $c->stash->{name_job} = $p->{name};
 
-    my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
+    my $job = ci->new( $p->{mid} );
     $c->stash->{job_exec} = ref $job ? $job->exec : 1;
-    $self->summary( $c );
-    $self->services( $c );
-    $self->contents( $c );
-    $self->outputs( $c );
-
+    $c->stash->{summary} = $job->summary;
+    $c->stash->{services} = $job->service_summary( summary=>$c->stash->{summary} );
+    $c->stash->{contents} = $job->contents;
+    $c->stash->{outputs} = $job->artifacts;
     $c->stash->{template} = '/comp/dashboard_job.html';
 }
 
 sub summary: Private{
     my ( $self, $c ) = @_;
-    my $sumary = $c->model('Jobs')->get_summary( jobid => $c->stash->{id_job}, job_exec => $c->stash->{job_exec} );
+    my $sumary = $c->model('Jobs')->get_summary( jobid => $c->stash->{mid}, job_exec => $c->stash->{job_exec} );
     $c->stash->{summary} = $sumary;
 }
 
 sub services: Private{
     my ( $self, $c ) = @_;
-    my $services = $c->model('Jobs')->get_services_status( jobid => $c->stash->{id_job}, job_exec => $c->stash->{job_exec}, summary => $c->stash->{summary} );
+    my $services = $c->model('Jobs')->get_services_status( jobid => $c->stash->{mid}, job_exec => $c->stash->{job_exec}, summary => $c->stash->{summary} );
     $c->stash->{services} = $services;
 }
 
 sub contents: Private{
     my ($self, $c ) = @_;
-    my $contents = $c->model('Jobs')->get_contents ( jobid => $c->stash->{id_job}, job_exec => $c->stash->{job_exec} );
+    my $contents = ci->new( $c->stash->{mid} )->contents; #$c->model('Jobs')->get_contents ( jobid => $c->stash->{mid}, job_exec => $c->stash->{job_exec} );
     $c->stash->{contents} = $contents;
 }
 
 sub outputs: Private{
     my ($self, $c ) = @_;
-    my $outputs = $c->model('Jobs')->get_outputs ( jobid => $c->stash->{id_job}, job_exec => $c->stash->{job_exec} );
+    my $outputs = $c->model('Jobs')->get_outputs ( jobid => $c->stash->{mid}, job_exec => $c->stash->{job_exec} );
     $c->stash->{outputs} = $outputs;
 }
 
@@ -77,7 +76,7 @@ sub auto_refresh : Path('/job/log/auto_refresh') {
     my $p = $c->request->parameters;
     my $filter = $p->{filter};
        $filter = decode_json( $filter ) if $filter;
-    my $where = { id_job => $p->{ id_job }, 'me.exec' => $p->{ job_exec } || 1 };
+    my $where = { mid => $p->{ mid }, 'me.exec' => $p->{ job_exec } || 1 };
     #_log _dump ( $filter );
     $where->{lev} = [ grep { $filter->{$_} } keys %$filter ]
         if ref($filter) eq 'HASH';
@@ -90,46 +89,35 @@ sub auto_refresh : Path('/job/log/auto_refresh') {
 }
 
 sub log_rows : Private {
-    my ( $self,$c, $id_job )=@_;
+    my ( $self,$c, $mid )=@_;
     my $p = $c->request->parameters;
     my ($start, $limit, $query, $dir, $sort, $service_name, $filter, $cnt ) = @{$p}{qw/start limit query dir sort service_name filter/};
     $limit||=50;
     ($sort, $dir) = split /\s+/, $sort if $sort =~ /\s/; # sort may have dir in it, ie: "id asc"
-    $dir ||= 'asc';
+    $dir = defined $dir && lc $dir eq 'desc' ? -1 : 1; 
+    $sort ||= 'ts';
     $filter = decode_json( $filter ) if $filter;
     my $config = $c->registry->get( 'config.job.log' );
     my @rows = ();
-    $id_job //= $p->{id_job};
-    _fail 'Missing id_job' unless length $id_job;
+    $mid //= $p->{mid};
+    _fail 'Missing mid' unless length $mid;
 
-    my $job = $c->model('Baseliner::BaliJob')->find( $id_job );
+    my $job = ci->new( $mid );
 
-    my $where = $id_job ? { id_job=>$id_job } : {};
-
-    my @select = qw( 
-         id text lev id_job more timestamp ns provider data_name data_length module section step exec prefix milestone service_key
-     );
-    push @select, 'data' if $p->{with_data}; 
-    # from
-    my $from = {  select=>\@select,  order_by=> ( $sort ? [{ "-$dir" => $sort },{ -asc => 'me.id' }] : { -asc => 'me.id' } ),
-                    #page => to_pages( start=>$start, limit=>$limit ),  
-                    #rows => $limit,
-                #	prefetch => ['job']
-                };
-    #TODO use the blob 'data' somehow .. change to clob?
+    my $where = $mid ? { mid=>"$mid" } : {};
 
     $where = {};	
     if( $query ) {
-        #$where->{'lower(to_char(timestamp)||text||lev||me.ns||provider||data_name)'} = { like => '%'. lc($query) . '%' };
-        $where = query_sql_build( query=>$query, fields=>{
-                timestamp   =>'to_char(timestamp)',
-                text		=>'text',
-                ns			=>'ns',
-                provider	=>'provider',
-                data_name   =>'data_name',
-                service_key	=>'service_key',
-                step		=>'step',
-            });		
+        #$where->{'lower(to_char(ts)||text||lev||me.ns||provider||data_name)'} = { like => '%'. lc($query) . '%' };
+        $where = mdb->query_build( query=>$query, fields=>[qw(
+                ts          
+                text		
+                ns			
+                provider	
+                data_name   
+                service_key	
+                step		
+                )]);		
     } else {
         my $job_exec;
         if( exists $p->{job_exec} ) {
@@ -137,66 +125,70 @@ sub log_rows : Private {
         } else {
             $job_exec = ref $job ? $job->exec : 1;
         }
-        $where->{'me.exec'} = $job_exec;
+        $where->{'exec'} = 0+$job_exec;
         # faster: $from->{join} = [ 'jobexec' ];
     }
     
-    if($id_job){
-        $where->{id_job} = $id_job;
+    if($mid){
+        $where->{mid} = $mid;
     }
-    $where->{lev} = [ grep { $filter->{$_} } keys %$filter ]
+    $where->{lev} = mdb->in( grep { $filter->{$_} } keys %$filter )
         if ref($filter) eq 'HASH';
-    $p->{levels} and $where->{lev} = [ _array $p->{levels} ];
+    $p->{levels} and $where->{lev} = mdb->in( _array $p->{levels} );
     
     #Viene por la parte de dashboard_log
     if($service_name){
         $where->{service_key} = $service_name;
     }
-    #TODO    store filter preferences in a session instead of a cookie, on a by id_job basis
-    #my $job = $c->model( 'Baseliner::BaliJob')->search({ id=>$id_job })->first;
+    #TODO    store filter preferences in a session instead of a cookie, on a by mid basis
+    #my $job = $c->model( 'Baseliner::BaliJob')->search({ id=>$mid })->first;
 
-    my $rs = $c->model( 'Baseliner::BaliLog')->search( $where , $from );
+_warn( $where );
+    my $rs = mdb->job_log->find( $where );
+    $rs->sort({ $sort => $dir });
+    
+    if( $p->{with_data} ) {
+        # TODO get asset list
+    }
 
     #my $pager = $rs->pager;
     #$cnt = $pager->total_entries;
 
     my $qre = qr/\.\w+$/;
-    while( my $r = $rs->next ) {
-        my $more = $r->more;
+    while( my $doc = $rs->next ) {
+        my $more = $doc->{more};
         my $data = $p->{with_data}
             || ( defined $more && $more eq 'link' )
-            ? _html_escape( uncompress( $r->data ) || $r->data ) : '';
-        #next if( $query && !query_array($query, $r->job->name, $r->get_column('timestamp'), $r->text, $r->provider, $r->lev, $r->data_name, $data, $r->ns ));
-        #if( $filter ) { next if defined($filter->{$r->lev}) && !$filter->{$r->lev}; }
+            ? _html_escape( uncompress( $doc->{data} ) || $doc->{data} ) : '';  # TODO data from asset
 
-        my $data_len = $r->data_length || 0;
-        my $data_name = $r->data_name || ''; 
+        my $data_len = $doc->{data_length} || 0;
+        my $data_name = $doc->{data_name} || ''; 
         my $file = $data_name =~ $qre
             ? $data_name
             : ( $data_len > ( 4 * 1024 ) )
-                ? ( $data_name || $self->_select_words($r->text,2) ) . ".txt"
+                ? ( $data_name || $self->_select_words($doc->{text},2) ) . ".txt"
                 : '';
         push @rows,
           {
-            id       => $r->id,
-            id_job   => $r->id_job,
-            job      => $job->name,
-            text     => _markup( $r->text ),
-            step     => $r->step,
-            prefix   => $r->prefix,
-            milestone=> $r->milestone,
-            service_key=> $r->service_key,
-            exec     => $r->exec,
-            timestamp => $r->get_column('timestamp'),
-            ts       => $r->get_column('timestamp'),
-            lev      => $r->lev,
-            module   => $r->module,
-            section  => $r->section,
-            ns       => $r->ns,
-            provider => $r->provider,
+            id       => $doc->{id},
+            mid      => $doc->{mid},  # job mid
+            id_data  => $doc->{data},  # job mid
+            job      => $job->{name},
+            text     => _markup( $doc->{text} ),
+            step     => $doc->{step},
+            prefix   => $doc->{prefix},
+            milestone=> $doc->{milestone},
+            service_key=> $doc->{service_key},
+            exec     => $doc->{exec},
+            ts       => $doc->{ts},
+            lev      => $doc->{lev},
+            module   => $doc->{module},
+            section  => $doc->{section},
+            ns       => $doc->{ns},
+            provider => $doc->{provider},
             datalen  => $data_len,
             data     => $data,
-            more     => { more=>$more, data_name=> $r->data_name, data=> $data_len ? \1 : \0, file=>$file },
+            more     => { more=>$more, data_name=> $doc->{data_name}, data=> $data_len ? \1 : \0, file=>$file },
           } #if( ($cnt++>=$start) && ( $limit ? scalar @rows < $limit : 1 ) );
     }
     return ( $job, @rows );
@@ -204,8 +196,8 @@ sub log_rows : Private {
 
 sub gen_job_key : Path('/job/log/gen_job_key') {
     my ($self,$c ) = @_;
-    my $id_job = $c->req->params->{id_job};
-    my $job = DB->BaliJob->find( $id_job );
+    my $mid = $c->req->params->{mid};
+    my $job = DB->BaliJob->find( $mid );
     if( $job ) {
         if( ! $job->job_key ) {
             $job->job_key( _md5() );
@@ -213,7 +205,7 @@ sub gen_job_key : Path('/job/log/gen_job_key') {
         }
         $c->stash->{json} = {  success=>\1, job_key => $job->job_key };
     } else {
-        $c->stash->{json} = { success=>\0, msg=>_loc('Could not find job id %1', $id_job ) };
+        $c->stash->{json} = { success=>\0, msg=>_loc('Could not find job id %1', $mid ) };
     }
     $c->forward('View::JSON');
 }
@@ -226,13 +218,13 @@ sub log_html : Path('/job/log/html') {
     if( $job_key ) {
         my $job = $c->model('Baseliner::BaliJob')->search({ job_key=>$job_key })->first;
         _throw "Job key not found (job_key=$job_key)" unless ref $job;
-        $p->{id_job} = $job->id;
+        $p->{mid} = $job->id;
         $p->{job_exec} ||= $job->exec;
         $p->{levels} = [ 'info', 'warn', 'error' ];
         $p->{debug} eq 1 and push @{ $p->{levels} }, 'debug';
     }
     # get data
-    if( defined $p->{id_job} ) {
+    if( defined $p->{mid} ) {
         # log_rows uses req->parameters ($p) 
         my ($job, @rows ) = $self->log_rows( $c );
         # prepare template
@@ -255,7 +247,7 @@ sub logs_json : Path('/job/log/json') {
     $c->stash->{json} = {
         totalCount => scalar(@rows),
         data       => \@rows,
-        job        => { ref $job ? $job->get_columns : () },
+        job        => ref $job ? $job : {},
         job_key  => $job_key,
      };	
     # CORE::warn Dump $c->stash->{json};
@@ -288,7 +280,7 @@ sub jobList : Path('/job/log/jobList') {
     if ( ref $p->{logId} ) {
         $log = $c->model('Baseliner::BaliLogData')->search( { id_log => $p->{logId} }, { order_by => 'path, id' } );
     } else {
-        $log = $c->model('Baseliner::BaliLogData')->search( { id_job => $p->{jobId} }, { order_by => 'path, id' } );
+        $log = $c->model('Baseliner::BaliLogData')->search( { mid => $p->{jobId} }, { order_by => 'path, id' } );
     }
     my ( $package, $site, $parent, $lastSite, $lastParent, $lastPackage ) =
         ( undef, undef, undef, undef, undef, undef, undef );
@@ -453,8 +445,9 @@ sub jesFile : Path('/job/log/jesFile') {
 sub log_data : Path('/job/log/data') {
     my ( $self, $c, $id ) = @_;
     my $p = $c->req->params;
-    my $log = $c->model('Baseliner::BaliLog')->search({ id=> $id || $p->{id} })->first;
-    my $data = uncompress($log->data) || $log->data;
+    my $log = mdb->job_log->find_one({ id=> 0+$id || 0+$p->{id} });
+    my $data = mdb->grid->get( $log->{data} )->slurp; 
+    $data = uncompress($data) || $data;
     $data = _html_escape( $data );
     $c->res->body( "<pre>" . $data  . " " );
 }
@@ -462,10 +455,9 @@ sub log_data : Path('/job/log/data') {
 sub log_elements : Path('/job/log/elements') {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    my $job = $c->model('Baseliner::BaliJob')->find(  $p->{id_job} );
-    
+    my $job = ci->new( $c->stash->{mid} ); 
     my $job_exec = ref $job ? $job->exec : 1;
-    my $contents = $c->model('Jobs')->get_contents( jobid => $p->{id_job}, job_exec => $job_exec);	
+    my $contents = $job->contents; #$c->model('Jobs')->get_contents ( jobid => $c->stash->{mid}, job_exec => $c->stash->{job_exec} );
     my @items = _array ($contents->{items});
     my $data = join "\n", map { $_->status . "\t" . $_->path . " (" . $_->versionid . ")" } @items;
     $data = _html_escape( $data );
@@ -477,7 +469,7 @@ sub log_delete : Path('/job/log/delete') {
     my ( $self, $c, $id ) = @_;
     my $p = $c->req->params;
     $c->stash->{json} = try {
-        my $log = $c->model('Baseliner::BaliLog')->search({ id_job=>$p->{id_job}, exec=>$p->{job_exec} })->delete;
+        my $log = $c->model('Baseliner::BaliLog')->search({ mid=>$p->{mid}, exec=>$p->{job_exec} })->delete;
         { success=>\1, msg=>_loc( "Deleted" ) };
     } catch {
         { success=>\0, msg=>shift() };
@@ -512,38 +504,11 @@ sub log_file : Path('/job/log/download_data') {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     my $log = $c->model('Baseliner::BaliLog')->search({ id=> $p->{id} })->first;
-    my $file_id = $log->id_job.'-'.$p->{id};
+    my $file_id = $log->mid.'-'.$p->{id};
     my $filename = $file_id . '-' . ( $p->{file_name} || $log->data_name || 'attachment.txt' );
     $c->stash->{serve_filename} = $filename;
     $c->stash->{serve_body} = uncompress($log->data) || $log->data;
     $c->forward('/serve_file');
-}
-
-sub annotate : Path('/job/log/annotate') {
-    my ( $self, $c ) = @_;
-    my $p = $c->req->params;
-    my $level = $p->{level} ||= 'info';
-    try {
-        _throw 'Missing text' unless $p->{text};
-
-        my $text = $p->{text};
-        $text = substr($text, 0, 2048 );
-        #$text = '<b>' . $c->username . '</b>: ' . $p->{text};
-        my %args = ( jobid=>$p->{jobid} );
-        $args{job_exec} = $p->{job_exec} if $p->{job_exec} > 0;
-        if ($level eq 'info') {
-            Baseliner->model('Jobs')->log_this(  %args  )->comment( $text, data=>$p->{data}, username=>$c->username );
-        } elsif ($level eq 'warn') {
-            Baseliner->model('Jobs')->log_this(  %args  )->warn( $text, data=>$p->{data}, username=>$c->username );
-        } elsif ($level eq 'error') {
-            Baseliner->model('Jobs')->log_this(  %args  )->error( $text, data=>$p->{data}, username=>$c->username );
-        } else {
-        }
-        $c->stash->{json} = { success=>\1 };
-    } catch {
-        $c->stash->{json} = { success=>\0, msg=>shift };
-    };
-    $c->forward('View::JSON');
 }
 
 1;

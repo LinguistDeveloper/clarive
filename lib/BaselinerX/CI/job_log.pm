@@ -67,8 +67,9 @@ sub common_log {
     $p{data}||='';
     ref $p{data} and $p{data}=_dump( $p{data} );  # auto dump data if its a ref
     $p{'dump'} and $p{data}=_dump( delete $p{'dump'} );  # auto dump data if its a ref
-    my $job_exec = $self->exec;
+    my $job_exec = 0+$self->exec;
     my $jobid = $self->jobid;
+    my $mid = ''.$self->job->mid;
     my $row;
     # set max level
     if( my $log_level = $self->log_levels->{ $lev } ) {
@@ -85,41 +86,52 @@ sub common_log {
         $text .= "\n(continue...)";
     }
     try {
-        $row = Baseliner->model('Baseliner::BaliLog')->create({ id_job =>$jobid, text=> $text, lev=>$lev, module=>$module, exec=>$job_exec }); 
-
-        $p{data} && $row->data( compress $p{data} );  ##TODO even with compression, too much data breaks around here - use dbh directly?
-        defined $p{more} && $row->more( $p{more} );
-        $p{data_name} && $row->data_name( $p{data_name} );
-        $p{data} && $row->data_length( length( $p{data} ) );
-        $p{prefix} and $row->prefix( $p{prefix} );
-        $p{milestone} and $row->milestone( $p{milestone} );
-        $row->service_key( $self->current_service );
+        my $id = 0+ mdb->seq('job_log_id');  # numeric, good for sorting
+        my $doc = { id=>$id, mid =>$mid, text=> $text, lev=>$lev, module=>$module, exec=>$job_exec, ts=>Util->_now() };
+        
+        $doc->{_id} = mdb->job_log->insert($doc); 
+        
+        $doc->{more} = $p{more} if defined $p{more};
+        $doc->{data_name} = $p{data_name} if $p{data_name};
+        $doc->{data_length} = length( $p{data} ) if $p{data};
+        $doc->{prefix} = $p{prefix} if $p{prefix};
+        $doc->{milestone} = "$p{milestone}" if $p{milestone};
+        $doc->{service_key} = $self->current_service;
+        
+        if( $p{data} ) {
+            my $d = compress( $p{data} );  ## asset in grid
+            my $ass = mdb->asset( $d, parent=>$doc->{_id}, parent_mid=>$mid, filename=>$doc->{data_name}//'', parent_collection=>'log' );
+            $ass->insert;
+            $doc->{data} = $ass->id;
+        }
         
         # save top level for this statement if higher
-        my $ll = $self->log_levels;
+        my $loglevels = $self->log_levels;
         my $top_service_level = $self->job->service_levels->{ $self->job->step }{ $self->current_service };
-        $self->job->service_levels->{ $self->job->step }{ $self->current_service } = $lev if $ll->{$lev} > $ll->{$top_service_level} ; 
+        $self->job->service_levels->{ $self->job->step }{ $self->current_service } = $lev 
+            if $loglevels->{$lev} > ( $top_service_level ? $loglevels->{$top_service_level} : 0 ); 
 
         # print out too
         {
             local $Baseliner::logger = undef;  # prevent recursivity
             Baseliner::Utils::_log_lev( 5, sprintf "[JOB %d][%s] %s", $self->jobid, $lev, $text );
             Baseliner::Utils::_log_lev( 5, substr($p{data},0,1024*10) )
-                if Baseliner->debug && defined $p{data} && !$p{data_name} # no files wanted!;
+                if Baseliner->debug && defined $p{data} && !$p{data_name}; # no files wanted!
         }
 
         # store the current section
         ;
         $p{username} && $lev eq 'comment'
-            ? $row->section( $p{username} )
-            : $row->section( $self->current_section );
+            ? $doc->{section} = $p{username}
+            : $doc->{section} = $self->current_section;
 
         # store the current step
-        my $step = $row->job->step;
-        $row->step( $step ) if $step;
+        my $step = $self->job->step;
+        $doc->{step} = $step if $step;
 
-        $row->update;
-        $self->last_log( $row->get_columns ) if $lev ne 'debug';
+        mdb->job_log->save( $doc );
+        
+        $self->last_log( $doc ) if $lev ne 'debug';
     } catch {
         my $err = shift;
         local $Baseliner::logger = undef;  # prevent recursivity

@@ -13,7 +13,7 @@ has mongo_db_name => qw(is rw isa Any), default=>sub{ Baseliner->config->{mongo}
 has mongo         => ( is=>'ro', isa=>'MongoDB::MongoClient', lazy=>1, default=>sub{
        my $self = shift;
        require MongoDB;
-       _log "Mongo: new connection";
+       _log "Mongo: new connection to " . $self->mongo_db_name;
        MongoDB::MongoClient->new($self->mongo_client);
     });
 has db => ( is=>'ro', isa=>'MongoDB::Database', lazy=>1, default=>sub{
@@ -55,6 +55,41 @@ sub asset {
     my ($self, $in, %opts) = @_;
     require Baseliner::Schema::Asset;
     return Baseliner::Schema::Asset->new( $in, grid=>$self->db->get_gridfs, %opts );
+}
+
+sub asset_new {
+    my ($self,$in,%opts) = @_;
+    $in //= '';
+    my $fh;
+    if( !ref $in ) {
+        # open the string like a file
+        my $basic_fh;
+        open($basic_fh, '<', \$in) or _fail _loc 'Error trying to open string asset: %1', $!;
+        # turn the file handle into a FileHandle
+        $fh = FileHandle->new;
+        $fh->fdopen($basic_fh, 'r');
+    }
+    elsif( ref $in eq 'Path::Class::File' ) {
+        $fh = $in->open('r');
+    }
+    elsif( ref $in eq 'GLOB' ) {
+        $fh = $in;
+    }
+    else {
+        # open the string like a file
+        my $basic_fh;
+        open($basic_fh, '<', \$in);
+        # turn the file handle into a FileHandle
+        $fh = FileHandle->new;
+        $fh->fdopen($basic_fh, 'r');
+    }
+    
+    _fail _loc 'Could not get filehandle for asset' unless $fh; 
+    
+    # $grid->insert($fh, {"filename" => "mydbfile"});
+    # TODO match md5, add mid to asset in case it exists
+    my $id = $self->grid->insert($fh, { %opts } );
+    return $id;
 }
 
 sub ts { Util->_now() }
@@ -195,8 +230,8 @@ sub index_all {
             [{ mid=>1 },{ unique=>1 }],
             [{'$**'=> "text"}],
         ],
-        job => [
-            [{ mid=>1 },{ unique=>1 }],
+        job_log => [
+            [{ id=>1 }],
         ],
         topic_image => [
             [{ id_hash => 1 }]
@@ -282,6 +317,10 @@ sub integrity {
         };
     }
     
+}
+
+sub disconnect {
+    $Baseliner::_mdb = undef;
 }
 
 =head2 query_sql_build
