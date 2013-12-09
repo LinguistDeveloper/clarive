@@ -1007,7 +1007,9 @@ sub update_topic_labels : Local {
                                                                 id_label    => $label_id,
                                                             });     
         }
-        push @label_ids,@current_labels;
+        for ( @label_ids ) {
+            push @current_labels,$_ if !($_ ~~ @current_labels);
+        }
         mdb->topic->update({ mid => "$topic_mid"},{ '$set' => {labels => \@label_ids}});
         $c->stash->{json} = { msg=>_loc('Labels assigned'), success=>\1 };
         Baseliner->cache_remove( qr/:$topic_mid:/ ) if length $topic_mid;
