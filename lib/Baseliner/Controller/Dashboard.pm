@@ -979,7 +979,7 @@ sub get_last_jobError: Private{
     return $db->array_hash( $SQL, $project, $bl );	
 }
 
-sub viewjobs: Local{
+sub viewjobs : Local{
     my ( $self, $c, $dashboard_id, $projects, $type, $bl ) = @_;
     my $p = $c->request->parameters;
 
@@ -1013,13 +1013,12 @@ sub viewjobs: Local{
             }
         }
         
-        my $jobs = 	$c->model('Baseliner::BaliJob')->search({status=>\@status, bl=>$bl});        
-        @jobs = $jobs->search_literal('TO_NUMBER(SYSDATE - ENDTIME) <= ?',$config->{bl_days})->hashref->all;
-        
-        
+        my $days = ( $config->{bl_days} // 7 ) . 'D';
+        my $start = mdb->now - $days; 
+        @jobs = ci->job->find({ endtime => { '$gt' => "$start" }, status=>mdb->in(@status), bl=>$bl })->all;
         
     }else{
-        @jobs = $c->model('Baseliner::BaliJob')->search({status=>'RUNNING', bl=>\@baselines })->hashref->all;
+        @jobs = ci->job->find({ status=>'RUNNING', bl=>mdb->in(@baselines) })->all;
     }
     
     #my $jobsid = join(',', map {$_->{id_job}} @jobs);
