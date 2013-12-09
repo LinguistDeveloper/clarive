@@ -478,6 +478,10 @@ sub selected_fields {
 							push @options, $_->{name};
 							push @values, $_->{mid};
 						} @cis;
+						
+						push @options, _loc('Undefined');
+						push @values, '-1';
+						
 						$filters{$filter->{id_field}} = { type => $type->{field}, options => @options ? \@options : undef, values => @values ? \@values: undef};		
 					}
 					else{
@@ -507,13 +511,10 @@ sub selected_fields {
 method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=undef ) {
     my $rows = $limit // $self->rows;
     my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
-	#_log ">>>>>>>>>>>FIELDS: " . _dump %fields;
 	
     my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $username) );  # XXX should be by category, same id fields may step on each other
     my @selects = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) => 1 } _array($fields{select});
 	
-	#_log ">>>>>>>>>>>SELECT: " . _dump @selects;
-
 	#filters
 	my %dynamic_filter;
 	if( $filter ){
@@ -560,7 +561,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 			my $id_field = $_->{id_field};
 			my $cond;
 			if(exists $dynamic_filter{$id_field}) {
-				#_log ">>>>>>>>TYPE: " . $dynamic_filter{$id_field}->{type};
+				_log ">>>>>>>>TYPE: " . $dynamic_filter{$id_field}->{type};
 				given ($dynamic_filter{$id_field}->{type}) {
 					when ('numeric') {
 						for (my $i = 0; $i < scalar @{$dynamic_filter{$id_field}->{oper}}; $i++){
@@ -572,9 +573,16 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 						}
 					};
 					when ('list') {
-						my @parse = map { $_ == '-1' ? '' : $_.''} _array $dynamic_filter{$id_field}->{value};
+						my @parse;
+						for my $value (_array $dynamic_filter{$id_field}->{value}){
+							if( $value eq '-1'){
+								push @parse, '';
+							}else{
+								push @parse, $value;	
+							}
+						}
 						if (scalar @parse > 1){
-							$cond = { $val->{oper} => \@parse };	
+							$cond = { '$in' => \@parse };	
 						}else{
 							$cond = $parse[0];	
 						}
