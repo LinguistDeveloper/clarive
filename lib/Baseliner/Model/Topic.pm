@@ -1679,17 +1679,15 @@ sub update_category {
     
     $doc->{category} = DB->BaliTopicCategories->search({ id=>$id_cat })->hashref->first 
         || _fail _loc 'Category %1 not found', $id_cat;
-    $doc = {
-        %$doc,
-        color_category       => $doc->{category}{color},
-        category_color       => $doc->{category}{color},
-        category_id          => $doc->{category}{id},
-        id_category          => $doc->{category}{id},
-        category_name        => $doc->{category}{name},
-        name_category        => $doc->{category}{name},
-        is_changeset         => $doc->{category}{is_changeset},
-        is_release           => $doc->{category}{is_release},
-    };
+       
+    $doc->{color_category}       = $doc->{category}{color};
+    $doc->{category_color}       = $doc->{category}{color};
+    $doc->{category_id}          = $doc->{category}{id};
+    $doc->{id_category}          = $doc->{category}{id};
+    $doc->{category_name}        = $doc->{category}{name};
+    $doc->{name_category}        = $doc->{category}{name};
+    $doc->{is_changeset}         = $doc->{category}{is_changeset};
+    $doc->{is_release}           = $doc->{category}{is_release};
     
     if( !ref $mid_or_doc ) {
         # save back to mongo
@@ -1709,15 +1707,13 @@ sub update_category_status {
     $doc->{category_status} = DB->BaliTopicStatus->search({ id=>$id_category_status })->hashref->first
         || _fail _loc 'Status %1 not found', $id_category_status;
         
-    $doc = {
-        %$doc,
-        id_category_status   => $id_category_status,
-        category_status_id   => $doc->{category_status}{id},
-        category_status_seq  => $doc->{category_status}{seq},
-        category_status_type => $doc->{category_status}{type},
-        category_status_name => $doc->{category_status}{name},
-        name_status          => $doc->{category_status}{name},
-    };
+    $doc->{id_category_status}   = 
+    $doc->{category_status_id}   = 
+    $doc->{status_new}           = $doc->{category_status}{id};
+    $doc->{category_status_seq}  = $doc->{category_status}{seq};
+    $doc->{category_status_type} = $doc->{category_status}{type};
+    $doc->{category_status_name} = 
+    $doc->{name_status}          = $doc->{category_status}{name};
     
     if( !ref $mid_or_doc ) {
         # save back to mongo
