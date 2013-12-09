@@ -269,17 +269,17 @@ sub refresh_now : Local {
     try {
         if( exists $p->{top} ) {
             # are there newer jobs?
-            my $row = DB->BaliJob->search(undef, { order_by=>{ -desc =>'id' } })->first;
-            $real_top= $row->id;
+            my $doc = ci->job->find->sort({ id=>-1 })->next; 
+            $real_top= $doc->{mid};
             if( $real_top ne $p->{top} && $real_top ne $p->{real_top} ) {
                 $need_refresh = \1;
             }
         }
         if( $p->{ids} ) {
             # are there more info for current jobs?
-            my @rows = DB->BaliJob->search({ id=>$p->{ids} }, { order_by=>{ -desc =>'id' } })->hashref->all;
+            my @rows = ci->job->find({ id=>mdb->in($p->{ids}) })->sort({ id=>-1 })->all;
             my $data ='';
-            map { $data.= ( $_->{status} // '') . ( $_->{last_log_message} // '') } @rows;
+            map { $data.= ( $_->{status} // '') . ( $_->{last_log_message} // '') } @rows;  # TODO should use step and exec also
             $magic = String::CRC32::crc32( $data );
             my $last_magic = $p->{last_magic};
             if( $magic ne $last_magic ) {
