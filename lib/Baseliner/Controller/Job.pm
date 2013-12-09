@@ -217,10 +217,10 @@ sub job_stash : Local {
 sub job_stash_save : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
-    my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
     $c->stash->{json}  = try {
+        my $job = ci->new( $p->{mid} );
         my $d = _load( $p->{stash} );
-        $job->stash( Util->_stash_dump($d) );
+        $job->job_stash( $d );
         { msg=>_loc( "Stash saved ok"), success=>\1 };
     } catch {
         { success=>\0, msg=>shift() };

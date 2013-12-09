@@ -1770,7 +1770,7 @@ Baseliner.jobs_for_topic = function(args) {
                 //jh += Baseliner.tmpl( 'tmpl_topic_jobs', job ); 
                 jh += function(){/*
                     <div style="margin-left: 20px">
-                        <p><a href="javascript:Baseliner.addNewTab('/job/log/dashboard?id_job=[%= id_job %]&name=[%= name %]',
+                        <p><a href="javascript:Baseliner.addNewTab('/job/log/dashboard?mid=[%= mid %]&name=[%= name %]',
                             '[%= name %]')">
                                 [%= name %]
                            </a> 
