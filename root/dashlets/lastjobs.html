@@ -72,8 +72,8 @@ html: /dashlets/lastjobs.html
                     <tr>
                         <td><b><a href="javascript:Baseliner.addNewTab('/job/log/dashboard?id_job=<%$lastjob->{id}%>&name=<%$lastjob->{name}%>', _('Log <%$lastjob->{name}%>') );"><%$lastjob->{name}%></a></b></td>
                         <td id='row<%$row%>_<%$status_id%>'><%$lastjob->{status}%></td>
-                        <td><% length($lastjob->{starttime}) ? $lastjob->{starttime}->ymd() : '' %> <% length($lastjob->{starttime}) ? $lastjob->{starttime}->hms : '' %> </td>
-                        <td><% length($lastjob->{endtime}) ? $lastjob->{endtime}->ymd() : '' %> <% length($lastjob->{endtime}) ? $lastjob->{endtime}->hms : '' %></td>
+                        <td><% length($lastjob->{starttime}) ? $lastjob->{starttime}: '' %></td>
+                        <td><% length($lastjob->{endtime}) ? $lastjob->{endtime}: '' %> </td>
                     </tr>
                 <script>
                     var details_job = new Object();

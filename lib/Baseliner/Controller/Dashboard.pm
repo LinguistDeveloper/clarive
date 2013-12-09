@@ -660,13 +660,9 @@ sub list_baseline : Private {
 sub list_lastjobs: Private{
     my ( $self, $c, $dashboard_id ) = @_;
     my $order_by = 'STARTTIME DESC'; 
-
-    my $rs_search = DB->BaliJob->search( { 'exists' => $c->model( 'Permissions' )->user_projects_query( username => $c->username, join_id=>'id_project' ) }, 
-        { 
-            join => 'bali_job_items', 
-            order_by => $order_by,
-        }
-    );
+    
+    my @user_projects = $c->model( 'Permissions' )->user_projects_ids( username => $c->username );
+    my $rs_search = ci->job->find({ projects => mdb->in( @user_projects )  })->sort({ starttime => -1 });
     my $numrow = 0;
     my @lastjobs;
     
@@ -687,15 +683,19 @@ sub list_lastjobs: Private{
     }	
     ##########################################################################################################
 
-    while( my $rs = $rs_search->next ) {
-        if ($numrow >= $default_config->{rows}) {last;}
-        push @lastjobs,{ 	id => $rs->id,
-                            name => $rs->name,
-                            type => $rs->type,
-                            rollback => $rs->rollback,
-                            status => $rs->status,
-                            starttime => $rs->starttime,
-                            endtime=> $rs->endtime};
+    while( my $doc = $rs_search->next ) {
+        my $job = ci->new( $doc->{mid} );
+        last if $numrow >= $default_config->{rows};
+        push @lastjobs,
+            {
+            mid       => $job->mid,
+            name      => $job->name,
+            type      => $job->job_type,
+            rollback  => $job->rollback,
+            status    => $job->status,
+            starttime => $job->starttime,
+            endtime   => $job->endtime
+            };
         $numrow = $numrow + 1;
     }
     $c->stash->{lastjobs} =\@lastjobs;
