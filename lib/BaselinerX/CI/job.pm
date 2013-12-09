@@ -171,7 +171,7 @@ sub _create {
 
     #$now->set_time_zone('CET');
     my $now = mdb->now;
-    my $end = $now + ( $config->{expiry_time} // '1D' );
+    my $end = $now + ( $config->{expiry_time}{normal} // '1D' );
 
     $p{starttime}    ||= "$now";
     $p{maxstarttime} ||= "$end";
@@ -402,9 +402,9 @@ sub reset {   # aka restart
 
     my $msg;
     event_new 'event.job.rerun' => { job=>$self } => sub {
-        if( $p{run_now} ) {
-            my $now = mdb->now;
-            my $end = $now + ( $config->{expiry_time} // '1D' );
+        my $now = mdb->now;
+        if( $p{run_now} || $self->schedtime < $now ) {
+            my $end = $now + ( $config->{expiry_time}{normal} // '1D' );
             $self->schedtime( "$now" );
             $self->starttime( "$now" );
             $self->maxstarttime( "$end" );
