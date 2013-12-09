@@ -1001,14 +1001,14 @@ sub update_topic_labels : Local {
         
 
         my @current_labels = map { $_->{id_label} }$c->model("Baseliner::BaliTopicLabel")->search( {id_topic => $topic_mid} )->hashref->all;
-        
+        $c->model("Baseliner::BaliTopicLabel")->search( {id_topic => $topic_mid} )->delete;
+        for ( @current_labels ) {
+            push @label_ids,$_ if !($_ ~~ @label_ids);
+        }
         foreach my $label_id (@label_ids){
             $c->model('Baseliner::BaliTopicLabel')->create( {   id_topic    => $topic_mid,
                                                                 id_label    => $label_id,
                                                             });     
-        }
-        for ( @current_labels ) {
-            push @label_ids,$_ if !($_ ~~ @label_ids);
         }
         mdb->topic->update({ mid => "$topic_mid"},{ '$set' => {labels => \@label_ids}});
         $c->stash->{json} = { msg=>_loc('Labels assigned'), success=>\1 };
