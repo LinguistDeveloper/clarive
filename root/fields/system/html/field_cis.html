@@ -15,9 +15,11 @@
   		for ( @cis ) {
   			$ci .= "<li style='white-space: nowrap;padding: 0px 10px 0px 0px;'>"._ci( $_ )->{name}."</li>";
       }
-    } else {
+    } elsif (@cis) {
       $ci = _ci( $cis[0] )->{name};
-		}
+		} else {
+      $ci = ''
+    }
 </%perl>
 		<% $ci %>
   </td>
