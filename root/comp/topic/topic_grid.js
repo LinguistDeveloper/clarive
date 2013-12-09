@@ -860,6 +860,8 @@
         }
     };
 	
+	var force_fit = true;
+	
 	var type_filters ={
 		string: 'string',
 		number: 'numeric',
@@ -906,6 +908,7 @@
     };
     if( fields ) {
 		//console.dir(fields);
+		force_fit = false;
         columns = [ dragger, check_sm, col_map['topic_name'] ];
         Ext.each( fields.columns, function(r){ 
             // r.meta_type, r.id, r.as, r.width, r.header
@@ -926,18 +929,23 @@
 						break;
 					case 'string':
 						filter_params.emptyText = _('Enter Text...');
-						break;					
+						break;
+					case 'list':
+						if (r.filter.options){
+							console.dir(r.filter.options);
+							var options = [];
+							for(i=0;i<r.filter.options.length;i++){
+								if(r.filter.values[i] == '') r.filter.values[i] = -1;
+								options.push( [ r.filter.values[i],r.filter.options[i] ]);
+							}
+							filter_params.options = options;
+						}else{
+							filter_params = undefined;
+						}
 				}
-
-				var options = [];
-				if(r.filter.options){
-					for(i=0;i<r.filter.options.length;i++){
-						if(r.filter.values[i] == '') r.filter.values[i] = -1;
-						options.push( [ r.filter.values[i],r.filter.options[i] ]);
-					}
-					filter_params.options = options;
+				if(filter_params) {
+					fields_filter.push(filter_params);
 				}
-				fields_filter.push(filter_params);
 			}
 			
             var col = gridlets[ r.gridlet ] || col_map[ r.id ] || meta_types[ r.meta_type ] || { 
@@ -965,6 +973,7 @@
          });
     }
 	
+	
     var filters = new Ext.ux.grid.GridFilters({
 		menuFilterText: _('Filters'),
         encode: true,
@@ -988,7 +997,7 @@
         autoSizeColumns: true,
         deferredRender: true,
         ddGroup: 'explorer_dd',
-        viewConfig: {forceFit: true},
+        viewConfig: {forceFit: force_fit},
 %if ( !$c->stash->{typeApplication} ){
         sm: check_sm,
 %}

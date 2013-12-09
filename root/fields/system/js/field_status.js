@@ -9,6 +9,7 @@ params:
     section: 'body'
     relation: 'status'
     anchor: 30%
+    meta_type: status
 ---
 */
 (function(params){

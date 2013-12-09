@@ -8,14 +8,16 @@
     var ds_fields = [];
     var title = is_new ? _('New Search') : lc_node.text;
     var lc_tree = lc_node.ownerTree;
-    var tree_all_loader = new Baseliner.TreeLoader({
-        dataUrl: '/ci/report/all_fields'
-        //baseParams: { id_rule: id_rule },
-        //requestMethod:'GET',
-        //uiProviders: { 'col': Ext.tree.ColumnNodeUI }
-    });
+    
+    //var tree_all_loader = new Baseliner.TreeLoader({
+    //    dataUrl: '/ci/report/all_fields'
+    //    //baseParams: { id_rule: id_rule },
+    //    //requestMethod:'GET',
+    //    //uiProviders: { 'col': Ext.tree.ColumnNodeUI }
+    //});
     
     var tree_all = new Ext.tree.TreePanel({
+        dataUrl: '/ci/report/all_fields',
         flex: 1,
         closable: true,
         autoScroll: true,
@@ -23,20 +25,30 @@
         useArrows: true,
         animate: true,
         lines: true,
-        //stripeRows: true,
         enableSort: true,
         enableDrag: true,
         ddScroll: true,
-        loader: tree_all_loader,
+        //loader: tree_all_loader,
         //listeners: { beforenodedrop: { fn: drop_handler }, contextmenu: menu_click },
         root: { text: 'xx', name: 'xx', draggable: false, id: 'root' }, 
         rootVisible: false
     });
     
+    tree_all.getLoader().on("beforeload", function(treeLoader, node) {
+        var baseParams = {};
+        if (node.attributes.data && node.attributes.data.id_category) baseParams.id_category = node.attributes.data.id_category;
+        if (node.attributes.data && node.attributes.data.name_category) baseParams.name_category = node.attributes.data.name_category;
+        treeLoader.baseParams = baseParams ;
+    });      
+    
+    
+    
+    
     var tree_selected_loader = new Baseliner.TreeLoader({
         dataUrl: '/ci/'+report_mid+'/field_tree',
         baseParams: { id_report: data.id }
     });
+    
     var tree_selected_is_loaded = false;
     tree_selected_loader.on('load',function(){
         tree_selected_is_loaded = true;
@@ -55,7 +67,7 @@
     var edit_value = function(node){
         var attr = node.attributes;
         var pn = node.parentNode; // should be where_field
-        
+        console.dir(pn );
         
         var oper_all = [ ['','='], ['$ne','<>'],['$lt','<'],['$lte','<='],['$gt','>'],['$gte','>='] ];
         var oper_in = [ ['$in','IN'], ['$nin','NOT IN'] ];
@@ -81,6 +93,7 @@
                   break;
             case 'ci':
                 var ci_class = pn.attributes.collection || pn.attributes.ci_class;
+                alert(ci_class);
                 field=new Baseliner.ci_box({ value: attr.value, name:'value', singleMode: false, force_set_value:true, class: ci_class, security: true });
                 oper_by_type = oper_in;
                 var store;
@@ -239,6 +252,7 @@
         }
         Ext.each( ev.dropNode, function(n){
             var type = n.attributes.type;
+            //console.dir(n);
             //Baseliner.message( 'Type', type );
             if( !type=='where_field' && ev.point=='append' ) {
                 flag = false; //alert('no no'); 
@@ -248,7 +262,7 @@
                 n.attributes.icon = '/static/images/icons/field.png',
                 n.expanded = true;
                 if( n.attributes.category ) {
-                    n.setText( String.format('{0}: {1}', n.attributes.category.name, n.attributes.name_field ) );
+                    n.setText( String.format('{0}: {1}', n.attributes.category, n.attributes.text ) );
                 }
             } else {
                 var nn = Ext.apply({ id: Ext.id(), expanded: ttype=='where' }, n.attributes);
@@ -258,11 +272,37 @@
                     : '/static/images/icons/field.png';
                 nn.leaf = ttype=='where' ? false : true;
                 var copy = new Ext.tree.TreeNode(nn);
-                if( ttype=='where_field' ) {
-                } else if( n.attributes.category ) {
-                    copy.setText( String.format('{0}: {1}', n.attributes.category.name, n.attributes.name_field ) );
-                }
                 
+                if( ttype=='where_field' ) {
+                } else {
+                    if( n.attributes.category ){
+                        copy.setText( String.format('{0}: {1}', n.attributes.category, n.attributes.text ) );    
+                    }else{
+                        copy.setText( String.format('{0}', n.attributes.text ) );       
+                    }
+                    //console.dir(copy);
+                    var meta_type = n.attributes.meta_type ? n.attributes.meta_type : 'string' ;
+                    switch (meta_type){
+                        case 'string':
+                        case 'number':
+                        case 'date':
+                        case 'status':break;
+                        default: {
+                            meta_type = 'ci';
+                        }
+                    }
+                    copy.appendChild({
+                        id: Ext.id()
+                        ,text: _(meta_type)
+                        ,icon: '/static/images/icons/where.png'
+                        ,type: 'value'
+                        ,leaf:true
+                        ,where: meta_type
+                        ,field: meta_type
+                        ,value: 'default'
+                    });                    
+                    
+                }
                 //copy.setIcon( icon );
                 //console.log( copy );
                 ev.dropNode = copy;

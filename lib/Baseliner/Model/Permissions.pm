@@ -316,11 +316,7 @@ sub user_actions_list {
         @actions = map { $_->{key} } Baseliner->model( 'Actions' )->list;
     } elsif ( $mid ) {
         @actions = $self->user_actions_by_topic( %p );
-        _log "por mid";
     } else {
-        _log "sin mid";
-
-        _log $regexp_action;
         @actions = map { $_->{'action'} } DB->BaliRoleuser->search(
 
             $where,
@@ -502,7 +498,7 @@ sub user_projects_ids_with_collection {
     my @sec;
 
     $sec_projects = Baseliner->cache_get(":user:security:$username:");
-    @sec = Baseliner->cache_get(":user:security:roles:$username:");
+    @sec = _array(Baseliner->cache_get(":user:security:roles:$username:"));
 
     if ( !$sec_projects || !@sec ) {
         if ( $p{action} ) {
@@ -517,19 +513,18 @@ sub user_projects_ids_with_collection {
         } @projects;    
 
         for my $role ( keys %$sec_projects ) {
-            
-                push @sec, $sec_projects->{$role};
+            push @sec, $sec_projects->{$role};
         }
         Baseliner->cache_set(":user:security:$username:",$sec_projects);
-        Baseliner->cache_get(":user:security:roles:$username:", \@sec);
+        Baseliner->cache_set(":user:security:roles:$username:", \@sec);
         _debug "NO CACHE for :user:security:$username:";
     } else {
         _debug "CACHE HIT for :user:security:$username:";
     }
-    for ( @roles ) {
-        @sec = ();
+    if ( @roles ) {
+        @sec = undef;
         for my $r ( keys %{$sec_projects}) {
-            delete $sec_projects->{$r} if $r !~ @roles;
+            delete $sec_projects->{$r} if !($r ~~ @roles);
             push @sec, $sec_projects->{$r} if $r ~~ @roles;       
         }
     }
@@ -548,7 +543,6 @@ sub user_projects_for_action {
         return _unique( map { "1/".$_->{ns} }
                 Baseliner->model( 'Baseliner::BaliProject' )->search()->hashref->all );
     } else {
-        _log "AAAAAAAAA".$p{action};
         my @projects;
         my @all_projects =
             Baseliner->model( 'Baseliner::BaliRoleUser' )
@@ -587,6 +581,7 @@ sub user_can_topic_by_project {
         push @ors, $wh;
     }
     $where->{'$or'} = \@ors;
+    _log "RRRRRRRRRRRRRRR:"._dump $where;
     return !!mdb->topic->find($where)->count;
 }
 

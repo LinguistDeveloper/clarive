@@ -1,4 +1,4 @@
-package Baseliner::Model::Rules;
+    package Baseliner::Model::Rules;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Baseliner::Sugar;
@@ -244,7 +244,7 @@ sub dsl_run {
     my $dsl = $p{dsl};
     local $@;
     my $ret;
-    our $stash = $p{stash} // {};
+    my $stash = $p{stash} // {};
     
     local $SIG{ALRM} = sub { die "Timeout running rule\n" };
     alarm 0;

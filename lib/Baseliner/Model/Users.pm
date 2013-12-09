@@ -118,4 +118,35 @@ sub get_users_username {
     return wantarray ? @users : \@users; 
 }
 
+sub get_categories_fields_meta_by_user {
+    #Pendiente parametrizar por categorías
+    my ( $self, %p) = @_;
+    my $username = $p{username} or _throw 'Missing parameter username';
+    my %categories_fields;
+    my %categories;
+    
+    %categories = %{$p{categories}} if $p{categories};
+
+    if(!%categories){
+        map { $categories{$_->{id}} = $_->{name} } Baseliner->model('Topic')->get_categories_permissions( username => $username, type => 'view' );        
+    }
+    
+    for my $key ( keys %categories ){
+        my %fields_perm;
+        my $parse_category =  _name_to_id($categories{$key});
+        my @fieldlets = _array (Baseliner->model('Topic')->get_meta(undef, $key, $username));
+        ##Se podría tener en cuenta para el metadato los permisos de escritura y lectura.
+        for my $field ( @fieldlets){
+            my $view_action = 'action.topicsfield.' .  $parse_category . '.' .  $field->{id_field} . '.read';  
+
+            if (!Baseliner->model('Permissions')->user_has_read_action( username=> $username, action => $view_action )){
+                $fields_perm{$field->{id_field}} = $field;
+            };
+        }
+        
+        $categories_fields{$parse_category} = \%fields_perm;
+    }
+    return \%categories_fields;
+}
+
 1;
