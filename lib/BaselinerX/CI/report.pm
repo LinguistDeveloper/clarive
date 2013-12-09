@@ -25,6 +25,8 @@ sub rel_type {
 sub report_list {
     my ($self,$p) = @_;
     
+	_log ">>>>>>>>>>USUARIO: " . $p->{username};
+	
     my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $p->{username}) );  # XXX should be by category, same id fields may step on each other
     my $mine = $self->my_searches({ username=>$p->{username}, meta=>\%meta });
     my $public = $self->public_searches({ meta=>\%meta, username=>$p->{username} });
@@ -459,14 +461,21 @@ sub selected_fields {
 				when ('ci') {
 					if($type->{value} eq 'default'){
 						my $collection = $filter->{collection} // $filter->{ci_class} ;
-						my @cis = ci->search_cis( collection => $collection );
+						my @cis;
 						my (@options, @values);
-						#my @cols_roles = $c->model('Permissions')->user_projects_ids_with_collection( username=>$c->username );
-						#for my $collections ( @cols_roles ) {
-						#	if(exists $collections->{$class}){
-						#		push @security, keys $collections->{$class};    
-						#	}
-						#}					
+						
+						my @cols_roles = Baseliner->model('Permissions')->user_projects_ids_with_collection( username => $p->{username} );
+						my $sw_finded = 0;
+						for my $collections ( @cols_roles ) {
+							if(exists $collections->{$collection}){
+								$sw_finded = 1;
+								for my $key (keys $collections->{$collection}){
+									push @cis, ci->search_cis( collection => $collection, mid => $key );
+								}
+							}
+						}
+						@cis = ci->search_cis( collection => $collection ) if ($sw_finded == 0);						
+						
 						map {
 							push @options, $_->{name};
 							push @values, $_->{mid};
