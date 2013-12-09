@@ -1008,7 +1008,7 @@ sub update_topic_labels : Local {
                                                             });     
         }
         for ( @label_ids ) {
-            push $_,@current_labels if !($_ ~~ @current_labels);
+            push @current_labels,$_ if !($_ ~~ @current_labels);
         }
         mdb->topic->update({ mid => "$topic_mid"},{ '$set' => {labels => \@label_ids}});
         $c->stash->{json} = { msg=>_loc('Labels assigned'), success=>\1 };
