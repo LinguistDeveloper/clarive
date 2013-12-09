@@ -577,6 +577,8 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 						for my $value (_array $dynamic_filter{$id_field}->{value}){
 							if( $value eq '-1'){
 								push @parse, '';
+								push @parse, undef;
+								push @parse, [];
 							}else{
 								push @parse, $value;	
 							}
