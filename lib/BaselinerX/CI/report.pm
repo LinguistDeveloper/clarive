@@ -29,8 +29,10 @@ sub report_list {
 	
     my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $p->{username}) );  # XXX should be by category, same id fields may step on each other
     my $mine = $self->my_searches({ username=>$p->{username}, meta=>\%meta });
+	_log ">>>>>>>>>>>>>>PASASASASSA";
     my $public = $self->public_searches({ meta=>\%meta, username=>$p->{username} });
-    
+	_log ">>>>>>>>>>>>>>>>>PUBLIC: " . _dump $public;
+	
     my @trees = (
             {
                 text => _loc('My Searches'),
@@ -68,9 +70,11 @@ sub my_searches {
     my $username = $p->{username};
 	
     #DB->BaliMasterRel->search({ to_mid=>$userci->mid, rel_field=>'report_user' });
-    my @searches = $self->search_cis( owner=>$username, '$or' => [{ permissions=>'private' }, { permissions=>undef } ] ); 
+    my @searches = $self->search_cis( owner=>$username );
+		
     my @mine;
     for my $folder ( @searches ){
+		_log ">>>>>>>>>>>>>>>>>>>>>>>>>Folder: " . _dump $folder;
         push @mine,
             {
                 mid     => $folder->mid,
@@ -97,7 +101,7 @@ sub my_searches {
                     },
                     #store_fields   => $folder->fields,
                     #columns        => $folder->fields,
-                    fields         => $folder->selected_fields({ meta=>$p->{meta} }),
+                    fields         => $folder->selected_fields({ meta=>$p->{meta}, username => $p->{username}  }),
                     id_report      => $folder->mid,
                     report_name    => $folder->name,
                     report_rows    => $folder->rows,
@@ -108,7 +112,8 @@ sub my_searches {
                 permissions => $folder->permissions,
                 leaf    => \1,
             };
-    }    
+    }
+	_log ">>>>>>>>>>>>>>>>>MINE: " . _dump @mine;
     return \@mine;
 }
 
@@ -141,7 +146,7 @@ sub public_searches {
                     },
                     #store_fields   => $folder->fields,
                     #columns        => $folder->fields,
-                    fields         => $folder->selected_fields({ meta=>$p->{meta} }),
+                    fields         => $folder->selected_fields({ meta => $p->{meta}, username => $p->{username} }),
                     id_report      => $folder->mid,
                     report_rows    => $folder->rows,
                     report_name    => $folder->name,
