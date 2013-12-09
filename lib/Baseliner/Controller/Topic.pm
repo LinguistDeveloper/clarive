@@ -1753,7 +1753,7 @@ sub newjob : Local {
         my $job_type = $p->{job_type} || 'static';
         my $job_data = {
             bl         => $bl,
-            type       => $job_type,
+            job_type   => $job_type,
             username   => $c->username || $p->{username} || `whoami`,
             comments   => $p->{comments},
             changesets => $changesets,

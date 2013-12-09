@@ -245,35 +245,6 @@ sub get {
     return Baseliner->model('Baseliner::BaliJob')->search({ name=>$id })->first;
 }
 
-sub list_by_type {
-    my $self = shift ;
-    my @types = @_;
-    return Baseliner->model('Baseliner::BaliJob')->search({ type=>{ -in => [ @types ] } });
-}
-
-sub check_scheduled {
-    my $self = shift;
-    my @services = Baseliner->model('Services')->search_for( scheduled=>1 );
-    foreach my $service ( @services ) {
-        my $frequency = $service->frequency;
-        unless( $frequency ) {
-            $frequency = Baseliner->model('Config')->get( $service->frequency_key );
-        }
-        if( $frequency ) {
-            my $last_run = Baseliner->model('Baseliner::BaliJob')->search({ runner=> $service->key }, { order_by=>{ '-desc' => 'starttime' } })->first;
-        }
-    }
-}
-
-sub top_job {
-    my ($self, %p )=@_;
-    my $rs = Baseliner->model('Baseliner::BaliJobItems')->search({ %p }, { order_by => { '-desc' => 'id_job.id' }, prefetch=>['id_job'] });
-    return undef unless ref $rs;
-    my $row = $rs->next;
-    return undef unless ref $row;
-    return $row->id_job; # return the job row
-}
-
 register 'event.job.rerun';
 
 sub status {
