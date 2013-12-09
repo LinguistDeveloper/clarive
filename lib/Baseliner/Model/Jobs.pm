@@ -54,13 +54,12 @@ sub monitor {
     #    # username can view jobs if it has action.job.view for the job set of job_contents projects/app/subapl
     #}
     
-    my $rs_jobs1;
     if( !Baseliner->is_root($username) ) {
         my @ids_project = $perm->user_projects_with_action(username => $username,
                                                             action => 'action.job.viewall',
                                                             level => 1);
         
-        $rs_jobs1 = Baseliner->model('Baseliner::BaliMasterRel')->search({rel_type => 'job_project', to_mid => \@ids_project}
+        my $rs_jobs1 = Baseliner->model('Baseliner::BaliMasterRel')->search({rel_type => 'job_project', to_mid => \@ids_project}
                                                                            ,{select=>'from_mid'});
         push @mid_filters, { mid=>mdb->in( map { $_->{from_mid} } $rs_jobs1->hashref->all ) };
     }
@@ -76,13 +75,7 @@ sub monitor {
     # Filter by nature
     if (length $p->{filter_nature} && $p->{filter_nature} ne 'ALL' ) {
         # TODO nature only exists after PRE executes, "Load natures" $where->{'bali_job_items_2.item'} = $p->{filter_nature};
-        my @natures = _array( $p->{filter_nature} );
-
-        my $where2 = { rel_type=>'job_nature', to_mid=>\@natures };
-        $where2->{from_mid} = mdb->in( map { $rs_jobs1->{mid} } $rs_jobs1->hashref->all );
-        
-        my $rs_jobs2 = Baseliner->model('Baseliner::BaliMasterRel')->search($where2,{select=>'from_mid'});
-        push @mid_filters, { mid=>mdb->in( map { $_->{from_mid} } $rs_jobs2->hashref->all ) };
+        $where->{natures} = mdb->in( _array( $p->{filter_nature} ) );
     }
 
     # Filter by environment name:
@@ -92,7 +85,7 @@ sub monitor {
 
     # Filter by job_type
     if (exists $p->{filter_type}) {      
-      $where->{type} = $p->{filter_type};
+      $where->{job_type} = $p->{filter_type};
     }
         
     if($query_id ne '-1'){

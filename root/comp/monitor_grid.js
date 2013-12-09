@@ -494,8 +494,7 @@
                 if( sel.data.job_key ) {
                     win_opener( sel.data.job_key );
                 } else {
-                    Baseliner.ajaxEval('/job/log/gen_job_key', { mid : sel.data.mid }, function( res ) {
-                        if( ! res.success ) { Baseliner.error( _('Error'), res.msg ); return; }
+                    Baseliner.ci_call( sel.data.mid, 'gen_job_key', {}, function( res ) {
                         win_opener( res.job_key );
                     });
                 }

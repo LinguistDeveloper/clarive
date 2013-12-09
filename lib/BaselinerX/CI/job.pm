@@ -196,10 +196,10 @@ sub _create {
             id_rule      => $p{id_rule},
             username     => $p{username} || $config->{username} || 'internal',
             comments     => $p{description},
-            job_key      => $p{job_key},
             ns           => '/', # not used, deprecated
             bl           => $bl,
     };
+    $row_data->{job_key} = $p{job_key} if length $p{job_key},
     
     # create db row
     my $job_seq = mdb->seq('job');
@@ -513,6 +513,13 @@ sub status_icon {
         default { 'log_e.gif' }
     }
 }
+
+
+sub gen_job_key {
+    my ($self,$p ) = @_;
+    { job_key => $self->job_key };
+}
+
 
 # used by the job dashboard
 sub summary2 {
