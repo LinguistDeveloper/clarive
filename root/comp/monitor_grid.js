@@ -494,8 +494,7 @@
                 if( sel.data.job_key ) {
                     win_opener( sel.data.job_key );
                 } else {
-                    Baseliner.ajaxEval('/job/log/gen_job_key', { mid : sel.data.mid }, function( res ) {
-                        if( ! res.success ) { Baseliner.error( _('Error'), res.msg ); return; }
+                    Baseliner.ci_call( sel.data.mid, 'gen_job_key', {}, function( res ) {
                         win_opener( res.job_key );
                     });
                 }
@@ -749,41 +748,6 @@
     }
     
 
-    var fupdatepanel = new Ext.FormPanel({
-        frame: true,
-        url: '/job/job_update', 
-        buttons: [
-            {  text: _('Update'), handler: function(){ return false; } }
-            ,{  text: _('Cancel'), handler: function(){ winupdate.hide(); } }
-        ],
-        items: [
-            {  xtype: 'hidden', name: 'mid', value: '' },
-            {
-                xtype: 'datefield',
-                fieldLabel: _('Date'),
-                name:'_job_calendar',
-                value: new Date(),
-                format: 'd/m/y'
-            },
-          {
-            xtype: 'uxspinner', 
-            name: '_job_time', 					
-            fieldLabel: _('Time'),
-            allowBlank: false,
-            value: new Date().format('H:i'),
-            strategy: new Ext.ux.form.Spinner.TimeStrategy()				  
-          }		   
-        ]
-    });
-
-    var winupdate = new Ext.Window({
-        layout: 'fit',
-        closeAction: 'hide',
-        height: 150, width: 280,
-        title: 'Modificar fecha y hora del pase.',
-        items: fupdatepanel
-    });
-    
     var gview = new Ext.grid.GroupingView({
             forceFit: true,
             enableRowBody: true,
@@ -977,7 +941,7 @@
                                         Baseliner.ci_call( 'job', 'reset', form_data, 
                                             function(res){ 
                                                 Baseliner.message( sel.data.name, _('Job Restarted') );
-                                                store.load();
+                                                store.reload();
                                                 win_res.close();
                                             },
                                             function(res) { 
@@ -1017,9 +981,9 @@
                     }
                 }),
 % }
-% if( $c->stash->{user_action}->{'action.job.reschedule'} ) {
+% if( $c->stash->{user_action}->{'action.job.restart'} || $c->stash->{user_action}->{'action.job.reschedule'} ) {
                 new Ext.Toolbar.Button({
-                    text: _('Modify Job'),
+                    text: _('Reschedule'),
                     icon:'/static/images/date_field.png',
                     cls: 'x-btn-text-icon',
                     handler: function() {
@@ -1027,10 +991,56 @@
                         if (sm.hasSelection())
                         {
                             var sel = sm.getSelected();
-                            var fecha = Date.parseDate(sel.data.starttime, 'Y-m-d H:i:s' );
+                            if( sel.data.status_code != 'READY' ) {
+                                Baseliner.error( _('Reschedule'), 
+                                    _("Job cannot be rescheduled unless its status is '%1' (current: %2)", _('READY'), _(sel.data.status) ) );
+                                return;
+                            }
+                            var curr = Date.parseDate(sel.data.schedtime, 'Y-m-d H:i:s' );
+                            var fupdatepanel = new Baseliner.FormPanel({
+                                frame: true,
+                                url: '/job/job_update', 
+                                items: [
+                                    {
+                                        xtype: 'datefield',
+                                        anchor: '100%',
+                                        fieldLabel: _('Date'),
+                                        name:'date',
+                                        value: curr,
+                                        format: 'Y-m-d'
+                                    },
+                                  {
+                                    xtype: 'uxspinner', 
+                                    name: 'time', 					
+                                    fieldLabel: _('Time'),
+                                        anchor: '100%',
+                                    allowBlank: false,
+                                    value: curr.format('H:i:s'),
+                                    strategy: new Ext.ux.form.Spinner.TimeStrategy()				  
+                                  }		   
+                                ]
+                            });
+
+                            var winupdate = new Baseliner.Window({
+                                layout: 'fit',
+                                height: 150, width: 380,
+                                tbar: [
+                                    '->',
+                                    {  text: _('Cancel'), icon: IC('close'), handler: function(){ winupdate.close(); } },
+                                    {  text: _('Update'), icon: IC('edit'), handler: function(){ 
+                                            var d = fupdatepanel.getValues();
+                                            Baseliner.ci_call( sel.data.mid, 'reschedule', d, function(res){
+                                                Baseliner.message( _('Reschedule'), res.msg );
+                                                store.reload();
+                                                winupdate.close();
+                                            });
+                                                                             
+                                     } }
+                                ],
+                                title: 'Modificar fecha y hora del pase.',
+                                items: fupdatepanel
+                            });
                             winupdate.show();
-                            fupdatepanel.getForm().findField("_job_calendar").setValue(fecha.format("d/m/Y"));
-                            //fupdatepanel.getForm().findField("_job_timer").setValue(fecha.format("H:i"));
                         } else {
                             Ext.Msg.alert(_('Error'), _('Select a row first'));   
                         };

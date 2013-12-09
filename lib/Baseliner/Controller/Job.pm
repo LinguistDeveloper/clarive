@@ -369,7 +369,6 @@ sub submit : Local {
 
             # create job
             my $approval = undef;
-            #my $start = parse_dt( '%Y-%m-%d %H:%M', "$job_date $job_time");
             my $job_data = {
                     bl           => $bl,
                     job_type     => $job_type,
@@ -383,9 +382,11 @@ sub submit : Local {
                     description  => $comments,
                     changesets   => $contents, 
             };
-            $job_data->{start} = Class::Date->new("$job_date $job_time") if length $job_date && length $job_time;
+            
+            $job_data->{schedtime} = Class::Date->new("$job_date $job_time")->string if length $job_date && length $job_time;
+
             event_new 'event.job.new' => { username => $c->username, bl => $job_data->{bl}  } => sub {
-                my $job = BaselinerX::CI::job->new( $job_data );
+                my $job = ci->job->new( $job_data );
                 $job->save;  # after save, CHECK and INIT run
                 if( ref $job_stash ) {
                     _debug "*** Job Stash before Job Creation: " . _dump $job_stash;

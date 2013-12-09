@@ -194,31 +194,15 @@ _warn( $where );
     return ( $job, @rows );
 }
 
-sub gen_job_key : Path('/job/log/gen_job_key') {
-    my ($self,$c ) = @_;
-    my $mid = $c->req->params->{mid};
-    my $job = DB->BaliJob->find( $mid );
-    if( $job ) {
-        if( ! $job->job_key ) {
-            $job->job_key( _md5() );
-            $job->update;
-        }
-        $c->stash->{json} = {  success=>\1, job_key => $job->job_key };
-    } else {
-        $c->stash->{json} = { success=>\0, msg=>_loc('Could not find job id %1', $mid ) };
-    }
-    $c->forward('View::JSON');
-}
-
 sub log_html : Path('/job/log/html') {
     my ($self,$c, $job_key ) = @_;
     my $p = $c->request->parameters;
 
     # load from hash
     if( $job_key ) {
-        my $job = $c->model('Baseliner::BaliJob')->search({ job_key=>$job_key })->first;
+        my $job = ci->job->search_ci({ job_key=>$job_key });
         _throw "Job key not found (job_key=$job_key)" unless ref $job;
-        $p->{mid} = $job->id;
+        $p->{mid} = $job->mid;
         $p->{job_exec} ||= $job->exec;
         $p->{levels} = [ 'info', 'warn', 'error' ];
         $p->{debug} eq 1 and push @{ $p->{levels} }, 'debug';

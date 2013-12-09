@@ -59,7 +59,7 @@ sub files {
 
 sub topic_name {
     my ($self) = @_;
-    return sprintf '%s #%s - %s', $self->name_category, $self->mid, $self->name; 
+    return sprintf '%s #%s - %s', $self->name_category, $self->mid, ( $self->title // $self->name ); 
 }
 
 sub timeline {

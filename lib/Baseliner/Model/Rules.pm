@@ -51,7 +51,7 @@ sub error_trap {
         event_new 'event.rule.trap' => { username=>'internal', stash=>$stash, output=>$err } => sub {};
         $job->save;
         my $last_status;
-        while( ($last_status = $job->job_row->get_from_storage->status) eq 'TRAPPED' ) {
+        while( ($last_status = $job->load->{status} ) eq 'TRAPPED' ) {
             sleep 5;
         }
         if( $last_status eq 'RETRYING' ) {

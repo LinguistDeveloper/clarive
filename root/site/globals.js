@@ -16,3 +16,8 @@ Baseliner.in_edit = {};
 Ext.Ajax.timeout = 60000;
 Baseliner.DEBUG = <% Baseliner->debug ? 'true' : 'false' %>;
 Prefs = {};
+
+IC = function(icon){
+    var path = '/static/images/icons/';
+    return /\./.test(icon) ? path+icon : path+icon+'.png'; 
+}
