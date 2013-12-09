@@ -390,7 +390,7 @@ sub contract {
     #return $vars;
 }
 
-sub reset {
+sub reset {   # aka restart
     my ($self, $p )=@_;
     my %p = %{ $p || {} };
     my $username = $p{username} or _throw 'Missing username';
@@ -420,6 +420,27 @@ sub reset {
         $self->save;
         my $log = $self->logger;
         $msg = _loc("Job restarted by user %1, execution %2, step %3", $realuser, $exec, $self->step );
+        $log->info($msg);
+    };
+    return { msg=>$msg };
+}
+
+sub reschedule {
+    my ($self, $p )=@_;
+    my %p = %{ $p || {} };
+    my $username = $p{username} or _throw 'Missing username';
+    my $realuser = $p{realuser} || $username;
+
+    _fail _loc('Job %1 is not in status %2 (currently %3)', $self->name, _loc('READY'), _loc($self->status) )
+        if $self->status ne 'READY';
+
+    my $msg;
+    event_new 'event.job.reschedule' => { job=>$self } => sub {
+        my $newtime = Class::Date->new( "$p->{date} $p->{time}" );
+        $self->schedtime( "$newtime" );
+        $self->save;
+        my $log = $self->logger;
+        $msg = _loc("Job %1 rescheduled by user %2 to %3", $self->name, $realuser, $newtime );
         $log->info($msg);
     };
     return { msg=>$msg };

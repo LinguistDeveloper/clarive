@@ -246,6 +246,7 @@ sub get {
 }
 
 register 'event.job.rerun';
+register 'event.job.reschedule';
 
 sub status {
     my ($self,%p) = @_;
