@@ -927,7 +927,7 @@
         columns = [ dragger, check_sm, col_map['topic_name'] ];
         Ext.each( fields.columns, function(r){ 
             // r.meta_type, r.id, r.as, r.width, r.header
-			console.dir(r);
+			//console.dir(r);
 			if(r.filter){
 				var filter_params = {type: type_filters[r.filter.type], dataIndex: r.id};
 				switch (filter_params.type){
@@ -947,7 +947,7 @@
 						break;
 					case 'list':
 						if (r.filter.options){
-							console.dir(r.filter.options);
+							#console.dir(r.filter.options);
 							var options = [];
 							for(i=0;i<r.filter.options.length;i++){
 								if(r.filter.values[i] == '') r.filter.values[i] = -1;

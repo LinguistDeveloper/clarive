@@ -121,7 +121,7 @@ sub public_searches {
     for my $folder ( @searches ){
         my %fields = map { $_->{type}=>$_->{children} } _array( $folder->selected );
         # check categories permissions
-        my @categories = map { $_->{id_category} } _array($fields{categories});
+        my @categories = map { $_->{data}->{id_category} } _array($fields{categories});
         my @user_cats = grep { exists $user_categories{ $_ } } @categories;
         next if @categories > @user_cats;  # user cannot see category, skip this search
         push @public,
@@ -459,14 +459,21 @@ sub selected_fields {
 				when ('ci') {
 					if($type->{value} eq 'default'){
 						my $collection = $filter->{collection} // $filter->{ci_class} ;
-						my @cis = ci->search_cis( collection => $collection );
+						my @cis;
 						my (@options, @values);
-						#my @cols_roles = $c->model('Permissions')->user_projects_ids_with_collection( username=>$c->username );
-						#for my $collections ( @cols_roles ) {
-						#	if(exists $collections->{$class}){
-						#		push @security, keys $collections->{$class};    
-						#	}
-						#}					
+						
+						my @cols_roles = Baseliner->model('Permissions')->user_projects_ids_with_collection( username => $p->{username} );
+						my $sw_finded = 0;
+						for my $collections ( @cols_roles ) {
+							if(exists $collections->{$collection}){
+								$sw_finded = 1;
+								for my $key (keys $collections->{$collection}){
+									push @cis, ci->search_cis( collection => $collection, mid => $key );
+								}
+							}
+						}
+						@cis = ci->search_cis( collection => $collection ) if ($sw_finded == 0);						
+						
 						map {
 							push @options, $_->{name};
 							push @values, $_->{mid};
