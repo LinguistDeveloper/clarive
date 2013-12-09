@@ -322,6 +322,8 @@ sub all_fields {
 				icon        => '/static/images/icons/field-add.png',
 				type        => 'select_field',
 				meta_type   => $user_categories_fields_meta->{$name_category}->{$_}->{meta_type},
+				collection  => $user_categories_fields_meta->{$name_category}->{$_}->{collection},
+				ci_class	=> $user_categories_fields_meta->{$name_category}->{$_}->{ci_class},
 				gridlet     => $user_categories_fields_meta->{$name_category}->{$_}->{gridlet},
 				category    => $p->{name_category},
 				leaf        =>\1
@@ -438,6 +440,7 @@ sub selected_fields {
 		my %type_filter = map { $_->{type}=>$_->{children} } _array( $filter );
 		for my $type ( _array($type_filter{where_field}) ) {
 			given ($type->{field}) {
+				
 				when ('status') {
 					if($type->{value} eq 'default'){
 						my @status = DB->BaliTopicCategoriesStatus
@@ -453,6 +456,27 @@ sub selected_fields {
 						$filters{$filter->{id_field}} = { type => $type->{field}, options => exists $type->{options} ? $type->{options} : undef, values => $type->{value}};								
 					}
 				};
+				when ('ci') {
+					if($type->{value} eq 'default'){
+						my $collection = $filter->{collection} // $filter->{ci_class} ;
+						my @cis = ci->search_cis( collection => $collection );
+						my (@options, @values);
+						#my @cols_roles = $c->model('Permissions')->user_projects_ids_with_collection( username=>$c->username );
+						#for my $collections ( @cols_roles ) {
+						#	if(exists $collections->{$class}){
+						#		push @security, keys $collections->{$class};    
+						#	}
+						#}					
+						map {
+							push @options, $_->{name};
+							push @values, $_->{mid};
+						} @cis;
+						$filters{$filter->{id_field}} = { type => $type->{field}, options => @options ? \@options : undef, values => @values ? \@values: undef};		
+					}
+					else{
+						$filters{$filter->{id_field}} = { type => $type->{field}, options => exists $type->{options} ? $type->{options} : undef, values => $type->{value}};														
+					}
+				}
 				default{
 					$filters{$filter->{id_field}} = { type => $type->{field}, options => exists $type->{options} ? $type->{options} : undef, values => $type->{value}};		
 				}
