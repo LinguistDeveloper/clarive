@@ -33,7 +33,7 @@ register 'config.job' => {
         { id=>'step', label => 'Which phase of the job, pre, post or run', default => 'RUN' },
         { id=>'normal_window', label => 'Normal Window Name', default => 'normal' },
         { id=>'emer_window', label => 'Emergency Window Name', default => 'emergency' },
-        { id=>'expiry_time', label => 'Time to expiry a job in hours', type=>'hash', default=>'{ normal=>24, emergency=>24 }' }, 
+        { id=>'expiry_time', label => 'Time to expiry a job in hours', type=>'hash', default=>'{ normal=>"1D", emergency=>"1H" }' }, 
     ],
     relationships => [ { id=>'natures', label => 'Technologies', type=>'list', config=> 'config.tech' },
         { id=>'releases', label => 'Releases', type=>'list', config=> 'config.release' },
