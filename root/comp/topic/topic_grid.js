@@ -672,8 +672,7 @@
     };
     var render_date = function(value,metadata,rec,rowIndex,colIndex,store) {
         // if( !value ) return '';
-        // return value.dateFormat(Prefs.js_date_format);
-        return value;
+		return value.dateFormat(Prefs.js_date_format);
     };
     var render_bool = function(value) {
         if( !value ) return '';
