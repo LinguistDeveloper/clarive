@@ -1013,20 +1013,12 @@ sub viewjobs: Local{
             }
         }
         
-        #my $jobs = 	$c->model('Baseliner::BaliJobItems')
-        #            ->search(	{id_project => \@ids_project, status=>\@status, bl=>$bl}, 
-        #                        {join=>['id_job']});
-        
         my $jobs = 	$c->model('Baseliner::BaliJob')->search({status=>\@status, bl=>$bl});        
         @jobs = $jobs->search_literal('TO_NUMBER(SYSDATE - ENDTIME) <= ?',$config->{bl_days})->hashref->all;
         
         
         
     }else{
-        #@jobs = $c->model('Baseliner::BaliJobItems')
-        #        ->search(	{id_project=>\@ids_project, status=>'RUNNING', bl=>\@baselines },
-        #                    {select=>['id_job'], distinct=>'me.id_job', join=>['id_job']})
-        #        ->hashref->all;
         @jobs = $c->model('Baseliner::BaliJob')->search({status=>'RUNNING', bl=>\@baselines })->hashref->all;
     }
     

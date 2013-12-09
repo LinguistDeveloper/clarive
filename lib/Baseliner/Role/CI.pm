@@ -28,6 +28,7 @@ coerce 'BL' =>
 
 coerce 'TS' => 
     from 'DT' => via { Class::Date->new( $_->set_time_zone( Util->_tz ) )->string },
+    from 'Class::Date' => via { $_->string },
     from 'Num' => via { Class::Date->new( $_ )->string },
     from 'Undef' => via { Class::Date->now->string },
     from 'Any' => via { Class::Date->now->string };
@@ -223,12 +224,16 @@ sub delete {
     $mid //= $self->mid;
     if( $mid ) {
         my $row = DB->BaliMaster->find( $mid );
+        DB->BaliMasterRel->search({ -or=>[{ from_mid=>$mid },{ to_mid=>$mid }] })->delete;
         mdb->master_doc->remove({ mid=>"$mid" });
         if( $row ) {
+            # perfect
             Baseliner->cache_remove( qr/^ci:/ );
+            delete $self->{mid} if ref $self;  # delete the mid value, in case a reuse is in place
             return $row->delete;
         } else {
-            mdb->mongo_doc->remove({ mid=>"$mid" });
+            # not found error, cleanup master_doc in the way out
+            mdb->master_doc->remove({ mid=>"$mid" });
             Util->_fail( Util->_loc( 'Could not delete, master row %1 not found', $mid ) );
         }
     } else {
@@ -255,7 +260,7 @@ sub new_ci {
     $self->save_data( $master_row, $data, $opts);
 }
 
-# save data to yaml and mongo_doc, does not use self
+# save data to yaml and master_doc, does not use self
 sub save_data {
     my ( $self, $master_row, $data, $opts ) = @_;
     return unless ref $data;
@@ -319,7 +324,7 @@ sub save_fields {
     $opts->{master_only} //= 1;
     my $mid = $master_row->mid;
     if( !$master_row ) {
-        mdb->mongo_doc->remove({ mid=>"$mid" });
+        mdb->master_doc->remove({ mid=>"$mid" });
         _fail _loc( 'Master row not found for mid %1', $mid );
     }
     $master_row->update({ yaml=>Util->_dump($data) });
@@ -357,9 +362,9 @@ sub load {
     return $cached if $cached;
 
     if( !$data ) {
-        $row //= Baseliner->model('Baseliner::BaliMaster')->find( $mid );
+        $row //= DB->BaliMaster->find( $mid );
         if( ! ref $row ) {
-            mdb->mongo_doc->remove({ mid=>"$mid" });
+            mdb->master_doc->remove({ mid=>"$mid" });
             _fail _loc( "Master row not found for mid %1", $mid );
         }
         # setup the base data from master row
@@ -1011,15 +1016,27 @@ sub find_one {
     return mdb->master_doc->find_one($where,@rest);
 }
 
+sub search_ci {
+    my ($class,%p) = @_;
+    $p{_ci_search_one} = 1;
+    $class->search_cis( %p );
+}
+
 sub search_cis {
     my ($class,%p) = @_;
+    my $search_one = delete $p{_ci_search_one};
     $class = $p{class} // $class;
     $class = 'BaselinerX::CI::' . $class unless $class =~ /::/ || ref $class;
     my $coll = $class->collection;
-    my @cis = 
-        map { ci->new( $_->{mid} ) }
-        mdb->master_doc->find({ collection=>$coll, %p })->fields({ mid=>1 })->sort({ mid=>1 })->all;
-    return @cis;
+    my $rs = mdb->master_doc->find({ collection=>$coll, %p })->fields({ mid=>1 })->sort({ mid=>1 });
+    if( $search_one ) {
+        my $doc = $rs->next; 
+        return undef if !$doc;
+        return ci->new( $doc->{mid} );
+    } else {
+        my @cis = map { ci->new( $_->{mid} ) } $rs->all;
+        return @cis;
+    }
 }
 
 

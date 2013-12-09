@@ -1293,6 +1293,9 @@ msgstr "Guardando..."
 msgid "Reset"
 msgstr "Limpiar"
 
+msgid "Reset Grid Columns"
+msgstr "Resetear Columnas del Grid"
+
 msgid "Language"
 msgstr "Idioma"
 

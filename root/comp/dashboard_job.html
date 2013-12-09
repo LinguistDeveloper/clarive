@@ -1,6 +1,6 @@
 <%perl>
     use Baseliner::Utils;
-    my $idjob = $c->stash->{id_job};
+    my $mid = $c->stash->{mid};
     my $namejob = $c->stash->{name_job};
     my $status_id = "status". _nowstamp;
     my $details_file_id = "details_file". _nowstamp;
@@ -14,7 +14,7 @@
 <div id="boot">
     <div class="container_24" style="padding-top:12px;padding-left:10px;">
         <div class="grid_24">
-            <h2>Job: <%$namejob%> (<a href="javascript:Baseliner.add_tabcomp('/job/log/list?id_job=<%$idjob%>', _('<%$namejob%>'), { tab_icon: '/static/images/icons/moredata.gif' } );"> <% _loc('full log') %> </a>)</h2>
+            <h2>Job: <%$namejob%> (<a href="javascript:Baseliner.add_tabcomp('/job/log/list?mid=<%$mid%>', _('<%$namejob%>'), { tab_icon: '/static/images/icons/moredata.gif' } );"> <% _loc('full log') %> </a>)</h2>
         </div>
 
         <div class="grid_11">
@@ -36,11 +36,11 @@
                     </tr>
                     <tr>
                         <td><% _loc( 'Start') %></td>
-                        <td><%$resumen->{starttime}?$resumen->{starttime}->dmy.' '.$resumen->{starttime}->hms:''%></td>
+                        <td><%$resumen->{starttime}?$resumen->{starttime}:''%></td>
                     </tr>
                     <tr>
                         <td><% _loc( 'End') %></td>
-                        <td><%$resumen->{endtime}?$resumen->{endtime}->dmy.' '.$resumen->{endtime}->hms:''%></td>
+                        <td><%$resumen->{endtime}?$resumen->{endtime}:''%></td>
                     </tr>
                     <tr>
                         <td><% _loc( 'Active Time') %></td>
@@ -97,7 +97,7 @@
                     $first = 0;
         	    }
 </%perl>
-                        <td class="datos"><b><a href="javascript:Baseliner.addNewTabComp('/job/log/list?id_job=<%$idjob%>&service_name=<%$service->{service}%>', _('Log <%$service->{service}%>'), { tab_icon: '/static/images/icons/moredata.gif' } );"><% $service->{description} || $service->{service} %></a></b></td>
+                        <td class="datos"><b><a href="javascript:Baseliner.addNewTabComp('/job/log/list?mid=<%$mid%>&service_name=<%$service->{service}%>', _('Log <%$service->{service}%>'), { tab_icon: '/static/images/icons/moredata.gif' } );"><% $service->{description} || $service->{service} %></a></b></td>
                         <td class="datos" style="color:<% $colors->{$service->{status}} %>;"><b><% _loc($service->{status}) %></b></td>
                         <td class="datos"><b><% $resumen->{services_time}->{$step."#".$service->{service}}." sec." %></b></td>
 
@@ -164,7 +164,7 @@
 </%perl>                        
                     <tr>
                         <td><b><% _loc( 'Job Items') %></b></td>
-                        <td><b><a href="javascript:Baseliner.addNewTab('/job/log/elements?id_job=<%$idjob%>', _('Elementos <%$namejob%>'), { tab_icon: '/static/images/icons/moredata.gif' } );"><% _loc("Items") %>&nbsp;<img border=0 src='/static/images/moredata.gif'/></a></b></td>
+                        <td><b><a href="javascript:Baseliner.addNewTab('/job/log/elements?mid=<%$mid%>', _('Elementos <%$namejob%>'), { tab_icon: '/static/images/icons/moredata.gif' } );"><% _loc("Items") %>&nbsp;<img border=0 src='/static/images/moredata.gif'/></a></b></td>
                     </tr>
 <%perl>
     my $tot_tecnologias;

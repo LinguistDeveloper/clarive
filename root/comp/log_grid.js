@@ -1,11 +1,18 @@
+<%args>
+    $mid
+    $annotate_now => 0
+    $job_exec => 1
+    $user_action
+    $service_name
+</%args>
 (function(params){
     if( !params ) params = {};
     var ps = 500; //page_size
-    var id_job = '<% $c->stash->{id_job} %>' ;
-    var job_exec = '<% $c->stash->{job_exec} %>' ;
+    var mid = '<% $mid %>' ;
+    var job_exec = '<% $job_exec %>' ;
     var job_exec_max = job_exec;
-    var filter_key = 'log_filter_<% $c->stash->{id_job} . int(rand(9999999999)) %>' ;
-    var annotate_now = <% $c->stash->{annotate_now} ? 'true' : 'false' %> ;
+    var filter_key = 'log_filter_<% $mid . int(rand(9999999999)) %>' ;
+    var annotate_now = <% $annotate_now ? 'true' : 'false' %> ;
     var filter_cookie; // = Baseliner.cookie.get( filter_key );
     var filter_obj = filter_cookie || params.filter_obj || {
         info : true,
@@ -30,39 +37,6 @@
         store.load( params );
     };
     
-    // La fuente de Datos JSON con todos el listado:
-    /*
-    var store=new Baseliner.JsonStore({
-        root: 'data' , 
-        remoteSort: true,
-        totalProperty:"totalCount", 
-        id: 'id', 
-        url: '/job/log/json',
-        baseParams: {  start: 0, limit: ps, id_job: '<% $c->stash->{id_job} %>', service_name: '<% $c->stash->{service_name} %>', filter: {} },
-        fields: [ 
-            {  name: 'id' },
-            {  name: 'id_job' },
-            {  name: 'job' },
-            {  name: 'text' },
-            {  name: 'datalen' },
-            {  name: 'ts' },
-            {  name: 'timestamp' },  // real column name
-            {  name: 'lev' },
-            {  name: 'section' },
-            {  name: 'step' },
-            {  name: 'exec' },
-            {  name: 'prefix' },
-            {  name: 'milestone' },
-            {  name: 'module' },
-            {  name: 'ns' },
-            {  name: 'provider' },
-            {  name: 'service_key' },
-            {  name: 'file' },
-            {  name: 'data' },
-            {  name: 'more' }
-        ]
-    });
-    */
     var reader = new Ext.data.JsonReader({
         root: 'data' , 
         remoteSort: true,
@@ -70,12 +44,12 @@
         id: 'id'
         }, [ 
             {  name: 'id' },
-            {  name: 'id_job' },
+            {  name: 'id_data' },
+            {  name: 'mid' },
             {  name: 'job' },
             {  name: 'text' },
             {  name: 'datalen' },
             {  name: 'ts' },
-            {  name: 'timestamp' },  // real column name
             {  name: 'lev' },
             {  name: 'section' },
             {  name: 'step' },
@@ -95,7 +69,7 @@
     var store = new Baseliner.GroupingStore({
             reader: reader,
             url: '/job/log/json',
-            baseParams: {  start: 0, limit: ps, id_job: '<% $c->stash->{id_job} %>', service_name: '<% $c->stash->{service_name} %>', filter: {} },
+            baseParams: {  start: 0, limit: ps, mid: '<% $mid %>', service_name: '<% $service_name %>', filter: {} },
             remoteSort: true,
             //sortInfo: { field: 'starttime', direction: "DESC" },
             groupField: grouping
@@ -140,7 +114,7 @@
         cls: 'x-btn-text-icon',
         handler: function(t) {
             if( t.pressed ) {
-                if( id_job == "" ) {
+                if( mid == "" ) {
                     t.toggle();
                 } else {
                     autorefresh.start(task);
@@ -154,12 +128,12 @@
     var task_off_count = ATTEMPTS;
     var task = {
         run: function() {
-            if( id_job == "" ) return; 
+            if( mid == "" ) return; 
             var f = Ext.util.JSON.encode( filter_obj );
             var je = store.baseParams.job_exec || job_exec;
             Ext.Ajax.request({
                 url: '/job/log/auto_refresh',
-                params: { id_job: id_job, cnt: store.getCount(), job_exec: je, filter: f },
+                params: { mid: mid, cnt: store.getCount(), job_exec: je, filter: f },
                 success: function(xhr) {
                     var res = xhr.responseText;
                     var data = Ext.util.JSON.decode( res );
@@ -247,9 +221,9 @@
                                 msg: _('Field limit exceeded: %1 chars. Use the Data field for large content', 2000) });
                             return ;
                         }
-                        Baseliner.ajaxEval('/job/log/annotate',
+                        Baseliner.ci_call( mid, 'annotate',  
                             { text: field_annotate.getValue(), data: field_data.getValue(),
-                                jobid: id_job, job_exec: store.baseParams.job_exec || job_exec, level: severity.getValue() },
+                                jobid: mid, job_exec: store.baseParams.job_exec || job_exec, level: severity.getValue() },
                             function(res){
                                 Baseliner.message(_('Annotation'), _('Submitted') );
                                     win.close();
@@ -325,9 +299,9 @@
                }
            }
            if( value.more=='jes' ) {
-             ret += "<a href='#' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/jesSpool?id=" + rec.id + "&jobId=" + rec.data.id_job + "&jobName=" + rec.data.job +"\"); return false;'><img border=0 src='/static/images/host.gif'/></a> " ;
+             ret += "<a href='#' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/jesSpool?id=" + rec.data.id + "&jobId=" + rec.data.mid + "&jobName=" + rec.data.job +"\"); return false;'><img border=0 src='/static/images/host.gif'/></a> " ;
 //           if( value.more=='jes' ) {
-//               ret += "<a href='#' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/jesSpool?id=" + rec.id + "&job=" + rec.data.job +"\");'><img border=0 src='/static/images/mainframe.png' /></a> ";
+//               ret += "<a href='#' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/jesSpool?id=" + rec.data.id + "&job=" + rec.data.job +"\");'><img border=0 src='/static/images/mainframe.png' /></a> ";
            } else if( value.more=='link'  ) {
                ret += String.format("<a href='{0}' target='_blank'><img src='/static/images/icons/link.gif'</a>", rec.data.data );
            } else if( value.more!='' && value.more!=undefined && value.data ) {
@@ -337,18 +311,18 @@
                } else {
                   img = '/static/images/download.gif';
            } 
-               ret += "<a href='/job/log/download_data?id=" + rec.id + "' target='FrameDownload'><img border=0 src="+img+" /></a> " + datalen ;
+               ret += "<a href='/job/log/download_data?id=" + rec.data.id + "' target='FrameDownload'><img border=0 src="+img+" /></a> " + datalen ;
            } else {
                if( value.more!='file' && value.data && xdatalen < 250000 ) {  // 250Ks max
                    var data_name = value.data_name;
                    if( data_name==undefined || data_name.length<1 ) {
-                       data_name = "Log Data " + rec.id;
+                       data_name = "Log Data " + rec.data.id;
                    }
-                   ret += "<a href='#' onclick='javascript:Baseliner.addNewTabSearch(\"/job/log/data?id=" + rec.id + "\",\""+data_name+"\"); return false;'><img border=0 src='/static/images/moredata.gif'/></a> " + datalen ;
+                   ret += "<a href='#' onclick='javascript:Baseliner.addNewTabSearch(\"/job/log/data?id=" + rec.data.id + "\",\""+data_name+"\"); return false;'><img border=0 src='/static/images/moredata.gif'/></a> " + datalen ;
                }
                else if( value.file!=undefined && value.file!='' && value.data ) { // alternative file
-                   ret += "<a href='/job/log/highlight/" + rec.id + "' target='_blank'><img border=0 src='/static/images/silk/page_new.gif'></a> "
-                   ret += "&nbsp;<a href='/job/log/download_data?id=" + rec.id + "&file_name=" + value.file + "' target='FrameDownload'><img border=0 src='/static/images/download.gif'/></a> " + datalen ;
+                   ret += "<a href='/job/log/highlight/" + rec.data.id + "' target='_blank'><img border=0 src='/static/images/silk/page_new.gif'></a> "
+                   ret += "&nbsp;<a href='/job/log/download_data?id=" + rec.data.id + "&file_name=" + value.file + "' target='FrameDownload'><img border=0 src='/static/images/download.gif'/></a> " + datalen ;
                } 
            }
            return ret;
@@ -396,7 +370,7 @@
     //--- Resume from Suspend, Pause
     var button_resume = new Ext.Toolbar.Button({ text : _('Resume Job'), icon: '/static/images/icons/play.png', cls: 'x-btn-text-icon', hidden: true,
         handler: function(){
-            Baseliner.ajaxEval( '/job/resume', { id_job: current_job().id, confirm: _('Do you wish to resume job %1',current_job().job_name) }, function(res) {
+            Baseliner.ajaxEval( '/job/resume', { mid: current_job().mid, confirm: _('Do you wish to resume job %1',current_job().job_name) }, function(res) {
                 Baseliner.message( _('Resume Job'), res.msg );
             });
         } 
@@ -417,7 +391,7 @@
             if( hash != undefined ) {
                 win_opener( hash + '?' + par  );
             } else {
-                Baseliner.ajaxEval('/job/log/gen_job_key', { id_job : id_job }, function( res ) {
+                Baseliner.ajaxEval('/job/log/gen_job_key', { mid : mid }, function( res ) {
                     if( ! res.success ) { Baseliner.error( _('Error'), res.msg ); return; }
                     win_opener( res.job_key + '?' + par);
                 });
@@ -427,8 +401,8 @@
 
     var menu_delete = { text : _('Delete Log'), icon: '/static/images/icons/delete.gif', cls: 'x-btn-text-icon', hidden: false,
         handler: function(){
-            Baseliner.ajaxEval( '/job/log/delete', { id_job: current_job().id, job_exec: job_exec,
-                confirm: _('Do you wish to delete all log data for job %1, exec %2?',current_job().id, job_exec) }, function(res) {
+            Baseliner.ajaxEval( '/job/log/delete', { mid: current_job().mid, job_exec: job_exec,
+                confirm: _('Do you wish to delete all log data for job %1, exec %2?',current_job().mid, job_exec) }, function(res) {
                     Baseliner.message( _('Delete Log'), res.msg );
             });
         } 
@@ -436,21 +410,21 @@
 
     var menu_stash = { text : _('View Stash'), icon: '/static/images/icons/stash.gif', cls: 'x-btn-text-icon', hidden: false,
         handler: function(){
-                    var id_job = current_job().id;
-                    Baseliner.add_tabcomp( "/comp/job_stash.js", _("Job Stash %1", id_job ), { id_job: id_job } );
+                    var mid = current_job().mid;
+                    Baseliner.add_tabcomp( "/comp/job_stash.js", _("Job Stash %1", mid ), { mid: mid } );
                  }
     };
 
     var menu_logfile = { text : _('View Logfile'), icon: '/static/images/icons/page.gif', cls: 'x-btn-text-icon', hidden: false,
         handler: function(){
-                    var id_job = current_job().id;
-                    Baseliner.add_tabcomp( "/comp/job_logfile.js", _("Logfile %1", id_job ), { id_job: id_job } );
+                    var mid = current_job().mid;
+                    Baseliner.add_tabcomp( "/comp/job_logfile.js", _("Logfile %1", mid ), { mid: mid } );
                  }
     };
 
     var button_cancel = new Ext.Toolbar.Button({ text : _('Resume Job'), icon: '/static/images/icons/play.png', cls: 'x-btn-text-icon', hidden: true,
         handler: function(){
-            Baseliner.ajaxEval( '/job/resume', { id_job: current_job().id, confirm: _('Do you wish to resume job %1',current_job().job_name) }, function(res) {
+            Baseliner.ajaxEval( '/job/resume', { mid: current_job().mid, confirm: _('Do you wish to resume job %1',current_job().job_name) }, function(res) {
                 Baseliner.message( _('Resume Job'), res.msg );
             });
         } 
@@ -493,7 +467,7 @@
                 { header: _('Step'), width: 40, dataIndex: 'step', sortable: true },
                 { header: _('Execution'), width: 60, dataIndex: 'exec', sortable: true, hidden: true },
                 { header: _('Level'), width: 30, dataIndex: 'lev', renderer: Baseliner.levRenderer, sortable: true },
-                { header: _('Timestamp'), width: 100, dataIndex: 'timestamp', sortable: true }, 
+                { header: _('Timestamp'), width: 100, dataIndex: 'ts', sortable: true }, 
                 { header: _('Task'), width: 120, id:'service_key', dataIndex: 'service_key', sortable: true, hidden: false, renderer: render_task },
                 { header: _('Message'), width: 450, dataIndex: 'text', sortable: true, cls: 'nowrapgrid', renderer: render_msg  },
                 { header: _('Namespace'), width: 100, dataIndex: 'ns', sortable: true, hidden: true },   
@@ -513,7 +487,7 @@
             tbar: [ _('Search') + ': ', ' ',
                 new Ext.app.SearchField({
                     store: store,
-                    params: {start: 0, limit: ps, id_job: '<% $c->stash->{id_job} %>' },
+                    params: {start: 0, limit: ps, mid: '<% $mid %>' },
                     emptyText: _('<Enter your search string>')
                 }),
                 button_html,
@@ -527,7 +501,7 @@
                     cls: 'x-btn-text-icon',
                     handler: annotation
                 },
-% if( $c->stash->{user_action}->{'action.admin.default'} ) {
+% if( $user_action->{'action.admin.default'} ) {
                 button_resume,
                 new Ext.Toolbar.Button({ 
                     text: _('Advanced'),
@@ -584,12 +558,12 @@
                 win.show();
             }
         });
-        //Baseliner.addNewTabComp('/job/log/list?id_job=' + r.get('id') , '<% _loc('Log') %>' + r.get('name') );
+        //Baseliner.addNewTabComp('/job/log/list?mid=' + r.get('id') , '<% _loc('Log') %>' + r.get('name') );
     });		
 
     //Scroll to bottom when the store reloads
     store.on('load', function(){
-        if( id_job != "" ) {
+        if( mid != "" ) {
             grid.view.scroller.scroll('down', 9999999999999, true);
         }
         var job = current_job();

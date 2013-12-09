@@ -11,7 +11,6 @@ has host               => qw(is rw isa Str lazy 1), default=>sub{ return Util->m
 has owner              => qw(is rw isa Str lazy 1), default=>sub{ return $ENV{USER} || $ENV{USERNAME} };
 has same_exec          => qw(is rw isa Bool default 0); 
 has last_error         => qw(is rw isa Maybe[Str] default '');
-has step_status        => ( is=>'rw', isa=>'HashRef[Str]', default=>sub{{}} );  # saves statuses at step change
 has prev_status        => ( is=>'rw', isa=>'Any' );  # saves previous status
 has final_status       => ( is=>'rw', isa=>'Any' );  # so that services can request a final status like PAUSE
 has parent_job         => (is=>'rw', isa=>'Num', required=>1 );
@@ -108,7 +107,7 @@ sub run {
         return 0;
     };
 
-    _log "=========| Starting JOB " . $self->id_job . ", rollback=" . $self->rollback;
+    _log "=========| Starting JOB " . $self->jobid . ", rollback=" . $self->rollback;
 
     _debug( _loc('Rule Runner, STEP=%1, PID=%2, RULE_ID', $self->step, $self->pid ) );
 
@@ -188,8 +187,14 @@ sub run {
     } else {
         $self->logger->info( _loc( 'Job step %1 finished with status %2', $self->step, $self->status ) );
     }
-    $self->goto_next_step( $self->final_status ) unless $self->status eq 'ERROR';
+    if( $self->status eq 'ERROR' && $self->step eq 'POST' ) {
+        $self->step('END'); 
+        $self->save;
+    } else {
+        $self->goto_next_step( $self->final_status ) 
+    }
     unlink $self->pid_file;
+    $self->save_to_parent_job( status=>$self->status, step=>$self->step );
     return $self->status;
 }
 
@@ -202,7 +207,7 @@ sub write_pid {
     my ($self) = @_;
     my $file = $self->pid_file;
     open my $ff, '>', $file or _error( _loc('Could not write pid file for job: %1', $!) );
-    print $ff $self->pid;
+    print $ff $$;
     close $ff;
 }
 

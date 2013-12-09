@@ -60,27 +60,13 @@ sub rollback : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     try {
-        ## get old
-        #my $old = _ci( $p->{mid} ) // _fail _loc 'Job %1 not found', $p->{name};
-        #my $stash = $old->job_stash;
-        #delete $old->{$_} for qw(mid _ci id_job name ns starttime endtime schedtime maxstarttime exec milestones);
-        ## create
-        #my $job = BaselinerX::CI::job->new( %$old, rollback=>1 );
-        #$job->step( 'RUN');
-        #$job->status( 'IN-EDIT' );
-        #$job->save;
-        #$job->job_stash( $stash );
-        #$job->save;
-        #$c->stash->{json} = { success => \1, msg=>_loc('Job %1 created', $job->name ) };
 
-        my $job = _ci( $p->{mid} ) // _fail _loc 'Job %1 not found', $p->{name};
+        my $job = ci->new( $p->{mid} ) // _fail _loc 'Job %1 not found', $p->{name};
         if( my $deps = $job->find_rollback_deps ) {
             $c->stash->{json} = { success => \0, msg=>_loc('Job has dependencies due to later jobs. Baseline cannot be updated.'), deps=>$deps };
             return;
         }
         $job->update( step=>'RUN', rollback=>1, status=>'READY' );
-        my $jj = _ci( $p->{mid} );
-        _debug $jj;
         $c->stash->{json} = { success => \1, msg=>_loc('Job %1 backout scheduled', $job->name ) };
     } catch {
         $c->stash->{json} = { success => \0, msg=>"".shift() };
@@ -198,8 +184,8 @@ sub rs_filter {
 sub job_logfile : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
-    my $job = ci->new( ns=>'job/'.$p->{id_job} );
     $c->stash->{json}  = try {
+        my $job = ci->new( $p->{mid} );
         my $file = $job->logfile;
         #$file //= Baseliner->loghome( $job->name . '.log' ); 
         _fail _loc( "Error: logfile not found or invalid: %1", $file ) if !$file || ! -f $file;
@@ -215,10 +201,10 @@ sub job_logfile : Local {
 sub job_stash : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
-    my $job = $c->model('Baseliner::BaliJob')->find( $p->{id_job} );
+    my $job = ci->new( $p->{mid} );
     $c->stash->{json}  = try {
-        my $stash = $job->stash;
-        $stash = _dump( Util->_stash_load( $stash ) );
+        my $stash = $job->job_stash;
+        $stash = _dump( $stash );
         #Encode::_utf8_on( $stash );
         #$c->stash->{job_stash} = $stash;
         { stash=>$stash, success=>\1 };
@@ -335,31 +321,29 @@ sub submit : Local {
     try {
         use Baseliner::Sugar;
         if( $p->{action} eq 'delete' ) {
-            my $job = $c->model('Baseliner::BaliJob')->search({ id=> $p->{id_job} })->first;
-            my $job_ci = ci->new( ns=>'job/'.$p->{id_job} );
+            my $job_ci = ci->new( $p->{mid} );
             my $msg = '';
-            if( $job->status =~ /CANCELLED|KILLED|FINISHED|ERROR/ ) {
-
-                event_new 'event.job.delete' => { username => $c->username, bl => $job->bl, id_job=>$job->id, jobname => $job->name  }  => sub {
+            if( $job_ci->status =~ /CANCELLED|KILLED|FINISHED|ERROR/ ) {
+                event_new 'event.job.delete' => { username => $c->username, bl => $job_ci->bl, mid=>$p->{mid}, id_job=>$job_ci->jobid, jobname => $job_ci->name  }  => sub {
                     # be careful: may be cancelled already
                     $p->{mode} ne 'delete' and _fail _loc('Job already cancelled'); 
-                    $job->delete;
+                    $job_ci->delete;
                 };
                 $msg = "Job %1 deleted";
             }
-            elsif( $job->status =~ /RUNNING/ ) {
-                event_new 'event.job.cancel_running' => { username => $c->username, bl => $job->bl, id_job=>$job->id, jobname => $job->name  } => sub {
+            elsif( $job_ci->status =~ /RUNNING/ ) {
+                event_new 'event.job.cancel_running' => { username => $c->username, bl => $job_ci->bl, mid=>$p->{mid}, id_job=>$job_ci->jobid, jobname => $job_ci->name  } => sub {
                     $job_ci->status( 'CANCELLED' );
                     $job_ci->save;
                     $job_ci->logger->error( _loc('Job cancelled by user %1', $c->username ) );
                     sub job_submit_cancel_running : Private {};
-                    $c->forward( 'job_submit_cancel_running', $job, $job_name, $username );
+                    $c->forward( 'job_submit_cancel_running', $job_ci, $job_name, $username );
                 };
                 $msg = "Job %1 cancelled";
             } else {
-                event_new 'event.job.cancel'  => { username => $c->username, bl => $job->bl, id_job=>$job->id, jobname => $job->name  } => sub {
+                event_new 'event.job.cancel'  => { username => $c->username, bl => $job_ci->bl, mid=>$p->{mid}, id_job=>$job_ci->jobid, jobname => $job_ci->name  } => sub {
                     $job_ci->status( 'CANCELLED' );
-                    $job->save;
+                    $job_ci->save;
                     $job_ci->logger->error( _loc('Job cancelled by user %1', $c->username ) );
                 };
                 $msg = "Job %1 cancelled";
@@ -384,29 +368,12 @@ sub submit : Local {
             }
 
             # create job
-            #my $start = parse_date('Y-mm-dd hh:mi', "$job_date $job_time");
-            my $start = parse_dt( '%Y-%m-%d %H:%M', "$job_date $job_time");
-            #$start->set_time_zone('CET');
-            my $end = $start->clone->add( hours => 1 );
-            my $ora_start =  $start->strftime('%Y-%m-%d %T');
-            my $ora_end =  $end->strftime('%Y-%m-%d %T');
             my $approval = undef;
-            
-            # U -- urgent calendar
-            if ( config_value('job_new.approve_urgent') && $p->{window_type} eq 'U') {
-                $approval = { reason=>_loc('Urgent Job') };
-            }
-                
-            # not in an authorized calendar
-            if ( config_value('job_new.approve_no_cal') && $p->{check_no_cal} eq 'on') {
-                $approval = { reason=>_loc('Job not in a window') };
-            }
-                
+            #my $start = parse_dt( '%Y-%m-%d %H:%M', "$job_date $job_time");
             my $job_data = {
                     bl           => $bl,
                     job_type     => $job_type,
-                    starttime    => $start,
-                    maxstarttime => $end,
+                    window_type  => $p->{window_type},  # $p->{check_no_cal} has 'on' if no job window available
                     status       => 'IN-EDIT',
                     approval     => $approval,
                     step         => 'PRE',
@@ -416,16 +383,16 @@ sub submit : Local {
                     description  => $comments,
                     changesets   => $contents, 
             };
+            $job_data->{start} = Class::Date->new("$job_date $job_time") if length $job_date && length $job_time;
             event_new 'event.job.new' => { username => $c->username, bl => $job_data->{bl}  } => sub {
-                # calls _create in the topic 
                 my $job = BaselinerX::CI::job->new( $job_data );
-                $job->save;
+                $job->save;  # after save, CHECK and INIT run
                 if( ref $job_stash ) {
                     _debug "*** Job Stash before Job Creation: " . _dump $job_stash;
                     $job->job_stash( $job_stash );
                 }
                 $job_name = $job->name;
-                { jobname => $job_name, id_job=>$job->{id_job} };
+                { jobname => $job_name, mid=>$job->mid, id_job=>$job->jobid };
             };
             
             $c->stash->{json} = { success => \1, msg => _loc("Job %1 created", $job_name) };
@@ -500,7 +467,6 @@ sub monitor_portlet : Local {
 sub export : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
-    return unless ref $c->model('Jobs')->user_has_access(id=>$p->{id_job}, username=>$c->username );
 
     my $file = $c->model('Jobs')->export( id=>$p->{id_job}, format=>'tar', file=>1 );
     return unless $file;

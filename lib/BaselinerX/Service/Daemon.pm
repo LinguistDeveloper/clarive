@@ -37,17 +37,6 @@ register 'config.job.daemon' => {
 };
 
 
-sub check_rollbacks {
-    my ($self)=@_;
-    my @rs = DB->BaliJob->search({ 
-        status => 'ROLLBACK'
-    });
-    foreach my $r ( @rs ) {
-        $r->status('READY');
-        $r->update;
-    }
-}
-
 # daemon - listens for new jobs
 sub job_daemon {
     my ($self,$c,$config)=@_;
@@ -71,48 +60,51 @@ sub job_daemon {
 
     # set job query order
     for( 1..1000 ) {
-        my $now = _now;
+        my $now = mdb->now;
 
         my @query_roll = (
                 # Immediate chain (PRE, POST or now=1 )
                 { 
-                    status => 'READY',
-                    '-or' => [ { step => 'PRE' }, { step => 'POST' }, { now=>1 } ]
-                    #step=>{ '-or' => ['PRE', 'POST'] },
+                    '$or' => [ 
+                        { step => 'PRE', status=>'READY' }, 
+                        { step => 'POST', status=>mdb->in('READY','ERROR','KILLED','EXPIRED','REJECTED') }, 
+                        { now=>1 }, 
+                    ]
                 }, 
                 # Scheduled chain (RUN and now<>0 )
                 { 
-                    schedtime => { '<' , $now }, 
-                    maxstarttime => { '>' , $now }, 
-                    status => 'READY', step=>'RUN',
-                    now => { '<>', 1 },
+                    schedtime        => { '$lte', "$now" },
+                    maxstarttime     => { '$gt',  "$now" },
+                    status           => 'READY',
+                    step             => 'RUN',
+                    now              => { '$ne' => 1 },
                 } 
         );
         for my $roll ( @query_roll ) {
-            my @rs = DB->BaliJob->search($roll);
-            foreach my $r ( @rs ) {
-                _log _loc( "Starting job %1 for step %2", $r->name, $r->step );
-                $r->status('RUNNING');
-                $r->update;
+            my @docs = ci->job->find( $roll )->all;
+            foreach my $job ( map { ci->new( $_->{mid} ) } @docs ) {
+                _log _loc( "Starting job %1 for step %2", $job->name, $job->step );
+                $job->status('RUNNING');
+                $job->save;
                 # get proc mode from job bl
                 my $mode = $^O eq 'Win32'
                     ? 'spawn'
-                    : Baseliner->model('ConfigStore')->get('config.job.daemon', bl=>$r->bl || '*' )->{mode} || 'spawn';
-                my $step = $r->step;
+                    : Baseliner->model('ConfigStore')->get('config.job.daemon', bl=>$job->bl || '*' )->{mode} || 'spawn';
+                my $step = $job->step;
                 my $loghome = $ENV{BASELINER_LOGHOME};
                 $loghome ||= $ENV{BASELINER_HOME} . './logs';
                 _mkpath $loghome;
-                my $logfile = File::Spec->catfile( $ENV{BASELINER_LOGHOME} || $ENV{BASELINER_HOME} || '.', $r->name . '.log' );
+                my $logfile = File::Spec->catfile( $ENV{BASELINER_LOGHOME} || $ENV{BASELINER_HOME} || '.', $job->name . '.log' );
                 # set job pid to 0 to avoid checking until it sets it's own pid
-                $r->pid( 0 );
-                $r->update; 
+                $job->pid( $$ );
+                $job->save; 
                 # launch the job proc
                 if( $mode eq 'spawn' ) {
                     _log "Spawning job (mode=$mode)";
-                    my $pid = $self->runner_spawn( mid=>$r->mid, runner=>$r->runner, step=>$step, jobid=>$r->id, logfile=>$logfile );
+                    my $pid = $self->runner_spawn( mid=>$job->mid, runner=>$job->runner, step=>$step, jobid=>$job->mid, logfile=>$logfile );
                 } elsif( $mode =~ /fork|detach/i ) {
-                    _log "Forking job " . $r->id . " (mode=$mode), logfile=$logfile";
-                    $self->runner_fork( mid=>$r->mid, runner=>$r->runner, step=>$step, jobid=>$r->id, logfile=>$logfile, mode=>$mode, unified_log=>$config->{unified_log} );
+                    _log "Forking job " . $job->mid . " (mode=$mode), logfile=$logfile";
+                    $self->runner_fork( mid=>$job->mid, runner=>'Core', step=>$step, jobid=>$job->mid, logfile=>$logfile, mode=>$mode, unified_log=>$config->{unified_log} );
                 } else {
                     _throw _loc("Unrecognized mode '%1'", $mode );
                 }
@@ -160,13 +152,14 @@ sub runner_fork {
     my ($self, %p ) =@_;
     my $mid = $p{mid} or _throw 'Missing parameter job `mid`';
     require POSIX;
+    mdb->disconnect;
     my $pid = fork;
     if( $pid ) { # parent
         waitpid( $pid, 0 );
         return $pid;
     } elsif( $pid == 0 ) { # child
         $SIG{CHLD} = 'DEFAULT';
-        if ($pid = Fork) { exit 0; }
+        if ($pid = Fork) { exit 0; }  # refork and exit parent (XXX necessary?)
         if( $p{mode} eq 'detach' ) {
             _log "Detaching job...";
             my $sid = POSIX::setsid; 
@@ -180,47 +173,51 @@ sub runner_fork {
             open (STDERR, ">>", $p{logfile} ) or die "Can't open STDERR: $!";
         }
         my $job = Baseliner::CI->new( $mid );
-        my $job_run = $job->create_runner( same_exec=>1, logfile=>$p{logfile} );
-        $job_run->run();
-        #Baseliner->model('Services')->launch( 'job.run', data=>{ runner=>$p{runner}, step=>$p{step}, jobid=>$p{jobid}, logfile=>$p{logfile} } );
+        $job->logfile( $p{logfile} );
+        $job->run( same_exec=>1 );
         exit 0;
     } else {
         _log _loc("***** ERROR: Could not fork job '%1'", $p{jobid} );
     }
 }
 
+# expired or pid alive
 sub check_job_expired {
     my ($self)=@_;
     #_log( "Checking for expired jobs..." );
-    my $rs = DB->BaliJob->search({ 
-            maxstarttime => { '<' , _now }, 
+    my $rs = ci->job->find({ 
+            maxstarttime => { '$lt' => _now }, 
             status => 'READY',
     });
-    while( my $row = $rs->next ) {
-        _log( _loc("Job %1 expired (maxstartime=%2)" , $row->name, $row->maxstarttime ) );
-        $row->status('EXPIRED');
-        $row->endtime( _now );
-        $row->update;
+    while( my $doc = $rs->next ) {
+        _log( _loc("Job %1 expired (mid=%3, maxstartime=%2)" , $doc->{name}, $doc->{maxstarttime}, $doc->{mid} ) );
+        my $ci = ci->new( $doc->{mid} ) or do { _error _loc 'Job ci not found for id_job=%1', $doc->{id}; next };
+        $ci->status('EXPIRED');
+        $ci->endtime( _now );
+        $ci->save;
     }
     # some jobs are running with pid, and some without, 
-    #   but if they have any of these statuses, they should have a pid>0 and exist, otherwise their dead
-    $rs = DB->BaliJob->search({ status => ['RUNNING','PAUSED','TRAPPED'] });
+    #   but if they have any of these statuses, they should have a pid>0 and exist, otherwise they are dead
+    $rs = ci->job->find({ status => mdb->in('RUNNING','PAUSED','TRAPPED') });
     my $hostname = Util->my_hostname();
-    while( my $row = $rs->next ) {
-        _debug sprintf "Checking job row alive: job=%s, pid=%s, host=%s (my host=%s)", $row->name, $row->pid, $row->host, $hostname;
-        if( $row->host eq $hostname ) {
-            if( $row->pid>0 && !pexists($row->pid) ) {
-                _warn "Not alive: " . $row->name;
+    while( my $doc = $rs->next ) {
+        my $ci = ci->new( $doc->{mid} );
+        _debug sprintf "Checking job row alive: job=%s, pid=%s, host=%s (my host=%s)", $ci->name, $ci->mid, $ci->pid, $ci->host, $hostname;
+        if( $ci->host eq $hostname ) {
+            if( $ci->pid>0 && !pexists($ci->pid) ) {
+                _warn "Not alive: " . $ci->name;
                 # recheck
-                if( $row->pid>0 ) {
-                    my $job = DB->BaliJob->search({ id=>$row->id, step=>$row->step, pid=>{'>',0} })->first;
-                    next unless ref $job;
-                    next unless $job->status eq 'RUNNING';
+                if( $ci->pid>0 ) {
+                    my $rec = $ci->load;
+                    next unless ref $rec;
+                    next unless $rec->{status} eq 'RUNNING';
                 }
-                _warn( _loc("Detected killed job %1 (status %2, pid %3)", $row->name, $row->status, $row->pid ) ); 
-                $row->status('KILLED');
-                $row->endtime( _now );
-                $row->update;
+                my $msg = _loc("Detected killed job %1 (mid %2 status %3, pid %4)", $ci->name, $ci->mid, $ci->status, $ci->pid ); 
+                _warn( $msg ); 
+                $ci->logger->error( $msg ); 
+                $ci->status('KILLED');
+                $ci->endtime( _now );
+                $ci->save;
             } else {
                 #if( $^O eq 'MSWin32' ) {
                 #    use Win32::Process;

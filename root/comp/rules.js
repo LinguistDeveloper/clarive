@@ -729,8 +729,15 @@
         root: { nodeType: 'async', text: 'Reglas', draggable: false, id: 'root', expanded: true }
     });
     */
+    var menu_tab = new Ext.ux.TabCloseMenu({
+        closeTabText: _('Close Tab'),
+        closeOtherTabsText: _('Close Other Tabs'),
+        closeAllTabsText: _('Close All Tabs')        
+    });
+
     var tabpanel = new Ext.TabPanel({
         region: 'center',
+        plugins: [ menu_tab ],
         items: []
     });
     var palette_fake_store = {  // the SearchField needs a store, but the tree doesnt have one

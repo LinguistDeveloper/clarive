@@ -664,9 +664,12 @@ around 'finalize' => sub {
     }
 };
 
+# monkey patch this
+sub Class::Date::TO_JSON { $_[0]->string };
+
 # disconnect from mongo global just in case somebody connected during initializacion (like cache_remove)
 # otherwise mongo hell breaks loose
-$Baseliner::_mdb = undef; 
+mdb->disconnect;
 
 =head1 NAME
 

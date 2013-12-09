@@ -122,6 +122,8 @@
             {  name: 'runner' },
             {  name: 'id_rule' },
             {  name: 'rollback' },
+            {  name: 'has_errors' },
+            {  name: 'has_warnings' },
             {  name: 'username' },
             {  name: 'step' },
             {  name: 'step_code' },
@@ -366,7 +368,7 @@
             refresh_button_wait_on();
             var flag_running = false;
             store.each( function(rec) {
-                var id = rec.data.id;
+                var id = rec.data.mid;
                 if( parseInt(id) > parseInt( top_id ) ) {
                     top_id = id;
                 }
@@ -492,7 +494,7 @@
                 if( sel.data.job_key ) {
                     win_opener( sel.data.job_key );
                 } else {
-                    Baseliner.ajaxEval('/job/log/gen_job_key', { id_job : sel.data.id }, function( res ) {
+                    Baseliner.ajaxEval('/job/log/gen_job_key', { mid : sel.data.mid }, function( res ) {
                         if( ! res.success ) { Baseliner.error( _('Error'), res.msg ); return; }
                         win_opener( res.job_key );
                     });
@@ -511,7 +513,7 @@
                 layout: 'fit', width: 800, height: 600, items: cons_pan });
             cons_inproc.on('afterrender', function(){ 
                 Baseliner.showLoadingMask( cons_pan.el );
-                Baseliner.ci_call( sel.data.mid, 'run_inproc', { id_job: sel.data.id }, function(res){
+                Baseliner.ci_call( sel.data.mid, 'run_inproc', { mid: sel.data.mid }, function(res){
                     Baseliner.message( _('Run In-Process'), _('Job %1 in-process run finished', sel.data.name ) );
                     if( !Ext.getCmp(cons_pan.id) ) return;
                     if( !Ext.getCmp(cons_inproc.id) ) return;
@@ -545,7 +547,7 @@
                         var sel = sm.getSelected();
                         Baseliner.message( _('Job Export'), _('Job export started. Wait a few minutes...') );
                         var fd = document.all.FD || document.all.FrameDownload;
-                        fd.src =  '/job/export?id_job=' + sel.data.id ;
+                        fd.src =  '/job/export?mid=' + sel.data.mid ;
                     } else {
                         Ext.Msg.alert(_('Error'), _('Select a row first'));   
                     };
@@ -635,7 +637,7 @@
             Ext.Msg.confirm(_('Confirmation'),  '<b>' + sel.data.name + '</b>: ' + msg, 
                 function(btn){ 
                     if(btn=='yes') {
-                        Baseliner.ajaxEval( '/job/submit',  { action: 'delete', mode: mode, id_job: sel.data.id }, function(res){
+                        Baseliner.ajaxEval( '/job/submit',  { action: 'delete', mode: mode, mid: sel.data.mid }, function(res){
                             //console.log( res );
                             if( res.success ) {
                                 grid.getStore().reload();
@@ -682,9 +684,6 @@
         return Baseliner.render_wrap( v.join(', ') );
     };
 
-    var render_job = function(value,metadata,rec,rowIndex,colIndex,store) {
-        return '<b><span style=\'font-family: "Verdana"; font-size: "7pt" \'>' + value + '</span></b>';
-    };
     var render_level = function(value,metadata,rec,rowIndex,colIndex,store) {
         var icon;
         var bold = false;
@@ -723,24 +722,26 @@
             value = String.format("<a href='javascript:Baseliner.trap_check({0},\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id ); 
         }
         if( icon!=undefined ) {
+            var err_warn = rec.data.has_errors > 0 ? _('err: %1', rec.data.has_errors) : '';
+            err_warn += rec.data.has_warnings > 0 ? _('warn: %1', rec.data.has_warnings) : '';
             return div1 
                 + "<table><tr><td><img alt='"+status+"' border=0 src='/static/images/icons/"+icon+"' /></td>"
-                + '<td>' + value + '</td></tr></table>' + div2 ;
+                + '<td>' + value + '</td><td>'+err_warn+'</td></tr></table>' + div2 ;
         } else {
             return value;
         }
     };
 
     Baseliner.openLogTab = function(id, name) {
-        //Baseliner.addNewTabComp('/job/log/list?id_job=' + id, _('Log') + ' ' + name, { tab_icon: '/static/images/icons/moredata.gif' } );
-        Baseliner.addNewTab('/job/log/dashboard?id_job=' + id + '&name=' + name , name, { tab_icon: '/static/images/icons/job.png' });
+        //Baseliner.addNewTabComp('/job/log/list?mid=' + id, _('Log') + ' ' + name, { tab_icon: '/static/images/icons/moredata.gif' } );
+        Baseliner.addNewTab('/job/log/dashboard?mid=' + id + '&name=' + name , name, { tab_icon: '/static/images/icons/job.png' });
     };
 
-    var render_topic = function(value, p, record){
+    var render_job = function(value, metadata, record){
         var contents = ''; record.data.contents.join('<br />');
         return String.format(
                 '<b><a href="javascript:Baseliner.openLogTab({1}, \'{2}\');" style="font-family: Tahoma;">{0}</a></b><br />',
-                value, record.id, record.data.name ); 
+                value, record.data.mid, record.data.name ); 
     };
 
     function renderLast(value, p, r){
@@ -752,11 +753,11 @@
         frame: true,
         url: '/job/job_update', 
         buttons: [
-            {  text: 'Actualizar', handler: function(){ return false; } }
-            ,{  text: 'Cancelar', handler: function(){ winupdate.hide(); } }
+            {  text: _('Update'), handler: function(){ return false; } }
+            ,{  text: _('Cancel'), handler: function(){ winupdate.hide(); } }
         ],
         items: [
-            {  xtype: 'hidden', name: 'id_job', value: '' },
+            {  xtype: 'hidden', name: 'mid', value: '' },
             {
                 xtype: 'datefield',
                 fieldLabel: _('Date'),
@@ -840,14 +841,15 @@
         columns: [
                 { header: _('ID'), width: 60, dataIndex: 'id', sortable: true, hidden: true },
                 { header: _('MID'), width: 60, dataIndex: 'mid', sortable: true, hidden: true },
-                { header: _('Job'), width: 140, dataIndex: 'name', sortable: true, renderer: render_topic },    
+                { header: _('Job'), width: 140, dataIndex: 'name', sortable: true, renderer: render_job },    
                 { header: _('Job Status'), width: 130, dataIndex: 'status', renderer: render_level, sortable: true },
+                { header: _('Status Code'), width: 60, dataIndex: 'status_code', hidden: true, sortable: true },
                 { header: _('Step'), width: 50, dataIndex: 'step_code', sortable: true , hidden: false },	
                 { header: _('Application'), width: 70, dataIndex: 'applications', renderer: render_app, sortable: false, hidden: is_portlet ? true : false },
                 { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true },
                 { header: _('Natures'), width: 120, hidden: view_natures, dataIndex: 'natures', sortable: false, renderer: render_nature }, // not in DB
                 { header: _('Subapplications'), width: 120, dataIndex: 'subapps', sortable: false, hidden: true, renderer: render_subapp }, // not in DB
-                { header: _('Job Type'), width: 100, dataIndex: 'type', sortable: true, hidden: false },
+                { header: _('Job Type'), width: 100, dataIndex: 'type', sortable: true, hidden: true },
                 { header: _('User'), width: 80, dataIndex: 'username', sortable: true , renderer: Baseliner.render_user_field, hidden: is_portlet ? true : false},	
                 { header: _('Execution'), width: 80, dataIndex: 'exec', sortable: true , hidden: true },	
                 { header: _('Last Message'), width: 180, dataIndex: 'last_log', sortable: true , hidden: is_portlet ? true : true },	
@@ -890,7 +892,7 @@
                         if (sm.hasSelection())
                         {
                             var sel = sm.getSelected();
-                            Baseliner.addNewTabComp('/job/log/list?id_job=' + sel.data.id, sel.data.name );
+                            Baseliner.addNewTabComp('/job/log/list?mid=' + sel.data.mid, sel.data.name );
                         } else {
                             Ext.Msg.alert(_('Error'), _('Select a row first'));   
                         };
@@ -963,7 +965,6 @@
                                 bodyStyle:'padding: 10px',
                                 items: [
                                     user_combo,
-                                    { xtype: 'hidden', name:'id_job', value: sel.data.id },
                                     { xtype: 'hidden', name:'mid', value: sel.data.mid },
                                     { xtype: 'hidden', name:'job_name', value: sel.data.name },
                                     { xtype: 'hidden', name:'starttime',fieldLabel: _('Start Date'), value: sel.data.starttime },
@@ -1002,7 +1003,7 @@
                                         var conn = new Ext.data.Connection();
                                         conn.request({
                                             url: '/job/submit',
-                                            params: { action: 'rerun', id_job: sel.data.id },
+                                            params: { action: 'rerun', mid: sel.data.mid },
                                             success: function(resp,opt) {
                                                 Baseliner.message( sel.data.name, '<% _loc('Job Restarted') %>');
                                                 store.load();

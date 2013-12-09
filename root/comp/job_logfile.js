@@ -5,7 +5,7 @@
         });
         var load_logfile = function() {
             if( panel.el ) panel.el.mask();
-            Baseliner.ajaxEval( '/job/job_logfile', { id_job: params.id_job || 0 },
+            Baseliner.ajaxEval( '/job/job_logfile', { mid: params.mid || 0 },
                 function(res) {
                     panel.el.unmask();
                     if( res.success )
