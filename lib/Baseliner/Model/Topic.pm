@@ -427,7 +427,10 @@ sub topics_for_user {
         my $rel_where = {};
         my $dir = length $p->{from_mid} ? ['from_mid','to_mid'] : ['to_mid','from_mid'];
         $rel_where->{$dir->[0]} = $p->{$dir->[0]};
-        $where->{topic_mid} = { -in => DB->BaliMasterRel->search( $rel_where,{ select=>$dir->[1]})->as_query };
+        $where->{topic_mid} = mdb->in( 
+                map { $_->{ $dir->[1] } }
+                DB->BaliMasterRel->search( $rel_where,{ select=>$dir->[1] })->hashref->all 
+            );
     }
 
     #*****************************************************************************************************************************
