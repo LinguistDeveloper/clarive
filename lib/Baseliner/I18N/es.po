@@ -4946,3 +4946,6 @@ msgstr "Introduce Número..."
 
 msgid "Enter Text..."
 msgstr "Introduce Texto..."
+
+msgid "BLs"
+msgstr "Entornos"

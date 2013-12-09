@@ -10,9 +10,10 @@
       style="<% $meta->{framed} and 'text-transform: uppercase; font-size: 10px; font-weight:bold; background-color: #eee; text-align: center' %>" >
 <%perl> 
 		my @cis = _array $data->{$meta->{id_field}};
+    _log "RRRRRRRRRRRRRRR: "._dump @cis;
 		my $ci = "";
-		if ( @cis ) {
-			$ci = _ci( $cis[0] )->{name};
+		for ( @cis ) {
+			$ci .= "<li style='white-space: nowrap;padding: 0px 10px 0px 0px;'>"._ci( $_ )->{name}."</li>";
 		}
 </%perl>
 		<% $ci %>

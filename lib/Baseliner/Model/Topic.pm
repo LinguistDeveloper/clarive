@@ -621,7 +621,7 @@ sub update {
                 push @meta_filter, $_
                    for grep { exists $p->{$_->{id_field}}} _array($meta);
                 $meta = \@meta_filter;
-                
+                _log "RRRRRRRRRRRR: "._dump $meta;
                 my ($topic, %change_status) = $self->save_data ($meta, $topic_mid, $p);
                 
                 $topic_mid    = $topic->mid;
@@ -896,6 +896,24 @@ sub get_system_fields {
                 html        => $pathHTML . 'field_include_into.html',
                 field_order => 0,
                 section     => 'details'
+            }
+        },        
+        {
+            id_field => 'bls',
+            params   => {
+                name_field  => 'BLs',
+                bd_field    => 'bls',
+                origin      => 'custom',
+                html        => '/fields/system/html/field_cis.html',
+                field_order => 10000,
+                section     => 'body',
+                get_method => 'get_cis',
+                set_method => 'set_cis',
+                ci_class => 'bl',
+                rel_type => 'topic_bl',
+                show_class => 'false',
+                meta_type => 'ci',
+                id_field => 'bls'
             }
         },
     );
@@ -1882,6 +1900,7 @@ sub set_cis {
     my ($self, $rs_topic, $cis, $user, $id_field, $meta ) = @_;
 
     my $field_meta = [ grep { $_->{id_field} eq $id_field } _array($meta) ]->[0];
+    _log "RRRRRRRRRRRR: "._dump $field_meta;
 
     my $rel_type = $field_meta->{rel_type} or _fail "Missing rel_type for field $id_field";
 
