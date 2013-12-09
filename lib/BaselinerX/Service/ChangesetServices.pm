@@ -112,6 +112,18 @@ sub changeset_update {
            #id_old_status   => $cs->id_category_status,
            mid             => $cs->mid,
         );
+        if ( !$stash->{failing} ) {
+            my $id_bl = ci->new('moniker:'.$bl)->{mid};
+            my $topic = mdb->topic->find_one({ mid => "$cs->{mid}"});
+            my @cs_bls = _array $topic->{bls};
+            if (!( $id_bl ~~ @cs_bls)) {
+                push @cs_bls,$id_bl;
+                my %p;
+                $p{topic_mid} = $cs->{mid};
+                $p{bls} = \@cs_bls;
+                Baseliner->model('Topic')->update( { action => 'update', %p } );
+            }            
+        }
     }
 
 }

@@ -581,7 +581,6 @@ sub user_can_topic_by_project {
         push @ors, $wh;
     }
     $where->{'$or'} = \@ors;
-    _log "RRRRRRRRRRRRRRR:"._dump $where;
     return !!mdb->topic->find($where)->count;
 }
 

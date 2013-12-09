@@ -621,7 +621,6 @@ sub update {
                 push @meta_filter, $_
                    for grep { exists $p->{$_->{id_field}}} _array($meta);
                 $meta = \@meta_filter;
-                _log "RRRRRRRRRRRR: "._dump $meta;
                 my ($topic, %change_status) = $self->save_data ($meta, $topic_mid, $p);
                 
                 $topic_mid    = $topic->mid;
@@ -1900,7 +1899,6 @@ sub set_cis {
     my ($self, $rs_topic, $cis, $user, $id_field, $meta ) = @_;
 
     my $field_meta = [ grep { $_->{id_field} eq $id_field } _array($meta) ]->[0];
-    _log "RRRRRRRRRRRR: "._dump $field_meta;
 
     my $rel_type = $field_meta->{rel_type} or _fail "Missing rel_type for field $id_field";
 
