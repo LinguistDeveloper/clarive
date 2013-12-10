@@ -1058,7 +1058,13 @@ sub menu_related {
                         eval => {
                             handler => 'Baseliner.open_topic_grid_from_release'
                         }
-                    };    
+                    };
+        push @menu, {  text => _loc('Apply filter'),
+                        icon => '/static/images/icons/topic.png',
+                        eval => {
+                            handler => 'Baseliner.open_apply_filter_from_release'
+                        }
+                    };           
     return @menu;
 }
 

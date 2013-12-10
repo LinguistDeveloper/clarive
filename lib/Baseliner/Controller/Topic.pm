@@ -105,13 +105,14 @@ sub list : Local {
     if( $p->{id_report} ) {
         my $filter = $p->{filter} ? _decode_json($p->{filter}) : undef;
         my $start = $p->{start} // 0;
-        my ($cnt, @rows ) = ci->new( $p->{id_report} )->run( start=>$start, username=>$c->username, limit=>$p->{limit}, query=>$p->{query}, filter=>$filter );
+        
+        my ($cnt, @rows ) = ci->new( $p->{id_report} )->run( start=>$start, username=>$c->username, limit=>$p->{limit}, query=>$p->{topic_list}, filter=>$filter );
         $c->stash->{json} = { data=>\@rows, totalCount=>$cnt };
     } else {
         my ($cnt, @rows ) = $c->model('Topic')->topics_for_user( $p );
         $c->stash->{json} = { data=>\@rows, totalCount=>$cnt };
     }
-    $c->forward('View::JSON');
+   $c->forward('View::JSON');
 }
 
 sub update : Local {

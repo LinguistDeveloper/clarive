@@ -16,6 +16,14 @@
     var id_report = params.id_report;
     var report_rows = params.report_rows;
     var report_name = params.report_name;
+	var fields = params.fields;
+	 
+	if(params.data_report){
+		report_rows = params.data_report.report_rows;
+		report_name = params.data_report.report_name;
+		fields = params.data_report.fields;
+	}
+	
     var mini_mode = false;
     if( report_rows ) {
         ps_maxi=report_rows;
@@ -23,7 +31,7 @@
         ps= parseInt(report_rows);
         mini_mode = params.mini_mode==undefined ? true : params.mini_mode;
     }
-    var fields = params.fields;
+   
     var state_id =id_report ? 'topic-grid-'+id_report : 'topic-grid';
     //console.log( params );
     
@@ -1495,8 +1503,8 @@
                 loadfilters( node_selected );
             }
         }
-    }   
-
+    }
+	
     if( !id_report ) {
         var id_collapse = Ext.id();
         tree_filters = new Ext.tree.TreePanel({

@@ -4955,3 +4955,7 @@ msgstr "Introduce Texto..."
 
 msgid "BLs"
 msgstr "Entornos"
+
+msgid "Apply filter"
+msgstr "Aplicar filtro"
+

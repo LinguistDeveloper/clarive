@@ -786,6 +786,58 @@ Baseliner.open_topic_grid_from_release = function(n){
     });
 }
 
+Baseliner.open_apply_filter_from_release = function(n){
+    var name = n.attributes.data.click.title;
+    var id_release = n.attributes.data.topic_mid;
+    
+    var win;
+    var treeRoot = new Ext.tree.AsyncTreeNode({
+        draggable: false,
+        checked: false,
+    });
+
+    var tree_filters = new Ext.tree.TreePanel({
+        border: false,
+        dataUrl : '/ci/report/report_list',
+        useArrows: true,
+        autoScroll: true,
+        animate: true,
+        enableDD: true,
+        containerScroll: true,
+        rootVisible: false,
+        root: treeRoot
+    });
+    
+    tree_filters.on('dblclick', function(n, ev){
+        console.log(n);
+        Baseliner.ajaxEval( '/lifecycle/topics_for_release', { id_release: id_release }, function(res){
+            Baseliner.add_tabcomp('/comp/topic/topic_grid.js', _('Related: %1', name), { id_report: n.attributes.data.id_report, data_report: n.attributes.data ,topic_list: res.topics, tab_icon: '/static/images/icons/topic.png' });
+        });             
+        win.close();
+    });
+    
+    var title = _('Select a filter');
+    
+    var form_filters = new Ext.FormPanel({
+        padding: 10,
+        border: false,
+        frame: false,
+        height: 400,
+        items: [
+            tree_filters
+        ]
+    });
+
+    win = new Ext.Window({
+        title: title,
+        width: 550,
+        closeAction: 'close',
+        modal: true,
+        items: form_filters
+    });
+    win.show();     
+}
+
 Baseliner.open_kanban_from_folder = function(n){
     var name = n.text;
     var id_directory = n.attributes.data.id_directory;
