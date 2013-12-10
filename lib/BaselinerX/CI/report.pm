@@ -707,10 +707,11 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
       $where->{'$or'} = \@ors;
     }
 
-    ##if( length $query ) {
+    if( length $query ) {
     ##    my @qmids = map { $_->{obj}{mid} } _array(mdb->topic->search( query=>$query, limit=>999999, project=>{ mid=>1 } )->{results});
     ##    push @where, { mid=>mdb->in(@qmids) };
-    ##}
+		$where->{'mid'} = mdb->in($query);
+    }
 
 #    for my $id_field ( keys %$where ) {
 #		_log ">>>>>>>>>>>>>>>>>>" . $select_field_map{ $id_field };
