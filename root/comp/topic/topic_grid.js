@@ -911,15 +911,15 @@
     var gridlets = {
     };
     var meta_types = {
-        custom_data : { sortable: false, width: 40, renderer: render_custom_data  },
-        calendar : { sortable: false, width: 250, renderer: render_cal  },
-        date : { sortable: false, width: 40, renderer: render_date  },
-        bool : { sortable: false, width: 40, renderer: render_bool  },
-        ci : { sortable: false, width: 90, renderer: render_ci  },
-        revision : { sortable: false, width: 90, renderer: render_ci  },
-        project : { sortable: false, width: 90, renderer: render_ci  },
-        topic : { sortable: false, width: 90, renderer: render_topic_rel  },
-        release : { sortable: false, width: 90, renderer: render_topic_rel  }
+        custom_data : { sortable: true, width: 40, renderer: render_custom_data  },
+        calendar : { sortable: true, width: 250, renderer: render_cal  },
+        date : { sortable: true, width: 40, renderer: render_date  },
+        bool : { sortable: true, width: 40, renderer: render_bool  },
+        ci : { sortable: true, width: 90, renderer: render_ci  },
+        revision : { sortable: true, width: 90, renderer: render_ci  },
+        project : { sortable: true, width: 90, renderer: render_ci  },
+        topic : { sortable: true, width: 90, renderer: render_topic_rel  },
+        release : { sortable: true, width: 90, renderer: render_topic_rel  }
     };
     if( fields ) {
 		//console.dir(fields);
