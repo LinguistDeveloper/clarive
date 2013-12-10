@@ -15,10 +15,15 @@
 %   my $target = $file->{extension} =~ /pdf|htm|html|txt|properties/i ? '_blank' : 'FrameDownload';  # download or try to show on next tab?
 %   my ($size,$units) = Baseliner::Utils::_size_unit( $file->{filesize} );
         <li id="<% $fii %>">
-            <i class="icon-file"></i> 
-            <a href="/topic/download_file/<% $file->{md5} %>/<% $file->{filename} %>" target="<% $target %>">
-                <% Baseliner::Utils::_html_escape( $file->{filename} ) %>
-            </a> (<% $size %> <% $units %>) version <% $file->{versionid} %>
+            <table>
+                <tr>
+                    <td style="border:0"><i class="icon-file"></i></td>
+                    <td class="bl-text-over"  style="border:0"><div class="bl-text-over" style="width:200px" title="<% Baseliner::Utils::_html_escape( $file->{filename} ) %>"><a href="/topic/download_file/<% $file->{md5} %>/<% $file->{filename} %>" target="<% $target %>">
+                        <% Baseliner::Utils::_html_escape( $file->{filename} ) %>
+                    </a></div></td>
+                    <td  style="border:0">(<% $size %> <% $units %>) version <% $file->{versionid} %></td>
+                </tr>
+             </table>
         </li>
 % }
     </ul>
