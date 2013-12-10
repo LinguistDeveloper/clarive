@@ -25,12 +25,10 @@ sub rel_type {
 sub report_list {
     my ($self,$p) = @_;
     
-	_log ">>>>>>>>>>USUARIO: " . $p->{username};
-	
     my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $p->{username}) );  # XXX should be by category, same id fields may step on each other
     my $mine = $self->my_searches({ username=>$p->{username}, meta=>\%meta });
     my $public = $self->public_searches({ meta=>\%meta, username=>$p->{username} });
-    
+	
     my @trees = (
             {
                 text => _loc('My Searches'),
@@ -97,7 +95,7 @@ sub my_searches {
                     },
                     #store_fields   => $folder->fields,
                     #columns        => $folder->fields,
-                    fields         => $folder->selected_fields({ meta=>$p->{meta} }),
+                    fields         => $folder->selected_fields({ meta=>$p->{meta}, username => $p->{username}  }),
                     id_report      => $folder->mid,
                     report_name    => $folder->name,
                     report_rows    => $folder->rows,
@@ -108,7 +106,7 @@ sub my_searches {
                 permissions => $folder->permissions,
                 leaf    => \1,
             };
-    }    
+    }
     return \@mine;
 }
 
@@ -141,7 +139,7 @@ sub public_searches {
                     },
                     #store_fields   => $folder->fields,
                     #columns        => $folder->fields,
-                    fields         => $folder->selected_fields({ meta=>$p->{meta} }),
+                    fields         => $folder->selected_fields({ meta => $p->{meta}, username => $p->{username} }),
                     id_report      => $folder->mid,
                     report_rows    => $folder->rows,
                     report_name    => $folder->name,
@@ -480,6 +478,10 @@ sub selected_fields {
 							push @options, $_->{name};
 							push @values, $_->{mid};
 						} @cis;
+						
+						push @options, _loc('Undefined');
+						push @values, '-1';
+						
 						$filters{$filter->{id_field}} = { type => $type->{field}, options => @options ? \@options : undef, values => @values ? \@values: undef};		
 					}
 					else{
@@ -508,19 +510,17 @@ sub selected_fields {
 
 method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=undef ) {
     my $rows = $limit // $self->rows;
+
     my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
-	#_log ">>>>>>>>>>>FIELDS: " . _dump %fields;
 	
     my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $username) );  # XXX should be by category, same id fields may step on each other
     my @selects = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) => 1 } _array($fields{select});
 	
-	#_log ">>>>>>>>>>>SELECT: " . _dump @selects;
-
 	#filters
 	my %dynamic_filter;
 	if( $filter ){
 		for my $flt ( _array $filter ){
-			_log ">>>>>>Filter: " . _dump $flt;
+			#_log ">>>>>>Filter: " . _dump $flt;
 			if( exists $dynamic_filter{$flt->{field}} ){
 				push @{$dynamic_filter{$flt->{field}}->{oper}}, $flt->{comparison};
 				push @{$dynamic_filter{$flt->{field}}->{value}}, $flt->{value};
@@ -562,7 +562,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 			my $id_field = $_->{id_field};
 			my $cond;
 			if(exists $dynamic_filter{$id_field}) {
-				#_log ">>>>>>>>TYPE: " . $dynamic_filter{$id_field}->{type};
+				_log ">>>>>>>>TYPE: " . $dynamic_filter{$id_field}->{type};
 				given ($dynamic_filter{$id_field}->{type}) {
 					when ('numeric') {
 						for (my $i = 0; $i < scalar @{$dynamic_filter{$id_field}->{oper}}; $i++){
@@ -574,9 +574,18 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 						}
 					};
 					when ('list') {
-						my @parse = map { $_ == '-1' ? '' : $_.''} _array $dynamic_filter{$id_field}->{value};
+						my @parse;
+						for my $value (_array $dynamic_filter{$id_field}->{value}){
+							if( $value eq '-1'){
+								push @parse, '';
+								push @parse, undef;
+								push @parse, [];
+							}else{
+								push @parse, $value;	
+							}
+						}
 						if (scalar @parse > 1){
-							$cond = { $val->{oper} => \@parse };	
+							$cond = { '$in' => \@parse };	
 						}else{
 							$cond = $parse[0];	
 						}
@@ -703,7 +712,15 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
     ##    push @where, { mid=>mdb->in(@qmids) };
     ##}
 
+#    for my $id_field ( keys %$where ) {
+#		_log ">>>>>>>>>>>>>>>>>>" . $select_field_map{ $id_field };
+#		my $new_id_field = $select_field_map{ $id_field } // next;
+#		$where->{$new_id_field} = delete $where->{$id_field};
+#	}
 
+	if( exists $where->{'status_new'} ){
+		$where->{'category_status.id'} = delete $where->{'status_new'};
+	}
 	
     my @sort = map { $_->{id_field} => 0+($_->{sort_direction} // 1) } _array($fields{sort});
     
@@ -711,6 +728,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	
     my $rs = mdb->topic->find($where);
     my $cnt = $rs->count;
+	$rows = $cnt if ($rows eq '-1') ;
     #_debug \%meta;
 	
 	my %select_system = (
@@ -783,5 +801,4 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 
 1;
 
-__END__
 
