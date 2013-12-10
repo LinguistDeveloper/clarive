@@ -606,7 +606,7 @@ sub view : Local {
             
             #workflow category-status
             #my $username = $c->is_root ? '' : $c->username;
-            my @statuses = sort { ( $a->{seq} // 0 ) <=> ( $b->{seq} // 0 ) } $c->model('Topic')->next_status_for_user(
+            my @statuses = sort { ( $a->{seq} // 0 ) <=> ( $b->{seq} // 0 ) } grep { $_->{id_status} ne $category->topics->status->id } $c->model('Topic')->next_status_for_user(
                 id_category    => $category->id,
                 id_status_from => $category->topics->status->id,
                 username       => $c->username,
@@ -664,7 +664,7 @@ sub view : Local {
                 {id_category => $id_category, 'statuses.status.type' => 'I'} , 
                 { join => {'statuses' => 'status'} , +select =>[ 'forms','statuses.status.id'], as =>['forms','id_status'] } )->hashref->first;
             
-            my @statuses = sort { ($a->{seq}//0) <=> ($b->{seq}//0) } $c->model('Topic')->next_status_for_user(
+            my @statuses = sort { ($a->{seq}//0) <=> ($b->{seq}//0) } grep { $_->{id_status} ne $category[0]->{id_status}} $c->model('Topic')->next_status_for_user(
                 id_category    => $id_category,
                 id_status_from => $category[0]->{id_status},
                 username       => $c->username,
