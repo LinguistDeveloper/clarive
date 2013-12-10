@@ -18,7 +18,7 @@ sub run_opts {
 
 sub run {
     my ($self)=@_;
-    goto &run_config;
+    goto &run_show;
 }
 
 1;
