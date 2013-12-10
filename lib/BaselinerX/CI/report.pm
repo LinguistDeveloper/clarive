@@ -510,6 +510,7 @@ sub selected_fields {
 
 method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=undef ) {
     my $rows = $limit // $self->rows;
+
     my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
 	
     my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $username) );  # XXX should be by category, same id fields may step on each other
@@ -727,6 +728,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	
     my $rs = mdb->topic->find($where);
     my $cnt = $rs->count;
+	$rows = $cnt if ($rows eq '-1') ;
     #_debug \%meta;
 	
 	my %select_system = (
