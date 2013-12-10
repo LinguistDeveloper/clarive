@@ -200,7 +200,7 @@ sub log_html : Path('/job/log/html') {
 
     # load from hash
     if( $job_key ) {
-        my $job = ci->job->search_ci({ job_key=>$job_key });
+        my $job = ci->job->search_ci( job_key=>$job_key );
         _throw "Job key not found (job_key=$job_key)" unless ref $job;
         $p->{mid} = $job->mid;
         $p->{job_exec} ||= $job->exec;
@@ -210,7 +210,7 @@ sub log_html : Path('/job/log/html') {
     # get data
     if( defined $p->{mid} ) {
         # log_rows uses req->parameters ($p) 
-        my ($job, @rows ) = $self->log_rows( $c );
+        my ($job, @rows ) = $self->log_rows( $c, $p->{mid} );
         # prepare template
         $c->stash->{rows} = \@rows;
         $c->stash->{job_name} = $job->name;

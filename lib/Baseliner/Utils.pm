@@ -1300,6 +1300,14 @@ sub parse_vars_raw {
             my $v = $vars->{$k};
             $str =~ s/\$\{$k\}/$v/g;
         }
+        # look for cis like this: ${ci(field.attrib)}
+        for my $k ( keys %$vars ) {
+               my $v = $vars->{$k};
+               $str =~ s/\$\{ci\($k\)\.(.+)\}/
+                  parse_vars( "\${$1}", ci->new($v) )/eg;
+        }
+
+        
         # cleanup or throw unresolved vars
         if( $throw ) { 
             if( my @unresolved = $str =~ m/\$\{(.*?)\}/gs ) {
