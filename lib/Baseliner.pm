@@ -503,7 +503,7 @@ sub username {
 
 sub user_ci {
     my ($c,$username) = @_;
-    ci->find( name=>$username // $c->username, collection=>'user' );
+    ci->user->search_ci( name=>( $username // $c->username ) );
 }
 
 sub has_action {
