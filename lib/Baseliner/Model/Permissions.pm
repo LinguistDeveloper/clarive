@@ -255,13 +255,14 @@ sub user_has_read_action {
     for my $role ( @roles ) {
         my @role_actions = _array(Baseliner->cache_get(":role:actions:$role:"));
         if (!@role_actions){
-            push @actions, DB->BaliRoleaction->search({ id_role => \@roles, action => $action})->hashref->all;
+            push @actions, map { $_->{action} } DB->BaliRoleaction->search({ id_role => $role})->hashref->all;
             Baseliner->cache_set(":role:actions:$role:",\@actions);
             #_debug "NO CACHE for :role:actions:$role:";
         } else {
             push @actions, @role_actions;
             #_debug "CACHE HIT for :role:actions:$role:";
         }
+        @actions = grep { $_ eq $action } @actions;
     }
 
     my $has_action;
