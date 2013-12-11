@@ -427,6 +427,7 @@ sub request_approval {
 
     event_new 'event.job.approval_request' => 
         { username => $job->username, name=>$job->name, step=>$job->step, status=>$job->status, bl=>$job->bl } => sub {
+        $job->approval_config( $config );
         $job->final_status( 'APPROVAL' );
     };
     1;

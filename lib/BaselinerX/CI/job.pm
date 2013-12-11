@@ -765,6 +765,7 @@ has pid                => qw(is rw isa Num lazy 1), default=>sub{ return $$ };
 has host               => qw(is rw isa Str lazy 1), default=>sub{ return Util->my_hostname() };
 has owner              => qw(is rw isa Str lazy 1), default=>sub{ return $ENV{USER} || $ENV{USERNAME} };
 has last_error         => qw(is rw isa Maybe[Str] default '');
+has approval_config    => ( is=>'rw', isa=>'Any' ), default => sub{ +{} };  # approval config form goes here
 has prev_status        => ( is=>'rw', isa=>'Any' );  # saves previous status
 has last_finish_status => ( is=>'rw', isa=>'Any' );  # saves ending statuses, so that POST can keep them - done by Daemon
 has final_status       => ( is=>'rw', isa=>'Any' );  # so that services can request a final status like PAUSE
