@@ -134,7 +134,7 @@ sub save_api_key  {
     { api_key=>$new_key, msg=>'ok', success=>\1 };
 }
 
-sub username { $_[0]->name }
+#sub username { $_[0]->name }
 
 method gen_project_security {
     if( ref $self ) {
