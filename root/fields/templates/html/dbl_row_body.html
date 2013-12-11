@@ -10,15 +10,13 @@
         <th colspan="2" style="padding: 10px 0 10px 0"><h5 style="border-bottom: 1px solid #bbb"><% _loc($meta->{name_field}) %></h5></th>
     </tr>
     <tr>
-        <script>
-        </script>
         <td id="<% _loc($meta->{name_field}) %>" colspan="2" class="fieldlet-html"></td>
     </tr>
     
     <script>
         var tabpanel = Ext.getCmp('main-panel');
         var width = parseInt(tabpanel.el.dom.clientWidth * 0.7);
-        var value = '<div style="max-width:' + width + 'px;overflow-x: scroll; white-space: nowrap;"><% _loc($data->{$meta->{display_field}} || $data->{$meta->{bd_field}} || '&nbsp;') %></div>';
+        var value = '<div style="max-width:' + width + 'px;overflow-x: auto; white-space: nowrap;"><% _loc($data->{$meta->{display_field}} || $data->{$meta->{bd_field}} || '&nbsp;') %></div>';
         document.getElementById('<% _loc($meta->{name_field}) %>').innerHTML = value;
     </script>       
 % }     
