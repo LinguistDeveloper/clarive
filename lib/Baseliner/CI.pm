@@ -33,6 +33,9 @@ sub find {
         my $rec = Baseliner::Role::CI->load( $mid );
         _throw _loc('CI record not found for mid %1', $mid) unless ref $rec;
         return Baseliner::Role::CI->_build_ci_instance_from_rec( $rec );
+    } elsif( @_ == 1 && ref( $_[0] ) =~ /^Baseliner.?::CI/ && $_[0]->does('Baseliner::Role::CI') ) {
+        # already a full grown CI
+        return $_[0];
     } elsif( @_ == 1 && $_[0] =~ /^(\w+):(.+)/ ) {
         # name, moniker, etc.
         my ($parm,$val) = ($1,$2);
@@ -40,9 +43,6 @@ sub find {
         _throw _loc('CI record not found for search %1', _to_json(\%args) ) if !ref $rec && !$Baseliner::CI::no_throw_on_search;
         return undef if !ref $rec;
         return Baseliner::Role::CI->_build_ci_instance_from_rec( $rec );
-    } elsif( @_ == 1 && ref( $_[0] ) =~ /^Baseliner.?::CI/ && $_[0]->does('Baseliner::Role::CI') ) {
-        # already a full grown CI
-        return $_[0];
     } elsif( @_ == 1 && ! ref $_[0] ) {
         # NOP: could be moniker?
         _throw _loc("Could not instanciate CI from parameter %1", $_[0] );
