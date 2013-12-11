@@ -13,7 +13,6 @@
     if( !params ) params = {};
     var view_natures = <% $view_natures ? 'false' : 'true' %>; 
    
-    // Eric
     // -- ADDING Arr.map() method --
     // Production steps of ECMA-262, Edition 5, 15.4.4.19
     // Reference: http://es5.github.com/#x15.4.4.19
@@ -136,12 +135,10 @@
             {  name: 'day' },
             {  name: 'status_code' },
             {  name: 'status' },
-            {  name: 'natures' }, // Eric
-            {  name: 'subapps' }  // Eric
+            {  name: 'natures' }, 
+            {  name: 'subapps' } 
         ]
     );
-
-    // Eric
 
     // Nature Filters
 
@@ -834,7 +831,6 @@
         tbar: is_portlet ? [] : [ 
                 search_field,
                 button_html,
-                // Eric
                 menu_bl, nature_menu_btn, { text: _('Status'), menu: menu_job_states }, menu_type_filter, '-',
                 // end
 % if( $c->stash->{user_action}->{'action.job.create'} ) {
