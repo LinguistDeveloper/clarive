@@ -3883,8 +3883,8 @@ msgstr "Disponible"
 msgid "Enable Job"
 msgstr "Disponible para Pase"
 
-msgid "Are you sure you want to deploy/rollback %1 to baseline %2?"
-msgstr "¿Quiere mover %1 al entorno de %2?"
+msgid "Are you sure you want to deploy/rollback %1 to baseline %2 (%3)?"
+msgstr "¿Quiere mover %1 al entorno de %2 (%3)?"
 
 msgid "Are you sure you want to delete the role %1?"
 msgstr "¿Seguro que quiere borrar el rol %1?"
@@ -4389,10 +4389,10 @@ msgstr "*Despliegue añadido* para `%1`"
 msgid "Cannot promote/demote changeset %1 to baseline %2 (job type %3)"
 msgstr "No es posible promover/devolver el cambio %1 al entorno %2 (tipo de pase: %3)"
 
-msgid "Job element '%1' is in an active job: %2"
-msgstr "Item de pase '%1' está en un pase activo: %2"
+msgid "Changeset '%1' is in an active job: %2 (%3) with promote/demote to a different state (%4)"
+msgstr "Item de pase '%1' está en un pase activo: %2 (%3) con promoción/devolución a un estado diferente (%4)"
 
-msgid "Job element '%1' is in an active job to bl %3: %2"
+msgid "Changeset '%1' is in an active job to bl %3: %2"
 msgstr "Item de pase '%1' está en un pase activo al entorno %3: %2"
 
 msgid "select or drop repository revisions"

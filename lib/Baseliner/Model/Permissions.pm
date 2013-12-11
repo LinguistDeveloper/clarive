@@ -255,13 +255,14 @@ sub user_has_read_action {
     for my $role ( @roles ) {
         my @role_actions = _array(Baseliner->cache_get(":role:actions:$role:"));
         if (!@role_actions){
-            push @actions, DB->BaliRoleaction->search({ id_role => \@roles, action => $action})->hashref->all;
+            push @actions, map { $_->{action} } DB->BaliRoleaction->search({ id_role => $role})->hashref->all;
             Baseliner->cache_set(":role:actions:$role:",\@actions);
-            _debug "NO CACHE for :role:actions:$role:";
+            #_debug "NO CACHE for :role:actions:$role:";
         } else {
             push @actions, @role_actions;
-            _debug "CACHE HIT for :role:actions:$role:";
+            #_debug "CACHE HIT for :role:actions:$role:";
         }
+        @actions = grep { $_ eq $action } @actions;
     }
 
     my $has_action;
@@ -341,11 +342,11 @@ sub user_actions_by_topic {
     for my $role ( @roles ) {
         my @actions = _array(Baseliner->cache_get(":role:actions:$role:"));
         if ( !@actions ) {
-           _debug "NO CACHE for :role:actions:$role:";
+            #_debug "NO CACHE for :role:actions:$role:";
            @actions = map { $_->{action} } DB->BaliRoleaction->search({ id_role => $role })->hashref->all;
            Baseliner->cache_set(":role:actions:$role:",\@actions);
         } else {
-            _debug "CACHE HIT for :role:actions:$role:";
+            #_debug "CACHE HIT for :role:actions:$role:";
         }
         push @return, @actions;
     }
@@ -517,9 +518,9 @@ sub user_projects_ids_with_collection {
         }
         Baseliner->cache_set(":user:security:$username:",$sec_projects);
         Baseliner->cache_set(":user:security:roles:$username:", \@sec);
-        _debug "NO CACHE for :user:security:$username:";
+        #_debug "NO CACHE for :user:security:$username:";
     } else {
-        _debug "CACHE HIT for :user:security:$username:";
+        #_debug "CACHE HIT for :user:security:$username:";
     }
     if ( @roles ) {
         @sec = undef;

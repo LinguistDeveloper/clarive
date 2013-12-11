@@ -2,18 +2,19 @@ package BaselinerX::CI::user;
 use Baseliner::Moose;
 with 'Baseliner::Role::CI::Internal';
 
-has api_key       => qw(is rw isa Any);
-has email         => qw(is rw isa Any);
-has avatar        => qw(is rw isa Any);
-has phone         => qw(is rw isa Any);
-has username      => qw(is rw isa Any);
-has password      => qw(is rw isa Any);
-has realname      => qw(is rw isa Any);
-has alias         => qw(is rw isa Any);
+has api_key          => qw(is rw isa Any);
+has email            => qw(is rw isa Any);
+has avatar           => qw(is rw isa Any);
+has phone            => qw(is rw isa Any);
+has username         => qw(is rw isa Any);
+has password         => qw(is rw isa Any);
+has realname         => qw(is rw isa Any);
+has alias            => qw(is rw isa Any);
+has project_security => qw(is rw isa Any), default => sub { +{} };
 
-has favorites     => qw(is rw isa HashRef), default=>sub{ +{} };
-has workspaces    => qw(is rw isa HashRef), default=>sub{ +{} };
-has prefs         => qw(is rw isa HashRef), default=>sub{ +{} };
+has favorites  => qw(is rw isa HashRef), default => sub { +{} };
+has workspaces => qw(is rw isa HashRef), default => sub { +{} };
+has prefs      => qw(is rw isa HashRef), default => sub { +{} };
 
 sub icon { '/static/images/icons/user.gif' }
 
@@ -131,6 +132,21 @@ sub save_api_key  {
     my $new_key = $p->{api_key} // Util->_md5( $p->{username} . ( int ( rand( 32 * 32 ) % time ) ) );
     $self->update( api_key=>$new_key );
     { api_key=>$new_key, msg=>'ok', success=>\1 };
+}
+
+#sub username { $_[0]->name }
+
+method gen_project_security {
+    if( ref $self ) {
+        my $sec = Baseliner->model('Permissions')->user_projects_ids_with_collection( username=>$self->name, with_role=>1 );
+        $self->project_security( $sec );
+    } else {
+        for my $user ( ci->user->search_cis ) {
+            $user->gen_project_security;
+            $user->save;
+        }
+        
+    }
 }
 
 1;
