@@ -26,7 +26,7 @@
          </tr>
 % }
          <tr>
-             <td style="font: 13px OpenSans, Lato, Calibri, Tahoma; background-color: #fff; color: #111;" title="<% $ch->{username}  %>"><% Util->ago( $data->{created_on_epoch} )   %></td>
+             <td style="font: 13px OpenSans, Lato, Calibri, Tahoma; background-color: #fff; color: #111;" title="<% $data->{created_by}  %>"><% Util->ago( $data->{created_on_epoch} )   %></td>
              <!-- <td><img style="margin: 0px 5px 2px 0px" width=16 src="/user/avatar/<% $data->{created_by} %>/image.png" /><% $data->{created_by}  %></td> -->
              <!--<td><% $data->{created_by}  %></td>-->
              <td colspan=3 class="status-html" style="font-size: 10px; font-weight: bold"><% _loc('Created') %></td>
