@@ -119,6 +119,7 @@ sub auto : Private {
     return 1 if $path =~ /(^site\/)|(^login)|(^auth)/;
     return 1 if $path =~ /\.(css)$/;
     return 1 if $path =~ /^shared\//;
+    return 1 if $path =~ /^user\/avatar\//;
 
     # sessionid param?
     my $sid = $c->req->params->{sessionid} // $c->req->headers->{sessionid};
