@@ -234,10 +234,18 @@ sub _create {
     for my $cs ( @cs_cis ) {
         my @active_jobs = $cs->is_in_active_job;
         for my $active_job ( @active_jobs ) {
+            _log _dump $active_job;
             if ( $active_job->job_type ne 'static') {
-                _fail _loc("Changeset '%1' is in an active job: %2 (%3)", $cs->name, $active_job->name, $active_job->mid )
-            } elsif ( $active_job->bl eq $self->bl ) {
-                _fail _loc("Changeset '%1' is in an active job to bl %3: %2", $cs->name, $active_job->name, $self->bl )
+                my $ci_self_status = ci->new('moniker:'.$self->bl);
+                my ($self_status_to) = grep {$_->{type} eq 'D'} Util->_array($ci_self_status->parents( isa => 'status'));
+                my $ci_other_status = ci->new('moniker:'.$active_job->bl);
+                my ($other_status_to) = grep {$_->{type} eq 'D'} Util->_array($ci_other_status->parents( isa => 'status'));
+                if ( $self_status_to->{name} ne $other_status_to->{name} ) {
+                    _fail _loc("Changeset '%1' is in an active job: %2 (%3) with promote/demote to a different state (%4)", $cs->{name}, $active_job->name, $active_job->mid, $other_status_to->{name} )
+                }
+            }
+            if ( $active_job->bl eq $self->bl ) {
+                _fail _loc("Changeset '%1' is in an active job to bl %3: %2", $cs->{name}, $active_job->name, $self->bl )
             }
         }
         push @cs_list, $cs->topic_name;

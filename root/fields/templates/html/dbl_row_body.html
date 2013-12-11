@@ -6,10 +6,23 @@
    Normally this is the description field text and header on the left side.
 </%doc>
 % if( !$meta->{hidden} ) {
+% use Baseliner::Utils;
+% my $unique_id = _loc($meta->{name_field}) . (_nowstamp + rand());
     <tr>
         <th colspan="2" style="padding: 10px 0 10px 0"><h5 style="border-bottom: 1px solid #bbb"><% _loc($meta->{name_field}) %></h5></th>
     </tr>
     <tr>
-        <td colspan="2" class="fieldlet-html"><% _loc($data->{$meta->{display_field}} || $data->{$meta->{bd_field}} || '&nbsp;') %></td>
+        <td colspan="2" class="fieldlet-html">
+            <div id="<% $unique_id %>" style="overflow-x: auto;">
+                <% _loc($data->{$meta->{display_field}} || $data->{$meta->{bd_field}} || '&nbsp;') %>
+            </div>
+        </td>
     </tr>
+    
+    <script>
+        var tabpanel = Ext.getCmp('main-panel');
+        var width = parseInt(tabpanel.el.dom.clientWidth * 0.6);
+        var obj_div = document.getElementById('<% $unique_id %>');
+        obj_div.style.width = width + 'px';
+    </script>       
 % }     

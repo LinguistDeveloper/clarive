@@ -5,9 +5,9 @@
 % my $val = $data->{$meta->{display_field}}  || $data->{$meta->{bd_field}};
 % if( defined $val && !$meta->{hidden} ) {
     <tr>
-      <th><% _loc($meta->{name_field}) %>:</th>
+      <th width="50%"><% _loc($meta->{name_field}) %>:</th>
       <td 
           class="fieldlet-html"
-          style="<% $meta->{framed} and 'text-transform: uppercase; font-size: 10px; font-weight:bold; background-color: #eee; text-align: center' %>" ><% _loc( $val ) %></td>
+          style="<% $meta->{framed} and 'text-transform: uppercase; font-size: 10px; font-weight:bold; background-color: #eee; text-align: center' %>" width="50%"><% _loc( $val ) %></td>
     </tr>
 % }
