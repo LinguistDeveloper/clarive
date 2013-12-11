@@ -12,14 +12,17 @@
         <th colspan="2" style="padding: 10px 0 10px 0"><h5 style="border-bottom: 1px solid #bbb"><% _loc($meta->{name_field}) %></h5></th>
     </tr>
     <tr>
-        <td id="<% $unique_id %>" colspan="2" class="fieldlet-html"></td>
+        <td colspan="2" class="fieldlet-html">
+            <div id="<% $unique_id %>" style="overflow-x: auto;">
+                <% _loc($data->{$meta->{display_field}} || $data->{$meta->{bd_field}} || '&nbsp;') %>
+            </div>
+        </td>
     </tr>
     
     <script>
         var tabpanel = Ext.getCmp('main-panel');
         var width = parseInt(tabpanel.el.dom.clientWidth * 0.7);
-        console.log(width);
-        var value = '<div style="max-width:' + width + 'px;overflow-x: auto;"><% _loc($data->{$meta->{display_field}} || $data->{$meta->{bd_field}} || '&nbsp;') %></div>';
-        document.getElementById('<% $unique_id %>').innerHTML = value;
+        var obj_div = document.getElementById('<% $unique_id %>');
+        obj_div.style.width = width + 'px';
     </script>       
 % }     
