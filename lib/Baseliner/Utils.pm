@@ -1299,14 +1299,13 @@ sub parse_vars_raw {
         for my $k ( keys %$vars ) {
             my $v = $vars->{$k};
             $str =~ s/\$\{$k\}/$v/g;
+            # look for cis like this: ${ci(field.attrib)}
+            $str =~ s/\$\{ci\($k\)\.(.+)\}/ parse_vars("\${$1}", ci->new($v)) /eg;
+            $str =~ s/\$\{uc\($k\)\}/uc($v)/eg;
+            $str =~ s/\$\{lc\($k\)\}/lc($v)/eg;
+            $str =~ s/\$\{to_id\($k\)\}/_name_to_id($v)/eg;
+            #$str =~ s/\$\{join\((\S+),$k\)\}/join($1,_array($v))/eg;   # TODO $v has a baddly comma joined list, should be an Arrayref
         }
-        # look for cis like this: ${ci(field.attrib)}
-        for my $k ( keys %$vars ) {
-               my $v = $vars->{$k};
-               $str =~ s/\$\{ci\($k\)\.(.+)\}/
-                  parse_vars( "\${$1}", ci->new($v) )/eg;
-        }
-
         
         # cleanup or throw unresolved vars
         if( $throw ) { 

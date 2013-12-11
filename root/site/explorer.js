@@ -793,7 +793,7 @@ Baseliner.open_apply_filter_from_release = function(n){
     var win;
     var treeRoot = new Ext.tree.AsyncTreeNode({
         draggable: false,
-        checked: false,
+        checked: false
     });
 
     var tree_filters = new Ext.tree.TreePanel({
@@ -809,7 +809,6 @@ Baseliner.open_apply_filter_from_release = function(n){
     });
     
     tree_filters.on('dblclick', function(n, ev){
-        console.log(n);
         Baseliner.ajaxEval( '/lifecycle/topics_for_release', { id_release: id_release }, function(res){
             Baseliner.add_tabcomp('/comp/topic/topic_grid.js', _('Related: %1', name), { id_report: n.attributes.data.id_report, data_report: n.attributes.data ,topic_list: res.topics, tab_icon: '/static/images/icons/topic.png' });
         });             
