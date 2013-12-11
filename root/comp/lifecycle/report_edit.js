@@ -9,12 +9,14 @@
     var title = is_new ? _('New Search') : lc_node.text;
     var lc_tree = lc_node.ownerTree;
     
-    //var tree_all_loader = new Baseliner.TreeLoader({
-    //    dataUrl: '/ci/report/all_fields'
-    //    //baseParams: { id_rule: id_rule },
-    //    //requestMethod:'GET',
-    //    //uiProviders: { 'col': Ext.tree.ColumnNodeUI }
-    //});
+
+    
+    var tree_all_loader = new Baseliner.TreeLoader({
+        dataUrl: '/ci/report/all_fields'
+        //baseParams: { id_rule: id_rule },
+        //requestMethod:'GET',
+        //uiProviders: { 'col': Ext.tree.ColumnNodeUI }
+    });
     
     var tree_all = new Ext.tree.TreePanel({
         dataUrl: '/ci/report/all_fields',
@@ -40,10 +42,7 @@
         if (node.attributes.data && node.attributes.data.name_category) baseParams.name_category = node.attributes.data.name_category;
         treeLoader.baseParams = baseParams ;
     });      
-    
-    
-    
-    
+
     var tree_selected_loader = new Baseliner.TreeLoader({
         dataUrl: '/ci/'+report_mid+'/field_tree',
         baseParams: { id_report: data.id }
@@ -79,20 +78,20 @@
                 oper_by_type = oper_string;
                 break;
             case 'number': 
-                  field={ xtype:'textfield', name:'value', maskRe:/[0-9]/, fieldLabel: pn.text, value: attr.value==undefined ? 0 :  parseFloat(attr.value) };
-                  break;
+                field={ xtype:'textfield', name:'value', maskRe:/[0-9]/, fieldLabel: pn.text, value: attr.value==undefined ? 0 :  parseFloat(attr.value) };
+                break;
             case 'date': 
-                  field={ xtype:'datefield', dateFormat:'Y-m-d', name:'value', fieldLabel: pn.text, value: attr.value==undefined ? '' : attr.value };
-                  break;
+                field={ xtype:'datefield', dateFormat:'Y-m-d', name:'value', fieldLabel: pn.text, value: attr.value==undefined ? '' : attr.value };
+                break;
             case 'status': 
-                  field=new Baseliner.SuperBox({ fieldLabel:_('Status'), name:'value', 
-                      valueField:'id', value: attr.value, singleMode: false, store: new Baseliner.Topic.StoreStatus() });
-                  //field=Baseliner.ci_box({ value: attr.value, isa:'status', force_set_value:true });
-                  oper_by_type = oper_in;
-                  break;
+                field=new Baseliner.SuperBox({ fieldLabel:_('Status'), name:'value', 
+                    valueField:'id', value: attr.value, singleMode: false, store: new Baseliner.Topic.StoreStatus() });
+                //field=Baseliner.ci_box({ value: attr.value, isa:'status', force_set_value:true });
+                oper_by_type = oper_in;
+                break;
             case 'ci':
                 var ci_class = pn.attributes.collection || pn.attributes.ci_class;
-                field=new Baseliner.ci_box({ value: attr.value, name:'value', singleMode: false, force_set_value:true, class: ci_class, security: true });
+                field=new Baseliner.ci_box({value: attr.value, name:'value', singleMode: false, force_set_value:true, 'class': ci_class, security: true });
                 oper_by_type = oper_in;
                 var store;
                 store = field.getStore();
@@ -390,6 +389,7 @@
             }
         }
     ];
+    
     win = new Baseliner.Window({
         title: title,
         autoHeight: true,
