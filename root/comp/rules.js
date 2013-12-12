@@ -508,7 +508,7 @@
             stmts_menu.showAt(event.xy);
         };
         var btn_save_tree = new Ext.Button({ text: _('Save'), icon:'/static/images/icons/save.png', handler: rule_save });
-        var btn_refresh_tree = new Ext.Button({ text: _('Reload'), icon:'/static/images/icons/refresh.gif', handler: rule_load });
+        var btn_refresh_tree = new Ext.Button({ text: _('Reload'), icon:'/static/images/icons/refresh.gif', handler: function(){ rule_load(btn_refresh_tree) } });
         var btn_dsl = new Ext.Button({ text: _('DSL'), icon:'/static/images/icons/edit.png', handler: function() { rule_tree.rule_dsl() } });
         var btn_version_tree = new Ext.Button({ enableToggle: true, pressed: false, icon:'/static/images/icons/history.png', 
             handler: function() { 
