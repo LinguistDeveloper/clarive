@@ -482,7 +482,8 @@ sub user_projects_ids_with_collection {
     my $sec_projects;
     my $with_role = $p{with_role} // 0;
     my $username = $p{username};
-    my @roles = split /,/, $p{roles} || ();
+    $p{roles} //= '';
+    my @roles = split(/,/, $p{roles} );
 
     if ( @roles ) {                
         my $role_ids = Baseliner->cache_get(':role:ids:');

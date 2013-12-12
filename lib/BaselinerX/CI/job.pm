@@ -467,9 +467,25 @@ sub cancel {
     }
 }
 
+method can_approve( :$username ) {
+    my $config = $self->approval_config;  # this config gets set when the approve task executes in the rule
+    my $user = Baseliner->user_ci( $username );
+    return 1 if $user->is_root || $user->has_action( 'action.job.approve_all' );
+    my %avr = map { $_=>1 } Util->_array( $config->{approvers} );
+    return 1 if $avr{ 'user/' . $user->mid };
+    my @roles = keys Baseliner->model('Permissions')->user_projects_ids_with_collection( username=>$username, with_role=>1);
+    for( @roles ) {
+        return 1 if $avr{ 'role/'.$_ };
+    }
+    return 0;
+}
+
 sub approve {
     my ($self, $p)=@_;
     my $comments = $p->{comments};
+    if( ! $self->can_approve( username=>$p->{username} ) ) {
+        _fail _loc 'User %1 is not authorized to approve job %2', $p->{username}, $self->name;
+    }
     event_new 'event.job.approved' => 
         { username => $self->username, name=>$self->name, step=>$self->step, status=>$self->status, bl=>$self->bl, comments=>$comments } => sub {
         $self->logger->info( _loc('*Job Approved by %1*: %2', $p->{username}, $comments), data=>$comments, username=>$p->{username} );
@@ -483,6 +499,9 @@ sub approve {
 sub reject {
     my ($self, $p)=@_;
     my $comments = $p->{comments};
+    if( ! $self->can_approve( username=>$p->{username} ) ) {
+        _fail _loc 'User %1 is not authorized to approve job %2', $p->{username}, $self->name;
+    }
     event_new 'event.job.rejected' => 
         { username => $self->username, name=>$self->name, step=>$self->step, status=>$self->status, bl=>$self->bl, comments=>$comments } => sub {
         $self->logger->error( _loc('*Job Rejected by %1*: %2', $p->{username}, $comments), data=>$comments, username=>$p->{username} );
@@ -738,6 +757,15 @@ sub artifacts {
 
     } ## end while ( my $r = $rs->next)
     return $result;
+}
+
+method bom( :$username ) {
+    return $self;
+    return { 
+        changesets => $self->changesets,
+        projects   => $self->projects,
+        #items=>$job->items,
+    }; 
 }
 
 sub _select_words {

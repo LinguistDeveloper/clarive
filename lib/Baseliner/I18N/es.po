@@ -1290,6 +1290,9 @@ msgstr "Guardar"
 msgid "Saving..."
 msgstr "Guardando..."
 
+msgid "User is not authorized to approve this job"
+msgstr "Usuario no está autorizado para aprobar este pase"
+
 msgid "Reschedule"
 msgstr "Replanificar"
 
