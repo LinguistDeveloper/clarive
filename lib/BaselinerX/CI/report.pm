@@ -360,6 +360,7 @@ sub field_tree {
 } 
 
 our %data_field_map = (
+	category => 'category_name',
     status => 'category_status_name',
     status_new => 'category_status_name',
     name_status => 'category_status_name',       
@@ -367,6 +368,7 @@ our %data_field_map = (
 );
 
 our %select_field_map = (
+	category => 'category.name',
     status => 'category_status.name',
     status_new => 'category_status.name',
     name_status => 'category_status.name',       
@@ -462,6 +464,8 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	
     my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $username) );  # XXX should be by category, same id fields may step on each other
     my @selects = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) => 1 } _array($fields{select});
+	
+	_log ">>>>>>>>>>>>>>>>>>>>>>Campos select: " . _dump @selects;
 	
 	#filters
 	my %dynamic_filter;
@@ -657,7 +661,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	
     my @sort = map { $_->{id_field} => 0+($_->{sort_direction} // 1) } _array($fields{sort});
     
-	#_log ">>>>>>>>>>>>>>>>>>FIND: " . _dump $where;
+	_log ">>>>>>>>>>>>>>>>>>FIND: " . _dump $where;
 	
     my $rs = mdb->topic->find($where);
     my $cnt = $rs->count;
