@@ -71,20 +71,26 @@ sub _select_words {
     return join '_', @ret;
 }
 
+# used by log_grid to refresh the log
 sub auto_refresh : Path('/job/log/auto_refresh') {
     my ( $self,$c )=@_;
     my $p = $c->request->parameters;
+    my $mid = ''. $p->{mid};
     my $filter = $p->{filter};
        $filter = decode_json( $filter ) if $filter;
-    my $where = { mid => $p->{ mid }, 'me.exec' => $p->{ job_exec } || 1 };
+    my $where = { mid => $mid, 'exec' => 0+($p->{job_exec} || 1) };
     #_log _dump ( $filter );
-    $where->{lev} = [ grep { $filter->{$_} } keys %$filter ]
-        if ref($filter) eq 'HASH';
+    $where->{lev} = mdb->in( grep { $filter->{$_} } keys %$filter ) if ref($filter) eq 'HASH';
     _log _dump $where;
-    my $rs = $c->model( 'Baseliner::BaliLog' )->search( $where, { order_by=>{ '-desc' => 'me.id' }, join=>['job'] } );
-    my $top = $rs->first;
-    my $stop_now = $top->job->status ne 'RUNNING' ? \1 : \0;
-    $c->stash->{json} = { count => $rs->count, top_id=>$top->id, stop_now=>$stop_now };  
+    my $rs = mdb->job_log->find($where)->sort({ id=>-1 });
+    my $top = $rs->next;
+    my $job = ci->job->find_one({ mid=>$mid });
+    if( $job ) {
+        my $stop_now = $job->{status} ne 'RUNNING' ? \1 : \0;
+        $c->stash->{json} = { count => $rs->count, top_id=>$top->{id}, stop_now=>$stop_now };  
+    } else {
+        $c->stash->{json} = { count => $rs->count, top_id=>$top->{id}, stop_now=>\1 };  
+    }
     $c->forward('View::JSON');
 }
 
