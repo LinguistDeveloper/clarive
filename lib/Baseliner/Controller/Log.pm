@@ -430,9 +430,12 @@ sub log_data : Path('/job/log/data') {
     my ( $self, $c, $id ) = @_;
     my $p = $c->req->params;
     my $log = mdb->job_log->find_one({ id=> 0+$id || 0+$p->{id} });
-    my $data = mdb->grid->get( $log->{data} )->slurp; 
-    $data = uncompress($data) || $data;
-    $data = _html_escape( $data );
+    my $logd = $log->{data} ? mdb->grid->get( $log->{data} ) : '';
+    my $data = $logd ? $logd->slurp : '';
+    if( $data ) {
+        $data = uncompress($data) || $data;
+        $data = _html_escape( $data );
+    }
     $c->res->body( "<pre>" . $data  . " " );
 }
 
