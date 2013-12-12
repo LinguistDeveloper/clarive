@@ -3489,10 +3489,85 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
 	}	
 });
 
+// TODO this should be a Job Dashboard style page, in a separate, reusable component
+Baseliner.BOM = Ext.extend( Ext.Panel, {
+    title: _('Bill Of Materials'),
+    autoScroll: true,
+    padding: 10,
+    initComponent: function(){
+        var self = this;
+        if( !self.params ) self.params = {};
+        self.build_tmpl();
+        Baseliner.BOM.superclass.initComponent.call(this);
+        self.on('afterrender', function(){
+            Baseliner.ci_call( self.mid, 'bom', self.params, function(res){
+                console.log( res );
+                var html = Baseliner.BOM_tmpl(res);
+                self.body.update( html );
+                self.doLayout();
+            });
+        });
+    },
+    build_tmpl : function(){
+        if( Baseliner.BOM_tmpl ) return;
+        Baseliner.BOM_tmpl = function(){/*
+            <div id="boot" style="overflow: yes">
+            <h2>[%= _('BOM') %]</h2>
+            <table class="table table-bordered table-condensed dashboard">
+                <tbody>
+                    <tr>
+                        <td>[%= _('Baselines') %]</td>
+                        <td>[%= bl %]</td>
+                    </tr>
+                    <tr>
+                        <td>[%= _('Status') %]</td>
+                        <td>[%= _(status) %]</td>
+                    </tr>
+                    <tr>
+                        <td>[%= _('Type') %]</td>
+                        <td>[%= _(job_type) %]</td>
+                    </tr>
+                    <tr>
+                        <td>[%= _('Scheduled') %]</td>
+                        <td>[%= _(starttime) %]</td>
+                    </tr>
+                    <tr>
+                        <td>[%= _('Start') %]</td>
+                        <td>[%= _(starttime) %]</td>
+                    </tr>
+                    <tr>
+                        <td>[%= _('End') %]</td>
+                        <td>[%= _(endtime) %]</td>
+                    </tr>
+                    <tr>
+                        <td>[%= _('User') %]</td>
+                        <td>[%= _(username) %]</td>
+                    </tr>
+                </tbody>    
+            </table>
+            <h3>Changesets</h3>
+            <table class="table table-bordered table-condensed dashboard">
+                <tbody>
+                    [% for( var i=0; i<changesets.length; i++) { %]
+                    <tr>
+                    </tr>
+                    [% } %]
+                </tbody>    
+            </table>
+            </div>
+        */}.tmpl();
+    }
+});
+
 Baseliner.request_approval = function(mid,id_grid){
     var grid = Ext.getCmp( id_grid );
     var user_comments = new Ext.form.TextArea({ title: _('Comments'), value:'' });
-    Baseliner.ci_call( mid, 'contract', { }, function(res){
+    
+    Baseliner.ci_call( mid, 'can_approve', { }, function(res){
+        if( res.data == '0' ) {
+            Baseliner.error( _('Approval'), _('User is not authorized to approve this job') );
+            return;
+        }
         //console.log( res );
         var btn_approve = new Ext.Button({
             text: _('Approve'),
@@ -3522,32 +3597,10 @@ Baseliner.request_approval = function(mid,id_grid){
                 });
             }
         });
-        var variables = new Baseliner.VariableForm({
-            name: 'variables',
-            fieldLabel: _('Variables'),
-            show_tbar: false,
-            force_bl: ['*', res.bl],
-            height: 400,
-            data: res.vars
-        });
-        var form = new Ext.FormPanel({
-            title: _('Details'),
-            padding: 10,
-            labelAlign: 'right',
-            defaults: { anchor: '100%' },
-            frame: false, border: false,
-            items: [ 
-                { xtype:'textfield', fieldLabel:_('User'), value:res.username },
-                { xtype:'textfield', fieldLabel:_('Scheduled Time'), value:res.schedtime },
-                { xtype:'textfield', fieldLabel:_('Projects'), value:res.projects },
-                { xtype:'textfield', fieldLabel:_('Changes'), value: res.cs },
-                { xtype:'textarea', fieldLabel:_('Comments'), value: res.comments },
-                variables 
-            ]
-        });
-        var tab_approve = new Ext.TabPanel({ activeTab:0, items: [ user_comments, form ] });
+        //var bom = new Baseliner.BOM({ mid: mid, hidden: true });
+        var tab_approve = new Ext.TabPanel({ activeTab:0, items: [ user_comments ] });
         tab_approve.on('afterrender', function(){
-            tab_approve.changeTabIcon( form, '/static/images/icons/log_16.png' ); 
+            //tab_approve.changeTabIcon( bom, '/static/images/icons/log_16.png' ); 
             tab_approve.changeTabIcon( user_comments, '/static/images/icons/comment_blue.gif' ); 
         });
         var win = new Baseliner.Window({ width: 800, height: 600, layout:'fit', 

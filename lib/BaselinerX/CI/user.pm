@@ -149,6 +149,14 @@ method gen_project_security {
     }
 }
 
+method is_root( $username=undef ) {
+    Baseliner->model('Permissions')->is_root( $username || $self->username );
+}
+
+method has_action( $action ) {
+    return Baseliner->model('Permissions')->user_has_action( action=>$action, username=>$self->username );
+}
+
 1;
 
 __END__
