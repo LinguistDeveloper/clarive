@@ -426,23 +426,24 @@ sub topics_for_user {
         my $rel_where = {};
         my $dir = length $p->{from_mid} ? ['from_mid','to_mid'] : ['to_mid','from_mid'];
         $rel_where->{$dir->[0]} = $p->{$dir->[0]};
-        $where->{topic_mid} = mdb->in( 
-                map { $_->{ $dir->[1] } }
-                DB->BaliMasterRel->search( $rel_where,{ select=>$dir->[1] })->hashref->all 
-            );
+        push @{ $where->{mid} }, map { $_->{ $dir->[1] } } DB->BaliMasterRel->search( $rel_where,{ select=>$dir->[1] })->hashref->all 
     }
 
     #*****************************************************************************************************************************
     
     #Filtro cuando viene por la parte del Dashboard.
     if($p->{query_id}){
-        $where->{topic_mid} = mdb->in($p->{query_id});
+        push @{ $where->{mid} }, _array($p->{query_id});
     }
     
     #Filtro cuando viene por la parte del lifecycle.
     if($p->{id_project}){
         my @topics_project = map {$_->{from_mid}} DB->BaliMasterRel->search({ to_mid=>$p->{id_project}, rel_type =>'topic_project' })->hashref->all;
-        $where->{topic_mid} = mdb->in(@topics_project);
+        push @{ $where->{mid} }, @topics_project;
+    }
+    
+    if( $where->{mid} ) {
+        $where->{mid} = mdb->in( $where->{mid} );
     }
     
 _debug( $where );
