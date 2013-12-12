@@ -52,6 +52,13 @@
           ['rollback_force',_('Must Rollback from local files')]
         ]
     });
+    var exist_mode = new Baseliner.ComboDouble({ 
+        fieldLabel: _('Exist Mode'), name:'exist_mode', value: data.exist_mode || 'skip', 
+        data: [
+          ['skip',_('Skip, if file already sent by any task in job chain')],  // add skip local (instead of global chain)
+          ['reship',_('Reship, even file has already been shipped to node')]   // add copy from dir to dir remotely, and checksum mode 
+        ]
+    });
     return [
         Baseliner.ci_box({ name: 'server', role:'Baseliner::Role::HasAgent', fieldLabel:_('Server'), with_vars: 1, value: data.server, force_set_value: true }),
         { xtype:'textfield', fieldLabel: _('User'), name: 'user', value: data.user },
@@ -60,6 +67,7 @@
         rel_path,
         anchor_path,
         { xtype:'textarea', fieldLabel: _('Remote Path'), height: 80, name: 'remote_path', value: data.remote_path },
+        exist_mode,
         backup_mode,
         rollback_mode,
         { xtype:'textfield', fieldLabel: _('Chown'), name: 'chown', value: data.chown },

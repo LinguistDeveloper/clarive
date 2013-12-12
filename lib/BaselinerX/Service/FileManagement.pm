@@ -170,10 +170,13 @@ sub run_ship {
     my $rollback_mode = $config->{rollback_mode} // 'rollback'; 
     my $needs_rollback_mode = $config->{needs_rollback_mode} // 'nb_after'; 
     my $needs_rollback_key = $config->{needs_rollback_key} // $task;
+    my $exist_mode = $config->{exist_mode} // 'skip'; # skip files already shipped by default
     $stash->{needs_rollback}{ $needs_rollback_key } = 1 if $needs_rollback_mode eq 'nb_always';
     my ($include_path,$exclude_path) = @{ $config }{qw(include_path exclude_path)};
     
     _fail _loc "Server not configured" unless length $config->{server};
+    
+    my $sent_files = $stash->{sent_files} // {};
 
     my $servers = $config->{server};
     for my $server ( ref $servers ? _array($servers) : split /,/, $servers ) {
@@ -265,14 +268,23 @@ sub run_ship {
                     _fail _loc 'Could not find rollback file %1', $bkp_local;
                 }
             }
-            $log->info( _loc( 'Sending file `%1` to `%2`', $local, "*$server_str*".':'.$remote ) );
             
             # ship done here
-            $stash->{needs_rollback}{ $needs_rollback_key } = 1 if $needs_rollback_mode eq 'nb_before';
-            $agent->put_file(
-                local  => "$local",
-                remote => "$remote",
-            );
+            my $local_stat   = join(",",@{ _file($local)->stat || [] }); # create a stat string
+            my $local_chksum = Digest::MD5::md5_base64( scalar _file($local)->slurp );   # maybe slow for very large files
+            my $local_key = "$local|$local_stat|$local_chksum";
+            my $sent = $sent_files->{$server_str}{$local_key}{"$remote"}; 
+            if( $sent && $exist_mode ne 'reship' ) {
+                $log->info( _loc('File `%1` already in machine `%2`. Ship skipped.', "$local", "*$server_str*".':'.$remote ), data=>$local_key );
+            } else {
+                $log->info( _loc( 'Sending file `%1` to `%2`', $local, "*$server_str*".':'.$remote ) );
+                $stash->{needs_rollback}{ $needs_rollback_key } = 1 if $needs_rollback_mode eq 'nb_before';
+                $agent->put_file(
+                    local  => "$local",
+                    remote => "$remote",
+                );
+                $sent_files->{$server_str}{"$local"}{"$remote"} = _now();
+            }
             $stash->{needs_rollback}{ $needs_rollback_key } = 1 if $needs_rollback_mode eq 'nb_after';
             
             if( length $chown ) {
@@ -289,6 +301,8 @@ sub run_ship {
         $log->warn( _loc( 'Could not find any file locally to ship to `%1`', $server_str ), $config )
             unless $cnt > 0;
     }
+    
+    $stash->{sent_files} //= $sent_files;
 
     return 1;
 }
