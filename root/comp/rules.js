@@ -236,6 +236,9 @@
         if( clipboard ) {
             var p = clipboard.node;
             p.id = Ext.id();
+            p.cascade(function(n_chi){
+                n_chi.id = Ext.id();
+            });
             node.appendChild( p );
         }
         //clipboard = 
