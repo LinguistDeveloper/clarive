@@ -112,42 +112,76 @@ sub my_searches {
 
 sub public_searches {
     my ($self,$p) = @_;
-    my @searches = $self->search_cis( permissions=>'public' ); 
-    my %user_categories = map {
-        $_->{id} => 1;
-    } Baseliner->model('Topic')->get_categories_permissions( username => $p->{username}, type => 'view' );
-    
-    my @public;
+    my @searches = $self->search_cis( permissions=>'public' );
+	
+	my %user_categories;
+	my $user_categories_fields_meta;
+	
+	if (! Baseliner->model('Permissions')->is_root( $p->{username} )) {
+		%user_categories = map {
+			$_->{id} => $_->{name};
+		} Baseliner->model('Topic')->get_categories_permissions( username => $p->{username}, type => 'view' );
+		$user_categories_fields_meta = Baseliner->model('Users')->get_categories_fields_meta_by_user( username => $p->{username}, categories=> \%user_categories );
+	}
+	
+	my @public;
     for my $folder ( @searches ){
-        my %fields = map { $_->{type}=>$_->{children} } _array( $folder->selected );
-        # check categories permissions
-        my @categories = map { $_->{data}->{id_category} } _array($fields{categories});
-        my @user_cats = grep { exists $user_categories{ $_ } } @categories;
-        next if @categories > @user_cats;  # user cannot see category, skip this search
-        push @public,
-            {
-                mid     => $folder->mid,
-                text    => sprintf( '%s (%s)', $folder->name, $folder->owner ), 
-                icon    => '/static/images/icons/topic.png',
-                #menu    => [ ],
-                data    => {
-                    click   => {
-                        icon    => '/static/images/icons/topic.png',
-                        url     => '/comp/topic/topic_grid.js',
-                        type    => 'comp',
-                        title   => $folder->name,
-                    },
-                    #store_fields   => $folder->fields,
-                    #columns        => $folder->fields,
-                    fields         => $folder->selected_fields({ meta => $p->{meta}, username => $p->{username} }),
-                    id_report      => $folder->mid,
-                    report_rows    => $folder->rows,
-                    report_name    => $folder->name,
-                    #column_mode    => 'full', #$folder->mode,
-                    hide_tree      => \1,
-                },
-                leaf    => \1,
-            };
+		my $swAllowed = 0;
+		if (! Baseliner->model('Permissions')->is_root( $p->{username} )) {
+			my %fields = map { $_->{type}=>$_->{children} } _array( $folder->selected );
+			# check categories permissions
+			my @categories;
+			my @names_categories;
+			map {
+				push @categories, $_->{data}->{id_category};
+				push @names_categories, Util->_name_to_id($_->{data}->{name_category});
+			} _array($fields{categories});
+			
+			my @user_cats = grep { exists $user_categories{ $_ } } @categories;
+			next if @categories > @user_cats;  # user cannot see category, skip this search
+			
+			my @selected =  map { $_->{id_field} } _array($fields{select});
+			
+			for my $category (@names_categories){
+				for my $field (@selected){
+					if (exists $user_categories_fields_meta->{$category}{$field}){
+						$swAllowed = 1;	
+					}else{
+						$swAllowed = 0;
+						last if ($swAllowed == 0);
+					}
+				}
+				last if ($swAllowed == 0);
+			}
+		}else{
+			$swAllowed = 1;	
+		}
+
+		if($swAllowed == 1){
+			push @public,{
+				mid     => $folder->mid,
+				text    => sprintf( '%s (%s)', $folder->name, $folder->owner ), 
+				icon    => '/static/images/icons/topic.png',
+				#menu    => [ ],
+				data    => {
+					click   => {
+						icon    => '/static/images/icons/topic.png',
+						url     => '/comp/topic/topic_grid.js',
+						type    => 'comp',
+						title   => $folder->name,
+					},
+					#store_fields   => $folder->fields,
+					#columns        => $folder->fields,
+					fields         => $folder->selected_fields({ meta => $p->{meta}, username => $p->{username} }),
+					id_report      => $folder->mid,
+					report_rows    => $folder->rows,
+					report_name    => $folder->name,
+					#column_mode    => 'full', #$folder->mode,
+					hide_tree      => \1,
+				},
+				leaf    => \1,
+			};
+		}
     }    
     return \@public;
 }
@@ -170,7 +204,6 @@ sub report_update {
         when ('add') {
             try{
                 $self = $self->new() unless ref $self;
-                #my @cis = $self->search_cis( name=>$data->{name} );
 				my @cis = $self->search_cis( name=>$data->{name}, owner=>$username );
                 if(!@cis){
                     $self->selected( $data->{selected} ) if ref $data->{selected};
@@ -192,7 +225,6 @@ sub report_update {
         }
         when ('update') {
             try{
-                #my @cis = $self->search_cis( name=>$data->{name} );
 				my @cis = $self->search_cis( name=>$data->{name}, owner=>$username );
                 if( @cis && $cis[0]->mid != $self->mid ) {
                     _fail _loc('Search name already exists, introduce another search name');
@@ -234,7 +266,6 @@ sub dynamic_fields {
 sub all_fields {
     my ($self,$p) = @_;
 	
-    #my @cats = DB->BaliTopicCategories->search(undef,{ order_by=>{ -asc=>'name' } })->hashref->all;
 	my $username = $p->{username};
 	my @cats = Baseliner->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
     my @tree;
@@ -278,7 +309,6 @@ sub all_fields {
 			text => _loc('Commons'),
 			leaf => \0,
 			icon     => '/static/images/icons/topic.png',
-			#url  => '/ci/report/dynamic_fields',
 			children => [
 				map {
 					{
@@ -298,20 +328,6 @@ sub all_fields {
 		};	
 	}
 	else{
-		## Custom Fields, separated by topic
-		#push @tree, map { +{ 
-		#		%$_,
-		#		text        => _loc($_->{name_field}), 
-		#		icon        => '/static/images/icons/field-add.png',
-		#		type        => 'select_field',
-		#		meta_type   => $_->{meta_type},
-		#		gridlet     => $_->{gridlet},
-		#		#category    => $cat,
-		#		leaf        =>\1, 
-		#	} } 
-		#	sort { lc $a->{name_field} cmp lc $b->{name_field} } 
-		#	grep { !exists $common_fields{$_->{id_field}} && !exists $hidden_list{$_->{id_field}} } 
-		#	_array( Baseliner->model('Topic')->get_meta( undef, $id_category, $username ) );
 		my %categories;
 		$categories{$id_category} = $name_category;
 		my $user_categories_fields_meta = Baseliner->model('Users')->get_categories_fields_meta_by_user( username=>$username, categories=> \%categories );
@@ -335,75 +351,6 @@ sub all_fields {
 		keys $user_categories_fields_meta->{$name_category}; 		
 		
 	}
-		#push @tree, (
-		#    { text=>_loc('Filters'),
-		#        leaf=>\0,
-		#        expanded => \1,
-		#        icon => '/static/images/icons/search.png',
-		#        children=>[
-		#            map { $_->{icon}='/static/images/icons/where.png'; $_->{type}='value'; $_->{leaf}=\1; $_ } 
-		#            (
-		#                { text=>_loc('String'), where=>'string', field=>'string', },
-		#                { text=>_loc('Number'), where=>'number', field=>'number' },
-		#                { text=>_loc('Date'), where=>'date', field=>'date' },
-		#                { text=>_loc('CIs'), where=>'cis', field=>'ci' },
-		#                { text=>_loc('Status'), where=>'status', field=>'status' },
-		#            )
-		#        ]
-		#    }
-		#);
-		
-		#push @tree, {
-		#    text => _loc('Dynamic'),
-		#    leaf => \0,
-		#    icon     => '/static/images/icons/all.png',
-		#    #url  => '/ci/report/dynamic_fields',
-		#    children => [
-		#        map {
-		#            my $key = $_;
-		#            my ($prefix,$data_key) = split( /\./, $key, 2);
-		#            {
-		#                text     => $key,
-		#                icon     => '/static/images/icons/field-add.png',
-		#                id_field => $prefix,
-		#                data_key => $data_key,
-		#                type     => 'select_field',
-		#                leaf     => \1
-		#            }
-		#        } 
-		#        grep !/^_/, 
-		#        grep !/\.[0-9]+$/, 
-		#        mdb->topic->all_keys
-		#    ],
-		#};
-		
-		## Custom Fields, separated by topic
-		#push @tree, map { 
-		#    my $cat = $_;
-		#    my @chi = map { +{ 
-		#            %$_,
-		#            text        => _loc($_->{name_field}), 
-		#            icon        => '/static/images/icons/field-add.png',
-		#            type        => 'select_field',
-		#            meta_type   => $_->{meta_type},
-		#            gridlet     => $_->{gridlet},
-		#            category    => $cat,
-		#            leaf        =>\1, 
-		#         } } 
-		#        sort { lc $a->{name_field} cmp lc $b->{name_field} } 
-		#        grep { !exists $common_fields{$_->{id_field}} && !exists $hidden_list{$_->{id_field}} } 
-		#        _array( Baseliner->model('Topic')->get_meta( undef, $cat->{id} ) ); 
-		#    +{  text => _loc($cat->{name}),
-		#        data => $cat, 
-		#        icon => '/static/images/icons/topic.png',
-		#        expanded => \0,
-		#        draggable => \0,
-		#        children =>\@chi, 
-		#    }
-		#} @cats;		
-	
-	
-
     return \@tree;
 }
 
@@ -413,6 +360,7 @@ sub field_tree {
 } 
 
 our %data_field_map = (
+	category => 'category_name',
     status => 'category_status_name',
     status_new => 'category_status_name',
     name_status => 'category_status_name',       
@@ -420,6 +368,7 @@ our %data_field_map = (
 );
 
 our %select_field_map = (
+	category => 'category.name',
     status => 'category_status.name',
     status_new => 'category_status.name',
     name_status => 'category_status.name',       
@@ -516,11 +465,12 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
     my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $username) );  # XXX should be by category, same id fields may step on each other
     my @selects = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) => 1 } _array($fields{select});
 	
+	_log ">>>>>>>>>>>>>>>>>>>>>>Campos select: " . _dump @selects;
+	
 	#filters
 	my %dynamic_filter;
 	if( $filter ){
 		for my $flt ( _array $filter ){
-			#_log ">>>>>>Filter: " . _dump $flt;
 			if( exists $dynamic_filter{$flt->{field}} ){
 				push @{$dynamic_filter{$flt->{field}}->{oper}}, $flt->{comparison};
 				push @{$dynamic_filter{$flt->{field}}->{value}}, $flt->{value};
@@ -543,7 +493,6 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 			$dynamic_filter{status_new} = $dynamic_filter{category_status_name};
 		}
 	}
-	#_log ">>>>>>>>>>>>>>>Dynamic filter: " . _dump %dynamic_filter;
 
 	my $where;
 	
@@ -558,11 +507,9 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
         my @chi = _array($field->{children});
 		
         for my $val ( @chi ) {
-			#_log ">>>>>>>>>>>>>>>>>>>FIELDS: " . _dump $val;
 			my $id_field = $_->{id_field};
 			my $cond;
 			if(exists $dynamic_filter{$id_field}) {
-				_log ">>>>>>>>TYPE: " . $dynamic_filter{$id_field}->{type};
 				given ($dynamic_filter{$id_field}->{type}) {
 					when ('numeric') {
 						for (my $i = 0; $i < scalar @{$dynamic_filter{$id_field}->{oper}}; $i++){
@@ -589,9 +536,6 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 						}else{
 							$cond = $parse[0];	
 						}
-						#$cond = { $val->{oper} => \@parse };
-						#$cond = mdb->in(@parse);
-						#$cond = { $val->{oper} => $dynamic_filter{$id_field}->{value} };
 					};
 					when ('string') {
 						if( $val->{oper} =~ /^(like|not_like)$/ || $val->{value} eq 'default' ) {
@@ -708,16 +652,8 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
     }
 
     if( length $query ) {
-    ##    my @qmids = map { $_->{obj}{mid} } _array(mdb->topic->search( query=>$query, limit=>999999, project=>{ mid=>1 } )->{results});
-    ##    push @where, { mid=>mdb->in(@qmids) };
 		$where->{'mid'} = mdb->in($query);
     }
-
-#    for my $id_field ( keys %$where ) {
-#		_log ">>>>>>>>>>>>>>>>>>" . $select_field_map{ $id_field };
-#		my $new_id_field = $select_field_map{ $id_field } // next;
-#		$where->{$new_id_field} = delete $where->{$id_field};
-#	}
 
 	if( exists $where->{'status_new'} ){
 		$where->{'category_status.id'} = delete $where->{'status_new'};
@@ -746,8 +682,6 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
       ->limit($rows)
       ->all;
 	  
-	#_log ">>>>>>>>>>>>>>Datos: " . _dump @data;
-	
     my %scope_topics;
     my %scope_cis;
     my @topics = map { 

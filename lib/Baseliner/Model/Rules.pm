@@ -882,6 +882,7 @@ register 'statement.if.nature' => {
     data => { nature=>'', },
     dsl => sub { 
         my ($self, $n , %p) = @_;
+        my ($nature) = _array($n->{nature});  # in case we accidently get an array of natures
         sprintf(q{
             if( my $nature = $stash->{natures}{'%s'} ) {
                 NAT: {  
@@ -898,7 +899,7 @@ register 'statement.if.nature' => {
                     %s
                 };
             }
-        }, $n->{nature}, $n->{cut_path} , $self->dsl_build( $n->{children}, %p ) );
+        }, $nature, $n->{cut_path} , $self->dsl_build( $n->{children}, %p ) );
     },
 };
 

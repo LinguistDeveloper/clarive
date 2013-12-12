@@ -199,7 +199,7 @@ sub _create {
             ns           => '/', # not used, deprecated
             bl           => $bl,
     };
-    $row_data->{job_key} = $p{job_key} if length $p{job_key},
+    $row_data->{job_key} = $p{job_key} if length $p{job_key};
     
     # create db row
     my $job_seq = mdb->seq('job');
@@ -304,7 +304,7 @@ sub gen_job_name {
 sub is_active {
     my $self = shift;
     if( my $status = $self->load->{status} ) {
-        return 1 if $status !~ /REJECTED|CANCELLED|ERROR|FINISHED|KILLED|EXPIRED/;
+        return 1 if $status !~ /REJECTED|CANCELLED|TRAPPED|ERROR|FINISHED|KILLED|EXPIRED/;
     }
     return 0;
 }

@@ -235,9 +235,11 @@ sub tree_objects {
     
     if( length $p{query} ) {
         my $filter = {};
+        my $q = $p{query};
         $filter->{collection} = $collection if $collection;
         my @mids_query = map { $_->{obj}{mid} } 
-            _array( mdb->master_doc->search( query=>$p{query}, limit=>1000, project=>{mid=>1}, filter=>$filter )->{results} );
+            _array( mdb->master_doc->search( query=>$q, limit=>1000, project=>{mid=>1}, filter=>$filter )->{results} );
+        push @mids_query, map { $_->{mid} } mdb->master_doc->find({ '$or'=>[ {name=>qr/$q/i}, {moniker=>qr/$q/i} ] })->fields({ mid=>1 })->all;
         $where->{mid}=\@mids_query;
     }
     
@@ -890,9 +892,8 @@ sub delete : Local {
 
     try {
         $c->cache_clear();
-        for( _array( $mids ) ) {
-            my $ci = _ci( $_ );
-            $ci->delete if ref $ci;
+        for( grep { length } _array( $mids ) ) {
+            ci->delete( $_ );
         }
         $c->stash->{json} = { success=>\1, msg=>_loc('CIs deleted ok' ) };
         #$c->stash->{json} = { success=>\1, msg=>_loc('CI does not exist' ) };

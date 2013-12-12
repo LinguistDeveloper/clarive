@@ -188,11 +188,15 @@
         }
     });
    
-    var encode_tree = function( root ){
+    var encode_tree = function( root, include ){
         var stmts = [];
-        root.eachChild( function(n){
-            stmts.push({ attributes: n.attributes, children: encode_tree( n ) });
-        });
+        if( include ) {
+            stmts.push({ attributes: root.attributes, children: encode_tree( root ) });
+        } else {
+            root.eachChild( function(n){
+                stmts.push({ attributes: n.attributes, children: encode_tree( n ) });
+            });
+        }
         return stmts;
     };
 
@@ -226,7 +230,7 @@
         return copy;
     };
     var dsl_node = function( node ) {
-        node.getOwnerTree().rule_dsl(node);
+        node.getOwnerTree().rule_dsl(node,true);
     };
     var copy_node = function( node ) {
         var copy = clone_node( node ); 
@@ -236,6 +240,9 @@
         if( clipboard ) {
             var p = clipboard.node;
             p.id = Ext.id();
+            p.cascade(function(n_chi){
+                n_chi.id = Ext.id();
+            });
             node.appendChild( p );
         }
         //clipboard = 
@@ -508,7 +515,7 @@
             stmts_menu.showAt(event.xy);
         };
         var btn_save_tree = new Ext.Button({ text: _('Save'), icon:'/static/images/icons/save.png', handler: rule_save });
-        var btn_refresh_tree = new Ext.Button({ text: _('Reload'), icon:'/static/images/icons/refresh.gif', handler: rule_load });
+        var btn_refresh_tree = new Ext.Button({ text: _('Reload'), icon:'/static/images/icons/refresh.gif', handler: function(){ rule_load(btn_refresh_tree) } });
         var btn_dsl = new Ext.Button({ text: _('DSL'), icon:'/static/images/icons/edit.png', handler: function() { rule_tree.rule_dsl() } });
         var btn_version_tree = new Ext.Button({ enableToggle: true, pressed: false, icon:'/static/images/icons/history.png', 
             handler: function() { 
@@ -577,10 +584,10 @@
             setTimeout( function(){ node_decorate(n) }, 500 ) ;
         });
         
-        rule_tree.rule_dsl = function(from){
+        rule_tree.rule_dsl = function(from,include){
             var root = from || rule_tree.root;
             //rule_save({ callback: function(res) { } });
-            var stmts = encode_tree( root );
+            var stmts = encode_tree( root, include );
             var json = Ext.util.JSON.encode( stmts );
             Baseliner.ajaxEval( '/rule/dsl', { id_rule: id_rule, rule_type: rule_type, stmts: json, event_key: rule_event }, function(res) {
                 if( res.success ) {
