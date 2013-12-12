@@ -249,7 +249,6 @@
         }
         Ext.each( ev.dropNode, function(n){
             var type = n.attributes.type;
-            //console.dir(n);
             //Baseliner.message( 'Type', type );
             if( !type=='where_field' && ev.point=='append' ) {
                 flag = false; //alert('no no'); 
