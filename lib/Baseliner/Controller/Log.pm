@@ -464,34 +464,36 @@ sub log_delete : Path('/job/log/delete') {
 sub log_highlight : Path('/job/log/highlight') {
     my ( $self, $c, $id ) = @_;
     my $p = $c->req->params;
-    my $log = $c->model('Baseliner::BaliLog')->search({ id=> $id || $p->{id} })->first;
-    if( my $viewer_key = $log->provider ) {
+    $id ||= $p->{id};
+    my $log = mdb->job_log->find_one({ id=>0+$id });
+    _fail _loc 'Log row not found: %1', $id unless $log;
+    if( my $viewer_key = $log->{provider} ) {
         if( my $viewer = $c->model('Registry')->get( $viewer_key ) ) {
             # viewer options
         }
     }
-    $c->stash->{class} = $log->data_length > 1000000 ? '' : $log->{highlight_class} || 'spool';
+    $c->stash->{class} = $log->{data_length} > 1000000 ? '' : $log->{highlight_class} || 'spool';
     $c->stash->{style} = $log->{highlight_style} || 'golden';
-    $c->stash->{data} = (uncompress($log->data) || $log->data)  . " ";
+    my $logd = mdb->grid->find_one({ _id=>$log->{data} });
+    _fail _loc 'Log data not found: %1', $log->{data} unless $logd;
+    my $data = $logd->slurp;
+    $c->stash->{data} = (uncompress($data) || $data)  . " ";
     $c->stash->{template} = '/site/highlight.html';
-}
-
-sub log_data_search : Path('/job/log/data_search') {
-    my ( $self, $c ) = @_;
-    my $p = $c->req->params;
-    my $log = $c->model('Baseliner::BaliLog')->search({ id=> $p->{id} })->first;
-    $c->stash->{log_data} = uncompress($log->data) || $log->data;
-    $c->stash->{template} = '/comp/log_search.mas';
 }
 
 sub log_file : Path('/job/log/download_data') {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    my $log = $c->model('Baseliner::BaliLog')->search({ id=> $p->{id} })->first;
-    my $file_id = $log->mid.'-'.$p->{id};
-    my $filename = $file_id . '-' . ( $p->{file_name} || $log->data_name || 'attachment.txt' );
+    my $id = $p->{id};
+    my $log = mdb->job_log->find_one({ id=>0+$id });
+    _fail _loc 'Log row not found: %1', $id unless $log;
+    my $logd = mdb->grid->find_one({ _id=>$log->{data} });
+    _fail _loc 'Log data not found: %1', $log->{data} unless $logd;
+    my $file_id = $log->{mid}.'-'.$p->{id};
+    my $data = $logd->slurp;
+    my $filename = $file_id . '-' . ( $p->{file_name} || $log->{data_name} || 'attachment.txt' );
     $c->stash->{serve_filename} = $filename;
-    $c->stash->{serve_body} = uncompress($log->data) || $log->data;
+    $c->stash->{serve_body} = uncompress($data) || $data;
     $c->forward('/serve_file');
 }
 

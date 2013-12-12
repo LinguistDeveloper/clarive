@@ -35,7 +35,7 @@ sub begin : Private {
     my $content_type = $c->req->content_type;
     
     # cleanup 
-    delete $c->req->params->{_login_count}; # used by tabfu to control attempts
+    delete $c->req->params->{_bali_login_count}; # used by tabfu to control attempts
 
     # process json data, if any
     if( $content_type eq 'application/json' ) {
@@ -46,11 +46,13 @@ sub begin : Private {
             my $p = $c->req->params || {};
             my $d = { %$p, %$json };
             delete $d->{as_json};
+            delete $d->{$_} for grep /^_bali/, keys $d;
             $c->req->params( $d ); 
             Util->_debug( $d );
         } else {
             $json //= {};
             delete $json->{as_json};
+            delete $json->{$_} for grep /^_bali/, keys $json;
             $c->req->{body_data} = $json;
         }
     }

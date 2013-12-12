@@ -1290,6 +1290,9 @@ msgstr "Guardar"
 msgid "Saving..."
 msgstr "Guardando..."
 
+msgid "User is not authorized to approve this job"
+msgstr "Usuario no está autorizado para aprobar este pase"
+
 msgid "Reschedule"
 msgstr "Replanificar"
 
@@ -4958,4 +4961,7 @@ msgstr "Entornos"
 
 msgid "Apply filter"
 msgstr "Aplicar filtro"
+
+msgid "To upload files to UCM, the topic needs to be created. Save topic first?"
+msgstr "Para subir ficheros a UCM, el tópico tiene que estar creado.  Desea guardarlo primero?"
 

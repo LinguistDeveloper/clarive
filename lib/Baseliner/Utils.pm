@@ -1154,8 +1154,9 @@ sub hash_flatten {
         }
     }
     elsif( $refstash && $refstash !~ /CODE|GLOB|SCALAR/ ) {
-        $stash = _damn( $stash );
-        %flat = merge_pushing( \%flat, scalar hash_flatten ( $stash, "$prefix" ) );
+        my $clone = _damn( $stash );
+        %flat = merge_pushing( \%flat, scalar hash_flatten ( $clone, "$prefix" ) );
+        %flat = ( "$prefix"=>$stash, %flat );  # so that we have key: { ... }, key.subkey1: 1, key.subkey2: 2, ...
     }
     else {
         $flat{ "$prefix" } = "$stash";
@@ -1298,13 +1299,17 @@ sub parse_vars_raw {
         my $str = "$data";
         for my $k ( keys %$vars ) {
             my $v = $vars->{$k};
-            $str =~ s/\$\{$k\}/$v/g;
-            # look for cis like this: ${ci(field.attrib)}
-            $str =~ s/\$\{ci\($k\)\.(.+)\}/ parse_vars("\${$1}", ci->new($v)) /eg;
-            $str =~ s/\$\{uc\($k\)\}/uc($v)/eg;
-            $str =~ s/\$\{lc\($k\)\}/lc($v)/eg;
-            $str =~ s/\$\{to_id\($k\)\}/_name_to_id($v)/eg;
-            #$str =~ s/\$\{join\((\S+),$k\)\}/join($1,_array($v))/eg;   # TODO $v has a baddly comma joined list, should be an Arrayref
+            if( ref $v && $str =~ /^\$\{$k\}$/ ) {
+                $str = $v;
+            } else {
+                $str =~ s/\$\{$k\}/$v/g;
+                # look for cis like this: ${ci(field.attrib)}
+                $str =~ s/\$\{ci\($k\)\.(.+)\}/ parse_vars("\${$1}", ci->new($v)) /eg;
+                $str =~ s/\$\{uc\($k\)\}/uc($v)/eg;
+                $str =~ s/\$\{lc\($k\)\}/lc($v)/eg;
+                $str =~ s/\$\{to_id\($k\)\}/_name_to_id($v)/eg;
+                #$str =~ s/\$\{join\((\S+),$k\)\}/join($1,_array($v))/eg;   # TODO $v has a baddly comma joined list, should be an Arrayref
+            }
         }
         
         # cleanup or throw unresolved vars

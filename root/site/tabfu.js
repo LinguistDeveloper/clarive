@@ -1041,7 +1041,7 @@ if( Prefs.routing ) {
     Baseliner.ajaxEval = function( url, params, foo, scope ){
         if(params == undefined ) params = {};
 
-        if( params._login_count == undefined ) params._login_count = 0;
+        if( params._bali_login_count == undefined ) params._bali_login_count = 0;
         params['_bali_notify_valid_session'] = true;
         
         var login_and_go = function(url,params,foo,scope){
@@ -1049,10 +1049,10 @@ if( Prefs.routing ) {
         };
         
         var login_or_error = function(){
-            if( params._login_count >= 2 ) {  // 2 attempts to authorize, then abort
+            if( params._bali_login_count >= 2 ) {  // 2 attempts to authorize, then abort
                 Baseliner.error_win(url,params,xhr, _('Login not available') );       
             } else {
-                params._login_count++;
+                params._bali_login_count++;
                 login_and_go(url,params,foo,scope);
             }
         }

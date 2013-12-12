@@ -204,7 +204,8 @@ padding: 2px 4px 2px 7px;
                     <p><small><img style="margin: 0px 5px 2px 0px" width=16 src="/user/avatar/<% $com->{created_by} %>/image.png" />
                     <b><%$com->{created_by}%></b>, <%$com->{created_on}->dmy%> <%$com->{created_on}->hms%>
 
-%   if( $c->username eq $com->{created_by} ) {
+%   if ( $c->model('Permissions')->is_root($c->username)) {
+%#if( $c->username eq $com->{created_by} ) {
 
                     | <a href="javascript:Baseliner.Topic.comment_edit( <% $topic_mid %>, <% $com->{id} %>)"><% _loc("edit") %></a>
                     | <a href="javascript:Baseliner.Topic.comment_delete(<% $topic_mid %>, <% $com->{id} %>, '<% $id_div_com %>')"><% _loc("delete") %></a>
