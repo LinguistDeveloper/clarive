@@ -157,6 +157,7 @@ sub run_ship {
     my $job_dir = $stash->{job_dir};
     my $job_mode = $stash->{job_mode};
     my $task  = $stash->{current_task_name};
+    my $job_exec = $job->exec;
 
     my $remote_path_orig = $config->{remote_path} // _fail 'Missing parameter remote_file';
     my $local_path  = $config->{local_path}  // _fail 'Missing parameter local_file';
@@ -272,7 +273,7 @@ sub run_ship {
             # ship done here
             my $local_stat   = join(",",@{ _file($local)->stat || [] }); # create a stat string
             my $local_chksum = Digest::MD5::md5_base64( scalar _file($local)->slurp );   # maybe slow for very large files
-            my $local_key = "$local|$local_stat|$local_chksum";
+            my $local_key = "$job_exec|$local|$local_stat|$local_chksum";  # job exec included, forces reship on every exec
             my $sent = $sent_files->{$server_str}{$local_key}{"$remote"}; 
             if( $sent && $exist_mode ne 'reship' ) {
                 $log->info( _loc('File `%1` already in machine `%2`. Ship skipped.', "$local", "*$server_str*".':'.$remote ), data=>$local_key );
