@@ -1299,7 +1299,7 @@ sub parse_vars_raw {
         my $str = "$data";
         for my $k ( keys %$vars ) {
             my $v = $vars->{$k};
-            if( ref $v && $str =~ /^\$\{[^\}]+\}$/ ) {
+            if( ref $v && $str =~ /^\$\{$k\}$/ ) {
                 $str = $v;
             } else {
                 $str =~ s/\$\{$k\}/$v/g;
