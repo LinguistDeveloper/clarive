@@ -1067,7 +1067,7 @@
                             var sel = sm.getSelected();
                             if( sel.data.status_code != 'READY' sel.data.status_code != 'APPROVAL' ) {
                                 Baseliner.error( _('Reschedule'), 
-                                    _("Job cannot be rescheduled unless its status is '%1' (current: %2)", _('READY')+"|"+_('APPROVAL), _(sel.data.status) ) );
+                                    _("Job cannot be rescheduled unless its status is '%1' (current: %2)", _('READY')+"|"+_('APPROVAL'), _(sel.data.status) ) );
                                 return;
                             }
                             var curr = Date.parseDate(sel.data.schedtime, 'Y-m-d H:i:s' );
