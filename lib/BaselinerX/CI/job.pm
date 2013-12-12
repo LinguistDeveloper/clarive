@@ -304,7 +304,7 @@ sub gen_job_name {
 sub is_active {
     my $self = shift;
     if( my $status = $self->load->{status} ) {
-        return 1 if $status !~ /REJECTED|CANCELLED|ERROR|FINISHED|KILLED|EXPIRED/;
+        return 1 if $status !~ /REJECTED|CANCELLED|TRAPPED|ERROR|FINISHED|KILLED|EXPIRED/;
     }
     return 0;
 }
