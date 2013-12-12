@@ -188,11 +188,15 @@
         }
     });
    
-    var encode_tree = function( root ){
+    var encode_tree = function( root, include ){
         var stmts = [];
-        root.eachChild( function(n){
-            stmts.push({ attributes: n.attributes, children: encode_tree( n ) });
-        });
+        if( include ) {
+            stmts.push({ attributes: root.attributes, children: encode_tree( root ) });
+        } else {
+            root.eachChild( function(n){
+                stmts.push({ attributes: n.attributes, children: encode_tree( n ) });
+            });
+        }
         return stmts;
     };
 
@@ -226,7 +230,7 @@
         return copy;
     };
     var dsl_node = function( node ) {
-        node.getOwnerTree().rule_dsl(node);
+        node.getOwnerTree().rule_dsl(node,true);
     };
     var copy_node = function( node ) {
         var copy = clone_node( node ); 
@@ -580,10 +584,10 @@
             setTimeout( function(){ node_decorate(n) }, 500 ) ;
         });
         
-        rule_tree.rule_dsl = function(from){
+        rule_tree.rule_dsl = function(from,include){
             var root = from || rule_tree.root;
             //rule_save({ callback: function(res) { } });
-            var stmts = encode_tree( root );
+            var stmts = encode_tree( root, include );
             var json = Ext.util.JSON.encode( stmts );
             Baseliner.ajaxEval( '/rule/dsl', { id_rule: id_rule, rule_type: rule_type, stmts: json, event_key: rule_event }, function(res) {
                 if( res.success ) {
