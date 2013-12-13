@@ -3356,6 +3356,10 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
         
         self.height_list = self.height ? self.height*.9 : 120;
         self.height_drop = self.height ? self.height*.1 : 100;
+        if( self.height_drop < 40 ) { // minimum height for drop area
+            self.height_list = self.height - 40;
+            self.height_drop = 40;
+        }
         var filelist = new Ext.ux.maximgb.tg.GridPanel({
             height: self.height_list,
             stripeRows: true,
