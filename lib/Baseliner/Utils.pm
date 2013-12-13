@@ -713,6 +713,7 @@ sub _replace_tags {
 
 sub _strip_html {
     my $d = shift;
+    return $d unless length $d;
     require HTML::Strip;
     my $hs = HTML::Strip->new();
     my $clean_text = $hs->parse($d);
