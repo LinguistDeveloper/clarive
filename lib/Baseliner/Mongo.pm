@@ -221,7 +221,7 @@ sub save {
 }
 
 # deprecated:
-sub index_sync { }
+sub index_sync { ... }
 
 sub index_all {
     my ($self, $collection)=@_;
