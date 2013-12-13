@@ -149,7 +149,6 @@ sub log_rows : Private {
     #TODO    store filter preferences in a session instead of a cookie, on a by mid basis
     #my $job = $c->model( 'Baseliner::BaliJob')->search({ id=>$mid })->first;
 
-_warn( $where );
     my $rs = mdb->job_log->find( $where );
     $rs->sort({ $sort => $dir });
     

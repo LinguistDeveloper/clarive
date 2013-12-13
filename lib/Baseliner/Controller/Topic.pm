@@ -1768,7 +1768,7 @@ sub newjob : Local {
                 status_from    => $p->{status_from},
                 status_to      => $p->{status_to},
                 id_status_from => $p->{id_status_from},
-            });
+            }, 'merge');
             my $job_name = $job->name;
             { jobname => $job_name, id_job=>$job->{id_job} };
         };

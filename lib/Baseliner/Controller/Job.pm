@@ -380,6 +380,7 @@ sub submit : Local {
                     runner       => $runner,
                     id_rule      => $id_rule,
                     description  => $comments,
+                    stash_init   => $job_stash, # only used to create the stash
                     changesets   => $contents, 
             };
             
@@ -388,10 +389,6 @@ sub submit : Local {
             event_new 'event.job.new' => { username => $c->username, bl => $job_data->{bl}  } => sub {
                 my $job = ci->job->new( $job_data );
                 $job->save;  # after save, CHECK and INIT run
-                if( ref $job_stash ) {
-                    _debug "*** Job Stash before Job Creation: " . _dump $job_stash;
-                    $job->job_stash( $job_stash );
-                }
                 $job_name = $job->name;
                 { jobname => $job_name, mid=>$job->mid, id_job=>$job->jobid };
             };

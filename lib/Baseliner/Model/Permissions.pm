@@ -424,6 +424,7 @@ sub user_projects_query {
     my ( $self, %p ) = @_;
     _throw 'Missing username' unless exists $p{username};
     _throw 'Missing join_id' unless exists $p{join_id};
+    $p{roles} //= '';
     my @roles = split /,/, $p{roles} || ();
 
     my $where;

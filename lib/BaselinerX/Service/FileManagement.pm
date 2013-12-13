@@ -180,7 +180,7 @@ sub run_ship {
     my $sent_files = $stash->{sent_files} // {};
 
     my $servers = $config->{server};
-    for my $server ( ref $servers ? _array($servers) : split /,/, $servers ) {
+    for my $server ( Util->_array_or_commas($servers) ) {
         $server = ci->new( $server ) unless ref $server;
         my $remote_path = $server->parse_vars( "$remote_path_orig" );
         my $server_str = "$user\@".$server->name;
@@ -321,7 +321,7 @@ sub run_retrieve {
     my $user   = $config->{user};
 
     my $servers = $config->{server};
-    for my $server ( ref $servers ? _array($servers) : split /,/, $servers ) {
+    for my $server ( Util->_array_or_commas($servers) ) {
         $server = ci->new( $server ) unless ref $server;
         my $server_str = "$user\@".$server->name;
         _debug "Connecting to server " . $server_str;
