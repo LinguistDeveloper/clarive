@@ -3254,7 +3254,6 @@ Ext.apply(Ext.layout.FormLayout.prototype, {
 Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
     border: false,
     layout: 'form',
-    style: 'margin-top: 10px', 
     id_field: 'upload_files_panel',
     url_delete : '/topic/file/delete', 
     url_list : '/topic/file_tree',
@@ -3355,8 +3354,10 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
             return undefined;
         };
         
+        self.height_list = self.height ? self.height*.9 : 120;
+        self.height_drop = self.height ? self.height*.1 : 100;
         var filelist = new Ext.ux.maximgb.tg.GridPanel({
-            height: 120,
+            height: self.height_list,
             stripeRows: true,
             autoScroll: true,
             autoWidth: true,
@@ -3391,7 +3392,7 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
         var filedrop = new Ext.Panel({
             border: false,
             style: { margin: '10px 0px 10px 0px' },
-            height: '100px'
+            height: self.height_drop
         });
 
         filedrop.on('afterrender', function(){

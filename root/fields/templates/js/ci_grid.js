@@ -33,7 +33,7 @@ params:
         //labelAlign: 'top', 
         readOnly: ( meta.readOnly == 'true' ? true : false ),
         //style: 'margin-top: 20px', 
-        height: meta.height || 200,
+        height: ( meta.height ? parseInt(meta.height) : 200 ),
         value: value , 
         name: meta.id_field 
     });

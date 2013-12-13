@@ -244,6 +244,7 @@ params:
 		name:  meta.id_field,
 		fieldLabel: _(meta.name_field),
         allowBlank  : allow,
+        height: ( meta.height ? parseInt(meta.height) : 200 ),
         readOnly    : readonly,
 		disabled: readonly,
         id_field    : meta.id_field,
