@@ -191,6 +191,21 @@ sub is_in_active_job {
     return @active_jobs;
 }
 
+sub get_data {
+    my ($self, $meta)=@_;
+    Baseliner->model('Topic')->get_data( $meta, $self->mid, with_meta=>1 );
+}
+
+sub get_doc {
+    my ($self, @rest)=@_;
+    mdb->topic->find_one({ mid=>$self->mid }, @rest); 
+}
+
+sub get_meta {
+    my ($self)=@_;
+    Baseliner->model('Topic')->get_meta( $self->mid );
+}
+
 sub verify_integrity {
     my ($self)=@_;
 
