@@ -606,6 +606,11 @@ sub _array_all {
     return @array;
 }
 
+sub _array_or_commas {
+    my (@arr) = @_;
+    map { ref $_ ? ( map { split/,/,$_ } _array($_) ) : split( /,/, $_) } @arr;
+}
+
 sub is_oracle {
     return Baseliner->model('Baseliner')->storage->dbh->{Driver}->{Name} =~ m/oracle/i;
 }
