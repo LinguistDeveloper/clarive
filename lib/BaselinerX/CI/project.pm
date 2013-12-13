@@ -64,9 +64,9 @@ around load => sub {
     return $data;
 };
 
-method user_in_project( :$username, :$action=undef ) {
+method user_has_action( :$username, :$action=undef ) {
     return scalar grep { $_ == $self->mid } Baseliner->model( 'Permissions' )
-        ->user_projects_ids( username=>$username );
+        ->user_projects_with_action( username=>$username, action=>$action );
 }
 
 1;

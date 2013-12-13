@@ -903,24 +903,6 @@ sub get_system_fields {
                 field_order => 0,
                 section     => 'details'
             }
-        },        
-        {
-            id_field => 'bls',
-            params   => {
-                name_field  => 'BLs',
-                bd_field    => 'bls',
-                origin      => 'custom',
-                html        => '/fields/system/html/field_cis.html',
-                field_order => 10000,
-                section     => 'body',
-                get_method => 'get_cis',
-                set_method => 'set_cis',
-                ci_class => 'bl',
-                rel_type => 'topic_bl',
-                show_class => 'false',
-                meta_type => 'ci',
-                id_field => 'bls'
-            }
         },
     );
     return \@system_fields

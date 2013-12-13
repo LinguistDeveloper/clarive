@@ -3433,15 +3433,18 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
                         Ext.Msg.confirm( _('Confirmation'), _('To upload files, the form needs to be created. Save form before submitting?'),
                             function(btn){ 
                                 if(btn=='yes') {
-                                    form.main.save_topic({ success: function(res){
-                                        // resubmit form hack
-                                        config_parms(res.topic_mid);
-                                        var fc = uploader._handler._files[0];
-                                        var id = uploader._handler.add(fc);
-                                        var fileName = uploader._handler.getName(id);
-                                        uploader._onSubmit(id, fileName);
-                                        uploader._handler.upload(id, uploader._options.params);
-                                    }});
+                                    form.main.save_topic({ 
+                                        no_refresh: true,
+                                        success: function(res){
+                                            // resubmit form hack
+                                            config_parms(res.topic_mid);
+                                            var fc = uploader._handler._files[0];
+                                            var id = uploader._handler.add(fc);
+                                            var fileName = uploader._handler.getName(id);
+                                            uploader._onSubmit(id, fileName);
+                                            uploader._handler.upload(id, uploader._options.params);
+                                        }
+                                    });
                                 };
                             }
                         );

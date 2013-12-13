@@ -439,8 +439,8 @@ sub reschedule {
     my $username = $p{username} or _throw 'Missing username';
     my $realuser = $p{realuser} || $username;
 
-    _fail _loc('Job %1 is not in status %2 (currently %3)', $self->name, _loc('READY'), _loc($self->status) )
-        if $self->status ne 'READY';
+    _fail _loc("Job cannot be rescheduled unless its status is '%1' (current: %2)", $self->name, _loc('READY')."|"._loc('APPROVAL'), _loc($self->status) )
+        if $self->status ne 'READY' && $self->status ne 'APPROVAL';
 
     my $msg;
     event_new 'event.job.reschedule' => { job=>$self } => sub {
