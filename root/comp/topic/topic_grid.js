@@ -681,7 +681,7 @@
     var render_date = function(value,metadata,rec,rowIndex,colIndex,store) {
         if( !value ) return '';
 		var value_to_date = new Date(value);
-		return value_to_date.dateFormat('Y-m-d h:m:s');
+		return value_to_date.dateFormat('d/m/Y h:m:s');
     };
     var render_bool = function(value) {
         if( !value ) return '';
