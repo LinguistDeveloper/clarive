@@ -299,6 +299,7 @@ sub all_fields {
 		push @tree, (
 			{ 	text		=> _loc('Categories'),
 				leaf		=> \0,
+				draggable 	=> \0,
 				expanded 	=> \1,
 				icon 		=> '/static/images/icons/topic_one.png',
 				children 	=> \@children
@@ -309,6 +310,7 @@ sub all_fields {
 			text => _loc('Commons'),
 			leaf => \0,
 			icon     => '/static/images/icons/topic.png',
+			draggable => \0,
 			children => [
 				map {
 					{
