@@ -31,7 +31,6 @@ sub monitor {
     my $page = to_pages( start=>$start, limit=>$limit );
 
     ### WHERE
-    _log "Job search...";
     my $where = {};
     my @mid_filters;
     if( length($query) ) {
