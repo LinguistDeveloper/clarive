@@ -38,21 +38,21 @@ method connect( :$user='' ) {
         if $tmout;
     if( $self->connect_worker ) {
         $agent = try {
-            my ($chi) = $self->children( isa=>'worker_agent' );
+            my ($chi) = $self->children( isa=>'worker_agent' ) if $self->mid;
             do { alarm 0; return $chi } if ref $chi;
             BaselinerX::CI::worker_agent->new( timeout=>$self->agent_timeout, cap=>$user.'@'.$self->hostname );
         } catch { $err.=shift . "\n" };       
     } 
     if( !$agent && $self->connect_balix ) {
         $agent = try { 
-            my ($chi) = $self->children( isa=>'balix_agent' );
+            my ($chi) = $self->children( isa=>'balix_agent' ) if $self->mid;
             do { alarm 0; return $chi } if ref $chi;
             BaselinerX::CI::balix_agent->new( user=>$user, server=>$self, timeout=>$self->agent_timeout );
         } catch { $err.=shift . "\n" };       
     }
     if( !$agent && $self->connect_ssh ) {
         $agent = try { 
-            my ($chi) = $self->children( isa=>'ssh_agent' );
+            my ($chi) = $self->children( isa=>'ssh_agent' ) if $self->mid;
             do { alarm 0; return $chi } if ref $chi;
             BaselinerX::CI::ssh_agent->new( user=>$user, server=>$self, timeout=>$self->agent_timeout );
         } catch { $err.=shift . "\n" };       

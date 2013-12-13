@@ -90,7 +90,9 @@ sub run_once {
                         $model_messaging->{cc} = { users => $notification->{$template}->{CC} } if (exists $notification->{$template}->{CC}) ;
                         $model_messaging->{bcc} = { users => $notification->{$template}->{BCC} } if (exists $notification->{$template}->{BCC}) ;
                         
-                        $model_messaging->{vars} = $stash;
+                        my $topic = {};
+                        $topic = mdb->topic->find_one({ mid => "$stash->{mid}"}) if $stash->{mid};
+                        $model_messaging->{vars} = {%$stash,%$topic};
                         $model_messaging->{vars}->{subject} = $stash->{subject} || $event_key;
                         $model_messaging->{vars}->{to} = { users => $notification->{$template}->{TO} } if (exists $notification->{$template}->{TO}) ;
                         $model_messaging->{vars}->{cc} = { users => $notification->{$template}->{CC} } if (exists $notification->{$template}->{CC}) ;

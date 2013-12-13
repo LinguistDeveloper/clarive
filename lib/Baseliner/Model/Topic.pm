@@ -259,12 +259,13 @@ sub topics_for_user {
     my $username = $p->{username};
     my $is_root = $perm->is_root( $username );
     my $topic_list = $p->{topic_list};
+    my ( @mids_in, @mids_nin );
 
     if( length($query) ) {
         #$query =~ s{(\w+)\*}{topic "$1"}g;  # apparently "<str>" does a partial, but needs something else, so we put the collection name "job"
         my @mids_query = map { $_->{obj}{mid} } 
             _array( mdb->topic->search( query=>$query, limit=>1000, project=>{mid=>1})->{results} );
-        $where->{mid}=mdb->in(@mids_query);
+        push @mids_in, @mids_query;
     }
     
     my ($select,$order_by, $as, $group_by);
@@ -326,7 +327,7 @@ sub topics_for_user {
     
     if ( $p->{unread} ){
         my @seen = map { $_->{mid} } mdb->master_seen->find({ username=>$username })->fields({ mid=>1, _id=>0 })->all;
-        $where->{mid} = mdb->nin( @seen );
+        push @mids_nin, mdb->nin( @seen );
     }
     
     if ( $p->{created_for_me} ) {
@@ -426,23 +427,27 @@ sub topics_for_user {
         my $rel_where = {};
         my $dir = length $p->{from_mid} ? ['from_mid','to_mid'] : ['to_mid','from_mid'];
         $rel_where->{$dir->[0]} = $p->{$dir->[0]};
-        $where->{topic_mid} = mdb->in( 
-                map { $_->{ $dir->[1] } }
-                DB->BaliMasterRel->search( $rel_where,{ select=>$dir->[1] })->hashref->all 
-            );
+        push @mids_in, grep { length } map { $_->{ $dir->[1] } } DB->BaliMasterRel->search( $rel_where,{ select=>$dir->[1] })->hashref->all 
     }
 
     #*****************************************************************************************************************************
     
     #Filtro cuando viene por la parte del Dashboard.
     if($p->{query_id}){
-        $where->{topic_mid} = mdb->in($p->{query_id});
+        push @mids_in, grep { length } _array($p->{query_id});
     }
     
     #Filtro cuando viene por la parte del lifecycle.
     if($p->{id_project}){
         my @topics_project = map {$_->{from_mid}} DB->BaliMasterRel->search({ to_mid=>$p->{id_project}, rel_type =>'topic_project' })->hashref->all;
-        $where->{topic_mid} = mdb->in(@topics_project);
+        push @mids_in, grep { length } @topics_project;
+    }
+    
+    if( @mids_in || @mids_nin ) {
+        my $w = {};
+        $w->{'$in'} = \@mids_in if @mids_in;
+        $w->{'$nin'} = \@mids_nin if @mids_nin;
+        $where->{mid} = $w;
     }
     
 _debug( $where );
@@ -897,24 +902,6 @@ sub get_system_fields {
                 html        => $pathHTML . 'field_include_into.html',
                 field_order => 0,
                 section     => 'details'
-            }
-        },        
-        {
-            id_field => 'bls',
-            params   => {
-                name_field  => 'BLs',
-                bd_field    => 'bls',
-                origin      => 'custom',
-                html        => '/fields/system/html/field_cis.html',
-                field_order => 10000,
-                section     => 'body',
-                get_method => 'get_cis',
-                set_method => 'set_cis',
-                ci_class => 'bl',
-                rel_type => 'topic_bl',
-                show_class => 'false',
-                meta_type => 'ci',
-                id_field => 'bls'
             }
         },
     );

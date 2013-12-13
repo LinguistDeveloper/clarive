@@ -199,7 +199,7 @@ sub _create {
             ns           => '/', # not used, deprecated
             bl           => $bl,
     };
-    $row_data->{job_key} = $p{job_key} if length $p{job_key},
+    $row_data->{job_key} = $p{job_key} if length $p{job_key};
     
     # create db row
     my $job_seq = mdb->seq('job');
@@ -304,7 +304,7 @@ sub gen_job_name {
 sub is_active {
     my $self = shift;
     if( my $status = $self->load->{status} ) {
-        return 1 if $status !~ /REJECTED|CANCELLED|ERROR|FINISHED|KILLED|EXPIRED/;
+        return 1 if $status !~ /REJECTED|CANCELLED|TRAPPED|ERROR|FINISHED|KILLED|EXPIRED/;
     }
     return 0;
 }
@@ -439,8 +439,8 @@ sub reschedule {
     my $username = $p{username} or _throw 'Missing username';
     my $realuser = $p{realuser} || $username;
 
-    _fail _loc('Job %1 is not in status %2 (currently %3)', $self->name, _loc('READY'), _loc($self->status) )
-        if $self->status ne 'READY';
+    _fail _loc("Job cannot be rescheduled unless its status is '%1' (current: %2)", $self->name, _loc('READY')."|"._loc('APPROVAL'), _loc($self->status) )
+        if $self->status ne 'READY' && $self->status ne 'APPROVAL';
 
     my $msg;
     event_new 'event.job.reschedule' => { job=>$self } => sub {

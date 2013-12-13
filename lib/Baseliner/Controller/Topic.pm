@@ -1595,7 +1595,7 @@ sub file : Local {
                 
                 my $topic = $c->model('Baseliner::BaliTopic')->find( $p->{topic_mid} );
                 my @projects = map {$_->{mid}} $topic->projects->hashref->all;
-                my @users = $self->get_users_friend(id_category => $topic->id_category, id_status => $topic->id_category_status, projects => \@projects);
+                my @users = $c->model('Topic')->get_users_friend(id_category => $topic->id_category, id_status => $topic->id_category_status, projects => \@projects);
                 
                 if( $count < 2 ) {
                     _log "Deleting file " . $file->mid;
