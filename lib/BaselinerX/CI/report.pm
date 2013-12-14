@@ -3,6 +3,7 @@ use Baseliner::Moose;
 use Baseliner::Utils qw(:logging _array _loc _fail hash_flatten);
 use v5.10;
 use Try::Tiny;
+
 with 'Baseliner::Role::CI::Internal';
 
 has selected    => qw(is rw isa ArrayRef), default => sub{ [] };
@@ -306,31 +307,33 @@ sub all_fields {
 			}
 		);
 		
-		push @tree, {
-		    text => _loc('Dynamic'),
-		    leaf => \0,
-		    icon     => '/static/images/icons/all.png',
-		    #url  => '/ci/report/dynamic_fields',
-			draggable => \0,
-		    children => [
-		        map {
-		            my $key = $_;
-		            my ($prefix,$data_key) = split( /\./, $key, 2);
-		            {
-		                text     => $key,
-		                icon     => '/static/images/icons/field-add.png',
-		                id_field => $prefix,
-		                data_key => $data_key,
-		                type     => 'select_field',
-		                leaf     => \1
-		            }
-		        } 
-		        grep !/^_/, 
-		        grep !/\.[0-9]+$/, 
-		        mdb->topic->all_keys
-		    ],
-		};		
-		
+		my $has_action = Baseliner->model('Permissions')->user_has_action( username=> $username, action => 'action.reports.dynamics' );
+		if($has_action){
+			push @tree, {
+				text => _loc('Dynamic'),
+				leaf => \0,
+				icon     => '/static/images/icons/all.png',
+				#url  => '/ci/report/dynamic_fields',
+				draggable => \0,
+				children => [
+					map {
+						my $key = $_;
+						my ($prefix,$data_key) = split( /\./, $key, 2);
+						{
+							text     => $key,
+							icon     => '/static/images/icons/field-add.png',
+							id_field => $prefix,
+							data_key => $data_key,
+							type     => 'select_field',
+							leaf     => \1
+						}
+					} 
+					grep !/^_/, 
+					grep !/\.[0-9]+$/, 
+					mdb->topic->all_keys
+				],
+			};		
+		}
 		
 		push @tree, {
 			text => _loc('Commons'),

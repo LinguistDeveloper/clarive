@@ -30,6 +30,7 @@ has approval           => qw(is rw isa Any);
 has username           => qw(is rw isa Any);
 has milestones         => qw(is rw isa HashRef default), sub { +{} };
 has service_levels     => qw(is rw isa HashRef default), sub { +{} };
+has stash_init         => qw(is rw isa HashRef default), sub { +{} };
 has job_dir            => qw(is rw isa Any lazy 1), default => sub { 
     my ($self) = @_;
     my $job_home = $ENV{BASELINER_JOBHOME} || $ENV{BASELINER_TEMP} || File::Spec->tmpdir();
@@ -121,12 +122,16 @@ around update_ci => sub {
 
 # get and set the job stash in mdb, this does not merge! (it's a full replace)
 sub job_stash {
-    my ($self, $new_stash)=@_;
+    my ($self, $new_stash, $merge )=@_;
     if( $new_stash ) {
         # set
         _fail "Invalid stash type ".ref($new_stash) unless ref $new_stash eq 'HASH';
         delete $new_stash->{job}; # never serialize job
         delete $new_stash->{$_} for grep /^_state_/, keys %$new_stash;  # no _state_ vars, usually have CODE in them
+        if( $merge ) {
+            my $prev_stash = $self->job_stash;
+            $new_stash = { %{ $prev_stash || {} }, %$new_stash };
+        }
         my $serial_stash = Util->_stash_dump($new_stash);  # better serialization for stash
         mdb->grid->remove({ parent_mid=>''.$self->mid }, { multiple=>1 });
         my $id = mdb->asset_new( $serial_stash, parent_collection=>'job', parent_mid=>''.$self->mid  );
@@ -211,14 +216,28 @@ sub _create {
 
     _log "****** Creating JOB id=" . $job_seq . ", name=$name, mask=" . $config->{mask};
 
-    # create a hash stash
-
     my $log = $self->logger;
+
+    # find job_stash_key fields
+    my %topic_stash;
+    for my $cs ( Util->_array( $changesets ) ) {
+        my @meta = Util->_array( $cs->get_meta ); 
+        for my $m ( @meta ) {
+            if( my $key = $m->{job_stash_key} ) {
+                my $data = $cs->get_doc({ $m->{id_field} => 1 }); 
+                $topic_stash{$key} = $data->{ $m->{id_field} }; 
+            }
+        }
+    }
+    
+    # create a hash stash
+    my $stash = +{ %{ $self->stash_init }, %topic_stash };
+    $self->stash_init({});
 
     # expand releases into changesets
     my @releases; 
     my @cs_cis = grep { ref } map {
-        my $cs = ref $_ ? $_ :  Baseliner::CI->new( $_ );
+        my $cs = ref $_ ? $_ :  ci->new( $_ );
         if( $cs->is_release ) {
             push @releases, $cs if $cs->is_release;
             grep { $_->is_changeset } $cs->children( isa=>'topic', depth=>-1, no_rels=>1 );
@@ -276,6 +295,9 @@ sub _create {
     ]);
     $self->ns( 'job/' . $job_seq );
     $self->save;
+    
+    # first stash
+    $self->job_stash($stash);
 
     # CHECK
     $self->step('CHECK');
@@ -382,7 +404,6 @@ sub contract {
     my ($self, $p)=@_;
     my @prjs = Util->_array( $self->projects );
     my ($prj) = @prjs;
-    _debug $prj;
     _fail _loc 'Missing project for job %1', $self->name unless $prj;
     my $vars = $prj->variables // {};
     my $bl = $self->bl;

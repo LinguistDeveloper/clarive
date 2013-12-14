@@ -105,7 +105,7 @@ sub run_remote {
     my ($servers,$user,$home, $path,$args, $stdin, $output_error, $output_warn, $output_capture, $output_ok) = 
         @{ $config }{qw/server user home path args stdin output_error output_warn output_capture output_ok/};
     $args ||= [];
-    for my $server ( ref $servers ? _array($servers) :  split /,/, $servers ) {
+    for my $server ( Util->_array_or_commas($servers)  ) {
         $server = ci->new( $server ) unless ref $server;
         for my $hostname ( _array( $server->hostname ) ) {
             $log->info( _loc( 'STARTING remote script `%1` (%2)', $path . ' '. join(' ',_array($args)), $user . '@' . $hostname ), $config );
@@ -173,7 +173,7 @@ sub run_eval {
     
     my ($servers, $user, $code) = @{ $config }{qw/server user code/};
     my @rets;
-    for my $server ( ref $servers ? _array($servers) :  split /,/, $servers ) {
+    for my $server ( Util->_array_or_commas($servers)  ) {
         $server = ci->new( $server ) unless ref $server;
         _log _loc "===========> RUNNING remote eval: %1\@%2", $user, $server->hostname ;
         

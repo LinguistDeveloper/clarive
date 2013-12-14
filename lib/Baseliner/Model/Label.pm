@@ -16,6 +16,7 @@ sub get_labels {
     my ($self, $username, $mode) = @_;
     my @labels;
     my $perm = Baseliner->model('Permissions');
+    $mode //= '';
     
     #user labels
     my @user_labels = Baseliner->model('Baseliner::BaliLabel')->search({username => $username}, {join => 'users'})->hashref->all;

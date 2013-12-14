@@ -625,6 +625,22 @@ register 'statement.foreach' => {
     },
 };
 
+register 'statement.foreach.ci' => {
+    text => 'FOREACH CI',
+    type => 'loop',
+    data => { variable=>'stash_var', local_var=>'value' },
+    dsl => sub { 
+        my ($self, $n, %p ) = @_;
+        sprintf(q{
+            foreach my $ci ( map { ci->new($_) } Util->_array_or_commas( $stash->{'%s'} ) ) {
+                local $stash->{'%s'} = $ci;
+                %s
+            }
+            
+        }, $n->{variable}, $n->{local_var} // 'value', $self->dsl_build( $n->{children}, %p ) );
+    },
+};
+
 register 'statement.foreach.split' => {
     text => 'FOREACH SPLIT /re/', 
     type => 'loop',
