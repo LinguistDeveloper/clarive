@@ -1017,27 +1017,54 @@ sub duplicate : Local {
         if( $r ){
             my $user;
             my $new_user;
-            my $user_mid = master_new 'user' => 'Duplicate of ' . $r->username => sub {
-                my $mid = shift;
-                $new_user = $r->username . '-' . $mid;
-                $user = Baseliner->model('Baseliner::BaliUser')->create(
-                    {
-                        mid			=> $mid,
-                        username    => $new_user,
-                    }
-                );
-            };
-            
-            my @rs_roles =  $c->model('Baseliner::BaliRoleUser')->search({ username => $r->username })->hashref->all;
-            for (@rs_roles){
-                Baseliner->model('Baseliner::BaliRoleUser')->create(
-                    {
-                        username    => $new_user,
-                        id_role     => $_->{id_role},
-                        ns          => $_->{ns},
-                        id_project  => $_->{id_project},
-                    }
-                );
+            # my $user_mid = master_new 'user' => 'Duplicate of ' . $r->username => sub {
+            #     my $mid = shift;
+            #     $new_user = $r->username . '-' . $mid;
+            #     $user = Baseliner->model('Baseliner::BaliUser')->create(
+            #         {
+            #             mid			=> $mid,
+            #             username    => $new_user,
+            #         }
+            #     );
+            # };
+
+            my $row;
+            my $cont = 2;
+            $new_user = "Duplicate of ".$r->username;
+            $row = $c->model('Baseliner::BaliUser')->search({username => $new_user, active => 1})->first;
+            while ($row) {
+                $new_user = "Duplicate of ".$r->username." ".$cont++;
+                $row = $c->model('Baseliner::BaliUser')->search({username => $new_user, active => 1})->first;                
+            }
+            if(!$row){
+                my $user_mid;
+               
+                my $ci_data = {
+                    name        => $new_user,
+                    bl          => '*',
+                    username    => $new_user,
+                    realname    => $r->realname,
+                    alias       => $r->alias,
+                    email       => $r->email,
+                    phone       => $r->phone,            
+                    active      => '1',
+                };           
+                
+                my $ci = BaselinerX::CI::user->new( %$ci_data );
+                $user_mid = $ci->save;
+                $c->stash->{json} = { msg=>_loc('User added'), success=>\1, user_id=> $user_mid };
+
+                my @rs_roles =  $c->model('Baseliner::BaliRoleUser')->search({ username => $r->username })->hashref->all;
+                for (@rs_roles){
+                    Baseliner->model('Baseliner::BaliRoleUser')->create(
+                        {
+                            username    => $new_user,
+                            id_role     => $_->{id_role},
+                            ns          => $_->{ns},
+                            id_project  => $_->{id_project},
+                        }
+                    );
+                }
             }
         }
         $c->stash->{json} = { success => \1, msg => _loc("User duplicated") };  
