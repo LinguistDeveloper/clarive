@@ -232,9 +232,8 @@ sub delete {
             delete $self->{mid} if ref $self;  # delete the mid value, in case a reuse is in place
             return $row->delete;
         } else {
-            # not found error, cleanup master_doc in the way out
-            mdb->master_doc->remove({ mid=>"$mid" });
-            Util->_fail( Util->_loc( 'Could not delete, master row %1 not found', $mid ) );
+            # not found warning, cleanup master_doc in the way out
+            Util->_warn( Util->_loc( 'Could not delete, master row %1 not found', $mid ) );
         }
     } else {
         return undef;
@@ -855,11 +854,11 @@ sub mem_table {
         $self->mem_load( db=>$db, cis=>$p{cis}, cols=>\@cols  );
     }
     elsif( exists $p{mid} ) {
-        $self->mem_load( db=>$db, cis=>[ map { Baseliner::CI->new( $_ ) } _array($p{mid}) ], cols=>\@cols  );
+        $self->mem_load( db=>$db, cis=>[ map { ci->new( $_ ) } _array($p{mid}) ], cols=>\@cols  );
     }
     else {   # full collection, from yaml
         #my @mids = map { $_->{mid} } DB->BaliMaster->search({ collection=>$coll }, { select=>'mid' })->hashref->all;
-        #$self->mem_load( db=>$db, cis=>[ map { Baseliner::CI->new( $_ ) } @mids ], cols=>\@cols  );
+        #$self->mem_load( db=>$db, cis=>[ map { ci->new( $_ ) } @mids ], cols=>\@cols  );
         my @cis = map {
             my $h = _load( delete $_->{yaml} ) // {};
             +{ %$_, %$h };
@@ -988,7 +987,7 @@ sub all_cis {
         DB->BaliMaster->search({ collection=>$coll })->each( sub {
             my ($row)=@_;
             Util->_log( $row->mid );
-            push @cis, Baseliner::CI->new( $row->mid );
+            push @cis, ci->new( $row->mid );
         });
     }
     return @cis;
@@ -1060,7 +1059,7 @@ my $init = sub {
         return $obj;
     } else {
         $_[1] = 0;
-        return Baseliner::CI->new( $val );
+        return ci->new( $val );
     }
 };
 
