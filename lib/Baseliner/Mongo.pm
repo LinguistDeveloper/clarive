@@ -232,6 +232,7 @@ sub index_all {
         ],
         job_log => [
             [{ id=>1 }],
+            [{ mid=>1 }],
         ],
         topic_image => [
             [{ id_hash => 1 }]
