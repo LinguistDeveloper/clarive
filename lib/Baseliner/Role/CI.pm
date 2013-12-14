@@ -172,7 +172,7 @@ sub save {
         my $row;
         if( $exists ) { 
             ######## UPDATE CI
-            $row = Baseliner->model('Baseliner::BaliMaster')->find( $mid );
+            $row = DB->BaliMaster->find( $mid );
             if( $row ) {
                 $row->bl( join( ',', Util->_array( $bl ) ) );
                 $row->name( $self->name );
@@ -193,7 +193,7 @@ sub save {
             }
         } else {
             ######## NEW CI
-            $row = Baseliner->model('Baseliner::BaliMaster')->create(
+            $row = DB->BaliMaster->create(
                 {
                     collection => $collection,
                     name       => $self->name,
@@ -218,6 +218,8 @@ sub save {
             # now save the rest of the ci data (yaml)
             $self->new_ci( $row, undef, \%opts );
         }
+        # update mongo master
+        mdb->master->update({ mid=>$self->mid }, +{ $row->get_columns }, { upsert=>1 });
     });  # txn end
     return $mid; 
 }
@@ -302,11 +304,16 @@ sub save_data {
         my $my_rel = $rel->{rel_type}->[0];
         my $other_rel = $my_rel eq 'from_mid' ? 'to_mid' : 'from_mid';
         my $rel_type_name = $rel->{rel_type}->[1];
-        DB->BaliMasterRel->search({ $my_rel, $master_row->mid, rel_type=>$rel_type_name })->delete;
+        # delete all records related 
+        my $mr_where ={ $my_rel=>$master_row->mid, rel_type=>$rel_type_name };
+        DB->BaliMasterRel->search($mr_where)->delete;
+        mdb->master_rel->remove($mr_where,{ multiple=>1 });
         for my $other_mid ( _array $rel->{value} ) {
             $other_mid = $other_mid->mid if ref( $other_mid ) =~ /^BaselinerX::CI::/;
             next unless $other_mid;
-            DB->BaliMasterRel->find_or_create({ $my_rel => $master_row->mid, $other_rel => $other_mid, rel_type=>$rel_type_name, rel_field=>$rel->{field} });
+            my $doc = { $my_rel => $master_row->mid, $other_rel => $other_mid, rel_type=>$rel_type_name, rel_field=>$rel->{field} };
+            DB->BaliMasterRel->find_or_create($doc);
+            mdb->master_rel->insert( $doc );
             push @{$relations{ $rel->{field} }}, $other_mid;
             Baseliner->cache_remove( qr/:$other_mid:/ );
         }

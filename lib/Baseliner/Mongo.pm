@@ -245,6 +245,8 @@ sub index_all {
             [{ from_mid=>1, to_mid=>1, rel_type=>1, rel_field=>1 },{ unique=>1 }],
             [{ from_mid=>1, rel_type=>1 }],
             [{ to_mid  =>1, rel_type=>1 }],
+            [{ to_mid  =>1 }],
+            [{ from_mid  =>1 }],
             [{ rel_type=>1 }],
         ],
         master_doc => [
