@@ -124,12 +124,6 @@ __PACKAGE__->add_columns(
 );
 __PACKAGE__->set_primary_key("id");
 
-__PACKAGE__->has_one(
-  "job",
-  "Baseliner::Schema::Baseliner::Result::BaliJob",
-  { id => "id_job" },
-);
-
 sub sqlt_deploy_hook {
    my ($self, $sqlt_table) = @_;
    $sqlt_table->add_index(name =>'bali_sem_queue_idx_host_status', fields=>['host', 'status'] );
