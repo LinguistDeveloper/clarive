@@ -129,7 +129,7 @@ sub tree_project_jobs : Local {
                   icon => '/static/images/icons/job.png',
                   text => _loc('Open...'),
                   page => {
-                      url => sprintf( "/job/log/dashboard?id_job=%s&name=%s", $_->id_job, $_->name ),
+                      url => sprintf( "/job/log/dashboard?mid=%s&name=%s", $_->mid, $_->name ),
                       title => $_->name,
                   }
                 }
@@ -360,7 +360,7 @@ sub branches : Local {
         my $repo = Baseliner::CI->new( $id_repo );
 
         my @changes = $repo->list_branches( project=>$project );
-        _log _loc "---- provider ".$repo->name." has %1 changesets", scalar @changes;
+        _debug _loc "---- provider ".$repo->name." has %1 changesets", scalar @changes;
         push @cs, @changes;
 
         # loop through the changeset objects (such as BaselinerX::GitChangeset)
@@ -854,7 +854,7 @@ sub tree_favorites : Local {
    
     $root //= {};
     
-    my $favs = [ map { $root->{$_} } sort { $a <=> $b }
+    my $favs = [ map { $root->{$_} } sort { $a cmp $b }
         keys %$root ];
 
     for my $node ( @$favs ) {

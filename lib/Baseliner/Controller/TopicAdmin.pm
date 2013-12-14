@@ -686,7 +686,7 @@ sub list_tree_fields : Local {
     $j = 0;
     my @meta_forms;
     my @data_forms;
-    for my $forms (  sort { $a->{metadata}->{params}->{field_order} <=> $b->{metadata}->{params}->{field_order} }
+    for my $forms (  sort { ( $a->{metadata}{params}{field_order} // -1 ) <=> ( $b->{metadata}{params}{field_order} // -1 ) }
                         grep {$_->{metadata}->{params}->{type} eq 'form'} @tmp_templates ) {
         
         push @meta_forms, [$j++, _loc $forms->{metadata}->{name}];

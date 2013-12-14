@@ -96,8 +96,12 @@ sub class_short_name {
     my $self = shift;
     ref $self and $self = ref $self;
     my ($classname) = $self =~ /^BaselinerX::CI::(.+?)$/;
-    $classname =~ s{::}{/}g;
-    return $classname;
+    if( length $classname ) {
+        $classname =~ s{::}{/}g;
+        return $classname;
+    } else {
+        return $self;
+    }
 }
 
 sub collection {
