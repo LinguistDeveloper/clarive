@@ -421,7 +421,7 @@ sub master_and_rel {
     mdb->master_rel->drop;  # cleaner just to insert
     mdb->index_all('master_rel');  # so we have the master_rel uniques
     for my $r ( @master_rel ) {
-        next if mdb->master_rel->find($r); # bali_master_rel may have tons of junk
+        next if mdb->master_rel->find_one($r); # bali_master_rel may have tons of junk
         mdb->master_rel->insert( $r );
     }
     
