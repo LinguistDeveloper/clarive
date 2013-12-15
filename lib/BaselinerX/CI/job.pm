@@ -596,7 +596,7 @@ sub summary {
     my $result = {};
     $p{job_exec} //= $self->exec; 
     
-    my @log_all = mdb->job_log->find({ mid => $self->mid, exec =>$p{job_exec} })
+    my @log_all = mdb->job_log->find({ mid => $self->mid, exec =>0+$p{job_exec} })
         ->fields({ step=>1, service_key=>1, ts=>1 })->all;
     
     my %log_max; 
@@ -676,12 +676,8 @@ sub service_summary {
     my $log_levels = { warn => 3, error => 4, debug => 2, info => 2 };
     $p{job_exec} //= $self->exec;
     
-    my @log = mdb->job_log->find(
-        {
-            mid    => $self->mid,
-            exec   => $p{job_exec}
-        },
-    )->fields({ step=>1, service_key=>1, lev=>1 })->all;
+    my @log = mdb->job_log->find({ mid => ''.$self->mid, exec => 0+$p{job_exec} })
+        ->fields({ step=>1, service_key=>1, lev=>1 })->all;
 
     for my $sl ( @log ) {
         if ( $sl->{service_key} && $summary->{services_time}->{$sl->{step}."#".$sl->{service_key} }) {
@@ -725,7 +721,7 @@ sub service_summary {
     # $load_results->( @keys );
 
     # load current keys
-    my @keys = mdb->job_log->find({ mid=>$self->mid, exec => $p{job_exec}, service_key=>{ '$ne'=>undef } })
+    my @keys = mdb->job_log->find({ mid=>''.$self->mid, exec => 0+$p{job_exec}, service_key=>{ '$ne'=>undef } })
         ->sort({ id=>1 })->fields({ step=>1, service_key=>1, id=>1 })->all;
     # reset keys for current exec 
     for my $r ( @keys ) {
@@ -740,12 +736,12 @@ sub artifacts {
     my ( $self, %p ) = @_;
     $p{job_exec} //= $self->exec;
     my $rs = mdb->job_log->find({
-            mid  => $self->mid,
-            exec => $p{job_exec},
-            lev    => { '$ne' => 'debug' },
+            mid       => $self->mid,
+            exec      => 0 + $p{job_exec},
+            lev       => { '$ne' => 'debug' },
             more      => { '$ne' => undef },
             milestone => '1',
-        })->sort({ id=>1 });
+    })->sort( { id => 1 } );
     my $result;
     my $qre = qr/\.\w+$/;
 
@@ -810,7 +806,7 @@ sub annotate {
     #$text = '<b>' . $c->username . '</b>: ' . $p->{text};
     $level = 'comment' if !$level || $level eq 'info';
     my $log = $self->logger; 
-    $log->exec( "$p->{job_exec}" ) if $p->{job_exec} > 0;
+    $log->exec( 0+$p->{job_exec} ) if $p->{job_exec} > 0;
     $log->$level( $text, data=>$p->{data}, username=>$p->{username} );
 }
 

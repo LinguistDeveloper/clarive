@@ -266,15 +266,18 @@ sub jobList : Path('/job/log/jobList') {
     my $infoIcon  = '/static/images/log_i.gif';
 
     if ( ref $p->{logId} ) {
-        $log = $c->model('Baseliner::BaliLogData')->search( { id_log => $p->{logId} }, { order_by => 'path, id' } );
+        # (log data)->search( { id_log => $p->{logId} }, { order_by => 'path, id' } );
+        # search for children of a log
+        $log = mdb->grid->find({ _id=>$p->{logId} })->sort({ path=>1 })->sort({ id=>1 });
     } else {
-        $log = $c->model('Baseliner::BaliLogData')->search( { mid => $p->{jobId} }, { order_by => 'path, id' } );
+        # (log data)->search( { mid => $p->{jobId} }, { order_by => 'path, id' } );
+        $log = mdb->grid->find({ mid=>$p->{jobId} })->sort({ path=>1 })->sort({ id=>1 });
     }
     my ( $package, $site, $parent, $lastSite, $lastParent, $lastPackage ) =
         ( undef, undef, undef, undef, undef, undef, undef );
 
     while ( my $rec = $log->next ) {
-        if ( $rec->name =~ m{\/(.*)\/.*\/(fin(..))}i ) {
+        if ( $rec->{name} =~ m{\/(.*)\/.*\/(fin(..))}i ) {
             push @sites,
                 {
                 id   => "$1$3",
@@ -287,7 +290,7 @@ sub jobList : Path('/job/log/jobList') {
             next;
         }
 
-        my ( $root, $packageText, $siteText, $parentText, $file ) = split /\//, $rec->name;
+        my ( $root, $packageText, $siteText, $parentText, $file ) = split /\//, $rec->{name};
 
         $parent = {
             key  => "/$packageText/$siteText/$parentText",
@@ -304,14 +307,14 @@ sub jobList : Path('/job/log/jobList') {
 
         if ( $parent->{key} ne $lastParent->{key} ) {
 
-            #_log $rec->name ."=". _dump $parent . ".." . _dump $lastParent;
+            #_log $rec->{name} ."=". _dump $parent . ".." . _dump $lastParent;
             push @jobs,
                 {
                 id       => $lastParent->{text} !~ m{siteok|siteko}i ? $lastParent->{id} : '~' . $lastParent->{id},
                 cls      => 'x-tree-node',
                 icon     => $lastParent->{text} !~ m{siteok|siteko}i ? $jobIcon : $infoIcon,
                 needLoad => \1,
-                _id       => $rec->id,
+                _id       => $rec->{_id},
                 leaf     => $lastParent->{text} !~ m{siteok|siteko}i ? 0 : 1,
                 text     => $lastParent->{text},
                 children => [@files]
@@ -365,7 +368,7 @@ sub jobList : Path('/job/log/jobList') {
         }
         push @files,
             {
-            id       => $rec->id,
+            id       => $rec->{_id},
             cls      => 'x-tree-node-leaf',
             icon     => $spoolIcon,
             leaf     => 1,
@@ -460,7 +463,7 @@ sub log_delete : Path('/job/log/delete') {
     my ( $self, $c, $id ) = @_;
     my $p = $c->req->params;
     $c->stash->{json} = try {
-        my $log = $c->model('Baseliner::BaliLog')->search({ mid=>$p->{mid}, exec=>$p->{job_exec} })->delete;
+        mdb->job_log->remove({ id=>0+$id, mid=>''.$p->{mid}, exec=>0+$p->{job_exec} });
         { success=>\1, msg=>_loc( "Deleted" ) };
     } catch {
         { success=>\0, msg=>shift() };
