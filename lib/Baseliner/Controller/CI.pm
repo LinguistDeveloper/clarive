@@ -1257,11 +1257,11 @@ sub default : Path Args(2) {
             my $ci = ci->new( $arg );
             _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
             $ret = $ci->$meth( $to_args->($ci) );
-        } elsif( my $ci = ( try { ci->find($arg) } catch {} ) ) {
+        } elsif( my $ci = ci->find($arg) ) {
             _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
             $ret = $ci->$meth( $to_args->($ci) );
         } elsif( length $mid ) {
-            my $ci = ci->find( $mid );
+            my $ci = ci->new( $mid );
             _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
             $ret = $ci->$meth( $to_args->($ci) );
         } elsif ( $arg eq 'undefined' && $collection ) {

@@ -9,16 +9,19 @@ our $no_throw_on_search = 1;
 our $scope = {};
 
 
-=head2
+=head2 new
 
-    Baseliner::CI->new( 1212 ); # mid
-    Baseliner::CI->new({ ci_class=>'BaselinerX::CI::whatever', ... }); # record
-    Baseliner::CI->new( ns=>'domain/id' );   # new from ns
-    Baseliner::CI->new( moniker=>'monkey' );   # new from moniker
+The new instanciates a CI or throws an error otherwise. 
+
+    ci->new( 1212 ); # mid
+    ci->new({ ci_class=>'BaselinerX::CI::whatever', ... }); # record
+    ci->new( ns=>'domain/id' );   # new from ns
+    ci->new( moniker=>'monkey' );   # new from moniker
+    ci->generic_server->new( name=>'Local', hostname=>'localhost' );   # new for class BaselinerX::CI::generic_server
 
 =cut
 
-sub find {
+sub new {
     my $class = shift;
     my %args;
     if( @_ == 0 ) {
@@ -48,29 +51,8 @@ sub find {
         _throw _loc("Could not instanciate CI from parameter %1", $_[0] );
     } elsif( @_ == 1 && ref $_[0] eq 'ARRAY' ) {
         # several CIs at once  TODO optimize loading in load for array, using a BaliMaster->search
-        my $mids = $_[0];
-        # master data
-        my @rows = DB->BaliMaster->search({ mid=>$mids })->hashref->all;
-        my %mids_found = map { $_->{mid} =>$_ } @rows;
-        # check mids were found
-        for( @$mids ) {
-            _throw _loc('CI record not found for mid %1', $_) unless exists $mids_found{$_};
-        }
-        # rel data
-        my @rel_rows = DB->BaliMasterRel->search( 
-            { -or=>[ to_mid=>$mids, from_mid=>$mids ]},
-            { select=> ['from_mid', 'to_mid', 'rel_type' ] } )->hashref->all;
-        my %rel_data;
-        for my $rel_row ( @rel_rows ) { 
-            push @{ $rel_data{ $rel_row->{mid} } }, $rel_row;
-        }
-        # now inflate, making sure order is the same as in the original array
-        my @cis;
-        for my $mid ( keys %mids_found ) {
-            my $rec = Baseliner::Role::CI->load( $mid, undef, $mids_found{$mid}, undef, \%rel_data );
-            push @cis, Baseliner::Role::CI->_build_ci_instance_from_rec( $rec );
-        }
-        return @cis;
+        my @mids = Util->_array($_[0]);
+        return map { ci->new($_) } @mids;
     } else {
         # search %hash 
         %args = @_;
@@ -81,7 +63,23 @@ sub find {
     }
 }
 
-*new = \&find;
+=head2 find
+
+Instanciates a CI or returns undef. If it errors, 
+a message is printed out to STDERR, but no throwing. 
+
+    ci->find( ... )
+
+=cut
+sub find {
+    my ($class,@args);
+    return try {
+        ci->new( @args );
+    } catch {
+        Util->_error( shift );
+        undef;   
+    };
+}
 
 1;
 
