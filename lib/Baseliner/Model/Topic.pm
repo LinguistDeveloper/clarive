@@ -265,7 +265,7 @@ sub topics_for_user {
         #$query =~ s{(\w+)\*}{topic "$1"}g;  # apparently "<str>" does a partial, but needs something else, so we put the collection name "job"
         my @mids_query = map { $_->{obj}{mid} } 
             _array( mdb->topic->search( query=>$query, limit=>1000, project=>{mid=>1})->{results} );
-        push @mids_in, @mids_query;
+        push @mids_in, @mids_query > 0 ? @mids_query : -1;
     }
     
     my ($select,$order_by, $as, $group_by);

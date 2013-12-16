@@ -30,7 +30,7 @@ has approval           => qw(is rw isa Any);
 has username           => qw(is rw isa Any);
 has milestones         => qw(is rw isa HashRef default), sub { +{} };
 has service_levels     => qw(is rw isa HashRef default), sub { +{} };
-has stash_init         => qw(is rw isa HashRef default), sub { +{} };
+has stash_init         => qw(is rw isa Maybe[HashRef] default), sub { +{} };
 has job_dir            => qw(is rw isa Any lazy 1), default => sub { 
     my ($self) = @_;
     my $job_home = $ENV{BASELINER_JOBHOME} || $ENV{BASELINER_TEMP} || File::Spec->tmpdir();
@@ -231,7 +231,7 @@ sub _create {
     }
     
     # create a hash stash
-    my $stash = +{ %{ $self->stash_init }, %topic_stash };
+    my $stash = +{ %{ $self->stash_init || {} }, %topic_stash };
     $self->stash_init({});
 
     # expand releases into changesets
