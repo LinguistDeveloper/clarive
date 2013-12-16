@@ -373,6 +373,13 @@ Baseliner.JsonStore = Ext.extend( Ext.data.JsonStore, {
     constructor: function(c){
         Baseliner.JsonStore.superclass.constructor.call(this,c);
         var self =this;
+        if( self.jsonData ) {
+            self.proxy = new Ext.data.HttpProxy({
+                url: self.url,
+                method : 'POST',
+                jsonData: self.jsonData
+            });
+        }
         this.on('exception', Baseliner.store_exception_handler );
         this.on('beforeload', Baseliner.store_exception_params );
         this.on('load', function(){ self.is_loaded=true });
