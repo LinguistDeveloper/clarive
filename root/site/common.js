@@ -2108,6 +2108,11 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
             if( n.leaf ) 
                 self.click_handler({ node: n });
         });
+        self.loader.on('load', function(n){
+			if(self.onload){
+				self.onload();
+			};
+        });		
     },
     drop_handler : function(e) {
         var self = this;
@@ -2184,18 +2189,20 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
             Baseliner.message( 'Invalid or missing click.type', '' );
         }
     },
-    refresh : function(){
+    refresh : function(callback){
         var self = this;
         var sm = self.getSelectionModel();
         var node = sm.getSelectedNode();
         if( node )
             self.refresh_node( node );
         else 
-            self.refresh_all();
+            self.refresh_all(callback);
     },
-    refresh_all : function(){
+    refresh_all : function(callback){
+		
         var self = this;
         this.loader.load(self.root);
+		self.onload = callback;
     },
     refresh_node : function(node){
         var self = this;
@@ -2205,6 +2212,7 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
             if( is ) node.expand();
         }
     }
+	
 });
 
 Baseliner.CheckBoxField = Ext.extend( Ext.grid.GridPanel, {
