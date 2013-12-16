@@ -96,8 +96,12 @@ sub class_short_name {
     my $self = shift;
     ref $self and $self = ref $self;
     my ($classname) = $self =~ /^BaselinerX::CI::(.+?)$/;
-    $classname =~ s{::}{/}g;
-    return $classname;
+    if( length $classname ) {
+        $classname =~ s{::}{/}g;
+        return $classname;
+    } else {
+        return $self;
+    }
 }
 
 sub collection {
@@ -168,7 +172,7 @@ sub save {
         my $row;
         if( $exists ) { 
             ######## UPDATE CI
-            $row = Baseliner->model('Baseliner::BaliMaster')->find( $mid );
+            $row = DB->BaliMaster->find( $mid );
             if( $row ) {
                 $row->bl( join( ',', Util->_array( $bl ) ) );
                 $row->name( $self->name );
@@ -189,7 +193,7 @@ sub save {
             }
         } else {
             ######## NEW CI
-            $row = Baseliner->model('Baseliner::BaliMaster')->create(
+            $row = DB->BaliMaster->create(
                 {
                     collection => $collection,
                     name       => $self->name,
@@ -214,6 +218,8 @@ sub save {
             # now save the rest of the ci data (yaml)
             $self->new_ci( $row, undef, \%opts );
         }
+        # update mongo master
+        mdb->master->update({ mid=>$self->mid }, +{ $row->get_columns }, { upsert=>1 });
     });  # txn end
     return $mid; 
 }
@@ -232,9 +238,8 @@ sub delete {
             delete $self->{mid} if ref $self;  # delete the mid value, in case a reuse is in place
             return $row->delete;
         } else {
-            # not found error, cleanup master_doc in the way out
-            mdb->master_doc->remove({ mid=>"$mid" });
-            Util->_fail( Util->_loc( 'Could not delete, master row %1 not found', $mid ) );
+            # not found warning, cleanup master_doc in the way out
+            Util->_warn( Util->_loc( 'Could not delete, master row %1 not found', $mid ) );
         }
     } else {
         return undef;
@@ -299,11 +304,16 @@ sub save_data {
         my $my_rel = $rel->{rel_type}->[0];
         my $other_rel = $my_rel eq 'from_mid' ? 'to_mid' : 'from_mid';
         my $rel_type_name = $rel->{rel_type}->[1];
-        DB->BaliMasterRel->search({ $my_rel, $master_row->mid, rel_type=>$rel_type_name })->delete;
+        # delete all records related 
+        my $mr_where ={ $my_rel=>$master_row->mid, rel_type=>$rel_type_name };
+        DB->BaliMasterRel->search($mr_where)->delete;
+        mdb->master_rel->remove($mr_where,{ multiple=>1 });
         for my $other_mid ( _array $rel->{value} ) {
             $other_mid = $other_mid->mid if ref( $other_mid ) =~ /^BaselinerX::CI::/;
             next unless $other_mid;
-            DB->BaliMasterRel->find_or_create({ $my_rel => $master_row->mid, $other_rel => $other_mid, rel_type=>$rel_type_name, rel_field=>$rel->{field} });
+            my $doc = { $my_rel => $master_row->mid, $other_rel => $other_mid, rel_type=>$rel_type_name, rel_field=>$rel->{field} };
+            DB->BaliMasterRel->find_or_create($doc);
+            mdb->master_rel->insert( $doc );
             push @{$relations{ $rel->{field} }}, $other_mid;
             Baseliner->cache_remove( qr/:$other_mid:/ );
         }
@@ -855,11 +865,11 @@ sub mem_table {
         $self->mem_load( db=>$db, cis=>$p{cis}, cols=>\@cols  );
     }
     elsif( exists $p{mid} ) {
-        $self->mem_load( db=>$db, cis=>[ map { Baseliner::CI->new( $_ ) } _array($p{mid}) ], cols=>\@cols  );
+        $self->mem_load( db=>$db, cis=>[ map { ci->new( $_ ) } _array($p{mid}) ], cols=>\@cols  );
     }
     else {   # full collection, from yaml
         #my @mids = map { $_->{mid} } DB->BaliMaster->search({ collection=>$coll }, { select=>'mid' })->hashref->all;
-        #$self->mem_load( db=>$db, cis=>[ map { Baseliner::CI->new( $_ ) } @mids ], cols=>\@cols  );
+        #$self->mem_load( db=>$db, cis=>[ map { ci->new( $_ ) } @mids ], cols=>\@cols  );
         my @cis = map {
             my $h = _load( delete $_->{yaml} ) // {};
             +{ %$_, %$h };
@@ -988,7 +998,7 @@ sub all_cis {
         DB->BaliMaster->search({ collection=>$coll })->each( sub {
             my ($row)=@_;
             Util->_log( $row->mid );
-            push @cis, Baseliner::CI->new( $row->mid );
+            push @cis, ci->new( $row->mid );
         });
     }
     return @cis;
@@ -1060,7 +1070,7 @@ my $init = sub {
         return $obj;
     } else {
         $_[1] = 0;
-        return Baseliner::CI->new( $val );
+        return ci->new( $val );
     }
 };
 

@@ -265,7 +265,7 @@ sub topics_for_user {
         #$query =~ s{(\w+)\*}{topic "$1"}g;  # apparently "<str>" does a partial, but needs something else, so we put the collection name "job"
         my @mids_query = map { $_->{obj}{mid} } 
             _array( mdb->topic->search( query=>$query, limit=>1000, project=>{mid=>1})->{results} );
-        push @mids_in, @mids_query;
+        push @mids_in, @mids_query > 0 ? @mids_query : -1;
     }
     
     my ($select,$order_by, $as, $group_by);
@@ -665,9 +665,9 @@ sub update {
                 for my $mid ( _array( $topic_mid ) ) {
                     # delete master row and bali_topic row
                     #      -- delete cascade does not clear up the cache
-                    _ci( $mid )->delete;
+                    try { $self->cache_topic_remove( $mid ) } catch { };  # dont care about these errors, usually due to related
+                    ci->delete( $mid );
                     mdb->topic->remove({ mid=>"$mid" });
-                    $self->cache_topic_remove( $mid );
                 }
 
                 $modified_on = Class::Date->new(_now)->epoch;
@@ -676,7 +676,7 @@ sub update {
             } ## end try
             catch {
                 _throw _loc( 'Error deleting topic: %1', shift() );
-            }
+            };
         } ## end when ( 'delete' )
         when ( 'close' ) {
             try {
@@ -691,7 +691,7 @@ sub update {
             } ## end try
             catch {
                 _throw _loc( 'Error closing Topic: %1', shift() );
-            }
+            };
         } ## end when ( 'close' )
     } ## end given
     return ( $return, $topic_mid, $status, $p->{title}, $category, $modified_on);
@@ -1378,7 +1378,7 @@ sub save_data {
             }
             $topic->modified_by( $data->{username} );
             $topic->update( \%row );
-            _ci( $topic_mid )->update( name => $row{title}, moniker => $moniker, %row );
+            ci->new( $topic_mid )->update( name => $row{title}, moniker => $moniker, %row );
 
             for my $field ( keys %row ) {
                 next if $field eq 'response_time_min' || $field eq 'expr_response_time';
@@ -2396,7 +2396,7 @@ sub cache_topic_remove {
         Baseliner->cache_remove( qr/:$topic_mid:/ );
         for my $rel ( 
             map { +{mid=>$_->{mid}, type=>$_->{_edge}{rel_type} } } 
-            _ci( $topic_mid )->related( depth=>1 ) ) 
+            ci->new( $topic_mid )->related( depth=>1 ) ) 
         {
             my $rel_mid = $rel->{mid};
             #_debug "TOPIC CACHE REL remove :$rel_mid:";

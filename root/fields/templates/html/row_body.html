@@ -2,12 +2,16 @@
     $meta
     $data
 </%args>
-% my $val = $data->{$meta->{display_field}}  || $data->{$meta->{bd_field}};
+<%perl>
+    my $val = $data->{$meta->{display_field}}  || $data->{$meta->{bd_field}};
+    $val = join(',',@$val) if ref $val eq 'ARRAY';
+</%perl>
 % if( defined $val && !$meta->{hidden} ) {
     <tr>
       <th width="50%"><% _loc($meta->{name_field}) %>:</th>
       <td 
           class="fieldlet-html"
-          style="<% $meta->{framed} and 'text-transform: uppercase; font-size: 10px; font-weight:bold; background-color: #eee; text-align: center' %>" width="50%"><% _loc( $val ) %></td>
+          style="<% $meta->{framed} and 'text-transform: uppercase; font-size: 10px; font-weight:bold; background-color: #eee; text-align: center' %>" width="50%">
+          <% _loc( $val ) %></td>
     </tr>
 % }

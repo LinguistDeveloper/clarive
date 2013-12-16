@@ -410,6 +410,22 @@ sub topic_numify {
     }
 }
     
+sub master_and_rel {
+    my ( $self, %p ) = @_;
+    my $db = Util->_dbis();
+    my @master = $db->query('select * from bali_master')->hashes;
+    for my $r ( @master ) {
+        mdb->master->update({ mid=>''.$r->{mid} }, $r, { upsert=>1 });
+    }
+    my @master_rel = $db->query('select * from bali_master_rel')->hashes;
+    mdb->master_rel->drop;  # cleaner just to insert
+    mdb->index_all('master_rel');  # so we have the master_rel uniques
+    for my $r ( @master_rel ) {
+        next if mdb->master_rel->find_one($r); # bali_master_rel may have tons of junk
+        mdb->master_rel->insert( $r );
+    }
+    
+}
     
 sub topic {
     my ( $self, %p ) = @_;

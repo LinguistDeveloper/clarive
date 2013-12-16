@@ -203,7 +203,8 @@ sub get_doc {
 
 sub get_meta {
     my ($self)=@_;
-    Baseliner->model('Topic')->get_meta( $self->mid );
+    my $mid = $self->mid if ref $self;
+    Baseliner->model('Topic')->get_meta( $mid );
 }
 
 sub verify_integrity {

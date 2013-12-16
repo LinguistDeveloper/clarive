@@ -100,7 +100,7 @@ sub common_log {
         
         if( $p{data} ) {
             my $d = compress( $p{data} );  ## asset in grid
-            my $ass = mdb->asset( $d, parent=>$doc->{_id}, parent_mid=>$mid, filename=>$doc->{data_name}//'', parent_collection=>'log' );
+            my $ass = mdb->asset( $d, parent=>$doc->{_id}, parent_mid=>$mid, id_log=>$id, filename=>$doc->{data_name}//'', parent_collection=>'log' );
             $ass->insert;
             $doc->{data} = $ass->id;
         }

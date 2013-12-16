@@ -17,7 +17,7 @@ sub monitor {
     my $perm = Baseliner->model('Permissions');
     my $username = $p->{username};
 
-    my ($start, $limit, $query, $query_id, $dir, $sort, $cnt ) = @{$p}{qw/start limit query query_id dir sort/};
+    my ($start, $limit, $query, $query_id, $dir, $sort, $filter, $cnt ) = @{$p}{qw/start limit query query_id dir sort filter/};
     $start||=0;
     $limit||=50;
 
@@ -96,6 +96,29 @@ sub monitor {
     $where->{'$and'} =\@mid_filters if @mid_filters;
     _debug $where;
 
+    if( $filter ) {
+        $filter = Util->_decode_json( $filter );
+        my $where_filter = {};
+        for my $fi ( _array( $filter ) ) {
+            my $val = $fi->{value};
+            if( $fi->{type} eq 'date' ) {
+                $val = Class::Date->new( $val )->string ;
+                my $oper = $fi->{comparison};
+                if( $oper eq 'eq' ) {
+                    $where_filter->{$fi->{field}}={ '$gt'=>$val, '$lt'=>(Class::Date->new($val)+'1D')->string };
+                } else {
+                    $where_filter->{$fi->{field}}{'$'.$oper }=$val;
+                }
+            }
+            elsif( $fi->{type} eq 'string' ) {
+                $where_filter->{$fi->{field}} = qr/$val/i;
+            }
+        }
+        $where = { %$where, %$where_filter };
+    }
+    
+    _debug $where;
+
     my $rs = mdb->master_doc->find({ collection=>'job', %$where })->sort($order_by);
     $cnt = $rs->count;
     $rs->limit($limit)->skip($start);
@@ -105,7 +128,7 @@ sub monitor {
     my $now = _dt();
     my $today = DateTime->new( year=>$now->year, month=>$now->month, day=>$now->day, , hour=>0, minute=>0, second=>0) ; 
     my $ahora = DateTime->new( year=>$now->year, month=>$now->month, day=>$now->day, , hour=>$now->hour, minute=>$now->minute, second=>$now->second ) ; 
-
+    
     #foreach my $r ( _array $results->{data} ) {
     #local $Baseliner::CI::no_rels = 1;
     _debug "Looping start...";

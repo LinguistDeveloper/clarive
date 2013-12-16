@@ -232,6 +232,7 @@ sub index_all {
         ],
         job_log => [
             [{ id=>1 }],
+            [{ mid=>1 }],
         ],
         topic_image => [
             [{ id_hash => 1 }]
@@ -244,6 +245,8 @@ sub index_all {
             [{ from_mid=>1, to_mid=>1, rel_type=>1, rel_field=>1 },{ unique=>1 }],
             [{ from_mid=>1, rel_type=>1 }],
             [{ to_mid  =>1, rel_type=>1 }],
+            [{ to_mid  =>1 }],
+            [{ from_mid  =>1 }],
             [{ rel_type=>1 }],
         ],
         master_doc => [

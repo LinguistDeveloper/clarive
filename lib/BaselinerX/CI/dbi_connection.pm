@@ -205,5 +205,25 @@ sub gen_drop {
     return @drops;
 }
 
+sub query_from_field {
+    my ($self,$p)=@_;
+    my $query = $p->{query};
+    my $data = Util->hash_flatten($p);
+    
+    my $meta = ci->topic->get_meta();
+    my ($field) = grep { $_->{id_field} eq $p->{id_field} && $_->{id_category} == $data->{'meta.id_category'} } @$meta; 
+    my $db= $self->connect;
+    my $dbis = $self->dbis;
+    my $sql = $field->{sql};
+    _warn $data;
+    my @placeholders = Util->_array_or_commas( $field->{placeholders} );
+    my $rs = $dbis->query($sql, @{$data}{ @placeholders } );
+    my @ret;
+    @ret = $rs->hashes;
+    $db->disconnect;
+    
+    return { data=>[ @ret ], totalCount=> 1 };
+}
+
 1;
 
