@@ -787,9 +787,23 @@
     }; */
     var row_sel = new Ext.grid.RowSelectionModel({singleSelect:true});
 
+    var filters = new Ext.ux.grid.GridFilters({
+		menuFilterText: _('Filters'),
+        encode: true,
+        local: false,
+        filters: [
+           //{ type: 'string', dataIndex: 'status', emptyText: _('Job Status') },
+           { type: 'date', dataIndex: 'starttime', dateFormat: 'Y-m-d', beforeText: _('Before'), afterText: _('After'), onText: _('On') },
+           { type: 'date', dataIndex: 'endtime', dateFormat: 'Y-m-d', beforeText: _('Before'), afterText: _('After'), onText: _('On') },
+           { type: 'date', dataIndex: 'maxstarttime', dateFormat: 'Y-m-d', beforeText: _('Before'), afterText: _('After'), onText: _('On') },
+           { type: 'date', dataIndex: 'schedtime', dateFormat: 'Y-m-d', beforeText: _('Before'), afterText: _('After'), onText: _('On') }	
+        ]
+	});
+	
     // create the grid
     var grid = new Ext.grid.EditorGridPanel({
         title: _('Monitor'),
+        plugins: [ filters ],
         header: false,
         tab_icon: '/static/images/icons/television.gif',
         stripeRows: false,
