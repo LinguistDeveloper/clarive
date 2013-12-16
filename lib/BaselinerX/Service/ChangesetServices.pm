@@ -78,7 +78,9 @@ sub update_changesets_bls {
     my @changesets = _array( $stash->{changesets} );
     
     for my $cs ( @changesets ) {
-        if ( !$stash->{failing} ) {
+        $log->debug("Failing is $stash->{failing}");
+        $log->debug("Failing is $stash->{last_finish_status}");
+        if ( !$stash->{failing} && $job->last_finish_status ne 'REJECTED' ) {
             my $id_bl = ci->new('moniker:'.$bl)->{mid};
             my $topic = mdb->topic->find_one({ mid => "$cs->{mid}"});
             my @cs_bls = _array $topic->{bls};
@@ -88,7 +90,7 @@ sub update_changesets_bls {
                 $p{topic_mid} = $cs->{mid};
                 $p{bls} = \@cs_bls;
                 Baseliner->model('Topic')->update( { action => 'update', %p } );
-                $self->log->info( _loc("Added %1 to changeset %2 bls",$bl,$cs->{mid}) );        
+                $log->info( _loc("Added %1 to changeset %2 bls",$bl,$cs->{mid}) );        
             }            
         }
     }
@@ -105,8 +107,8 @@ sub changeset_update {
     my @changesets;
     
     my $category       = $config->{category};
-    my $status_on_ok   = $stash->{failing} ? $config->{status_on_fail} : $config->{status_on_ok};
-    my $status_on_rollback = $stash->{failing} ? $config->{status_on_rollback_fail} : $config->{status_on_rollback_ok};
+    my $status_on_ok   = $stash->{failing} || $job->last_finish_status eq 'REJECTED' ? $config->{status_on_fail} : $config->{status_on_ok};
+    my $status_on_rollback = $stash->{failing} || $job->last_finish_status eq 'REJECTED' ? $config->{status_on_rollback_fail} : $config->{status_on_rollback_ok};
 
     if ( $job_type eq 'static' ) {
         $self->log->info( _loc "Changesets status not updated. Static job." );
