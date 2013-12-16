@@ -78,7 +78,7 @@ sub update_changesets_bls {
     my @changesets = _array( $stash->{changesets} );
     
     for my $cs ( @changesets ) {
-        if ( !$stash->{failing} ) {
+        if ( !$stash->{failing} && !$stash->{last_finish_status} ) {
             my $id_bl = ci->new('moniker:'.$bl)->{mid};
             my $topic = mdb->topic->find_one({ mid => "$cs->{mid}"});
             my @cs_bls = _array $topic->{bls};
