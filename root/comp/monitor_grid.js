@@ -744,7 +744,6 @@
         return String.format('{0}<br/>by {1}', value.dateFormat('M j, Y, g:i a'), r.data['lastposter']);
     }
     
-
     var gview = new Ext.grid.GroupingView({
             forceFit: true,
             enableRowBody: true,
@@ -1065,7 +1064,7 @@
 
         grid.on("rowdblclick", function(grid, rowIndex, e ) {
             var r = grid.getStore().getAt(rowIndex);
-            Baseliner.openLogTab(r.get('id') , r.get('name') );
+            Baseliner.openLogTab(r.get('mid') , r.get('name') );
         });		
 
 
