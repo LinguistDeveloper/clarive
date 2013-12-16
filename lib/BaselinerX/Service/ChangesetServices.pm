@@ -116,8 +116,7 @@ sub changeset_update {
     my $status = $status_on_ok || $stash->{status_to};
     if ( !$status ) {
         my $ci_self_status = ci->new('moniker:'.$bl);
-        my ($status) = grep {$_->{type} eq 'D'} _array($ci_self_status->parents( isa => 'status'));
-
+        ($status) = grep {$_->{type} eq 'D'} _array($ci_self_status->parents( isa => 'status'));
     }
 
     $stash->{update_baselines_changesets} //= {};
