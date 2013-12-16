@@ -1641,7 +1641,8 @@ sub save_doc {
 sub migrate_docs {
     my ($self,$mid)=@_;
     my $db = _dbis;
-    DB->BaliTopic->hashref->each(sub{
+    my $w = { mid=>$mid } if length $mid;
+    DB->BaliTopic->search($w)->hashref->each(sub{
         my $r = shift;
         _debug $r;
         my @meta = _array( Baseliner->model('Topic')->get_meta(undef,$r->{id_category}) ); 
