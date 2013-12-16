@@ -34,79 +34,81 @@ sub deploy_sql {
     my ($include_path,$exclude_path,$include_content,$exclude_content) = 
         @{ $config }{qw(include_path exclude_path include_content exclude_content)};
     
+    my $tran_cnt = $stash->{_db_transaction_count} // 0;
+    
     # get db CI
-    my $db  = ci->new( $config->{db} );
+    for my $db ( Util->_array_or_commas( $config->{db} ) ) {
+        $db = ci->new( $db ) unless ci->is_ci($db);
+            
+        $tran_cnt += 1;
     
-    $stash->{_db_transaction_count} //= 0;
-    my $tran_cnt = $stash->{_db_transaction_count} + 1;
-    
-    if( $config->{transactional} ) {
-        push @{ $stash->{_state_db_transactions} }, { id=>$tran_cnt, db=>$db };
-        try { $db->begin_work } catch { _debug "BEGIN WORK WARNING: " . shift() };
-    }
-    
-    ITEM: for my $item ( _array( $items ) ) {
+        if( $config->{transactional} ) {
+            push @{ $stash->{_state_db_transactions} }, { id=>$tran_cnt, db=>$db };
+            try { $db->begin_work } catch { _debug "BEGIN WORK WARNING: " . shift() };
+        }
         
-        # path checks
-        my $path = $item->path;
-        my $file = _file( $job_dir, $path );
-        my $flag;
-        IN: for my $in ( _array( $include_path ) ) {
-            $flag //= 0;
-            if( $path =~ _regex($in) ) {
-                $flag =$in;
-                last IN;
+        ITEM: for my $item ( _array( $items ) ) {
+            
+            # path checks
+            my $path = $item->path;
+            my $file = _file( $job_dir, $path );
+            my $flag;
+            IN: for my $in ( _array( $include_path ) ) {
+                $flag //= 0;
+                if( $path =~ _regex($in) ) {
+                    $flag =$in;
+                    last IN;
+                }
             }
-        }
-        if( defined $flag && !$flag ) {
-            _debug "SQL not included path `$path` due to rule `$flag`";
-            next ITEM;
-        }
-        for my $ex ( _array( $exclude_path ) ) {
-            if( $path =~ _regex($ex) ) {
-                _debug "SQL excluded path `$path` due to rule `$ex`";
+            if( defined $flag && !$flag ) {
+                _debug "SQL not included path `$path` due to rule `$flag`";
                 next ITEM;
             }
-        }
-        
-        _debug "Checking content for sql item path: " . $path;
-        
-        # content check
-        my $sql = $file->slurp;
-        $flag = undef;
-        for my $in ( _array( $include_content ) ) {
-            $flag //= 0;
-            if( $sql =~ _regex($in) ) {
-                $flag = $in;
+            for my $ex ( _array( $exclude_path ) ) {
+                if( $path =~ _regex($ex) ) {
+                    _debug "SQL excluded path `$path` due to rule `$ex`";
+                    next ITEM;
+                }
             }
-        }
-        if( defined $flag && !$flag ) {
-            _debug "SQL not included content due to rule `$flag`";
-            next ITEM;
-        }
-        for my $ex ( _array( $exclude_content ) ) {
-            if( $sql =~ _regex($ex) ) {
-                _debug "SQL excluded content due to rule `$ex`";
+            
+            _debug "Checking content for sql item path: " . $path;
+            
+            # content check
+            my $sql = $file->slurp;
+            $flag = undef;
+            for my $in ( _array( $include_content ) ) {
+                $flag //= 0;
+                if( $sql =~ _regex($in) ) {
+                    $flag = $in;
+                }
+            }
+            if( defined $flag && !$flag ) {
+                _debug "SQL not included content due to rule `$flag`";
                 next ITEM;
             }
-        }
-        
-        _log "Calling do for item path: " . $path;
-        
-        # call connection do
-        my $ret = $db->dosql(
-            sql          => $sql,
-            mode         => $mode,
-            split_mode   => $split_mode,
-            comment      => $comment,
-            exists_action => $exists_action,
-            split        => _regex($split),
-            error_mode   => $error_mode,
-        );
-        my $k=0;
-        for my $st ( _array $ret->{queries} ) {
-            $k++;
-            my $msg = <<LOG;
+            for my $ex ( _array( $exclude_content ) ) {
+                if( $sql =~ _regex($ex) ) {
+                    _debug "SQL excluded content due to rule `$ex`";
+                    next ITEM;
+                }
+            }
+            
+            _log "Calling do for item path: " . $path;
+            
+            # call connection do
+            my $ret = $db->dosql(
+                sql          => $sql,
+                mode         => $mode,
+                split_mode   => $split_mode,
+                comment      => $comment,
+                exists_action => $exists_action,
+                split        => _regex($split),
+                error_mode   => $error_mode,
+            );
+            my $k=0;
+            for my $st ( _array $ret->{queries} ) {
+                $k++;
+                my $msg = <<LOG;
 =========| SQL |=======
 $st->{sql}
 
@@ -122,21 +124,22 @@ $st->{err}
 ==========| RETURN |========
 $st->{ret}
 LOG
-            if( !$st->{rc} ) {
-                $log->info( _loc('SQL Query %1 executed ok (mode %2)', "$tran_cnt.$k", $st->{mode}), $msg );
-            } else {
-                my @errmsg = ( _loc('SQL %1 Query error (mode %3): %2',"$tran_cnt.$k",substr($st->{err},0,30),$st->{mode}), $msg );
-                if( $error_mode eq 'fail' ) {
-                    $log->error( @errmsg ); 
-                    _fail( _loc('Error processing SQL') );
-                } elsif( $error_mode eq 'warn' ) {
-                    $log->warn( @errmsg ); 
-                } elsif( $error_mode eq 'ignore' ) {
-                    # ignore...
-                    $log->error( @errmsg ); 
+                if( !$st->{rc} ) {
+                    $log->info( _loc('SQL Query %1 executed ok (mode %2)', "$tran_cnt.$k", $st->{mode}), $msg );
                 } else {
-                    # silent
-                    # _debug( @errlog );  # not needed, should be enough with dbi_connection _log
+                    my @errmsg = ( _loc('SQL %1 Query error (mode %3): %2',"$tran_cnt.$k",substr($st->{err},0,30),$st->{mode}), $msg );
+                    if( $error_mode eq 'fail' ) {
+                        $log->error( @errmsg ); 
+                        _fail( _loc('Error processing SQL') );
+                    } elsif( $error_mode eq 'warn' ) {
+                        $log->warn( @errmsg ); 
+                    } elsif( $error_mode eq 'ignore' ) {
+                        # ignore...
+                        $log->error( @errmsg ); 
+                    } else {
+                        # silent
+                        # _debug( @errlog );  # not needed, should be enough with dbi_connection _log
+                    }
                 }
             }
         }

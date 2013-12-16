@@ -318,7 +318,7 @@ around 'debug' => sub {
             my $self = shift;
             my $name = $AUTOLOAD;
             my ($method) = reverse( split(/::/, $name));
-            my $class = $method =~ /new|find/ ? 'Baseliner::CI' : 'Baseliner::Role::CI';
+            my $class = $method =~ /new|find|is_ci/ ? 'Baseliner::CI' : 'Baseliner::Role::CI';
             if( $class->can($method) ) {
                 $method = $class . '::' . $method;
                 @_ = ( $class, @_ );

@@ -81,5 +81,10 @@ sub find {
     };
 }
 
+sub is_ci {
+    my ($class,$obj) = @_;
+    ref($obj) =~ /^BaselinerX::CI::/;
+}
+
 1;
 
