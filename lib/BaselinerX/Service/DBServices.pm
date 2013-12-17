@@ -189,6 +189,9 @@ sub commit_all {
         $log->info( _loc( 'DB COMMIT transaction %1', $tran->{id} ) );
         $tran->{db}->commit;
     }
+    for my $tran ( _array $stash->{_state_db_transactions} ) {
+        delete $tran->{db}{_connection}; # delete connection DBI object to avoid serialization problems, it can be ref'd by tmp variables
+    }
     delete $stash->{_state_db_transactions};  # cant' be seraialized
     return;
 }   
