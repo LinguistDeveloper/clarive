@@ -72,7 +72,7 @@ a message is printed out to STDERR, but no throwing.
 
 =cut
 sub find {
-    my ($class,@args);
+    my ($class,@args)=@_;
     return try {
         ci->new( @args );
     } catch {
