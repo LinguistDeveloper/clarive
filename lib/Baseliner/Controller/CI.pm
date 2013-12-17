@@ -814,7 +814,8 @@ sub update : Local {
             #$mid = $class->save( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($form_data->{moniker}), data => $form_data ); 
 
             #my $ci = $class->new( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($form_data->{moniker}), %$form_data, modified_by=>$c->username );
-            my $ci = ci->find( $mid ) || _fail _loc 'CI %1 not found', $mid;
+            #my $ci = ci->find( $mid ) || _fail _loc 'CI %1 not found', $mid;
+            my $ci = ci->new( $mid ) || _fail _loc 'CI %1 not found', $mid;
             $ci->update( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($form_data->{moniker}), %$form_data, modified_by=>$c->username );
             
             #my $ci = _ci( $mid );
