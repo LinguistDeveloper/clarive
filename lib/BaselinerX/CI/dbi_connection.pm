@@ -152,7 +152,7 @@ method dosql( :$sql, :$comment='strip', :$split_mode='auto', :$split=';', :$mode
                     $dbh->do( $st ); 
                 }
                 my @ret = $dbh->func( 'dbms_output_get' );
-                { sql=>$st, rc=>0, err=>'', ret=>join('', @ret), skips=>join("\n",@skips), drops=>join("\n",@drops), mode=>$mode };
+                { sql=>$st, rc=>0, err=>'', ret=>join('', @ret), catch=>'', skips=>join("\n",@skips), drops=>join("\n",@drops), mode=>$mode };
             } catch {
                 my $err = shift;
                 my @ret = $dbh->func( 'dbms_output_get' );
