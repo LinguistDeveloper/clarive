@@ -1,6 +1,7 @@
 package BaselinerX::Service::Daemon;
 use Baseliner::Plug;
 use Baseliner::Utils;
+use Try::Tiny;
 
 with 'Baseliner::Role::Service';
 
@@ -172,9 +173,22 @@ sub runner_fork {
             open (STDOUT, ">>", $p{logfile} ) or die "Can't open STDOUT: $!";
             open (STDERR, ">>", $p{logfile} ) or die "Can't open STDERR: $!";
         }
-        my $job = Baseliner::CI->new( $mid );
-        $job->logfile( $p{logfile} );
-        $job->run( same_exec=>1 );
+        my $job;
+        try {
+            $job = ci->new( $mid );
+            $job->logfile( $p{logfile} );
+            $job->run( same_exec=>1 );
+        } catch {
+            my $err = shift;
+            # this is job.pm error not caught, this is considered a KILLED (aborted) job
+            # no POST will execute since stash situation may be unstable
+            my $msg = Util->_loc('Abort by Dispatcher. Job unknown error caught: %1', $err);
+            print STDERR "Unknown error in Job with mid=$mid";
+            print STDERR $msg;
+            $job->logger->error( $msg );
+            $job->status('KILLED');
+            $job->save;
+        };
         exit 0;
     } else {
         _log _loc("***** ERROR: Could not fork job '%1'", $p{jobid} );

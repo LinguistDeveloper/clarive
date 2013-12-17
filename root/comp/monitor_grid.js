@@ -115,6 +115,7 @@
             {  name: 'schedtime' },
             {  name: 'last_log' },
             {  name: 'contents' },
+            {  name: 'releases' },
             {  name: 'applications' },
             {  name: 'maxstarttime' },
             {  name: 'endtime' },
@@ -139,6 +140,82 @@
             {  name: 'subapps' } 
         ]
     );
+
+    var form_report = new Ext.form.FormPanel({
+        url: '/topic/report_html', renderTo:'run-panel', style:{ display: 'none'},
+        items: [
+           { xtype:'hidden', name:'data_json'},
+           { xtype:'hidden', name:'title' },
+           { xtype:'hidden', name:'rows' },
+           { xtype:'hidden', name:'total_rows' }
+        ]
+    });
+    
+    var form_report_submit = function(args) {
+        var data = { rows:[], columns:[] };
+        // find current columns
+        var cfg = grid.getColumnModel().config;
+        
+        if( !args.store_data ) { 
+            var row=0, col=0;
+            var gv = grid.getView();
+            for( var row=0; row<9999; row++ ) {
+                if( !gv.getRow(row) ) break;
+                var d = {};
+                for( var col=0; col<9999; col++ ) {
+                    if( !cfg[col] ) break;
+                    if( cfg[col].hidden || cfg[col]._checker ) continue; 
+                    var cell = gv.getCell(row,col); 
+                    if( !cell ) break;
+                    //console.log( cell.innerHTML );
+                    d[ cfg[col].dataIndex ] = args.no_html ? $(cell.innerHTML).text() : cell.innerHTML;
+                }
+                data.rows.push( d ); 
+            }
+        } else {
+            // get the grid store data
+            grid.store.each( function(rec) {
+                var d = rec.data;
+                var topic_name = String.format('{0} #{1}', d.category_name, d.topic_mid )
+                d.topic_name = topic_name;
+                data.rows.push( d ); 
+            });
+        }
+        
+        for( var i=0; i<cfg.length; i++ ) {
+            //console.log( cfg[i] );
+            if( ! cfg[i].hidden && ! cfg[i]._checker ) 
+                data.columns.push({ id: cfg[i].dataIndex, name: cfg[i].report_header || cfg[i].header });
+        }
+        
+        // report so that it opens cleanly in another window/download
+        var form = form_report.getForm(); 
+        form.findField('data_json').setValue( Ext.util.JSON.encode( data ) );
+        form.findField('title').setValue( _('Monitor') );
+        form.findField('rows').setValue( grid.store.getCount() );
+        form.findField('total_rows').setValue( grid.store.getTotalCount() );
+        var el = form.getEl().dom;
+        var target = document.createAttribute("target");
+        target.nodeValue = args.target || "_blank";
+        el.setAttributeNode(target);
+        el.action = args.url;
+        el.submit(); 
+    };
+
+    var btn_csv = {
+        icon: '/static/images/icons/csv.png',
+        text: _('CSV'),
+        handler: function() {
+            form_report_submit({ no_html: true, url: '/topic/report_csv', target: 'FrameDownload' });
+        }
+    };
+
+    var btn_reports = new Ext.Button({
+        icon: '/static/images/icons/exports.png',
+        iconCls: 'x-btn-icon',
+        menu: [ btn_csv ]
+    });
+    
 
     // Nature Filters
 
@@ -827,7 +904,8 @@
                 { header: _('User'), width: 80, dataIndex: 'username', sortable: true , renderer: Baseliner.render_user_field, hidden: is_portlet ? true : false},	
                 { header: _('Execution'), width: 80, dataIndex: 'exec', sortable: true , hidden: true },	
                 { header: _('Last Message'), width: 180, dataIndex: 'last_log', sortable: true , hidden: is_portlet ? true : true },	
-                { header: _('Contents'), width: 100, dataIndex: 'contents', renderer: render_contents, sortable: true, hidden: true },
+                { header: _('Changesets'), width: 100, dataIndex: 'contents', renderer: render_contents, sortable: true, hidden: true },
+                { header: _('Releases'), width: 100, dataIndex: 'releases', renderer: render_contents, sortable: true, hidden: true },
                 { header: _('Scheduled'), width: 130, dataIndex: 'schedtime', sortable: true , hidden: is_portlet ? true : false},	
                 { header: _('Start Date'), width: 130, dataIndex: 'starttime', sortable: true , hidden: is_portlet ? true : false},	
                 { header: _('Max Start Date'), width: 130, dataIndex: 'maxstarttime', sortable: true, hidden: true },	
@@ -1058,6 +1136,7 @@
 % }
                 '->',
                 menu_tools,
+                btn_reports,
                 refresh_button
                 ]
         });
