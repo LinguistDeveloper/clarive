@@ -332,9 +332,10 @@ sub is_active {
 }
 
 sub is_failed {
-    my $self = shift;
-    if( my $status = $self->load->{status} ) {
-        return 1 if $status =~ /REJECTED|CANCELLED|ERROR|KILLED|EXPIRED/;
+    my ($self, %p) = @_;
+    my $status = $p{status} // 'status';
+    if( my $real_status = $self->load->{$status} ) {
+        return 1 if $real_status =~ /REJECTED|CANCELLED|ERROR|KILLED|EXPIRED/;
     }
     return 0;
 }

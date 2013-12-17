@@ -77,7 +77,7 @@ sub update_changesets_bls {
     my $job_type = $job->job_type;
     my @changesets = _array( $stash->{changesets} );
     
-    if ( !$stash->{failing} && $job->last_finish_status ne 'REJECTED' ) {
+    if ( !$job->is_failed( status => 'last_finish_status') ) {
         for my $cs ( @changesets ) {
             my $id_bl = ci->new('moniker:'.$bl)->{mid};
             my $topic = mdb->topic->find_one({ mid => "$cs->{mid}"});
@@ -105,8 +105,8 @@ sub changeset_update {
     my @changesets;
     
     my $category       = $config->{category};
-    my $status_on_ok   = $job->is_failed ? $config->{status_on_fail} : $config->{status_on_ok};
-    my $status_on_rollback = $job->is_failed ? $config->{status_on_rollback_fail} : $config->{status_on_rollback_ok};
+    my $status_on_ok   = $job->is_failed( status => 'last_finish_status') ? $config->{status_on_fail} : $config->{status_on_ok};
+    my $status_on_rollback = $job->is_failed( status => 'last_finish_status') ? $config->{status_on_rollback_fail} : $config->{status_on_rollback_ok};
 
     if ( $job_type eq 'static' ) {
         $self->log->info( _loc "Changesets status not updated. Static job." );
@@ -162,7 +162,7 @@ sub update_baselines {
     my $type = $job->job_type;
     my $bl = $job->bl;
     
-    if ( !$stash->{failing} && $job->last_finish_status ne 'REJECTED' ) {
+    if ( !$job->is_failed( status => 'last_finish_status')) {
         my @project_changes = @{ $stash->{project_changes} || [] };
         $log->info( _loc('Updating baseline for %1 project(s) to %2', scalar(@project_changes), $bl ) );
         for my $pc ( @project_changes ) {
