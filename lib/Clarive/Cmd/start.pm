@@ -18,7 +18,7 @@ sub run {
 		print "Mongo server started\n";
 	}
 
-	if ( !$opts{mongo_arbiter} ) {
+	if ( $opts{mongo_arbiter} ) {
 		if ( !$opts{no_mongo_arbiter} ) {	
 			print "Starting Mongo arbiter\n";
 			system('mongod -f',$self->app->base.'/config/mongod-arb.conf');
