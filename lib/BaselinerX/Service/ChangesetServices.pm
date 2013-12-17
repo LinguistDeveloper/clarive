@@ -77,10 +77,8 @@ sub update_changesets_bls {
     my $job_type = $job->job_type;
     my @changesets = _array( $stash->{changesets} );
     
-    for my $cs ( @changesets ) {
-        $log->debug("Failing is $stash->{failing}");
-        $log->debug("Failing is $stash->{last_finish_status}");
-        if ( !$stash->{failing} && $job->last_finish_status ne 'REJECTED' ) {
+    if ( !$stash->{failing} && $job->last_finish_status ne 'REJECTED' ) {
+        for my $cs ( @changesets ) {
             my $id_bl = ci->new('moniker:'.$bl)->{mid};
             my $topic = mdb->topic->find_one({ mid => "$cs->{mid}"});
             my @cs_bls = _array $topic->{bls};
@@ -164,17 +162,19 @@ sub update_baselines {
     my $type = $job->job_type;
     my $bl = $job->bl;
     
-    my @project_changes = @{ $stash->{project_changes} || [] };
-    $log->info( _loc('Updating baseline for %1 project(s) to %2', scalar(@project_changes), $bl ) );
-    for my $pc ( @project_changes ) {
-        my ($project, $repo_revisions_items ) = @{ $pc }{ qw/project repo_revisions_items/ };
-        next unless ref $repo_revisions_items eq 'ARRAY';
-        for my $rri ( @$repo_revisions_items ) {
-            my ($repo, $revisions,$items) = @{ $rri }{ qw/repo revisions items/ };
-            
-            $log->info( _loc('Updating baseline %1 for project %2, repository %3, job type %4', $bl, $project->name, $repo->name, $type ) );
-            my $out = $repo->update_baselines( revisions => $revisions, tag=>$bl, type=>$type );
-            $log->info( _loc('Baseline update of %1 item(s) completed', $repo->name), $out );
+    if ( !$stash->{failing} && $job->last_finish_status ne 'REJECTED' ) {
+        my @project_changes = @{ $stash->{project_changes} || [] };
+        $log->info( _loc('Updating baseline for %1 project(s) to %2', scalar(@project_changes), $bl ) );
+        for my $pc ( @project_changes ) {
+            my ($project, $repo_revisions_items ) = @{ $pc }{ qw/project repo_revisions_items/ };
+            next unless ref $repo_revisions_items eq 'ARRAY';
+            for my $rri ( @$repo_revisions_items ) {
+                my ($repo, $revisions,$items) = @{ $rri }{ qw/repo revisions items/ };
+                
+                $log->info( _loc('Updating baseline %1 for project %2, repository %3, job type %4', $bl, $project->name, $repo->name, $type ) );
+                my $out = $repo->update_baselines( revisions => $revisions, tag=>$bl, type=>$type );
+                $log->info( _loc('Baseline update of %1 item(s) completed', $repo->name), $out );
+            }
         }
     }
 }
