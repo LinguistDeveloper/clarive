@@ -240,13 +240,15 @@ sub _regex {
 sub _stash_dump {
     my ($data) = @_;
     require Storable;
-    local $Storable::Deparse = 1;
+    # local $Storable::Deparse = 1;
+    local $Storable::forgive_me = 1;   # warns on CODE, etc., but no fail
     Storable::freeze( $data )
 }
 sub _stash_load {
     my ($str) = @_;
     require Storable;
-    local $Storable::Eval = 1;
+    #local $Storable::Eval = sub{ sub{} };
+    local $Storable::forgive_me = 1;
     Storable::thaw( $str );
 }
 
