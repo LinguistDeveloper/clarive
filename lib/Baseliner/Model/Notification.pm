@@ -219,7 +219,7 @@ sub get_rules_notifications{
             			when ('Users') 	    { 
                         	if ( exists $notification->{$plantilla}->{$carrier}->{$type}->{'*'} ){
                                 if (exists $notify_scope->{project}){
-                                	@tmp_users = Baseliner->model('Users')->get_users_friends_by_projects($notify_scope->{project});
+                                	@tmp_users = Baseliner->model('Users')->get_users_friends_by_projects(mid => $mid, $notify_scope->{project});
                                 }
                                 else{
                                 	@tmp_users = Baseliner->model('Users')->get_users_username;
@@ -237,13 +237,13 @@ sub get_rules_notifications{
                             else{
                             	@actions = keys $notification->{$plantilla}->{$carrier}->{$type};
                             }
-                            @tmp_users = Baseliner->model('Users')->get_users_from_actions( actions => \@actions, projects => \@prj_mid);
+                            @tmp_users = Baseliner->model('Users')->get_users_from_actions(mid => $mid, actions => \@actions, projects => \@prj_mid);
                         }
                         when ('Roles') 	    {
                         	my @roles;
                         	if ( exists $notification->{$plantilla}->{$carrier}->{$type}->{'*'} ){
                             	if (exists $notify_scope->{project}){
-                                	@roles = Baseliner->model('Users')->get_roles_from_projects($notify_scope->{project});
+                                	@roles = Baseliner->model('Users')->get_roles_from_projects(mid => $mid, $notify_scope->{project});
                             	}
                                 else{
                             		@roles = ('*');
