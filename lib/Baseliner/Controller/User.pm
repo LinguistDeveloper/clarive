@@ -787,6 +787,7 @@ sub projects_list : Local {
 sub list : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
+
     my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
     $sort ||= 'me.username';
     $dir ||= 'asc';
@@ -829,7 +830,11 @@ sub list : Local {
 		+{ id => $_->{mid}, %{$_}};
     } $rs->hashref->all;	
 
-    $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};		
+    if ( $p->{only_data} ) {
+        $c->stash->{json} = \@rows;    
+    } else {    
+        $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};		
+    }
     $c->forward('View::JSON');
 }
 
