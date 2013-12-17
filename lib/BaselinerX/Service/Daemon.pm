@@ -1,6 +1,7 @@
 package BaselinerX::Service::Daemon;
 use Baseliner::Plug;
 use Baseliner::Utils;
+use Try::Tiny;
 
 with 'Baseliner::Role::Service';
 
