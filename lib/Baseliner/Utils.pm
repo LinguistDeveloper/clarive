@@ -608,7 +608,7 @@ sub _array_all {
 
 sub _array_or_commas {
     my (@arr) = @_;
-    map { ref $_ ? ( map { split/,/,$_ } _array($_) ) : split( /,/, $_) } @arr;
+    map { ref($_) ? ( map { ref $_ ? $_ : split(/,/,$_) } _array($_) ) : split( /,/, $_) } @arr;
 }
 
 sub is_oracle {

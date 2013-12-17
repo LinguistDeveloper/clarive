@@ -1378,8 +1378,9 @@ sub save_data {
             }
             $topic->modified_by( $data->{username} );
             $topic->update( \%row );
+            
             ci->new( $topic_mid )->update( name => $row{title}, moniker => $moniker, %row );
-
+            
             for my $field ( keys %row ) {
                 next if $field eq 'response_time_min' || $field eq 'expr_response_time';
                 next if $field eq 'deadline_min'      || $field eq 'expr_deadline';
@@ -1550,6 +1551,7 @@ sub update_project_security {
 
 sub save_doc {
     my ($self,$meta,$row, $doc, %p) = @_;
+    
     # not necessary, noboody cares about the original? $doc = Util->_clone($doc); # so that we don't change the original
     Util->_unbless( $doc );
     my $mid = ''. $p{mid};
@@ -1634,14 +1636,15 @@ sub save_doc {
     }
     
     # create/update mongo doc
-    my $write_doc = { %$row, %$old_doc, %$doc };
+    my $write_doc = { %$old_doc, %$row, %$doc };
     mdb->topic->update({ mid=>"$doc->{mid}" }, $write_doc, { upsert=>1 });
 }
 
 sub migrate_docs {
     my ($self,$mid)=@_;
     my $db = _dbis;
-    DB->BaliTopic->hashref->each(sub{
+    my $w = { mid=>$mid } if length $mid;
+    DB->BaliTopic->search($w)->hashref->each(sub{
         my $r = shift;
         _debug $r;
         my @meta = _array( Baseliner->model('Topic')->get_meta(undef,$r->{id_category}) ); 

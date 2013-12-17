@@ -43,10 +43,8 @@ sub connect {
     my $tmout = $self->timeout;
     return $self->_connection if ref $self->_connection;
     my $conn;
-    if( $tmout ) {
-        local $SIG{ALRM} = sub { _fail _loc 'timeout connecting to database %1 (timeout=%2)', $self->name, $tmout };
-        alarm $tmout;
-    }
+    local $SIG{ALRM} = sub { _fail _loc 'timeout connecting to database %1 (timeout=%2)', $self->name, $tmout } if $tmout;
+    alarm $tmout if $tmout;
     $conn = DBI->connect( $self->data_source_parsed, $self->user, $self->password, $self->parameters);
     alarm 0 if $tmout;
     $self->_connection( $conn );
@@ -107,6 +105,7 @@ method dosql( :$sql, :$comment='strip', :$split_mode='auto', :$split=';', :$mode
         $ENV{ $env_key } = $v;
     }
     my $dbh = $self->connect;
+    Util->_fail( Util->_loc('Could not connect to database %1', $self->name || $self->data_source_parsed ) ) unless ref $dbh;
     my @queries;
     $dbh->func( 1000000, 'dbms_output_enable' );
     for my $sql ( _array( $sql ) ) {
