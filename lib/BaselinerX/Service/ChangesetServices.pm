@@ -105,8 +105,8 @@ sub changeset_update {
     my @changesets;
     
     my $category       = $config->{category};
-    my $status_on_ok   = $stash->{failing} || $job->last_finish_status eq 'REJECTED' ? $config->{status_on_fail} : $config->{status_on_ok};
-    my $status_on_rollback = $stash->{failing} || $job->last_finish_status eq 'REJECTED' ? $config->{status_on_rollback_fail} : $config->{status_on_rollback_ok};
+    my $status_on_ok   = $job->is_failed ? $config->{status_on_fail} : $config->{status_on_ok};
+    my $status_on_rollback = $job->is_failed ? $config->{status_on_rollback_fail} : $config->{status_on_rollback_ok};
 
     if ( $job_type eq 'static' ) {
         $self->log->info( _loc "Changesets status not updated. Static job." );

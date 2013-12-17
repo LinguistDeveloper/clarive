@@ -331,6 +331,14 @@ sub is_active {
     return 0;
 }
 
+sub is_failed {
+    my $self = shift;
+    if( my $status = $self->load->{status} ) {
+        return 1 if $status =~ /REJECTED|CANCELLED|ERROR|KILLED|EXPIRED/;
+    }
+    return 0;
+}
+
 sub is_running {
     my $self = shift;
     if( my $status = $self->load->{status} ) {
