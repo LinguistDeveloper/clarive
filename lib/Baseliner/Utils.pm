@@ -1160,9 +1160,11 @@ sub hash_flatten {
         }
     }
     elsif( $refstash && $refstash !~ /CODE|GLOB|SCALAR/ ) {
-        my $clone = _damn( $stash );
-        %flat = merge_pushing( \%flat, scalar hash_flatten ( $clone, "$prefix" ) );
-        %flat = ( "$prefix"=>$stash, %flat );  # so that we have key: { ... }, key.subkey1: 1, key.subkey2: 2, ...
+        #my $clone = _damn( $stash );
+        #%flat = merge_pushing( \%flat, scalar hash_flatten ( $clone, "$prefix" ) );
+        #%flat = ( "$prefix"=>$stash, %flat );  # so that we have key: { ... }, key.subkey1: 1, key.subkey2: 2, ...
+        $stash = _damn( $stash );
+        %flat = merge_pushing( \%flat, scalar hash_flatten ( $stash, "$prefix" ) );
     }
     else {
         $flat{ "$prefix" } = "$stash";
@@ -1256,7 +1258,9 @@ sub parse_vars {
           local $SIG{ALRM} = sub { alarm 0; die "parse_vars timeout - data structure too large?\n" };
           alarm( $Baseliner::Utils::parse_vars_timeout // 5 );
           # flatten keys
-          $vars = hash_flatten( $vars );
+          my $flat = hash_flatten( $vars );
+          # now merge flat keys with originals, but originals have precedence
+          $vars = { %$flat, %$vars };
 
           $ret = parse_vars_raw( data=>$data, vars=>$vars, throw=>$args{throw} );
           alarm 0;
