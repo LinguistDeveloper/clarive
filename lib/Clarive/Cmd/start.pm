@@ -8,13 +8,27 @@ our $CAPTION = 'start all server tasks';
 sub run {
 	my ($self,%opts) = @_;
 
-	print "Starting mongo server\n";
-	system('mongod -f '.$self->app->base.'/config/mongod.conf');
-	if ( $? ) {
-		print "Error starting mongo server\n";
-		exit 1;
+	if ( !$opts{no_mongo} ) {	
+		print "Starting mongo server\n";
+		system('mongod -f '.$self->app->base.'/config/mongod.conf');
+		if ( $? ) {
+			print "Error starting mongo server\n";
+			exit 1;
+		}
+		print "Mongo server started\n";
 	}
-	print "Mongo server started\n";
+
+	if ( !$opts{mongo_arbiter} ) {
+		if ( !$opts{no_mongo_arbiter} ) {	
+			print "Starting Mongo arbiter\n";
+			system('mongod -f',$self->app->base.'/config/mongod-arb.conf');
+			if ( $? ) {
+				print "Error starting Mongo arbiter server\n";
+				exit 1;
+			}
+			print "Mongo arbiter server started\n";
+		}
+	}
 
 	if ( !$opts{no_redis} ) {	
 		print "Starting Redis server\n";
