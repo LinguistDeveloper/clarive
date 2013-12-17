@@ -152,17 +152,18 @@
             btn_form_ok, btn_form_save, '-', btn_depends, btn_form_calendar, btn_data, menu_services //btn_form_reset
         ]);
         var fieldset = new Ext.form.FieldSet({
-            defaults: { 
+            defaults: {
+               //anchor: '100%',  
                msgTarget: 'under'
             },
             hidden: true,
-            margin: 0,
-            padding: 10,
+            //padding: 0,
             style: { 
-                margin: '30px 0px 0px -20px'
+                //margin: '30px 0px 0px -20px'
+                margin: '0px 0px 0px -10px'
                 //'border-top' : '#eee 1px solid', 
                 //'border-left' : '#f5f0f0 6px solid' }
-                },
+            },
             //title: _(params.collection),
             collapsible: false,
             border: false,
@@ -178,21 +179,22 @@
         var desc = { xtype:'textarea', fieldLabel: _('Description'), name:'description', allowBlank: true, value: params.rec.description, height: 80 };
         var form = new Baseliner.FormPanel({
             url:'/ci/update',
+            padding: 10,
             defaults: {
                allowBlank: false,
-               anchor: '90%' 
+               anchor: '100%' 
             },
             autoScroll: true,
-            bodyStyle:'padding: 10px 0px 0px 15px',
+            //bodyStyle:'padding: 10px 0px 0px 15px',
             items: [
                 txt_cont,
                 children,
-                { layout:'column', border: false, defaults:{ border: false}, items:[
-                    { layout:'form', columnWidth : .65, defaults: { anchor: '96%' }, items:[
+                { layout:'column', border: false, defaults:{ layout:'form', border: false, padding: '0px 0px 10px 0px'}, items:[
+                    { columnWidth : .65, defaults: { anchor: '100%' }, items:[
                         { xtype: 'textfield', fieldLabel: _('Name'), name:'name', allowBlank: false, value: params.rec.name, height: 30, style:'font-size: 18px;' },
                         ( params.has_description > 0 ? desc : [] )
                     ]},
-                    { layout:'form', columnWidth : .35, defaults: { anchor: '100%' }, items:[
+                    { columnWidth : .35, defaults: { anchor: '100%' }, items:[
                         { xtype: 'checkbox', colspan: 1, fieldLabel: _('Active'), name:'active', checked: is_active, allowBlank: true },
                         { xtype: 'textfield', colspan: 1, fieldLabel: _('Moniker'), name:'moniker', value: params.rec.moniker, allowBlank: true },
                         { xtype: 'textfield', colspan: 1, fieldLabel: _('Version'), name:'versionid', readOnly: true, submitValue: false, value: params.rec.versionid, allowBlank: true },

@@ -1379,6 +1379,8 @@ sub save_data {
             $topic->modified_by( $data->{username} );
             $topic->update( \%row );
             
+            #_log "fecha modificacion######################: " . $topic->modified_on;
+            
             ci->new( $topic_mid )->update( name => $row{title}, moniker => $moniker, %row );
             
             for my $field ( keys %row ) {
@@ -1600,8 +1602,8 @@ sub save_doc {
     }
     
     # expanded data
-    $self->update_category( $doc, $row->{id_category} // ( ref $doc->{category} ? $doc->{category}{id} : $doc->{category} ) ); 
-    $self->update_category_status( $doc, $row->{id_category_status} // $doc->{id_category_status} // $doc->{status_new} );
+    $self->update_category( $doc, $row->{id_category} // ( ref $doc->{category} ? $doc->{category}{id} : $doc->{category} ) );
+    $self->update_category_status( $doc, $row->{id_category_status} // $doc->{id_category_status} // $doc->{status_new}, $p{username}, $row->{modified_on} );
 
     # detect modified fields
     require Hash::Diff;
@@ -1689,7 +1691,7 @@ sub update_category {
 
 # update status in mongo
 sub update_category_status {
-    my ($self, $mid_or_doc, $id_category_status ) = @_; 
+    my ($self, $mid_or_doc, $id_category_status, $username, $modified_on ) = @_; 
     my $doc = ref $mid_or_doc ? $mid_or_doc : mdb->topic->find_one({ mid=>$mid_or_doc });
     _fail _loc "Cannot update topic category status, topic not found: %1", $mid_or_doc unless ref $doc;
 
@@ -1704,6 +1706,8 @@ sub update_category_status {
     $doc->{category_status_type} = $doc->{category_status}{type};
     $doc->{category_status_name} = 
     $doc->{name_status}          = $doc->{category_status}{name};
+    $doc->{modified_by}          = $username;
+    $doc->{modified_on}          = $modified_on;
     
     if( !ref $mid_or_doc ) {
         # save back to mongo
@@ -2429,9 +2433,10 @@ sub change_status {
                 _fail _loc "Current topic status '%1' does not match the real status '%2'. Please refresh.", $row->status->name, $old_status if $row->id_category_status != $id_old_status;
                 # XXX check workflow for user?
                 # change and cleanup
-                $row->update({ id_category_status => $p{id_status} });
+                $row->update({ id_category_status => $p{id_status}, modified_by => $p{username} });
                 # update mongo
-                $self->update_category_status( $mid, $p{id_status} );
+                my $modified_on = $row->modified_on->dmy . ' ' . $row->modified_on->hms;
+                $self->update_category_status( $mid, $p{id_status}, $p{username}, $modified_on );
                 
                 $self->cache_topic_remove( $mid );
             }
