@@ -151,19 +151,18 @@ sub log_rows : Private {
     my $rs = mdb->job_log->find( $where );
     $rs->sort({ $sort => $dir });
     
-    if( $p->{with_data} ) {
-        # TODO get asset list
-    }
-
     #my $pager = $rs->pager;
     #$cnt = $pager->total_entries;
 
     my $qre = qr/\.\w+$/;
     while( my $doc = $rs->next ) {
         my $more = $doc->{more};
-        my $data = $p->{with_data}
-            || ( defined $more && $more eq 'link' )
-            ? _html_escape( uncompress( $doc->{data} ) || $doc->{data} ) : '';  # TODO data from asset
+        my $data;
+        if( $p->{with_data} || ( defined $more && $more eq 'link' ) ) {
+            my $logd = $doc->{data} ? mdb->grid->get( $doc->{data} ) : '';
+            $data = $logd ? $logd->slurp : '';
+            $data = _html_escape( uncompress($data) || $data );
+        }
 
         my $data_len = $doc->{data_length} || 0;
         my $data_name = $doc->{data_name} || ''; 

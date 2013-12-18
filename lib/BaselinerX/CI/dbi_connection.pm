@@ -130,7 +130,7 @@ method dosql( :$sql, :$comment='strip', :$split_mode='auto', :$split=';', :$mode
             } elsif( $exists_action =~ /skip|ignore/ ) {
                 @skips =  $self->gen_drop( $st );
                 if( @skips ) {
-                    _log "SQL OBJECT ALREDY EXISTS (action: $exists_action): $st";
+                    _log "SQL OBJECT ALREADY EXISTS (action: $exists_action): $st";
                     next STMT if $exists_action eq 'skip';
                 }
             } elsif( $exists_action eq 'fail' ) {

@@ -50,7 +50,7 @@ sub deploy_sql {
         ITEM: for my $item ( _array( $items ) ) {
             
             # path checks
-            my $path = $item->path;
+            my $path = ref $item ? $item->path : $item;   # from nature_items or from items?
             my $file = _file( $job_dir, $path );
             my $flag;
             IN: for my $in ( _array( $include_path ) ) {
@@ -106,7 +106,7 @@ sub deploy_sql {
                 error_mode   => $error_mode,
             );
             my $k=0;
-            for my $st ( _array $ret->{queries} ) {
+            for my $st ( _array( $ret->{queries} ) ) {
                 $k++;
                 my $msg = <<LOG;
 =========| SQL |=======
@@ -188,12 +188,22 @@ sub commit_all {
     my $job   = $c->stash->{job};
     my $log   = $job->logger;
     my $stash = $c->stash;
+    my @msgs;
+    try {
+        for my $tran ( _array $stash->{_state_db_transactions} ) {
+            push @msgs, _loc( 'DB COMMIT transaction %1', $tran->{id} );
+            $tran->{db}->commit;
+        }
+        $log->info( _loc( 'DB COMMIT transactions: %1', scalar(@msgs) ), join("\n",@msgs) );
+    } catch {
+        my $err = shift;   
+        $log->info( _loc( 'DB COMMIT transactions: %1', scalar(@msgs) ), join("\n",@msgs) );
+        _fail _loc 'Error during commit transactions: %1', $err;
+    };
+
+    # delete connection DBI object to avoid serialization problems, it can be ref'd by tmp variables
     for my $tran ( _array $stash->{_state_db_transactions} ) {
-        $log->info( _loc( 'DB COMMIT transaction %1', $tran->{id} ) );
-        $tran->{db}->commit;
-    }
-    for my $tran ( _array $stash->{_state_db_transactions} ) {
-        delete $tran->{db}{_connection}; # delete connection DBI object to avoid serialization problems, it can be ref'd by tmp variables
+        delete $tran->{db}{_connection}; 
     }
     delete $stash->{_state_db_transactions};  # cant' be seraialized
     return;
