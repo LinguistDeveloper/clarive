@@ -290,7 +290,8 @@ sub topics_for_user {
         for my $proj_coll_ids ( @proj_coll_roles ) {
             my $wh = {};
             while( my ($k,$v) = each %{ $proj_coll_ids || {} } ) {
-                $wh->{"_project_security.$k"} = { '$in'=>[ undef, keys %{ $v || {} } ] }; 
+                #$wh->{"_project_security.$k"} = { '$in'=>[ undef, keys %{ $v || {} } ] }; 
+                $wh->{"_project_security.$k"} = { '$in'=>[ keys %{ $v || {} } ] }; 
             }
             push @ors, $wh;
         }
