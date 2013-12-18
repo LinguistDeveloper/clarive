@@ -1252,6 +1252,8 @@ sub list_status_changed: Local{
     my ( $self, $c ) = @_;
     
     my $now1 = my $now2 = mdb->now;
+    $now2 += '1D';
+    
     my $query = {
         event_key   => 'event.topic.change_status',
         ts			=> { '$lte' => "$now1", '$gte' => ''.($now2-'1D') },
@@ -1265,7 +1267,7 @@ sub list_status_changed: Local{
 
 
     my %my_topics;
-    map { $my_topics{$_->{mid}} = 1 } DB->BaliTopic->search({mid=>{ -in=> $topic_project } , id_category => \@user_categories, modified_on=> {'between' => [ $now2->ymd, $now2->add(days=>1)->ymd]}})->hashref->all;
+    map { $my_topics{$_->{mid}} = 1 } DB->BaliTopic->search({mid=>{ -in=> $topic_project } , id_category => \@user_categories, modified_on=> {'between' => [ $now1->ymd, $now2->ymd ]}})->hashref->all;
 
     my @status_changes;
     my @mid_topics;
