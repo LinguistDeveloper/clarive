@@ -97,7 +97,6 @@ sub run {
 
     $log->debug( _loc('Sed include/exclude.'), data=>join("\n", @log ) ); 
     $log->info( _loc('Sed changes'), data=>_dump(\@mods) ) if @mods;
-    _debug _dump \@mods if @mods;
     $log->info( _loc('Sed finished. Changed %1 file(s).', scalar(@mods)) );
 }
 
