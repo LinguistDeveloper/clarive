@@ -92,7 +92,7 @@ sub run_once {
                         
                         my $topic = {};
                         $topic = mdb->topic->find_one({ mid => "$stash->{mid}"}) if $stash->{mid};
-                        $model_messaging->{vars} = {%$stash,%$topic};
+                        $model_messaging->{vars} = {%$topic,%$stash};
                         $model_messaging->{vars}->{subject} = $stash->{subject} || $event_key;
                         $model_messaging->{vars}->{to} = { users => $notification->{$template}->{TO} } if (exists $notification->{$template}->{TO}) ;
                         $model_messaging->{vars}->{cc} = { users => $notification->{$template}->{CC} } if (exists $notification->{$template}->{CC}) ;
