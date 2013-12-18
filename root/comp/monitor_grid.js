@@ -397,8 +397,9 @@
             url: '/job/monitor_json',
             baseParams: { limit: ps, query_id: '<% $query_id %>', query: params.query },
             remoteSort: true,
-            sortInfo: { field: 'starttime', direction: "DESC" },
-            groupField: group_field
+            remoteGroup: true,
+            sortInfo: { field: 'starttime', direction: "DESC" }
+//            groupField: group_field
     });
     
     var paging = new Ext.PagingToolbar({
@@ -829,7 +830,7 @@
             deferredRender: true,
             startCollapsed: false,
             hideGroupedColumn: true,
-            groupTextTpl: '{[ values.rs[0].data["day"] ]}',
+            // groupTextTpl: '{[ values.rs[0].data["day"] ]}',
             getRowClass: function(record, index, p, store){
                 var css='';
                 p.body='';
@@ -896,7 +897,7 @@
                 { header: _('Job Status'), width: 130, dataIndex: 'status', renderer: render_level, sortable: true },
                 { header: _('Status Code'), width: 60, dataIndex: 'status_code', hidden: true, sortable: true },
                 { header: _('Step'), width: 50, dataIndex: 'step_code', sortable: true , hidden: false },	
-                { header: _('Application'), width: 70, dataIndex: 'applications', renderer: render_app, sortable: false, hidden: is_portlet ? true : false },
+                { header: _('Application'), width: 70, dataIndex: 'applications', renderer: render_app, sortable: true, hidden: is_portlet ? true : false },
                 { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true },
                 { header: _('Natures'), width: 120, hidden: view_natures, dataIndex: 'natures', sortable: false, renderer: render_nature }, // not in DB
                 { header: _('Subapplications'), width: 120, dataIndex: 'subapps', sortable: false, hidden: true, renderer: render_subapp }, // not in DB
@@ -915,7 +916,7 @@
                 { header: _('Owner'), width: 120, dataIndex: 'owner', sortable: true, hidden: true },	
                 { header: _('Runner'), width: 80, dataIndex: 'runner', sortable: true, hidden: true },	
                 { header: _('Rule'), width: 80, dataIndex: 'id_rule', sortable: true, hidden: true },	
-                { header: _('Grouping'), width: 120, dataIndex: 'grouping', hidden: true },	
+                { header: _('Grouping'), width: 120, dataIndex: 'grouping', hidden: false },	
                 { header: _('Comments'), hidden: true, width: 150, dataIndex: 'comments', sortable: true }
             ],
         bbar: paging,        
