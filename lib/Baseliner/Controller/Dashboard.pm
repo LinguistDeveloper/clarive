@@ -1274,7 +1274,7 @@ sub list_status_changed: Local{
     
     
     #my %my_topics;
-    my ($cnt, @rows ) = Baseliner->model('Topic')->topics_for_user({ username=>'root', limit=>50, query=>undef });
+    my ($cnt, @rows ) = Baseliner->model('Topic')->topics_for_user({ username => $c->username, limit=>50, query=>undef });
     my @topic_project = map { $_->{mid} } @rows;
     map { $my_topics{$_->{mid}} = 1 } DB->BaliTopic->search({mid=>{ -in=> \@topic_project } , id_category => \@user_categories, modified_on=> {'between' => [ $now1->ymd, $now2->ymd ]}})->hashref->all;
     
