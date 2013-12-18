@@ -11,6 +11,7 @@ use Try::Tiny;
 use Data::Dumper;
 use utf8;
 use Class::Date;
+use Tie::IxHash;
 
 sub monitor {
     my ($self,$p) = @_;
@@ -57,12 +58,14 @@ sub monitor {
         applications => 'list_apps',
         natures      => 'list_natures'
     };
-    my $order_by = { $group_keys->{$sort} => $dir };
+    my @order_by;
     if ( length($groupby) ) {
         $groupdir = $groupdir eq 'ASC' ? 1:-1;
-        $order_by = { $group_keys->{$groupby} => $groupdir, $group_keys->{$sort} => $dir};
+        @order_by = ( $group_keys->{$groupby} => $groupdir, $group_keys->{$sort} => $dir );
     }
-    _log "SSSSSSSSSSSS"._dump $order_by;
+    else {
+        @order_by = ( $group_keys->{$sort} => $dir );
+    }
 
     $start=$p->{next_start} if $p->{next_start} && $start && $query;
 
@@ -157,7 +160,7 @@ sub monitor {
     
     _debug $where;
 
-    my $rs = mdb->master_doc->find({ collection=>'job', %$where })->sort($order_by);
+    my $rs = mdb->master_doc->find({ collection=>'job', %$where })->sort(Tie::IxHash->new( @order_by ));
     $cnt = $rs->count;
     $rs->limit($limit)->skip($start);
 
