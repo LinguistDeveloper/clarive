@@ -45,11 +45,11 @@ sub run {
     my $job = $stash->{job};
     my $log = $job->logger;
 
-    $log->info( _loc('Sed: starting' ) );
-
     my $path = $config->{path} 
         or _fail _loc('Sed: Missing or invalid path in configuration');
 
+    $log->info( _loc('Sed: starting: %1', $path ) );
+    
     -e $path or _fail _loc "Sed: Invalid path '%1'", $path;
 
     # check config
@@ -65,6 +65,7 @@ sub run {
     my @mods;
     my $dir = Path::Class::dir( $path );
     my @log;
+    # TODO make recurse optional
     $dir->recurse( callback=>sub{
         my $f = shift;
         return if $f->is_dir;
@@ -88,6 +89,7 @@ sub run {
             stash      => $stash,
             file       => $f,
             output_dir => $config->{output_dir},
+            path       => $path,
             patterns   => $sed->{patterns},
             slurp      => $sed->{slurp}
         );
@@ -114,11 +116,12 @@ sub process_file {
     my $file = $p{file} or _throw _loc('Missing file parameter');
     my $output_file = $file;
     if( $p{output_dir} ) {
-        Util->_mkpath( $p{output_dir} );
-        my $basename = _file( $output_file )->basename;
-        $output_file = ''. _file( $p{output_dir}, $basename );
-        _debug "sed output_file = $output_file";
+        my $relative = _file( $output_file )->relative( $p{path} );
+        $output_file = _file( $p{output_dir}, $relative );
+        $output_file->dir->mkpath;
     }
+    _debug "sed input_file = $file";
+    _debug "sed output_file = $output_file";
 
     # save date
     my @stat = stat $file;
