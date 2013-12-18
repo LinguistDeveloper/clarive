@@ -17,14 +17,52 @@ sub monitor {
     my $perm = Baseliner->model('Permissions');
     my $username = $p->{username};
 
-    my ($start, $limit, $query, $query_id, $dir, $sort, $filter, $cnt ) = @{$p}{qw/start limit query query_id dir sort filter/};
+    my ($start, $limit, $query, $query_id, $dir, $sort, $filter, $groupby, $groupdir, $cnt ) = @{$p}{qw/start limit query query_id dir sort filter groupBy groupDir/};
     $start||=0;
     $limit||=50;
 
-    $sort = 'step' if $sort && $sort eq 'step_code';
     $sort ||= 'mid';
     $dir = !$dir ? -1 : lc $dir eq 'desc' ? -1 : 1; 
-    my $order_by = { $sort => $dir };
+
+    my $group_keys = {
+        id           => 'jobid',
+        mid          => 'mid',
+        name         => 'name',
+        bl           => 'bl',
+        bl_text      => 'bl',
+        ts           => 'ts',
+        starttime    => 'starttime',
+        schedtime    => 'schedtime',
+        maxstarttime => 'maxstarttime',
+        endtime      => 'endtime',
+        comments     => 'comments',
+        username     => 'username',
+        rollback     => 'rollback',
+        has_errors   => 'has_errors',
+        has_warnings => 'has_warnings',
+        key          => 'job_key',
+        step_code    => 'step',
+        exec         => 'exec',
+        pid          => 'pid',
+        owner        => 'owner',
+        host         => 'host',
+        status_code  => 'status',
+        status       => 'status',
+        type_raw     => 'job_type',
+        type         => 'job_type',
+        runner       => 'runner',
+        id_rule      => 'id_rule',
+        contents     => 'list_contents',
+        releases     => 'list_releases',
+        applications => 'list_apps',
+        natures      => 'list_natures'
+    };
+    my $order_by = { $group_keys->{$sort} => $dir };
+    if ( length($groupby) ) {
+        $groupdir = $groupdir eq 'ASC' ? 1:-1;
+        $order_by = { $group_keys->{$groupby} => $groupdir, $group_keys->{$sort} => $dir};
+    }
+    _log "SSSSSSSSSSSS"._dump $order_by;
 
     $start=$p->{next_start} if $p->{next_start} && $start && $query;
 
@@ -138,7 +176,7 @@ sub monitor {
     for my $job ( $rs->all ) {
         my $step = _loc( $job->{step} );
         my $status = _loc( $job->{status} );
-        my $type = _loc( $job->{type} );
+        my $type = _loc($job->{job_type});
         my @changesets = (); #_array $job_items{ $job->{id} };
         
         # list_contents, list_apps are cache vars
@@ -207,7 +245,7 @@ sub monitor {
             host         => $job->{host},
             status       => $status,
             status_code  => $job->{status},
-            type_raw     => $job->{type},
+            type_raw     => $job->{job_type},
             type         => $type,
             runner       => $job->{runner},
             id_rule      => $job->{id_rule},
