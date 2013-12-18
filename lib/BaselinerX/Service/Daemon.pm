@@ -114,6 +114,7 @@ sub job_daemon {
             }
         }
         $self->check_job_expired();
+        $self->check_cancelled();
         last if $EXIT_NOW;
         sleep $freq;    
         last if $EXIT_NOW;
@@ -243,6 +244,62 @@ sub check_job_expired {
                 #} else {
                 #    _log "PID " . $row->pid . " ok.";
                 #}
+            }
+        }
+    }
+
+    foreach my $proc ( @{ $self->{proc_list} } ) {
+        unless( $proc->alive ) {
+            $proc->die;
+        }
+    }
+    return;
+}
+
+# Cancelled by user in monitor
+sub check_cancelled {
+    my ($self)=@_;
+    #_log( "Checking for expired jobs..." );
+    my $rs = ci->job->find({ 
+            status => 'CANCELLED', pid => { '$gt' => 0 }
+    });
+    while( my $doc = $rs->next ) {
+        _log( _loc("Job %1 cancelled (mid=%3, maxstartime=%2)" , $doc->{name}, $doc->{maxstarttime}, $doc->{mid} ) );
+        my $ci = ci->new( $doc->{mid} ) or do { _error _loc 'Job ci not found for id_job=%1', $doc->{id}; next };
+        $ci->status('KILLED');
+        $ci->endtime( _now );
+        $ci->save;
+    }
+    # some jobs are running with pid, and some without, 
+    #   but if they have any of these statuses, they should have a pid>0 and exist, otherwise they are dead
+    $rs = ci->job->find({ status => mdb->in('RUNNING','PAUSED','TRAPPED') });
+    my $hostname = Util->my_hostname();
+    while( my $doc = $rs->next ) {
+        my $ci = ci->new( $doc->{mid} );
+        _debug sprintf "Checking job row alive: job=%s, pid=%s, host=%s (my host=%s)", $ci->name, $ci->mid, $ci->pid, $ci->host, $hostname;
+        if( $ci->host eq $hostname ) {
+            if( $ci->pid>0  ) {
+                if( pexists($ci->pid) ) {
+                    my $sig = 16;
+                    _warn "Killing job (sig=$sig): " . $ci->name;
+                    my $msg;
+                    if( kill $sig => $ci->pid ) {
+                        # recheck
+                        $msg = _loc("Killed Job %1 due to CANCEL issued (mid %2 status %3, pid %4)", $ci->name, $ci->mid, $ci->status, $ci->pid ); 
+                        _warn( $msg ); 
+                    } else {
+                        $msg = _loc("Could not kill Job %1 due to CANCEL issued, pid not found (mid %2 status %3, pid %4)", $ci->name, $ci->mid, $ci->status, $ci->pid ); 
+                        _warn( $msg ); 
+                    }
+                    $ci->logger->error( $msg ); 
+                    $ci->status('KILLED');
+                    $ci->endtime( _now );
+                    $ci->save;
+                } else {
+                    # process not found, killed by hand? just reset PID
+                    $ci->pid( 0 );
+                    $ci->save;
+                }
             }
         }
     }
