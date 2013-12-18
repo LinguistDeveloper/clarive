@@ -378,14 +378,7 @@ sub stmts_save : Local {
             return if $p->{ignore_dsl_errors};
             _fail _loc "Error testing DSL build: %1", shift(); 
         };
-        my $row = DB->BaliRule->find($id_rule);
-        $row->update({ rule_tree=>$p->{stmts} });
-        # now, version
-        # check if collection exists
-        if( ! mdb->collection('system.namespaces')->find({ name=>qr/rule_version/ })->count ) {
-            mdb->create_capped( 'rule_version' );
-        }
-        mdb->rule_version->insert({ $row->get_columns, ts=>mdb->ts, username=>$c->username, id_rule=>$id_rule, rule_tree=>$p->{stmts} });
+        $self->save_rule( id_rule=>$id_rule, stmts_json=>$p->{stmts}, username=>$c->username );
         
         $c->stash->{json} = { success=>\1, msg => _loc('Rule statements saved ok') };
     } catch {
@@ -395,6 +388,39 @@ sub stmts_save : Local {
     $c->forward("View::JSON");
 }
 
+# saves and versions a rule
+sub save_rule {
+    my ($self,%p)=@_;
+    my $row = DB->BaliRule->find($p{id_rule});
+    _fail _loc 'Rule not found, id=%1', $p{id_rule} unless $row;
+    $row->update({ rule_tree=>$p{stmts_json} });
+    # keep mongo in sync, even though it's not used anywhere
+    mdb->rule->update({ id_rule=>''.$row->id }, +{ $row->get_columns }, { upsert=>1 });
+    # now, version
+    # check if collection exists
+    if( ! mdb->collection('system.namespaces')->find({ name=>qr/rule_version/ })->count ) {
+        mdb->create_capped( 'rule_version' );
+    }
+    mdb->rule_version->insert({ $row->get_columns, ts=>mdb->ts, username=>$p{username}, id_rule=>$p{id_rule}, rule_tree=>$p{stmts_json}, was=>($p{was}//'') });
+}
+
+sub rollback_version : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+    my $version_id = $p->{version_id};
+    my $ver = mdb->rule_version->find_one({ _id=>mdb->oid($version_id) });
+    _fail _loc 'Version not found: %1', $version_id unless $ver;
+    try {
+        $self->save_rule( id_rule=>$ver->{id_rule}, stmts_json=>$ver->{rule_tree}, username=>$ver->{username}, was=>$ver->{ts} );
+        $c->stash->{json} = { success=>\1, msg => _loc('Rule rollback to %1 (%2)', $ver->{ts}, $ver->{username} ) };
+    } catch {
+        my $err = shift;
+        _error $err;
+        $c->stash->{json} = { success=>\0, msg => $err };
+    };
+    $c->forward("View::JSON");
+} 
+    
 sub stmts_load : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
@@ -407,8 +433,9 @@ sub stmts_load : Local {
         if( $load_versions ) {
             my $rs = mdb->rule_version->find({ id_rule=>"$id_rule" })->sort({ ts=>-1 });
             my $current = $rs->next;
+            my $text = ' was: '.$current->{was} if $current && $current->{was};
             @tree = ( 
-                {   text => $current ? _loc('Current: %1 (%2)', $current->{ts}, $current->{username}) : _loc('Current'), 
+                {   text => $current ? _loc('Current: %1 (%2)', $current->{ts}, $current->{username}).$text : _loc('Current'), 
                     leaf=>\0, 
                     icon=>'/static/images/icons/history.png',
                     is_current=>\1, children=>[ @tree ] }, 
@@ -416,9 +443,11 @@ sub stmts_load : Local {
             while( my $rv = $rs->next ) {
                 my $ver_tree = Util->_decode_json($rv->{rule_tree}); 
                 my @ver_tree = Baseliner->model('Rules')->tree_format( @$ver_tree );
-                push @tree, +{ text=>_loc('Version: %1 (%2)', $rv->{ts}, $rv->{username} ), 
+                my $text = _loc('Version: %1 (%2)', $rv->{ts}, $rv->{username} );
+                $text .= ' was: '.$rv->{was} if $rv->{was};
+                push @tree, +{ text=>$text, 
                     icon=>'/static/images/icons/history.png',
-                    is_version=>\1, leaf=>\0, children=>\@ver_tree };
+                    is_version=>\1, version_id=>''.$rv->{_id}, leaf=>\0, children=>\@ver_tree };
             } 
         }
         $c->stash->{json} = \@tree;
