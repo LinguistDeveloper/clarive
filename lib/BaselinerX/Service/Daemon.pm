@@ -114,6 +114,7 @@ sub job_daemon {
             }
         }
         $self->check_job_expired();
+        $self->check_cancelled();
         last if $EXIT_NOW;
         sleep $freq;    
         last if $EXIT_NOW;
@@ -216,7 +217,7 @@ sub check_job_expired {
     my $hostname = Util->my_hostname();
     while( my $doc = $rs->next ) {
         my $ci = ci->new( $doc->{mid} );
-        _debug sprintf "Checking job row alive: job=%s, pid=%s, host=%s (my host=%s)", $ci->name, $ci->mid, $ci->pid, $ci->host, $hostname;
+        _debug sprintf "Checking job row alive: job=%s, mid=%s, pid=%s, host=%s (my host=%s)", $ci->name, $ci->mid, $ci->pid, $ci->host, $hostname;
         if( $ci->host eq $hostname ) {
             if( $ci->pid>0 && !pexists($ci->pid) ) {
                 _warn "Not alive: " . $ci->name;
@@ -243,6 +244,52 @@ sub check_job_expired {
                 #} else {
                 #    _log "PID " . $row->pid . " ok.";
                 #}
+            }
+        }
+    }
+
+    foreach my $proc ( @{ $self->{proc_list} } ) {
+        unless( $proc->alive ) {
+            $proc->die;
+        }
+    }
+    return;
+}
+
+# Cancelled by user in monitor
+sub check_cancelled {
+    my ($self)=@_;
+    my $hostname = Util->my_hostname();
+    my $rs = ci->job->find({ 
+            status => 'CANCELLED', '$or'=>[ {pid=>{'$gt' => 0}},{ pid=>{ '$ne'=>'0'}} ] 
+    });
+    while( my $doc = $rs->next ) {
+        my $ci = ci->new( $doc->{mid} );
+        _debug sprintf "Looking for job kill candidate: job=%s, mid=%s, pid=%s, host=%s (my host=%s)", $ci->name, $ci->mid, $ci->pid, $ci->host, $hostname;
+        if( $ci->host eq $hostname ) {
+            if( $ci->pid > 0  ) {
+                if( pexists($ci->pid) ) {
+                    my $sig = 16;
+                    _warn "Killing job (sig=$sig): " . $ci->name;
+                    my $msg;
+                    if( kill $sig => $ci->pid ) {
+                        # recheck
+                        $msg = _loc("Killed Job %1 due to CANCEL issued (mid %2 status %3, pid %4)", $ci->name, $ci->mid, $ci->status, $ci->pid ); 
+                        _warn( $msg ); 
+                    } else {
+                        $msg = _loc("Could not kill Job %1 due to CANCEL issued, pid not found (mid %2 status %3, pid %4)", $ci->name, $ci->mid, $ci->status, $ci->pid ); 
+                        _warn( $msg ); 
+                    }
+                    $ci->logger->error( $msg ); 
+                    $ci->status('KILLED');
+                    $ci->endtime( _now );
+                    $ci->save;
+                } else {
+                    # process not found, killed by hand? just reset PID
+                    _warn sprintf "Cancelled job %s pid %s not found. Resetting pid to 0: ", $ci->name, $ci->pid;
+                    $ci->pid( 0 );
+                    $ci->save;
+                }
             }
         }
     }

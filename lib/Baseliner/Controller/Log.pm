@@ -267,10 +267,10 @@ sub jobList : Path('/job/log/jobList') {
     if ( ref $p->{logId} ) {
         # (log data)->search( { id_log => $p->{logId} }, { order_by => 'path, id' } );
         # search for children of a log
-        $log = mdb->grid->find({ _id=>$p->{logId} })->sort({ path=>1 })->sort({ id=>1 });
+        $log = mdb->grid->find({ _id=>$p->{logId} })->sort(Tie::IxHash->new( path=>1, id=>1 ));
     } else {
         # (log data)->search( { mid => $p->{jobId} }, { order_by => 'path, id' } );
-        $log = mdb->grid->find({ mid=>$p->{jobId} })->sort({ path=>1 })->sort({ id=>1 });
+        $log = mdb->grid->find({ mid=>$p->{jobId} })->sort(Tie::IxHash->new( path=>1, id=>1 ));
     }
     my ( $package, $site, $parent, $lastSite, $lastParent, $lastPackage ) =
         ( undef, undef, undef, undef, undef, undef, undef );

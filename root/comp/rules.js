@@ -476,12 +476,12 @@
             save_action({ ignore_dsl_errors: rule_type=='independent' ? 1 : 0 });
         };
         var rule_load_do = function(btn,load_versions){
-            btn.disable();
+            if(btn) btn.disable();
             Ext.apply(rule_tree_loader.baseParams, { load_versions: load_versions ? 1 : 0 });
             rule_tree_loader.load( rule_tree.root );
             rule_tree.root.expand();
             rule_tree.is_dirty = false;
-            btn.enable();
+            if(btn) btn.enable();
         };
         var rule_load = function(btn,load_versions){
             if( rule_tree.is_dirty ) {
@@ -494,9 +494,26 @@
                 rule_load_do(btn,load_versions);
             }
         };
+        var rollback_version = function( btn, node ) {
+            Baseliner.ajaxEval('/rule/rollback_version', { version_id: node.attributes.version_id }, function(res){
+                rule_load( null, true );
+                Baseliner.message( _('Rollback Rule'), res.msg );
+            });
+            return;
+        }
         var short_name = name.length > 10 ? name.substring(0,20) : name;
         var menu_click = function(node,event){
-            if( node.attributes.is_version || node.attributes.is_current ) return false;
+            if( node.attributes.is_current ) return false;
+            if( node.attributes.is_version ) {
+                node.select();
+                var stmts_menu = new Ext.menu.Menu({
+                    items: [
+                        { text: _('Rollback'), handler: function(){ rollback_version( btn_refresh_tree, node ) }, icon:'/static/images/icons/arrow_undo.png' },
+                    ]
+                });
+                stmts_menu.showAt(event.xy);
+                return;
+            }
             node.select();
             var stmts_menu = new Ext.menu.Menu({
                 items: [

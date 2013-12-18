@@ -107,17 +107,19 @@ sub run_remote {
     $args ||= [];
     for my $server ( Util->_array_or_commas($servers)  ) {
         $server = ci->new( $server ) unless ref $server;
+        my $path_parsed = $server->parse_vars( $path );
+        my $args_parsed = $server->parse_vars( $args );
         for my $hostname ( _array( $server->hostname ) ) {
-            $log->info( _loc( 'STARTING remote script `%1` (%2)', $path . ' '. join(' ',_array($args)), $user . '@' . $hostname ), $config );
+            $log->info( _loc( 'STARTING remote script `%1` (%2)', $path_parsed . ' '. join(' ',_array($args_parsed)), $user . '@' . $hostname ), $config );
         }
         
         my $agent = $server->connect( user=>$user );
-        $agent->execute( { chdir=>$home }, $path, _array($args) );
+        $agent->execute( { chdir=>$home }, $path_parsed, _array($args_parsed) );
         my $out = $agent->output;
         my $rc = $agent->rc;
         my $ret = $agent->ret;
         if( List::MoreUtils::any {$_} _array($rc) ) {
-            my $ms = _loc 'Error during script (%1) execution: %2', $path, ($out // 'script not found or could not be executed (check chmod or chown)');
+            my $ms = _loc 'Error during script (%1) execution: %2', $path_parsed, ($out // 'script not found or could not be executed (check chmod or chown)');
             Util->_fail($ms) if $errors eq 'fail';
             Util->_warn($ms) if $errors eq 'warn';
             Util->_debug($ms) if $errors eq 'silent';
@@ -157,7 +159,7 @@ sub run_remote {
                    }
                 }
             }
-            $log->info( _loc( 'FINISHED remote script `%1` (%2)', $path . join(' ',_array($args)), $user . '@' . $server->hostname ), $agent->tuple_str );
+            $log->info( _loc( 'FINISHED remote script `%1` (%2)', $path_parsed . join(' ',_array($args_parsed)), $user . '@' . $server->hostname ), $agent->tuple_str );
         }
         push @rets, { output=>$out, rc=>$rc, ret=>$ret };
     }
