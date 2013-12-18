@@ -50,7 +50,7 @@ sub deploy_sql {
         ITEM: for my $item ( _array( $items ) ) {
             
             # path checks
-            my $path = $item->path;
+            my $path = ref $item ? $item->path : $item;   # from nature_items or from items?
             my $file = _file( $job_dir, $path );
             my $flag;
             IN: for my $in ( _array( $include_path ) ) {
