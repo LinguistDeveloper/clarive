@@ -1822,7 +1822,7 @@ sub set_topics {
     }
     # related topics
     my @new_topics = map { split /,/, $_ } _array( $topics ) ;
-    my @old_topics = map {$_->{to_mid}} DB->BaliMasterRel->search({$topic_direction => $rs_topic->mid, rel_type => 'topic_topic', rel_field => $rel_field})->hashref->all;
+    my @old_topics = map {$_->{$data_direction}} DB->BaliMasterRel->search({$topic_direction => $rs_topic->mid, rel_type => 'topic_topic', rel_field => $rel_field})->hashref->all;
     
     # no diferences, get out
     return if !array_diff(@new_topics, @old_topics);
