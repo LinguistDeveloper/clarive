@@ -107,13 +107,13 @@ sub run_remote {
     $args ||= [];
     for my $server ( Util->_array_or_commas($servers)  ) {
         $server = ci->new( $server ) unless ref $server;
+        my $path_parsed = $server->parse_vars( $path );
+        my $args_parsed = $server->parse_vars( $args );
         for my $hostname ( _array( $server->hostname ) ) {
-            $log->info( _loc( 'STARTING remote script `%1` (%2)', $path . ' '. join(' ',_array($args)), $user . '@' . $hostname ), $config );
+            $log->info( _loc( 'STARTING remote script `%1` (%2)', $path_parsed . ' '. join(' ',_array($args_parsed)), $user . '@' . $hostname ), $config );
         }
         
         my $agent = $server->connect( user=>$user );
-        my $path_parsed = $server->parse_vars( $path );
-        my $args_parsed = $server->parse_vars( $args );
         $agent->execute( { chdir=>$home }, $path_parsed, _array($args_parsed) );
         my $out = $agent->output;
         my $rc = $agent->rc;
