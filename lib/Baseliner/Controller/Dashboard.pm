@@ -1256,7 +1256,7 @@ sub list_status_changed: Local{
     
     my $query = {
         event_key   => 'event.topic.change_status',
-        ts			=> { '$lte' => "$now1", '$gte' => ''.($now2-'1D') },
+        ts			=> { '$lte' => "$now2", '$gte' => ''.($now1) },
     };
     
     my @user_categories =  map { $_->{id} } $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view' );
