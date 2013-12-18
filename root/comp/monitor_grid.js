@@ -795,8 +795,8 @@
             value = String.format("<a href='javascript:Baseliner.trap_check({0},\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id ); 
         }
         if( icon!=undefined ) {
-            var err_warn = rec.data.has_errors > 0 ? _('err: %1', rec.data.has_errors) : '';
-            err_warn += rec.data.has_warnings > 0 ? _('warn: %1', rec.data.has_warnings) : '';
+            var err_warn = rec.data.has_errors > 0 ? _('(errors: %1)', rec.data.has_errors) : '';
+            err_warn += rec.data.has_warnings > 0 ? _('(warnings: %1)', rec.data.has_warnings) : '';
             return div1 
                 + "<table><tr><td><img alt='"+status+"' border=0 src='/static/images/icons/"+icon+"' /></td>"
                 + '<td>' + value + '</td><td>'+err_warn+'</td></tr></table>' + div2 ;
