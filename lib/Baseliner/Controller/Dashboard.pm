@@ -1254,9 +1254,15 @@ sub list_status_changed: Local{
     my $now1 = my $now2 = mdb->now;
     $now2 += '1D';
     
+    my $fecha1 = $now1->ymd;
+    $fecha1 =~ s/\//-/g;
+    
+    my $fecha2 = $now2->ymd;
+    $fecha2 =~ s/\//-/g;
+    
     my $query = {
         event_key   => 'event.topic.change_status',
-        ts			=> { '$lte' => "$now2", '$gte' => ''.($now1) },
+        ts			=> { '$lte' => ''.$fecha2, '$gte' => ''.$fecha1 },
     };
     
     my @user_categories =  map { $_->{id} } $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view' );
