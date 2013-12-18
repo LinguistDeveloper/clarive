@@ -919,6 +919,8 @@
         stripeRows: false,
         autoScroll: true,
         loadMask: true,
+        stateful: true,
+        stateId: 'job-monitor', 
         wait: _('Loading...'),
         store: store,
         view: gview,
@@ -949,7 +951,7 @@
                 { header: _('Owner'), width: 120, dataIndex: 'owner', sortable: true, hidden: true },	
                 { header: _('Runner'), width: 80, dataIndex: 'runner', sortable: true, hidden: true },	
                 { header: _('Rule'), width: 80, dataIndex: 'id_rule', sortable: true, hidden: true },	
-                { header: _('Grouping'), width: 120, dataIndex: 'grouping', hidden: false },	
+                { header: _('Grouping'), width: 120, dataIndex: 'grouping', hidden: true },	
                 { header: _('Comments'), hidden: true, width: 150, dataIndex: 'comments', sortable: true }
             ],
         bbar: paging,        
