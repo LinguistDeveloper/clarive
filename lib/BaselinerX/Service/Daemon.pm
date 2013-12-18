@@ -259,21 +259,10 @@ sub check_job_expired {
 # Cancelled by user in monitor
 sub check_cancelled {
     my ($self)=@_;
-    #_log( "Checking for expired jobs..." );
-    my $rs = ci->job->find({ 
-            status => 'CANCELLED', pid => { '$gt' => 0 }
-    });
-    while( my $doc = $rs->next ) {
-        _log( _loc("Job %1 cancelled (mid=%3, maxstartime=%2)" , $doc->{name}, $doc->{maxstarttime}, $doc->{mid} ) );
-        my $ci = ci->new( $doc->{mid} ) or do { _error _loc 'Job ci not found for id_job=%1', $doc->{id}; next };
-        $ci->status('KILLED');
-        $ci->endtime( _now );
-        $ci->save;
-    }
-    # some jobs are running with pid, and some without, 
-    #   but if they have any of these statuses, they should have a pid>0 and exist, otherwise they are dead
-    $rs = ci->job->find({ status => mdb->in('RUNNING','PAUSED','TRAPPED') });
     my $hostname = Util->my_hostname();
+    my $rs = ci->job->find({ 
+            status => 'CANCELLED', '$or'=>[ {pid=>{'$gt' => 0}},{ pid=>{ '$ne'=>'0'}} ] 
+    });
     while( my $doc = $rs->next ) {
         my $ci = ci->new( $doc->{mid} );
         _debug sprintf "Checking job row alive: job=%s, pid=%s, host=%s (my host=%s)", $ci->name, $ci->mid, $ci->pid, $ci->host, $hostname;
