@@ -450,10 +450,8 @@ sub log_elements : Path('/job/log/elements') {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     my $job = ci->new( $p->{mid} ); 
-    _log _dump $job;
     my $job_exec = ref $job ? $job->exec : 1;
-    #my $contents = $job->contents; #$c->model('Jobs')->get_contents ( jobid => $c->stash->{mid}, job_exec => $c->stash->{job_exec} );
-    my @items = _array ($job->{items});
+    my @items = _array ($job->stash->{items});
     my $data = join "\n", map { $_->status . "\t" . $_->path . " (" . $_->versionid . ")" } @items;
     $data = _html_escape( $data );
     # TODO send this to a comp with a pretty table
