@@ -108,7 +108,7 @@ method dosql( :$sql, :$comment='strip', :$split_mode='auto', :$split=';', :$mode
     Util->_fail( Util->_loc('Could not connect to database %1', $self->name || $self->data_source_parsed ) ) unless ref $dbh;
     my @queries;
     $dbh->func( 1000000, 'dbms_output_enable' );
-    for my $sql ( _array( $sql ) ) {
+    SQL: for my $sql ( _array( $sql ) ) {
         # comments?
         $sql =~ s{--[^\n]*\r?\n}{\n}sg if $comment eq 'strip';
         
@@ -130,7 +130,7 @@ method dosql( :$sql, :$comment='strip', :$split_mode='auto', :$split=';', :$mode
             } elsif( $exists_action =~ /skip|ignore/ ) {
                 @skips =  $self->gen_drop( $st );
                 if( @skips ) {
-                    _log "SQL OBJECT ALREDY EXISTS (action: $exists_action): $st";
+                    _log "SQL OBJECT ALREADY EXISTS (action: $exists_action): $st";
                     next STMT if $exists_action eq 'skip';
                 }
             } elsif( $exists_action eq 'fail' ) {
@@ -152,17 +152,22 @@ method dosql( :$sql, :$comment='strip', :$split_mode='auto', :$split=';', :$mode
                     $dbh->do( $st ); 
                 }
                 my @ret = $dbh->func( 'dbms_output_get' );
-                { sql=>$st, rc=>0, err=>'', ret=>join('', @ret), skips=>join("\n",@skips), drops=>join("\n",@drops), mode=>$mode };
+                { sql=>$st, rc=>0, err=>'', ret=>join('', @ret), catch=>'', skips=>join("\n",@skips), drops=>join("\n",@drops), mode=>$mode };
             } catch {
                 my $err = shift;
                 my @ret = $dbh->func( 'dbms_output_get' );
                 %ENV = %ENV_ORIG;
-                my $msg = _loc 'Database error: %1 %2', $dbh->errstr, $err;
+                my $msg = _loc( 'Database error: %1 %2', $dbh->errstr, $err );
                 my @errlog = ( $msg, "SQL:\n$st\n\n$msg\n\n" . join('',@ret) );
                 _log( @errlog );
                 { sql=>$st, rc=>1, err=>$dbh->errstr, catch=>$err, ret=>join('', @ret), skips=>join("\n",@skips), drops=>join("\n",@drops), mode=>$mode };
             };
             push @queries, $ret;
+            # maybe stop due to an error, the rest (skip,ignore,warn) will be taken care of later
+            if( $error_mode eq 'error' && $ret->{rc} ) {
+                _debug( _loc('Stopping SQL execution due to an error') );
+                last SQL;
+            }
         }
     }
     %ENV = %ENV_ORIG;

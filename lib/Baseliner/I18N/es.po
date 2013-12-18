@@ -4932,6 +4932,9 @@ msgstr "Cerrar Todas"
 msgid "Changed statuses"
 msgstr "Cambios de estado"
 
+msgid "Daily highlights"
+msgstr "Cambios diarios"
+
 msgid "Transition"
 msgstr "Transición"
 

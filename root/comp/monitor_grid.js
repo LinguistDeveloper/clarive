@@ -397,19 +397,53 @@
             url: '/job/monitor_json',
             baseParams: { limit: ps, query_id: '<% $query_id %>', query: params.query },
             remoteSort: true,
-            sortInfo: { field: 'starttime', direction: "DESC" },
-            groupField: group_field
+            remoteGroup: true,
+            sortInfo: { field: 'starttime', direction: "DESC" }
+//            groupField: group_field
     });
     
+    // var paging = new Ext.PagingToolbar({
+    //         store: store,
+    //         pageSize: ps,
+    //         displayInfo: true,
+    //         displayMsg: _('Rows {0} - {1} of {2}'),
+    //         emptyMsg: "No hay registros disponibles"
+    // });
+    //paging.on('beforechange', function(){ refresh_stop(); });
+    var ps_plugin = new Ext.ux.PageSizePlugin({
+        editable: false,
+        width: 90,
+        data: [
+            ['5', 5], ['10', 10], ['15', 15], ['20', 20], ['25', 25], ['50', 50],
+            ['100', 100], ['200',200], ['500', 500], ['1000', 1000], [_('all rows'), -1 ]
+        ],
+        beforeText: _('Show'),
+        afterText: _('rows/page'),
+        value: ps,
+        listeners: {
+            'select':function(c,rec) {
+                ps = rec.data.value;
+                if( rec.data.value < 0 ) {
+                    paging.afterTextItem.hide();
+                } else {
+                    paging.afterTextItem.show();
+                }
+            }
+        },
+        forceSelection: true
+    });
+
     var paging = new Ext.PagingToolbar({
             store: store,
             pageSize: ps,
+            plugins:[
+                ps_plugin,
+                new Ext.ux.ProgressBarPager()
+            ],
             displayInfo: true,
             displayMsg: _('Rows {0} - {1} of {2}'),
-            emptyMsg: "No hay registros disponibles"
+            emptyMsg: _('There are no rows available')
     });
-    //paging.on('beforechange', function(){ refresh_stop(); });
-
     var next_start = 0;
     store.on('load', function(s,recs,opt) {
         //console.log( s );
@@ -795,8 +829,8 @@
             value = String.format("<a href='javascript:Baseliner.trap_check({0},\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id ); 
         }
         if( icon!=undefined ) {
-            var err_warn = rec.data.has_errors > 0 ? _('err: %1', rec.data.has_errors) : '';
-            err_warn += rec.data.has_warnings > 0 ? _('warn: %1', rec.data.has_warnings) : '';
+            var err_warn = ''; // rec.data.has_errors > 0 ? _('(errors: %1)', rec.data.has_errors) : '';
+            err_warn += rec.data.has_warnings > 0 ? _('(warnings: %1)', rec.data.has_warnings) : '';
             return div1 
                 + "<table><tr><td><img alt='"+status+"' border=0 src='/static/images/icons/"+icon+"' /></td>"
                 + '<td>' + value + '</td><td>'+err_warn+'</td></tr></table>' + div2 ;
@@ -829,7 +863,7 @@
             deferredRender: true,
             startCollapsed: false,
             hideGroupedColumn: true,
-            groupTextTpl: '{[ values.rs[0].data["day"] ]}',
+            // groupTextTpl: '{[ values.rs[0].data["day"] ]}',
             getRowClass: function(record, index, p, store){
                 var css='';
                 p.body='';
@@ -885,6 +919,8 @@
         stripeRows: false,
         autoScroll: true,
         loadMask: true,
+        stateful: true,
+        stateId: 'job-monitor', 
         wait: _('Loading...'),
         store: store,
         view: gview,
@@ -896,7 +932,7 @@
                 { header: _('Job Status'), width: 130, dataIndex: 'status', renderer: render_level, sortable: true },
                 { header: _('Status Code'), width: 60, dataIndex: 'status_code', hidden: true, sortable: true },
                 { header: _('Step'), width: 50, dataIndex: 'step_code', sortable: true , hidden: false },	
-                { header: _('Application'), width: 70, dataIndex: 'applications', renderer: render_app, sortable: false, hidden: is_portlet ? true : false },
+                { header: _('Application'), width: 70, dataIndex: 'applications', renderer: render_app, sortable: true, hidden: is_portlet ? true : false },
                 { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true },
                 { header: _('Natures'), width: 120, hidden: view_natures, dataIndex: 'natures', sortable: false, renderer: render_nature }, // not in DB
                 { header: _('Subapplications'), width: 120, dataIndex: 'subapps', sortable: false, hidden: true, renderer: render_subapp }, // not in DB

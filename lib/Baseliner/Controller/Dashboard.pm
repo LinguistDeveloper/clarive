@@ -1292,7 +1292,7 @@ sub list_status_changed: Local{
     
     $c->stash->{list_topics} = \%topics_categories;
     $c->stash->{list_status_changed} = \@status_changes;
-    $c->stash->{list_status_changed_title} = _loc('Changed statuses');    
+    $c->stash->{list_status_changed_title} = _loc('Daily highlights');    
 };
 
 
