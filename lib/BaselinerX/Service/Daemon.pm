@@ -217,7 +217,7 @@ sub check_job_expired {
     my $hostname = Util->my_hostname();
     while( my $doc = $rs->next ) {
         my $ci = ci->new( $doc->{mid} );
-        _debug sprintf "Checking job row alive: job=%s, pid=%s, host=%s (my host=%s)", $ci->name, $ci->mid, $ci->pid, $ci->host, $hostname;
+        _debug sprintf "Checking job row alive: job=%s, mid=%s, pid=%s, host=%s (my host=%s)", $ci->name, $ci->mid, $ci->pid, $ci->host, $hostname;
         if( $ci->host eq $hostname ) {
             if( $ci->pid>0 && !pexists($ci->pid) ) {
                 _warn "Not alive: " . $ci->name;
@@ -265,9 +265,9 @@ sub check_cancelled {
     });
     while( my $doc = $rs->next ) {
         my $ci = ci->new( $doc->{mid} );
-        _debug sprintf "Checking job row alive: job=%s, pid=%s, host=%s (my host=%s)", $ci->name, $ci->mid, $ci->pid, $ci->host, $hostname;
+        _debug sprintf "Looking for job kill candidate: job=%s, mid=%s, pid=%s, host=%s (my host=%s)", $ci->name, $ci->mid, $ci->pid, $ci->host, $hostname;
         if( $ci->host eq $hostname ) {
-            if( $ci->pid>0  ) {
+            if( $ci->pid > 0  ) {
                 if( pexists($ci->pid) ) {
                     my $sig = 16;
                     _warn "Killing job (sig=$sig): " . $ci->name;
@@ -286,6 +286,7 @@ sub check_cancelled {
                     $ci->save;
                 } else {
                     # process not found, killed by hand? just reset PID
+                    _warn sprintf "Cancelled job %s pid %s not found. Resetting pid to 0: ", $ci->name, $ci->pid;
                     $ci->pid( 0 );
                     $ci->save;
                 }
