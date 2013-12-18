@@ -402,15 +402,48 @@
 //            groupField: group_field
     });
     
+    // var paging = new Ext.PagingToolbar({
+    //         store: store,
+    //         pageSize: ps,
+    //         displayInfo: true,
+    //         displayMsg: _('Rows {0} - {1} of {2}'),
+    //         emptyMsg: "No hay registros disponibles"
+    // });
+    //paging.on('beforechange', function(){ refresh_stop(); });
+    var ps_plugin = new Ext.ux.PageSizePlugin({
+        editable: false,
+        width: 90,
+        data: [
+            ['5', 5], ['10', 10], ['15', 15], ['20', 20], ['25', 25], ['50', 50],
+            ['100', 100], ['200',200], ['500', 500], ['1000', 1000], [_('all rows'), -1 ]
+        ],
+        beforeText: _('Show'),
+        afterText: _('rows/page'),
+        value: ps,
+        listeners: {
+            'select':function(c,rec) {
+                ps = rec.data.value;
+                if( rec.data.value < 0 ) {
+                    paging.afterTextItem.hide();
+                } else {
+                    paging.afterTextItem.show();
+                }
+            }
+        },
+        forceSelection: true
+    });
+
     var paging = new Ext.PagingToolbar({
             store: store,
             pageSize: ps,
+            plugins:[
+                ps_plugin,
+                new Ext.ux.ProgressBarPager()
+            ],
             displayInfo: true,
             displayMsg: _('Rows {0} - {1} of {2}'),
-            emptyMsg: "No hay registros disponibles"
+            emptyMsg: _('There are no rows available')
     });
-    //paging.on('beforechange', function(){ refresh_stop(); });
-
     var next_start = 0;
     store.on('load', function(s,recs,opt) {
         //console.log( s );
