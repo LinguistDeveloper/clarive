@@ -272,10 +272,11 @@ sub run_ship {
             
             # ship done here
             my $local_stat   = join(",",@{ _file($local)->stat || [] }); # create a stat string
-            my $local_chksum = Digest::MD5::md5_base64( scalar _file($local)->slurp );   # maybe slow for very large files
+            my $local_chksum = Digest::MD5::md5_base64( scalar _file($local)->slurp );   # maybe slow for very large files, but faster than _md5
             my $local_key = "$job_exec|$local|$local_stat|$local_chksum";  # job exec included, forces reship on every exec
+            my $local_key_md5 = Util->_md5( $local_key );
             my $hostname = $agent->server->hostname;
-            my $sent = $sent_files->{$hostname}{$local_key}{"$remote"}; 
+            my $sent = $sent_files->{$hostname}{$local_key_md5}{"$remote"}; 
             if( $sent && $exist_mode ne 'reship' ) {
                 $log->info( _loc('File `%1` already in machine `%2` (%3). Ship skipped.', "$local", "*$hostname*".':'.$remote, $server_str ), data=>$local_key );
             } else {
@@ -285,7 +286,7 @@ sub run_ship {
                     local  => "$local",
                     remote => "$remote",
                 );
-                $sent_files->{$hostname}{$local_key}{"$remote"} = _now();
+                $sent_files->{$hostname}{$local_key_md5}{"$remote"} = _now();
             }
             $stash->{needs_rollback}{ $needs_rollback_key } = 1 if $needs_rollback_mode eq 'nb_after';
             
