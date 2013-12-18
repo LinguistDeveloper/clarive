@@ -1254,20 +1254,33 @@ sub list_status_changed: Local{
     my $now1 = my $now2 = mdb->now;
     $now2 += '1D';
     
+    my $fecha1 = $now1->ymd;
+    $fecha1 =~ s/\//-/g;
+    
+    my $fecha2 = $now2->ymd;
+    $fecha2 =~ s/\//-/g;
+    
     my $query = {
         event_key   => 'event.topic.change_status',
-        ts			=> { '$lte' => "$now2", '$gte' => ''.($now1) },
+        ts			=> { '$lte' => ''.$fecha2, '$gte' => ''.$fecha1 },
     };
     
-    my @user_categories =  map { $_->{id} } $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view' );
-    my @user_project_ids = Baseliner->model("Permissions")->user_projects_ids( username => $c->username);
+    #my @user_categories =  map { $_->{id} } $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view' );
+    #my @user_project_ids = Baseliner->model("Permissions")->user_projects_ids( username => $c->username);
+    #
+    #my $topic_project = DB->BaliMasterRel->search({to_mid=>\@user_project_ids, rel_type=>'topic_project'}, 
+    #                          {select=>'from_mid', group_by=>'from_mid'} )->as_query;
 
-    my $topic_project = DB->BaliMasterRel->search({to_mid=>\@user_project_ids, rel_type=>'topic_project'}, 
-                              {select=>'from_mid', group_by=>'from_mid'} )->as_query;
-
-
+    
+    
+    #my %my_topics;
+    #map { $my_topics{$_->{mid}} = 1 } DB->BaliTopic->search({mid=>{ -in=> $topic_project } , id_category => \@user_categories, modified_on=> {'between' => [ $now1->ymd, $now2->ymd ]}})->hashref->all;
+    
     my %my_topics;
-    map { $my_topics{$_->{mid}} = 1 } DB->BaliTopic->search({mid=>{ -in=> $topic_project } , id_category => \@user_categories, modified_on=> {'between' => [ $now1->ymd, $now2->ymd ]}})->hashref->all;
+    my ($cnt, @rows ) = Baseliner->model('Topic')->topics_for_user({ username => $c->username, limit=>1000, query=>undef });
+    map { $my_topics{$_->{mid}} = 1 } @rows;
+
+    
 
     my @status_changes;
     my @mid_topics;

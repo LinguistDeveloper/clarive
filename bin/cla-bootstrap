@@ -304,6 +304,7 @@ Config::JFDI
 Convert::EBCDIC
 Crypt::Blowfish::Mod
 Crypt::OpenSSL::RSA
+Crypt::OpenSSL::Random
 DBD::Oracle
 DBI
 DBIx::Class

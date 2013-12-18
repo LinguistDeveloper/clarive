@@ -1353,7 +1353,7 @@ sub _repl {
 
 sub _md5 {
     require Digest::MD5;
-    my $str = @_ ? join '#',@_ : _now . rand() . $$ ;
+    my $str = @_ ? join( '#',@_ ) : _now . rand() . $$ ;
     Digest::MD5::md5_hex( $str );
 }
 
