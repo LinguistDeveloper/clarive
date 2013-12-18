@@ -830,7 +830,7 @@
         }
         if( icon!=undefined ) {
             var err_warn = ''; // rec.data.has_errors > 0 ? _('(errors: %1)', rec.data.has_errors) : '';
-            err_warn += rec.data.has_warnings > 0 ? _('(warnings: %1)', rec.data.has_warnings) : '';
+            err_warn += rec.data.has_warnings > 0 ? '<img src="/static/images/icons/log_w.gif" />' : '';
             return div1 
                 + "<table><tr><td><img alt='"+status+"' border=0 src='/static/images/icons/"+icon+"' /></td>"
                 + '<td>' + value + '</td><td>'+err_warn+'</td></tr></table>' + div2 ;
