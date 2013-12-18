@@ -195,7 +195,7 @@ sub dsl_build {
         push @dsl, sprintf( '# task: %s', $name ) . "\n"; 
         if( $closure ) {
             push @dsl, sprintf( 'current_task($stash, q{%s}, sub{', $name )."\n";
-        } else {
+        } elsif( ! $attr->{nested} ) {
             push @dsl, sprintf( 'current_task($stash, q{%s});', $name )."\n";
         }
         if( $timeout > 0 ) {
@@ -531,11 +531,43 @@ register 'statement.if_not.var' => {
 register 'statement.if.condition' => {
     text => 'IF condition THEN',
     type => 'if',
-    data => { condition =>'' },
+    data => { condition =>'1' },
     dsl => sub { 
         my ($self, $n , %p) = @_;
         sprintf(q{
             if( %s ) {
+                %s
+            }
+            
+        }, $n->{condition}, $self->dsl_build( $n->{children}, %p ) );
+    },
+};
+
+register 'statement.if.else' => {
+    text => 'ELSE',
+    type => 'if',
+    nested => 1,   # avoids a "current_task" before
+    data => {},
+    dsl => sub { 
+        my ($self, $n , %p) = @_;
+        sprintf(q{
+            else {
+                %s
+            }
+            
+        }, $self->dsl_build( $n->{children}, %p ) );
+    },
+};
+
+register 'statement.if.elsif' => {
+    text => 'ELSIF condition THEN',
+    type => 'if',
+    nested => 1,
+    data => { condition =>'1' },
+    dsl => sub { 
+        my ($self, $n , %p) = @_;
+        sprintf(q{
+            elsif( %s ) {
                 %s
             }
             

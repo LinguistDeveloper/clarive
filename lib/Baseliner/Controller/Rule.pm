@@ -252,6 +252,7 @@ sub palette : Local {
         $n->{leaf} = \1;
         $n->{key} = $key;
         $n->{text} = $s->{text} // $key;
+        $n->{nested} = $s->{nested} // 0;
         $n->{icon} = $s->icon // "/static/images/icons/$s->{type}.gif";
         $n;
     } 
