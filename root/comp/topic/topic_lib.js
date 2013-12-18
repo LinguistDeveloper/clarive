@@ -192,6 +192,14 @@ Baseliner.TopicBox = Ext.extend( Ext.ux.form.SuperBoxSelect, {
             '</div></tpl>' );
         
         Baseliner.TopicBox.superclass.initComponent.call(this);
+    }, 
+    get_save_data : function(){
+        var self = this;
+        var mids = [];
+        self.store.each(function(row){
+            mids.push( row.data.mid ); 
+        });
+        return mids;
     }
 });
 
