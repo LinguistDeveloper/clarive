@@ -18,7 +18,8 @@
     };
 </%perl>
 
-            <span id="topic<% $topic->{mid} %>" class="label" onclick="javascript:Baseliner.show_topic_colored(<% $topic->{mid} %>, '<% $topic->{name} %>', '<% $topic->{color} %>')" 
+% my $topic_id = $topic->{mid} . _nowstamp;
+            <span id="topic<% $topic_id %>" class="label" onclick="javascript:Baseliner.show_topic_colored(<% $topic->{mid} %>, '<% $topic->{name} %>', '<% $topic->{color} %>')" 
             style="cursor:pointer;background: <% $topic->{color} %>"><% $topic->{name} %></span>
 % my $cls = ( $topic->{progress} < 20 ? 'important' : ( $topic->{progress} < 40 ? 'warning' : ( $topic->{progress} < 80 ? 'info' : 'success' ) ) );
 % if( $show_title ) {
@@ -30,13 +31,13 @@
 
 % if( $show_short_name ) {
 <script>
-    var obj_topic_name = Ext.query('#topic<% $topic->{mid} %>');
+    var obj_topic_name = Ext.query('#topic<%$topic_id %>');
     obj_topic_name[0].innerHTML = Baseliner.topic_title( '<% $topic->{mid} %>', '<% $topic->{name} %>', '<% $topic->{color} %>', true );
 </script>
 %}
 % if( $show_name_tooltip ) {
 <script>
-    var obj_topic_name = Ext.query('#topic<% $topic->{mid} %>');
+    var obj_topic_name = Ext.query('#topic<% $topic_id %>');
     obj_topic_name[0].setAttribute("title", "<% $title_short->($topic->{title}) %>");
 </script>
 % }
