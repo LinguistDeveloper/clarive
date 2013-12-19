@@ -2038,6 +2038,7 @@ sub set_release {
     $notify->{project} = \@projects if @projects;
 
     # check if arrays contain same members
+    _log "Guardando $release_field";
     if ( $new_release ne $old_release ) {
         if($release_row){
             my $rs = DB->BaliMasterRel->search({from_mid => $old_release, to_mid=>$topic_mid, rel_field => $release_field})->delete;
