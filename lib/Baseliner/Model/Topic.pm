@@ -2027,7 +2027,7 @@ sub set_release {
         #my $rs = Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => {in => $release_row->mid}, to_mid=>$topic_mid })->delete;
     }        
         
-    my $new_release = $release;
+    my $new_release = _array $release;
 
     my @projects = map {$_->{mid}} $rs_topic->projects->hashref->all;
     my $notify = {
