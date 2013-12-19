@@ -44,9 +44,13 @@ sub connect {
     return $self->_connection if ref $self->_connection;
     my $conn;
     local $SIG{ALRM} = sub { _fail _loc 'timeout connecting to database %1 (timeout=%2)', $self->name, $tmout } if $tmout;
-    alarm $tmout if $tmout;
+    if( $tmout ) {
+        alarm $tmout;
+    }
     $conn = DBI->connect( $self->data_source_parsed, $self->user, $self->password, $self->parameters);
-    alarm 0 if $tmout;
+    if( $tmout ) {
+        alarm 0;
+    }
     $self->_connection( $conn );
     return $conn; 
 }
