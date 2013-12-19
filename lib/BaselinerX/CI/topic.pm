@@ -25,6 +25,7 @@ sub icon { '/static/images/icons/topic.png' }
 around delete => sub {
     my ($orig, $self, $mid ) = @_;
     $mid = $mid // $self->mid;
+    print "EN CI....".$mid."\n";
     DB->BaliTopic->search({ mid=>$mid })->delete if length $mid;
 	my $cnt = $self->$orig($mid);
 };

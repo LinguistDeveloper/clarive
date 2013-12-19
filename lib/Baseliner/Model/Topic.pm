@@ -666,6 +666,9 @@ sub update {
                 for my $mid ( _array( $topic_mid ) ) {
                     # delete master row and bali_topic row
                     #      -- delete cascade does not clear up the cache
+
+                    DB->BaliTopic->search({ mid=>$mid })->delete; ##### RICARDO: TEMPORAL HASTA ARREGLAR around EN CI
+                    
                     try { $self->cache_topic_remove( $mid ) } catch { };  # dont care about these errors, usually due to related
                     ci->delete( $mid );
                     mdb->topic->remove({ mid=>"$mid" });
