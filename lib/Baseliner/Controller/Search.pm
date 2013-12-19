@@ -21,11 +21,11 @@ sub providers : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
     my @provs = packages_that_do('Baseliner::Role::Search');
-    my $config = config_get 'config.search';
-    if( my $filter = $config->{provider_filter} ) {
-        _debug "PROV FILTER=$filter";
-        @provs = grep { $_ =~ /$filter/ } @provs;
-    }
+#    my $config = config_get 'config.search';
+#    if( my $filter = $config->{provider_filter} ) {
+#        _debug "PROV FILTER=$filter";
+        @provs = grep { $_->user_can_search($c->username) } @provs;
+#    }
     $c->stash->{json} =
         { providers => [ map { {pkg => $_, type => $_->search_provider_type, name => $_->search_provider_name } } @provs ] };
     $c->forward('View::JSON');

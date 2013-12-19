@@ -14,6 +14,8 @@ BEGIN { extends 'Catalyst::Controller' }
 #     actions  => ['action.ci.admin']
 # };
 
+register 'action.search.ci' => { name => 'Search cis' };
+
 # gridtree - the adjacency list treegrid
 sub gridtree : Local {
     my ($self, $c) = @_;
@@ -1304,5 +1306,9 @@ sub default : Path Args(2) {
     $c->forward('View::JSON');
 }
 
+sub user_can_search {
+    my ($self, $username) = @_;
+    return Baseliner->model('Permissions')->user_has_action( username => $username, action => 'action.search.ci');
+}
 1;
 

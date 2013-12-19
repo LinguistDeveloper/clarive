@@ -20,6 +20,9 @@ my $post_filter = sub {
         $vars[2] = "<quote>$vars[2]</quote>";  # quote post
         ($text,@vars);
     };
+
+register 'action.search.topic' => { name => 'Search topics' };
+
 register 'event.post.create' => {
     text => '%1 posted a comment: %3',
     description => 'User posted a comment',
@@ -2556,6 +2559,11 @@ sub get_short_name {
     my $name = $p{name} or _throw 'Missing parameter name';
     $name =~ s/[^A-Z]//g;    
     return $name; 
+}
+
+sub user_can_search {
+    my ($self, $username) = @_;
+    return Baseliner->model('Permissions')->user_has_action( username => $username, action => 'action.search.topic');
 }
 
 1;
