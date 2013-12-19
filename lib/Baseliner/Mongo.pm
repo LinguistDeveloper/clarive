@@ -8,13 +8,30 @@ use Function::Parameters qw(:strict);
 use Baseliner::Utils qw(_fail _loc _error _warn _debug _throw _log _array _dump _ixhash);
 
 # mongo connection
+has retry_frequency => qw(is rw isa Num default 5);
+has max_retries     => qw(is rw isa Num default 60);
 has mongo_client  => qw(is rw isa Any), default=>sub{ Baseliner->config->{mongo}{client} // {} };
 has mongo_db_name => qw(is rw isa Any), default=>sub{ Baseliner->config->{mongo}{dbname} // 'clarive' };
 has mongo         => ( is=>'ro', isa=>'MongoDB::MongoClient', lazy=>1, default=>sub{
        my $self = shift;
        require MongoDB;
-       _log "Mongo: new connection to " . $self->mongo_db_name;
-       MongoDB::MongoClient->new($self->mongo_client);
+       my $max = $self->max_retries;
+       my $last_error;
+       for my $retry (1..$max){
+           my $cli = try {
+               _log "Mongo: new connection to " . $self->mongo_db_name;
+               return MongoDB::MongoClient->new($self->mongo_client);
+           } catch {
+               my $err = shift;
+               $last_error = _loc( "Mongo error connecting to %1: %2", $self->mongo_db_name, $err );
+               _error $last_error;
+               _error _loc( 'Retrying (%1) in %2 secs...', $retry, $self->retry_frequency );
+               sleep $self->retry_frequency;
+               return undef;
+           };
+           return $cli if $cli;
+       }
+       _fail $last_error if $last_error;
     });
 has db => ( is=>'ro', isa=>'MongoDB::Database', lazy=>1, default=>sub{
        my $self = shift;

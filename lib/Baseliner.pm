@@ -262,31 +262,8 @@ around 'debug' => sub {
         #$_->meta->make_immutable for keys %pkgs;
     }
 
-    # mkv : KV db setup
-    {
-        package mkv;
-        our $AUTOLOAD;
-        sub AUTOLOAD {
-            my $self = shift;
-            my $name = $AUTOLOAD;
-            my @a = reverse( split(/::/, $name));
-            my $db = $Baseliner::_mkv //( $Baseliner::_mkv = do{
-                my $conf = Baseliner->config->{mkv} // {};
-                # XXX make this optional - mongo, elasticsearch, etc
-                my $class = 'Baseliner::Schema::KV';
-                eval "require $class"; 
-                Util->_fail('Error loading mkv class: '. $@ ) if $@ ;
-                $class->new( $conf );
-            });
-            my $class = ref $db;
-            my $method = $class . '::' . $a[0];
-            @_ = ( $db, @_ );
-            goto &$method;
-        }
-    }
-    
     # mdb : master db setup
-    Baseliner->config->{mdb} //= {};
+    Baseliner->config->{mongo} //= {};
     {
         package mdb;
         our $AUTOLOAD;
@@ -295,7 +272,7 @@ around 'debug' => sub {
             my $name = $AUTOLOAD;
             my @a = reverse( split(/::/, $name));
             my $db = $Baseliner::_mdb //( $Baseliner::_mdb = do{
-                my $conf = Baseliner->config->{mdb};
+                my $conf = Baseliner->config->{mongo};
                 my $class = $conf->{class} // 'Baseliner::Mongo'; #'Baseliner::Schema::KV';
                 eval "require $class";
                 Util->_fail('Error loading mdb class: '. $@ ) if $@ ;

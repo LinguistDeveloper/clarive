@@ -4,6 +4,8 @@ redis:
     server: 'localhost:6379'
 mongo:
     dbname: clarive
+    retry_frequency: 5
+    max_retries: 60
     client:
         host: 'localhost:27017'
         auto_reconnect: 1
@@ -36,8 +38,6 @@ baseliner:
     job_runner: service.job.runner.rule
     web_url: 'http://localhost:3000'
     create_user_session: 0
-    mdb:
-      lazy: 1
     ldap: no
     header_init:
         show_lifecycle: 1
