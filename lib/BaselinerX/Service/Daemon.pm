@@ -105,7 +105,7 @@ sub job_daemon {
                     my $pid = $self->runner_spawn( mid=>$job->mid, runner=>$job->runner, step=>$step, jobid=>$job->mid, logfile=>$logfile );
                 } elsif( $mode =~ /fork|detach/i ) {
                     _log "Forking job " . $job->mid . " (mode=$mode), logfile=$logfile";
-                    $self->runner_fork( mid=>$job->mid, runner=>'Core', step=>$step, jobid=>$job->mid, logfile=>$logfile, mode=>$mode, unified_log=>$config->{unified_log} );
+                    $self->runner_fork( mid=>$job->mid, runner=>'Core', step=>$step, jobid=>$job->jobid, logfile=>$logfile, mode=>$mode, unified_log=>$config->{unified_log} );
                 } else {
                     _throw _loc("Unrecognized mode '%1'", $mode );
                 }

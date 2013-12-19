@@ -980,9 +980,11 @@ sub pid_file {
 sub write_pid {
     my ($self) = @_;
     my $file = $self->pid_file;
+    my $pid = $$;
     open my $ff, '>', $file or _error( _loc('Could not write pid file for job: %1', $!) );
-    print $ff $$;
+    print $ff $pid;
     close $ff;
+    $self->pid( $pid );
 }
 
 # called from dsl_run in Rules
