@@ -666,12 +666,13 @@ sub update {
                 for my $mid ( _array( $topic_mid ) ) {
                     # delete master row and bali_topic row
                     #      -- delete cascade does not clear up the cache
+
                     try { $self->cache_topic_remove( $mid ) } catch { };  # dont care about these errors, usually due to related
                     ci->delete( $mid );
                     mdb->topic->remove({ mid=>"$mid" });
+                    
+                    DB->BaliTopic->search({ mid=>$mid })->delete; ##### RICARDO: TEMPORAL HASTA ARREGLAR around EN CI
                 }
-
-                $modified_on = Class::Date->new(_now)->epoch;
                 
                 $return = '%1 topic(s) deleted';
             } ## end try
@@ -1822,7 +1823,7 @@ sub set_topics {
     }
     # related topics
     my @new_topics = map { split /,/, $_ } _array( $topics ) ;
-    my @old_topics = map {$_->{to_mid}} DB->BaliMasterRel->search({$topic_direction => $rs_topic->mid, rel_type => 'topic_topic', rel_field => $rel_field})->hashref->all;
+    my @old_topics = map {$_->{$data_direction}} DB->BaliMasterRel->search({$topic_direction => $rs_topic->mid, rel_type => 'topic_topic', rel_field => $rel_field})->hashref->all;
     
     # no diferences, get out
     return if !array_diff(@new_topics, @old_topics);
@@ -2027,7 +2028,7 @@ sub set_release {
         #my $rs = Baseliner->model('Baseliner::BaliMasterRel')->search({from_mid => {in => $release_row->mid}, to_mid=>$topic_mid })->delete;
     }        
         
-    my $new_release = $release;
+    my ($new_release) = _array $release;
 
     my @projects = map {$_->{mid}} $rs_topic->projects->hashref->all;
     my $notify = {
@@ -2038,6 +2039,8 @@ sub set_release {
     $notify->{project} = \@projects if @projects;
 
     # check if arrays contain same members
+
+    _log "Nueva $release_field: $new_release";
     if ( $new_release ne $old_release ) {
         if($release_row){
             my $rs = DB->BaliMasterRel->search({from_mid => $old_release, to_mid=>$topic_mid, rel_field => $release_field})->delete;
