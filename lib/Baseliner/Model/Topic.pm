@@ -2038,7 +2038,6 @@ sub set_release {
     $notify->{project} = \@projects if @projects;
 
     # check if arrays contain same members
-    _log "Guardando $release_field: $old_release -> $new_release";
 
     if ( $new_release ne $old_release ) {
         if($release_row){
