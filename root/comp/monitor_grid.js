@@ -500,9 +500,10 @@
             }
             
             if(swRefresh){
+                var filter = store.baseParams || {};
                 // send from and where, to determine if there's a more recent job
-                Baseliner.ajaxEval( '/job/refresh_now',
-                    { ids: ids, top: top_id, real_top: real_top, last_magic: last_magic, _ignore_conn_errors: true  }, function(res) {
+                Baseliner.ajax_json( '/job/refresh_now',
+                    { ids: ids, filter: filter, top: top_id, real_top: real_top, last_magic: last_magic, _ignore_conn_errors: true  }, function(res) {
                     refresh_button_wait_off();
                     if( ! res.success ) {
                         refresh_stop();
@@ -846,9 +847,10 @@
 
     var render_job = function(value, metadata, record){
         var contents = ''; record.data.contents.join('<br />');
+        var execs = record.data.exec > 1 ? " ("+record.data.exec+")" : '';
         return String.format(
-                '<b><a href="javascript:Baseliner.openLogTab({1}, \'{2}\');" style="font-family: Tahoma;">{0}</a></b><br />',
-                value, record.data.mid, record.data.name ); 
+                '<b><a href="javascript:Baseliner.openLogTab({1}, \'{2}\');" style="font-family: Tahoma;">{0}{3}</a></b><br />',
+                value, record.data.mid, record.data.name, execs ); 
     };
 
     function renderLast(value, p, r){

@@ -163,6 +163,10 @@ sub monitor {
     my $rs = mdb->master_doc->find({ collection=>'job', %$where })->sort(Tie::IxHash->new( @order_by ));
     $cnt = $rs->count;
     $rs->limit($limit)->skip($start);
+    
+    if( $p->{list_only} ) {    # used by the refresh auto, for speed
+        return ($cnt, $rs->all );
+    }
 
     my @rows;
     #while( my $r = $rs->next ) {

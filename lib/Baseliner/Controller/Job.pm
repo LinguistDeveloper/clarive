@@ -5,6 +5,7 @@ use Baseliner::Utils;
 use DateTime;
 use JSON::XS;
 use Try::Tiny;
+use List::Util qw(max);
 use utf8;
 
 BEGIN { extends 'Catalyst::Controller' }
@@ -259,7 +260,6 @@ sub monitor_json_from_config : Path('/job/monitor_json_from_config') {
 
 sub refresh_now : Local {
     my ( $self, $c ) = @_;
-    use String::CRC32;
     my $p = $c->request->parameters;
     my $username = $c->username;
     my $need_refresh = \0;
@@ -267,27 +267,33 @@ sub refresh_now : Local {
     my $real_top;
 
     try {
-        if( exists $p->{top} ) {
-            # are there newer jobs?   
-            my $doc = ci->job->find->sort({ jobid=>-1 })->next; 
-            $real_top= $doc->{mid};
-            if( $real_top ne $p->{top} && $real_top ne $p->{real_top} ) {
+        my $filter = $p->{filter} // {};
+        if( $p->{top} > 0 ) {
+            $filter->{username} = $c->username;
+            $filter->{language} = $c->languages->[0];
+            $filter->{list_only} = 1;
+            my ($cnt, @rows ) = Baseliner->model('Jobs')->monitor($filter);
+            my $max_id = max map { $_->{mid} } @rows;
+            _debug "Comparing max_id=$max_id and top_id=$p->{top}";
+            if( $max_id != $p->{top} ) {
                 $need_refresh = \1;
             }
         }
         if( $p->{ids} ) {
             # are there more info for current jobs?
-            my @rows = ci->job->find({ id=>mdb->in($p->{ids}) })->sort({ id=>-1 })->all;
+            my @rows = ci->job->find({ mid=>mdb->in($p->{ids}) })->fields({ _id=>-1, status=>1, exec=>1, step=>1, last_log_message=>1 })->sort({ mid=>-1 })->all;
             my $data ='';
-            map { $data.= ( $_->{status} // '') . ( $_->{last_log_message} // '') } @rows;  # TODO should use step and exec also
-            $magic = String::CRC32::crc32( $data );
+            map { $data.= join(',', sort(%$_) ) } @rows;  # TODO should use step and exec also
+            $magic = Util->_md5( $data );
             my $last_magic = $p->{last_magic};
             if( $magic ne $last_magic ) {
                 _debug "LAST MAGIC=$last_magic != CURRENT MAGIC $magic";
                 $need_refresh = \1;
             }
         }
-    } catch { _log shift };
+    } catch { 
+        _error( shift );
+    };
     $c->stash->{json} = { success=>\1, magic=>$magic, need_refresh => $need_refresh, stop_now=>\0, real_top=>$real_top };	
     $c->forward('View::JSON');
 }
