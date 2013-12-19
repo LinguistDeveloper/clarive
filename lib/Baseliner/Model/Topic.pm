@@ -667,14 +667,12 @@ sub update {
                     # delete master row and bali_topic row
                     #      -- delete cascade does not clear up the cache
 
-                    DB->BaliTopic->search({ mid=>$mid })->delete; ##### RICARDO: TEMPORAL HASTA ARREGLAR around EN CI
-                    
                     try { $self->cache_topic_remove( $mid ) } catch { };  # dont care about these errors, usually due to related
                     ci->delete( $mid );
                     mdb->topic->remove({ mid=>"$mid" });
+                    
+                    DB->BaliTopic->search({ mid=>$mid })->delete; ##### RICARDO: TEMPORAL HASTA ARREGLAR around EN CI
                 }
-
-                $modified_on = Class::Date->new(_now)->epoch;
                 
                 $return = '%1 topic(s) deleted';
             } ## end try
