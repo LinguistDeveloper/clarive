@@ -188,6 +188,7 @@ sub runner_fork {
             print STDERR $msg;
             $job->logger->error( $msg );
             $job->status('KILLED');
+            unlink $job->pid_file;
             $job->save;
         };
         exit 0;
@@ -264,31 +265,34 @@ sub check_cancelled {
             status => 'CANCELLED', '$or'=>[ {pid=>{'$gt' => 0}},{ pid=>{ '$ne'=>'0'}} ] 
     });
     while( my $doc = $rs->next ) {
-        my $ci = ci->new( $doc->{mid} );
-        _debug sprintf "Looking for job kill candidate: job=%s, mid=%s, pid=%s, host=%s (my host=%s)", $ci->name, $ci->mid, $ci->pid, $ci->host, $hostname;
-        if( $ci->host eq $hostname ) {
-            if( $ci->pid > 0  ) {
-                if( pexists($ci->pid) ) {
+        my $job = ci->new( $doc->{mid} );
+        _debug sprintf "Looking for job kill candidate: job=%s, mid=%s, pid=%s, host=%s (my host=%s)", $job->name, $job->mid, $job->pid, $job->host, $hostname;
+        if( $job->host eq $hostname ) {
+            if( $job->pid > 0  ) {
+                if( pexists($job->pid) ) {
                     my $sig = 16;
-                    _warn "Killing job (sig=$sig): " . $ci->name;
+                    _warn "Killing job (sig=$sig): " . $job->name;
                     my $msg;
-                    if( kill $sig => $ci->pid ) {
+                    if( kill $sig => $job->pid ) {
                         # recheck
-                        $msg = _loc("Killed Job %1 due to CANCEL issued (mid %2 status %3, pid %4)", $ci->name, $ci->mid, $ci->status, $ci->pid ); 
+                        $msg = _loc("Killed issued to job %1 process due to CANCEL status (mid %2 status %3, pid %4, host %5)", 
+                            $job->name, $job->mid, $job->status, $job->pid, $hostname ); 
                         _warn( $msg ); 
                     } else {
-                        $msg = _loc("Could not kill Job %1 due to CANCEL issued, pid not found (mid %2 status %3, pid %4)", $ci->name, $ci->mid, $ci->status, $ci->pid ); 
+                        $msg = _loc("Could not kill Job %1 process due to CANCEL: pid not found (mid %2 status %3, pid %4, host %5)", 
+                                $job->name, $job->mid, $job->status, $job->pid, $hostname ); 
                         _warn( $msg ); 
                     }
-                    $ci->logger->error( $msg ); 
-                    $ci->status('KILLED');
-                    $ci->endtime( _now );
-                    $ci->save;
+                    $job->logger->error( $msg ); 
+                    $job->status('KILLED');
+                    $job->endtime( _now );
+                    unlink $job->pid_file;
+                    $job->save;
                 } else {
                     # process not found, killed by hand? just reset PID
-                    _warn sprintf "Cancelled job %s pid %s not found. Resetting pid to 0: ", $ci->name, $ci->pid;
-                    $ci->pid( 0 );
-                    $ci->save;
+                    _warn sprintf "Cancelled job %s pid %s not found. Resetting pid to 0: ", $job->name, $job->pid;
+                    $job->pid( 0 );
+                    $job->save;
                 }
             }
         }
