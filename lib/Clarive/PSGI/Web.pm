@@ -40,5 +40,15 @@ if(0) {
 builder {
     #mount '/ws' => $Clarive::MM::app->start;
     #mount '/' => sub { [ 0, ["Content-Type","text/html"], ["Hello=$PP"] ]; };
+    mount '/check_status' => sub {
+        my $p = shift;
+        my $q = $p->{QUERY_STRING};
+        my $user = ci->user->search_ci( api_key=>'749c4edd1ee39f846b5784f592fa1274' );
+        if( $user ) {
+            [ 200, ["Content-Type","text/html"], ["Clarive: ok"] ];
+        } else {
+            [ 401, ["Content-Type","text/html"], ["Clarive: no auth"] ];
+        }
+    };
     mount '/' => Baseliner->psgi_app;
 };
