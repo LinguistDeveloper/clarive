@@ -637,7 +637,18 @@ sub view : Local {
             # comments
             $c->stash->{comments} = $c->model('Topic')->list_posts( mid=>$topic_mid );
             # activity (events)
-            $c->stash->{events} = events_by_mid( $topic_mid, min_level => 2 );
+            
+            #Controlar permisos de visualizacion en eventos
+            my %topic_category;
+            $topic_category{$category->id} = $category->name;
+
+            my $user_categories_fields_meta = Baseliner->model('Users')->get_categories_fields_meta_by_user( username => $c->username, categories=> \%topic_category );
+            my $events = events_by_mid( $topic_mid, min_level => 2 );
+            my $name_category = _name_to_id($category->name);
+            my @perm_events = grep { !exists $_->{field} || exists $user_categories_fields_meta->{$name_category}->{$_->{field}}} _array( $events );
+            
+            $c->stash->{events} = \@perm_events;
+            #$c->stash->{events} = events_by_mid( $topic_mid, min_level => 2 );
             
             #$c->stash->{forms} = [
             #    map { "/forms/$_" } split /,/,$topic->categories->forms
