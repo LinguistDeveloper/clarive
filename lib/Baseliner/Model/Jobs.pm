@@ -13,6 +13,8 @@ use utf8;
 use Class::Date;
 use Tie::IxHash;
 
+register 'action.search.job' => { name => 'Search jobs' };
+
 sub monitor {
     my ($self,$p) = @_;
     my $perm = Baseliner->model('Permissions');
@@ -451,5 +453,10 @@ sub get_contents {
     return $result;
 
 } ## end sub get_contents
+
+sub user_can_search {
+    my ($self, $username) = @_;
+    return Baseliner->model('Permissions')->user_has_action( username => $username, action => 'action.search.job');
+}
 
 1;
