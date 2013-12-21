@@ -756,7 +756,7 @@ sub artifacts {
 
     while ( my $r = $rs->next ) {
         my $more = $r->{more};
-        my $data = _html_escape( uncompress( $r->{data} ) || $r->{data} );
+        my $data = $r->{data};   # _html_escape( uncompress( $r->{data} ) || $r->{data} );
 
         my $data_len  = $r->{data_length} || 0;
         my $data_name = $r->{data_name}   || '';
