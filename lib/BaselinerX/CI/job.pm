@@ -755,26 +755,26 @@ sub artifacts {
     my $qre = qr/\.\w+$/;
 
     while ( my $r = $rs->next ) {
-        my $more = $r->more;
-        my $data = _html_escape( uncompress( $r->data ) || $r->data );
+        my $more = $r->{more};
+        my $data = _html_escape( uncompress( $r->{data} ) || $r->{data} );
 
-        my $data_len  = $r->data_length || 0;
-        my $data_name = $r->data_name   || '';
+        my $data_len  = $r->{data_length} || 0;
+        my $data_name = $r->{data_name}   || '';
         my $file =
             $data_name =~ $qre ? $data_name
             : ( $data_len > ( 4 * 1024 ) )
-            ? ( $data_name || $self->_select_words( $r->text, 2 ) ) . ".txt"
+            ? ( $data_name || $self->_select_words( $r->{text}, 2 ) ) . ".txt"
             : '';
         my $link;
         if ( $more && $more eq 'link') {
             $link = $data;
         }
         push @{$result->{outputs}}, {
-            id      => $r->id,
+            id      => $r->{id},
             datalen => $data_len,
             more => {
                 more      => $more,
-                data_name => $r->data_name,
+                data_name => $r->{data_name},
                 data      => $data_len ? 1 : 0,
                 file      => $file,
                 link      => $link
