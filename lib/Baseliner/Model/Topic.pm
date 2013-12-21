@@ -1395,8 +1395,8 @@ sub save_data {
                 my $method    = $relation{$field};
                 my $new_value = $row{$field};
                 my $old_value = $old_values{$field};
-
-                if ( !defined $old_value || $new_value ne $old_value ) {
+                
+                if ( !defined $old_value && $new_value ne '' || $new_value ne $old_value ) {
                     if ( $field eq 'id_category_status' ) {
 
                         # change status
