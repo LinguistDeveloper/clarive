@@ -589,32 +589,24 @@ sub list_baseline : Private {
 
     if ( @ids_project ) {
 
-        my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+        my $date = Class::Date->now();
+        my $days = $bl_days.'D';
+        $date = $date - $days;
+        my $date_str = $date->ymd;
+        $date_str  =~ s/\//\-/g;
 
 
-        # $SQL = "SELECT BL, 'OK' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
-        #         WHERE   TO_NUMBER(SYSDATE - ENDTIME) <= ? AND STATUS = 'FINISHED'
-        #                 AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
-        #                                                 (SELECT NAME FROM BALI_PROJECT WHERE $ids ACTIVE = 1) B 
-        #                 WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
-        #         GROUP BY BL
-        #     UNION               
-        #     SELECT BL, 'ERROR' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
-        #     WHERE   TO_NUMBER(SYSDATE - ENDTIME) <= ? AND STATUS IN ('ERROR','CANCELLED','KILLED')
-        #             AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
-        #                                             (SELECT NAME FROM BALI_PROJECT WHERE $ids ACTIVE = 1) B 
-        #             WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
-        #     GROUP BY BL";
-        $SQL = "SELECT BL, 'OK' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
-                WHERE   TO_NUMBER(SYSDATE - ENDTIME) <= ? AND STATUS = 'FINISHED'
-                GROUP BY BL
-            UNION               
-            SELECT BL, 'ERROR' AS RESULT, COUNT(*) AS TOT FROM BALI_JOB
-            WHERE   TO_NUMBER(SYSDATE - ENDTIME) <= ? AND STATUS IN ('ERROR','CANCELLED','KILLED')
-            GROUP BY BL";
+        my @jobs_ok = _array(mdb->master_doc->aggregate([
+            { '$match' => { 'collection' => 'job', 'status' => 'FINISHED', 'endtime' => {'$gte' => ''.$date_str} } },
+            { '$group' => { _id => '$bl', 'result' => {'$max' => 'OK'} , 'tot' => {'$sum' => 1} } }
+        ]));
 
+        my @jobs_ko = _array(mdb->master_doc->aggregate([
+            { '$match' => { 'collection' => 'job', 'status' => mdb->in( ('ERROR','CANCELLED','KILLED','REJECTED') ), 'endtime' => {'$gte' => ''.$date_str} } },
+            { '$group' => { _id => '$bl', 'result' => {'$max' => 'ERROR'} , 'tot' => {'$sum' => 1} } }
+        ])); 
 
-        @jobs = $db->array_hash( $SQL, $bl_days, $bl_days );
+        @jobs = ( @jobs_ok, @jobs_ko );
 
         #my @entornos = ('TEST', 'PREP', 'PROD');
         my $states = $config->{states};
@@ -622,9 +614,9 @@ sub list_baseline : Private {
 
         foreach my $entorno ( @entornos ) {
             my ( $totError, $totOk, $total, $porcentError, $porcentOk, $bl ) = ( 0, 0, 0, 0, 0);
-            @temps = grep { $_->{bl} eq $entorno } @jobs;
+            @temps = grep { $_->{_id} eq $entorno } @jobs;
             foreach my $temp ( @temps ) {
-                $bl = $temp->{bl};
+                $bl = $temp->{_id};
                 if ( $temp->{result} eq 'OK' ) {
                     $totOk = $temp->{tot};
                 } else {
@@ -659,10 +651,24 @@ sub list_baseline : Private {
 
 sub list_lastjobs: Private{
     my ( $self, $c, $dashboard_id ) = @_;
-    my $order_by = 'STARTTIME DESC'; 
     
-    my @user_projects = $c->model( 'Permissions' )->user_projects_ids( username => $c->username );
-    my $rs_search = ci->job->find({ projects => mdb->in( @user_projects )  })->sort({ starttime => -1 });
+    my $perm = Baseliner->model('Permissions');
+    my @mid_filters = ();
+    my $limit = $default_config->{rows} // 10;
+    my $username = $c->username;
+
+    if( !$perm->is_root($username) ) {
+            @mid_filters = $perm->user_projects_with_action(username => $username,
+                                                                action => 'action.job.viewall',
+                                                                level => 1);
+            
+    }
+
+    my $where = {};
+    $where->{'projects.mid'} = mdb->in(@mid_filters) if @mid_filters;
+    $where->{collection} = 'job';
+    my @rs_search = mdb->master_doc->find( $where )->sort({ starttime => -1 })->all;
+
     my $numrow = 0;
     my @lastjobs;
     
@@ -683,20 +689,24 @@ sub list_lastjobs: Private{
     }	
     ##########################################################################################################
 
-    while( my $doc = $rs_search->next ) {
-        my $job = ci->new( $doc->{mid} );
-        last if $numrow >= $default_config->{rows};
-        push @lastjobs,
-            {
-            mid       => $job->mid,
-            name      => $job->name,
-            type      => $job->job_type,
-            rollback  => $job->rollback,
-            status    => $job->status,
-            starttime => $job->starttime,
-            endtime   => $job->endtime
-            };
-        $numrow = $numrow + 1;
+    for my $doc ( @rs_search ) {
+        last if $numrow > $limit;
+        try {
+            my $job = ci->new( $doc->{mid} );
+            push @lastjobs,
+                {
+                mid       => $job->mid,
+                name      => $job->name,
+                type      => $job->job_type,
+                rollback  => $job->rollback,
+                status    => $job->status,
+                starttime => $job->starttime,
+                endtime   => $job->endtime
+                };
+            $numrow++;
+        } catch {
+            _log "FAILURE Searching job ".$doc->{mid}.": " . shift;
+        };
     }
     $c->stash->{lastjobs} =\@lastjobs;
 }
