@@ -1030,46 +1030,47 @@ sub viewjobs : Local{
 sub topics_by_category: Local{
     my ( $self, $c, $action ) = @_;
     #my $p = $c->request->parameters;
-    my ($SQL, @topics_by_category, @datas);
+    my (@topics_by_category, @datas);
 
-    my $user = $c->username;
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
 
-    my $user_categories = join ",", map {
-            $_->{id};
-        } $c->model('Topic')->get_categories_permissions( username => $user, type => 'view' );
-        
-    my $in_projects;
+    my $where = {};
+    my $username = $c->username;
+    my $perm = Baseliner->model('Permissions');
 
-    if ( !Baseliner->model("Permissions")->is_root( $user ) ) {
-        my @user_project_ids = Baseliner->model("Permissions")->user_projects_ids( username => $user );
-        my $in = join ",", @user_project_ids;
-        $in_projects = "AND EXISTS ( SELECT 1 
-                                     FROM BALI_MASTER_REL MR 
-                                     WHERE MR.FROM_MID = TP.MID 
-                                     AND MR.REL_TYPE = 'topic_project' 
-                                     AND MR.TO_MID IN ( $in ) )";   
-    };
+    my @user_categories =  map {
+                $_->{id};
+            } $c->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
 
-        
-    $SQL = "SELECT COUNT(*) AS TOTAL, C.NAME AS CATEGORY, C.COLOR, TP.ID_CATEGORY 
-                FROM BALI_TOPIC TP, BALI_TOPIC_CATEGORIES C
-                WHERE TP.ACTIVE = 1 
-                      AND TP.ID_CATEGORY = C.ID 
-                      AND TP.ID_CATEGORY IN ( $user_categories )
-                      $in_projects
-                GROUP BY NAME, C.COLOR, TP.ID_CATEGORY 
-                ORDER BY TOTAL DESC";
-    
-    @topics_by_category = $db->array_hash( $SQL );
+    $where->{'category.id'} = mdb->in(@user_categories);
 
+    if( $username && ! $perm->is_root( $username )){
+            my @proj_coll_roles = Baseliner->model('Permissions')->user_projects_ids_with_collection(username=>$username);
+            my @ors;
+            for my $proj_coll_ids ( @proj_coll_roles ) {
+                my $wh = {};
+                while( my ($k,$v) = each %{ $proj_coll_ids || {} } ) {
+                    #$wh->{"_project_security.$k"} = { '$in'=>[ undef, keys %{ $v || {} } ] }; 
+                    $wh->{"_project_security.$k"} = { '$in'=>[ keys %{ $v || {} } ] }; 
+                }
+                push @ors, $wh;
+            }
+            my $where_undef = { '_project_security' => undef };
+            push @ors, $where_undef;
+            $where->{'$or'} = \@ors;
+        }
+
+    @topics_by_category = _array (mdb->topic->aggregate( [
+        { '$match' => $where },
+        { '$group' => { _id => '$category.id', 'category' => {'$max' => '$category.name'},'color' => {'$max' => '$category.color'}, 'total' => { '$sum' => 1 }} },
+        { '$sort' => { total => -1}}
+    ]));
     
     foreach my $topic (@topics_by_category){
         push @datas, {
                     total           => $topic->{total},
                     category        => $topic->{category},
                     color           => $topic->{color},
-                    category_id     => $topic->{id_category}
+                    category_id     => $topic->{_id}
                 };
      }
     $c->stash->{topics_by_category} = \@datas;
@@ -1083,46 +1084,45 @@ sub topics_open_by_category: Local{
     my ($SQL, @topics_open_by_category, @datas);
 
 
-    my $user = $c->username;
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+    my $where = {};
+    my $username = $c->username;
+    my $perm = Baseliner->model('Permissions');
 
-    my $user_categories = join ",", map {
-            $_->{id};
-        } $c->model('Topic')->get_categories_permissions( username => $user, type => 'view' );
-        
-    my $in_projects;
+    my @user_categories =  map {
+                $_->{id};
+            } $c->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
 
-    if ( !Baseliner->model("Permissions")->is_root( $user ) ) {
-        my @user_project_ids = Baseliner->model("Permissions")->user_projects_ids( username => $user );
-        my $in = join ",", @user_project_ids;
-        $in_projects = "AND EXISTS ( SELECT 1 
-                                     FROM BALI_MASTER_REL MR 
-                                     WHERE MR.FROM_MID = TP.MID 
-                                     AND MR.REL_TYPE = 'topic_project' 
-                                     AND MR.TO_MID IN ( $in ) )";   
-    };
+    $where->{'category.id'} = mdb->in(@user_categories);
+    $where->{'category_status.type'} = mdb->nin(('F','FC'));
 
-        
-    $SQL = "SELECT COUNT(*) AS TOTAL, C.NAME AS CATEGORY, C.COLOR, TP.ID_CATEGORY 
-            FROM BALI_TOPIC TP
-                 INNER JOIN BALI_TOPIC_STATUS S ON ID_CATEGORY_STATUS = S.ID AND TYPE NOT LIKE 'F%'
-                 INNER JOIN BALI_TOPIC_CATEGORIES C ON TP.ID_CATEGORY = C.ID  
-            WHERE TP.ACTIVE = 1 
-                  AND TP.ID_CATEGORY = C.ID 
-                  AND TP.ID_CATEGORY IN ( $user_categories )
-                  $in_projects
+    if( $username && ! $perm->is_root( $username )){
+            my @proj_coll_roles = Baseliner->model('Permissions')->user_projects_ids_with_collection(username=>$username);
+            my @ors;
+            for my $proj_coll_ids ( @proj_coll_roles ) {
+                my $wh = {};
+                while( my ($k,$v) = each %{ $proj_coll_ids || {} } ) {
+                    #$wh->{"_project_security.$k"} = { '$in'=>[ undef, keys %{ $v || {} } ] }; 
+                    $wh->{"_project_security.$k"} = { '$in'=>[ keys %{ $v || {} } ] }; 
+                }
+                push @ors, $wh;
+            }
+            my $where_undef = { '_project_security' => undef };
+            push @ors, $where_undef;
+            $where->{'$or'} = \@ors;
+        }
 
-            GROUP BY C.NAME, C.COLOR, TP.ID_CATEGORY 
-            ORDER BY TOTAL DESC";
-    
-    @topics_open_by_category = $db->array_hash( $SQL );
+    @topics_open_by_category = _array (mdb->topic->aggregate( [
+        { '$match' => $where },
+        { '$group' => { _id => '$category.id', 'category' => {'$max' => '$category.name'},'color' => {'$max' => '$category.color'}, 'total' => { '$sum' => 1 }} },
+        { '$sort' => { total => -1}}
+    ]));
     
     foreach my $topic (@topics_open_by_category){
         push @datas, {
                     total 			=> $topic->{total},
                     category		=> $topic->{category},
                     color			=> $topic->{color},
-                    category_id		=> $topic->{id_category}
+                    category_id		=> $topic->{_id}
                 };
      }
     $c->stash->{topics_open_by_category} = \@datas;
@@ -1133,55 +1133,45 @@ sub topics_open_by_category: Local{
 sub topics_by_status: Local{
     my ( $self, $c, $action ) = @_;
     #my $p = $c->request->parameters;
-    my ($SQL, @topics_by_status, @datas);
+    my (@topics_by_status, @datas);
 
-    my $user = $c->username;
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+    my $where = {};
+    my $username = $c->username;
+    my $perm = Baseliner->model('Permissions');
 
-    my $user_categories = join ",", map {
-            $_->{id};
-        } $c->model('Topic')->get_categories_permissions( username => $user, type => 'view' );
-        
-    my $in_projects;
+    my @user_categories =  map {
+                $_->{id};
+            } $c->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
 
-    if ( !Baseliner->model("Permissions")->is_root( $user ) ) {
-        my @user_project_ids = Baseliner->model("Permissions")->user_projects_ids( username => $user );
-        my $in = join ",", @user_project_ids;
-        $in_projects = "AND EXISTS ( SELECT 1 
-                                     FROM BALI_MASTER_REL MR 
-                                     WHERE MR.FROM_MID = TP.MID 
-                                     AND MR.REL_TYPE = 'topic_project' 
-                                     AND MR.TO_MID IN ( $in ) )";   
-    };
+    $where->{'category.id'} = mdb->in(@user_categories);
 
-        
-    ##$SQL = "SELECT COUNT(*) AS TOTAL, C.NAME AS CATEGORY, C.COLOR, TP.ID_CATEGORY 
-    ##            FROM BALI_TOPIC TP, BALI_TOPIC_CATEGORIES C
-    ##            WHERE TP.ACTIVE = 1 
-    ##                  AND TP.ID_CATEGORY = C.ID 
-    ##                  AND TP.ID_CATEGORY IN ( $user_categories )
-    ##                  $in_projects
-    ##            GROUP BY NAME, C.COLOR, TP.ID_CATEGORY 
-    ##            ORDER BY TOTAL DESC";
-    
-    
-    $SQL = "SELECT COUNT(*) AS TOTAL, S.NAME AS STATUS, S.ID, S.COLOR  
-                FROM BALI_TOPIC TP INNER JOIN BALI_TOPIC_STATUS S ON TP.ID_CATEGORY_STATUS = S.ID
-                WHERE TP.ACTIVE = 1
-                      AND TP.ID_CATEGORY IN ( $user_categories )
-                      $in_projects                
-                GROUP BY S.NAME, S.ID, S.COLOR 
-                ORDER BY TOTAL DESC";
-    
-    @topics_by_status = $db->array_hash( $SQL );
+    if( $username && ! $perm->is_root( $username )){
+            my @proj_coll_roles = Baseliner->model('Permissions')->user_projects_ids_with_collection(username=>$username);
+            my @ors;
+            for my $proj_coll_ids ( @proj_coll_roles ) {
+                my $wh = {};
+                while( my ($k,$v) = each %{ $proj_coll_ids || {} } ) {
+                    $wh->{"_project_security.$k"} = { '$in'=>[ keys %{ $v || {} } ] }; 
+                }
+                push @ors, $wh;
+            }
+            my $where_undef = { '_project_security' => undef };
+            push @ors, $where_undef;
+            $where->{'$or'} = \@ors;
+        }
 
+    @topics_by_status = _array(mdb->topic->aggregate( [
+        { '$match' => $where },
+        { '$group' => { _id => '$category_status.id', 'status' => {'$max' => '$category_status.name'},'color' => {'$max' => '$category_status.color'}, 'total' => { '$sum' => 1 }} },
+        { '$sort' => { total => -1}}
+    ]));
     
     foreach my $topic (@topics_by_status){
         push @datas, {
                     total         => $topic->{total},
                     status        => $topic->{status},
                     color		  => $topic->{color},
-                    status_id     => $topic->{id}
+                    status_id     => $topic->{_id}
                 };
      }
     $c->stash->{topics_by_status} = \@datas;
@@ -1192,55 +1182,46 @@ sub topics_by_status: Local{
 sub topics_open_by_status: Local{
     my ( $self, $c, $action ) = @_;
     #my $p = $c->request->parameters;
-    my ($SQL, @topics_open_by_status, @datas);
+    my (@topics_open_by_status, @datas);
 
-    my $user = $c->username;
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
+    my $where = {};
+    my $username = $c->username;
+    my $perm = Baseliner->model('Permissions');
 
-    my $user_categories = join ",", map {
-            $_->{id};
-        } $c->model('Topic')->get_categories_permissions( username => $user, type => 'view' );
-        
-    my $in_projects;
+    my @user_categories =  map {
+                $_->{id};
+            } $c->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
 
-    if ( !Baseliner->model("Permissions")->is_root( $user ) ) {
-        my @user_project_ids = Baseliner->model("Permissions")->user_projects_ids( username => $user );
-        my $in = join ",", @user_project_ids;
-        $in_projects = "AND EXISTS ( SELECT 1 
-                                     FROM BALI_MASTER_REL MR 
-                                     WHERE MR.FROM_MID = TP.MID 
-                                     AND MR.REL_TYPE = 'topic_project' 
-                                     AND MR.TO_MID IN ( $in ) )";   
-    };
+    $where->{'category.id'} = mdb->in(@user_categories);
+    $where->{'category_status.type'} = mdb->nin(('F','FC'));
 
-        
-    ##$SQL = "SELECT COUNT(*) AS TOTAL, C.NAME AS CATEGORY, C.COLOR, TP.ID_CATEGORY 
-    ##            FROM BALI_TOPIC TP, BALI_TOPIC_CATEGORIES C
-    ##            WHERE TP.ACTIVE = 1 
-    ##                  AND TP.ID_CATEGORY = C.ID 
-    ##                  AND TP.ID_CATEGORY IN ( $user_categories )
-    ##                  $in_projects
-    ##            GROUP BY NAME, C.COLOR, TP.ID_CATEGORY 
-    ##            ORDER BY TOTAL DESC";
-    
-    
-    $SQL = "SELECT COUNT(*) AS TOTAL, S.NAME AS STATUS, S.ID, S.COLOR   
-                FROM BALI_TOPIC TP INNER JOIN BALI_TOPIC_STATUS S ON TP.ID_CATEGORY_STATUS = S.ID AND TYPE NOT LIKE 'F%'
-                WHERE TP.ACTIVE = 1
-                      AND TP.ID_CATEGORY IN ( $user_categories )
-                      $in_projects                
-                GROUP BY S.NAME, S.ID, S.COLOR 
-                ORDER BY TOTAL DESC";
-    
-    @topics_open_by_status = $db->array_hash( $SQL );
+    if( $username && ! $perm->is_root( $username )){
+            my @proj_coll_roles = Baseliner->model('Permissions')->user_projects_ids_with_collection(username=>$username);
+            my @ors;
+            for my $proj_coll_ids ( @proj_coll_roles ) {
+                my $wh = {};
+                while( my ($k,$v) = each %{ $proj_coll_ids || {} } ) {
+                    $wh->{"_project_security.$k"} = { '$in'=>[ keys %{ $v || {} } ] }; 
+                }
+                push @ors, $wh;
+            }
+            my $where_undef = { '_project_security' => undef };
+            push @ors, $where_undef;
+            $where->{'$or'} = \@ors;
+        }
 
+    @topics_open_by_status = _array(mdb->topic->aggregate( [
+        { '$match' => $where },
+        { '$group' => { _id => '$category_status.id', 'status' => {'$max' => '$category_status.name'},'color' => {'$max' => '$category_status.color'}, 'total' => { '$sum' => 1 }} },
+        { '$sort' => { total => -1}}
+    ]));
     
     foreach my $topic (@topics_open_by_status){
         push @datas, {
                     total         => $topic->{total},
                     status        => $topic->{status},
                     color		  => $topic->{color},
-                    status_id     => $topic->{id}
+                    status_id     => $topic->{_id}
                 };
      }
     $c->stash->{topics_open_by_status} = \@datas;
