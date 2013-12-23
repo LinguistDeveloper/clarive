@@ -679,6 +679,8 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
           }
           push @ors, $wh;
       }
+	  my $where_undef = { '_project_security' => undef };
+	  push @ors, $where_undef;
       $where->{'$or'} = \@ors;
     }
 
