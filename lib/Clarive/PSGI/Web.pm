@@ -43,7 +43,7 @@ builder {
     mount '/check_status' => sub {
         my $p = shift;
         my $q = $p->{QUERY_STRING};
-        my $user = ci->user->search_ci( api_key=>'749c4edd1ee39f846b5784f592fa1274' );
+        my $user = ci->user->search_ci( name => 'root' );
         if( $user ) {
             [ 200, ["Content-Type","text/html"], ["Clarive: ok"] ];
         } else {
