@@ -298,6 +298,8 @@ sub topics_for_user {
             }
             push @ors, $wh;
         }
+        my $where_undef = { '_project_security' => undef };
+        push @ors, $where_undef;
         $where->{'$or'} = \@ors;
     }
     
