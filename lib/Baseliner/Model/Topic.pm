@@ -601,17 +601,16 @@ sub update {
                     $return = 'Topic added';
                     $category = { $topic->categories->get_columns };
                     $modified_on = $topic->modified_on->epoch;
-                    my @projects = map {$_->{mid}} $topic->projects->hashref->all;
+                    #my @projects = map {$_->{mid}} $topic->projects->hashref->all;
                     my $id_category = $topic->id_category;
                     my $id_category_status = $topic->id_category_status;
                     
-                    my @users = $self->get_users_friend(id_category => $id_category, id_status => $id_category_status, projects => \@projects);
+                    my @users = $self->get_users_friend(mid => $topic_mid, id_category => $id_category, id_status => $id_category_status);
                     
                     my $notify = {
                         category        => $id_category,
                         category_status => $id_category_status,
                     };
-                    $notify->{project} = \@projects if @projects;
                     
                     my $subject = _loc("New topic (%1): [%2] %3", $category->{name}, $topic->mid, $topic->title);
                     { mid => $topic->mid, title => "Nuevo tópico - ".$topic, topic => $topic->title, name_category => $category->{name}, category => $category->{name}, category_name => $category->{name}, notify_default => \@users, subject => $subject, notify => $notify }   # to the event
@@ -641,8 +640,8 @@ sub update {
                 $modified_on = $topic->modified_on->epoch;
                 $category = { $topic->categories->get_columns };
                 
-                my @projects = map {$_->{mid}} $topic->projects->hashref->all;
-                my @users = $self->get_users_friend(id_category => $topic->id_category, id_status => $topic->id_category_status, projects => \@projects);
+                #my @projects = map {$_->{mid}} $topic->projects->hashref->all;
+                my @users = $self->get_users_friend(mid => $topic_mid, id_category => $topic->id_category, id_status => $topic->id_category_status);
 
                 $return = 'Topic modified';
                 my $subject = _loc("Topic updated (%1): [%2] %3", $category->{name}, $topic->mid, $topic->title);
@@ -2451,8 +2450,8 @@ sub change_status {
             }
             # callback, if any
             $callback->() if ref $callback eq 'CODE';
-            my @projects = map {$_->{mid}} $row->projects->hashref->all;
-            my @users = $self->get_users_friend(id_category => $row->id_category, id_status => $p{id_status}, projects => \@projects);
+            #my @projects = map {$_->{mid}} $row->projects->hashref->all;
+            my @users = $self->get_users_friend(id_category => $row->id_category, id_status => $p{id_status});
             
             ###my @roles = map { $_->{id_role} }
             ###            DB->BaliTopicCategoriesAdmin->search(   {id_category => $row->id_category, id_status_from => $p{id_status}}, 
@@ -2493,12 +2492,12 @@ sub get_users_friend {
     my ($self, %p) = @_;
 
     my @users;
-    my @projects = _array $p{projects};
+    my $mid = $p{mid};
     my @roles = map { $_->{id_role} }
                 DB->BaliTopicCategoriesAdmin->search(   {id_category => $p{id_category}, id_status_from => $p{id_status}}, 
                                                         {select => 'id_role', group_by=> 'id_role'})->hashref->all;
     if (@roles){
-        @users = Baseliner->model('Users')->get_users_from_mid_roles( roles => \@roles, projects => \@projects );
+        @users = Baseliner->model('Users')->get_users_from_mid_roles( mid => $mid, roles => \@roles);
     }
     return @users
 }

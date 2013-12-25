@@ -139,7 +139,18 @@ sub save_api_key  {
 method gen_project_security {
     if( ref $self ) {
         my $sec = Baseliner->model('Permissions')->user_projects_ids_with_collection( username=>$self->name, with_role=>1 );
-        $self->project_security( $sec );
+        my $security = {};
+        for my $role ( keys %{$sec} ) {
+            for my $coll ( keys %{$sec->{$role}} ) {
+                my @projs;
+                for my $proj ( keys %{$sec->{$role}->{$coll} } ) {
+                    push @projs, $proj;
+                }
+                $security->{$role}->{$coll} = \@projs;
+            }
+        }
+
+        $self->project_security( $security );
     } else {
         for my $user ( ci->user->search_cis ) {
             $user->gen_project_security;
@@ -173,3 +184,15 @@ __END__
                         qw/site_raw can_menu can_change_password can_lifecycle can_surrogate portlets tab_list alert theme_dir/
                     })
                 %>
+
+                my $security = {};
+                for my $role ( keys %{$sec} ) {
+                    for my $coll ( keys %{$security->{$role}} ) {
+                        my @projs;
+                        for my $proj ( keys %{$security->{$role}->{$coll} } ) {
+                            push @projs, $proj;
+                        }
+                        $security->{$role}->{$coll} = \@projs;
+                    }
+                }
+urity

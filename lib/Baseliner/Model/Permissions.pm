@@ -1127,25 +1127,37 @@ sub users_with_roles {
     my ( $self, %p ) = @_;
     
     my @roles = _array $p{roles};
-    my @projects = _array $p{projects};
     my $include_root = $p{include_root} // 1;
+    my $mid = $p{mid};
+    my @users;
 
+    my $topic           = mdb->topic->find_one( { mid => $mid } );
+    my $proj_coll_roles = $topic->{_project_security};
 
-    @projects = map { 'project/'.$_ } @projects if @projects;
-    push @projects, '/';
+    my $where;
+    my @ors;
+    
+    if ( $proj_coll_roles ) {    
+        for my $role (@roles) {
+            my @ands;
+            for my $proj ( keys %{$proj_coll_roles} ) {
+                my $wh = {};
+                $wh->{"project_security.$role.$proj"} =
+                  { '$in' => [ _array $proj_coll_roles->{$proj} ] };
+                push @ands, $wh;
+            }
+            push @ors, { '$and' => \@ands };
+        }
+    } else {
+        for my $role ( @roles ) {
+            my $wh;
+            $wh->{"project_security.$role"} = { '$ne' => undef };
+            push @ors, $wh;
+        }
+    }
+    $where->{'$or'} = \@ors;
+    @users = map { $_->{name} } BaselinerX::CI::user->search_cis(%$where);
 
-
-    my $query = {};
-    $query->{id_role} = \@roles;
-    $query->{username} = {'!=', undef};
-    $query->{'ns'} = \@projects;
-
-    delete $query->{role} if (scalar @roles == 1 && $roles[0] eq '*');    
-
-    my @users = map{ $_->{username} } DB->BaliRoleuser->search( $query ,
-                                    { select => ['username'], as => ['username'],
-        
-                                  group_by => ['username']} )->hashref->all;
     my @root_users;
     if ( $include_root ) {        
         @root_users = map{ $_->{username} } DB->BaliRoleaction->search( { action => 'action.admin.root'} ,
@@ -1158,5 +1170,43 @@ sub users_with_roles {
     return @users, @root_users;
 
 }
+
+# DEPRECATED
+# sub users_with_roles {
+#     my ( $self, %p ) = @_;
+    
+#     my @roles = _array $p{roles};
+#     my @projects = _array $p{projects};
+#     my $include_root = $p{include_root} // 1;
+#     my $mid = $p{mid};
+
+
+#     @projects = map { 'project/'.$_ } @projects if @projects;
+#     push @projects, '/';
+
+
+#     my $query = {};
+#     $query->{id_role} = \@roles;
+#     $query->{username} = {'!=', undef};
+#     $query->{'ns'} = \@projects;
+
+#     delete $query->{role} if (scalar @roles == 1 && $roles[0] eq '*');    
+
+#     my @users = map{ $_->{username} } DB->BaliRoleuser->search( $query ,
+#                                     { select => ['username'], as => ['username'],
+        
+#                                   group_by => ['username']} )->hashref->all;
+#     my @root_users;
+#     if ( $include_root ) {        
+#         @root_users = map{ $_->{username} } DB->BaliRoleaction->search( { action => 'action.admin.root'} ,
+#                                         { join => {'id_role' => {'bali_roleusers' => 'bali_user'}}, 
+#                                           select => ['bali_roleusers.username'], as => ['username'],
+#                                           group_by => ['username']} )->hashref->all;
+#         push @root_users,Baseliner->config->{root_username} if Baseliner->config->{root_username};
+
+#     }
+#     return @users, @root_users;
+
+# }
 
 1;
