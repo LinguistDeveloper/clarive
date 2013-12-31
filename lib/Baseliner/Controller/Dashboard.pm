@@ -651,8 +651,8 @@ sub list_baseline : Private {
 
 sub list_lastjobs: Private{
     my ( $self, $c, $dashboard_id ) = @_;
-    
     my $perm = Baseliner->model('Permissions');
+    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.lastjobs');	
     my @mid_filters = ();
     my $limit = $default_config->{rows} // 10;
     my $username = $c->username;
@@ -675,7 +675,6 @@ sub list_lastjobs: Private{
     #######################################################################################################
     #CONFIGURATION DASHLET
     ##########################################################################################################
-    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.lastjobs');	
     
     if($dashboard_id && looks_like_number($dashboard_id)){
         my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
