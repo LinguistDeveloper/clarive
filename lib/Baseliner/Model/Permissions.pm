@@ -1140,10 +1140,12 @@ sub users_with_roles {
     if ( $proj_coll_roles ) {    
         for my $role (@roles) {
             my @ands;
+            my $wh = {};
+            $wh->{"project_security.$role"} = { '$ne' => undef };
+            push @ands, $wh;
             for my $proj ( keys %{$proj_coll_roles} ) {
-                my $wh = {};
                 $wh->{"project_security.$role.$proj"} =
-                  { '$in' => [ _array $proj_coll_roles->{$proj} ] };
+                  { '$in' => [ undef, _array $proj_coll_roles->{$proj} ] };
                 push @ands, $wh;
             }
             push @ors, { '$and' => \@ands };

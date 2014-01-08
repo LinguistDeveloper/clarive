@@ -292,10 +292,13 @@ sub topics_for_user {
         my @ors;
         for my $proj_coll_ids ( @proj_coll_roles ) {
             my $wh = {};
-            while( my ($k,$v) = each %{ $proj_coll_ids || {} } ) {
-                #$wh->{"_project_security.$k"} = { '$in'=>[ undef, keys %{ $v || {} } ] }; 
-                $wh->{"_project_security.$k"} = { '$in'=>[ keys %{ $v || {} } ] }; 
-            }
+            while ( my ( $k, $v ) = each %{$proj_coll_ids || {}} ) {
+                if ( $k eq 'project' ) {
+                    $wh->{"_project_security.$k"} = {'$in' => [ undef, keys %{$v || {}} ]};
+                } else {
+                    $wh->{"_project_security.$k"} = {'$in' => [ keys %{$v || {}} ]};
+                }
+            } ## end while ( my ( $k, $v ) = each...)
             push @ors, $wh;
         }
         my $where_undef = { '_project_security' => undef };
