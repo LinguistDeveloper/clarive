@@ -341,7 +341,7 @@ sub save_fields {
     my $md = mdb->master_doc;
     if( my $row = $md->find_one({ mid=>"$mid" }) ) {
         my $id = $row->{_id};
-        my $doc = { %$row, %{ $data || {} } };
+        my $doc = { ( $master_row ? $master_row->get_columns : () ), %$row, %{ $data || {} } };
         my $final_doc = Util->_clone($doc);
         Util->_unbless($final_doc);
         mdb->clean_doc($final_doc);
