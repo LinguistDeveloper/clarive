@@ -514,6 +514,7 @@ sub user_projects : Local {
     my $collection = $p->{collection} // 'project';
     my $level = $p->{level};
     my $roles = $p->{roles};
+    my $valuesqry = $p->{valuesqry};
     my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
     my $where;
     length($query) and $where = query_sql_build( query=>$query, fields=>{
@@ -534,7 +535,7 @@ sub user_projects : Local {
     my $username = $c->username;
 
     $where->{'exists'} =  $c->model( 'Permissions' )->user_projects_query( username=>$username, join_id=>'id', roles => $roles )
-        unless $c->is_root;
+        unless $c->is_root || $valuesqry;
 
     # this can be super slow due to IN
     #my $user_prjs = $c->model( 'Permissions' )->user_projects_query(
