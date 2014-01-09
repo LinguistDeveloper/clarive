@@ -303,7 +303,7 @@ sub index : Private {
         #$c->stash->{can_change_password} = $c->config->{authentication}{default_realm} eq 'none';
         # TLC
         if( my $ccc = $Baseliner::TLC_MSG ) {
-            my $tlc_msg = $ccc->( DB->BaliUser->search({ active=>1 })->count );
+            my $tlc_msg = $ccc->( DB->BaliUser->search({ active=>1, username=>{ '!=' => 'root' } })->count );
             if( $tlc_msg  ) {
                 unshift @{ $c->stash->{menus} }, '"<span style=\'font-weight: bold;color: #f34\'>'.$tlc_msg. '</span>"';
             }
