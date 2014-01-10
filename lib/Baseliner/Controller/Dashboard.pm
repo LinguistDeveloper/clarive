@@ -1057,8 +1057,9 @@ sub topics_by_category: Local{
             my @ors;
             for my $proj_coll_ids ( @proj_coll_roles ) {
                 my $wh = {};
-                while ( my ( $k, $v ) = each %{$proj_coll_ids || {}} ) {
-                    if ( $k eq 'project' ) {
+                my $count = scalar keys %{ $proj_coll_ids || {} };
+                while ( my ( $k, $v ) = each %{ $proj_coll_ids || {} } ) {
+                    if ( $k eq 'project' && $count gt 1) {
                         $wh->{"_project_security.$k"} = {'$in' => [ undef, keys %{$v || {}} ]};
                     } else {
                         $wh->{"_project_security.$k"} = {'$in' => [ keys %{$v || {}} ]};
@@ -1112,8 +1113,9 @@ sub topics_open_by_category: Local{
             my @ors;
             for my $proj_coll_ids ( @proj_coll_roles ) {
                 my $wh = {};
-                while ( my ( $k, $v ) = each %{$proj_coll_ids || {}} ) {
-                    if ( $k eq 'project' ) {
+                my $count = scalar keys %{ $proj_coll_ids || {} };
+                while ( my ( $k, $v ) = each %{ $proj_coll_ids || {} } ) {
+                    if ( $k eq 'project' && $count gt 1) {
                         $wh->{"_project_security.$k"} = {'$in' => [ undef, keys %{$v || {}} ]};
                     } else {
                         $wh->{"_project_security.$k"} = {'$in' => [ keys %{$v || {}} ]};
@@ -1165,8 +1167,9 @@ sub topics_by_status: Local{
             my @ors;
             for my $proj_coll_ids ( @proj_coll_roles ) {
                 my $wh = {};
-                while ( my ( $k, $v ) = each %{$proj_coll_ids || {}} ) {
-                    if ( $k eq 'project' ) {
+                my $count = scalar keys %{ $proj_coll_ids || {} };
+                while ( my ( $k, $v ) = each %{ $proj_coll_ids || {} } ) {
+                    if ( $k eq 'project' && $count gt 1) {
                         $wh->{"_project_security.$k"} = {'$in' => [ undef, keys %{$v || {}} ]};
                     } else {
                         $wh->{"_project_security.$k"} = {'$in' => [ keys %{$v || {}} ]};
@@ -1218,8 +1221,9 @@ sub topics_open_by_status: Local{
             my @ors;
             for my $proj_coll_ids ( @proj_coll_roles ) {
                 my $wh = {};
-                while ( my ( $k, $v ) = each %{$proj_coll_ids || {}} ) {
-                    if ( $k eq 'project' ) {
+                my $count = scalar keys %{ $proj_coll_ids || {} };
+                while ( my ( $k, $v ) = each %{ $proj_coll_ids || {} } ) {
+                    if ( $k eq 'project' && $count gt 1) {
                         $wh->{"_project_security.$k"} = {'$in' => [ undef, keys %{$v || {}} ]};
                     } else {
                         $wh->{"_project_security.$k"} = {'$in' => [ keys %{$v || {}} ]};
