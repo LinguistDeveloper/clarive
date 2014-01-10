@@ -275,25 +275,41 @@ sub all_fields {
 	my $id_category = $p->{id_category} ? $p->{id_category} : undef;
 	my $name_category = $p->{name_category} ? Util->_name_to_id($p->{name_category}) : undef;
 	
+	
+	my %categories;
+	$categories{$id_category} = $name_category;
+	my $user_categories_fields_meta = Baseliner->model('Users')->get_categories_fields_meta_by_user( username => $username );	
+	
+	
 	my @fieldlets = _array( Baseliner->model('Topic')->get_meta(undef, $id_category, $username) );
 	
 	#_error \@fieldlets;
-	my %common_list = ( created_on=>1, created_by=>1, modified_on=>1, modified_by=>1 );
-	my %hidden_list = ( labels=>1, included_into=>1, progress=>1, 
-		 ( map {$_->{id_field}=>1} grep {$_->{type} eq 'separator' || $_->{meta_type} eq 'history'} grep {exists $_->{type}} @fieldlets) );
-	 
-	my %common_fields = map { $_->{id_field} => $_ } 
-		# any fields that are 'system', or are in the common_list and are not in the hidden list
-		grep { ($_->{origin} eq 'system' || exists $common_list{$_->{id_field}}) 
-			&& !exists $hidden_list{$_->{id_field}} } 
-		@fieldlets;
+	####my %common_list = ( created_on=>1, created_by=>1, modified_on=>1, modified_by=>1 );
+	####my %hidden_list = ( labels=>1, included_into=>1, progress=>1, 
+	####	 ( map {$_->{id_field}=>1} grep {$_->{type} eq 'separator' || $_->{meta_type} eq 'history'} grep {exists $_->{type}} @fieldlets) );
+	#### 
+	####my %common_fields = map { $_->{id_field} => $_ } 
+	####	# any fields that are 'system', or are in the common_list and are not in the hidden list
+	####	grep { ($_->{origin} eq 'system' || exists $common_list{$_->{id_field}}) 
+	####		&& !exists $hidden_list{$_->{id_field}} } 
+	####	@fieldlets;
 			
 	if(!$id_category){	
-		my @children =	map { 
-						$_->{text} 	= $_->{name};
-						$_->{icon}	='/static/images/icons/topic_one.png';
-						$_->{data}	= { 'id_category' => $_->{id}, 'name_category' => $_->{name} };
-						$_->{type}='category'; $_->{leaf}=\0; $_ } 
+		my @children =	map {
+							my $name_id  = Util->_name_to_id($_->{name});
+							my @fields = map { [ $_, _loc($user_categories_fields_meta->{$name_id}->{$_}->{name_field})] } 
+										 keys $user_categories_fields_meta->{$name_id} ;
+				
+							$_->{text} 	= $_->{name};
+							$_->{icon}	='/static/images/icons/topic_one.png';
+							$_->{data}	= {
+								'id_category' 	=> $_->{id},
+								'name_category' => $_->{name},
+								'fields' 		=> \@fields,
+								'relation'		=> ''};
+							$_->{type}='category'; $_->{leaf}=\0;
+							$_
+						} 
 						sort { defined($a->{name_field})  cmp defined($b->{name_field})  }
 						@cats;
 		
@@ -335,33 +351,33 @@ sub all_fields {
 			};		
 		}
 		
-		push @tree, {
-			text => _loc('Commons'),
-			leaf => \0,
-			icon     => '/static/images/icons/topic.png',
-			draggable => \0,
-			children => [
-				map {
-					{
-						text      => _loc( $_->{name_field} ),
-						icon      => '/static/images/icons/field-add.png',
-						id_field  => $_->{id_field},
-						header    => $_->{name_field},
-						meta_type => $_->{meta_type},
-						gridlet   => $_->{gridlet},
-						type      => 'select_field',
-						leaf      => \1,
-					}
-				} 
-				sort { lc $a->{name_field} cmp lc $b->{name_field} } 
-				values %common_fields
-			],
-		};	
+		####push @tree, {
+		####	text => _loc('Commons'),
+		####	leaf => \0,
+		####	icon     => '/static/images/icons/topic.png',
+		####	draggable => \0,
+		####	children => [
+		####		map {
+		####			{
+		####				text      => _loc( $_->{name_field} ),
+		####				icon      => '/static/images/icons/field-add.png',
+		####				id_field  => $_->{id_field},
+		####				header    => $_->{name_field},
+		####				meta_type => $_->{meta_type},
+		####				gridlet   => $_->{gridlet},
+		####				type      => 'select_field',
+		####				leaf      => \1,
+		####			}
+		####		} 
+		####		sort { lc $a->{name_field} cmp lc $b->{name_field} } 
+		####		values %common_fields
+		####	],
+		####};	
 	}
 	else{
-		my %categories;
-		$categories{$id_category} = $name_category;
-		my $user_categories_fields_meta = Baseliner->model('Users')->get_categories_fields_meta_by_user( username=>$username, categories=> \%categories );
+		#my %categories;
+		#$categories{$id_category} = $name_category;
+		#my $user_categories_fields_meta = Baseliner->model('Users')->get_categories_fields_meta_by_user( username=>$username, categories=> \%categories );
 		map { 
 			push @tree, { 
 				text        => _loc($user_categories_fields_meta->{$name_category}->{$_}->{name_field}),
@@ -371,6 +387,7 @@ sub all_fields {
 				meta_type   => $user_categories_fields_meta->{$name_category}->{$_}->{meta_type},
 				collection  => $user_categories_fields_meta->{$name_category}->{$_}->{collection},
 				ci_class	=> $user_categories_fields_meta->{$name_category}->{$_}->{ci_class},
+				filter      => $user_categories_fields_meta->{$name_category}->{$_}->{filter},				
 				gridlet     => $user_categories_fields_meta->{$name_category}->{$_}->{gridlet},
 				category    => $p->{name_category},
 				leaf        =>\1
@@ -378,7 +395,7 @@ sub all_fields {
 		
 		}
 		sort { lc $a cmp lc $b }
-		grep { !exists $common_fields{$_} && !exists $hidden_list{$_} } 		
+		####grep { !exists $common_fields{$_} && !exists $hidden_list{$_} } 		
 		keys $user_categories_fields_meta->{$name_category}; 		
 		
 	}
@@ -420,7 +437,6 @@ sub selected_fields {
 		my %type_filter = map { $_->{type}=>$_->{children} } _array( $filter );
 		for my $type ( _array($type_filter{where_field}) ) {
 			given ($type->{field}) {
-				
 				when ('status') {
 					if($type->{value} eq 'default'){
 						my @status = DB->BaliTopicCategoriesStatus
@@ -478,28 +494,201 @@ sub selected_fields {
     for my $select_field ( _array($fields{select}) ) {
         my $id = $data_field_map{$select_field->{id_field}} // $select_field->{id_field};
 		my $filter_type = exists $filters{$select_field->{id_field}} ?  $filters{$select_field->{id_field}} : undef;
+		if ( $filter_type) {
+			$filter_type->{category} = $select_field->{category};
+		}
+		
         $id =~ s/\.+/-/g;  # convert dot to dash to avoid JsonStore id problems
         my $as = $select_field->{as} // $select_field->{name_field};
-        push @{ $ret{ids} }, $id;   # sent to the Topic Store as report data keys
+        push @{ $ret{ids} }, $id . "_$select_field->{category}";   # sent to the Topic Store as report data keys
         push @{ $ret{columns} }, { as=>$as, id=>$id, meta_type=>$meta->{$id}{meta_type}, %$select_field, filter=> $filter_type };
     }
     #_debug \%ret;
     return \%ret;
 }
 
+sub get_where {
+    my ($self, $p ) = @_;
+	my $filters_where = $p->{filters_where};
+	my $name_category = $p->{name_category};
+	my %dynamic_filter = %{$p->{dynamic_filter}};
+	my $where = $p->{where};
+	
+	_log ">>>>>>>>>>Aplicar filtro dinamico: " . _dump %dynamic_filter;
+	
+	map {
+		if (!exists $_->{category} || $_->{category} eq $name_category){
+			my $field=$_;
+			my $id = $field->{meta_where_id} // $where_field_map{$_->{id_field}} // $field->{id_field};
+			my @chi = _array($field->{children});
+			
+			#_log ">>>>>>>>>>>>>>>>>>>>>>>ID_FIELD: " . $_->{id_field};
+			#_log ">>>>>>>>>>>>>>>>>>>>>>>ID XXXXXXX: " . _dump $field;
+			
+			for my $val ( @chi ) {
+				my $id_field_category = $id . "_$name_category";
+				my $cond;
+				#_log ">>>>>>>>>>>>>>>>>>>>>>>CHILDREN: " . _dump $val;
+				if(exists $dynamic_filter{$id_field_category} && $dynamic_filter{$id_field_category}->{category} eq $name_category ) {
+					given ($dynamic_filter{$id_field_category}->{type}) {
+						when ('numeric') {
+							for (my $i = 0; $i < scalar @{$dynamic_filter{$id_field_category}->{oper}}; $i++){
+								if ($dynamic_filter{$id_field_category}->{oper}[$i] eq 'eq'){
+									$cond = $dynamic_filter{$id_field_category}->{value}[$i];
+								}else{
+									$cond->{'$'.$dynamic_filter{$id_field_category}->{oper}[$i]} = $dynamic_filter{$id_field_category}->{value}[$i];
+								}
+							}
+						};
+						when ('list') {
+							my @parse;
+							for my $value (_array $dynamic_filter{$id_field_category}->{value}){
+								if( $value eq '-1'){
+									push @parse, '';
+									push @parse, undef;
+									push @parse, [];
+								}else{
+									push @parse, $value;	
+								}
+							}
+							if (scalar @parse > 1){
+								$cond = { '$in' => \@parse };	
+							}else{
+								$cond = $parse[0];	
+							}
+						};
+						when ('string') {
+							if( $val->{oper} =~ /^(like|not_like)$/ || $val->{value} eq 'default' ) {
+								#filtros join tratamiento mid string
+								if ($val->{where} eq 'ci'){
+									$cond = $dynamic_filter{$id_field_category}->{value};		
+								}
+								else{
+									$val->{value} = qr/$dynamic_filter{$id_field_category}->{value}/i;
+									if ($val->{oper} eq 'not_like'){
+										$cond = { '$not' => $val->{value} };	
+									}else{
+										$cond = $val->{value};	
+									}	
+								}
+							}else{
+								$val->{value} = $dynamic_filter{$id_field_category}->{value};
+								if ($val->{oper}){
+									$cond = { $val->{oper} => $val->{value}  };
+								}else{
+									$cond = $val->{value};
+								}
+							}
+						};
+						when ('date') {
+							for (my $i = 0; $i < scalar @{$dynamic_filter{$id_field_category}->{oper}}; $i++){
+								if ($dynamic_filter{$id_field_category}->{oper}[$i] eq 'eq'){
+									$cond = $dynamic_filter{$id_field_category}->{value}[$i];	
+								}else{
+									$cond->{'$'.$dynamic_filter{$id_field_category}->{oper}[$i]} = $dynamic_filter{$id_field_category}->{value}[$i];	
+								}
+							}
+						}
+					}
+					$where->{$id} = $cond;
+				}
+				else{
+					if($val->{value}){
+						given ($val->{field}) {
+							when ('number') {
+								if($val->{value} ne 'default'){
+									if (exists $where->{$id}){
+										$where->{$id}->{$val->{oper}} = $val->{value} + 0;
+									}else{
+										$cond = { $val->{oper} => $val->{value} + 0 };
+										$where->{$id} = $cond;	
+									}
+								}
+							}
+							when ('string') {
+								if($val->{value} ne 'default'){
+									if( $val->{oper} =~ /^(like|not_like)$/ ) {
+										$val->{value} = qr/$val->{value}/i;
+										if ($val->{oper} eq 'not_like'){
+											$cond = { '$not' => $val->{value} };	
+										}else{
+											$cond = $val->{value};	
+										}								
+									}
+									else{
+										if ($val->{oper}){
+											$cond = { $val->{oper} => $val->{value}  };
+										}else{
+											$cond = $val->{value};
+										}
+									}
+									$where->{$id} = $cond;
+								}
+							}
+							when ('date') {
+								if($val->{value} ne 'default'){
+									if (exists $where->{$id}){
+										$where->{$id}->{$val->{oper}} = $val->{value};	
+									}
+									else{
+										$cond = { $val->{oper} => $val->{value} };
+										$where->{$id} = $cond;
+									}
+								}
+							}
+							when ('status') {
+								if($val->{value} ne 'default'){
+									if (exists $where->{$id}){
+										$where->{$id}->{$val->{oper}} = $val->{value};	
+									}
+									else{
+										$cond = { $val->{oper} => $val->{value} };
+										$where->{$id} = $cond;
+									}
+								}
+							}						
+							default{
+								if($val->{value} ne 'default'){
+									if ($val->{oper}){
+										$cond = { $val->{oper} => $val->{value} };
+									}else{
+										$cond = $val->{value};
+									}
+									$where->{$id} = $cond;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	} _array($filters_where);
+	#_log ">>>>>>>>>>>>>>>>>>>>>FILTER WHERE: " . _dump $filters_where;
+	#_log ">>>>>>>>>>>>>>>>>>>>>WHERE: " . _dump $where;
+	return $where;
+}
+
 
 method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=undef ) {
     my $rows = $limit // $self->rows;
 
-    my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
+	my $rel_query;
+	for my $selected (_array( $self->selected )){
+		if (exists $selected->{query}){
+			$rel_query = $selected->{query};
+			last;
+		}
+	};
+	#_log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>QUERY: " . _dump $rel_query;
 	
-    my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $username) );  # XXX should be by category, same id fields may step on each other
-    my @selects = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) => 1 } _array($fields{select});
-	
-	_log ">>>>>>>>>>>>>>>>>>>>>>Campos select: " . _dump @selects;
+	my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
+	my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $username) );  # XXX should be by category, same id fields may step on each other
+	my @selects = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) => $_->{category} } _array($fields{select});
+	#_log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS: " . _dump @selects;
 	
 	#filters
 	my %dynamic_filter;
+	
 	if( $filter ){
 		for my $flt ( _array $filter ){
 			if( exists $dynamic_filter{$flt->{field}} ){
@@ -508,165 +697,67 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 			}else {
 				given ($flt->{type}) {
 					when ('numeric') {				
-						$dynamic_filter{$flt->{field}} =  { type=> $flt->{type}, oper=> $flt->{comparison} ? [$flt->{comparison}] : undef , value => [$flt->{value}]};
+						$dynamic_filter{$flt->{field}} =  { category=> $flt->{category}, type=> $flt->{type}, oper=> $flt->{comparison} ? [$flt->{comparison}] : undef , value => [$flt->{value}]};
 					};
 					when ('date') {				
-						$dynamic_filter{$flt->{field}} =  { type=> $flt->{type}, oper=> $flt->{comparison} ? [$flt->{comparison}] : undef , value => [$flt->{value}]};
+						$dynamic_filter{$flt->{field}} =  { category=> $flt->{category}, type=> $flt->{type}, oper=> $flt->{comparison} ? [$flt->{comparison}] : undef , value => [$flt->{value}]};
 					};
 					default{
-						$dynamic_filter{$flt->{field}} =  { type=> $flt->{type}, oper=> $flt->{comparison} ? $flt->{comparison} : undef , value => $flt->{value}};
+						$dynamic_filter{$flt->{field}} =  { category=> $flt->{category}, type=> $flt->{type}, oper=> $flt->{comparison} ? $flt->{comparison} : undef , value => $flt->{value}};
 					};
 				}
+			}
+			
+			#_log ">>>>>>>>>>>>>>>>>>>>FILTRO CATEGORIA: " . $flt->{category};
+			
+			#Excepción
+			if ( exists $dynamic_filter{'category_status_name_' . $flt->{category}} ){
+				$dynamic_filter{'status_new_' . $flt->{category}} = $dynamic_filter{'category_status_name_' . $flt->{category}};
 			}
 		};
-		#Excepción
-		if ( exists $dynamic_filter{category_status_name} ){
-			$dynamic_filter{status_new} = $dynamic_filter{category_status_name};
-		}
 	}
-
+	
 	my $where;
+	my %queries;
+	my $categories_queries;
 	
-    # filter categories
-    if( my @categories = map { $_->{data}->{id_category} } _array($fields{categories}) ) {
-		$where->{id_category} = {'$in' => \@categories };
-    }
-	
-	map {
-        my $field=$_;
-        my $id = $field->{meta_where_id} // $where_field_map{$_->{id_field}} // $field->{id_field};
-        my @chi = _array($field->{children});
-		
-        for my $val ( @chi ) {
-			my $id_field = $_->{id_field};
-			my $cond;
-			if(exists $dynamic_filter{$id_field}) {
-				given ($dynamic_filter{$id_field}->{type}) {
-					when ('numeric') {
-						for (my $i = 0; $i < scalar @{$dynamic_filter{$id_field}->{oper}}; $i++){
-							if ($dynamic_filter{$id_field}->{oper}[$i] eq 'eq'){
-								$cond = $dynamic_filter{$id_field}->{value}[$i];	
-							}else{
-								$cond->{'$'.$dynamic_filter{$id_field}->{oper}[$i]} = $dynamic_filter{$id_field}->{value}[$i];	
-							}
-						}
-					};
-					when ('list') {
-						my @parse;
-						for my $value (_array $dynamic_filter{$id_field}->{value}){
-							if( $value eq '-1'){
-								push @parse, '';
-								push @parse, undef;
-								push @parse, [];
-							}else{
-								push @parse, $value;	
-							}
-						}
-						if (scalar @parse > 1){
-							$cond = { '$in' => \@parse };	
-						}else{
-							$cond = $parse[0];	
-						}
-					};
-					when ('string') {
-						if( $val->{oper} =~ /^(like|not_like)$/ || $val->{value} eq 'default' ) {
-							$val->{value} = qr/$dynamic_filter{$id_field}->{value}/i;
-							if ($val->{oper} eq 'not_like'){
-								$cond = { '$not' => $val->{value} };	
-							}else{
-								$cond = $val->{value};	
-							}						
-						}else{
-							$val->{value} = $dynamic_filter{$id_field}->{value};
-							if ($val->{oper}){
-								$cond = { $val->{oper} => $val->{value}  };
-							}else{
-								$cond = $val->{value};
-							}
-						}
-					};
-					when ('date') {
-						for (my $i = 0; $i < scalar @{$dynamic_filter{$id_field}->{oper}}; $i++){
-							if ($dynamic_filter{$id_field}->{oper}[$i] eq 'eq'){
-								$cond = $dynamic_filter{$id_field}->{value}[$i];	
-							}else{
-								$cond->{'$'.$dynamic_filter{$id_field}->{oper}[$i]} = $dynamic_filter{$id_field}->{value}[$i];	
-							}
+	foreach my $key (sort { $b <=> $a} keys $rel_query) {
+		my @ids_category = _array $rel_query->{$key}->{id_category};
+		my @names_category = _array $rel_query->{$key}->{name_category};
+		my @relation = _array $rel_query->{$key}->{relation};
+
+		my $length = scalar @ids_category;
+		if ($key eq '0'){
+			map{
+				$where = $self->get_where({filters_where => $fields{where}, name_category => $_, dynamic_filter => \%dynamic_filter, where => $where });
+				_log ">>>>>>>>>>>>>WHEREEEEEEEEEEEEEEEEEEEEEEEEEEE: " . _dump $where;
+				$where->{id_category} = {'$in' => \@ids_category };
+				if (exists $queries{'1'}){
+					for my $relation ( keys $queries{'1'} ){
+						my @mids = keys $queries{'1'}{$relation};
+						if (!exists $where->{$relation}){
+							$where->{$relation} = {'$in' => \@mids};
 						}
 					}
 				}
-				$where->{$id_field} = $cond;
+			} @names_category;
+		}else{
+			my $length = scalar @ids_category;
+			for (my $i = 0; $i < $length; $i++){
+				#_log ">>>>>>>>>>>>>FILTERS WHERE: " . _dump $fields{where};
+				$where = $self->get_where({filters_where => $fields{where}, name_category => $names_category[$i], dynamic_filter => \%dynamic_filter, where => $where  });
+				$where->{id_category} = {'$in' => [$ids_category[$i]] };
+				_log ">>>>>>>>>>>>>WHERE: " . _dump $where;
+				my @data = mdb->topic->find($where)->all;
+				map {
+					$queries{$key}->{$relation[$i]}->{$_->{mid}} = 1;
+					$categories_queries->{$names_category[$i]}->{$_->{mid}} = $_;
+				} @data;
+				
+				$where = undef;
 			}
-			else{
-				if($val->{value}){
-					given ($val->{field}) {
-						when ('number') {
-							if($val->{value} ne 'default'){
-								if (exists $where->{$id_field}){
-									$where->{$id_field}->{$val->{oper}} = $val->{value} + 0;
-								}else{
-									$cond = { $val->{oper} => $val->{value} + 0 };
-									$where->{$id_field} = $cond;	
-								}
-							}
-						}
-						when ('string') {
-							if($val->{value} ne 'default'){
-								if( $val->{oper} =~ /^(like|not_like)$/ ) {
-									$val->{value} = qr/$val->{value}/i;
-									if ($val->{oper} eq 'not_like'){
-										$cond = { '$not' => $val->{value} };	
-									}else{
-										$cond = $val->{value};	
-									}								
-								}
-								else{
-									if ($val->{oper}){
-										$cond = { $val->{oper} => $val->{value}  };
-									}else{
-										$cond = $val->{value};
-									}
-								}
-								$where->{$id_field} = $cond;
-							}
-						}
-						when ('date') {
-							if($val->{value} ne 'default'){
-								if (exists $where->{$id_field}){
-									$where->{$id_field}->{$val->{oper}} = $val->{value};	
-								}
-								else{
-									$cond = { $val->{oper} => $val->{value} };
-									$where->{$id_field} = $cond;
-								}
-							}
-						}
-						when ('status') {
-							if($val->{value} ne 'default'){
-								if (exists $where->{$id_field}){
-									$where->{$id_field}->{$val->{oper}} = $val->{value};	
-								}
-								else{
-									$cond = { $val->{oper} => $val->{value} };
-									$where->{$id_field} = $cond;
-								}
-							}
-						}						
-						default{
-							if($val->{value} ne 'default'){
-								if ($val->{oper}){
-									$cond = { $val->{oper} => $val->{value} };
-								}else{
-									$cond = $val->{value};
-								}
-								$where->{$id_field} = $cond;
-							}
-						}
-					}
-				}
-			}
-        }
-    } _array($fields{where});
+		}
+	}	
 	
     # filter user projects
     if( $username && ! Baseliner->model('Permissions')->is_root( $username )){
@@ -686,7 +777,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	  my $where_undef = { '_project_security' => undef };
 	  push @ors, $where_undef;
       $where->{'$or'} = \@ors;
-    }
+	}
 
     if( length $query ) {
 		$where->{'mid'} = mdb->in($query);
@@ -709,6 +800,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 		mid			=> 1,
 		category	=> 1,
 		modified_on	=> 1,
+		modified_by	=> 1,
 		labels		=> 1
 	);
 		
@@ -718,7 +810,91 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
       ->skip( $start )
       ->limit($rows)
       ->all;
-	  
+	
+	my @parse_data;  
+	map {
+		if (exists $queries{'1'}){
+			for my $relation ( keys $queries{'1'} ){
+				my @ids_where;
+				if (ref $where->{$relation} eq 'HASH'){
+					@ids_where = _array $where->{$relation}->{'$in'};
+				}else{
+					push @ids_where, $where->{$relation};
+				}
+				my %ids_where =  map { $_ => 1 } @ids_where;
+				
+				for my $field (_array $_->{$relation}){
+					next unless $ids_where{$field}; #Para evitar que cuando haya filtros saque todos los correspondientes a la peticion
+					if ( exists $queries{'1'}{$relation}{$field} ){#mids
+						my %tmp_row;
+						my $i = 1;
+						my $value;
+						my %alias;
+						for my $select (@selects){
+							if ($i % 2 == 0){
+								if (exists  $categories_queries->{$select}){
+									my @fields = split( /\./, $value);
+									my $tmp_value = $categories_queries->{$select}->{$field};
+									for my $inner_field ( @fields ) {
+										$tmp_value = $tmp_value->{$inner_field};
+									}
+									#####$alias{$select} = $tmp_value;
+									
+									my $tmp_ref = $_;
+									for my $inner_field ( @fields ) {
+										if ( ref $tmp_ref->{$inner_field} eq 'HASH' ){
+											$tmp_ref = $tmp_ref->{$inner_field};
+										}
+										else{
+											#$tmp_ref->{$inner_field}= $tmp_value;
+											#_log ">>>>>>>>>>>>Valor select: " . $select;
+											$tmp_ref->{$inner_field . "_$select"}= $tmp_value;
+											#####$tmp_ref->{$inner_field} = \%alias;
+										}
+									}
+									$_->{'mid' . "_$select"} = $field;
+									$_->{'category_color' . "_$select"} = $categories_queries->{$select}->{$field}->{category}->{color};
+									$_->{'category_name' . "_$select"} = $categories_queries->{$select}->{$field}->{category}->{name};
+									$_->{'modified_on' . "_$select"} = $categories_queries->{$select}->{$field}->{modified_on};
+									$_->{'modified_by' . "_$select"} = $categories_queries->{$select}->{$field}->{modified_by};
+								}else{
+									
+									my @fields = split( /\./, $value);
+									my $tmp_value = $_;
+									for my $inner_field ( @fields ) {
+										$tmp_value = $tmp_value->{$inner_field};
+									}
+									my $tmp_ref = $_;
+									for my $inner_field ( @fields ) {
+										if ( ref $tmp_ref->{$inner_field} eq 'HASH' ){
+											$tmp_ref = $tmp_ref->{$inner_field};
+										}
+										else{
+											$tmp_ref->{$inner_field . "_$select"}= $tmp_value;
+										}
+									}									
+								}
+								$value = '';
+							}else{
+								$value = $select;
+							}
+							$i++;
+						}
+						use Storable 'dclone';
+						my $tmp_data = dclone $_;
+						$tmp_data->{$relation} = $field;
+						push @parse_data, $tmp_data;
+					}
+				}
+			}
+		}
+	} @data;
+	
+	@parse_data = @data if !@parse_data;
+	
+	#_log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump @data;	
+	#_log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump @parse_data;
+	
     my %scope_topics;
     my %scope_cis;
     my @topics = map { 
@@ -738,7 +914,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                         $scope_cis{$_->{mid}} = $_ for @objs; 
                         \@objs;
                         };
-            } elsif( $mt =~ /release|topic/ ) { 
+            } elsif( $mt =~ /release|topic/ ) {
                 $row{$k} = $scope_topics{$v} 
                     // do {
                         my @objs = mdb->topic->find({ mid=>mdb->in($v) },
@@ -758,16 +934,27 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 			my @format_labels;
 			map { push @format_labels, $_->{id}.';'.$_->{name}.';'.$_->{color} } @labels;
 			$row{labels} = \@format_labels;
-		}		
+		}
+		
         $row{category_color} = $row{category}{color};
         $row{category_name} = $row{category}{name};
         $row{category_id} = $row{category}{id};
         $row{status_new} = $row{category_status}{name};
-        $row{category_status_name} = $row{category_status}{name};
+		
+		if($row{category_status}){
+			foreach my $key (keys %{$row{category_status}}){
+				$row{'category_status_'.$key} = $row{category_status}{$key};
+			}
+		}
+        #$row{category_status_name} = $row{category_status}{name};
         \%row;
-    } @data;
+    #} @data;
+	} @parse_data;
+	
+	
 	
     #_debug @topics;
+	_log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump @parse_data;
     return ( 0+$cnt, @topics );
 }
 

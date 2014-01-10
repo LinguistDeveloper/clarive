@@ -106,6 +106,14 @@ sub list : Local {
         my $filter = $p->{filter} ? _decode_json($p->{filter}) : undef;
         my $start = $p->{start} // 0;
         
+        for my $f (_array $filter){
+            my @temp = split('_', $f->{field});
+            #$f->{field} = join('_',@temp[0..$#temp-1]);
+            $f->{category} = $temp[$#temp];
+        }
+        
+        #_log ">>>>>>>>>>>>>>>Filtro XXXXXXXXXXXXXXXXXXX: " . _dump $filter;
+        
         my ($cnt, @rows ) = ci->new( $p->{id_report} )->run( start=>$start, username=>$c->username, limit=>$p->{limit}, query=>$p->{topic_list}, filter=>$filter );
         $c->stash->{json} = { data=>\@rows, totalCount=>$cnt };
     } else {

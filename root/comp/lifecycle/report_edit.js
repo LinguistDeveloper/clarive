@@ -91,8 +91,28 @@
                 break;
             case 'ci':
                 var ci_class = pn.attributes.collection || pn.attributes.ci_class;
-                field=new Baseliner.ci_box({value: attr.value, name:'value', singleMode: false, force_set_value:true, 'class': ci_class, security: true });
-                oper_by_type = oper_in;
+                if (ci_class != undefined && ci_class != '') {
+                    field=new Baseliner.ci_box({value: attr.value, name:'value', singleMode: false, force_set_value:true, 'class': ci_class, security: true });
+                }else{
+                    var filter = pn.attributes.filter;
+                    var topic_box_store = new Baseliner.store.Topics({
+                        baseParams: { 
+                            topic_child_data: true, 
+                            show_release: 0, 
+                            filter: filter
+                        } 
+                    });
+                    
+                    field = new Baseliner.TopicBox({
+                        fieldLabel: pn.text,                         
+                        name: 'value',
+                        store: topic_box_store,
+                        value: attr.value,
+                        singleMode: false
+                    });
+                }
+                oper_by_type = oper_in;                
+                
                 var store;
                 store = field.getStore();
                 store.on('load',function(){
@@ -103,7 +123,7 @@
                         arr_values.push( r.data.mid );
                     });
                     attr.options = arr_options;
-                });
+                });                 
                 break;
         }
         form_value.removeAll();
@@ -115,13 +135,21 @@
         var set_value = function(){
             attr.oper = oper.get_save_data();
             var val = fcomp.get_save_data ? fcomp.get_save_data() : fcomp.getValue();
+            
             var label;
             switch( ftype ) {
                 case 'string': val = val.toString(); break;
                 case 'number': val = parseFloat(val); break;
                 case 'date': val = val.format('Y-m-d').trim(); break;
                 case 'ci':
-                case 'status': 
+                    var arr_options = [];
+                    fcomp.items.each(function(r){ arr_options.push(r.display) });
+                    attr.options = arr_options;
+                    label = arr_options.join(',');
+                    var tmp_val = val.split(',');
+                    val = tmp_val;
+                    break;
+                case 'status':
                     label = fcomp.get_labels().join(',');
                     attr.options = fcomp.get_labels();
                     if(attr.options.length == 0){
@@ -142,6 +170,7 @@
             }
             attr.value = val;
             node.setText( String.format('{0} {1}', oper.getRawValue(), label || attr.value) );
+            console.dir(node);
         };
         oper.on('blur', function(f){ set_value() });
         fcomp.on('blur', function(f){ set_value() });
@@ -190,6 +219,51 @@
         form_value.doLayout();
     };
     
+    var edit_categories = function(node){
+        var parent = node.parentNode;
+        var attr = node.attributes;
+        var table = { xtype:'textfield', name:'table', fieldLabel: _('Table'), value: attr.data.table||node.text };
+        var alias = { xtype:'textfield', name:'alias', fieldLabel: _('Alias'), value: attr.data.alias||node.text };
+        
+        var options = [table, alias];
+        
+        if(parent.attributes.type != 'categories'){
+            var relation = new Baseliner.ComboDouble({
+                value: attr.data.relation || '', 
+                name: 'relation',
+                fieldLabel: _('Relation') +' (' + parent.text + ')',
+                data: parent.attributes.data.fields
+            });            
+            options.push(relation);
+        }
+        
+        var set_select = function(){
+            var vals = form_value.getValues();
+            Ext.apply( node.attributes.data, vals );
+            node.setText( String.format('{0}', vals.alias ) );
+            var root = tree_selected.getRootNode();
+            var nodeCategories = root.firstChild;
+            var query = {};
+            if (nodeCategories.attributes.query) {
+                query = nodeCategories.attributes.query;
+            }
+            query[node.getDepth()-2] = {id_category : [node.attributes.data.id_category], name_category: [node.attributes.data.name_category], relation: [node.attributes.data.relation] };
+            nodeCategories.attributes.query = query;
+        };
+        
+        form_value.removeAll();
+        
+        form_value.add(options);
+        form_value.items.each(function(fi){
+            fi.on('blur', function(){ set_select() });
+            fi.on('change', function(){ set_select() });
+        });
+        form_value.setTitle( String.format('{0}', node.text) );
+        if( form_value.collapsed ) form_value.toggleCollapse(true);
+        form_value.doLayout();        
+    }
+    
+    
     var node_properties = function(n){
         var attr = n.attributes;
         // XXX max stack size error ?
@@ -201,6 +275,8 @@
         node.select();
         var its = [];
         var type = node.attributes.type;
+        if( type =='categories_field' )
+            its.push({ text: _('Edit'), handler: function(item){ edit_categories(node) }, icon:'/static/images/icons/edit.gif' });
         if( type =='select_field' ) 
             its.push({ text: _('Edit'), handler: function(item){ edit_select(node) }, icon:'/static/images/icons/edit.gif' });
         if( type =='value' ) 
@@ -209,9 +285,9 @@
             its.push({ text: _('Ascending'), handler: function(item){ sort_direction(1,node) }, icon:'/static/images/icons/arrow-up.gif' });
             its.push({ text: _('Descending'), handler: function(item){ sort_direction(-1,node) }, icon:'/static/images/icons/arrow-down.gif' });
         }
-        if( !/^(select|where|sort)$/.test(type) ) 
+        if( !/^(categories|select|sort)$/.test(type) )
             its.push({ text: _('Delete'), handler: function(item){ node.remove() }, icon:'/static/images/icons/delete.gif' });
-        var stmts_menu = new Ext.menu.Menu({
+            var stmts_menu = new Ext.menu.Menu({
             items: its 
         });
         stmts_menu.showAt(event.xy);
@@ -229,9 +305,10 @@
         enableDD: true,
         ddScroll: true,
         loader: tree_selected_loader,
-        listeners: { contextmenu: tree_menu_click, click: function(n){ 
+        listeners: { contextmenu: tree_menu_click, click: function(n){
                 if(n.attributes.type=='value') edit_value(n); 
                 else if( n.attributes.type=='select_field') edit_select(n);
+                else if( n.attributes.type == 'categories_field' ) edit_categories(n);
             } 
         },
         root: { text: '', expanded: true, draggable: false }, 
@@ -255,29 +332,62 @@
                 flag = false; //alert('no no'); 
                 return; 
             }
+
             if( ttype=='select' || ttype=='select_field' ) {
                 n.attributes.icon = '/static/images/icons/field.png',
                 n.expanded = true;
                 if( n.attributes.category ) {
-                    n.setText( String.format('{0}: {1}', n.attributes.category, n.attributes.text ) );
+                    if (n.attributes.text.search(':') == '-1'){
+                        n.setText( String.format('{0}: {1}', n.attributes.category, n.attributes.text ) );    
+                    }else{
+                        n.setText( n.attributes.text );
+                    }
+                    
                 }
             } else {
                 var nn = Ext.apply({ id: Ext.id(), expanded: ttype=='where' }, n.attributes);
-                if( type!='value' ) nn.type = ttype+'_field';
+                if( type!='value' ) nn.type = (ttype=='categories') || ttype=='where' ? ttype+'_field': ttype;
                 var icon = type=='value' ? '/static/images/icons/search.png' 
                     : type=='sort' ? '/static/images/icons/arrow-down.gif' 
                     : '/static/images/icons/field.png';
-                nn.leaf = ttype=='where' ? false : true;
+                nn.leaf = ttype == 'where' ? false : true;
                 var copy = new Ext.tree.TreeNode(nn);
                 
-                if( ttype=='where_field' ) {
-                } else {
-                    if( n.attributes.category ){
-                        copy.setText( String.format('{0}: {1}', n.attributes.category, n.attributes.text ) );    
-                    }else{
-                        copy.setText( String.format('{0}', n.attributes.text ) );       
+                if (ttype=='where_field') {
+                    
+                }else if (ttype == 'categories' || ttype == 'categories_field'){
+                    //ok-console.dir(target.attributes);
+                    var root = tree_selected.getRootNode();
+                    var nodeCategories = root.firstChild;
+                    var query = {};
+                    var id_category;
+                    if (nodeCategories.attributes.query) {
+                        query = nodeCategories.attributes.query;
                     }
-                    //console.dir(copy);
+                    if (query[target.getDepth()+1-2]) {
+                        var arr;
+                        arr = query[target.getDepth()+1-2].id_category;
+                        arr.push(copy.attributes.data.id_category)
+                        query[target.getDepth()+1-2].id_category = arr;
+                        arr = query[target.getDepth()+1-2].name_category;
+                        arr.push(copy.attributes.data.name_category);
+                        query[target.getDepth()+1-2].name_category = arr;
+                        arr = query[target.getDepth()+1-2].relation;
+                        arr.push(copy.attributes.data.relation);
+                        query[target.getDepth()+1-2].relation = arr;                        
+                        
+                    }else{
+                        query[target.getDepth()+1-2] = {id_category : [copy.attributes.data.id_category], name_category: [copy.attributes.data.name_category], relation: [copy.attributes.data.relation]};
+                    }
+                    nodeCategories.attributes.query = query;                    
+                    copy.leaf = false;
+                }
+                else {
+                    //if( n.attributes.category ){
+                    //    copy.setText( String.format('{0}: {1}', n.attributes.category, n.attributes.text ) );
+                    //}else{
+                        copy.setText( String.format('{0}', n.attributes.text ) );
+                    //}                        
                     var meta_type = n.attributes.meta_type ? n.attributes.meta_type : 'string' ;
                     switch (meta_type){
                         case 'string':
@@ -293,15 +403,13 @@
                         ,text: _(meta_type)
                         ,icon: '/static/images/icons/where.png'
                         ,type: 'value'
-                        ,leaf:true
+                        ,leaf: false
                         ,where: meta_type
                         ,field: meta_type
                         ,value: 'default'
-                    });                    
-                    
+                    });                         
+
                 }
-                //copy.setIcon( icon );
-                //console.log( copy );
                 ev.dropNode = copy;
             }
         });
