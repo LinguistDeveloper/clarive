@@ -1671,6 +1671,29 @@ sub migrate_docs {
     });
 }
 
+sub update_rels {
+    my ($self,@mids_or_docs ) = @_;
+    my @mids = map { ref $_ eq 'HASH' ? $_->{mid} : $_ } grep { length } _unique( @mids_or_docs );
+    my %rel_data;
+    my %rels = DB->BaliMasterRel->search({ from_mid=>\@mids })->hash_on('from_mid');
+    # my %rels; map { push @{ $rels{$_->{from_mid}} },$_ } mdb->master_rel->find({ from_mid=>mdb->in(@mids) })->all;
+    for my $mid_or_doc ( _unique( @mids_or_docs  ) ) {
+        my $is_doc = ref $mid_or_doc eq 'HASH';
+        my $mid = $is_doc ? $mid_or_doc->{mid} : $mid_or_doc;
+        my %d;
+        map { 
+           $d{ $_->{rel_field} }{ $_->{to_mid} } = ();
+        } _array( $rels{$mid} );
+        %d = map { $_ => [ sort keys $d{$_} ] } keys %d; 
+        # single value, no array: %d = map { my @to_mids = keys $d{$_}; $_ => @to_mids>1 ? [ sort @to_mids ] : @to_mids } keys %d; 
+        if( $is_doc ) {
+            $mid_or_doc->{$_} = $d{$_} for keys %d;  # merge into doc
+        } else {
+            mdb->topic->update({ mid=>"$mid" }, { '$set'=>\%d });
+        }
+    }
+}
+
 # update categories in mongo
 sub update_category {
     my ($self,$mid_or_doc, $id_cat ) = @_; 
@@ -1895,6 +1918,8 @@ sub set_topics {
         my $rs_old_topics = DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_field => $rel_field });
         $rs_old_topics->delete();
     }
+
+    $self->update_rels( @old_topics, @new_topics );
 }
 
 sub set_cis {
@@ -2092,6 +2117,7 @@ sub set_release {
             };  
         }
     }
+    $self->update_rels( $old_release, $new_release );
 }
 
 sub set_projects {
