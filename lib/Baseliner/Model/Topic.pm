@@ -1547,10 +1547,12 @@ sub save_data {
 } ## end sub save_data
 
 sub update_project_security {
-    my ($self, $meta, $data, $doc )=@_;
+    my ($self, $doc )=@_;
+
+    my $meta = Baseliner->model('Topic')->get_meta ($doc->{mid});
     my %project_collections; 
     for my $field ( grep { $_->{meta_type} eq 'project' && length $_->{collection} } @$meta ) {
-        my @secs = _array($data->{ $field->{id_field} });
+        my @secs = _array($doc->{ $field->{id_field} });
         push @{ $project_collections{ $field->{collection} } }, @secs if @secs;
     }
     if( keys %project_collections ) {
@@ -1573,8 +1575,6 @@ sub save_doc {
     my %meta = map { $_->{id_field} => $_ } @$meta;
     my $old_doc = mdb->topic->find_one({ mid=>"$mid" }) // {};
     
-    # save project collection security
-    $self->update_project_security($meta, { %$old_doc, %$doc },  $doc);   # we need to send old data merged, in case the user has sent an incomplete topic (due to field security)
     
     # save topic labels 
     $doc->{id_label} = [ map  { $_->{id_label} } 
@@ -1649,6 +1649,10 @@ sub save_doc {
     
     # create/update mongo doc
     my $write_doc = { %$old_doc, %$row, %$doc };
+
+    # save project collection security
+    $self->update_project_security($write_doc);   # we need to send old data merged, in case the user has sent an incomplete topic (due to field security)
+
     mdb->topic->update({ mid=>"$doc->{mid}" }, $write_doc, { upsert=>1 });
 }
 
