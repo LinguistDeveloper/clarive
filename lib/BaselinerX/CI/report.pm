@@ -907,19 +907,20 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
             #  TODO for sorting, do this before and save to report_results collection (capped?) 
             #       with query id and query ts, then sort
             #_error "MT===$mt, K==$k";
-            if( $mt =~ /ci|project|revision|user/ ) { 
-                $row{$k} = $scope_cis{$v} 
-                    // do{ 
-                        my @objs = mdb->master_doc->find({ mid=>mdb->in($v) },{ _id=>0 })->all;
-                        $scope_cis{$_->{mid}} = $_ for @objs; 
-                        \@objs;
-                        };
+			
+            if( $mt =~ /ci|project|revision|user/ ) {
+				$row{$k} = $scope_cis{$v} 
+					// do{ 
+						my @objs = mdb->master_doc->find({ mid=>mdb->in($v) },{ _id=>0 })->all;
+						$scope_cis{$_->{mid}} = $_ for @objs; 
+						\@objs;
+						};
             } elsif( $mt =~ /release|topic/ ) {
                 $row{$k} = $scope_topics{$v} 
                     // do {
                         my @objs = mdb->topic->find({ mid=>mdb->in($v) },
                                 { title=>1, mid=>1, is_changeset=>1, is_release=>1, category=>1, _id=>0 })->all;
-                        $scope_cis{$_->{mid}} = $_ for @objs; 
+                        $scope_topics{$_->{mid}} = $_ for @objs; 
                         \@objs;   
                     };
             } elsif( $mt eq 'calendar' && ( my $cal = ref $row{$k} ? $row{$k} : undef ) ) { 
@@ -947,6 +948,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 			}
 		}
         #$row{category_status_name} = $row{category_status}{name};
+		
         \%row;
     #} @data;
 	} @parse_data;
