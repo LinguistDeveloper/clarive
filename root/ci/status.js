@@ -1,7 +1,7 @@
 (function(params){
     if( !params.rec ) params.rec = {};
 
-    var bls = Baseliner.ci_box({ name:'bls', hiddenName:'bls', class:'BaselinerX::CI::bl', allowBlank:false, singleMode:false,
+    var bls = Baseliner.ci_box({ name:'bls', hiddenName:'bls', 'class':'BaselinerX::CI::bl', allowBlank:false, singleMode:false,
         fieldLabel:_('BLs'), value: params.rec.bls, force_set_value: true });
     var bind_releases = params.rec.bind_releases == undefined ? false : params.rec.bind_releases;
 
