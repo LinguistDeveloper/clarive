@@ -130,9 +130,10 @@ method check_writeable( $file_or_dir ) {
 # TODO data parameter support
 method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
     if( my $remote_dir = ''. _file($remote)->dir ) {
-        my ($rc,$ret) = $self->check_writeable($remote_dir);
+        my $dir_exists = $self->file_exists( $remote_dir );
+        #my ($rc,$ret) = $self->check_writeable($remote_dir);
         _fail _loc("balix: can't send file: could not find remote dir `%1` (rc: %2)", $remote_dir, $rc)
-            if $rc;
+            if !$dir_exists;
     } else {
         _fail _loc "balix: can't send file: missing remote dir in `%1`", $remote;
     }
