@@ -167,6 +167,7 @@ sub run_ship {
     my $local_mode  = $config->{local_mode} // 'local_files';  # local_files, nature_items
     my $rel_mode    = $config->{rel_path} // 'file_only'; # file_only, rel_path_job, rel_path_anchor 
     my $anchor_path = $config->{anchor_path} // ''; 
+    my $create_dir  = $config->{create_dir} // 'create'; 
     my $backup_mode = $config->{backup_mode} // 'backup'; 
     my $rollback_mode = $config->{rollback_mode} // 'rollback'; 
     my $needs_rollback_mode = $config->{needs_rollback_mode} // 'nb_after'; 
@@ -281,7 +282,13 @@ sub run_ship {
                 $log->info( _loc('File `%1` already in machine `%2` (%3). Ship skipped.', "$local", "*$hostname*".':'.$remote, $server_str ), data=>$local_key );
             } else {
                 $log->info( _loc( 'Sending file `%1` to `%2`', $local, "*$server_str*".':'.$remote ) );
+                # create dir if not exists?
+                my $remote_dir = _file($remote)->dir;
+                if( $create_dir eq 'create' && !$agent->file_exists("$remote_dir") ) {
+                    $agent->mkpath( "$remote_dir" );
+                }
                 $stash->{needs_rollback}{ $needs_rollback_key } = 1 if $needs_rollback_mode eq 'nb_before';
+                # send file remotely
                 $agent->put_file(
                     local  => "$local",
                     remote => "$remote",
