@@ -1547,10 +1547,12 @@ sub save_data {
 } ## end sub save_data
 
 sub update_project_security {
-    my ($self, $meta, $data, $doc )=@_;
+    my ($self, $doc )=@_;
+
+    my $meta = Baseliner->model('Topic')->get_meta ($doc->{mid});
     my %project_collections; 
     for my $field ( grep { $_->{meta_type} eq 'project' && length $_->{collection} } @$meta ) {
-        my @secs = _array($data->{ $field->{id_field} });
+        my @secs = _array($doc->{ $field->{id_field} });
         push @{ $project_collections{ $field->{collection} } }, @secs if @secs;
     }
     if( keys %project_collections ) {
@@ -1573,8 +1575,6 @@ sub save_doc {
     my %meta = map { $_->{id_field} => $_ } @$meta;
     my $old_doc = mdb->topic->find_one({ mid=>"$mid" }) // {};
     
-    # save project collection security
-    $self->update_project_security($meta, { %$old_doc, %$doc },  $doc);   # we need to send old data merged, in case the user has sent an incomplete topic (due to field security)
     
     # save topic labels 
     $doc->{id_label} = [ map  { $_->{id_label} } 
@@ -1649,6 +1649,10 @@ sub save_doc {
     
     # create/update mongo doc
     my $write_doc = { %$old_doc, %$row, %$doc };
+
+    # save project collection security
+    $self->update_project_security($write_doc);   # we need to send old data merged, in case the user has sent an incomplete topic (due to field security)
+
     mdb->topic->update({ mid=>"$doc->{mid}" }, $write_doc, { upsert=>1 });
 }
 
@@ -1669,6 +1673,29 @@ sub migrate_docs {
         } @fields );
         $self->save_doc( \@meta, $r, \%fieldlets, mid=>$r->{mid}, custom_fields=>[] );
     });
+}
+
+sub update_rels {
+    my ($self,@mids_or_docs ) = @_;
+    my @mids = map { ref $_ eq 'HASH' ? $_->{mid} : $_ } grep { length } _unique( @mids_or_docs );
+    my %rel_data;
+    my %rels = DB->BaliMasterRel->search({ from_mid=>\@mids })->hash_on('from_mid');
+    # my %rels; map { push @{ $rels{$_->{from_mid}} },$_ } mdb->master_rel->find({ from_mid=>mdb->in(@mids) })->all;
+    for my $mid_or_doc ( _unique( @mids_or_docs  ) ) {
+        my $is_doc = ref $mid_or_doc eq 'HASH';
+        my $mid = $is_doc ? $mid_or_doc->{mid} : $mid_or_doc;
+        my %d;
+        map { 
+           $d{ $_->{rel_field} }{ $_->{to_mid} } = ();
+        } _array( $rels{$mid} );
+        %d = map { $_ => [ sort keys $d{$_} ] } keys %d; 
+        # single value, no array: %d = map { my @to_mids = keys $d{$_}; $_ => @to_mids>1 ? [ sort @to_mids ] : @to_mids } keys %d; 
+        if( $is_doc ) {
+            $mid_or_doc->{$_} = $d{$_} for keys %d;  # merge into doc
+        } else {
+            mdb->topic->update({ mid=>"$mid" }, { '$set'=>\%d });
+        }
+    }
 }
 
 # update categories in mongo
@@ -1895,6 +1922,8 @@ sub set_topics {
         my $rs_old_topics = DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_field => $rel_field });
         $rs_old_topics->delete();
     }
+
+    $self->update_rels( @old_topics, @new_topics );
 }
 
 sub set_cis {
@@ -2092,6 +2121,7 @@ sub set_release {
             };  
         }
     }
+    $self->update_rels( $old_release, $new_release );
 }
 
 sub set_projects {

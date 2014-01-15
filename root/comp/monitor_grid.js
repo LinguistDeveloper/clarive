@@ -12,6 +12,7 @@
 (function(params){
     if( !params ) params = {};
     var view_natures = <% $view_natures ? 'false' : 'true' %>; 
+    var state_id = 'job-monitor';
    
     // -- ADDING Arr.map() method --
     // Production steps of ECMA-262, Edition 5, 15.4.4.19
@@ -216,6 +217,18 @@
         menu: [ btn_csv ]
     });
     
+    var btn_clear_state = new Ext.Button({
+        icon: '/static/images/icons/reset-grey.png',
+        tooltip: _('Reset Grid Columns'),
+        iconCls: 'x-btn-icon',
+        handler: function(){
+            // deletes 
+            var cp=new Ext.state.CookieProvider();
+            Ext.state.Manager.setProvider(cp);
+            Ext.state.Manager.clear( state_id );
+            Baseliner.refreshCurrentTab();
+        }
+    });
 
     // Nature Filters
 
@@ -922,7 +935,7 @@
         autoScroll: true,
         loadMask: true,
         stateful: true,
-        stateId: 'job-monitor', 
+        stateId: state_id,
         wait: _('Loading...'),
         store: store,
         view: gview,
@@ -1175,6 +1188,7 @@
                 '->',
                 menu_tools,
                 btn_reports,
+                btn_clear_state,
                 refresh_button
                 ]
         });
