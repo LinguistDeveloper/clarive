@@ -520,7 +520,7 @@ sub approve {
         { username => $self->username, name=>$self->name, step=>$self->step, status=>$self->status, bl=>$self->bl, comments=>$comments } => sub {
         $self->logger->info( _loc('*Job Approved by %1*: %2', $p->{username}, $comments), data=>$comments, username=>$p->{username} );
         $self->status( 'READY' );
-        $self->owner( $p->{username} );   # TODO make this line optional, set a checkbox in the interface [ x ] make me owner
+        $self->username( $p->{username} );   # TODO make this line optional, set a checkbox in the interface [ x ] make me owner
         $self->final_status( '' );
         $self->save;
     };
@@ -541,7 +541,7 @@ sub reject {
         $self->last_finish_status( 'REJECTED' );  # saved for POST
         $self->step('POST');
         # $self->goto_next_step();
-        $self->owner( $p->{username} );   # TODO make this line optional, set a checkbox in the interface [ x ] make me owner
+        $self->username( $p->{username} );   # TODO make this line optional, set a checkbox in the interface [ x ] make me owner
         $self->save;
     };
     { success=>1 }
