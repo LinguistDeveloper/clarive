@@ -110,7 +110,9 @@ sub run_remote {
         my $path_parsed = $server->parse_vars( $path );
         my $args_parsed = $server->parse_vars( $args );
         for my $hostname ( _array( $server->hostname ) ) {
-            $log->info( _loc( 'STARTING remote script `%1` (%2)', $path_parsed . ' '. join(' ',_array($args_parsed)), $user . '@' . $hostname ), $config );
+            my $dest = $user . '@' . $hostname;
+            $log->info( _loc( 'STARTING remote script %1: `%2`', $dest, $path_parsed . ' '. join(' ',_array($args_parsed)) ), 
+                { config => $config, dest => $dest });
         }
         
         my $agent = $server->connect( user=>$user );
@@ -159,7 +161,8 @@ sub run_remote {
                    }
                 }
             }
-            $log->info( _loc( 'FINISHED remote script `%1` (%2)', $path_parsed . join(' ',_array($args_parsed)), $user . '@' . $server->hostname ), $agent->tuple_str );
+            $log->info( _loc( 'FINISHED remote script %1: `%2`', $user . '@' . $server->hostname, $path_parsed . join(' ',_array($args_parsed)) ), 
+                $agent->tuple_str );
         }
         push @rets, { output=>$out, rc=>$rc, ret=>$ret };
     }
