@@ -1688,7 +1688,7 @@ sub update_rels {
         my %d;
        
         # resolve to_mids (parent_field)
-        my %parent_mapping = map { $_->{parent_field} => $_->{id_field} } grep { $_->{parent_field} } _array( $self->model('Topic')->get_meta( $mid ) );
+        my %parent_mapping = map { $_->{parent_field} => $_->{id_field} } grep { $_->{parent_field} } _array( $self->get_meta( $mid ) );
         map { 
            $d{ $parent_mapping{$_->{rel_field}} }{ $_->{from_mid} } = ();
         } grep { exists $parent_mapping{$_->{rel_field}} }
