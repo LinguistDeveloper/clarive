@@ -1680,15 +1680,28 @@ sub update_rels {
     my @mids = map { ref $_ eq 'HASH' ? $_->{mid} : $_ } grep { length } _unique( @mids_or_docs );
     my %rel_data;
     my %rels = DB->BaliMasterRel->search({ from_mid=>\@mids })->hash_on('from_mid');
+    my %rels_to = DB->BaliMasterRel->search({ to_mid=>\@mids })->hash_on('to_mid');
     # my %rels; map { push @{ $rels{$_->{from_mid}} },$_ } mdb->master_rel->find({ from_mid=>mdb->in(@mids) })->all;
     for my $mid_or_doc ( _unique( @mids_or_docs  ) ) {
         my $is_doc = ref $mid_or_doc eq 'HASH';
         my $mid = $is_doc ? $mid_or_doc->{mid} : $mid_or_doc;
         my %d;
+       
+        # resolve to_mids (parent_field)
+        my %parent_mapping = map { $_->{parent_field} => $_->{id_field} } grep { $_->{parent_field} } _array( $self->model('Topic')->get_meta( $mid ) );
+        map { 
+           $d{ $parent_mapping{$_->{rel_field}} }{ $_->{from_mid} } = ();
+        } grep { exists $parent_mapping{$_->{rel_field}} }
+        _array( $rels_to{$mid} );
+        
+        # resolve from_mids
         map { 
            $d{ $_->{rel_field} }{ $_->{to_mid} } = ();
         } _array( $rels{$mid} );
+        
+        # now uniquify
         %d = map { $_ => [ sort keys $d{$_} ] } keys %d; 
+
         # single value, no array: %d = map { my @to_mids = keys $d{$_}; $_ => @to_mids>1 ? [ sort @to_mids ] : @to_mids } keys %d; 
         if( $is_doc ) {
             $mid_or_doc->{$_} = $d{$_} for keys %d;  # merge into doc
