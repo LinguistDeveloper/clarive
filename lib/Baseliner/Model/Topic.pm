@@ -1685,6 +1685,7 @@ sub update_rels {
     for my $mid_or_doc ( _unique( @mids_or_docs  ) ) {
         my $is_doc = ref $mid_or_doc eq 'HASH';
         my $mid = $is_doc ? $mid_or_doc->{mid} : $mid_or_doc;
+        next unless length $mid;
         my %d;
        
         # resolve to_mids (parent_field)
