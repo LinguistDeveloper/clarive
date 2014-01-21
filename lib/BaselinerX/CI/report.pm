@@ -680,6 +680,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 		}
 	};
 	#_log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>QUERY: " . _dump $rel_query;
+	#_log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>QUERY: " . _dump $self->selected;
 	
 	my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
 	my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $username) );  # XXX should be by category, same id fields may step on each other
@@ -721,6 +722,8 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	my %queries;
 	my $categories_queries;
 	
+	my @All_Categories;
+	
 	foreach my $key (sort { $b <=> $a} keys $rel_query) {
 		my @ids_category = _array $rel_query->{$key}->{id_category};
 		my @names_category = _array $rel_query->{$key}->{name_category};
@@ -740,11 +743,13 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 						}
 					}
 				}
+				push @All_Categories, $_;
 			} @names_category;
 		}else{
 			my $length = scalar @ids_category;
 			for (my $i = 0; $i < $length; $i++){
 				#_log ">>>>>>>>>>>>>FILTERS WHERE: " . _dump $fields{where};
+				push @All_Categories, $names_category[$i];
 				$where = $self->get_where({filters_where => $fields{where}, name_category => $names_category[$i], dynamic_filter => \%dynamic_filter, where => $where  });
 				$where->{id_category} = {'$in' => [$ids_category[$i]] };
 				_log ">>>>>>>>>>>>>WHERE: " . _dump $where;
@@ -916,6 +921,17 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 						$scope_cis{$_->{mid}} = $_ for @objs; 
 						\@objs;
 						};
+				for my $category (@All_Categories){
+					if( exists $row{$k . "_$category"} ){
+						my $tmp = $row{$k . "_$category"};
+						$row{$k . "_$category"} = $scope_cis{$tmp} 
+							// do{ 
+								my @objs = mdb->master_doc->find({ mid=>mdb->in($tmp) },{ _id=>0 })->all;
+								$scope_cis{$_->{mid}} = $_ for @objs; 
+								\@objs;
+								};
+					}
+				}
             } elsif( $mt =~ /release|topic/ ) {
                 $row{$k} = $scope_topics{$v} 
                     // do {
@@ -924,6 +940,18 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                         $scope_topics{$_->{mid}} = $_ for @objs; 
                         \@objs;   
                     };
+				for my $category (@All_Categories){
+					if( exists $row{$k . "_$category"} ){
+						my $tmp = $row{$k . "_$category"};
+						$row{$k . "_$category"} = $scope_topics{$tmp} 
+							// do {
+								my @objs = mdb->topic->find({ mid=>mdb->in($tmp) },
+										{ title=>1, mid=>1, is_changeset=>1, is_release=>1, category=>1, _id=>0 })->all;
+								$scope_topics{$_->{mid}} = $_ for @objs; 
+								\@objs;   
+							};
+					}
+				}					
             } elsif( $mt eq 'calendar' && ( my $cal = ref $row{$k} ? $row{$k} : undef ) ) { 
                 for my $slot ( keys %$cal ) {
                     $cal->{$slot}{$_} //= '' for qw(end_date plan_end_date start_date plan_start_date);
