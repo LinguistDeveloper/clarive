@@ -655,8 +655,6 @@
 			value = rec.json[res];
 		};		
 
-		alert(value);
-
         Ext.each( value, function(v){
             arr.push( typeof v=='object' ? v.moniker ? v.moniker : v.name : v );
         });
@@ -721,6 +719,7 @@
 			date = value;
 		}else{
 			var dateStr= value;
+			if (dateStr == '' || dateStr == undefined) return '';
 			var a=dateStr.split(" ");
 			var d=a[0].split("-");
 			var t=a[1].split(":");
