@@ -747,10 +747,10 @@
 			value = rec.json[res];
 		};
 		
-		if( !value || value.length == 0 ) return '';
+		//if( !value  ) return '';
 		
 		//#################################################Ñapa 
-		if ( !value[0].mid ) {
+		if ( value[0] && !value[0].mid ) {
 			var str = this.dataIndex;
 			var res = str.replace('_' +  this.alias,"");
 			value = rec.json[res];
