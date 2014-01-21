@@ -1040,6 +1040,7 @@ our %meta_types = (
     set_users      => 'user',
     set_priority   => 'priority',
     set_labels     => 'label',
+    get_files      => 'file',
 );
 
 sub get_meta {
@@ -1080,7 +1081,7 @@ sub get_meta {
             $d->{meta_type} = 'history' if $d->{js} && $d->{js} eq '/fields/templates/js/status_changes.js';  # for legacy only
             $d->{meta_type} ||= $d->{set_method} 
                 ? ($meta_types{ $d->{set_method} } // _fail("Unknown set_method $d->{set_method} for field $d->{name_field}") ) 
-                : '';
+                : $d->{get_method} ? $meta_types{ $d->{get_method} } : '';
             $d
         } @cat_fields;
     
