@@ -646,7 +646,7 @@
     };  
     
     var render_ci = function(value,metadata,rec,rowIndex,colIndex,store) {
-        if( !value ) return '';
+        //if( !value ) return '';
         var arr=[];
 		
 		if ( !rec.json[this.dataIndex] ) {
@@ -655,8 +655,9 @@
 			value = rec.json[res];
 		};		
 
+		alert(value);
+
         Ext.each( value, function(v){
-			
             arr.push( typeof v=='object' ? v.moniker ? v.moniker : v.name : v );
         });
         return arr.join('\n');
