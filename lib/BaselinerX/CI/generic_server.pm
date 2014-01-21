@@ -40,7 +40,7 @@ method connect( :$user='' ) {
         $agent = try {
             my ($chi) = $self->children( isa=>'worker_agent' ) if $self->mid;
             do { alarm 0; return $chi } if ref $chi;
-            BaselinerX::CI::worker_agent->new( timeout=>$self->agent_timeout, cap=>$user.'@'.$self->hostname );
+            BaselinerX::CI::worker_agent->new( server=>$self, timeout=>$self->agent_timeout, cap=>$user.'@'.$self->hostname );
         } catch { $err.=shift . "\n" };       
     } 
     if( !$agent && $self->connect_balix ) {
