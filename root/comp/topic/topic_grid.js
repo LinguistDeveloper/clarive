@@ -646,15 +646,16 @@
     };  
     
     var render_ci = function(value,metadata,rec,rowIndex,colIndex,store) {
-        if( !value ) return '';
+        //if( !value ) return '';
         var arr=[];
 		
-		var str = this.dataIndex;
-		var res = str.replace('_' +  this.alias,"");
-		value = rec.json[res];
-		
+		if ( !rec.json[this.dataIndex] ) {
+			var str = this.dataIndex;
+			var res = str.replace('_' +  this.alias,"");
+			value = rec.json[res];
+		};		
+
         Ext.each( value, function(v){
-			
             arr.push( typeof v=='object' ? v.moniker ? v.moniker : v.name : v );
         });
         return arr.join('\n');
@@ -705,13 +706,34 @@
     };
 	
     var render_date = function(value,metadata,rec,rowIndex,colIndex,store) {
-        if( !value ) return '';
-		var value_to_date = new Date(value);
-		return value_to_date.dateFormat('d/m/Y');
-		//return value_to_date.dateFormat('d/m/Y H:i:s');
+		if ( !rec.json[this.dataIndex] ) {
+			var str = this.dataIndex;
+			var res = str.replace('_' +  this.alias,"");
+			value = rec.json[res];
+		};			
+        if( !value && value == undefined ) return '';
+		//var value_to_date = new Date(value);
+		//return value_to_date.dateFormat('d/m/Y');
+		var date;
+		if (value.getMonth) {
+			date = value;
+		}else{
+			var dateStr= value;
+			if (dateStr == '' || dateStr == undefined) return '';
+			var a=dateStr.split(" ");
+			var d=a[0].split("-");
+			var t=a[1].split(":");
+			date = new Date(d[0],(d[1]-1),d[2],t[0],t[1],t[2]);
+		}
+		return date.dateFormat('d/m/Y');
     };
 	
     var render_bool = function(value) {
+		if ( !rec.json[this.dataIndex] ) {
+			var str = this.dataIndex;
+			var res = str.replace('_' +  this.alias,"");
+			value = rec.json[res];
+		};			
         if( !value ) return '';
         return '<input type="checkbox" '+ ( value ? 'checked' : '' ) + '></input>'; 
     };
@@ -725,10 +747,10 @@
 			value = rec.json[res];
 		};
 		
-		if( !value ) return '';
+		//if( !value  ) return '';
 		
 		//#################################################Ñapa 
-		if (!value[0].mid) {
+		if ( value[0] && !value[0].mid ) {
 			var str = this.dataIndex;
 			var res = str.replace('_' +  this.alias,"");
 			value = rec.json[res];
@@ -825,6 +847,11 @@
     };
 
     var render_status = function(value,metadata,rec,rowIndex,colIndex,store){
+		if ( !rec.json[this.dataIndex] ) {
+			var str = this.dataIndex;
+			var res = str.replace('_' +  this.alias,"");
+			value = rec.json[res];
+		};			
 		//////////if(rec.json[this.dataIndex + '_' + this.alias]){
 		//////////	value = rec.json[this.dataIndex + '_' + this.alias];
 		//////////}		
@@ -837,6 +864,11 @@
     };
 
     var render_progress = function(value,metadata,rec,rowIndex,colIndex,store){
+		if ( !rec.json[this.dataIndex] ) {
+			var str = this.dataIndex;
+			var res = str.replace('_' +  this.alias,"");
+			value = rec.json[res];
+		};			
         if( value==undefined || value == 0 ) return '';
         if( rec.data.category_status_type == 'I'  ) return '';  // no progress if its in a initial state
 
@@ -955,24 +987,24 @@
     var columns = [];
     var col_map = {
         topic_name : { header: _('Name'), sortable: true, dataIndex: 'topic_name', width: 90, sortable: true, renderer: render_topic_name },
-        category_name : { header: _('Category'), sortable: true, dataIndex: 'category_name', hidden: true, width: 80, sortable: true },
+        category_name : { header: _('Category'), sortable: true, dataIndex: 'category_name', hidden: true, width: 80, sortable: true, renderer: render_default },
         category_status_name : { header: _('Status'), sortable: true, dataIndex: 'category_status_name', width: 50, renderer: render_status },
         title : { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title},
         progress : { header: _('%'), dataIndex: 'progress', width: 25, sortable: true, renderer: render_progress },
         numcomment : { header: _('More info'), report_header: _('Comments'), sortable: true, dataIndex: 'numcomment', width: 45, renderer: render_actions },         
         projects : { header: _('Projects'), dataIndex: 'projects', sortable: true, width: 60, renderer: render_project },
-        topic_mid : { header: _('ID'), hidden: true, sortable: true, dataIndex: 'topic_mid'},    
-        moniker : { header: _('Moniker'), hidden: true, sortable: true, dataIndex: 'moniker'},    
-        cis_out : { header: _('CIs Referenced'), hidden: true, sortable: false, dataIndex: 'cis_out'},    
-        cis_in : { header: _('CIs Referenced In'), hidden: true, sortable: false, dataIndex: 'cis_in'},    
-        references_out : { header: _('References'), hidden: true, sortable: false, dataIndex: 'references_out'},    
-        references_in : { header: _('Referenced In'), hidden: true, sortable: false, dataIndex: 'referenced_in'},    
-        assignee : { header: _('Assigned To'), hidden: true, sortable: true, dataIndex: 'assignee'},
-        current_job : { header: _('Current Job'), hidden: true, sortable: true, dataIndex: 'current_job'},
-        modified_by : { header: _('Modified By'), hidden: true, sortable: true, dataIndex: 'modified_by'},
+        topic_mid : { header: _('ID'), hidden: true, sortable: true, dataIndex: 'topic_mid', renderer: render_default},    
+        moniker : { header: _('Moniker'), hidden: true, sortable: true, dataIndex: 'moniker', renderer: render_default},    
+        cis_out : { header: _('CIs Referenced'), hidden: true, sortable: false, dataIndex: 'cis_out', renderer: render_default},    
+        cis_in : { header: _('CIs Referenced In'), hidden: true, sortable: false, dataIndex: 'cis_in', renderer: render_default},    
+        references_out : { header: _('References'), hidden: true, sortable: false, dataIndex: 'references_out', renderer: render_default},    
+        references_in : { header: _('Referenced In'), hidden: true, sortable: false, dataIndex: 'referenced_in', renderer: render_default},    
+        assignee : { header: _('Assigned To'), hidden: true, sortable: true, dataIndex: 'assignee', renderer: render_default},
+        current_job : { header: _('Current Job'), hidden: true, sortable: true, dataIndex: 'current_job', renderer: render_default},
+        modified_by : { header: _('Modified By'), hidden: true, sortable: true, dataIndex: 'modified_by', renderer: render_default },
         modified_on : { header: _('Modified On'), hidden: true, sortable: true, dataIndex: 'modified_on', renderer: render_date },
         created_on : { header: _('Created On'), width: 80, hidden: true, sortable: true, dataIndex: 'created_on', renderer: render_date },
-        created_by : { header: _('Created By'), width: 40, hidden: true, sortable: true, dataIndex: 'created_by'}
+        created_by : { header: _('Created By'), width: 40, hidden: true, sortable: true, dataIndex: 'created_by', renderer: render_default}
     };
     var gridlets = {
     };

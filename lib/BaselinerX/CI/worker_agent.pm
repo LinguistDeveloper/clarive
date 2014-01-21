@@ -167,7 +167,7 @@ method get_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
 }
 
 method file_exists( $file_or_dir ) {
-    $self->execute( 'test', '-e', $file_or_dir ); # check it exists
+    $self->execute( 'test', '-r', $file_or_dir ); # check it exists
     return !$self->rc; 
 }
 

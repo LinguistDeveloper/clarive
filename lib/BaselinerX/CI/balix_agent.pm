@@ -117,7 +117,7 @@ method is_remote_dir( $dir ) {
 }
 
 method file_exists( $file_or_dir ) {
-    my ($rc,$ret) = $self->_execute( 'test', '-e', $file_or_dir ); # check it exists
+    my ($rc,$ret) = $self->_execute( 'test', '-r', $file_or_dir ); # check it exists
     return !$rc; 
 }
 
