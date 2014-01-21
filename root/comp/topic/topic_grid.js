@@ -720,10 +720,12 @@
 			date = value;
 		}else{
 			var dateStr= value; //returned from mysql timestamp/datetime field
-			var a=dateStr.split(" ");
-			var d=a[0].split("-");
-			var t=a[1].split(":");
-			date = new Date(d[0],(d[1]-1),d[2],t[0],t[1],t[2]);			
+			if (value.split) { 
+				var a=dateStr.split(" ");
+				var d=a[0].split("-");
+				var t=a[1].split(":");
+				date = new Date(d[0],(d[1]-1),d[2],t[0],t[1],t[2]);
+			}else return ''
 		}
 		return date.dateFormat('d/m/Y');
     };
