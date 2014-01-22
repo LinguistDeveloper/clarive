@@ -73,7 +73,7 @@ sub run_local {
         _fail $msg if $fail_on_error; 
     } else {
         $self->publish_output_files( 'info', $job,$output_files );
-        $job->logger->info( _loc('Finished command %1' , join ' ', @cmd ), $r ); 
+        $job->logger->info( _loc('Finished command %1' , join ' ', @cmd ), qq{RC: $rc\nRET: $ret\nOUTPUT: $out} ); 
     }
     return $r;
 }
