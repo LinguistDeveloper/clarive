@@ -1,5 +1,20 @@
 (function(params){
     var data = params.rec;
+
+    var ta = Baseliner.cols_templates['textarea'];
+    var tables = new Baseliner.GridEditor({
+        title: _('Tables'),
+        height: 400,
+        name: 'tables',
+        records: data.tables,
+        preventMark: false,        
+        columns: [
+            //{ dataIndex:'maq', header: 'M&aacute;quina', editor: Baseliner.ci_box({ role:'Server', height: 50 }), renderer: Baseliner.render_ci },
+            Ext.apply({ dataIndex:'tablename', header: _('Table Name') }, ta() )
+        ],
+        viewConfig: { forceFit: true }
+    });
+    
     return [
        Baseliner.ci_box({ name:'server', anchor:'100%', fieldLabel:_('Server'), role:'Server', force_set_value: true, value: data.server }),
        new Baseliner.ComboSingleRemote({
@@ -22,7 +37,8 @@
                data: data.parameters || { AutoCommit: 0, RaiseError: 1 } }),
            new Baseliner.DataEditor({ name:'envvars', title: _('Environment Variables'), 
                hide_save: true, hide_cancel: true,
-               data: data.envvars || {} })
+               data: data.envvars || {} }),
+           tables
        ]}
     ]
 })

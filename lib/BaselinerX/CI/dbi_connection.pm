@@ -12,6 +12,9 @@ has driver      => qw(is rw isa Any);
 has user        => qw(is rw isa Any);
 has password    => qw(is rw isa Any);
 has timeout     => qw(is rw isa Any);
+
+has tables      => qw(is rw isa Maybe[ArrayRef] default), sub { [] };
+
 has envvars     => qw(is rw isa HashRef), default=>sub{ +{} };
 has parameters  => qw(is rw isa Any), default=>sub{ +{} };
 
