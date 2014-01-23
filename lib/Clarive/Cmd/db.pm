@@ -6,19 +6,50 @@ bali_deploy.pl - Baseliner DB Schema Deploy
 
 Deploy the Baseliner's schema in a database.
 
-Usage, from the command line:
+=head1 USAGE
 
-    $ BALI_ENV=<suffix> bali deploy
+  cla db-deploy [options]
 
-=head1 OPTIONS
+Options:
+
+  -h                      : this help
+  -deploy                 : actually execute statements in the db
+                              cla db-deploy --deploy
+  -run                    : Run DB statements interactively or from STDIN
+  -quote                  : quote table names
+  -drop                   : add drop statements
+  -grep                   : grep a string or re in the generated sql
+  -env                    : sets CLARIVE_ENV (local, test, prod, t, etc...)
+  -schema                 : schemas to deploy (does not work for migrations)
+                                cla db-deploy --schema BaliRepo --schema BaliRepoKeys 
+
+Versioning Options:
+
+  --diff                  : diffs this schema against the database
+  --installversion        : installs versioning tables if needed
+  --upgrade               : upgrades database version
+  --from <version>        : from version (replaces current db version)
+  --to <version>          : to version (replaces current schema version)
+  --grep <re>             : filter diff statements with a reg. expression
+
+Examples:
+
+    cla db-deploy --env t   
+    cla db-deploy --env t --diff
+    cla db-deploy --env t --diff --deploy
+    cla db-deploy --env t --installversion   
+    cla db-deploy --env t --upgrade                   # print migration scripts only, no changes made
+    cla db-deploy --env t --upgrade --deploy          # print migration scripts only, no changes made
+    cla db-deploy --env t --upgrade --show --to 2     # same, but with schema version 2
+    cla db-deploy --env t --upgrade --show --from 1   # same, but with db version 2
 
 =head2 Run limited test cases
 
-    bali deploy --case job [ --case ... ]
+    cla db-deploy --case job [ --case ... ]
 
 =head2 Run only feature tests
 
-    bali deploy --feature ca.harvest [ --feature ... ]
+    cla db-deploy --feature ca.harvest [ --feature ... ]
 
 =cut
 
@@ -67,11 +98,6 @@ sub run_deploy {
 
     say "Baseliner DB Schema Deploy";
 
-    if( exists $opts{h} ) {  # help
-        $self->_help();
-        exit 0;
-    }
-
     require Carp::Always if exists $opts{carp};
     $ENV{BASELINER_DEBUG}=1 if exists $opts{debug};
 
@@ -81,12 +107,10 @@ sub run_deploy {
     $Baseliner::Schema::Baseliner::DB_DRIVER = 'SQLite';
     my $env = $self->env;
     $env = @$env if ref $env eq 'ARRAY';
-    my $cfg_file = $self->bali_conf_file();
-    say pre . "Config file: $cfg_file";
 
     require Baseliner::Schema::Baseliner;
 
-    my $config = $self->bali_config;
+    my $config = $self->setup_baseliner;
     my $db_config = $config->{ 'Model::Baseliner' }{ 'connect_info' };
     if( $db_config->[2]  && $db_config->[2] =~ /^__.*\(.*\)__$/ ) {
         say sprintf "Invalid password [%s] - function detected.\n", $db_config->[2];
@@ -137,19 +161,19 @@ sub run_deploy {
 sub _help {
     print << 'EOF';
 Usage:
-  bali deploy [options]
+  cla db-deploy [options]
 
 Options:
   -h                      : this help
   -deploy                 : actually execute statements in the db
-                              bali deploy --deploy
+                              cla db-deploy --deploy
   -run                    : Run DB statements interactively or from STDIN
   -quote                  : quote table names
   -drop                   : add drop statements
   -grep                   : grep a string or re in the generated sql
-  -env                    : sets BALI_ENV (local, test, prod, t, etc...)
+  -env                    : sets CLARIVE_ENV (local, test, prod, t, etc...)
   -schema                 : schemas to deploy (does not work for migrations)
-                                bali deploy --schema BaliRepo --schema BaliRepoKeys 
+                                cla db-deploy --schema BaliRepo --schema BaliRepoKeys 
 
 Versioning Options:
   --diff                  : diffs this schema against the database and generates a diff
@@ -160,14 +184,14 @@ Versioning Options:
   --grep <re>             : filter diff statements with a reg. expression
 
 Examples:
-    bin/bali deploy --env t   
-    bin/bali deploy --env t --diff
-    bin/bali deploy --env t --diff --deploy
-    bin/bali deploy --env t --installversion   
-    bin/bali deploy --env t --upgrade                   # print migration scripts only, no changes made
-    bin/bali deploy --env t --upgrade --deploy          # print migration scripts only, no changes made
-    bin/bali deploy --env t --upgrade --show --to 2     # same, but with schema version 2
-    bin/bali deploy --env t --upgrade --show --from 1   # same, but with db version 2
+    bin/cla db-deploy --env t   
+    bin/cla db-deploy --env t --diff
+    bin/cla db-deploy --env t --diff --deploy
+    bin/cla db-deploy --env t --installversion   
+    bin/cla db-deploy --env t --upgrade                   # print migration scripts only, no changes made
+    bin/cla db-deploy --env t --upgrade --deploy          # print migration scripts only, no changes made
+    bin/cla db-deploy --env t --upgrade --show --to 2     # same, but with schema version 2
+    bin/cla db-deploy --env t --upgrade --show --from 1   # same, but with db version 2
 
 EOF
 }
