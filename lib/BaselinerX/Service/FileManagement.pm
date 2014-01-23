@@ -183,6 +183,7 @@ sub run_ship {
     my $servers = $config->{server};
     for my $server ( Util->_array_or_commas($servers) ) {
         $server = ci->new( $server ) unless ref $server;
+        _fail _loc "Could not instanciate CI for server `%1`", $server unless ref $server;
         my $remote_path = $server->parse_vars( "$remote_path_orig" );
         my $server_str = "$user\@".$server->name;
         _debug "Connecting to server " . $server_str;
