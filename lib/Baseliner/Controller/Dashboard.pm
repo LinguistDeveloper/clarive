@@ -828,21 +828,23 @@ sub list_jobs : Private {
                 : $status=~/CANCELLED|APPROVAL|PAUSED|REJECTED/ ? next : 'ok';
             # for project in job
             for my $prj ( _array( $job->{projects} ) ) {
-               my $r = $rep{ $projects{$prj}->{name} }{$bl} //= {};
-               # last error by type
-               if( !defined $r->{"last_$type"} || $days < $r->{"last_$type"} ) {
-                   $r->{"last_$type"} = $days;
-                   $r->{"id_$type"} = $job->{jobid};
-                   $r->{"mid_$type"} = $job->{mid};
-                   $r->{"name_$type"} = $job->{name};
-                   $r->{status} = $status;
-               }
-               # last durantion and top mid
-               if( !defined $r->{top_mid} || $job->{mid} > $r->{top_mid} ) {  
-                   my $secs = ($endt-Class::Date->new($job->{starttime}))->second;
-                   $r->{last_duration} = sprintf '%dm%ds', int($secs/60), ($secs % 60);
-               }
-               
+                my $name = $projects{$prj}->{name};
+                next unless $name;
+                my $r = $rep{ $name }{$bl} //= {};
+                # last error by type
+                if( !defined $r->{"last_$type"} || $days < $r->{"last_$type"} ) {
+                    $r->{"last_$type"} = $days;
+                    $r->{"id_$type"} = $job->{jobid};
+                    $r->{"mid_$type"} = $job->{mid};
+                    $r->{"name_$type"} = $job->{name};
+                    $r->{status} = $status;
+                }
+                # last durantion and top mid
+                if( !defined $r->{top_mid} || $job->{mid} > $r->{top_mid} ) {  
+                    my $secs = ($endt-Class::Date->new($job->{starttime}))->second;
+                    $r->{last_duration} = sprintf '%dm%ds', int($secs/60), ($secs % 60);
+                    $r->{top_mid} = $job->{mid};
+                }
             }
         }
         
