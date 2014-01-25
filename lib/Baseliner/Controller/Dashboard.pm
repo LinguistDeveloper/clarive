@@ -818,6 +818,7 @@ sub list_jobs : Private {
         my %projects = map { $_->{mid} => $_ } ci->project->find({ mid=>mdb->in(@ids_project) })->all;
         my %rep;
         my $now = _ts();
+        # for all jobs
         for my $job ( values %jobs ) {
             my $bl = $job->{bl};
             my $endt = Class::Date->new($job->{endtime});
@@ -825,8 +826,10 @@ sub list_jobs : Private {
             my $status = $job->{status};
             my $type = $status =~ /ERROR|KILLED/ ? 'err' 
                 : $status=~/CANCELLED|APPROVAL|PAUSED|REJECTED/ ? next : 'ok';
+            # for project in job
             for my $prj ( _array( $job->{projects} ) ) {
                my $r = $rep{ $projects{$prj}->{name} }{$bl} //= {};
+               # last error by type
                if( !defined $r->{"last_$type"} || $days < $r->{"last_$type"} ) {
                    $r->{"last_$type"} = $days;
                    $r->{"id_$type"} = $job->{jobid};
@@ -834,6 +837,7 @@ sub list_jobs : Private {
                    $r->{"name_$type"} = $job->{name};
                    $r->{status} = $status;
                }
+               # last durantion and top mid
                if( !defined $r->{top_mid} || $job->{mid} > $r->{top_mid} ) {  
                    my $secs = ($endt-Class::Date->new($job->{starttime}))->second;
                    $r->{last_duration} = sprintf '%dm%ds', int($secs/60), ($secs % 60);
@@ -845,7 +849,7 @@ sub list_jobs : Private {
         # now create something we can send to the template
         @datas = sort {
             #$a->{project}.'#'.$a->{bl} cmp $b->{project}.'#'.$b->{bl}; 
-            $a->{last_ok} <=> $b->{last_ok}
+            $a->{top_mid} <=> $b->{top_mid}
         } map {
             my $prj = $_;
             my $bls = $rep{$prj};
