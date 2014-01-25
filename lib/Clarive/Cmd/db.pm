@@ -1,10 +1,10 @@
 =head1 NAME
 
-bali_deploy.pl - Baseliner DB Schema Deploy
+Clarive DB Schema Deploy
 
 =head1 DESCRIPTION
 
-Deploy the Baseliner's schema in a database.
+Deploy Clarive's schema to a database.
 
 =head1 USAGE
 
@@ -42,14 +42,6 @@ Examples:
     cla db-deploy --env t --upgrade --deploy          # print migration scripts only, no changes made
     cla db-deploy --env t --upgrade --show --to 2     # same, but with schema version 2
     cla db-deploy --env t --upgrade --show --from 1   # same, but with db version 2
-
-=head2 Run limited test cases
-
-    cla db-deploy --case job [ --case ... ]
-
-=head2 Run only feature tests
-
-    cla db-deploy --feature ca.harvest [ --feature ... ]
 
 =cut
 
@@ -156,44 +148,6 @@ sub run_deploy {
     say pre . "Done.";
 
     exit 0;
-}
-
-sub _help {
-    print << 'EOF';
-Usage:
-  cla db-deploy [options]
-
-Options:
-  -h                      : this help
-  -deploy                 : actually execute statements in the db
-                              cla db-deploy --deploy
-  -run                    : Run DB statements interactively or from STDIN
-  -quote                  : quote table names
-  -drop                   : add drop statements
-  -grep                   : grep a string or re in the generated sql
-  -env                    : sets CLARIVE_ENV (local, test, prod, t, etc...)
-  -schema                 : schemas to deploy (does not work for migrations)
-                                cla db-deploy --schema BaliRepo --schema BaliRepoKeys 
-
-Versioning Options:
-  --diff                  : diffs this schema against the database and generates a diff
-  --installversion        : installs versioning tables if needed
-  --upgrade               : upgrades database version
-  --from <version>        : from version (replaces current db version)
-  --to <version>          : to version (replaces current schema version)
-  --grep <re>             : filter diff statements with a reg. expression
-
-Examples:
-    bin/cla db-deploy --env t   
-    bin/cla db-deploy --env t --diff
-    bin/cla db-deploy --env t --diff --deploy
-    bin/cla db-deploy --env t --installversion   
-    bin/cla db-deploy --env t --upgrade                   # print migration scripts only, no changes made
-    bin/cla db-deploy --env t --upgrade --deploy          # print migration scripts only, no changes made
-    bin/cla db-deploy --env t --upgrade --show --to 2     # same, but with schema version 2
-    bin/cla db-deploy --env t --upgrade --show --from 1   # same, but with db version 2
-
-EOF
 }
 
 1;
