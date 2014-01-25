@@ -851,7 +851,7 @@ sub list_jobs : Private {
         # now create something we can send to the template
         @datas = sort {
             #$a->{project}.'#'.$a->{bl} cmp $b->{project}.'#'.$b->{bl}; 
-            $a->{top_mid} <=> $b->{top_mid}
+            $b->{top_mid} <=> $a->{top_mid}
         } map {
             my $prj = $_;
             my $bls = $rep{$prj};
