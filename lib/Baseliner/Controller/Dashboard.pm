@@ -791,10 +791,8 @@ sub list_jobs : Private {
     my @ids_project = $c->model( 'Permissions' )->user_projects_ids(
         username => $c->username
     );
-
+    
     if ( @ids_project ) {
-
-        my $ids_project = 'MID=' . join( ' OR MID=', grep { length } @ids_project ). " AND " if grep { length } @ids_project;
 
         #CONFIGURATION DASHLET
         ##########################################################################################################
@@ -814,181 +812,59 @@ sub list_jobs : Private {
         ##########################################################################################################
 
         my $rows = $default_config->{rows};
+        
+        my %jobs = map { $_->{mid} => $_ } ci->job->find
+             ->fields({ mid=>1, starttime=>1, endtime=>1, projects=>1, bl=>1, status=>1, jobid=>1 })->all; #{ endtime=>{ '$gt'=>'2013-11-31 00:00' } })->all;
+        my %projects = map { $_->{mid} => $_ } ci->project->find({ mid=>mdb->in(@ids_project) })->all;
+        my %rep;
+        my $now = _ts();
+        for my $job ( values %jobs ) {
+            my $bl = $job->{bl};
+            my $endt = Class::Date->new($job->{endtime});
+            my $days = int( ($now - $endt)->day );
+            my $status = $job->{status};
+            my $type = $status =~ /ERROR|KILLED/ ? 'err' 
+                : $status=~/CANCELLED|APPROVAL|PAUSED|REJECTED/ ? next : 'ok';
+            for my $prj ( _array( $job->{projects} ) ) {
+               my $r = $rep{ $projects{$prj}->{name} }{$bl} //= {};
+               if( !defined $r->{"last_$type"} || $days < $r->{"last_$type"} ) {
+                   $r->{"last_$type"} = $days;
+                   $r->{"id_$type"} = $job->{jobid};
+                   $r->{"mid_$type"} = $job->{mid};
+                   $r->{"name_$type"} = $job->{name};
+                   $r->{status} = $status;
+               }
+               if( !defined $r->{top_mid} || $job->{mid} > $r->{top_mid} ) {  
+                   my $secs = ($endt-Class::Date->new($job->{starttime}))->second;
+                   $r->{last_duration} = sprintf '%dm%ds', int($secs/60), ($secs % 60);
+               }
+               
+            }
+        }
+        
+        # now create something we can send to the template
+        @datas = sort {
+            #$a->{project}.'#'.$a->{bl} cmp $b->{project}.'#'.$b->{bl}; 
+            $a->{last_ok} <=> $b->{last_ok}
+        } map {
+            my $prj = $_;
+            my $bls = $rep{$prj};
+            my @rows;
+            for my $bl ( keys $bls ) {
+                my $r = $bls->{$bl};
+                push @rows, { project=>$prj, bl=>$bl, %$r };
+            }
+            @rows;
+        } keys %rep;
+        
+        @datas = @datas[0..$rows] if $rows < @datas;  # cut to top rows per config
 
-        $SQL =
-            "SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY PROJECT1, G.ID) AS MY_ROW_NUM, E.ID, E.PROJECT1, F.BL, G.ID AS ORDERBL, F.STATUS, F.ENDTIME, F.STARTTIME, TRUNC(SYSDATE) - TRUNC(F.ENDTIME) AS DIAS, F.NAME, ROUND ((F.ENDTIME - STARTTIME) * 24 * 60) AS DURATION
-                        FROM (SELECT * FROM (SELECT MAX(ID_JOB) AS ID, SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) AS PROJECT1, BL
-                            FROM BALI_JOB_ITEMS A, BALI_JOB B
-                            WHERE A.ID_JOB = B.ID
-                            GROUP BY  SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))), BL) C,
-                        (SELECT DISTINCT SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) AS PROJECT, BL
-                            FROM BALI_JOB_ITEMS A,
-                                (SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY FECHA DESC) AS MY_ROW_NUM , ID, FECHA, STATUS, ENDTIME, BL 
-                                                    FROM (SELECT  ID, SYSDATE + MY_ROW_NUM/(24*60*60)  AS FECHA, STATUS, ENDTIME, BL 
-                                                            FROM (SELECT ID, STARTTIME, ROW_NUMBER() OVER(ORDER BY STARTTIME ASC) AS MY_ROW_NUM, STATUS, ENDTIME, BL 
-                                                                        FROM BALI_JOB
-                                                                        WHERE STATUS = 'RUNNING' AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
-                                                                                                                            (SELECT NAME FROM BALI_PROJECT WHERE ACTIVE = 1) B 
-                                                                                                                    WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME))
-                                                                        
-                                                                        
-                                                                        
-                                                                        
-                                                          UNION
-                                                          SELECT  ID, ENDTIME AS FECHA, STATUS, ENDTIME, BL FROM BALI_JOB
-                                                                                    WHERE ENDTIME IS NOT NULL AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
-                                                                                                                                        (SELECT NAME FROM BALI_PROJECT WHERE ACTIVE = 1) B 
-                                                                                                                                WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
-                                                         
-                                                         
-                                                         )
-                                               )
-                                ) B
-                            WHERE A.ID_JOB = B.ID ) D WHERE C.PROJECT1 = D.PROJECT AND C.BL = D.BL) E, BALI_JOB F, BALI_BASELINE G WHERE E.ID = F.ID AND F.BL = G.BL)
-                WHERE MY_ROW_NUM <= ?";
-        # $SQL =
-        #     "SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY PROJECT1, G.ID) AS MY_ROW_NUM, E.ID, E.PROJECT1, F.BL, G.ID AS ORDERBL, F.STATUS, F.ENDTIME, F.STARTTIME, TRUNC(SYSDATE) - TRUNC(F.ENDTIME) AS DIAS, F.NAME, ROUND ((F.ENDTIME - STARTTIME) * 24 * 60) AS DURATION
-        #                 FROM (SELECT * FROM (SELECT MAX(ID_JOB) AS ID, SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) AS PROJECT1, BL
-        #                     FROM BALI_JOB_ITEMS A, BALI_JOB B
-        #                     WHERE A.ID_JOB = B.ID
-        #                     GROUP BY  SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))), BL) C,
-        #                 (SELECT DISTINCT SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) AS PROJECT, BL
-        #                     FROM BALI_JOB_ITEMS A,
-        #                         (SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY FECHA DESC) AS MY_ROW_NUM , ID, FECHA, STATUS, ENDTIME, BL 
-        #                                             FROM (SELECT  ID, SYSDATE + MY_ROW_NUM/(24*60*60)  AS FECHA, STATUS, ENDTIME, BL 
-        #                                                     FROM (SELECT ID, STARTTIME, ROW_NUMBER() OVER(ORDER BY STARTTIME ASC) AS MY_ROW_NUM, STATUS, ENDTIME, BL 
-        #                                                                 FROM BALI_JOB
-        #                                                                 WHERE STATUS = 'RUNNING' AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
-        #                                                                                                                     (SELECT NAME FROM BALI_PROJECT WHERE $ids_project ACTIVE = 1) B 
-        #                                                                                                             WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME))
-                                                                        
-                                                                        
-                                                                        
-                                                                        
-        #                                                   UNION
-        #                                                   SELECT  ID, ENDTIME AS FECHA, STATUS, ENDTIME, BL FROM BALI_JOB
-        #                                                                             WHERE ENDTIME IS NOT NULL AND ID IN (SELECT ID_JOB FROM BALI_JOB_ITEMS A,
-        #                                                                                                                                 (SELECT NAME FROM BALI_PROJECT WHERE $ids_project ACTIVE = 1) B 
-        #                                                                                                                         WHERE SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = B.NAME)
-                                                         
-                                                         
-        #                                                  )
-        #                                        )
-        #                         ) B
-        #                     WHERE A.ID_JOB = B.ID ) D WHERE C.PROJECT1 = D.PROJECT AND C.BL = D.BL) E, BALI_JOB F, BALI_BASELINE G WHERE E.ID = F.ID AND F.BL = G.BL)
-        #         WHERE MY_ROW_NUM <= ?";
-        my @jobs = $db->array_hash( $SQL, $rows );
-            #if @ids_project;
-
-        foreach my $job ( @jobs ) {
-            my ( $lastError, $lastOk, $idError, $idOk, $nameOk, $nameError, $lastDuration );
-            given ( $job->{status} ) {
-                when ( 'RUNNING' ) {
-                    my @jobError = get_last_jobError( $job->{project1}, $job->{bl}, $username );
-
-                    if ( @jobError ) {
-                        foreach my $jobError ( @jobError ) {
-                            $idError      = $jobError->{id};
-                            $lastError    = $jobError->{dias};
-                            $nameError    = $jobError->{name};
-                            $lastDuration = $jobError->{duration};
-                        } ## end foreach my $jobError ( @jobError)
-                    } ## end if ( @jobError )
-                    my @jobOk = get_last_jobOk( $job->{project1}, $job->{bl}, $username );
-
-                    if ( @jobOk ) {
-                        foreach my $jobOk ( @jobOk ) {
-                            $idOk   = $jobOk->{id};
-                            $lastOk = $jobOk->{dias};
-                            $nameOk = $jobOk->{name};
-                            if ( $lastOk < $lastError ) {
-                                $lastDuration = $jobOk->{duration};
-                            }
-                        } ## end foreach my $jobOk ( @jobOk )
-                    } ## end if ( @jobOk )
-
-                } ## end when ( 'RUNNING' )
-                when ( 'FINISHED' ) {
-                    $idOk         = $job->{id};
-                    $lastOk       = $job->{dias};
-                    $nameOk       = $job->{name};
-                    $lastDuration = $job->{duration};
-
-                    my @jobError = get_last_jobError( $job->{project1}, $job->{bl} );
-
-                    if ( @jobError ) {
-                        foreach my $jobError ( @jobError ) {
-                            $idError   = $jobError->{id};
-                            $lastError = $jobError->{dias};
-                            $nameError = $jobError->{name};
-                        }
-                    } ## end if ( @jobError )
-
-                } ## end when ( 'FINISHED' )
-                when ( 'ERROR' || 'CANCELLED' || 'KILLED' ) {
-                    $idError      = $job->{id};
-                    $lastError    = $job->{dias};
-                    $nameError    = $job->{name};
-                    $lastDuration = $job->{duration};
-
-                    my @jobOk = get_last_jobOk( $job->{project1}, $job->{bl} );
-
-                    if ( @jobOk ) {
-                        foreach my $jobOk ( @jobOk ) {
-                            $idOk   = $jobOk->{id};
-                            $lastOk = $jobOk->{dias};
-                            $nameOk = $jobOk->{name};
-                        }
-                    } ## end if ( @jobOk )
-                } ## end when ( 'ERROR' || 'CANCELLED'...)
-            } ## end given
-
-            push @datas,
-                {
-                project      => $job->{project1},
-                bl           => $job->{bl},
-                lastOk       => $lastOk,
-                idOk         => $idOk,
-                nameOk       => $nameOk,
-                idError      => $idError,
-                lastError    => $lastError,
-                nameError    => $nameError,
-                lastDuration => $lastDuration
-                };
-        } ## end foreach my $job ( @jobs )
     } ## end if ( @ids_project )
     $c->stash->{jobs} = \@datas;
-} ## end sub list_jobs:
+} 
 
 
-sub get_last_jobOk: Private{
-    my $project = shift;
-    my $bl = shift;
-    my $username = shift;
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-    
-    my $SQL = "SELECT * FROM (SELECT B.ID, NAME, ROW_NUMBER() OVER(ORDER BY endtime DESC) AS MY_ROW_NUM, ENDTIME, STARTTIME, TRUNC(SYSDATE)-TRUNC(ENDTIME) AS DIAS, ROUND ((ENDTIME - STARTTIME) * 24 * 60) AS DURATION 
-                                FROM BALI_JOB_ITEMS A, BALI_JOB B 
-                                WHERE A.ID_JOB = B.ID AND SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = ? 
-                                        AND BL = ? AND STATUS = 'FINISHED' AND ENDTIME IS NOT NULL)
-                    WHERE MY_ROW_NUM < 2";
-    return $db->array_hash( $SQL, $project, $bl);
-}
-
-sub get_last_jobError: Private{
-    my $project = shift;
-    my $bl = shift;
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-    
-    my $SQL = "SELECT * FROM (SELECT B.ID, NAME, ROW_NUMBER() OVER(ORDER BY endtime DESC) AS MY_ROW_NUM, ENDTIME, STARTTIME, TRUNC(SYSDATE)-TRUNC(ENDTIME) AS DIAS, ROUND ((ENDTIME - STARTTIME) * 24 * 60) AS DURATION 
-                                FROM BALI_JOB_ITEMS A, BALI_JOB B 
-                                WHERE A.ID_JOB = B.ID AND SUBSTR(APPLICATION, -(LENGTH(APPLICATION) - INSTRC(APPLICATION, '/', 1, 1))) = ? 
-                                        AND BL = ? AND STATUS IN ('ERROR','CANCELLED','KILLED') AND ENDTIME IS NOT NULL)
-                    WHERE MY_ROW_NUM < 2";
-    return $db->array_hash( $SQL, $project, $bl );	
-}
-
-sub viewjobs : Local{
+sub viewjobs : Local {
     my ( $self, $c, $dashboard_id, $projects, $type, $bl ) = @_;
     my $p = $c->request->parameters;
 

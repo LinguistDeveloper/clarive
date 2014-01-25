@@ -23,6 +23,7 @@ use Exporter::Tidy default => [
     _error
     _utf8
     _tz
+    _ts
     slashFwd
     slashBack
     slashSingle
@@ -482,8 +483,12 @@ sub _now_log {
     }
 }
 
+sub _ts {
+    Class::Date->now()->to_tz(_tz())
+}
+
 sub _now {
-    return Class::Date->now()->to_tz(_tz()).''
+    return _ts().''
 }
 
 sub _nowstamp {

@@ -23,10 +23,9 @@ sub logs_list : Path('/job/log/list') {
 sub dashboard_log : Path('/job/log/dashboard') {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    $c->stash->{mid} = $p->{mid};
-    $c->stash->{name_job} = $p->{name};
-
     my $job = ci->new( $p->{mid} );
+    $c->stash->{mid} = $job->mid;
+    $c->stash->{name_job} = $p->{name} // $job->name;
     $c->stash->{job_exec} = ref $job ? $job->exec : 1;
     $c->stash->{summary} = $job->summary;
     $c->stash->{services} = $job->service_summary( summary=>$c->stash->{summary} );
