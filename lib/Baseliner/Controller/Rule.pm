@@ -544,6 +544,7 @@ sub dsl_try : Local {
     my $stash = $p->{stash} ? _load( $p->{stash} ) : {};
     my $output;
     my $dslerr;
+    local $Baseliner::no_log_color = 1;
     try {
         require Capture::Tiny;
         _log "============================ DSL TRY START ============================";

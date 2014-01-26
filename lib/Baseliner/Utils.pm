@@ -358,7 +358,7 @@ sub _log_me {
         my $msg = join '', _now_log(), "[$pid] [$cl:$li] ", $first, @msgs ;
         #if( !$ENV{BALI_CMD} && ( my $cat_log = Baseliner->log ) ) {
             #$cat_log->$lev( $msg );
-        if( ( $^O ne 'Win32' && -t STDOUT ) || $ENV{BASELINER_LOGCOLOR} ) { 
+        if( ( ( $^O ne 'Win32' && -t STDOUT ) || $ENV{BASELINER_LOGCOLOR} ) && !$Baseliner::no_log_color) { 
             if( $lev eq 'error' ) {
                 print STDERR color('red') , $msg , color('reset'), "\n"; 
             } elsif( $lev eq 'debug' ) {

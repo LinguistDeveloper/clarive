@@ -708,7 +708,6 @@ sub sync : Local {
     my ($self, $c, $action) = @_;
     my $p = $c->req->params;
 
-    _log "SSSSSSSSSSSSS"._dump $p;
     my $collection = delete $p->{collection};
     my $class = delete $p->{class};
     my $name = delete $p->{name};
