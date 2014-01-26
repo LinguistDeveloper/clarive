@@ -225,9 +225,10 @@
         }
         var ed = String.format('Baseliner.ci_edit(\'{0}\',{1})', ci_grid.id, rowIndex, value );
         var ret = '<table><tr><td width="1">';
-        ret += '<img style="margin-top:-2px" src="' + rec.data.icon + '" alt="edit" />';
+        ret += '<img style="margin-top:-2px" '+( active ? '':'class="gris"')+' src="' + rec.data.icon + '" alt="edit" />';
         //ret += '</td><td><b><a href="javascript:'+ed+'" style="'+(active?'':'text-decoration: line-through;')+'" onmouseover="this.style.cursor=\'pointer\'">' + value + '</a></b></td></tr></table>';
-        ret += '</td><td><b><a href="#" onclick="'+ed+'; return false" style="'+(active?'':'color: #444;')+'" onmouseover="this.style.cursor=\'pointer\'">' + value + '</a></b></td></tr></table>';
+        ret += '</td><td><b><a href="#" onclick="'+ed+'; return false" style="'+(active?'':'color: #aaa;')
+            +'" onmouseover="this.style.cursor=\'pointer\'">' + value + '</a></b></td></tr></table>';
         return ret;
     };
     var render_properties = function(value,metadata,rec,rowIndex,colIndex,store) {

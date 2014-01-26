@@ -107,6 +107,10 @@ sub run_remote {
     $args ||= [];
     for my $server ( Util->_array_or_commas($servers)  ) {
         $server = ci->new( $server ) unless ref $server;
+        if( !$server->active ) {
+            $log->warn( _loc('Server %1 is inactive. Skipped', $server->name) );
+            next;
+        }
         my $path_parsed = $server->parse_vars( $path );
         my $args_parsed = $server->parse_vars( $args );
         for my $hostname ( _array( $server->hostname ) ) {
@@ -180,6 +184,10 @@ sub run_eval {
     my @rets;
     for my $server ( Util->_array_or_commas($servers)  ) {
         $server = ci->new( $server ) unless ref $server;
+        if( !$server->active ) {
+            $log->warn( _loc('Server %1 is inactive. Skipped', $server->name) );
+            next;
+        }
         _log _loc "===========> RUNNING remote eval: %1\@%2", $user, $server->hostname ;
         
         my $agent = $server->connect( user=>$user );
