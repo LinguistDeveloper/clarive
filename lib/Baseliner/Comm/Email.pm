@@ -169,7 +169,7 @@ sub send {
     # take out accents
     #use Text::Unaccent::PurePerl qw/unac_string/;
     #$subject = unac_string( $subject );
-    $subject = '=?ISO-8859-1?Q?' . MIME::Lite::encode_qp( $subject, '' ) ; # Building fa=?ISO-8859-1?Q?=E7ade?=
+    $subject = '=?ISO-8859-1?Q?' . MIME::Lite::encode_qp($subject,''); # Building fa=?ISO-8859-1?Q?=E7ade?=
     $subject = substr( $subject, 0, length( $subject ) ) . '?=';
     
     my $server=$p{server} || "localhost";
