@@ -945,7 +945,7 @@ sub run {
         } elsif( !@needing_rollback && !$self->rollback ) {
             $self->logger->info( _loc( 'No need to rollback anything.' ) );
         } else {
-            $self->logger->error( _loc( 'Error during rollback. Baselines are incosistent, manual intervention required.' ) );
+            $self->logger->error( _loc( 'Error during rollback. Baselines are inconsistent, manual intervention required.' ) );
         }
     }
 
