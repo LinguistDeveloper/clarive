@@ -15,7 +15,9 @@ BEGIN { extends 'Catalyst::Model' }
 
 my $post_filter = sub {
         my ($text, @vars ) = @_;
-        $vars[2] =~ s{\n|\r|<(.+?)>}{ }gs;
+        $vars[2] =~ s{\n|\r}{ }gs;
+        $vars[2] =~ s{<(.+?)>}{}gs;
+        $vars[2] = substr( $vars[2], 0, 30 ) . ( length $vars[2] > 30 ? "..." : "" );
         $vars[0] = "<b>$vars[0]</b>";  # bold username
         $vars[2] = "<quote>$vars[2]</quote>";  # quote post
         ($text,@vars);
