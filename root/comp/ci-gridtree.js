@@ -205,7 +205,7 @@
         return value ? String.format('<div class="bali-moniker">{0}</div>', value ) : '';
     };
     var render_item = function(value,metadata,rec,rowIndex,colIndex,store) {
-        var active = rec.data.active;
+        var active = rec.data.type=='object' && !rec.data._parent ? rec.data.active : true;
         if( rec.data.type == 'class' ) {
             // we create objects
             value = String.format('<a href="javascript:Baseliner.ci_add(\'{0}\',{1})">{2}</a>', ci_grid.id, rowIndex, value );
