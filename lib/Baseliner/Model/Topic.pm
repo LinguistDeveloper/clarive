@@ -15,7 +15,9 @@ BEGIN { extends 'Catalyst::Model' }
 
 my $post_filter = sub {
         my ($text, @vars ) = @_;
-        $vars[2] =~ s{\n|\r|<(.+?)>}{ }gs;
+        $vars[2] =~ s{\n|\r}{ }gs;
+        $vars[2] =~ s{<(.+?)>}{}gs;
+        $vars[2] = substr( $vars[2], 0, 30 ) . ( length $vars[2] > 30 ? "..." : "" );
         $vars[0] = "<b>$vars[0]</b>";  # bold username
         $vars[2] = "<quote>$vars[2]</quote>";  # quote post
         ($text,@vars);
@@ -1040,6 +1042,7 @@ our %meta_types = (
     set_users      => 'user',
     set_priority   => 'priority',
     set_labels     => 'label',
+    get_files      => 'file',
 );
 
 sub get_meta {
@@ -1080,7 +1083,7 @@ sub get_meta {
             $d->{meta_type} = 'history' if $d->{js} && $d->{js} eq '/fields/templates/js/status_changes.js';  # for legacy only
             $d->{meta_type} ||= $d->{set_method} 
                 ? ($meta_types{ $d->{set_method} } // _fail("Unknown set_method $d->{set_method} for field $d->{name_field}") ) 
-                : '';
+                : $d->{get_method} ? $meta_types{ $d->{get_method} } : '';
             $d
         } @cat_fields;
     
@@ -1685,6 +1688,7 @@ sub update_rels {
     for my $mid_or_doc ( _unique( @mids_or_docs  ) ) {
         my $is_doc = ref $mid_or_doc eq 'HASH';
         my $mid = $is_doc ? $mid_or_doc->{mid} : $mid_or_doc;
+        next unless length $mid;
         my %d;
        
         # resolve to_mids (parent_field)

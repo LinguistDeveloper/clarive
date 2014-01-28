@@ -696,7 +696,7 @@ sub ci_create_or_update {
             $obj->save;
             return $mid;
         }
-    } ## end else [ if ( length $p{mid} ) ]
+    } 
 };
 
 =head2 sync
@@ -708,7 +708,6 @@ sub sync : Local {
     my ($self, $c, $action) = @_;
     my $p = $c->req->params;
 
-    _log "SSSSSSSSSSSSS"._dump $p;
     my $collection = delete $p->{collection};
     my $class = delete $p->{class};
     my $name = delete $p->{name};
@@ -763,7 +762,8 @@ sub sync : Local {
                 }
             }
 
-            $mid = $self->ci_create_or_update( rel_field => $collection, name=>$name, class=>$class, username=>$c->username, ns=>$ns, collection=>$collection, mid=>$mid, data=>\%ci_data );
+            $mid = $self->ci_create_or_update( rel_field => $collection, name=>$name, class=>$class, 
+                username=>$c->username, ns=>$ns, collection=>$collection, mid=>$mid, data=>\%ci_data );
 
             $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 saved ok', $name) };
             $c->stash->{json}{mid} = $mid;

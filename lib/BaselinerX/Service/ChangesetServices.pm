@@ -242,6 +242,41 @@ sub job_items {
         my $pc = { project => $project };
         $repos //= {};
         my @items;
+        
+        # Topic files - group
+        my %topic_files;
+        for my $cs ( _array( $changesets )  ) {
+            my %mid_files = 
+                map { $_->{to_mid} => $_->{rel_field} }
+                DB->BaliMasterRel->search({ from_mid=>$cs->mid, rel_type=>'topic_file_version' })->hashref->all;
+            my @files = DB->BaliFileVersion->search({ mid=>[ keys %mid_files ] },
+                    { select=>[qw(created_by created_on extension filename filesize md5 mid versionid)] })->hashref->all;
+            my %meta = map { $_->{id_field} => $_ } grep { $_->{meta_type} && $_->{meta_type} eq 'file' } _array $cs->get_meta;
+            my ($project) = ( map { $_->name } $cs->projects );
+            $project //= '';
+            for my $tfile ( @files ) {
+               my $mid = $tfile->{mid};
+               my $fieldlet = $meta{ $mid_files{$mid} };
+               my $co_dir = $fieldlet->{checkout_dir};
+               my $fullpath = ''.Util->_dir( "/", $project, $co_dir, $tfile->{filename} );
+               my $versionid = $tfile->{versionid};
+               my $item = BaselinerX::CI::topic_file->new(
+                    mid       => $mid,   # this ci has mid, but is not yet saved as such
+                    md5       => $tfile->{md5},
+                    size      => $tfile->{filesize},
+                    path      => $fullpath,
+                    versionid => $versionid,
+               );
+               # if I'm the highest version, then save. Topic files are unique by project + path
+               my $unique_key = $project . '&%&' . $fullpath;
+               $topic_files{$unique_key} = { item=>$item, row=>$tfile, mid=>$mid }
+                   if !exists $topic_files{$unique_key} || $topic_files{$unique_key}->{versionid} < $versionid;
+            } 
+        }
+        # Topic files - finalize groupings
+        @items = map { $_->{item} } values %topic_files;
+    
+        # Now work with Repositories
         for my $repo_group ( values %$repos ) {
             my ($revs,$repo) = @{ $repo_group }{qw/revisions repo/};
             $log->debug( _loc('Grouping items for revision'), { revisions=>$revs, repository=>$repo } );
@@ -331,7 +366,9 @@ sub checkout {
         $item->checkout( dir=>$job_dir );
         $cnt++;
     }
+    
     $log->info( _loc('Checked out %1 item(s) to %2', $cnt, $job_dir), [ map { "$_->{path} ($_->{versionid})" } @items ] );
+    
 }
 
 sub nature_items {

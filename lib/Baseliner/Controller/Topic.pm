@@ -772,7 +772,7 @@ sub comment : Local {
                         mid             => $topic_mid,
                         data            => ci->new($topic_mid)->{_ci},
                         id_post         => $mid,
-                        post            => substr( $text, 0, 30 ) . ( length $text > 30 ? "..." : "" ),
+                        post            => $text,
                         notify_default  => \@users,
                         subject         => $subject
                     };

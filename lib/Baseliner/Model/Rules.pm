@@ -198,7 +198,7 @@ sub dsl_build {
         } elsif( ! $attr->{nested} ) {
             push @dsl, sprintf( 'current_task($stash, q{%s});', $name )."\n";
         }
-        if( $timeout > 0 ) {
+        if( defined $timeout && $timeout > 0 ) {
             push @dsl, sprintf( 'alarm %s;', $timeout )."\n";
         }
         push @dsl, sprintf( '_debug(q{=====| Current Rule Task: %s} );', $name)."\n" if $p{verbose}; 

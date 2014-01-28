@@ -3,7 +3,6 @@ use Baseliner::Moose;
 use Baseliner::Utils qw(:logging _file _dir);
 use v5.10;
 
-has_ci 'server';
 has workerid   => qw(is rw isa Str lazy 1), default => sub { 
     my ($self)=@_;
     my $wid = $self->_whos_capable( $self->cap );

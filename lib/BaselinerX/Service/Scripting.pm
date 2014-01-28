@@ -66,6 +66,7 @@ sub run_local {
         _log "CHDIR $orig";
     }
     my $r = { output=>$out, rc=>$rc, ret=>$ret };
+
     if( $rc ) {
         my $msg = _loc('Error running command %1', join ' ', @cmd);
         $job->logger->error( $msg , $r ); 
@@ -73,7 +74,8 @@ sub run_local {
         _fail $msg if $fail_on_error; 
     } else {
         $self->publish_output_files( 'info', $job,$output_files );
-        $job->logger->info( _loc('Finished command %1' , join ' ', @cmd ), $r ); 
+        $self->check_output_errors($stash, ($fail_on_error ? 'fail' : 'error'),$log,$out,$config);
+        $job->logger->info( _loc('Finished command %1' , join ' ', @cmd ), qq{RC: $rc\nRET: $ret\nOUTPUT: $out} ); 
     }
     return $r;
 }
@@ -107,6 +109,10 @@ sub run_remote {
     $args ||= [];
     for my $server ( Util->_array_or_commas($servers)  ) {
         $server = ci->new( $server ) unless ref $server;
+        if( !$server->active ) {
+            $log->warn( _loc('Server %1 is inactive. Skipped', $server->name) );
+            next;
+        }
         my $path_parsed = $server->parse_vars( $path );
         my $args_parsed = $server->parse_vars( $args );
         for my $hostname ( _array( $server->hostname ) ) {
@@ -130,43 +136,50 @@ sub run_remote {
             my $output = $agent->output;
             # check for output errors and warnings
             #   if we find an output ok, then ignore all other errors
-            my $ignore_errors = 0;
-            OUT_OK: for my $ook ( _array($output_ok) ) {
-                if( my @match = ( $output =~ _regex($ook) ) ) {
-                   my %found = %+;
-                   $log->info( _loc('Output ok detected by `%1` (errors will be ignored): %2', $ook, %found ? _encode_json(\%found) : join(',',@match) ) );
-                   $ignore_errors = 1;
-                   last OUT_OK;
-                }
-            }
-            for my $oerr ( _array($output_error) ) {
-                if( my @match = ( $output =~ _regex($oerr) ) ) {
-                   my %found = %+;
-                   $log->error( _loc('Output error detected by `%1`: %2', $oerr, %found ? _encode_json(\%found) : join(',',@match) ) );
-                   _fail _loc 'Output error detected' if $errors eq 'fail' && !$ignore_errors;
-                }
-            }
-            for my $owarn ( _array($output_warn) ) {
-                if( my @match = ( $output =~ _regex($owarn) ) ) {
-                   my %found = %+;
-                   $log->warn( _loc('Output error detected by `%1`: %2', $owarn, %found ? _encode_json(\%found) : join(',',@match) ) );
-                }
-            }
-            for my $ocap ( _array($output_capture) ) {
-                if( $output =~ _regex($ocap) ) {
-                   my %found = %+;
-                   for( keys %found ) {
-                       $log->debug( _loc('Captured from output `%1` into stash `%2`', $ocap, $_) );
-                       $stash->{$_} = $found{$_};
-                   }
-                }
-            }
+            $self->check_output_errors($stash,$errors,$log,$output,$config);
             $log->info( _loc( 'FINISHED remote script %1: `%2`', $user . '@' . $server->hostname, $path_parsed . join(' ',_array($args_parsed)) ), 
                 $agent->tuple_str );
         }
         push @rets, { output=>$out, rc=>$rc, ret=>$ret };
     }
     return @rets > 1 ? \@rets : $rets[0];
+}
+
+sub check_output_errors {
+    my ($self, $stash, $error_mode, $log, $output, $config)=@_;
+    
+    my $ignore_errors = 0;
+    my ($output_ok, $output_error, $output_warn, $output_capture) = @{$config}{qw(output_ok output_error output_warn output_capture)}; 
+    OUT_OK: for my $ook ( _array($output_ok) ) {
+        if( my @match = ( $output =~ _regex($ook) ) ) {
+           my %found = %+;
+           $log->info( _loc('Output ok detected by `%1` (errors will be ignored): %2', $ook, %found ? _encode_json(\%found) : join(',',@match) ) );
+           $ignore_errors = 1;
+           last OUT_OK;
+        }
+    }
+    for my $oerr ( _array($output_error) ) {
+        if( my @match = ( $output =~ _regex($oerr) ) ) {
+           my %found = %+;
+           $log->error( _loc('Output error detected by `%1`: %2', $oerr, %found ? _encode_json(\%found) : join(',',@match) ) );
+           _fail _loc 'Output error detected' if $error_mode eq 'fail' && !$ignore_errors;
+        }
+    }
+    for my $owarn ( _array($output_warn) ) {
+        if( my @match = ( $output =~ _regex($owarn) ) ) {
+           my %found = %+;
+           $log->warn( _loc('Output error detected by `%1`: %2', $owarn, %found ? _encode_json(\%found) : join(',',@match) ) );
+        }
+    }
+    for my $ocap ( _array($output_capture) ) {
+        if( $output =~ _regex($ocap) ) {
+           my %found = %+;
+           for( keys %found ) {
+               $log->debug( _loc('Captured from output `%1` into stash `%2`', $ocap, $_) );
+               $stash->{$_} = $found{$_};
+           }
+        }
+    }
 }
 
 sub run_eval {
@@ -180,6 +193,10 @@ sub run_eval {
     my @rets;
     for my $server ( Util->_array_or_commas($servers)  ) {
         $server = ci->new( $server ) unless ref $server;
+        if( !$server->active ) {
+            $log->warn( _loc('Server %1 is inactive. Skipped', $server->name) );
+            next;
+        }
         _log _loc "===========> RUNNING remote eval: %1\@%2", $user, $server->hostname ;
         
         my $agent = $server->connect( user=>$user );

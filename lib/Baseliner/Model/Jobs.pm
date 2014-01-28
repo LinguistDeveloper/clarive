@@ -62,10 +62,9 @@ sub monitor {
     };
     my @order_by;
     if ( length($groupby) ) {
-        $groupdir = $groupdir eq 'ASC' ? 1:-1;
+        $groupdir = $groupdir eq 'ASC' ? 1 : -1;
         @order_by = ( $group_keys->{$groupby} => $groupdir, $group_keys->{$sort} => $dir );
-    }
-    else {
+    } else {
         @order_by = ( $group_keys->{$sort} => $dir );
     }
 
@@ -171,15 +170,10 @@ sub monitor {
     }
 
     my @rows;
-    #while( my $r = $rs->next ) {
     my $now = _dt();
     my $today = DateTime->new( year=>$now->year, month=>$now->month, day=>$now->day, , hour=>0, minute=>0, second=>0) ; 
     my $ahora = DateTime->new( year=>$now->year, month=>$now->month, day=>$now->day, , hour=>$now->hour, minute=>$now->minute, second=>$now->second ) ; 
     
-    #foreach my $r ( _array $results->{data} ) {
-    #local $Baseliner::CI::no_rels = 1;
-    _debug "Looping start...";
-
     local $Baseliner::CI::mid_scope = {};
 
     for my $job ( $rs->all ) {
@@ -233,10 +227,11 @@ sub monitor {
             bl           => $job->{bl},
             bl_text      => $job->{bl},  #TODO resolve bl name
             ts           => $job->{ts},
-            starttime    => $job->{starttime},
-            schedtime    => $job->{schedtime},
-            maxstarttime => $job->{maxstarttime},
-            endtime      => $job->{endtime},
+            # show only date if grouping 
+            starttime    => ( $groupby eq 'starttime' ? substr($job->{starttime},0,10) : $job->{starttime} ), 
+            schedtime    => ( $groupby eq 'schedtime' ? substr($job->{schedtime},0,10) : $job->{schedtime} ),
+            maxstarttime => ( $groupby eq 'maxstarttime' ? substr($job->{maxstarttime},0,10) : $job->{maxstarttime} ),
+            endtime      => ( $groupby eq 'endtime' ? substr($job->{endtime},0,10) : $job->{endtime} ),
             comments     => $job->{comments},
             username     => $job->{username},
             rollback     => $job->{rollback},
@@ -265,9 +260,6 @@ sub monitor {
             #subapps      => \@subapps,   # maybe use _path_xs from Utils.pm?
           }; # if ( ( $cnt++ >= $start ) && ( $limit ? scalar @rows < $limit : 1 ) );
     }
-    _debug "Looping end ";
-    #_debug \@rows;
-
     return ( $cnt, @rows );
 }
 

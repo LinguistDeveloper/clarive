@@ -76,7 +76,7 @@ has modified_by => qw(is rw isa Maybe[Str]);
     # };  # a short name for this
 has job     => qw(is rw isa Baseliner::Role::JobRunner),
         lazy    => 1, default => sub {
-            BaselinerX::CI::job_run->new;
+            BaselinerX::CI::job->new;
         };
 
 sub storage { 'yaml' }   # ie. yaml, deprecated: for now, no other method supported
@@ -690,7 +690,7 @@ sub related {
     $opts{path} //= [];
     push @{ $opts{path} }, $mid;
     return () if exists $opts{visited}{$mid};
-    local $Baseliner::CI::_no_record = $opts{no_record} // 0; # make sure we include a _ci 
+    local $Baseliner::CI::_no_record = $opts{no_record} // 1; # make sure we *don't* include a _ci (rgo) 
     $opts{visited}{ $mid } = 1;
     local $Baseliner::ci_unique = {} unless defined $Baseliner::ci_unique;
     

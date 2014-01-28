@@ -19,7 +19,8 @@
             default_value: params.data.home || '${job_dir}/${project}/file.log' 
         }), 
         { xtype:'textarea', fieldLabel: _('Home Directory'), height: 80, name: 'home', value: params.data.home },
-        { xtype:'textarea', fieldLabel: _('Stdin'), height: 80, name: 'stdin', value: params.data.stdin }
+        { xtype:'textarea', fieldLabel: _('Stdin'), height: 80, name: 'stdin', value: params.data.stdin },
+        new Baseliner.ErrorOutputTabs({ data: data }) 
     ]
 })
 

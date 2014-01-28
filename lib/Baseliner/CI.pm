@@ -38,7 +38,7 @@ sub new {
         return Baseliner::Role::CI->_build_ci_instance_from_rec( $rec );
     } elsif( @_ == 1 && ref( $_[0] ) =~ /^Baseliner.?::CI/ && $_[0]->does('Baseliner::Role::CI') ) {
         # already a full grown CI
-        return $_[0];
+        return $_[0]->can('mid') ? $class->new( $_[0]->mid ) : $_[0];  # renew if it has mid, otherwise just keep it as-is (it's a handmade CI)
     } elsif( @_ == 1 && $_[0] =~ /^(\w+):(.+)/ ) {
         # name, moniker, etc.
         my ($parm,$val) = ($1,$2);

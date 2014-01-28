@@ -646,7 +646,7 @@
     };  
     
     var render_ci = function(value,metadata,rec,rowIndex,colIndex,store) {
-        if( !value ) return '';
+        //if( !value ) return '';
         var arr=[];
 		
 		if ( !rec.json[this.dataIndex] ) {
@@ -656,7 +656,6 @@
 		};		
 
         Ext.each( value, function(v){
-			
             arr.push( typeof v=='object' ? v.moniker ? v.moniker : v.name : v );
         });
         return arr.join('\n');
@@ -712,18 +711,19 @@
 			var res = str.replace('_' +  this.alias,"");
 			value = rec.json[res];
 		};			
-        if( !value ) return '';
+        if( !value && value == undefined ) return '';
 		//var value_to_date = new Date(value);
 		//return value_to_date.dateFormat('d/m/Y');
 		var date;
 		if (value.getMonth) {
 			date = value;
 		}else{
-			var dateStr= value; //returned from mysql timestamp/datetime field
+			var dateStr= value;
+			if (dateStr == '' || dateStr == undefined) return '';
 			var a=dateStr.split(" ");
 			var d=a[0].split("-");
 			var t=a[1].split(":");
-			date = new Date(d[0],(d[1]-1),d[2],t[0],t[1],t[2]);			
+			date = new Date(d[0],(d[1]-1),d[2],t[0],t[1],t[2]);
 		}
 		return date.dateFormat('d/m/Y');
     };
@@ -747,10 +747,10 @@
 			value = rec.json[res];
 		};
 		
-		if( !value ) return '';
+		//if( !value  ) return '';
 		
 		//#################################################Ñapa 
-		if (!value[0].mid) {
+		if ( value[0] && !value[0].mid ) {
 			var str = this.dataIndex;
 			var res = str.replace('_' +  this.alias,"");
 			value = rec.json[res];

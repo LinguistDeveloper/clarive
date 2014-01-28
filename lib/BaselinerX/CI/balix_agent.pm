@@ -122,18 +122,28 @@ method file_exists( $file_or_dir ) {
 }
 
 method check_writeable( $file_or_dir ) {
-    my ($rc,$ret) = $self->_execute( 'test', '-e', $file_or_dir ); # check it exists
+    my ($rc,$ret) = $self->_execute( 'test', '-r', $file_or_dir ); # check it exists
     return (0,'') if $rc; # doesnt exist, it's writeable
     return $self->_execute( 'test', '-w', $file_or_dir ); # now check it's writeable
 }
 
+method is_writeable( $file_or_dir ) {
+    my ($rc,$ret) = $self->check_writeable( $file_or_dir );
+    return 1 if !$rc;
+}
+
 # TODO data parameter support
 method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
+    # check if remote dir exists and is writeable
     if( my $remote_dir = ''. _file($remote)->dir ) {
+        # exists?
         my $dir_exists = $self->file_exists( $remote_dir );
-        #my ($rc,$ret) = $self->check_writeable($remote_dir);
         _fail _loc("balix: can't send file: could not find remote dir `%1` (dir_exists: %2)", $remote_dir, $dir_exists)
             if !$dir_exists;
+        # writeable?
+        my $is_writeable = $self->is_writeable($remote_dir);
+        _fail _loc("balix: can't send file: remote dir is not writeable `%1`", $remote_dir)
+            if !$is_writeable;
     } else {
         _fail _loc "balix: can't send file: missing remote dir in `%1`", $remote;
     }

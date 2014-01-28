@@ -205,7 +205,7 @@
         return value ? String.format('<div class="bali-moniker">{0}</div>', value ) : '';
     };
     var render_item = function(value,metadata,rec,rowIndex,colIndex,store) {
-        var active = rec.data.active;
+        var active = rec.data.type=='object' && !rec.data._parent ? rec.data.active : true;
         if( rec.data.type == 'class' ) {
             // we create objects
             value = String.format('<a href="javascript:Baseliner.ci_add(\'{0}\',{1})">{2}</a>', ci_grid.id, rowIndex, value );
@@ -225,9 +225,10 @@
         }
         var ed = String.format('Baseliner.ci_edit(\'{0}\',{1})', ci_grid.id, rowIndex, value );
         var ret = '<table><tr><td width="1">';
-        ret += '<img style="margin-top:-2px" src="' + rec.data.icon + '" alt="edit" />';
+        ret += '<img style="margin-top:-2px" '+( active ? '':'class="gris"')+' src="' + rec.data.icon + '" alt="edit" />';
         //ret += '</td><td><b><a href="javascript:'+ed+'" style="'+(active?'':'text-decoration: line-through;')+'" onmouseover="this.style.cursor=\'pointer\'">' + value + '</a></b></td></tr></table>';
-        ret += '</td><td><b><a href="#" onclick="'+ed+'; return false" style="'+(active?'':'color: #444;')+'" onmouseover="this.style.cursor=\'pointer\'">' + value + '</a></b></td></tr></table>';
+        ret += '</td><td><b><a href="#" onclick="'+ed+'; return false" style="'+(active?'':'color: #aaa;')
+            +'" onmouseover="this.style.cursor=\'pointer\'">' + value + '</a></b></td></tr></table>';
         return ret;
     };
     var render_properties = function(value,metadata,rec,rowIndex,colIndex,store) {

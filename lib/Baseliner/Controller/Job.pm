@@ -61,14 +61,20 @@ sub rollback : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     try {
-
         my $job = ci->new( $p->{mid} ) // _fail _loc 'Job %1 not found', $p->{name};
-        if( my $deps = $job->find_rollback_deps ) {
-            $c->stash->{json} = { success => \0, msg=>_loc('Job has dependencies due to later jobs. Baseline cannot be updated.'), deps=>$deps };
-            return;
+        _fail _loc 'Job %1 is currently running', $job->name if $job->is_running;
+        if( my @deps = $job->find_rollback_deps ) {
+            $c->stash->{json} = { success => \0, msg=>_loc('Job has dependencies due to later jobs. Baseline cannot be updated. Rollback cancelled.'), deps=>\@deps };
+        } else {
+            my $exec = $job->exec + 1;
+            $job->exec( $exec );
+            $job->step( 'RUN' );
+            $job->rollback( 1 );
+            $job->status( 'READY' );
+            $job->save;
+            $job->logger->info( _loc('Job rollback requested by %1', $c->username) );
+            $c->stash->{json} = { success => \1, msg=>_loc('Job %1 rollback scheduled', $job->name ) };
         }
-        $job->update( step=>'RUN', rollback=>1, status=>'READY' );
-        $c->stash->{json} = { success => \1, msg=>_loc('Job %1 backout scheduled', $job->name ) };
     } catch {
         $c->stash->{json} = { success => \0, msg=>"".shift() };
     };
