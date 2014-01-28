@@ -161,14 +161,14 @@ sub check_output_errors {
     for my $oerr ( _array($output_error) ) {
         if( my @match = ( $output =~ _regex($oerr) ) ) {
            my %found = %+;
-           $log->error( _loc('Output error detected by `%1`: %2', $oerr, %found ? _encode_json(\%found) : join(',',@match) ) );
+           $log->error( _loc('Output error detected by `%1`: %2', $oerr, %found ? _encode_json(\%found) : join(',',@match) ), data=>$output );
            _fail _loc 'Output error detected' if $error_mode eq 'fail' && !$ignore_errors;
         }
     }
     for my $owarn ( _array($output_warn) ) {
         if( my @match = ( $output =~ _regex($owarn) ) ) {
            my %found = %+;
-           $log->warn( _loc('Output error detected by `%1`: %2', $owarn, %found ? _encode_json(\%found) : join(',',@match) ) );
+           $log->warn( _loc('Output error detected by `%1`: %2', $owarn, %found ? _encode_json(\%found) : join(',',@match) ), data=>$output );
         }
     }
     for my $ocap ( _array($output_capture) ) {
