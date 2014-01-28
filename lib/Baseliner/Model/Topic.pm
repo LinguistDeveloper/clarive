@@ -2578,6 +2578,7 @@ sub check_fields_required {
                 }
                 
                 push @fields_required , $fields_required{$field} if !$isValid;
+                last if !$isValid;
             }
         }else{
             my $data = $p{data} or _throw 'Missing parameter data';
@@ -2596,6 +2597,7 @@ sub check_fields_required {
                 $isValid = (ref $v eq 'ARRAY' ? @$v : ref $v eq 'HASH' ? keys %$v : defined $v && $v ne '' ) ? 1 : 0;
                 
                 push @fields_required , $fields_required{$field} if !$isValid;
+                last if !$isValid;
             }            
         }
     }
