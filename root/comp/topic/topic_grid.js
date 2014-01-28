@@ -745,7 +745,7 @@
 			var res = str.replace('_' +  this.alias,"");
 			value = rec.json[res];
 		};			
-        if( !value ) return '';
+        if( value == undefined ) return '';
         return value.name; 
     };
 	
