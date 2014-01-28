@@ -254,11 +254,17 @@ sub job_items {
             my %meta = map { $_->{id_field} => $_ } grep { $_->{meta_type} && $_->{meta_type} eq 'file' } _array $cs->get_meta;
             my ($project) = ( map { $_->name } $cs->projects );
             $project //= '';
-            for my $tfile ( @files ) {
+            TOPIC_FILE: for my $tfile ( @files ) {
                my $mid = $tfile->{mid};
                my $fieldlet = $meta{ $mid_files{$mid} };
                my $co_dir = $fieldlet->{checkout_dir};
                my $fullpath = ''.Util->_dir( "/", $project, $co_dir, $tfile->{filename} );
+               # select only files for this BL
+               if( $rename_mode && $fullpath =~ /{$all_bls}/ ) {
+                   next TOPIC_FILE if $fullpath !~ /{$bl}/;  # not for this bl
+                   $fullpath =~ s/{$bl}//g; # cleanup
+               }
+           
                my $versionid = $tfile->{versionid};
                my $item = BaselinerX::CI::topic_file->new(
                     mid       => $mid,   # this ci has mid, but is not yet saved as such
@@ -289,6 +295,7 @@ sub job_items {
                 $it->path( '' . _dir('/', $project->name, $repo->rel_path, $it->path) );  # prepend project name
                 $it;
             } grep {
+                # select only files for this BL
                 $rename_mode 
                 ? ( $_->path =~ /{$bl}/ || $_->path !~ /{$all_bls}/ )
                 : 1 
