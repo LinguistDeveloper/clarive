@@ -66,6 +66,7 @@ sub run_local {
         _log "CHDIR $orig";
     }
     my $r = { output=>$out, rc=>$rc, ret=>$ret };
+
     if( $rc ) {
         my $msg = _loc('Error running command %1', join ' ', @cmd);
         $job->logger->error( $msg , $r ); 
@@ -73,6 +74,7 @@ sub run_local {
         _fail $msg if $fail_on_error; 
     } else {
         $self->publish_output_files( 'info', $job,$output_files );
+        $self->check_output_errors($stash, ($fail_on_error ? 'fail' : 'error'),$log,$out,$config);
         $job->logger->info( _loc('Finished command %1' , join ' ', @cmd ), qq{RC: $rc\nRET: $ret\nOUTPUT: $out} ); 
     }
     return $r;
