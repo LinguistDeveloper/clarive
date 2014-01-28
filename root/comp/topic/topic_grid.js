@@ -706,6 +706,7 @@
     };
 	
     var render_date = function(value,metadata,rec,rowIndex,colIndex,store) {
+        return value;
 		if ( !rec.json[this.dataIndex] ) {
 			var str = this.dataIndex;
 			var res = str.replace('_' +  this.alias,"");
