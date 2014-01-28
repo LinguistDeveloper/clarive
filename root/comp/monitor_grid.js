@@ -685,15 +685,50 @@
                 function(btn){ 
                     if(btn=='yes') {
                         Baseliner.ajaxEval('/job/rollback', sel.data, function(res){
-                            Baseliner.message( _('Rollback'), res.msg ) ;
+                                Baseliner.message( _('Rollback'), res.msg ) ;
+                                grid.getStore().reload();
                             }, function(res){
+                                var deps = Ext.isArray(res.deps) ? res.deps.map(function(r){ return { job: r } }) : [];
+                                // TODO use an extjs Grid with links that open the job dashboard for each, and cols for Project and BL
+                                var msg = function(){/*
+                                      <div id="boot">
+                                      <div class="container_24"> 
+                                        <div class="grid_24">
+                                        <h4>
+                                            <img src="/static/images/warnmsg.png" style="vertical-align:middle">
+                                            [%= msg %]
+                                        </h4>
+                                        </div>
+                                        <div class="clear"></div>
+                                        <div class="grid_4">&nbsp;</div>
+                                        <div class="grid_8">
+                                          <table class="table" >
+                                          [% Ext.each(deps,function(job){ %]
+                                              <tr>
+                                                  <td style="font-weight: bold">
+                                                    [%= job.name %]
+                                                  </td>
+                                                  <td>
+                                                    [%= job.bl %]
+                                                  </td>
+                                                  <td>
+                                                    [%= job.projects.map(function(p){ return p.name }) %]
+                                                  </td>
+                                              </tr>
+                                          [% }); %]
+                                        </div>
+                                      </div>
+                                      </div>
+                                */}.tmpl({ msg: res.msg, deps: res.deps });
                                 var win = new Baseliner.Window({
-                                    width: 800, height: 600, layout:'fit',
+                                    width: 800, height: 400, layout:'fit', //layout:'vbox', layoutConfig: { align:'stretch' },
                                     title: _('Dependencies'), 
-                                    items: new Baseliner.DataEditor({ data: res.deps })
+                                    items: [
+                                        { xtype:'panel', autoScroll: true, padding: 20, html: msg }, 
+                                    ]
                                 });
                                 win.show();
-                                Baseliner.message( _('Rollback'), res.msg ) ;
+                                //Baseliner.message( _('Rollback'), res.msg ) ;
                             }
                         );
                     }

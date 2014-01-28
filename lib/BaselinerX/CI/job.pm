@@ -399,14 +399,17 @@ method write_to_logfile( $txt ) {
 
 sub find_rollback_deps {
     my ($self)=@_;
-    my @prjs = Util->_array( $self->projects );
-    my ($prj) = @prjs;
-    my @jobs = map { Baseliner::CI->new($_->{mid}) } 
-        DB->BaliMaster->search({ collection=>'job', bl=>$self->bl, mid=>{'>'=>$self->mid } }, { select=>'mid' })
-        ->hashref->all;
-    
+    my @projects = map { $_->mid } Util->_array( $self->projects );
+    my @later_jobs = 
+       grep {
+          # ignore later jobs that broke during PRE - XXX better to check if rollback needed flag is on?
+          $_->step eq 'PRE' && $_->status eq 'ERROR' 
+          ? 0
+          : 1;
+       }
+       ci->job->search_cis( bl=>$self->bl, projects=>mdb->in(@projects), mid=>{ '$gt'=>$self->mid } );
     # TODO check if there are later jobs for the same repository
-    return ();
+    return @later_jobs;
 }
 
 sub contract {
