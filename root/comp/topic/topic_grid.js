@@ -729,7 +729,7 @@
 		return date.dateFormat('d/m/Y');
     };
 	
-    var render_bool = function(value) {
+    var render_bool = function(value,metadata,rec,rowIndex,colIndex,store) {
         if ( !rec.json[this.dataIndex] ) {
             var str = this.dataIndex;
             var res = str.replace('_' +  this.alias,"");
@@ -739,7 +739,7 @@
         return '<input type="checkbox" '+ ( value ? 'checked' : '' ) + '></input>'; 
     };
     
-    var render_user = function(value) {
+    var render_user = function(value,metadata,rec,rowIndex,colIndex,store) {
 		if ( !rec.json[this.dataIndex] ) {
 			var str = this.dataIndex;
 			var res = str.replace('_' +  this.alias,"");
