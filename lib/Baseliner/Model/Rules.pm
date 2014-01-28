@@ -412,10 +412,16 @@ sub current_task {
 sub cut_nature_items {
     my ($stash,$tail)=@_;
     my @items = _array( $stash->{nature_items} );
-    my @paths = grep { length } map { $_->path_tail( $tail ) } @items;
+    # items to write
+    my @items_write = grep { $_->status ne 'D' } @items;
+    my @paths_write = grep { length } map { $_->path_tail( $tail ) } @items_write;
+    # items deleted
+    my @items_del   = grep { $_->status eq 'D' } @items;
+    my @paths_del   = grep { length } map { $_->path_tail( $tail ) } @items_del;
+    
     _fail _loc 'Could not find any paths in nature items that match cut path `%1`', $tail 
-        unless @paths;
-    return @paths;
+        unless ( @paths_write + @paths_del );
+    return ( \@paths_write, \@paths_del );
 }
 
 # launch runs service, merge return into stash and returns what the service returns
@@ -937,10 +943,11 @@ register 'statement.if.nature' => {
                     $stash->{current_nature} = $nature;
                     local $stash->{nature_items} = $stash->{project_items}{ $project->mid }{natures}{ $nature->mid };
                     last NAT if !_array( $stash->{nature_items} );
-                    my @nat_paths = cut_nature_items( $stash, parse_vars(q{%s},$stash) );
-                    local $stash->{ nature_item_paths } = \@nat_paths;
-                    local $stash->{ nature_items_comma } = join(',', @nat_paths );
-                    local $stash->{ nature_items_quote } = "'" . join("' '", @nat_paths ) . "'";
+                    my ($nat_paths, $nat_paths_del) = cut_nature_items( $stash, parse_vars(q{%s},$stash) );
+                    local $stash->{ nature_item_paths } = $nat_paths;
+                    local $stash->{ nature_item_paths_del } = $nat_paths_del;
+                    local $stash->{ nature_items_comma } = join(',', @$nat_paths );
+                    local $stash->{ nature_items_quote } = "'" . join("' '", @$nat_paths ) . "'";
                     $stash->{job}->logger->info( _loc('Nature Detected *%1*', $nature->name ), 
                         +{ map { $_=>$stash->{$_} } qw/nature_items nature_item_paths nature_items_comma nature_items_quote/ } );
 
