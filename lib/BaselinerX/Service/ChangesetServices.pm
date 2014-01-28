@@ -374,7 +374,7 @@ sub checkout {
         $cnt++;
     }
     
-    $log->info( _loc('Checked out %1 item(s) to %2', $cnt, $job_dir), [ map { "$_->{path} ($_->{versionid})" } @items ] );
+    $log->info( _loc('Checked out %1 item(s) to %2', $cnt, $job_dir), [ map { "[$_->{status}] $_->{path} ($_->{versionid})" } @items ] );
     
 }
 
