@@ -12,8 +12,8 @@
     <ul class="" style="margin-left: 20px">
 % foreach my $revision ( _array( $data->{$meta->{id_field}} ) ) {
         <li style="margin: 6px 0px 6px 0px">
-            <img style="margin: 5px" width=16 src="/static/images/icons/tag.gif" />
             <div class="bl-text-over" style="width:250px" title="<% $revision->{name} %>">
+                <img style="margin: 5px" width=16 src="/static/images/icons/tag.gif" />
                 <a href="javascript:Baseliner.show_revision(<% $revision->{mid} %>)"><% $revision->{name} %></a>
             </div>
         </li>
