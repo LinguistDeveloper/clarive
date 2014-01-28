@@ -741,12 +741,14 @@
     var render_topic_rel = function(value,metadata,rec,rowIndex,colIndex,store) {
         var arr = [];
 		
-		if ( !rec.json[this.dataIndex] ) {
-			var str = this.dataIndex;
-			var res = str.replace('_' +  this.alias,"");
-			value = rec.json[res];
-		};
-		
+        
+        if ( !rec.json[this.dataIndex] ) {
+            var str = this.dataIndex;
+            var res = str.replace('_' +  this.alias,"");
+            value = rec.json[res];
+        };
+        
+        if ( !value || value == undefined ) return '';
 		//if( !value  ) return '';
 		
 		//#################################################Ñapa 
