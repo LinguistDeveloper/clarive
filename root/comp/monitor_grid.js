@@ -477,8 +477,8 @@
     });
     //---------- Refreshments
     var task_interval_base = 5000;  // start with 5 seconds and grow from there
-    var task_interval_increment = 2000;  
-    var task_interval_max = 60000;  
+    var task_interval_increment = 500;  // grow .5 sec slower 
+    var task_interval_max = 30000;  // max 30 sec refresh 
     var task_interval = task_interval_base;
     var task = {
         run: function() {
