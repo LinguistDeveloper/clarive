@@ -706,12 +706,13 @@
     };
 	
     var render_date = function(value,metadata,rec,rowIndex,colIndex,store) {
-		if ( !rec.json[this.dataIndex] ) {
-			var str = this.dataIndex;
-			var res = str.replace('_' +  this.alias,"");
-			value = rec.json[res];
-		};			
+        if ( !rec.json[this.dataIndex] ) {
+            var str = this.dataIndex;
+            var res = str.replace('_' +  this.alias,"");
+            value = rec.json[res];
+        };          
         if( !value && value == undefined ) return '';
+        return value;
 		//var value_to_date = new Date(value);
 		//return value_to_date.dateFormat('d/m/Y');
 		var date;
@@ -728,25 +729,37 @@
 		return date.dateFormat('d/m/Y');
     };
 	
-    var render_bool = function(value) {
+    var render_bool = function(value,metadata,rec,rowIndex,colIndex,store) {
+        if ( !rec.json[this.dataIndex] ) {
+            var str = this.dataIndex;
+            var res = str.replace('_' +  this.alias,"");
+            value = rec.json[res];
+        };          
+        if( !value ) return '';
+        return '<input type="checkbox" '+ ( value ? 'checked' : '' ) + '></input>'; 
+    };
+    
+    var render_user = function(value,metadata,rec,rowIndex,colIndex,store) {
 		if ( !rec.json[this.dataIndex] ) {
 			var str = this.dataIndex;
 			var res = str.replace('_' +  this.alias,"");
 			value = rec.json[res];
 		};			
-        if( !value ) return '';
-        return '<input type="checkbox" '+ ( value ? 'checked' : '' ) + '></input>'; 
+        if( value == undefined ) return '';
+        return value.name; 
     };
 	
     var render_topic_rel = function(value,metadata,rec,rowIndex,colIndex,store) {
         var arr = [];
 		
-		if ( !rec.json[this.dataIndex] ) {
-			var str = this.dataIndex;
-			var res = str.replace('_' +  this.alias,"");
-			value = rec.json[res];
-		};
-		
+        
+        if ( !rec.json[this.dataIndex] ) {
+            var str = this.dataIndex;
+            var res = str.replace('_' +  this.alias,"");
+            value = rec.json[res];
+        };
+        
+        if ( !value || value == undefined ) return '';
 		//if( !value  ) return '';
 		
 		//#################################################Ñapa 
@@ -1009,15 +1022,16 @@
     var gridlets = {
     };
     var meta_types = {
-        custom_data : { sortable: true, width: 40, renderer: render_custom_data  },
+        custom_data : { sortable: true, width: 100, renderer: render_custom_data  },
         calendar : { sortable: true, width: 250, renderer: render_cal  },
-        date : { sortable: true, width: 40, renderer: render_date  },
-        bool : { sortable: true, width: 40, renderer: render_bool  },
-        ci : { sortable: true, width: 90, renderer: render_ci  },
-        revision : { sortable: true, width: 90, renderer: render_ci  },
-        project : { sortable: true, width: 90, renderer: render_ci  },
-        topic : { sortable: true, width: 90, renderer: render_topic_rel  },
-        release : { sortable: true, width: 90, renderer: render_topic_rel  }
+        date : { sortable: true, width: 100, renderer: render_date  },
+        bool : { sortable: true, width: 100, renderer: render_bool  },
+        ci : { sortable: true, width: 100, renderer: render_ci  },
+        revision : { sortable: true, width: 100, renderer: render_ci  },
+        project : { sortable: true, width: 100, renderer: render_ci  },
+        topic : { sortable: true, width: 100, renderer: render_topic_rel  },
+        release : { sortable: true, width: 100, renderer: render_topic_rel  },
+        user : { sortable: true, width: 100, renderer: render_user  }
     };
     if( fields ) {
 		force_fit = false;
