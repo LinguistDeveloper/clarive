@@ -10,7 +10,7 @@ has path         => qw(is rw isa Str default /);           # fullpath, with proj
 has path_rel     => qw(is rw isa Str);                     # with prefix only 
 has path_in_repo => qw(is rw isa Str);                     # in case someone changes path, set this here
 has size         => qw(is rw isa Num default -1);
-has mask         => qw(is rw isa Num default 777);
+has mask         => qw(is rw isa Maybe[Num] default 777);
 has is_dir       => qw(is rw isa Maybe[Bool]);
 has status       => qw(is rw isa Maybe[Str] default A);    # used by jobs to determine create, delete, etc (A,M,D)
 has basename     => qw(is rw isa Str lazy 1), default => sub {
