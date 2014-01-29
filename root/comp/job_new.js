@@ -545,13 +545,18 @@
                         item: node.text,
                         text: node.text 
                     });
-                    jc_store.add(rec);
-                    //jc_store.sort('action', 'ASC');
-                    var parent_node = node.parentNode;
-                    // node.disable();
-                    calendar_reload();
-                    button_submit.enable();
-                    //tree_check_folder_enabled(parent_node);
+                    // check for duplicate items
+                    if( jc_store.find('mid', rec.data.mid ) > -1 ) {
+                        Baseliner.error( _('New Job'), _('Topic %1 has already been selected', rec.data.text) );
+                    } else {
+                        jc_store.add(rec);
+                        //jc_store.sort('action', 'ASC');
+                        var parent_node = node.parentNode;
+                        // node.disable();
+                        calendar_reload();
+                        button_submit.enable();
+                        //tree_check_folder_enabled(parent_node);
+                    }
                 }
                 var attr = n.attributes;
                 var data = n.attributes.data;
@@ -563,6 +568,7 @@
                         _("Cannot promote/demote this entity type" ) );
                     return true; 
                 }
+                
                 var bl_item = ( job_type == 'promote' ) ? data.promotable[bl] : ( job_type == 'promote' ) ? data.demotable[bl] : data.deployable[bl];
                 if( (cnt == 0 || bl_item == undefined) && !changed ) {
                     var bl_hash = ( job_type == 'promote' ) ? data.promotable : ( job_type == 'promote' ) ? data.demotable : data.deployable;
