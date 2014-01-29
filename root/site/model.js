@@ -43,7 +43,7 @@ Baseliner.store.AllProjects = function(c) {
      Baseliner.store.AllProjects.superclass.constructor.call(this, Ext.apply({
         root: 'data' , 
         remoteSort: true,
-        autoLoad: true,
+        autoLoad: false,
         totalProperty:"totalCount", 
         baseParams: {},
         id: 'id', 
@@ -172,7 +172,7 @@ Baseliner.ComboUsers = Ext.extend( Baseliner.model.Users,{
     initComponent: function(){
         var self = this;
         self.store = new Baseliner.Topic.StoreUsers({
-            autoLoad: true,
+            autoLoad: false,
             baseParams: { projects: self.projects || [], roles: self.roles }
         });
         self.store.on('load',function(){
@@ -229,7 +229,7 @@ Baseliner.UserAndRoleBox = function(c) {
     var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name}</div></tpl>' );
     var tpl2 = new Ext.XTemplate( '<tpl for="."><b>{[_loc(values.type)]}</b>: {name}</tpl>' );
     var store = new Baseliner.JsonStore({
-        root: 'data' , remoteSort: true, autoLoad: true,
+        root: 'data' , remoteSort: true, autoLoad: false,
         id: 'id', 
         totalProperty: 'totalCount', 
         //baseParams: c.request || {},
@@ -318,7 +318,7 @@ Baseliner.combo_baseline = function(params) {
     var store = new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
-        autoLoad: true,
+        autoLoad: false,
         totalProperty:"totalCount", 
         baseParams: params.request || {},
         id: 'id', 
@@ -578,7 +578,7 @@ Baseliner.combo_services = function(params) {
     var store = new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
-        autoLoad: true,
+        autoLoad: false,
         totalProperty:"totalCount", 
         baseParams: params.request || {},
         id: 'id', 
