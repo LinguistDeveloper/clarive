@@ -803,7 +803,7 @@ Baseliner.store.CI = function(c) {
         url: '/ci/store',
         root: 'data' , 
         remoteSort: true,
-        autoLoad: true,
+        autoLoad: false,
         totalProperty: 'totalCount', 
         fields: ['mid','item', 'name','collection','class','classname', 'versionid', 'description', 'properties', 'pretty_properties','data', 'icon','moniker'] 
      }, c));
