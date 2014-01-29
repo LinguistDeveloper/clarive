@@ -2007,7 +2007,7 @@ Ext.extend( Baseliner.Wizard, Ext.Panel );
     var w = new Ext.Window({ layout:'fit',width:400, height:400, items: tree });
     w.show();
     tree.on('destroy', function(){
-       console.log( tree.data );
+       // console.log( tree.data );
        w.close();
     });
 

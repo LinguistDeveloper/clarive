@@ -508,7 +508,7 @@
                 node.select();
                 var stmts_menu = new Ext.menu.Menu({
                     items: [
-                        { text: _('Rollback'), handler: function(){ rollback_version( btn_refresh_tree, node ) }, icon:'/static/images/icons/arrow_undo.png' },
+                        { text: _('Rollback'), handler: function(){ rollback_version( btn_refresh_tree, node ) }, icon:'/static/images/icons/arrow_undo.png' }
                     ]
                 });
                 stmts_menu.showAt(event.xy);
