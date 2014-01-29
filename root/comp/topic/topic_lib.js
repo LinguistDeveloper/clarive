@@ -149,7 +149,7 @@ Baseliner.store.Topics = function(c) {
      Baseliner.store.Topics.superclass.constructor.call(this, Ext.apply({
         root: 'data' , 
         remoteSort: true,
-        autoLoad: true,
+        autoLoad: false,
         totalProperty:"totalCount", 
         baseParams: {},
         id: 'mid', 
