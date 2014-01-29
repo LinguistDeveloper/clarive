@@ -407,7 +407,7 @@ sub find_rollback_deps {
           ? 0
           : 1;
        }
-       ci->job->search_cis( bl=>$self->bl, projects=>mdb->in(@projects), mid=>{ '$gt'=>$self->mid } );
+       ci->job->search_cis( bl=>$self->bl, projects=>mdb->in(@projects), endtime=>{ '$gt'=>$job->endtime } );
     # TODO check if there are later jobs for the same repository
     return @later_jobs;
 }
