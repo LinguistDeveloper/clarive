@@ -445,7 +445,7 @@ Baseliner.combo_project = function(params) {
     var store = new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
-        autoLoad: true,
+        autoLoad: false,
         totalProperty:"totalCount", 
         baseParams: params.request || {},
         id: 'ns', 
@@ -1017,7 +1017,7 @@ Baseliner.model.ComboBaseline = Ext.extend( Ext.form.ComboBox, {
         var store = new Baseliner.JsonStore({
             root: 'data' , 
             remoteSort: true,
-            autoLoad: true,
+            autoLoad: false,
             totalProperty:"totalCount", 
             baseParams: {}, //{ no_common: true },
             id: 'id', 
@@ -1063,7 +1063,7 @@ Baseliner.model.SelectBaseline = function(c) {
     var store = new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
-        autoLoad: true,
+        autoLoad: false,
         totalProperty:"totalCount", 
         baseParams: {}, //{ no_common: true },
         id: 'id', 
