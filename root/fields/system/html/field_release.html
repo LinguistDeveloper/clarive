@@ -11,7 +11,7 @@
                 onclick="javascript:Baseliner.show_topic(<% $data->{$meta->{id_field}}->{mid} %>, '<% $data->{$meta->{id_field}}->{title} %>')">
                 <% $data->{$meta->{id_field}}->{title} || '&nbsp;' %>
         </span>-->
-        <td  id="<% $topic_id %>" title="<% $data->{$meta->{id_field}}->{title} || '&nbsp;' %>" ></td>
+        <td  id="<% $topic_id.$meta->{id_field} %>" title="<% $data->{$meta->{id_field}}->{title} || '&nbsp;' %>" ></td>
       <!--</td>-->
     </tr>
   
@@ -29,5 +29,5 @@
         }else{
             name = '';
         }
-        document.getElementById('<% $topic_id %>').innerHTML = name;
+        document.getElementById('<% $topic_id.$meta->{id_field} %>').innerHTML = name;
     </script>    
