@@ -85,6 +85,9 @@ sub common_log {
         $text .= '=' x 20;
         $text .= "\n(continue...)";
     }
+    # check for password patterns - TODO put this in config
+    $text =~ s{(\S+/)\S+@}{$1************@}g;  # XXX the asterisk is "bold" in log textile
+    
     try {
         my $id = 0+ mdb->seq('job_log_id');  # numeric, good for sorting
         my $doc = { id=>$id, mid =>$mid, text=> $text, lev=>$lev, module=>$module, exec=>$job_exec, ts=>Util->_now() };
