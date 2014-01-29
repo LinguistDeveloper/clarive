@@ -22,7 +22,7 @@ params:
     var store = new Baseliner.JsonStore({
         root: 'data',
         remoteSort: true,
-        autoLoad: true,
+        autoLoad: false,
         totalProperty: 'totalCount',
         jsonData: { id_field: meta.id_field, form: {}, raw: {}, data: data, meta: meta },
         url: '/ci/'+ meta.dbi_connection + '/query_from_field',
@@ -34,8 +34,8 @@ params:
         store.jsonData.form = params.form.getValues();
         params.form.cascade( function(obj){
             if( obj.name != undefined && obj.getValueEx ) {
-                console.log( obj.name );
-                console.log( obj.getValueEx() );
+                //console.log( obj.name );
+                //console.log( obj.getValueEx() );
                 //console.log( obj.getCaption() );
                 store.jsonData.raw[ obj.name ] = obj.getValueEx();
             }
