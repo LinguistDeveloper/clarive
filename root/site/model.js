@@ -43,7 +43,7 @@ Baseliner.store.AllProjects = function(c) {
      Baseliner.store.AllProjects.superclass.constructor.call(this, Ext.apply({
         root: 'data' , 
         remoteSort: true,
-        autoLoad: true,
+        autoLoad: false,
         totalProperty:"totalCount", 
         baseParams: {},
         id: 'id', 
@@ -172,7 +172,7 @@ Baseliner.ComboUsers = Ext.extend( Baseliner.model.Users,{
     initComponent: function(){
         var self = this;
         self.store = new Baseliner.Topic.StoreUsers({
-            autoLoad: true,
+            autoLoad: false,
             baseParams: { projects: self.projects || [], roles: self.roles }
         });
         self.store.on('load',function(){
@@ -229,7 +229,7 @@ Baseliner.UserAndRoleBox = function(c) {
     var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name}</div></tpl>' );
     var tpl2 = new Ext.XTemplate( '<tpl for="."><b>{[_loc(values.type)]}</b>: {name}</tpl>' );
     var store = new Baseliner.JsonStore({
-        root: 'data' , remoteSort: true, autoLoad: true,
+        root: 'data' , remoteSort: true, autoLoad: false,
         id: 'id', 
         totalProperty: 'totalCount', 
         //baseParams: c.request || {},
@@ -318,7 +318,7 @@ Baseliner.combo_baseline = function(params) {
     var store = new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
-        autoLoad: true,
+        autoLoad: false,
         totalProperty:"totalCount", 
         baseParams: params.request || {},
         id: 'id', 
@@ -445,7 +445,7 @@ Baseliner.combo_project = function(params) {
     var store = new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
-        autoLoad: true,
+        autoLoad: false,
         totalProperty:"totalCount", 
         baseParams: params.request || {},
         id: 'ns', 
@@ -578,7 +578,7 @@ Baseliner.combo_services = function(params) {
     var store = new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
-        autoLoad: true,
+        autoLoad: false,
         totalProperty:"totalCount", 
         baseParams: params.request || {},
         id: 'id', 
@@ -803,7 +803,7 @@ Baseliner.store.CI = function(c) {
         url: '/ci/store',
         root: 'data' , 
         remoteSort: true,
-        autoLoad: true,
+        autoLoad: false,
         totalProperty: 'totalCount', 
         fields: ['mid','item', 'name','collection','class','classname', 'versionid', 'description', 'properties', 'pretty_properties','data', 'icon','moniker'] 
      }, c));
@@ -1017,7 +1017,7 @@ Baseliner.model.ComboBaseline = Ext.extend( Ext.form.ComboBox, {
         var store = new Baseliner.JsonStore({
             root: 'data' , 
             remoteSort: true,
-            autoLoad: true,
+            autoLoad: false,
             totalProperty:"totalCount", 
             baseParams: {}, //{ no_common: true },
             id: 'id', 
@@ -1063,7 +1063,7 @@ Baseliner.model.SelectBaseline = function(c) {
     var store = new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
-        autoLoad: true,
+        autoLoad: false,
         totalProperty:"totalCount", 
         baseParams: {}, //{ no_common: true },
         id: 'id', 
@@ -2007,7 +2007,7 @@ Ext.extend( Baseliner.Wizard, Ext.Panel );
     var w = new Ext.Window({ layout:'fit',width:400, height:400, items: tree });
     w.show();
     tree.on('destroy', function(){
-       console.log( tree.data );
+       // console.log( tree.data );
        w.close();
     });
 

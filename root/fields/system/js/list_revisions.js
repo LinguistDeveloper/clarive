@@ -112,7 +112,6 @@ params:
                     //var s = project_box.store;
                     var attr = n.attributes;
                     var data = attr.data || {};
-//                    console.dir(data);
                     var ci = data.ci;
                     var mid = data.mid;
                     if( mid==undefined && ( ci == undefined || ci.role != 'Revision') ) { 
@@ -122,12 +121,16 @@ params:
                         // TODO
                     }
                     else if ( ci !=undefined ) {
-//                        console.dir(topic_data)
                         Baseliner.ajaxEval('/ci/sync',
-                            { name: ci.name, 'class': ci['class'], ns: ci.ns, ci_json: Ext.util.JSON.encode( ci.data ), repo: data.click.repo_mid, topic_mid: topic_data.topic_mid },
+                            { name: ci.name, 'class': ci['class'], ns: ci.ns, 
+                                ci_json: Ext.util.JSON.encode( ci.data ), repo: data.click.repo_mid, topic_mid: topic_data.topic_mid },
                             function(res) {
                                 if( res.success ) {
                                     var mid = res.mid ;
+                                    if( revision_store.find('mid', mid ) > -1 ) {
+                                        Baseliner.message( _('Revision'), _('Revision %1 has already been selected', ci.name ) );
+                                        return;
+                                    } 
                                     var d = { name: attr.text, id: mid, mid: mid };
                                     var r = new revision_store.recordType( d, mid );
     

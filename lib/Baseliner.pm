@@ -14,18 +14,18 @@ BEGIN {
     elsif( $ENV{BALI_FAST} ) {
         @modules = qw/
             StackTrace
+            +Baseliner::Plugin::ConfigExternal
             +CatalystX::Features
             +CatalystX::Features::Lib
             +CatalystX::Features::Plugin::ConfigLoader
-            +Baseliner::Plugin::ConfigExternal
             +CatalystX::Features::Plugin::I18N/;
     } else {
         @modules = qw/
             StackTrace
+            +Baseliner::Plugin::ConfigExternal
             +CatalystX::Features
             +CatalystX::Features::Lib
             +CatalystX::Features::Plugin::ConfigLoader
-            +Baseliner::Plugin::ConfigExternal
             Authentication
             Session     
             +Baseliner::MongoSession

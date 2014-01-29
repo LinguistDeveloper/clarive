@@ -595,7 +595,7 @@
                 { flex:1, layout:'hbox', padding: 20, 
                     items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Abort')+'</b>', icon:'/static/images/icons/delete.gif', 
                         handler:function(){trap_do(mid,'abort')}  },
-                        { flex:1, border: false, style: 'margin-left:10px', html: _('The task will fail') }]},
+                        { flex:1, border: false, style: 'margin-left:10px', html: _('The task will fail') }]}
             ]
         });
         trap_win.show();
@@ -724,7 +724,7 @@
                                     width: 800, height: 400, layout:'fit', //layout:'vbox', layoutConfig: { align:'stretch' },
                                     title: _('Dependencies'), 
                                     items: [
-                                        { xtype:'panel', autoScroll: true, padding: 20, html: msg }, 
+                                        { xtype:'panel', autoScroll: true, padding: 20, html: msg }
                                     ]
                                 });
                                 win.show();

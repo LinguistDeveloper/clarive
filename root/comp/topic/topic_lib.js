@@ -149,7 +149,7 @@ Baseliner.store.Topics = function(c) {
      Baseliner.store.Topics.superclass.constructor.call(this, Ext.apply({
         root: 'data' , 
         remoteSort: true,
-        autoLoad: true,
+        autoLoad: false,
         totalProperty:"totalCount", 
         baseParams: {},
         id: 'mid', 
@@ -1406,6 +1406,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
     initComponent: function(){
         var self = this;
         self.combo_store = self.combo_store || new Baseliner.store.Topics({});
+        self.combo_store.baseParams._fieldlet = self.fieldLabel || self.id;
         if( self.topic_grid == undefined ) self.topic_grid = {};
         self.combo = new Baseliner.TopicCombo({
             store: self.combo_store, 

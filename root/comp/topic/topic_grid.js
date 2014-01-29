@@ -1055,7 +1055,7 @@
 						break;
 					case 'numeric':
 						filter_params.menuItemCfgs = {
-							emptyText: _('Enter Number...'),
+							emptyText: _('Enter Number...')
 						}
 						break;
 					case 'string':

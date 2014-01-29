@@ -43,6 +43,12 @@ baseliner:
         show_lifecycle: 1
     cache: mongo
     # toolbar_height: 45
+    
+    # allows setting 2 or more feature directories
+    # 'CatalystX::Features':
+    #     home: 
+    #     - '{{CLARIVE_BASE}}/features'
+    #     - '{{CLARIVE_HOME}}/features'
             
     'Plugin::Session':
         host: '{{mongo.host}}'
