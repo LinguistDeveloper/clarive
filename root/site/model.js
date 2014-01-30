@@ -934,7 +934,7 @@ Baseliner.ci_box = function(c) {
     if( c.hiddenName == undefined ) c.hiddenName = c.name;
 	if( security != undefined ) bp.security = 1;
     var autoload = c.autoLoad != undefined ? c.autoLoad : true;
-    var store = new Baseliner.store.CI({ baseParams: bp });
+    var store = new Baseliner.store.CI({ autoLoad:true, baseParams: bp });
     store.on('load', function(){
         if( c.force_set_value )
            ci_box.setValue( value );
