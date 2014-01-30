@@ -171,8 +171,19 @@ sub update_baselines {
             for my $rri ( @$repo_revisions_items ) {
                 my ($repo, $revisions,$items) = @{ $rri }{ qw/repo revisions items/ };
                 
+                my $out;
                 $log->info( _loc('Updating baseline %1 for project %2, repository %3, job type %4', $bl, $project->name, $repo->name, $type ) );
-                my $out = $repo->update_baselines( revisions => $revisions, tag=>$bl, type=>$type );
+                if( $job->rollback ) {
+                    if( my $previous = $stash->{bl_original}{$repo->mid} ) {
+                        $out = $repo->update_baselines( ref=>$previous, revisions=>[], tag=>$bl, type=>$type );
+                    } else {
+                        _fail _loc 'Could not find previous revision for repository: %1 (%2)', $repo->name, $repo->mid;
+                    }
+                } else {
+                    $out = $repo->update_baselines( revisions => $revisions, tag=>$bl, type=>$type );
+                }
+                # save previous revision by repo mid
+                $stash->{bl_original}{$repo->mid} = $out->{previous}; 
                 $log->info( _loc('Baseline update of %1 item(s) completed', $repo->name), $out );
             }
         }
