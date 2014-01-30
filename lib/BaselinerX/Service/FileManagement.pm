@@ -329,13 +329,15 @@ sub run_retrieve {
     my $log   = $job->logger;
     my $stash = $c->stash;
 
-    my $remote = $config->{remote_path} // _fail 'Missing parameter remote_file';
-    my $local  = $config->{local_path} // _fail 'Missing parameter local_file';
-    my $user   = $config->{user};
+    my $remote_orig = $config->{remote_path} // _fail 'Missing parameter remote_file';
+    my $local_orig  = $config->{local_path} // _fail 'Missing parameter local_file';
+    my $user        = $config->{user};
 
     my $servers = $config->{server};
     for my $server ( Util->_array_or_commas($servers) ) {
         $server = ci->new( $server ) unless ref $server;
+        my $local  =  $server->parse_vars( "$local_orig" );
+        my $remote =  $server->parse_vars( "$remote_orig" );
         my $server_str = "$user\@".$server->name;
         _debug "Connecting to server " . $server_str;
         my $agent = $server->connect( user=>$user );
