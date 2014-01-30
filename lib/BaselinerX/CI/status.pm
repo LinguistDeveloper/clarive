@@ -71,8 +71,14 @@ after delete => sub {
 };
 
 sub combo_list {
-    my ($self)=@_;
-    { data=>[ map { +{ id_status=> $_->id_status, name=>$_->name } } sort { $a->name <=> $b->name } $self->search_cis ] };
+    my ($self) = @_;
+    {
+        data => [
+            map { +{ id_status => $_->id_status, name => $_->name } } 
+            sort { lc $a->name cmp lc $b->name } 
+            $self->search_cis
+        ]
+    };
 }
 
 1;

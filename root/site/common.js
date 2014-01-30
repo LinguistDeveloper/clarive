@@ -2707,7 +2707,8 @@ Baseliner.ComboDoubleRemote = Ext.extend( Baseliner.ComboDouble, {
         Baseliner.ComboDoubleRemote.superclass.initComponent.call(this); 
         self.store.on('load', function(){
             if( value != undefined ) {
-                var ix = self.store.find( self.valueField, value ); 
+                // rgo: not working, finds erroneous indexes everywhere: var ix = self.store.find( self.valueField, value ); 
+                var ix = self.store.findBy( function(r){ return r.data[self.valueField] == value }); 
                 if( ix > -1 ) self.setValue(self.store.getAt(ix).get( self.valueField ));
             } else {
                 self.setValue(self.store.getAt(0).get( self.valueField ));
