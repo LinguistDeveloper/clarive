@@ -69,6 +69,7 @@ sub rollback : Local {
             my $exec = $job->exec + 1;
             $job->exec( $exec );
             $job->step( 'RUN' );
+            $job->final_status( '' );  # reset status, so that POST runs in rollback 
             $job->rollback( 1 );
             $job->status( 'READY' );
             $job->save;
