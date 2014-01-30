@@ -101,9 +101,9 @@ params:
         var read_only = meta && meta.readonly ? meta.readonly : false;
         
         if( !read_only ){
-            var el = this.el.dom; 
+            var el = revision_grid.el.dom; 
             var revision_box_dt = new Baseliner.DropTarget(el, {
-                comp: this,
+                comp: revision_grid,
                 ddGroup: 'explorer_dd',
                 copy: true,
                 available: meta ? meta.readonly : false,
@@ -111,9 +111,9 @@ params:
                     var n = dd.dragData.node;
                     //var s = project_box.store;
                     var attr = n.attributes;
-                    var data = attr.data || {};
-                    var ci = data.ci;
-                    var mid = data.mid;
+                    var node_data = attr.data || {};
+                    var ci = node_data.ci;
+                    var mid = node_data.mid;
                     if( mid==undefined && ( ci == undefined || ci.role != 'Revision') ) { 
                         Baseliner.message( _('Error'), _('Node is not a revision'));
                     } 
@@ -123,7 +123,7 @@ params:
                     else if ( ci !=undefined ) {
                         Baseliner.ajaxEval('/ci/sync',
                             { name: ci.name, 'class': ci['class'], ns: ci.ns, 
-                                ci_json: Ext.util.JSON.encode( ci.data ), repo: data.click.repo_mid, topic_mid: topic_data.topic_mid },
+                                ci_json: Ext.util.JSON.encode( ci.data ), repo: node_data.click.repo_mid, topic_mid: topic_data.topic_mid },
                             function(res) {
                                 if( res.success ) {
                                     var mid = res.mid ;
@@ -144,7 +144,7 @@ params:
                         );
                     }
                     return (true); 
-                 }
+                }
             });
         }
         

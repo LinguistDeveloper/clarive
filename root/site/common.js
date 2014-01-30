@@ -2386,6 +2386,9 @@ Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
     },
     getValues : function(a,b,c){
         var form2 = this.getForm();
+        if( !form2.el.dom ) {
+            return null;
+        }
         var form_data = form2.getValues() || {};
         this.cascade(function(obj){
             if( obj.name && obj.get_save_data ) {
