@@ -454,7 +454,7 @@ Baseliner.combo_project = function(params) {
     var store = new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
-        autoLoad: false,
+        autoLoad: true,
         totalProperty:"totalCount", 
         baseParams: params.request || {},
         id: 'ns', 

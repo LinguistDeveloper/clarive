@@ -229,7 +229,7 @@ Baseliner.UserAndRoleBox = function(c) {
     var tpl = new Ext.XTemplate( '<tpl for="."><div class="search-item {recordCls}">{name}</div></tpl>' );
     var tpl2 = new Ext.XTemplate( '<tpl for="."><b>{[_loc(values.type)]}</b>: {name}</tpl>' );
     var store = new Baseliner.JsonStore({
-        root: 'data' , remoteSort: true, autoLoad: false,
+        root: 'data' , remoteSort: true, autoLoad: true,
         id: 'id', 
         totalProperty: 'totalCount', 
         //baseParams: c.request || {},
@@ -318,7 +318,7 @@ Baseliner.combo_baseline = function(params) {
     var store = new Baseliner.JsonStore({
         root: 'data' , 
         remoteSort: true,
-        autoLoad: false,
+        autoLoad: true,
         totalProperty:"totalCount", 
         baseParams: params.request || {},
         id: 'id', 
@@ -803,7 +803,7 @@ Baseliner.store.CI = function(c) {
         url: '/ci/store',
         root: 'data' , 
         remoteSort: true,
-        autoLoad: false,
+        autoLoad: true,
         totalProperty: 'totalCount', 
         fields: ['mid','item', 'name','collection','class','classname', 'versionid', 'description', 'properties', 'pretty_properties','data', 'icon','moniker'] 
      }, c));
@@ -1039,7 +1039,7 @@ Baseliner.model.ComboBaseline = Ext.extend( Ext.form.ComboBox, {
 Baseliner.store.Baseline = Ext.extend( Baseliner.JsonStore, {
     root: 'data' , 
     remoteSort: true,
-    autoLoad: true,
+    autoLoad: false,
     totalProperty:"totalCount", 
     id: 'id', 
     url: '/baseline/json',
