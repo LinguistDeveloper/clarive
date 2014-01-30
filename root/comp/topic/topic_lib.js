@@ -1036,11 +1036,13 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         var custom_form = '';
         
         var do_submit = function(){
+            self.getEl().mask(_("Processing.  Please wait"));
             Baseliner.ajax_json( 
                 self.form_topic.url,
                 Ext.apply({ action: action, form: custom_form, _cis: Ext.util.JSON.encode( self._cis ) }, form_data), 
                 // success
                 function(res){
+                    self.getEl().unmask();
                     self.getTopToolbar().enable();
                     if( self.permDelete ) {
                         self.btn_delete_form.enable();
@@ -1139,6 +1141,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 },
                 // failure
                 function(res){
+                    self.getEl().unmask();
                     self.getTopToolbar().enable();
                     if( self.permDelete ) {
                         self.btn_delete_form.enable();

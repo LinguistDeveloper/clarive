@@ -38,9 +38,9 @@ params:
 		hidden: meta ? (meta.hidden ? meta.hidden : false): true
 	});	
 	
-    release_box_store.on('load',function(){
-		release_box.setValue (data ? (eval('data.' + meta.id_field + '.mid') ? eval('data.' + meta.id_field + '.mid') : '') : '');
-    });
+//    release_box_store.on('load',function(){
+		release_box.setValue (data ? (eval('data.' + meta.id_field + ' && data.' + meta.id_field + ' != undefined && data.' + meta.id_field + '.mid' ) ? eval('data.' + meta.id_field + '.mid') : '') : '');
+//    });
 
 	return [
 		release_box
