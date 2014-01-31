@@ -46,6 +46,11 @@ has id_rule      => qw(is rw isa Any ), default=>sub {
     my $row = DB->BaliRule->search({ rule_when=>$type }, { order_by=>{-desc=>'id'} })->first;
     if( $row ) {
         return $row->id;    
+    } elsif( $type eq 'demote' ) {
+        # cant' find demote, use a promote
+        my $row = DB->BaliRule->search({ rule_when=>'promote' }, { order_by=>{-desc=>'id'} })->first;
+        _fail _loc 'Could not find a default %1 job chain rule', 'promote/demote' unless $row;
+        return $row->id;    
     } else {
         _fail _loc 'Could not find a default %1 job chain rule', $type;
     }

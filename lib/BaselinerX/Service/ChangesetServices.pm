@@ -214,6 +214,8 @@ sub verify_revisions {
     my $type = $job->job_type;
     my $bl = $job->bl;
     
+    my %rev_repos;
+    
     my @project_changes = @{ $stash->{project_changes} || [] };
     $log->info( _loc('Checking job revisions', scalar(@project_changes) ) );
     for my $pc ( @project_changes ) {
@@ -222,11 +224,22 @@ sub verify_revisions {
         for my $rri ( @$repo_revisions_items ) {
             my ($repo, $revisions,$items) = @{ $rri }{ qw/repo revisions items/ };
             
-            $log->info( _loc('Verifying baseline %1 for project %2, repository %3, job type %4', $bl, $project->name, $repo->name, $type ) );
-            $log->debug( _loc('Revisions selected'), $revisions );
-            my $out = $repo->verify_revisions( revisions=>$revisions, tag=>$bl, type=>$type );
-            $log->info( _loc('Baseline verified for repository %1', $repo->name), $out );
+            # TODO if 2 projects share a repository, look into tags from both?
+            for my $revision ( _array( $revisions ) ) {
+                $rev_repos{ $revision->repo->mid }{ 'repo' } //= $revision->repo;
+                $rev_repos{ $revision->repo->mid }{ $revision->mid } = $revision;
+            }
         }
+    }
+    
+    # now verify, only once for each repository
+    for my $revgroup ( values %rev_repos ) {
+        my $repo = delete $revgroup->{repo};
+        my $revisions = [ values %$revgroup ];
+        $log->info( _loc('Verifying baseline %1 for repository %2, job type %3', $bl, $repo->name, $type ) );
+        $log->debug( _loc('Revisions selected'), $revisions );
+        my $out = $repo->verify_revisions( revisions=>$revisions, tag=>$bl, type=>$type );
+        $log->info( _loc('Baseline verified for repository %1', $repo->name), $out );
     }
 }
 
