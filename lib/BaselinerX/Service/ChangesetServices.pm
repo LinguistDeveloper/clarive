@@ -141,7 +141,7 @@ sub changeset_update {
         my $status_row = DB->BaliTopicStatus->find( $status );
         _fail _loc 'Status row not found for status `%1`', $status unless $status_row;
         my $status_name = $status_row->name;
-        $log->info( _loc( 'Moving changeset *%1* to stage *%2*', $cs->name, $status_name ) );
+        $log->info( _loc( 'Moving changeset %1 to stage *%2*', $cs->name, $status_name ) );
         Baseliner->model('Topic')->change_status(
            change          => 1, 
            username        => $job->username,
@@ -193,7 +193,7 @@ sub update_baselines {
                 if( my $previous = $stash->{bl_original}{$repo->mid} ) {
                     $out = $repo->update_baselines( ref=>$previous, revisions=>[], tag=>$bl, type=>$type );
                 } else {
-                    _fail _loc 'Could not find previous revision for repository: %1 (%2)', $repo->name, $repo->mid;
+                    _warn _loc 'Could not find previous revision for repository: %1 (%2)', $repo->name, $repo->mid;
                 }
             } else {
                 $out = $repo->update_baselines( revisions => $revisions, tag=>$bl, type=>$type );
