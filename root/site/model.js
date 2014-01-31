@@ -1753,10 +1753,10 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
                     var title = rec.data.topic_name;
                     var params = { topic_mid: mid, title: _( title ) };
                     if( self.is_tab ) {
-                        Baseliner.add_tabcomp( '/topic/view?topic_mid=' + mid, _(title), params );
+                        Baseliner.add_tabcomp( '/topic/view', _(title), params );
                     } else {
                         params.window_mode = true;
-                        Baseliner.ajaxEval( '/topic/view?topic_mid=' + mid, params, function(topic_panel) {
+                        Baseliner.ajaxEval( '/topic/view', params, function(topic_panel) {
                             var win = new Baseliner.Window({
                                 layout: 'fit', 
                                 tabifiable : true,

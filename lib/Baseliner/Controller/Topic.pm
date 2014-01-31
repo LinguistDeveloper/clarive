@@ -563,6 +563,7 @@ sub view : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
     my $topic_mid = $p->{topic_mid} || $p->{action};
+    ($topic_mid) = _array( $topic_mid ) if ref $topic_mid eq 'ARRAY';
 
     my $id_category;
     
