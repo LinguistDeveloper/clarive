@@ -2495,7 +2495,7 @@ sub change_status {
                 # change and cleanup
                 $row->update({ id_category_status => $p{id_status}, modified_by => $p{username} });
                 # update mongo
-                my $modified_on = $row->modified_on->dmy . ' ' . $row->modified_on->hms;
+                my $modified_on = $row->modified_on->ymd . ' ' . $row->modified_on->hms;
                 $self->update_category_status( $mid, $p{id_status}, $p{username}, $modified_on );
                 
                 $self->cache_topic_remove( $mid );
