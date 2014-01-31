@@ -235,7 +235,7 @@ Baseliner.escape_lt_gt = function(str) {
 Baseliner.render_job = function(value,metadata,rec,rowIndex,colIndex,store) {
     if( value!=undefined && value!='' ) {
         var id_job = rec.data.id_job;
-        return "<a href='#' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/list?id_job="+id_job+"\",\""+ _("Log") + " " +value+"\"); return false;'>" + value + "</a>" ;
+        return "<a href='#' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/list?mid="+id_job+"\",\""+ _("Log") + " " +value+"\"); return false;'>" + value + "</a>" ;
     } else {
         return '';
     }
@@ -867,7 +867,7 @@ Baseliner.merge = function() {
 
 Baseliner.openLogTab = function(id_job,title) {
     if( id_job!=undefined ) {
-        Baseliner.addNewTabComp("/job/log/list?id_job="+id_job, title);
+        Baseliner.addNewTabComp("/job/log/list?mid="+id_job, title);
     }
 };
 

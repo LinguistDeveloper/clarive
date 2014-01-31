@@ -1259,7 +1259,7 @@ sub default : Path Args(2) {
             my $ci = ci->new( $arg );
             _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
             $ret = $ci->$meth( $to_args->($ci) );
-        } elsif( my $ci = ci->find($arg) ) {
+        } elsif( my $ci = ci->find($arg) ) {   #  TODO this generates warnings in log when $arg is a classname
             _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
             $ret = $ci->$meth( $to_args->($ci) );
         } elsif( length $mid ) {

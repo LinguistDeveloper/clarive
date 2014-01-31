@@ -483,7 +483,7 @@ sub changeset : Local {
     my @changes;
     my $bind_releases = 0;
     $where->{id_category_status} = $p->{id_status};
-    @changes = $c->model('Baseliner::BaliTopic')->search(
+    @changes = DB->BaliTopic->search(
         $where,
         { prefetch=>['categories','children','master'] }
     )->all;

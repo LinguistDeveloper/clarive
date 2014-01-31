@@ -338,7 +338,7 @@ sub notify { #TODO : send to all action+ns users, send to project-team
         my $u = Baseliner->model('Users')->get( $username );
         my $realname = $u->{realname};
         $log->debug( _loc("Notifying user %1: %2", $username, $subject) );
-        my $url_log = sprintf( "%s/tab/job/log/list?id_job=%d", _notify_address(), $jobid );
+        my $url_log = sprintf( "%s/tab/job/log/list?mid=%d", _notify_address(), $jobid );
         Baseliner->model('Messaging')->notify(
             subject => $subject,
             message => $message,
