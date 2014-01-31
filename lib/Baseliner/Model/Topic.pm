@@ -1232,6 +1232,7 @@ sub get_cis {
     my $field_meta = [ grep { $_->{id_field} eq $id_field } _array( $meta ) ]->[0];
     my $where = { from_mid => $topic_mid };
     $where->{rel_type} = $field_meta->{rel_type} if ref $field_meta eq 'HASH' && defined $field_meta->{rel_type};
+    $where->{rel_field} = $id_field;
     my @cis = map { $_->{mid} } DB->BaliMasterRel->search(     
         $where,
         #{ prefetch => ['master_to'], +select => [ 'master_to.name', 'master_to.mid' ], +as => [qw/name mid/] } )
