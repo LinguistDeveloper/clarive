@@ -34,7 +34,7 @@ params:
         readOnly: ( meta.readOnly == 'true' ? true : false ),
         //style: 'margin-top: 20px', 
         height: ( meta.height ? parseInt(meta.height) : 200 ),
-        value: value , 
+        value: value, 
         name: meta.id_field 
     });
 	return [

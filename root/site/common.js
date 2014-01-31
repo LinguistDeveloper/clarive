@@ -1923,6 +1923,7 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
             height: 400,
             width: 400,
             singleMode: true, 
+            autoLoad: false,
             fieldLabel: _('CI'),
             name: 'ci',
             hiddenName: 'ci', 
@@ -1931,6 +1932,7 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
         self.ci_box.on('select', function(combo,rec,ix) {
             if( combo.id != self.ci_box.id ) return; // strange bug: this event gets fired with TopicGrid and CIGrid in the same page
             self.add_to_grid( rec.data );
+            self.ci_box.setValue('');
         });
         self.ddGroup = 'bali-grid-data-' + self.id;
         var btn_delete = new Baseliner.Grid.Buttons.Delete({
@@ -1960,7 +1962,7 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
         var val = self.value;
         if( Ext.num(val) != undefined ) val=[val];
         
-        if( Ext.isArray(val) ) {
+        if( Ext.isArray(val) && val.length>0 ) {
             var p = { mids: val, _whoami: 'CIGrid_mids' };
             if( self.ci.role ) p.role = self.ci.role;
             Baseliner.ajaxEval( '/ci/store', Ext.apply(self.ci_grid, p ), function(res){
