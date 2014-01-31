@@ -126,7 +126,7 @@ sub changeset_update {
             $log->debug( _loc('Topic %1 does not match category %2. Skipped', $cs->name, $category) );
             next;
         }
-        if( $stash->{rollback} ) {
+        if( $stash->{rollback} || $job_type eq 'demote' ) {
             # rollback to previous status
             $status = $status_on_rollback || $stash->{update_baselines_changesets}{ $cs->mid };
             if( !length $status ) {
