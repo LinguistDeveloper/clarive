@@ -1221,9 +1221,12 @@ sub get_labels {
 
 sub get_revisions {
     my ($self, $topic_mid ) = @_;
-    my @revisions = DB->BaliMasterRel->search( { rel_type => 'topic_revision', from_mid => $topic_mid },
-        { prefetch => ['master_to'], +select => [ 'master_to.name', 'master_to.mid' ], +as => [qw/name mid/] } )
-        ->hashref->all;
+    my @revisions = DB->BaliMasterRel->search({ rel_type => 'topic_revision', from_mid => $topic_mid })->hashref->all;
+    @revisions = map {  
+        my $r = mdb->master_doc->find_one({ mid=>"$_->{to_mid}" },{ name=>1, mid=>1, _id=>0, repo=>1 });
+        my $repo = mdb->master_doc->find_one({ mid=>mdb->in(delete $r->{repo}) },{ name=>1 });
+        +{ %$r, reponame=>$repo->{name} };
+    } @revisions; 
     return @revisions ? \@revisions : [];    
 }
 
