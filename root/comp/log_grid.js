@@ -532,35 +532,19 @@
 
     grid.on("rowdblclick", function(grid, rowIndex, e ) {
         var r = grid.getStore().getAt(rowIndex);
-        Ext.Ajax.request({
-            url: '/job/log/data',
-            params: { id: r.get('id') },
-            success: function(xhr) {
-                var msg = xhr.responseText;
-                var title = r.get('text');
-                if( msg == undefined || msg.length < 15 ) { //usually msg has a <pre> tag
-                    msg = '<pre>' + title;
-                    title = r.get('job') + " - Log ID " + r.get('id');
-                }
-                var win = new Ext.Window({ layout: 'fit', 
-                    autoScroll: true,
-                    maximizable: true,
-                    style: 'white-space: pre-wrap; white-space: -moz-pre-wrap; word-wrap: break-word;',
-                    title: title,
-                    height: 600, width: 700, 
-                    html: msg
-                });
-                win.show();
-            },
-            failure: function(xhr) {
-                var win = new Ext.Window({ layout: 'fit', 
-                    autoScroll: true, title: 'Error', 
-                    height: 600, width: 700, 
-                    html: 'Server communication failure:' + xhr.responseText });
-                win.show();
-            }
+        var title = r.get('job') + " - Log ID " + r.get('id') + ": " + r.get('service_key');
+        var msg = r.get('text');
+        var lev = r.get('lev');
+        var win = new Baseliner.Window({ 
+            layout: 'fit', 
+            //autoScroll: true,
+            maximizable: true,
+            //style: 'white-space: pre-wrap; white-space: -moz-pre-wrap; word-wrap: break-word;',
+            title: title,
+            height: 600, width: 700, 
+            items: [ new Baseliner.MonoTextArea({ value: msg, style:'color:'+ ( lev=='error' ? '#f23' : lev=='warn' ? '#daa520' : '#000' ) }) ]
         });
-        //Baseliner.addNewTabComp('/job/log/list?mid=' + r.get('id') , '<% _loc('Log') %>' + r.get('name') );
+        win.show();
     });		
 
     //Scroll to bottom when the store reloads
