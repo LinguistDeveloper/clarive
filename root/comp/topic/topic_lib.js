@@ -1221,8 +1221,14 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         if( self._parent_grid != undefined && ! Ext.isObject( self._parent_grid ) ) {
             self._parent_grid = Ext.getCmp( self._parent_grid ); 
         }
-        if( Ext.isObject( self._parent_grid )  && self._parent_grid.getStore()!=undefined ) {
-            self._parent_grid.getStore().reload();
+        // a grid with a store?
+        if( Ext.isObject( self._parent_grid )  && self._parent_grid.getStore ) {
+            var store = self._parent_grid.getStore();
+            if( store ) store.reload();
+        }
+        // something else with a reload?
+        if( Ext.isObject( self._parent_grid )  && self._parent_grid.reload!=undefined ) {
+            self._parent_grid.reload();
         }
     },
     change_status: function(obj){

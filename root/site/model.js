@@ -1735,6 +1735,10 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
             }
         });
     },
+    reload : function(){  // used by topics when refreshing _parent_grid
+        var self = this;
+        self.refresh(); 
+    },
     create_portlets : function( id_status ){
         var self = this;
         self.store.each( function(rec) {
@@ -1751,7 +1755,7 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
                 // double-click on portlet opens either window or tab
                 this.ownerCt.body.on('dblclick',function(){ 
                     var title = rec.data.topic_name;
-                    var params = { topic_mid: mid, title: _( title ) };
+                    var params = { topic_mid: mid, title: _( title ), _parent_grid: self.id };
                     if( self.is_tab ) {
                         Baseliner.add_tabcomp( '/topic/view', _(title), params );
                     } else {
@@ -1771,6 +1775,7 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
                             });
                             //topic_panel.on('afterrender', function(){ topic_panel.header.hide() } );
                             topic_panel.title = undefined;
+                            topic_panel._parent_window = win.id;
                             win.show();
                         });
                     }
