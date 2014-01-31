@@ -541,26 +541,36 @@ if( Prefs.routing ) {
         
     };
 
+    Baseliner.family_notify = function(params) {
+        var tabpanel = Ext.getCmp('main-panel');
+        if( !tabpanel ) return;
+        tabpanel.cascade( function(c){ 
+            if( c.family == params.family ) {
+                if( c.store && c.store.reload ) {
+                    c.store.reload();
+                }
+            }
+        });
+    }
+
     //adds a new fragment component with html or <script>...</script>
     Baseliner.addNewTab = function(purl, ptitle, params, obj_tab ){
-        
         //Baseliner.
         var tabpanel;
-            var newpanel; 
+        var newpanel; 
         if(obj_tab) {
-           
-        newpanel = new Ext.Panel({ layout: 'fit', title: ptitle, closable:true});
-        tabpanel = obj_tab;
+            newpanel = new Ext.Panel({ layout: 'fit', title: ptitle, closable:true});
+            tabpanel = obj_tab;
         }
         else{
-        newpanel = new Ext.Panel({ layout: 'fit', title: ptitle, padding: 10 });
-        tabpanel = Ext.getCmp('main-panel');
+            newpanel = new Ext.Panel({ layout: 'fit', title: ptitle, padding: 10 });
+            tabpanel = Ext.getCmp('main-panel');
         }
         //var tabpanel = Ext.getCmp('main-panel');
         var tab = tabpanel.add( newpanel );
         tabpanel.setActiveTab(tab); 
         if( params == undefined ) params={};
-        if( params.tab_icon!=undefined  ) tabpanel.changeTabIcon( tab, params.tab_icon );
+        if( params.tab_icon!=undefined ) tabpanel.changeTabIcon( tab, params.tab_icon );
         params.fail_on_auth = true;
         newpanel.load({
             url: purl,

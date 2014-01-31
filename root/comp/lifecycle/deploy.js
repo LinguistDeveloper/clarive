@@ -32,6 +32,7 @@
         Baseliner.ajaxEval( '/topic/newjob', { changesets:[mid], bl: bl_to, job_type: job_type, status_to: status_to, status_from: status_from, id_status_from: id_status_from }, function(res) {
             if( res.success ) {
                 Baseliner.message( _('Job'), res.msg );
+                Baseliner.family_notify({ family:'jobs' });
             } else {
                 Ext.Msg.alert( _('Error creating job'), res.msg );
             }

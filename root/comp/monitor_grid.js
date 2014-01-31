@@ -968,6 +968,7 @@
         tab_icon: '/static/images/icons/television.gif',
         stripeRows: false,
         autoScroll: true,
+        family: 'jobs',
         loadMask: true,
         stateful: true,
         stateId: state_id,
