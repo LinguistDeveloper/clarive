@@ -542,7 +542,7 @@
             //style: 'white-space: pre-wrap; white-space: -moz-pre-wrap; word-wrap: break-word;',
             title: title,
             height: 600, width: 700, 
-            items: [ new Baseliner.MonoTextArea({ value: msg, style:'color:'+ ( lev=='error' ? '#f23' : lev=='warn' ? '#daa520' : '#000' ) }) ]
+            items: [ new Baseliner.MonoTextArea({ value: msg, style:'font-family: Courier New, Courier; color:'+ ( lev=='error' ? '#d23' : lev=='warn' ? '#997A00' : '#000' ) }) ]
         });
         win.show();
     });		
