@@ -94,6 +94,7 @@ sub common_log {
         
         $doc->{_id} = mdb->job_log->insert($doc); 
         
+        $doc->{pid} = $$;
         $doc->{more} = $p{more} if defined $p{more};
         $doc->{data_name} = $p{data_name} if $p{data_name};
         $doc->{data_length} = length( $p{data} ) if $p{data};

@@ -187,6 +187,7 @@ sub log_rows : Private {
             module   => $doc->{module},
             section  => $doc->{section},
             ns       => $doc->{ns},
+            pid      => $doc->{pid},
             provider => $doc->{provider},
             datalen  => $data_len,
             data     => $data,
