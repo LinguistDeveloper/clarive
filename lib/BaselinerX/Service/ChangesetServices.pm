@@ -162,30 +162,45 @@ sub update_baselines {
     my $type = $job->job_type;
     my $bl = $job->bl;
     
+    my %rev_repos;
+    
     if ( !$job->is_failed( status => 'last_finish_status')) {
         my @project_changes = @{ $stash->{project_changes} || [] };
         $log->info( _loc('Updating baseline for %1 project(s) to %2', scalar(@project_changes), $bl ) );
+        
+        # first, group revisions by repository
         for my $pc ( @project_changes ) {
             my ($project, $repo_revisions_items ) = @{ $pc }{ qw/project repo_revisions_items/ };
             next unless ref $repo_revisions_items eq 'ARRAY';
             for my $rri ( @$repo_revisions_items ) {
                 my ($repo, $revisions,$items) = @{ $rri }{ qw/repo revisions items/ };
                 
-                my $out;
-                $log->info( _loc('Updating baseline %1 for project %2, repository %3, job type %4', $bl, $project->name, $repo->name, $type ) );
-                if( $job->rollback ) {
-                    if( my $previous = $stash->{bl_original}{$repo->mid} ) {
-                        $out = $repo->update_baselines( ref=>$previous, revisions=>[], tag=>$bl, type=>$type );
-                    } else {
-                        _fail _loc 'Could not find previous revision for repository: %1 (%2)', $repo->name, $repo->mid;
-                    }
-                } else {
-                    $out = $repo->update_baselines( revisions => $revisions, tag=>$bl, type=>$type );
+                # TODO if 2 projects share a repository, need to create different tags with project in str?
+                for my $revision ( _array( $revisions ) ) {
+                    $rev_repos{ $revision->repo->mid }{ 'repo' } //= $revision->repo;
+                    $rev_repos{ $revision->repo->mid }{ $revision->mid } = $revision;
                 }
-                # save previous revision by repo mid
-                $stash->{bl_original}{$repo->mid} = $out->{previous}; 
-                $log->info( _loc('Baseline update of %1 item(s) completed', $repo->name), $out );
             }
+        }
+        
+        # now update
+        for my $revgroup ( values %rev_repos ) {
+            my $repo = delete $revgroup->{repo};
+            my $revisions = [ values %$revgroup ];
+            my $out;
+            $log->info( _loc('Updating baseline %1 for repository %2, job type %3', $bl, $repo->name, $type ) );
+            if( $job->rollback ) {
+                if( my $previous = $stash->{bl_original}{$repo->mid} ) {
+                    $out = $repo->update_baselines( ref=>$previous, revisions=>[], tag=>$bl, type=>$type );
+                } else {
+                    _fail _loc 'Could not find previous revision for repository: %1 (%2)', $repo->name, $repo->mid;
+                }
+            } else {
+                $out = $repo->update_baselines( revisions => $revisions, tag=>$bl, type=>$type );
+            }
+            # save previous revision by repo mid
+            $stash->{bl_original}{$repo->mid} = $out->{previous}; 
+            $log->info( _loc('Baseline update of %1 item(s) completed', $repo->name), $out );
         }
     }
 }
