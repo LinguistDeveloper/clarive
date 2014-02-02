@@ -975,7 +975,7 @@ sub json_tree : Local {
         my @all;
         for my $mid ( _array( $mids ) ) { 
             $mid =~ s{^.+-(.+)$}{$1}; 
-            my $ci = _ci( $mid );
+            my $ci = ci->new( $mid );
             my @rels = $ci->$direction( depth=>2, mode=>$p->{mode} || 'tree', unique=>1, %$p );
             my $recurse;
             $recurse = sub {
@@ -989,7 +989,7 @@ sub json_tree : Local {
                     data => {
                         '$type' => 'icon',
                         %node_data,
-                        icon     => $chi->{_ci}{ci_icon},
+                        icon     => $chi->icon,
                     },
                     #data     => { '$type' => 'arrow' },
                     children => [ map { $recurse->($_) } _array( $chi->{ci_rel} ) ]
