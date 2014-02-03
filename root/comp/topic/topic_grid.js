@@ -897,15 +897,18 @@
         return ret;
     };
 
+    var topic_name_too_narrow = false;
     var render_topic_name = function(value,metadata,rec,rowIndex,colIndex,store){
         var d = rec.data;
+        //var hc = grid_topics.view.getHeaderCell(colIndex);
+        //var too_short = (hc && $(hc).width() < 80) ? true : false;
         return Baseliner.topic_name({
             link: true,
             parent_id: grid_topics.id,
             mid: d.topic_mid, 
             mini: btn_mini.pressed,
             size: btn_mini.pressed ? '9' : '11',
-            category_name: d.category_name,
+            category_name: (topic_name_too_narrow ? '' : d.category_name),
             category_color:  d.category_color,
             category_icon: d.category_icon,
             is_changeset: d.is_changeset,
@@ -1186,6 +1189,18 @@
         }
     });
     
+    grid_topics.on('columnresize', function(ix,newSize){
+        if( newSize < 80 ) {
+            topic_name_too_narrow = true;
+        } else {
+            topic_name_too_narrow = false;
+        }
+    });
+    // determine if too narrow
+    var ixi = grid_topics.getColumnModel().findColumnIndex('topic_name');
+    if( ixi ) {
+        topic_name_too_narrow = grid_topics.getColumnModel().getColumnWidth(ixi) < 80;
+    }
 
 /*
     node: Ext.tree.AsyncTreeNode
