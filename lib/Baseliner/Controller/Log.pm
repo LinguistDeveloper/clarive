@@ -100,7 +100,9 @@ sub log_rows : Private {
     $limit||=50;
     ($sort, $dir) = split /\s+/, $sort if $sort =~ /\s/; # sort may have dir in it, ie: "id asc"
     $dir = defined $dir && lc $dir eq 'desc' ? -1 : 1; 
-    $sort ||= 'ts';
+    # include direction in sort, so that both fields follow the same sort
+    my $sort_ix = Tie::IxHash->new( $sort ? ( $sort => $dir ) : (), $sort ne 'id' ? ( id=>$dir ):() );
+    
     $filter = decode_json( $filter ) if $filter;
     my $config = $c->registry->get( 'config.job.log' );
     my @rows = ();
@@ -148,7 +150,7 @@ sub log_rows : Private {
     #TODO    store filter preferences in a session instead of a cookie, on a by mid basis
 
     my $rs = mdb->job_log->find( $where );
-    $rs->sort({ $sort => $dir });
+    $rs->sort( $sort_ix );
     
     #my $pager = $rs->pager;
     #$cnt = $pager->total_entries;
