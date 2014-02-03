@@ -601,8 +601,8 @@ sub _filter_cis {
     my @cis = @{ delete $opts{_cis} };
     if( $opts{does} || $opts{does_any} || $opts{does_all} ) {
         @cis = grep { 
-            my @does = map { "Baseliner::Role::CI::$_" } _array( $opts{does}, $opts{does_all}, $opts{does_any} );
             my $ci = $_;
+            my @does = map { "Baseliner::Role::CI::$_" } _array( $opts{does}, $opts{does_all}, $opts{does_any} );
             if( exists $opts{does_all} ) {
                 List::MoreUtils::all( sub { $ci->does( $_ ) }, @does );
             } else {
