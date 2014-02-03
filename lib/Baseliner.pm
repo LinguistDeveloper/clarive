@@ -285,8 +285,25 @@ around 'debug' => sub {
         }
     }
     # mdb: establish connection now?
-    #mdb->db if Baseliner->config->{mdb}{lazy} eq '0';  # default is lazy=1
 
+    # queue : worker queue
+    {
+        package queue;
+        our $AUTOLOAD;
+        sub AUTOLOAD {
+            my $self = shift;
+            my $name = $AUTOLOAD;
+            my ($method) = reverse( split(/::/, $name));
+            my $queue = $Baseliner::_queue //( $Baseliner::_queue = do{
+                require Baseliner::Queue;
+                Baseliner::Queue->new;
+            });
+            $method = 'Baseliner::Queue::' . $method;
+            @_ = ( $queue, @_ );
+            goto &$method;
+        }
+    }
+    
     # ci : ci utilities setup
     {
         package ci;

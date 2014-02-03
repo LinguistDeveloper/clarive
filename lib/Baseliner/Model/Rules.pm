@@ -1,9 +1,10 @@
-    package Baseliner::Model::Rules;
+package Baseliner::Model::Rules;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use Try::Tiny;
 use v5.10;
+
 BEGIN { extends 'Catalyst::Model' }
 
 with 'Baseliner::Role::Service';

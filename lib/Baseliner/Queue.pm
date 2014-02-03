@@ -1,0 +1,22 @@
+package Baseliner::Queue;
+use Baseliner::Mouse;
+
+method push( :$msg, :$data ) {
+    my $ts = mdb->ts;
+    my $data_ser = Util->_stash_dump( $data );
+    mdb->queue->insert({ msg=>$msg, data=>$data_ser, ts=>mdb->ts, t=>Time::HiRes::time() }); 
+}
+
+method pop( :$msg ) {
+    my $ts = mdb->ts;
+    # TODO race condition, 2 pops can pop the same - set a unique key and reserve first with '$inc' or '$set'
+    my $doc = mdb->queue->find({ msg=>$msg })->sort({ t=>-1 })->next; # LIFO
+    if( $doc ) {
+        mdb->queue->remove({ _id=>$doc->{_id} });
+        return Util->_stash_load($doc->{data});
+    } else {
+        return undef;
+    }
+}
+
+1;
