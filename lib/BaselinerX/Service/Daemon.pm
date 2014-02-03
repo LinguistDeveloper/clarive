@@ -83,7 +83,12 @@ sub job_daemon {
         );
         for my $roll ( @query_roll ) {
             my @docs = ci->job->find( $roll )->all;
-            foreach my $job ( map { ci->new( $_->{mid} ) } @docs ) {
+            JOB: foreach my $job_doc ( @docs ) {
+                my $job = ci->new( $job_doc->{mid} );  # reload job here, so that old jobs in the roll get refreshed
+                if( $job->status ne $job_doc->{status} ) {
+                    _log _loc( "Skipping job %1 due to status discrepancy: %2 != %3", $job->name, $job->status, $job_doc->{status} );
+                    next JOB if $job->status ne $job_doc->{status};
+                }
                 _log _loc( "Starting job %1 for step %2", $job->name, $job->step );
                 $job->status('RUNNING');
                 $job->save;
@@ -214,7 +219,8 @@ sub check_job_expired {
     }
     # some jobs are running with pid, and some without, 
     #   but if they have any of these statuses, they should have a pid>0 and exist, otherwise they are dead
-    $rs = ci->job->find({ status => mdb->in('RUNNING','PAUSED','TRAPPED') });
+    my @running = ('RUNNING','PAUSED','TRAPPED');
+    $rs = ci->job->find({ status => mdb->in(@running) });
     my $hostname = Util->my_hostname();
     while( my $doc = $rs->next ) {
         my $ci = ci->new( $doc->{mid} );
@@ -226,7 +232,7 @@ sub check_job_expired {
                 if( $ci->pid>0 ) {
                     my $rec = $ci->load;
                     next unless ref $rec;
-                    next unless $rec->{status} eq 'RUNNING';
+                    next unless $rec->{status} ~~ @running;
                 }
                 my $msg = _loc("Detected killed job %1 (mid %2 status %3, pid %4)", $ci->name, $ci->mid, $ci->status, $ci->pid ); 
                 _warn( $msg ); 
