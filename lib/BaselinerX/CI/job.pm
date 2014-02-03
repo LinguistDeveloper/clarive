@@ -881,7 +881,7 @@ sub run {
         my ($lev, $cl,$fi,$li, @msgs ) = @_;
         #my $cal = $Baseliner::Utils::caller_level // 2;
         #die "calling logger: $lev";
-        $lev = 'debug' if $lev eq 'info';
+        $lev = 'debug' if $lev eq 'info' && !$Baseliner::log_info_is_info;
         $self->has_errors( $self->has_errors + 1 ) if $lev eq 'error';
         $self->has_warnings( $self->has_warnings + 1 ) if $lev eq 'warn';
         my $text = $msgs[0];

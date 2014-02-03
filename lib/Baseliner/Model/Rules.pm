@@ -31,10 +31,26 @@ sub init_job_tasks {
 sub parallel_run {
     my ($name, $mode, $stash, $code)= @_;
     my $job = $stash->{job};
+     
     if( my $chi_pid = fork ) {
         _log _loc 'Forked child task %1 with pid %2', $name, $chi_pid; 
+        if( $mode eq 'fork' ) {
+            # fork and wait..
+            $stash->{_forked_pids}{ $chi_pid } = $name;
+        }
     } else {
-         $code->();
+         my ($ret,$err);
+         try {
+             $ret = $code->();
+         } catch {
+            $err = shift; 
+            _error( _loc('Detected error in child %1 (%2): %3', $$, $mode, $err) );
+         };
+         if( $mode eq 'fork' ) {
+            # fork and wait.., communicate results to parent
+            my $res = { ret=>$ret, err=>$err }; 
+            queue->push( msg=>"rule:child:results:$$", data=>$res ); 
+         }
          exit 0; # cannot update stash, because it would override the parent run copy
     }
 }
@@ -258,6 +274,18 @@ sub dsl_run {
     ##############################
     alarm 0;
     
+    # wait for children to finish
+    if( my $chi_pids = $stash->{_forked_pids} ) {
+        _info( _loc('Waiting for return code from children pids: %1', join(',',keys $chi_pids ) ) );
+        for my $pid ( keys $chi_pids ) {
+            waitpid $pid, 0;
+            if( my $res = queue->pop( msg=>"rule:child:results:$pid" ) ) {
+                _fail $res->{err} if $res->{err};
+            }
+        }
+    }
+    
+    # reset log reporting to "Core"
     if( my $job = $stash->{job} ) {
         $job->back_to_core;
     }
@@ -305,6 +333,7 @@ sub run_rules {
                     $err = shift // _loc('Unknown error running rule: %1', $rule->{id} ); 
                 };
             });
+            # report controlled errors
             if( $err ) {
                 if ( $rule->{rule_when} !~ /online/ ) {
                     event_new 'event.rule.failed' => { username => 'internal', dsl => $dsl, rule => $rule->{id}, rule_name => $rule->{rule_name}, stash => $stash, output => $runner_output } => sub {};

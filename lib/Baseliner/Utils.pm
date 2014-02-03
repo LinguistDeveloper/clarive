@@ -18,6 +18,7 @@ use Exporter::Tidy default => [
     _loc_raw
     _cut
     _log
+    _info
     _debug
     _warn
     _error
@@ -378,6 +379,13 @@ sub _log_me {
 
 sub _log {
     return unless any { $_ } @_;
+    my ($cl,$fi,$li) = caller( ($Baseliner::Utils::caller_level // 0) );
+    _log_me( 'info', $cl, $fi, $li, @_ );
+}
+
+sub _info {    # info is the same as _log, but in a job, reports as info instead as debug
+    return unless any { $_ } @_;
+    local $Baseliner::log_info_is_info = 1;
     my ($cl,$fi,$li) = caller( ($Baseliner::Utils::caller_level // 0) );
     _log_me( 'info', $cl, $fi, $li, @_ );
 }
