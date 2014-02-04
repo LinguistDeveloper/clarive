@@ -44,6 +44,7 @@ sub run_local {
     my $output_files = $config->{output_files};
 
     my ($user,$home,$path,$args,$stdin) = @{ $config }{qw/user home path args stdin/};
+    my $environment = $config->{environment} // {};
     $args ||= [];
     require Capture::Tiny;
     my $rc;
@@ -58,6 +59,7 @@ sub run_local {
     my @cmd = ($path, _array( $args ) );
     $job->logger->info( _loc('Running command: %1', join ' ', @cmd), \@cmd ); 
     my ($out) = Capture::Tiny::tee_merged(sub{ 
+        local %ENV = ( %ENV, %$environment );
         $ret = system @cmd ;
         $rc = $?;
     });
