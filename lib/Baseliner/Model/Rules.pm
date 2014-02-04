@@ -207,7 +207,7 @@ sub dsl_build {
         do{ _debug _loc("*Skipped* task %1 in run forward", $name); next; } if !$is_rollback && !$run_forward;
         do{ _debug _loc("*Skipped* task %1 in run rollback", $name); next; } if $is_rollback && !$run_rollback;
         my $data = $attr->{data} || {};
-        my $data_key = length $attr->{data_key} ? $attr->{data_key} : _name_to_id( $name );
+        my ($data_key) = $attr->{data_key} =~ /^\s*(\S+)\s*$/;
         my $closure = $attr->{closure};
         push @dsl, sprintf( '# task: %s', $name ) . "\n"; 
         if( $closure ) {
