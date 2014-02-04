@@ -149,7 +149,7 @@ Baseliner.store.Topics = function(c) {
      Baseliner.store.Topics.superclass.constructor.call(this, Ext.apply({
         root: 'data' , 
         remoteSort: true,
-        autoLoad: false,
+        autoLoad: true,
         totalProperty:"totalCount", 
         baseParams: {},
         id: 'mid', 
@@ -1221,20 +1221,14 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         if( self._parent_grid != undefined && ! Ext.isObject( self._parent_grid ) ) {
             self._parent_grid = Ext.getCmp( self._parent_grid ); 
         }
-        // a grid with a store?
-        if( Ext.isObject( self._parent_grid )  && self._parent_grid.getStore ) {
-            var store = self._parent_grid.getStore();
-            if( store ) store.reload();
-        }
-        // something else with a reload?
-        if( Ext.isObject( self._parent_grid )  && self._parent_grid.reload!=undefined ) {
-            self._parent_grid.reload();
+        if( Ext.isObject( self._parent_grid )  && self._parent_grid.getStore()!=undefined ) {
+            self._parent_grid.getStore().reload();
         }
     },
     change_status: function(obj){
         var self = this;
         
-        Baseliner.Topic.change_status_topic({ mid: self.topic_mid, new_status: obj.id_status_to, old_status: obj.id_status_from});
+        Baseliner.Topic.change_status_topic({ mid: self.topic_mid, new_status: obj.id_status_to, old_status: obj.id_status_from, this: self});
     }/*,
     check_required: function(){
         var fields_required = [];
@@ -1268,7 +1262,8 @@ Baseliner.Topic.delete_topic = function(opts){
 
 
 Baseliner.Topic.change_status_topic = function(opts){
-    
+    var self = opts.this;
+    self.getEl().mask(_("Processing.  Please wait"));
     Baseliner.ajaxEval( '/topic/change_status',{ mid: opts.mid, new_status: opts.new_status, old_status: opts.old_status },
         function(res) {
             //if ( res.success ) {
@@ -1412,7 +1407,6 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
     initComponent: function(){
         var self = this;
         self.combo_store = self.combo_store || new Baseliner.store.Topics({});
-        self.combo_store.baseParams._fieldlet = self.fieldLabel || self.id;
         if( self.topic_grid == undefined ) self.topic_grid = {};
         self.combo = new Baseliner.TopicCombo({
             store: self.combo_store, 
