@@ -33,7 +33,7 @@
     var tabs = new Ext.TabPanel({
         activeTab: 0,
         fieldLabel: _('Configuration'),
-        height: 400,
+        height: 430,
         items: [
             { xtype:'panel', layout:'vbox', 
                layoutConfig:{ align:'stretch' },
