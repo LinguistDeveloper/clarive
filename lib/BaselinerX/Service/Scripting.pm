@@ -71,7 +71,7 @@ sub run_local {
 
     if( $rc ) {
         my $msg = _loc('Error running command %1', join ' ', @cmd);
-        $job->logger->error( $msg , $r ); 
+        $job->logger->error( $msg , qq{RC: $rc\nRET: $ret\nOUTPUT: $out} ); 
         $self->publish_output_files( 'error', $job, $output_files );
         _fail $msg if $fail_on_error; 
     } else {
