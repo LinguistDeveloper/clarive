@@ -657,7 +657,7 @@ sub _parse_template {
     my $type = $vars{text_template_type} || 'FILE'; # could use STRING
     require Text::Template;
     my $tt = Text::Template->new( 
-                    TYPE => "FILE",
+                    TYPE => $type,
                     SOURCE => $template ) or _throw _loc("Could not open template file %1", $template);
     my $body = $tt->fill_in( 
         HASH=> \%vars,

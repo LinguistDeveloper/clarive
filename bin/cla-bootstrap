@@ -400,6 +400,7 @@ String::ShellQuote
 Switch
 Term::ANSIColor
 Term::ReadKey
+Template
 Text::CSV
 Text::CSV_XS
 Text::Markdown

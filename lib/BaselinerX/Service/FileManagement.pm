@@ -108,12 +108,25 @@ sub run_write {
     my $filepath = $config->{filepath};
     my $file_encoding = $config->{file_encoding};
     my $body_encoding = $config->{body_encoding};
+    my $templating    = $config->{templating} // 'none';
+    my $template_var  = $config->{template_var} // '';
     my $body = $config->{body};
     my $log_body = $config->{log_body};
     
     require Encode;
     Encode::from_to( $body, $body_encoding, $file_encoding )
         if $body_encoding && ( $file_encoding ne $body_encoding );
+        
+    if( $templating eq 'tt' ) {
+        require Template; # aka TT
+        my $tt = Template->new();
+        my $vars = $template_var ? $stash->{template_var} : $stash;
+        my $output = '';
+        if( ! $tt->process( \$body, $vars, \$output ) ) {
+            _fail _loc "Error processing file body with templating %1: %2", $templating, $tt->error;
+        }
+        $body = $output;
+    }
     
     my $open_str = $file_encoding ? ">:encoding($file_encoding)" : '>';
     open my $ff, $open_str, $filepath
