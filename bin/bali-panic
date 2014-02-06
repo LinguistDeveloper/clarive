@@ -1,5 +1,0 @@
-#!/usr/bin/env sh
-
-ps uwwx | grep perl | grep "ba.*pl" | perl -n -l -e '@a=split /\s+|\t+/;kill 9,$a[1]'
-ps uwwx | grep starman | grep "bali_web.pid" | perl -n -l -e '@a=split /\s+|\t+/;kill 9,$a[1]'
-
