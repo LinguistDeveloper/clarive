@@ -199,11 +199,12 @@ sub check_daemon {
         my $reg = try {
             Baseliner->model('Registry')->get( $daemon->service ) if $daemon->service
         } catch {
-            _error( _loc("Could not start service %1. Service ignored.", $daemon->service ) );
+            my $err = shift;
+            _error( _loc("Could not start service %1. Service ignored: %2", $daemon->service, $err ) );
             $self->failed_services->{ $daemon->service } = ();
         };
 
-        next if !$reg;
+        return if !$reg;
 
         # bring it back up
         my $params = {};
