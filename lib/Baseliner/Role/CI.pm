@@ -265,6 +265,16 @@ sub new_ci {
     $self->save_data( $master_row, $data, $opts);
 }
 
+sub field_is_ci {
+    my ($self,$field,$meta) = @_;
+    $meta //= $self->meta;
+    my $attr = $meta->get_attribute( $field ) or return;
+    my $type_cons = $attr->type_constraint or return;
+    my $type = $type_cons->name;
+    my $has_ci_trait = grep /Baseliner::Role::CI::Trait/, _array( $attr->applied_traits );
+    return $type if $has_ci_trait || $type eq 'CI' || $type eq 'CIs' || $type =~ /^Baseliner::Role::CI/;
+}
+
 # save data to yaml and master_doc, does not use self
 sub save_data {
     my ( $self, $master_row, $data, $opts ) = @_;
@@ -274,11 +284,7 @@ sub save_data {
     my @master_rel;
     my $meta = $self->meta;
     for my $field ( keys %$data ) {
-        my $attr = $meta->get_attribute( $field ) or next;
-        my $type_cons = $attr->type_constraint or next;
-        my $type = $type_cons->name;
-        my $has_ci_trait = grep /Baseliner::Role::CI::Trait/, _array( $attr->applied_traits );
-        if( $has_ci_trait || $type eq 'CI' || $type eq 'CIs' || $type =~ /^Baseliner::Role::CI/ ) {
+        if( my $type = $self->field_is_ci($field,$meta) ) { 
             my $rel_type = $self->rel_type->{ $field } or Util->_fail( Util->_loc( "Missing rel_type definition for %1 (class %2)", $field, ref $self || $self ) );
             next unless $rel_type;
             my $v = delete($data->{$field});  # consider a split on ,  
