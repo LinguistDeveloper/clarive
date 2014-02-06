@@ -1227,8 +1227,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
     },
     change_status: function(obj){
         var self = this;
-        
-        Baseliner.Topic.change_status_topic({ mid: self.topic_mid, new_status: obj.id_status_to, old_status: obj.id_status_from, this: self});
+        Baseliner.Topic.change_status_topic({ mid: self.topic_mid, new_status: obj.id_status_to, old_status: obj.id_status_from, 'this': self });
     }/*,
     check_required: function(){
         var fields_required = [];
@@ -1262,7 +1261,7 @@ Baseliner.Topic.delete_topic = function(opts){
 
 
 Baseliner.Topic.change_status_topic = function(opts){
-    var self = opts.this;
+    var self = opts['this'];
     self.getEl().mask(_("Processing.  Please wait"));
     Baseliner.ajaxEval( '/topic/change_status',{ mid: opts.mid, new_status: opts.new_status, old_status: opts.old_status },
         function(res) {
