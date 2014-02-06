@@ -343,20 +343,20 @@ sub disconnect {
     $Baseliner::_mdb = undef;
 }
 
-=head2 query_sql_build
+=head2 query_build
 
 Returns a Mongo query regex based statement
 a query string and a list of fields.
 
     $query and $where = mdb->query_build( query=>$query, fields=>{
-        name     =>'me.name',
+        name     =>'name',
         id       =>'to_char(me.id)',
-        user     =>'me.username',
-        comments =>'me.comments',
-        status   =>'me.status',
-        start    =>"me.starttime",
-        sched    =>"me.schedtime",
-        end      =>"me.endtime",
+        user     =>'username',
+        comments =>'comments',
+        status   =>'status',
+        start    =>"starttime",
+        sched    =>"schedtime",
+        end      =>"endtime",
         items    =>"foreign.item",
     });
 
@@ -376,7 +376,7 @@ sub query_build {
         unless ref( $p{fields} ) =~ m/HASH|ARRAY/i;
     my @terms;
     my $where = {};
-    my @fields = _array($p{fields});
+    my @fields = ref $p{fields} eq 'HASH' ? keys( %{ $p{fields} } ) : _array($p{fields});
     # build columns   -----    TODO use field:lala
     $p{query} =~ s{\*}{.*}g;
     $p{query} =~ s{\?}{.}g;
