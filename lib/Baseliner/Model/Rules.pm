@@ -85,6 +85,12 @@ sub error_trap {
     };
 }
 
+sub semaphore {
+    my ($self)=@_;
+    require Baseliner::Sem;
+    return 'Baseliner::Sem';
+}
+
 sub tree_format {
     my ($self, @tree_in)=@_;
     my @tree_out;
@@ -189,7 +195,6 @@ sub dsl_build {
     local $Data::Dumper::Terse = 1;
     for my $s ( _array $stmts ) {
         local $p{no_tidy} = 1; # just one tidy is enough
-        #_debug( $s );
         my $children = $s->{children} || {};
         my $attr = defined $s->{attributes} ? $s->{attributes} : $s;  # attributes is for a json treepanel
         # is active ?
@@ -203,6 +208,10 @@ sub dsl_build {
         my $run_rollback = _bool($attr->{run_rollback},1); 
         my $error_trap = $attr->{error_trap} && $attr->{error_trap} eq 'trap';
         my $parallel_mode = length $attr->{parallel_mode} && $attr->{parallel_mode} ne 'none' ? $attr->{parallel_mode} : '';
+        if( my $semaphore_key = $attr->{semaphore_key} ) {
+            # consider using a hash: $stash->{_sem}{ $semaphore_key } = ...
+            push @dsl, sprintf( 'local $stash->{_sem} = $self->semaphore->new( key=>parse_vars(q{%s},$stash), who=>parse_vars(q{%s}, $stash) )->take;', $semaphore_key, $name ) . "\n"; 
+        }
         my $timeout = $attr->{timeout};
         do{ _debug _loc("*Skipped* task %1 in run forward", $name); next; } if !$is_rollback && !$run_forward;
         do{ _debug _loc("*Skipped* task %1 in run rollback", $name); next; } if $is_rollback && !$run_rollback;
@@ -236,6 +245,7 @@ sub dsl_build {
             push @dsl, '});' if $error_trap; # current_task close
             push @dsl, '});' if $parallel_mode; # current_task close
             push @dsl, '});' if $closure; # current_task close
+            push @dsl, sprintf( '$stash->{_sem}->release if $stash->{_sem};') if $attr->{semaphore_key};
         } else {
             _debug $s;
             _fail _loc 'Missing dsl/service key for node %1', $name;
