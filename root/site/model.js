@@ -1117,6 +1117,13 @@ Baseliner.model.Status = function(c) {
     }, c));
 };
 Ext.extend( Baseliner.model.Status, Ext.ux.form.SuperBoxSelect );
+
+Baseliner.ComboStatus = Ext.extend( Baseliner.ComboDoubleRemote, {
+    allowBlank: true,
+    url: '/ci/status/combo_list', field: 'id_status', displayField: 'name',
+    fields: [ 'id_status', 'name' ]
+});
+
 /*
 
 A Revision draganddrop superbox inside a form-ready panel.
