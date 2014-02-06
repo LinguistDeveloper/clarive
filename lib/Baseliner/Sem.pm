@@ -19,77 +19,107 @@ Set slots:
     my $sem = Baseliner::Sem->new( key=>'abcde' );
     $sem->slots( 5 );
 
+Possible statuses for the queue:
+
+    - idle - created, but not requested
+    - waiting - blocked waiting for granted
+    - granted - master semaphore service granted request
+    - busy - process has the semaphore
+    - done - process released the semaphore
+    - cancelled - abort semaphore
+    - killed - requestor process has disappeared
+
 =cut
 package Baseliner::Sem;
-use Moose;
+use Baseliner::Mouse;
 use Baseliner::Utils;
 
-has key => qw(is rw isa Str required 1);
-has sem => qw(is rw isa Any);
-has key_tok => qw(is rw isa Any);
-has taken => qw(is rw isa Bool default 0);
-has slots => qw(is rw isa Num default 1), trigger => sub {
-    # changes the number of slots available
-    #   WARNING: this will reset the semaphore queue, releasing pending requests
-    my ($self, $v )= @_;
-    $self->sem->setall( $v );
-};
+has key      => qw(is rw isa Str required 1);
+has sem      => qw(is rw isa Any);
+has who      => qw(is rw isa Any);
+has slots    => qw(is rw isa Num default 1);
+has id_queue => qw(is rw isa MongoDB::OID);
+has id_sem   => qw(is rw isa MongoDB::OID);
 
 sub BUILD {
     my ($self) = @_;
 
     # create semaphore if it does not exist
-    my $sem = $self->_get_sem();
-    $self->sem( $sem );
-}
-
-use IPC::SysV qw(IPC_NOWAIT SEM_UNDO IPC_EXCL S_IRWXU IPC_PRIVATE S_IRUSR S_IWUSR IPC_CREAT ftok);
-use IPC::Semaphore;
-
-sub _get_sem {
-    my ($self ) = @_;
-    require String::CRC32;
-    my $key = $self->key_tok // String::CRC32::crc32( $self->key);
-    $self->key_tok( $key);
-    my $sem = IPC::Semaphore->new( $key, 1, 0666 );
-    unless( $sem ) {
-        # "SEM is new";
-        _debug "SEM CREATING " . $key;
-        $sem = IPC::Semaphore->new( $key, 1, 0666 | IPC_CREAT );
-        $sem->setall( $self->slots ); # 1 slot
-        _fail "semget: $!" unless $sem;
+    my $doc = mdb->sem->find_one({ key=>$self->key }); 
+    my $_id;
+    if( !$doc ) {
+        $_id = $self->create;
     }
-    return $sem;
+    $self->id_sem( $doc->{_id} // $_id );
+    return $doc;
 }
 
-=head2 take
-
-takes a slot. Locks on wait.
-
-=cut
-sub take {
-    my $self = shift;
-    #say "VAL=" . $sem->getval( 0 );
-    _debug sprintf "SEM TAKE %s GETVAL %s" , $self->key_tok,  $self->sem->getval( 0 );
-    # SEM_UNDO destroys all operations on the semaphore for this pid in case pid exits
-    $self->sem->op( 0, -1, SEM_UNDO ) or _fail "sem_take: $!" ; #| IPC_NOWAIT );
-    $self->taken( 1 );
+sub create {
+    my ($self, %p) =@_;
+    return mdb->sem->insert({
+            key       => $self->key,
+            slots     => $self->slots,
+            %p
+        }, { safe => 1 }
+    );
 }
 
+sub enqueue {
+    my ($self) =@_;
+    my ($package, $filename, $line) = caller;
+    my $caller = "$package ($line)";
+    # now add request to queue
+    my $seq = mdb->seq( 'sem' );
+    my $doc = { 
+        key        => $self->key,
+        who        => $self->who,
+        seq        => $seq, 
+        ts         => Time::HiRes::time(), 
+        caller     => "$package ($line)",
+        active     => 1,
+        pid        => $$, 
+        ts_request => mdb->ts,
+        hostname   => Util->my_hostname,
+        status     => 'waiting',
+    };
 
-sub release {
-    my $self = shift;
-    #say "VAL=" . $sem->getval( 0 );
-    _debug sprintf "SEM REL %s GETVAL %s" , $self->key_tok,  $self->sem->getval( 0 );
-    if( $self->taken ) {
-        $self->sem->op( 0, 1, SEM_UNDO ) or _fail "sem_take: $!" ; #| IPC_NOWAIT );
-        $self->taken( 0 );
+    my $id_queue = mdb->sem_queue->insert( $doc, { safe=>1 });
+    $self->id_queue( $id_queue );
+}
+
+sub take { 
+    my ($self, %p) =@_;
+    my $id_queue = $self->enqueue;
+    my $que;
+    # wait until the daemon grants me out
+    while( 1 ) {
+        # granted?
+        last if $que = mdb->sem_queue->find_one({ _id=>$id_queue, status=>{ '$ne'=>'waiting' } });
+        sleep 1;
     }
+    my $status = $que->{status};
+    if( $status eq 'granted' ) {
+        $que->{status} = 'busy';
+        $que->{ts_grant} = mdb->ts;
+        mdb->sem_queue->save( $que, { safe=>1 });
+    }
+    else {
+        _fail _loc 'Semaphore cancelled due to status %1', $status;
+    }
+    return $self;
 }
 
-sub DESTROY {
-    my $self = shift;
-    $self->release if $self->taken;
+sub release { 
+    my ($self, %p) =@_;
+    my $que = mdb->sem_queue->find_one({ _id=>$self->id_queue });
+    $que->{status} = 'done'; 
+    $que->{ts_release} = mdb->ts;
+    mdb->sem_queue->save( $que, { safe=>1 } );
+}
+
+sub purge { 
+    my ($self, %p) =@_;
+    mdb->sem_queue->remove({ key=>$self->key }, { multiple=>1 });
 }
 
 

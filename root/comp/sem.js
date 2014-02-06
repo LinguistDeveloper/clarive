@@ -9,12 +9,11 @@
         id: 'id', 
         url: '/semaphore/sems',
         fields: [ 
-            {  name: 'sem' },
+            {  name: 'key' },
             {  name: 'active' },
             {  name: 'slots' },
-            {  name: 'occupied' },
-            {  name: 'waiting' },
-            {  name: 'bl' }
+            {  name: 'busy' },
+            {  name: 'waiting' }
         ]
     });
 
@@ -26,18 +25,17 @@
         },
         [ 
             {  name: 'id' },
-            {  name: 'sem_bl' },
-            {  name: 'sem' },
+            {  name: 'key' },
             {  name: 'who' },
             {  name: 'status' },
             {  name: 'active' },
             {  name: 'host' },
             {  name: 'pid' },
+            {  name: 'hostname' },
             {  name: 'caller' },
             {  name: 'ts_request' },
             {  name: 'ts_grant' },
-            {  name: 'ts_release' },
-            {  name: 'bl' }
+            {  name: 'ts_release' }
         ]
     );
     var store_queue = new Baseliner.GroupingStore({
@@ -45,7 +43,7 @@
         reader: reader_queue,
         remoteGroup: false,
         url: '/semaphore/queue',
-        groupField: 'sem_bl'
+        groupField: 'key'
     });
 
 
@@ -122,9 +120,9 @@
         handler: function() { sem_req_activate(0); }
     });
 
-    Baseliner.sem_mod = function(action, sem, bl) {
-        Baseliner.ajaxEval( '/semaphore/change_slot', { sem: sem, bl: bl, action: action }, function(res) {
-            Baseliner.message( sem + bl, res.message ); 
+    Baseliner.sem_mod = function(action, key) {
+        Baseliner.ajaxEval( '/semaphore/change_slot', { key: key, action: action }, function(res) {
+            Baseliner.message( key, res.message ); 
             store_sem.load();
         });
      };
@@ -132,8 +130,8 @@
         icon:'/static/images/icons/add.png',
         cls: 'x-btn-text-icon',
         handler: function() {
-            Baseliner.ajaxEval( '/semaphore/change_slot', { sem: sem, bl: bl, action: action }, function(res) {
-                Baseliner.message( sem + bl, res.message ); 
+            Baseliner.ajaxEval( '/semaphore/change_slot', { key: key, action: action }, function(res) {
+                Baseliner.message( key, res.message ); 
                 store_sem.load();
             });
         }
@@ -158,10 +156,8 @@
     });
 
     var render_sem = function(value,metadata,rec,rowIndex,colIndex,store) {
-        var sem = value;
-        var bl = rec.data.bl;
-        if( bl != '*' ) sem = sem + " (" + _(bl) + ")";
-        return "<div style='font-weight:bold; font-size: 12px;'>" + sem + "</div><br />" ;
+        var key = value;
+        return "<div style='font-weight:bold; font-size: 12px;'>" + key + "</div><br />" ;
     };
 
     var render_sem_data = function(value,metadata,rec,rowIndex,colIndex,store) {
@@ -169,10 +165,10 @@
 
     var render_sem_actions = function(value,metadata,rec,rowIndex,colIndex,store) {
         var slots = rec.data.slots;
-        var up = '<a href="#" onclick="javascript:Baseliner.sem_mod(\'add\', \''+ rec.data.sem +'\', \''+rec.data.bl+'\' )">'
+        var up = '<a href="#" onclick="javascript:Baseliner.sem_mod(\'add\', \''+ rec.data.key +'\', \''+rec.data.bl+'\' )">'
                 + '<img src="/static/images/icons/arrow-up.gif"></img></a>';
         var down = slots > 0 
-            ? '<a href="#" onclick="javascript:Baseliner.sem_mod(\'del\', \''+ rec.data.sem +'\', \''+rec.data.bl+'\')">'
+            ? '<a href="#" onclick="javascript:Baseliner.sem_mod(\'del\', \''+ rec.data.key +'\', \''+rec.data.bl+'\')">'
                 + '<img src="/static/images/icons/arrow-down.gif"></img></a>'
             : '';
         return up + down;
@@ -246,7 +242,7 @@
                 getRowClass : function(rec, index, p, store){
                         // slot squares
                         var slots = rec.data.slots;
-                        var occ = rec.data.occupied || 0;
+                        var occ = rec.data.busy || 0;
                         var waiting = rec.data.waiting || 0;
                         p.body = String.format( '<div style="margin: 0 0 0 32;"><table><tr>'
                             + '<td style="width: 80px; background-color: #89cd79; padding: 2 4 2 4;"><center>{3}: {0}</td>'
@@ -269,8 +265,8 @@
         loadMask:'true',
         columns: [
             { width: 1, sortable: false, renderer: function() { return '<img src="/static/images/icons/traffic_lights.png" width="16px" />' } },    
-            { header: _('Semaphore'), width: 100, dataIndex: 'sem', sortable: true, renderer: render_sem }, 
-            { width: 50, dataIndex: 'sem', renderer: render_sem_actions  }
+            { header: _('Semaphore'), width: 100, dataIndex: 'key', sortable: true, renderer: render_sem }, 
+            { width: 50, dataIndex: 'key', renderer: render_sem_actions  }
         ]
     });
     var tbar_queue = new Ext.Toolbar({
@@ -284,7 +280,7 @@
             '->', button_queue_refresh
         ]
     });
-    var grouping = 'sem_bl';
+    var grouping = 'key';
     var gview = new Ext.grid.GroupingView({
         forceFit: true,
         enableRowBody: true,
@@ -320,12 +316,11 @@
         selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
         loadMask:'true',
         columns: [
-            { header: _('Semaphore'), width: 200, hidden: true, dataIndex: 'sem', sortable: false, menuDisabled: true },    
-            { header: _('SemaphoreBL'), width: 200, dataIndex: 'sem_bl', sortable: false, menuDisabled: true }, 
-            { header: _('Baseline'), width: 100, hidden: true, dataIndex: 'bl', sortable: false, menuDisabled: true },  
+            { header: _('Semaphore'), width: 200, hidden: true, dataIndex: 'key', sortable: false, menuDisabled: true },    
             { width: 30, dataIndex: 'status', sortable: false, renderer: render_status, menuDisabled: true},
             { header: _('Who'), width: 200, dataIndex: 'who', sortable: false , menuDisabled: true},    
             { header: _('Process'), width: 60, dataIndex: 'pid', sortable: false , menuDisabled: true}, 
+            { header: _('Host'), width: 60, dataIndex: 'hostname', sortable: false , menuDisabled: true}, 
             { header: _('Status Text'), width: 100, dataIndex: 'status', hidden: true, sortable: false , menuDisabled: true},   
             { header: _('Requested On'), width: 100, dataIndex: 'ts_request', sortable: false , menuDisabled: true},    
             { header: _('Granted On'), width: 100, dataIndex: 'ts_grant', sortable: false , menuDisabled: true},    

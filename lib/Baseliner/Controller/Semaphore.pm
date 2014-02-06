@@ -38,13 +38,15 @@ sub change_status : Local {
     my ( $self, $c ) = @_;
     my $params = $c->req->params;
     try {
-        my $id = $params->{id};
+        my $id = $params->{id} or _throw 'Missing id';
         my $status = $params->{status} or _throw 'Missing status parameter';
-        my $q   = $c->model('Baseliner::BaliSemQueue')->find( $id );
-        my $sem = $q->sem;
-        my $who = $q->who || $q->caller;
-        $q->status( $status );
-        $q->update;
+        my $from_status = { granted=>'waiting', cancelled=>'waiting' };
+        my $q = mdb->sem_queue->find_one({ _id=>mdb->oid($id), status=>mdb->in($from_status->{$status}) });
+        _fail _loc 'Semaphore not found or status changed from %1', $from_status->{$status} unless $q;
+        my $sem = $q->{key};
+        my $who = $q->{who} || $q->{caller};
+        $q->{status} = $status;
+        mdb->sem_queue->save( $q );
         $c->stash->{json} = { message=>_loc("Granted semaphore %1 to %2", $sem, $who) };
     } catch {
         $c->stash->{json} = { message=>shift };
@@ -62,24 +64,25 @@ sub sems : Local {
     my $p = $c->request->parameters;
     my ($start, $limit, $query, $dir, $sort ) = @{$p}{qw/start limit query dir sort/};
     my $cnt;
-    $sort||='sem';
+    $sort||='key';
+    $dir = uc $dir eq 'DESC' ? -1 : 1;
     my $where = {};
-    $query and $where = query_sql_build( query=>$query, fields=>{
-        sem      =>'me.sem',
-        bl       =>'me.bl',
-    });
-    my @rows;
-    my $rs = $c->model('Baseliner::BaliSem')->search(
-        $where,
-        { order_by=>"$sort $dir" }
+    $query and $where = mdb->query_build(
+        query  => $query,
+        fields => {
+            key => 'key',
+        }
     );
-    #rs_hashref( $rs );
+    my @rows;
+    my $rs = mdb->sem->find( $where )->sort({ $sort => $dir });
     while( my $r = $rs->next ) {
-        push @rows, {
-            $r->get_columns, 
-            occupied => $r->occupied,
-            waiting  => $r->waiting,
-        } if( ($cnt++>=$start) && ( $limit ? scalar @rows < $limit : 1 ) );
+        if( ($cnt++>=$start) && ( $limit ? scalar @rows < $limit : 1 ) ) {
+            $r->{waiting} = mdb->sem_queue->find({ key=>$r->{key}, status=>'waiting' })->all;
+            $r->{busy} = mdb->sem_queue->find({ key=>$r->{key}, status=>'busy' })->all;
+            $r->{id} = '' . delete $r->{_id};
+            push @rows, $r;
+            
+        }
     }
     #@rows = sort { $a->{ $sort } cmp $b->{ $sort } } @rows if $sort;
     $c->stash->{json} = {
@@ -101,23 +104,20 @@ sub queue : Local {
     my $cnt;
     $sort||='id';
     my $where = {};
-    $query and $where = query_sql_build( query=>$query, fields=>{
-        sem      =>'me.sem',
-        bl       =>'me.bl',
-        who      =>'me.who',
-        pid      =>'me.pid',
-        status   =>'me.status',
+    $query and $where = mdb->query_build( query=>$query, fields=>{
+        key      =>'key',
+        who      =>'who',
+        pid      =>'pid',
+        status   =>'status',
     });
     my @rows;
-    my $rs = $c->model('Baseliner::BaliSemQueue')->search(
-        $where,
-        { order_by=>"sem, seq desc, id asc" }
-    );
-    rs_hashref( $rs );
+    my $rs = mdb->sem_queue->find( $where )->sort(Tie::IxHash->new( key=>1, seq=>-1, ts=>-1 ) );
+    $rs->skip( $start ) if length $start;
+    $rs->limit( $limit ) if length $limit;
     while( my $r = $rs->next ) {
         $r->{who} ||= $r->{caller};
-        $r->{sem_bl} = $r->{sem} . '-' . $r->{bl};
-        push @rows, $r if( ($cnt++>=$start) && ( $limit ? scalar @rows < $limit : 1 ) );
+        $r->{id} = '' . delete $r->{_id};
+        push @rows, $r;
     }
     #@rows = sort { $a->{ $sort } cmp $b->{ $sort } } @rows if $sort;
     $c->stash->{json} = {
@@ -133,8 +133,7 @@ Changes the slot size of a semaphore, up, down or by number.
 
 Parameters:
 
-    - bl
-    - sem
+    - key
 
     And one of the two:
 
@@ -146,20 +145,19 @@ sub change_slot  : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
     try { 
-        my $bl = $p->{bl} || '*';
-        my $sem = $c->model('Baseliner::BaliSem')->search({ sem=>$p->{sem}, bl=>$bl })->first; 
-        _throw _loc("Semaphore '%1' not found", $p->{sem} ) unless ref $sem;
+        my $sem = mdb->sem->find_one({ key=>$p->{key} });
+        _throw _loc("Semaphore '%1' not found", $p->{key} ) unless ref $sem;
         if( $p->{action} eq 'add' ) {
-            $sem->slots( $sem->slots + 1 );
+            $sem->{slots} = $sem->{slots} + 1;
         }
         elsif( $p->{action} eq 'del' ) {
-            $sem->slots( $sem->slots - 1 );
+            $sem->{slots} = $sem->{slots} - 1;
         }
         else {
-            $sem->slots( $p->{slots} ) if defined $p->{slots};
+            $sem->{slots} = $p->{slots} if defined $p->{slots};
         }
-        $sem->update;
-        $c->stash->{json} = { message=>_loc("Semaphore %1 slots changed to %2", $sem->sem, $sem->slots) };
+        mdb->sem->save( $sem );
+        $c->stash->{json} = { message=>_loc("Semaphore %1 slots changed to %2", $sem->{key}, $sem->{slots}) };
     } catch {
         $c->stash->{json} = { message=>shift };
     };
@@ -177,19 +175,19 @@ sub queue_move  : Local {
     my $p = $c->request->parameters;
     try { 
         my $id = $p->{id} or _throw _loc("Missing parameter id");
-        my $que = $c->model('Baseliner::BaliSemQueue')->find( $id );
+        my $que = mdb->sem_queue->find_one({ _id=>mdb->oid($id) });
         _throw _loc("Semaphore request '%1' not found", $id ) unless ref $que;
+        # TODO needs to be combined with a timestamp hires and ordered by ts + seq
         if( $p->{action} eq 'up' ) {
-            $que->seq( $que->seq + 1 );
+            $que->{seq} = $que->{seq} + 1;
         }
         elsif( $p->{action} eq 'down' ) {
-            $que->seq( $que->seq - 1 );
-        }
-        else {
+            $que->{seq} = $que->{seq} - 1;
+        } else {
             _throw _loc("Action %1 not found", $p->{action} );
         }
-        $que->update;
-        $c->stash->{json} = { message=>_loc("Semaphore %1 precedence changed to %2", $que->sem, $que->seq ) };
+        mdb->sem_queue->save( $que );
+        $c->stash->{json} = { message=>_loc("Semaphore %1 precedence changed to %2", $que->{key}, $que->{seq} ) };
     } catch {
         $c->stash->{json} = { message=>shift };
     };
@@ -199,7 +197,7 @@ sub queue_move  : Local {
 sub purge : Local {
     my ( $self, $c ) = @_;
     try {
-        Baseliner->model('Semaphores')->purge;
+        # Baseliner::Sem->purge_all;
         $c->stash->{json} = { message=>_loc("Requests purged") };
     } catch {
         $c->stash->{json} = { message=>shift };
@@ -213,80 +211,14 @@ sub activate : Local {
     try {
         defined $p->{id} or _throw _loc "Missing parameter id";
         defined $p->{active} or _throw _loc "Missing parameter active";
-        my $q = Baseliner->model('Baseliner::BaliSemQueue')->find( $p->{id} );
-        _throw _loc "Error: Semaphore is already busy." if $q->status !~ m/waiting|idle/;
-        $q->active( $p->{active} );
-        $q->update;
+        my $q = mdb->sem_queue->find_one({ _id=>mdb->oid($p->{id}) });
+        _throw _loc "Error: Semaphore is already busy." if $q->{status} !~ m/waiting|idle/;
+        $q->{active} = 0+$p->{active} ;
+        mdb->sem_queue->save( $q );
         my $msg = $p->{active} ? _loc('Semaphore request active') : _loc('Semaphore request inactive');
         $c->stash->{json} = { message=>$msg };
     } catch {
         $c->stash->{json} = { message=>shift };
-    };
-    $c->forward('View::JSON');
-}
-
-# Baseliner::Sem methods
-
-sub begin : Private {
-    my ($self,$c) = @_;
-    if( $c->req->path =~ /sem_/ ) {
-        $c->stash->{auth_skip} = 1;
-    }
-    $c->forward('/begin');
-}
-
-sub sem_lock : Local {
-    my($self, $c) = @_;
-    my $p = $c->request->parameters;
-    my $key = $p->{key};
-    require Baseliner::Sem;
-    $c->stash->{json} = try {
-        my $sem = Baseliner::Sem->new( key => $key );
-        _debug "Taking";
-        $sem->take;
-        _debug "Sleeping";
-        sleep 10;
-        _debug "Done";
-        { success=>\1, msg => _loc('Semaphore %1 locked', $key ) };
-    } catch {
-        my $err = shift;
-        _error $err;
-        { success=>\0, msg => $err };
-    };
-    $c->forward('View::JSON');
-}
-
-sub sem_del : Local {
-    my($self, $c) = @_;
-    my $p = $c->request->parameters;
-    my $key = $p->{key};
-    require Baseliner::Sem;
-    $c->stash->{json} = try {
-        my $sem = Baseliner::Sem->new( key => $key );
-        $sem->sem->remove;
-        { success=>\1, msg => _loc('Semaphore %1 removed', $key ) };
-    } catch {
-        my $err = shift;
-        _error $err;
-        { success=>\0, msg => $err };
-    };
-    $c->forward('View::JSON');
-}
-
-sub sem_slots : Local {
-    my($self, $c) = @_;
-    my $p = $c->request->parameters;
-    my $key = $p->{key};
-    my $slots = $p->{slots};
-    require Baseliner::Sem;
-    $c->stash->{json} = try {
-        my $sem = Baseliner::Sem->new( key => $key );
-        my $curr = $sem->slots( $slots );
-        { success=>\1, msg => _loc('Semaphore %1 slots changed to', $curr ) };
-    } catch {
-        my $err = shift;
-        _error $err;
-        { success=>\0, msg => $err };
     };
     $c->forward('View::JSON');
 }
