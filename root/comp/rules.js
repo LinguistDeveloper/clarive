@@ -294,7 +294,7 @@
         var note = new Baseliner.MonoTextArea({ title:_('Note'), value: attr.note || '' });
         var data_key = new Ext.form.TextField({ fieldLabel:_('Return Key'), name:'data_key', value: node.attributes.data_key || '' });
         var needs_rollback_mode = new Baseliner.ComboDouble({ 
-            fieldLabel: _('Needs Rollback?'), name:'needs_rollback_mode', value: data.needs_rollback_mode || 'nb_after', 
+            fieldLabel: _('Needs Rollback?'), name:'needs_rollback_mode', value: data.needs_rollback_mode || 'none', 
             data: [ ['nb_after',_('Rollback Needed After')], ['nb_before',_('Rollback Needed Before')], 
                     ['nb_always',_('Rollback Needed Always')], ['none',_('No Rollback Necessary')] ]
         });

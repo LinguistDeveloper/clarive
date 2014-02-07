@@ -42,6 +42,11 @@ sub run_local {
     my $stash = $c->stash;
     my $fail_on_error = $config->{fail_on_error} // 1;
     my $output_files = $config->{output_files};
+    
+    # rollback basics
+    my $task  = $stash->{current_task_name};
+    my $needs_rollback_mode = $config->{needs_rollback_mode} // 'none'; 
+    my $needs_rollback_key = $config->{needs_rollback_key} // $task;
 
     my ($user,$home,$path,$args,$stdin) = @{ $config }{qw/user home path args stdin/};
     my $environment = $config->{environment} // {};
@@ -58,6 +63,7 @@ sub run_local {
     }
     my @cmd = ($path, _array( $args ) );
     $job->logger->info( _loc('Running command: %1', join ' ', @cmd), \@cmd ); 
+    $stash->{needs_rollback}{ $needs_rollback_key } = 1 if $needs_rollback_mode eq 'nb_before';
     my ($out) = Capture::Tiny::tee_merged(sub{ 
         local %ENV = ( %ENV, %$environment );
         $ret = system @cmd ;
@@ -79,6 +85,7 @@ sub run_local {
         $self->check_output_errors($stash, ($fail_on_error ? 'fail' : 'error'),$log,$out,$config);
         $job->logger->info( _loc('Finished command %1' , join ' ', @cmd ), qq{RC: $rc\nRET: $ret\nOUTPUT: $out} ); 
     }
+    $stash->{needs_rollback}{ $needs_rollback_key } = 1 if $needs_rollback_mode eq 'nb_after'; # only if everything went alright
     return $r;
 }
 
@@ -108,6 +115,12 @@ sub run_remote {
     my @rets;
     my ($servers,$user,$home, $path,$args, $stdin, $output_error, $output_warn, $output_capture, $output_ok) = 
         @{ $config }{qw/server user home path args stdin output_error output_warn output_capture output_ok/};
+        
+    # rollback basics
+    my $task  = $stash->{current_task_name};
+    my $needs_rollback_mode = $config->{needs_rollback_mode} // 'none'; 
+    my $needs_rollback_key = $config->{needs_rollback_key} // $task;
+    
     $args ||= [];
     for my $server ( Util->_array_or_commas($servers)  ) {
         $server = ci->new( $server ) unless ref $server;
@@ -124,6 +137,7 @@ sub run_remote {
         }
         
         my $agent = $server->connect( user=>$user );
+        $stash->{needs_rollback}{ $needs_rollback_key } = 1 if $needs_rollback_mode eq 'nb_before';
         $agent->execute( { chdir=>$home }, $path_parsed, _array($args_parsed) );
         my $out = $agent->output;
         my $rc = $agent->rc;
@@ -143,6 +157,7 @@ sub run_remote {
                 $agent->tuple_str );
         }
         push @rets, { output=>$out, rc=>$rc, ret=>$ret };
+        $stash->{needs_rollback}{ $needs_rollback_key } = 1 if $needs_rollback_mode eq 'nb_after';  # after only one ok, needs rollback
     }
     return @rets > 1 ? \@rets : $rets[0];
 }

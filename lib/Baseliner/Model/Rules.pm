@@ -204,10 +204,16 @@ sub dsl_build {
         delete $attr->{events} ; # node cruft
         #_debug $attr;
         my $name = _strip_html( $attr->{text} );
+        my $name_id = Util->_name_to_id( $name );
+        my $data = $attr->{data} || {};
+        
         my $run_forward = _bool($attr->{run_forward},1);  # if !defined, default is true
         my $run_rollback = _bool($attr->{run_rollback},1); 
         my $error_trap = $attr->{error_trap} && $attr->{error_trap} eq 'trap';
+        my $needs_rollback_mode = $data->{needs_rollback_mode} // 'none'; 
+        my $needs_rollback_key  = $data->{needs_rollback_key} // $name_id;
         my $parallel_mode = length $attr->{parallel_mode} && $attr->{parallel_mode} ne 'none' ? $attr->{parallel_mode} : '';
+
         if( my $semaphore_key = $attr->{semaphore_key} ) {
             # consider using a hash: $stash->{_sem}{ $semaphore_key } = ...
             push @dsl, sprintf( 'local $stash->{_sem} = $self->semaphore->new( key=>parse_vars(q{%s},$stash), who=>parse_vars(q{%s}, $stash) )->take;', $semaphore_key, $name ) . "\n"; 
@@ -215,7 +221,6 @@ sub dsl_build {
         my $timeout = $attr->{timeout};
         do{ _debug _loc("*Skipped* task %1 in run forward", $name); next; } if !$is_rollback && !$run_forward;
         do{ _debug _loc("*Skipped* task %1 in run rollback", $name); next; } if $is_rollback && !$run_rollback;
-        my $data = $attr->{data} || {};
         my ($data_key) = $attr->{data_key} =~ /^\s*(\S+)\s*$/;
         my $closure = $attr->{closure};
         push @dsl, sprintf( '# task: %s', $name ) . "\n"; 
@@ -229,6 +234,7 @@ sub dsl_build {
         }
         push @dsl, sprintf( '_debug(q{=====| Current Rule Task: %s} );', $name)."\n" if $p{verbose}; 
         if( length $attr->{key} ) {
+            push @dsl, sprintf('$stash->{needs_rollback}{q{%s}} = 1;', $needs_rollback_key) if $needs_rollback_mode eq 'nb_always';
             push @dsl, sprintf('parallel_run(q{%s},q{%s},$stash,sub{', $name, $parallel_mode) if $parallel_mode;
             push @dsl, sprintf( 'error_trap($stash, sub {') if $error_trap; 
             my $key = $attr->{key};
