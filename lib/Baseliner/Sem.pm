@@ -33,6 +33,7 @@ Possible statuses for the queue:
 package Baseliner::Sem;
 use Baseliner::Mouse;
 use Baseliner::Utils;
+use Baseliner::Sugar;
 
 has key      => qw(is rw isa Str required 1);
 has sem      => qw(is rw isa Any);
@@ -90,12 +91,13 @@ sub enqueue {
 sub take { 
     my ($self, %p) =@_;
     my $id_queue = $self->enqueue;
+    my $freq = config_get( 'config.sem.server.wait_for' )->{wait_for};
     my $que;
     # wait until the daemon grants me out
     while( 1 ) {
         # granted?
         last if $que = mdb->sem_queue->find_one({ _id=>$id_queue, status=>{ '$ne'=>'waiting' } });
-        sleep 1;
+        Time::HiRes::usleep( $freq );
     }
     my $status = $que->{status};
     if( $status eq 'granted' ) {
@@ -120,6 +122,12 @@ sub release {
 sub purge { 
     my ($self, %p) =@_;
     mdb->sem_queue->remove({ key=>$self->key }, { multiple=>1 });
+}
+
+sub DEMOLISH {
+    my ($self)=@_;
+    # release me
+    $self->release;
 }
 
 

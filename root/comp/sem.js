@@ -157,7 +157,10 @@
 
     var render_sem = function(value,metadata,rec,rowIndex,colIndex,store) {
         var key = value;
-        return "<div style='font-weight:bold; font-size: 12px;'>" + key + "</div><br />" ;
+        var is_infinite = rec.data.slots == -1;
+        var is_stopped = rec.data.slots == 0;
+        var strike = is_stopped ? 'color:#932;' : is_infinite ? 'color: #293' : ''; 
+        return "<div style='font-weight:bold; font-size: 12px; "+strike+"'>" + key + "</div><br />" ;
     };
 
     var render_sem_data = function(value,metadata,rec,rowIndex,colIndex,store) {
@@ -167,7 +170,7 @@
         var slots = rec.data.slots;
         var up = '<a href="#" onclick="javascript:Baseliner.sem_mod(\'add\', \''+ rec.data.key +'\', \''+rec.data.bl+'\' )">'
                 + '<img src="/static/images/icons/arrow-up.gif"></img></a>';
-        var down = slots > 0 
+        var down = slots > -1 
             ? '<a href="#" onclick="javascript:Baseliner.sem_mod(\'del\', \''+ rec.data.key +'\', \''+rec.data.bl+'\')">'
                 + '<img src="/static/images/icons/arrow-down.gif"></img></a>'
             : '';
@@ -244,12 +247,13 @@
                         var slots = rec.data.slots;
                         var occ = rec.data.busy || 0;
                         var waiting = rec.data.waiting || 0;
+                        var is_infinite = rec.data.slots == -1;
                         p.body = String.format( '<div style="margin: 0 0 0 32;"><table><tr>'
                             + '<td style="width: 80px; background-color: #89cd79; padding: 2 4 2 4;"><center>{3}: {0}</td>'
                             + '<td style="width: 80px; background-color: #e7dc65; padding: 2 4 2 4;"><center>{4}: {1}</td>'
                             + '<td style="width: 80px; background-color: #ed9e9e; padding: 2 4 2 4;"><center>{5}: {2}</td>'
                             + '</tr></table></div>'
-                            , slots, occ, waiting, _('slots'), _('busy'), _('waiting') );
+                            , (is_infinite ? '\u221E' : slots), occ, waiting, _('slots'), _('busy'), _('waiting') );
                         var css = '';
                         if( rec.data.active == 0  ) 
                             css = index % 2 > 0 ? 'level-row debug-odd' : 'level-row debug-even' ;

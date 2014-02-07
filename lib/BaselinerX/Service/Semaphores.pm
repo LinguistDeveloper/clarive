@@ -11,7 +11,7 @@ with 'Baseliner::Role::Service';
 register 'config.sem.server' => {
     metadata => [
         { id=>'frequency', default=>1 },
-        { id=>'wait_for',  default=>5 },
+        { id=>'wait_for',  default=>.5 },
         { id=>'host',  default=>'localhost' },
         { id=>'auto_purge',  default=>0 },
         { id=>'iterations', default=>100},
@@ -39,15 +39,15 @@ sub run_once {
 
     # cleanup killed rows
     $self->del_roadkill if $config->{auto_purge};
-    # process queue
-    $self->process_queue( %$config );
     # check for dead processes
     $self->check_for_roadkill;
+    # process queue
+    $self->process_queue( %$config );
 }
 
 sub run_daemon {
     my ($self, $c, $config) = @_;
-    my $freq = $config->{frequency} || 10;
+    my $freq = $config->{frequency} || 1;
     my $iterations = $config->{iterations} || 1000;
     
     _log "Making sure the semaphore queue is Capped...";
@@ -69,7 +69,7 @@ sub run_daemon {
         $iteration++; 
         $pending = mdb->sem_queue->find({ status => 'waiting', hostname=>$hostname })->count;
     } while ( ( $iteration <=  $iterations ) || $pending gt 0 );
-    _debug _now." $$ SEM ITERATION FINISHED " . $iteration . ' le ' . $iterations . ' or ' . $pending . " gt 0\n";
+    _debug " - semaphore iteration finished " . $iteration . ' le ' . $iterations . ' or ' . $pending . " gt 0\n";
     _log "Sem daemon finished";
 }
 
@@ -84,16 +84,18 @@ sub process_queue {
     my @sems = mdb->sem->find->all;
     for my $sem ( @sems ) {
         my $slots = $sem->{slots} // 1;
-        next if $slots < 1 ;
+        next if $slots == 0;
         my $key = $sem->{key};
         my $busy = mdb->sem_queue->find({ key=>$key, status=>'busy' })->all;
-        my $free_slots = $slots - $busy;
+        my $free_slots = $slots==-1 ? 1 : $slots - $busy;  # -1 = infinity
         next if $free_slots < 1;
 
         my @reqs = 
             mdb->sem_queue
             ->find({ key=>$key, status => 'waiting', active=>1, hostname=>Util->my_hostname })
             ->sort( Tie::IxHash->new( seq=>1, ts=>1 ) )->all; 
+            
+        $free_slots = @reqs if $slots == -1;  # infinity
         
         for( 1..$free_slots ) {
             my $req = shift @reqs;
