@@ -93,10 +93,15 @@ sub take {
     my $id_queue = $self->enqueue;
     my $freq = config_get( 'config.sem.server.wait_for' )->{wait_for};
     my $que;
+    my $logged = 0;
     # wait until the daemon grants me out
     while( 1 ) {
         # granted?
         last if $que = mdb->sem_queue->find_one({ _id=>$id_queue, status=>{ '$ne'=>'waiting' } });
+        if( !$logged ) {
+            _warn( _log 'Waiting for semaphore %1', $self->key );
+            $logged = 1;
+        }
         Time::HiRes::usleep( $freq );
     }
     my $status = $que->{status};
