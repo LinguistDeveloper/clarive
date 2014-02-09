@@ -28,6 +28,7 @@ sub report_list {
     
     my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $p->{username}) );  # XXX should be by category, same id fields may step on each other
     my $mine = $self->my_searches({ username=>$p->{username}, meta=>\%meta });
+    my $reports_available = $self->reports_available({ username=>$p->{username}, meta=>\%meta });
     my $public = $self->public_searches({ meta=>\%meta, username=>$p->{username} });
 	
     my @trees = (
@@ -57,8 +58,80 @@ sub report_list {
                 data => [],
                 expanded => \1,
             },
+            {
+                text => _loc('Reports Available'),
+                icon => '/static/images/icons/table.png',
+                mid => -1,
+                draggable => \0,
+                children => $reports_available,
+                url => '/ci/report/reports_available',
+                data => [],
+                expanded => \1,
+            },
+            # {
+            #     text => _loc('Custom Reports'),
+            #     icon => '/static/images/icons/table_edit.png',
+            #     mid => -1,
+            #     draggable => \0,
+            #     #children => $customized,
+            #     url => '/ci/report/reports_available',
+            #     data => [],
+            #     expanded => \1,
+            # },
     );
     return \@trees; 
+}
+
+sub reports_available {
+    my ($self,$p) = @_;
+    my $userci = Baseliner->user_ci( $p->{username} );
+    my $username = $p->{username};
+    my @tree;
+    for my $key ( Baseliner->registry->starts_with( 'report.' ) ) {
+        my $reg = Baseliner->registry->get( $key );
+        # check security 
+        if( my $han = $reg->security_handler ) {
+            my $can = $han->($reg, $username);
+            next unless $can; 
+        }
+        my $name = $reg->name // $key;
+        my $n = {
+            key => $key,
+            text => $name,
+            icon => $reg->icon,
+            leaf => \1,
+            # menu => [
+            #     {
+            #         text   => _loc('Customize') . '...',
+            #         icon   => '/static/images/icons/table_edit.png',                        
+            #         eval   => { handler => 'Baseliner.custom_report' }
+            #     },
+            # ], 
+            data    => {
+                click   => {
+                    icon    => '/static/images/icons/topic.png',
+                    url     => '/comp/topic/topic_report.js',
+                    type    => 'eval',
+                    title   => $name,
+                },
+                id_report      => $key,
+                report_name    => $name,
+                hide_tree      => \1,
+                custom_form    => $reg->form,    
+            }
+        };
+        push @tree, $n;
+    }
+    @tree = sort { $a->{text} cmp $b->{text} }  @tree;
+    return \@tree;
+}
+
+sub report_meta {
+    my ($self,$p) = @_;
+    my $key = $p->{key};
+    my $config = $p->{config} // {};
+    my $report = Baseliner->registry->get( $key );
+    return $report->meta_handler->( $config );
 }
 
 sub my_searches {

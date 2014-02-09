@@ -474,6 +474,15 @@ msgstr "Informe"
 msgid "Reports"
 msgstr "Informes"
 
+msgid "Reports Available"
+msgstr "Informes Disponibles"
+
+msgid "Custom Reports"
+msgstr "Informes Customizados"
+
+msgid "Customize"
+msgstr "Customizar"
+
 msgid "Project"
 msgstr "Proyecto"
 

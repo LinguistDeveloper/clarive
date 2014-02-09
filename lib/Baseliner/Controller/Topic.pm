@@ -102,7 +102,12 @@ sub list : Local {
     my $p = $c->request->parameters;
     $p->{username} = $c->username;
 
-    if( $p->{id_report} ) {
+    if( $p->{id_report} =~ /^report\./ ) {
+        my $report = Baseliner->registry->get( $p->{id_report} );
+        my $config = {};   #  TODO get config from custom forms
+        my $rep_data = $report->data_handler->($report,$config,$p);
+        $c->stash->{json} = { data=>$rep_data->{rows}, totalCount=>$rep_data->{total} };
+    } elsif( $p->{id_report} ) {
         my $filter = $p->{filter} ? _decode_json($p->{filter}) : undef;
         my $start = $p->{start} // 0;
         
@@ -111,8 +116,6 @@ sub list : Local {
             #$f->{field} = join('_',@temp[0..$#temp-1]);
             $f->{category} = $temp[$#temp];
         }
-        
-        #_log ">>>>>>>>>>>>>>>Filtro XXXXXXXXXXXXXXXXXXX: " . _dump $filter;
         
         my ($cnt, @rows ) = ci->new( $p->{id_report} )->run( start=>$start, username=>$c->username, limit=>$p->{limit}, query=>$p->{topic_list}, filter=>$filter );
         $c->stash->{json} = { data=>\@rows, totalCount=>$cnt };
