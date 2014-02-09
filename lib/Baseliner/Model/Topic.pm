@@ -247,6 +247,30 @@ register 'registor.action.topic_category_fields' => {
     }
 };
 
+sub build_project_security {
+    my ($self,$where,$username,$is_root) = @_;
+    $is_root //= Baseliner->model('Permissions')->is_root( $username );
+    if( $username && ! $is_root ){
+        my @proj_coll_roles = Baseliner->model('Permissions')->user_projects_ids_with_collection(username=>$username);
+        my @ors;
+        for my $proj_coll_ids ( @proj_coll_roles ) {
+            my $wh = {};
+            my $count = scalar keys %{ $proj_coll_ids || {} };
+            while ( my ( $k, $v ) = each %{ $proj_coll_ids || {} } ) {
+                if ( $k eq 'project' && $count gt 1) {
+                    $wh->{"_project_security.$k"} = {'$in' => [ undef, keys %{$v || {}} ]};
+                } else {
+                    $wh->{"_project_security.$k"} = {'$in' => [ keys %{$v || {}} ]};
+                }
+            } ## end while ( my ( $k, $v ) = each...)
+            push @ors, $wh;
+        }
+        my $where_undef = { '_project_security' => undef };
+        push @ors, $where_undef;
+        $where->{'$or'} = \@ors;
+    }
+}
+
 sub build_field_query {
     my ($self,$query,$where,$username) = @_;
     my %all_fields = map { $_->{id_field} => undef } _array($self->get_meta(undef,undef,$username));
@@ -309,26 +333,8 @@ sub topics_for_user {
         $order_by = $self->build_sort($sort,$dir);
     }
 
-    # project security - grouped by 
-    if( $username && ! $perm->is_root( $username )){
-        my @proj_coll_roles = Baseliner->model('Permissions')->user_projects_ids_with_collection(username=>$username);
-        my @ors;
-        for my $proj_coll_ids ( @proj_coll_roles ) {
-            my $wh = {};
-            my $count = scalar keys %{ $proj_coll_ids || {} };
-            while ( my ( $k, $v ) = each %{ $proj_coll_ids || {} } ) {
-                if ( $k eq 'project' && $count gt 1) {
-                    $wh->{"_project_security.$k"} = {'$in' => [ undef, keys %{$v || {}} ]};
-                } else {
-                    $wh->{"_project_security.$k"} = {'$in' => [ keys %{$v || {}} ]};
-                }
-            } ## end while ( my ( $k, $v ) = each...)
-            push @ors, $wh;
-        }
-        my $where_undef = { '_project_security' => undef };
-        push @ors, $where_undef;
-        $where->{'$or'} = \@ors;
-    }
+    # project security - grouped by - into $or 
+    $self->build_project_security( $where, $username, $is_root );
     
     if( $topic_list ) {
         $where->{topic_mid} = mdb->in($topic_list);
