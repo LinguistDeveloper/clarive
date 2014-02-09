@@ -14,6 +14,8 @@
     var query_id = '<% $c->stash->{query_id} %>';
     var id_project = '<% $c->stash->{id_project} %>';
     var id_report = params.id_report;
+    var custom_form_url = params.custom_form;
+    var custom_form_data = params.custom_form_data || {};
     var report_rows = params.report_rows;
     var report_name = params.report_name;
 	var fields = params.fields;
@@ -78,6 +80,10 @@
    
     var loading;
     store_topics.on('beforeload',function(){
+        if( custom_form_url && custom_form.is_loaded ) {
+            var fvalues = custom_form.getValues();
+            store_topics.baseParams = Ext.apply(store_topics.baseParams, fvalues);
+        }
         //loading = new Ext.LoadMask(panel.el, {msg:"Please wait..."});
         //loading = Ext.Msg.wait(_('Loading'), _('Loading'), { modal: false } );
         /*
@@ -520,6 +526,50 @@
             kanban.fullscreen();
         }
     }); 
+    
+    var btn_custom = new Ext.Button({
+        icon: '/static/images/icons/table_edit.png',
+        iconCls: 'x-btn-icon',
+        enableToggle: true, 
+        pressed: false,
+        text: _('Customize'),
+        hidden: custom_form_url ? false : true,
+        handler: function(){
+            if( !custom_form.is_loaded ) {
+                Baseliner.ajax_json( custom_form_url, custom_form_data, function(comp){
+                    custom_form.is_loaded = true;
+                    custom_form.removeAll();
+                    custom_form.add( comp );
+                    custom_form.doLayout();
+                    panel.doLayout();
+                });
+            }
+            if( this.pressed ) { 
+                custom_panel.show(); 
+                custom_panel.expand();
+            } else {
+                custom_panel.hide(); 
+                custom_panel.collapse();
+            }
+            panel.doLayout();
+        }
+    });
+    
+    var custom_form = new Baseliner.FormPanel({ 
+        frame: false, forceFit: true, defaults: { msgTarget: 'under', anchor:'100%' },
+        hidden: false,
+        labelWidth: 150,
+        labelAlign: 'right',
+        autoScroll: true,
+        bodyStyle: { padding: '4px', "background-color": '#eee' }
+    });
+    var custom_panel = new Ext.Panel({ 
+        region: 'south', layout:'fit',
+        hidden: true,
+        height: 200,
+        items: custom_form
+    });
+    
     
     var render_id = function(value,metadata,rec,rowIndex,colIndex,store) {
         return "<div style='font-weight:bold; font-size: 14px; color: #808080'> #" + value + "</div>" ;
@@ -1134,6 +1184,7 @@
 	
 	
     var grid_topics = new Ext.grid.GridPanel({
+        region: 'center',
         //title: _('Topics'),
         //header: false,
 		plugins: [filters],		
@@ -1160,6 +1211,7 @@
 %if ( !$c->stash->{typeApplication} ){              
                 btn_add,
                 btn_edit,
+                btn_custom,
                 // btn_delete,
 %}              
                 //btn_labels
@@ -1747,13 +1799,8 @@
         title: _('Topics'),
         //tab_icon: '/static/images/icons/topic.png',
         items : [
-            {
-                region:'center',
-                collapsible: false,
-                items: [
-                    grid_topics
-                ]
-            },   
+            grid_topics,
+            custom_panel,
             tree_filters  // show only if not report
         ]
     });
