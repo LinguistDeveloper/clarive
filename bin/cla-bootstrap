@@ -262,7 +262,7 @@ Calendar::Slots
 Capture::Tiny
 Carp::Always
 Carp::REPL
-Carp::Tidy
+#Carp::Tidy
 Catalyst::Action::RenderView
 Catalyst::Authentication::Store::LDAP
 Catalyst::Component::ACCEPT_CONTEXT
