@@ -287,17 +287,18 @@ sub topics_for_user {
     }
     
     my ($select,$order_by, $as, $group_by);
-    if( $sort && $sort eq 'category_status_name' ) {
-        $order_by = { 'category_status.seq' => $dir };
+    if( !$sort ) {
+        $order_by = { 'modified_on' => -1 };
     } else {
-        $sort //= '';
-        # sort fixups 
-        $sort eq 'topic_name' and $sort = ''; # fake column, use mid instead
-        $sort eq 'topic_mid' and $sort = '';
-        if( $sort ) {
-            $order_by = { $sort => $dir };
+        if( $sort eq 'topic_name' ) {
+            #$order_by = Tie::IxHash->new( 'category.name'=>$dir, mid=>$dir ); 
+            $order_by = Tie::IxHash->new( created_on=>$dir, mid=>$dir );  # TODO "m" is the numeric mid, should change eventually
+        } elsif( $sort eq 'category_status_name' ) {
+            $order_by = { 'category_status.seq' => $dir };
+        } elsif( $sort eq 'topic_mid' ) {
+            $order_by = { created_on => $dir };
         } else {
-            $order_by = { 'modified_on' => -1 };
+            $order_by = { $sort => $dir };
         }
     }
 
@@ -1672,7 +1673,7 @@ sub save_doc {
     }
     
     # create/update mongo doc
-    my $write_doc = { %$old_doc, %$row, %$doc };
+    my $write_doc = { %$old_doc, %$row, %$doc, m=>0+$doc->{mid} };
 
     # save project collection security
     $self->update_project_security($write_doc);   # we need to send old data merged, in case the user has sent an incomplete topic (due to field security)

@@ -59,7 +59,7 @@
     }
     var store_config = {
         baseParams: base_params,
-        remoteSort: false,
+        remoteSort: true,
         listeners: {
             'beforeload': function( obj, opt ) {
                 if( opt !== undefined && opt.params !== undefined )
@@ -955,7 +955,7 @@
         return Baseliner.topic_name({
             link: true,
             parent_id: grid_topics.id,
-            mid: d.topic_mid, 
+            mid: d.topic_mid || d.mid, 
             mini: btn_mini.pressed,
             size: btn_mini.pressed ? '9' : '11',
             category_name: (topic_name_too_narrow ? '' : d.category_name),
@@ -1059,7 +1059,7 @@
         progress : { header: _('%'), dataIndex: 'progress', width: 25, sortable: true, renderer: render_progress },
         numcomment : { header: _('More info'), report_header: _('Comments'), sortable: true, dataIndex: 'numcomment', width: 45, renderer: render_actions },         
         projects : { header: _('Projects'), dataIndex: 'projects', sortable: true, width: 60, renderer: render_project },
-        topic_mid : { header: _('ID'), hidden: true, sortable: true, dataIndex: 'topic_mid', renderer: render_default},    
+        topic_mid : { header: _('MID'), hidden: true, sortable: true, dataIndex: 'topic_mid', renderer: render_default},    
         moniker : { header: _('Moniker'), hidden: true, sortable: true, dataIndex: 'moniker', renderer: render_default},    
         cis_out : { header: _('CIs Referenced'), hidden: true, sortable: false, dataIndex: 'cis_out', renderer: render_default},    
         cis_in : { header: _('CIs Referenced In'), hidden: true, sortable: false, dataIndex: 'cis_in', renderer: render_default},    

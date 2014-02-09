@@ -245,6 +245,9 @@ sub index_all {
     my $idx = {
         topic => [
             [{ mid=>1 },{ unique=>1 }],
+            [{ created_on=>1 }],
+            [{ created_on=>1 },{ mid=>1 }],
+            [{ created_on=>1 },{ m=>1 }],
             [{'$**'=> "text"}],
         ],
         job_log => [
