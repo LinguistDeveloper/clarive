@@ -247,6 +247,12 @@ register 'registor.action.topic_category_fields' => {
     }
 };
 
+sub build_field_query {
+    my ($self,$query,$where,$username) = @_;
+    my %all_fields = map { $_->{id_field} => undef } _array($self->get_meta(undef,undef,$username));
+    mdb->query_build( where=>$where, query=>$query, fields=>['category.name', 'category_status.name', keys %all_fields] ); 
+}
+
 # this is the main topic grid 
 # MONGO:
 #
@@ -259,18 +265,25 @@ sub topics_for_user {
     $dir = !length $dir ? -1 : uc($dir) eq 'DESC' ? -1 : 1;
 
     my $where = {};
-    my $query_limit = 300;
     my $perm = Baseliner->model('Permissions');
     my $username = $p->{username};
     my $is_root = $perm->is_root( $username );
     my $topic_list = $p->{topic_list};
-    my ( @mids_in, @mids_nin );
+    my ( @mids_in, @mids_nin, @mids_or );
 
     if( length($query) ) {
         #$query =~ s{(\w+)\*}{topic "$1"}g;  # apparently "<str>" does a partial, but needs something else, so we put the collection name "job"
-        my @mids_query = map { $_->{obj}{mid} } 
-            _array( mdb->topic->search( query=>$query, limit=>1000, project=>{mid=>1})->{results} );
-        push @mids_in, @mids_query > 0 ? @mids_query : -1;
+        my @mids_query;
+        if( $query !~ /\+|\-|\"/ ) {  # special queries handled by query_build later
+            @mids_query = map { $_->{obj}{mid} } 
+                _array( mdb->topic->search( query=>$query, limit=>1000, project=>{mid=>1})->{results} );
+        }
+        
+        if( @mids_query == 0 ) {
+            $self->build_field_query( $query, $where, $username );
+        } else {
+            push @mids_in, @mids_query > 0 ? @mids_query : -1;
+        }
     }
     
     my ($select,$order_by, $as, $group_by);
@@ -460,6 +473,10 @@ sub topics_for_user {
         $w->{'$in'} = \@mids_in if @mids_in;
         $w->{'$nin'} = \@mids_nin if @mids_nin;
         $where->{mid} = $w;
+    }
+    
+    if( @mids_or ) {
+        $where->{'$or'} = \@mids_or;
     }
     
 _debug( $where );
