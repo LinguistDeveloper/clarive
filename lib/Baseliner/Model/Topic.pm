@@ -253,6 +253,22 @@ sub build_field_query {
     mdb->query_build( where=>$where, query=>$query, fields=>['category.name', 'category_status.name', keys %all_fields] ); 
 }
 
+sub build_sort {
+    my ($self,$sort,$dir) =@_;
+    my $order_by;
+    if( $sort eq 'topic_name' ) {
+        #$order_by = Tie::IxHash->new( 'category.name'=>$dir, mid=>$dir ); 
+        $order_by = Tie::IxHash->new( created_on=>$dir, mid=>$dir );  # TODO "m" is the numeric mid, should change eventually
+    } elsif( $sort eq 'category_status_name' ) {
+        $order_by = { 'category_status.seq' => $dir };
+    } elsif( $sort eq 'topic_mid' ) {
+        $order_by = { created_on => $dir };
+    } else {
+        $order_by = { $sort => $dir };
+    }
+    return $order_by;
+}
+
 # this is the main topic grid 
 # MONGO:
 #
@@ -290,16 +306,7 @@ sub topics_for_user {
     if( !$sort ) {
         $order_by = { 'modified_on' => -1 };
     } else {
-        if( $sort eq 'topic_name' ) {
-            #$order_by = Tie::IxHash->new( 'category.name'=>$dir, mid=>$dir ); 
-            $order_by = Tie::IxHash->new( created_on=>$dir, mid=>$dir );  # TODO "m" is the numeric mid, should change eventually
-        } elsif( $sort eq 'category_status_name' ) {
-            $order_by = { 'category_status.seq' => $dir };
-        } elsif( $sort eq 'topic_mid' ) {
-            $order_by = { created_on => $dir };
-        } else {
-            $order_by = { $sort => $dir };
-        }
+        $order_by = $self->build_sort($sort,$dir);
     }
 
     # project security - grouped by 
