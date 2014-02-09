@@ -2167,7 +2167,7 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
         }
         return true;
     },
-    click_handler: function(item){
+    click_handler : function(item){
         var n = item.node;
         var c = n.attributes.data.click;
         var params = n.attributes.data;
@@ -2176,7 +2176,6 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
             params.id_project = n.parentNode.attributes.data.id_project;
         }
         if( params.tab_icon == undefined ) params.tab_icon = c.icon;
-
         if( c.type == 'comp' ) {
             if(n.attributes.topic_name) {
                 var topic = n.attributes.topic_name;
@@ -2192,6 +2191,9 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
             
         } else if( c.type == 'html' ) {
             Baseliner.add_tab( c.url, _(c.title), params );
+        } else if( c.type == 'eval' ) {
+            Baseliner.ajax_json( c.url, params, function(res){
+            });
         } else if( c.type == 'iframe' ) {
             Baseliner.add_iframe( c.url, _(c.title), params );
         } else {
