@@ -18,14 +18,14 @@
     var custom_form_data = params.custom_form_data || {};
     var report_rows = params.report_rows;
     var report_name = params.report_name;
-	var fields = params.fields;
-	 
-	//if(params.data_report){
-	//	report_rows = params.data_report.report_rows;
-	//	report_name = params.data_report.report_name;
-	//	fields = params.data_report.fields;
-	//}
-	
+    var fields = params.fields;
+     
+    //if(params.data_report){
+    //  report_rows = params.data_report.report_rows;
+    //  report_name = params.data_report.report_name;
+    //  fields = params.data_report.fields;
+    //}
+    
     var mini_mode = false;
     if( report_rows ) {
         ps_maxi=report_rows;
@@ -69,7 +69,7 @@
     };
     if( fields ) {
         store_config.add_fields = fields.ids.map(function(r){ return { name: r } });
-		//console.dir(fields);
+        //console.dir(fields);
         //alert( fields.ids );
     }
 
@@ -272,7 +272,6 @@
         var win;
         
         var render_category = function(value,metadata,rec,rowIndex,colIndex,store){
-			
             var color = rec.data.color;
             var ret = '<div id="boot"><span class="label" style="float:left;padding:2px 8px 2px 8px;background: '+ color + '">' + value + '</span></div>';
             return ret;
@@ -603,29 +602,29 @@
            */}.tmpl();
 
     var render_title = function(value,metadata,rec,rowIndex,colIndex,store) {
-		if ( !rec.json[this.dataIndex] ) {
-			var str = this.dataIndex;
-			var res = str.replace('_' +  this.alias,"");
-			value = rec.json[res];
-		};		
-		
-		var mid = rec.data.topic_mid;
+        if ( !rec.json[this.dataIndex] ) {
+            var str = this.dataIndex;
+            var res = str.replace('_' +  this.alias,"");
+            value = rec.json[res];
+        };      
+        
+        var mid = rec.data.topic_mid;
         var category_name = rec.data.category_name;
         var category_color = rec.data.category_color;
-		var date_modified_on = rec.data.modified_on.dateFormat('M j, Y, g:i a');
-		var modified_by = rec.data.modified_by;
-		
-		//#######################################Ñapa
-		if ( rec.json['mid_' + this.alias] ){
-			mid = rec.json['mid_' + this.alias];
-			category_name = rec.json['category_name_' + this.alias];
-			category_color = rec.json['category_color_' + this.alias];
-			var modified_on_to_date = new Date(rec.json['modified_on_' + this.alias]);
-			date_modified_on = modified_on_to_date.dateFormat('M j, Y, g:i a');
-			modified_by = rec.json['modified_by_' + this.alias];
-		}
-		//#######################################
-		
+        var date_modified_on = rec.data.modified_on.dateFormat('M j, Y, g:i a');
+        var modified_by = rec.data.modified_by;
+        
+        //#######################################Ñapa
+        if ( rec.json['mid_' + this.alias] ){
+            mid = rec.json['mid_' + this.alias];
+            category_name = rec.json['category_name_' + this.alias];
+            category_color = rec.json['category_color_' + this.alias];
+            var modified_on_to_date = new Date(rec.json['modified_on_' + this.alias]);
+            date_modified_on = modified_on_to_date.dateFormat('M j, Y, g:i a');
+            modified_by = rec.json['modified_by_' + this.alias];
+        }
+        //#######################################
+        
         var tag_color_html;
         tag_color_html = '';
         var strike = ( rec.data.is_closed ? 'text-decoration: line-through' : '' );
@@ -659,9 +658,9 @@
                         strike: strike,
                         modified_on: date_modified_on, 
                         who: _('by %1', modified_by), 
-						mid: mid,
-						category_name: category_name,
-						category_color: category_color,
+                        mid: mid,
+                        category_name: category_name,
+                        category_color: category_color,
                         id: grid_topics.id, 
                         font_weight: font_weight, 
                         folders: folders, 
@@ -672,7 +671,7 @@
                         strike: strike,
                         modified_on: date_modified_on, 
                         who: _('by %1', modified_by), 
-						mid: mid,
+                        mid: mid,
                         category_name: category_name, 
                         category_color: category_color, 
                         id: grid_topics.id, 
@@ -701,12 +700,12 @@
     var render_ci = function(value,metadata,rec,rowIndex,colIndex,store) {
         //if( !value ) return '';
         var arr=[];
-		
-		if ( !rec.json[this.dataIndex] ) {
-			var str = this.dataIndex;
-			var res = str.replace('_' +  this.alias,"");
-			value = rec.json[res];
-		};		
+        
+        if ( !rec.json[this.dataIndex] ) {
+            var str = this.dataIndex;
+            var res = str.replace('_' +  this.alias,"");
+            value = rec.json[res];
+        };      
 
         Ext.each( value, function(v){
             arr.push( typeof v=='object' ? v.moniker ? v.moniker : v.name : v );
@@ -757,7 +756,7 @@
         });
         return arr.join('<br>');
     };
-	
+    
     var render_date = function(value,metadata,rec,rowIndex,colIndex,store) {
         if ( !rec.json[this.dataIndex] ) {
             var str = this.dataIndex;
@@ -766,22 +765,22 @@
         };          
         if( !value && value == undefined ) return '';
         return value;
-		//var value_to_date = new Date(value);
-		//return value_to_date.dateFormat('d/m/Y');
-		var date;
-		if (value.getMonth) {
-			date = value;
-		}else{
-			var dateStr= value;
-			if (dateStr == '' || dateStr == undefined) return '';
-			var a=dateStr.split(" ");
-			var d=a[0].split("-");
-			var t=a[1].split(":");
-			date = new Date(d[0],(d[1]-1),d[2],t[0],t[1],t[2]);
-		}
-		return date.dateFormat('d/m/Y');
+        //var value_to_date = new Date(value);
+        //return value_to_date.dateFormat('d/m/Y');
+        var date;
+        if (value.getMonth) {
+            date = value;
+        }else{
+            var dateStr= value;
+            if (dateStr == '' || dateStr == undefined) return '';
+            var a=dateStr.split(" ");
+            var d=a[0].split("-");
+            var t=a[1].split(":");
+            date = new Date(d[0],(d[1]-1),d[2],t[0],t[1],t[2]);
+        }
+        return date.dateFormat('d/m/Y');
     };
-	
+    
     var render_bool = function(value,metadata,rec,rowIndex,colIndex,store) {
         if ( !rec.json[this.dataIndex] ) {
             var str = this.dataIndex;
@@ -793,18 +792,18 @@
     };
     
     var render_user = function(value,metadata,rec,rowIndex,colIndex,store) {
-		if ( !rec.json[this.dataIndex] ) {
-			var str = this.dataIndex;
-			var res = str.replace('_' +  this.alias,"");
-			value = rec.json[res];
-		};			
+        if ( !rec.json[this.dataIndex] ) {
+            var str = this.dataIndex;
+            var res = str.replace('_' +  this.alias,"");
+            value = rec.json[res];
+        };          
         if( value == undefined ) return '';
         return value.name; 
     };
-	
+    
     var render_topic_rel = function(value,metadata,rec,rowIndex,colIndex,store) {
         var arr = [];
-		
+        
         
         if ( !rec.json[this.dataIndex] ) {
             var str = this.dataIndex;
@@ -813,33 +812,33 @@
         };
         
         if ( !value || value == undefined ) return '';
-		//if( !value  ) return '';
-		
-		//#################################################Ñapa 
-		if ( value[0] && !value[0].mid ) {
-			var str = this.dataIndex;
-			var res = str.replace('_' +  this.alias,"");
-			value = rec.json[res];
-		};
-		//#####################################################
-		
-		Ext.each( value, function(topic){
-			arr.push( Baseliner.topic_name({
-				link: true,
-				parent_id: grid_topics.id,
-				mid: topic.mid, 
-				mini: btn_mini.pressed,
-				size: btn_mini.pressed ? '9' : '11',
-				category_name: topic.category.name,
-				category_color: topic.category.color,
-				//category_icon: topic.category.icon,
-				is_changeset: topic.is_changeset,
-				is_release: topic.is_release
-			}) ); 
-		});
-		return arr.join("<br>");
+        //if( !value  ) return '';
+        
+        //#################################################Ñapa 
+        if ( value[0] && !value[0].mid ) {
+            var str = this.dataIndex;
+            var res = str.replace('_' +  this.alias,"");
+            value = rec.json[res];
+        };
+        //#####################################################
+        
+        Ext.each( value, function(topic){
+            arr.push( Baseliner.topic_name({
+                link: true,
+                parent_id: grid_topics.id,
+                mid: topic.mid, 
+                mini: btn_mini.pressed,
+                size: btn_mini.pressed ? '9' : '11',
+                category_name: topic.category.name,
+                category_color: topic.category.color,
+                //category_icon: topic.category.icon,
+                is_changeset: topic.is_changeset,
+                is_release: topic.is_release
+            }) ); 
+        });
+        return arr.join("<br>");
     }
-	
+    
     var shorten_title = function(t){
         if( !t || t.length==0 ) {
             t = '';
@@ -913,14 +912,14 @@
     };
 
     var render_status = function(value,metadata,rec,rowIndex,colIndex,store){
-		if ( !rec.json[this.dataIndex] ) {
-			var str = this.dataIndex;
-			var res = str.replace('_' +  this.alias,"");
-			value = rec.json[res];
-		};			
-		//////////if(rec.json[this.dataIndex + '_' + this.alias]){
-		//////////	value = rec.json[this.dataIndex + '_' + this.alias];
-		//////////}		
+        if ( !rec.json[this.dataIndex] ) {
+            var str = this.dataIndex;
+            var res = str.replace('_' +  this.alias,"");
+            value = rec.json[res];
+        };          
+        //////////if(rec.json[this.dataIndex + '_' + this.alias]){
+        //////////  value = rec.json[this.dataIndex + '_' + this.alias];
+        //////////}     
         var size = btn_mini.pressed ? '8' : '8';
         var ret = String.format(
             '<b><span class="bali-topic-status" style="font-size: {0}px;">{1}</span></b>',
@@ -930,11 +929,11 @@
     };
 
     var render_progress = function(value,metadata,rec,rowIndex,colIndex,store){
-		if ( !rec.json[this.dataIndex] ) {
-			var str = this.dataIndex;
-			var res = str.replace('_' +  this.alias,"");
-			value = rec.json[res];
-		};			
+        if ( !rec.json[this.dataIndex] ) {
+            var str = this.dataIndex;
+            var res = str.replace('_' +  this.alias,"");
+            value = rec.json[res];
+        };          
         if( value==undefined || value == 0 ) return '';
         if( rec.data.category_status_type == 'I'  ) return '';  // no progress if its in a initial state
 
@@ -968,15 +967,15 @@
             is_release: d.is_release
         });
     };
-	
+    
     var render_default = function(value,metadata,rec,rowIndex,colIndex,store){
-		if ( !rec.json[this.dataIndex] ) {
-			var str = this.dataIndex;
-			var res = str.replace('_' +  this.alias,"");
-			value = rec.json[res];
-		};
+        if ( !rec.json[this.dataIndex] ) {
+            var str = this.dataIndex;
+            var res = str.replace('_' +  this.alias,"");
+            value = rec.json[res];
+        };
         return value;
-    };	
+    };  
 
     var search_field = new Baseliner.SearchField({
         store: store_topics,
@@ -1041,18 +1040,18 @@
             return ' '; //'<div>aaa</div>';
         }
     };
-	
-	var force_fit = true;
-	
-	var type_filters ={
-		string: 'string',
-		number: 'numeric',
-		date: 'date',
-		status: 'list',
-		ci: 'list'
-	}
-	var fields_filter = [];
-	
+    
+    var force_fit = true;
+    
+    var type_filters ={
+        string: 'string',
+        number: 'numeric',
+        date: 'date',
+        status: 'list',
+        ci: 'list'
+    }
+    var fields_filter = [];
+    
     var columns = [];
     var col_map = {
         topic_name : { header: _('ID'), sortable: true, dataIndex: 'topic_name', width: 90, sortable: true, renderer: render_topic_name },
@@ -1090,81 +1089,81 @@
         user : { sortable: true, width: 100, renderer: render_user  }
     };
     if( fields ) {
-		force_fit = false;
+        force_fit = false;
         columns = [ dragger, check_sm, col_map['topic_name'] ];
         Ext.each( fields.columns, function(r){ 
             // r.meta_type, r.id, r.as, r.width, r.header
-			//console.dir(r);
-			
-			if(r.filter){
-				//console.dir(r);
-				//alert(r.id);
-				var filter_params = {type: type_filters[r.filter.type], dataIndex: r.id + '_' + r.category};
-				
-				//console.dir(filter_params);
-				switch (filter_params.type){
-					case 'date':   
-						filter_params.dateFormat = 'Y-m-d';
-						filter_params.beforeText = _('Before');
-						filter_params.afterText = _('After'); 
-						filter_params.onText = _('On');	
-						break;
-					case 'numeric':
-						filter_params.menuItemCfgs = {
-							emptyText: _('Enter Number...')
-						}
-						break;
-					case 'string':
-						filter_params.emptyText = _('Enter Text...');
-						break;
-					case 'list':
-						if (r.filter.options){
-							if(r.filter.options.length == 1 && r.filter.values[0] == -1){
-								filter_params.type = 'string';
-								filter_params.emptyText = _('Enter mid...');
-								break;						
-							}else{
-								var options = [];
-								for(i=0;i<r.filter.options.length;i++){
-									if(r.filter.values[i] == '') r.filter.values[i] = -1;
-									options.push( [ r.filter.values[i],r.filter.options[i] ]);
-								}
-								filter_params.options = options;
-							}
-						}else{
-							filter_params = undefined;
-						}
-				}
-				if(filter_params) {
-					fields_filter.push(filter_params);
-				}
-			}
-			
-			var col = gridlets[ r.gridlet ] || col_map[ r.id ] || meta_types[ r.meta_type ] || {
+            //console.dir(r);
+            
+            if(r.filter){
+                //console.dir(r);
+                //alert(r.id);
+                var filter_params = {type: type_filters[r.filter.type], dataIndex: r.id + '_' + r.category};
+                
+                //console.dir(filter_params);
+                switch (filter_params.type){
+                    case 'date':   
+                        filter_params.dateFormat = 'Y-m-d';
+                        filter_params.beforeText = _('Before');
+                        filter_params.afterText = _('After'); 
+                        filter_params.onText = _('On'); 
+                        break;
+                    case 'numeric':
+                        filter_params.menuItemCfgs = {
+                            emptyText: _('Enter Number...')
+                        }
+                        break;
+                    case 'string':
+                        filter_params.emptyText = _('Enter Text...');
+                        break;
+                    case 'list':
+                        if (r.filter.options){
+                            if(r.filter.options.length == 1 && r.filter.values[0] == -1){
+                                filter_params.type = 'string';
+                                filter_params.emptyText = _('Enter mid...');
+                                break;                      
+                            }else{
+                                var options = [];
+                                for(i=0;i<r.filter.options.length;i++){
+                                    if(r.filter.values[i] == '') r.filter.values[i] = -1;
+                                    options.push( [ r.filter.values[i],r.filter.options[i] ]);
+                                }
+                                filter_params.options = options;
+                            }
+                        }else{
+                            filter_params = undefined;
+                        }
+                }
+                if(filter_params) {
+                    fields_filter.push(filter_params);
+                }
+            }
+            
+            var col = gridlets[ r.gridlet ] || col_map[ r.id ] || meta_types[ r.meta_type ] || {
                 dataIndex: r.id + '_' + r.category,
                 hidden: false, width: 80, sortable: true,
-				renderer: render_default
+                renderer: render_default
             };
-			
-			//console.log( r );
-			//console.log(col);
-			
+            
+            //console.log( r );
+            //console.log(col);
+            
             col = Ext.apply({},col);  // clone the column
-			col.dataIndex =  r.id + '_' + r.category;
-			//if( !col.dataIndex ) col.dataIndex = r.id;
-			
+            col.dataIndex =  r.id + '_' + r.category;
+            //if( !col.dataIndex ) col.dataIndex = r.id;
+            
             if( r.meta_type == 'custom_data' && r.data_key ) {
                 var dk = r.data_key;
                 col.renderer = function(v,m,row,ri){ return render_custom_data(dk,v,m,row,ri) };
             }
             col.hidden = false;
-			
-			col.alias = r.category;
-			col.header = _(r.header || r.as || r.text || r.id);
+            
+            col.alias = r.category;
+            col.header = _(r.header || r.as || r.text || r.id);
             col.width = r.width || col.width;
-			
-			
-			//console.log( col );
+            
+            
+            //console.log( col );
             columns.push( col );
         });
     } else {
@@ -1176,21 +1175,20 @@
              columns.push( col_map[col] );
          });
     }
-	
-	
+    
     var filters = new Ext.ux.grid.GridFilters({
-		menuFilterText: _('Filters'),
+        menuFilterText: _('Filters'),
         encode: true,
         local: false,
         filters: fields_filter
-	});
-	
-	
+    });
+    
+    
     var grid_topics = new Ext.grid.GridPanel({
         region: 'center',
         //title: _('Topics'),
         //header: false,
-		plugins: [filters],		
+        plugins: [filters],     
         stripeRows: true,
         autoScroll: true,
         stateful: true,
@@ -1698,7 +1696,7 @@
             }
         }
     }
-	
+    
     if( !id_report ) {
         var id_collapse = Ext.id();
         tree_filters = new Ext.tree.TreePanel({
