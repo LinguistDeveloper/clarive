@@ -394,8 +394,8 @@ sub query_build {
     #push @ors, { 1=>1 } if ! @terms_normal;
     my @wh_and = (
         ( @ors ? {'$or' => \@ors} : () ),
-        ( @terms_plus ? { '$and'=>[ map { my $v=substr($_,1); map { +{$_ => $insensitive ? qr/$v/i : qr/$v/} } @fields } @terms_plus ]} : () ),
-        ( @terms_minus ? { '$and'=>[ map { my $v=substr($_,1); map { +{$_ => {'$not' => $insensitive ? qr/$v/i : qr/$v/} } } @fields } @terms_minus ]} : () ),
+        ( @terms_plus ? { '$and'=>[ map { my $v=substr($_,1); { '$or'=>[map { +{$_ => $insensitive ? qr/$v/i : qr/$v/} } @fields] } } @terms_plus ]} : () ),
+        ( @terms_minus ? { '$and'=>[ map { my $v=substr($_,1); { '$and'=>[map { +{$_ => {'$not' => $insensitive ? qr/$v/i : qr/$v/} } } @fields] } } @terms_minus ]} : () ),
     );
     #push @ors, { 1=>1 } if ! @terms_normal;
     $where->{'$and'} = \@wh_and if @wh_and;
