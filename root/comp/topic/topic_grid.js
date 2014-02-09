@@ -99,8 +99,11 @@
             });
             */
     });
-    store_topics.on('load',function(){
+    store_topics.on('load',function(s){
         if( loading ) loading.hide();
+        // get extra data
+        var cd = s.reader.jsonData.config;
+        if( cd ) custom_form_data = cd;
     });
     
     var init_buttons = function(action) {
@@ -536,7 +539,7 @@
         hidden: custom_form_url ? false : true,
         handler: function(){
             if( !custom_form.is_loaded ) {
-                Baseliner.ajax_json( custom_form_url, custom_form_data, function(comp){
+                Baseliner.ajax_json( custom_form_url, { data: custom_form_data }, function(comp){
                     custom_form.is_loaded = true;
                     custom_form.removeAll();
                     custom_form.add( comp );
@@ -556,7 +559,7 @@
     });
     
     var custom_form = new Baseliner.FormPanel({ 
-        frame: false, forceFit: true, defaults: { msgTarget: 'under', anchor:'100%' },
+        frame: true, forceFit: true, defaults: { msgTarget: 'under', anchor:'100%' },
         hidden: false,
         labelWidth: 150,
         labelAlign: 'right',
