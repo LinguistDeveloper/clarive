@@ -368,6 +368,8 @@ You can use an ARRAY for shorthand too:
             [ 'age', 'foreign.age' ]     # handles pairs also
         ]);
 
+    Or use where=>$where for merging. 
+
 =cut
 sub query_build {
     my ($self,%p) = @_;
@@ -375,13 +377,13 @@ sub query_build {
     _throw 'Fields parameter should be HASH or ARRAY'
         unless ref( $p{fields} ) =~ m/HASH|ARRAY/i;
     my @terms;
-    my $where = {};
+    my $where = $p{where} // {};
     my @fields = ref $p{fields} eq 'HASH' ? keys( %{ $p{fields} } ) : _array($p{fields});
     # build columns   -----    TODO use field:lala
     $p{query} =~ s{\*}{.*}g;
     $p{query} =~ s{\?}{.}g;
     @terms = grep { defined($_) && length($_) } split /\s+/, lc($p{query});  # TODO handle quotes "
-    my $insensitive = 1 unless grep /[A-Z]/, @terms; # case sensitive search?
+    my $insensitive = ! grep /[A-Z]/, @terms; # case sensitive search?
     my @terms_normal = grep(!/^\+|^\-/,@terms);
     my @terms_plus = grep(/^\+/,@terms);
     my @terms_minus = grep(/^\-/,@terms);
@@ -390,11 +392,13 @@ sub query_build {
         push @ors, map { { $col => $insensitive ? qr/$_/i : qr/$_/ } } @terms_normal;
     }
     #push @ors, { 1=>1 } if ! @terms_normal;
-    $where->{'$and'} = [
+    my @wh_and = (
         ( @ors ? {'$or' => \@ors} : () ),
-        ( map { my $v=substr($_,1); map { +{$_ => $insensitive ? qr/$v/i : qr/$v/} } @fields } @terms_plus ),
-        ( map { my $v=substr($_,1); map { +{$_ => {'$not' => $insensitive ? qr/$v/i : qr/$v/} } } @fields } @terms_plus ),
-    ];
+        ( @terms_plus ? { '$and'=>[ map { my $v=substr($_,1); map { +{$_ => $insensitive ? qr/$v/i : qr/$v/} } @fields } @terms_plus ]} : () ),
+        ( @terms_minus ? { '$and'=>[ map { my $v=substr($_,1); map { +{$_ => {'$not' => $insensitive ? qr/$v/i : qr/$v/} } } @fields } @terms_minus ]} : () ),
+    );
+    #push @ors, { 1=>1 } if ! @terms_normal;
+    $where->{'$and'} = \@wh_and if @wh_and;
     return $where;
 }
 
