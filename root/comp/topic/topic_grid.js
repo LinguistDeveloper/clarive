@@ -26,7 +26,7 @@
     //  fields = params.data_report.fields;
     //}
     
-    var mini_mode = false;
+    var mini_mode = params.mini_mode==undefined ? Prefs.mini_mode : params.mini_mode;
     if( report_rows ) {
         ps_maxi=report_rows;
         ps_mini=report_rows;
@@ -489,6 +489,7 @@
         cls: 'x-btn-text-icon',
         enableToggle: true, pressed: mini_mode || false, allowDepress: true,
         handler: function() {
+            Prefs.mini_mode = btn_mini.pressed;
             if( btn_mini.pressed && ptool.pageSize == ps_maxi ) {
                 ptool.pageSize =  ps_mini;
                 store_topics.baseParams.limit = ps_mini;
