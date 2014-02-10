@@ -250,7 +250,7 @@
     var node_decorate = function( node ) {
         var rf = _bool(node.attributes.run_forward,true);
         var rr = _bool(node.attributes.run_rollback,true);
-        var props = [];
+        var props = [], parallel_mode=[];
         if( !node.attributes.disabled ) {
             if( rf && !rr ) {
                 props.push('NO ROLLBACK');
@@ -261,6 +261,9 @@
             else if( !rr && !rf ) {
                 props.push('NO RUN');
             }
+            if( node.attributes.parallel_mode && node.attributes.parallel_mode!='none' ) {
+                parallel_mode.push( node.attributes.parallel_mode );
+            }
         }
         if( node.attributes.note ) node.setTooltip( node.attributes.note );
         var nel = node.ui.getTextEl();
@@ -268,9 +271,11 @@
             var nn = node.id;
             // cleanup if no properties, needed by save on properties panel
             $( "[parent-node-props='"+nn+"']" ).remove();
-            if( props.length ) {
-                var labs = props.map(function(r){ return '<span class="badge" style="font-size: 9px;">'+r+'</span>' }).join('');
-                nel.insertAdjacentHTML( 'afterEnd', '<span id="boot" parent-node-props="'+nn+'" style="margin: 0px 0px 0px 4px; background: transparent">'+labs+'</span>');
+            var badges='';
+            if( props.length ) badges += props.map(function(r){ return '<span class="badge" style="font-size: 9px;">'+r+'</span>' }).join('');
+            if( parallel_mode.length ) badges += parallel_mode.map(function(r){ return '<span class="badge" style="font-size: 9px; background-color:#609060; text-transform: uppercase;">'+r+'</span>' }).join('');
+            if( badges.length ) {
+                nel.insertAdjacentHTML( 'afterEnd', '<span id="boot" parent-node-props="'+nn+'" style="margin: 0px 0px 0px 4px; background: transparent">'+badges+'</span>');
             }
         }
     };
@@ -685,6 +690,8 @@
                     depth:depth, 
                     icon: attr.icon,
                     lev: lev.length>0 ? lev.join('.')+'.'+k : k,
+                    parallel_mode: attr.parallel_mode && attr.parallel_mode!='none' 
+                        ? _(attr.parallel_mode) : '',
                     run_mode: rf && !rb ? _('NO ROLLBACK') 
                         : !rf && rb ? _('ROLLBACK')
                         : rf===false && rb===false ? _('NO RUN') : '',
@@ -706,6 +713,7 @@
                 [%= lev %]
                 <img style="vertical-align: middle; float: left" src="[%= icon %]"> [%= text %]
             [% if( run_mode ) { %]<span class="badge">[%= run_mode %]</span>[% } %]
+            [% if( parallel_mode ) { %]<span class="badge" style="background-color: #609060; text-transform: uppercase;">[%= parallel_mode %]</span>[% } %]
             </h3>
             <div style="margin-left: 16px">
             <small class="rule" style="color:#999">[%= name %] - [%= key %]</small>
