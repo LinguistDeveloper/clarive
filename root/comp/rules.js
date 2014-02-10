@@ -250,7 +250,7 @@
     var node_decorate = function( node ) {
         var rf = _bool(node.attributes.run_forward,true);
         var rr = _bool(node.attributes.run_rollback,true);
-        var props = [], parallel_mode=[];
+        var props = [], parallel_mode=[], data_key='', semaphore_key='';
         if( !node.attributes.disabled ) {
             if( rf && !rr ) {
                 props.push('NO ROLLBACK');
@@ -264,6 +264,12 @@
             if( node.attributes.parallel_mode && node.attributes.parallel_mode!='none' ) {
                 parallel_mode.push( node.attributes.parallel_mode );
             }
+            if( node.attributes.data_key ) {
+                data_key = '= ' + node.attributes.data_key;
+            }
+            if( node.attributes.semaphore_key ) {
+                semaphore_key = '\u2223 ' + node.attributes.semaphore_key;
+            }
         }
         if( node.attributes.note ) node.setTooltip( node.attributes.note );
         var nel = node.ui.getTextEl();
@@ -272,8 +278,10 @@
             // cleanup if no properties, needed by save on properties panel
             $( "[parent-node-props='"+nn+"']" ).remove();
             var badges='';
-            if( props.length ) badges += props.map(function(r){ return '<span class="badge" style="font-size: 9px;">'+r+'</span>' }).join('');
-            if( parallel_mode.length ) badges += parallel_mode.map(function(r){ return '<span class="badge" style="font-size: 9px; background-color:#609060; text-transform: uppercase;">'+r+'</span>' }).join('');
+            if( data_key.length ) badges += '<span class="label" style="font-size: 9px; background-color:#606090">'+data_key+'</span>&nbsp;';
+            if( semaphore_key.length ) badges += '<span class="label" style="font-size: 9px; background-color:#906060">'+semaphore_key+'</span>&nbsp;';
+            if( props.length ) badges += props.map(function(r){ return '<span class="badge" style="font-size: 9px;">'+r+'</span>&nbsp;' }).join('');
+            if( parallel_mode.length ) badges += parallel_mode.map(function(r){ return '<span class="badge" style="font-size: 9px; background-color:#609060; text-transform: uppercase;">'+r+'</span>&nbsp;' }).join('');
             if( badges.length ) {
                 nel.insertAdjacentHTML( 'afterEnd', '<span id="boot" parent-node-props="'+nn+'" style="margin: 0px 0px 0px 4px; background: transparent">'+badges+'</span>');
             }
