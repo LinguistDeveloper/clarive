@@ -1686,7 +1686,9 @@ sub save_doc {
     }
     
     # create/update mongo doc
-    my $write_doc = { %$old_doc, %$row, %$doc, m=>0+$doc->{mid} };
+    my $m = $doc->{mid};
+    $m = 0+$m;
+    my $write_doc = { %$old_doc, %$row, %$doc, m=>$m };
 
     # save project collection security
     $self->update_project_security($write_doc);   # we need to send old data merged, in case the user has sent an incomplete topic (due to field security)
