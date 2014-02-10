@@ -1098,7 +1098,7 @@
             if(r.filter){
                 //console.dir(r);
                 //alert(r.id);
-                var filter_params = {type: type_filters[r.filter.type], dataIndex: r.id + '_' + r.category};
+                var filter_params = {type: type_filters[r.filter.type], dataIndex: r.category ? r.id + '_' + r.category : r.id };
                 
                 //console.dir(filter_params);
                 switch (filter_params.type){
@@ -1140,7 +1140,7 @@
             }
             
             var col = gridlets[ r.gridlet ] || col_map[ r.id ] || meta_types[ r.meta_type ] || {
-                dataIndex: r.id + '_' + r.category,
+                dataIndex: r.category ? r.id + '_' + r.category : r.id,
                 hidden: false, width: 80, sortable: true,
                 renderer: render_default
             };
