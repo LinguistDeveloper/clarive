@@ -3072,14 +3072,17 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
             }); 
         });
     },
-    add_row : function(){
+    add_row : function(rec,no_edit){
         var self = this;
-        var u = new self.store.recordType( Ext.decode(Ext.encode(self.default_record)) );
+        var u = new self.store.recordType( rec || Ext.decode(Ext.encode(self.default_record)) );
         var index = self.store.getCount();
-        if( self.editor ) self.editor.stopEditing();
+        if( self.editor && !no_edit ) self.editor.stopEditing();
         self.store.insert(index, u);
         self.getSelectionModel().selectRow(index);          
-        if( self.editor ) self.editor.startEditing(index);
+        if( self.editor && !no_edit ) self.editor.startEditing(index);
+    },
+    remove_all : function(){
+        this.store.removeAll();
     },
     del_row : function(){
         var self = this;
