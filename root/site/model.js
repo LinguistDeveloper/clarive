@@ -958,6 +958,15 @@ Baseliner.ci_box = function(c) {
     return ci_box;
 };
 
+Baseliner.CIClassCombo = Ext.extend(Baseliner.ComboSingleRemote, {
+    fieldLabel: _('CI Class'),
+    allowBlank: true,
+    field: 'name',
+    fields: [ 'classname', 'name' ],
+    url: '/ci/classes'
+});
+    
+
 /* 
      Baseliner.form components
 */
@@ -2187,6 +2196,11 @@ Baseliner.DataEditor = function(c) {
 
     self.getData = function(){
         return collapse_data( store.getRange(), 0 );
+    };
+    self.setData = function(v) {
+        set_data( v );
+        store.proxy = new Ext.data.MemoryProxy( data );
+        store.reload();
     };
 
     self.addSingle = function(k,v){
