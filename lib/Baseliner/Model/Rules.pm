@@ -496,11 +496,14 @@ sub launch {
     # TODO milestone for service
     #_debug $ret;
     my $refr = ref $return_data;
-    $return_data = {} unless $refr eq 'HASH' || Scalar::Util::blessed($return_data) || ($refr eq 'ARRAY' && $data_key ne '=');
-    
-    # merge into stash
-    merge_into_stash( $stash, ( $data_key ne '=' ? { $data_key => $return_data } : $return_data ) ) if length $data_key;
-    return $return_data;
+    my $mergeable = $refr eq 'HASH' || Scalar::Util::blessed($return_data); 
+    if( $mergeable || $refr eq 'ARRAY' || !$refr ) {
+        # merge into stash
+        merge_into_stash( $stash, ( $data_key eq '=' && $mergeable ? $return_data : { $data_key => $return_data } ) ) if length $data_key;
+        return $return_data;
+    } else {
+        return {};
+    }
 }
 
 sub merge_into_stash {
