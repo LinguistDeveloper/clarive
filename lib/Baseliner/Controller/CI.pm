@@ -439,6 +439,7 @@ sub tree_object_info {
     return @tree;
 }
 
+
 sub list_classes {
     my ($self, $role ) = @_;
     $role //= 'Baseliner::Role::CI';
@@ -472,9 +473,29 @@ sub list_roles {
     } grep /^Baseliner::Role::CI/, keys %cl;
 }
 
+sub class_methods : Local {
+    my ($self, $c) = @_;
+    my $classname = $c->req->params->{classname};
+    $classname = Util->to_ci_class( $classname );
+    my @methods = 
+        map { 
+            my $meth = $_;
+            my $ret = { name=>$meth };
+            if( my $info = Function::Parameters::info( $classname.'::'.$meth ) ) {
+                $ret->{p_required} = [ map { $_->name } $info->positional_required ];
+                $ret->{p_optional} = [ map { $_->name } $info->positional_optional ];
+                $ret->{n_required} = [ map { $_->name } $info->named_required ];
+                $ret->{n_optional} = [ map { $_->name } $info->named_optional ];
+            }
+            $ret; 
+        } sort { lc $a cmp lc $b } grep !/^(_|TO_JSON)/, $classname->meta->get_method_list;
+    $c->stash->{json} = { data=>\@methods, totalCount=>scalar(@methods) };
+    $c->forward('View::JSON');
+}
+
 sub classes : Local {
     my ($self, $c) = @_;
-    my @classes = sort { $a->{name} cmp $b->{name} } $self->list_classes;
+    my @classes = sort { lc $a->{name} cmp lc $b->{name} } $self->list_classes;
     $c->stash->{json} = { data=>\@classes, totalCount=>scalar(@classes) };
     $c->forward('View::JSON');
 }
