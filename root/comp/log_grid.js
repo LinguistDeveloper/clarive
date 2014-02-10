@@ -181,6 +181,53 @@
         });
         var field_annotate = new Ext.form.HtmlEditor({ width: 450, height: 200, title:_('Text')});
         var field_data = new Ext.form.TextArea({ width: 450, height: 200, title:_('Data') });
+        
+        var field_file = new Ext.Panel({
+            title: _('File'),
+            border: false,
+            style: { margin: '10px 0px 10px 10px' },
+            height: self.height_drop
+        });
+        field_file.on('afterrender', function(){
+            var uploader = new qq.FileUploader({
+                element: field_file.el.dom,
+                action: '/job/log/upload_file',
+                //params: {
+                //  topic_mid: data ? data.topic_mid : self.get_mid()
+                //},
+                template: '<div class="qq-uploader">' + 
+                    '<div class="qq-upload-drop-area"><span>' + _('Drop files here to upload') + '</span></div>' +
+                    '<div class="qq-upload-button">' + _('Upload File') + '</div>' +
+                    '<ul class="qq-upload-list"></ul>' + 
+                 '</div>',
+                onComplete: function(fu, filename, res){
+                    Baseliner.message(_('Upload File'), _(res.msg, filename) );
+                    store_load();
+                },
+                onSubmit: function(id, filename){
+                    var text = field_annotate.getValue();
+                    uploader.setParams({ text: text, mid: mid, level: severity.getValue()  });
+                    return true;
+                    //var mid = self.get_mid(); // data && data.topic_mid ? data.topic_mid : self.get_mid();
+                    //ar config_parms = function(mid) { uploader.setParams({topic_mid: mid, filter: self.id_field }); };
+                },
+                onProgress: function(id, filename, loaded, total){},
+                onCancel: function(id, filename){ },
+                classes: {
+                    button: 'qq-upload-button',
+                    drop: 'qq-upload-drop-area',
+                    dropActive: 'qq-upload-drop-area-active',
+                    list: 'qq-upload-list',
+                    file: 'qq-upload-file',
+                    spinner: 'qq-upload-spinner',
+                    size: 'qq-upload-size',
+                    cancel: 'qq-upload-cancel',
+                    success: 'qq-upload-success',
+                    fail: 'qq-upload-fail'
+                }
+            });
+        });
+        //var field_file = new Ext.FormPanel({ title:_('File'), items:[ ]});
         var severity = new Ext.form.ComboBox ({
                 editable: false,
                 forceSelection: true,
@@ -233,7 +280,7 @@
                 }
                 }, '->', new Ext.Toolbar.TextItem (_("Severity")), severity
             ],
-            items : [ { xtype:'tabpanel', activeTab:0, items: [ field_annotate, field_data ] } ] 
+            items : [ { xtype:'tabpanel', activeTab:0, items: [ field_annotate, field_data, field_file ] } ] 
         });
 
         win.show();
