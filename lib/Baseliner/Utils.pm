@@ -734,7 +734,7 @@ sub _strip_html {
     require HTML::Strip;
     my $hs = HTML::Strip->new();
     my $clean_text = $hs->parse($d);
-    Encode::_utf8_on( $clean_text );
+    utf8::decode( $clean_text );
     $clean_text;
 }
 
