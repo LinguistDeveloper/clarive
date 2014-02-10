@@ -8,10 +8,10 @@ use utf8::all;
 with 'Baseliner::Role::Service';
 
 register 'service.fileman.foreach' => {
-    name => 'List file/item',
+    name => 'Load files/items into stash',
     form => '/forms/file_foreach.js',
     job_service  => 1,
-    handler => \&run_foreach,
+    handler => \&run_load_files,
 };
 
 register 'statement.fileman.foreach' => {
@@ -97,7 +97,7 @@ register 'service.fileman.parse_config' => {
     handler => \&run_parse_config,
 };
 
-sub run_foreach {
+sub run_load_files {
     my ($self, $c, $config ) = @_;
     return $self->file_foreach( $c->stash, $config );
 }
