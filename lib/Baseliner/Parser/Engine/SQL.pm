@@ -16,7 +16,7 @@ sub parse {
     #Parse the file, remove line feed and store it in variable fc
     for ( @lines ) {
         chomp;
-        s/(.*?)(--)(.*)/\1/;      # Strip -- sql comments
+        s/(.*?)(--)(.*)/$1/;      # Strip -- sql comments
         s/((\/\*).+?(\*\/))//;    # Strip /* */ comments
         s/^\s+//;                 # Strip leading spaces
         $fc .= " " . $_;
@@ -24,7 +24,7 @@ sub parse {
     }
     
     $_ = $fc;
-    s/([\d\D]*)/\U\1/;            #make uppercase
+    s/([\d\D]*)/\U$1/;            #make uppercase
     $fc = $_;
 
     # SELECT LIST #
@@ -90,7 +90,7 @@ sub parse {
 
     #Process select lists to strip alias name for the table
     foreach (@select_list) {
-        s/(\w+?)\s+(\w+)/\1/;
+        s/(\w+?)\s+(\w+)/$1/;
 
         #print $_,"\n"; this line was very useful in debugging, I like it.
         s/\s//g;
