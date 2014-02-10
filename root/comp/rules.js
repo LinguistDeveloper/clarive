@@ -626,7 +626,9 @@
                             dsl_stash.setValue( res.stash_yaml );
                         }, function(res){
                             Baseliner.message( 'DSL', _('Error during DSL execution: %1', res.msg ) );
-                            document.getElementById( dsl_cons.getId() ).style.color = "#f54";  // red
+                            var el_cons = document.getElementById( dsl_cons.getId() );
+                            if(!el_cons) return;
+                            el_cons.style.color = "#f54";  // red
                             var out = res.output != undefined ? res.output : '';
                             dsl_cons.setValue( out + '\n\n========= DSL ERROR =======\n\n' + res.msg ); 
                             dsl_stash.setValue( res.stash_yaml );
