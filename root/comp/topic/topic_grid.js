@@ -1145,11 +1145,8 @@
                 renderer: render_default
             };
             
-            //console.log( r );
-            //console.log(col);
-            
             col = Ext.apply({},col);  // clone the column
-            if( r.category ) col.dataIndex =  r.id + '_' + r.category;
+            col.dataIndex =  r.category ? r.id + '_' + r.category : r.id;
             //if( !col.dataIndex ) col.dataIndex = r.id;
             
             if( r.meta_type == 'custom_data' && r.data_key ) {
@@ -1162,8 +1159,6 @@
             col.header = _(r.header || r.as || r.text || r.id);
             col.width = r.width || col.width;
             
-            
-            //console.log( col );
             columns.push( col );
         });
     } else {
@@ -1182,7 +1177,6 @@
         local: false,
         filters: fields_filter
     });
-    
     
     var grid_topics = new Ext.grid.GridPanel({
         region: 'center',
