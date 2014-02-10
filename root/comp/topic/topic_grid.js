@@ -611,7 +611,7 @@
         var mid = rec.data.topic_mid;
         var category_name = rec.data.category_name;
         var category_color = rec.data.category_color;
-        var date_modified_on = rec.data.modified_on.dateFormat('M j, Y, g:i a');
+        var date_modified_on = rec.data.modified_on ? rec.data.modified_on.dateFormat('M j, Y, g:i a') : '';
         var modified_by = rec.data.modified_by;
         
         //#######################################Ñapa
@@ -1149,7 +1149,7 @@
             //console.log(col);
             
             col = Ext.apply({},col);  // clone the column
-            col.dataIndex =  r.id + '_' + r.category;
+            if( r.category ) col.dataIndex =  r.id + '_' + r.category;
             //if( !col.dataIndex ) col.dataIndex = r.id;
             
             if( r.meta_type == 'custom_data' && r.data_key ) {
