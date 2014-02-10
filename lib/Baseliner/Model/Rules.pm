@@ -489,9 +489,8 @@ sub launch {
     # TODO milestone for service
     #_debug $ret;
     my $refr = ref $return_data;
-    $return_data = $refr eq 'HASH' || Scalar::Util::blessed($return_data) 
-        ? $return_data 
-        : {}; #!$refr || $refr eq 'ARRAY' ? { service_return=>$return_data } : {} ;
+    $return_data = {} unless $refr eq 'HASH' || Scalar::Util::blessed($return_data) || ($refr eq 'ARRAY' && $data_key ne '=');
+    
     # merge into stash
     merge_into_stash( $stash, ( $data_key ne '=' ? { $data_key => $return_data } : $return_data ) ) if length $data_key;
     return $return_data;
