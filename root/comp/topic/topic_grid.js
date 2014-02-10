@@ -764,7 +764,7 @@
             var res = str.replace('_' +  this.alias,"");
             value = rec.json[res];
         };          
-        if( !value && value == undefined ) return '';
+        if( !value || value == undefined ) return '';
         return value;
         //var value_to_date = new Date(value);
         //return value_to_date.dateFormat('d/m/Y');
