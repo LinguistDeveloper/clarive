@@ -8,7 +8,8 @@
             return;
         }
         grid_params = Ext.apply(Ext.apply({ 
-                tab_icon: '/static/images/icons/topic.png'
+            mini_mode: true,
+            tab_icon: '/static/images/icons/topic.png'
         }, report), grid_params );
         // console.log( grid_params );
         

@@ -1098,7 +1098,7 @@
             if(r.filter){
                 //console.dir(r);
                 //alert(r.id);
-                var filter_params = {type: type_filters[r.filter.type], dataIndex: r.category ? r.id + '_' + r.category : r.id };
+                var filter_params = {type: type_filters[r.filter.type], dataIndex: r.id + '_' + r.category};
                 
                 //console.dir(filter_params);
                 switch (filter_params.type){
@@ -1140,13 +1140,13 @@
             }
             
             var col = gridlets[ r.gridlet ] || col_map[ r.id ] || meta_types[ r.meta_type ] || {
-                dataIndex: r.category ? r.id + '_' + r.category : r.id,
+                dataIndex: r.id + '_' + r.category,
                 hidden: false, width: 80, sortable: true,
                 renderer: render_default
             };
             
             col = Ext.apply({},col);  // clone the column
-            col.dataIndex =  r.category ? r.id + '_' + r.category : r.id;
+            col.dataIndex =  r.id + '_' + r.category;
             //if( !col.dataIndex ) col.dataIndex = r.id;
             
             if( r.meta_type == 'custom_data' && r.data_key ) {
