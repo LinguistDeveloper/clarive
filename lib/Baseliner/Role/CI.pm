@@ -1044,7 +1044,7 @@ sub search_cis {
     $class = $p{class} // $class;
     $class = 'BaselinerX::CI::' . $class unless $class =~ /::/ || ref $class;
     my $coll = $class->collection;
-    my $rs = mdb->master_doc->find({ collection=>$coll, %p })->fields({ mid=>1 })->sort({ mid=>1 });
+    my $rs = mdb->master_doc->find({ collection=>$coll, %p })->fields({ mid=>1 })->sort({ _id=>1 });
     if( $search_one ) {
         my $doc = $rs->next; 
         return undef if !$doc;
