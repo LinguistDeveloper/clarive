@@ -7,6 +7,29 @@ use Try::Tiny;
 use utf8::all;
 with 'Baseliner::Role::Service';
 
+register 'service.fileman.foreach' => {
+    name => 'List file/item',
+    form => '/forms/file_foreach.js',
+    job_service  => 1,
+    handler => \&run_foreach,
+};
+
+register 'statement.fileman.foreach' => {
+    text => 'FOREACH file/item',
+    type => 'loop',
+    form => '/forms/file_foreach.js',
+    dsl => sub { 
+        my ($self, $n, %p ) = @_;
+        sprintf(q{
+            my $config = parse_vars %s, $stash;
+            foreach ( _array( BaselinerX::Service::FileManagement->file_foreach($stash,$config) ) ) {
+                local $stash->{'%s'} = $_;
+                %s
+            }
+        }, Data::Dumper::Dumper($n->{data}), $n->{varname}//'file', $self->dsl_build( $n->{children}, %p ) );
+    },
+};
+
 register 'service.fileman.tar' => {
     name => 'Tar Local Files',
     form => '/forms/tar_local.js',
@@ -73,6 +96,91 @@ register 'service.fileman.parse_config' => {
     job_service  => 1,
     handler => \&run_parse_config,
 };
+
+sub run_foreach {
+    my ($self, $c, $config ) = @_;
+    return $self->file_foreach( $c->stash, $config );
+}
+
+sub file_foreach {
+    my ($self, $stash, $config ) = @_;
+    my $job   = $stash->{job};
+    #my $log   = $job->logger;
+    my $fail_on_error = $config->{fail_on_error} // 1;
+    my $path = $config->{path} // _throw _loc 'Root path not configured';
+    my $path_mode = $config->{path_mode} // 'files_flat';
+    my $dir_mode = $config->{dir_mode} // 'file_only';
+    
+    _fail _loc 'Path does not exist or is not readable: `%1`', $path if $path!~/\*|\?/ && !-e $path;
+    my $job_dir = $stash->{job_dir};
+
+    my @files;
+    if( $path_mode eq 'files_flat' ){
+        my $gpath = -d $path ? ''._dir($path,'*') : $path;
+        @files = grep { $dir_mode eq 'file_only' ? -f : -e } glob $gpath;
+    }
+    elsif( $path_mode eq 'files_recursive' ){
+        _dir( $path )->recurse( callback=>sub{
+            my $f = shift;
+            my $is_dir = $f->is_dir;
+            return if $dir_mode eq 'file_only' && $is_dir;
+            return if $dir_mode eq 'dir_only' && !$is_dir;
+            push @files, "$f";
+        });
+    }
+    elsif( $path_mode eq 'nature_items' ){
+        @files = 
+            map { "$_" }
+            grep { 
+                my $is_dir = -d $_; # is_dir does not check if it exists and is a dir
+                ($dir_mode eq 'file_only' && $is_dir)
+                || ($dir_mode eq 'dir_only' && !$is_dir)
+                || $dir_mode eq 'file_and_dir';
+            }
+            grep {
+               -e $_  # gets rid of deletions
+            }
+            map { _file($job_dir,$_) } _array( $stash->{nature_item_paths} ); 
+    }
+   
+    my ($include_path,$exclude_path) = @{ $config }{qw(include_path exclude_path)};
+    @files = $self->filter_paths( $include_path, $exclude_path, @files );
+    return \@files;
+}
+
+sub filter_paths {
+    my ($self,$include_path,$exclude_path,@paths) = @_;
+    my @filtered;
+    my @debugs;
+    PATH: for my $path ( @paths ) {
+        # filters?
+        my $flag;
+        IN: for my $in ( _array( $include_path ) ) {
+            $flag //= 0;
+            if( $path =~ _regex($in) ) {
+                $flag =$in;
+                last IN;
+            }
+        }
+        if( defined $flag && !$flag ) {
+            push @debugs, "File not included path `$path` due to rule `$flag`";
+            next PATH;
+        }
+        for my $ex ( _array( $exclude_path ) ) {
+            if( $path =~ _regex($ex) ) {
+                push @debugs, "File excluded path `$path` due to rule `$ex`";
+                next PATH;
+            }
+        }
+        push @filtered, $path;
+    }
+    _debug( _loc("Filter paths, include, excludes"), 
+            "Includes:\n".join("\n",_array($include_path))
+            ."\nExcludes:\n".join("\n",_array($exclude_path))
+            ."\nMessages:\n".join("\n",@debugs) ) if @debugs;
+
+    return @filtered;
+}
 
 sub run_tar {
     my ($self, $c, $config ) = @_;
@@ -231,7 +339,7 @@ sub run_ship {
             $local_path = $server->parse_vars("$local_path");
             $log->debug( _loc('rel path mode `%1`, local_path=%2', $rel_mode, $local_path ) );
             
-            # filters?
+            # filters?   TODO use $self->filter_paths
             my $flag;
             IN: for my $in ( _array( $include_path ) ) {
                 $flag //= 0;
