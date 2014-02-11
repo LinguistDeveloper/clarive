@@ -248,10 +248,12 @@
         //clipboard = 
     };
     var node_decorate = function( node ) {
-        var rf = _bool(node.attributes.run_forward,true);
-        var rr = _bool(node.attributes.run_rollback,true);
-        var props = [], parallel_mode=[], data_key='', semaphore_key='';
-        if( !node.attributes.disabled ) {
+        var attr = node.attributes;
+        var rf = _bool(attr.run_forward,true);
+        var rr = _bool(attr.run_rollback,true);
+        var props = [], parallel_mode=[], data_key='';
+        var semaphore_key='';
+        if( !attr.disabled ) {
             if( rf && !rr ) {
                 props.push('NO ROLLBACK');
             }
@@ -261,17 +263,17 @@
             else if( !rr && !rf ) {
                 props.push('NO RUN');
             }
-            if( node.attributes.parallel_mode && node.attributes.parallel_mode!='none' ) {
-                parallel_mode.push( node.attributes.parallel_mode );
+            if( attr.parallel_mode && attr.parallel_mode!='none' ) {
+                parallel_mode.push( attr.parallel_mode );
             }
-            if( node.attributes.data_key ) {
-                data_key = '= ' + node.attributes.data_key;
+            if( attr.data_key ) {
+                data_key = '= ' + attr.data_key;
             }
-            if( node.attributes.semaphore_key ) {
-                semaphore_key = '\u2223 ' + node.attributes.semaphore_key;
+            if( attr.semaphore_key ) {
+                semaphore_key = '\u00D8 ' + attr.semaphore_key;
             }
         }
-        if( node.attributes.note ) node.setTooltip( node.attributes.note );
+        if( attr.note ) node.setTooltip( attr.note );
         var nel = node.ui.getTextEl();
         if( nel ) {
             var nn = node.id;
@@ -317,7 +319,7 @@
             hidden: !( !data.needs_rollback_mode || data.needs_rollback_mode!='none' ),
             value: Baseliner.name_to_id(node.text) 
         });
-        var enabled = new Ext.form.Checkbox({ fieldLabel:_('Enabled'), checked: !_bool(attr.disabled,true) });
+        var enabled = new Ext.form.Checkbox({ fieldLabel:_('Enabled'), checked: node.disabled===true?false:true });
         var run_forward = new Ext.form.Checkbox({ fieldLabel:_('Run Forward'), checked: _bool(attr.run_forward,true) });
         var run_rollback = new Ext.form.Checkbox({ fieldLabel:_('Run Rollback'), checked: _bool(attr.run_rollback,true) });
         var error_trap = new Baseliner.ComboDouble({ 
@@ -338,8 +340,8 @@
             if( !node.attributes.data ) node.attributes.data={}; 
             var dk = data_key.getValue(); 
             if( dk!=undefined ) { 
-                node.attributes.data_key = dk; 
-                node.attributes.data.data_key=dk 
+                node.attributes.data_key = dk.trim(); 
+                node.attributes.data.data_key=dk.trim();
             }
             // attribute save
             node.attributes.active = enabled.checked ? 1 : 0;
@@ -349,11 +351,11 @@
             node.attributes.run_rollback = run_rollback.checked;
             node.attributes.parallel_mode = parallel_mode.getValue();
             node.attributes.error_trap = error_trap.getValue();
-            node_decorate( node );  // change the node's look
-            node.attributes.semaphore_key = semaphore_key.getValue();
+            node.attributes.semaphore_key = semaphore_key.getValue().trim();
             node.attributes.timeout = timeout.getValue();
             node.attributes.note = note.getValue();
             node.setText( node.attributes.text );
+            node_decorate( node );  // change the node's look
             // data save
             if( !node.attributes.data ) node.attributes.data={};
             Ext.apply(node.attributes.data, opts.getValues() );
