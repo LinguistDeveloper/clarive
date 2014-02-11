@@ -120,16 +120,11 @@
         load_on_type( var_type.getValue() );
     });
     
-    var ci_class =  new Baseliner.ComboSingleRemote({ 
-        fieldLabel: _('CI Class'),
+    var ci_class =  new Baseliner.CIClassCombo({
         name: 'var_ci_class',
         hidden: true,
         disabled: true,
-        allowBlank: true,
-        value: params.rec.var_ci_class,
-        field: 'name',
-        fields: [ 'classname', 'name' ],
-        url: '/ci/classes'
+        value: params.rec.var_ci_class
     });
     
     var ci_role =  new Baseliner.ComboSingleRemote({ 

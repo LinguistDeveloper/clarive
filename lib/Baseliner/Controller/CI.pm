@@ -439,6 +439,7 @@ sub tree_object_info {
     return @tree;
 }
 
+
 sub list_classes {
     my ($self, $role ) = @_;
     $role //= 'Baseliner::Role::CI';
@@ -472,9 +473,29 @@ sub list_roles {
     } grep /^Baseliner::Role::CI/, keys %cl;
 }
 
+sub class_methods : Local {
+    my ($self, $c) = @_;
+    my $classname = $c->req->params->{classname};
+    $classname = Util->to_ci_class( $classname );
+    my @methods = 
+        map { 
+            my $meth = $_;
+            my $ret = { name=>$meth };
+            if( my $info = Function::Parameters::info( $classname.'::'.$meth ) ) {
+                $ret->{p_required} = [ map { $_->name } $info->positional_required ];
+                $ret->{p_optional} = [ map { $_->name } $info->positional_optional ];
+                $ret->{n_required} = [ map { $_->name } $info->named_required ];
+                $ret->{n_optional} = [ map { $_->name } $info->named_optional ];
+            }
+            $ret; 
+        } sort { lc $a cmp lc $b } grep !/^(_|TO_JSON)/, $classname->meta->get_method_list;
+    $c->stash->{json} = { data=>\@methods, totalCount=>scalar(@methods) };
+    $c->forward('View::JSON');
+}
+
 sub classes : Local {
     my ($self, $c) = @_;
-    my @classes = sort { $a->{name} cmp $b->{name} } $self->list_classes;
+    my @classes = sort { lc $a->{name} cmp lc $b->{name} } $self->list_classes;
     $c->stash->{json} = { data=>\@classes, totalCount=>scalar(@classes) };
     $c->forward('View::JSON');
 }
@@ -493,6 +514,7 @@ sub roles : Local {
 sub store : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
+    my $query = $p->{query};
     
     # in cache ?
     my $mid_param =  $p->{mid} || $p->{from_mid} || $p->{to_mid} ;
@@ -558,7 +580,7 @@ sub store : Local {
         }
         
         $class = "BaselinerX::CI::$class" if $class !~ /^Baseliner/;
-        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
+        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
     }
     elsif( my $role = $p->{role} ) {
         my @roles;
@@ -569,10 +591,10 @@ sub store : Local {
             push @roles, $r;
         }
         my $classes = [ packages_that_do( @roles ) ];
-        ($total, @data) = $self->tree_objects( class=>$classes, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty}, no_yaml=>$p->{with_data}?0:1);
+        ($total, @data) = $self->tree_objects( class=>$classes, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty}, no_yaml=>$p->{with_data}?0:1);
     }
     else {
-        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
+        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
         #_fail( 'No class or role supplied' );
     }
 
@@ -583,9 +605,9 @@ sub store : Local {
         my %vp = ( $p->{role} ? (role=>$p->{role}) : ($p->{classname} || $p->{class} || $p->{isa}) ? (classname=>$p->{class}||$p->{classname}) : () );
         
         my @vars = Baseliner::Role::CI->variables_like_me( %vp );
-        push @data, map { 
+        push @data, grep { defined } map { 
             my $cn =  $_->var_ci_class ? 'BaselinerX::CI::'.$_->var_ci_class : $_->description;
-            +{
+            length $query && $_->name !~ /$query/i ? undef : +{
                   _id=> 'var-'. $_->mid,
                   _is_leaf=> \1,
                   _parent=> undef,

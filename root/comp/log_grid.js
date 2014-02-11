@@ -181,6 +181,21 @@
         });
         var field_annotate = new Ext.form.HtmlEditor({ width: 450, height: 200, title:_('Text')});
         var field_data = new Ext.form.TextArea({ width: 450, height: 200, title:_('Data') });
+        var field_file = new Baseliner.UploadPanel({
+            title: _('File'),
+            url: '/job/log/upload_file',
+            height: self.height_drop
+        });
+        field_file.on('beforesubmit', function(up,params,filename){
+            params.text = field_annotate.getValue();
+            params.mid = mid;
+            params.level = severity.getValue();
+            return true;
+        });
+        field_file.on('complete', function(up,params){
+            store_load();
+        });
+        
         var severity = new Ext.form.ComboBox ({
                 editable: false,
                 forceSelection: true,
@@ -233,7 +248,7 @@
                 }
                 }, '->', new Ext.Toolbar.TextItem (_("Severity")), severity
             ],
-            items : [ { xtype:'tabpanel', activeTab:0, items: [ field_annotate, field_data ] } ] 
+            items : [ { xtype:'tabpanel', activeTab:0, items: [ field_annotate, field_data, field_file ] } ] 
         });
 
         win.show();

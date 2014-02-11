@@ -805,7 +805,7 @@ Baseliner.store.CI = function(c) {
         remoteSort: true,
         autoLoad: true,
         totalProperty: 'totalCount', 
-        fields: ['mid','item', 'name','collection','class','classname', 'versionid', 'description', 'properties', 'pretty_properties','data', 'icon','moniker'] 
+        fields: ['mid','item', 'name','bl','collection','class','classname', 'versionid', 'description', 'properties', 'pretty_properties','data', 'icon','moniker'] 
      }, c));
 };
 Ext.extend( Baseliner.store.CI, Baseliner.JsonStore );
@@ -816,7 +816,6 @@ Baseliner.model.CISelect = function(c) {
     var tpl_list;
 
     if ( show_class ) {
-
         tpl_list = new Ext.XTemplate(
             '<tpl for="."><div class="search-item">',
                 //'<h3><span>{ns_type}<br />{user}</span><img src="{icon}" />{name}</h3>',
@@ -830,7 +829,11 @@ Baseliner.model.CISelect = function(c) {
         tpl_list = new Ext.XTemplate(
             '<tpl for="."><div class="search-item">',
                 //'<h3><span>{ns_type}<br />{user}</span><img src="{icon}" />{name}</h3>',
-            '<span id="boot" style="background: transparent"><strong>{name}</strong></span>',
+            '<span id="boot" style="background: transparent"><strong>{name}</strong>',
+            '<tpl if="values.bl && values.bl!=\'*\'">',
+                ' ({bl})',
+            '</tpl>',
+            '</span>',
             '<tpl if="pretty_properties">',
                 '<br />{pretty_properties}',
             '</tpl>',
@@ -942,6 +945,7 @@ Baseliner.ci_box = function(c) {
     var ci_box = new Baseliner.model.CISelect(Ext.apply({
         store: store, 
         singleMode: true, 
+        mode: 'remote',
         fieldLabel: _('CI'),
         name: 'ci',
         hiddenName: 'ci', 
@@ -957,6 +961,15 @@ Baseliner.ci_box = function(c) {
     }
     return ci_box;
 };
+
+Baseliner.CIClassCombo = Ext.extend(Baseliner.ComboSingleRemote, {
+    fieldLabel: _('CI Class'),
+    allowBlank: true,
+    field: 'name',
+    fields: [ 'classname', 'name' ],
+    url: '/ci/classes'
+});
+    
 
 /* 
      Baseliner.form components
@@ -2187,6 +2200,11 @@ Baseliner.DataEditor = function(c) {
 
     self.getData = function(){
         return collapse_data( store.getRange(), 0 );
+    };
+    self.setData = function(v) {
+        set_data( v );
+        store.proxy = new Ext.data.MemoryProxy( data );
+        store.reload();
     };
 
     self.addSingle = function(k,v){

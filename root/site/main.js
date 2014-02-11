@@ -92,19 +92,19 @@ Ext.onReady(function(){
                  handler: function(){ Baseliner.addNewTabComp("/message/inbox", _("Inbox"), { tab_icon: "/static/images/icons/envelope.gif" } ); },
                  icon : '/static/images/icons/envelope.gif' 
              },
-             { text: _('Permissions'), handler: function(){ Baseliner.user_actions(); } },
+             { text: _('Permissions'), handler: function(){ Baseliner.user_actions(); }, icon:'/static/images/icons/user_suit.gif' },
              // { text=>_('Preferences'), handler: function(){ Baseliner.preferences(); } },
-             { text: _('Preferences'), icon: '/user/avatar/image.png', handler: function(){ Prefs.open_editor(); } },
-             { text: _('Logout') , handler: function(){ Baseliner.logout(); }, index: 99, icon: '/static/images/logout.gif' }
+             { text: _('Preferences'), icon: '/user/avatar/image.png', handler: function(){ Prefs.open_editor(); } }
         ];
         
         if( Prefs.stash.can_change_password ) {
-            user_menu.push({ text: _('Change password'), handler: function(){ Baseliner.change_password(); } });
+            user_menu.push({ text: _('Change password'), handler: function(){ Baseliner.change_password(); }, icon:'/static/images/icons/password.png' });
         }
         if( Prefs.stash.can_surrogate ) {
             user_menu.push({ text: _('Surrogate...'), handler: function(){ Baseliner.surrogate();}, index: 80, icon: '/static/images/icons/users.gif' });
         }
         
+        user_menu.push({ text: _('Logout') , handler: function(){ Baseliner.logout(); }, index: 999, icon: '/static/images/logout.gif' });
         tbar_items.push({ xtype:'button', text: '<b>'+Prefs.username+'</b>', menu: user_menu });
     } else {
         tbar_items.push({ text: _('Login'), handler: function(){ Baseliner.login(); } });

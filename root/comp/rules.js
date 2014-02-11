@@ -248,10 +248,12 @@
         //clipboard = 
     };
     var node_decorate = function( node ) {
-        var rf = _bool(node.attributes.run_forward,true);
-        var rr = _bool(node.attributes.run_rollback,true);
-        var props = [];
-        if( !node.attributes.disabled ) {
+        var attr = node.attributes;
+        var rf = _bool(attr.run_forward,true);
+        var rr = _bool(attr.run_rollback,true);
+        var props = [], parallel_mode=[], data_key='';
+        var semaphore_key='';
+        if( !attr.disabled ) {
             if( rf && !rr ) {
                 props.push('NO ROLLBACK');
             }
@@ -261,16 +263,29 @@
             else if( !rr && !rf ) {
                 props.push('NO RUN');
             }
+            if( attr.parallel_mode && attr.parallel_mode!='none' ) {
+                parallel_mode.push( attr.parallel_mode );
+            }
+            if( attr.data_key ) {
+                data_key = '= ' + attr.data_key;
+            }
+            if( attr.semaphore_key ) {
+                semaphore_key = '\u00D8 ' + attr.semaphore_key;
+            }
         }
-        if( node.attributes.note ) node.setTooltip( node.attributes.note );
+        if( attr.note ) node.setTooltip( attr.note );
         var nel = node.ui.getTextEl();
         if( nel ) {
             var nn = node.id;
             // cleanup if no properties, needed by save on properties panel
             $( "[parent-node-props='"+nn+"']" ).remove();
-            if( props.length ) {
-                var labs = props.map(function(r){ return '<span class="badge" style="font-size: 9px;">'+r+'</span>' }).join('');
-                nel.insertAdjacentHTML( 'afterEnd', '<span id="boot" parent-node-props="'+nn+'" style="margin: 0px 0px 0px 4px; background: transparent">'+labs+'</span>');
+            var badges='';
+            if( data_key.length ) badges += '<span class="label" style="font-size: 9px; background-color:#606090">'+data_key+'</span>&nbsp;';
+            if( semaphore_key.length ) badges += '<span class="label" style="font-size: 9px; background-color:#906060">'+semaphore_key+'</span>&nbsp;';
+            if( props.length ) badges += props.map(function(r){ return '<span class="badge" style="font-size: 9px;">'+r+'</span>&nbsp;' }).join('');
+            if( parallel_mode.length ) badges += parallel_mode.map(function(r){ return '<span class="badge" style="font-size: 9px; background-color:#609060; text-transform: uppercase;">'+r+'</span>&nbsp;' }).join('');
+            if( badges.length ) {
+                nel.insertAdjacentHTML( 'afterEnd', '<span id="boot" parent-node-props="'+nn+'" style="margin: 0px 0px 0px 4px; background: transparent">'+badges+'</span>');
             }
         }
     };
@@ -304,7 +319,7 @@
             hidden: !( !data.needs_rollback_mode || data.needs_rollback_mode!='none' ),
             value: Baseliner.name_to_id(node.text) 
         });
-        var enabled = new Ext.form.Checkbox({ fieldLabel:_('Enabled'), checked: !_bool(attr.disabled,true) });
+        var enabled = new Ext.form.Checkbox({ fieldLabel:_('Enabled'), checked: node.disabled===true?false:true });
         var run_forward = new Ext.form.Checkbox({ fieldLabel:_('Run Forward'), checked: _bool(attr.run_forward,true) });
         var run_rollback = new Ext.form.Checkbox({ fieldLabel:_('Run Rollback'), checked: _bool(attr.run_rollback,true) });
         var error_trap = new Baseliner.ComboDouble({ 
@@ -325,8 +340,8 @@
             if( !node.attributes.data ) node.attributes.data={}; 
             var dk = data_key.getValue(); 
             if( dk!=undefined ) { 
-                node.attributes.data_key = dk; 
-                node.attributes.data.data_key=dk 
+                node.attributes.data_key = dk.trim(); 
+                node.attributes.data.data_key=dk.trim();
             }
             // attribute save
             node.attributes.active = enabled.checked ? 1 : 0;
@@ -336,11 +351,11 @@
             node.attributes.run_rollback = run_rollback.checked;
             node.attributes.parallel_mode = parallel_mode.getValue();
             node.attributes.error_trap = error_trap.getValue();
-            node_decorate( node );  // change the node's look
-            node.attributes.semaphore_key = semaphore_key.getValue();
+            node.attributes.semaphore_key = semaphore_key.getValue().trim();
             node.attributes.timeout = timeout.getValue();
             node.attributes.note = note.getValue();
             node.setText( node.attributes.text );
+            node_decorate( node );  // change the node's look
             // data save
             if( !node.attributes.data ) node.attributes.data={};
             Ext.apply(node.attributes.data, opts.getValues() );
@@ -626,7 +641,9 @@
                             dsl_stash.setValue( res.stash_yaml );
                         }, function(res){
                             Baseliner.message( 'DSL', _('Error during DSL execution: %1', res.msg ) );
-                            document.getElementById( dsl_cons.getId() ).style.color = "#f54";  // red
+                            var el_cons = document.getElementById( dsl_cons.getId() );
+                            if(!el_cons) return;
+                            el_cons.style.color = "#f54";  // red
                             var out = res.output != undefined ? res.output : '';
                             dsl_cons.setValue( out + '\n\n========= DSL ERROR =======\n\n' + res.msg ); 
                             dsl_stash.setValue( res.stash_yaml );
@@ -683,6 +700,8 @@
                     depth:depth, 
                     icon: attr.icon,
                     lev: lev.length>0 ? lev.join('.')+'.'+k : k,
+                    parallel_mode: attr.parallel_mode && attr.parallel_mode!='none' 
+                        ? _(attr.parallel_mode) : '',
                     run_mode: rf && !rb ? _('NO ROLLBACK') 
                         : !rf && rb ? _('ROLLBACK')
                         : rf===false && rb===false ? _('NO RUN') : '',
@@ -704,6 +723,7 @@
                 [%= lev %]
                 <img style="vertical-align: middle; float: left" src="[%= icon %]"> [%= text %]
             [% if( run_mode ) { %]<span class="badge">[%= run_mode %]</span>[% } %]
+            [% if( parallel_mode ) { %]<span class="badge" style="background-color: #609060; text-transform: uppercase;">[%= parallel_mode %]</span>[% } %]
             </h3>
             <div style="margin-left: 16px">
             <small class="rule" style="color:#999">[%= name %] - [%= key %]</small>

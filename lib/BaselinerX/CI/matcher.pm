@@ -73,7 +73,7 @@ sub parse {
         $tree = $item->add_parse_tree( $tree );
         return $tree;
     } else {
-        return { msg=>'not found' };
+        return {};
     }
 }
 

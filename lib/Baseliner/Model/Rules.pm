@@ -275,6 +275,21 @@ sub dsl_build {
     }
 }
 
+sub wait_for_children {
+    my ($self, $stash, %p ) = @_;
+    if( my $chi_pids = $stash->{_forked_pids} ) {
+        _info( _loc('Waiting for return code from children pids: %1', join(',',keys $chi_pids ) ) );
+        for my $pid ( keys $chi_pids ) {
+            waitpid $pid, 0;
+            delete $chi_pids->{$pid};
+            if( my $res = queue->pop( msg=>"rule:child:results:$pid" ) ) {
+                _fail $res->{err} if $res->{err};
+            }
+        }
+        _info( _loc('Done waiting for return code from children pids: %1', join(',',keys $chi_pids ) ) );
+    }
+}
+
 sub dsl_run {
     my ($self, %p ) = @_;
     my $dsl = $p{dsl};
@@ -294,15 +309,7 @@ sub dsl_run {
     alarm 0;
     
     # wait for children to finish
-    if( my $chi_pids = $stash->{_forked_pids} ) {
-        _info( _loc('Waiting for return code from children pids: %1', join(',',keys $chi_pids ) ) );
-        for my $pid ( keys $chi_pids ) {
-            waitpid $pid, 0;
-            if( my $res = queue->pop( msg=>"rule:child:results:$pid" ) ) {
-                _fail $res->{err} if $res->{err};
-            }
-        }
-    }
+    $self->wait_for_children( $stash );
     
     # reset log reporting to "Core"
     if( my $job = $stash->{job} ) {
@@ -489,12 +496,14 @@ sub launch {
     # TODO milestone for service
     #_debug $ret;
     my $refr = ref $return_data;
-    $return_data = $refr eq 'HASH' || Scalar::Util::blessed($return_data) 
-        ? $return_data 
-        : {}; #!$refr || $refr eq 'ARRAY' ? { service_return=>$return_data } : {} ;
-    # merge into stash
-    merge_into_stash( $stash, ( $data_key ne '=' ? { $data_key => $return_data } : $return_data ) ) if length $data_key;
-    return $return_data;
+    my $mergeable = $refr eq 'HASH' || Scalar::Util::blessed($return_data); 
+    if( $mergeable || $refr eq 'ARRAY' || !$refr ) {
+        # merge into stash
+        merge_into_stash( $stash, ( $data_key eq '=' && $mergeable ? $return_data : { $data_key => $return_data } ) ) if length $data_key;
+        return $return_data;
+    } else {
+        return {};
+    }
 }
 
 sub merge_into_stash {
@@ -693,6 +702,19 @@ register 'statement.delete.key' => {
         sprintf(q{
            delete $stash->{ '%s' } ;
         }, $n->{key}, $self->dsl_build( $n->{children}, %p ) );
+    },
+};
+
+register 'statement.parallel.wait' => {
+    text => 'WAIT for children',
+    data => { variable=>'stash_var', local_var=>'value' },
+    icon => '/static/images/icons/time.png',
+    holds_children => 0, 
+    dsl => sub { 
+        my ($self, $n, %p ) = @_;
+        sprintf(q{
+            $self->wait_for_children( $stash );
+        });
     },
 };
 

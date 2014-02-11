@@ -37,9 +37,11 @@ sub parse {
     my %tree;
     my @found;
     while( $source =~ /$regex/g ) {
+        my %caps = %+;
         my $lin = [ map { $_->{lin} } grep { ( $_->{from} <= $-[0] ) && ( $+[0] <= $_->{to} ) } @newline ]->[0];
-        push @found => { %+, line=>($lin//0) } if %+;
-        while( my($k,$v) = each %+ ) {
+        push @found => { %caps, line=>($lin//0) } if %caps;
+        Util->_debug( \%caps );
+        while( my($k,$v) = each %caps ) {
             $tree{ $k } = [] unless exists $tree{$k}; 
             push @{ $tree{ $k } }, $v;
         }
@@ -50,7 +52,7 @@ sub parse {
         $item->add_parse_tree( \@found );
         return \%tree;
     } else {
-        return { msg=>'not found' };
+        return {};
     }
 }
 

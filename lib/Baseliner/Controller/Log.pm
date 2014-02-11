@@ -507,4 +507,28 @@ sub log_file : Path('/job/log/download_data') {
     $c->forward('/serve_file');
 }
 
+sub upload_file : Path('/job/log/upload_file') {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+
+    my $mid      = $p->{mid};
+    my $filename = $p->{qqfile};
+    my $level    = $p->{level} ||= 'info';
+    my $text     = $p->{text};
+    
+    my $f = _file( $c->req->body );
+    _log "Uploading to log " . $filename;
+    try {
+        my $job = ci->new( $mid );
+        my $msg = length $text  ? $text : _loc( 'User *%1* has uploaded file `%2`', $c->username, $filename);  
+        $job->logger->$level( $msg, data=>''.$f->slurp, data_name=>"$filename", more=>'file', username=>$c->username );
+        $c->stash->{ json } = { success => \1, msg => _loc( 'File saved to job %1 log: %2', $job->name, $filename ) } ;            
+    } catch {
+        my $err = shift;
+        _error "Error uploading file to job log: " . $err;
+        $c->stash->{ json } = { success => \0, msg => $err };
+    };
+    $c->forward( 'View::JSON' );
+}
+
 1;

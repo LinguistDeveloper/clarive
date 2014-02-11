@@ -2390,7 +2390,7 @@ Baseliner.FormPanel = Ext.extend( Ext.FormPanel, {
     },
     getValues : function(a,b,c){
         var form2 = this.getForm();
-        if( !form2.el.dom ) {
+        if( !form2 || !form2.el || !form2.el.dom ) {
             return null;
         }
         var form_data = form2.getValues() || {};
@@ -3072,14 +3072,17 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
             }); 
         });
     },
-    add_row : function(){
+    add_row : function(rec,no_edit){
         var self = this;
-        var u = new self.store.recordType( Ext.decode(Ext.encode(self.default_record)) );
+        var u = new self.store.recordType( rec || Ext.decode(Ext.encode(self.default_record)) );
         var index = self.store.getCount();
-        if( self.editor ) self.editor.stopEditing();
+        if( self.editor && !no_edit ) self.editor.stopEditing();
         self.store.insert(index, u);
         self.getSelectionModel().selectRow(index);          
-        if( self.editor ) self.editor.startEditing(index);
+        if( self.editor && !no_edit ) self.editor.startEditing(index);
+    },
+    remove_all : function(){
+        this.store.removeAll();
     },
     del_row : function(){
         var self = this;
@@ -3264,8 +3267,88 @@ Ext.apply(Ext.layout.FormLayout.prototype, {
     }
 });
 
- 
 /* 
+ *  UploadPanel : a simple uploader
+ *
+ *  Example:
+ *
+        var field_file = new Baseliner.UploadPanel({
+            title: _('File'),
+            url: '/job/log/upload_file',
+            height: self.height_drop
+        });
+        field_file.on('beforesubmit', function(up,params,filename){
+            params.text = field_annotate.getValue();
+            params.mid = mid;
+            params.level = severity.getValue();
+            return true;
+        });
+        field_file.on('complete', function(up,params){
+            store_load();
+        });
+
+*/
+Baseliner.UploadPanel = Ext.extend( Ext.Panel, {
+    border: false,
+    style: { margin: '10px 10px 10px 10px' },
+    height: 200,
+    initComponent : function(){
+        var self = this;
+        if(!self.baseParams) self.baseParams = {};
+        if(!self.url ) {
+            throw _('Missing UploadPanel url');
+        }
+        self.addEvents(['beforesubmit','complete']);
+        self.on('afterrender', function(){
+            self.uploader = new qq.FileUploader({
+                element: self.el.dom,
+                action: self.url,
+                template: '<div class="qq-uploader">' + 
+                    '<div class="qq-upload-drop-area"><span>' + _('Drop files here to upload') + '</span></div>' +
+                    '<div class="qq-upload-button">' + _('Upload File') + '</div>' +
+                    '<ul class="qq-upload-list"></ul>' + 
+                 '</div>',
+                onComplete: function(fu, filename, res){
+                    return self.on_complete(fu,filename,res);
+                },
+                onSubmit: function(id, filename){
+                    return self.on_submit(id,filename);
+                },
+                onProgress: function(id, filename, loaded, total){},
+                onCancel: function(id, filename){ },
+                classes: Ext.apply({
+                    button: 'qq-upload-button',
+                    drop: 'qq-upload-drop-area',
+                    dropActive: 'qq-upload-drop-area-active',
+                    list: 'qq-upload-list',
+                    file: 'qq-upload-file',
+                    spinner: 'qq-upload-spinner',
+                    size: 'qq-upload-size',
+                    cancel: 'qq-upload-cancel',
+                    success: 'qq-upload-success',
+                    fail: 'qq-upload-fail'
+                }, self.classes)
+            });
+        });
+        Baseliner.UploadPanel.superclass.initComponent.call(this);
+    },
+    on_submit : function(id,filename){
+        var self = this;
+        var params = Ext.apply({}, self.baseParams);  // clone
+        self.fireEvent('beforesubmit', self, params, filename);
+        self.uploader.setParams(params);
+        return true;
+    },
+    on_complete : function(fu,filename,res){
+        var self = this;
+        Baseliner.message(_('Upload File'), _(res.msg, filename) );
+        self.fireEvent('complete', self, filename, res);
+    }
+});
+
+/* 
+ *  IMPORTANT: This is for fieldlets only. Use Baseliner.UploadPanel for a more generic one.
+ *
  *  new Baseliner.UploadFilesPanel({
  *      allowBlank  : meta.allowBlank,
  *      readonly    : meta.readonly,
