@@ -170,7 +170,7 @@
             }
             attr.value = val;
             node.setText( String.format('{0} {1}', oper.getRawValue(), label || attr.value) );
-            console.dir(node);
+            //console.dir(node);
         };
         oper.on('blur', function(f){ set_value() });
         fcomp.on('blur', function(f){ set_value() });
