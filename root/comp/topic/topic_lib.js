@@ -1265,6 +1265,7 @@ Baseliner.Topic.change_status_topic = function(opts){
     self.getEl().mask(_("Processing.  Please wait"));
     Baseliner.ajaxEval( '/topic/change_status',{ mid: opts.mid, new_status: opts.new_status, old_status: opts.old_status },
         function(res) {
+            self.getEl().unmask();
             //if ( res.success ) {
                 if(res.change_status_before){
                     Ext.Msg.confirm( _('Confirmation'), _('Topic changed status before. Do you  want to refresh the topic?'),
@@ -1285,6 +1286,7 @@ Baseliner.Topic.change_status_topic = function(opts){
             //}
         },
         function(res) {
+            self.getEl().unmask();
             Baseliner.error( _('Error'), res.msg );
             if( Ext.isFunction(opts.failure) ) opts.failure(res);
         }        
