@@ -942,6 +942,7 @@ Baseliner.ci_box = function(c) {
     var ci_box = new Baseliner.model.CISelect(Ext.apply({
         store: store, 
         singleMode: true, 
+        mode: 'remote',
         fieldLabel: _('CI'),
         name: 'ci',
         hiddenName: 'ci', 
