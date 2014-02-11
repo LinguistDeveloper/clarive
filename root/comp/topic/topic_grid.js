@@ -612,7 +612,8 @@
         var mid = rec.data.topic_mid;
         var category_name = rec.data.category_name;
         var category_color = rec.data.category_color;
-        var date_modified_on = rec.data.modified_on ? rec.data.modified_on.dateFormat('M j, Y, g:i a') : '';
+        var date_modified_on = rec.data.modified_on ? rec.data.modified_on : '';
+        // var date_modified_on = rec.data.modified_on ? rec.data.modified_on.dateFormat('M j, Y, g:i a') : '';
         var modified_by = rec.data.modified_by;
         
         //#######################################Ñapa
@@ -620,8 +621,9 @@
             mid = rec.json['mid_' + this.alias];
             category_name = rec.json['category_name_' + this.alias];
             category_color = rec.json['category_color_' + this.alias];
-            var modified_on_to_date = new Date(rec.json['modified_on_' + this.alias]);
-            date_modified_on = modified_on_to_date.dateFormat('M j, Y, g:i a');
+            // var modified_on_to_date = new Date(rec.json['modified_on_' + this.alias]);
+            // date_modified_on = modified_on_to_date.dateFormat('M j, Y, g:i a');
+            // date_modified_on = modified_on_to_date.dateFormat('M j, Y, g:i a');
             modified_by = rec.json['modified_by_' + this.alias];
         }
         //#######################################
@@ -1104,7 +1106,7 @@
                 //console.dir(filter_params);
                 switch (filter_params.type){
                     case 'date':   
-                        filter_params.dateFormat = 'Y-m-d';
+                        //filter_params.dateFormat = 'Y-m-d';
                         filter_params.beforeText = _('Before');
                         filter_params.afterText = _('After'); 
                         filter_params.onText = _('On'); 
