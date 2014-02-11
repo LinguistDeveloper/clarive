@@ -514,6 +514,7 @@ sub roles : Local {
 sub store : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
+    my $query = $p->{query};
     
     # in cache ?
     my $mid_param =  $p->{mid} || $p->{from_mid} || $p->{to_mid} ;
@@ -579,7 +580,7 @@ sub store : Local {
         }
         
         $class = "BaselinerX::CI::$class" if $class !~ /^Baseliner/;
-        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
+        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
     }
     elsif( my $role = $p->{role} ) {
         my @roles;
@@ -590,10 +591,10 @@ sub store : Local {
             push @roles, $r;
         }
         my $classes = [ packages_that_do( @roles ) ];
-        ($total, @data) = $self->tree_objects( class=>$classes, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty}, no_yaml=>$p->{with_data}?0:1);
+        ($total, @data) = $self->tree_objects( class=>$classes, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty}, no_yaml=>$p->{with_data}?0:1);
     }
     else {
-        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$p->{query}, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
+        ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
         #_fail( 'No class or role supplied' );
     }
 
@@ -604,9 +605,9 @@ sub store : Local {
         my %vp = ( $p->{role} ? (role=>$p->{role}) : ($p->{classname} || $p->{class} || $p->{isa}) ? (classname=>$p->{class}||$p->{classname}) : () );
         
         my @vars = Baseliner::Role::CI->variables_like_me( %vp );
-        push @data, map { 
+        push @data, grep { defined } map { 
             my $cn =  $_->var_ci_class ? 'BaselinerX::CI::'.$_->var_ci_class : $_->description;
-            +{
+            length $query && $_->name !~ /$query/i ? undef : +{
                   _id=> 'var-'. $_->mid,
                   _is_leaf=> \1,
                   _parent=> undef,
