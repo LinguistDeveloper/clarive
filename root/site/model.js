@@ -805,7 +805,7 @@ Baseliner.store.CI = function(c) {
         remoteSort: true,
         autoLoad: true,
         totalProperty: 'totalCount', 
-        fields: ['mid','item', 'name','collection','class','classname', 'versionid', 'description', 'properties', 'pretty_properties','data', 'icon','moniker'] 
+        fields: ['mid','item', 'name','bl','collection','class','classname', 'versionid', 'description', 'properties', 'pretty_properties','data', 'icon','moniker'] 
      }, c));
 };
 Ext.extend( Baseliner.store.CI, Baseliner.JsonStore );
@@ -816,7 +816,6 @@ Baseliner.model.CISelect = function(c) {
     var tpl_list;
 
     if ( show_class ) {
-
         tpl_list = new Ext.XTemplate(
             '<tpl for="."><div class="search-item">',
                 //'<h3><span>{ns_type}<br />{user}</span><img src="{icon}" />{name}</h3>',
@@ -830,7 +829,11 @@ Baseliner.model.CISelect = function(c) {
         tpl_list = new Ext.XTemplate(
             '<tpl for="."><div class="search-item">',
                 //'<h3><span>{ns_type}<br />{user}</span><img src="{icon}" />{name}</h3>',
-            '<span id="boot" style="background: transparent"><strong>{name}</strong></span>',
+            '<span id="boot" style="background: transparent"><strong>{name}</strong>',
+            '<tpl if="values.bl && values.bl!=\'*\'">',
+                ' ({bl})',
+            '</tpl>',
+            '</span>',
             '<tpl if="pretty_properties">',
                 '<br />{pretty_properties}',
             '</tpl>',
