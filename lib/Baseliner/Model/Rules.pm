@@ -224,7 +224,7 @@ sub dsl_build {
         my $timeout = $attr->{timeout};
         do{ _debug _loc("*Skipped* task %1 in run forward", $name); next; } if !$is_rollback && !$run_forward;
         do{ _debug _loc("*Skipped* task %1 in run rollback", $name); next; } if $is_rollback && !$run_rollback;
-        my ($data_key) = $attr->{data_key} =~ /^\s*(\S+)\s*$/;
+        my ($data_key) = $attr->{data_key} =~ /^\s*(\S+)\s*$/ if $attr->{data_key};
         my $closure = $attr->{closure};
         push @dsl, sprintf( '# task: %s', $name ) . "\n"; 
         if( $closure ) {
@@ -935,9 +935,11 @@ register 'statement.perl.do' => {
         my ($self, $n, %p ) = @_;
         sprintf(q{
             {
-                $stash->{'%s'} = do { %s };
+                my $dk = '%s';
+                my $ret = do { %s };
+                $stash->{$dk} = $ret if length $dk;
             }
-        }, $n->{data_key}, $n->{code} // '', $self->dsl_build( $n->{children}, %p ) );
+        }, $n->{data_key} // '', $n->{code} // '', $self->dsl_build( $n->{children}, %p ) );
     },
 };
 
