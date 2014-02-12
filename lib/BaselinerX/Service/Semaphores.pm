@@ -43,7 +43,7 @@ sub run_once {
     # cleanup killed rows
     $self->del_roadkill if $config->{auto_purge} && $check_for_roadkill;
     # check for dead processes
-    $self->check_for_roadkill && $check_for_roadkill;
+    $self->check_for_roadkill if $check_for_roadkill;
     # process queue
     $self->process_queue( %$config );
 }
@@ -57,7 +57,7 @@ sub run_daemon {
     #mdb->create_capped( 'sem_queue' );
 
     _log "Sem daemon started";
-    my $iteration=0;
+    my $iteration=1;
     my $pending=0;
     my $hostname = Util->my_hostname;
     
