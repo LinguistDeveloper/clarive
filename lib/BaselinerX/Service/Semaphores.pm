@@ -14,7 +14,8 @@ register 'config.sem.server' => {
         { id=>'wait_for',  default=>.5 },
         { id=>'host',  default=>'localhost' },
         { id=>'auto_purge',  default=>0 },
-        { id=>'iterations', default=>100},
+        { id=>'iterations', default=>1000},
+        { id=>'check_for_roadkill_iterations', default=>1000},
     ],
 };
 
@@ -33,14 +34,16 @@ register 'service.sem.daemon' => {
 };
 
 sub run_once {
-    my ($self, $c, $config) = @_;
+    my ($self, $c, $config, $check_for_roadkill ) = @_;
+    
+    $check_for_roadkill //= 1;
 
     my $sm = Baseliner->model('Semaphores');
 
     # cleanup killed rows
-    $self->del_roadkill if $config->{auto_purge};
+    $self->del_roadkill if $config->{auto_purge} && $check_for_roadkill;
     # check for dead processes
-    $self->check_for_roadkill;
+    $self->check_for_roadkill && $check_for_roadkill;
     # process queue
     $self->process_queue( %$config );
 }
@@ -57,18 +60,20 @@ sub run_daemon {
     my $iteration=0;
     my $pending=0;
     my $hostname = Util->my_hostname;
+    
+    my $cr_iters = $config->{check_for_roadkill_iterations} // 1000;
 
     do {
         try {
-            $self->run_once( $c, $config );
+            $self->run_once( $c, $config, !($iteration % $cr_iters) );
         } catch {
             my $err = shift;
-            _debug "ERROR: $err";
+            _debug "SEM DAEMON ERROR: $err";
         };
         Time::HiRes::usleep( $freq );
         $iteration++; 
         $pending = mdb->sem_queue->find({ status => 'waiting', hostname=>$hostname })->count;
-    } while ( ( $iteration <=  $iterations ) || $pending gt 0 );
+    } while ( ( $iteration <=  $iterations ) || $pending > 0 );
     _debug " - semaphore iteration finished " . $iteration . ' le ' . $iterations . ' or ' . $pending . " gt 0\n";
     _log "Sem daemon finished";
 }
@@ -112,7 +117,7 @@ sub process_queue {
 sub check_for_roadkill {
     my ($self, %p ) = @_;
     
-    #_debug _loc("RUNNING sem_check_for_roadkill");
+    _debug _loc("RUNNING sem_check_for_roadkill");
     my $rs = mdb->sem_queue->find({ status=>mdb->in('waiting', 'idle', 'granted', 'busy'), hostname=>Util->my_hostname });
     while( my $r = $rs->next ) {
         my $pid = $r->{pid};
