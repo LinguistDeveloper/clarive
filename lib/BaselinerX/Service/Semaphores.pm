@@ -51,7 +51,7 @@ sub run_daemon {
     my $iterations = $config->{iterations} || 1000;
     
     _log "Making sure the semaphore queue is Capped...";
-    mdb->create_capped( 'sem_queue' );
+    #mdb->create_capped( 'sem_queue' );
 
     _log "Sem daemon started";
     my $iteration=0;
