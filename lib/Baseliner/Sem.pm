@@ -92,7 +92,7 @@ sub take {
     my ($self, %p) =@_;
     return $self if $ENV{CLARIVE_NO_SEMS};
     my $id_queue = $self->enqueue;
-    my $freq = config_get( 'config.sem.server.wait_for' )->{wait_for};
+    my $freq = config_get( 'config.sem.server.wait_for' )->{wait_for} // 250_000;  # microsecs, 250ms
     my $que;
     my $logged = 0;
     # wait until the daemon grants me out

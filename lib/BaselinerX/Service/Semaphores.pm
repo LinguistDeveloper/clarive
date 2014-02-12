@@ -10,12 +10,13 @@ with 'Baseliner::Role::Service';
 
 register 'config.sem.server' => {
     metadata => [
-        { id=>'frequency', default=>1 },
-        { id=>'wait_for',  default=>.5 },
+        { id=>'frequency', default=>500_000 },  # microseconds, 1_000_000 = 1 sec
+        { id=>'wait_for',  default=>250_000 },
         { id=>'host',  default=>'localhost' },
         { id=>'auto_purge',  default=>0 },
+        { id=>'purge_interval',  default=>'1D' },
         { id=>'iterations', default=>1000},
-        { id=>'check_for_roadkill_iterations', default=>1000},
+        { id=>'check_for_roadkill_iterations', default=>500},
     ],
 };
 
@@ -40,8 +41,8 @@ sub run_once {
 
     my $sm = Baseliner->model('Semaphores');
 
-    # cleanup killed rows
-    $self->del_roadkill if $config->{auto_purge} && $check_for_roadkill;
+    # cleanup killed rows, etc
+    $self->cleanup( purge_interval=>$config->{purge_interval} ) if $config->{auto_purge} && $check_for_roadkill;
     # check for dead processes
     $self->check_for_roadkill if $check_for_roadkill;
     # process queue
@@ -50,9 +51,10 @@ sub run_once {
 
 sub run_daemon {
     my ($self, $c, $config) = @_;
-    my $freq = $config->{frequency} || 1;
+    my $freq = $config->{frequency} // 500_000;  # milisecs
     my $iterations = $config->{iterations} || 1000;
     
+    _log "Starting sem daemon with frequency '$freq'";
     _log "Making sure the semaphore queue is Capped...";
     #mdb->create_capped( 'sem_queue' );
 
@@ -70,11 +72,16 @@ sub run_daemon {
             my $err = shift;
             _debug "SEM DAEMON ERROR: $err";
         };
-        Time::HiRes::usleep( $freq );
+        Time::HiRes::usleep( 0+$freq );
         $iteration++; 
         $pending = mdb->sem_queue->find({ status => 'waiting', hostname=>$hostname })->count;
     } while ( ( $iteration <=  $iterations ) || $pending > 0 );
+    
     _debug " - semaphore iteration finished " . $iteration . ' le ' . $iterations . ' or ' . $pending . " gt 0\n";
+    
+    # cleanup 
+    $self->cleanup( purge_interval=>$config->{purge_interval} ) if $config->{auto_purge};
+    
     _log "Sem daemon finished";
 }
 
@@ -131,9 +138,15 @@ sub check_for_roadkill {
     }
 }
 
-sub del_roadkill {
+sub cleanup {
     my ($self, %p ) = @_;
-    my $rs = mdb->sem_queue->remove({ status=>'killed', hostname=>Util->my_hostname }, { multiple=>1 });
+    my $inter = $p{purge_interval} // '1D';
+    my $purge_date = ''.(Class::Date->now - $inter); 
+    # roadkilled? old?
+    mdb->sem_queue->remove({ 
+            status=>mdb->in('cancelled','done','killed'), 
+            ts_request=>{ '$lt'=>$purge_date }, 
+            hostname=>Util->my_hostname }, { multiple=>1 });
 }
 
 1;
