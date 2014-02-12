@@ -330,12 +330,13 @@ sub dsl_run {
 # used by events
 sub run_rules {
     my ($self, %p) = @_;
+    my $when = $p{when};
     local $Baseliner::_no_cache = 1;
     my @rules = 
         $p{id_rule} 
             ? ( +{ DB->BaliRule->find( $p{id_rule} )->get_columns } )
             : DB->BaliRule->search(
-                { rule_event => $p{event}, rule_type => ($p{rule_type} // 'event'), rule_when => $p{when}, rule_active => 1 },
+                { rule_event => $p{event}, rule_type => ($p{rule_type} // 'event'), rule_when => $when, rule_active => 1 },
                 { order_by   => [          { -asc    => 'rule_seq' }, { -asc    => 'id' } ] }
               )->hashref->all;
     my $stash = $p{stash};
@@ -346,7 +347,7 @@ sub run_rules {
     my $sem;
     if( defined $mid && @rules ) {
         require Baseliner::Sem;
-        $sem = Baseliner::Sem->new( key=>'event:'.$stash->{mid} );
+        $sem = Baseliner::Sem->new( key=>'event:'.$stash->{mid}, who=>"rules:$when" );
         $sem->take;
     }
 
