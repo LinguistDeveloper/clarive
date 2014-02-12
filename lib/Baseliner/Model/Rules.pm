@@ -341,6 +341,15 @@ sub run_rules {
     my $stash = $p{stash};
     my @rule_log;
     local $ENV{BASELINER_LOGCOLOR} = 0;
+    
+    my $mid = $stash->{mid} if $stash;
+    my $sem;
+    if( defined $mid && @rules ) {
+        require Baseliner::Sem;
+        $sem = Baseliner::Sem->new( key=>'event:'.$stash->{mid} );
+        $sem->take;
+    }
+
     for my $rule ( @rules ) {
         my ($runner_output, $rc, $dsl, $ret,$err);
         try {
@@ -384,6 +393,9 @@ sub run_rules {
             }
         };
         push @rule_log, { ret=>$ret, id => $rule->{id}, dsl=>$dsl, stash=>$stash, output=>$runner_output, rc=>$rc };
+    }
+    if( $sem ) {
+        $sem->release;
     }
     return { stash=>$stash, rule_log=>\@rule_log }; 
 }
