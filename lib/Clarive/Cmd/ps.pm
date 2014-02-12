@@ -33,7 +33,8 @@ sub run {
               #$p->ttydev,
               $p->state,
               scalar(localtime($p->start)),
-              $p->cmndline);
+              ( $^O eq 'cygwin' ? $p->fname : $p->cmndline)
+        );
         for my $pid ( @pids ) {
             if( $pid->{pid} == $p->pid || $pid->{pid} == $p->ppid ) {
                 if( $pid->{type} eq 'server' ) {
