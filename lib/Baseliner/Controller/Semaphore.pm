@@ -66,7 +66,7 @@ sub sems : Local {
     my $cnt;
     $sort||='key';
     $dir = uc $dir eq 'DESC' ? -1 : 1;
-    my $where = {};
+    my $where = { internal=>mdb->nin(1,'1',undef) };
     $query and $where = mdb->query_build(
         query  => $query,
         fields => {

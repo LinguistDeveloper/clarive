@@ -41,6 +41,7 @@ has who      => qw(is rw isa Any);
 has slots    => qw(is rw isa Num default 1);
 has id_queue => qw(is rw isa MongoDB::OID);
 has id_sem   => qw(is rw isa MongoDB::OID);
+has internal => qw(is rw isa Bool default 0); 
 
 sub BUILD {
     my ($self) = @_;
@@ -59,6 +60,7 @@ sub create {
     my ($self, %p) =@_;
     return mdb->sem->insert({
             key       => $self->key,
+            internal  => ''.$self->internal,
             slots     => $self->slots,
             %p
         }, { safe => 1 }
@@ -122,7 +124,7 @@ sub release {
     my $que = mdb->sem_queue->find_one({ _id=>$self->id_queue });
     $que->{status} = 'done'; 
     $que->{ts_release} = mdb->ts;
-    mdb->sem_queue->save( $que, { safe=>1 } );
+    mdb->sem_queue->save( $que, { safe=>1 } ) if $que->{_id};
 }
 
 sub purge { 

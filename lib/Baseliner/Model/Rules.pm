@@ -347,7 +347,7 @@ sub run_rules {
     my $sem;
     if( defined $mid && @rules ) {
         require Baseliner::Sem;
-        $sem = Baseliner::Sem->new( key=>'event:'.$stash->{mid}, who=>"rules:$when" );
+        $sem = Baseliner::Sem->new( key=>'event:'.$stash->{mid}, who=>"rules:$when", internal=>1 );
         $sem->take;
     }
 
