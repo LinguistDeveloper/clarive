@@ -90,6 +90,7 @@ sub enqueue {
 
 sub take { 
     my ($self, %p) =@_;
+    return $self if $ENV{CLARIVE_NO_SEMS};
     my $id_queue = $self->enqueue;
     my $freq = config_get( 'config.sem.server.wait_for' )->{wait_for};
     my $que;
@@ -131,6 +132,7 @@ sub purge {
 
 sub DEMOLISH {
     my ($self)=@_;
+    return if $ENV{CLARIVE_NO_SEMS};
     # release me
     $self->release;
 }
