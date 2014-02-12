@@ -65,7 +65,7 @@ sub run_daemon {
             my $err = shift;
             _debug "ERROR: $err";
         };
-        sleep $freq;
+        Time::HiRes::usleep( $freq );
         $iteration++; 
         $pending = mdb->sem_queue->find({ status => 'waiting', hostname=>$hostname })->count;
     } while ( ( $iteration <=  $iterations ) || $pending gt 0 );
