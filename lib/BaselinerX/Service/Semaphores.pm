@@ -112,9 +112,7 @@ sub process_queue {
         for( 1..$free_slots ) {
             my $req = shift @reqs;
             next if !ref $req;
-            $req->{status} = 'granted';
-            $req->{ts_grant} = _now();
-            mdb->sem_queue->save( $req, { safe=>1 });
+            mdb->sem_queue->update({ _id=>$req->{_id} }, { '$set'=>{ status=>'granted', ts_grant=>_now() } }, { safe=>1 });
             _log _loc 'Granted semaphore %1 to %2', $key, $req->{who};
         }
         
