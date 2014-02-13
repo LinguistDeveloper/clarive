@@ -1061,7 +1061,7 @@
         category_name : { header: _('Category'), sortable: true, dataIndex: 'category_name', hidden: true, width: 80, sortable: true, renderer: render_default },
         category_status_name : { header: _('Status'), sortable: true, dataIndex: 'category_status_name', width: 50, renderer: render_status },
         title : { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title},
-        progress : { header: _('%'), dataIndex: 'progress', width: 25, sortable: true, renderer: render_progress },
+        progress : { header: _('%'), dataIndex: 'progress', width: 25, sortable: true, hidden: true, renderer: render_progress },
         numcomment : { header: _('More info'), report_header: _('Comments'), sortable: true, dataIndex: 'numcomment', width: 45, renderer: render_actions },         
         projects : { header: _('Projects'), dataIndex: 'projects', sortable: true, width: 60, renderer: render_project },
         topic_mid : { header: _('MID'), hidden: true, sortable: true, dataIndex: 'topic_mid', renderer: render_default},    

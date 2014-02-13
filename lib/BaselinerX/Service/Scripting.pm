@@ -124,6 +124,7 @@ sub run_remote {
     $args ||= [];
     for my $server ( Util->_array_or_commas($servers)  ) {
         $server = ci->new( $server ) unless ref $server;
+        Util->is_ci_or_fail( $server, 'server' );
         if( !$server->active ) {
             $log->warn( _loc('Server %1 is inactive. Skipped', $server->name) );
             next;
@@ -210,6 +211,7 @@ sub run_eval {
     my @rets;
     for my $server ( Util->_array_or_commas($servers)  ) {
         $server = ci->new( $server ) unless ref $server;
+        Util->is_ci_or_fail( $server, 'server' );
         if( !$server->active ) {
             $log->warn( _loc('Server %1 is inactive. Skipped', $server->name) );
             next;

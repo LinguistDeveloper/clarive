@@ -28,12 +28,13 @@ sub run {
         my $lin = sprintf($FORMAT,
               $p->pid,
               $p->ppid,
-              $p->pctcpu . '%',
-              $p->pctmem . '%',
+              ( $^O eq 'cygwin' ? '??' : $p->pctcpu . '%' ),
+              ( $^O eq 'cygwin' ? '??' : $p->pctmem . '%' ),
               #$p->ttydev,
               $p->state,
               scalar(localtime($p->start)),
-              $p->cmndline);
+              ( $^O eq 'cygwin' ? $p->fname : $p->cmndline)
+        );
         for my $pid ( @pids ) {
             if( $pid->{pid} == $p->pid || $pid->{pid} == $p->ppid ) {
                 if( $pid->{type} eq 'server' ) {

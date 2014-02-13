@@ -224,7 +224,7 @@ sub dsl_build {
         my $timeout = $attr->{timeout};
         do{ _debug _loc("*Skipped* task %1 in run forward", $name); next; } if !$is_rollback && !$run_forward;
         do{ _debug _loc("*Skipped* task %1 in run rollback", $name); next; } if $is_rollback && !$run_rollback;
-        my ($data_key) = $attr->{data_key} =~ /^\s*(\S+)\s*$/;
+        my ($data_key) = $attr->{data_key} =~ /^\s*(\S+)\s*$/ if $attr->{data_key};
         my $closure = $attr->{closure};
         push @dsl, sprintf( '# task: %s', $name ) . "\n"; 
         if( $closure ) {
@@ -330,17 +330,27 @@ sub dsl_run {
 # used by events
 sub run_rules {
     my ($self, %p) = @_;
+    my $when = $p{when};
     local $Baseliner::_no_cache = 1;
     my @rules = 
         $p{id_rule} 
             ? ( +{ DB->BaliRule->find( $p{id_rule} )->get_columns } )
             : DB->BaliRule->search(
-                { rule_event => $p{event}, rule_type => ($p{rule_type} // 'event'), rule_when => $p{when}, rule_active => 1 },
+                { rule_event => $p{event}, rule_type => ($p{rule_type} // 'event'), rule_when => $when, rule_active => 1 },
                 { order_by   => [          { -asc    => 'rule_seq' }, { -asc    => 'id' } ] }
               )->hashref->all;
     my $stash = $p{stash};
     my @rule_log;
     local $ENV{BASELINER_LOGCOLOR} = 0;
+    
+    my $mid = $stash->{mid} if $stash;
+    my $sem;
+    if( defined $mid && @rules ) {
+        require Baseliner::Sem;
+        $sem = Baseliner::Sem->new( key=>'event:'.$stash->{mid}, who=>"rules:$when", internal=>1 );
+        $sem->take;
+    }
+
     for my $rule ( @rules ) {
         my ($runner_output, $rc, $dsl, $ret,$err);
         try {
@@ -384,6 +394,9 @@ sub run_rules {
             }
         };
         push @rule_log, { ret=>$ret, id => $rule->{id}, dsl=>$dsl, stash=>$stash, output=>$runner_output, rc=>$rc };
+    }
+    if( $sem ) {
+        $sem->release;
     }
     return { stash=>$stash, rule_log=>\@rule_log }; 
 }
@@ -922,9 +935,11 @@ register 'statement.perl.do' => {
         my ($self, $n, %p ) = @_;
         sprintf(q{
             {
-                $stash->{'%s'} = do { %s };
+                my $dk = '%s';
+                my $ret = do { %s };
+                $stash->{$dk} = $ret if length $dk;
             }
-        }, $n->{data_key}, $n->{code} // '', $self->dsl_build( $n->{children}, %p ) );
+        }, $n->{data_key} // '', $n->{code} // '', $self->dsl_build( $n->{children}, %p ) );
     },
 };
 

@@ -1515,6 +1515,13 @@ sub to_ci_class {
     return 'BaselinerX::CI::'.$cn;
 }
 
+sub is_ci_or_fail {
+    my ($obj,$name)=@_;
+    my $msg = _loc('Invalid or missing CI: %1', $name);
+    _fail($msg) unless _blessed($obj) && $obj->does('Baseliner::Role::CI'); 
+    return 1;
+}
+
 sub _strip_last {
     my ($pattern, $str)=@_;
     my ($ret) = reverse ( split /$pattern/, $str );
