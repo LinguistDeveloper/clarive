@@ -514,7 +514,8 @@ sub roles : Local {
 sub store : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
-    my $query = $p->{query};
+    my $valuesqry = $p->{valuesqry} ? ( $p->{mids} = $p->{query} ) : ''; # en valuesqry está el "mid" en cuestión
+    my $query = $p->{query} unless $valuesqry;
     
     # in cache ?
     my $mid_param =  $p->{mid} || $p->{from_mid} || $p->{to_mid} ;
@@ -558,7 +559,7 @@ sub store : Local {
     if( exists $p->{mids} ) {
         $mids = delete $p->{mids};
         if( length $mids ) {
-            $mids = [ grep { defined } split /,+/, $mids ] unless ref $mids eq 'ARRAY';
+            $mids = [ grep { defined } split /[\s,]+/, $mids ] unless ref $mids eq 'ARRAY';
         } else {  # no value sent, but key exists
             $mids = [];  # otherwise, it will return all cis
         }
