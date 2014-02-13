@@ -33,6 +33,8 @@
             {  name: 'pid' },
             {  name: 'hostname' },
             {  name: 'caller' },
+            {  name: 'wait_time' },
+            {  name: 'run_time' },
             {  name: 'ts_request' },
             {  name: 'ts_grant' },
             {  name: 'ts_release' }
@@ -329,6 +331,8 @@
             { header: _('Requested On'), width: 100, dataIndex: 'ts_request', sortable: false , menuDisabled: true},    
             { header: _('Granted On'), width: 100, dataIndex: 'ts_grant', sortable: false , menuDisabled: true},    
             { header: _('Released On'), width: 100, dataIndex: 'ts_release', sortable: false, menuDisabled: true }, 
+            { header: _('Wait'), width: 100, dataIndex: 'wait_time', sortable: false, menuDisabled: true }, 
+            { header: _('Run'), width: 100, dataIndex: 'run_time', sortable: false, menuDisabled: true }, 
             { header: _('Active'), width: 50, dataIndex: 'active', sortable: false, menuDisabled: true, renderer: Baseliner.render_active},
             { width: 100, renderer: render_actions, menuDisabled: true }
         ]

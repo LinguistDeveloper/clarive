@@ -117,8 +117,11 @@ sub queue : Local {
     while( my $r = $rs->next ) {
         $r->{who} ||= $r->{caller};
         $r->{id} = '' . delete $r->{_id};
+        $r->{wait_time} = $$r{ts_grant} && $$r{ts_request} ? (Class::Date->new($r->{ts_grant}) - Class::Date->new($r->{ts_request}))->second . 's': '';
+        $r->{run_time} = $$r{ts_release} && $$r{ts_grant} ? (Class::Date->new($r->{ts_release}) - Class::Date->new($r->{ts_grant}))->second . 's' : '';
         push @rows, $r;
     }
+    
     #@rows = sort { $a->{ $sort } cmp $b->{ $sort } } @rows if $sort;
     $c->stash->{json} = {
         totalCount=>scalar @rows,
