@@ -107,11 +107,12 @@ sub file_foreach {
     my $job   = $stash->{job};
     #my $log   = $job->logger;
     my $fail_on_error = $config->{fail_on_error} // 1;
-    my $path = $config->{path} // _throw _loc 'Root path not configured';
+    my $path = $config->{path};
     my $path_mode = $config->{path_mode} // 'files_flat';
     my $dir_mode = $config->{dir_mode} // 'file_only';
-    
-    _fail _loc 'Path does not exist or is not readable: `%1`', $path if $path!~/\*|\?/ && !-e $path;
+   
+    _fail _loc 'Root path not configured' if $path_mode ne 'nature_items' && !length $path;
+    _fail _loc 'Path does not exist or is not readable: `%1`', $path if length $path && $path!~/\*|\?/ && !-e $path;
     my $job_dir = $stash->{job_dir};
 
     my @files;
@@ -130,11 +131,11 @@ sub file_foreach {
     }
     elsif( $path_mode eq 'nature_items' ){
         @files = 
-            map { "$_" }
+            map { length $path ? $_->relative($path)->stringify : "$_" }
             grep { 
                 my $is_dir = -d $_; # is_dir does not check if it exists and is a dir
-                ($dir_mode eq 'file_only' && $is_dir)
-                || ($dir_mode eq 'dir_only' && !$is_dir)
+                ($dir_mode eq 'file_only' && !$is_dir)
+                || ($dir_mode eq 'dir_only' && $is_dir)
                 || $dir_mode eq 'file_and_dir';
             }
             grep {
@@ -280,8 +281,8 @@ sub run_ship {
     my $task  = $stash->{current_task_name};
     my $job_exec = $job->exec;
 
-    my $remote_path_orig = $config->{remote_path} // _fail 'Missing parameter remote_file';
-    my $local_path  = $config->{local_path}  // _fail 'Missing parameter local_file';
+    my $remote_path_orig = $config->{remote_path} // _fail 'Missing parameter remote_path';
+    my $local_path  = $config->{local_path}  // _fail 'Missing parameter local_path';
     my $user        = $config->{user};
     my $chmod       = $config->{'chmod'};
     my $chown       = $config->{'chown'};
