@@ -304,6 +304,7 @@ sub run_ship {
     my $servers = $config->{server};
     for my $server ( Util->_array_or_commas($servers) ) {
         $server = ci->new( $server ) unless ref $server;
+        Util->is_ci_or_fail( $server, 'server' );
         if( !$server->active ) {
             $log->warn( _loc('Server %1 is inactive. Skipped', $server->name) );
             next;
@@ -457,6 +458,7 @@ sub run_retrieve {
     my $servers = $config->{server};
     for my $server ( Util->_array_or_commas($servers) ) {
         $server = ci->new( $server ) unless ref $server;
+        Util->is_ci_or_fail( $server, 'server' );
         my $local  =  $server->parse_vars( "$local_orig" );
         my $remote =  $server->parse_vars( "$remote_orig" );
         my $server_str = "$user\@".$server->name;
