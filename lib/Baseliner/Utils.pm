@@ -1014,9 +1014,9 @@ sub _mason {
     @mason_features or @mason_features = map {
         [ $_->id => _dir( $_->root )->stringify ]
     } Baseliner->features->list;
-    use File::Spec;
-    use HTML::Mason::Interp;
-    my $comp_root = [ [ root=>"". Baseliner->config->{root} ], @mason_features ];
+    require File::Spec;
+    require HTML::Mason::Interp;
+    my $comp_root = [ @mason_features, [ root=>"". Baseliner->config->{root} ] ];
     my $data_dir = File::Spec->catdir( File::Spec->tmpdir, sprintf('Baseliner_%d_mason_data_dir', $<));
     my $m = HTML::Mason::Interp->new(
         comp_root  => $comp_root,
