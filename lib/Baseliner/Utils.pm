@@ -1582,9 +1582,9 @@ our $__month = 3600 * 24 * 4.33;
 our $__year = 2_629_744*12;
 
 sub ago {
-    my ($date) = @_;
+    my ($date, $now) = @_;
     _log "Date:".$date;
-    my $now = Class::Date->now();
+    $now //= Class::Date->now();
     # if( ref $date eq 'DateTime' ) {
     #     $date = Class::Date->new( $date->epoch );
     # } elsif( ref $date ne 'Class::Date' ) {
