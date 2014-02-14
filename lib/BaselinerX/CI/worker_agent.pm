@@ -295,12 +295,7 @@ sub _worker_do {
         my $result = $self->db->get( $res_key );
         $self->db->del( $res_key );
         if( length $result ) {
-            my $msgtype = substr($result,0,5);
-            $result = $msgtype eq 'stor:' 
-                ? Storable::thaw(substr($result,5)) 
-                : $msgtype eq 'yaml:' 
-                    ? Util->_load( substr($result,5) )
-                    : Util->_from_json( $result );
+            $result = $self->parse_message( $result );
         }
         # load standard receivers
         $self->output( $result->{output} );
@@ -323,6 +318,16 @@ sub _worker_do {
     }
     FINISH:
     return;   # do not return anything here, use the done callback
+}
+
+sub parse_message { 
+    my($self,$msg) = @_; 
+    my $msgtype = substr($msg,0,5);
+    return $msgtype eq 'stor:' 
+        ? Storable::thaw(substr($msg,5)) 
+        : $msgtype eq 'yaml:' 
+            ? Util->_load( substr($msg,5) )
+            : Util->_from_json( $msg );
 }
 
 sub _whos_capable {

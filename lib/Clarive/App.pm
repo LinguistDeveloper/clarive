@@ -105,6 +105,12 @@ sub yaml {
     YAML::XS::Dump( @_ );
 }
 
+sub yaml_load {
+    my $self=shift;
+    require YAML::XS;
+    YAML::XS::Load( @_ );
+}
+
 sub json {
     my ($self, $data) = @_; 
     require JSON::XS;
