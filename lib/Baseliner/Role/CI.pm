@@ -317,9 +317,9 @@ sub save_data {
         for my $other_mid ( _array $rel->{value} ) {
             $other_mid = $other_mid->mid if ref( $other_mid ) =~ /^BaselinerX::CI::/;
             next unless $other_mid;
-            my $doc = { $my_rel => $master_row->mid, $other_rel => $other_mid, rel_type=>$rel_type_name, rel_field=>$rel->{field} };
-            DB->BaliMasterRel->find_or_create($doc);
-            mdb->master_rel->insert( $doc );
+            my $rdoc = { $my_rel => $master_row->mid, $other_rel => $other_mid, rel_type=>$rel_type_name, rel_field=>$rel->{field} };
+            DB->BaliMasterRel->find_or_create($rdoc);
+            mdb->master_rel->find_or_create($rdoc);
             push @{$relations{ $rel->{field} }}, $other_mid;
             Baseliner->cache_remove( qr/:$other_mid:/ );
         }

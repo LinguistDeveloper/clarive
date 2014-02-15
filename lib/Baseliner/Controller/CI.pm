@@ -835,27 +835,24 @@ sub update : Local {
             #$mid = $class->save( name=>$name, bl=>$bl, active=>$active, moniker=>delete($form_data->{moniker}), data=> $form_data ); 
         }
         elsif( $action eq 'edit' && defined $mid ) {
-            #$c->cache_remove( qr/:$mid:/ );
-            #$mid = $class->save( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($form_data->{moniker}), data => $form_data ); 
-
-            #my $ci = $class->new( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($form_data->{moniker}), %$form_data, modified_by=>$c->username );
             my $ci = ci->find( $mid ) || _fail _loc 'CI %1 not found', $mid;
             $ci->update( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($form_data->{moniker}), %$form_data, modified_by=>$c->username );
-            
-            #my $ci = _ci( $mid );
-            #$ci->update( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($form_data->{moniker}), %$form_data ); 
-            #$ci->save;
             $mid = $ci->mid;
         }
         else {
             _fail _loc("Undefined action");
         }
+        
+        # XXX deprecate this?
         if( $chi ) {
             my $cis = ref $chi eq 'ARRAY' ? $chi : [ split /,/, $chi ]; 
             DB->BaliMasterRel->search({ from_mid=>$mid })->delete;
+            mdb->master_rel->remove({ from_mid=>"$mid" });
             for my $to_mid ( _array( $cis ) ) {
-                my $rel_type = $collection . '_' . _ci( $to_mid )->collection;   # XXX consider sending the rel_type from js 
-                DB->BaliMasterRel->create({ from_mid=>$mid, to_mid=>$to_mid, rel_type=>$rel_type });
+                my $rel_type = $collection . '_' . ci->new( $to_mid )->collection;   # XXX consider sending the rel_type from js 
+                my $doc = { from_mid=>"$mid", to_mid=>"$to_mid", rel_type=>$rel_type };
+                DB->BaliMasterRel->create($doc);
+                mdb->master_rel->insert($doc);
                 $c->cache_remove( qr/:$to_mid:/ );
             }
         }
@@ -921,7 +918,6 @@ sub delete : Local {
             ci->delete( $_ );
         }
         $c->stash->{json} = { success=>\1, msg=>_loc('CIs deleted ok' ) };
-        #$c->stash->{json} = { success=>\1, msg=>_loc('CI does not exist' ) };
     } catch {
         my $err = shift;
         _error( $err );

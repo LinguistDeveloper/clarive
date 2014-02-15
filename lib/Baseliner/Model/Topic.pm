@@ -1227,7 +1227,7 @@ sub get_projects {
     my ($self, $topic_mid, $id_field, $meta, $data ) = @_;
 
     # for safety with legacy, reassign previous unassigned projects (normally from drag-drop
-    DB->BaliMasterRel->search({ from_mid=>$topic_mid, rel_type=>'topic_project', rel_field=>undef })->update({ rel_field=>$id_field });
+    # DB->BaliMasterRel->search({ from_mid=>$topic_mid, rel_type=>'topic_project', rel_field=>undef })->update({ rel_field=>$id_field });
     
     my @projects = Baseliner->model('Baseliner::BaliTopic')->find(  $topic_mid )->projects->search( {rel_field => $id_field}, { select=>['mid','name'], order_by => { '-asc' => ['mid'] }} )->hashref->all;
     $data->{"$id_field._project_name_list"} = join ', ', map { $_->{name} } @projects;
@@ -1540,8 +1540,9 @@ sub save_data {
         if ( my $cis = $data->{_cis} ) {
             for my $ci ( _array $cis ) {
                 if ( length $ci->{ci_mid} && $ci->{ci_action} eq 'update' ) {
-                    DB->BaliMasterRel->update_or_create(
-                        {rel_type => 'ci_request', from_mid => $ci->{ci_mid}, to_mid => $topic->mid} );
+                    my $rdoc = {rel_type => 'ci_request', from_mid => ''.$ci->{ci_mid}, to_mid => ''.$topic->mid};
+                    DB->BaliMasterRel->update_or_create($rdoc);
+                    mdb->master_rel->update_or_create($rdoc);
                 }
             } ## end for my $ci ( _array $cis)
         } ## end if ( my $cis = $data->...)
@@ -1927,13 +1928,16 @@ sub set_topics {
         
     if( @new_topics ) {
         if(@old_topics){
-            my $rs_old_topics = DB->BaliMasterRel->search({$topic_direction => $rs_topic->mid, rel_field=>$rel_field });
-            $rs_old_topics->delete();
+            my $rdoc = {$topic_direction=>''.$rs_topic->mid, rel_field=>$rel_field };
+            my $rs_old_topics = DB->BaliMasterRel->search($rdoc)->delete;
+            mdb->master_rel->remove($rdoc,{multiple=>1});
         }
 
         my $rel_seq = 1;  # oracle may resolve this with a seq, but sqlite doesn't
         for (@new_topics){
-            DB->BaliMasterRel->update_or_create({$topic_direction => $rs_topic->mid, $data_direction => $_, rel_type =>'topic_topic', rel_field => $rel_field, rel_seq=>$rel_seq++ });
+            my $rdoc = {$topic_direction => ''.$rs_topic->mid, $data_direction => "$_", rel_type =>'topic_topic', rel_field=>$rel_field, rel_seq=>0+($rel_seq++) };
+            DB->BaliMasterRel->update_or_create($rdoc);
+            mdb->master_rel->update_or_create($rdoc);
         }
 
         my $topics = join(',', @new_topics);
@@ -1973,8 +1977,9 @@ sub set_topics {
         };
 
         #$rs_topic->set_topics( undef, { rel_type=>'topic_topic', rel_field => $id_field});
-        my $rs_old_topics = DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_field => $rel_field });
-        $rs_old_topics->delete();
+        my $rdoc = {from_mid => ''.$rs_topic->mid, rel_field => $rel_field };
+        my $rs_old_topics = DB->BaliMasterRel->search($rdoc)->delete();
+        mdb->master_rel->remove($rdoc,{multiple=>1});
     }
 
     $self->update_rels( @old_topics, @new_topics );
@@ -1992,7 +1997,7 @@ sub set_cis {
     @new_cis  = split /,/, $new_cis[0] if $new_cis[0] =~ /,/ ;
     my @old_cis =
         map { $_->{to_mid} }
-    DB->BaliMasterRel->search( { from_mid => $rs_topic->mid, rel_type => $rel_type } )
+    DB->BaliMasterRel->search({ from_mid => $rs_topic->mid, rel_type => $rel_type })
         ->hashref->all;
 
     my @del_cis = array_minus( @old_cis, @new_cis );
@@ -2001,13 +2006,16 @@ sub set_cis {
     if( @add_cis || @del_cis ) {
         my ($del_cis, $add_cis) = ( '', '' );
         if( @del_cis ) {
-            DB->BaliMasterRel->search( { from_mid => $rs_topic->mid, to_mid=>\@del_cis, rel_type => $rel_type, rel_field => $id_field } )
-                ->delete;
+            DB->BaliMasterRel->search({ from_mid => ''.$rs_topic->mid, to_mid=>\@del_cis, rel_type => $rel_type, rel_field => $id_field })->delete;
+            mdb->master_rel->remove({ from_mid => $rs_topic->mid, to_mid=>mdb->in(@del_cis), rel_type=>$rel_type, rel_field=>$id_field },{multiple=>1});
             $del_cis = join(',', map { Baseliner::CI->new($_)->name . '[-]' } @del_cis );
         }
         if( @add_cis ) {
-            DB->BaliMasterRel->create({ from_mid => $rs_topic->mid, to_mid=>$_, rel_type => $rel_type, rel_field => $id_field } )
-                for @add_cis;
+            for( @add_cis ) {
+                my $rdoc = { from_mid => ''.$rs_topic->mid, to_mid=>"$_", rel_type=>$rel_type, rel_field=>$id_field };
+                DB->BaliMasterRel->create($rdoc);
+                mdb->master_rel->insert($rdoc);
+            }
             $add_cis = join(',', map { Baseliner::CI->new($_)->name . '[+]' } @add_cis );
         }
         
@@ -2087,8 +2095,9 @@ sub set_revisions {
             => sub {
                 _throw _loc( 'Error modifying Topic: %1', shift() );
             };
-            my $rs_old_revisions = DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_type => 'topic_revision' });
-            $rs_old_revisions->delete(); 
+            my $rdoc = {from_mid => ''.$rs_topic->mid, rel_type => 'topic_revision' };
+            my $rs_old_revisions = DB->BaliMasterRel->search($rdoc)->delete;
+            mdb->master_rel->remove($rdoc,{multiple=>1});
             #$rs_topic->set_revisions( undef, { rel_type=>'topic_revision'});
             #$rs_topic->revisions->delete;
         }
@@ -2130,18 +2139,19 @@ sub set_release {
     $notify->{project} = \@projects if @projects;
 
     # check if arrays contain same members
-
-    _log "Nueva $release_field: $new_release";
     if ( $new_release ne $old_release ) {
         if($release_row){
-            my $rs = DB->BaliMasterRel->search({from_mid => $old_release, to_mid=>$topic_mid, rel_field => $release_field})->delete;
+            my $rdoc = {from_mid => "$old_release", to_mid=>''.$topic_mid, rel_field => $release_field};
+            my $rs = DB->BaliMasterRel->search($rdoc)->delete;
+            mdb->master_rel->remove($rdoc,{multiple=>1});
         }
         # release
         if( $new_release ) {
-            
             my $row_release = Baseliner->model('Baseliner::BaliTopic')->find( $new_release );
             my $topic_row = Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid );
             $row_release->add_to_topics( $topic_row, { rel_type=>'topic_topic', rel_field => $release_field} );
+            mdb->master_rel->insert({ from_mid=>''.$row_release->mid, to_mid=>"$topic_mid", 
+                    rel_type=>'topic_topic', rel_field=>$release_field, rel_seq=>mdb->seq('master_rel') });
             
             event_new 'event.topic.modify_field' => { username   => $user,
                                                 field      => $id_field,
@@ -2187,7 +2197,9 @@ sub set_projects {
     #my @old_projects = map {$_->{mid}} Baseliner->model('Baseliner::BaliTopic')->find(  $topic_mid )->projects->search( {rel_field => $id_field}, { order_by => { '-asc' => ['mid'] }} )->hashref->all;
     
     # for safety with legacy, reassign previous unassigned projects (normally from drag-drop
-    DB->BaliMasterRel->search({ from_mid=>$topic_mid, rel_type=>'topic_project', rel_field=>undef })->update({ rel_field=>$id_field });
+    my $rdoc = { from_mid=>"$topic_mid", rel_type=>'topic_project', rel_field=>undef };
+    DB->BaliMasterRel->search($rdoc)->update({ rel_field=>$id_field });
+    mdb->master_rel->update($rdoc,{ rel_field=>$id_field },{multiple=>1});
 
     my @old_projects =  map { $_->{mid} } Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid )->
                 projects->search( {rel_field => $id_field }, { select => ['mid'], order_by => { '-asc' => ['mid'] }} )->hashref->all;
@@ -2202,7 +2214,9 @@ sub set_projects {
     
     # check if arrays contain same members
     if ( array_diff(@new_projects, @old_projects) ) {
-        my $del_projects = DB->BaliMasterRel->search({from_mid => $topic_mid, rel_type => 'topic_project', rel_field => $id_field})->delete;
+        my $rdoc = {from_mid => "$topic_mid", rel_type => 'topic_project', rel_field => $id_field};
+        my $del_projects = DB->BaliMasterRel->search($rdoc)->delete;
+        mdb->master_rel->remove($rdoc,{multiple=>1});
         
         # projects
         if (@new_projects){
@@ -2211,6 +2225,8 @@ sub set_projects {
             while( my $project = $rs_projects->next){
                 push @name_projects,  $project->name;
                 $rs_topic->add_to_projects( $project, { rel_type=>'topic_project', rel_field => $id_field } );
+                mdb->master_rel->insert({ to_mid=>''.$project->mid, from_mid=>"$topic_mid", rel_type=>'topic_project', 
+                        rel_field=>$id_field, rel_seq=>mdb->seq('master_rel') });
             }
             
             my $projects = join(',', @name_projects);
@@ -2264,7 +2280,9 @@ sub set_users{
     
     # check if arrays contain same members
     if ( array_diff(@new_users, @old_users) ) {
-        my $del_users =  DB->BaliMasterRel->search( {from_mid => $topic_mid, rel_type => 'topic_users', rel_field=>$id_field })->delete;
+        my $rdoc = {from_mid => "$topic_mid", rel_type => 'topic_users', rel_field=>$id_field };
+        my $del_users =  DB->BaliMasterRel->search($rdoc)->delete;
+        mdb->master_rel->remove($rdoc,{multiple=>1});
         # users
         if (@new_users){
             my @name_users;
@@ -2272,6 +2290,7 @@ sub set_users{
             while(my $user = $rs_users->next){
                 push @name_users,  $user->username;
                 $rs_topic->add_to_users( $user, { rel_type=>'topic_users', rel_field=>$id_field });
+                mdb->master_rel->insert({ to_mid=>''.$user->mid, from_mid=>"$topic_mid", rel_type=>'topic_users', rel_field => $id_field, rel_seq=>mdb->seq('master_rel') });
             }
 
             my $users = join(',', @name_users);
