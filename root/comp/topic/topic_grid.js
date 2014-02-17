@@ -84,9 +84,6 @@
             var fvalues = custom_form.getValues();
             store_topics.baseParams = Ext.apply(store_topics.baseParams, fvalues);
             store_topics.baseParams = Ext.apply(store_topics.baseParams, { meta: params });
-            if( custom_panel && !custom_panel.hidden ) {
-                store_topics.baseParams.start = 0;
-            }
         }
         //loading = new Ext.LoadMask(panel.el, {msg:"Please wait..."});
         //loading = Ext.Msg.wait(_('Loading'), _('Loading'), { modal: false } );

@@ -496,6 +496,7 @@ sub topics_for_user {
 _debug( $where );
     my $rs = mdb->topic->find( $where )->sort( $order_by );
     $cnt = $rs->count;
+    $start = 0 if length $start && $start>=$cnt; # reset paging if offset
     $rs->skip( $start ) if $start >= 0 ;
     $rs->limit( $limit ) if $limit >= 0 ;
     my @mids = map { $_->{mid} } $rs->all;
