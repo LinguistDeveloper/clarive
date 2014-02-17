@@ -173,7 +173,6 @@ method is_writeable( $file_or_dir ) {
 
 # TODO data parameter support
 method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
-    $local = $self->normalize_path( $local );  # fixes windows slashes
     $remote = $self->normalize_path( $remote );
     # check if remote dir exists and is writeable
     if( my $remote_dir = ''. _file($remote)->dir ) {
@@ -205,7 +204,6 @@ method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
 }
 
 method get_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
-    $local = $self->normalize_path( $local );  # fixes windows slashes
     $remote = $self->normalize_path( $remote );
     $self->_get_file( $remote, $local );
     return $self->tuple;  
