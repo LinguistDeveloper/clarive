@@ -231,7 +231,8 @@ sub delete {
     if( $mid ) {
         my $row = DB->BaliMaster->find( $mid );
         DB->BaliMasterRel->search({ -or=>[{ from_mid=>$mid },{ to_mid=>$mid }] })->delete;
-        mdb->master_doc->remove({ mid=>"$mid" });
+        mdb->master_rel->remove({ '$or'=>[{from_mid=>"$mid",to_mid=>"$mid"}] },{multiple=>1});
+        mdb->master_doc->remove({ mid=>"$mid" },{multiple=>1});
         if( $row ) {
             # perfect
             Baseliner->cache_remove( qr/^ci:/ );
@@ -311,7 +312,7 @@ sub save_data {
         my $other_rel = $my_rel eq 'from_mid' ? 'to_mid' : 'from_mid';
         my $rel_type_name = $rel->{rel_type}->[1];
         # delete all records related 
-        my $mr_where ={ $my_rel=>$master_row->mid, rel_type=>$rel_type_name };
+        my $mr_where ={ $my_rel=>''.$master_row->mid, rel_type=>$rel_type_name };
         DB->BaliMasterRel->search($mr_where)->delete;
         mdb->master_rel->remove($mr_where,{ multiple=>1 });
         for my $other_mid ( _array $rel->{value} ) {
@@ -575,8 +576,9 @@ sub related_cis {
     } else {
         push @ands, { '$or'=> [ {from_mid=>$mid}, {to_mid=>$mid} ] };
     }
-    $where->{rel_type} = { -like=>$opts{rel_type} } if defined $opts{rel_type};
+    $where->{rel_type} = $opts{rel_type} if defined $opts{rel_type};
     # paging support
+    $opts{start} //= 0;
     $opts{limit} //= 20;
     $where->{'$and'} = \@ands if @ands;
     ######### rel query
@@ -587,6 +589,7 @@ sub related_cis {
     }
     $rs->skip( $opts{start} ) if $opts{start} > 0;
     $rs->limit( $opts{limit} ) if $opts{limit} > 0;
+    $rs->sort( $opts{sort} ) if ref $opts{sort};
 
     my @data = $rs->all;
     local $Baseliner::CI::no_rels = 1 if $opts{no_rels};
