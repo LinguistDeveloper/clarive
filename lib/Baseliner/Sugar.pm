@@ -225,7 +225,7 @@ sub event_new {
             _error "*** event_new: caught $key: $err";
         } else {
             _error "*** event_new: untrapped $key: $err";
-            _throw $err;
+            _fail $err;
         }
     };
 }
