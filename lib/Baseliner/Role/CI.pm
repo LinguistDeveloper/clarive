@@ -520,7 +520,13 @@ sub _build_ci_instance_from_rec {
     }
     my $ci_class = $rec->{ci_class}; 
     # instantiate
-    my $obj = $ci_class->new( $rec );
+    my $obj = try {
+        $ci_class->new( $rec )
+    } catch { 
+        my $err = shift;
+        _fail _loc 'Could not instanciate CI `%1`%2: %3', 
+            $ci_class, ($rec->{mid} ? " ($rec->{mid})": ''), $err;
+    };
     # add the original record to _ci
     if( ! $Baseliner::CI::_no_record ) {   ## TODO change this to $Baseliner::CI::ci_record
         $obj->{_ci} = $rec; 
