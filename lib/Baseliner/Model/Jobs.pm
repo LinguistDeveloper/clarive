@@ -57,6 +57,7 @@ sub monitor {
         runner       => 'runner',
         id_rule      => 'id_rule',
         contents     => 'list_contents',
+        changesets   => 'list_changesets',
         releases     => 'list_releases',
         applications => 'list_apps',
         natures      => 'list_natures'
@@ -184,10 +185,11 @@ sub monitor {
         my @changesets = (); #_array $job_items{ $job->{id} };
         
         # list_contents, list_apps are cache vars
-        if( !exists $job->{list_contents} || !exists $job->{list_apps} || !exists $job->{list_natures} ) {
+        if( Util->_any( sub{ !exists $job->{$_} }, qw(list_contents list_natures list_apps list_releases list_changesets)) ) {
             if ( my $ci = try { ci->new( $job->{mid} ) } catch { '' } ) {   # if -- support legacy jobs without cis?
-                $job->{list_contents} //= [ map { $_->topic_name } _array( $ci->changesets ) ];
+                $job->{list_changesets} //= [ map { $_->topic_name } _array( $ci->changesets ) ];
                 $job->{list_releases} //= [ map { $_->topic_name } _array( $ci->releases ) ];
+                $job->{list_contents} //= [ _array( $job->{list_releases}, $job->{list_changesets} ) ];
                 $job->{list_apps} //= [ map { $_->name } _array( $ci->projects ) ];
                 $job->{list_natures} //= [ map { $_->name } _array( $ci->natures ) ];
                 _warn "Saving job lists for mid " . _dump($job->{_id});
@@ -255,6 +257,7 @@ sub monitor {
             runner       => $job->{runner},
             id_rule      => $job->{id_rule},
             contents     => $job->{list_contents} || [],
+            changesets   => $job->{list_changesets} || [],
             releases     => $job->{list_releases} || [],
             applications => $job->{list_apps} || [],
             natures      => $job->{list_natures} || [],
