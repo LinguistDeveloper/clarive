@@ -23,6 +23,7 @@ sub monitor {
     my ($start, $limit, $query, $query_id, $dir, $sort, $filter, $groupby, $groupdir, $cnt ) = @{$p}{qw/start limit query query_id dir sort filter groupBy groupDir/};
     $start||=0;
     $limit||=50;
+    $groupby //= '';
 
     $sort ||= 'mid';
     $dir = !$dir ? -1 : lc $dir eq 'desc' ? -1 : 1; 

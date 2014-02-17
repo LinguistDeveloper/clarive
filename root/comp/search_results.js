@@ -11,6 +11,22 @@
         panel_prev.removeAll();
         panel_prev.setTitle( query );
     }
+    
+    var block_tmpl = function(){/*
+        <div id="boot" style="margin:4"><div id="search-result-block">
+            [% if( url[4] ){ %]
+                <img style="float: left; margin-right: 3px" src="[%= url[4] %]">
+            [% } %]
+            <div id="search-result-block-title">
+                <h4 style="color: #111">
+                    [%= title %]
+               </h4>
+            </div>
+            <p style="color:#aaa;font-size:11px;margin: 0px 0px 0px 0px">[%= info %]</p>
+            <p>[%= excerpt ? excerpt : text %]</p>
+            </div>
+        </div>
+    */}.tmpl();
     var panel = panel_prev 
         ? panel_prev
         : new Ext.Panel({
@@ -50,16 +66,7 @@
                             r.title = ['<table><tr><td>', Baseliner.topic_name({ category_name:r.url[1], category_color:r.url[2] }),
                                 '&nbsp;</td><td><h4>', r.title, '</h4></td></tr></table>' ].join(''); 
                         }
-                        var block = '<div id="boot" style="margin:4"><div id="search-result-block">'
-                            + ( r.url[4] ? String.format('<img style="float: left; margin-right: 3px" src="{0}">', r.url[4]) : '' )
-                            + '<div id="search-result-block-title"><h4 style="color: #111">'
-                            + r.title
-                            + '</h4>'
-                            + '</div>';
-                        block +=  '<p style="color:#aaa;margin: 0px 0px 0px 0px">' + r.info + '</p>';
-                        block +=  '<p>' + ( r.excerpt ? r.excerpt : r.text ) + '</p>'
-                            + '</div></div>'
-                            ;
+                        var block = block_tmpl(r);
                         var hit_panel = new Ext.Container({ html: block, style:'padding-right:20px; cursor:pointer; border: 1px solid #fff;', name: 'search-result' });
                         hit_panel.url = r.url;
                         hit_panel.type = r.type;

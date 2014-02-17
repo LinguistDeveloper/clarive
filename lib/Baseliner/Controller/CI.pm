@@ -1224,6 +1224,7 @@ sub search_query {
         my $class = Util->to_ci_class($coll);
         my $icon = $class->icon if $coll && $class->can('icon');
         $text =~ s/"|\{|\}|\'|\[|\]//g;
+        $text =~ s/(,)(\S)/$1 $2/g;
         my $info = sprintf "%s - %s (%s)", $r->{collection}, $r->{bl}, $r->{ts};
         my $desc = _strip_html( sprintf "%s", ($r->{name} // '') );
         if( length $desc ) {
