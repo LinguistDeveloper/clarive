@@ -245,7 +245,7 @@ sub _create {
         my $cs = ref $_ ? $_ :  ci->new( $_ );
         if( $cs->is_release ) {
             push @releases, $cs if $cs->is_release;
-            grep { $_->is_changeset } $cs->children( isa=>'topic', depth=>-1, no_rels=>1 );
+            grep { $_->is_changeset } $cs->children( isa=>'topic', no_rels=>1 );
         } elsif( $cs->is_changeset ) {
             $cs
         } else {
