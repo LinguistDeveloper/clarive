@@ -924,10 +924,10 @@
         //////////if(rec.json[this.dataIndex + '_' + this.alias]){
         //////////  value = rec.json[this.dataIndex + '_' + this.alias];
         //////////}     
-        // var size = btn_mini.pressed ? '8' : '10';
+        var size = btn_mini.pressed ? '8' : '8';
         var ret = String.format(
-            '<b><span class="bali-topic-status" style="font-size: 10px;">{0}</span></b>',
-             value );
+            '<b><span class="bali-topic-status" style="font-size: {0}px;">{1}</span></b>',
+             size, value );
            //+ '<div id="boot"><span class="label" style="float:left;padding:2px 8px 2px 8px;background:#ddd;color:#222;font-weight:normal;text-transform:lowercase;text-shadow:none;"><small>' + value + '</small></span></div>'
         return ret;
     };
