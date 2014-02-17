@@ -84,7 +84,7 @@ method execute( @cmd ) {
     if( $opts->{chdir} ) {
        @cmd = ( \'cd', $opts->{chdir}, \'&&', @cmd == 1 ? \$cmd[0] : @cmd );      
     }
-    if( my $user = $self->user ) {
+    if( (my $user = $self->user) && !$self->is_win ) {
         @cmd = @cmd == 1 ? $cmd[0] : $self->_double_quote_cmd( @cmd ); # join params quoted 
         @cmd = (\'su', \'-', $user, \'-l', \'-c', "@cmd");
     }
