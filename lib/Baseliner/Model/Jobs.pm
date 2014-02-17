@@ -183,17 +183,12 @@ sub monitor {
         my $status = _loc( $job->{status} );
         my $type = _loc($job->{job_type});
         my @changesets = (); #_array $job_items{ $job->{id} };
+        my $job_contents = $job->{job_contents} // {};
         
         # list_contents, list_apps are cache vars
-        if( Util->_any( sub{ !exists $job->{$_} }, qw(list_contents list_natures list_apps list_releases list_changesets)) ) {
-            if ( my $ci = try { ci->new( $job->{mid} ) } catch { '' } ) {   # if -- support legacy jobs without cis?
-                $job->{list_changesets} //= [ map { $_->topic_name } _array( $ci->changesets ) ];
-                $job->{list_releases} //= [ map { $_->topic_name } _array( $ci->releases ) ];
-                $job->{list_contents} //= [ _array( $job->{list_releases}, $job->{list_changesets} ) ];
-                $job->{list_apps} //= [ map { $_->name } _array( $ci->projects ) ];
-                $job->{list_natures} //= [ map { $_->name } _array( $ci->natures ) ];
-                _warn "Saving job lists for mid " . _dump($job->{_id});
-                mdb->master_doc->save( $job );
+        if( !keys %$job_contents ) {
+            if ( my $job_ci = try { ci->new( $job->{mid} ) } catch { '' } ) {   # if -- support legacy jobs without cis?
+                $job_contents = $job_ci->build_job_contents( 1 );  # also saves contents into doc
             }
         }
         my $last_log_message = $job->{last_log_message};
@@ -256,11 +251,11 @@ sub monitor {
             type         => $type,
             runner       => $job->{runner},
             id_rule      => $job->{id_rule},
-            contents     => $job->{list_contents} || [],
-            changesets   => $job->{list_changesets} || [],
-            releases     => $job->{list_releases} || [],
-            applications => $job->{list_apps} || [],
-            natures      => $job->{list_natures} || [],
+            contents     => [ _array( $job_contents->{list_releases}, $job_contents->{list_changesets} ) ],
+            changesets   => $job_contents->{list_changesets} || [],
+            releases     => $job_contents->{list_releases} || [],
+            applications => $job_contents->{list_apps} || [],
+            natures      => $job_contents->{list_natures} || [],
             #subapps      => \@subapps,   # maybe use _path_xs from Utils.pm?
           }; # if ( ( $cnt++ >= $start ) && ( $limit ? scalar @rows < $limit : 1 ) );
     }

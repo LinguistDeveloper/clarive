@@ -12,6 +12,7 @@ has bl                 => qw(is rw isa Any);
 has rollback           => qw(is rw isa BoolCheckbox default 0);
 has job_key            => qw(is rw isa Any), default => sub { Util->_md5() };
 has job_type           => qw(is rw isa Any default promote);  # promote, demote, static
+has job_contents       => qw(is rw isa HashRef), default=>sub{ +{} }; 
 has current_service    => qw(is rw isa Any default Core);
 has root_dir           => qw(is rw isa Any);
 has schedtime          => qw(is rw isa TS coerce 1), default => sub { ''.mdb->now };
@@ -587,6 +588,18 @@ sub gen_job_key {
     { job_key => $self->job_key };
 }
 
+# used by the job monitor 
+sub build_job_contents {
+    my ($self, $saving) =@_;
+    my $jc = {};
+    $jc->{list_changesets} //= [ map { $_->topic_name } Util->_array( $self->changesets ) ];
+    $jc->{list_releases} //= [ map { $_->topic_name } Util->_array( $self->releases ) ];
+    $jc->{list_apps} //= [ map { $_->name } Util->_array( $self->projects ) ];
+    $jc->{list_natures} //= [ map { $_->name } Util->_array( $self->natures ) ];
+    $self->job_contents( $jc );
+    $self->save if $saving;
+    return $jc; 
+}
 
 # used by the job dashboard
 sub summary2 {
@@ -978,6 +991,7 @@ sub run {
     }
     unlink $self->pid_file;
     $self->step( $self->final_step );
+    $self->build_job_contents;
     $self->save;
     return $self->status;
 }
