@@ -231,7 +231,7 @@ sub delete {
     if( $mid ) {
         my $row = DB->BaliMaster->find( $mid );
         DB->BaliMasterRel->search({ -or=>[{ from_mid=>$mid },{ to_mid=>$mid }] })->delete;
-        mdb->master_rel->remove({ '$or'=>[{from_mid=>"$mid",to_mid=>"$mid"}] },{multiple=>1});
+        mdb->master_rel->remove({ '$or'=>[{from_mid=>"$mid"},{to_mid=>"$mid"}] },{multiple=>1});
         mdb->master_doc->remove({ mid=>"$mid" },{multiple=>1});
         if( $row ) {
             # perfect
@@ -1099,9 +1099,9 @@ my $init = sub {
 };
 
 around initialize_instance_slot => sub {
-    my ($orig, $self) = (shift,shift);
+    my ($orig, $self) = (shift,shift);   # $self isa Moose::Meta::Attribute
     my ($meta_instance, $instance, $params) = @_;
-
+    
     my $init_arg = $self->init_arg();
     $gscope or local $gscope = {};
     my $mid = $instance->mid // $params->{mid};
