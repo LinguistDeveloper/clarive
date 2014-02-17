@@ -41,7 +41,7 @@ Values: Unix o Win32
 Default: Unix
 
 =cut
-has os => qw(default Unix lazy 1 required 1 is rw isa), enum [qw(Win32 Unix)];
+has os => qw(default unix lazy 1 required 1 is rw isa), enum [qw(unix win mvs)];
 
 =head2 mkpath_on
 
@@ -62,6 +62,18 @@ Default: true
 has overwrite_on => qw(is ro isa Bool default 1);
 
 has copy_attrs => qw(is ro isa Bool default 0);
+
+sub is_win { $_[0]->os eq 'win' }
+sub is_unix { $_[0]->os eq 'unix' }
+sub is_mvs { $_[0]->os eq 'mvs' }
+
+sub normalize_path {
+    my($self,$path) = @_;
+    return "$path" if !length $self->os || $self->is_unix;
+    my $p = Util->_file( $path );
+    return ''.$p->as_foreign('Win32') if $self->is_win;
+    return "$path";  # mvs?
+}
 
 sub tuple {
     my ($self)=@_;

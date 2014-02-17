@@ -48,18 +48,31 @@ sub error;
 sub rmpath;
 
 method mkpath ( $path ) {
-    $self->execute( \'mkdir', \'-p', $path );
-    $self->execute( 'chown', $self->user, $path ) if $self->user;
+    if ( $self->is_win ) {
+        $self->execute( \'md', \'/s', $path );
+        $self->execute( 'cacls', $path, '/e /c /g', $self->user ) if $self->user;
+    } else {
+        $self->execute( \'mkdir', \'-p', $path );
+        $self->execute( 'chown', $self->user, $path ) if $self->user;
+    }
     $self->rc and _fail _loc( 'Could not create remote directory `%1`: %2', $path, $self->output );
 }
 
 method chmod ( $mode, $path ) {
-    $self->execute( \'chmod', \$mode, $path );
+    if ( $self->is_win ) {
+        $self->execute( \'attrib', \'/D', \$mode, $path ) if $self->user;
+    } else {
+        $self->execute( \'chmod', \$mode, $path );
+    }
     $self->rc and _fail _loc( 'Could not chmod `%1 %2`: %3', $mode, $path, $self->output );
 }
 
 method chown ( $perms, $path ) {
-    $self->execute( \'chown', \$perms, $path );
+    if ( $self->is_win ) {
+        $self->execute( 'cacls', $path, '/e /c /g', $self->user ) if $self->user;
+    } else {
+        $self->execute( \'chown', \$perms, $path );
+    }
     $self->rc and _fail _loc( 'Could not chown `%1 %2`: %3', $perms, $path, $self->output );
 }
 
@@ -134,6 +147,8 @@ method is_writeable( $file_or_dir ) {
 
 # TODO data parameter support
 method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
+    $local = $self->normalize_path( $local );  # fixes windows slashes
+    $remote = $self->normalize_path( $remote );
     # check if remote dir exists and is writeable
     if( my $remote_dir = ''. _file($remote)->dir ) {
         # exists?
@@ -164,6 +179,8 @@ method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
 }
 
 method get_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
+    $local = $self->normalize_path( $local );  # fixes windows slashes
+    $remote = $self->normalize_path( $remote );
     $self->_get_file( $remote, $local );
     return $self->tuple;  
 }
@@ -264,7 +281,7 @@ sub _get_file {
     my ( $self, $remote, $local ) = @_;
     my $socket = $self->socket;
 
-    if ( $self->os eq "win" ) {
+    if ( $self->is_win ) {
         $remote =~ s{\/}{\\}g;      ## subs de las barras palante
         $remote =~ s{\\\\}{\\}g;    ## normalizo las barras dobles, por si acaso
         $socket->print( $self->encodeCMD("X dir $remote") . $self->EOL );

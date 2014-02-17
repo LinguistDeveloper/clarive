@@ -1,16 +1,18 @@
 package Baseliner::Role::CI::Server;
 use Moose::Role;
+use Moose::Util::TypeConstraints;
 with 'Baseliner::Role::CI';
 with 'Baseliner::Role::CI::Infrastructure';
 with 'Baseliner::Role::HasAgent';
 
 sub icon { '/static/images/ci/server.png' }
 
-has os          => qw(is rw isa Str default unix);
+
+has os          => qw(default unix lazy 1 required 1 is rw isa), enum [qw(unix win mvs)];
 has hostname    => qw(is rw isa Any required 1);
 has remote_temp => qw(is rw isa Any lazy 1), default => sub {
     my $self = shift;
-    return $self->os eq 'win' ? 'C:\TEMP' : '/tmp';
+    return $self->is_win ? 'C:\TEMP' : '/tmp';
     };
 has remote_perl => qw(is rw isa Str default perl);
 has remote_tar  => qw(is rw isa Str default tar);
