@@ -158,7 +158,7 @@ method check_writeable( $file_or_dir ) {
         #    Else
         #       WScript.Echo "The file is Read-only."
         #    End If
-        return 1;
+        return 0;  # this is backwards... use is_writeable
     } else {
         my ($rc,$ret) = $self->_execute( 'test', '-r', $file_or_dir ); # check it exists
         return (0,'') if $rc; # doesnt exist, it's writeable
