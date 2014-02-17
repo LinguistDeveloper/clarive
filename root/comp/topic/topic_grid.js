@@ -83,6 +83,7 @@
         if( custom_form_url && custom_form.is_loaded ) {
             var fvalues = custom_form.getValues();
             store_topics.baseParams = Ext.apply(store_topics.baseParams, fvalues);
+            store_topics.baseParams = Ext.apply(store_topics.baseParams, { meta: params });
         }
         //loading = new Ext.LoadMask(panel.el, {msg:"Please wait..."});
         //loading = Ext.Msg.wait(_('Loading'), _('Loading'), { modal: false } );

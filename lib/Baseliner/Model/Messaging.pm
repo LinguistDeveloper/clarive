@@ -128,17 +128,7 @@ sub create {
     if( my $template = $p{template} ) {
         if( $p{template_engine} eq 'mason' ) {
             try {
-                use File::Spec;
-                use HTML::Mason::Interp;
-                my $comp_root = [ [ root=>"". Baseliner->config->{root} ], @features ];
-                my $data_dir = File::Spec->catdir(
-                    File::Spec->tmpdir, sprintf('Baseliner_%d_mason_data_dir', $<));
-                my $m = HTML::Mason::Interp->new(
-                    comp_root  => $comp_root,
-                    data_dir   => $data_dir,
-                    out_method => \$body,
-                );
-                $m->exec( "/$template", %p, %{ $p{vars} || {} } );
+                $body = Util->_mason( "/$template", %p, %{ $p{vars} || {} } );
             } catch {
                 _log "Error in Mason Email engine: " . shift;
                 _log _whereami;

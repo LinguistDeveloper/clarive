@@ -95,7 +95,9 @@ sub save_relationships {
             }
         }
         if( defined $mid ) {
-            DB->BaliMasterRel->find_or_create({ from_mid=>$self->mid, to_mid=>$mid, rel_type=>$p{rel_type} // $self->item_relationship }); 
+            my $doc = { from_mid=>''.$self->mid, to_mid=>"$mid", rel_type=>$p{rel_type} // $self->item_relationship };
+            DB->BaliMasterRel->find_or_create($doc); 
+            mdb->master_rel->find_or_create($doc);
         }
     }
 }

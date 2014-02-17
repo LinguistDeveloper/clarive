@@ -58,12 +58,12 @@ sub parse {
         $item->save;
         for my $topic ( _array $self->topics ) {
             push @$tree, { tag => $topic->moniker };
-            #DB->BaliMasterRel->update_or_create({ from_mid=>$topic->mid, to_mid=>$item->mid, rel_type=>'topic_item' });
+            #mdb->master_rel->update_or_create({ from_mid=>''.$topic->mid, to_mid=>''.$item->mid, rel_type=>'topic_item' });
         }
         for my $ci ( _array $self->cis ) {
             push @$tree, { tag => $ci->moniker };
             #my $coll = $ci->collection || 'ci';
-            #DB->BaliMasterRel->update_or_create({ from_mid=>$ci->mid, to_mid=>$item->mid, rel_type=> $coll . '_item' });
+            #mdb->master_rel->update_or_create({ from_mid=>''.$ci->mid, to_mid=>''.$item->mid, rel_type=> $coll . '_item' });
         }
         Baseliner->cache_clear;
     }

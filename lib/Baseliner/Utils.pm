@@ -1014,9 +1014,9 @@ sub _mason {
     @mason_features or @mason_features = map {
         [ $_->id => _dir( $_->root )->stringify ]
     } Baseliner->features->list;
-    use File::Spec;
-    use HTML::Mason::Interp;
-    my $comp_root = [ [ root=>"". Baseliner->config->{root} ], @mason_features ];
+    require File::Spec;
+    require HTML::Mason::Interp;
+    my $comp_root = [ @mason_features, [ root=>"". Baseliner->config->{root} ] ];
     my $data_dir = File::Spec->catdir( File::Spec->tmpdir, sprintf('Baseliner_%d_mason_data_dir', $<));
     my $m = HTML::Mason::Interp->new(
         comp_root  => $comp_root,
@@ -1582,9 +1582,9 @@ our $__month = 3600 * 24 * 4.33;
 our $__year = 2_629_744*12;
 
 sub ago {
-    my ($date) = @_;
+    my ($date, $now) = @_;
     _log "Date:".$date;
-    my $now = Class::Date->now();
+    $now //= Class::Date->now();
     # if( ref $date eq 'DateTime' ) {
     #     $date = Class::Date->new( $date->epoch );
     # } elsif( ref $date ne 'Class::Date' ) {

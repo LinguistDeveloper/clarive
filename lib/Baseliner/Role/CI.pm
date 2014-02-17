@@ -231,7 +231,8 @@ sub delete {
     if( $mid ) {
         my $row = DB->BaliMaster->find( $mid );
         DB->BaliMasterRel->search({ -or=>[{ from_mid=>$mid },{ to_mid=>$mid }] })->delete;
-        mdb->master_doc->remove({ mid=>"$mid" });
+        mdb->master_rel->remove({ '$or'=>[{from_mid=>"$mid",to_mid=>"$mid"}] },{multiple=>1});
+        mdb->master_doc->remove({ mid=>"$mid" },{multiple=>1});
         if( $row ) {
             # perfect
             Baseliner->cache_remove( qr/^ci:/ );
@@ -311,15 +312,15 @@ sub save_data {
         my $other_rel = $my_rel eq 'from_mid' ? 'to_mid' : 'from_mid';
         my $rel_type_name = $rel->{rel_type}->[1];
         # delete all records related 
-        my $mr_where ={ $my_rel=>$master_row->mid, rel_type=>$rel_type_name };
+        my $mr_where ={ $my_rel=>''.$master_row->mid, rel_type=>$rel_type_name };
         DB->BaliMasterRel->search($mr_where)->delete;
         mdb->master_rel->remove($mr_where,{ multiple=>1 });
         for my $other_mid ( _array $rel->{value} ) {
             $other_mid = $other_mid->mid if ref( $other_mid ) =~ /^BaselinerX::CI::/;
             next unless $other_mid;
-            my $doc = { $my_rel => $master_row->mid, $other_rel => $other_mid, rel_type=>$rel_type_name, rel_field=>$rel->{field} };
-            DB->BaliMasterRel->find_or_create($doc);
-            mdb->master_rel->insert( $doc );
+            my $rdoc = { $my_rel => $master_row->mid, $other_rel => $other_mid, rel_type=>$rel_type_name, rel_field=>$rel->{field} };
+            DB->BaliMasterRel->find_or_create($rdoc);
+            mdb->master_rel->find_or_create($rdoc);
             push @{$relations{ $rel->{field} }}, $other_mid;
             Baseliner->cache_remove( qr/:$other_mid:/ );
         }
@@ -563,25 +564,35 @@ sub related_cis {
         return @$cached if ref $cached eq 'ARRAY';
     }
     my $where = {};
+    my @ands;
     my $edge = $opts{edge} // '';
     if( $edge ) {
         my $dir_normal = $edge =~ /^out/ ? 'to_mid' : 'from_mid';
         my $dir_reverse = $edge =~ /^out/ ? 'from_mid' : 'to_mid';
         $where->{$dir_reverse} = $mid;
+    } elsif( $opts{where} ) {
+        my @mids = grep { $_ ne $mid } map {$_->{mid} } mdb->master_doc->find($opts{where})->fields({ mid=>1, _id=>0 })->all;
+        push @ands, { '$or'=> [ { from_mid=>mdb->in(@mids), to_mid=>$mid }, {to_mid=>mdb->in(@mids), from_mid=>$mid} ] };
     } else {
-        $where->{'-or'} = [ from_mid=>$mid, to_mid=>$mid ];
+        push @ands, { '$or'=> [ {from_mid=>$mid}, {to_mid=>$mid} ] };
     }
-    $where->{rel_type} = { -like=>$opts{rel_type} } if defined $opts{rel_type};
+    $where->{rel_type} = $opts{rel_type} if defined $opts{rel_type};
     # paging support
-    $opts{rows} = delete $opts{limit} if exists $opts{limit};
-    $opts{page} = Util->to_pages( start=>$opts{start}, limit=>($opts{rows}//20) ) if exists $opts{start};
-    my $from = $opts{from} // +{ map { $_ => $opts{$_} } grep { exists $opts{$_} } qw(select order_by rows page) };
+    $opts{start} //= 0;
+    $opts{limit} //= 20;
+    $where->{'$and'} = \@ands if @ands;
     ######### rel query
-    my $rs = DB->BaliMasterRel->search( $where, $from );
+    my $rs = mdb->master_rel->find( $where );
     ########
-    local $Baseliner::CI::no_rels = 1 if $opts{no_rels};
+    if( $opts{order_by} ) {
+        Util->_error( "IGNORED: " . _dump( $opts{order_by} ) );   
+    }
+    $rs->skip( $opts{start} ) if $opts{start} > 0;
+    $rs->limit( $opts{limit} ) if $opts{limit} > 0;
+    $rs->sort( $opts{sort} ) if ref $opts{sort};
 
-    my @data = $rs->hashref->all;
+    my @data = $rs->all;
+    local $Baseliner::CI::no_rels = 1 if $opts{no_rels};
     my @ret = map {
         my $rel_edge = $_->{from_mid} == $mid
             ? 'child'

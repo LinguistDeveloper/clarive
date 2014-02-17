@@ -687,7 +687,7 @@ sub ci_create_or_update {
     # check if it's an update, in case of foreign ci
 
     if ( length $p{mid} ) {
-        my $ci = _ci( $p{mid} );
+        my $ci = ci->new( $p{mid} );
         $ci->update( %{ $p{data} || {} } );
         $ci->save;
         return $p{mid};
@@ -700,7 +700,7 @@ sub ci_create_or_update {
 
         if ( scalar @same_name_cis > 1 ) {
             for ( @same_name_cis ) {
-                if ( _ci( $_->{mid} )->{ci_class} eq $class ) {
+                if ( ci->new( $_->{mid} )->{ci_class} eq $class ) {
                     $mid = $_->{mid};
                     last;
                 }
@@ -714,7 +714,7 @@ sub ci_create_or_update {
             my $ci = $class->new($d);
             return $ci->save;
         } else {
-            my $obj = _ci( $mid );
+            my $obj = ci->new( $mid );
             $obj->update( %{ $p{data} || {} });
             $obj->save;
             return $mid;
@@ -824,7 +824,7 @@ sub update : Local {
     my $collection = delete $p->{collection};
     $action ||= delete $p->{action};
     my $class = "BaselinerX::CI::$collection";    # XXX what?? fix the class vs. collection mess
-    my $chi = delete $form_data->{children};
+    my $chi = delete $form_data->{children};   # XXX deprecate this? who uses it?
     delete $form_data->{version}; # form should not set version
 
     try {
@@ -835,27 +835,24 @@ sub update : Local {
             #$mid = $class->save( name=>$name, bl=>$bl, active=>$active, moniker=>delete($form_data->{moniker}), data=> $form_data ); 
         }
         elsif( $action eq 'edit' && defined $mid ) {
-            #$c->cache_remove( qr/:$mid:/ );
-            #$mid = $class->save( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($form_data->{moniker}), data => $form_data ); 
-
-            #my $ci = $class->new( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($form_data->{moniker}), %$form_data, modified_by=>$c->username );
             my $ci = ci->find( $mid ) || _fail _loc 'CI %1 not found', $mid;
             $ci->update( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($form_data->{moniker}), %$form_data, modified_by=>$c->username );
-            
-            #my $ci = _ci( $mid );
-            #$ci->update( mid=>$mid, name=> $name, bl=>$bl, active=>$active, moniker=>delete($form_data->{moniker}), %$form_data ); 
-            #$ci->save;
             $mid = $ci->mid;
         }
         else {
             _fail _loc("Undefined action");
         }
+        
+        # XXX deprecate this?
         if( $chi ) {
             my $cis = ref $chi eq 'ARRAY' ? $chi : [ split /,/, $chi ]; 
             DB->BaliMasterRel->search({ from_mid=>$mid })->delete;
+            mdb->master_rel->remove({ from_mid=>"$mid" });
             for my $to_mid ( _array( $cis ) ) {
-                my $rel_type = $collection . '_' . _ci( $to_mid )->collection;   # XXX consider sending the rel_type from js 
-                DB->BaliMasterRel->create({ from_mid=>$mid, to_mid=>$to_mid, rel_type=>$rel_type });
+                my $rel_type = $collection . '_' . ci->new( $to_mid )->collection;   # XXX consider sending the rel_type from js 
+                my $doc = { from_mid=>"$mid", to_mid=>"$to_mid", rel_type=>$rel_type };
+                DB->BaliMasterRel->create($doc);
+                mdb->master_rel->insert($doc);
                 $c->cache_remove( qr/:$to_mid:/ );
             }
         }
@@ -921,7 +918,6 @@ sub delete : Local {
             ci->delete( $_ );
         }
         $c->stash->{json} = { success=>\1, msg=>_loc('CIs deleted ok' ) };
-        #$c->stash->{json} = { success=>\1, msg=>_loc('CI does not exist' ) };
     } catch {
         my $err = shift;
         _error( $err );
@@ -937,7 +933,7 @@ sub export : Local {
     my $format = $p->{format} || 'yaml';
 
     try {
-        my @cis = map { _ci( $_ ) } _array $mids;
+        my @cis = map { ci->new( $_ ) } _array $mids;
         my $data;
         if( $format eq 'yaml' ) {
             $data = _dump( \@cis );
@@ -963,7 +959,7 @@ sub export_html : Local {
     my $mids = delete $p->{mids};
     my $format = $p->{format} || 'yaml';
 
-    my @cis = map { _ci( $_ ) } _array $mids;
+    my @cis = map { ci->new( $_ ) } _array $mids;
     $c->stash->{cis} = \@cis;
     $c->stash->{template} = '/comp/ci-data.html';
 }
@@ -1058,7 +1054,7 @@ sub ping : Local {
     try {
         my $msg;
         for my $mid ( @mids ) {
-            my $ci = _ci( $mid );
+            my $ci = ci->new( $mid );
             if ( $ci->does( 'Baseliner::Role::CI::Infrastructure' ) ) {
                 my ( $status, $out ) = $ci->ping;
                 $msg .= "\nCI: ".$ci->name . "\nStatus: " . $status . "\nOutput:\n" . $out . "\n----------------------------------------------";
@@ -1104,7 +1100,7 @@ sub service_run : Local {
         my $service_js_output = $service->js_output;
         
         local $ENV{BASELINER_LOGCOLOR} = 0;
-        my $ci = _ci( $p->{mid} );
+        my $ci = ci->new( $p->{mid} );
         # TODO this is the future: 
         my $ret = $ci->run_service( $p->{key}, %{ $p->{data} || {} } );
         #my $ret = $c->model('Services')->launch( $service->key, obj=>$ci, c=>$c, logger=>$logger, data=>$p->{data}, capture=>1 );
@@ -1133,8 +1129,8 @@ sub edit : Local {
 
     my $has_permission;
     if ( $p->{mid} ) {
-        my $ci = _ci($p->{mid});
-        $has_permission = Baseliner->model('Permissions')->user_has_any_action( action => 'action.ci.admin.%.'. $ci->{_ci}->{collection}, username => $c->username );
+        my $ci = ci->new($p->{mid});
+        $has_permission = Baseliner->model('Permissions')->user_has_any_action( action => 'action.ci.admin.%.'. $ci->collection, username => $c->username );
     } else {
         $has_permission = 1;
     }

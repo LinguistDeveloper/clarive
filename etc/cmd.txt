@@ -1,7 +1,0 @@
-# Useful commands
-perl C:\BALI\vass\baseliner\script\baseliner_create.pl model Baseliner DBIC::Schema Baseliner::Schema::Baseliner create=static constraint=bali_sqa "dbi:Oracle:host=prusv059;sid=TISH;port=1522" wtscm4 wtscm4
-
-perl script/baseliner_create.pl model Baseliner DBIC::Schema Baseliner::Schema create=static dbi:SQLite:database=baseliner2.db 
-
-perl script/baseliner_create.pl model Baseliner DBIC::Schema Baseliner::Schema::Baseliner create=static constraint=^bali_sem dbi:Oracle://localhost:1521/SCM gbp gbp
-

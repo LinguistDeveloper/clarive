@@ -37,8 +37,14 @@ sub run_workers {
     say "workers:";
     for my $key ( $self->db->hkeys('queue:workers') ) {
         my $v = $self->db->hget( 'queue:workers', $key);
-        my $cy = $self->_format_conf( $v );
-        say BLACK ON_BRIGHT_BLACK, $key, RESET, "\n$cy\n";
+        if( $self->verbose ) {
+            my $cy = $self->_format_conf( $v );
+            say BLACK ON_BRIGHT_BLACK, $key, RESET, "\n$cy\n";
+        } else {
+            require BaselinerX::CI::worker_agent;
+            my $msg = BaselinerX::CI::worker_agent->parse_message($v);
+            say BLACK ON_BRIGHT_BLACK, $key, RESET, " $$msg{started_on} | $$msg{user}\@$$msg{host}:$$msg{home} | pid=$$msg{pid} | $$msg{os}-$$msg{arch}";
+        }
     }
 
 }
@@ -59,7 +65,7 @@ sub run_ping {
     
     require JSON::XS;
     
-    my $wid = $opts{wid} // $opts{workerid} // die "Missing option worker id\n";
+    my $wid = $opts{wid} // $opts{workerid} // die "Missing option workerid\n";
     $self->queue->subscribe("queue:pong:$wid", sub{
         my ($msg)=@_;
         my $cy = $self->_format_conf( $msg );

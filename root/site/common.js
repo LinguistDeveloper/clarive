@@ -2434,24 +2434,31 @@ Baseliner.run_service = function(params, service){
     var mask = { xtype:'panel', items: Baseliner.loading_panel(), flex: 1 };
     //var initial_data = Ext.apply( { timeout:0 }, service, params );
     var initial_data = { service: service, data: service.data };
-    var deditor = service.form 
+    var deditor= service.form 
         ? new Baseliner.FormEditor({ data: initial_data, form_url: service.form })
         : new Baseliner.DataEditor({ data: initial_data, hide_cancel:true, hide_save:true });
+    var btn_restart = new Ext.Button({ icon:'/static/images/icons/left.png', text:_('Restart'), hidden: true, handler: function(){ 
+        btn_restart.hide();
+        card.getLayout().setActiveItem(0); 
+    }});
+    var btn_output = new Ext.Button({ icon:'/static/images/icons/down.png', text:_('Output'), hidden: true, handler: function(){ 
+        card.getLayout().setActiveItem(2); 
+    }});
     var btn_run = new Ext.Button({ icon:'/static/images/icons/run.png', text:_('Run'), handler: function(){ 
             btn_run.disable();
             if(!params) params = {};
+            btn_restart.show();
             var run_data = Ext.apply({ key: service.key, _merge_with_params: 1, as_json: true }, params);
             run_it( Ext.apply(run_data, { data: deditor.getData() }) );
-            win.removeAll();
-            win.add( mask );
-            win.doLayout();
+            card.getLayout().setActiveItem(1); 
         } })
+    var tabp = new Ext.TabPanel({});
     var run_it = function(data){
         Baseliner.ajax_json( '/ci/service_run', data, function(res){
             btn_run.enable();
-            win.removeAll();
-            var tabp = new Ext.TabPanel({ activeTab: res.msg ? 0 : 1 });
-            win.add( tabp );
+            card.getLayout().setActiveItem(2); 
+            tabp.removeAll();
+            btn_output.show();
             if( !res.success ) {
                 tabp.add(new Baseliner.MonoTextArea({ title: 'Message', value: res.msg, style:'color:#f23' }) );
                 tabp.add(new Baseliner.MonoTextArea({ title: 'Console', value: res.console, style:'color:#f23' }) );
@@ -2462,7 +2469,6 @@ Baseliner.run_service = function(params, service){
                         comp.title = _('Data');
                         tabp.insert(0, comp );
                         tabp.doLayout();
-                        win.doLayout();
                         tabp.setActiveTab( comp );
                     });
                 } else {
@@ -2471,11 +2477,13 @@ Baseliner.run_service = function(params, service){
                 tabp.add(new Baseliner.MonoTextArea({ title: 'Console', value: res.console }) );
                 tabp.add(new Baseliner.MonoTextArea({ title: 'Return', value: res.ret }) );
             }
-            win.doLayout();
+            tabp.setActiveTab( res.msg ? 0 : 1 );
+            tabp.doLayout();
         });
     };
-    var tbar = [ btn_run ];
-    var win = new Baseliner.Window({ width: 800, tbar: tbar, height: 400, layout:'fit', items:[ deditor ], title: service.name });
+    var tbar = [ btn_restart, btn_run, btn_output ];
+    var card = new Ext.Panel({ items:[ deditor, mask, tabp], layout: 'card', activeItem: 0 });
+    var win = new Baseliner.Window({ width: 800, tbar: tbar, height: 400, layout:'fit', items:card, title: service.name });
     win.show();
 }
 
