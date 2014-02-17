@@ -524,7 +524,7 @@ sub _build_ci_instance_from_rec {
         $ci_class->new( $rec )
     } catch { 
         my $err = shift;
-        _error "MID=$rec->{mid} rec=" . _dump( $rec );
+        Util->_error( "MID=$rec->{mid} rec=" . _dump( $rec ) );
         _fail _loc 'Could not instanciate CI `%1`%2: %3', 
             Util->to_base_class($ci_class), ($rec->{mid} ? " ($rec->{mid})": ''), $err;
     };
