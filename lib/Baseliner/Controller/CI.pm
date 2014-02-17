@@ -1129,8 +1129,10 @@ sub edit : Local {
 
     my $has_permission;
     if ( $p->{mid} ) {
-        my $ci = ci->new($p->{mid});
-        $has_permission = Baseliner->model('Permissions')->user_has_any_action( action => 'action.ci.admin.%.'. $ci->collection, username => $c->username );
+        my $doc = mdb->master->find_one({ mid=>"$p->{mid}" });
+        _fail _loc 'Could not find CI %1 in database', $p->{mid} unless $doc;
+        my $collection = $doc->{collection};
+        $has_permission = Baseliner->model('Permissions')->user_has_any_action( action => 'action.ci.admin.%.'. $collection, username => $c->username );
     } else {
         $has_permission = 1;
     }
