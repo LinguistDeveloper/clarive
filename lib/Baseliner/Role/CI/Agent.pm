@@ -84,7 +84,7 @@ sub tuple_str {
     my ($self)=@_;
     my $t = $self->tuple;
     delete $t->{ret} if $t->{ret} eq $t->{output};
-    sprintf "RC=%s\nRET: %s\nOUTPUT:\n%s\n", $t->{rc}, $t->{ret}, $t->{output} ;
+    sprintf "RC=%s\nRET: %s\nOUTPUT:\n%s\n", $t->{rc}, ($t->{ret}//''), $t->{output} ;
 }
 
 sub _quote_cmd {

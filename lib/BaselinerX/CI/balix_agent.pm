@@ -125,19 +125,45 @@ method get_dir( :$local, :$remote, :$group='', :$files=undef, :$user=$self->user
 }
 
 method is_remote_dir( $dir ) {
-    my ($rc,$ret) = $self->_execute( 'test', '-d', $dir );
-    return !$rc;
+    if( $self->is_win ) {
+        my ($rc,$ret) = $self->_execute( \'PUSHD', $dir );
+        return !$rc
+    } else {
+        my ($rc,$ret) = $self->_execute( 'test', '-d', $dir );
+        return !$rc;
+    }
 }
 
 method file_exists( $file_or_dir ) {
-    my ($rc,$ret) = $self->_execute( 'test', '-r', $file_or_dir ); # check it exists
-    return !$rc; 
+    my ($rc,$ret);
+    if( $self->is_win ) {
+        my ($rc,$ret) = $self->_execute( \'if', \'exist', $file_or_dir, \'echo', \'CLAX_EXIST');
+        return !!( $ret =~ /CLAX_EXIST/s );
+    } else {
+        my ($rc,$ret) = $self->_execute( 'test', '-r', $file_or_dir ); # check it exists
+        return !$rc; 
+    }
 }
 
 method check_writeable( $file_or_dir ) {
-    my ($rc,$ret) = $self->_execute( 'test', '-r', $file_or_dir ); # check it exists
-    return (0,'') if $rc; # doesnt exist, it's writeable
-    return $self->_execute( 'test', '-w', $file_or_dir ); # now check it's writeable
+    if( $self->is_win ) {
+        # apparently, the only way to check is actually writing to it, so go ahead
+        #  although this VBscript could do it: cscript //nologo check.vbs myfile
+        #    Set objFS=CreateObject("Scripting.FileSystemObject")
+        #    Set objArgs = WScript.Arguments
+        #    strFile = objArgs(0)
+        #    Set objFile = objFS.GetFile(strFile)
+        #    If Not objFile.Attributes And 1 Then
+        #       WScript.Echo "The file is Read/Write."
+        #    Else
+        #       WScript.Echo "The file is Read-only."
+        #    End If
+        return 1;
+    } else {
+        my ($rc,$ret) = $self->_execute( 'test', '-r', $file_or_dir ); # check it exists
+        return (0,'') if $rc; # doesnt exist, it's writeable
+        return $self->_execute( 'test', '-w', $file_or_dir ); # now check it's writeable
+    }
 }
 
 method is_writeable( $file_or_dir ) {
