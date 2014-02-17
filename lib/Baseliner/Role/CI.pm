@@ -525,7 +525,7 @@ sub _build_ci_instance_from_rec {
     } catch { 
         my $err = shift;
         _fail _loc 'Could not instanciate CI `%1`%2: %3', 
-            $ci_class, ($rec->{mid} ? " ($rec->{mid})": ''), $err;
+            Util->to_base_class($ci_class), ($rec->{mid} ? " ($rec->{mid})": ''), $err;
     };
     # add the original record to _ci
     if( ! $Baseliner::CI::_no_record ) {   ## TODO change this to $Baseliner::CI::ci_record
