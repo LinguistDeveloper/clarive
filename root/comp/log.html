@@ -121,7 +121,7 @@ Exec:
 %    if( $debug ) {
         <td class="<% $row->{lev} . $eo->() %>"><% $row->{pid} %></td>
 %    }
-        <td class="<% $row->{lev} . $eo->()  %>"><% $row->{ts} %></td>
+        <td class="<% $row->{lev} . $eo->()  %>"><% $debug ? ( $row->{ts} . sprintf('.%.3f', (split/\./, $row->{t})[1] ) ) : $row->{ts} %></td>
         <td class="<% $row->{lev} . $eo->()  %>"><% $row->{text} %></td>
         <td class="<% $row->{lev} . $eo->()  %>">
 % if( $row->{datalen} ) {
