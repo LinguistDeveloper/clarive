@@ -1928,8 +1928,8 @@ sub report_csv : Local {
     my $body = join "\n", @csv;
     #_warn $body;
     #$c->res->body( $body );
-    $body =~ s/([^\x00-\x7f])/sprintf('&#%d;', ord($1))/ge;
-    $c->stash->{serve_body} = $body;
+    #$body =~ s/([^\x00-\x7f])/sprintf('&#%d;', ord($1))/ge;
+    $c->stash->{serve_body} = encode('utf-16',$body);
     $c->stash->{serve_filename} = 'Clarive_export.csv';#length $p->{title} ? Util->_name_to_id($p->{title}).'.csv' : 'topics.csv';
     $c->forward('/serve_file');
 }
