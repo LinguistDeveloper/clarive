@@ -15,6 +15,7 @@ has test_url      => qw(is rw isa Str), default => sub {
 };
 has test_user     => qw(is rw isa Str default local/root);
 has test_password => qw(is rw isa Str default admin);
+has case  => qw(is rw isa Str default *);
 
 sub run {
     my ( $self, %opts ) = @_;
@@ -27,14 +28,19 @@ sub run {
     $Clarive::Test::user = $self->test_user;
     $Clarive::Test::password = $self->test_password;
 
-    my @tc = glob join '/', $self->home, 't', $self->type, '*';
+    my @tc = glob join '/', $self->home, 't', $self->type, $self->case . '*';
     for my $tc ( @tc ) {
-        say "====> [start] $tc" ;
-        my $t0 = [gettimeofday]; 
-        do $tc;
-        my $inter = sprintf( "%.04fs", tv_interval( $t0 ) );
-        say Term::ANSIColor::color('red'),"====> [error] $tc:\n" . $@, Term::ANSIColor::color('reset') if $@;
-        say "====> [end] $tc [$inter]" ;
+        my $pid;
+            unless ( $pid = fork ) {
+                say "====> [start] $tc" ;
+                my $t0 = [gettimeofday]; 
+                do $tc;
+                my $inter = sprintf( "%.04fs", tv_interval( $t0 ) );
+                say Term::ANSIColor::color('red'),"====> [error] $tc:\n" . $@, Term::ANSIColor::color('reset') if $@;
+                say "====> [end] $tc [$inter]" ;
+                exit;
+            }
+            waitpid $pid,0;
     }
 }
 
