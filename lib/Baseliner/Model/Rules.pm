@@ -285,8 +285,10 @@ sub wait_for_children {
             waitpid $pid, 0;
             delete $chi_pids->{$pid};
             if( my $res = queue->pop( msg=>"rule:child:results:$pid" ) ) {
-                _error( $res->{err} ) if $res->{err};
-                push @failed, $pid;
+                if( $res->{err} ) {
+                    _error( $res->{err} );
+                    push @failed, $pid;
+                }
             }
         }
         if( @failed ) {
