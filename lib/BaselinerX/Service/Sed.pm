@@ -89,6 +89,7 @@ sub run {
             stash      => $stash,
             file       => $f,
             output_dir => $config->{output_dir},
+            suffix     => $config->{suffix},
             path       => $path,
             patterns   => $sed->{patterns},
             slurp      => $sed->{slurp}
@@ -119,6 +120,9 @@ sub process_file {
         my $relative = _file( $output_file )->relative( $p{path} );
         $output_file = _file( $p{output_dir}, $relative );
         $output_file->dir->mkpath;
+    }
+    if( length $p{suffix} ) {
+        $output_file = $output_file . $p{suffix};
     }
     _debug "sed input_file = $file";
     _debug "sed output_file = $output_file";

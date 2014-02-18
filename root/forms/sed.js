@@ -6,6 +6,7 @@
         new Baseliner.MonoTextArea({ fieldLabel: _('Path'), height: 60, name: 'path', value: params.data.path }),
         slurp,
         new Baseliner.MonoTextArea({ fieldLabel: _('Output Dir'), height: 40, name: 'output_dir', value: params.data.output_dir }),
+        { xtype:'textfield', name:'suffix', value: data.suffix || '', fieldLabel: _('Suffix') },
         new Baseliner.ArrayGrid({ 
             fieldLabel:_('Patterns'), 
             name: 'patterns', 
