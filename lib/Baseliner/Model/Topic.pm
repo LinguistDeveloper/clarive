@@ -2047,6 +2047,8 @@ sub set_cis {
 sub set_revisions {
     my ($self, $rs_topic, $revisions, $user, $id_field  ) = @_;
     
+    my $topic_mid = $rs_topic->mid;
+    
     # related topics
     my @new_revisions = _array( $revisions ) ;
     my @old_revisions = map {$_->{to_mid}} DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_type => 'topic_revision'})->hashref->all;    
