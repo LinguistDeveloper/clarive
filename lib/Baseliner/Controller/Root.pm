@@ -6,6 +6,7 @@ use Baseliner::Utils;
 register 'action.home.show_lifecycle' => { name => 'User can access the lifecycle panel' };
 register 'action.home.show_menu' => { name => 'User can access the menu' } ;
 register 'action.home.view_workspace' => { name => 'User can access the workspace view' } ;
+register 'action.home.view_releases' => { name => 'User can access the releases view' } ;
 
 use Try::Tiny;
 use MIME::Base64;
