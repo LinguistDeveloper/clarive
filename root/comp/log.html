@@ -102,6 +102,7 @@ Exec:
   <tbody>
     <tr>
         <th class="summary-name"><% _loc( 'Step' ) %></th>
+        <th class="summary-name"><% _loc( 'Task' ) %></th>
         <th class="summary-name"><% _loc( 'Timestamp' ) %></th>
         <th class="summary-name"><% _loc( 'Message' ) %></th>
         <th class="summary-name"><% _loc( 'Actions' ) %></th>
@@ -113,6 +114,7 @@ Exec:
 % for my $row ( @$rows ) {
     <tr class="<% $row->{lev} . $eo->()  %>">
         <td class="<% $row->{lev} . $eo->() %>"><% $row->{step} %></td>
+        <td class="<% $row->{lev} . $eo->() %>"><% $row->{service_key} %></td>
         <td class="<% $row->{lev} . $eo->()  %>"><% $row->{ts} %></td>
         <td class="<% $row->{lev} . $eo->()  %>"><% $row->{text} %></td>
         <td class="<% $row->{lev} . $eo->()  %>">
