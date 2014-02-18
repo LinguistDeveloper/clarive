@@ -39,6 +39,7 @@ sub parallel_run {
             $stash->{_forked_pids}{ $chi_pid } = $name;
         }
     } else {
+        mdb->disconnect;  # will reconnect later
          my ($ret,$err);
          try {
              $ret = $code->();
