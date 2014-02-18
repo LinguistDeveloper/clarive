@@ -662,14 +662,14 @@ sub summary {
     my $services_time = +{ map { $_ => sprintf('%.1f', $log_max{$_}{dur}) } keys %log_max };
  
     # Fill services time
-    my $st = Class::Date->new( $self->starttime );
-    my $et = Class::Date->new( $self->endtime );
+    my $st2 = Class::Date->new( $self->starttime );
+    my $et2 = Class::Date->new( $self->endtime );
     return {
         bl             => $self->bl,
         status         => $self->status,
         starttime      => $self->starttime, #$starttime,
         endtime        => $self->endtime, #$endtime,
-        execution_time => $et - $st, #$execution_time,
+        execution_time => $et2 - $st2, #$execution_time,
         active_time    => $active_time,
         type           => $self->job_type,
         owner          => $self->username,
