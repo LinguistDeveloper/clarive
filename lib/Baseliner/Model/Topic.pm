@@ -2064,6 +2064,13 @@ sub set_revisions {
             @new_revisions  = split /,/, $new_revisions[0] if $new_revisions[0] =~ /,/ ;
             my @rs_revs = Baseliner->model('Baseliner::BaliMaster')->search({mid =>\@new_revisions});
             $rs_topic->set_revisions( \@rs_revs, { rel_type=>'topic_revision', rel_field => $id_field});
+            # first remove all revisions
+            mdb->master_rel->remove({ from_mid=>"$topic_mid", rel_type=>'topic_revision', rel_field=>$id_field });
+            # now add
+            for my $rev ( @rs_revs ) {
+                mdb->master_rel->insert({ to_mid=>''.$rev->mid, from_mid=>"$topic_mid", rel_type=>'topic_revision', 
+                        rel_field=>$id_field, rel_seq=>mdb->seq('master_rel') });
+            }
             
             my $revisions = join(',', map { Baseliner::CI->new($_->mid)->load->{name}} @rs_revs);
     
@@ -2096,7 +2103,7 @@ sub set_revisions {
             => sub {
                 _throw _loc( 'Error modifying Topic: %1', shift() );
             };
-            my $rdoc = {from_mid => ''.$rs_topic->mid, rel_type => 'topic_revision' };
+            my $rdoc = {from_mid => ''.$rs_topic->mid, rel_type => 'topic_revision', rel_field=>$id_field };
             my $rs_old_revisions = DB->BaliMasterRel->search($rdoc)->delete;
             mdb->master_rel->remove($rdoc,{multiple=>1});
             #$rs_topic->set_revisions( undef, { rel_type=>'topic_revision'});
