@@ -628,53 +628,34 @@ sub summary {
     my $result = {};
     $p{job_exec} //= $self->exec; 
     
+    my $active_time = 0;
     my @log_all = mdb->job_log->find({ mid => $self->mid, exec =>0+$p{job_exec} })
-        ->fields({ step=>1, service_key=>1, ts=>1 })->all;
+        ->fields({ step=>1, service_key=>1, ts=>1 })->sort({ ts=>1 })->all;
     
     my %log_max; 
+    my $last_serv;
+    my ($last_log,$st,$et);
     for my $log ( @log_all ) {
-        my $mm = $log_max{ $log->{step} .';'. $log->{service_key} };
+        next unless $log->{service_key};
+        my $ii = $log->{step} .'#'. $log->{service_key};
+        my $mm = $log_max{ $ii } //= {};
         $mm->{step} //= $log->{step};
         $mm->{service_key} //= $log->{service_key};
-        $log_max{ $log->{step} .';'. $log->{service_key} }{starttime} = $log->{ts}  
-            if !defined $mm->{starttime} || $mm->{starttime} gt $log->{ts}; 
-        $log_max{ $log->{step} .';'. $log->{service_key} }{endtime} = $log->{ts}  
-            if !defined $mm->{endtime} || $mm->{endtime} lt $log->{ts}; 
-    }
-    
-    @log_all = sort { Class::Date->new($a->{starttime})->epoch <=> Class::Date->new($b->{starttime})->epoch } values %log_max;
-
-    my $active_time = 0;
-    my $services_time = {};
-
-    my $endtime;
-    my $starttime;
-    
-    for my $service ( @log_all ) {
-        
-        my $service_starttime = Class::Date->new($service->{starttime});
-        my $service_endtime = Class::Date->new($service->{endtime});
-
-        $starttime = Class::Date->new( $service_starttime ) if !$starttime;
-        $endtime = Class::Date->new( $service_endtime );
-
-        my $service_time = $service_endtime - $service_starttime;
-
-        if ( $service_time && $service_time->sec > 0) {
-            $services_time->{$service->{step}."#".$service->{service_key}} = $service_time->sec;
+        $st //= $log->{t} // Class::Date->new($log->{ts})->epoch;
+        if( $last_serv && $log->{service_key} ne $last_serv->{service_key} ) {
+            my $et = $log->{t} // Class::Date->new($log->{ts})->epoch;
+            #push @{ $mm->{times} }, { st=>$st, et=>$et };
+            my $dur = $et - $st;
+            $dur ||= .1;  # XXX legacy, so that old ts have a value
+            $mm->{dur} //= 0;
+            $mm->{dur} += $dur;
+            $active_time += $dur;
+            $st=undef;
         }
-        $active_time += $service_endtime - $service_starttime;
+		$last_serv = $mm;
     }
-    
-    # my $execution_time;
-    # if ($row->endtime){
-    #     $endtime = Class::Date->new( $row->endtime );
-    #     $execution_time = $endtime - $starttime;
-    # } else {
-    #     my $now = Class::Date->now;
-    #     $execution_time = $now - $starttime;
-    # }
-
+    my $services_time = +{ map { $_ => sprintf('%.1f', $log_max{$_}{dur}) } keys %log_max };
+ 
     # Fill services time
     my $st = Class::Date->new( $self->starttime );
     my $et = Class::Date->new( $self->endtime );
