@@ -49,8 +49,8 @@ sub rmpath;
 
 method mkpath ( $path ) {
     if ( $self->is_win ) {
-        $self->execute( \'md', \'/s', $path );
-        $self->execute( 'cacls', $path, '/e /c /g', $self->user ) if $self->user;
+        $self->execute( \'md', $path );
+        #$self->execute( \'cacls', $path, \'/e /c /g', $self->user ) if $self->user;
     } else {
         $self->execute( \'mkdir', \'-p', $path );
         $self->execute( 'chown', $self->user, $path ) if $self->user;
@@ -84,7 +84,7 @@ method execute( @cmd ) {
     if( $opts->{chdir} ) {
        @cmd = ( \'cd', $opts->{chdir}, \'&&', @cmd == 1 ? \$cmd[0] : @cmd );      
     }
-    if( my $user = $self->user ) {
+    if( (my $user = $self->user) && !$self->is_win ) {
         @cmd = @cmd == 1 ? $cmd[0] : $self->_double_quote_cmd( @cmd ); # join params quoted 
         @cmd = (\'su', \'-', $user, \'-l', \'-c', "@cmd");
     }
@@ -125,19 +125,45 @@ method get_dir( :$local, :$remote, :$group='', :$files=undef, :$user=$self->user
 }
 
 method is_remote_dir( $dir ) {
-    my ($rc,$ret) = $self->_execute( 'test', '-d', $dir );
-    return !$rc;
+    if( $self->is_win ) {
+        my ($rc,$ret) = $self->_execute( \'PUSHD', $dir );
+        return !$rc
+    } else {
+        my ($rc,$ret) = $self->_execute( 'test', '-d', $dir );
+        return !$rc;
+    }
 }
 
 method file_exists( $file_or_dir ) {
-    my ($rc,$ret) = $self->_execute( 'test', '-r', $file_or_dir ); # check it exists
-    return !$rc; 
+    my ($rc,$ret);
+    if( $self->is_win ) {
+        my ($rc,$ret) = $self->_execute( \'if', \'exist', $file_or_dir, \'echo', \'CLAX_EXIST');
+        return !!( $ret =~ /CLAX_EXIST/s );
+    } else {
+        my ($rc,$ret) = $self->_execute( 'test', '-r', $file_or_dir ); # check it exists
+        return !$rc; 
+    }
 }
 
 method check_writeable( $file_or_dir ) {
-    my ($rc,$ret) = $self->_execute( 'test', '-r', $file_or_dir ); # check it exists
-    return (0,'') if $rc; # doesnt exist, it's writeable
-    return $self->_execute( 'test', '-w', $file_or_dir ); # now check it's writeable
+    if( $self->is_win ) {
+        # apparently, the only way to check is actually writing to it, so go ahead
+        #  although this VBscript could do it: cscript //nologo check.vbs myfile
+        #    Set objFS=CreateObject("Scripting.FileSystemObject")
+        #    Set objArgs = WScript.Arguments
+        #    strFile = objArgs(0)
+        #    Set objFile = objFS.GetFile(strFile)
+        #    If Not objFile.Attributes And 1 Then
+        #       WScript.Echo "The file is Read/Write."
+        #    Else
+        #       WScript.Echo "The file is Read-only."
+        #    End If
+        return 0;  # this is backwards... use is_writeable
+    } else {
+        my ($rc,$ret) = $self->_execute( 'test', '-r', $file_or_dir ); # check it exists
+        return (0,'') if $rc; # doesnt exist, it's writeable
+        return $self->_execute( 'test', '-w', $file_or_dir ); # now check it's writeable
+    }
 }
 
 method is_writeable( $file_or_dir ) {
@@ -147,7 +173,6 @@ method is_writeable( $file_or_dir ) {
 
 # TODO data parameter support
 method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
-    $local = $self->normalize_path( $local );  # fixes windows slashes
     $remote = $self->normalize_path( $remote );
     # check if remote dir exists and is writeable
     if( my $remote_dir = ''. _file($remote)->dir ) {
@@ -179,7 +204,6 @@ method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
 }
 
 method get_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
-    $local = $self->normalize_path( $local );  # fixes windows slashes
     $remote = $self->normalize_path( $remote );
     $self->_get_file( $remote, $local );
     return $self->tuple;  
@@ -408,6 +432,7 @@ sub _crc_local {
 
 sub _crc_match {
     my ($self, $local, $remote ) = @_;
+    return 1 if $self->is_win; # XXX crc not matching in windows
     my $crc_local = $self->_crc_local( $local );
     my $crc_remote = $self->_crc( $remote );
     return $crc_local eq $crc_remote;

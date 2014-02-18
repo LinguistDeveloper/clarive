@@ -84,18 +84,24 @@ sub tuple_str {
     my ($self)=@_;
     my $t = $self->tuple;
     delete $t->{ret} if $t->{ret} eq $t->{output};
-    sprintf "RC=%s\nRET: %s\nOUTPUT:\n%s\n", $t->{rc}, $t->{ret}, $t->{output} ;
+    sprintf "RC=%s\nRET: %s\nOUTPUT:\n%s\n", $t->{rc}, ($t->{ret}//''), $t->{output} ;
 }
 
 sub _quote_cmd {
     my $self = shift;
-    map { ref $_ eq 'SCALAR' ? $$_ : "'$_'"; } @_;
+    my $q = $self->_quote_str;
+    map { ref $_ eq 'SCALAR' ? $$_ : $q . "$_" . $q; } @_;
 }
 
 sub _double_quote_cmd {
     my $self = shift;
     map { ref $_ eq 'SCALAR' ? $$_ : "\"$_\""; } @_;
 }
+
+sub _quote_str { 
+    $_[0]->is_win ? '"' : "'";
+}
+
 
 sub fatpack_perl_code {
     my ($self, $code)=@_;
