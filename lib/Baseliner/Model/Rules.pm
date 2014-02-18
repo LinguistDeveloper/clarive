@@ -280,14 +280,20 @@ sub wait_for_children {
     my ($self, $stash, %p ) = @_;
     if( my $chi_pids = $stash->{_forked_pids} ) {
         _info( _loc('Waiting for return code from children pids: %1', join(',',keys $chi_pids ) ) );
+        my @failed;
         for my $pid ( keys $chi_pids ) {
             waitpid $pid, 0;
             delete $chi_pids->{$pid};
             if( my $res = queue->pop( msg=>"rule:child:results:$pid" ) ) {
-                _fail $res->{err} if $res->{err};
+                _error( $res->{err} ) if $res->{err};
+                push @failed, $pid;
             }
         }
-        _info( _loc('Done waiting for return code from children pids: %1', join(',',keys $chi_pids ) ) );
+        if( @failed ) {
+            _fail( _loc('Error detected in children: %1', join(',',@failed ) ) );
+        } else {
+            _info( _loc('Done waiting for return code from children pids: %1', join(',',keys $chi_pids ) ) );
+        }
     }
 }
 
