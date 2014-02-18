@@ -629,11 +629,14 @@ sub summary {
     $p{job_exec} //= $self->exec; 
     
     my $active_time = 0;
+    
     my @log_all = mdb->job_log->find({ mid => $self->mid, exec =>0+$p{job_exec} })
-        ->fields({ step=>1, service_key=>1, ts=>1 })->sort({ ts=>1 })->all;
+        ->fields({ step=>1, service_key=>1, ts=>1, t=>1 })
+        ->sort(Tie::IxHash->new( ts=>1, t=>1 ))->all;
     
     my %log_max; 
     my $last_serv;
+    my $last_step;
     my ($last_log,$st,$et);
     for my $log ( @log_all ) {
         next unless $log->{service_key};
@@ -642,17 +645,19 @@ sub summary {
         $mm->{step} //= $log->{step};
         $mm->{service_key} //= $log->{service_key};
         $st //= $log->{t} // Class::Date->new($log->{ts})->epoch;
-        if( $last_serv && $log->{service_key} ne $last_serv->{service_key} ) {
-            my $et = $log->{t} // Class::Date->new($log->{ts})->epoch;
-            #push @{ $mm->{times} }, { st=>$st, et=>$et };
+        if( $last_serv && $log->{service_key} ne $last_serv ) {
+            my $et =  $log->{step} ne $last_step ? $st :
+                $log->{t} // Class::Date->new($log->{ts})->epoch;
             my $dur = $et - $st;
-            $dur ||= .1;  # XXX legacy, so that old ts have a value
-            $mm->{dur} //= 0;
-            $mm->{dur} += $dur;
+            $dur ||= .1;
+            $last_log->{dur} //= 0;
+            $last_log->{dur} += $dur;
             $active_time += $dur;
             $st=undef;
         }
-		$last_serv = $mm;
+		$last_serv = $log->{service_key};
+        $last_step = $log->{step};
+        $last_log = $mm;
     }
     my $services_time = +{ map { $_ => sprintf('%.1f', $log_max{$_}{dur}) } keys %log_max };
  
@@ -665,7 +670,7 @@ sub summary {
         starttime      => $self->starttime, #$starttime,
         endtime        => $self->endtime, #$endtime,
         execution_time => $et - $st, #$execution_time,
-        #active_time    => $et - $st, #$active_time,
+        active_time    => $active_time,
         type           => $self->job_type,
         owner          => $self->username,
         last_step      => $self->step,
@@ -673,7 +678,6 @@ sub summary {
         
         #starttime => $starttime,
         #execution_time => $execution_time,
-        active_time => $active_time,
         #endtime => $endtime,
         services_time => $services_time,
     };
