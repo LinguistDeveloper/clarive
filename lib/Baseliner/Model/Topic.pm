@@ -1591,7 +1591,7 @@ sub update_project_security {
 
     my $meta = Baseliner->model('Topic')->get_meta ($doc->{mid});
     my %project_collections; 
-    for my $field ( grep { $_->{meta_type} eq 'project' && length $_->{collection} } @$meta ) {
+    for my $field ( grep { $_->{meta_type} && $_->{meta_type} eq 'project' && length $_->{collection} } @$meta ) {
         my @secs = _array($doc->{ $field->{id_field} });
         push @{ $project_collections{ $field->{collection} } }, @secs if @secs;
     }
