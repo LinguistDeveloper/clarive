@@ -1538,6 +1538,7 @@ sub save_data {
 
 
         if ( my $cis = $data->{_cis} ) {
+            _log "Tengo CIs: ". _dump $data->{_cis};
             for my $ci ( _array $cis ) {
                 if ( length $ci->{ci_mid} && $ci->{ci_action} eq 'update' ) {
                     my $rdoc = {rel_type => 'ci_request', from_mid => ''.$ci->{ci_mid}, to_mid => ''.$topic->mid};
@@ -1551,6 +1552,7 @@ sub save_data {
         my %rel_fields =
             map { $_->{id_field} => $_->{set_method} }
             grep { $_->{relation} && $_->{relation} eq 'system' } _array( $meta );
+
         foreach my $id_field ( keys %rel_fields ) {
             if ( $rel_fields{$id_field} ) {
                 my $meth = $rel_fields{$id_field};
@@ -1571,7 +1573,9 @@ sub save_data {
                 {username => $data->{username}, mid => $topic_mid, last_seen => mdb->ts, type=>'topic' }, { upsert=>1 });
 
         # cache clear
+        _log "Antes de limpiar la cache para el tópico $topic_mid";
         $self->cache_topic_remove( $topic_mid );
+
         my @related_topics = ci->new( $topic_mid )->related( isa => 'topic' );
         for ( @related_topics ) {
             $self->cache_topic_remove( $_->{mid} );
