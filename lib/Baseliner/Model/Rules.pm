@@ -32,27 +32,31 @@ sub parallel_run {
     my ($name, $mode, $stash, $code)= @_;
     my $job = $stash->{job};
      
-    mdb->disconnect;  # will reconnect later
     if( my $chi_pid = fork ) {
+        # parent
+        mdb->disconnect;    # will reconnect later
         _log _loc 'Forked child task %1 with pid %2', $name, $chi_pid; 
         if( $mode eq 'fork' ) {
             # fork and wait..
             $stash->{_forked_pids}{ $chi_pid } = $name;
         }
     } else {
-         my ($ret,$err);
-         try {
-             $ret = $code->();
-         } catch {
-            $err = shift; 
-            _error( _loc('Detected error in child %1 (%2): %3', $$, $mode, $err) );
-         };
-         if( $mode eq 'fork' ) {
+        # child
+        mdb->disconnect;    # will reconnect later
+        my ( $ret, $err );
+        try {
+            $ret = $code->();
+        }
+        catch {
+            $err = shift;
+            _error( _loc( 'Detected error in child %1 (%2): %3', $$, $mode, $err ) );
+        };
+        if ( $mode eq 'fork' ) {
             # fork and wait.., communicate results to parent
-            my $res = { ret=>$ret, err=>$err }; 
-            queue->push( msg=>"rule:child:results:$$", data=>$res ); 
-         }
-         exit 0; # cannot update stash, because it would override the parent run copy
+            my $res = { ret => $ret, err => $err };
+            queue->push( msg => "rule:child:results:$$", data => $res );
+        }
+        exit 0;    # cannot update stash, because it would override the parent run copy
     }
 }
 
