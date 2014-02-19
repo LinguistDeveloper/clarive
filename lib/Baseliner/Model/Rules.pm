@@ -34,7 +34,6 @@ sub parallel_run {
      
     if( my $chi_pid = fork ) {
         # parent
-        mdb->disconnect;    # will reconnect later
         _log _loc 'Forked child task %1 with pid %2', $name, $chi_pid; 
         if( $mode eq 'fork' ) {
             # fork and wait..
@@ -237,7 +236,7 @@ sub dsl_build {
         } elsif( ! $attr->{nested} ) {
             push @dsl, sprintf( 'current_task($stash, q{%s});', $name )."\n";
         }
-        if( defined $timeout && $timeout > 0 ) {
+        if( length $timeout && $timeout > 0 ) {
             push @dsl, sprintf( 'alarm %s;', $timeout )."\n";
         }
         push @dsl, sprintf( '_debug(q{=====| Current Rule Task: %s} );', $name)."\n" if $p{verbose}; 
@@ -250,7 +249,7 @@ sub dsl_build {
             if( $reg->isa( 'BaselinerX::Type::Service' ) ) {
                 push @dsl, $spaces->($level) . '{';
                 push @dsl, $spaces->($level) . sprintf(q{   my $config = parse_vars %s, $stash;}, Data::Dumper::Dumper( $data ) );
-                push @dsl, $spaces->($level) . sprintf(q{   launch( "%s", q{%s}, $stash, $config => '%s' );}, $key, $name, $data_key );
+                push @dsl, $spaces->($level) . sprintf(q{   launch( "%s", q{%s}, $stash, $config => '%s' );}, $key, $name, ($data_key//'') );
                 push @dsl, $spaces->($level) . '}';
                 #push @dsl, $spaces->($level) . sprintf('merge_data($stash, $ret );', Data::Dumper::Dumper( $data ) );
             } else {
@@ -282,25 +281,31 @@ sub dsl_build {
 
 sub wait_for_children {
     my ($self, $stash, %p ) = @_;
-    if( my $chi_pids = $stash->{_forked_pids} ) {
-        _info( _loc('Waiting for return code from children pids: %1', join(',',keys $chi_pids ) ) );
+    my $chi_pids = $stash->{_forked_pids};
+    if( my @pids = keys %$chi_pids ) {
+        _info( _loc('Waiting for return code from children pids: %1', join(',', @pids ) ) );
         my @failed;
-        my @pids = keys $chi_pids;
-        for my $pid ( keys $chi_pids ) {
+        my @oks;
+       
+        for my $pid ( @pids ) {
             waitpid $pid, 0;
             delete $chi_pids->{$pid};
             if( my $res = queue->pop( msg=>"rule:child:results:$pid" ) ) {
                 if( $res->{err} ) {
                     _error( $res->{err} );
                     push @failed, $pid;
+                } else {
+                    push @oks, $pid;
                 }
             }
         }
         if( @failed ) {
-            _fail( _loc('Error detected in children: %1', join(',',@failed ) ) );
+            _fail( _loc('Error detected in children, pids failed: %1. Ok: %2', join(',',@failed ), join(',',@oks) ) );
         } else {
             _info( _loc('Done waiting for return code from children pids: %1', join(',',@pids ) ) );
         }
+    } else {
+        _debug( _loc('No children to wait for.') );
     }
 }
 
