@@ -357,7 +357,7 @@ sub json : Local {
     my $meta = $c->model('Topic')->get_meta( $topic_mid );
     my $data = $c->model('Topic')->get_data( $meta, $topic_mid, %$p );
 
-    $meta = get_meta_permissions ($c, $meta, $data);
+    $meta = $self->get_meta_permissions ($c, $meta, $data);
     
     $meta = $self->get_field_bodies( $meta );
     
@@ -374,8 +374,8 @@ sub json : Local {
     $c->forward('View::JSON');
 }
 
-sub get_meta_permissions : Local {
-    my ($c, $meta, $data, $name_category, $name_status) = @_;
+sub get_meta_permissions : Private {
+    my ($self,$c, $meta, $data, $name_category, $name_status) = @_;
     my @hidden_field;
     
     my $parse_category = $data->{name_category} ? _name_to_id($data->{name_category}) : _name_to_id($name_category);
@@ -530,7 +530,7 @@ sub new_topic : Local {
         
         map{ $data->{$_} = 'off'}  grep {$_ =~ '_done' && $data->{$_} eq 'on' } _array $data;
         
-        $meta = get_meta_permissions ($c, $meta, $data, $name_category, $name_status);
+        $meta = $self->get_meta_permissions ($c, $meta, $data, $name_category, $name_status);
         
         {
             success => \1,
@@ -709,7 +709,7 @@ sub view : Local {
         if( $p->{html} ) {
             my $meta = $c->model('Topic')->get_meta( $topic_mid, $id_category );
             my $data = $c->model('Topic')->get_data( $meta, $topic_mid, topic_child_data=>$p->{topic_child_data} );
-            $meta = get_meta_permissions ($c, $meta, $data);        
+            $meta = $self->get_meta_permissions ($c, $meta, $data);        
             
             $data->{admin_labels} = $c->model('Permissions')->user_has_any_action( username=> $c->username, action=>'action.admin.topics' );
             
