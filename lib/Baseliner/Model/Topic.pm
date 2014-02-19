@@ -1397,7 +1397,6 @@ sub save_data {
         my %change_status;
 
         if ( !$topic_mid ) {
-
             # new topic
             $row{created_by}         = $data->{username};
             $row{modified_by}        = $data->{username};
@@ -1539,7 +1538,6 @@ sub save_data {
 
 
         if ( my $cis = $data->{_cis} ) {
-            _log "Tengo CIs: ". _dump $data->{_cis};
             for my $ci ( _array $cis ) {
                 if ( length $ci->{ci_mid} && $ci->{ci_action} eq 'update' ) {
                     my $rdoc = {rel_type => 'ci_request', from_mid => ''.$ci->{ci_mid}, to_mid => ''.$topic->mid};
@@ -1572,15 +1570,9 @@ sub save_data {
         # user seen
         mdb->master_seen->update({ username => $data->{username}, mid => $topic_mid }, 
                 {username => $data->{username}, mid => $topic_mid, last_seen => mdb->ts, type=>'topic' }, { upsert=>1 });
-
         # cache clear
         _log "Antes de limpiar la cache para el tópico $topic_mid";
         $self->cache_topic_remove( $topic_mid );
-
-        my @related_topics = ci->new( $topic_mid )->related( isa => 'topic' );
-        for ( @related_topics ) {
-            $self->cache_topic_remove( $_->{mid} );
-        }
 
         return ($topic, %change_status);
     } catch {
@@ -1708,7 +1700,6 @@ sub migrate_docs {
     my $w = { mid=>$mid } if length $mid;
     DB->BaliTopic->search($w)->hashref->each(sub{
         my $r = shift;
-        _debug $r;
         my @meta = _array( Baseliner->model('Topic')->get_meta(undef,$r->{id_category}) ); 
         my %meta = map { $_->{id_field} => $_ } @meta; 
         my @fields = $db->query( 'select * from bali_topic_fields_custom where topic_mid=?', $r->{mid} )->hashes;
@@ -2530,11 +2521,11 @@ sub cache_topic_remove {
     # refresh cache for related stuff 
     if ($topic_mid && $topic_mid ne -1) {    
         Baseliner->cache_remove( qr/:$topic_mid:/ );
-        for my $rel ( 
-            map { +{mid=>$_->{mid}, type=>$_->{_edge}{rel_type} } } 
-            ci->new( $topic_mid )->related( depth=>1 ) ) 
+        for my $rel_mid ( 
+            map { $_->{from_mid} == $topic_mid ? $_->{to_mid} : $_->{from_mid} }
+            mdb->master_rel->find({ '$or'=>[{from_mid=>"$topic_mid"},{to_mid=>"$topic_mid"}] })->all
+            )
         {
-            my $rel_mid = $rel->{mid};
             #_debug "TOPIC CACHE REL remove :$rel_mid:";
             Baseliner->cache_remove( qr/:$rel_mid:/ );
         }
