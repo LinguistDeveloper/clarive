@@ -375,13 +375,15 @@ sub json : Local {
 }
 
 sub get_meta_permissions : Private {
-    my ($self,$c, $meta, $data, $name_category, $name_status) = @_;
+    my ($self,$c, $meta, $data, $name_category, $name_status,$username) = @_;
     my @hidden_field;
+    
+    $username //= $c->username;
     
     my $parse_category = $data->{name_category} ? _name_to_id($data->{name_category}) : _name_to_id($name_category);
     my $parse_status = $data->{name_status} ? _name_to_id($data->{name_status}) : _name_to_id($name_status);
     
-    my $is_root = $c->model('Permissions')->is_root( $c->username );
+    my $is_root = $c->model('Permissions')->is_root( $username );
 
     for (_array $meta){
         my $parse_id_field = _name_to_id($_->{name_field});
@@ -399,7 +401,7 @@ sub get_meta_permissions : Private {
                         $field_form->{readonly} = \0;
                         $field_form->{allowBlank} = 'true' unless $field_form->{id_field} eq 'title';
                 } else {
-                    my $has_action = $c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action, mid => $data->{topic_mid} );
+                    my $has_action = $c->model('Permissions')->user_has_action( username=> $username, action => $write_action, mid => $data->{topic_mid} );
                     if ( $has_action ){
                         $field_form->{readonly} = \0;
                     }else{
@@ -416,7 +418,7 @@ sub get_meta_permissions : Private {
                         $field_form->{hidden} = \0;
                 } else {
 
-                    if ($c->model('Permissions')->user_has_read_action( username=> $c->username, action => $read_action )){
+                    if ($c->model('Permissions')->user_has_read_action( username=> $username, action => $read_action )){
                         $field_form->{hidden} = \1;
                         #push @hidden_field, $field_form->{id_field};
                     }
@@ -432,7 +434,7 @@ sub get_meta_permissions : Private {
                     $_->{allowBlank} = 'true' unless $_->{id_field} eq 'title';
             } else {
 
-                my $has_action = $c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action, mid => $data->{topic_mid} );
+                my $has_action = $c->model('Permissions')->user_has_action( username=> $username, action => $write_action, mid => $data->{topic_mid} );
                 # _log "Comprobando ".$write_action."= ".$has_action;
                 if ( $has_action ){
                     $_->{readonly} = \0;
@@ -447,7 +449,7 @@ sub get_meta_permissions : Private {
             #_error $read_action;
 
             if ( !$is_root ) {
-                if ($c->model('Permissions')->user_has_read_action( username=> $c->username, action => $read_action )){
+                if ($c->model('Permissions')->user_has_read_action( username=> $username, action => $read_action )){
                     push @hidden_field, $_->{id_field};
                 }
             } 
