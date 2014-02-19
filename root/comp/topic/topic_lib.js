@@ -996,6 +996,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         
         self.btn_save_form.hide();
         if( self.view_is_dirty ) {
+            self.btn_detail.toggle(true);
             self.view_is_dirty = false;
             self.detail_reload();
         }
@@ -1061,23 +1062,20 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     
                     if (form2.findField("status").getValue() != res.topic_status && form2.findField("status").getValue() != ''){
                         self.form_is_loaded = false;
-                        self.show_form();
-                        self.view_is_dirty = true;                          
+                        self.view_is_dirty = true;                     
                         var store = form2.findField("status_new").getStore();
-                        store.load({
-                            params:{    'categoryId': form2.findField("category").getValue(),
-                                        'statusId': res.topic_status,
-                                        'statusName': form2.findField("status_new").getRawValue()
+                        console.dir(store);
+                        store.reload({
+                            callback: function() {
+                                self.status_menu.removeAll();
+                                store.each( function(row){
+                                    if(res.topic_status != row.data.id){
+                                        self.status_menu.addItem({ text: _(row.data.name), id_status_to: row.data.id, id_status_from:  res.topic_status, handler: function(obj){ self.change_status(obj) } });                                    
                                     }
-                        });  
-                        store.on("load", function() {
-                            self.status_menu.removeAll();
-                            store.each( function(row){
-                                if(res.topic_status != row.data.id){
-                                    self.status_menu.addItem({ text: _(row.data.name), id_status_to: row.data.id, id_status_from:  res.topic_status, handler: function(obj){ self.change_status(obj) } });                                    
-                                }
-                            });
+                                });
+                            }
                         });
+                        self.show_detail();
                         
 
                     }else{
