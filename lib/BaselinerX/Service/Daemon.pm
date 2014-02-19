@@ -174,7 +174,7 @@ sub runner_fork {
             _log "Detached with session id $sid";
         }
         # change child process name for the ps command
-        $0 = "clarive job $p{jobid} (#$mid)";
+        $0 = "clarive job $p{jobid} (#$mid, $p{step})";
         unless( $p{unified_log} ) {
             open (STDOUT, ">>", $p{logfile} ) or die "Can't open STDOUT: $!";
             open (STDERR, ">>", $p{logfile} ) or die "Can't open STDERR: $!";
