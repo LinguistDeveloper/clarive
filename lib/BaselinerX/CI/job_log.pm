@@ -90,7 +90,7 @@ sub common_log {
     
     try {
         my $id = 0+ mdb->seq('job_log_id');  # numeric, good for sorting
-        my $doc = { id=>$id, mid =>$mid, text=> $text, lev=>$lev, module=>$module, exec=>$job_exec, ts=>Util->_now() };
+        my $doc = { id=>$id, mid =>$mid, text=> $text, lev=>$lev, module=>$module, exec=>$job_exec, ts=>Util->_now(), t=>Time::HiRes::time() };
         
         $doc->{_id} = mdb->job_log->insert($doc); 
         

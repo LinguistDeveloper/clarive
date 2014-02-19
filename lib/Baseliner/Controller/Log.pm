@@ -118,6 +118,7 @@ sub log_rows : Private {
         #$where->{'lower(to_char(ts)||text||lev||me.ns||provider||data_name)'} = { like => '%'. lc($query) . '%' };
         $where = mdb->query_build( query=>$query, fields=>[qw(
                 ts          
+                t
                 text		
                 ns			
                 provider	
@@ -185,6 +186,7 @@ sub log_rows : Private {
             service_key=> $doc->{service_key},
             exec     => $doc->{exec},
             ts       => $doc->{ts},
+            t        => $doc->{t},
             lev      => $doc->{lev},
             module   => $doc->{module},
             section  => $doc->{section},

@@ -33,25 +33,30 @@ sub parallel_run {
     my $job = $stash->{job};
      
     if( my $chi_pid = fork ) {
+        # parent
+        mdb->disconnect;    # will reconnect later
         _log _loc 'Forked child task %1 with pid %2', $name, $chi_pid; 
         if( $mode eq 'fork' ) {
             # fork and wait..
             $stash->{_forked_pids}{ $chi_pid } = $name;
         }
     } else {
-         my ($ret,$err);
-         try {
-             $ret = $code->();
-         } catch {
-            $err = shift; 
-            _error( _loc('Detected error in child %1 (%2): %3', $$, $mode, $err) );
-         };
-         if( $mode eq 'fork' ) {
+        # child
+        mdb->disconnect;    # will reconnect later
+        my ( $ret, $err );
+        try {
+            $ret = $code->();
+        }
+        catch {
+            $err = shift;
+            _error( _loc( 'Detected error in child %1 (%2): %3', $$, $mode, $err ) );
+        };
+        if ( $mode eq 'fork' ) {
             # fork and wait.., communicate results to parent
-            my $res = { ret=>$ret, err=>$err }; 
-            queue->push( msg=>"rule:child:results:$$", data=>$res ); 
-         }
-         exit 0; # cannot update stash, because it would override the parent run copy
+            my $res = { ret => $ret, err => $err };
+            queue->push( msg => "rule:child:results:$$", data => $res );
+        }
+        exit 0;    # cannot update stash, because it would override the parent run copy
     }
 }
 
@@ -279,14 +284,23 @@ sub wait_for_children {
     my ($self, $stash, %p ) = @_;
     if( my $chi_pids = $stash->{_forked_pids} ) {
         _info( _loc('Waiting for return code from children pids: %1', join(',',keys $chi_pids ) ) );
+        my @failed;
+        my @pids = keys $chi_pids;
         for my $pid ( keys $chi_pids ) {
             waitpid $pid, 0;
             delete $chi_pids->{$pid};
             if( my $res = queue->pop( msg=>"rule:child:results:$pid" ) ) {
-                _fail $res->{err} if $res->{err};
+                if( $res->{err} ) {
+                    _error( $res->{err} );
+                    push @failed, $pid;
+                }
             }
         }
-        _info( _loc('Done waiting for return code from children pids: %1', join(',',keys $chi_pids ) ) );
+        if( @failed ) {
+            _fail( _loc('Error detected in children: %1', join(',',@failed ) ) );
+        } else {
+            _info( _loc('Done waiting for return code from children pids: %1', join(',',@pids ) ) );
+        }
     }
 }
 
