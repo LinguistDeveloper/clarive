@@ -586,7 +586,7 @@ sub related_cis {
     $where->{rel_type} = $opts{rel_type} if defined $opts{rel_type};
     # paging support
     $opts{start} //= 0;
-    # causes normal stuff to miss relationships: $opts{limit} //= 20;
+    $opts{limit} //= 0; # causes normal stuff to miss relationships
     $where->{'$and'} = \@ands if @ands;
     ######### rel query
     my $rs = mdb->master_rel->find( $where );
