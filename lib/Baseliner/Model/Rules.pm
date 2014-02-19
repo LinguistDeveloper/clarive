@@ -268,11 +268,8 @@ sub dsl_build {
     my $dsl = join "\n", @dsl;
     if( $self->tidy_up && !$p{no_tidy} ) {
         require Perl::Tidy;
-        require Capture::Tiny;
         my $tidied = '';
-        Capture::Tiny::capture(sub{
-            Perl::Tidy::perltidy( argv => '--maximum-line-length=160 ', source => \$dsl, destination => \$tidied );
-        });
+        Perl::Tidy::perltidy( argv => '--maximum-line-length=160 --quiet --no-log', source => \$dsl, destination => \$tidied );
         return $tidied;
     } else {
         return $dsl;
