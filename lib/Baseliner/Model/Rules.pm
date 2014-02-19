@@ -32,6 +32,7 @@ sub parallel_run {
     my ($name, $mode, $stash, $code)= @_;
     my $job = $stash->{job};
      
+    mdb->disconnect;  # will reconnect later
     if( my $chi_pid = fork ) {
         _log _loc 'Forked child task %1 with pid %2', $name, $chi_pid; 
         if( $mode eq 'fork' ) {
@@ -39,7 +40,6 @@ sub parallel_run {
             $stash->{_forked_pids}{ $chi_pid } = $name;
         }
     } else {
-        mdb->disconnect;  # will reconnect later
          my ($ret,$err);
          try {
              $ret = $code->();
@@ -281,6 +281,7 @@ sub wait_for_children {
     if( my $chi_pids = $stash->{_forked_pids} ) {
         _info( _loc('Waiting for return code from children pids: %1', join(',',keys $chi_pids ) ) );
         my @failed;
+        my @pids = keys $chi_pids;
         for my $pid ( keys $chi_pids ) {
             waitpid $pid, 0;
             delete $chi_pids->{$pid};
@@ -294,7 +295,7 @@ sub wait_for_children {
         if( @failed ) {
             _fail( _loc('Error detected in children: %1', join(',',@failed ) ) );
         } else {
-            _info( _loc('Done waiting for return code from children pids: %1', join(',',keys $chi_pids ) ) );
+            _info( _loc('Done waiting for return code from children pids: %1', join(',',@pids ) ) );
         }
     }
 }
