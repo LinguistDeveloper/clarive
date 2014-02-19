@@ -1398,22 +1398,21 @@ sub save_data {
         if ( !$topic_mid ) {
 
             # new topic
-            master_new 'topic' => {name => $data->{title}, moniker => $moniker, data => {%row}} => sub {
-                $topic_mid = shift;
+            $row{created_by}         = $data->{username};
+            $row{modified_by}        = $data->{username};
+            $row{id_category_status} = $data->{id_category_status} if $data->{id_category_status};
 
-                #Defaults
-                $row{mid}                = $topic_mid;
-                $row{created_by}         = $data->{username};
-                $row{modified_by}        = $data->{username};
-                $row{id_category_status} = $data->{id_category_status} if $data->{id_category_status};
+            my $topic_ci = BaselinerX::CI::topic->new( name => $row{title}, moniker => $moniker, %row );
+            $topic_mid = $topic_ci->save;
 
-                $topic = DB->BaliTopic->create( \%row );
+            $row{mid} = $topic_mid;
 
-                # update images
-                for ( @imgs ) {
-                    $_->update( {topic_mid => $topic_mid} );
-                }
-                }
+            $topic = DB->BaliTopic->create( \%row );
+
+            # update images
+            for ( @imgs ) {
+                $_->update( {topic_mid => $topic_mid} );
+            }
         } else {
 
             # update topic
