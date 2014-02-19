@@ -47,6 +47,20 @@ params:
     });
     
     store_category_status.on('load',function(){
+        // refresh detail status menu 
+        /*
+        var menu = params.form.main.status_menu;
+        if( menu ) {
+            menu.removeAll();
+            store_category_status.each( function(row){
+                if( data.id_category_status != row.data.id ){
+                    menu.addItem({ text: _(row.data.name), id_status_to: row.data.id, id_status_from: data.id_category_status, 
+                        handler: function(obj){ params.form.main.change_status(obj) } });                                    
+                }
+            });
+        }
+        */
+        // set value
         status_box.setValue( data.name_status ) ;            
     });	
     var comp = status_box;

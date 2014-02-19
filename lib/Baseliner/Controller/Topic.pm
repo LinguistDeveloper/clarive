@@ -357,7 +357,7 @@ sub json : Local {
     my $meta = $c->model('Topic')->get_meta( $topic_mid );
     my $data = $c->model('Topic')->get_data( $meta, $topic_mid, %$p );
 
-    $meta = get_meta_permissions ($c, $meta, $data);
+    $meta = $self->get_meta_permissions ($c, $meta, $data);
     
     $meta = $self->get_field_bodies( $meta );
     
@@ -374,14 +374,16 @@ sub json : Local {
     $c->forward('View::JSON');
 }
 
-sub get_meta_permissions : Local {
-    my ($c, $meta, $data, $name_category, $name_status) = @_;
+sub get_meta_permissions : Private {
+    my ($self,$c, $meta, $data, $name_category, $name_status,$username) = @_;
     my @hidden_field;
+    
+    $username //= $c->username;
     
     my $parse_category = $data->{name_category} ? _name_to_id($data->{name_category}) : _name_to_id($name_category);
     my $parse_status = $data->{name_status} ? _name_to_id($data->{name_status}) : _name_to_id($name_status);
     
-    my $is_root = $c->model('Permissions')->is_root( $c->username );
+    my $is_root = $c->model('Permissions')->is_root( $username );
 
     for (_array $meta){
         my $parse_id_field = _name_to_id($_->{name_field});
@@ -399,7 +401,7 @@ sub get_meta_permissions : Local {
                         $field_form->{readonly} = \0;
                         $field_form->{allowBlank} = 'true' unless $field_form->{id_field} eq 'title';
                 } else {
-                    my $has_action = $c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action, mid => $data->{topic_mid} );
+                    my $has_action = $c->model('Permissions')->user_has_action( username=> $username, action => $write_action, mid => $data->{topic_mid} );
                     if ( $has_action ){
                         $field_form->{readonly} = \0;
                     }else{
@@ -416,7 +418,7 @@ sub get_meta_permissions : Local {
                         $field_form->{hidden} = \0;
                 } else {
 
-                    if ($c->model('Permissions')->user_has_read_action( username=> $c->username, action => $read_action )){
+                    if ($c->model('Permissions')->user_has_read_action( username=> $username, action => $read_action )){
                         $field_form->{hidden} = \1;
                         #push @hidden_field, $field_form->{id_field};
                     }
@@ -432,7 +434,7 @@ sub get_meta_permissions : Local {
                     $_->{allowBlank} = 'true' unless $_->{id_field} eq 'title';
             } else {
 
-                my $has_action = $c->model('Permissions')->user_has_action( username=> $c->username, action => $write_action, mid => $data->{topic_mid} );
+                my $has_action = $c->model('Permissions')->user_has_action( username=> $username, action => $write_action, mid => $data->{topic_mid} );
                 # _log "Comprobando ".$write_action."= ".$has_action;
                 if ( $has_action ){
                     $_->{readonly} = \0;
@@ -447,7 +449,7 @@ sub get_meta_permissions : Local {
             #_error $read_action;
 
             if ( !$is_root ) {
-                if ($c->model('Permissions')->user_has_read_action( username=> $c->username, action => $read_action )){
+                if ($c->model('Permissions')->user_has_read_action( username=> $username, action => $read_action )){
                     push @hidden_field, $_->{id_field};
                 }
             } 
@@ -530,7 +532,7 @@ sub new_topic : Local {
         
         map{ $data->{$_} = 'off'}  grep {$_ =~ '_done' && $data->{$_} eq 'on' } _array $data;
         
-        $meta = get_meta_permissions ($c, $meta, $data, $name_category, $name_status);
+        $meta = $self->get_meta_permissions ($c, $meta, $data, $name_category, $name_status);
         
         {
             success => \1,
@@ -709,7 +711,7 @@ sub view : Local {
         if( $p->{html} ) {
             my $meta = $c->model('Topic')->get_meta( $topic_mid, $id_category );
             my $data = $c->model('Topic')->get_data( $meta, $topic_mid, topic_child_data=>$p->{topic_child_data} );
-            $meta = get_meta_permissions ($c, $meta, $data);        
+            $meta = $self->get_meta_permissions ($c, $meta, $data);        
             
             $data->{admin_labels} = $c->model('Permissions')->user_has_any_action( username=> $c->username, action=>'action.admin.topics' );
             
