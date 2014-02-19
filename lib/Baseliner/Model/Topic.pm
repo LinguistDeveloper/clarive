@@ -74,6 +74,7 @@ register 'event.topic.file_remove' => {
 register 'event.topic.create' => {
     text => '%1 created a topic of %2',
     description => 'User created a topic',
+    use_semaphore => 0,
     vars => ['username', 'category', 'ts', 'scope'],
     notify => {
         #scope => ['project', 'category', 'category_status', 'priority','baseline'],
