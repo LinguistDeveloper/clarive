@@ -399,7 +399,19 @@ Baseliner.Topic.StoreList = Ext.extend( Baseliner.JsonStore, {
             fields: fields
         },config);
         Baseliner.Topic.StoreList.superclass.constructor.call(this, config);
-    }
+    }/*,
+	sort: function(sorters, direction){
+		var col;
+		if( this.data.items.length > 0 ){
+			console.log(this.data.items[0].data[sorters]);
+			if(this.data.items[0].data[sorters] === '' ){
+				var res = sorters.replace(/\_[^_]+$/,"");
+				sorters = res;
+			}
+		}
+		this.superclass().sort.call(this, sorters, direction);
+	}*/
+
 });
 
 Baseliner.Topic.StoreLabel = Ext.extend( Baseliner.JsonStore, {
@@ -1797,5 +1809,18 @@ Baseliner.jobs_for_topic = function(args) {
         }
     });
 };
+
+
+//Ext.override(Baseliner.Topic.StoreList, {
+//  sort: function(sorters, direction){
+//
+//    this.fireEvent('sorting', this, {});
+//
+//    //this.callParent(arguments);
+//    Baseliner.Topic.StoreList.superclass.sort.call(sorters,direction,this);
+//    this.fireEvent('sorted', this, {});
+//
+//  }	
+//});
 
 
