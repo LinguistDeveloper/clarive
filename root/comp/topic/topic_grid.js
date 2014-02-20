@@ -54,19 +54,44 @@
     status_id = params.status_id ? params.status_id.split(',') : '<% $c->stash->{status_id} %>' ? '<% $c->stash->{status_id} %>' : undefined;
     base_params.statuses = status_id;
     
+	var store_config;
     if( id_report ) {
         base_params.id_report = id_report;
-    }
-    var store_config = {
-        baseParams: base_params,
-        remoteSort: false,
-        listeners: {
-            'beforeload': function( obj, opt ) {
-                if( opt !== undefined && opt.params !== undefined )
-                    filter_current = Baseliner.merge( filter_current, opt.params );
-            }
-        }
-    };
+		store_config = {
+			baseParams: base_params,
+			remoteSort: false,
+			listeners: {
+				'beforeload': function( obj, opt ) {
+					if( opt !== undefined && opt.params !== undefined )
+						filter_current = Baseliner.merge( filter_current, opt.params );
+				}
+			},
+			sort: function(sorters, direction){
+				var col;
+				if( this.data.items.length > 0 ){
+					console.log(this.data.items[0].data[sorters]);
+					if(this.data.items[0].data[sorters] === '' ){
+						var res = sorters.replace(/\_[^_]+$/,"");
+						sorters = res;
+					}
+				}
+				this.superclass().sort.call(this, sorters, direction);
+			}			
+		};			
+    }else{
+		store_config = {
+			baseParams: base_params,
+			remoteSort: true,
+			listeners: {
+				'beforeload': function( obj, opt ) {
+					if( opt !== undefined && opt.params !== undefined )
+						filter_current = Baseliner.merge( filter_current, opt.params );
+				}
+			}
+		};		
+	}
+
+	
     if( fields ) {
         store_config.add_fields = fields.ids.map(function(r){ return { name: r } });
         //console.dir(fields);
@@ -1009,20 +1034,7 @@
         },
         forceSelection: true
     });
-    Baseliner.PagingToolbar = Ext.extend( Ext.PagingToolbar, {
-        onLoad: function(store,r,o) {
-            var p = this.getParams();
-            if( o.params && o.params[p.start] ) {
-                var st = o.params[p.start];
-                var ap = Math.ceil((this.cursor+this.pageSize)/this.pageSize);
-                if( ap > this.getPageData().pages ) { 
-                    delete o.params[p.start];
-                }
-            }
-            Baseliner.PagingToolbar.superclass.onLoad.call(this,store,r,o);
-        }
-    });
-    var ptool = new Baseliner.PagingToolbar({
+    var ptool = new Ext.PagingToolbar({
             store: store_topics,
             pageSize: ps,
             plugins:[
@@ -1071,7 +1083,8 @@
     
     var columns = [];
     var col_map = {
-        topic_name : { header: _('ID'), sortable: true, dataIndex: 'topic_name', width: 90, sortable: true, renderer: render_topic_name },
+        //topic_name : { header: _('ID'), sortable: true, dataIndex: 'topic_name', width: 90, sortable: true, renderer: render_topic_name },
+		topic_name : { header: _('ID'), sortable: true, dataIndex: 'topic_mid', width: 90, sortable: true, renderer: render_topic_name },
         category_name : { header: _('Category'), sortable: true, dataIndex: 'category_name', hidden: true, width: 80, sortable: true, renderer: render_default },
         category_status_name : { header: _('Status'), sortable: true, dataIndex: 'category_status_name', width: 50, renderer: render_status },
         title : { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title},
@@ -1261,7 +1274,8 @@
         }
     });
     // determine if too narrow
-    var ixi = grid_topics.getColumnModel().findColumnIndex('topic_name');
+    //var ixi = grid_topics.getColumnModel().findColumnIndex('topic_name');
+	var ixi = grid_topics.getColumnModel().findColumnIndex('topic_mid');
     if( ixi ) {
         topic_name_too_narrow = grid_topics.getColumnModel().getColumnWidth(ixi) < 80;
     }
