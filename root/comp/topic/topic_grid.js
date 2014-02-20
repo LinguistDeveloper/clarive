@@ -1043,7 +1043,20 @@
         },
         forceSelection: true
     });
-    var ptool = new Ext.PagingToolbar({
+    Baseliner.PagingToolbar = Ext.extend( Ext.PagingToolbar, {
+        onLoad: function(store,r,o) {
+            var p = this.getParams();
+            if( o.params && o.params[p.start] ) {
+                var st = o.params[p.start];
+                var ap = Math.ceil((this.cursor+this.pageSize)/this.pageSize);
+                if( ap > this.getPageData().pages ) { 
+                    delete o.params[p.start];
+                }
+            }
+            Baseliner.PagingToolbar.superclass.onLoad.call(this,store,r,o);
+        }
+    });
+    var ptool = new Baseliner.PagingToolbar({
             store: store_topics,
             pageSize: ps,
             plugins:[
