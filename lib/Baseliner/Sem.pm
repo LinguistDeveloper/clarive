@@ -92,21 +92,26 @@ sub enqueue {
 
 sub take { 
     my ($self, %p) =@_;
+    my ($package, $filename, $line) = caller;
+    $self->who("$package ($line)") unless $self->who;
     _debug('No sem'),return $self if $ENV{CLARIVE_NO_SEMS};
     my $id_queue = $self->enqueue;
     my $freq = config_get( 'config.sem.server.wait_for' )->{wait_for} // 250_000;  # microsecs, 250ms
     my $que;
     my $logged = 0;
     # wait until the daemon grants me out
-    while( 1 ) {
-        # granted?
-        last if $que = mdb->sem_queue->find_one({ _id=>$id_queue, status=>{ '$ne'=>'waiting' } });
+    mdb->create_capped('pipe');
+    mdb->pipe->insert({ q=>'sem', id_queue=>$id_queue });
+    mdb->pipe->follow( where=>{ id_queue=>$id_queue }, code=>sub{
+        _debug('wating sem in take..........');
         if( !$logged ) {
             _warn( _loc 'Waiting for semaphore %1 (%2)', $self->key, $self->who );
             $logged = 1;
         }
-        Time::HiRes::usleep( $freq );
-    }
+        return 0 if $que = mdb->sem_queue->find_one({ _id=>$id_queue, status=>{ '$ne'=>'waiting' } });
+        return 1;  
+    });
+
     my $status = $que->{status};
     if( $status eq 'granted' ) {
         $que->{status} = 'busy';
@@ -114,7 +119,7 @@ sub take {
         mdb->sem_queue->save( $que, { safe=>1 });
     }
     else {
-        _fail _loc 'Semaphore cancelled due to status %1', $status;
+        _fail _loc 'Semaphore cancelled due to status `%1`', $status;
     }
     return $self;
 }
@@ -124,7 +129,10 @@ sub release {
     my $que = mdb->sem_queue->find_one({ _id=>$self->id_queue });
     $que->{status} = 'done'; 
     $que->{ts_release} = mdb->ts;
-    mdb->sem_queue->save( $que, { safe=>1 } ) if $que->{_id};
+    if( $que->{_id} ) {
+        mdb->sem_queue->save( $que );
+        mdb->pipe->insert({ q=>'sem', id_queue=>$self->id_queue });
+    }
 }
 
 sub purge { 

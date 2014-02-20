@@ -125,5 +125,33 @@ sub all_keys {
     mdb->$tmp->drop;
     return @ky;
 }
+
+
+sub follow {
+    my ($self, %p)=@_;
+    my $iter = $p{iter} // -1;
+    my $where = $p{where} // {};
+    my $code = $p{code} // Util->_throw('Missing code parameter');
+    my $rs = $self->query($where)->tailable(1); # ->hint({ '$natural' => 1 }); # hint makes perl cpu shoot up
+    bless $rs => 'Baseliner::MongoCursor';
+    $rs->await_data( 1 );
+    ITER: while( $iter != 0 ) { 
+        while ( my $r = $rs->next ) {
+            if( my $err = mdb->db->last_error->{err} ) {
+                Util->_fail( Util->_loc('Failed during mongo tail follow: %1', $err) );
+            }
+            last ITER unless $code->($r,$rs,%p);
+        }
+        $iter-- if $iter>0;
+    }
+}
+
+# wrap around my own cursor
+#  around query => sub {
+#      my ($orig,$self) = (shift,shift);
+#      my $rs = $self->$orig( @_ );
+#      bless $rs => 'Baseliner::MongoCursor';
+#      return $rs;
+#  };
     
 1;

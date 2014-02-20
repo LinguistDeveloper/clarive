@@ -39,8 +39,6 @@ sub run_once {
     
     $check_for_roadkill //= 1;
 
-    my $sm = Baseliner->model('Semaphores');
-
     # cleanup killed rows, etc
     $self->cleanup( purge_interval=>$config->{purge_interval} ) if $config->{auto_purge} && $check_for_roadkill;
     # check for dead processes
@@ -56,7 +54,11 @@ sub run_daemon {
     
     _log "Starting sem daemon with frequency '$freq'";
     _log "Making sure the semaphore queue is Capped...";
-    #mdb->create_capped( 'sem_queue' );
+    
+    # mdb->pipe->drop;
+    mdb->create_capped('pipe');
+    mdb->pipe->find->all;
+    mdb->pipe->insert({ q=>'sem', base=>1 });  # otherwise follow goes bezerk
 
     _log "Sem daemon started";
     my $iteration=1;
@@ -64,20 +66,24 @@ sub run_daemon {
     my $hostname = Util->my_hostname;
     
     my $cr_iters = $config->{check_for_roadkill_iterations} // 1000;
-
+    
     do {
-        try {
-            $self->run_once( $c, $config, !($iteration % $cr_iters) );
-        } catch {
-            my $err = shift;
-            _debug "SEM DAEMON ERROR: $err";
-        };
-        Time::HiRes::usleep( 0+$freq );
+        _debug( 'loop sem daemon');
+        mdb->pipe->follow( where=>{ q=>'sem' }, iter=>$iterations, code=>sub{
+            _debug( 'follow daemon' );
+            try {
+                $self->run_once( $c, $config, !($iteration % $cr_iters) );
+            } catch {
+                my $err = shift;
+                _debug "SEM DAEMON ERROR: $err";
+            };
+            return 1;
+        });
         $iteration++; 
         $pending = mdb->sem_queue->find({ status => 'waiting', hostname=>$hostname })->count;
     } while ( ( $iteration <=  $iterations ) || $pending > 0 );
-    
-    _debug " - semaphore iteration finished " . $iteration . ' le ' . $iterations . ' or ' . $pending . " gt 0\n";
+
+    _debug " - semaphore iteration finished " . $iteration . ' > ' . $iterations . ' or ' . $pending . " > 0\n";
     
     # cleanup 
     $self->cleanup( purge_interval=>$config->{purge_interval} ) if $config->{auto_purge};
@@ -112,7 +118,9 @@ sub process_queue {
         for( 1..$free_slots ) {
             my $req = shift @reqs;
             next if !ref $req;
-            mdb->sem_queue->update({ _id=>$req->{_id} }, { '$set'=>{ status=>'granted', ts_grant=>_now() } }, { safe=>1 });
+            my $id_queue = $req->{_id};
+            mdb->sem_queue->update({ _id=>$id_queue }, { '$set'=>{ status=>'granted', ts_grant=>_now() } }, { safe=>1 });
+            mdb->pipe->insert({ q=>'sem', id_queue=>$id_queue });  # otherwise follow goes bezerk
             _log _loc 'Granted semaphore %1 to %2', $key, $req->{who};
         }
         
