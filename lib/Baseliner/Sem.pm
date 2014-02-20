@@ -101,9 +101,8 @@ sub take {
     my $logged = 0;
     # wait until the daemon grants me out
     mdb->create_capped('pipe');
-    mdb->pipe->insert({ q=>'sem', id_queue=>$id_queue });
+    mdb->pipe->insert({ q=>'sem', w=>'sem-take', id_queue=>$id_queue });
     mdb->pipe->follow( where=>{ id_queue=>$id_queue }, code=>sub{
-        _debug('wating sem in take..........');
         if( !$logged ) {
             _warn( _loc 'Waiting for semaphore %1 (%2)', $self->key, $self->who );
             $logged = 1;
@@ -131,7 +130,7 @@ sub release {
     $que->{ts_release} = mdb->ts;
     if( $que->{_id} ) {
         mdb->sem_queue->save( $que );
-        mdb->pipe->insert({ q=>'sem', id_queue=>$self->id_queue });
+        mdb->pipe->insert({ q=>'sem', w=>'sem-release', id_queue=>$self->id_queue });
     }
 }
 
