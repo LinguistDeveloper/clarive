@@ -1064,7 +1064,6 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                         self.form_is_loaded = false;
                         self.view_is_dirty = true;                     
                         var store = form2.findField("status_new").getStore();
-                        console.dir(store);
                         store.reload({
                             callback: function() {
                                 self.status_menu.removeAll();
