@@ -74,6 +74,7 @@ register 'event.topic.file_remove' => {
 register 'event.topic.create' => {
     text => '%1 created a topic of %2',
     description => 'User created a topic',
+    use_semaphore => 0,
     vars => ['username', 'category', 'ts', 'scope'],
     notify => {
         #scope => ['project', 'category', 'category_status', 'priority','baseline'],
@@ -1396,24 +1397,22 @@ sub save_data {
         my %change_status;
 
         if ( !$topic_mid ) {
-
             # new topic
-            master_new 'topic' => {name => $data->{title}, moniker => $moniker, data => {%row}} => sub {
-                $topic_mid = shift;
+            $row{created_by}         = $data->{username};
+            $row{modified_by}        = $data->{username};
+            $row{id_category_status} = $data->{id_category_status} if $data->{id_category_status};
 
-                #Defaults
-                $row{mid}                = $topic_mid;
-                $row{created_by}         = $data->{username};
-                $row{modified_by}        = $data->{username};
-                $row{id_category_status} = $data->{id_category_status} if $data->{id_category_status};
+            my $topic_ci = BaselinerX::CI::topic->new( name => $row{title}, moniker => $moniker, %row );
+            $topic_mid = $topic_ci->save;
 
-                $topic = DB->BaliTopic->create( \%row );
+            $row{mid} = $topic_mid;
 
-                # update images
-                for ( @imgs ) {
-                    $_->update( {topic_mid => $topic_mid} );
-                }
-                }
+            $topic = DB->BaliTopic->create( \%row );
+
+            # update images
+            for ( @imgs ) {
+                $_->update( {topic_mid => $topic_mid} );
+            }
         } else {
 
             # update topic
@@ -1552,6 +1551,7 @@ sub save_data {
         my %rel_fields =
             map { $_->{id_field} => $_->{set_method} }
             grep { $_->{relation} && $_->{relation} eq 'system' } _array( $meta );
+
         foreach my $id_field ( keys %rel_fields ) {
             if ( $rel_fields{$id_field} ) {
                 my $meth = $rel_fields{$id_field};
@@ -1570,13 +1570,9 @@ sub save_data {
         # user seen
         mdb->master_seen->update({ username => $data->{username}, mid => $topic_mid }, 
                 {username => $data->{username}, mid => $topic_mid, last_seen => mdb->ts, type=>'topic' }, { upsert=>1 });
-
         # cache clear
+        _log "Antes de limpiar la cache para el tópico $topic_mid";
         $self->cache_topic_remove( $topic_mid );
-        my @related_topics = ci->new( $topic_mid )->related( isa => 'topic' );
-        for ( @related_topics ) {
-            $self->cache_topic_remove( $_->{mid} );
-        }
 
         return ($topic, %change_status);
     } catch {
@@ -1591,7 +1587,7 @@ sub update_project_security {
 
     my $meta = Baseliner->model('Topic')->get_meta ($doc->{mid});
     my %project_collections; 
-    for my $field ( grep { $_->{meta_type} eq 'project' && length $_->{collection} } @$meta ) {
+    for my $field ( grep { $_->{meta_type} && $_->{meta_type} eq 'project' && length $_->{collection} } @$meta ) {
         my @secs = _array($doc->{ $field->{id_field} });
         push @{ $project_collections{ $field->{collection} } }, @secs if @secs;
     }
@@ -1704,7 +1700,6 @@ sub migrate_docs {
     my $w = { mid=>$mid } if length $mid;
     DB->BaliTopic->search($w)->hashref->each(sub{
         my $r = shift;
-        _debug $r;
         my @meta = _array( Baseliner->model('Topic')->get_meta(undef,$r->{id_category}) ); 
         my %meta = map { $_->{id_field} => $_ } @meta; 
         my @fields = $db->query( 'select * from bali_topic_fields_custom where topic_mid=?', $r->{mid} )->hashes;
@@ -2526,11 +2521,11 @@ sub cache_topic_remove {
     # refresh cache for related stuff 
     if ($topic_mid && $topic_mid ne -1) {    
         Baseliner->cache_remove( qr/:$topic_mid:/ );
-        for my $rel ( 
-            map { +{mid=>$_->{mid}, type=>$_->{_edge}{rel_type} } } 
-            ci->new( $topic_mid )->related( depth=>1 ) ) 
+        for my $rel_mid ( 
+            map { $_->{from_mid} == $topic_mid ? $_->{to_mid} : $_->{from_mid} }
+            mdb->master_rel->find({ '$or'=>[{from_mid=>"$topic_mid"},{to_mid=>"$topic_mid"}] })->all
+            )
         {
-            my $rel_mid = $rel->{mid};
             #_debug "TOPIC CACHE REL remove :$rel_mid:";
             Baseliner->cache_remove( qr/:$rel_mid:/ );
         }
@@ -2578,7 +2573,7 @@ sub change_status {
             ###    @users = Baseliner->model('Users')->get_users_from_mid_roles( roles => \@roles );
             ###}
             
-            my $subject = _loc("Topic [%1] %2.  Status changed to %3", $mid, $row->title, $self->find_status_name($p{id_status}));
+            my $subject = _loc("Topic [%1] %2.  Status changed to %3", $mid, $row->title, $status );
             +{ mid => $mid, title => $row->title, notify_default => \@users, subject => $subject } ;       
         } 
         => sub {

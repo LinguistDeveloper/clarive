@@ -33,26 +33,29 @@ sub parallel_run {
     my $job = $stash->{job};
      
     if( my $chi_pid = fork ) {
+        # parent
         _log _loc 'Forked child task %1 with pid %2', $name, $chi_pid; 
         if( $mode eq 'fork' ) {
             # fork and wait..
             $stash->{_forked_pids}{ $chi_pid } = $name;
         }
     } else {
-        mdb->disconnect;  # will reconnect later
-         my ($ret,$err);
-         try {
-             $ret = $code->();
-         } catch {
-            $err = shift; 
-            _error( _loc('Detected error in child %1 (%2): %3', $$, $mode, $err) );
-         };
-         if( $mode eq 'fork' ) {
+        # child
+        mdb->disconnect;    # will reconnect later
+        my ( $ret, $err );
+        try {
+            $ret = $code->();
+        }
+        catch {
+            $err = shift;
+            _error( _loc( 'Detected error in child %1 (%2): %3', $$, $mode, $err ) );
+        };
+        if ( $mode eq 'fork' ) {
             # fork and wait.., communicate results to parent
-            my $res = { ret=>$ret, err=>$err }; 
-            queue->push( msg=>"rule:child:results:$$", data=>$res ); 
-         }
-         exit 0; # cannot update stash, because it would override the parent run copy
+            my $res = { ret => $ret, err => $err };
+            queue->push( msg => "rule:child:results:$$", data => $res );
+        }
+        exit 0;    # cannot update stash, because it would override the parent run copy
     }
 }
 
@@ -233,7 +236,7 @@ sub dsl_build {
         } elsif( ! $attr->{nested} ) {
             push @dsl, sprintf( 'current_task($stash, q{%s});', $name )."\n";
         }
-        if( defined $timeout && $timeout > 0 ) {
+        if( length $timeout && $timeout > 0 ) {
             push @dsl, sprintf( 'alarm %s;', $timeout )."\n";
         }
         push @dsl, sprintf( '_debug(q{=====| Current Rule Task: %s} );', $name)."\n" if $p{verbose}; 
@@ -246,7 +249,7 @@ sub dsl_build {
             if( $reg->isa( 'BaselinerX::Type::Service' ) ) {
                 push @dsl, $spaces->($level) . '{';
                 push @dsl, $spaces->($level) . sprintf(q{   my $config = parse_vars %s, $stash;}, Data::Dumper::Dumper( $data ) );
-                push @dsl, $spaces->($level) . sprintf(q{   launch( "%s", q{%s}, $stash, $config => '%s' );}, $key, $name, $data_key );
+                push @dsl, $spaces->($level) . sprintf(q{   launch( "%s", q{%s}, $stash, $config => '%s' );}, $key, $name, ($data_key//'') );
                 push @dsl, $spaces->($level) . '}';
                 #push @dsl, $spaces->($level) . sprintf('merge_data($stash, $ret );', Data::Dumper::Dumper( $data ) );
             } else {
@@ -265,11 +268,8 @@ sub dsl_build {
     my $dsl = join "\n", @dsl;
     if( $self->tidy_up && !$p{no_tidy} ) {
         require Perl::Tidy;
-        require Capture::Tiny;
         my $tidied = '';
-        Capture::Tiny::capture(sub{
-            Perl::Tidy::perltidy( argv => '--maximum-line-length=160 ', source => \$dsl, destination => \$tidied );
-        });
+        Perl::Tidy::perltidy( argv => '--maximum-line-length=160 --quiet --no-log', source => \$dsl, destination => \$tidied );
         return $tidied;
     } else {
         return $dsl;
@@ -278,16 +278,31 @@ sub dsl_build {
 
 sub wait_for_children {
     my ($self, $stash, %p ) = @_;
-    if( my $chi_pids = $stash->{_forked_pids} ) {
-        _info( _loc('Waiting for return code from children pids: %1', join(',',keys $chi_pids ) ) );
-        for my $pid ( keys $chi_pids ) {
+    my $chi_pids = $stash->{_forked_pids};
+    if( my @pids = keys %$chi_pids ) {
+        _info( _loc('Waiting for return code from children pids: %1', join(',', @pids ) ) );
+        my @failed;
+        my @oks;
+       
+        for my $pid ( @pids ) {
             waitpid $pid, 0;
             delete $chi_pids->{$pid};
             if( my $res = queue->pop( msg=>"rule:child:results:$pid" ) ) {
-                _fail $res->{err} if $res->{err};
+                if( $res->{err} ) {
+                    _error( $res->{err} );
+                    push @failed, $pid;
+                } else {
+                    push @oks, $pid;
+                }
             }
         }
-        _info( _loc('Done waiting for return code from children pids: %1', join(',',keys $chi_pids ) ) );
+        if( @failed ) {
+            _fail( _loc('Error detected in children, pids failed: %1. Ok: %2', join(',',@failed ), join(',',@oks) ) );
+        } else {
+            _info( _loc('Done waiting for return code from children pids: %1', join(',',@pids ) ) );
+        }
+    } else {
+        _debug( _loc('No children to wait for.') );
     }
 }
 
@@ -346,7 +361,7 @@ sub run_rules {
     
     my $mid = $stash->{mid} if $stash;
     my $sem;
-    if( defined $mid && @rules ) {
+    if( defined $mid && @rules && $p{use_semaphore} ) {
         require Baseliner::Sem;
         $sem = Baseliner::Sem->new( key=>'event:'.$stash->{mid}, who=>"rules:$when", internal=>1 );
         $sem->take;

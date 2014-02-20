@@ -101,8 +101,12 @@ Exec:
 <table class="summary-table">
   <tbody>
     <tr>
-        <th class="summary-name"><% _loc( 'Step' ) %></th>
-        <th class="summary-name"><% _loc( 'Timestamp' ) %></th>
+        <th class="summary-name" width="1"><% _loc( 'Step' ) %></th>
+        <th class="summary-name" width="1"><% _loc( 'Task' ) %></th>
+%    if( $debug ) {
+        <th class="summary-name" width="1"><% _loc( 'PID' ) %></th>
+%    }
+        <th class="summary-name" width="1"><% _loc( 'Timestamp' ) %></th>
         <th class="summary-name"><% _loc( 'Message' ) %></th>
         <th class="summary-name"><% _loc( 'Actions' ) %></th>
     </tr>
@@ -113,7 +117,11 @@ Exec:
 % for my $row ( @$rows ) {
     <tr class="<% $row->{lev} . $eo->()  %>">
         <td class="<% $row->{lev} . $eo->() %>"><% $row->{step} %></td>
-        <td class="<% $row->{lev} . $eo->()  %>"><% $row->{ts} %></td>
+        <td class="<% $row->{lev} . $eo->() %>"><% $row->{service_key} %></td>
+%    if( $debug ) {
+        <td class="<% $row->{lev} . $eo->() %>"><% $row->{pid} %></td>
+%    }
+        <td class="<% $row->{lev} . $eo->()  %>"><% $debug ? ( $row->{ts} . '.' . (split/\./, $row->{t})[1] ) : $row->{ts} %></td>
         <td class="<% $row->{lev} . $eo->()  %>"><% $row->{text} %></td>
         <td class="<% $row->{lev} . $eo->()  %>">
 % if( $row->{datalen} ) {

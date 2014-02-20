@@ -56,6 +56,7 @@ has 'name' => ( is => 'rw', isa => 'Str', default => sub { shift->key } );
 has 'type' => ( is => 'rw', isa => 'Str', default => 'trigger' );
 has 'description' => ( is => 'rw', isa => 'Str', default => 'An Event' );
 has 'notify' => ( is => 'rw', isa => 'HashRef' );
+has 'use_semaphore' => ( is => 'rw', isa => 'Bool', default => 1 );
 has 'text' => (
     is      => 'rw',
     isa     => 'Str',
@@ -94,7 +95,7 @@ sub after_hooks { $_[0]->_hooks( 'after' ) }
 
 sub run_rules {
     my ($self, $when, $stash) = @_;
-    return Baseliner->model('Rules')->run_rules( event=>$self->key, when=>$when, stash=>$stash, rule_type=>'event', simple_error=>1 );
+    return Baseliner->model('Rules')->run_rules( event=>$self->key, when=>$when, stash=>$stash, rule_type=>'event', simple_error=>1, use_semaphore=>$self->use_semaphore );
 }
 sub rules_pre_online { $_[0]->run_rules( 'pre-online', $_[1] ) }
 sub rules_post_online { $_[0]->run_rules( 'post-online', $_[1] ) }

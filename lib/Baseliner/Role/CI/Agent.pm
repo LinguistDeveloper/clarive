@@ -41,7 +41,7 @@ Values: Unix o Win32
 Default: Unix
 
 =cut
-has os => qw(default unix lazy 1 required 1 is rw isa), enum [qw(unix win mvs)];
+has os => qw(default unix is rw isa), enum [qw(unix win mvs)];
 
 =head2 mkpath_on
 

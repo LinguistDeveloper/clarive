@@ -92,7 +92,7 @@ sub enqueue {
 
 sub take { 
     my ($self, %p) =@_;
-    return $self if $ENV{CLARIVE_NO_SEMS};
+    _debug('No sem'),return $self if $ENV{CLARIVE_NO_SEMS};
     my $id_queue = $self->enqueue;
     my $freq = config_get( 'config.sem.server.wait_for' )->{wait_for} // 250_000;  # microsecs, 250ms
     my $que;
@@ -102,7 +102,7 @@ sub take {
         # granted?
         last if $que = mdb->sem_queue->find_one({ _id=>$id_queue, status=>{ '$ne'=>'waiting' } });
         if( !$logged ) {
-            _warn( _log 'Waiting for semaphore %1', $self->key );
+            _warn( _loc 'Waiting for semaphore %1 (%2)', $self->key, $self->who );
             $logged = 1;
         }
         Time::HiRes::usleep( $freq );

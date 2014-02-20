@@ -85,10 +85,10 @@
     my $colors = { Success => '#00BB00', Warning => '#E0B500', Error => '#BB0000'};
     for my $step ( @steps ) {
         if ( $servicios->{$step} ) {
-            my @services = _array $servicios->{$step};
+            my @services = grep { !( $_->{service} ~~ @steps ) } _array $servicios->{$step};  # grep out PRE, INIT, ... from the IFs TODO put a better if
             my $tot_services = scalar @services;
             my $first = 1;
-            for my $service ( @services ) {
+            SERVICE: for my $service ( @services ) {
         	    if ( $first ) {
 </%perl>
                     <tr>
@@ -99,7 +99,7 @@
 </%perl>
                         <td class="datos"><b><a href="javascript:Baseliner.addNewTabComp('/job/log/list?mid=<%$mid%>&service_name=<%$service->{service}%>', _('Log <%$service->{service}%>'), { tab_icon: '/static/images/icons/moredata.gif' } );"><% $service->{description} || $service->{service} %></a></b></td>
                         <td class="datos" style="color:<% $colors->{$service->{status}} %>;"><b><% _loc($service->{status}) %></b></td>
-                        <td class="datos"><b><% $resumen->{services_time}->{$step."#".$service->{service}}." sec." %></b></td>
+                        <td class="datos"><b><% $resumen->{services_time}->{$step."#".$service->{service}}." sec" %></b></td>
 
                     </tr>
 <%perl>
