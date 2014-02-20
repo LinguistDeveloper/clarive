@@ -59,7 +59,7 @@
     }
     var store_config = {
         baseParams: base_params,
-        remoteSort: true,
+        remoteSort: false,
         listeners: {
             'beforeload': function( obj, opt ) {
                 if( opt !== undefined && opt.params !== undefined )
