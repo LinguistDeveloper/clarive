@@ -132,6 +132,7 @@ sub tree_resolve {
                 Baseliner->cache_remove( qr/:$mid:/ );
                 # XXX missing rel_field...
                 DB->BaliMasterRel->find_or_create({ to_mid=>$self->mid, from_mid=>$mid, rel_type=>$tag_relationship });
+                mdb->master_rel->find_or_create({ to_mid=>$self->mid, from_mid=>$mid, rel_type=>$tag_relationship });
             }
         }
         # item_item relationships
@@ -142,6 +143,7 @@ sub tree_resolve {
                 Baseliner->cache_remove( qr/:$mid:/ );
                 # XXX missing rel_field...
                 DB->BaliMasterRel->find_or_create({ to_mid=>$self->mid, from_mid=>$mid, rel_type=>$item_relationship });
+                mdb->master_rel->find_or_create({ to_mid=>$self->mid, from_mid=>$mid, rel_type=>$tag_relationship });
             }
         }
         # XXX compare my parse tree (functions, etc) with other parse trees
