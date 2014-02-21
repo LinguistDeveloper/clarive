@@ -1904,7 +1904,8 @@ sub report_yaml : Local {
 sub report_csv : Local {
     my ($self, $c ) = @_;
     my $p = $c->req->params;
-    my $data = _decode_json $p->{data_json};
+    my $json = $p->{data_json};
+    my $data = _decode_json $json;
     
     my @csv;
     my @cols;
@@ -1931,10 +1932,8 @@ sub report_csv : Local {
         push @csv, join ',', @cells; 
     }
     my $body = join "\n", @csv;
-    #_warn $body;
-    #$c->res->body( $body );
-    #$body =~ s/([^\x00-\x7f])/sprintf('&#%d;', ord($1))/ge;
-    Encode::encode('utf-16',$body);
+    utf8::encode($body);
+    Encode::from_to($body,'utf-8','iso-8859-15');
     $c->stash->{serve_body} = $body;
     $c->stash->{serve_filename} = 'Clarive_export.csv';#length $p->{title} ? Util->_name_to_id($p->{title}).'.csv' : 'topics.csv';
     $c->forward('/serve_file');
