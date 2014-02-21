@@ -389,7 +389,10 @@
                     var cell = gv.getCell(row,col); 
                     if( !cell ) break;
                     //console.log( cell.innerHTML );
-                    d[ cfg[col].dataIndex ] = args.no_html ? $(cell.innerHTML).text() : cell.innerHTML;
+                    var text = args.no_html ? $(cell.innerHTML).text() : cell.innerHTML;
+                    text = text.replace(/^\s+/,'');
+                    text = text.replace(/\s+$/,'');
+                    d[ cfg[col].dataIndex ] = text;
                 }
                 data.rows.push( d ); 
             }
