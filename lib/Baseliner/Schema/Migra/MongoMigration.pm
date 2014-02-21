@@ -413,18 +413,47 @@ sub topic_numify {
 sub master_and_rel {
     my ( $self, %p ) = @_;
     my $db = Util->_dbis();
+    # MASTER
     my @master = $db->query('select * from bali_master')->hashes;
     for my $r ( @master ) {
         mdb->master->update({ mid=>''.$r->{mid} }, $r, { upsert=>1 });
     }
+    # MASTER_REL
     my @master_rel = $db->query('select * from bali_master_rel')->hashes;
     mdb->master_rel->drop;  # cleaner just to insert
     mdb->index_all('master_rel');  # so we have the master_rel uniques
     for my $r ( @master_rel ) {
-        next if mdb->master_rel->find_one($r); # bali_master_rel may have tons of junk
+        #next if mdb->master_rel->find_one($r); # bali_master_rel may have tons of junk
         mdb->master_rel->insert( $r );
     }
-    
+    # MASTER_DOC 
+    for my $mid ( map {$_->{mid}} mdb->master->find->fields({ mid=>1 })->all ) {
+        ci->new( $mid )->save;  # creates/updates master_doc record
+    }
+    # master_doc integrity 
+    for my $mid ( map {$_->{mid}} mdb->master_doc->find->fields({ mid=>1 })->all ) {
+        next if mdb->master->find_one({ mid=>$mid });
+        warn "master_doc mid not found=$mid";
+        mdb->master_doc->remove({ mid=>$mid });
+    }
+}
+
+sub master_rel_fix {
+    my ($self,@mids)=@_;
+    for my $mid ( @mids ) {
+        my %db = map { join(',',@{$_}{qw(from_mid to_mid rel_type rel_field)}) => $_ } 
+            DB->BaliMasterRel->search({ -or=>[{from_mid=>$mid}, {to_mid=>$mid}] })->hashref->all;
+        my %mdb = map { join(',',@{$_}{qw(from_mid to_mid rel_type rel_field)}) => $_ } 
+            mdb->master_rel->find({ '$or'=>[{from_mid=>"$mid"},{to_mid=>"$mid"}] })->all;
+        for ( keys %mdb ) {
+            next if exists $db{$_};
+            mdb->master_rel->remove({ _id=>$mdb{$_}{_id} },{ multiple=>1 });
+        }
+        for ( keys %db ) {
+            next if exists $mdb{$_};
+            mdb->master_rel->insert( $db{$_} );
+        }
+    }
 }
     
 sub topic {

@@ -255,6 +255,9 @@ sub index_all {
             [{ id=>1 }],
             [{ mid=>1 }],
         ],
+        event => [
+            [{ ts=>1 }],
+        ],
         topic_image => [
             [{ id_hash => 1 }]
         ],
