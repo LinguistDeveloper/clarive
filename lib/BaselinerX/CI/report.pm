@@ -882,10 +882,11 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 		modified_by	=> 1,
 		labels		=> 1
 	);
-		
+    my $fields = {  %select_system, map { $_=>1 } keys +{@selects}, _id=>0 };
+    _log "FIELDS==================>" . _dump( $fields );
     my @data = $rs
       ->sort({ @sort })
-      ->fields({  %select_system, @selects, _id=>0 })
+      ->fields($fields)
       ->skip( $start )
       ->limit($rows)
       ->all;
