@@ -10,10 +10,8 @@ with 'Baseliner::Role::Service';
 
 register 'config.sem.server' => {
     metadata => [
-        { id=>'frequency', default=>500_000 },  # microseconds, 1_000_000 = 1 sec
-        { id=>'wait_for',  default=>250_000 },
         { id=>'host',  default=>'localhost' },
-        { id=>'auto_purge',  default=>0 },
+        { id=>'auto_purge',  default=>1 },
         { id=>'purge_interval',  default=>'1D' },
         { id=>'iterations', default=>1000},
         { id=>'check_for_roadkill_iterations', default=>500},
@@ -58,7 +56,7 @@ sub run_daemon {
     # mdb->pipe->drop;
     mdb->create_capped('pipe');
     mdb->pipe->find->all;
-    mdb->pipe->insert({ q=>'sem', base=>1 });  # otherwise follow goes bezerk
+    mdb->pipe->insert({ q=>'sem', w=>'sem-base', base=>1 });  # otherwise follow goes bezerk
 
     _log "Sem daemon started";
     my $iteration=1;
@@ -68,14 +66,12 @@ sub run_daemon {
     my $cr_iters = $config->{check_for_roadkill_iterations} // 1000;
     
     do {
-        _debug( 'loop sem daemon');
         mdb->pipe->follow( where=>{ q=>'sem' }, iter=>$iterations, code=>sub{
-            _debug( 'follow daemon' );
             try {
                 $self->run_once( $c, $config, !($iteration % $cr_iters) );
             } catch {
                 my $err = shift;
-                _debug "SEM DAEMON ERROR: $err";
+                _error "SEM DAEMON ERROR: $err";
             };
             return 1;
         });
@@ -83,12 +79,10 @@ sub run_daemon {
         $pending = mdb->sem_queue->find({ status => 'waiting', hostname=>$hostname })->count;
     } while ( ( $iteration <=  $iterations ) || $pending > 0 );
 
-    _debug " - semaphore iteration finished " . $iteration . ' > ' . $iterations . ' or ' . $pending . " > 0\n";
+    _info "semaphore iteration finished " . $iteration . ' > ' . $iterations . ' or ' . $pending . " > 0\n";
     
     # cleanup 
     $self->cleanup( purge_interval=>$config->{purge_interval} ) if $config->{auto_purge};
-    
-    _log "Sem daemon finished";
 }
 
 sub process_queue {
@@ -120,7 +114,7 @@ sub process_queue {
             next if !ref $req;
             my $id_queue = $req->{_id};
             mdb->sem_queue->update({ _id=>$id_queue }, { '$set'=>{ status=>'granted', ts_grant=>_now() } }, { safe=>1 });
-            mdb->pipe->insert({ q=>'sem', id_queue=>$id_queue });  # otherwise follow goes bezerk
+            mdb->pipe->insert({ q=>'sem', w=>'sem-grant', id_queue=>$id_queue }); 
             _log _loc 'Granted semaphore %1 to %2', $key, $req->{who};
         }
         

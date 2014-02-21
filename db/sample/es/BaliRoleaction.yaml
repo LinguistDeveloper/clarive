@@ -1,4 +1,0 @@
----
-- action: action.admin.default
-  bl: '*'
-  id_role: 1
