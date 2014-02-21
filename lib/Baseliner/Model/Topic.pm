@@ -2182,6 +2182,7 @@ sub set_release {
             
         }else{
             my $rs = DB->BaliMasterRel->search({from_mid => $old_release, to_mid=>$topic_mid })->delete;
+            mdb->master_rel->remove({from_mid => $old_release, to_mid=>$topic_mid },{multiple=>1});
             event_new 'event.topic.modify_field' => { username   => $user,
                                                 field      => $id_field,
                                                 old_value      => $old_release_name,
