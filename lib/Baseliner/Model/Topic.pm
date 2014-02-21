@@ -662,7 +662,11 @@ sub update {
                 });                   
             } 
             => sub { # catch
-                _throw _loc( 'Error adding Topic: %1', shift() );
+                mdb->topic->remove({ mid=>"$topic_mid" },{ multiple=>1 });
+                mdb->master->remove({ mid=>"$topic_mid" },{ multiple=>1 });
+                mdb->master_doc->remove({ mid=>"$topic_mid" },{ multiple=>1 });
+                mdb->master_rel->remove({ '$or'=>[{from_mid=>"$topic_mid"},{to_mid=>"$topic_mid"}] },{ multiple=>1 });
+                _throw _loc( 'Error adding Topic %1: %2', $topic_mid, shift() );
             }; # event_new
         } ## end when ( 'add' )
         when ( 'update' ) {
@@ -689,7 +693,7 @@ sub update {
                 
                 #my @projects = map {$_->{mid}} $topic->projects->hashref->all;
                 my @users = $self->get_users_friend(mid => $topic_mid, id_category => $topic->id_category, id_status => $topic->id_category_status);
-
+                
                 $return = 'Topic modified';
                 my $subject = _loc("Topic updated (%1): [%2] %3", $category->{name}, $topic->mid, $topic->title);
                 Baseliner->model('Baseliner')->schema->txn_commit;
@@ -699,13 +703,13 @@ sub update {
                 }
 
                { mid => $topic->mid, topic => $topic->title, subject => $subject, notify_default => \@users }   # to the event
-            } ## end try
-            => sub {
+            } => sub {
                 my $e = shift;
                 Baseliner->model('Baseliner')->schema->txn_rollback if $rollback;
+                mdb->migra->master_rel_fix($topic_mid); # XXX only while DB is alive
                 _throw $e;
             };
-        } ## end when ( 'update' )
+        } 
         when ( 'delete' ) {
             $topic_mid = $p->{topic_mid};
             try {
