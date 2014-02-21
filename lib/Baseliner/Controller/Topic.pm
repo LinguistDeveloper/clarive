@@ -132,29 +132,32 @@ sub update : Local {
     my $p = $c->request->parameters;
     
     $p->{username} = $c->username;
+    my $return_options;   # used by event rules to return anything back to the form
     
     try  {
         my ($isValid, @field_name) = (1,());
         #my ($isValid, @field_name) = $c->model('Topic')->check_fields_required( mid => $p->{topic_mid}, username => $c->username, data => $p);
 
         if($isValid == 1){
-            my ($msg, $topic_mid, $status, $title, $category, $modified_on) = $c->model('Topic')->update( $p );
+            my ($msg, $topic_mid, $status, $title, $category, $modified_on);
+            ($msg, $topic_mid, $status, $title, $category, $modified_on, $return_options) = $c->model('Topic')->update( $p );
             $c->stash->{json} = {
-                success      => \1,
-                msg          => _loc( $msg, scalar( _array( $p->{topic_mid} ) ) ),
-                topic_mid    => $topic_mid,
-                topic_status => $status,
-                category     => $category,
-                title        => $title,
-                modified_on  => $modified_on,
+                success        => \1,
+                msg            => _loc( $msg, scalar( _array( $p->{topic_mid} ) ) ),
+                topic_mid      => $topic_mid,
+                topic_status   => $status,
+                return_options => $return_options // {},
+                category       => $category,
+                title          => $title,
+                modified_on    => $modified_on,
             };            
         }
         else{
-            $c->stash->{json} = { success => \0, fields_required=> \@field_name };    
+            $c->stash->{json} = { success => \0, fields_required=> \@field_name, return_options=>$return_options // {} };    
         }
     } catch {
         my $e = shift;
-        $c->stash->{json} = { success => \0, msg=>_loc($e) };
+        $c->stash->{json} = { success => \0, msg=>_loc($e), return_options=>$return_options // {} };
     };
     $c->forward('View::JSON');
 }

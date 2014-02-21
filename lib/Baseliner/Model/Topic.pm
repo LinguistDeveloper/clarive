@@ -616,6 +616,7 @@ sub update {
     my $status;
     my $category;
     my $modified_on;
+    my $return_options = {};
     
     given ( $action ) {
         #Casos especiales, por ejemplo la aplicacion GDI
@@ -623,11 +624,11 @@ sub update {
         $p->{_cis} = _decode_json( $p->{_cis} ) if $p->{_cis};
 
         when ( 'add' ) {
-            
-            event_new 'event.topic.create' => { username=>$p->{username} } => sub {
+            my $stash = { topic_data=>$p, username=>$p->{username}, return_options=>$return_options };
+            event_new 'event.topic.create' => $stash => sub {
                 Baseliner->model('Baseliner')->txn_do(sub{
                     my $meta = $self->get_meta ($topic_mid , $p->{category});
-                    
+                    $stash->{topic_meta} = $meta; 
                     my @meta_filter;
                     push @meta_filter, $_
                        for grep { exists $p->{$_->{id_field}}} _array($meta);
@@ -652,7 +653,12 @@ sub update {
                     };
                     
                     my $subject = _loc("New topic (%1): [%2] %3", $category->{name}, $topic->mid, $topic->title);
-                    { mid => $topic->mid, title => "Nuevo tópico - ".$topic, topic => $topic->title, name_category => $category->{name}, category => $category->{name}, category_name => $category->{name}, notify_default => \@users, subject => $subject, notify => $notify }   # to the event
+                    { mid => $topic->mid, title => "Nuevo tópico - ".$topic, 
+                        topic=>$topic->title, 
+                        name_category=>$category->{name}, 
+                        category=>$category->{name}, 
+                        category_name=>$category->{name}, 
+                        notify_default=>\@users, subject=>$subject, notify=>$notify }   # to the event
                 });                   
             } 
             => sub { # catch
@@ -661,12 +667,14 @@ sub update {
         } ## end when ( 'add' )
         when ( 'update' ) {
             my $rollback = 1;
-            event_new 'event.topic.modify' => { username=>$p->{username},  } => sub {
+            my $stash = { topic_data=>$p, username=>$p->{username}, return_options=>$return_options };
+            event_new 'event.topic.modify' => $stash => sub {
                 Baseliner->model('Baseliner')->schema->txn_begin;
                 my @field;
                 $topic_mid = $p->{topic_mid};
 
                 my $meta = $self->get_meta ($topic_mid, $p->{category});
+                $stash->{topic_meta} = $meta; 
                 
                 my @meta_filter;
                 push @meta_filter, $_
@@ -739,7 +747,7 @@ sub update {
             };
         } ## end when ( 'close' )
     } ## end given
-    return ( $return, $topic_mid, $status, $p->{title}, $category, $modified_on);
+    return ( $return, $topic_mid, $status, $p->{title}, $category, $modified_on, $return_options);
 } ## end sub update
 
 
