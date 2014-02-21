@@ -796,7 +796,9 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	my $categories_queries;
 	
 	my @All_Categories;
-	
+
+    _fail( _loc("Missing 'Categories' in search configuration") ) unless keys %{ $rel_query || {} };	
+    
 	foreach my $key (sort { $b <=> $a} keys $rel_query) {
 		my @ids_category = _array $rel_query->{$key}->{id_category};
 		my @names_category = _array $rel_query->{$key}->{name_category};
