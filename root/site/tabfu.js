@@ -997,7 +997,7 @@ if( Prefs.routing ) {
         win.show();
     };
 
-    Baseliner.eval_response = function( text, params, url ) {
+    Baseliner.eval_response = function( text, params, url, compiled_func ) {
         var comp;
         // search cache, if exists
         if( Ext.isObject( Baseliner.eval_cache ) && Baseliner.eval_cache[url] !=undefined ) {
@@ -1008,7 +1008,7 @@ if( Prefs.routing ) {
         try { eval("comp = " + text ) } catch(e) {} // this is for (function(){})(); with semicolon, etc.
         if( comp == undefined ) eval("comp = ( " + text + " )");  // json, pure js, closures (function(){ })
         
-        if( Ext.isFunction( comp ) ) {
+        if( Ext.isFunction( comp ) && !compiled_func ) {
             var ret = comp(params);
             if( Ext.isObject( Baseliner.eval_cache ) ) Baseliner.eval_cache[url]=comp;
             return ret;

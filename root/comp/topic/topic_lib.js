@@ -1589,6 +1589,8 @@ Ext.form.Action.prototype.constructor = Ext.form.Action.prototype.constructor.cr
     });
 });
 
+Baseliner.field_cache = {};
+
 Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
     labelAlign: 'top',
     layout:'column',
@@ -1655,24 +1657,26 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
             
             if( field.active!=undefined && ( !field.active || field.active=='false') ) continue;
             
-            if( field.body) {// some fields only have an html part
-                if( field.body.length==0  ) continue; 
-                var comp = Baseliner.eval_response(
-                    field.body,
-                    { 
-                        form: self, topic_data: data, topic_meta:  field, value: '', 
-                        _cis: rec._cis, id_panel: rec.id_panel, admin: rec.can_admin, 
-                        html_buttons: rec.html_buttons 
-                    }
-                );
+            if( field.body ) {// some fields only have an html part
+                var func = Baseliner.field_cache[ field.body[0] ];
+                if( !func || field.body[2]>0 ) {
+                    var func = Baseliner.eval_response( field.body[1],{},'',true );
+                    Baseliner.field_cache[ field.body[0] ] = func;
+                }
+                if( !func ) continue; 
+                var fieldlet = func({ 
+                    form: self, topic_data: data, topic_meta:  field, value: '', 
+                    _cis: rec._cis, id_panel: rec.id_panel, admin: rec.can_admin, 
+                    html_buttons: rec.html_buttons 
+                });
                 
-                if( !comp ) continue; // invalid field?
+                if( !fieldlet ) continue; // invalid field?
 
-                if( comp.xtype == 'hidden' ) {
-                    self.add( comp );
+                if( fieldlet.xtype == 'hidden' ) {
+                    self.add( fieldlet );
                 } else {
                     var all_hidden = true;
-                    Ext.each( comp, function(f){
+                    Ext.each( fieldlet, function(f){
                         if( f.hidden!=undefined && !f.hidden ) all_hidden = false;
                         f.origin = 'custom';
                         if (f.name == "title" || f.name == "category" || f.name == "status_new") f.system_force = true;
@@ -1691,12 +1695,12 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
                     //         mask.setStyle('height', 5000);
                     //     };            
                     // });                    
-                    if( comp.items ) {
-                        if( comp.on_submit ) self.on_submit_events.push( comp.on_submit );
-                        p.add( comp.items ); 
+                    if( fieldlet.items ) {
+                        if( fieldlet.on_submit ) self.on_submit_events.push( fieldlet.on_submit );
+                        p.add( fieldlet.items ); 
                         self.add ( p );
                     } else {
-                        p.add( comp ); 
+                        p.add( fieldlet ); 
                         self.add ( p );
                     }
                 }

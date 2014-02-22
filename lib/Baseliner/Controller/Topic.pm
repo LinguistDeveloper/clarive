@@ -328,12 +328,12 @@ sub get_field_bodies {
         my $cache = $field_cache{ "$file" };
         if( defined $cache && $cache->{modified_on} == $modified_on ) {
             _debug "************ HIT CACHE ( $cache->{modified_on} == $modified_on ) for $file";
-            $field->{body} = $cache->{body};
+            $field->{body} = ["$file", $cache->{body}, 0];
         } else {
             _debug "************ NOOO CACHE ( $cache->{modified_on} != $modified_on )  for $file";
             my $body = _mason( $field->{js} );
             $field_cache{ "$file" } = { modified_on=>$modified_on, body => $body };
-            $field->{body} = $body;
+            $field->{body} = ["$file", $body, 1 ];
         }
     }
     return $meta;
