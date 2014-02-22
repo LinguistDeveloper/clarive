@@ -48,7 +48,6 @@ params:
     
     store_category_status.on('load',function(){
         // refresh detail status menu 
-        /*
         var menu = params.form.main.status_menu;
         if( menu ) {
             menu.removeAll();
@@ -59,7 +58,6 @@ params:
                 }
             });
         }
-        */
         // set value
         status_box.setValue( data.name_status ) ;            
     });	

@@ -1074,21 +1074,8 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     
                     if ( status_value != res.topic_status && status_value != ''){
                         self.form_is_loaded = false;
+                        self.show_form();
                         self.view_is_dirty = true;                     
-                        var store = form2.findField("status_new").getStore();
-                        store.reload({
-                            callback: function() {
-                                self.status_menu.removeAll();
-                                store.each( function(row){
-                                    if(res.topic_status != row.data.id){
-                                        self.status_menu.addItem({ text: _(row.data.name), id_status_to: row.data.id, id_status_from:  res.topic_status, handler: function(obj){ self.change_status(obj) } });                                    
-                                    }
-                                });
-                            }
-                        });
-                        self.show_detail();
-                        
-
                     }else{
                         var store = form2.findField("status_new").getStore();
                         ////store.on("load", function() {
