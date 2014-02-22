@@ -857,7 +857,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             } else {
                 self.set_original_record(data,retry+1); // retry
             }
-        }, 2000);
+        }, 5000);
     },
     load_form : function(rec) {
         var self = this;
