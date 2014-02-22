@@ -580,10 +580,14 @@ Baseliner.Topic.comment_edit = function(topic_mid, id_com, cb) {
 };
 
 Baseliner.TopicMain = Ext.extend( Ext.Panel, {
+    layout: 'card',
+    activeItem: 0,
+    autoScroll: true,
+    //frame: true,
+    //padding: '15px 15px 15px 15px',
     initComponent: function(c){
         var self = this;
         var params = self;
-        Ext.apply( this, c );
         
         self.view_is_dirty = false;
         self.form_is_loaded = false;
@@ -670,7 +674,6 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             allowDepress: false, toggleGroup: self.toggle_group
         });
         
-        
         var obj_status_items_menu = Ext.util.JSON.decode(self.status_items_menu);
         
         self.status_items_menu = [];
@@ -687,7 +690,6 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             self.btn_change_status.hide();
         }
         
-            
         self.btn_kanban = new Ext.Toolbar.Button({
             icon:'/static/images/icons/kanban.png',
             cls: 'x-btn-icon',
@@ -747,23 +749,17 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         if( !self.permDelete ) {
             self.btn_delete_form.hide();
         }
-        
         if( ! params.title ) {
             self.setTitle( Baseliner.topic_title( params.topic_mid, params.category, params.category_color, null, self.id_title ) ) 
         }
         
-        Ext.apply(this, {
-            layout: 'card',
-            activeItem: 0,
-            title: params.title,
-            tbar: tb,
-            autoScroll: true,
-            //frame: true,
-            //padding: '15px 15px 15px 15px',
-            defaults: {border: false},
-            items: [ self.loading_panel, self.detail ]
-        });
+        self.title = params.title;
+        self.tbar = tb;
+        self.defaults = {border: false};
+        self.items = [ self.loading_panel, self.detail ];
+        
         Baseliner.TopicMain.superclass.initComponent.call(this);
+
         self.on('afterrender', function(){
             new Ext.KeyMap( self.el, {
                 key: 's', ctrl: true, scope: self.el,
@@ -874,6 +870,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         }
         rec.id_panel = self.id;
 
+        if( self.form_topic ) self.remove( self.form_topic );
         self.form_topic = new Baseliner.TopicForm({ rec: rec, main: self, padding: 15, id_title: self.id_title });
         
         if( ! self.form_is_loaded ) {
