@@ -1583,6 +1583,12 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
     }   
 });
 
+Ext.form.Action.prototype.constructor = Ext.form.Action.prototype.constructor.createSequence(function() {
+    Ext.applyIf(this.options, {
+        submitEmptyText: false
+    });
+});
+
 Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
     labelAlign: 'top',
     layout:'column',
@@ -1602,47 +1608,36 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
         var form_is_loaded = false;
         var data = rec.topic_data;
         if( data == undefined ) data = {};
-        var on_submit_events = [];
+        self.on_submit_events = [];
         self.field_map = {};
         
         var unique_id_form = Ext.getCmp('main-panel').getActiveTab().id + '_form_topic';
+        this.id = unique_id_form; 
+        this.bodyStyle = { 'padding': '5px 50px 5px 10px' };
+        this.items = [ { xtype: 'hidden', name: 'topic_mid', value: data ? data.topic_mid : -1 } ];
         
-        Ext.form.Action.prototype.constructor = Ext.form.Action.prototype.constructor.createSequence(function() {
-            Ext.applyIf(this.options, {
-                submitEmptyText: false
-            });
-        });
-
-        Ext.apply(this, {
-            id: unique_id_form,
-            bodyStyle: {
-              'padding': '5px 50px 5px 10px'
-            },
-            
-            items: [
-                { xtype: 'hidden', name: 'topic_mid', value: data ? data.topic_mid : -1 }
-            ]
-        });
         Baseliner.TopicForm.superclass.initComponent.call(this);
-
-        self.on_submit = function(){
-            Ext.each( on_submit_events, function(ev) {
-                ev();
-            });
-        };
-
-       
-        // if we have an id, then async load the form
+        /*
         self.on('afterrender', function(){
             //self.body.setStyle('overflow', 'auto');
             self.ownerCt.doLayout();  // so we get a scrollbar from the parent, XXX consider putting this in parent
         });
+        */
 
         self.render_fields(data);
+    },
+    on_submit : function(){
+        var self = this;
+        Ext.each( self.on_submit_events, function(ev) {
+            ev();
+        });
     },
     render_fields : function(data) {
         var self = this;
         var rec = self.rec;
+        if( data === undefined ) {
+            data = self.rec.topic_data;
+        }
         if( rec.topic_meta == undefined ) return;
         ///*****************************************************************************************************************************
         var fields = rec.topic_meta;
@@ -1674,7 +1669,7 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
                 if( !comp ) continue; // invalid field?
 
                 if( comp.xtype == 'hidden' ) {
-                        self.add( comp );
+                    self.add( comp );
                 } else {
                     var all_hidden = true;
                     Ext.each( comp, function(f){
@@ -1697,7 +1692,7 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
                     //     };            
                     // });                    
                     if( comp.items ) {
-                        if( comp.on_submit ) on_submit_events.push( comp.on_submit );
+                        if( comp.on_submit ) self.on_submit_events.push( comp.on_submit );
                         p.add( comp.items ); 
                         self.add ( p );
                     } else {
