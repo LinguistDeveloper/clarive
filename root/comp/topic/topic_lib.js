@@ -1067,9 +1067,12 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                         return;
                     }
                         
-                    form2.findField("topic_mid").setValue(res.topic_mid);
+                    var mid = res.topic_mid;
+                    form2.findField("topic_mid").setValue( mid );
+                    var status_field = form2.findField("status");
+                    var status_value = status_field.getValue();
                     
-                    if (form2.findField("status").getValue() != res.topic_status && form2.findField("status").getValue() != ''){
+                    if ( status_value != res.topic_status && status_value != ''){
                         self.form_is_loaded = false;
                         self.view_is_dirty = true;                     
                         var store = form2.findField("status_new").getStore();
