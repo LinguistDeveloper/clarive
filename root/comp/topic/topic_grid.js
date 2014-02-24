@@ -66,20 +66,21 @@
 					if( opt !== undefined && opt.params !== undefined )
 						filter_current = Baseliner.merge( filter_current, opt.params );
 				}
-			},
-			sort: function(sorters, direction){
-				var col;
-				if( this.data.items.length > 0 ){
+			}
+            //,
+			//sort: function(sorters, direction){
+			//	var col;
+			//	if( this.data.items.length > 0 ){
                     //console.log(sorters);
-                    //console.dir(this.data.items[0]);
+                    //console.dir(this.data);
 					//console.log(this.data.items[0].data[sorters]);
 					// if(this.data.items[0].data[sorters] === '' ){
 					// 	var res = sorters.replace(/\_[^_]+$/,"");
      //                    sorters = res;
 					// }
-				}
-				this.superclass().sort.call(this, sorters, direction);
-			}			
+			//	}
+			//	this.superclass().sort.call(this, sorters, direction);
+			//}			
 		};			
     }else{
 		store_config = {
@@ -733,14 +734,14 @@
     };  
     
     var render_ci = function(value,metadata,rec,rowIndex,colIndex,store) {
-        //if( !value ) return '';
+        if( !value ) return '';
         var arr=[];
         
-        if ( !rec.json[this.dataIndex] ) {
-            var str = this.dataIndex;
-            var res = str.replace('_' +  this.alias,"");
-            value = rec.json[res];
-        };      
+        // if ( !rec.json[this.dataIndex] ) {
+        //     var str = this.dataIndex;
+        //     var res = str.replace('_' +  this.alias,"");
+        //     value = rec.json[res];
+        // };      
 
         Ext.each( value, function(v){
             arr.push( typeof v=='object' ? v.moniker ? v.moniker : v.name : v );
@@ -1005,12 +1006,12 @@
     
     var render_default = function(value,metadata,rec,rowIndex,colIndex,store){
         //console.dir(rec);
-        if ( !rec.json[this.dataIndex] ) {
-            var str = this.dataIndex;
-            var res = str.replace('_' +  this.alias,"");
-            value = rec.json[res];
-        };
-        if (rec.json[this.dataIndex]) value = rec.json[this.dataIndex];
+        // if ( !rec.json[this.dataIndex] ) {
+        //     var str = this.dataIndex;
+        //     var res = str.replace('_' +  this.alias,"");
+        //     value = rec.json[res];
+        // };
+        // if (rec.json[this.dataIndex]) value = rec.json[this.dataIndex];
         return value;
     };  
 
@@ -1202,6 +1203,7 @@
             col.header = _(r.header || r.as || r.text || r.id);
             col.width = r.width || col.width;
             
+            //console.log(col);
             columns.push( col );
         });
         //console.dir(columns);
