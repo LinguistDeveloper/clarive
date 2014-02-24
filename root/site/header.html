@@ -181,7 +181,7 @@
             menus: [ <% join ',', _array $c->stash->{menus} %> ],
             stash: <% _to_json({
                         map { $_ => $to_bool->( $c->stash->{$_} ) }
-                        qw/site_raw can_menu can_change_password can_lifecycle can_surrogate portlets tab_list alert theme_dir/
+                        qw/site_raw can_menu can_change_password can_lifecycle can_surrogate portlets tab_list alert theme_dir show_js_reload/
                     })
                 %>
         });
