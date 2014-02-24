@@ -382,15 +382,21 @@ Baseliner.Topic.StoreList = Ext.extend( Baseliner.JsonStore, {
             {  name: 'modified_on', type: 'date', dateFormat: 'c' },        
             {  name: 'modified_by' }
         ];
+
         if( config.add_fields ) {
             var ff = {};
-            Ext.each(fields, function(f){ 
-                return ff[f.name]=true });
+            // Ext.each(fields, function(f){ 
+            //     return ff[f.name]=true });
             Ext.each( config.add_fields, function(f){
-                if( !ff[f.name] ) fields.push(f);
+                //if( !ff[f.name] ) fields.push(f);
+                fields.push(f);
             });
             delete config.add_fields;
         }
+
+        //console.log('Campos declarados en store');
+        //console.dir(fields);
+
         config = Ext.apply({
             root: 'data' , 
             remoteSort: true,
@@ -399,18 +405,7 @@ Baseliner.Topic.StoreList = Ext.extend( Baseliner.JsonStore, {
             fields: fields
         },config);
         Baseliner.Topic.StoreList.superclass.constructor.call(this, config);
-    }/*,
-	sort: function(sorters, direction){
-		var col;
-		if( this.data.items.length > 0 ){
-			console.log(this.data.items[0].data[sorters]);
-			if(this.data.items[0].data[sorters] === '' ){
-				var res = sorters.replace(/\_[^_]+$/,"");
-				sorters = res;
-			}
-		}
-		this.superclass().sort.call(this, sorters, direction);
-	}*/
+    }
 
 });
 
@@ -1783,18 +1778,5 @@ Baseliner.jobs_for_topic = function(args) {
         }
     });
 };
-
-
-//Ext.override(Baseliner.Topic.StoreList, {
-//  sort: function(sorters, direction){
-//
-//    this.fireEvent('sorting', this, {});
-//
-//    //this.callParent(arguments);
-//    Baseliner.Topic.StoreList.superclass.sort.call(sorters,direction,this);
-//    this.fireEvent('sorted', this, {});
-//
-//  }	
-//});
 
 

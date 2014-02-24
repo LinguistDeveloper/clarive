@@ -14,6 +14,7 @@
     var query_id = '<% $c->stash->{query_id} %>';
     var id_project = '<% $c->stash->{id_project} %>';
     var id_report = params.id_report;
+    var report_type = params.report_type || 'topics';
     var custom_form_url = params.custom_form;
     var custom_form_data = params.custom_form_data || {};
     var report_rows = params.report_rows;
@@ -65,18 +66,21 @@
 					if( opt !== undefined && opt.params !== undefined )
 						filter_current = Baseliner.merge( filter_current, opt.params );
 				}
-			},
-			sort: function(sorters, direction){
-				var col;
-				if( this.data.items.length > 0 ){
-					console.log(this.data.items[0].data[sorters]);
-					if(this.data.items[0].data[sorters] === '' ){
-						var res = sorters.replace(/\_[^_]+$/,"");
-						sorters = res;
-					}
-				}
-				this.superclass().sort.call(this, sorters, direction);
-			}			
+			}
+            //,
+			//sort: function(sorters, direction){
+			//	var col;
+			//	if( this.data.items.length > 0 ){
+                    //console.log(sorters);
+                    //console.dir(this.data);
+					//console.log(this.data.items[0].data[sorters]);
+					// if(this.data.items[0].data[sorters] === '' ){
+					// 	var res = sorters.replace(/\_[^_]+$/,"");
+     //                    sorters = res;
+					// }
+			//	}
+			//	this.superclass().sort.call(this, sorters, direction);
+			//}			
 		};			
     }else{
 		store_config = {
@@ -91,11 +95,11 @@
 		};		
 	}
 
-	
+	 
     if( fields ) {
-        store_config.add_fields = fields.ids.map(function(r){ return { name: r } });
+        //console.log('Add fields');
         //console.dir(fields);
-        //alert( fields.ids );
+        store_config.add_fields = fields.ids.map(function(r){ return { name: r } });
     }
 
     // Create store instances
@@ -730,14 +734,14 @@
     };  
     
     var render_ci = function(value,metadata,rec,rowIndex,colIndex,store) {
-        //if( !value ) return '';
+        if( !value ) return '';
         var arr=[];
         
-        if ( !rec.json[this.dataIndex] ) {
-            var str = this.dataIndex;
-            var res = str.replace('_' +  this.alias,"");
-            value = rec.json[res];
-        };      
+        // if ( !rec.json[this.dataIndex] ) {
+        //     var str = this.dataIndex;
+        //     var res = str.replace('_' +  this.alias,"");
+        //     value = rec.json[res];
+        // };      
 
         Ext.each( value, function(v){
             arr.push( typeof v=='object' ? v.moniker ? v.moniker : v.name : v );
@@ -1001,11 +1005,13 @@
     };
     
     var render_default = function(value,metadata,rec,rowIndex,colIndex,store){
-        if ( !rec.json[this.dataIndex] ) {
-            var str = this.dataIndex;
-            var res = str.replace('_' +  this.alias,"");
-            value = rec.json[res];
-        };
+        //console.dir(rec);
+        // if ( !rec.json[this.dataIndex] ) {
+        //     var str = this.dataIndex;
+        //     var res = str.replace('_' +  this.alias,"");
+        //     value = rec.json[res];
+        // };
+        // if (rec.json[this.dataIndex]) value = rec.json[this.dataIndex];
         return value;
     };  
 
@@ -1085,9 +1091,10 @@
     var fields_filter = [];
     
     var columns = [];
+    alert(report_type);
     var col_map = {
         //topic_name : { header: _('ID'), sortable: true, dataIndex: 'topic_name', width: 90, sortable: true, renderer: render_topic_name },
-		topic_name : { header: _('ID'), sortable: true, dataIndex: 'topic_mid', width: 90, sortable: true, renderer: render_topic_name },
+		topic_name : { header: _('ID'), sortable: true, dataIndex: 'topic_mid', width: 90, sortable: true, renderer: render_topic_name, hidden: report_type != 'topics'?true:false },
         category_name : { header: _('Category'), sortable: true, dataIndex: 'category_name', hidden: true, width: 80, sortable: true, renderer: render_default },
         category_status_name : { header: _('Status'), sortable: true, dataIndex: 'category_status_name', width: 50, renderer: render_status },
         title : { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title},
@@ -1126,12 +1133,14 @@
         columns = [ dragger, check_sm, col_map['topic_name'] ];
         Ext.each( fields.columns, function(r){ 
             // r.meta_type, r.id, r.as, r.width, r.header
+            //console.log('cols');
             //console.dir(r);
             
             if(r.filter){
                 //console.dir(r);
                 //alert(r.id);
-                var filter_params = {type: type_filters[r.filter.type], dataIndex: r.id + '_' + r.category};
+                var filter_params = {type: type_filters[r.filter.type], dataIndex: r.category ? r.id + '_' + r.category : r.id};
+                //var filter_params = {type: type_filters[r.filter.type], dataIndex: r.id};
                 
                 //console.dir(filter_params);
                 switch (filter_params.type){
@@ -1173,13 +1182,15 @@
             }
             
             var col = gridlets[ r.gridlet ] || col_map[ r.id ] || meta_types[ r.meta_type ] || {
-                dataIndex: r.id + '_' + r.category,
+                dataIndex: r.category ? r.id + '_' + r.category : r.id,
+                //dataIndex: r.id,
                 hidden: false, width: 80, sortable: true,
                 renderer: render_default
             };
             
             col = Ext.apply({},col);  // clone the column
-            col.dataIndex =  r.id + '_' + r.category;
+            //col.dataIndex = r.id;
+            col.dataIndex =  r.category ? r.id + '_' + r.category : r.id;
             //if( !col.dataIndex ) col.dataIndex = r.id;
             
             if( r.meta_type == 'custom_data' && r.data_key ) {
@@ -1192,8 +1203,10 @@
             col.header = _(r.header || r.as || r.text || r.id);
             col.width = r.width || col.width;
             
+            //console.log(col);
             columns.push( col );
         });
+        //console.dir(columns);
     } else {
          columns = [ dragger, check_sm ];
          var cols = ['topic_name', 'category_name', 'category_status_name', 'title', 'progress',
