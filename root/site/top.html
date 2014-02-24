@@ -7,8 +7,6 @@
 </%perl>
 
     <title><% _loc( $c->config->{name} ) %></title>
-    <meta http-equiv="Page-Enter" content="blendTrans(Duration=0.05)" />
-    <meta http-equiv="Page-Exit" content="blendTrans(Duration=0.05)" />
 % if( my $favicon = $c->config->{favicon} ) {
     <link rel="shortcut icon" href="<% $favicon %>" mce_href="<% $favicon %>"/>
 % }
