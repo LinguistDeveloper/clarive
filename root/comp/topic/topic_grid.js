@@ -1091,7 +1091,6 @@
     var fields_filter = [];
     
     var columns = [];
-    alert(report_type);
     var col_map = {
         //topic_name : { header: _('ID'), sortable: true, dataIndex: 'topic_name', width: 90, sortable: true, renderer: render_topic_name },
 		topic_name : { header: _('ID'), sortable: true, dataIndex: 'topic_mid', width: 90, sortable: true, renderer: render_topic_name, hidden: report_type != 'topics'?true:false },
