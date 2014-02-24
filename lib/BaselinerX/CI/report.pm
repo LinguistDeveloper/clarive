@@ -929,9 +929,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 										}
 										else{
 											#$tmp_ref->{$inner_field}= $tmp_value;
-											#_log ">>>>>>>>>>>>Valor select: " . $select;
 											$tmp_ref->{$inner_field . "_$select"}= $tmp_value;
-											#####$tmp_ref->{$inner_field} = \%alias;
 										}
 									}
 									$_->{'mid' . "_$select"} = $field;
@@ -997,22 +995,31 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
             #_error "MT===$mt, K==$k";
 			
             if( $mt =~ /ci|project|revision|user/ ) {
+                #_log ">>>>>>>>>>>>>>>>>>>>>>>>>>CLAVE: " . $k;
 				$row{$k} = $scope_cis{$v} 
 					// do{ 
 						my @objs = mdb->master_doc->find({ mid=>mdb->in($v) },{ _id=>0 })->all;
-						$scope_cis{$_->{mid}} = $_ for @objs; 
-						\@objs;
+                        my @values;
+                        for my $obj (@objs){
+                            my $tmp = $obj->{moniker} ? $obj->{moniker} : $obj->{name}; 
+                            push @values, $tmp;    
+                        }
+                        $scope_cis{$_->{mid}} = \@values;
+                        \@values;
+						#$scope_cis{$_->{mid}} = $_ for @objs;
+						#\@objs;
 						};
 				for my $category (@All_Categories){
-					if( exists $row{$k . "_$category"} ){
-						my $tmp = $row{$k . "_$category"};
-						$row{$k . "_$category"} = $scope_cis{$tmp} 
-							// do{ 
-								my @objs = mdb->master_doc->find({ mid=>mdb->in($tmp) },{ _id=>0 })->all;
-								$scope_cis{$_->{mid}} = $_ for @objs; 
-								\@objs;
-								};
-					}
+                    $row{$k. "_$category"} = $row{$k};
+					# if( exists $row{$k . "_$category"} ){
+					# 	my $tmp = $row{$k . "_$category"};
+					# 	$row{$k . "_$category"} = $scope_cis{$tmp} 
+					# 		// do{ 
+					# 			my @objs = mdb->master_doc->find({ mid=>mdb->in($tmp) },{ _id=>0 })->all;
+					# 			$scope_cis{$_->{mid}} = $_ for @objs; 
+					# 			\@objs;
+					# 			};
+					# }
 				}
             } elsif( $mt =~ /release|topic/ ) {
                 $row{$k} = $scope_topics{$v} 
