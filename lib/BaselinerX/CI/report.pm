@@ -969,7 +969,13 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 					}
 				}
 			}
-		}
+		}else{
+            my $parse_category = $_->{category}{name};
+            $parse_category = Util->_unac($parse_category);
+            foreach my $field (keys $_){
+                $_->{$field . "_$parse_category"} = $_->{$field};
+            }
+        }
 	} @data;
 	
 	@parse_data = @data if !@parse_data;
@@ -1061,7 +1067,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	
 	
     #_debug @topics;
-	_log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump @parse_data;
+	#_log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump @parse_data;
     return ( 0+$cnt, @topics );
 }
 

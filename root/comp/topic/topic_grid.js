@@ -69,11 +69,13 @@
 			sort: function(sorters, direction){
 				var col;
 				if( this.data.items.length > 0 ){
-					console.log(this.data.items[0].data[sorters]);
-					if(this.data.items[0].data[sorters] === '' ){
-						var res = sorters.replace(/\_[^_]+$/,"");
-						sorters = res;
-					}
+                    //console.log(sorters);
+                    //console.dir(this.data.items[0]);
+					//console.log(this.data.items[0].data[sorters]);
+					// if(this.data.items[0].data[sorters] === '' ){
+					// 	var res = sorters.replace(/\_[^_]+$/,"");
+     //                    sorters = res;
+					// }
 				}
 				this.superclass().sort.call(this, sorters, direction);
 			}			
@@ -91,11 +93,11 @@
 		};		
 	}
 
-	
+	 
     if( fields ) {
-        store_config.add_fields = fields.ids.map(function(r){ return { name: r } });
+        //console.log('Add fields');
         //console.dir(fields);
-        //alert( fields.ids );
+        store_config.add_fields = fields.ids.map(function(r){ return { name: r } });
     }
 
     // Create store instances
@@ -1001,11 +1003,13 @@
     };
     
     var render_default = function(value,metadata,rec,rowIndex,colIndex,store){
+        //console.dir(rec);
         if ( !rec.json[this.dataIndex] ) {
             var str = this.dataIndex;
             var res = str.replace('_' +  this.alias,"");
             value = rec.json[res];
         };
+        if (rec.json[this.dataIndex]) value = rec.json[this.dataIndex];
         return value;
     };  
 
@@ -1126,12 +1130,14 @@
         columns = [ dragger, check_sm, col_map['topic_name'] ];
         Ext.each( fields.columns, function(r){ 
             // r.meta_type, r.id, r.as, r.width, r.header
+            //console.log('cols');
             //console.dir(r);
             
             if(r.filter){
                 //console.dir(r);
                 //alert(r.id);
-                var filter_params = {type: type_filters[r.filter.type], dataIndex: r.id + '_' + r.category};
+                var filter_params = {type: type_filters[r.filter.type], dataIndex: r.category ? r.id + '_' + r.category : r.id};
+                //var filter_params = {type: type_filters[r.filter.type], dataIndex: r.id};
                 
                 //console.dir(filter_params);
                 switch (filter_params.type){
@@ -1173,13 +1179,15 @@
             }
             
             var col = gridlets[ r.gridlet ] || col_map[ r.id ] || meta_types[ r.meta_type ] || {
-                dataIndex: r.id + '_' + r.category,
+                dataIndex: r.category ? r.id + '_' + r.category : r.id,
+                //dataIndex: r.id,
                 hidden: false, width: 80, sortable: true,
                 renderer: render_default
             };
             
             col = Ext.apply({},col);  // clone the column
-            col.dataIndex =  r.id + '_' + r.category;
+            //col.dataIndex = r.id;
+            col.dataIndex =  r.category ? r.id + '_' + r.category : r.id;
             //if( !col.dataIndex ) col.dataIndex = r.id;
             
             if( r.meta_type == 'custom_data' && r.data_key ) {
@@ -1194,6 +1202,7 @@
             
             columns.push( col );
         });
+        //console.dir(columns);
     } else {
          columns = [ dragger, check_sm ];
          var cols = ['topic_name', 'category_name', 'category_status_name', 'title', 'progress',
