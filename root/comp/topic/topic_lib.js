@@ -892,17 +892,13 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             self.btn_delete_form.hide();
         }
     },
-    show_form : function(){
+    show_form : function(dontshow){
         var self = this;
         var ai = self.getLayout().activeItem;
         if( ai && self.form_topic && self.form_is_loaded && ai.id==self.form_topic.id ) return;
-        self.getLayout().setActiveItem( self.loading_panel );
+        if( !dontshow ) self.getLayout().setActiveItem( self.loading_panel );
         if( self!==undefined && self.topic_mid !== undefined ) {
-            var tabpanel = Ext.getCmp('main-panel');
-            var panel = tabpanel.getActiveTab();
-            var activeTabIndex = tabpanel.items.findIndex('id', panel.id );
-            var id = panel.getId();
-            var info = Baseliner.tabInfo[id];
+            var info = Baseliner.tabInfo[self.id];
             if( info!=undefined ) info.params.swEdit = 1;
             self.btn_change_status.hide();
             if (!self.form_is_loaded){
@@ -910,7 +906,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     self.load_form( rec );
                 });
             }else{
-                self.getLayout().setActiveItem( self.form_topic );
+                if( !dontshow ) self.getLayout().setActiveItem( self.form_topic );
                 self.btn_save_form.show();
                 
                 if(self.topic_mid){
@@ -985,12 +981,9 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
     show_detail : function(){
         var self = this;
         self.getLayout().setActiveItem( self.detail );
-        var tabpanel = Ext.getCmp('main-panel');
-        var panel = tabpanel.getActiveTab();
-        var activeTabIndex = tabpanel.items.findIndex('id', panel.id );
-        var id = panel.getId();
-        var info = Baseliner.tabInfo[id];
+        var info = Baseliner.tabInfo[self.id];
         if( info!=undefined ) info.params.swEdit = 0;
+        
         if(self.status_menu.items.length > 0){
             self.btn_change_status.show();
         }
@@ -1064,30 +1057,25 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                         
                     var mid = res.topic_mid;
                     form2.findField("topic_mid").setValue( mid );
-                    var status_field = form2.findField("status");
-                    var status_value = status_field.getValue();
+                    var status_hidden_field = form2.findField("status");
+                    var status_value = status_hidden_field.getValue();
                     
                     if ( status_value != res.topic_status && status_value != ''){
                         self.form_is_loaded = false;
-                        self.show_form();
                         self.view_is_dirty = true;                     
-                    }else{
+                        var status_combo = form2.findField("status_new");
+                        if( status_combo && status_combo.store ) {
+                            status_hidden_field.setValue( status_combo.getValue() );
+                            status_combo.store.load({ 
+                                params: { 
+                                    statusId: status_combo.getValue(),
+                                    categoryId: form2.findField("category").getValue()
+                                } 
+                            }); 
+                        }
+                        self.show_detail();
+                    } else {
                         var store = form2.findField("status_new").getStore();
-                        ////store.on("load", function() {
-                        ////    
-                        ////    form2.findField("status_new").setValue( res.topic_status );
-                        ////    //var obj_status_items_menu = Ext.util.JSON.decode(self.status_items_menu);
-                        ////    //
-                        ////    //self.status_menu.removeAll();
-                        ////    //self.status_items_menu = [];
-                        ////    //store.each( function(row){
-                        ////    //    if(res.topic_status != row.data.id){
-                        ////    //        self.status_items_menu.push({ text: _(row.data.name), id_status_to: obj_status_items_menu[i].id_status, id_status_from: obj_status_items_menu[i].id_status_from, handler: function(obj){ self.change_status(obj) } });                                                    
-                        ////    //        self.status_menu.addItem({ text: _(row.data.name), id_status_to: obj_status_items_menu[i].id_status, id_status_from: obj_status_items_menu[i].id_status_from, handler: function(obj){ self.change_status(obj) } });
-                        ////    //    }
-                        ////    //});                              
-                        ////});
-                        ////
                         if(form2.findField("status").getValue()==''){
                             store.reload({
                                 params:{    'categoryId': form2.findField("category").getValue(),

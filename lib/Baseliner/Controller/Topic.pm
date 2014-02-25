@@ -702,7 +702,7 @@ sub view : Local {
                 id_status_from => $category[0]->{id_status},
                 username       => $c->username,
                 topic_mid      => $topic_mid
-            );               
+            );
             $c->stash->{status_items_menu} = _encode_json(\@statuses);
             $c->stash->{category_meta} = $category[0]->{forms};
             
@@ -1462,9 +1462,7 @@ sub list_admin_category : Local {
             }
         }        
 
-    }else{
-        
-        #my $username = $c->is_root ? '' : $c->username;
+    } else {
         my @statuses = $c->model('Topic')->next_status_for_user(
             id_category    => $p->{categoryId},
             id_status_from => $p->{statusId},
@@ -1472,15 +1470,16 @@ sub list_admin_category : Local {
             topic_mid     => $topic_mid
         );
 
-
-        my $rs_current_status = $c->model('Baseliner::BaliTopicStatus')->find({id => $p->{statusId}});
-        
-        push @rows, { id => $p->{statusId},
-                     name => _loc($p->{statusName}),
-                     status => $p->{statusId},
-                     status_name => _loc($p->{statusName}),
-                     action => $c->model('Topic')->getAction($rs_current_status->type)};
-        
+        my $status_id   = $p->{statusId};
+        my $rs_current_status = $c->model('Baseliner::BaliTopicStatus')->find({ id=>$p->{statusId} });
+        my $status_name = _loc( $p->{statusName} || $rs_current_status->name );
+        push @rows, { 
+            id          => $status_id,
+            name        => $status_name,
+            status      => $status_id,
+            status_name => $status_name,
+            action      => $c->model('Topic')->getAction($rs_current_status->type),
+        };
         
         push @rows , map {
             my $action = $c->model('Topic')->getAction($_->{status_type});

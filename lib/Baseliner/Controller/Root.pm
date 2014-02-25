@@ -298,9 +298,11 @@ sub index : Private {
     my @menus;
     $c->forward('/user/can_surrogate');
     if( $c->username ) {
-        my @actions = $c->model('Permissions')->list( username=> $c->username, ns=>'any', bl=>'any' );
+        my $perms = $c->model('Permissions');
+        my @actions = $perms->list( username=> $c->username, ns=>'any', bl=>'any' );
         $c->stash->{menus} = $c->model('Menus')->menus( allowed_actions=>\@actions, username => $c->username );
-        $c->stash->{can_change_password} = $c->model('Permissions')->user_has_action( username => $c->username, action => 'action.change_password' ) && $c->config->{authentication}{default_realm} eq 'none';
+        $c->stash->{show_js_reload} = $perms->user_has_action( username => $c->username, action => 'action.development' );
+        $c->stash->{can_change_password} = $perms->user_has_action( username => $c->username, action => 'action.change_password' ) && $c->config->{authentication}{default_realm} eq 'none';
         #$c->stash->{can_change_password} = $c->config->{authentication}{default_realm} eq 'none';
         # TLC
         if( my $ccc = $Baseliner::TLC_MSG ) {

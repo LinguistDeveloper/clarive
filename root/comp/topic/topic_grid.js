@@ -14,6 +14,7 @@
     var query_id = '<% $c->stash->{query_id} %>';
     var id_project = '<% $c->stash->{id_project} %>';
     var id_report = params.id_report;
+    var report_type = params.report_type || 'topics';
     var custom_form_url = params.custom_form;
     var custom_form_data = params.custom_form_data || {};
     var report_rows = params.report_rows;
@@ -1092,7 +1093,7 @@
     var columns = [];
     var col_map = {
         //topic_name : { header: _('ID'), sortable: true, dataIndex: 'topic_name', width: 90, sortable: true, renderer: render_topic_name },
-		topic_name : { header: _('ID'), sortable: true, dataIndex: 'topic_mid', width: 90, sortable: true, renderer: render_topic_name },
+		topic_name : { header: _('ID'), sortable: true, dataIndex: 'topic_mid', width: 90, sortable: true, renderer: render_topic_name, hidden: report_type != 'topics'?true:false },
         category_name : { header: _('Category'), sortable: true, dataIndex: 'category_name', hidden: true, width: 80, sortable: true, renderer: render_default },
         category_status_name : { header: _('Status'), sortable: true, dataIndex: 'category_status_name', width: 50, renderer: render_status },
         title : { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title},

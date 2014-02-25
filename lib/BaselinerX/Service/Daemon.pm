@@ -42,6 +42,7 @@ register 'config.job.daemon' => {
 sub job_daemon {
     my ($self,$c,$config)=@_;
     my $freq = $config->{frequency};
+    my %discrepancies;  # keep a count on these
 
     my $startup = { cwd=>Cwd::cwd, proc=>$^X, script=>$0, argv=>[ @ARGV ] };
     # enable signal handler before sleep
@@ -87,7 +88,13 @@ sub job_daemon {
                 my $job = ci->new( $job_doc->{mid} );  # reload job here, so that old jobs in the roll get refreshed
                 if( $job->status ne $job_doc->{status} ) {
                     _log _loc( "Skipping job %1 due to status discrepancy: %2 != %3", $job->name, $job->status, $job_doc->{status} );
-                    next JOB if $job->status ne $job_doc->{status};
+                    if( $discrepancies{ $job->mid } > 10 ) {  
+                        $job->save; # fixes the discrepancy
+                        delete $discrepancies{ $job->mid };
+                    } else {
+                        $discrepancies{ $job->mid }++;
+                    }
+                    next JOB;
                 }
                 _log _loc( "Starting job %1 for step %2", $job->name, $job->step );
                 $job->status('RUNNING');
