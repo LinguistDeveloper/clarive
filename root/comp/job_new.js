@@ -132,11 +132,20 @@
         allowBlank: false,
         listeners: {
             select: function() {
-                var bl = combo_baseline.getRawValue();
-                form_reset_all();
+                var bl_name = combo_baseline.getRawValue();
+                var bl = combo_baseline.getValue();
                 store_search.removeAll();
-                jc_grid.getStore().removeAll();
-                combo_baseline.setRawValue( bl );
+                var jc_store = jc_grid.getStore();
+                var flag_remove_all = false;
+                // check if we have to remove all contents or not, depending on availability
+                jc_store.each( function(t){
+                    if( !t.data.promotable[ bl ] ) {
+                        flag_remove_all = true;
+                        return false;
+                    }
+                });
+                form_reset_all(flag_remove_all);
+                combo_baseline.setRawValue( bl_name );
                 changed = true;
             }
         },
@@ -243,14 +252,14 @@
     });
 
     // Clean up the whole form
-    var form_reset_all = function() {
+    var form_reset_all = function(jc_grid_remove) {
         //main_form.getForm().reset();
         if( ! check_no_cal.checked ) {
             store_time.removeAll();
             combo_time.setRawValue('');
             combo_time.fireEvent('change');
         }
-        jc_grid.getStore().removeAll();
+        if( jc_grid_remove ) jc_grid.getStore().removeAll();
         store_search.removeAll();
         button_submit.disable();
     };
@@ -541,6 +550,7 @@
                         ns: data.ns,
                         mid: mid,
                         icon: node.attributes.icon,
+                        promotable: data.promotable,
                         //item: data.name,
                         item: node.text,
                         text: node.text 
