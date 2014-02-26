@@ -1161,7 +1161,7 @@
             // console.dir(r);
 
             var parse_category = omitirAcentos(r.category);
-            // console.log(parse_category);
+            console.log(parse_category);
 
             if(r.filter){
                 //console.dir(r);
