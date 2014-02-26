@@ -818,13 +818,13 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 						}
 					}
 				}
-				push @All_Categories, $_;
+				push @All_Categories, Util->_unac($_);
 			} @names_category;
 		}else{
 			my $length = scalar @ids_category;
 			for (my $i = 0; $i < $length; $i++){
 				#_log ">>>>>>>>>>>>>FILTERS WHERE: " . _dump $fields{where};
-				push @All_Categories, $names_category[$i];
+				push @All_Categories, Util->_unac($names_category[$i]);
 				$where = $self->get_where({filters_where => $fields{where}, name_category => $names_category[$i], dynamic_filter => \%dynamic_filter, where => $where  });
 				$where->{id_category} = {'$in' => [$ids_category[$i]] };
 				_log ">>>>>>>>>>>>>WHERE: " . _dump $where;
@@ -985,6 +985,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 		}else{
             my $parse_category = $_->{category}{name};
             $parse_category = Util->_unac($parse_category);
+            # $parse_category = $parse_category;
             foreach my $field (keys $_){
                 $_->{$field . "_$parse_category"} = $_->{$field};
             }
@@ -1098,7 +1099,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	
 	
     #_debug @topics;
-	#_log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump @parse_data;
+	_log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump @parse_data;
     return ( 0+$cnt, @topics );
 }
 
