@@ -71,8 +71,8 @@
 			sort: function(sorters, direction){
 				var col;
 				if( this.data.items.length > 0 ){
-                     console.log(sorters);
-                     console.dir(this.data);
+                     // console.log(sorters);
+                     // console.dir(this.data);
 					// console.log(this.data.items[0].data[sorters]);
 					if(this.data.items[0].data[sorters] === '' ){
 						var res = sorters.replace(/\_[^_]+$/,"");
