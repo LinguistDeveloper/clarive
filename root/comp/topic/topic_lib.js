@@ -1063,6 +1063,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     if ( status_value != res.topic_status && status_value != ''){
                         self.form_is_loaded = false;
                         self.view_is_dirty = true;                     
+                        /*
                         var status_combo = form2.findField("status_new");
                         if( status_combo && status_combo.store ) {
                             status_hidden_field.setValue( status_combo.getValue() );
@@ -1073,7 +1074,8 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                                 } 
                             }); 
                         }
-                        self.show_detail();
+                        */
+                        self.show_form();
                     } else {
                         var store = form2.findField("status_new").getStore();
                         if(form2.findField("status").getValue()==''){

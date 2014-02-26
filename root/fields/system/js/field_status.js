@@ -52,11 +52,10 @@ params:
         if( menu ) {
             menu.removeAll();
             store_category_status.each( function(row){
-                var id_category_status = status_box.getValue();
-                if( id_category_status != row.data.id ){
+                if( data.id_category_status != row.data.id ){
                     menu.addItem({ 
                         text: _(row.data.name), 
-                        id_status_to: row.data.id, id_status_from: id_category_status, 
+                        id_status_to: row.data.id, id_status_from: data.id_category_status, 
                         handler: function(obj){ params.form.main.change_status(obj) } });                                    
                 }
             });
