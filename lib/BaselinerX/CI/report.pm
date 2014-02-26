@@ -818,7 +818,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 						}
 					}
 				}
-				push @All_Categories, Util->_unac($_);
+				push @All_Categories, $_;
 			} @names_category;
 		}else{
 			my $length = scalar @ids_category;
@@ -984,7 +984,8 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 			}
 		}else{
             my $parse_category = $_->{category}{name};
-            $parse_category = Util->_unac($parse_category);
+            # $parse_category = Util->_unac($parse_category);
+            $parse_category = $parse_category;
             foreach my $field (keys $_){
                 $_->{$field . "_$parse_category"} = $_->{$field};
             }
