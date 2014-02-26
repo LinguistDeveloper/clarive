@@ -67,20 +67,20 @@
 						filter_current = Baseliner.merge( filter_current, opt.params );
 				}
 			}
-            ,
-			sort: function(sorters, direction){
-				var col;
-				if( this.data.items.length > 0 ){
-                    console.log(sorters);
-                    console.dir(this.data);
-					console.log(this.data.items[0].data[sorters]);
-					if(this.data.items[0].data[sorters] === '' ){
-						var res = sorters.replace(/\_[^_]+$/,"");
-                        sorters = res;
-					}
-				}
-				this.superclass().sort.call(this, sorters, direction);
-			}			
+   //          ,
+			// sort: function(sorters, direction){
+			// 	var col;
+			// 	if( this.data.items.length > 0 ){
+   //                  console.log(sorters);
+   //                  console.dir(this.data);
+			// 		console.log(this.data.items[0].data[sorters]);
+			// 		if(this.data.items[0].data[sorters] === '' ){
+			// 			var res = sorters.replace(/\_[^_]+$/,"");
+   //                      sorters = res;
+			// 		}
+			// 	}
+			// 	this.superclass().sort.call(this, sorters, direction);
+			// }			
 		};			
     }else{
 		store_config = {
