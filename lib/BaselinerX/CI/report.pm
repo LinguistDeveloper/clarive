@@ -895,6 +895,21 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	
 	my @parse_data;  
 	map {
+        foreach my $field (keys $fields){
+            if (!exists $_->{$field}) {
+                #_log ">>>>>>>>>>>>>>>>>Field: " . $field;
+                $_->{$field} = ' ';
+                # for my $category (@All_Categories){
+                #     $_->{$field. "_$category"} = $_->{$field};
+                # }                  
+            }else{
+                if ($_->{$field}  eq ''){
+                    $_->{$field} = ' ';
+                }
+
+            }
+        }
+
 		if (exists $queries{'1'}){
 			for my $relation ( keys $queries{'1'} ){
 				my @ids_where;
@@ -978,14 +993,14 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	
 	@parse_data = @data if !@parse_data;
 	
-	#_log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump @data;	
-	#_log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump @parse_data;
+	#_log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump $fields;
 	
     my %scope_topics;
     my %scope_cis;
     my @topics = map { 
         my %row = %$_;
-		
+		#_log ">>>>>>>>>>>>>>>>>>>>>>>>>>>FILA: " . _dump %row;
+
         while( my($k,$v) = each %row ) {
             $row{$k} = Class::Date->new($v)->string if $k =~ /modified_on|created_on/;
             my $mt = $meta{$k}{meta_type} // '';
@@ -996,15 +1011,19 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 			
             if( $mt =~ /ci|project|revision|user/ ) {
                 #_log ">>>>>>>>>>>>>>>>>>>>>>>>>>CLAVE: " . $k;
+                #_log ">>>>>>>>>>>>>>>>>>>>>>>>>>VALOR: " . $v;
 				$row{$k} = $scope_cis{$v} 
 					// do{ 
 						my @objs = mdb->master_doc->find({ mid=>mdb->in($v) },{ _id=>0 })->all;
                         my @values;
+                        if (@objs){
                         for my $obj (@objs){
                             my $tmp = $obj->{moniker} ? $obj->{moniker} : $obj->{name}; 
                             push @values, $tmp;    
                         }
                         $scope_cis{$_->{mid}} = \@values;
+
+                        }
                         \@values;
 						#$scope_cis{$_->{mid}} = $_ for @objs;
 						#\@objs;
@@ -1063,6 +1082,11 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 		if($row{category_status}){
 			foreach my $key (keys %{$row{category_status}}){
 				$row{'category_status_'.$key} = $row{category_status}{$key};
+                # for my $category (@All_Categories){
+                #     if( !exists $row{'category_status' . "_$category"} ){
+                #         $row{'category_status_'.$category."_$key"} = $row{category_status}{$key};
+                #     }
+                # }
 			}
 		}
         #$row{category_status_name} = $row{category_status}{name};
