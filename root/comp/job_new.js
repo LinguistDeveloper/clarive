@@ -572,7 +572,6 @@
                 var attr = n.attributes;
                 var data = n.attributes.data;
                 var job_type = main_form.getForm().getValues()['job_type'];
-                var cnt = jc_store.getCount();  // auto set ?
                 var bl = combo_baseline.getValue();
                 if( ! ( data.promotable || data.demotable || data.deployable ) ) {
                     Ext.Msg.alert( _('Error'),
@@ -580,24 +579,21 @@
                     return true; 
                 }
                 
-                var bl_hash = ( job_type == 'promote' ) ? data.promotable : ( job_type == 'promote' ) ? data.demotable : data.deployable;
+                var bl_hash = ( job_type == 'promote' ) ? data.promotable : ( job_type == 'demote' ) ? data.demotable : data.deployable;
                 var bl_item = bl_hash[ bl ];
                 
-                // set our first environment?
-                if( (cnt == 0 || bl_item == undefined) && !changed ) {
-                    var bl_old = combo_baseline.getValue();
-                    if( !bl_hash[bl_old]  ) {
-                        var first_bl;
-                        for( var k in bl_hash ) {
-                           first_bl = k;
-                           break;
-                        }
-                        if( first_bl ) combo_baseline.setValue( first_bl ); 
+                // auto-set our first environment?
+                if( jc_store.getCount()==0 && !bl_item && !changed ) {
+                    var first_bl;
+                    for( var k in bl_hash ) {
+                       first_bl = k;
+                       break;
                     }
+                    if( first_bl ) combo_baseline.setValue( first_bl ); 
                 }
                 
                 bl = combo_baseline.getValue();
-                var bl_item = ( job_type == 'promote' ) ? data.promotable[bl] : ( job_type == 'demote') ? data.demotable[bl]: data.deployable[bl];
+                var bl_item = bl_hash[ bl ];
                 if ( bl_item == undefined ) {  
                     Ext.Msg.alert( _('Error'),
                         _("Cannot promote/demote changeset %1 to baseline %2 (job type %3)", '<b>' + n.text + '</b>', bl, job_type ) );
