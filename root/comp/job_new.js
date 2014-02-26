@@ -543,7 +543,7 @@
             copy: true,
             notifyDrop: function(dd, e, data) {
                 var n = dd.dragData.node;
-                var add_node = function(node) {
+                var add_node = function(node,bl_hash) {
                     var data = node.attributes.data;
 //                    console.dir(data);
                     var mid = data.mid || data.topic_mid;
@@ -551,7 +551,7 @@
                         ns: data.ns,
                         mid: mid,
                         icon: node.attributes.icon,
-                        promotable: data.promotable,
+                        promotable: bl_hash,
                         //item: data.name,
                         item: node.text,
                         text: node.text 
@@ -580,24 +580,29 @@
                     return true; 
                 }
                 
-                var bl_item = ( job_type == 'promote' ) ? data.promotable[bl] : ( job_type == 'promote' ) ? data.demotable[bl] : data.deployable[bl];
+                var bl_hash = ( job_type == 'promote' ) ? data.promotable : ( job_type == 'promote' ) ? data.demotable : data.deployable;
+                var bl_item = bl_hash[ bl ];
+                
+                // set our first environment?
                 if( (cnt == 0 || bl_item == undefined) && !changed ) {
-                    var bl_hash = ( job_type == 'promote' ) ? data.promotable : ( job_type == 'promote' ) ? data.demotable : data.deployable;
-                    var first_bl;
-                    for( var k in bl_hash ) {
-                       first_bl = k;
-                       break;
+                    var bl_old = combo_baseline.getValue();
+                    if( !bl_hash[bl_old]  ) {
+                        var first_bl;
+                        for( var k in bl_hash ) {
+                           first_bl = k;
+                           break;
+                        }
+                        if( first_bl ) combo_baseline.setValue( first_bl ); 
                     }
-                    if( first_bl ) combo_baseline.setValue( first_bl ); 
                 }
-                var bl = combo_baseline.getValue();
-
+                
+                bl = combo_baseline.getValue();
                 var bl_item = ( job_type == 'promote' ) ? data.promotable[bl] : ( job_type == 'demote') ? data.demotable[bl]: data.deployable[bl];
                 if ( bl_item == undefined ) {  
                     Ext.Msg.alert( _('Error'),
                         _("Cannot promote/demote changeset %1 to baseline %2 (job type %3)", '<b>' + n.text + '</b>', bl, job_type ) );
                 } else {
-                    add_node(n);
+                    add_node(n,bl_hash);
                 }
                 return (true); 
              }
