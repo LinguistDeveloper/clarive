@@ -146,6 +146,7 @@
                 });
                 form_reset_all(flag_remove_all);
                 combo_baseline.setRawValue( bl_name );
+                if( !flag_remove_all ) calendar_reload();  // we still have job contents, so reload dates
                 changed = true;
             }
         },
