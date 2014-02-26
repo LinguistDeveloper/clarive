@@ -439,6 +439,15 @@ sub job_states_json {
   _encode_json \@data;
 }
 
+sub job_states : Path('/job/states') {
+  my ( $self, $c ) = @_;
+  my @data = map { {id=>$_, name => _loc($_)} }
+             sort @{config_get('config.job.states')->{states}};
+  _encode_json \@data;
+  $c->stash->{json} = { data => \@data };
+  $c->forward('View::JSON'); 
+}
+
 sub envs_json {
   #my @data =  grep { ! $_->{bl} eq '*' } Baseliner::Core::Baseline->baselines;
     my @data = sort { ($a->{seq}//0) <=> ($b->{seq}//0) } map { {name => $_->{name}, bl => $_->{bl}}}  grep {$_->{moniker} ne '*'}  BaselinerX::CI::bl->search_cis;
