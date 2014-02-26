@@ -49,10 +49,6 @@ __PACKAGE__->result_source_instance->view_definition(q{
             NUM_FILE,
             U.USERNAME ASSIGNEE,
             MA.MONIKER,
-            cis_out.NAME CIS_OUT,
-            cis_in.NAME CIS_IN,
-            topics_in.TITLE REFERENCED_IN,
-            topics_out.TITLE REFERENCES_OUT,
             DS.NAME directory
             FROM  BALI_TOPIC T
                     JOIN BALI_MASTER MA ON T.MID = MA.MID
@@ -73,29 +69,19 @@ __PACKAGE__->result_source_instance->view_definition(q{
                                         AND REL1.REL_TYPE = 'topic_file_version'
                                         GROUP BY E.MID) H ON T.MID = H.MID                                         
                     LEFT JOIN BALI_TOPIC_STATUS S ON T.ID_CATEGORY_STATUS = S.ID
+
                     LEFT JOIN BALI_MASTER_REL REL_PR ON REL_PR.FROM_MID = T.MID AND REL_PR.REL_TYPE = 'topic_project'
                     LEFT JOIN BALI_PROJECT P ON P.MID = REL_PR.TO_MID
                     LEFT JOIN BALI_MASTER MP ON REL_PR.TO_MID = MP.MID 
+
                     LEFT JOIN BALI_MASTER_REL REL_F ON REL_F.FROM_MID = T.MID AND REL_F.REL_TYPE = 'topic_file_version'
                     LEFT JOIN BALI_FILE_VERSION F ON F.MID = REL_F.TO_MID
+
                     LEFT JOIN BALI_MASTER_REL REL_PS ON REL_PS.FROM_MID = T.MID AND REL_PS.REL_TYPE = 'topic_post'
                     LEFT JOIN BALI_POST PS ON PS.MID = REL_PS.TO_MID
+                    
                     LEFT JOIN BALI_MASTER_REL REL_USER ON REL_USER.FROM_MID = T.MID AND REL_USER.REL_TYPE = 'topic_users'
                     LEFT JOIN BALI_USER U ON U.MID = REL_USER.TO_MID
-                    
-                    LEFT JOIN BALI_MASTER_REL rel_topics_out ON rel_topics_out.FROM_MID = T.MID AND rel_topics_out.REL_TYPE = 'topic_topic'
-                    LEFT JOIN BALI_TOPIC topics_out ON topics_out.MID = rel_topics_out.TO_MID
-                    
-                    LEFT JOIN BALI_MASTER_REL rel_topics_in ON rel_topics_in.TO_MID = T.MID AND rel_topics_in.REL_TYPE = 'topic_topic'
-                    LEFT JOIN BALI_TOPIC topics_in ON topics_in.MID = rel_topics_in.FROM_MID
-                    
-                    LEFT JOIN BALI_MASTER_REL rel_cis_out ON rel_cis_out.FROM_MID = T.MID AND rel_cis_out.REL_TYPE NOT IN( 
-                        'topic_post','topic_file_version','topic_project','topic_users','topic_topic' )
-                    LEFT JOIN BALI_MASTER cis_out ON cis_out.MID = rel_cis_out.TO_MID
-                    
-                    LEFT JOIN BALI_MASTER_REL rel_cis_in ON rel_cis_in.TO_MID = T.MID AND rel_cis_in.REL_TYPE NOT IN( 
-                        'topic_post','topic_file_version','topic_project','topic_users','topic_topic' )
-                    LEFT JOIN BALI_MASTER cis_in ON cis_in.MID = rel_cis_in.FROM_MID
                     
                     LEFT JOIN BALI_PROJECT_DIRECTORIES_FILES DF ON DF.ID_FILE = T.MID
                     LEFT JOIN BALI_PROJECT_DIRECTORIES DS ON DF.ID_DIRECTORY = DS.ID
@@ -141,10 +127,6 @@ __PACKAGE__->add_columns(
         num_file
         assignee
         moniker
-        cis_out
-        cis_in
-        referenced_in
-        references_out
         directory
     )
 );

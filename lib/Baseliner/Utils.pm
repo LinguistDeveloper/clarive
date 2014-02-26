@@ -1799,6 +1799,34 @@ sub tar_dir {
     return 1;
 }
 
+=head2 foreach_block
+
+Calls a code block for each group
+of N elements from an array:
+
+    my @xx = map { "N$_" } 1..34;
+    Util->foreach_block( 10, sub {
+        # will be called 4 times
+        my $ix = shift;
+        _log \@_;   
+    }, @xx );
+
+Useful for limiting a call to a function to N 
+elements in an array (ie DBIC IN clauses).
+
+=cut
+sub foreach_block {
+    my ($blk,$code,@arr) = @_;
+    
+    require POSIX;
+    my $top = POSIX::ceil(@arr/$blk-1);
+    for( 0..$top ) {
+       my $i = $blk * $_;
+       my $j = $i+$blk-1;
+       $code->($_, @arr[ $i..($j>@arr ? $#arr : $j) ] );
+    }
+}
+
 {
     package Util;
     our $AUTOLOAD;

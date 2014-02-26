@@ -506,7 +506,31 @@ _debug( $where );
     my %mid_data = map { $_->{topic_mid} => $_ } grep { defined } map { Baseliner->cache_get("topic:view:$_:") } @mids; 
     if( my @db_mids = grep { !exists $mid_data{$_} } @mids ) {
         _debug( "CACHE==============================> MIDS: @mids, DBMIDS: @db_mids, MIDS_IN_CACHE: " . join',',keys %mid_data );
-        my @db_mid_data = DB->TopicView->search({ topic_mid=>{ -in =>\@db_mids  } })->hashref->all if @db_mids > 0;
+       
+        my @db_mid_data;
+        if( @db_mids > 0 ) {
+            # group in blocks of 1000 mids max, to avoid things like I#6171
+            Util->foreach_block( 100, sub {
+               my $ix = shift;
+               push @db_mid_data, DB->TopicView->search({ topic_mid=>{ -in =>\@_  } })->hashref->all;
+            }, @db_mids );
+        }
+        
+        my (%topics_out,%topics_in,%cis_in,%cis_out);
+        map { $topics_out{ $_->{from_mid} }{ $_->{to_mid} }=1 } mdb->master_rel->find({ 
+            from_mid=>mdb->in(@db_mids), rel_type=>'topic_topic' })->all;
+        map { $topics_in{ $_->{to_mid} }{ $_->{from_mid} }=1 } mdb->master_rel->find({ 
+            to_mid=>mdb->in(@db_mids), rel_type=>'topic_topic' })->all;
+        map { $cis_out{ $_->{from_mid} }{ $_->{to_mid} }=1 } mdb->master_rel->find({ 
+            from_mid=>mdb->in(@db_mids), rel_type=>{ '$not'=>qr/topic/ } })->all;
+        map { $cis_in{ $_->{to_mid} }{ $_->{from_mid} }=1 } mdb->master_rel->find({ 
+            to_mid=>mdb->in(@db_mids), rel_type=>{ '$not'=>qr/topic/ } })->all;
+
+        my @ci_mids = keys +{ map { $_=>1 } map { keys $_ } (values %cis_out, values %cis_in) };
+        my %all_cis = map { $_->{mid} => $_->{name} } mdb->master_doc->find({ mid=>mdb->in(@ci_mids) })->fields({ _id=>0,name=>1,mid=>1 })->all ;
+
+        my @rel_mids = keys +{ map{ $_=>1 } map { keys %$_ } (values %topics_out, values %topics_in) };
+        my %all_rels = map { $_->{mid} => $_->{title} } mdb->topic->find({ mid=>mdb->in(@rel_mids) })->fields({ _id=>0,title=>1,mid=>1 })->all ;
         
         # Controlar que categorias son editables.
         #my %categories_edit = map { lc $_->{name} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $username, type => 'edit' );
@@ -526,6 +550,11 @@ _debug( $where );
                         mid => $mid
                 );
 
+            $mid_data{$mid}{cis_in} = [ @all_cis{ keys %{ $cis_in{$mid} || {} } } ];
+            $mid_data{$mid}{cis_out} = [ @all_cis{ keys %{ $cis_out{$mid} || {} } } ];
+            $mid_data{$mid}{referenced_in} = [ @all_rels{ keys %{ $topics_in{$mid} || {} } } ];
+            $mid_data{$mid}{references_out} = [ @all_rels{ keys %{ $topics_out{$mid} || {} } } ];
+
             # fill out hash indexes
             if( $row->{label_id} ) {
                 $mid_data{$mid}{group_labels}{ $row->{label_id} . ";" . $row->{label_name} . ";" . $row->{label_color} } = ();
@@ -537,21 +566,6 @@ _debug( $where );
                 }
                 #Structure to check user has access to at least one project in all collections
                 $mid_data{$mid}{sec_projects}{$row->{collection}}{$row->{project_id}} = 1;
-            # } else {
-            #     $mid_data{$mid}{group_projects} = {};
-            #     $mid_data{$mid}{group_projects_report} = {};
-            }
-            if( $row->{cis_out} ) {
-                $mid_data{$mid}{group_cis_out}{ $row->{cis_out} } = ();
-            }
-            if( $row->{cis_in} ) {
-                $mid_data{$mid}{group_cis_in}{ $row->{cis_in} } = ();
-            }
-            if( $row->{references_out} ) {
-                $mid_data{$mid}{group_references_out}{ $row->{references_out} } = ();
-            }
-            if( $row->{referenced_in} ) {
-                $mid_data{$mid}{group_referenced_in}{ $row->{referenced_in} } = ();
             }
             if( $row->{directory} ) {
                 $mid_data{$mid}{group_directory}{ $row->{directory} } = ();
@@ -593,7 +607,7 @@ _debug( $where );
         };
         $data->{category_status_name} = _loc($data->{category_status_name});
         $data->{category_name} = _loc($data->{category_name});
-        map { $data->{$_} = [ keys %{ delete($data->{"group_$_"}) || {} } ] } qw/labels projects cis_out cis_in references_out referenced_in assignee directory/;
+        map { $data->{$_} = [ keys %{ delete($data->{"group_$_"}) || {} } ] } qw/labels projects assignee directory/;
         my @projects_report = keys %{ delete $data->{projects_report} || {} };
         push @rows, {
             %$data,
