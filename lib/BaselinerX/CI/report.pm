@@ -818,7 +818,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 						}
 					}
 				}
-				push @All_Categories, $_;
+				push @All_Categories, Util->_unac($_);
 			} @names_category;
 		}else{
 			my $length = scalar @ids_category;
