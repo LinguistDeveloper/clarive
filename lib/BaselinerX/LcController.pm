@@ -1043,7 +1043,8 @@ sub topics_for_release : Local {
 
     my @cis = _ci($p->{id_release})->children( rel_type => "topic_topic", depth => -1);
 
-    my @topics = _unique map { $_->{_ci}->{mid} } @cis;
+    #my @topics = _unique map { $_->{_ci}->{mid} } @cis;
+    my @topics = _unique map { $_->{mid} } @cis;
     push @topics, $p->{id_release};        
 
     $c->stash->{json} = { success=>\1, topics=>\@topics };
