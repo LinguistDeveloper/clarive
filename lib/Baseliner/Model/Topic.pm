@@ -516,32 +516,14 @@ _debug( $where );
             }, @db_mids );
         }
         
-        my (%topics_out,%topics_in,%cis_in,%cis_out);
-        map { $topics_out{ $_->{from_mid} }{ $_->{to_mid} }=1 } mdb->master_rel->find({ 
-            from_mid=>mdb->in(@db_mids), rel_type=>'topic_topic' })->all;
-        map { $topics_in{ $_->{to_mid} }{ $_->{from_mid} }=1 } mdb->master_rel->find({ 
-            to_mid=>mdb->in(@db_mids), rel_type=>'topic_topic' })->all;
-        map { $cis_out{ $_->{from_mid} }{ $_->{to_mid} }=1 } mdb->master_rel->find({ 
-            from_mid=>mdb->in(@db_mids), rel_type=>{ '$not'=>qr/topic/ } })->all;
-        map { $cis_in{ $_->{to_mid} }{ $_->{from_mid} }=1 } mdb->master_rel->find({ 
-            to_mid=>mdb->in(@db_mids), rel_type=>{ '$not'=>qr/topic/ } })->all;
-
-        my @ci_mids = keys +{ map { $_=>1 } map { keys $_ } (values %cis_out, values %cis_in) };
-        my %all_cis = map { $_->{mid} => $_->{name} } mdb->master_doc->find({ mid=>mdb->in(@ci_mids) })->fields({ _id=>0,name=>1,mid=>1 })->all ;
-
-        my @rel_mids = keys +{ map{ $_=>1 } map { keys %$_ } (values %topics_out, values %topics_in) };
-        my %all_rels = map { $_->{mid} => $_->{title} } mdb->topic->find({ mid=>mdb->in(@rel_mids) })->fields({ _id=>0,title=>1,mid=>1 })->all ;
         
-        # Controlar que categorias son editables.
-        #my %categories_edit = map { lc $_->{name} => 1} Baseliner::Model::Topic->get_categories_permissions( username => $username, type => 'edit' );
         my $user_security = Baseliner->model('Permissions')->user_projects_ids_with_collection(username => $username, with_role => 1);
-        
+       
         for my $row (@db_mid_data) {
-            #_log _dump $row if $row->{topic_mid} eq 880;
             my $mid = $row->{topic_mid};
             $mid_data{ $mid } = $row unless exists $mid_data{ $row->{topic_mid} };
             $mid_data{ $mid }{is_closed} = defined $row->{status} && $row->{status} eq 'C' ? \1 : \0;
-            #$mid_data{ $mid }{sw_edit} = 1 if exists $categories_edit{ lc $row->{category_name}};
+            # user can edit?
             $mid_data{$mid}{sw_edit} = 1
                 if Baseliner->model( 'Permissions' )->user_has_action(
                         username => $username,
@@ -550,28 +532,19 @@ _debug( $where );
                         mid => $mid
                 );
 
-            $mid_data{$mid}{cis_in} = [ @all_cis{ keys %{ $cis_in{$mid} || {} } } ];
-            $mid_data{$mid}{cis_out} = [ @all_cis{ keys %{ $cis_out{$mid} || {} } } ];
-            $mid_data{$mid}{referenced_in} = [ @all_rels{ keys %{ $topics_in{$mid} || {} } } ];
-            $mid_data{$mid}{references_out} = [ @all_rels{ keys %{ $topics_out{$mid} || {} } } ];
-
             # fill out hash indexes
             if( $row->{label_id} ) {
                 $mid_data{$mid}{group_labels}{ $row->{label_id} . ";" . $row->{label_name} . ";" . $row->{label_color} } = ();
-            }
-            if( $row->{project_id} && $row->{collection}) {
-                if ( $row ->{collection} eq 'project' ) {                
-                    $mid_data{$mid}{group_projects}{ $row->{project_id} . ";" . $row->{project_name} } = ();
-                    $mid_data{$mid}{group_projects_report}{ $row->{project_name} } = ();
-                }
-                #Structure to check user has access to at least one project in all collections
-                $mid_data{$mid}{sec_projects}{$row->{collection}}{$row->{project_id}} = 1;
             }
             if( $row->{directory} ) {
                 $mid_data{$mid}{group_directory}{ $row->{directory} } = ();
             }
             $mid_data{$mid}{group_assignee}{ $row->{assignee} } = () if defined $row->{assignee};
         }
+
+        # mongo - get additional data
+        $self->update_mid_data( \@db_mids, \%mid_data );
+    
         for my $db_mid ( @db_mids ) {
             Baseliner->cache_set( "topic:view:$db_mid:", $mid_data{$db_mid} );
         }
@@ -597,8 +570,8 @@ _debug( $where );
 
     my @rows;
     for my $mid (@mids) {
-        next if !$mid_data{$mid};
-        my $data = $mid_data{$mid};
+        #next if !$mid_data{$mid};
+        my $data = $mid_data{$mid} // do { _error("MISSING mid_data for MID=$mid"); +{ mid=>$mid } };
         $data->{calevent} = {
             mid    => $mid,
             color  => $data->{category_color},
@@ -607,7 +580,7 @@ _debug( $where );
         };
         $data->{category_status_name} = _loc($data->{category_status_name});
         $data->{category_name} = _loc($data->{category_name});
-        map { $data->{$_} = [ keys %{ delete($data->{"group_$_"}) || {} } ] } qw/labels projects assignee directory/;
+        map { $data->{$_} = [ keys %{ delete($data->{"group_$_"}) || {} } ] } qw/labels assignee directory/;
         my @projects_report = keys %{ delete $data->{projects_report} || {} };
         push @rows, {
             %$data,
@@ -622,6 +595,45 @@ _debug( $where );
 }
 
 
+sub update_mid_data {
+    my ( $self, $mids, $mid_data ) = @_;
+    my @mids = _array( $mids ); 
+    $mid_data //= {};  
+    
+    my (%topics_out,%topics_in,%cis_in,%cis_out,%topic_project);
+    map { $topics_out{ $_->{from_mid} }{ $_->{to_mid} }=1 } mdb->master_rel->find({ 
+        from_mid=>mdb->in(@mids), rel_type=>'topic_topic' })->all;
+    map { $topics_in{ $_->{to_mid} }{ $_->{from_mid} }=1 } mdb->master_rel->find({ 
+        to_mid=>mdb->in(@mids), rel_type=>'topic_topic' })->all;
+    map { $cis_out{ $_->{from_mid} }{ $_->{to_mid} }=1 } mdb->master_rel->find({ 
+        from_mid=>mdb->in(@mids), rel_type=>{ '$not'=>qr/topic/ } })->all;
+    map { $cis_in{ $_->{to_mid} }{ $_->{from_mid} }=1 } mdb->master_rel->find({ 
+        to_mid=>mdb->in(@mids), rel_type=>{ '$not'=>qr/topic/ } })->all;
+    map { $topic_project{$_->{from_mid}}{$_->{to_mid}}=1 } mdb->master_rel->find({ 
+        from_mid=>mdb->in(@mids), rel_type=>'topic_project' })->all;
+
+    my @ci_mids = keys +{ map { $_=>1 } map { keys $_ } (values %cis_out, values %cis_in, values %topic_project) };
+    my %all_cis = map { $_->{mid} => $_ } mdb->master_doc->find({ mid=>mdb->in(@ci_mids) })->fields({ _id=>0,name=>1,mid=>1,collection=>1 })->all ;
+
+    my @rel_mids = keys +{ map{ $_=>1 } map { keys %$_ } (values %topics_out, values %topics_in) };
+    my %all_rels = map { $_->{mid} => $_->{title} } mdb->topic->find({ mid=>mdb->in(@rel_mids) })->fields({ _id=>0,title=>1,mid=>1 })->all ;
+    
+    for my $mid ( @mids ) {
+        $$mid_data{$mid}{cis_in} = [ map { $_->{name} } @all_cis{ keys %{ $cis_in{$mid} || {} } } ];
+        $$mid_data{$mid}{cis_out} = [ map { $_->{name} } @all_cis{ keys %{ $cis_out{$mid} || {} } } ];
+        $$mid_data{$mid}{referenced_in} = [ @all_rels{ keys %{ $topics_in{$mid} || {} } } ];
+        $$mid_data{$mid}{references_out} = [ @all_rels{ keys %{ $topics_out{$mid} || {} } } ];
+        # for all projects that are not areas, etc
+        for my $prj ( grep { $_->{collection} eq 'project' } @all_cis{ _unique keys %{ $topic_project{$mid} || {} } } ) {
+            push @{ $$mid_data{$mid}{projects} }, $prj->{mid}.';'.$prj->{name};
+            push @{ $$mid_data{$mid}{project_report} }, $prj->{name};
+            # Structure to check user has access to at least one project in all collections
+            $$mid_data{$mid}{sec_projects}{ $prj->{collection} }{ $prj->{mid} } = 1;
+        }
+    }
+    return $mid_data;
+}
+        
 sub update {
     my ( $self, $p ) = @_;
     my $action = delete $p->{action};
