@@ -1045,16 +1045,29 @@
         },
         forceSelection: true
     });
-    var ptool = new Ext.PagingToolbar({
-            store: store_topics,
-            pageSize: ps,
-            plugins:[
-                ps_plugin,
-                new Ext.ux.ProgressBarPager()
-            ],
-            displayInfo: true,
-            displayMsg: _('Rows {0} - {1} of {2}'),
-            emptyMsg: _('There are no rows available')
+    Baseliner.PagingToolbar = Ext.extend( Ext.PagingToolbar, {
+        onLoad: function(store,r,o) {
+            var p = this.getParams();
+            if( o.params && o.params[p.start] ) {
+                var st = o.params[p.start];
+                var ap = Math.ceil((this.cursor+this.pageSize)/this.pageSize);
+                if( ap > this.getPageData().pages ) { 
+                    delete o.params[p.start];
+                }
+            }
+            Baseliner.PagingToolbar.superclass.onLoad.call(this,store,r,o);
+        }
+    });
+    var ptool = new Baseliner.PagingToolbar({            
+        store: store_topics,
+        pageSize: ps,
+        plugins:[
+            ps_plugin,
+            new Ext.ux.ProgressBarPager()
+        ],
+        displayInfo: true,
+        displayMsg: _('Rows {0} - {1} of {2}'),
+        emptyMsg: _('There are no rows available')
     });
 
     var check_sm = new Ext.grid.CheckboxSelectionModel({
