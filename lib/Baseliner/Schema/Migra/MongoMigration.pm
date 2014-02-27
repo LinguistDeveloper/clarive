@@ -423,6 +423,7 @@ sub topic_numify {
 #
 
 sub master_and_rel {
+    my ($self) = @_;
     my $db = Util->_dbis();
 
     # MASTER
