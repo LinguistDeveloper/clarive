@@ -1045,16 +1045,29 @@
         },
         forceSelection: true
     });
-    var ptool = new Ext.PagingToolbar({
-            store: store_topics,
-            pageSize: ps,
-            plugins:[
-                ps_plugin,
-                new Ext.ux.ProgressBarPager()
-            ],
-            displayInfo: true,
-            displayMsg: _('Rows {0} - {1} of {2}'),
-            emptyMsg: _('There are no rows available')
+    Baseliner.PagingToolbar = Ext.extend( Ext.PagingToolbar, {
+        onLoad: function(store,r,o) {
+            var p = this.getParams();
+            if( o.params && o.params[p.start] ) {
+                var st = o.params[p.start];
+                var ap = Math.ceil((this.cursor+this.pageSize)/this.pageSize);
+                if( ap > this.getPageData().pages ) { 
+                    delete o.params[p.start];
+                }
+            }
+            Baseliner.PagingToolbar.superclass.onLoad.call(this,store,r,o);
+        }
+    });
+    var ptool = new Baseliner.PagingToolbar({            
+        store: store_topics,
+        pageSize: ps,
+        plugins:[
+            ps_plugin,
+            new Ext.ux.ProgressBarPager()
+        ],
+        displayInfo: true,
+        displayMsg: _('Rows {0} - {1} of {2}'),
+        emptyMsg: _('There are no rows available')
     });
 
     var check_sm = new Ext.grid.CheckboxSelectionModel({
@@ -1130,20 +1143,6 @@
         user : { sortable: true, width: 100, renderer: render_user  }
     };
 
-<<<<<<< HEAD
-=======
-    function omitirAcentos(text) {
-        var acentos = "ÃÀÁÄÂÈÉËÊÌÍÏÎÒÓÖÔÙÚÜÛãàáäâèéëêìíïîòóöôùúüûÑñÇç";
-        var original = "AAAAAEEEEIIIIOOOOUUUUaaaaaeeeeiiiioooouuuunncc";
-        for (var i=0; i<acentos.length; i++) {
-            if ( text ) {
-                text = text.replace(acentos.charAt(i), original.charAt(i));
-            }
-        }
-        return text;
-    }
-
->>>>>>> 73d1cba364fc39d25b57d01895dc99222fee6163
     if( fields ) {
         force_fit = false;
         columns = [ dragger, check_sm, col_map['topic_name'] ];
@@ -1152,12 +1151,7 @@
             //console.log('cols');
         
             if(r.filter){
-<<<<<<< HEAD
                 var filter_params = {type: type_filters[r.filter.type], dataIndex: r.category ? r.id + '_' + r.category : r.id};
-=======
-                //console.dir(r);
-                var filter_params = {type: type_filters[r.filter.type], dataIndex: r.category ? r.id + '_' + parse_category : r.id};
->>>>>>> 73d1cba364fc39d25b57d01895dc99222fee6163
                 //var filter_params = {type: type_filters[r.filter.type], dataIndex: r.id};
                 
                 //console.dir(filter_params);
