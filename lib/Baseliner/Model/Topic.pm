@@ -338,7 +338,7 @@ sub topics_for_user {
     $self->build_project_security( $where, $username, $is_root );
     
     if( $topic_list ) {
-        $where->{topic_mid} = mdb->in($topic_list);
+        $where->{mid} = mdb->in($topic_list);
     }
     
     #DEFAULT VIEWS***************************************************************************************************************

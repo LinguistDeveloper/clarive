@@ -1041,7 +1041,7 @@ sub topics_for_release : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
 
-    my @cis = _ci($p->{id_release})->children( rel_type => "topic_topic", depth => -1);
+    my @cis = ci->new($p->{id_release})->children( rel_type => "topic_topic", depth => -1);
 
     #my @topics = _unique map { $_->{_ci}->{mid} } @cis;
     my @topics = _unique map { $_->{mid} } @cis;
