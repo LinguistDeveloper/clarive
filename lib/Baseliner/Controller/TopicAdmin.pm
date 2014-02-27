@@ -391,13 +391,17 @@ sub update_label : Local {
                 $rs = Baseliner->model('Baseliner::BaliLabelProject')->search({ id_label => \@ids_label });
                 $rs->delete;                
                 
-                $rs = Baseliner->model('Baseliner::BaliTopicLabel')->search({ id_label => \@ids_label });
-                $rs->delete;                
+                if( @ids_label ) {
+                    my $rq = { '$pull'=>{ labels=>mdb->in(@ids_label) } };
+                    _warn( $rq );
+                    mdb->topic->update({}, $rq,{ multiple=>1 }); # mongo rocks!
+                }
                 
                 $c->stash->{json} = { success => \1, msg=>_loc('Labels deleted') };
-            }
-            catch{
-                $c->stash->{json} = { success => \0, msg=>_loc('Error deleting Labels') };
+            } catch{
+                my $err = shift;
+                _error( $err );
+                $c->stash->{json} = { success => \0, msg=>_loc('Error deleting Labels').': '. $err };
             }
         }
     }
@@ -1173,21 +1177,6 @@ sub import : Local {
         $c->stash->{json} = { success => \0, log=>\@log, msg => _loc('Error importing: %1', shift()) };
     };
     $c->forward('View::JSON');  
-}
-
-sub delete_topic_label : Local {
-    my ($self,$c, $topic_mid, $label_id)=@_;
-    try{
-        Baseliner->cache_remove( qr/:$topic_mid:/ ) if length $topic_mid;
-        
-        Baseliner->model("Baseliner::BaliTopicLabel")->search( {id_topic => $topic_mid, id_label => $label_id } )->delete;
-        $c->stash->{json} = { msg=>_loc('Label deleted'), success=>\1, id=> $label_id };
-    }
-    catch{
-        $c->stash->{json} = { msg=>_loc('Error deleting label: %1', shift()), failure=>\1 }
-    };
-    
-    $c->forward('View::JSON');    
 }
 
 1;

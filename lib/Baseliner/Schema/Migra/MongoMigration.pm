@@ -373,13 +373,20 @@ sub topic_security {
 
 sub topic_labels {
     my ( $self, %p ) = @_;
-    for my $doc ( mdb->topic->find->all ) {
-        warn "Updating labels for topic #$doc->{mid}\n";
-        $doc->{id_label} = [ 
-            map  { $_->{id_label} } 
-            DB->BaliTopicLabel->search({ id_topic=>"$doc->{mid}" },{ select=>'id_label' })->hashref->all ];
-        mdb->topic->save( $doc );
+    
+    my $db = Util->_dbis();
+    
+    # bali_topic_label
+    my %tlabels;
+    map { push @{ $tlabels{$_->{id_topic}} }, $_->{id_label} } $db->query('select * from bali_topic_label')->hashes;
+    
+    for my $mid ( keys %tlabels ) {
+        mdb->topic->update({ mid=>"$mid" },{ '$set'=>{ labels=>$tlabels{$mid} } });
     }
+    
+    # bali_label
+    mdb->label->drop;
+    mdb->label->insert($_) for $db->query('select * from bali_topic_label')->hashes;
 }
 
 sub topic_status {

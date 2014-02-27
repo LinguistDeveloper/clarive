@@ -495,12 +495,13 @@ sub topics_for_user {
     }
     
 _debug( $where );
-    my $rs = mdb->topic->find( $where )->sort( $order_by );
+    my $rs = mdb->topic->find( $where )->fields({ mid=>1, labels=>1 })->sort( $order_by );
     $cnt = $rs->count;
     $start = 0 if length $start && $start>=$cnt; # reset paging if offset
     $rs->skip( $start ) if $start >= 0 ;
     $rs->limit( $limit ) if $limit >= 0 ;
-    my @mids = map { $_->{mid} } $rs->all;
+    my %mid_docs = map { $_->{mid}=>$_ } $rs->all;
+    my @mids = keys %mid_docs;
     
     # SELECT MID DATA:
     my %mid_data = map { $_->{topic_mid} => $_ } grep { defined } map { Baseliner->cache_get("topic:view:$_:") } @mids; 
@@ -516,12 +517,11 @@ _debug( $where );
             }, @db_mids );
         }
         
-        
         my $user_security = Baseliner->model('Permissions')->user_projects_ids_with_collection(username => $username, with_role => 1);
        
         for my $row (@db_mid_data) {
             my $mid = $row->{topic_mid};
-            $mid_data{ $mid } = $row unless exists $mid_data{ $row->{topic_mid} };
+            $mid_data{ $mid } = { %{ $mid_docs{$mid} }, %$row } unless exists $mid_data{ $row->{topic_mid} };
             $mid_data{ $mid }{is_closed} = defined $row->{status} && $row->{status} eq 'C' ? \1 : \0;
             # user can edit?
             $mid_data{$mid}{sw_edit} = 1
@@ -532,10 +532,6 @@ _debug( $where );
                         mid => $mid
                 );
 
-            # fill out hash indexes
-            if( $row->{label_id} ) {
-                $mid_data{$mid}{group_labels}{ $row->{label_id} . ";" . $row->{label_name} . ";" . $row->{label_color} } = ();
-            }
             if( $row->{directory} ) {
                 $mid_data{$mid}{group_directory}{ $row->{directory} } = ();
             }
@@ -580,7 +576,7 @@ _debug( $where );
         };
         $data->{category_status_name} = _loc($data->{category_status_name});
         $data->{category_name} = _loc($data->{category_name});
-        map { $data->{$_} = [ keys %{ delete($data->{"group_$_"}) || {} } ] } qw/labels assignee directory/;
+        map { $data->{$_} = [ keys %{ delete($data->{"group_$_"}) || {} } ] } qw/assignee directory/;
         my @projects_report = keys %{ delete $data->{projects_report} || {} };
         push @rows, {
             %$data,
@@ -595,23 +591,26 @@ _debug( $where );
 }
 
 
+# TODO this doesn't actually update yet, but it could
 sub update_mid_data {
     my ( $self, $mids, $mid_data ) = @_;
     my @mids = _array( $mids ); 
     $mid_data //= {};  
     
     my (%topics_out,%topics_in,%cis_in,%cis_out,%topic_project);
-    map { $topics_out{ $_->{from_mid} }{ $_->{to_mid} }=1 } mdb->master_rel->find({ 
-        from_mid=>mdb->in(@mids), rel_type=>'topic_topic' })->all;
-    map { $topics_in{ $_->{to_mid} }{ $_->{from_mid} }=1 } mdb->master_rel->find({ 
-        to_mid=>mdb->in(@mids), rel_type=>'topic_topic' })->all;
-    map { $cis_out{ $_->{from_mid} }{ $_->{to_mid} }=1 } mdb->master_rel->find({ 
-        from_mid=>mdb->in(@mids), rel_type=>{ '$not'=>qr/topic/ } })->all;
-    map { $cis_in{ $_->{to_mid} }{ $_->{from_mid} }=1 } mdb->master_rel->find({ 
-        to_mid=>mdb->in(@mids), rel_type=>{ '$not'=>qr/topic/ } })->all;
-    map { $topic_project{$_->{from_mid}}{$_->{to_mid}}=1 } mdb->master_rel->find({ 
-        from_mid=>mdb->in(@mids), rel_type=>'topic_project' })->all;
-
+    map { $topics_out{ $_->{from_mid} }{ $_->{to_mid} }=1 } 
+        mdb->master_rel->find({ from_mid=>mdb->in(@mids), rel_type=>'topic_topic' })->all;
+    map { $topics_in{ $_->{to_mid} }{ $_->{from_mid} }=1 } 
+        mdb->master_rel->find({ to_mid=>mdb->in(@mids), rel_type=>'topic_topic' })->all;
+    map { $cis_out{ $_->{from_mid} }{ $_->{to_mid} }=1 } 
+        mdb->master_rel->find({ from_mid=>mdb->in(@mids), rel_type=>{ '$not'=>qr/topic/ } })->all;
+    map { $cis_in{ $_->{to_mid} }{ $_->{from_mid} }=1 } 
+        mdb->master_rel->find({ to_mid=>mdb->in(@mids), rel_type=>{ '$not'=>qr/topic/ } })->all;
+    map { $topic_project{$_->{from_mid}}{$_->{to_mid}}=1 } 
+        mdb->master_rel->find({ from_mid=>mdb->in(@mids), rel_type=>'topic_project' })->all;
+        
+    my %labels = map { $_->{id} => $_ } DB->BaliLabel->hashref->all;
+    
     my @ci_mids = keys +{ map { $_=>1 } map { keys $_ } (values %cis_out, values %cis_in, values %topic_project) };
     my %all_cis = map { $_->{mid} => $_ } mdb->master_doc->find({ mid=>mdb->in(@ci_mids) })->fields({ _id=>0,name=>1,mid=>1,collection=>1 })->all ;
 
@@ -630,6 +629,13 @@ sub update_mid_data {
             # Structure to check user has access to at least one project in all collections
             $$mid_data{$mid}{sec_projects}{ $prj->{collection} }{ $prj->{mid} } = 1;
         }
+        $$mid_data{$mid}{labels} = [ 
+            map { 
+                my $id=$_; 
+                my $r = $labels{$id};
+                $id . ";" . $r->{name} . ";" . $r->{color};
+            } _array( $$mid_data{$mid}{labels} )
+        ];
     }
     return $mid_data;
 }
@@ -1236,6 +1242,11 @@ sub get_data {
         for my $f ( grep { exists $custom_fields{$_} } keys %{ $doc || {} } ) {
             $data->{ $f } = $doc->{$f}; 
         }
+        my @labels = _array( $doc->{labels} );
+        if( @labels > 0 ) {
+            my %all_labels = map { $_->{id} => $_ } DB->BaliLabel->search({ id=>$doc->{labels} })->hashref->all;
+            $data->{labels} = [ map { $all_labels{$_} } @labels ]; 
+        }
         Baseliner->cache_set( $cache_key, $data );
     }
     
@@ -1282,12 +1293,13 @@ sub get_users {
     return @users ? \@users : [];
 }
 
+# deprecated : this is now embedded into the topic doc, $doc->{labels}
 sub get_labels {
     my ($self, $topic_mid ) = @_;
-    my @labels = Baseliner->model('Baseliner::BaliTopicLabel')->search( { id_topic => $topic_mid },
-                                                                        {prefetch =>['label']})->hashref->all;
-    @labels = map {$_->{label}} @labels;
-    return @labels ? \@labels : [];
+    #my $doc = mdb->topic->find_one({ mid=>"$topic_mid" }, { labels=>1 });
+    #my @labels = _array( $doc->{labels} ) if $doc;
+    #return @labels ? \@labels : [];
+    return [];   
 }
 
 sub get_revisions {
@@ -1649,11 +1661,6 @@ sub save_doc {
     my %meta = map { $_->{id_field} => $_ } @$meta;
     my $old_doc = mdb->topic->find_one({ mid=>"$mid" }) // {};
     
-    
-    # save topic labels 
-    $doc->{id_label} = [ map  { $_->{id_label} } 
-        DB->BaliTopicLabel->search({ id_topic=>"$mid" },{ select=>'id_label' })->hashref->all ];
-
     # clear master_seen for everyone else
     mdb->master_seen->remove({ mid=>"$mid", username=>{ '$ne' => $p{username} } });
     
@@ -2371,19 +2378,12 @@ sub set_users{
     }
 }
 
-sub set_labels{
+sub set_labels {
     my ($self, $rs_topic, $labels ) = @_;
-    my $topic_mid = $rs_topic->mid;
     
-    # labels
-    Baseliner->model("Baseliner::BaliTopicLabel")->search( {id_topic => $topic_mid} )->delete;
-    
-    foreach my $label_id (_array  $labels){
-        Baseliner->model('Baseliner::BaliTopicLabel')->create( {    id_topic    => $topic_mid,
-                                                                    id_label    => $label_id,
-                                                        });     
-    }     
+    # XXX do nothing, now labels is in the mongo doc
 }
+
 sub get_categories_permissions{
     my ($self, %param) = @_;
     

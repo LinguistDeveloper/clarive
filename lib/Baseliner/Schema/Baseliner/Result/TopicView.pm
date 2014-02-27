@@ -38,9 +38,6 @@ __PACKAGE__->result_source_instance->view_definition(q{
             C.COLOR CATEGORY_COLOR,
             C.IS_CHANGESET,
             C.IS_RELEASE,
-            L.ID LABEL_ID,
-            L.NAME LABEL_NAME,
-            L.COLOR LABEL_COLOR,
             F.FILENAME AS FILE_NAME,
             PS.TEXT AS TEXT,
             NUM_FILE,
@@ -50,8 +47,6 @@ __PACKAGE__->result_source_instance->view_definition(q{
             FROM  BALI_TOPIC T
                     JOIN BALI_MASTER MA ON T.MID = MA.MID
                     LEFT JOIN BALI_TOPIC_CATEGORIES C ON T.ID_CATEGORY = C.ID
-                    LEFT JOIN BALI_TOPIC_LABEL TL ON TL.ID_TOPIC = T.MID
-                    LEFT JOIN BALI_LABEL L ON L.ID = TL.ID_LABEL
                     LEFT JOIN BALI_TOPIC_PRIORITY TP ON T.ID_PRIORITY = TP.ID
                     LEFT JOIN (SELECT COUNT(*) AS NUMCOMMENT, A.MID 
                                         FROM BALI_TOPIC A, BALI_MASTER_REL REL, BALI_POST B
@@ -108,9 +103,6 @@ __PACKAGE__->add_columns(
         category_color
         is_changeset
         is_release
-        label_id
-        label_name
-        label_color
         file_name
         text
         progress

@@ -21,7 +21,6 @@
             <script language="javascript">
                 var label_color = '<% $label->{color} %>';
                 var label_name = '<% _loc($label->{name}) %>'
-                alert(label_name);
                 var div_name = '<%$id . '_' . $label->{name} %>'
                 var div_label = document.getElementById(div_name);
                 div_label.innerHTML = "<span class='label' style='font-size: 9px; float:left;padding:1px 4px 1px 4px;margin-right:4px;color:" + returnOpposite(label_color.substr(1)) + ";background-color:" + label_color + "'>" + label_name + "</span>";

@@ -1028,22 +1028,13 @@ sub update_topic_labels : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
     my $topic_mid = $p->{topic_mid};
-    my @label_ids = _array $p->{label_ids};
+    my @label_ids = _array( $p->{label_ids} );
     
     try{
-        
-
-        my @current_labels = map { $_->{id_label} }$c->model("Baseliner::BaliTopicLabel")->search( {id_topic => $topic_mid} )->hashref->all;
-        $c->model("Baseliner::BaliTopicLabel")->search( {id_topic => $topic_mid} )->delete;
-        for ( @current_labels ) {
-            push @label_ids,$_ if !($_ ~~ @label_ids);
+        if( my $doc = mdb->topic->find_one({ mid=>"$topic_mid"}) ) {
+            my @current_labels = _array( $doc->{labels} );
+            mdb->topic->update({ mid => "$topic_mid"},{ '$set' => {labels => \@label_ids}});
         }
-        foreach my $label_id (@label_ids){
-            $c->model('Baseliner::BaliTopicLabel')->create( {   id_topic    => $topic_mid,
-                                                                id_label    => $label_id,
-                                                            });     
-        }
-        mdb->topic->update({ mid => "$topic_mid"},{ '$set' => {labels => \@label_ids}});
         $c->stash->{json} = { msg=>_loc('Labels assigned'), success=>\1 };
         Baseliner->cache_remove( qr/:$topic_mid:/ ) if length $topic_mid;
     }
@@ -1053,6 +1044,21 @@ sub update_topic_labels : Local {
      
     $c->forward('View::JSON');    
 }
+
+sub delete_topic_label : Local {
+    my ($self,$c, $topic_mid, $label_id)=@_;
+    try{
+        Baseliner->cache_remove( qr/:$topic_mid:/ ) if length $topic_mid;
+        mdb->topic->update({ mid => "$topic_mid" },{ '$pull'=>{ labels=>$label_id } },{ multiple=>1 });
+        $c->stash->{json} = { msg=>_loc('Label deleted'), success=>\1, id=> $label_id };
+    }
+    catch{
+        $c->stash->{json} = { msg=>_loc('Error deleting label: %1', shift()), failure=>\1 }
+    };
+    
+    $c->forward('View::JSON');    
+}
+
 
 sub update_project : Local {
     my ($self,$c)=@_;

@@ -91,10 +91,6 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("id");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07012 @ 2012-01-17 18:19:57
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:kPypxdTqp7bcXeLkSRdC7A
-
-
 =head2 bali_issuelabels
 
 Type: has_many
@@ -103,21 +99,10 @@ Related object: L<Baseliner::Schema::Baseliner::Result::BaliIssueLabel>
 
 =cut
 
-__PACKAGE__->has_many(
-  "bali_topiclabel",
-  "Baseliner::Schema::Baseliner::Result::BaliTopicLabel",
-  { "foreign.id_label" => "self.id" },
-);
-
 __PACKAGE__->belongs_to(
   "users",
   "Baseliner::Schema::Baseliner::Result::BaliUser",
   { mid => "mid_user" },
 );
 
-
-
-
-
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
 1;
