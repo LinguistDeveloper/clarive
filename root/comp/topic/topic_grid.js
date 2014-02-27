@@ -1130,20 +1130,6 @@
         user : { sortable: true, width: 100, renderer: render_user  }
     };
 
-<<<<<<< HEAD
-=======
-    function omitirAcentos(text) {
-        var acentos = "ÃÀÁÄÂÈÉËÊÌÍÏÎÒÓÖÔÙÚÜÛãàáäâèéëêìíïîòóöôùúüûÑñÇç";
-        var original = "AAAAAEEEEIIIIOOOOUUUUaaaaaeeeeiiiioooouuuunncc";
-        for (var i=0; i<acentos.length; i++) {
-            if ( text ) {
-                text = text.replace(acentos.charAt(i), original.charAt(i));
-            }
-        }
-        return text;
-    }
-
->>>>>>> 73d1cba364fc39d25b57d01895dc99222fee6163
     if( fields ) {
         force_fit = false;
         columns = [ dragger, check_sm, col_map['topic_name'] ];
@@ -1152,12 +1138,7 @@
             //console.log('cols');
         
             if(r.filter){
-<<<<<<< HEAD
                 var filter_params = {type: type_filters[r.filter.type], dataIndex: r.category ? r.id + '_' + r.category : r.id};
-=======
-                //console.dir(r);
-                var filter_params = {type: type_filters[r.filter.type], dataIndex: r.category ? r.id + '_' + parse_category : r.id};
->>>>>>> 73d1cba364fc39d25b57d01895dc99222fee6163
                 //var filter_params = {type: type_filters[r.filter.type], dataIndex: r.id};
                 
                 //console.dir(filter_params);
