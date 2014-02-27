@@ -1130,6 +1130,20 @@
         user : { sortable: true, width: 100, renderer: render_user  }
     };
 
+<<<<<<< HEAD
+=======
+    function omitirAcentos(text) {
+        var acentos = "ÃÀÁÄÂÈÉËÊÌÍÏÎÒÓÖÔÙÚÜÛãàáäâèéëêìíïîòóöôùúüûÑñÇç";
+        var original = "AAAAAEEEEIIIIOOOOUUUUaaaaaeeeeiiiioooouuuunncc";
+        for (var i=0; i<acentos.length; i++) {
+            if ( text ) {
+                text = text.replace(acentos.charAt(i), original.charAt(i));
+            }
+        }
+        return text;
+    }
+
+>>>>>>> 73d1cba364fc39d25b57d01895dc99222fee6163
     if( fields ) {
         force_fit = false;
         columns = [ dragger, check_sm, col_map['topic_name'] ];
@@ -1138,7 +1152,12 @@
             //console.log('cols');
         
             if(r.filter){
+<<<<<<< HEAD
                 var filter_params = {type: type_filters[r.filter.type], dataIndex: r.category ? r.id + '_' + r.category : r.id};
+=======
+                //console.dir(r);
+                var filter_params = {type: type_filters[r.filter.type], dataIndex: r.category ? r.id + '_' + parse_category : r.id};
+>>>>>>> 73d1cba364fc39d25b57d01895dc99222fee6163
                 //var filter_params = {type: type_filters[r.filter.type], dataIndex: r.id};
                 
                 //console.dir(filter_params);
@@ -1626,7 +1645,6 @@
                             break;
             }
         }
-        //alert('merge views: ' + Ext.util.JSON.encode(selected_views));
         filtrar_topics(selected_views, labels_checked, categories_checked, statuses_checked, priorities_checked, unselected_node);
     }
     
@@ -1638,9 +1656,6 @@
             base_params= { start: bp.start, limit: ps, sort: bp.sort, dir: bp.dir, typeApplication: typeApplication, topic_list: params.topic_list, id_project: id_project ? id_project : undefined, categories: category_id ? category_id : undefined, statuses: status_id  };        // object for merging with views 
         var selected_filters = {labels: labels_checked, categories: categories_checked, statuses: statuses_checked, priorities: priorities_checked};
         
-        //alert('selected_views ' + Ext.util.JSON.encode(selected_views));
-        //alert('merge_filters: ' + Ext.util.JSON.encode(merge_filters));
-        //alert('bfilters: ' + Ext.util.JSON.encode(base_params));
 
         // merge selected filters with views
         var merge_filters = Baseliner.merge( selected_views, selected_filters);
@@ -1667,7 +1682,6 @@
         //    //filter_final.query = bp.query + ' ' + selected_views.query;
         //}
 
-        //alert('curr ' + Ext.util.JSON.encode(filter_final));
         //if( base_params.query !== filter_final.query ) {
             //delete filter_final['query'];    
         //}
