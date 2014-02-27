@@ -71,8 +71,8 @@
 			sort: function(sorters, direction){
 				var col;
 				if( this.data.items.length > 0 ){
-                     // console.log(sorters);
-                     // console.dir(this.data);
+                    // console.log(sorters);
+                    // console.dir(this.data);
 					// console.log(this.data.items[0].data[sorters]);
 					if(this.data.items[0].data[sorters] === '' ){
 						var res = sorters.replace(/\_[^_]+$/,"");
@@ -1045,20 +1045,7 @@
         },
         forceSelection: true
     });
-    Baseliner.PagingToolbar = Ext.extend( Ext.PagingToolbar, {
-        onLoad: function(store,r,o) {
-            var p = this.getParams();
-            if( o.params && o.params[p.start] ) {
-                var st = o.params[p.start];
-                var ap = Math.ceil((this.cursor+this.pageSize)/this.pageSize);
-                if( ap > this.getPageData().pages ) { 
-                    delete o.params[p.start];
-                }
-            }
-            Baseliner.PagingToolbar.superclass.onLoad.call(this,store,r,o);
-        }
-    });
-    var ptool = new Baseliner.PagingToolbar({
+    var ptool = new Ext.PagingToolbar({
             store: store_topics,
             pageSize: ps,
             plugins:[
@@ -1143,30 +1130,15 @@
         user : { sortable: true, width: 100, renderer: render_user  }
     };
 
-    function omitirAcentos(text) {
-        var acentos = "ÃÀÁÄÂÈÉËÊÌÍÏÎÒÓÖÔÙÚÜÛãàáäâèéëêìíïîòóöôùúüûÑñÇç";
-        var original = "AAAAAEEEEIIIIOOOOUUUUaaaaaeeeeiiiioooouuuunncc";
-        for (var i=0; i<acentos.length; i++) {
-            text = text.replace(acentos.charAt(i), original.charAt(i));
-        }
-        return text;
-    }
-
     if( fields ) {
         force_fit = false;
         columns = [ dragger, check_sm, col_map['topic_name'] ];
         Ext.each( fields.columns, function(r){ 
             // r.meta_type, r.id, r.as, r.width, r.header
             //console.log('cols');
-            // console.dir(r);
-
-            var parse_category = omitirAcentos(r.category);
-            console.log(parse_category);
-
+        
             if(r.filter){
-                //console.dir(r);
-                //alert(r.id);
-                var filter_params = {type: type_filters[r.filter.type], dataIndex: r.category ? r.id + '_' + parse_category : r.id};
+                var filter_params = {type: type_filters[r.filter.type], dataIndex: r.category ? r.id + '_' + r.category : r.id};
                 //var filter_params = {type: type_filters[r.filter.type], dataIndex: r.id};
                 
                 //console.dir(filter_params);
@@ -1209,7 +1181,7 @@
             }
             
             var col = gridlets[ r.gridlet ] || col_map[ r.id ] || meta_types[ r.meta_type ] || {
-                dataIndex: r.category ? r.id + '_' + parse_category : r.id,
+                dataIndex: r.category ? r.id + '_' + r.category : r.id,
                 //dataIndex: r.id,
                 hidden: false, width: 80, sortable: true,
                 renderer: render_default
@@ -1217,7 +1189,7 @@
             
             col = Ext.apply({},col);  // clone the column
             //col.dataIndex = r.id;
-            col.dataIndex =  r.category ? r.id + '_' + parse_category : r.id;
+            col.dataIndex =  r.category ? r.id + '_' + r.category : r.id;
             //if( !col.dataIndex ) col.dataIndex = r.id;
             
             if( r.meta_type == 'custom_data' && r.data_key ) {
@@ -1226,7 +1198,7 @@
             }
             col.hidden = false;
             
-            col.alias = parse_category;
+            col.alias = r.category;
             col.header = _(r.header || r.as || r.text || r.id);
             col.width = r.width || col.width;
             
