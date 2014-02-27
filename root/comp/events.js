@@ -1,5 +1,5 @@
 (function(params){
-    var ps = 30;
+    var ps = 20;
     var Record = Ext.data.Record.create(
         [ 'event_key', 'event_status', 'event_data', 'description', 'ts',
             'data', 'type', 'id_rule', 'id_rule_log', 'id_event', 
@@ -95,6 +95,54 @@
             });
         }
     };
+    Baseliner.PagingToolbar = Ext.extend( Ext.PagingToolbar, {
+        onLoad: function(store,r,o) {
+            var p = this.getParams();
+            if( o.params && o.params[p.start] ) {
+                var st = o.params[p.start];
+                var ap = Math.ceil((this.cursor+this.pageSize)/this.pageSize);
+                if( ap > this.getPageData().pages ) { 
+                    delete o.params[p.start];
+                }
+            }
+            Baseliner.PagingToolbar.superclass.onLoad.call(this,store,r,o);
+        }
+    });
+    var ps_plugin = new Ext.ux.PageSizePlugin({
+        editable: false,
+        width: 90,
+        data: [
+            ['5', 5], ['10', 10], ['15', 15], ['20', 20], ['25', 25], ['50', 50],
+            ['100', 100], ['200',200], ['500', 500], ['1000', 1000], [_('all rows'), -1 ]
+        ],
+        beforeText: _('Show'),
+        afterText: _('rows/page'),
+        value: ps,
+        listeners: {
+            'select':function(c,rec) {
+                ps = rec.data.value;
+                if( rec.data.value < 0 ) {
+                    ptool.afterTextItem.hide();
+                } else {
+                    ptool.afterTextItem.show();
+                }
+            }
+        },
+        forceSelection: true
+    });
+
+    var ptool = new Baseliner.PagingToolbar({            
+        store: store_events,
+        pageSize: ps,
+        plugins:[
+            ps_plugin,
+            new Ext.ux.ProgressBarPager()
+        ],
+        displayInfo: true,
+        displayMsg: _('Rows {0} - {1} of {2}'),
+        emptyMsg: _('There are no rows available')
+    });
+
     var grid = new Ext.ux.maximgb.tg.GridPanel({ 
         store: store_events,
         master_column_id : '_id',
@@ -121,13 +169,7 @@
             { icon:'/static/images/icons/delete.gif', handler: del_event , tooltip:_('Delete event')},
             { icon:'/static/images/icons/hourglass.png', handler: function(){ event_status_change('new') }, tooltip:_('Reset event status') }
         ],
-        bbar: new Ext.ux.maximgb.tg.PagingToolbar({
-            store: store_events,
-            pageSize: ps,
-            displayInfo: true,
-            displayMsg: _('Rows {0} - {1} of {2}'),
-            emptyMsg: _('There are no rows available')
-        })
+        bbar: ptool
     });
     return grid;
 })
