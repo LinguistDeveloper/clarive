@@ -997,29 +997,21 @@ sub list_label : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
     my ($dir, $sort, $cnt) = ( @{$p}{qw/dir sort/}, 0 );
-    $dir ||= 'asc';
+    $dir = lc $dir eq 'desc' ? -1 : 1;
     $sort ||= 'name';
     
-    my $row;
     my @rows;
-    
-    $row = $c->model('Baseliner::BaliLabel')->search(undef, { order_by => { "-$dir" => ["$sort" ] }});
-    
-    if($row){
-        while( my $r = $row->next ) {
-            push @rows,
-              {
-                id          => $r->id,
-                name        => $r->name,
-                color       => $r->color
-              };
-        }  
-    }
-    
-    #@rows = Baseliner::Model::Label->get_labels( $c->username, 'admin' );
+    my $rs = mdb->label->find->sort({ $sort => $dir});
+    while( my $r = $rs->next ) {
+        push @rows,
+          {
+            id          => $r->{id},
+            name        => $r->{name},
+            color       => $r->{color}
+          };
+    }  
     
     $cnt = $#rows + 1 ; 
-    
     $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
     $c->forward('View::JSON');
 }
@@ -1235,7 +1227,6 @@ sub filters_list : Local {
     if(!$typeApplication){
         my @labels; 
     
-        #$row = $c->model('Baseliner::BaliLabel')->search();
         my @row = Baseliner::Model::Label->get_labels( $c->username );
         
         #if($row->count() gt 0){

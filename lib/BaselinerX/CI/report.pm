@@ -1000,6 +1000,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	
     my %scope_topics;
     my %scope_cis;
+    my %all_labels = map { $_->{id} => $_ } mdb->label->find->all;
     my @topics = map { 
         my %row = %$_;
 		#_log ">>>>>>>>>>>>>>>>>>>>>>>>>>>FILA: " . _dump %row;
@@ -1070,11 +1071,16 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
             }
         }
         $row{topic_mid} = $row{mid};
+        
+        # labels
 		if($row{labels}){
-			my @labels = Baseliner->model('Baseliner::BaliLabel')->search({id=>$row{labels}})->hashref->all;
-			my @format_labels;
-			map { push @format_labels, $_->{id}.';'.$_->{name}.';'.$_->{color} } @labels;
-			$row{labels} = \@format_labels;
+			$row{labels} = [ 
+                map { 
+                    my $id=$_; 
+                    my $r = $all_labels{$id};
+                    $id . ";" . $r->{name} . ";" . $r->{color};
+                } _array( $row{labels} )
+            ];
 		}
 		
         $row{category_color} = $row{category}{color};

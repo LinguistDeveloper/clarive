@@ -609,7 +609,7 @@ sub update_mid_data {
     map { $topic_project{$_->{from_mid}}{$_->{to_mid}}=1 } 
         mdb->master_rel->find({ from_mid=>mdb->in(@mids), rel_type=>'topic_project' })->all;
         
-    my %labels = map { $_->{id} => $_ } DB->BaliLabel->hashref->all;
+    my %labels = map { $_->{id} => $_ } mdb->label->find->all;
     
     my @ci_mids = keys +{ map { $_=>1 } map { keys $_ } (values %cis_out, values %cis_in, values %topic_project) };
     my %all_cis = map { $_->{mid} => $_ } mdb->master_doc->find({ mid=>mdb->in(@ci_mids) })->fields({ _id=>0,name=>1,mid=>1,collection=>1 })->all ;
@@ -1244,7 +1244,7 @@ sub get_data {
         }
         my @labels = _array( $doc->{labels} );
         if( @labels > 0 ) {
-            my %all_labels = map { $_->{id} => $_ } DB->BaliLabel->search({ id=>$doc->{labels} })->hashref->all;
+            my %all_labels = map { $_->{id} => $_ } mdb->label->find({ id=>mdb->in($doc->{labels}) })->all;
             $data->{labels} = [ map { $all_labels{$_} } @labels ]; 
         }
         Baseliner->cache_set( $cache_key, $data );
