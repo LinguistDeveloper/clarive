@@ -872,11 +872,12 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	
     my @sort = map { $_->{id_field} => 0+($_->{sort_direction} // 1) } _array($fields{sort});
     
-	_log ">>>>>>>>>>>>>>>>>>FIND: " . _dump $where;
+	#_log ">>>>>>>>>>>>>>>>>>FIND: " . _dump $where;
 	
     my $rs = mdb->topic->find($where);
     my $cnt = $rs->count;
-	$rows = $cnt if ($rows eq '-1') ;
+    $rows = $cnt if ($rows eq '-1') ;
+    $rs->sort({ @sort });
     #_debug \%meta;
 	
 	my %select_system = (
@@ -887,9 +888,9 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 		labels		=> 1
 	);
     my $fields = {  %select_system, map { $_=>1 } keys +{@selects}, _id=>0 };
-    _log "FIELDS==================>" . _dump( $fields );
+    #_log "FIELDS==================>" . _dump( $fields );
+    #_log "SORT==================>" . _dump( @sort );
     my @data = $rs
-      ->sort({ @sort })
       ->fields($fields)
       ->skip( $start )
       ->limit($rows)
@@ -900,6 +901,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
         foreach my $field (keys $fields){
             if (!exists $_->{$field}) {
                 #_log ">>>>>>>>>>>>>>>>>Field: " . $field;
+                next if ($field eq '_id' || $field eq '0');
                 $_->{$field} = ' ';
                 # for my $category (@All_Categories){
                 #     $_->{$field. "_$category"} = $_->{$field};
@@ -1104,10 +1106,8 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
     #} @data;
 	} @parse_data;
 	
-	
-	
     #_debug @topics;
-	_log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump @parse_data;
+	#_log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump @parse_data;
     return ( 0+$cnt, @topics );
 }
 

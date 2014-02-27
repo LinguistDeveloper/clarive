@@ -326,7 +326,6 @@
         }
         Ext.each( ev.dropNode, function(n){
             var type = n.attributes.type;
-            //console.log(n);
             //Baseliner.message( 'Type', type );
             if( !type=='where_field' && ev.point=='append' ) {
                 flag = false; //alert('no no'); 
@@ -347,6 +346,7 @@
             } else {
                 var nn = Ext.apply({ id: Ext.id(), expanded: ttype=='where' }, n.attributes);
                 if( type!='value' ) nn.type = (ttype=='categories') || ttype=='where' ? ttype+'_field': ttype;
+                if( ttype == 'sort') nn.type = ttype+'_field';
                 var icon = type=='value' ? '/static/images/icons/search.png' 
                     : type=='sort' ? '/static/images/icons/arrow-down.gif' 
                     : '/static/images/icons/field.png';
