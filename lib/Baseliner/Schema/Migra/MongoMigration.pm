@@ -386,7 +386,7 @@ sub topic_labels {
     
     # bali_label
     mdb->label->drop;
-    mdb->label->insert($_) for $db->query('select * from bali_topic_label')->hashes;
+    mdb->label->insert($_) for $db->query('select * from bali_label')->hashes;
 }
 
 sub topic_status {
