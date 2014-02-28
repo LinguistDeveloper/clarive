@@ -63,17 +63,18 @@ sub log : Local {
     EVENT: for my $e ( @rows ) {
         # event_key event_status event_data 
         delete $e->{event_data};
-        my $ev = Baseliner->cache_get('event:'.$e->{event_key});
+        my $desc = Baseliner->cache_get('event:'.$e->{event_key});
         if ( !$ev ) {
             try {
-                $ev = $c->registry->get( $e->{event_key} );
+                my $ev = $c->registry->get( $e->{event_key} );
+                $desc = $ev->description;
                 Baseliner->cache_set( 'event:' . $e->{event_key}, $ev->description );
             }
             catch {
                  _error( shift() ); 
                 next EVENT; };
         } ## end if ( !$ev )
-        $e->{description} = $ev;
+        $e->{description} = _loc($desc);
         $e->{_id}         = $e->{id};
         $e->{_parent}     = undef;
         $e->{type}        = 'event';
