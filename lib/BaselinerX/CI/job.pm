@@ -22,7 +22,7 @@ has endtime            => qw(is rw isa Any);
 has comments           => qw(is rw isa Any);
 has logfile            => qw(is rw isa Any lazy 1), default => sub { my $self=shift; ''.Util->_file($ENV{BASELINER_LOGHOME}, $self->name . '.log') };
 has step               => qw(is rw isa Str default CHECK);
-has exec               => qw(is rw isa Num default 1);
+has exec               => qw(is rw isa Num), default=>1;
 has status             => qw(is rw isa Any default IN-EDIT);
 has status_trans       => qw(is rw isa Any);  # translation of status so that it shows in searches
 has step_status        => ( is=>'rw', isa=>'HashRef[Str]', default=>sub{{}} );  # saves statuses at step change
@@ -108,7 +108,7 @@ around exec => sub {
     my $self = shift;
     my $exec = shift;
     if( defined $exec && $exec > 1 && ref $self->{logger} ) {
-        $self->logger->exec( $exec );
+        $self->logger->exec( 0+$exec );
     }
     return defined $exec 
         ? $self->$orig( $exec )
