@@ -426,10 +426,10 @@ sub rule_migrate {
     mdb->rule->drop;
     for( @rules ) {
         my $id = $_->{id};
+        $_->{rule_active} .= '';
         mdb->rule->insert($_);        
         if( !length $_->{rule_tree} ) {
-            _warn( "RULE TREE missing for $id, looking for Statements..." );
-
+            _warn( "RULE TREE missing for $id, Open them in Rule editor, then save again." );
         }
     }
 }
