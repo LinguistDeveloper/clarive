@@ -417,6 +417,23 @@ sub topic_numify {
     }
 }
 
+sub rule_migrate {
+    my ($self)=@_;
+    my $db = Util->_dbis();
+
+    # MASTER
+    my @rules = $db->query('select * from bali_rule')->hashes;
+    mdb->rule->drop;
+    for( @rules ) {
+        my $id = $_->{id};
+        mdb->rule->insert($_);        
+        if( !length $_->{rule_tree} ) {
+            _warn( "RULE TREE missing for $id, looking for Statements..." );
+
+        }
+    }
+}
+
 ####################################
 #
 # Integrity fixes
