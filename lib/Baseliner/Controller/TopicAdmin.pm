@@ -342,30 +342,12 @@ sub update_label : Local {
     given ($action) {
         when ('add') {
             try{
-                my $row = $c->model('Baseliner::BaliLabel')->search({name => $p->{label}})->first;
+                my $row = mdb->label->find_one({name => $p->{label}});
                 if(!$row){
-                    my $rslabel;
-                    my $label = { name => $label, color => $color};
-                    #if (!@projects){
-                    #    if ($username eq 'root'){
-                            $label->{sw_allprojects} = 1;
-                    #    }else{
-                    #        my $rs_user = $c->model('Baseliner::BaliUser')->search({username => $username}, {select => 'mid'})->hashref->first;
-                    #        $label->{mid_user} = $rs_user->{mid};
-                    #    }
-                        $rslabel = $c->model('Baseliner::BaliLabel')->create($label);
-                        
-                    #}else{
-                    #    if ($projects[0] eq 'todos'){
-                    #        $label->{sw_allprojects} = 1;
-                    #    }
-                    #    $rslabel = $c->model('Baseliner::BaliLabel')->create($label);
-                    #    foreach my $project (@projects){
-                    #        next if $project eq 'todos';
-                    #        $c->model('Baseliner::BaliLabelProject')->create({id_label => $rslabel->id, mid_project => $project});
-                    #    }                        
-                    #}
-                    $c->stash->{json} = { msg=>_loc('Label added'), success=>\1, label_id=> $rslabel->id };
+                    my $label = { name => $label, color => $color, id=>mdb->seq('label') };
+                    $label->{sw_allprojects} = 1;
+                    mdb->label->insert($label);
+                    $c->stash->{json} = { msg=>_loc('Label added'), success=>\1, label_id=>$label->{id} };
                 }
                 else{
                     $c->stash->{json} = { msg=>_loc('Label name already exists, introduce another label name'), failure=>\1 };
@@ -385,19 +367,18 @@ sub update_label : Local {
                     push @ids_label, $id_label;
                 }
                   
-                my $rs = Baseliner->model('Baseliner::BaliLabel')->search({ id => \@ids_label });
-                $rs->delete;
+                mdb->label->remove({ id=>mdb->in(@ids_label) },{ multiple=>1 });
                 
-                $rs = Baseliner->model('Baseliner::BaliLabelProject')->search({ id_label => \@ids_label });
-                $rs->delete;                
-                
-                $rs = Baseliner->model('Baseliner::BaliTopicLabel')->search({ id_label => \@ids_label });
-                $rs->delete;                
+                if( @ids_label ) {
+                    # errors like "cannot $pull/pullAll..." is due to labels=>N
+                    mdb->topic->update({}, { '$pull'=>{ labels=>mdb->in(@ids_label) } },{ multiple=>1 }); # mongo rocks!
+                }
                 
                 $c->stash->{json} = { success => \1, msg=>_loc('Labels deleted') };
-            }
-            catch{
-                $c->stash->{json} = { success => \0, msg=>_loc('Error deleting Labels') };
+            } catch{
+                my $err = shift;
+                _error( $err );
+                $c->stash->{json} = { success => \0, msg=>_loc('Error deleting Labels').': '. $err };
             }
         }
     }
@@ -1173,21 +1154,6 @@ sub import : Local {
         $c->stash->{json} = { success => \0, log=>\@log, msg => _loc('Error importing: %1', shift()) };
     };
     $c->forward('View::JSON');  
-}
-
-sub delete_topic_label : Local {
-    my ($self,$c, $topic_mid, $label_id)=@_;
-    try{
-        Baseliner->cache_remove( qr/:$topic_mid:/ ) if length $topic_mid;
-        
-        Baseliner->model("Baseliner::BaliTopicLabel")->search( {id_topic => $topic_mid, id_label => $label_id } )->delete;
-        $c->stash->{json} = { msg=>_loc('Label deleted'), success=>\1, id=> $label_id };
-    }
-    catch{
-        $c->stash->{json} = { msg=>_loc('Error deleting label: %1', shift()), failure=>\1 }
-    };
-    
-    $c->forward('View::JSON');    
 }
 
 1;

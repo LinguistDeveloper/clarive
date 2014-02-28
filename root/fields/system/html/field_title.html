@@ -22,10 +22,10 @@
 
 % foreach my $label ( _array( $data->{labels} ) ) {
         <!--<div class='alert' style='font-size: 9px;padding:1px 4px 1px 4px;margin-right:4px;color:white;background-color:<% $label->{color} %>'>-->
-        <span class='label' style='padding:1px 4px 1px 4px;background-color:<% $label->{color} %>'>
+        <span class='label' style='padding:1px 4px 1px 4px;margin-right:3px;background-color:<% $label->{color} %>'>
             <% $label->{name} %>
 % if($data->{admin_labels}){        
-            <img id='<% $label->{id} %>' class='label_click' src='/static/images/icons/close.png' style='vertical-align: middle;'></img>
+            <span id='<% $label->{id} %>' class='label_click' style="cursor:pointer; cursor:hand">&nbsp;&#x00D7;</span>
 %}
         </span>
 % }
@@ -34,12 +34,13 @@
     </tr>
 
     <script>
-    $(".label_click").click(function() {
+    $(".label_click").click(function(ev) {
         var topic_mid = '<%$data->{topic_mid}%>';
-        Baseliner.ajaxEval( '/topicadmin/delete_topic_label/' + topic_mid + '/' + this.id,{},
+        Baseliner.ajaxEval( '/topic/delete_topic_label/' + topic_mid + '/' + this.id,{},
             function(response) {
                 if ( response.success ) {
-                    $("#" + response.id).parent().hide();
+                    $( ev.target ).parent().hide();
+                    //$("#" + response.id).parent().hide();
                     Baseliner.message( _('Success'), response.msg );
                 } else {
                     Ext.Msg.show({

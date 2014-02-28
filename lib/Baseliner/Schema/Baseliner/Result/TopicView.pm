@@ -38,12 +38,6 @@ __PACKAGE__->result_source_instance->view_definition(q{
             C.COLOR CATEGORY_COLOR,
             C.IS_CHANGESET,
             C.IS_RELEASE,
-            L.ID LABEL_ID,
-            L.NAME LABEL_NAME,
-            L.COLOR LABEL_COLOR,
-            P.MID AS PROJECT_ID,
-            P.NAME AS PROJECT_NAME,
-            MP.COLLECTION AS COLLECTION,
             F.FILENAME AS FILE_NAME,
             PS.TEXT AS TEXT,
             NUM_FILE,
@@ -53,8 +47,6 @@ __PACKAGE__->result_source_instance->view_definition(q{
             FROM  BALI_TOPIC T
                     JOIN BALI_MASTER MA ON T.MID = MA.MID
                     LEFT JOIN BALI_TOPIC_CATEGORIES C ON T.ID_CATEGORY = C.ID
-                    LEFT JOIN BALI_TOPIC_LABEL TL ON TL.ID_TOPIC = T.MID
-                    LEFT JOIN BALI_LABEL L ON L.ID = TL.ID_LABEL
                     LEFT JOIN BALI_TOPIC_PRIORITY TP ON T.ID_PRIORITY = TP.ID
                     LEFT JOIN (SELECT COUNT(*) AS NUMCOMMENT, A.MID 
                                         FROM BALI_TOPIC A, BALI_MASTER_REL REL, BALI_POST B
@@ -69,10 +61,6 @@ __PACKAGE__->result_source_instance->view_definition(q{
                                         AND REL1.REL_TYPE = 'topic_file_version'
                                         GROUP BY E.MID) H ON T.MID = H.MID                                         
                     LEFT JOIN BALI_TOPIC_STATUS S ON T.ID_CATEGORY_STATUS = S.ID
-
-                    LEFT JOIN BALI_MASTER_REL REL_PR ON REL_PR.FROM_MID = T.MID AND REL_PR.REL_TYPE = 'topic_project'
-                    LEFT JOIN BALI_PROJECT P ON P.MID = REL_PR.TO_MID
-                    LEFT JOIN BALI_MASTER MP ON REL_PR.TO_MID = MP.MID 
 
                     LEFT JOIN BALI_MASTER_REL REL_F ON REL_F.FROM_MID = T.MID AND REL_F.REL_TYPE = 'topic_file_version'
                     LEFT JOIN BALI_FILE_VERSION F ON F.MID = REL_F.TO_MID
@@ -115,12 +103,6 @@ __PACKAGE__->add_columns(
         category_color
         is_changeset
         is_release
-        label_id
-        label_name
-        label_color
-        project_id
-        project_name
-        collection
         file_name
         text
         progress
