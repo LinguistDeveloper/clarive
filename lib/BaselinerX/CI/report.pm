@@ -931,6 +931,9 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 						my $i = 1;
 						my $value;
 						my %alias;
+                        use Storable 'dclone';
+                        my $tmp_data = dclone $_;
+                        $tmp_data->{$relation} = $field;                        
 						for my $select (@selects){
 							if ($i % 2 == 0){
 								if (exists  $categories_queries->{$select}){
@@ -939,9 +942,8 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 									for my $inner_field ( @fields ) {
 										$tmp_value = $tmp_value->{$inner_field};
 									}
-									#####$alias{$select} = $tmp_value;
-									
-									my $tmp_ref = $_;
+									#my $tmp_ref = $_;
+                                    my $tmp_ref = $tmp_data;
 									for my $inner_field ( @fields ) {
 										if ( ref $tmp_ref->{$inner_field} eq 'HASH' ){
 											$tmp_ref = $tmp_ref->{$inner_field};
@@ -951,19 +953,25 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 											$tmp_ref->{$inner_field . "_$select"}= $tmp_value;
 										}
 									}
-									$_->{'mid' . "_$select"} = $field;
-									$_->{'category_color' . "_$select"} = $categories_queries->{$select}->{$field}->{category}->{color};
-									$_->{'category_name' . "_$select"} = $categories_queries->{$select}->{$field}->{category}->{name};
-									$_->{'modified_on' . "_$select"} = $categories_queries->{$select}->{$field}->{modified_on};
-									$_->{'modified_by' . "_$select"} = $categories_queries->{$select}->{$field}->{modified_by};
+                                    $tmp_ref->{'mid' . "_$select"} = $field;
+                                    $tmp_ref->{'category_color' . "_$select"} = $categories_queries->{$select}->{$field}->{category}->{color};
+                                    $tmp_ref->{'category_name' . "_$select"} = $categories_queries->{$select}->{$field}->{category}->{name};
+                                    $tmp_ref->{'modified_on' . "_$select"} = $categories_queries->{$select}->{$field}->{modified_on};
+                                    $tmp_ref->{'modified_by' . "_$select"} = $categories_queries->{$select}->{$field}->{modified_by};
+                                    $tmp_ref->{$relation . "_$select"} = $field; 
+									#$_->{'mid' . "_$select"} = $field;
+									#$_->{'category_color' . "_$select"} = $categories_queries->{$select}->{$field}->{category}->{color};
+									#$_->{'category_name' . "_$select"} = $categories_queries->{$select}->{$field}->{category}->{name};
+									#$_->{'modified_on' . "_$select"} = $categories_queries->{$select}->{$field}->{modified_on};
+									#$_->{'modified_by' . "_$select"} = $categories_queries->{$select}->{$field}->{modified_by};
 								}else{
 									
 									my @fields = split( /\./, $value);
-									my $tmp_value = $_;
+									my $tmp_value = $tmp_data;
 									for my $inner_field ( @fields ) {
 										$tmp_value = $tmp_value->{$inner_field};
 									}
-									my $tmp_ref = $_;
+									my $tmp_ref = $tmp_data;
 									for my $inner_field ( @fields ) {
 										if ( ref $tmp_ref->{$inner_field} eq 'HASH' ){
 											$tmp_ref = $tmp_ref->{$inner_field};
@@ -971,7 +979,8 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 										else{
 											$tmp_ref->{$inner_field . "_$select"}= $tmp_value;
 										}
-									}									
+									}	
+                                    $tmp_ref->{$relation . "_$select"} = $field; 								
 								}
 								$value = '';
 							}else{
@@ -979,10 +988,11 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 							}
 							$i++;
 						}
-						use Storable 'dclone';
-						my $tmp_data = dclone $_;
-						$tmp_data->{$relation} = $field;
-						push @parse_data, $tmp_data;
+						#use Storable 'dclone';
+						#my $tmp_data = dclone $_;
+						#$tmp_data->{$relation} = $field;
+						#push @parse_data, $tmp_data;
+                        push @parse_data, $tmp_data;
 					}
 				}
 			}
