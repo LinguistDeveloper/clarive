@@ -64,7 +64,7 @@ sub log : Local {
         # event_key event_status event_data 
         delete $e->{event_data};
         my $desc = Baseliner->cache_get('event:'.$e->{event_key});
-        if ( !$ev ) {
+        if ( !$desc ) {
             try {
                 my $ev = $c->registry->get( $e->{event_key} );
                 $desc = $ev->description;
