@@ -373,13 +373,20 @@ sub topic_security {
 
 sub topic_labels {
     my ( $self, %p ) = @_;
-    for my $doc ( mdb->topic->find->all ) {
-        warn "Updating labels for topic #$doc->{mid}\n";
-        $doc->{id_label} = [ 
-            map  { $_->{id_label} } 
-            DB->BaliTopicLabel->search({ id_topic=>"$doc->{mid}" },{ select=>'id_label' })->hashref->all ];
-        mdb->topic->save( $doc );
+    
+    my $db = Util->_dbis();
+    
+    # bali_topic_label
+    my %tlabels;
+    map { push @{ $tlabels{$_->{id_topic}} }, $_->{id_label} } $db->query('select * from bali_topic_label')->hashes;
+    
+    for my $mid ( keys %tlabels ) {
+        mdb->topic->update({ mid=>"$mid" },{ '$set'=>{ labels=>$tlabels{$mid} } });
     }
+    
+    # bali_label
+    mdb->label->drop;
+    mdb->label->insert($_) for $db->query('select * from bali_label')->hashes;
 }
 
 sub topic_status {
@@ -409,26 +416,42 @@ sub topic_numify {
     for my $doc ( mdb->topic->find->all ) {
     }
 }
-    
+
+####################################
+#
+# Integrity fixes
+#
+
 sub master_and_rel {
-    my ( $self, %p ) = @_;
+    my ($self) = @_;
     my $db = Util->_dbis();
+
     # MASTER
     my @master = $db->query('select * from bali_master')->hashes;
     for my $r ( @master ) {
         mdb->master->update({ mid=>''.$r->{mid} }, $r, { upsert=>1 });
     }
-    # MASTER_REL
-    my @master_rel = $db->query('select * from bali_master_rel')->hashes;
-    mdb->master_rel->drop;  # cleaner just to insert
-    mdb->index_all('master_rel');  # so we have the master_rel uniques
-    for my $r ( @master_rel ) {
-        #next if mdb->master_rel->find_one($r); # bali_master_rel may have tons of junk
-        mdb->master_rel->insert( $r );
+    
+    # NOT IN MASTER
+    my %in_master = map  {  $_->{mid} => $_ } @master;
+    for my $m ( mdb->master->find->fields({ mid=>1 })->all ) {
+        if( ! exists $in_master{ $m->{mid} } ) {
+            warn "MASTER-MASTER not in DB: $m->{mid}";
+            mdb->master->remove({ mid=>''.$m->{mid} },{ multiple=>1 }) 
+        }
     }
+    
+    # FIX master_rel safely
+    $self->master_rel_fix;
+}
+
+# MASTER_DOC created from CI->save. MASTER_DOC deleted if not in MASTER
+sub master_doc {
+    my ($self) = @_;
+    
     # MASTER_DOC 
     for my $mid ( map {$_->{mid}} mdb->master->find->fields({ mid=>1 })->all ) {
-        ci->new( $mid )->save;  # creates/updates master_doc record
+        try { ci->new( $mid )->save } catch { warn "Could not write MASTER_DOC for $mid: " . shift() };  # creates/updates master_doc record
     }
     # master_doc integrity 
     for my $mid ( map {$_->{mid}} mdb->master_doc->find->fields({ mid=>1 })->all ) {
@@ -438,8 +461,29 @@ sub master_and_rel {
     }
 }
 
+# topic docs that do not have a master row?
+sub master_topic {
+    my ($self) = @_;
+    
+    my $db = Util->_dbis();
+    my %in_master = map  {  $_->{mid} => $_ } $db->query('select * from bali_master')->hashes;
+    
+    # TOPIC is in MASTER?
+    for my $t ( mdb->topic->find->fields({ mid=>1 })->all ) {
+        my $x = mdb->master->find_one({ mid=>$t->{mid} });
+        next if $x and exists $in_master{ $t->{mid} };
+        warn "TOPIC not in MASTER: $$t{mid}";
+        mdb->topic->remove({'$or'=>[{mid=>$$t{mid}},{mid=>0+$$t{mid}}] },{ multiple=>1 });
+    }
+}
+
+# safely add and delete MASTER_REL from Database
 sub master_rel_fix {
     my ($self,@mids)=@_;
+    my $db = Util->_dbis();
+    @mids = keys +{ map{$_->{mid}=>1} (mdb->master->find->all,$db->query('select * from bali_master')->hashes) }
+        unless @mids > 0;
+    
     for my $mid ( @mids ) {
         my %db = map { join(',',@{$_}{qw(from_mid to_mid rel_type rel_field)}) => $_ } 
             DB->BaliMasterRel->search({ -or=>[{from_mid=>$mid}, {to_mid=>$mid}] })->hashref->all;
@@ -447,15 +491,31 @@ sub master_rel_fix {
             mdb->master_rel->find({ '$or'=>[{from_mid=>"$mid"},{to_mid=>"$mid"}] })->all;
         for ( keys %mdb ) {
             next if exists $db{$_};
+            _warn "REMOVE REL from MDB: $_";
             mdb->master_rel->remove({ _id=>$mdb{$_}{_id} },{ multiple=>1 });
         }
         for ( keys %db ) {
             next if exists $mdb{$_};
+            _warn "INSERT REL into MDB: $_";
             mdb->master_rel->insert( $db{$_} );
         }
     }
 }
     
+# DROPS!!! master_rel and reloads from Database
+sub master_rel_rebuild {
+    my $db = Util->_dbis();
+    # MASTER_REL
+    my @master_rel = $db->query('select * from bali_master_rel')->hashes;
+    mdb->master_rel->drop;  # cleaner just to insert
+    mdb->index_all('master_rel');  # so we have the master_rel uniques
+    for my $r ( @master_rel ) {
+        next if mdb->master_rel->find_one($r); # bali_master_rel may have tons of junk
+        # rgo: salen todas... warn "Missing Rel: $$r{from_mid} => $$r{to_mid} ( $$r{rel_field}, $$r{rel_type} )";
+        mdb->master_rel->insert( $r );
+    }
+}
+
 sub topic {
     my ( $self, %p ) = @_;
     
