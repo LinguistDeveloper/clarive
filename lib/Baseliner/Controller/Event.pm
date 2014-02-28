@@ -67,11 +67,13 @@ sub log : Local {
         if ( !$ev ) {
             try {
                 $ev = $c->registry->get( $e->{event_key} );
-                Baseliner->cache_set( 'event:' . $e->{event_key}, $ev );
+                Baseliner->cache_set( 'event:' . $e->{event_key}, $ev->description );
             }
-            catch { next EVENT; };
+            catch {
+                 _error( shift() ); 
+                next EVENT; };
         } ## end if ( !$ev )
-        $e->{description} = $ev->description;
+        $e->{description} = $ev;
         $e->{_id}         = $e->{id};
         $e->{_parent}     = undef;
         $e->{type}        = 'event';
