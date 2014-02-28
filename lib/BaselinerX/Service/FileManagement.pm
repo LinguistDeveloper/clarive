@@ -237,6 +237,8 @@ sub run_write {
         $body = $output;
     }
     
+    my $dir = _file( $filepath )->dir;
+    $dir->mkpath;
     my $open_str = $file_encoding ? ">:encoding($file_encoding)" : '>';
     open my $ff, $open_str, $filepath
         or _fail _loc 'Could not open file for writing (%1): %2', $!;
