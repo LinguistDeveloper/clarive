@@ -24,7 +24,7 @@ register 'menu.admin.rule' => {
 sub list : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
-    my @rows = DB->BaliRule->search({ rule_active=>1 },{ order_by=>'rule_name' })->hashref->all;
+    my @rows = mdb->rule->find({ rule_active=>'1' })->sort({ rule_name=>1 })->fields({ rule_tree=>0 })->all;
     $c->stash->{json} = { data=>\@rows, totalCount=>scalar(@rows) };
     $c->forward('View::JSON');
 }
@@ -57,10 +57,10 @@ sub activate : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     try {
-        my $row = DB->BaliRule->find( $p->{id_rule} );
+        my $row = mdb->rule->find_one({ id=>"$p->{id_rule}" });
         _fail _loc('Row with id %1 not found', $p->{id_rule} ) unless $row;
-        my $name = $row->rule_name;
-        $row->update({ rule_active=> $p->{activate} });
+        my $name = $row->{rule_name};
+        mdb->rule->update({ id=>"$p->{id_rule}" }, { '$set'=>{ rule_active=>"$p->{activate}" } });
         my $act = $p->{activate} ? _loc('activated') : _loc('deactivated');
         $c->stash->{json} = { success=>\1, msg=>_loc('Rule %1 %2', $name, $act) };
     } catch {
@@ -75,7 +75,7 @@ sub export : Local {
     my $p = $c->req->params;
     my $id_rule = $p->{id_rule};
     try {
-        my $row = +{ DB->BaliRule->find( $id_rule )->get_columns };
+        my $row = mdb->rule->find_one({ id=>"$id_rule" });
         _fail _loc('Row with id %1 not found', $p->{id_rule} ) unless $row;
         $row->{rule_tree} = $row->{rule_tree} ? _decode_json($row->{rule_tree}) : [];
         my $yaml = _dump($row);
@@ -98,12 +98,14 @@ sub import : Local {
         my $rule = $type eq 'yaml' ? _load( $data ) : {} ;
         delete $rule->{id};
         delete $rule->{rule_id};
-        if( DB->BaliRule->search({ rule_name=>$rule->{rule_name} })->first ) {
+        my $doc = mdb->rule->find_one({ rule_name=>$rule->{rule_name} });
+        if( $doc ) {
             $rule->{rule_name} = sprintf '%s (%s)', $rule->{rule_name}, _now();
         }
         $rule->{rule_tree} = Util->_encode_json($rule->{rule_tree});
-        my $row = DB->BaliRule->create( $rule );
-        $c->stash->{json} = { success=>\1, name=>$row->rule_name };
+        $rule->{id} = mdb->seq('rule');
+        mdb->rule->insert($rule);
+        $c->stash->{json} = { success=>\1, name=>$rule->{rule_name} };
     } catch {
         my $err = shift;
         $c->stash->{json} = { success=>\0, msg => $err };
@@ -115,11 +117,10 @@ sub delete : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     try {
-        my $row = DB->BaliRule->find( $p->{id_rule} );
+        my $row = mdb->rule->find_one({ id=>"$p->{id_rule}" });
         _fail _loc('Row with id %1 not found', $p->{id_rule} ) unless $row;
-        my $name = $row->rule_name;
-        DB->BaliRuleStatement->search({ id_rule=>$row->id })->delete; # legacy: no foreign key
-        $row->delete;
+        my $name = $row->{rule_name};
+        mdb->rule->remove({ id=>"$p->{id_rule}" },{ multiple=>1 });
         $c->stash->{json} = { success=>\1, msg=>_loc('Rule %1 deleted', $name) };
     } catch {
         my $err = shift;
@@ -132,11 +133,10 @@ sub get : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     try {
-        my $row = DB->BaliRule->find( $p->{id_rule} );
-        _fail _loc('Row with id %1 not found', $p->{id_rule} ) unless $row;
-        my $rec = { $row->get_columns };
-        $rec->{chain_default} = $rec->{rule_type} eq 'chain' ? $rec->{rule_when} : '-';
-        $c->stash->{json} = { success=>\1, rec=>$rec };
+        my $doc = mdb->rule->find_one({ id=>"$p->{id_rule}" });
+        _fail _loc('Row with id %1 not found', $p->{id_rule} ) unless $doc;
+        $doc->{chain_default} = $doc->{rule_type} eq 'chain' ? $doc->{rule_when} : '-';
+        $c->stash->{json} = { success=>\1, rec=>$doc };
     } catch {
         my $err = shift;
         $c->stash->{json} = { success=>\0, msg => $err };
@@ -167,7 +167,7 @@ sub tree : Local {
 
     my @tree;
     use utf8;
-    my @rules = $c->model('Baseliner::BaliRule')->search->hashref->all;
+    my @rules = mdb->rule->find->fields({ rule_tree=>0 })->all;
     my $cnt = 1;
     for my $rule ( @rules ) {
         push @tree,
@@ -186,7 +186,7 @@ sub tree : Local {
 sub grid : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
-    my @rules = DB->BaliRule->search(undef,{ order_by=>[ { -asc=>'rule_seq' }, { -desc=>'id' }] })->hashref->all;
+    my @rules = mdb->rule->find->sort( mdb->ixhash( rule_seq=>1, _id=>-1 ) )->all;
     @rules = map {
         $_->{event_name} = $c->registry->get( $_->{rule_event} )->name if $_->{rule_event};
         $_
@@ -209,11 +209,12 @@ sub save : Local {
         rule_desc  => substr($p->{rule_desc},0,2000),
     };
     if ( length $p->{rule_id} ) {
-        my $row = $c->model('Baseliner::BaliRule')->find( $p->{rule_id} );
-        _fail _loc 'Rule %1 not found', $p->{rule_id} unless $row;
-        $row->update($data);
+        my $doc = mdb->rule->find_one({ id=>"$p->{rule_id}" });
+        _fail _loc 'Rule %1 not found', $p->{rule_id} unless $doc;
+        mdb->rule->update({ id=>"$p->{rule_id}" },{ %$doc, %$data });
     } else {
-        $c->model('Baseliner::BaliRule')->create($data);
+        $data->{id} = mdb->seq('rule');
+        mdb->rule->insert($data);
     }
     $c->stash->{json} = { success => \1, msg => 'Creado' };
     $c->forward("View::JSON");
@@ -330,7 +331,7 @@ sub palette : Local {
         @services ]
     };
 
-    my @rules = DB->BaliRule->search(undef,{ order_by=>[ { -asc=>'rule_seq' }, { -desc=>'id' }] })->hashref->all;
+    my @rules = mdb->rule->find->sort( mdb->ixhash( rule_seq=>1, _id=>-1) )->all; 
     push @tree, {
         id=>$cnt++,
         leaf=>\0,
@@ -392,17 +393,15 @@ sub stmts_save : Local {
 # saves and versions a rule
 sub save_rule {
     my ($self,%p)=@_;
-    my $row = DB->BaliRule->find($p{id_rule});
-    _fail _loc 'Rule not found, id=%1', $p{id_rule} unless $row;
-    $row->update({ rule_tree=>$p{stmts_json} });
-    # keep mongo in sync, even though it's not used anywhere
-    mdb->rule->update({ id_rule=>''.$row->id }, +{ $row->get_columns }, { upsert=>1 });
+    my $doc = mdb->rule->find_one({ id=>"$p{id_rule}" });
+    _fail _loc 'Rule not found, id=%1', $p{id_rule} unless $doc;
+    mdb->rule->update({ id=>''.$p{id_rule} },{ '$set'=> { rule_tree=>$p{stmts_json} } },{ upsert=>1 });
     # now, version
     # check if collection exists
     if( ! mdb->collection('system.namespaces')->find({ name=>qr/rule_version/ })->count ) {
         mdb->create_capped( 'rule_version' );
     }
-    mdb->rule_version->insert({ $row->get_columns, ts=>mdb->ts, username=>$p{username}, id_rule=>$p{id_rule}, rule_tree=>$p{stmts_json}, was=>($p{was}//'') });
+    mdb->rule_version->insert({ %$doc, ts=>mdb->ts, username=>$p{username}, id_rule=>$p{id_rule}, rule_tree=>$p{stmts_json}, was=>($p{was}//'') });
 }
 
 sub rollback_version : Local {
@@ -520,7 +519,6 @@ sub dsl : Local {
             };
         } elsif( $rule_type eq 'event' ) {
             my $event_key = $p->{event_key} or _throw 'Missing parameter event_key';
-            #my @rows = DB->BaliRuleS
             my $event = $c->registry->get( $event_key );
             my $event_data = { map { $_ => '' } _array( $event->vars ) };
             $data = $event_data;

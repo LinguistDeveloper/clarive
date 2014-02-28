@@ -58,7 +58,7 @@ sub log : Local {
     for( mdb->event_log->find({ id_event => mdb->in(@eventids) })->all ) {
         push @{ $rule_log{$_->{id_event}} }, $_;
     }
-    my $all_rules = DB->BaliRule->search( undef,{ select=>[qw(id rule_name)]})->hash_unique_on('id');
+    my $all_rules = +{ map{ $_->{id} => $_ } mdb->rule->find->fields({ id=>1, rule_name=>1 })->all }; 
     my @final;
     EVENT: for my $e ( @rows ) {
         # event_key event_status event_data 

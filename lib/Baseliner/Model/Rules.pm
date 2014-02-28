@@ -131,47 +131,16 @@ sub tree_format {
 sub build_tree {
     my ($self, $id_rule, $parent, %p) = @_;
     # TODO run query just once and work with a hash ->hash_for( id_parent )
-    my $rule = DB->BaliRule->find( $id_rule );
-    my $rule_tree_json = $rule->rule_tree;
+    my $rule = mdb->rule->find_one({ id=>"$id_rule" });
+    _fail _loc 'Could not find rule %1', $id_rule unless $rule;
+    my $rule_tree_json = $rule->{rule_tree};
     if( $rule_tree_json ) {
         my $rule_tree = Util->_decode_json( $rule_tree_json );
         _fail _loc 'Invalid rule tree json data: not an array' unless ref $rule_tree eq 'ARRAY';
         return $self->tree_format( @$rule_tree );
         return @$rule_tree;
     } else {
-        # no json rule_tree, look for legacy data
-        my @tree;
-        my @rows = DB->BaliRuleStatement->search( { id_rule => $id_rule, id_parent => $parent }, # XXX legacy, deprecated
-            { order_by=>{ -asc=>'id' } } )->hashref->all;
-        if( !defined $parent ) {
-            my $rule_type = $rule->rule_type;
-            if( !@rows && $rule_type eq 'chain' ) {
-                push @tree, $self->init_job_tasks;
-            }
-        }
-        for my $row ( @rows ) {
-            my $n = { text=>$row->{stmt_text} };
-            $row->{stmt_attr} = _load( $row->{stmt_attr} );
-            $n = { active=>1, %$n, %{ $row->{stmt_attr} } } if length $row->{stmt_attr};
-            delete $n->{disabled};
-            delete $n->{id};
-            $n->{active} //= 1;
-            $n->{disabled} = $n->{active} ? \0 : \1;
-            my @chi = $self->build_tree( $id_rule, $row->{id} );
-            if(  @chi ) {
-                $n->{children} = \@chi;
-                $n->{leaf} = \0;
-                $n->{expanded} = $n->{expanded} eq 'false' ? \0 : \1;
-            } elsif( ! ${$n->{leaf} // \1} ) {  # may be a folder with no children
-                $n->{children} = []; 
-                $n->{expanded} = $n->{expanded} eq 'false' ? \0 : \1;
-            }
-            delete $n->{loader};  
-            delete $n->{isTarget};  # otherwise you cannot drag-drop around a node
-            #_log $n;
-            push @tree, $n;
-        }
-        return @tree;
+        _fail _loc 'Rule tree is empty for rule %1', $id_rule;
     }
 }
 
@@ -350,11 +319,9 @@ sub run_rules {
     local $Baseliner::_no_cache = 1;
     my @rules = 
         $p{id_rule} 
-            ? ( +{ DB->BaliRule->find( $p{id_rule} )->get_columns } )
-            : DB->BaliRule->search(
-                { rule_event => $p{event}, rule_type => ($p{rule_type} // 'event'), rule_when => $when, rule_active => 1 },
-                { order_by   => [          { -asc    => 'rule_seq' }, { -asc    => 'id' } ] }
-              )->hashref->all;
+            ? ( mdb->rule->find_one({ id=>"$p{id_rule}" }) )
+            : mdb->rule->find({ rule_event => $p{event}, rule_type => ($p{rule_type} // 'event'), rule_when => $when, rule_active=>'1' })
+              ->sort(mdb->ixhash(rule_seq=>1, id=>1))->all;
     my $stash = $p{stash};
     my @rule_log;
     local $ENV{BASELINER_LOGCOLOR} = 0;
@@ -422,14 +389,15 @@ sub run_single_rule {
     my ($self, %p ) = @_;
     local $Baseliner::_no_cache = 1;
     $p{stash} //= {};
-    my $rule = DB->BaliRule->find( $p{id_rule} );
+    my $rule = mdb->rule->find_one({ id=>"$p{id_rule}" });
+    
     _fail _loc 'Rule with id `%1` not found', $p{id_rule} unless $rule;
     my @tree = $self->build_tree( $p{id_rule}, undef );
     #local $self->{tidy_up} = 0;
     my $dsl = try {
         $self->dsl_build( \@tree, no_tidy=>0, %p ); 
     } catch {
-        _fail( _loc("Error building DSL for rule '%1' (%2): %3", $rule->rule_name, $rule->rule_when, shift() ) ); 
+        _fail( _loc("Error building DSL for rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, shift() ) ); 
     };
     my $ret = try {
         ################### RUN THE RULE DSL ######################
@@ -437,7 +405,7 @@ sub run_single_rule {
         _debug "DSL:\n",  $self->dsl_listing( $dsl ) if $p{logging};
     } catch {
         _debug "DSL:\n",  $self->dsl_listing( $dsl );
-        _fail( _loc("Error running rule '%1': %2", $rule->rule_name, shift() ) ); 
+        _fail( _loc("Error running rule '%1': %2", $rule->{rule_name}, shift() ) ); 
     };
     return { ret=>$ret, dsl=>$dsl };
 }

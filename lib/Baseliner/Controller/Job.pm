@@ -48,7 +48,7 @@ sub chains : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     try {
-        my @rules = DB->BaliRule->search({ rule_type=>'chain', rule_active=>1 })->hashref->all;
+        my @rules = mdb->rule->find({ rule_type=>'chain', rule_active=>'1' })->fields({ rule_tree=>0 })->all;
         # TODO check action.rule.xxxxx for user
         $c->stash->{json} = { success => \1, data=>\@rules, totalCount=>scalar(@rules) };
     } catch {
