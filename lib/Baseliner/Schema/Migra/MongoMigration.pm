@@ -422,16 +422,23 @@ sub rule_migrate {
     my $db = Util->_dbis();
 
     # MASTER
-    my @rules = $db->query('select * from bali_rule')->hashes;
+    my @rules = $db->query('select * from bali_rule order by id')->hashes;
     mdb->rule->drop;
+    my ($maxseq,$maxid) = (0,0);
     for( @rules ) {
         my $id = $_->{id};
         $_->{rule_active} .= '';
+        $_->{rule_seq} = 0+ $_->{rule_seq};
+        $maxseq = $_->{rule_seq} if $_->{rule_seq} > $maxseq;
+        $maxid = $_->{id} if $_->{id} > $maxid;
         mdb->rule->insert($_);        
         if( !length $_->{rule_tree} ) {
             _warn( "RULE TREE missing for $id, Open them in Rule editor, then save again." );
         }
     }
+    
+    mdb->seq('rule',$maxid+1);
+    mdb->seq('rule_seq',$maxseq+1);
 }
 
 ####################################
