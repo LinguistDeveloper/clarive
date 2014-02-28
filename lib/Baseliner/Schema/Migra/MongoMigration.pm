@@ -480,6 +480,10 @@ sub master_topic {
 # safely add and delete MASTER_REL from Database
 sub master_rel_fix {
     my ($self,@mids)=@_;
+    my $db = Util->_dbis();
+    @mids = keys +{ map{$_->{mid}=>1} (mdb->master->find->all,$db->query('select * from bali_master')->hashes) }
+        unless @mids > 0;
+    
     for my $mid ( @mids ) {
         my %db = map { join(',',@{$_}{qw(from_mid to_mid rel_type rel_field)}) => $_ } 
             DB->BaliMasterRel->search({ -or=>[{from_mid=>$mid}, {to_mid=>$mid}] })->hashref->all;
@@ -487,10 +491,12 @@ sub master_rel_fix {
             mdb->master_rel->find({ '$or'=>[{from_mid=>"$mid"},{to_mid=>"$mid"}] })->all;
         for ( keys %mdb ) {
             next if exists $db{$_};
+            _warn "REMOVE REL from MDB: $_";
             mdb->master_rel->remove({ _id=>$mdb{$_}{_id} },{ multiple=>1 });
         }
         for ( keys %db ) {
             next if exists $mdb{$_};
+            _warn "INSERT REL into MDB: $_";
             mdb->master_rel->insert( $db{$_} );
         }
     }
