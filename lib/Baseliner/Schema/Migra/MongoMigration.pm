@@ -417,23 +417,59 @@ sub topic_numify {
     }
 }
 
-sub rule_migrate {
+sub rules {
     my ($self)=@_;
     my $db = Util->_dbis();
+    
 
     # MASTER
     my @rules = $db->query('select * from bali_rule order by id')->hashes;
     mdb->rule->drop;
     my ($maxseq,$maxid) = (0,0);
-    for( @rules ) {
-        my $id = $_->{id};
-        $_->{rule_active} .= '';
-        $_->{rule_seq} = 0+ $_->{rule_seq};
-        $maxseq = $_->{rule_seq} if $_->{rule_seq} > $maxseq;
-        $maxid = $_->{id} if $_->{id} > $maxid;
-        mdb->rule->insert($_);        
-        if( !length $_->{rule_tree} ) {
+    for my $rule ( @rules ) {
+        my $id = $rule->{id};
+        $rule->{rule_active} .= '';
+        $rule->{rule_seq} = 0+ $rule->{rule_seq};
+        $maxseq = $rule->{rule_seq} if $rule->{rule_seq} > $maxseq;
+        $maxid = $rule->{id} if $rule->{id} > $maxid;
+        $rule->{id} .='';
+        mdb->rule->insert($rule);        
+        if( !length $rule->{rule_tree} ) {
             _warn( "RULE TREE missing for $id, Open them in Rule editor, then save again." );
+            # no json rule_tree, look for legacy data
+            my $build_tree;
+            $build_tree = sub {
+                my( $id_rule, $parent )=@_;
+                my @tree;
+                my $par = length $parent ? ' and id_parent=? ' : ' and id_parent is null';
+                my @rows = $db->query('select * from bali_rule_statement where id_rule=? '.$par.' order by id', $id_rule, ($parent // () ))->hashes;
+                for my $row ( @rows ) {
+                              
+                    my $n = { text=>$row->{stmt_text} };
+                    $row->{stmt_attr} = _load( $row->{stmt_attr} );
+                    $n = { active=>1, %$n, %{ $row->{stmt_attr} } } if length $row->{stmt_attr};
+                    delete $n->{disabled};
+                    delete $n->{id};
+                    $n->{active} //= 1;
+                    $n->{disabled} = $n->{active} ? \0 : \1;
+                    my @chi = $build_tree->( $id_rule, $row->{id} );
+                    if(  @chi ) {
+                        $n->{children} = \@chi;
+                        $n->{leaf} = \0;
+                        $n->{expanded} = $n->{expanded} eq 'false' ? \0 : \1;
+                    } elsif( ! ${$n->{leaf} // \1} ) {  # may be a folder with no children
+                        $n->{children} = []; 
+                        $n->{expanded} = $n->{expanded} eq 'false' ? \0 : \1;
+                    }
+                    delete $n->{loader};  
+                    delete $n->{isTarget};  # otherwise you cannot drag-drop around a node
+                    #_log $n;
+                    push @tree, $n;
+                }
+                return @tree;
+            };
+            my @tree = $build_tree->($rule->{id},undef);
+            mdb->rule->update({ id=>$rule->{id} }, { '$set'=>{ rule_tree=>Util->_encode_json(\@tree) } });
         }
     }
     
