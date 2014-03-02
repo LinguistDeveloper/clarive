@@ -293,6 +293,11 @@ sub migra {
     return 'Baseliner::Schema::Migra::MongoMigration';
 }
 
+sub ixhash {
+    my $self = shift;
+    Util->_ixhash( @_ );
+}
+
 # default 20MB capped collection
 sub create_capped {
     my ($self,$coll, %p) = @_;

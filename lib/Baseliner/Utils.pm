@@ -1532,7 +1532,8 @@ sub _strip_last {
 
 sub _ixhash {
     require Tie::IxHash;
-    Tie::IxHash->new( @_ );
+    my @arr = ref($_[0]) eq 'ARRAY' ? @{ $_[0] } : @_;
+    Tie::IxHash->new( @arr );
 }
 
 sub _package_is_loaded {
