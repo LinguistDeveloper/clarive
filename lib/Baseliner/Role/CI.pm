@@ -233,6 +233,7 @@ sub delete {
         DB->BaliMasterRel->search({ -or=>[{ from_mid=>$mid },{ to_mid=>$mid }] })->delete;
         mdb->master_rel->remove({ '$or'=>[{from_mid=>"$mid"},{to_mid=>"$mid"}] },{multiple=>1});
         mdb->master_doc->remove({ mid=>"$mid" },{multiple=>1});
+        mdb->master->remove({ mid=>"$mid" },{multiple=>1});
         if( $row ) {
             # perfect
             Baseliner->cache_remove( qr/^ci:/ );
