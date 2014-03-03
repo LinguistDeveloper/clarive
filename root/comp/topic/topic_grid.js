@@ -99,7 +99,7 @@
     if( fields ) {
         //console.log('Add fields');
         //console.dir(fields);
-        store_config.add_fields = fields.ids.map(function(r){ return { name: r } });
+        store_config.add_fields = fields.ids.map(function(r){ return Ext.isObject(r)?r:{ name: r } });
     }
 
     // Create store instances
@@ -794,7 +794,12 @@
         });
         return arr.join('<br>');
     };
-    
+
+    var render_number = function(value,metadata,rec,rowIndex,colIndex,store) {
+        if( !value || value == undefined ) return '';
+        return parseInt(value);
+    };
+
     var render_date = function(value,metadata,rec,rowIndex,colIndex,store) {
         if ( !rec.json[this.dataIndex] ) {
             var str = this.dataIndex;
@@ -1132,6 +1137,7 @@
     };
     var meta_types = {
         custom_data : { sortable: true, width: 100, renderer: render_custom_data  },
+        number : { sortable: true, width: 100, renderer: render_number  },
         calendar : { sortable: true, width: 250, renderer: render_cal  },
         date : { sortable: true, width: 100, renderer: render_date  },
         bool : { sortable: true, width: 100, renderer: render_bool  },
