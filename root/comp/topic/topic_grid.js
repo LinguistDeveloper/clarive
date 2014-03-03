@@ -1451,7 +1451,13 @@
 
     grid_topics.on("rowdblclick", function(grid, rowIndex, e ) {
         var r = grid.getStore().getAt(rowIndex);
-        Baseliner.show_topic_from_row( r, grid_topics );
+
+        if ( report_type == 'jobs' ) {
+            console.dir(r);
+            Baseliner.openLogTab(r.id, r.data.nombre_job);
+        } else {
+            Baseliner.show_topic_from_row( r, grid_topics );
+        }
     });
     
     grid_topics.on( 'render', function(){
