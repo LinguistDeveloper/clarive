@@ -71,8 +71,8 @@
 			sort: function(sorters, direction){
 				var col;
 				if( this.data.items.length > 0 ){
-                     console.log(sorters);
-                     console.dir(this.data);
+                     // console.log(sorters);
+                     // console.dir(this.data);
 					// console.log(this.data.items[0].data[sorters]);
 					if(this.data.items[0].data[sorters] === '' ){
 						var res = sorters.replace(/\_[^_]+$/,"");
@@ -1138,6 +1138,7 @@
     var meta_types = {
         custom_data : { sortable: true, width: 100, renderer: render_custom_data  },
         number : { sortable: true, width: 100, renderer: render_number  },
+        job_id : { sortable: true, width: 100, hidden: true  },
         calendar : { sortable: true, width: 250, renderer: render_cal  },
         date : { sortable: true, width: 100, renderer: render_date  },
         bool : { sortable: true, width: 100, renderer: render_bool  },
@@ -1454,7 +1455,7 @@
 
         if ( report_type == 'jobs' ) {
             console.dir(r);
-            Baseliner.openLogTab(r.id, r.data.nombre_job);
+            Baseliner.openLogTab(r.data.job_id, r.data.nombre_job);
         } else {
             Baseliner.show_topic_from_row( r, grid_topics );
         }
