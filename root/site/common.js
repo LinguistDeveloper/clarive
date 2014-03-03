@@ -865,9 +865,14 @@ Baseliner.merge = function() {
     return target;
 };
 
-Baseliner.openLogTab = function(id_job,title) {
+Baseliner.openLogTab = function(id, name) {
+    //Baseliner.addNewTabComp('/job/log/list?mid=' + id, _('Log') + ' ' + name, { tab_icon: '/static/images/icons/moredata.gif' } );
+    Baseliner.addNewTab('/job/log/dashboard?mid=' + id + '&name=' + name , name, { tab_icon: '/static/images/icons/job.png' });
+};
+
+Baseliner.openDashboardTab = function(id_job,title) {
     if( id_job!=undefined ) {
-        Baseliner.addNewTabComp("/job/log/list?mid="+id_job, title);
+        Baseliner.addNewTabComp("/job/log/dashboard?mid="+id_job, title);
     }
 };
 

@@ -71,8 +71,8 @@
 			sort: function(sorters, direction){
 				var col;
 				if( this.data.items.length > 0 ){
-                    // console.log(sorters);
-                    // console.dir(this.data);
+                     console.log(sorters);
+                     console.dir(this.data);
 					// console.log(this.data.items[0].data[sorters]);
 					if(this.data.items[0].data[sorters] === '' ){
 						var res = sorters.replace(/\_[^_]+$/,"");
@@ -99,7 +99,7 @@
     if( fields ) {
         //console.log('Add fields');
         //console.dir(fields);
-        store_config.add_fields = fields.ids.map(function(r){ return { name: r } });
+        store_config.add_fields = fields.ids.map(function(r){ return Ext.isObject(r)?r:{ name: r } });
     }
 
     // Create store instances
@@ -794,7 +794,12 @@
         });
         return arr.join('<br>');
     };
-    
+
+    var render_number = function(value,metadata,rec,rowIndex,colIndex,store) {
+        if( !value || value == undefined ) return '';
+        return parseInt(value);
+    };
+
     var render_date = function(value,metadata,rec,rowIndex,colIndex,store) {
         if ( !rec.json[this.dataIndex] ) {
             var str = this.dataIndex;
@@ -1008,12 +1013,12 @@
     
     var render_default = function(value,metadata,rec,rowIndex,colIndex,store){
         //console.dir(rec);
-        // if ( !rec.json[this.dataIndex] ) {
-        //     var str = this.dataIndex;
-        //     var res = str.replace('_' +  this.alias,"");
-        //     value = rec.json[res];
-        // };
-        // if (rec.json[this.dataIndex]) value = rec.json[this.dataIndex];
+        if ( !rec.json[this.dataIndex] ) {
+            var str = this.dataIndex;
+            var res = str.replace('_' +  this.alias,"");
+            value = rec.json[res];
+        };
+        if (rec.json[this.dataIndex]) value = rec.json[this.dataIndex];
         return value;
     };  
 
@@ -1132,6 +1137,7 @@
     };
     var meta_types = {
         custom_data : { sortable: true, width: 100, renderer: render_custom_data  },
+        number : { sortable: true, width: 100, renderer: render_number  },
         calendar : { sortable: true, width: 250, renderer: render_cal  },
         date : { sortable: true, width: 100, renderer: render_date  },
         bool : { sortable: true, width: 100, renderer: render_bool  },
@@ -1445,7 +1451,13 @@
 
     grid_topics.on("rowdblclick", function(grid, rowIndex, e ) {
         var r = grid.getStore().getAt(rowIndex);
-        Baseliner.show_topic_from_row( r, grid_topics );
+
+        if ( report_type == 'jobs' ) {
+            console.dir(r);
+            Baseliner.openLogTab(r.id, r.data.nombre_job);
+        } else {
+            Baseliner.show_topic_from_row( r, grid_topics );
+        }
     });
     
     grid_topics.on( 'render', function(){

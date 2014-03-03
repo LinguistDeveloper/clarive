@@ -120,7 +120,7 @@ sub list : Local {
             $f->{category} = $temp[$#temp];
         }
         
-        my ($cnt, @rows ) = ci->new( $p->{id_report} )->run( start=>$start, username=>$c->username, limit=>$p->{limit}, query=>$p->{topic_list}, filter=>$filter );
+        my ($cnt, @rows ) = ci->new( $p->{id_report} )->run( start=>$start, username=>$c->username, limit=>$p->{limit}, query=>$p->{topic_list}, filter=>$filter, query_search=>$p->{query} );
         #_log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>JSON: " . _dump  @rows;    
         $c->stash->{json} = { data=>\@rows, totalCount=>$cnt };
     } else {

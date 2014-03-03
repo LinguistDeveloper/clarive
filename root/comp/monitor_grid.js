@@ -889,11 +889,6 @@
         }
     };
 
-    Baseliner.openLogTab = function(id, name) {
-        //Baseliner.addNewTabComp('/job/log/list?mid=' + id, _('Log') + ' ' + name, { tab_icon: '/static/images/icons/moredata.gif' } );
-        Baseliner.addNewTab('/job/log/dashboard?mid=' + id + '&name=' + name , name, { tab_icon: '/static/images/icons/job.png' });
-    };
-
     var render_job = function(value, metadata, record){
         var contents = ''; record.data.contents.join('<br />');
         var execs = record.data.exec > 1 ? " ("+record.data.exec+")" : '';

@@ -218,12 +218,12 @@ sub get_rules_notifications{
         			given ($type) {
             			when ('Users') 	    { 
                         	if ( exists $notification->{$plantilla}->{$carrier}->{$type}->{'*'} ){
-                                if (exists $notify_scope->{project}){
-                                	@tmp_users = Baseliner->model('Users')->get_users_friends_by_projects(mid => $mid, $notify_scope->{project});
-                                }
-                                else{
+                                #if (exists $notify_scope->{project}){
+                                #	@tmp_users = Baseliner->model('Users')->get_users_friends_by_projects(mid => $mid, $notify_scope->{project});
+                                #}
+                                #else{
                                 	@tmp_users = Baseliner->model('Users')->get_users_username;
-                                }
+                                #}
                             }
                             else{
                         		@tmp_users = values $notification->{$plantilla}->{$carrier}->{$type};                             
@@ -237,7 +237,12 @@ sub get_rules_notifications{
                             else{
                             	@actions = keys $notification->{$plantilla}->{$carrier}->{$type};
                             }
-                            @tmp_users = Baseliner->model('Users')->get_users_from_actions(mid => $mid, actions => \@actions, projects => \@prj_mid);
+                            my $query = {};
+                            $query->{action} = \@actions;
+                            delete $query->{action} if (scalar @actions == 1 && $actions[0] eq '*');                                
+                            my @roles = map {$_->{id_role}} Baseliner->model('Baseliner::BaliRoleaction')->search($query)->hashref->all;
+                            @tmp_users = Baseliner->model('Users')->get_users_from_mid_roles_topic( roles => \@roles, mid => $mid );
+                            #@tmp_users = Baseliner->model('Users')->get_users_from_actions(mid => $mid, actions => \@actions, projects => \@prj_mid);
                         }
                         when ('Roles') 	    {
                         	my @roles;
@@ -252,13 +257,21 @@ sub get_rules_notifications{
                             else{
                             	@roles = keys $notification->{$plantilla}->{$carrier}->{$type};
                             }
-                            @tmp_users = Baseliner->model('Users')->get_users_from_mid_roles( roles => \@roles, projects => \@prj_mid);                            
+                            @tmp_users = Baseliner->model('Users')->get_users_from_mid_roles_topic( roles => \@roles, mid => $mid );
+                            #@tmp_users = Baseliner->model('Users')->get_users_from_mid_roles( roles => \@roles, projects => \@prj_mid);                            
                         }
                         when ('Fields') 	    {
                             my @fields = map {lc($_)} keys $notification->{$plantilla}->{$carrier}->{$type};
-                            @tmp_users = map { _ci($_->{to_mid})->name }
-                                                    DB->BaliMasterRel->search(  { 'LOWER(rel_field)' => \@fields, rel_type => 'topic_users'},
-                                                                                { select => 'to_mid' })->hashref->all;
+                            my $topic = mdb->topic->find_one({mid=>"$mid"});
+                            my @users_mid;
+                            for my $field (@fields){
+                                push @users_mid, $topic->{$field};
+                            }
+                            @tmp_users= map {$_->{name}} ci->user->find({mid=>@users_mid})->all;
+
+                            #@tmp_users = map { _ci($_->{to_mid})->name }
+                            #                        DB->BaliMasterRel->search(  { 'LOWER(rel_field)' => \@fields, rel_type => 'topic_users'},
+                            #                                                    { select => 'to_mid' })->hashref->all;
                         }                        
             		};
             		push @users, @tmp_users;
