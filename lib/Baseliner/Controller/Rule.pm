@@ -104,6 +104,8 @@ sub import : Local {
         }
         $rule->{rule_tree} = Util->_encode_json($rule->{rule_tree});
         $rule->{id} = mdb->seq('rule');
+        $rule->{rule_seq} = 0+ mdb->seq('rule_seq');
+        $rule->{rule_active} = '1';
         mdb->rule->insert($rule);
         $c->stash->{json} = { success=>\1, name=>$rule->{rule_name} };
     } catch {
@@ -121,6 +123,7 @@ sub delete : Local {
         _fail _loc('Row with id %1 not found', $p->{id_rule} ) unless $row;
         my $name = $row->{rule_name};
         mdb->rule->remove({ id=>"$p->{id_rule}" },{ multiple=>1 });
+        # TODO delete rule_version? its capped, it can't be deleted... may be good to keep history
         $c->stash->{json} = { success=>\1, msg=>_loc('Rule %1 deleted', $name) };
     } catch {
         my $err = shift;
@@ -186,7 +189,7 @@ sub tree : Local {
 sub grid : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
-    my @rules = mdb->rule->find->sort( mdb->ixhash( rule_seq=>1, _id=>-1 ) )->all;
+    my @rules = mdb->rule->find->sort( mdb->ixhash( rule_seq=>-1, _id=>-1 ) )->all;
     @rules = map {
         $_->{event_name} = $c->registry->get( $_->{rule_event} )->name if $_->{rule_event};
         $_
@@ -200,6 +203,7 @@ sub save : Local {
     my ( $self, $c ) = @_;
     my $p    = $c->req->params;
     my $data = {
+        rule_active => '1',
         rule_name  => $p->{rule_name},
         rule_when  => ( $p->{rule_type} eq 'chain' 
             ? $p->{chain_default}  
@@ -214,6 +218,7 @@ sub save : Local {
         mdb->rule->update({ id=>"$p->{rule_id}" },{ %$doc, %$data });
     } else {
         $data->{id} = mdb->seq('rule');
+        $data->{rule_seq} = 0+mdb->seq('rule_seq');
         mdb->rule->insert($data);
     }
     $c->stash->{json} = { success => \1, msg => 'Creado' };
@@ -395,12 +400,13 @@ sub save_rule {
     my ($self,%p)=@_;
     my $doc = mdb->rule->find_one({ id=>"$p{id_rule}" });
     _fail _loc 'Rule not found, id=%1', $p{id_rule} unless $doc;
-    mdb->rule->update({ id=>''.$p{id_rule} },{ '$set'=> { rule_tree=>$p{stmts_json} } },{ upsert=>1 });
+    mdb->rule->update({ id=>''.$p{id_rule} },{ '$set'=> { rule_tree=>$p{stmts_json} } });
     # now, version
     # check if collection exists
     if( ! mdb->collection('system.namespaces')->find({ name=>qr/rule_version/ })->count ) {
         mdb->create_capped( 'rule_version' );
     }
+    delete $doc->{_id};
     mdb->rule_version->insert({ %$doc, ts=>mdb->ts, username=>$p{username}, id_rule=>$p{id_rule}, rule_tree=>$p{stmts_json}, was=>($p{was}//'') });
 }
 
