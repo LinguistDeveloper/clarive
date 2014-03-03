@@ -309,6 +309,7 @@ sub _create {
     $self->step('CHECK');
     $self->run( same_exec => 1 );
     if( $self->status eq 'ERROR' ) { 
+        $self->delete;   # cleanup mongo and relationships
         # errors during CHECK fail back to the user
         _fail _loc "Error during Job Check: %1", $self->last_error;
     } else {
