@@ -742,7 +742,7 @@ sub get_where {
 }
 
 
-method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=undef ) {
+method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=undef, :$query_search=undef ) {
     my $rows = $limit // $self->rows;
 
 	my $rel_query;
@@ -872,8 +872,8 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	
     my @sort = map { $_->{id_field} => 0+($_->{sort_direction} // 1) } _array($fields{sort});
     
-	#_log ">>>>>>>>>>>>>>>>>>FIND: " . _dump $where;
-	
+    Baseliner->model('Topic')->build_field_query( $query_search, $where, $username ) if length $query_search;	
+
     my $rs = mdb->topic->find($where);
     my $cnt = $rs->count;
     $rows = $cnt if ($rows eq '-1') ;
@@ -1008,7 +1008,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	
 	@parse_data = @data if !@parse_data;
 	
-	#_log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump $fields;
+	#_log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump @data;
 	
     my %scope_topics;
     my %scope_cis;

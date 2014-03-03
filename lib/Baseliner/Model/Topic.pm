@@ -275,7 +275,7 @@ sub build_project_security {
 sub build_field_query {
     my ($self,$query,$where,$username) = @_;
     my %all_fields = map { $_->{id_field} => undef } _array($self->get_meta(undef,undef,$username));
-    mdb->query_build( where=>$where, query=>$query, fields=>['category.name', 'category_status.name', keys %all_fields] ); 
+    mdb->query_build( where=>$where, query=>$query, fields=>['mid', 'category.name', 'category_status.name', keys %all_fields] ); 
 }
 
 sub build_sort {
