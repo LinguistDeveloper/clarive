@@ -186,6 +186,7 @@
 										]
 									};
 									form_notification.insert(indice++,columns);
+									store_projects.load();
 									break;
 								case 'category':
 									var store_categories = new Baseliner.Topic.StoreCategory({
