@@ -189,7 +189,7 @@ sub tree : Local {
 sub grid : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
-    my @rules = mdb->rule->find->sort( mdb->ixhash( rule_seq=>-1, _id=>-1 ) )->all;
+    my @rules = mdb->rule->find->fields({ rule_tree=>0 })->sort( mdb->ixhash( rule_seq=>-1, _id=>-1 ) )->all;
     @rules = map {
         $_->{event_name} = $c->registry->get( $_->{rule_event} )->name if $_->{rule_event};
         $_
