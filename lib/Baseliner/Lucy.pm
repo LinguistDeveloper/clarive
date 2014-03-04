@@ -7,17 +7,6 @@ $VERSION = eval $VERSION;
 use Moose;
 use namespace::autoclean;
 
-use Moose::Util::TypeConstraints;
-
-subtype 'LoadClass' 
-    => as 'ClassName';
-
-coerce 'LoadClass' 
-    => from 'Str'
-    => via { Class::MOP::load_class($_); $_ };
-
-no Moose::Util::TypeConstraints;
-
 use Lucy::Analysis::PolyAnalyzer;
 use Lucy::Plan::Schema;
 use Lucy::Index::Indexer;
@@ -177,11 +166,10 @@ sub _build__query_parser{
 }
 
 has resultclass => (
-    'is' => 'rw',
-    'isa' => 'LoadClass',
-    'coerce' => 1,
-    'lazy' => 1,
-    'default' => 'Baseliner::Lucy::Result::Object',
+    is => 'rw',
+    isa => 'ClassName',
+    lazy => 1,
+    default => sub{ require Baseliner::Lucy::Result::Object; 'Baseliner::Lucy::Result::Object' },
 );
 
 has entries_per_page => (

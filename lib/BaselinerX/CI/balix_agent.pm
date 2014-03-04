@@ -468,6 +468,9 @@ sub _checkRC {
         $ret =~ s/[\n]*HARAXE=([0-9]*)//g;
     }
     my $ret_parsed = $self->_parseReturn($ret);
+    if( $self->os ne 'win' ) {
+        $rc >> 8;   
+    }
     $self->rc( $rc );
     $self->ret( $ret_parsed );
     $self->output( $ret_parsed );

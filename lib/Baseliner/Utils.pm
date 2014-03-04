@@ -603,7 +603,7 @@ sub _array {
         } elsif( ref $item eq 'HASH' ) {
             push @array, $item;
         } else {
-            push @array, $item if $item;
+            push @array, $item if length $item;
         }
     }
     return @array;
@@ -1826,6 +1826,33 @@ sub foreach_block {
        my $j = $i+$blk-1;
        $code->($_, @arr[ $i..($j>@arr ? $#arr : $j) ] );
     }
+}
+
+=head2 in_range
+
+Checks if number is withing a range string,
+typically used by return code matches
+in the run_remote/local task.
+
+    Util->in_range( 7, '1,2,3,10-');  # returns false
+    Util->in_range( 11, '1,2,3,10-'); # returns true
+    Util->in_range( 999999, '1,2,3,10-'); # returns true
+    Util->in_range( 0, '1,2,3,10-'); # returns false
+    Util->in_range( 0, '0-');        # returns true
+
+=cut
+sub in_range {
+   my ($v,$range) = @_;
+   return 0 if !length $v || !length $range;
+   #$range =~ s/-+/../g;
+   #my @rg = map { $_ =~ s/-+./../g ? eval $_ : $_ } grep { length } split /,+/, $range;
+   my @rg = grep { length } split /,+/, $range;
+   List::MoreUtils::any { 
+   		/^(.+)-+$/ ? $v >= $1 :
+   		/^-+(.+)$/ ? $v <= $1 :
+   		/^(.+)-+(.+)$/ ? ($v >= $1 && $v <= $2) : 
+        $v == $_ 
+   } @rg;
 }
 
 {
