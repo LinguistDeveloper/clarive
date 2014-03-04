@@ -2030,6 +2030,7 @@ sub set_cis {
     my ($self, $rs_topic, $cis, $user, $id_field, $meta ) = @_;
 
     my $field_meta = [ grep { $_->{id_field} eq $id_field } _array($meta) ]->[0];
+    my $name_field = $field_meta->{name_field};
 
     my $rel_type = $field_meta->{rel_type} or _fail "Missing rel_type for field $id_field";
 
@@ -2076,7 +2077,7 @@ sub set_cis {
             text_new  => ( $field_meta->{modify_text_new} // '%1 modified topic (%2): %4 ' ),
             mid => $rs_topic->mid,
         } => sub {
-            my $subject = _loc("Topic [%1] %2 updated", $rs_topic->mid, $rs_topic->title);
+            my $subject = _loc("Topic [%1] %2 updated.  %3 changed", $rs_topic->mid, $rs_topic->title, $name_field);
             { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }    # to the event
         } => sub {
             _throw _loc( 'Error modifying Topic: %1', shift() );
@@ -2085,10 +2086,12 @@ sub set_cis {
 }
 
 sub set_revisions {
-    my ($self, $rs_topic, $revisions, $user, $id_field  ) = @_;
+    my ($self, $rs_topic, $revisions, $user, $id_field, $meta  ) = @_;
     
     my $topic_mid = $rs_topic->mid;
     
+    my ($name_field) =  map {$_->{name_field}} grep {$_->{id_field} eq $id_field} _array $meta;
+
     # related topics
     my @new_revisions = _array( $revisions ) ;
     my @old_revisions = map {$_->{to_mid}} DB->BaliMasterRel->search({from_mid => $rs_topic->mid, rel_type => 'topic_revision'})->hashref->all;    
@@ -2160,6 +2163,7 @@ sub set_release {
     my @release_meta = grep { $_->{id_field} eq $id_field } _array $meta;
 
     my $release_field = $release_meta[0]->{release_field} // 'undef';
+    my $name_field = $release_meta[0]->{name_field} // 'undef';
 
     my $topic_mid = $rs_topic->mid;
     cache_topic_remove($topic_mid);
@@ -2210,7 +2214,7 @@ sub set_release {
                                                 text_new      => '%1 modified topic: changed %2 to %4',
                                                 mid => $rs_topic->mid,
                                                } => sub {
-                                                my $subject = _loc("Topic [%1] %2 updated.  %4 changed to %3", $rs_topic->mid, $rs_topic->title, $row_release->title, $release_field);
+                                                my $subject = _loc("Topic [%1] %2 updated.  %4 changed to %3", $rs_topic->mid, $rs_topic->title, $row_release->title, $name_field);
                 { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
             } ## end try
             => sub {
@@ -2240,8 +2244,9 @@ sub set_release {
 }
 
 sub set_projects {
-    my ($self, $rs_topic, $projects, $user, $id_field ) = @_;
+    my ($self, $rs_topic, $projects, $user, $id_field, $meta ) = @_;
     my $topic_mid = $rs_topic->mid;
+    my ($name_field) =  map {$_->{name_field}} grep {$_->{id_field} eq $id_field} _array $meta;
     
     my @new_projects = sort { $a <=> $b } _array( $projects ) ;
 
@@ -2289,7 +2294,7 @@ sub set_projects {
                                                 text_new      => '%1 modified topic: %2 ( %4 )',
                                                 mid => $rs_topic->mid,
                                                } => sub {
-                                                my $subject = _loc("Topic [%1] %2 updated.  %4 (%3)", $rs_topic->mid, $rs_topic->title, $projects, $id_field);
+                                                my $subject = _loc("Topic [%1] %2 updated.  %4 (%3)", $rs_topic->mid, $rs_topic->title, $projects, $name_field);
                 { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
             } ## end try
             => sub {
@@ -2304,7 +2309,7 @@ sub set_projects {
                                                 text_new      => '%1 deleted %2',
                                                 mid => $rs_topic->mid,
                                                } => sub {
-                                                my $subject = _loc("Topic [%1] %2 updated.  %3 deleted", $rs_topic->mid, $rs_topic->title, $id_field );
+                                                my $subject = _loc("Topic [%1] %2 updated.  %3 deleted", $rs_topic->mid, $rs_topic->title, $name_field );
                 { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
             } ## end try
             => sub {
