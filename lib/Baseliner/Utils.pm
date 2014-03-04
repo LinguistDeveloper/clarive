@@ -603,7 +603,7 @@ sub _array {
         } elsif( ref $item eq 'HASH' ) {
             push @array, $item;
         } else {
-            push @array, $item if defined $item;
+            push @array, $item if length $item;
         }
     }
     return @array;
