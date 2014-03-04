@@ -450,4 +450,10 @@ sub user_can_search {
     return Baseliner->model('Permissions')->user_has_action( username => $username, action => 'action.search.job');
 }
 
+sub build_field_query {
+    my ($self,$query,$where) = @_;
+    mdb->query_build( where=>$where, query=>$query, fields=>['name', 'bl','final_status', 'final_step', 'list_contents','username','job_contents.list_apps', 'job_contents.list_changesets', 'job_contents.list_natures', 'job_contents.list_releases'] ); 
+}
+
+
 1;
