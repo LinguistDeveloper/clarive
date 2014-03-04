@@ -657,6 +657,9 @@ sub update {
 
         when ( 'add' ) {
             my $stash = { topic_data=>$p, username=>$p->{username}, return_options=>$return_options };
+
+            $p->{cancelEvent} = 1;
+
             event_new 'event.topic.create' => $stash => sub {
                 Baseliner->model('Baseliner')->txn_do(sub{
                     my $meta = $self->get_meta ($topic_mid , $p->{category});
@@ -1602,10 +1605,13 @@ sub save_data {
             map { $_->{id_field} => $_->{set_method} }
             grep { $_->{relation} && $_->{relation} eq 'system' } _array( $meta );
 
+        
+        my $cancelEvent = exists $data->{cancelEvent} ? $data->{cancelEvent} : 0;
+
         foreach my $id_field ( keys %rel_fields ) {
             if ( $rel_fields{$id_field} ) {
                 my $meth = $rel_fields{$id_field};
-                $self->$meth( $topic, $data->{$id_field}, $data->{username}, $id_field, $meta );
+                $self->$meth( $topic, $data->{$id_field}, $data->{username}, $id_field, $meta, $cancelEvent );
             }
         } ## end foreach my $id_field ( keys...)
 
@@ -1940,7 +1946,7 @@ sub set_cal {
 }
 
 sub set_topics {
-    my ($self, $rs_topic, $topics, $user, $id_field, $meta ) = @_;
+    my ($self, $rs_topic, $topics, $user, $id_field, $meta, $cancelEvent ) = @_;
     my @all_topics = ();
     
     my $rel_field = $id_field;
@@ -1984,38 +1990,40 @@ sub set_topics {
         my $topics = join(',', @new_topics);
         
       
+        if($cancelEvent != 1){
+            event_new 'event.topic.modify_field' => { username      => $user,
+                                                field               => $id_field,
+                                                old_value           => '',
+                                                new_value           => $topics,
+                                                text_new            => '%1 modified topic: %2 ( %4 )',
+                                                mid => $rs_topic->mid,
+                                               } => sub {
+                                my $subject = _loc("Topic [%1] %2 updated", $rs_topic->mid, $rs_topic->title);
 
-        event_new 'event.topic.modify_field' => { username      => $user,
-                                            field               => $id_field,
-                                            old_value           => '',
-                                            new_value           => $topics,
-                                            text_new            => '%1 modified topic: %2 ( %4 )',
-                                            mid => $rs_topic->mid,
-                                           } => sub {
-                            my $subject = _loc("Topic [%1] %2 updated", $rs_topic->mid, $rs_topic->title);
-
-                            { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
-        } ## end try
-        => sub {
-            _throw _loc( 'Error modifying Topic: %1', shift() );
-        };
+                                { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
+            } ## end try
+            => sub {
+                _throw _loc( 'Error modifying Topic: %1', shift() );
+            };
+        }
 
     } elsif( @old_topics ) {
         
-        
-        event_new 'event.topic.modify_field' => { username      => $user,
-                                            field               => $id_field,
-                                            old_value           => '',
-                                            new_value           => '',
-                                            text_new            => '%1 deleted all attached topics of ' . $id_field ,
-                                            mid => $rs_topic->mid,
-                                           } => sub {
-                            my $subject = _loc("Topic [%1] %2 updated", $rs_topic->mid, $rs_topic->title);
-            { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
-        } ## end try
-        => sub {
-            _throw _loc( 'Error modifying Topic: %1', shift() );
-        };
+        if($cancelEvent != 1){
+            event_new 'event.topic.modify_field' => { username      => $user,
+                                                field               => $id_field,
+                                                old_value           => '',
+                                                new_value           => '',
+                                                text_new            => '%1 deleted all attached topics of ' . $id_field ,
+                                                mid => $rs_topic->mid,
+                                               } => sub {
+                                my $subject = _loc("Topic [%1] %2 updated", $rs_topic->mid, $rs_topic->title);
+                { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
+            } ## end try
+            => sub {
+                _throw _loc( 'Error modifying Topic: %1', shift() );
+            };
+        }
 
         #$rs_topic->set_topics( undef, { rel_type=>'topic_topic', rel_field => $id_field});
         my $rdoc = {from_mid => ''.$rs_topic->mid, rel_field => $rel_field };
@@ -2027,7 +2035,7 @@ sub set_topics {
 }
 
 sub set_cis {
-    my ($self, $rs_topic, $cis, $user, $id_field, $meta ) = @_;
+    my ($self, $rs_topic, $cis, $user, $id_field, $meta, $cancelEvent ) = @_;
 
     my $field_meta = [ grep { $_->{id_field} eq $id_field } _array($meta) ]->[0];
     my $name_field = $field_meta->{name_field};
@@ -2068,25 +2076,27 @@ sub set_cis {
             field           => $id_field
         };
         $notify->{project} = \@projects if @projects;
-        
-        event_new 'event.topic.modify_field' => {
-            username  => $user,
-            field     => $field_meta->{id_field},
-            old_value => $del_cis,
-            new_value => join(',', grep { length } $add_cis, $del_cis ),
-            text_new  => ( $field_meta->{modify_text_new} // '%1 modified topic (%2): %4 ' ),
-            mid => $rs_topic->mid,
-        } => sub {
-            my $subject = _loc("Topic [%1] %2 updated.  %3 changed", $rs_topic->mid, $rs_topic->title, $name_field);
-            { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }    # to the event
-        } => sub {
-            _throw _loc( 'Error modifying Topic: %1', shift() );
-        };
+    
+        if ($cancelEvent != 1){
+            event_new 'event.topic.modify_field' => {
+                username  => $user,
+                field     => $field_meta->{id_field},
+                old_value => $del_cis,
+                new_value => join(',', grep { length } $add_cis, $del_cis ),
+                text_new  => ( $field_meta->{modify_text_new} // '%1 modified topic (%2): %4 ' ),
+                mid => $rs_topic->mid,
+            } => sub {
+                my $subject = _loc("Topic [%1] %2 updated.  %3 changed", $rs_topic->mid, $rs_topic->title, $name_field);
+                { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }    # to the event
+            } => sub {
+                _throw _loc( 'Error modifying Topic: %1', shift() );
+            };            
+        }
     }
 }
 
 sub set_revisions {
-    my ($self, $rs_topic, $revisions, $user, $id_field, $meta  ) = @_;
+    my ($self, $rs_topic, $revisions, $user, $id_field, $meta, $cancelEvent ) = @_;
     
     my $topic_mid = $rs_topic->mid;
     
@@ -2119,35 +2129,40 @@ sub set_revisions {
             
             my $revisions = join(',', map { Baseliner::CI->new($_->mid)->load->{name}} @rs_revs);
     
-            event_new 'event.topic.modify_field' => { username   => $user,
-                                                field      => $id_field,
-                                                old_value      => '',
-                                                new_value  => $revisions,
-                                                text_new      => '%1 modified topic: %2 ( %4 )',
-                                                mid => $rs_topic->mid,
-                                               } => sub {
-                                                my $subject = _loc("Topic [%1] %2 updated.  New revisions", $rs_topic->mid, $rs_topic->title);
+            if ($cancelEvent != 1){
+                event_new 'event.topic.modify_field' => { username   => $user,
+                                                    field      => $id_field,
+                                                    old_value      => '',
+                                                    new_value  => $revisions,
+                                                    text_new      => '%1 modified topic: %2 ( %4 )',
+                                                    mid => $rs_topic->mid,
+                                                   } => sub {
+                                                    my $subject = _loc("Topic [%1] %2 updated.  New revisions", $rs_topic->mid, $rs_topic->title);
 
-                { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
-            } ## end try
-            => sub {
-                _throw _loc( 'Error modifying Topic: %1', shift() );
-            };             
+                    { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
+                } ## end try
+                => sub {
+                    _throw _loc( 'Error modifying Topic: %1', shift() );
+                };                             
+            }
             
         } else {
-            event_new 'event.topic.modify_field' => { username   => $user,
-                                                field      => $id_field,
-                                                old_value      => '',
-                                                new_value  => '',
-                                                text_new      => '%1 deleted all revisions',
-                                                mid => $rs_topic->mid,
-                                               } => sub {
-                                                my $subject = _loc("Topic [%1] %2 updated.  All revisions removed", $rs_topic->mid, $rs_topic->title);
-                { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
-            } ## end try
-            => sub {
-                _throw _loc( 'Error modifying Topic: %1', shift() );
-            };
+            if ($cancelEvent != 1){
+                event_new 'event.topic.modify_field' => { username   => $user,
+                                                    field      => $id_field,
+                                                    old_value      => '',
+                                                    new_value  => '',
+                                                    text_new      => '%1 deleted all revisions',
+                                                    mid => $rs_topic->mid,
+                                                   } => sub {
+                                                    my $subject = _loc("Topic [%1] %2 updated.  All revisions removed", $rs_topic->mid, $rs_topic->title);
+                    { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
+                } ## end try
+                => sub {
+                    _throw _loc( 'Error modifying Topic: %1', shift() );
+                };
+            }
+
             my $rdoc = {from_mid => ''.$rs_topic->mid, rel_type => 'topic_revision', rel_field=>$id_field };
             my $rs_old_revisions = DB->BaliMasterRel->search($rdoc)->delete;
             mdb->master_rel->remove($rdoc,{multiple=>1});
@@ -2158,7 +2173,7 @@ sub set_revisions {
 }
 
 sub set_release {
-    my ($self, $rs_topic, $release, $user, $id_field, $meta  ) = @_;
+    my ($self, $rs_topic, $release, $user, $id_field, $meta, $cancelEvent) = @_;
     
     my @release_meta = grep { $_->{id_field} eq $id_field } _array $meta;
 
@@ -2206,45 +2221,48 @@ sub set_release {
             $row_release->add_to_topics( $topic_row, { rel_type=>'topic_topic', rel_field => $release_field} );
             mdb->master_rel->insert({ from_mid=>''.$row_release->mid, to_mid=>"$topic_mid", 
                     rel_type=>'topic_topic', rel_field=>$release_field, rel_seq=>mdb->seq('master_rel') });
-            
-            event_new 'event.topic.modify_field' => { username   => $user,
-                                                field      => $id_field,
-                                                old_value      => $old_release_name,
-                                                new_value  => $row_release->title,
-                                                text_new      => '%1 modified topic: changed %2 to %4',
-                                                mid => $rs_topic->mid,
-                                               } => sub {
-                                                my $subject = _loc("Topic [%1] %2 updated.  %4 changed to %3", $rs_topic->mid, $rs_topic->title, $row_release->title, $name_field);
-                { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
-            } ## end try
-            => sub {
-                _throw _loc( 'Error modifying Topic: %1', shift() );
-            };
-            
+    
+            if ($cancelEvent != 1){
+                event_new 'event.topic.modify_field' => { username   => $user,
+                                                    field      => $id_field,
+                                                    old_value      => $old_release_name,
+                                                    new_value  => $row_release->title,
+                                                    text_new      => '%1 modified topic: changed %2 to %4',
+                                                    mid => $rs_topic->mid,
+                                                   } => sub {
+                                                    my $subject = _loc("Topic [%1] %2 updated.  %4 changed to %3", $rs_topic->mid, $rs_topic->title, $row_release->title, $name_field);
+                    { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
+                } ## end try
+                => sub {
+                    _throw _loc( 'Error modifying Topic: %1', shift() );
+                };                
+            }
         }else{
             my $rs = DB->BaliMasterRel->search({from_mid => $old_release, to_mid=>$topic_mid })->delete;
             mdb->master_rel->remove({from_mid => $old_release, to_mid=>$topic_mid },{multiple=>1});
-            event_new 'event.topic.modify_field' => { username   => $user,
-                                                field      => $id_field,
-                                                old_value      => $old_release_name,
-                                                new_value  => '',
-                                                text_new      => '%1 deleted %2 %3',
-                                                mid => $rs_topic->mid,
-                                               } => sub {
-                                                my $subject = _loc("Topic [%1] %2 updated.  Removed from %4 %3", $rs_topic->mid, $rs_topic->title, $old_release_name, $release_field);
+            if ($cancelEvent != 1){            
+                event_new 'event.topic.modify_field' => { username   => $user,
+                                                    field      => $id_field,
+                                                    old_value      => $old_release_name,
+                                                    new_value  => '',
+                                                    text_new      => '%1 deleted %2 %3',
+                                                    mid => $rs_topic->mid,
+                                                   } => sub {
+                                                    my $subject = _loc("Topic [%1] %2 updated.  Removed from %4 %3", $rs_topic->mid, $rs_topic->title, $old_release_name, $release_field);
 
-                { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify}   # to the event
-            } ## end try
-            => sub {
-                _throw _loc( 'Error modifying Topic: %1', shift() );
-            };  
+                    { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify}   # to the event
+                } ## end try
+                => sub {
+                    _throw _loc( 'Error modifying Topic: %1', shift() );
+                };  
+            }
         }
     }
     $self->update_rels( $old_release, $new_release );
 }
 
 sub set_projects {
-    my ($self, $rs_topic, $projects, $user, $id_field, $meta ) = @_;
+    my ($self, $rs_topic, $projects, $user, $id_field, $meta, $cancelEvent ) = @_;
     my $topic_mid = $rs_topic->mid;
     my ($name_field) =  map {$_->{name_field}} grep {$_->{id_field} eq $id_field} _array $meta;
     
@@ -2287,40 +2305,44 @@ sub set_projects {
             
             my $projects = join(',', @name_projects);
     
-            event_new 'event.topic.modify_field' => { username   => $user,
-                                                field      => $id_field,
-                                                old_value      => '',
-                                                new_value  => $projects,
-                                                text_new      => '%1 modified topic: %2 ( %4 )',
-                                                mid => $rs_topic->mid,
-                                               } => sub {
-                                                my $subject = _loc("Topic [%1] %2 updated.  %4 (%3)", $rs_topic->mid, $rs_topic->title, $projects, $name_field);
-                { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
-            } ## end try
-            => sub {
-                _throw _loc( 'Error modifying Topic: %1', shift() );
-            };            
+            if ($cancelEvent != 1) {
+                event_new 'event.topic.modify_field' => { username   => $user,
+                                                    field      => $id_field,
+                                                    old_value      => '',
+                                                    new_value  => $projects,
+                                                    text_new      => '%1 modified topic: %2 ( %4 )',
+                                                    mid => $rs_topic->mid,
+                                                   } => sub {
+                                                    my $subject = _loc("Topic [%1] %2 updated.  %4 (%3)", $rs_topic->mid, $rs_topic->title, $projects, $name_field);
+                    { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
+                } ## end try
+                => sub {
+                    _throw _loc( 'Error modifying Topic: %1', shift() );
+                };            
+            }
         }
         else{
-            event_new 'event.topic.modify_field' => { username   => $user,
-                                                field      => $id_field,
-                                                old_value      => '',
-                                                new_value  => '',
-                                                text_new      => '%1 deleted %2',
-                                                mid => $rs_topic->mid,
-                                               } => sub {
-                                                my $subject = _loc("Topic [%1] %2 updated.  %3 deleted", $rs_topic->mid, $rs_topic->title, $name_field );
-                { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
-            } ## end try
-            => sub {
-                _throw _loc( 'Error modifying Topic: %1', shift() );
-            };              
+            if ($cancelEvent != 1){
+                event_new 'event.topic.modify_field' => { username   => $user,
+                                                    field      => $id_field,
+                                                    old_value      => '',
+                                                    new_value  => '',
+                                                    text_new      => '%1 deleted %2',
+                                                    mid => $rs_topic->mid,
+                                                   } => sub {
+                                                    my $subject = _loc("Topic [%1] %2 updated.  %3 deleted", $rs_topic->mid, $rs_topic->title, $name_field );
+                    { mid => $rs_topic->mid, topic => $rs_topic->title, subject => $subject, notify => $notify }   # to the event
+                } ## end try
+                => sub {
+                    _throw _loc( 'Error modifying Topic: %1', shift() );
+                };              
+            }
         }
     }
 }
 
 sub set_users{
-    my ($self, $rs_topic, $users, $user, $id_field ) = @_;
+    my ($self, $rs_topic, $users, $user, $id_field, $meta, $cancelEvent ) = @_;
     my $topic_mid = $rs_topic->mid;
     
     my @new_users = _array( $users ) ;
@@ -2350,35 +2372,38 @@ sub set_users{
             }
 
             my $users = join(',', @name_users);
-            event_new 'event.topic.modify_field' => { username   => $user,
-                                                field      => $id_field,
-                                                old_value      => '',
-                                                new_value  => $users,
-                                                text_new      => '%1 modified topic: %2 ( %4 )',
-                                                mid => $rs_topic->mid,
-                                               } => sub {
-                { mid => $rs_topic->mid, topic => $rs_topic->title, notify => $notify }   # to the event
-            } ## end try
-            => sub {
-                _throw _loc( 'Error modifying Topic: %1', shift() );
-            };            
-            
-            
-            
-            
+
+            if ($cancelEvent) {
+                event_new 'event.topic.modify_field' => { username   => $user,
+                                                    field      => $id_field,
+                                                    old_value      => '',
+                                                    new_value  => $users,
+                                                    text_new      => '%1 modified topic: %2 ( %4 )',
+                                                    mid => $rs_topic->mid,
+                                                   } => sub {
+                    { mid => $rs_topic->mid, topic => $rs_topic->title, notify => $notify }   # to the event
+                } ## end try
+                => sub {
+                    _throw _loc( 'Error modifying Topic: %1', shift() );
+                };            
+            }
+
         }else{
-            event_new 'event.topic.modify_field' => { username   => $user,
-                                                field      => $id_field,
-                                                old_value      => '',
-                                                new_value  => '',
-                                                text_new      => '%1 deleted all users',
-                                                mid => $rs_topic->mid,
-                                               } => sub {
-                { mid => $rs_topic->mid, topic => $rs_topic->title, notify => $notify }   # to the event
-            } ## end try
-            => sub {
-                _throw _loc( 'Error modifying Topic: %1', shift() );
-            };              
+            if ( $cancelEvent != 1) {
+                event_new 'event.topic.modify_field' => { username   => $user,
+                                                    field      => $id_field,
+                                                    old_value      => '',
+                                                    new_value  => '',
+                                                    text_new      => '%1 deleted all users',
+                                                    mid => $rs_topic->mid,
+                                                   } => sub {
+                    { mid => $rs_topic->mid, topic => $rs_topic->title, notify => $notify }   # to the event
+                } ## end try
+                => sub {
+                    _throw _loc( 'Error modifying Topic: %1', shift() );
+                };                              
+            }
+
         }
     }
 }
