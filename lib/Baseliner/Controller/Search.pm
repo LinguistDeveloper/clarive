@@ -84,6 +84,7 @@ sub query_lucy : Local {
     my $provider = $p->{provider} or _throw _loc('Missing provider');
     my $query    = delete $p->{query} // _throw _loc('Missing query');
     my $lang = $c->languages->[0] || 'en';
+    require LucyX::Simple::Result::Hash;
 
     #my $dir = _dir _tmp_dir(), 'search_index_' . _md5( join ',', $c->username , $$ , time );
     my $case_folder = Lucy::Analysis::CaseFolder->new;

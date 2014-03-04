@@ -818,6 +818,7 @@ sub searcher {
         } @fields 
     ];
     require Baseliner::Lucy;
+    require LucyX::Simple::Result::Hash;
     my $string_tokenizer = Lucy::Analysis::RegexTokenizer->new( pattern => '\w');
     my $analyzer = Lucy::Analysis::PolyAnalyzer->new( analyzers => [$string_tokenizer]);
 
