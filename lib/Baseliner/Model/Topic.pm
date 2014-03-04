@@ -685,7 +685,7 @@ sub update {
                     };
                     
                     my $subject = _loc("New topic (%1): [%2] %3", $category->{name}, $topic->mid, $topic->title);
-                    { mid => $topic->mid, title => "Nuevo tópico - ".$topic, 
+                    { mid => $topic->mid, title => $topic->title, 
                         topic=>$topic->title, 
                         name_category=>$category->{name}, 
                         category=>$category->{name}, 
