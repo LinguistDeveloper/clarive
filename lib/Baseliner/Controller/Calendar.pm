@@ -36,9 +36,11 @@ sub calendar : Path( '/job/calendar' ) {
     my $p = $c->req->params;
     my $id_cal = delete $p->{ id_cal };
     my $row;
-    if( $id_cal < 0 && $p->{ns} ) {
-        if( $row = DB->BaliCalendar->search({ ns => $p->{ns} })->first ) {
-            $id_cal = $row->id;
+    if( $id_cal > 0) {
+        $row = mdb->calendar->find_one({ id => ''.$id_cal });
+    }elsif( $id_cal < 0 && $p->{ns} ) {
+        if( $row = mdb->calendar->find_one({ ns => $p->{ns} }) ) {
+            $id_cal = $row->{id};
         }
     }
     $c->stash->{ ns_query } = { does => [ 'Baseliner::Role::Namespace::Nature', 'Baseliner::Role::Namespace::Application', ] };
@@ -48,10 +50,10 @@ sub calendar : Path( '/job/calendar' ) {
     # load the calendar row data
     $self->init_date( $c );
     $c->stash->{ calendar } = $row
-        ? { $row->get_columns }   # ci calendar
+        ? $row   # ci calendar
         : (!$id_cal || $id_cal < 0)
             ? $p   # new calendar, from ci editor
-            : { $c->model( 'Baseliner::BaliCalendar' )->search( { id => $id_cal } )->first->get_columns() };  # regular existing calendar
+            : +{ mdb->calendar->find_one({ id => $id_cal }) };  # regular existing calendar
 
     $c->stash->{ id_cal } = $id_cal;
     $c->stash->{ template } = '/comp/job_calendar_editor.js';
@@ -61,10 +63,8 @@ sub calendar : Path( '/job/calendar' ) {
 sub calendar_slots : Path( '/job/calendar_slots' ) {
     my ( $self, $c ) = @_;
     my $id_cal = $c->stash->{ id_cal } = $c->req->params->{ id_cal };
-
     # get the panel id to be able to refresh it
     $c->stash->{ panel } = $c->req->params->{ panel };
-
     # load the calendar row data
     $self->init_date( $c );
 
@@ -79,27 +79,29 @@ sub calendar_grid_json : Path('/job/calendar_grid_json') {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
     my ( $start, $limit, $query, $dir, $sort, $cnt ) = @{ $p }{ qw/start limit query dir sort/ };
-    my $rs = $c->model( 'Baseliner::BaliCalendar' )->search( undef, { order_by => $sort ? "$sort $dir" : undef } );
+    $dir = $dir ? ( lc($dir) eq 'desc' ? -1 : 1 ) : 1;
+    my $rs = mdb->calendar->find;
+    $rs->sort({ $sort => $dir }) if $sort;
     my @rows;
 
     while ( my $r = $rs->next ) {
-        next if ( $query && !query_array( $query, $r->name, $r->description, $r->ns ) );
+        next if ( $query && !query_array( $query, $r->{name}, $r->{description}, $r->{ns} ) ); # TODO use mongo regex
         push @rows,
             {
-            id          => $r->id,
-            name        => $r->name,
-            description => $r->description,
-            seq         => $r->seq,
-            bl          => $r->bl,
-            bl_desc     => Baseliner::Core::Baseline->name( $r->bl ),
-            ns          => $r->ns,
-            ns_desc     => $r->ns,
+            id          => $r->{id},
+            name        => $r->{name},
+            description => $r->{description},
+            seq         => $r->{seq},
+            bl          => $r->{bl},
+            bl_desc     => Baseliner::Core::Baseline->name( $r->{bl} ),
+            ns          => $r->{ns},
+            ns_desc     => $r->{ns},
             }
             if ( ( $cnt++ >= $start ) && ( $limit ? scalar @rows < $limit : 1 ) );
     }
     my @prjs = map { $_->{ns} } grep { is_number( $_->{ns} ) } grep { length } @rows;
     my %mids = DB->BaliProject->search({ mid=>\@prjs })->hash_unique_on('mid');
-    _error \%mids;
+    _debug( \%mids );
     @rows = map { $_->{ns} = $mids{ $_->{ns} } ? $mids{ $_->{ns} }->{name} : $_->{ns}; $_ } @rows;
     $c->stash->{ json } = { data => \@rows };
     $c->forward( 'View::JSON' );
@@ -125,16 +127,16 @@ sub calendar_update : Path( '/job/calendar_update' ) {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     my $new_id;
-
+    
     my @msgs = ();
 
     try {
         # may be a CI calendar, search for its id_cal if we don't have one
         if( !length $p->{id_cal} || $p->{id_cal} == -1 ) {
             _fail 'Missing ns parameter' unless defined $p->{ns};
-            my $cal = DB->BaliCalendar->search({ ns => $p->{ns} })->first;
+            my $cal = mdb->calendar->find_one({ ns => $p->{ns} });
             if( ref $cal ) {
-                $p->{id_cal} = $cal->id;
+                $p->{id_cal} = $cal->{id};
                 $p->{action} = 'update';
             }
             else {
@@ -144,59 +146,62 @@ sub calendar_update : Path( '/job/calendar_update' ) {
 
         if( $p->{action} eq 'create' || $p->{newAction} eq 'create')  {
             @msgs = ( 'created', 'creating' );
+            
             $p->{ns} = '/' unless length $p->{ns};
-            my $r1 = $c->model( 'Baseliner::BaliCalendar' )->search( { ns => $p->{ ns }, bl => $p->{ bl } } );
-            if ( my $r = $r1->first ) {
-                _fail _loc( "A calendar (%1) already exists for namespace %2 and baseline %3", $r->name, $p->{ ns }, $p->{ bl } );
+            my $r1 = mdb->calendar->find({ ns => $p->{ ns }, bl => $p->{ bl } });
+            if ( my $r = $r1->next ) {
+                _fail _loc( "A calendar (%1) already exists for namespace %2 and baseline %3", $r->{name}, $p->{ ns }, $p->{ bl } );
             } else {
-                my $row = $c->model('Baseliner::BaliCalendar')->create({
-                        name        => $p->{ name },
-                        description => $p->{ description },
-                        seq         => $p->{ seq } // $DEFAULT_SEQ,
-                        active      => '1',
-                        ns          => $p->{ ns },
-                        bl          => $p->{ bl }
-                    }
-                );
-                $new_id = $row->id;
+                my $new_id_cal = mdb->seq('calendar');
+                my $_id = mdb->calendar->insert({
+                    id          => $new_id_cal,
+                    name        => $p->{ name },
+                    description => $p->{ description },
+                    seq         => $p->{ seq } // $DEFAULT_SEQ,
+                    active      => '1',
+                    ns          => $p->{ ns },
+                    bl          => $p->{ bl }
+                });
+                $new_id = $new_id_cal;
                 if ( $p->{ copyof } ) {
                     my $copyOf = int( $p->{ copyof } );
-                    $row = $c->model( 'Baseliner::BaliCalendar' )->search( { ns => $p->{ ns }, bl => $p->{ bl } } )->first;
-                    my $rs = $c->model( 'Baseliner::BaliCalendarWindow' )->search( { id_cal => $copyOf } );
+                    $_id = mdb->calendar->find_one( { ns=>$p->{ns}, bl=>$p->{ bl } } );
+                    my $rs = mdb->calendar_window->find({ id_cal => $copyOf });
 
                     while ( my $r = $rs->next ) {
-                        $c->model( 'Baseliner::BaliCalendarWindow' )->create(
-                            {
-                                start_time => $r->start_time,
-                                end_time   => $r->end_time,
-                                start_date => $r->start_date,
-                                end_date   => $r->end_date,
-                                day        => $r->day,
-                                type       => $r->type,
-                                active     => $r->active,
-                                id_cal     => $new_id
-                            }
-                        );
+                        mdb->calendar_window->insert({
+                            id         => mdb->seq('calendar_window'),
+                            start_time => $r->{start_time},
+                            end_time   => $r->{end_time},
+                            start_date => $r->{start_date},
+                            end_date   => $r->{end_date},
+                            day        => $r->{day},
+                            type       => $r->{type},
+                            active     => $r->{active},
+                            id_cal     => $new_id
+                        });
                     }
                 }
             }
         }
         elsif ( $p->{ action } eq 'delete' ) {
             @msgs = ( 'deleted', 'deleting' );
-            my $row = $c->model( 'Baseliner::BaliCalendar' )->search( { id => $p->{ id_cal } } );
-            $row->delete;
+            mdb->calendar->remove({ id => ''.$p->{ id_cal } });
+            #borramos las ventanas asociadas a ese calendario
+            mdb->calendar_window->remove({ id_cal => ''.$p->{ id_cal } });
         }
         else { # update
             @msgs = ( 'modified', 'modifying' );
-            my $row = $c->model( 'Baseliner::BaliCalendar' )->search( { id => $p->{ id_cal } } )->first;
-            $row->name( $p->{ name } );
-            $row->description( $p->{ description } );
-            length $p->{ seq } and $row->seq( $p->{ seq } );
-            $row->ns( length $p->{ns} ? $p->{ns} : '/' );
-            $p->{ bl } and $row->bl( $p->{ bl } );
-            $row->update;
+            my $row = mdb->calendar->find_one({ id => ''.$p->{ id_cal } });
+            $row->{name} = $p->{ name };
+            $row->{description} = $p->{ description };
+            length $p->{ seq } and $row->{seq} = $p->{ seq };
+            $row->{ns} = length $p->{ns} ? $p->{ns} : '/';
+            $p->{bl} and $row->{bl} = $p->{bl};
+            
+            mdb->calendar->update({ id => ''.$p->{ id_cal } }, $row);
         }
-        $c->stash->{ json } = { success => \1, msg => _loc( "Calendar '%1' $msgs[0]", $p->{ name } ), id_cal=>$new_id // $p->{id_cal} };
+        $c->stash->{ json } = { success => \1, msg => _loc( "Calendar with id '%1' $msgs[0]", $p->{ name } ), id_cal=>$new_id // $p->{id_cal} };
     } catch {
         my $err = shift;
         _error $err;
@@ -211,7 +216,7 @@ sub calendar_slot_edit : Path( '/job/calendar_slot_edit' ) {
     $c->stash->{ panel } = $p->{ panel };
     my $id     = $p->{ id };
     my $id_cal = $p->{ id_cal };
-    my $win    = $c->model( 'Baseliner::BaliCalendarWindow' )->search( { id => $id } )->first;
+    my $win    = mdb->calendar_window->find_one( { id => ''.$id } );
     my $pdia   = $p->{ pdia };
     my $activa = 0;
 
@@ -233,12 +238,12 @@ sub calendar_slot_edit : Path( '/job/calendar_slot_edit' ) {
             $tipo   = "N";
         }
         else {            # existing window
-            $inicio = $win->start_time;
-            $fin    = $win->end_time;
-            $dia    = $win->day;
-            $tipo   = $win->type;
-            $activa = $win->active;
-            $date   = $win->start_date;
+            $inicio = $win->{start_time};
+            $fin    = $win->{end_time};
+            $dia    = $win->{day};
+            $tipo   = $win->{type};
+            $activa = $win->{active};
+            $date   = $win->{start_date};
         }
         $c->stash->{ id }     = $id;
         $c->stash->{ id_cal } = $id_cal;
@@ -266,6 +271,7 @@ sub calendar_submit : Path('/job/calendar_submit') {
     my $ven_tipo    = $p->{ ven_tipo };
     my $date_str    = $p->{ date };
     my $currentDate = $self->parseDateTime( $date_str ) if ( $date_str );
+    my $new_id;
 
     try {
         my @diaList;
@@ -282,7 +288,7 @@ sub calendar_submit : Path('/job/calendar_submit') {
             if ( $cmd eq "B" ) {
                 #delete row
                 if ( $id ) {
-                    $c->model( 'Baseliner::BaliCalendarWindow' )->search( { id => $id } )->first->delete;
+                    mdb->calendar_window->remove({ id => $id });
                     $cierra = 1;
                 }
                 else {
@@ -291,9 +297,11 @@ sub calendar_submit : Path('/job/calendar_submit') {
             }
             elsif ( $cmd eq "A" or $cmd eq "AD" ) {
                 my $active = ( $cmd eq "A" );
-
+                my $_ci;
+                $new_id = ''.mdb->seq('calendar_window');
                 unless ( $id ) {    #new row
-                    my $r = $c->model( 'Baseliner::BaliCalendarWindow' )->create({
+                    $_ci = mdb->calendar_window->insert({
+                        id         => $new_id,
                         id_cal     => $id_cal,
                         day        => $ven_dia,
                         type       => $ven_tipo,
@@ -302,21 +310,22 @@ sub calendar_submit : Path('/job/calendar_submit') {
                         end_time   => $ven_fin,
                         start_date => $self->parseDateTimeToDbix( $currentDate ),
                         end_date   => $self->parseDateTimeToDbix( $currentDate )
-                    });
+                    });                    
                 }
                 else {    #existing
-                    my $row = $c->model( 'Baseliner::BaliCalendarWindow' )->search( { id => $id } )->first;
-                    $row->delete;
+                    my $row = mdb->calendar_window->find_one({ id => $id });
+                    mdb->calendar_window->remove({ id => $id });
                     # we need to recreate the id so this gets precedence in db_to_slots()
-                    my $r = $c->model( 'Baseliner::BaliCalendarWindow' )->create({
+                    $_ci = mdb->calendar_window->insert({
+                        id         => $new_id,
                         id_cal     => $id_cal,
                         day        => $ven_dia,
                         type       => $ven_tipo,
-                        active     => $row->active,
+                        active     => $row->{active},
                         start_time => $ven_ini,
                         end_time   => $ven_fin,
-                        start_date => $row->start_date,
-                        end_date   => $row->end_date,
+                        start_date => $row->{start_date},
+                        end_date   => $row->{end_date},
                     });
                 }
                 $self->db_merge_slots( $id_cal ) if defined $id_cal;
@@ -325,9 +334,7 @@ sub calendar_submit : Path('/job/calendar_submit') {
             elsif ( $cmd eq "C1" || $cmd eq "C0" ) {
 
                 #Activar
-                my $row = $c->model( 'Baseliner::BaliCalendarWindow' )->search( { id => $id } )->first;
-                $row->active( substr( $cmd, 1 ) );
-                $row->update;
+                mdb->calendar_window->update({ id => $id }, { '$set'=>{ active=>substr($cmd, 1) } });
                 $cierra = 1;
             }
             else {
@@ -336,7 +343,7 @@ sub calendar_submit : Path('/job/calendar_submit') {
 
             last unless ( $cierra );
         }
-        $c->stash->{ json } = { success => \1, msg => _loc( "Calendar modified." ) };
+        $c->stash->{ json } = { success => \1, msg => _loc( "Calendar modified." ), cal_window => $id // $new_id };
     } catch {
         my $err = shift;
         _error $err;
@@ -345,7 +352,8 @@ sub calendar_submit : Path('/job/calendar_submit') {
     $c->forward( 'View::JSON' );
 }
 
-sub calendar_delete : Path('/job/calendar_delete') {
+sub calendar_delete : 
+ {
     my ( $self, $c ) = @_;
     my $p           = $c->req->params;
     my $id_cal      = $p->{ id_cal };
@@ -353,12 +361,9 @@ sub calendar_delete : Path('/job/calendar_delete') {
     my $date_str    = $p->{ date };
     my $currentDate = $self->parseDateTime( $date_str );
 
-    if ( $c->model( 'Baseliner::BaliCalendarWindow' )
-        ->search( { id_cal => $id_cal, start_date => $self->parseDateTimeToDbix( $currentDate ) } )->delete_all )
-    {
+    if ( mdb->calendar_window->remove({ id_cal => $id_cal, start_date => $self->parseDateTimeToDbix( $currentDate ) },{ multiple=>1 }) ) {
         $c->stash->{ json } = { success => \1, msg => _loc( "Calendar deleted." ) };
-    }
-    else {
+    } else {
         $c->stash->{ json } = { success => \0, msg => _loc( "Error deleting the calendar: " ) };
     }
     $c->forward( 'View::JSON' );
@@ -374,30 +379,29 @@ sub db_merge_slots {
     my ( $self, $id_cal ) = @_;
 
     # load slots from DB
-    my $slots = $self->db_to_slots( $id_cal, no_base=>1 );
-
+    my $slots = $self->db_to_slots( $id_cal, base=>1 );
     # delete all cal rows
-    my $rs = DB->BaliCalendarWindow->search({ id_cal=>$id_cal });
+    my $rs = mdb->calendar_window->find({ id_cal=>$id_cal });
     return unless $rs->count;
-    $rs->delete;
+    mdb->calendar_window->remove({ id_cal=>$id_cal },{ multiple=>1 });
 
     my $to_time = sub { substr( $_[0], 0, 2 ) . ':' . substr( $_[0], 2, 2 ) };
 
     for ( $slots->sorted ) {
         my $date = join '-', ( $_->when =~ /^(\d{4})(\d{2})(\d{2})/ ) 
             if $_->type eq 'date';
-        DB->BaliCalendarWindow->create(
-            {  
-                start_time => $to_time->( $_->{start} ),
-                end_time   => $to_time->( $_->{end} ),
-                start_date => $date,
-                end_date   => $date,
-                day        => ( $_->weekday - 1 ),
-                type       => $_->data->{type},
-                active     => $_->data->{active} // 1,
-                id_cal     => $id_cal,
-            }
-        );
+        my $new_id = ''.mdb->seq('calendar_window');
+        mdb->calendar_window->insert({  
+            id         => $new_id,
+            start_time => $to_time->( $_->{start} ),
+            end_time   => $to_time->( $_->{end} ),
+            start_date => $date,
+            end_date   => $date,
+            day        => ( $_->weekday - 1 ),
+            type       => $_->data->{type},
+            active     => $_->data->{active} // 1,
+            id_cal     => $id_cal,
+        });
     }
 }
 
@@ -447,25 +451,8 @@ sub build_job_window : Path('/job/build_job_window') {
             push @ns, ( $mid, @rel_ids );
         }
         @ns = _unique @ns;
-        _debug "------Checking dates for namespaces: " . _dump \@ns;
-        my @rel_cals = $c->model('Baseliner::BaliCalendar')->search({ ns=>[ @ns, '/', 'Global', undef ], bl=>[$bl,'*'] })->hashref->all;
-        my @ns_cals = map { $_->{ns} } @rel_cals;
-        _debug "Calendars Found: " . _dump( \@rel_cals );
-        _debug "NS with Calendar: " . join ',', @ns_cals; 
 
-        # produce the hour list for matching calendars
-        my $hours = @ns_cals
-                ? $self->merge_calendars( ns=>\@ns_cals, bl=>$bl, date=>$date )
-                : {};
-
-        # remove X
-        while( my ($k,$v) = each %$hours ) {
-            delete $hours->{$k} if $v->{type} eq 'X'; 
-        }
-        # get it ready for a combo simplestore
-        my $hour_store = [ map {
-           [ $hours->{$_}{hour}, $hours->{$_}{name}, $hours->{$_}{type} ]
-        } sort keys %$hours ];
+        my ($hour_store, @rel_cals) = $self->check_dates($date, $bl, @ns);
 
         $c->stash->{json} = {success=>\1, data => $hour_store, cis=>_damn( \%cis ), cals=>\@rel_cals };
     } catch {
@@ -504,29 +491,8 @@ sub build_job_window_direct : Path('/job/build_job_window_direct') {
             $date->add( days=>$p->{day_add} );
         }
 
-        my @ns;
-
-        for my $ns ( _array $p->{ns} ) {
-            my $r = $c->model('Baseliner::BaliCalendar')->search({ns=>{ -like => $ns }, active=>'1' });
-            push @ns, $ns if $r->count;
-        }
-        _debug "NS with Calendar: " . join ',',@ns;
-        my %tmp_hash   = map { $_ => 1 } @ns;
-        @ns = keys %tmp_hash;    
-        _debug "------Checking dates for namespaces ($date): " . _dump \@ns;
-
-        my $hours = $self->merge_calendars( ns=>\@ns, bl=>$bl, date=>$date );
-
-        # remove X
-        while( my ($k,$v) = each %$hours ) {
-            delete $hours->{$k} if $v->{type} eq 'X'; 
-        }
-        # get it ready for a combo simplestore
-        my $hour_store = [ map {
-            my $st = substr($hours->{$_}{start}, 0,2 ) . ':' . substr($hours->{$_}{start}, 2,2);
-            my $et = substr($hours->{$_}{end}, 0,2 ) . ':' . substr($hours->{$_}{end}, 2,2 );
-            [ $hours->{$_}{hour}, $hours->{$_}{name}, $hours->{$_}{type}, $st, $et ]
-        } sort keys %$hours ];
+        my @ns = _array $p->{ns};
+        my ($hour_store, @rel_cals) = $self->check_dates($date, $bl, @ns);
 
         $c->stash->{json} = {success=>\1, data => $hour_store };
     } catch {
@@ -537,6 +503,32 @@ sub build_job_window_direct : Path('/job/build_job_window_direct') {
     $c->forward('View::JSON');
 }
 
+sub check_dates {
+    my ($self, $date, $bl, @ns) = @_;
+    my @rel_cals = mdb->calendar->find(
+        { 
+            ns=> { '$in' => [ @ns, '/', 'Global', undef ] }, 
+            bl=> { '$in' => [ $bl, '*'] } 
+        })->all;
+
+    my @ns_cals = map { $_->{ns} } @rel_cals;
+
+    # produce the hour list for matching calendars
+    my $hours = @ns_cals
+            ? $self->merge_calendars( ns=>@ns_cals, bl=>$bl, date=>$date )
+            : {};
+    # remove X
+    while( my ($k,$v) = each %$hours ) {
+        delete $hours->{$k} if $v->{type} eq 'X';
+        delete $hours->{$k} if $v->{type} eq 'B';
+    }
+    # get it ready for a combo simplestore
+    my $hour_store = [ map {
+       [ $hours->{$_}{hour}, $hours->{$_}{name}, $hours->{$_}{type} ]
+    } sort keys %$hours ];
+
+    return $hour_store, @rel_cals;
+}
 
 ### Private Methods
 
@@ -591,26 +583,30 @@ Options:
 =cut
 sub db_to_slots {
     my ($self, $id_cal, %opts ) = @_;
-    my @cals = DB->BaliCalendar->search(
-        { 'me.id' => $id_cal },
-        {
-          prefetch=>'windows',
-          order_by=>[
-              { -asc =>'seq' },
-              { -asc=>'windows.id' }, # last creation/edit is most important
-              { -asc =>'windows.day' },
-              { -asc =>'windows.start_time' }
-          ]
-        }
-    )->hashref->all;
+    my @cals = mdb->joins( 
+            calendar => { id=>$id_cal },
+            id => id_cal => 
+            calendar_window => {} );
+        # my @cals = mdb->calendar->search(
+        #     { 'me.id' => $id_cal },
+        #     {
+        #       prefetch=>'windows',
+        #       order_by=>[
+        #           { -asc =>'seq' },
+        #           { -asc=>'windows.id' }, # last creation/edit is most important
+        #           { -asc =>'windows.day' },
+        #           { -asc =>'windows.start_time' }
+        #       ]
+        #     }
+        # )->hashref->all;
     my $slots = Calendar::Slots->new();
     # create base (undefined) calendar
     if( $opts{ base } ) {
         $slots->slot( weekday=>$_, start=>'00:00', end=>'24:00', name=>'B', data=>{ type=>'B' } )
             for 1 .. 7;
     }
-    if ( my $cal = shift @cals ) {
-        for my $win ( _array( $cal->{windows} ) ) {
+    if ( my $cal =  @cals[0] ) {
+        for my $win ( _array( @cals ) ) {
             my $name = $win->{type};
             my $when;
             if ( $win->{start_date} ) {
@@ -636,7 +632,6 @@ sub db_to_slots {
             }
         }
     }
-    _debug $slots;
     return $slots;
 }
 
@@ -658,32 +653,27 @@ sub merge_calendars {
     # if today, start hours at now
     my $start_hour = $now->ymd eq $date->ymd ? sprintf("%02d%02d", $now->hour , $now->minute) : '';
 
-    my $where = {
-        'me.active'=>'1',
-        'windows.active'=>1,
-    };
-
+    my $where = { active  =>'1' };
     $where->{bl} = ['*'];
-    push @{ $where->{bl} }, $p{bl} if $p{bl};
     $where->{ns} = $p{ns} if $p{ns}; # [ 'xxxx.nature/yyyy', '/'  ]
-    _debug "Calendar search: " . _dump $where;
+    push $where->{bl} , $p{bl} if $p{bl};
+    $where->{bl} = mdb->in( $where->{bl} );
     
-    my @cals = DB->BaliCalendar->search(
-        $where,
-        {
-          prefetch=>'windows',
-          order_by=>[
-              { -asc=>'seq' },
-              { -asc=>'windows.day' },
-              { -asc=>'windows.start_time' }
-          ]
-        }
-    )->hashref->all;
+    my @cals = mdb->calendar->find($where)
+        ->sort({ seq=>1 })
+        ->sort({ day => 1 })
+        ->sort({ start_time => 1 })->all;
 
     my @slots_cal;
     for my $cal (@cals) {
+        my $id_cal = $cal->{id};
+        my @win_cals = mdb->joins( 
+            calendar => { id=>$id_cal },
+            id => id_cal => 
+            calendar_window => {} );
+
         my $slots = Calendar::Slots->new();
-        for my $win ( _array $cal->{windows} ) {
+        for my $win ( _array @win_cals ) {
             my $name = "$cal->{name} ($win->{type})==>" . ( $win->{day} + 1 );
             if ( $win->{start_date} ) {
                 my $d = Class::Date->new( $win->{start_date} );
