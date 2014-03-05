@@ -590,7 +590,13 @@ sub view : Local {
         $c->stash->{permissionGraph} = $c->model("Permissions")->user_has_action( username => $c->username, action => 'action.topics.view_graph');
         $c->stash->{permissionComment} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.GDI.comment' );
         if ( $topic_mid ) {
-            $c->stash->{viewKanban} = ci->new( $topic_mid )->children( isa => 'topic' );
+            my $topic_ci;
+            try {
+                $topic_ci = ci->new( $topic_mid );
+                $c->stash->{viewKanban} = $topic_ci->children( isa => 'topic' );
+            } catch {
+                $c->stash->{viewKanban} = 0;
+            };
         } else {
             $c->stash->{viewKanban} = 0;
         }
@@ -729,7 +735,7 @@ sub view : Local {
             $c->stash->{template} = '/comp/topic/topic_main.js';
         }
     } catch {
-        $c->stash->{json} = { success=>\0, msg=>"". shift() };
+        $c->stash->{json} = { success=>\0, msg=>_loc("Problem found opening topic %1.  Perhaps it's been removed from the system.  The error message is: %2", $topic_mid, shift()) };
         $c->forward('View::JSON');
     };
 }
