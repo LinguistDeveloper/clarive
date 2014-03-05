@@ -469,7 +469,7 @@ sub _checkRC {
     }
     my $ret_parsed = $self->_parseReturn($ret);
     if( $self->os ne 'win' ) {
-        $rc >> 8;   
+        $rc >>= 8;   
     }
     $self->rc( $rc );
     $self->ret( $ret_parsed );
