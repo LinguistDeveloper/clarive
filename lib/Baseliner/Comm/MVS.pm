@@ -197,8 +197,7 @@ sub do_recurse {
 }
 
 sub wait {
-    my $self=shift;
-    my $log=shift;
+    my ($self,$log) = @_;
 
 WW:	while( $self->pending( $log ) ) {
         for ( $self->finished_jobs($log) ) {
