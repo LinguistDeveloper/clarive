@@ -133,6 +133,7 @@
         form_value.add(oper);
         var fcomp = form_value.add(field);
         var set_value = function(){ 
+            if( ! Ext.getCmp( fcomp.id ) ) return;
             attr.oper = oper.get_save_data();
             var val = fcomp.get_save_data ? fcomp.get_save_data() : fcomp.getValue();
             
@@ -172,8 +173,8 @@
             node.setText( String.format('{0} {1}', oper.getRawValue(), label || attr.value) );
             //console.dir(node);
         };
-        oper.on('blur', function(f){ set_value() });
-        fcomp.on('blur', function(f){ set_value() });
+        //oper.on('blur', function(f){ set_value() });
+        //fcomp.on('blur', function(f){ set_value() });
         fcomp.on('change', function(f){ set_value() });
         oper.on('change', function(f){ set_value() });
         form_value.setTitle( String.format('{0} - {1}', node.text, pn.text ) );
@@ -182,10 +183,6 @@
         form_value.set_value = function(){ set_value() };
     };
     
-
-
-
-
 
     // selected fields editor
     var edit_select = function(node){
@@ -208,16 +205,23 @@
             mt =='custom_data' ? data_key.show() : date_key.hide();
         });
         
+        form_value.save_and_remove();
+        var sfields = form_value.add([ header, width, gridlet, meta_type, data_key ]);
+        
         var set_select = function(){
+            var sflag = true;
+            Ext.each(sfields,function(sf){
+                if( !Ext.getCmp(sf.id) ) sflag=false;
+                return sflag;
+            });
+            if( !sflag ) return;
             var vals = form_value.getValues();
             Ext.apply( node.attributes, vals );
             node.setText( String.format('{0}', vals.header ) );
         };
-    
-        form_value.save_and_remove();
-        form_value.add([ header, width, gridlet, meta_type, data_key ]);
+
         form_value.items.each(function(fi){
-            fi.on('blur', function(){ set_select() });
+            //fi.on('blur', function(){ set_select() });
             fi.on('change', function(){ set_select() });
         });
         form_value.setTitle( String.format('{0}', node.text) );
@@ -262,7 +266,7 @@
         
         form_value.add(options);
         form_value.items.each(function(fi){
-            fi.on('blur', function(){ set_select() });
+            //fi.on('blur', function(){ set_select() });
             fi.on('change', function(){ set_select() });
         });
         form_value.setTitle( String.format('{0}', node.text) );
