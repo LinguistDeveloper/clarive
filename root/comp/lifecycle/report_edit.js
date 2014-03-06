@@ -133,7 +133,6 @@
         form_value.add(oper);
         var fcomp = form_value.add(field);
         var set_value = function(){
-            alert('pasa');
             attr.oper = oper.get_save_data();
             var val = fcomp.get_save_data ? fcomp.get_save_data() : fcomp.getValue();
             
