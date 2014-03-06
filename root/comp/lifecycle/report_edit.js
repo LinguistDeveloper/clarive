@@ -174,10 +174,8 @@
         };
         oper.on('blur', function(f){ set_value() });
         fcomp.on('blur', function(f){ set_value() });
-        field.on('blur', function(f){ set_value() });        
         fcomp.on('change', function(f){ set_value() });
         oper.on('change', function(f){ set_value() });
-        field.on('change', function(f){ set_value() });        
         form_value.setTitle( String.format('{0} - {1}', node.text, pn.text ) );
         if( form_value.collapsed ) form_value.toggleCollapse(true);
         form_value.doLayout();
@@ -478,6 +476,7 @@
         { text: _('Close'), icon:'/static/images/icons/close.png', handler: function(){ win.close() } },
         { text: _('Save'),icon:'/static/images/icons/save.png', 
           handler: function(){
+
                 var dd = options.getValues();
                 if( tree_selected_is_loaded ) dd.selected = Baseliner.encode_tree( tree_selected.root );
                 //if( sql.editor ) dd.sql = sql.getValue();
