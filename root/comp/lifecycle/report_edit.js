@@ -133,6 +133,7 @@
         form_value.add(oper);
         var fcomp = form_value.add(field);
         var set_value = function(){
+            alert('pasa');
             attr.oper = oper.get_save_data();
             var val = fcomp.get_save_data ? fcomp.get_save_data() : fcomp.getValue();
             
@@ -174,13 +175,20 @@
         };
         oper.on('blur', function(f){ set_value() });
         fcomp.on('blur', function(f){ set_value() });
+        field.on('blur', function(f){ set_value() });        
         fcomp.on('change', function(f){ set_value() });
         oper.on('change', function(f){ set_value() });
+        field.on('change', function(f){ set_value() });        
         form_value.setTitle( String.format('{0} - {1}', node.text, pn.text ) );
         if( form_value.collapsed ) form_value.toggleCollapse(true);
         form_value.doLayout();
     };
     
+
+
+
+
+
     // selected fields editor
     var edit_select = function(node){
         var attr = node.attributes;
