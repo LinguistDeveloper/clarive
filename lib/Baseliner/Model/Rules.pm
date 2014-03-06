@@ -140,6 +140,9 @@ sub build_tree {
         return $self->tree_format( @$rule_tree );
         return @$rule_tree;
     } else {
+        if( $rule->{rule_type} eq 'chain' ) {
+            return $self->init_job_tasks;
+        }
         _fail _loc 'Rule tree is empty for rule %1', $id_rule;
     }
 }
