@@ -126,7 +126,7 @@
                 });                 
                 break;
         }
-        form_value.removeAll();
+        form_value.save_and_remove();
         var oper = new Baseliner.ComboDouble({
             value: attr.oper || '', 
             fieldLabel: _('Operator'), data: oper_by_type });
@@ -214,7 +214,7 @@
             node.setText( String.format('{0}', vals.header ) );
         };
     
-        form_value.removeAll();
+        form_value.save_and_remove();
         form_value.add([ header, width, gridlet, meta_type, data_key ]);
         form_value.items.each(function(fi){
             fi.on('blur', function(){ set_select() });
@@ -258,7 +258,7 @@
             nodeCategories.attributes.query = query;
         };
         
-        form_value.removeAll();
+        form_value.save_and_remove();
         
         form_value.add(options);
         form_value.items.each(function(fi){
@@ -464,6 +464,11 @@
         collapsed: true,
         hidden: false
     });
+    form_value.save_and_remove = function(){
+        if( form_value.set_value ) form_value.set_value();
+        if( form_value.set_select ) form_value.set_select();
+        form_value.removeAll();
+    };
     var selector = new Ext.Panel({ layout:'hbox', layoutConfig:{ align:'stretch' },
         region:'center',
         tbar: [ reload_all, '->', btn_clean_all ],
