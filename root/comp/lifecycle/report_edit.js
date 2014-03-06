@@ -132,7 +132,7 @@
             fieldLabel: _('Operator'), data: oper_by_type });
         form_value.add(oper);
         var fcomp = form_value.add(field);
-        var set_value = function(){
+        var set_value = function(){ 
             attr.oper = oper.get_save_data();
             var val = fcomp.get_save_data ? fcomp.get_save_data() : fcomp.getValue();
             
@@ -179,6 +179,7 @@
         form_value.setTitle( String.format('{0} - {1}', node.text, pn.text ) );
         if( form_value.collapsed ) form_value.toggleCollapse(true);
         form_value.doLayout();
+        form_value.set_value = function(){ set_value() };
     };
     
 
@@ -222,6 +223,7 @@
         form_value.setTitle( String.format('{0}', node.text) );
         if( form_value.collapsed ) form_value.toggleCollapse(true);
         form_value.doLayout();
+        form_value.set_select = function(){ set_select() };
     };
     
     var edit_categories = function(node){
@@ -476,7 +478,8 @@
         { text: _('Close'), icon:'/static/images/icons/close.png', handler: function(){ win.close() } },
         { text: _('Save'),icon:'/static/images/icons/save.png', 
           handler: function(){
-
+                if( form_value.set_value ) form_value.set_value();
+                if( form_value.set_select ) form_value.set_select();
                 var dd = options.getValues();
                 if( tree_selected_is_loaded ) dd.selected = Baseliner.encode_tree( tree_selected.root );
                 //if( sql.editor ) dd.sql = sql.getValue();
