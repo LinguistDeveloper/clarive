@@ -402,6 +402,7 @@ Term::ANSIColor
 Term::ReadKey
 Template
 Text::CSV
+Text::CSV::Slurp
 Text::CSV_XS
 Text::Markdown
 Text::Template

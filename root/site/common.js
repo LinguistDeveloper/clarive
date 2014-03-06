@@ -1254,7 +1254,7 @@ Baseliner.ImportWindow = Ext.extend( Baseliner.Window, {
             { text: self.title, 
                 icon: '/static/images/icons/import.png',
                 handler: function(){
-                    Baseliner.ajaxEval( self.url, { yaml: self.data_paste.getValue() }, function(res){
+                    Baseliner.ajaxEval( self.url, { text: self.data_paste.getValue(), format: self.format, ci_type: self.ci_type }, function(res){
                         if( !res.success ) {
                             Baseliner.error( self.title, res.msg );
                             return;

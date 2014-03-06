@@ -192,7 +192,7 @@ sub dsl_build {
 
         if( my $semaphore_key = $attr->{semaphore_key} ) {
             # consider using a hash: $stash->{_sem}{ $semaphore_key } = ...
-            push @dsl, sprintf( 'local $stash->{_sem} = semaphore({ key=>q{%s}, who=>q{%s} }, $stash)->take;', $semaphore_key, $name ) . "\n"; 
+            push @dsl, sprintf( 'local $stash->{_sem} = semaphore({ key=>parse_vars(q{%s},$stash), who=>q{%s} }, $stash)->take;', $semaphore_key, $name ) . "\n"; 
         }
         my $timeout = $attr->{timeout};
         do{ _debug _loc("*Skipped* task %1 in run forward", $name); next; } if !$is_rollback && !$run_forward;

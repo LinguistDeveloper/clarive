@@ -167,13 +167,17 @@
         }
     };
 
+    var ci_import = function(format, ci_type){
+       new Baseliner.ImportWindow({ url:'/ci/import', format: format, ci_type: ci_type }).show();
+    };
+
     var ci_export = function(format, mode){
         var checked = multi_check_data( check_sm, 'mid' );
-        if ( checked.count > 0 ) {
+        if ( checked.count > 0 && format != 'csv') {
             if( format == 'html' ) {
                 window.open('/ci/export_html?mids=' + checked.data.join('&mids=') + '&mode=' + mode );
             } else {
-                Baseliner.ajaxEval( '/ci/export', { mids: checked.data, format: format }, function(res) {
+                Baseliner.ajaxEval( '/ci/export', { mids: checked.data, format: format}, function(res) {
                     if( res.success ) {
                         var win = new Ext.Window({ height: 400, width: 800, items: new Baseliner.MonoTextArea({ value: res.data }), layout:'fit', maximizable: true });       
                         win.show();
@@ -182,15 +186,43 @@
                     }
                 });
             }
+        } else if(format == 'csv') {
+            Baseliner.ajaxEval( '/ci/export', { mids: checked.data, format: format, ci_type: mode }, function(res) {
+                if( res.success ) {
+                    var win = new Ext.Window({ height: 400, width: 800, items: new Baseliner.MonoTextArea({ value: res.data }), layout:'fit', maximizable: true });       
+                    win.show();
+                } else {
+                    Baseliner.error( _('CI'), res.msg );
+                }
+            });
         } else {
             Baseliner.message( _('Error'), _('Select rows first') );
         }
     };
-    
 
-    var ci_import = function(format, mode){
-        new Baseliner.ImportWindow({ url:'/ci/import' }).show();
+    var ci_export_file = function(url, format, ci_type, target) {
+        var checked = multi_check_data( check_sm, 'mid' );
+       
+        var form = form_report.getForm(); 
+        form.findField('mids').setValue( checked.data );
+        form.findField('format').setValue( format );
+        form.findField('ci_type').setValue( ci_type );
+        var el = form.getEl().dom;
+        var targetD = document.createAttribute("target");
+        targetD.nodeValue = target || "_blank";
+        el.setAttributeNode(targetD);
+        el.action = url;
+        el.submit(); 
     };
+
+    var form_report = new Ext.form.FormPanel({
+        url: '/ci/export_file', renderTo:'run-panel', style:{ display: 'none'},
+        items: [
+            { xtype:'hidden', name:'mids'},
+            { xtype:'hidden', name:'format'},
+            { xtype:'hidden', name:'ci_type'}
+        ]
+    });
 
     /*  Renderers */
     var render_tags = function(value,metadata,rec,rowIndex,colIndex,store) {
@@ -365,13 +397,19 @@
                     { text:_('YAML'), icon: '/static/images/icons/yaml.png', handler:function(){ ci_export('yaml') } },
                     { text:_('JSON'), icon: '/static/images/icons/json.png', handler:function(){ ci_export('json') } },
                     { text:_('HTML'), icon: '/static/images/icons/html.png', handler:function(){ ci_export('html', 'shallow') } },
-                    { text:_('HTML (Long)'), icon: '/static/images/icons/html.png', handler:function(){ ci_export('html', 'deep') } }
+                    { text:_('HTML (Long)'), icon: '/static/images/icons/html.png', handler:function(){ ci_export('html', 'deep') } },
+                    { text:_('CSV'), icon: '/static/images/icons/csv.png', handler:function(){ ci_export('csv', params.item) } },
+                    { text: _('CSV File'), icon: '/static/images/icons/csv.png', handler: function() {
+                        ci_export_file('/ci/export_file', 'csv', params.item, 'FrameDownload')} }
                 ]
             },
-            { xtype:'button', text: _('Import YAML'), icon: '/static/images/icons/import.png', cls: 'x-btn-text-icon', 
-                handler:function(){ ci_import('yaml') }
+            { xtype:'button', text: _('Import'), icon: '/static/images/icons/import.png', cls: 'x-btn-text-icon', 
+                menu:[
+                    { text:_('YAML'), icon: '/static/images/icons/yaml.png', handler:function(){ ci_import('yaml') } },
+                    { text:_('CSV'), icon: '/static/images/icons/csv.png', handler:function(){ ci_import('csv', params.item) } }
+                ]
             },
-            '->',
+	       '->',
             { icon:'/static/images/ci/ci-grey.png', cls: 'x-btn-icon', handler: show_graph }
         ],
         viewConfig: {

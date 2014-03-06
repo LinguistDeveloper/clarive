@@ -936,12 +936,12 @@ sub export : Local {
         my @cis = map { ci->new( $_ ) } _array $mids;
         my $data;
         if( $format eq 'yaml' ) {
-            $data = _dump( \@cis );
-        }
-        elsif( $format eq 'json' ) {
+            $data = _dump( \@cis );            
+        }elsif( $format eq 'json' ) {
             $data = _encode_json( [ map { _damn( $_ ) } @cis ] );
-        }
-        else {
+        }elsif( $format eq 'csv' ) {
+            $data = export_csv($p->{ci_type}, @cis);
+        } else {
             _fail _loc "Unknown export format: %1", $format;
         }
         $c->stash->{json} = { success=>\1, msg=>_loc('CIs exported ok' ), data=>$data };
@@ -949,8 +949,83 @@ sub export : Local {
         my $err = shift;
         _error( $err );
         $c->stash->{json} = { success=>\0, msg=>_loc('Error exporting CIs: %1', $err) };
-    };
-    $c->forward('View::JSON');
+    }; 
+    
+    $c->forward('View::JSON');   
+}
+
+sub export_file : Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+    my @mids = split ',', $p->{mids};
+    my $format = $p->{format};
+    try {
+        my @cis = map { _ci( $_ ) } @mids;
+        my $body;
+        if($format eq 'csv'){
+            $body = export_csv($p->{ci_type}, @cis);
+            $c->stash->{serve_body} = $body;
+            $c->stash->{serve_filename} = length $p->{ci_type} ? Util->_name_to_id($p->{ci_type}).'Export.csv' : 'CIsExport.csv';
+        }
+        
+        $c->forward('/serve_file');
+    } catch {
+        my $err = shift;
+        _error( $err );
+        $c->stash->{json} = { success=>\0, msg=>_loc('Error exporting CIs: %1', $err) };
+    }; 
+}
+
+sub export_csv {
+    require Baseliner::CSV;
+    my ($ci_type, @cis) = @_;
+    #limpiamos los cis de entrada para tener una estructura mas legible
+    my @array = map { _damn( $_ ) } @cis;
+    my $class = "BaselinerX::CI::$ci_type";
+
+
+    my @csv_cols;
+
+    my @ci_cols = map {$_} $class->meta->get_attribute_list;
+
+    #ojo, revisar que si hay 0 filas seleccionadas, tiene que devolver SOLO los nombres de las columnas
+    #my @ci_cols = keys %{ @array[0] };
+    my @not = ("modified_by","created_by","job","active","ts","versionid");
+
+    #columnas a mostrar en el CSV
+    foreach my $col (@ci_cols) {
+        if (grep {$_ eq $col} @not) {
+            next;
+        }elsif($col =~ /^_.*/){
+            next;
+        }
+        push @csv_cols, $col; 
+    }  
+
+    #ordenamos alfabeticamente. Ver si se puede ordenar de otro modo
+    @csv_cols = sort @csv_cols;
+
+    #sustituir las referencias por los nombres del CI al que referencian
+    foreach my $csv_struct (@array) {        
+        foreach my $field (keys %{$csv_struct}) {
+            if($class->field_is_ci($field)){
+                my ($campo) = _array ${$csv_struct}{$field};
+                my $nombre = $campo->{name};
+                ${$csv_struct}{$field} = $nombre;
+            }
+        }
+    }
+
+    #generar el CSV
+    my $data;
+    if(@cis){
+        #hay campos seleccionados
+        $data = Baseliner::CSV->create( input => \@array, sep_char=>';', binary => 1, allow_loose_quotes => 1, field_order => \@csv_cols);
+    }else{
+        #no hay campos seleccionados, devolvemos los titulos de columna
+        $data = join(';', @csv_cols);
+    }
+    return $data;
 }
 
 sub export_html : Local {
@@ -1144,23 +1219,66 @@ sub edit : Local {
 sub import : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
-    my $yaml = $p->{yaml};
-    $c->stash->{json} = try {
-        my $d = _load( $yaml );
-        my @mids;
-        if( ref $d eq 'ARRAY' ) {
-            push @mids, $self->import_one_ci( $_ ) for @$d;
-        } else {
-            push @mids, $self->import_one_ci( $d );
+    
+    my $text = $p->{text};
+    my $format = $p->{format};
+    use v5.10;
+    given ($format) {
+        when ('yaml') {
+           $c->stash->{json} = 
+                try {
+                    my $d = _load( $text );
+                    my @mids;
+                    if( ref $d eq 'ARRAY' ) {
+                        push @mids, $self->import_one_ci( $_ ) for @$d;
+                    } else {
+                        push @mids, $self->import_one_ci( $d );
+                    }
+                    {success => \1, msg=>_loc('CIs created: %1', join',',@mids), mids=>\@mids };
+                } catch {
+                    my $err = shift;
+                    _error( $err );
+                    {success => \0, msg => $err};
+                };
+            $c->forward('View::JSON');
         }
-        {success => \1, msg=>_loc('CIs created: %1', join',',@mids), mids=>\@mids };
-    } 
-    catch {
-        my $err = shift;
-        _error( $err );
-        {success => \0, msg => $err};
-    };
-    $c->forward('View::JSON');
+        when ('csv') {
+            $c->stash->{json} = 
+                try { 
+                    my $ci;
+                    my $class = "BaselinerX::CI::$p->{ci_type}";
+                    my @rows = csv_import($text);
+                    my $upd_rows = 0;
+                    my $ins_rows = 0;
+                    my @updates_mids;
+                    my @mids;
+                    for my $row ( @rows ) {
+                        $ci = get_ci_from_row($row, $class);
+                        if(defined $ci){
+                            $row = update_csv_fields($row, $class);
+                            #actualizamos el CI
+                            $ci->update( %$row );
+                            push @updates_mids, $ci->{mid};
+                            $upd_rows++;
+                        } else {
+                            $row = update_csv_fields($row, $class);
+                            # creamos un nuevo CI.
+                            $ci = $class->new($row);
+                            $ci->save;
+                            $ins_rows++;
+                        }
+                        push @mids, $ci->{mid};
+                    }
+                    _log _dump @mids;
+                    {success => \1, msg=>_loc('CIs created: %1, CIs updated: %2', $ins_rows, $upd_rows), mids=>\@mids, updated_mids=>\@updates_mids};
+                 } catch {
+                    my $err = shift;
+                    _error($err);
+                    {success => \0, msg => $err};
+                 };
+             $c->forward('View::JSON');
+        }
+    }
 }
 
 sub import_one_ci {
@@ -1175,6 +1293,55 @@ sub import_one_ci {
     } else {
         _fail _loc 'No class name defined for ci %1 (%2)', $d->{name}, $mid;
     }
+}
+
+sub csv_import{
+    my ($text) = @_;
+    use Text::CSV;
+    use List::MoreUtils qw/zip/;
+    my $csv = Text::CSV->new ({sep_char=>';', binary => 1});
+    
+    open my $ff, '<', \$text;
+    my @rows;
+    my @cols;
+
+    while ( my $row = $csv->getline($ff) ) {
+        if( !@cols ) {
+            @cols = map { Util->_name_to_id($_) } @$row;
+            next;
+        }
+        my $h = +{ zip( @cols, @$row ) };
+        push @rows, $h;
+    }
+    return @rows;
+}
+
+sub update_csv_fields{
+    my ($row, $class) = @_;
+    for my $field ( keys %$row ) {
+        next unless $class->field_is_ci( $field );
+        if(length $row->{$field} > 0) {
+            my $rel_ci = ci->new( "name:$row->{$field}" );   # se instancia el CI relacionado
+            _fail _loc "Related CI not found: %1", $row->{$field} unless ref $rel_ci;  # no existe!!!
+            $row->{ $field } = $rel_ci->{mid};
+        }
+    }
+    return $row;
+}
+
+sub get_ci_from_row{
+    my ($row, $class) = @_;
+    my $ci;
+    if (length $row->{mid} > 0){
+        $ci = $class->search_ci( mid => $row->{mid} );
+    }elsif (length $row->{moniker} > 0){
+        $ci = $class->search_ci( moniker => $row->{moniker} );
+    }elsif (length $row->{ns} > 0){
+        $ci = $class->search_ci( ns => $row->{ns} );
+    }elsif (length $row->{name} > 0){
+        $ci = $class->search_ci( name => $row->{name} );
+    }
+    return $ci;
 }
 
 sub grid : Local {
