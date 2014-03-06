@@ -73,43 +73,40 @@ sub run_once {
             push @notify_default, _array $stash->{notify_default} if $stash->{notify_default};
             push @notify_default, $stash->{created_by} if $stash->{created_by};
             
-            my @notifications = Baseliner->model('Notification')->get_notifications({ event_key => $event_key, notify_default => \@notify_default, notify_scope => $notify_scope, mid => $stash->{mid} });
+            my $notification = Baseliner->model('Notification')->get_notifications({ event_key => $event_key, notify_default => \@notify_default, notify_scope => $notify_scope, mid => $stash->{mid} });
             my $config_email = Baseliner->model( 'ConfigStore' )->get( 'config.comm.email.from' )->{from};
             
-            foreach  my $notification ( @notifications ){
-                if ($notification){
-                    foreach  my $template (  keys $notification ){
-                        my $model_messaging = {
-                            subject         => $stash->{subject} || $event_key,
-                            sender          => $config_email || 'clarive@clarive.com',
-                            carrier         => 'email',
-                            template        => $template,
-                            template_engine => 'mason',
-                        };
-                        $model_messaging->{to} = { users => $notification->{$template}->{TO} } if (exists $notification->{$template}->{TO}) ;
-                        $model_messaging->{cc} = { users => $notification->{$template}->{CC} } if (exists $notification->{$template}->{CC}) ;
-                        $model_messaging->{bcc} = { users => $notification->{$template}->{BCC} } if (exists $notification->{$template}->{BCC}) ;
+            if ($notification){
+                foreach  my $template (  keys $notification ){
+                    my $model_messaging = {
+                        subject         => $stash->{subject} || $event_key,
+                        sender          => $config_email || 'clarive@clarive.com',
+                        carrier         => 'email',
+                        template        => $template,
+                        template_engine => 'mason',
+                    };
+                    $model_messaging->{to} = { users => $notification->{$template}->{TO} } if (exists $notification->{$template}->{TO}) ;
+                    $model_messaging->{cc} = { users => $notification->{$template}->{CC} } if (exists $notification->{$template}->{CC}) ;
+                    $model_messaging->{bcc} = { users => $notification->{$template}->{BCC} } if (exists $notification->{$template}->{BCC}) ;
+                    
+                    my $topic = {};
+                    $topic = mdb->topic->find_one({ mid => "$stash->{mid}"}) if $stash->{mid};
+                    $model_messaging->{vars} = {%$topic,%$stash};
+                    $model_messaging->{vars}->{subject} = $stash->{subject} || $event_key;
+                    $model_messaging->{vars}->{to} = { users => $notification->{$template}->{TO} } if (exists $notification->{$template}->{TO}) ;
+                    $model_messaging->{vars}->{cc} = { users => $notification->{$template}->{CC} } if (exists $notification->{$template}->{CC}) ;
+                    $model_messaging->{vars}->{bcc} = { users => $notification->{$template}->{BCC} } if (exists $notification->{$template}->{BCC}) ;
                         
-                        my $topic = {};
-                        $topic = mdb->topic->find_one({ mid => "$stash->{mid}"}) if $stash->{mid};
-                        $model_messaging->{vars} = {%$topic,%$stash};
-                        $model_messaging->{vars}->{subject} = $stash->{subject} || $event_key;
-                        $model_messaging->{vars}->{to} = { users => $notification->{$template}->{TO} } if (exists $notification->{$template}->{TO}) ;
-                        $model_messaging->{vars}->{cc} = { users => $notification->{$template}->{CC} } if (exists $notification->{$template}->{CC}) ;
-                        $model_messaging->{vars}->{bcc} = { users => $notification->{$template}->{BCC} } if (exists $notification->{$template}->{BCC}) ;
-                            
-                        Baseliner->model( 'Messaging' )->notify(%{$model_messaging});
-                        
-                        mdb->event_log->insert({
-                            id=>mdb->seq('event_log'), id_event=> $ev->{id}, stash_data=> _dump( $model_messaging ), return_code=>0, 
-                        });
-                    }
+                    Baseliner->model( 'Messaging' )->notify(%{$model_messaging});
+                    
+                    mdb->event_log->insert({
+                        id=>mdb->seq('event_log'), id_event=> $ev->{id}, stash_data=> _dump( $model_messaging ), return_code=>0, 
+                    });
                 }
             }
 
             $event_status= $rc ? 'ko' : 'ok';
-            $ev->{event_status} = $event_status;
-            mdb->event->save( $ev );
+            mdb->event->update( {id => $ev->{id}}, {'$set'=>{event_status=>$event_status}});
         } catch {
             my $err = shift;
             # TODO global error or a rule by rule (errors go into rule, but event needs a global) 
@@ -120,8 +117,7 @@ sub run_once {
             } else {
                 $event_status = 'ko';
             }
-            $ev->{event_status} = $event_status;
-            mdb->event->save( $ev );
+            mdb->event->update( {id => $ev->{id}}, {'$set'=>{event_status=>$event_status}});
         };
         _debug _loc 'Finished event %1 (id %2), status: %3', $ev->{event_key}, $ev->{id}, $event_status;
     }
