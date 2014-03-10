@@ -578,7 +578,8 @@ sub store : Local {
                     push @security, keys $collections->{$class};    
                 }
             }
-            $mids = [ _array($mids), @security];
+            $mids = [ _array($mids), _unique @security];
+            _log _dump $mids;
         }
 
         $class = "BaselinerX::CI::$class" if $class !~ /^Baseliner/;
