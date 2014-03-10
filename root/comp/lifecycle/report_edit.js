@@ -147,7 +147,7 @@
                     fcomp.items.each(function(r){ arr_options.push(r.display) });
                     attr.options = arr_options;
                     label = arr_options.join(',');
-                    var tmp_val = val.split(',');
+                    var tmp_val = val?val.toString().split(','):'';
                     val = tmp_val;
                     break;
                 case 'status':
