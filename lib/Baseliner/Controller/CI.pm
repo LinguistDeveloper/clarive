@@ -558,7 +558,7 @@ sub store : Local {
     my $mids;
     if( exists $p->{mids} ) {
         $mids = delete $p->{mids};
-        if( length $mids ) {
+        if( length $mids && $mids ne 'default' ) {
             $mids = [ grep { defined } split /[\s,]+/, $mids ] unless ref $mids eq 'ARRAY';
         } else {  # no value sent, but key exists
             $mids = [];  # otherwise, it will return all cis
@@ -569,6 +569,7 @@ sub store : Local {
     my $total = 0; 
 
     if( my $class = $p->{class} // $p->{classname} // $p->{isa} ) {
+
         if( $p->{security} ){  #Parámetro desde informes
             my @security;
             my @cols_roles = $c->model('Permissions')->user_projects_ids_with_collection( username=>$c->username );
@@ -579,7 +580,7 @@ sub store : Local {
             }
             $mids = [ _array($mids), @security];
         }
-        
+
         $class = "BaselinerX::CI::$class" if $class !~ /^Baseliner/;
         ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
     }
