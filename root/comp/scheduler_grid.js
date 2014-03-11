@@ -1,4 +1,3 @@
-
 <%perl>
     use Baseliner::Utils;
     use utf8;
@@ -145,7 +144,6 @@
         emptyMsg: "No hay registros disponibles"
     });
         
-    
     store.load({params:{start:0 , limit: ps}}); 
 
     var render_name = function(value, metadata, rec, rowIndex, colIndex, store) {
@@ -156,8 +154,6 @@
     var grid = new Ext.grid.GridPanel({
         header: false,
         stripeRows: true,
-        autoScroll: true,
-        autoWidth: true,
         store: store,
         viewConfig: {
             enableRowBody: true,
@@ -186,10 +182,8 @@
             { header: _('Description'), width: 200, dataIndex: 'description', sortable: true },
             { header: _('Frequency'), width: 60, dataIndex: 'frequency', sortable: true },
             { header: _('Workdays'), width: 60, dataIndex: 'workdays', sortable: true },
-            { header: _('Service'), width: 100, dataIndex: 'service', sortable: true }   
+            { header: _('Service'), width: 100, dataIndex: 'service', sortable: true }
         ],
-        autoSizeColumns: true,
-        deferredRender:true,      
         bbar: paging,
         tbar: tbar
     });

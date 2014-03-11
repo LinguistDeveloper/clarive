@@ -3,7 +3,6 @@ use Moose;
 use Baseliner::Utils;
 use Path::Class;
 use Try::Tiny;
-use Proc::Exists qw(pexists);
 
 BEGIN { extends 'Catalyst::Model' }
 
@@ -14,10 +13,8 @@ sub tasks_list {
 
     my @tasks_to_return = ();
     #Looking for tasks to run
-    my $tasks = Baseliner->model('Baseliner::BaliScheduler')->search( {status => ['IDLE','KILLED','RUNNOW'] } );
-
-    rs_hashref($tasks);
-
+    my $tasks = mdb->scheduler->find({ status=>mdb->in('IDLE','KILLED','RUNNOW') });
+    
     while ( my $task = $tasks->next ){
         _log "Evaluating task ".$task->{description};
         if ( $self->needs_execution( $task ) ) {
@@ -35,16 +32,18 @@ sub road_kill {
 
     my ( $self ) = @_;
 
-    my $rs = Baseliner->model('Baseliner::BaliScheduler')->search( {status => 'RUNNING'} );
+    my $rs = mdb->scheduler->find({ status=>mdb->in('RUNNING') });
 
+    require Proc::Exists;
+    
     while( my $r = $rs->next ) {
-        my $pid = $r->pid;
+        my $pid = $r->{pid};
         next unless $pid > 0;
         _log _loc("Checking if process $pid exists");
-        next if pexists( $pid );
+        next if Proc::Exists::pexists( $pid );
         _log _loc("Process $pid does not exist");
-        $self->set_task_data( taskid=>$r->id, status=>'IDLE');
-        $self->schedule_task( taskid=>$r->id, when=>$self->next_from_last_schedule( taskid=>$r->id ));
+        $self->set_task_data( taskid=>$r->{id}, status=>'IDLE');
+        $self->schedule_task( taskid=>$r->{id}, when=>$self->next_from_last_schedule( taskid=>$r->{id} ));
     }
 }
 
@@ -79,18 +78,19 @@ sub run_task {
 
     my $taskid = $p{taskid};
     my $pid = $p{pid};
-    my $task = Baseliner->model('Baseliner::BaliScheduler')->find($taskid);
-    my $status = $task->status;
+    my $task = mdb->scheduler->find_one({ _id=>mdb->oid($taskid) });
+    my $status = $task->{status};
+    
+    my $rs = mdb->scheduler->find({ status=>mdb->in('RUNNING') });
 
-    _log "Running task ".$task->description;
+    _log "Running task ".$task->{description};
 
     $self->set_last_execution( taskid=>$taskid, when=>$self->now );
     $self->set_task_data( taskid=>$taskid, status=>'RUNNING', pid=>$pid );
-    my $out = Baseliner->launch( $task->service, data=>$task->parameters );
+    my $out = Baseliner->launch( $task->{service}, data=>$task->{parameters} );
 
-    if ( $task->frequency eq 'ONCE') {
-        $task->next_exec(undef);
-        $task->update;
+    if ($task->{frequency} eq 'ONCE') {
+        mdb->scheduler>update({ _id=>mdb->oid($task->{_id}) },{ '$set'=>{ next_exec=>undef } });
     } elsif ( $status ne 'RUNNOW') {
         $self->schedule_task( taskid=>$taskid, when=>$self->next_from_last_schedule( taskid=>$taskid ));
     }
@@ -104,12 +104,10 @@ sub set_task_data {
     my $status = $p{status};
     my $pid = $p{pid};
 
-    my $task = Baseliner->model('Baseliner::BaliScheduler')->find($taskid);
-
-    $task->status($status) if $status;
-    $task->pid($pid) if $pid;
-
-    $task->update;
+    my $up;
+    $up->{status} = $status if $status;
+    $up->{pid} = $pid if $pid;
+    mdb->scheduler->update({ _id=>mdb->oid($taskid) },{ '$set'=>$up }) if $up;
 }
 
 sub schedule_task {
@@ -118,17 +116,13 @@ sub schedule_task {
     my $taskid = $p{taskid};
     my $when = $p{when};
 
-    my $task = Baseliner->model('Baseliner::BaliScheduler')->find($taskid);
-
     if ( $when eq 'now') {
-        $task->status( 'RUNNOW' );		
+        mdb->scheduler->update({ _id=>mdb->oid($taskid) },{ '$set'=>{ status=>'RUNNOW' } });
         _log "Task will run now";
     } else {
-        $task->next_exec( $when );
+        mdb->scheduler->update({ _id=>mdb->oid($taskid) },{ '$set'=>{ next_exec=>$when } });
         _log "New next exec is ".$when;
     }
-
-    $task->update;
 }
 
 sub set_last_execution {
@@ -137,10 +131,7 @@ sub set_last_execution {
     my $taskid = $p{taskid};
     my $when = $p{when};
 
-    my $task = Baseliner->model('Baseliner::BaliScheduler')->find($taskid);
-
-    $task->last_exec($when);
-    $task->update;
+    mdb->scheduler->update({ _id=>mdb->oid($taskid) },{ '$set'=>{ last_exec=>$when } });
 }
 
 sub now {
@@ -163,19 +154,19 @@ sub next_from_last_schedule {
     my ( $self, %p ) = @_;
 
     my $taskid = $p{taskid};
-    my $task = Baseliner->model('Baseliner::BaliScheduler')->find($taskid);
+    my $task = mdb->scheduler->find_one({ _id=>mdb->oid($taskid) });
 
-    my $last_schedule = Class::Date->new($task->next_exec);
+    my $last_schedule = Class::Date->new($task->{next_exec});
 
-    my $next_exec = $last_schedule+$task->frequency;
+    my $next_exec = $last_schedule+$task->{frequency};
 
     my $now = Class::Date->new($self->now);
 
     if ( $next_exec < $now ) {
-        $next_exec = $now+$task->frequency;
+        $next_exec = $now+$task->{frequency};
     }
     if ( $task->{workdays} ) {
-        $next_exec = next_workday( date => $next_exec);	
+        $next_exec = $self->next_workday( date => $next_exec);	
     }
     return $next_exec;
 }
@@ -193,9 +184,7 @@ sub next_workday {
 
 sub is_workday {
     my ( $self, %p ) = @_;
-
     my @workdays = ('Monday','Tuesday','Wednesday','Thursday','Friday');
-
     my $date = Class::Date->new($p{date});
     return $date->day_of_weekname ~~ @workdays;
 }
@@ -219,19 +208,20 @@ sub toggle_activation {
 
 sub kill_schedule {
     my ( $self, %p ) = @_;
+    
+    require Proc::Exists;
 
     my $taskid = $p{taskid};
-     my $rs = Baseliner->model('Baseliner::BaliScheduler')->find($taskid);
-     my $pid = $rs->pid;
+    my $task = mdb->scheduler->find_one({ _id=>mdb->oid($taskid) });
+    
+    my $pid = $task->{pid};
+    _log "Killing PID $pid";
 
-     _log "Killing PID $pid";
-
-    if ( pexists( $pid ) ) {
+    if ( Proc::Exists::pexists( $pid ) ) {
         kill 9,$pid;
         $self->schedule_task( taskid=>$taskid, when=>$self->next_from_last_schedule( taskid=>$taskid )); 
     };
 
-
-       $self->set_task_data( taskid => $taskid, status => 'KILLED');
+    $self->set_task_data( taskid => $taskid, status => 'KILLED');
 }
 1;
