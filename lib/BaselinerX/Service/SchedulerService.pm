@@ -37,7 +37,7 @@ sub run_once {
     $self->config( $config );
     my $pid      = '';
 
-    my $sm = Baseliner->model('SchedulerModel');
+    my $sm = Baseliner->model('Scheduler');
 
     my @tasks = $sm->tasks_list( status => 'IDLE');    # find new schedules
     _log "Number of tasks to dispatch: " . @tasks;
@@ -65,7 +65,7 @@ sub road_kill {
     my ( $self, $c, $config ) = @_;
     $self->config( $config );
 
-    my $sm = Baseliner->model('SchedulerModel');
+    my $sm = Baseliner->model('Scheduler');
     $sm->road_kill;    # find new schedules
 }
 
