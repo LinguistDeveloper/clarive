@@ -97,7 +97,7 @@ sub run_schedule : Local {
 
     try {
         if ($id) {
-            BaselinerX::Model::SchedulerModel->schedule_task(
+            Baseliner->model('Scheduler')->schedule_task(
                 taskid => $id,
                 when   => 'now'
             );
@@ -175,7 +175,7 @@ sub toggle_activation : Local {
 
     try {
         if ($id) {
-            $new_status = BaselinerX::Model::SchedulerModel->toggle_activation(
+            $new_status = Baseliner->model('Scheduler')->toggle_activation(
                 taskid => $id,
                 status => $status
             );
@@ -202,7 +202,7 @@ sub kill_schedule : Local {
 
     try {
         if ($id) {
-            BaselinerX::Model::SchedulerModel->kill_schedule( taskid => $id );
+            Baseliner->model('Scheduler')->kill_schedule( taskid => $id );
         }
         $c->stash->{json} = { msg => 'Task killed', success => \1 };
     }

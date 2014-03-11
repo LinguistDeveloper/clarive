@@ -1,4 +1,4 @@
-package BaselinerX::Model::SchedulerModel;
+package Baseliner::Model::Scheduler;
 use Moose;
 use Baseliner::Utils;
 use Path::Class;
@@ -225,3 +225,4 @@ sub kill_schedule {
     $self->set_task_data( taskid => $taskid, status => 'KILLED');
 }
 1;
+
