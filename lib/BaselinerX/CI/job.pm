@@ -44,12 +44,12 @@ has backup_dir         => qw(is rw isa Any lazy 1), default => sub {
 has id_rule      => qw(is rw isa Any ), default=>sub {
     my $self = shift;
     my $type = $self->job_type || 'promote';
-    my $doc = mdb->rule->find_one({ rule_when=>$type })->sort({ _id=>-1 });
+    my $doc = mdb->rule->find({ rule_when=>$type })->sort({ _id=>-1 })->next;
     if( $doc ) {
         return $doc->{id};    
     } elsif( $type eq 'demote' ) {
         # cant' find demote, use a promote
-        my $doc = mdb->rule->find_one({ rule_when=>'promote' })->sort({ _id=>-1 });
+        my $doc = mdb->rule->find({ rule_when=>'promote' })->sort({ _id=>-1 })->next;
         _fail _loc 'Could not find a default %1 job chain rule', 'promote/demote' unless $doc;
         return $doc->{id};    
     } else {
