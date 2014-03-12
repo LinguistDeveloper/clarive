@@ -477,6 +477,25 @@ sub rules {
     mdb->seq('rule_seq',$maxseq+1);
 }
 
+sub message_queue {
+    mdb->message->drop;
+    for my $msg ( DB->BaliMessage->all ) {
+       my @q = map { delete $_->{id_message}; delete $_->{id}; $_ }  
+              $msg->bali_message_queues->hashref->all;
+       my $doc = +{ $msg->get_columns };
+       delete $doc->{id};
+       $doc->{queue} = \@q;
+       
+       mdb->message->insert( $doc );   
+    }
+}
+
+sub scheduler {
+    my @sch = _dbis->query('select * from bali_scheduler')->hashes;
+    mdb->scheduler->drop;
+    mdb->scheduler->insert($_) for map { delete $_->{id}; $_ } @sch;
+}
+
 ####################################
 #
 # Integrity fixes

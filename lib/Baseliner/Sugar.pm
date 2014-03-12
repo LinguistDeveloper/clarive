@@ -60,8 +60,6 @@ sub user_get {
     $rs->first;
 }
 
-sub lifecycle { Baseliner->model('LCModel')->lc }
-
 # job dsl
 
 our $job;

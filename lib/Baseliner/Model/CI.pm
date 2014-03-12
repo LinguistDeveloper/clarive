@@ -1,4 +1,4 @@
-package BaselinerX::Model::CI;
+package Baseliner::Model::CI;
 use Baseliner::Plug;
 use Baseliner::Utils qw(packages_that_do);
 use v5.10;
@@ -24,3 +24,4 @@ register 'registor.action.ci' => {
 };
 
 1;
+
