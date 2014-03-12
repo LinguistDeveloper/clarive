@@ -1,4 +1,4 @@
-package Baseliner::Model::Scheduler;
+package Baseliner::Model::Sched;
 use Moose;
 use Baseliner::Utils;
 use Path::Class;
@@ -90,7 +90,7 @@ sub run_task {
     my $out = Baseliner->launch( $task->{service}, data=>$task->{parameters} );
 
     if ($task->{frequency} eq 'ONCE') {
-        mdb->scheduler>update({ _id=>mdb->oid($task->{_id}) },{ '$set'=>{ next_exec=>undef } });
+        mdb->scheduler->update({ _id=>mdb->oid($task->{_id}) },{ '$set'=>{ next_exec=>undef } });
     } elsif ( $status ne 'RUNNOW') {
         $self->schedule_task( taskid=>$taskid, when=>$self->next_from_last_schedule( taskid=>$taskid ));
     }
@@ -120,7 +120,7 @@ sub schedule_task {
         mdb->scheduler->update({ _id=>mdb->oid($taskid) },{ '$set'=>{ status=>'RUNNOW' } });
         _log "Task will run now";
     } else {
-        mdb->scheduler->update({ _id=>mdb->oid($taskid) },{ '$set'=>{ next_exec=>$when } });
+        mdb->scheduler->update({ _id=>mdb->oid($taskid) },{ '$set'=>{ next_exec=>"$when" } });
         _log "New next exec is ".$when;
     }
 }
@@ -131,7 +131,7 @@ sub set_last_execution {
     my $taskid = $p{taskid};
     my $when = $p{when};
 
-    mdb->scheduler->update({ _id=>mdb->oid($taskid) },{ '$set'=>{ last_exec=>$when } });
+    mdb->scheduler->update({ _id=>mdb->oid($taskid) },{ '$set'=>{ last_exec=>"$when" } });
 }
 
 sub now {
