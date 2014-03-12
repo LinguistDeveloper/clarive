@@ -37,14 +37,17 @@ sub run_once {
     $self->config( $config );
     my $pid      = '';
 
-    my $sm = Baseliner->model('SchedulerModel');
+    my $sm = Baseliner->model('Sched');
 
     my @tasks = $sm->tasks_list( status => 'IDLE');    # find new schedules
     _log "Number of tasks to dispatch: " . @tasks;
     for my $task ( @tasks ) {
+        
+        # TODO create a job for each one, of type "internal", hide from the public view? (according
+        #   to a user defined option 
 
         #
-        $pid = fork;
+        $pid = fork;   # XXX no-no for mongo
         if ( $pid ) {
             next;
         }
@@ -65,7 +68,7 @@ sub road_kill {
     my ( $self, $c, $config ) = @_;
     $self->config( $config );
 
-    my $sm = Baseliner->model('SchedulerModel');
+    my $sm = Baseliner->model('Sched');
     $sm->road_kill;    # find new schedules
 }
 
