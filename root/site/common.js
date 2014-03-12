@@ -2494,7 +2494,7 @@ Baseliner.run_service = function(params, service){
 
 // Simple JavaScript Templating
 // John Resig - http://ejohn.org/ - MIT Licensed
-// rgo: heredoc quote fix
+// rgo: heredoc quote fix, XXX heredoc comment only works in FF >= 17
 Baseliner.HEREDOC_SLICE_START = Ext.isSafari ? 15 : Ext.isIE ? 13 : 14;
 Baseliner.HEREDOC_SLICE_END   = Ext.isSafari ? -4 : -3;
 Function.prototype.heredoc = function(s){ return this.toString().slice(Baseliner.HEREDOC_SLICE_START,Baseliner.HEREDOC_SLICE_END) };
@@ -2507,9 +2507,10 @@ Baseliner.tmpl = function (str, data){
     var st = Baseliner.HEREDOC_SLICE_START;
     var en = Baseliner.HEREDOC_SLICE_END;
     var he = ['function(){/*', '*/}.toString().slice('+st+','+en+')']; 
-    var fn = !/\W/.test(str) ?
-      Baseliner.tmpl_cache[str] = Baseliner.tmpl_cache[str] ||
-        Baseliner.tmpl(document.getElementById(str).innerHTML) :
+    var fn = !/\W/.test(str) && str.length>0
+        ? Baseliner.tmpl_cache[str] = Baseliner.tmpl_cache[str] ||
+           Baseliner.tmpl(document.getElementById(str).innerHTML) 
+        :
      
       // Generate a reusable function that will serve as a template
       // generator (and which will be cached).
