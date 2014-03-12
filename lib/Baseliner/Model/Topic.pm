@@ -1486,11 +1486,13 @@ sub save_data {
                 $old_text{$field} = $method ? try { $topic->$method->name } : $topic->$field,;
             }
             $topic->modified_by( $data->{username} );
-            $topic->update( \%row );
+            my %row_without_status = %row;
+            delete $row_without_status{'id_category_status'};
+            $topic->update( \%row_without_status );
             
             #_log "fecha modificacion######################: " . $topic->modified_on;
             
-            ci->new( $topic_mid )->update( name => $row{title}, moniker => $moniker, %row );
+            ci->new( $topic_mid )->update( name => $row{title}, moniker => $moniker, %row_without_status );
             
             for my $field ( keys %row ) {
                 next if $field eq 'response_time_min' || $field eq 'expr_response_time';
