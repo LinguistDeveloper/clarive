@@ -257,11 +257,12 @@ sub update : Local {
                     email     	=> $p->{email},
                     phone      	=> $p->{phone},            
                     active 		=> '1',
-                    password    => BaselinerX::CI::user->encrypt_password( $p->{username}, $p->{pass} )
+                    password    => ci->user->encrypt_password( $p->{username}, $p->{pass} )
                 };           
                 
-                my $ci = BaselinerX::CI::user->new( %$ci_data );
+                my $ci = ci->user->new( %$ci_data );
                 $user_mid = $ci->save;
+                $ci->gen_project_security;
                 $c->stash->{json} = { msg=>_loc('User added'), success=>\1, user_id=> $user_mid };
                 
             }else{
@@ -301,7 +302,7 @@ sub update : Local {
                                     mid			=> $mid,
                                     username    => $p->{username},
                                     realname  	=> $p->{realname},
-                                    password	=> BaselinerX::CI::user->encrypt_password( $p->{username}, $p->{pass} ),
+                                    password	=> ci->user->encrypt_password( $p->{username}, $p->{pass} ),
                                     alias	=> $p->{alias},
                                     email	=> $p->{email},
                                     phone	=> $p->{phone},
@@ -324,28 +325,30 @@ sub update : Local {
                         ##Borramos el antiguo
                         $user->delete();
                     }
-                }
-                else{
+                } else{
                     $user->realname( $p->{realname} ) if $p->{realname};
                     if( $p->{pass} ){
-                        $user->password( BaselinerX::CI::user->encrypt_password( $p->{username}, $p->{pass} ));
+                        $user->password( ci->user->encrypt_password( $p->{username}, $p->{pass} ));
                     }
                     $user->alias( $p->{alias} ) if $p->{alias};
                     $user->email( $p->{email} ) if $p->{email};
                     $user->phone( $p->{phone} ) if $p->{phone};                 
                     $user->phone( $p->{active} ) if $p->{active};                 
                     $user->update();                    
+                    
+                    # regenerate project security for all users TODO work with my ci only
+                    _debug 'Re-generating user project security...';
+                    ci->user->gen_project_security;
+                    _debug 'Done updating project security.';
                 }
                 
                 $c->stash->{json} = { msg=>_loc('User modified'), success=>\1, user_id=> $user_id };
-            }
-            else {
+            } else {
                 tratar_proyectos($c, $p->{username}, $roles_checked, $projects_checked);
                 tratar_proyectos_padres($c, $p->{username}, $roles_checked, $projects_parents_checked, 'update');
                 $c->stash->{json} = { msg=>_loc('User modified'), success=>\1, user_id=> $p->{id} };
             }
-        }
-        catch{
+        } catch {
             $c->stash->{json} = { msg=>_loc('Error modifying User: %1', shift()), failure=>\1 }
         }
     }
@@ -885,9 +888,9 @@ sub change_pass : Local {
     my $row = $c->model('Baseliner::BaliUser')->search({username => $username, active => 1})->first;
     
     if ($row) {
-        if ( BaselinerX::CI::user->encrypt_password( $username, $p->{oldpass} ) eq $row->password ) {
+        if ( ci->user->encrypt_password( $username, $p->{oldpass} ) eq $row->password ) {
             if ( $p->{newpass} ) {
-                $row->password( BaselinerX::CI::user->encrypt_password( $username, $p->{newpass} ) );
+                $row->password( ci->user->encrypt_password( $username, $p->{newpass} ) );
                 $row->update();
                 $c->stash->{json} = { msg => _loc('Password changed'), success => \1 };
             } else {
@@ -1055,7 +1058,7 @@ sub duplicate : Local {
                     active      => '1',
                 };           
                 
-                my $ci = BaselinerX::CI::user->new( %$ci_data );
+                my $ci = ci->user->new( %$ci_data );
                 $user_mid = $ci->save;
                 $c->stash->{json} = { msg=>_loc('User added'), success=>\1, user_id=> $user_mid };
 
