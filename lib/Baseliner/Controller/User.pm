@@ -356,8 +356,8 @@ sub update : Local {
         try {
             my $user;
             my $user_id = $p->{id};
-            if ( $p->{id} ) {
-                $user = $c->model( 'Baseliner::BaliUser' )->find( $p->{id} );
+            if ( length $user_id ) {
+                $user = $c->model( 'Baseliner::BaliUser' )->find( $user_id );
             } else {
                 $user =
                     $c->model( 'Baseliner::BaliUser' )->search( {username => $p->{username}} )
@@ -372,6 +372,8 @@ sub update : Local {
                 Baseliner->model( 'Baseliner::BaliRoleuser' )
                 ->search( {username => $p->{username}} );
             $rs->delete;
+            
+            ci->delete( $user_id );
             $c->stash->{json} = {success => \1, msg => _loc( 'User deleted' )};
         } ## end try
         catch {
