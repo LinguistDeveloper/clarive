@@ -2905,7 +2905,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                         handler: function(btn){
                             self.getLayout().setActiveItem( mf );
                         },
-                        text: _(name)
+                        text: name
                     });
                     if( bl.id == def_bl ) self.getLayout().setActiveItem( mf );
                     // load form
