@@ -103,13 +103,6 @@ if( $ENV{BALI_CMD} ) {
     require Baseliner::Standalone;
 }
 
-
-#__PACKAGE__->config->{authentication}{dbic} = {
-#    user_class     => 'Bali::BaliUser',
-#    user_field     => 'username',
-#    password_field => 'password'
-#};
-
 use FindBin '$Bin';
 #$c->languages( ['es'] );
 __PACKAGE__->config(
