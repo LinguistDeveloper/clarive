@@ -130,7 +130,9 @@ sub deploy_schema {
     warn _dump $config unless $p{show_config};
     $config ||= eval "Baseliner->config";
     die "Could not connect to db: no config loaded" unless $config;
-    my ( $dsn, $user, $pass ) = @{ $config->{ 'Model::Baseliner' }->{ 'connect_info' } };
+    my $conn = $config->{ 'Model::Baseliner' }->{ 'connect_info' };
+    die "Missing or invalid config option 'Model::Baseliner: connect_info = [dsn,user,password]'" unless ref $conn eq 'ARRAY';
+    my ( $dsn, $user, $pass ) = @$conn;
     $self->db_driver( $dsn );
 
     sub show_file { open my $ff, '<', shift() or die $!; print join '',<$ff>; close $ff; }
