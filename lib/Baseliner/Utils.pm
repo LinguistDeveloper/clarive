@@ -1855,6 +1855,16 @@ sub in_range {
    } @rg;
 }
 
+sub compress {
+    require Compress::Zlib;
+    Compress::Zlib::compress( @_ );
+}
+
+sub uncompress {
+    require Compress::Zlib;
+    Compress::Zlib::uncompress( @_ );
+}
+
 {
     package Util;
     our $AUTOLOAD;
