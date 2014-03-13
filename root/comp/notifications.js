@@ -1165,12 +1165,95 @@
         }       
     });  	
 	
+
 	var check_notifications_sm = new Ext.grid.CheckboxSelectionModel({
 		singleSelect: false,
 		sortable: false,
 		checkOnly: true
 	});	
+
+
+
+    var notify_export = function(sel){
+        var sel = check_notifications_sm.getSelections();
+        var ids = [];
+        Ext.each( sel, function(s){
+            ids.push( s.data.id );
+        });
+        Baseliner.ajaxEval('/notification/export', { id_notify: ids }, function(res){
+            if( !res.success ) {
+                Baseliner.error( _('Export'), res.msg );
+                return;
+            }
+            var data_paste = new Baseliner.MonoTextArea({ value: res.yaml });
+            var win = new Baseliner.Window({
+                title: _('Export'),
+                width: 800, height: 400, layout:'fit',
+                items: data_paste
+            });
+            win.show();
+        });
+    };
     
+    var notify_import = function(){
+        var data_paste = new Baseliner.MonoTextArea({ flex:1 });
+        var results = new Baseliner.MonoTextArea({ flex:1 });
+        var win = new Baseliner.Window({
+            title: _('Import'),
+            width: 800, height: 400, layout:'vbox',
+            layout: { type: 'vbox', align: 'stretch' },
+            items: [ data_paste, results ],
+            tbar:[
+                { text:_('Import'), 
+                    icon: '/static/images/icons/import.png',
+                    handler: function(){
+                        Baseliner.ajaxEval('/notification/import', { yaml: data_paste.getValue() }, function(res){
+                            if( !res.success ) {
+                                Baseliner.error( _('Import'), res.msg );
+                                if( ! Ext.isArray( res.log ) ) res.log=[];
+                                results.setValue( res.log.join("\n") + "\n" + res.msg )
+                                results.el.setStyle('font-color', 'red');
+                                return;
+                            } else {
+                                if( ! Ext.isArray( res.log ) ) res.log=[];
+                                results.setValue( res.log.join("\n") + "\n" + res.msg )
+                                results.el.setStyle('font-color', 'green');
+                                Baseliner.message(_('Import'), res.msg );
+                                grid.getStore().reload();
+                            }
+                        });
+                    }
+                }
+            ]
+        });
+        win.show();
+    };    
+
+    var btn_tools_notify = new Ext.Toolbar.Button({
+        icon:'/static/images/icons/wrench.png',
+        cls: 'x-btn-text-icon',
+        disabled: false,
+        menu: [
+            { text: _('Import'), 
+                icon: '/static/images/icons/import.png',
+                handler: function(){
+                    notify_import();
+                 }
+            },
+            { text: _('Export'), 
+                icon: '/static/images/icons/export.png',
+                handler: function(){ 
+                    var sm = grid.getSelectionModel();
+                    if (sm.hasSelection()) {
+                        var sel = sm.getSelected();
+                        notify_export(sel);
+                    } else {
+                        Baseliner.message( _('ERROR'), _('Select at least one row'));    
+                    };          
+                 }
+            }
+        ]
+    });     
     
 	var show_recipients = function(value,metadata,rec,rowIndex,colIndex,store) {
 		var items = new Array();
@@ -1267,7 +1350,8 @@
             btn_stop,
 			btn_add,
 			btn_edit,
-			btn_delete
+			btn_delete,
+			btn_tools_notify
         ],
 		bbar: ptool
     });

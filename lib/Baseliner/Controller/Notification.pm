@@ -243,4 +243,75 @@ sub get_templates : Local {
 }
 
 
+sub export : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    try{
+        $p->{id_notify} or _fail( _loc('Missing parameter id') );
+        my $export;
+        my @notifies; 
+        for my $id (  _array( $p->{id_notify} ) ) {
+            my $notify = DB->BaliNotification->search({ id=> $id })->hashref->first;
+            _fail _loc('Notify not found for id %1', $id) unless $notify;
+            push @notifies, $notify;
+        }
+        if( @notifies > 1 ) {
+            my $yaml = _dump( \@notifies );
+            utf8::decode( $yaml );
+            $c->stash->{json} = { success => \1, yaml=>$yaml };  
+        } else {
+            my $yaml = _dump( $notifies[0] );
+            utf8::decode( $yaml );
+            $c->stash->{json} = { success => \1, yaml=>$yaml };  
+        }
+    }
+    catch{
+        $c->stash->{json} = { success => \0, msg => _loc('Error exporting: %1', shift()) };
+    };
+    $c->forward('View::JSON');  
+}
+
+sub import : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    my @log;
+    Baseliner->cache_remove_like( qr/^notify:/ );
+    $c->registry->reload_all;
+    try{
+        Baseliner->model('Baseliner')->txn_do( sub {
+            my $yaml = $p->{yaml} or _fail _loc('Missing parameter yaml');
+            my $import = _load( $yaml );
+            $import = [ $import ] unless ref $import eq 'ARRAY';
+            for my $data ( _array( $import ) ) {
+                next if !defined $data;
+                my $is_new;
+                my $notify;
+                delete $data->{id};
+                push @log => "----------------| Notify: $data->{event_key} |----------------";
+                #$notify = DB->BaliNotification->search({ event_key=>$data->{event_key} })->first;
+                #$is_new = !$notify;
+                #if( $is_new ) {
+                    $notify = DB->BaliNotification->create( $data );
+                    push @log => _loc('Created notify %1', $data->{event_key} );
+                #} else {
+                #    $notify->update( $data );
+                #    push @log => _loc('Updated notify %1', $data->{event_key} );
+                #}
+               
+                #push @log => $is_new 
+                #    ? _loc('Notify created with id %1 and event_key %2:', $notify->id, $notify->event_key) 
+                #    : _loc('Notify %1 updated', $notify->event_key) ;
+
+                push @log, _loc('Notify created with id %1 and event_key %2:', $notify->id, $notify->event_key) ;
+            }
+        });   # txn_do end
+        
+        $c->stash->{json} = { success => \1, log=>\@log, msg=>_loc('finished') };  
+    }
+    catch{
+        $c->stash->{json} = { success => \0, log=>\@log, msg => _loc('Error importing: %1', shift()) };
+    };
+    $c->forward('View::JSON');  
+}
+
 1;

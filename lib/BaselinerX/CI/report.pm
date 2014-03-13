@@ -704,8 +704,12 @@ sub get_where {
 										$where->{$id}->{$val->{oper}} = $val->{value};	
 									}
 									else{
-										$cond = { $val->{oper} => $val->{value} };
-										$where->{$id} = $cond;
+                                        if ($val->{oper} eq ''){
+                                            $where->{$id} = $val->{value};
+                                        }else{
+                                            $cond = { $val->{oper} => $val->{value} };
+                                            $where->{$id} = $cond;
+                                        }
 									}
 								}
 							}
