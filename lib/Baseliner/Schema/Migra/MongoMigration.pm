@@ -595,6 +595,15 @@ sub master_rel_rebuild {
     }
 }
 
+sub user_cis {
+    for my $u ( ci->user->search_cis ) {
+       DB->BaliUser->find($u->{mid}) or do {
+            warn "NO USER=$u->{mid}, $$u{username}";
+            ci->delete( $u->{mid} );
+       }
+    }
+}
+
 sub topic {
     my ( $self, %p ) = @_;
     
