@@ -285,9 +285,9 @@ sub build_sort {
         #$order_by = Tie::IxHash->new( 'category.name'=>$dir, mid=>$dir ); 
         $order_by = Tie::IxHash->new( created_on=>$dir, mid=>$dir );  # TODO "m" is the numeric mid, should change eventually
     } elsif( $sort eq 'category_status_name' ) {
-        $order_by = { 'category_status.seq' => $dir };
+        $order_by = { 'category_status_name' => $dir };
     } elsif( $sort eq 'topic_mid' ) {
-        $order_by = { created_on => $dir };
+        $order_by = { mid => $dir };
     } else {
         $order_by = { $sort => $dir };
     }
@@ -1558,6 +1558,7 @@ sub save_data {
                             old_status    => $old_text{$field},
                             id_old_status => $old_value,
                             id_status     => $id_status,
+                            change => 1,
                             callback      => $cb_ci_update
                         );
                     } else {
@@ -1637,7 +1638,6 @@ sub save_data {
         mdb->master_seen->update({ username => $data->{username}, mid => $topic_mid }, 
                 {username => $data->{username}, mid => $topic_mid, last_seen => mdb->ts, type=>'topic' }, { upsert=>1 });
         # cache clear
-        _log "Antes de limpiar la cache para el tópico $topic_mid";
         $self->cache_topic_remove( $topic_mid );
 
         return ($topic, %change_status);
@@ -2760,6 +2760,17 @@ sub user_can_search {
     return Baseliner->model('Permissions')->user_has_action( username => $username, action => 'action.search.topic');
 }
 
+sub my_releases {
+    my ($self, $mid) = @_;
+    my @rels = map {$_->{id}} Baseliner->model('Baseliner::BaliTopicCategories')->search( { is_release => 1 }, { select => ['id'] } )->hashref->all;
+    my @releases = ci->new($mid)->parents( where => {id_category => mdb->in(@rels),collection => 'topic'}, depth => 2);
+    my $topic = mdb->topic->find_one({mid=>"$mid"});
+    my @return;
+
+    for my $release ( @releases ) {
+
+    }
+}
 1;
 
 
