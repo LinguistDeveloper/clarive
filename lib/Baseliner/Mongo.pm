@@ -42,6 +42,7 @@ has db => ( is=>'ro', isa=>'MongoDB::Database', lazy=>1, default=>sub{
 
 sub oid {
     my($self,$oid)=@_;
+    return MongoDB::OID->new if !$oid;
     return MongoDB::OID->new( $oid );
 }
 
