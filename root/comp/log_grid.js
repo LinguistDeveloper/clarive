@@ -383,15 +383,6 @@
             menu_exec.setText( _('Execution', job_exec ) );
     }
 
-    //--- Resume from Suspend, Pause
-    var button_resume = new Ext.Toolbar.Button({ text : _('Resume Job'), icon: '/static/images/icons/play.png', cls: 'x-btn-text-icon', hidden: true,
-        handler: function(){
-            Baseliner.ajaxEval( '/job/resume', { mid: current_job().mid, confirm: _('Do you wish to resume job %1',current_job().job_name) }, function(res) {
-                Baseliner.message( _('Resume Job'), res.msg );
-            });
-        } 
-    });
-
     var button_html = new Ext.Toolbar.Button({ icon: '/static/images/icons/html.gif',
         style: 'width: 30px', cls: 'x-btn-icon', hidden: false,
         handler: function(){
@@ -519,7 +510,6 @@
                     handler: annotation
                 },
 % if( $user_action->{'action.admin.default'} ) {
-                button_resume,
                 new Ext.Toolbar.Button({ 
                     text: _('Advanced'),
                     icon: '/static/images/icons/advanced.png', 
@@ -569,9 +559,6 @@
         }
         var job = current_job();
         if( job != undefined ) {
-            if( job.status == 'PAUSED' || job.status == 'SUSPENDED' || job.status == 'WAITING' ) {
-                button_resume.show();
-            }
             job_exec_max = job.exec;
             job_exec = store.baseParams.job_exec || job_exec;
             menu_exec_review();
