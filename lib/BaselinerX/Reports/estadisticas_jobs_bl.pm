@@ -1,0 +1,229 @@
+package BaselinerX::Reports::estadisticas_jobs_bl;
+use Baseliner::Plug;
+use Baseliner::Utils;
+use Baseliner::Sugar;
+use utf8;
+
+register 'config.reports.estadisticas_jobs_bl' => {
+    metadata=> [
+        { id=>'user_list', label => 'Usuarios que ven el informe (lista separada por comas)', default => 'root', type=>'text', width=>200 },
+    ],
+};
+
+register 'report.jazztel.job_statistics_bl' => {
+    name => 'Estadísticas de JOBS por Entorno',
+    data => { },
+    form => '/reports/listado_jobs.js', 
+    security_handler => sub{
+        my ($self,$username) =@_;
+        my $config = config_get 'config.reports.estadisticas_jobs_bl';
+        my @user_list = split /,/, $config->{user_list};
+
+        return $username ~~ @user_list;
+        #return $username =~ /(root|asalinaa|sdiaram|ricardo)/;  # or a 0 for no access
+    },
+    meta_handler => sub {
+        my ( $self, $config ) = @_;
+        return {
+            fields => {
+                ids => [
+                    'entorno','pct_fallidos', 'cancelados','pct_cancelados', 'correctos', 'pct_correctos', 'total_ejecuciones', 'avg_ejecuciones',
+                    'total'
+                ],
+                columns => [
+                    {id => 'entorno',  text => 'Entorno'},
+                    {id => 'fallidos',     text => 'Fallidos'},
+                    {id => 'pct_fallidos',     text => '%Fallidos'},
+                    {id => 'cancelados',     text => 'Cancelados'},
+                    {id => 'pct_cancelados',     text => '%Cancelados'},
+                    {id => 'correctos',    text => 'Correctos'},
+                    {id => 'pct_correctos',    text => '%Correctos'},
+                    {id => 'total_ejecuciones',    text => 'Total ejecuciones'},
+                    {id => 'avg_ejecuciones',    text => 'Avg Ejecuciones'},
+                    {id => 'total', text => 'Total jobs'}
+                ],
+            },
+            report_name => 'Estadisticas de JOBS por BL',
+            report_type => 'jobs',
+            # report_rows => 100,
+            hide_tree => \1,
+        };
+    },
+    data_handler => sub{
+        my ($self,$config, $p) = @_;
+
+
+        my $username = $p->{username};
+        my ($start,$limit,$sort,$dir,$query)=@{$p}{qw(start limit sort dir query)};
+
+        # Condiciones fijas del informe
+        my $where = { collection => 'job' };
+
+        # Condiciones por defecto cuando no hay configuración guardada
+        my $dt = Class::Date->now();
+        if ( !$config ) {
+
+        } else {
+          $p = $config;
+        };
+
+        # Condiciones customizables
+        if ( $p->{chk_inicio} eq 1 ) {
+          $where->{starttime} = {
+              '$ne'  => undef,
+              '$nin' => [ '' ],
+          };              
+          if ( $p->{fecha_inicio_hasta} ) {
+              $where->{starttime}->{'$lte'} = $p->{fecha_inicio_hasta};
+          }
+          if ( $p->{fecha_inicio_desde} ) {
+              $where->{starttime}->{'$gte'} = $p->{fecha_inicio_desde};
+          }
+        };
+
+        if ( $p->{chk_fin} eq 1 ) {
+          $where->{endtime} = {
+              '$ne'  => undef,
+              '$nin' => [ '' ],
+          };
+          if ( $p->{fecha_fin_hasta} ) {
+              $where->{endtime}->{'$lte'} = $p->{fecha_fin_hasta};
+          }
+          if ( $p->{fecha_fin_desde} ) {
+              $where->{endtime}->{'$gte'} = $p->{fecha_fin_desde};
+          }
+        };
+
+        if ( $p->{chk_bl} eq 1 ) {
+          $where->{bl} = mdb->in( [_array $p->{bl}] )
+        };
+
+        if ( $p->{chk_projects} eq 1 ) {
+          if ( $p->{chk_projects_and} eq 1 ) {
+              my @ands;
+              for my $project ( _array $p->{projects} ) {
+                push @ands, {projects => mdb->in([$project])};
+              }
+              $where->{'$and'} = \@ands;
+            } else {
+              $where->{projects} = mdb->in( [_array $p->{projects}] )
+            }
+        };
+
+        if ( $p->{chk_natures} eq 1 ) {
+          if ( $p->{chk_natures_and} eq 1 ) {
+              my @ands;
+              for my $nature ( _array $p->{natures} ) {
+                push @ands, {natures => mdb->in([$nature])};
+              }
+              $where->{'$and'} = \@ands;
+            } else {
+              $where->{natures} = mdb->in( [_array $p->{natures}] )
+            }
+        };
+
+        if ( $p->{chk_users} eq 1 ) {
+            my @usernames = map {$_->{name}} BaselinerX::CI::user->search_cis( mid => mdb->in(_array $p->{users}));
+            $where->{username} = mdb->in( @usernames )
+        };
+
+        if ( $p->{chk_states} eq 1 ) {
+            $where->{status} = mdb->in( _array $p->{states} )
+        };
+
+        if ( $p->{chk_releases} eq 1 ) {
+          if ( $p->{chk_releases_and} eq 1 ) {
+              my @ands;
+              for my $release ( _array $p->{releases} ) {
+                push @ands, {releases => mdb->in([$release])};
+              }
+              $where->{'$and'} = \@ands;
+            } else {
+              $where->{releases} = mdb->in( [_array $p->{releases}] )
+            }
+        };
+
+        _warn $where;
+        my @rows;
+        # Baseliner->model('Topic')->build_field_query( $query, $where, $username ) if length $query;
+        # Baseliner->model('Topic')->build_project_security( $where, $username );
+
+        my @docs = _array(
+            mdb->master_doc->aggregate(
+                [
+                    {'$match' => $where},
+                    {
+                        '$group' => {
+                            _id    => '$bl',
+                            'fail' => {
+                                '$sum' => {
+                                    '$cond' => [
+                                        {
+                                            '$or' => [
+                                                {'$eq' => [ '$status', 'ERROR' ]},
+                                                {'$eq' => [ '$status', 'ROLLBACKFAIL' ]},
+                                                {'$eq' => [ '$status', 'ROLLEDBACK' ]}
+                                            ]
+                                        },
+                                        1, 0
+                                    ]
+                                }
+                            },
+                            'cancelled' => {
+                                '$sum' => {
+                                    '$cond' => [
+                                        {
+                                            '$or' => [
+                                                {'$eq' => [ '$status', 'CANCELLED' ]},
+                                                {'$eq' => [ '$status', 'EXPIRED' ]},
+                                                {'$eq' => [ '$status', 'KILLED' ]},
+                                                {'$eq' => [ '$status', 'REJECTED' ]}
+                                            ]
+                                        },
+                                        1, 0
+                                    ]
+                                }
+                            },
+                            'success' => {
+                                '$sum' =>
+                                    {'$cond' => [ {'$eq' => [ '$status', 'FINISHED' ]}, 1, 0 ]}
+                            },
+                            'exec' => {
+                                '$push' => '$exec'
+                            },
+
+                            'total' => {'$sum' => 1}
+                        }
+                    },
+                    {'$sort' => {total => -1}}
+                ]
+            )
+        );
+
+        for my $d (@docs) {
+            my $execs = 0;
+            map {$execs = $execs + $_} _array $d->{exec};
+
+            push @rows,
+              {
+                entorno      => $d->{_id},
+                fallidos      => $d->{fail},
+                pct_fallidos => sprintf('%.2f',$d->{fail}/$d->{total}*100),
+                cancelados      => $d->{cancelled},
+                pct_cancelados => sprintf('%.2f',$d->{cancelled}/$d->{total}*100),
+                correctos         => $d->{success},
+                pct_correctos => sprintf('%.2f',$d->{success}/$d->{total}*100),
+                total_ejecuciones         => $execs,
+                avg_ejecuciones => sprintf('%.2f',$execs/$d->{total}),
+                total       => $d->{total}
+              };
+        }
+        _log _dump @rows;
+        my $cnt = scalar @rows;
+        return {
+            rows=>\@rows, total=>$cnt, config=>$config,
+        };
+    }
+};
+
+1;
