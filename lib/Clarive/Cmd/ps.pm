@@ -36,7 +36,7 @@ sub run {
               ( $^O eq 'cygwin' ? $p->fname : $p->cmndline)
         );
         for my $pid ( @pids ) {
-            if( $pid->{pid} == $p->pid || $pid->{pid} == $p->ppid ) {
+            if( $pid->{pid}>1 && ($pid->{pid} == $p->pid || $pid->{pid} == $p->ppid) ) {
                 if( $pid->{type} eq 'server' ) {
                     $server{ $p->pid } = $lin;
                 } elsif( $pid->{type} eq 'job' ) {
