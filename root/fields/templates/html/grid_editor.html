@@ -43,7 +43,7 @@
         @rows = map {
             my $r= $_;
             my ($sd,$ed,$psd,$ped) = @{ $r }{qw/start_date end_date plan_start_date plan_end_date/}; 
-            if( defined $ped && $now>$ped && $now>$ed ) {
+            if( defined $ped && $now>$ped && !defined $ed ) {
                 $r->{end_date} = \'<img src="/static/images/icons/error.png" />' ;
                 $r->{overdue} = 1;
             }

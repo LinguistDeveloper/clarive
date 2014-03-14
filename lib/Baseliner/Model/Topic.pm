@@ -694,7 +694,8 @@ sub update {
                         category=>$category->{name}, 
                         category_name=>$category->{name}, 
                         notify_default=>\@users, subject=>$subject, notify=>$notify }   # to the event
-                });                   
+                });  
+                $return_options->{reload} = 1;                 
             } 
             => sub { # catch
                 mdb->topic->remove({ mid=>"$topic_mid" },{ multiple=>1 });
@@ -735,6 +736,7 @@ sub update {
                 $rollback = 0;
                 if ( %change_status ) {
                     $self->change_status( %change_status );
+                    $return_options->{reload} = 1;
                 }
 
                { mid => $topic->mid, topic => $topic->title, subject => $subject, notify_default => \@users }   # to the event
@@ -1483,7 +1485,7 @@ sub save_data {
 
             for my $field ( keys %row ) {
                 $old_values{$field} = $topic->$field, my $method = $relation{$field};
-                $old_text{$field} = $method ? try { $topic->$method->name } : $topic->$field,;
+                $old_text{$field} = $method ? try { $topic->$method->name } : $topic->$field;
             }
             $topic->modified_by( $data->{username} );
             my %row_without_status = %row;
@@ -1558,8 +1560,7 @@ sub save_data {
                             old_status    => $old_text{$field},
                             id_old_status => $old_value,
                             id_status     => $id_status,
-                            change => 1,
-                            callback      => $cb_ci_update
+                            change => 1
                         );
                     } else {
 
