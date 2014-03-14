@@ -1060,7 +1060,8 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     var status_hidden_field = form2.findField("status");
                     var status_value = status_hidden_field.getValue();
                     
-                    if ( status_value != res.topic_status && status_value != ''){
+                    if ( res.return_options.reload == 1 ) {
+                    // if ( status_value != res.topic_status && status_value != ''){
                         self.form_is_loaded = false;
                         self.view_is_dirty = true;                     
                         /*
