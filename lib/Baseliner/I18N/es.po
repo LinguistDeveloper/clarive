@@ -4985,3 +4985,9 @@ msgstr "Procesando.  Espere por favor"
 
 msgid "Problem found opening topic %1.  Perhaps it's been removed from the system.  The error message is: %2"
 msgstr "Se ha encontrado un problema abriendo el tópico %1.  Probablemente se haya borrado del sistema.  El mensaje de error es: %2"
+
+msgid "Artifacts"
+msgstr "Artefactos"
+
+msgid "No artifacts found"
+msgstr "No se han encontrado artefactos"
