@@ -56,7 +56,9 @@ sub run_once {
         $SIG{STOP} = 'DEFAULT';
         _log 'Starting to work...';
         _log "Task ".$task->{description}." started with PID $$";
+        
         $sm->run_task( taskid => $task->{id}, pid=>$$ );    # run scheduled task
+
         _log "Task ".$task->{description}." finished";
         exit 0;
     }
@@ -68,8 +70,7 @@ sub road_kill {
     my ( $self, $c, $config ) = @_;
     $self->config( $config );
 
-    my $sm = Baseliner->model('Sched');
-    $sm->road_kill;    # find new schedules
+    Baseliner->model('Sched')->road_kill; # find new schedules
 }
 
 register 'service.scheduler.test' => { config => 'config.scheduler', handler => \&scheduler_test };

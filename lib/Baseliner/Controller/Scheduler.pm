@@ -42,7 +42,6 @@ sub json : Local {
         query  => $query,
         fields => {
             name        => 'name',
-            service     => 'service',
             parameters  => 'parameters',
             next_exec   => 'next_exec',
             last_exec   => 'last_exec',
@@ -120,8 +119,7 @@ sub save_schedule : Local {
 
     _log "Ejecutando save_schedule";
     my $id          = $p->{id};
-    my $name        = $p->{name} || $p->{service};
-    my $service     = $p->{service};
+    my $name        = $p->{name} || 'noname';
     my $next_exec   = $p->{date} . " " . $p->{time};
     my $parameters  = $p->{txt_conf};
     my $frequency   = $p->{frequency};
@@ -138,7 +136,7 @@ sub save_schedule : Local {
                 name        => $name,
                 status      => 'IDLE',
                 pid         => 0,
-                service     => $service,
+                id_rule     => $p->{id_rule},
                 next_exec   => $next_exec,
                 parameters  => $parameters,
                 frequency   => $frequency,
@@ -146,8 +144,9 @@ sub save_schedule : Local {
                 workdays    => $workdays,
             });
         } else {
-            mdb->scheduler->update({ _id=>mdb->in($id) },{ '$set'=>{ 
-                    name=>$name, service=>$service, next_exec=>$next_exec, 
+            mdb->scheduler->update({ _id=>mdb->oid($id) },{ '$set'=>{ 
+                    name=>$name, next_exec=>$next_exec, 
+                    id_rule=>$p->{id_rule},
                     parameters=>$parameters, frequency=>$frequency, description=>$description,
                     workdays=>$workdays,
                 }

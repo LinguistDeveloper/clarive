@@ -78,16 +78,38 @@ sub run_task {
 
     my $taskid = $p{taskid};
     my $pid = $p{pid};
+    
     my $task = mdb->scheduler->find_one({ _id=>mdb->oid($taskid) });
     my $status = $task->{status};
-    
     my $rs = mdb->scheduler->find({ status=>mdb->in('RUNNING') });
 
     _log "Running task ".$task->{description};
 
     $self->set_last_execution( taskid=>$taskid, when=>$self->now );
     $self->set_task_data( taskid=>$taskid, status=>'RUNNING', pid=>$pid );
-    my $out = Baseliner->launch( $task->{service}, data=>$task->{parameters} );
+    
+    my $out;
+    if( $task->{id_rule} =~ /^\d+$/ ) {
+        # it's a rule
+        my $stash = $task->{parameters} || {};
+        require Capture::Tiny;
+        _log "============================ SCHED RUN START ============================";
+        ($out) = Capture::Tiny::tee_merged(sub{
+            my $ret = Baseliner->model('Rules')->run_single_rule( 
+                id_rule => $task->{id_rule},
+                logging => 1,
+                stash   => $stash,
+                simple_error => 2,  # hide "Error Running Rule...Error DSL" even as _error
+            );
+        });
+        _log "============================ SCHED RUN END   ============================";
+        my $stash_yaml = _dump( $stash );
+    } elsif( $task->{service} ) {
+        # it's a service
+        $out = Baseliner->launch( $task->{service}, data=>$task->{parameters} );
+    } else {
+        _fail _loc 'Could not find rule or service for scheduler task run `%1` (%2)', $task->{name}, $taskid;
+    }
 
     if ($task->{frequency} eq 'ONCE') {
         mdb->scheduler->update({ _id=>mdb->oid($task->{_id}) },{ '$set'=>{ next_exec=>undef } });
