@@ -29,35 +29,10 @@ sub dashboard_log : Path('/job/log/dashboard') {
     $c->stash->{job_exec} = ref $job ? $job->exec : 1;
     $c->stash->{summary} = $job->summary;
     $c->stash->{services} = $job->service_summary( summary=>$c->stash->{summary} );
-    $c->stash->{contents} = $job->contents;
+    $c->stash->{contents} = $job->{job_contents};
     $c->stash->{outputs} = $job->artifacts;
     $c->stash->{template} = '/comp/dashboard_job.html';
 }
-
-sub summary: Private{
-    my ( $self, $c ) = @_;
-    my $sumary = $c->model('Jobs')->get_summary( jobid => $c->stash->{mid}, job_exec => $c->stash->{job_exec} );
-    $c->stash->{summary} = $sumary;
-}
-
-sub services: Private{
-    my ( $self, $c ) = @_;
-    my $services = $c->model('Jobs')->get_services_status( jobid => $c->stash->{mid}, job_exec => $c->stash->{job_exec}, summary => $c->stash->{summary} );
-    $c->stash->{services} = $services;
-}
-
-sub contents: Private{
-    my ($self, $c ) = @_;
-    my $contents = ci->new( $c->stash->{mid} )->contents; #$c->model('Jobs')->get_contents ( jobid => $c->stash->{mid}, job_exec => $c->stash->{job_exec} );
-    $c->stash->{contents} = $contents;
-}
-
-sub outputs: Private{
-    my ($self, $c ) = @_;
-    my $outputs = $c->model('Jobs')->get_outputs ( jobid => $c->stash->{mid}, job_exec => $c->stash->{job_exec} );
-    $c->stash->{outputs} = $outputs;
-}
-
 
 sub _select_words {
     my ($self,$text,$cnt)=@_;

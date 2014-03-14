@@ -66,8 +66,79 @@
         </div>
         
         <div class="grid_1">&nbsp;</div>
-        
+
         <div class="grid_12">
+            <!--######INICIO TABLA CONTENIDO ###################################################################################-->
+            <h3><% _loc( 'Contents') %></h3>
+            <table class="table table-bordered table-condensed dashboard">
+                <tbody>
+<%perl>
+        my @aplicaciones;
+        my $tot_aplicaciones;
+        if ( $contenido->{list_apps} ) {
+            @aplicaciones = _array $contenido->{list_apps} || {} ;
+            $tot_aplicaciones = scalar @aplicaciones;
+        }
+</%perl>
+                    <tr>     
+                        <td rowspan="<%$tot_aplicaciones%>"><b><% _loc( 'Projects') %></b></td>
+%       my $first = 1;                            
+%       for my $aplicacion (@aplicaciones){
+%                   if ( $first ) {    
+                        <td><%$aplicacion%></td>
+%                       $first = 0;
+%                   }
+%                   else {
+                        <td><%$aplicacion%></td>
+%                   }                            
+                    </tr>
+%       }
+<%perl>
+            if ( $contenido->{list_changesets} ) {
+                my @paquetes = _array $contenido->{list_changesets};
+                my $tot_paquetes = scalar @paquetes;
+                my $first = 1;
+                for my $changeset ( @paquetes ) {
+                    if ( $first ) {
+</%perl>                        
+                    <tr>
+                        <td rowspan="<%$tot_paquetes%>"><b><% _loc( 'Changesets') %></b></td>
+<%perl>
+                        $first = 0;
+                    }
+</%perl>                            
+                        <td><% $changeset %></td>
+                    </tr>
+<%perl>
+                }
+            }
+</%perl>                        
+                    <tr>
+                        <td><b><% _loc( 'Job Items') %></b></td>
+                        <td><b><a href="javascript:Baseliner.addNewTab('/job/log/elements?mid=<%$mid%>', _('Elementos <%$namejob%>'), { tab_icon: '/static/images/icons/moredata.gif' } );"><% _loc("Items") %>&nbsp;<img border=0 src='/static/images/moredata.gif'/></a></b></td>
+                    </tr>
+<%perl>
+    my $tot_tecnologias;
+    my @tecnologias = _array $contenido->{list_natures};
+    $tot_tecnologias = scalar @tecnologias;
+</%perl> 
+                    <tr>
+                        <td rowspan="<%$tot_tecnologias%>"><b><% _loc( 'Natures') %></b></td>
+%   for my $tecnologia ( @tecnologias ){
+                        <td>
+                            <%$tecnologia%><br>
+                        </td>
+                    </tr>
+%}
+                </tbody>    
+            </table>
+            <!--######FIN TABLA CONTENIDO #######################################################################################-->
+        </div>        
+
+        
+        <div class="clear"></div>
+        
+        <div class="grid_11">
             <!--######INICIO TABLA EJECUCION ##################################################################################-->
             <h3><% _loc( 'Run Summary') %></h3>
             <table class="table table-bordered table-condensed dashboard">
@@ -89,13 +160,13 @@
             my $tot_services = scalar @services;
             my $first = 1;
             SERVICE: for my $service ( @services ) {
-        	    if ( $first ) {
+                if ( $first ) {
 </%perl>
                     <tr>
                         <td class="section-paso" rowspan="<%$tot_services%>"><% $step %></td>
 <%perl>
                     $first = 0;
-        	    }
+                }
 </%perl>
                         <td class="datos"><b><a href="javascript:Baseliner.addNewTabComp('/job/log/list?mid=<%$mid%>&service_name=<%$service->{service}%>', _('Log <%$service->{service}%>'), { tab_icon: '/static/images/icons/moredata.gif' } );"><% $service->{description} || $service->{service} %></a></b></td>
                         <td class="datos" style="color:<% $colors->{$service->{status}} %>;"><b><% _loc($service->{status}) %></b></td>
@@ -111,78 +182,6 @@
             </table>
             <!--######FIN TABLA EJECUCION ##################################################################################-->
         </div>
-        
-        <div class="clear"></div>
-        
-        <div class="grid_11">
-            <!--######INICIO TABLA CONTENIDO ###################################################################################-->
-            <h3><% _loc( 'Contents') %></h3>
-            <table class="table table-bordered table-condensed dashboard">
-                <tbody>
-<%perl>
-        my @aplicaciones;
-        my $tot_aplicaciones;
-        if ( $contenido->{packages} ) {
-            @aplicaciones = keys %{$contenido->{packages} || {}} ;
-            $tot_aplicaciones = scalar @aplicaciones;
-        }
-</%perl>
-                    <tr>     
-                        <td rowspan="<%$tot_aplicaciones%>"><b><% _loc( 'Projects') %></b></td>
-%       my $first = 1;                            
-%       for my $aplicacion (@aplicaciones){
-%                   if ( $first ) {    
-                        <td><%$aplicacion%></td>
-%                       $first = 0;
-%                   }
-%                   else {
-                        <td><%$aplicacion%></td>
-%                   }                            
-                    </tr>
-%       }
-<%perl>
-        for my $aplicacion ( @aplicaciones ) {
-            if ( $contenido->{packages}->{$aplicacion} ) {
-                my @paquetes = _array $contenido->{packages}->{$aplicacion};
-                my $tot_paquetes = scalar @paquetes;
-                my $first = 1;
-                for my $changeset ( @paquetes ) {
-                    if ( $first ) {
-</%perl>                        
-                    <tr>
-                        <td rowspan="<%$tot_paquetes%>"><b><% _loc( 'Changesets') %> (<% $aplicacion %>)</b></td>
-<%perl>
-                        $first = 0;
-                    }
-</%perl>                            
-                        <td><% $changeset->topic_name %></td>
-                    </tr>
-<%perl>
-                }
-            }
-        }
-</%perl>                        
-                    <tr>
-                        <td><b><% _loc( 'Job Items') %></b></td>
-                        <td><b><a href="javascript:Baseliner.addNewTab('/job/log/elements?mid=<%$mid%>', _('Elementos <%$namejob%>'), { tab_icon: '/static/images/icons/moredata.gif' } );"><% _loc("Items") %>&nbsp;<img border=0 src='/static/images/moredata.gif'/></a></b></td>
-                    </tr>
-<%perl>
-    my $tot_tecnologias;
-    my @tecnologias = _array $contenido->{technologies};
-    $tot_tecnologias = scalar @tecnologias;
-</%perl> 
-                    <tr>
-                        <td rowspan="<%$tot_tecnologias%>"><b><% _loc( 'Natures') %></b></td>
-%   for my $tecnologia ( @tecnologias ){
-                        <td>
-                            <%$tecnologia%><br>
-                        </td>
-                    </tr>
-%}
-                </tbody>    
-            </table>
-            <!--######FIN TABLA CONTENIDO #######################################################################################-->
-        </div>        
 
         <div class="grid_1">&nbsp;</div>
     
@@ -247,10 +246,17 @@
     my @ficheros = _array $salida->{outputs};
     my $data;
     my $row = 0;
-    for my $fichero (@ficheros){
-        $row = $row + 1;
-        if ($fichero->{more}->{data}){
-            $data = 1;
+    if ( !@ficheros ) {
+</%perl>
+                <tr>
+                    <td colspan="2" style="text-align:center;"><% _loc( 'No artifacts found') %></td>
+                </tr>
+<%perl>
+    } else {
+        for my $fichero (@ficheros){
+            $row = $row + 1;
+            if ($fichero->{more}->{data}){
+                $data = 1;
 </%perl>
                     <tr>     
                         <td class="datos"><%$fichero->{more}->{data_name} || $fichero->{more}->{file} %></td>
@@ -268,8 +274,9 @@
                         file(details_file, 'row<%$row%>_<%$details_file_id%>');
                     </script>                        
 <%perl>                        
+            }
         }
-    }                
+    }
 </%perl>                        
                 </tbody>    
             </table>
