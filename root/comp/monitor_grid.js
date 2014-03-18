@@ -123,6 +123,7 @@
             {  name: 'endtime' },
             {  name: 'runner' },
             {  name: 'id_rule' },
+            {  name: 'rule_name' },
             {  name: 'rollback' },
             {  name: 'has_errors' },
             {  name: 'has_warnings' },
@@ -997,7 +998,7 @@
                 { header: _('Host'), width: 120, dataIndex: 'host', sortable: true, hidden: true },	
                 { header: _('Owner'), width: 120, dataIndex: 'owner', sortable: true, hidden: true },	
                 { header: _('Runner'), width: 80, dataIndex: 'runner', sortable: true, hidden: true },	
-                { header: _('Rule'), width: 80, dataIndex: 'id_rule', sortable: true, hidden: true },	
+                { header: _('Rule'), width: 80, dataIndex: 'rule_name', sortable: true, hidden: true },	
                 { header: _('Grouping'), width: 120, dataIndex: 'grouping', hidden: true },	
                 { header: _('Comments'), hidden: true, width: 150, dataIndex: 'comments', sortable: true }
             ],
