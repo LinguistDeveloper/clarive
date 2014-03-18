@@ -695,7 +695,7 @@ sub update {
                         category_name=>$category->{name}, 
                         notify_default=>\@users, subject=>$subject, notify=>$notify }   # to the event
                 });  
-                $return_options->{reload} = 1;                 
+                #$return_options->{reload} = 1;                 
             } 
             => sub { # catch
                 mdb->topic->remove({ mid=>"$topic_mid" },{ multiple=>1 });
