@@ -73,7 +73,7 @@ sub get_carriers{
 
 sub get_type_recipients{
     #return ('Default','Users','Roles','Groups','Emails','Actions');
-    return ('Default','Users','Roles','Actions','Fields','Owner');
+    return ('Default','Users','Roles','Actions','Fields','Owner','Emails');
 }
 
 sub get_recipients{
@@ -292,6 +292,10 @@ sub get_rules_notifications{
                             #@tmp_users = map { _ci($_->{to_mid})->name }
                             #                        DB->BaliMasterRel->search(  { 'LOWER(rel_field)' => \@fields, rel_type => 'topic_users'},
                             #                                                    { select => 'to_mid' })->hashref->all;
+                        }                        
+                        when ('Emails') {
+                            my @emails = keys $notification->{$plantilla}->{$carrier}->{$type};
+                            push @tmp_users, @emails;
                         }                        
                         when ('Owner') 	    {
                             my $topic = mdb->topic->find_one({mid=>"$mid"});
