@@ -119,26 +119,27 @@ sub isValid {
     my $valid = 1;
     
     SCOPE: foreach my $key (keys %{$data->{scopes}}){
+        my @data_scope = _array keys %{$data->{scopes}->{$key}};
+        if ( $data_scope[0] eq '*' ) {
+            next SCOPE;
+        }
+
         if( !exists $notify_scope->{$key} ){
             $valid = 0;
             last SCOPE; 
         }else{ 
             my @event_scope = _array $notify_scope->{$key};
-            my @data_scope = _array keys %{$data->{scopes}->{$key}};
 
-            if ( $data_scope[0] ne '*' ) {
-
-                my $found = 0;
-                EVENT: for ( @event_scope ) {
-                    if ( $_ ~~ @data_scope ) {
-                        $found = 1;
-                        last EVENT;
-                    }
+            my $found = 0;
+            EVENT: for ( @event_scope ) {
+                if ( $_ ~~ @data_scope ) {
+                    $found = 1;
+                    last EVENT;
                 }
-                if ( !$found ) {
-                    $valid = 0;
-                    last SCOPE;
-                }
+            }
+            if ( !$found ) {
+                $valid = 0;
+                last SCOPE;
             }
         }
     }    
@@ -198,7 +199,7 @@ sub get_rules_notifications{
     
     my @rs_notify = DB->BaliNotification->search({ event_key => $event_key, is_active => 1, action => $action } )->hashref->all;
 
-    my @prj_mid = map { $_->{mid} } ci->related( mid => $mid, isa => 'project') if $mid;
+    #my @prj_mid = map { $_->{mid} } ci->related( mid => $mid, isa => 'project') if $mid;
     
     if ( @rs_notify ) {
 		foreach my $row_send ( @rs_notify ){
@@ -296,6 +297,7 @@ sub get_rules_notifications{
                         when ('Emails') {
                             my @emails = keys $notification->{$plantilla}->{$carrier}->{$type};
                             push @tmp_users, @emails;
+                            _log _dump @emails;
                         }                        
                         when ('Owner') 	    {
                             my $topic = mdb->topic->find_one({mid=>"$mid"});
