@@ -2645,6 +2645,11 @@ sub change_status {
             #my @projects = map {$_->{mid}} $row->projects->hashref->all;
             my @users = $self->get_users_friend(id_category => $row->id_category, id_status => $p{id_status});
             
+            my $notify = {
+                category        => $row->id_category,
+                category_status => $p{id_status},
+            };
+
             ###my @roles = map { $_->{id_role} }
             ###            DB->BaliTopicCategoriesAdmin->search(   {id_category => $row->id_category, id_status_from => $p{id_status}}, 
             ###                                                    {select => 'id_role', group_by=> 'id_role'})->hashref->all;
@@ -2654,7 +2659,7 @@ sub change_status {
             ###}
             
             my $subject = _loc("Topic [%1] %2.  Status changed to %3", $mid, $row->title, $status );
-            +{ mid => $mid, title => $row->title, notify_default => \@users, subject => $subject } ;       
+            +{ mid => $mid, title => $row->title, notify_default => \@users, subject => $subject, notify => $notify } ;       
         } 
         => sub {
             _throw _loc( 'Error modifying Topic: %1', shift() );
