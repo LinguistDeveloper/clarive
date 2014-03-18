@@ -46,21 +46,28 @@ sub run_once {
         # TODO create a job for each one, of type "internal", hide from the public view? (according
         #   to a user defined option 
 
-        #
-        $pid = fork;   # XXX no-no for mongo
-        if ( $pid ) {
-            next;
-        }
-        $SIG{HUP} = 'DEFAULT';
-        $SIG{TERM} = 'DEFAULT';
-        $SIG{STOP} = 'DEFAULT';
-        _log 'Starting to work...';
-        _log "Task ".$task->{description}." started with PID $$";
+        $pid = fork;   
         
-        $sm->run_task( taskid => $task->{id}, pid=>$$ );    # run scheduled task
+        if ( $pid ) {
+            # parent
+            mdb->scheduler->update({ _id=>mdb->oid($task->{_id}) },{ '$set'=>{ last_pid=>$pid } });
+        } else {
+            # child
+            mdb->disconnect;    # mongo fork protection, will reconnect later
+            
+            $SIG{HUP} = 'DEFAULT';
+            $SIG{TERM} = 'DEFAULT';
+            $SIG{STOP} = 'DEFAULT';
+            _log 'Starting to work...';
+            _log "Task ".$task->{description}." started with PID $$";
+            
+            # Run Task
+            $sm->run_task( taskid => $task->{_id}, pid=>$$ );  
 
-        _log "Task ".$task->{description}." finished";
-        exit 0;
+            _log "Task ".$task->{description}." finished";
+            
+            exit 0;
+        }
     }
     # get rid of zombies
     BaselinerX::Service::Daemon->reap_children();

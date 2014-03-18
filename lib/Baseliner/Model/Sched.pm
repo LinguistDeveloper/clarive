@@ -42,8 +42,8 @@ sub road_kill {
         _log _loc("Checking if process $pid exists");
         next if Proc::Exists::pexists( $pid );
         _log _loc("Process $pid does not exist");
-        $self->set_task_data( taskid=>$r->{id}, status=>'IDLE');
-        $self->schedule_task( taskid=>$r->{id}, when=>$self->next_from_last_schedule( taskid=>$r->{id} ));
+        $self->set_task_data( taskid=>$r->{_id}, status=>'IDLE');
+        $self->schedule_task( taskid=>$r->{_id}, when=>$self->next_from_last_schedule( taskid=>$r->{_id} ));
     }
 }
 
@@ -81,7 +81,6 @@ sub run_task {
     
     my $task = mdb->scheduler->find_one({ _id=>mdb->oid($taskid) });
     my $status = $task->{status};
-    my $rs = mdb->scheduler->find({ status=>mdb->in('RUNNING') });
 
     _log "Running task ".$task->{description};
 
@@ -110,6 +109,9 @@ sub run_task {
     } else {
         _fail _loc 'Could not find rule or service for scheduler task run `%1` (%2)', $task->{name}, $taskid;
     }
+    
+    # save output log
+    mdb->scheduler->update({ _id=>mdb->oid($task->{_id}) },{ '$set'=>{ last_log=>substr($task->{last_log}."\n".$out,-(1024*1024*4)) } });  # 4MB max last log
 
     if ($task->{frequency} eq 'ONCE') {
         mdb->scheduler->update({ _id=>mdb->oid($task->{_id}) },{ '$set'=>{ next_exec=>undef } });

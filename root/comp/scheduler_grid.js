@@ -19,7 +19,10 @@
             {name: 'id'},
             {name: 'name'},
             {name: 'service'},
+            {name: 'id_last_log'},
             {name: 'id_rule'},
+            {name: 'what'}, // unused
+            {name: 'what_name'}, // rule name, service name
             {name: 'parameters'},
             {name: 'next_exec'},
             {name: 'last_exec'},
@@ -164,7 +167,8 @@
     store.load({params:{start:0 , limit: ps}}); 
 
     var render_name = function(value, metadata, rec, rowIndex, colIndex, store) {
-        return "<div style='font-weight:bold; font-size: 15px;font-family: Calibri, Helvetica Neue, Arial, Arial, sans-serif'>" + value + "</div>" ;
+        var str = value + String.format(' <a target="_blank" href="/scheduler/last_log?id={0}"><img src="/static/images/icons/moredata.gif" /></a>', rec.data.id_last_log);
+        return "<div style='font-weight:bold; font-size: 15px;font-family: Calibri, Helvetica Neue, Arial, Arial, sans-serif'>" + str + "</div>" ;
     };
 
     // create the grid
@@ -199,7 +203,7 @@
             { header: _('Description'), width: 200, dataIndex: 'description', sortable: true },
             { header: _('Frequency'), width: 60, dataIndex: 'frequency', sortable: true },
             { header: _('Workdays'), width: 60, dataIndex: 'workdays', sortable: true },
-            { header: _('Service'), width: 100, dataIndex: 'service', sortable: true }
+            { header: _('What'), width: 100, dataIndex: 'what_name', sortable: true }
         ],
         bbar: paging,
         tbar: tbar

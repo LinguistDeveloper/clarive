@@ -53,18 +53,39 @@ sub json : Local {
         }
     );
 
-    my $rs = mdb->scheduler->find($where);
+    my $rs = mdb->scheduler->find($where)->fields({ last_log=>0 });
     $cnt = $rs->count;
     $rs->skip($start) if length $start; 
     $rs->limit($limit) if length $limit; 
     $rs->sort({ $sort=>( lc($dir) eq 'desc' ? -1 : 1 ) }) if length $sort; 
 
     my @rows;
+    my %rule_names = map { $_->{id} => $_ } mdb->rule->find->fields({ rule_tree=>0 })->all;
     while ( my $r = $rs->next ) {
-        push @rows, map { $_->{id}=''.delete $_->{_id}; $_ } $r;
+        $r->{what_name} = $r->{what} eq 'service' 
+            ? $r->{service}
+            : _loc('Rule: %1 (%2)', $rule_names{ $r->{id_rule} }{rule_name}, $r->{id_rule} ); 
+        $r->{id}=''.delete $r->{_id};
+        $r->{id_last_log} = $r->{id};
+        push @rows, $r;
     }
     $c->stash->{json} = { data => \@rows, totalCount => $cnt };
     $c->forward('View::JSON');
+}
+
+sub last_log : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->params;
+    my $id = $p->{id};
+    my $body;
+    if( my $doc = mdb->scheduler->find_one({ _id=>mdb->oid($id) }) ) {
+        $body = $doc->{last_log} || _loc('No log');
+    } else {
+        $c->res->status( 404 );
+        $body = _loc('Error: last log or rule not found');
+    }
+    $c->res->content_type( 'text/plain' );
+    $c->res->body( $body );
 }
 
 sub delete_schedule : Local {
@@ -117,7 +138,6 @@ sub save_schedule : Local {
     my $user = $c->username;
     my $p    = $c->request->params;
 
-    _log "Ejecutando save_schedule";
     my $id          = $p->{id};
     my $name        = $p->{name} || 'noname';
     my $next_exec   = $p->{date} . " " . $p->{time};
