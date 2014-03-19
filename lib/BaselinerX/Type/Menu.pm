@@ -41,7 +41,7 @@ sub ext_menu {
     my $ret={ text=> \"_('$self->{label}')" };
     my @children;
     my $top_level = delete $p{top_level};
-    for( sort { sprintf('%05d-%s',$a->index,$a->label) cmp sprintf('%05d-%s',$b->index,$b->label) } $self->get_children(%p) ) {
+    for( sort { sprintf('%05d-%s',$a->index,$a->label) cmp sprintf('%05d-%s',$b->index,$b->label) } grep {$_->index && $_->label} $self->get_children(%p) ) {
         my $submenu = $_->ext_menu(%p);
         push @children, $submenu;
     }
