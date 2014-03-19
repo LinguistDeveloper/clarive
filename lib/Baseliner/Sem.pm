@@ -98,14 +98,14 @@ sub take {
     my $id_queue = $self->enqueue;
     my $freq = config_get( 'config.sem.server.wait_for' )->{wait_for} // 250_000;  # microsecs, 250ms
     my $que;
-    my $logged = 0;
+    my $logged = 1;
     # wait until the daemon grants me out
     mdb->create_capped('pipe');
     mdb->pipe->insert({ q=>'sem', w=>'sem-take', id_queue=>$id_queue });
     mdb->pipe->follow( where=>{ id_queue=>$id_queue }, code=>sub{
-        if( !$logged ) {
+        if( $logged==3 ) {  # only once, not on first, after awhile (3 attempts)
             _warn( _loc 'Waiting for semaphore %1 (%2)', $self->key, $self->who );
-            $logged = 1;
+            $logged++;
         }
         return 0 if $que = mdb->sem_queue->find_one({ _id=>$id_queue, status=>{ '$ne'=>'waiting' } });
         return 1;  
