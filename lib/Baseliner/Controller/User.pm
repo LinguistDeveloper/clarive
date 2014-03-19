@@ -336,17 +336,19 @@ sub update : Local {
                     $user->phone( $p->{active} ) if $p->{active};                 
                     $user->update();                    
                     
-                    my ($ci) = ci->user->search_cis({name=>$p->{username}});
-                    # regenerate project security for all users TODO work with my ci only
-                    _debug 'Re-generating user project security...';
-                    $ci->gen_project_security;
-                    _debug 'Done updating project security.';
                 }
                 
                 $c->stash->{json} = { msg=>_loc('User modified'), success=>\1, user_id=> $user_id };
             } else {
                 tratar_proyectos($c, $p->{username}, $roles_checked, $projects_checked);
                 tratar_proyectos_padres($c, $p->{username}, $roles_checked, $projects_parents_checked, 'update');
+
+                # regenerate project security for all users TODO work with my ci only: DONE
+                my ($ci) = ci->user->search_cis({name=>$p->{username}});
+                _debug 'Re-generating user project security...';
+                $ci->gen_project_security;
+                _debug 'Done updating project security.';
+                
                 $c->stash->{json} = { msg=>_loc('User modified'), success=>\1, user_id=> $p->{id} };
             }
         } catch {
