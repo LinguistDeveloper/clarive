@@ -336,7 +336,7 @@ sub update : Local {
                     $user->phone( $p->{active} ) if $p->{active};                 
                     $user->update();                    
                     
-                    my $ci = ci->user->find_one({name=>$p->{username}});
+                    my ($ci) = ci->user->search_cis({name=>$p->{username}});
                     # regenerate project security for all users TODO work with my ci only
                     _debug 'Re-generating user project security...';
                     $ci->gen_project_security;
