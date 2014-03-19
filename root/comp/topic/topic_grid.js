@@ -1013,12 +1013,14 @@
     
     var render_default = function(value,metadata,rec,rowIndex,colIndex,store){
         //console.dir(rec);
-        if ( !rec.json[this.dataIndex] ) {
-            var str = this.dataIndex;
-            var res = str.replace('_' +  this.alias,"");
-            value = rec.json[res];
-        };
-        if (rec.json[this.dataIndex]) value = rec.json[this.dataIndex];
+        // if ( !rec.json[this.dataIndex] ) {
+        //     var str = this.dataIndex;
+        //     if ( str ) {   
+        //         var res = str.replace('_' +  this.alias,"");
+        //         value = rec.json[res];
+        //     }
+        // };
+        // if (rec.json[this.dataIndex]) value = rec.json[this.dataIndex];
         return value;
     };  
 
