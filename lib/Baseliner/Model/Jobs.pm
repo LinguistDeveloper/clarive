@@ -171,6 +171,8 @@ sub monitor {
         return ($cnt, $rs->all );
     }
 
+    my %rule_names = map { $_->{id} => $_ } mdb->rule->find->fields({ rule_tree=>0 })->all;
+            
     my @rows;
     my $now = _dt();
     my $today = DateTime->new( year=>$now->year, month=>$now->month, day=>$now->day, , hour=>0, minute=>0, second=>0) ; 
@@ -251,6 +253,7 @@ sub monitor {
             type         => $type,
             runner       => $job->{runner},
             id_rule      => $job->{id_rule},
+            rule_name    => _loc('Rule: %1 (%2)', $rule_names{ $job->{id_rule} }{rule_name}, $job->{id_rule} ), 
             contents     => [ _array( $job_contents->{list_releases}, $job_contents->{list_changesets} ) ],
             changesets   => $job_contents->{list_changesets} || [],
             releases     => $job_contents->{list_releases} || [],

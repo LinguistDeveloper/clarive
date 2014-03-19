@@ -46,19 +46,28 @@ sub run_once {
         # TODO create a job for each one, of type "internal", hide from the public view? (according
         #   to a user defined option 
 
-        #
-        $pid = fork;   # XXX no-no for mongo
+        $pid = fork;   
+        
         if ( $pid ) {
-            next;
+            # parent
+            mdb->scheduler->update({ _id=>mdb->oid($task->{_id}) },{ '$set'=>{ last_pid=>$pid } });
+        } else {
+            # child
+            mdb->disconnect;    # mongo fork protection, will reconnect later
+            
+            $SIG{HUP} = 'DEFAULT';
+            $SIG{TERM} = 'DEFAULT';
+            $SIG{STOP} = 'DEFAULT';
+            _log 'Starting to work...';
+            _log "Task ".$task->{description}." started with PID $$";
+            
+            # Run Task
+            $sm->run_task( taskid => $task->{_id}, pid=>$$ );  
+
+            _log "Task ".$task->{description}." finished";
+            
+            exit 0;
         }
-        $SIG{HUP} = 'DEFAULT';
-        $SIG{TERM} = 'DEFAULT';
-        $SIG{STOP} = 'DEFAULT';
-        _log 'Starting to work...';
-        _log "Task ".$task->{description}." started with PID $$";
-        $sm->run_task( taskid => $task->{id}, pid=>$$ );    # run scheduled task
-        _log "Task ".$task->{description}." finished";
-        exit 0;
     }
     # get rid of zombies
     BaselinerX::Service::Daemon->reap_children();
@@ -68,8 +77,7 @@ sub road_kill {
     my ( $self, $c, $config ) = @_;
     $self->config( $config );
 
-    my $sm = Baseliner->model('Sched');
-    $sm->road_kill;    # find new schedules
+    Baseliner->model('Sched')->road_kill; # find new schedules
 }
 
 register 'service.scheduler.test' => { config => 'config.scheduler', handler => \&scheduler_test };

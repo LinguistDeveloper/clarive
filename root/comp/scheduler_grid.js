@@ -1,14 +1,13 @@
-<%perl>
-    use Baseliner::Utils;
-    use utf8;
-    my $now = DateTime->now;
-    my $iid = "div-" . _nowstamp;
-    $now->set_time_zone(_tz);
-    my $today =  $now->strftime('%Y-%m-%d');
-    my $hm =  $now->strftime('%H:%M');
-</%perl>
 (function(){
     var bl_edit;
+    
+    var hm = function(){
+        new Date( Date.now() ).format('H:i:s')
+    }
+    var today = function(){
+        //new Date( Date.now() ).format('Y-m-d H:i:s')
+        new Date( Date.now() ).format('Y-m-d')
+    }
     
     var store=new Baseliner.JsonStore({
         root: 'data', 
@@ -20,6 +19,10 @@
             {name: 'id'},
             {name: 'name'},
             {name: 'service'},
+            {name: 'id_last_log'},
+            {name: 'id_rule'},
+            {name: 'what'}, // unused
+            {name: 'what_name'}, // rule name, service name
             {name: 'parameters'},
             {name: 'next_exec'},
             {name: 'last_exec'},
@@ -31,25 +34,20 @@
         ]
     });
 
-    var myMask = new Ext.LoadMask(Ext.getBody(), {msg:_("Please wait...")});
-
-    <& /comp/search_field.mas &>
 
     var ps = 30; //page_size
 
-    var search_field = new Ext.app.SearchField({
+    var search_field = new Baseliner.SearchField({
         store: store,
         params: {start: 0, limit: ps },
         emptyText: '<% _loc('<Enter your search string>') %>'
     });
-
 
     var button_toggle_activation = new Ext.Toolbar.Button({
         text: _('Activate'),
         hidden: true,
         cls: 'x-btn-text-icon',
         handler: function() {
-            myMask.show();
             toggle_activation();
         }
     });
@@ -60,9 +58,8 @@
         icon:'/static/images/silk/clock_add.png',
         cls: 'x-btn-text-icon',
         handler: function() {
-            myMask.show();
-            new_schedule();
-            myMask.hide();
+            var next_exec = new Date( Date.now() ).format('Y-m-d H:i:s');
+            edit_window({ next_exec: next_exec });
         }
     });
 
@@ -72,21 +69,40 @@
         icon:'/static/images/silk/clock_edit.png',
         cls: 'x-btn-text-icon',
         handler: function() {
-            myMask.show();
-            edit_schedule();
-            myMask.hide();
+            bl_edit = true;
+            var sm = grid.getSelectionModel();
+            if ( sm.hasSelection() ){
+                edit_window( sm.getSelected().data );
+            } else {
+                Baseliner.message(_('Error'), _('Select a row') );
+            }     
         }
     });
 
+    var delete_schedule = function () {
+        var sm = grid.getSelectionModel();
+        if ( sm.hasSelection() ){
+            var r = sm.getSelected();
+            Baseliner.ajaxEval( '/scheduler/delete_schedule', 
+                    { id: r.data.id }, 
+                    function(response) {
+                        if ( response.success ) {
+                            Baseliner.message( _('SUCCESS'), _('Scheduled task deleted') );
+                            store.load({params:{ limit: ps }});
+                        } else {
+                            Baseliner.message( _('ERROR'), _('Scheduled task not deleted') );
+                        }
+                    }
+            );
+        }     
+    };
     var button_delete_schedule = new Ext.Toolbar.Button({
         text: _('Delete task'),
         hidden: true,
         icon:'/static/images/silk/clock_delete.png',
         cls: 'x-btn-text-icon',
         handler: function() {
-            myMask.show();
             delete_schedule();
-            myMask.hide();
         }
     });
 
@@ -96,9 +112,15 @@
         icon:'/static/images/silk/clock_red.png',
         cls: 'x-btn-text-icon',
         handler: function() {
-            myMask.show();
-            duplicate_schedule();
-            myMask.hide();
+            bl_edit = true;
+            var sm = grid.getSelectionModel();
+            if ( sm.hasSelection() ){
+                var rec = sm.getSelected();
+                delete rec.id;
+                edit_window(rec);
+            } else {
+                Baseliner.message(_('Error'), _('Select a row') );
+            }     
         }
     });
 
@@ -108,9 +130,7 @@
         icon:'/static/images/silk/clock_play.png',
         cls: 'x-btn-text-icon',
         handler: function() {
-            myMask.show();
             run_schedule();
-            myMask.hide();
         }
     });
 
@@ -125,15 +145,15 @@
     });
 
     var tbar = new Ext.Toolbar({ items: [ _('Search') + ': ', ' ',
-                    search_field,
-                    button_new_schedule,
-                    button_edit_schedule,
-                    button_delete_schedule,
-                    button_duplicate_schedule,
-                    button_toggle_activation,
-                    button_run_schedule,
-                    button_kill_schedule
-                ]
+            search_field,
+            button_new_schedule,
+            button_edit_schedule,
+            button_delete_schedule,
+            button_duplicate_schedule,
+            button_toggle_activation,
+            button_run_schedule,
+            button_kill_schedule
+        ]
     });
 
     var paging = new Ext.PagingToolbar({
@@ -147,7 +167,8 @@
     store.load({params:{start:0 , limit: ps}}); 
 
     var render_name = function(value, metadata, rec, rowIndex, colIndex, store) {
-        return "<div style='font-weight:bold; font-size: 15px;font-family: Calibri, Helvetica Neue, Arial, Arial, sans-serif'>" + value + "</div>" ;
+        var str = value + String.format(' <a target="_blank" href="/scheduler/last_log?id={0}"><img src="/static/images/icons/moredata.gif" /></a>', rec.data.id_last_log);
+        return "<div style='font-weight:bold; font-size: 15px;font-family: Calibri, Helvetica Neue, Arial, Arial, sans-serif'>" + str + "</div>" ;
     };
 
     // create the grid
@@ -182,7 +203,7 @@
             { header: _('Description'), width: 200, dataIndex: 'description', sortable: true },
             { header: _('Frequency'), width: 60, dataIndex: 'frequency', sortable: true },
             { header: _('Workdays'), width: 60, dataIndex: 'workdays', sortable: true },
-            { header: _('Service'), width: 100, dataIndex: 'service', sortable: true }
+            { header: _('What'), width: 100, dataIndex: 'what_name', sortable: true }
         ],
         bbar: paging,
         tbar: tbar
@@ -225,371 +246,316 @@
         tbar.doLayout();
     };
 
-    var schedule_id = new Ext.form.Hidden({
-        name: 'id'
-    });
-
-    var schedule_name = new Ext.form.TextField({
-        name: 'name',
-        fieldLabel: _('Name'),
-        width: 150,
-        labelWidth: 250
-    });
-
-    var schedule_description = new Ext.form.TextArea({
-        name: 'description',
-        fieldLabel: _('Description'),
-        width: 150,
-        height: 60,
-        labelWidth: 250
-    });
-
-    var schedule_parameters = new Ext.form.TextArea({
-        name: 'parameters'
-    });
-
-    var schedule_date = new Ext.ux.form.DateFieldPlus({
-        name: 'date',
-        disabled: false,
-        readOnly: false,
-        fieldLabel: _('Date'),
-        allowBlank: false,
-        format: 'Y-m-d',
-        value: '<% $today %>',
-        minValue: '<% $today %>',
-        noOfMonth : 2,
-        noOfMonthPerRow : 2,
-        renderTodayButton: false,
-        showToday: true,
-        multiSelection: false,
-        allowMouseWheel:false,
-        showWeekNumber: false,
-        selectedDates: [],
-        showActiveDate:true,
-        summarizeHeader:true,
-        width: 150,
-        labelWidth: 250
-    });
-
-    var schedule_time = new Ext.ux.form.Spinner({
-        name: 'time',
-        format : "H:i",
-        fieldLabel: _('Time'),
-        allowBlank: false,
-        disabled:false,
-        value: '<% $hm %>',
-        editable: true,
-        width: 150,
-        labelWidth: 250,
-        strategy: new Ext.ux.form.Spinner.TimeStrategy()
-    });
-
-    var schedule_frequency = new Ext.form.TextField({
-        name: 'frequency',
-        width: 150,
-        labelWidth: 250,
-        fieldLabel: _('Frequency')
-    });
-
-    var chk_schedule_workdays = new Ext.form.Checkbox({
-        name: 'workdays',
-        fieldLabel: _('Workdays only')
-    });
-
-
-    var txtconfig;
+    var edit_window = function(rec){
     
-    var btn_config_service = new Ext.Toolbar.Button({
-        text: _('Parameters'),
-        icon:'/static/images/icons/cog_edit.png',
-        cls: 'x-btn-text-icon',
-        disabled: true,
-        handler: function() {
-            var ta = new Ext.form.TextArea({
-                height: 300,
-                width: 500,
-                enableKeyEvents: true,
-                style: { 'font-family': 'Consolas, Courier, monotype' },
-                value: txtconfig
-            });
-            
-            ta.on('keypress', function(TextField, e) {
-                btn_save_config.enable();
-            });             
-            
-            var title;
-            var img_icon;
-            var bl_save = false;
-            title = 'Apply';
-            img_icon = '/static/images/icons/cog_edit.png';		
-            
-            form = schedule_form.getForm();
-            var id = form.findField('id').value;
+        var schedule_id = new Ext.form.Hidden({
+            name: 'id', value: rec.id
+        });
 
-            if (bl_edit){
-                title = 'Save';
-                img_icon = '/static/images/icons/database_save.png';
-                bl_save = true;
-            }
-    
-            var btn_save_config = new Ext.Toolbar.Button({
-                text: _(title),
-                icon: img_icon,
-                cls: 'x-btn-text-icon',
-                handler: function() {
-                    if(bl_save){
-                       Baseliner.ajaxEval( '/scheduler/update_conf', { id: id, conf: ta.getValue() },
-                           function(resp){
-                                    Baseliner.message( _('Success'), resp.msg );
-                                    store.load({params:{ limit: ps }});
-                                    form = schedule_form.getForm();
-                                    form.findField("txt_conf").setValue(ta.getValue());
-                                    txtconfig = ta.getValue();
-                                    btn_save_config.disable();
-                           }
-                       );
-                    }else{
-                       form = schedule_form.getForm();
-                       form.findField("txt_conf").setValue(ta.getValue());
-                       btn_save_config.disable();
-                       
-                    }                   
-                }
-            });
+        var schedule_name = new Ext.form.TextField({
+            name: 'name',
+            fieldLabel: _('Name'),
+            width: 150,
+            value: rec.name,
+            labelWidth: 250
+        });
 
-            var winYaml = new Ext.Window({
-                modal: true,
-                width: 500,
-                title: _("Parameters"),
-                tbar: [ 
-                    btn_save_config,
-                    { xtype:'button', text: _('Close'), iconCls:'x-btn-text-icon', icon:'/static/images/icons/leave.png',
-                        handler: function(){
-                            winYaml.close();
-                        }
-                    }			
-                ],
-                items: ta
-            });
-            winYaml.show();
-        }
-    });
-      
-    //var schedule_service = Baseliner.combo_services({ hiddenName: 'service' });
-    var store_chain = new Baseliner.JsonStore({
-        url: '/rule/list', root: 'data', totalProperty: 'totalCount', id: 'id', 
-        fields:['id','rule_name','rule_type', 'rule_desc']
-    });
-    var resultTpl = new Ext.XTemplate(
-        '<tpl for="."><div class="x-combo-list-item">',
-        '<span id="boot" style="background: transparent;">',
-        '<strong>{rule_name}</strong>',
-        '<tpl if="rule_desc">',
-            '<br /><span style="color: #ccc">{rule_desc}<span>',
-        '</tpl>',
-        '</span>',
-        '</div></tpl>'
-    );
-    var schedule_service = new Baseliner.SuperBox({
-        singleMode: true,
-        fieldLabel: _('Rule'),
-            name: 'id_rule',
-            displayField:'rule_name',
-            hiddenName:'id_rule', 
-            valueField: 'id',
-        store: store_chain,
-        //anchor: '50%',
-        mode: 'remote',
-        minChars: 0, //min_chars ,
-        loadingText: _('Searching...'),
-        tpl: resultTpl,
-        allowBlank: false,
-        editable: false,
-        lazyRender: true
-    });
-    /* store_chain.on('load', function(){
-        var row = store_chain.getAt(0);
-        if( row ) {
-            combo_chain.setValue( row.data.id );
-        } else {
-            Baseliner.message(_('Job'), _('No job chains available') );
-        }
-    });
-    */
-    store_chain.load();
-    
-    function check_configuration(id_service){
-        // Baseliner.ajaxEval( '/chain/getconfig', {id: id_service}, function(res) {
-        //     if( !res.success ) {
-        //         //Baseliner.error( _('YAML'), res.msg );
-        //     } else {
-        //         // saved ok
-        //         //Baseliner.message( _('YAML'), res.msg );
-        //         if(res.yaml){
-        //             txtconfig = res.yaml;
-        //             btn_config_service.enable();
-        //         }
-        //         else{
-        //             btn_config_service.disable();
-        //         }
+        var schedule_description = new Ext.form.TextArea({
+            name: 'description',
+            fieldLabel: _('Description'),
+            width: 150,
+            height: 60,
+            value: rec.description,
+            labelWidth: 250
+        });
+
+        var schedule_parameters = new Ext.form.TextArea({
+            name: 'parameters'
+        });
+
+        var schedule_date = new Ext.ux.form.DateFieldPlus({
+            name: 'date',
+            disabled: false,
+            readOnly: false,
+            fieldLabel: _('Date'),
+            allowBlank: false,
+            format: 'Y-m-d',
+            value: today(),
+            minValue: today(),
+            noOfMonth : 2,
+            noOfMonthPerRow : 2,
+            renderTodayButton: false,
+            showToday: true,
+            multiSelection: false,
+            allowMouseWheel:false,
+            showWeekNumber: false,
+            selectedDates: [],
+            showActiveDate:true,
+            summarizeHeader:true,
+            width: 150,
+            labelWidth: 250
+        });
+
+        var schedule_time = new Ext.ux.form.Spinner({
+            name: 'time',
+            format : "H:i",
+            fieldLabel: _('Time'),
+            allowBlank: false,
+            disabled:false,
+            value: hm(),
+            editable: true,
+            width: 150,
+            labelWidth: 250,
+            strategy: new Ext.ux.form.Spinner.TimeStrategy()
+        });
+
+        var schedule_frequency = new Ext.form.TextField({
+            name: 'frequency',
+            width: 150,
+            labelWidth: 250,
+            value: rec.frequency,
+            fieldLabel: _('Frequency')
+        });
+
+        var chk_schedule_workdays = new Ext.form.Checkbox({
+            name: 'workdays',
+            checked: rec.workdays==1,
+            fieldLabel: _('Workdays only')
+        });
+
+        var txtconfig;
+        var btn_config_service = new Ext.Toolbar.Button({
+            text: _('Parameters'),
+            icon:'/static/images/icons/cog_edit.png',
+            cls: 'x-btn-text-icon',
+            disabled: true,
+            handler: function() {
+                var ta = new Ext.form.TextArea({
+                    height: 300,
+                    width: 500,
+                    enableKeyEvents: true,
+                    style: { 'font-family': 'Consolas, Courier, monotype' },
+                    value: txtconfig
+                });
                 
-        //     }
-        // });
-    };
+                ta.on('keypress', function(TextField, e) {
+                    btn_save_config.enable();
+                });             
+                
+                var title;
+                var img_icon;
+                var bl_save = false;
+                title = 'Apply';
+                img_icon = '/static/images/icons/cog_edit.png';		
+                
+                form = schedule_form.getForm();
+                var id = form.findField('id').value;
 
-    schedule_service.on('select', function(field, newValue, oldValue) {
-        form = schedule_form.getForm();
-        form.findField("txt_conf").setValue('');       
-        check_configuration(newValue.data.id);
-    });
-    
-    var schedule_form = new Baseliner.FormPanel({
-        frame: true,
-        url:'/scheduler/save_schedule',
-        buttons: [
-            {
-                text: _('Accept'),
-                type: 'submit',
-                handler: function() {
-                    if ( !valida_hora(schedule_time.getValue() ) ) {
-                        alert(_('Time not valid'));
-                    } else {
-                        myMask.show();
-                        var ff = schedule_form.getForm();
-                        ff.submit({
-                                success: function(form, action) { 
-                                    store.load({params:{ limit: ps }});
-                                    ff.reset();
-                                },
-                                failure: function(form, action) { 
-                                    Ext.Msg.alert(_('Failure'), action.result.msg);
-                                }
-                        }); 
-                        win.hide();    
+                if (bl_edit){
+                    title = 'Save';
+                    img_icon = '/static/images/icons/database_save.png';
+                    bl_save = true;
+                }
+        
+                var btn_save_config = new Ext.Toolbar.Button({
+                    text: _(title),
+                    icon: img_icon,
+                    cls: 'x-btn-text-icon',
+                    handler: function() {
+                        if(bl_save){
+                           Baseliner.ajaxEval( '/scheduler/update_conf', { id: id, conf: ta.getValue() },
+                               function(resp){
+                                        Baseliner.message( _('Success'), resp.msg );
+                                        store.load({params:{ limit: ps }});
+                                        form = schedule_form.getForm();
+                                        form.findField("txt_conf").setValue(ta.getValue());
+                                        txtconfig = ta.getValue();
+                                        btn_save_config.disable();
+                               }
+                           );
+                        }else{
+                           form = schedule_form.getForm();
+                           form.findField("txt_conf").setValue(ta.getValue());
+                           btn_save_config.disable();
+                           
+                        }                   
                     }
-                    myMask.hide();
-                }
-            },
-            {
-                text: _('Cancel'),
-                handler: function(){ 
-                    win.hide(); 
-                }
+                });
+
+                var winYaml = new Baseliner.Window({
+                    modal: true,
+                    width: 500,
+                    title: _("Parameters"),
+                    tbar: [ 
+                        btn_save_config,
+                        { xtype:'button', text: _('Close'), iconCls:'x-btn-text-icon', icon:'/static/images/icons/leave.png',
+                            handler: function(){
+                                winYaml.close();
+                            }
+                        }			
+                    ],
+                    items: ta
+                });
+                winYaml.show();
             }
-        ],
-        defaults:{anchor:'100%'},
-        items: [ schedule_id, schedule_name,
-                 //schedule_service,
-                { name: 'txt_conf', xtype: 'textarea', hidden: 'true' },
-                {
-                // column layout with 2 columns
-                layout:'column'
-                ,defaults:{
-                        //columnWidth:0.5
-                        layout:'form'
-                        ,border:false
-                        ,xtype:'panel'
-                        ,bodyStyle:'padding:0 2px 0 0'
-                }
-                ,items:[{
-                        // left column
-                        columnWidth:0.86,
-                        defaults:{anchor:'100%'}
-                        ,items:[
-                                schedule_service
-                                ]
-                        },
-                        {
-                        columnWidth:0.14,
-                        // right column
-                        defaults:{anchor:'100%'},
-                        items:[
-                                btn_config_service
-                        ]
-                        }
-                ]
-                },                 
-                 schedule_date, schedule_time, schedule_frequency, schedule_description, chk_schedule_workdays ]
-    });
-
-    var win = new Ext.Window({
-        autoScroll: true,
-        title: _("Schedule information"),
-        width: 650, 
-        closeAction: 'hide',
-        items: [ schedule_form ]
-    });
-
-    var new_schedule = function () {
-        bl_edit = false;
-        schedule_id.setValue(undefined);
-        schedule_name.setValue(undefined);
-        schedule_service.setValue(undefined);
-        schedule_date.setValue('<% $today %>');
-        schedule_time.setValue('<% $hm %>');
-        schedule_frequency.setValue(undefined);
-        schedule_description.setValue(undefined);
-        chk_schedule_workdays.checked = false;
-
-        win.show();
-        myMask.hide();
-    };
-
-    var edit_schedule = function () {
-        bl_edit = true;
-        var sm = grid.getSelectionModel();
-        if ( sm.hasSelection() ){
-            var r = sm.getSelected();
-            schedule_id.setValue(r.data.id);
-            schedule_name.setValue(r.data.name);
-            schedule_service.setValue(r.data.service);
-            
-            form = schedule_form.getForm();
-            if(r.data.parameters){
-                txtconfig = r.data.parameters;
-                form.findField("txt_conf").setValue(r.data.parameters);                
-                btn_config_service.enable();
-            }else{
-                form.findField("txt_conf").setValue('');
-                check_configuration(r.data.service);
-            }			    
-            
-            if ( r.data.next_exec ) {
-                schedule_date.setValue(r.data.next_exec.substring(0,10));
-                schedule_time.setValue(r.data.next_exec.substring(11,16));
+        });
+          
+        //var schedule_service = Baseliner.combo_services({ hiddenName: 'service' });
+        var store_chain = new Baseliner.JsonStore({
+            url: '/rule/list', root: 'data', totalProperty: 'totalCount', id: 'id', 
+            fields:['id','rule_name','rule_type', 'rule_desc']
+        });
+        var resultTpl = new Ext.XTemplate(
+            '<tpl for="."><div class="x-combo-list-item">',
+            '<span id="boot" style="background: transparent;">',
+            '<strong>{rule_name}</strong>',
+            '<tpl if="rule_desc">',
+                '<br /><span style="color: #ccc">{rule_desc}<span>',
+            '</tpl>',
+            '</span>',
+            '</div></tpl>'
+        );
+        var schedule_service = new Baseliner.SuperBox({
+            singleMode: true,
+            fieldLabel: _('Rule'),
+                name: 'id_rule',
+                displayField:'rule_name',
+                hiddenName:'id_rule', 
+                valueField: 'id',
+            store: store_chain,
+            //anchor: '50%',
+            mode: 'remote',
+            minChars: 0, //min_chars ,
+            loadingText: _('Searching...'),
+            tpl: resultTpl,
+            allowBlank: false,
+            value: rec.id_rule,
+            editable: false,
+            lazyRender: true
+        });
+        /* store_chain.on('load', function(){
+            var row = store_chain.getAt(0);
+            if( row ) {
+                combo_chain.setValue( row.data.id );
             } else {
-                schedule_date.setValue(undefined);
-                schedule_time.setValue(undefined);                
+                Baseliner.message(_('Job'), _('No job chains available') );
             }
-            schedule_frequency.setValue(r.data.frequency);
-            chk_schedule_workdays.checked = r.data.workdays ==1?true:false;
-            schedule_description.setValue(r.data.description);
-            win.show();
-        } else {
-            alert(_('Select a row'));
-        }     
-        myMask.hide();
-    };
-
-    var delete_schedule = function () {
-        var sm = grid.getSelectionModel();
-        if ( sm.hasSelection() ){
-            var r = sm.getSelected();
-            Baseliner.ajaxEval( '/scheduler/delete_schedule', 
-                    { id: r.data.id }, 
-                    function(response) {
-                        if ( response.success ) {
-                            Baseliner.message( _('SUCCESS'), _('Scheduled task deleted') );
+        });
+        */
+        store_chain.load();
+        
+        var check_configuration = function(id_service){
+            // Baseliner.ajaxEval( '/chain/getconfig', {id: id_service}, function(res) {
+            //     if( !res.success ) {
+            //         //Baseliner.error( _('YAML'), res.msg );
+            //     } else {
+            //         // saved ok
+            //         //Baseliner.message( _('YAML'), res.msg );
+            //         if(res.yaml){
+            //             txtconfig = res.yaml;
+            //             btn_config_service.enable();
+            //         }
+            //         else{
+            //             btn_config_service.disable();
+            //         }
+                    
+            //     }
+            // });
+        };
+        schedule_service.on('select', function(field, newValue, oldValue) {
+            form = schedule_form.getForm();
+            form.findField("txt_conf").setValue('');       
+            check_configuration(newValue.data.id);
+        });
+        
+        var btn_submit = new Ext.Button({
+            text: _('OK'), icon:'/static/images/icons/save.png', 
+            handler: function(){
+                if ( !valida_hora(schedule_time.getValue() ) ) {
+                    Baseliner.error(_('Scheduler'), _('Time not valid'));
+                } else {
+                    var ff = schedule_form.getForm();
+                    ff.submit({
+                        success: function(form, action) { 
                             store.load({params:{ limit: ps }});
-                        } else {
-                            Baseliner.message( _('ERROR'), _('Scheduled task not deleted') );
+                            ff.reset();
+                            win.close(); 
+                        },
+                        failure: function(form, action) { 
+                            if( action.result ) {
+                                Baseliner.error(_('Scheduler'), action.result.msg);
+                            } else {
+                                Baseliner.error(_('Scheduler'), _('Missing fields') );
+                            }
                         }
-                        myMask.hide();
-                    }
-            );
+                    }); 
+                }
+            }
+        });
+        
+        var txt_conf = new Ext.form.TextArea({ 
+            name: 'txt_conf', xtype: 'textarea', 
+            hidden: 'true', value: rec.parameters });
 
-        }     
-    };
+        var schedule_form = new Baseliner.FormPanel({
+            frame: true,
+            url: '/scheduler/save_schedule',
+            buttons: [
+                btn_submit,
+                {
+                    text: _('Cancel'),
+                    handler: function(){ 
+                        win.close();
+                    }
+                }
+            ],
+            defaults:{anchor:'100%'},
+            items: [ schedule_id, schedule_name,
+                    txt_conf,
+                    {
+                    // column layout with 2 columns
+                    layout:'column'
+                    ,defaults:{
+                            //columnWidth:0.5
+                            layout:'form'
+                            ,border:false
+                            ,xtype:'panel'
+                            ,bodyStyle:'padding:0 2px 0 0'
+                    }
+                    ,items:[{
+                                // left column
+                                columnWidth:0.86,
+                                defaults:{anchor:'100%'},
+                                items:[ schedule_service ]
+                            },
+                            {
+                                // right column
+                                columnWidth:0.14,
+                                defaults:{anchor:'100%'},
+                                items:[ btn_config_service ]
+                            }
+                    ]
+                    },                 
+                     schedule_date, schedule_time, schedule_frequency, schedule_description, chk_schedule_workdays ]
+        });
+
+        var win = new Baseliner.Window({
+            autoScroll: true,
+            title: _("Schedule information"),
+            width: 650, 
+            //closeAction: 'hide',
+            items: [ schedule_form ]
+        });
+        
+        if ( rec.next_exec ) {
+            schedule_date.setValue(rec.next_exec.substring(0,10));
+            schedule_time.setValue(rec.next_exec.substring(11,16));
+        } else {
+            schedule_date.setValue(undefined);
+            schedule_time.setValue(undefined);                
+        }
+        win.show();
+    }; // edit_window
 
     var toggle_activation = function () {
         var sm = grid.getSelectionModel();
@@ -604,7 +570,6 @@
                         } else {
                             Baseliner.message( _('ERROR'), _(response.msg) );
                         }
-                        myMask.hide();
                     }
             ); 
         }     
@@ -613,37 +578,6 @@
     store.on("load", function () {
         show_buttons();
     });
-
-    var duplicate_schedule = function () {
-        var sm = grid.getSelectionModel();
-        if ( sm.hasSelection() ){
-            var r = sm.getSelected();
-            schedule_id.setValue(undefined);
-            schedule_name.setValue(r.data.name+'_copy');
-            schedule_service.setValue(r.data.service);
-            
-            form = schedule_form.getForm();
-            if(r.data.parameters){
-                txtconfig = r.data.parameters;
-                form.findField("txt_conf").setValue(r.data.parameters);                
-                btn_config_service.enable();
-            }else{
-                form.findField("txt_conf").setValue('');
-                check_configuration(r.data.service);
-            }	            
-            
-            if ( r.data.next_exec ) {
-                schedule_date.setValue(r.data.next_exec.substring(0,10));
-                schedule_time.setValue(r.data.next_exec.substring(11,16));
-            } else {
-                schedule_date.setValue('<% $today %>');
-                schedule_time.setValue('<% $hm %>');                
-            }
-            schedule_frequency.setValue(r.data.frequency);
-            win.show();
-        }     
-        myMask.hide();
-    };
 
     var run_schedule = function () {
         var sm = grid.getSelectionModel();
@@ -664,7 +598,6 @@
         } else {
             alert(_('Select a row'));
         }     
-        myMask.hide();
     };
 
     var kill_schedule = function () {
@@ -685,7 +618,6 @@
                                 } else {
                                     Baseliner.message( _('ERROR'), _('Could not kill task') );
                                 }
-                                myMask.hide();
                             }
                     );
                 }
