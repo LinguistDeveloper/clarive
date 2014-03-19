@@ -281,6 +281,10 @@ sub field_is_ci {
 sub save_data {
     my ( $self, $master_row, $data, $opts ) = @_;
     return unless ref $data;
+    
+    # To fix not saving attributes modified in "before save_data"
+    $data = { %$self, %$data };
+
     my $storage = $self->storage;
     # peek into if we need to store the relationship
     my @master_rel;
@@ -578,12 +582,13 @@ sub related_cis {
         my $dir_normal = $edge =~ /^out/ ? 'to_mid' : 'from_mid';
         my $dir_reverse = $edge =~ /^out/ ? 'from_mid' : 'to_mid';
         $where->{$dir_reverse} = $mid;
-    } elsif( $opts{where} ) {
-        my @mids = grep { $_ ne $mid } map {$_->{mid} } mdb->master_doc->find($opts{where})->fields({ mid=>1, _id=>0 })->all;
-        push @ands, { '$or'=> [ { from_mid=>mdb->in(@mids), to_mid=>$mid }, {to_mid=>mdb->in(@mids), from_mid=>$mid} ] };
     } else {
         push @ands, { '$or'=> [ {from_mid=>$mid}, {to_mid=>$mid} ] };
     }
+    if( $opts{where} ) {
+        my @mids = grep { $_ ne $mid } map {$_->{mid} } mdb->master_doc->find($opts{where})->fields({ mid=>1, _id=>0 })->all;
+        push @ands, { '$or'=> [ { from_mid=>mdb->in(@mids), to_mid=>$mid }, {to_mid=>mdb->in(@mids), from_mid=>$mid} ] };
+    } 
     $where->{rel_type} = $opts{rel_type} if defined $opts{rel_type};
     # paging support
     $opts{start} //= 0;
