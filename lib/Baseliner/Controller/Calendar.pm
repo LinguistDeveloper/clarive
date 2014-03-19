@@ -605,7 +605,7 @@ sub db_to_slots {
         $slots->slot( weekday=>$_, start=>'00:00', end=>'24:00', name=>'B', data=>{ type=>'B' } )
             for 1 .. 7;
     }
-    if ( my $cal =  @cals[0] ) {
+    if ( my $cal =  $cals[0] ) {
         for my $win ( _array( @cals ) ) {
             my $name = $win->{type};
             my $when;
