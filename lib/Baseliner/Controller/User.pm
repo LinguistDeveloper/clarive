@@ -409,7 +409,7 @@ sub update : Local {
                 my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role });
                 $rs->delete;
             }
-            }		    
+            }           
         }
         else{
             my @ns_projects =
@@ -422,6 +422,12 @@ sub update : Local {
             
             tratar_proyectos_padres($c, $p->{username}, $roles_checked, $projects_parents_checked, 'delete');
         }
+        # regenerate project security for all users TODO work with my ci only
+        my ($ci) = ci->user->search_cis({name=>$p->{username}});
+        _debug 'Re-generating user project security...';
+        $ci->gen_project_security;
+        _debug 'Done updating project security.';
+
         $c->stash->{json} = { msg=>_loc('User modified'), success=>\1};
         }
         catch{
