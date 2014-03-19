@@ -73,7 +73,7 @@ sub get_carriers{
 
 sub get_type_recipients{
     #return ('Default','Users','Roles','Groups','Emails','Actions');
-    return ('Default','Users','Roles','Actions','Fields');
+    return ('Default','Users','Roles','Actions','Fields','Owner','Emails');
 }
 
 sub get_recipients{
@@ -102,6 +102,9 @@ sub get_recipients{
             when ('Default') {
                 @recipients = ({id => 'Default', name => 'Default'});
             }            
+            when ('Owner') {
+                @recipients = ({id => 'Owner', name => 'Owner'});
+            }            
         };
         return wantarray ? @recipients : \@recipients;
     }catch{
@@ -113,38 +116,56 @@ sub isValid {
     my ( $self, $p ) = @_;
     my $data = $p->{data} or _throw 'Missing parameter data';
     my $notify_scope = $p->{notify_scope} or _throw 'Missing parameter notify_scope';
-    my $valid;
+    my $valid = 1;
     
-    foreach my $key (keys $data->{scopes}){
-    	if( !exists $notify_scope->{$key} ){
-        	$valid = 0;
-        	last; 
-        }else{ $valid = 1; }
-    }
-    
-    if ($valid == 1) {
-    	foreach my $key (keys $notify_scope){
-        	if( exists $data->{scopes}->{$key}->{'*'} ){
-            	$valid = 1;
+    SCOPE: foreach my $key (keys %{$data->{scopes}}){
+        my @data_scope = _array keys %{$data->{scopes}->{$key}};
+        if ( $data_scope[0] eq '*' ) {
+            next SCOPE;
+        }
+
+        if( !exists $notify_scope->{$key} ){
+            $valid = 0;
+            last SCOPE; 
+        }else{ 
+            my @event_scope = _array $notify_scope->{$key};
+
+            my $found = 0;
+            EVENT: for ( @event_scope ) {
+                if ( $_ ~~ @data_scope ) {
+                    $found = 1;
+                    last EVENT;
+                }
             }
-            else{
-        		if( ref $notify_scope->{$key} eq 'ARRAY'){
-            		foreach my $value (@{$notify_scope->{$key}}){
-            			if (exists $data->{scopes}->{$key}->{$value}) {
-                			$valid = 1;
-                    		last;
-                		}else{ $valid = 0;}
-            		}
-        		}
-        		else{
-        			if (exists $data->{scopes}->{$key}->{$notify_scope->{$key}}) {
-        				$valid = 1;
-        			}else{ $valid = 0; }
-        		}
-        		last unless $valid == 1;
-            } 
-    	}
-    }   
+            if ( !$found ) {
+                $valid = 0;
+                last SCOPE;
+            }
+        }
+    }    
+    # if ($valid == 1) {
+    # 	foreach my $key (keys $notify_scope){
+    #     	if( exists $data->{scopes}->{$key}->{'*'} ){
+    #         	$valid = 1;
+    #         }
+    #         else{
+    #     		if( ref $notify_scope->{$key} eq 'ARRAY'){
+    #         		foreach my $value (@{$notify_scope->{$key}}){
+    #         			if (exists $data->{scopes}->{$key}->{$value}) {
+    #             			$valid = 1;
+    #                 		last;
+    #             		}else{ $valid = 0;}
+    #         		}
+    #     		}
+    #     		else{
+    #     			if (exists $data->{scopes}->{$key}->{$notify_scope->{$key}}) {
+    #     				$valid = 1;
+    #     			}else{ $valid = 0; }
+    #     		}
+    #     		last unless $valid == 1;
+    #         } 
+    # 	}
+    # }   
     return $valid;
 }
 
@@ -178,7 +199,7 @@ sub get_rules_notifications{
     
     my @rs_notify = DB->BaliNotification->search({ event_key => $event_key, is_active => 1, action => $action } )->hashref->all;
 
-    my @prj_mid = map { $_->{mid} } ci->related( mid => $mid, isa => 'project') if $mid;
+    #my @prj_mid = map { $_->{mid} } ci->related( mid => $mid, isa => 'project') if $mid;
     
     if ( @rs_notify ) {
 		foreach my $row_send ( @rs_notify ){
@@ -260,7 +281,7 @@ sub get_rules_notifications{
                             @tmp_users = Baseliner->model('Users')->get_users_from_mid_roles_topic( roles => \@roles, mid => $mid );
                             #@tmp_users = Baseliner->model('Users')->get_users_from_mid_roles( roles => \@roles, projects => \@prj_mid);                            
                         }
-                        when ('Fields') 	    {
+                        when ('Fields')         {
                             my @fields = map {lc($_)} keys $notification->{$plantilla}->{$carrier}->{$type};
                             my $topic = mdb->topic->find_one({mid=>"$mid"});
                             my @users_mid;
@@ -272,6 +293,15 @@ sub get_rules_notifications{
                             #@tmp_users = map { _ci($_->{to_mid})->name }
                             #                        DB->BaliMasterRel->search(  { 'LOWER(rel_field)' => \@fields, rel_type => 'topic_users'},
                             #                                                    { select => 'to_mid' })->hashref->all;
+                        }                        
+                        when ('Emails') {
+                            my @emails = keys $notification->{$plantilla}->{$carrier}->{$type};
+                            push @tmp_users, @emails;
+                            _log _dump @emails;
+                        }                        
+                        when ('Owner') 	    {
+                            my $topic = mdb->topic->find_one({mid=>"$mid"});
+                            push @tmp_users, $topic->{created_by};
                         }                        
             		};
             		push @users, @tmp_users;

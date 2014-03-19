@@ -226,15 +226,18 @@ sub get_templates : Local {
     
     try{
 
-        # my @templates_dirs; # = map { $_->root . '/email/*.html' } Baseliner->features->list;
-        # push @templates_dirs, $c->path_to( 'root/email' ) . '/*.html';
+        my @templates_dirs = map { $_->root } Baseliner->features->list;
+        push @templates_dirs, $c->path_to( 'root' );
+        my @templates;
 
-        my $path = $c->path_to;
-        my @templates = map { (_file $_)->basename } <$path/root/email/* $path/features/*/root/email/*>;
-
+        for my $template_dir ( @templates_dirs ) {
+            push @templates, map { ( _file $_)->basename } <$template_dir/email/*>;
+        }
+        
         @templates = map { +{name => $_, path => "/email/$_" }}  @templates;
 
         $c->stash->{json} = { data => \@templates, success=>\1 }; 
+
     }catch{
         $c->stash->{json} = { data => {}, msg=> _loc('Se ha producido un error'), success=>\0 };
     };

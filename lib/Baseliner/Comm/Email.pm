@@ -149,9 +149,13 @@ sub resolve_address {
     if ( $email ) {
         return $email;
     } else {
-        my $config = Baseliner->model('ConfigStore')->get( 'config.comm.email' );
-        my $domain = $config->{domain};
-        return "$username\@$domain";        
+        if ( $username =~ /\@/ ) {
+            return $username;
+        } else {        
+            my $config = Baseliner->model('ConfigStore')->get( 'config.comm.email' );
+            my $domain = $config->{domain};
+            return "$username\@$domain";        
+        }
     }
 }
 
