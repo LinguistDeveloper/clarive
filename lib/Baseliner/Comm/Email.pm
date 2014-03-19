@@ -51,7 +51,7 @@ sub group_queue {
             $from = $config->{from} if $from eq 'internal';
             $email{ $id } ||= {};
 
-            my $address = $queue_item->{destination} || resolve_address( $queue_item->{username} );
+            my $address = $queue_item->{destination} || $self->resolve_address( $queue_item->{username} );
 
             my $tocc = $queue_item->{carrier_param} || 'to';
             push @{ $email{ $id }{ $tocc } }, $address; 
