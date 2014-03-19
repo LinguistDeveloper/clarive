@@ -35,7 +35,6 @@ sub rel_type {
 before save_data => sub {
     my ($self, $master_row, $data ) = @_;
 
-    _log _dump $data;
     my @bls = _array $data->{bls};
 
     my $bl = $bls[0]->{moniker};
@@ -53,13 +52,18 @@ before save_data => sub {
         bl            => $bl
     };
     my $row;
+    my $id_status;
     if( $row = DB->BaliTopicStatus->find( $self->id_status ) || DB->BaliTopicStatus->search({ name=>$r->{name} })->first ) {
+        $id_status = $row->id;
         $row->update($r);
     } else {
         $row = DB->BaliTopicStatus->create($r);
+        $id_status = $row->id;
     }
-    $self->moniker( uc($self->name) );
-    $self->id_status( $row->id );  
+    _log "El estado es $id_status";
+    $self->moniker( uc($self->name) ) unless $data->{moniker};
+    $self->id_status( $id_status );
+    _log _dump $self;
 };
     
 after delete => sub {
