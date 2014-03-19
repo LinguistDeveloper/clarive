@@ -233,6 +233,8 @@ sub get_templates : Local {
         for my $template_dir ( @templates_dirs ) {
             push @templates, map { ( _file $_)->basename } <$template_dir/email/*>;
         }
+        
+        @templates = map { +{name => $_, path => "/email/$_" }}  @templates;
 
         $c->stash->{json} = { data => \@templates, success=>\1 }; 
 
