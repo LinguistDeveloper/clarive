@@ -16,6 +16,9 @@ register 'action.development.ext_api' => { name => 'ExtJS API Reference'};
 register 'action.development.ext_examples' => { name => 'ExtJS Examples'};
 register 'action.development.gui_designer', => { name => 'GUI Designer'};
 register 'action.development.baliref', => { name => 'Baseliner Reference'};
+# Action sequences
+register 'action.development.sequences', => { name => 'Sequences'};
+
 
 register 'menu.development' => {
     label => 'Development', 
@@ -77,6 +80,89 @@ register 'menu.development.baliref' => {
     action => 'action.development.baliref',
     index      => 100,
 };
+
+##########################################################################
+register 'menu.development.sequences' =>{
+    label    => 'Sequences',
+    # Ruta del controlador
+    url_comp => '/repl/sequences',
+    title    => 'Sequences',
+    action   => 'action.development.sequences',
+    #icon     => '/static/images/icons/console.png',
+    #index    => 10, 
+};
+
+
+sub sequence_store : Local {
+    my ($self,$c)=@_;
+    # Consulta mongo
+    $c->stash->{json} = try {
+        my @rows = mdb->master_seq->find->all;
+        { success=>\1, data=>\@rows, totalCount=>scalar(@rows) };
+    } catch {
+        my $err = shift;
+        { success=>\0, msg=>_loc('Error getting sequences: %1', $err) };
+    };
+    $c->forward( 'View::JSON' );
+}
+
+sub sequences : Local {
+    my ( $self, $c ) = @_;
+    $c->stash->{template} = '/comp/sequences.js';
+}
+
+sub sequences_update : Local {
+    my ($self,$c)=@_;
+    my $p = $c->request->parameters;
+    $c->stash->{json} = try {
+        my $modified_records = _load $p->{modified_records};
+        foreach my $updated_seq (keys $modified_records)
+        {
+            my $new_value = $modified_records->{$updated_seq}[0];
+            my $actual_value = mdb->master_seq->find( { _id => $updated_seq } )->next->{seq};
+            my $old_value = $modified_records->{$updated_seq}[1];
+            if ($old_value != $actual_value ){
+                die _loc('Error sync updating sequences');
+            }
+            my $ret = mdb->master_seq->update({ _id => $updated_seq, seq => $old_value }, { '$set' => { seq => $new_value } });
+        }
+        { success=>\1, msg=>_loc('Modified rows updated successfully') };
+    } catch {
+        my $err = shift;
+        { success=>\0, msg=>_loc('Error updating sequences: %1', $err) };
+    };
+    $c->forward( 'View::JSON' );
+ }
+
+sub sequence_test : Local {
+    my ( $self, $c )=@_;
+    my $option = $c->request->parameters->{option};
+    if ( $option == 0 ) {
+        mdb->master_seq->remove({ _id => 'id1' });
+        mdb->master_seq->remove({ _id => 'id2' });
+        mdb->master_seq->insert({ _id => 'id1', seq => 1 });
+        mdb->master_seq->insert({ _id => 'id2', seq => 1 });
+        $c->stash->{json} = { success=>\1, msg=>_loc('Sequences added successfully') };
+    }
+    if ( $option == 1 ) {
+        mdb->master_seq->update({ _id => "id1" }, { '$set' => { seq => 2 } });
+        $c->stash->{json} = { success=>\1, msg=>_loc('Simulation of modification of sequence by other user') };
+    }
+    if ( $option == 2 ){
+        my $seq_id = $c->request->parameters->{seq_id};
+        my $seq = mdb->master_seq->find({ _id => $seq_id })->next->{seq};
+        $c->stash->{json} = { success=>\1, msg=>_loc('Get seq value of ' . $seq_id), seq => $seq };
+    }
+    if ( $option == -1 ) {
+        mdb->master_seq->remove({ _id => 'id1' });
+        mdb->master_seq->remove({ _id => 'id2' });
+        $c->stash->{json} = { success=>\1, msg=>_loc('Initial state establishet') };
+    }
+    $c->forward( 'View::JSON' );
+}
+##########################################################################
+
+
 
 sub test : Local {
     my ( $self, $c ) = @_;
