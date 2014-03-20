@@ -1456,7 +1456,6 @@
         var r = grid.getStore().getAt(rowIndex);
 
         if ( report_type == 'jobs' ) {
-            console.dir(r);
             Baseliner.openLogTab(r.data.job_id, r.data.nombre_job);
         } else {
             Baseliner.show_topic_from_row( r, grid_topics );

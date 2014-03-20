@@ -3630,7 +3630,6 @@ Baseliner.BOM = Ext.extend( Ext.Panel, {
         Baseliner.BOM.superclass.initComponent.call(this);
         self.on('afterrender', function(){
             Baseliner.ci_call( self.mid, 'bom', self.params, function(res){
-                console.log( res );
                 var html = Baseliner.BOM_tmpl(res);
                 self.body.update( html );
                 self.doLayout();
