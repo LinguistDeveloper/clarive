@@ -7,20 +7,16 @@ BEGIN {  extends 'Catalyst::Controller' }
 sub detail : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
-    my $message = $c->model('Messaging')->get( id=>$p->{id} );
-            
-    my $r = $c->model('Baseliner::BaliMessageQueue')->find({ id=>$p->{id}, username=> $c->username });
-    $r->swreaded( '1' );
-    $r->update();		
-    
+    my $message = $c->model('Messaging')->get( id=>$p->{id} ); 
+    mdb->message->update({'queue.id' => $p->{id}}, {'$set' => {'queue.$.swreaded' => '1'}});
     $c->stash->{json} = { data => [ $message ] };		
     $c->forward('View::JSON');
 }
 
 sub body : Local {
     my ($self,$c, $id) = @_;
-    my $message = $c->model('Baseliner::BaliMessage')->find( $id );
-    my $body = $message->body;
+    my $message = mdb->message->find({_id => mdb->oid($id)})->next;
+    my $body = $message->{body};
     #$body = Encode::decode_utf8( $body );
     #Encode::from_to( $body, 'utf-8', 'iso-8859-1' );
     $c->response->body( $body );
@@ -69,14 +65,14 @@ sub json : Local {
         # produce the grid
         push @rows,
              {
-                 id         => $message->id ,
-                 id_message => $message->id_message,
-                 sender     => $message->sender,
-                 subject    => $message->subject,
-                 received    => $message->received,
-                 body    => substr( $message->body, 0, 100 ),
-                 sent       => $message->sent,
-                 swreaded	=> $message->swreaded
+                 id         => $message->{id} ,
+                 id_message => $message->{_id},
+                 sender     => $message->{sender},
+                 subject    => $message->{subject},
+                 received    => $message->{received},
+                 body    => substr( $message->{body}, 0, 100 ),
+                 sent       => $message->{sent},
+                 swreaded	=> $message->{swreaded}
              }
     }
     $c->stash->{json} = { totalCount=>$c->stash->{messages}->{total}, data => \@rows };
@@ -103,8 +99,7 @@ sub inbox : Local {
     my $p = $c->req->params;
     $c->stash->{username} = $p->{username} || $c->username;
     $c->stash->{query_id} = $p->{query};	
-     $c->stash->{template} = '/comp/message_grid.mas';
-    
+    $c->stash->{template} = '/comp/message_grid.mas';    
 }
 
 sub to_and_cc : Local {

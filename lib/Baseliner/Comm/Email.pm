@@ -21,50 +21,61 @@ sub daemon {
 
 # groups the email queue around the same message
 sub group_queue {
-    my ( $self, $config ) = @_;
-    my $rs_queue = Baseliner->model('Baseliner::BaliMessageQueue')->search({ carrier=>'email', 'me.active'=>1 }, { join=>'id_message' });
+    my ( $config ) = @_;
+    
+    my %query;
+
+    $query{where}->{'queue.active'} = '1';
+    $query{where}->{'queue.carrier'} = 'email';
+
+    my @queue = Baseliner->model('Messaging')->transform(%query);
+
+    my @q = $self->filter_queue(@queue);
+
     my %email;
-    while( my $queue_item = $rs_queue->next ) {
+    foreach my $queue_item (@q){
         try {
             local $SIG{ALRM} = sub { die "alarm\n" };
             alarm $config->{timeout} if $config->{timeout};  # 0 turns off timeout
-            my $message = $queue_item->id_message;
-            my $id = $message->id ;
-            my $from = $message->sender;
-            my $msgsiz = length( $message->body ) // 0;
+            my $message = $queue_item->{msg};
+            my $id = $message->{_id} ;
+            my $from = $message->{sender};
+            my $msgsiz = length( $message->{body} ) // 0;
             my $body;
             if( $msgsiz > $config->{max_message_size} ) {
                 _log _loc "Trimming email message body, size exceeded ( %1 > %2 )", $msgsiz, $config->{max_message_size};
-                $body = substr( $message->body, 0, $config->{max_message_size} ); 
+                $body = substr( $message->{body}, 0, $config->{max_message_size} ); 
             } else {
-                $body = $message->body;
+                $body = $message->{body};
             }
             $from = $config->{from} if $from eq 'internal';
             $email{ $id } ||= {};
 
-            my $address = $queue_item->destination
-                || $self->resolve_address( $queue_item->username );
+            my $address = $queue_item->{destination} || resolve_address( $queue_item->{username} );
 
-            my $tocc = $queue_item->carrier_param || 'to';
+            my $tocc = $queue_item->{carrier_param} || 'to';
             push @{ $email{ $id }{ $tocc } }, $address; 
-            push @{ $email{ $id }{ id_list } }, $queue_item->id;
+            push @{ $email{ $id }{ id_list } }, $queue_item->{id};
 
             $email{ $id }->{from} ||= $from; # from should be always from the same address
-            $email{ $id }->{subject} ||= $message->subject;
+            $email{ $id }->{subject} ||= $message->{subject};
             $email{ $id }->{body} ||= $body;
             $email{ $id }->{attach} ||= {
-                data         => $message->attach,
-                content_type => $message->attach_content_type,
-                filename     => $message->attach_filename
+                data         => $message->{attach},
+                content_type => $message->{attach_content_type},
+                filename     => $message->{attach_filename}
             };
             alarm 0;
-        } catch {
-            # error fetching message from queue, mark as inactive
+        }
+        catch {
             my $err = shift;    
             alarm 0;
-            _error _loc "MessageQueue item id %1 could not be prepared: %2", $queue_item->id, $err; 
-            $queue_item->update({ active => 0 });
-        };
+            _error _loc "MessageQueue item id %1 could not be prepared: %2", $queue_item->{id}, $err; 
+            mdb->message->update(
+                {'queue.id' => $queue_item->{id}},
+                {'$set' => {'queue.$.active' => '0'}}
+            );
+        }
     }
     return %email;
 }
@@ -113,7 +124,6 @@ sub process_queue {
             $body =~ s{Ã±}{ñ}g;
             
             utf8::downgrade($body);
-
             $result = $self->send(
                 server=>$config->{server},
                 to => join(';',@to),
@@ -222,6 +232,30 @@ sub send {
     
     $msg->send('smtp');  ## put smtp otherwise it uses sendmail
 }	
+
+sub filter_queue {
+    my ($self, @queue) = @_;
+    
+    require Time::Piece;
+    my $dateformat = "%Y-%m-%d %H:%M:%S";
+
+    my $now = Time::Piece->strptime(mdb->ts, $dateformat);
+    my @q;
+    foreach my $r (@queue){
+        if($r->{active} eq '1' ){
+            if(!$r->{schedule_time} or ($r->{schedule_time} eq '') ){
+                push (@q, $r);
+            }else{
+                my $schedule_time = Time::Piece->strptime($r->{schedule_time}, $dateformat);    
+                if ($schedule_time < $now) {
+                    push (@q, $r);
+                }
+            }
+        }
+    }
+
+    return @q;
+}
 
 1;
 

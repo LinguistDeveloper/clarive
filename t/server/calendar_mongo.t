@@ -219,15 +219,15 @@ ok $json->{success}, 'merge windows succesfully';
 
 $url = "/job/build_job_window_direct";
 
-my $date = '2014-03-03';
+$date = '2014-03-03';
 my $date_format = "%Y-%m-%d";
-my $bl = '*';
-my $ns = '/';
+$bl = '*';
+$ns = '/';
 
 %data = ('date' => $date, 'date_format' => $date_format, 'bl' => $bl, 'ns' => $ns);
 $ag->post( URL($url), \%data );
 $json = _decode_json( $ag->content );
-say "Result: " . $json->{msg};
+say "Result: " . $json->{msg} if (defined $json->{msg});
 ok $json->{success}, 'job added succesfully';
 
 done_testing;
