@@ -21,7 +21,7 @@ sub daemon {
 
 # groups the email queue around the same message
 sub group_queue {
-    my ( $config ) = @_;
+    my ( $self, $config ) = @_;
     
     my %query;
 
