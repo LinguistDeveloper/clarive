@@ -158,7 +158,15 @@ sub create {
 
 sub delete {
     my ( $self, %p ) = @_;
-    my $msg = mdb->message->remove({_id => ''.$p{id}}) if $p{id};
+    my $msg = mdb->message->update(
+        {_id => mdb->oid($p{id_message})},
+        {'$pull' => 
+            {
+                queue => {id => 0+$p{id_queue}}
+            }
+        }
+    );
+    
 }
 
 sub read {
@@ -245,7 +253,7 @@ sub notify {
                     {_id => $msg},
                     {'$push' => 
                         {queue => {
-                        	id => mdb->seq('message_queue'),
+                        	id =>  0 + mdb->seq('message_queue'),
                             username=>$username, 
                             carrier=>$carrier, 
                             carrier_param=>$param, 
@@ -290,37 +298,45 @@ sub inbox {
 
     my %q;
     
-    $p{dir} ||= 1;
+    $p{dir} ||= 'DESC';
 
    	if ($p{sort}){
-   		if ({$p{dir} eq 'desc'}) {
+        if($p{sort} eq 'id' or $p{sort} eq 'sent') {
+            $p{sort} = 'queue.'.$p{sort};
+        }
+
+   		if ($p{dir} eq 'DESC') {
    			$q{sort} = {$p{sort} => -1}; 
    		}else{
-   			$q{sort} {$p{sort} => $p{dir}};
+   			$q{sort} = {$p{sort} => 1};
    		}
    	} else{
-   		$q{sort} = {id => -1};
+   		if ($p{dir} eq 'DESC') {
+            $q{sort} = {'queue.id' => -1}; 
+        }else{
+            $q{sort} = {'queue.id' => 1};
+        }
    	}
-
+    
     if( defined $p{start} && defined $p{limit} ) {
 		$q{skip} = $p{start};
 		$q{limit} = $p{limit} || 30;
 	}
 
-    $q{active} = '1' unless $p{all};
+    $q{where}->{'queue.active'} = '1' unless $p{all};
     
     exists $p{username} and $q{where}->{'queue.username'} = $p{username} if $p{username};
     exists $p{carrier} and $q{where}->{'queue.carrier'} = delete $p{carrier};
 
     if($p{query_id}){
-        $p{query_id} and $q{where}->{_id} = $p{query_id};	
+        $p{query_id} and $q{where}->{_id => mdb->oid($p{query_id})};	
     }else{
-    	my $row;
-        $p{query} and $row = mdb->query_build(query => $p{query}, fields=>[qw(sender body subject )]) and %q = { %q, %$row };
+        $p{query} and $q{where} = mdb->query_build(query => $p{query}, where => $q{where}, fields=>[qw(sender body subject )]);
     }
 
 	my @queue = $self->transform(%q);
-	my @q;
+	
+    my @q;
 
 	foreach my $r (@queue){
     	if($r->{username} eq $p{username}){
@@ -335,7 +351,7 @@ sub inbox {
 
         if( $p{deliver_now} ) {
             mdb->message->update(
-    			{'queue.id' => $r->{id}},
+    			{'queue.id' => 0 + $r->{id}},
     			{'$set' =>
     				{
     					'queue.$.received' => mdb->ts,
@@ -356,12 +372,12 @@ sub delivered {
 
     _fail _loc('Missing id') unless length $p{id};
 
-    $p{where} ={'queue.id' => $p{id}};
+    $p{where} ={'queue.id' => 0 + $p{id}};
     my @queue = $self->transform(%p);
 
     my $act = '0';
     mdb->message->update(
-		{'queue.id' => $p{id}},
+		{'queue.id' => 0 + $p{id}},
 		{'$set' =>
 			{
 				'queue.$.result' => $p{result},
@@ -379,7 +395,7 @@ sub failed {
     
     _fail _loc('Missing id') unless length $p{id};
 
-    $p{where} ={'queue.id' => $p{id}};
+    $p{where} ={'queue.id' => 0 + $p{id}};
     my @queue = $self->transform(%p);
 	
 	my $r;
@@ -400,7 +416,7 @@ sub failed {
 
     my $n_attempts = $r->{attempts} + 1;
     mdb->message->update(
-    	{'queue.id' => $p{id}},
+    	{'queue.id' => 0 + $p{id}},
     	{'$set' =>
     		{
     			'queue.$.result' => $p{result}, 
@@ -412,7 +428,7 @@ sub failed {
 
 sub get {
     my ($self,%p)=@_;
-    $p{where} ={'queue.id' => $p{id}}; 
+    $p{where} ={'queue.id' => 0 + $p{id}}; 
     my @queue = $self->transform(%p);
     my ($row) = @queue;
     my $merged = { %{ delete $row->{msg} }, %$row }; 

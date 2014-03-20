@@ -18,7 +18,7 @@ my $json;
 my $id_cal;
 
 #####################
-#	MENSAJES		#
+#   MENSAJES        #
 #####################
 
 $url = '/message/detail';
@@ -26,7 +26,6 @@ $url = '/message/detail';
 my $id;
 my $username;
 
-#1 crear un mensaje
 $id = "110";
 $username = "rodrigo";
 
@@ -36,59 +35,26 @@ $json = _decode_json( $ag->content );
 say "Result: " . $json->{msg};
 ok $json->{success}, 'message readed';
 
+my $config = Baseliner->model('ConfigStore')->get('config.comm.email');
+my @users_list = ('saul@clarive.com');
+
+my $to = [ _unique(@users_list) ];
+
+Baseliner->model('Messaging')->notify(
+to => { users => $to },
+sender => $config->{from},
+carrier => 'email',
+template => 'email/generic.html',
+template_engine => 'mason',
+vars => {
+subject => "Prueba de envio de correo desde Clarive",
+message =>
+'Has recibido este correo porque estamos ejecutando una prueba de envio desde Clarive'
+}
+);
 
 
-# my %p;
-# $p{body} = 'body body body';
-# $p{template_engine} ||= 'text';
-# $p{subject} = 'un sujeto';
-# $p{sender} ||= 'clarive@vasslabs.com';
-
-# my $msg_id = Baseliner->model('Messaging')->create(%p);
-
-# my $qid = mdb->seq('message_queue');
-# mdb->message->update(
-# 	{_id => $msg_id},
-# 	{
-#     	'$push' => {
-#         	queue => {
-# 				id => $qid,
-#                 username=>'usuario1111', 
-#                 carrier=>'email', 
-#                 carrier_param=>'to', 
-#                 active => '1',
-#                 attempts => '0',
-#                 swreaded => '0',
-#                 sent => mdb->ts
-# 			}
-#         }
-# 	}
-# );
-    
-# my $qid2 = mdb->seq('message_queue');
-# mdb->message->update(
-# 	{_id => $msg_id},
-# 	{
-#     	'$push' => {
-#         	queue => {
-# 				id => $qid2,
-#                 username=>'usuario2222', 
-#                 carrier=>'email', 
-#                 carrier_param=>'to', 
-#                 active => '1',
-#                 attempts => '0',
-#                 swreaded => '0',
-#                 sent => mdb->ts
-# 			}
-#         }
-# 	}
-# );
-
-
-# Baseliner->model('Messaging')->failed( id=>$qid, result=>'error', max_attempts=>'10' );  
-
-# Baseliner->model('Messaging')->delivered( id=>$qid2, result=>'success' );
-
-# return $qid, $qid2;
+say "Result: " . $json->{msg};
+ok $json->{success}, 'message readed';
 
 done_testing;

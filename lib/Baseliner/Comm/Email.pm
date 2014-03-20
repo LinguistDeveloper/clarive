@@ -72,7 +72,7 @@ sub group_queue {
             alarm 0;
             _error _loc "MessageQueue item id %1 could not be prepared: %2", $queue_item->{id}, $err; 
             mdb->message->update(
-                {'queue.id' => $queue_item->{id}},
+                {'queue.id' => 0 + $queue_item->{id}},
                 {'$set' => {'queue.$.active' => '0'}}
             );
         }

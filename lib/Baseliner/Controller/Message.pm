@@ -7,8 +7,8 @@ BEGIN {  extends 'Catalyst::Controller' }
 sub detail : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
-    my $message = $c->model('Messaging')->get( id=>$p->{id} ); 
-    mdb->message->update({'queue.id' => $p->{id}}, {'$set' => {'queue.$.swreaded' => '1'}});
+    my $message = $c->model('Messaging')->get( id => $p->{id} ); 
+    mdb->message->update({'queue.id' => 0 + $p->{id}}, {'$set' => {'queue.$.swreaded' => '1'}});
     $c->stash->{json} = { data => [ $message ] };		
     $c->forward('View::JSON');
 }
@@ -38,7 +38,7 @@ sub inbox_json : Local {
     my ($start, $limit, $query, $query_id, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query query_id dir sort/}, 0 );
     
     $sort ||= 'sent';
-    $dir ||='desc';
+    $dir ||= 'DESC';
     return unless $c->user;
     
     $c->stash->{messages} = $c->model('Messaging')->inbox(
@@ -83,7 +83,8 @@ sub delete : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     eval {
-        $c->model('Messaging')->delete( id=>$p->{id_message} );
+
+        $c->model('Messaging')->delete( id_queue=>$p->{id_queue}, id_message =>  $p->{id_message});
     };
     if( $@ ) {
         warn $@;
