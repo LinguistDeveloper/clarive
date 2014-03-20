@@ -1877,6 +1877,29 @@ sub uncompress {
     }
 }
 
+sub properties {
+    my ($body) = @_;
+    my %ret;
+    my $re = qr/^
+                  \s*
+                  ((?:[^\s:=\\]|\\.)+)
+                  \s*
+                  [:=\s]
+                  \s*
+                  (.*)
+                  $
+                  /x;  # SALVA's, see Config::Properties
+    my $cnt=0;
+    for my $lin ( split/\r*\n/, $body ) {
+        $cnt++;
+        next if $lin =~ /^\s*#/;
+        if( my ($k,$v) = $lin =~ $re ) {
+            $ret{ $k } = $v;
+        } else { _warn "Incorrect property (line=$cnt): $lin" }
+    }
+    %ret;
+}
+
 1;
 
 __END__
