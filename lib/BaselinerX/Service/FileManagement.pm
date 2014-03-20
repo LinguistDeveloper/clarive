@@ -227,13 +227,7 @@ sub run_write {
         if $body_encoding && ( $file_encoding ne $body_encoding );
         
     if( $templating eq 'tt' ) {
-        require Template; # aka TT
-        my $tt = Template->new();
-        my $vars = $template_var ? $stash->{ $template_var } : $stash;
-        my $output = '';
-        if( ! $tt->process( \$body, $vars, \$output ) ) {
-            _fail _loc "Error processing file body with templating %1: %2", $templating, $tt->error;
-        }
+        my $output = BaselinerX::Service::Templating->process_tt( $stash, $template_var, $body );
         $body = $output;
     }
     
