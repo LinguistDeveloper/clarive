@@ -54,7 +54,7 @@
 %if($c->stash->{is_columns}){
 <table width="100%">
     <tr>
-        <td width="50%" >
+        <td width="50%" style="padding: 0 5px 0 5px">
 % if($dashboardlets){        
 % for my $dash ( sort { $a->{order} <=> $b->{order} } _array $dashboardlets ) {
 % if ($dash->{order} % 2 != 0){
@@ -62,7 +62,7 @@
 % }}
         </td> 
         <td >&nbsp;<td>
-        <td width="50%">
+        <td width="50%" style="padding: 0 5px 0 5px">
             
 % for my $dash ( sort { $a->{order} <=> $b->{order} } _array $dashboardlets ) {
 % if ($dash->{order} % 2 == 0){
