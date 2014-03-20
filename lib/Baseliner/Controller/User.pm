@@ -261,8 +261,8 @@ sub update : Local {
                 };           
                 
                 my $ci = ci->user->new( %$ci_data );
-                $user_mid = $ci->save;
                 $ci->gen_project_security;
+                $user_mid = $ci->save;
                 $c->stash->{json} = { msg=>_loc('User added'), success=>\1, user_id=> $user_mid };
                 
             }else{
@@ -347,6 +347,7 @@ sub update : Local {
                 my ($ci) = ci->user->search_cis({name=>$p->{username}});
                 _debug 'Re-generating user project security...';
                 $ci->gen_project_security;
+                $ci->save;
                 _debug 'Done updating project security.';
                 
                 $c->stash->{json} = { msg=>_loc('User modified'), success=>\1, user_id=> $p->{id} };
@@ -423,9 +424,10 @@ sub update : Local {
             tratar_proyectos_padres($c, $p->{username}, $roles_checked, $projects_parents_checked, 'delete');
         }
         # regenerate project security for all users TODO work with my ci only
-        my ($ci) = ci->user->search_cis({name=>$p->{username}});
+        my ($ci) = ci->usernameser->search_cis({name=>$p->{username}});
         _debug 'Re-generating user project security...';
         $ci->gen_project_security;
+        $ci->save;
         _debug 'Done updating project security.';
 
         $c->stash->{json} = { msg=>_loc('User modified'), success=>\1};
