@@ -1,9 +1,8 @@
 (function(){
-	// Modificated sequences numbers
+	// Sequences to modify
 	var modified_records={};
 
 
-	// Store for mongo query
 	var store = new Baseliner.JsonStore({
         autoLoad: false,
         totalProperty:"totalCount",
@@ -14,8 +13,6 @@
         ]
 	});
 
-
-	// Save button
 	var btn_submit = new Ext.Button({ text:_('Submit'), icon:'/static/images/icons/save.png', handler: function(){
 		Baseliner.ajaxEval( '/repl/sequences_update',{modified_records: Ext.util.JSON.encode(modified_records)},
                             function(response) {
@@ -29,7 +26,6 @@
     	);	    	
 	}});
 
-	// Refresh button
 	var btn_refresh = new Ext.Button({ text:_('Refresh'), icon:'/static/images/icons/refresh.gif', handler: function(){
 		var hash={};
 		store.load();
@@ -54,12 +50,10 @@
    		grid_seq.setSource(hash);
 	});
 
-
-	var  afterEditEvent = event = function afterEdit(e) {
+	var handler_afterEdit_event = (function afterEdit(e) {
 		modified_records[ e.record.data.name ] = [e.value, e.originalValue];
-	};
-
-	grid_seq.on('afteredit', afterEditEvent, this);
+	});
+	grid_seq.on('afteredit', handler_afterEdit_event, this);
 
 	store.load();
 

@@ -178,20 +178,24 @@
     rules_store.load();
     
     rules_grid.on('rowclick', function(grid, ix){
+        console.log("-----------------------------------------------------");
         var rec = rules_store.getAt( ix ); 
         var get_rule_ts = Baseliner.ajaxEval('/rule/get_rule_ts', { id_rule: rec.data.id }, function(response){
             if (response.success){
+                console.log("1");
                 var old_ts = response.ts;
                 if( rec ) {
                     var tab_arr = tabpanel.find( 'id_rule', rec.data.id );
                     if( tab_arr.length > 0 ) {
                         tabpanel.setActiveTab( tab_arr[0] );
                     } else {
+                        console.log(old_ts);
                         rule_flow_show( rec.data.id, rec.data.rule_name, rec.data.event_name, rec.data.rule_event, rec.data.rule_type, old_ts );
                     }
                 }
             }
         });
+        
     });
    
     var encode_tree = function( root, include ){
@@ -463,6 +467,7 @@
         });*/
     
         var rule_save = function(opt){
+            //console.log(get_rule_ts);
             var root = rule_tree.root;
             root.cascade(function(nc){
                 nc.attributes.expanded = nc.isExpanded();
@@ -474,20 +479,13 @@
             btn_refresh_tree.disable();
             var save_action = function(opts){
                 if( !opts ) opts={};
-                var args = { id_rule: id_rule, stmts: json, old_ts: old_ts };
+                console.log("Pasa por rule save (debería pasar despues de get_rule_ts)");
+                console.log(old_ts);
+                var args = { id_rule: id_rule, ts: rule_tree_loader.ts, stmts: json };
                 Ext.apply(args, opts);
                 Baseliner.ajaxEval( '/rule/stmts_save', args, function(res) {
-                    old_ts = res.old_ts;
-                    if ( old_ts == ''){
-                        Baseliner.confirm( _("User %1 has changed rule at %2. Are you sure you want to overwrite it?", res.username, res.actual_ts ), function(){
-                            old_ts = res.actual_ts;
-                            save_action({ ignore_dsl_errors: 1 });
-                        });
-                    }
-                    
                     if( btn_save_tree ) btn_save_tree.enable();
                     if( btn_refresh_tree ) btn_refresh_tree.enable();
-
                     if( res.success ) {
                         rule_tree.is_dirty = false;
                         Baseliner.message( _('Rule'), res.msg );
@@ -755,6 +753,7 @@
             </div>
         */}.tmpl();
         rule_tree.view_docs = function(from,depth,doc){
+            console.log(rule_tree);
             var root = from || rule_tree.root;
             var doc = [];
             doc_gen(root,0,doc,[]);

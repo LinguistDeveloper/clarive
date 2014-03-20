@@ -95,7 +95,6 @@ register 'menu.development.sequences' =>{
 
 sub sequence_store : Local {
     my ($self,$c)=@_;
-    # Consulta mongo
     $c->stash->{json} = try {
         my @rows = mdb->master_seq->find->all;
         { success=>\1, data=>\@rows, totalCount=>scalar(@rows) };
@@ -150,7 +149,7 @@ sub sequence_test : Local {
     }
     if ( $option == 2 ){
         my $seq_id = $c->request->parameters->{seq_id};
-        my $seq = mdb->master_seq->find({ _id => $seq_id })->next->{seq};
+        my $seq = mdb->master_seq->find({ _id => $seq_id })->next->{seq}; 
         $c->stash->{json} = { success=>\1, msg=>_loc('Get seq value of ' . $seq_id), seq => $seq };
     }
     if ( $option == -1 ) {

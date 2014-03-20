@@ -5,6 +5,7 @@ use Baseliner::Sugar;
 use Baseliner::Core::DBI;
 use DateTime;
 use Try::Tiny;
+use Time::HiRes qw(time);
 use v5.10;
 
 BEGIN {  extends 'Catalyst::Controller' }
@@ -211,6 +212,8 @@ sub save : Local {
         rule_event => $p->{rule_event},
         rule_type  => $p->{rule_type},
         rule_desc  => substr($p->{rule_desc},0,2000),
+        ts =>  mdb->ts,
+        username => $c->username
     };
     if ( length $p->{rule_id} ) {
         my $doc = mdb->rule->find_one({ id=>"$p->{rule_id}" });
@@ -254,12 +257,13 @@ sub palette : Local {
         my $s = $c->registry->get( $key );
         my $n= { palette => 1 };
         my $type = $types{ $s->{type} };
+        my $parse_path = "/static/images/icons/$s->{type}.gif";
         $n->{holds_children} = defined $s->{holds_children} ? \($s->{holds_children}) : \1;
         $n->{leaf} = \1;
         $n->{key} = $key;
         $n->{text} = $s->{text} // $key;
         $n->{nested} = $s->{nested} // 0;
-        $n->{icon} = $s->icon // "/static/images/icons/$s->{type}.gif";
+        $n->{icon} = $s->icon // $parse_path;
         $n;
     } 
     Baseliner->registry->starts_with( 'statement.' );
@@ -367,7 +371,7 @@ sub palette : Local {
 sub stmts_save : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
-
+    my $returned_ts;
     my $error_checking_dsl = 0;
     try {
         my $id_rule = $p->{id_rule} or _throw 'Missing rule id';
@@ -385,9 +389,15 @@ sub stmts_save : Local {
             return if $p->{ignore_dsl_errors};
             _fail _loc "Error testing DSL build: %1", shift(); 
         };
-        $self->save_rule( id_rule=>$id_rule, stmts_json=>$p->{stmts}, username=>$c->username );
-        
-        $c->stash->{json} = { success=>\1, msg => _loc('Rule statements saved ok') };
+        $returned_ts = $self->save_rule( id_rule=>$id_rule, stmts_json=>$p->{stmts}, username=>$c->username, old_ts => $p->{old_ts} );
+        my $old_ts = $returned_ts->{old_ts};
+        my $actual_ts = $returned_ts->{actual_ts};
+        my $previous_user = $returned_ts->{previous_user};
+        if ($returned_ts->{old_ts} ne ''){
+            $c->stash->{json} = { success=>\1, msg => _loc('Rule statements saved ok'), old_ts => $old_ts, actual_ts=> $actual_ts, username=>$c->username };
+        } else {
+            $c->stash->{json} = { success=>\1, msg => _loc('An other user changed rule statements during edition process!'), old_ts => $old_ts, actual_ts=> $actual_ts, username=> $previous_user };
+        }
     } catch {
         my $err = shift;
         $c->stash->{json} = { success=>\0, msg => "$err", error_checking_dsl=>$error_checking_dsl };
@@ -395,19 +405,67 @@ sub stmts_save : Local {
     $c->forward("View::JSON");
 }
 
+##################################################################################
+sub get_rule_ts : Local{
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+    try {
+        my $ts = mdb->rule->find({id => ''.$p->{id_rule}})->next->{ts};
+        $c->stash->{json} = { success=>\1, msg => 'ok', ts => $ts };
+    } catch {
+        my $err = shift;
+        _error $err;
+        $c->stash->{json} = { success=>\0, msg => $err };
+    };
+    $c->forward("View::JSON");
+}
+
+
+sub rule_test : Local{
+    my ( $self, $c )=@_;
+    my $option = $c->request->parameters->{option};
+    if ( $option == 0 ) {
+        my $id_rule = $c->request->parameters->{id_rule};
+        mdb->rule->update({ id=>''.$id_rule }, { '$set'=> { ts => '2014-03-14 14:00:00', username => 'pepe' }} );
+        $c->stash->{json} = { success=>\1, msg=>_loc('Simulation of modification of rule statements') };
+    }
+    if ( $option == -1 ) {
+        my $id_rule = $c->request->parameters->{id_rule};
+        mdb->rule->remove({ id=> ''.$id_rule },{ multiple=>1 });
+        my $previous_seq_r = mdb->master_seq->find_one({_id => 'rule'})->{seq}-1;
+        my $previous_seq_rs = mdb->master_seq->find_one({_id => 'rule_seq'})->{seq}-1;
+        mdb->master_seq->update( {_id => 'rule'}, { '$set'=> { seq => $previous_seq_r } });
+        mdb->master_seq->update( {_id => 'rule_seq'}, { '$set'=> { seq => $previous_seq_rs } });
+        $c->stash->{json} = { success=>\1, msg=>_loc('Rule deleted') };
+    }
+    $c->forward( 'View::JSON' );
+}
+#################################################################################
 # saves and versions a rule
 sub save_rule {
     my ($self,%p)=@_;
     my $doc = mdb->rule->find_one({ id=>"$p{id_rule}" });
     _fail _loc 'Rule not found, id=%1', $p{id_rule} unless $doc;
-    mdb->rule->update({ id=>''.$p{id_rule} },{ '$set'=> { rule_tree=>$p{stmts_json} } });
-    # now, version
-    # check if collection exists
-    if( ! mdb->collection('system.namespaces')->find({ name=>qr/rule_version/ })->count ) {
-        mdb->create_capped( 'rule_version' );
+
+    my $ts_modified = 0;
+    my $old_timestamp = ''.$p{old_ts};
+    my $actual_timestamp = mdb->rule->find({ id => ''.$p{id_rule}})->next->{ts};
+    my $previous_user = mdb->rule->find({ id => ''.$p{id_rule}})->next->{username};
+    $ts_modified = (''.$old_timestamp ne ''.$actual_timestamp) or  ($p{username} ne $previous_user);
+    if ( $ts_modified ){
+        $old_timestamp = '';
+    }else{
+        $old_timestamp = mdb->ts;
+        mdb->rule->update({ id=>''.$p{id_rule} }, { '$set'=> { ts => $old_timestamp, username => $p{username}, rule_tree=>$p{stmts_json} } } );
+        # now, version
+        # check if collection exists
+        if( ! mdb->collection('system.namespaces')->find({ name=>qr/rule_version/ })->count ) {
+            mdb->create_capped( 'rule_version' );
+        }
+        delete $doc->{_id};
+        mdb->rule_version->insert({ %$doc, ts=>mdb->ts, username=>$p{username}, id_rule=>$p{id_rule}, rule_tree=>$p{stmts_json}, was=>($p{was}//'') });    
     }
-    delete $doc->{_id};
-    mdb->rule_version->insert({ %$doc, ts=>mdb->ts, username=>$p{username}, id_rule=>$p{id_rule}, rule_tree=>$p{stmts_json}, was=>($p{was}//'') });
+    { old_ts => $old_timestamp, actual_ts => $actual_timestamp, previous_user => $previous_user };
 }
 
 sub rollback_version : Local {
@@ -444,7 +502,9 @@ sub stmts_load : Local {
                 {   text => $current ? _loc('Current: %1 (%2)', $current->{ts}, $current->{username}).$text : _loc('Current'), 
                     leaf=>\0, 
                     icon=>'/static/images/icons/history.png',
-                    is_current=>\1, children=>[ @tree ] }, 
+                    is_current=>\1, children=>[ @tree ]
+                }
+
             );
             while( my $rv = $rs->next ) {
                 my $ver_tree = Util->_decode_json($rv->{rule_tree}); 
@@ -456,7 +516,7 @@ sub stmts_load : Local {
                     is_version=>\1, version_id=>''.$rv->{_id}, leaf=>\0, children=>\@ver_tree };
             } 
         }
-        $c->stash->{json} = \@tree;
+        $c->stash->{json} =  \@tree;
     } catch {
         my $err = shift;
         _error $err;

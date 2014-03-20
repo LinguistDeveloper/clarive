@@ -43,7 +43,7 @@ sub get_seq {
 }
 
 
-##### Update of a sequence ######
+##### Update a sequence whit a new value ######
 init_test_sequences();
 $url = '/repl/sequences_update';
 $mod = '{"id1":[2,1]}';
@@ -54,7 +54,7 @@ say "Result: " . $json->{msg};
 say "Value of seq in id1: " . ''.get_seq(seq_id => 'id1') . ' = 2';
 ok $json->{success}, 'Sequence updated';
 
-### Update of various sequences
+### Update 2 sequences
 init_test_sequences();
 $url = '/repl/sequences_update';
 $mod = '{"id1":[2,1], "id2":[3,1]}';
@@ -66,12 +66,14 @@ say "Value of seq in id1: " . ''.get_seq(seq_id => 'id1') . ' = 2';
 say "Value of seq in id2: " . ''.get_seq(seq_id => 'id2') . ' = 3';
 ok $json->{success}, 'Sequences updated';
 
-##### Simulation of change of seq by an other user  ####
+##### Sync test ####
+## Simulate an other user changing a sequence
 init_test_sequences();
 simulate_sequence_change();
+## Should return an error,
 $url = '/repl/sequences_update';
 $mod = '{"id1":[2,1]}';
-%data = ('modificados' => $mod);
+%data = ('modified_records' => $mod);
 $ag->post( URL($url), \%data );
 $json = _decode_json( $ag->content );
 say "Result: " . $json->{msg};
