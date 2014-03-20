@@ -387,10 +387,10 @@ ie, if the user has ANY role in them.
 sub user_projects {
     my ( $self, %p ) = @_;
     _throw 'Missing username' unless exists $p{ username };
-    my $is_root = $self->is_root( $p{username} );
-    if($is_root){
-        return _unique( map { $p{with_role}?"1/".$_->{ns}:$_->{ns} } Baseliner->model( 'Baseliner::BaliProject' )->search()->hashref->all );
-    }else{
+    # my $is_root = $self->is_root( $p{username} );
+    # if($is_root){
+    #     return _unique( map { $p{with_role}?"1/".$_->{ns}:$_->{ns} } Baseliner->model( 'Baseliner::BaliProject' )->search()->hashref->all );
+    # }else{
         my @projects;
     	my @all_projects = Baseliner->model( 'Baseliner::BaliRoleUser' )->search({ username => $p{username}, ns => '/'})->hashref->all;
         if ( @all_projects ) {
@@ -402,7 +402,7 @@ sub user_projects {
         }
         push @projects, map { $p{with_role}?$_->{id_role}."/".$_->{ns}:$_->{ns}} Baseliner->model( 'Baseliner::BaliRoleuser' )->search({ username => $p{username}, ns => {'<>','/'} }, { select => [ 'ns','id_role' ] })->hashref->all;
         return _unique( grep { length } @projects );
-	}
+	# }
 }
 
 =head2 user_projects_query
@@ -542,11 +542,11 @@ sub user_projects_ids_with_collection {
 sub user_projects_for_action {
     my ( $self, %p ) = @_;
 
-    my $is_root = $self->is_root( $p{username} );
-    if ( $is_root ) {
-        return _unique( map { "1/".$_->{ns} }
-                Baseliner->model( 'Baseliner::BaliProject' )->search()->hashref->all );
-    } else {
+    # my $is_root = $self->is_root( $p{username} );
+    # if ( $is_root ) {
+    #     return _unique( map { "1/".$_->{ns} }
+    #             Baseliner->model( 'Baseliner::BaliProject' )->search()->hashref->all );
+    # } else {
         my @projects;
         my @all_projects =
             Baseliner->model( 'Baseliner::BaliRoleUser' )
@@ -566,7 +566,7 @@ sub user_projects_for_action {
             )->hashref->all;
 
         return _unique( grep { length } @projects );
-    } ## end else [ if ( $all_projects || ...)]
+    # } ## end else [ if ( $all_projects || ...)]
 } ## end sub user_projects_for_action
 
 sub user_can_topic_by_project {
