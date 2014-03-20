@@ -138,6 +138,7 @@ sub save_api_key  {
 
 method gen_project_security {
     if( ref $self ) {
+        Baseliner->cache_remove(":user:security:".$self->name.":");
         my $sec = Baseliner->model('Permissions')->user_projects_ids_with_collection( username=>$self->name, with_role=>1 );
         my $security = {};
         for my $role ( keys %{$sec} ) {
@@ -152,6 +153,7 @@ method gen_project_security {
 
         $self->project_security( $security );
     } else {
+        Baseliner->cache_remove(/:user:security:/);
         for my $user ( ci->user->search_cis ) {
             $user->gen_project_security;
             $user->save;
