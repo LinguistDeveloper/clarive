@@ -674,7 +674,7 @@ sub _parse_template_mason {
     my ( $template, %vars ) = @_;
 
     my $body;
-    use HTML::Mason::Interp;
+    require HTML::Mason::Interp;
     my $comp_root = "". Baseliner->config->{root};
     my $data_dir = File::Spec->catdir(
         File::Spec->tmpdir, sprintf('Baseliner_%d_mason_data_dir', $<));
@@ -1016,7 +1016,7 @@ sub _mason {
     } Baseliner->features->list;
     require File::Spec;
     require HTML::Mason::Interp;
-    my $comp_root = [ @mason_features, [ root=>"". Baseliner->config->{root} ] ];
+    my $comp_root = $p{comp_root} ? [[root=>"$p{comp_root}"]] : [ @mason_features, [ root=>"". Baseliner->config->{root} ] ];
     my $data_dir = File::Spec->catdir( File::Spec->tmpdir, sprintf('Baseliner_%d_mason_data_dir', $<));
     my $m = HTML::Mason::Interp->new(
         comp_root  => $comp_root,
