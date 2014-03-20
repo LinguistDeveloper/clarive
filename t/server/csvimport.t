@@ -55,7 +55,7 @@ push @mids, $json4->{mids}[0];
 
 
 #EXPORT de un process instance creado anteriormente
-my $ag = Clarive::Test->user_agent;
+$ag = Clarive::Test->user_agent;
 my %data_exp_pi = ('_bali_login_count' => 0, '_bali_notify_valid_session' => 'true', 'ci_type' => 'balix_agent', 'format' => 'csv', 'mids' => join ',',@mids);
 $ag->post( URL('/ci/export'), \%data_exp_pi );
 my $json5 = _decode_json( $ag->content );

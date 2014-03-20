@@ -38,6 +38,7 @@ Ext.override(Ext.form.HtmlEditor, {
             }
             this.el.dom.readOnly = false;
         }
+        
     },
    // private
     onRender : function(ct, position){

@@ -142,13 +142,15 @@ sub create {
     }
 
     $p{sender} ||= _loc('internal');
-
-    my $msg = Baseliner->model('Baseliner::BaliMessage')->create(
+    my $msg = mdb->message->insert(
         {
             subject => $p{subject},
+            active => '1',
+            created => mdb->ts,
             body    => $body,
             sender  => $p{sender},
             attach  => $p{attach},
+            schedule_time => $p{schedule_time}
         }
     );
     return $msg;
@@ -156,9 +158,7 @@ sub create {
 
 sub delete {
     my ( $self, %p ) = @_;
-
-    my $msg = Baseliner->model('Baseliner::BaliMessage')->find({ id=> $p{id} }) if $p{id} ;
-    $msg->delete if ref $msg; 
+    my $msg = mdb->message->remove({_id => ''.$p{id}}) if $p{id};
 }
 
 sub read {
@@ -241,7 +241,21 @@ sub notify {
         for my $param ( qw/to cc bcc/ ) {
             for my $username ( _array $users{$param} ) {
                 _log "Creating message for username=$username, carrier=$carrier";
-                $msg->bali_message_queues->create({ username=>$username, carrier=>$carrier, carrier_param=>$param });
+                mdb->message->update(
+                    {_id => $msg},
+                    {'$push' => 
+                        {queue => {
+                        	id => mdb->seq('message_queue'),
+                            username=>$username, 
+                            carrier=>$carrier, 
+                            carrier_param=>$param, 
+                            active => '1',
+                            attempts => '0',
+                            swreaded => '0',
+                            sent => mdb->ts
+                        }}
+                    }
+                );
                 #TODO make TO fields have the full TO list, so users can see who else was notified
             }
         }
@@ -271,99 +285,187 @@ If you are a queue carrier, to list all, set:
 =cut
 sub inbox {
     my ($self,%p)=@_;
+
     my @messages;
 
-    my $search = {};
-    $p{dir} ||= 'asc';
-    my $opts = $p{sort}
-        ? { order_by => { "-$p{dir}" => $p{sort} } }
-        : { order_by => { -desc=>'id' } };
+    my %q;
+    
+    $p{dir} ||= 1;
+
+   	if ($p{sort}){
+   		if ({$p{dir} eq 'desc'}) {
+   			$q{sort} = {$p{sort} => -1}; 
+   		}else{
+   			$q{sort} {$p{sort} => $p{dir}};
+   		}
+   	} else{
+   		$q{sort} = {id => -1};
+   	}
+
     if( defined $p{start} && defined $p{limit} ) {
-        $opts->{page} = to_pages( start=>$p{start}, limit=>$p{limit} );
-        $opts->{rows} = $p{limit} || 30;
-    }
+		$q{skip} = $p{start};
+		$q{limit} = $p{limit} || 30;
+	}
 
-    $search->{active} = 1 unless $p{all};
-
-    exists $p{username} and $search->{username} = delete $p{username} if $p{username};
-    exists $p{carrier} and $search->{carrier} = delete $p{carrier};
+    $q{active} = '1' unless $p{all};
     
+    exists $p{username} and $q{where}->{'queue.username'} = $p{username} if $p{username};
+    exists $p{carrier} and $q{where}->{'queue.carrier'} = delete $p{carrier};
+
     if($p{query_id}){
-        $p{query_id} and $search->{"(id_message)"} = $p{query_id};	
+        $p{query_id} and $q{where}->{_id} = $p{query_id};	
     }else{
-        $p{query} and $search->{"lower(sender||body||subject)"} = { -like => '%'.lc($p{query}).'%' };	
+    	my $row;
+        $p{query} and $row = mdb->query_build(query => $p{query}, fields=>[qw(sender body subject )]) and %q = { %q, %$row };
     }
-    
-    $opts->{prefetch} = ['id_message']; 
-    my $rs = Baseliner->model('Baseliner::BaliMessageQueue')->search($search, $opts );
 
-    while( my $r = $rs->next ) {
-        my $message = new Baseliner::Core::Message(
-            {
-                $r->id_message->get_columns, $r->get_columns,
-                id_message => $r->id_message->id,
-                swreaded => $r->swreaded,
-            }
-        );
+	my @queue = $self->transform(%q);
+	my @q;
+
+	foreach my $r (@queue){
+    	if($r->{username} eq $p{username}){
+    		push @q, $r;
+		}
+  	}
+
+	foreach my $r (@q){
+		my $message = { %{ delete $r->{msg} }, %$r, swreaded => $r->{swreaded}  }; 
+
         push @messages, $message;
 
         if( $p{deliver_now} ) {
-            $r->deliver_now;
+            mdb->message->update(
+    			{'queue.id' => $r->{id}},
+    			{'$set' =>
+    				{
+    					'queue.$.received' => mdb->ts,
+    					'queue.$.active' => '0'
+    				}
+    			}
+    		);
         }
-    }
-    my $total = $rs->is_paged ? $rs->pager->total_entries : scalar @messages;
+	}
+	@messages = map { $_->{_id} .=''; $_ } @messages;
+
+    my $total = $q{limit} ? $q{limit} : scalar @messages;
     return { data=>\@messages, total=>$total };
 }
 
 sub delivered {
     my ($self,%p)=@_;
-    
-    my $search = {};
-    $p{id} and $search->{id} = $p{id}; 
 
-    my $rs = Baseliner->model('Baseliner::BaliMessageQueue')->search($search);
-    while( my $r = $rs->next )  {
-        $r->deliver_now;
-        $r->update;
-    }
+    _fail _loc('Missing id') unless length $p{id};
+
+    $p{where} ={'queue.id' => $p{id}};
+    my @queue = $self->transform(%p);
+
+    my $act = '0';
+    mdb->message->update(
+		{'queue.id' => $p{id}},
+		{'$set' =>
+			{
+				'queue.$.result' => $p{result},
+				'queue.$.received' => mdb->ts,
+				'queue.$.active' => $act
+			}
+		}
+	);
 }
 
 sub failed {
     my ($self,%p)=@_;
     
-    my $search = {};
     my $max_attempts = $p{max_attempts} || 10;  #TODO to config
-    $p{id} and $search->{id} = $p{id}; 
-    my $rs = Baseliner->model('Baseliner::BaliMessageQueue')->search($search);
-    while( my $r = $rs->next )  {
-        if( $r->attempts < $max_attempts ) {
-            $r->active( 1 );
-        } else {
-            $r->active( 0 );
-        }
-        $r->result( $p{result} );
-        $r->attempts(  $r->attempts + 1 );
-        $r->update;
+    
+    _fail _loc('Missing id') unless length $p{id};
+
+    $p{where} ={'queue.id' => $p{id}};
+    my @queue = $self->transform(%p);
+	
+	my $r;
+
+	for my $entry (@queue){
+	    if ($entry->{id} eq $p{id}){
+	         $r = $entry;
+	         last;
+	    }
+	}
+
+	my $act;
+	if( $r->{attempts} < $max_attempts ) {
+        $act = '1' ;
+    } else {
+        $act = '0' ;
     }
+
+    my $n_attempts = $r->{attempts} + 1;
+    mdb->message->update(
+    	{'queue.id' => $p{id}},
+    	{'$set' =>
+    		{
+    			'queue.$.result' => $p{result}, 
+    			'queue.$.active' => $act, 
+    			'queue.$.attempts' => ''.$n_attempts
+    		}
+    	});
 }
 
 sub get {
     my ($self,%p)=@_;
-    my $r = Baseliner->model('Baseliner::BaliMessageQueue')->find({ id=>$p{id} });
-    #my $message = new Baseliner::Core::Message({ $r->get_columns, $r->id_message->get_columns });
-    return { $r->get_columns, $r->id_message->get_columns } if ref $r;
+    $p{where} ={'queue.id' => $p{id}}; 
+    my @queue = $self->transform(%p);
+    my ($row) = @queue;
+    my $merged = { %{ delete $row->{msg} }, %$row }; 
+    $merged->{_id} .='';
+    return $merged if ref $row;
 }
 
 sub has_unread_messages {
     my ( $self, %p ) = @_;
 
-    my $search = {};
-    $search->{active} = 1 unless $p{all};
-    exists $p{username} and $search->{username} = delete $p{username} if $p{username};
-    exists $p{carrier} and $search->{carrier} = delete $p{carrier};
+    my %search;
+    $search{where}->{'queue.active'} = '1' unless $p{all};
+    exists $p{username} and $search{where}->{'queue.username'} = delete $p{username} if $p{username};
+    exists $p{carrier} and $search{where}->{'queue.carrier'} = delete $p{carrier};
 
-    return Baseliner->model('Baseliner::BaliMessageQueue')->search($search)->count;
+    my @queue = Baseliner->model('Messaging')->transform(%search);
+
+    my @q;
+    foreach my $r (@queue){
+	if (!$p{all}){
+    	if($r->{active} eq '1'){
+    		push (@q, $r);
+		}
+    }else{
+    	push (@q, $r);
+    }
 }
 
+    return scalar @q;
+}
+
+sub transform {
+	my ($self, %p) = @_;
+	my @queue =
+	    map {
+	        my $msg = $_;
+	    	map {
+	           $_->{msg} = $msg; 
+	           $_
+	        } 
+	        _array(delete $msg->{queue}) 
+	    } 
+	   _array($self->mdb_message_query(%p));
+    return @queue;
+}
+
+sub mdb_message_query {
+	my ($self, %p) = @_;
+	my $rs = mdb->message->find( $p{where} );
+	$rs->sort( $p{sort} ) if $p{sort};
+	$rs->skip( $p{skip} ) if $p{skip};
+	$rs->limit( $p{limit} ) if $p{limit};
+	return $rs->all;
+}
 
 1;
