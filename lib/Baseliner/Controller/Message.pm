@@ -27,7 +27,7 @@ sub im_json : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
     return unless $c->user;
-    $c->stash->{messages} = $c->model('Messaging')->inbox(username=>$c->username || $c->user->id, carrier=>'instant', deliver_now=>1 );
+    $c->stash->{messages} = $c->model('Messaging')->inbox(username=>$c->username || $c->user->id, carrier=>'instant', deliver_notify_adminw=>1 );
     $c->forward('/message/json');
 }
 
@@ -130,6 +130,44 @@ sub to_and_cc : Local {
         $c->stash->{json} = { success => \0, msg => $err };
     };
     $c->forward('View::JSON');	
+}
+
+sub test_message : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    try {
+        my $config = Baseliner->model('ConfigStore')->get('config.comm.email');
+
+        my $now = mdb->ts;
+        my $test_user = _trim "$now".'test@clarive.com';
+        my @users_list = ($test_user);
+        my $to = [ _unique(@users_list) ];
+
+        Baseliner->model('Messaging')->notify(
+            to => { users => $to },
+            subject => "Envio de correo desde Clarive: $now",
+            sender => $config->{from},
+            carrier => 'email',
+            template => 'email/generic.html',
+            template_engine => 'mason',
+            vars => {
+                subject => "Prueba de envio de correo desde Clarive",
+                message =>'Has recibido este correo porque estamos ejecutando una prueba de envio desde Clarive'
+            }
+        );
+        my $_id = mdb->message->find({subject => "Envio de correo desde Clarive: $now", sender => $config->{from}})->next->{_id};
+
+        my %query;
+        $query{where} = {_id => $_id, 'queue.username' => $test_user};
+        my @queue = Baseliner->model('Messaging')->transform(%query);
+        my ($q) = @queue;
+
+        $c->stash->{json} = { success => \1, msg => "Message created with _id $_id. MessageQueue inserted with id: $q->{id}. Email sent succesfully. " };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { success => \0, msg => $err };
+    };
+    $c->forward('View::JSON');
 }
 
 1;
