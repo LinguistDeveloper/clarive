@@ -246,9 +246,9 @@ sub filter_queue {
             if(!$r->{msg}->{schedule_time} || ($r->{msg}->{schedule_time} eq '') ){
                 push (@q, $r);
             }else{
-
                 my $schedule_time = Time::Piece->strptime($r->{msg}->{schedule_time}, $dateformat);    
                 if ($schedule_time lt $now) {
+                    Baseliner->model('Messaging')->send_schedule_mail(%$r);
                     push (@q, $r);
                 }
             }

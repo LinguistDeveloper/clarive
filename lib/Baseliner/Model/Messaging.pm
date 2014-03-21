@@ -243,12 +243,16 @@ sub notify {
 
     # create the message
     my $msg = $self->create(%p); 
-
+    my $schedule = $p{schedule_time};
     # create the queue entries
     for my $carrier ( @carriers ) {
         for my $param ( qw/to cc bcc/ ) {
             for my $username ( _array $users{$param} ) {
                 _log "Creating message for username=$username, carrier=$carrier";
+                my $sent;
+                if(!$schedule || ($schedule eq '') ){
+                    $sent = mdb->ts;
+                }
                 mdb->message->update(
                     {_id => $msg},
                     {'$push' => 
@@ -260,7 +264,7 @@ sub notify {
                             active => '1',
                             attempts => '0',
                             swreaded => '0',
-                            sent => mdb->ts
+                            sent => $sent
                         }}
                     }
                 );
@@ -303,7 +307,7 @@ sub inbox {
    	if ($p{sort}){
         if($p{sort} eq 'id' or $p{sort} eq 'sent') {
             $p{sort} = 'queue.'.$p{sort};
-        }
+        } 
 
    		if ($p{dir} eq 'DESC') {
    			$q{sort} = {$p{sort} => -1}; 
@@ -458,6 +462,17 @@ sub has_unread_messages {
 }
 
     return scalar @q;
+}
+
+sub send_schedule_mail {
+    my ( $self, %p ) = @_;
+    mdb->message->update(
+        {
+            _id => $p{msg}->{_id}, 
+            'queue.id' => $p{id}
+        },
+        {'$set' => {'queue.$.sent' => mdb->ts}}
+    );
 }
 
 sub transform {

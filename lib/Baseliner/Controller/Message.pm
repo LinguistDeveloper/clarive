@@ -72,6 +72,8 @@ sub json : Local {
                  received    => $message->{received},
                  body    => substr( $message->{body}, 0, 100 ),
                  sent       => $message->{sent},
+                 created    =>  $message->{created},
+                 schedule_time  =>  $message->{schedule_time},
                  swreaded	=> $message->{swreaded}
              }
     }
