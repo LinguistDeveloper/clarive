@@ -283,7 +283,7 @@ sub save_data {
     return unless ref $data;
     
     # To fix not saving attributes modified in "before save_data"
-    $data = { %$self, %$data };
+    #$data = { %$self, %$data };
 
     my $storage = $self->storage;
     # peek into if we need to store the relationship
