@@ -247,7 +247,7 @@ sub filter_queue {
                 push (@q, $r);
             }else{
                 my $schedule_time = Time::Piece->strptime($r->{schedule_time}, $dateformat);    
-                if ($schedule_time < $now) {
+                if ($schedule_time lt $now) {
                     push (@q, $r);
                 }
             }
