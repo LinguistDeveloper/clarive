@@ -243,10 +243,11 @@ sub filter_queue {
     my @q;
     foreach my $r (@queue){
         if($r->{active} eq '1' ){
-            if(!$r->{schedule_time} || ($r->{schedule_time} eq '') ){
+            if(!$r->{msg}->{schedule_time} || ($r->{msg}->{schedule_time} eq '') ){
                 push (@q, $r);
             }else{
-                my $schedule_time = Time::Piece->strptime($r->{schedule_time}, $dateformat);    
+
+                my $schedule_time = Time::Piece->strptime($r->{msg}->{schedule_time}, $dateformat);    
                 if ($schedule_time lt $now) {
                     push (@q, $r);
                 }
