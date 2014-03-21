@@ -2643,7 +2643,7 @@ sub change_status {
             # callback, if any
             $callback->() if ref $callback eq 'CODE';
             #my @projects = map {$_->{mid}} $row->projects->hashref->all;
-            my @users = $self->get_users_friend(id_category => $row->id_category, id_status => $p{id_status});
+            my @users = $self->get_users_friend(mid => $mid, id_category => $row->id_category, id_status => $p{id_status});
             
             my $notify = {
                 category        => $row->id_category,
