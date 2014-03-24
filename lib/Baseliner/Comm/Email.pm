@@ -231,7 +231,8 @@ sub send {
         );
     }
     
-    $msg->send('smtp');  ## put smtp otherwise it uses sendmail
+    eval{$msg->send('smtp');};
+    _throw "send failed: $@\n" if $@;
 }	
 
 sub filter_queue {
