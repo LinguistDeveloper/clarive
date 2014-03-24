@@ -143,6 +143,7 @@ sub process_queue {
             for my $id ( _array $em->{id_list} ) {
                 Baseliner->model('Messaging')->failed( id=>$id, result=>$error, max_attempts=>$config->{max_attempts} );
             }
+            _log "Error enviando correo - $error";
         };
     }
 }
@@ -197,7 +198,7 @@ sub send {
         _throw "No he podido enviar el correo '$subject'. No hay recipientes en la lista TO o CC.\n";
     }
 
-    # _debug " - Enviando correo (server=$server) '$subject'\nFROM: $p{from}\nTO: @to\nCC: @cc\n";
+    _log "Enviando correo (server=$server) '$subject'\nFROM: $p{from}\nTO: @to\nCC: @cc\n";
 
     my $msg = MIME::Lite->new(
         To        => "@to",
