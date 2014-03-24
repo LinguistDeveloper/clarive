@@ -417,7 +417,7 @@ sub _get_file {
 sub _crc {
     my ($self, $file ) = @_;
     $self->socket->print( $self->encodeCMD("Y $file") . $self->EOL );
-    my ($crc, $ret ) = $self->_checkRC();
+    my ($crc, $ret ) = $self->_checkRC(1);
     return $crc;
 }
 
@@ -448,7 +448,7 @@ sub _execute {
 }
 
 sub _checkRC {
-    my ($self) = @_;
+    my ($self,$noshift) = @_;
     my ($buf,$ret); 
     my $socket = $self->socket;
     #warn "READ....";
@@ -468,7 +468,7 @@ sub _checkRC {
         $ret =~ s/[\n]*HARAXE=([0-9]*)//g;
     }
     my $ret_parsed = $self->_parseReturn($ret);
-    if( $self->os ne 'win' ) {
+    if( $self->os ne 'win' && !$noshift ) {
         $rc >>= 8;   
     }
     $self->rc( $rc );
