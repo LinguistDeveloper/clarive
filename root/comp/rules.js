@@ -330,7 +330,7 @@
         var run_rollback = new Ext.form.Checkbox({ fieldLabel:_('Run Rollback'), checked: _bool(attr.run_rollback,true) });
         var error_trap = new Baseliner.ComboDouble({ 
             fieldLabel: _('Error Trap'), name:'error_trap', value: attr.error_trap || 'none', 
-            data: [ ['none',_('No Trap')], ['trap',_('Trap Errors')] ]
+            data: [ ['none',_('No Trap')], ['trap',_('Trap Errors')], ['ignore',_('Ignore Errors')] ]
         });
         var parallel_mode = new Baseliner.ComboDouble({ 
             fieldLabel: _('Parallel Mode'), name:'parallel_mode', value: attr.parallel_mode || 'none', 
