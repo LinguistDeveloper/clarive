@@ -36,7 +36,10 @@ my $ag = Clarive::Test->user_agent;
     };
     my $res = $ag->json( URL('ci/update') => $data );
     is( ${ $res->{success} }, 1,  'ci update ok' );
-    warn YAML::XS::Dump( $res );
+    if( my $mid = $res->{mid} ) {
+        $res =  $ag->json( URL('ci/delete') => { mids=>$mid } );
+        is( ${ $res->{success} }, 1,  'ci delete ok' );
+    }
      
 }
 
