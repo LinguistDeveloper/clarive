@@ -261,8 +261,8 @@ sub update : Local {
                 };           
                 
                 my $ci = ci->user->new( %$ci_data );
-                $user_mid = $ci->save;
                 $ci->gen_project_security;
+                $user_mid = $ci->save;
                 $c->stash->{json} = { msg=>_loc('User added'), success=>\1, user_id=> $user_mid };
                 
             }else{
@@ -280,50 +280,55 @@ sub update : Local {
                 my $user;
                 my $user_id = $p->{id};
                 if ( $p->{id} ) {
-                    $user = $c->model('Baseliner::BaliUser')->find( $p->{id} );
+                    $user = ci->new($p->{id});#$c->model('Baseliner::BaliUser')->find( $p->{id} );
                 } else {
-                    $user = $c->model('Baseliner::BaliUser')->search( { username => $p->{username} } )->first;
+                    $user = ci->new('name:'.$p->{username});#$c->model('Baseliner::BaliUser')->search( { username => $p->{username} } )->first;
                     _fail _loc("User not found") if !$user;
-                    $user_id = $user->id;
+                    $user_id = $user->{mid};
                 }
-                my $old_username = $user->username;
+                my $old_username = $user->{username};
                 if ($old_username ne $p->{username}){
-                    my $row = $c->model('Baseliner::BaliUser')->search({username => $p->{username}, active => 1})->first;
-                    if ($row) {
+                    # my $row = $c->model('Baseliner::BaliUser')->search({username => $p->{username}, active => 1})->first;
+                    my $user_ci = ci->user->find_one({ username => $p->{username}});
+                    # if ($row) {
+                    if ($user_ci) {
                         $c->stash->{json} = { msg=>_loc('User name already exists, introduce another user name'), failure=>\1 };    
                     }else{
-                        my $user_mid;
-                        my $user_new;
-                        $user_mid = master_new 'user' => $p->{username} => sub {
-                            my $mid = shift;
-                            
-                            $user_new = Baseliner->model('Baseliner::BaliUser')->create(
-                                {
-                                    mid			=> $mid,
-                                    username    => $p->{username},
-                                    realname  	=> $p->{realname},
-                                    password	=> ci->user->encrypt_password( $p->{username}, $p->{pass} ),
-                                    alias	=> $p->{alias},
-                                    email	=> $p->{email},
-                                    phone	=> $p->{phone},
-                                    active  => '1'
-                                }
-                            );
-                        };
+                        $user_ci = ci->user->find_one({ username => $old_username});
+                        my $user_mid = $user_ci->{mid};
+                        
+                        my $ci_data = {
+                            name        => $p->{username},
+                            bl          => '*',
+                            username    => $p->{username},
+                            realname    => $p->{realname},
+                            alias       => $p->{alias},
+                            email       => $p->{email},
+                            phone       => $p->{phone},            
+                            active      => '1',
+                            password    => ci->user->encrypt_password( $p->{username}, $p->{pass} )
+                        };           
+                        
+                        my $ci = ci->user->new( %$ci_data );
+                        my $user_new = $ci->save;
+
                         ##BaliRoleUser
                         my $rs_role_user = $c->model('Baseliner::BaliRoleUser')->search({username => $old_username });
                         $rs_role_user->update( {username => $p->{username}} );
                         ##BaliMasterRel
                         my $user_from = $c->model('Baseliner::BaliMasterRel')->search( {from_mid => $p->{id}} );
                         if ($user_from) {
-                            $user_from->update( {from_mid => $user_new->mid} );
+                            $user_from->update( {from_mid => $user_new} );
                         }
                         my $user_to = $c->model('Baseliner::BaliMasterRel')->search( {to_mid => $p->{id}} );
                         if ($user_to){
-                            $user_to->update( {to_mid => $user_new->mid} );    
+                            $user_to->update( {to_mid => $user_new} );    
                         }
+                        $ci->gen_project_security;
+                        $ci->save;
                         ##Borramos el antiguo
-                        $user->delete();
+                        #$user->delete();
+                        ci->delete( $user_mid );
                     }
                 } else{
                     $user->realname( $p->{realname} ) if $p->{realname};
@@ -334,7 +339,8 @@ sub update : Local {
                     $user->email( $p->{email} ) if $p->{email};
                     $user->phone( $p->{phone} ) if $p->{phone};                 
                     $user->phone( $p->{active} ) if $p->{active};                 
-                    $user->update();                    
+                    # $user->update();                    
+                    $user->save;                    
                     
                 }
                 
@@ -344,9 +350,10 @@ sub update : Local {
                 tratar_proyectos_padres($c, $p->{username}, $roles_checked, $projects_parents_checked, 'update');
 
                 # regenerate project security for all users TODO work with my ci only: DONE
-                my ($ci) = ci->user->search_cis({name=>$p->{username}});
+                my $ci = ci->new('name:'.$p->{username});
                 _debug 'Re-generating user project security...';
                 $ci->gen_project_security;
+                $ci->save;
                 _debug 'Done updating project security.';
                 
                 $c->stash->{json} = { msg=>_loc('User modified'), success=>\1, user_id=> $p->{id} };
@@ -423,9 +430,10 @@ sub update : Local {
             tratar_proyectos_padres($c, $p->{username}, $roles_checked, $projects_parents_checked, 'delete');
         }
         # regenerate project security for all users TODO work with my ci only
-        my ($ci) = ci->user->search_cis({name=>$p->{username}});
+        my $ci = ci->new('name:'.$p->{username});
         _debug 'Re-generating user project security...';
         $ci->gen_project_security;
+        $ci->save;
         _debug 'Done updating project security.';
 
         $c->stash->{json} = { msg=>_loc('User modified'), success=>\1};

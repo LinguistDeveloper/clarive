@@ -143,6 +143,7 @@ sub process_queue {
             for my $id ( _array $em->{id_list} ) {
                 Baseliner->model('Messaging')->failed( id=>$id, result=>$error, max_attempts=>$config->{max_attempts} );
             }
+            _log "Error enviando correo - $error";
         };
     }
 }
@@ -197,7 +198,7 @@ sub send {
         _throw "No he podido enviar el correo '$subject'. No hay recipientes en la lista TO o CC.\n";
     }
 
-    # _debug " - Enviando correo (server=$server) '$subject'\nFROM: $p{from}\nTO: @to\nCC: @cc\n";
+    _log "Enviando correo (server=$server) '$subject'\nFROM: $p{from}\nTO: @to\nCC: @cc\n";
 
     my $msg = MIME::Lite->new(
         To        => "@to",
@@ -230,7 +231,8 @@ sub send {
         );
     }
     
-    $msg->send('smtp');  ## put smtp otherwise it uses sendmail
+    eval{$msg->send('smtp');};
+    _throw "send failed: $@\n" if $@;
 }	
 
 sub filter_queue {
@@ -243,11 +245,12 @@ sub filter_queue {
     my @q;
     foreach my $r (@queue){
         if($r->{active} eq '1' ){
-            if(!$r->{schedule_time} or ($r->{schedule_time} eq '') ){
+            if(!$r->{msg}->{schedule_time} || ($r->{msg}->{schedule_time} eq '') ){
                 push (@q, $r);
             }else{
-                my $schedule_time = Time::Piece->strptime($r->{schedule_time}, $dateformat);    
-                if ($schedule_time < $now) {
+                my $schedule_time = Time::Piece->strptime($r->{msg}->{schedule_time}, $dateformat);    
+                if ($schedule_time lt $now) {
+                    Baseliner->model('Messaging')->send_schedule_mail(%$r);
                     push (@q, $r);
                 }
             }

@@ -1,7 +1,7 @@
 (function(){
     var username = '<% $c->stash->{username} %>';
     var fields = [ 'id', 'id_message', 'subject',
-        'body', 'sender', 'to', 'cc', 'sent', 'received', 'type', 'swreaded'
+        'body', 'sender', 'to', 'cc', 'sent', 'created', 'schedule_time', 'received', 'type', 'swreaded'
     ];
     var store=new Baseliner.JsonStore({
         url: '/message/inbox_json',
@@ -188,7 +188,9 @@ Ext.override(Ext.form.HtmlEditor, {
                 { header: _('From'), width: 200, dataIndex: 'sender', sortable: true },	
                 { header: _('Subject'), width: 300, dataIndex: 'subject', sortable: true, renderer: render_subject },	
                 { header: _('To'), width: 150, dataIndex: 'to', sortable: true, hidden: true },	
-                { header: _('Message'), width: 300, dataIndex: 'body', sortable: true },	
+                { header: _('Message'), width: 300, dataIndex: 'body', sortable: true, hidden: true },
+                { header: _('Created'), width: 150, dataIndex: 'created', sortable: true },
+                { header: _('Scheduled'), width: 150, dataIndex: 'schedule_time', sortable: true },	
                 { header: _('Sent'), width: 150, dataIndex: 'sent', sortable: true } ,
                 { header: _('Received'), width: 150, dataIndex: 'received', sortable: true, hidden: true }	
             ],
