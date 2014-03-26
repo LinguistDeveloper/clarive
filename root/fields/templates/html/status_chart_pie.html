@@ -8,10 +8,11 @@
     my $filter_category = $meta->{filter_category} || '';
     my $depth = $meta->{depth} || 1;
     
-    my @topics = map { $_->{mid} }
-                _array(ci->new($data->{topic_mid})->children( where => { collection => 'topic'}, depth => $depth ));
+    my @topics = _array(ci->new($data->{topic_mid})->children( where => { collection => 'topic'}, depth => $depth ));
 
     @topics = grep { $_->{name_category} eq $filter_category} @topics if $filter_category;
+
+    @topics = map { $_->{mid} } @topics;
 
                 # $c->model( 'Baseliner::BaliTopic' )->search(
                 #         {
