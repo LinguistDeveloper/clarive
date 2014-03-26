@@ -5,19 +5,25 @@
 <%perl>
     use Baseliner::Utils;
     my $graph_id = "graph1". _nowstamp;
+    my $category = $meta->{category} || '';
+    my $depth = $meta->{depth} || 1;
     
     my @topics = map { $_->{mid} }
-                $c->model( 'Baseliner::BaliTopic' )->search(
-                        {
-                            rel_type => 'topic_topic',
-                            from_mid => $data->{topic_mid},
-                        },
-                        {
-                            join => [ 'parents', 'master' ],
-                            select => [ 'mid' ],
-                            as => [ 'mid' ]
-                        }
-                )->hashref->all;     
+                _array(ci->new($data->{topic_mid})->children( where => { collection => 'topic'}, depth => $depth ));
+
+    @topics = grep { $_->{name_category} eq $category} @topics if $category;
+    
+                # $c->model( 'Baseliner::BaliTopic' )->search(
+                #         {
+                #             rel_type => 'topic_topic',
+                #             from_mid => $data->{topic_mid},
+                #         },
+                #         {
+                #             join => [ 'parents', 'master' ],
+                #             select => [ 'mid' ],
+                #             as => [ 'mid' ]
+                #         }
+                # )->hashref->all;     
     
     
     my @topics_by_status = DB->BaliTopic->search(
