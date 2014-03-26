@@ -5,6 +5,9 @@ params:
     html: '/fields/templates/html/status_chart_pie.html'
     field_order: 1
     section: 'details'
+    category: ''
+    depth: ''
+    filter: ''
 ---
 */
 

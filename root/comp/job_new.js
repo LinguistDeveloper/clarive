@@ -154,7 +154,7 @@
     });
 
     var store_chain = new Baseliner.JsonStore({
-        url: '/job/chains', root: 'data', totalProperty: 'totalCount', id: 'id', 
+        url: '/job/chains', root: 'data', totalProperty: 'totalCount', id: 'id',
         fields:['id','rule_name','rule_type']
     });
     var combo_chain = new Ext.form.ComboBox({
@@ -180,7 +180,7 @@
             Baseliner.message(_('Job'), _('No job chains available') );
         }
     });
-    store_chain.load();
+    store_chain.load( {params: { type: 'promote'}});
     
     if( default_baseline.length == 0 ) {
         combo_baseline.on( 'afterrender', function(){
@@ -869,6 +869,7 @@
                         store_search.removeAll();
                         jc_grid.getStore().removeAll();
                         combo_baseline.setFieldLabel( checked.inputValue =='demote' ? label_orig : label_dest );
+                        store_chain.load( {params: { type: checked.inputValue}});
                         } }
                     },
                 items: <% js_dumper(  $c->stash->{job_types} ) %>
