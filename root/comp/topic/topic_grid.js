@@ -21,11 +21,11 @@
     var report_name = params.report_name;
     var fields = params.fields;
      
-    //if(params.data_report){
-    //  report_rows = params.data_report.report_rows;
-    //  report_name = params.data_report.report_name;
-    //  fields = params.data_report.fields;
-    //}
+    if(params.data_report){
+     report_rows = params.data_report.report_rows;
+     report_name = params.data_report.report_name;
+     fields = params.data_report.fields;
+    }
     
     var mini_mode = params.mini_mode==undefined ? Prefs.mini_mode : params.mini_mode;
     if( report_rows ) {

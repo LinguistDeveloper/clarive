@@ -60,13 +60,17 @@ sub parallel_run {
 }
 
 sub error_trap {
-    my ($stash, $code)= @_;
+    my ($stash, $mode, $code)= @_;
     my $job = $stash->{job};
     RETRY_TRAP:
     try {
         $code->();
     } catch {
         my $err = shift;
+        if( $mode eq 'ignore' ) {
+            $job->logger->debug( _loc "Ignored error trapped in rule: %1", $err );    
+            return;
+        }
         $job->logger->error( _loc "Error trapped in rule: %1", $err );    
         $job->status('TRAPPED');
         event_new 'event.rule.trap' => { username=>'internal', stash=>$stash, output=>$err } => sub {};
@@ -188,7 +192,7 @@ sub dsl_build {
         
         my $run_forward = _bool($attr->{run_forward},1);  # if !defined, default is true
         my $run_rollback = _bool($attr->{run_rollback},1); 
-        my $error_trap = $attr->{error_trap} && $attr->{error_trap} eq 'trap';
+        my $error_trap = $attr->{error_trap} if $attr->{error_trap} ne 'none';
         my $needs_rollback_mode = $data->{needs_rollback_mode} // 'none'; 
         my $needs_rollback_key  = $data->{needs_rollback_key} // $name_id;
         my $parallel_mode = length $attr->{parallel_mode} && $attr->{parallel_mode} ne 'none' ? $attr->{parallel_mode} : '';
@@ -215,7 +219,7 @@ sub dsl_build {
         if( length $attr->{key} ) {
             push @dsl, sprintf('$stash->{needs_rollback}{q{%s}} = 1;', $needs_rollback_key) if $needs_rollback_mode eq 'nb_always';
             push @dsl, sprintf('parallel_run(q{%s},q{%s},$stash,sub{', $name, $parallel_mode) if $parallel_mode;
-            push @dsl, sprintf( 'error_trap($stash, sub {') if $error_trap; 
+            push @dsl, sprintf( 'error_trap($stash,"%s", sub {', $error_trap) if $error_trap; 
             my $key = $attr->{key};
             my $reg = Baseliner->registry->get( $key );
             if( $reg->isa( 'BaselinerX::Type::Service' ) ) {

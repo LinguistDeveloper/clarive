@@ -30,5 +30,10 @@ sub parse_vars {
     return Util->parse_vars( $str, \%vars );
 }
 
+sub is_win {
+    my $self = shift;
+    return $self->os eq 'win';
+}
+
 1;
 
