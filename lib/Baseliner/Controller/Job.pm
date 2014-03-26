@@ -55,7 +55,13 @@ sub chains : Local {
         } else {
             $where = { rule_type=>'chain', rule_active=>'1' };
         }
-        my @rules = mdb->rule->find( $where )->fields({ rule_tree=>0 })->all;
+        my @rules = sort {
+           my $r = $a->{rule_when} eq $type ? -1
+           : $b->{rule_when} eq $type ? 1
+           : $a cmp $b;
+           $r;
+        } 
+        sort mdb->rule->find({ rule_type=>'chain', rule_active=>'1' })->fields({ rule_tree=>0 })->all;
         # TODO check action.rule.xxxxx for user
         $c->stash->{json} = { success => \1, data=>\@rules, totalCount=>scalar(@rules) };
     } catch {
