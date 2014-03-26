@@ -214,6 +214,7 @@ sub serve_file : Private {
     }
     $c->res->headers->remove_header('Cache-Control');
     $c->res->header('Content-Disposition', qq[attachment; filename=$filename]);
+    $c->res->header('X-UA-Compatible', 'chrome=1');
     $c->res->headers->remove_header('Pragma');
     $c->res->content_type('application-download;charset=utf-8');
 }
