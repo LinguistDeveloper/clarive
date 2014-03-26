@@ -49,7 +49,13 @@ sub chains : Local {
     my $p = $c->req->params;
     my $type = $p->{type};
     try {
-        my @rules = mdb->rule->find({ rule_type=>'chain', rule_active=>'1', rule_when => $type })->fields({ rule_tree=>0 })->all;
+        my $where;
+        if ( !Baseliner->model('Permissions')->is_root($c->username) ) {
+            $where = { rule_type=>'chain', rule_active=>'1', rule_when => $type };
+        } else {
+            $where = { rule_type=>'chain', rule_active=>'1' };
+        }
+        my @rules = mdb->rule->find( $where )->fields({ rule_tree=>0 })->all;
         # TODO check action.rule.xxxxx for user
         $c->stash->{json} = { success => \1, data=>\@rules, totalCount=>scalar(@rules) };
     } catch {
