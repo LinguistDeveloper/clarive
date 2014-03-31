@@ -40,7 +40,7 @@ sub log : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
-    $sort ||= 'ts';
+    $sort ||= '_id';
     $dir ||= 'desc';
     $start||= 0;
     $limit ||= 30;

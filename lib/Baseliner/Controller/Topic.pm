@@ -1937,6 +1937,9 @@ sub report_csv : Local {
         push @csv, join ',', @cells; 
     }
     my $body = join "\n", @csv;
+    # I#6947 - chromeframe does not download csv with less than 1024: pad the file
+    my $len = length $body;
+    $body .= "\n" x ( 1024 - $len + 1 ) if $len < 1024;
     utf8::encode($body);
     Encode::from_to($body,'utf-8','iso-8859-15');
     $c->stash->{serve_body} = $body;

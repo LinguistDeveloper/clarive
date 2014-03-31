@@ -41,7 +41,7 @@ sub run_once {
     my ($self, $c, $data ) = @_;
     my $rules = Baseliner->model('Rules')->new;
     $rules->tidy_up( 0 );  # turn off perl_tidy
-    my $rs = mdb->event->find({ event_status => 'new' })->sort({ 'ts'=>1 });
+    my $rs = mdb->event->find({ event_status => 'new' })->sort({ '_id'=>1 });
     while( my $ev = $rs->next ) {
         my $event_status = '??';
         _debug _loc 'Running event %1 (id %2)', $ev->{event_key}, $ev->{id};

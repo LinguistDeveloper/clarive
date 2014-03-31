@@ -305,6 +305,8 @@ sub _create {
     # first stash
     $self->job_stash($stash);
 
+    event_new 'event.job.start' => { job=>$self, job_stash=>$stash };
+
     # CHECK
     $self->step('CHECK');
     $self->run( same_exec => 1 );
@@ -350,7 +352,7 @@ sub is_failed {
 sub is_running {
     my $self = shift;
     if( my $status = $self->load->{status} ) {
-        return 1 if $status =~ /RUNNING|PAUSE/;
+        return 1 if $status =~ /RUNNING|PAUSE|TRAPPED/;
     }
     return 0;
 }
@@ -895,7 +897,7 @@ sub run {
     _log "=========| Starting JOB " . $self->jobid . ", rollback=" . $self->rollback;
 
     _debug( _loc('Rule Runner, STEP=%1, PID=%2, RULE_ID', $self->step, $self->pid ) );
-
+     
     # prepare stash for rules
     my $prev_stash = $self->job_stash;
     my $stash = { 
@@ -913,6 +915,8 @@ sub run {
             needs_rollback => {},
     };
     
+    event_new 'event.job.start_step' => { job=>$self, job_stash=>$prev_stash, status=>$self->status, bl=>$self->bl, step=>$self->step };
+
     ROLLBACK:
     my $job_error = 0;
     try {
@@ -979,6 +983,7 @@ sub run {
     $self->step( $self->final_step );
     $self->build_job_contents;
     $self->save;
+    
     return $self->status;
 }
 
@@ -1047,6 +1052,12 @@ sub finish {
     $status ||= 'FINISHED';
 
     _debug( "JOB FINISHED=$status, rollback=". $self->rollback );
+
+    event_new 'event.job.end_step' => { job=>$self, job_stash=>$self->stash, status=>$self->status, bl=>$self->bl, step=>$self->step };
+    if( $self->step eq 'POST' ) {
+        event_new 'event.job.end' => { job=>$self, job_stash=>$self->stash, status=>$self->status, bl=>$self->bl, step=>$self->step };
+    }
+
     $self->status( $status );
     $self->step_status->{ $self->step } = $status;
     $self->last_finish_status( $status );  # saved for POST
