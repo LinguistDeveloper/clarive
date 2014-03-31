@@ -15,6 +15,13 @@ use Tie::IxHash;
 
 register 'action.search.job' => { name => 'Search jobs' };
 
+register 'event.job.rerun' => { name=>'Rerun a job' };
+register 'event.job.reschedule' => { name=>'Reschedule a job' };
+register 'event.job.start' => { name=>'Job start' };
+register 'event.job.start_step' => { name=>'Job step start' };
+register 'event.job.end' => { name=>'Job end, after POST' };
+register 'event.job.end_step' => { name=>'Job step end' };
+
 sub monitor {
     my ($self,$p) = @_;
     my $perm = Baseliner->model('Permissions');
@@ -303,9 +310,6 @@ sub get {
     return Baseliner->model('Baseliner::BaliJob')->find($id) if $id =~ /^[0-9]+$/;
     return Baseliner->model('Baseliner::BaliJob')->search({ name=>$id })->first;
 }
-
-register 'event.job.rerun';
-register 'event.job.reschedule';
 
 sub status {
     my ($self,%p) = @_;
