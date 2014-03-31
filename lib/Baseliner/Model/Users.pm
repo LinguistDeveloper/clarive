@@ -152,25 +152,43 @@ sub get_categories_fields_meta_by_user {
 sub get_users_from_mid_roles_topic {
     my ( $self, %p ) = @_;
     my @roles = _array $p{roles} or _throw 'Missing parameter roles';
-    my $mid = $p{mid} or _throw 'Missing parameter topic mid';
+    my $mid   = $p{mid}          or _throw 'Missing parameter topic mid';
 
-    my $topic = mdb->topic->find_one({mid=>"$mid"});
-    my $topic_security = $topic->{_project_security};
+    my $topic = mdb->topic->find_one( { mid => "$mid" } );
 
-    my @ors;
-    my $total_where = {};
+    my @topic_securities;
 
-    for my $role ( @roles ) {
-         my $where = {};
-         $where->{"project_security.$role"} = { '$nin' => [undef]};
-         while ( my ( $k, $v ) = each %{ $topic_security || {} } ) {
-                 $where->{"project_security.$role.$k"} = {'$in' => [undef,@$v]};
-         } ## end while ( my ( $k, $v ) = each...)  
-         push @ors, $where;
+    push @topic_securities, $topic->{_project_security} if $topic->{_project_security};
+
+    if ( $topic->{category}->{is_release} && !@topic_securities ) {
+        my @children = map { $_->{mid} } ci->new( $mid )->children( where => { collection => 'topic' }, depth => 2);
+        @topic_securities = map { $_->{_project_security} } mdb->topic->find({ mid => mdb->in(@children) })->all;
+        if ( !@topic_securities ) {
+            push @topic_securities, {};
+        }
     }
-    $total_where->{'$or'} = \@ors;
-    my @users = map {$_->{name}} _array(ci->user->find($total_where)->all);
 
+    my $mega_where = {};
+    my @mega_ors;
+
+    for my $topic_security ( @topic_securities ) {
+        my @ors;
+        my $total_where = {};
+        
+        for my $role (@roles) {
+            my $where = {};
+            $where->{"project_security.$role"} = { '$nin' => [undef] };
+            while ( my ( $k, $v ) = each %{ $topic_security || {} } ) {
+                $where->{"project_security.$role.$k"} = { '$in' => [ undef, @$v ] };
+            } ## end while ( my ( $k, $v ) = each...)
+            push @ors, $where;
+        }
+        $total_where->{'$or'} = \@ors;
+        push @mega_ors, $total_where;
+    }
+
+    $mega_where->{'$or'} = \@mega_ors;
+    my @users = map {$_->{name}} _array(ci->user->find($mega_where)->all);
     return wantarray ? @users : \@users; 
 }
 
