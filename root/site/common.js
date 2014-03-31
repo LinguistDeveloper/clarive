@@ -3559,7 +3559,7 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
                             function(btn){ 
                                 if(btn=='yes') {
                                     form.main.save_topic({ 
-                                        no_refresh: true,
+//                                        no_refresh: true,
                                         success: function(res){
                                             // resubmit form hack
                                             config_parms(res.topic_mid);
