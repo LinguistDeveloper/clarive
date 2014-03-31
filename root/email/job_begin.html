@@ -1,0 +1,68 @@
+<%args>
+	$subject 
+	$message
+    $job_stash
+</%args>
+<head>
+    <meta http-equiv="Content-Language" content="en" />
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <title>Accion</title>
+	<& /email/style.css &>
+</head>
+
+<body>
+    <div class='box'>
+        <div class="error">
+            <h2> <% $subject %> </h2>
+        </div>
+    </div>
+    <div class='box'>
+        <div class="trace error">
+            <p>Damos comienzo a la implantación en <% $job_stash->{bl} %>:</p>
+% my @changesets = _array $job_stash->{changesets};
+% my %releases;
+% my %releases_names;
+% my %changesets_names;
+% my %changesets;
+% for my $changeset (@changesets){
+%   $changesets_names{$changeset->{mid}} = $changeset->{name_category};
+%   my @rels = map {$_->{id}} Baseliner->model('Baseliner::BaliTopicCategories')->search( { is_release => 1 }, { select => ['id'] } )->hashref->all;
+%   my @releases = ci->new( $changeset->{mid} )->parents( where => {id_category => mdb->in(@rels),collection => 'topic'}, depth => -1);
+%   if (scalar @releases > 0){
+%       for my $release (@releases){
+%           $releases_names{$release->{mid}} = $release->{name_category};
+%           my @changesets = exists $releases{$release->{mid}} ? _array $releases{$release->{mid}} : ();
+%           push @changesets, $changeset->{mid};
+%           $releases{$release->{mid}} = \@changesets;
+%       }
+%   }else{
+%       $changesets{$changeset->{mid}} = $changeset->{name_category};
+%   }
+% }
+
+% if ( %releases ){
+    <ul>
+%   for my $release (keys %releases){
+        <li> <% $releases_names{$release} %> #<% $release %> </li>
+%       my @changesets = _array $releases{$release};
+%       if ( scalar @changesets > 0 ){
+            <ul>
+%           for my $changeset ( @changesets ){
+%               <li> <% $changesets_names{$changeset} %> #<% $changeset %> </li>
+%           }
+            </ul>
+%       }
+%   }
+    </ul>
+% }
+
+% if ( %changesets ){
+    <ul>
+%   for my $changeset (keys %changesets){
+        <li><% $changesets_names{$changeset} %> #<%$changeset %></li>
+%   }
+    </ul>
+% }
+        </div>
+    </div>
+</body>
