@@ -1532,7 +1532,7 @@ sub upload : Local {
             my $existing = Baseliner->model('Baseliner::BaliFileVersion')->search({ md5=>$md5 })->first;
 
             my @projects = map {$_->{mid}} $topic->projects->hashref->all;
-            my @users = Baseliner->model("Topic")->get_users_friend(id_category => $topic->id_category, id_status => $topic->id_category_status, projects => \@projects);
+            my @users = Baseliner->model("Topic")->get_users_friend(mid => $p->{topic_mid}, id_category => $topic->id_category, id_status => $topic->id_category_status, projects => \@projects);
             
             
             if( $existing && $p->{topic_mid}) {
@@ -1540,7 +1540,7 @@ sub upload : Local {
                 if( $topic->files->search({ md5=>$md5 })->count > 0 ) {
                     _fail _loc "File already attached to topic";
                 } else {
-                    my $subject = _loc("Attached file %1 to topic [%2] %3", $filename, $topic->mid, $topic->title);                    
+                    my $subject = _loc("New file %1 attached to topic [%2] %3", $filename, $topic->mid, $topic->title);                    
                     event_new 'event.file.attach' => {
                         username        => $c->username,
                         mid             => $topic_mid,
@@ -1940,7 +1940,7 @@ sub report_csv : Local {
     utf8::encode($body);
     Encode::from_to($body,'utf-8','iso-8859-15');
     $c->stash->{serve_body} = $body;
-    $c->stash->{serve_filename} = 'Clarive_export.csv';#length $p->{title} ? Util->_name_to_id($p->{title}).'.csv' : 'topics.csv';
+    $c->stash->{serve_filename} = length $p->{title} ? Util->_name_to_id($p->{title}).'.csv' : 'topics.csv';
     $c->forward('/serve_file');
 }
 
