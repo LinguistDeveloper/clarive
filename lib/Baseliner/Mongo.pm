@@ -112,6 +112,7 @@ sub asset_new {
 }
 
 sub ts { Util->_now() }
+sub ts_hires { Time::HiRes::time() }
 sub now { Class::Date->now->to_tz( Util->_tz() ) }
 sub in  { shift; {  '$in' => [ map { ref $_ eq 'HASH' ? "$_->{mid}" : "$_" } Util->_array( @_ ) ] } }
 sub nin { shift; { '$nin' => [ map { ref $_ eq 'HASH' ? "$_->{mid}" : "$_" } Util->_array( @_ ) ] } }

@@ -143,12 +143,14 @@ sub event_new {
     my @rule_log;
     $data ||= {};
     my $ev = Baseliner->model('Registry')->get( $key ); # this throws an exception if key not found
+    # mdb->create_capped('event'); # not capped for now
     my $event_create = sub {
         my ($ed,@event_log) = @_;
         my $ev_id = mdb->seq('event');
         mdb->event->insert({
                 id            => $ev_id,
                 ts            => mdb->ts,
+                t             => mdb->ts_hires,
                 event_key     => $key,
                 event_data    => _dump($ed),
                 event_status  => 'new',
@@ -162,6 +164,7 @@ sub event_new {
                 id_event   => $ev_id,
                 id_rule    => $log->{id},
                 ts         => mdb->ts,
+                t          => mdb->ts_hires,
                 stash_data => _dump( $log->{ret} ),
                 dsl        => $log->{dsl},
                 log_output => $log->{output},
