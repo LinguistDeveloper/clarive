@@ -161,7 +161,7 @@ sub get_users_from_mid_roles_topic {
     push @topic_securities, $topic->{_project_security} if $topic->{_project_security};
 
     if ( $topic->{category}->{is_release} && !@topic_securities ) {
-        my @children = map { $_->{mid} } ci->new( $mid )->children( where => { collection => 'topic' }, depth => 2);
+        my @children = map { $_->{mid} } ci->new( $mid )->children( where => { collection => 'topic' }, depth => 1);
         @topic_securities = map { $_->{_project_security} } mdb->topic->find({ mid => mdb->in(@children) })->all;
         if ( !@topic_securities ) {
             push @topic_securities, {};
