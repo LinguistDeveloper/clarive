@@ -182,11 +182,14 @@ sub execute {
         alarm 0;
         my $err = shift;
         my $msg = _loc( 'ssh_agent execute error %1 (%2): %3', $self->_build_uri, "@cmd", $err );
-        _fail $msg if $self->_throw_on_error;
+        _fail $msg if $self->throw_errors;
+        $ret = $msg;
+        $rc = $?>0 ? $? : 99;
         #_fail _loc( 'Timeout %1 (%2)', $self->_build_uri, "@cmd" ) if $err =~ /ssh timeout alarm/; 
         #_fail _loc( 'ssh_agent execute error %1 (%2): %3', $self->_build_uri, "@cmd", $err ) if $err =~ /ssh timeout alarm/; 
     };
     my $out = _slurp $p{stdout_file};
+    $out //= '';
     unlink $p{stdout_file};
     $self->ret( "$out" );
     $self->rc( $rc );
