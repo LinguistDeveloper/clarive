@@ -166,7 +166,7 @@
 											}
 										}
 									});
-									
+                                    
 									columns = {
 										id: 'pnl_projects',
 										layout:'column',
@@ -596,6 +596,24 @@
 			tpl: '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><strong>{name}</strong> </span></div></tpl>'
 		});		
 		
+        var subject = new Ext.form.TextField({ name:'subject', value: '', disabled: true, anchor:'100%', fieldLabel:_('Subject'), height: 30 });
+        var chk_subject = new Ext.form.Checkbox({
+            name:'chk_subject',
+            boxLabel:_('Default'),
+            checked: true,
+            listeners: {
+                check: function(obj, checked){
+                    if(checked){
+                        subject.setValue('');
+                        subject.disable();
+                    }else{
+                        subject.enable();	
+                    }
+                }
+            }
+        });
+        
+									
         var names_recipients = new Object();
 		
 		var add_edit_recipients = function (){
@@ -1041,6 +1059,14 @@
 					]
 				},
 				cb_templates,
+                {
+                    id: 'pnl_subject',
+                    layout:'column',
+                    defaults:{ layout:'form' },
+                    items:[ { columnWidth: 0.85, items: subject },
+                        { columnWidth: 0.15, labelWidth: 5, items: chk_subject }
+                    ]
+                },
 				{
 					xtype: 'panel',
 					fieldLabel: _('Recipients'),
