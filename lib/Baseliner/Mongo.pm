@@ -303,7 +303,7 @@ sub ixhash {
 # default 20MB capped collection
 sub create_capped {
     my ($self,$coll, %p) = @_;
-    mdb->db->run_command([ create=> $coll, capped=>boolean::true, size=>$p{size}//(1024*1024*20), %p ]);
+    mdb->db->run_command([ create=> $coll, capped=>boolean::true, size=>$p{size}//(1024*1024*50), %p ]);
 }
 
 sub compact {
