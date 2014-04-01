@@ -434,7 +434,7 @@ sub get_meta_permissions : Private {
             my $write_action = 'action.topicsfield.' .  $parse_category . '.' .  $parse_id_field . '.' . $parse_status . '.write';
             #my $write_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $_->{id_field} . '.' . lc $data->{name_status} . '.write';
             #my $write_action = 'action.topicsfield.write.' . $_->{name_field};
-            
+            my $readonly = 0;
             if ( $is_root ) {
                     $_->{readonly} = \0;
                     $_->{allowBlank} = 'true' unless $_->{id_field} eq 'title';
@@ -446,6 +446,7 @@ sub get_meta_permissions : Private {
                     $_->{readonly} = \0;
                 }else{
                     $_->{readonly} = \1;    
+                    $readonly = 1;
                 }
             }
             
@@ -454,8 +455,9 @@ sub get_meta_permissions : Private {
             #my $read_action = 'action.topicsfield.read.' . $_->{name_field} if ! $write_action;
             #_error $read_action;
 
+            _log "ESO $readonly ... $_->{hidden_if_protected}";
             if ( !$is_root ) {
-                if ($c->model('Permissions')->user_has_read_action( username=> $username, action => $read_action )){
+                if ($c->model('Permissions')->user_has_read_action( username=> $username, action => $read_action  ) || ($readonly && $_->{hidden_if_protected} eq 'true')){
                     push @hidden_field, $_->{id_field};
                 }
             } 
