@@ -596,8 +596,9 @@
 			tpl: '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><strong>{name}</strong> </span></div></tpl>'
 		});		
 		
-        var has_subject = rec.data.subject !=undefined && rec.data.subject.length>0;
-        var subject = new Ext.form.TextField({ name:'subject', value: rec.data.subject, disabled: !has_subject, anchor:'100%', fieldLabel:_('Subject'), height: 30 });
+        var has_subject = rec && rec.data && rec.data.subject !=undefined && rec.data.subject.length>0;
+        var subject = new Ext.form.TextField({ name:'subject', value: rec && rec.data ? rec.data.subject : '', 
+                disabled: !has_subject, anchor:'100%', fieldLabel:_('Subject'), height: 30 });
         var chk_subject = new Ext.form.Checkbox({
             name:'chk_subject',
             boxLabel:_('Default'),
