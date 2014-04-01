@@ -125,9 +125,12 @@ sub create {
     my @features = map {
         [ $_->id => _dir( $_->root )->stringify ]
     } Baseliner->features->list;
-    
     my $vars = $p{vars} ? $p{vars} : {};
-    my %final_vars = ( %p, %$vars );
+    # merge vars and %p
+    my %final_vars = %p;
+    delete $final_vars{vars};
+    %final_vars = ( %final_vars, %$vars );
+    # parse subject
     my $subject = parse_vars( $p{subject}, \%final_vars ); 
     $final_vars{subject} = $subject;
 
