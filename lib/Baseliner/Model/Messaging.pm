@@ -128,6 +128,9 @@ sub create {
     
     my $vars = $p{vars} ? $p{vars} : {};
     my %final_vars = ( %p, %$vars );
+    my $subject = parse_vars( $p{subject}, \%final_vars ); 
+    $final_vars{subject} = $subject;
+
     if( my $template = $p{template} ) {
         $template = "/$template";
         if( $p{template_engine} eq 'mason' ) {
@@ -148,8 +151,6 @@ sub create {
         }
     }
     
-    my $subject = parse_vars( $p{subject}, \%final_vars ); 
-
     $p{sender} ||= _loc('internal');
     my $msg = mdb->message->insert(
         {

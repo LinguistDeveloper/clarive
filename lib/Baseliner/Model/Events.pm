@@ -103,7 +103,6 @@ sub run_once {
                     $model_messaging->{bcc} = { users => $notify->{carrier}{BCC} } if (exists $notify->{carrier}{BCC}) ;
                     
                     $model_messaging->{vars} = $vars; 
-                    $model_messaging->{vars}{subject} = parse_vars($subject,$vars);
                     $model_messaging->{vars}{to} = { users => $notify->{carrier}{TO} } if (exists $notify->{carrier}{TO}) ;
                     $model_messaging->{vars}{cc} = { users => $notify->{carrier}{CC} } if (exists $notify->{carrier}{CC}) ;
                     $model_messaging->{vars}{bcc} = { users => $notify->{carrier}{BCC} } if (exists $notify->{carrier}{BCC}) ;
