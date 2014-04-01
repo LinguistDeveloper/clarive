@@ -724,6 +724,7 @@ sub update {
                 
                 $topic_mid    = $topic->mid;
                 $status = $topic->id_category_status;
+                my $id_category = $topic->id_category;
                 $modified_on = $topic->modified_on->epoch;
                 $category = { $topic->categories->get_columns };
                 
@@ -739,7 +740,12 @@ sub update {
                     $return_options->{reload} = 1;
                 }
 
-               { mid => $topic->mid, topic => $topic->title, subject => $subject, notify_default => \@users }   # to the event
+                my $notify = {
+                    category => $id_category,
+                    category_status => $status,
+                };
+                    
+               { mid => $topic->mid, topic => $topic->title, subject => $subject, notify_default=>\@users, notify=>$notify }   # to the event
             } => sub {
                 my $e = shift;
                 Baseliner->model('Baseliner')->schema->txn_rollback if $rollback;

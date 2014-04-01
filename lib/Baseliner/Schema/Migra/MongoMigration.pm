@@ -496,6 +496,14 @@ sub scheduler {
     mdb->scheduler->insert($_) for map { delete $_->{id}; $_ } @sch;
 }
 
+sub notifications {
+    my @notifs = _dbis->query('select * from bali_notification')->hashes;
+    for my $doc ( @notifs ) {
+        delete $doc->{id};
+        mdb->notification->insert($doc);
+    }
+}
+
 ####################################
 #
 # Integrity fixes

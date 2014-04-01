@@ -125,26 +125,35 @@ sub create {
     my @features = map {
         [ $_->id => _dir( $_->root )->stringify ]
     } Baseliner->features->list;
+    
+    my $vars = $p{vars} ? $p{vars} : {};
+    my %final_vars = ( %p, %$vars );
     if( my $template = $p{template} ) {
+        $template = "/$template";
         if( $p{template_engine} eq 'mason' ) {
             try {
-                $body = Util->_mason( "/$template", %p, %{ $p{vars} || {} } );
+                $body = Util->_mason( $template, %final_vars );
             } catch {
-                _log "Error in Mason Email engine: " . shift;
+                my $err = shift;
+                _log "Error in Mason Email engine: $err";
                 _log _whereami;
                 $body = _dump( $p{vars} );
+                _fail _loc 'Error in message mason template %1: %2', $template, $err
+                    if $p{_fail_on_error}; 
             };
         } else {
             $template = Baseliner->path_to('root', $p{template} )
                 unless -e $template;
-            $body = _parse_template( $template, %{ $p{vars} || {} } );
+            $body = _parse_template( $template, %final_vars );
         }
     }
+    
+    my $subject = parse_vars( $p{subject}, \%final_vars ); 
 
     $p{sender} ||= _loc('internal');
     my $msg = mdb->message->insert(
         {
-            subject => $p{subject},
+            subject => $subject,
             active => '1',
             created => mdb->ts,
             body    => $body,

@@ -410,6 +410,7 @@ sub get_rule_ts : Local{
     my ($self,$c)=@_;
     my $p = $c->req->params;
     try {
+        _log _dump $p;
         my $ts = mdb->rule->find({id => ''.$p->{id_rule}})->next->{ts};
         $c->stash->{json} = { success=>\1, msg => 'ok', ts => $ts };
     } catch {
