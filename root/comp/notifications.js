@@ -75,7 +75,7 @@
 		
 		var store_events = new Baseliner.JsonStore({
 			url: '/notification/list_events',
-			fields: ['key']   
+			fields: ['kind','key','description']   
 		});
 		
 		store_events.on('load', function(ds, records, o){
@@ -98,7 +98,8 @@
 			valueField: 'key',
 			store: store_events,
 			singleMode: true,
-			tpl: '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><strong>{key}</strong> {description}</span></div></tpl>'
+			tpl: '<tpl for="."><div class="x-combo-list-item">'
+                +'<span id="boot" style="background: transparent"><strong>[{kind}] {description}</strong><p>{key}</p></span></div></tpl>'
 		});
 		
 		
