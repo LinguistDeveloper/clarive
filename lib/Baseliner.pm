@@ -49,14 +49,20 @@ $DB::deep = 500; # makes the Perl Debugger Happier
 # determine version with a GIT DESCRIBE
 our $FULL_VERSION = do {
     my $v = eval { 
+        my $branch = `git rev-parse --abbrev-ref HEAD`;
+        chomp $branch;
         my @x = `cd $ENV{CLARIVE_HOME}; git describe --always --tags --candidates 1`;
         my $version = $x[0];
-        $version=~ /^(.*)-(\d+)-(.*)$/ ? $version=["$1_$2", substr($3,1,7) ] : ['?','?','?'];
+        chomp $version;
+        if( $version=~ /^(?<ver>.*)-(?<cnt>\d+)-g(?<sha>\w*)$/ ) {
+            ["release: $branch, patch: $+{ver}+$+{cnt}, sha: $+{sha}" , "${branch}_$+{ver}_$+{sha}", $+{sha} ] 
+        } else {
+            [ "r$branch v$version", "${branch}_${version}", ''];
+        }
     };
-    !$v ?  ['6.0','??'] : $v;
+    !$v ?  ['r6','??'] : $v;
 };
 our $VERSION = $FULL_VERSION->[0];
-our $VERSION_SHA = $FULL_VERSION->[1];
 
 # find my parent to enable restarts
 $ENV{BASELINER_PARENT_PID} //= getppid();
@@ -175,8 +181,6 @@ __PACKAGE__->setup();
 # Capture Signals
 $SIG{INT} = \&signal_interrupt;
 $SIG{KILL} = \&signal_interrupt;
-
-our $VERSION_STRING = "v" . ( Baseliner->config->{About}->{version} // $Baseliner::VERSION ) . " (sha $Baseliner::VERSION_SHA)";
 
 # check if DB connected, retry
 if( my $retry = Baseliner->config->{db_retry} ) {
@@ -391,7 +395,7 @@ around 'debug' => sub {
     # Beep
     my $bali_env = $ENV{CATALYST_CONFIG_LOCAL_SUFFIX} // $ENV{BASELINER_CONFIG_LOCAL_SUFFIX};
     print STDERR ( Baseliner->config->{name} // 'Baseliner' ) 
-        . " $Baseliner::VERSION_STRING. Startup time: " . tv_interval($t0) . "s.\n";
+        . " $Baseliner::VERSION. Startup time: " . tv_interval($t0) . "s.\n";
     $ENV{CATALYST_DEBUG} || $ENV{BASELINER_DEBUG} and do { 
         print STDERR "Environment: $bali_env. Catalyst: $Catalyst::VERSION. DBIC: $DBIx::Class::VERSION. Perl: $^V. OS: $^O\n";
         print STDERR "\7";
