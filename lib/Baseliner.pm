@@ -611,7 +611,7 @@ if( Baseliner->debug ) {
                 if( defined $obj->{_log}{_body} && $obj->{_log}{_body} =~ m{(password\s+\|\s+)(.+?)(\s+)}s ) {
                    my $p = $2;
                    my $np = '*' x length($p) ;
-                   $obj->{_log}{_body} =~ s{$p}{$np}gsm;
+                   $obj->{_log}{_body} =~ s{\Q$p}{$np}gsm;
                 }
                 push @ret, $d;
             } else {

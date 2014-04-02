@@ -177,7 +177,7 @@ sub event_new {
         my $obj = Baseliner::Core::Event->new( data => $data );
         try {
             if( length $data->{mid} ){
-                my $ci = Baseliner::CI->new( $data->{mid} );
+                my $ci = ci->new( $data->{mid} );
                 my $ci_data = $ci->load;
                 $data = { %$ci_data, ci=>$ci, %$data };
             }else{
