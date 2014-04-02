@@ -1,30 +1,51 @@
 <%args>
-	$action
-	$job
-	$status
 	$subject 
-	$message
-	$username
-	$realname
+    $job
 </%args>
 <head>
     <meta http-equiv="Content-Language" content="en" />
-    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-    <title>Accion</title>
-	<& /email/style.css &>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title><% $subject %></title>
+    <style>
+    <& /static/bootstrap/css/bootstrap.min.css &>
+    </style>
 </head>
 
 <body>
-    <div class='box'>
-        <div class="error">
-            <h2>SCM: <% $subject %></h2>
-        </div>
-    </div>
-    <div class='box'>
-        <div class="trace error">
-            <p>Usuario propietario del pase: <b><% "$username ($realname)" %></b></p>
-            <p>Ultimo Mensaje de pase: <b><% $message || '<i>no disponible</i>' %></b></p>
-        </div>
-    </div>
+    <div style="padding: 10px 10px 10px 10px;">
+    <& /email/banner.html &>
+    <hr />
+    <p><strong><% $subject %></strong></p>
+    <p><% _loc('Job started in %1 at %2', $job->bl, $job->starttime ) %></p>
+    <p><% _loc('Rule: %1', $job->rule_name ) %></p>
+<%perl>            
+    my ($releases,$release_names,$changesets,$changeset_names) = $job->build_job_email;
+</%perl> 
+
+
+% if ( %$releases ){
+    <ul>
+%   for my $release (keys %$releases){
+        <li> <% $release_names->{$release} %> #<% $release %> </li>
+%       my @changesets = Util->_array( $releases->{$release} );
+%       if ( scalar @changesets > 0 ){
+            <ul>
+%           for my $changeset ( @changesets ){
+                <li> <% $changeset_names->{$changeset} %> #<% $changeset %> </li>
+%           }
+            </ul>
+%       }
+%   }
+    </ul>
+% }
+
+% if ( %$changesets ){
+    <ul>
+%   for my $changeset (keys %$changesets){
+        <li><% $changeset_names->{$changeset} %> #<% $changeset %></li>
+%   }
+    </ul>
+% }
+   </div>
 </body>
 

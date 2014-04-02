@@ -604,6 +604,46 @@ sub build_job_contents {
     return $jc; 
 }
 
+# used by the job email template
+sub build_job_email {
+    my ($self)=@_;
+
+    my %releases;
+    my %release_names;
+    my %changeset_names;
+    my %changesets;
+
+    my $changesets = $self->changesets;
+    my $releases = $self->releases; 
+    
+    for my $changeset (@$changesets) {
+        $changeset_names{ $changeset->mid } = $changeset->topic_name;
+        
+        if ( scalar @$releases > 0 ) {
+            for my $release (@$releases) {
+                $release_names{ $release->mid } = $release->topic_name;
+                my @changesets = exists $releases{ $release->mid } ? Util->_array( $releases{ $release->mid } ) : ();
+                push @changesets, $changeset->{mid};
+                $releases{ $release->mid } = \@changesets;
+            }
+        } else {
+            $changesets{ $changeset->{mid} } = $changeset->topic_name;
+        }
+    }
+    
+    return (\%releases, \%release_names, \%changesets, \%changeset_names);
+}
+
+sub rule_name {
+    my ($self)=@_;
+    if( my $id = $self->id_rule ) {
+        my $r = mdb->rule->find_one({ id=>"$id" },{ rule_name=>1 });
+        return $r->{rule_name} if $r;
+        return "rule id=$id";
+    }
+    return '??';
+}
+
 # used by the job dashboard
 sub summary2 {
     my ($self)=@_;
