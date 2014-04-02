@@ -456,7 +456,6 @@ sub get_meta_permissions : Private {
             #my $read_action = 'action.topicsfield.read.' . $_->{name_field} if ! $write_action;
             #_error $read_action;
 
-            _log "ESO $readonly ... $_->{hidden_if_protected}";
             if ( !$is_root ) {
                 if ($c->model('Permissions')->user_has_read_action( username=> $username, action => $read_action  ) || $c->model('Permissions')->user_has_read_action( username=> $username, action => $read_action_status  ) || ($readonly && $_->{hidden_if_protected} eq 'true')){
                     push @hidden_field, $_->{id_field};
