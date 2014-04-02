@@ -613,8 +613,8 @@ sub build_job_email {
     my %changeset_names;
     my %changesets;
 
-    my $changesets = $self->changesets;
-    my $releases = $self->releases; 
+    my $changesets = $self->changesets // [];
+    my $releases = $self->releases // []; 
     
     for my $changeset (@$changesets) {
         $changeset_names{ $changeset->mid } = $changeset->topic_name;
