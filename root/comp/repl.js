@@ -76,7 +76,7 @@ To do:
     };
     var fcode = new Ext.form.TextArea({
         name: 'code',
-        value: "$c->model('Topic');\nmdb->topic->find_one({ mid=>'' });\nDB->BaliMasterRel({ from_mid=>'', to_mid=>'' })->hashref->all;\n",
+        value: "$c->model('Topic');\nmdb->topic->find_one({ mid=>'' });\nDB->BaliMasterRel->search({ from_mid=>'', to_mid=>'' })->hashref->all;\n",
         style: style_cons,
         width: 700,
         height: 300
