@@ -12,12 +12,13 @@
 </head>
 
 <body>
-    <div style="padding: 10px 10px 10px 10px;">
+<div style="padding: 10px 10px 10px 10px;">
     <& /email/banner.html &>
     <hr />
     <p><strong><% $subject %></strong></p>
     <p><% _loc('Job started in %1 at %2', $job->bl, $job->starttime ) %></p>
     <p><% _loc('Rule: %1', $job->rule_name ) %></p>
+    <p><strong><% _loc('Contents' ) %>:</strong></p>
 <%perl>            
     my ($releases,$release_names,$changesets,$changeset_names) = $job->build_job_email;
 </%perl> 
@@ -46,6 +47,6 @@
 %   }
     </ul>
 % }
-   </div>
+</div>
 </body>
 
