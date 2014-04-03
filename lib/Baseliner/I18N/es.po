@@ -4994,3 +4994,6 @@ msgstr "No se han encontrado artefactos"
 
 msgid "New file %1 attached to topic [%2] %3"
 msgstr "Nuevo fichero %1 adjuntado al tópico [%2] %3"
+
+msgid "%1 created a post for topic [%2] %3"
+msgstr "%1 ha comentado el tópico [%2] %3"
