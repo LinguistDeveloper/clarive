@@ -12,11 +12,14 @@ use File::Copy;
 
 with 'Baseliner::Role::Service';
 
-register 'service.purge.daemon' => {
-    name => 'Purge Daemon',
-    config => 'config.purge',
-    handler => \&run_purge ,
+
+register 'config.daemon.purge' => {
+    name => 'Event daemon configuration',
+    metadata => [
+        { id=>'frequency', label=>'event puge daemon frequency (secs)', default=>86400 },    
+    ]
 };
+
 
 register 'config.purge' => {
     metadata => [
@@ -29,18 +32,26 @@ register 'config.purge' => {
     ]
 };
 
-register 'service.job.purge.files' => {
-    name => 'Purge job directories',
+
+register 'service.purge.daemon' => {
+    daemon => 1,
+    name => 'Purge Daemon',
     scheduled => 1,
-    frequency_key => 'config.job.purge.files.frequency',
-    config => 'config.job',
-    handler => \&run,
+    config => 'config.daemon.purge',
+    handler => sub {
+                    my ($self, $c, $config ) = @_;
+                    $config->{frequency} ||= 86400;
+                    for( 1..1000 ) {
+                        $self->run_once();
+                        sleep( $config->{frequency} );
+                    }
+                }
 };
 
-sub run_purge  {
-    my ($self,$c,$config)=@_;
-    sleep 600;
-}
+
+register 'service.purge.run_once' => {
+    handler => \&run_once,
+};
 
 # sub truncate_log {
 #     my @p = @_;
@@ -91,7 +102,7 @@ sub truncate_log {
 }
 
 
-sub run {
+sub run_once {
     my ( $self )=@_;
     my $now = mdb->ts;
     my $config_runner = Baseliner->model('ConfigStore')->get( 'config.job.runner');
