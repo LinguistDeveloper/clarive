@@ -207,7 +207,7 @@ sub update : Local {
         }
         $role->update();
         Baseliner->cache_remove(":role:actions:$p->{id}:") if $p->{id};
-        Baseliner->cache_remove(':role:ids:')
+        Baseliner->cache_remove(':role:ids:');
     };
     if( $@ ) {
         warn $@;
@@ -231,7 +231,7 @@ sub delete : Local {
     } else { 
         $c->stash->{json} = { success => \1, msg => _loc("Role '%1' modified", $p->{name} ) };
     }
-    Baseliner->cache_remove(':role:ids:')
+    Baseliner->cache_remove(':role:ids:');
     $c->forward('View::JSON');  
 }
 
@@ -274,7 +274,7 @@ sub duplicate : Local {
     } else { 
         $c->stash->{json} = { success => \1, msg => _loc("Role '%1' modified", $p->{name} ) };
     }
-    Baseliner->cache_remove(':role:ids:')
+    Baseliner->cache_remove(':role:ids:');
     $c->forward('View::JSON');  
 }
 
