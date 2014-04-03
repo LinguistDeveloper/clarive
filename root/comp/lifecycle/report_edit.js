@@ -483,10 +483,7 @@
     
     var tabs = new Ext.TabPanel({ height: 600,activeTab: 0, items:[ options, seltab ]});
     
-    var tbar = [ '->',
-        { text: _('Close'), icon:'/static/images/icons/close.png', handler: function(){ win.close() } },
-        { text: _('Save'),icon:'/static/images/icons/save.png', 
-          handler: function(){
+    var save_form = function(){
                 if( form_value.set_value ) form_value.set_value();
                 if( form_value.set_select ) form_value.set_select();
                 var dd = options.getValues();
@@ -512,7 +509,11 @@
                         });  
                     }
                 });
-            }
+            };
+    var tbar = [ '->',
+        { text: _('Close'), icon:'/static/images/icons/close.png', handler: function(){ win.close() } },
+        { text: _('Save'),icon:'/static/images/icons/save.png', 
+          handler: save_form
         }
     ];
     
@@ -524,7 +525,8 @@
         layout:'fit',
         closeAction: 'close',
         tbar: tbar,
-        items: tabs
+        items: tabs,
+        save_handler: save_form
     });
     
     win.show();
