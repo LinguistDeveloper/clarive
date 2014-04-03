@@ -107,7 +107,7 @@ sub run_once {
     my $now = mdb->ts;
     my $config_runner = Baseliner->model('ConfigStore')->get( 'config.job.runner');
     my $job_home = $ENV{BASELINER_JOBHOME} || $ENV{BASELINER_TEMP} || File::Spec->tmpdir();
-    my $job_home = $job_home."/";
+    $job_home = $job_home."/";
     my $logs_home = $ENV{CLARIVE_BASE}.'/logs/';
     $config_runner->{root} = $job_home;
     #my @purged_jobs=[];
@@ -120,7 +120,8 @@ sub run_once {
             my $config = Baseliner->model('ConfigStore')->get('config.purge', bl => $job->{bl});
             my $endtime = $job->{endtime};
             #_log $endtime."<----->".$now;
-            if ( $endtime lt $now ) {
+            if ( $endtime lt $now and $job->{ status } ne 'PURGED') {
+                _log "Purgin job $job_name with mid ".$job->{mid}."....";
                 my $ci_job = ci->new($job->{mid});
                 $ci_job->status('PURGED');
                 $ci_job->save;
@@ -133,7 +134,7 @@ sub run_once {
                     my $data;
                     mdb->job_log->remove({ mid => $actual->{mid} });
                     if(ref $query){
-                        #_log "Deleting field data....";
+                        _log "\tDeleting field data of ".$job->{mid}."....";
                         $data = $query->{data};
                         mdb->grid->delete($data);
                     }
@@ -145,10 +146,9 @@ sub run_once {
                 my @temp = split( " ", $now );
                 #_log "Condition to delete job_dir and job_log  ".$max_job_time->datetime."<------>$temp[0]T$temp[1]";
                 if( $max_job_time->datetime lt "$temp[0]T$temp[1]" ) {
-                    _log "Deleting log and job directory....";
-                    # Deleting log of the purged job 
+                    _log "\tDeleting log $purged_job_log_path"; 
                     unlink $purged_job_log_path;
-                    # Deleting directory of purged job
+                    _log "\tDeleting job directory $purged_job_path....";
                     File::Path::remove_tree( $purged_job_path, {error => \my $err} );
                     unlink $purged_job_path;
                 }
@@ -157,10 +157,10 @@ sub run_once {
 
         ############## Control of logsize and old .gz ######################
         my $log_dir = Path::Class::dir( $logs_home );
+        _log "\n\n\nAnalyzing logs....";
         while (my $file = $log_dir->next) {
             next unless -f $file;
             my @parts = split('\\.', $file->basename);
-            _log $file->basename;
             if ( $file->basename =~ /\w*\.log\.\d{4}_\d{2}_\d{2}T\d{2}_\d{2}_\d{2}\.gz$/ ){
                 my $date_time = $parts[-2];
                 #_log $date_time;
@@ -170,7 +170,7 @@ sub run_once {
                 my @temp = split( " ", $now );
                 #_log $time_to_remove->datetime." <----> ". "$temp[0]T$temp[1]";
                 if ( $time_to_remove->datetime lt "$temp[0]T$temp[1]" ){
-                    #_log "Deleting old ".$file->basename."....";
+                    _log "\tDeleting old GZ file ".$file->basename."....";
                     unlink $file;
                 }
             }
@@ -180,7 +180,7 @@ sub run_once {
                 my $job = ci->job->find({name => $job_name})->next;
                 my $config = Baseliner->model('ConfigStore')->get('config.purge', bl => $job->{bl});
                 if ( $filesize-1 > $config->{keep_log_size} ){
-                    #_log "Truncate ".$file->basename."....";
+                    _log "\tTruncate log ".$file->basename."....";
                     truncate_log( $file, $config->{keep_log_size} );
                 }
             }
