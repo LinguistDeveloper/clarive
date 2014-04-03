@@ -788,6 +788,11 @@ sub comment : Local {
                     my @projects = map {$_->{mid}} $topic_row->projects->hashref->all;
                     my @users = Baseliner->model("Topic")->get_users_friend(id_category => $topic_row->id_category, id_status => $topic_row->id_category_status, projects => \@projects);
                     my $subject = _loc("%1 created a post for topic [%2] %3", $c->username, $topic_row->mid, $topic_row->title);
+                    my $notify = { #'project', 'category', 'category_status'
+                        category        => $topic_row->id_category,
+                        category_status => $topic_row->id_category_status,
+                        project => \@projects
+                    };
                     event_new 'event.post.create' => {
                         username        => $c->username,
                         mid             => $topic_mid,
@@ -795,9 +800,10 @@ sub comment : Local {
                         id_post         => $mid,
                         post            => $text,
                         notify_default  => \@users,
-                        subject         => $subject
+                        subject         => $subject,
+                        notify=>$notify 
                     };
-                    $topic_row->add_to_posts( $post, { rel_field => 'topic_post', rel_type=>'topic_post' });
+                    $topic_row->add_to_posts( $post, { rel_field => 'topic_post', rel_type=>'topic_post'});
                     #master_rel->create({ rel_type=>'topic_post', from_mid=>$id_topic, to_mid=>$mid });
                 };
                 #$c->model('Event')->create({
@@ -849,11 +855,17 @@ sub comment : Local {
             my @projects = map {$_->{mid}} $topic_row->projects->hashref->all;
             my @users = Baseliner->model("Topic")->get_users_friend(id_category => $topic_row->id_category, id_status => $topic_row->id_category_status, projects => \@projects);
             my $subject = _loc("%1 deleted a post from topic [%2] %3", $c->username, $topic_row->mid, $topic_row->title);
-            
+            my $notify = { #'project', 'category', 'category_status'
+                category        => $topic_row->id_category,
+                category_status => $topic_row->id_category_status,
+                project => \@projects
+            };
+
             event_new 'event.post.delete' => { username => $c->username, mid => $_, id_post=>$id_com,
                 post            => substr( $text, 0, 30 ) . ( length $text > 30 ? "..." : "" ),
                 notify_default  => \@users,
-                subject         => $subject
+                subject         => $subject,
+                notify => $notify
             } for @mids;
             $c->stash->{json} = { msg => _loc('Delete comment ok'), failure => \0 };
         } catch {
