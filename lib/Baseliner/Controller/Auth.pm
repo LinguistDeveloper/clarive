@@ -217,9 +217,9 @@ sub login : Global {
         # go to the main authentication worker
         $c->stash->{login} = $login; 
         $c->stash->{password} = $password; 
-        $c->forward('authenticate');
+        my $res = $c->forward('authenticate');
         $msg = $c->stash->{auth_message};
-        if( length $c->username ) {
+        if( $res && length $c->username ) {
             $msg //= _loc("OK");
             event_new 'event.auth.ok'=>{ username=>$c->username, login=>$login, mode=>'login', msg=>$msg };
             $c->stash->{json} = { success => \1, msg => $msg // _loc("OK") };
