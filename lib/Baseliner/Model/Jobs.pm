@@ -15,12 +15,12 @@ use Tie::IxHash;
 
 register 'action.search.job' => { name => 'Search jobs' };
 
-register 'event.job.rerun' => { name=>'Rerun a job' };
-register 'event.job.reschedule' => { name=>'Reschedule a job' };
-register 'event.job.start' => { name=>'Job start' };
-register 'event.job.start_step' => { name=>'Job step start' };
-register 'event.job.end' => { name=>'Job end, after POST' };
-register 'event.job.end_step' => { name=>'Job step end' };
+register 'event.job.rerun' => { name=>'Rerun a job', notify=>{ scope=>['project','bl'] }  };
+register 'event.job.reschedule' => { name=>'Reschedule a job', notify=>{ scope=>['project','bl'] }  };
+register 'event.job.start' => { name=>'Job start', notify=>{ scope=>['project','bl'] } };
+register 'event.job.start_step' => { name=>'Job step start', notify=>{ scope=>['project','bl'] } };
+register 'event.job.end' => { name=>'Job end, after POST', notify=>{ scope=>['project','bl'] } };
+register 'event.job.end_step' => { name=>'Job step end', notify=>{ scope=>['project','bl'] } };
 
 sub monitor {
     my ($self,$p) = @_;
