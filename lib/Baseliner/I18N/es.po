@@ -4997,3 +4997,6 @@ msgstr "Nuevo fichero %1 adjuntado al tópico [%2] %3"
 
 msgid "%1 created a post for topic [%2] %3"
 msgstr "%1 ha comentado el tópico [%2] %3"
+
+msgid "%1 deleted a post from topic [%2] %3"
+msgstr "%1 ha borrado un comentario del tópico [%2] %3"
