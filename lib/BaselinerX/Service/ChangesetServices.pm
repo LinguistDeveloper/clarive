@@ -314,7 +314,7 @@ sub job_items {
                );
                # if I'm the highest version, then save. Topic files are unique by project + path
                my $unique_key = $project . '&%&' . $fullpath;
-               $topic_files{$unique_key} = { item=>$item, row=>$tfile, mid=>$mid }
+               $topic_files{$unique_key} = { item=>$item, row=>$tfile, mid=>$mid, versionid=>$versionid }
                    if !exists $topic_files{$unique_key} || $topic_files{$unique_key}->{versionid} < $versionid;
             } 
         }
@@ -512,11 +512,16 @@ sub request_approval {
     my $job      = $c->stash->{job};
     my $log      = $job->logger;
     my $bl       = $job->bl;
+    my @projects = map {$_->{mid} } _array($job->{projects});
+    my $notify = {
+        project => \@projects
+    };
 
     event_new 'event.job.approval_request' => 
-        { username => $job->username, name=>$job->name, step=>$job->step, status=>$job->status, bl=>$job->bl } => sub {
+        { job => $job, notify => $notify, username => $job->username, name=>$job->name, step=>$job->step, status=>$job->status, bl=>$job->bl } => sub {
         $job->approval_config( $config );
         $job->final_status( 'APPROVAL' );
+
     };
     1;
 }
