@@ -307,8 +307,10 @@ sub search_query {
 
 sub get {
     my ($self, $id ) = @_;
-    return Baseliner->model('Baseliner::BaliJob')->find($id) if $id =~ /^[0-9]+$/;
-    return Baseliner->model('Baseliner::BaliJob')->search({ name=>$id })->first;
+    my $where = $id =~ /^[0-9]+$/ ? {id => $id} : {name => $id};
+    #return Baseliner->model('Baseliner::BaliJob')->find($id) if $id =~ /^[0-9]+$/;
+    #return Baseliner->model('Baseliner::BaliJob')->search({ name=>$id })->first;
+    return Baseliner->model('Baseliner::BaliJob')->search($where)->first;
 }
 
 sub status {
