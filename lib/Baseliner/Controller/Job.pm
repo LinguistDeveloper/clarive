@@ -406,6 +406,7 @@ sub submit : Local {
                     runner       => $runner,
                     id_rule      => $id_rule,
                     description  => $comments,
+                    comments     => $comments,
                     stash_init   => $job_stash, # only used to create the stash
                     changesets   => $contents, 
             };
