@@ -85,14 +85,21 @@ sub monitor {
     my $where = {};
     my @mid_filters;
     if( length($query) ) {
-        $query =~ s{(\w+)\*}{job "$1"}g;  # apparently "<str>" does a partial, but needs something else, so we put the collection name "job"
-        $query =~ s{([\w\-\.]+)}{"$1"}g;  # fix the "N.ENV-00000319" type search
-        $query =~ s{\+(\S+)}{"$1"}g;
-        $query =~ s{""+}{"}g;
         _debug "Job QUERY=$query";
-        my @mids_query = map { $_->{obj}{mid} } 
-            _array( mdb->master_doc->search( query=>$query, limit=>1000, project=>{mid=>1}, filter=>{ collection=>'job' })->{results} );
-        push @mid_filters, { mid=>mdb->in(@mids_query) };
+        my @mids_query;
+        if( $query !~ /\+|\-|\"|\:/ ) {  # special queries handled by query_build later
+            $query =~ s{(\w+)\*}{job "$1"}g;  # apparently "<str>" does a partial, but needs something else, so we put the collection name "job"
+            $query =~ s{([\w\-\.]+)}{"$1"}g;  # fix the "N.ENV-00000319" type search
+            $query =~ s{\+(\S+)}{"$1"}g;
+            $query =~ s{""+}{"}g;
+            @mids_query = map { $_->{obj}{mid} } 
+                _array( mdb->master_doc->search( query=>$query, limit=>1000, project=>{mid=>1}, filter=>{ collection=>'job' })->{results} );
+        }
+        if( !@mids_query ) {
+            mdb->query_build( where=>$where, query=>$query, fields=>[ keys %$group_keys ] ); 
+        } else {
+            push @mid_filters, { mid=>mdb->in(@mids_query) };
+        }
     }
     
     # user content

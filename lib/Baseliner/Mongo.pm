@@ -401,15 +401,28 @@ sub query_build {
     my @terms_normal = grep(!/^\+|^\-/,@terms);
     my @terms_plus = grep(/^\+/,@terms);
     my @terms_minus = grep(/^\-/,@terms);
-    my @ors;
-    for my $col ( @fields ) {
-        push @ors, map { { $col => $insensitive ? qr/$_/i : qr/$_/ } } @terms_normal;
-    }
+    my $all_or_one = sub {
+        my $term = shift;
+        if( $term =~ /^([^:]+):(.+)$/ ) {
+            return ($2,$1);
+        }
+        return ($term,@_);
+    };
+    #my @ors;
+    #for my $col ( @fields ) {
+    #    push @ors, map { { $col => $insensitive ? qr/$_/i : qr/$_/ } } @terms_normal;
+    #}
+    my @ors = map {
+        my ($term,@term_fields) = $all_or_one->($_,@fields);
+        map {
+            +{ $_ => $insensitive ? qr/$term/i : qr/$term/ }
+        } @term_fields;
+    } @terms_normal;
     #push @ors, { 1=>1 } if ! @terms_normal;
     my @wh_and = (
         ( @ors ? {'$or' => \@ors} : () ),
-        ( @terms_plus ? { '$and'=>[ map { my $v=substr($_,1); { '$or'=>[map { +{$_ => $insensitive ? qr/$v/i : qr/$v/} } @fields] } } @terms_plus ]} : () ),
-        ( @terms_minus ? { '$and'=>[ map { my $v=substr($_,1); { '$and'=>[map { +{$_ => {'$not' => $insensitive ? qr/$v/i : qr/$v/} } } @fields] } } @terms_minus ]} : () ),
+        ( @terms_plus ? { '$and'=>[ map { my $v=substr($_,1); ($v,@fields)=$all_or_one->($v,@fields); { '$or'=>[map { +{$_ => $insensitive ? qr/$v/i : qr/$v/} } @fields] } } @terms_plus ]} : () ),
+        ( @terms_minus ? { '$and'=>[ map { my $v=substr($_,1); ($v,@fields)=$all_or_one->($v,@fields); { '$and'=>[map { +{$_ => {'$not' => $insensitive ? qr/$v/i : qr/$v/} } } @fields] } } @terms_minus ]} : () ),
     );
     #push @ors, { 1=>1 } if ! @terms_normal;
     $where->{'$and'} = \@wh_and if @wh_and;
