@@ -200,7 +200,7 @@ sub next_workday {
 
     my $date = Class::Date->new($p{date});	
 
-    while ( !is_workday( date=>$date ) ) {
+    while ( !$self->is_workday( date=>$date ) ) {
         $date = $date+"1D";
     }
     return $date;

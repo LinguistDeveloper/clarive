@@ -434,7 +434,7 @@ sub get_meta_permissions : Private {
             my $write_action = 'action.topicsfield.' .  $parse_category . '.' .  $parse_id_field . '.' . $parse_status . '.write';
             #my $write_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $_->{id_field} . '.' . lc $data->{name_status} . '.write';
             #my $write_action = 'action.topicsfield.write.' . $_->{name_field};
-            
+            my $readonly = 0;
             if ( $is_root ) {
                     $_->{readonly} = \0;
                     $_->{allowBlank} = 'true' unless $_->{id_field} eq 'title';
@@ -446,16 +446,18 @@ sub get_meta_permissions : Private {
                     $_->{readonly} = \0;
                 }else{
                     $_->{readonly} = \1;    
+                    $readonly = 1;
                 }
             }
             
             my $read_action = 'action.topicsfield.' .  $parse_category . '.' .  $parse_id_field . '.read';
+            my $read_action_status = 'action.topicsfield.' .  $parse_category . '.' .  $parse_id_field . '.' . $parse_status . '.read';
             #my $read_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $_->{id_field} . '.' . lc $data->{name_status} . '.read';
             #my $read_action = 'action.topicsfield.read.' . $_->{name_field} if ! $write_action;
             #_error $read_action;
 
             if ( !$is_root ) {
-                if ($c->model('Permissions')->user_has_read_action( username=> $username, action => $read_action )){
+                if ($c->model('Permissions')->user_has_read_action( username=> $username, action => $read_action  ) || $c->model('Permissions')->user_has_read_action( username=> $username, action => $read_action_status  ) || ($readonly && $_->{hidden_if_protected} eq 'true')){
                     push @hidden_field, $_->{id_field};
                 }
             } 
@@ -786,6 +788,11 @@ sub comment : Local {
                     my @projects = map {$_->{mid}} $topic_row->projects->hashref->all;
                     my @users = Baseliner->model("Topic")->get_users_friend(id_category => $topic_row->id_category, id_status => $topic_row->id_category_status, projects => \@projects);
                     my $subject = _loc("%1 created a post for topic [%2] %3", $c->username, $topic_row->mid, $topic_row->title);
+                    my $notify = { #'project', 'category', 'category_status'
+                        category        => $topic_row->id_category,
+                        category_status => $topic_row->id_category_status,
+                        project => \@projects
+                    };
                     event_new 'event.post.create' => {
                         username        => $c->username,
                         mid             => $topic_mid,
@@ -793,9 +800,10 @@ sub comment : Local {
                         id_post         => $mid,
                         post            => $text,
                         notify_default  => \@users,
-                        subject         => $subject
+                        subject         => $subject,
+                        notify=>$notify 
                     };
-                    $topic_row->add_to_posts( $post, { rel_field => 'topic_post', rel_type=>'topic_post' });
+                    $topic_row->add_to_posts( $post, { rel_field => 'topic_post', rel_type=>'topic_post'});
                     #master_rel->create({ rel_type=>'topic_post', from_mid=>$id_topic, to_mid=>$mid });
                 };
                 #$c->model('Event')->create({
@@ -847,11 +855,17 @@ sub comment : Local {
             my @projects = map {$_->{mid}} $topic_row->projects->hashref->all;
             my @users = Baseliner->model("Topic")->get_users_friend(id_category => $topic_row->id_category, id_status => $topic_row->id_category_status, projects => \@projects);
             my $subject = _loc("%1 deleted a post from topic [%2] %3", $c->username, $topic_row->mid, $topic_row->title);
-            
+            my $notify = { #'project', 'category', 'category_status'
+                category        => $topic_row->id_category,
+                category_status => $topic_row->id_category_status,
+                project => \@projects
+            };
+
             event_new 'event.post.delete' => { username => $c->username, mid => $_, id_post=>$id_com,
                 post            => substr( $text, 0, 30 ) . ( length $text > 30 ? "..." : "" ),
                 notify_default  => \@users,
-                subject         => $subject
+                subject         => $subject,
+                notify => $notify
             } for @mids;
             $c->stash->{json} = { msg => _loc('Delete comment ok'), failure => \0 };
         } catch {

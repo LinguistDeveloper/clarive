@@ -240,6 +240,12 @@ register 'registor.action.topic_category_fields' => {
                         $description = $msg_edit . ' ' . lc $field->{name_field} . ' ' . $msg_in_category . ' ' . lc $category->{name} . ' ' . $msg_for_status . ' ' . lc $status->{name};
                         
                         $actions_category_fields{$id_action} = { id => $id_action, name => $description };
+
+                        $id_action = 'action.topicsfield.' . _name_to_id($category->{name}) . '.' . _name_to_id($field->{name_field}) . '.' . _name_to_id($status->{name}) . '.read';
+                        $description = $msg_view . ' ' . lc $field->{name_field} . ' ' . $msg_in_category . ' ' . lc $category->{name} . ' ' . $msg_for_status . ' ' . lc $status->{name};
+                        
+                        $actions_category_fields{$id_action} = { id => $id_action, name => $description };
+
                     }
                 }
             }
