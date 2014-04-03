@@ -207,6 +207,7 @@ sub update : Local {
         }
         $role->update();
         Baseliner->cache_remove(":role:actions:$p->{id}:") if $p->{id};
+        Baseliner->cache_remove(':role:ids:')
     };
     if( $@ ) {
         warn $@;
@@ -230,6 +231,7 @@ sub delete : Local {
     } else { 
         $c->stash->{json} = { success => \1, msg => _loc("Role '%1' modified", $p->{name} ) };
     }
+    Baseliner->cache_remove(':role:ids:')
     $c->forward('View::JSON');  
 }
 
@@ -253,7 +255,7 @@ sub duplicate : Local {
             my @rs_dashboards = $r->dashboard_roles->hashref->all;
             foreach my $dashboard (@rs_dashboards){
                 $dashboard->{id_role} = $role->id;
-            	$role->dashboard_roles->find_or_create($dashboard);   
+                $role->dashboard_roles->find_or_create($dashboard);   
             }
             $role->update;
             
@@ -261,7 +263,7 @@ sub duplicate : Local {
             foreach my $workflow (@rs_workflows){
                 delete $workflow->{id};
                 $workflow->{id_role} = $role->id;
-            	$role->roles->create($workflow);   
+                $role->roles->create($workflow);   
             }
             $role->update;
         }
@@ -272,6 +274,7 @@ sub duplicate : Local {
     } else { 
         $c->stash->{json} = { success => \1, msg => _loc("Role '%1' modified", $p->{name} ) };
     }
+    Baseliner->cache_remove(':role:ids:')
     $c->forward('View::JSON');  
 }
 
