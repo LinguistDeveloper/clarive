@@ -476,19 +476,21 @@ sub build_job_window : Path('/job/build_job_window') {
         }
         
         my @res; my @durs; my $succ=1;
+        my $any_succ = 0;
         while( my ($pb,$v) = each %stats ) {
             my @dur = @{ $$v{dur} // [] };
-            push @durs, @dur;
+            push @durs, @dur;   # TODO weighted avg by project?
             my ($ok,$ko) = @{$v}{qw(ok ko)};
             $succ = $succ * ( !$ok ? 0 : $ok/($ok+$ko) );
+            $any_succ = 1 if $ok || $ko;
             #map { _warn("DUR=========================$_"); $durs+=$_ } @dur;
         }
-        my $avg = '??'; 
+        my $avg = '?'; 
         if( @durs ) { 
             $avg = Util->to_dur(Util->stat_mode(@durs));
         }
         
-        $c->stash->{json} = {success=>\1, data => $hour_store, cis=>_damn( \%cis ), cals=>\@rel_cals, stats=>{ eta=>$avg, p_success=>int($succ*100) } };
+        $c->stash->{json} = {success=>\1, data => $hour_store, cis=>_damn( \%cis ), cals=>\@rel_cals, stats=>{ eta=>$avg, p_success=>$any_succ?int($succ*100).'%':'?' } };
     } catch {
         my $error = shift;
         _error $error;
