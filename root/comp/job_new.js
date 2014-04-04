@@ -356,7 +356,7 @@
                                 jc_row.set('rels', ci.related );
                             });
                             rel_cals = res.cals ? res.cals : [];
-                            job_statistics.update( stats_tmpl({ eta:res.stats.eta, p_success:res.stats.p_success+'%' }) );
+                            job_statistics.update( stats_tmpl({ eta:res.stats.eta, p_success:res.stats.p_success }) );
                         } else {
                             Baseliner.hideLoadingMask( main_form.getEl() );
                             combo_time.disable();
