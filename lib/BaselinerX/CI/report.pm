@@ -767,7 +767,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
     my %selects_ci_columns = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) . '_' . $_->{category} => $_->{ci_columns} } grep { exists $_->{ci_columns}} _array($fields{select});
 
 	#_log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS: " . _dump @selects;
-    #_log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS CI COLUMNS: " . _dump %selects_ci_columns;
+    _log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS CI COLUMNS: " . _dump %selects_ci_columns;
 	
 	#filters
 	my %dynamic_filter;
@@ -1034,6 +1034,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
             my $parse_key =  Util->_unac($k);
 
             if ( exists $selects_ci_columns{$parse_key} ) {
+                _log ">>>>>>>>>>>>>>>>>>Existe CI:";
                 #if ( $v ne '' && $v ne ' ' && !ref $v){
                 if ( $v ne '' && $v ne ' '){
                     try{
@@ -1057,13 +1058,13 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 
                         }else{
                              _log "Unico: $v" ;
-                            #_log ">>>>>>>>>>>>>>>>>>><KEY VALOR: " . $parse_key;
+                            _log ">>>>>>>>>>>>>>>>>>><KEY VALOR: " . $parse_key;
                             my $ci = ci->new($v);
                             for my $ci_column (_array $selects_ci_columns{$parse_key}){
                                 #_log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><Column: " . $ci_column;
                                 $ci_columns{$parse_key.'_'.$ci_column} = $ci->{$ci_column};
 
-                                #_log ">>>>>>>>>>>>>>>>>>>>>>>>><VALORESSSS: " . _dump %ci_columns;
+                                _log ">>>>>>>>>>>>>>>>>>>>>>>>><VALORESSSS: " . _dump %ci_columns;
                             }                                
                         }
                     }catch{
