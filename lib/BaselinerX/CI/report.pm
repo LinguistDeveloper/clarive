@@ -1045,12 +1045,14 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                             my @tmp;
                             for my $v_item (_array $v){
                                 my $ci = ci->new($v_item);
+                                _log "##################33CI: " . _dump $ci;
                                 for my $ci_column (_array $selects_ci_columns{$parse_key}){
                                     if ( exists $ci_columns{$parse_key.'_'.$ci_column} ) {
                                         my @tmp = _array $ci_columns{$parse_key.'_'.$ci_column};
                                         push @tmp,  $ci->{$ci_column};
                                         $ci_columns{$parse_key.'_'.$ci_column} = \@tmp;
                                     }else{
+                                        _log "############################: $ci->{$ci_column};"
                                         $ci_columns{$parse_key.'_'.$ci_column} = $ci->{$ci_column};
                                     }
                                     
