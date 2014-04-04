@@ -1052,7 +1052,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                                         push @tmp,  $ci->{$ci_column};
                                         $ci_columns{$parse_key.'_'.$ci_column} = \@tmp;
                                     }else{
-                                        _log "############################: $ci->{$ci_column};"
+                                        _log "############################: $ci->{$ci_column}";
                                         $ci_columns{$parse_key.'_'.$ci_column} = $ci->{$ci_column};
                                     }
                                     
