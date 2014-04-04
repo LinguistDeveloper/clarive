@@ -104,7 +104,7 @@ sub truncate_log {
 
 sub run_once {
     my ( $self )=@_;
-    my $now = mdb->ts;
+    my $now = Util->_ts(); # Class::Date->now object
     my $config_runner = Baseliner->model('ConfigStore')->get( 'config.job.runner');
     my $job_home = $ENV{BASELINER_JOBHOME} || $ENV{BASELINER_TEMP} || File::Spec->tmpdir();
     $job_home = $job_home."/";
@@ -116,18 +116,18 @@ sub run_once {
         my $jobs = ci->job->find({});
         while (my $job= $jobs->next){
             my $job_name = $job->{name};
-            #next unless $job->{status} ne 'is_not_running';
-            my $config = Baseliner->model('ConfigStore')->get('config.purge', bl => $job->{bl});
             my $endtime = $job->{endtime};
-            #_log $endtime."<----->".$now;
-            if ( $endtime lt $now and !$job->{purged} ) {
+            my $config = Baseliner->model('ConfigStore')->get('config.purge', bl => $job->{bl});
+            my $configdays = $job->is_failed ? $config->{keep_jobs_ko} : $config->{keep_jobs_ok};
+            
+            if ( length $endtime && $endtime < ( $now - "${configdays}D" ) && !$job->{purged} ) {
                 my $ci_job = ci->new($job->{mid});
                 next if $ci_job->is_active;
                 _log "Purging job $job_name with mid ".$job->{mid}."....";
                 $ci_job->purged(1);
                 $ci_job->save;
-                #push(@purged_jobs, $job->{name});
-                #_log "Purging $job_name ===mid===> ".$job->{mid};
+                
+                # delete job logs
                 my $deleted_job_logs = mdb->job_log->find({ mid => $job->{mid}, lev => 'debug' });
                 while( my $actual = $deleted_job_logs->next ) {
                     my $query = mdb->job_log->find_one({ mid => "$job->{mid}", data=>{'$exists'=>'1'} }); 
@@ -139,6 +139,7 @@ sub run_once {
                         mdb->grid->delete($data);
                     }
                 }
+                # delete job directories
                 my $purged_job_path = $job_home."$job->{name}";
                 my $purged_job_log_path = $logs_home."$job->{name}.log";
                 my $max_job_time = Time::Piece->strptime($endtime, "%Y-%m-%d %H:%M:%S");
