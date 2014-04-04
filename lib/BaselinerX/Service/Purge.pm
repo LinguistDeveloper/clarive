@@ -103,8 +103,10 @@ sub truncate_log {
 
 
 sub run_once {
-    my ( $self )=@_;
+    my ( $self, $c, $opts )=@_;
+    $opts //= {};
     my $now = Util->_ts(); # Class::Date->now object
+    my $job_purge_count = 0;
     my $config_runner = Baseliner->model('ConfigStore')->get( 'config.job.runner');
     my $job_home = $ENV{BASELINER_JOBHOME} || $ENV{BASELINER_TEMP} || File::Spec->tmpdir();
     $job_home = $job_home."/";
@@ -113,19 +115,20 @@ sub run_once {
     #my @purged_jobs=[];
     if( ref $config_runner && $config_runner->{root} ) {
         #_log "Config root: ". $config_runner->{root};
-        my $jobs = ci->job->find({});
+        my $jobs = ci->job->find({})->sort({ _id=>1 });
         while (my $job= $jobs->next){
             my $job_name = $job->{name};
             my $endtime = $job->{endtime};
             my $config = Baseliner->model('ConfigStore')->get('config.purge', bl => $job->{bl});
-            my $configdays = $job->is_failed ? $config->{keep_jobs_ko} : $config->{keep_jobs_ok};
-            
-            if ( length $endtime && $endtime < ( $now - "${configdays}D" ) && !$job->{purged} ) {
-                my $ci_job = ci->new($job->{mid});
+            my $ci_job = ci->new($job->{mid});
+            my $configdays = $ci_job->is_failed ? $config->{keep_jobs_ko} : $config->{keep_jobs_ok};
+            my $limitdate = $now - "${configdays}D";
+            if ( length $endtime && $endtime < $limitdate && !$job->{purged} ) {
                 next if $ci_job->is_active;
-                _log "Purging job $job_name with mid ".$job->{mid}."....";
-                $ci_job->purged(1);
-                $ci_job->save;
+                _log "Purging job $job_name with mid $job->{mid} ($endtime < $limitdate)....";
+                $job_purge_count++;
+                $ci_job->update( purged=>1 );
+                next if $opts->{dry_run};
                 
                 # delete job logs
                 my $deleted_job_logs = mdb->job_log->find({ mid => $job->{mid}, lev => 'debug' });
@@ -153,6 +156,8 @@ sub run_once {
                     File::Path::remove_tree( $purged_job_path, {error => \my $err} );
                     unlink $purged_job_path;
                 }
+            } elsif( !$job->{purged} ) {
+                _log _loc 'Job not ready to purge yet: %1 (%2): %3', $job_name, $job->{mid}, "$endtime >= $limitdate";
             }
         }
 
@@ -174,6 +179,7 @@ sub run_once {
                 #_log $time_to_remove->datetime." <----> ". "$temp[0]T$temp[1]";
                 if ( $time_to_remove->datetime lt "$temp[0]T$temp[1]" ){
                     _log "\tDeleting old GZ file ".$file->basename."....";
+                    next if $opts->{dry_run};
                     unlink $file;
                 }
             }
