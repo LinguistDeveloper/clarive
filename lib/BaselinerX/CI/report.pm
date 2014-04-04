@@ -764,7 +764,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $username) );  # XXX should be by category, same id fields may step on each other
 	my @selects = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) => $_->{category} } _array($fields{select});
 
-    my %selects_ci_columns = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) . '_' . $_->{category} => $_->{ci_columns} } grep { exists $_->{ci_columns}} _array($fields{select});
+    my %selects_ci_columns = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) . '_' . Util->_unac($_->{category}) => $_->{ci_columns} } grep { exists $_->{ci_columns}} _array($fields{select});
 
 	#_log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS: " . _dump @selects;
     _log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS CI COLUMNS: " . _dump %selects_ci_columns;
