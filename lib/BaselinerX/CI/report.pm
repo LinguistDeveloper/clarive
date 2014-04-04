@@ -1038,15 +1038,25 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                 if ( $v ne '' && $v ne ' '){
                     try{
                         if (ref $v){
+                             _log "Array: $v" ;
                             #_log ">>>>>>>>>>>>>>>>>>><KEY: " . $parse_key;
+                            my @tmp;
                             for my $v_item (_array $v){
-                                my $ci = ci->new($v);
+                                my $ci = ci->new($v_item);
                                 for my $ci_column (_array $selects_ci_columns{$parse_key}){
-                                    $ci_columns{$parse_key.'_'.$ci_column} = $ci->{$ci_column};
+                                    if ( exists $ci_columns{$parse_key.'_'.$ci_column} ) {
+                                        my @tmp = _array $ci_columns{$parse_key.'_'.$ci_column};
+                                        push @tmp,  $ci->{$ci_column};
+                                        $ci_columns{$parse_key.'_'.$ci_column} = \@tmp;
+                                    }else{
+                                        $ci_columns{$parse_key.'_'.$ci_column} = $ci->{$ci_column};
+                                    }
+                                    
                                 }                                 
                             }
 
                         }else{
+                             _log "Unico: $v" ;
                             #_log ">>>>>>>>>>>>>>>>>>><KEY VALOR: " . $parse_key;
                             my $ci = ci->new($v);
                             for my $ci_column (_array $selects_ci_columns{$parse_key}){
