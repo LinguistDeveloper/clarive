@@ -4959,6 +4959,15 @@ msgstr "Antes"
 msgid "After"
 msgstr "Despues"
 
+msgid "Estimated Duration"
+msgstr "Duración Estimada"
+
+msgid "Success Rate"
+msgstr "Probabilidad de Éxito"
+
+msgid "ETA"
+msgstr "Hora Estimada"
+
 msgid "On"
 msgstr "El"
 
