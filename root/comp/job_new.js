@@ -851,7 +851,7 @@
         <div id="boot" style='background: transparent'>
         <table class="table table-bordered"><tbody>
             <tr><th>[%= _('Estimated Duration') %]</th><td style="font-size:22px; font-weight: bold">[%= eta %]</td></tr>
-            <tr><th>[%= _('Rate of Success') %]</th><td style="font-size:20px; font-weight: bold">[%= p_success %]</td></tr>
+            <tr><th>[%= _('Success Rate') %]</th><td style="font-size:20px; font-weight: bold">[%= p_success %]</td></tr>
         </tbody></table>
         </div>
     */}.tmpl();
