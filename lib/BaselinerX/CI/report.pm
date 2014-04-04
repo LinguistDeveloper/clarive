@@ -587,7 +587,7 @@ sub get_where {
 	my %dynamic_filter = %{$p->{dynamic_filter}};
 	my $where = $p->{where};
 	
-	_log ">>>>>>>>>>Aplicar filtro dinamico: " . _dump %dynamic_filter;
+	#_log ">>>>>>>>>>Aplicar filtro dinamico: " . _dump %dynamic_filter;
 	
 	map {
 		if (!exists $_->{category} || $_->{category} eq $name_category){
@@ -760,9 +760,14 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	#_log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>QUERY: " . _dump $self->selected;
 	
 	my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
+    #_log ">>>>>>>>>>>>>>>>>>>>>>>FIELDS: " . _dump %fields;
 	my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $username) );  # XXX should be by category, same id fields may step on each other
 	my @selects = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) => $_->{category} } _array($fields{select});
+
+    my %selects_ci_columns = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) . '_' . $_->{category} => $_->{ci_columns} } grep { exists $_->{ci_columns}} _array($fields{select});
+
 	#_log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS: " . _dump @selects;
+    #_log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS CI COLUMNS: " . _dump %selects_ci_columns;
 	
 	#filters
 	my %dynamic_filter;
@@ -833,7 +838,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                 push @All_Categories, $names_category[$i];
 				$where = $self->get_where({filters_where => $fields{where}, name_category => $names_category[$i], dynamic_filter => \%dynamic_filter, where => $where  });
 				$where->{id_category} = {'$in' => [$ids_category[$i]] };
-				_log ">>>>>>>>>>>>>WHERE: " . _dump $where;
+				#_log ">>>>>>>>>>>>>WHERE: " . _dump $where;
 				my @data = mdb->topic->find($where)->all;
 				map {
 					$queries{$key}->{$relation[$i]}->{$_->{mid}} = 1;
@@ -844,6 +849,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 			}
 		}
 	}	
+
 	
     # filter user projects
     if( $username && ! Baseliner->model('Permissions')->is_root( $username )){
@@ -892,7 +898,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 		labels		=> 1
 	);
     my $fields = {  %select_system, map { $_=>1 } keys +{@selects}, _id=>0 };
-    #_log "FIELDS==================>" . _dump( $fields );
+    _log "FIELDS==================>" . _dump( $fields );
     #_log "SORT==================>" . _dump( @sort );
     my @data = $rs
       ->fields($fields)
@@ -1017,11 +1023,47 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
     my %scope_topics;
     my %scope_cis;
     my %all_labels = map { $_->{id} => $_ } mdb->label->find->all;
+    my %ci_columns;
+
     my @topics = map { 
         my %row = %$_;
 		#_log ">>>>>>>>>>>>>>>>>>>>>>>>>>>FILA: " . _dump %row;
 
         while( my($k,$v) = each %row ) {
+
+            my $parse_key =  Util->_unac($k);
+
+            if ( exists $selects_ci_columns{$parse_key} ) {
+                #if ( $v ne '' && $v ne ' ' && !ref $v){
+                if ( $v ne '' && $v ne ' '){
+                    try{
+                        if (ref $v){
+                            #_log ">>>>>>>>>>>>>>>>>>><KEY: " . $parse_key;
+                            for my $v_item (_array $v){
+                                my $ci = ci->new($v);
+                                for my $ci_column (_array $selects_ci_columns{$parse_key}){
+                                    $ci_columns{$parse_key.'_'.$ci_column} = $ci->{$ci_column};
+                                }                                 
+                            }
+
+                        }else{
+                            #_log ">>>>>>>>>>>>>>>>>>><KEY VALOR: " . $parse_key;
+                            my $ci = ci->new($v);
+                            for my $ci_column (_array $selects_ci_columns{$parse_key}){
+                                #_log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><Column: " . $ci_column;
+                                $ci_columns{$parse_key.'_'.$ci_column} = $ci->{$ci_column};
+
+                                #_log ">>>>>>>>>>>>>>>>>>>>>>>>><VALORESSSS: " . _dump %ci_columns;
+                            }                                
+                        }
+                    }catch{
+                        _log "Error Valor:($v)" ;
+                    };
+                }
+                
+            } 
+
+
             $row{$k} = Class::Date->new($v)->string if $k =~ /modified_on|created_on/;
             my $mt = $meta{$k}{meta_type} // '';
             #  get additional fields ?   
@@ -1094,7 +1136,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                 map { 
                     my $id=$_; 
                     my $r = $all_labels{$id};
-                    $id . ";" . $r->{name} . ";" . $r->{color};
+                    $id // '' . ";" . $r->{name} // '' . ";" . $r->{color} // '';
                 } _array( $row{labels} )
             ];
 		}
@@ -1116,12 +1158,18 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 		}
         #$row{category_status_name} = $row{category_status}{name};
 		
+        #_log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" . _dump %ci_columns;
+
+        foreach my $key (keys %ci_columns){
+            $row{$key} = $ci_columns{$key};
+        }
+        %ci_columns = ();
         \%row;
     #} @data;
 	} @parse_data;
 	
     #_debug @topics;
-	#_log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump @parse_data;
+	#_log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump @topics;
     return ( 0+$cnt, @topics );
 }
 
