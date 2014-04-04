@@ -1900,6 +1900,80 @@ sub properties {
     %ret;
 }
 
+sub split_with_quotes {
+    my ($str, %p)=@_;
+    my @arr = $str =~ /(".+"|\S+)/g;
+    @arr = map { s/^"//g; s/"$//g; $_ } @arr if $p{unquote};
+    return @arr;
+}
+
+sub to_dur {
+    my $secs = shift;
+    my $rel = new Class::Date::Rel int($secs).'s';
+    my ($y,$M,$d,$h,$m,$s) = map{ int } ($rel->year,$rel->month,$rel->day,$rel->hour,$rel->minute,$rel->second);
+    my $M2=$M-($y*12);
+    my $d2=int($d-($M*30.436851851851844));
+    my $h2=$h-($d*24);
+    my $m2=$m-($h*60);
+    my $s2=$s-($m*60);
+    # localze the time letters (english: y d h m s, french: a j h m s, spanish: a d h m s, ...)
+    my @letters = map { '%d'.substr(_loc($_),0,1) } qw(Year Month Day hour minute second);
+    my $tot = 
+          $y ? sprintf(join(' ',@letters),$y,$M2,$d2,$h2,$m2,$s2)
+        : $M ? sprintf(join(' ',@letters[-5..-1]),$M2,$d2,$h2,$m2,$s2)
+        : $d ? sprintf(join(' ',@letters[-4..-1]),$d2,$h2,$m2,$s2)
+        : $h ? sprintf(join(' ',@letters[-3..-1]),$h2,$m2,$s2)
+        : $m ? sprintf(join(' ',@letters[-2..-1]),$m2,$s2)
+        : sprintf('%ds',$secs);
+    return $tot;
+}
+
+
+sub average {
+    my @data = @_;
+    if ( not @data ) {
+        _fail("Empty array");
+    }
+    my $total = 0;
+    foreach (@data) {
+        $total += $_;
+    }
+    my $average = $total / @data;
+    return $average;
+}
+
+sub stdev {
+    my @data = @_;
+    if ( @data == 1 ) {
+        return 0;
+    }
+    my $average = average(@data);
+    my $sqtotal = 0;
+    foreach (@data) {
+        $sqtotal += ( $average - $_ )**2;
+    }
+    my $std = ( $sqtotal / ( @data - 1 ) )**0.5;
+    return $std;
+}
+
+sub stat_mode {
+    my $mode = 0;
+    my $occurances = 0;
+
+    my %count;
+
+    foreach my $item (@_) {
+        my $count = ++$count{$item};
+        if ($count > $occurances)
+        {
+            $mode = $item;
+            $occurances = $count;
+        }
+    }
+ 
+    return $mode; 
+}
+
 1;
 
 __END__
