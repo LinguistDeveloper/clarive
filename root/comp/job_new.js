@@ -115,10 +115,11 @@
         '</tpl>'
     );
     var changed = false;
-    var combo_baseline = new Ext.form.ComboBox({
+    var combo_baseline = new Baseliner.SuperBox({
         name: 'bl',
         hiddenName: 'bl',
         displayField:'name',
+        singleMode: true,
         valueField: 'bl',
         fieldLabel: label_dest,
         mode: 'local',
@@ -157,13 +158,14 @@
         url: '/job/chains', root: 'data', totalProperty: 'totalCount', id: 'id',
         fields:['id','rule_name','rule_type']
     });
-    var combo_chain = new Ext.form.ComboBox({
+    var combo_chain = new Baseliner.SuperBox({
         fieldLabel: _('Job Chain'),
             name: 'id_rule',
             displayField:'rule_name',
             hiddenName:'id_rule', 
             valueField: 'id',
         store: store_chain,
+        singleMode: true,
         mode: 'remote',
         minChars: 0, //min_chars ,
         loadingText: _('Searching...'),
@@ -356,7 +358,7 @@
                                 jc_row.set('rels', ci.related );
                             });
                             rel_cals = res.cals ? res.cals : [];
-                            job_statistics.update( stats_tmpl({ eta:res.stats.eta, p_success:res.stats.p_success }) );
+                            job_statistics.update( stats_tmpl({ eta: res.stats?res.stats.eta:'-', p_success:res.stats?res.stats.p_success:'-' }) );
                         } else {
                             Baseliner.hideLoadingMask( main_form.getEl() );
                             combo_time.disable();
@@ -863,9 +865,10 @@
         bodyStyle: { 'background-color': '#eee', padding: '10px 10px 10px 10px' },
         title: _loc('Job Options'),
         forceFit: true,
-        labelWidth: 150,
+        labelWidth: 100,
         tbar: tb,
         //labelAlign: 'top',
+        labelAlign: 'right',
         defaults: {
             border: false,
             msgTarget: 'under'
@@ -896,6 +899,21 @@
                     job_statistics
                 ]}
             ]},
+            {
+                layout: 'column',
+                fieldLabel: _('When'),
+                columns: 3, bodyStyle: { 'background-color': '#eee'},
+                bodyBorder: false, 
+                defaults: { bodyBorder: false, bodyStyle: { 'background-color': '#eee', 'padding': '0 25px 0 0'} },
+                items: [
+                    { width: 225, layout:'form', items: job_date, labelWidth: 40  },
+                    { width: 470, layout:'form', items: combo_time , labelWidth: 40 },
+                    time_not_available,
+                    { width: 30, layout:'form', items: button_show_cals, labelWidth: 40, bodyStyle: { 'margin-left':5 } },
+                    { width: 30, layout:'form', items: button_refresh_cals, labelWidth: 40  }
+                ]
+            },
+            check_no_cal,
             { 
                 xtype:'fieldset', 
                 style: { 'margin': '20 0 20 0' , 'padding': '15 15 15 15' },
@@ -910,21 +928,6 @@
             },
             //combo_search,
             //{ xtype: 'container', style: 'height: 20px', fieldLabel:'x', html:  _('Live search requires a minimum of %1 characters.', min_chars ) },
-            { 
-                layout: 'column',
-                fieldLabel: _('When'),
-                columns: 3, bodyStyle: { 'background-color': '#eee'},
-                bodyBorder: false,
-                defaults: { bodyBorder: false, bodyStyle: { 'background-color': '#eee', 'padding': '0 25px 0 0'} },
-                items: [
-                    { width: 225, layout:'form', items: job_date, labelWidth: 40, bodyStyle: { 'background-color': '#eee'} },
-                    { width: 470, layout:'form', items: combo_time , labelWidth: 40, bodyStyle: { 'background-color': '#eee'}},
-                    time_not_available,
-                    { width: 30, layout:'form', items: button_show_cals, labelWidth: 40, bodyStyle: { 'background-color': '#eee', 'margin-left':5 } },
-                    { width: 30, layout:'form', items: button_refresh_cals, labelWidth: 40, bodyStyle: { 'background-color': '#eee' } }
-                ]
-            },
-            check_no_cal,
             comments
         ]
     });
