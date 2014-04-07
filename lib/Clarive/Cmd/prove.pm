@@ -27,21 +27,27 @@ sub run {
     $Clarive::Test::base_url = $self->test_url;
     $Clarive::Test::user = $self->test_user;
     $Clarive::Test::password = $self->test_password;
+    
+    my $grc=0;
 
     my @tc = glob join '/', $self->home, 't', $self->type, $self->case . '*';
     for my $tc ( @tc ) {
         my $pid;
-            unless ( $pid = fork ) {
-                say "====> [start] $tc" ;
-                my $t0 = [gettimeofday]; 
-                do $tc;
-                my $inter = sprintf( "%.04fs", tv_interval( $t0 ) );
-                say Term::ANSIColor::color('red'),"====> [error] $tc:\n" . $@, Term::ANSIColor::color('reset') if $@;
-                say "====> [end] $tc [$inter]" ;
-                exit;
-            }
-            waitpid $pid,0;
+        unless ( $pid = fork ) {
+            say "====> [start] $tc" ;
+            my $t0 = [gettimeofday]; 
+            do $tc;  # this returns 1 always... or whatever, unusable
+            my $rc = $@;  # catch errors here
+            my $inter = sprintf( "%.04fs", tv_interval( $t0 ) );
+            say Term::ANSIColor::color('red'),"====> [error] $tc:\n" . $@, Term::ANSIColor::color('reset') if $@;
+            say "====> [end] $tc [$inter]" ;
+            exit !!$rc;
+        }
+        waitpid $pid,0;
+        my $rc = $? >> 8;
+        $grc += $rc;
     }
+    exit $grc;
 }
 
 sub run_startup {

@@ -9,6 +9,7 @@ with 'Baseliner::Role::CI::Internal';
 has id_stash           => qw(is rw isa Any);
 has jobid              => qw(is rw isa Any);   # mdb->seq('job')
 has bl                 => qw(is rw isa Any);
+has purged             => qw(is rw isa Bool default 0);
 has rollback           => qw(is rw isa BoolCheckbox default 0);
 has job_key            => qw(is rw isa Any), default => sub { Util->_md5() };
 has job_type           => qw(is rw isa Any default promote);  # promote, demote, static

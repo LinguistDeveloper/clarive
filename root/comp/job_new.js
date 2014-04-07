@@ -150,7 +150,7 @@
                 changed = true;
             }
         },
-        width: 200
+        anchor: '100%'
     });
 
     var store_chain = new Baseliner.JsonStore({
@@ -164,7 +164,6 @@
             hiddenName:'id_rule', 
             valueField: 'id',
         store: store_chain,
-        anchor: '50%',
         mode: 'remote',
         minChars: 0, //min_chars ,
         loadingText: _('Searching...'),
@@ -263,6 +262,7 @@
         if( jc_grid_remove ) jc_grid.getStore().removeAll();
         store_search.removeAll();
         button_submit.disable();
+        job_statistics.update( stats_tmpl({ eta:'-', p_success:'-' }) );
     };
 
     var store_time = new Ext.data.SimpleStore({
@@ -356,6 +356,7 @@
                                 jc_row.set('rels', ci.related );
                             });
                             rel_cals = res.cals ? res.cals : [];
+                            job_statistics.update( stats_tmpl({ eta:res.stats.eta, p_success:res.stats.p_success }) );
                         } else {
                             Baseliner.hideLoadingMask( main_form.getEl() );
                             combo_time.disable();
@@ -845,6 +846,16 @@
     });
     combo_time.on('enable', function(){ button_show_cals.enable(); });
     combo_time.on('disable', function(){ button_show_cals.disable(); });
+    
+    var stats_tmpl = function(){/*
+        <div id="boot" style='background: transparent'>
+        <table class="table table-bordered"><tbody>
+            <tr><th>[%= _('Estimated Duration') %]</th><td style="font-size:22px; font-weight: bold">[%= eta %]</td></tr>
+            <tr><th>[%= _('Success Rate') %]</th><td style="font-size:20px; font-weight: bold">[%= p_success %]</td></tr>
+        </tbody></table>
+        </div>
+    */}.tmpl();
+    var job_statistics = new Ext.Container({ html: stats_tmpl({ eta:'-', p_success:'-' }) });
 
     var main_form = new Ext.FormPanel({
         url: '/job/submit',
@@ -854,27 +865,37 @@
         forceFit: true,
         labelWidth: 150,
         tbar: tb,
+        //labelAlign: 'top',
         defaults: {
+            border: false,
             msgTarget: 'under'
         },
         items: [
-            combo_chain,
-            {
-                xtype: 'radiogroup',
-                name: 'job_type',
-                columns: 1,
-                fieldLabel: _('Job Type'),
-                listeners: {
-                    change: { fn: function(t,checked) {
-                        store_search.removeAll();
-                        jc_grid.getStore().removeAll();
-                        combo_baseline.setFieldLabel( checked.inputValue =='demote' ? label_orig : label_dest );
-                        store_chain.load( {params: { type: checked.inputValue}});
-                        } }
+            { layout:'column', bodyBorder: false, padding: 10, border: false, frame: false, bodyStyle: { 'background-color': '#eee'}, 
+                defaults:{ bodyBorder: false, border: false, bodyStyle: { 'background-color': '#eee'} }, items:[
+                { layout:'form', columnWidth: .5, border:false, defaults:{ border:false, anchor: '100%' }, items:[
+                    {
+                        xtype: 'radiogroup',
+                        name: 'job_type',
+                        fieldLabel: _('Job Type'),
+                        listeners: {
+                            change: { fn: function(t,checked) {
+                                store_search.removeAll();
+                                jc_grid.getStore().removeAll();
+                                combo_baseline.setFieldLabel( checked.inputValue =='demote' ? label_orig : label_dest );
+                                store_chain.load( {params: { type: checked.inputValue}});
+                                } }
+                            },
+                        items: <% js_dumper(  $c->stash->{job_types} ) %>
                     },
-                items: <% js_dumper(  $c->stash->{job_types} ) %>
-            },
-            combo_baseline,
+                    combo_baseline,
+                    combo_chain
+                ]},
+                { columnWidth:.5, style: { 'margin-left': '20px' }, 
+                    defaults:{ bodyBorder: false, border: false, bodyStyle: { 'background-color': '#eee'} }, items:[
+                    job_statistics
+                ]}
+            ]},
             { 
                 xtype:'fieldset', 
                 style: { 'margin': '20 0 20 0' , 'padding': '15 15 15 15' },
