@@ -44,6 +44,13 @@ register 'service.changeset.checkout.bl' => {
     handler => \&checkout_bl,
 };
 
+register 'service.changeset.checkout.bl_all_repos' => {
+    name    => 'Checkout Job Baseline ... all repos',
+    icon    => '/static/images/icons/checkout.png',
+    job_service  => 1,
+    handler => \&checkout_bl_all_repos,
+};
+
 register 'service.changeset.natures' => {
     name    => 'Load Nature Items',
     icon    => '/static/images/icons/nature.gif',
@@ -387,6 +394,31 @@ sub checkout_bl {
         next unless ref $repo_revisions_items eq 'ARRAY';
         for my $rri ( @$repo_revisions_items ) {
             my ($repo, $revisions,$items) = @{ $rri }{ qw/repo revisions items/ };
+            my $dir_prefixed = File::Spec->catdir( $job_dir, $project->name, $repo->rel_path );
+            $log->info( _loc('Checking out baseline %1 for project %2, repository %3: %4', $bl, $project->name, $repo->name, $dir_prefixed ) );
+            my $co_info = $repo->checkout( tag=>$bl, dir=>$dir_prefixed );
+            my @ls = _array( $co_info->{ls} );
+            $log->info( _loc('Baseline checkout of %1 item(s) completed', scalar(@ls)), join("\n",@ls) );
+        }
+    }
+}
+
+sub checkout_bl_all_repos {
+    my ( $self, $c, $config ) = @_;
+    my $job   = $c->stash->{job};
+    my $log   = $job->logger;
+    my $stash = $c->stash;
+    my $job_dir = $job->job_dir;
+    my $bl = $stash->{bl};
+    _fail _loc 'Missing job_dir' unless length $job_dir;
+    
+    my @project_changes = @{ $stash->{project_changes} || [] };
+    
+    $log->info( _loc('Checking out baseline for %1 project(s)', scalar(@project_changes) ) );
+    for my $pc ( @project_changes ) {
+        my ($project) = @{ $pc }{ qw/project/ };
+        my @repos = grep { $_->{bl} =~ /(\*|$bl)/} _array(ci->new($project)->{repositories});
+        for my $repo ( @repos ) {
             my $dir_prefixed = File::Spec->catdir( $job_dir, $project->name, $repo->rel_path );
             $log->info( _loc('Checking out baseline %1 for project %2, repository %3: %4', $bl, $project->name, $repo->name, $dir_prefixed ) );
             my $co_info = $repo->checkout( tag=>$bl, dir=>$dir_prefixed );
