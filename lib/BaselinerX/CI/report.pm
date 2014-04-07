@@ -1123,7 +1123,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                                                 };  
                                             }
                                             
-                                            _log ">>>>>>>>>>>>>>>>>><PASASAS: " . _dump @tmp;
+                                            _log ">>>>>>>>>>>>>>>>>><PASASAS1: " . _dump @tmp;
 
                                             $ci_columns{$parse_key.'_'.$ci_column} = \@tmp;
                                         }else{
@@ -1158,12 +1158,14 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                                 if ($ci->{$ci_column}){
                                     $ci_columns{$parse_key.'_'.$ci_column} = $ci->{$ci_column}
                                 }else{
+                                    _log "pasa extend";
                                     if (ref ($ci_extends->{$ci_column}) =~ /^BaselinerX::CI::/){
                                          $ci_columns{$parse_key.'_'.$ci_column} = $ci_extends->{$ci_column}->{name};
                                     }else{
                                         $ci_columns{$parse_key.'_'.$ci_column} = $ci_extends->{$ci_column}
                                     };  
-                                }                                
+                                }    
+                                _log ">>>>>>>>>>>>>>>>>><PASASAS2: " . $ci_columns{$parse_key.'_'.$ci_column};                            
                             }                               
                         }
                     }
