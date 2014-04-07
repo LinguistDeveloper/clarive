@@ -460,11 +460,13 @@ sub build_job_window : Path('/job/build_job_window') {
         # build statistics
         my %stats;
         my $prj_list = mdb->in( map { $_->mid } @all_projects ); 
+        # TODO loop by project here so we get 1000 from one, 1000 from another...
         my $rs = ci->job->find({ projects=>$prj_list, bl=>$bl })->sort({ starttime=>-1 })->limit(1000);
         while( my $job = $rs->next ) {
             next unless $job->{endtime} && $job->{starttime};
             my $bl = $job->{bl};
             my @prjs = _array( $job->{projects} );
+            # TODO use only last months or last 10; -- success rate based on last 10, etc.
             map {
                 my $k = $_ . "-" . $bl;
                 # duration
@@ -479,7 +481,7 @@ sub build_job_window : Path('/job/build_job_window') {
         my $any_succ = 0;
         while( my ($pb,$v) = each %stats ) {
             my @dur = @{ $$v{dur} // [] };
-            push @durs, @dur;   # TODO weighted avg by project?
+            push @durs, (Util->stat_mode(@dur)) if @dur;   # TODO weighted avg by project?
             my ($ok,$ko) = @{$v}{qw(ok ko)};
             $succ = $succ * ( !$ok ? 0 : $ok/($ok+$ko) );
             $any_succ = 1 if $ok || $ko;
@@ -487,7 +489,7 @@ sub build_job_window : Path('/job/build_job_window') {
         }
         my $avg = '?'; 
         if( @durs ) { 
-            $avg = Util->to_dur(Util->stat_mode(@durs));
+            $avg = Util->to_dur(List::Util::sum(@durs));
         }
         
         $c->stash->{json} = {success=>\1, data => $hour_store, cis=>_damn( \%cis ), cals=>\@rel_cals, stats=>{ eta=>$avg, p_success=>$any_succ?int($succ*100).'%':'?' } };
