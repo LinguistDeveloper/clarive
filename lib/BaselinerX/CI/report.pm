@@ -1115,19 +1115,22 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                                             if ($ci->{$ci_column}){
                                                 push @tmp,  $ci->{$ci_column};
                                             }else{
-                                                if (ref ($ci_extends->{desarrollo}) =~ /^BaselinerX::CI::/){
+                                                _log "pasa extend";
+                                                if (ref ($ci_extends->{$ci_column}) =~ /^BaselinerX::CI::/){
                                                     push @tmp,  $ci_extends->{$ci_column}->{name};
                                                 }else{
                                                     push @tmp,  $ci_extends->{$ci_column};
                                                 };  
                                             }
                                             
+                                            _log ">>>>>>>>>>>>>>>>>><PASASAS: " . _dump @tmp;
+
                                             $ci_columns{$parse_key.'_'.$ci_column} = \@tmp;
                                         }else{
                                             if ($ci->{$ci_column}){
                                                 $ci_columns{$parse_key.'_'.$ci_column} = $ci->{$ci_column}
                                             }else{
-                                                if (ref ($ci_extends->{desarrollo}) =~ /^BaselinerX::CI::/){
+                                                if (ref ($ci_extends->{$ci_column}) =~ /^BaselinerX::CI::/){
                                                      $ci_columns{$parse_key.'_'.$ci_column} = $ci_extends->{$ci_column}->{name};
                                                 }else{
                                                     $ci_columns{$parse_key.'_'.$ci_column} = $ci_extends->{$ci_column}
@@ -1155,7 +1158,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                                 if ($ci->{$ci_column}){
                                     $ci_columns{$parse_key.'_'.$ci_column} = $ci->{$ci_column}
                                 }else{
-                                    if (ref ($ci_extends->{desarrollo}) =~ /^BaselinerX::CI::/){
+                                    if (ref ($ci_extends->{$ci_column}) =~ /^BaselinerX::CI::/){
                                          $ci_columns{$parse_key.'_'.$ci_column} = $ci_extends->{$ci_column}->{name};
                                     }else{
                                         $ci_columns{$parse_key.'_'.$ci_column} = $ci_extends->{$ci_column}
