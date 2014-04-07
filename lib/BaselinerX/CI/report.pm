@@ -1090,8 +1090,8 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
             }
 
 
-            my $parse_key =  Util->_unac($k); 
-            #my $parse_key =  $k;
+            #my $parse_key =  Util->_unac($k); 
+            my $parse_key =  $k;
 
             if ( exists $selects_ci_columns{$parse_key} ) {
                 #if ( $v ne '' && $v ne ' ' && !ref $v){
@@ -1099,7 +1099,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                     if (ref $v){
                         my @tmp;
                         
-                        for my $v_item (_array $row{'_'.$k}){
+                        for my $v_item (_array $row{'_'.$k} // $v){
                             try{
                                 if ($v_item ne '' && $v_item ne ' '){
                                     my $ci = ci->new($v_item);
@@ -1115,7 +1115,6 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                                             if ($ci->{$ci_column}){
                                                 push @tmp,  $ci->{$ci_column};
                                             }else{
-                                                _log "pasa extend";
                                                 if (ref ($ci_extends->{$ci_column}) =~ /^BaselinerX::CI::/){
                                                     push @tmp,  $ci_extends->{$ci_column}->{name};
                                                 }else{
@@ -1123,8 +1122,6 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                                                 };  
                                             }
                                             
-                                            _log ">>>>>>>>>>>>>>>>>><PASASAS1: " . _dump @tmp;
-
                                             $ci_columns{$parse_key.'_'.$ci_column} = \@tmp;
                                         }else{
                                             if ($ci->{$ci_column}){
@@ -1146,8 +1143,9 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                         }
 
                     }else{
-                        if(  $row{'_'.$k} ne '' && $row{'_'.$k} ne ' '){
-                            my $ci = ci->new($row{'_'.$k});
+                        my $value = $row{'_'.$k} // $v;
+                        if(  $value ne '' && $value ne ' '){
+                            my $ci = ci->new($value);
                             my $ci_extends;
                             if(exists $selects_ci_columns_collection_extends{$parse_key}){
                                 my @mid_extends = map { $_->{mid} } $ci->related( where => {collection => $selects_ci_columns_collection_extends{$parse_key}});
@@ -1158,14 +1156,12 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                                 if ($ci->{$ci_column}){
                                     $ci_columns{$parse_key.'_'.$ci_column} = $ci->{$ci_column}
                                 }else{
-                                    _log "pasa extend";
                                     if (ref ($ci_extends->{$ci_column}) =~ /^BaselinerX::CI::/){
                                          $ci_columns{$parse_key.'_'.$ci_column} = $ci_extends->{$ci_column}->{name};
                                     }else{
                                         $ci_columns{$parse_key.'_'.$ci_column} = $ci_extends->{$ci_column}
                                     };  
                                 }    
-                                _log ">>>>>>>>>>>>>>>>>><PASASAS2: " . $ci_columns{$parse_key.'_'.$ci_column};                            
                             }                               
                         }
                     }
