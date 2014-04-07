@@ -156,16 +156,17 @@
 
     var store_chain = new Baseliner.JsonStore({
         url: '/job/chains', root: 'data', totalProperty: 'totalCount', id: 'id',
+        autoLoad: false,
         fields:['id','rule_name','rule_type']
     });
-    var combo_chain = new Baseliner.SuperBox({
+    var combo_chain = new Ext.form.ComboBox({ //new Baseliner.SuperBox({
         fieldLabel: _('Job Chain'),
             name: 'id_rule',
             displayField:'rule_name',
             hiddenName:'id_rule', 
             valueField: 'id',
         store: store_chain,
-        singleMode: true,
+        //singleMode: true,
         mode: 'remote',
         minChars: 0, //min_chars ,
         loadingText: _('Searching...'),
@@ -173,15 +174,18 @@
         editable: false,
         lazyRender: true
     });
+    store_chain.on('beforeload', function(){
+        store_chain.baseParams.type = 'promote';
+    });
     store_chain.on('load', function(){
         var row = store_chain.getAt(0);
         if( row ) {
             combo_chain.setValue( row.data.id );
         } else {
-            Baseliner.message(_('Job'), _('No job chains available') );
+            Baseliner.error(_('Job'), _('No job chains available') );
         }
     });
-    store_chain.load( {params: { type: 'promote'}});
+    store_chain.load(); // {params: { type: 'promote'}});
     
     if( default_baseline.length == 0 ) {
         combo_baseline.on( 'afterrender', function(){
