@@ -1090,8 +1090,8 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
             }
 
 
-            #my $parse_key =  Util->_unac($k); 
-            my $parse_key =  $k;
+            my $parse_key =  Util->_unac($k); 
+            #my $parse_key =  $k;
 
             if ( exists $selects_ci_columns{$parse_key} ) {
                 #if ( $v ne '' && $v ne ' ' && !ref $v){
