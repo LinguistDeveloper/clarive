@@ -148,11 +148,12 @@
                 if( rec.data.rule_type == 'event' ) {
                     caption =  _('%1 for event "%2"', _(rec.data.rule_when), rec.data.rule_event );
                 } else if( rec.data.rule_type == 'chain' ) {
-                    caption =  _('job chain');
+                    var default_chain = rec.data.rule_when || '-';
+                    caption =  _('job chain: %1', '<span style="font-weight: bold; color: #48b010">'+default_chain+'</span>' );
                 } else {
                     caption =  _('independent');
                 }
-                p.body = String.format( '<div style="margin: 0 0 0 32px;color: #999">{0}</div>', caption );
+                p.body = String.format( '<div style="margin: 0 0 0 32px;color: #777">{0}</div>', caption );
                 return ' x-grid3-row-expanded';
             }
         },
