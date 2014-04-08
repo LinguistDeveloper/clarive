@@ -618,6 +618,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             items: [
                 {   xtype:'button', 
                     cls: 'x-btn-text-icon',
+                    tooltip: _('Refresh All Nodes'),
                     icon: '/static/images/icons/refresh-grey.gif',
                     handler: function(){
                         this.disable();
