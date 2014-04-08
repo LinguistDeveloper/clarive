@@ -1722,30 +1722,47 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
                 //console.log( res.workflow );
                 var statuses = res.statuses;
                 var workflow = res.workflow;
+                var status_mids = res.status_mids;
                 var col_num = statuses.length;
-                var col_width = 1 / col_num;
+                //var col_width = 1 / col_num;
                 var btns = [];
                 self.workflow = workflow;
+                var col_status = [];
+                var kvisible = 0;
 
-                var add_column = function( id_status, name ) {
+                for( var i=0; i<col_num; i++ ) {
+                    var cs = statuses[i];
+                    var smids = status_mids[cs.id];
+                    cs.visible = col_num<10 || (smids && smids.length > 0); 
+                    col_status.push( cs ); 
+                    if( cs.visible ) kvisible++;
+                    self.statuses_hash[ cs.name ] = { colnum: i, hidden: !cs.visible };  // store colnum for status
+                }
+                var col_width = 1 / kvisible;
+                var add_column = function( id_status, name, visible ) {
                    var status_title = '<span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif; padding: 4px 4px 4px 4px">' + _(name) + '</span>';
                    // create columns
                    var col_obj = new Baseliner.KanbanColumn({
-                      xtype: 'kanbancolumn',
-                      title: status_title,
-                      columnWidth: col_width,
-                      id_status: id_status
+                       xtype: 'kanbancolumn',
+                       title: status_title,
+                       hidden: !visible,
+                       columnWidth: col_width,
+                       id_status: id_status
                    });
                    self.add( col_obj );
                    self.column_by_status[ id_status ] = col_obj.id;
                 };
-                for( var i=0; i<col_num; i++ ) {
-                    add_column( statuses[i].id, statuses[i].name );
-                    self.statuses_hash[ statuses[i].name ] = i;  // store colnum for status
-                }
+                Ext.each( col_status, function(cs){
+                    add_column( cs.id, cs.name, cs.visible );
+                });
 
                 for( var k=0; k< statuses.length; k++ ) {
-                    self.status_btn.menu.addMenuItem({ id_status: statuses[k].id, text: statuses[k].name, checked: true, checkHandler: function(opt){ return self.check_column(opt) } });
+                    var cs = statuses[k];
+                    self.status_btn.menu.addMenuItem({ 
+                        id_status: cs.id, text: cs.name, 
+                        checked: !!cs.visible, 
+                        checkHandler: function(opt){ return self.check_column(opt) } 
+                    });
                 }
 
                 self.render_me();
@@ -1768,7 +1785,8 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
             var cat = '<div id="boot"><span class="label" style="float:left;width:95%;background: '+ rec.data.category_color + '">' + rec.data.category_name + ' #' + mid + '</span></div>';
             var txt = String.format('<span id="boot">{0}<br /><h5>{1}</h5></span>', cat, _( rec.data.title ) );
             //var txt = String.format('<span id="boot"><h5>{0}</h5></span>', rec.data.title);
-            var col = self.statuses_hash[ rec.data.category_status_name ];
+            var sh = self.statuses_hash[ rec.data.category_status_name ];
+            var col = sh ? sh.colnum : undefined;
             // portlet contents
             var contents = new Ext.Container({ html: txt, style:'padding: 2px 2px 2px 2px', autoHeight: true, mid: mid });
             contents.on('afterrender', function(){ 
