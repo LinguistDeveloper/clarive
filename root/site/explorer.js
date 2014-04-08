@@ -622,7 +622,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                     handler: function(){
                         this.disable();
                         var that = this;                        
-                        self.current_tree().refresh(function(){that.enable();});
+                        self.current_tree().refresh_all(function(){that.enable();});
                     }
                 },
                 button_projects,
