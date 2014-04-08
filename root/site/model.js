@@ -1727,20 +1727,21 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
                 //var col_width = 1 / col_num;
                 var btns = [];
                 self.workflow = workflow;
-                var col_status = [];
                 var kvisible = 0;
 
                 for( var i=0; i<col_num; i++ ) {
                     var cs = statuses[i];
                     var smids = status_mids[cs.id];
                     cs.visible = col_num<10 || (smids && smids.length > 0); 
-                    col_status.push( cs ); 
                     if( cs.visible ) kvisible++;
                     self.statuses_hash[ cs.name ] = { colnum: i, hidden: !cs.visible };  // store colnum for status
                 }
                 var col_width = 1 / kvisible;
-                var add_column = function( id_status, name, visible ) {
-                   var status_title = '<span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif; padding: 4px 4px 4px 4px">' + _(name) + '</span>';
+                var add_column = function( id_status, name, visible, bl ) {
+                   var status_title = 
+                       '<div id="boot" style="background:transparent;font-size:10px;font-family:Helvetica Neue,Helvetica,Arial,sans-serif; padding: 4px 4px 4px 4px">' 
+                       + _(name) + ( !bl || bl=='*' ? '' : '&nbsp;<span class="label" style="font-size: 10px;background-color:#222;">'
+                        + bl+'</span>' ) + '</div>';
                    // create columns
                    var col_obj = new Baseliner.KanbanColumn({
                        xtype: 'kanbancolumn',
@@ -1752,8 +1753,8 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
                    self.add( col_obj );
                    self.column_by_status[ id_status ] = col_obj.id;
                 };
-                Ext.each( col_status, function(cs){
-                    add_column( cs.id, cs.name, cs.visible );
+                Ext.each( statuses, function(cs){
+                    add_column( cs.id, cs.name, cs.visible, cs.bl );
                 });
 
                 for( var k=0; k< statuses.length; k++ ) {

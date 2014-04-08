@@ -1843,10 +1843,16 @@ sub kanban_status : Local {
 
         my $rs = $c->model('Baseliner::BaliTopicCategoriesStatus')->search(
           { id_category=>{ -in => $rs1->as_query } },
-          { +select=>['status.id', 'status.name', 'status.seq'], +as=>[qw/id name seq/], 
+          { +select=>['status.id', 'status.name', 'status.seq', 'status.bl'], +as=>[qw/id name seq bl/], 
             join=>['status'], order_by=>'status.seq', distinct=>1 }
         );
-        my @statuses = $rs->hashref->all;
+        ## support multiple bls
+        my %status_cis = map { $_->{id_status} => $_->{bls} } ci->status->search_cis;
+        my @statuses = map {  
+            my $bls = join ' ', map { $_->{moniker} } _array(  $status_cis{ $_->{id} } );
+            $_->{bl} = $bls;
+            $_;
+        } $rs->hashref->all;
 
         my $where = { mid => $topics };
         $where->{'user_role.username'} = $c->username unless $c->is_root;
