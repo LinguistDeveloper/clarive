@@ -1739,9 +1739,9 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
                 var col_width = 1 / kvisible;
                 var add_column = function( id_status, name, visible, bl ) {
                    var status_title = 
-                       '<div id="boot" style="background:transparent;font-size:10px;font-family:Helvetica Neue,Helvetica,Arial,sans-serif; padding: 4px 4px 4px 4px">' 
-                       + _(name) + ( !bl || bl=='*' ? '' : '&nbsp;<span class="label" style="font-size: 10px;background-color:#222;">'
-                        + bl+'</span>' ) + '</div>';
+                       '<div id="boot" style="background:transparent;font-size:8px;font-family:Helvetica Neue,Helvetica,Arial,sans-serif; padding: 4px 4px 4px 4px">' 
+                       + _(name) + ( !bl || bl=='*' ? '' : '&nbsp;<div class="label" style="font-size: 8px;background-color:#666;">'
+                        + bl+'</div>' ) + '</div>';
                    // create columns
                    var col_obj = new Baseliner.KanbanColumn({
                        xtype: 'kanbancolumn',
@@ -1952,7 +1952,7 @@ Baseliner.KanbanColumn = Ext.extend(Ext.Panel, {
     },
     headerCfg: {
         style: {
-            'background-color': '#eee', color: '#555', height: '30px', 'text-transform': 'uppercase', 'font-weight':'bold',
+            'background-color': '#eee', color: '#555', height: '40px', 'text-transform': 'uppercase', 'font-weight':'bold',
             margin: '0px 0px 8px 0px',
             padding: '2px 2px 2px 2px',
             'font-size':'10px'
