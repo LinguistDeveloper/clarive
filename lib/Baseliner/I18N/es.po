@@ -4998,6 +4998,12 @@ msgstr "Se ha encontrado un problema abriendo el tópico %1.  Probablemente se h
 msgid "Artifacts"
 msgstr "Artefactos"
 
+msgid "Velocity by Category"
+msgstr "Velocidad por Categoría"
+
+msgid "Velocity by Project"
+msgstr "Velocidad por Proyecto"
+
 msgid "No artifacts found"
 msgstr "No se han encontrado artefactos"
 
