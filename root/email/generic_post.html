@@ -1,0 +1,62 @@
+<%args>
+	$title 
+	$username
+    $subject
+    $mid
+    $to
+    $name_category
+    $post
+</%args>
+<head>
+    <meta http-equiv="Content-Language" content="en" />
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <title>Accion</title>
+	<& /email/style.css &>
+</head>
+
+<style>
+body {
+    font-family: arial;
+    font-size: 10pt;
+}
+.backGroundPrimeraFila {
+    font-family: Verdana;
+    font-size: 8pt;
+    font-weight: bold;
+    color: #CCCCCC;
+    background-color: #666666;
+    vertical-align: middle;
+}
+.backGroundFilaDatos {
+    font-family: Verdana;
+    font-size: 8pt;
+    color: #111111;
+    background-color: #ffffff;
+    vertical-align: top;
+}
+</style>
+
+<body>
+    <div id="tablaContenedor_div">
+        <TABLE cellpadding="0" cellspacing="0" width="100%">
+            <TR height="20">
+                <TD class="backGroundPrimeraFila" nowrap="nowrap" height="14">
+                    &nbsp;CLARIVE Release Manager
+                </TD>
+            </TR>
+        </TABLE>
+    </div>
+    <div class='box'>
+            Comentario:
+            <div class="trace error">
+                <p style="background-color:#eee;padding:15px"><% $post %></p>
+            </div>
+            <p>Pulse <a href="<% Baseliner->config->{web_url}."/tab/topic/view?topic_mid=".${mid} %>">aqu&iacute;</a> para revisar el t&oacute;pico</p>
+    </div>
+% if ( $ENV{BASELINER_DEBUG} ) {
+    <div class='box'>
+            <p>Enviado a: <% join ",",@{$to->{users}} %></p>
+    </div>
+%}
+</body>
+
