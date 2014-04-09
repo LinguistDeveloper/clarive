@@ -273,6 +273,9 @@ msgstr "Todas"
 msgid "Velocity"
 msgstr "Velocidad"
 
+msgid "New Status"
+msgstr "Nuevo Status"
+
 msgid "Copy of"
 msgstr "Copia de"
 

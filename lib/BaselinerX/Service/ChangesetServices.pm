@@ -67,6 +67,14 @@ register 'service.changeset.update' => {
     handler => \&changeset_update,
 };
 
+register 'service.topic.status' => {
+    name    => 'Change Topic Status',
+    icon    => '/static/images/icons/topic.png',
+    form    => '/forms/topic_status.js',
+    job_service  => 1,
+    handler => \&topic_status,
+};
+
 register 'service.changeset.update_bls' => {
     name    => 'Update Changesets BLs',
     icon    => '/static/images/icons/topic.png',
@@ -98,6 +106,24 @@ sub update_changesets_bls {
                 $log->info( _loc("Added %1 to changeset %2 bls",$bl,$cs->{mid}) );        
             }            
         }
+    }
+}
+
+sub topic_status {
+    my ( $self, $c, $config ) = @_;
+
+    my $stash    = $c->stash;
+    my $topics = $config->{topics} // _fail _loc 'Missing or invalid parameter topics'; 
+    my $new_status = $config->{new_status} // _fail _loc 'Missing or invalid parameter new_status'; 
+   
+    for my $mid ( Util->_array_or_commas( $topics) ) {
+        my $topic = ci->new( $mid );
+        _log _loc 'Changing status for topic %1 to status %2', $topic->topic_name, $new_status; 
+        Baseliner->model('Topic')->change_status( 
+            change     => 1, 
+            id_status  => $new_status,
+            mid        => $mid,
+        );
     }
 }
 
