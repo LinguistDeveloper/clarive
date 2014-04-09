@@ -3779,3 +3779,10 @@ Baseliner.ErrorOutputTabs = Ext.extend( Ext.TabPanel, {
         Baseliner.ErrorOutputTabs.superclass.initComponent.call(this);
     }
 });
+
+Baseliner.ComboStatus = Ext.extend( Baseliner.ComboDoubleRemote, { 
+    allowBlank: true,
+    url: '/ci/status/combo_list', field: 'id_status', displayField: 'name',
+    fields: [ 'id_status', 'name' ]
+});
+

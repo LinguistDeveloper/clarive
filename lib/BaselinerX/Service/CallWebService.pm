@@ -25,6 +25,7 @@ sub web_request {
     my $url    = $config->{url};
     my $args   = $config->{args};
     my $headers = $config->{headers} || {};
+    my $body = $config->{body} || '';
     my $timeout = $config->{timeout};
     my $encoding = $config->{encoding} || 'utf-8';
 
@@ -52,6 +53,10 @@ sub web_request {
         $ua->default_header( $k => $headers->{$k} );
     }
     $ua->env_proxy;
+    
+    if( length $body ) {
+        $request->content( $body ); 
+    }
 
     my $response = $ua->request( $request );
 
