@@ -776,10 +776,10 @@
         for( var slot in value ) {
             var cal = value[slot];
             if( !cal ) continue;
-            if(cal.start_date) cal.start_date = Date.parseDate(cal.start_date,'d/m/Y H:i:s').format( Prefs.js_date_format );
-            if(cal.plan_start_date) cal.plan_start_date = Date.parseDate(cal.plan_start_date,'d/m/Y H:i:s').format( Prefs.js_date_format );
-            if(cal.end_date) cal.end_date = Date.parseDate(cal.end_date,'d/m/Y H:i:s').format( Prefs.js_date_format );
-            if(cal.plan_end_date) cal.plan_end_date = Date.parseDate(cal.plan_end_date,'d/m/Y H:i:s').format( Prefs.js_date_format );
+            // if(cal.start_date) cal.start_date = Date.parseDate(cal.start_date,'d/m/Y H:i:s').format( Prefs.js_date_format );
+            // if(cal.plan_start_date) cal.plan_start_date = Date.parseDate(cal.plan_start_date,'d/m/Y H:i:s').format( Prefs.js_date_format );
+            // if(cal.end_date) cal.end_date = Date.parseDate(cal.end_date,'d/m/Y H:i:s').format( Prefs.js_date_format );
+            // if(cal.plan_end_date) cal.plan_end_date = Date.parseDate(cal.plan_end_date,'d/m/Y H:i:s').format( Prefs.js_date_format );
             arr.push( html_cal(cal) );
         }
         return arr.join('\n');
