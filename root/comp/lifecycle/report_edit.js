@@ -215,7 +215,7 @@
                 remoteSort: true,
                 autoLoad: true,
                 totalProperty:"totalCount", 
-                baseParams: {collection: attr.collection},
+                baseParams: {collection: attr.collection, collection_extends: attr.collection_extends ? attr.collection_extends : undefined},
                 id: 'ci_columns', 
                 url: '/report/get_ci_columns',
                 fields: ['name'] 
@@ -524,7 +524,7 @@
                 var dd = options.getValues();
                 if( tree_selected_is_loaded ) dd.selected = Baseliner.encode_tree( tree_selected.root );
                 //if( sql.editor ) dd.sql = sql.getValue();
-                console.dir(dd);
+                //console.dir(dd);
                 var action = report_mid > 0 ? 'update':'add';
                 var data = { action:action, data:dd };
                 if( report_mid > 0 ) data.mid = report_mid;

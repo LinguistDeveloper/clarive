@@ -305,10 +305,13 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
             }});
         }
         m.add({
+            xtype: 'menuitem',
             text: _('Refresh Node'),
             cls: 'x-btn-text-icon',
             icon: '/static/images/icons/refresh.gif',
-            handler: function() { self.refresh() }
+            handler: function() {
+                self.refresh(function(node){node.attributes.is_refreshing = false;});
+            }
         });
         Baseliner.explorer_menu.showAt(event.xy);
     }

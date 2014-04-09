@@ -459,6 +459,7 @@ sub all_fields {
 				type        => 'select_field',
 				meta_type   => $user_categories_fields_meta->{$name_category}->{$_}->{meta_type},
 				collection  => $user_categories_fields_meta->{$name_category}->{$_}->{collection},
+                collection_extends  => $user_categories_fields_meta->{$name_category}->{$_}->{collection_extends},
 				ci_class	=> $user_categories_fields_meta->{$name_category}->{$_}->{ci_class},
 				filter      => $user_categories_fields_meta->{$name_category}->{$_}->{filter},				
 				gridlet     => $user_categories_fields_meta->{$name_category}->{$_}->{gridlet},
@@ -765,9 +766,11 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	my @selects = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) => $_->{category} } _array($fields{select});
 
     my %selects_ci_columns = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) . '_' . $_->{category} => $_->{ci_columns} } grep { exists $_->{ci_columns}} _array($fields{select});
+    my %selects_ci_columns_collection_extends = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) . '_' . $_->{category} => $_->{collection_extends} } grep { exists $_->{ci_columns}} _array($fields{select});
 
-	#_log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS: " . _dump @selects;
-    _log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS CI COLUMNS: " . _dump %selects_ci_columns;
+	#_log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS: " . _dump $self->selected ;
+    #_log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS CI COLUMNS: " . _dump %selects_ci_columns;
+    _log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS CI COLUMNS COLLECTION: " . _dump %selects_ci_columns_collection_extends;
 	
 	#filters
 	my %dynamic_filter;
@@ -827,14 +830,14 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 						}
 					}
 				}
-				#push @All_Categories, Util->_unac($_);
+				#push @All_Categories, Util->_unac($_);  ###########################################################################################33
                 push @All_Categories, $_;
 			} @names_category;
 		}else{
 			my $length = scalar @ids_category;
 			for (my $i = 0; $i < $length; $i++){
 				#_log ">>>>>>>>>>>>>FILTERS WHERE: " . _dump $fields{where};
-				#push @All_Categories, Util->_unac($names_category[$i]);
+				#push @All_Categories, Util->_unac($names_category[$i]); ###########################################################################################33
                 push @All_Categories, $names_category[$i];
 				$where = $self->get_where({filters_where => $fields{where}, name_category => $names_category[$i], dynamic_filter => \%dynamic_filter, where => $where  });
 				$where->{id_category} = {'$in' => [$ids_category[$i]] };
@@ -1008,7 +1011,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 			}
 		}else{
             my $parse_category = $_->{category}{name};
-            #$parse_category = Util->_unac($parse_category);
+            #my $parse_category = Util->_unac($_->{category}{name});
             # $parse_category = $parse_category;
             foreach my $field (keys $_){
                 $_->{$field . "_$parse_category"} = $_->{$field};
@@ -1018,7 +1021,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	
 	@parse_data = @data if !@parse_data;
 	
-	#_log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump @data;
+	#_log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump @parse_data;
 	
     my %scope_topics;
     my %scope_cis;
@@ -1027,58 +1030,11 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 
     my @topics = map { 
         my %row = %$_;
-		#_log ">>>>>>>>>>>>>>>>>>>>>>>>>>>FILA: " . _dump %row;
 
         while( my($k,$v) = each %row ) {
 
-            #my $parse_key =  Util->_unac($k);
-            my $parse_key =  $k;
-
-            if ( exists $selects_ci_columns{$parse_key} ) {
-                _log ">>>>>>>>>>>>>>>>>>Existe CI:";
-                #if ( $v ne '' && $v ne ' ' && !ref $v){
-                if ( $v ne '' && $v ne ' '){
-                    try{
-                        if (ref $v){
-                             _log "Array: $v" ;
-                            #_log ">>>>>>>>>>>>>>>>>>><KEY: " . $parse_key;
-                            my @tmp;
-                            for my $v_item (_array $v){
-                                my $ci = ci->new($v_item);
-                                _log "##################33CI: " . _dump $ci;
-                                for my $ci_column (_array $selects_ci_columns{$parse_key}){
-                                    if ( exists $ci_columns{$parse_key.'_'.$ci_column} ) {
-                                        my @tmp = _array $ci_columns{$parse_key.'_'.$ci_column};
-                                        push @tmp,  $ci->{$ci_column};
-                                        $ci_columns{$parse_key.'_'.$ci_column} = \@tmp;
-                                    }else{
-                                        _log "############################: $ci->{$ci_column}";
-                                        $ci_columns{$parse_key.'_'.$ci_column} = $ci->{$ci_column};
-                                    }
-                                    
-                                }                                 
-                            }
-
-                        }else{
-                             _log "Unico: $v" ;
-                            _log ">>>>>>>>>>>>>>>>>>><KEY VALOR: " . $parse_key;
-                            my $ci = ci->new($v);
-                            for my $ci_column (_array $selects_ci_columns{$parse_key}){
-                                #_log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><Column: " . $ci_column;
-                                $ci_columns{$parse_key.'_'.$ci_column} = $ci->{$ci_column};
-
-                                _log ">>>>>>>>>>>>>>>>>>>>>>>>><VALORESSSS: " . _dump %ci_columns;
-                            }                                
-                        }
-                    }catch{
-                        _log "Error Valor:($v)" ;
-                    };
-                }
-                
-            } 
-
-
             $row{$k} = Class::Date->new($v)->string if $k =~ /modified_on|created_on/;
+            
             my $mt = $meta{$k}{meta_type} // '';
             #  get additional fields ?   
             #  TODO for sorting, do this before and save to report_results collection (capped?) 
@@ -1086,8 +1042,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
             #_error "MT===$mt, K==$k";
 			
             if( $mt =~ /ci|project|revision|user/ ) {
-                #_log ">>>>>>>>>>>>>>>>>>>>>>>>>>CLAVE: " . $k;
-                #_log ">>>>>>>>>>>>>>>>>>>>>>>>>>VALOR: " . $v;
+                $row{'_'.$k} = $v;
 				$row{$k} = $scope_cis{$v} 
 					// do{ 
 						my @objs = mdb->master_doc->find({ mid=>mdb->in($v) },{ _id=>0 })->all;
@@ -1106,15 +1061,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 						};
 				for my $category (@All_Categories){
                     $row{$k. "_$category"} = $row{$k};
-					# if( exists $row{$k . "_$category"} ){
-					# 	my $tmp = $row{$k . "_$category"};
-					# 	$row{$k . "_$category"} = $scope_cis{$tmp} 
-					# 		// do{ 
-					# 			my @objs = mdb->master_doc->find({ mid=>mdb->in($tmp) },{ _id=>0 })->all;
-					# 			$scope_cis{$_->{mid}} = $_ for @objs; 
-					# 			\@objs;
-					# 			};
-					# }
+                    $row{'_'.$k. "_$category"} = $row{'_'.$k};
 				}
             } elsif( $mt =~ /release|topic/ ) {
                 $row{$k} = $scope_topics{$v} 
@@ -1141,6 +1088,85 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                     $cal->{$slot}{$_} //= '' for qw(end_date plan_end_date start_date plan_start_date);
                 }
             }
+
+
+            #my $parse_key =  Util->_unac($k); 
+            my $parse_key =  $k;
+
+            if ( exists $selects_ci_columns{$parse_key} ) {
+                #if ( $v ne '' && $v ne ' ' && !ref $v){
+                if ( $v ne '' && $v ne ' '){
+                    if (ref $v){
+                        my @tmp;
+                        
+                        for my $v_item (_array $row{'_'.$k} // $v){
+                            try{
+                                if ($v_item ne '' && $v_item ne ' '){
+                                    my $ci = ci->new($v_item);
+                                    my $ci_extends;
+                                    if(exists $selects_ci_columns_collection_extends{$parse_key}){
+                                        my @mid_extends = map { $_->{mid} } $ci->related( where => {collection => $selects_ci_columns_collection_extends{$parse_key}});
+                                        $ci_extends = ci->new($mid_extends[0]);
+                                    }
+
+                                    for my $ci_column (_array $selects_ci_columns{$parse_key}){
+                                        if ( exists $ci_columns{$parse_key.'_'.$ci_column} ) {
+                                            my @tmp = _array $ci_columns{$parse_key.'_'.$ci_column};
+                                            if ($ci->{$ci_column}){
+                                                push @tmp,  $ci->{$ci_column};
+                                            }else{
+                                                if (ref ($ci_extends->{$ci_column}) =~ /^BaselinerX::CI::/){
+                                                    push @tmp,  $ci_extends->{$ci_column}->{name};
+                                                }else{
+                                                    push @tmp,  $ci_extends->{$ci_column};
+                                                };  
+                                            }
+                                            
+                                            $ci_columns{$parse_key.'_'.$ci_column} = \@tmp;
+                                        }else{
+                                            if ($ci->{$ci_column}){
+                                                $ci_columns{$parse_key.'_'.$ci_column} = $ci->{$ci_column}
+                                            }else{
+                                                if (ref ($ci_extends->{$ci_column}) =~ /^BaselinerX::CI::/){
+                                                     $ci_columns{$parse_key.'_'.$ci_column} = $ci_extends->{$ci_column}->{name};
+                                                }else{
+                                                    $ci_columns{$parse_key.'_'.$ci_column} = $ci_extends->{$ci_column}
+                                                };  
+                                            }
+                                        }
+                                    }                                     
+                                }
+                            }catch{
+                                _log "Key: $k";
+                                _log "Error Valor:($v)" ;
+                            };                                                                    
+                        }
+
+                    }else{
+                        my $value = $row{'_'.$k} // $v;
+                        if(  $value ne '' && $value ne ' '){
+                            my $ci = ci->new($value);
+                            my $ci_extends;
+                            if(exists $selects_ci_columns_collection_extends{$parse_key}){
+                                my @mid_extends = map { $_->{mid} } $ci->related( where => {collection => $selects_ci_columns_collection_extends{$parse_key}});
+                                $ci_extends = ci->new($mid_extends[0]);
+                            }                        
+
+                            for my $ci_column (_array $selects_ci_columns{$parse_key}){
+                                if ($ci->{$ci_column}){
+                                    $ci_columns{$parse_key.'_'.$ci_column} = $ci->{$ci_column}
+                                }else{
+                                    if (ref ($ci_extends->{$ci_column}) =~ /^BaselinerX::CI::/){
+                                         $ci_columns{$parse_key.'_'.$ci_column} = $ci_extends->{$ci_column}->{name};
+                                    }else{
+                                        $ci_columns{$parse_key.'_'.$ci_column} = $ci_extends->{$ci_column}
+                                    };  
+                                }    
+                            }                               
+                        }
+                    }
+                }
+            } 
         }
         $row{topic_mid} = $row{mid};
         
@@ -1161,6 +1187,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
         $row{status_new} = $row{category_status}{name};
 		
 		if($row{category_status}){
+
 			foreach my $key (keys %{$row{category_status}}){
 				$row{'category_status_'.$key} = $row{category_status}{$key};
                 # for my $category (@All_Categories){
@@ -1177,6 +1204,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
         foreach my $key (keys %ci_columns){
             $row{$key} = $ci_columns{$key};
         }
+
         %ci_columns = ();
         \%row;
     #} @data;
