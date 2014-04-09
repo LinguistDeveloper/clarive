@@ -148,7 +148,6 @@ sub tree_project_jobs : Local {
 sub tree_topics_project : Local {
     my ($self,$c) = @_;
     my @tree;
-
     my $project = $c->req->params->{project} ;
     my $id_project = $c->req->params->{id_project} ;
     my @categories  = map { $_->{id}} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'view' );
