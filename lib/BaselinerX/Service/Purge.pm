@@ -32,10 +32,8 @@ register 'config.purge' => {
     ]
 };
 
-
-register 'service.purge.daemon' => {
-    daemon => 1,
-    name => 'Purge Daemon',
+register 'service.job.purge.files' => {
+    name => 'Purge job directories',
     scheduled => 1,
     config => 'config.daemon.purge',
     handler => sub {

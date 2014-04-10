@@ -232,7 +232,7 @@ sub send {
     }
     
     eval{$msg->send('smtp');};
-    _throw "send failed: $@\n" if $@;
+    _throw "send failed: $@\n" if $@; 
 }	
 
 sub filter_queue {

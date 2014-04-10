@@ -2,6 +2,7 @@ package Baseliner::Controller::Root;
 use Baseliner::PlugMouse;
 BEGIN { extends 'Catalyst::Controller'; };
 use Baseliner::Utils;
+use Baseliner::Sugar;
 
 register 'action.home.show_lifecycle' => { name => 'User can access the lifecycle panel' };
 register 'action.home.show_menu' => { name => 'User can access the menu' } ;
@@ -148,6 +149,7 @@ sub auto : Private {
         if( ref $user && ( my $auth = $c->authenticate({ id=>$user->username }, 'none') ) ) {
             $c->session->{username} = $user->username;
             $c->session->{user} = new Baseliner::Core::User( user=>$c->user );
+            event_new 'event.auth.failed'=>{ username=>$c->username, status=>401, mode=>'api_key' };
             return 1;
         } else {
             $c->stash->{json} = { success=>\0, msg=>'invalid api-key' };

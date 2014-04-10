@@ -195,7 +195,7 @@ sub grid : Local {
         $_->{event_name} = $c->registry->get( $_->{rule_event} )->name if $_->{rule_event};
         $_
     } @rules;
-    @rules = grep { join(',',values %$_) =~ qr/$p->{query}/ } @rules if length $p->{query}; 
+    @rules = grep { join(',',values %$_) =~ qr/$p->{query}/i } @rules if length $p->{query}; 
     $c->stash->{json} = { totalCount=>scalar(@rules), data => \@rules };
     $c->forward("View::JSON");
 }
@@ -410,6 +410,7 @@ sub get_rule_ts : Local{
     my ($self,$c)=@_;
     my $p = $c->req->params;
     try {
+        _log _dump $p;
         my $ts = mdb->rule->find({id => ''.$p->{id_rule}})->next->{ts};
         $c->stash->{json} = { success=>\1, msg => 'ok', ts => $ts };
     } catch {

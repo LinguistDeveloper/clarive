@@ -93,10 +93,15 @@ sub releases {
        join=>['categories'], select=>['me.mid'],
     })->as_query;
 
+    # DB->BaliTopic->search(
+    #         { 'me.mid'=>{-in=>$rel_chi }, 'to_children.to_mid' => $self->mid },
+    #         { join=>[{ 'master' => { 'children' => 'to_children' } }] }
+    # );
+
     DB->BaliTopic->search(
-            { 'me.mid'=>{-in=>$rel_chi }, 'to_children.to_mid' => $self->mid },
+            { 'me.mid'=>{-in=>$rel_chi }, 'children.to_mid' => $self->mid },
             { join=>[{ 'master' => { 'children' => 'to_children' } }] }
-    );
+    );    
 }
 
 1;

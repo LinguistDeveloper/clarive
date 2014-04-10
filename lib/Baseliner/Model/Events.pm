@@ -77,30 +77,49 @@ sub run_once {
             my $config_email = Baseliner->model( 'ConfigStore' )->get( 'config.comm.email.from' )->{from};
             
             if ($notification){
-                foreach  my $template (  keys $notification ){
+                my $ci_or_topic = {};
+                if( $stash->{mid} ) {
+                    $ci_or_topic = 
+                        mdb->topic->find_one({ mid => "$stash->{mid}"}) 
+                        // mdb->master_doc->find_one({ mid=>"$stash->{mid}" }) // {};
+                }
+                my $vars = { %$ci_or_topic, %$stash };
+                
+                foreach  my $notify ( values $notification ){
+                    my $subject = $notify->{subject} || $stash->{subject} || do{
+                        my $ev = Baseliner->model('Registry')->get($event_key); # this throws an exception if key not found
+                        $ev->event_text($vars);
+                    } || $event_key;
                     my $model_messaging = {
-                        subject         => $stash->{subject} || $event_key,
+                        subject         => $subject,
                         sender          => $config_email || 'clarive@clarive.com',
                         carrier         => 'email',
-                        template        => $template,
+                        template        => $notify->{template_path},
                         template_engine => 'mason',
+                        _fail_on_error  => 1,   # so that it fails on template errors
                     };
-                    $model_messaging->{to} = { users => $notification->{$template}->{TO} } if (exists $notification->{$template}->{TO}) ;
-                    $model_messaging->{cc} = { users => $notification->{$template}->{CC} } if (exists $notification->{$template}->{CC}) ;
-                    $model_messaging->{bcc} = { users => $notification->{$template}->{BCC} } if (exists $notification->{$template}->{BCC}) ;
+                    $model_messaging->{to} = { users => $notify->{carrier}{TO} } if (exists $notify->{carrier}{TO}) ;
+                    $model_messaging->{cc} = { users => $notify->{carrier}{CC} } if (exists $notify->{carrier}{CC}) ;
+                    $model_messaging->{bcc} = { users => $notify->{carrier}{BCC} } if (exists $notify->{carrier}{BCC}) ;
                     
-                    my $topic = {};
-                    $topic = mdb->topic->find_one({ mid => "$stash->{mid}"}) if $stash->{mid};
-                    $model_messaging->{vars} = {%$topic,%$stash};
-                    $model_messaging->{vars}->{subject} = $stash->{subject} || $event_key;
-                    $model_messaging->{vars}->{to} = { users => $notification->{$template}->{TO} } if (exists $notification->{$template}->{TO}) ;
-                    $model_messaging->{vars}->{cc} = { users => $notification->{$template}->{CC} } if (exists $notification->{$template}->{CC}) ;
-                    $model_messaging->{vars}->{bcc} = { users => $notification->{$template}->{BCC} } if (exists $notification->{$template}->{BCC}) ;
+                    $model_messaging->{vars} = $vars; 
+                    $model_messaging->{vars}{to} = { users => $notify->{carrier}{TO} } if (exists $notify->{carrier}{TO}) ;
+                    $model_messaging->{vars}{cc} = { users => $notify->{carrier}{CC} } if (exists $notify->{carrier}{CC}) ;
+                    $model_messaging->{vars}{bcc} = { users => $notify->{carrier}{BCC} } if (exists $notify->{carrier}{BCC}) ;
                         
-                    Baseliner->model( 'Messaging' )->notify(%{$model_messaging});
+                    my $rc_notify = 0;
+                    my $err = '';
+                    try {
+                        Baseliner->model( 'Messaging' )->notify(%{$model_messaging});
+                    } catch {
+                        $err = shift;   
+                        $rc_notify = 1;
+                        $rc += $rc_notify;
+                    };
                     
                     mdb->event_log->insert({
-                        id=>mdb->seq('event_log'), id_event=> $ev->{id}, stash_data=> _dump( $model_messaging ), return_code=>0, 
+                        id=>mdb->seq('event_log'), id_event=> $ev->{id}, stash_data=> _dump( $model_messaging ), return_code=>$rc_notify, 
+                        log_output => $err, dsl=>'',
                     });
                 }
             }

@@ -1,6 +1,7 @@
 package Baseliner::Controller::Auth;
 use Baseliner::PlugMouse;
 use Baseliner::Utils;
+use Baseliner::Sugar;
 BEGIN { extends 'Catalyst::Controller'; }
 use Try::Tiny;
 use MIME::Base64;
@@ -14,6 +15,14 @@ register 'action.change_password' => {
     name => 'User can change his password',
 };
 
+register 'event.auth.logout' => { name => 'User Logout' } ;
+register 'event.auth.ok' => { name => 'Login Ok' } ;
+register 'event.auth.failed' => { name => 'Login Failed' } ;
+register 'event.auth.saml_ok' => { name => 'Login by SAML Ok' } ;
+register 'event.auth.saml_failed' => { name => 'Login by SAML Failed' } ;
+register 'event.auth.surrogate_ok' => { name => 'Surrogate Ok' } ;
+register 'event.auth.surrogate_failed' => { name => 'Surrogate Failed' } ;
+
 =head2 logout 
 
 Hardcore, url based logout. Always redirects otherwise 
@@ -23,6 +32,7 @@ we get into a /logout loop
 sub logout : Global {
     my ( $self, $c ) = @_;
     $c->full_logout;
+    event_new 'event.auth.logout'=>{ username=>$c->username, mode=>'url' };
     $c->res->redirect( $c->req->params->{redirect} || $c->uri_for('/') );
 }
 
@@ -34,6 +44,7 @@ JSON based logoff, used by the logout menu option
 sub logoff : Global {
     my ( $self, $c ) = @_;
     $c->full_logout;
+    event_new 'event.auth.logout'=>{ username=>$c->username, mode=>'logoff' };
     $c->stash->{json} = { success=>\1 };
     $c->forward('View::JSON');
 }
@@ -57,6 +68,7 @@ sub login_from_url : Local {
             $c->authenticate({ id=>$username }, 'ldap_no_pw');
             $c->session->{user} = new Baseliner::Core::User( user=>$c->user, username=>$username );
             $c->session->{username} = $username;
+            event_new 'event.auth.ok'=>{ username=>$username, mode=>'from_url', realm=>'ldap_no_pw' };
         } catch {
             # failed to find ldap, just let him in ??? TODO
             my $err = shift;
@@ -64,6 +76,7 @@ sub login_from_url : Local {
             $c->authenticate({ id=>$username }, 'none');
             $c->session->{user} = new Baseliner::Core::User( user=>$c->user, username=>$username );
             $c->session->{username} = $username;
+            event_new 'event.auth.ok'=>{ username=>$username, mode=>'from_url', realm=>'none' };
         };
     }
     if( ref $c->user ) {
@@ -81,11 +94,13 @@ sub login_basic : Local {
         $c->stash->{password} = $password; 
         $c->forward('authenticate');
         _debug "LOGIN USER=" . $c->user;
+        event_new 'event.auth.ok'=>{ username=>$c->username, mode=>'basic' };
         return 1; # don't stop chain on auto, let the caller decide based on $c->username
     } else {
         _debug 'Notifying WWW-Authenticate = Basic';
         $c->response->headers->push_header( 'WWW-Authenticate' => 'Basic realm="clarive"' );
         $c->response->body( _loc('Authentication required') );
+        event_new 'event.auth.failed'=>{ username=>$login, mode=>'basic' };
         $c->response->status( 401 );
         return 0;  # stops chain, sends auth required
     }
@@ -102,8 +117,10 @@ sub surrogate : Local {
         $c->authenticate({ id=>$username }, 'none');
         $c->session->{user} = new Baseliner::Core::User( user=>$c->user );
         $c->session->{username} = $username;
+        event_new 'event.auth.surrogate'=>{ username=>$c->username, to_user=>$username };
         $c->stash->{json} = { success => \1, msg => _loc("Login Ok") };
     } catch {
+        event_new 'event.auth.surrogate_failed'=>{ username=>$c->username, to_user=>$username };
         $c->stash->{json} = { success => \0, msg => _loc("Invalid User") };
     };
     $c->forward('View::JSON');	
@@ -200,17 +217,23 @@ sub login : Global {
         # go to the main authentication worker
         $c->stash->{login} = $login; 
         $c->stash->{password} = $password; 
-        $c->forward('authenticate');
+        my $res = $c->forward('authenticate');
         $msg = $c->stash->{auth_message};
-        if( length $c->username ) {
+        if( $res && length $c->username ) {
+            $msg //= _loc("OK");
+            event_new 'event.auth.ok'=>{ username=>$c->username, login=>$login, mode=>'login', msg=>$msg };
             $c->stash->{json} = { success => \1, msg => $msg // _loc("OK") };
         } else {
-            $c->stash->{json} = { success => \0, msg => $msg // _loc("Invalid User or Password") };
+            $msg //= _loc("Invalid User or Password");
+            event_new 'event.auth.failed'=>{ username=>'', login=>$login, mode=>'login', msg=>$msg };
+            $c->stash->{json} = { success=>\0, msg=>$msg };
         }
     } else {
         # invalid form input
         # $c->stash->{json} = { success => \0, msg => _loc("Missing User or Password") };
-        $c->stash->{json} = { success => \0, msg => _loc("Missing User") };
+        $msg //= _loc("Missing User");
+        event_new 'event.auth.failed'=>{ username=>'', login=>$login, mode=>'login', msg=>$msg };
+        $c->stash->{json} = { success => \0, msg => $msg };
     }
     _log '------Login in: '  . $c->username ;
     $c->forward('View::JSON');	
@@ -229,21 +252,24 @@ sub saml_check : Private {
     my $header = $c->config->{saml_header} || 'samlv20';
     _debug _loc('SAML header: %1', $header );
     _log _loc('Current user: %1', $c->username );
+    my $username = '';
     require XML::Simple;
     return try {
         my $saml = $c->req->headers->{$header};
         _debug "H=$saml";
         defined $saml or _fail "SAML: no header '$header' found in request. Rejected.";
         my $xml = XML::Simple::XMLin( $saml );
-        my $username = $xml->{'saml:Subject'}->{'saml:NameID'};
+        $username = $xml->{'saml:Subject'}->{'saml:NameID'};
         $username or die 'SAML username not found';
         $username = $username->{content} if ref $username eq 'HASH';
         _log _loc('SAML starting session for username: %1', $username);
         $c->session->{user} = new Baseliner::Core::User( user=>$c->user, username=>$username );
         $c->session->{username} = $username;
+        event_new 'event.auth.saml_ok'=>{ username=>$username };
         return $username;
     } catch {
         _error _loc('SAML Failed auth: %1', shift);
+        event_new 'event.auth.saml_failed'=>{ username=>$username };
         return 0;
     };
 }

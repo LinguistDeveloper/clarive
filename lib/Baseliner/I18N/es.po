@@ -5025,4 +5025,10 @@ msgstr "El usuario %1 ha solicitado aprobación para el job %2"
 msgid "Refresh All Nodes"
 msgstr "Refrescar todo el Árbol"
 
+msgid "Job started in %1 at %2"
+msgstr "Pase iniciado en %1 a %2"
+
+msgid "Rule: %1"
+msgstr "Regla: %1"
+
 ### EOF - do not write anything bellow this

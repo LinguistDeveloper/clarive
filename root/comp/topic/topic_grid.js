@@ -20,7 +20,7 @@
     var report_rows = params.report_rows;
     var report_name = params.report_name;
     var fields = params.fields;
-     
+
     if(params.data_report){
      report_rows = params.data_report.report_rows;
      report_name = params.data_report.report_name;
@@ -95,11 +95,26 @@
 		};		
 	}
 
-	 
     if( fields ) {
         //console.log('Add fields');
-        //console.dir(fields);
+        var columns = fields.columns;
+        for(i=0;i<columns.length;i++){
+            if (columns[i].ci_columns) {
+                if (typeof columns[i].ci_columns === 'string'){
+                     fields.ids.push( columns[i].id + '_' + columns[i].category + '_' + columns[i].ci_columns );
+                     //store_config.add_fields = { name: columns[i].id + '_' + columns[i].category + '_' + columns[i].ci_columns };
+                }
+                else{
+                    for(j=0;j<columns[i].ci_columns.length;j++){
+                         //console.dir(columns[i].ci_columns[j]);
+                         fields.ids.push( columns[i].id + '_' + columns[i].category + '_' + columns[i].ci_columns[j] );
+                         //store_config.add_fields = { name: columns[i].id + '_' + columns[i].category + '_' + columns[i].ci_columns[j] };    
+                    }
+                }
+            }
+        }
         store_config.add_fields = fields.ids.map(function(r){ return Ext.isObject(r)?r:{ name: r } });
+        // console.dir(fields);
     }
 
     // Create store instances
@@ -1012,7 +1027,6 @@
     };
     
     var render_default = function(value,metadata,rec,rowIndex,colIndex,store){
-        //console.dir(rec);
         // if ( !rec.json[this.dataIndex] ) {
         //     var str = this.dataIndex;
         //     if ( str ) {   
@@ -1226,6 +1240,38 @@
             
             //console.log(col);
             columns.push( col );
+
+            if (r.ci_columns) {
+                if (typeof r.ci_columns === 'string'){
+                    var ci_col = {
+                        //dataIndex: r.category ? r.ci_columns + '_' + r.category : r.ci_columns,
+                        header: r.category + ': ' + r.ci_columns,
+                        dataIndex: r.category ? r.id + '_' + r.category + '_' + r.ci_columns : r.category + '_' + r.ci_columns,
+                        //dataIndex: r.id,
+                        hidden: false, width: 80, sortable: true,
+                        renderer: render_default
+                    };
+                    //console.dir( ci_col );
+                    columns.push( ci_col );
+                }
+                else{
+                    for(i=0;i<r.ci_columns.length;i++){
+                        //console.log(r.ci_columns[i]);
+                        var ci_col = {
+                            //dataIndex: r.category ? r.ci_columns + '_' + r.category : r.ci_columns,
+                            header: r.category + ': ' + r.ci_columns[i],
+                            dataIndex: r.category ? r.id + '_' + r.category + '_' + r.ci_columns[i] : r.category + '_' + r.ci_columns[i],
+                            //dataIndex: r.id,
+                            hidden: false, width: 80, sortable: true,
+                            renderer: render_default
+                        };
+                        //console.dir( ci_col );
+                        columns.push( ci_col );  
+                    }
+                }
+                
+            }
+
         });
         //console.dir(columns);
     } else {

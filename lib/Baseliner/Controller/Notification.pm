@@ -11,48 +11,68 @@ sub list_notifications : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
-    $sort ||= 'me.id';
+    $sort ||= '_id';
     $dir ||= 'desc';
+    if($dir eq 'desc'){
+        $dir = -1;
+    }else{
+        $dir = 1;
+    }
+
     $start||= 0;
     $limit ||= 30;
     
     my $page = to_pages( start=>$start, limit=>$limit );
-    
+
     my $where={};
-    $query and $where = query_sql_build(
-        query   => $query,
-        fields  => [qw( id event_key action data is_active username
-                    template_path digest_time digest_date digest_freq)]
-    );
     
-    my $rs = DB->BaliNotification->search($where, 
-        { page => $page, rows => $limit,
-          order_by => { "-$dir" => $sort }, 
+    if( $query ) {
+        my @mids_query;
+        if( $query !~ /\+|\-|\"/ ) {  # special queries handled by query_build later
+            @mids_query = map { $_->{obj}{_id} } 
+            _array( mdb->notification->search( query=>$query, limit=>1000, project=>{_id=>1})->{results} );
         }
-    );
-    
-    my $pager = $rs->pager;
-    $cnt = $pager->total_entries;
+        if( @mids_query == 0 ) {
+            $where = mdb->query_build(query => $query, fields=>[qw(id event_key action data is_active username template_path subject digest_time digest_date digest_freq)]);
+        } else {
+            $where->{_id} = { '$in' => \@mids_query };
+        }
+    }
+
+    my $rs = mdb->notification->find($where);
+    $rs->skip($start);
+    $rs->limit($limit);
+    $rs->sort({$sort => $dir});
     
     my @rows;
     while( my $r = $rs->next ) {
         push @rows, {
-            id              => $r->id,
-            event_key       => $r->event_key,
-            data            => _load($r->data),
-            action          => $r->action,
-            is_active       => $r->is_active,
-            template_path   => $r->template_path
+            id              => $r->{_id}->{value},
+            event_key       => $r->{event_key},
+            data            => $r->{data},
+            action          => $r->{action},
+            is_active       => $r->{is_active},
+            template_path   => $r->{template_path},
+            subject         => $r->{subject},
         };        
     }
-    
+    $cnt = ''.scalar @rows;
     $c->stash->{json} = { data => \@rows, totalCount=>$cnt };
     $c->forward("View::JSON");
 }
 
 sub list_events : Local {
     my ( $self, $c ) = @_;
-    my @events = map { +{key => $_}} sort Baseliner->registry->starts_with('event.');
+    my @events = map { 
+        my $key = $_;
+        my $event = $c->registry->get($_);
+        my ($kind) = $key =~ /^event\.([^.]+)\./;
+        +{
+            key => $key, 
+            kind=>$kind,
+            description=> $event->description // $_
+         }
+     } sort $c->registry->starts_with('event.');
     
     $c->stash->{json} = \@events;
     $c->forward('View::JSON');
@@ -152,17 +172,26 @@ sub save_notification : Local {
         $data->{scopes} = \%scope;
         $data->{recipients} = _decode_json($p->{recipients});
         
-        my $notification = Baseliner->model('Baseliner::BaliNotification')->update_or_create(
+        ### no hacer _dump y mergear con el resto de la estructura
+        my $notification = mdb->notification->update(
             {
-                id              => $p->{id},
-                event_key       => $p->{event},
+                _id             => mdb->oid($p->{notification_id})
+            },
+            {   event_key       => $p->{event},
                 action          => $p->{action},
-                data            => _dump ($data),
-                template_path   => $p->{template}
-            }
+                data            => $data,
+                is_active       => 1,
+                template_path   => $p->{template},
+                subject         => $p->{subject},
+            },
+            {'upsert' => 1}
         );
-        
-        $c->stash->{json} = { success => \1, msg => 'Notification added', notification_id => $notification->id }; 
+
+        if($p->{notification_id} eq '-1'){
+            $c->stash->{json} = { success => \1, msg => 'Notification created', notification_id => $notification->{upserted}->{value} };         
+        }else{
+            $c->stash->{json} = { success => \1, msg => 'Notification updated', notification_id => $p->{notification_id} }; 
+        }
     }catch{
         my $err = shift;
         _error( $err );        
@@ -182,9 +211,10 @@ sub remove_notifications : Local {
         foreach my $id_notification (_array $ids_notification){
             push @ids_notification, $id_notification;
         }
-          
-        my $rs = Baseliner->model('Baseliner::BaliNotification')->search({ id => \@ids_notification });
-        $rs->delete;
+
+        map {$_ = mdb->oid($_)} @ids_notification;
+
+        mdb->notification->remove({_id => {'$in' => \@ids_notification }});  
         
         $c->stash->{json} = { success => \1, msg=>_loc('Notifications deleted') };
     }
@@ -202,15 +232,12 @@ sub change_active : Local {
     my $msg_active = $action eq 'active' ? 'activated' : 'deactivated';
     
     try{
-        my $notification = Baseliner->model('Baseliner::BaliNotification')->search( {id => \@ids_notifications} );
-        if( ref $notification ) {
-            #$notification->is_active( $action eq 'active' ? 1 : 0 );
-            $notification->update({is_active => $action eq 'active' ? 1 : 0 });
-            $c->stash->{json} = { success => \1, msg => "Notifications $msg_active" };
+        map {$_ = mdb->oid($_)} @ids_notifications;
+        my @notifications = mdb->notification->find({_id => {'$in' => \@ids_notifications }})->all;
+        foreach my $not (@notifications){
+            mdb->notification->update({_id => $not->{_id} }, {'$set' => {is_active => $action eq 'active' ? 1 : 0 }});
         }
-        else{
-            $c->stash->{json} = { success => \0, msg => 'Error modifying the notification' };
-        }
+        $c->stash->{json} = { success => \1, msg => "Notifications $msg_active" };
     }
     catch{
         $c->stash->{json} = { success => \0, msg => 'Error modifying the notification' };
@@ -254,7 +281,7 @@ sub export : Local {
         my $export;
         my @notifies; 
         for my $id (  _array( $p->{id_notify} ) ) {
-            my $notify = DB->BaliNotification->search({ id=> $id })->hashref->first;
+            my $notify = mdb->notification->find({_id => mdb->oid($id)})->next;
             _fail _loc('Notify not found for id %1', $id) unless $notify;
             push @notifies, $notify;
         }
@@ -289,12 +316,12 @@ sub import : Local {
                 next if !defined $data;
                 my $is_new;
                 my $notify;
-                delete $data->{id};
+                my $id = delete $data->{_id};
                 push @log => "----------------| Notify: $data->{event_key} |----------------";
                 #$notify = DB->BaliNotification->search({ event_key=>$data->{event_key} })->first;
                 #$is_new = !$notify;
                 #if( $is_new ) {
-                    $notify = DB->BaliNotification->create( $data );
+                    $notify = mdb->notification->insert($data);
                     push @log => _loc('Created notify %1', $data->{event_key} );
                 #} else {
                 #    $notify->update( $data );
@@ -305,7 +332,7 @@ sub import : Local {
                 #    ? _loc('Notify created with id %1 and event_key %2:', $notify->id, $notify->event_key) 
                 #    : _loc('Notify %1 updated', $notify->event_key) ;
 
-                push @log, _loc('Notify created with id %1 and event_key %2:', $notify->id, $notify->event_key) ;
+                push @log, _loc('Notify created with id %1 and event_key %2:', $id, $data->{event_key}) ;
             }
         });   # txn_do end
         

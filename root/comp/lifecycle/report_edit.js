@@ -204,9 +204,41 @@
             var mt=meta_type.get_save_data();
             mt =='custom_data' ? data_key.show() : date_key.hide();
         });
+
         
         form_value.save_and_remove();
-        var sfields = form_value.add([ header, width, gridlet, meta_type, data_key ]);
+
+        var fields = [header, width, gridlet, meta_type, data_key];
+        if ( attr.collection && attr.collection != ''){
+            var ci_columns_store = new Baseliner.JsonStore({
+                root: 'data' , 
+                remoteSort: true,
+                autoLoad: true,
+                totalProperty:"totalCount", 
+                baseParams: {collection: attr.collection, collection_extends: attr.collection_extends ? attr.collection_extends : undefined},
+                id: 'ci_columns', 
+                url: '/report/get_ci_columns',
+                fields: ['name'] 
+            });
+
+            ci_columns_store.on("load", function() {
+                ci_columns.setValue(attr.ci_columns);
+            });            
+            
+            var ci_columns = new Ext.ux.form.SuperBoxSelect({
+                mode: 'local',
+                fieldLabel: _('Columns'),
+                name: 'ci_columns',
+                displayField: 'name',
+                hiddenName: 'ci_columns',
+                valueField: 'name',
+                store: ci_columns_store
+            });
+
+            fields.push(ci_columns);
+        }
+
+        var sfields = form_value.add(fields);
         
         var set_select = function(){
             var sflag = true;

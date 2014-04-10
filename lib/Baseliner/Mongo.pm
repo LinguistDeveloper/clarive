@@ -267,6 +267,9 @@ sub index_all {
             [{ mid=>1 },{ unique=>1 }],
             [{ name=>1 }],
         ],
+        notification => [
+            [{'$**'=> "text"}],
+        ],
         master_rel => [
             [{ from_mid=>1, to_mid=>1, rel_type=>1, rel_field=>1 },{ unique=>1 }],
             [{ from_mid=>1, rel_type=>1 }],

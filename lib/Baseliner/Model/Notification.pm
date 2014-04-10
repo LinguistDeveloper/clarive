@@ -173,7 +173,7 @@ sub exclude_default{
     my ( $self, $p ) = @_;
     my $event_key = $p->{event_key} or _throw 'Missing parameter event_key';
     my $exclude_default = 0;
-    my @recipients = map { (_load $_->{data})->{recipients} } DB->BaliNotification->search({ event_key => $event_key, is_active => 1, action => 'EXCLUDE' } )->hashref->all;
+    my @recipients = map { (_load $_->{data})->{recipients} } mdb->notification->find({event_key => $event_key, is_active => 1, action => 'EXCLUDE'})->all;
     
     foreach my $recipient (@recipients){
         foreach my $carrier (keys $recipient){
@@ -196,14 +196,13 @@ sub get_rules_notifications{
     my $mid = $p->{mid};
     
     my $notification = {};
-    
-    my @rs_notify = DB->BaliNotification->search({ event_key => $event_key, is_active => 1, action => $action } )->hashref->all;
+    my @rs_notify = mdb->notification->find({event_key => $event_key, is_active => 1, action => $action})->all;
 
     #my @prj_mid = map { $_->{mid} } ci->related( mid => $mid, isa => 'project') if $mid;
     
     if ( @rs_notify ) {
 		foreach my $row_send ( @rs_notify ){
-			my $data = _load($row_send->{data});
+			my $data = ref $row_send->{data} ? $row_send->{data} : _load($row_send->{data});
     
             my $valid = 0;
     		if ($notify_scope) {
@@ -221,9 +220,16 @@ sub get_rules_notifications{
         			foreach $type (keys $data->{recipients}->{$carrier}){
             			my @values;
                 		foreach my $key_value (keys $data->{recipients}->{$carrier}->{$type}){
+                            my $key = Util->_md5( $row_send->{template_path} . '#' . ( $row_send->{subject} // '') );
+                            $notification->{$key}{subject}       = $row_send->{subject};
+                            $notification->{$key}{template_path} = $row_send->{template_path};
                     		given ($type) {
-                        		when ('Actions')    { $notification->{$row_send->{template_path}}->{$carrier}->{$type}->{$key_value} = 1; }
-                        		default             { $notification->{$row_send->{template_path}}->{$carrier}->{$type}->{$key_value} = $data->{recipients}->{$carrier}->{$type}->{$key_value}; }
+                        		when ('Actions') { 
+                                    $notification->{$key}{carrier}{$carrier}->{$type}->{$key_value} = 1; 
+                                }
+                        		default { 
+                                    $notification->{$key}{carrier}{$carrier}->{$type}->{$key_value} = $data->{recipients}->{$carrier}->{$type}->{$key_value}; 
+                                }
                     		};
                 		}
             		}
@@ -231,14 +237,14 @@ sub get_rules_notifications{
     		}
 		}
         
-		foreach my $plantilla (keys $notification){
-			foreach my $carrier ( keys $notification->{$plantilla}) {
+		foreach my $key (keys $notification){
+			foreach my $carrier ( keys $notification->{$key}{carrier}) {
     			my @users;
-        		foreach my $type (keys $notification->{$plantilla}->{$carrier}){
+        		foreach my $type (keys $notification->{$key}{carrier}{$carrier}){
         			my @tmp_users;
         			given ($type) {
             			when ('Users') 	    { 
-                        	if ( exists $notification->{$plantilla}->{$carrier}->{$type}->{'*'} ){
+                        	if ( exists $notification->{$key}{carrier}{$carrier}->{$type}->{'*'} ){
                                 #if (exists $notify_scope->{project}){
                                 #	@tmp_users = Baseliner->model('Users')->get_users_friends_by_projects(mid => $mid, $notify_scope->{project});
                                 #}
@@ -247,16 +253,16 @@ sub get_rules_notifications{
                                 #}
                             }
                             else{
-                        		@tmp_users = values $notification->{$plantilla}->{$carrier}->{$type};                             
+                        		@tmp_users = values $notification->{$key}{carrier}{$carrier}->{$type};                             
                             }
                         }
                         when ('Actions') 	{
                             my @actions;
-                            if ( exists $notification->{$plantilla}->{$carrier}->{$type}->{'*'} ){
+                            if ( exists $notification->{$key}{carrier}{$carrier}->{$type}->{'*'} ){
 								@actions = ('*');                            
                             }
                             else{
-                            	@actions = keys $notification->{$plantilla}->{$carrier}->{$type};
+                            	@actions = keys $notification->{$key}{carrier}{$carrier}->{$type};
                             }
                             my $query = {};
                             $query->{action} = \@actions;
@@ -267,7 +273,7 @@ sub get_rules_notifications{
                         }
                         when ('Roles') 	    {
                         	my @roles;
-                        	if ( exists $notification->{$plantilla}->{$carrier}->{$type}->{'*'} ){
+                        	if ( exists $notification->{$key}{carrier}{$carrier}->{$type}->{'*'} ){
                             	if (exists $notify_scope->{project}){
                                 	@roles = Baseliner->model('Users')->get_roles_from_projects(mid => $mid, $notify_scope->{project});
                             	}
@@ -276,13 +282,13 @@ sub get_rules_notifications{
                                 }
                             }
                             else{
-                            	@roles = keys $notification->{$plantilla}->{$carrier}->{$type};
+                            	@roles = keys $notification->{$key}{carrier}{$carrier}->{$type};
                             }
                             @tmp_users = Baseliner->model('Users')->get_users_from_mid_roles_topic( roles => \@roles, mid => $mid );
                             #@tmp_users = Baseliner->model('Users')->get_users_from_mid_roles( roles => \@roles, projects => \@prj_mid);                            
                         }
                         when ('Fields')         {
-                            my @fields = map {lc($_)} keys $notification->{$plantilla}->{$carrier}->{$type};
+                            my @fields = map {lc($_)} keys $notification->{$key}{carrier}{$carrier}->{$type};
                             my $topic = mdb->topic->find_one({mid=>"$mid"});
                             my @users_mid;
                             for my $field (@fields){
@@ -295,7 +301,7 @@ sub get_rules_notifications{
                             #                                                    { select => 'to_mid' })->hashref->all;
                         }                        
                         when ('Emails') {
-                            my @emails = keys $notification->{$plantilla}->{$carrier}->{$type};
+                            my @emails = keys $notification->{$key}{carrier}{$carrier}->{$type};
                             push @tmp_users, @emails;
                             _log _dump @emails;
                         }                        
@@ -310,15 +316,15 @@ sub get_rules_notifications{
                 	my %users; 
                     map { $users{$_} = 1 } @users;
                     
-        			$notification->{$plantilla}->{$carrier} = \%users;
+        			$notification->{$key}{carrier}{$carrier} = \%users;
         		}
         		else{
-        			delete $notification->{$plantilla}->{$carrier} ;
+        			delete $notification->{$key}{carrier}{$carrier} ;
         		}
     		}
-    		my @totCarrier = keys $notification->{$plantilla};
+    		my @totCarrier = keys $notification->{$key};
     		if (!@totCarrier) {
-    			delete $notification->{$plantilla};
+    			delete $notification->{$key};
     		}
 		};
     }
@@ -329,6 +335,77 @@ sub get_rules_notifications{
     else {
     	return undef ;
     }
+}
+
+
+sub data_loader {
+    my ($self,$p) = @_;
+    
+    my $data = _load $p;
+    if($data->{recipients}){
+        if($data->{recipients}->{TO}){
+            $data->{recipients}->{TO} = recipients($data,'TO');
+        }
+        if($data->{recipients}->{CC}){
+            $data->{recipients}->{CC} = recipients($data,'CC');
+        }
+        if($data->{recipients}->{BCC}){
+            $data->{recipients}->{BCC} = recipients($data,'BCC');
+        }        
+    }
+    if($data->{scopes}){
+        if($data->{scopes}->{category}){
+            $data->{scopes}->{category} = scopes($data,'category');
+        }
+        if($data->{scopes}->{category_status}){
+            $data->{scopes}->{category_status} = scopes($data,'category_status');
+        }
+        if($data->{scopes}->{project}){
+            $data->{scopes}->{project} = scopes($data,'project');
+        }    
+        my $scopes = $data->{scopes};
+    }
+    return $data;
+}
+
+sub scopes {
+    my ($data,$p) = @_;  
+    my @ar;
+    foreach (keys $data->{scopes}->{$p}){
+        push @ar, {'mid' => $_, 'name' => $data->{scopes}->{$p}->{$_}}; 
+    }
+    $data->{scopes}->{$p} = \@ar;
+}
+
+sub recipients {
+    my ($data,$p) = @_;
+    if($data->{recipients}->{$p}->{Fields}){
+        $data->{recipients}->{$p}->{Fields} = [keys $data->{recipients}->{$p}->{Fields}];
+    } 
+    if($data->{recipients}->{$p}->{Owner}){
+        $data->{recipients}->{$p}->{Owner} = [keys $data->{recipients}->{$p}->{Owner}];
+    } 
+    if($data->{recipients}->{$p}->{Emails}){
+        $data->{recipients}->{$p}->{Emails} = [keys $data->{recipients}->{$p}->{Emails}];
+    } 
+    if($data->{recipients}->{$p}->{Roles}){
+        my @ar;
+        foreach (keys $data->{recipients}->{$p}->{Roles}){
+            push @ar, {'mid' => $_, 'name' => $data->{recipients}->{$p}->{Roles}->{$_}};    
+        }
+        $data->{recipients}->{$p}->{Roles} = \@ar;
+    } 
+    if($data->{recipients}->{$p}->{Actions}){
+        $data->{recipients}->{$p}->{Actions} = [keys $data->{recipients}->{$p}->{Action}];
+    } 
+    if($data->{recipients}->{$p}->{Users}){
+        my @ar;
+        foreach (keys $data->{recipients}->{$p}->{Users}){
+            push @ar, {'mid' => $_, 'name' => $data->{recipients}->{$p}->{Users}->{$_}};    
+        }
+        $data->{recipients}->{TO}->{Users} = \@ar;
+    }
+    return $data->{recipients}->{$p};
 }
 
 sub get_notifications {
@@ -349,13 +426,15 @@ sub get_notifications {
     }
     
     if(!$self->exclude_default( {event_key => $event_key} )){
-        if (exists $send_notification->{$template}){
-            map { $send_notification->{$template}->{TO}->{$_} = 1 } @notify_default;        
-        }else{
-            if (@notify_default){
-                my %users; 
-                map { $users{$_} = 1 } @notify_default;            
-                $send_notification->{$template}->{TO} = \%users;
+        for my $notify ( values %$send_notification ) {
+            if( $notify->{template_path} eq $template ){
+                map { $notify->{carrier}{TO}{$_} = 1 } @notify_default;        
+            }else{
+                if (@notify_default){
+                    my %users; 
+                    map { $users{$_} = 1 } @notify_default;            
+                    $notify->{carrier}{TO} = \%users;
+                }
             }
         }
     }
@@ -363,33 +442,33 @@ sub get_notifications {
 	my $exclude_notification;
     $exclude_notification = $self->get_rules_notifications( { event_key => $event_key, action => 'EXCLUDE', notify_scope => $notify_scope, mid => $mid  } );    
     if ($exclude_notification){
-    	foreach my $plantilla ( keys $exclude_notification ){
-        	foreach my $carrier ( keys $exclude_notification->{$plantilla} ){
-            	foreach my $value ( keys $exclude_notification->{$plantilla}->{$carrier} ){
-                	delete $send_notification->{$plantilla}->{$carrier}->{$value};
+    	foreach my $key ( keys $exclude_notification ){
+        	foreach my $carrier ( keys $exclude_notification->{$key} ){
+            	foreach my $value ( keys $exclude_notification->{$key}{carrier}{$carrier} ){
+                	delete $send_notification->{$key}{carrier}{$carrier}->{$value};
                 }
             }
         }
     }
 
     if ($send_notification){
-        foreach my $plantilla ( keys $send_notification ){
-            foreach my $carrier ( keys $send_notification->{$plantilla} ){
-                my @totUsers = keys $send_notification->{$plantilla}->{$carrier};
+        foreach my $key ( keys $send_notification ){
+            foreach my $carrier ( keys $send_notification->{$key}{carrier} ){
+                my @totUsers = keys $send_notification->{$key}{carrier}{$carrier};
                 if (!@totUsers) {
-                    delete $send_notification->{$plantilla}->{$carrier};
+                    delete $send_notification->{$key}{carrier}{$carrier};
                 }
                 else{
                     my @users;
-                    foreach my $user ( keys $send_notification->{$plantilla}->{$carrier} ){
+                    foreach my $user ( keys $send_notification->{$key}{carrier}{$carrier} ){
                         push @users, $user;	
                     }
-                    $send_notification->{$plantilla}->{$carrier} = \@users;
+                    $send_notification->{$key}{carrier}{$carrier} = \@users;
                 }
             }
-            my @totCarrier = keys $send_notification->{$plantilla};
+            my @totCarrier = keys $send_notification->{$key};
             if (!@totCarrier) {
-                delete $send_notification->{$plantilla};
+                delete $send_notification->{$key};
             }
         }
         
