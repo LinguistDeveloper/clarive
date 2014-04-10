@@ -47,7 +47,8 @@ sub job_create : Path('/job/create')  {
 sub chains : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    my $type = $p->{type};
+    my $type = $p->{type} // 'promote';
+    
     try {
         my $where;
         if ( !Baseliner->model('Permissions')->is_root($c->username) ) {

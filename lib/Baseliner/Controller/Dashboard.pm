@@ -119,6 +119,12 @@ sub list_dashboard : Local {
     $c->forward('View::JSON');
 }
 
+sub generic : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+}
+
+
 sub list_dashlets : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;

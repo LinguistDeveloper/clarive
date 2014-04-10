@@ -1843,28 +1843,39 @@ sub kanban_status : Local {
 
         my $rs = $c->model('Baseliner::BaliTopicCategoriesStatus')->search(
           { id_category=>{ -in => $rs1->as_query } },
-          { +select=>['status.id', 'status.name', 'status.seq'], +as=>[qw/id name seq/], 
+          { +select=>['status.id', 'status.name', 'status.seq', 'status.bl'], +as=>[qw/id name seq bl/], 
             join=>['status'], order_by=>'status.seq', distinct=>1 }
         );
-        my @statuses = $rs->hashref->all;
+        ## support multiple bls
+        my %status_cis = map { $_->{id_status} => $_->{bls} } ci->status->search_cis;
+        my @statuses = map {  
+            my $bls = join ' ', map { $_->{moniker} } _array(  $status_cis{ $_->{id} } );
+            $_->{bl} = $bls;
+            $_;
+        } $rs->hashref->all;
 
         my $where = { mid => $topics };
         $where->{'user_role.username'} = $c->username unless $c->is_root;
         my @rs2 = $c->model('Baseliner::BaliTopic')->search(
             $where,
             {   join => { 'workflow' => [ 'user_role', 'statuses_to', 'statuses_from' ] },
-                +select  => [qw/mid workflow.id_status_from workflow.id_status_to statuses_to.name statuses_to.seq statuses_from.name statuses_from.seq/],
-                +as      => [qw/mid id_status_from id_status_to to_name to_seq from_name from_seq/],
+                +select  => [qw/mid id_category_status workflow.id_status_from workflow.id_status_to statuses_to.name statuses_to.seq statuses_from.name statuses_from.seq/],
+                +as      => [qw/mid id_category_status id_status_from id_status_to to_name to_seq from_name from_seq/],
                 distinct => 1,
             }
         )->hashref->all;
         my %workflow;
-        for( @rs2 ) {
-            push @{ $workflow{ $_->{mid} } }, $_;
+        my %status_mids;
+        for my $wf ( @rs2 ) {
+            push @{ $workflow{ $wf->{mid} } }, $wf;
+            if( $wf->{id_status_from} == $wf->{id_category_status} ) {
+                push @{ $status_mids{ $wf->{id_status_from} } }, $wf->{mid};
+                push @{ $status_mids{ $wf->{id_status_to} } }, $wf->{mid};
+            }
         }
         #my %statuses = map { $_->{id_status_to} => { name=>$_->{to_name}, id=>$_->{id_status_to}, seq=>$_->{to_seq} } } @rs2;
         #{ success=>\1, msg=>'', statuses=>[ sort { $a->{seq} <=> $b->{seq} } values %statuses ] };
-        { success=>\1, msg=>'', statuses=>\@statuses, workflow=>\%workflow };
+        { success=>\1, msg=>'', statuses=>\@statuses, workflow=>\%workflow, status_mids=>\%status_mids };
     } catch {
         my $err = shift;
         { success=>\0, msg=> _loc( "Error creating job: %1", "$err" ) };

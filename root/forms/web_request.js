@@ -16,8 +16,9 @@
            new Baseliner.DataEditor({ name:'args', title: _('Form Arguments'), 
                hide_save: true, hide_cancel: true, height: 260, data: data.args || {} }),
            new Baseliner.DataEditor({ name:'headers', title: _('Headers'), 
-               hide_save: true, hide_cancel: true, height: 260, data: data.headers || {} })
-               ]}
+               hide_save: true, hide_cancel: true, height: 260, data: data.headers || {} }),
+           { xtype:'textarea', name:'body', title:_('Body'), height: 260, value: data.body||'' }
+        ]}
     ]
 })
 

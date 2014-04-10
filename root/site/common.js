@@ -2222,22 +2222,26 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
         var self = this;
         var sm = self.getSelectionModel();
         var node = sm.getSelectedNode();
-        if( node )
-            self.refresh_node( node );
+        if( node ){
+            //self.refresh_node( node );
+            if (!node.attributes.is_refreshing){
+                node.attributes.is_refreshing = true;
+                self.refresh_node( node, callback );    
+            }
+        }
         else 
             self.refresh_all(callback);
     },
     refresh_all : function(callback){
-		
         var self = this;
         this.loader.load(self.root);
 		self.onload = callback;
     },
-    refresh_node : function(node){
+    refresh_node : function(node, callback){
         var self = this;
         if( node != undefined ) {
             var is = node.isExpanded();
-            self.loader.load( node );
+            self.loader.load( node, callback );
             if( is ) node.expand();
         }
     }
@@ -2813,6 +2817,7 @@ Baseliner.cols_templates = {
           editor: new Ext.form.DateField({ format: Prefs.js_date_format, submitValue: false }), 
           renderer: Baseliner.render_date
       }},
+      cbox      : function(){ return { align: 'center', width: 10, editor: new Baseliner.CBox({submit_num: true, submitValue: false}), default_value: false, renderer: Baseliner.render_checkbox } },
       checkbox  : function(){ return { align: 'center', width: 10, editor: new Ext.form.Checkbox({submitValue: false}), default_value: false, renderer: Baseliner.render_checkbox } },
       ci_box    : function(p){ return { editor: Baseliner.ci_box( p || {} ), default_value:'' } },
       password  : function(){ return { editor: new Ext.form.TextField({submitValue: false, inputType:'password' }), default_value:'', renderer: function(v){ return '********' } } },
@@ -3246,6 +3251,7 @@ Baseliner.timeline = function(args){
 //    new Baseliner.CBox({ fieldLabel: _('Really?'), name: 'really', checked: params.rec.really, default_value: true }),
 Baseliner.CBox = Ext.extend( Ext.form.Checkbox, {
     submitValue: false,
+    submit_num: false,   // if true, submits 1 or 0
     default_value: false,
     initComponent: function(){
         var self = this;
@@ -3261,6 +3267,11 @@ Baseliner.CBox = Ext.extend( Ext.form.Checkbox, {
             if( self.hidden_field ) self.hidden_field.dom.value = checked ? 1 : 0;
         });
         Baseliner.CBox.superclass.initComponent.call(this);
+    },
+    getValue : function(){
+        return !this.submit_num 
+            ? this.checked 
+            : this.checked ? 1 : 0 ;  
     }
 });
 
@@ -3791,3 +3802,10 @@ Baseliner.ErrorOutputTabs = Ext.extend( Ext.TabPanel, {
         Baseliner.ErrorOutputTabs.superclass.initComponent.call(this);
     }
 });
+
+Baseliner.ComboStatus = Ext.extend( Baseliner.ComboDoubleRemote, { 
+    allowBlank: true,
+    url: '/ci/status/combo_list', field: 'id_status', displayField: 'name',
+    fields: [ 'id_status', 'name' ]
+});
+

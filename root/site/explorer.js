@@ -305,10 +305,13 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
             }});
         }
         m.add({
+            xtype: 'menuitem',
             text: _('Refresh Node'),
             cls: 'x-btn-text-icon',
             icon: '/static/images/icons/refresh.gif',
-            handler: function() { self.refresh() }
+            handler: function() {
+                self.refresh(function(node){node.attributes.is_refreshing = false;});
+            }
         });
         Baseliner.explorer_menu.showAt(event.xy);
     }
@@ -618,11 +621,12 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             items: [
                 {   xtype:'button', 
                     cls: 'x-btn-text-icon',
+                    tooltip: _('Refresh All Nodes'),
                     icon: '/static/images/icons/refresh-grey.gif',
                     handler: function(){
                         this.disable();
                         var that = this;                        
-                        self.current_tree().refresh(function(){that.enable();});
+                        self.current_tree().refresh_all(function(){that.enable();});
                     }
                 },
                 button_projects,

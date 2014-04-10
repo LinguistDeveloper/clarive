@@ -273,6 +273,9 @@ msgstr "Todas"
 msgid "Velocity"
 msgstr "Velocidad"
 
+msgid "New Status"
+msgstr "Nuevo Status"
+
 msgid "Copy of"
 msgstr "Copia de"
 
@@ -2683,7 +2686,7 @@ msgstr "Finished dummy sleep semaphore service"
 msgid "Approve jobs"
 msgstr "Aprobar pases"
 
-#>>>> lib/BaselinerX/Job/Service/ApprovalRequest.pm (45)
+# lib/BaselinerX/Job/Service/ApprovalRequest.pm (45)
 msgid "No hay aprobaciones programadas para este pase."
 msgstr "No hay aprobaciones programadas para este pase."
 
@@ -4998,6 +5001,12 @@ msgstr "Se ha encontrado un problema abriendo el tópico %1.  Probablemente se h
 msgid "Artifacts"
 msgstr "Artefactos"
 
+msgid "Velocity by Category"
+msgstr "Velocidad por Categoría"
+
+msgid "Velocity by Project"
+msgstr "Velocidad por Proyecto"
+
 msgid "No artifacts found"
 msgstr "No se han encontrado artefactos"
 
@@ -5009,3 +5018,11 @@ msgstr "El usuario %1 ha comentado el tópico [%2] %3"
 
 msgid "%1 deleted a post from topic [%2] %3"
 msgstr "El usuario %1 ha borrado un comentario del tópico [%2] %3"
+
+msgid "User %1 has requested approval for job %2"
+msgstr "El usuario %1 ha solicitado aprobación para el job %2"
+
+msgid "Refresh All Nodes"
+msgstr "Refrescar todo el Árbol"
+
+### EOF - do not write anything bellow this

@@ -32,6 +32,7 @@ register 'service.job.dummy' => {
 register 'config.job.daemon' => {
     metadata=> [
         {  id=>'frequency', label=>'Job Server Frequency', type=>'int', default=>10 },
+        {  id=>'wait_for_killed', label=>'Seconds to wait before declaring job killed', type=>'int', default=>10 },
         {  id=>'mode', label=>'Job Spawn Mode (spawn,fork,detach)', type=>'str', default=>'detach' },
         {  id=>'unified_log', label=>'Set true to have jobs report to dispatcher log', type=>'bool', default=>0 },
     ]
@@ -125,7 +126,7 @@ sub job_daemon {
                 _log("Reaping children..."), $self->reap_children if $mode =~ /fork|detach/;
             }
         }
-        $self->check_job_expired();
+        $self->check_job_expired($config);
         $self->check_cancelled();
         last if $EXIT_NOW;
         sleep $freq;    
@@ -211,7 +212,7 @@ sub runner_fork {
 
 # expired or pid alive
 sub check_job_expired {
-    my ($self)=@_;
+    my ($self, $config)=@_;
     #_log( "Checking for expired jobs..." );
     my $rs = ci->job->find({ 
             maxstarttime => { '$lt' => _now }, 
@@ -235,14 +236,19 @@ sub check_job_expired {
         if( $ci->host eq $hostname ) {
             if( $ci->pid>0 && !pexists($ci->pid) ) {
                 _warn "Not alive: " . $ci->name;
-                # recheck
+                # TODO recheck is slow (sleeps), try forking
+                # recheck: sleep a little, reload the row, than check the pid again
+                sleep( $config->{wait_for_killed} // 10 );  # sleep for row wait
                 if( $ci->pid>0 ) {
                     my $rec = $ci->load;
                     next unless ref $rec;
                     next unless $rec->{status} ~~ @running;
+                    next unless $ci->pid;
                 }
+                next if pexists($ci->pid);
                 my $msg = _loc("Detected killed job %1 (mid %2 status %3, pid %4)", $ci->name, $ci->mid, $ci->status, $ci->pid ); 
                 _warn( $msg ); 
+                # TODO consider using $ci->update
                 $ci->logger->error( $msg ); 
                 $ci->status('KILLED');
                 $ci->endtime( _now );
