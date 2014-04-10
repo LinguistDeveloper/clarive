@@ -2222,22 +2222,26 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
         var self = this;
         var sm = self.getSelectionModel();
         var node = sm.getSelectedNode();
-        if( node )
-            self.refresh_node( node );
+        if( node ){
+            //self.refresh_node( node );
+            if (!node.attributes.is_refreshing){
+                node.attributes.is_refreshing = true;
+                self.refresh_node( node, callback );    
+            }
+        }
         else 
             self.refresh_all(callback);
     },
     refresh_all : function(callback){
-		
         var self = this;
         this.loader.load(self.root);
 		self.onload = callback;
     },
-    refresh_node : function(node){
+    refresh_node : function(node, callback){
         var self = this;
         if( node != undefined ) {
             var is = node.isExpanded();
-            self.loader.load( node );
+            self.loader.load( node, callback );
             if( is ) node.expand();
         }
     }

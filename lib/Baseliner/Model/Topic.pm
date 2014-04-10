@@ -321,7 +321,7 @@ sub topics_for_user {
     if( length($query) ) {
         #$query =~ s{(\w+)\*}{topic "$1"}g;  # apparently "<str>" does a partial, but needs something else, so we put the collection name "job"
         my @mids_query;
-        if( $query !~ /\+|\-|\"|\:/ ) {  # special queries handled by query_build later
+        if( $query !~ /\+|\-|\"/ ) {  # special queries handled by query_build later
             @mids_query = map { $_->{obj}{mid} } 
                 _array( mdb->topic->search( query=>$query, limit=>1000, project=>{mid=>1})->{results} );
         }
@@ -849,12 +849,12 @@ sub next_status_for_user {
                 if(Baseliner->model('Permissions')->user_has_action( username=> $username, action => 'action.topics.logical_change_status', bl=> $status->{status_bl}, mid => $topic_mid )){
                     push @to_status, $status;
                 }
-            }else{
-                if ( $status->{job_type} eq 'demote' ) {
+            }elsif ( $status->{job_type} eq 'demote' ) {
                     if(Baseliner->model('Permissions')->user_has_action( username=> $username, action => 'action.topics.logical_change_status', bl=> $status->{status_bl_from}, mid => $topic_mid )){
                         push @to_status, $status;
                     }               
-                }
+            }else {
+                push @to_status, $status;
             }
         }    
     } else {
