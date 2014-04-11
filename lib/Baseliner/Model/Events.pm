@@ -70,12 +70,16 @@ sub run_once {
             my $event_key = $ev->{event_key};
             my $notify_scope = $stash->{notify};
             my @notify_default;
-            push @notify_default, _array $stash->{notify_default} if $stash->{notify_default};
-            push @notify_default, $stash->{created_by} if $stash->{created_by};
+            
+            
+            my $config = config_get('config.notifications');
+            if (!$config->{exclude_default}){
+                push @notify_default, _array $stash->{notify_default} if $stash->{notify_default};
+                push @notify_default, $stash->{created_by} if $stash->{created_by};
+            }
             
             my $notification = Baseliner->model('Notification')->get_notifications({ event_key => $event_key, notify_default => \@notify_default, notify_scope => $notify_scope, mid => $stash->{mid} });
             my $config_email = Baseliner->model( 'ConfigStore' )->get( 'config.comm.email.from' )->{from};
-            
             if ($notification){
                 my $ci_or_topic = {};
                 if( $stash->{mid} ) {

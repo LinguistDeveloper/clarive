@@ -36,11 +36,9 @@ sub inbox_json : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
     my ($start, $limit, $query, $query_id, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query query_id dir sort/}, 0 );
-    
     $sort ||= 'sent';
     $dir ||= 'DESC';
-    return unless $c->user;
-    
+    return unless $c->user || $p->{test};
     $c->stash->{messages} = $c->model('Messaging')->inbox(
             all      => 1,
             username => $p->{username} || $c->username || $c->user->id,

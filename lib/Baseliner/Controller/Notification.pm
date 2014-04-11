@@ -46,17 +46,18 @@ sub list_notifications : Local {
     
     my @rows;
     while( my $r = $rs->next ) {
+        my $data = Baseliner->model('Notification')->encode_data($r->{data});
         push @rows, {
             id              => $r->{_id}->{value},
             event_key       => $r->{event_key},
-            data            => $r->{data},
+            data            => $data,
             action          => $r->{action},
             is_active       => $r->{is_active},
             template_path   => $r->{template_path},
             subject         => $r->{subject},
         };        
     }
-    $cnt = ''.scalar @rows;
+    $cnt = mdb->notification->count();
     $c->stash->{json} = { data => \@rows, totalCount=>$cnt };
     $c->forward("View::JSON");
 }
@@ -168,11 +169,10 @@ sub save_notification : Local {
                 map {  $scope{$_} = $p->{$_} ? $p->{$_} eq 'on' ? {'*' => _loc('All')} : _decode_json($p->{$_ . '_names'}) : undef } grep {$p->{$_} ne ''} _array $scope;
             }
         }
-        
         $data->{scopes} = \%scope;
         $data->{recipients} = _decode_json($p->{recipients});
-        
-        ### no hacer _dump y mergear con el resto de la estructura
+        #convert data to mongo style
+        $data = Baseliner->model('Notification')->decode_data(_dump $data);
         my $notification = mdb->notification->update(
             {
                 _id             => mdb->oid($p->{notification_id})
@@ -180,7 +180,7 @@ sub save_notification : Local {
             {   event_key       => $p->{event},
                 action          => $p->{action},
                 data            => $data,
-                is_active       => 1,
+                is_active       => '1',
                 template_path   => $p->{template},
                 subject         => $p->{subject},
             },
@@ -235,7 +235,7 @@ sub change_active : Local {
         map {$_ = mdb->oid($_)} @ids_notifications;
         my @notifications = mdb->notification->find({_id => {'$in' => \@ids_notifications }})->all;
         foreach my $not (@notifications){
-            mdb->notification->update({_id => $not->{_id} }, {'$set' => {is_active => $action eq 'active' ? 1 : 0 }});
+            mdb->notification->update({_id => $not->{_id} }, {'$set' => {is_active => $action eq 'active' ? '1' : '0' }});
         }
         $c->stash->{json} = { success => \1, msg => "Notifications $msg_active" };
     }

@@ -256,6 +256,7 @@ sub notify {
 
     # create the message
     my $msg = $self->create(%p); 
+    _log "VAMOS A NOTIFICAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAR";
     my $schedule = $p{schedule_time};
     # create the queue entries
     for my $carrier ( @carriers ) {
