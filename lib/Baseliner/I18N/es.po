@@ -4962,6 +4962,15 @@ msgstr "Antes"
 msgid "After"
 msgstr "Despues"
 
+msgid "Estimated Duration"
+msgstr "Duración Estimada"
+
+msgid "Success Rate"
+msgstr "Probabilidad de Éxito"
+
+msgid "ETA"
+msgstr "Hora Estimada"
+
 msgid "On"
 msgstr "El"
 
@@ -5003,3 +5012,12 @@ msgstr "Pase iniciado en %1 a %2"
 
 msgid "Rule: %1"
 msgstr "Regla: %1"
+
+msgid "%1 created a post for topic [%2] %3"
+msgstr "El usuario %1 ha comentado el tópico [%2] %3"
+
+msgid "%1 deleted a post from topic [%2] %3"
+msgstr "El usuario %1 ha borrado un comentario del tópico [%2] %3"
+
+msgid "User %1 has requested approval for job %2"
+msgstr "El usuario %1 ha solicitado aprobación para el job %2"

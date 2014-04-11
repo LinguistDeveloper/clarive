@@ -45,6 +45,9 @@ msgstr "Finished"
 msgid "ERROR"
 msgstr "Error"
 
+msgid "REJECTED"
+msgstr "Rejected"
+
 msgid "CANCELLED"
 msgstr "Cancelled"
 

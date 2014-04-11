@@ -15,12 +15,12 @@ use Tie::IxHash;
 
 register 'action.search.job' => { name => 'Search jobs' };
 
-register 'event.job.rerun' => { name=>'Rerun a job' };
-register 'event.job.reschedule' => { name=>'Reschedule a job' };
-register 'event.job.start' => { name=>'Job start' };
-register 'event.job.start_step' => { name=>'Job step start' };
-register 'event.job.end' => { name=>'Job end, after POST' };
-register 'event.job.end_step' => { name=>'Job step end' };
+register 'event.job.rerun' => { name=>'Rerun a job', notify=>{ scope=>['project','bl'] }  };
+register 'event.job.reschedule' => { name=>'Reschedule a job', notify=>{ scope=>['project','bl'] }  };
+register 'event.job.start' => { name=>'Job start', notify=>{ scope=>['project','bl'] } };
+register 'event.job.start_step' => { name=>'Job step start', notify=>{ scope=>['project','bl'] } };
+register 'event.job.end' => { name=>'Job end, after POST', notify=>{ scope=>['project','bl'] } };
+register 'event.job.end_step' => { name=>'Job step end', notify=>{ scope=>['project','bl'] } };
 
 sub monitor {
     my ($self,$p) = @_;
@@ -85,14 +85,21 @@ sub monitor {
     my $where = {};
     my @mid_filters;
     if( length($query) ) {
-        $query =~ s{(\w+)\*}{job "$1"}g;  # apparently "<str>" does a partial, but needs something else, so we put the collection name "job"
-        $query =~ s{([\w\-\.]+)}{"$1"}g;  # fix the "N.ENV-00000319" type search
-        $query =~ s{\+(\S+)}{"$1"}g;
-        $query =~ s{""+}{"}g;
         _debug "Job QUERY=$query";
-        my @mids_query = map { $_->{obj}{mid} } 
-            _array( mdb->master_doc->search( query=>$query, limit=>1000, project=>{mid=>1}, filter=>{ collection=>'job' })->{results} );
-        push @mid_filters, { mid=>mdb->in(@mids_query) };
+        my @mids_query;
+        if( $query !~ /\+|\-|\"|\:/ ) {  # special queries handled by query_build later
+            $query =~ s{(\w+)\*}{job "$1"}g;  # apparently "<str>" does a partial, but needs something else, so we put the collection name "job"
+            $query =~ s{([\w\-\.]+)}{"$1"}g;  # fix the "N.ENV-00000319" type search
+            $query =~ s{\+(\S+)}{"$1"}g;
+            $query =~ s{""+}{"}g;
+            @mids_query = map { $_->{obj}{mid} } 
+                _array( mdb->master_doc->search( query=>$query, limit=>1000, project=>{mid=>1}, filter=>{ collection=>'job' })->{results} );
+        }
+        if( !@mids_query ) {
+            mdb->query_build( where=>$where, query=>$query, fields=>[ keys %$group_keys ] ); 
+        } else {
+            push @mid_filters, { mid=>mdb->in(@mids_query) };
+        }
     }
     
     # user content

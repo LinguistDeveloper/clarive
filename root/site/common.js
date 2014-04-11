@@ -1198,6 +1198,18 @@ Baseliner.Window = Ext.extend( Ext.Window, {
                 handler: function(a,b,c){ self.tabify(a,b,c) }
             });
         }
+        if( self.save_handler ) {
+            self.on('afterrender', function(){
+                new Ext.KeyMap( self.el, {
+                    key: 's', ctrl: true, scope: self.el,
+                    stopEvent: true,
+                    fn: function(){  
+                        if( self.el ) self.save_handler();
+                        return false;
+                    }
+                });
+            });
+        }
         Baseliner.Window.superclass.initComponent.call(this);
     },
     minimize: function(){

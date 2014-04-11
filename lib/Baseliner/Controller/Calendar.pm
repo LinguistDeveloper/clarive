@@ -430,6 +430,7 @@ sub build_job_window : Path('/job/build_job_window') {
             : _dt();  # _dt = now with timezone
 
         my @ns;
+        my @all_projects;
         my %cis;  # keep track of all ci relations found
         my $depth_default = 4;
         # $contents = $c->model('Jobs')->container_expand( $contents );
@@ -439,7 +440,9 @@ sub build_job_window : Path('/job/build_job_window') {
             # recurse into ci relations up to depth
             my @related; 
             push @related, $ci->children( depth => $depth_default, does => [ 'Infrastructure', 'Revision' ] ) ;   
-            push @related, $ci->children( depth => 1, does => [ 'Project'] ) ;   
+            my @projects = $ci->children( depth => 1, does => [ 'Project'] ) ;   
+            push @all_projects, @projects;
+            push @related, @projects;
 
             # ask for nature from revisions TODO this is a placeholder still, revisions need to support nature
             my @natures = grep { defined } map { $_->nature if $_->can('nature') } $ci, @related;
@@ -453,8 +456,43 @@ sub build_job_window : Path('/job/build_job_window') {
         @ns = _unique @ns;
 
         my ($hour_store, @rel_cals) = $self->check_dates($date, $bl, @ns);
-
-        $c->stash->{json} = {success=>\1, data => $hour_store, cis=>_damn( \%cis ), cals=>\@rel_cals };
+        
+        # build statistics
+        my %stats;
+        my $prj_list = mdb->in( map { $_->mid } @all_projects ); 
+        # TODO loop by project here so we get 1000 from one, 1000 from another...
+        my $rs = ci->job->find({ projects=>$prj_list, bl=>$bl })->sort({ starttime=>-1 })->limit(1000);
+        while( my $job = $rs->next ) {
+            next unless $job->{endtime} && $job->{starttime};
+            my $bl = $job->{bl};
+            my @prjs = _array( $job->{projects} );
+            # TODO use only last months or last 10; -- success rate based on last 10, etc.
+            map {
+                my $k = $_ . "-" . $bl;
+                # duration
+                push @{ $stats{$k}{dur} }, ((Class::Date->new( $job->{endtime} ) - Class::Date->new($job->{starttime}))/@prjs)
+                    if $job->{status} eq 'FINISHED';
+                # success rate
+                $job->{status} eq 'FINISHED' ? $stats{$k}{ok}++ : $stats{$k}{ko}++;
+            } @prjs;
+        }
+        
+        my @res; my @durs; my $succ=1;
+        my $any_succ = 0;
+        while( my ($pb,$v) = each %stats ) {
+            my @dur = @{ $$v{dur} // [] };
+            push @durs, (Util->stat_mode(@dur)) if @dur;   # TODO weighted avg by project?
+            my ($ok,$ko) = @{$v}{qw(ok ko)};
+            $succ = $succ * ( !$ok ? 0 : $ok/($ok+$ko) );
+            $any_succ = 1 if $ok || $ko;
+            #map { _warn("DUR=========================$_"); $durs+=$_ } @dur;
+        }
+        my $avg = '?'; 
+        if( @durs ) { 
+            $avg = Util->to_dur(List::Util::sum(@durs));
+        }
+        
+        $c->stash->{json} = {success=>\1, data => $hour_store, cis=>_damn( \%cis ), cals=>\@rel_cals, stats=>{ eta=>$avg, p_success=>$any_succ?int($succ*100).'%':'?' } };
     } catch {
         my $error = shift;
         _error $error;

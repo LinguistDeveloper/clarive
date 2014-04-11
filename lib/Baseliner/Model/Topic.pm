@@ -240,6 +240,12 @@ register 'registor.action.topic_category_fields' => {
                         $description = $msg_edit . ' ' . lc $field->{name_field} . ' ' . $msg_in_category . ' ' . lc $category->{name} . ' ' . $msg_for_status . ' ' . lc $status->{name};
                         
                         $actions_category_fields{$id_action} = { id => $id_action, name => $description };
+
+                        $id_action = 'action.topicsfield.' . _name_to_id($category->{name}) . '.' . _name_to_id($field->{name_field}) . '.' . _name_to_id($status->{name}) . '.read';
+                        $description = $msg_view . ' ' . lc $field->{name_field} . ' ' . $msg_in_category . ' ' . lc $category->{name} . ' ' . $msg_for_status . ' ' . lc $status->{name};
+                        
+                        $actions_category_fields{$id_action} = { id => $id_action, name => $description };
+
                     }
                 }
             }
@@ -315,7 +321,7 @@ sub topics_for_user {
     if( length($query) ) {
         #$query =~ s{(\w+)\*}{topic "$1"}g;  # apparently "<str>" does a partial, but needs something else, so we put the collection name "job"
         my @mids_query;
-        if( $query !~ /\+|\-|\"/ ) {  # special queries handled by query_build later
+        if( $query !~ /\+|\-|\"|\:/ ) {  # special queries handled by query_build later
             @mids_query = map { $_->{obj}{mid} } 
                 _array( mdb->topic->search( query=>$query, limit=>1000, project=>{mid=>1})->{results} );
         }

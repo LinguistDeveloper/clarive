@@ -453,11 +453,12 @@ around 'debug' => sub {
         $p{bl} ||= '*';
         if( $p{domain} ) {
             $p{domain} =~ s{\.$}{}g;
-            $p{key}={ -like => "$p{domain}.%" };
+            # $p{key}={ -like => "$p{domain}.%" };
+            $p{key}= qr/^$p{domain}\./ ;
         }
         print "KEY==$p{domain}\n";
         my %data;
-        my $rs = $c->model('Baseliner::BaliConfig')->search({ ns=>$p{ns}, bl=>$p{bl}, key=>$p{key} });
+        my $rs = mdb->config->find({ ns=>$p{ns}, bl=>$p{bl}, key=>$p{key} });
         while( my $r = $rs->next  ) {
             (my $var = $r->key) =~ s{^(.*)\.(.*?)$}{$2}g;
             $c->stash->{$var} = $r->value;

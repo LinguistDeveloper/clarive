@@ -17,7 +17,7 @@ sub delete : Local {
     my ($self,$c)=@_;
     my $p = $c->req->parameters;
     try {
-        $c->model('ConfigStore')->delete( id=>$p->{id} );
+        $c->model('ConfigStore')->delete( _id=>$p->{id} );
         $c->stash->{json} = { success => \1, msg => _loc("Config value %1 deleted", $$ ) };
     } catch {
         my $err = shift;
@@ -42,15 +42,16 @@ sub resolve : Local {
 sub update : Local {
     my ($self,$c)=@_;
     my $p = $c->req->parameters;
+    my $row;
     try {
         if( $p->{id} ) {
             # update
-            $c->model('ConfigStore')->set( id=>$p->{id}, key=>$p->{key}, value=>$p->{value}, bl=>$p->{bl}, ns=>$p->{ns} );
+            $row = $c->model('ConfigStore')->set( _id=>$p->{id}, key=>$p->{key}, value=>$p->{value}, bl=>$p->{bl}, ns=>$p->{ns} );
         } else {
             # create
-            $c->model('ConfigStore')->set( key=>$p->{key}, value=>$p->{value}, bl=>$p->{bl}, ns=>$p->{ns} );
+            $row = $c->model('ConfigStore')->set( key=>$p->{key}, value=>$p->{value}, bl=>$p->{bl}, ns=>$p->{ns} );
         }
-        $c->stash->{json} = { success => \1, msg => _loc("Config value %1 saved", $p->{key} ) };
+        $c->stash->{json} = { success => \1, msg => _loc("Config value %1 saved", $p->{key} ), _id => $row->{value} };
     } catch {
         my $err = shift;
         $c->stash->{json} = { success => \0, msg => _loc("Error storing config value %1: %2", $$, $err ) };
@@ -78,21 +79,24 @@ sub json_combined : Local {
     $sort ||= 'key';
     $dir ||= 'asc';
 
-    my $res1 = $c->model('ConfigStore')->search_registry( query=>$query, );
+    my $res1 = $c->model('ConfigStore')->search_registry( query=>$query );
+
     my %original = map { $_->{key} => 1 } _array $res1->{data};
 
     my %modified;
     my $res2 = $c->model('ConfigStore')->search( query=>$query,  );  
-    for( _array( $res2->{data} ) ) {
+    for( _array( $res2->{data} ) ) { 
         next unless $_->{ns} eq '/';
         next unless $_->{bl} eq '*';
         $modified{$_->{key}}=$_;
     }
     my @ret;
+    my $modified = 0;
     for( _array( $res1->{data} ) ) {
         if( ref ( my $row = $modified{$_->{key}} ) ) {
             $row->{status} = 'modified';
             push @ret, $row;
+            $modified++;
         } else { 
             $_->{status} = 'original';
             push @ret, $_;
@@ -102,7 +106,7 @@ sub json_combined : Local {
         my $orig = $original{ $_->{key} };
         next if ref $orig
             && $orig->{ns} eq $_->{ns}
-            && $orig->{bl} eq $orig->{bl}; 
+            && $orig->{bl} eq $_->{bl}; 
         $_->{status} = 'missing';
         push @ret, $_;
     }
@@ -116,7 +120,7 @@ sub json_combined : Local {
 
     $c->stash->{json} = { 
         data =>  \@ret,
-        totalCount => scalar @ret
+        totalCount => scalar @ret - $modified
     };
     $c->forward('View::JSON');
 }
@@ -124,7 +128,7 @@ sub json_combined : Local {
 sub json_original : Local {
     my ($self,$c)=@_;
     my $p = $c->req->parameters;
-    my ($start, $limit, $query, $dir, $sort, $cnt ) = @{$p}{qw/start limit query dir sort/};
+    my ($start, $limit, $query, $dir, $sort, $cnt ) = @{$p}{qw/start ps query dir sort/};
     $start||=0;
     $limit||=50;
     my $res = $c->model('ConfigStore')->search_registry( query=>$query, start=>$start, limit=>$limit, sort=>$sort, dir=>$dir );

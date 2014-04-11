@@ -314,7 +314,7 @@ sub get_rules_notifications{
                             for my $field (@fields){
                                 push @users_mid, $topic->{$field};
                             }
-                            @tmp_users= map {$_->{name}} ci->user->find({mid=>@users_mid})->all;
+                            @tmp_users= map {$_->{name}} ci->user->find({mid=>mdb->in(@users_mid)})->all;
 
                             #@tmp_users = map { _ci($_->{to_mid})->name }
                             #                        DB->BaliMasterRel->search(  { 'LOWER(rel_field)' => \@fields, rel_type => 'topic_users'},

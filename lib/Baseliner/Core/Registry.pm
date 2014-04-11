@@ -230,7 +230,7 @@ sub dump_yaml {
 
 sub load_enabled_list {
     my ( $self ) = @_;
-    my $rs = Baseliner->model('Baseliner::BaliConfig')->search({ ns=>'/', bl=>'*', key=>{ -like => '%.enabled' } });
+    my $rs = mdb->config->find({ ns=>'/', bl=>'*', key=> qr/\.enabled$/});
     while( my $row = $rs->next ) {
         my $key = $row->key;
         my $enabled = $row->value;

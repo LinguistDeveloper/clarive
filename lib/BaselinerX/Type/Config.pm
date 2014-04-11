@@ -141,7 +141,7 @@ sub factory {
     for( @{$self->metadata} ) {
         next if defined $data->{ $_->{id} }; 
         ## load missing from table
-            my $rs = Baseliner->model('Baseliner::BaliConfig')->search({ key=>$self->key.'.'.$_->{id} }) or die $!;
+            my $rs = mdb->config->find({ key => $self->key.'.'.$_->{id} }) or die $!;
             my @values;
             while( my $r = $rs->next ) {
                 push @values, { ns=>$r->ns, bl=>$r->bl, value=>$r->value };
@@ -175,8 +175,7 @@ sub data {
     my $data = $p{data} || {};
     for( @{$self->metadata} ) {
         next if defined $data->{ $_->{id} };  ## data=> params have priority
-        my $rs = Baseliner->model('Baseliner::BaliConfig')->search({ ns=>$p{ns}, bl=>$p{bl}, key=>$self->key.'.'.$_->{id} })
-            or die $!;			
+        my $rs = mdb->config->find({ ns=>$p{ns}, bl=>$p{bl}, key=>$self->key.'.'.$_->{id} }) or die $!;			
         while( my $r = $rs->next ) {
             $data->{ $_->{id} } = $r->value;
         }
@@ -210,8 +209,8 @@ sub factory_from_metadata{
     for( @{$self->metadata} ) {
         next if defined $data->{ $_->{id} }; 
         ## load missing from table
-        if($_->{id} ne 'ns' && $_->{id} ne 'bl' ){		
-            my $rs = $c->model('Baseliner::BaliConfig')->search({ key=>$self->key.'.'.$_->{id} }) or die $!;
+        if($_->{id} ne 'ns' && $_->{id} ne 'bl' ){	
+            my $rs = mdb->config->find({ key => $self->key.'.'.$_->{id} }) or die $!;
             my @values;
             while( my $r = $rs->next ) {
                 push @values, { ns=>$r->ns, bl=>$r->bl, value=>$r->value };
@@ -244,28 +243,21 @@ sub store {
         next unless defined $data->{ $_->{id} };
         if($_->{id} ne 'ns' && $_->{id} ne 'bl' ){
             my $key = $p{long_key} ? $_->{id} : $self->key.'.'.$_->{id} ;
-            my $rs = Baseliner->model('Baseliner::BaliConfig')->search({ ns=>$p{ns}, bl=>$p{bl}, key=>$key })
-                or die $!;	
-            my $exist = 0;		
-            while( my $r = $rs->next ) {
-                $r->value( $data->{ $_->{id} } );
-                $r->update;
-                $exist = 1;
-            }		
-            # Modificado para que en caso de que no exista la clave la cree
-            if($exist eq 0){
-                my $r = Baseliner->model('Baseliner::BaliConfig')->create(
-                    {
-                        ns => $p{ns},
-                        bl => $p{bl},
-                        key => $key,
-                        value => $data->{ $_->{id}},					
-                        
-                    }
-                );
-            
-                $r->update;
-            }
+            my $config = mdb->config->update(
+                {
+                    key     => $key,
+                    ns      => $p{ns},
+                    bl      => $p{bl},
+                },
+                {   
+                    key     => $key,
+                    ns      => $p{ns},
+                    bl      => $p{bl},
+                    value   => $data->{$key},
+                    ts      => mdb->ts,
+                },
+                {'upsert' => 1}
+            ) or die $!;
         }
     }
     return 1;
@@ -328,7 +320,8 @@ sub rows {
     my ($self,%p) = @_;
     my $config_set = $self->key;
     ## order_by is not effective in this query
-    my $rs = Baseliner->model('Baseliner::BaliConfig')->search({ key=>{-in=> [ $self->get_keys ] } }, { order_by => [qw/ns/] });
+    my $rs = mdb->config->find({key => {'$in' => [$self->get_keys]}});
+    $rs->sort({ns => 1});
     my $last_ns = '';
     my @rows=();
     my @packed_data=();
@@ -367,7 +360,7 @@ sub rows {
 sub load_inf {  #TODO deprecated
     my ($self,$c, $config_set) = @_;
     my $data = {};
-    my $rs = $c->model('Baseliner::BaliConfig')->search({ ns=>'/', bl=>'*', key=>{-like=>"$config_set.%" } });
+    my $rs = mdb->config->find({ ns => '/', bl => '*', key => qr/^$config_set\./ });
     while( my $r = $rs->next  ) {
         (my $var = $r->key) =~ s{^(.*)\.(.*?)$}{$2}g;
         $data->{$var} = $r->value;
@@ -382,7 +375,7 @@ sub load_stash {
     for my $config_set ( @config_list ) {
         my $config = $c->registry->get( $config_set );
         ## read config from the table
-        my $rs = $c->model('Baseliner::BaliConfig')->search({ ns=>'/', bl=>'*', key=>{-like=>"$config_set.%" } });
+        my $rs = mdb->config->find({ ns => '/', bl => '*', key => qr/^$config_set\./ });
         while( my $r = $rs->next  ) {
             (my $var = $r->key) =~ s{^(.*)\.(.*?)$}{$2}g;
             $c->stash->{$var} = $r->value;
@@ -476,8 +469,7 @@ sub getRowValueById {
     my ($self, $c, $id, $ns, $bl ) = @_;
     $ns ||= '/';
     $bl ||= '*';
-
-    my $rs = $c->model('Baseliner::BaliConfig')->search({ ns=>$ns, bl=>$bl, key=>$self->key.'.'.$id })
+    my $rs = mdb->config->find({ ns=>$ns, bl=>$bl, key=>$self->key.'.'.$id })
         or die $!;			
     while( my $r = $rs->next ) {
         return $r->value
