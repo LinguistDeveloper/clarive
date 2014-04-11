@@ -500,6 +500,7 @@ sub notifications {
     my @notifs = _dbis->query('select * from bali_notification')->hashes;
     for my $doc ( @notifs ) {
         delete $doc->{id};
+        $doc->{data} = Baseliner->model('Notification')->decode_data( $doc->{data});
         mdb->notification->insert($doc);
     }
 }

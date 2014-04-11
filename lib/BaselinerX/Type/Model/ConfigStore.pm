@@ -44,29 +44,21 @@ sub store_long {
     $p{ns} ||= '/';
     $p{bl} ||= '*';
     for my $key ( keys %{ $p{data} || {} } ) {
-        my $rs = Baseliner->model('Baseliner::BaliConfig')->search({ ns=>$p{ns}, bl=>$p{bl}, key=>$key })
-                or die $!;	
-        my $exist = 0;		
-        while( my $r = $rs->next ) {
-            $r->value( $data->{ $key } );
-            $r->update;
-            $exist = 1;
-        }		
-
-        #TODO check for duplicates
-
-        #TODO if bl=DESA and bl=* values are equal, don't store
-
-        # Modificado para que en caso de que no exista la clave la cree
-        unless($exist){
-            my $r = Baseliner->model('Baseliner::BaliConfig')->create({
-                    ns => $p{ns},
-                    bl => $p{bl},
-                    key => $key,
-                    value => $data->{$key},					
-                });
-            $r->update;
-        }
+        my $config = mdb->config->update(
+            {
+                key     => $key,
+                ns      => $p{ns},
+                bl      => $p{bl},
+            },
+            {   
+                key     => $key,
+                ns      => $p{ns},
+                bl      => $p{bl},
+                value   => $data->{$key},
+                ts      => mdb->ts
+            },
+            {'upsert' => 1}
+        ) or die $!;
     }
     return 1;
 }
@@ -111,9 +103,15 @@ sub get {
     $values{ $key } = [ { key=>$key, ns=>'/', bl=>'*', value=>$v } ] if defined $v ;
 
     # load all values for the keyinto a temp hash
-    my @rs = Baseliner->model('Baseliner::BaliConfig')->search(
-        { -or => [ key=>{-like=>"$key.%" },  key=>{-like=>"$key" } ] },
-        { select=>[qw/ns key bl value/] })->hashref->all;
+    my $where;
+    $where->{bl} = $p{bl} if $p{bl};
+    $where->{ns} = $p{ns} if $p{ns};
+    $where->{'$or'} = [{key => qr/^$key\./}, {key => qr/^$key$/}];
+
+    my @rs = mdb->config->find($where)->fields(
+            {ns => 1, key => 1, bl => 1, value => 1, _id => 0}
+        )->all; 
+
     for my $r ( @rs ) {
         push @{ $values{ $r->{key} } }, { ns=>$r->{ns}, bl=>$r->{bl}, value=>$r->{value} };
     }	
@@ -261,7 +259,7 @@ sub filter_ns {
     $ns ||= '/';
     my $search = { ns=>$ns };
     $search->{bl} = $bl if( $bl );
-    my $rs = Baseliner->model('Baseliner::BaliConfig')->search($search, { select=>[qw/key bl ns/] });
+    my $rs = mdb->config->find($search)->fields({key => 1, bl => 1, ns => 1, _id => 0});
     my %keys;
     while( my $r = $rs->next ) {
         $keys{ $r->key } = ();
@@ -280,63 +278,58 @@ sub search {
     
     my $query = $p->{query};
     my $where = {};
+    $query and $where = mdb->query_build(query => $query, fields=>[qw(ns bl key value ts)]);
 
-    my @query_fields = $p->{query_fields}
-        ? _array($p->{query_fields})
-            : qw/ns bl key value ts/;
-
-    $query and $where = query_sql_build(
-        query  => $query,
-        fields => {
-            ns => 'ns',
-            bl => 'bl',
-            key => 'key',
-            value => 'value',
-            ts => 'ts',
-    }
-    );
-
+    my $rs = mdb->config->find($where);
     # paging
-    my $filter = {};
     my $has_paging = defined($p->{start}) && defined($p->{limit});
     if( $has_paging ) {
-        my $page = abs( $p->{start} / $p->{limit} ) + 1; 
-        $filter->{page} = $page;
-        $filter->{rows} = $p->{limit};
+        $rs->skip($p->{start});
+        $rs->limit($p->{limit});
     }
+
     # sorting
-    $filter->{order_by} = $p->{"sort"} ? { "-$p->{dir}" => $p->{sort} } : { -asc =>"me.key" }
-        unless $p->{sort} =~ /^config_/i;
-    
-    my $rs = Baseliner->model('Baseliner::BaliConfig')->search($where,$filter);
+    my $dir;
+    if($p->{dir} eq 'desc'){
+        $dir = -1;
+    }else{
+        $dir = 1;
+    }
+    my $sort = $p->{sort} ? {$p->{sort} => $dir} : {key => 1}
+        unless $p->{sort} =~ /^config_/i;   
+    $rs->sort($sort);
+
     my $count = 0;
     my @rows;
     while( my $r = $rs->next ) {
-            my $config = $self->config_for_key( $r->key ) or warn 'No config for ' . $r->key;
-            my $metadata = { type=>'?', default=>'', label=>$r->key };  # default values
+            my $config = $self->config_for_key( $r->{key} ) or warn 'No config for ' . $r->{key};
+            my $metadata = { type=>'?', default=>'', label=>$r->{key} };  # default values
             if( $config ) {
-                try { $metadata = $config->metadata_for_key( $r->key ) or warn 'No metadata for ' . $r->key; } catch {_log $r->key;};
+                try { $metadata = $config->metadata_for_key( $r->{key} ) or warn 'No metadata for ' . $r->{key}; } catch {_log $r->{key};};
             }
-            my $value = $self->get( $r->key, ns=>$r->ns, bl=>$r->bl, value=>1, long_key=>1 );
+            my $value = $self->get( $r->{key}, ns=>$r->{ns}, bl=>$r->{bl}, value=>1, long_key=>1 );
             my $data = {
-                $r->get_columns,
-                  resolved => $value,
-                  composed => $self->key_compose( key=>$r->key, ns=>$r->ns, bl=>$r->bl ),
-                  config_name    => $config->{name} || '',
-                  config_key     => $config->{key} || '',
-                  config_module  => $config->{module} || '',
-                  config_type    => $metadata->{type} || '',
-                  config_default => $metadata->{default} || '',
-                  config_label   => _loc( $metadata->{label} ) || '',
+                resolved        => $value,
+                composed        => $self->key_compose( key=>$r->{key}, ns=>$r->{ns}, bl=>$r->{bl} ),
+                config_name    => $config->{name} || '',
+                config_key     => $config->{key} || '',
+                config_module  => $config->{module} || '',
+                config_type    => $metadata->{type} || '',
+                config_default => $metadata->{default} || '',
+                config_label   => _loc( $metadata->{label} ) || '',
             };
+            $data = ($data, $r);
             $data->{config_default} = $self->check_value_type( $data->{config_default} );
+            $data->{id} = $data->{_id} = $data->{_id}{value};
             push @rows, $data;
             $count++;
     }
-
     # add registry items not already in the db
     my %already;
-    @already{ map { $_->{key} } @rows } = 1;
+    my @keys = map { $_->{key} } @rows;
+    foreach (@keys){
+        %already->{$_} = 1;
+    }
     my @registry = grep { not $already{ $_->{key} } } $self->search_registry;
 
     # manual sorting
@@ -346,8 +339,7 @@ sub search {
     }
 
     if( $has_paging ) {
-        my $pager = $rs->pager;
-        my $total = $pager->total_entries;
+        my $total = $rs->count();
         return { data=>\@rows, total=>$total };
     } else {
         return { data=>\@rows, total=>$count };
@@ -432,16 +424,10 @@ sub delete {
     my ($self,%p) = @_;
     my $ns = $p{ns} || '/';
     my $bl = $p{bl} || '*';
-    if( $p{id} ) {
-        my $row = Baseliner->model('Baseliner::BaliConfig')->find( $p{id} );
-        $row->delete if ref $row;
+    if( $p{_id} ) {
+        mdb->config->remove({_id => mdb->oid($p{_id})});
     } else {
-        my $rs = Baseliner->model('Baseliner::BaliConfig')->search({ key=>$p{key}, ns=>$ns, bl=>$bl });
-        if( ref $rs ) {
-            while( my $r = $rs->next ) {
-                $r->delete;
-            }
-        } 
+        mdb->config->remove({ key=>$p{key}, ns=>$ns, bl=>$bl });
     }
 }
 
@@ -453,9 +439,15 @@ sub set {
     _throw 'Missing parameter value' unless defined $p{value};
 
     $self->delete( %p );
-
-    my $row = Baseliner->model('Baseliner::BaliConfig')->create({ key=>$p{key}, value=>$p{value}, ns=>$ns, bl=>$bl });
-    $row->update;
+    
+    my $row = mdb->config->insert(
+        {   key     => $p{key}, 
+            value   => $p{value}, 
+            ns      => $ns, 
+            bl      => $bl,
+            ts      => mdb->ts
+        }
+    );
     return $row;
 }
 
@@ -563,8 +555,7 @@ sub export_to_file {
     $p{file} ||= Baseliner->path_to('/etc/export/config_store');
     my ($vol,$path,$file) = File::Spec->splitpath( $p{file} );
     _mkpath $path;
-    my $rs = Baseliner->model('Baseliner::BaliConfig')->search;
-    $rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
+    my $rs = mdb->config->find();
     my %data;
     for ( $rs->all ) {
         my $key = delete $_->{key} ;

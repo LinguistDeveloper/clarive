@@ -25,6 +25,7 @@ register 'menu.admin.notifications' => {
 register 'config.notifications' => {
     metadata => [
         { id => 'template_default', label => 'Template by default', default => '/email/generic_topic.html'},
+        { id => 'exclude_default', label => 'Exclude all notifications', default => 0},
     ]
 };
 
@@ -173,7 +174,7 @@ sub exclude_default{
     my ( $self, $p ) = @_;
     my $event_key = $p->{event_key} or _throw 'Missing parameter event_key';
     my $exclude_default = 0;
-    my @recipients = map { (_load $_->{data})->{recipients} } mdb->notification->find({event_key => $event_key, is_active => 1, action => 'EXCLUDE'})->all;
+    my @recipients = map { (_load $_->{data})->{recipients} } mdb->notification->find({event_key => $event_key, is_active => '1', action => 'EXCLUDE'})->all;
     
     foreach my $recipient (@recipients){
         foreach my $carrier (keys $recipient){
@@ -196,14 +197,15 @@ sub get_rules_notifications{
     my $mid = $p->{mid};
     
     my $notification = {};
-    my @rs_notify = mdb->notification->find({event_key => $event_key, is_active => 1, action => $action})->all;
-
+    my @rs_notify = mdb->notification->find({event_key => $event_key, is_active => '1', action => $action})->all;
     #my @prj_mid = map { $_->{mid} } ci->related( mid => $mid, isa => 'project') if $mid;
     
     if ( @rs_notify ) {
 		foreach my $row_send ( @rs_notify ){
-			my $data = ref $row_send->{data} ? $row_send->{data} : _load($row_send->{data});
-    
+
+			#my $data = ref $row_send->{data} ? $row_send->{data} : _load($row_send->{data});
+            my $data = $self->encode_data($row_send->{data});
+
             my $valid = 0;
     		if ($notify_scope) {
                 $valid = $self->isValid({ data => $data, notify_scope => $notify_scope});    
@@ -236,7 +238,7 @@ sub get_rules_notifications{
         		}
     		}
 		}
-        
+
 		foreach my $key (keys $notification){
 			foreach my $carrier ( keys $notification->{$key}{carrier}) {
     			my @users;
@@ -253,7 +255,7 @@ sub get_rules_notifications{
                                 #}
                             }
                             else{
-                        		@tmp_users = values $notification->{$key}{carrier}{$carrier}->{$type};                             
+                        		@tmp_users = values $notification->{$key}{carrier}{$carrier}->{$type};                           
                             }
                         }
                         when ('Actions') 	{
@@ -328,9 +330,8 @@ sub get_rules_notifications{
     		}
 		};
     }
-    
     if (keys $notification){
-    	return $notification ;
+    	return $notification;
     }
     else {
     	return undef ;
@@ -338,47 +339,53 @@ sub get_rules_notifications{
 }
 
 
-sub data_loader {
+sub decode_data {
     my ($self,$p) = @_;
-    
     my $data = _load $p;
     if($data->{recipients}){
         if($data->{recipients}->{TO}){
-            $data->{recipients}->{TO} = recipients($data,'TO');
+            $data->{recipients}->{TO} = $self->decode_recipients($data,'TO');
         }
         if($data->{recipients}->{CC}){
-            $data->{recipients}->{CC} = recipients($data,'CC');
+            $data->{recipients}->{CC} = $self->decode_recipients($data,'CC');
         }
         if($data->{recipients}->{BCC}){
-            $data->{recipients}->{BCC} = recipients($data,'BCC');
+            $data->{recipients}->{BCC} = $self->decode_recipients($data,'BCC');
         }        
     }
     if($data->{scopes}){
         if($data->{scopes}->{category}){
-            $data->{scopes}->{category} = scopes($data,'category');
+            $data->{scopes}->{category} = $self->decode_scopes($data,'category');
         }
         if($data->{scopes}->{category_status}){
-            $data->{scopes}->{category_status} = scopes($data,'category_status');
+            $data->{scopes}->{category_status} = $self->decode_scopes($data,'category_status');
         }
         if($data->{scopes}->{project}){
-            $data->{scopes}->{project} = scopes($data,'project');
-        }    
-        my $scopes = $data->{scopes};
+            $data->{scopes}->{project} = $self->decode_scopes($data,'project');
+        }
+        if($data->{scopes}->{field}){
+            $data->{scopes}->{field} = $self->decode_scopes($data,'field');
+        }  
     }
     return $data;
 }
 
-sub scopes {
-    my ($data,$p) = @_;  
-    my @ar;
-    foreach (keys $data->{scopes}->{$p}){
-        push @ar, {'mid' => $_, 'name' => $data->{scopes}->{$p}->{$_}}; 
+sub decode_scopes {
+    my ($self, $data, $p) = @_;  
+    if($p eq 'field'){
+       $data->{scopes}->{field} = [values $data->{scopes}->{field}];
     }
-    $data->{scopes}->{$p} = \@ar;
+    else{ 
+       my @ar;
+       foreach (keys $data->{scopes}->{$p}){
+          push @ar, {'mid' => $_, 'name' => $data->{scopes}->{$p}->{$_}};   
+       }
+       $data->{scopes}->{$p} = \@ar;
+    }
 }
 
-sub recipients {
-    my ($data,$p) = @_;
+sub decode_recipients {
+    my ($self, $data, $p) = @_;
     if($data->{recipients}->{$p}->{Fields}){
         $data->{recipients}->{$p}->{Fields} = [keys $data->{recipients}->{$p}->{Fields}];
     } 
@@ -388,15 +395,15 @@ sub recipients {
     if($data->{recipients}->{$p}->{Emails}){
         $data->{recipients}->{$p}->{Emails} = [keys $data->{recipients}->{$p}->{Emails}];
     } 
+    if($data->{recipients}->{$p}->{Actions}){
+        $data->{recipients}->{$p}->{Actions} = [keys $data->{recipients}->{$p}->{Actions}];
+    } 
     if($data->{recipients}->{$p}->{Roles}){
         my @ar;
         foreach (keys $data->{recipients}->{$p}->{Roles}){
             push @ar, {'mid' => $_, 'name' => $data->{recipients}->{$p}->{Roles}->{$_}};    
         }
         $data->{recipients}->{$p}->{Roles} = \@ar;
-    } 
-    if($data->{recipients}->{$p}->{Actions}){
-        $data->{recipients}->{$p}->{Actions} = [keys $data->{recipients}->{$p}->{Action}];
     } 
     if($data->{recipients}->{$p}->{Users}){
         my @ar;
@@ -406,6 +413,105 @@ sub recipients {
         $data->{recipients}->{TO}->{Users} = \@ar;
     }
     return $data->{recipients}->{$p};
+}
+
+sub encode_data {
+    my ($self,$data) = @_;
+    if($data->{scopes}){
+        $data->{scopes} = $self->encode_scopes($data->{scopes});
+    }
+    if($data->{recipients}){
+        if($data->{recipients}->{TO}){
+            $data->{recipients}->{TO} = $self->encode_recipients($data->{recipients}, 'TO');
+        }
+        if($data->{recipients}->{CC}){
+            $data->{recipients}->{CC} = $self->encode_recipients($data->{recipients}, 'CC');
+        }
+        if($data->{recipients}->{BCC}){
+            $data->{recipients}->{BCC} = $self->encode_recipients($data->{recipients}, 'BCC');
+        }
+    }
+    return $data;
+}
+
+sub encode_scopes {
+    my ($self,$scopes) = @_;
+    if($scopes->{project}){  
+        my %hash;
+        foreach (_array $scopes->{project}){
+            $hash{ $_->{mid} } = $_->{name};
+        }
+        $scopes->{project} = \%hash;
+    }
+    if($scopes->{category_status}){
+        my %hash;
+        foreach (_array $scopes->{category_status}){
+            $hash{ $_->{mid} } = $_->{name};
+        }
+        $scopes->{category_status} = \%hash;
+    }
+    if($scopes->{category}){
+        my %hash;
+        foreach (_array $scopes->{category}){
+            $hash{ $_->{mid} } = $_->{name};
+        }
+        $scopes->{category} = \%hash;
+    }
+    if($scopes->{field}){
+        my %hash;
+        foreach (_array $scopes->{field}){
+            $hash{ $_ } = $_;
+        }
+        $scopes->{field} = \%hash;
+    }
+    return $scopes;
+}
+
+sub encode_recipients {
+    my ($self, $recipients, $method) = @_;
+    if($recipients->{$method}->{Fields}){
+        my %hash;
+        foreach (_array $recipients->{$method}->{Fields}){
+            $hash{ $_ } = $_;
+        }
+        $recipients->{$method}->{Fields} = \%hash;
+    }
+    if($recipients->{$method}->{Owner}){
+       my %hash;
+        foreach (_array $recipients->{$method}->{Owner}){
+            $hash{ $_ } = $_;
+        }
+        $recipients->{$method}->{Owner} = \%hash;
+    }
+    if($recipients->{$method}->{Emails}){
+        my %hash;
+        foreach (_array $recipients->{$method}->{Emails}){
+            $hash{ $_ } = $_;
+        }
+        $recipients->{$method}->{Emails} = \%hash;
+    }
+    if($recipients->{$method}->{Actions}){
+        my %hash;
+        foreach (_array $recipients->{$method}->{Actions}){
+            $hash{ $_ } = $_;
+        }
+        $recipients->{$method}->{Actions} = \%hash;
+    }
+    if($recipients->{$method}->{Roles}){
+        my %hash;
+        foreach (_array $recipients->{$method}->{Roles}){
+            $hash{ $_->{mid} } = $_->{name};
+        }
+        $recipients->{$method}->{Roles} = \%hash;
+    }
+    if($recipients->{$method}->{Users}){
+        my %hash;
+        foreach (_array $recipients->{$method}->{Users}){
+            $hash{ $_->{mid} } = $_->{name};
+        }
+        $recipients->{$method}->{Users} = \%hash;
+    }
+    return $recipients->{$method};
 }
 
 sub get_notifications {
