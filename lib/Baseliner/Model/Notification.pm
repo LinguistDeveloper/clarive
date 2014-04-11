@@ -197,25 +197,15 @@ sub get_rules_notifications{
     my $mid = $p->{mid};
     
     my $notification = {};
-<<<<<<< HEAD
-    my @rs_notify = mdb->notification->find({event_key => $event_key, is_active => 1, action => $action})->all;
-
-=======
     my @rs_notify = mdb->notification->find({event_key => $event_key, is_active => '1', action => $action})->all;
->>>>>>> 6.1#6437notif
     #my @prj_mid = map { $_->{mid} } ci->related( mid => $mid, isa => 'project') if $mid;
     
     if ( @rs_notify ) {
 		foreach my $row_send ( @rs_notify ){
-<<<<<<< HEAD
-			my $data = ref $row_send->{data} ? $row_send->{data} : _load($row_send->{data});
-    
-=======
 
 			#my $data = ref $row_send->{data} ? $row_send->{data} : _load($row_send->{data});
             my $data = $self->encode_data($row_send->{data});
 
->>>>>>> 6.1#6437notif
             my $valid = 0;
     		if ($notify_scope) {
                 $valid = $self->isValid({ data => $data, notify_scope => $notify_scope});    
@@ -248,11 +238,7 @@ sub get_rules_notifications{
         		}
     		}
 		}
-<<<<<<< HEAD
-        
-=======
 
->>>>>>> 6.1#6437notif
 		foreach my $key (keys $notification){
 			foreach my $carrier ( keys $notification->{$key}{carrier}) {
     			my @users;
@@ -269,11 +255,7 @@ sub get_rules_notifications{
                                 #}
                             }
                             else{
-<<<<<<< HEAD
-                        		@tmp_users = values $notification->{$key}{carrier}{$carrier}->{$type};                             
-=======
                         		@tmp_users = values $notification->{$key}{carrier}{$carrier}->{$type};                           
->>>>>>> 6.1#6437notif
                             }
                         }
                         when ('Actions') 	{
@@ -357,21 +339,6 @@ sub get_rules_notifications{
 }
 
 
-<<<<<<< HEAD
-sub data_loader {
-    my ($self,$p) = @_;
-    
-    my $data = _load $p;
-    if($data->{recipients}){
-        if($data->{recipients}->{TO}){
-            $data->{recipients}->{TO} = recipients($data,'TO');
-        }
-        if($data->{recipients}->{CC}){
-            $data->{recipients}->{CC} = recipients($data,'CC');
-        }
-        if($data->{recipients}->{BCC}){
-            $data->{recipients}->{BCC} = recipients($data,'BCC');
-=======
 sub decode_data {
     my ($self,$p) = @_;
     my $data = _load $p;
@@ -384,22 +351,10 @@ sub decode_data {
         }
         if($data->{recipients}->{BCC}){
             $data->{recipients}->{BCC} = $self->decode_recipients($data,'BCC');
->>>>>>> 6.1#6437notif
         }        
     }
     if($data->{scopes}){
         if($data->{scopes}->{category}){
-<<<<<<< HEAD
-            $data->{scopes}->{category} = scopes($data,'category');
-        }
-        if($data->{scopes}->{category_status}){
-            $data->{scopes}->{category_status} = scopes($data,'category_status');
-        }
-        if($data->{scopes}->{project}){
-            $data->{scopes}->{project} = scopes($data,'project');
-        }    
-        my $scopes = $data->{scopes};
-=======
             $data->{scopes}->{category} = $self->decode_scopes($data,'category');
         }
         if($data->{scopes}->{category_status}){
@@ -411,24 +366,10 @@ sub decode_data {
         if($data->{scopes}->{field}){
             $data->{scopes}->{field} = $self->decode_scopes($data,'field');
         }  
->>>>>>> 6.1#6437notif
     }
     return $data;
 }
 
-<<<<<<< HEAD
-sub scopes {
-    my ($data,$p) = @_;  
-    my @ar;
-    foreach (keys $data->{scopes}->{$p}){
-        push @ar, {'mid' => $_, 'name' => $data->{scopes}->{$p}->{$_}}; 
-    }
-    $data->{scopes}->{$p} = \@ar;
-}
-
-sub recipients {
-    my ($data,$p) = @_;
-=======
 sub decode_scopes {
     my ($self, $data, $p) = @_;  
     if($p eq 'field'){
@@ -445,7 +386,6 @@ sub decode_scopes {
 
 sub decode_recipients {
     my ($self, $data, $p) = @_;
->>>>>>> 6.1#6437notif
     if($data->{recipients}->{$p}->{Fields}){
         $data->{recipients}->{$p}->{Fields} = [keys $data->{recipients}->{$p}->{Fields}];
     } 
@@ -455,12 +395,9 @@ sub decode_recipients {
     if($data->{recipients}->{$p}->{Emails}){
         $data->{recipients}->{$p}->{Emails} = [keys $data->{recipients}->{$p}->{Emails}];
     } 
-<<<<<<< HEAD
-=======
     if($data->{recipients}->{$p}->{Actions}){
         $data->{recipients}->{$p}->{Actions} = [keys $data->{recipients}->{$p}->{Actions}];
     } 
->>>>>>> 6.1#6437notif
     if($data->{recipients}->{$p}->{Roles}){
         my @ar;
         foreach (keys $data->{recipients}->{$p}->{Roles}){
@@ -468,12 +405,6 @@ sub decode_recipients {
         }
         $data->{recipients}->{$p}->{Roles} = \@ar;
     } 
-<<<<<<< HEAD
-    if($data->{recipients}->{$p}->{Actions}){
-        $data->{recipients}->{$p}->{Actions} = [keys $data->{recipients}->{$p}->{Action}];
-    } 
-=======
->>>>>>> 6.1#6437notif
     if($data->{recipients}->{$p}->{Users}){
         my @ar;
         foreach (keys $data->{recipients}->{$p}->{Users}){
@@ -484,8 +415,6 @@ sub decode_recipients {
     return $data->{recipients}->{$p};
 }
 
-<<<<<<< HEAD
-=======
 sub encode_data {
     my ($self,$data) = @_;
     if($data->{scopes}){
@@ -585,7 +514,6 @@ sub encode_recipients {
     return $recipients->{$method};
 }
 
->>>>>>> 6.1#6437notif
 sub get_notifications {
 	my ( $self, $p ) = @_;
     my $event_key = $p->{event_key} or _throw 'Missing parameter event_key';
