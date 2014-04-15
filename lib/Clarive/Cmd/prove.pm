@@ -8,7 +8,7 @@ use v5.10;
 our $CAPTION = 'run system tests and check';
 with 'Clarive::Role::Baseliner';
 
-has type          => qw(is rw isa Str default server);
+has type          => qw(is rw isa Str default *);
 has test_url      => qw(is rw isa Str), default => sub {
     my ($self)=@_;
     return $self->app->config->{baseliner}{web_url};
