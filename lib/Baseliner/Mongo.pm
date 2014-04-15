@@ -399,6 +399,7 @@ sub query_build {
     # build columns   -----    TODO use field:lala
     $p{query} =~ s{\*}{.*}g;
     $p{query} =~ s{\?}{.}g;
+    $p{query} = Encode::encode('UTF-8',$p{query});
     @terms = grep { defined($_) && length($_) } Util->split_with_quotes($p{query});  
     my @terms_normal = grep(!/^\+|^\-/,@terms);
     my @terms_plus = grep(/^\+/,@terms);
