@@ -2204,7 +2204,7 @@ sub set_release {
     my $name_field = $release_meta[0]->{name_field} // 'undef';
 
     my $topic_mid = $rs_topic->mid;
-    cache_topic_remove($topic_mid);
+    $self->cache_topic_remove($topic_mid);
 
     my $where = { is_release => 1, rel_type=>'topic_topic', to_mid=> $topic_mid };
     $where->{rel_field} = $release_field if $release_field;
