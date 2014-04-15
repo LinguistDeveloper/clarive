@@ -1329,6 +1329,11 @@ sub parse_vars_raw {
             my $v = $vars->{$k};
             if( ref $v && $str =~ /^\$\{$k\}$/ ) {
                 $str = $v;
+            } elsif( ( ref $v || looks_like_number($v) ) && $str =~ /^\$\{$k\.([^\}]+)}$/ ) {
+                my $meth=$1;
+                $meth = join '', map { "{$_}" } split /\.+/, $meth;
+                $v = ci->new($v) if !ref $v;
+                $str = eval '$v->' . $meth;
             } else {
                 $str =~ s/\$\{$k\}/$v/g;
                 # look for cis like this: ${ci(field.attrib)}

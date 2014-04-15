@@ -20,5 +20,11 @@ use Baseliner::Utils;
     
 }
 
+{
+    my $stash = { wl=>{ instances=>[11,22] } };
+    my $res = Util->parse_vars( '${wl.instances}', $stash );
+    is( $res->[0], 11, 'parse vars nested ok' );
+}
+
 done_testing;
 
