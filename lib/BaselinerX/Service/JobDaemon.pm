@@ -1,4 +1,4 @@
-package BaselinerX::Service::Daemon;
+package BaselinerX::Service::JobDaemon;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Try::Tiny;

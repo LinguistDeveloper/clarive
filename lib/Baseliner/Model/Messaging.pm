@@ -347,8 +347,8 @@ sub inbox {
     exists $p{carrier} and $q{where}->{'queue.carrier'} = delete $p{carrier};
 
     if($p{query_id}){
-        $p{query_id} and $q{where}->{_id => mdb->oid($p{query_id})};	
-    }else{
+        $p{query_id} and $q{where}{_id} = mdb->oid($p{query_id});
+    } else {
         $p{query} and $q{where} = mdb->query_build(query => $p{query}, where => $q{where}, fields=>[qw(sender body subject )]);
     }
 

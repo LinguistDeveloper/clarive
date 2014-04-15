@@ -318,7 +318,7 @@ sub search {
                 config_default => $metadata->{default} || '',
                 config_label   => _loc( $metadata->{label} ) || '',
             };
-            $data = ($data, $r);
+            $data = +{ %$data, %$r };
             $data->{config_default} = $self->check_value_type( $data->{config_default} );
             $data->{id} = $data->{_id} = $data->{_id}{value};
             push @rows, $data;
@@ -328,9 +328,9 @@ sub search {
     my %already;
     my @keys = map { $_->{key} } @rows;
     foreach (@keys){
-        %already->{$_} = 1;
+        $already{$_} = 1;
     }
-    my @registry = grep { not $already{ $_->{key} } } $self->search_registry;
+    my @registry = grep { not $already{ $_->{key} } } $self->search_registry; # XXX dead code, delete?
 
     # manual sorting
     if( $p->{sort} =~ /^config_/i ) {
