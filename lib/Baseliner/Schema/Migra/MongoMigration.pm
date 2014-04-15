@@ -496,6 +496,14 @@ sub scheduler {
     mdb->scheduler->insert($_) for map { delete $_->{id}; $_ } @sch;
 }
 
+sub config {
+    my @config = _dbis->query('select * from bali_config')->hashes;
+    for my $doc ( @config ) {
+        delete $doc->{id};
+        mdb->config->insert($doc);
+    }
+}
+
 sub notifications {
     my @notifs = _dbis->query('select * from bali_notification')->hashes;
     for my $doc ( @notifs ) {

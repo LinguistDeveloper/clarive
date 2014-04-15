@@ -1,4 +1,4 @@
-package Baseliner::Schema::Migrations;
+package Baseliner::Schema::Migrations::notification;
 use Mouse;
 
 sub upgrade {
