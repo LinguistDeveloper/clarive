@@ -607,15 +607,21 @@ sub dsl_try : Local {
     my $p = $c->req->params;
     my $dsl = $p->{dsl} or _throw 'Missing parameter dsl';
     my $stash = $p->{stash} ? _load( $p->{stash} ) : {};
+    $c->stash->{json} = $self->dsl_run($dsl,$stash);
+    $c->forward("View::JSON");
+}
+
+sub dsl_run {
+    my ($self,$dsl,$stash) = @_;
     my $output;
-    my $dslerr;
     local $Baseliner::no_log_color = 1;
-    try {
+    return try {
+        my $dslerr;
         require Capture::Tiny;
         _log "============================ DSL TRY START ============================";
         ($output) = Capture::Tiny::tee_merged(sub{
             try {
-                $stash = $c->model('Rules')->dsl_run( dsl=>$dsl, stash=>$stash );
+                $stash = Baseliner->model('Rules')->dsl_run( dsl=>$dsl, stash=>$stash );
             } catch {
                $dslerr = shift;   
             };
@@ -626,13 +632,46 @@ sub dsl_try : Local {
             _fail "ERROR DSL TRY: $dslerr";
         }
         #$stash = Util->_unbless( $stash );
-        $c->stash->{json} = { success=>\1, msg=>'ok', output=>$output, stash_yaml=>$stash_yaml };
+        return { success=>\1, msg=>'ok', output=>$output, stash_yaml=>$stash_yaml };
     } catch {
         my $err = shift; _error $err;
         my $stash_yaml = _dump( $stash );
-        $c->stash->{json} = { success=>\0, msg=>$err, output=>$output, stash_yaml=>$stash_yaml };
+        return { success=>\0, msg=>$err, output=>$output, stash_yaml=>$stash_yaml };
     };
-    $c->forward("View::JSON");
+}
+
+sub default : Path Args(2) {
+    my ($self,$c,$id_rule,$meth) = @_;
+    my $p = $c->req->params;
+    $meth //= 'json';
+    my $ret = {};
+    my $body = $c->req->body ? _file($c->req->body)->slurp : '';
+    my $stash = { ws_body=>$body, ws_headers=>Util->_clone($c->req->headers), ws_params=>Util->_clone($p), };
+    try {
+        my $rule = mdb->rule->find_one({ id=>"$id_rule" },{ rule_type=>1 }) or _fail _loc 'Rule %1 not found', $id_rule;
+        _fail _loc 'Rule %1 not independent: %2',$id_rule, $rule->{rule_type} if $rule->{rule_type} ne 'independent' ;
+        my $ret_rule = Baseliner->model('Rules')->run_single_rule( id_rule=>$id_rule, stash=>$stash );
+        $ret = defined $stash->{ws_return} 
+            ? $stash->{ws_return} 
+            : ref $ret_rule->{ret} ? $ret_rule->{ret} : { output=>$ret_rule->{ret}, stash=>$stash };
+    } catch {
+        my $err = shift;
+        my $json = try { Util->_encode_json($p) } catch { '{ ... }' };
+        _error "Error in Rule WS call '$id_rule/$meth': $json\n$err";
+        $ret = { msg=>"$err", success=>\0 }; 
+    };
+    if( $meth eq 'json' ) {
+        $c->stash->{json} = $ret;
+        $c->forward('View::JSON');
+    } elsif( $meth eq 'yaml' ) {
+        $c->res->body( Util->_dump($ret) );
+    } elsif( $meth eq 'xml' ) {
+        require XML::Simple;
+        $c->res->body( XML::Simple::XMLout($ret) );
+        $c->res->content_type("text/xml; charset=utf-8");
+    } else {
+        $c->res->body( $ret );
+    }
 }
 
 1;

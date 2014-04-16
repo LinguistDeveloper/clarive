@@ -192,7 +192,7 @@ sub dsl_build {
         
         my $run_forward = _bool($attr->{run_forward},1);  # if !defined, default is true
         my $run_rollback = _bool($attr->{run_rollback},1); 
-        my $error_trap = $attr->{error_trap} if $attr->{error_trap} ne 'none';
+        my $error_trap = $attr->{error_trap} if $attr->{error_trap} && $attr->{error_trap} ne 'none';
         my $needs_rollback_mode = $data->{needs_rollback_mode} // 'none'; 
         my $needs_rollback_key  = $data->{needs_rollback_key} // $name_id;
         my $parallel_mode = length $attr->{parallel_mode} && $attr->{parallel_mode} ne 'none' ? $attr->{parallel_mode} : '';
