@@ -23,12 +23,16 @@ register 'config.daemon.purge' => {
 
 register 'config.purge' => {
     metadata => [
-        { id => 'keep_log_files', default => 30, name=> 'Number of days to keep /log files' },
         { id => 'keep_job_files', default => 30, name=> 'Number of days to keep job files' },
         { id => 'keep_jobs_ok', default => 30, name=> 'Number of days to keep OK job logs' },
         { id => 'keep_jobs_ko', default => 30, name=> 'Number of days to keep KO job logs' },
-        #{ id => 'keep_log_lines', default => 500, name=> 'Number of lines that logs can store' },
-        { id => 'keep_log_size', default => (1024*1024*4), name=> 'Max size in Bytes to keep logs' },   # 4MB to start with
+        { id => 'keep_rotation_level', default => 7, name=> 'Number of compressed files  associated to a log file' },
+        { id => 'keep_nginx-error_log_size', default => 4, name=> 'Max size in MBytes to keep nginx-error log' },
+        { id => 'keep_nginx-access_log_size', default => 4, name=> 'Max size in MBytes to keep nginx-access log' },
+        { id => 'keep_mongod_log_size', default => 4, name=> 'Max size in MBytes to keep mongod log' },
+        { id => 'keep_redis_log_size', default => 4, name=> 'Max size in MBytes to keep redis log' },
+        { id => 'keep_disp_log_size', default => 4, name=> 'Max size in MBytes to keep cla-disp log' },
+        { id => 'keep_web_log_size', default => 4, name=> 'Max size in MBytes to keep cla-web log' },
     ]
 };
 
@@ -48,59 +52,9 @@ register 'service.purge.daemon' => {
                 }
 };
 
-
 register 'service.purge.run_once' => {
     handler => \&run_once,
 };
-
-# sub truncate_log {
-#     my @p = @_;
-#     my $filename = $p[0];
-#     my $numlines  = $p[1];
-#     my $byte;
-#     open FILE, "<$filename" or die "Couldn't open $filename: $!";
-#     seek FILE,-1, 2;
-#     my $count=0;
-#      while (1){
-#        seek FILE,-1,1;
-#        read FILE,$byte,1;
-#        if(ord($byte) == 10 ){
-#         $count++;
-#         if($count == $numlines){last}
-#        }
-#        seek FILE,-1,1;
-#      if (tell FILE == 0){last}
-#     }
-#     $/=undef;
-#     my $tail = <FILE>;
-#     close(FILE);
-#     open FILE, ">>$filename"."_new" or die "Couldn't open $filename"."_new: $!";
-#     print FILE "$tail\n";
-#     close (FILE);
-#     unlink $filename;
-#     move("$filename"."_new","$filename");
-# }
-
-
-
-sub truncate_log {
-    my @p = @_;
-    my $filename = $p[0];
-    my $filesize  = $p[1];
-    # Open the file in read mode 
-    open FILE, "<$filename" or die "Couldn't open $filename: $!";
-    seek FILE,0, 2; 
-    seek FILE,-$filesize,2;
-    $/=undef;
-    my $tail = <FILE>;
-    close(FILE);
-    open FILE, ">>$filename"."_new" or die "Couldn't open $filename"."_new: $!";
-    print FILE "$tail\n";
-    close (FILE);
-    unlink $filename;
-    move("$filename"."_new","$filename");
-}
-
 
 sub run_once {
     my ( $self, $c, $opts )=@_;
@@ -128,8 +82,7 @@ sub run_once {
                 _log "Purging job $job_name with mid $job->{mid} ($endtime < $limitdate)....";
                 $job_purge_count++;
                 $ci_job->update( purged=>1 );
-                next if $opts->{dry_run};
-                
+                next if $opts->{dry_run};              
                 # delete job logs
                 my $deleted_job_logs = mdb->job_log->find({ mid => $job->{mid}, lev => 'debug' });
                 while( my $actual = $deleted_job_logs->next ) {
@@ -160,7 +113,6 @@ sub run_once {
                 _log _loc 'Job not ready to purge yet: %1 (%2): %3', $job_name, $job->{mid}, "$endtime >= $limitdate";
             }
         }
-
         ############## Control of logsize and old .gz ######################
         my $log_dir = Path::Class::dir( $logs_home );
         my $config_files = Baseliner->model('ConfigStore')->get( 'config.purge');
@@ -168,54 +120,54 @@ sub run_once {
         _log "\n\n\nAnalyzing logs....";
         while (my $file = $log_dir->next) {
             next unless -f $file;
-            my @parts = split('\\.', $file->basename);
-            if ( $file->basename =~ /\w*\.log\.\d{4}_\d{2}_\d{2}T\d{2}_\d{2}_\d{2}\.gz$/ ){
-                my $date_time = $parts[-2];
-                #_log $date_time;
-                my $original_time = Time::Piece->strptime($date_time, "%Y_%m_%dT%H_%M_%S");
-                my $days = $config_files->{keep_log_files};
-                my $time_to_remove = $original_time + ONE_DAY * $days;
-                my @temp = split( " ", $now );
-                #_log $time_to_remove->datetime." <----> ". "$temp[0]T$temp[1]";
-                if ( $time_to_remove->datetime lt "$temp[0]T$temp[1]" ){
-                    _log "\tDeleting old GZ file ".$file->basename."....";
-                    next if $opts->{dry_run};
-                    unlink $file;
-                }
-            }
             if ( $file->basename =~ /(?<filename>.+)\.log$/ ){
                 my $filename = $+{filename};
                 my $filesize = -s $file;
-                next unless $filesize-1 > $config_files->{keep_log_size};
-                next if ci->job->find_one({ name=>$filename });
-                _log _loc 'Found log file %1 (filename=%2)', $file, $filename;
-                next if $self->pid_file_and_process($file->dir, $filename);
-                #my $job_name = (split( '\\.', $file->basename ))[0];
-                #my $job = ci->job->find({name => $job_name})->next;
-                #my $config = Baseliner->model('ConfigStore')->get('config.purge', bl => $job->{bl});
-                _log "\tTruncate log ".$file->basename." ($filesize > $config_files->{keep_log_size})...";
-                truncate_log( $file, $config_files->{keep_log_size} );
+                my @particular_logs = ("nginx-error.log", "nginx-access.log", "redis.log", "mongod.log");
+                if ( $file->basename =~ qr/^cla\-web\-(.+)\.log$/ or $file->basename =~ qr/^cla\-disp\-(.+)\.log$/ ) {
+                    push( @particular_logs, $file->basename );
+                }
+                next unless grep { $_ eq $file->basename } @particular_logs;
+                #switch ($file->basename) {
+                #    case qr/^cla\-disp\-(.+)\.log$/  { next unless $filesize-1 > $config_files->{keep_disp_log_size}; }
+                #    case qr/^cla\-web\-(.+)\.log$/ { next unless $filesize-1 > $config_files->{keep_web_log_size};  }
+                #    else { next unless $filesize-1 > $config_files->{"keep_".$filename."_log_size"}; }
+                #}
+                if( $file->basename =~ qr/^cla\-disp\-(.+)\.log$/ ){
+                    next unless $filesize-1 > $config_files->{keep_disp_log_size}*(1024*1024);
+                } elsif( $file->basename =~ qr/^cla\-web\-(.+)\.log$/ ){
+                    next unless $filesize-1 > $config_files->{keep_web_log_size}*(1024*1024);
+                } else {
+                    next unless $filesize-1 > $config_files->{"keep_".$filename."_log_size"}*(1024*1024);
+                }
+                # PID location
+                #my $pid_file;
+                #if($file->basename eq "mongod.log"){ 
+                #    $pid_file = Path::Class::file( $file->dir."/data/mongo/", "mongod.pid" ); 
+                #}else{
+                #    $pid_file = Path::Class::file( $file->dir, "$filename.pid" );
+                #}
+                my $pid_file = Path::Class::file( $file->dir, "$filename.pid" );
+                next unless -e $pid_file;
+                require Baseliner::LogfileRotate;
+                my $log = new Baseliner::LogfileRotate( File   => $file, 
+                                Count  => $config_files->{keep_rotation_level},
+                                Gzip  => 'lib',
+                                Post   => sub{
+                                    open( my $opened_file, $pid_file );
+                                    kill( "HUP", chomp( $opened_file ) ); 
+                                    },
+                                Dir    => $file->dir,
+                                Flock  => 'yes',
+                                Persist => 'yes',
+                                );
+                $log->rotate();
                 _log "\tDone truncating: ".$file->basename;
             }
         }
     }
     _log 'Done purging.';
-    #_log _dump @purged_jobs;
 }
 
-sub pid_file_and_process {
-    my ($self, $dir, $filename)=@_;
-    my $pid_file = Path::Class::file( $dir, "$filename.pid" ); 
-    return 1 if $filename =~ /nginx|mongod|redis/;  # do not purge these
-    _log _loc 'Checking pid file %1', $pid_file;
-    return unless -e $pid_file;
-    my $pid = $pid_file->slurp;
-    $pid =~ s{[^0-9]}{}g;
-    _log _loc 'Checking that pid %1 exists', $pid;
-    require Proc::Exists;
-    my $ex =  Proc::Exists::pexists( $pid );
-    _log _loc 'Pid %1 exists=%2', $pid, $ex?'YES':'NO';
-    return $ex;
-}
 
 1;

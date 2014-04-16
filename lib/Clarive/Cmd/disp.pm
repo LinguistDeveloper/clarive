@@ -36,8 +36,8 @@ sub run_start {
     $self->check_pid_exists();
     if( $self->daemon ) {
         say 'log_file: ' . $self->log_file;
-        $self->_log_zip( $self->log_file ); 
-        $self->_cleanup_logs( $self->log_file ); 
+        #$self->_log_zip( $self->log_file );
+        #$self->_cleanup_logs( $self->log_file );
         $self->nohup( sub { 
             $self->bali_service( 'service.dispatcher', %opts ); 
         });
