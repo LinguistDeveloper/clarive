@@ -452,6 +452,11 @@ sub save_rule {
     my $old_timestamp = ''.$p{old_ts};
     my $actual_timestamp = mdb->rule->find({ id => ''.$p{id_rule}})->next->{ts};
     my $previous_user = mdb->rule->find({ id => ''.$p{id_rule}})->next->{username};
+    if (!$actual_timestamp and !$previous_user){
+        $actual_timestamp = mdb->ts;
+        $previous_user = $p{username};
+        mdb->rule->update({ id =>''.$p{id_rule} }, { '$set'=> { ts => $actual_timestamp, username => $previous_user } } ); 
+    }
     $ts_modified = ''.$old_timestamp ne ''.$actual_timestamp || $p{username} ne $previous_user;
     if ( $ts_modified ){
         $old_timestamp = '';
