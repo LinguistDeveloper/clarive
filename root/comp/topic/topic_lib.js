@@ -186,17 +186,19 @@ Baseliner.TopicBox = Ext.extend( Ext.ux.form.SuperBoxSelect, {
     // stackItems: true,
     initComponent: function(){
         var self = this;
-        var display_field = self.display_field || 'short_name';
+//var display_field = self.display_field ?  '{short_name} {'+self.display_field+'}':  '{short_name}';
 
         self.tpl = new Ext.XTemplate( '<tpl for=".">',
             '<div class="x-combo-list-item">',
-            '<span class="bl-label" style="background: {color}">{' + display_field + '}</span>',
+            '<span class="bl-label" style="background: {color}">{short_name}</span>',
+            ( self.display_field ? '&nbsp;[{'+self.display_field+'}]' : '' ),
             '<span style="padding-left:4px"><b>{title}</b></span>',
             '</div></tpl>' );        
 
         self.displayFieldTpl = new Ext.XTemplate( '<tpl for=".">',
             '<div class="bl-text-over" title="{title}">',
-            '<span class="bl-label" style="background: {color}; cursor:pointer;" onclick="javascript:Baseliner.show_topic_colored({mid}, \'{name}\', \'{color}\');">{' +  display_field + '}</span>',
+            '<span class="bl-label" style="background: {color}; cursor:pointer;" onclick="javascript:Baseliner.show_topic_colored({mid}, \'{name}\', \'{color}\');">{short_name}</span>',
+            ( self.display_field ? '&nbsp;{'+self.display_field+'}' : '' ),
             // '<span style="padding-left:4px">{title}</span>',
             '</div></tpl>' );
         

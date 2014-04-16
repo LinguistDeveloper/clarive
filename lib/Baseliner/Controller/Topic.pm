@@ -227,6 +227,7 @@ sub related : Local {
 
     my @topics = map {
         $_->{name} = _loc($_->{category}->{name}) . ' #' . $_->{mid};
+        $_->{color} = $_->{category}{color};
         $_->{short_name} = $c->model('Topic')->get_short_name( name => $_->{category}->{name} ) . ' #' . $_->{mid};
         $_
     } $c->model('Topic')->get_topics_mdb( $where, $username, $start, $limit );
