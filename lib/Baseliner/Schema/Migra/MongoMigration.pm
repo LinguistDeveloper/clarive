@@ -513,6 +513,27 @@ sub notifications {
     }
 }
 
+sub dashboards {
+my @dashes = _dbis->query('select * from bali_dashboard')->hashes;
+    for my $dash ( @dashes ) {
+        my @roles_in_mongo;
+        my @roles_in_oracle = _dbis->query('select * from bali_dashboard_role')->hashes;
+        foreach my $role (@roles_in_oracle){
+            if($role->{id_dashboard} eq $dash->{id}){
+                push @roles_in_mongo, $role->{id_role};
+            }
+        }
+        delete $dash->{id};
+        $dash->{role} = \@roles_in_mongo;
+        my @dashlets = _array _load $dash->{dashlets};
+        $dash->{dashlets} = \@dashlets;      
+        if($dash->{system_params}){
+            $dash->{system_params} = _load $dash->{system_params};
+        } 
+        mdb->dashboard->insert( $dash );   
+    }
+}
+
 ####################################
 #
 # Integrity fixes

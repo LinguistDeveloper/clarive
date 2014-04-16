@@ -71,47 +71,43 @@ sub list_dashboard : Local {
     my $p = $c->request->parameters;
 
     my ($start, $limit, $query, $dir, $sort, $cnt) = ( @{$p}{qw/start limit query dir sort/}, 0 );
-    $dir ||= 'desc';
+
     $start||= 0;
     $limit ||= 100;
     
-    my $page = to_pages( start=>$start, limit=>$limit );
-    
-    
-    my $where = $query
-        ? { 'lower(name||description)' => { -like => "%".lc($query)."%" } }
-        : undef;   
+    $dir ||= 'desc';
+    if($dir =~ /desc/i){
+        $dir = -1;
+    }else{
+        $dir = 1;
+    }
+
+    my $where = $query ? mdb->query_build(query => $query, fields=>[qw(name description)]) : {};
 
     #my @roles = map { $_->{id} } $c->model('Permissions')->user_roles( $c->username );
     #$where->{"dashboard_roles.id_role"} = \@roles;
-    
-    my $rs = $c->model('Baseliner::BaliDashboard')->search( $where,
-                                                            { page => $page,
-                                                              rows => $limit,
-                                                              order_by => $sort ? { "-$dir" => $sort } : undef,
-                                                              join => ['dashboard_roles']
-                                                            }
-                                                    );
-    
-    my $pager = $rs->pager;
-    $cnt = $pager->total_entries;		
+
+    my $rs = mdb->dashboard->find($where);
+    $rs->skip($start);
+    $rs->limit($limit);
+    $rs->sort($sort ? { $sort => $dir } : {name => 1});   
+
+    $cnt = mdb->dashboard->count($where);		
     
     my @rows;
     while( my $r = $rs->next ) {
         # produce the grid
-
-        my @roles = map { $_->{id_role} } $c->model('Baseliner::BaliDashboardRole')->search( {id_dashboard => $r->id})->hashref->all;
-        my @dashlets = map {$_->{html} . '#' . $_->{url} } sort { $a->{order} <=> $b->{order} } _array _load $r->dashlets;
+        my @dashlets = map {$_->{html} . '#' . $_->{url} } sort { $a->{order} <=> $b->{order} } _array $r->{dashlets};
         
         push @rows,
             {
-                id 			=> $r->id,
-                name		=> $r->name,
-                description	=> $r->description,
-                is_main 	=> $r->is_main,
-                is_system	=> \$r->is_system,
-                type 		=> $r->is_columns eq '1' ? 'T':'O',
-                roles 		=> \@roles,
+                id 			=> ''.$r,
+                name		=> $r->{name},
+                description	=> $r->{description},
+                is_main 	=> $r->{is_main},
+                is_system	=> \$r->{is_system},
+                type 		=> $r->{is_columns} eq '1' ? 'T':'O',
+                roles 		=> $r->{role},
                 dashlets	=> \@dashlets
             };
     }
@@ -197,8 +193,8 @@ sub update : Local {
         $_dashlet->{order}	=  ++$i;
             
         if($p->{id} != -1){
-            my $dashboard = $c->model('Baseliner::BaliDashboard')->find($p->{id});
-            my @config_dashlet = grep {$_->{html}=~ $html_url[0]} _array _load($dashboard->dashlets);
+            my $dashboard = mdb->dashboard->find({_id => mdb->oid($p->{id})});
+            my @config_dashlet = grep {$_->{html}=~ $html_url[0]} _array $dashboard->{dashlets};
             if($config_dashlet[0]->{params}){
                 $_dashlet->{params} = $config_dashlet[0]->{params};
             };			
@@ -212,29 +208,23 @@ sub update : Local {
         when ('add') {
             try{
                 my $row;
-                $row = $c->model('Baseliner::BaliDashboard')->search( {name => $p->{name}} )->first;
+                $row = mdb->dashboard->find({name => $p->{name}})->next;
                 if(!$row){
-                    my $dashboard = $c->model('Baseliner::BaliDashboard')->create(
+                    my @roles;
+                    foreach (_array $p->{roles}){
+                        push @roles, $_;
+                    }
+                    my $dashboard = mdb->dashboard->insert(
                                     {
                                         name  => $p->{name},
                                         description => $p->{description},
                                         is_main => $p->{dashboard_main_check} ? '1': '0',
                                         is_columns => $p->{type} eq 'T' ? '1': '0',
-                                        dashlets => _dump \@dashlets,
-                                        
+                                        dashlets =>  \@dashlets,
+                                        role => \@roles,
+                                        is_system => '0'
                                     });
-                    
-                    if ($dashboard->id){
-                        foreach my $role (_array $p->{roles}){
-                            my $dasboard_role = $c->model('Baseliner::BaliDashboardRole')->create(
-                                                {
-                                                    id_dashboard  => $dashboard->id,
-                                                    id_role => $role,
-                                                });
-                        }
-                    }
-                    
-                    $c->stash->{json} = { msg => _loc('Dashboard added'), success => \1, dashboard_id => $dashboard->id };
+                    $c->stash->{json} = { msg => _loc('Dashboard added'), success => \1, dashboard_id => ''.$dashboard };
                 }else{
                     $c->stash->{json} = { msg => _loc('Dashboard name already exists, introduce another dashboard'), failure => \1 };
                 }
@@ -245,46 +235,33 @@ sub update : Local {
         }
         when ('update') {
             try{
-                my $dashboard_id = $p->{id};
-                my $dashboard = $c->model('Baseliner::BaliDashboard')->find( $dashboard_id );
-                $dashboard ->name( $p->{name} );
-                $dashboard ->description( $p->{description} );
-                $dashboard ->is_main ( $p->{dashboard_main_check} ? '1': '0');
-                $dashboard ->is_columns ( $p->{type} eq 'T' ? '1': '0');
-                $dashboard ->dashlets( _dump \@dashlets );
-                $dashboard ->update();
-
-                $dashboard = $c->model('Baseliner::BaliDashboardRole')->search( {id_dashboard => $dashboard_id} );
-                $dashboard->delete();
-                
-                foreach my $role (_array $p->{roles}){
-                    my $dasboard_role = $c->model('Baseliner::BaliDashboardRole')->create(
-                                        {
-                                            id_dashboard  => $dashboard_id,
-                                            id_role => $role,
-                                        });
-                }				
-                
-                
-                $c->stash->{json} = { msg => _loc('Dashboard modified'), success => \1, dashboard_id => $dashboard_id };
+                my @roles;
+                foreach (_array $p->{roles}){
+                    push @roles, $_;
+                }
+                mdb->dashboard->update( 
+                    {_id => mdb->oid($p->{id})},
+                    {
+                        '$set' => {
+                            name => $p->{name},
+                            description => $p->{description},
+                            is_main => $p->{dashboard_main_check} ? '1': '0',
+                            is_columns => $p->{type} eq 'T' ? '1': '0',
+                            dashlets => \@dashlets,
+                            role => \@roles,                            
+                        }
+                    });
+                $c->stash->{json} = { msg => _loc('Dashboard modified'), success => \1, dashboard_id => $p->{id} };
             }
             catch{
                 $c->stash->{json} = { msg => _loc('Error modifying dashboard: %1', shift()), failure => \1 };
             }
         }
         when ('delete') {
-            my $dashboard_id = $p->{id};
+            my $dashboard_id = mdb->oid($p->{id});
             
             try{
-                my $row = $c->model('Baseliner::BaliDashboard')->find( $dashboard_id );
-                $row->delete;
-                
-                $row = $c->model('Baseliner::BaliDashboardRole')->search( {id_dashboard => $dashboard_id} );
-                if($row){
-                    $row->delete;	
-                }
-                
-                
+                mdb->dashboard->remove({_id => $dashboard_id});
                 $c->stash->{json} = { success => \1, msg=>_loc('Dashboard deleted') };
             }
             catch{
@@ -303,18 +280,17 @@ sub list : Local {
     # **********************************************************************************************************
     # TODO: Hay que controlar los dashboards por perfil ********************************************************
     # **********************************************************************************************************
-    
     given ($dashboard_name) {
         when ('project') {
-            my $system_dashboard = $c->model('Baseliner::BaliDashboard')->search({name => 'Clarive projects'})->first();
+            my $system_dashboard = mdb->dashboard->find({name => 'Clarive projects'})->next;
             my @dashlets;
             my $is_columns;
             my $dashboard_id;
             
             if($system_dashboard){
-                @dashlets = _array _load $system_dashboard->dashlets;
-                $is_columns = $system_dashboard->is_columns;
-                $dashboard_id = $system_dashboard->id;
+                @dashlets = $system_dashboard->{dashlets};
+                $is_columns = $system_dashboard->{is_columns};
+                $dashboard_id = $system_dashboard.'';
             }
             else{
                 ##Dashlets para el dashboard de proyectos.
@@ -324,26 +300,17 @@ sub list : Local {
                 $is_columns = '1';
                 
                 my @params = qw /projects/; #Aqui van las variables no configurables por el usuario.
-                my $dashboard = $c->model('Baseliner::BaliDashboard')->create(
-                                {
-                                    name  => 'Clarive projects',
-                                    description => 'System dashboard',
-                                    dashlets => _dump (\@dashlets),
-                                    is_columns => '1',
-                                    is_system => '1',
-                                    system_params => _dump (\@params),
-                                    
-                                });
-                $dashboard_id = $dashboard->id;
-                if ($dashboard->id){
-                    my $dasboard_role = $c->model('Baseliner::BaliDashboardRole')->create(
-                                        {
-                                            id_dashboard  => $dashboard->id,
-                                            id_role => 100, #Public
-                                        });
-                }
-            }
-    
+                my $dashboard = mdb->dashboard->insert(
+                    {
+                        name  => 'Clarive projects',
+                        description => 'System dashboard',
+                        dashlets => \@dashlets,
+                        is_columns => '1',
+                        is_system => '1',
+                        system_params => \@params,
+                        role => ['100'] #Public
+                    });
+            }    
             
             my @params;
             my %valores;
@@ -359,48 +326,48 @@ sub list : Local {
     
         } #End Dashboard Project
         default {
-            my $dashboard_id = $p->{dashboard_id};
+            my $dashboard_id = $p->{dashboard_id} ? mdb->oid($p->{dashboard_id}) : undef;
             my @dashlets;
             
             if ($dashboard_id){
-                my $dashboard = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
-                @dashlets = _array _load $dashboard->dashlets;
+                my $dashboard = mdb->dashboard->find({_id => $dashboard_id})->next;
+                @dashlets = _array  $dashboard->{dashlets};
                 for my $dash ( @dashlets ) {
                     if($dash->{url}){
-                        $c->forward( $dash->{url} . '/' . $dashboard_id );
+                        $c->forward( $dash->{url} . '/' . $dashboard_id.'' );
                     }
                 }
-                $c->stash->{is_columns} = $dashboard->is_columns;
+                $c->stash->{is_columns} = $dashboard->{is_columns};
                 $c->stash->{dashboardlets} = \@dashlets;
             }else{
                 my $where = {};
                 my $is_root = $c->model('Permissions')->is_root( $c->username );
-                if (!$is_root) {                
+                if (!$is_root) {             
                     my @roles = map { $_->{id} } $c->model('Permissions')->user_roles( $c->username );
-                    $where->{"dashboard_roles.id_role"} = \@roles;
+                    #$where->{"dashboard_roles.id_role"} = \@roles;
+                    $where->{role} = {'$in' => \@roles};
                 }
-                $where->{"is_system"} = '0';
+                $where->{is_system} = '0';
                 
-                #my $dashboard = $c->model('Baseliner::BaliDashboard')->search( {is_system=>'0'}, {order_by => 'is_main desc'} );
-                my $dashboard = $c->model('Baseliner::BaliDashboard')->search( $where, {join => ['dashboard_roles'],order_by => 'is_main desc'} );
-                
-                if ($dashboard->count > 0){
+                my $dashboard = mdb->dashboard->find($where);
+                $dashboard->sort({is_main_desc => 1});
+                if (mdb->dashboard->count($where) > 0){
                     my $i = 0;
                     my @dashboard;
                     my %dash;
                     while (my $dashboard = $dashboard->next){
                         if($i == 0){
-                            @dashlets = _array _load $dashboard->dashlets;
+                            @dashlets = _array $dashboard->{dashlets};
                             for my $dash ( @dashlets ) {
                                 if($dash->{url}){
-                                    $c->forward( $dash->{url} . '/' . $dashboard->id );
+                                    $c->forward( $dash->{url} . '/' . $dashboard->{_id}.'' );
                                 }
                             }
-                            $c->stash->{is_columns} = $dashboard->is_columns;
+                            $c->stash->{is_columns} = $dashboard->{is_columns};
                             $c->stash->{dashboardlets} = \@dashlets;
                         }else{
-                            $dash{$dashboard->id} = { name => $dashboard->name,
-                                               id   => $dashboard->id,
+                            $dash{$dashboard->{_id}.''} = { name => $dashboard->{name},
+                                               id   => $dashboard->{_id}.'',
                                              };
                         }
                         $i++;
@@ -417,31 +384,24 @@ sub list : Local {
                                     { html => '/dashlets/jobs.html', url => '/dashboard/list_jobs', order=> 5},
 #                                    { html=> '/dashlets/sqa.html', url=> '/sqa/grid_json/Dashboard', order=> 6},
                                 );
-                    
-                    my $dashboard = $c->model('Baseliner::BaliDashboard')->search({is_system => 1, name => 'Clarive'})->first;
+                    my $dashboard = mdb->dashboard->find({is_system => '1', name => 'Clarive'})->next;
                     if (!$dashboard) {
-                        $dashboard = $c->model('Baseliner::BaliDashboard')->create(
-                                        {
-                                            name  => 'Clarive',
-                                            description => 'Demo dashboard Clarive configurable',
-                                            dashlets => _dump (\@dashlets),
-                                            is_system => '1',
-                                        });
-                        
-                        if ($dashboard->id){
-                            my $dasboard_role = $c->model('Baseliner::BaliDashboardRole')->create(
-                                                {
-                                                    id_dashboard  => $dashboard->id,
-                                                    id_role => 100, #Public
-                                                });
-                        }
+                        $dashboard = mdb->dashboard->insert({
+                                name  => 'Clarive',
+                                description => 'Demo dashboard Clarive configurable',
+                                dashlets => \@dashlets,
+                                is_name => '0',
+                                is_columns => '1',
+                                is_system => '1',
+                                role => ['100'] 
+                            });
                     }
                     
                     for my $dash ( @dashlets ) {
-                        $c->forward( $dash->{url} . '/' . $dashboard->id );
-                        $c->stash->{is_columns} = $dashboard->is_columns;
+                        $c->forward( $dash->{url} . '/' . $dashboard->{_id}.'' );
+                        $c->stash->{is_columns} = $dashboard->{is_columns};
                         $c->stash->{dashboardlets} = \@dashlets;
-                    }	
+                    }
                 }
             }
         } # End default
@@ -463,9 +423,8 @@ sub get_config : Local {
             $dashlet_config{$field->{id}} = $field->{default};
             $key_description{$field->{id}} = $field->{label};
         }		
-        
-        my $dashboard = $c->model('Baseliner::BaliDashboard')->find($p->{dashboard_id});
-        my @config_dashlet = grep {$_->{html}=~ $html_url[0]} _array _load($dashboard->dashlets);
+        my $dashboard = mdb->dashboard->find({_id => mdb->oid($p->{dashboard_id})});
+        my @config_dashlet = grep {$_->{html}=~ $html_url[0]} _array $dashboard->{dashlets};
         
 
         if($config_dashlet[0]->{params}){
@@ -475,7 +434,7 @@ sub get_config : Local {
         }
         
         if($p->{system} eq 'true'){
-            foreach my $system_id (_array _load($dashboard->system_params)){
+            foreach my $system_id (_array $dashboard->{system_params}){
                 delete $dashlet_config{$system_id};
                 delete $key_description{$system_id};
             };			
@@ -501,18 +460,23 @@ sub set_config : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
     
-    my $dashboard_id = $p->{id_dashboard};
-    my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
+    my $dashboard_id = mdb->oid($p->{id_dashboard});
+    my $dashboard_rs = mdb->dashboard->find({_id => $dashboard_id});
     my $dashlet = $p->{dashlet};
 
-    my @dashlet = grep {$_->{html}=~ $dashlet} _array _load($dashboard_rs->dashlets);
+    my @dashlet = grep {$_->{html}=~ $dashlet} _array $dashboard_rs->{dashlets};
     $dashlet[0]->{params}->{$p->{id}} = $p->{value};
     
-    my @dashlets = grep {$_->{html}!~ $dashlet} _array _load($dashboard_rs->dashlets);
+    my @dashlets = grep {$_->{html}!~ $dashlet} _array $dashboard_rs->{dashlets};
 
     push @dashlets, @dashlet;
-    $dashboard_rs->dashlets(_dump \@dashlets);
-    $dashboard_rs->update();
+    mdb->dashboard->update(
+        {_id => $dashboard_id},
+        {
+            '$set' => {
+                dashlets => \@dashlets
+            }
+        });
     
     $c->stash->{json} = { success => \1, msg=>_loc('Configuration changed') };	
     $c->forward('View::JSON');	
@@ -524,24 +488,23 @@ sub get_config_dashlet{
     
     my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.baselines');
 
-    if($dashboard_id && looks_like_number($dashboard_id)){
+    if($dashboard_id){
         $default_config->{dashboard_id} = $dashboard_id;
-        
-        my $dashboard_rs = Baseliner->model('Baseliner::BaliDashboard')->find($dashboard_id);
-        my @config_dashlet = grep {$_->{url}=~ $parent_method} _array _load($dashboard_rs->dashlets);
+        my $dashboard_rs = mdb->dashboard->find({_id => mdb->oid($dashboard_id)});
+        my @config_dashlet = grep {$_->{url}=~ $parent_method} _array $dashboard_rs->{dashlets};
         
         if($config_dashlet[0]->{params}){
             foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
                 $default_config->{$key} = $config_dashlet[0]->{params}->{$key};
-            };				
+            };
         }		
     }else{
         
         my @dashboard_system_id = split "/", $dashboard_id;		
         $default_config->{dashboard_id} = $dashboard_system_id[1];
-        
-        my $dashboard_rs = Baseliner->model('Baseliner::BaliDashboard')->find($dashboard_system_id[1]);
-        my @config_dashlet = grep {$_->{url}=~ $parent_method} _array _load($dashboard_rs->dashlets);
+        my $dashboard_rs = mdb->dashboard->find({_id => mdb->oid($dashboard_system_id[1])});
+
+        my @config_dashlet = grep {$_->{url}=~ $parent_method} _array $dashboard_rs->{dashlets};
         
         if($config_dashlet[0]->{params}){
             foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
@@ -682,9 +645,9 @@ sub list_lastjobs: Private{
     #CONFIGURATION DASHLET
     ##########################################################################################################
     
-    if($dashboard_id && looks_like_number($dashboard_id)){
-        my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
-        my @config_dashlet = grep {$_->{url}=~ 'list_lastjobs'} _array _load($dashboard_rs->dashlets);
+    if($dashboard_id){
+        my $dashboard_rs = mdb->dhashboard->find({_id => mdb->oid($dashboard_id)});
+        my @config_dashlet = grep {$_->{url}=~ 'list_lastjobs'} _array $dashboard_rs->{dashlets};
         
         if($config_dashlet[0]->{params}){
             foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
@@ -726,9 +689,9 @@ sub list_emails: Private{
     ##########################################################################################################
     my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.emails');	
     
-    if($dashboard_id && looks_like_number($dashboard_id)){
-        my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
-        my @config_dashlet = grep {$_->{url}=~ 'list_emails'} _array _load($dashboard_rs->dashlets);
+    if($dashboard_id){
+        my $dashboard_rs = mdb->doashboard->find({_id => mdb->oid($dashboard_id)});
+        my @config_dashlet = grep {$_->{url}=~ 'list_emails'} _array $dashboard_rs->{dashlets};
         
         if($config_dashlet[0]->{params}){
             foreach my $key (keys %{ $config_dashlet[0]->{params} || {} } ){
@@ -740,23 +703,17 @@ sub list_emails: Private{
     
     my $rows = $default_config->{rows};
     
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-    my $SQL = "SELECT SUBJECT, SENDER, B.SENT, ID
-                FROM BALI_MESSAGE A,
-                    (SELECT * FROM ( SELECT ID_MESSAGE,  SENT
-                                        FROM BALI_MESSAGE_QUEUE
-                                        WHERE USERNAME = ? AND SWREADED = 0
-                                        ORDER BY SENT DESC ) WHERE ROWNUM <= ?) B
-                WHERE A.ID = B.ID_MESSAGE";
-                
-
-    my @emails = $db->array_hash( $SQL , $username, $rows);
-    foreach my $email (@emails){
-        push @datas, $email;
+    my $emails = Baseliner->model('Messaging')->inbox(username=>$username, carrier=>'email', start => 0, limit => $rows);
+    
+    foreach my $email (_array $emails->{data}){
+        if (!$email->{swreaded}){
+            push @datas, $email;
+        }
     }	
         
     $c->stash->{emails} =\@datas;
 }
+
 
 sub list_topics: Private{
     my ( $self, $c, $dashboard_id ) = @_;
@@ -767,9 +724,9 @@ sub list_topics: Private{
     ##########################################################################################################
     my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.topics');	
     
-    if($dashboard_id && looks_like_number($dashboard_id)){
-        my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
-        my @config_dashlet = grep {$_->{url}=~ 'list_topics'} _array _load($dashboard_rs->dashlets);
+    if($dashboard_id){
+        my $dashboard_rs = mdb->dashboard->find({_id => mdb->oid($dashboard_id)});
+        my @config_dashlet = grep {$_->{url}=~ 'list_topics'} _array $dashboard_rs->{dashlets};
         
         if($config_dashlet[0]->{params}){
             foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
@@ -792,8 +749,7 @@ sub list_jobs : Private {
     my $SQL;
     my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
 
-    #Cojemos los proyectos que el usuario tiene permiso para ver jobs
-   #Cojemos los proyectos que el usuario tiene permiso para ver jobs
+    #Cogemos los proyectos que el usuario tiene permiso para ver jobs
     my @ids_project = $c->model( 'Permissions' )->user_projects_ids(
         username => $c->username
     );
@@ -805,9 +761,9 @@ sub list_jobs : Private {
         my $default_config = Baseliner->model( 'ConfigStore' )->get( 'config.dashlet.jobs' );
 
         if ( $dashboard_id && looks_like_number( $dashboard_id ) ) {
-            my $dashboard_rs = $c->model( 'Baseliner::BaliDashboard' )->find( $dashboard_id );
+            my $dashboard_rs = mdb->dashboard->find({_id => mdb->oid($dashboard_id)});
             my @config_dashlet =
-                grep { $_->{url} =~ 'list_jobs' } _array _load( $dashboard_rs->dashlets );
+                grep { $_->{url} =~ 'list_jobs' } _array  $dashboard_rs->{dashlets} ;
 
             if ( $config_dashlet[ 0 ]->{params} ) {
                 foreach my $key ( keys %{$config_dashlet[ 0 ]->{params} || {}} ) {

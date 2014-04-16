@@ -171,8 +171,11 @@
 			    hidden: show, //**************************************************************
 			    handler: function(){
 				    var form = form_dashboard.getForm();
-				    var action = form.getValues()['id'] >= 0 ? 'update' : 'add';
-				    
+				    if(form.getValues()['id'] == -1){
+				    	action = 'add';
+				    }else{
+				    	action = 'update';
+				    }
 				    if (form.isValid()) {
 					    form.submit({
 						    params: { action: action },

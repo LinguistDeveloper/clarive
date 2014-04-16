@@ -140,7 +140,8 @@ sub test_message : Local {
 
         my $now = mdb->ts;
         my $test_user = _trim "$now".'test@clarive.com';
-        my @users_list = ($test_user);
+        #my @users_list = ($test_user);
+        my @users_list = ('root');
         my $to = [ _unique(@users_list) ];
 
         Baseliner->model('Messaging')->notify(
