@@ -2789,6 +2789,102 @@ sub my_releases {
 
     }
 }
+
+sub apply_filter{
+    my ($self, $username, $where, %filter) = @_;
+
+    for my $key (keys %filter){
+        given ($key) {
+            when ('mid') {
+                $where->{'mid'} = mdb->in($filter{mid});
+            }
+            when ('category_id') {
+                my @category_id = _array $filter{category_id};
+                my @not_in = map { abs $_ } grep { $_ < 0 } @category_id;
+                my @in = @not_in ? grep { $_ > 0 } @category_id : @category_id;
+                if (@not_in && @in){
+                    $where->{'category.id'} = [mdb->nin(@in), mdb->in(@in)];    
+                }else{
+                    if (@not_in){
+                        $where->{'category.id'} = mdb->nin(@in);
+                    }else{
+                        $where->{'category.id'} = mdb->in(@in);  
+                    }
+                } 
+            }
+            when ('category_type') {
+                given ($filter{category_type}){
+                    when ('release') {
+                        $where->{'category.is_release'} = '1';
+                    }
+                    when ('changeset'){
+                        $where->{'category.is_changeset'} = '1';
+                    }
+                };
+            }
+            when ('category_status_id') {
+                my @category_status_id = _array $filter{category_status_id};
+                my @not_in = map { abs $_ } grep { $_ < 0 } @category_status_id;
+                my @in = @not_in ? grep { $_ > 0 } @category_status_id : @category_status_id;
+                if (@not_in && @in){
+                    $where->{'category_status.id'} = [mdb->nin(@in), mdb->in(@in)];    
+                }else{
+                    if (@not_in){
+                        $where->{'category_status.id'} = mdb->nin(@in);
+                    }else{
+                        $where->{'category_status.id'} = mdb->in(@in);  
+                    }
+                } 
+            }
+            when ('id_priority') {
+                my @id_priority = _array $filter{id_priority};
+                my @not_in = map { abs $_ } grep { $_ < 0 } @id_priority;
+                my @in = @not_in ? grep { $_ > 0 } @id_priority : @id_priority;
+                if (@not_in && @in){
+                    $where->{'id_priority'} = [mdb->nin(@in), mdb->in(@in)];    
+                }else{
+                    if (@not_in){
+                        $where->{'id_priority'} = mdb->nin(@in);
+                    }else{
+                        $where->{'id_priority'} = mdb->in(@in);  
+                    }
+                } 
+            }             
+
+        };
+    }
+
+    return $where;
+}
+
+sub get_topics_mdb{
+    my ($self, $where, $username, $start, $limit) = @_;
+    try{
+        $where = {} if !$where;
+        _throw _loc('Missing username') if !$username;
+
+        $self->build_project_security( $where, $username );
+
+        my $rs_topics = mdb->topic->find($where);
+        $rs_topics->skip($start) if ($start);
+        $rs_topics->limit($limit) if ($limit);
+
+        return wantarray ? $rs_topics->all : \$rs_topics->all;
+    }
+    catch{
+        _throw _loc( 'Error getting Topics ( %1 )', shift() );
+    }
+}
+
+sub get_fields_topic{
+    my ($self) = @_;
+
+    my @fields = map {$_} keys mdb->topic->find_one(); #TODO: Improve to get all fields from topic collection. 
+
+    return \@fields;
+}
+
+
 1;
 
 

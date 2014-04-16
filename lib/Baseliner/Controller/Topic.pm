@@ -190,126 +190,186 @@ sub check_modified_on: Local {
     $c->forward('View::JSON');
 }
 
+# sub related : Local {
+#     my ($self, $c) = @_;
+#     my $p = $c->request->parameters;
+#     my $mid = $p->{mid};
+#     my $show_release = $p->{show_release} // '0';
+#     my $where = {};
+#     my $query = $p->{query};
+    
+#     length($query) and $where = query_sql_build( query=>$query, fields=>{
+#         map { $_ => "me.$_" } qw/
+#         mid 
+#         title
+#         created_on
+#         created_by
+#         modified_on
+#         modified_by        
+#         /
+#     });
+
+#     if ($p->{mids}){
+#          my @mids = _array $p->{mids};
+#          $where->{mid} = \@mids;
+#     }
+#     $where->{mid} = { '<>' => $mid } if length $mid;
+#     $where->{'categories.is_release'} = $show_release;
+    
+#     my $start = $p->{start} // 0;
+#     my $limit = $p->{limit} // 20;
+
+#     if($p->{filter} && $p->{filter} ne 'none'){
+#         ##Tratamos todos los t?icos, independientemente si son releases o no.
+#         delete $where->{'categories.is_release'}; 
+#         my $filter = _decode_json($p->{filter});
+        
+#         #$limit = $filter->{limit};
+        
+#         if($filter->{categories}){
+#             my @categories = _array $filter->{categories};
+#             if(@categories){
+#                 my @not_in = map { abs $_ } grep { $_ < 0 } @categories;
+#                 my @in = @not_in ? grep { $_ > 0 } @categories : @categories;
+#                 if (@not_in && @in){
+#                     $where->{'id_category'} = [{'not in' => \@not_in},{'in' => \@in}];    
+#                 }else{
+#                     if (@not_in){
+#                         $where->{'id_category'} = {'not in' => \@not_in};
+#                     }else{
+#                         $where->{'id_category'} = \@in;
+#                     }
+#                 }                   
+                
+#                 #$where->{'id_category'} = \@categories;
+#             }
+#         }
+        
+#         if($filter->{statuses}){
+#             my @statuses = _array $filter->{statuses};
+#             if(@statuses){
+#                 my @not_in = map { abs $_ } grep { $_ < 0 } @statuses;
+#                 my @in = @not_in ? grep { $_ > 0 } @statuses : @statuses;
+#                 if (@not_in && @in){
+#                     $where->{'id_category_status'} = [{'not in' => \@not_in},{'in' => \@in}];    
+#                 }else{
+#                     if (@not_in){
+#                         $where->{'id_category_status'} = {'not in' => \@not_in};
+#                     }else{
+#                         $where->{'id_category_status'} = \@in;
+#                     }
+#                 }                
+#                 #$where->{'id_category_status'} = \@statuses;
+#             }
+#         }
+          
+#         if($filter->{priorities}){
+#             my @priorities = _array $filter->{priorities};
+#             if(@priorities){
+#                 my @not_in = map { abs $_ } grep { $_ < 0 } @priorities;
+#                 my @in = @not_in ? grep { $_ > 0 } @priorities : @priorities;
+#                 if (@not_in && @in){
+#                     $where->{'id_priority'} = [{'not in' => \@not_in},{'in' => \@in}, undef];
+#                 }else{
+#                     if (@not_in){
+#                         $where->{'id_priority'} = [{'not in' => \@not_in}, undef];
+#                     }else{
+#                         $where->{'id_priority'} = \@in;
+#                     }
+#                 }                
+#                 #$where->{'id_priority'} = \@priorities;            
+#             }
+        
+#         }        
+#     }
+
+#     my $from = { order_by=>['categories.name', 'mid' ], prefetch=>['categories'] };
+#     $from->{page} //= to_pages( start=>$start, limit=>$limit );
+#     $from->{rows} = $limit;
+
+#     my $rs_topic = DB->BaliTopic->search($where, $from)->hashref;
+
+#     my @topics = map {
+#         if( $p->{topic_child_data} ) {
+#             $_->{data} = $c->model('Topic')->get_data( undef, $_->{mid}, with_meta=>1 ); # without the meta, no fieldlets will come
+#             $_->{description} //= $_->{data}{description};
+#             $_->{name_status} ||= $_->{data}{name_status};
+#         }
+
+#         #$_->{name} = $_->{categories}{is_release} eq '1' 
+#         #    ?  $_->{title}
+#         #    :  _loc($_->{categories}->{name}) . ' #' . $_->{mid};
+#         $_->{name} = _loc($_->{categories}->{name}) . ' #' . $_->{mid};
+#         $_->{color} = $_->{categories}->{color};
+#         $_->{short_name} = $c->model('Topic')->get_short_name( name => $_->{categories}->{name} ) . ' #' . $_->{mid};
+#         #my $data = mdb->topic->find_one({ mid => $_->{mid} });
+#         #+{ %$data, %$_ };        
+#         $_
+#     } $rs_topic->all;
+
+#     my $cnt = try {
+#         my $pager = $rs_topic->pager;
+#         $pager->total_entries ;
+#     } catch { 
+#         scalar @topics;
+#     };
+#     $c->stash->{json} = { totalCount=>$cnt, data=>\@topics };
+#     $c->forward('View::JSON');
+# }
+
 sub related : Local {
     my ($self, $c) = @_;
+    my $username = $c->username;
     my $p = $c->request->parameters;
-    my $mid = $p->{mid};
-    my $show_release = $p->{show_release} // '0';
-    my $where = {};
-    my $query = $p->{query};
-    
-    length($query) and $where = query_sql_build( query=>$query, fields=>{
-        map { $_ => "me.$_" } qw/
-        mid 
-        title
-        created_on
-        created_by
-        modified_on
-        modified_by        
-        /
-    });
 
-    if ($p->{mids}){
-         my @mids = _array $p->{mids};
-         $where->{mid} = \@mids;
-    }
-    $where->{mid} = { '<>' => $mid } if length $mid;
-    $where->{'categories.is_release'} = $show_release;
-    
+    my $where = {};
+
+    my %filter;
+
     my $start = $p->{start} // 0;
     my $limit = $p->{limit} // 20;
 
-    if($p->{filter} && $p->{filter} ne 'none'){
-        ##Tratamos todos los tópicos, independientemente si son releases o no.
-        delete $where->{'categories.is_release'}; 
-        my $filter = _decode_json($p->{filter});
-        
-        #$limit = $filter->{limit};
-        
-        if($filter->{categories}){
-            my @categories = _array $filter->{categories};
-            if(@categories){
-                my @not_in = map { abs $_ } grep { $_ < 0 } @categories;
-                my @in = @not_in ? grep { $_ > 0 } @categories : @categories;
-                if (@not_in && @in){
-                    $where->{'id_category'} = [{'not in' => \@not_in},{'in' => \@in}];    
-                }else{
-                    if (@not_in){
-                        $where->{'id_category'} = {'not in' => \@not_in};
-                    }else{
-                        $where->{'id_category'} = \@in;
-                    }
-                }                   
-                
-                #$where->{'id_category'} = \@categories;
-            }
-        }
-        
-        if($filter->{statuses}){
-            my @statuses = _array $filter->{statuses};
-            if(@statuses){
-                my @not_in = map { abs $_ } grep { $_ < 0 } @statuses;
-                my @in = @not_in ? grep { $_ > 0 } @statuses : @statuses;
-                if (@not_in && @in){
-                    $where->{'id_category_status'} = [{'not in' => \@not_in},{'in' => \@in}];    
-                }else{
-                    if (@not_in){
-                        $where->{'id_category_status'} = {'not in' => \@not_in};
-                    }else{
-                        $where->{'id_category_status'} = \@in;
-                    }
-                }                
-                #$where->{'id_category_status'} = \@statuses;
-            }
-        }
-          
-        if($filter->{priorities}){
-            my @priorities = _array $filter->{priorities};
-            if(@priorities){
-                my @not_in = map { abs $_ } grep { $_ < 0 } @priorities;
-                my @in = @not_in ? grep { $_ > 0 } @priorities : @priorities;
-                if (@not_in && @in){
-                    $where->{'id_priority'} = [{'not in' => \@not_in},{'in' => \@in}, undef];
-                }else{
-                    if (@not_in){
-                        $where->{'id_priority'} = [{'not in' => \@not_in}, undef];
-                    }else{
-                        $where->{'id_priority'} = \@in;
-                    }
-                }                
-                #$where->{'id_priority'} = \@priorities;            
-            }
-        
-        }        
+    if ( $p->{mids} ){
+        my @mids = _array $p->{mids};
+        $filter{mid} = \@mids;    
     }
-    my $from = { order_by=>['categories.name', 'mid' ], prefetch=>['categories'] };
-    $from->{page} //= to_pages( start=>$start, limit=>$limit );
-    $from->{rows} = $limit;
-    my $rs_topic = DB->BaliTopic->search($where, $from)->hashref;
+
+    if ( $p->{query} ){
+        my $query = $p->{query};
+        $where = $self->get_search_query_topic ( $query, $where );    
+    }
+
+    $filter{category_type} = 'release' if ($p->{show_release});
+
+    if ($p->{filter} && $p->{filter} ne 'none'){
+        delete $filter{category_type}; 
+        my $filter_js = _decode_json($p->{filter});
+
+        $filter{category_id}        =  $filter_js->{categories} if ($filter_js->{categories} eq 'ARRAY' && scalar @{$filter_js->{categories}} > 0);
+        $filter{category_status_id} =  $filter_js->{statuses} if ( ref $filter_js->{statuses} eq 'ARRAY' && scalar @{$filter_js->{statuses}} > 0);
+        $filter{id_priority}        =  $filter_js->{priorities} if ( ref $filter_js->{priorities} eq 'ARRAY' && scalar @{$filter_js->{priorities}} > 0);
+    }
+
+    $where = $c->model('Topic')->apply_filter( $username, $where, %filter );
+
     my @topics = map {
-        if( $p->{topic_child_data} ) {
-            $_->{data} = $c->model('Topic')->get_data( undef, $_->{mid}, with_meta=>1 ); # without the meta, no fieldlets will come
-            $_->{description} //= $_->{data}{description};
-            $_->{name_status} ||= $_->{data}{name_status};
-        }
-
-        #$_->{name} = $_->{categories}{is_release} eq '1' 
-        #    ?  $_->{title}
-        #    :  _loc($_->{categories}->{name}) . ' #' . $_->{mid};
-        $_->{name} = _loc($_->{categories}->{name}) . ' #' . $_->{mid};
-        $_->{color} = $_->{categories}->{color};
-        $_->{short_name} = $c->model('Topic')->get_short_name( name => $_->{categories}->{name} ) . ' #' . $_->{mid};
+        $_->{name} = _loc($_->{category}->{name}) . ' #' . $_->{mid};
+        $_->{short_name} = $c->model('Topic')->get_short_name( name => $_->{category}->{name} ) . ' #' . $_->{mid};
         $_
-    } $rs_topic->all;
+    } $c->model('Topic')->get_topics_mdb( $where, $username, $start, $limit );
 
-    my $cnt = try {
-        my $pager = $rs_topic->pager;
-        $pager->total_entries ;
-    } catch { 
-        scalar @topics;
-    };
-    $c->stash->{json} = { totalCount=>$cnt, data=>\@topics };
+    $c->stash->{json} = { totalCount => scalar @topics, data => \@topics };
     $c->forward('View::JSON');
+}
+
+sub get_search_query_topic {
+    my ($self, $query, $where) = @_;
+    _fail _loc("Missing parameter query") if ( !$query );
+    $where = {} if ( !$where );
+
+    mdb->query_build( query => $query, where => $where, fields => Baseliner->model('Topic')->get_fields_topic() );
+
+    return $where;
 }
 
 our %field_cache;
@@ -346,7 +406,7 @@ sub json : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
     my $topic_mid = $p->{topic_mid};
-    
+     
     ######################################################################################### 
     #my $id_category = $topic->id_category;    
 

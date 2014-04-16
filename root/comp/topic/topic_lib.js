@@ -146,7 +146,14 @@ Baseliner.topic_name = function(args) {
 };
 
 Baseliner.store.Topics = function(c) {
-     Baseliner.store.Topics.superclass.constructor.call(this, Ext.apply({
+    var fields = ['mid','name', 'title','description','color','short_name'];
+
+    if (c.display_field){
+        fields.push(c.display_field);
+        delete c.display_field;  
+    } 
+
+    Baseliner.store.Topics.superclass.constructor.call(this, Ext.apply({
         root: 'data' , 
         remoteSort: true,
         autoLoad: true,
@@ -154,8 +161,8 @@ Baseliner.store.Topics = function(c) {
         baseParams: {},
         id: 'mid', 
         url: '/topic/related',
-        fields: ['mid','name', 'title','description','color','short_name'] 
-     }, c));
+        fields: fields 
+    }, c));
 };
 Ext.extend( Baseliner.store.Topics, Baseliner.JsonStore );
 
@@ -179,15 +186,17 @@ Baseliner.TopicBox = Ext.extend( Ext.ux.form.SuperBoxSelect, {
     // stackItems: true,
     initComponent: function(){
         var self = this;
+        var display_field = self.display_field || 'short_name';
+
         self.tpl = new Ext.XTemplate( '<tpl for=".">',
             '<div class="x-combo-list-item">',
-            '<span class="bl-label" style="background: {color}">{short_name}</span>',
+            '<span class="bl-label" style="background: {color}">{' + display_field + '}</span>',
             '<span style="padding-left:4px"><b>{title}</b></span>',
             '</div></tpl>' );        
 
         self.displayFieldTpl = new Ext.XTemplate( '<tpl for=".">',
             '<div class="bl-text-over" title="{title}">',
-            '<span class="bl-label" style="background: {color}; cursor:pointer;" onclick="javascript:Baseliner.show_topic_colored({mid}, \'{name}\', \'{color}\');">{short_name}</span>',
+            '<span class="bl-label" style="background: {color}; cursor:pointer;" onclick="javascript:Baseliner.show_topic_colored({mid}, \'{name}\', \'{color}\');">{' +  display_field + '}</span>',
             // '<span style="padding-left:4px">{title}</span>',
             '</div></tpl>' );
         

@@ -36,6 +36,7 @@ params:
 		topics = [];
 	}
 	
+    var display_field = meta.display_field || undefined;
     var topic_box;
     var topic_box_store = new Baseliner.store.Topics({
         baseParams: { 
@@ -44,8 +45,10 @@ params:
             mid: data ? data.topic_mid : '', 
             show_release: 0, 
             filter: meta.filter ? meta.filter : ''
-        } 
+        },
+        display_field: display_field
     });
+
     if( meta.list_type == 'grid' ) {
         // Grid
 		
@@ -87,7 +90,8 @@ params:
             disabled: meta ? meta.readonly : true,
             value: topics,
             singleMode: meta.single_mode == 'false' || !meta.single_mode ? false : true,
-			hidden: meta ? (meta.hidden ? meta.hidden : false): true
+			hidden: meta ? (meta.hidden ? meta.hidden : false): true,
+            display_field: display_field
         });
         
         if( meta.copy_fields ) {

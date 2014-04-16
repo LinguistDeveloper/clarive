@@ -22,8 +22,9 @@ params:
 
 	var topic_mid = data.topic_mid || undefined;
 	var ps = meta.page_size || 10;  // for combos, 10 is a much nicer on a combo
-	
-    var release_box_store = new Baseliner.store.Topics({ baseParams: {  limit: ps, mid: topic_mid, show_release: 1, filter: meta.filter ? meta.filter : ''} });
+    var display_field = meta.display_field || undefined;
+
+    var release_box_store = new Baseliner.store.Topics({ baseParams: {  limit: ps, mid: topic_mid, show_release: 1, filter: meta.filter ? meta.filter : ''}, display_field: display_field });
 
 	var release_box = new Baseliner.TopicBox({
 		fieldLabel: _(meta.name_field),
@@ -35,7 +36,8 @@ params:
 		store: release_box_store,
 		disabled: meta ? meta.readonly : true,
 		singleMode: meta.single_mode == 'false' || !meta.single_mode ? false : true,
-		hidden: meta ? (meta.hidden ? meta.hidden : false): true
+		hidden: meta ? (meta.hidden ? meta.hidden : false): true,
+        display_field: display_field
 	});	
 	
 //    release_box_store.on('load',function(){
