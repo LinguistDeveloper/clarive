@@ -28,7 +28,7 @@
         //title:_('Scripts Multi'), label:_('Scripts Multi'), value: params.scripts_multi, default_value: 'ssh_script://user@host:port/path/new_script.sh'});
 
     var include = Baseliner.array_field({ name:'include',
-        title:_('Include'), label:_('Include'), description: _('Element pattern regex to include'), 
+        title:_('Include'), label:_('Include'), description: _('Element pattern regex to include'),
             value: params.include, default_value: '\\.js$'});
 
     var exclude = Baseliner.array_field({ name:'exclude',
@@ -51,7 +51,7 @@
     //var deployments = Baseliner.array_field({ name:'deployments', description: _('List of nodes to deploy to'),
         //title:_('Deployments'), label:_('Deployments'), value: params.deployments, default_value: 'new_deployment'});
     
-    var tabs = new Ext.TabPanel({ width: '705', height: '200',
+    var tabs = new Ext.TabPanel({ width: '705', height: '200', frame: true, border: false,
                 items: [ include.grid, exclude.grid ] });
 
     tabs.setActiveTab( include.grid );

@@ -2389,6 +2389,7 @@ Baseliner.DataEditor = function(c) {
         layout: 'card',
         tbar: tbar,
         activeItem: 0,
+        frame: true,
         items: [ tree, json_text ]
     }, c));
 

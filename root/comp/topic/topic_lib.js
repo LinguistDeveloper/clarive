@@ -1455,6 +1455,11 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
             enableDragDrop: true,   
             pageSize: 10, // used by the combo             
             store: store,
+            frame: true,
+            bodyStyle: {
+                'background-color': 'white',
+                'overflow-y': 'auto' 
+            },
             viewConfig: {
                 headersDisabled: true,
                 enableRowBody: true,
