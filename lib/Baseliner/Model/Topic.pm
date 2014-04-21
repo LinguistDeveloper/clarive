@@ -2824,13 +2824,13 @@ sub apply_filter{
             }
             when ('category_status_id') {
                 my @category_status_id = _array $filter{category_status_id};
-                my @not_in = map { abs $_ } grep { $_ < 0 } @category_status_id;
-                my @in = @not_in ? grep { $_ > 0 } @category_status_id : @category_status_id;
+                my @not_in = map { abs $_ } grep { 0+$_ < 0 } @category_status_id;
+                my @in = @not_in ? grep { 0+$_ > 0 } @category_status_id : @category_status_id;
                 if (@not_in && @in){
-                    $where->{'category_status.id'} = [mdb->nin(@in), mdb->in(@in)];    
+                    $where->{'category_status.id'} = [mdb->nin(@not_in), mdb->in(@in)];
                 }else{
                     if (@not_in){
-                        $where->{'category_status.id'} = mdb->nin(@in);
+                        $where->{'category_status.id'} = mdb->nin(@not_in);
                     }else{
                         $where->{'category_status.id'} = mdb->in(@in);  
                     }
@@ -2849,7 +2849,11 @@ sub apply_filter{
                         $where->{'id_priority'} = mdb->in(@in);  
                     }
                 } 
-            }             
+            }
+            default {
+                my @ids = _array $filter{$key};
+                $where->{$key} = mdb->in(@ids);
+            }        
 
         };
     }

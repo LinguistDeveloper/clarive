@@ -25,7 +25,7 @@ params:
     var display_field = meta.display_field || undefined;
     var tpl_cfg = meta.tpl_cfg || undefined;
 
-    var release_box_store = new Baseliner.store.Topics({ baseParams: {  limit: ps, mid: topic_mid, show_release: 1, filter: meta.filter ? meta.filter : ''}, display_field: display_field });
+    var release_box_store = new Baseliner.store.Topics({ baseParams: {  limit: ps, mid: topic_mid, show_release: 1, filter: meta.filter ? meta.filter : ''}, display_field: display_field, tpl_cfg: tpl_cfg });
 
 	var release_box = new Baseliner.TopicBox({
 		fieldLabel: _(meta.name_field),

@@ -48,7 +48,8 @@ params:
             show_release: 0, 
             filter: meta.filter ? meta.filter : ''
         },
-        display_field: display_field
+        display_field: display_field,
+        tpl_cfg: tpl_cfg
     });
 
     if( meta.list_type == 'grid' ) {
