@@ -7,11 +7,16 @@ sub list {
     my ( $self, %p ) = @_;
     
     my $query = {};
-    $query->{active} = defined $p{active} ? $p{active} : 1;
-    $query->{hostname} = defined $p{id} ? $p{id} : defined $p{no_id} ? {'<>',$p{no_id}} : [ -or => [ {'like','%'},{"=",undef} ] ];
     $p{all} and delete $query->{active};
+    $query->{active} = defined $p{active} ? $p{active} : '1';
 
-    my @daemons = Baseliner->model('Baseliner::BaliDaemon')->search($query)->all;
+    if(defined $p{id}){
+        $query->{hostname} = $p{id};
+    }elsif(defined $p{no_id}){
+        $query->{hostname} = {'$ne' => $p{no_id}};
+    }
+
+    my @daemons = mdb->daemon->find($query)->all;
     return @daemons;
 }
 
@@ -23,13 +28,15 @@ host dispatcher to start or stop the process.
 =cut
 sub request_start_stop {
     my ( $self, %p ) = @_;
-    my $id = $p{id};
+    my $id = mdb->oid($p{id});
     my $action = $p{action};
-    my $daemon = Baseliner->model('Baseliner::BaliDaemon')->find( $id );
-    if( ref $daemon ) {
-        $daemon->active( $action eq 'start' ? 1 : 0 );
-        $daemon->update;
-    }
+    mdb->daemon->update(
+        {_id => $id},
+        {   '$set' => {
+                active => $action eq 'start' ? '1' : '0', 
+                last_ping => mdb->ts
+            }
+        });
 }
 
 =head2 service_start
@@ -125,17 +132,22 @@ sub kill_daemon {
     my ( $self, $daemon, $signal ) = @_;
 
     $signal ||= 9;
-    $self->mark_as_pending( id=>$daemon->id );
+    $self->mark_as_pending( id=>$daemon->{_id}.'' );
 
-    if( kill $signal,$daemon->pid ) {
-        $daemon->pid( 0 );
-        $daemon->update;
-        _log "Daemon " . $daemon->service . " stopped";
+    if( kill $signal,$daemon->{pid} ) {
+        mdb->daemon->update(
+            {_id => $daemon->{_id}},
+            {   '$set' =>{
+                    pid => '0',
+                    last_ping => mdb->ts
+                }
+            });
+        _log "Daemon " . $daemon->{service} . " stopped";
     } else {
         _log "Could not kill daemon "
-            . $daemon->service
+            . $daemon->{service}
             . " with pid "
-            . $daemon->pid;
+            . $daemon->{pid};
     }
 }
 
@@ -146,13 +158,13 @@ Put the pid field to -1 to indicate that the daemon is either starting or stoppi
 =cut
 sub mark_as_pending {
     my ($self, %p) = @_;
-    my $rs = Baseliner->model('Baseliner::BaliDaemon')->search({ id=>$p{id} });
-    while( my $r = $rs->next ) {
-        unless( $r->pid ) {
-            $r->pid( -1 );
-            $r->update;
-        }
-    }
+    my $rs = mdb->daemon->update(
+            {_id => mdb->oid($p{id})},
+            {   '$set' => {
+                    last_ping => mdb->ts,
+                    pid => '-1'
+                }
+            });
 }
 
 1;

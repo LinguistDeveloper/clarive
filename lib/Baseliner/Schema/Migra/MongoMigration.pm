@@ -534,6 +534,14 @@ my @dashes = _dbis->query('select * from bali_dashboard')->hashes;
     }
 }
 
+sub daemons {
+    my @daemons = _dbis->query('select * from bali_daemon')->hashes;
+    for my $daemon ( @daemons ) {
+        delete $daemon->{id};   
+        mdb->daemon->insert( $daemon );   
+    }
+}
+
 ####################################
 #
 # Integrity fixes

@@ -24,27 +24,27 @@ sub list : Local {
     $limit ||= 100;
     $sort||='service';
     $dir||='asc';
+
+    if($dir =~ /asc/i){
+        $dir = 1;
+    }else{
+        $dir = -1;
+    }
     
-    my $page = to_pages( start=>$start, limit=>$limit );
     my @rows;
-    my $where = $query
-    ? { 'lower(service||hostname)' => { -like => "%".lc($query)."%" } }
-    : undef;
-    
-    my $rs = $c->model('Baseliner::BaliDaemon')->search(  $where,
-                            { page => $page,
-                              rows => $limit,
-                              order_by => $sort ? { "-$dir" => "$sort" } : undef
-                            }
-                            );
-    my $pager = $rs->pager;
-    $cnt = $pager->total_entries;
-    $rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
+    my $where = $query ? mdb->query_build(query => $query, fields=>[qw(service hostname)]) : {};
+    my $rs = mdb->daemon->find($where);
+    $rs->sort($sort ? { $sort => $dir } : {service => 1});
+    $rs->limit($limit);
+    $rs->skip($start);
+    $cnt = mdb->daemon->count($where);
     while( my $r = $rs->next ) {
-    $r->{exists} = pexists( $r->{pid} ) if $r->{pid} > 0;
-    $r->{exists} = -1 if $r->{pid} == -1 ;
-    $r->{exists} = 1 if $r->{pid} > 0 ;
-    push @rows, $r
+        $r->{exists} = pexists( $r->{pid} ) if $r->{pid} > 0;
+        $r->{exists} = -1 if $r->{pid} == -1 ;
+        $r->{exists} = 1 if $r->{pid} > 0 ;
+        $r->{id} = $r->{_id}.'';
+        delete $r->{_id};
+        push @rows, $r
     }
     $c->stash->{json} = { totalCount=>$cnt, data=>\@rows };
     $c->forward('View::JSON');
@@ -76,44 +76,46 @@ sub update : Local {
     given ($action) {
     when ('add') {
         try{
-            my $daemon = $c->model('Baseliner::BaliDaemon')->create(
-                            {
-                            service	=> $p->{service},
-                            hostname => $p->{hostname},
-                            active 	=> $p->{state},
-                            });
+            my $daemon = mdb->daemon->insert({
+                    service => $p->{service},
+                    hostname => $p->{hostname},
+                    active  => $p->{state},
+                    last_ping => mdb->ts,
+                });
             
-        $c->stash->{json} = { msg=>_loc('Daemon added'), success=>\1, daemon_id=> $daemon->id };
-
+            $c->stash->{json} = { msg=>_loc('Daemon added'), success=>\1, daemon_id=> $daemon.'' };
         }
         catch{
-        $c->stash->{json} = { msg=>_loc('Error adding Daemon: %1', shift()), failure=>\1 }
+            $c->stash->{json} = { msg=>_loc('Error adding Daemon: %1', shift()), failure=>\1 }
         }
     }
     when ('update') {
         try{
-        my $id_daemon = $p->{id};
-        my $daemon = $c->model('Baseliner::BaliDaemon')->find( $id_daemon );
-        $daemon->hostname( $p->{hostname} );
-        $daemon->active( $p->{state} );
-        $daemon->update();
-        $c->stash->{json} = { msg=>_loc('Daemon modified'), success=>\1, daemon_id=> $id_daemon };
+            my $id_daemon = $p->{id};
+            my $daemon = mdb->daemon->update(
+                {_id => mdb->oid($id_daemon)},
+                {   '$set' => { 
+                        hostname => $p->{hostname},
+                        active => $p->{state},
+                        last_ping => mdb->ts,
+                    }
+                });
+            $c->stash->{json} = { msg=>_loc('Daemon modified'), success=>\1, daemon_id=> $id_daemon.'' };
         }
         catch{
-        $c->stash->{json} = { msg=>_loc('Error modifying Daemon: %1', shift()), failure=>\1 };
+            $c->stash->{json} = { msg=>_loc('Error modifying Daemon: %1', shift()), failure=>\1 };
         }
     }
     when ('delete') {
         my $id_daemon = $p->{id};
         
         try{
-        my $row = $c->model('Baseliner::BaliDaemon')->find( $id_daemon );
-        $row->delete;
+            my $row = mdb->daemon->remove({_id => mdb->oid($id_daemon)});
     
-        $c->stash->{json} = { success => \1, msg=>_loc('Daemon deleted') };
+            $c->stash->{json} = { success => \1, msg=>_loc('Daemon deleted') };
         }
         catch{
-        $c->stash->{json} = { success => \0, msg=>_loc('Error deleting Daemon') };
+            $c->stash->{json} = { success => \0, msg=>_loc('Error deleting Daemon') };
         }
     }
     }

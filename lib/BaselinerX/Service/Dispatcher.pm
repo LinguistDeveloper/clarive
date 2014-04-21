@@ -54,15 +54,15 @@ sub list {
 
     _log "Listing active daemons...";
     for my $daemon ( Baseliner->model('Daemons')->list( all => 1 ) ) {
-        my $pid = $daemon->pid;
+        my $pid = $daemon->{pid};
         if ($pid) {
-            my $exists = pexists( $daemon->pid );
+            my $exists = pexists( $daemon->{pid} );
             my $e_text = $exists ? 'running' : 'missing';
-            my $host   = $daemon->hostname;
-            print $daemon->service . " ($host:$pid): $e_text", "\n";
+            my $host   = $daemon->{hostname};
+            print $daemon->{service} . " ($host:$pid): $e_text", "\n";
         }
         else {
-            print $daemon->service . ": inactive", "\n";
+            print $daemon->{service} . ": inactive", "\n";
         }
     }
 }
@@ -74,10 +74,10 @@ sub stop_all {
 
     # kill everybody
     for my $daemon ( Baseliner->model('Daemons')->list( all => 1 ) ) {
-        if ( $daemon->active ) {
-            next unless $daemon->pid;
-            next unless pexists( $daemon->pid );
-            _log "Stopping daemon " . $daemon->service;
+        if ( $daemon->{active} ) {
+            next unless $daemon->{pid};
+            next unless pexists( $daemon->{pid} );
+            _log "Stopping daemon " . $daemon->{service};
             Baseliner->model('Daemons')->kill_daemon($daemon);
         }
     }
@@ -94,10 +94,10 @@ sub restart_all {
 
     # kill everybody
     for my $daemon ( Baseliner->model('Daemons')->list( all => 1 ) ) {
-        if ( $daemon->active ) {
-            next unless $daemon->pid;
-            next unless pexists( $daemon->pid );
-            _log "Stopping daemon " . $daemon->service;
+        if ( $daemon->{active} ) {
+            next unless $daemon->{pid};
+            next unless pexists( $daemon->{pid} );
+            _log "Stopping daemon " . $daemon->{service};
             Baseliner->model('Daemons')->kill_daemon( $daemon, RESTART_SIGNAL );
         }
     }
@@ -135,11 +135,6 @@ sub dispatcher {
         _log _loc('Checking for daemons started/stopped');
         my @daemons = ();
 
-        # Block table and start transaction
-        my $dbh = Baseliner->model('Baseliner')->storage->dbh;
-        $dbh->begin_work();
-        $dbh->do("lock table bali_daemon in exclusive mode");  # BaliDaemon
-
         try {
             # in case of DB failure
             @daemons = Baseliner->model('Daemons')->list( all => 1 );
@@ -148,17 +143,16 @@ sub dispatcher {
             _log _loc "Error trying to read daemon list from DB: %1", shift();
         };
         for my $daemon (@daemons) {
-            if ( $daemon->hostname eq $self->disp_id ) {
+            if ( $daemon->{hostname} eq $self->disp_id ) {
                 $self->check_daemon( { daemon => $daemon }, $config );
             } elsif ( !$first_time ) {
                 my $now = Class::Date->now;
-                my $last_ping = Class::Date->new( $daemon->last_ping );
+                my $last_ping = Class::Date->new( $daemon->{last_ping} );
                 if ( $now - 2*$frequency."s" > $last_ping ) {
                     $self->check_daemon( { daemon => $daemon, new_disp => 1 }, $config );
                 }
             }
         }
-        $dbh->commit();
         $first_time = 0;
         sleep $frequency;
     }
@@ -170,38 +164,44 @@ sub check_daemon {
     my $daemon = $p->{daemon};
     my $new_disp = $p->{new_disp} // 0;
 
-    my $now = Class::Date->now;
-
-    if ( !$daemon->active ) {
+    if ( !$daemon->{active} ) {
         if ( !$new_disp ) {
-            return unless $daemon->pid;
-            return unless pexists( $daemon->pid );
-            _debug "Stopping daemon " . $daemon->service;
+            return unless $daemon->{pid};
+            return unless pexists( $daemon->{pid} );
+            _debug "Stopping daemon " . $daemon->{service};
             Baseliner->model('Daemons')->kill_daemon($daemon);
         }
     }
 
-    elsif ( $daemon->active ) {
+    elsif ( $daemon->{active} ) {
         if ( !$new_disp ) {
-            if (  $daemon->pid > 0 && pexists( $daemon->pid ) ) {
-                $daemon->last_ping( "$now" );
-                $daemon->update;
+            if (  $daemon->{pid} > 0 && pexists( $daemon->{pid} ) ) {
+                mdb->daemon->update(
+                    {_id => $daemon->{_id}},
+                    {   '$set' => {
+                            last_ping => mdb->ts
+                        }
+                    });
                 return;          
             };
-            if ( exists $self->failed_services->{ $daemon->service } ) {
-                $daemon->last_ping( "$now" );
-                $daemon->update;
+            if ( exists $self->failed_services->{ $daemon->{service} } ) {
+                mdb->daemon->update(
+                    {_id => $daemon->{_id}},
+                    {   '$set' => {
+                            last_ping => mdb->ts
+                        }
+                    });
                 return;                              
             }  # ignore failing services
         }
-        _debug "Starting daemon " . $daemon->service;
+        _debug "Starting daemon " . $daemon->{service};
 
         my $reg = try {
-            Baseliner->model('Registry')->get( $daemon->service ) if $daemon->service
+            Baseliner->model('Registry')->get( $daemon->{service} ) if $daemon->{service}
         } catch {
             my $err = shift;
-            _error( _loc("Could not start service %1. Service ignored: %2", $daemon->service, $err ) );
-            $self->failed_services->{ $daemon->service } = ();
+            _error( _loc("Could not start service %1. Service ignored: %2", $daemon->{service}, $err ) );
+            $self->failed_services->{ $daemon->{service} } = ();
         };
 
         return if !$reg;
@@ -224,8 +224,8 @@ sub check_daemon {
             @started =
               Baseliner->model('Daemons')->service_start_forked(
                 frequency => $freq,
-                id        => $daemon->id,
-                service   => $daemon->service,
+                id        => $daemon->{_id}.'',
+                service   => $daemon->{service},
                 hostname  => $self->disp_id,
                 params    => $params
               );
@@ -235,8 +235,8 @@ sub check_daemon {
             # forked
             @started =
               Baseliner->model('Daemons')->service_start_forked(
-                id      => $daemon->id,
-                service => $daemon->service,
+                id      => $daemon->{_id}.'',
+                service => $daemon->{service},
                 hostname  => $self->disp_id,
                 params  => $params
               );
@@ -244,17 +244,21 @@ sub check_daemon {
         else {
             # background proc
             @started = Baseliner->model('Daemons')->service_start(
-                id      => $daemon->id,
-                service => $daemon->service,
+                id      => $daemon->{_id}.'',
+                service => $daemon->{service},
                 hostname  => $self->disp_id,
                 params  => $params
             );
         }
         my $started = shift @started;
-        $daemon->last_ping( "$now" );
-        $daemon->pid( $started->{pid} );
-        $daemon->hostname( $self->disp_id );
-        $daemon->update;
+        mdb->daemon->update(
+            {_id => $daemon->{_id}.''},
+            {   '$set' => {
+                    last_ping => mdb->ts,
+                    pid => $started->{pid},
+                    hostname => $self->disp_id
+                }
+            });
 
         #REAPER() unless $^O eq 'Win32';
 
