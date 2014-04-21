@@ -1876,7 +1876,7 @@ sub report_csv : Local {
     for( grep { length $_->{name} } _array( $data->{columns} ) ) {
         push @cols, qq{"$_->{name}"}; #"
     }
-    push @csv, join ',', @cols;
+    push @csv, join ';', @cols;
 
     for my $row ( _array( $data->{rows} ) ) {
         my @cells;
@@ -1891,9 +1891,11 @@ sub report_csv : Local {
             }
             #_debug "V=$v," . ref $v;
             $v =~ s{"}{""}g;
+            utf8::encode($v);
+            Encode::from_to($v,'utf-8','iso-8859-15');
             push @cells, qq{"$v"}; 
         }
-        push @csv, join ',', @cells; 
+        push @csv, join ';', @cells; 
     }
     my $body = join "\n", @csv;
     # I#6947 - chromeframe does not download csv with less than 1024: pad the file
