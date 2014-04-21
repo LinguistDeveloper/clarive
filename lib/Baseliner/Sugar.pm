@@ -18,7 +18,6 @@ use Exporter::Tidy default => [qw/
     config_get
     config_value
     bali_rs
-    repo
     relation
     user_get
     ns_get
@@ -43,9 +42,6 @@ sub mdl {  }
 sub config_store { Baseliner->model('ConfigStore') }
 sub config_get { Baseliner->model('ConfigStore')->get(@_) }
 sub config_value { Baseliner->model('ConfigStore')->get($_[0], value=>1) }
-
-sub repo { Baseliner->model('Repository') }
-#sub ns { Baseliner->model('Repository') }
 
 sub bali_rs { Baseliner->model('Baseliner::Bali' . shift ) }
 

@@ -290,65 +290,50 @@ sub sql_normalize {
 sub save : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->parameters;
-    if ( $p->{id} ) {
-        _log "Saving REPL: " . $p->{id};
-        my $key = join '/', 'saved.repl', $p->{id};
-        $c->model( 'Repository' )->set(
-            ns   => $key,
-            data => {code => $p->{code}, output => $p->{output}, username => $c->username}
-        );
-    } ## end if ( $p->{id} )
-} ## end sub save :
+    $p->{text} //= $p->{id};
+    my $doc = mdb->repl->find_one({ _id=>mdb->oid($p->{_id}) });
+    if ( $doc ) {
+        mdb->repl->save({ %$doc, %$p });
+    } else {
+        mdb->repl->insert($p);
+    }
+} 
 
 sub delete : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->parameters;
-    if ( $p->{ns} ) {
-        $c->model( 'Repository' )->delete( ns => 'saved.repl/' . $p->{ns} );
+    my $id = $p->{_id} || $p->{ns};
+    if ( $id ) {
+        mdb->repl->remove({ '$or'=>[{_id=>mdb->oid($id)},{text=>$id}] });
+    } else {
+        _fail _loc 'Missing REPL _id';
     }
-} ## end sub delete :
+} 
 
 sub load : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->parameters;
-    my $item = $c->model( 'Repository' )->get( ns => 'saved.repl/' . $p->{ns} );
-    $c->stash->{json} = $item;
+    my $doc = mdb->repl->find_one({ _id=>mdb->oid($p->{_id}) }); 
+    _fail _loc 'REPL entry not found: %1', $p->{_id} unless $doc;
+    $c->stash->{json} = $doc;
     $c->forward( 'View::JSON' );
-} ## end sub load :
-
-# deprecated
-sub list_saved : Local {
-    my ( $self, $c ) = @_;
-    my $p  = $c->req->parameters;
-    my @ns = $c->model( 'Repository' )->list( provider => 'saved.repl' );
-    my $k  = 0;
-    $c->stash->{json} = {
-        data => [
-            sort { lc $a->{ns} cmp lc $b->{ns} } map {
-                my $ns = ( ns_split( $_ ) )[ 1 ];
-                {id => $k++, ns => $ns, leaf => \0}
-                } @ns
-        ]
-    };
-    $c->forward( 'View::JSON' );
-} ## end sub list_saved :
+} 
 
 sub tree_saved : Local {
     my ( $self, $c ) = @_;
     my $p     = $c->req->parameters;
     my $query = $p->{query};
-    my @ns    = $c->model( 'Repository' )->list( provider => 'saved.repl' );
+    my @docs  = mdb->repl->find->all;
     my $k     = 0;
     $c->stash->{json} = [
         grep { $query ? $_->{text} =~ /$query/i : 1 }
-            sort { lc $a->{text} cmp lc $b->{text} }
-            map {
-            my $ns = ( ns_split( $_ ) )[ 1 ];
-            {text => $ns, leaf => \1, url_click => '/repl/load', data => {ns => $ns}}
-            } @ns
+        sort { lc $a->{text} cmp lc $b->{text} }
+        map {
+            { _id=>''.$_->{_id}, text =>$_->{text},leaf => \1, url_click => '/repl/load', data => { _id=>''.$_->{_id} }}
+        } @docs
     ];
     $c->forward( 'View::JSON' );
-} ## end sub tree_saved :
+} 
 
 sub tree_hist : Local {
     my ( $self, $c ) = @_;
@@ -525,13 +510,12 @@ sub tree_main : Local {
 sub save_to_file : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->parameters;
-    my @ns = $c->model( 'Repository' )->list( provider => 'saved.repl' );
+    my @docs = mdb->repl->find->all;
     try {
-
-        for ( @ns ) {
-            my $name = ( ns_split( $_ ) )[ 1 ];
-            $name =~ s{\s}{_}g;
-            my $item = $c->model( 'Repository' )->get( ns => $_ );
+ 
+        for my $item ( @docs ) {
+            my $name = $item->{id};
+            $name =~ Util->name_to_id( $name );
             my $file   = Baseliner->path_to( 'etc', 'repl', "$name.t" );
             my $code   = $item->{code};
             my $output = $item->{output};
@@ -550,7 +534,7 @@ sub save_to_file : Local {
         $c->stash->{json} = {success => \0, msg => shift};
     };
     $c->forward( 'View::JSON' );
-} ## end sub save_to_file :
+} 
 
 sub tidy : Local {
     my ( $self, $c ) = @_;
