@@ -23,6 +23,7 @@ params:
 	var topic_mid = data.topic_mid || undefined;
 	var ps = meta.page_size || 10;  // for combos, 10 is a much nicer on a combo
     var display_field = meta.display_field || undefined;
+    var tpl_cfg = meta.tpl_cfg || undefined;
 
     var release_box_store = new Baseliner.store.Topics({ baseParams: {  limit: ps, mid: topic_mid, show_release: 1, filter: meta.filter ? meta.filter : ''}, display_field: display_field });
 
@@ -37,7 +38,8 @@ params:
 		disabled: meta ? meta.readonly : true,
 		singleMode: meta.single_mode == 'false' || !meta.single_mode ? false : true,
 		hidden: meta ? (meta.hidden ? meta.hidden : false): true,
-        display_field: display_field
+        display_field: display_field,
+        tpl_cfg: tpl_cfg
 	});	
 	
 //    release_box_store.on('load',function(){
