@@ -714,7 +714,7 @@ sub comment : Local {
                             text       => $text,
                             content_type => $content_type,
                             created_by => $c->username,
-                            created_on => DateTime->now,
+                            created_on => Class::Date->now,
                         }
                     );
                     local $Baseliner::CI::ci_record = 1;
@@ -1891,8 +1891,8 @@ sub report_csv : Local {
             }
             #_debug "V=$v," . ref $v;
             $v =~ s{"}{""}g;
-            utf8::encode($v);
-            Encode::from_to($v,'utf-8','iso-8859-15');
+            # utf8::encode($v);
+            # Encode::from_to($v,'utf-8','iso-8859-15');
             push @cells, qq{"$v"}; 
         }
         push @csv, join ';', @cells; 
