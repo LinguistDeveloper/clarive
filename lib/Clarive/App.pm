@@ -7,6 +7,7 @@ has home    => qw(is rw required 1);
 has base    => qw(is rw required 1);
 has lang    => qw(is ro required 1);
 has debug   => qw(is rw default 0);
+has migrate => qw(is rw default 0);
 has verbose => qw(is rw default 0);
 has trace   => qw(is ro default 0);
 has carp_always   => qw(is ro default 0);
