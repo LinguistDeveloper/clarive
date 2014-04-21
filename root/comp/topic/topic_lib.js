@@ -151,7 +151,15 @@ Baseliner.store.Topics = function(c) {
     if (c.display_field){
         fields.push(c.display_field);
         delete c.display_field;  
-    } 
+    }
+
+    if (c.tpl_cfg){
+        var column_tpl = c.tpl_cfg.split(';');
+        for (i=0;i<column_tpl.length;i++) {        
+            var col_name = column_tpl[i].split(':');
+            fields.push(col_name[0]);
+        }
+    }
 
     Baseliner.store.Topics.superclass.constructor.call(this, Ext.apply({
         root: 'data' , 

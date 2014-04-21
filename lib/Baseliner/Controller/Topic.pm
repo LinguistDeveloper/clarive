@@ -218,12 +218,26 @@ sub related : Local {
         delete $filter{category_type}; 
         my $filter_js = _decode_json($p->{filter});
 
-        $filter{category_id}        =  $filter_js->{categories} if ($filter_js->{categories} eq 'ARRAY' && scalar @{$filter_js->{categories}} > 0);
+        $filter{category_id}        =  $filter_js->{categories} if ( ref $filter_js->{categories} eq 'ARRAY' && scalar @{$filter_js->{categories}} > 0);
         $filter{category_status_id} =  $filter_js->{statuses} if ( ref $filter_js->{statuses} eq 'ARRAY' && scalar @{$filter_js->{statuses}} > 0);
         $filter{id_priority}        =  $filter_js->{priorities} if ( ref $filter_js->{priorities} eq 'ARRAY' && scalar @{$filter_js->{priorities}} > 0);
+        $filter{labels}        =  $filter_js->{labels} if ( ref $filter_js->{labels} eq 'ARRAY' && scalar @{$filter_js->{labels}} > 0);
+
+        delete $filter_js->{categories};
+        delete $filter_js->{statuses};
+        delete $filter_js->{priorities};
+        delete $filter_js->{labels};
+        delete $filter_js->{limit};
+        delete $filter_js->{start};
+        delete $filter_js->{typeApplication};
+
+        for my $other_filter ( keys %$filter_js ) {
+            $filter{$other_filter} = $filter_js->{$other_filter};
+        }
     }
 
     $where = $c->model('Topic')->apply_filter( $username, $where, %filter );
+    _log _dump $where;
 
     my @topics = map {
         $_->{name} = _loc($_->{category}->{name}) . ' #' . $_->{mid};
