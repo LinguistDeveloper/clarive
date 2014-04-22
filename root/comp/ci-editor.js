@@ -184,8 +184,12 @@
                allowBlank: false,
                anchor: '100%' 
             },
-            autoScroll: true,
-            //bodyStyle:'padding: 10px 0px 0px 15px',
+            frame: true,
+            //autoScroll: true,
+            bodyStyle: {
+                'background-color': 'white',
+                'overflow-y': 'auto' 
+            },
             items: [
                 txt_cont,
                 children,
@@ -288,11 +292,16 @@
         });
         return form;
     };
+
     var cardpanel = new Ext.Panel({
        layout: 'card',
-       autoScroll: true,
-       tbar: []
+       tbar: [],
+       frame: true,
+       bodyStyle: {
+            'background-color' : 'white'
+       }
     });
+
     cardpanel.on('afterrender', function(){
         if( params.load ) {
             Baseliner.ajaxEval( '/ci/load', { mid: params.mid }, function(res) {
