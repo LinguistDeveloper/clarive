@@ -172,6 +172,7 @@ sub check_modified_on: Local {
     my $modified_rel = \0;
     my $topic_mid = $p->{topic_mid};
     
+    my $duration;
     my $strDate = $p->{modified};
         
     use Class::Date;
@@ -183,6 +184,7 @@ sub check_modified_on: Local {
     
     if ( $date_modified_on < $date_actual_modified_on ){
         $modified_before = $who;
+        $duration = Util->to_dur( $date_actual_modified_on - $date_modified_on );
     } else {
         my $old_signature = $p->{rel_signature};
         my $new_signature = $c->model('Topic')->rel_signature($topic_mid);
@@ -190,10 +192,11 @@ sub check_modified_on: Local {
     }
   
     $c->stash->{json} = {
-        success      => \1,
-        modified_before => $modified_before,
-        modified_rel => $modified_rel,
-        msg          => _loc( 'Prueba' ),
+        success                  => \1,
+        modified_before          => $modified_before,
+        modified_before_duration => $duration,
+        modified_rel             => $modified_rel,
+        msg                      => _loc( 'Prueba' ),
     };      
     $c->forward('View::JSON');
 }
