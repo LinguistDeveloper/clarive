@@ -1222,7 +1222,8 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             self.btn_delete_form.disable();
             
             if(action == 'update'){
-                Baseliner.ajaxEval( '/topic/check_modified_on/',{ topic_mid: self.topic_mid, modified: self.modified_on },
+                var rel_signature = self.form_topic.rec ? self.form_topic.rec.rel_signature : '';
+                Baseliner.ajaxEval( '/topic/check_modified_on/',{ topic_mid: self.topic_mid, modified: self.modified_on, rel_signature: rel_signature },
                     function(res) {
                         if ( res.success ) {
                             if (res.modified_before){
