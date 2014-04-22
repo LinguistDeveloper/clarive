@@ -114,8 +114,8 @@ sub asset_new {
 sub ts { Util->_now() }
 sub ts_hires { Time::HiRes::time() }
 sub now { Class::Date->now->to_tz( Util->_tz() ) }
-sub in  { shift; {  '$in' => [ map { ref $_ eq 'HASH' ? "$_->{mid}" : "$_" } Util->_array( @_ ) ] } }
-sub nin { shift; { '$nin' => [ map { ref $_ eq 'HASH' ? "$_->{mid}" : "$_" } Util->_array( @_ ) ] } }
+sub in  { shift; {  '$in' => [ map { ref $_ eq 'HASH' ? "$_->{mid}" : defined $_ ? "$_" : $_ } Util->_array( @_ ) ] } }
+sub nin { shift; { '$nin' => [ map { ref $_ eq 'HASH' ? "$_->{mid}" : defined $_ ? "$_" : $_ } Util->_array( @_ ) ] } }
 sub str { shift; [ map { defined $_ ? "$_" : undef } Util->_array( @_ ) ] }
 
 sub find {
