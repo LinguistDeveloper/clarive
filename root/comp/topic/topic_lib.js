@@ -1226,8 +1226,12 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 Baseliner.ajaxEval( '/topic/check_modified_on/',{ topic_mid: self.topic_mid, modified: self.modified_on, rel_signature: rel_signature },
                     function(res) {
                         if ( res.success ) {
-                            if (res.modified_before){
-                                Ext.Msg.confirm( _('Confirmation'), _('Topic was modified before your changes. Are you sure you want to save the topic?'),
+                            var msg_confirm = res.modified_before ? _("Topic was modified by %1 while you're editing. Are you sure you want to save the topic?", res.modified_before)
+                                              res.modified_rel ? _("Topic relationships changed while you're editing. Are you sure you want to save the topic?")
+                                              : null;
+                                
+                            if (msg_confirm){
+                                Ext.Msg.confirm( _('Confirmation'), msg_confirm,
                                     function(btn){ 
                                         if(btn=='yes') {
                                             do_submit();
@@ -1239,8 +1243,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                                         }
                                     }
                                 );
-                            }
-                            else{
+                            } else{
                                 do_submit();
                             }
                         } else {

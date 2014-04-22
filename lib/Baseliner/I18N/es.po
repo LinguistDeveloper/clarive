@@ -4851,7 +4851,10 @@ msgstr "Cambiar estado del tópico lógicamente (Sin despliegue)"
 msgid "Can delete topic in this category"
 msgstr "Puede borrar tópicos de la categoría"
 
-msgid "Topic was modified before your changes. Are you sure you want to save the topic?"
+msgid "Topic was modified by %1 while you're editing. Are you sure you want to save the topic?"
+msgstr "Tópico fue modificado por el usuario %1 y se perderán esos cambios. ¿Seguro que quiere guardar el tópico?"
+
+msgid "Topic relationships changed while you're editing. Are you sure you want to save the topic?"
 msgstr "Tópico fue modificado por otro usuario y se perderán esos cambios. ¿Seguro que quiere guardar el tópico?"
 
 msgid "Topic changed status before. Do you want to refresh the topic?"
