@@ -278,7 +278,7 @@ sub wait_for_children {
             _info( _loc('Done waiting for return code from children pids: %1', join(',',@pids ) ) );
         }
     } else {
-        _debug( _loc('No children to wait for.') );
+#        _debug( _loc('No children to wait for.') );
     }
 }
 
