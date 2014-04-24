@@ -2937,7 +2937,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                     self.meta_for_data( mf, bl.id );
                 });
                 tbar.doLayout();
-                self.doLayout(false,true);
+                self.doLayout();
             }
         });
         
