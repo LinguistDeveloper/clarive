@@ -2807,7 +2807,7 @@ Baseliner.MetaForm = Ext.extend( Ext.Panel, {
             var field_container = self.to_field_container( field );
             self.add( field_container );
             //self.add( field );
-            self.doLayout();
+            self.doLayout(false,true);
             return field;
         }
     }, 
@@ -2827,6 +2827,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
     bl: '*', 
     frame: true,
     layout: 'card',
+    forceLayout: true,
     activeItem: 0,
     show_tbar: true,
     bodyStyle: {
@@ -2936,7 +2937,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                     self.meta_for_data( mf, bl.id );
                 });
                 tbar.doLayout();
-                self.doLayout();
+                self.doLayout(false,true);
             }
         });
         
