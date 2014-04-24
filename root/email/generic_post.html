@@ -49,7 +49,7 @@ body {
     <div class='box'>
             Comentario:
             <div class="trace error">
-                <p style="background-color:#eee;padding:15px"><% $post %></p>
+                <p style="background-color:#eee;padding:15px"><% _strip_html($post) %></p>
             </div>
             <p>Pulse <a href="<% Baseliner->config->{web_url}."/tab/topic/view?topic_mid=".${mid} %>">aqu&iacute;</a> para revisar el t&oacute;pico</p>
     </div>
