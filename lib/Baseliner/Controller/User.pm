@@ -263,6 +263,8 @@ sub update : Local {
                 my $ci = ci->user->new( %$ci_data );
                 $ci->gen_project_security;
                 $user_mid = $ci->save;
+                $ci->password( ci->user->encrypt_password( $p->{username}, $p->{pass} ));
+                $ci->save;
                 $c->stash->{json} = { msg=>_loc('User added'), success=>\1, user_id=> $user_mid };
                 
             }else{
@@ -338,7 +340,7 @@ sub update : Local {
                     $user->alias( $p->{alias} ) if $p->{alias};
                     $user->email( $p->{email} ) if $p->{email};
                     $user->phone( $p->{phone} ) if $p->{phone};                 
-                    $user->phone( $p->{active} ) if $p->{active};                 
+                    $user->active( $p->{active} ) if $p->{active};                 
                     # $user->update();                    
                     $user->save;                    
                     

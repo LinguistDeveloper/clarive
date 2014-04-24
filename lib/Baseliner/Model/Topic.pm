@@ -1278,6 +1278,13 @@ sub get_data {
     return $data;
 }
 
+sub rel_signature {
+    my ($self,$mid) = @_;
+    join ',', sort { $a <=> $b } _unique 
+        map { ($_->{from_mid}, $_->{to_mid}) } 
+        mdb->master_rel->find({ '$or'=>[{ from_mid=>"$mid" },{ to_mid=>"$mid" }] })->all;
+}
+
 sub get_release {
     my ($self, $topic_mid, $key, $meta ) = @_;
 
@@ -2296,7 +2303,7 @@ sub set_projects {
     # for safety with legacy, reassign previous unassigned projects (normally from drag-drop
     my $rdoc = { from_mid=>"$topic_mid", rel_type=>'topic_project', rel_field=>undef };
     DB->BaliMasterRel->search($rdoc)->update({ rel_field=>$id_field });
-    mdb->master_rel->update($rdoc,{ rel_field=>$id_field },{multiple=>1});
+    mdb->master_rel->update($rdoc,{ '$set'=>{rel_field=>$id_field} },{multiple=>1});
 
     my @old_projects =  map { $_->{mid} } Baseliner->model('Baseliner::BaliTopic')->find( $topic_mid )->
                 projects->search( {rel_field => $id_field }, { select => ['mid'], order_by => { '-asc' => ['mid'] }} )->hashref->all;
@@ -2824,13 +2831,13 @@ sub apply_filter{
             }
             when ('category_status_id') {
                 my @category_status_id = _array $filter{category_status_id};
-                my @not_in = map { abs $_ } grep { $_ < 0 } @category_status_id;
-                my @in = @not_in ? grep { $_ > 0 } @category_status_id : @category_status_id;
+                my @not_in = map { abs $_ } grep { 0+$_ < 0 } @category_status_id;
+                my @in = @not_in ? grep { 0+$_ > 0 } @category_status_id : @category_status_id;
                 if (@not_in && @in){
-                    $where->{'category_status.id'} = [mdb->nin(@in), mdb->in(@in)];    
+                    $where->{'category_status.id'} = [mdb->nin(@not_in), mdb->in(@in)];
                 }else{
                     if (@not_in){
-                        $where->{'category_status.id'} = mdb->nin(@in);
+                        $where->{'category_status.id'} = mdb->nin(@not_in);
                     }else{
                         $where->{'category_status.id'} = mdb->in(@in);  
                     }
@@ -2849,7 +2856,11 @@ sub apply_filter{
                         $where->{'id_priority'} = mdb->in(@in);  
                     }
                 } 
-            }             
+            }
+            default {
+                my @ids = _array $filter{$key};
+                $where->{$key} = mdb->in(@ids);
+            }        
 
         };
     }

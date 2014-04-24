@@ -2389,6 +2389,7 @@ Baseliner.DataEditor = function(c) {
         layout: 'card',
         tbar: tbar,
         activeItem: 0,
+        frame: true,
         items: [ tree, json_text ]
     }, c));
 
@@ -2824,9 +2825,13 @@ Baseliner.MetaForm = Ext.extend( Ext.Panel, {
 
 Baseliner.VariableForm = Ext.extend( Ext.Panel, {
     bl: '*', 
+    frame: true,
     layout: 'card',
     activeItem: 0,
     show_tbar: true,
+    bodyStyle: {
+        'background-color': 'white'
+    },
     constructor: function(c){
         Baseliner.VariableForm.superclass.constructor.call(this, Ext.apply({
         }, c));

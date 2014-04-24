@@ -151,7 +151,15 @@ Baseliner.store.Topics = function(c) {
     if (c.display_field){
         fields.push(c.display_field);
         delete c.display_field;  
-    } 
+    }
+
+    if (c.tpl_cfg){
+        var column_tpl = c.tpl_cfg.split(';');
+        for (i=0;i<column_tpl.length;i++) {        
+            var col_name = column_tpl[i].split(':');
+            fields.push(col_name[0]);
+        }
+    }
 
     Baseliner.store.Topics.superclass.constructor.call(this, Ext.apply({
         root: 'data' , 
@@ -186,14 +194,67 @@ Baseliner.TopicBox = Ext.extend( Ext.ux.form.SuperBoxSelect, {
     // stackItems: true,
     initComponent: function(){
         var self = this;
-//var display_field = self.display_field ?  '{short_name} {'+self.display_field+'}':  '{short_name}';
 
-        self.tpl = new Ext.XTemplate( '<tpl for=".">',
-            '<div class="x-combo-list-item">',
-            '<span class="bl-label" style="background: {color}">{short_name}</span>',
-            ( self.display_field ? '&nbsp;[{'+self.display_field+'}]' : '' ),
-            '<span style="padding-left:4px"><b>{title}</b></span>',
-            '</div></tpl>' );        
+        if (self.tpl_cfg){
+            var columns = self.tpl_cfg.split(';');
+            var header = [];
+            var body = [];
+            header.push('<p>');
+            body.push('<p><div class="x-combo-list-item">');
+            for (i=0;i<columns.length;i++){
+                var properties = columns[i].split(':');
+                var width_column;
+                var name_column;
+                if (properties[0] == 'mid'){
+                    width_column = properties[1] ? properties[1] : '75'; 
+                    header.push('<div class="titulo" style="width:' + width_column + 'px;">&nbsp;');
+                    name_column = _(properties[0]).toUpperCase();
+                    header.push( name_column );
+                    header.push('</div>');
+
+                    body.push('<div class="columna" style="width:' + width_column + 'px;"><span class="bl-label" style="background: {color}; cursor:pointer;">');
+                    body.push( properties[0] == 'mid' ? '{short_name}' : '{' + properties[0] + '}' );
+                    body.push('</span></div>');
+                }else{
+                    width_column = properties[1] ? properties[1] : undefined;
+                    if (width_column){
+                        header.push('<div class="titulo" style="width:' + width_column + 'px;">&nbsp;');
+                        body.push('<div class="columna" style="width:' + width_column +'px;">{');
+                    }else{
+                        header.push('<div class="titulo">&nbsp;');
+                        body.push('<div class="columna">{');
+                    }
+                    name_column = _(properties[0]).toUpperCase();
+                    header.push( name_column );
+                    header.push('</div>');
+
+                    body.push( properties[0] );
+                    body.push('}</div>');
+                }
+            }
+            header.push('</p>');
+            body.push('</div></p>');
+
+            str_header = header.join('');
+            str_body = body.join('');
+
+            self.tpl = new Ext.XTemplate( 
+                '<tpl>',
+                '<div class="tabla">',
+                str_header,
+                '<tpl for=".">',
+                str_body,
+                '</tpl>',
+                '</div>',
+                '</tpl>');        
+        }else{
+            self.tpl = new Ext.XTemplate( '<tpl for=".">',
+                '<div class="x-combo-list-item">',
+                '<span class="bl-label" style="background: {color}">{short_name}</span>',
+                ( self.display_field ? '&nbsp;[{'+self.display_field+'}]' : '' ),
+                '<span style="padding-left:4px"><b>{title}</b></span>',
+                '</div></tpl>' );            
+        }
 
         self.displayFieldTpl = new Ext.XTemplate( '<tpl for=".">',
             '<div class="bl-text-over" title="{title}">',
@@ -1161,11 +1222,16 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             self.btn_delete_form.disable();
             
             if(action == 'update'){
-                Baseliner.ajaxEval( '/topic/check_modified_on/',{ topic_mid: self.topic_mid, modified: self.modified_on },
+                var rel_signature = self.form_topic.rec ? self.form_topic.rec.rel_signature : '';
+                Baseliner.ajaxEval( '/topic/check_modified_on/',{ topic_mid: self.topic_mid, modified: self.modified_on, rel_signature: rel_signature },
                     function(res) {
                         if ( res.success ) {
-                            if (res.modified_before){
-                                Ext.Msg.confirm( _('Confirmation'), _('Topic was modified before your changes. Are you sure you want to save the topic?'),
+                            var msg_confirm = res.modified_before ? _("Topic was modified by %1 while you're editing %2 ago. Are you sure you want to save the topic?", res.modified_before, res.modified_before_duration) 
+                                              : res.modified_rel ? _("Topic relationships changed while you're editing. Are you sure you want to save the topic?")
+                                              : null;
+                                
+                            if (msg_confirm){
+                                Ext.Msg.confirm( _('Confirmation'), msg_confirm,
                                     function(btn){ 
                                         if(btn=='yes') {
                                             do_submit();
@@ -1177,8 +1243,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                                         }
                                     }
                                 );
-                            }
-                            else{
+                            } else{
                                 do_submit();
                             }
                         } else {
@@ -1390,6 +1455,11 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
             enableDragDrop: true,   
             pageSize: 10, // used by the combo             
             store: store,
+            frame: true,
+            bodyStyle: {
+                'background-color': 'white',
+                'overflow-y': 'auto' 
+            },
             viewConfig: {
                 headersDisabled: true,
                 enableRowBody: true,

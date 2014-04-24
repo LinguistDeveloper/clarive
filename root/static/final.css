@@ -267,3 +267,42 @@
 	overflow:hidden;	
 	text-overflow:ellipsis;
 }
+
+.tabla {
+ width: 100%;
+ border-top:1px solid #fff;
+ border-left:1px solid #fff;
+ background-color:#fff;
+ color: gray;
+ font-family:arial,verdana,times;
+ font-size:12px;
+ }
+ 
+.tabla p {
+ clear:both;
+ width: 100%;
+ margin: 0;
+}
+
+.tabla .titulo {
+ padding: 5px;
+ background-color: #fff;
+ font-family:arial,verdana,times;
+ float:left;
+ border-right: 1px solid #fff;
+ font-weight:bold;
+ }
+
+.tabla .columna {
+ padding: 5px;
+ float:left;
+ border-right: 1px solid #fff;
+ border-bottom: 1px solid #fff;
+ }
+
+@-moz-document url-prefix() {
+  .x-fieldset-body {
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+  }
+}

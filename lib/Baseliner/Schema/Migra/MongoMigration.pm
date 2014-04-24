@@ -514,7 +514,7 @@ sub notifications {
 }
 
 sub dashboards {
-my @dashes = _dbis->query('select * from bali_dashboard')->hashes;
+    my @dashes = _dbis->query('select * from bali_dashboard')->hashes;
     for my $dash ( @dashes ) {
         my @roles_in_mongo;
         my @roles_in_oracle = _dbis->query('select * from bali_dashboard_role')->hashes;
@@ -540,6 +540,29 @@ sub daemons {
         delete $daemon->{id};   
         mdb->daemon->insert( $daemon );   
     }
+}
+
+sub repository_repl {
+    my ($self) = @_;
+    
+    # repository 
+    #   migrate Repository saved.repl into mdb->repl
+    #   migrate mvs.queue? no, not needed
+    mdb->repl->clone if mdb->repl->count;
+    mdb->repl->drop;
+    $self->each('bali_repo', sub{
+       my $r = shift;
+       return unless $r->{ns} =~ /repl/;
+       my $t = $r->{ns};
+       $t =~ s{^.*/(.*)$}{$1}g;
+       #say $t;
+       #say _dump $r;
+       my $d = Util->_load($r->{data});
+       #say _dump $d;
+       my $doc = { %$d, text=>$t };
+       mdb->repl->insert( $doc );
+    });
+    mdb->repo->drop; # in case it exists
 }
 
 ####################################

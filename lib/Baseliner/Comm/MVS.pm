@@ -496,14 +496,12 @@ sub _gen_jobname_global {
     my $id;
     my $id_next; # the next id, just in case somebody needs it
     ## Para evitar accesos concurrentes al mismo registro... Pases a la misma hora generan identico JOBNAME
-    Baseliner->model('Baseliner')->txn_do ( sub {
-        my $queue_size = $self->_queuesize;
-        my $global_size = try { Baseliner->model('Repository')->get( provider=>'mvs.queue', ns=>'queuesize' ) } catch { 0 };
-        my $total_size = $queue_size + $global_size + 1 ;
-        Baseliner->model('Repository')->set( provider=>'mvs.queue', ns=>'queuesize', data=>$total_size );
-        $id = $total_size % length($valid_letters);
-        $id_next = ($total_size + 1) % length($valid_letters);
-    });
+    my $queue_size = $self->_queuesize;
+    my $global_size = try { mdb->seq('mvs.queue.queuesize') } catch { 0 };
+    my $total_size = $queue_size + $global_size + 1 ;
+    # mdb->seq('mvs.queue.queuesize', $total_size );
+    $id = $total_size % length($valid_letters);
+    $id_next = ($total_size + 1) % length($valid_letters);
 
     my $letter = substr($valid_letters, $id, 1);
     my $letter_next = substr($valid_letters, $id_next, 1);

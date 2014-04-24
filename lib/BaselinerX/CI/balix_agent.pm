@@ -425,7 +425,7 @@ sub _crc_local {
     my ($self, $file ) = @_;
     CORE::open( my $F,'<', $file ) or die $!;
     require String::CRC32;
-    my $crc = String::CRC32::crc32( $F ) or die $!;
+    my $crc = String::CRC32::crc32( $F );
     close $F;
     return $crc;
 }

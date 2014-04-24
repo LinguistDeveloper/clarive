@@ -659,6 +659,12 @@ around 'finalize' => sub {
 # monkey patch this
 sub Class::Date::TO_JSON { $_[0]->string };
 
+# now check for migrations: --migrate
+if( $ENV{CLARIVE_MIGRATE_NOW} ) {
+    require Baseliner::Schema::Migrator;
+    Baseliner::Schema::Migrator->check;
+}
+
 # disconnect from mongo global just in case somebody connected during initializacion (like cache_remove)
 # otherwise mongo hell breaks loose
 mdb->disconnect;

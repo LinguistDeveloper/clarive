@@ -7,6 +7,7 @@ use Baseliner::Utils;
 sub check {
     my ($self)=@_;
     my %ids;
+    _log('Checking for migrations...');
     my @current = mdb->_migrations->find->all;
     my @candidates = Baseliner->path_to('lib/Baseliner/Schema/Migrations'), map { _dir($_->path,'lib/Baseliner/Schema/Migrations') } _array(Baseliner->features->list );
     for my $f ( map { $_->children } grep { -e } @candidates ) {
@@ -35,6 +36,8 @@ sub check {
         next if exists $ids{ $doc->{_id} };
         _warn( _loc( 'Migration source not found: %1. Rolling back...', $doc->{_id} ) );
     }
+    
+    _log('Migration check done.');
 }
 
 1;

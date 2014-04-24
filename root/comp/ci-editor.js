@@ -182,14 +182,17 @@
             padding: 10,
             defaults: {
                allowBlank: false,
-               anchor: '100%' 
+               anchor: '100%',
             },
-            autoScroll: true,
-            //bodyStyle:'padding: 10px 0px 0px 15px',
+            frame: true,
+            bodyStyle: {
+                'background-color': 'white',
+                'overflow-y': 'auto' 
+            },
             items: [
                 txt_cont,
                 children,
-                { layout:'column', border: false, defaults:{ layout:'form', border: false, padding: '0px 0px 10px 0px'}, items:[
+                { layout:'column', border: false, defaults:{ layout:'form', border: false, padding: '0px 2px 10px 2px'}, items:[
                     { columnWidth : .65, defaults: { anchor: '100%' }, items:[
                         { xtype: 'textfield', fieldLabel: _('Name'), name:'name', allowBlank: false, value: params.rec.name, height: 30, style:'font-size: 18px;' },
                         ( params.has_description > 0 ? desc : [] )
@@ -288,11 +291,16 @@
         });
         return form;
     };
+
     var cardpanel = new Ext.Panel({
        layout: 'card',
-       autoScroll: true,
-       tbar: []
+       tbar: [],
+       frame: true,
+       bodyStyle: {
+            'background-color' : 'white'
+       }
     });
+
     cardpanel.on('afterrender', function(){
         if( params.load ) {
             Baseliner.ajaxEval( '/ci/load', { mid: params.mid }, function(res) {

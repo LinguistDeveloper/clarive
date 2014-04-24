@@ -169,23 +169,34 @@ sub check_modified_on: Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
     my $modified_before = \0;
+    my $modified_rel = \0;
+    my $topic_mid = $p->{topic_mid};
     
+    my $duration;
     my $strDate = $p->{modified};
         
     use Class::Date;
     my $date_modified_on =  Class::Date->new( $strDate );
     
-    my $rs_topic = DB->BaliTopic->find($p->{topic_mid});
+    my $rs_topic = DB->BaliTopic->find($topic_mid);
     my $date_actual_modified_on = Class::Date->new( $rs_topic->modified_on );
+    my $who = $rs_topic->modified_by;
     
     if ( $date_modified_on < $date_actual_modified_on ){
-        $modified_before = \1;
+        $modified_before = $who;
+        $duration = Util->to_dur( $date_actual_modified_on - $date_modified_on );
+    } else {
+        my $old_signature = $p->{rel_signature};
+        my $new_signature = $c->model('Topic')->rel_signature($topic_mid);
+        $modified_rel = \1 if $old_signature ne $new_signature;
     }
   
     $c->stash->{json} = {
-        success      => \1,
-        modified_before => $modified_before,
-        msg          => _loc( 'Prueba' ),
+        success                  => \1,
+        modified_before          => $modified_before,
+        modified_before_duration => $duration,
+        modified_rel             => $modified_rel,
+        msg                      => _loc( 'Prueba' ),
     };      
     $c->forward('View::JSON');
 }
@@ -218,12 +229,26 @@ sub related : Local {
         delete $filter{category_type}; 
         my $filter_js = _decode_json($p->{filter});
 
-        $filter{category_id}        =  $filter_js->{categories} if ($filter_js->{categories} eq 'ARRAY' && scalar @{$filter_js->{categories}} > 0);
+        $filter{category_id}        =  $filter_js->{categories} if ( ref $filter_js->{categories} eq 'ARRAY' && scalar @{$filter_js->{categories}} > 0);
         $filter{category_status_id} =  $filter_js->{statuses} if ( ref $filter_js->{statuses} eq 'ARRAY' && scalar @{$filter_js->{statuses}} > 0);
         $filter{id_priority}        =  $filter_js->{priorities} if ( ref $filter_js->{priorities} eq 'ARRAY' && scalar @{$filter_js->{priorities}} > 0);
+        $filter{labels}        =  $filter_js->{labels} if ( ref $filter_js->{labels} eq 'ARRAY' && scalar @{$filter_js->{labels}} > 0);
+
+        delete $filter_js->{categories};
+        delete $filter_js->{statuses};
+        delete $filter_js->{priorities};
+        delete $filter_js->{labels};
+        delete $filter_js->{limit};
+        delete $filter_js->{start};
+        delete $filter_js->{typeApplication};
+
+        for my $other_filter ( keys %$filter_js ) {
+            $filter{$other_filter} = $filter_js->{$other_filter};
+        }
     }
 
     $where = $c->model('Topic')->apply_filter( $username, $where, %filter );
+    _log _dump $where;
 
     my @topics = map {
         $_->{name} = _loc($_->{category}->{name}) . ' #' . $_->{mid};
@@ -309,6 +334,7 @@ sub json : Local {
     }
     
     $ret->{topic_data} = $data;
+    $ret->{rel_signature} = $c->model('Topic')->rel_signature($topic_mid);
     $c->stash->{json} = $ret;
     
     $c->forward('View::JSON');
@@ -714,7 +740,7 @@ sub comment : Local {
                             text       => $text,
                             content_type => $content_type,
                             created_by => $c->username,
-                            created_on => DateTime->now,
+                            created_on => Class::Date->now,
                         }
                     );
                     local $Baseliner::CI::ci_record = 1;
@@ -1876,7 +1902,7 @@ sub report_csv : Local {
     for( grep { length $_->{name} } _array( $data->{columns} ) ) {
         push @cols, qq{"$_->{name}"}; #"
     }
-    push @csv, join ',', @cols;
+    push @csv, join ';', @cols;
 
     for my $row ( _array( $data->{rows} ) ) {
         my @cells;
@@ -1891,9 +1917,11 @@ sub report_csv : Local {
             }
             #_debug "V=$v," . ref $v;
             $v =~ s{"}{""}g;
+            # utf8::encode($v);
+            # Encode::from_to($v,'utf-8','iso-8859-15');
             push @cells, qq{"$v"}; 
         }
-        push @csv, join ',', @cells; 
+        push @csv, join ';', @cells; 
     }
     my $body = join "\n", @csv;
     # I#6947 - chromeframe does not download csv with less than 1024: pad the file

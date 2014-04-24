@@ -491,6 +491,8 @@ sub changeset : Local {
     my @rels;
     for my $topic (@changes) {
         my @releases = $topic->my_releases->hashref->all;
+        _log _dump @releases;
+        #my @releases = Baseliner->model('Topic')->my_releases($topic->mid);
         push @rels, @releases;  # slow! join me!
         next if $bind_releases && @releases;
         my $td = { $topic->get_columns() };  # TODO no prefetch comes thru
@@ -683,7 +685,7 @@ sub cs_menu {
         #    { join=>['parents'] })->hashref->all;
         my @chi;
 
-        for ( ci->new($topic->{mid})->children( isa => 'topic') ) {
+        for ( ci->new($topic->{mid})->children( isa => 'topic', depth => 2) ) {
             push @chi, $_ if DB->BaliTopicCategories->find($_->{id_category})->is_changeset
         };
         

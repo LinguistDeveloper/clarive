@@ -22,6 +22,9 @@ params:
     if (meta.allowBlank == 'false') allowBlank = false;
     if (meta.allowBlank == 'true') allowBlank = true;
     if (meta.allowBlank == undefined) allowBlank = true;
+
+    var single_mode = true;
+    if (meta.single_mode == 'false') single_mode = false;
 	
     var users = new Array();
 	
@@ -48,7 +51,7 @@ params:
         hiddenName: meta.id_field,		
         store: user_box_store,
 		disabled: meta ? meta.readonly : true,
-		singleMode: meta.single_mode,
+		singleMode: single_mode,
 		allowBlank: allowBlank
     });
     

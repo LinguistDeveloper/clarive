@@ -21,7 +21,7 @@ Options:
   -grep                   : grep a string or re in the generated sql
   -env                    : sets CLARIVE_ENV (local, test, prod, t, etc...)
   -schema                 : schemas to deploy (does not work for migrations)
-                                cla db-deploy --schema BaliRepo --schema BaliRepoKeys 
+                                cla db-deploy --schema BaliUser --schema BaliProject 
 
 Versioning Options:
 
