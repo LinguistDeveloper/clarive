@@ -2384,6 +2384,7 @@ sub set_users{
         category_status => $rs_topic->id_category_status,
         field           => $id_field
     };
+    my $name_category = DB->BaliTopicCategories->find($rs_topic->id_category)->name;
     $notify->{project} = \@projects if @projects;
     
     # check if arrays contain same members
@@ -2410,7 +2411,7 @@ sub set_users{
                                                 text_new      => '%1 modified topic: %2 ( %4 )',
                                                 mid => $rs_topic->mid,
                                                } => sub {
-                { mid => $rs_topic->mid, topic => $rs_topic->title, notify => $notify }   # to the event
+                { mid => $rs_topic->mid, topic => $rs_topic->title, notify => $notify, subject => _loc("Topic %1 (%2) has been assigned to you",$rs_topic->mid,$name_category) }   # to the event
             } ## end try
             => sub {
                 _throw _loc( 'Error modifying Topic: %1', shift() );
