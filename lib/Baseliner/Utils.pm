@@ -1915,7 +1915,7 @@ sub split_with_quotes {
 
 sub to_dur {
     my $secs = shift;
-    my $rel = new Class::Date::Rel int($secs).'s';
+    my $rel = ref $secs eq 'Class::Date::Rel' ? $secs : new Class::Date::Rel int($secs).'s';
     my ($y,$M,$d,$h,$m,$s) = map{ int } ($rel->year,$rel->month,$rel->day,$rel->hour,$rel->minute,$rel->second);
     my $M2=$M-($y*12);
     my $d2=int($d-($M*30.436851851851844));

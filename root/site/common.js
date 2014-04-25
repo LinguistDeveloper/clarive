@@ -1871,6 +1871,7 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
     height: 220,
     hideHeaders: false,
     disabled: false,
+    frame: true,
     enableDragDrop: true, // enable drag and drop of grid rows
     readOnly: false,
     constructor: function(c){
@@ -2926,6 +2927,7 @@ Baseliner.CSV = Ext.extend( Ext.util.Observable, {
 Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
     width: '100%',
     height: 250,
+    frame: true,
     enableDragDrop: true,
     use_row_editor: true,
     initComponent: function(){

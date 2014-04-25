@@ -169,23 +169,34 @@ sub check_modified_on: Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
     my $modified_before = \0;
+    my $modified_rel = \0;
+    my $topic_mid = $p->{topic_mid};
     
+    my $duration;
     my $strDate = $p->{modified};
         
     use Class::Date;
     my $date_modified_on =  Class::Date->new( $strDate );
     
-    my $rs_topic = DB->BaliTopic->find($p->{topic_mid});
+    my $rs_topic = DB->BaliTopic->find($topic_mid);
     my $date_actual_modified_on = Class::Date->new( $rs_topic->modified_on );
+    my $who = $rs_topic->modified_by;
     
     if ( $date_modified_on < $date_actual_modified_on ){
-        $modified_before = \1;
+        $modified_before = $who;
+        $duration = Util->to_dur( $date_actual_modified_on - $date_modified_on );
+    } else {
+        my $old_signature = $p->{rel_signature};
+        my $new_signature = $c->model('Topic')->rel_signature($topic_mid);
+        $modified_rel = \1 if $old_signature ne $new_signature;
     }
   
     $c->stash->{json} = {
-        success      => \1,
-        modified_before => $modified_before,
-        msg          => _loc( 'Prueba' ),
+        success                  => \1,
+        modified_before          => $modified_before,
+        modified_before_duration => $duration,
+        modified_rel             => $modified_rel,
+        msg                      => _loc( 'Prueba' ),
     };      
     $c->forward('View::JSON');
 }
@@ -323,6 +334,7 @@ sub json : Local {
     }
     
     $ret->{topic_data} = $data;
+    $ret->{rel_signature} = $c->model('Topic')->rel_signature($topic_mid);
     $c->stash->{json} = $ret;
     
     $c->forward('View::JSON');

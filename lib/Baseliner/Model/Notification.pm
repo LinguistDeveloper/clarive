@@ -294,7 +294,7 @@ sub get_rules_notifications{
                             my $topic = mdb->topic->find_one({mid=>"$mid"});
                             my @users_mid;
                             for my $field (@fields){
-                                push @users_mid, $topic->{$field};
+                                push @users_mid, _array($topic->{$field});
                             }
                             @tmp_users= map {$_->{name}} ci->user->find({mid=>mdb->in(@users_mid)})->all;
 

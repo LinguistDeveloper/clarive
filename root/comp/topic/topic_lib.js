@@ -1222,11 +1222,16 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             self.btn_delete_form.disable();
             
             if(action == 'update'){
-                Baseliner.ajaxEval( '/topic/check_modified_on/',{ topic_mid: self.topic_mid, modified: self.modified_on },
+                var rel_signature = self.form_topic.rec ? self.form_topic.rec.rel_signature : '';
+                Baseliner.ajaxEval( '/topic/check_modified_on/',{ topic_mid: self.topic_mid, modified: self.modified_on, rel_signature: rel_signature },
                     function(res) {
                         if ( res.success ) {
-                            if (res.modified_before){
-                                Ext.Msg.confirm( _('Confirmation'), _('Topic was modified before your changes. Are you sure you want to save the topic?'),
+                            var msg_confirm = res.modified_before ? _("Topic was modified by %1 while you're editing %2 ago. Are you sure you want to save the topic?", res.modified_before, res.modified_before_duration) 
+                                              : res.modified_rel ? _("Topic relationships changed while you're editing. Are you sure you want to save the topic?")
+                                              : null;
+                                
+                            if (msg_confirm){
+                                Ext.Msg.confirm( _('Confirmation'), msg_confirm,
                                     function(btn){ 
                                         if(btn=='yes') {
                                             do_submit();
@@ -1238,8 +1243,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                                         }
                                     }
                                 );
-                            }
-                            else{
+                            } else{
                                 do_submit();
                             }
                         } else {
@@ -1451,6 +1455,11 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
             enableDragDrop: true,   
             pageSize: 10, // used by the combo             
             store: store,
+            frame: true,
+            bodyStyle: {
+                'background-color': 'white',
+                'overflow-y': 'auto' 
+            },
             viewConfig: {
                 headersDisabled: true,
                 enableRowBody: true,

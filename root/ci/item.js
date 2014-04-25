@@ -22,6 +22,8 @@
         ],
         anchor:'100%',
         height: 280,
+        border: false,
+        frame: true,
         fieldLabel: _('Parse Tree')
     });
     Ext.each( rec.parse_tree, function(rt){
