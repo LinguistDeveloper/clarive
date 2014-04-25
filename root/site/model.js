@@ -831,7 +831,7 @@ Baseliner.model.CISelect = function(c) {
                 //'<h3><span>{ns_type}<br />{user}</span><img src="{icon}" />{name}</h3>',
             '<span id="boot" style="background: transparent"><strong>{name}</strong>',
             '<tpl if="values.bl && values.bl!=\'*\'">',
-                ' ({bl})',
+                ' ({bl} - {moniker})',
             '</tpl>',
             '</span>',
             '<tpl if="pretty_properties">',
