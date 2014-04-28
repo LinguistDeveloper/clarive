@@ -42,7 +42,8 @@ FIN
             }
         } else {
             my $caption = ${$pkg . '::CAPTION'} // '??';
-            push @cmd_msg => sprintf "    %-12s %-80s", $fn, $caption;
+            my $cmd_id = ${$pkg . '::CMD_ALIAS'} // $fn; 
+            push @cmd_msg => sprintf "    %-12s %-80s", $cmd_id, $caption;
         }
     }
     if( $subcommand && !@cmd_msg ) {

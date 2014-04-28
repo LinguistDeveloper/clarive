@@ -7,6 +7,7 @@ has service_name => qw(is ro required 1);
 
 with 'Clarive::Role::Baseliner'; 
 
+our $CMD_ALIAS = '<service.*>';
 our $CAPTION = 'run Baseliner services';
 
 sub run {
