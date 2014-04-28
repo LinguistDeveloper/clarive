@@ -555,11 +555,8 @@ sub repository_repl {
        return unless $r->{ns} =~ /repl/;
        my $t = $r->{ns};
        $t =~ s{^.*/(.*)$}{$1}g;
-       #say $t;
-       #say _dump $r;
        my $d = Util->_load($r->{data});
-       #say _dump $d;
-       my $doc = { %$d, text=>$t };
+       my $doc = { %$d, text=>$t, _id=>$t };
        mdb->repl->insert( $doc );
     });
     mdb->repo->drop; # in case it exists

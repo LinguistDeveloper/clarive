@@ -291,32 +291,33 @@ sub save : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->parameters;
     $p->{text} //= $p->{id};
-    my $doc = mdb->repl->find_one({ _id=>mdb->oid($p->{_id}) });
+    my $doc = mdb->repl->find_one({ _id=>$p->{id} });
     if ( $doc ) {
         mdb->repl->save({ %$doc, %$p });
     } else {
+        $p->{_id} //= $p->{id};
         mdb->repl->insert($p);
-    }
-} 
-
-sub delete : Local {
-    my ( $self, $c ) = @_;
-    my $p = $c->req->parameters;
-    my $id = $p->{_id} || $p->{ns};
-    if ( $id ) {
-        mdb->repl->remove({ '$or'=>[{_id=>mdb->oid($id)},{text=>$id}] });
-    } else {
-        _fail _loc 'Missing REPL _id';
     }
 } 
 
 sub load : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->parameters;
-    my $doc = mdb->repl->find_one({ _id=>mdb->oid($p->{_id}) }); 
-    _fail _loc 'REPL entry not found: %1', $p->{_id} unless $doc;
+    my $doc = mdb->repl->find_one({ _id=>$p->{id} });
+    _fail _loc 'REPL entry not found: %1', $p->{id} unless $doc;
     $c->stash->{json} = $doc;
     $c->forward( 'View::JSON' );
+} 
+
+sub delete : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->parameters;
+    my $id = $p->{_id} || $p->{id} || $p->{ns};
+    if ( $id ) {
+        mdb->repl->remove({ _id=>$p->{id} });
+    } else {
+        _fail _loc 'Missing REPL id';
+    }
 } 
 
 sub tree_saved : Local {
@@ -329,7 +330,8 @@ sub tree_saved : Local {
         grep { $query ? $_->{text} =~ /$query/i : 1 }
         sort { lc $a->{text} cmp lc $b->{text} }
         map {
-            { _id=>''.$_->{_id}, text =>$_->{text},leaf => \1, url_click => '/repl/load', data => { _id=>''.$_->{_id} }}
+            my $id = "$_->{_id}";
+            { _id=>$id, text =>$_->{text},leaf => \1, url_click => '/repl/load', data=>{ _id=>$id, id=>$id } };
         } @docs
     ];
     $c->forward( 'View::JSON' );

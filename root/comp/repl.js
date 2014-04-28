@@ -575,13 +575,13 @@ To do:
                 handler: function(){
                     var selectedNode = tree.getSelectionModel().getSelectedNode();
                     if( selectedNode == undefined ) return;
-                    var ns = selectedNode.text;
-                    Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete the entry %1?', ns), 
+                    var id = selectedNode.text;
+                    Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete the entry %1?', id), 
                             function(btn){ 
                                 if(btn=='yes') {
                                     Ext.Ajax.request({
                                         url: '/repl/delete',
-                                        params: { ns: ns }, 
+                                        params: { id: id }, 
                                         success: function(xhr) {
                                             //saved_store.load();
                                             reload_root();
