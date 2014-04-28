@@ -203,34 +203,6 @@ if( Prefs.routing ) {
         }
     };
     
-    Baseliner.preferences = function() {
-        Ext.Ajax.request({
-            url: '/user/preferences',
-            success: function(xhr) {
-                try {
-                    var comp = eval(xhr.responseText);
-                    var win = new Ext.Window({
-                        layout: 'fit', 
-                        autoScroll: true,
-                        title: "<% _loc('User Preferences') %>",
-                        height: 400, width: 500, 
-                        items: [ { 
-                                xtype: 'panel', 
-                                layout: 'fit', 
-                                items: comp
-                        }]
-                    });
-                    win.show();
-                } catch(err) {
-                    //TODO something
-                }
-            },
-            failure: function(xhr) {
-                //TODO something
-            }
-        });
-    };
-
     /****** Baseliner Help context methods *******/
     Baseliner.help_show = function(params) {
         if( Baseliner.help_win != undefined ) Baseliner.help_win.close();

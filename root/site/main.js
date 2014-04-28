@@ -92,7 +92,6 @@ Ext.onReady(function(){
                  icon : '/static/images/icons/envelope.gif' 
              },
              { text: _('Permissions'), handler: function(){ Baseliner.user_actions(); }, icon:'/static/images/icons/user_suit.gif' },
-             // { text=>_('Preferences'), handler: function(){ Baseliner.preferences(); } },
              { text: _('Preferences'), icon: '/user/avatar/image.png', handler: function(){ Prefs.open_editor(); } }
         ];
         
