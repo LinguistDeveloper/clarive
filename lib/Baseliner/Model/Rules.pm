@@ -396,7 +396,7 @@ sub run_single_rule {
     my ($self, %p ) = @_;
     local $Baseliner::_no_cache = 1;
     $p{stash} //= {};
-    my $rule = mdb->rule->find_one({ id=>"$p{id_rule}" });
+    my $rule = mdb->rule->find_one({ '$or'=>[ {id=>"$p{id_rule}"},{rule_name=>"$p{id_rule}"} ] });
     
     _fail _loc 'Rule with id `%1` not found', $p{id_rule} unless $rule;
     my @tree = $self->build_tree( $p{id_rule}, undef );
