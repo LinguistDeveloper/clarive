@@ -2906,7 +2906,8 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                     var mf = new Baseliner.MetaForm({ 
                         bl: bl.id,
                         data: self.data[bl.id] || {}, 
-                        tbar: false
+                        tbar: false,
+                        autoScroll: true
                     });
                     mf.on('beforedestroy', function(){ 
                         self.data[bl.id] = mf.serialize();
