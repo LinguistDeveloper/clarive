@@ -252,7 +252,7 @@ sub check_daemon {
         }
         my $started = shift @started;
         mdb->daemon->update(
-            {_id => $daemon->{_id}.''},
+            {_id => $daemon->{_id} },
             {   '$set' => {
                     last_ping => mdb->ts,
                     pid => $started->{pid},
