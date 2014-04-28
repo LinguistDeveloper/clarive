@@ -1850,7 +1850,7 @@ Baseliner.jobs_for_topic = function(args) {
                     <div style="margin-left: 20px">
                         <p><a href="javascript:Baseliner.addNewTab('/job/log/dashboard?mid=[%= mid %]&name=[%= name %]',
                             '[%= name %]')">
-                                [%= name %]
+                                [%= name %] ([%= username%])
                            </a> 
                            - [%= _(status) %]  <small>[%= ts %]</small>
                         </p>
