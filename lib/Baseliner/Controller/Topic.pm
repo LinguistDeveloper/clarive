@@ -689,7 +689,7 @@ sub view : Local {
             my $data = $c->model('Topic')->get_data( $meta, $topic_mid, topic_child_data=>$p->{topic_child_data} );
             $meta = $self->get_meta_permissions ($c, $meta, $data);        
             
-            my $write_action = 'action.topicsfield.' .  $topic_doc->{name_category} . '.labels.' . $topic_doc->{name_status} . '.write';
+            my $write_action = 'action.topicsfield.' .  _name_to_id($topic_doc->{name_category}) . '.labels.' . _name_to_id($topic_doc->{name_status}) . '.write';
 
             $data->{admin_labels} = $c->model('Permissions')->user_has_any_action( username=> $c->username, action=>$write_action );
             
