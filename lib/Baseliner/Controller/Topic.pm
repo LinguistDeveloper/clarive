@@ -545,6 +545,7 @@ sub view : Local {
     
     try {
     
+        my $topic_doc;
         $c->stash->{ii} = $p->{ii};    
         $c->stash->{swEdit} =  ref($p->{swEdit}) eq 'ARRAY' ? $p->{swEdit}->[0]:$p->{swEdit} ;
         $c->stash->{permissionEdit} = 0;
@@ -559,6 +560,7 @@ sub view : Local {
             } catch {
                 $c->stash->{viewKanban} = 0;
             };
+            $topic_doc = mdb->topic->find_one({ mid => "$topic_mid" });
         } else {
             $c->stash->{viewKanban} = 0;
         }
@@ -687,7 +689,9 @@ sub view : Local {
             my $data = $c->model('Topic')->get_data( $meta, $topic_mid, topic_child_data=>$p->{topic_child_data} );
             $meta = $self->get_meta_permissions ($c, $meta, $data);        
             
-            $data->{admin_labels} = $c->model('Permissions')->user_has_any_action( username=> $c->username, action=>'action.admin.topics' );
+            my $write_action = 'action.topicsfield.' .  $topic_doc->{name_category} . '.labels.' . $topic_doc->{name_status} . '.write';
+
+            $data->{admin_labels} = $c->model('Permissions')->user_has_any_action( username=> $c->username, action=>$write_action );
             
             $c->stash->{topic_meta} = $meta;
             $c->stash->{topic_data} = $data;
@@ -1770,15 +1774,23 @@ sub newjob : Local {
             changesets => $changesets,
         };
         event_new 'event.job.new' => { username => $job_data->{username}, bl => $job_data->{bl}  } => sub {
-            $job = BaselinerX::CI::job->new( $job_data );
-            $job->save;
+
+            my $job = ci->job->new( $job_data );
+            $job->save;  # after save, CHECK and INIT run
             $job->job_stash({   # job stash autosaves into the stash table
                 status_from    => $p->{status_from},
                 status_to      => $p->{status_to},
                 id_status_from => $p->{id_status_from},
             }, 'merge');
-            my $job_name = $job->name;
-            { jobname => $job_name, id_job=>$job->{id_job} };
+            my $job_name = $job->{name};
+            my $subject = _loc("The user %1 has created job %2 for %3 bl", $c->username, $job_name, $job_data->{bl});
+            my @projects = map {$_->{mid} } _array($job->{projects});
+            my $notify = {
+                project => \@projects,
+                baseline => $job_data->{bl}
+            };
+            { jobname => $job_name, mid=>$job->{mid}, id_job=>$job->{jobid}, subject => $subject, notify => $notify };
+
         };
         { success=>\1, msg=> _loc( "Job %1 created ok", $job->name ) };
     } catch {
