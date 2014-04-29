@@ -98,31 +98,31 @@
         ]
     });
     // webservice-soap form
-    var webservice_wsdl = new Ext.form.TextArea({ height: 180, anchor:'100%', fieldLabel:_('WSDL'), name: 'wsdl', value: params.rec.wsdl, hidden: params.rec.subtype!='soap' });
+    var wsdl = Ext.isIE 
+        ? new Ext.form.TextArea({ height: 300, anchor:'100%', fieldLabel:_('WSDL'), name: 'wsdl', value: params.rec.wsdl, hidden: params.rec.subtype!='soap' })
+        : new Baseliner.AceEditor({ fieldLabel:_('WSDL'), anchor:'100%', height: 300, name:'wsdl', value: params.rec.wsdl, hidden: params.rec.subtype!='soap' });
     var subtype = new Baseliner.ComboSingle({ fieldLabel: _('Web Service Type'), name:'subtype', value: params.rec.subtype, data: [
                 '-', 'soap' ]});
     var webservice_form = new Ext.form.FieldSet({
-        hidden: true, border: false,
-        items: [ subtype, webservice_wsdl ]
+        hidden: true, border: false, height: 400, anchor:'100%', items: [ subtype, wsdl ]
     });
     subtype.on('select', function(){
         if( subtype.getValue() == 'soap' ) {
-            webservice_wsdl.show();
+            wsdl.show();
         } else {
-            webservice_wsdl.hide();
+            wsdl.hide();
         }
     });
+    // other panes
     var msg_ev = new Ext.Container({ border:false, html:'<span id="boot"><p><h4>'+_('Select the Event') + ':</h4></p>' });
     var msg_job = new Ext.Container({ hidden: true, border:false, html:'<span id="boot"><p><h4>'+_('Job Chain Details') + ':</h4></p>' });
     // PAGE 1
-    var form_events = new Ext.FormPanel({
+    var form_events = new Baseliner.FormPanel({
         defaults: { anchor: '90%' },
         border: false,
         items: [
             { xtype:'textfield', fieldLabel:_('Name'), name:'rule_name', value: params.rec.rule_name },
-            combo_type,
-            msg_ev, msg_job,
-            grid_events, job_chain_form, webservice_form
+            combo_type, msg_ev, msg_job, grid_events, job_chain_form, webservice_form
         ]
     });
 
@@ -150,7 +150,7 @@
     var wiz = new Baseliner.Wizard({
         height: 450,
         done_handler: function(){
-            var d = form_events.getForm().getValues();
+            var d = form_events.getValues();
             var rule_type = combo_type.getValue();
             d = Ext.apply( d, form_when.getForm().getValues() );
             if( rule_type == 'event' ) {

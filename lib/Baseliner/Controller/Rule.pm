@@ -162,7 +162,7 @@ sub event_list : Local {
             type        => $ev->type // 'none',
         };
     }
-    $c->stash->{json} = { data => [ sort { uc $a->{ev_name} cmp uc $b->{ev_name} } @rows ], totalCount=>scalar @rows };
+    $c->stash->{json} = { data => [ sort { uc $a->{name} cmp uc $b->{name} } @rows ], totalCount=>scalar @rows };
     $c->forward("View::JSON");
 }
 
@@ -648,22 +648,28 @@ sub dsl_run {
     };
 }
 
+=head2 default
+
+Soap webservices.
+
+=cut
+
 sub default : Path Args(2) {
-    my ($self,$c,$id_rule,$meth) = @_;
+    my ($self,$c,$meth,$id_rule) = @_;
     my $p = $c->req->params;
     $meth //= 'json';
     my $ret = {};
     my $body_file = $c->req->body ? _file($c->req->body) : undef;
     my $body = $body_file && -e $body_file ? $body_file->slurp : '';
-    my $stash = { ws_body=>$body, ws_headers=>Util->_clone($c->req->headers), ws_params=>Util->_clone($p), };
+    my $stash = { ws_body=>$body, ws_headers=>Util->_clone($c->req->headers), ws_params=>Util->_clone($p), WSURL=>$c->req->uri.''};
     my $where = { '$or'=>[ {id=>"$id_rule"}, {rule_name=>"$id_rule"}] };
     my $run_rule = sub{
         try {
             my $rule = mdb->rule->find_one($where,{ rule_type=>1 }) or _fail _loc 'Rule %1 not found', $id_rule;
             _fail _loc 'Rule %1 not independent: %2',$id_rule, $rule->{rule_type} if $rule->{rule_type} ne 'independent' ;
             my $ret_rule = Baseliner->model('Rules')->run_single_rule( id_rule=>$id_rule, stash=>$stash );
-            $ret = defined $stash->{ws_return} 
-                ? $stash->{ws_return} 
+            $ret = defined $stash->{ws_response} 
+                ? $stash->{ws_response} 
                 : ref $ret_rule->{ret} ? $ret_rule->{ret} : { output=>$ret_rule->{ret}, stash=>$stash };
         } catch {
             my $err = shift;
@@ -675,7 +681,8 @@ sub default : Path Args(2) {
     };
     if( $meth eq 'soap' ) {
         my $doc = mdb->rule->find_one($where); 
-        my $wsdl_body = $doc->{wsdl};
+        my $wsdl_body = Util->parse_vars( $doc->{wsdl}, $stash );
+        
         if( !length $body ) {
             # wsdl only
             $c->res->body( $wsdl_body );
@@ -690,10 +697,10 @@ sub default : Path Args(2) {
             $daemon->operationsFromWSDL(
                 $wsdl,
                 default_callback => sub {
-                    my ($soap, $data_in, $request) = @_;
-                    $stash->{ws_request} = $request;
-                    $stash->{ws_data}    = $data_in;
-                    return $run_rule->();
+                    my ($soap, $request_data, $cgi_request) = @_;
+                    $stash->{ws_request} = $request_data;
+                    my $res = $run_rule->();  # typically ws_response
+                    return $res;
                 },
             );
             $self->cgi_to_response($c, sub {

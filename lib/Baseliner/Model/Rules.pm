@@ -135,7 +135,7 @@ sub tree_format {
 sub build_tree {
     my ($self, $id_rule, $parent, %p) = @_;
     # TODO run query just once and work with a hash ->hash_for( id_parent )
-    my $rule = mdb->rule->find_one({ id=>"$id_rule" });
+    my $rule = mdb->rule->find_one({ '$or'=>[ {id=>"$id_rule"},{rule_name=>"$id_rule"} ] });
     _fail _loc 'Could not find rule %1', $id_rule unless $rule;
     my $rule_tree_json = $rule->{rule_tree};
     if( $rule_tree_json ) {
@@ -326,7 +326,7 @@ sub run_rules {
     local $Baseliner::_no_cache = 1;
     my @rules = 
         $p{id_rule} 
-            ? ( mdb->rule->find_one({ id=>"$p{id_rule}" }) )
+            ? ( mdb->rule->find_one({ '$or'=>[ {id=>"$p{id_rule}"},{rule_name=>"$p{id_rule}"} ] }) )
             : mdb->rule->find({ rule_event => $p{event}, rule_type => ($p{rule_type} // 'event'), rule_when => $when, rule_active=>'1' })
               ->sort(mdb->ixhash(rule_seq=>1, id=>1))->all;
     my $stash = $p{stash};
