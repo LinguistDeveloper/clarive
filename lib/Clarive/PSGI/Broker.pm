@@ -1,4 +1,4 @@
-package Clarive::PSGI::Web;
+package Clarive::PSGI::Broker;
 use Plack::Builder;
 
 our $PP = $$;
