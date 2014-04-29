@@ -1226,8 +1226,8 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 Baseliner.ajaxEval( '/topic/check_modified_on/',{ topic_mid: self.topic_mid, modified: self.modified_on, rel_signature: rel_signature },
                     function(res) {
                         if ( res.success ) {
-                            var msg_confirm = res.modified_before ? _("Topic was modified by %1 while you're editing %2 ago. Are you sure you want to save the topic?", res.modified_before, res.modified_before_duration) 
-                                              : res.modified_rel ? _("Topic relationships changed while you're editing. Are you sure you want to save the topic?")
+                            var msg_confirm = res.modified_before ? _("Topic was modified by %1 while you're editing %2 ago. Are you sure you want to overwrite the topic?", res.modified_before, res.modified_before_duration) 
+                                              : res.modified_rel ? _("Topic relationships changed while you're editing. Are you sure you want to overwrite the topic?")
                                               : null;
                                 
                             if (msg_confirm){
@@ -1850,7 +1850,7 @@ Baseliner.jobs_for_topic = function(args) {
                     <div style="margin-left: 20px">
                         <p><a href="javascript:Baseliner.addNewTab('/job/log/dashboard?mid=[%= mid %]&name=[%= name %]',
                             '[%= name %]')">
-                                [%= name %]
+                                [%= name %] ([%= username%])
                            </a> 
                            - [%= _(status) %]  <small>[%= ts %]</small>
                         </p>

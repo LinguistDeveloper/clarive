@@ -1,13 +1,7 @@
 <%args>
-	$subject 
-	$requested_by
-	$realname => ''
-	$requested_to => []
-	$reason => '(vacio)'
-	$comments => '(vacio)'
-	$url_approve
-	$url_reject
-	$jobname 
+    $username
+    $name
+    $subject
 </%args>
 <%init>
     use Baseliner::Utils;
@@ -22,32 +16,15 @@
 <body>
     <div class='box'>
         <div class="error">
-            <h2>SCM: <% $subject %></h2>
+            <h2><% $subject %></h2>
         </div>
     </div>
     <div class='box'>
         <div class="trace error">
-            <li><b><% _loc("Requested by") %>: </b> <% $requested_by %> (<% $realname %>)
-            <li><b><% _loc("Requested to") %>: </b>
-				<ul>
-					<li><% join '<li>', @{ $requested_to } %>
-				</ul>
-        </div>
-        <div class="trace error">
-            <p>Por favor, apruebe el pase: <% $jobname %>
-            <% $reason ? '<p><li>Motivo: ' . $reason : '' %>
-            <% $comments ? '<p><li>Comentarios: ' . $comments : '' %>
-        </div>
-    </div>
-
-    <div class='box'>
-        <div class="name">
-            <p><% _loc("Please, click on the following links") %>:
-            <p><table><tr><td style='width: 80px; color: black; background-color: #80d066'><b><% _loc("Approve") %>:</td><td><a href="<% $url_approve %>"><% $url_approve %></a></td></tr></table>
-
-            <p><% _loc("To reject") %>:
-            <p><table><tr><td style='width: 80px; color: black; background-color: #e4a597'><b><% _loc("Reject") %>:</td><td><a href="<% $url_approve %>"><% $url_reject %></a></td></tr></table>
+            <p><b><% _loc("User %1 has requested approval for job %2",$username,$name) %></b></p>
+            <p><a href="<% Baseliner->config->{web_url}.'/tab/job/monitor' %>"><% _loc('Job monitor') %></a></p>
         </div>
     </div>
 </body>
+
 

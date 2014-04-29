@@ -4852,10 +4852,10 @@ msgid "Can delete topic in this category"
 msgstr "Puede borrar tópicos de la categoría"
 
 msgid "Topic was modified by %1 %2 ago while you're editing. Are you sure you want to overwrite the topic?"
-msgstr "Tópico fue modificado por el usuario %1 hace %2 y se perderán esos cambios. ¿Seguro que quiere sobreescribir el tópico?"
+msgstr "El tópico fue modificado por el usuario %1 hace %2 y se perderán esos cambios. ¿Seguro que quiere sobreescribir el tópico?"
 
 msgid "Topic relationships changed while you're editing. Are you sure you want to overwrite the topic?"
-msgstr "Tópico fue modificado por otro usuario y se perderán esos cambios. ¿Seguro que quiere sobreescribir el tópico?"
+msgstr "Las relaciones del tópico han modificadas en otra ventana o por otro usuario y se perderán esos cambios. ¿Seguro que quiere sobreescribir el tópico?"
 
 msgid "Topic changed status before. Do you want to refresh the topic?"
 msgstr "Tópico cambió de estado anteriormente. ¿Quieres refrescar el tópico?"

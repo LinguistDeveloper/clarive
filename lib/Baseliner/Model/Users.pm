@@ -152,21 +152,31 @@ sub get_categories_fields_meta_by_user {
 sub get_users_from_mid_roles_topic {
     my ( $self, %p ) = @_;
     my @roles = _array $p{roles} or _throw 'Missing parameter roles';
-    my $mid   = $p{mid}          or _throw 'Missing parameter topic mid';
-
-    my $topic = mdb->topic->find_one( { mid => "$mid" } );
+    my $mid   = $p{mid};
 
     my @topic_securities;
 
-    push @topic_securities, $topic->{_project_security} if $topic->{_project_security};
+    if ( !$mid ) {
+        push @topic_securities, {};
+    } else {
 
-    if ( $topic->{category}->{is_release} && !@topic_securities ) {
-        my @children = map { $_->{mid} } ci->new( $mid )->children( where => { collection => 'topic' }, depth => 1);
-        @topic_securities = map { $_->{_project_security} } mdb->topic->find({ mid => mdb->in(@children) })->all;
-        if ( !@topic_securities ) {
-            push @topic_securities, {};
-        }
-    }
+        my $topic = mdb->topic->find_one( {mid => "$mid"} );
+
+
+        push @topic_securities, $topic->{_project_security} if $topic->{_project_security};
+
+        if ( $topic->{category}->{is_release} && !@topic_securities ) {
+            my @children =
+                map { $_->{mid} }
+                ci->new( $mid )->children( where => {collection => 'topic'}, depth => 1 );
+            @topic_securities =
+                map { $_->{_project_security} }
+                mdb->topic->find( {mid => mdb->in( @children )} )->all;
+            if ( !@topic_securities ) {
+                push @topic_securities, {};
+            }
+        } ## end if ( $topic->{category...})
+    } ## end else [ if ( !$mid ) ]
 
     my $mega_where = {};
     my @mega_ors;

@@ -500,7 +500,7 @@ sub topics_for_user {
         $where->{'$or'} = \@mids_or;
     }
     
-_debug( $where );
+#_debug( $where );
     my $rs = mdb->topic->find( $where )->fields({ mid=>1, labels=>1 })->sort( $order_by );
     $cnt = $rs->count;
     $start = 0 if length $start && $start>=$cnt; # reset paging if offset
@@ -510,9 +510,9 @@ _debug( $where );
     my @mids = keys %mid_docs;
     
     # SELECT MID DATA:
-    my %mid_data = map { $_->{topic_mid} => $_ } grep { defined } map { Baseliner->cache_get("topic:view:$_:") } @mids; 
+    my %mid_data = map { $_->{topic_mid} => $_ } grep { $_ } map { Baseliner->cache_get("topic:view:$_:") } @mids; 
     if( my @db_mids = grep { !exists $mid_data{$_} } @mids ) {
-        _debug( "CACHE==============================> MIDS: @mids, DBMIDS: @db_mids, MIDS_IN_CACHE: " . join',',keys %mid_data );
+        #_debug( "CACHE==============================> MIDS: @mids, DBMIDS: @db_mids, MIDS_IN_CACHE: " . join',',keys %mid_data );
        
         my @db_mid_data;
         if( @db_mids > 0 ) {
@@ -2403,23 +2403,21 @@ sub set_users{
 
             my $users = join(',', @name_users);
 
-            if ($cancelEvent) {
-                event_new 'event.topic.modify_field' => { username   => $user,
-                                                    field      => $id_field,
-                                                    old_value      => '',
-                                                    new_value  => $users,
-                                                    text_new      => '%1 modified topic: %2 ( %4 )',
-                                                    mid => $rs_topic->mid,
-                                                   } => sub {
-                    { mid => $rs_topic->mid, topic => $rs_topic->title, notify => $notify }   # to the event
-                } ## end try
-                => sub {
-                    _throw _loc( 'Error modifying Topic: %1', shift() );
-                };            
-            }
+            event_new 'event.topic.modify_field' => { username   => $user,
+                                                field      => $id_field,
+                                                old_value      => '',
+                                                new_value  => $users,
+                                                text_new      => '%1 modified topic: %2 ( %4 )',
+                                                mid => $rs_topic->mid,
+                                               } => sub {
+                { mid => $rs_topic->mid, topic => $rs_topic->title, notify => $notify }   # to the event
+            } ## end try
+            => sub {
+                _throw _loc( 'Error modifying Topic: %1', shift() );
+            };            
 
         }else{
-            if ( $cancelEvent != 1) {
+            if ( !$cancelEvent ) {
                 event_new 'event.topic.modify_field' => { username   => $user,
                                                     field      => $id_field,
                                                     old_value      => '',

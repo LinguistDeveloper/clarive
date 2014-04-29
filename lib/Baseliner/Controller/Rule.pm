@@ -9,6 +9,7 @@ use Time::HiRes qw(time);
 use v5.10;
 
 BEGIN {  extends 'Catalyst::Controller' }
+BEGIN { extends 'Catalyst::Controller::WrapCGI' }
 
 register 'action.admin.rules' => { name=>'Admin Rules' };
 
@@ -212,6 +213,8 @@ sub save : Local {
         rule_event => $p->{rule_event},
         rule_type  => $p->{rule_type},
         rule_desc  => substr($p->{rule_desc},0,2000),
+        subtype => $p->{subtype},
+        wsdl => $p->{wsdl},
         ts =>  mdb->ts,
         username => $c->username
     };
@@ -650,32 +653,70 @@ sub default : Path Args(2) {
     my $p = $c->req->params;
     $meth //= 'json';
     my $ret = {};
-    my $body = $c->req->body ? _file($c->req->body)->slurp : '';
+    my $body_file = $c->req->body ? _file($c->req->body) : undef;
+    my $body = $body_file && -e $body_file ? $body_file->slurp : '';
     my $stash = { ws_body=>$body, ws_headers=>Util->_clone($c->req->headers), ws_params=>Util->_clone($p), };
-    try {
-        my $rule = mdb->rule->find_one({ id=>"$id_rule" },{ rule_type=>1 }) or _fail _loc 'Rule %1 not found', $id_rule;
-        _fail _loc 'Rule %1 not independent: %2',$id_rule, $rule->{rule_type} if $rule->{rule_type} ne 'independent' ;
-        my $ret_rule = Baseliner->model('Rules')->run_single_rule( id_rule=>$id_rule, stash=>$stash );
-        $ret = defined $stash->{ws_return} 
-            ? $stash->{ws_return} 
-            : ref $ret_rule->{ret} ? $ret_rule->{ret} : { output=>$ret_rule->{ret}, stash=>$stash };
-    } catch {
-        my $err = shift;
-        my $json = try { Util->_encode_json($p) } catch { '{ ... }' };
-        _error "Error in Rule WS call '$id_rule/$meth': $json\n$err";
-        $ret = { msg=>"$err", success=>\0 }; 
+    my $where = { '$or'=>[ {id=>"$id_rule"}, {rule_name=>"$id_rule"}] };
+    my $run_rule = sub{
+        try {
+            my $rule = mdb->rule->find_one($where,{ rule_type=>1 }) or _fail _loc 'Rule %1 not found', $id_rule;
+            _fail _loc 'Rule %1 not independent: %2',$id_rule, $rule->{rule_type} if $rule->{rule_type} ne 'independent' ;
+            my $ret_rule = Baseliner->model('Rules')->run_single_rule( id_rule=>$id_rule, stash=>$stash );
+            $ret = defined $stash->{ws_return} 
+                ? $stash->{ws_return} 
+                : ref $ret_rule->{ret} ? $ret_rule->{ret} : { output=>$ret_rule->{ret}, stash=>$stash };
+        } catch {
+            my $err = shift;
+            my $json = try { Util->_encode_json($p) } catch { '{ ... }' };
+            _error "Error in Rule WS call '$id_rule/$meth': $json\n$err";
+            $ret = { msg=>"$err", success=>\0 }; 
+        };
+        return $ret;
     };
-    if( $meth eq 'json' ) {
-        $c->stash->{json} = $ret;
-        $c->forward('View::JSON');
-    } elsif( $meth eq 'yaml' ) {
-        $c->res->body( Util->_dump($ret) );
-    } elsif( $meth eq 'xml' ) {
-        require XML::Simple;
-        $c->res->body( XML::Simple::XMLout($ret) );
-        $c->res->content_type("text/xml; charset=utf-8");
+    if( $meth eq 'soap' ) {
+        my $doc = mdb->rule->find_one($where); 
+        my $wsdl_body = $doc->{wsdl};
+        if( !length $body ) {
+            # wsdl only
+            $c->res->body( $wsdl_body );
+        } else {
+            # soap envelope received
+            require XML::Compile::SOAP11;
+            require XML::Compile::SOAP::Daemon::CGI;
+            require XML::Compile::WSDL11;
+            require XML::Compile::SOAP::Util;
+            my $wsdl = XML::Compile::WSDL11->new($wsdl_body);
+            my $daemon = XML::Compile::SOAP::Daemon::CGI->new();
+            $daemon->operationsFromWSDL(
+                $wsdl,
+                default_callback => sub {
+                    my ($soap, $data_in, $request) = @_;
+                    $stash->{ws_request} = $request;
+                    $stash->{ws_data}    = $data_in;
+                    return $run_rule->();
+                },
+            );
+            $self->cgi_to_response($c, sub {
+                my $query = CGI->new;
+                $daemon->runCgiRequest(query => $query);
+            }); 
+             
+        }
+         
     } else {
-        $c->res->body( $ret );
+        $run_rule->();
+        if( $meth eq 'json' ) {
+            $c->stash->{json} = $ret;
+            $c->forward('View::JSON');
+        } elsif( $meth eq 'yaml' ) {
+            $c->res->body( Util->_dump($ret) );
+        } elsif( $meth eq 'xml' ) {
+            require XML::Simple;
+            $c->res->body( XML::Simple::XMLout($ret) );
+            $c->res->content_type("text/xml; charset=utf-8");
+        } else {
+            $c->res->body( $ret );
+        }
     }
 }
 

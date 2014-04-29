@@ -32,6 +32,7 @@ sub role_detail_json : Local {
                 }; 
                 push @actions,{ action=>$ra->action, description=>$desc, bl=>$ra->bl };
             }
+            @actions = sort { $a->{action} cmp $b->{action} } @actions;
             $c->stash->{json} = { data=>[{  id=>$r->id, name=>$r->role, description=>$r->description, mailbox=>$r->mailbox, actions=>[ @actions ] }]  };
             $c->forward('View::JSON');
         }

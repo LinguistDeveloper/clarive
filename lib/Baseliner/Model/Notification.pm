@@ -305,7 +305,7 @@ sub get_rules_notifications{
                         when ('Emails') {
                             my @emails = keys $notification->{$key}{carrier}{$carrier}->{$type};
                             push @tmp_users, @emails;
-                            _log _dump @emails;
+                            # _log _dump @emails;
                         }                        
                         when ('Owner') 	    {
                             my $topic = mdb->topic->find_one({mid=>"$mid"});

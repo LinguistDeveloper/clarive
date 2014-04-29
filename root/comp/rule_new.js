@@ -70,6 +70,7 @@
             wiz.last = wiz.current;
             wiz.button_setup();
             job_chain_form.hide();
+            webservice_form.show();
             msg_job.hide();
             msg_ev.hide();
             grid_events.hide();
@@ -96,6 +97,21 @@
             { xtype:'textarea', height: 180, anchor:'100%', fieldLabel:_('Chain Description'), name: 'rule_desc', value: params.rec.rule_desc }
         ]
     });
+    // webservice-soap form
+    var webservice_wsdl = new Ext.form.TextArea({ height: 180, anchor:'100%', fieldLabel:_('WSDL'), name: 'wsdl', value: params.rec.wsdl, hidden: params.rec.subtype!='soap' });
+    var subtype = new Baseliner.ComboSingle({ fieldLabel: _('Web Service Type'), name:'subtype', value: params.rec.subtype, data: [
+                '-', 'soap' ]});
+    var webservice_form = new Ext.form.FieldSet({
+        hidden: true, border: false,
+        items: [ subtype, webservice_wsdl ]
+    });
+    subtype.on('select', function(){
+        if( subtype.getValue() == 'soap' ) {
+            webservice_wsdl.show();
+        } else {
+            webservice_wsdl.hide();
+        }
+    });
     var msg_ev = new Ext.Container({ border:false, html:'<span id="boot"><p><h4>'+_('Select the Event') + ':</h4></p>' });
     var msg_job = new Ext.Container({ hidden: true, border:false, html:'<span id="boot"><p><h4>'+_('Job Chain Details') + ':</h4></p>' });
     // PAGE 1
@@ -106,7 +122,7 @@
             { xtype:'textfield', fieldLabel:_('Name'), name:'rule_name', value: params.rec.rule_name },
             combo_type,
             msg_ev, msg_job,
-            grid_events, job_chain_form
+            grid_events, job_chain_form, webservice_form
         ]
     });
 
