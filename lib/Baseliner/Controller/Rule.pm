@@ -77,10 +77,11 @@ sub export : Local {
     my $p = $c->req->params;
     my $id_rule = $p->{id_rule};
     try {
-        my $row = mdb->rule->find_one({ id=>"$id_rule" });
-        _fail _loc('Row with id %1 not found', $p->{id_rule} ) unless $row;
-        $row->{rule_tree} = $row->{rule_tree} ? _decode_json($row->{rule_tree}) : [];
-        my $yaml = _dump($row);
+        my $doc = mdb->rule->find_one({ id=>"$id_rule" });
+        _fail _loc('Row with id %1 not found', $p->{id_rule} ) unless $doc;
+        #$doc->{rule_tree} = $doc->{rule_tree} ? _decode_json($doc->{rule_tree}) : [];
+        delete $doc->{_id};
+        my $yaml = _dump($doc);
         $c->stash->{json} = { success=>\1, yaml=>$yaml };
     } catch {
         my $err = shift;
@@ -100,11 +101,12 @@ sub import : Local {
         my $rule = $type eq 'yaml' ? _load( $data ) : {} ;
         delete $rule->{id};
         delete $rule->{rule_id};
+        delete $rule->{_id};
         my $doc = mdb->rule->find_one({ rule_name=>$rule->{rule_name} });
         if( $doc ) {
             $rule->{rule_name} = sprintf '%s (%s)', $rule->{rule_name}, _now();
         }
-        $rule->{rule_tree} = Util->_encode_json($rule->{rule_tree});
+        #$rule->{rule_tree} = Util->_encode_json($rule->{rule_tree});
         $rule->{id} = mdb->seq('rule');
         $rule->{rule_seq} = 0+ mdb->seq('rule_seq');
         $rule->{rule_active} = '1';
