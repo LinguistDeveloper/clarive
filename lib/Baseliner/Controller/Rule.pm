@@ -656,20 +656,29 @@ Soap webservices.
 
 =cut
 
-sub default : Path Args(2) {
-    my ($self,$c,$meth,$id_rule) = @_;
+sub default : Path {
+    my ($self,$c,$meth,$id_rule,@args) = @_;
     my $p = $c->req->params;
     $meth //= 'json';
     my $ret = {};
     my $body_file = $c->req->body ? _file($c->req->body) : undef;
     my $body = $body_file && -e $body_file ? $body_file->slurp : '';
-    my $stash = { ws_body=>$body, ws_headers=>Util->_clone($c->req->headers), ws_params=>Util->_clone($p), WSURL=>$c->req->uri.''};
+    my $uri = $c->req->uri;
+    my $wsurl = sprintf '%s://%s%s', $uri->scheme, $uri->authority, $uri->path;  # http://www.perl.com:8080/xxx/yyy, everything minus the query & fragments
+    my $stash = {
+        ws_body      => $body,
+        ws_headers   => Util->_clone( $c->req->headers ),
+        ws_params    => Util->_clone($p),
+        WSURL        => $wsurl,
+        ws_arguments => \@args,
+    };
     my $where = { '$or'=>[ {id=>"$id_rule"}, {rule_name=>"$id_rule"}] };
     my $run_rule = sub{
         try {
             my $rule = mdb->rule->find_one($where,{ rule_type=>1 }) or _fail _loc 'Rule %1 not found', $id_rule;
             _fail _loc 'Rule %1 not independent: %2',$id_rule, $rule->{rule_type} if $rule->{rule_type} ne 'independent' ;
             my $ret_rule = Baseliner->model('Rules')->run_single_rule( id_rule=>$id_rule, stash=>$stash );
+            _debug( $stash );
             $ret = defined $stash->{ws_response} 
                 ? $stash->{ws_response} 
                 : ref $ret_rule->{ret} ? $ret_rule->{ret} : { output=>$ret_rule->{ret}, stash=>$stash };
@@ -684,6 +693,7 @@ sub default : Path Args(2) {
     if( $meth eq 'soap' ) {
         my $doc = mdb->rule->find_one($where); 
         my $wsdl_body = Util->parse_vars( $doc->{wsdl}, $stash );
+        $stash->{ws_operation} = $args[0];
         
         if( !length $body ) {
             # wsdl only
