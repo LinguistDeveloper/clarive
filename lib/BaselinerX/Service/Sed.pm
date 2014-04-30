@@ -73,9 +73,14 @@ sub run {
         # find matching sed
         push @log, "Checking $f...";
         for my $in ( _array( $sed->{includes} ) ) {
+            my $cnt = 0;
             if( $f !~ /$in/ ) {
-                push( @log, "Not included $f...");
-                return; 
+                push( @log, "Not included $f... in $in");
+            } else {
+                $cnt++;
+            }
+            if ( $cnt == 0 ) {
+                return;
             }
         }
         for my $ex ( _array( $sed->{excludes} ) ) {
