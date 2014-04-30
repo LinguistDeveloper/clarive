@@ -236,25 +236,26 @@ sub jobList : Path('/job/log/jobList') {
     my $p = $c->req->params;
     my $log;
 
-    # _log _dump $p;
+    _log _dump $p;
     my $pkgIcon   = '/static/images/icons/package_green.gif';
     my $siteIcon  = '/static/images/site.gif';
     my $jobIcon   = '/static/images/book.gif';
     my $spoolIcon = '/static/images/page.gif';
     my $infoIcon  = '/static/images/log_i.gif';
 
-    if ( ref $p->{logId} ) {
+    if ( $p->{logId} ) {
         # (log data)->search( { id_log => $p->{logId} }, { order_by => 'path, id' } );
         # search for children of a log
-        $log = mdb->grid->find({ _id=>$p->{logId} })->sort(Tie::IxHash->new( path=>1, id=>1 ));
+        $log = mdb->jes_log->find({ id_log => 0+$p->{logId}});
     } else {
         # (log data)->search( { mid => $p->{jobId} }, { order_by => 'path, id' } );
-        $log = mdb->grid->find({ mid=>$p->{jobId} })->sort(Tie::IxHash->new( path=>1, id=>1 ));
+        $log = mdb->grid->chunks->find({ mid=>$p->{jobId} })->sort(Tie::IxHash->new( path=>1, id=>1 ));
     }
     my ( $package, $site, $parent, $lastSite, $lastParent, $lastPackage ) =
         ( undef, undef, undef, undef, undef, undef, undef );
 
     while ( my $rec = $log->next ) {
+        _log "Solving $rec->{name}";
         if ( $rec->{name} =~ m{\/(.*)\/.*\/(fin(..))}i ) {
             push @sites,
                 {
@@ -270,10 +271,10 @@ sub jobList : Path('/job/log/jobList') {
 
         my ( $root, $packageText, $siteText, $parentText, $file ) = split /\//, $rec->{name};
 
-        $parent = {
-            key  => "/$packageText/$siteText/$parentText",
-            text => $parentText
-        };
+        $parent = {};
+        $parent->{key}  = "/".$packageText."/".$siteText."/".$parentText;
+        $parent->{text} = $parentText;
+
         $site = {
             key  => "/$packageText/$siteText",
             text => $siteText
@@ -286,6 +287,7 @@ sub jobList : Path('/job/log/jobList') {
         if ( $parent->{key} ne $lastParent->{key} ) {
 
             #_log $rec->{name} ."=". _dump $parent . ".." . _dump $lastParent;
+            _log "EEEEEEEEEEEEEEE"._dump $parent;
             push @jobs,
                 {
                 id       => $lastParent->{text} !~ m{siteok|siteko}i ? $lastParent->{id} : '~' . $lastParent->{id},
@@ -346,7 +348,7 @@ sub jobList : Path('/job/log/jobList') {
         }
         push @files,
             {
-            id       => $rec->{_id},
+            id       => $rec->{_id}->{value},
             cls      => 'x-tree-node-leaf',
             icon     => $spoolIcon,
             leaf     => 1,
@@ -405,8 +407,11 @@ sub jobList : Path('/job/log/jobList') {
 sub jesFile : Path('/job/log/jesFile') {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    my $log = $c->model('Baseliner::BaliLogData')->search({ id=>$p->{id} })->first;
-    my $data=$log->data;
+    _log "RRRRRRRRRRRRRRRRRR "._dump $p;
+    my ($id) = _array($p->{id});
+    # my $log = $c->model('Baseliner::BaliLogData')->search({ id=>$p->{id} })->first;
+    my $log = mdb->jes_log->find_one({ _id=>mdb->oid($id) });
+    my $data=$log->{data};
     $c->stash->{json} = {data=>$data};
     $c->forward('View::JSON');
 }
