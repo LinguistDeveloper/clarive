@@ -190,6 +190,8 @@ register 'report.jazztel.jobs' => {
                 map { my $r = $cis{$_}; $r->{name} if $r } _array( $d->{releases} )
             ];
 
+            my ($last_exec) = sort { $b cmp $a } keys %{$$d{milestones}};
+
             push @rows,
               {
                 job_id => $$d{mid},
@@ -201,10 +203,10 @@ register 'report.jazztel.jobs' => {
                 releases    => $releases,
                 inicio      => $$d{starttime},
                 fin         => $$d{endtime},
-                pre_inicio      => $$d{milestones}->{PRE}->{start} || " ",
-                pre_fin         => $$d{milestones}->{PRE}->{end}|| " ",
-                run_inicio      => $$d{milestones}->{RUN}->{start}|| " ",
-                run_fin         => $$d{milestones}->{RUN}->{end}|| " ",
+                pre_inicio      => $last_exec?$$d{milestones}->{$last_exec}->{PRE}->{start} || " ":" ",
+                pre_fin         => $last_exec?$$d{milestones}->{$last_exec}->{PRE}->{end}|| " ":" ",
+                run_inicio      => $last_exec?$$d{milestones}->{$last_exec}->{RUN}->{start}|| " ":" ",
+                run_fin         => $last_exec?$$d{milestones}->{$last_exec}->{RUN}->{end}|| " ":" ",
                 usuario     => $$d{username},
                 estado      => _loc( $$d{status} ),
                 ejecuciones => $$d{exec}

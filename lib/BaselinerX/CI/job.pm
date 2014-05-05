@@ -913,7 +913,7 @@ sub run {
         _log "Setting exec to " . $self->exec;
     }
     my $milestones = $self->milestones;
-    $milestones->{$self->step}->{start} = _now;
+    $milestones->{$self->exec}->{$self->step}->{start} = _now;
     $self->milestones( $milestones );
     $self->save;
     
@@ -1108,7 +1108,7 @@ sub finish {
     $self->last_finish_status( $status );  # saved for POST
     $self->endtime( _now );
     my $milestones = $self->milestones;
-    $milestones->{$self->step}->{end} = _now;
+    $milestones->{$self->exec}->{$self->step}->{end} = _now;
     $self->milestones( $milestones );
 
 }
