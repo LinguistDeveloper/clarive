@@ -112,20 +112,23 @@ sub login_basic : Local {
         return 0;  # stops chain, sends auth required
     }
 }
-
+ 
 sub surrogate : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     my $case = $c->config->{user_case};
     my $username= $case eq 'uc' ? uc($p->{login}) 
      : ( $case eq 'lc' ) ? lc($p->{login}) : $p->{login};
-    
     try {
-        $c->authenticate({ id=>$username }, 'none');
-        $c->session->{user} = new Baseliner::Core::User( user=>$c->user );
-        $c->session->{username} = $username;
-        event_new 'event.auth.surrogate'=>{ username=>$c->username, to_user=>$username };
-        $c->stash->{json} = { success => \1, msg => _loc("Login Ok") };
+        my $doc = ci->user->find_one({ name=>$username, active=>'1' }); 
+        if ($doc){
+            $c->authenticate({ id=>$username }, 'none');
+            $c->session->{user} = new Baseliner::Core::User( user=>$c->user );
+            $c->session->{username} = $username;
+            $c->stash->{json} = { success => \1, msg => _loc("Login Ok") };
+        } else {
+            $c->stash->{json} = { success => \0, msg => _loc("Invalid User") };
+        }
     } catch {
         event_new 'event.auth.surrogate_failed'=>{ username=>$c->username, to_user=>$username };
         $c->stash->{json} = { success => \0, msg => _loc("Invalid User") };
