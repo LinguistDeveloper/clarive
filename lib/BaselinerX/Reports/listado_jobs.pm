@@ -28,7 +28,7 @@ register 'report.jazztel.jobs' => {
             fields => {
                 ids => [
                     'job_id','nombre_job',  'nombre_job', 'cambios', 'bl', 'sistemas',
-                    'naturalezas', 'releases',   'inicio',  'fin',
+                    'naturalezas', 'releases',   'inicio',  'fin', 'pre_inicio',  'pre_fin', 'run_inicio',  'run_fin',
                     'usuario',     'estado',     {name => 'ejecuciones', type => 'int', sortType => 'asInt'}
                 ],
                 columns => [
@@ -41,6 +41,10 @@ register 'report.jazztel.jobs' => {
                     {id => 'releases',    text => 'Releases'},
                     {id => 'inicio',      text => 'Inicio', meta_type => 'date', sortable => \1},
                     {id => 'fin',         text => 'Fin', meta_type => 'date', sortable => \1},
+                    {id => 'pre_inicio',      text => 'PRE Inicio', meta_type => 'date', sortable => \1},
+                    {id => 'pre_fin',         text => 'PRE Fin', meta_type => 'date', sortable => \1},
+                    {id => 'run_inicio',      text => 'RUN Inicio', meta_type => 'date', sortable => \1},
+                    {id => 'run_fin',         text => 'RUN Fin', meta_type => 'date', sortable => \1},
                     {id => 'usuario',     text => 'Usuario'},
                     {id => 'estado',      text => 'Estado'},
                     {id => 'ejecuciones', text => 'Ejecuciones', meta_type => 'number'}
@@ -197,6 +201,10 @@ register 'report.jazztel.jobs' => {
                 releases    => $releases,
                 inicio      => $$d{starttime},
                 fin         => $$d{endtime},
+                pre_inicio      => $$d{milestones}->{PRE}->{start} || " ",
+                pre_fin         => $$d{milestones}->{PRE}->{end}|| " ",
+                run_inicio      => $$d{milestones}->{RUN}->{start}|| " ",
+                run_fin         => $$d{milestones}->{RUN}->{end}|| " ",
                 usuario     => $$d{username},
                 estado      => _loc( $$d{status} ),
                 ejecuciones => $$d{exec}

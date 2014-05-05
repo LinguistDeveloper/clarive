@@ -887,7 +887,8 @@ has final_step         => ( is=>'rw', isa=>'Any' );  # so that we set the next s
 has pause_timeout      => qw(is rw isa Num default), 3600 * 24;  # 1 day max
 has pause_frequency    => qw(is rw isa Num default 5);  # 5 seconds
 has has_errors         => ( is=>'rw', isa=>'Num', default=>0 ); 
-has has_warnings       => ( is=>'rw', isa=>'Num', default=>0 ); 
+has has_warnings       => ( is=>'rw', isa=>'Num', default=>0 );
+
 
 with 'Baseliner::Role::JobRunner';   # TODO legacy
 
@@ -911,6 +912,9 @@ sub run {
         $self->exec( $self->exec + 1);  # endtime=job has run before, a way to detect first time
         _log "Setting exec to " . $self->exec;
     }
+    my $milestones = $self->milestones;
+    $milestones->{$self->step}->{start} = _now;
+    $self->milestones( $milestones );
     $self->save;
     
     $self->service_levels->{ $self->step } = {};  # restart level aggregator
@@ -1102,7 +1106,11 @@ sub finish {
     $self->status( $status );
     $self->step_status->{ $self->step } = $status;
     $self->last_finish_status( $status );  # saved for POST
-    $self->endtime( _now ); 
+    $self->endtime( _now );
+    my $milestones = $self->milestones;
+    $milestones->{$self->step}->{end} = _now;
+    $self->milestones( $milestones );
+
 }
 
 =head2 pause
