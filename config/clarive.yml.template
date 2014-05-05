@@ -1,0 +1,10 @@
+baseliner:
+     host: [[host:'localhost':Name of the instance that identifies the server.\nTry to be concise.]]
+     web_host: [[web host:$vars{host}{value}:host added to published urls in emails]]
+     web_url: http://[[web host]]:[[web port:3000:port added to published urls in emails and the interface]]
+     default_lang: es
+     decrypt_key: [[site_key:(int(rand(1024*1024))*time()):a random key used to encrypt passwords]]
+     ldap: no
+     default_theme: [[default theme:"gray"]]
+     create_user_session: 1
+     time_zone: [[time_zone_offset:"":hit enter for no offset, otherwise try GMT+1, etc.]]

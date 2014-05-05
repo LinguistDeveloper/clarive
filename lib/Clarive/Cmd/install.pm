@@ -18,12 +18,12 @@ sub run {
 
 sub run_conf {
     my ($self, %opts)=@_;
-    my $f = file( $opts{template} // $self->home, 'config', 'baseliner.conf.template' );
+    my $f = file( $opts{template} // (  $self->home, 'config', 'clarive.yml.template' ) );
     -e $f or die "ERROR: template file not found: $f";
-    my $dest_file = file( $self->home, $f->basename );
+    my $dest_file = file( $self->home, '/config', $f->basename );
     $dest_file =~ s{\.template}{}g;
     my $env = $self->env;
-    $dest_file =~ s{baseliner\.conf}{baseliner_$env\.conf}g;
+    $dest_file =~ s{clarive\.yml}{$env\.yml}g;
     $self->install_from_template( $f, $dest_file );
 }
 
