@@ -23,6 +23,13 @@ register 'event.auth.saml_failed' => { name => 'Login by SAML Failed' } ;
 register 'event.auth.surrogate_ok' => { name => 'Surrogate Ok' } ;
 register 'event.auth.surrogate_failed' => { name => 'Surrogate Failed' } ;
 
+register 'config.login' => {
+    metadata => [
+        { id => 'delay_attempts', default => 5, name=> 'Number of attempts the user ' },
+        { id => 'delay_duration', default => 5, name=> 'Number of seconds the sleep loggin user' },
+        ]
+    };
+
 =head2 logout 
 
 Hardcore, url based logout. Always redirects otherwise 
@@ -123,7 +130,7 @@ sub surrogate : Local {
         event_new 'event.auth.surrogate_failed'=>{ username=>$c->username, to_user=>$username };
         $c->stash->{json} = { success => \0, msg => _loc("Invalid User") };
     };
-    $c->forward('View::JSON');	
+    $c->forward('View::JSON');  
 }
 
 =head2 authenticate
@@ -206,38 +213,113 @@ sub login : Global {
     my $password = $c->stash->{password} // $p->{password};
     # configure user login case
     my $case = $c->config->{user_case} // '';
+    my $config_login = Baseliner->model('ConfigStore')->get('config.login');
     $login= $case eq 'uc' ? uc($login)
      : ( $case eq 'lc' ) ? lc($login) : $login;
-     
     $c->log->info( "LOGIN: " . $login );
     #_log "PW   : " . $password; #XXX only for testing!
     my $msg;
-
+    my $attempts_login = $config_login->{delay_attempts};
+    my $attempts_duration = $config_login->{delay_duration};
+    my $id_login = $c->req->address;
+    my $id_browser = $c->req->user_agent;
+    my $block_datetime = mdb->ts;
     if( $login ) {
-        # go to the main authentication worker
-        $c->stash->{login} = $login; 
-        $c->stash->{password} = $password; 
-        my $res = $c->forward('authenticate');
-        $msg = $c->stash->{auth_message};
-        if( $res && length $c->username ) {
-            $msg //= _loc("OK");
-            event_new 'event.auth.ok'=>{ username=>$c->username, login=>$login, mode=>'login', msg=>$msg };
-            $c->stash->{json} = { success => \1, msg => $msg // _loc("OK") };
-        } else {
-            $msg //= _loc("Invalid User or Password");
+        # check if exists before insert in db attempts
+        my $attempts_query = mdb->user_login_attempts->find_one({ id_login => $id_login, id_browser => $id_browser });
+        my $num_attempts = $attempts_query->{num_attempts}; $num_attempts = 0 if !$num_attempts;
+        # check the user hasn't been blocked.
+        ########################################################
+        my $time_user_block = Class::Date->new($attempts_query->{block_datetime});
+        $time_user_block = $time_user_block + "$attempts_duration s";
+        my $block_expired = 1 if $time_user_block < mdb->ts;
+        ########################################################
+        if (($attempts_query->{block_datetime} == 0) || ($block_expired == 1)){
+            # go to the main authentication worker
+            $c->stash->{login} = $login; 
+            $c->stash->{password} = $password;
+            $c->forward('authenticate');
+            $msg = $c->stash->{auth_message};
+            # comprueba el logueo correcto del usuario
+            if( $c->forward('authenticate') ) {
+                $msg //= _loc("OK");
+                event_new 'event.auth.ok'=>{ username=>$c->username, login=>$login, mode=>'login', msg=>$msg };
+                $c->stash->{json} = { success => \1, msg => $msg };
+                #remove from user login attempts if loggin has ok
+                mdb->user_login_attempts->remove({ id_login => $id_login, id_browser => $id_browser });
+            } #end if $c->forward('authenticate')
+            else {
+                # insert in db;
+                if ($num_attempts >= $attempts_login) {
+                    mdb->user_login_attempts->update(
+                    { id_login => $id_login, id_browser => $id_browser },
+                    { id_login => $id_login, id_browser => $id_browser, num_attempts => $num_attempts, block_datetime => $block_datetime },
+                    { upsert => 1 });
+                    if($attempts_query->{block_datetime} != 0) { 
+                            my $time_user_block = Class::Date->new($attempts_query->{block_datetime});
+                            $time_user_block = $time_user_block + "$attempts_duration s";
+                            if($time_user_block < mdb->ts) {
+                                #remove from db if time has expired
+                                $block_datetime = 0;
+                                mdb->user_login_attempts->update(
+                                { id_login => $id_login, id_browser => $id_browser },
+                                { id_login => $id_login, id_browser => $id_browser, num_attempts => 1, block_datetime => $block_datetime },
+                                { upsert => 1 }); 
+                            } #end if $time_user_block < mdb->ts
+                        } #end else $attempts_query->{block_datetime} == 0
+                    $msg //= _loc("Too many attempts");
+                    event_new 'event.auth.failed'=>{ username=>'', login=>$login, mode=>'login', msg=>$msg };
+                    $c->stash->{json} = { 
+                        success => \0, 
+                        msg => $msg,
+                        attempts_login => $attempts_login-$num_attempts, 
+                        block_datetime => $block_datetime, 
+                        attempts_duration => $attempts_duration };
+                } #end else $c->forward('authenticate')
+                else {
+                    $block_datetime = 0;
+                    mdb->user_login_attempts->update(
+                    { id_login => $id_login, id_browser => $id_browser },
+                    { id_login => $id_login, id_browser => $id_browser ,num_attempts => $num_attempts+1, block_datetime => $block_datetime },
+                    { 'upsert' => 1 });
+                    $msg //= _loc("Invalid User or Password");
+                    event_new 'event.auth.failed'=>{ username=>'', login=>$login, mode=>'login', msg=>$msg };
+                    $c->stash->{json} = { 
+                        success => \0, 
+                        msg => $msg,
+                        attempts_login => $attempts_login-$num_attempts, 
+                        block_datetime => $block_datetime };
+                } #end else ($num_attempts >= $attempts_login)
+            } #end else $attempts_query->{block_datetime}
+        } #end if $attempts_query->{block_datetime}
+        else { 
+            $block_datetime = 0 if $block_expired == 1;
+            $num_attempts = 0 if $block_expired == 1;
+            mdb->user_login_attempts->update(
+            { id_login => $id_login, id_browser => $id_browser },
+            { id_login => $id_login, id_browser => $id_browser, num_attempts => $num_attempts, block_datetime => $block_datetime },
+            { upsert => 1 }); 
+            $msg //= _loc("Attempts exhausted, please wait");
             event_new 'event.auth.failed'=>{ username=>'', login=>$login, mode=>'login', msg=>$msg };
-            $c->stash->{json} = { success=>\0, msg=>$msg };
-        }
-    } else {
+            $c->stash->{json} = { 
+                        success => \0, 
+                        msg => $msg,
+                        attempts_login => $attempts_login-$num_attempts, 
+                        block_datetime => $block_datetime, 
+                        attempts_duration => $attempts_duration
+                         }; 
+        } #end else $LOGIN 
+    } #END IF $LOGIN
+    else { 
         # invalid form input
         # $c->stash->{json} = { success => \0, msg => _loc("Missing User or Password") };
         $msg //= _loc("Missing User");
         event_new 'event.auth.failed'=>{ username=>'', login=>$login, mode=>'login', msg=>$msg };
         $c->stash->{json} = { success => \0, msg => $msg };
-    }
+    } #end else $LOGIN 
+    
     _log '------Login in: '  . $c->username ;
-    $c->forward('View::JSON');	
-    #$c->res->body("Welcome " . $c->user->username || $c->user->id . "!");
+    $c->forward('View::JSON');
 }
 
 sub error : Private {
