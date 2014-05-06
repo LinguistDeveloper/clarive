@@ -175,7 +175,6 @@ sub monitor {
         $where = { %$where, %$where_filter };
     }
     
-    _debug $where;
 
     my $rs = mdb->master_doc->find({ collection=>'job', %$where })->sort(Tie::IxHash->new( @order_by ));
     $cnt = $rs->count;
