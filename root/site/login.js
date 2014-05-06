@@ -2,7 +2,7 @@ Ext.onReady(function(){
     Ext.BLANK_IMAGE_URL = '/static/ext/resources/images/default/s.gif';
     Ext.QuickTips.init();
 
-    var after_login = "<% $c->stash->{after_login} %>";
+    var after_login = "<% $c->stash->{after_login} %>"; 
     var after_login_query = "<% $c->stash->{after_login_query} %>";
     Ext.Ajax.timeout = 60000;
 
@@ -26,11 +26,20 @@ Ext.onReady(function(){
                                                     document.location.href = after_login || '/';
                                              },
                                     failure: function(form, action) {
-                                                    Ext.Msg.alert('<% _loc('Login Failed') %>', action.result.msg );
-	                                                login_form.getForm().findField('login').focus('',100);
-                                                    //login_form.getForm().findField('password').getValue() == ''
-	                                                //	? login_form.getForm().findField('login').focus('',100)
-                                                    //	: login_form.getForm().findField('password').focus('',100);
+                                                    if(action.result.block_datetime != 0) {
+                                                        Ext.Msg.show({
+                                                         title: '<% _loc('Login Failed') %>',
+                                                         msg: '<% _loc('Attempts exhausted, please wait') %>',
+                                                         width:300,
+                                                         wait:true,
+                                                         waitConfig: {interval: action.result.attempts_duration * 100}
+                                                     });
+                                                        setTimeout(function(){ Ext.Msg.hide(); }, action.result.attempts_duration * 1000);
+                                                    }
+                                                    else{
+                                                        Ext.Msg.alert('<% _loc('Login Failed') %>', action.result.msg );
+                                                        login_form.getForm().findField('login').focus('',100);
+                                                    }      
                                               }
                                 });
                            };
@@ -80,4 +89,3 @@ Ext.onReady(function(){
      }, 400);
      
 });
-

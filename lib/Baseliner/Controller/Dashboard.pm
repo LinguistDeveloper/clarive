@@ -101,7 +101,7 @@ sub list_dashboard : Local {
         
         push @rows,
             {
-                id 			=> ''.$r,
+                id 			=> ''.$r->{_id},
                 name		=> $r->{name},
                 description	=> $r->{description},
                 is_main 	=> $r->{is_main},
@@ -290,7 +290,7 @@ sub list : Local {
             if($system_dashboard){
                 @dashlets = $system_dashboard->{dashlets};
                 $is_columns = $system_dashboard->{is_columns};
-                $dashboard_id = $system_dashboard.'';
+                $dashboard_id = $system_dashboard->{_id}.'';
             }
             else{
                 ##Dashlets para el dashboard de proyectos.

@@ -1274,7 +1274,7 @@ sub parse_vars {
     my $ret;
     {
           local $SIG{ALRM} = sub { alarm 0; die "parse_vars timeout - data structure too large?\n" };
-          alarm( $Baseliner::Utils::parse_vars_timeout // 5 );
+          alarm( $ENV{BASELINER_PARSE_TIMEOUT} // $Baseliner::Utils::parse_vars_timeout // 30 );
           # flatten keys
           my $flat = hash_flatten( $vars );
           # now merge flat keys with originals, but originals have precedence

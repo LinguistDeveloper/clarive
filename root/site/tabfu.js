@@ -283,7 +283,7 @@ if( Prefs.routing ) {
                      },
             failure: function(form, action) {
                             Ext.Msg.alert('<% _loc('Login Failed') %>', action.result.msg );
-                            lf.getForm().findField('login').focus('',100);
+                            form.findField('login').focus('',100);
                       }
         });
    };
@@ -388,7 +388,7 @@ if( Prefs.routing ) {
                            }
                 }
             ],
-            items: [
+            items: [ 
                 {  xtype: 'textfield', name: 'login', fieldLabel: "<% _loc('Username') %>", selectOnFocus: true }
             ]
         });
