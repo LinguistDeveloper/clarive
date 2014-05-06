@@ -152,7 +152,6 @@ sub monitor {
     }
     
     $where->{'$and'} =\@mid_filters if @mid_filters;
-    _debug $where;
 
     if( $filter ) {
         $filter = Util->_decode_json( $filter );
