@@ -50,7 +50,6 @@ sub begin : Private {
             delete $d->{as_json};
             delete $d->{$_} for grep /^_bali/, keys $d;
             $c->req->params( $d ); 
-            Util->_debug( $d );
         } else {
             $json //= {};
             delete $json->{as_json};
