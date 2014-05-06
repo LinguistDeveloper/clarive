@@ -24,9 +24,9 @@ has url_nginx     => qw(is rw isa Any);
 has api_key       => qw(is rw isa Any);
 has pid_filter    => qw(is rw isa Any);
 has web           => qw(is rw isa Any default 1);
-has nginx         => qw(is rw isa Any default 1);
-has mongo         => qw(is rw isa Any default 1);
-has redis         => qw(is rw isa Any default 1);
+has act_nginx     => qw(is rw isa Any default 1);
+has act_mongo     => qw(is rw isa Any default 1);
+has act_redis     => qw(is rw isa Any default 0);
 has timeout_web   => qw(is rw isa Num default 5);
 has error_rc      => qw(is rw isa Num default 10);
 
@@ -44,9 +44,9 @@ Options:
   --url_nginx             nginx web url
   --api_key               api key to login to clarive
   --web                   1=try clarive web connection, 0=skip
-  --nginx                 1=try nginx connection, 0=skip nginx
-  --mongo                 1=try mongo connection, 0=skip mongo
-  --redis                 1=try redis connection, 0=skip redis status
+  --act_nginx                 1=try nginx connection, 0=skip nginx
+  --act_mongo                 1=try mongo connection, 0=skip mongo
+  --act_redis                 1=try redis connection, 0=skip redis status
   --timeout_web           seconds to wait for clarive/nginx web response, 0=no timeout
   --error_rc              return code for fatal errors
   --pid_filter            regular expression to filter in pid files
@@ -61,8 +61,9 @@ sub _find_pid {
     $pidfile = $pidfile . ($cnt ? $cnt : '' );
     my $clean_pid = sub { $_[0] =~ /^([0-9]+)/ ? $1 : $_[0] };
     if( defined $self->opts->{pid} ) {
-        return $clean_pid->( $self->opts->{pid} );
-    } elsif( -e $pidfile ) {
+        $clean_pid->( $self->opts->{pid} );
+    } 
+    if( -e $pidfile ) {
         open(my $pf, '<', $pidfile ) or die "Could not open pidfile: $!";
         my $pid = join '',<$pf>;
         close $pf;
@@ -82,6 +83,7 @@ sub run {
         next if $pid_filter && $pidfile !~ $pid_filter;
         sayts "pid_file=$pidfile";
         my $pid = $self->_find_pid( $pidfile );
+        next if( length $self->opts->{pid} && $self->opts->{pid} != $pid );
         sayts "checking pid exists=$pid";
         if( ! pexists($pid) ) {
             errts "KO: pid $pid not found.";
@@ -96,12 +98,12 @@ sub run {
         $rc += $self->call_web( %opts, url=>$self->url_web );
     }
     
-    if( $self->nginx  && $self->url_nginx) {
+    if( $self->act_nginx  && $self->url_nginx) {
         sayts "connecting to Nginx...";
-        $rc += $self->call_web( %opts, url=>$self->url_nginx ) if $self->nginx;  
+        $rc += $self->call_web( %opts, url=>$self->url_nginx ) if $self->act_nginx;  
     }
     
-    if( $self->mongo ) {
+    if( $self->act_mongo ) {
         require MongoDB;
         try {
             sayts "connecting to MongoDB...";
@@ -116,7 +118,7 @@ sub run {
         };
     }
     
-    if( $self->redis ) {
+    if( $self->act_redis ) {
         require Redis;
         try {
             sayts "connecting to Redis...";
