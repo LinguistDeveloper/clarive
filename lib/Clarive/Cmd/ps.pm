@@ -72,8 +72,8 @@ sub run_filter {
               #$p->ttydev,
               $p->state,
               scalar(localtime($p->start)),
-              $p->cmndline);
-        given( $p->cmndline ) {
+              ( $^O eq 'cygwin' ? $p->fname : $p->cmndline));
+        given( $^O eq 'cygwin' ? $p->fname : $p->cmndline ) {
             when( /starman|plackup|bali_server|start_server/ ) {
                 push @server, $lin;
             }
