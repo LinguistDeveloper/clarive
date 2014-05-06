@@ -101,7 +101,7 @@ sub list_dashboard : Local {
         
         push @rows,
             {
-                id 			=> ''.$r,
+                id 			=> ''.$r->{_id},
                 name		=> $r->{name},
                 description	=> $r->{description},
                 is_main 	=> $r->{is_main},
