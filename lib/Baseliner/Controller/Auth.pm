@@ -149,7 +149,7 @@ sub authenticate : Private {
     my ( $self, $c ) = @_;
     my $login    = $c->stash->{login} // _throw _loc('Missing login');
     my $password = $c->stash->{password};
-
+    
     my $auth; 
     _debug "AUTH START=$login";
 
