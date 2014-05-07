@@ -1590,7 +1590,6 @@ our $__year = 2_629_744*12;
 
 sub ago {
     my ($date, $now) = @_;
-    _log "Date:".$date;
     $now //= Class::Date->now();
     # if( ref $date eq 'DateTime' ) {
     #     $date = Class::Date->new( $date->epoch );
