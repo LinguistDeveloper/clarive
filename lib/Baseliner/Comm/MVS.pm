@@ -9,18 +9,6 @@ use Carp;
 ## inheritance
 use vars qw($VERSION);
 
-{
-    package Baseliner::Comm::MVS::Config;
-    use Baseliner::Plug;
-    register 'config.JES' => {
-        metadata => [
-           { id=>'interval', label=>'Interval in seconds to wait for the next attempt', default => '10' },
-           { id=>'attempts', label=>'Number of attempts to retrieve the job output', default => '5'},
-           { id=>'nopurge', label=>'0->purge jobs when retrieved, 1->do not purge', default => '0'},
-        ]
-    };
-}
-
 $VERSION = '1.0';
 
 sub opt { $_[0]->{opts}->{$_[1]} }
@@ -120,7 +108,7 @@ sub submit {
         $self->{jobs}{$JobNumber}{job} = $jobtxt; 
         push @jobs, $JobNumber; 
         _log "MVS Submitted $jobname/$JobNumber"; 
-        $log->info( "MVS Submitted $jobname $JobNumber" );
+        $log->info( "MVS Submitted $jobname $JobNumber", $jobfile );
     }
     
     return wantarray ? @jobs : shift @jobs;
