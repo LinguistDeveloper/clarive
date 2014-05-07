@@ -108,7 +108,7 @@ sub submit {
         $self->{jobs}{$JobNumber}{job} = $jobtxt; 
         push @jobs, $JobNumber; 
         _log "MVS Submitted $jobname/$JobNumber"; 
-        $log->info( "MVS Submitted $jobname $JobNumber", $jobfile );
+        $log->info( "MVS Submitted $jobname $JobNumber", $jobtxt );
     }
     
     return wantarray ? @jobs : shift @jobs;
