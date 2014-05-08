@@ -152,7 +152,6 @@ sub monitor {
     }
     
     $where->{'$and'} =\@mid_filters if @mid_filters;
-    _debug $where;
 
     if( $filter ) {
         $filter = Util->_decode_json( $filter );
@@ -175,7 +174,6 @@ sub monitor {
         $where = { %$where, %$where_filter };
     }
     
-    _debug $where;
 
     my $rs = mdb->master_doc->find({ collection=>'job', %$where })->sort(Tie::IxHash->new( @order_by ));
     $cnt = $rs->count;

@@ -84,7 +84,13 @@ sub tree_project_releases : Local {
 sub category_contents : Local {
     my ($self,$c) = @_;
     my %seen = ();
-    my @rels = grep {!$seen{$_->{mid}}++} DB->BaliTopic->search( { id_category => $c->req->params->{category_id} },{ prefetch=>['categories'] })->hashref->all;
+    my ($category_id) = _array($c->req->params->{category_id});
+    my ($cnt,@user_topics) = Baseliner->model('Topic')->topics_for_user( { username => $c->username, clear_filter => 1 });
+    @user_topics = map { $_->{mid}} @user_topics;
+
+    #my @rels = grep {!$seen{$_->{mid}}++} DB->BaliTopic->search( { id_category => $category_id },{ prefetch=>['categories'] })->hashref->all;
+    my @rels = grep {!$seen{$_->{mid}}++} mdb->topic->find( { mid => mdb->in(@user_topics), id_category => "$category_id" })->all;
+    
     my @menu_related = $self->menu_related();
     my @tree = map {
        +{
@@ -93,13 +99,13 @@ sub category_contents : Local {
             url  => '/lifecycle/topic_contents',
             topic_name => {
                 mid            => $_->{mid},
-                category_color => $_->{categories}{color},
-                category_name  => $_->{categories}{name},
+                category_color => $_->{category}->{color},
+                category_name  => $_->{category}->{name},
                 is_release     => 1,
             },
             data => {
                 topic_mid    => $_->{mid},
-                click       => $self->click_for_topic(  $_->{categories}{name}, $_->{mid} ),
+                click       => $self->click_for_topic(  $_->{category}->{name}, $_->{mid} ),
             },
             menu => \@menu_related
        }
@@ -225,7 +231,8 @@ sub topic_contents : Local {
 sub tree_releases : Local {
     my ($self,$c) = @_;
     my %seen = ();
-    my @rels = DB->BaliTopicCategories->search( {is_release => 1} )->hashref->all;
+    my @categories  = map { $_->{id}} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'view' );
+    my @rels = DB->BaliTopicCategories->search( {id => \@categories, is_release => 1} )->hashref->all;
     my @tree = map {
        +{
             text => $_->{name},

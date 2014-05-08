@@ -812,8 +812,8 @@
     };
 
     var render_number = function(value,metadata,rec,rowIndex,colIndex,store) {
-        if( !value || value == undefined ) return '';
-        return parseInt(value);
+        if( !value || value == undefined || value == ' ') return '';
+        return parseFloat(value);
     };
 
     var render_date = function(value,metadata,rec,rowIndex,colIndex,store) {
@@ -1028,14 +1028,15 @@
     };
     
     var render_default = function(value,metadata,rec,rowIndex,colIndex,store){
-        // if ( !rec.json[this.dataIndex] ) {
-        //     var str = this.dataIndex;
-        //     if ( str ) {   
-        //         var res = str.replace('_' +  this.alias,"");
-        //         value = rec.json[res];
-        //     }
-        // };
-        // if (rec.json[this.dataIndex]) value = rec.json[this.dataIndex];
+        //console.dir(rec);
+        if ( !rec.json[this.dataIndex] ) {
+            var str = this.dataIndex;
+            if ( str ) {   
+                var res = str.replace('_' +  this.alias,"");
+                value = rec.json[res];
+            }
+        };
+        if (rec.json[this.dataIndex]) value = rec.json[this.dataIndex];
         return value;
     };  
 

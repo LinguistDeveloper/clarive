@@ -1,6 +1,7 @@
 package BaselinerX::CI::ssh_agent;
 use Baseliner::Moose;
 use Baseliner::Utils;
+use Try::Tiny;
 #use namespace::autoclean;
 
 has_ci 'server';
@@ -166,16 +167,24 @@ sub execute {
     my %p = ( stderr_to_stdout => 1, );
     my @cmd = map { "$_" } @_ ; # stringify possible Path::Class
     $p{stdout_file} = _tmp_file;  # send output to tmp file
-
+    
+    # TODO alternative: send a shell file (or .bat) to remote and execute it?
+    my $cmd_quoted;
+    if( length( join('', @cmd) ) > 65_536 ) {  # 64K TODO use getconf ARG_MAX - length(join '',%ENV)
+        $cmd_quoted = join ' ', $self->_double_quote_cmd( @cmd ); # command is too large, so we use a quoted version
+    }
     my $ret; 
     my $rc; 
     my $timeout = length $self->{timeout} ? $self->{timeout} : 60;
 
-    use Try::Tiny;
     try {
         local $SIG{ALRM} = sub { die "ssh timeout alarm\n" };
         alarm $timeout; 
-        $ret = $self->ssh->system( \%p, @cmd );
+        if( !$cmd_quoted ) {
+            $ret = $self->ssh->system( \%p, @cmd );
+        } else {
+            $ret = $self->ssh->system({ %p, tty=>0, stdin_data=>$cmd_quoted });
+        }
         $rc = $?;
         alarm 0;
     } catch {

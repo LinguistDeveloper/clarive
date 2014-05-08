@@ -5043,4 +5043,7 @@ msgstr "El usuario %1 ha borrado un comentario del tópico [%2] %3"
 msgid "User %1 has requested approval for job %2"
 msgstr "El usuario %1 ha solicitado aprobación para el job %2"
 
+msgid "Topic %1 (%2) has been assigned to you"
+msgstr "El tópico %1 (%2) ha sido signado a ti"
+
 ### EOF - do not write anything bellow this

@@ -136,6 +136,7 @@ sub common_log {
         mdb->job_log->save( $doc );
         
         $self->last_log( $doc ) if $lev ne 'debug';
+        $row = $doc;
     } catch {
         my $err = shift;
         local $Baseliner::logger = undef;  # prevent recursivity

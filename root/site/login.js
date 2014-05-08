@@ -26,7 +26,12 @@ Ext.onReady(function(){
                                                     document.location.href = after_login || '/';
                                              },
                                     failure: function(form, action) {
-                                                    if(action.result.block_datetime != 0) {
+                                                    if (action.result == undefined){
+                                                      var errorMask = Ext.fly( document.body ).mask( _('Server communication failure. Check your connection.') );
+                                                      errorMask.show();
+                                                      setTimeout(function(){ Ext.fly( document.body ).unmask(); }, 4000);
+                                                    }
+                                                    else if (action.result.block_datetime != 0) {
                                                         Ext.Msg.show({
                                                          title: '<% _loc('Login Failed') %>',
                                                          msg: '<% _loc('Attempts exhausted, please wait') %>',
