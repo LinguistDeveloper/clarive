@@ -664,8 +664,8 @@ sub view : Local {
             $c->stash->{category_meta} = $category->forms;
             
             my @category = DB->BaliTopicCategories->search( 
-                {id_category => $id_category, 'statuses.status.type' => 'I'} , 
-                { join => {'statuses' => 'status'} , +select =>[ 'forms','statuses.status.id'], as =>['forms','id_status'] } )->hashref->first;
+                {id_category => $id_category, 'status.type' => 'I'} , 
+                { join => {'statuses' => 'status'} , +select =>[ 'forms','status.id'], as =>['forms','id_status'] } )->hashref->first;
             
             my @statuses = sort { ($a->{seq}//0) <=> ($b->{seq}//0) } grep { $_->{id_status} ne $category[0]->{id_status}} $c->model('Topic')->next_status_for_user(
                 id_category    => $id_category,
