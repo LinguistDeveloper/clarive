@@ -10,7 +10,7 @@ sub run {
 
 	if ( !$opts{no_mongo} ) {	
 		print "Starting mongo server\n";
-		system('mongod -f '.$self->app->base.'/config/mongod.conf');
+		#system('mongod -f '.$self->app->base.'/config/mongod.conf');
 		if ( $? ) {
 			print "Error starting mongo server\n";
 			exit 1;
@@ -30,7 +30,7 @@ sub run {
 		}
 	}
 
-	if ( !$opts{no_redis} ) {	
+	if ( $opts{redis} ) {	
 		print "Starting Redis server\n";
 		system('redis-server',$self->app->base.'/config/redis.conf');
 		if ( $? ) {
