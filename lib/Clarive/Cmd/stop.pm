@@ -18,7 +18,7 @@ sub run {
 		print "Mongo server stopped\n";
 	}
 
-	if ( !$opts{no_redis} ) {
+	if ( $opts{redis} ) {
 		print "Stopping Redis server\n";
 		system('killall redis-server');
 		if ( $? ) {
