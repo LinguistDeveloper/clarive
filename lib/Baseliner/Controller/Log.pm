@@ -407,7 +407,6 @@ sub jobList : Path('/job/log/jobList') {
 sub jesFile : Path('/job/log/jesFile') {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    _log "RRRRRRRRRRRRRRRRRR "._dump $p;
     my ($id) = _array($p->{id});
     # my $log = $c->model('Baseliner::BaliLogData')->search({ id=>$p->{id} })->first;
     my $log = mdb->jes_log->find_one({ _id=>mdb->oid($id) });
