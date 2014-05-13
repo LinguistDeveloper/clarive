@@ -280,7 +280,7 @@ sub build_project_security {
 
 sub build_field_query {
     my ($self,$query,$where,$username) = @_;
-    my %all_fields = map { $_->{id_field} => undef } _array($self->get_meta(undef,undef,$username));
+    my %all_fields = ( '_txt'=>1, map { $_->{id_field} => undef } _array($self->get_meta(undef,undef,$username)) );
     mdb->query_build( where=>$where, query=>$query, fields=>['mid', 'category.name', 'category_status.name', keys %all_fields] ); 
 }
 
