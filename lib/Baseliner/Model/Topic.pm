@@ -1852,24 +1852,27 @@ sub update_category {
     _fail _loc "Cannot update topic category, topic not found: %1", $mid_or_doc unless ref $doc;
     
     $id_cat //= $doc->{id_category};
-    
-    $doc->{category} = DB->BaliTopicCategories->search({ id=>$id_cat })->hashref->first 
-        || _fail _loc 'Category %1 not found', $id_cat;
-       
-    $doc->{color_category}       = $doc->{category}{color};
-    $doc->{category_color}       = $doc->{category}{color};
-    $doc->{category_id}          = $doc->{category}{id};
-    $doc->{id_category}          = $doc->{category}{id};
-    $doc->{category_name}        = $doc->{category}{name};
-    $doc->{name_category}        = $doc->{category}{name};
-    $doc->{is_changeset}         = $doc->{category}{is_changeset};
-    $doc->{is_release}           = $doc->{category}{is_release};
+   
+    my $category = DB->BaliTopicCategories->search({ id=>$id_cat })->hashref->first 
+        or _fail _loc 'Category %1 not found', $id_cat;
+    my $d = {
+        category             => $category,
+        color_category       => $$category{color},
+        category_color       => $$category{color},
+        category_id          => $$category{id},
+        id_category          => $$category{id},
+        category_name        => $$category{name},
+        name_category        => $$category{name},
+        is_changeset         => $$category{is_changeset},
+        is_release           => $$category{is_release},
+    };
     
     if( !ref $mid_or_doc ) {
         # save back to mongo
-        mdb->topic->save($doc);
+        mdb->topic->update({ mid=>"$mid_or_doc" },{ '$set'=>$doc });
     }
     
+    $$doc{$_} = $$d{$_} for keys $d;   # merge hashes while maintaining original hash integrity
     return $doc;
 }
 
