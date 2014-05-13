@@ -646,6 +646,83 @@ sub list_lastjobs: Private{
         if($config_dashlet[0]->{params}){
             foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
                 $default_config->{$key} = $config_dashlet[0]->{params}->{$key};
+            };              
+        }       
+    }   
+    ##########################################################################################################
+
+    for my $doc ( @rs_search ) {
+        last if $numrow >= $limit;
+        try {
+            my $job = ci->new( $doc->{mid} );
+            push @lastjobs,
+                {
+                mid       => $job->mid,
+                name      => $job->name,
+                type      => $job->job_type,
+                rollback  => $job->rollback,
+                status    => $job->status,
+                starttime => $job->starttime,
+                endtime   => $job->endtime,
+                bl => $job->bl,
+                apps => join ",", _array($job->{job_contents}->{list_apps})
+                };
+            $numrow++;
+        } catch {
+            _log "FAILURE Searching job ".$doc->{mid}.": " . shift;
+        };
+    }
+    $c->stash->{lastjobs} =\@lastjobs;
+}
+
+sub list_pending_jobs: Private{
+    my ( $self, $c, $dashboard_id, $params ) = @_;
+    my $perm = Baseliner->model('Permissions');
+
+    #######################################################################################################
+    #CONFIGURATION DASHLET
+    ##########################################################################################################
+    my $config = get_config_dashlet( 'list_pending_jobs', $dashboard_id, $params );
+    ##########################################################################################################
+    $c->stash->{dashboard_id} = $config->{dashboard_id};
+
+    my @mid_filters = ();
+    my $limit = $config->{rows} // 10;
+    my $statuses = 'APPROVAL,TRAPPED,PAUSED';
+    my $username = $c->username;
+
+    if( !$perm->is_root($username) ) {
+            @mid_filters = $perm->user_projects_with_action(username => $username,
+                                                                action => 'action.job.viewall',
+                                                                level => 1);
+            
+    }
+
+    my $where = {};
+    $where->{'projects.mid'} = mdb->in(@mid_filters) if @mid_filters;
+    $where->{collection} = 'job';
+
+    my @filter_statuses;
+    @filter_statuses = split /,/,$statuses;
+    $where->{status} = mdb->in(@filter_statuses);
+
+    my @rs_search = mdb->master_doc->find( $where )->sort({ starttime => -1 })->all;
+
+    my $numrow = 0;
+    my @pending_jobs;
+    my $default_config;
+    
+    #######################################################################################################
+    #CONFIGURATION DASHLET
+    ##########################################################################################################
+    
+     if($dashboard_id){
+        my $dashboard_rs = mdb->dashboard->find({_id => mdb->oid($dashboard_id)});
+        my @config_dashlet = grep {$_->{url}=~ 'list_pending_jobs'} _array $dashboard_rs->{dashlets};
+        
+        if($config_dashlet[0]->{params}){
+            foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
+                $default_config->{$key} = $config_dashlet[0]->{params}->{$key};
             };				
         }		
     }	
