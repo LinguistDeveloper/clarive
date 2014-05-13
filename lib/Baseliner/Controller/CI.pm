@@ -1384,10 +1384,25 @@ sub search_query {
         project=>{ _id=>0 },
         filter=>{ collection=>mdb->nin('topic','job') }
     );
+
+    my @results = map { 
+        my $r = $$_{obj};
+        $r;
+    } _array( $res->{results} );
+    
+    my $wh = {collection=>mdb->nin('topic','job') };
+    mdb->query_build( where=>$wh, query=>$query, fields=>['mid','moniker','name','description'] ); 
+    push @results, map {
+        delete $$_{_id};
+        $_;
+    } mdb->master_doc->find($wh)->all;
+    
+    my %res_unique = map { $$_{mid} => $_ } @results;
+    
     #my @mids = map { $_->{obj}{mid} } _array $res->{results};
     #$where->{'me.mid'} = mdb->in(@mids);
     return map {
-        my $r = $_->{obj};
+        my $r = $_;
         my $text = Util->_encode_json( $r );
         my $coll = $r->{collection};
         my $class = Util->to_ci_class($coll);
@@ -1410,7 +1425,7 @@ sub search_query {
             mid   => $r->{mid},
             id    => $r->{mid},
         }
-    } _array $res->{results};
+    } values %res_unique;
 }
 
 =head2

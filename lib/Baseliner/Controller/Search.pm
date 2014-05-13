@@ -80,7 +80,9 @@ sub order_matches {
     my $docs = [];
     for my $doc ( @results ) {
         my @found;
-        my $tmatch  = ( "$$doc{id},$$doc{mid},$$doc{title}" =~ /($query)/gsi );
+        my $idexact  = $$doc{mid} eq $query;
+        my $idmatch  = length join '',( "$$doc{mid}" =~ /($query)/gsi );
+        my $tmatch  = length join '', ( "$$doc{title}" =~ /($query)/gsi );
         for my $doc_txt ( $$doc{info}, $$doc{text} ) {
             while ( $doc_txt =~ /(?<bef>.{0,40})?(?<mat>$query)(?<aft>.{0,40})?/gsi ) {
                 my ( $bef, $mat, $aft ) = ( $+{bef}, $+{mat}, $+{aft} );
@@ -89,14 +91,15 @@ sub order_matches {
                 push @found, $t;
             }
         }
-        if ( $tmatch + @found ) {
-            $$doc{excerpt} = !@found ? '' : join( "...", @found ) . '...';
-            $$doc{matches} = $tmatch * 20 + scalar @found;
-            push $docs, $doc;
-        }
+        $$doc{excerpt} = !@found ? '' : join( "...", @found ) . '...';
+        $$doc{matches} = $idexact*1000000 + ($idmatch>0?(10**(1/$idmatch)*10000):0) + ($tmatch>0?(10**(1/$tmatch)*1000):0) + scalar @found;
+        $$doc{title} = "$$doc{title}";
+        push $docs, $doc;
     }
     #my $res = { results => , query => $query, matches => @$docs };
-    [ sort { $$b{matches} <=> $$a{matches} } @$docs ];
+    [ sort { 
+        $$a{matches} == $$b{matches} ? $$a{mid} <=> $$b{mid} : $$b{matches} <=> $$a{matches} 
+        } @$docs ];
 }
 
 =head2 query_lucy
