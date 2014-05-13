@@ -1797,8 +1797,15 @@ sub update_rels {
     my ($self,@mids_or_docs ) = @_;
     my @mids = map { ref $_ eq 'HASH' ? $_->{mid} : $_ } grep { length } _unique( @mids_or_docs );
     my %rel_data;
-    my %rels = DB->BaliMasterRel->search({ from_mid=>\@mids })->hash_on('from_mid');
+    my %rels = DB->BaliMasterRel->search({ from_mid=>\@mids })->hash_on('from_mid'); # XXX this returns an array of hashes { mid1 => [ {}, {}...], ... }
     my %rels_to = DB->BaliMasterRel->search({ to_mid=>\@mids })->hash_on('to_mid');
+    # gather all text
+    my @all_rel_mids = ( (map{$$_{to_mid}} _array(values %rels)), (map{$$_{from_mid}} _array(values %rels_to)) );
+    my %txts = map { 
+        my $txt = join ';', grep { length } values %$_;
+        $$_{mid} => $txt;
+    } mdb->master->find({ mid=>mdb->in(_unique(@all_rel_mids)) })->fields({ yaml=>0, _id=>0 })->all;
+    
     # my %rels; map { push @{ $rels{$_->{from_mid}} },$_ } mdb->master_rel->find({ from_mid=>mdb->in(@mids) })->all;
     for my $mid_or_doc ( _unique( @mids_or_docs  ) ) {
         my $is_doc = ref $mid_or_doc eq 'HASH';
@@ -1813,14 +1820,22 @@ sub update_rels {
         } grep { exists $parent_mapping{$_->{rel_field}} }
         _array( $rels_to{$mid} );
         
+        
         # resolve from_mids
         map { 
            $d{ $_->{rel_field} }{ $_->{to_mid} } = ();
         } _array( $rels{$mid} );
         
-        # now uniquify
+        # now uniquify mids in each rel array
         %d = map { $_ => [ sort keys $d{$_} ] } keys %d; 
-
+        
+        # and put aggregate text in it, for searching purposes
+        my @all_rel_mids = ( 
+            (map { $$_{to_mid} } _array($rels{$mid}) ), 
+            (map { $$_{from_mid} } _array($rels_to{$mid}) )
+        );
+        $d{_txt} = join ';', grep { defined } @txts{ @all_rel_mids };
+        
         # single value, no array: %d = map { my @to_mids = keys $d{$_}; $_ => @to_mids>1 ? [ sort @to_mids ] : @to_mids } keys %d; 
         if( $is_doc ) {
             $mid_or_doc->{$_} = $d{$_} for keys %d;  # merge into doc

@@ -562,6 +562,11 @@ sub repository_repl {
     mdb->repo->drop; # in case it exists
 }
 
+# add _txt to topic collection
+sub topic_rels {
+    Baseliner->model('Topic')->update_rels( map{ $$_{mid} } mdb->topic->find->fields({mid=>1})->all );
+}
+
 ####################################
 #
 # Integrity fixes
