@@ -2876,10 +2876,11 @@ sub get_topics_mdb{
         $self->build_project_security( $where, $username );
 
         my $rs_topics = mdb->topic->find($where);
+        my $cnt = $rs_topics->count;
         $rs_topics->skip($start) if ($start);
         $rs_topics->limit($limit) if ($limit);
 
-        return wantarray ? $rs_topics->all : \$rs_topics->all;
+        return ($cnt , $rs_topics->all);
     }
     catch{
         _throw _loc( 'Error getting Topics ( %1 )', shift() );
