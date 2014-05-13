@@ -14,6 +14,8 @@ register 'config.search' => {
         { id=>'lucy_boolop', text=>'AND or OR default', default=>'OR' },
         { id=>'max_results', text=>'Number of results to return to user', default=>10_000 },
         { id=>'max_results_provider', text=>'Limit sent to provider', default=>10_000 },
+        { id=>'max_excerpt_size', text=>'Max length of excerpt string', default=>120 },
+        { id=>'max_excerpt_tokens', text=>'Max number of highlighted tokens excerpts', default=>5 },
     ]
 };
 
@@ -61,7 +63,7 @@ sub query_raw : Local {
     my @results  = $provider->search_query( username=>$c->username, query=>$query, language=>$c->languages->[0], limit=>$config->{max_results_provider} ); 
      
     $c->stash->{json} = {
-        results  => $self->order_matches($query,@results),
+        results  => $self->order_matches($query,$config,@results),
         type     => $provider->search_provider_type,
         name     => $provider->search_provider_name,
         provider => $provider
@@ -76,25 +78,33 @@ sub clean_match {
 }
 
 sub order_matches {
-    my ($self,$query,@results) = @_;
+    my ($self,$query,$config,@results) = @_;
     my $docs = [];
+    my $max_excerpt_size = $config->{max_excerpt_size} // 120;
+    my $max_excerpt_tokens = $config->{max_excerpt_tokens} // 5;
     for my $doc ( @results ) {
         my @found;
         my $idexact  = $$doc{mid} eq $query;
         my $idmatch  = length join '',( "$$doc{mid}" =~ /($query)/gsi );
         my $tmatch  = length join '', ( "$$doc{title}" =~ /($query)/gsi );
         for my $doc_txt ( $$doc{info}, $$doc{text} ) {
-            while ( $doc_txt =~ /(?<bef>.{0,40})?(?<mat>$query)(?<aft>.{0,40})?/gsi ) {
-                my ( $bef, $mat, $aft ) = ( $+{bef}, $+{mat}, $+{aft} );
-                $self->clean_match($bef);
-                my $t = sprintf '%s<strong>%s</strong>%s', $bef, $mat, $aft;
+            my $kfrag = 0;
+            while ( $doc_txt =~ /(?<bef>.{0,20})?(?<mat>$query)(?<aft>.{0,20})?/gsi ) {
+                my $t = '';
+                if( $kfrag <= $max_excerpt_tokens ) {   # otherwise excerpt too long
+                    my ( $bef, $mat, $aft ) = ( $+{bef}, $+{mat}, $+{aft} );
+                    $self->clean_match($bef);
+                    $t = sprintf '%s<strong>%s</strong>%s', $bef, $mat, $aft;
+                }
                 push @found, $t;
+                $kfrag++;
             }
         }
-        $$doc{excerpt} = !@found ? '' : join( "...", @found ) . '...';
+        $$doc{excerpt} = !@found ? '' : join( "...", grep { length } @found ) . '...';
+        $$doc{text} = substr $$doc{text},0,$max_excerpt_size; # if no excerpt, search_results.js uses text, so we better trim
         $$doc{matches} = $idexact*1000000 + ($idmatch>0?(10**(1/$idmatch)*10000):0) + ($tmatch>0?(10**(1/$tmatch)*1000):0) + scalar @found;
         $$doc{title} = "$$doc{title}";
-        push $docs, $doc;
+        push $docs, $doc;  # we don't filter results
     }
     #my $res = { results => , query => $query, matches => @$docs };
     [ sort { 

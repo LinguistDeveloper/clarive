@@ -1395,7 +1395,7 @@ sub search_query {
     push @results, map {
         delete $$_{_id};
         $_;
-    } mdb->master_doc->find($wh)->all;
+    } mdb->master_doc->find($wh)->limit(1000)->all;
     
     my %res_unique = map { $$_{mid} => $_ } @results;
     
