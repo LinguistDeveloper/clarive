@@ -248,16 +248,20 @@ sub related : Local {
     }
 
     $where = $c->model('Topic')->apply_filter( $username, $where, %filter );
-    _log _dump $where;
+    #_log _dump $where;
+
+    my ($cnt, @result_topics) = $c->model('Topic')->get_topics_mdb( $where, $username, $start, $limit );
 
     my @topics = map {
         $_->{name} = _loc($_->{category}->{name}) . ' #' . $_->{mid};
         $_->{color} = $_->{category}{color};
         $_->{short_name} = $c->model('Topic')->get_short_name( name => $_->{category}->{name} ) . ' #' . $_->{mid};
         $_
-    } $c->model('Topic')->get_topics_mdb( $where, $username, $start, $limit );
+    }  @result_topics;
 
-    $c->stash->{json} = { totalCount => scalar @topics, data => \@topics };
+    
+
+    $c->stash->{json} = { totalCount => $cnt, data => \@topics };
     $c->forward('View::JSON');
 }
 
@@ -664,8 +668,8 @@ sub view : Local {
             $c->stash->{category_meta} = $category->forms;
             
             my @category = DB->BaliTopicCategories->search( 
-                {id_category => $id_category, 'statuses.status.type' => 'I'} , 
-                { join => {'statuses' => 'status'} , +select =>[ 'forms','statuses.status.id'], as =>['forms','id_status'] } )->hashref->first;
+                {id_category => $id_category, 'status.type' => 'I'} , 
+                { join => {'statuses' => 'status'} , +select =>[ 'forms','status.id'], as =>['forms','id_status'] } )->hashref->first;
             
             my @statuses = sort { ($a->{seq}//0) <=> ($b->{seq}//0) } grep { $_->{id_status} ne $category[0]->{id_status}} $c->model('Topic')->next_status_for_user(
                 id_category    => $id_category,

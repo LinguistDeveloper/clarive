@@ -94,7 +94,7 @@ sub run_start {
     
     TOP:
     
-    say sprintf "Starting web server: http://%s:%s", $self->host // '*', $self->port;
+    say 'Starting web server: ' . ( $self->listen // sprintf "http://%s:%s", $self->host // '*', $self->port);
     
     $runner->{argv} = [];
     my $proc = sub { 
@@ -227,7 +227,7 @@ Common options:
     --env <environment>
     --host <host>           hostname or ip address
     --port <portnum>        web port
-    --listen                full protocol+host+port, ie: http://*:8080
+    --listen                host:port
     --daemon                fork and start server
     --pid_file <file>       where to save the pid
     --log_file <file>       where to write the log to
