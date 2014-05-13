@@ -62,6 +62,7 @@ if( $reversed ) {
 ORIG: for my $msg ( @origs ) {
     my $sha = $omap->{$msg};
     my $sha7 = substr( $sha, 0, 7);
+    my $msg_pretty = `git log --pretty="%cn: %s [%cr, %h]" -1 $sha7`;
     
     if( $until && !$reversed ) {
         say "UNTIL match: $until";
@@ -71,7 +72,7 @@ ORIG: for my $msg ( @origs ) {
     my $ask_maybe = sub{
         my ($status,$force) = @_; 
         my $default = { '+++'=>'y', '---'=>'y', '==='=>'n' }->{ $status };
-        my $s = $color_status{$status} . "$status $msg ($sha7)" . RESET;
+        my $s = $color_status{$status} . "$status $msg_pretty" . RESET;
         $opts{'-y'} && !$force 
             ? say $s
             : ask( 
@@ -130,7 +131,7 @@ CHOSEN: for my $msg ( @chosen ) {
             system 'git', 'cherry-pick', $sha;
             if( $? ) {
                 system 'git', 'status';
-                ask "===> ERROR during cherry-pick. y: Resolve and go to next commit / a: try to cherry-pick again\n", 
+                ask "===> ERROR during cherry-pick. y: Mark as resolved and go to next commit / a: try to cherry-pick again\n", 
                     y =>sub { next CHOSEN },
                     a =>sub { goto AGAIN },
                     q => sub { die "Aborted\n" };
