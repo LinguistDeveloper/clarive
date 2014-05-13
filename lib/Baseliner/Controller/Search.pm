@@ -9,7 +9,7 @@ BEGIN {  extends 'Catalyst::Controller' }
 
 register 'config.search' => {
     metadata => [
-        { id=>'block_lucy', text=>'Block the use of Lucy in searches', default=>0 },
+        { id=>'block_lucy', text=>'Block the use of Lucy in searches', default=>1 },
         { id=>'provider_filter', text=>'Regex to filter provider packages', default=>'' },
         { id=>'lucy_boolop', text=>'AND or OR default', default=>'OR' },
         { id=>'max_results', text=>'Number of results to return to user', default=>10_000 },
@@ -46,25 +46,58 @@ sub query : Local {
 
     $lucy_here 
         ? $c->forward('/search/query_lucy')
-        : $c->forward('/search/query_sql');
+        : $c->forward('/search/query_raw');
     my $inter = sprintf( "%.02f", Time::HiRes::tv_interval( $t0 ) );
     $c->stash->{json}->{elapsed} = $inter;
     $c->forward('View::JSON');
 };
 
-sub query_sql : Local {
+sub query_raw : Local {
     my ( $self, $c ) = @_;
     my $p        = $c->request->parameters;
+    my $config   = $c->stash->{search_config};
     my $provider = $p->{provider} or _throw _loc('Missing provider');
     my $query    = $p->{query} // _throw _loc('Missing query');
-    my @results  = $provider->search_query( query => $query, c => $c );
+    my @results  = $provider->search_query( username=>$c->username, query=>$query, language=>$c->languages->[0], limit=>$config->{max_results_provider} ); 
+     
     $c->stash->{json} = {
-        results  => \@results,
+        results  => $self->order_matches($query,@results),
         type     => $provider->search_provider_type,
         name     => $provider->search_provider_name,
         provider => $provider
     };
 } 
+
+sub clean_match {
+    my $self = shift;
+    #$_[0] =~ s/^\B+\b(.*)$/X=$1=/; 
+    #$_[0] =~ s/^(.*)\s+\S+$/$1/g; 
+    $_[0] =~ s/^\S+\s+(.*)$/$1/g; 
+}
+
+sub order_matches {
+    my ($self,$query,@results) = @_;
+    my $docs = [];
+    for my $doc ( @results ) {
+        my @found;
+        my $tmatch  = ( "$$doc{id},$$doc{mid},$$doc{title}" =~ /($query)/gsi );
+        for my $doc_txt ( $$doc{info}, $$doc{text} ) {
+            while ( $doc_txt =~ /(?<bef>.{0,40})?(?<mat>$query)(?<aft>.{0,40})?/gsi ) {
+                my ( $bef, $mat, $aft ) = ( $+{bef}, $+{mat}, $+{aft} );
+                $self->clean_match($bef);
+                my $t = sprintf '%s<strong>%s</strong>%s', $bef, $mat, $aft;
+                push @found, $t;
+            }
+        }
+        if ( $tmatch + @found ) {
+            $$doc{excerpt} = !@found ? '' : join( "...", @found ) . '...';
+            $$doc{matches} = $tmatch * 20 + scalar @found;
+            push $docs, $doc;
+        }
+    }
+    #my $res = { results => , query => $query, matches => @$docs };
+    [ sort { $$b{matches} <=> $$a{matches} } @$docs ];
+}
 
 =head2 query_lucy
 
@@ -150,3 +183,4 @@ sub query_lucy : Local {
 }
 
 1;
+
