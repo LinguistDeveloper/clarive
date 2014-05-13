@@ -640,6 +640,7 @@ sub list_lastjobs: Private{
 
     my $numrow = 0;
     my @lastjobs;
+    my $default_config;
     
     #######################################################################################################
     #CONFIGURATION DASHLET
