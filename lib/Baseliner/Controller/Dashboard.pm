@@ -414,7 +414,7 @@ sub get_config : Local {
     my $p = $c->req->params;
     my @rows = ();
     my @html_url = split(/#/, $p->{id});
-
+    
     if($p->{config}){
         my $default_config = $c->model('Registry')->get( $p->{config} )->metadata;
         my %dashlet_config;
@@ -423,7 +423,7 @@ sub get_config : Local {
             $dashlet_config{$field->{id}} = $field->{default};
             $key_description{$field->{id}} = $field->{label};
         }		
-        my $dashboard = mdb->dashboard->find({_id => mdb->oid($p->{dashboard_id})});
+        my $dashboard = mdb->dashboard->find({_id => mdb->oid($p->{dashboard_id})})->next;
         my @config_dashlet = grep {$_->{html}=~ $html_url[0]} _array $dashboard->{dashlets};
         
 
@@ -461,10 +461,11 @@ sub set_config : Local {
     my $p = $c->req->params;
     
     my $dashboard_id = mdb->oid($p->{id_dashboard});
-    my $dashboard_rs = mdb->dashboard->find({_id => $dashboard_id});
+    my $dashboard_rs = mdb->dashboard->find({_id => $dashboard_id})->next;
     my $dashlet = $p->{dashlet};
 
     my @dashlet = grep {$_->{html}=~ $dashlet} _array $dashboard_rs->{dashlets};
+   
     $dashlet[0]->{params}->{$p->{id}} = $p->{value};
     
     my @dashlets = grep {$_->{html}!~ $dashlet} _array $dashboard_rs->{dashlets};
@@ -485,12 +486,11 @@ sub set_config : Local {
 
 sub get_config_dashlet{
     my ($parent_method, $dashboard_id, $params) = @_;
-    
     my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.baselines');
 
     if($dashboard_id){
         $default_config->{dashboard_id} = $dashboard_id;
-        my $dashboard_rs = mdb->dashboard->find({_id => mdb->oid($dashboard_id)});
+        my $dashboard_rs = mdb->dashboard->find({_id => mdb->oid($dashboard_id)})->next;
         my @config_dashlet = grep {$_->{url}=~ $parent_method} _array $dashboard_rs->{dashlets};
         
         if($config_dashlet[0]->{params}){
