@@ -64,10 +64,10 @@ sub monitor {
         runner       => 'runner',
         id_rule      => 'id_rule',
         contents     => 'list_contents',
-        changesets   => 'list_changesets',
-        releases     => 'list_releases',
-        applications => 'list_apps',
-        natures      => 'list_natures'
+        changesets   => 'job_contents.list_changesets',
+        releases     => 'job_contents.list_releases',
+        applications => 'job_contents.list_apps',
+        natures      => 'job_contents.list_natures'
     };
     my @order_by;
     if ( length($groupby) ) {
