@@ -22,6 +22,41 @@ register 'event.job.start_step' => { name=>'Job step start', notify=>{ scope=>['
 register 'event.job.end' => { name=>'Job end, after POST', notify=>{ scope=>['project','bl'] } };
 register 'event.job.end_step' => { name=>'Job step end', notify=>{ scope=>['project','bl'] } };
 
+our $group_keys = {
+    id           => 'jobid',
+    mid          => 'mid',
+    name         => 'name',
+    bl           => 'bl',
+    bl_text      => 'bl',
+    ts           => 'ts',
+    starttime    => 'starttime',
+    schedtime    => 'schedtime',
+    maxstarttime => 'maxstarttime',
+    endtime      => 'endtime',
+    comments     => 'comments',
+    username     => 'username',
+    rollback     => 'rollback',
+    has_errors   => 'has_errors',
+    has_warnings => 'has_warnings',
+    key          => 'job_key',
+    step_code    => 'step',
+    exec         => 'exec',
+    pid          => 'pid',
+    owner        => 'owner',
+    host         => 'host',
+    status_code  => 'status',
+    status       => 'status',
+    type_raw     => 'job_type',
+    type         => 'job_type',
+    runner       => 'runner',
+    id_rule      => 'id_rule',
+    contents     => 'list_contents',
+    changesets   => 'job_contents.list_changesets',
+    releases     => 'job_contents.list_releases',
+    applications => 'job_contents.list_apps',
+    natures      => 'job_contents.list_natures'
+};
+
 sub monitor {
     my ($self,$p) = @_;
     my $perm = Baseliner->model('Permissions');
@@ -35,40 +70,6 @@ sub monitor {
     $sort ||= 'mid';
     $dir = !$dir ? -1 : lc $dir eq 'desc' ? -1 : 1; 
 
-    my $group_keys = {
-        id           => 'jobid',
-        mid          => 'mid',
-        name         => 'name',
-        bl           => 'bl',
-        bl_text      => 'bl',
-        ts           => 'ts',
-        starttime    => 'starttime',
-        schedtime    => 'schedtime',
-        maxstarttime => 'maxstarttime',
-        endtime      => 'endtime',
-        comments     => 'comments',
-        username     => 'username',
-        rollback     => 'rollback',
-        has_errors   => 'has_errors',
-        has_warnings => 'has_warnings',
-        key          => 'job_key',
-        step_code    => 'step',
-        exec         => 'exec',
-        pid          => 'pid',
-        owner        => 'owner',
-        host         => 'host',
-        status_code  => 'status',
-        status       => 'status',
-        type_raw     => 'job_type',
-        type         => 'job_type',
-        runner       => 'runner',
-        id_rule      => 'id_rule',
-        contents     => 'list_contents',
-        changesets   => 'job_contents.list_changesets',
-        releases     => 'job_contents.list_releases',
-        applications => 'job_contents.list_apps',
-        natures      => 'job_contents.list_natures'
-    };
     my @order_by;
     if ( length($groupby) ) {
         $groupdir = $groupdir eq 'ASC' ? 1 : -1;
