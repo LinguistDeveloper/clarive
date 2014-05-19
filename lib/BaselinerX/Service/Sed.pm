@@ -48,6 +48,9 @@ sub run {
     my $path = $config->{path} 
         or _fail _loc('Sed: Missing or invalid path in configuration');
 
+    my $items_mode = $config->{items_mode} // 'all_files';
+    my @items = _array( $stash->{nature_item_paths} );
+
     $log->info( _loc('Sed: starting: %1', $path ) );
     
     -e $path or _fail _loc "Sed: Invalid path '%1'", $path;
@@ -72,17 +75,31 @@ sub run {
 
         # find matching sed
         push @log, "Checking $f...";
-        for my $in ( _array( $sed->{includes} ) ) {
-            my $cnt = 0;
-            if( $f !~ /$in/ ) {
-                push( @log, "Not included $f... in $in");
-            } else {
-                $cnt++;
+
+        my $cnt = 0;
+        if ( $items_mode eq 'only_job_items') {
+            for my $it ( @items ) {
+                if ( $f !~ /$it/ ) {
+                    $cnt = $cnt + 1;
+                }
             }
             if ( $cnt == 0 ) {
                 return;
             }
         }
+
+        $cnt = 0;
+        for my $in ( _array( $sed->{includes} ) ) {
+            if( $f !~ /$in/ ) {
+                push( @log, "Not included $f... in $in");
+            } else {
+                $cnt++;
+            }
+        }
+        if ( $cnt == 0 ) {
+            return;
+        }
+
         for my $ex ( _array( $sed->{excludes} ) ) {
             if(  $f =~ /$ex/ ) {
                 push( @log, "Excluded $f...");
