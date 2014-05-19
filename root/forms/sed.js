@@ -14,19 +14,6 @@
         item_mode,
         new Baseliner.MonoTextArea({ fieldLabel: _('Output Dir'), height: 40, name: 'output_dir', value: params.data.output_dir }),
         { xtype:'textfield', name:'suffix', value: data.suffix || '', fieldLabel: _('Suffix') },
-        new Baseliner.GridEditor({
-            fieldLabel: _('Tablas'),
-            height: 300,
-            name: 'tablas',
-            records: data.tablas,
-            preventMark: false,
-            columns: [
-                Ext.apply({ dataIndex:'maq', header: 'M&aacute;quina' }, ta() ),
-                Ext.apply({ dataIndex:'port', header: 'Puerto (default: 1521)' }, ta() )
-            ],
-            viewConfig: { forceFit: true }
-        }),
-
         new Baseliner.ArrayGrid({ 
             fieldLabel:_('Patterns'), 
             name: 'patterns', 
