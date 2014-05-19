@@ -84,9 +84,9 @@ sub run {
             } else {
                 push @log, "$f included in job_items";
             }
-        }
+        };
 
-        if ( _array( $sed->{includes} ) {
+        if ( _array( $sed->{includes} ) ) {
             $cnt = 0;
             for my $in ( _array( $sed->{includes} ) ) {
                 if( $f !~ /$in/ ) {
