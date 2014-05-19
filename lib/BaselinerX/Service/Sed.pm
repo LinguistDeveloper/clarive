@@ -78,14 +78,11 @@ sub run {
 
         my $cnt = 0;
         if ( $items_mode eq 'only_job_items') {
-            $log->debug(_loc("Checking if %1 is in the job items list", $f), join("", @items));
-            for my $it ( @items ) {
-                if ( $f =~ /$it/ ) {
-                    $cnt = $cnt + 1;
-                }
-            }
+            my $cnt = grep { $f =~ /$_/ } @items;
             if ( $cnt == 0 ) {
                 return;
+            } else {
+                push @log, "$f included in job_items";
             }
         }
 
