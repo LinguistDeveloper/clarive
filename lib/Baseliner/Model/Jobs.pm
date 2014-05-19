@@ -232,6 +232,7 @@ sub monitor {
                                : $sdt > $ahora ? [ 0,  _loc('Upcoming') ] : [ 1,  _loc('Today') ]
           :                      [ 0,  _loc('Upcoming') ];
         $grouping = $day->[0];
+        my ($last_exec) = sort { $b cmp $a } keys %{$job->{milestones}};
 
         push @rows, {
             id           => $job->{jobid},
@@ -272,6 +273,11 @@ sub monitor {
             releases     => $job_contents->{list_releases} || [],
             applications => $job_contents->{list_apps} || [],
             natures      => $job_contents->{list_natures} || [],
+            pre_start      => $last_exec?$job->{milestones}->{$last_exec}->{PRE}->{start} || " ":" ",
+            pre_end         => $last_exec?$job->{milestones}->{$last_exec}->{PRE}->{end}|| " ":" ",
+            run_start      => $last_exec?$job->{milestones}->{$last_exec}->{RUN}->{start}|| " ":" ",
+            run_end         => $last_exec?$job->{milestones}->{$last_exec}->{RUN}->{end}|| " ":" ",
+
             #subapps      => \@subapps,   # maybe use _path_xs from Utils.pm?
           }; # if ( ( $cnt++ >= $start ) && ( $limit ? scalar @rows < $limit : 1 ) );
     }

@@ -113,6 +113,10 @@
             {  name: 'bl_text' },
             {  name: 'job_key' },
             {  name: 'starttime' },
+            {  name: 'pre_start' },
+            {  name: 'pre_end' },
+            {  name: 'run_start' },
+            {  name: 'run_end' },
             {  name: 'schedtime' },
             {  name: 'last_log' },
             {  name: 'contents' },
@@ -1001,7 +1005,12 @@
                 { header: _('Runner'), width: 80, dataIndex: 'runner', sortable: true, hidden: true },	
                 { header: _('Rule'), width: 80, dataIndex: 'rule_name', sortable: false, hidden: true },	
                 { header: _('Grouping'), width: 120, dataIndex: 'grouping', hidden: true },	
-                { header: _('Comments'), hidden: true, width: 150, dataIndex: 'comments', sortable: true }
+                { header: _('Comments'), hidden: true, width: 150, dataIndex: 'comments', sortable: true },
+                { header: _('PRE Start Date'), width: 130, dataIndex: 'pre_start', sortable: true , hidden: true }, 
+                { header: _('PRE End Date'), width: 130, dataIndex: 'pre_end', sortable: true , hidden: true }, 
+                { header: _('RUN Start Date'), width: 130, dataIndex: 'run_start', sortable: true , hidden: true }, 
+                { header: _('RUN End Date'), width: 130, dataIndex: 'run_end', sortable: true , hidden: true } 
+
             ],
         bbar: paging,        
         tbar: is_portlet ? [] : [ 
