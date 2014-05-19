@@ -86,18 +86,20 @@ sub run {
             }
         }
 
-        $cnt = 0;
-        for my $in ( _array( $sed->{includes} ) ) {
-            if( $f !~ /$in/ ) {
-                push( @log, "Not included $f... in $in");
-            } else {
-                $cnt++;
+        if ( _array( $sed->{includes} ) {
+            $cnt = 0;
+            for my $in ( _array( $sed->{includes} ) ) {
+                if( $f !~ /$in/ ) {
+                    push( @log, "Not included $f... in $in");
+                } else {
+                    $cnt++;
+                }
+            }
+            if ( $cnt == 0 ) {
+                return;
             }
         }
-        if ( $cnt == 0 ) {
-            return;
-        }
-
+        
         for my $ex ( _array( $sed->{excludes} ) ) {
             if(  $f =~ /$ex/ ) {
                 push( @log, "Excluded $f...");
