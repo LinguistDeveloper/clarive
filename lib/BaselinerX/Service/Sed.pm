@@ -78,7 +78,7 @@ sub run {
 
         my $cnt = 0;
         if ( $items_mode eq 'only_job_items') {
-            $log->debug(_("Checking if %1 is in the job items list", $f), join "", @items);
+            $log->debug(_loc("Checking if %1 is in the job items list", $f), join("", @items));
             for my $it ( @items ) {
                 if ( $f =~ /$it/ ) {
                     $cnt = $cnt + 1;
