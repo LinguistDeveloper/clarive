@@ -325,6 +325,7 @@ sub run_ship {
             if ( !$recursive ) {
                 @locals = grep { -f } glob $local_path;
             } else {
+                use File::Find qw(finddepth);
                 my @files;
                 finddepth(
                     sub {
