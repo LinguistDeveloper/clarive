@@ -98,8 +98,8 @@ sub run {
             if ( $cnt == 0 ) {
                 return;
             }
-        }
-        
+        };
+
         for my $ex ( _array( $sed->{excludes} ) ) {
             if(  $f =~ /$ex/ ) {
                 push( @log, "Excluded $f...");
