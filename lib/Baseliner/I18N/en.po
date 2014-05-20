@@ -1,8 +1,9 @@
-msgid ""
-msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8    \n"
 "Content-Transfer-Encoding: 8bit\n"
+
+msgid ""
+msgstr ""
 
 msgid "class_date_format"
 msgstr "%m/%d/%Y"
@@ -10,11 +11,9 @@ msgstr "%m/%d/%Y"
 msgid "js_date_format"
 msgstr "m/d/Y"
 
-# topic form keys for better is_dirty messages
 msgid "status_new"
 msgstr "Status"
 
-# Job Status Codes
 msgid "IN EDIT"
 msgstr "In Edit"
 
@@ -171,9 +170,6 @@ msgstr "Critical"
 msgid "Común"
 msgstr "Common"
 
-msgid "noun:Run"
-msgstr "Run"
-
 msgid "Incidencias"
 msgstr "Issues"
 
@@ -273,64 +269,76 @@ msgstr "Accept"
 msgid "Cancelar"
 msgstr "Cancel"
 
-# root/comp/revision/grid_live.mas (58)
 msgid "Pendiente de Aprobación"
 msgstr "Pending approval"
 
-# lib/Baseliner/Controller/Topic.pm (199)
 msgid "Prueba"
 msgstr "Test"
 
-# root/comp/release_form.mas (200)
 msgid "Pendiente de validar"
 msgstr "Validation pending"
 
-# root/comp/release_form.mas (386)
 msgid "Texto Libre"
 msgstr "Free Text"
 
-# root/comp/project_grid.js (132)
 msgid "todos"
 msgstr "all"
 
-# root/comp/project_grid.js (215)
 msgid "Naturaleza"
 msgstr "Nature"
 
-# root/reports/listado_jobs.js (51)
 msgid "Sistemas"
 msgstr "Systems"
 
-# root/reports/listado_jobs.js (198)
 msgid "Fecha inicio Desde"
 msgstr "Start date from"
 
-# root/reports/listado_jobs.js (200)
 msgid "Fecha inicio Hasta"
 msgstr "Start date to"
 
-# root/reports/listado_jobs.js (206)
 msgid "Fecha fin Desde"
 msgstr "End date from"
 
-# root/reports/listado_jobs.js (208)
 msgid "Fecha fin Hasta"
 msgstr "End date to"
 
-# lib/Baseliner/Controller/Notification.pm (135)
 msgid "Se ha producido un error"
 msgstr "There was an error"
 
-# lib/Baseliner/Controller/Rule.pm (42)
 msgid "Envío de Notificación por Email"
 msgstr "Sending email notification"
 
-# root/comp/job_new_comp.js (389)
 msgid "Pase fuera de ventana. Seleccione 'Ventana personalizada' si quiere un pase fuera de las ventanas permitidas"
 msgstr "Job out of window. Select 'Custom window' if you want a job out of the allowed windows"
 
-# root/comp/release_form.mas (281)
 msgid "Se filtraran los paquetes por este campo"
 msgstr "The packages are going to be filtered by this field"
+
+msgid "Pase fuera de ventana. Seleccione Ventana personalizada si quiere un pase fuera de las ventanas permitidas"
+msgstr "Job out of window. Select Custom window if you want a job out of the allowed windows"
+
+msgid "Franja horaria"
+msgstr "Times"
+
+msgid "Hora de pase Caducada"
+msgstr "Job time expires"
+
+msgid "Ayuda"
+msgstr "Help"
+
+msgid "Normal"
+msgstr "Normal"
+
+msgid "Previsualizar"
+msgstr "Preview"
+
+msgid "Previsualizar Calendario"
+msgstr "Calendar Preview"
+
+msgid "Elementos <%$namejob%>"
+msgstr "Items <%$namejob%>"
+
+msgid "No hay aprobaciones programadas para este pase."
+msgstr "No approvals scheduled for this job."
 
 ### EOF - do not write anything bellow this
