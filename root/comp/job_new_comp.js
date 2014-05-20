@@ -386,7 +386,7 @@
         var c = to_hour( _range.end_time );
         if( a <= b && b <= c ) return true;
         field_spinner.markInvalid( _('Time off range %1', range_str ) );
-        Ext.form.VTypes['hourText'] = _('Pase fuera de ventana. Seleccione "Ventana personalizada" si quiere un pase fuera de las ventanas permitidas');
+        Ext.form.VTypes['hourText'] = _("Pase fuera de ventana. Seleccione 'Ventana personalizada' si quiere un pase fuera de las ventanas permitidas");
         return false;
         };
 

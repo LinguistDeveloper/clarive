@@ -242,3 +242,95 @@ msgstr "Organic"
 
 msgid "Topicos"
 msgstr "Topics"
+
+msgid "Fecha PaP Desde"
+msgstr "Date PaP From"
+
+msgid "Fecha PaP Hasta"
+msgstr "Date PaP Until"
+
+msgid "Fecha UAT Desde"
+msgstr "Date UAT From"
+
+msgid "Fecha UAT Hasta"
+msgstr "Date UAT Until"
+
+msgid "Tablas"
+msgstr "Tables"
+
+msgid "Area"
+msgstr "Area"
+
+msgid "Area solicitante"
+msgstr "Requesting area"
+
+msgid "Tipos"
+msgstr "Types"
+
+msgid "Aceptar"
+msgstr "Accept"
+
+msgid "Cancelar"
+msgstr "Cancel"
+
+# root/comp/revision/grid_live.mas (58)
+msgid "Pendiente de Aprobación"
+msgstr "Pending approval"
+
+# lib/Baseliner/Controller/Topic.pm (199)
+msgid "Prueba"
+msgstr "Test"
+
+# root/comp/release_form.mas (200)
+msgid "Pendiente de validar"
+msgstr "Validation pending"
+
+# root/comp/release_form.mas (386)
+msgid "Texto Libre"
+msgstr "Free Text"
+
+# root/comp/project_grid.js (132)
+msgid "todos"
+msgstr "all"
+
+# root/comp/project_grid.js (215)
+msgid "Naturaleza"
+msgstr "Nature"
+
+# root/reports/listado_jobs.js (51)
+msgid "Sistemas"
+msgstr "Systems"
+
+# root/reports/listado_jobs.js (198)
+msgid "Fecha inicio Desde"
+msgstr "Start date from"
+
+# root/reports/listado_jobs.js (200)
+msgid "Fecha inicio Hasta"
+msgstr "Start date to"
+
+# root/reports/listado_jobs.js (206)
+msgid "Fecha fin Desde"
+msgstr "End date from"
+
+# root/reports/listado_jobs.js (208)
+msgid "Fecha fin Hasta"
+msgstr "End date to"
+
+# lib/Baseliner/Controller/Notification.pm (135)
+msgid "Se ha producido un error"
+msgstr "There was an error"
+
+# lib/Baseliner/Controller/Rule.pm (42)
+msgid "Envío de Notificación por Email"
+msgstr "Sending email notification"
+
+# root/comp/job_new_comp.js (389)
+msgid "Pase fuera de ventana. Seleccione 'Ventana personalizada' si quiere un pase fuera de las ventanas permitidas"
+msgstr "Job out of window. Select 'Custom window' if you want a job out of the allowed windows"
+
+# root/comp/release_form.mas (281)
+msgid "Se filtraran los paquetes por este campo"
+msgstr "The packages are going to be filtered by this field"
+
+### EOF - do not write anything bellow this

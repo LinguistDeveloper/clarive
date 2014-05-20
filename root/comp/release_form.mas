@@ -278,7 +278,7 @@ Ext.onReady(function(){
     var rfc_field = new Ext.form.TextField( { 
         fieldLabel: _('RFC'), 
         allowBlank: false,
-        qtip: _('Se filtrarán los paquetes por este campo'),
+        qtip: _("Se filtraran los paquetes por este campo"),
         readOnly: updating,
         disabledClass: 'rfc_disabled',
         validator: rfc_validator,

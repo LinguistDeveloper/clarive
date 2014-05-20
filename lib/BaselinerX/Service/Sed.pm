@@ -152,7 +152,7 @@ sub process_file {
     # save date
     my @stat = stat $file;
         # slurp in
-    open my $fin, '<', $file or _throw _loc('Sed: failed to open file "%1": %2', $file, $!);
+    open my $fin, '<', $file or _throw _loc("Sed: failed to open file '%1': %2", $file, $!);
         # process
     my $cnt = 0;
 
@@ -176,13 +176,13 @@ sub process_file {
         close $fin;
         $data = $sed_sub->($data);
         # slurp out 
-        open my $fout, '>', "$output_file" or _fail _loc('Sed: failed to write to file "%1": %2', "$output_file", $!);;
+        open my $fout, '>', "$output_file" or _fail _loc("Sed: failed to write to file '%1': %2", "$output_file", $!);;
         print $fout $data;
         close $fout;
     } 
     else {
         my $tmpfile = file "$output_file" . '-' . $$ . '.bak';
-        open my $fout, '>', $tmpfile or _fail _loc('Sed: failed to write to file "%1": %2', $tmpfile, $!);;
+        open my $fout, '>', $tmpfile or _fail _loc("Sed: failed to write to file '%1': %2", $tmpfile, $!);;
         while( <$fin> ) {
             print $fout $sed_sub->($_)
         }
