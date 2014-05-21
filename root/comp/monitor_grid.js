@@ -753,8 +753,9 @@
                     function(btn){ 
                         if(btn=='yes') {
                             Baseliner.ci_call( sel.data.mid, 'resume',  {}, function(res){
-                                if( res.success ) {
+                                if( !res.msg ) {
                                     grid.getStore().reload();
+                                    Baseliner.message( _('Success'), res.data );
                                 } else {
                                     Ext.Msg.alert( _('Error'), _('Could not resume the job: %1', res.msg ) );
                                 }
