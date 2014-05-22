@@ -801,7 +801,7 @@ register 'service.echo' => {
     handler=>sub{
         my ($self, $c, $data ) = @_;
         $data->{hello} = $data->{msg} || 'world';
-        _log _loc "Loggin echo: %1", $data->{hello};
+        _info (_loc "%1", $data->{hello});
         $data;
     }
 };
@@ -865,7 +865,7 @@ register 'statement.nature.block' => {
                     %s
                 }
             }
-        }, $n->{nature}, $self->dsl_build( $n->{children}, %p ) );
+        }, [ _array($n->{nature}) ]->[0], $self->dsl_build( $n->{children}, %p ) );
     },
 };
 
@@ -1068,6 +1068,7 @@ register 'statement.if.rollback' => {
 register 'statement.include' => {
     text => 'INCLUDE rule',
     icon => '/static/images/icons/cog.png', 
+    holds_children => 0,
     data => { id_rule=>'', },
     dsl => sub { 
         my ($self, $n , %p) = @_;
