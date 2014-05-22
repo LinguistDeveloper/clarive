@@ -192,16 +192,15 @@ sub update : Local {
         $_dashlet->{url}	=  $html_url[1];
         $_dashlet->{order}	=  ++$i;
             
-        if($p->{id} != -1){
-            my $dashboard = mdb->dashboard->find({_id => mdb->oid($p->{id})});
+        if($p->{id} ne '-1'){
+            my $dashboard = mdb->dashboard->find({_id => mdb->oid($p->{id})})->next;
             my @config_dashlet = grep {$_->{html}=~ $html_url[0]} _array $dashboard->{dashlets};
             if($config_dashlet[0]->{params}){
                 $_dashlet->{params} = $config_dashlet[0]->{params};
-            };			
+            }			
         }			
             
         push @dashlets, $_dashlet;
-        
     }
 
     given ($action) {
@@ -640,13 +639,14 @@ sub list_lastjobs: Private{
 
     my $numrow = 0;
     my @lastjobs;
+    my $default_config;
     
     #######################################################################################################
     #CONFIGURATION DASHLET
     ##########################################################################################################
     
     if($dashboard_id){
-        my $dashboard_rs = mdb->dhashboard->find({_id => mdb->oid($dashboard_id)});
+        my $dashboard_rs = mdb->dashboard->find({_id => mdb->oid($dashboard_id)});
         my @config_dashlet = grep {$_->{url}=~ 'list_lastjobs'} _array $dashboard_rs->{dashlets};
         
         if($config_dashlet[0]->{params}){

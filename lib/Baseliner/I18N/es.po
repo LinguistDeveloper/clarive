@@ -5046,4 +5046,16 @@ msgstr "El usuario %1 ha solicitado aprobación para el job %2"
 msgid "Topic %1 (%2) has been assigned to you"
 msgstr "El tópico %1 (%2) ha sido signado a ti"
 
+msgid "PRE Start Date"
+msgstr "Inicio PRE"
+
+msgid "RUN Start Date"
+msgstr "Inicio RUN"
+
+msgid "PRE End Date"
+msgstr "Fin PRE"
+
+msgid "RUN End Date"
+msgstr "End RUN"
+
 ### EOF - do not write anything bellow this

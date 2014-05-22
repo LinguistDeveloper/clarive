@@ -319,6 +319,10 @@ sub _create {
         # INIT
         $self->step('INIT');
         $self->run( same_exec => 1 );
+        if( $self->status eq 'ERROR' ) { 
+            # errors during CHECK fail back to the user
+            _fail _loc "Error during Job Init: %1", $self->last_error;
+        }
     }
     $self->step('PRE');
     $self->status('READY');
@@ -373,14 +377,16 @@ sub logger {
 
 sub resume {
     my ($self, $p ) = @_;
+    my $msg;
     if( $self->status eq 'PAUSED' ) {
         $self->logger->info( Util->_loc('Job resumed by user %1', $p->{username}) );
         $self->status( 'RUNNING' );
-        $self->save;
+        $self->save; 
+        $msg = _loc('Job resumed by user %1', $p->{username});
     } else {
         Util->_fail( Util->_loc('Job was not paused') );
     }
-    return {};
+    return $msg;
 }
 
 sub run_inproc {
@@ -1134,39 +1140,46 @@ Pause happens on the spot. The job blocks at this same call:
 sub pause {
     my ($self, %p ) = @_;
     $self->logger->warn( _loc('Job pausing...') );
-    my $saved_status = $self->status;
-    $self->status('PAUSED');
-    $self->save;
-    
-    $p{reason} ||= _loc('unspecified');
-    $self->logger->info( _loc('Paused. Reason: %1', $p{reason} ), milestone=>1, data=>$p{details} );
-    
-    my $timeout = $p{timeout} || $self->pause_timeout;
-    my $freq    = $p{frequency} || $self->pause_frequency;
-    my $t = 0;
-    $self->logger->debug( _loc('Setting pause timeout at %1 seconds', $timeout ) );
-    # select continuously
-    while( $self->load->{status} eq 'PAUSED' ) {
-        $self->logger->info( _loc('Paused. Reason: %1', $p{reason} )) if $p{verbose};
-        sleep $freq;
-        $t += $freq;
-        if( defined $timeout && $t > $timeout ) {
-            my $msg = _loc('Pause timed-out at %1 seconds', $timeout ) ;
-            $self->logger->error( $msg );
-            _fail $msg unless $p{no_fail}; 
-            last;
+    my $saved_status = $self->load->{status};
+    #check if paused job. Init or Check can't paused!
+    if ($self->step =~ /INIT|CHECK/){
+        $self->status('ERROR');
+        $self->save;
+        $self->logger->warn( _loc('Can\'t paused job on CHECK or INIT status') );
+        _fail _loc('Can\'t paused job on CHECK or INIT status');
+    }else{
+        $self->status('PAUSED');
+        $self->save;
+        $p{reason} ||= _loc('unspecified');
+        $self->logger->info( _loc('Paused. Reason: %1', $p{reason} ), milestone=>1, data=>$p{details} );
+        
+        my $timeout = $p{timeout} || $self->pause_timeout;
+        my $freq    = $p{frequency} || $self->pause_frequency;
+        my $t = 0;
+        $self->logger->debug( _loc('Setting pause timeout at %1 seconds', $timeout ) );
+        # select continuously
+        while( $self->load->{status} eq 'PAUSED' ) {
+            $self->logger->info( _loc('Paused. Reason: %1', $p{reason} )) if $p{verbose};
+            sleep $freq;
+            $t += $freq;
+            if( defined $timeout && $t > $timeout ) {
+                my $msg = _loc('Pause timed-out at %1 seconds', $timeout ) ;
+                $self->logger->error( $msg );
+                _fail $msg unless $p{no_fail}; 
+                last;
+            }
         }
-    }
-    my $last_status = $self->load->{status};
-    $self->logger->debug( _loc('Pause finished due to status %1', $last_status) );
-    if( $last_status =~ /CANCEL/ ) {
-        _fail _loc('Job cancelled while in pause');
-    }
-    elsif( $last_status =~ /ERROR/ ) {
-        _fail _loc('Job error while in pause');
-    }
-    $self->status( $saved_status );  # resume back to my last real status
-    $self->save;
+        my $last_status = $self->load->{status};
+        $self->logger->debug( _loc('Pause finished due to status %1', $last_status) );
+        if( $last_status =~ /CANCEL/ ) {
+            _fail _loc('Job cancelled while in pause');
+        }
+        elsif( $last_status =~ /ERROR/ ) {
+            _fail _loc('Job error while in pause');
+        }
+        $self->status( $saved_status );  # resume back to my last real status
+        $self->save;
+    }  
 }
 
 sub suspend {
