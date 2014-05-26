@@ -200,35 +200,34 @@ sub public_searches {
 	my @public;
     for my $folder ( @searches ){
 		my $swAllowed = 0;
-		if (! Baseliner->model('Permissions')->is_root( $p->{username} )) {
-			my %fields = map { $_->{type}=>$_->{children} } _array( $folder->selected );
-			# check categories permissions
-			my @categories;
-			my @names_categories;
-			map {
-				push @categories, $_->{data}->{id_category};
-				push @names_categories, Util->_name_to_id($_->{data}->{name_category});
-			} _array($fields{categories});
-			
-			my @user_cats = grep { exists $user_categories{ $_ } } @categories;
-			next if @categories > @user_cats;  # user cannot see category, skip this search
-			
-			my @selected =  map { $_->{id_field} } _array($fields{select});
-			
-			for my $category (@names_categories){
-				for my $field (@selected){
-					if (exists $user_categories_fields_meta->{$category}{$field}){
-						$swAllowed = 1;	
-					}else{
-						$swAllowed = 0;
-						last if ($swAllowed == 0);
-					}
-				}
-				last if ($swAllowed == 0);
-			}
-		}else{
-			$swAllowed = 1;	
-		}
+        if (! Baseliner->model('Permissions')->is_root( $c->username )) {
+            my %fields = map { $_->{type}=> $_->{children} } _array( $folder->selected );
+            # check categories permissions
+            my @categories;
+            my @names_categories;
+            map {
+                push @categories, $_->{data}->{id_category};
+                push @names_categories, Util->_name_to_id($_->{data}->{name_category});
+            } _array($fields{categories});
+                        
+            my @user_cats = grep { exists $user_categories{ $_ } } @categories;
+            next if @categories > @user_cats;  # user cannot see category, skip this search
+            
+            my @selected =  map { $_->{id_field} } _array($fields{select});
+                
+            for my $field (@selected){
+                $swAllowed = 0;
+                for my $category (@names_categories){
+                    if (exists $user_categories_fields_meta->{$category}{$field}){
+                        $swAllowed = 1; 
+                        last;
+                    }
+                }
+                last if ($swAllowed == 0);
+            }
+        }else{
+            $swAllowed = 1; 
+        }
 
 		if($swAllowed == 1){
 			push @public,{
