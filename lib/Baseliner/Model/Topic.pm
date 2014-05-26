@@ -1340,7 +1340,7 @@ sub get_revisions {
 }
 
 sub get_cis {
-    my ($self, $topic_mid, $id_field, $meta ) = @_;
+    my ($self, $topic_mid, $id_field, $meta, $data ) = @_;
     my $field_meta = [ grep { $_->{id_field} eq $id_field } _array( $meta ) ]->[0];
     my $where = { from_mid => $topic_mid };
     $where->{rel_type} = $field_meta->{rel_type} if ref $field_meta eq 'HASH' && defined $field_meta->{rel_type};
