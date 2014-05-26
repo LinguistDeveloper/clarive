@@ -86,8 +86,9 @@ sub common_log {
         $text .= "\n(continue...)";
     }
     # check for password patterns - TODO put this in config
-    $text =~ s{(\S+/)\S+@}{$1************@}g;  # XXX the asterisk is "bold" in log textile
-    
+#    $text =~ s{(\S+/)\S+@}{$1\************@}g;  # XXX the asterisk is "bold" in log textile
+    # Using config.global.password_patterns
+    $text = Baseliner::Utils::hide_passwords($text);    
     try {
         my $id = 0+ mdb->seq('job_log_id');  # numeric, good for sorting
         my $doc = { id=>$id, mid =>$mid, text=> $text, lev=>$lev, module=>$module, exec=>$job_exec, ts=>Util->_now(), t=>Time::HiRes::time() };

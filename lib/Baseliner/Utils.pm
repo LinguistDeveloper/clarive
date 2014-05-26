@@ -1977,6 +1977,16 @@ sub stat_mode {
 
 1;
 
+sub hide_passwords {
+    my ($string) = @_;
+
+    my @patterns = split "\n", Baseliner->model('ConfigStore')->get('config.global')->{password_patterns};
+    for my $line ( @patterns ) {
+        my ($pattern,$replace) = split /\|\|/,$line;
+        eval('$string'." =~ s/$pattern/$replace/gm");
+    }
+    return $string;
+}
 __END__
 
 =head1 LICENCE AND COPYRIGHT
