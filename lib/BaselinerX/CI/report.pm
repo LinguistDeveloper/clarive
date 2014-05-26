@@ -200,7 +200,7 @@ sub public_searches {
 	my @public;
     for my $folder ( @searches ){
 		my $swAllowed = 0;
-        if (! Baseliner->model('Permissions')->is_root( $c->username )) {
+        if (! Baseliner->model('Permissions')->is_root( $p->{username} )) {
             my %fields = map { $_->{type}=> $_->{children} } _array( $folder->selected );
             # check categories permissions
             my @categories;
