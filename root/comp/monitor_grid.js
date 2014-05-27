@@ -920,7 +920,7 @@
                 var css='';
                 p.body='';
                 var desc = record.data.comments;
-                if( desc != undefined ) {
+                if( (desc != undefined) && (desc != '') ) {
                     //desc = desc.replace(/\n|\r|/,'');
                     p.body +='<div style="color: #333; font-weight: bold; padding: 0px 0px 5px 30px;">';
                     p.body += '<img style="float:left" src="/static/images/icons/post.gif" />';

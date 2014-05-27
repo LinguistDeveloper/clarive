@@ -86,6 +86,7 @@ sub rollback : Local {
             $job->final_status( '' );  # reset status, so that POST runs in rollback 
             $job->rollback( 1 );
             $job->status( 'READY' );
+            $job->maxstarttime(_ts->set(day => _ts->day + 1).''); 
             $job->save;
             $job->logger->info( _loc('Job rollback requested by %1', $c->username) );
             $c->stash->{json} = { success => \1, msg=>_loc('Job %1 rollback scheduled', $job->name ) };
