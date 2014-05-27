@@ -1218,6 +1218,15 @@ msgstr "Nombre de la Actividad"
 msgid "Use regex and forward slashes, separate by comma: ^/files/, ^/xml/"
 msgstr "Utilice expresiones regulares separadas por coma: ^/files/, ^/xml/"
 
+msgid "No jobs found"
+msgstr "No hay pases"
+
+msgid "No comments found"
+msgstr "No hay comentarios"
+
+msgid "No activity found"
+msgstr "No hay actividad"
+
 msgid "Activity Description"
 msgstr "Descripción de la Actividad"
 
@@ -5861,10 +5870,6 @@ msgstr "Directorio del pase ddemasiado corto, no se elimina por seguridad: %1"
 
 msgid "Job home `%1` created"
 msgstr "Pase home `%1` creado"
-=======
-msgid "Job home '%1' created"
-msgstr "Pase home '%1' creado"
->>>>>>> 268ab95... Changes  branch 6.1#8262_2.
 
 msgid "Added %1 to changeset %2 bls"
 msgstr "Añadido %1 al cambio %2 entorno"
