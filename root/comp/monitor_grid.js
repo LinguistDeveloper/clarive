@@ -757,7 +757,7 @@
                     function(btn){ 
                         if(btn=='yes') {
                             Baseliner.ci_call( sel.data.mid, 'resume',  {}, function(res){
-                                if( !res.msg ) {
+                                if( !res.msg ) { 
                                     grid.getStore().reload();
                                     Baseliner.message( _('Success'), res.data );
                                 } else {
