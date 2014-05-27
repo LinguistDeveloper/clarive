@@ -274,7 +274,7 @@ msgid "Velocity"
 msgstr "Velocidad"
 
 msgid "New Status"
-msgstr "Nuevo Estado"
+msgstr "Nuevo Status"
 
 msgid "Copy of"
 msgstr "Copia de"
@@ -355,7 +355,7 @@ msgid "Natures: %1"
 msgstr "Naturalezas: %1"
 
 msgid "Missing rule name"
-msgstr "Falta el nombre de la regla"
+msgstr "Rellene el nombre de la regla"
 
 msgid "No events selected"
 msgstr "No se han seleccionado eventos"
@@ -370,10 +370,13 @@ msgid "Events"
 msgstr "Eventos"
 
 msgid "View Stash"
-msgstr "Ver pase"
+msgstr "Ver Stash"
 
 msgid "View Logfile"
 msgstr "Ver Fichero de Log"
+
+msgid "View Stash"
+msgstr "Ver Stash"
 
 msgid "Inbox"
 msgstr "Buzón"
@@ -837,6 +840,9 @@ msgstr "Solicitud Enviada"
 msgid "Approvals"
 msgstr "Aprobaciones"
 
+msgid "Cancel Request"
+msgstr "Cancelar Solicitud"
+
 msgid "All Users"
 msgstr "Todos Usuarios"
 
@@ -847,19 +853,19 @@ msgid "Pending"
 msgstr "Pendiente"
 
 msgid "Are you sure you want to cancel the request '%1' for item '%2'?"
-msgstr "¿Seguro que quiere cancelar la solicitud '%1' para el elemento '%2'?"
+msgstr "¿Seguro que quiere cancelar la solicitud '%1' para el item '%2'?"
 
 msgid "Are you sure you want to request again '%1' for item '%2'?"
-msgstr "¿Seguro que quiere realizar de nuevo la solicitud '%1' para el elemento '%2'?"
+msgstr "¿Seguro que quiere realizar de nuevo la solicitud '%1' para el item '%2'?"
 
 msgid "Pending Approval"
 msgstr "Pendiente de Aprobación"
 
 msgid "Request is already in a %1 state"
-msgstr "Solicitud está en el estadio %1"
+msgstr "Solicitud está en el estado %1"
 
 msgid "Requesting approval for baseline %1, item %2"
-msgstr "Solicitando aprobación para el pase en el entorno %1, elemento %2"
+msgstr "Solicitando aprobación para el pase en el entorno %1, item %2"
 
 msgid "No users found for action %1 and namespace(s) %2"
 msgstr "No hay usuarios definidos para la acción %1 y ámbito %2"
@@ -907,7 +913,7 @@ msgid "Job"
 msgstr "Pase"
 
 msgid "Could not store job stash: %1"
-msgstr "No se ha podido guardar el stash del pase: %1"
+msgstr "No se ha podido guardar el stash de pase: %1"
 
 msgid "Job %1 created"
 msgstr "Pase %1 creado"
@@ -1161,6 +1167,9 @@ msgstr "Creado Por"
 msgid "Modifier"
 msgstr "Modificado Por"
 
+msgid "Created"
+msgstr "Creado"
+
 msgid "Submit"
 msgstr "Enviar"
 
@@ -1203,6 +1212,9 @@ msgstr "acciones"
 msgid "Task"
 msgstr "Tarea"
 
+msgid "Tasks"
+msgstr "Tareas"
+
 msgid "Action"
 msgstr "Acción"
 
@@ -1217,6 +1229,15 @@ msgstr "Nombre de la Actividad"
 
 msgid "Use regex and forward slashes, separate by comma: ^/files/, ^/xml/"
 msgstr "Utilice expresiones regulares separadas por coma: ^/files/, ^/xml/"
+
+msgid "No jobs found"
+msgstr "No hay pases"
+
+msgid "No comments found"
+msgstr "No hay comentarios"
+
+msgid "No activity found"
+msgstr "No hay actividad"
 
 msgid "Activity Description"
 msgstr "Descripción de la Actividad"
@@ -1278,6 +1299,9 @@ msgstr "Elementos renombrados"
 msgid "Deleted elements that belong to another baseline"
 msgstr "Elementos borrados por petenecer a otra linea base"
 
+msgid "Action"
+msgstr "Acción"
+
 msgid "Clone"
 msgstr "Clonar"
 
@@ -1316,6 +1340,12 @@ msgstr "Error al intentar reiniciar el pase"
 
 msgid "Job Manager"
 msgstr "Gestor de Pases" 
+
+msgid "Job %1 started"
+msgstr  "Pase %1 started"
+
+msgid "Job finished with status %1"
+msgstr  "Pase finalizado en estado %1"
 
 msgid "Job %1 finished with status %2"
 msgstr  "Pase %1 finalizado en estado %2"
@@ -1446,6 +1476,7 @@ msgstr "¿Seguro que quiere reiniciar el pase"
 msgid "No records found"
 msgstr "No hay registros"
 
+# Calendario
 msgid "Could not delete the calendar."
 msgstr "No he podido borrar el calendario."
 
@@ -1470,6 +1501,9 @@ msgstr "Seleccione al menos una fila"
 msgid "Calendar '%1' modified"
 msgstr "Calendario '%1' modificado"
 
+msgid "Calendar Windows"
+msgstr "Ventanas de Calendario"
+
 msgid "Error modifying the calendar: "
 msgstr "Error al modificar el calendario: "
 
@@ -1487,6 +1521,9 @@ msgstr "Día"
 
 msgid "Urgent"
 msgstr "Urgente"
+
+msgid "Description"
+msgstr "Descripción"
 
 msgid "Calendar Name"
 msgstr "Nombre del Calendario"
@@ -1521,6 +1558,9 @@ msgstr "Hora fin"
 msgid "Job Calendar"
 msgstr "Calendario de Pase"
 
+msgid "Job Calendars"
+msgstr "Calendarios de Pase"
+
 msgid "Killing the job will interrupt current local processing but no remote processes"
 msgstr "Al matarse el proceso se interrumpen procesos locales, pero no procesos remotos"
 
@@ -1536,6 +1576,7 @@ msgstr "De %1 a %2"
 msgid "A calendar (%1) already exists for namespace %2 and baseline %3"
 msgstr "Un calendario (%1) ya existe para el ámbito %2 y entorno %3"
 
+# Harvest / Endevor
 msgid "Package is not a Promotion Package"
 msgstr "No es un Paquete de Promoción"
 
@@ -1553,6 +1594,9 @@ msgstr "Cache de Endevor"
 
 msgid "Reset Cache"
 msgstr "Restablecer Cache"
+
+msgid "Reload"
+msgstr "Recargar"
 
 msgid "Reload Cache"
 msgstr "Recargar Cache"
@@ -1572,14 +1616,23 @@ msgstr "Aprobar Pases"
 msgid "Could not approve the package."
 msgstr "No se ha podido aprobar el paquete."
 
+msgid "approved"
+msgstr "aprobada"
+
 msgid "pending"
 msgstr "pendiente"
+
+msgid "rejected"
+msgstr "rechazada"
+
+msgid "cancelled"
+msgstr "cancelada"
 
 msgid "empty"
 msgstr "vacio"
 
 msgid "Surrogating as %1"
-msgstr "Subrogando a %1"
+msgstr "Surrogate de %1"
 
 msgid "Yes"
 msgstr "Sí"
@@ -1615,7 +1668,7 @@ msgid "%1 is not in a release."
 msgstr "%1 no está en ninguna release."
 
 msgid "Cannot add item of type %1 to releases."
-msgstr "No se permite añadir el elemento de tipo %1 a una release."
+msgstr "No se permite añadir %1 a una release."
 
 msgid "Error creating the job: %1"
 msgstr "Error al crear el pase: %1"
@@ -1625,6 +1678,9 @@ msgstr "Error al crear/alterar la release: %1"
 
 msgid "Are you sure you want to remove %1 from the release %2?"
 msgstr "¿Está seguro de que quiere quitar el elemento %1 de la release %2?"
+
+msgid "Add to Release"
+msgstr "Añadir a Release"
 
 msgid "Add Item to Release"
 msgstr "Añadir Elemento a Release"
@@ -1660,7 +1716,7 @@ msgid "Harvest Nature"
 msgstr "Naturaleza de Harvest"
 
 msgid "State"
-msgstr "Estadio"
+msgstr "Estado"
 
 msgid "Create a new Release"
 msgstr "Crear Release"
@@ -1675,7 +1731,7 @@ msgid "Remove Release Item"
 msgstr "Quitar Elemento de Release"
 
 msgid "Missing release contents"
-msgstr "Falta el contenido de la release"
+msgstr "Hay que añadir el contenido de la release"
 
 msgid "Contents"
 msgstr "Contenido"
@@ -1728,6 +1784,7 @@ msgstr "Planificado"
 msgid "Scheduled to run now"
 msgstr "Planificado para este instante"
 
+# Job Status Codes
 msgid "IN EDIT"
 msgstr "En Edición"
 
@@ -1738,7 +1795,7 @@ msgid "READY"
 msgstr "Esperando Inicio"
 
 msgid "APPROVAL"
-msgstr "Pendiente Aprobación"
+msgstr "Pend. Aprobación"
 
 msgid "EXPIRED"
 msgstr "Caducado"
@@ -1806,6 +1863,7 @@ msgstr "Pendiente"
 msgid "SUPERSEDED"
 msgstr "Sobreseído"
 
+# Job email types
 msgid "started"
 msgstr "iniciado"
 
@@ -1815,12 +1873,14 @@ msgstr "reanudado"
 msgid "finished"
 msgstr "finalizado"
 
+# Job actions
 msgid "Job revived"
 msgstr "Continuando la ejecución del Pase"
 
 msgid "Job stash stored ok"
 msgstr "Almacenada correctamente la información del Pase"
 
+# Job Types
 
 msgid "none"
 msgstr "Ninguno"
@@ -1849,6 +1909,7 @@ msgstr "Rollback"
 msgid "rollback"
 msgstr "Rollback"
 
+# About
 
 msgid "version"
 msgstr "Versión"
@@ -1865,12 +1926,28 @@ msgstr "Nombre del Host"
 msgid "Port"
 msgstr "Puerto"
 
+msgid ""
+msgstr ""
+
+msgid ""
+msgstr ""
+
+# Requests
 
 msgid "unassigned"
 msgstr "sin asignar"
 
 msgid "Name"
 msgstr "Nombre"
+
+msgid "Status"
+msgstr "Estado"
+
+msgid "State"
+msgstr "Estadio"
+
+msgid "Approve"
+msgstr "Aprobar"
 
 msgid "Reject"
 msgstr "Rechazar"
@@ -1884,6 +1961,9 @@ msgstr "aprobado"
 msgid "approval"
 msgstr "aprobación"
 
+msgid "pending"
+msgstr "pendiente"
+
 msgid "rejected"
 msgstr "rechazado"
 
@@ -1896,17 +1976,20 @@ msgstr "Solicitado por"
 msgid "Requested to"
 msgstr "Solicitado a"
 
+msgid "Request %1 has been %2"
+msgstr "La solicitud %1 ya ha sido %2"
+
 msgid "Are you sure you want to delete the release"
 msgstr "¿Seguro que quiere borrar la release"
 
 msgid "Changing status to %1"
-msgstr "Cambiando estado a %1"
+msgstr "Cambiando status a %1"
 
 msgid "Job '%1' does not need approval (there are no approval users available)"
 msgstr "El pase '%1' no necesita aprobación (no hay usuarios para aprobarlo)"
 
 msgid "Item cannot be added to release"
-msgstr "Elemento no disponible para release"
+msgstr "Item no disponible para release"
 
 msgid "Already in release %1"
 msgstr "Ya está en la release %1"
@@ -2062,7 +2145,7 @@ msgid "Release for %1"
 msgstr "Release para línea base %1"
 
 msgid "Could not add the item"
-msgstr "No se ha podido añadir el elemento"
+msgstr "No se ha podido añadir el item"
 
 msgid "Release not found"
 msgstr "Release no encontrada"
@@ -2080,7 +2163,7 @@ msgid "%1 removed"
 msgstr "Quitado %1"
 
 msgid "Could not add the item: %1"
-msgstr "No se ha podido añadir el elemento: %1"
+msgstr "No se ha podido añadir el item: %1"
 
 msgid "User '%1' added item '%2' to release '%3'"
 msgstr "El usuario '%1' ha añadido el elemento '%2' a la release '%3'"
@@ -2095,19 +2178,19 @@ msgid "No rollback data found in the stash"
 msgstr "No hay datos de rollback para este pase"
 
 msgid "Starting job rollback for step %1"
-msgstr "Iniciando marcha atrás para el pase %1"
+msgstr "Iniciando marcha atrás para el paso %1"
 
 msgid "Job finished with status %1"
-msgstr "Pase terminado con estado %1"
+msgstr "Pase terminado con status %1"
 
 msgid "Job prerun finished with status %1"
-msgstr "Pre-ejecución de pase terminada con estado '%1'"
+msgstr "Pre-ejecución de pase terminada con status '%1'"
 
 msgid "Job run finished with status %1"
-msgstr "Ejecución de pase terminada con estado '%1'"
+msgstr "Ejecución de pase terminada con status '%1'"
 
 msgid "Job postrun finished with status %1"
-msgstr "Post-ejecución de pase terminada con estado '%1'"
+msgstr "Post-ejecución de pase terminada con status '%1'"
 
 msgid "Job contents: %1"
 msgstr "Contenido del pase: %1"
@@ -2170,7 +2253,7 @@ msgid "Export all to file"
 msgstr "Exportar a ficheros"
 
 msgid "Exported all items to files."
-msgstr "Todos los elementos exportados a ficheros."
+msgstr "Todos los items exportados a ficheros."
 
 msgid "Console"
 msgstr "Consola"
@@ -2185,7 +2268,7 @@ msgid "Job execution output"
 msgstr "Salida de la ejecución de pase"
 
 msgid "Missing output"
-msgstr "Falta la salida"
+msgstr "No hay datos salida"
 
 msgid "Job restarted by user %1, execution %2" 
 msgstr "Pase reiniciado por el usuario %1, ejecución %2"
@@ -2299,7 +2382,7 @@ msgid "Not found"
 msgstr "No encontrado"
 
 msgid "Invalid item %1"
-msgstr "El elemento '%1' no es válido"
+msgstr "El item '%1' no existe"
 
 msgid "Release is closed: %1"
 msgstr "Release cerrada: %1"
@@ -2488,405 +2571,563 @@ msgstr "Buzón"
 msgid "There are no rows available"
 msgstr "No hay registros disponibles"
 
+# lib/BaselinerX/Type/Model/ConfigStore.pm (127)
 msgid "Could not find metadata for the key '%1' in the registry."
 msgstr "Metadatos para la clave '%1' no localizados en el registry."
 
+# lib/Baseliner/Schema/Baseliner/Result/BaliJob.pm (419)
 msgid "Could not update the stash with key %1: %2"
 msgstr "No se ha podido actualizar el stash con la clave %1: %2"
 
+# lib/Baseliner/Schema/Baseliner/Result/BaliSemQueue.pm (141)
+msgid "Waiting for semaphore %1..."
+msgstr "Esperando semáforo %1..."
+
+# lib/Baseliner/Schema/Baseliner/Result/BaliSemQueue.pm (149)
+msgid "Semaphore %1 granted"
+msgstr "Semáforo %1 concedido"
+
+# lib/Baseliner/Schema/Baseliner/Result/BaliSemQueue.pm (153)
 msgid "Semaphore %1 cancelled"
 msgstr "Semáforo %1 cancelado"
 
+# lib/Baseliner/Schema/Baseliner/Result/BaliSemQueue.pm (161)
 msgid "Semaphore %1 skipped"
 msgstr "Semáforo %1 ignorado"
 
+# lib/Baseliner/Controller/Auth.pm (62)
 msgid "Invalid User"
 msgstr "Usuario Inválido"
 
+# lib/Baseliner/Controller/Baseline.pm (9)
 msgid "List all Baselines"
-msgstr "Listar todos los entornos"
+msgstr "Listar todas las Líneas Bases"
 
+# lib/Baseliner/Controller/Daemon.pm (47)
 msgid "Service started"
 msgstr "Servicio iniciado"
 
+# lib/Baseliner/Controller/Daemon.pm (55)
 msgid "Service stopped"
 msgstr "Servicio parado"
 
+# lib/Baseliner/Controller/Namespace.pm (7)
 msgid "List all Namespaces"
 msgstr "Listar todos los Ámbitos"
 
+# lib/Baseliner/Controller/Role.pm (111)
 msgid "Error modifying the role "
 msgstr "Error modificando el rol"
 
+# lib/Baseliner/Controller/Role.pm (127)
 msgid "Error deleting the role "
 msgstr "Error borrando el rol"
 
+# lib/Baseliner/Controller/Root.pm (63)
 msgid "Not Logged on"
 msgstr "No se ha hecho login"
 
+# lib/Baseliner/Controller/Semaphore.pm (179)
 msgid "Missing parameter id"
 msgstr "Falta el parámetro id"
 
+# lib/Baseliner/Controller/Semaphore.pm (203)
 msgid "Requests purged"
 msgstr "Peticiones purgadas"
 
+# lib/Baseliner/Core/Baseline.pm (14)
 msgid "Config global baselines"
-msgstr "Configurar los entornos globales"
+msgstr "Configurar las Líneas Bases globales"
 
+# lib/Baseliner/Core/Baseline.pm (17)
 msgid "Baseline Identifier"
-msgstr "Identificador del entorno"
+msgstr "Identificador de la Línea Base"
 
+# lib/Baseliner/Core/Baseline.pm (18)
 msgid "Baseline Name"
-msgstr "Nombre del entorno"
+msgstr "Línea Base"
 
+# lib/Baseliner/Core/Request.pm (11)
 msgid "Requests"
 msgstr "Peticiones"
 
+# lib/Baseliner/Model/Permissions.pm (204)
 msgid "No action or username specified"
 msgstr "No action or username specified"
 
+# lib/Baseliner/Model/Permissions.pm (275)
 msgid "Missing username"
 msgstr "Falta el nombre de usuario"
 
+# lib/Baseliner/Model/Request.pm (308)
 msgid "Approval Request"
 msgstr "Petición de aprobación"
 
+# lib/BaselinerX/Service/Dispatcher.pm (122)
 msgid "Checking for daemons started/stopped"
 msgstr "Comprobando demonios parados/arrancados"
 
+# lib/BaselinerX/Service/ManualDeploy.pm (34)
 msgid "Starting service Manual Deploy"
 msgstr "Starting service Manual Deploy"
 
+# lib/BaselinerX/Service/ManualDeploy.pm (43)
 msgid "Manual Deploy service finished."
 msgstr "Manual Deploy service finished."
 
+# lib/BaselinerX/Service/Sed.pm (54)
 msgid "Starting service Sed"
 msgstr "Iniciando el servicio de Sustitución de Caracteres"
 
+# lib/BaselinerX/Service/Sed.pm (91)
 msgid "Sed service file changes."
 msgstr "Cambio de fichero en el servicio Sed"
 
+# lib/BaselinerX/Service/SemService.pm (97)
 msgid "Starting dummy sleep semaphore service"
 msgstr "Starting dummy sleep semaphore service"
 
+# lib/BaselinerX/Service/SemService.pm (110)
 msgid "Finished dummy sleep semaphore service"
 msgstr "Finished dummy sleep semaphore service"
 
+# lib/BaselinerX/Job/Service/ApprovalRequest.pm (19)
 msgid "Approve jobs"
 msgstr "Aprobar pases"
 
+#>>>> lib/BaselinerX/Job/Service/ApprovalRequest.pm (45)
+msgid "No hay aprobaciones programadas para este pase."
+msgstr "No hay aprobaciones programadas para este pase."
 
-
+# lib/BaselinerX/Job/Service/Runner.pm (59)
 msgid "Notify when job has started"
 msgstr "Notificar cuando haya empezado el pase"
 
+# lib/BaselinerX/Job/Service/Runner.pm (60)
 msgid "Notify when job has finished"
 msgstr "Notificar cuando haya finalizado el pase"
 
+# lib/BaselinerX/Release/Controller/Release.pm (396)
 msgid "Invalid release state"
-msgstr "Estadio de release inválido"
+msgstr "Estado de release inválido"
 
+# lib/BaselinerX/Release/Controller/Release.pm (420)
 msgid "No release contents"
 msgstr "La release está vacía"
 
+# lib/BaselinerX/Type/Controller/Config.pm (67)
 msgid "Error storing config data"
 msgstr "Error guardando datos de configuración"
 
+# lib/BaselinerX/Type/Controller/ConfigList.pm (158)
 msgid "Config data exported"
 msgstr "Datos de configuración exportados"
 
+# root/comp/scheduler_grid.js (57)
 msgid "New task"
 msgstr "Nueva"
 
+# root/comp/scheduler_grid.js (69)
 msgid "Edit task"
 msgstr "Editar"
 
+# root/comp/scheduler_grid.js (81)
 msgid "Delete task"
 msgstr "Borrar"
 
+# root/comp/scheduler_grid.js (93)
 msgid "Duplicate task"
 msgstr "Duplicar"
 
+# root/comp/scheduler_grid.js (105)
 msgid "Run now"
 msgstr "Ejecutar ahora"
 
+# root/comp/scheduler_grid.js (117)
 msgid "Kill"
 msgstr "Cancelar"
 
+# root/comp/scheduler_grid.js (166)
 msgid "Parameters"
 msgstr "Parámetros"
 
+# root/comp/scheduler_grid.js (167)
 msgid "Next execution"
 msgstr "Siguiente ejecución"
 
+# root/comp/scheduler_grid.js (168)
 msgid "Last execution"
 msgstr "Última ejecución"
 
+# root/comp/scheduler_grid.js (169)
 msgid "PID"
 msgstr "PID"
 
+# root/comp/scheduler_grid.js (171)
 msgid "Frequency"
 msgstr "Frecuencia"
 
+# root/comp/scheduler_grid.js (173)
 msgid "Workdays"
 msgstr "Días de diario"
 
+# root/comp/scheduler_grid.js (288)
 msgid "Workdays only"
 msgstr "Sólo días de diario"
 
+# root/comp/scheduler_grid.js (300)
 msgid "Time not valid"
 msgstr "Hora no válida"
 
+# root/comp/scheduler_grid.js (331)
 msgid "Schedule information"
 msgstr "Información de la planificación"
 
+# root/comp/scheduler_grid.js (370)
 msgid "Select a row"
 msgstr "Seleccione una fila"
 
+# root/comp/scheduler_grid.js (463)
 msgid "Confirm"
 msgstr "Confirmar"
 
+# root/comp/scheduler_grid.js (463)
+msgid "Scheduler"
+msgstr "Planificador"
 
+# root/comp/user_info.mas (4)
 msgid "Actions User"
 msgstr "Acciones de usuario"
 
+# root/comp/user_info.mas (62)
 msgid "Roles/Projects User"
 msgstr "Roles/Proyectos de usuario"
 
+# root/comp/user_info.mas (92)
 msgid "Watch all actions"
 msgstr "Ver todas las acciones"
 
+# root/comp/user_info.mas (205)
 msgid "Email address"
 msgstr "Correo electrónico"
 
+# root/comp/user_info.mas (219)
 msgid "Phone Number"
 msgstr "Teléfono"
 
+# root/comp/user_grid.mas (145)
 msgid "Assign roles/projects"
 msgstr "Asignar roles/proyectos"
 
+# root/comp/user_grid.mas (202)
 msgid "You must save the user before"
 msgstr "Tienes que grabar el usuario primero"
 
+# root/comp/user_grid.mas (211)
 msgid "Unassign roles/projects"
 msgstr "Desasignar roles/proyectos"
 
+# root/comp/user_grid.mas (268)
 msgid "User doesn't exist"
 msgstr "El usuario no existe"
 
+# root/comp/user_grid.mas (307)
 msgid "Edit user"
 msgstr "Editar usuario"
 
+# root/comp/user_grid.mas (329)
 msgid "Available Roles"
 msgstr "Roles disponibles"
 
+# root/comp/user_grid.mas (388)
 msgid "Available Projects"
 msgstr "Proyectos disponibles"
 
+# root/comp/user_grid.mas (617)
 msgid "Create user"
 msgstr "Crear usuario"
 
+# root/comp/user_grid.mas (717)
 msgid "Email"
 msgstr "Correo electrónico"
 
+# root/comp/user_grid.mas (718)
 msgid "Phone"
 msgstr "Teléfono"
 
+# root/comp/user_grid.mas (675)
 msgid "Are you sure you want to delete the user"
 msgstr "¿Está seguro de que quiere borrar el usuario"
 
+# lib/Baseliner/Controller/User.pm (236)
 msgid "User added"
 msgstr "Usuario grabado"
 
+# lib/Baseliner/Controller/User.pm (238)
 msgid "User name already exists, introduce another user name"
 msgstr "El usuario ya existe, intoduce otro usuario"
 
+# lib/Baseliner/Controller/User.pm (242)
 msgid "Error adding User: %1"
 msgstr "Error grabando usuario: %1"
 
+# lib/Baseliner/Controller/User.pm (261)
 msgid "User modified"
 msgstr "Usuario modificado"
 
+# lib/Baseliner/Controller/User.pm (264)
 msgid "Error modifying User: %1"
 msgstr "Error modificando usuario: %1"
 
+# lib/Baseliner/Controller/User.pm (276)
 msgid "User deleted"
 msgstr "Usuario borrado"
 
+# lib/Baseliner/Controller/User.pm (279)
 msgid "Error deleting User"
 msgstr "Error borrando usuario1"
 
+# lib/Baseliner/Controller/Project.pm (158)
 msgid "Root (/)"
 msgstr "Raíz (/)"
 
+# lib/Baseliner/Controller/Project.pm (252)
 msgid "Project added"
 msgstr "Proyecto grabado"
 
+# lib/Baseliner/Controller/Project.pm (254)
 msgid "Project name already exists, introduce another project name"
 msgstr "El proyecto ya existe, intoduce otro proyecto"
 
+# lib/Baseliner/Controller/Project.pm (258)
 msgid "Error adding Project: %1"
 msgstr "Error grabando proyecto: %1"
 
+# lib/Baseliner/Controller/Project.pm (261)
 msgid "Project modified"
 msgstr "Proyecto modificado"
 
+# lib/Baseliner/Controller/Project.pm (264)
 msgid "Error modifying Project: %1"
 msgstr "Error modificando proyecto: %1"
 
+# lib/Baseliner/Controller/Project.pm (279)
 msgid "Project deleted"
 msgstr "Proyecto borrado"
 
+# lib/Baseliner/Controller/Project.pm (282)
 msgid "Error deleting Project"
 msgstr "Error borrando proyecto"
 
+# root/comp/Project_grid.js (90)
 msgid "Are you sure you want to delete the project"
 msgstr "¿Está seguro de que quiere borrar el proyecto"
 
+# root/comp/Project_grid.js (131)
 msgid "List of projects"
 msgstr "Lista de proyectos"
 
+# root/comp/Project_grid.js (131)
 msgid "Edit project"
 msgstr "Editar proyecto"
 
+# root/comp/Project_grid.js (205)
 msgid "Project name"
 msgstr "Nombre del proyecto"
 
+# root/comp/Project_grid.js (206)
 msgid "Parent"
 msgstr "Raíz"
 
+# root/comp/Project_grid.js (206)
 msgid "Select a parent from the list of projects"
 msgstr "Selecciona la raíz de la lista de proyectos"
 
+# root/comp/Project_grid.js (208)
 msgid "Nature of the project (Examples: J2EE, .NET)"
 msgstr "Naturaleza del proyecto (Ejemplos: J2EE, .NET)"
 
+# root/comp/Project_grid.js (209)
 msgid "A brief description of the project"
 msgstr "Una breve descripción del proyecto"
 
+# root/comp/Project_grid.js (247)
 msgid "Create project"
 msgstr "Crear proyecto"
 
+# root/comp/Project_grid.js (269)
+msgid "Projects"
+msgstr "Proyectos"
+
+# lib/Baseliner/Controller/Daemon.pm (57)
 msgid "Daemon started"
 msgstr "Demonio iniciado"
 
+# lib/Baseliner/Controller/Daemon.pm (65)
 msgid "Daemon stopped"
 msgstr "Demonio parado"
 
+# lib/Baseliner/Controller/Daemon.pm (85)
 msgid "Daemon added"
 msgstr "Demonio añadido"
 
+# lib/Baseliner/Controller/Daemon.pm (89)
 msgid "Error adding Daemon: %1"
 msgstr "Error añadiendo Demonio"
 
+# lib/Baseliner/Controller/Daemon.pm (98)
 msgid "Daemon modified"
 msgstr "Demonio modificado"
 
+# lib/Baseliner/Controller/Daemon.pm (101)
 msgid "Error modifying Daemon: %1"
 msgstr "Error modificando Demonio"
 
+# lib/Baseliner/Controller/Daemon.pm (115)
 msgid "Daemon deleted"
 msgstr "Demonio borrado"
 
+# lib/Baseliner/Controller/Daemon.pm (118)
 msgid "Error deleting Daemon"
 msgstr "Error borrando Demonio"
 
+# root/comp/daemon_grid.js (85)
 msgid "Are you sure you want to turn off the daemon"
 msgstr "¿Está seguro de que quiere parar el demonio"
 
+# root/comp/daemon_grid.js (85)
 msgid "Are you sure you want to delete the daemon"
 msgstr "¿Está seguro de que quiere borrar el demonio"
 
+# root/comp/daemon_grid.js (167)
 msgid "Create daemon"
 msgstr "Crear demonio"
 
+# root/comp/daemon_grid.js (188)
 msgid "Edit daemon"
 msgstr "Editar demonio"
 
+# root/comp/daemon_grid.js (220)
 msgid "Not Active"
 msgstr "Desactivado"
 
+# lib/Baseliner/Controller/Chain.pm (248)
 msgid "Chain activated"
 msgstr "Cadena activada"
 
+# lib/Baseliner/Controller/Chain.pm (252)
 msgid "Error changing the chain"
 msgstr "Error modificando la cadena"
 
+# lib/Baseliner/Controller/Chain.pm (275)
 msgid "Chain added"
 msgstr "Cadena añadida"
 
+# lib/Baseliner/Controller/Chain.pm (279)
 msgid "Error adding Chain: %1"
 msgstr "Error añadiendo Cadena: %1"
 
+# lib/Baseliner/Controller/Chain.pm (294)
 msgid "Chain modified"
 msgstr "Cadena modificada"
 
+# lib/Baseliner/Controller/Chain.pm (297)
 msgid "Error modifying Chain: %1"
 msgstr "Error modificando Cadena"
 
-msgid "Service added"
-msgstr "Servicio añadido"
-
-msgid "Error adding Service: %1"
-msgstr "Error añadiendo Servicio: %1"
-
-msgid "Service modified"
-msgstr "Servicio modificado"
-
-msgid "Error modifying Service: %1"
-msgstr "Error modificando Servicio: %1"
-
+# lib/Baseliner/Controller/Chain.pm (307)
 msgid "Chain deleted"
 msgstr "Cadena borrada"
 
+# lib/Baseliner/Controller/Chain.pm (310)
 msgid "Error deleting Chain"
-msgstr "Error borrando la cadena"
+msgstr "Error borrando Cadena"
 
+# lib/Baseliner/Controller/Chain.pm (347)
+msgid "Service added"
+msgstr "Servicio añadido"
+
+# lib/Baseliner/Controller/Chain.pm (351)
+msgid "Error adding Service: %1"
+msgstr "Error añadiendo Servicio: %1"
+
+# lib/Baseliner/Controller/Chain.pm (363)
+msgid "Service modified"
+msgstr "Servicio modificado"
+
+# lib/Baseliner/Controller/Chain.pm (366)
+msgid "Error modifying Service: %1"
+msgstr "Error modificando Servicio: %1"
+
+# lib/Baseliner/Controller/Chain.pm (375)
+msgid "Chain deleted"
+msgstr "Cadena borrada"
+
+# lib/Baseliner/Controller/Chain.pm (378)
+msgid "Error deleting Chain"
+msgstr "Error borrando cadena"
+
+# lib/Baseliner/Controller/Chain.pm (433)
 msgid "Configuration changed"
 msgstr "Configuración cambiada"
 
+# lib/Baseliner/Controller/Chain.pm (436)
 msgid "Error changing the configuration"
 msgstr "Error cambiando configuración"
 
+# lib/Baseliner/Controller/Chain.pm (378)
 msgid "Sequence changed"
 msgstr "Secuencia cambiada"
 
+# root/comp/chain_grid.js (128)
 msgid "Are you sure you want to deactivate the chain"
 msgstr "¿Está seguro de que quiere desactivar la cadena"
 
+# root/comp/chain_grid.js (177)
 msgid "Create chain"
 msgstr "Crear cadena"
 
+# root/comp/chain_grid.js (204)
 msgid "Edit chain"
 msgstr "Editar cadena"
 
+# root/comp/chain_grid.js (264)
 msgid "Apply"
 msgstr "Aplicar"
 
+# root/comp/chain_grid.js (279)
 msgid "Configuration"
 msgstr "Configuración"
 
+# root/comp/chain_grid.js (395)
 msgid "Mode create"
 msgstr "Modo crear"
 
+# root/comp/chain_grid.js (395)
 msgid "Mode edit"
 msgstr "Modo editar"
 
+# root/comp/chain_grid.js (438)
 msgid "You must save a chain first"
 msgstr "Debes salvar una cadea primero"
 
+# root/comp/chain_grid.js (548)
 msgid "A brief description of the service"
 msgstr "Una breve descripcion del servicio"
 
+# root/comp/chain_grid.js (621)
 msgid "Do you want to save changes?"
 msgstr "¿Quiere salvar cambios?"
 
+# root/comp/chain_grid.js (683)
 msgid "Sequence"
 msgstr "Secuencia"
 
+# root/comp/chain_grid.js (700)
 msgid "Drag and drop the rows to change the sequence."
 msgstr "Arrastra y suelta las filas para cambiar la secuencia."
 
+# root/comp/chain_grid.js (805)
 msgid "Are you sure you want to delete the chain"
 msgstr "¿Está seguro de que quiere borrar la cadena"
 
@@ -2914,120 +3155,156 @@ msgstr "Cerrar Todos"
 msgid "Maximize"
 msgstr "Maximizar"
 
+# lib/Baseliner/Controller/Baseline.pm (161)
 msgid "Baseline added"
 msgstr "Entorno añadido"
 
+
+# lib/Baseliner/Controller/Baseline.pm (161)
+msgid "Baseline added"
+msgstr "Entorno añadido"
+
+# lib/Baseliner/Controller/Baseline.pm (166)
 msgid "Baseline key already exists, introduce another baseline key"
 msgstr "Código ya existe, introduce otro"
 
 
+# lib/Baseliner/Controller/Baseline.pm (170)
 msgid "Error adding Baseline: %1"
 msgstr "Error añadiendo entorno: %1"
 
 
+# lib/Baseliner/Controller/Baseline.pm (183)
 msgid "Baseline modified"
 msgstr "Entorno modificado"
 
+# lib/Baseliner/Controller/Baseline.pm (186)
 msgid "Error modifying Baseline: %1"
 msgstr "Error modificanco entorno: %1"
 
 
+# lib/Baseliner/Controller/Baseline.pm (196)
 msgid "Baseline deleted"
 msgstr "Entorno borrado"
 
 
+# lib/Baseliner/Controller/Baseline.pm (199)
 msgid "Error deleting Baseline"
 msgstr "Error borrando entorno"
 
+# root/comp/baseline_grid.js (41)
 msgid "Create baseline"
 msgstr "Crear entorno"
 
+# root/comp/baseline_grid.js (63)
 msgid "Order (Drag & Drop)"
 msgstr "Orden (Arrastra & Suelta)"
 
 
+# root/comp/baseline_grid.js (94)
 msgid "Key baseline"
 msgstr "Código entorno"
 
+# root/comp/baseline_grid.js (95)
 msgid "Name of the baseline"
 msgstr "Nombre de entorno"
 
 
+# root/comp/baseline_grid.js (96)
 msgid "A brief description of the baseline"
 msgstr "Una breve descripción del entorno"
 
 
+# root/comp/baseline_grid.js (137)
 msgid "Edit baseline"
 msgstr "Editar entorno"
 
 
+# root/comp/baseline_grid.js (235)
 msgid "Are you sure you want to delete the baseline"
 msgstr "¿Seguro que quiere borrar el entorno"
 
+# lib/Baseliner/Controller/Topic.pm (171)
 msgid "Comment added"
 msgstr "Comentario añadido"
 
 
+# lib/Baseliner/Controller/Topic.pm (175)
 msgid "Error adding Comment: %1"
 msgstr "Error añadiendo comentario: %1"
 
 
+# lib/Baseliner/Controller/Topic.pm (235)
 msgid "Category added"
 msgstr "Categoría añadida"
 
+# lib/Baseliner/Controller/Topic.pm (238)
 msgid "Error adding Category: %1"
 msgstr "Error añadiendo categoría: %1"
 
+# lib/Baseliner/Controller/Topic.pm (249)
 msgid "Category modified"
 msgstr "Categoría modificada"
 
 
+# lib/Baseliner/Controller/Topic.pm (252)
 msgid "Error modifying Category: %1"
 msgstr "Error modificando categoría: %1"
 
 
+# lib/Baseliner/Controller/Topic.pm (262)
 msgid "Category deleted"
 msgstr "Categoría borrada"
 
 
+# lib/Baseliner/Controller/Topic.pm (265)
 msgid "Error deleting Category"
 msgstr "Error borrando categoría"
 
 
+# lib/Baseliner/Model/Topic.pm (32)
 msgid "Topic added"
 msgstr "Tópico añadido"
 
 
+# lib/Baseliner/Model/Topic.pm (32)
 msgid "Error adding Topic: %1"
 msgstr "Error añadiendo tópico: %1"
 
 
+# lib/Baseliner/Model/Topic.pm (48)
 msgid "Topic modified"
 msgstr "Tópico modificado"
 
 
+# lib/Baseliner/Model/Topic.pm (51)
 msgid "Error modifying Topic: %1"
 msgstr "Error modificando tópico: %1"
 
 
+# lib/Baseliner/Model/Topic.pm (63)
 msgid "Topic deleted"
 msgstr "Tópico borrado"
 
 msgid "%1 topic(s) deleted"
 msgstr "%1 tópico(s) borrado(s)"
 
+# lib/Baseliner/Model/Topic.pm (66)
 msgid "Error deleting topic: %1"
 msgstr "Error borrando tópico: %1"
 
 
+# lib/Baseliner/Model/Topic.pm (77)
 msgid "Topic closed"
 msgstr "Tópico cerrado"
 
 
+# lib/Baseliner/Model/Topic.pm (80)
 msgid "Error closing Topic: %1"
 msgstr "Error cerrando tópico: %1"
 
 
+# root/comp/topic_grid.js (116)
 msgid "Are you sure you want to delete the topic(s)"
 msgstr "¿Seguro que quiere borrar el/los tópico(s)"
 
@@ -3037,126 +3314,164 @@ msgstr "¿Seguro que quiere borrar el tópico?"
 msgid " (and %1 more)"
 msgstr " (y %1 más)"
 
+# root/comp/topic_grid.js (156)
 msgid "Are you sure you want to close the topic"
 msgstr "¿Seguro que quiere cerrar tópico"
 
 
+# root/comp/topic_grid.js (181)
 msgid "Create topic"
 msgstr "Crear tópico"
 
 
+# root/comp/topic_grid.js (187)
 msgid "Category"
 msgstr "Categoría"
 
 
+# root/comp/topic_grid.js (241)
 msgid "Title"
 msgstr "Título"
 
+# root/comp/topic_grid.js (258)
 msgid "Edit topic"
 msgstr "Editar tópico"
 
+# root/comp/topic_grid.js (275)
 msgid "Create comment"
 msgstr "Crear comentario"
 
 
+# root/comp/topic_grid.js (537)
 msgid "Create category"
 msgstr "Crear categoría"
 
+# root/comp/topic_grid.js (545)
 msgid "A brief description of the category"
 msgstr "Una breve descripción de la categoría"
 
 
+# root/comp/topic_grid.js (568)
 msgid "Edit category"
 msgstr "Editar categoría"
 
 
+# root/comp/topic_grid.js (592)
 msgid "Name of category"
 msgstr "Nombre de categoría"
 
+# root/comp/topic_grid.js (829)
 msgid "Are you sure you want to delete the categories selected?"
 msgstr "¿Seguro que quiere borrar las categorias seleccionadas?"
 
+# root/comp/topic_grid.js (669)
 msgid "Categories"
 msgstr "Categorías"
 
+# lib/Baseliner/Controller/Topic.pm (15)
 msgid "Topics"
 msgstr "Tópicos"
 
+# lib/Baseliner/Controller/Topic.pm (268)
 msgid "Label added"
 msgstr "Etiqueta añadida"
 
+# lib/Baseliner/Controller/Topic.pm (271)
 msgid "Label name already exists, introduce another label name"
 msgstr "Etiqueta ya existe, introduce otra"
 
+# lib/Baseliner/Controller/Topic.pm (214)
 msgid "Category name already exists, introduce another category name"
 msgstr "Categoria ya existe, introduce otra"
 
+# lib/Baseliner/Controller/Topic.pm (275)
 msgid "Error adding Label: %1"
 msgstr "Error añadiendo etiqueta: %1"
 
+# lib/Baseliner/Controller/Topic.pm (301)
 msgid "Labels deleted"
 msgstr "Etiquetas borradas"
 
+# lib/Baseliner/Controller/Topic.pm (304)
 msgid "Error deleting Labels"
 msgstr "Error borrando etiquetas"
 
+# lib/Baseliner/Controller/Topic.pm (357)
 msgid "Labels assigned"
 msgstr "Etiquetas asignadas"
 
+# lib/Baseliner/Controller/Topic.pm (360)
 msgid "Error assigning Labels: %1"
 msgstr "Error asignando etiquetas: %1"
 
+# root/comp/topic_grid.js (605)
 msgid "Topic"
 msgstr "Tópico"
 
 msgid "Topics: %1"
 msgstr "Tópicos: %1"
 
+# root/comp/topic_grid.js (654)
 msgid "Open"
 msgstr "Abiertas"
 
+# root/comp/topic_grid.js (660)
 msgid "Closed"
 msgstr "Cerradas"
 
+# root/comp/topic_grid.js (938)
 msgid "Are you sure you want to delete the labels selected?"
 msgstr "¿Seguro que quiere borrar le etiqueta seleccionada?"
 
+# root/comp/topic_grid.js (1006)
 msgid "Pick a Color"
 msgstr "Elije color"
 
+# root/comp/topic_grid.js (1032)
 msgid "Labels"
 msgstr "Etiquetas"
 
+# root/comp/topic_grid.js (1050)
 msgid "Label"
 msgstr "Etiqueta"
 
+# root/comp/topic_grid.js (575)
 msgid "Project %1 added"
 msgstr "Proyecto %1 añadido"
 
+# root/comp/topic_grid.js (577)
 msgid "Project %1 is already assigned"
 msgstr "Proyecto ya esta asignado"
 
+# root/comp/topic_grid.js (624)
 msgid "Topic #"
 msgstr "Tópico #"
 
+# lib/Baseliner/Controller/Topic.pm (247)
 msgid "Categories deleted"
 msgstr "Categorías borradas"
 
+# lib/Baseliner/Controller/Topic.pm (250)
 msgid "Error deleting Categories"
 msgstr "Error borrando categorías"
 
+# lib/Baseliner/Controller/Topic.pm (422)
 msgid "Projects unassigned"
 msgstr "Proyectos desasignados"
 
+# lib/Baseliner/Controller/Topic.pm (425)
 msgid "Error unassigning Projects: %1"
 msgstr "Error desasignando proyectos: %1"
 
+# root/comp/topic_grid.js (624)
 msgid "Unassign projects"
 msgstr "Desasignar proyectos"
 
+# root/comp/topic_grid.js (963)
 msgid "Topics: Statuses"
 msgstr "Estados"
 
+# root/comp/topic_grid.js (980)
 msgid "Topics: Status"
 msgstr "Estado"
 
@@ -3188,7 +3503,7 @@ msgid "Upload File"
 msgstr "Subir Fichero"
 
 msgid "Drop files here to upload"
-msgstr "Arrastre los ficheros aquí para subirlos"
+msgstr "Arrastre los fichero aquí para subirlos"
 
 msgid "Create view"
 msgstr "Crear vista"
@@ -3337,11 +3652,17 @@ msgstr "Prioridad creada"
 msgid "Edit priority"
 msgstr "Editar prioridad"
 
+msgid "Priority added"
+msgstr "Prioridad creada"
+
 msgid "Priority name already exists, introduce another priority name"
-msgstr "La prioridad ya existe, introduce otra prioridad"
+msgstr "Prioridad ya existe, introduce otra prioridad"
 
 msgid "Error adding Priority: %1"
 msgstr "Error creando prioridad: %1"
+
+msgid "Priority modified"
+msgstr "Prioridad modificada"
 
 msgid "Error modifying Priority: %1"
 msgstr "Error modificando prioridad: %1"
@@ -3424,11 +3745,20 @@ msgstr "Proyectos"
 msgid "assign_to"
 msgstr "Asignar a"
 
+msgid "labels"
+msgstr "Etiquetas"
+
 msgid "topics"
 msgstr "Tópicos"
 
+msgid "revisions"
+msgstr "revisiones"
+
 msgid "files"
 msgstr "Ficheros"
+
+msgid "description"
+msgstr "Descripción"
 
 msgid "Select forms to add to the category"
 msgstr "Seleccione formularios para añadir a la categoría"
@@ -3450,6 +3780,9 @@ msgstr "vistas"
 
 msgid "Admin category"
 msgstr "Administrar categoría"
+
+msgid "Views"
+msgstr "Vistas"
 
 msgid "Statuses"
 msgstr "Estados"
@@ -3502,6 +3835,12 @@ msgstr "Relación borrada correctamente"
 msgid "File %1 not found"
 msgstr "Fichero %1 no encontrado"
 
+msgid "Drop files here to upload"
+msgstr "Arrastrar fichero aqui para subirlo"
+
+msgid "Upload File"
+msgstr "Subir fichero"
+
 msgid "Are you sure you want to delete these artifacts?"
 msgstr "¿Seguro que quiere borrar estos ficheros?"
 
@@ -3551,7 +3890,10 @@ msgid "Relationship deleted: %1"
 msgstr "Relaciones borradas: %1"
 
 msgid "Workflow: %1"
-msgstr "Flujo de trabajo: %1"
+msgstr "Workflow: %1"
+
+msgid "Providers"
+msgstr "Provedores"
 
 msgid "Readonly"
 msgstr "Sólo Lectura"
@@ -3620,308 +3962,451 @@ msgid "Scripts Multi"
 msgstr "Scripts Globales"
 
 msgid "Deploy Job Items"
-msgstr "Despliegue de elementos del pase"
+msgstr "Despliegue de Ficheros"
 
 msgid "Mapping Order"
 msgstr "Orden de Mapeo"
 
+# lib/Baseliner/Utils.pm (475)
 msgid "Could not open template file %1"
 msgstr "No se ha podido abrir el fichero de plantilla %1"
 
+# lib/Baseliner/Utils.pm (480)
 msgid "Error loading template '%1': '%2'"
 msgstr "Error cargando plantilla '%1': '%2'"
 
+# lib/Baseliner/Utils.pm (543)
 msgid "Missing parameter %1"
 msgstr "Falta parámetro %1"
 
+# lib/Baseliner/Utils.pm (719)
 msgid "Could not open file %1: %2"
 msgstr "No se ha podido abrir el fichero %1: %2"
 
+# lib/Baseliner/Utils.pm (888)
 msgid "Unresolved vars: '%1' in %2"
 msgstr "Vars no resueltas: '%1' in %2"
 
+# lib/BaselinerX/LcController.pm (601)
 msgid "Favorite added ok"
 msgstr "Favorito añadido correctamente"
 
+# lib/BaselinerX/LcController.pm (615)
 msgid "Favorite removed ok"
 msgstr "Favorito eliminado correctamente"
 
+# lib/BaselinerX/Project.pm (25)
 msgid "Baseliner Project"
 msgstr "Proyecto Baseliner"
 
+# lib/BaselinerX/Project.pm (29)
 msgid "Baseliner Projects"
 msgstr "Proyectos Baseliner"
 
+# root/ci/ftp_agent.js (5)
 msgid "Server"
 msgstr "Servidor"
 
+# root/ci/ftp_agent.js (17)
 msgid "Password"
 msgstr "Contraseña"
 
+# root/ci/ftp_agent.js (17)
 msgid "Confirm Password"
 msgstr "Confirmar contraseña"
 
+# root/ci/oracle_connection.js (17)
 msgid "SID"
 msgstr "SID"
 
+# root/ci/ssh_agent.js (20)
 msgid "Private Key"
 msgstr "Clave privada"
 
+# root/ci/ssh_dest.js (5)
 msgid "SSH Server"
 msgstr "Servidor SSH"
 
+# root/ci/ssh_script.js (5)
 msgid "SSH Destination"
 msgstr "Destino SSH"
 
+# root/ci/ssh_script.js (16)
 msgid "Script"
 msgstr "Script"
 
+# root/ci/windows_server.js (5)
 msgid "Domain"
 msgstr "Dominio"
 
+# root/ci/windows_server.js (6)
 msgid "NetBIOS Name"
 msgstr "Nombre NetBIOS"
 
+# root/comp/catalog_grid.js (144)
 msgid "YAML"
 msgstr "YAML"
 
+# root/comp/catalog_grid.js (242)
 msgid "Grouping"
 msgstr "Agrupación"
 
+# root/comp/catalog_grid.js (253)
 msgid "ID"
 msgstr "ID"
 
+# root/comp/catalog_grid.js (255)
 msgid "Package"
 msgstr "Paquete"
 
+# root/comp/chain_edit.mas (254)
 msgid "Switch"
 msgstr "Switch"
 
+# root/comp/chain_grid.js (463)
 msgid "Chains"
 msgstr "Cadenas"
 
+# root/comp/chain_grid.js (479)
 msgid "Servicio"
 msgstr "Servicio"
 
+# root/comp/chain_grid.mas (97)
 msgid "OK"
 msgstr "OK"
 
+# root/comp/chain_grid.mas (109)
 msgid "Saved"
 msgstr "Guardado"
 
+# root/comp/chain_grid.mas (129)
 msgid "New Chain"
 msgstr "Nueva cadena"
 
+# root/comp/chain_grid.mas (221)
 msgid "No rows selected"
 msgstr "Ninguna fila seleccionada"
 
+# root/comp/ci-grid.js (78)
 msgid "CI: %1"
 msgstr "CI: %1"
 
+# root/comp/ci-grid.js (97)
 msgid "Item"
-msgstr "Elemento"
+msgstr "Item"
 
+# root/comp/ci-grid.js (98)
 msgid "Collection"
 msgstr "Colección"
 
+# root/comp/ci-grid.js (100)
 msgid "Class"
 msgstr "Clase"
 
+# root/comp/ci-grid.js (104)
 msgid "Properties"
 msgstr "Propiedades"
 
+# root/comp/ci-gridtree.js (97)
 msgid "CI"
 msgstr "CI"
 
+# root/comp/ci-gridtree.js (174)
 msgid "CI Class: %1"
 msgstr "Clase CI: %1"
 
+# root/comp/ci-gridtree.js (210)
+msgid "Class"
+msgstr "Clase"
+
+# root/comp/ci-viewer.js (20)
 msgid "New %1"
 msgstr "Nuevo %1"
 
+# root/comp/daemon_grid.js (271)
 msgid "Config"
 msgstr "Configuración"
 
+# root/comp/daemon_grid.js (273)
 msgid "Running"
 msgstr "Ejecutando"
 
+# root/comp/daemon_grid.js (274)
 msgid "Last Process ID"
 msgstr "Último ID de proceso"
 
+# root/comp/dashboard.html (23)
 msgid "<%$entorno->{bl}%> - <%$entorno->{totOk}%>/<%$entorno->{total}%> OK"
 msgstr "<%$entorno->{bl}%> - <%$entorno->{totOk}%>/<%$entorno->{total}%> OK"
 
+# root/comp/dashboard.html (26)
 msgid "<%$entorno->{bl}%> - <%$entorno->{totError}%>/<%$entorno->{total}%> ERROR"
 msgstr "<%$entorno->{bl}%> - <%$entorno->{totError}%>/<%$entorno->{total}%> ERROR"
 
+# root/comp/dashboard.html (95)
 msgid "Log <%$lastjob->{name}%>"
 msgstr "Log <%$lastjob->{name}%>"
 
+# root/comp/dashboard.html (175)
 msgid "Log <%$job->{nameOk}%>"
 msgstr "Log <%$job->{nameOk}%>"
 
+# root/comp/dashboard.html (181)
 msgid "Log <%$job->{nameError}%>"
 msgstr "Log <%$job->{nameError}%>"
 
+# root/comp/dashboard_job.html (17)
 msgid "Log details <%$namejob%>"
 msgstr "Log detallado <%$namejob%>"
 
+# root/comp/dashboard_job.html (93)
 msgid "Log <%$service->{service}%>"
 msgstr "Log <%$service->{service}%>"
 
+# root/comp/dashboard_job.html (250)
+msgid "Elementos <%$namejob%>"
+msgstr "Elementos <%$namejob%>"
+
+# root/comp/feature_grid.mas (74)
 msgid "New Feature"
 msgstr "Nueva característica"
 
+# root/comp/jes_viewer.mas (62)
 msgid "Previous"
 msgstr "Anterior"
 
+# root/comp/jes_viewer.mas (69)
 msgid "Next"
 msgstr "Siguiente"
 
+# root/comp/jes_viewer.mas (103)
 msgid "JES Files"
 msgstr "Ficheros JES"
 
+# root/comp/jes_viewer.mas (159)
 msgid "JES Spool"
 msgstr "Spool JES"
 
+# root/comp/job_calendar_comp.mas (34)
+msgid "Ayuda"
+msgstr "Ayuda"
+
+# root/comp/job_calendar_edit.mas (104)
+msgid "Normal"
+msgstr "Normal"
+
+# root/comp/job_calendar_grid.mas (282)
+msgid "Previsualizar"
+msgstr "Previsualizar"
+
+# root/comp/job_calendar_grid.mas (310)
+msgid "Previsualizar Calendario"
+msgstr "Previsualizar Calendario"
+
+# root/comp/job_logfile.js (16)
 msgid "Logfile Open Error"
 msgstr "Error al abrir fichero de log"
 
+# root/comp/job_new.mas (217)
+msgid "Franja horaria"
+msgstr "Franja horaria"
+
+# root/comp/job_new.mas (376)
+msgid "Hora de pase Caducada"
+msgstr "Hora de pase Caducada"
+
+# root/comp/job_new.mas (377)
+msgid "Hora de pase Caducada"
+msgstr "Hora de pase Caducada"
+
+# root/comp/job_new.mas (391)
 msgid "Time off range %1"
 msgstr "Hora fuera de rango %1"
 
+# root/comp/job_new.mas (392)
+msgid "Pase fuera de ventana. Seleccione Ventana personalizada si quiere un pase fuera de las ventanas permitidas"
+msgstr "Pase fuera de ventana. Seleccione Ventana personalizada si quiere un pase fuera de las ventanas permitidas"
+
+# root/comp/job_new.mas (600)
 msgid "Not promotable to %1"
 msgstr "No promocionable a %1"
 
+# root/comp/job_stash.js (12)
 msgid "Stash Log"
-msgstr "Log del pase"
+msgstr "Stash Log"
 
+# root/comp/log.html (74)
 msgid "Sort"
 msgstr "Ordenar"
 
+# root/comp/log.html (76)
 msgid "Chronological"
 msgstr "Cronológico"
 
+# root/comp/log.html (78)
 msgid "Reverse"
 msgstr "Inverso"
 
+# root/comp/log.html (82)
 msgid "No Data"
 msgstr "No hay datos"
 
+# root/comp/log.html (84)
 msgid "View Data"
 msgstr "Ver datos"
 
 msgid "Hide Data"
 msgstr "Ocultar datos"
 
+# root/comp/log.html (122)
 msgid "view"
 msgstr "ver"
 
+# root/comp/log_grid.mas (202)
+msgid "Form Error"
+msgstr "Error de formulario"
+
+# root/comp/log_grid.mas (215)
 msgid "Severity"
 msgstr "Severidad"
 
+# root/comp/log_grid.mas (349)
 msgid "Do you wish to resume job %1"
 msgstr "Seguro que quiere reiniciar el job %1"
 
+# root/comp/log_grid.mas (369)
 msgid "Delete Log"
 msgstr "Borrar log"
 
+# lib/BaselinerX/Service/ChangesetServices.pm (11)
 msgid "Checkout files of a changeset"
 msgstr "Checkout de ficheros de un cambio"
 
+# lib/BaselinerX/Service/ChangesetServices.pm (16)
 msgid "Fill job_elements"
 msgstr "Rellenado de job_elements"
 
+# lib/BaselinerX/Service/ChangesetServices.pm (46)
 msgid "Changeset checkout: failed to write to file %1: %2"
 msgstr "Changeset checkout: fallo al escribir el fichero %1: %2"
 
+# lib/BaselinerX/Service/ChangesetServices.pm (51)
 msgid "Checked out files"
 msgstr "Ficheros descargados"
 
+# lib/BaselinerX/Service/ChangesetServices.pm (93)
 msgid "Elements included in job"
 msgstr "Elementos del job"
 
+# lib/BaselinerX/Service/ChangesetServices.pm (128)
 msgid "%1 %2 to %3"
 msgstr "%1 %2 a %3"
 
+# lib/BaselinerX/Service/DeployFromStash.pm (56)
 msgid "Deployments detected"
 msgstr "Despliegues detectados"
 
+# lib/BaselinerX/Service/DeployFromStash.pm (61)
 msgid "Deployment files for group %1"
 msgstr "Ficheros a desplegar del grupo %1"
 
+# lib/BaselinerX/Service/DeployFromStash.pm (69)
 msgid "*resetting* deployment scripts - they were unset"
 msgstr "*Reiniciando* scripts de despliegue"
 
+# lib/BaselinerX/Service/DeployFromStash.pm (73)
 msgid "Running deployment: %1"
 msgstr "Ejecutando despliegue: %1"
 
+# lib/BaselinerX/Service/DeployFromStash.pm (80)
 msgid "Deployment error for %1"
 msgstr "Error en el despliegue %1"
 
+# lib/BaselinerX/Service/DeployFromStash.pm (81)
 msgid "Error during deployment %1"
 msgstr "Errores durante el despliegue %1"
 
+# lib/BaselinerX/Service/DeployFromStash.pm (84)
 msgid "Deployment ok for *%1* - %2"
 msgstr "Despliegue correcto para *%1* - %2"
 
+# lib/BaselinerX/Service/DeployFromStash.pm (90)
 msgid "Deployed %1 files/dirs to `%2`"
 msgstr "Desplegados %1 ficheros/directorios a `%2`"
 
+# lib/BaselinerX/Service/DeployFromStash.pm (112)
 msgid "Deployments Scripts detected"
 msgstr "Scripts de despliegue detectados"
 
+# lib/BaselinerX/Service/DeployFromStash.pm (116)
 msgid "Deployment scripts for group *%1*"
 msgstr "Scripts de despliegue para el grupo *%1*"
 
+# lib/BaselinerX/Service/DeployFromStash.pm (124)
 msgid "Error loading module %1"
 msgstr "Error al cargar el módulo %1"
 
+# lib/BaselinerX/Service/DeployFromStash.pm (128)
 msgid "Running Deployment script %1..."
 msgstr "Ejecutando script de despliegue %1..."
 
+# lib/BaselinerX/Service/DeployFromStash.pm (132)
 msgid "Deployment script error for %1"
 msgstr "Error en el script de despliegue para %1"
 
+# lib/BaselinerX/Service/DeployFromStash.pm (133)
 msgid "Error durante el script de despliegue %1"
 msgstr "Error during deployment script %1"
 
+# lib/BaselinerX/Service/DeployFromStash.pm (135)
 msgid "Deployment scripts ok for *%1*"
 msgstr "Script de despliegue correcto para *%1*"
 
+# lib/BaselinerX/Service/DeployFromStash.pm (140)
 msgid "Finished running %1 scripts"
 msgstr "Finalizada la ejecución de %1 scripts"
 
+# lib/BaselinerX/Service/ItemDeploy.pm (62)
 msgid "Item Deploy Mappings"
-msgstr "Mapeos de despliegue de elementos"
+msgstr "Mapeos de despliegue de items"
 
+# lib/BaselinerX/Service/ItemDeploy.pm (107)
 msgid "Invalid job_root %1"
 msgstr "Root del job inválido %1"
 
+# lib/BaselinerX/Service/ItemDeploy.pm (115)
 msgid "Mapping name %1 not active. Ignored"
 msgstr "Nombre del mapeo %1 no está activo. Ignorado"
 
+# lib/BaselinerX/Service/ItemDeploy.pm (119)
 msgid "Checking if mapping for bl %1 applies"
 msgstr "Comprobando si el mapeo para el bl %1 aplica"
 
+# lib/BaselinerX/Service/ItemDeploy.pm (129)
 msgid "Checking workspace `%1` for changes `%2` ..."
 msgstr "Comprobando cambios `%2` en el espacio de trabajo `%1`"
 
+# lib/BaselinerX/Service/ItemDeploy.pm (137)
 msgid "Checking exclusions"
 msgstr "Comprobando exclusiones"
 
+# lib/BaselinerX/Service/ItemDeploy.pm (140)
 msgid "Excluded workspace mapping %1"
 msgstr "Mapeo de espacio de trabajo excluido %1"
 
+# lib/BaselinerX/Service/ItemDeploy.pm (145)
 msgid "After exclusions for %1"
 msgstr "Después de las exclusiones para %1"
 
+# lib/BaselinerX/Service/ItemDeploy.pm (161)
 msgid "*%1* Included Elements for Deployment"
 msgstr "*%1* Elementos incluidos para el despliegue"
 
+# lib/BaselinerX/Service/ItemDeploy.pm (164)
 msgid "Mapping to `%1` has no matching workspaces in elements"
 msgstr "El mapeo a `%1` no tiene elementos coincidentes"
 
+# lib/BaselinerX/Service/ItemDeploy.pm (199)
 msgid "*Pushed deployment* for `%1`"
 msgstr "*Despliegue añadido* para `%1`"
 
@@ -3929,10 +4414,10 @@ msgid "Cannot promote/demote changeset %1 to baseline %2 (job type %3)"
 msgstr "No es posible promover/devolver el cambio %1 al entorno %2 (tipo de pase: %3)"
 
 msgid "Changeset '%1' is in an active job: %2 (%3) with promote/demote to a different state (%4)"
-msgstr "Cambio '%1' está en un pase activo: %2 (%3) con promoción/devolución a un estadio diferente (%4)"
+msgstr "Item de pase '%1' está en un pase activo: %2 (%3) con promoción/devolución a un estado diferente (%4)"
 
 msgid "Changeset '%1' is in an active job to bl %3: %2"
-msgstr "Cambio '%1' está en un pase activo al entorno %3: %2"
+msgstr "Item de pase '%1' está en un pase activo al entorno %3: %2"
 
 msgid "select or drop repository revisions"
 msgstr "seleccione o arrastre revisiones de repositorio"
@@ -4002,6 +4487,9 @@ msgstr "Dos columnas"
 
 msgid "Data loss may occur"
 msgstr "Se podrán perder datos"
+
+msgid "Configuration Items"
+msgstr "Items de Configuración"
 
 msgid "Workspaces"
 msgstr "Áreas de Trabajo"
@@ -4082,7 +4570,7 @@ msgid "You must save the topic before add new files"
 msgstr "Debes guardar el tópico antes de añadir nuevos ficheros"
 
 msgid "To upload files, the form needs to be created. Save form before submitting?"
-msgstr "Para poder subir ficheros, el formulario tiene que estar creado. Crear formulario ahora?"
+msgstr "Para poder subir ficheros, el tópico tiene que estar creado. Crear tópico ahora?"
 
 msgid "status_new"
 msgstr "Estados"
@@ -4101,6 +4589,9 @@ msgstr "%1 modificó el campo %2  de %3 a %4"
 
 msgid "%1 modified the field %2"
 msgstr "%1 modificó el campo %2"
+
+msgid "%1 modified topic"
+msgstr "%1 modificó el tópico"
 
 msgid "%1 deleted all attached topics of "
 msgstr "%1 borró todos los tópicos adjuntos de "
@@ -4249,6 +4740,9 @@ msgstr "Campo de fecha"
 msgid "Timefield"
 msgstr "Campo de tiempo"
 
+msgid "Notifications"
+msgstr "Notificaciones"
+
 msgid "Recipients"
 msgstr "Destinatarios"
 
@@ -4325,10 +4819,10 @@ msgid "Summary"
 msgstr "Resumen"
 
 msgid "Save role"
-msgstr "Guardar rol"
+msgstr "Guardar role"
 
 msgid "Role saved successfully"
-msgstr "Rol guardado correctamente"
+msgstr "Role guardado correctamente"
 
 msgid "Administration manual"
 msgstr "Manual de administración"
@@ -4338,6 +4832,9 @@ msgstr "Manual de usuario"
 
 msgid "baseline"
 msgstr "Entorno"
+
+msgid "Notification added"
+msgstr "Notificación añadida"
 
 msgid "Error adding notification: "
 msgstr "Error añadiendo notificación"
@@ -4535,19 +5032,19 @@ msgid "%1 deleted a post from topic [%2] %3"
 msgstr "El usuario %1 ha borrado un comentario del tópico [%2] %3"
 
 msgid "User %1 has requested approval for job %2"
-msgstr "El usuario %1 ha solicitado aprobación para el pase %2"
+msgstr "El usuario %1 ha solicitado aprobación para el job %2"
 
 msgid "Refresh All Nodes"
 msgstr "Refrescar todo el Árbol"
 
-msgid "Job started in %1 at %2"
-msgstr "Pase iniciado en %1 a %2"
-
-msgid "Rule: %1"
-msgstr "Regla: %1"
-
 msgid "Topic %1 (%2) has been assigned to you"
-msgstr "El tópico %1 (%2) ha sido signado a ti"
+msgstr "El tópico %1 (%2) ha sido asignado a ti"
+
+msgid "Job Statistics"
+msgstr "Estadísticas de pases"
+
+msgid "Pending Jobs"
+msgstr "Pases pendientes"
 
 msgid "PRE Start Date"
 msgstr "Inicio PRE"
@@ -4559,2836 +5056,6 @@ msgid "PRE End Date"
 msgstr "Fin PRE"
 
 msgid "RUN End Date"
-msgstr "Fin RUN"
-
-msgid "AND?"
-msgstr "¿Y?"
-
-msgid "Fecha PaP Desde"
-msgstr "Fecha PaP Desde"
-
-msgid "Fecha PaP Hasta"
-msgstr "Fecha PaP Hasta"
-
-msgid "Fecha UAT Desde"
-msgstr "Fecha UAT Desde"
-
-msgid "Fecha UAT Hasta"
-msgstr "Fecha UAT Hasta"
-
-msgid "CORE_ID"
-msgstr "CORE_ID"
-
-msgid "CAR_ID_CATEGORIA"
-msgstr "CAR_ID_CATEGORIA"
-
-msgid "CAR_NIVEL1"
-msgstr "CAR_NIVEL1"
-
-msgid "CAR_NIVEL2"
-msgstr "CAR_NIVEL2"
-
-msgid "CAR_NIVEL3"
-msgstr "CAR_NIVEL3"
-
-msgid "CAR_NIVEL4"
-msgstr "CAR_NIVEL4"
-
-msgid "Link a git revision to the changesets in title"
-msgstr "Relacionar una revisión de git con los cambios en el título"
-
-msgid "SHA"
-msgstr "SHA"
-
-msgid "Git Repository"
-msgstr "Repositorio Git"
-
-msgid "Repository path"
-msgstr "Path del repositorio"
-
-msgid "Existing Tags"
-msgstr "Etiquetas existentes"
-
-msgid "Don't replace existing tags"
-msgstr "No reemplazar etiquetas existentes"
-
-msgid "Reset all tags"
-msgstr "Reinicializar todas las etiquetas"
-
-msgid "Commit or Ref"
-msgstr "Commit o Ref"
-
-msgid "Instance %1 is inactive. Skipped"
-msgstr "La instancia %1 está inactiva. Ignorado"
-
-msgid "Connecting to Weblogic instance %1"
-msgstr "Conectando a la instancia de Weblogic %1"
-
-msgid "Removing cache from $server_dir"
-msgstr "Borrando caché de $server_dir"
-
-msgid "Sending and Running Weblogic script in `%1:%2 %3 %4 %5`"
-msgstr "Script de Weblogic corriendo y enviándose en `%1:%2 %3 %4 %5`"
-
-msgid "WL: SCRIPT FAILED %1. RC=%2"
-msgstr "WL: SCRIPT FALLÓ %1. RC=%2"
-
-msgid "WL: SCRIPT OK %1"
-msgstr "WL: SCRIPT OK %1"
-
-msgid "Clustering"
-msgstr "Clustering"
-
-msgid "Not in cluster"
-msgstr "No en el cluster"
-
-msgid "In cluster"
-msgstr "En el cluster"
-
-msgid "Applications path"
-msgstr "Path de las aplicaciones"
-
-msgid "Applications"
-msgstr "Aplicaciones"
-
-msgid "Areas"
-msgstr "Áreas"
-
-msgid "Config files path"
-msgstr "Path de los archivos de configuración"
-
-msgid "Server Dir"
-msgstr "Servidor Dir"
-
-msgid "IP server"
-msgstr "IP servidor"
-
-msgid "Start script"
-msgstr "Iniciar script"
-
-msgid "Stop script"
-msgstr "Parar script"
-
-msgid "Weblogic domain"
-msgstr "Dominio Weblogic"
-
-msgid "Instances"
-msgstr "Instancias"
-
-msgid "Libraries path"
-msgstr "Path de las Librerias"
-
-msgid "Context file path"
-msgstr "Path del archivo de contexto"
-
-msgid "EAR/WAR Files"
-msgstr "Archivos EAR/WAR"
-
-msgid "Filename"
-msgstr "Nombre de fichero"
-
-msgid "Install Dir"
-msgstr "Instalar Dir"
-
-msgid "Deploy Dir"
-msgstr "Desplegar Dir"
-
-msgid "IP Administration"
-msgstr "IP Administracion"
-
-msgid "Install Bin"
-msgstr "Instalar Bin"
-
-msgid "JAVA_HOME"
-msgstr "JAVA_HOME"
-
-msgid "Task Type"
-msgstr "Tipo de tarea"
-
-msgid "Cache Clear Command"
-msgstr "Comando para borrar la memoria caché"
-
-msgid "Weblogic Instance"
-msgstr "Instancia de Weblogic"
-
-msgid "Domain Name"
-msgstr "Nombre de dominio"
-
-msgid "Errors"
-msgstr "Errores"
-
-msgid "Script Parameters"
-msgstr "Parámetros de script"
-
-msgid "Uploaded file %1: %2"
-msgstr "Archivo subido %1: %2"
-
-msgid "Deleted files:"
-msgstr "Ficheros borrados:"
-
-msgid "No natures available to scan. Please, define some nature CIs before continuing."
-msgstr "No hay naturalezas disponibles para escanear. Por favor, define alguna CI de tipo naturaleza antes de continuar."
-
-msgid "No natures included this item path: %1"
-msgstr "Naturalezas no incluidas en la dirección de este elemento: %1"
-
-msgid "Error trying to fatpack perl code. Could not find fatpack code in `%1`"
-msgstr "Error al intentar hacer fatpack sobre el código perl. No se ha podido encontrae el código del fatpack en `%1`"
-
-msgid "Config value %1 deleted"
-msgstr "Valor de configiración %1 borrado"
-
-msgid "Error deleting config value %1: %2"
-msgstr "Error borrando el valor de configuración %1: %2"
-
-msgid "Config value %1 saved"
-msgstr "Valor de configuración %1 guardado"
-
-msgid "Error storing config value %1: %2"
-msgstr "Error almacenando el valor de configuración %1: %2"
-
-msgid "Error exporting config data: %1"
-msgstr "Error exportando los datos de configuración: %1"
-
-msgid "No data found for variable %1"
-msgstr "No se han encontrado datos para la variable %1"
-
-msgid "&nbsp;"
-msgstr "&nbsp;"
-
-msgid "Response"
-msgstr "Respuesta"
-
-msgid "Resolution"
-msgstr "Resolución"
-
-msgid "Create tasks"
-msgstr "Crear tareas"
-
-msgid "Observation"
-msgstr "Observación"
-
-msgid "gradient"
-msgstr "gradiente"
-
-msgid "gradientradial"
-msgstr "gradiente-radial"
-
-msgid "Error saving priority: %1"
-msgstr "Error guardando la prioridad: %1"
-
-msgid "PaP for topic %1 approved"
-msgstr "PaP para el tópico %1 aprobada"
-
-msgid "PaP for topic %1 rejected"
-msgstr "PaP para el tópico %1 rechazada"
-
-msgid "Issues"
-msgstr "Problemas"
-
-msgid "Issue resolved with git tag %1"
-msgstr "Problema resuelto con la etiqueta de git %1"
-
-msgid "Invalid project name %1"
-msgstr "Nombre del proyecto %1 no válido"
-
-msgid "Invalid repository name %1"
-msgstr "Nombre del repositorio %1 no válido"
-
-msgid "Invalid or unauthorized git repository path %1"
-msgstr "Ruta del repositorio git %1 inválida o no autorizada"
-
-msgid "Authentication failed for user '%1': %2"
-msgstr "Fallo de autenticación para el usuario '%1': %2"
-
-msgid "User: %1 does not have access to the project %2"
-msgstr "El usuario: %1 no tiene acceso al proyecto %2"
-
-msgid "File %1 does not have a blob"
-msgstr "El archivo %1 no tiene un 'blob'"
-
-msgid "Create tags"
-msgstr "Crear etiquetas"
-
-msgid "No files for ref %1 in repository. Skipping"
-msgstr "No hay archivos en el repositorio para la referencia %1. Omitiendo"
-
-msgid "Checking out revision '%1'"
-msgstr "Verificando la revisión '%1'"
-
-msgid "Checked out revision %1"
-msgstr "Verificada la revisión %1"
-
-msgid "Updated baseline %1 to %2"
-msgstr "Actualizado el entorno %1 a %2"
-
-msgid "Error: could not find tag %1 in repository. Repository tags are configured?"
-msgstr "Error: No se puede encontrar la etiqueta %1 en el repositorio. ¿Están configuradas las etiquetas del repositorio?"
-
-msgid "Enter or select the category tags"
-msgstr "Indica o selecciona las etiquetas de categoría"
-
-msgid "Hello"
-msgstr "Hola"
-
-msgid "File delete"
-msgstr "Fichero borrado"
-
-msgid "Error deleting file"
-msgstr "Error borrando el fichero"
-
-msgid "Tablas"
-msgstr "Tablas"
-
-msgid "Area"
-msgstr "Area"
-
-msgid "Area solicitante"
-msgstr "Area solicitante"
-
-msgid "Tipos"
-msgstr "Tipos"
-
-msgid "Color"
-msgstr "Color"
-
-msgid "Clear filters"
-msgstr "Limpiar filtros"
-
-msgid "name"
-msgstr "nombre"
-
-msgid "HTML Report"
-msgstr "Reporte HTML"
-
-msgid "start"
-msgstr "inicio"
-
-msgid "planned start"
-msgstr "Inicio previsto"
-
-msgid "end"
-msgstr "completado"
-
-msgid "planned end"
-msgstr "Final previsto"
-
-msgid "MID"
-msgstr "MID"
-
-msgid "CIs Referenced"
-msgstr "CIs referenciados"
-
-msgid "CIs Referenced In"
-msgstr "CIs referenciados en"
-
-msgid "Current Job"
-msgstr "Job actual"
-
-msgid "Enter mid..."
-msgstr "Introduce el mid..."
-
-msgid "category_name"
-msgstr "category_name"
-
-msgid "Select a topic"
-msgstr "Selecciona un tópico"
-
-msgid "Enter or select topics"
-msgstr "Introduce o selecciona tópicos"
-
-msgid "Save Changes?"
-msgstr "¿Guardar cambios?"
-
-msgid "Topic was modified by %1 while you're editing %2 ago. Are you sure you want to overwrite the topic?"
-msgstr "El tópico fue modificado por %1 mientras tu estabas editando %2. ¿Está seguro de que quiere sobreescribirlo?"
-
-msgid "Check balix"
-msgstr "Comprobar balix"
-
-msgid "Error configuring cache: %1"
-msgstr "Error configurando la caché: %1"
-
-msgid "Page not found: %1"
-msgstr "Página no encontrada: %1"
-
-msgid "Error: Could not instantiate ci data for event: %1"
-msgstr "Error: No se pueden instanciar los datos del ci para el evento: %1"
-
-msgid "Error in event text generator: %1"
-msgstr "Error en la generación de texto del evento: %1"
-
-msgid "Collection %1 already has rows in it, cannot clone"
-msgstr "La colección %1 ya tiene filas dentro, no se puede clonar"
-
-msgid "Document not found: %1"
-msgstr "Documento no encontrado: %1"
-
-msgid "Failed during mongo tail follow: %1"
-msgstr "Error durante el seguimiento de la cola de mongo: %1"
-
-msgid "Could not scan file %1"
-msgstr "No se puede explorar el archivo %1"
-
-msgid "Mongo error connecting to %1: %2"
-msgstr "Error de conexión de mongo con %1: %2"
-
-msgid "Missing mid for row"
-msgstr "Falta el MID para la fila"
-
-msgid "Master row not found for mid `%1`"
-msgstr "Fila Master no encontrada para el mid `%1`"
-
-msgid "CI record not found for mid %1"
-msgstr "El registro CI no encontrado para el mid %1"
-
-msgid "Could not instanciate CI from parameter %1"
-msgstr "No se puede instanciar el CI para el parámetro %1"
-
-msgid "CI record not found for search %1"
-msgstr "El registro de CI no encontrado para la búsqueda %1"
-
-msgid "Could not parse date %1 with format %2"
-msgstr "No se puede parsear la fecha %1 con el formato %2"
-
-msgid "Invalid or missing CI: %1"
-msgstr "Falta el CI %1 o no es válido"
-
-msgid "%1 is not a dir"
-msgstr "%1 no es un directorio"
-
-msgid "Error while reloading %1: %2"
-msgstr "Error mientras se recarga %1: %2"
-
-msgid "today"
-msgstr "hoy"
-
-msgid "async_request: missing or invalid queue configuration: either configure web_queue to 'host:port', or web_host and web_port"
-msgstr "respuesta_asincrona: falta la cola de configuración o no es válida:configure la web_queue al "host:port", o web_host y web_port; cualquiera de los dos"
-
-msgid "Favorite renamed ok"
-msgstr "Favorito renombrado ok"
-
-msgid "Favorite moved ok"
-msgstr "Favorito movido ok"
-
-msgid "Surrogate..."
-msgstr "Subrogación..."
-
-msgid "Portal"
-msgstr "Portal"
-
-msgid "Browser Warning"
-msgstr "Advertencia del navegador"
-
-msgid "This browser is not supported by %1"
-msgstr "Este navegador no es soportado por %1"
-
-msgid "Baseliner"
-msgstr "Baseliner"
-
-msgid "Server not available"
-msgstr "Servidor no disponible"
-
-msgid "Favorite"
-msgstr "Favorito"
-
-msgid "Explorer"
-msgstr "Explorador"
-
-msgid "Releases"
-msgstr "Releases"
-
-msgid "Add Workspace"
-msgstr "Añadir Workspace"
-
-msgid "Add Favorite Folder"
-msgstr "Añadir carpeta de favoritos"
-
-msgid "Fix explorer"
-msgstr "Fijar el explorador"
-
-msgid "Related: %1"
-msgstr "Relacionar: %1"
-
-msgid "Select a filter"
-msgstr "Seleccionar un filtro"
-
-msgid "Are you sure you want to delete the search %1?"
-msgstr "¿Está seguro de que quiere borrar la búsqueda %1?"
-
-msgid "Old Password"
-msgstr "Contraseña antigua"
-
-msgid "New Password"
-msgstr "Nueva Contraseña"
-
-msgid "Aceptar"
-msgstr "Aceptar"
-
-msgid "Cancelar"
-msgstr "Cancelar"
-
-msgid "Change User"
-msgstr "Cambiar usuario"
-
-msgid "Surrogate"
-msgstr "Subrogación"
-
-msgid "Component Error"
-msgstr "Error del componente"
-
-msgid "Timeout"
-msgstr "Tiempo de espera"
-
-msgid "Params"
-msgstr "Parámetros"
-
-msgid "Login not available"
-msgstr "Login no disponible"
-
-msgid "Not found: %1"
-msgstr "No encontrado: %1"
-
-msgid "Unknown error"
-msgstr "Error desconocido"
-
-msgid "Logout Error"
-msgstr "Logout Error"
-
-msgid "Data Error"
-msgstr "Error de datos"
-
-msgid "Error Rendering Component"
-msgstr "Error del componente de prestaciones"
-
-msgid "Print"
-msgstr "Imprimir"
-
-msgid "Preview"
-msgstr "Vista Previa"
-
-msgid "Message from"
-msgstr "Mensaje desde"
-
-msgid "Are you sure you want to close the window?"
-msgstr "¿Está seguro de que quiere cerrar la ventana?"
-
-msgid "new"
-msgstr "nuevo"
-
-msgid "Server Error"
-msgstr "Error del Servidor"
-
-msgid "Page:"
-msgstr "Página:"
-
-msgid "config.csv"
-msgstr "config.csv"
-
-msgid "Downloading..."
-msgstr "Descargando..."
-
-msgid "Uploading..."
-msgstr "Subiendo..."
-
-msgid "Installing..."
-msgstr "Instalando..."
-
-msgid "Drop"
-msgstr "Tirar"
-
-msgid "Form Editor"
-msgstr "Editor de Formularios"
-
-msgid "Restart"
-msgstr "Reiniciar"
-
-msgid "Add Rows"
-msgstr "Añadir filas"
-
-msgid "Replace"
-msgstr "Reemplazar"
-
-msgid "Really?"
-msgstr "¿Seguro?"
-
-msgid "Missing UploadPanel url"
-msgstr "Falta la barra de direcciones"
-
-msgid "Bill Of Materials"
-msgstr "Cuenta de materiales"
-
-msgid "BOM"
-msgstr "BOM"
-
-msgid "Warn"
-msgstr "Advertir"
-
-msgid "Regex"
-msgstr "Expresion regular"
-
-msgid "Capture"
-msgstr "Captura"
-
-msgid "Use Named Captures in Regex"
-msgstr "Usar capturas nombradas en expresiones regulares"
-
-msgid "Attempts exhausted, please wait"
-msgstr "Intentos agotados, por favor espere"
-
-msgid "Hello %1 %2"
-msgstr "Hola %1 %2"
-
-msgid "CI Graph"
-msgstr "Gráfica de CI"
-
-msgid "Redraw"
-msgstr "Redibujar"
-
-msgid "Generate Image"
-msgstr "Generar imagen"
-
-msgid "SpaceTree"
-msgstr "SpaceTree"
-
-msgid "RGraph"
-msgstr "RGraph"
-
-msgid "d3G"
-msgstr "d3G"
-
-msgid "Start on Last"
-msgstr "Empezar o después"
-
-msgid "dph"
-msgstr "dph"
-
-msgid "lim"
-msgstr "lim"
-
-msgid "dir"
-msgstr "dir"
-
-msgid "%1: %2"
-msgstr "%1: %2"
-
-msgid "Select one"
-msgstr "Seleccione uno"
-
-msgid "Select a project"
-msgstr "Seleccione un proyecto"
-
-msgid "select users or roles"
-msgstr "seleccione usuarios o roles"
-
-msgid "To"
-msgstr "A"
-
-msgid "[untitled]"
-msgstr "[sin título]"
-
-msgid "Invalid or corrupt data for variables"
-msgstr "Los datos para las variables son inválidos o están corruptos"
-
-msgid "<select variable>"
-msgstr "<selecciona variable>"
-
-msgid "Info"
-msgstr "Info"
-
-msgid "Third Party Notices"
-msgstr "Noticias de terceros"
-
-msgid "Prefereces"
-msgstr "Preferencias"
-
-msgid "User data"
-msgstr "Datos de usuarios"
-
-msgid "API"
-msgstr "API"
-
-msgid "Save API Key"
-msgstr "Guardar API Key"
-
-msgid "Generate API Key"
-msgstr "Genenar API Key"
-
-msgid "Parent Project"
-msgstr "Poyecto Padre"
-
-msgid "Engine Package"
-msgstr "Paquete Engine"
-
-msgid "Grammar"
-msgstr "Ortografía"
-
-msgid "Grammar Template"
-msgstr "Plantilla de ortografía"
-
-msgid "Replace current grammar with standard one?"
-msgstr "¿reemplazar la ortografía actual por la estandard?"
-
-msgid "Token Case"
-msgstr "Caso de muestra"
-
-msgid "Path Capture"
-msgstr "Path de las capturas"
-
-msgid "OS"
-msgstr "SO"
-
-msgid "Connect by Worker"
-msgstr "Conectado con Worker"
-
-msgid "Connect by Balix"
-msgstr "Conectado con Balix"
-
-msgid "Connect by SSH"
-msgstr "Conectado por SSH"
-
-msgid "Remote Temp Dir"
-msgstr "Directorio remoto de plantillas"
-
-msgid "Remote Tar"
-msgstr "Tar Remoto"
-
-msgid "Remote Perl"
-msgstr "Perl Remoto"
-
-msgid "CI Role"
-msgstr "Rol de CI"
-
-msgid "CI Mandatory"
-msgstr "CI Obligatorio"
-
-msgid "CI Multiple"
-msgstr "CI Multiple"
-
-msgid "Combo Options"
-msgstr "Opciones Combinadas"
-
-msgid "Realname"
-msgstr "Nombre real"
-
-msgid "Parallel?"
-msgstr "¿Comparar?"
-
-msgid "Directories"
-msgstr "Directorios"
-
-msgid "Root Dir"
-msgstr "Directorio root"
-
-msgid "Start Path"
-msgstr "Path de inicio"
-
-msgid "Chunk Size"
-msgstr "Tamaño de los trozos"
-
-msgid "Include"
-msgstr "Incluir"
-
-msgid "List of nodes to deploy to"
-msgstr "Lista de nodos a desplegar"
-
-msgid "Use regex, forward slashes and captures: %1"
-msgstr "Use expresiones regulares, barras diagonales y capturas: %1"
-
-msgid "CIs"
-msgstr "CIs"
-
-msgid "Token"
-msgstr "Muestra"
-
-msgid "Line"
-msgstr "Línea"
-
-msgid "Directory?"
-msgstr "¿Directorio?"
-
-msgid "Driver Parameters"
-msgstr "Parámetros del driver"
-
-msgid "Environment Variables"
-msgstr "Variables de entorno"
-
-msgid "Build"
-msgstr "Construir"
-
-msgid "New Search"
-msgstr "Nueva búsqueda"
-
-msgid "Operator"
-msgstr "Operador"
-
-msgid "Gridlet"
-msgstr "Gridlet"
-
-msgid "Columns"
-msgstr "Columnas"
-
-msgid "Relation"
-msgstr "Relación"
-
-msgid "Clear"
-msgstr "Limpiar"
-
-msgid "Query"
-msgstr "Query"
-
-msgid "SQL"
-msgstr "SQL"
-
-msgid "Packages"
-msgstr "Paquetes"
-
-msgid "Tipo"
-msgstr "Tipo"
-
-msgid "DESA"
-msgstr "DESA"
-
-msgid "PREP"
-msgstr "PREP"
-
-msgid "PROD"
-msgstr "PROD"
-
-msgid "Are you sure you want to approve %1?"
-msgstr "Está seguro de que quiere autorizar %1?"
-
-msgid "Create..."
-msgstr "Crear..."
-
-msgid "Icon"
-msgstr "Icono"
-
-msgid "ChangeStatus"
-msgstr "Cambiar Estado"
-
-msgid "Error Rendering Tab Component"
-msgstr "Error interpretando la tabla de componentes"
-
-msgid "Form creation failed"
-msgstr "Ha fallado la creación del formulario"
-
-msgid "Timeline"
-msgstr "Timeline"
-
-msgid "CI Update"
-msgstr "Actualización de CI"
-
-msgid "Order"
-msgstr "Orden"
-
-msgid "Basecamp"
-msgstr "Basecamp"
-
-msgid "Trac"
-msgstr "Trac"
-
-msgid "Redmine"
-msgstr "Redmine"
-
-msgid "BMC Remedy"
-msgstr "BMC Remedy"
-
-msgid "Jira"
-msgstr "Jira"
-
-msgid "HP PPM"
-msgstr "HP PPM"
-
-msgid "Clarity"
-msgstr "Clarity"
-
-msgid "select providers..."
-msgstr "seleccione proveedores..."
-
-msgid "Sample"
-msgstr "Muestra"
-
-msgid "System"
-msgstr "Sistema"
-
-msgid "Roles/Workflow"
-msgstr "Roles/Flujo de trabajo"
-	
-msgid "Field already exists, introduce another field name"
-msgstr "El campo ya existe, introduzca otro nombre de campo"
-
-msgid "Grid"
-msgstr "Grid"
-
-msgid "Workflow"
-msgstr "Flujo de Trabajo"
-
-msgid "Configuration Priorities"
-msgstr "Prioridades de configuración"
-
-msgid "There are not projects selected"
-msgstr "No hay proyectos seleccionados"
-
-msgid "By project"
-msgstr "Por proyecto"
-
-msgid "Minimum %1 characters"
-msgstr "Mínimo %1 caracteres"
-
-msgid "Eclipse Java/J2EE Mapping"
-msgstr "Mapeo en Eclipse Java/J2EE"
-
-msgid "Commit..."
-msgstr "Commit..."
-
-msgid "Compile"
-msgstr "Compilar"
-
-msgid "Add to folder"
-msgstr "Agregar a la carpeta"
-
-msgid "Workspace Name"
-msgstr "Nombre del Workspace"
-
-msgid "Remote Dir"
-msgstr "Directorio remoto"
-
-msgid "Workspace"
-msgstr "Workspace"
-
-msgid "New Workspace"
-msgstr "Nuevo Workspace"
-
-msgid "AssignedTo"
-msgstr "Asignada A"
-
-msgid "output"
-msgstr "salida"
-
-msgid "Output error detected by `%1`: %2"
-msgstr "Error en la salida detectada por `%1`: %2"
-
-msgid "Captured from output `%1` into stash `%2`"
-msgstr "Capturado en la salida `%1` en el pase `%2`"
-
-msgid "Running command: %1"
-msgstr "Ejecutando el comando: %1"
-
-msgid "Error running command %1"
-msgstr "Error ejecutando el comando %1"
-
-msgid "Role %1 created."
-msgstr "Rol %1 creado."
-
-msgid "Action %1 added to role %2."
-msgstr "Acción %1 añadida al rol %2."
-
-msgid "Granting role %1 to user %2..."
-msgstr "Concediendo rol %1 al usuario %2..."
-
-msgid "Finished command %1"
-msgstr "Comando terminado %1"
-
-msgid "STARTING remote script %1: `%2`"
-msgstr "INICIANDO script remoto %1: `%2`"
-
-msgid "FINISHED remote script %1: `%2`"
-msgstr "Script remoto FINALIZADO %1: `%2`"
-
-msgid "Error doing a chmod `%1` to file `%2`: %3"
-msgstr "Error haciendo chmod `%1` al fichero `%2`: %3"
-
-msgid "Could not find any file locally to ship to `%1`"
-msgstr "No se ha encontrado ningún fichero localmente para enviar a `%1`"
-
-msgid "Retrieving file `%1` to `%2`"
-msgstr "Recuperando el fichero `%1` a `%2`"
-
-msgid "Successfully delete file `%1`"
-msgstr "El archivo `%1`, ha sido borrado correctamente"
-
-msgid "Error deleting file `%1`: %2"
-msgstr "Error borrando el archivo `%1`: %2"
-
-msgid "Successfully deleted directory `%1`"
-msgstr "Borrado satisfactoriamente el directorio `%1`"
-
-msgid "Error deleting directory `%1`: %2"
-msgstr "Error borrando el directorio `%1`: %2"
-
-msgid "Config file not found in `%1`"
-msgstr "El fichero de configuración: `%1`, no se ha encontrado"
-
-msgid "Config file is empty: `%1`"
-msgstr "El fichero de configuración: `%1`, está vacío"
-
-msgid "Error processing SQL"
-msgstr "Error procesando SQL"
-
-msgid "Getting backup file from remote `%1` to `%2`"
-msgstr "Obteniendo el fichero de copia de seguridad remoto `%1` a `%2`"
-
-msgid "No existing file detected to backup: `%1`"
-msgstr "No existe el fichero detectado para la copia de seguridad: `%1`"
-
-msgid "Error reading backup file from remote. Ignored: `%1`"
-msgstr "Error leyendo el fichero de copia de seguridad de forma remotaa. Ignorado: `%1`"
-
-
-msgid "Rollback switch to local file `%1`"
-msgstr "Revertir cambio al fichero local `%1`"
-
-msgid "Sending file `%1` to `%2`"
-msgstr "Enviando fichero `%1` a `%2`"
-
-msgid "Error doing a chown `%1` to file `%2`: %3"
-msgstr "Error haciendo cambiando el usuario propietario `%1` al fichero `%2`: %3"
-
-msgid "Tables"
-msgstr "Tablas"
-
-msgid "Parser"
-msgstr "Parseador"
-
-msgid "Element pattern regex to include"
-msgstr "Patrón de expresión regular a incluir"
-
-msgid "Exclude"
-msgstr "Excluir"
-
-msgid "Element pattern regex to exclude"
-msgstr "Patrón de expresión regular a excluir"
-
-msgid "Exclude unparsed items"
-msgstr "Excluir elementos sin parsear"
-
-msgid "Baseline ID"
-msgstr "Entorno ID"
-
-msgid "CI update"
-msgstr "CI actualizado"
-
-msgid "Read only"
-msgstr "Sólo lectura"
-
-msgid "Rollback?"
-msgstr "¿Marcha atrás?"
-
-msgid "Job Key"
-msgstr "Clave de pase"
-
-msgid "Job ID"
-msgstr "Pase ID"
-
-msgid "Job monitor"
-msgstr "Monitor del pase"
-
-msgid "hello"
-msgstr "hola"
-
-msgid "Live search requires a minimum of 4 characters."
-msgstr "La búsqeuda en vivo requiere un mínimo de 4 caracteres."
-
-msgid "Last success"
-msgstr "Último éxito"
-
-msgid "Last failure"
-msgstr "Último fallo"
-
-msgid "Last elapsed"
-msgstr "Último transcurrido"
-
-msgid "Log <%$job->{name_ok}%>"
-msgstr "Log <%$job->{name_ok}%>"
-
-msgid "Log <%$job->{name_err}%>"
-msgstr "Log <%$job->{name_err}%>"
-
-msgid "File Path"
-msgstr "Ruta del fichero"
-
-msgid "Don't Fail On Timeout"
-msgstr "No falla en tiempo de espera"
-
-msgid "Variables to check"
-msgstr "Variables a comprobar"
-
-msgid "Seconds"
-msgstr "Segundos"
-
-msgid "Commit Items?"
-msgstr "¿Hacer un Commit de los elementos?"
-
-msgid "Output Dir"
-msgstr "Directorio de la salida"
-
-msgid "Suffix"
-msgstr "Sufijo"
-
-msgid "Patterns"
-msgstr "Patrones"
-
-msgid "Patterns Regex"
-msgstr "Patrones de expresiones regulares"
-
-msgid "Includes"
-msgstr "Incluye"
-
-msgid "Include Regex"
-msgstr "Incluye expresiones regulares"
-
-msgid "Excludes"
-msgstr "Excuye"
-
-msgid "Exclude Regex"
-msgstr "Excluye expresiones regulares"
-
-msgid "TO"
-msgstr "A"
-
-msgid "CC"
-msgstr "CC"
-
-msgid "Body"
-msgstr "Cuerpo"
-
-msgid "Local Path"
-msgstr "Ruta Local"
-
-msgid "Arguments"
-msgstr "Argumentos"
-
-msgid "Command arguments"
-msgstr "Argumentos de comando"
-
-msgid "Output Files"
-msgstr "Ficheros de salida"
-
-msgid "Output or log files generated by this command"
-msgstr "Salida o ficheros de log generados por este comando"
-
-msgid "Home Directory"
-msgstr "Directorio Home"
-
-msgid "Stdin"
-msgstr "Stdin"
-
-msgid "Method"
-msgstr "Método"
-
-msgid "Encoding"
-msgstr "Codificación"
-
-msgid "Form Arguments"
-msgstr "Argumentos formales"
-
-msgid "Headers"
-msgstr "Cabeceras"
-
-msgid "Log Body"
-msgstr "Log del cuerpo"
-
-msgid "Don't print body to log"
-msgstr "No imprimir el cuerpo en el log"
-
-msgid "Print body in log"
-msgstr "Imprimir el cuerpo en el log"
-
-msgid "Templating"
-msgstr "Templatizar"
-
-msgid "No Templating"
-msgstr "No Templatizar"
-
-msgid "Template Var"
-msgstr "Variables de la plantilla"
-
-msgid "File Encoding"
-msgstr "Codificación de ficheros"
-
-msgid "Content Encoding"
-msgstr "Codificación de contenido"
-
-msgid "CI Class"
-msgstr "Clase CI"
-
-msgid "CI Methods"
-msgstr "Métodos de CI"
-
-msgid "Named"
-msgstr "Nombrado"
-
-msgid "Positional"
-msgstr "Posicional"
-
-msgid "Transactional"
-msgstr "Transaccional"
-
-msgid "File does not exist: %1"
-msgstr "El fichero: %1, no existe"
-
-msgid "Loading cpanm."
-msgstr "Cargando cpanm."
-
-msgid "cpanm found at %1"
-msgstr "cpanm encontrado en %1"
-
-msgid "Install error: could not install distribution: %1"
-msgstr "Error en la instalación: no se ha podido instalar la distribución: %1"
-
-msgid "Unauthorized"
-msgstr "No autorizado"
-
-msgid "ok, remote %1 already exists: %2"
-msgstr "ok, el remoto %1 ya existe: %2"
-
-msgid "Fetching from remote %1 into branch %2"
-msgstr "Fetching del remoto %1 en la rama %2"
-
-msgid "Role '%1' modified"
-msgstr "Rol '%1' modificado"
-
-msgid "Authentication required"
-msgstr "Autenticación requerida"
-
-msgid "Login Ok"
-msgstr "Login Ok"
-
-msgid "Missing login"
-msgstr "Falta el login"
-
-msgid "Too many attempts"
-msgstr "Demasiados intentos"
-
-msgid "Missing User"
-msgstr "Falta el Usuario"
-
-msgid "User '%1' not found"
-msgstr "Usuario '%1' no encontrado"
-
-msgid "SAML header: %1"
-msgstr Cabecera SAML: %1"
-
-msgid "Current user: %1"
-msgstr "Usuario actual: %1"
-
-msgid "SAML starting session for username: %1"
-msgstr "SAML iniciando sesión para el nombre de usuario: %1"
-
-msgid "SAML Failed auth: %1"
-msgstr "SAML Fallo de autenticación: %1"
-
-msgid "S0003: create_user_session not enabled"
-msgstr "S0003: Creada la sesión de usuario no habilitada"
-
-msgid "S0001: User %1 not authorized: action.create_user_session"
-msgstr "S0001: Usuario %1 no autorizado: action.create_user_session"
-
-msgid "S0002: User not found: %1"
-msgstr "S0002: Usuario no encontrado: %1"
-
-msgid "Auth error: %1"
-msgstr "Error de autenticación: %1"
-
-msgid "Categories admin"
-msgstr "Categorías de administrador"
-
-msgid "Field cloned"
-msgstr "Campo clonado"
-
-msgid "Field name already exists, introduce another name"
-msgstr "El nombre del campo ya existe, introduzca otro nombre"
-
-msgid "Error cloning field: %1"
-msgstr "Error clonando el campo: %1"
-
-msgid "System updated"
-msgstr "Sistema actualizado"
-
-msgid "Error updating system"
-msgstr "Error actualizando el sistema"
-
-msgid "Category not found for id %1"
-msgstr "Categoría no encontrada para el id %1"
-
-msgid "Error exporting: %1"
-msgstr "Error exportando: %1"
-
-msgid "Created category %1"
-msgstr "Categoría %1 creada"
-
-msgid "Updated category %1"
-msgstr "Categoría %1 actualizada"
-
-msgid "Created status %1"
-msgstr "Estado %1 creado"
-
-msgid "Status %1 found. Statuses are not updated by this import."
-msgstr "Estado %1 encontrado. Los estados no se han actualizado con este import"
-
-msgid "Status '%1' included in category"
-msgstr "Estado '%1' included in category"
-
-msgid "Status '%1' was already included."
-msgstr "El estado '%1' ya estaba incluido."
-
-msgid "Topic category created with id %1 and name %2:"
-msgstr "Categoría de tópico creada con el id %1 y nombre %2:"
-
-msgid "Topic category %1 updated"
-msgstr "La categoría de tópico %1 ha sido actualizada"
-
-msgid "Get seq value of "
-msgstr "Obtener valor de secuencia de "
-
-msgid "Initial state establishet"
-msgstr "Estadio inicial establecido"
-
-msgid "Missing class for %1"
-msgstr "Falta la clase para %1"
-
-msgid "CI %1 saved ok"
-msgstr "CI %1 guardado ok"
-
-msgid "Undefined action"
-msgstr "Acción indefinida"
-
-msgid "CI error: %1"
-msgstr "Error de CI: %1"
-
-msgid "CI %1 loaded ok"
-msgstr "CI %1 cargado ok"
-
-msgid "CI load error: %1"
-msgstr "Error al cargar el CI: %1"
-
-msgid "CIs deleted ok"
-msgstr "CIs borrados ok"
-
-msgid "Error deleting CIs: %1"
-msgstr "Error borrando CIs: %1"
-
-msgid "CIs exported ok"
-msgstr "CIs exportados ok"
-
-msgid "Error exporting CIs: %1"
-msgstr "Error exportando CIs: %1"
-
-msgid "Missing parameter classname"
-msgstr Falta el parámetro classname"
-
-msgid "CIs created: %1"
-msgstr "CIs creados: %1"
-
-msgid "CIs created: %1, CIs updated: %2"
-msgstr "CIs creados: %1, CIs actualizados: %2"
-
-msgid "Could not load metadata for dashlet %1: %2"
-msgstr "No se pueden cargar los metadatos para el dashlet %1: %2"
-
-msgid "Executed JOBS for <b>%1</b>"
-msgstr "PASES ejecutados para <b>%1</b>"
-
-msgid "User *%1* has uploaded file `%2`"
-msgstr "El usuario *%1* ha actualizado el fichero `%2`"
-
-msgid "File saved to job %1 log: %2"
-msgstr "Fichero guardado en el pase %1 log: %2"
-
-msgid "Missing provider"
-msgstr "Falta el proveedor"
-
-msgid "Missing query"
-msgstr "Falta la query"
-
-msgid "rule: [%1] %2"
-msgstr "regla: [%1] %2"
-
-msgid "Event not found"
-msgstr "No se ha encontrado el evento"
-
-msgid "Event status changed to: %1"
-msgstr "El estado del evento ha cambiado a: %1"
-
-msgid "Missing parameter username"
-msgstr "Falta el parámetro username"
-
-msgid "User not found"
-msgstr "Usuario no encontrado"
-
-msgid "Error deleting User: %1"
-msgstr "Error borrando el usuario: %1"
-
-msgid "Password changed"
-msgstr "Contraseña cambiada"
-
-msgid "You must introduce a new password"
-msgstr "Debes introducir una nueva contraseña"
-
-msgid "Password incorrect"
-msgstr "Contraseña incorrecta"
-
-msgid "Error changing Password %1"
-msgstr "Error cambiando la contraseña %1"
-
-msgid "Avatar refreshed"
-msgstr "Avatar refrescado"
-
-msgid "Changed user avatar"
-msgstr "Avatar de usuario cambiado"
-
-msgid "Error adding project %1: %2"
-msgstr "Error añadiendo el proyecto %1: %2"
-
-msgid "Error deleting project %1: %2"
-msgstr "Error borrando el proyecto %1: %2"
-
-msgid "Job has dependencies due to later jobs. Baseline cannot be updated. Rollback cancelled."
-msgstr "El pase tiene dependencias debido a pases posteriores. EL entorno no puede ser actualizado. Marcha atrás cancelada"
-
-msgid "Job rollback requested by %1"
-msgstr "Pase marcha atrás solicitado por %1"
-
-msgid "Job %1 rollback scheduled"
-msgstr "Pase %1 marcha atrás programada"
-
-msgid "Error: logfile not found or invalid: %1"
-msgstr "Error: fichero de log no encontrado o inválido: %1"
-
-msgid "Stash saved ok"
-msgstr "Stash guardado ok"
-
-msgid "Job already cancelled"
-msgstr "Pase ya cancelado"
-
-msgid "No job contents"
-msgstr "Pase sin contenido"
-
-msgid "Job %1 resumed"
-msgstr "Pase %1 reanudado"
-
-msgid "Error resuming the job: %1"
-msgstr "Error reanudando el pase: %1"
-
-msgid "Could not delete, master row %1 not found"
-msgstr "No se puede borrar, fila master %1 no encontrada"
-
-msgid "CI Storage method not supported: %1"
-msgstr "Método de almacenamiento de CI no soportado: %1"
-
-msgid "Missing mid %1"
-msgstr "Falta el Mid %1"
-
-msgid "Error inserting into master kv: %1. Doc: %2"
-msgstr "Error insertando en el master kv: %1. Doc: %2"
-
-msgid "Error reading recipients: %1"
-msgstr "Error leyendo los destinatarios: %1"
-
-msgid "Action %1 already belongs to role %2"
-msgstr "Acción %1 pertenece ya al rol %2"
-
-msgid "Role %1 not found"
-msgstr "Rol %1 no encontrado"
-
-msgid "Process $pid does not exist"
-msgstr "El proceso $pid no existe"
-
-msgid "SQA Package analysis finished"
-msgstr "El paquete de análisis SQA ha terminado"
-
-msgid "Email error. Email contents: <pre>%1</pre>"
-msgstr "Email error. Contenido del email: <pre>%1</pre>"
-
-msgid "internal"
-msgstr "interno"
-
-msgid "Error adding Topic %1: %2"
-msgstr "Error añadiendo el tópico %1: %2"
-
-msgid "Toópico no encontrado"
-
-msgid "Topic [%1] %2 updated.  %3 changed"
-msgstr "Tópico [%1] %2 actualizado.  %3 cambiado"
-
-msgid "Topic [%1] %2 updated.  Removed from %4 %3"
-msgstr "Tópico [%1] %2 actualizado.  Borrado de %4 %3"
-
-msgid "Id not found: %1"
-msgstr "Id no encontrado: %1"
-
-msgid "*Skipped* task %1 in run forward"
-msgstr "*Omitida* tarea %1 en ejecución"
-
-msgid "*Skipped* task %1 in run rollback"
-msgstr "*Omitida* tarea %1 ejecutando marcha atrás"
-
-msgid "Waiting for return code from children pids: %1"
-msgstr "Esperando el código que devuelven los pids hijos: %1"
-
-msgid "Error detected in children, pids failed: %1. Ok: %2"
-msgstr "Error detectado en el hijo, han fallado los pids: %1. Ok: %2"
-
-msgid "Done waiting for return code from children pids: %1"
-msgstr "Hecha la espera del código que devuelven los pids hijos: %1"
-
-msgid "No children to wait for."
-msgstr "No hijos por los que esperar."
-
-msgid "Unknown error running rule: %1"
-msgstr "Error desconocido ejecutando la regla: %1"
-
-msgid "Error running rule '%1': %2"
-msgstr "Error ejecutando la regla '%1': %2"
-
-msgid "No project changes detected"
-msgstr "No se han detectado cambios en el proyecto"
-
-msgid "Error running task * %1 *: %2"
-msgstr "Error ejecutando la tarea * %1 *: %2"
-
-msgid "Nature Detected *%1*"
-msgstr "Naturaleza detectada *%1*"
-
-msgid "Error building DSL for rule '%1': %2"
-msgstr "Error construyendo el DSL para la regla '%1': %2"
-
-msgid "$self->{label}"
-msgstr "$self->{label}"
-
-msgid "$title"
-msgstr "$title"
-
-msgid "Could not connect to database %1"
-msgstr "No se puede conectar con la base de datos %1"
-
-msgid "Database error: %1 %2"
-msgstr "Error de base de datos: %1 %2"
-
-msgid "Stopping SQL execution due to an error"
-msgstr "Parando la ejecución de SQL debido a un error"
-
-msgid "CAPTURE for item %1 with regex %2"
-msgstr "CAPTURA del elemento %1 con la expresión regular %2"
-
-msgid "Grammar not found in %1"
-msgstr "ortografía no encontrada en %1"
-
-msgid "Error user does not exist. "
-msgstr "Error, no existe el usuario. "
-
-msgid "Search added"
-msgstr "Búsqueda añadida"
-
-msgid "Search name already exists, introduce another search name"
-msgstr "El nombre de la búsqueda ya existe, introduce otro nombre de búsqueda"
-
-msgid "Error adding search: %1"
-msgstr "Error añadiendo la búsqueda: %1"
-
-msgid "Search modified"
-msgstr "Búsqueda modificada"
-
-msgid "Error modifing search: %1"
-msgstr "Error modificando la búsqueda: %1"
-
-msgid "Search deleted"
-msgstr "Búsqueda borrada"
-
-msgid "Error deleting search: %1"
-msgstr "Error borrando la búsqueda: %1"
-
-msgid "Missing 'Categories' in search configuration"
-msgstr "No está 'Categorías' en la configuración de búsqueda"
-
-msgid "Could not find a worker capable of %1"
-msgstr "No se pudo obtener un worker capaz de %1"
-
-msgid "Local file `%1` not found"
-msgstr "Fichero local `%1` no encontrado"
-
-msgid "Could not create remote directory `%1`: %2"
-msgstr "No se puede crear el directorio remoto `%1`: %2"
-
-msgid "Could not chown `%1 %2`: %3"
-msgstr "No se puede hacer cambair el usuario propietario `%1 %2`: %3"
-
-msgid "Could not find local directory to `%1`"
-msgstr "No se puede encontrar directorio local en `%1`"
-
-msgid "balix: can't send file: remote dir is not writeable `%1`"
-msgstr "balix: no se puede enviar el fichero: el directorio remoto no se puede escribir `%1`"
-
-msgid "balix: can't send file: destination is a directory `%1`"
-msgstr "balix: no se puede enviar el fichero: el destinatario es un directorio `%1`"
-
-msgid "Failed CRC check for remote file `%1`"
-msgstr "Fallo en la verificación CRC del fichero remoto `%1`"
-
-msgid "Error reading file `%1` from `%2`: %3"
-msgstr "Error leyendo el fichero `%1` de `%2`: %3"
-
-msgid "Balix: get_file: could not open local file `%1`: %2"
-msgstr "Balix: get_file: no se puede abrir el fichero local`%1`: %2"
-
-msgid "Password does not comply. Rule: %1"
-msgstr "La contraseña no cumple con las características. Regla: %1"
-
-msgid "Password length is less than %1 characters. Rule: %1"
-msgstr "Password length is less than %1 characters. Rule: %1"
-
-msgid "Could now checkout topic file `%1`"
-msgstr "Ahora podría obtener el fichero del tópico `%1`"
-
-msgid "Job resumed by user %1"
-msgstr "Pase reanudado por el usuario %1"
-
-msgid "Job was not paused"
-msgstr "El pase no fue pausado"
-
-msgid "Job restarted by user %1, execution %2, step %3"
-msgstr "Pase reiniciado por el usuario %1, ejecución %2, paso %3"
-
-msgid "Job %1 rescheduled by user %2 to %3"
-msgstr "Pase %1 reprogramado por el usuario %2 a %3"
-
-msgid "*Job Approved by %1*: %2"
-msgstr "*Pase Aprobado por %1*: %2"
-
-msgid "*Job Rejected by %1*: %2"
-msgstr "*Pase Rechazado por %1*: %2"
-
-msgid "no comment"
-msgstr "No hay comentarios"
-
-msgid "Task response `*%1*` by *%2*: %3"
-msgstr "Respuesta de la tarea `*%1*` por *%2*: %3"
-
-msgid "Job failure: %1"
-msgstr "Fallo del pase: %1"
-
-msgid "No need to rollback anything."
-msgstr "No es necesario dar marcha atrás nada"
-
-msgid "Error during rollback. Baselines are inconsistent, manual intervention required."
-msgstr "Error durante la marcha atrás. Los entornos son inconsistentes, se requiere intervención manual"
-
-msgid "Job step %1 finished with error"
-msgstr "Paso %1 del pase ha terminado con error"
-
-msgid "Job step %1 finished ok"
-msgstr "Paso %1 del pase ha terminado ok"
-
-msgid "Job step %1 finished with status %2"
-msgstr "Paso %1 del pase ha terminado con estado %2"
-
-msgid "Could not write pid file for job: %1"
-msgstr "No se puede escibir el fichero del pid para el pase: %1"
-
-msgid "Job pausing..."
-msgstr "Pausando el pase..."
-
-msgid "Setting pause timeout at %1 seconds"
-msgstr "estableciendo el tiempo de espera de la pauda en %1 segundos"
-
-msgid "Pause finished due to status %1"
-msgstr "Pausa terminada debido al estado %1"
-
-msgid "Job cancelled while in pause"
-msgstr "Pase cancelado durante la pausa"
-
-msgid "Job error while in pause"
-msgstr "Error del pase durante la pausa"
-
-msgid "Suspending Job"
-msgstr "Suspendiendo el pase"
-
-msgid "Directory does not exist or is not accesible %1"
-msgstr "El directorio no existe o no es accesible %1"
-
-msgid "Could not chmod `%1 %2`: %3"
-msgstr "No se puede hacer chmod `%1 %2`: %3"
-
-msgid "File skipped: %1"
-msgstr "Fichero ignorado: %1"
-
-msgid "Could not require package %1: %2"
-msgstr "No se requiere el paquete %1: %2"
-
-msgid "Parser *%1* could not parse `%2`"
-msgstr "Parseador *%1* no puede parsear `%2`"
-
-msgid "Creating job home: %1"
-msgstr "Creando pase home: %1"
-
-msgid "Job home `%1` reset clean"
-msgstr "Pase home `%1` reestablecido y limpio"
-
-msgid "Job dir too short, not removed for safety: %1"
-msgstr "Directorio del pase ddemasiado corto, no se elimina por seguridad: %1"
-
-msgid "Job home `%1` created"
-msgstr "Pase home `%1` creado"
-
-msgid "Added %1 to changeset %2 bls"
-msgstr "Añadido %1 al cambio %2 entorno"
-
-msgid "Topic %1 does not match category %2. Skipped"
-msgstr "El tópico %1 no se encuentra en la categoría %2. Skipped"
-
-msgid "Moving changeset %1 to stage *%2*"
-msgstr "Moviendo el cambio %1 a la etapa *%2*"
-
-msgid "Updating baseline %1 for repository %2, job type %3"
-msgstr "Actualizando el entorno %1 para el repositorio %2, tipo de pase %3"
-
-msgid "Checking job revisions"
-msgstr "Comprobando las revisiones de los pases"
-
-msgid "Verifying baseline %1 for repository %2, job type %3"
-msgstr "Verificando el entorno %1 para el repositorio %2, tipo de pase %3"
-
-msgid "Revisions selected"
-msgstr "Revisiones seleccionadas"
-
-msgid "Baseline verified for repository %1"
-msgstr "Entorno verificado para el repositorio %1"
-
-msgid "No project assigned to changeset %1"
-msgstr "No se ha asignado proyecto al cambio %1"
-
-msgid "Grouping items for revision"
-msgstr "Agrupando elementos para revisarlos"
-
-msgid "Found %1 items for this job"
-msgstr "Encontrados %1 elementos para este pase"
-
-msgid "Checking out baseline %1 for project %2, repository %3: %4"
-msgstr "Verificando el entorno %1 para el proyecto %2, repositorio %3: %4"
-
-msgid "Project items before for %1"
-msgstr "Elementos del proyecto antes de %1"
-
-msgid "Job natures after push"
-msgstr "Naturalezas del pase después del push"
-
-msgid "Project items for %1"
-msgstr "Elementos del proyecto para %1"
-
-msgid "Project natures for %1"
-msgstr "Naturalezas del proyecto para %1"
-
-msgid "Nature check log"
-msgstr "Log de verificación de la naturaleza"
-
-msgid "No natures detected in job items"
-msgstr "No se han detectado naturalezas en los elementos del pase"
-
-msgid "<b>Changeset:</B> Files detected for job"
-msgstr "<b>Cambio:</B> Ficheros detectados para el pase"
-
-msgid "Searching for revisions for mids: %1"
-msgstr "Buscando para revisiones para los mids: %1"
-
-msgid "<b>GIT Revisions:</B> Treating revision"
-msgstr "<b>Revisiones GIT:</B> Tratamiento de la revisión"
-
-msgid "No project found for revision *%1*"
-msgstr "No se ha encontrado proyecto para la revisión *%1*"
-
-msgid "<b>GIT Revisions:</B> Processing revision $_"
-msgstr "<b>Revisiones GIT:</B> Processando la revision $_"
-
-msgid "<b>SVN Revisions:</B> Treating revision"
-msgstr "<b>Revisiones SVN:</B> Tratamiento de la revisión"
-
-msgid "<b>SVN Revisions:</B> Branch of revision $rev->{sha} ... $branch"
-msgstr "<b>Revisiones SVN:</B> Rama de la revisión $rev->{sha} ... $branch"
-
-msgid "<b>SVN Revisions:</B> Processing revision $_"
-msgstr "<b>Revisiones SVN:</B> Procesando la revisión $_"
-
-msgid "<b>SVN Revisions:</B> Calling revision $_ list_elements"
-msgstr "<b>Revisiones SVN:</B> Llamando a la revisión $_ list_elements"
-
-msgid "<b>CVS Revisions:</B> Treating revision"
-msgstr "<b>Revisiones CVS:</B> Tratamiendo de la revisión"
-
-msgid "<b>CVS Revisions:</B> Branch of revision $rev->{sha} ... $branch"
-msgstr "<b>Revisiones CVS:</B> rama de la revisión $rev->{sha} ... $branch"
-
-msgid "<b>CVS Revisions:</B> Processing revision $_"
-msgstr "<b>Revisiones CVS:</B> Procesando la revisión $_"
-
-msgid "<b>CVS Revisions:</B> Calling revision $_ list_elements"
-msgstr "<b>Revisiones CVS:</B> Llamando a la revisión $_ list_elements"
-
-msgid "<b>PLASTIC Revisions:</B> Treating revision"
-msgstr "<b>Revisiones PLASTIC:</B> Tratamiento de la revisión"
-
-msgid "<b>PLASTIC Revisions:</B> Processing revision $_"
-msgstr "<b>Revisiones PLASTIC:</B> Procesando la revisión $_"
-
-msgid "Error parsing %1: %2"
-msgstr "Error parseando %1: %2"
-
-msgid "Skipping job %1 due to status discrepancy: %2 != %3"
-msgstr "Omitiendo el pase %1 debido a una discrepancia de estado: %2 != %3"
-
-msgid "Starting job %1 for step %2"
-msgstr "Iniciando el pase %1 por el paso %2"
-
-msgid "Unrecognized mode '%1'"
-msgstr "Modo no reconocido '%1'"
-
-msgid "Abort by Dispatcher. Job unknown error caught: %1"
-msgstr "Abortado por el Dispatcher. Capturado error desconocido del pase: %1"
-
-msgid "***** ERROR: Could not fork job '%1'"
-msgstr "***** ERROR: 	No se puede bifurcar el trabajo '%1'"
-
-msgid "Could not start service %1. Service ignored: %2"
-msgstr "No se puede iniciar el servicio %1. Servicio ignorado: %2"
-
-msgid "Sed: Missing or invalid path in configuration"
-msgstr "Sed: Falta el Path de configuración o no es válido"
-
-msgid "Sed: starting: %1"
-msgstr "Sed: iniciando: %1"
-
-msgid "Sed include/exclude."
-msgstr "Sed incluir/excluir."
-
-msgid "Sed changes"
-msgstr "Cambios Sed"
-
-msgid "Missing file parameter"
-msgstr "Falta el parámetro del fichero"
-
-msgid "Footprint elements"
-msgstr "Elementos de la huella"
-
-msgid "RUNNING sem_check_for_roadkill"
-msgstr "RUNNING sem_check_for_roadkill"
-
-msgid "Checking if process $pid exists"
-msgstr "verificar si el proceso $pid existe"
-
-msgid "Detected killed semaphore %1"
-msgstr "Detectado un semáforo abortado %1"
-
-msgid "Running file rename for baseline %1"
-msgstr "Ejecutando renombrar un fichero del entorno %1"
-
-msgid "Could not find rename root dir %1"
-msgstr "No se pudo encontrar el renombre para el directorio raíz %1"
-
-msgid "Filter paths, include, excludes"
-msgstr "Filtrar rutas, incluir, excluir"
-
-msgid "Tar of directory `%1` into file `%2`"
-msgstr "Tar del directorio `%1` en el fichero `%2`"
-
-msgid "File content written: `%1`"
-msgstr "Escrito el contenido del fichero: `%1`"
-
-msgid "Server %1 is inactive. Skipped"
-msgstr "El servidor %1 está inactivo. Ignorado"
-
-msgid "local_mode=%1, local list"
-msgstr "local_mode=%1, lista local"
-
-msgid "Backup Mode"
-msgstr "Modo copia de seguridad"
-
-msgid "No Backup"
-msgstr "No copia de seguridad"
-
-msgid "Backup Existing Files"
-msgstr "Copia de seguridad de archivos existentes"
-
-msgid "Backup Existing Files or Fail"
-msgstr "Copia de seguridad de archivos existentes o no"
-
-msgid "Keep Relative Path from job directory"
-msgstr "Mantenenga la ruta relativa desde el directorio de trabajo"
-
-msgid "Rollback Mode"
-msgstr "Modo Marcha atrás"
-
-msgid "No Rollback"
-msgstr "No marcha atrás"
-
-msgid "Rollback from local files if exist"
-msgstr "Marcha atrás de los archivos locales si existe"
-
-msgid "Must Rollback from local files"
-msgstr "Debe hacer marcha atrás de los archivos locales"
-
-msgid "Exist Mode"
-msgstr "Modo existe"
-
-msgid "Skip, if file already sent by any task in job chain"
-msgstr "Ignorar, si el fichero ta ha sido mandado por  cualquier tarea en la cadena de pase"
-
-msgid "Reship, even file has already been shipped to node"
-msgstr "Reenviar, incluso si el fichero ha sido ya enciado al nodo"
-
-msgid "Remote Path"
-msgstr "Ruta remota"
-
-msgid "Chown"
-msgstr "Chown"
-
-msgid "Chmod"
-msgstr "Chmod"
-
-msgid "Include Paths"
-msgstr "Incluir rutas"
-
-msgid "Include Path Regex"
-msgstr "Incluir rutas con las expresiones regulares"
-
-msgid "Exclude Path"
-msgstr "Excluir ruta"
-
-msgid "Engine"
-msgstr "Motor"
-
-msgid "Mason"
-msgstr "Masón"
-
-msgid "Template Toolkit"
-msgstr "Herramientas de la plantilla"
-
-msgid "Template Stash Var"
-msgstr "variables Stash de la plantilla"
-
-msgid "Input File"
-msgstr "Fichero de entrada"
-
-msgid "Output File"
-msgstr "Fichero de salida"
-
-msgid "Status on Success"
-msgstr "Estado en éxito"
-
-msgid "Status on Failure"
-msgstr "Estado en fallo"
-
-msgid "Status on Rollback OK"
-msgstr "Estado en matcha atrás OK"
-
-msgid "Status on Rollback Failure"
-msgstr "Estado en matcha atrás Fallo"
-
-msgid "Local Dir"
-msgstr "Directorio local"
-
-msgid "Tar File Path"
-msgstr "Ruta del fichero Tar"
-
-msgid "Return Codes"
-msgstr "Código devuelto"
-
-msgid "Split Mode"
-msgstr "Modo división"
-
-msgid "Split"
-msgstr "División"
-
-msgid "Database"
-msgstr "Base de datos"
-
-msgid "Error Mode"
-msgstr "Modo Error"
-
-msgid "Mode"
-msgstr "Modo"
-
-msgid "Exists Action"
-msgstr "Existe la Acción"
-
-msgid "Include Content"
-msgstr "Incluir Contenido"
-
-msgid "Include Content Regex"
-msgstr "Incluir el contenido de la expresión regular"
-
-msgid "Exclude Content"
-msgstr "Excluir contenido"
-
-msgid "Exclude Content Regex"
-msgstr "Excluir contenido de la expresión regular"
-
-msgid "Path Mode"
-msgstr "Modo de Ruta"
-
-msgid "Files, non Recursive"
-msgstr "Ficheros, no recursivo"
-
-msgid "Recursive Files"
-msgstr "Ficheros recursivos"
-
-msgid "Dir Mode"
-msgstr "Modo directorio"
-
-msgid "Files only"
-msgstr "Sólo ficheros"
-
-msgid "Files and Directories"
-msgstr "Ficheros y directorios"
-
-msgid "Only Directories"
-msgstr "Sólo directorios"
-
-msgid "Exclude Paths"
-msgstr "Excluir rutas"
-
-msgid "Exclude Path Regex"
-msgstr "Excluir rutas de la expresión regular"
-
-msgid "Approvers"
-msgstr "Aprobados"
-
-msgid "Cut Path"
-msgstr "Ruta cortada"
-
-msgid "New Project"
-msgstr "Nuevo proyecto"
-
-msgid "Properties Grid"
-msgstr "Propiedades del Grid"
-
-msgid "Scan"
-msgstr "Explorar"
-
-msgid "Ping"
-msgstr "Ping"
-
-msgid "CSV File"
-msgstr "Archivo CSV"
-
-msgid "Template"
-msgstr "Plantilla"
-
-msgid "Digest time"
-msgstr "Tiempo de asimilación"
-
-msgid "Digest date"
-msgstr "Fecha de asimilación"
-
-msgid "Digest frequency"
-msgstr "Frecuencia de asimilación"
-
-msgid "Success: %1"
-msgstr "Éxito: %1"
-
-msgid "You are about to lose your changes. Save now?"
-msgstr "Está a punto de perder sus cambios. ¿Guardar ahora?"
-
-msgid "No Services"
-msgstr "No servicios"
-
-msgid "<%$namejob%>"
-msgstr "<%$namejob%>"
-
-msgid "Total Time"
-msgstr "Tiempo Total"
-
-msgid "Last Step"
-msgstr "Último paso"
-
-msgid "Job Items"
-msgstr "Elementos del pase"
-
-msgid "Active Time"
-msgstr "Tiempo de activación"
-
-msgid "Moved up"
-msgstr "Subido"
-
-msgid "Status Text"
-msgstr "Texto de estado"
-
-msgid "Wait"
-msgstr "Espera"
-
-msgid "SUCCESS"
-msgstr "ÉXITO"
-
-msgid "Job Chain"
-msgstr "Cadena de pase"
-
-msgid "Cannot promote/demote this entity type"
-msgstr "No se puede promocionar/degradar este tipo de entidad"
-
-msgid "No slots selected"
-msgstr "No se han seleccionado slots"
-
-msgid "<search>"
-msgstr "<search>"
-
-msgid "Rule Export"
-msgstr "Exportar regla"
-
-msgid "Import YAML"
-msgstr "Importar YAML"
-
-msgid "Edit Rule"
-msgstr "Editar regla"
-
-msgid "job chain: %1"
-msgstr "cadena de pase: %1"
-
-msgid "independent"
-msgstr "independiente"
-
-msgid "Metadata"
-msgstr "Metadatos"
-
-msgid "Return Key"
-msgstr "Clave de retorno"
-
-msgid "Needs Rollback?"
-msgstr "¿Es necesaria marcha atrás?"
-
-msgid "Rollback Needed After"
-msgstr "La marcha atrás será necesaria después"
-
-msgid "Rollback Needed Always"
-msgstr "Marcha atrás necesaria siempre"
-
-msgid "Needs Rollback Key"
-msgstr "se necesita clave de la marcha atrás"
-
-msgid "Run Forward"
-msgstr "Ejecución"
-
-msgid "Run Rollback"
-msgstr "Ejecución de la marcha atrás"
-
-msgid "Error Trap"
-msgstr "Captura del error"
-
-msgid "No Trap"
-msgstr "No captura"
-
-msgid "Parallel Mode"
-msgstr "Modo paralelo"
-
-msgid "No Parallel"
-msgstr "No paralelo"
-
-msgid "Semaphore Key"
-msgstr "Clave de semáforo"
-
-msgid "Missing key"
-msgstr "Falta la clave"
-
-msgid "Service '%1' does not contain edit information"
-msgstr "El servicio '%1' no contiene información editable"
-
-msgid "User %1 has changed rule at %2. Are you sure you want to overwrite it?"
-msgstr "El usuario %1 ha cambiado la regla a %2. ¿Está seguro de que quiere sobreescribirla?"
-
-msgid "DSL validation failed, save it anyway? Error: %1"
-msgstr "Ha fallado la validación, ¿Guardar de todos modos?  Error: %1"
-
-msgid "Rollback Rule"
-msgstr "Regla de Marcha atrás"
-
-msgid "Toggle"
-msgstr "Interruptor"
-
-msgid "Rule `%1` has changed, but has not been saved. Leave without saving?"
-msgstr "La regla `%1` ha cambiado, pero no ha sido guardada. ¿Desea salir sin guardar?"
-
-msgid "Stash"
-msgstr "Stash"
-
-msgid "Finished OK"
-msgstr "Terminado OK"
-
-msgid "Error during DSL execution: %1"
-msgstr "Error durante la ejecución DSL: %1"
-
-msgid "DSL: %1"
-msgstr "DSL: %1"
-
-msgid "Error saving rule"
-msgstr "Error guardando la regla"
-
-msgid "NO ROLLBACK"
-msgstr "NO MARCHA ATRÁS"
-
-msgid "NO RUN"
-msgstr "NO EJECUTAR"
-
-msgid "Palette"
-msgstr "Paleta"
-
-msgid "RFC"
-msgstr "RFC"
-
-msgid "Event Type"
-msgstr "Tipo de evento"
-
-msgid "Independent"
-msgstr "Independiente"
-
-msgid "Chain Description"
-msgstr "Descripción de la cadena"
-
-msgid "Web Service Type"
-msgstr "Tipo de Web Service"
-
-msgid "Job Chain Details"
-msgstr "Detalles de la cadena de pase"
-
-msgid "Pre Online"
-msgstr "Pre Online"
-
-msgid "Post Online"
-msgstr "Post Online"
-
-msgid "Post Offline"
-msgstr "Post Offline"
-
-msgid "Event Delete"
-msgstr "Evento Borrado"
-
-msgid "Event Status Changed"
-msgstr "Estado del evento cambiado"
-
-msgid "Event Key"
-msgstr "Clave del evento"
-
-msgid "Rule Log ID"
-msgstr "ID del log de la regla"
-
-msgid "Event ID"
-msgstr "ID del evento"
-
-msgid "Rule ID"
-msgstr "ID de la regla"
-
-msgid "Delete event"
-msgstr "Borrar evento"
-
-msgid "Reset event status"
-msgstr "Reiniciar el estado del evento"
-
-msgid "CI Export"
-msgstr "Exportar CI"
-
-msgid "Class: %1 #%2"
-msgstr "Clase: %1 #%2"
-
-msgid "Retry"
-msgstr "Reintentar"
-
-msgid "Retries the job task that failed"
-msgstr "Reintentar la tarea del pase que falló"
-
-msgid "Skip"
-msgstr "Ignorar"
-
-msgid "Skips the job task that failed, ignoring the error"
-msgstr "Ignorar las tareas de pase que fallan, iggnorando el error"
-
-msgid "Abort"
-msgstr "Abortar"
-
-msgid "The task will fail"
-msgstr "La tarea va a falalr"
-
-msgid "Run In-process: %1"
-msgstr "Ejecución en progreso: %1"
-
-msgid "Run In-Process"
-msgstr "Ejecución en progreso"
-
-msgid "Run In-process"
-msgstr "Ejecución en progreso"
-
-msgid "Status Code"
-msgstr "Código de Estado"
-
-msgid "Subapplications"
-msgstr "Subapplicaciones"
-
-msgid "Runner"
-msgstr "Ejecutador"
-
-msgid "Raw"
-msgstr "Minimizar"
-
-msgid "Running..."
-msgstr "Ejecutando..."
-
-msgid "Lang: %1"
-msgstr "Lenguaje: %1"
-
-msgid "Lang"
-msgstr "Lenguaje"
-
-msgid "Data Editor"
-msgstr "Editor de datos"
-
-msgid "Tidy"
-msgstr "Ordenar"
-
-msgid "Elapsed"
-msgstr "Transcurrido"
-
-msgid "Fullscreen"
-msgstr "Pantalla completa"
-
-msgid "Do you wish to delete all log data for job %1, exec %2?"
-msgstr "¿Desea borrar todos los datos del log para la tarea %1, exec %2?"
-
-msgid "Job Stash %1"
-msgstr "Stash del pase %1"
-
-msgid "Logfile %1"
-msgstr "Fichero de log %1"
-
-msgid "Log Id"
-msgstr "Id del log"
-
-msgid "Job Log"
-msgstr "Log del pase"
-
-msgid "Surrogate Error"
-msgstr "Error de Subrogación"
-
-msgid "Passwords do not match"
-msgstr "Contraseñas no encontradas"
-
-
-msgid "<% $dashboard->{name} %>"
-msgstr "<% $dashboard->{name} %>"
-
-msgid "Last Fetch"
-msgstr "Último Fetch"
-
-msgid "Refs"
-msgstr "Referencias"
-
-msgid "Repository"
-msgstr "Repositorio"
-
-msgid "Checkout"
-msgstr "Checkout"
-
-msgid "Selected features will be overwritten. A server restart may be necessary. If any changes are found, they will be stashed and the current version saved to the __rollback__ branch. Ok?"
-msgstr "Las características seleccionadas serán sobreescritas. Puede ser necesario reiniciar el servidor. Si se encuentra algún cambio, se hará un stash con ellos y la versión actual se guardará en la rama de marcha atrás. ¿Está de acuerdo?
-
-msgid "No versions were changed, checking out over anyway?"
-msgstr "No han cambiado las versiones, ¿Desea hacer un checkout de todas formas?"
-
-msgid "Creating patch..."
-msgstr "Creando parche..."
-
-msgid "Starting download for %1..."
-msgstr "Iniciando la descarga para %1..."
-
-msgid "Downloading, total %1"
-msgstr "Descargando, total %1"
-
-msgid "Uploading and importing, total %1"
-msgstr "Subiendo e importando, total %1"
-
-msgid "Upload and Fetch finished ok"
-msgstr "Subida y Fetch ha terminado correctamente"
-
-msgid "status: %1"
-msgstr "Estado: %1"
-
-msgid "Upload response empty."
-msgstr "Subir respuesta vacía."
-
-msgid "Nothing to do. Already up to date."
-msgstr "Nada que hacer. Todo al día"
-
-msgid "Patch pull failed: %1"
-msgstr "Falla el pull del parche: %1"
-
-msgid "Patch request failed: %1"
-msgstr "Fallo en la solicitud del parche: %1"
-
-msgid "You are about to attempt to restart the server. Are you sure?"
-msgstr "Está a punto de reiniciar el servidor. ¿Está seguro?"
-
-msgid "Message Id"
-msgstr "Id del mensaje"
-
-msgid "Rows {0} - {1} de {2}"
-msgstr "Filas {0} - {1} de {2}"
-
-msgid "Dashlets"
-msgstr "Dashlets"
-
-msgid "Configuration Dashlets"
-msgstr "Configuración de Dashlets"
-
-msgid "No log"
-msgstr "No log"
-
-msgid "Error: last log or rule not found"
-msgstr "Error: último log o regla no encontrado"
-
-msgid "Error deleting schedule: %1"
-msgstr "Error borrando el planificador: %1"
-
-msgid "Error saving configuration schedule: %1"
-msgstr "Error guardando la configuración del planificador: %1"
-
-msgid "Error changing activation: %1"
-msgstr "Error cambiando la activación: %1"
-
-msgid "Error killing task: %1"
-msgstr "Error matando la tarea: %1"
-
-msgid "Error adding notification: %1"
-msgstr "Error añadiendo la notificacion: %1"
-
-msgid "Notify not found for id %1"
-msgstr "Notificar que no se encuentra para el id %1"
-
-msgid "Missing parameter yaml"
-msgstr "Falta el parámetro yaml"
-
-msgid "Created notify %1"
-msgstr "Creado notificar %1"
-
-msgid "Updated notify %1"
-msgstr "Actualizar notificado %1"
-
-msgid "Notify %1 updated"
-msgstr "Notificar %1 actualizado"
-
-msgid "Notify created with id %1 and event_key %2:"
-msgstr "Notificar creado con el id %1 y la clave de evento %2:"
-
-msgid "Error importing: %1"
-msgstr "Error importando: %1"
-
-msgid "File already exists"
-msgstr "El fichero ya existe"
-
-msgid "File added to project"
-msgstr "Fichero añadido al proyecto"
-
-msgid "Missing parent_id"
-msgstr "Falta el parent_id"
-
-msgid "Invalid name"
-msgstr "Nombre no válido"
-
-msgid "Source topic #%1 does not exist or is not in this folder anymore"
-msgstr "Tópico Fuente #%1 no existe o no está en esta carpeta nunca más"
-
-msgid "Granted semaphore %1 to %2"
-msgstr "Semáforo aceptado %1 a %2"
-
-msgid "Semaphore '%1' not found"
-msgstr "Semáforo '%1' no encontrado"
-
-msgid "Semaphore request '%1' not found"
-msgstr "Petición del semáforo '%1' no encontrado"
-
-msgid "Action %1 not found"
-msgstr "Acción %1 no encontrada"
-
-msgid "Semaphore %1 precedence changed to %2"
-msgstr "La precedencia del semáforo %1 ha cambiado a %2"
-
-msgid "Semaphore request active"
-msgstr "Petición del semáforo activa"
-
-msgid "Calendar with id '%1' $msgs[0]"
-msgstr "Calendario con id '%1' $msgs[0]"
-
-msgid "Error $msgs[1] the calendar: "
-msgstr "Error $msgs[1] el calendario: "
-
-msgid "Calendar modified."
-msgstr "Calendario modificado."
-
-msgid "Error modifying the calendar: %1"
-msgstr "Error modificando el calendario: %1"
-
-msgid "Calendar deleted."
-msgstr "Calendario borrado."
-
-msgid "Error deleting the calendar: "
-msgstr "Error borrando el calendario: "
-
-msgid "invalid sessionid"
-msgstr "No válido el id de la sesión"
-
-msgid "Help file parsing error"
-msgstr "Error en el parseo del fichero de ayuda"
-
-msgid "Missing data"
-msgstr "Faltan datos"
-
-msgid "Rule %1 deleted"
-msgstr "Regla %1 borrada"
-
-msgid "Row with id %1 not found"
-msgstr "Fila con id %1 no encontrada"
-
-msgid "if var"
-msgstr "si variable"
-
-msgid "if user"
-msgstr "si usuario"
-
-msgid "if role"
-msgstr "si rol"
-
-msgid "if project"
-msgstr "si proyecto"
-
-msgid "Control"
-msgstr "Control"
-
-msgid "Rule statements saved ok"
-msgstr "Sentencias de la regla guardadas ok"
-
-msgid "An other user changed rule statements during edition process!"
-msgstr "¡Otro usuario ha cambiado las sentencias de la regla durante el proceso de edición!"
-
-msgid "Simulation of modification of rule statements"
-msgstr "Simulación de la modificación de las sentencias de una regla"
-
-msgid "Rule deleted"
-msgstr "Regla borrada"
-
-msgid "Missing parameter query"
-msgstr "Falta el parámetro query"
-
-msgid "Missing id"
-msgstr "Falta el id"
-
-msgid "Delete comment ok"
-msgstr "Comentario borrado ok"
-
-msgid "Error deleting Comment: %1"
-msgstr "Error borrando el comentario: %1"
-
-msgid "Error viewing comment: %1"
-msgstr "Error visualizando el contenido: %1"
-
-msgid "Label deleted"
-msgstr "Etiqueta borrada"
-
-msgid "Error deleting label: %1"
-msgstr "Error borrando etiqueta: %1"
-
-msgid "Project added to field '%1'"
-msgstr "Proyecto añadido al campo '%1'"
-
-msgid "Error adding project: %1"
-msgstr "Error añadiendo el proyecto: %1"
-
-msgid "Created file %1 to topic [%2] %3"
-msgstr "Fichero %1 creado para el tópico [%2] %3"
-
-msgid "Deleted file %1"
-msgstr "Fichero borrado %1"
-
-msgid "Detached file %1 from topic [%2] %3"
-msgstr "Fichero %1 destacado para el tópico [%2] %3"
-
-msgid "The user %1 has created job %2 for %3 bl"
-msgstr "El usuario %1 ha creado el pase %2 para %3 bl"
-
-msgid "Error getting sequences: %1"
-msgstr "Error obteniendo las secuencias: %1"
-
-msgid "Error sync updating sequences"
-msgstr "Error al sincronizar la actualización de secuencias"
-
-msgid "Modified rows updated successfully"
-msgstr "Las filas modificadas se han actualizado satisfactoriamente"
-
-msgid "Error updating sequences: %1"
-msgstr "Error actualizando secuencias: %1"
-
-msgid "Sequences added successfully"
-msgstr "Secuencias añadidas satisfactoriamente"
-
-msgid "Simulation of modification of sequence by other user"
-msgstr "Simulación de la modificación de una secuencia por otro usuario"
-
-msgid "history"
-msgstr "history"
-
-msgid "diff"
-msgstr "diff"
-
-msgid "source"
-msgstr "source"
-
-msgid "blame"
-msgstr "blame"
-
-msgid "Parse Tree"
-msgstr "Analizar árbol"
-
-msgid "Parse Type"
-msgstr "Analizar tipos"
-
-msgid "Table Name"
-msgstr "Nombre de tabla"
-
-msgid "Driver"
-msgstr "Driver"
-
-msgid "Stash Variable"
-msgstr "variable de Stash"
-
-msgid "Fail Mode"
-msgstr "Modo de Fallo"
-
-msgid "Skip if no matches"
-msgstr "Ignorar si no hay coincidencia"
-
-msgid "Warning if no match"
-msgstr "Advertencia si no hay coincidencia"
-
-msgid "Fail if no match"
-msgstr "Fallo si no hay coincidencia"
-
-msgid "Parsers"
-msgstr "Parseadores"
-
-msgid "Schema backup ok"
-msgstr "Copia de seguridad del esquema ok"
-
-msgid "Data Source"
-msgstr "Origen de datos"
-
-msgid "Local Mode"
-msgstr "Modo Local"
-
-msgid "Nature Items"
-msgstr "Elementos de Naturaleza"
-
-msgid "Relative Path"
-msgstr "Ruta Relativa"
-
-msgid "File Only, no Path"
-msgstr "Sólo ficheros, no rutas"
-
-msgid "Rule Runner, STEP=%1, PID=%2, RULE_ID"
-msgstr "Regla ejecutando, STEP=%1, PID=%2, RULE_ID"
-
-msgid "DB COMMIT transaction %1"
-msgstr "Transacción de COMMIT a BD %1"
-
-msgid "DB COMMIT transactions: %1"
-msgstr "Transacción de COMMIT a BD: %1"
-
-msgid "DB ROLLBACK transaction %1"
-msgstr "Transacción de MARCHA ATRÁS a BD %1"
-
-msgid "Cmd. Line Connection"
-msgstr "Cmd. Línea de conexión" 
-
-msgid "Error"
-msgstr "Error"
-
-msgid "Kanban"
-msgstr "Kanban"
-
-msgid "Log"
-msgstr "Log"
-
-msgid "Error %1"
-msgstr "Error %1"
-
-msgid "URL"
-msgstr "URL"
-
-msgid "JS"
-msgstr "JS"
-
-msgid "HTML"
-msgstr "HTML"
-
-msgid "XHR"
-msgstr "XHR"
-
-msgid "Dashboard"
-msgstr "Dashboard"
-
-msgid "Local"
-msgstr "Local"
-
-msgid "CPAN"
-msgstr "CPAN"
-
-msgid "CSV"
-msgstr "CSV"
-
-msgid "JSON"
-msgstr "JSON"
-
-msgid "H"
-msgstr "H"
-
-msgid "DSL"
-msgstr "DSL"
-
-msgid "Variable"
-msgstr "Variable"
-
-msgid "Variables"
-msgstr "Variables"
-
-msgid "Id"
-msgstr "Id"
-
-msgid "Avatar"
-msgstr "Avatar"
-
-msgid "API Key"
-msgstr "API Key"
-
-msgid "Alias"
-msgstr "Alias"
-
-msgid "General"
-msgstr "General"
-
-msgid "Final"
-msgstr "Final"
-
-msgid "Ok"
-msgstr "Ok"
-
-msgid "WSDL"
-msgstr "WSDL"
-
-msgid "Monitor"
-msgstr "Monitor"
-
-msgid "REPL"
-msgstr "REPL"
-
-msgid "P"
-msgstr "P"
-
-msgid "id"
-msgstr "id"
-
-msgid "%"
-msgstr "%"
-
-msgid "#%1 %2"
-msgstr "#%1 %2"
-
-msgid "Bugzilla"
-msgstr "Bugzilla"
-
-msgid "Core"
-msgstr "Core"
-
-msgid "Global"
-msgstr "Global"
-
-msgid "return"
-msgstr "return"
-
-msgid "Dashboards"
-msgstr "Dashboards"
-
-msgid "Topic not found"
-msgstr "Tópico no encontrado"
-
-msgid "Master row not found for mid %1"
-msgstr "Fila Master no encontrada para el mid %1"
-
-msgid "Error deserializing CI %1. Missing or invalid YAML ref: %2"
-msgstr "Error deserializando el CI %1. Falta la referencia YALM o no es válida: %2"
-
-msgid "Error deserializing CI %1. Error YAML ref: %2"
-msgstr "Error deserializando el CI %1. Error en la referencia YAML: %2"
-
-msgid "rel path mode `%1`, local=`%2`, anchor=`%3`"
-msgstr "rel path mode `%1`, local=`%2`, anchor=`%3`"
-
-msgid "rel path mode `%1`, local_path=%2"
-msgstr "rel path mode `%1`, local_path=%2"
-
-msgid "Running migration %1..."
-msgstr "Ejecutando la migración %1..."
-
-msgid "Migration source not found: %1. Rolling back..."
-msgstr "Fuente de la migración no encontrada: %1. Marcha atrás..."
-
-msgid "Data dump"
-msgstr "Volcado de datos"
-
-msgid "Slurp"
-msgstr "Poner fichero en memoria"
-
-msgid "Anchor Path"
-msgstr "Ruta del anclaje"
-
-msgid "Specify Anchor Path"
-msgstr "Especificar la ruta de anclaje"
-
-msgid "Error trapped"
-msgstr "Error de excepción"
-
-msgid "Role with id "%1" not found"
-msgstr "Rol con id "%1" no encontrado"
-
-msgid "Role with id "%1" or name "%2" not found"
-msgstr "Rol con id "%1" o nombre "%2" no encontrado"
-
-msgid "Changeset checkout: failed to write to file "%1": %2"
-msgstr "Checkout del cambio: fallo al escribir el fichero "%1": %2"
-
-msgid "Sed: failed to open file "%1": %2"
-msgstr "Sed: fallo al abrir el fichero "%1": %2"
-
-msgid "Sed: failed to write to file "%1": %2"
-msgstr "Sed: fallo al escribir el fichero "%1": %2"
-
-msgid "%1"
-msgstr "%1"
-
-msgid "Role with id '%1' not found"
-msgstr "Rol con id '%1' no encontrado"
-
-msgid "Role with id '%1' or name '%2' not found"
-msgstr "Rol con id '%1' o nombre '%2' no encontrado"
-
-msgid "Changeset checkout: failed to write to file '%1': %2"
-msgstr "Checkout del cambio: fallo al escribir el fichero '%1': %2"
-
-msgid "Sed: failed to open file '%1': %2"
-msgstr "Sed: fallo al abrir el fichero '%1': %2"
-
-msgid "Sed: failed to write to file '%1': %2"
-msgstr "Sed: fallo al escribir el fichero '%1': %2"
-
-msgid "%1 for event '%2'"
-msgstr "%1 para el evento '%2'"
-
-msgid "<img src='%1' alt='%2'>"
-msgstr "<img src='%1' alt='%2'>"
-
-msgid "Se filtraran los paquetes por este campo"
-msgstr "Se filtrarán los paquetes por este campo"
+msgstr "End RUN"
 
 ### EOF - do not write anything bellow this
