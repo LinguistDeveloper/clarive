@@ -47,13 +47,13 @@ sub run_start {
     }
 }
 
-sub run_reload {
-    my ($self,%opts) = @_;
-    $self->run_stop(%opts);
-    say "Reload in progress: dispatcher will be stopped and reloaded again.";
-    my $orig_opts = $self->load_opts;
-    $self->run_start( %$orig_opts );
-}
+#sub run_reload {
+#    my ($self,%opts) = @_;
+#    $self->run_stop(%opts);
+#    say "Reload in progress: dispatcher will be stopped and reloaded again.";
+#    my $orig_opts = $self->load_opts;
+#    $self->run_start( %$orig_opts );
+#}
 
 1;
 
