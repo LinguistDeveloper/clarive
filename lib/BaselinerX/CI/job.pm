@@ -311,6 +311,7 @@ sub _create {
     # CHECK
     $self->step('CHECK');
     $self->run( same_exec => 1 );
+    # check not exists pause on CHECK status, return ERROR!
     if( $self->status eq 'ERROR' ) { 
         $self->delete;   # cleanup mongo and relationships
         # errors during CHECK fail back to the user
@@ -319,13 +320,19 @@ sub _create {
         # INIT
         $self->step('INIT');
         $self->run( same_exec => 1 );
+        # check not exists pause on INIT status, return ERROR!
         if( $self->status eq 'ERROR' ) { 
             # errors during CHECK fail back to the user
-            _fail _loc "Error during Job Init: %1", $self->last_error;
+            $self->step('END');
+            _error _loc "Error during Job Init: %1", $self->last_error;
+        }
+        # if not exists pause on INIT or CHECK... PERFECT!
+        else {
+            $self->step('PRE');
+            $self->status('READY');
         }
     }
-    $self->step('PRE');
-    $self->status('READY');
+    
     $self->save;
     return $job_seq;
 }
@@ -1166,7 +1173,7 @@ sub pause {
                 last;
             }
         }
-        my $last_status = $self->load->{status};
+    my $last_status = $self->load->{status};
         $self->logger->debug( _loc('Pause finished due to status %1', $last_status) );
         if( $last_status =~ /CANCEL/ ) {
             _fail _loc('Job cancelled while in pause');
@@ -1176,7 +1183,7 @@ sub pause {
         }
         $self->status( $saved_status );  # resume back to my last real status
         $self->save;
-    }  
+    }
 }
 
 sub suspend {
