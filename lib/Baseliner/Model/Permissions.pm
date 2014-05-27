@@ -100,7 +100,7 @@ sub delete_role {
     if( $p{id} ) {
         my $role = Baseliner->model('Baseliner::BaliRole')->find({ id=>$p{id} });
 
-        die _loc( 'Role with id "%1" not found', $p{id} ) unless ref $role;
+        die _loc( "Role with id '%1' not found", $p{id} ) unless ref $role;
 
         my $role_name = $role->role;
         $role->delete;
@@ -109,7 +109,7 @@ sub delete_role {
         my @role_names;
         my $roles = Baseliner->model('Baseliner::BaliRole')->search({ role=>$p{role} });
         unless( ref $roles ) {
-            die _loc( 'Role with id "%1" or name "%2" not found', $p{id}, $p{role} );
+            die _loc( "Role with id '%1' or name '%2' not found", $p{id}, $p{role} );
         } else {
             while( my $role = $roles->next ) {
                 push @role_names, $role->role;
