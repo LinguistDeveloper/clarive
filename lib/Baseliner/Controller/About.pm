@@ -43,6 +43,7 @@ sub show : Local {
         push @about, { name=>'Server Parent ID', value=>$ENV{BASELINER_PARENT_PID} };
         #push @about, { name=>'Path', value=>join '<li>',split /;|:/,$ENV{PATH} };
         push @about, { name=>'OS', value=>$^O };
+        push @about, { name => _loc('Active users count'), value => ci->user->find({ active => '1', name => { '$ne' => 'root' }})->count };
         #push @about, { name=>'Library Path', value=>join '<li>',split /;|:/,$ENV{LIBPATH} || '-' };
         #$body = dehash( $c->config );
         $c->stash->{environment_vars} = [ 
