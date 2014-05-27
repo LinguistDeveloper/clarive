@@ -1166,7 +1166,7 @@ sub pause {
                 last;
             }
         }
-        my $last_status = $self->load->{status};
+    my $last_status = $self->load->{status};
         $self->logger->debug( _loc('Pause finished due to status %1', $last_status) );
         if( $last_status =~ /CANCEL/ ) {
             _fail _loc('Job cancelled while in pause');
@@ -1176,7 +1176,7 @@ sub pause {
         }
         $self->status( $saved_status );  # resume back to my last real status
         $self->save;
-    }  
+    }
 }
 
 sub suspend {
