@@ -1,7 +1,7 @@
 lang: en_US.UTF-8
 port: 3000
-redis:
-    server: 'localhost:6379'
+#redis:
+#    server: 'localhost:6379'
 mongo:
     dbname: clarive
     retry_frequency: 5
@@ -31,7 +31,7 @@ baseliner:
     name: Clarive
     app_name: Clarive
     default_theme: clarive
-    default_lang: en
+    default_lang: es
     logo_filename: logo.png
     toolbar_height: 36
     #favicon: /static/themes/clarive/favicon.ico
@@ -74,13 +74,13 @@ baseliner:
 #
 # RDBMS configuration
 #
-    # 'Model::Baseliner':
-    #    connect_info:
-    #    - dbi:Oracle:host=localhost;sid=scm;port=1521
-    #    - clarive
-    #    - clarive
-    #    - LongReadLen: '100000000'
-    #      LongTruncOk: '1'
+    'Model::Baseliner':
+        connect_info:
+        - dbi:Oracle:host=jacob;sid=scm;port=1521
+        - test
+        - testeador00
+        - LongReadLen: '100000000'
+          LongTruncOk: '1'
 #
 # Authentication Configuration
 #

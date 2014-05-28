@@ -1230,6 +1230,15 @@ msgstr "Nombre de la Actividad"
 msgid "Use regex and forward slashes, separate by comma: ^/files/, ^/xml/"
 msgstr "Utilice expresiones regulares separadas por coma: ^/files/, ^/xml/"
 
+msgid "No jobs found"
+msgstr "No hay pases"
+
+msgid "No comments found"
+msgstr "No hay comentarios"
+
+msgid "No activity found"
+msgstr "No hay actividad"
+
 msgid "Activity Description"
 msgstr "Descripción de la Actividad"
 
@@ -1786,7 +1795,7 @@ msgid "READY"
 msgstr "Esperando Inicio"
 
 msgid "APPROVAL"
-msgstr "Pendiente Aprobación"
+msgstr "Pend. Aprobación"
 
 msgid "EXPIRED"
 msgstr "Caducado"
@@ -2686,7 +2695,7 @@ msgstr "Finished dummy sleep semaphore service"
 msgid "Approve jobs"
 msgstr "Aprobar pases"
 
-# lib/BaselinerX/Job/Service/ApprovalRequest.pm (45)
+#>>>> lib/BaselinerX/Job/Service/ApprovalRequest.pm (45)
 msgid "No hay aprobaciones programadas para este pase."
 msgstr "No hay aprobaciones programadas para este pase."
 
@@ -4561,7 +4570,7 @@ msgid "You must save the topic before add new files"
 msgstr "Debes guardar el tópico antes de añadir nuevos ficheros"
 
 msgid "To upload files, the form needs to be created. Save form before submitting?"
-msgstr "Para poder subir ficheros, el formulario tiene que estar creado. Crear formulario ahora?"
+msgstr "Para poder subir ficheros, el tópico tiene que estar creado. Crear tópico ahora?"
 
 msgid "status_new"
 msgstr "Estados"
@@ -5028,22 +5037,25 @@ msgstr "El usuario %1 ha solicitado aprobación para el job %2"
 msgid "Refresh All Nodes"
 msgstr "Refrescar todo el Árbol"
 
-msgid "Job started in %1 at %2"
-msgstr "Pase iniciado en %1 a %2"
-
-msgid "Rule: %1"
-msgstr "Regla: %1"
-
-msgid "%1 created a post for topic [%2] %3"
-msgstr "El usuario %1 ha comentado el tópico [%2] %3"
-
-msgid "%1 deleted a post from topic [%2] %3"
-msgstr "El usuario %1 ha borrado un comentario del tópico [%2] %3"
-
-msgid "User %1 has requested approval for job %2"
-msgstr "El usuario %1 ha solicitado aprobación para el job %2"
-
 msgid "Topic %1 (%2) has been assigned to you"
-msgstr "El tópico %1 (%2) ha sido signado a ti"
+msgstr "El tópico %1 (%2) ha sido asignado a ti"
+
+msgid "Job Statistics"
+msgstr "Estadísticas de pases"
+
+msgid "Pending Jobs"
+msgstr "Pases pendientes"
+
+msgid "PRE Start Date"
+msgstr "Inicio PRE"
+
+msgid "RUN Start Date"
+msgstr "Inicio RUN"
+
+msgid "PRE End Date"
+msgstr "Fin PRE"
+
+msgid "RUN End Date"
+msgstr "End RUN"
 
 ### EOF - do not write anything bellow this

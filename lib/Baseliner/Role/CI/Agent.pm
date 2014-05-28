@@ -9,7 +9,7 @@ use Moose::Util::TypeConstraints;
 has user        => qw(is rw isa Str);
 has password    => qw(is rw isa Str);
 
-has server => qw(is rw isa CI required 1),
+has server => qw(is rw isa CI),
     traits => ['CI'],
     handles=>[qw(remote_temp remote_perl remote_tar hostname)];
     

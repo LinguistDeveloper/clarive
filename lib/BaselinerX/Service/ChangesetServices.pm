@@ -625,7 +625,7 @@ sub checkout_items {
         $log->debug( "Element $element->{mid}", data => _dump $element);
 
         open my $fout, '>', $filepath
-            or _throw _loc( 'Changeset checkout: failed to write to file "%1": %2', $filepath, $! );
+            or _throw _loc( "Changeset checkout: failed to write to file '%1': %2", $filepath, $! );
         print $fout $file->filedata;
         close $fout;
         $checkout .= $filepath . "\n";

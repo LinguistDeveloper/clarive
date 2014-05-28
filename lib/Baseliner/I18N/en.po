@@ -1,8 +1,9 @@
-msgid ""
-msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8    \n"
 "Content-Transfer-Encoding: 8bit\n"
+
+msgid ""
+msgstr ""
 
 msgid "class_date_format"
 msgstr "%m/%d/%Y"
@@ -10,11 +11,9 @@ msgstr "%m/%d/%Y"
 msgid "js_date_format"
 msgstr "m/d/Y"
 
-# topic form keys for better is_dirty messages
 msgid "status_new"
 msgstr "Status"
 
-# Job Status Codes
 msgid "IN EDIT"
 msgstr "In Edit"
 
@@ -171,9 +170,6 @@ msgstr "Critical"
 msgid "Común"
 msgstr "Common"
 
-msgid "noun:Run"
-msgstr "Run"
-
 msgid "Incidencias"
 msgstr "Issues"
 
@@ -242,3 +238,107 @@ msgstr "Organic"
 
 msgid "Topicos"
 msgstr "Topics"
+
+msgid "Fecha PaP Desde"
+msgstr "Date PaP From"
+
+msgid "Fecha PaP Hasta"
+msgstr "Date PaP Until"
+
+msgid "Fecha UAT Desde"
+msgstr "Date UAT From"
+
+msgid "Fecha UAT Hasta"
+msgstr "Date UAT Until"
+
+msgid "Tablas"
+msgstr "Tables"
+
+msgid "Area"
+msgstr "Area"
+
+msgid "Area solicitante"
+msgstr "Requesting area"
+
+msgid "Tipos"
+msgstr "Types"
+
+msgid "Aceptar"
+msgstr "Accept"
+
+msgid "Cancelar"
+msgstr "Cancel"
+
+msgid "Pendiente de Aprobación"
+msgstr "Pending approval"
+
+msgid "Prueba"
+msgstr "Test"
+
+msgid "Pendiente de validar"
+msgstr "Validation pending"
+
+msgid "Texto Libre"
+msgstr "Free Text"
+
+msgid "todos"
+msgstr "all"
+
+msgid "Naturaleza"
+msgstr "Nature"
+
+msgid "Sistemas"
+msgstr "Systems"
+
+msgid "Fecha inicio Desde"
+msgstr "Start date from"
+
+msgid "Fecha inicio Hasta"
+msgstr "Start date to"
+
+msgid "Fecha fin Desde"
+msgstr "End date from"
+
+msgid "Fecha fin Hasta"
+msgstr "End date to"
+
+msgid "Se ha producido un error"
+msgstr "There was an error"
+
+msgid "Envío de Notificación por Email"
+msgstr "Sending email notification"
+
+msgid "Pase fuera de ventana. Seleccione 'Ventana personalizada' si quiere un pase fuera de las ventanas permitidas"
+msgstr "Job out of window. Select 'Custom window' if you want a job out of the allowed windows"
+
+msgid "Se filtraran los paquetes por este campo"
+msgstr "The packages are going to be filtered by this field"
+
+msgid "Pase fuera de ventana. Seleccione Ventana personalizada si quiere un pase fuera de las ventanas permitidas"
+msgstr "Job out of window. Select Custom window if you want a job out of the allowed windows"
+
+msgid "Franja horaria"
+msgstr "Times"
+
+msgid "Hora de pase Caducada"
+msgstr "Job time expires"
+
+msgid "Ayuda"
+msgstr "Help"
+
+msgid "Normal"
+msgstr "Normal"
+
+msgid "Previsualizar"
+msgstr "Preview"
+
+msgid "Previsualizar Calendario"
+msgstr "Calendar Preview"
+
+msgid "Elementos <%$namejob%>"
+msgstr "Items <%$namejob%>"
+
+msgid "No hay aprobaciones programadas para este pase."
+msgstr "No approvals scheduled for this job."
+
+### EOF - do not write anything bellow this

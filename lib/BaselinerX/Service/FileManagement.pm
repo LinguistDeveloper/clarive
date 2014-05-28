@@ -291,6 +291,7 @@ sub run_ship {
     my $needs_rollback_mode = $config->{needs_rollback_mode} // 'nb_after'; 
     my $needs_rollback_key = $config->{needs_rollback_key} // $task;
     my $exist_mode = $config->{exist_mode} // 'skip'; # skip files already shipped by default
+    my $recursive = $config->{recursive} // 0;
     $stash->{needs_rollback}{ $needs_rollback_key } = 1 if $needs_rollback_mode eq 'nb_always';
     my ($include_path,$exclude_path) = @{ $config }{qw(include_path exclude_path)};
     
@@ -321,7 +322,21 @@ sub run_ship {
             # local_files (with or without wildcard)
             $local_path = $server->parse_vars( "$local_path" );
             $is_wildcard = $local_path =~ /\*/;
-            @locals = grep { -f } glob $local_path;
+            if ( !$recursive ) {
+                @locals = grep { -f } glob $local_path;
+            } else {
+                use File::Find qw(finddepth);
+                my @files;
+                finddepth(
+                    sub {
+                        return if ( $_ eq '.' || $_ eq '..' );
+                        push @files, $File::Find::name;
+                        _log $File::Find::name;
+                    },
+                    $local_path
+                );
+                @locals = grep {-f} @files;
+            }
         }
         $log->debug( _loc('local_mode=%1, local list', $local_mode), \@locals );
         

@@ -338,7 +338,7 @@ Baseliner.render_extensions = function(value,metadata,rec,rowIndex,colIndex,stor
     value = value.toLowerCase();
     var extension = extensions_available[ value ];
     if( extension == undefined ) value = 'bin'; // no icon available
-    return _('<img src="%1" alt="%2">', '/static/images/icons/mime/file_extension_' + value + '.png', value );
+    return _("<img src='%1' alt='%2'>", '/static/images/icons/mime/file_extension_' + value + '.png', value );
 }
 
 // JsonStore with Error Handling
@@ -2821,6 +2821,7 @@ Baseliner.cols_templates = {
       cbox      : function(){ return { align: 'center', width: 10, editor: new Baseliner.CBox({submit_num: true, submitValue: false}), default_value: false, renderer: Baseliner.render_checkbox } },
       checkbox  : function(){ return { align: 'center', width: 10, editor: new Ext.form.Checkbox({submitValue: false}), default_value: false, renderer: Baseliner.render_checkbox } },
       ci_box    : function(p){ return { editor: Baseliner.ci_box( p || {} ), default_value:'' } },
+      combo_dbl : function(p){ return { editor: new Baseliner.ComboDouble( p ), default_value:p.default_value } },
       password  : function(){ return { editor: new Ext.form.TextField({submitValue: false, inputType:'password' }), default_value:'', renderer: function(v){ return '********' } } },
       textarea  : function(){ return { editor: new Ext.form.TextArea({submitValue: false}), default_value:'', renderer: Baseliner.render_wrap } }
 };

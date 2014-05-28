@@ -23,6 +23,7 @@ has frozen        => qw(is rw isa Any);
 has readonly      => qw(is rw isa Any);
 has seq           => qw(is rw isa Any);
 has type          => qw(is rw isa Any);
+has color         => qw(is rw isa Any);
 
 sub icon { '/static/images/icons/baseline.gif' }
 sub collection { 'status' }
@@ -37,16 +38,16 @@ before save_data => sub {
 
     my @bls = _array $data->{bls};
 
-    my $bl = $bls[0]->{moniker};
+    my $bl = $bls[0]->{moniker} || '*';
 
 
     my $r = {
         name          => $data->{name},
         description   => $data->{description},
-        bind_releases => $data->{bind_releases} eq 'on' ? '1' : '0',
-        ci_update     => $data->{ci_update} eq 'on' ? '1' : '0',
-        readonly      => $data->{readonly} eq 'on' ? '1' : '0',
-        frozen        => $data->{frozen} eq 'on' ? '1' : '0',
+        bind_releases => $data->{bind_releases} && $data->{bind_releases} eq 'on' ? '1' : '0',
+        ci_update     => $data->{ci_update} && $data->{ci_update} eq 'on' ? '1' : '0',
+        readonly      => $data->{readonly} && $data->{readonly} eq 'on' ? '1' : '0',
+        frozen        => $data->{frozen} && $data->{frozen} eq 'on' ? '1' : '0',
         seq           => $data->{seq},
         type          => $data->{type},
         bl            => $bl

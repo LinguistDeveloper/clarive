@@ -1,5 +1,7 @@
 (function(params){
     var data = params.data || {};
+    var rc = params.data.recursive=='on' ? true : false;
+    var recursive = new Ext.form.Checkbox({ name: 'recursive', checked: rc , fieldLabel: _("Recursive") });
     var local_path = new Baseliner.MonoTextArea({ fieldLabel: _('Local Path'), height: 80, name: 'local_path', 
         value: data.local_path!=undefined ? data.local_path : '${job_dir}/${project}',
         hidden: !( data.local_mode && data.local_mode=='local_files' )
@@ -62,6 +64,7 @@
     return [
         Baseliner.ci_box({ name: 'server', role:'Baseliner::Role::HasAgent', fieldLabel:_('Server'), with_vars: 1, value: data.server, force_set_value: true }),
         { xtype:'textfield', fieldLabel: _('User'), name: 'user', value: data.user },
+        recursive,
         local_mode,
         local_path,
         rel_path,
