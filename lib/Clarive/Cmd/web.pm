@@ -21,6 +21,9 @@ has pid_web_file  => qw(is rw);
 has instance_name => qw(is rw);
 has id            => qw(is ro default) => sub { lc( Sys::Hostname::hostname() ) };
 
+# From Starman (check lib/Starman/Server.pm for options)
+has [qw(backlog min_servers min_spare_servers max_spare_servers max_requests max_servers)] => qw(is rw isa Any);
+
 with 'Clarive::Role::EnvRequired';
 with 'Clarive::Role::Daemon';
 with 'Clarive::Role::Baseliner';  # yes, I run baseliner stuff
@@ -156,6 +159,12 @@ sub run_start {
     $runner->{options} = [ 
         $self->workers ? (workers => $self->workers) : (),
         pid => $self->pid_web_file,
+        ( 
+            map { ( $_ => $self->$_ ) }
+                grep { defined $self->$_ } 
+                qw(min_servers min_spare_servers max_spare_servers max_requests max_servers) 
+        ),
+        # TODO Starlet: --max-workers --timeout --keepalive-timeout --max-keepalive-reqs --max-reqs-per-child --min-reqs-per-child --spawn-interval
         $runner->mangle_host_port_socket( $self->host, $self->port, $self->socket, @{ ref $self->listen ? $self->listen : [$self->listen] } )
     ];
     if( exists $self->opts->{daemon} ) {
@@ -237,12 +246,20 @@ Common options:
     --pid_file <file>       where to save the pid
     --log_file <file>       where to write the log to
     --log_keep <file>       days to keep log file
-    --engine [Standalone|Twiggy|Starman|Starlet]
+    --engine [Standalone|Twiggy|Starman|Starlet] default=Starman
 
 =head1 web- subcommands:
 
 =head2 start
 
-Starts the server
+Starts the server. Options:
+
+    --workers <num>              number of web workers (default 5)
+    --max_requests <num>         max requests per worker
+    --min_servers <num>          min servers allowed (default =workers)
+    --min_spare_servers <num>    min free workers allowed (default =workers-1)
+    --max_spare_servers <num>    max free workers allowed (default =workers-1)
+    --max_servers <num>          max servers allowed (default =workers)
+    --backlog <num>              backlog of sockets available, lower numbers fails faster on high load (default 1024)
 
 =cut
