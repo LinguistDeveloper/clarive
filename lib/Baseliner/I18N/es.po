@@ -1423,7 +1423,7 @@ msgid "Delete All"
 msgstr "Borrar Todos"
 
 msgid "Warning"
-msgstr "Aviso"
+msgstr "Warning"
 
 msgid "Debug"
 msgstr "Debug"
@@ -4537,7 +4537,7 @@ msgid "Rule: %1"
 msgstr "Regla: %1"
 
 msgid "Topic %1 (%2) has been assigned to you"
-msgstr "El tópico %1 (%2) ha sido asignado a ti"
+msgstr "El tópico %1 (%2) ha sido signado a ti"
 
 msgid "AND?"
 msgstr "¿Y?"
@@ -4954,7 +4954,7 @@ msgid "Portal"
 msgstr "Portal"
 
 msgid "Browser Warning"
-msgstr "Advertencia del navegador"
+msgstr "Warning del navegador"
 
 msgid "This browser is not supported by %1"
 msgstr "Este navegador no es soportado por %1"
