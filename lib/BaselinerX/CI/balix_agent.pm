@@ -55,7 +55,7 @@ method mkpath ( $path ) {
         $self->execute( \'mkdir', \'-p', $path );
         $self->execute( 'chown', $self->user, $path ) if $self->user;
     }
-    $self->rc and _fail _loc( 'Could not create remote directory `%1`: %2', $path, $self->output );
+    $self->rc and _fail _loc( "Could not create remote directory '%1': %2", $path, $self->output );
 }
 
 method chmod ( $mode, $path ) {
@@ -64,7 +64,7 @@ method chmod ( $mode, $path ) {
     } else {
         $self->execute( \'chmod', \$mode, $path );
     }
-    $self->rc and _fail _loc( 'Could not chmod `%1 %2`: %3', $mode, $path, $self->output );
+    $self->rc and _fail _loc( "Could not chmod '%1 %2': %3", $mode, $path, $self->output );
 }
 
 method chown ( $perms, $path ) {
@@ -73,7 +73,7 @@ method chown ( $perms, $path ) {
     } else {
         $self->execute( \'chown', \$perms, $path );
     }
-    $self->rc and _fail _loc( 'Could not chown `%1 %2`: %3', $perms, $path, $self->output );
+    $self->rc and _fail _loc( "Could not chown '%1 %2': %3", $perms, $path, $self->output );
 }
 
 method execute( @cmd ) {
@@ -111,7 +111,7 @@ method get_dir( :$local, :$remote, :$group='', :$files=undef, :$user=$self->user
     my $tarfile_remote = _dir( $remote, _file( $tarfile)->basename );
     $self->execute( \"cd '$remote' && ", \'tar', \'cvf', $tarfile_remote, \'*' );
     Util->_mkpath( $local ) unless -d $local;
-    _fail _loc('Could not find local directory to `%1`', $local) unless -d $local;
+    _fail _loc("Could not find local directory to '%1'", $local) unless -d $local;
     $self->get_file( local=>$tarfile, remote=>"$tarfile_remote" );
     $self->execute( rm => $tarfile_remote );
     my $orig = Cwd::cwd;
@@ -182,24 +182,24 @@ method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
             if !$dir_exists;
         # writeable?
         my $is_writeable = $self->is_writeable($remote_dir);
-        _fail _loc("balix: can't send file: remote dir is not writeable `%1`", $remote_dir)
+        _fail _loc("balix: can't send file: remote dir is not writeable '%1'", $remote_dir)
             if !$is_writeable;
     } else {
-        _fail _loc "balix: can't send file: missing remote dir in `%1`", $remote;
+        _fail _loc("balix: can't send file: missing remote dir in '%1'", $remote);
     }
     # check file writeable
     my ($rc,$ret) = $self->check_writeable($remote);
-    _fail _loc("balix: can't send file: file not writeable `%1` (rc: %2)", $remote, $rc) if $rc;
+    _fail _loc("balix: cannot send file: file not writeable '%1' (rc: %2)", $remote, $rc) if $rc;
     # check we are not trying to write a directory 
     my $is_dir = $self->is_remote_dir($remote);
-    _fail _loc("balix: can't send file: destination is a directory `%1`", $remote) if $is_dir;
+    _fail _loc("balix: cannot send file: destination is a directory '%1'", $remote) if $is_dir;
     # send
     $self->_send_file( $local, $remote );
     if( $user ) {
         $self->_execute( 'chown', "${user}:${group}", $remote );
     }
     $self->_crc_match( $local, $remote )  
-        or Util->_fail( Util->_loc('Failed CRC check for remote file `%1`', $remote ) );
+        or Util->_fail( Util->_loc("Failed CRC check for remote file '%1'", $remote ) );
     return $self->tuple;  
 }
 
@@ -320,7 +320,7 @@ sub _get_file {
     my ( $RC, $RET ) = $self->_checkRC();
     if ( $RC ne 0 ) {
         chop $RET;
-        Util->_fail( Util->_loc( "Error reading file `%1` from `%2`: %3", $remote, $self->hostname, $RET ) );
+        Util->_fail( Util->_loc( "Error reading file '%1' from '%2': %3", $remote, $self->hostname, $RET ) );
     }
 
     $socket->print( $self->encodeCMD("R $remote") . $self->EOL );
@@ -348,7 +348,7 @@ sub _get_file {
         my $fout;
     if ($local) {
         CORE::open $fout, ">$local"
-          or Util->_fail( Util->_loc( "Balix: get_file: could not open local file `%1`: %2", $local, $@ ) );
+          or Util->_fail( Util->_loc( "Balix: get_file: could not open local file '%1': %2", $local, $@ ) );
         binmode $fout;
     }
 

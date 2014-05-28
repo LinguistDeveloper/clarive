@@ -630,7 +630,7 @@
         rule_tree.on('nodedrop', rule_tree.make_dirty );
         rule_tree.on('remove', rule_tree.make_dirty );
         rule_tree.close_me = function(){ 
-            return confirm(_('Rule `%1` has changed, but has not been saved. Leave without saving?', rule_tree.title ));
+            return confirm(_("Rule '%1' has changed, but has not been saved. Leave without saving?", rule_tree.title ));
         };
         // best place to decorate
         rule_tree.on('append', function(t,p,n){

@@ -571,7 +571,7 @@ sub trap_action {
     my $comments = $p->{comments} // _('no comment');
     my $action = $p->{action} // '';
     my $job_status = $action eq 'retry' ? 'RETRYING' : $action eq 'skip' ? 'SKIPPING' : 'ERROR';
-    $self->logger->warn( _loc('Task response `*%1*` by *%2*: %3', _loc($action), $p->{username}, $comments), data=>$comments, username=>$p->{username} );
+    $self->logger->warn( _loc("Task response '*%1*' by *%2*: %3", _loc($action), $p->{username}, $comments), data=>$comments, username=>$p->{username} );
     $self->status( $job_status );
     $self->save;
     { success=>1 }
@@ -1145,8 +1145,8 @@ sub pause {
     if ($self->step =~ /INIT|CHECK/){
         $self->status('ERROR');
         $self->save;
-        $self->logger->warn( _loc('Can\'t paused job on CHECK or INIT status') );
-        _fail _loc('Can\'t paused job on CHECK or INIT status');
+        $self->logger->warn( _loc('Cannot paused job on CHECK or INIT status') );
+        _fail _loc('Cannot paused job on CHECK or INIT status'); 
     }else{
         $self->status('PAUSED');
         $self->save;

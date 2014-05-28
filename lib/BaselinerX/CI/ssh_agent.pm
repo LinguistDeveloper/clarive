@@ -60,12 +60,12 @@ sub rmpath {
 
 method chmod ( $mode, $path ) {
     $self->execute( 'chmod', $mode, $path );
-    $self->rc and _fail _loc( 'Could not chmod `%1 %2`: %3', $mode, $path, $self->output );
+    $self->rc and _fail _loc( "Could not chmod '%1 %2': %3", $mode, $path, $self->output );
 }
 
 method chown ( $perms, $path ) {
     $self->execute( 'chown', $perms, $path );
-    $self->rc and _fail _loc( 'Could not chown `%1 %2`: %3', $perms, $path, $self->output );
+    $self->rc and _fail _loc( "Could not chown '%1 %2': %3", $perms, $path, $self->output );
 }
 
 sub make_writable {

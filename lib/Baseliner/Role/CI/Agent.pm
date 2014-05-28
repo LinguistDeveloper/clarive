@@ -110,7 +110,7 @@ sub fatpack_perl_code {
     if( my ($fp) = $claw =~ /^(.*END OF FATPACK CODE).*$/s ) {
         return $fp . "\n\n" . $code;         
     } else {
-        Util->_fail( Util->_loc( 'Error trying to fatpack perl code. Could not find fatpack code in `%1`', $claw_file) );
+        Util->_fail( Util->_loc( "Error trying to fatpack perl code. Could not find fatpack code in '%1'", $claw_file) );
     }
 }
 

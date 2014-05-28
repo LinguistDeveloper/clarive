@@ -12,7 +12,7 @@ method checkout( :$dir ) {
     my $file = DB->BaliFileVersion->search({ mid=>$self->mid }, { select=>'filedata' })->hashref->first;
     my $dest = Util->_file($dir,$self->path);
     $dest->dir->mkpath;
-    open( my $ff, '>:raw', $dest) or _fail( _loc('Could now checkout topic file `%1`', $dest) );
+    open( my $ff, '>:raw', $dest) or _fail( _loc("Could now checkout topic file '%1'", $dest) );
     print $ff $file->{filedata}; 
     close $ff;
     

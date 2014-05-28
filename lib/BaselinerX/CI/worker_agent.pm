@@ -46,7 +46,7 @@ method put_file( :$local=undef, :$remote, :$group='', :$user=$self->user, :$data
     my $file_size;
     if( defined $local ) {
         my $f = Util->_file( $local ); 
-        Util->_fail( Util->_loc( 'Local file `%1` not found', $f) ) unless -e $f;
+        Util->_fail( Util->_loc( "Local file '%1' not found", $f) ) unless -e $f;
         $file_size = $f->stat->size;
     } else {
         $file_size = length( $data );

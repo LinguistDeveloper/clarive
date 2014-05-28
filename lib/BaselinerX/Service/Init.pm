@@ -28,7 +28,7 @@ sub job_init {
     if( -e $job_dir ) {
         if( length $job_dir > 5 ) {
             remove_tree $job_dir, { keep_root=>1 };
-            $log->debug( _loc( 'Job home `%1` reset clean', $job_dir ) );
+            $log->debug( _loc( "Job home '%1' reset clean", $job_dir ) );
         } else {
             $log->warn( _loc('Job dir too short, not removed for safety: %1', $job_dir) );
         }
@@ -38,7 +38,7 @@ sub job_init {
         if( @$err ) {
             _fail( _log( 'Error creating job home `%1`: %2', %{ $err->[0] || {} } ) );
         } else {
-            $log->debug( _loc( 'Job home `%1` created', $job_dir ) );
+            $log->debug( _loc( "Job home '%1' created", $job_dir ) );
         }
     }
     

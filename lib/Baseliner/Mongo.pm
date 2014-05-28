@@ -128,7 +128,7 @@ sub find_master {
     my ($self,$mid)=@_;
     _throw( _loc( 'Missing mid for row' ) ) unless length $mid;
     my $row = $self->collection('master')->find_one({ '$or'=>[ {mid=>"$mid"},{mid=>0+$mid} ] });
-    _throw( _loc( 'Master row not found for mid `%1`', $mid ) ) unless ref $row;
+    _throw( _loc( "Master row not found for mid '%1'", $mid ) ) unless ref $row;
     return $row;
 }
 

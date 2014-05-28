@@ -190,7 +190,7 @@ sub run_tar {
     my $log   = $job->logger;
     my $stash = $c->stash;
     
-    $log->info( _loc('Tar of directory `%1` into file `%2`', $config->{source_dir}, $config->{tarfile}), 
+    $log->info( _loc("Tar of directory '%1' into file '%2'", $config->{source_dir}, $config->{tarfile}), 
             $config );
     Util->tar_dir( %$config ); 
 }
@@ -203,7 +203,7 @@ sub run_tar_nature {
     my $stash = $c->stash;
     
     my @files = _array( $stash->{nature_item_paths} );
-    $log->info( _loc('Tar of directory `%1` into file `%2`', $config->{source_dir}, $config->{tarfile}), 
+    $log->info( _loc("Tar of directory '%1' into file '%2'", $config->{source_dir}, $config->{tarfile}), 
             $config );
     Util->tar_dir( %$config, files=>\@files ); 
 }
@@ -238,7 +238,7 @@ sub run_write {
         or _fail _loc 'Could not open file for writing (%1): %2', $!;
     print $ff $body;
     close $ff;
-    $log->info( _loc('File content written: `%1`', $filepath), $log_body eq 'yes' ? ( data=>$body ) : () ); 
+    $log->info( _loc("File content written: '%1'", $filepath), $log_body eq 'yes' ? ( data=>$body ) : () ); 
     return $filepath;
 }
     
@@ -344,13 +344,13 @@ sub run_ship {
             $cnt++;
 
             # local path relative or pure filename?
-            $log->debug( _loc('rel path mode `%1`, local=`%2`, anchor=`%3`', $rel_mode, $local, $anchor_path ) );
+            $log->debug( _loc("rel path mode '%1', local='%2', anchor='%3'", $rel_mode, $local, $anchor_path ) );
             my $local_path = 
                 $rel_mode eq 'file_only' ? _file( $local )->basename : 
                 $rel_mode eq 'rel_path_job' ? _file( $local )->relative( $job_dir ) 
                 : _file($local)->relative( $anchor_path );
             $local_path = $server->parse_vars("$local_path");
-            $log->debug( _loc('rel path mode `%1`, local_path=%2', $rel_mode, $local_path ) );
+            $log->debug( _loc("rel path mode '%1', local_path=%2", $rel_mode, $local_path ) );
             
             # filters?   TODO use $self->filter_paths
             my $flag;
@@ -379,21 +379,21 @@ sub run_ship {
             # make a backup?
             if( $job_mode eq 'forward' && $backup_mode eq 'backup' ) {
                 if( ! -e $bkp_local ) {
-                    $log->debug( _loc('Getting backup file from remote `%1` to `%2`', $remote, $bkp_local) );
+                    $log->debug( _loc("Getting backup file from remote '%1' to '%2'", $remote, $bkp_local) );
                     push @backup_files, "$bkp_local";
                     my $bkp_dir = _file( $bkp_local )->dir->mkpath;
                     if( !$agent->file_exists( "$remote" ) ) {
-                        $log->debug( _loc('No existing file detected to backup: `%1`', $remote) );
+                        $log->debug( _loc("No existing file detected to backup: '%1'", $remote) );
                     } else {
                         try {
                             $agent->get_file( local=>"$bkp_local", remote=>"$remote" );
                         } catch {
                             my $err = shift;
                             if( $backup_mode eq 'backup_fail' ) {
-                                $log->error( _loc('Error reading backup file from remote. Ignored: `%1`', $remote), "$err" );
+                                $log->error( _loc("Error reading backup file from remote. Ignored: '%1'", $remote), "$err" );
                                 _fail _loc 'Error during file backup';
                             } else {
-                                $log->warn( _loc('Error reading backup file from remote. Ignored: `%1`', $remote), "$err" );
+                                $log->warn( _loc("Error reading backup file from remote. Ignored: '%1'", $remote), "$err" );
                             }
                         };
                     }
@@ -403,7 +403,7 @@ sub run_ship {
             # rollback ?
             if( $job_mode eq 'rollback' && $rollback_mode =~ /^rollback/ ) {
                 if( -e $bkp_local ) {
-                    $log->debug( _loc( 'Rollback switch to local file `%1`', $bkp_local ) );
+                    $log->debug( _loc( "Rollback switch to local file '%1'", $bkp_local ) );
                     $local = $bkp_local;
                 } elsif( $rollback_mode eq 'rollback_force' ) {
                     _fail _loc 'Could not find rollback file %1', $bkp_local;
@@ -420,7 +420,7 @@ sub run_ship {
             if( $sent && $exist_mode ne 'reship' ) {
                 $log->info( _loc('File `%1` already in machine `%2` (%3). Ship skipped.', "$local", "*$hostname*".':'.$remote, $server_str ), data=>$local_key );
             } else {
-                $log->info( _loc( 'Sending file `%1` to `%2`', $local, "*$server_str*".':'.$remote ) );
+                $log->info( _loc( "Sending file '%1' to '%2'", $local, "*$server_str*".':'.$remote ) );
                 # create dir if not exists?
                 my $remote_dir = _file($remote)->dir;
                 if( $create_dir eq 'create' && !$agent->file_exists("$remote_dir") ) {
@@ -439,15 +439,15 @@ sub run_ship {
             if( length $chown ) {
                 _debug "chown $chown $remote";
                 $agent->chown( $chmod, "$remote" );
-                $log->warn( _loc('Error doing a chown `%1` to file `%2`: %3', $chown,$remote, $agent->output ), $agent->tuple_str ) if $agent->rc && $agent->rc!=512;
+                $log->warn( _loc("Error doing a chown '%1' to file '%2': %3", $chown,$remote, $agent->output ), $agent->tuple_str ) if $agent->rc && $agent->rc!=512;
             }
             if( length $chmod ) {
                 _debug "chmod $chmod $remote";
                 $agent->chmod( $chmod, "$remote" );
-                $log->warn( _loc('Error doing a chmod `%1` to file `%2`: %3', $chmod,$remote, $agent->output ), $agent->tuple_str ) if $agent->rc && $agent->rc!=512;
+                $log->warn( _loc("Error doing a chmod '%1' to file '%2': %3", $chmod,$remote, $agent->output ), $agent->tuple_str ) if $agent->rc && $agent->rc!=512;
             }
         }
-        $log->warn( _loc( 'Could not find any file locally to ship to `%1`', $server_str ), $config )
+        $log->warn( _loc( "Could not find any file locally to ship to '%1'", $server_str ), $config )
             unless $cnt > 0;
     }
     
@@ -476,7 +476,7 @@ sub run_retrieve {
         my $server_str = "$user\@".$server->name;
         _debug "Connecting to server " . $server_str;
         my $agent = $server->connect( user=>$user );
-        $log->info( _loc( 'Retrieving file `%1` to `%2`', $local, "*$server_str".'*:'.$remote ) );
+        $log->info( _loc( "Retrieving file '%1' to '%2'", $local, "*$server_str".'*:'.$remote ) );
         $agent->get_file(
             local  => $local,
             remote => $remote,
@@ -496,12 +496,12 @@ sub run_rm {
     my $file = $config->{file} // _fail _loc 'Missing parameter file';
     
     my $f = _file( $job->job_dir, $file );
-    _fail _loc 'Could not find file `%1`', $f
+    _fail _loc "Could not find file '%1'", $f
         unless -e $f;
     if( unlink "$f" ) {
-        $log->info( _loc('Successfully delete file `%1`', $f) ); 
+        $log->info( _loc("Successfully delete file '%1'", $f) ); 
     } else {
-        _fail( _loc('Error deleting file `%1`: %2', $f, $!) ); 
+        _fail( _loc("Error deleting file '%1': %2", $f, $!) ); 
     }
 }
 
@@ -515,12 +515,12 @@ sub run_rmtree {
     my $dir = $config->{dir} // _fail _loc 'Missing parameter dir';
     
     my $f = _dir( $job->job_dir, $dir );
-    _fail _loc 'Could not find dir `%1`', $f
+    _fail _loc "Could not find dir '%1'", $f
         unless -d $f;
     if( $f->rmtree ) {
-        $log->info( _loc('Successfully deleted directory `%1`', $f) ); 
+        $log->info( _loc("Successfully deleted directory '%1'", $f) ); 
     } else {
-        _fail( _loc('Error deleting directory `%1`: %2', $f, $!) ); 
+        _fail( _loc("Error deleting directory '%1': %2", $f, $!) ); 
     }
 }
 
@@ -535,7 +535,7 @@ sub run_parse_config {
     my $fail_if_not_found  = $config->{fail_if_not_found};
     
     if( !-e $config_file ) {
-        my $msg = _loc( 'Config file not found in `%1`', $config_file );
+        my $msg = _loc( "Config file not found in '%1'", $config_file );
         if( $fail_if_not_found ) {
             _fail $msg; 
         } else {
@@ -545,7 +545,7 @@ sub run_parse_config {
     
     my $body = _file($config_file)->slurp;
     if( !length $body ) {
-        _fail _loc('Config file is empty: `%1`', $config_file);
+        _fail _loc("Config file is empty: '%1'", $config_file);
         return;
     }
     my $vars = _load( $body );

@@ -133,7 +133,7 @@ sub run_remote {
         my $args_parsed = $server->parse_vars( $args );
         for my $hostname ( _array( $server->hostname ) ) {
             my $dest = $user . '@' . $hostname;
-            $log->info( _loc( 'STARTING remote script %1: `%2`', $dest, $path_parsed . ' '. join(' ',_array($args_parsed)) ), 
+            $log->info( _loc( "STARTING remote script %1: '%2'", $dest, $path_parsed . ' '. join(' ',_array($args_parsed)) ), 
                 { config => $config, dest => $dest });
         }
         
@@ -164,7 +164,7 @@ sub run_remote {
             # check for output errors and warnings
             #   if we find an output ok, then ignore all other errors
             $self->check_output_errors($stash,$errors,$log,$output,$config);
-            $log->info( _loc( 'FINISHED remote script %1: `%2`', $user . '@' . $server->hostname, $path_parsed . join(' ',_array($args_parsed)) ), 
+            $log->info( _loc( "FINISHED remote script %1: '%2'", $user . '@' . $server->hostname, $path_parsed . join(' ',_array($args_parsed)) ), 
                 $agent->tuple_str );
         }
         push @rets, { output=>$out, rc=>$rc, ret=>$ret };
@@ -189,21 +189,21 @@ sub check_output_errors {
     for my $oerr ( _array($output_error) ) {
         if( my @match = ( $output =~ _regex($oerr) ) ) {
            my %found = %+;
-           $log->error( _loc('Output error detected by `%1`: %2', $oerr, %found ? _encode_json(\%found) : join(',',@match) ), data=>$output );
+           $log->error( _loc("Output error detected by '%1': %2", $oerr, %found ? _encode_json(\%found) : join(',',@match) ), data=>$output );
            _fail _loc 'Output error detected' if $error_mode eq 'fail' && !$ignore_errors;
         }
     }
     for my $owarn ( _array($output_warn) ) {
         if( my @match = ( $output =~ _regex($owarn) ) ) {
            my %found = %+;
-           $log->warn( _loc('Output error detected by `%1`: %2', $owarn, %found ? _encode_json(\%found) : join(',',@match) ), data=>$output );
+           $log->warn( _loc("Output error detected by '%1': %2", $owarn, %found ? _encode_json(\%found) : join(',',@match) ), data=>$output );
         }
     }
     for my $ocap ( _array($output_capture) ) {
         if( $output =~ _regex($ocap) ) {
            my %found = %+;
            for( keys %found ) {
-               $log->debug( _loc('Captured from output `%1` into stash `%2`', $ocap, $_) );
+               $log->debug( _loc("Captured from output '%1' into stash '%2'", $ocap, $_) );
                $stash->{$_} = $found{$_};
            }
         }
