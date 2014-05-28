@@ -8,7 +8,7 @@ our $CAPTION = 'Start/Stop web server';
 
 has r          => qw(is rw default) => sub { 0 };
 has host       => qw(is ro);
-has listen     => qw(is ro default) => sub { [] };
+has listen     => qw(is ro), default => sub{ [] };
 has workers    => qw(is ro);
 has socket     => qw(is ro);
 has daemon     => qw(is ro);
@@ -94,7 +94,12 @@ sub run_start {
     
     TOP:
     
-    say 'Starting web server: ' . ( $self->listen // sprintf "http://%s:%s", $self->host // '*', $self->port);
+    my @listen = ref $self->listen eq 'ARRAY' ? @{ $self->listen } : ($self->listen);
+    say 'Starting web server: ' . 
+        ( @listen 
+            ? join(' ', @listen) 
+            : sprintf( "http://%s:%s", $self->host // '*', $self->port)
+    );
     
     $runner->{argv} = [];
     my $proc = sub { 
