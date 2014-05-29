@@ -4720,8 +4720,8 @@ msgstr "No hay naturalezas disponibles para escanear. Por favor, define alguna C
 msgid "No natures included this item path: %1"
 msgstr "Naturalezas no incluidas en la dirección de este elemento: %1"
 
-msgid "Error trying to fatpack perl code. Could not find fatpack code in '%1'"
-msgstr "Error al intentar hacer fatpack sobre el código perl. No se ha podido encontrae el código del fatpack en '%1'"
+msgid "Error trying to fatpack perl code. Could not find fatpack code in `%1`"
+msgstr "Error al intentar hacer fatpack sobre el código perl. No se ha podido encontrae el código del fatpack en `%1`"
 
 msgid "Config value %1 deleted"
 msgstr "Valor de configiración %1 borrado"
@@ -5452,11 +5452,11 @@ msgstr "Asignada A"
 msgid "output"
 msgstr "salida"
 
-msgid "Output error detected by '%1': %2"
-msgstr "Error en la salida detectada por '%1': %2"
+msgid "Output error detected by `%1`: %2"
+msgstr "Error en la salida detectada por `%1`: %2"
 
-msgid "Captured from output '%1' into stash '%2'"
-msgstr "Capturado en la salida '%1' en el pase '%2'"
+msgid "Captured from output `%1` into stash `%2`"
+msgstr "Capturado en la salida `%1` en el pase `%2`"
 
 msgid "Running command: %1"
 msgstr "Ejecutando el comando: %1"
@@ -5476,60 +5476,60 @@ msgstr "Concediendo rol %1 al usuario %2..."
 msgid "Finished command %1"
 msgstr "Comando terminado %1"
 
-msgid "STARTING remote script %1: '%2'"
-msgstr "INICIANDO script remoto %1: '%2'"
+msgid "STARTING remote script %1: `%2`"
+msgstr "INICIANDO script remoto %1: `%2`"
 
-msgid "FINISHED remote script %1: '%2'"
-msgstr "Script remoto FINALIZADO %1: '%2'"
+msgid "FINISHED remote script %1: `%2`"
+msgstr "Script remoto FINALIZADO %1: `%2`"
 
-msgid "Error doing a chmod '%1' to file '%2': %3"
-msgstr "Error haciendo chmod '%1' al fichero '%2': %3"
+msgid "Error doing a chmod `%1` to file `%2`: %3"
+msgstr "Error haciendo chmod `%1` al fichero `%2`: %3"
 
-msgid "Could not find any file locally to ship to '%1'"
-msgstr "No se ha encontrado ningún fichero localmente para enviar a '%1'"
+msgid "Could not find any file locally to ship to `%1`"
+msgstr "No se ha encontrado ningún fichero localmente para enviar a `%1`"
 
-msgid "Retrieving file '%1' to '%2'"
-msgstr "Recuperando el fichero '%1' a '%2'"
+msgid "Retrieving file `%1` to `%2`"
+msgstr "Recuperando el fichero `%1` a `%2`"
 
-msgid "Successfully delete file '%1'"
-msgstr "El archivo '%1', ha sido borrado correctamente"
+msgid "Successfully delete file `%1`"
+msgstr "El archivo `%1`, ha sido borrado correctamente"
 
-msgid "Error deleting file '%1': %2"
-msgstr "Error borrando el archivo '%1': %2"
+msgid "Error deleting file `%1`: %2"
+msgstr "Error borrando el archivo `%1`: %2"
 
-msgid "Successfully deleted directory '%1'"
-msgstr "Borrado satisfactoriamente el directorio '%1'"
+msgid "Successfully deleted directory `%1`"
+msgstr "Borrado satisfactoriamente el directorio `%1`"
 
-msgid "Error deleting directory '%1': %2"
-msgstr "Error borrando el directorio '%1': %2"
+msgid "Error deleting directory `%1`: %2"
+msgstr "Error borrando el directorio `%1`: %2"
 
-msgid "Config file not found in '%1'"
-msgstr "El fichero de configuración: '%1', no se ha encontrado"
+msgid "Config file not found in `%1`"
+msgstr "El fichero de configuración: `%1`, no se ha encontrado"
 
-msgid "Config file is empty: '%1'"
-msgstr "El fichero de configuración: '%1', está vacío"
+msgid "Config file is empty: `%1`"
+msgstr "El fichero de configuración: `%1`, está vacío"
 
 msgid "Error processing SQL"
 msgstr "Error procesando SQL"
 
-msgid "Getting backup file from remote '%1' to '%2'"
-msgstr "Obteniendo el fichero de copia de seguridad remoto '%1' a '%2'"
+msgid "Getting backup file from remote `%1` to `%2`"
+msgstr "Obteniendo el fichero de copia de seguridad remoto `%1` a `%2`"
 
-msgid "No existing file detected to backup: '%1'"
-msgstr "No existe el fichero detectado para la copia de seguridad: '%1'"
+msgid "No existing file detected to backup: `%1`"
+msgstr "No existe el fichero detectado para la copia de seguridad: `%1`"
 
-msgid "Error reading backup file from remote. Ignored: '%1'"
-msgstr "Error leyendo el fichero de copia de seguridad de forma remotaa. Ignorado: '%1'"
+msgid "Error reading backup file from remote. Ignored: `%1`"
+msgstr "Error leyendo el fichero de copia de seguridad de forma remotaa. Ignorado: `%1`"
 
 
-msgid "Rollback switch to local file '%1'"
-msgstr "Revertir cambio al fichero local '%1'"
+msgid "Rollback switch to local file `%1`"
+msgstr "Revertir cambio al fichero local `%1`"
 
-msgid "Sending file '%1' to '%2'"
-msgstr "Enviando fichero '%1' a '%2'"
+msgid "Sending file `%1` to `%2`"
+msgstr "Enviando fichero `%1` a `%2`"
 
-msgid "Error doing a chown '%1' to file '%2': %3"
-msgstr "Error haciendo cambiando el usuario propietario '%1' al fichero '%2': %3"
+msgid "Error doing a chown `%1` to file `%2`: %3"
+msgstr "Error haciendo cambiando el usuario propietario `%1` al fichero `%2`: %3"
 
 msgid "Tables"
 msgstr "Tablas"
@@ -5870,8 +5870,8 @@ msgstr "No se pueden cargar los metadatos para el dashlet %1: %2"
 msgid "Executed JOBS for <b>%1</b>"
 msgstr "PASES ejecutados para <b>%1</b>"
 
-msgid "User *%1* has uploaded file '%2'"
-msgstr "El usuario *%1* ha actualizado el fichero '%2'"
+msgid "User *%1* has uploaded file `%2`"
+msgstr "El usuario *%1* ha actualizado el fichero `%2`"
 
 msgid "File saved to job %1 log: %2"
 msgstr "Fichero guardado en el pase %1 log: %2"
@@ -6085,32 +6085,32 @@ msgstr "No está 'Categorías' en la configuración de búsqueda"
 msgid "Could not find a worker capable of %1"
 msgstr "No se pudo obtener un worker capaz de %1"
 
-msgid "Local file '%1' not found"
-msgstr "Fichero local '%1' no encontrado"
+msgid "Local file `%1` not found"
+msgstr "Fichero local `%1` no encontrado"
 
-msgid "Could not create remote directory '%1': %2"
-msgstr "No se puede crear el directorio remoto '%1': %2"
+msgid "Could not create remote directory `%1`: %2"
+msgstr "No se puede crear el directorio remoto `%1`: %2"
 
-msgid "Could not chown '%1 %2': %3"
-msgstr "No se puede hacer cambair el usuario propietario '%1 %2': %3"
+msgid "Could not chown `%1 %2`: %3"
+msgstr "No se puede hacer cambair el usuario propietario `%1 %2`: %3"
 
-msgid "Could not find local directory to '%1'"
-msgstr "No se puede encontrar directorio local en '%1'"
+msgid "Could not find local directory to `%1`"
+msgstr "No se puede encontrar directorio local en `%1`"
 
-msgid "balix: can't send file: remote dir is not writeable '%1'"
-msgstr "balix: no se puede enviar el fichero: el directorio remoto no se puede escribir '%1'"
+msgid "balix: can't send file: remote dir is not writeable `%1`"
+msgstr "balix: no se puede enviar el fichero: el directorio remoto no se puede escribir `%1`"
 
-msgid "balix: can't send file: destination is a directory '%1'"
-msgstr "balix: no se puede enviar el fichero: el destinatario es un directorio '%1'"
+msgid "balix: can't send file: destination is a directory `%1`"
+msgstr "balix: no se puede enviar el fichero: el destinatario es un directorio `%1`"
 
-msgid "Failed CRC check for remote file '%1'"
-msgstr "Fallo en la verificación CRC del fichero remoto '%1'"
+msgid "Failed CRC check for remote file `%1`"
+msgstr "Fallo en la verificación CRC del fichero remoto `%1`"
 
-msgid "Error reading file '%1' from '%2': %3"
-msgstr "Error leyendo el fichero '%1' de '%2': %3"
+msgid "Error reading file `%1` from `%2`: %3"
+msgstr "Error leyendo el fichero `%1` de `%2`: %3"
 
-msgid "Balix: get_file: could not open local file '%1': %2"
-msgstr "Balix: get_file: no se puede abrir el fichero local'%1': %2"
+msgid "Balix: get_file: could not open local file `%1`: %2"
+msgstr "Balix: get_file: no se puede abrir el fichero local `%1`: %2"
 
 msgid "Password does not comply. Rule: %1"
 msgstr "La contraseña no cumple con las características. Regla: %1"
@@ -6118,8 +6118,8 @@ msgstr "La contraseña no cumple con las características. Regla: %1"
 msgid "Password length is less than %1 characters. Rule: %1"
 msgstr "Password length is less than %1 characters. Rule: %1"
 
-msgid "Could now checkout topic file '%1'"
-msgstr "Ahora podría obtener el fichero del tópico '%1'"
+msgid "Could now checkout topic file `%1`"
+msgstr "Ahora podría obtener el fichero del tópico `%1`"
 
 msgid "Job resumed by user %1"
 msgstr "Pase reanudado por el usuario %1"
@@ -6142,8 +6142,8 @@ msgstr "*Pase Rechazado por %1*: %2"
 msgid "no comment"
 msgstr "No hay comentarios"
 
-msgid "Task response '*%1*' by *%2*: %3"
-msgstr "Respuesta de la tarea '*%1*' por *%2*: %3"
+msgid "Task response `*%1*` by *%2*: %3"
+msgstr "Respuesta de la tarea `*%1*` por *%2*: %3"
 
 msgid "Job failure: %1"
 msgstr "Fallo del pase: %1"
@@ -6187,8 +6187,8 @@ msgstr "Suspendiendo el pase"
 msgid "Directory does not exist or is not accesible %1"
 msgstr "El directorio no existe o no es accesible %1"
 
-msgid "Could not chmod '%1 %2': %3"
-msgstr "No se puede hacer chmod '%1 %2': %3"
+msgid "Could not chmod `%1 %2`: %3"
+msgstr "No se puede hacer chmod `%1 %2`: %3"
 
 msgid "File skipped: %1"
 msgstr "Fichero ignorado: %1"
@@ -6196,20 +6196,20 @@ msgstr "Fichero ignorado: %1"
 msgid "Could not require package %1: %2"
 msgstr "No se requiere el paquete %1: %2"
 
-msgid "Parser *%1* could not parse '%2'"
-msgstr "Parseador *%1* no puede parsear '%2'"
+msgid "Parser *%1* could not parse `%2`"
+msgstr "Parseador *%1* no puede parsear `%2`"
 
 msgid "Creating job home: %1"
 msgstr "Creando pase home: %1"
 
-msgid "Job home '%1' reset clean"
-msgstr "Pase home '%1' reestablecido y limpio"
+msgid "Job home `%1` reset clean"
+msgstr "Pase home `%1` reestablecido y limpio"
 
 msgid "Job dir too short, not removed for safety: %1"
 msgstr "Directorio del pase ddemasiado corto, no se elimina por seguridad: %1"
 
-msgid "Job home '%1' created"
-msgstr "Pase home '%1' creado"
+msgid "Job home `%1` created"
+msgstr "Pase home `%1` creado"
 
 msgid "Added %1 to changeset %2 bls"
 msgstr "Añadido %1 al cambio %2 entorno"
@@ -6367,11 +6367,11 @@ msgstr "No se pudo encontrar el renombre para el directorio raíz %1"
 msgid "Filter paths, include, excludes"
 msgstr "Filtrar rutas, incluir, excluir"
 
-msgid "Tar of directory '%1' into file '%2'"
-msgstr "Tar del directorio '%1' en el fichero '%2'"
+msgid "Tar of directory `%1` into file `%2`"
+msgstr "Tar del directorio `%1` en el fichero `%2`"
 
-msgid "File content written: '%1'"
-msgstr "Escrito el contenido del fichero: '%1'"
+msgid "File content written: `%1`"
+msgstr "Escrito el contenido del fichero: `%1`"
 
 msgid "Server %1 is inactive. Skipped"
 msgstr "El servidor %1 está inactivo. Ignorado"
@@ -6682,8 +6682,8 @@ msgstr "Regla de Marcha atrás"
 msgid "Toggle"
 msgstr "Interruptor"
 
-msgid "Rule '%1' has changed, but has not been saved. Leave without saving?"
-msgstr "La regla '%1' ha cambiado, pero no ha sido guardada. ¿Desea salir sin guardar?"
+msgid "Rule `%1` has changed, but has not been saved. Leave without saving?"
+msgstr "La regla `%1` ha cambiado, pero no ha sido guardada. ¿Desea salir sin guardar?"
 
 msgid "Stash"
 msgstr "Stash"
@@ -7292,6 +7292,9 @@ msgstr "Dashboards"
 msgid "Topic not found"
 msgstr "Tópico no encontrado"
 
+msgid "Master row not found for mid `%1`"
+msgstr "Fila Master no encontrada para el mid `%1`"
+
 msgid "Master row not found for mid %1"
 msgstr "Fila Master no encontrada para el mid %1"
 
@@ -7301,11 +7304,11 @@ msgstr "Error deserializando el CI %1. Falta la referencia YALM o no es válida:
 msgid "Error deserializing CI %1. Error YAML ref: %2"
 msgstr "Error deserializando el CI %1. Error en la referencia YAML: %2"
 
-msgid "rel path mode '%1', local='%2', anchor='%3'"
-msgstr "rel path mode '%1', local='%2', anchor='%3'"
+msgid "rel path mode `%1`, local=`%2`, anchor=`%3`"
+msgstr "rel path mode `%1`, local=`%2`, anchor=`%3`"
 
-msgid "rel path mode '%1', local_path=%2"
-msgstr "rel path mode '%1', local_path=%2"
+msgid "rel path mode `%1`, local_path=%2"
+msgstr "rel path mode `%1`, local_path=%2"
 
 msgid "Running migration %1..."
 msgstr "Ejecutando la migración %1..."
@@ -7376,9 +7379,6 @@ msgstr "Fecha de inicio de la ejecución"
 msgid "RUN End Date"
 msgstr "Fecha final de ejecución"
 
-msgid "<img src='%1' alt='%2'>"
-msgstr "<img src='%1' alt='%2'>"
-
 msgid "Active users count"
 msgstr "Cuenta de usuarios activos"
 
@@ -7418,10 +7418,25 @@ msgstr "No se puede pausar un pase en los estados CHECK o INIT"
 msgid "balix: can't send file: missing remote dir in '%1'"
 msgstr "balix: no se puede enviar el fichero: falta el directorio remoto en '%1'"
 
-msgid "balix: cannot send file: destination is a directory '%1'"
-msgstr "balix: no se puede enviar el fichero: el destino es un directorio '%1'"
+msgid "balix: cannot send file: destination is a directory `%1`"
+msgstr "balix: no se puede enviar el fichero: el destino es un directorio `%1`"
 
 msgid "async_request: missing or invalid queue configuration: either configure web_queue to 'host:port', or web_host and web_port"
 msgstr "petición asíncrona: falta la cola de configuración o no es válida: o bien conffigure el web_queue a 'host:port', o bien a web_host y web_port"
+
+msgid "Stop Script"
+msgstr "Parar Script"
+
+msgid "Binary"
+msgstr "Binario"
+
+msgid "Servers"
+msgstr "Servidores"
+
+msgid "Parent Process"
+msgstr "Proceso Padre"
+
+msgid "Start Script"
+msgstr "Iniciar Script"
 
 ### EOF - do not write anything bellow this

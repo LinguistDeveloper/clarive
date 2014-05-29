@@ -341,4 +341,22 @@ msgstr "Items <%$namejob%>"
 msgid "No hay aprobaciones programadas para este pase."
 msgstr "No approvals scheduled for this job."
 
+msgid "Aplicacion"
+msgstr "Aplication"
+
+msgid "Linea de negocio"
+msgstr "Line of bussines"
+
+msgid "Clave"
+msgstr "Key"
+
+msgid "Criticidad"
+msgstr "Criticality"
+
+msgid "Direcci&oacuten de Desarrollo"
+msgstr "Direcci&oacuten de Desarrollo"
+
+msgid "Direcci&oacuten de Producci&oacuten"
+msgstr "Direcci&oacuten de Producci&oacuten"
+
 ### EOF - do not write anything bellow this
