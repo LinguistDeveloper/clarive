@@ -189,7 +189,6 @@ method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
     }
     # check file writeable
     my ($rc,$ret) = $self->check_writeable($remote);
-<<<<<<< HEAD
     _fail _loc("balix: cannot send file: file not writeable `%1` (rc: %2)", $remote, $rc) if $rc;
     # check we are not trying to write a directory 
     my $is_dir = $self->is_remote_dir($remote);
