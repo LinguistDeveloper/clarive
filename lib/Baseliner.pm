@@ -7,6 +7,8 @@ our @modules;
 BEGIN {
 
     use CatalystX::Features 0.24;
+    
+    # TODO ConfigLoader used by some features with .conf, but not core -- migrate to features/*/config/.yml
 
     if( $ENV{BALI_PLUGINS} ) {
         @modules = split /,/, $ENV{BALI_PLUGINS};
@@ -331,7 +333,7 @@ around 'debug' => sub {
     } else {
         my $cache_type = Baseliner->config->{cache};
         my $cache_defaults = {
-                fastmmap  => [ driver => 'FastMmap', root_dir   => Util->_tmp_dir . '/bali-cache', cache_size => '120m' ],
+                fastmmap  => [ driver => 'FastMmap', root_dir   => Util->_tmp_dir . '/bali-cache', cache_size => '256m' ],
                 memory    => [ driver => 'Memory' ],
                 rawmemory => [ driver => 'RawMemory', datastore => {}, max_size => 1000 ],
                 sharedmem => [ driver => 'SharedMem', size => 1_000_000, shmkey=>93894384 ],
