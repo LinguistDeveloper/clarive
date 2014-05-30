@@ -10,8 +10,24 @@ register 'service.topic.change_status' => {
     name => 'Change topic status',
     handler => \&change_status,
     job_service  => 1,
-    icon => '/static/images/icons/webservice.png',
+    icon => '/static/images/icons/folder_go.png',
     form => '/forms/topic_status.js' 
+};
+
+register 'service.topic.create' => {
+    name => 'Create a new topic',
+    handler => \&create,
+    job_service  => 1,
+    icon => '/static/images/icons/folder_new.png',
+    form => '/forms/topic_create.js' 
+};
+
+register 'service.topic.update' => {
+    name => 'Update topic data',
+    handler => \&update,
+    job_service  => 1,
+    icon => '/static/images/icons/folder_edit.png',
+    form => '/forms/topic_update.js' 
 };
 
 
@@ -121,6 +137,65 @@ sub change_status {
             username   => $config->{username} // 'clarive'
         );
     }
+}
+
+sub create {
+    my ( $self, $c, $config ) = @_;
+
+    my $stash = $c->stash;
+    my $category = $config->{category} _fail _loc 'Missing or invalid parameter category';
+    my $data = $config->{data};
+    my $user = $config->{username} // 'clarive';
+    my $new_status = $config->{new_status};
+
+    #Let's get the category id
+    ###### TODO: GET CATEGORY ID FROM MONGO ¿?¿? 
+    my $category_id = $category;
+
+    # if ( is_number( $category ) ) {
+    #     ($category_id) = map {$_->{id}} ci->status->find_one( {id_status => $new_status} );
+    # } else {
+    #     ($new_status_id) = map {$_->{id_status}} ci->status->find_one( {name => $new_status} );
+    # }
+
+    # if ( !$new_status_id ) {
+    #     _fail _loc("Status %1 does not exist in the system", $new_status);
+    # }
+
+    #Let's get the new_status id
+    my $new_status_id;
+
+    if ( $new_status ) {
+        if ( is_number( $new_status ) ) {
+            ($new_status_id) = map {$_->{id_status}} ci->status->find_one( {id_status => $new_status} );
+        } else {
+            ($new_status_id) = map {$_->{id_status}} ci->status->find_one( {name => $new_status} );
+        }
+
+        if ( !$new_status_id ) {
+            _fail _loc("Status %1 does not exist in the system", $new_status);
+        } else {
+            $data->{id_category_status} = $new_status_id;
+        }
+    };
+
+    $data->{username} = $username;
+    $data->{action} = 'add';
+    $data->{category} = $id_category;
+
+
+    Baseliner->model('Topic')->update( 
+        $data
+    );
+}
+
+sub update {
+    my ( $self, $c, $config ) = @_;
+
+    my $stash = $c->stash;
+    my $data = $config->{data};
+    my $user = $config->{username} // 'clarive';
+
 }
 
 1;
