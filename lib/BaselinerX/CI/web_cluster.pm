@@ -1,6 +1,7 @@
 package BaselinerX::CI::web_cluster;
 use Baseliner::Moose;
 use Baseliner::Utils qw(:logging);
+with 'Baseliner::Role::CI';
 
 sub icon { '/static/images/icons/webservice.png' }
 
@@ -10,9 +11,6 @@ has url 	=> qw(is rw isa Str), default => '';
 has doc_root => qw(is rw isa Str), default => '';
 has user 	=> qw(is rw isa Str), default => '';
 has_cis 'instances';
-
-with 'Baseliner::Role::CI::ApplicationServer';
-#with 'Baseliner::Role::HasAgent';
 
 sub rel_type { 
 	+{
