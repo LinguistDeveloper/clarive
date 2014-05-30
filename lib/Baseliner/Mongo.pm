@@ -195,7 +195,7 @@ sub joins {
             $rs->fields({ _id=>-1, $from => 1 });
             @docs = $rs->all; 
         }
-        _warn [ map{ $_->{$from} } @docs ];
+        #_warn [ map{ $_->{$from} } @docs ];
         %in = ( $to => mdb->in(map{ $_->{$from} } @docs ) );
     }
     my $where = +{ %{ $res{where} }, %in };
@@ -301,6 +301,14 @@ sub migra {
 sub ixhash {
     my $self = shift;
     Util->_ixhash( @_ );
+}
+
+sub true {
+   +{ '$nin'=>[undef,'','0',0] }; 
+}
+
+sub false {
+   +{ '$in'=>[undef,'','0',0] }; 
 }
 
 # default 20MB capped collection
@@ -439,6 +447,21 @@ sub query_build {
     #push @ors, { 1=>1 } if ! @terms_normal;
     $where->{'$and'} = \@wh_and if @wh_and;
     return $where;
+}
+
+=head2 txn
+
+Simulated transaction in Mongo. 
+
+1) insert a _tx with any insert, keep track of collections
+2) update, brings the updated equivalent of the older doc into mdb->_txn() 
+3) insert a _tx id with every update / insert 
+
+=cut
+sub txn {
+    my ($self,$code) =@_;
+    local $mdb::_tx = Util->_md5;
+    $code->($mdb::_tx );
 }
 
 our $AUTOLOAD;
