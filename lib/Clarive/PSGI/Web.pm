@@ -15,7 +15,8 @@ if( $@ ) {
     die $@;
 }
 
-if(0) {
+=pod 
+
     package Clarive::MM;
     use strict;
     use Mojo::Base 'Mojolicious';
@@ -35,7 +36,8 @@ if(0) {
         my $id = sprintf "%s", $self->tx;
         $clients->{$id} = $self->tx;
     });
-}
+
+=cut
 
 builder {
     #mount '/ws' => $Clarive::MM::app->start;

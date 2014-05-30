@@ -1,3 +1,9 @@
+=head1 Baseliner::Role::Search
+
+This role is used by the CI, Topic and Job libs
+to register as search providers.
+
+=cut
 package Baseliner::Role::Search;
 use Moose::Role;
 

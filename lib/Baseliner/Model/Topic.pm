@@ -506,8 +506,9 @@ sub topics_for_user {
     $start = 0 if length $start && $start>=$cnt; # reset paging if offset
     $rs->skip( $start ) if $start >= 0 ;
     $rs->limit( $limit ) if $limit >= 0 ;
-    my %mid_docs = map { $_->{mid}=>$_ } $rs->all;
-    my @mids = keys %mid_docs;
+    my @topics = $rs->all;
+    my %mid_docs = map { $_->{mid}=>$_ } @topics; 
+    my @mids = map { $$_{mid} } @topics;  # keep order
     
     # SELECT MID DATA:
     my %mid_data = map { $_->{topic_mid} => $_ } grep { $_ } map { Baseliner->cache_get("topic:view:$_:") } @mids; 
@@ -538,9 +539,6 @@ sub topics_for_user {
                         mid => $mid
                 );
 
-            if( $row->{directory} ) {
-                $mid_data{$mid}{group_directory}{ $row->{directory} } = ();
-            }
             $mid_data{$mid}{group_assignee}{ $row->{assignee} } = () if defined $row->{assignee};
         }
 
@@ -582,7 +580,7 @@ sub topics_for_user {
         };
         $data->{category_status_name} = _loc($data->{category_status_name});
         $data->{category_name} = _loc($data->{category_name});
-        map { $data->{$_} = [ keys %{ delete($data->{"group_$_"}) || {} } ] } qw/assignee directory/;
+        $data->{group_assignee} = [ keys %{ delete($data->{group_assignee}) || {} } ];
         my @projects_report = keys %{ delete $data->{projects_report} || {} };
         push @rows, {
             %$data,
@@ -628,6 +626,8 @@ sub update_mid_data {
         $$mid_data{$mid}{cis_out} = [ map { $_->{name} } @all_cis{ keys %{ $cis_out{$mid} || {} } } ];
         $$mid_data{$mid}{referenced_in} = [ @all_rels{ keys %{ $topics_in{$mid} || {} } } ];
         $$mid_data{$mid}{references_out} = [ @all_rels{ keys %{ $topics_out{$mid} || {} } } ];
+        $$mid_data{$mid}{directory} = [ map { $_->{name} } grep { $_->{collection} eq 'folder' } @all_cis{ keys %{ $cis_in{$mid} || {} } } ];
+        
         # for all projects that are not areas, etc
         for my $prj ( grep { $_->{collection} eq 'project' } @all_cis{ _unique keys %{ $topic_project{$mid} || {} } } ) {
             push @{ $$mid_data{$mid}{projects} }, $prj->{mid}.';'.$prj->{name};
@@ -2612,6 +2612,7 @@ sub list_posts {
 
     my $rs = DB->BaliTopic->find( $mid )
         ->posts->search( undef, { order_by => { '-desc' => 'created_on' } } );
+    return $rs->count if $p{count_only};
     my @rows;
     while( my $r = $rs->next ) {
         push @rows,

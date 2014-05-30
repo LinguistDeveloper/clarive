@@ -548,8 +548,6 @@ sub variable_parse_config {
     return $value;
 }
 
-use Config::General;
-use IO::File;
 sub export_to_file {
     my ($self, %p ) =@_;
     $p{file} ||= Baseliner->path_to('/etc/export/config_store');
@@ -562,6 +560,7 @@ sub export_to_file {
         push @{ $data{$key} }, $_;
     }
     # conf
+    require Config::General;
     my $conf = Config::General->new( \%data ) or _throw $@;
     $conf->save_file( $p{file} . ".dmp" );
 
@@ -571,6 +570,7 @@ sub export_to_file {
     close $yaml;
 
     #xml
+    require IO::File;
     my $xml_file = IO::File->new( '> ' . $p{file} . '.xml');
     require XML::Simple;
     print $xml_file XML::Simple::XMLout( \%data );

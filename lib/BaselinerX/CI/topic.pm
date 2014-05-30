@@ -188,6 +188,35 @@ sub jobs {
     wantarray ? @jobs : \@jobs;
 }
 
+sub activity {
+    my ($self, $p )=@_;
+    # activity (events)
+    require Baseliner::Sugar;
+    my $events = Baseliner::Sugar::events_by_mid( $self->mid, min_level => 2 );
+    # control event visualiz permissions
+    my $name_category = Util->_name_to_id($self->name_category);
+    my %topic_category = ();
+    my $user_categories_fields_meta = Baseliner->model('Users')->get_categories_fields_meta_by_user( 
+        username=>$$p{username}, categories=>{ $self->id_category => $self->name_category }, 
+    );
+    my @perm_events = grep { !exists $_->{field} || exists $user_categories_fields_meta->{$name_category}->{$_->{field}}} Util->_array( $events );
+    @perm_events = map { $$_{text} = Util->_to_utf8( $$_{text} ); $_ } Util->_array($events);
+    wantarray ? @perm_events : \@perm_events;
+}
+
+sub comments {
+    my ($self, $p )=@_;
+    # comments
+    my $is_root = Baseliner->model('Permissions')->is_root($$p{username});
+    my $comments = Baseliner->model('Topic')->list_posts( mid=>$self->mid );
+    for my $com ( @$comments ) {
+        $$com{created_on} = join ' ', "$$com{created_on}" =~ /^(.*)T(.*)$/; # TODO use a standard user date format 
+        $$com{topic_mid} = $self->mid;
+        $$com{can_edit} = $is_root ? \1 : \0;   # XXX for now the owner cannot edit or delete her own post
+    }
+    wantarray ? @$comments : $comments;
+}
+            
 sub is_in_active_job {
     my ($self )=@_;
     my @active_jobs;

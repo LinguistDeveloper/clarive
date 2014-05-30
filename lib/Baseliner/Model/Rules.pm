@@ -5,6 +5,24 @@ use Baseliner::Sugar;
 use Try::Tiny;
 use v5.10;
 
+# DSL functions, export needed by "contained" mode in dsl_run
+use Exporter::Tidy default => [qw( 
+    current_task
+    semaphore
+    parallel_run
+    error_trap
+    merge_data
+    project_changes 
+    current_task
+    cut_nature_items
+    launch
+    merge_into_stash
+    stash_has_nature
+    changeset_projects
+    variables_for_bl
+    include_rule
+)];
+
 BEGIN { extends 'Catalyst::Model' }
 
 with 'Baseliner::Role::Service';
@@ -293,12 +311,34 @@ sub dsl_run {
     alarm 0;
     
     merge_into_stash( $stash, BaselinerX::CI::variable->default_hash ); 
+    my $err;
     ## local $Baseliner::Utils::caller_level = 3;
     ############################## EVAL DSL Tasks
-    $ret = eval $dsl;
-    my $err = $@;
+    if( $p{contained} ) {
+        # contained mode avoids leaking variables and subs into the current package
+        my $eval_pkg = 'Rule_' . Util->_md5;
+        $$stash{_rule_package} = $eval_pkg;
+        my $t0=[Time::HiRes::gettimeofday];
+        $ret = eval qq{
+            package $eval_pkg { 
+                use Baseliner::Model::Rules; 
+                use Baseliner::Plug;
+                use Baseliner::Utils;
+                use Baseliner::Sugar;
+                sub{ $dsl }->() 
+            }
+        };
+        $err = $@;
+        $$stash{_rule_elapsed} = Time::HiRes::tv_interval( $t0 );
+    } else {
+        my $t0=[Time::HiRes::gettimeofday];
+        $ret = eval $dsl;
+        $err = $@;
+        $$stash{_rule_elapsed} = Time::HiRes::tv_interval( $t0 );
+    }
     ##############################
     alarm 0;
+    $$stash{_rule_err} = $err;
     
     # wait for children to finish
     $self->wait_for_children( $stash );
@@ -401,11 +441,14 @@ sub run_single_rule {
     _fail _loc 'Rule with id `%1` not found', $p{id_rule} unless $rule;
     my @tree = $self->build_tree( $p{id_rule}, undef );
     #local $self->{tidy_up} = 0;
+    my $t0=[Time::HiRes::gettimeofday];
     my $dsl = try {
         $self->dsl_build( \@tree, no_tidy=>0, %p ); 
     } catch {
         _fail( _loc("Error building DSL for rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, shift() ) ); 
     };
+    my $elapsed = Time::HiRes::tv_interval( $t0 );
+    _debug( _loc('DSL build elapsed %1s', $elapsed) );
     my $ret = try {
         ################### RUN THE RULE DSL ######################
         $self->dsl_run( dsl=>$dsl, stash=>$p{stash}, %p );

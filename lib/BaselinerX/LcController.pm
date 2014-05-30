@@ -1005,22 +1005,23 @@ sub build_topic_tree {
     my $self = shift;
     my %p    = @_;
     my @menu_related = $self->menu_related();
+    my $category = $p{category} // $p{topic}{category} // $p{topic}{categories};
 
     return +{
         text     => $p{topic}{title},
         calevent => {
             mid    => $p{mid},
-            color  => $p{topic}{categories}{color},
+            color  => $category->{color},
             title  => $p{topic}{title},
             allDay => \1
         },
         url        => '/lifecycle/tree_topic_get_files',
         topic_name => {
             mid            => $p{mid},
-            category_color => $p{topic}{categories}{color},
-            category_name  => _loc($p{topic}{categories}{name}),
-            is_release     => $p{is_release} // $p{topic}{categories}{is_release},
-            is_changeset   => $p{is_changeset} // $p{topic}{categories}{is_changeset},
+            category_color => $category->{color},
+            category_name  => _loc($category->{name}),
+            is_release     => $p{is_release} // $category->{is_release},
+            is_changeset   => $p{is_changeset} // $category->{is_changeset},
         },
         children => [
             {
@@ -1036,7 +1037,7 @@ sub build_topic_tree {
         ],
         data => {
             topic_mid => $p{mid},
-            click     => $self->click_for_topic( $p{topic}{categories}{name}, $p{mid} )
+            click     => $self->click_for_topic( $category->{name}, $p{mid} )
         },
         icon       => $p{icon} // q{/static/images/icons/topic.png},
         leaf       => \0,

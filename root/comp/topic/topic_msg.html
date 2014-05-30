@@ -1,11 +1,10 @@
 <%args>
     $ii
     $topic_mid
-    $comments
-    $events
     $topic_meta
     $topic_data
     $jobs => 0
+    $has_comments
     $HTMLbuttons => 0
     $permissionEdit => 0
     $permissionDelete => 0
@@ -13,7 +12,7 @@
 </%args>
 <%perl>
     use Baseliner::Utils;
-    my @tabactive = _array( $comments ) ? ( 1,0 ) : ( 0,1);
+    my @tabactive = $has_comments ? ( 1,0 ) : ( 0,1);
 </%perl>
 <style>
 .badge-rel {
@@ -165,13 +164,13 @@ padding: 2px 4px 2px 7px;
     <br><br>
     <ul class="nav nav-tabs" id="nav-tabs-<% $ii %>">
         <li <% $tabactive[0] and 'class="active"' %>>
-            <a href="#comments<% $ii %>" data-toggle="tab"><% _loc('Discussion') %></a>
+            <a href="#comments<% $ii %>" id="tab-comments<% $ii %>" data-toggle="tab"><% _loc('Discussion') %></a>
         </li>
         <li <% $tabactive[1] and 'class="active"' %>>
-            <a href="#activity<% $ii %>" data-toggle="tab"><% _loc('Activity') %></a>
+            <a href="#activity<% $ii %>" id="tab-activity<% $ii %>" data-toggle="tab"><% _loc('Activity') %></a>
         </li>
         <li <% $jobs or 'style="display: none"' %>>
-            <a href="#jobs<% $ii %>"  id="tab-jobs<% $ii %>"data-toggle="tab"><% _loc('Jobs') %></a>
+            <a href="#jobs<% $ii %>" id="tab-jobs<% $ii %>" data-toggle="tab"><% _loc('Jobs') %></a>
         </li>
 <!--         <li <% $tabactive[3] and 'class="active"' %>>
             <a href="#timeline<% $ii %>" id="tab-timeline<% $ii %>" data-toggle="tab"><% _loc('Timeline') %></a>
@@ -181,55 +180,15 @@ padding: 2px 4px 2px 7px;
     <div class="grid_24">
         <div class="tab-content">
             <div class="tab-pane <% $tabactive[0] and 'active' %>" id="comments<% $ii %>">
-
-% foreach my $com ( _array( $comments) ){
-%   my $id_div_com =  "comment_$com->{id}_$ii";
-
-                <div style="margin-left: 20px" id="<% $id_div_com %>">  <!-- class 'well' -->
-
-%   if( $com->{content_type} eq 'code' )  {
-
-                    <p><pre id="<% $id_div_com . '_ta' %>"><% $com->{text} %></pre></p>
-
-%#   codemirror does not work well under boot, needs a css reset before
-%#                  <script>setTimeout( function(){CodeMirror.fromTextArea( document.getElementById("<% $id_div_com . '_ta' %>",
-%#                    {lineNumbers: true, tabMode: "indent", smartIndent: true, matchBrackets: true}) );}, 2000)</script>
-
-%   } else {
-
-                    <p><% $com->{text} %></p>
-
-%   } 
-
-                    <p><small><img style="margin: 0px 5px 2px 0px" width=16 src="/user/avatar/<% $com->{created_by} %>/image.png" />
-                    <b><%$com->{created_by}%></b>, <%$com->{created_on}->dmy%> <%$com->{created_on}->hms%>
-
-%   if ( $c->model('Permissions')->is_root($c->username)) {
-%#if( $c->username eq $com->{created_by} ) {
-
-                    | <a href="javascript:Baseliner.Topic.comment_edit( <% $topic_mid %>, <% $com->{id} %>)"><% _loc("edit") %></a>
-                    | <a href="javascript:Baseliner.Topic.comment_delete(<% $topic_mid %>, <% $com->{id} %>, '<% $id_div_com %>')"><% _loc("delete") %></a>
-
-%   }
-
-                    </small></p>
-                    <hr />
-                </div>
-%}
-            </div>  <!-- comment tab -->
+                <div id="topic-comments<% $ii %>"><img src="/static/images/loading-fast.gif" style="padding-left: 5px" /></div>
+            </div>  <!-- comments tab -->
 
             <div class="tab-pane <% $tabactive[1] and 'active' %>" id="activity<% $ii %>">
-%  foreach my $ev ( _array( $events ) ) {
-                <div style="margin-left: 20px">
-                    <p><img style="margin: 5px" width=16 src="/user/avatar/<% $ev->{username} %>/image.png" />
-                    <% Util->_to_utf8( $ev->{text} ) %> <small><% $ev->{ts} %></small></p>
-                    <hr />
-                </div> 
-%}
+                <div id="topic-activity<% $ii %>"><img src="/static/images/loading-fast.gif" style="padding-left: 5px" /></div>
             </div> <!-- activity tab -->
 
             <div class="tab-pane <% $tabactive[2] and 'active' %>" id="jobs<% $ii %>">
-                <div id="topic-jobs<% $ii %>"></div>
+                <div id="topic-jobs<% $ii %>"><img src="/static/images/loading-fast.gif" style="padding-left: 5px" /></div>
             </div> <!-- jobs tab -->
 
             <div class="tab-pane <% $tabactive[3] and 'active' %>" id="timeline<% $ii %>">
@@ -237,21 +196,38 @@ padding: 2px 4px 2px 7px;
             </div> <!-- timeline tab -->
 
             <script>
-                    //$("#timeline<% $ii %> a").click(function(){
-                    $('#nav-tabs-<% $ii %> a[data-toggle="tab"]').on('shown', function (e) {
-                        if( e.target.id == "tab-timeline<% $ii %>" && '<% $topic_mid %>' != '' ) {
+                    Baseliner.build_topic_tabs = function(topic_mid, ii, target_id){
+                        if( target_id == "tab-timeline"+ii && topic_mid != '' ) {
                             Baseliner.timeline({ 
-                                mid: '<% $topic_mid %>', 
-                                render_to: "topic-timeline<% $ii %>",
-                                parent_id:'<% $ii %>' 
+                                mid: topic_mid,
+                                render_to: "topic-timeline"+ii,
+                                parent_id: ii
                             });
-                        } else if( e.target.id == "tab-jobs<% $ii %>" && '<% $topic_mid %>' != '' ) {
+                        } else if( target_id == "tab-comments"+ii && topic_mid != '' ) {
+                            Baseliner.comments_for_topic({ 
+                                mid: topic_mid,
+                                render_to: "topic-comments"+ii,
+                                parent_id: ii
+                            });
+                        } else if( target_id == "tab-activity"+ii && topic_mid != '' ) {
+                            Baseliner.activity_for_topic({ 
+                                mid: topic_mid,
+                                render_to: "topic-activity"+ii,
+                                parent_id: ii
+                            });
+                        } else if( target_id == "tab-jobs"+ii && topic_mid != '' ) {
                             Baseliner.jobs_for_topic({ 
-                                mid: '<% $topic_mid %>', 
-                                render_to: "topic-jobs<% $ii %>",
-                                parent_id:'<% $ii %>' 
+                                mid: topic_mid,
+                                render_to: "topic-jobs"+ii,
+                                parent_id: ii
                             });
                         } // if tab
+                    };
+                    //$("#timeline<% $ii %> a").click(function(){
+                    var curr_tab = <% $tabactive[0] ? 'true' : 'false' %> ? 'comments' : 'activity';
+                    Baseliner.build_topic_tabs('<% $topic_mid %>', '<% $ii %>', 'tab-'+curr_tab+'<% $ii %>' );
+                    $('#nav-tabs-<% $ii %> a[data-toggle="tab"]').on('shown', function (ev) {
+                        Baseliner.build_topic_tabs('<% $topic_mid %>', '<% $ii %>', ev.target.id );
                     }); // on shown
             </script>
         </div> <!-- tab content -->

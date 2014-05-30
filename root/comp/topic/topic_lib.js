@@ -1858,7 +1858,69 @@ Baseliner.jobs_for_topic = function(args) {
                     </div> 
                 */}.tmpl( job );
             });
-            div.innerHTML = jh;
+            div.innerHTML = res.length 
+                ? jh 
+                : '<span style="text-transform: uppercase; font-size: 10px; font-weight: bold; padding-left: 5px">' + _('No jobs found') + '</span>';
+        }
+    });
+};
+
+Baseliner.activity_for_topic = function(args) {
+    Baseliner.ci_call( args.mid, 'activity', {}, function(res){
+        var div = document.getElementById( args.render_to );
+        var html = '';
+        if( div ) {
+            Ext.each( res, function(ev){
+                html += function(){/*
+                <div style="margin-left: 20px">
+                    <p><img style="margin: 5px" width=16 src="/user/avatar/[%= username %]/image.png" />
+                    [%= text %]&nbsp;<small>[%= ts %]</small></p>
+                    <hr />
+                </div> 
+                */}.tmpl( ev );
+            });
+            div.innerHTML = res.length 
+                ? html 
+                : '<span style="text-transform: uppercase; font-size: 10px; font-weight: bold; padding-left: 5px">' + _('No activity found') + '</span>';
+        }
+    });
+};
+
+Baseliner.comments_for_topic = function(args) {
+    Baseliner.ci_call( args.mid, 'comments', {}, function(res){
+        var div = document.getElementById( args.render_to );
+        var html = '';
+        if( div ) {
+            Ext.each( res, function(com){
+                com.id_div_com = Ext.id();
+                html += function(){/*
+                <div style="margin-left: 20px" id="[%= id_div_com %]">  <!-- class 'well' -->
+
+[%   if( content_type == 'code' ) { %]
+
+                    <p><pre id="[%= id_div_com + '_ta' %]">[%= text %]</pre></p>
+
+[%   } else { %]
+                    <p>[%= text %]</p>
+[%   } %]
+
+                    <p><small><img style="margin: 0px 5px 2px 0px" width=16 src="/user/avatar/[%= created_by %]/image.png" />
+                    <b>[%= created_by %]</b>, [%= created_on %]
+
+[% if ( can_edit ) { %]
+
+                    | <a href="javascript:Baseliner.Topic.comment_edit( [%= topic_mid %], [%= id %])">[%= _("edit") %]</a>
+                    | <a href="javascript:Baseliner.Topic.comment_delete([%= topic_mid %], [%= id %], '[%= id_div_com %]')">[%= _("delete") %]</a>
+
+[% } %]
+                    </small></p>
+                    <hr />
+                </div>
+                */}.tmpl( com );
+            });
+            div.innerHTML = res.length 
+                ? html 
+                : '<span style="text-transform: uppercase; font-size: 10px; font-weight: bold; padding-left: 5px">' + _('No comments found') + '</span>';
         }
     });
 };

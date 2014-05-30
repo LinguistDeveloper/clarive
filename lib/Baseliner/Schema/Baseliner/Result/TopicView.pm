@@ -42,8 +42,7 @@ __PACKAGE__->result_source_instance->view_definition(q{
             PS.TEXT AS TEXT,
             NUM_FILE,
             U.USERNAME ASSIGNEE,
-            MA.MONIKER,
-            DS.NAME directory
+            MA.MONIKER
             FROM  BALI_TOPIC T
                     JOIN BALI_MASTER MA ON T.MID = MA.MID
                     LEFT JOIN BALI_TOPIC_CATEGORIES C ON T.ID_CATEGORY = C.ID
@@ -71,8 +70,6 @@ __PACKAGE__->result_source_instance->view_definition(q{
                     LEFT JOIN BALI_MASTER_REL REL_USER ON REL_USER.FROM_MID = T.MID AND REL_USER.REL_TYPE = 'topic_users'
                     LEFT JOIN BALI_USER U ON U.MID = REL_USER.TO_MID
                     
-                    LEFT JOIN BALI_PROJECT_DIRECTORIES_FILES DF ON DF.ID_FILE = T.MID
-                    LEFT JOIN BALI_PROJECT_DIRECTORIES DS ON DF.ID_DIRECTORY = DS.ID
             WHERE T.ACTIVE = 1
 });
 
@@ -109,7 +106,6 @@ __PACKAGE__->add_columns(
         num_file
         assignee
         moniker
-        directory
     )
 );
 

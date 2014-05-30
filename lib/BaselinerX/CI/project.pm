@@ -10,10 +10,15 @@ sub icon { '/static/images/icons/project.png' }
 has_cis 'repositories';
 has_ci 'parent_project';
 
+has_cis 'assets';
+has_cis 'folders';
+
 sub rel_type { 
     { 
-        repositories=>[ from_mid => 'project_repository'],
-        parent_project =>[ from_mid => 'project_project'] 
+        repositories   => [ from_mid => 'project_repository'],
+        parent_project => [ from_mid => 'project_project'] ,
+        assets         => [ from_mid => 'project_asset' ],
+        folders        => [ from_mid => 'project_folder' ],
     },
 }
 
