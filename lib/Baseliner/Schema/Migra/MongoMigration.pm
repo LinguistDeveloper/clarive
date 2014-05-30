@@ -567,6 +567,27 @@ sub topic_rels {
     Baseliner->model('Topic')->update_rels( map{ $$_{mid} } mdb->topic->find->fields({mid=>1})->all );
 }
 
+sub role {
+    my @roles = _dbis->query('select * from bali_role')->hashes;
+    my $highest_id = 0;
+    for my $role (@roles){
+        my @actions_in_oracle = _dbis->query('select * from bali_roleaction')->hashes;
+        my @actions_in_mongo;
+        if ($role->{id} > $highest_id){
+            $highest_id = $role->{id};
+        }
+        foreach my $action (@actions_in_oracle){
+            if($role->{id} eq $action->{id_role}){
+                push @actions_in_mongo, {action => $action->{action}, bl => $action->{bl}};
+            }
+        }
+        $role->{actions} = \@actions_in_mongo;
+        mdb->role->insert( $role ); 
+    }
+    mdb->master_seq->remove({ _id => 'role'});
+    mdb->master_seq->insert({ _id => 'role', seq => $highest_id });
+}
+
 ####################################
 #
 # Integrity fixes

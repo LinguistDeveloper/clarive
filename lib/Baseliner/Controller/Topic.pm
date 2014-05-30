@@ -1705,17 +1705,18 @@ sub list_users : Local {
         }
         if($p->{roles} && $p->{roles} ne 'none'){
             my @name_roles = map {lc ($_)} split /,/, $p->{roles};
-            #map { my $temp = lc ($_); $temp =~s/ //g; push @name_roles, $temp } split /,/, $p->{roles};
-            
-            my @id_roles = map {$_->{id}} DB->BaliRole->search( { 'LOWER(role)' => \@name_roles} )->hashref->all;
+            my @id_roles;
+            foreach my $role_name (@name_roles){
+                push @id_roles, mdb->role->find_one({ role=>$role_name })->{id};
+            }
             if (@id_roles){
-                $users_friends = $c->model('Users')->get_users_from_mid_roles(roles => \@id_roles, projects => \@topic_projects);    
+                $users_friends = $c->model('Users')->get_users_from_mid_roles(roles => \@id_roles, projects => \@topic_projects); 
             }
         }else{
             $users_friends = $c->model('Users')->get_users_friends_by_username($username);    
         }
     }
-    $row = $c->model('Baseliner::BaliUser')->search({username => $users_friends},{order_by => 'realname asc'});    
+    $row = ci->user->find({username => $users_friends})->sort({realname => 1}); 
     if($row){
         while( my $r = $row->next ) {
             push @rows,
@@ -1960,6 +1961,7 @@ sub change_status : Local {
             my ($isValid, $field_name) = $c->model('Topic')->check_fields_required( mid => $p->{mid}, username => $c->username);
             
             if ($isValid){
+                _log "entrooooooooooooooooooooooooo";
                 $c->model('Topic')->change_status( 
                     change => 1, username => $c->username, 
                     id_status => $p->{new_status}, id_old_status => $p->{old_status}, 

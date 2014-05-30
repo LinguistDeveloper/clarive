@@ -51,9 +51,7 @@ sub ns_get { Baseliner->model('Namespaces')->get(@_) }
 
 sub user_get {
     use Baseliner::Utils;
-    my $rs = Baseliner->model('Baseliner::BaliUser')->search({ username=>shift });
-    rs_hashref( $rs );
-    $rs->first;
+    my $rs = ci->user->find({ username=>shift })->next;
 }
 
 # job dsl

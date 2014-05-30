@@ -1,6 +1,0 @@
-<pre>
-<%perl>
-	my $p = Baseliner->model('Namespaces')->get( 'harvest.package/H0083S0912919@04 rodrigo' ) or die 'Not found!';
-	print '<li>'. $p->application;
-	print '<li>'. join ',',$p->nature;
-</%perl>

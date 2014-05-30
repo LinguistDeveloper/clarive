@@ -334,60 +334,6 @@ sub status {
     $job->save;
 }
 
-sub notify { #TODO : send to all action+ns users, send to project-team
-    my ($self,%p) = @_;
-    my $type = $p{type};
-    my $jobid = $p{jobid} or _throw 'Missing jobid';
-    my $job = Baseliner->model('Baseliner::BaliJob')->find( $jobid )
-        or _throw "Job id $jobid not found";
-    my $log = new BaselinerX::Job::Log({ jobid=>$jobid });
-    my $status = $p{status} || $job->status || $type;
-    my $mailcfg   = Baseliner->model('ConfigStore')->get( 'config.comm.email' );
-
-    if( $job->step ne 'RUN' && $job->status !~ /ERROR|KILLED/ ) {
-        $log->debug(_loc( "Notification skipped for job %1 step %2 status %3",
-            $job->name,
-            $job->step,
-            $job->status ));
-    }
-    try {
-        my $subject = _loc('Job %1: %2', $job->name, _loc($status) );
-        my $last_log = $job->last_log_message;
-        my $message = ref $last_log ? $last_log->{text} : _loc($type);
-        my $username = $job->username;
-        my $u = Baseliner->model('Users')->get( $username );
-        my $realname = $u->{realname};
-        $log->debug( _loc("Notifying user %1: %2", $username, $subject) );
-        my $url_log = sprintf( "%s/tab/job/log/list?mid=%d", _notify_address(), $jobid );
-        Baseliner->model('Messaging')->notify(
-            subject => $subject,
-            message => $message,
-            sender  => $mailcfg->{from},
-            to => { users => [ $username ] },
-            carrier =>'email',
-            template => 'email/job.html',
-            template_engine => 'mason',
-            vars   => {
-                action    => _loc($type), #started or finished
-                job       => $job->name,
-                message   => $message,  # last log msg
-                realname  => $realname,
-                status    => _loc($status),
-                subject   => $subject,  # Job xxxx: (error|finished|started|cancelled...)
-                to        => $username,
-                username  => $username,
-                url_log   => $url_log,
-            }
-            #cc => { actions=> ['action.notify.job.end'] },
-        );
-    } catch {
-        my $err = shift;
-        my $msg =  _loc( 'Error sending job notification: %1', $err );
-        _log $msg;
-        $log->warn( _loc("Failed to notify users"), data=> $msg );
-    };
-}
-
 sub export {
     my ($self,%p) = @_;
     exists $p{mid} or _throw 'Missing job id';

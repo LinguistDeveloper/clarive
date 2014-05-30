@@ -1,9 +1,0 @@
-<pre>
-<%perl>
-	my $p = Baseliner->model('Namespaces')->get( 'harvest.package/STRESS' ) or die 'Not found!';
-	print _dump( $p );
-	#my $r = $p->promote( config=>{ broker=>'harvestpro', login=>'-usr ROG2833Z -pw sat0910' } );
-	my $r = $p->demote( config=>{ broker=>'harvestpro', login=>'-usr ROG2833Z -pw sat0910' } );
-	print "<li>$r->{rc}";
-	print "<li>$r->{msg}";
-</%perl>

@@ -341,7 +341,6 @@
 		    
 				    var form_dashlets = new Ext.FormPanel({
 					    name: form_dashlets,
-					    url: '/user/update',
 					    frame: true,
 					    items   : [
 							       {

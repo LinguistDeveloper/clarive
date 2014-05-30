@@ -5,23 +5,9 @@ use Baseliner::Utils;
 
 sub get {
     my ($self, $username ) = @_;
-
-    {
-        # try locally
-        my $rs = Baseliner->model('Baseliner::BaliUser')->search({ username=>$username });
-        rs_hashref( $rs );
-        my $user = $rs->first;
-        $user->{data} = _load( $user->{data} ) if defined $user->{data};
-        return $user if defined $user;
-    }
-    {
-        # FIXME this is old
-    my $rs = Baseliner->model('Harvest::Harallusers')->search({ username=>$username });
-    rs_hashref( $rs );
-    my $u = $rs->first;
-    return {} unless ref $u;
-    return $u;
-}
+    my $user = ci->user->find({ username=>$username })->next;
+    $user->{data} = _load( $user->{data} ) if defined $user->{data};
+    return $user if defined $user;
 }
 
 # get user data from the database
@@ -29,67 +15,61 @@ sub populate_from_ldap {
     my ($self, $who ) = @_;
     
     my $where = defined $who ? { username=>$who } : {};
-    my $rs = Baseliner->model('Baseliner::BaliUser')->search($where);
+    my $rs = ci->user->find($where);
     while( my $r = $rs->next ) {
-        my $username = $r->username;
+        my $username = $r->{username};
         next unless $username;
         my $u = $self->get( $username );
         next unless defined $u->{realname};
         $u->{realname} =~ tr/0-9a-zA-Z //dcs; # sanitize
-        $r->realname( $u->{realname} );
-        $r->update;
+        $r->update({realname => $u->{realname} });
     }
 }
 
 sub get_users_friends_by_username{
     my ($self, $username ) = @_;
-    my $root = Baseliner->model('Permissions')->is_root( $username );
-    my $where = {};
-    my @users_friends = [];
     
-    if (!$root){
-        my @projects = Baseliner->model('Permissions')->user_projects( username => $username );	
-        $where = { ns => \@projects };
+    my @res;
+    my @user_projects = $self->get_projects_from_user($username);
+    foreach my $project (@user_projects){
+        push @res, $self->get_users_from_project($project);
     }
-    
-    my $rs_users = Baseliner->model('Baseliner::BaliRoleuser')->search(
-                                                                $where,
-                                                                { select => {distinct => 'username'}, as => ['username'] } #, order_by => 'username asc' }
-                                                        );
-    
-    while( my $user = $rs_users->next ) {
-        push @users_friends, $user->username;
-    }
-    
-    return wantarray ? @users_friends : \@users_friends;
+    @res= _unique @res;	
+   
+    return wantarray ? @res : \@res;
 }
 
 sub get_users_friends_by_projects{
     my ($self, $projects ) = @_;
     $projects or _throw 'Missing parameter projects';
 
-    my @ns_projects = map { 'project/' . $_ } _array $projects;	
-    my $where = { ns => \@ns_projects, ns => '/' };
-    my @users_friends = map { $_->{username} } Baseliner->model('Baseliner::BaliRoleuser')->search(
-                                                                $where,
-                                                                { select => {distinct => 'username'}, as => ['username'] } 
-                                                        )->hashref->all;
-        
-    return wantarray ? @users_friends : \@users_friends;
+    my @users;
+    foreach my $project (_array $projects){
+        push @users, $self->get_users_from_project($project);
+    } 
+    return wantarray ? @users : \@users;
 }
+
 
 sub get_roles_from_projects{
     my ($self, $projects ) = @_;
     $projects or _throw 'Missing parameter projects';
 
-    my @ns_projects = map { 'project/' . $_ } _array $projects;	
-    my $where = { ns => \@ns_projects, ns => '/' };
-    my @roles = map { $_->{id_role} } Baseliner->model('Baseliner::BaliRoleuser')->search(
-                                                                $where,
-                                                                { select => {distinct => 'id_role'}, as => ['id_role'] } 
-                                                        )->hashref->all;
-        
-    return wantarray ? @roles : \@roles;
+    my @users = ci->user->find->all;
+    my @colls = map { Util->to_base_class($_) } packages_that_do( 'Baseliner::Role::CI::Project' );
+    my @resp;
+
+    foreach my $user (@users){
+        foreach my $role (keys $user->{project_security}){
+            foreach my $coll (@colls){
+                my $ps = $user->{project_security};
+                my %pjs = map { $_=>1 } @{$ps->{$role}->{$coll}} if $ps->{$role}->{$coll};
+                push @resp, $role if @pjs{ @$projects }; # returns the number of matching keys in the hash
+            }
+        }
+    }
+    @resp = _unique @resp;        
+    return wantarray ? @resp : \@resp;
 }
 
 sub get_users_from_actions {
@@ -114,7 +94,7 @@ sub get_users_from_mid_roles {
 }
 
 sub get_users_username {
-    my @users = map { $_->{username} } DB->BaliUser->search( {active => 1}, {select => 'username'} )->hashref->all;
+    my @users = map { $_->{username} } ci->user->find({active => '1'})->fields({username => 1, _id => 0});
     return wantarray ? @users : \@users; 
 }
 
@@ -200,6 +180,56 @@ sub get_users_from_mid_roles_topic {
     $mega_where->{'$or'} = \@mega_ors;
     my @users = map {$_->{name}} _array(ci->user->find($mega_where)->all);
     return wantarray ? @users : \@users; 
+}
+
+sub get_actions_from_user{
+   my ($self, $username, @bl) = @_;
+   my @roles = keys ci->user->find({ username=>$username })->next->{project_security};
+   my @id_roles = map { 0+$_ } @roles;
+   my @actions = mdb->role->find({ id=>{ '$in'=>\@id_roles } })->fields( {actions=>1, _id=>0} )->all;
+   my @final;
+   foreach my $f (map { values $_->{actions} } @actions){
+       if(@bl){
+           if($f->{bl} ~~ @bl){
+               push @final, $f->{action};
+           }
+       }else{
+           push @final, $f->{action};
+       }
+   }
+   _unique @final;
+}
+
+sub get_users_from_project{
+    my ($self, $project_id) = @_;
+    my @all_users = ci->user->find->all;
+    my @ret;
+    my @colls = map { Util->to_base_class($_) } packages_that_do( 'Baseliner::Role::CI::Project' );
+    foreach my $user (@all_users){
+        my $ps = $user->{project_security};
+        my @user_projects;
+        foreach my $col (@colls){
+            foreach my $role ( keys $ps){
+                @user_projects = (@user_projects, _array $user->{project_security}->{$role}->{$col});
+            }
+        }
+        if($project_id ~~ @user_projects){
+            push @ret, $user->{name};
+        }
+    }
+    return _unique @ret;
+}
+
+sub get_projects_from_user{
+    my ($self, $username) = @_;
+    my @id_projects;
+    my %project_security = %{ci->user->find({username=>$username})->next->{project_security}};
+    my @id_roles = keys %project_security;
+    foreach my $id_role (@id_roles){
+        my @project_types = keys $project_security{$id_role};
+        map { push @id_projects, @{$project_security{$id_role}->{$_}} } @project_types;
+    }
+    _unique @id_projects;
 }
 
 1;

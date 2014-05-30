@@ -37,6 +37,7 @@ register 'action.notify.error' =>  { name=>'Receive Error Notifications' };
 register 'service.notify.create' => {
     name => 'Send a Notification',
     form => '/forms/notify_create.js',
+    #migrar 
     handler=>sub{
         my ($self, $c, $config) = @_;
 
@@ -50,9 +51,10 @@ register 'service.notify.create' => {
 
         for ( _array $to ) {
             if ( $_ =~ /role\/(.*)/ ) {
-                push @users, map { $_->{username} } DB->BaliRole->find( $1 )->bali_roleusers->hashref->all;
+                push @users,  map { $_->{username} } ci->user->find({ "project_security.$1"=>{'$exists'=>1 } })->all;
             } elsif ( $_ =~ /user\/(.*)/ ) {
-                push @users, DB->BaliUser->find( $1 )->username;
+                my $user = ci->new($1);
+                push @users, $user->{username};
             } else {
                 push @users, $_;
             }
@@ -63,9 +65,10 @@ register 'service.notify.create' => {
         @users = ();
         for ( _array $cc ) {
             if ( $_ =~ /role\/(.*)/ ) {
-                push @users, map { $_->{username} } DB->BaliRole->find( $1 )->bali_roleusers->hashref->all;
+                push @users,  map { $_->{username} } ci->user->find({ "project_security.$1"=>{'$exists'=>1 } })->all;
             } elsif ( $_ =~ /user\/(.*)/ ) {
-                push @users, DB->BaliUser->find( $1 )->username;
+                my $user = ci->new($1);
+                push @users, $user->{username};
             } else {
                 push @users, $_;
             }

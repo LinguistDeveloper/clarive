@@ -151,10 +151,10 @@ sub process_queue {
 sub resolve_address {
     my ( $self, $username ) = @_;
 
-    my $row= DB->BaliUser->search( {username => $username} )->first;
+    my $row = ci->user->find({username => $username})->next;
     my $email="";
     if ( $row )  {
-      $email = $row->email;
+      $email = $row->{email};
     }
 
     if ( $email ) {

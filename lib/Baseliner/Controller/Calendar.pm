@@ -100,7 +100,11 @@ sub calendar_grid_json : Path('/job/calendar_grid_json') {
             if ( ( $cnt++ >= $start ) && ( $limit ? scalar @rows < $limit : 1 ) );
     }
     my @prjs = map { $_->{ns} } grep { is_number( $_->{ns} ) } grep { length } @rows;
-    my %mids = DB->BaliProject->search({ mid=>\@prjs })->hash_unique_on('mid');
+    my %mids;
+    my @projects = mdb->master_doc->find({ mid=>{ '$in'=>\@prjs }})->fields({_id=>0})->all;
+    foreach my $project (@projects){
+        $mids{$project->{mid}} = $project;
+    }
     _debug( \%mids );
     @rows = map { $_->{ns} = $mids{ $_->{ns} } ? $mids{ $_->{ns} }->{name} : $_->{ns}; $_ } @rows;
     $c->stash->{ json } = { data => \@rows };

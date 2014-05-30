@@ -1,8 +1,0 @@
-%#<pre>
-<%perl>
-	#$c->stash->{ns_query} = { does=>'Baseliner::Role::Namespace::User' }; 
-	#$c->stash->{ns_query} = { does=>'Baseliner::Role::Namespace::User' }; 
-	#print join ',', map { $_->ns_name } _array( $c->model('Namespaces')->namespaces( { does=>['Baseliner::Role::Namespace::Nature', 'Baseliner::Role::Namespace::Application'] } ) ); 
-	print join ',', _array( $c->model('Namespaces')->namespaces( { does=>['Baseliner::Role::Namespace::Nature', 'Baseliner::Role::Namespace::Application'] } ) ); 
-	#print join ',',_array( $c->model('Namespaces')->namespaces( { domain=>'user' } ) ); 
-</%perl>

@@ -5,7 +5,6 @@ use Baseliner::Sugar;
 BEGIN { extends 'Catalyst::Controller'; }
 use Try::Tiny;
 use MIME::Base64;
-use Baseliner::Core::User;
 
 register 'action.surrogate' => {
     name => 'Become a different user',
@@ -73,7 +72,7 @@ sub login_from_url : Local {
         try {
             die if $c->config->{ldap} eq 'no';
             $c->authenticate({ id=>$username }, 'ldap_no_pw');
-            $c->session->{user} = new Baseliner::Core::User( user=>$c->user, username=>$username );
+            $c->session->{user} = $c->user_ci;
             $c->session->{username} = $username;
             event_new 'event.auth.ok'=>{ username=>$username, mode=>'from_url', realm=>'ldap_no_pw' };
         } catch {
@@ -81,7 +80,7 @@ sub login_from_url : Local {
             my $err = shift;
             _log $err;
             $c->authenticate({ id=>$username }, 'none');
-            $c->session->{user} = new Baseliner::Core::User( user=>$c->user, username=>$username );
+            $c->session->{user} = $c->user_ci;
             $c->session->{username} = $username;
             event_new 'event.auth.ok'=>{ username=>$username, mode=>'from_url', realm=>'none' };
         };
@@ -117,20 +116,22 @@ sub surrogate : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     my $case = $c->config->{user_case};
+    my $curr_user = $c->username;
     my $username= $case eq 'uc' ? uc($p->{login}) 
      : ( $case eq 'lc' ) ? lc($p->{login}) : $p->{login};
     try {
         my $doc = ci->user->find_one({ name=>$username, active=>'1' }); 
         if ($doc){
             $c->authenticate({ id=>$username }, 'none');
-            $c->session->{user} = new Baseliner::Core::User( user=>$c->user );
+            $c->session->{user} = $c->user_ci;
             $c->session->{username} = $username;
+            event_new 'event.auth.surrogate_ok'=>{ username=>$curr_user, to_user=>$username };
             $c->stash->{json} = { success => \1, msg => _loc("Login Ok") };
         } else {
             $c->stash->{json} = { success => \0, msg => _loc("Invalid User") };
         }
     } catch {
-        event_new 'event.auth.surrogate_failed'=>{ username=>$c->username, to_user=>$username };
+        event_new 'event.auth.surrogate_failed'=>{ username=>$curr_user, to_user=>$username };
         $c->stash->{json} = { success => \0, msg => _loc("Invalid User") };
     };
     $c->forward('View::JSON');  
@@ -174,18 +175,18 @@ sub authenticate : Private {
         $auth = $c->authenticate({ id=>$login, password=> $password });
         
         if ( lc( $c->config->{authentication}->{default_realm} ) eq 'none' ) {
-            # BaliUser (internal) auth when realm is 'none'
+            # User (internal) auth when realm is 'none'
             if ( !$password ) {
                     $auth = undef;                
             } else {                
-                my $row = $c->model('Baseliner::BaliUser')->search( { username => $login } )->first;
+                my $row = ci->user->find({ username => $login })->next;
                 if ($row) {
-                    if ( ! $row->active ) {
+                    if ( ! $row->{active} ) {
                         $c->stash->{auth_message} = _loc( 'User is not active');
                         $auth = undef;
                     }
-                    if ( BaselinerX::CI::user->encrypt_password( $login, $password ) ne $row->password 
-                        && $row->api_key ne $password )
+                    if ( BaselinerX::CI::user->encrypt_password( $login, $password ) ne $row->{password} 
+                        && $row->{api_key} ne $password )
                     {
                         $auth = undef;
                     }
@@ -199,7 +200,7 @@ sub authenticate : Private {
     if( ref $auth ) {
         _debug "AUTH OK: $login";
         $c->session->{username} = $login;
-        $c->session->{user} = new Baseliner::Core::User( user=>$c->user );
+        $c->session->{user} = $c->user_ci;
         return 1;
     } else {
         _error "AUTH KO: $login";
@@ -348,7 +349,7 @@ sub saml_check : Private {
         $username or die 'SAML username not found';
         $username = $username->{content} if ref $username eq 'HASH';
         _log _loc('SAML starting session for username: %1', $username);
-        $c->session->{user} = new Baseliner::Core::User( user=>$c->user, username=>$username );
+        $c->session->{user} = $c->user_ci;
         $c->session->{username} = $username;
         event_new 'event.auth.saml_ok'=>{ username=>$username };
         return $username;
@@ -374,7 +375,7 @@ sub create_user_session : Local {
             if $c->username && !$c->has_action('action.create_user_session');
         my $username = $c->req->params->{userid} // $c->req->headers->{userid} // _throw _loc 'Missing userid';
         # check that username is in the database
-        my $uid = DB->BaliUser->search({ username=>$username })->first;
+        my $uid = ci->user->find({ username=>$username })->next;
         _fail _loc( 'S0002: User not found: %1', $username ) unless ref $uid;
         my $sid = $c->create_session_id;
         $c->_sessionid($sid);
@@ -382,7 +383,7 @@ sub create_user_session : Local {
         $c->set_session_id($sid);
         _throw _loc 'Invalid session' unless $c->session_is_valid;    
         $c->session->{username} = $username;
-        $c->session->{user} = new Baseliner::Core::User( user=>$c->user, username=>$username );
+        $c->session->{user} = $c->user_ci;
         $c->_save_session();
         _error $c->session;
         $c->res->body( sprintf '%s/auth/login_from_session?sessionid=%s', $c->config->{web_url}, $c->sessionid );

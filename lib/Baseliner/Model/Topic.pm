@@ -354,7 +354,7 @@ sub topics_for_user {
     }
     
     if ( $p->{assigned_to_me} ) {
-        my $rs_user = DB->BaliUser->search( username => $username )->first;
+        my $rs_user = ci->user->find({username => $username})->next;
         if ($rs_user) {
             my @topic_mids
                 = map { $_->{from_mid} }
@@ -2343,11 +2343,12 @@ sub set_projects {
         # projects
         if (@new_projects){
             my @name_projects;
-            my $rs_projects = Baseliner->model('Baseliner::BaliProject')->search({mid =>\@new_projects});
+            
+            my $rs_projects = mdb->master_doc->find({mid =>{'$in' => \@new_projects}});
             while( my $project = $rs_projects->next){
-                push @name_projects,  $project->name;
+                push @name_projects,  $project->{name};
                 $rs_topic->add_to_projects( $project, { rel_type=>'topic_project', rel_field => $id_field } );
-                mdb->master_rel->insert({ to_mid=>''.$project->mid, from_mid=>"$topic_mid", rel_type=>'topic_project', 
+                mdb->master_rel->insert({ to_mid=>''.$project->{mid}, from_mid=>"$topic_mid", rel_type=>'topic_project', 
                         rel_field=>$id_field, rel_seq=>mdb->seq('master_rel') });
             }
             
@@ -2413,11 +2414,11 @@ sub set_users{
         # users
         if (@new_users){
             my @name_users;
-            my $rs_users = Baseliner->model('Baseliner::BaliUser')->search({mid =>\@new_users});
+            my $rs_users = ci->user->find({mid => {'$or' => \@new_users}});
             while(my $user = $rs_users->next){
-                push @name_users,  $user->username;
+                push @name_users,  $user->{username};
                 $rs_topic->add_to_users( $user, { rel_type=>'topic_users', rel_field=>$id_field });
-                mdb->master_rel->insert({ to_mid=>''.$user->mid, from_mid=>"$topic_mid", rel_type=>'topic_users', rel_field => $id_field, rel_seq=>mdb->seq('master_rel') });
+                mdb->master_rel->insert({ to_mid=>''.$user->{mid}, from_mid=>"$topic_mid", rel_type=>'topic_users', rel_field => $id_field, rel_seq=>mdb->seq('master_rel') });
             }
 
             my $users = join(',', @name_users);

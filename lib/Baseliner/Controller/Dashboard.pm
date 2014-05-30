@@ -84,9 +84,6 @@ sub list_dashboard : Local {
 
     my $where = $query ? mdb->query_build(query => $query, fields=>[qw(name description)]) : {};
 
-    #my @roles = map { $_->{id} } $c->model('Permissions')->user_roles( $c->username );
-    #$where->{"dashboard_roles.id_role"} = \@roles;
-
     my $rs = mdb->dashboard->find($where);
     $rs->skip($start);
     $rs->limit($limit);
@@ -316,7 +313,7 @@ sub list : Local {
             $valores{projects} = $p->{id_project};
             push @params, 'system/' . $dashboard_id; 
             push @params, \%valores;
-            
+
             for my $dash ( @dashlets ) {
                 $c->forward( $dash->{url}, \@params );
                 $c->stash->{is_columns} = $is_columns;

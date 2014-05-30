@@ -1,6 +1,0 @@
-<pre>
-<%perl>
-	#print _dump( $c->stash->{user_action} );	
-		my @actions = $c->model('Permissions')->list( username=> $c->username );
-		print '<li>'.$_ for @actions;
-</%perl>

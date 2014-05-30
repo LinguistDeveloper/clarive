@@ -1,4 +1,0 @@
-<pre>
-<%perl>
-  print `bali_web restart`
-</%perl>

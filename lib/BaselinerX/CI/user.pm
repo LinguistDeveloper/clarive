@@ -16,64 +16,13 @@ has favorites  => qw(is rw isa HashRef), default => sub { +{} };
 has workspaces => qw(is rw isa HashRef), default => sub { +{} };
 has prefs      => qw(is rw isa HashRef), default => sub { +{} };
 
+has languages => ( is=>'rw', isa=>'ArrayRef', lazy=>1, 
+default=>sub{ [ Util->_array(Baseliner->config->{default_lang} // 'en') ] });
+
 sub icon { '/static/images/icons/user.gif' }
 
 sub has_description { 0 }
 
-around load_post_data => sub {
-    my ($orig, $class, $mid, $data ) = @_;
-    #my $data = $self->$orig() // {};
-    my $row = DB->BaliUser->find( $mid );
-    my $row_data = $row ? +{ $row->get_columns } : {};
-    $data = { %$data, %$row_data };
-    return $data;
-};
-
-around save_data => sub {
-    my ($orig, $self, $master_row, $data, $opts ) = @_;
-
-    my $mid = $master_row->mid;
-    
-    # TODO encrypt here too? if $self->password . " == " . $data->{password};    
-    if( $opts->{save_type} eq 'new' ) {
-        $data->{password} = $self->encrypt_password( $data->{name}, $data->{password} );
-    }
-    elsif( exists $opts->{changed}{password} ) {  # its an update, and the password has changed
-        $data->{password} = $self->encrypt_password( $data->{name}, $data->{password} );
-        $self->password( $data->{password} );
-    }
-    Util->_debug( $data->{name} );
-    Util->_debug( $data->{password} );
-            
-    my $ret = $self->$orig($master_row, $data, $opts);
-
-    my $row = DB->BaliUser->update_or_create({
-        mid         => $mid,
-        active      => $master_row->active // 1, 
-        avatar      => $data->{avatar}, 
-        data        => undef,
-        api_key     => $data->{api_key}, 
-        phone       => $data->{phone}, 
-        username    => $data->{username} // $master_row->name, 
-        email       => $data->{email}, 
-        password    => length $data->{password} ? $data->{password} : Util->_md5(rand(9999999).time()), 
-        realname    => $data->{realname}, 
-        alias       => $data->{alias}, 
-    });
-    
-    return $ret;
-};
-
-around delete => sub {
-    my ($orig, $self, $mid ) = @_;
-    my $row = DB->BaliUser->find( $mid // $self->mid );  
-    my $cnt = $row->delete if $row; 
-    Baseliner->cache_remove( qr/^ci:/ );
-    #$self->$orig( $mid );  # BaliUser deletes its master automatically
-    # bali project deletes CI from master, no orig call then 
-    return $cnt;
-};
-    
 sub workspace_create {
     my ($self,$p) = @_;
     # create the favorite id 
@@ -136,31 +85,34 @@ sub save_api_key  {
 
 #sub username { $_[0]->name }
 
+
 method gen_project_security {
+    my ($projects, $roles) = @_;
     if( ref $self ) {
-        Baseliner->cache_remove(":user:security:".$self->name.":");
-        my $sec = Baseliner->model('Permissions')->user_projects_ids_with_collection( username=>$self->name, with_role=>1 );
         my $security = {};
-        for my $role ( keys %{$sec} ) {
-            for my $coll ( keys %{$sec->{$role}} ) {
-                my @projs;
-                for my $proj ( keys %{$sec->{$role}->{$coll} } ) {
-                    push @projs, $proj;
+        for my $role (Util->_array($roles)){
+            my @projs;
+            for (Util->_array($projects)){
+                if ($_ eq 'todos'){
+                    my @colls = map { Util->to_base_class($_) } Util->packages_that_do( 'Baseliner::Role::CI::Project' );
+                    my @pjs;
+                    foreach my $col (@colls){
+                        my @tmp = map {$_->{mid}} ci->$col->search_cis;
+                        push @{$security->{$role}->{$col}}, @tmp;
+                    }
+                    last;    
                 }
-                $security->{$role}->{$coll} = \@projs;
+                my $ci = ci->new($_);
+                my $col = Util->to_base_class(ref $ci);
+                push @{$security->{$role}->{$col}}, $_;
             }
         }
-
-        $self->project_security( $security );
-    } else {
-        Baseliner->cache_remove(/:user:security:/);
-        for my $user ( ci->user->search_cis ) {
-            $user->gen_project_security;
-            $user->save;
-        }
-        
+        my $old_project_security = $self->{project_security};
+        my %new_project_security = (%$old_project_security, %$security);
+        $self->project_security( \%new_project_security );
     }
 }
+
 
 method is_root( $username=undef ) {
     Baseliner->model('Permissions')->is_root( $username || $self->username );
@@ -197,4 +149,3 @@ __END__
                         $security->{$role}->{$coll} = \@projs;
                     }
                 }
-urity

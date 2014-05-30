@@ -55,7 +55,12 @@ sub tree_topic_get_files : Local {
 sub tree_project_releases : Local {
     my ($self,$c) = @_;
     my %seen = ();
-    my @rels = grep {!$seen{$_->{mid}}++} DB->BaliProject->find( $c->req->params->{id_project} )->releases->search(undef,{ prefetch=>['categories'] })->hashref->all;
+    
+    my $id_project = $c->req->params->{id_project};
+    my @topics = map { $$_{from_mid} } mdb->master_rel->find({ to_mid=>"$id_project", rel_type=>'topic_project' })->all;
+    my @rels = mdb->topic->find({ is_release=>'1', mid=>mdb->in(@topics) })->all;
+
+
     my @menu_related = $self->menu_related();
     my @tree = map {
        +{
@@ -258,39 +263,31 @@ sub tree_releases : Local {
 sub tree_projects : Local {
     my ( $self, $c ) = @_;
     my @tree;
-    my $where = { active=> 1, id_parent=>[undef,''] };
-    if( ! $c->is_root ){ 
-        $where->{'exists'} =  $c->model( 'Permissions' )->user_projects_query( username=>$c->username, join_id=>'mid' );
-    }
 
-    my $rs = Baseliner->model('Baseliner::BaliProject')->search( 
-        $where ,
-        { order_by => { -asc => \'lower(name)' } } );
-    my %projects;
-    my @project_ids = map { $_->{mid} } DB->BaliMaster->search( {collection => 'project'} )->hashref->all;
+    my @projects= Baseliner->model('Permissions')->user_projects( username=>$c->username );
 
-    map { $projects{$_} = 1 } @project_ids;
+    my @projects_ids = map { $_ =~ /\/(.*)/; } @projects;
+     
+    my $projects =  ci->project->find({ active=> '1', mid => mdb->in(@projects_ids)})->sort({name=>1});
 
-    while( my $r = $rs->next ) {
-        if ( $projects{$r->mid} ) {            
-            push @tree, {
-                text       => $r->name,
-                url        => '/lifecycle/tree_project',
-                data       => {
-                    id_project => $r->mid,
-                    project    => $r->name,
-                    click => {
-                        url   => '/dashboard/list/project',
-                        type  => 'html',
-                        icon  => '/static/images/icons/project.png',
-                        title => $r->name,
-                    }               
-                },
-                icon       => '/static/images/icons/project.png',
-                leaf       => \0,
-                expandable => \1
-                };
-        }
+    while( my $r = $projects->next ) {
+        push @tree, {
+            text       => $r->{name},
+            url        => '/lifecycle/tree_project',
+            data       => {
+                id_project => $r->{mid},
+                project    => $r->{name},
+                click => {
+                    url   => '/dashboard/list/project',
+                    type  => 'html',
+                    icon  => '/static/images/icons/project.png',
+                    title => $r->{name},
+                }               
+            },
+            icon       => '/static/images/icons/project.png',
+            leaf       => \0,
+            expandable => \1
+        };
     }
     $c->stash->{json} = \@tree;
     $c->forward('View::JSON');
@@ -327,22 +324,6 @@ sub tree_project : Local {
         };
     }
 
-    # get sub projects TODO make this recurse over the previous controller (or into a model)
-    my $rs_prj = $c->model('Baseliner::BaliProject')->search({ id_parent=>$id_project, active=>1 });
-    while( my $r = $rs_prj->next ) {
-        my $name = $r->nature ? sprintf("%s (%s)", _loc($r->name), $r->nature) : _loc($r->name);
-        push @tree, {
-            text       => $name,
-            url        => '/lifecycle/tree_project',
-            data       => {
-                id_project => $r->mid,
-                project    => _loc($r->name),
-            },
-            icon       => '/static/images/icons/project.png',
-            leaf       => \0,
-            expandable => \1
-        };
-    }
     $c->stash->{ json } = \@tree;
     $c->forward( 'View::JSON' );
 }

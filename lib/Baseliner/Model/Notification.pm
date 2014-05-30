@@ -84,11 +84,12 @@ sub get_recipients{
         given ($type) {
             when ('Users') {
                 @recipients = map {+{id => $_->{mid}, name => $_->{username}, description => $_->{realname} ? $_->{realname}:''  }}
-                            Baseliner->model('Baseliner::BaliUser')->search(undef,{select=>['mid','username','realname'], order_by=>{-asc=>['realname']}})->hashref->all;
+                            ci->user->find()->fields({mid => 1, username => 1, realname => 1, _id => 0})->sort({realname => 1})->all;
+                            
             }
             when ('Roles') {
                 @recipients = map {+{id => $_->{id}, name => $_->{role}, description => $_->{description} ? $_->{description}:''  }} 
-                            Baseliner->model('Baseliner::BaliRole')->search(undef,{select=>['id','role','description'], order_by=>{-asc=>['role']}})->hashref->all;
+                            mdb->role->find()->fields({ id=>1, role=>1, description=>1, _id=>0 })->sort({ role => 1 })->all;
             }
             when ('Emails') {
                 @recipients = ({id => 'Emails', name => 'Emails'});
@@ -247,12 +248,7 @@ sub get_rules_notifications{
         			given ($type) {
             			when ('Users') 	    { 
                         	if ( exists $notification->{$key}{carrier}{$carrier}->{$type}->{'*'} ){
-                                #if (exists $notify_scope->{project}){
-                                #	@tmp_users = Baseliner->model('Users')->get_users_friends_by_projects(mid => $mid, $notify_scope->{project});
-                                #}
-                                #else{
-                                	@tmp_users = Baseliner->model('Users')->get_users_username;
-                                #}
+                                @tmp_users = Baseliner->model('Users')->get_users_username;
                             }
                             else{
                         		@tmp_users = values $notification->{$key}{carrier}{$carrier}->{$type};                           
@@ -268,8 +264,29 @@ sub get_rules_notifications{
                             }
                             my $query = {};
                             $query->{action} = \@actions;
-                            delete $query->{action} if (scalar @actions == 1 && $actions[0] eq '*');                                
-                            my @roles = map {$_->{id_role}} Baseliner->model('Baseliner::BaliRoleaction')->search($query)->hashref->all;
+                            
+                            my @full_roles = mdb->role->find->all;
+                            
+                            my @roles;
+                            if (scalar @actions == 1 && $actions[0] eq '*'){
+                                delete $query->{action};
+                                @roles = map {$_->{id}} @full_roles;
+                            }else{
+                                foreach my $role (@full_roles){
+                                    my $actions = $role->{actions};
+                                    foreach my $action (@$actions){
+                                        foreach my $actual_action (@{$query->{action}}){
+                                            if($action->{action} eq $actual_action){
+                                                push @roles, $role->{id};
+                                            }
+                                        }
+                                    }
+                                }
+                            }                            
+                            
+                            @roles = _unique @roles;
+                            #my @roles = map {$_->{id_role}} Baseliner->model('Baseliner::BaliRoleaction')->search($query)->hashref->all;
+                            
                             @tmp_users = Baseliner->model('Users')->get_users_from_mid_roles_topic( roles => \@roles, mid => $mid );
                             #@tmp_users = Baseliner->model('Users')->get_users_from_actions(mid => $mid, actions => \@actions, projects => \@prj_mid);
                         }

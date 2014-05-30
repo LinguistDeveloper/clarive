@@ -144,10 +144,10 @@ sub auto : Private {
     
     # api_key ?
     if( my $api_key = $c->request->params->{api_key} ) {
-        my $user = DB->BaliUser->search({ api_key=>$api_key }, { select=>['username'] })->first;
+        my $user = ci->user->find({ api_key=>$api_key })->fields({username => 1, _id => 0})->next;
         if( ref $user && ( my $auth = $c->authenticate({ id=>$user->username }, 'none') ) ) {
             $c->session->{username} = $user->username;
-            $c->session->{user} = new Baseliner::Core::User( user=>$c->user );
+            $c->session->{user} = $c->user_ci;
             event_new 'event.auth.failed'=>{ username=>$c->username, status=>401, mode=>'api_key' };
             return 1;
         } else {
@@ -308,7 +308,7 @@ sub index : Private {
         #$c->stash->{can_change_password} = $c->config->{authentication}{default_realm} eq 'none';
         # TLC
         if( my $ccc = $Baseliner::TLC_MSG ) {
-            my $tlc_msg = $ccc->( DB->BaliUser->search({ active=>1, username=>{ '!=' => 'root' } })->count );
+            my $tlc_msg = $ccc->( scalar ci->user->find({active => '1', username => {'$ne' => 'root'}})->all);
             if( $tlc_msg  ) {
                 unshift @{ $c->stash->{menus} }, '"<span style=\'font-weight: bold;color: #f34\'>'.$tlc_msg. '</span>"';
             }

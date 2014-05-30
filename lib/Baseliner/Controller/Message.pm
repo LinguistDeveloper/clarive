@@ -119,7 +119,7 @@ sub to_and_cc : Local {
                 id => $id,
                 ns => $ns,
             }
-        } DB->BaliUser->search()->hashref->all, DB->BaliRole->search()->hashref->all;
+        } ci->user->find()->all, mdb->role->find()->all;
         if( $p->{query} ) {
             my $re = qr/$p->{query}/i;
             @data = grep { join( ',',values(%$_) ) =~ $re } @data ;

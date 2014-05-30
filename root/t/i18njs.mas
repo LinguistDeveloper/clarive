@@ -1,6 +1,0 @@
-<head>
-<script type="text/javascript" src="<% $c->uri_for('/i18n/js') %>"></script>
-<script>
-	alert( _loc("User '%1' not found.", 'macaco') );
-</script>
-</head>

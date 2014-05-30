@@ -55,14 +55,13 @@ sub actions : Local {
 }
 
 sub info : Local {
-    my ( $self, $c, $username ) = @_;
+    my ( $self, $c, $username) = @_;
     $c->stash->{swAsistentePermisos} = 0;
 
     if ( $username eq '' ) {
         $username = $c->username;
         $c->stash->{swAsistentePermisos} = 1;
     }
-
     my $u = $c->model('Users')->get($username);
     if ( ref $u ) {
         my $user_data = $u->{data} || {};
@@ -84,46 +83,55 @@ sub infodetail : Local {
     my $username = $p->{username};
     
     my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
-    $sort ||= 'me.role';
+    $sort ||= 'role';
     $dir ||= 'asc';
-
+    if($dir =~ /asc/i){
+        $dir = 1;
+    }else{
+        $dir = -1;
+    }
     my @rows;
-    my $roles = $c->model('Baseliner::BaliRole')->search(
-        { 'bali_roleusers.username' => $username },
-        {   select   => [qw/id role description/],
-            join     => ['bali_roleusers'],
-            group_by => [qw/id role description/],
-            order_by => $sort ? { "-$dir" => "$sort" } : undef
-        }
-    );
-    rs_hashref($roles);
+
+    my $user = ci->user->find({ username => $username})->next;
+    my @roles;
+    if($user->{project_security}){
+        @roles = keys $user->{project_security};
+        @roles = map {$_+0} @roles;
+    }
+    my $roles_from_user = 
+        mdb->role->find(
+            {id => {'$in' => \@roles}}
+        )->fields(
+            {   role => 1, 
+                description => 1, 
+                id => 1,  
+                _id => 0
+            }
+        )->sort($sort ? { $sort => $dir } : {role => 1});
     
-    while( my $r = $roles->next ) {
-        my $rs_userprojects = $c->model('Baseliner::BaliRoleUser')->search( { username => $username ,  id_role => $r->{id}} );
-        rs_hashref($rs_userprojects);
+    while( my $r = $roles_from_user->next ) {    
+        my $rs_user = ci->user->find({ username => $username, "project_security.$r->{id}"=> {'$exists' => 'true'} })->next;
+        my @roles = keys $rs_user->{project_security};
+        
+        my @user_projects;
+        my @colls = map { Util->to_base_class($_) } packages_that_do( 'Baseliner::Role::CI::Project' );
+        foreach my $col (@colls){
+            @user_projects = (@user_projects, _array $rs_user->{project_security}->{$r->{id}}->{$col});
+        }
+
         my @projects;
-        while( my $rs = $rs_userprojects->next ) {
-            my ($ns, $prjid) = split "/", $rs->{ns};
+        foreach my $prjid (@user_projects){
             my $str;
             my $parent;
             my $allpath;
             my $nature;
-            if($prjid){
-                my @path;
-                my $project = $c->model('Baseliner::BaliProject')->find($prjid);
-                if($project){
-                    push @path, $project->name;
-                    $parent = $project->id_parent;
-                    while($parent){
-                        my $projectparent = $c->model('Baseliner::BaliProject')->find($parent);
-                        push @path, $projectparent->name . '/';
-                        $parent = $projectparent->id_parent;
-                    }
-                    while(_unique @path){
-                        $allpath .= pop (@path)
-                    }
-                    if($project->nature){ $nature= ' (' . $project->nature . ')';}
-                    $str = $allpath . $nature;
+            my $project = ci->find($prjid);
+
+            if($project and $project->{name}){
+                if($project->{nature}){ 
+                    $str = $project->{name} . ' (' . $project->{nature} . ')';
+                }else{
+                    $str = $project->{name};
                 }
             }
             else{
@@ -131,8 +139,8 @@ sub infodetail : Local {
             }
             push @projects, $str;
         }
-        
         @projects = sort(@projects);
+        
         my @jsonprojects;
         foreach my $project (@projects){
             my $str = { name=>$project };
@@ -142,11 +150,11 @@ sub infodetail : Local {
     
         push @rows,
                 {
-                  id      	    => $r->{id},
-                  id_role		=> $r->{id},
-                  role		    => $r->{role},
-                  description	=> $r->{description},
-                  projects		=> $projects_txt
+                  id            => $r->{id},
+                  id_role       => $r->{id},
+                  role          => $r->{role},
+                  description   => $r->{description},
+                  projects      => $projects_txt
                 };
     }
     $c->stash->{json} = { data=>\@rows};		
@@ -156,9 +164,9 @@ sub infodetail : Local {
 sub user_data : Local {
     my ($self, $c) = @_;
     try {
-        my $user = DB->BaliUser->search({ username => $c->username })->first;
+        my $user = ci->user->find({ username => $c->username })->next;
         _fail _loc('User not found: %1', $c->username ) unless $user;
-        $c->stash->{json} = { data=>{ $user->get_columns }, msg=>'ok', success=>\1 };
+        $c->stash->{json} = { data=>{ $user }, msg=>'ok', success=>\1 };
     } catch {
         my $err = shift;
         $c->stash->{json} = { msg=>"$err", success=>\0 };
@@ -175,9 +183,9 @@ sub user_info : Local {
         if ( !$username ) {
             _fail _loc('Missing parameter username');
         }
-        my $user = DB->BaliUser->search({ username => $username }, {select=>[qw(username active realname alias email active phone mid)]})->first;
+        my $user = ci->user->find({ username => $username })->fields({username => 1, active => 1, realmane => 1, alias => 1, phone => 1, mid => 1, _id => 0})->next;
         _fail _loc('User not found: %1', $c->username ) unless $user;
-        $c->stash->{json} = { $user->get_columns, msg=>'ok', success=>\1 };
+        $c->stash->{json} = { $user, msg=>'ok', success=>\1 };
     } catch {
         my $err = shift;
         $c->stash->{json} = { msg=>"$err", success=>\0 };
@@ -194,37 +202,36 @@ sub infoactions : Local {
     my @actions;
     my @datas;
     my $data;
-    my $SQL;
     
     if ($id_role) {
-    my $rs_actions = $c->model('Baseliner::BaliRoleAction')->search( { id_role => $id_role} );
-    while( my $rs = $rs_actions->next ) {
-        my $desc = $rs->action;
-        eval { # it may fail for keys that are not in the registry
-        my $action = $c->model('Registry')->get( $rs->action );
-        $desc = $action->name;
-        }; 
-        push @actions,{ action=>$rs->action, description=>$desc, bl=>$rs->bl };
-    }
+        my $rs_actions = mdb->role->find({id=>$id_role+0})->next->{actions};
+        foreach my $rs (_array $rs_actions) {
+            my $desc = $rs->{action};
+            eval { # it may fail for keys that are not in the registry
+                my $action = $c->model('Registry')->get( $rs->{action} );
+                $desc = $action->name;
+            }; 
+            push @actions,{ action=>$rs->{action}, description=>$desc, bl=>$rs->{bl} };
+        }
     }
     else{
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-    
-    $SQL = "SELECT ACTION, BL
-        FROM BALI_ROLEUSER A, BALI_ROLEACTION B
-        WHERE A.USERNAME = ? AND A.ID_ROLE = B.ID_ROLE
-        GROUP BY ACTION, BL
-        ORDER BY ACTION ASC";
-    
-    @datas = $db->array_hash( "$SQL" , $username);
-    foreach $data (@datas){
-        my $desc = $data->{action};
-        eval { # it may fail for keys that are not in the registry
-        my $action = $c->model('Registry')->get( $data->{action} );
-        $desc = $action->name;
-        }; 
-        push @actions,{ action=>$data->{action}, description=>$desc, bl=>$data->{bl} };
-    }
+        my @user_roles = map{$_ + 0} keys ci->user->find({username=>$username})->next->{project_security};
+        my @roles = mdb->role->find({id=>{'$in'=>\@user_roles}})->all;
+        my @res;
+        foreach my $role (@roles){
+            push @res, @{$role->{actions}};
+        }
+
+        my @datas = values +{ map { ("$_->{action}_$_->{bl}" => $_) } @res };
+
+        foreach $data (@datas){
+            my $desc = $data->{action};
+            eval { # it may fail for keys that are not in the registry
+                my $action = $c->model('Registry')->get( $data->{action} );
+                $desc = $action->name;
+            }; 
+            push @actions,{ action=>$data->{action}, description=>$desc, bl=>$data->{bl} };
+        }
     }
     
     $c->stash->{json} =  { data=>\@actions};
@@ -244,7 +251,7 @@ sub update : Local {
     when ('add') {
         try{
             my $swOk = 1;
-            my $row = $c->model('Baseliner::BaliUser')->search({username => $p->{username}, active => 1})->first;
+            my $row = ci->user->find({username => $p->{username}, active => '1'})->next;
             if(!$row){
                 my $user_mid;
                
@@ -261,7 +268,7 @@ sub update : Local {
                 };           
                 
                 my $ci = ci->user->new( %$ci_data );
-                $ci->gen_project_security;
+                $ci->gen_project_security($projects_checked, $roles_checked);
                 $user_mid = $ci->save;
                 $ci->password( ci->user->encrypt_password( $p->{username}, $p->{pass} ));
                 $ci->save;
@@ -282,17 +289,15 @@ sub update : Local {
                 my $user;
                 my $user_id = $p->{id};
                 if ( $p->{id} ) {
-                    $user = ci->new($p->{id});#$c->model('Baseliner::BaliUser')->find( $p->{id} );
+                    $user = ci->new($p->{id});
                 } else {
-                    $user = ci->new('name:'.$p->{username});#$c->model('Baseliner::BaliUser')->search( { username => $p->{username} } )->first;
+                    $user = ci->new('name:'.$p->{username});
                     _fail _loc("User not found") if !$user;
                     $user_id = $user->{mid};
                 }
                 my $old_username = $user->{username};
                 if ($old_username ne $p->{username}){
-                    # my $row = $c->model('Baseliner::BaliUser')->search({username => $p->{username}, active => 1})->first;
                     my $user_ci = ci->user->find_one({ username => $p->{username}});
-                    # if ($row) {
                     if ($user_ci) {
                         $c->stash->{json} = { msg=>_loc('User name already exists, introduce another user name'), failure=>\1 };    
                     }else{
@@ -308,16 +313,13 @@ sub update : Local {
                             email       => $p->{email},
                             phone       => $p->{phone},            
                             active      => '1',
-                            password    => ci->user->encrypt_password( $p->{username}, $p->{pass} )
+                            password    => ci->user->encrypt_password( $p->{username}, $p->{pass} ),
+                            project_security => $user_ci->{project_security}
                         };           
                         
                         my $ci = ci->user->new( %$ci_data );
                         my $user_new = $ci->save;
 
-                        ##BaliRoleUser
-                        my $rs_role_user = $c->model('Baseliner::BaliRoleUser')->search({username => $old_username });
-                        $rs_role_user->update( {username => $p->{username}} );
-                        ##BaliMasterRel
                         my $user_from = $c->model('Baseliner::BaliMasterRel')->search( {from_mid => $p->{id}} );
                         if ($user_from) {
                             $user_from->update( {from_mid => $user_new} );
@@ -326,35 +328,29 @@ sub update : Local {
                         if ($user_to){
                             $user_to->update( {to_mid => $user_new} );    
                         }
-                        $ci->gen_project_security;
-                        $ci->save;
-                        ##Borramos el antiguo
-                        #$user->delete();
                         ci->delete( $user_mid );
                     }
                 } else{
-                    $user->realname( $p->{realname} ) if $p->{realname};
+                    $user->update(realname=> $p->{realname} ) if $p->{realname};
+
                     if( $p->{pass} ){
-                        $user->password( ci->user->encrypt_password( $p->{username}, $p->{pass} ));
+                        $user->update(password=> ci->user->encrypt_password( $p->{username}, $p->{pass}) );
                     }
-                    $user->alias( $p->{alias} ) if $p->{alias};
-                    $user->email( $p->{email} ) if $p->{email};
-                    $user->phone( $p->{phone} ) if $p->{phone};                 
-                    $user->active( $p->{active} ) if $p->{active};                 
-                    # $user->update();                    
+                    $user->update(alias => $p->{alias} ) if $p->{alias};
+                    $user->update(email => $p->{email} ) if $p->{email};
+                    $user->update(phone => $p->{phone} ) if $p->{phone};                 
+                    $user->update(active => $p->{active} ) if $p->{active};               
                     $user->save;                    
-                    
                 }
                 
                 $c->stash->{json} = { msg=>_loc('User modified'), success=>\1, user_id=> $user_id };
-            } else {
-                tratar_proyectos($c, $p->{username}, $roles_checked, $projects_checked);
-                tratar_proyectos_padres($c, $p->{username}, $roles_checked, $projects_parents_checked, 'update');
-
+            } 
+            else {
+            
                 # regenerate project security for all users TODO work with my ci only: DONE
                 my $ci = ci->new('name:'.$p->{username});
                 _debug 'Re-generating user project security...';
-                $ci->gen_project_security;
+                $ci->gen_project_security($projects_checked, $roles_checked);
                 $ci->save;
                 _debug 'Done updating project security.';
                 
@@ -369,22 +365,14 @@ sub update : Local {
             my $user;
             my $user_id = $p->{id};
             if ( length $user_id ) {
-                $user = $c->model( 'Baseliner::BaliUser' )->find( $user_id );
+                $user = ci->new($user_id);
             } else {
-                $user =
-                    $c->model( 'Baseliner::BaliUser' )->search( {username => $p->{username}} )
-                    ->first;
+                $user = ci->user->find({username => $p->{username}});
                 _fail _loc( "User not found" ) if !$user;
-                $user_id = $user->id;
+                $user_id = $user->{id};
             } ## end else [ if ( $p->{id} ) ]
-            $user->active( 0 );
-            $user->update();
+            $user->update( active => '0' );
 
-            my $rs =
-                Baseliner->model( 'Baseliner::BaliRoleuser' )
-                ->search( {username => $p->{username}} );
-            $rs->delete;
-            
             ci->delete( $user_id );
             $c->stash->{json} = {success => \1, msg => _loc( 'User deleted' )};
         } ## end try
@@ -396,52 +384,117 @@ sub update : Local {
     } ## end when ( 'delete' )
     when ('delete_roles_projects') {
         try{
-        
-        my $user_name = $p->{username};
-        my $rs;
-        
-        if ($roles_checked){
-            foreach my $role (_array $roles_checked){
-            if ($projects_checked || $projects_parents_checked){
-                my @ns_projects =
-                _unique
-                map { $_ eq 'todos'?'/':'project/' . $_ }
-                _array $projects_checked;
-                
-                my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role, ns=>\@ns_projects });
-                $rs->delete;
-                
-                tratar_proyectos_padres($c, $p->{username}, $roles_checked, $projects_parents_checked, 'delete');
-    
+            my $user_name = $p->{username};
+            my $rs;
+            
+            my @colls = map { Util->to_base_class($_) } packages_that_do( 'Baseliner::Role::CI::Project' );
+            my $orig_ps = ci->user->find({username=>$user_name})->next->{project_security};
+
+            if ($roles_checked){
+                if ($projects_checked){
+                    my @user_projects;
+                    my @ns_projects = _unique _array $projects_checked;
+                    foreach my $role (_array $roles_checked){
+                        my $rs_user;            
+                        my @where = map { { "project_security.$role.$_"=>{'$in'=>\@ns_projects} } } @colls;
+                        $rs_user = ci->user->find_one({username =>$user_name,"project_security.$role"=> {'$exists' => 'true'},'$or' =>\@where});
+                      
+                        foreach my $coll (@colls){
+                            push @user_projects, map {$role.'/'.$coll.'/'.$_} _array $rs_user->{project_security}->{$role}->{$coll};   
+                        }   
+                    }
+                    
+                    my %tmp;
+                    @tmp{ @ns_projects } = ();
+                    
+                    my @user_projects_erased = grep { 
+                                        $_ =~ /(?<urole>.+)\/(?<collection>.+)\/(?<pid>.+)/;
+                                        my $pid = $+{pid};                            
+                                        exists $tmp{$pid} 
+                                    } @user_projects;
+                                    
+                    foreach my $p_id_ns (@user_projects_erased){
+                        $p_id_ns =~ /(?<urole>.+)\/(?<collection>.+)\/(?<pid>.+)/;
+                        my $pid = $+{pid};
+                        my $pcol = $+{collection};
+                        my $role = $+{urole};
+                        my @tmp = @{$orig_ps->{$role}{$pcol}};
+                        my @new_items;
+                        for (my $i=0; $i<scalar @tmp; $i++) {
+                            if($tmp[$i] ne $pid){
+                                push @new_items, $tmp[$i];
+                            }
+                        }
+                        if(@new_items){
+                            $orig_ps->{$role}{$pcol} = \@new_items;
+                        }else{
+                            delete $orig_ps->{$role}{$pcol};
+                            my @values = values $orig_ps->{$role};
+                            delete $orig_ps->{$role} if !@values;
+                        }
+                    }
+                    
+                }
+                else{
+                    #delete all projects with $role for $user_name
+                    delete @$orig_ps{_array $roles_checked};
+                }
             }
             else{
-                my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role });
-                $rs->delete;
-            }
-            }           
-        }
-        else{
-            my @ns_projects =
-                _unique
-                map { $_ eq 'todos'?'/':'project/' . $_ }
-                _array $projects_checked;
+                 
+                my @user_projects;
+                my $user = ci->user->find({username=>$user_name})->next;
+                my @roles = keys $user->{project_security};
+                foreach my $role (@roles){
+                    foreach my $coll (@colls){
+                        push @user_projects, map {$role.'/'.$coll.'/'.$_} _array $user->{project_security}->{$role}->{$coll};   
+                    }
+                }
                 
-            my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, ns=>\@ns_projects });
-            $rs->delete;
-            
-            tratar_proyectos_padres($c, $p->{username}, $roles_checked, $projects_parents_checked, 'delete');
-        }
-        # regenerate project security for all users TODO work with my ci only
-        my $ci = ci->new('name:'.$p->{username});
-        _debug 'Re-generating user project security...';
-        $ci->gen_project_security;
-        $ci->save;
-        _debug 'Done updating project security.';
+                my @ns_projects = _unique _array $projects_checked;
+                my %tmp;
+                @tmp{ @ns_projects } = ();
+                
+                my @user_projects_erased = grep { 
+                                    my $pid;
+                                    if ($_ =~ /(?<urole>.+)\/(?<ucol>.+)\/(?<pid>.+)/){
+                                        $pid = $+{pid};
+                                    }
+                                    exists $tmp{$pid} 
+                                } @user_projects;
+                
+                foreach my $p_id_ns (@user_projects_erased){
+                    $p_id_ns =~ /(?<urole>.+)\/(?<collection>.+)\/(?<pid>.+)/;
+                    my $pid = $+{pid};
+                    my $pcol = $+{collection};
+                    my $role = $+{urole};
+                    my @tmp = @{$orig_ps->{$role}{$pcol}};
+                    my @new_items;
+                    for (my $i=0; $i<scalar @tmp; $i++) {
+                        if($tmp[$i] ne $pid){
+                            push @new_items, $tmp[$i];
+                        }
+                    }
+                    if(@new_items){
+                        $orig_ps->{$role}{$pcol} = \@new_items;
+                    }else{
+                        delete $orig_ps->{$role}{$pcol};
+                        my @values = values $orig_ps->{$role};
+                        delete $orig_ps->{$role} if !@values;
+                    }
+                }
+            }
 
-        $c->stash->{json} = { msg=>_loc('User modified'), success=>\1};
+            # regenerate project security for all users TODO work with my ci only
+            my $user_ci = ci->new(ci->user->find_one({username=>$user_name})->{mid});
+            
+            user_ci->update(project_security=>$orig_ps);
+            #$ci->save;
+            
+            $c->stash->{json} = { msg=>_loc('User modified'), success=>\1};
         }
         catch{
-        $c->stash->{json} = {  success => 0, msg=>_loc('Error modifying User: %1', shift()) };
+            $c->stash->{json} = {  success => 0, msg=>_loc('Error modifying User: %1', shift()) };
         }
     }
     }
@@ -450,173 +503,13 @@ sub update : Local {
     $c->forward('View::JSON');
 }
 
-sub tratar_proyectos{
-    my $c = shift;
-    my $user_name = shift;
-    my $roles_checked = shift;
-    my $projects_checked = shift;
-    my $role;
-    my $project;
-    my $rs;
-    my @roles_checked;
-
-    if(!$roles_checked){
-        my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-        my $dbh = $db->dbh;
-        my $sth = $dbh->prepare("SELECT DISTINCT ID_ROLE FROM BALI_ROLEUSER WHERE USERNAME = ? ");
-        $sth->bind_param( 1, $user_name );
-        $sth->execute();
-        @roles_checked = map { $_->[0] } _array $sth->fetchall_arrayref;
-    }
-    else{
-        foreach $role (_array $roles_checked){
-            push @roles_checked, $role;
-        }
-    }
-
-    foreach $role ( @roles_checked ){
-        foreach $project (_array $projects_checked){
-            if ($project eq 'todos'){
-                my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role });
-                $rs->delete;
-                my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
-                                            {	username => $user_name,
-                                                id_role => $role,
-                                                ns => '/',
-                                                id_project => undef,
-                                            },
-                                            { key => 'primary' });
-                $role_user->update();
-                last				
-            }else{
-                my $all_projects = $c->model('Baseliner::BaliRoleUser')->find(	{username => $user_name,
-                                                 id_role => $role,
-                                                 ns => '/'
-                                                },
-                                                { key => 'primary' });
-                if($all_projects){
-                    my $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role, ns=>'/'});
-                    $rs->delete;
-                }
-                
-                my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
-                                            {	username => $user_name,
-                                            id_role => $role,
-                                            ns => 'project/' . $project,
-                                            id_project => $project,
-                                            },
-                                            { key => 'primary' });
-                $role_user->update();
-            }
-        }
-    }
-}
-
-sub tratar_proyectos_padres(){
-    my $c = shift;
-    my $user_name = shift;
-    my $roles_checked = shift;
-    my $projects_parents_checked = shift;
-    my $accion = shift;
-    
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-    my $dbh = $db->dbh;
-    my $sth;
-    
-    if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
-        $sth = $dbh->prepare("SELECT MID FROM BALI_PROJECT START WITH MID = ? AND ACTIVE = 1 CONNECT BY PRIOR MID = ID_PARENT AND ACTIVE = 1");
-    }
-    else{
-        ##INSTRUCCION PARA COMPATIBILIDAD CON SQL SERVER ###############################################################################
-        $sth = $dbh->prepare("WITH N(MID) AS (SELECT MID FROM BALI_PROJECT WHERE MID = ? AND ACTIVE = 1
-                            UNION ALL
-                            SELECT NPLUS1.MID FROM BALI_PROJECT AS NPLUS1, N WHERE N.MID = NPLUS1.ID_PARENT AND ACTIVE = 1)
-                            SELECT N.MID FROM N ");
-    }
-    
-    given ($accion) {
-        when ('update') {
-            my @roles_checked;
-            if(!$roles_checked){
-                my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-                my $dbh = $db->dbh;
-                my $sth = $dbh->prepare("SELECT DISTINCT ID_ROLE FROM BALI_ROLEUSER WHERE USERNAME = ? ");
-                $sth->bind_param( 1, $user_name );
-                $sth->execute();
-                @roles_checked = map { $_->[0] } _array $sth->fetchall_arrayref;
-            }
-            else{
-                foreach my $role (_array $roles_checked){
-                    push @roles_checked, $role;
-                }
-            }
-            foreach my $role ( @roles_checked){
-                my $all_projects = $c->model('Baseliner::BaliRoleUser')->find(
-                                        {username => $user_name,
-                                         id_role => $role,
-                                         ns => '/'
-                                        },
-                                        { key => 'primary' });
-                if(!$all_projects){
-                    foreach my $project (_array $projects_parents_checked){
-                        $sth->bind_param( 1, $project );
-                        $sth->execute();
-                            while(my @row = $sth->fetchrow_array){
-                                my $role_user = $c->model('Baseliner::BaliRoleUser')->find_or_create(
-                                                       {
-                                                    username => $user_name,
-                                                    id_role => $role,
-                                                    ns => 'project/' . $row[0],
-													id_project => $row[0],
-                                                       },
-                                                       { key => 'primary' });
-                                $role_user->update();
-                            }
-                    }
-                }
-            
-            }
-        }
-        when ('delete') {
-            my $rs;
-            if($roles_checked){
-                foreach my $role (_array $roles_checked){
-                    foreach my $project (_array $projects_parents_checked){
-                    $sth->bind_param( 1, $project );
-                    $sth->execute();
-                    my @ns_projects = _unique
-                              map { 'project/' . $_->[0] }
-                              _array $sth->fetchall_arrayref;
-                              
-                    $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, id_role=>$role, ns=>\@ns_projects });
-                    $rs->delete;
-                    }
-                }
-            }
-            else{
-                foreach my $project (_array $projects_parents_checked){
-                    $sth->bind_param( 1, $project );
-                    $sth->execute();
-                    my @ns_projects = _unique
-                              map { 'project/' . $_->[0] }
-                              _array $sth->fetchall_arrayref;
-                              
-                    $rs = Baseliner->model('Baseliner::BaliRoleuser')->search({ username=>$user_name, ns=>\@ns_projects });
-                    $rs->delete;
-                }
-            }
-        }
-    }
-
-}
-
 sub actions_list : Local {
     my ($self, $c) = @_;
 
     my @data;
     for my $role ( $c->model('Permissions')->user_roles( $c->username ) ) {
         for my $action ( _array $role->{actions} ) {
-            push @data, {  role=>$role->{role}, description=>$role->{description}, ns=>$role->{ns}, action=>$action };
+            push @data, {  role=>$role->{role}, description=>$role->{description}, action=>$action };
         }
     }
     $c->stash->{json} = { data=>\@data, totalCount => scalar( @data ) };
@@ -685,30 +578,6 @@ sub project_json : Local {
     $c->forward('View::JSON');
 }
 
-sub application_json_old : Local {
-    my ($self, $c) = @_;
-    my $p = $c->request->parameters;
-    my @rows;
-    my $mask = $p->{mask};
-    my @ns_list = $c->model('Namespaces')->list(
-        does => 'Baseliner::Role::Namespace::Application',
-        username=> $c->username,
-    );
-    foreach my $ns ( @ns_list ) {
-        next if $mask && $ns->{ns_name} !~ m/$mask/i;
-        if( $p->{mask} ) {
-        }
-        push @rows, {
-            name => $ns->{ns_name},
-            ns => $ns->{ns}
-        };
-    }
-    $c->stash->{json} = { 
-        totalCount => scalar @rows,
-        data => \@rows
-    };	
-    $c->forward('View::JSON');
-}
 
 sub grid : Local {
     my ( $self, $c ) = @_;
@@ -732,76 +601,30 @@ sub can_maintenance : Local {
 }
 
 sub projects_list : Local {
-    my ($self,$c) = @_;
-    my $id = $c->req->params->{node};
-    my $project = $c->req->params->{project} ;
-    my $id_project = $c->req->params->{id_project} ;
-    my $parent_checked = $c->req->params->{parent_checked} || 0 ;
-   
+    my ( $self, $c ) = @_;
+    my $id             = $c->req->params->{node};
+    my $project        = $c->req->params->{project};
+    my $id_project     = $c->req->params->{id_project};
+    my $parent_checked = $c->req->params->{parent_checked} || 0;
+
+    my @colls = map { Util->to_base_class($_) } packages_that_do( 'Baseliner::Role::CI::Project' );
+    my @datas = mdb->master_doc->find({ collection=>mdb->in(@colls) })->fields({ name=>1, description=>1, mid=>1 })->sort({name=>1})->all;
     my @tree;
-    my $rsprojects;
-    my $rsprojects_parent;
-   
-    my @datas;
-    my $data;
-    my $SQL;
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
-
-    if($id_project ne 'todos'){
-    $SQL = "SELECT * FROM (SELECT B.MID, B.NAME, 1 AS LEAF, B.NATURE, B.DESCRIPTION
-                   FROM BALI_PROJECT B
-                   WHERE B.ID_PARENT = ? AND B.ACTIVE = 1
-                                     AND B.MID NOT IN (SELECT DISTINCT A.ID_PARENT
-                                                      FROM BALI_PROJECT A
-                                                      WHERE A.ID_PARENT IS NOT NULL AND A.ACTIVE = 1) 
-                               UNION ALL
-                               SELECT E.MID, E.NAME, 0 AS LEAF, E.NATURE, E.DESCRIPTION
-                               FROM BALI_PROJECT E
-                               WHERE E.MID IN (SELECT DISTINCT D.MID 
-                                              FROM BALI_PROJECT D,  
-                                              BALI_PROJECT C
-                                              WHERE D.ID_PARENT = ? AND C.ACTIVE = 1 AND
-                                                    D.MID = C.ID_PARENT)) RESULT
-           ORDER BY NAME ASC";
-    @datas = $db->array_hash( "$SQL" , $id_project, $id_project);					 
-    }
-    else{
-    $SQL = "SELECT * FROM (SELECT B.MID, B.NAME, 1 AS LEAF, B.NATURE, B.DESCRIPTION
-                   FROM BALI_PROJECT B
-                   WHERE B.ID_PARENT IS NULL AND B.ACTIVE = 1
-                                     AND B.MID NOT IN (SELECT DISTINCT A.ID_PARENT
-                                                      FROM BALI_PROJECT A
-                                                      WHERE A.ID_PARENT IS NOT NULL AND A.ACTIVE = 1) 
-                               UNION ALL
-                               SELECT E.MID, E.NAME, 0 AS LEAF, E.NATURE, E.DESCRIPTION
-                               FROM BALI_PROJECT E
-                               WHERE E.MID IN (SELECT DISTINCT D.MID 
-                                              FROM BALI_PROJECT D,  
-                                              BALI_PROJECT C
-                                              WHERE D.ID_PARENT IS NULL AND C.ACTIVE = 1 AND
-                                                    D.MID = C.ID_PARENT)) RESULT
-           ORDER BY NAME ASC";
-    
-    @datas = $db->array_hash( "$SQL" );					 
-    }
-
-    foreach $data(@datas){
-
-
-    push @tree, {
-        text        => $data->{name} . ($data->{nature}?" (" . $data->{nature} . ")":''),
-        nature	=> $data->{nature}?$data->{nature}:"",
-        description => $data->{description}?$data->{description}:"",
-        url         => 'user/projects_list',
-        data        => {
-            id_project => $data->{mid},
-            project    => $data->{name},
-            parent_checked => 0,
-        },	    
-        icon       => ci->new($data->{mid})->icon,
-        leaf       => \$data->{leaf},
-        checked    => \$parent_checked
-    };	
+    foreach my $data (@datas) {
+        push @tree, {
+            text => $data->{name} . ( $data->{nature} ? " (" . $data->{nature} . ")" : '' ),
+            nature      => $data->{nature}      ? $data->{nature}      : "",
+            description => $data->{description} ? $data->{description} : "",
+            url         => 'user/projects_list',
+            data        => {
+                id_project     => $data->{mid},
+                project        => $data->{name},
+                parent_checked => 0,
+            },
+            icon    => ci->new( $data->{mid} )->icon,
+            leaf    => \1,
+            checked => \0
+        };
     }
 
     $c->stash->{json} = \@tree;
@@ -813,46 +636,32 @@ sub list : Local {
     my $p = $c->request->parameters;
 
     my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
-    $sort ||= 'me.username';
-    $dir ||= 'asc';
+    
     $start||= 0;
     $limit ||= 100;
 
-    my $page = to_pages( start=>$start, limit=>$limit );
+    $sort ||= 'username';
+    $dir ||= 'asc';
+    if($dir =~ /asc/i){
+        $dir = 1;
+    }else{
+        $dir = -1;
+    }
     
-    
-    my $where={};
-    $query and $where = query_sql_build( query=>$query, fields=>[qw(username realname alias)] );
+    my $where = $query ? mdb->query_build(query => $query, fields=>[qw(username realname alias)]) : {};
 
-    $where->{active} = 1 if $p->{active_only};
-	
-	$where->{mid} = {'!=', undef};
+    $where->{active} = '1' if $p->{active_only};
 
-    my $rs = DB->BaliUser->search(
-        $where,
-        { page => $page,
-          rows => $limit,
-          select=>[qw(username realname alias email active phone mid)],
-		  as=>[qw(username realname alias email active phone mid)],
-          distinct => 1,
-          order_by => $sort ? { "-$dir" => $sort } : undef
-        }
-    );
+    my $rs = ci->user->find($where)->fields({ username => 1, realname => 1, alias => 1, email => 1, active => 1, phone => 1, mid => 1, _id => 0 });
+    $rs->sort($sort ? { $sort => $dir } : {username => 1});
+    $rs->skip($start);
+    $rs->limit($limit);
 
-    # my %userdata = DB->BaliRoleuser->search(
-    #         { username=>{ -in => $rs->as_query } },
-    #         { prefetch=>['role'] })->hash_on( 'username' );
-    
-    my $pager = $rs->pager;
-    $cnt = $pager->total_entries;	
-    
-    #my @rows = map {
-    #    $_
-    #} $rs->hashref->all;
-	
+    $cnt = ci->user->find($where)->count();
+
     my @rows = map {
-		+{ id => $_->{mid}, %{$_}};
-    } $rs->hashref->all;	
+        +{ id => $_->{mid}, %{$_}};
+    } $rs->all;
 
     if ( $p->{only_data} ) {
         $c->stash->{json} = \@rows;    
@@ -866,53 +675,83 @@ sub list_all : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
     my ($start, $limit, $query, $dir, $sort, $cnt ) = ( @{$p}{qw/start limit query dir sort/}, 0 );
-    $sort ||= 'username';
-    $dir ||= 'asc';
+    
     $start||= 0;
     $limit ||= 100;
 
-    my $page = to_pages( start=>$start, limit=>$limit );
-    
-    
-    my $where={};
-    $query and $where = query_sql_build( query=>$query, fields=>[qw( me.username role.description realname alias projects.name email actions.action)] );
+    my @role_list = mdb->role->find->fields({id=>1, name=>1, description=>1, role=>1, actions=> 1, _id=> 0})->all;
+    my %roles = map { ( $$_{id}=>$_ ) } @role_list;
+    my @colls = map { Util->to_base_class($_) } packages_that_do( 'Baseliner::Role::CI::Project' );
+    my %prjs = map { ($$_{mid}=>$_ ) } mdb->master_doc->find({ collection=>mdb->in(@colls) })->fields({mid=>1, name=>1, _id=>0})->all;
+    my @users;
+    # get user list
 
-    $where->{active} = 1 if $p->{active_only};
+    $sort ||= 'username';
+    $dir ||= 'asc';
+    if($dir =~ /asc/i){
+        $dir = 1;
+    }else{
+        $dir = -1;
+    }
 
-    my $rs = DB->BaliUser->search(
-        $where,
-        { 
-          page => $page,
-          rows => $limit,
-          +select => [ qw( me.username me.mid me.realname me.email me.alias me.active role.role role.description actions.action projects.name ) ],
-          +as => [ qw( username mid realname email alias active role role_desc action project ) ],
-          join => [ { 'roles' => ['role', 'actions','projects'] } ],
-          order_by => [ { "-$dir" => "me.$sort" } , { -asc=>'role' }, { -asc=>'project' } ] 
+    my $where = $query ? mdb->query_build(query => $query, fields=>[qw(username realname alias)]) : {};
+    $where->{active} = '1' if $p->{active_only};
+    $where->{username} = { '$nin'=>[undef,''] };
+
+    my $has_data = mdb->user_all->count;
+    if( !$has_data ) {
+        my $rs = ci->user->find()
+            ->fields({ active=>1, project_security=>1, username=>1, mid=>1, realname=>1, email=>1, alias=>1, name=>1, _id=>0 });
+
+        # for each unique user
+        while( my $user = $rs->next ) {
+            my $ps = $user->{project_security};
+            # for each user role
+            for my $roleid ( keys $ps ) {
+                my $ur = $ps->{$roleid};
+                # for each role project
+                my ($rol) = grep {$_->{id} == $roleid+0} @role_list;
+                for my $action (_array $rol->{actions}){
+                    #for each action in the role
+                    for my $prj ( _unique( _array( values $ur ) ) ) {
+                        push @users, {  %$user, role=>$roles{$roleid}{role}, project=>$prjs{$prj}{name}, action=>$action->{action} };
+                    }
+                }
+            }
         }
-    );
+        mdb->user_all->drop;
+        mdb->user_all->insert($_) for @users;
+    }
 
-   my $id = 1;
+    my $rs_shown =  mdb->user_all->find($where)->limit($limit)->skip($start)->sort($sort ? mdb->ixhash( $sort => $dir, 'project'=>1, action=>1 ) : {username => 1});
+    my $cn = $rs_shown->count;
+    my @users_shown = $rs_shown->all;
+
+   # my @users_shown = splice(@users, $start, $limit); 
+    #@users = ();
+    my $id = 1;
     my @rows = map { 
         $_->{project} ||= _loc('(all projects)');
         $_->{id} = $id++;
         $_;
-    } $rs->hashref->all;
-    $c->stash->{json} = { data=>\@rows, totalCount=>try { $rs->pager->total_entries } catch { scalar @rows } };		
+    } @users_shown;
+
+    $c->stash->{json} = { data=>\@rows, totalCount=>$cn };     
     $c->forward('View::JSON');
 }
+
+
 
 sub change_pass : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
     my $username = lc $c->username;
-
-    my $row = $c->model('Baseliner::BaliUser')->search({username => $username, active => 1})->first;
+    my $row = ci->user->find({username => $username, active => '1'})->next;
     
     if ($row) {
-        if ( ci->user->encrypt_password( $username, $p->{oldpass} ) eq $row->password ) {
+        if ( ci->user->encrypt_password( $username, $p->{oldpass} ) eq $row->{password} ) {
             if ( $p->{newpass} ) {
-                $row->password( ci->user->encrypt_password( $username, $p->{newpass} ) );
-                $row->update();
+                $row->update( password => ci->user->encrypt_password( $username, $p->{newpass} ) );
                 $c->stash->{json} = { msg => _loc('Password changed'), success => \1 };
             } else {
                 $c->stash->{json} = { msg => _loc('You must introduce a new password'), failure => \1 };
@@ -1005,7 +844,7 @@ sub avatar_upload : Local {
 
 sub identicon {
     my ($self, $c, $username)=@_;
-    my $user = $c->model('Baseliner::BaliUser')->search({ username=>$username })->first;
+    my $user = ci->user->find({ username=>$username })->next;
     my $generate = sub {
             # generate png identicon from random
             require Image::Identicon;
@@ -1015,9 +854,9 @@ sub identicon {
             return $image->{image}->png;
     };
     if( ref $user ) {
-        if( length $user->avatar ) {
+        if( length $user->{avatar} ) {
             _debug "Avatar from db";
-            return $user->avatar;
+            return $user->{avatar};
         } else {
             _debug "Generating and saving avatar";
             my $png = try { 
@@ -1026,9 +865,7 @@ sub identicon {
                 my $user_png = $c->path_to( "/root/static/images/icons/user.png");
                 $user_png->slurp;
             };
-            # save to user
-            $user->avatar( $png );
-            $user->update;
+            $user->update(avatar => $png);
             return $png;
         }
     }
@@ -1042,67 +879,142 @@ sub duplicate : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     try{
-        my $r = $c->model('Baseliner::BaliUser')->find({ mid => $p->{id_user} });
+        my $r = ci->user->find({ mid => $p->{id_user} })->next;
         if( $r ){
             my $user;
             my $new_user;
-            # my $user_mid = master_new 'user' => 'Duplicate of ' . $r->username => sub {
-            #     my $mid = shift;
-            #     $new_user = $r->username . '-' . $mid;
-            #     $user = Baseliner->model('Baseliner::BaliUser')->create(
-            #         {
-            #             mid			=> $mid,
-            #             username    => $new_user,
-            #         }
-            #     );
-            # };
 
             my $row;
             my $cont = 2;
-            $new_user = "Duplicate of ".$r->username;
-            $row = $c->model('Baseliner::BaliUser')->search({username => $new_user, active => 1})->first;
+            $new_user = "Duplicate of ".$r->{username};
+            $row = ci->user->find({username => $new_user, active => '1'})->next;
             while ($row) {
-                $new_user = "Duplicate of ".$r->username." ".$cont++;
-                $row = $c->model('Baseliner::BaliUser')->search({username => $new_user, active => 1})->first;                
+                $new_user = "Duplicate of ".$r->{username}." ".$cont++;
+                $row = ci->user->find({username => $new_user, active => '1'})->next;            
             }
-            if(!$row){
+            if(!$row) {
                 my $user_mid;
-               
-                my $ci_data = {
-                    name        => $new_user,
-                    bl          => '*',
-                    username    => $new_user,
-                    realname    => $r->realname,
-                    alias       => $r->alias,
-                    email       => $r->email,
-                    phone       => $r->phone,            
-                    active      => '1',
-                };           
-                
+
+                my $ci_data = 
+                    {
+                        name        => $new_user,
+                        bl          => '*',
+                        username    => $new_user,
+                        realname    => $r->{realname},
+                        alias       => $r->{alias},
+                        email       => $r->{email},
+                        phone       => $r->{phone},            
+                        active      => '1',
+                        project_security => $r->{project_security},
+                };       
+
                 my $ci = ci->user->new( %$ci_data );
                 $user_mid = $ci->save;
                 $c->stash->{json} = { msg=>_loc('User added'), success=>\1, user_id=> $user_mid };
-
-                my @rs_roles =  $c->model('Baseliner::BaliRoleUser')->search({ username => $r->username })->hashref->all;
-                for (@rs_roles){
-                    Baseliner->model('Baseliner::BaliRoleUser')->create(
-                        {
-                            username    => $new_user,
-                            id_role     => $_->{id_role},
-                            ns          => $_->{ns},
-                            id_project  => $_->{id_project},
-                        }
-                    );
-                }
             }
+            $c->stash->{json} = { success => \1, msg => _loc("User duplicated") };  
         }
-        $c->stash->{json} = { success => \1, msg => _loc("User duplicated") };  
     }
     catch{
         $c->stash->{json} = { success => \0, msg => _loc('Error duplicating user') };
     };
 
     $c->forward('View::JSON');  
+}
+
+sub dump_users{
+    use warnings;
+    no warnings;
+
+    my $projects = {};
+
+    #Cargamos los cis con role project (esto habría que hacerlo dinámico)
+    my @colls = map { Util->to_base_class($_) } packages_that_do( 'Baseliner::Role::CI::Project' );
+    map { map { $projects->{$_->mid} = $_->{name} } ci->search_cis( collection => $_) } @colls;
+
+
+    #carga el hash de roles
+    my $roles = {};
+    map { $roles->{$_->{id}} = $_->{role} } mdb->role->find->all;
+
+    #Bucle por usuarios
+    my @usuarios = map {$_->{username}} ci->user->find()->fields({username=>1})->all;
+    my $security_names;
+
+    for my $username ( @usuarios ) {
+
+        my $security = Baseliner->model('Permissions')->user_projects_ids_with_collection( username => $username, with_role => 1 );
+        
+        for my $role ( keys %{$security} ) {
+            for my $coll ( keys %{$security->{$role}} ) {
+                my @projs;
+                for my $proj ( keys %{$security->{$role}->{$coll} } ) {
+                    push @projs, $projects->{$proj}." ($proj)";
+                }
+                $security_names->{$username}->{$roles->{$role}." ($role)"}->{$coll} = \@projs;
+            }
+        }
+    }
+
+    $security_names;
+}
+
+sub load_users{
+    my ($self, $users) = @_;
+    #my $users = users_file_example();
+
+    for my $username ( keys %$users ) {
+       if ( ! Baseliner->model('Permissions')->is_root($username)) {
+           _log $username;
+           my $ci_user_ps = ci->user->find({username=>$username})->next->{project_security};
+           $ci_user_ps = undef;
+           my $user = $users->{$username};
+           for my $rolename ( keys %{$user} ) {
+              my ($id_role) = $rolename =~ /^.*\((.*)\)$/;
+              my $role = $user->{$rolename};
+              for my $collectionname ( keys %{$role} ) {
+                 my $collection = $role->{$collectionname};
+                 for my $projectname ( _array $collection ) {
+                     my ($id_project) = $projectname =~ /^.*\((.*)\)$/;
+                     push @{$ci_user_ps->{$id_role}->{$collectionname}} , $id_project;
+                 }
+              }
+           }
+           my $ci = ci->new('name:'.$username);
+           $ci->update(project_security => $ci_user_ps);
+       }
+    }
+}
+
+sub users_file_example {
+return _load(q{---
+acarrilm:
+  Desarrollador (41):
+    project:
+    - CRM (285)
+  Estimador (61):
+    project:
+    - CRM (285)
+  No OIM (121):
+    project:
+    - Clarive (6859)
+  Responsable de desarrollo (24):
+    project:
+    - CRM (285)
+ecarrion:
+  Desarrollador (41):
+    project:
+    - CRM (285)
+  Estimador (61):
+    project:
+    - CRM (285)
+  No OIM (121):
+    project:
+    - Clarive (6859)
+  Responsable de desarrollo (24):
+    project:
+    - CRM (285)
+});
 }
 
 1;
