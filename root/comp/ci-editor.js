@@ -182,7 +182,7 @@
             padding: 10,
             defaults: {
                allowBlank: false,
-               anchor: '100%',
+               anchor: '100%'
             },
             frame: true,
             bodyStyle: {
