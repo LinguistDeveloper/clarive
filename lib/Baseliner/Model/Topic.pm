@@ -354,13 +354,11 @@ sub topics_for_user {
     }
     
     if ( $p->{assigned_to_me} ) {
-        my $rs_user = ci->user->find({username => $username})->next;
-        if ($rs_user) {
-            my @topic_mids
-                = map { $_->{from_mid} }
-                DB->BaliMasterRel
-                ->search( { to_mid => $rs_user->mid, rel_type => 'topic_users' }, { select => [qw(from_mid)] } )
-                ->hashref->all;
+        my $ci_user = ci->user->find_one({ name=>$username });
+        if ($ci_user) {
+            my @topic_mids = 
+                map { $_->{from_mid} }
+                mdb->master_rel->find({ to_mid=>$ci_user->{mid}, rel_type => 'topic_users' })->fields({ from_mid=>1 })->all;
             if (@topic_mids) {
                 $where->{'mid'} = mdb->in(@topic_mids);
             } else {
