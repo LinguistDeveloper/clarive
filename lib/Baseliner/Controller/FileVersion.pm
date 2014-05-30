@@ -26,7 +26,7 @@ sub tree_file_project : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
 
-    my (@tree, @folders);
+    my @tree;
     
     # show child folders
     my @fids = map { $_->{to_mid} } mdb->master_rel->find({ from_mid=>$p->{id_directory} || $p->{id_project}, rel_type=>'project_folder' })->all;

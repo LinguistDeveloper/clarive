@@ -330,13 +330,13 @@ sub roleprojects : Local {
                 }
             } @projects;
         }
-        foreach my $elem (keys \%projects_users){
-            my @ord = _unique @{%projects_users->{$elem}};
+        foreach my $elem (keys %projects_users){
+            my @ord = _unique _array( $projects_users{ $elem } );
             @ord = sort @ord;
             my $users_txt = join ', ', @ord;
             push @data, {project=>$elem, users=>$users_txt};
         }
-        @data =  sort { $a->{project} cmp $b->{project} } @data;
+        @data = sort { $a->{project} cmp $b->{project} } @data;
         $c->stash->{json} = { success => \1, data=>\@data, totalCount=>scalar @data };
     } catch { 
         $c->stash->{json} = { success => \0, msg => _loc("Error deleting the role ").$@  };
