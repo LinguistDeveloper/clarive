@@ -28,8 +28,8 @@ mongo:
 
 # Baseliner Framework default config
 baseliner:
-    name: Clarive
-    app_name: Clarive
+    name: ϲʟᴀʀɪᴠе
+    app_name: ϲʟᴀʀɪᴠе
     default_theme: clarive
     default_lang: en
     logo_filename: logo.png
