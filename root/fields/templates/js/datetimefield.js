@@ -18,7 +18,7 @@ params:
 
     var df = meta.format || 'Y-m-d';
 
-    var value = data ? data[meta.bd_field]: ''; 
+    var value = data ? data[meta.id_field]: ''; 
     if( value != '' && meta.default_today && meta.default_today == 'true' ) value = new Date( Date.now() ).format(df);
 	
     return [
