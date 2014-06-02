@@ -6245,7 +6245,7 @@ msgid "Found %1 items for this job"
 msgstr "Encontrados %1 elementos para este pase"
 
 msgid "Checking out baseline %1 for project %2, repository %3: %4"
-msgstr "Verificando el entorno %1 para el proyecto %2, repositorio %3: %4"
+msgstr "Haciendo check-out del entorno %1 para el proyecto %2, repositorio %3: %4"
 
 msgid "Project items before for %1"
 msgstr "Elementos del proyecto antes de %1"
