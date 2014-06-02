@@ -781,10 +781,7 @@ sub service_summary {
         }
     };
     
-    # # load previous exec services, in case we had exec=1, step=PRE, then, exec=2, step=RUN
-    # my @keys = DB->BaliLog->search({ id_job=>$p{jobid}, exec =>{ '!=' => $p{job_exec} }, service_key=>{ '<>'=>undef } },
-    #     { order_by=>{ -asc=>'id' }, select=>[qw(step service_key id)] } ) # ->hash_unique_on('service_key');
-    #     ->hashref->all;
+    # TODO load previous exec services, in case we had exec=1, step=PRE, then, exec=2, step=RUN
     # $load_results->( @keys );
 
     # load current keys
