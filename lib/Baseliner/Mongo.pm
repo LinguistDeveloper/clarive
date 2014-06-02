@@ -289,6 +289,10 @@ sub index_all {
             [{ from_mid  =>1 }],
             [{ rel_type=>1 }],
         ],
+        role => [
+          [{ role=>1 }],
+          [{ id=>1 }],  
+        ],
         master_doc => [
             [{'$**'=> "text"}],
             [{ mid=>1 },{ unique=>1 }],
