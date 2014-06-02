@@ -10,21 +10,12 @@
         </li>
     </ul>
     <ul class="" style="margin-left: 20px">
-% foreach my $topic ( _array( $data->{$meta->{id_field}} ) ) {
+%   foreach my $topic ( _array( $data->{$meta->{id_field}} ) ) {
         <li style="margin: 6px 0px 6px 0px;">
             <& /partial/topic_name.html, topic=>$topic &>
         </li>
-% }
+%   }
     </ul>
 
-<%perl>
-    
-    my @parents_topics = $c->model('Baseliner::BaliTopic')->search(
-                            { rel_type=>'topic_topic', to_mid=>$data->{topic_mid} },
-                            { join=>['categories','children','master'], select=>['mid','title', 'progress', 'categories.name', 'categories.color'], as=>['mid','title','progress','name','color'] }
-                            )->hashref->all;
-    @parents_topics = $c->model('Topic')->append_category( @parents_topics );
-</%perl>
-    
 % }
 

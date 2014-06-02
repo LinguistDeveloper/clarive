@@ -156,7 +156,7 @@ sub save {
     
     # try to get mid from ns
     if( !$exists && length $ns && $ns ne '/' ) {
-        my $ns_row = DB->BaliMaster->search({ collection=>$collection, ns=>$ns }, {select=>'mid' })->first;
+        my $ns_row = mdb->master->find_one({ collection=>$collection, ns=>$ns }, { mid=>1 });
         if( $ns_row ) {
             $mid = $ns_row->mid;
             $exists = 1;
@@ -565,6 +565,7 @@ sub related_cis {
     my ($self_or_class, %opts )=@_;
     my $mid = ref $self_or_class ? $self_or_class->mid : $opts{mid};
     $mid // _fail 'Missing parameter `mid`';
+    $mid = ''. $mid;
     # in scope ? 
     #local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
     my $scope_key =  "related_cis:$mid:" . Storable::freeze( \%opts );
@@ -1045,6 +1046,13 @@ sub find {
     }
     $where->{collection} //= $self->collection;
     return mdb->master_doc->find($where,@rest);
+}
+
+sub aggregate {
+    my ($self,$where) = @_;
+    $where //= [];
+    unshift $where => { '$match'=>{ collection=>$self->collection } }; 
+    return mdb->master_doc->aggregate($where);
 }
 
 sub find_one {

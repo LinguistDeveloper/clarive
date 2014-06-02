@@ -12,9 +12,14 @@ has id_category_status => qw(is rw isa Any);
 #has_ci 'projects';
 #has_cis 'jobs';
 
+has_cis 'assets';
+has_cis 'posts';
+
 sub rel_type {
     { 
         projects => [ from_mid => 'topic_project' ] ,
+        assets   => [ from_mid => 'topic_asset' ] ,
+        posts    => [ from_mid => 'topic_post' ] ,
         #jobs     => [ to_mid => 'job_changeset' ] ,
     };
 }
@@ -25,8 +30,7 @@ sub icon { '/static/images/icons/topic.png' }
 around delete => sub {
     my ($orig, $self, $mid ) = @_;
     $mid = $mid // $self->mid;
-    print "EN CI....".$mid."\n";
-    DB->BaliTopic->search({ mid=>$mid })->delete if length $mid;
+    mdb->topic->remove({ mid=>"$mid" },{ multiple=>1 });
 	my $cnt = $self->$orig($mid);
 };
     
@@ -128,13 +132,13 @@ sub create_topic {
 
 sub is_changeset {
     my ($self) = @_;
-    my $row = DB->BaliTopic->search({ mid=> $self->mid},{ join=>'categories', select=>'categories.is_changeset', as=>'is_changeset' })->hashref->first;
+    my $row = $self->get_doc;
     return $row ? $row->{is_changeset} : 0;
 }
 
 sub is_release {
     my ($self) = @_;
-    my $row = DB->BaliTopic->search({ mid=> $self->mid},{ join=>'categories', select=>'categories.is_release', as=>'is_release' })->hashref->first;
+    my $row = $self->get_doc;
     return $row ? $row->{is_release} : 0;
 }
 
@@ -242,21 +246,9 @@ sub get_meta {
     Baseliner->model('Topic')->get_meta( $mid );
 }
 
-sub verify_integrity {
-    my ($self)=@_;
-
-    # delete rows in mongo not found in BaliTopic
-    my $k = 0;
-    my @docs = ci->topic->find->all;
-    for (@docs) {
-      my $row = DB->BaliTopic->find( $_->{mid} );
-      if( !$row ) {
-         warn "$_->{name} (#$_->{mid}) NOT FOUND in BaliTopic\n";
-         $k++;
-         mdb->topic->remove({ _id=> $_->{_id} });
-      }
-    }
-    warn "Integrity check against BaliTopic done (invalid docs=$k).";
+sub velocities {
+   my ($self,$p)=@_;
+   return { data=>[] };
 }
 
 1;

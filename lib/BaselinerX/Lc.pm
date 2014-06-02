@@ -116,8 +116,7 @@ sub lc_for_project {
 
     my @repos =
         map { values %$_ }
-        DB->BaliMasterRel->search( {from_mid => $id_prj, rel_type => 'project_repository'},
-        {select => 'to_mid'} )->hashref->all;
+        mdb->master_rel->find({from_mid=>"$id_prj", rel_type=>'project_repository'})->fields({ to_mid=>1, _id=>0 })->all;
 
     for my $id_repo ( @repos ) {
         my $repo = Baseliner::CI->new( $id_repo );
@@ -145,10 +144,7 @@ sub lc_for_project {
 
         # States-Statuses with bl and type = D (Deployable)
         my @deployable_statuses = map { $_->{id} } DB->BaliTopicStatus->search( { type=>'D' }, { order_by => { -asc => ['seq'] } } )->hashref->all;
-        # my @from_statuses = _unique map { $_->{id_status_from} } DB->BaliTopicCategoriesAdmin->search(
-        #         { id_status_to => \@deployable_statuses },
-        #         { distinct => 1 }
-        #   )->hashref->all; 
+        
         my @from_statuses = _unique map { $_->{id_status_from} } DB->BaliTopicCategoriesAdmin->search(
                 { id_status_to => \@deployable_statuses, id_status_from => \@user_workflow },
                 { distinct => 1 }

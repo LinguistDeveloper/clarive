@@ -174,10 +174,23 @@ sub joins {
     my $self = shift;
     my %opts = %{ shift() } if ref $_[0] eq 'HASH';
     my ( %res, %in, @merges );
+    # detect if a find coll=>{ ... }  or query coll=>[{},{}] 
+    my $rs_find = sub {
+        my $coll = shift;
+        my $wh = shift;
+        my $rs;
+        if( ref $wh eq 'ARRAY' ) {
+            $rs = $self->collection( $coll )->query(+{ %{ $$wh[0] || {} }, @_ }, $$wh[1] );
+            $rs->fields( $$wh[1]->{fields} ) if ref $$wh[1] eq 'HASH' && exists $$wh[1]->{fields};
+        } else {
+            $rs = $self->collection( $coll )->find(+{ %$wh, @_ });
+        }
+        return $rs;
+    };
     while( @_ ) {
         my ($coll,$where,$from,$to,$as) = (shift,shift,shift,shift);
         ($coll,$as) = @$coll if ref $coll eq 'ARRAY'; 
-        my $rs = $self->collection( $coll )->find({ %$where, %in });
+        my $rs = $rs_find->( $coll => $where, %in ); 
         if( ! $from ) {
             $res{coll} = $coll;
             $res{where} = $where;
@@ -198,9 +211,7 @@ sub joins {
         #_warn [ map{ $_->{$from} } @docs ];
         %in = ( $to => mdb->in(map{ $_->{$from} } @docs ) );
     }
-    my $where = +{ %{ $res{where} }, %in };
-    #_debug "final join = collection $res{coll}, where = " . _dump $where;
-    my $rs = $self->collection( $res{coll} )->find($where);
+    my $rs = $rs_find->( $res{coll} => $res{where}, %in);
     if( $opts{merge} ) {
         my @docs = $rs->all;
         my (%join_keys,$last_key);

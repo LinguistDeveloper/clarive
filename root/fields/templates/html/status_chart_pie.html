@@ -8,35 +8,7 @@
     my $filter_category = $meta->{filter_category} || '';
     my $depth = $meta->{depth} || 1;
     
-    my @topics = _array(ci->new($data->{topic_mid})->children( where => { collection => 'topic'}, depth => $depth ));
-
-    @topics = grep { $_->{name_category} eq $filter_category} @topics if $filter_category;
-
-    @topics = map { $_->{mid} } @topics;
-
-                # $c->model( 'Baseliner::BaliTopic' )->search(
-                #         {
-                #             rel_type => 'topic_topic',
-                #             from_mid => $data->{topic_mid},
-                #         },
-                #         {
-                #             join => [ 'parents', 'master' ],
-                #             select => [ 'mid' ],
-                #             as => [ 'mid' ]
-                #         }
-                # )->hashref->all;     
-    
-    
-    my @topics_by_status = DB->BaliTopic->search(
-                        {mid => \@topics},
-                        {
-                          join     => [qw/ status /],
-                          select   => [ 'status.name', { count => 'status.id' }, 'status.color','status.id' ],
-                          as       => [qw/ status total color status_id /],
-                          group_by => [qw/ status.name status.color status.id /]
-                        }
-    )->hashref->all;
-    
+    my ($topics, @topics_by_status) = Baseliner->model('Topic')->group_by_status(depth=>$depth,filter_category=>$filter_category,mid=>$$data{mid} );
     my @filter_topics_by_status;
     my @filter_status_names =  map {lc ($_)} split(',', $meta->{filter});
     
@@ -135,7 +107,7 @@
                 
         var topic_list = new Array();
         
-%foreach my $mid (@topics){
+%foreach my $mid (@$topics){
     topic_list.push(<% $mid %>);
 %}                   
                

@@ -95,6 +95,17 @@ sub update_or_create {
     $self->update($doc,$doc,{ upsert=>1 });
 }
 
+#around save => sub {
+#    my ($orig,$self,@args) = @_;
+#    try { 
+#        $self->$orig( @args );
+#    } catch {
+#        my $err = shift;
+#        my $msg = Util->_loc( 'Error in Mongo save: %1. %2', $err );
+#        _throw( $msg );
+#    };
+#};
+
 sub delete { 
     Util->_throw( "mdb...->delete does not exist. Use ->remove");
 }
@@ -145,6 +156,55 @@ sub follow {
         $iter-- if $iter>0;
     }
 }
+
+=head2 find_values ( key => { var=>'val' ... })
+
+Returns a list of values for the found docs and a given key.
+
+    my @mids = mdb->topic->find_values( mid => { mid=>$topic_mid });
+
+=cut
+sub find_values {
+    my $self = shift;
+    my $key = shift;
+    return map { $$_{ $key } } $self->find( @_ )->fields({ $key=>1 })->all;
+}
+
+=head2 find_one_value
+
+Returns the value for a given key or undef if not found.
+
+    say "ID=" . mdb->topic->find_one_value( id_category => { mid=>$topic_mid });
+
+=cut
+sub find_one_value {
+    my $self = shift;
+    my $key = shift;
+    my $doc = $self->find_one( @_ );
+    if( ref $doc ) {
+        return $$doc{$key};
+    } else {
+        return undef;
+    }
+}
+
+=head2 find_hashed
+
+Returns a hash indexed by key pointing to an array of hashes
+
+    my %users = mdb->master_doc->find_hashed( username=>{ username=>qr/^A/ }, { realname=>1 });
+
+=cut
+sub find_hashed {
+    my ($self,$key,$where,$fields)=@_;
+    my $rs = $self->find( $where );
+    $rs->fields($fields) if $fields;
+    my %ret;
+    while( my $r = $rs->next ) {
+        push @{ $ret{ $$r{$key} } }, $r;
+    }
+    return wantarray ? %ret : \%ret;
+};
 
 # wrap around my own cursor
 #  around query => sub {

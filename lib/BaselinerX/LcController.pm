@@ -69,13 +69,13 @@ sub tree_project_releases : Local {
             url  => '/lifecycle/topic_contents',
             topic_name => {
                 mid            => $_->{mid},
-                category_color => $_->{categories}{color},
-                category_name  => $_->{categories}{name},
+                category_color => $_->{category}{color},
+                category_name  => $_->{category}{name},
                 is_release     => 1,
             },
             data => {
                 topic_mid    => $_->{mid},
-                click       => $self->click_for_topic(  $_->{categories}{name}, $_->{mid} ),
+                click       => $self->click_for_topic(  $_->{category}{name}, $_->{mid} ),
             },
             menu => \@menu_related
        }
@@ -93,7 +93,6 @@ sub category_contents : Local {
     my ($cnt,@user_topics) = Baseliner->model('Topic')->topics_for_user( { username => $c->username, clear_filter => 1 });
     @user_topics = map { $_->{mid}} @user_topics;
 
-    #my @rels = grep {!$seen{$_->{mid}}++} DB->BaliTopic->search( { id_category => $category_id },{ prefetch=>['categories'] })->hashref->all;
     my @rels = grep {!$seen{$_->{mid}}++} mdb->topic->find( { mid => mdb->in(@user_topics), id_category => "$category_id" })->all;
     
     my @menu_related = $self->menu_related();
@@ -162,10 +161,12 @@ sub tree_topics_project : Local {
     my $project = $c->req->params->{project} ;
     my $id_project = $c->req->params->{id_project} ;
     my @categories  = map { $_->{id}} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'view' );
-    my @topics = DB->BaliMasterRel->search(
-        { to_mid => $id_project, 'categories.id' => \@categories, rownum => {'<=',30}, -not => ['status.type' => { -like => 'F%' }] },
-        { prefetch => {'topic_project'=> ['categories','status']}, order_by => { -desc => 'modified_on'} }
-    )->hashref->all;
+    
+    my @topics = mdb->joins( 
+            master_rel=>{ to_mid=>"$id_project" }, 
+            from_mid => mid => 
+            topic => { id_category=>mdb->in(@categories), 'category_status.type'=>{ '$not'=>qr/^F/ }  }); 
+        
     for( @topics ) {
         my $is_release = $_->{topic_project}{categories}{is_release};
         next if $c->stash->{release_only} && ! $is_release;
@@ -191,36 +192,36 @@ sub topic_contents : Local {
     my @tree;
     my $topic_mid = $c->req->params->{topic_mid};
     my $state = $c->req->params->{state_id};
-    my $where = { from_mid => $topic_mid };
+    my $where = {};
 
     if ( $state ) {
-        $where->{'topic_topic2.id_category_status'} = $state;
+        $where->{'category_status.id'} = "$state";
     }
 
-    my @topics = $c->model('Baseliner::BaliMasterRel')->search(
-        $where,
-        { prefetch => {'topic_topic2'=>'categories'} }
-    )->hashref->all;
-    for ( @topics ) {
-        my $is_release = $_->{topic_topic2}{categories}{is_release};
-        my $is_changeset = $_->{topic_topic2}{categories}{is_changeset};
+    my @topics = mdb->joins( master_rel=>{ rel_type=>'topic_topic', from_mid=>"$topic_mid" },
+        to_mid => mid => 
+        topic => $where );
+
+    for my $topic ( @topics ) {
+        my $is_release = $topic->{category}{is_release};
+        my $is_changeset = $topic->{category}{is_changeset};
         my $icon = $is_release ? '/static/images/icons/release_lc.png'
             : $is_changeset ? '/static/images/icons/changeset_lc.png' :'/static/images/icons/topic.png' ;
 
         my @menu_related = $self->menu_related();
         push @tree, {
-            text       => $_->{topic_topic2}{title},
+            text       => $topic->{title},
             topic_name => {
-                mid             => $_->{topic_topic2}{mid},
-                category_color  => $_->{topic_topic2}{categories}{color},
-                category_name   => _loc($_->{topic_topic2}{categories}{name}),
+                mid             => $topic->{mid},
+                category_color  => $topic->{category}{color},
+                category_name   => _loc($topic->{category}{name}),
                 is_release      => $is_release,
                 is_changeset    => $is_changeset,
             },
             url        => '/lifecycle/tree_topic_get_files',
             data       => {
-               topic_mid   => $_->{to_mid},
-               click       => $self->click_for_topic(  $_->{topic_topic2}{categories}{name}, $_->{topic_topic2}{mid} ),
+               topic_mid   => $topic->{to_mid},
+               click       => $self->click_for_topic(  $topic->{category}{name}, $topic->{mid} ),
             },
             icon       => $icon, 
             leaf       => \1,
@@ -466,60 +467,61 @@ sub changeset : Local {
     }
 
     # topic changes
-    my $where = { is_changeset => 1, rel_type=>'topic_project', to_mid=>$id_project };
-    my @changes;
     my $bind_releases = 0;
-    $where->{id_category_status} = $p->{id_status};
-    @changes = DB->BaliTopic->search(
-        $where,
-        { prefetch=>['categories','children','master'] }
-    )->all;
+    my @changes = mdb->joins(
+                master_rel=>{ rel_type=>'topic_project', to_mid=>"$id_project" },
+                from_mid=>mid=>topic=>{ is_changeset=>mdb->true, 'category_status.id'=> "$p->{id_status}" });
+    my %releases;
+    map { push @{ $releases{ $$_{to_mid} } } => $_ }
+        mdb->joins({ merge=>'flat' }, 
+            master_rel=>{ to_mid=>mdb->in(map{ $$_{mid} } @changes), rel_type=>'topic_topic' }, 
+            from_mid=>mid=>
+            topic=>{ is_release=>mdb->true } );
+    
     $bind_releases = DB->BaliTopicStatus->find( $p->{id_status} )->bind_releases;
 
     my @rels;
     for my $topic (@changes) {
-        my @releases = $topic->my_releases->hashref->all;
-        _log _dump @releases;
-        #my @releases = Baseliner->model('Topic')->my_releases($topic->mid);
+        my @releases = _array( $releases{ $topic->{mid} } );
         push @rels, @releases;  # slow! join me!
         next if $bind_releases && @releases;
-        my $td = { $topic->get_columns() };  # TODO no prefetch comes thru
         # get the menus for the changeset
-        my ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu( $c, $td, $bl, $state_name );
+        my ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu( $c, topic=>$topic, 
+            bl_state=>$bl, state_name=>$state_name, id_project=>$id_project );
         my $node = {
             url  => '/lifecycle/topic_contents',
             icon => '/static/images/icons/changeset_lc.png',
-            text => $td->{title},
+            text => $topic->{title},
             leaf => \1,
             menu => $menu,
             topic_name => {
-                mid             => $td->{mid},
-                category_color  => $topic->categories->color,
-                category_name   => _loc($topic->categories->name),
-                is_release      => $topic->categories->is_release,
-                is_changeset    => $topic->categories->is_changeset,
+                mid             => $topic->{mid},
+                category_color  => $$topic{category}{color}, 
+                category_name   => _loc($$topic{category}{name}),
+                is_release      => $$topic{category}{is_release},
+                is_changeset    => $$topic{category}{is_changeset},
             },
             data => {
-                ns           => 'changeset/' . $td->{mid},
+                ns           => 'changeset/' . $topic->{mid},
                 bl           => $bl,
-                name         => $td->{title},
+                name         => $topic->{title},
                 promotable   => $promotable,
                 demotable    => $demotable,
                 deployable   => $deployable,
                 state_name   => _loc($state_name),
-                topic_mid    => $td->{mid},
-                topic_status => $td->{id_category_status},
-                click        => $self->click_for_topic(  _loc($topic->categories->name), $td->{mid} )
+                topic_mid    => $topic->{mid},
+                topic_status => $topic->{id_category_status},
+                click        => $self->click_for_topic(  _loc($$topic{category}{name}), $topic->{mid} )
             },
         };
         # push @tree, $node if ! @rels;
         push @tree, $node;
     }
     if( $bl ne "new" && @rels ) {
-        my %unique = map { $_->{topic_topic}{mid} => $_ } @rels;
-        for my $rel ( values %unique ) {
+        my %unique_releases = map { $$_{mid} => $_ } @rels;
+        for my $rel ( values %unique_releases ) {
             $rel = $rel->{topic_topic};
-            my ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu( $c, $rel, $bl, $state_name, $p->{id_status} );
+            my ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu( $c, topic=>$rel, bl_state=>$bl, state_name=>$state_name, id_status=>$p->{id_status}, id_project=>$id_project );
             my $node = {
                 url  => '/lifecycle/topic_contents',
                 icon => '/static/images/icons/release_lc.png',
@@ -528,8 +530,8 @@ sub changeset : Local {
                 menu => $menu,
                 topic_name => {
                     mid             => $rel->{mid},
-                    category_color  => $rel->{categories}{color},
-                    category_name   => $rel->{categories}{name},
+                    category_color  => $rel->{category}{color},
+                    category_name   => $rel->{category}{name},
                     is_release      => \1,
                 },
                 data => {
@@ -543,7 +545,7 @@ sub changeset : Local {
                     state_id     => $p->{id_status},
                     topic_mid    => $rel->{mid},
                     topic_status => $rel->{id_category_status},
-                    click        => $self->click_for_topic(  _loc($rel->{categories}{name}), $rel->{mid} )
+                    click        => $self->click_for_topic(  _loc($rel->{category}{name}), $rel->{mid} )
                 },
             };
             push @tree, $node;
@@ -668,9 +670,8 @@ sub cs_menu {
 
     my ($deployable, $promotable, $demotable ) = ( {}, {}, {} );
     my $row = DB->BaliTopicCategories->find( $topic->{id_category} );
-    if( $row->is_release ) {
-        # my @chi = DB->BaliTopic->search({ rel_type=>'topic_topic', from_mid=>$topic->{mid}, },
-        #    { join=>['parents'] })->hashref->all;
+    if ( $row->is_release ) {
+
         my @chi;
 
         for ( ci->new($topic->{mid})->children( isa => 'topic', depth => 2) ) {
