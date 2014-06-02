@@ -65,6 +65,7 @@ register 'registor.menu.topics' => {
                     title    => _loc ('Topics'),
                     actions  => ['action.topics.%.view'],
                     url_comp => '/topic/grid',
+                    comp_data => { tabTopic_force => 1 }, #force modify name and icon only for Topics Tab
                     icon     => '/static/images/icons/topic.png',
                     tab_icon => '/static/images/icons/topic.png'
             },

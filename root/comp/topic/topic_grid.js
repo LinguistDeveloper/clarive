@@ -1475,20 +1475,11 @@
             var sw_edit;
             check_sm.each(function(rec){
                 sw_edit = (rec.get('sw_edit'));
-            });
-            if(sw_edit){
-                init_buttons('enable'); 
-            }else{
-                // btn_delete.enable();
-                btn_edit.disable();
-            }               
-            //init_buttons('enable');
+            });       
+            init_buttons('enable');
         }else{
             if(topics_checked.length == 0){
                 init_buttons('disable');
-            }else{
-                // btn_delete.enable();
-                btn_edit.disable();
             }
         }
     }
@@ -1915,6 +1906,11 @@
             tree_filters  // show only if not report
         ]
     });
+    /* change style for 'Topics' tab! */
+    if( params.tabTopic_force==1 ) {
+        panel.tab_icon = ''; // removes icon 
+        panel.title_force = '<span style="margin-left:10px;margin-right:10px;height: 14px"><img src="/static/images/icons/topic.png" /></span>'; // removes title
+    }
         
     grid_topics.on('afterrender', function(){
         grid_topics.loadMask = new Ext.LoadMask(grid_topics.bwrap, { msg: _('Loading'), store: store_topics });
@@ -1933,5 +1929,6 @@
     panel.print_hook = function(){
         return { title: grid_topics.title, id: Baseliner.grid_scroller( grid_topics ).id };
     };
+
     return panel;
 })

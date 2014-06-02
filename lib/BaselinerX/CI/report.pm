@@ -820,7 +820,6 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 		if ($key eq '0'){
 			map{
 				$where = $self->get_where({filters_where => $fields{where}, name_category => $_, dynamic_filter => \%dynamic_filter, where => $where });
-				_log ">>>>>>>>>>>>>WHEREEEEEEEEEEEEEEEEEEEEEEEEEEE: " . _dump $where;
 				$where->{id_category} = {'$in' => \@ids_category };
 				if (exists $queries{'1'}){
 					for my $relation ( keys $queries{'1'} ){

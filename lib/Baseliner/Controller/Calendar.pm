@@ -101,7 +101,7 @@ sub calendar_grid_json : Path('/job/calendar_grid_json') {
     }
     my @prjs = map { $_->{ns} } grep { is_number( $_->{ns} ) } grep { length } @rows;
     my %mids;
-    my @projects = mdb->master_doc->find({ mid=>{ '$in'=>\@prjs }})->fields({_id=>0})->all;
+    my @projects = mdb->master_doc->find({ mid=> mdb->in(@prjs)})->fields({_id=>0})->all;
     foreach my $project (@projects){
         $mids{$project->{mid}} = $project;
     }

@@ -902,7 +902,7 @@ sub topics_by_category: Local{
                     if ( $k eq 'project' && $count gt 1) {
                         $wh->{"_project_security.$k"} = {'$in' => [ undef, keys %{$v || {}} ]};
                     } else {
-                        $wh->{"_project_security.$k"} = {'$in' => [ keys %{$v || {}} ]};
+                        $wh->{"_project_security.$k"} ={'$in' => [ keys %{$v || {}} ]};
                     }
                 } ## end while ( my ( $k, $v ) = each...)
                 push @ors, $wh;

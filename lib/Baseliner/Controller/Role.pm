@@ -320,7 +320,7 @@ sub roleprojects : Local {
             my @projects;
             my @colls = map { Util->to_base_class($_) } packages_that_do( 'Baseliner::Role::CI::Project' );
             foreach my $col (@colls){
-                push @projects, ci->$col->find({ mid=>{'$in'=>\@user_projects} })->all;
+                push @projects, ci->$col->find({ mid=>mdb->in(@user_projects) })->all;
             }
             map {
                 if(exists $projects_users{$_->{name}}){

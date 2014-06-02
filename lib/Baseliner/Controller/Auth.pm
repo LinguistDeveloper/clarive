@@ -128,6 +128,7 @@ sub surrogate : Local {
             event_new 'event.auth.surrogate_ok'=>{ username=>$curr_user, to_user=>$username };
             $c->stash->{json} = { success => \1, msg => _loc("Login Ok") };
         } else {
+            event_new 'event.auth.surrogate_failed'=>{ username=>$curr_user, to_user=>$username };
             $c->stash->{json} = { success => \0, msg => _loc("Invalid User") };
         }
     } catch {

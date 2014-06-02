@@ -99,7 +99,7 @@ sub infodetail : Local {
         @roles = map {$_+0} @roles;
     }
     my $roles_from_user = 
-        mdb->role->find(
+        mdb->role->find( 
             {id => {'$in' => \@roles}}
         )->fields(
             {   role => 1, 
