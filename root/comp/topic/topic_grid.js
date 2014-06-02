@@ -1475,20 +1475,11 @@
             var sw_edit;
             check_sm.each(function(rec){
                 sw_edit = (rec.get('sw_edit'));
-            });
-            if(sw_edit){
-                init_buttons('enable'); 
-            }else{
-                // btn_delete.enable();
-                btn_edit.disable();
-            }               
-            //init_buttons('enable');
+            });       
+            init_buttons('enable');
         }else{
             if(topics_checked.length == 0){
                 init_buttons('disable');
-            }else{
-                // btn_delete.enable();
-                btn_edit.disable();
             }
         }
     }
