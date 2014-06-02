@@ -474,13 +474,16 @@ if( Prefs.routing ) {
         if( params == undefined ) params = { active: true };
         var tabpanel = Ext.getCmp('main-panel');
         var tab;
+        // if tab_index not defined -> add current tab for tab_index or add new tab.
         if( params.tab_index != undefined ) {
             tab = tabpanel.insert( params.tab_index, comp );
         } else {
             tab = tabpanel.add(comp);
         }
-        if( params.tab_icon!=undefined ) tabpanel.changeTabIcon( tab, params.tab_icon );
-        if( comp!=undefined && comp.tab_icon!=undefined ) tabpanel.changeTabIcon( tab, comp.tab_icon );
+        // force change title style if: tabTopic_force value is: 1 on Topic.pm and defined new icon and new title on topic_lib.js
+        if( comp && comp.title_force && comp.title_force.length ) title = comp.title_force;
+        if( params.tab_icon!=undefined && comp && comp.tab_icon===undefined ) tabpanel.changeTabIcon( tab, params.tab_icon );
+        else if( comp && comp.tab_icon!=undefined ) tabpanel.changeTabIcon( tab, comp.tab_icon );
         if( params.active==undefined ) params.active=true;
         if( params.active ) tabpanel.setActiveTab(comp);
         if( title == undefined || title=='' ) { 
@@ -801,7 +804,9 @@ if( Prefs.routing ) {
                 }
             } catch(e) {}
         });
-    };
+    }
+
+    ;
 
     //adds a new tab from a function() type component - XXX this is a mod with full params sending
     Baseliner.add_tab = function( comp_url, ptitle, params ){
