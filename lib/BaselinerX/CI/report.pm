@@ -626,7 +626,7 @@ sub get_where {
 								}
 							}
 							if (scalar @parse > 1){
-								$cond = mdb->in(@parse);	
+								$cond = { '$in' => \@parse };	
 							}else{
 								$cond = $parse[0];	
 							}
@@ -820,12 +820,12 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 		if ($key eq '0'){
 			map{
 				$where = $self->get_where({filters_where => $fields{where}, name_category => $_, dynamic_filter => \%dynamic_filter, where => $where });
-				$where->{id_category} = mdb->in(@ids_category);
+				$where->{id_category} = {'$in' => \@ids_category };
 				if (exists $queries{'1'}){
 					for my $relation ( keys $queries{'1'} ){
 						my @mids = keys $queries{'1'}{$relation};
 						if (!exists $where->{$relation}){
-							$where->{$relation} = mdb->in(@mids);
+							$where->{$relation} = {'$in' => \@mids};
 						}
 					}
 				}
@@ -839,7 +839,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 				#push @All_Categories, Util->_unac($names_category[$i]); ###########################################################################################33
                 push @All_Categories, $names_category[$i];
 				$where = $self->get_where({filters_where => $fields{where}, name_category => $names_category[$i], dynamic_filter => \%dynamic_filter, where => $where  });
-				$where->{id_category} = mdb->in([$ids_category[$i]]);
+				$where->{id_category} = {'$in' => [$ids_category[$i]] };
 				#_log ">>>>>>>>>>>>>WHERE: " . _dump $where;
 				my @data = mdb->topic->find($where)->all;
 				map {

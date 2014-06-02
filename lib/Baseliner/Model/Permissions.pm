@@ -346,7 +346,7 @@ sub user_can_topic_by_project {
     for my $proj_coll_ids ( @proj_coll_roles ) {
         my $wh = {};
         while( my ($k,$v) = each %{ $proj_coll_ids || {} } ) {
-            $wh->{"_project_security.$k"} = mdb->in([ undef, keys %{ $v || {} } ]) ;
+            $wh->{"_project_security.$k"} = { '$in'=>[ undef, keys %{ $v || {} } ] } ;
         }
         push @ors, $wh;
     }
@@ -364,7 +364,7 @@ sub user_roles_for_topic {
         my $where = { mid=>"$mid" };
         my $proj_coll_ids = $proj_coll_roles->{$role};
         while( my ($k,$v) = each %{ $proj_coll_ids || {} } ) {
-            $where->{"_project_security.$k"} = mdb->in([ undef, keys %{ $v || {} } ]); 
+            $where->{"_project_security.$k"} = { '$in'=>[ undef, keys %{ $v || {} } ] }; 
         }
         #_log _dump $where;
         push @roles, $role if !!mdb->topic->find($where)->count;
@@ -387,7 +387,7 @@ sub user_projects_with_action {
     my $user = ci->user->find({ username=>$username })->next;
     my @id_roles = keys $user->{project_security};
     @id_roles = map { $_+0 } @id_roles;
-    my @roles = mdb->role->find({ id=> mdb->in(@id_roles) })->fields( { _id=>0 } )->all;
+    my @roles = mdb->role->find({ id=> { '$in'=>\@id_roles } })->fields( { _id=>0 } )->all;
     my @res;
     foreach my $role (@roles){
         if(grep { $_->{action} eq $action and $_->{bl} eq $bl } @{$role->{actions}}){
@@ -414,7 +414,7 @@ sub user_grants {
     my $project_security = $user->{project_security};
     my @id_roles = keys $project_security;
     @id_roles = map { $_+0 } @id_roles;
-    my @roles = mdb->role->find({ id=> mdb->in(@id_roles) })->fields( { _id=>0, actions=>0 } )->all;
+    my @roles = mdb->role->find({ id=> { '$in'=>\@id_roles } })->fields( { _id=>0, actions=>0 } )->all;
     foreach my $id_role (keys $project_security ){
         foreach my $project_type (keys $project_security->{$id_role}){
             foreach my $id_project (@{$project_security->{$id_role}->{$project_type}}){
@@ -577,7 +577,8 @@ sub users_with_roles {
             $wh->{"project_security.$role"} = { '$ne' => undef };
             push @ands, $wh;
             for my $proj ( keys %{$proj_coll_roles} ) {
-                $wh->{"project_security.$role.$proj"} = mdb->in([ undef, _array $proj_coll_roles->{$proj} ]);
+                $wh->{"project_security.$role.$proj"} = 
+                  { '$in' => [ undef, _array $proj_coll_roles->{$proj} ] };
                 push @ands, $wh;
             }
             push @ors, { '$and' => \@ands };

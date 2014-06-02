@@ -100,7 +100,7 @@ sub infodetail : Local {
     }
     my $roles_from_user = 
         mdb->role->find( 
-            {id => mdb->in(@roles)}
+            {id => {'$in' => \@roles}}
         )->fields(
             {   role => 1, 
                 description => 1, 
@@ -216,7 +216,7 @@ sub infoactions : Local {
     }
     else{
         my @user_roles = map{$_ + 0} keys ci->user->find({username=>$username})->next->{project_security};
-        my @roles = mdb->role->find({id=>mdb->in(@user_roles)})->all;
+        my @roles = mdb->role->find({id=>{'$in'=>\@user_roles}})->all;
         my @res;
         foreach my $role (@roles){
             push @res, @{$role->{actions}};
@@ -396,7 +396,7 @@ sub update : Local {
                     my @ns_projects = _unique _array $projects_checked;
                     foreach my $role (_array $roles_checked){
                         my $rs_user;            
-                        my @where = map { { "project_security.$role.$_"=>mdb->in(@ns_projects) } } @colls;
+                        my @where = map { { "project_security.$role.$_"=>{'$in'=>\@ns_projects} } } @colls;
                         $rs_user = ci->user->find_one({username =>$user_name,"project_security.$role"=> {'$exists' => 'true'},'$or' =>\@where});
                       
                         foreach my $coll (@colls){

@@ -549,8 +549,8 @@ sub check_dates {
     my ($self, $date, $bl, @ns) = @_;
     my @rel_cals = mdb->calendar->find(
         { 
-            ns=> mdb->in([ @ns, '/', 'Global', undef ]), 
-            bl=> mdb->in([ $bl, '*']) 
+            ns=> { '$in' => [ @ns, '/', 'Global', undef ] }, 
+            bl=> { '$in' => [ $bl, '*'] } 
         })->all;
 
     my @ns_cals = map { $_->{ns} } @rel_cals;

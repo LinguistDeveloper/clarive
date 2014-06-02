@@ -341,7 +341,7 @@ sub list : Local {
                 if (!$is_root) {             
                     my @roles = map { $_->{id} } $c->model('Permissions')->user_roles( $c->username );
                     #$where->{"dashboard_roles.id_role"} = \@roles;
-                    $where->{role} = mdb->in(@roles);
+                    $where->{role} = {'$in' => \@roles};
                 }
                 $where->{is_system} = '0';
                 
@@ -900,9 +900,9 @@ sub topics_by_category: Local{
                 my $count = scalar keys %{ $proj_coll_ids || {} };
                 while ( my ( $k, $v ) = each %{ $proj_coll_ids || {} } ) {
                     if ( $k eq 'project' && $count gt 1) {
-                        $wh->{"_project_security.$k"} = mdb->in([ undef, keys %{$v || {}} ]);
+                        $wh->{"_project_security.$k"} = {'$in' => [ undef, keys %{$v || {}} ]};
                     } else {
-                        $wh->{"_project_security.$k"} =mdb->in([ keys %{$v || {}} ]) ;
+                        $wh->{"_project_security.$k"} ={'$in' => [ keys %{$v || {}} ]};
                     }
                 } ## end while ( my ( $k, $v ) = each...)
                 push @ors, $wh;
@@ -956,9 +956,9 @@ sub topics_open_by_category: Local{
                 my $count = scalar keys %{ $proj_coll_ids || {} };
                 while ( my ( $k, $v ) = each %{ $proj_coll_ids || {} } ) {
                     if ( $k eq 'project' && $count gt 1) {
-                        $wh->{"_project_security.$k"} = mdb->in([ undef, keys %{$v || {}} ]);
+                        $wh->{"_project_security.$k"} = {'$in' => [ undef, keys %{$v || {}} ]};
                     } else {
-                        $wh->{"_project_security.$k"} = mdb->in([ keys %{$v || {}} ]);
+                        $wh->{"_project_security.$k"} = {'$in' => [ keys %{$v || {}} ]};
                     }
                 } ## end while ( my ( $k, $v ) = each...)
                 push @ors, $wh;
@@ -1010,9 +1010,9 @@ sub topics_by_status: Local{
                 my $count = scalar keys %{ $proj_coll_ids || {} };
                 while ( my ( $k, $v ) = each %{ $proj_coll_ids || {} } ) {
                     if ( $k eq 'project' && $count gt 1) {
-                        $wh->{"_project_security.$k"} = mdb->in([ undef, keys %{$v || {}} ]);
+                        $wh->{"_project_security.$k"} = {'$in' => [ undef, keys %{$v || {}} ]};
                     } else {
-                        $wh->{"_project_security.$k"} = mdb->in([ keys %{$v || {}} ]);
+                        $wh->{"_project_security.$k"} = {'$in' => [ keys %{$v || {}} ]};
                     }
                 } ## end while ( my ( $k, $v ) = each...)                push @ors, $wh;
             }
@@ -1064,9 +1064,9 @@ sub topics_open_by_status: Local{
                 my $count = scalar keys %{ $proj_coll_ids || {} };
                 while ( my ( $k, $v ) = each %{ $proj_coll_ids || {} } ) {
                     if ( $k eq 'project' && $count gt 1) {
-                        $wh->{"_project_security.$k"} = mdb->in([ undef, keys %{$v || {}} ]);
+                        $wh->{"_project_security.$k"} = {'$in' => [ undef, keys %{$v || {}} ]};
                     } else {
-                        $wh->{"_project_security.$k"} = mdb->in([ keys %{$v || {}} ]);
+                        $wh->{"_project_security.$k"} = {'$in' => [ keys %{$v || {}} ]};
                     }
                 } ## end while ( my ( $k, $v ) = each...)                push @ors, $wh;
             }
