@@ -265,9 +265,9 @@ sub build_project_security {
             my $count = scalar keys %{ $proj_coll_ids || {} };
             while ( my ( $k, $v ) = each %{ $proj_coll_ids || {} } ) {
                 if ( $k eq 'project' && $count gt 1) {
-                    $wh->{"_project_security.$k"} = {'$in' => [ undef, keys %{$v || {}} ]};
+                    $wh->{"_project_security.$k"} = mdb->in([ undef, keys %{$v || {}} ]);
                 } else {
-                    $wh->{"_project_security.$k"} = {'$in' => [ keys %{$v || {}} ]};
+                    $wh->{"_project_security.$k"} = mdb->in([ keys %{$v || {}} ]);
                 }
             } ## end while ( my ( $k, $v ) = each...)
             push @ors, $wh;
@@ -2335,7 +2335,7 @@ sub set_projects {
         if (@new_projects){
             my @name_projects;
             
-            my $rs_projects = mdb->master_doc->find({mid =>{'$in' => \@new_projects}});
+            my $rs_projects = mdb->master_doc->find({mid => mdb->in(@new_projects)});
             while( my $project = $rs_projects->next){
                 push @name_projects,  $project->{name};
                 $rs_topic->add_to_projects( $project, { rel_type=>'topic_project', rel_field => $id_field } );

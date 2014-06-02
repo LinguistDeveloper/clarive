@@ -320,7 +320,7 @@ sub rows {
     my ($self,%p) = @_;
     my $config_set = $self->key;
     ## order_by is not effective in this query
-    my $rs = mdb->config->find({key => {'$in' => [$self->get_keys]}});
+    my $rs = mdb->config->find({key => mdb->in([$self->get_keys])});
     $rs->sort({ns => 1});
     my $last_ns = '';
     my @rows=();

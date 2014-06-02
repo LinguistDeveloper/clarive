@@ -35,7 +35,7 @@ sub list_notifications : Local {
         if( @mids_query == 0 ) {
             $where = mdb->query_build(query => $query, fields=>[qw(id event_key action data is_active username template_path subject digest_time digest_date digest_freq)]);
         } else {
-            $where->{_id} = { '$in' => \@mids_query };
+            $where->{_id} = mdb->in(@mids_query);
         }
     }
 
@@ -214,7 +214,7 @@ sub remove_notifications : Local {
 
         map {$_ = mdb->oid($_)} @ids_notification;
 
-        mdb->notification->remove({_id => {'$in' => \@ids_notification }});  
+        mdb->notification->remove({_id => mdb->in(@ids_notification)});  
         
         $c->stash->{json} = { success => \1, msg=>_loc('Notifications deleted') };
     }
@@ -233,7 +233,7 @@ sub change_active : Local {
     
     try{
         map {$_ = mdb->oid($_)} @ids_notifications;
-        my @notifications = mdb->notification->find({_id => {'$in' => \@ids_notifications }})->all;
+        my @notifications = mdb->notification->find({_id => mdb->in(@ids_notifications)})->all;
         foreach my $not (@notifications){
             mdb->notification->update({_id => $not->{_id} }, {'$set' => {is_active => $action eq 'active' ? '1' : '0' }});
         }

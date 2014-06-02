@@ -169,7 +169,7 @@ sub get_users_from_mid_roles_topic {
             my $where = {};
             $where->{"project_security.$role"} = { '$nin' => [undef] };
             while ( my ( $k, $v ) = each %{ $topic_security || {} } ) {
-                $where->{"project_security.$role.$k"} = { '$in' => [ undef, @$v ] };
+                $where->{"project_security.$role.$k"} = mdb->in([ undef, @$v ]);
             } ## end while ( my ( $k, $v ) = each...)
             push @ors, $where;
         }
@@ -186,7 +186,7 @@ sub get_actions_from_user{
    my ($self, $username, @bl) = @_;
    my @roles = keys ci->user->find({ username=>$username })->next->{project_security};
    my @id_roles = map { 0+$_ } @roles;
-   my @actions = mdb->role->find({ id=>{ '$in'=>\@id_roles } })->fields( {actions=>1, _id=>0} )->all;
+   my @actions = mdb->role->find({ id=>mdb->in(@id_roles) })->fields( {actions=>1, _id=>0} )->all;
    my @final;
    foreach my $f (map { values $_->{actions} } @actions){
        if(@bl){
