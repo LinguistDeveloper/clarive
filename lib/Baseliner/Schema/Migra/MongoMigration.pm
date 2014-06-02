@@ -496,6 +496,21 @@ sub scheduler {
     mdb->scheduler->insert($_) for map { delete $_->{id}; $_ } @sch;
 }
 
+sub post {
+    my %post = map { $_->{mid} => $_ } _dbis->query('select * from bali_post')->hashes;
+    for my $doc ( ci->post->find->all ) {
+        if( !exists $post{ $$doc{mid} } ) {
+            warn "MID== $$doc{mid} " ;
+            ci->delete( $$doc{mid} );
+        }
+    }
+    for my $post ( values  %post ) {
+        my $ci = ci->new( $$post{mid} );
+        $ci->put_data( $$post{text} );
+        $ci->save;
+    }
+}
+
 sub config {
     my @config = _dbis->query('select * from bali_config')->hashes;
     for my $doc ( @config ) {

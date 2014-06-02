@@ -1487,90 +1487,59 @@ sub upload : Local {
     }
     _log "Uploading file " . $filename;
     try {
-        if($p->{topic_mid} && $p->{topic_mid} > 0){
+        if( length $p->{topic_mid} ) {
             my ($topic, $topic_mid, $file_mid);
-            #if($p->{topic_mid}){
-                $topic = $c->model('Baseliner::BaliTopic')->find( $p->{topic_mid} );
-                $topic_mid = $topic->mid;
+            
+            $topic = $c->model('Baseliner::BaliTopic')->find( $p->{topic_mid} );
+            $topic_mid = $topic->mid;
+            #my @projects = ci->children( mid=>$_->{mid}, does=>'Project' );
+            my @users = Baseliner->model("Topic")->get_users_friend(
+                mid         => $p->{topic_mid}, 
+                id_category => $topic->id_category, 
+                id_status   => $topic->id_category_status, 
+                #  projects    => \@projects  # get_users_friend ignores this
+            );
+            
+            my $versionid = 1;
+            # increase file version?  if same md5 found...
+            #if(mdb->grid->files->find_one({ md5=>$
+            #   $versionid = $file[0] + 1;
             #}
-            my $body = scalar $f->slurp;
-            my $md5 = _md5( $body );
-            my $existing = Baseliner->model('Baseliner::BaliFileVersion')->search({ md5=>$md5 })->first;
-
-            my @projects = map {$_->{mid}} $topic->projects->hashref->all;
-            my @users = Baseliner->model("Topic")->get_users_friend(mid => $p->{topic_mid}, id_category => $topic->id_category, id_status => $topic->id_category_status, projects => \@projects);
+                
+            my $asset = ci->asset->new( 
+                name=>$filename, versionid=>$versionid, 
+                #md5 => $md5, 
+                extension=>$extension, 
+                # filesize => length( $body ), 
+                created_by => $c->username,
+                created_on => DateTime->now,
+            );
+            $asset->save;
+            $asset->put_data( $f->openr );
             
-            
-            if( $existing && $p->{topic_mid}) {
-                # file already exists
-                if( $topic->files->search({ md5=>$md5 })->count > 0 ) {
-                    _fail _loc "File already attached to topic";
-                } else {
-                    my $subject = _loc("New file %1 attached to topic [%2] %3", $filename, $topic->mid, $topic->title);                    
-                    event_new 'event.file.attach' => {
-                        username        => $c->username,
-                        mid             => $topic_mid,
-                        id_file         => $existing->mid,
-                        filename        => $filename,
-                        notify_default  => \@users,
-                        subject         => $subject
-                    };                
-                    $topic->add_to_files( $existing, { rel_type=>'topic_file_version', rel_field=> $p->{filter} });
-                }
-            } else {
-                # create file version master and bali_file_version rows
-                if (!$existing){
-                    my $versionid = 1;
-                    my @file = map {$_->{versionid}}  Baseliner->model('Baseliner::BaliFileVersion')->search({ filename =>$filename },{order_by => {'-desc' => 'versionid'}})->hashref->first;
-                    if(@file){
-                        $versionid = $file[0] + 1;
-                    }else{
-                    }
-                    
-                    master_new 'file', $filename, sub {
-                        my $mid = shift;
-                        my $file = $c->model('Baseliner::BaliFileVersion')->create(
-                            {   mid   => $mid,
-                                filedata   => $body,
-                                filename => $filename,
-                                extension => $extension,
-                                versionid => $versionid,
-                                md5 => $md5, 
-                                filesize => length( $body ), 
-                                created_by => $c->username,
-                                created_on => DateTime->now,
-                            }
-                        );
-
-                        $file_mid = $mid;
-                        
-                        if ($p->{topic_mid}){
-                            my $subject = _loc("Created file %1 to topic [%2] %3", $filename, $topic->mid, $topic->title);                            
-                            event_new 'event.file.create' => {
-                                username => $c->username,
-                                mid      => $topic_mid,
-                                id_file  => $mid,
-                                filename     => $filename,
-                                notify_default => \@users,
-                                subject         => $subject
-                            };
-                            # tie file to topic
-                            $topic->add_to_files( $file, { rel_type=>'topic_file_version', rel_field=> $p->{filter} });
-                        }
-                    };                        
-                }
-                    
-                #$file_mid = $existing->mid;
+            if ($p->{topic_mid}){
+                my $subject = _loc("Created file %1 to topic [%2] %3", $filename, $topic->mid, $topic->title);                            
+                event_new 'event.file.create' => {
+                    username => $c->username,
+                    mid      => $topic_mid,
+                    id_file  => $asset->mid,
+                    filename     => $filename,
+                    notify_default => \@users,
+                    subject         => $subject
+                };
+                # tie file to topic
+                my $topic_ci = ci->new( $p->{topic_mid} );
+                $topic_ci->assets->push( $asset );
+                # $topic->add_to_files( $file, { rel_type=>'topic_file_version', rel_field=> $p->{filter} });
             }
+                    
             $c->res->body('{"success": "true", "msg":"' . _loc( 'Uploaded file %1', $filename ) . '", "file_uploaded_mid":"' . $file_mid . '"}');
             #$c->stash->{ json } = { success => \1, msg => _loc( 'Uploaded file %1', $filename ), file_uploaded_mid => $file_mid };            
-        }
-        else{
+        } else {
             $c->res->body('{"success": "false", "msg":"' . _loc( 'You must save the topic before add new files' ) . '"}');
             #$c->stash->{ json } = { success => \0, msg => _loc( 'You must save the topic before add new files' )};
         }
-    }
-    catch {
+    } catch {
         my $err = shift;
         _log "Error uploading file: " . $err;
         $c->stash->{ json } = { success => \0, msg => $err };
@@ -1641,12 +1610,12 @@ sub file : Local {
 sub download_file : Local {
     my ( $self, $c, $md5 ) = @_;
     my $p      = $c->req->params;
-    my $file = $c->model('Baseliner::BaliFileVersion')->search({ md5=>$md5 })->first;
+    my $file = ci->asset->search_ci( md5=>$md5 );
     if( defined $file ) {
-        my $filename = $file->filename;
+        my $filename = $file->name;
         utf8::encode( $filename );
         $c->stash->{serve_filename} = $filename;
-        $c->stash->{serve_body} = $file->filedata;
+        $c->stash->{serve_body} = $file->slurp;
         $c->forward('/serve_file');
     } else {
         $c->res->body(_loc('File %1 not found', $md5 ) );

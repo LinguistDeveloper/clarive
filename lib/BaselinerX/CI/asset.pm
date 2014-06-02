@@ -64,6 +64,7 @@ sub source {
     return scalar $self->slurp;
 }
 
+sub filename { $_[0]->name }
 
 1;
 

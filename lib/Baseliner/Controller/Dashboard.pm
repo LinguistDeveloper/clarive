@@ -1113,14 +1113,6 @@ sub list_status_changed: Local{
     
     #my @user_categories =  map { $_->{id} } $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view' );
     #my @user_project_ids = Baseliner->model("Permissions")->user_projects_ids( username => $c->username);
-    #
-    #my $topic_project = DB->BaliMasterRel->search({to_mid=>\@user_project_ids, rel_type=>'topic_project'}, 
-    #                          {select=>'from_mid', group_by=>'from_mid'} )->as_query;
-
-    
-    
-    #my %my_topics;
-    #map { $my_topics{$_->{mid}} = 1 } DB->BaliTopic->search({mid=>{ -in=> $topic_project } , id_category => \@user_categories, modified_on=> {'between' => [ $now1->ymd, $now2->ymd ]}})->hashref->all;
     
     my %my_topics;
     my ($cnt, @rows ) = Baseliner->model('Topic')->topics_for_user({ username => $c->username, limit=>1000, query=>undef });

@@ -3441,7 +3441,8 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
             {name: 'versionid'},
             {name: 'filesize'},     
             {name: 'size'},     
-            {name: 'md5'},     
+            {name: 'md5'},  
+            {name: 'mid'},     
             {name: '_id', type: 'int'},
             {name: '_parent', type: 'auto'},
             {name: '_level', type: 'int'},
@@ -3459,9 +3460,9 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
         //self.store_file.on('remove', function(){ self.fireEvent( 'change', self ) });
 		
         var render_file = function(value,metadata,rec,rowIndex,colIndex,store) {
-            var md5 = rec.data.md5;
-            if( md5 != undefined ) {
-                value = String.format('<a target="FrameDownload" href="{2}/{1}">{0}</a>', value, md5, self.url_download );
+            var asset_mid = rec.data.mid;
+            if( asset_mid != undefined ) {
+                value = String.format('<a target="FrameDownload" href="{2}/{1}">{0}</a>', value, asset_mid, self.url_download );
             }
             value = '<div style="height: 20px; font-family: Consolas, Courier New, monospace; font-size: 12px; font-weight: bold; vertical-align: middle;">' 
                 //+ '<input type="checkbox" class="ux-maximgb-tg-mastercol-cb" ext:record-id="' + record.id +  '"/>&nbsp;'
@@ -3476,7 +3477,7 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
                 var sel = check_sm.getSelected();
                 Baseliner.confirm( _('Are you sure you want to delete these artifacts?'), function(){
                     var sels = checked_selections();
-                    Baseliner.ajaxEval( self.url_delete, { md5 : sels.md5, topic_mid: self.get_mid() }, function(res) {
+                    Baseliner.ajaxEval( self.url_delete, { asset_mid : sels.mid, topic_mid: self.get_mid() }, function(res) {
                         Baseliner.message(_('Deleted'), res.msg );
                         var rows = check_sm.getSelections();
                         Ext.each(rows, function(row){ self.store_file.remove(row); })                    
@@ -3491,12 +3492,12 @@ Baseliner.UploadFilesPanel = Ext.extend( Ext.Panel, {
             if (check_sm.hasSelection()) {
                 var sel = check_sm.getSelections();
                 var name = [];
-                var md5 = [];
+                var asset_mids = [];
                 for( var i=0; i<sel.length; i++ ) {
-                    md5.push( sel[i].data.md5 );
+                    asset_mids.push( sel[i].data.asset_mids );
                     name.push( sel[i].data.name );
                 }
-                return { count: md5.length, name: name, md5: md5 };
+                return { count: asset_mids.length, name: name, asset_mid: asset_mids };
             }
             return undefined;
         };
