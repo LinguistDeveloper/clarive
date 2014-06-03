@@ -119,7 +119,6 @@ sub tree_roles {
     my ( $self, %p ) = @_;
 
     #my $last1 = '2011-11-04 10:49:22';
-    #+{ $_->get_columns, _id => $_->mid, _parent => undef, _is_leaf => \1, size => $size }
     my $cnt  = 1;
     my $user = $p{user};
     my @tree;

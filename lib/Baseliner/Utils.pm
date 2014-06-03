@@ -536,16 +536,6 @@ sub parse_dt {
     };
 }
 
-# return an array with hashes of data from a resultset
-sub rs_data {
-    my $rs = shift;
-    my @data;
-    while( my $row = $rs->next ) {
-        push @data, { $row->get_columns };
-    }
-    return @data;
-}
-
 sub query_array {
     my $query = shift;
     {

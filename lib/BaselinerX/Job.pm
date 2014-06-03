@@ -102,5 +102,16 @@ register 'event.job.post' => {
     vars => ['job_name', 'id_job', 'job_stash', 'job' ],
 };
 
+# register 'menu.job.logs' => { label => _loc('Job Logs'), url_comp => '/job/log/list', title=>_loc('Job Logs') };
+register 'config.job.log' => {
+    metadata => [
+        { id=>'job_id', label=>'Job', width=>200 },
+        { id=>'log_id', label=>'Id', width=>80 },
+        { id=>'lev', label=>_loc('Level'), width=>80 },
+        { id=>'text', label=>_loc('Message'), width=>200 },
+    ]
+
+};
+
 
 1;
