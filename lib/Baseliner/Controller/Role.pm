@@ -180,9 +180,10 @@ sub action_tree : Local {
 sub update : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
+    my $row;
     eval {
         my $role_actions = decode_json(encode('UTF-8', $p->{role_actions}));
-        my $row = {  role=>$p->{name}, description=>$p->{description}, mailbox=>$p->{mailbox}, actions=>$role_actions };
+        $row = {  role=>$p->{name}, description=>$p->{description}, mailbox=>$p->{mailbox}, actions=>$role_actions };
         $row->{id} = $p->{id}+0 if $p->{id} >= 0;
         if ($p->{id} < 0){
             $row->{id} = mdb->seq('role')+0;
@@ -195,9 +196,9 @@ sub update : Local {
     };
     if( $@ ) {
         warn $@;
-        $c->stash->{json} = { success => \0, msg => _loc("Error modifying the role ").$@  };
+        $c->stash->{json} = { success => \0, msg => _loc("Error modifying the role ").$@};
     } else { 
-        $c->stash->{json} = { success => \1, msg => _loc("Role '%1' modified", $p->{name} ) };
+        $c->stash->{json} = { success => \1, msg => _loc("Role '%1' modified", $p->{name} ), id=> $row->{id}  };
     }
     $c->forward('View::JSON');  
 }

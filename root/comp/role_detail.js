@@ -14,12 +14,12 @@
                     ff.submit({
                         params: { role_actions: actions_json },
                         success: function(form, action) { 
+                            ff.findField("id").setValue(action.result.id);
                             var grid = Ext.getCmp( params.id_grid ); 
                             if( grid ) {
                                 grid.getStore().load();
                             }
                             Baseliner.message(_("Save role"), _("Role saved successfully"));
-                            //role_panel.destroy(); 
                         },
                         failure: function(form, action) { Baseliner.message( _("Save role")), _("Failure") + ":" + action.result.msg; }
                     });
