@@ -180,7 +180,7 @@ sub save_notification : Local {
             {   event_key       => $p->{event},
                 action          => $p->{action},
                 data            => $data,
-                is_active       => '1',
+                is_active => mdb->true,
                 template_path   => $p->{template},
                 subject         => $p->{subject},
             },

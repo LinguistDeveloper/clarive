@@ -367,7 +367,7 @@ sub run_rules {
     my @rules = 
         $p{id_rule} 
             ? ( mdb->rule->find_one({ '$or'=>[ {id=>"$p{id_rule}"},{rule_name=>"$p{id_rule}"} ] }) )
-            : mdb->rule->find({ rule_event => $p{event}, rule_type => ($p{rule_type} // 'event'), rule_when => $when, rule_active=>'1' })
+            : mdb->rule->find({ rule_event => $p{event}, rule_type => ($p{rule_type} // 'event'), rule_when => $when, rule_active => mdb->true })
               ->sort(mdb->ixhash(rule_seq=>1, id=>1))->all;
     my $stash = $p{stash};
     my @rule_log;

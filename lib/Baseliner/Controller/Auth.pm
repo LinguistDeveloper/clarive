@@ -120,7 +120,7 @@ sub surrogate : Local {
     my $username= $case eq 'uc' ? uc($p->{login}) 
      : ( $case eq 'lc' ) ? lc($p->{login}) : $p->{login};
     try {
-        my $doc = ci->user->find_one({ name=>$username, active=>'1' }); 
+        my $doc = ci->user->find_one({ name=>$username, active => mdb->true }); 
         if ($doc){
             $c->authenticate({ id=>$username }, 'none');
             $c->session->{user} = $c->user_ci;

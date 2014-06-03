@@ -162,7 +162,7 @@ sub calendar_update : Path( '/job/calendar_update' ) {
                     name        => $p->{ name },
                     description => $p->{ description },
                     seq         => $p->{ seq } // $DEFAULT_SEQ,
-                    active      => '1',
+                    active => mdb->true,
                     ns          => $p->{ ns },
                     bl          => $p->{ bl }
                 });
@@ -696,7 +696,7 @@ sub merge_calendars {
     # if today, start hours at now
     my $start_hour = $now->ymd eq $date->ymd ? sprintf("%02d%02d", $now->hour , $now->minute) : '';
 
-    my $where = { active  =>'1' };
+    my $where = { active => mdb->true };
     $where->{bl} = ['*'];
     $where->{ns} = $p{ns} if $p{ns}; # [ 'xxxx.nature/yyyy', '/'  ]
     push $where->{bl} , $p{bl} if $p{bl};

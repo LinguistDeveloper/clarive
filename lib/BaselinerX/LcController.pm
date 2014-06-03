@@ -270,7 +270,7 @@ sub tree_projects : Local {
 
     my @projects_ids = map { $_ =~ /\/(.*)/; } @projects;
      
-    my $projects =  ci->project->find({ active=> '1', mid => mdb->in(@projects_ids)})->sort({name=>1});
+    my $projects =  ci->project->find({ active => mdb->true, mid => mdb->in(@projects_ids)})->sort({name=>1});
 
     while( my $r = $projects->next ) {
         push @tree, {

@@ -175,7 +175,7 @@ sub exclude_default{
     my ( $self, $p ) = @_;
     my $event_key = $p->{event_key} or _throw 'Missing parameter event_key';
     my $exclude_default = 0;
-    my @recipients = map { (_load $_->{data})->{recipients} } mdb->notification->find({event_key => $event_key, is_active => '1', action => 'EXCLUDE'})->all;
+    my @recipients = map { (_load $_->{data})->{recipients} } mdb->notification->find({event_key => $event_key, is_active => mdb->true, action => 'EXCLUDE'})->all;
     
     foreach my $recipient (@recipients){
         foreach my $carrier (keys $recipient){
@@ -198,7 +198,7 @@ sub get_rules_notifications{
     my $mid = $p->{mid};
     
     my $notification = {};
-    my @rs_notify = mdb->notification->find({event_key => $event_key, is_active => '1', action => $action})->all;
+    my @rs_notify = mdb->notification->find({event_key => $event_key, is_active => mdb->true, action => $action})->all;
     #my @prj_mid = map { $_->{mid} } ci->related( mid => $mid, isa => 'project') if $mid;
     
     if ( @rs_notify ) {
