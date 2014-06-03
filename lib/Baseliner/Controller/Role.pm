@@ -197,7 +197,7 @@ sub update : Local {
     if( $@ ) {
         warn $@;
         $c->stash->{json} = { success => \0, msg => _loc("Error modifying the role ").$@};
-    } else {
+    } else { 
         $c->stash->{json} = { success => \1, msg => _loc("Role '%1' modified", $p->{name} ), id=> $row->{id}  };
     }
     $c->forward('View::JSON');  
