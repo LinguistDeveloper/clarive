@@ -2860,6 +2860,52 @@ sub group_by_status {
     } keys %statuses);
 }
 
+sub get_status_history_topics{
+    my ($self, %p) = @_;
+
+    my $username = $p{username} or _throw 'Missing parameter username';
+    my $topic_mid = $p{topic_mid} // undef;
+    my $now1 = my $now2 = mdb->now;
+    $now2 += '1D';
+
+    my $date_from = $p{date_from} // $now1->ymd;
+    my $date_until = $p{date_until} // $now2->ymd;
+    $date_from =~ s/\//-/g;
+    $date_until =~ s/\//-/g;
+
+    my $query = {
+        event_key   => 'event.topic.change_status',
+        ts          => { '$lte' => ''.$date_until, '$gte' => ''.$date_from },
+    };
+
+    my %my_topics;
+    my ($cnt, @rows ) = Baseliner->model('Topic')->topics_for_user({ username => $username, limit=>1000, query=>undef });
+    map { $my_topics{$_->{mid}} = 1 } @rows;
+
+    my @status_changes;
+    my @mid_topics;
+
+    my @topics = mdb->event->find($query)->sort({ ts=>-1 })->all;
+    map {
+        
+            my $ed = _load( $_->{event_data} );
+            try{
+                if ( (exists $my_topics{$ed->{topic_mid}} || Baseliner->model("Permissions")->is_root( $username ) ) && $ed->{old_status} ne $ed->{status}){
+                    push @status_changes, { old_status => $ed->{old_status}, status => $ed->{status}, username => $ed->{username}, when => $_->{ts}, mid => $ed->{topic_mid} };
+                    push @mid_topics, $ed->{topic_mid};
+                }
+            }catch{
+                _log ">>>>>>>>>>>>>>>>>>>>Error topic: $ed->{topic_mid} ";
+            }
+    } @topics;
+
+    if ($topic_mid) {
+        return  grep {$_->{mid} eq $topic_mid} @status_changes;
+    }else{
+        return @status_changes;    
+    }
+}
+
 1;
 
 
