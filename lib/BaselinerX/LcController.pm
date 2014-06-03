@@ -17,23 +17,24 @@ sub tree_topic_get_files : Local {
     my $sw_get_files = $c->req->params->{sw_get_files} ;
     
     if ($sw_get_files){
-        my $files = $c->model('Baseliner::BaliTopic')->find($id_topic)->files->search();
-            while (my $file = $files->next){
-                push @tree, {
-                    text       => $file->filename . '(v' . $file->versionid . ')',
-                    #url        => '/lifecycle/tree_topic_get_files',
-                    data       => {
-                       id_file => $file->mid,
-                       #sw_get_files =>\1
-                    },
-                    #icon       => '/static/images/icons/project_small.png',
-                    leaf       => \1,
-                    expandable => \0
-                };
+        my @files = mdb->joins( master_rel=>{ from_mid=>$self->mid, rel_type=>'topic_asset' },
+            to_mid=>mid=>master_doc=>[{},{ fields=>{ yaml=>0 }}] );
+        for my $file ( @files ) {
+            push @tree, {
+                text       => $file->{filename} . '(v' . $file->{versionid} . ')',
+                #url        => '/lifecycle/tree_topic_get_files',
+                data       => {
+                   id_file => $file->{mid},
+                   #sw_get_files =>\1
+                },
+                #icon       => '/static/images/icons/project_small.png',
+                leaf       => \1,
+                expandable => \0
+            };
         }
     }
     else{
-        my $files = $c->model('Baseliner::BaliTopic')->find($id_topic)->files->search()->count;
+        my $files = mdb->master_rel->find({ from_mid=>"$id_topic", rel_type=>'topic_asset' })->count;
         if ($files > 0){
             push @tree, {
                text       => _loc ('Files'),

@@ -320,14 +320,8 @@ sub update : Local {
                         my $ci = ci->user->new( %$ci_data );
                         my $user_new = $ci->save;
 
-                        my $user_from = $c->model('Baseliner::BaliMasterRel')->search( {from_mid => $p->{id}} );
-                        if ($user_from) {
-                            $user_from->update( {from_mid => $user_new} );
-                        }
-                        my $user_to = $c->model('Baseliner::BaliMasterRel')->search( {to_mid => $p->{id}} );
-                        if ($user_to){
-                            $user_to->update( {to_mid => $user_new} );    
-                        }
+                        mdb->master_rel->update({ from_mid=>"$$p{id}" },{ '$set'=>{ from_mid=>$user_new } },{ multiple=>1 });
+                        mdb->master_rel->update({ to_mid=>"$$p{id}" },{ '$set'=>{ to_mid=>$user_new } },{ multiple=>1 });
                         ci->delete( $user_mid );
                     }
                 } else{

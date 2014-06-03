@@ -17,7 +17,6 @@ use Exporter::Tidy default => [qw/
     config_store
     config_get
     config_value
-    bali_rs
     relation
     user_get
     ns_get
@@ -29,7 +28,6 @@ use Exporter::Tidy default => [qw/
     log_error
     lifecycle
     master_new
-    master_rel
     event_new
     event_hook
     events_by_key
@@ -42,8 +40,6 @@ sub mdl {  }
 sub config_store { Baseliner->model('ConfigStore') }
 sub config_get { Baseliner->model('ConfigStore')->get(@_) }
 sub config_value { Baseliner->model('ConfigStore')->get($_[0], value=>1) }
-
-sub bali_rs { Baseliner->model('Baseliner::Bali' . shift ) }
 
 # sub relation { Baseliner->model('Relationships') }
 
@@ -83,10 +79,11 @@ Or:
     master_new 'something' => 'my_ci_name' => {  yada=>1234, etc=>'...' };
 
 =cut
-sub master_new {
+sub master_new {   
     my ($collection, $name, $code ) =@_;
     my $master_data = ref $name eq 'HASH' ? $name : { name=>$name };
     my $class = 'BaselinerX::CI::'.$collection;
+    my $mid = $master_data->{mid};  # user supplied mid? ok. 
     if( ref $code eq 'HASH' ) {
         my $ci = $class->new( %$master_data, %$code );
         return $ci->save;
@@ -94,36 +91,23 @@ sub master_new {
     } elsif( ref $code eq 'CODE' ) {
         return try {
             my $ret;
-            Baseliner->model('Baseliner')->schema->txn_begin;
+            # txn begin
             my $ci = $class->new( %$master_data );
             $ci->save;
-            my $mid = $ci->mid;
-            #my $mid = $class->save( %$master_data ); 
+            $mid = $ci->mid;
+            ################################# 
             $ret = $code->( $mid );
-            Baseliner->model('Baseliner')->schema->txn_commit;
+            ################################# 
+            # txn commit
             return $ret;
         } catch {
             my $e = shift; 
-            Baseliner->model('Baseliner')->schema->txn_rollback;
+            ci->delete( $mid ) if length $mid;
+            # txn rollback
             _throw $e;
         };
     } else {
         _throw 'Invalid master_new syntax';
-    }
-}
-
-sub master_rel {
-    my ($from, $to, $rel_type ) =@_;
-    if( defined $from && defined $to ) {
-        my $p = { from_mid=>$from, to_mid=>$to };
-        if( defined $rel_type ) {  # just one row
-            $p->{rel_type} = $rel_type;
-            return Baseliner->model('Baseliner::BaliMasterRel')->search($p)->first;
-        } else {   # all relations in an Array
-            return Baseliner->model('Baseliner::BaliMasterRel')->search($p)->all;
-        }
-    } else {
-        return Baseliner->model('Baseliner::BaliMasterRel');
     }
 }
 

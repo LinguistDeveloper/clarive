@@ -50,7 +50,7 @@ sub new {
         # NOP: could be moniker?
         _throw _loc("Could not instanciate CI from parameter %1", $_[0] );
     } elsif( @_ == 1 && ref $_[0] eq 'ARRAY' ) {
-        # several CIs at once  TODO optimize loading in load for array, using a BaliMaster->search
+        # several CIs at once  TODO optimize loading in load for array, using a mdb->master->find
         my @mids = Util->_array($_[0]);
         return map { ci->new($_) } @mids;
     } else {

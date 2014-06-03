@@ -139,7 +139,6 @@ sub my_searches {
     my $userci = Baseliner->user_ci( $p->{username} );
     my $username = $p->{username};
 	
-    #DB->BaliMasterRel->search({ to_mid=>$userci->mid, rel_field=>'report_user' });
     my @searches = $self->search_cis( owner=>$username ); 
     my @mine;
     for my $folder ( @searches ){

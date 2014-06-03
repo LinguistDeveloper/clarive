@@ -108,10 +108,9 @@ sub commit {
     for my $it ( Util->_array( $self->items ) ) {
         for my $tag ( Util->_array( $it->{tags} ) ) {
             next unless length $tag;
-            my @targets = DB->BaliMaster->search({ moniker=>$tag }, { select=>'mid' })->hashref->all;
+            my @targets = mdb->master->find({ moniker=>$tag })->fields({ mid=>1 })->all;
             for my $mid ( map { $_->{mid} } @targets ) {
                 my $rdoc = { to_mid=>''.$it->mid, from_mid=>"$mid", rel_type=>$tag_relationship };
-                DB->BaliMasterRel->find_or_create($rdoc);
                 mdb->master_rel->find_or_create($rdoc);
             }
         }

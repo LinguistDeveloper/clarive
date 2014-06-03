@@ -239,7 +239,7 @@ sub joins {
 
 sub save {
     my ($self,$mid, $doc, $opts) = @_;
-    $mid = $mid->{mid} if ref $mid;  #  mid may be a BaliMaster row also
+    $mid = $mid->{mid} if ref $mid;  #  mid may be a master row also
     Util->_fail( 'Missing mid' ) unless length $mid;
     # save into master
     my $m = $self->master;
@@ -268,18 +268,22 @@ sub index_all {
             [{ id=>1 }],
             [{ mid=>1 }],
         ],
+        role => [
+            [{ id=>1 }],
+        ],
         event => [
             [{ ts=>1 }],
         ],
         topic_image => [
             [{ id_hash => 1 }]
         ],
-        master => [
-            [{ mid=>1 },{ unique=>1 }],
-            [{ name=>1 }],
-        ],
         notification => [
             [{'$**'=> "text"}],
+        ],
+        master => [
+            [{ mid=>1 },{ unique=>1 }],
+            [{ collection=>1 }],
+            [{ name=>1 }],
         ],
         master_rel => [
             [{ from_mid=>1, to_mid=>1, rel_type=>1, rel_field=>1 },{ unique=>1 }],
@@ -364,19 +368,6 @@ sub clean_doc {
             delete $doc->{$k};
         }
     }
-}
-
-sub integrity {
-    my($self) = @_;
-
-    # master_docs not in BaliMaster
-    for ( mdb->master_doc->find->all ) {
-       DB->BaliMaster->find({ mid=>$_->{mid} }) or do {
-        warn "Not found: $_->{mid}";
-        mdb->master_doc->remove({ mid=>$_->{mid} });
-        };
-    }
-    
 }
 
 sub disconnect {

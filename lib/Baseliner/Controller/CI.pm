@@ -225,13 +225,11 @@ sub tree_objects {
             #  consider creating a %class_coll of all classes
         }
     }
-    my $opts = { order_by=>( $p{order_by} // +{ -asc=>['mid'] } ) };
-    $opts->{select} = [ grep !/yaml/, DB->BaliMaster->result_source->columns ] if $p{no_yaml}; 
+    my $opts = { sort=>( $p{sort} // +{ _id=>1 } ) };
     my $page;
     if( length $p{start} && length $p{limit} && $p{limit}>-1 ) {
-        $page =  to_pages( start=>$p{start}, limit=>$p{limit} );
-        $opts->{rows} = $p{limit};
-        $opts->{page} = $page;
+        $opts->{limit} = $p{limit};
+        $opts->{skip} = $p{start};
     }
     my $where = {};
     
@@ -242,7 +240,7 @@ sub tree_objects {
         my @mids_query = map { $_->{obj}{mid} } 
             _array( mdb->master_doc->search( query=>$q, limit=>1000, project=>{mid=>1}, filter=>$filter )->{results} );
         push @mids_query, map { $_->{mid} } mdb->master_doc->find({ '$or'=>[ {name=>qr/$q/i}, {moniker=>qr/$q/i} ] })->fields({ mid=>1 })->all;
-        $where->{mid}=\@mids_query;
+        $where->{mid}=mdb->in(@mids_query);
     }
     
     $where->{collection} = $collection if $collection;
@@ -262,7 +260,7 @@ sub tree_objects {
         }
     }
 
-    my $rs = Baseliner->model('Baseliner::BaliMaster')->search( $where, $opts );
+    my $rs = mdb->master_doc->query($where,$opts)->fields({ yaml=>0 });
     my $total = defined $page ? $rs->pager->total_entries : $rs->count;
     my $generic_icon = do { require Baseliner::Role::CI::Generic; Baseliner::Role::CI::Generic->icon() };
     my (%forms, %icons);  # caches
@@ -306,7 +304,7 @@ sub tree_objects {
             pretty_properties => $pretty,
             versionid         => $row->{versionid},
         }
-    } $rs->hashref->all;
+    } $rs->all;
     ( $total, @tree );
 }
 
@@ -314,46 +312,41 @@ sub tree_object_depend {
     my ($self, %p)=@_;
     my $class = $p{class};
     my $where = {};
-    my $join = { };
-    my $page = to_pages( start=>$p{start}, limit=>$p{limit} );
-    my $rel_type;
+    my $dir;
     if( defined $p{from} ) {
-        $where->{from_mid} = $p{from};
-        $rel_type = 'master_to';
-        $join->{prefetch} = [$rel_type];
+        $where->{from_mid} = "$p{from}";
+        $dir = 'to_mid';
     }
     elsif( defined $p{to} ) {
         $where->{to_mid} = $p{to};
-        $rel_type = 'master_from';
-        $join->{prefetch} = [$rel_type];
+        $dir = 'from_mid';
     }
-    my $rs = Baseliner->model('Baseliner::BaliMasterRel')->search(
-        $where, { %$join, order_by=>{ -asc=>['mid'] }, rows=>$p{limit}, page=>$page }
-    );
-    my $total = $rs->pager->total_entries;
+    my @rels = mdb->master_rel->find_values( $dir => $where)->all;
+    my $rs = mdb->master_doc->find({ mid=>mdb->in(@rels) })->limit($p{limit})->skip($p{start})->sort({ _id=>1 });
+    my $total = $rs->count;
     my $cnt = $p{parent} * 10;
     my @tree = map {
-        my $class = 'BaselinerX::CI::' . $_->{$rel_type}{collection};
-        my $data = _load( $_->{yaml} );
-        my $bl = [ split /,/, $_->{bl} ];
+        my $data = $_;
+        my $class = 'BaselinerX::CI::' . $data->{collection};
+        my $bl = [ split /,/, $data->{bl} ];
         +{
             _id        => ++$cnt,
             _parent    => $p{parent} || undef,
             _is_leaf   => \0,
-            mid        => $_->{$rel_type}{mid},
-            item       => ( $_->{$rel_type}{name} // $data->{name} // $_->{$rel_type}{collection} ),
+            mid        => $data->{mid},
+            item       => ( $data->{name} // $data->{name} // $data->{collection} ),
             type       => 'object',
             class      => $class,
             classname  => $class,
             bl         => $bl,
-            collection => $_->{rel_type},
+            collection => $data->{rel_type},
             icon       => $class->icon,
-            ts         => $_->{$rel_type}{ts},
+            ts         => $data->{ts},
             data       => $data,
-            properties => $_->{yaml},
-            versionid    => $_->{versionid},
+            properties => $data->{yaml},
+            versionid    => $data->{versionid},
             }
-    } $rs->hashref->all;
+    } $rs->all;
     ( $total, @tree );
 }
 
@@ -362,28 +355,27 @@ sub tree_ci_request {
     my $class = $p{class};
     my $where = {};
     my $page = to_pages( start=>$p{start}, limit=>$p{limit} );
-    my @rs = DB->BaliTopic->search(
-        { from_mid=>$p{mid}, rel_type=>'ci_request' },
-        { prefetch=>['parents','status','categories'] },
-    )->hashref->all;
+    my @rs = mdb->topic->find(
+        { from_mid=>"$p{mid}", rel_type=>'ci_request' },
+    )->all;
     my $total = @rs;
     my $cnt = $p{parent} * 10;
     my @tree = map {
         +{
-            _id        => ++$cnt,
-            _parent    => $p{parent} || undef,
-            _is_leaf   => \1,
-            mid        => $_->{mid},
-            item       => $_->{categories}{name} . ' #' . $_->{mid},
-            title      => $_->{title},
-            type       => 'topic',
-            class      => 'BaselinerX::CI::topic',
-            bl         => $p{bl},
-            collection => $_->{status}{name}, 
-            icon       => '/static/images/icons/topic_one.png',
-            ts         => $_->{master_to}{ts},
-            data       => { %{ $_->{categories} } }, 
-            properties => '',
+            _id          => ++$cnt,
+            _parent      => $p{parent} || undef,
+            _is_leaf     => \1,
+            mid          => $_->{mid},
+            item         => $_->{category}{name} . ' #' . $_->{mid},
+            title        => $_->{title},
+            type         => 'topic',
+            class        => 'BaselinerX::CI::topic',
+            bl           => $p{bl},
+            collection   => $_->{status}{name}, 
+            icon         => '/static/images/icons/topic_one.png',
+            ts           => $_->{master_to}{ts},
+            data         => { %{ $_->{category} // {} } }, 
+            properties   => '',
             versionid    => '',
         }
     } @rs;
@@ -542,16 +534,16 @@ sub store : Local {
         $w->{to_mid}   = $p->{to_mid} if $p->{to_mid};
         $w->{rel_type} = $p->{rel_type}  if defined $p->{rel_type};
 
-        my $s = {};
-        $s->{select} = 'to_mid' if $p->{mid} || $p->{from_mid};
-        $s->{select} = 'from_mid' if $p->{to_mid};
+        my $dir;
+        $dir = 'to_mid' if $p->{mid} || $p->{from_mid};
+        $dir = 'from_mid' if $p->{to_mid};
         
-        my $rel_query = Baseliner->model('Baseliner::BaliMasterRel')->search( $w , $s )->as_query;
-        $where->{mid} = { -in=>$rel_query };
+        my @rels = map { $$_{$dir} } mdb->master_rel->find($w)->all;
+        $where->{mid} = mdb->in( @rels );
     }
 
     if( length $bl && $bl ne '*' ) {
-        $where->{'-or'} = [ { bl =>{-like => '%'.$bl.'%'} }, { bl=>{-like=>'%*%'}} ];  # XXX XXX XXX  use where exists( select rels from master_rel? )
+        $where->{bl} = qr/^($bl|\*)$/;  # XXX XXX XXX  use rels from master_rel?
     }
     
     # used by value in a CIGrid
@@ -698,7 +690,7 @@ sub ci_create_or_update {
         my $mid; 
         $class = "BaselinerX::CI::$p{class}";
 
-        my @same_name_cis = DB->BaliMaster->search( {name => $name, collection => $p{collection} // $class->collection } )->hashref->all;
+        my @same_name_cis = mdb->master->find({ name=>$name, collection=>($p{collection} // $class->collection) })->fields({ yaml=>0 })->all;
 
         if ( scalar @same_name_cis > 1 ) {
             for ( @same_name_cis ) {
@@ -742,21 +734,15 @@ sub sync : Local {
     my $valid_repo = 1;
 
     if ( $p->{topic_mid} ) {
-        my @projects = map { $_->{mid} } DB->BaliTopic->find( $p->{topic_mid} )->projects->hashref->all;
+        my %topic_projects = map { $_=>1 } mdb->master_rel->find_values( to_mid => { from_mid=> "$p->{topic_mid}", rel_type=>'topic_project' });
 
-        if ( !@projects ) {
+        if ( !%topic_projects ) {
             $c->stash->{json} = { success=>\0, msg=>_loc('The changeset must be assigned to at least one project') };
             $valid_repo = 0;
         } else {
             my @repo_projects = map { $_->{mid} } ci->new($repo_mid)->related( isa => 'project');
 
-            my $ok_repo = 0;
-            for ( @repo_projects ) {
-                if ( $_ ~~ @projects ) {
-                    $ok_repo = 1;
-                    last;
-                }
-            }
+            my $ok_repo = grep { defined } @topic_projects{ @repo_projects }; 
             if (!$ok_repo) {
                 $c->stash->{json} = { success=>\0, msg=>_loc('The revision does not belong to any of the changeset projects' ) };
                 $valid_repo = 0;
@@ -848,12 +834,10 @@ sub update : Local {
         # XXX deprecate this?
         if( $chi ) {
             my $cis = ref $chi eq 'ARRAY' ? $chi : [ split /,/, $chi ]; 
-            DB->BaliMasterRel->search({ from_mid=>$mid })->delete;
             mdb->master_rel->remove({ from_mid=>"$mid" });
             for my $to_mid ( _array( $cis ) ) {
                 my $rel_type = $collection . '_' . ci->new( $to_mid )->collection;   # XXX consider sending the rel_type from js 
                 my $doc = { from_mid=>"$mid", to_mid=>"$to_mid", rel_type=>$rel_type };
-                DB->BaliMasterRel->create($doc);
                 mdb->master_rel->insert($doc);
                 $c->cache_remove( qr/:$to_mid:/ );
             }
@@ -1287,7 +1271,7 @@ sub import_one_ci {
     my ($self,$d) = @_;
     my $mid = delete $d->{mid};
     if( my $cn = ref $d ) {
-        if( my $row = DB->BaliMaster->search({ name=>$d->{name}, collection=>$d->collection })->first ) {
+        if( mdb->master->find({ name=>$d->{name}, collection=>$d->collection })->count ) {
             my $now = Class::Date->now() ;
             $d->{name} = $d->{name} . ' (' . $now . ')';
         }

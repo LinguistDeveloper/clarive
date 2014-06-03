@@ -5,8 +5,6 @@ use warnings;
 our $VERSION = 3;
 
 use base 'DBIx::Class::Schema';
-use Baseliner::Schema::Baseliner::Result::BaliMasterRel;
-use Baseliner::Schema::Baseliner::Result::BaliMaster;
 
 
 __PACKAGE__->load_namespaces( default_resultset_class => '+Baseliner::Schema::Baseliner::Base::ResultSet' );

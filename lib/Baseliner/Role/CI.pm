@@ -151,14 +151,17 @@ sub save {
     my $mid = $self->mid;
     my $bl = $self->bl;
     $bl = '*' if !length $bl; # fix empty submits from web
-    my $exists = ! ! $mid;
-    my $ns = $self->ns;
+    # make sure we have a mid AND it's in mongo
+    my $row = mdb->master->find_one({ mid=>"$mid" });
+    my $exists = length($mid) && $row; 
+    _fail _loc "Could not find master row for mid %1", $mid if length($mid) && !$exists;
     
     # try to get mid from ns
+    my $ns = $self->ns;
     if( !$exists && length $ns && $ns ne '/' ) {
         my $ns_row = mdb->master->find_one({ collection=>$collection, ns=>$ns }, { mid=>1 });
         if( $ns_row ) {
-            $mid = $ns_row->mid;
+            $mid = $ns_row->{mid};
             $exists = 1;
         }
     }
@@ -167,60 +170,49 @@ sub save {
     Baseliner->cache_remove( qr/ci:[0-9]+:/ );
     Baseliner->cache_remove( qr/:$mid:/ ) if length $mid;
     
-    # transaction bound, in case there are foreign tables
-    Baseliner->model('Baseliner')->txn_do(sub{
-        my $row;
-        if( $exists ) { 
-            ######## UPDATE CI
-            $row = DB->BaliMaster->find( $mid );
-            if( $row ) {
-                $row->bl( join( ',', Util->_array( $bl ) ) );
-                $row->name( $self->name );
-                $row->active( $self->active );
-                $row->versionid( $self->versionid || '1' );
-                $row->moniker( $self->moniker );
-                $row->ns( $self->ns );
-                $row->ts( Util->_dt );
-                $row->update;  # save bali_master data
-                
-                $self->update_ci( $row, undef, \%opts );
-            }
-            else {
-                _fail _loc "Could not find master row for mid %1", $mid;
-            }
-            if( ref $self ) {
-                $self->mid( $mid );
-            }
-        } else {
-            ######## NEW CI
-            $row = DB->BaliMaster->create(
-                {
-                    collection => $collection,
-                    name       => $self->name,
-                    ns         => $self->ns,
-                    ts         => Util->_dt,
-                    moniker    => $self->moniker,
-                    bl         => join( ',', Util->_array( $bl ) ),
-                    active     => $self->active // 1,
-                    versionid  => $self->versionid || 1,
-                }
-            );
-            # update mid into CI
-            $mid = $row->mid;
-            $self->mid( $row->mid );
-            # put a default name
-            if( !length $row->name ) {
-                my $name = $collection . ':' . $mid;
-                $row->update({ name=> $name });
-                $self->name( $name );
-            }
-            
-            # now save the rest of the ci data (yaml)
-            $self->new_ci( $row, undef, \%opts );
+    # TODO make it mongo transaction bound, in case there are foreign tables
+    if( $exists ) { 
+        ######## UPDATE CI
+        if( $row ) {
+            $row->{bl} = join ',', Util->_array( $bl );
+            $row->{name} = $self->name;
+            $row->{active} = $self->active;
+            $row->{versionid} = $self->versionid || '1';
+            $row->{moniker} = $self->moniker;
+            $row->{ns} = $self->ns;
+            $row->{ts} = Util->_dt;
+            $self->update_ci( $row, undef, \%opts );
         }
-        # update mongo master
-        mdb->master->update({ mid=>$self->mid }, +{ $row->get_columns }, { upsert=>1 });
-    });  # txn end
+        if( ref $self ) {
+            $self->mid( $mid );
+        }
+    } else {
+        ######## NEW CI
+        $row = {
+                collection => $collection,
+                name       => $self->name,
+                ns         => $self->ns,
+                ts         => Util->_dt,
+                moniker    => $self->moniker,
+                bl         => join( ',', Util->_array( $bl ) ),
+                active     => $self->active // 1,
+                versionid  => $self->versionid || 1,
+        };
+        # update mid into CI
+        $mid = length($mid) ? $mid : mdb->seq('mid');
+        $self->mid( $mid );
+        # put a default name
+        if( !length $self->name ) {
+            my $name = $collection . ':' . $mid;
+            $$row{name} = $name;
+            $self->name( $name );
+        }
+        
+        # now save the rest of the ci data (yaml)
+        $self->new_ci( $row, undef, \%opts );
+    }
+    # update mongo master
+    mdb->master->update({ mid=>$self->mid }, $row, { upsert=>1 });
     return $mid; 
 }
 
@@ -229,20 +221,13 @@ sub delete {
     
     $mid //= $self->mid;
     if( $mid ) {
-        my $row = DB->BaliMaster->find( $mid );
-        DB->BaliMasterRel->search({ -or=>[{ from_mid=>$mid },{ to_mid=>$mid }] })->delete;
+        # first relations, so nobody can find me
         mdb->master_rel->remove({ '$or'=>[{from_mid=>"$mid"},{to_mid=>"$mid"}] },{multiple=>1});
         mdb->master_doc->remove({ mid=>"$mid" },{multiple=>1});
         mdb->master->remove({ mid=>"$mid" },{multiple=>1});
-        if( $row ) {
-            # perfect
-            Baseliner->cache_remove( qr/^ci:/ );
-            delete $self->{mid} if ref $self;  # delete the mid value, in case a reuse is in place
-            return $row->delete;
-        } else {
-            # not found warning, cleanup master_doc in the way out
-            Util->_warn( Util->_loc( 'Could not delete, master row %1 not found', $mid ) );
-        }
+        Baseliner->cache_remove( qr/^ci:/ );
+        delete $self->{mid} if ref $self;  # delete the mid value, in case a reuse is in place
+        return 1;
     } else {
         return undef;
     }
@@ -317,14 +302,12 @@ sub save_data {
         my $other_rel = $my_rel eq 'from_mid' ? 'to_mid' : 'from_mid';
         my $rel_type_name = $rel->{rel_type}->[1];
         # delete all records related 
-        my $mr_where ={ $my_rel=>''.$master_row->mid, rel_type=>$rel_type_name };
-        DB->BaliMasterRel->search($mr_where)->delete;
+        my $mr_where ={ $my_rel=>''.$master_row->{mid}, rel_type=>$rel_type_name };
         mdb->master_rel->remove($mr_where,{ multiple=>1 });
         for my $other_mid ( _array $rel->{value} ) {
             $other_mid = $other_mid->mid if ref( $other_mid ) =~ /^BaselinerX::CI::/;
             next unless $other_mid;
-            my $rdoc = { $my_rel => $master_row->mid, $other_rel => $other_mid, rel_type=>$rel_type_name, rel_field=>$rel->{field} };
-            DB->BaliMasterRel->find_or_create($rdoc);
+            my $rdoc = { $my_rel => $master_row->{mid}, $other_rel => $other_mid, rel_type=>$rel_type_name, rel_field=>$rel->{field} };
             mdb->master_rel->find_or_create($rdoc);
             push @{$relations{ $rel->{field} }}, $other_mid;
             Baseliner->cache_remove( qr/:$other_mid:/ );
@@ -344,23 +327,23 @@ sub save_fields {
     my ($self, $master_row, $data, $opts, $relations ) = @_;
     $opts //={};
     $opts->{master_only} //= 1;
-    my $mid = $master_row->mid;
+    my $mid = $master_row->{mid};
     if( !$master_row ) {
         mdb->master_doc->remove({ mid=>"$mid" });
         _fail _loc( 'Master row not found for mid %1', $mid );
     }
-    $master_row->update({ yaml=>Util->_dump($data) });
+    mdb->master->update({ mid=>"$mid" }, { '$set'=>{ yaml=>Util->_dump($data) } });
     my $md = mdb->master_doc;
     if( my $row = $md->find_one({ mid=>"$mid" }) ) {
         my $id = $row->{_id};
-        my $doc = { ( $master_row ? $master_row->get_columns : () ), %$row, %{ $data || {} } };
+        my $doc = { ( $master_row ? %$master_row : () ), %$row, %{ $data || {} } };
         my $final_doc = Util->_clone($doc);
         Util->_unbless($final_doc);
         mdb->clean_doc($final_doc);
         $final_doc->{_id} = $id;  # preserve OID object
         $md->save({ %$final_doc, %{ $relations || {} } });
     } else {
-        my $doc = { ( $master_row ? $master_row->get_columns : () ), %{ $data || {} }, mid=>"$mid" };
+        my $doc = { ( $master_row ? %$master_row : () ), %{ $data || {} }, mid=>"$mid" };
         delete $doc->{yaml};
         my $final_doc = Util->_clone($doc);
         Util->_unbless($final_doc);
@@ -384,13 +367,13 @@ sub load {
     return $cached if $cached;
 
     if( !$data ) {
-        $row //= DB->BaliMaster->find( $mid );
+        $row //= mdb->master->find_one({ mid=> "$mid" });
         if( ! ref $row ) {
-            mdb->master_doc->remove({ mid=>"$mid" });
+            mdb->master_doc->remove({ mid=>"$mid" },{ multiple=>1 });
             _fail _loc( "Master row not found for mid %1", $mid );
         }
         # setup the base data from master row
-        $data = ref $row eq 'HASH' ? $row : { $row->get_columns }; # row may come already hashref'ed
+        $data = $row; 
     }
 
     # find class, so that we are subclassed correctly
@@ -442,9 +425,9 @@ sub load {
                 ? @$rel_data 
                 : ref $rel_data eq 'HASH' 
                     ? @{ $rel_data->{$mid} || [] }
-                    : DB->BaliMasterRel->search( 
-                        { -or=>[ to_mid=>$mid, from_mid=>$mid ], rel_type => \@fields },
-                        { select=> ['from_mid', 'to_mid', 'rel_type' ] } )->hashref->all;
+                    : mdb->master_rel
+                        ->find({ '$or'=>[{ to_mid=>"$mid" },{ from_mid=>"$mid" }], rel_type =>mdb->in(@fields) })
+                        ->fields({ from_mid=>1,to_mid=>1,rel_type=>1 })->all;
                     
             for my $rel_row ( @rel_type_data ) {
                 my $f = $field_rel_mids{ $rel_row->{rel_type} }; 
@@ -470,7 +453,7 @@ sub load {
 
 sub load_from_search {
     my ($class, $where, %p ) = @_;
-    my @rows = DB->BaliMaster->search( $where )->hashref->all;
+    my @rows = mdb->master->find( $where )->all;
     if( $p{single} ) {
         _throw _loc('More than one row returned (%1) for CI load %2, mids found: %3', 
             scalar(@rows), Util->_to_json($where), join(',', map{$_->{mid}} @rows) )
@@ -485,7 +468,7 @@ sub load_from_search {
 sub load_from_query {
     my ($class, $where, %p ) = @_;
     my @mids = map { $_->{mid} } mdb->master_doc->find($where)->fields({ mid=>1 })->limit(1000)->all;
-    my @rows = DB->BaliMaster->search({ mid=>\@mids })->hashref->all;
+    my @rows = mdb->master->find({ mid=>mdb->in(@mids) })->all;
     if( $p{single} ) {
         _throw _loc('More than one row returned (%1) for CI load %2, mids found: %3', 
             scalar(@rows), Util->_to_json($where), join(',', map{$_->{mid}} @rows) )
@@ -766,9 +749,9 @@ sub list_by_name {
     my ($class, $p)=@_;
     my $where = {};
     $where->{name} = $p->{names} if defined $p->{names};
-    my $from = { select=>'mid' };
-    $from->{rows} = $p->{rows} if defined $p->{rows};
-    [ map { ci->new( $_->{mid} ) } DB->BaliMaster->search($where, $from)->hashref->all ];
+    my $from = {};
+    $from->{limit} = $p->{rows} if defined $p->{rows};
+    [ map { ci->new( $_->{mid} ) } mdb->master->query($where, $from)->fields({ mid=>1 })->all ];
 }
 
 =head2 push_ci_unique
@@ -810,120 +793,6 @@ sub attribute_default_values {
         } 
         $class->meta->get_all_attributes;
     return \%defs;
-}
-
-
-# XXX deprecated:
-sub searcher {
-    my ($self, %p ) = @_;
-    my $coll = $self->collection;
-    my @fields = _unique _array('mid', $p{fields});
-    my $schema = [
-        map {
-            +{ name=>$_, sortable=>1 } 
-        } @fields 
-    ];
-    require Baseliner::Lucy;
-    require LucyX::Simple::Result::Hash;
-    my $string_tokenizer = Lucy::Analysis::RegexTokenizer->new( pattern => '\w');
-    my $analyzer = Lucy::Analysis::PolyAnalyzer->new( analyzers => [$string_tokenizer]);
-
-    my $searcher = Baseliner::Lucy->new(
-            index_path => Lucy::Store::RAMFolder->new, # in-memory files "$dir",
-            language   => 'es', 
-            analyser   => $analyzer, 
-            resultclass => 'LucyX::Simple::Result::Hash',
-            entries_per_page => 10,
-            schema     => $schema,
-            highlighter => 'Baseliner::Lucy::Highlighter',
-            search_fields => ['gdi_perfil_dni', 'id'],
-            search_boolop => 'AND',
-        );
-    my @cis = map {
-       my $h = _load( delete $_->{yaml} );
-       my $d = { %$_, %$h };
-       +{ map { $_ => $d->{$_} } @fields  };
-    } DB->BaliMaster->search({ collection=>$coll })->hashref->all;
-
-    my $sort_spec;
-    if( $p{sort} ) {
-        $sort_spec = Lucy::Search::SortSpec->new(
-                rules => [
-                    map { 
-                        my ($field,$dir) = /^(\S+) (\S+)$/ ? ($1,$2) : ($_,'ASC');
-                        Lucy::Search::SortRule->new( field =>$field, reverse=>( $dir =~ /asc/i ? 0 : 1 )  ) 
-                    } _array($p{sort})
-                ],
-        );
-    }
-        
-    my $query;
-    if( ref $p{query} ) {
-        while( my ($k,$v) = each %{ $p{query} } ) {
-            $query = Lucy::Search::TermQuery->new(
-                field => $k,
-                term  => $v,
-            );
-        }
-    } else {
-        $query = $p{query};
-    }
-
-    map { $searcher->create($_) } @cis;
-    $searcher->commit;
-    my ( $results, $pager ) = try {
-       $searcher->search( $query, 1, $sort_spec );
-    } catch {
-      _debug shift(); # usually a "no results" exception
-      ([],undef);
-    };
-}
-
-sub mem_table {
-    my ($self, %p) = @_;
-    my $coll = $self->collection;
-    my @cols = grep { $_ ne 'mid' } (
-        @{ $p{cols} || [] } 
-        ||  
-        ( map { $_->name } $self->meta->get_all_attributes )
-    );
-    require DBIx::Simple;
-    my $db = $p{db} // DBIx::Simple->connect('dbi:SQLite::memory:'); 
-    my $cols_str = join ',', map { "$_ text" } @cols;
-    eval { $db->query("create table $coll ( mid number, $cols_str, unique (mid ) )") };
-    push @cols, 'mid';
-    @cols = _unique @cols;
-    if( ref $p{cis} eq 'ARRAY' ) {
-        $self->mem_load( db=>$db, cis=>$p{cis}, cols=>\@cols  );
-    }
-    elsif( exists $p{mid} ) {
-        $self->mem_load( db=>$db, cis=>[ map { ci->new( $_ ) } _array($p{mid}) ], cols=>\@cols  );
-    }
-    else {   # full collection, from yaml
-        #my @mids = map { $_->{mid} } DB->BaliMaster->search({ collection=>$coll }, { select=>'mid' })->hashref->all;
-        #$self->mem_load( db=>$db, cis=>[ map { ci->new( $_ ) } @mids ], cols=>\@cols  );
-        my @cis = map {
-            my $h = _load( delete $_->{yaml} ) // {};
-            +{ %$_, %$h };
-        } DB->BaliMaster->search( { collection => $coll, %{ $p{where} || {} } }, $p{from} )->hashref->all;
-        $self->mem_load( db => $db, cis =>\@cis, cols => \@cols );
-    }
-    return $db;
-}
-
-sub mem_load {
-    my ($self,%p) = @_;
-    my $coll = $self->collection;
-    my @cols = @{ $p{cols} };
-    my $db = $p{db};
-    my $k = @cols;
-    my $pos_str = join ',', map { '?' } 1..$k;
-    my $cols_str_ins = join ',', @cols;
-    my $s = $db->dbh->prepare("insert into $coll ($cols_str_ins) values ($pos_str)" );
-    for my $ci ( @{ $p{cis} } ) {
-        my @values = map { $ci->{$_} // '' } @cols;
-        $s->execute( @values );
-    }
 }
 
 sub service_list {
@@ -1027,11 +896,7 @@ sub all_cis {
     my @cis;
     for my $pkg ( Util->packages_that_do( $class ) ) {
         my $coll = $pkg->collection;
-        DB->BaliMaster->search({ collection=>$coll })->each( sub {
-            my ($row)=@_;
-            Util->_log( $row->mid );
-            push @cis, ci->new( $row->mid );
-        });
+        push @cis, map { ci->new( $_->{mid} ) } mdb->master->find({ collection=>$coll })->fields({ mid=>1 })->all;
     }
     return @cis;
 }

@@ -604,7 +604,8 @@ sub event : Local {
         $start_date =~ s{T}{ }g;
         $end_date =~ s{T}{ }g;
         if( $action eq 'add' ) {
-            $c->model('Baseliner::BaliMasterCal')->create({ mid=>$mid, start_date=>$start_date, end_date=>$end_date, allday=>$allday, slotname=>$slotname });
+            my $id = mdb->seq('master_cal');
+            mdb->master_cal->insert({ id=>$id, mid=>$mid, start_date=>$start_date, end_date=>$end_date, allday=>$allday, slotname=>$slotname });
         }
     }
     $c->stash->{json} = { success=>\1, msg=>'' };

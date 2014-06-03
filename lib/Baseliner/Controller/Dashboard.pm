@@ -1135,11 +1135,8 @@ sub list_status_changed: Local{
     @mid_topics = _unique map {$_} @mid_topics ;
     
     my %topics_categories;
-    map { $topics_categories{$_->{mid}} = { color => $_->{categories}->{color},
-    										name => $_->{categories}->{name}} }  Baseliner->model('Baseliner::BaliTopic')->search(
-                            { mid => \@mid_topics},
-                            { prefetch=>['categories'] }
-                            )->hashref->all;
+    $topics_categories{ $_->{mid} } = { color=>$_->{category}{color}, name=>$_->{category}{name} } 
+        for mdb->topic->find({ mid=>mdb->in(@mid_topics) })->all;
     
     $c->stash->{list_topics} = \%topics_categories;
     $c->stash->{list_status_changed} = \@status_changes;

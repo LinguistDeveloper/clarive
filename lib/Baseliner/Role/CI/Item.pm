@@ -88,15 +88,14 @@ sub save_relationships {
     for my $module ( Util->_array( $self->module_dependencies ) ) {
         my $mid = $cache->{ $module };
         if( !defined $mid ) {
-            my $row = DB->BaliMaster->search({ moniker=>$module })->first;
+            my $row = mdb->master->find_one({ moniker=>$module });
             if( $row ) {
-                $mid = $row->mid;
+                $mid = $row->{mid};
                 $cache->{ $module } = $mid;
             }
         }
         if( defined $mid ) {
             my $doc = { from_mid=>''.$self->mid, to_mid=>"$mid", rel_type=>$p{rel_type} // $self->item_relationship };
-            DB->BaliMasterRel->find_or_create($doc); 
             mdb->master_rel->find_or_create($doc);
         }
     }
@@ -126,23 +125,21 @@ sub tree_resolve {
         }
         # tags for topics, etc
         if( my $tag = $t->{tag} ) {
-            my @targets =  map { $_->{mid} } DB->BaliMaster->search({ -bool=>\['lower(moniker)=?', lc($tag) ], collection=>{ '='=>'topic' } }, { select=>'mid' })->hashref->all;
+            my @targets =  mdb->master->find_values( mid => { moniker=>qr/$tag/i, collection=>'topic' });
             push @rel_topics, @targets;
             for my $mid ( @targets ) {
                 Baseliner->cache_remove( qr/:$mid:/ );
                 # XXX missing rel_field...
-                DB->BaliMasterRel->find_or_create({ to_mid=>$self->mid, from_mid=>$mid, rel_type=>$tag_relationship });
                 mdb->master_rel->find_or_create({ to_mid=>$self->mid, from_mid=>$mid, rel_type=>$tag_relationship });
             }
         }
         # item_item relationships
         if( my $tag = $t->{depend} // $t->{depends} ) {
-            my @targets =  map { $_->{mid} } DB->BaliMaster->search({ -bool=>\['lower(moniker)=?', lc($tag) ], collection=>{ '!='=>'topic' } }, { select=>'mid' })->hashref->all;
+            my @targets = mdb->master->find_values( mid=>{ moniker=>qr/$tag/i, collection=>'topic' });
             push @rel_cis, @targets;
             for my $mid ( @rel_cis ) {
                 Baseliner->cache_remove( qr/:$mid:/ );
                 # XXX missing rel_field...
-                DB->BaliMasterRel->find_or_create({ to_mid=>$self->mid, from_mid=>$mid, rel_type=>$item_relationship });
                 mdb->master_rel->find_or_create({ to_mid=>$self->mid, from_mid=>$mid, rel_type=>$tag_relationship });
             }
         }
