@@ -65,6 +65,7 @@ sub source {
 }
 
 sub filename { $_[0]->name }
+sub filesize { 0 }   # XXX mdb
 
 1;
 

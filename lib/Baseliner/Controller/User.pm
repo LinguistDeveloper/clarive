@@ -110,7 +110,7 @@ sub infodetail : Local {
         )->sort($sort ? { $sort => $dir } : {role => 1});
     
     while( my $r = $roles_from_user->next ) {    
-        my $rs_user = ci->user->find({ username => $username, "project_security.$r->{id}"=> {'$exists' => 'true'} })->next;
+        my $rs_user = ci->user->find({ username => $username, "project_security.$r->{id}"=> {'$exists' => mdb->true} })->next;
         my @roles = keys $rs_user->{project_security};
         
         my @user_projects;
@@ -320,14 +320,8 @@ sub update : Local {
                         my $ci = ci->user->new( %$ci_data );
                         my $user_new = $ci->save;
 
-                        my $user_from = $c->model('Baseliner::BaliMasterRel')->search( {from_mid => $p->{id}} );
-                        if ($user_from) {
-                            $user_from->update( {from_mid => $user_new} );
-                        }
-                        my $user_to = $c->model('Baseliner::BaliMasterRel')->search( {to_mid => $p->{id}} );
-                        if ($user_to){
-                            $user_to->update( {to_mid => $user_new} );    
-                        }
+                        mdb->master_rel->update({ from_mid=>"$$p{id}" },{ '$set'=>{ from_mid=>$user_new } },{ multiple=>1 });
+                        mdb->master_rel->update({ to_mid=>"$$p{id}" },{ '$set'=>{ to_mid=>$user_new } },{ multiple=>1 });
                         ci->delete( $user_mid );
                     }
                 } else{
@@ -397,7 +391,7 @@ sub update : Local {
                     foreach my $role (_array $roles_checked){
                         my $rs_user;            
                         my @where = map { { "project_security.$role.$_"=>{'$in'=>\@ns_projects} } } @colls;
-                        $rs_user = ci->user->find_one({username =>$user_name,"project_security.$role"=> {'$exists' => 'true'},'$or' =>\@where});
+                        $rs_user = ci->user->find_one({username =>$user_name,"project_security.$role"=> {'$exists' => mdb->true},'$or' =>\@where});
                       
                         foreach my $coll (@colls){
                             push @user_projects, map {$role.'/'.$coll.'/'.$_} _array $rs_user->{project_security}->{$role}->{$coll};   

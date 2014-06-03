@@ -285,10 +285,8 @@ sub get_rules_notifications{
                             }                            
                             
                             @roles = _unique @roles;
-                            #my @roles = map {$_->{id_role}} Baseliner->model('Baseliner::BaliRoleaction')->search($query)->hashref->all;
                             
                             @tmp_users = Baseliner->model('Users')->get_users_from_mid_roles_topic( roles => \@roles, mid => $mid );
-                            #@tmp_users = Baseliner->model('Users')->get_users_from_actions(mid => $mid, actions => \@actions, projects => \@prj_mid);
                         }
                         when ('Roles') 	    {
                         	my @roles;
@@ -304,7 +302,6 @@ sub get_rules_notifications{
                             	@roles = keys $notification->{$key}{carrier}{$carrier}->{$type};
                             }
                             @tmp_users = Baseliner->model('Users')->get_users_from_mid_roles_topic( roles => \@roles, mid => $mid );
-                            #@tmp_users = Baseliner->model('Users')->get_users_from_mid_roles( roles => \@roles, projects => \@prj_mid);                            
                         }
                         when ('Fields')         {
                             my @fields = map {lc($_)} keys $notification->{$key}{carrier}{$carrier}->{$type};
@@ -315,14 +312,10 @@ sub get_rules_notifications{
                             }
                             @tmp_users= map {$_->{name}} ci->user->find({mid=>mdb->in(@users_mid)})->all;
 
-                            #@tmp_users = map { _ci($_->{to_mid})->name }
-                            #                        DB->BaliMasterRel->search(  { 'LOWER(rel_field)' => \@fields, rel_type => 'topic_users'},
-                            #                                                    { select => 'to_mid' })->hashref->all;
                         }                        
                         when ('Emails') {
                             my @emails = keys $notification->{$key}{carrier}{$carrier}->{$type};
                             push @tmp_users, @emails;
-                            # _log _dump @emails;
                         }                        
                         when ('Owner') 	    {
                             my $topic = mdb->topic->find_one({mid=>"$mid"});

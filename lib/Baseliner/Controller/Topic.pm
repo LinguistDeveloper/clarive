@@ -179,9 +179,9 @@ sub check_modified_on: Local {
     use Class::Date;
     my $date_modified_on =  Class::Date->new( $strDate );
     
-    my $rs_topic = DB->BaliTopic->find($topic_mid);
-    my $date_actual_modified_on = Class::Date->new( $rs_topic->modified_on );
-    my $who = $rs_topic->modified_by;
+    my $doc = mdb->topic->find_one({ mid=>"$topic_mid" });
+    my $date_actual_modified_on = Class::Date->new( $doc->{modified_on} );
+    my $who = $doc->{modified_by};
     
     if ( $date_modified_on < $date_actual_modified_on ){
         $modified_before = $who;
@@ -698,11 +698,7 @@ sub view : Local {
 sub title_row : Local {
     my ($self, $c ) = @_;
     my $mid = $c->req->params->{mid};
-    my $row = DB->BaliTopic->search(
-        { mid => $mid }, { join=>'categories', 
-        select=>[qw/mid title categories.name categories.color/], 
-        as=>[qw/mid title category_name category_color/] } );
-    $row = $row->hashref->first;
+    my $row = mdb->topic->find_one({ mid=>"$mid" },{ mid=>1, title=>1, category_name=>1, category_color=>1 });
     $c->stash->{json} = { success=>$row ? \1 : \0, row => $row };
     $c->forward('View::JSON');
 }
@@ -720,7 +716,7 @@ sub comment : Local {
             my $text = $p->{text};
             _log $text;
 
-            my $topic_row = $c->model('Baseliner::BaliTopic')->find( $topic_mid );
+            my $topic_row = mdb->topic->find_one({ mid=>"$topic_mid" });
             _fail( _loc("Topic with id %1 not found (deleted?)", $topic_mid ) ) unless $topic_row;
             
             my $topic;
@@ -738,13 +734,16 @@ sub comment : Local {
                     );
                     local $Baseliner::CI::ci_record = 1;
                     
-                    my @projects = map {$_->{mid}} $topic_row->projects->hashref->all;
-                    my @users = Baseliner->model("Topic")->get_users_friend(id_category => $topic_row->id_category, id_status => $topic_row->id_category_status, projects => \@projects);
-                    my $subject = _loc("%1 created a post for topic [%2] %3", $c->username, $topic_row->mid, $topic_row->title);
+                    my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$topic_mid", rel_type=>'topic_project' });
+                    my @users = Baseliner->model("Topic")->get_users_friend(
+                            id_category => $topic_row->{category}{id}, 
+                            id_status   => $topic_row->{category_status}{id}, 
+                            projects    => \@projects );
+                    my $subject = _loc("%1 created a post for topic [%2] %3", $c->username, $topic_row->{mid}, $topic_row->{title} );
                     my $notify = { #'project', 'category', 'category_status'
-                        category        => $topic_row->id_category,
-                        category_status => $topic_row->id_category_status,
-                        project => \@projects
+                        category        => $topic_row->{category}{id},
+                        category_status => $topic_row->{category_status}{id},
+                        project => \@projects,
                     };
                     event_new 'event.post.create' => {
                         username        => $c->username,
@@ -756,17 +755,9 @@ sub comment : Local {
                         subject         => $subject,
                         notify=>$notify 
                     };
-                    $topic_row->add_to_posts( $post, { rel_field => 'topic_post', rel_type=>'topic_post'});
+                    $topic_row->add_to_posts( $post, { rel_field => 'topic_post', rel_type=>'topic_post'});  # XXX mdb
                     #master_rel->create({ rel_type=>'topic_post', from_mid=>$id_topic, to_mid=>$mid });
                 };
-                #$c->model('Event')->create({
-                #    type => 'event.topic.new_comment',
-                #    ids  => [ $id_topic ],
-                #    username => $c->username,
-                #    data => {
-                #        text=>$p->{text}
-                #    }
-                #});
             } else {
                 my $post = $c->model('Baseliner::BaliPost')->find( $id_com );
                 _fail( _loc("This comment does not exist anymore") ) unless $post;
@@ -777,7 +768,7 @@ sub comment : Local {
             }
 
             # modified_on 
-            $topic_row->update({ modified_on => _dt() });
+            mdb->topic->udpate({ mid=>"$topic_mid" },{ '$set'=>{ modified_on=>mdb->ts } });
 
             $c->stash->{json} = {
                 msg     => _loc('Comment added'),
@@ -804,13 +795,14 @@ sub comment : Local {
             # now notify my parents
             
 
-            my $topic_row = $c->model('Baseliner::BaliTopic')->find( $mids[0] );
-            my @projects = map {$_->{mid}} $topic_row->projects->hashref->all;
-            my @users = Baseliner->model("Topic")->get_users_friend(id_category => $topic_row->id_category, id_status => $topic_row->id_category_status, projects => \@projects);
-            my $subject = _loc("%1 deleted a post from topic [%2] %3", $c->username, $topic_row->mid, $topic_row->title);
+            my $topic_row = mdb->topic->find_one({ mid=>"$mids[0]" });
+            my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$mids[0]", rel_type=>'topic_project' });
+            my @users = Baseliner->model("Topic")->get_users_friend(id_category => $topic_row->{category}{id}, 
+                id_status=>$topic_row->{category}{status}, projects=>\@projects);
+            my $subject = _loc("%1 deleted a post from topic [%2] %3", $c->username, $topic_row->{mid}, $topic_row->{title});
             my $notify = { #'project', 'category', 'category_status'
-                category        => $topic_row->id_category,
-                category_status => $topic_row->id_category_status,
+                category        => $topic_row->{category}{id},
+                category_status => $topic_row->{category_status}{id},
                 project => \@projects
             };
 
@@ -1491,13 +1483,13 @@ sub upload : Local {
         if( length $p->{topic_mid} ) {
             my ($topic, $topic_mid, $file_mid);
             
-            $topic = $c->model('Baseliner::BaliTopic')->find( $p->{topic_mid} );
-            $topic_mid = $topic->mid;
+            $topic = mdb->topic->find_one({ mid=>"$p->{topic_mid}" });
+            $topic_mid = $topic->{mid};
             #my @projects = ci->children( mid=>$_->{mid}, does=>'Project' );
             my @users = Baseliner->model("Topic")->get_users_friend(
                 mid         => $p->{topic_mid}, 
-                id_category => $topic->id_category, 
-                id_status   => $topic->id_category_status, 
+                id_category => $topic->{category}{id}, 
+                id_status   => $topic->{category_status}{id},
                 #  projects    => \@projects  # get_users_friend ignores this
             );
             
@@ -1519,7 +1511,7 @@ sub upload : Local {
             $asset->put_data( $f->openr );
             
             if ($p->{topic_mid}){
-                my $subject = _loc("Created file %1 to topic [%2] %3", $filename, $topic->mid, $topic->title);                            
+                my $subject = _loc("Created file %1 to topic [%2] %3", $filename, $topic->{mid}, $topic->{title});                            
                 event_new 'event.file.create' => {
                     username => $c->username,
                     mid      => $topic_mid,
@@ -1531,7 +1523,6 @@ sub upload : Local {
                 # tie file to topic
                 my $topic_ci = ci->new( $p->{topic_mid} );
                 $topic_ci->assets->push( $asset );
-                # $topic->add_to_files( $file, { rel_type=>'topic_file_version', rel_field=> $p->{filter} });
             }
                     
             $c->res->body('{"success": "true", "msg":"' . _loc( 'Uploaded file %1', $filename ) . '", "file_uploaded_mid":"' . $file_mid . '"}');
@@ -1561,10 +1552,10 @@ sub file : Local {
             for my $md5 ( _array( $p->{md5} ) ) {
                 my $file = Baseliner->model('Baseliner::BaliFileVersion')->search({ md5=>$md5 })->first;
                 ref $file or _fail _loc("File id %1 not found", $md5 );
-                my $count = Baseliner->model('Baseliner::BaliMasterRel')->search({ to_mid => $file->mid })->count;
+                my $count = mdb->master_rel->find({ to_mid=>$file->mid })->count;
                 
-                my $topic = $c->model('Baseliner::BaliTopic')->find( $p->{topic_mid} );
-                my @projects = map {$_->{mid}} $topic->projects->hashref->all;
+                my $topic = mdb->topic->find_one({ mid=> "$$p{topic_mid}" });
+                my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$$p{topic_mid}", rel_type=>'topic_project' });
                 my @users = $c->model('Topic')->get_users_friend(id_category => $topic->id_category, id_status => $topic->id_category_status, projects => \@projects);
                 
                 if( $count < 2 ) {
@@ -1591,7 +1582,7 @@ sub file : Local {
                         subject         => $subject
                         }
                     => sub {
-                        my $rel = Baseliner->model('Baseliner::BaliMasterRel')->search({ from_mid=>$topic_mid, to_mid => $file->mid })->first;
+                        my $rel = mdb->master_rel->find_one({ from_mid=>"$topic_mid", to_mid=>$file->mid });
                         _log "Deleting file from topic $topic_mid ($rel) = " . $file->mid;
                         ref $rel or _fail _loc "File not attached to topic";
                         $rel -> delete;
@@ -1629,17 +1620,13 @@ sub file_tree : Local {
     my $topic_mid = $p->{topic_mid};
     my @files = ();
     if($topic_mid){
+        my @assets = mdb->master_rel->find_values( to_mid =>{ mid=>"$topic_mid", rel_type=>'topic_asset' });
         @files = map {
-           my ( $size, $unit ) = _size_unit( $_->filesize );
-           $size = "$size $unit";
-           +{ $_->get_columns, _id => $_->mid, _parent => undef, _is_leaf => \1, size => $size }
-           } 
-           $c->model('Baseliner::BaliTopic')->search( { mid => $topic_mid } )->first->files->search(
-           {'rel_field'=> $p->{filter}},
-           {   select   => [qw(mid filename filesize md5 versionid extension created_on created_by)],
-               order_by => { '-asc' => 'created_on' }
-           }
-           )->all;       
+            my $ass = $_;
+            my ( $size, $unit ) = _size_unit( $ass->filesize );
+            $size = "$size $unit";
+            +{ %$ass, _id => $ass->mid, _parent => undef, _is_leaf => \1, size => $size }
+       }  ci->asset->search_cis( mid=>mdb->in(@assets) );
     }else{
         my @files_mid = _array $p->{files_mid};
         @files = map {
@@ -1670,8 +1657,8 @@ sub list_users : Local {
         my $topic_row;
         my @topic_projects;
         if ( $p->{topic_mid}) {
-            $topic_row = $c->model('Baseliner::BaliTopic')->find( $p->{topic_mid} );
-            @topic_projects = map {$_->{mid}} $topic_row->projects->hashref->all;            
+            $topic_row = mdb->topic->find_one({ mid=>"$$p{topic_mid}" });
+            @topic_projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$$p{topic_mid}", rel_type=>'topic_project' });
         }
         if($p->{roles} && $p->{roles} ne 'none'){
             my @name_roles = map {lc ($_)} split /,/, $p->{roles};
@@ -1769,11 +1756,10 @@ sub kanban_status : Local {
     my $data = {};
     my @columns;
     $c->stash->{json} = try {
-        my $rs1 = $c->model('Baseliner::BaliTopic')->search({ 
-          mid=>$topics }, { select=>'id_category', distinct=>1 }); 
+        my @cats = _unique( mdb->topic->find_values( id_category=>{ mid=>mdb->in($topics) }) );
 
         my $rs = $c->model('Baseliner::BaliTopicCategoriesStatus')->search(
-          { id_category=>{ -in => $rs1->as_query } },
+          { id_category=>mdb->in(@cats) },
           { +select=>['status.id', 'status.name', 'status.seq', 'status.bl'], +as=>[qw/id name seq bl/], 
             join=>['status'], order_by=>'status.seq', distinct=>1 }
         );
@@ -1785,16 +1771,12 @@ sub kanban_status : Local {
             $_;
         } $rs->hashref->all;
 
-        my $where = { mid => $topics };
-        $where->{'user_role.username'} = $c->username unless $c->is_root;
-        my @rs2 = $c->model('Baseliner::BaliTopic')->search(
-            $where,
-            {   join => { 'workflow' => [ 'user_role', 'statuses_to', 'statuses_from' ] },
-                +select  => [qw/mid id_category_status workflow.id_status_from workflow.id_status_to statuses_to.name statuses_to.seq statuses_from.name statuses_from.seq/],
-                +as      => [qw/mid id_category_status id_status_from id_status_to to_name to_seq from_name from_seq/],
-                distinct => 1,
-            }
-        )->hashref->all;
+        # given a user, find my workflow status froms and tos
+        my @roles = grep { defined  } map { $$_{id} } 
+            $c->model('Permissions')->user_roles( $c->username );
+        my @rs2 = mdb->joins({ merge=>'flat' }, topic=>[{ mid =>mdb->in($topics) },{ fields=>{ _txt=>0 } }], 
+            id_category=>id_category=>workflow=>{ id_role=>mdb->in(@roles) } );
+        
         my %workflow;
         my %status_mids;
         for my $wf ( @rs2 ) {
@@ -1804,8 +1786,6 @@ sub kanban_status : Local {
                 push @{ $status_mids{ $wf->{id_status_to} } }, $wf->{mid};
             }
         }
-        #my %statuses = map { $_->{id_status_to} => { name=>$_->{to_name}, id=>$_->{id_status_to}, seq=>$_->{to_seq} } } @rs2;
-        #{ success=>\1, msg=>'', statuses=>[ sort { $a->{seq} <=> $b->{seq} } values %statuses ] };
         { success=>\1, msg=>'', statuses=>\@statuses, workflow=>\%workflow, status_mids=>\%status_mids };
     } catch {
         my $err = shift;
@@ -1817,7 +1797,7 @@ sub kanban_status : Local {
 sub children : Local {
     my ($self, $c) = @_;
     my $mid = $c->req->params->{mid};
-    my @chi = map { $_->{to_mid} } DB->BaliMasterRel->search({ from_mid => $mid, rel_type=>'topic_topic' })->hashref->all; 
+    my @chi = map { $_->{to_mid} } mdb->master_rel->find({ from_mid=>"$mid", rel_type=>'topic_topic' })->all; 
     $c->stash->{json} = { success=>\1, msg=>'', children=>\@chi };
     $c->forward('View::JSON');
 }
@@ -1833,7 +1813,7 @@ sub report_data_replace {
         }
     }
     if( $show_desc ) {
-        my @descs = DB->BaliTopic->search({ mid=>\@mids }, { select=>'description' })->hashref->all;
+        my @descs = mdb->topic->find({ mid=>mdb->in(@mids) })->fields({ description=>1 })->all;
         map {
             $_->{description} = ( shift @descs )->{description};
         } _array( $data->{rows} );
@@ -1925,13 +1905,14 @@ sub change_status : Local {
     $c->stash->{json} = try {
         my $change_status_before;
         
-        if ($p->{old_status} eq DB->BaliTopic->find($p->{mid})->id_category_status){
+        my $id_cats = mdb->topic->find_one({ mid=>"$$p{mid}" },{ category_status=>1 })->{category_status}{id};
+        
+        if ($p->{old_status} eq $id_cats ){
             $change_status_before = \0;
             
             my ($isValid, $field_name) = $c->model('Topic')->check_fields_required( mid => $p->{mid}, username => $c->username);
             
             if ($isValid){
-                _log "entrooooooooooooooooooooooooo";
                 $c->model('Topic')->change_status( 
                     change => 1, username => $c->username, 
                     id_status => $p->{new_status}, id_old_status => $p->{old_status}, 

@@ -117,9 +117,8 @@ sub monitor {
                                                             action => 'action.job.viewall',
                                                             level => 1);
         
-        my $rs_jobs1 = Baseliner->model('Baseliner::BaliMasterRel')->search({rel_type => 'job_project', to_mid => \@ids_project}
-                                                                           ,{select=>'from_mid'});
-        push @mid_filters, { mid=>mdb->in( map { $_->{from_mid} } $rs_jobs1->hashref->all ) };
+        my $rs_jobs1 = mdb->master_rel->find({rel_type => 'job_project', to_mid => mdb->in(@ids_project) });
+        push @mid_filters, { mid=>mdb->in( map { $_->{from_mid} } $rs_jobs1->all ) };
     }
     
     if( length $p->{job_state_filter} ) {
@@ -319,10 +318,8 @@ sub search_query {
 
 sub get {
     my ($self, $id ) = @_;
-    my $where = $id =~ /^[0-9]+$/ ? {id => $id} : {name => $id};
-    #return Baseliner->model('Baseliner::BaliJob')->find($id) if $id =~ /^[0-9]+$/;
-    #return Baseliner->model('Baseliner::BaliJob')->search({ name=>$id })->first;
-    return Baseliner->model('Baseliner::BaliJob')->search($where)->first;
+    my $where = $id =~ /^[0-9]+$/ ? {jobid => "$id"} : {name => "$id"};
+    return ci->job->find_one($where);
 }
 
 sub status {

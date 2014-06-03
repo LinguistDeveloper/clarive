@@ -45,20 +45,8 @@ around load_post_data => sub {
 
 sub files {
     my $self  = shift;
-    my @files = Baseliner->model( 'Baseliner::BaliMasterRel' )->search(
-        {from_mid => [ $self->mid ], rel_type => 'topic_file_version'},
-        {
-
-            #                join    => [ 'topic_file_version_to' ],
-            join    => {'topic_file_version_to' => {'file_projects' => {'directory'}}},
-            +select => [
-                'topic_file_version_to.filename', 'max(topic_file_version_to.versionid)',
-                'max(topic_file_version_to.mid)', 'max(directory.name)'
-            ],
-            +as      => [ 'filename', 'version', 'mid', 'path' ],
-            group_by => 'topic_file_version_to.filename',
-        }
-    )->hashref->all;
+    my @files = mdb->joins( master_rel=>{ from_mid=>$self->mid, rel_type=>'topic_asset' },
+        to_mid=>mid=>master_doc=>{} );
     return @files;
 } 
 
@@ -74,7 +62,7 @@ sub timeline {
     
     # master cal entries
     my @cal =
-        DB->BaliMasterCal->search( { mid => $self->mid }, { order_by => { -asc => 'start_date' } } )->hashref->all;
+        mdb->master_cal->find({ mid => $self->mid })->sort({ start_data=>1 })->all;
     push @data, map {
         my $start = $_->{plan_end_date};
         my $end = $_->{end_date} // '';

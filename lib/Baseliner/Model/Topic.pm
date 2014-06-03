@@ -586,7 +586,7 @@ sub update_mid_data {
     map { $cis_out{ $_->{from_mid} }{ $_->{to_mid} }=1 } grep { $$_{rel_type} !~ /topic_topic/ } @rel_from;
     map { $cis_in{ $_->{to_mid} }{ $_->{from_mid} }=1 } grep { $$_{rel_type} !~ /topic_topic/ } @rel_to;
     map { $topic_project{$_->{from_mid}}{$_->{to_mid}}=1 } grep { $$_{rel_type} eq 'topic_project' } @rel_from;
-    map { $topic_file{$_->{from_mid}}{$_->{to_mid}}=1 } grep { $$_{rel_type} eq 'topic_file_version' } @rel_from;
+    map { $topic_file{$_->{from_mid}}{$_->{to_mid}}=1 } grep { $$_{rel_type} eq 'topic_asset' } @rel_from;
     map { $topic_post{$_->{from_mid}}{$_->{to_mid}}=1 } grep { $$_{rel_type} eq 'topic_post' } @rel_from;
     map { $assignee{$_->{from_mid}}{$_->{to_mid}}=1 } grep { $$_{rel_type} eq 'topic_user' } @rel_from;
     map { $folders{$_->{to_mid}}{$_->{from_mid}}=1 } grep { $$_{rel_type} eq 'folder_ci' } @rel_to;
@@ -1385,7 +1385,7 @@ sub get_cis {
 
 sub get_dates {
     my ($self, $topic_mid ) = @_;
-    my @dates = Baseliner->model('Baseliner::BaliMasterCal')->search({ mid=> $topic_mid })->hashref->all;
+    my @dates = mdb->master_cal->find({ mid=>"$topic_mid" })->all;
     return @dates ?  \@dates : [];
 }
 
@@ -1417,19 +1417,13 @@ sub get_topics {
 
 sub get_cal {
     my ($self, $topic_mid, $id_field, $meta, $data, %opts) = @_;
-    my @cal = DB->BaliMasterCal->search({ mid=>$topic_mid, rel_field=>$id_field })
-        ->hashref->all;
+    my @cal = mdb->master_cal->find({ mid=>"$topic_mid", rel_field=>$id_field })->all;
     return \@cal; 
 }
 
 sub get_files{
     my ($self, $topic_mid, $id_field) = @_;
-    my @files = map { +{ $_->get_columns } } 
-        Baseliner->model('Baseliner::BaliTopic')
-            ->find( $topic_mid )
-            ->files
-            ->search( { rel_field=>$id_field }, { select=>[qw(filename filesize md5 versionid extension created_on created_by)],
-        order_by => { '-asc' => 'created_on' } } )->all;
+    my @files = map { ci->asset->find_one({ mid=>"$_" }) } mdb->master_rel->find_values( to_mid => { from_mid=>"$topic_mid", rel_field=>$id_field });
     return @files ? \@files : []; 
 }
 
@@ -1998,7 +1992,7 @@ sub set_priority {
 sub set_cal {
     my ($self, $rs_topic, $cal_data, $user, $id_field ) = @_;
     my $mid = $rs_topic->mid;
-    DB->BaliMasterCal->search({ mid=>$mid, rel_field=>$id_field })->delete;
+    mdb->master_cal->remove({ mid=>$mid, rel_field=>$id_field },{ multiple=>1 });
    
     for my $row ( _array( $cal_data ) ) {
         $row->{rel_field} = $id_field;
@@ -2006,7 +2000,9 @@ sub set_cal {
             $row->{$_} =~ s/T/ /g if defined $row->{$_}; 
         }
         $row->{mid} = $mid; 
-        DB->BaliMasterCal->create( $row );
+        $row->{allday} //= 0;
+        $row->{id} //= mdb->seq('master_cal');
+        mdb->master_cal->insert( $row );
     }
 }
 
@@ -2560,15 +2556,6 @@ sub user_workflow {
         : DB->BaliTopicCategoriesAdmin->search({username => $username}, { join=>'user_role' })->hashref->all;
     return @rows;
 }
-
-   # my @all_to_status = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
-   #      $where,
-   #      {   join     => [ 'roles', 'statuses_to', 'statuses_from' ],
-   #          distinct => 1,
-   #          +select => [ 'id_status_from', 'statuses_from.name', 'statuses_from.bl', 'id_status_to', 'statuses_to.name', 'statuses_to.type', 'statuses_to.bl', 'statuses_to.description', 'id_category', 'job_type' ],
-   #          +as     => [ 'id_status_from', 'status_name_from', 'status_bl_from', 'id_status',    'status_name', 'status_type', 'status_bl', 'status_description', 'id_category', 'job_type' ]
-   #      }
-   #  )->hashref->all;
 
 sub root_workflow {
     my @categories = DB->BaliTopicCategories->search()->hashref->all;

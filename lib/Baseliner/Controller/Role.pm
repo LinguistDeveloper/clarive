@@ -279,7 +279,7 @@ sub roleusers : Local {
     try {
         my @data;
         my $role_id = $p->{id_role}+0;
-        my @role_users = ci->user->find({"project_security.$role_id"=>{'$exists'=>1}})->all;
+        my @role_users = ci->user->find({"project_security.$role_id"=>{'$exists'=>mdb->true}})->all;
         foreach my $user (@role_users){
             my @project_types = keys $user->{project_security}->{$role_id};
             my @user_projects;
@@ -308,7 +308,7 @@ sub roleprojects : Local {
     my $p = $c->req->params;
     my $role_id = $p->{id_role}+0;
     try {
-        my @role_users = ci->user->find({"project_security.$role_id"=>{'$exists'=>1}})->all;
+        my @role_users = ci->user->find({"project_security.$role_id"=>{'$exists'=>mdb->true}})->all;
         my %projects_users;
         my @data;
         foreach my $user (@role_users){

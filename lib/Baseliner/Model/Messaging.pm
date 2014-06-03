@@ -51,7 +51,7 @@ register 'service.notify.create' => {
 
         for ( _array $to ) {
             if ( $_ =~ /role\/(.*)/ ) {
-                push @users,  map { $_->{username} } ci->user->find({ "project_security.$1"=>{'$exists'=>1 } })->all;
+                push @users,  map { $_->{username} } ci->user->find({ "project_security.$1"=>{'$exists'=>mdb->true } })->all;
             } elsif ( $_ =~ /user\/(.*)/ ) {
                 my $user = ci->new($1);
                 push @users, $user->{username};
@@ -65,7 +65,7 @@ register 'service.notify.create' => {
         @users = ();
         for ( _array $cc ) {
             if ( $_ =~ /role\/(.*)/ ) {
-                push @users,  map { $_->{username} } ci->user->find({ "project_security.$1"=>{'$exists'=>1 } })->all;
+                push @users,  map { $_->{username} } ci->user->find({ "project_security.$1"=>{'$exists'=>mdb->true } })->all;
             } elsif ( $_ =~ /user\/(.*)/ ) {
                 my $user = ci->new($1);
                 push @users, $user->{username};
