@@ -39,9 +39,9 @@ sub run {
         bali_topic_status              => 'status',
         bali_topic_categories          => 'category',
         bali_topic_categories_status   => 'category_status',
-        bali_topic_categories_admin    => 'category_workflow',
+        bali_topic_categories_admin    => 'workflow',
         bali_topic_categories_priority => 'category_priority',
-        bali_topic_fields_category     => 'category_fields',
+        bali_topic_fields_category     => 'field',
         bali_topic_priority            => 'priority',
         bali_topic_view                => 'view',
 
@@ -601,6 +601,38 @@ sub role {
     }
     mdb->master_seq->remove({ _id => 'role'});
     mdb->master_seq->insert({ _id => 'role', seq => $highest_id });
+}
+
+sub topic_admin {
+    # category
+    my $max_cat=0;
+    for my $tc ( _dbis->query('select * from bali_topic_categories')->hashes ) {
+        my @st = _dbis->query('select * from bali_topic_categories_status where id_category=?', $$tc{id} )->hashes;
+        $$tc{statuses} = [ _unique map { $$_{id_status} } @st ];
+        my @fi = _dbis->query('select id_field,params_field from bali_topic_fields_category where id_category=?', $$tc{id} )->hashes;
+        $$tc{fields} = [ map { 
+        	$$_{params} = YAML::Syck::Load($$_{params_field});
+            $$_{params}{field_order} += 0;
+            $$_{params}{field_order_html} += 0;
+            $_ } @fi ];
+        my @wf = _dbis->query('select id_role,id_status_from,id_status_to,job_type from bali_topic_categories_admin where id_category=?', $$tc{id} )->hashes;
+        $$tc{workflow} = [ @wf ];
+        #_log( $tc ) ; 
+        $max_cat = $$tc{id} if $$tc{id} > $max_cat;
+        mdb->category->update({ id=>$$tc{id} }, $tc,{ upsert=>1 });
+    }
+    mdb->seq('category', $max_cat ) if $max_cat;
+}
+
+sub mids {
+    my $max_mid = _dbis->query('select max(mid) from bali_master')->array->[0];
+    require List::Util;
+    my $max_mid_mdb = List::Util::max(
+        map { $_->{mid} } 
+        mdb->master->find->fields({ mid=>1 })->all,
+        mdb->master_doc->find->fields({ mid=>1 })->all 
+     );
+     mdb->seq('mid', ($max_mid_mdb > $max_mid ? $max_mid_mdb : $max_mid)+1 );
 }
 
 ####################################
