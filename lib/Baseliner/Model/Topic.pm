@@ -1324,7 +1324,7 @@ sub get_release {
     $where->{rel_field} = $field_meta->{release_field} if $field_meta->{release_field};
     
     my ($release_row) = mdb->joins( master_rel => { rel_type=>'topic_topic', to_mid=>"$topic_mid" },
-                         from_mid => mid => topic => { is_release=>mdb->true });
+                         from_mid => mid => topic => { is_release=>'1' });
     return {
         color => $release_row->{categories}{color},
         name  => $release_row->{categories}{name},
