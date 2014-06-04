@@ -86,7 +86,7 @@ sub run_once {
                 # delete job logs
                 my $deleted_job_logs = mdb->job_log->find({ mid => $job->{mid}, lev => 'debug' });
                 while( my $actual = $deleted_job_logs->next ) {
-                    my $query = mdb->job_log->find_one({ mid => "$job->{mid}", data=>{'$exists'=>mdb->true} }); 
+                    my $query = mdb->job_log->find_one({ mid => "$job->{mid}", data=>{'$exists'=> '1'} }); 
                     my $data;
                     mdb->job_log->remove({ mid => $actual->{mid} });
                     if(ref $query){
