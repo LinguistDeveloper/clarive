@@ -4547,7 +4547,7 @@ msgid "Rule: %1"
 msgstr "Regla: %1"
 
 msgid "Topic %1 (%2) has been assigned to you"
-msgstr "El tópico %1 (%2) ha sido signado a ti"
+msgstr "El tópico %1 (%2) ha sido asignado a ti"
 
 msgid "AND?"
 msgstr "¿Y?"
