@@ -30,8 +30,8 @@ sub new {
         # ci record
         my $rec = $_[0];
         return Baseliner::Role::CI->_build_ci_instance_from_rec( $rec );
-    } elsif( @_ == 1 && is_number( $_[0] ) ) {
-        # mid
+    } elsif( @_ == 1 && ( is_number( $_[0] ) || $_[0] !~ /^(name|moniker):/ ) ) {
+        # mid, number or any string that does not start with "name:xxxx", "moniker:xxxx"
         my $mid = $_[0];
         my $rec = Baseliner::Role::CI->load( $mid );
         _throw _loc('CI record not found for mid %1', $mid) unless ref $rec;

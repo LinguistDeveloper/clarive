@@ -51,7 +51,7 @@ coerce 'HashJSON' =>
 #  from 'ArrayRef[Num]' => via { my $v = $_; [ map { Baseliner::CI->new( $_ ) } _array( $v ) ] },
 #  from 'Num' => via { [ Baseliner::CI->new( $_ ) ] }; 
 
-has mid      => qw(is rw isa Num);
+has mid      => qw(is rw isa Str);
 has active   => qw(is rw isa Bool default 1);
 has ts       => qw(is rw isa TS coerce 1), default => sub { Class::Date->now->string };
 #has _ci      => qw(is rw isa Any);  # the original DB record returned by load() XXX conflicts with Utils::_ci
@@ -152,9 +152,9 @@ sub save {
     my $bl = $self->bl;
     $bl = '*' if !length $bl; # fix empty submits from web
     # make sure we have a mid AND it's in mongo
-    my $row = mdb->master->find_one({ mid=>"$mid" });
+    Util->_fail( Util->_loc('CI mid cannot start with `name:` nor `mid:`') ) if $mid && $mid=~/^(name|moniker):/;
+    my $row = mdb->master->find_one({ mid=>"$mid" }) if length $mid;
     my $exists = length($mid) && $row; 
-    _fail _loc "Could not find master row for mid %1", $mid if length($mid) && !$exists;
     
     # try to get mid from ns
     my $ns = $self->ns;
@@ -180,11 +180,8 @@ sub save {
             $row->{versionid} = $self->versionid || '1';
             $row->{moniker} = $self->moniker;
             $row->{ns} = $self->ns;
-            $row->{ts} = Util->_dt;
+            $row->{ts} = mdb->ts;
             $self->update_ci( $row, undef, \%opts );
-        }
-        if( ref $self ) {
-            $self->mid( $mid );
         }
     } else {
         ######## NEW CI
@@ -192,7 +189,7 @@ sub save {
                 collection => $collection,
                 name       => $self->name,
                 ns         => $self->ns,
-                ts         => Util->_dt,
+                ts         => mdb->ts,
                 moniker    => $self->moniker,
                 bl         => join( ',', Util->_array( $bl ) ),
                 active     => $self->active // 1,
@@ -201,6 +198,7 @@ sub save {
         # update mid into CI
         $mid = length($mid) ? $mid : mdb->seq('mid');
         $self->mid( $mid );
+        $$row{mid} = $mid;
         # put a default name
         if( !length $self->name ) {
             my $name = $collection . ':' . $mid;
@@ -211,8 +209,6 @@ sub save {
         # now save the rest of the ci data (yaml)
         $self->new_ci( $row, undef, \%opts );
     }
-    # update mongo master
-    mdb->master->update({ mid=>$self->mid }, $row, { upsert=>1 });
     return $mid; 
 }
 
@@ -332,24 +328,26 @@ sub save_fields {
         mdb->master_doc->remove({ mid=>"$mid" });
         _fail _loc( 'Master row not found for mid %1', $mid );
     }
-    mdb->master->update({ mid=>"$mid" }, { '$set'=>{ yaml=>Util->_dump($data) } });
-    my $md = mdb->master_doc;
-    if( my $row = $md->find_one({ mid=>"$mid" }) ) {
+    my $yaml = Util->_dump($data);
+    # update mongo master
+    mdb->master->update({ mid=>"$mid" }, { '$set'=>{ %$master_row, yaml=>$yaml } }, { upsert=>1 });
+    if( my $row = mdb->master_doc->find_one({ mid=>"$mid" }) ) {
         my $id = $row->{_id};
         my $doc = { ( $master_row ? %$master_row : () ), %$row, %{ $data || {} } };
         my $final_doc = Util->_clone($doc);
         Util->_unbless($final_doc);
         mdb->clean_doc($final_doc);
         $final_doc->{_id} = $id;  # preserve OID object
-        $md->save({ %$final_doc, %{ $relations || {} } });
+        mdb->master_doc->save({ %$final_doc, %{ $relations || {} } });
     } else {
         my $doc = { ( $master_row ? %$master_row : () ), %{ $data || {} }, mid=>"$mid" };
         delete $doc->{yaml};
         my $final_doc = Util->_clone($doc);
         Util->_unbless($final_doc);
         mdb->clean_doc($final_doc);
-        $md->insert({ %$final_doc, %{ $relations || {} } });
+        mdb->master_doc->insert({ %$final_doc, %{ $relations || {} } });
     }
+    return $yaml;
 }
 
 sub load {

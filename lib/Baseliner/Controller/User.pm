@@ -291,7 +291,7 @@ sub update : Local {
                 if ( $p->{id} ) {
                     $user = ci->new($p->{id});
                 } else {
-                    $user = ci->new('name:'.$p->{username});
+                    $user = ci->user->search_ci( name=>$p->{username} );
                     _fail _loc("User not found") if !$user;
                     $user_id = $user->{mid};
                 }
@@ -342,7 +342,7 @@ sub update : Local {
             else {
             
                 # regenerate project security for all users TODO work with my ci only: DONE
-                my $ci = ci->new('name:'.$p->{username});
+                my $ci = ci->user->search_ci( name=>$p->{username} );
                 _debug 'Re-generating user project security...';
                 $ci->gen_project_security($projects_checked, $roles_checked);
                 $ci->save;
@@ -974,7 +974,7 @@ sub load_users{
                  }
               }
            }
-           my $ci = ci->new('name:'.$username);
+           my $ci = ci->user->search_ci( name=>$username );
            $ci->update(project_security => $ci_user_ps);
        }
     }

@@ -1306,7 +1306,7 @@ sub update_csv_fields{
     for my $field ( keys %$row ) {
         next unless $class->field_is_ci( $field );
         if(length $row->{$field} > 0) {
-            my $rel_ci = ci->new( "name:$row->{$field}" );   # se instancia el CI relacionado
+            my $rel_ci = ci->find( name=>$row->{$field} );   # se instancia el CI relacionado
             _fail _loc "Related CI not found: %1", $row->{$field} unless ref $rel_ci;  # no existe!!!
             $row->{ $field } = $rel_ci->{mid};
         }
