@@ -232,4 +232,18 @@ sub get_projects_from_user{
     _unique @id_projects;
 }
 
+
+sub get_projectnames_and_descriptions_from_user{
+    my ($self, $username) = @_;
+    my @id_projects;
+    my @res;
+    my %project_security = %{ci->user->find({username=>$username})->next->{project_security}};
+    my @id_roles = keys %project_security;
+    foreach my $id_role (@id_roles){
+        #my @project_types = keys $project_security{$id_role};
+        push @id_projects, @{$project_security{$id_role}->{project}};
+    }
+    mdb->master_doc->find({collection=>'project', mid=>mdb->in(@id_projects)})->fields({name=>1,description=>1, mid=>1, _id=>0})->all;
+}
+
 1;
