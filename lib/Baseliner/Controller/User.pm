@@ -365,8 +365,6 @@ sub update : Local {
                 _fail _loc( "User not found" ) if !$user;
                 $user_id = $user->{id};
             } ## end else [ if ( $p->{id} ) ]
-            $user->update( active => '0' );
-
             ci->delete( $user_id );
             $c->stash->{json} = {success => \1, msg => _loc( 'User deleted' )};
         } ## end try
