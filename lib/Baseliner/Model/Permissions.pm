@@ -602,7 +602,7 @@ sub users_with_roles {
                 push @root_ids, $role->{id};
              }
         }
-        my @where = map { { "project_security.$_"=>{'$exists'=>mdb->true } } } @root_ids;
+        my @where = map { { "project_security.$_"=>{'$exists'=> '1' } } } @root_ids;
         @root_users = map { $_->{name} } ci->user->find({'$or' =>\@where})->all;
 
     }

@@ -207,7 +207,7 @@ sub save : Local {
     my ( $self, $c ) = @_;
     my $p    = $c->req->params;
     my $data = {
-        rule_active => mdb->true,
+        rule_active => '1',
         rule_name  => $p->{rule_name},
         rule_when  => ( $p->{rule_type} eq 'chain' 
             ? $p->{chain_default}  

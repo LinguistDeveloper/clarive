@@ -471,13 +471,13 @@ sub changeset : Local {
     my $bind_releases = 0;
     my @changes = mdb->joins(
                 master_rel=>{ rel_type=>'topic_project', to_mid=>"$id_project" },
-                from_mid=>mid=>topic=>{ is_changeset=>mdb->true, 'category_status.id'=> "$p->{id_status}" });
+                from_mid=>mid=>topic=>{ is_changeset=>'1', 'category_status.id'=> "$p->{id_status}" });
     my %releases;
     map { push @{ $releases{ $$_{to_mid} } } => $_ }
         mdb->joins({ merge=>'flat' }, 
             master_rel=>{ to_mid=>mdb->in(map{ $$_{mid} } @changes), rel_type=>'topic_topic' }, 
             from_mid=>mid=>
-            topic=>{ is_release=>mdb->true } );
+            topic=>{ is_release=>'1' } );
     
     $bind_releases = DB->BaliTopicStatus->find( $p->{id_status} )->bind_releases;
 

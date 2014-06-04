@@ -31,7 +31,7 @@ params:
 			format:  df || Prefs.js_date_format,
 			width: 165,
 			//height: 30,
-			//allowBlank: false,
+			allowBlank: meta.allowBlank == 'false' ? false : true,
 			readOnly: meta ? meta.readonly : true,
 			hidden: meta ? (meta.hidden ? meta.hidden : false): true
 		}

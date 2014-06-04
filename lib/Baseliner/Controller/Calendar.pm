@@ -162,7 +162,7 @@ sub calendar_update : Path( '/job/calendar_update' ) {
                     name        => $p->{ name },
                     description => $p->{ description },
                     seq         => $p->{ seq } // $DEFAULT_SEQ,
-                    active => mdb->true,
+                    active      => '1',
                     ns          => $p->{ ns },
                     bl          => $p->{ bl }
                 });

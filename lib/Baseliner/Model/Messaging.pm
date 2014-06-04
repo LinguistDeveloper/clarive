@@ -51,7 +51,7 @@ register 'service.notify.create' => {
 
         for ( _array $to ) {
             if ( $_ =~ /role\/(.*)/ ) {
-                push @users,  map { $_->{username} } ci->user->find({ "project_security.$1"=>{'$exists'=>mdb->true } })->all;
+                push @users,  map { $_->{username} } ci->user->find({ "project_security.$1"=>{'$exists'=>1 } })->all;
             } elsif ( $_ =~ /user\/(.*)/ ) {
                 my $user = ci->new($1);
                 push @users, $user->{username};
@@ -65,7 +65,7 @@ register 'service.notify.create' => {
         @users = ();
         for ( _array $cc ) {
             if ( $_ =~ /role\/(.*)/ ) {
-                push @users,  map { $_->{username} } ci->user->find({ "project_security.$1"=>{'$exists'=>mdb->true } })->all;
+                push @users,  map { $_->{username} } ci->user->find({ "project_security.$1"=>{'$exists'=>1 } })->all;
             } elsif ( $_ =~ /user\/(.*)/ ) {
                 my $user = ci->new($1);
                 push @users, $user->{username};
@@ -161,7 +161,7 @@ sub create {
     my $msg = mdb->message->insert(
         {
             subject => $subject,
-            active => mdb->true,
+            active => '1',
             created => mdb->ts,
             body    => $body,
             sender  => $p{sender},
@@ -277,7 +277,7 @@ sub notify {
                             username=>$username, 
                             carrier=>$carrier, 
                             carrier_param=>$param, 
-                            active => mdb->true,
+                            active => '1',
                             attempts => '0',
                             swreaded => '0',
                             sent => $sent

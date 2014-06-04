@@ -110,7 +110,7 @@ sub infodetail : Local {
         )->sort($sort ? { $sort => $dir } : {role => 1});
     
     while( my $r = $roles_from_user->next ) {    
-        my $rs_user = ci->user->find({ username => $username, "project_security.$r->{id}"=> {'$exists' => mdb->true} })->next;
+        my $rs_user = ci->user->find({ username => $username, "project_security.$r->{id}"=> {'$exists'=>1} })->next;
         my @roles = keys $rs_user->{project_security};
         
         my @user_projects;
@@ -263,15 +263,15 @@ sub update : Local {
                     alias       => $p->{alias},
                     email     	=> $p->{email},
                     phone      	=> $p->{phone},            
-                    active => mdb->true,
+                    active      => '1',
                     password    => ci->user->encrypt_password( $p->{username}, $p->{pass} )
                 };           
                 
                 my $ci = ci->user->new( %$ci_data );
                 $ci->gen_project_security($projects_checked, $roles_checked);
-                $user_mid = $ci->save;
+                _log _dump $ci;
                 $ci->password( ci->user->encrypt_password( $p->{username}, $p->{pass} ));
-                $ci->save;
+                $user_mid = $ci->save;
                 $c->stash->{json} = { msg=>_loc('User added'), success=>\1, user_id=> $user_mid };
                 
             }else{
@@ -312,7 +312,7 @@ sub update : Local {
                             alias       => $p->{alias},
                             email       => $p->{email},
                             phone       => $p->{phone},            
-                            active => mdb->true,
+                            active      => '1',
                             password    => ci->user->encrypt_password( $p->{username}, $p->{pass} ),
                             project_security => $user_ci->{project_security}
                         };           
@@ -365,7 +365,7 @@ sub update : Local {
                 _fail _loc( "User not found" ) if !$user;
                 $user_id = $user->{id};
             } ## end else [ if ( $p->{id} ) ]
-            $user->update( active => mdb->false );
+            $user->update( active => '0' );
 
             ci->delete( $user_id );
             $c->stash->{json} = {success => \1, msg => _loc( 'User deleted' )};
@@ -391,7 +391,7 @@ sub update : Local {
                     foreach my $role (_array $roles_checked){
                         my $rs_user;            
                         my @where = map { { "project_security.$role.$_"=>{'$in'=>\@ns_projects} } } @colls;
-                        $rs_user = ci->user->find_one({username =>$user_name,"project_security.$role"=> {'$exists' => mdb->true},'$or' =>\@where});
+                        $rs_user = ci->user->find_one({username =>$user_name,"project_security.$role"=> {'$exists'=>1},'$or' =>\@where});
                       
                         foreach my $coll (@colls){
                             push @user_projects, map {$role.'/'.$coll.'/'.$_} _array $rs_user->{project_security}->{$role}->{$coll};   
@@ -898,7 +898,7 @@ sub duplicate : Local {
                         alias       => $r->{alias},
                         email       => $r->{email},
                         phone       => $r->{phone},            
-                        active => mdb->true,
+                        active      => '1',
                         project_security => $r->{project_security},
                 };       
 
