@@ -161,7 +161,7 @@ sub create {
     my $msg = mdb->message->insert(
         {
             subject => $subject,
-            active => '1',
+            active => mdb->true,
             created => mdb->ts,
             body    => $body,
             sender  => $p{sender},
@@ -277,7 +277,7 @@ sub notify {
                             username=>$username, 
                             carrier=>$carrier, 
                             carrier_param=>$param, 
-                            active => '1',
+                            active => mdb->true,
                             attempts => '0',
                             swreaded => '0',
                             sent => $sent

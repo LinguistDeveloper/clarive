@@ -251,7 +251,7 @@ sub update : Local {
     when ('add') {
         try{
             my $swOk = 1;
-            my $row = ci->user->find({username => $p->{username}, active => '1'})->next;
+            my $row = ci->user->find({username => $p->{username}, active => mdb->true})->next;
             if(!$row){
                 my $user_mid;
                
@@ -263,7 +263,7 @@ sub update : Local {
                     alias       => $p->{alias},
                     email     	=> $p->{email},
                     phone      	=> $p->{phone},            
-                    active 		=> '1',
+                    active => mdb->true,
                     password    => ci->user->encrypt_password( $p->{username}, $p->{pass} )
                 };           
                 
@@ -312,7 +312,7 @@ sub update : Local {
                             alias       => $p->{alias},
                             email       => $p->{email},
                             phone       => $p->{phone},            
-                            active      => '1',
+                            active => mdb->true,
                             password    => ci->user->encrypt_password( $p->{username}, $p->{pass} ),
                             project_security => $user_ci->{project_security}
                         };           
@@ -365,7 +365,7 @@ sub update : Local {
                 _fail _loc( "User not found" ) if !$user;
                 $user_id = $user->{id};
             } ## end else [ if ( $p->{id} ) ]
-            $user->update( active => '0' );
+            $user->update( active => mdb->false );
 
             ci->delete( $user_id );
             $c->stash->{json} = {success => \1, msg => _loc( 'User deleted' )};
@@ -740,7 +740,7 @@ sub change_pass : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
     my $username = lc $c->username;
-    my $row = ci->user->find({username => $username, active => '1'})->next;
+    my $row = ci->user->find({username => $username, active => mdb->true})->next;
     
     if ($row) {
         if ( ci->user->encrypt_password( $username, $p->{oldpass} ) eq $row->{password} ) {
@@ -881,10 +881,10 @@ sub duplicate : Local {
             my $row;
             my $cont = 2;
             $new_user = "Duplicate of ".$r->{username};
-            $row = ci->user->find({username => $new_user, active => '1'})->next;
+            $row = ci->user->find({username => $new_user, active => mdb->true})->next;
             while ($row) {
                 $new_user = "Duplicate of ".$r->{username}." ".$cont++;
-                $row = ci->user->find({username => $new_user, active => '1'})->next;            
+                $row = ci->user->find({username => $new_user, active => mdb->true})->next;            
             }
             if(!$row) {
                 my $user_mid;
@@ -898,7 +898,7 @@ sub duplicate : Local {
                         alias       => $r->{alias},
                         email       => $r->{email},
                         phone       => $r->{phone},            
-                        active      => '1',
+                        active => mdb->true,
                         project_security => $r->{project_security},
                 };       
 

@@ -94,7 +94,7 @@ sub get_users_from_mid_roles {
 }
 
 sub get_users_username {
-    my @users = map { $_->{username} } ci->user->find({active => '1'})->fields({username => 1, _id => 0});
+    my @users = map { $_->{username} } ci->user->find({active => mdb->true})->fields({username => 1, _id => 0});
     return wantarray ? @users : \@users; 
 }
 

@@ -26,7 +26,7 @@ register 'menu.admin.rule' => {
 sub list : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
-    my @rows = mdb->rule->find({ rule_active=>'1' })->sort({ rule_name=>1 })->fields({ rule_tree=>0 })->all;
+    my @rows = mdb->rule->find({ rule_active => mdb->true })->sort({ rule_name=>1 })->fields({ rule_tree=>0 })->all;
     $c->stash->{json} = { data=>\@rows, totalCount=>scalar(@rows) };
     $c->forward('View::JSON');
 }
@@ -207,7 +207,7 @@ sub save : Local {
     my ( $self, $c ) = @_;
     my $p    = $c->req->params;
     my $data = {
-        rule_active => '1',
+        rule_active => mdb->true,
         rule_name  => $p->{rule_name},
         rule_when  => ( $p->{rule_type} eq 'chain' 
             ? $p->{chain_default}  

@@ -52,9 +52,9 @@ sub chains : Local {
     try {
         my $where;
         if ( !Baseliner->model('Permissions')->is_root($c->username) ) {
-            $where = { rule_type=>'chain', rule_active=>'1', rule_when => $type };
+            $where = { rule_type=>'chain', rule_active => mdb->true, rule_when => $type };
         } else {
-            $where = { rule_type=>'chain', rule_active=>'1' };
+            $where = { rule_type=>'chain', rule_active => mdb->true };
         }
         my @rules = sort {
            my $r = $a->{rule_when} eq $type ? -1
@@ -62,7 +62,7 @@ sub chains : Local {
            : $a cmp $b;
            $r;
         } 
-        sort mdb->rule->find({ rule_type=>'chain', rule_active=>'1' })->fields({ rule_tree=>0 })->all;
+        sort mdb->rule->find({ rule_type=>'chain', rule_active => mdb->true })->fields({ rule_tree=>0 })->all;
         # TODO check action.rule.xxxxx for user
         $c->stash->{json} = { success => \1, data=>\@rules, totalCount=>scalar(@rules) };
     } catch {
