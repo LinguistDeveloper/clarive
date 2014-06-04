@@ -366,7 +366,7 @@ sub update : Local {
                 $user_id = $user->{id};
             } ## end else [ if ( $p->{id} ) ]
             
-            ci->delete( $user_id );
+	    ci->delete( $user_id );
             $c->stash->{json} = {success => \1, msg => _loc( 'User deleted' )};
         } ## end try
         catch {
