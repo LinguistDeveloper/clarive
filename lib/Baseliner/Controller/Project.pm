@@ -1,5 +1,5 @@
 package Baseliner::Controller::Project;
-use Baseliner::PlugMouse;
+use Baseliner::Plug;
 use Baseliner::Utils;
 use Baseliner::Core::DBI;
 use Baseliner::Sugar;
@@ -17,6 +17,7 @@ sub user_projects : Local {
 }
 
 sub all_projects : Local {
+    my ($self, $c) = @_;
 	my @rows = Baseliner->model('Projects')->get_all_projects();
 	$c->stash->{json} = { data=>\@rows, totalCount=>scalar(@rows)};		
 	$c->forward('View::JSON');	
