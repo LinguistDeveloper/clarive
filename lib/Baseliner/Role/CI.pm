@@ -7,6 +7,7 @@ use Try::Tiny;
 require Baseliner::CI;
 use Baseliner::Utils qw(_throw _fail _loc _log _debug _unique _array _load _dump _package_is_loaded _any);
 use Baseliner::Sugar;
+use Data::Compare ();
 
 subtype CI    => as 'Baseliner::Role::CI';
 subtype CIs   => as 'ArrayRef[CI]';
@@ -125,23 +126,25 @@ sub serialize {
 # sets several attributes at once, like DBIC
 #   the ci must exist (self=ref)
 sub update {
-    my ($self, %data ) = @_;
+    my $self = shift;
+    my %data = ref $_[0] eq 'HASH' ? %{ $_[0] } : @_; 
 
-    my $class = ref $self;
+    my $class = ref $self || _fail _loc 'CI must exist for update to work';
     
     # detect changed fields, in case it's a new row then all data is changed
     my $changed = +{ map { $_ => $data{$_} } grep { 
         ( defined $self->{$_} && !defined $data{$_} ) 
         || ( !defined $self->{$_} && defined $data{$_} ) 
-        || $self->{$_} ne $data{$_} 
+        || !Data::Compare::Compare( $self->{$_}, $data{$_} )
         } keys %data } ;
         
     # merge and recreate object
     my $d = { %$self, %data };  
-    $self = $class->new( $d );  
-    
-    $self->save( changed=>$changed );
+    $class->new( $d )->save( changed=>$changed );
+    # update attributes
+    $self->$_( $data{$_} ) for keys %data; 
 }
+
 
 sub save {
     my ($self,%opts) = @_;

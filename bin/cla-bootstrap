@@ -312,6 +312,7 @@ DBIx::Class::Helper::ResultSet
 DBIx::Class::Schema::Loader
 DBIx::Class::TimeStamp
 DBIx::Simple
+Data::Compare
 Data::Page
 Data::Random
 Data::Structure::Util
