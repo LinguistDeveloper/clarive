@@ -5,6 +5,7 @@ use Baseliner::CI;
 use Baseliner::Sugar;
 use Try::Tiny;
 use utf8::all;
+use Encode qw(encode decode);
 with 'Baseliner::Role::Service';
 
 our $ICON_DEFAULT = '/static/images/icons/step_run.png';
@@ -73,6 +74,8 @@ sub run_local {
         chdir $orig;
         _log "CHDIR $orig";
     }
+
+    $out = encode("utf8",$out);
     my $r = { output=>$out, rc=>$rc, ret=>$ret };
 
     if( $rc ) {
