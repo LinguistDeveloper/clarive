@@ -901,7 +901,7 @@ msgid "Last Message"
 msgstr "Mensaje"
 
 msgid "Status"
-msgstr "Estado de Ejecución"
+msgstr "Estado"
 
 msgid "Job"
 msgstr "Pase"
@@ -4994,7 +4994,7 @@ msgid "Fix explorer"
 msgstr "Fijar el explorador"
 
 msgid "Related: %1"
-msgstr "Relacionar: %1"
+msgstr "Relacionados: %1"
 
 msgid "Select a filter"
 msgstr "Seleccionar un filtro"
