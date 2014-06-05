@@ -1457,7 +1457,8 @@ sub save_data {
         my %relation;
 
         my @imgs;
-
+        
+        # XXX this should be a custom field (look in save_doc)
         $data->{description} =
             $self->deal_with_images( {topic_mid => $topic_mid, field => $data->{description}} );
 
@@ -1467,8 +1468,6 @@ sub save_data {
                 $description{$_->{column}} = $_->{name};     ##Contemplar otro parametro mas descriptivo
                 $relation{$_->{column}}    = $_->{relation};
                 if ( $_->{method} ) {
-
-                    #my $extra_fields = eval( '$self->' . $_->{method} . '( $data->{ $_ -> {name}}, $data, $meta )' );
                     my $method_set = $_->{method};
                     my $extra_fields = $self->$method_set( $data->{$_->{name}}, $data, $meta, %opts );
                     foreach my $column ( keys %{$extra_fields || {}} ) {
@@ -1657,6 +1656,9 @@ sub save_data {
             custom_fields => \@custom_fields
         );
 
+        # cleanup deleted images
+        $self->cleanup_images( $topic_mid, $data );
+
         # user seen
         mdb->master_seen->update({ username => $data->{username}, mid => $topic_mid }, 
                 {username => $data->{username}, mid => $topic_mid, last_seen => mdb->ts, type=>'topic' }, { upsert=>1 });
@@ -1702,10 +1704,10 @@ sub save_doc {
     
     # clear master_seen for everyone else
     mdb->master_seen->remove({ mid=>"$mid", username=>{ '$ne' => $p{username} } });
-    
+ 
     # take images out
     for( @custom_fields ) {
-        $doc->{ $_->{name} } = $self->deal_with_images({ topic_mid => $mid, field => $doc->{ $_->{name} } });
+        $doc->{ $_->{name} } = $self->deal_with_images({ topic_mid=>$mid, field=>$doc->{ $_->{name} } });
     }
     
     # treat fields based on their meta_type
@@ -1929,34 +1931,16 @@ sub update_projects {
 }
 
 sub deal_with_images{
-    #params:  topic_mid, field
     my ($self, $params ) = @_;
     my $topic_mid = $params->{topic_mid};
     my $field = $params->{field};
     
     my @imgs;
     
-    # TODO falta bucle de todos los campos HTMLEditor
-    #_debug $data->{description};
-    if( length $topic_mid ) {
-        my @img_current_ids;
-        #for my $img ( $data->{description} =~ m{"/topic/img/(.+?)"}g ) {   # /topic/img/id
-        for my $img ( $field =~ m{"/topic/img/(.+?)"}g ) {   # /topic/img/id
-            push @img_current_ids, $img;
-        }
-        if( @img_current_ids ) {
-            DB->BaliTopicImage->search({ topic_mid=>$topic_mid, -not => { id_hash=>{ -in => \@img_current_ids } } })->delete;
-        } else {
-            DB->BaliTopicImage->search({ topic_mid=>$topic_mid })->delete;
-        }
-    }
-    
-    #_debug $field;
-    ###for my $img ( $data->{description} =~ m{<img src="data:(.*?)"/?>}g ) {   # image/png;base64,xxxxxx
     for my $img ( $field =~ m{<img src="data:(.*?)"/?>}g ) {   # image/png;base64,xxxxxx
         my ($ct,$enc,$img_data) = ( $img =~ /^(\S+);(\S+),(.*)$/ );
         $img_data = from_base64( $img_data );
-        _error "IMG_DATA LEN=" . length( $img_data );
+        
         my $row = { topic_mid=>$topic_mid, img_data=>$img_data, content_type=>$ct };
         $row->{topic_mid} = $topic_mid if length $topic_mid;
         my $img_row = DB->BaliTopicImage->create( $row );
@@ -1964,11 +1948,32 @@ sub deal_with_images{
         my $img_id = $img_row->id;
         my $id_hash = _md5( join(',',$img_id,_nowstamp) ); 
         $img_row->update({ id_hash => $id_hash });
-        #$data->{description} =~ s{<img src="data:image/png;base64,(.*?)">}{<img class="bali-topic-editor-image" src="/topic/img/$id_hash">};
         $field =~ s{<img src="data:image/png;base64,(.*?)">}{<img class="bali-topic-editor-image" src="/topic/img/$id_hash">};
     }
     
     return $field;
+}
+
+sub cleanup_images {
+    my ($self, $topic_mid, $topic_data) = @_;
+    return unless length $topic_mid;
+    
+    my @img_current_ids;
+
+    # search for deleted images from all fields
+    for my $field( values %$topic_data ) {        
+        next if ref $field;
+        #for my $img ( $data->{description} =~ m{"/topic/img/(.+?)"}g ) {   # /topic/img/id
+        for my $img ( $field =~ m{"/topic/img/(.+?)"}g ) {   # /topic/img/id
+            push @img_current_ids, $img;
+        }
+    }
+    
+    if( @img_current_ids ) {
+        DB->BaliTopicImage->search({ topic_mid=>$topic_mid, -not => { id_hash=>{ -in => \@img_current_ids } } })->delete;
+    } else {
+        DB->BaliTopicImage->search({ topic_mid=>$topic_mid })->delete;
+    }
 }
 
 sub set_priority {
