@@ -851,13 +851,14 @@
     };
     
     var render_user = function(value,metadata,rec,rowIndex,colIndex,store) {
-        if ( !rec.json[this.dataIndex] ) {
-            var str = this.dataIndex;
-            var res = str.replace('_' +  this.alias,"");
-            value = rec.json[res];
-        };          
-        if( value == undefined ) return '';
-        return value.name; 
+        // if ( !rec.json[this.dataIndex] ) {
+        //     var str = this.dataIndex;
+        //     var res = str.replace('_' +  this.alias,"");
+        //     value = rec.json[res];
+        // };          
+        // if( value == undefined ) return '';
+        var user_list = value.join();
+        return user_list; 
     };
     
     var render_topic_rel = function(value,metadata,rec,rowIndex,colIndex,store) {
