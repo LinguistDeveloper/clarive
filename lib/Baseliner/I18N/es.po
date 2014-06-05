@@ -901,7 +901,7 @@ msgid "Last Message"
 msgstr "Mensaje"
 
 msgid "Status"
-msgstr "Estado de Ejecución"
+msgstr "Estado"
 
 msgid "Job"
 msgstr "Pase"
