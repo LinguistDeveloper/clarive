@@ -327,10 +327,7 @@ sub save_fields {
     $opts //={};
     $opts->{master_only} //= 1;
     my $mid = $master_row->{mid};
-    if( !$master_row ) {
-        mdb->master_doc->remove({ mid=>"$mid" });
-        _fail _loc( 'Master row not found for mid %1', $mid );
-    }
+    delete $master_row->{_id}; # $set fails if _id is in hash
     my $yaml = Util->_dump($data);
     # update mongo master
     mdb->master->update({ mid=>"$mid" }, { '$set'=>{ %$master_row, yaml=>$yaml } }, { upsert=>1 });
