@@ -19,8 +19,15 @@ sub data {
 sub get_project_name {
     my ( $self, %p ) = @_;
     $p{mid} //= delete $p{id};
-
     my $project = mdb->master_doc->find({ mid=>$p{mid} })->next->{name};
+}
+
+
+sub get_all_projects {
+    my ( $self, %p ) = @_;
+    my $rs = mdb->master_doc->find({ collection=>'project' })->fields({name=>1, description=>1, mid=>1, _id=>0});
+    $rs->sort({name=>1});
+    $rs->all;
 }
 
 1;

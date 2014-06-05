@@ -12,8 +12,14 @@ sub user_projects : Local {
     my ($self, $c) = @_;
     my $username = $c->username;
     my @rows = Baseliner->model('Users')->get_projectnames_and_descriptions_from_user($username);
-    $c->stash->{json} = { data=>\@rows};		
+    $c->stash->{json} = { data=>\@rows, totalCount=>scalar(@rows)};	
     $c->forward('View::JSON');
+}
+
+sub all_projects : Local {
+	my @rows = Baseliner->model('Projects')->get_all_projects();
+	$c->stash->{json} = { data=>\@rows, totalCount=>scalar(@rows)};		
+	$c->forward('View::JSON');	
 }
 
 1;
