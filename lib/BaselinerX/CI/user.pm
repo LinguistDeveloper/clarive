@@ -89,12 +89,12 @@ sub save_api_key  {
 method gen_project_security {
     my ($projects, $roles) = @_;
     if( ref $self ) {
+        my @colls = map { Baseliner::Utils::to_base_class($_) } Baseliner::Utils::packages_that_do( 'Baseliner::Role::CI::Project' );
         my $security = {};
-        for my $role (Util->_array($roles)){
+        for my $role (Baseliner::Utils::_array($roles)){
             my @projs;
-            for (Util->_array($projects)){
+            for (Baseliner::Utils::_array($projects)){
                 if ($_ eq 'todos'){
-                    my @colls = map { Util->to_base_class($_) } Util->packages_that_do( 'Baseliner::Role::CI::Project' );
                     my @pjs;
                     foreach my $col (@colls){
                         my @tmp = map {$_->{mid}} ci->$col->search_cis;
@@ -103,16 +103,23 @@ method gen_project_security {
                     last;    
                 }
                 my $ci = ci->new($_);
-                my $col = Util->to_base_class(ref $ci);
+                my $col = Baseliner::Utils::to_base_class(ref $ci);
                 push @{$security->{$role}->{$col}}, $_;
             }
         }
         my $old_project_security = $self->{project_security};
-        my %new_project_security = (%$old_project_security, %$security);
-        $self->project_security( \%new_project_security );
+        my %new_project_security;
+        foreach my $r (Baseliner::Utils::_array $roles){
+            foreach my $c (keys $security->{$r}){
+                foreach my $p (values $security->{$r}->{$c}){
+                    push @{$old_project_security->{$r}->{$c}}, $p;
+                }
+                @{$old_project_security->{$r}->{$c}} =  Baseliner::Utils::_unique @{$old_project_security->{$r}->{$c}};
+            }
+        }
+        $self->project_security( $old_project_security );
     }
 }
-
 
 method is_root( $username=undef ) {
     Baseliner->model('Permissions')->is_root( $username || $self->username );

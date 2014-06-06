@@ -207,7 +207,7 @@ sub delete : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     eval {
-        mdb->role->romove({ id=>$p->{id_role}+0 });
+        mdb->role->remove({ id=>$p->{id_role}+0 });
     };
     if( $@ ) {
         warn $@;
