@@ -372,7 +372,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 self.add( self.$tree_projects );
             }
             self.getLayout().setActiveItem( self.$tree_projects );
-            self.$tree_projects.onload = callback;            
+            self.$tree_projects.onload = callback;     
         };
 
         var show_favorites = function(callback) {
@@ -381,7 +381,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 self.add( self.$tree_favorites );
             }
             self.getLayout().setActiveItem( self.$tree_favorites );
-            self.$tree_favorites.onload = callback;            
+            self.$tree_favorites.onload = callback;
         };
 
         var show_workspaces = function(callback) {
@@ -401,7 +401,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 self.$tree_ci.on('favorite_added', function() { self.$tree_favorites.refresh() } );
             }
             self.getLayout().setActiveItem( self.$tree_ci );
-            self.$tree_ci.onload = callback;            
+            self.$tree_ci.onload = callback;  
         };
         
         var show_releases = function(callback) {
@@ -463,9 +463,9 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             tooltip: _('Favorites'),
             handler: function(){
                 this.disable();
-                show_favorites();
-                this.enable();
-            },
+                var that = this;
+                show_favorites(function(){ that.enable();}
+            )},
             pressed: true,
             allowDepress: false,
             toggleGroup: 'explorer-card',
@@ -654,7 +654,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
 
 
         Baseliner.Explorer.superclass.initComponent.call(this);
-        self.on('afterrender', function(){ show_favorites(); button_collapse.hide(); });
+        self.on('afterrender', function(){ show_favorites(function() { button_favorites.enable(); }); button_collapse.hide(); });
         self.on('beforeexpand', function() { button_stick.show();})
         self.on('beforecollapse', function() { button_stick.hide();})
     },
