@@ -142,12 +142,12 @@ sub revisions {
 
 sub bl {
     my ($self)=@_;
-    DB->BaliTopicStatus->find( $self->id_category_status )->bl;    
+    ci->status->find_one({ id_status=>''. $self->id_category_status })->{bl};    
 }
 
 sub status_name {
     my ($self)=@_;
-    DB->BaliTopicStatus->find( $self->id_category_status )->name;    
+    ci->status->find_one({ id_status=>''. $self->id_category_status })->{name};    
 }
 
 sub items {

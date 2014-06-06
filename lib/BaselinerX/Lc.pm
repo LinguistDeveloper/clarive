@@ -143,13 +143,16 @@ sub lc_for_project {
     if ( @projects_with_lc && $id_prj ~~ @projects_with_lc ) {   
 
         # States-Statuses with bl and type = D (Deployable)
-        my @deployable_statuses = map { $_->{id} } DB->BaliTopicStatus->search( { type=>'D' }, { order_by => { -asc => ['seq'] } } )->hashref->all;
+        my @deployable_statuses = map { $_->{id_status} } ci->status->find({ type=>'D' })->sort({ seq=>1 })->all; 
         
-        my @from_statuses = _unique map { $_->{id_status_from} } DB->BaliTopicCategoriesAdmin->search(
-                { id_status_to => \@deployable_statuses, id_status_from => \@user_workflow },
-                { distinct => 1 }
-          )->hashref->all; 
-
+        my @from_statuses = 
+                _unique map { $_->{id_status_from} } 
+                grep { 
+                    $$_{id_status_from} ~~ @user_workflow 
+                    && $$_{id_status_to} ~~ @deployable_statuses 
+                }
+                map { _array($$_{workflow}) }
+                mdb->category->find->fields({ workflow=>1 })->all;
 
         push @states, map {
                 my @bls = map { $_->{bl} } sort { $a->{seq} <=> $b->{seq} } _array $_->{bls};
@@ -169,8 +172,6 @@ sub lc_for_project {
                 ref $_ eq 'BaselinerX::CI::status'
             } 
             BaselinerX::CI::status->query( { id_status =>mdb->in(@from_statuses) } );
-            # Baseliner->model('Baseliner::BaliTopicStatus')
-            # ->search( { id => \@from_statuses  }, { order_by => { -asc => ['seq'] } } )->hashref->all;
     }     
 
     no strict;

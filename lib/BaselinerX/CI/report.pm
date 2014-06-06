@@ -504,6 +504,7 @@ sub selected_fields {
     my $meta = $p->{meta};
 	
 	my @categories = map { $_->{data}->{id_category} } _array($fields{categories});
+    my @status = values +{ ci->status->statuses( id_category=>\@categories ) };
 	
 	my %filters;
 	for my $filter ( _array($fields{where}) ) {
@@ -512,12 +513,9 @@ sub selected_fields {
 			given ($type->{field}) {
 				when ('status') {
 					if($type->{value} eq 'default'){
-						my @status = DB->BaliTopicCategoriesStatus
-							->search({id_category => \@categories}, 
-							{join=>'status', select=>['id_status','status.name'], as=>['id_status','name_status']})->hashref->all;
 						my (@options, @values);
 						map {
-							push @options, $_->{name_status};
+							push @options, $_->{name};
 							push @values, $_->{id_status};
 						} @status;	
 						$filters{$filter->{id_field}} = { type => $type->{field}, options => @options ? \@options : undef, values => @values ? \@values: undef};		

@@ -293,6 +293,9 @@ sub index_all {
             [{ from_mid  =>1 }],
             [{ rel_type=>1 }],
         ],
+        category => [
+          [{ id=>1 }],
+        ],
         role => [
           [{ role=>1 }],
           [{ id=>1 }],  

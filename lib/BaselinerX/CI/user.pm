@@ -122,6 +122,11 @@ method has_action( $action ) {
     return Baseliner->model('Permissions')->user_has_action( action=>$action, username=>$self->username );
 }
 
+method roles( $username=undef ) {
+    return grep { defined } map { $$_{id} } 
+        Baseliner->model('Permissions')->user_roles( ref $self ? $self->username : $username );
+}
+
 1;
 
 __END__

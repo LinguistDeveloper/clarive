@@ -17,7 +17,7 @@ register 'action.topics.view_graph' => { name=>'View related graph in topics' };
 register 'registor.menu.topics' => {
     generator => sub {
        # action.topics.<category_name>.[create|edit|view]
-       my @cats = DB->BaliTopicCategories->search(undef,{ select=>[qw/name id color/] })->hashref->all;
+       my @cats = mdb->categories->find->fields({ name=>1, id=>1, color=>1 })->all;
        my $seq = 10;
        my $pad_for_tab = 'margin: 0 0 -3px 0; padding: 2px 4px 2px 4px; line-height: 12px;';
        my %menu_view = map {
@@ -311,17 +311,6 @@ sub json : Local {
     my $p = $c->request->parameters;
     my $topic_mid = $p->{topic_mid};
      
-    ######################################################################################### 
-    #my $id_category = $topic->id_category;    
-
-    #my $row_category = $c->model('Baseliner::BaliTopicCategories')->find( $id_category );
-    #my $forms;
-    #if( ref $row_category ) {
-    #    $forms = $self->form_build( $row_category->forms );
-    #}
-
-    ##########################################################################################
-        
     my $ret = {};
     
     my $meta = $c->model('Topic')->get_meta( $topic_mid );
@@ -444,69 +433,15 @@ sub new_topic : Local {
     my $ret = try {
         my $id_category = $p->{new_category_id};
         my $name_category = $p->{new_category_name};
-        my $rs_status = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $id_category, type => 'I'},
-                                                                                            {
-                                                                                            prefetch=>['status'],
-                                                                                            }                                                                                 
-                                                                                         )->first; 
+        my ($st) = grep { $$_{type} eq 'I' } values +{ ci->status->statuses( id_category=>"$id_category" ) };
         _fail( _loc('The topic category %1 does not have any initial status assigned. Contact your administrator.', $name_category) ) 
-            unless $rs_status;
-        my $name_status = $rs_status->status->name;
+            unless $st;
+        my $name_status = $st->{name};
         my $meta = $c->model('Topic')->get_meta( undef, $id_category, $c->username );
         $meta = $self->get_field_bodies( $meta );
-        
-        my $data;
-        
-        if ($p->{ci}){
-            local $Baseliner::CI::ci_record = 1;
-            $data = ci->new($p->{ci})->{_ci};
-            $data->{title} = $data->{gdi_perfil_dni};
-            if ($p->{clonar} && $p->{clonar} == -1){
-                $data = $self->init_values_topic($data);
-                if ($p->{dni}){
-                    $data->{gdi_perfil_dni} = $p->{dni};
-                }
-                my $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $id_category, type => 'I'},
-                                                                                        {
-                                                                                        prefetch=>['status'],
-                                                                                        }                                                                                 
-                                                                                     )->first;
-                
-                my $action = $c->model('Topic')->getAction($statuses->status->type);
-                $data->{id_category_status} = $statuses->status->id;
-                $data->{name_status} = $statuses->status->name;
-                $data->{type_status} = $statuses->status->type;
-                $data->{action_status} = $action;
-            }
-        }else{
-            $data = $c->model('Topic')->get_data( $meta, undef );
-            
-            if($p->{dni}){
-                if ($p->{clonar}){
-                    $data = $c->model('Topic')->get_data( $meta, $p->{clonar} );
-                    $data = $self->init_values_topic($data);
-                    my $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $data->{id_category}, type => 'I'},
-                                                                                            {
-                                                                                            prefetch=>['status'],
-                                                                                            }                                                                                 
-                                                                                         )->first;
-                    
-                    
-                    my $action = $c->model('Topic')->getAction($statuses->status->type);
-                    $data->{id_category_status} = $statuses->status->id;
-                    $data->{name_status} = $statuses->status->name;
-                    $data->{type_status} = $statuses->status->type;
-                    $data->{action_status} = $action;                    
-                }
-                $data->{gdi_perfil_dni} = $p->{dni};
-                $data->{title} = $data->{gdi_perfil_dni};
-            }
-        }
-        
+        my $data = $c->model('Topic')->get_data( $meta, undef );
         map{ $data->{$_} = 'off'}  grep {$_ =~ '_done' && $data->{$_} eq 'on' } _array $data;
-        
         $meta = $self->get_meta_permissions ($c, $meta, $data, $name_category, $name_status);
-        
         {
             success => \1,
             new_category_id     => $id_category,
@@ -588,10 +523,11 @@ sub view : Local {
                 mdb->master_seen->update({ username=>$c->username, mid=>$mid },{ username=>$c->username, mid=>$mid, type=>'topic', last_seen=>mdb->ts },{ upsert=>1 });
             }
             
-            $category = DB->BaliTopicCategories->search({ mid=>$topic_mid }, { prefetch=>{'topics' => 'status'} })->first;
+            $category = mdb->category->find_one({ id=>$topic_doc->{category}{id} },{ fields=>0 });
+            
             _fail( _loc('Category not found or topic deleted: %1', $topic_mid) ) unless $category;
             
-            if ( !$categories_view{$category->id } ) {
+            if ( !$categories_view{$category->{id} } ) {
                 _fail( _loc("User %1 is not allowed to access topic %2 contents", $c->username, $topic_mid) );    
             }
 
@@ -599,19 +535,21 @@ sub view : Local {
                 _fail( _loc("User %1 is not allowed to access topic %2 contents", $c->username, $topic_mid) );    
             }
 
-            $c->stash->{category_meta} = $category->forms;
+            $c->stash->{category_meta} = $category->{forms};
             
             #workflow category-status
-            #my $username = $c->is_root ? '' : $c->username;
-            my @statuses = sort { ( $a->{seq} // 0 ) <=> ( $b->{seq} // 0 ) } grep { $_->{id_status} ne $category->topics->status->id } $c->model('Topic')->next_status_for_user(
-                id_category    => $category->id,
-                id_status_from => $category->topics->status->id,
-                username       => $c->username,
-                topic_mid      => $topic_mid
-            );            
-            
+            my @statuses = 
+                sort { ( $a->{seq} // 0 ) <=> ( $b->{seq} // 0 ) } 
+                grep { $_->{id_status} ne $topic_doc->{category_status}{id} } 
+                $c->model('Topic')->next_status_for_user(
+                    id_category    => $category->{id},
+                    id_status_from => $topic_doc->{category_status}{id},
+                    username       => $c->username,
+                    topic_mid      => $topic_mid
+                );            
+    
             my %tmp;
-            if ((substr $category->topics->status->type, 0, 1) eq "F"){
+            if ((substr $topic_doc->{category_status}{type}, 0, 1) eq "F"){
                 $c->stash->{permissionEdit} = 0;
                 $c->stash->{permissionDelete} = 0;
             }
@@ -620,10 +558,10 @@ sub view : Local {
                     $c->stash->{permissionEdit} = 1;     
                     $c->stash->{permissionDelete} = 1;     
                 }else{
-                    if (exists ($categories_edit{ $category->id })){
+                    if (exists ($categories_edit{ $category->{id} })){
                         $c->stash->{permissionEdit} = 1;
                     }
-                    if (exists ($categories_delete{ $category->id })){
+                    if (exists ($categories_delete{ $category->{id} })){
                         $c->stash->{permissionDelete} = 1;
                     }
                 }
@@ -631,40 +569,37 @@ sub view : Local {
                              
             $c->stash->{has_comments} = $c->model('Topic')->list_posts( mid=>$topic_mid, count_only=>1 );
             _log( $c->model('Topic')->list_posts( mid=>$topic_mid) );
-            #$c->stash->{forms} = [
-            #    map { "/forms/$_" } split /,/,$topic->categories->forms
-            #];
      
             # jobs for release and changeset
-            if( $category->is_changeset || $category->is_release ) {
-                my @jobs = ci->parents( 
-                    mid=>$topic_mid, 
-                    rel_type=>'job_' . ( $category->is_changeset ? 'changeset' : 'release' ),
-                    no_rels=>1,
-                    order_by=>{-desc=>'from_mid'} );
-
+            if ( $category->{is_changeset} || $category->{is_release} ) {
+                my @jobs = ci->parents(
+                    mid      => $topic_mid,
+                    rel_type => 'job_' . ( $category->{is_changeset} ? 'changeset' : 'release' ),
+                    no_rels  => 1,
+                    order_by => { -desc => 'from_mid' }
+                );
                 $c->stash->{jobs} = \@jobs;
             }
             
             $c->stash->{status_items_menu} = _encode_json(\@statuses);
-        }else{
+        } else {
             $id_category = $p->{new_category_id} // $p->{category_id};
             
-            my $category = DB->BaliTopicCategories->find( $id_category );
-            $c->stash->{category_meta} = $category->forms;
+            my $category = mdb->category->find_one({ id=>"$id_category" });
+            $c->stash->{category_meta} = $category->{forms};
+            my $first_status = ci->status->find_one({ id_status=>mdb->in( $category->{statuses} ), type=>'I' })  // _fail( _loc('Status not found: %1',  Util->_encode_json($category->{statuses}) ));
             
-            my @category = DB->BaliTopicCategories->search( 
-                {id_category => $id_category, 'status.type' => 'I'} , 
-                { join => {'statuses' => 'status'} , +select =>[ 'forms','status.id'], as =>['forms','id_status'] } )->hashref->first;
-            
-            my @statuses = sort { ($a->{seq}//0) <=> ($b->{seq}//0) } grep { $_->{id_status} ne $category[0]->{id_status}} $c->model('Topic')->next_status_for_user(
-                id_category    => $id_category,
-                id_status_from => $category[0]->{id_status},
-                username       => $c->username,
-                topic_mid      => $topic_mid
-            );
+            my @statuses =
+                sort { ( $a->{seq} // 0 ) <=> ( $b->{seq} // 0 ) }
+                grep { $_->{id_status} ne $first_status->{id_status} } 
+                $c->model('Topic')->next_status_for_user(
+                    id_category    => $id_category,
+                    id_status_from => $first_status->{id_status},
+                    username       => $c->username,
+                    topic_mid      => $topic_mid
+                );
             $c->stash->{status_items_menu} = _encode_json(\@statuses);
-            $c->stash->{category_meta} = $category[0]->{forms};
+            $c->stash->{category_meta} = $category->{forms};
             
             $c->stash->{permissionEdit} = 1 if exists $categories_edit{$id_category};
             $c->stash->{permissionDelete} = 1 if exists $categories_delete{$id_category};
@@ -677,7 +612,7 @@ sub view : Local {
             my $meta = $c->model('Topic')->get_meta( $topic_mid, $id_category );
             my $data = $c->model('Topic')->get_data( $meta, $topic_mid, topic_child_data=>$p->{topic_child_data} );
             $meta = $self->get_meta_permissions ($c, $meta, $data);        
-            
+
             my $write_action = 'action.topicsfield.' .  _name_to_id($topic_doc->{name_category}) . '.labels.' . _name_to_id($topic_doc->{name_status}) . '.write';
 
             $data->{admin_labels} = $c->model('Permissions')->user_has_any_action( username=> $c->username, action=>$write_action );
@@ -863,29 +798,21 @@ sub list_category : Local {
         }
         
         if(@categories){
-  
             foreach my $category (@categories){
-                my @statuses;
-                my $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $category->{id}});
-                while( my $status = $statuses->next ) {
-                    push @statuses, $status->id_status;
-                }
+                my @statuses = _array( $category->{statuses} );
 
                 my $type = $category->{is_changeset} ? 'C' : $category->{is_release} ? 'R' : 'N';
                 
                 my @fields =
                     map { $_->{name_field} }
                     sort { ( $a->{field_order} // 100 ) <=> ( $b->{field_order} // 100 ) }
-                    map { _load $_->{params_field} }
-                    DB->BaliTopicFieldsCategory->search( { id_category => $category->{id} } )->hashref->all;
+                    map { $_->{params} }
+                    _array( mdb->category->find_one({ id => ''.$category->{id} })->{fields} );
                     
-                my @priorities = map { $_->id_priority } 
-                    $c->model('Baseliner::BaliTopicCategoriesPriority')->search( {id_category => $category->{id}, is_active => 1}, {order_by=> {'-asc'=> 'id_priority'}} )->all;
-
                 my $forms = $self->form_build( $category->{forms} );
                 
-                push @rows,
-                {   id            => $category->{id},
+                push @rows, {
+                    id            => $category->{id},
                     category      => $category->{id},
                     name          => $p->{swnotranslate} ? $category->{name}: _loc($category->{name}),
                     color         => $category->{color},
@@ -897,61 +824,24 @@ sub list_category : Local {
                     description   => $category->{description},
                     statuses      => \@statuses,
                     fields        => \@fields,
-                    priorities    => \@priorities
+                    #priorities    => \@priorities
                 };
             }  
         }
-        $cnt = $#rows + 1 ; 
+        $cnt = @rows;
     }else{
         # Status list for combo and grid in workflow 
-        my $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $p->{categoryId}},
-                                                                            {
-                                                                                join => ['status'],
-                                                                                '+select' => ['status.name','status.id','status.bl'],
-                                                                                order_by => { -asc => ['status.seq'] },
-                                                                            });            
-        if($statuses){
-            while( my $status = $statuses->next ) {
-                push @rows, {
-                                id      => $status->status->id,
-                                bl      => $status->status->bl,
-                                name    => $status->status->name_with_bl,
-                            };
-            }
+        my $cat = mdb->category->find_one({ id=>mdb->in($p->{categoryId}) },{ statuses=>1 });
+        my @statuses = sort { $a->seq <=> $b->seq } ci->status->search_cis( id_status=>mdb->in($$cat{statuses}) );
+        for my $status ( @statuses ) {
+            push @rows, {
+                            id      => $status->id_status,
+                            bl      => $status->bl,
+                            name    => $status->name_with_bl,
+                        };
         }
-        $cnt = $#rows + 1 ;
+        $cnt = @rows;
     }
-    
-    $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
-    $c->forward('View::JSON');
-}
-
-
-sub list_priority : Local {
-    my ($self,$c) = @_;
-    my $p = $c->request->parameters;
-    my ($dir, $sort, $cnt) = ( @{$p}{qw/dir sort/}, 0 );
-    $dir ||= 'asc';
-    $sort ||= 'name';
-
-    my $row;
-    my @rows;
-    $row = $c->model('Baseliner::BaliTopicPriority')->search(undef, { order_by => { "-$dir" => ["$sort" ] }});
-    
-    if($row){
-        while( my $r = $row->next ) {
-            push @rows,
-              {
-                id          => $r->id,
-                name        => $r->name,
-                response_time_min   => $r->response_time_min,
-                expr_response_time => $r->expr_response_time,
-                deadline_min => $r->deadline_min,
-                expr_deadline => $r->expr_deadline
-              };
-        }  
-    }
-    $cnt = $#rows + 1 ; 
     
     $c->stash->{json} = { data=>\@rows, totalCount=>$cnt};
     $c->forward('View::JSON');
@@ -1122,25 +1012,6 @@ sub filters_list : Local {
     };            
     #################################################################################
 
-    ##$row = $c->model('Baseliner::BaliTopicView')->search();
-    ##
-    ##if($row){
-    ##    while( my $r = $row->next ) {
-    ##        push @views, {
-    ##            id  => $i++,
-    ##            idfilter      => $r->id,
-    ##            text    => _loc($r->name),
-    ##            filter  => $r->filter_json,
-    ##            default    => \0,
-    ##            cls     => 'forum',
-    ##            iconCls => 'icon-no',
-    ##            checked => \0,
-    ##            leaf    => 'true',
-    ##            uiProvider => 'Baseliner.CBTreeNodeUI_system'
-    ##        };	
-    ##    }  
-    ##}   
-    
     push @tree, {
         id          => 'V',
         text        => _loc('Filters'),
@@ -1154,7 +1025,6 @@ sub filters_list : Local {
         
     my @categories;
     my $category_id = $c->req->params->{category_id};
-    #$row = $c->model('Baseliner::BaliTopicCategories')->search();
     my @categories_permissions  = $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view' );
     if($category_id){
         @categories_permissions = grep { $_->{id} == $category_id } @categories_permissions;
@@ -1223,40 +1093,29 @@ sub filters_list : Local {
     
     # Filter: Status #############################################################################################################
     my @statuses;
-    my $where = undef;
+    my @id_categories = map { $_->{id} } @categories_permissions;
+    my @cat_statuses = mdb->category->find_values( statuses=>{ id=>mdb->in(@id_categories) } );
+    my $where = { '$and'=>[{ id_status=>mdb->in(@cat_statuses)}] };
     
+    # intersect statuses with a reduced set?
     my $status_id = $c->req->params->{status_id};
     if ($status_id) {
-        my @status_id = _array $status_id;
-        $where->{id} = \@status_id;
+        my @status_id = _array( $status_id );
+        push @{ $where->{'$and'} }, { id_status=>mdb->in(@status_id) };
     }
-    
-    my $arg = {order_by=>'seq'};
-    
-    #if($category_id){
-    my @id_categories = map { $_->{id} } @categories_permissions;
-    
-        $arg->{join} = ['categories_status'];
-        $arg->{distinct} = 1;
-        #$where->{'categories_status.id_category'} = $category_id;
-        $where->{'categories_status.id_category'} = \@id_categories;
-    #}
-    $row = $c->model('Baseliner::BaliTopicStatus')->search($where,$arg);
-    
-    #$row = $c->model('Baseliner::BaliTopicStatus')->search(undef, { order_by=>'seq' });
+    my $rs_status = ci->status->find($where)->sort({ seq=>1 });
     
     my $is_root = Baseliner->model('Permissions')->is_root( $c->username );
     ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
     my %tmp;
-
 
     if ( !$is_root ) {
         map { $tmp{$_->{id_status_from}} = 'id' } 
                     Baseliner->model('Topic')->user_workflow( $c->username );        
     };
 
-    if($row->count() gt 1){
-        while( my $r = $row->next ) {
+    if( $rs_status->count > 1 ){
+        while( my $r = $rs_status->next ) {
             my $checked;
 
             if ( $is_root ) {
@@ -1267,8 +1126,8 @@ sub filters_list : Local {
             push @statuses,
                 {
                     id  => $i++,
-                    idfilter      => $r->id,
-                    text    => _loc($r->name),
+                    idfilter      => $r->{id},
+                    text    => _loc($r->{name}),
                     cls     => 'forum status',
                     iconCls => 'icon-no',
                     checked => $checked,
@@ -1288,38 +1147,6 @@ sub filters_list : Local {
     }
     
     
-    #Filter: Priority ########################################################################################################
-    if(!$typeApplication){    
-        my @priorities;
-        $row = $c->model('Baseliner::BaliTopicPriority')->search();
-        
-        if($row->count() gt 0){
-            while( my $r = $row->next ) {
-                push @priorities,
-                {
-                    id  => $i++,
-                    idfilter      => $r->id,
-                    text    => _loc($r->name),
-                    cls     => 'forum',
-                    iconCls => 'icon-no',
-                    checked => \0,
-                    leaf    => 'true',
-                    uiProvider => 'Baseliner.CBTreeNodeUI'                
-                };
-            }
-            
-            push @tree, {
-                id          => 'P',
-                text        => _loc('Priorities'),
-                cls         => 'forum-ct',
-                iconCls     => 'forum-parent',
-                expanded    => 'true',
-                children    => \@priorities
-            };
-            
-        }
-    }
-        
     $c->stash->{json} = \@tree;
     $c->forward('View::JSON');
 }
@@ -1382,47 +1209,31 @@ sub list_admin_category : Local {
     my $p = $c->request->parameters;
     my $cnt;
     my @rows;
-    my $statuses;
-    my $swStatus = 0;
+    my @statuses;
     my $topic_mid = $p->{topic_mid};
-
 
     if ($p->{change_categoryId}){
         if ($p->{statusId}){
-            $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $p->{change_categoryId}, id_status => $p->{statusId}},
-                                                                                        {
-                                                                                        prefetch=>['status'],
-                                                                                        order_by => {'-asc' => 'seq'}
-                                                                                        }                                                                                 
-                                                                                     );
-            if($statuses->count){
-                $swStatus = 1;
-            }
-            
+            # intersect statusId and change_categoryId
+            @statuses = sort { $$a{seq} <=> $$b{seq} } values +{ ci->status->statuses( id_category=>''.$p->{change_categoryId}, id_status=>mdb->in($p->{statusId}) ) };
         }
-        if(!$swStatus){
-            $statuses = $c->model('Baseliner::BaliTopicCategoriesStatus')->search({id_category => $p->{change_categoryId}, type => 'I'},
-                                                                                        {
-                                                                                        prefetch=>['status'],
-                                                                                        }                                                                                 
-                                                                                     );        
+        if( !@statuses ){
+            @statuses = sort { $$a{seq} <=> $$b{seq} } values +{ ci->status->statuses( id_category=>''.$p->{change_categoryId}, type=>'I' ) };
         }
         
-        if($statuses->count){
-            while( my $status = $statuses->next ) {
-                my $action = $c->model('Topic')->getAction($status->status->type);
-                push @rows, {
-                                id          => $status->status->id,
-                                status      => $status->status->id,
-                                name        => _loc($status->status->name),
-                                status_name => _loc($status->status->name),
-                                type        => $status->status->type,
-                                action      => $action,
-                                bl          => $status->status->bl,
-                                description => $status->status->description
-                            };
-            }
-        }        
+        for my $status ( @statuses ) {
+            my $action = $c->model('Topic')->getAction($status->status->type);
+            push @rows, {
+                            id          => $status->{id},
+                            status      => $status->{id},
+                            name        => _loc($status->{name}),
+                            status_name => _loc($status->{name}),
+                            type        => $status->{type},
+                            action      => $action,
+                            bl          => $status->{bl},
+                            description => $status->{description}
+                        };
+        }
 
     } else {
         my @statuses = $c->model('Topic')->next_status_for_user(
@@ -1433,14 +1244,14 @@ sub list_admin_category : Local {
         );
 
         my $status_id   = $p->{statusId};
-        my $rs_current_status = $c->model('Baseliner::BaliTopicStatus')->find({ id=>$p->{statusId} });
-        my $status_name = _loc( $p->{statusName} || $rs_current_status->name );
+        my $current_status = ci->status->find_one({ id_status=>''.$p->{statusId} }) // _fail( _loc('Status not found: %1', $p->{statusId}) );
+        my $status_name = _loc( $p->{statusName} || $current_status->{name} );
         push @rows, { 
             id          => $status_id,
             name        => $status_name,
             status      => $status_id,
             status_name => $status_name,
-            action      => $c->model('Topic')->getAction($rs_current_status->type),
+            action      => $c->model('Topic')->getAction($current_status->{type}),
         };
         
         push @rows , map {
@@ -1758,22 +1569,17 @@ sub kanban_status : Local {
     $c->stash->{json} = try {
         my @cats = _unique( mdb->topic->find_values( id_category=>{ mid=>mdb->in($topics) }) );
 
-        my $rs = $c->model('Baseliner::BaliTopicCategoriesStatus')->search(
-          { id_category=>mdb->in(@cats) },
-          { +select=>['status.id', 'status.name', 'status.seq', 'status.bl'], +as=>[qw/id name seq bl/], 
-            join=>['status'], order_by=>'status.seq', distinct=>1 }
-        );
+        my @cat_status = mdb->category->find({ id =>mdb->in(@cats) })->fields({ statuses=>1 })->all;
         ## support multiple bls
-        my %status_cis = map { $_->{id_status} => $_->{bls} } ci->status->search_cis;
-        my @statuses = map {  
-            my $bls = join ' ', map { $_->{moniker} } _array(  $status_cis{ $_->{id} } );
-            $_->{bl} = $bls;
-            $_;
-        } $rs->hashref->all;
+        my %status_cis = ci->status->statuses;
+        my @statuses = map {
+            my $st = $_;
+            my $bls = join ' ', map { $_->{moniker} } _array($st->{bl});  # XXX where are the multiple bls in ci status?
+            +{ id=>$$st{id_status}, name=>$$st{name}, seq=>$$st{seq}, bl=>$bls };
+        } sort { $$a{seq}<=>$$b{seq} } grep { defined } map { $status_cis{$_} } _unique map { _array($$_{statuses}) } @cat_status;
 
         # given a user, find my workflow status froms and tos
-        my @roles = grep { defined  } map { $$_{id} } 
-            $c->model('Permissions')->user_roles( $c->username );
+        my @roles = ci->user->roles( $c->username );
         my @rs2 = mdb->joins({ merge=>'flat' }, topic=>[{ mid =>mdb->in($topics) },{ fields=>{ _txt=>0 } }], 
             id_category=>id_category=>workflow=>{ id_role=>mdb->in(@roles) } );
         

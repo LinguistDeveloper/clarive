@@ -3,10 +3,14 @@
     $data
 </%args>
 <%perl>
-    my $val = length($data->{$meta->{id_field}}) ? $data->{$meta->{id_field}}: length($data->{$meta->{display_field}}) ? $data->{$meta->{display_field}}: "";
-    $val = join(',',@$val) if ref $val eq 'ARRAY';
+    my $val = length( $data->{ $meta->{id_field} } ) && $meta->{id_field} ne 'status_new' 
+        ? $data->{ $meta->{id_field} }
+        : length( $data->{ $meta->{display_field} } ) 
+            ? $data->{ $meta->{display_field} }
+            : "";
+    $val = join( ',', @$val ) if ref $val eq 'ARRAY';
 </%perl>
-% if( length($val) && !$meta->{hidden} ) {
+% if( length($val) && !$meta->{hidden} ) {  # This is the 'Status' right column field:
     <tr>
       <th width="50%"><% _loc($meta->{name_field}) %>:</th>
       <td 

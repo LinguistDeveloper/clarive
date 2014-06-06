@@ -528,9 +528,8 @@ Returns everything a user has.
 =cut
 sub user_roles {
     my ( $self, $username ) = @_;
-    $username or _throw 'Missing parameter username';	
+    my @id_roles = $self->user_role_ids($username);
     my @roles;
-    my @id_roles = keys ci->user->find({ username=>$username })->next->{project_security};
     foreach my $id (@id_roles){
         my $role = mdb->role->find({ id=>0+$id })->next;
         my @actions = map { $_->{action} } @{ $role->{actions} };
@@ -539,6 +538,12 @@ sub user_roles {
     return @roles;
 }
 
+sub user_role_ids {
+    my ( $self, $username ) = @_;
+    $username or _throw 'Missing parameter username';	
+    my $u = ci->user->find_one({ username=>$username });
+    return $u ? keys $u->{project_security} : ();
+}
 
 =head2 all_users
 

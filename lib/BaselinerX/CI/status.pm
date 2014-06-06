@@ -17,12 +17,12 @@ with 'Baseliner::Role::CI::Internal';
 
 has_cis "bls";
 has id_status     => qw(is rw isa Any);
-has bind_releases => qw(is rw isa Any);
-has ci_update     => qw(is rw isa Any);
-has frozen        => qw(is rw isa Any);
-has readonly      => qw(is rw isa Any);
+has bind_releases => qw(is rw isa Any), default=>'0';
+has ci_update     => qw(is rw isa Any), default=>'0';
+has frozen        => qw(is rw isa Any), default=>'0';
+has readonly      => qw(is rw isa Any), default=>'0';
 has seq           => qw(is rw isa Any);
-has type          => qw(is rw isa Any);
+has type          => qw(is rw isa Any), default=>'G';
 has color         => qw(is rw isa Any);
 
 sub icon { '/static/images/icons/baseline.gif' }
@@ -35,42 +35,20 @@ sub rel_type {
 
 before save_data => sub {
     my ($self, $master_row, $data ) = @_;
-
-    my @bls = _array $data->{bls};
-
-    my $bl = $bls[0]->{moniker} || '*';
-
-
-    my $r = {
-        name          => $data->{name},
-        description   => $data->{description},
-        bind_releases => $data->{bind_releases} && $data->{bind_releases} eq 'on' ? '1' : '0',
-        ci_update     => $data->{ci_update} && $data->{ci_update} eq 'on' ? '1' : '0',
-        readonly      => $data->{readonly} && $data->{readonly} eq 'on' ? '1' : '0',
-        frozen        => $data->{frozen} && $data->{frozen} eq 'on' ? '1' : '0',
-        seq           => $data->{seq},
-        type          => $data->{type},
-        bl            => $bl
-    };
-    my $row;
-    my $id_status;
-    if( $row = DB->BaliTopicStatus->find( $self->id_status ) || DB->BaliTopicStatus->search({ name=>$r->{name} })->first ) {
-        $id_status = $row->id;
-        $row->update($r);
-    } else {
-        $row = DB->BaliTopicStatus->create($r);
-        $id_status = $row->id;
+    if( !length $$data{id_status} ) {
+        # new save, use mid as id_status
+        $$data{id_status} = $$data{mid};
+        $self->id_status( $$data{id_status} );
     }
-    $self->moniker( uc($self->name) ) unless $data->{moniker};
-    $self->id_status( $id_status );
+    if( !length $$data{moniker} ) {
+        $$data{moniker} = uc $self->name;
+        $self->moniker( $$data{moniker} );
+    }
 };
     
 after delete => sub {
     my ($self, $mid ) = @_;
     Baseliner::Core::Registry->reload_all;
-    if( my $row = DB->BaliTopicStatus->find( $self->id_status ) ) {
-        $row->delete;
-    }
 };
 
 sub combo_list {
@@ -82,6 +60,28 @@ sub combo_list {
             $self->search_cis
         ]
     };
+}
+
+sub name_with_bl {
+    my ($self) = @_;
+    sprintf '%s (%s)', $self->name, $self->bl;
+}
+
+sub statuses {
+    my ($self, %p ) = @_;
+    
+    if( my $id_cat = delete $p{id_category} ) {
+        my $cat = mdb->category->find_one({ id=>mdb->in($id_cat) },{ statuses=>1 });
+        return () unless $cat;
+        my $in = mdb->in($$cat{statuses});
+        if( $p{id_status} ) {
+            $p{'$and'} = [{id_status=>$p{id_status}},{id_status=>$in}]
+        } else {
+            $p{id_status} = $in;
+        }
+    }
+    my %statuses = map { $$_{id_status} => $_ } $self->find(\%p)->fields({ _id=>0, yaml=>0 })->all;
+    return %statuses;
 }
 
 1;

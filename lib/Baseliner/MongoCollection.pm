@@ -193,15 +193,48 @@ sub find_one_value {
 Returns a hash indexed by key pointing to an array of hashes
 
     my %users = mdb->master_doc->find_hashed( username=>{ username=>qr/^A/ }, { realname=>1 });
+    
+    say $users{ $id }->[0]->{name};
 
 =cut
 sub find_hashed {
     my ($self,$key,$where,$fields)=@_;
     my $rs = $self->find( $where );
-    $rs->fields($fields) if $fields;
+    if( $fields ) {
+        $fields->{$key} //= 1;
+        $rs->fields($fields);
+    }
     my %ret;
     while( my $r = $rs->next ) {
-        push @{ $ret{ $$r{$key} } }, $r;
+        push @{ $ret{ $$r{$key} } }, $r
+    }
+    return wantarray ? %ret : \%ret;
+};
+
+=head2 find_hash_one
+
+Returns a hash indexed by key pointing to a SINGLE VALUE (no arrayref)
+
+    my %users = mdb->master_doc->find_hashed( username=>{ username=>qr/^A/ }, { realname=>1 });
+    
+    say $users{ $id }{name};
+
+=cut
+sub find_hash_one {
+    my ($self,$key,$where,$fields)=@_;
+    my $rs = $self->find( $where );
+    if( $fields ) {
+        $fields->{$key} //= 1 if scalar grep { $_ } values $fields;
+        $rs->fields($fields);
+    }
+    my %ret;
+    while( my $r = $rs->next ) {
+        if( length $ret{ $$r{$key} } ) {
+            $ret{ $$r{$key} } = [ $ret{ $$r{$key} } ];
+            push @{ $ret{ $$r{$key} } }, $r
+        } else {
+            $ret{ $$r{$key} } = $r; 
+        }
     }
     return wantarray ? %ret : \%ret;
 };

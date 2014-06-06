@@ -604,14 +604,21 @@ sub role {
 }
 
 sub topic_admin {
-    # category
+    # category:
+    #     { statuses=>[], fields=>[], workflow=>[] }
+    require YAML::Syck;
+    my $trans=sub{ ref $_[0] eq 'SCALAR' ? $_[0] = ${ $_[0] } : $_[0] };
     my $max_cat=0;
     for my $tc ( _dbis->query('select * from bali_topic_categories')->hashes ) {
         my @st = _dbis->query('select * from bali_topic_categories_status where id_category=?', $$tc{id} )->hashes;
         $$tc{statuses} = [ _unique map { $$_{id_status} } @st ];
         my @fi = _dbis->query('select id_field,params_field from bali_topic_fields_category where id_category=?', $$tc{id} )->hashes;
         $$tc{fields} = [ map { 
-        	$$_{params} = YAML::Syck::Load($$_{params_field});
+            my $pf = delete $$_{params_field};
+        	$$_{params} = Util->_load($pf);
+            $trans->( $$_{params}{allowBlank} );
+            $trans->( $$_{params}{hidden} );
+            $trans->( $$_{params}{system_force} );
             $$_{params}{field_order} += 0;
             $$_{params}{field_order_html} += 0;
             $_ } @fi ];
@@ -619,8 +626,13 @@ sub topic_admin {
         $$tc{workflow} = [ @wf ];
         #_log( $tc ) ; 
         $max_cat = $$tc{id} if $$tc{id} > $max_cat;
-        mdb->category->update({ id=>$$tc{id} }, $tc,{ upsert=>1 });
+        $$tc{id} .= '';
+        mdb->category->update({ id=>"$$tc{id}" }, $tc,{ upsert=>1 });
     }
+    # get rid of priority fields in forms
+    mdb->category->update({},
+     { '$pull'=>{ fields=>{ id_field=>'priority' } } },{ multiple=>1 });
+    
     mdb->seq('category', $max_cat ) if $max_cat;
 }
 
@@ -633,6 +645,19 @@ sub mids {
         mdb->master_doc->find->fields({ mid=>1 })->all 
      );
      mdb->seq('mid', ($max_mid_mdb > $max_mid ? $max_mid_mdb : $max_mid)+1 );
+}
+
+sub statuses {
+    my @st = _dbis->query('select * from bali_topic_status')->hashes;
+    
+    for my $s ( @st )  {
+        my $ci = ci->status->search_ci( id_status=>$$s{id} );
+        next unless $ci;
+        $ci->type( $$s{type} );
+        $ci->save;
+        say "Updated CI status data for $$s{id} mid=$$ci{mid}";
+    }
+    
 }
 
 ####################################

@@ -239,7 +239,7 @@ sub tree_releases : Local {
     my ($self,$c) = @_;
     my %seen = ();
     my @categories  = map { $_->{id}} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'view' );
-    my @rels = DB->BaliTopicCategories->search( {id => \@categories, is_release => 1} )->hashref->all;
+    my @rels = mdb->category->find({ id =>mdb->in(@categories), is_release=>mdb->true })->fields({ fields=>0, workflow=>0 })->all;
     my @tree = map {
        +{
             text => $_->{name},
@@ -371,31 +371,10 @@ sub branches : Local {
         }
     }
 
-    # ## add what's in this baseline 
-    # my @repos = BaselinerX::Lc->new->project_repos( project=>$project );
-    # # ( Girl::Repo->new( path=>"$path" ), $rev, $project );
-
-    # push @tree, {
-    #     url  => '/lifecycle/repo',
-    #     icon => '/static/images/icons/repo.gif',
-    #     text => $_->{name},
-    #     leaf => \1,
-    #     data => {
-    #         bl    => $bl,
-    #         name  => $_->{name},
-    #         repo_path  => $_->{path},
-    #         click => {
-    #             url   => '/lifecycle/repo',
-    #             type  => 'comp',
-    #             icon  => '/static/images/icons/repo.gif',
-    #             title => "$_->{name} - $bl",
-    #         }
-    #       },
-    # } for @repos;
-
     $c->stash->{ json } = \@tree;
     $c->forward( 'View::JSON' );
 }
+
 sub changeset : Local {
     my ($self,$c) = @_;
     my @tree;
@@ -479,7 +458,9 @@ sub changeset : Local {
             from_mid=>mid=>
             topic=>{ is_release=>'1' } );
     
-    $bind_releases = DB->BaliTopicStatus->find( $p->{id_status} )->bind_releases;
+    $bind_releases = ci->status->find_one({ id_status=>''. $p->{id_status} })->{bind_releases};
+    
+    my %categories = mdb->category->find_hash_one( id=>{},{ workflow=>0, fields=>0, statuses=>0, _id=>0 });
 
     my @rels;
     for my $topic (@changes) {
@@ -488,7 +469,7 @@ sub changeset : Local {
         next if $bind_releases && @releases;
         # get the menus for the changeset
         my ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu( $c, topic=>$topic, 
-            bl_state=>$bl, state_name=>$state_name, id_project=>$id_project );
+            bl_state=>$bl, state_name=>$state_name, id_project=>$id_project, categories=>\%categories );
         my $node = {
             url  => '/lifecycle/topic_contents',
             icon => '/static/images/icons/changeset_lc.png',
@@ -522,7 +503,15 @@ sub changeset : Local {
         my %unique_releases = map { $$_{mid} => $_ } @rels;
         for my $rel ( values %unique_releases ) {
             $rel = $rel->{topic_topic};
-            my ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu( $c, topic=>$rel, bl_state=>$bl, state_name=>$state_name, id_status=>$p->{id_status}, id_project=>$id_project );
+            my ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu(
+                $c,
+                topic      => $rel,
+                bl_state   => $bl,
+                state_name => $state_name,
+                id_status  => $p->{id_status},
+                id_project => $id_project,
+                categories => \%categories,
+            );
             my $node = {
                 url  => '/lifecycle/topic_contents',
                 icon => '/static/images/icons/release_lc.png',
@@ -557,40 +546,49 @@ sub changeset : Local {
 }
 
 sub promotes_and_demotes {
-    my ($self, $c, $topic, $bl_state, $state_name, $id_status_from ) = @_;
+    my ($self, $c, %p ) = @_; 
+    my ( $topic, $bl_state, $state_name, $id_status_from, $id_project ) = @p{ qw/topic bl_state state_name id_status_from id_project/ };
     my ( @menu_s, @menu_p, @menu_d );
-
-
-    _debug( "Buscando deploys, promotes y demotes para el estado $id_status_from");
 
     my $id_status_from_lc = $id_status_from ? $id_status_from: $topic->{id_category_status};
     my @user_workflow = _unique map {$_->{id_status_to} } Baseliner->model("Topic")->user_workflow( $c->username );
+    my @user_roles = ci->user->roles( $c->username );
+    my %statuses = ci->status->statuses;
+    my $status_list = sub {
+        my ($dir) = @_;
+        return sort { $$a{seq} <=> $$b{seq} }
+        map { 
+            my $st = $statuses{ $$_{id_status_to} };
+            $st->{bl_from} = $statuses{ $$_{id_status_from} }{bl};
+            $st;
+        }
+        grep {
+           $$_{id_role} ~~ @user_roles 
+           && $$_{id_status_to} ~~ @user_workflow
+           && $$_{id_status_from} == $id_status_from_lc
+           && $$_{job_type} eq $dir  # static,promote,demote
+        } _array( mdb->category->find_one({ id=>''.$topic->{id_category} },{ workflow=>1 })->{workflow} );
+    };
 
     # Static
-    my @status_from = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
-        { id_status_to => \@user_workflow, id_category => $topic->{id_category}, id_status_from => $id_status_from_lc, job_type => 'static', username => $c->username },
-        {   join     => [ 'statuses_from', 'statuses_to', 'user_role' ],
-            distinct => 1,
-            +select  => [qw/statuses_to.bl statuses_to.name statuses_to.id statuses_from.bl statuses_to.seq/],
-            order_by => { -asc => 'statuses_to.seq' }
-        }
-    )->hashref->all;
+    my @statics = $status_list->( 'static' );
 
     my $deployable={};
-    for my $status ( @status_from ) {
-        my ($ci_status) = BaselinerX::CI::status->query( { id_status => ''.$status->{statuses_to}{id}, name => $status->{statuses_to}{name} } );
+    for my $status ( @statics ) {
+        my ($ci_status) = ci->status->query({ id_status => ''.$status->{id_status}, name=>$status->{name} });
 
         for my $bl ( _array $ci_status->{bls} ) {        
             $deployable->{ $bl->{bl} } = \1;
             push @menu_s, {
-                text => _loc( 'Deploy to %1 (%2)', _loc( $status->{statuses_to}{name} ), $bl->{bl} ),
+                text => _loc( 'Deploy to %1 (%2)', _loc( $status->{name} ), $bl->{bl} ),
                 eval => {
-                    url      => '/comp/lifecycle/deploy.js',
-                    title    => 'Deploy',
-                    job_type => 'static',
-                    bl_to => $bl->{bl},
-                    status_to => $status->{statuses_to}{id},
-                    status_to_name => _loc($status->{statuses_to}{name}),
+                    url            => '/comp/lifecycle/deploy.js',
+                    title          => 'Deploy',
+                    job_type       => 'static',
+                    bl_to          => $bl->{bl},
+                    id_project     => $id_project,
+                    status_to      => $status->{id_status},
+                    status_to_name => _loc($status->{name}),
                 },
                 id_status_from => $id_status_from_lc,
                 icon => '/static/images/silk/arrow_right.gif'
@@ -599,30 +597,24 @@ sub promotes_and_demotes {
     }
 
     # Promote
-    my @status_to = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
-        { id_status_to => \@user_workflow, id_category => $topic->{id_category}, id_status_from => $id_status_from_lc, job_type => 'promote' , username => $c->username },
-        {   join     => [ 'statuses_from', 'statuses_to', 'user_role' ],
-            distinct => 1,
-            +select  => [qw/statuses_to.bl statuses_to.name statuses_to.id statuses_to.seq/],
-            order_by => { -asc => 'statuses_to.seq' }
-        }
-    )->hashref->all;
+    my @status_to = $status_list->( 'promote' );
 
     my $promotable={};
     for my $status ( @status_to ) {
-        my ($ci_status) = BaselinerX::CI::status->query( { id_status => ''.$status->{statuses_to}{id}, name => $status->{statuses_to}{name} } );
+        my ($ci_status) = ci->status->query({ id_status=>''.$status->{id_status}, name => $status->{name} });
 
         for my $bl ( _array $ci_status->{bls} ) {        
             $promotable->{ $bl->{bl} } = \1;
             push @menu_p, {
-                text => _loc( 'Promote to %1 (%2)', _loc( $status->{statuses_to}{name} ), $bl->{bl} ),
+                text => _loc( 'Promote to %1 (%2)', _loc( $status->{name} ), $bl->{bl} ),
                 eval => {
-                    url      => '/comp/lifecycle/deploy.js',
-                    title    => 'To Promote',
-                    job_type => 'promote',
-                    bl_to => $bl->{bl},
-                    status_to => $status->{statuses_to}{id},
-                    status_to_name => _loc($status->{statuses_to}{name}),
+                    url            => '/comp/lifecycle/deploy.js',
+                    title          => 'To Promote',
+                    job_type       => 'promote',
+                    id_project     => $id_project,
+                    bl_to          => $bl->{bl},
+                    status_to      => $status->{id_status},
+                    status_to_name => _loc($status->{name}),
                 },
                 id_status_from => $id_status_from_lc,
                 icon => '/static/images/silk/arrow_down.gif'
@@ -631,27 +623,21 @@ sub promotes_and_demotes {
     }
 
     # Demote
-    @status_from = Baseliner->model('Baseliner::BaliTopicCategoriesAdmin')->search(
-        { id_status_to => \@user_workflow, id_category => $topic->{id_category}, id_status_from => $id_status_from_lc, job_type => 'demote' , username => $c->username },
-        {   join     => [ 'statuses_from', 'statuses_to', 'user_role' ],
-            distinct => 1,
-            +select  => [qw/statuses_to.bl statuses_to.name statuses_to.id statuses_from.bl statuses_to.seq/],
-            order_by => { -asc => 'statuses_to.seq' }
-        }
-    )->hashref->all;
+    my @status_from = $status_list->( 'demote' );
 
     my $demotable={};
     for my $status ( @status_from ) {
-        $demotable->{ $status->{statuses_from}{bl} } = \1;
+        $demotable->{ $status->{from_bl} } = \1;
         push @menu_d, {
-            text => _loc( 'Demote to %1', _loc( $status->{statuses_to}{name} ) ),
+            text => _loc( 'Demote to %1', _loc( $status->{name} ) ),
             eval => {
-                url      => '/comp/lifecycle/deploy.js',
-                title    => 'Demote',
-                job_type => 'demote',
-                bl_to => $status->{statuses_from}{bl},
-                status_to => $status->{statuses_to}{id},
-                status_to_name => _loc($status->{statuses_to}{name}),
+                url            => '/comp/lifecycle/deploy.js',
+                title          => 'Demote',
+                job_type       => 'demote',
+                id_project     => $id_project,
+                bl_to          => $status->{from_bl},
+                status_to      => $status->{id_status},
+                status_to_name => _loc( $status->{name} ),
             },
             id_status_from => $id_status_from_lc,
             icon => '/static/images/silk/arrow_up.gif'
@@ -661,7 +647,8 @@ sub promotes_and_demotes {
 }
 
 sub cs_menu {
-    my ($self, $c, $topic, $bl_state, $state_name, $id_status_from ) = @_;
+    my ($self, $c, %p ) = @_; 
+    my ( $topic, $bl_state, $state_name, $id_status_from, $id_project ) = @p{ qw/topic bl_state state_name id_status_from id_project/ };
     #return [] if $bl_state eq '*';
     my ( @menu, @menu_s, @menu_p, @menu_d );
     my $sha = ''; #try { $self->head->{commit}->id } catch {''};
@@ -670,13 +657,12 @@ sub cs_menu {
     push @menu, $self->menu_related();
 
     my ($deployable, $promotable, $demotable ) = ( {}, {}, {} );
-    my $row = DB->BaliTopicCategories->find( $topic->{id_category} );
-    if ( $row->is_release ) {
-
+    my $is_release = $p{categories}{$topic->{id_category}}{is_release}; 
+    if ( $is_release ) {
         my @chi;
 
         for ( ci->new($topic->{mid})->children( isa => 'topic', depth => 2) ) {
-            push @chi, $_ if DB->BaliTopicCategories->find($_->{id_category})->is_changeset
+            push @chi, $_ if $p{categories}{ $_->{id_category} }{is_changeset}
         };
         
         if( @chi ) {
@@ -687,11 +673,17 @@ sub cs_menu {
            push @menu_d, _array( $menu_d );
         }
     } else {
-       my ($menu_s, $menu_p, $menu_d );
-       ($deployable, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) = $self->promotes_and_demotes( $c, $topic, $bl_state, $state_name );
-       push @menu_s, _array( $menu_s );
-       push @menu_p, _array( $menu_p );
-       push @menu_d, _array( $menu_d );       
+        my ( $menu_s, $menu_p, $menu_d );
+        ( $deployable, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) = $self->promotes_and_demotes(
+            $c,
+            topic      => $topic,
+            bl_state   => $bl_state,
+            state_name => $state_name,
+            id_project => $id_project
+        );
+        push @menu_s, _array($menu_s);
+        push @menu_p, _array($menu_p);
+        push @menu_d, _array($menu_d);
     }
 
     push @menu, ( @menu_s, @menu_p, @menu_d );  # deploys, promotes, then demotes
