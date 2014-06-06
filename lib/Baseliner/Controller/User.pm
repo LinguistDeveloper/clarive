@@ -480,7 +480,7 @@ sub update : Local {
             # regenerate project security for all users TODO work with my ci only
             my $user_ci = ci->new(ci->user->find_one({username=>$user_name})->{mid});
             
-            user_ci->update(project_security=>$orig_ps);
+            $user_ci->update(project_security=>$orig_ps);
             #$ci->save;
             
             $c->stash->{json} = { msg=>_loc('User modified'), success=>\1};
