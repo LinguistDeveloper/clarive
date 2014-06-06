@@ -802,6 +802,7 @@
 
     var tabpanel = new Ext.TabPanel({
         region: 'center',
+        enableTabScroll: true,
         plugins: [ menu_tab ],
         items: []
     });
