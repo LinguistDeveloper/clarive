@@ -557,6 +557,52 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             listeners: Baseliner.gen_btn_listener()
         });        
 
+        var button_expandall = new Ext.Button({
+            cls: 'x-btn-icon',
+            icon: '/static/images/icons/expandall.png',
+            handler: function(){
+                if( self.$tree_releases ) self.$tree_releases.expandAll();
+                if( self.$tree_ci ) self.$tree_ci.expandAll();
+                if( self.$tree_workspaces ) self.$tree_workspaces.expandAll();
+                if( self.$tree_favorites ) self.$tree_favorites.expandAll();
+                if( self.$tree_favorites ) self.$tree_favorites.expandAll();
+                this.enable();
+            },
+            tooltip: _('Expand All'),
+            //toggleGroup: 'explorer-card',
+            refresh_all: function(callback){
+                if( self.$tree_releases ) self.$tree_releases.refresh_all(callback);
+                if( self.$tree_ci ) self.$tree_ci.refresh_all(callback);
+                if( self.$tree_workspaces ) self.$tree_workspaces.refresh_all(callback);
+                if( self.$tree_favorites ) self.$tree_favorites.refresh_all(callback);
+                if( self.$tree_projects ) self.$tree_projects.refresh_all(callback);
+            },
+            listeners: Baseliner.gen_btn_listener()
+        });
+
+        var button_collapseall = new Ext.Button({
+            cls: 'x-btn-icon',
+            icon: '/static/images/icons/collapseall.png',
+            handler: function(){
+                if( self.$tree_releases ) self.$tree_releases.collapseAll();
+                if( self.$tree_ci ) self.$tree_ci.collapseAll();
+                if( self.$tree_workspaces ) self.$tree_workspaces.collapseAll();
+                if( self.$tree_favorites ) self.$tree_favorites.collapseAll();
+                if( self.$tree_favorites ) self.$tree_favorites.collapseAll();
+                this.enable();
+            },
+            tooltip: _('Collapse All'),
+            //toggleGroup: 'explorer-card',
+            refresh_all: function(callback){
+                if( self.$tree_releases ) self.$tree_releases.refresh_all(callback);
+                if( self.$tree_ci ) self.$tree_ci.refresh_all(callback);
+                if( self.$tree_workspaces ) self.$tree_workspaces.refresh_all(callback);
+                if( self.$tree_favorites ) self.$tree_favorites.refresh_all(callback);
+                if( self.$tree_projects ) self.$tree_projects.refresh_all(callback);
+            },
+            listeners: Baseliner.gen_btn_listener()
+        });
+
         var add_to_fav_folder = function() {
             Ext.Msg.prompt(_('Favorite'), _('Folder name:'), function(btn, folder){
                 if( btn == 'ok' ) {
@@ -644,6 +690,8 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 button_workspaces,
                 button_ci,
                 button_search_folders,
+                button_expandall,
+                button_collapseall,
                 '->',
                 button_menu,
                 button_collapse,
