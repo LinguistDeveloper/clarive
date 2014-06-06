@@ -597,7 +597,7 @@ sub role {
             }
         }
         $role->{actions} = \@actions_in_mongo;
-        mdb->role->insert( $role ); 
+        mdb->role->update({ id=>$$role{id} },$role,{ upsert=>1 }); 
     }
     mdb->master_seq->remove({ _id => 'role'});
     mdb->master_seq->insert({ _id => 'role', seq => $highest_id });

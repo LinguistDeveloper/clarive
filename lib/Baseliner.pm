@@ -184,39 +184,7 @@ __PACKAGE__->setup();
 $SIG{INT} = \&signal_interrupt;
 $SIG{KILL} = \&signal_interrupt;
 
-# check if DB connected, retry
-if( my $retry = Baseliner->config->{db_retry} ) {
-    my $connected = try { Baseliner->model('Baseliner')->storage->dbh } catch { warn "DB ERR: " . shift(); 0 };
-    if( ! $connected ) {
-        my $freq = Baseliner->config->{db_retry_frequency} // 30;
-        my $i = 0;
-        while( !$connected && ( $retry < 0 || $i++ <  $retry ) ) {
-            sleep $freq;
-            warn "Retrying Database Connection ($i for $retry retries)...\n";
-            $connected = try { Baseliner->model('Baseliner')->storage->dbh } catch { warn "DB ERR: " . shift(); 0 };
-        }
-        warn "DB Reconected ok.\n";
-    }
-}
-
 # setup the DB package
-
-{
-    no strict;
-    *DB::schema = sub { Baseliner->model('Baseliner')->schema; };
-    for my $n (  DB->schema->sources ) {
-        my $package = "DB::$n";
-        *{$package} = sub { Baseliner->model("Baseliner::$n") }
-    }
-}
-
-# Setup date formating for Oracle
-my $dbh = __PACKAGE__->model('Baseliner')->storage->dbh;
-if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
-    $dbh->do("alter session set nls_date_format='yyyy-mm-dd hh24:mi:ss'");
-    #$dbh->{LongReadLen} = __PACKAGE__->config->{LongReadLen} || 100000000; #64 * 1024;
-    #$dbh->{LongTruncOk} = __PACKAGE__->config->{LongTruncOk}; # do not accept truncated LOBs   
-}
 
 around 'debug' => sub {
     my $orig = shift;
@@ -399,7 +367,7 @@ around 'debug' => sub {
     print STDERR ( Baseliner->config->{name} // 'Baseliner' ) 
         . " $Baseliner::VERSION. Startup time: " . tv_interval($t0) . "s.\n";
     $ENV{CATALYST_DEBUG} || $ENV{BASELINER_DEBUG} and do { 
-        print STDERR "Environment: $bali_env. Catalyst: $Catalyst::VERSION. DBIC: $DBIx::Class::VERSION. Perl: $^V. OS: $^O\n";
+        print STDERR "Environment: $bali_env. Catalyst: $Catalyst::VERSION. MongoDB: $MongoDB::VERSION. Perl: $^V. OS: $^O\n";
         print STDERR "\7";
     };
     # Make registry easily available to contexts

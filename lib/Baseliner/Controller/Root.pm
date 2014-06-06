@@ -86,8 +86,6 @@ sub begin : Private {
 
     Baseliner->app( $c );
 
-    _db_setup;  # make sure LongReadLen is set after forking
-
     $c->forward('/theme');
 
     #my $logged_on = defined $c->username;

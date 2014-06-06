@@ -77,7 +77,6 @@ use Exporter::Tidy default => [
     rs_hashref
     packages_that_do
     query_array
-    _db_setup
     query_sql_build
     _file
     _dir
@@ -542,17 +541,6 @@ sub query_array {
         no warnings;  # may be empty strings, unitialized
         my $txt = join ',', @_;    ##TODO check for "and", "or", etc. with text::query
         return $txt =~ m/$query/i;
-    }
-}
-
-# setup some data standards at a lower level
-sub _db_setup {
-    my $dbh = Baseliner->model('Baseliner')->storage->dbh;
-    return unless $dbh;
-    if( $dbh->{Driver}->{Name} eq 'Oracle' ) {
-        $dbh->do("alter session set nls_date_format='yyyy-mm-dd hh24:mi:ss'");
-        $dbh->{LongReadLen} =  Baseliner->config->{LongReadLen} || 100000000; #64 * 1024;
-        $dbh->{LongTruncOk} = Baseliner->config->{LongTruncOk}; # do not accept truncated LOBs
     }
 }
 
@@ -1425,10 +1413,12 @@ sub _size_unit {
 }
 
 sub _dbis {
-    my( $model ) = @_;
-    $model ||= 'Baseliner';
+    my( $dbh ) = @_;
+    $dbh ||= Baseliner->config->{'Model::Baseliner'}{connect_info};
     require DBIx::Simple;
-    return DBIx::Simple->connect( Baseliner->model($model)->storage->dbh );
+    my $conn = DBIx::Simple->connect( ref $dbh eq 'ARRAY' ? @$dbh : $dbh );
+    $conn->dbh->do("alter session set nls_date_format='yyyy-mm-dd hh24:mi:ss'");
+    return $conn;
 }
 
 =head2 _hook
