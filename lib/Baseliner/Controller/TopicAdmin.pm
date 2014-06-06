@@ -324,21 +324,29 @@ sub list_categories_admin : Local {
     my @rows;
 
     Baseliner->cache_remove_like( qr/^topic:/ );
-    my $rs = mdb->workflow->find({ id_category => "$p->{categoryId}" })->sort({ id_role=>1, id_status_from=>1 }); # TODO mdb missing name
-    
-    my %statuses = ci->status->statuses;
-    my %role = mdb->role->find_hashed( id=>{},{role=>1,_id=>0});
 
-    while( my $rec = $rs->next ) {
-        my @statuses_to;
-        my $statuses_to = mdb->workflow->find({   
-                id_category    => $p->{categoryId},
-                id_role        => $rec->{id_role},
-                id_status_from => $rec->{id_status_from},
-        });  # TODO mdb sort statuses_from.seq
+    my %role = mdb->role->find_hashed( id=>{},{role=>1,_id=>0});
+    my %statuses = ci->status->statuses;
+    
+    my @cat_wkf = _array( mdb->category->find_one({ id=> "$p->{categoryId}" })->{workflow} );
+    my @wkf = 
+        sort { 
+            # complex sort needed... look into aggregation framework for better sorting on group
+            sprintf('%09d%09d%09d', $$a{id_role}, $$a{id_status_from}, $statuses{ $$a{id_status_from} }{seq} )
+            <=> 
+            sprintf('%09d%09d%09d', $$b{id_role}, $$b{id_status_from}, $statuses{ $$b{id_status_from} }{seq} )
+        } @cat_wkf;
+        
+    my %stat_to;
+    push @{ $stat_to{$$_{id_role}}{$$_{is_status_from}} }, $_ for @cat_wkf;
+
+    for my $rec ( @wkf ) {
+        my @sts = sort { $statuses{$$a{id_status_from}}<=>$statuses{$$b{id_status_from}} } 
+            _array $stat_to{$$rec{id_role}}{$$rec{id_status_from}};
         
         # Grid for workflow configuration: right side field
-        while( my $status_to = $statuses_to->next ) {
+        my @statuses_to;
+        for my $status_to ( @sts ) {
             my $name = $statuses{ $status_to->{id_status_to} }{name};
             # show 
             my $job_type = $status_to->{job_type};
@@ -661,19 +669,18 @@ sub get_conf_fields : Local {
 sub workflow : Local {
     my ($self,$c, $action) = @_;
     my $p = $c->request->parameters;
-    my $cnt;
+    my $cnt=0;
     Baseliner->cache_remove_like( qr/^topic:/ );
     $c->registry->reload_all;
     if( $action eq 'delete' ) {
         try {
-            my $rs = mdb->workflow->find({
-                id_category    => $p->{id},
-                id_role        => $p->{idsroles},
-                id_status_from => $p->{status_from},
-                id_status_to   => $p->{idsstatus}
-            });
-            $cnt = $rs->count;
-            $rs->delete;
+            my $up = mdb->category->update({ id=>''.$p->{id} },
+                 { '$pull'=>{ workflow=>{ 
+                        id_role        => mdb->in($p->{idsroles}),
+                        id_status_from => mdb->in($p->{status_from}),
+                        id_status_to   => mdb->in($p->{idsstatus}),
+                  } } },{ multiple=>1 });
+            $cnt = $up->{n};
         } catch {
             $c->stash->{json} = { success => \0, msg=>_loc('Error deleting relationships: %1', shift() ) };
         };
