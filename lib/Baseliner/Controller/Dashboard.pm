@@ -67,6 +67,14 @@ register 'config.dashlet.filtered_topics' => {
         ]
 };
 
+register 'config.dashlet.filtered_topics' => {
+    metadata => [
+           { id=>'rows', label=>'Number of rows', default => 7 },
+           { id=>'categories', label=>'List of categories', default => 'ALL' },
+           { id=>'statuses', label=>'List of statuses', default => 'ALL' },
+        ]
+};
+
 sub grid : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
@@ -802,8 +810,7 @@ sub list_topics: Private{
     #CONFIGURATION DASHLET
     ##########################################################################################################
     my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.topics'); 
-    
-    if($dashboard_id){
+    if($dashboard_id && looks_like_number( $dashboard_id ) ){
         my $dashboard_rs = mdb->dashboard->find({_id => mdb->oid($dashboard_id)});
         my @config_dashlet = grep {$_->{url}=~ 'list_topics'} _array $dashboard_rs->{dashlets};
         
@@ -813,6 +820,23 @@ sub list_topics: Private{
             };              
         }       
     }   
+    ##########################################################################################################      
+    
+    # go to the controller for the list
+    my $p = { limit => $default_config->{rows}, username=>$c->username };
+    my ($cnt, @rows) = $c->model('Topic')->topics_for_user( $p );
+    $c->stash->{topics} = \@rows ;
+}
+
+sub list_filtered_topics: Private{
+    my ( $self, $c, $dashboard_id ) = @_;
+    my $username = $c->username;
+    #my (@topics, $topic, @datas, $SQL);
+    
+    #CONFIGURATION DASHLET
+    ##########################################################################################################
+    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.filtered_topics');	
+    
     ##########################################################################################################      
     
     # go to the controller for the list
