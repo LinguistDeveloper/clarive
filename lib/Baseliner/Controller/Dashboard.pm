@@ -59,6 +59,14 @@ register 'config.dashlet.jobs' => {
         ]
 };
 
+register 'config.dashlet.filtered_topics' => {
+    metadata => [
+           { id=>'rows', label=>'Number of rows', default => 7 },
+           { id=>'categories', label=>'List of categories', default => 'ALL' },
+           { id=>'statuses', label=>'List of statuses', default => 'ALL' },
+        ]
+};
+
 sub grid : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
@@ -793,11 +801,38 @@ sub list_topics: Private{
     
     #CONFIGURATION DASHLET
     ##########################################################################################################
-    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.topics');	
+    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.topics'); 
     
     if($dashboard_id){
         my $dashboard_rs = mdb->dashboard->find({_id => mdb->oid($dashboard_id)});
         my @config_dashlet = grep {$_->{url}=~ 'list_topics'} _array $dashboard_rs->{dashlets};
+        
+        if($config_dashlet[0]->{params}){
+            foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
+                $default_config->{$key} = $config_dashlet[0]->{params}->{$key};
+            };              
+        }       
+    }   
+    ##########################################################################################################      
+    
+    # go to the controller for the list
+    my $p = { limit => $default_config->{rows}, username=>$c->username };
+    my ($cnt, @rows) = $c->model('Topic')->topics_for_user( $p );
+    $c->stash->{topics} = \@rows ;
+}
+
+sub list_filtered_topics: Private{
+    my ( $self, $c, $dashboard_id ) = @_;
+    my $username = $c->username;
+    #my (@topics, $topic, @datas, $SQL);
+    
+    #CONFIGURATION DASHLET
+    ##########################################################################################################
+    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.filtered_topics');	
+    
+    if($dashboard_id && looks_like_number($dashboard_id)){
+        my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
+        my @config_dashlet = grep {$_->{url}=~ 'list_filtered_topics'} _array _load($dashboard_rs->dashlets);
         
         if($config_dashlet[0]->{params}){
             foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
@@ -817,7 +852,7 @@ sub list_topics: Private{
     }
 
     my ($cnt, @rows) = $c->model('Topic')->topics_for_user( $p );
-    $c->stash->{topics} = \@rows ;
+    $c->stash->{filtered_topics} = \@rows ;
 }
 
 sub list_jobs : Private {
@@ -1196,7 +1231,7 @@ sub list_status_changed: Local{
     #my @user_project_ids = Baseliner->model("Permissions")->user_projects_ids( username => $c->username);
     
     my %my_topics;
-    my ($cnt, @rows ) = Baseliner->model('Topic')->topics_for_user({ username => $c->username, limit=>1000, query=>undef });
+    my ($cnt, @rows ) = Baseliner->model('Topic')->topics_for_user({ username => $c->username, limit=>1000, query=>undef, clear_filter => 1 });
     map { $my_topics{$_->{mid}} = 1 } @rows;
 
     
