@@ -379,7 +379,7 @@ sub list_tree_fields : Local {
     my @system;
     my $system_fields = Baseliner::Model::Topic->get_system_fields();
     
-    my @temp_fields = _array( mdb->category->find_one({ id=>"$id_category" })->{fields} );
+    my @temp_fields = _array( mdb->category->find_one({ id=>"$id_category" })->{fieldlets} );
     my %conf_fields;
     
     for(@temp_fields){
@@ -413,7 +413,7 @@ sub list_tree_fields : Local {
     my @custom_fields = 
         grep {!exists $conf_fields{$$_{id_field}} } 
         grep { $$_{id_field} ~~ @id_fields } 
-        map { _array($$_{fields}) } mdb->category->find->all;
+        map { _array($$_{fieldlets}) } mdb->category->find->all;
         
     my %unique_fields;
     for(@custom_fields){
@@ -611,7 +611,7 @@ sub update_fields : Local {
         push @fields, { id_field => $$f{id_field}, params => $params };
     }    
     
-    mdb->category->update({ id=>"$id_category" },{ '$set'=>{ fields=>\@fields } });
+    mdb->category->update({ id=>"$id_category" },{ '$set'=>{ fieldlets=>\@fields } });
 
     $c->stash->{json} = { success => \1, msg=>_loc('fields modified') };
     $c->forward('View::JSON');    
@@ -635,7 +635,7 @@ sub get_conf_fields : Local {
     my @conf_fields = 
         grep { !exists $_->{params}->{hidden} && $_->{params}->{origin} ne 'default' }
         map { +{ id_field => $_->{id_field}, params => $_->{params} } }
-        _array( mdb->category->find_one({ id=>"$id_category" })->{fields} );
+        _array( mdb->category->find_one({ id=>"$id_category" })->{fieldlets} );
     my @system;
     for ( sort { $a->{params}->{field_order} <=> $b->{params}->{field_order} } @conf_fields){
         push @system,   {
@@ -698,8 +698,8 @@ sub create_clone : Local {
     try {
         my ($row) = 
             grep { $$_{id_field} eq $$p{name_field} } 
-            map { _array($$_{fields}) } 
-            mdb->category->find->fields({ fields=>1 })->all;
+            map { _array($$_{fieldlets}) } 
+            mdb->category->find->fields({ fieldlets=>1 })->all;
         if(!$row){
             my $params = _decode_json($p->{params});
             
@@ -716,7 +716,7 @@ sub create_clone : Local {
             }
             
             mdb->category->update({ id =>''.$p->{id_category} },
-                { '$push'=>{ fields=>{ id_field=>$p->{name_field}, params=>$params } } }
+                { '$push'=>{ fieldlets=>{ id_field=>$p->{name_field}, params=>$params } } }
             );
     
             $c->stash->{json} = { msg=>_loc('Field cloned'), success=>\1 };

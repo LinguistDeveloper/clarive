@@ -787,14 +787,14 @@ sub field_parent_topics {
     my $id_category = $category->{id};
     my $cat_doc = mdb->category->find_one({id=>"$id_category" }) // _fail _loc 'Category not found: %1', $id_category;
 
-    my @fields =
+    my @fieldlets =
         map {
             $_->{id_field}
         }
         grep {
             my $params = $_->{params};
             $params->{origin} ne "system"
-        } _array( $cat_doc->{fields} );
+        } _array( $cat_doc->{fieldlets} );
 
     if ($release) {
         $is_release     = 1;
@@ -802,7 +802,7 @@ sub field_parent_topics {
             master_rel => {
                 rel_type => 'topic_topic',
                 from_mid => $data->{topic_mid},
-                '$or'    => [ { rel_field => { '$nin' => \@fields } }, { rel_field => undef } ]
+                '$or'    => [ { rel_field => { '$nin' => \@fieldlets } }, { rel_field => undef } ]
             },
             to_mid => mid => topic => { '$or' => [ { is_changeset => '1' }, { is_release => '1' } ] }
         )->fields( { mid => 1, title => 1, progress => 1, category => 1 } )->all;
@@ -813,7 +813,7 @@ sub field_parent_topics {
             master_rel => {
                 rel_type => 'topic_topic',
                 to_mid   => $data->{topic_mid},
-                #'$or'    => [ { rel_field => { '$nin' => \@fields } }, { rel_field => undef } ]
+                #'$or'    => [ { rel_field => { '$nin' => \@fieldlets } }, { rel_field => undef } ]
             },
             from_mid => mid => topic => { '$or' => [ { is_release => { '$ne' => '1' } } ] }
         )->fields( { mid => 1, title => 1, progress => 1, category => 1 } )->all;
@@ -827,7 +827,7 @@ sub next_status_for_user {
     my @user_roles;
     my $username = $p{username};
     my $topic_mid = $p{topic_mid};
-    my $where = { id => $p{id_category} };
+    my $where = { id =>''.$p{id_category} };
     $where->{'workflow.id_status_from'} = mdb->in($p{id_status_from}) if defined $p{id_status_from};
     my $is_root = Baseliner->model('Permissions')->is_root( $username );
     my @to_status;
@@ -845,6 +845,8 @@ sub next_status_for_user {
         }
         
         my %statuses = ci->status->statuses;
+        my $cat = mdb->category->find_one($where);
+        _fail _loc 'Category not found `%1`', $p{id_category} unless $cat; 
         my @all_to_status =
             sort { $$a{seq} <=> $$b{seq} }
             map {
@@ -863,7 +865,7 @@ sub next_status_for_user {
                     job_type           => $$_{job_type},
                     seq                => $$sto{seq}
                 };
-            } _array( mdb->category->find_one($where)->{workflow} );
+            } grep { defined } _array( $cat->{workflow} );
         
         my @no_deployable_status = grep {$_->{status_type} ne 'D'} @all_to_status;
         my @deployable_status = grep {$_->{status_type} eq 'D'} @all_to_status; 
@@ -1046,7 +1048,7 @@ sub get_update_system_fields {
     
     my $system_fields = $self->get_system_fields();
     my $cat = mdb->category->find_one({id=>"$id_category" }) // _fail _loc 'Category not found: %1', $id_category;
-    my @rs_categories_fields = _array( $cat->{fields} );
+    my @rs_categories_fields = _array( $cat->{fieldlets} );
     my %fields = map { $$_{id_field} => $_ } @rs_categories_fields;
     for my $category ( @rs_categories_fields ){
         my $id_category = $category->{id_category};
@@ -1056,8 +1058,8 @@ sub get_update_system_fields {
                 for my $attr (keys %{ $_->{params} || {} }){
                     next unless $attr ne 'field_order';
                     $tmp_params->{$attr} = $_->{params}->{$attr};
-                    mdb->category->update({ id=>"$id_category", 'fields.id_field'=>$$field{id_field} },
-                            { '$set'=>{ 'fields.$.params'=>$tmp_params } }) 
+                    mdb->category->update({ id=>"$id_category", 'fieldlets.id_field'=>$$field{id_field} },
+                            { '$set'=>{ 'fieldlets.$.params'=>$tmp_params } }) 
                 }
             }
         }
@@ -1094,7 +1096,7 @@ sub get_update_system_fields {
        @ret;
     } @template_dirs;
     
-    my @fields =  grep { tratar $_ } map { _array($_->{fields}) } mdb->category->find->fields({ fields=>1 })->all;    
+    my @fields =  grep { tratar $_ } map { _array($_->{fieldlets}) } mdb->category->find->fields({ fieldlets=>1 })->all;    
     
     for my $template (  grep {$_->{metadata}->{params}->{origin} eq 'template'} @tmp_templates ) {
         if( $template->{metadata}->{name} ){
@@ -1102,7 +1104,7 @@ sub get_update_system_fields {
             for my $select_field (@select_fields){
                 my ($update_field) = 
                     grep { $$_{id_field} eq $select_field->{id_field} } 
-                    _array( mdb->category->find_one({ id=>''.$select_field->{id_category}, })->{fields} );
+                    _array( mdb->category->find_one({ id=>''.$select_field->{id_category}, })->{fieldlets} );
                 if ($update_field){
                     my $tmp_params = $update_field->{params};
                     for my $attr (keys %{ $template->{metadata}->{params} || {} } ){
@@ -1123,7 +1125,7 @@ sub get_update_system_fields {
             for my $select_field (@select_fields){
                 my ($update_field) = 
                     grep { $$_{id_field} eq $select_field->{id_field} } 
-                    _array( mdb->category->find_one({ id=>''.$select_field->{id_category}, })->{fields} );
+                    _array( mdb->category->find_one({ id=>''.$select_field->{id_category}, })->{fieldlets} );
                 if ($update_field){
                     my $tmp_params = $update_field->{params};
                     for my $attr (keys %{ $system_listbox->{metadata}->{params} || {} } ){
@@ -1163,13 +1165,13 @@ sub get_meta {
     my @cat_fields;
     
     if ($id_cat){
-        @cat_fields = _array( mdb->category->find_one({ id=>mdb->in($id_cat) })->{fields} );
+        @cat_fields = _array( mdb->category->find_one({ id=>mdb->in($id_cat) })->{fieldlets} );
     }else{
         if($username){
             my @user_categories =  map { $_->{id} } $self->get_categories_permissions( username => $username, type => 'view',  );
-            @cat_fields = _array( mdb->category->find_one({ id=>mdb->in(@user_categories) })->{fields} );
+            @cat_fields = _array( mdb->category->find_one({ id=>mdb->in(@user_categories) })->{fieldlets} );
         }else{
-            @cat_fields = _array( map{ _array($$_{fields}) } mdb->category->find->all );
+            @cat_fields = _array( map{ _array($$_{fieldlets}) } mdb->category->find->all );
         }
     }
     
@@ -1448,7 +1450,7 @@ sub save_data {
         push @custom_fields, map {
             my $cf = $_;
             map { +{name => $_->{id_field}, column => $_->{id_field}, data => $_->{data}} }
-                _array $_->{fields};
+                _array $_->{fieldlets};
             } grep {
             $_->{type} && $_->{type} eq 'form'
             } _array( $meta );
@@ -1827,7 +1829,7 @@ sub update_category {
     
     $id_cat //= $doc->{id_category};
    
-    my $category = mdb->category->find_one({ id=>"$id_cat" },{ workflow=>0, fields=>0 })
+    my $category = mdb->category->find_one({ id=>"$id_cat" },{ workflow=>0, fieldlets=>0 })
         or _fail _loc 'Category %1 not found', $id_cat;
     my $d = {
         category             => $category,
@@ -2399,7 +2401,7 @@ sub get_categories_permissions{
     my $order = delete $param{order};
     my $topic_mid = delete $param{topic_mid};
     
-    my $dir = $order->{dir} =~ /desc/i ? -1 : 1;
+    my $dir = $order->{dir} && $order->{dir} =~ /desc/i ? -1 : 1;
     my $sort = $order->{sort} || 'name';
     
     my $re_action;
@@ -2515,8 +2517,8 @@ all categ statuses to all categ statuses.
 =cut
 sub root_workflow {
     my $self = shift;
-    my @categories = mdb->category->find->all;
     my %statuses = ci->status->statuses;
+    my @categories = mdb->category->find->all;
     my @wf;
 
     for my $cat (@categories) {

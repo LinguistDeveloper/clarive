@@ -625,7 +625,7 @@ sub topic_admin {
         my @st = _dbis->query('select * from bali_topic_categories_status where id_category=?', $$tc{id} )->hashes;
         $$tc{statuses} = [ _unique map { $$_{id_status} } @st ];
         my @fi = _dbis->query('select id_field,params_field from bali_topic_fields_category where id_category=?', $$tc{id} )->hashes;
-        $$tc{fields} = [ map { 
+        $$tc{fieldlets} = [ map { 
             my $pf = delete $$_{params_field};
         	$$_{params} = Util->_load($pf);
             $trans->( $$_{params}{allowBlank} );
@@ -643,7 +643,7 @@ sub topic_admin {
     }
     # get rid of priority fields in forms
     mdb->category->update({},
-     { '$pull'=>{ fields=>{ id_field=>'priority' } } },{ multiple=>1 });
+     { '$pull'=>{ fieldlets=>{ id_field=>'priority' } } },{ multiple=>1 });
     
     mdb->seq('category', $max_cat ) if $max_cat;
 }

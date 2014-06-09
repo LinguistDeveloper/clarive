@@ -1,7 +1,5 @@
-package Baseliner::Schema::Migrations::topic_admin;
+package Baseliner::Schema::Migrations::topic_admin 5;
 use Mouse;
-
-our $VERSION = 3;
 
 sub upgrade {
     mdb->migra->topic_admin;

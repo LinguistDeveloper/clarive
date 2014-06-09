@@ -348,8 +348,8 @@ sub get_meta_permissions : Private {
     for (_array $meta){
         my $parse_id_field = _name_to_id($_->{name_field});
         
-        if($_->{fields}){
-        	my @fields_form = _array $_->{fields};
+        if($_->{fieldlets}){
+        	my @fields_form = _array $_->{fieldlets};
             for my $field_form ( @fields_form ){
                 my $parse_field_form_id = $field_form->{id_field};
                 my $write_action = 'action.topicsfield.' .  $parse_category 
@@ -523,7 +523,7 @@ sub view : Local {
                 mdb->master_seen->update({ username=>$c->username, mid=>$mid },{ username=>$c->username, mid=>$mid, type=>'topic', last_seen=>mdb->ts },{ upsert=>1 });
             }
             
-            $category = mdb->category->find_one({ id=>$topic_doc->{category}{id} },{ fields=>0 });
+            $category = mdb->category->find_one({ id=>$topic_doc->{category}{id} },{ fieldlets=>0 });
             
             _fail( _loc('Category not found or topic deleted: %1', $topic_mid) ) unless $category;
             
@@ -537,7 +537,7 @@ sub view : Local {
 
             $c->stash->{category_meta} = $category->{forms};
             
-            #workflow category-status
+            # workflow category-status
             my @statuses = 
                 sort { ( $a->{seq} // 0 ) <=> ( $b->{seq} // 0 ) } 
                 grep { $_->{id_status} ne $topic_doc->{category_status}{id} } 
@@ -795,11 +795,11 @@ sub list_category : Local {
 
                 my $type = $category->{is_changeset} ? 'C' : $category->{is_release} ? 'R' : 'N';
                 
-                my @fields =
+                my @fieldlets =
                     map { $_->{name_field} }
                     sort { ( $a->{field_order} // 100 ) <=> ( $b->{field_order} // 100 ) }
                     map { $_->{params} }
-                    _array( mdb->category->find_one({ id => ''.$category->{id} })->{fields} );
+                    _array( mdb->category->find_one({ id => ''.$category->{id} })->{fieldlets} );
                     
                 my $forms = $self->form_build( $category->{forms} );
                 
@@ -815,7 +815,7 @@ sub list_category : Local {
                     is_changeset  => $category->{is_changeset},
                     description   => $category->{description},
                     statuses      => \@statuses,
-                    fields        => \@fields,
+                    fields        => \@fieldlets,
                     #priorities    => \@priorities
                 };
             }  

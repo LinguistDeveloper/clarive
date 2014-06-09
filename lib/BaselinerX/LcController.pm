@@ -168,23 +168,32 @@ sub tree_topics_project : Local {
     my $id_project = $c->req->params->{id_project} ;
     my @categories  = map { $_->{id}} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'view' );
     
+    my $limit = 20;
+    my $skip = 0;
+    my $sort = { modified_on=>-1 };
+    
+    my $is_release = $c->stash->{release_only} ? mdb->true : mdb->false;
+    
+    # TODO no joins, just search the topic collection for project fields
     my @topics = mdb->joins( 
             master_rel=>{ to_mid=>"$id_project" }, 
             from_mid => mid => 
-            topic => { id_category=>mdb->in(@categories), 'category_status.type'=>{ '$not'=>qr/^F/ }  }); 
+            topic => [
+                { id_category=>mdb->in(@categories), 'category.is_release'=>$is_release, 'category_status.type'=>{ '$not'=>qr/^F/ }  },
+                { limit=>$limit, skip=>$skip, sort=>$sort }
+            ]); 
         
-    for( @topics ) {
-        my $is_release = $_->{topic_project}{categories}{is_release};
-        next if $c->stash->{release_only} && ! $is_release;
-        my $is_changeset = $_->{topic_project}{categories}{is_changeset};
+    for my $topic ( @topics ) {
+        my $is_release = $topic->{category}{is_release};
+        my $is_changeset = $topic->{category}{is_changeset};
         my $icon = $is_release ? '/static/images/icons/release_lc.png'
             : $is_changeset ? '/static/images/icons/changeset_lc.png' :'/static/images/icons/topic.png' ;
         push @tree,
             $self->build_topic_tree( 
-                mid      => $_->{from_mid},
-                topic    => $_->{topic_project},
-                icon     => $icon,
-                is_release => $is_release,
+                mid          => $topic->{mid},
+                topic        => $topic,
+                icon         => $icon,
+                is_release   => $is_release,
                 is_changeset => $is_changeset,
             );
     }
