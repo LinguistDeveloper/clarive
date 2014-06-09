@@ -2553,7 +2553,7 @@ sub list_posts {
     my @rows;
     for my $r ( @posts ) {
         push @rows, {
-            created_on   => $r->ts,
+            created_on   => $r->created_on || $r->ts,
             created_by   => $r->created_by,
             text         => $r->text,
             content_type => $r->content_type,

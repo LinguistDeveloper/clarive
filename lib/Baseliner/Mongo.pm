@@ -214,6 +214,7 @@ sub joins {
         if( ref $wh eq 'ARRAY' ) {
             $rs = $self->collection( $coll )->query(+{ %{ $$wh[0] || {} }, @_ }, $$wh[1] );
             $rs->fields( $$wh[1]->{fields} ) if ref $$wh[1] eq 'HASH' && exists $$wh[1]->{fields};
+            $rs->sort( $$wh[1]->{sort} ) if ref $$wh[1] eq 'HASH' && exists $$wh[1]->{sort};
         } else {
             $rs = $self->collection( $coll )->find(+{ %$wh, @_ });
         }

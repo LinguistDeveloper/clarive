@@ -156,6 +156,11 @@ sub tree_project_jobs : Local {
     $c->forward( 'View::JSON' );
 }
 
+=head2 tree_topics_project
+
+Left hand tree "Topics" in each one of the explorer projects.
+
+=cut
 sub tree_topics_project : Local {
     my ($self,$c) = @_;
     my @tree;

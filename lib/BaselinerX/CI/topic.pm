@@ -202,7 +202,7 @@ sub comments {
     my $is_root = Baseliner->model('Permissions')->is_root($$p{username});
     my $comments = Baseliner->model('Topic')->list_posts( mid=>$self->mid );
     for my $com ( @$comments ) {
-        $$com{created_on} = join ' ', "$$com{created_on}" =~ /^(.*)T(.*)$/; # TODO use a standard user date format 
+        #$$com{created_on} = $$comm{cjoin ' ', "$$com{created_on}" =~ /^(.*)T(.*)$/; # TODO use a standard user date format 
         $$com{topic_mid} = $self->mid;
         $$com{can_edit} = $is_root ? \1 : \0;   # XXX for now the owner cannot edit or delete her own post
     }

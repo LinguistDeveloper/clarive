@@ -172,7 +172,7 @@ msgid "Sending Request..."
 msgstr "Enviando Petición..."
 
 msgid "This comment does not exist anymore"
-msgstr "El comentario ha sido borrado"
+msgstr "El comentario ya no existe"
 
 msgid "The topic category %1 does not have any initial status assigned. Contact your administrator."
 msgstr "La categoría %1 no tiene un estado inicial asignado. Contacte al administrador."
@@ -7401,13 +7401,13 @@ msgid "Local file '%1' not found"
 msgstr "Archivo local '%1' no encontrado"
 
 msgid "No jobs found"
-msgstr "Pases no encontrados"
+msgstr "No hay pases"
 
 msgid "No activity found"
-msgstr "Actividad no encontrada"
+msgstr "No hay actividad"
 
 msgid "No comments found"
-msgstr "Comentarios no encontrados"
+msgstr "No hay comentarios"
 
 msgid "Could not chown '%1 %2': %3"
 msgstr "No se puede hacer chown sobre '%1 %2': %3"

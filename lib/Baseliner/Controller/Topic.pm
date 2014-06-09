@@ -568,7 +568,6 @@ sub view : Local {
             }
                              
             $c->stash->{has_comments} = $c->model('Topic')->list_posts( mid=>$topic_mid, count_only=>1 );
-            _log( $c->model('Topic')->list_posts( mid=>$topic_mid) );
      
             # jobs for release and changeset
             if ( $category->{is_changeset} || $category->{is_release} ) {
@@ -656,62 +655,55 @@ sub comment : Local {
             
             my $topic;
             if( ! length $id_com ) {  # optional, if exists then is not add, it's an edit
-                $topic = master_new 'post' => substr($text,0,10) => sub { 
-                    my $mid = shift;
-                    $id_com = $mid;
-                    my $post = $c->model('Baseliner::BaliPost')->create(
-                        {   mid   => $mid,
-                            text       => $text,
-                            content_type => $content_type,
-                            created_by => $c->username,
-                            created_on => Class::Date->now,
-                        }
-                    );
-                    local $Baseliner::CI::ci_record = 1;
-                    
-                    my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$topic_mid", rel_type=>'topic_project' });
-                    my @users = Baseliner->model("Topic")->get_users_friend(
-                            id_category => $topic_row->{category}{id}, 
-                            id_status   => $topic_row->{category_status}{id}, 
-                            projects    => \@projects );
-                    my $subject = _loc("%1 created a post for topic [%2] %3", $c->username, $topic_row->{mid}, $topic_row->{title} );
-                    my $notify = { #'project', 'category', 'category_status'
-                        category        => $topic_row->{category}{id},
-                        category_status => $topic_row->{category_status}{id},
-                        project => \@projects,
-                    };
-                    event_new 'event.post.create' => {
-                        username        => $c->username,
-                        mid             => $topic_mid,
-                        data            => ci->new($topic_mid)->{_ci},
-                        id_post         => $mid,
-                        post            => $text,
-                        notify_default  => \@users,
-                        subject         => $subject,
-                        notify=>$notify 
-                    };
-                    $topic_row->add_to_posts( $post, { rel_field => 'topic_post', rel_type=>'topic_post'});  # XXX mdb
-                    #master_rel->create({ rel_type=>'topic_post', from_mid=>$id_topic, to_mid=>$mid });
+                
+                my $post = ci->post->new({   
+                        topic        => $topic_mid,
+                        content_type => $content_type,
+                        created_by   => $c->username,
+                        created_on   => mdb->ts,
+                });
+                local $Baseliner::CI::ci_record = 1;
+
+                # notification data
+                my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$topic_mid", rel_type=>'topic_project' });
+                my @users = Baseliner->model("Topic")->get_users_friend(
+                        id_category => $topic_row->{category}{id}, 
+                        id_status   => $topic_row->{category_status}{id}, 
+                        projects    => \@projects );
+                my $subject = _loc("%1 created a post for topic [%2] %3", $c->username, $topic_row->{mid}, $topic_row->{title} );
+                my $notify = { #'project', 'category', 'category_status'
+                    category        => $topic_row->{category}{id},
+                    category_status => $topic_row->{category_status}{id},
+                    project => \@projects,
+                };
+                # save the post
+                my $mid_post = $post->save;
+                $post->put_data( $text ); 
+                event_new 'event.post.create' => {
+                    username        => $c->username,
+                    mid             => $topic_mid,
+                    data            => ci->new($topic_mid)->{_ci},
+                    id_post         => $mid_post,
+                    post            => $text,
+                    notify_default  => \@users,
+                    subject         => $subject,
+                    notify=>$notify 
                 };
             } else {
-                my $post = $c->model('Baseliner::BaliPost')->find( $id_com );
+                my $post = ci->find( $id_com );
                 _fail( _loc("This comment does not exist anymore") ) unless $post;
-                $post->text( $text );
-                $post->content_type( $content_type );
-                # TODO modified_on ?
-                $post->update;
+                $post->update( text=>$text, content_type=>$content_type );
             }
 
             # modified_on 
-            mdb->topic->udpate({ mid=>"$topic_mid" },{ '$set'=>{ modified_on=>mdb->ts } });
+            mdb->topic->update({ mid=>"$topic_mid" },{ '$set'=>{ modified_on=>mdb->ts } });
 
             $c->stash->{json} = {
                 msg     => _loc('Comment added'),
                 id      => $id_com,
                 success => \1
             };
-        }
-        catch{
+        } catch {
             my $err = shift;
             _error( $err );
             $c->stash->{json} = { msg => _loc('Error adding Comment: %1', $err ), failure => \1 }
@@ -719,34 +711,34 @@ sub comment : Local {
     } elsif( $action eq 'delete' )  {
         try {
             my $id_com = $p->{id_com};
-            _throw( _loc( 'Missing id' ) ) unless defined $id_com;
-            my $post = $c->model('Baseliner::BaliPost')->find( $id_com );
+            _fail( _loc( 'Missing id' ) ) unless defined $id_com;
+            my $post = ci->find( $id_com );
             _fail( _loc("This comment does not exist anymore") ) unless $post;
             my $text = $post->text;
             # find my parents to notify via events
-            my @mids = map { $_->from_mid } $post->parents->all; 
+            my @mids = map { $_->mid } $post->parents( isa=>'topic' );
             # delete the record
             $post->delete;
             # now notify my parents
-            
+            for my $mid_topic ( @mids ) {
+                my $topic_row = mdb->topic->find_one({ mid=>$mid_topic });
+                my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$mids[0]", rel_type=>'topic_project' });
+                my @users = Baseliner->model("Topic")->get_users_friend(id_category => $topic_row->{category}{id}, 
+                    id_status=>$topic_row->{category}{status}, projects=>\@projects);
+                my $subject = _loc("%1 deleted a post from topic [%2] %3", $c->username, $topic_row->{mid}, $topic_row->{title});
+                my $notify = { #'project', 'category', 'category_status'
+                    category        => $topic_row->{category}{id},
+                    category_status => $topic_row->{category_status}{id},
+                    project => \@projects
+                };
 
-            my $topic_row = mdb->topic->find_one({ mid=>"$mids[0]" });
-            my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$mids[0]", rel_type=>'topic_project' });
-            my @users = Baseliner->model("Topic")->get_users_friend(id_category => $topic_row->{category}{id}, 
-                id_status=>$topic_row->{category}{status}, projects=>\@projects);
-            my $subject = _loc("%1 deleted a post from topic [%2] %3", $c->username, $topic_row->{mid}, $topic_row->{title});
-            my $notify = { #'project', 'category', 'category_status'
-                category        => $topic_row->{category}{id},
-                category_status => $topic_row->{category_status}{id},
-                project => \@projects
-            };
-
-            event_new 'event.post.delete' => { username => $c->username, mid => $_, id_post=>$id_com,
-                post            => substr( $text, 0, 30 ) . ( length $text > 30 ? "..." : "" ),
-                notify_default  => \@users,
-                subject         => $subject,
-                notify => $notify
-            } for @mids;
+                event_new 'event.post.delete' => { username => $c->username, mid => $mid_topic, id_post=>$id_com,
+                    post            => substr( $text, 0, 30 ) . ( length $text > 30 ? "..." : "" ),
+                    notify_default  => \@users,
+                    subject         => $subject,
+                    notify          => $notify
+                };
+            }
             $c->stash->{json} = { msg => _loc('Delete comment ok'), failure => \0 };
         } catch {
             my $err = shift;
@@ -756,7 +748,7 @@ sub comment : Local {
     } elsif( $action eq 'view' )  {
         try {
             my $id_com = $p->{id_com};
-            my $post = $c->model('Baseliner::BaliPost')->find($id_com);
+            my $post = ci->find($id_com);
             _fail( _loc("This comment does not exist anymore") ) unless $post;
             # check if youre the owner
             _fail _loc( "You're not the owner (%1) of the comment.", $post->created_by ) 
@@ -765,7 +757,7 @@ sub comment : Local {
                 failure=>\0,
                 text       => $post->text,
                 created_by => $post->created_by,
-                created_on => $post->created_on->dmy . ' ' . $post->created_on->hms
+                created_on => $post->created_on,
             };
         } catch {
             my $err = shift;

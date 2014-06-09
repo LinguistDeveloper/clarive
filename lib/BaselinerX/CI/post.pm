@@ -5,8 +5,22 @@ with 'Baseliner::Role::CI::Asset';
 
 sub icon { '/static/images/icons/post.png' }
 
-sub text { '' } 
-sub content_type { '' } 
+has content_type => qw(is rw isa Any default text);
+has created_on   => qw(is rw isa Any), default=>sub{ mdb->ts };
+
+has_ci 'topic';
+
+sub rel_type {
+    { 
+        topic => [ to_mid => 'topic_post' ] ,
+    };
+}
+
+sub text { 
+    my ($self)=@_;
+    my $d = $self->get_data;
+    return $d ? $d->slurp : '';
+} 
 
 1;
 

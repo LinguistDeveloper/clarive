@@ -496,18 +496,30 @@ sub scheduler {
     mdb->scheduler->insert($_) for map { delete $_->{id}; $_ } @sch;
 }
 
-sub post {
-    my %post = map { $_->{mid} => $_ } _dbis->query('select * from bali_post')->hashes;
-    for my $doc ( ci->post->find->all ) {
-        if( !exists $post{ $$doc{mid} } ) {
-            warn "MID== $$doc{mid} " ;
-            ci->delete( $$doc{mid} );
+sub posts {
+    my $db = _dbis;
+    my %post = map { $_->{mid} => $_ } $db->query('select * from bali_post')->hashes;
+    my %rels = map { $$_{to_mid} => $$_{from_mid} }    # post => parent topic
+        _dbis->query('select * from bali_master_rel where rel_type=?', 'topic_post')->hashes;
+    my $rs = $db->query('select * from bali_post');
+    while( my $post = $rs->hash ) {
+        # if we find a post for this mid, delete it and create it again
+        if( ci->post->find({ mid=>"$$post{mid}" })->count ) {
+            say "Post replace existing MID== $$post{mid} " ;
+            ci->delete( $$post{mid} );
         }
-    }
-    for my $post ( values  %post ) {
-        my $ci = ci->new( $$post{mid} );
+        my $ci = ci->post->new({
+                mid          => $$post{mid},
+                content_type => $$post{content_type},
+                created_on   => $$post{created_on},
+                created_by   => $$post{created_by},
+                modified_on  => $$post{created_on},
+                ts           => $$post{created_on},
+        });
+        $ci->topic( ci->new($rels{$$post{mid}}) ) if length $rels{$$post{mid}};
         $ci->put_data( $$post{text} );
         $ci->save;
+        say "Saved Post $$post{mid}";
     }
 }
 
