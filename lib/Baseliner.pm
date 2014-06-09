@@ -367,7 +367,8 @@ around 'debug' => sub {
     print STDERR ( Baseliner->config->{name} // 'Baseliner' ) 
         . " $Baseliner::VERSION. Startup time: " . tv_interval($t0) . "s.\n";
     $ENV{CATALYST_DEBUG} || $ENV{BASELINER_DEBUG} and do { 
-        print STDERR "Environment: $bali_env. Catalyst: $Catalyst::VERSION. MongoDB: $MongoDB::VERSION. Perl: $^V. OS: $^O\n";
+        my $mdbv = mdb->eval('db.version()');
+        print STDERR "Environment: $bali_env. MongoDB: $mdbv / $MongoDB::VERSION. Catalyst: $Catalyst::VERSION. Perl: $^V. OS: $^O\n";
         print STDERR "\7";
     };
     # Make registry easily available to contexts

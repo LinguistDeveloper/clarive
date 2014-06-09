@@ -64,7 +64,6 @@ use Exporter::Tidy default => [
     _notify_address
     _replace_tags
     _strip_html
-    is_oracle
     is_number
     _dump
     _load
@@ -604,10 +603,6 @@ sub _array_all {
 sub _array_or_commas {
     my (@arr) = @_;
     map { ref($_) ? ( map { ref $_ ? $_ : split(/,/,$_) } _array($_) ) : split( /,/, $_) } @arr;
-}
-
-sub is_oracle {
-    return Baseliner->model('Baseliner')->storage->dbh->{Driver}->{Name} =~ m/oracle/i;
 }
 
 sub is_number {
@@ -1349,10 +1344,30 @@ sub _repl {
     goto &Carp::REPL::repl;
 }
 
+=head2 _md5
+
+Returns a md5 hash for a given string, Path::Class::File,
+glob or IO::File.
+
+    my $f = _file('/dir/file.txt');
+    say 'HASH=' . _md5( $f );
+    say 'HASH=' . _md5( 'hello world' );
+    open my $ff,'<', '/dir/file.txt';
+    say 'HASH=' . _md5( $ff );
+
+=cut
 sub _md5 {
+    my ($in) = @_;
     require Digest::MD5;
-    my $str = @_ ? join( '#',@_ ) : _now . rand() . $$ ;
-    Digest::MD5::md5_hex( $str );
+    $in = $in->open('r') if ref($in) eq 'Path::Class::File';
+    if( ref($in) =~ /GLOB|IO::File/ ) {
+        my $md5 = Digest::MD5->new;
+        $md5->addfile( $in );
+        return $md5->hexdigest;
+    } else {
+        my $str = @_ ? join( '#',@_ ) : _now . rand() . $$ ;
+        return Digest::MD5::md5_hex( $str );
+    }
 }
 
 sub _html_escape {

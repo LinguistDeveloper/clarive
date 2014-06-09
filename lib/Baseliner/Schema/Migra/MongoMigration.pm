@@ -660,6 +660,18 @@ sub statuses {
     
 }
 
+sub topic_images {
+    my $db = _dbis(); # otherwise we get nasty DESTROY errors
+    my $rs = $db->query('select * from bali_topic_image');
+    while( my $img = $rs->hash ) {
+        say "Checking if image $$img{id_hash} is already in mongo...";
+        next if mdb->grid->files->find_one({ md5=>$$img{id_hash} });
+        say "Migrating image $$img{id_hash}";
+        mdb->grid_insert( $$img{img_data}, content_type=>$$img{content_type}, md5=>$$img{id_hash}, parent_mid=>$$img{topic_mid} );
+    }
+    say "Done migrating images";
+}
+
 ####################################
 #
 # Integrity fixes

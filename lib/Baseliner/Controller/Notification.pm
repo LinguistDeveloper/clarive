@@ -308,7 +308,7 @@ sub import : Local {
     Baseliner->cache_remove_like( qr/^notify:/ );
     $c->registry->reload_all;
     try{
-        Baseliner->model('Baseliner')->txn_do( sub {
+        mdb->txn( sub {
             my $yaml = $p->{yaml} or _fail _loc('Missing parameter yaml');
             my $import = _load( $yaml );
             $import = [ $import ] unless ref $import eq 'ARRAY';
@@ -334,7 +334,7 @@ sub import : Local {
 
                 push @log, _loc('Notify created with id %1 and event_key %2:', $id, $data->{event_key}) ;
             }
-        });   # txn_do end
+        });   # txn end
         
         $c->stash->{json} = { success => \1, log=>\@log, msg=>_loc('finished') };  
     }

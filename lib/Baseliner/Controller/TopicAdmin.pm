@@ -899,7 +899,7 @@ sub import : Local {
                     ? _loc('Topic category created with id %1 and name %2:', $topic_cat->id, $topic_cat->name) 
                     : _loc('Topic category %1 updated', $topic_cat->name) ;
             }
-        });   # txn_do end
+        });   # txn end
         
         $c->stash->{json} = { success => \1, log=>\@log, msg=>_loc('finished') };  
     }

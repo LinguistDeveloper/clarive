@@ -37,7 +37,7 @@ has mongo         => ( is=>'ro', isa=>'MongoDB::MongoClient', lazy=>1, default=>
 has db => ( is=>'ro', isa=>'MongoDB::Database', lazy=>1, default=>sub{
        my $self = shift;
        $self->mongo->get_database($self->mongo_db_name); 
-    }, handles=>[qw(run_command)],
+    }, handles=>[qw(run_command eval)],
 );
 
 sub oid {
@@ -69,6 +69,38 @@ sub collection {
 }
 
 sub grid { $_[0]->db->get_gridfs }
+
+sub grid_insert {  
+    my ($self, $in, %opts) = @_;
+    my $fh;
+    if( !ref $in ) {
+        # open the string like a file
+        my $basic_fh;
+        open($basic_fh, '<', \$in) or _fail _loc 'Error trying to open string asset: %1', $!;
+        # turn the file handle into a FileHandle
+        $fh = FileHandle->new;
+        $fh->fdopen($basic_fh, 'r');
+    }
+    elsif( ref $in eq 'Path::Class::File' ) {
+        $fh = $in->open('r');
+    }
+    elsif( ref($in) =~ /GLOB|IO::File/ ) {
+        $fh = $in;
+    }
+    else {
+        # open the string like a file
+        my $basic_fh;
+        open($basic_fh, '<', \$in);
+        # turn the file handle into a FileHandle
+        $fh = FileHandle->new;
+        $fh->fdopen($basic_fh, 'r');
+    }
+    _fail _loc 'Could not get filehandle for asset' unless $fh; 
+    my $md5 = Util->_md5( $self->fh );
+    my $origin = _loc '%1:%3', caller;
+    my $id = $self->grid->insert($fh, +{ md5=>$md5, origin=>$origin, %opts } );
+    return $id;
+}
 
 sub asset {
     my ($self, $in, %opts) = @_;
@@ -479,7 +511,29 @@ sub AUTOLOAD {
     my $name = $AUTOLOAD;
     my ($coll) = reverse( split(/::/, $name));
     Util->_fail('The method is `joins` not `join`') if $coll eq 'join';
-    return $self->collection( $coll );
+    Util->_debug( "TRACE: $coll: ". join('; ',caller) ) if $ENV{CLARIVE_TRACE};
+    return ( ( $ENV{CLARIVE_TRACE}==2 && $coll ne 'cache' ) || $ENV{CLARIVE_TRACE}>2 )
+          ? bless { coll=>$self->collection($coll) } => 'Baseliner::Mongo::TraceCollecion'
+          : $self->collection( $coll )
+}
+
+package Baseliner::Mongo::TraceCollecion {
+    use strict;
+    our $AUTOLOAD;
+    sub AUTOLOAD {
+        my $self = shift;
+        my $name = $AUTOLOAD;
+        my ($meth) = reverse( split(/::/, $name));
+        unless( $ENV{CLARIVE_TRACE}==2 && $meth eq 'DESTROY' ) {
+            my $coll_name = $self->{coll}->name;
+            my $d = Data::Dumper->new(\@_);
+            $d->Indent(0)->Purity(1)->Quotekeys(0)->Terse(1)->Deepcopy(1);
+            my $dump = join ',', $d->Dump;
+            #Util->_debug( "TRACE $coll_name->$meth:" . Util->_dump(\@_) );
+            Util->_debug( "TRACE:\n\n   mdb->$coll_name->$meth($dump)\n" );
+        }
+        return $self->{coll}->$meth(@_);
+    }
 }
 
 1;

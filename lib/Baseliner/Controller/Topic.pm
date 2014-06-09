@@ -17,7 +17,7 @@ register 'action.topics.view_graph' => { name=>'View related graph in topics' };
 register 'registor.menu.topics' => {
     generator => sub {
        # action.topics.<category_name>.[create|edit|view]
-       my @cats = mdb->categories->find->fields({ name=>1, id=>1, color=>1 })->all;
+       my @cats = mdb->category->find->fields({ name=>1, id=>1, color=>1 })->all;
        my $seq = 10;
        my $pad_for_tab = 'margin: 0 0 -3px 0; padding: 2px 4px 2px 4px; line-height: 12px;';
        my %menu_view = map {
@@ -1215,17 +1215,23 @@ sub list_admin_category : Local {
     if ($p->{change_categoryId}){
         if ($p->{statusId}){
             # intersect statusId and change_categoryId
-            @statuses = sort { $$a{seq} <=> $$b{seq} } values +{ ci->status->statuses( id_category=>''.$p->{change_categoryId}, id_status=>mdb->in($p->{statusId}) ) };
+            @statuses =
+                sort { $$a{seq} <=> $$b{seq} }
+                values +{
+                    ci->status->statuses( id_category => '' . $p->{change_categoryId}, id_status => mdb->in( $p->{statusId} ) )
+                };
         }
         if( !@statuses ){
-            @statuses = sort { $$a{seq} <=> $$b{seq} } values +{ ci->status->statuses( id_category=>''.$p->{change_categoryId}, type=>'I' ) };
+            @statuses =
+                sort { $$a{seq} <=> $$b{seq} }
+                values +{ ci->status->statuses( id_category => '' . $p->{change_categoryId}, type => 'I' ) };
         }
         
         for my $status ( @statuses ) {
-            my $action = $c->model('Topic')->getAction($status->status->type);
+            my $action = $c->model('Topic')->getAction($status->{type});
             push @rows, {
-                            id          => $status->{id},
-                            status      => $status->{id},
+                            id          => $status->{id_status},
+                            status      => $status->{id_status},
                             name        => _loc($status->{name}),
                             status_name => _loc($status->{name}),
                             type        => $status->{type},
@@ -1367,7 +1373,11 @@ sub file : Local {
                 
                 my $topic = mdb->topic->find_one({ mid=> "$$p{topic_mid}" });
                 my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$$p{topic_mid}", rel_type=>'topic_project' });
-                my @users = $c->model('Topic')->get_users_friend(id_category => $topic->id_category, id_status => $topic->id_category_status, projects => \@projects);
+                my @users = $c->model('Topic')->get_users_friend(
+                    id_category => $topic->id_category,
+                    id_status   => $topic->id_category_status,
+                    projects    => \@projects
+                );
                 
                 if( $count < 2 ) {
                     _log "Deleting file " . $file->mid;
@@ -1430,6 +1440,7 @@ sub file_tree : Local {
     my $p = $c->request->parameters;
     my $topic_mid = $p->{topic_mid};
     my @files = ();
+    # TODO mdb
     if($topic_mid){
         my @assets = mdb->master_rel->find_values( to_mid =>{ mid=>"$topic_mid", rel_type=>'topic_asset' });
         @files = map {
@@ -1694,10 +1705,11 @@ sub report_csv : Local {
 sub img : Local {
     my ($self, $c, $id ) = @_;
     my $p = $c->req->params;
-    my $img = DB->BaliTopicImage->search({ id_hash=>$id })->first;
+    my $img = mdb->grid->get( "$id" );
+    $img //= do{ my $doc = mdb->grid->files->find_one({ md5=>$id }); mdb->grid->get($$doc{_id}) if $doc };
     if( $img ) {
-        $c->res->content_type( $img->content_type || 'image/png');
-        $c->res->body( $img->img_data );
+        $c->res->content_type( $$img{content_type} || 'image/png');
+        $c->res->body( $img->slurp );
     } else {
         $c->res->content_type( 'image/png');
         my $broken = $c->path_to('/root/static/images/icons/help.png')->slurp;

@@ -13,11 +13,12 @@ sub check {
     for my $f ( map { $_->children } grep { -e } @candidates ) {
         my ($id) = $f->basename =~ /^(.+)\.(.*?)$/;
         my $body = $f->slurp;
-        my ($version) = $body =~ /our\s+\$VERSION\s*=\s*([0-9]+)/;
+        my ($version) = $body =~ /package\s+\S+\s+([0-9]+);/;
+        ($version) = $body =~ /our\s+\$VERSION\s*=\s*([0-9]+)/ unless defined $version;
         $version //= 0;
         $ids{ $id } = 1;
         my $wh ={ _id=>$id };
-        $wh->{'$or'} = [{version=>undef},{ '$and'=>[{version=>{'$gte'=>$version}}, {version=>{ '$ne'=>undef } }] }] if $version>0;
+        $wh->{'$or'} = [{version=>undef},{ '$and'=>[{version=>{'$gte'=>0+$version}}, {version=>{ '$ne'=>undef } }] }] if $version>0;
         if( my $doc = mdb->_migrations->find_one($wh) ) {
             _debug("====> Migration ok: $id (version: $version)" );
             next;
@@ -30,7 +31,9 @@ sub check {
                 $pkg->upgrade;
             };
             my $err = $@;
-            mdb->_migrations->update({ _id=>$id }, { _id=>$id, rb=>$body, err=>$err, ts=>mdb->ts, version=>0+$version },{ upsert=>1 });
+            Util->_error( $err );
+            mdb->_migrations->update({ _id=>$id }, { _id=>$id, rb=>$body, err=>$err, ts=>mdb->ts, version=>0+$version },{ upsert=>1 })
+                unless length $err;
         }
         say "ID=$id";
     }

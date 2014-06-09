@@ -44,7 +44,8 @@ sub insert {
     my ($self,%p) = @_;
     # $grid->insert($fh, {"filename" => "mydbfile"});
     # TODO match md5, add mid to asset in case it exists
-    my $id = $self->grid->insert($self->fh, { filename=>$self->filename, %p } );
+    my $md5 = Util->_md5( $self->fh );
+    my $id = $self->grid->insert($self->fh, { filename=>$self->filename, md5=>$md5, %p } );
     $self->id( $id );
 }
 

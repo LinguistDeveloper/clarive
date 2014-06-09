@@ -16,7 +16,7 @@ sub get_labels {
     
     #user labels
     # my $perm = Baseliner->model('Permissions');
-    # my @user_labels = Baseliner->model('Baseliner::BaliLabel')->search({username => $username}, {join => 'users'})->hashref->all;
+    # my @user_labels = mdb->label_user->find({username => $username})->all;
     # if ($perm->user_has_action( username=> $username, action => 'action.labels.admin') || $perm->is_root( $username ) || $mode ne 'admin'  ){
     # }
     

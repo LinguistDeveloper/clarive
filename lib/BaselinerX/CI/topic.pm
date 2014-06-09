@@ -234,6 +234,11 @@ sub get_meta {
     Baseliner->model('Topic')->get_meta( $mid );
 }
 
+sub category {
+    my ($self)=@_;
+    mdb->category->find_one({ id=>$self->id_category });
+}
+
 sub velocities {
    my ($self,$p)=@_;
    return { data=>[] };
