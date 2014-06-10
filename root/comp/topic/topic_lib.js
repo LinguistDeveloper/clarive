@@ -1355,7 +1355,7 @@ Baseliner.Topic.change_status_topic = function(opts){
 Baseliner.TopicCombo = Ext.extend( Ext.form.ComboBox, {
     minChars: 2,
     name: 'topic',
-    displayField: 'short_name',
+    // displayField: 'short_name',
     hiddenName: 'topic',
     valueField: 'mid',
     msgTarget: 'under',
