@@ -573,7 +573,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 if( self.$tree_projects ) self.$tree_projects.refresh_all(callback);
             },
             listeners: Baseliner.gen_btn_listener()
-        });       
+        });
 
         var add_to_fav_folder = function() {
             Ext.Msg.prompt(_('Favorite'), _('Folder name:'), function(btn, folder){
@@ -661,7 +661,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 button_workspaces,
                 button_ci,
                 button_search_folders,
-                button_collapseall,        
+                button_collapseall,
                 '->',
                 button_menu,
                 button_collapse,
