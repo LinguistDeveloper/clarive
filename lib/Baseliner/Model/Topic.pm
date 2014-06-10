@@ -116,7 +116,7 @@ register 'event.topic.modify_field' => {
         else {
             #$txt = '';
             require Algorithm::Diff::XS;
-            my $brk = sub { my $x=_strip_html(shift); [ $x =~ m{(\w+)}gs ] };
+            my $brk = sub { my $x = ""; $x=_strip_html(shift); [ $x =~ m{([\w|\.]+)}gs ] };
             my $aa = $brk->($vars[2]);
             my $bb = $brk->($vars[3]);
             my $d =Algorithm::Diff::XS::sdiff( $aa, $bb );
