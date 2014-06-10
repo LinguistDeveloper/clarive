@@ -1,5 +1,5 @@
 package Baseliner::Controller::Dashboard;
-use Baseliner::PlugMouse;
+use Baseliner::Plug;
 use Baseliner::Utils qw(:default _load_yaml_from_comment);
 use Baseliner::Sugar;
 use Baseliner::Core::DBI;
@@ -731,7 +731,14 @@ sub list_topics: Private{
     ##########################################################################################################		
     
     # go to the controller for the list
-    my $p = { limit => $default_config->{rows}, username=>$c->username };
+    my $p = { limit => $default_config->{rows}, username=>$c->username, clear_filter => 1 };
+
+    if ( $default_config->{statuses} && $default_config->{statuses} ne 'ALL') {
+        my @statuses = split /,/, $default_config->{statuses};
+        my @status_ids = map {$_->{id_status}} ci->status->find({ name => mdb->in(@statuses)})->all;
+        $p->{statuses} = \@status_ids;
+    }
+
     my ($cnt, @rows) = $c->model('Topic')->topics_for_user( $p );
     $c->stash->{topics} = \@rows ;
 }
