@@ -29,4 +29,16 @@ sub rel_type {
 	};
 }
 
+
+sub store {
+
+	my ($self, $p) = @_;
+    
+	my @cis = ci->search_cis(collection=>'web_instance');
+
+	my $total = scalar (@cis);
+	
+	return { totalCount => $total, data => \@cis };
+}
+
 1;

@@ -602,7 +602,8 @@ sub _array_all {
 
 sub _array_or_commas {
     my (@arr) = @_;
-    map { ref($_) ? ( map { ref $_ ? $_ : split(/,/,$_) } _array($_) ) : split( /,/, $_) } @arr;
+    my @ret = map { ref($_) ? ( map { ref $_ ? $_ : split(/,/,$_) } _array($_) ) : split( /,/, $_) } @arr;
+    return @ret==1 && ref $ret[0] eq 'ARRAY' ? _array($ret[0]) : @ret; 
 }
 
 sub is_number {

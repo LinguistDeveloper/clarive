@@ -316,7 +316,7 @@
         var note = new Baseliner.MonoTextArea({ title:_('Note'), value: attr.note || '' });
         var data_key = new Ext.form.TextField({ fieldLabel:_('Return Key'), name:'data_key', value: node.attributes.data_key || '' });
         var needs_rollback_mode = new Baseliner.ComboDouble({ 
-            fieldLabel: _('Needs Rollback?'), name:'needs_rollback_mode', value: data.needs_rollback_mode || 'none', 
+            fieldLabel: _('Needs Rollback?'), name:'needs_rollback_mode', value: attr.needs_rollback_mode || 'none', 
             data: [ ['nb_after',_('Rollback Needed After')], ['nb_before',_('Rollback Needed Before')], 
                     ['nb_always',_('Rollback Needed Always')], ['none',_('No Rollback Necessary')] ]
         });
@@ -354,6 +354,7 @@
             node.attributes.active = enabled.checked ? 1 : 0;
             node.attributes.disabled = enabled.checked ? false : true;
             enabled.checked ? node.enable() : node.disable();
+            node.attributes.needs_rollback_mode = needs_rollback_mode.getValue();
             node.attributes.run_forward = run_forward.checked;
             node.attributes.run_rollback = run_rollback.checked;
             node.attributes.parallel_mode = parallel_mode.getValue();

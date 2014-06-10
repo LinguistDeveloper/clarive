@@ -1,8 +1,13 @@
 (function(params){
     var data = params.rec || {}; 
-    
+
+    var bp = {};
+    bp.class = 'web_instance';
+    var store = new Baseliner.store.CI({ url:'/ci/web_instance/store', autoLoad:true, baseParams: bp });
+
+
     return [
-      Baseliner.ci_box({ name:'server', anchor:'100%', fieldLabel:_('Server'), role:'Server', allowBlank: false, force_set_value: true, value: data.server }),
+      Baseliner.ci_box({name:'server', anchor:'100%', fieldLabel:_('Server'), role:'Server', allowBlank: false, force_set_value: true, value: data.server }),
       { xtype: 'textfield', fieldLabel: _('IP'), anchor:'100%', name:'ip', allowBlank: true, value: data.ip },
       { xtype: 'textfield', fieldLabel: _('Port'), anchor:'100%', name:'web_port', allowBlank: true, value: data.web_port },
       { xtype: 'textfield', fieldLabel: _('Stop script'), anchor:'100%', name:'stop_script', allowBlank: true, value: data.stop_script },
