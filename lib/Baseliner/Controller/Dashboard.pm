@@ -650,7 +650,7 @@ sub list_lastjobs: Private{
         }		
     }	
     ##########################################################################################################
-
+    my @lastjobs;
     for my $doc ( @rs_search ) {
         last if $numrow > $limit;
         try {
