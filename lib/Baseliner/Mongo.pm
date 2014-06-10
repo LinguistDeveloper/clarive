@@ -513,7 +513,8 @@ sub AUTOLOAD {
     my ($coll) = reverse( split(/::/, $name));
     Util->_fail('The method is `joins` not `join`') if $coll eq 'join';
     Util->_debug( "TRACE: $coll: ". join('; ',caller) ) if $ENV{CLARIVE_TRACE};
-    return ( ( $ENV{CLARIVE_TRACE}==2 && $coll ne 'cache' ) || $ENV{CLARIVE_TRACE}>2 )
+
+    return ( ( defined $ENV{CLARIVE_TRACE} && $ENV{CLARIVE_TRACE}==2 && $coll ne 'cache' ) || ( defined $ENV{CLARIVE_TRACE} && $ENV{CLARIVE_TRACE}>2 ))
           ? bless { coll=>$self->collection($coll) } => 'Baseliner::Mongo::TraceCollecion'
           : $self->collection( $coll )
 }
