@@ -24,6 +24,6 @@ $url = 'ci/update';
 $ag->post( URL($url), \%data );
 $json = _decode_json( $ag->content );
 say "Result: " . $json->{msg};
-ok $json->{success}, "user added succesfully with mid: $json->{user_id}";
+ok $json->{success}, "Entorno anyadido";
 
 done_testing;
