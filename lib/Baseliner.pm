@@ -271,6 +271,18 @@ around 'debug' => sub {
         }
     }
     
+    # model : shortcut to Baseliner->model
+    {
+        package model;
+        our $AUTOLOAD;
+        sub AUTOLOAD {
+            my $self = shift;
+            my $name = $AUTOLOAD;
+            my ($method) = reverse( split(/::/, $name));
+            return Baseliner->model($method);
+        }
+    }
+    
     # ci : ci utilities setup
     {
         package ci;

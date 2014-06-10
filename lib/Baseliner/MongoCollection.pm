@@ -246,5 +246,12 @@ sub find_hash_one {
 #      bless $rs => 'Baseliner::MongoCursor';
 #      return $rs;
 #  };
+
+
+sub find_mid {
+    my ($self,@mids)=@_;
+    my @docs = $self->find({ mid=>mdb->in(@mids) })->all;
+    return @docs;
+}
     
 1;
