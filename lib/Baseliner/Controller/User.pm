@@ -269,7 +269,6 @@ sub update : Local {
                 
                 my $ci = ci->user->new( %$ci_data );
                 $ci->gen_project_security($projects_checked, $roles_checked);
-                _log _dump $ci;
                 $ci->password( ci->user->encrypt_password( $p->{username}, $p->{pass} ));
                 $user_mid = $ci->save;
                 $c->stash->{json} = { msg=>_loc('User added'), success=>\1, user_id=> $user_mid };
@@ -486,7 +485,7 @@ sub update : Local {
             $c->stash->{json} = { msg=>_loc('User modified'), success=>\1};
         }
         catch{
-            $c->stash->{json} = {  success => 0, msg=>_loc('Error modifying User: %1', shift()) };
+            $c->stash->{json} = {  success => \0, msg=>_loc('Error modifying User: %1', shift()) };
         }
     }
     }

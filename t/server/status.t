@@ -13,18 +13,17 @@ my $url;
 my %data;
 my $json;
 
-#####################
-#		USER	    #
-#####################
+#########################
+#		status			#
+#########################
 
-$url = 'user/update';
-%data = ('action' => 'add', 'type' => 'user', 'id' => '-1', 'username' => 'utest', 'pass' => 'utest', 'alias' => 'utest', 'pass_cfrm' => 'utest',
-		'realname' => 'usuario de prueba', 'language' => 'spanish', 'phone' => '661000000', 'email' => 'usuario@test.es');
+$url = 'ci/update';
+%data = ('action' => 'add', 'collection' => 'bl', 
+		 'form_data' => ('children' => '', 'name' => 'Entorno de pruebas', 'description' => 'Entorno de pruebas', 'active' => 'on', 'moniker' => '', 'bl' => '*', 'seq' => '100'));
 
 $ag->post( URL($url), \%data );
 $json = _decode_json( $ag->content );
 say "Result: " . $json->{msg};
 ok $json->{success}, "user added succesfully with mid: $json->{user_id}";
-
 
 done_testing;
