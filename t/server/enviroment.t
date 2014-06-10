@@ -14,12 +14,12 @@ my %data;
 my $json;
 
 #########################
-#		status			#
+#		entorno			#
 #########################
 
 $url = 'ci/update';
-%data = ('action' => 'add', 'collection' => 'bl', 
-		 'form_data' => ('children' => '', 'name' => 'Entorno de pruebas', 'description' => 'Entorno de pruebas', 'active' => 'on', 'moniker' => '', 'bl' => '*', 'seq' => '100'));
+my %form_data = ('children' => '', 'name' => 'Entorno de pruebas', 'description' => 'Entorno de pruebas', 'active' => 'on', 'moniker' => '', 'bl' => '*', 'seq' => '100');
+%data = ('action' => 'add', 'collection' => 'bl', 'form_data' => \%form_data);
 
 $ag->post( URL($url), \%data );
 $json = _decode_json( $ag->content );
