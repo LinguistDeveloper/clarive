@@ -670,7 +670,7 @@ L<Baseliner::Controller::Root>, L<Catalyst>
 
 =head1 LICENCE AND COPYRIGHT
 
-Copyright (c) 2010 The Authors of baseliner.org
+Copyright (c) 2010 VASS Software Labs, SL
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
