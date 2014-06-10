@@ -442,8 +442,8 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             icon: '/static/images/icons/project.png',
             handler: function(){
                 this.disable();
-                show_projects();
-                this.enable();
+                var that = this;
+                show_projects(function(){that.enable();});
             },
             tooltip: _('Projects'),
             pressed: false,
@@ -481,8 +481,8 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             icon: '/static/images/icons/workspaces.png',
             handler: function(){
                 this.disable();
-                show_workspaces();
-                this.enable();
+                var that = this;
+                show_workspaces(function(){that.enable();});
             },
             tooltip: _('Workspaces'),
             toggleGroup: 'explorer-card',
@@ -502,8 +502,8 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             icon: '/static/images/ci/ci-grey.png',
             handler: function(){
                 this.disable();
-                show_ci();
-                this.enable();
+                var that = this;
+                show_ci(function(){that.enable();});
             },
             tooltip: _('Configuration Items'),
             toggleGroup: 'explorer-card',
@@ -522,8 +522,8 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             icon: '/static/images/icons/release_explorer.png',
             handler: function(){
                 this.disable();
-                show_releases();
-                this.enable();
+                var that = this;
+                show_releases(function(){that.enable();});
             },
             tooltip: _('Releases'),
             toggleGroup: 'explorer-card',
@@ -542,8 +542,8 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             icon: '/static/images/icons/search_grey.png',
             handler: function(){
                 this.disable();
-                show_reports();
-                this.enable();
+                var that = this;
+                show_reports(function(){that.enable();});
             },
             tooltip: _('Reports'),
             toggleGroup: 'explorer-card',
@@ -557,8 +557,8 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             listeners: Baseliner.gen_btn_listener()
         });        
 
-        var button_collapseall = new Ext.Button({
-            cls: 'x-btn-icon',
+	var button_collapseall = new Ext.Button({
+	    cls: 'x-btn-icon',
             icon: '/static/images/icons/collapseall.png',
             handler: function(){
                 if( self.$tree_releases ) self.$tree_releases.collapseAll();
@@ -577,7 +577,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 if( self.$tree_projects ) self.$tree_projects.refresh_all(callback);
             },
             listeners: Baseliner.gen_btn_listener()
-        });
+        });       
 
         var add_to_fav_folder = function() {
             Ext.Msg.prompt(_('Favorite'), _('Folder name:'), function(btn, folder){
@@ -656,8 +656,8 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                     icon: '/static/images/icons/refresh-grey.gif',
                     handler: function(){
                         this.disable();
-                        self.current_tree().refresh_all();
-                        this.enable();
+                        var that = this;                        
+                        self.current_tree().refresh_all(function(){that.enable();});
                     }
                 },
                 button_projects,
@@ -666,7 +666,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 button_workspaces,
                 button_ci,
                 button_search_folders,
-                button_collapseall,
+                button_collapseall,        
                 '->',
                 button_menu,
                 button_collapse,
