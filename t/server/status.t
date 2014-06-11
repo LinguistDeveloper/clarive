@@ -29,7 +29,7 @@ my $json;
             active          => 'on',
             children        => '',
             seq             => '100',
-            type            => 'G'
+            type            => 'I'
         },
         _merge_with_params => 1,
         action             => 'add',

@@ -56,7 +56,7 @@ $data = {
         active          => 'on',
         children        => '',
         seq             => '100',
-        type            => 'G'
+        type            => 'I'
     },
     _merge_with_params => 1,
     action             => 'add',
@@ -131,5 +131,31 @@ $data = {
 
 $res = $ag->json( URL($url) => $data );
 is( ${ $res->{success} }, 1,  "$res->{msg}: category created succesfully" );     
+my $cat = $res->{mid};
+#add fields to a category
+
+
+my @fields;
+push @fields, 'title';
+push @fields, 'moniker';
+push @fields, 'description';
+
+my @params;
+push @params, {"bd_field":"title","origin":"system","name_field":"Title","section":"head","font_weigth":"bold","system_force":true,"allowBlank":false,"html":"/fields/system/html/field_title.html","js":"/fields/templates/js/textfield.js","field_order":-1,"field_order_html":1};
+push @params, {"bd_field":"moniker","origin":"system","name_field":"Moniker","section":"body","html":"/fields/templates/html/row_body.html","allowBlank":true,"js":"/fields/templates/js/textfield.js","field_order":-8};
+push @params, {"bd_field":"description","origin":"system","name_field":"Description","section":"head","html":"/fields/templates/html/dbl_row_body.html","js":"/fields/templates/js/html_editor.js","field_order":-7,"field_order_html":2};
+
+$url = 'topicadmin/update_fields';
+$data = {
+    as_json                 => 1,
+    id_category             => $cat,
+    _merge_with_params      => 1,
+    fields                  => \@fields,
+    params                  => \@params
+};
+
+$res = $ag->json( URL($url) => $data );
+is( ${ $res->{success} }, 1,  "$res->{msg}: fields added to category succesfully" );     
+
 
 done_testing;
