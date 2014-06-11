@@ -10,144 +10,126 @@ use Clarive::Test;
 my $ag = Clarive::Test->user_agent;
 
 my $url;
-my %data;
+my $data;
 my $json;
+my $res;
 
 #########################
 #		entorno			#
 #########################
 
-{
-    my $data = {
-        as_json   => 1,
-        form_data => {
-            name           => 'Entorno de pruebas',
-            description    => 'Entorno de pruebas',
-            bl             => '*',
-            moniker        => '',
-            active         => 'on',
-            children       => '',
-            seq => '100'
-        },
-        _merge_with_params => 1,
-        action             => 'add',
-        collection         => 'bl',
-    };
-    my $res = $ag->json( URL('ci/update') => $data );
-    is( ${ $res->{success} }, 1,  "$res->{msg}: enviroment created succesfully" );
-    # if( my $mid = $res->{mid} ) {
-    #     $res =  $ag->json( URL('ci/delete') => { mids=>$mid } );
-    #     is( ${ $res->{success} }, 1,  'ci delete ok' );
-    # }
+$url = 'ci/update';
+$data = {
+    as_json   => 1,
+    form_data => {
+        name           	=> 'Entorno de pruebas',
+        description    	=> 'Entorno de pruebas',
+        bl             	=> '*',
+        moniker        	=> '',
+        active         	=> 'on',
+        children       	=> '',
+        seq 			=> '100'
+    },
+    _merge_with_params => 1,
+    action             => 'add',
+    collection         => 'bl',
+};
+$res = $ag->json( URL($url) => $data );
+my $bl = $res->{mid};
+is( ${ $res->{success} }, 1,  "$res->{msg}: enviroment created succesfully" );
      
-}
 
 #########################
 #		status			#
 #########################
 
+$url = 'ci/update';
+my @cats=[];
 #nuevo
-{
-    my $data = {
-        as_json   => 1,
-        form_data => {
-            name            => 'nuevo',
-            description     => 'Estado nuevo',
-            bls             => ['14'],
-            moniker         => '',
-            active          => 'on',
-            children        => '',
-            seq             => '100',
-            type            => 'G'
-        },
-        _merge_with_params => 1,
-        action             => 'add',
-        collection         => 'status',
-    };
-    my $res = $ag->json( URL('ci/update') => $data );
-    is( ${ $res->{success} }, 1,  "$res->{msg}: enviroment created succesfully" );
-    # if( my $mid = $res->{mid} ) {
-    #     $res =  $ag->json( URL('ci/delete') => { mids=>$mid } );
-    #     is( ${ $res->{success} }, 1,  'ci delete ok' );
-    # }
-     
-}
+$data = {
+    as_json   => 1,
+    form_data => {
+        name            => 'nuevo',
+        description     => 'Estado nuevo',
+        bls             => [$bl],
+        moniker         => '',
+        active          => 'on',
+        children        => '',
+        seq             => '100',
+        type            => 'G'
+    },
+    _merge_with_params => 1,
+    action             => 'add',
+    collection         => 'status',
+};
+$res = $ag->json( URL($url) => $data );
+push @cats, $res->{mid};
+is( ${ $res->{success} }, 1,  "$res->{msg}: enviroment created succesfully" );
+
 
 #progreso
-{
-    my $data = {
-        as_json   => 1,
-        form_data => {
-            name            => 'progreso',
-            description     => 'Estado progreso',
-            bls             => ['14'],
-            moniker         => '',
-            active          => 'on',
-            children        => '',
-            seq             => '100',
-            type            => 'G'
-        },
-        _merge_with_params => 1,
-        action             => 'add',
-        collection         => 'status',
-    };
-    my $res = $ag->json( URL('ci/update') => $data );
-    is( ${ $res->{success} }, 1,  "$res->{msg}: enviroment created succesfully" );
-    # if( my $mid = $res->{mid} ) {
-    #     $res =  $ag->json( URL('ci/delete') => { mids=>$mid } );
-    #     is( ${ $res->{success} }, 1,  'ci delete ok' );
-    # }
+$data = {
+    as_json   => 1,
+    form_data => {
+        name            => 'progreso',
+        description     => 'Estado progreso',
+        bls             => [$bl],
+        moniker         => '',
+        active          => 'on',
+        children        => '',
+        seq             => '100',
+        type            => 'G'
+    },
+    _merge_with_params => 1,
+    action             => 'add',
+    collection         => 'status',
+};
+$res = $ag->json( URL($url) => $data );
+push @cats, $res->{mid};
+is( ${ $res->{success} }, 1,  "$res->{msg}: enviroment created succesfully" );
      
-}
 
 #finalizado
-{
-    my $data = {
-        as_json   => 1,
-        form_data => {
-            name            => 'finalizado',
-            description     => 'Estado finalizado',
-            bls             => ['14'],
-            moniker         => '',
-            active          => 'on',
-            children        => '',
-            seq             => '100',
-            type            => 'G'
-        },
-        _merge_with_params => 1,
-        action             => 'add',
-        collection         => 'status',
-    };
-    my $res = $ag->json( URL('ci/update') => $data );
-    is( ${ $res->{success} }, 1,  "$res->{msg}: enviroment created succesfully" );
-    # if( my $mid = $res->{mid} ) {
-    #     $res =  $ag->json( URL('ci/delete') => { mids=>$mid } );
-    #     is( ${ $res->{success} }, 1,  'ci delete ok' );
-    # }
+$data = {
+    as_json   => 1,
+    form_data => {
+        name            => 'finalizado',
+        description     => 'Estado finalizado',
+        bls             => [$bl],
+        moniker         => '',
+        active          => 'on',
+        children        => '',
+        seq             => '100',
+        type            => 'G'
+    },
+    _merge_with_params => 1,
+    action             => 'add',
+    collection         => 'status',
+};
+$res = $ag->json( URL($url) => $data );
+push @cats, $res->{mid};
+is( ${ $res->{success} }, 1,  "$res->{msg}: enviroment created succesfully" );
      
-}
 
 #############################
 #		categoria			#
 #############################
 
-{
-    
-    my $data = {
-        as_json         => 1,
-        type            => 'N',
-        provider        => 'internal',
-        action          => 'add',
-        name            => 'catTest',
-        category_color  => '#808000',
-        id              => '-1',
-        description     => 'Categoria de prueba',
-        _merge_with_params => 1,
-        idsstatus       => ['16', '17', '18']
-    };
+$url = 'topicadmin/update_category';
+$data = {
+    as_json         => 1,
+    type            => 'N',
+    provider        => 'internal',
+    action          => 'add',
+    name            => 'catTest',
+    category_color  => '#808000',
+    id              => '-1',
+    description     => 'Categoria de prueba',
+    _merge_with_params => 1,
+    idsstatus       => \@cats
+};
 
-    my $res = $ag->json( URL('topicadmin/update_category') => $data );
-    is( ${ $res->{success} }, 1,  "$res->{msg}: category created succesfully" );     
-}
+$res = $ag->json( URL($url) => $data );
+is( ${ $res->{success} }, 1,  "$res->{msg}: category created succesfully" );     
 
 done_testing;
