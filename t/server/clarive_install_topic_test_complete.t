@@ -44,7 +44,7 @@ is( ${ $res->{success} }, 1,  "$res->{msg}: enviroment created succesfully" );
 #########################
 
 $url = 'ci/update';
-my @cats=[];
+my @cats;
 #nuevo
 $data = {
     as_json   => 1,

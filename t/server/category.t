@@ -36,4 +36,6 @@ my $json;
     is( ${ $res->{success} }, 1,  "$res->{msg}: category created succesfully" );     
 }
 
+#reload de entire system to create a topic for the new category
+
 done_testing;
