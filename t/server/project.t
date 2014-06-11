@@ -1,0 +1,46 @@
+use v5.10;
+use strict;
+use warnings;
+use Test::More;
+use Try::Tiny;
+use WWW::Mechanize;
+use Baseliner::Utils;
+use Clarive::Test;
+
+my $ag = Clarive::Test->user_agent;
+
+my $url;
+my %data;
+my $json;
+
+#########################
+#		project			#
+#########################
+
+{
+
+    my $data = {
+        as_json   => 1,
+        form_data => {
+            name           => 'test_project',
+            description    => 'Proyecto de pruebas',
+            bl             => '*',
+            moniker        => '',
+            active         => 'on',
+            children       => '',
+            seq => '100'
+        },
+        _merge_with_params => 1,
+        action             => 'add',
+        collection         => 'project',
+    };
+    my $res = $ag->json( URL('ci/update') => $data );
+    is( ${ $res->{success} }, 1,  "$res->{msg}: project created succesfully" );
+    # if( my $mid = $res->{mid} ) {
+    #     $res =  $ag->json( URL('ci/delete') => { mids=>$mid } );
+    #     is( ${ $res->{success} }, 1,  'ci delete ok' );
+    # }
+     
+}
+
+done_testing;
