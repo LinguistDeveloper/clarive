@@ -17,13 +17,29 @@ my $json;
 #		entorno			#
 #########################
 
-$url = 'ci/update';
-my %form_data = ('children' => '', 'name' => 'Entorno de pruebas', 'description' => 'Entorno de pruebas', 'active' => 'on', 'moniker' => '', 'bl' => '*', 'seq' => '100');
-%data = ('action' => 'add', 'collection' => 'bl', 'form_data' => \%form_data);
-
-$ag->post( URL($url), \%data );
-$json = _decode_json( $ag->content );
-say "Result: " . $json->{msg};
-ok $json->{success}, "Entorno anyadido";
+{
+    my $data = {
+        as_json   => 1,
+        form_data => {
+            name           => 'Entorno de pruebas',
+            description    => 'Entorno de pruebas',
+            bl             => '*',
+            moniker        => '',
+            active         => 'on',
+            children       => '',
+            seq => '100'
+        },
+        _merge_with_params => 1,
+        action             => 'add',
+        collection         => 'bl',
+    };
+    my $res = $ag->json( URL('ci/update') => $data );
+    is( ${ $res->{success} }, 1,  "$res->{msg}: enviroment created succesfully" );
+    # if( my $mid = $res->{mid} ) {
+    #     $res =  $ag->json( URL('ci/delete') => { mids=>$mid } );
+    #     is( ${ $res->{success} }, 1,  'ci delete ok' );
+    # }
+     
+}
 
 done_testing;
