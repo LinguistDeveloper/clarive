@@ -135,8 +135,8 @@ register 'event.topic.modify_field' => {
                 my $aft = join( ' ', @aft );
                 $bef = substr( $bef, 0, 50 ) . '...' if length $bef > 50;
                 $aft = substr( $aft, 0, 50 ) . '...' if length $aft > 50;
-                $vars[2] = @bef ? '<pre>' . $bef . '</pre>' : '<pre>-</pre>';
-                $vars[3] = @aft ? '<pre>' . $aft . '</pre>' : '<pre>-</pre>';
+                $vars[2] = @bef ? '<code>' . $bef . '</code>' : '<code>-</code>';
+                $vars[3] = @aft ? '<code>' . $aft . '</code>' : '<code>-</code>';
             } else {
                 $txt = '%1 modified the field %2';
             }
