@@ -663,7 +663,7 @@ sub update {
                     $topic_mid    = $topic->mid;
                     $status = $topic->id_category_status;
                     $return = 'Topic added';
-                    $category = $topic->category;
+                    $category = $topic->get_category;
                     $modified_on = $topic->ts;
                     my $id_category = $topic->id_category;
                     my $id_category_status = $topic->id_category_status;
@@ -713,7 +713,7 @@ sub update {
                 $status = $topic->id_category_status;
                 my $id_category = $topic->id_category;
                 $modified_on = $topic->ts;
-                $category = $topic->category;
+                $category = $topic->get_category;
                 
                 my @users = $self->get_users_friend(mid => $topic_mid, id_category => $topic->id_category, id_status => $topic->id_category_status);
                 
@@ -1824,7 +1824,7 @@ sub update_rels {
 # update categories in mongo
 sub update_category {
     my ($self,$mid_or_doc, $id_cat ) = @_; 
-    my $doc = ref $mid_or_doc ? $mid_or_doc : mdb->topic->find_one({ mid=>"$mid_or_doc" });
+    my $doc = ref $mid_or_doc ? $mid_or_doc : mdb->topic->find_mid( $mid_or_doc );
     _fail _loc "Cannot update topic category, topic not found: %1", $mid_or_doc unless ref $doc;
     
     $id_cat //= $doc->{id_category};
@@ -1855,15 +1855,20 @@ sub update_category {
 # update status in mongo
 sub update_category_status {
     my ($self, $mid_or_doc, $id_category_status, $username, $modified_on ) = @_; 
-    my $doc = ref $mid_or_doc ? $mid_or_doc : mdb->topic->find_one({ mid=>$mid_or_doc },{ 'category_status.id'=>1 });
+    my $doc =
+        ref $mid_or_doc
+        ? $mid_or_doc
+        : mdb->topic->find_one( { mid => "$mid_or_doc" }, { id_category_status => 1, 'category_status.id' => 1 } );
     _fail _loc "Cannot update topic category status, topic not found: %1", $mid_or_doc unless ref $doc;
 
-    $id_category_status //= $$doc{category_status}{id};
+    $id_category_status //= $$doc{category_status}{id} // $$doc{id_category_status};
+    _fail _loc "Topic %1 does not have a status id", $$doc{mid} unless $id_category_status;
+    
     my $category_status = ci->status->find_one({ id_status=>''.$id_category_status })
         || _fail _loc 'Status `%1` not found', $id_category_status;
         
     my $d = {
-        category_status      => $$category_status{id_status}, 
+        category_status      => $category_status,
         id_category_status   => $$category_status{id_status},
         category_status_id   => $$category_status{id_status},
         status_new           => $$category_status{id_status},
@@ -1874,7 +1879,7 @@ sub update_category_status {
         modified_by          => $username,
         modified_on          => $modified_on,
     };
-    
+
     if( !ref $mid_or_doc ) {
         # save back to mongo
         mdb->topic->update({ mid=>"$mid_or_doc" },{ '$set'=>$d });
