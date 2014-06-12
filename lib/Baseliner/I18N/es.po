@@ -2920,10 +2920,8 @@ msgstr "Entorno añadido"
 msgid "Baseline key already exists, introduce another baseline key"
 msgstr "Código ya existe, introduce otro"
 
-
 msgid "Error adding Baseline: %1"
 msgstr "Error añadiendo entorno: %1"
-
 
 msgid "Baseline modified"
 msgstr "Entorno modificado"
@@ -2931,10 +2929,8 @@ msgstr "Entorno modificado"
 msgid "Error modifying Baseline: %1"
 msgstr "Error modificanco entorno: %1"
 
-
 msgid "Baseline deleted"
 msgstr "Entorno borrado"
-
 
 msgid "Error deleting Baseline"
 msgstr "Error borrando entorno"
@@ -2945,21 +2941,17 @@ msgstr "Crear entorno"
 msgid "Order (Drag & Drop)"
 msgstr "Orden (Arrastra & Suelta)"
 
-
 msgid "Key baseline"
 msgstr "Código entorno"
 
 msgid "Name of the baseline"
 msgstr "Nombre de entorno"
 
-
 msgid "A brief description of the baseline"
 msgstr "Una breve descripción del entorno"
 
-
 msgid "Edit baseline"
 msgstr "Editar entorno"
-
 
 msgid "Are you sure you want to delete the baseline"
 msgstr "¿Seguro que quiere borrar el entorno"
@@ -2967,10 +2959,8 @@ msgstr "¿Seguro que quiere borrar el entorno"
 msgid "Comment added"
 msgstr "Comentario añadido"
 
-
 msgid "Error adding Comment: %1"
 msgstr "Error añadiendo comentario: %1"
-
 
 msgid "Category added"
 msgstr "Categoría añadida"

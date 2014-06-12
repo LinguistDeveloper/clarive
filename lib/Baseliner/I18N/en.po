@@ -56,8 +56,128 @@ msgstr "Finished"
 msgid "All-f"
 msgstr "All"
 
+msgid "Baseline"
+msgstr "Environment"
+
 msgid "Baselines"
-msgstr "Baselines"
+msgstr "Environments"
+
+msgid "Baseline: %1"
+msgstr "Environment: %1"
+
+msgid "Origin Baseline"
+msgstr "From Environment"
+
+msgid "Destination Baseline"
+msgstr "To Environment"
+
+msgid "List all Baselines"
+msgstr "List all Environments"
+
+msgid "Baseline Identifier"
+msgstr "Environment Identifier"
+
+msgid "Baseline Name"
+msgstr "Environment Name"
+
+msgid "Baseline added"
+msgstr "Environment added"
+
+msgid "Baseline key already exists, introduce another baseline key"
+msgstr "Environment key already exists, enter another environment key"
+
+msgid "Error adding Baseline: %1"
+msgstr "Error adding Environment %1"
+
+msgid "Baseline modified"
+msgstr "Environment modified"
+
+msgid "Error modifying Baseline: %1"
+msgstr "Error modifying Environment %1"
+
+msgid "Baseline deleted"
+msgstr "Environment deleted"
+
+msgid "Error deleting Baseline"
+msgstr "Error deleting Environment"
+
+msgid "Create baseline"
+msgstr "Create environment"
+
+msgid "Order (Drag & Drop)"
+msgstr "Order (Drag & Drop)"
+
+msgid "Key baseline"
+msgstr "Key environment"
+
+msgid "Name of the baseline"
+msgstr "Name of the environment"
+
+msgid "A brief description of the baseline"
+msgstr "A brief description of the environment"
+
+msgid "Edit baseline"
+msgstr "Edit environment"
+
+msgid "Are you sure you want to delete the baseline"
+msgstr "Are you sure you want to delete the environment"
+
+msgid "Are you sure you want to deploy/rollback %1 to baseline %2 (%3)?"
+msgstr "¿Quiere mover %1 al entorno de %2 (%3)?"
+
+msgid "Promoted baseline %1 to %2"
+msgstr "Línea Base promocionada de %1 a %2"
+
+msgid "Demoted baseline %1 to %2"
+msgstr "Línea Base devuelta de %1 a %2"
+
+msgid "Cannot promote/demote changeset %1 to baseline %2 (job type %3)"
+msgstr "No es posible promover/devolver el cambio %1 al entorno %2 (tipo de pase: %3)"
+
+msgid "baseline"
+msgstr "Entorno"
+
+msgid "Updated baseline %1 to %2"
+msgstr "Actualizado el entorno %1 a %2"
+
+msgid "Baseline ID"
+msgstr "Entorno ID"
+
+msgid "Job has dependencies due to later jobs. Baseline cannot be updated. Rollback cancelled."
+msgstr "El pase tiene dependencias debido a pases posteriores. EL entorno no puede ser actualizado. Marcha atrás cancelada"
+
+msgid "Updating baseline %1 for repository %2, job type %3"
+msgid "Updating environment %1 for repository %2, job type %3"
+
+msgid "Verifying baseline %1 for repository %2, job type %3"
+msgid "Verifying environment %1 for repository %2, job type %3"
+
+msgid "Baseline verified for repository %1"
+msgid "Environment verified for repository %1"
+
+msgid "Checking out baseline %1 for project %2, repository %3: %4"
+msgstr "Checking out environment %1 for project %2, repository %3: %4"
+
+msgid "Running file rename for baseline %1"
+msgstr "Running file rename for environment %1"
+
+msgid "Application: %1. Requesting approval for job %2, baseline %3: %4"
+msgstr "Application: %1. Requesting approval for job %2, environment %3: %4"
+
+msgid "Applications: %1. Requesting approval for job %2, baseline %3: %4"
+msgstr "Applications: %1. Requesting approval for job %2, environment %3: %4"
+
+msgid "Requesting approval for baseline %1, item %2"
+msgstr "Requesting approval for environment %1, item %2"
+
+msgid "Could not delete file that belongs to another baseline %1: %2"
+msgstr "Could not delete file that belongs to another environment %1: %2"
+
+msgid "Deleted elements that belong to another baseline"
+msgstr "Deleted elements that belong to another environment"
+
+msgid "A calendar (%1) already exists for namespace %2 and baseline %3"
+msgstr "A calendar (%1) already exists for namespace %2 and environment %3"
 
 msgid "Nature"
 msgstr "Nature"
