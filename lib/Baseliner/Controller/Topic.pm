@@ -478,7 +478,6 @@ sub view : Local {
     my $p = $c->request->parameters;
     my $topic_mid = $p->{topic_mid} || $p->{action};
     ($topic_mid) = _array( $topic_mid ) if ref $topic_mid eq 'ARRAY';
-
     my $id_category;
     
     my $category;
@@ -536,20 +535,20 @@ sub view : Local {
             }
 
             $c->stash->{category_meta} = $category->{forms};
-            
+
             # workflow category-status
             my @statuses = 
                 sort { ( $a->{seq} // 0 ) <=> ( $b->{seq} // 0 ) } 
-                grep { $_->{id_status} ne $topic_doc->{category_status}{id} } 
+                grep { $_->{id_status} ne $topic_doc->{category_status_id} } 
                 $c->model('Topic')->next_status_for_user(
                     id_category    => $category->{id},
-                    id_status_from => $topic_doc->{category_status}{id},
+                    id_status_from => $topic_doc->{category_status_id},
                     username       => $c->username,
                     topic_mid      => $topic_mid
                 );            
     
             my %tmp;
-            if ((substr $topic_doc->{category_status}{type}, 0, 1) eq "F"){
+            if ((substr $topic_doc->{category_status_type}, 0, 1) eq "F"){
                 $c->stash->{permissionEdit} = 0;
                 $c->stash->{permissionDelete} = 0;
             }
