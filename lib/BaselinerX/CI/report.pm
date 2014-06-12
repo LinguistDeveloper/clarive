@@ -584,8 +584,6 @@ sub get_where {
 	my %dynamic_filter = %{$p->{dynamic_filter}};
 	my $where = $p->{where};
 	
-	#_log ">>>>>>>>>>Aplicar filtro dinamico: " . _dump %dynamic_filter;
-	
 	map {
 		if (!exists $_->{category} || $_->{category} eq $name_category){
 			my $field=$_;
@@ -831,18 +829,20 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 		}else{
 			my $length = scalar @ids_category;
 			for (my $i = 0; $i < $length; $i++){
-				#_log ">>>>>>>>>>>>>FILTERS WHERE: " . _dump $fields{where};
-				#push @All_Categories, Util->_unac($names_category[$i]); ###########################################################################################33
                 push @All_Categories, $names_category[$i];
 				$where = $self->get_where({filters_where => $fields{where}, name_category => $names_category[$i], dynamic_filter => \%dynamic_filter, where => $where  });
+
 				$where->{id_category} = {'$in' => [$ids_category[$i]] };
-				#_log ">>>>>>>>>>>>>WHERE: " . _dump $where;
 				my @data = mdb->topic->find($where)->all;
-				map {
-					$queries{$key}->{$relation[$i]}->{$_->{mid}} = 1;
-					$categories_queries->{$names_category[$i]}->{$_->{mid}} = $_;
-				} @data;
-				
+
+				if (@data) {
+                    map {
+                        $queries{$key}->{$relation[$i]}->{$_->{mid}} = 1;
+                        $categories_queries->{$names_category[$i]}->{$_->{mid}} = $_;
+                    } @data;
+                }else{
+                        $queries{$key}->{$relation[$i]}->{-1} = 1;    
+                }
 				$where = undef;
 			}
 		}
@@ -879,10 +879,11 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	}
 	
     my @sort = map { $_->{id_field} => 0+($_->{sort_direction} // 1) } _array($fields{sort});
-    
+
     Baseliner->model('Topic')->build_field_query( $query_search, $where, $username ) if length $query_search;	
 
     my $rs = mdb->topic->find($where);
+
     my $cnt = $rs->count;
     $rows = $cnt if ($rows eq '-1') ;
     $rs->sort({ @sort });
