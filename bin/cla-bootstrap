@@ -400,6 +400,7 @@ String::CRC32
 String::ShellQuote
 Switch
 Term::ANSIColor
+Term::Size::Any
 Term::ReadKey
 Template
 Text::CSV
