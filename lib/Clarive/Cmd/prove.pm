@@ -8,7 +8,7 @@ use v5.10;
 our $CAPTION = 'run system tests and check';
 with 'Clarive::Role::Baseliner';
 
-has type          => qw(is rw isa Str default *);
+has type          => qw(is rw isa Str default server);
 has test_url      => qw(is rw isa Str), default => sub {
     my ($self)=@_;
     return $self->app->config->{baseliner}{web_url};
@@ -29,15 +29,28 @@ sub run {
     $Clarive::Test::password = $self->test_password;
     
     my $grc=0;
+    
+    $self->type('*') if exists $opts{case};
 
     my @tc = glob join '/', $self->home, 't', $self->type, $self->case . '*';
-    for my $tc ( @tc ) {
+    for my $tc ( sort @tc ) {
         my $pid;
+        my ($ext) = $tc =~ /\.(\w+)$/;
         unless ( $pid = fork ) {
             say "====> [start] $tc" ;
             my $t0 = [gettimeofday]; 
-            do $tc;  # this returns 1 always... or whatever, unusable
-            my $rc = $@;  # catch errors here
+            my $rc;
+            if( $ext eq 't' ) { 
+                do $tc;  # this returns 1 always... or whatever, unusable
+                $rc = $@;  # catch errors here
+            } elsif( $ext eq 'har' ) {
+                require Path::Class;
+                my $ag = Clarive::Test->user_agent;
+                my $har = Path::Class::file( $tc ); 
+                my $body = scalar $har->slurp;
+                utf8::encode( $body );
+                $rc = $ag->har_run( $body  );
+            }
             my $inter = sprintf( "%.04fs", tv_interval( $t0 ) );
             say Term::ANSIColor::color('red'),"====> [error] $tc:\n" . $@, Term::ANSIColor::color('reset') if $@;
             say "====> [end] $tc [$inter]" ;
