@@ -63,6 +63,7 @@ $data = {
     collection         => 'status',
 };
 $res = $ag->json( URL($url) => $data );
+my $new_status = $res->{mid};
 push @cats, $res->{mid};
 is( ${ $res->{success} }, 1,  "$res->{msg}: enviroment created succesfully" );
 
@@ -134,13 +135,6 @@ is( ${ $res->{success} }, 1,  "$res->{msg}: category created succesfully" );
 my $cat = $res->{category_id};
 #add fields to a category
 
-
-my @fields;
-push @fields, 'title';
-push @fields, 'moniker';
-push @fields, 'description';
-
-
 $url = 'topicadmin/update_fields';
 
 $res = $ag->post( URL($url) => [ fields =>'title', fields =>'moniker', fields=>'description', id_category=>$cat,
@@ -149,7 +143,35 @@ $res = $ag->post( URL($url) => [ fields =>'title', fields =>'moniker', fields=>'
                                  params=>'{"bd_field":"description","origin":"system","name_field":"Description","section":"head","html":"/fields/templates/html/dbl_row_body.html","js":"/fields/templates/js/html_editor.js","field_order":-7,"field_order_html":2}' ] );
 
 $json = _decode_json( $ag->content );
-ok $json->{success}, 'fields added to category succesfully';     
+ok $json->{success}, 'fields added to category succesfully';
 
+
+#crear un topico
+
+#crear un topico
+
+$url = 'topic/update';
+$data = {
+    as_json         => 1,
+    type            => 'N',
+    moniker         => '',
+    progress        => '',
+    form            => '',
+    action          => 'add',
+    title            => 'testTopic',
+    topic_mid       => '-1',
+    description     => 'Esto es un tópico de prueba',
+    _merge_with_params => 1,
+    category        => $cat,
+    txtcategory_old => '',
+    _cis            => '[]',
+    status_new      => $new_status,
+    status          => '',
+    form            => ''
+};
+
+$ag->post( URL($url), $data);
+$json = _decode_json( $ag->content );
+ok $json->{success}, 'topic created succesfully';
 
 done_testing;
