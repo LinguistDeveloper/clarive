@@ -366,7 +366,7 @@ sub list_categories_admin : Local {
              id_role        => $$rec{id_role},
              id_status_from => $$rec{id_status_from},                         
              statuses_to    => \@statuses_to
-        };             
+        };
     }
     $cnt = @rows;
     
@@ -825,7 +825,7 @@ sub export : Local {
             my $cat = mdb->category->find_one({ id=> "$id" });
             my $statuses = delete $cat->{statuses};
             for my $st ( _array($statuses) ) {
-                push @{ $cat->{statuses} }, $statuses{ $st->{id_status} }; 
+                push @{ $cat->{statuses} }, $statuses{ $st }; 
             }
             _fail _loc('Category not found for id %1', $id) unless $cat;
             push @cats, $cat;
