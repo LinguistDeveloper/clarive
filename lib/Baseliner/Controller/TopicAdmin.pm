@@ -325,25 +325,25 @@ sub list_categories_admin : Local {
 
     Baseliner->cache_remove_like( qr/^topic:/ );
 
-    my %role = mdb->role->find_hashed( id=>{},{role=>1,_id=>0});
+    my %roles = mdb->role->find_hash_one( id=>{},{role=>1,_id=>0});
     my %statuses = ci->status->statuses;
-    
+    my %stat_to;
     my @cat_wkf = _array( mdb->category->find_one({ id=> "$p->{categoryId}" })->{workflow} );
+    push @{ $stat_to{$$_{id_role}}{$$_{id_status_from}} }, $_ for @cat_wkf;
+    my %wkf_unique;
+    $wkf_unique{ join(',',@{ $_ }{qw(id_role id_status_from)}) } = $_ for @cat_wkf;
     my @wkf = 
         sort { 
             # complex sort needed... look into aggregation framework for better sorting on group
             sprintf('%09d%09d%09d', $$a{id_role}, $$a{id_status_from}, $statuses{ $$a{id_status_from} }{seq} )
             <=> 
             sprintf('%09d%09d%09d', $$b{id_role}, $$b{id_status_from}, $statuses{ $$b{id_status_from} }{seq} )
-        } @cat_wkf;
-        
-    my %stat_to;
-    push @{ $stat_to{$$_{id_role}}{$$_{is_status_from}} }, $_ for @cat_wkf;
+        } values %wkf_unique;
 
     for my $rec ( @wkf ) {
         my @sts = sort { $statuses{$$a{id_status_from}}<=>$statuses{$$b{id_status_from}} } 
-            _array $stat_to{$$rec{id_role}}{$$rec{id_status_from}};
-        
+            _array( $stat_to{ $$rec{id_role} }{ $$rec{id_status_from} } );
+            
         # Grid for workflow configuration: right side field
         my @statuses_to;
         for my $status_to ( @sts ) {
@@ -355,15 +355,18 @@ sub list_categories_admin : Local {
             }
             push @statuses_to,  $name;
         }
+    
+        my $role = $roles{ $$rec{id_role} } // next;
+        my $status = $statuses{ $$rec{id_status_from} } // next;
         
         push @rows, {
-             role           => $role{ $$rec{id_role} }{name},
-             status_from    => $statuses{ $$rec{id_status_from} }{name},
+             role           => $$role{role},
+             status_from    => $$status{name},
              id_category    => $p->{categoryId},
              id_role        => $$rec{id_role},
              id_status_from => $$rec{id_status_from},                         
              statuses_to    => \@statuses_to
-         };             
+        };             
     }
     $cnt = @rows;
     
