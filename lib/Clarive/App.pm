@@ -31,10 +31,6 @@ around 'BUILDARGS' => sub {
     # home and env need to be setup first
     $args{env}  //= $ENV{CLA_ENV} // $ENV{CLARIVE_ENV}; # // 'local';
 
-    #Force legacy ENVs to $args{env}
-    $ENV{BASELINER_ENV} = $args{env};
-    $ENV{BASELINER_CONFIG_LOCAL_SUFFIX} = $args{env};
-    
     $args{home} //= $ENV{CLARIVE_HOME} // '.';
     $args{base} //= $ENV{CLARIVE_BASE} // ( $ENV{CLARIVE_HOME} ? "$ENV{CLARIVE_HOME}/.." : '..' );
     
@@ -45,7 +41,7 @@ around 'BUILDARGS' => sub {
     chdir $args{home};
     
     require Clarive::Config;   # needs to be chdir in directory
-    my $config = Clarive::Config->config_load( %args );
+    my $config = Clarive::Config->config_load( \%args );
     
     $config //= {} unless ref $config eq 'HASH'; 
     
@@ -58,6 +54,10 @@ around 'BUILDARGS' => sub {
     $args{lang} //= $ENV{CLARIVE_LANG};
     $args{args} = $self->clone( \%args );
 
+    #Force legacy ENVs to $args{env}
+    $ENV{BASELINER_ENV} = $args{env};
+    $ENV{BASELINER_CONFIG_LOCAL_SUFFIX} = $args{env};
+    
     # resolve variables
     my $parsed_config = $self->parse_vars( $config, { %ENV, %$config, %args } );
     my $parsed_args   = $self->parse_vars( \%args, { %ENV, %$config, %args } );
@@ -67,7 +67,7 @@ around 'BUILDARGS' => sub {
     $opts{config} = $parsed_config;
     $opts{opts}   = $self->clone( \%opts );
     
-    warn "app args: " . $self->yaml( $parsed_args ) if $args{v};
+    warn "app args: " . $self->yaml( \%opts ) if $args{v};
     
     $self->$orig( \%opts ); 
 };

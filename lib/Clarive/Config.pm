@@ -8,19 +8,34 @@ sub new {
 }
 
 sub config_load {
-    my ($self, %p) = @_;
+    my ($self, $args) = @_;
     my %ret ;
     
-    my $env = $p{env} or exists $p{v} and warn "warn: env is not defined\n";
-    my @files = ( 'config/clarive.yml', 'config/global.yml' );
-    length $env && push @files, "config/$env.yml";
-    push @files, $p{config};
+    my $env = $$args{env} or exists $$args{v} and warn "warn: env is not defined\n";
+    my @files = ( 'config/clarive.yml', "$$args{base}/config/clarive.yml", 'config/global.yml', "$$args{base}/config/global.yml" );
+    if( length $env ) {
+        if( $env =~ m{[/\\](\w+)\.} ) {
+            # looks like a dir
+            my $env_code = $1;
+            push @files, $env;
+            $$args{env} = $env_code;
+        } else {
+            push( @files, "config/$env.yml", "$$args{base}/config/$env.yml") if length $env;
+        }
+    }
+    
+    push @files, $$args{config};  # config is a free config file that goes last and precedes the environment
+    my @loaded_config_files; 
+    
+    my $found = 0;
     # clarive.yml has product defaults, global.yml is a User Defined base config
     for my $file ( @files ) {   # most important last
         next unless $file;
         if( -e $file ) {
             require YAML::XS;
+            $found = 1;
             open my $fcfg, '<', $file or die "Error opening config file '$file':$!";
+            push @loaded_config_files, $file;
             ## TODO consider allowing variables in yaml, such as {{port}}
             ##         which would get replaced before parsing with values from $ret{port} and/or $p{port}
             ##      -- but remember YAML already has the &1 - *1 pair functionality which can come in handy
@@ -29,6 +44,8 @@ sub config_load {
             %ret = $self->merge_2level( \%ret, $data ) if ref $data eq 'HASH';
         }
     }
+    $ret{loaded_config_files} = \@loaded_config_files;
+    die "Error: Could not find suitable config file for environment `$env`\n" unless $found;
     return \%ret;
 }
 
