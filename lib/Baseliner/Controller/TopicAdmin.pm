@@ -75,6 +75,7 @@ sub update_category : Local {
                     my $iss = $assign_type->($category);
                     mdb->category->insert($category);
                     
+                    $c->registry->reload_all;
                     $c->stash->{json} = { msg=>_loc('Category added'), success=>\1, category_id=>$category->{id} };
                 }
                 else{
@@ -98,6 +99,7 @@ sub update_category : Local {
                         %$iss
                     }
                 });
+                $c->registry->reload_all;
                 $c->stash->{json} = { msg=>_loc('Category modified'), success=>\1, category_id=> $id_category };
             }
             catch{
@@ -108,6 +110,7 @@ sub update_category : Local {
             my $ids_category = $p->{idscategory};
             try{
                 mdb->category->remove({ id=>mdb->in($ids_category) });
+                $c->registry->reload_all;
                 $c->stash->{json} = { success => \1, msg=>_loc('Categories deleted') };
             }
             catch{

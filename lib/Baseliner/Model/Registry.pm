@@ -7,6 +7,7 @@ use Carp;
 #TODO for now, this is a place holder for Core::Registry
 our $AUTOLOAD;
 use Baseliner::Core::Registry;
+
 sub AUTOLOAD {
     my $self = shift;
     my $type = ref($self)
