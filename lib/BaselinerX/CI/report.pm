@@ -303,6 +303,7 @@ sub report_update {
                 }
                 else {
                     $self->name( $data->{name} );
+                    #Util->_warn( $data );
                     $self->rows( $data->{rows} );
                     $self->sql( $data->{sql} );
                     $self->owner( $username );

@@ -329,7 +329,28 @@
             its.push({ text: _('Descending'), handler: function(item){ sort_direction(-1,node) }, icon:'/static/images/icons/arrow-down.gif' });
         }
         if( !/^(categories|select|sort)$/.test(type) )
-            its.push({ text: _('Delete'), handler: function(item){ node.remove() }, icon:'/static/images/icons/delete.gif' });
+            its.push({  text: _('Delete'), 
+                        handler: function(item){ 
+                            var root = tree_selected.getRootNode();
+                            var nodeCategories = root.firstChild;
+                            for (var prop in nodeCategories.attributes.query) {
+                                var name_category = nodeCategories.attributes.query[prop].name_category;
+                                var id_category = nodeCategories.attributes.query[prop].id_category;
+                                for (i=0;i<name_category.length;i++){
+                                    if (name_category[i] == node.attributes.name ){
+                                        delete name_category[i];
+                                    }
+                                }
+                                for (i=0;i<id_category.length;i++){
+                                    if (id_category[i] == node.attributes.data.id_category ){
+                                        delete id_category[i];
+                                    }
+                                }                                
+
+                            }
+                            node.remove();
+                        }, 
+                        icon:'/static/images/icons/delete.gif' });
             var stmts_menu = new Ext.menu.Menu({
             items: its 
         });
@@ -519,6 +540,7 @@
                 if( form_value.set_value ) form_value.set_value();
                 if( form_value.set_select ) form_value.set_select();
                 var dd = options.getValues();
+                //console.dir(tree_selected.root);
                 if( tree_selected_is_loaded ) dd.selected = Baseliner.encode_tree( tree_selected.root );
                 //if( sql.editor ) dd.sql = sql.getValue();
                 //console.dir(dd);
