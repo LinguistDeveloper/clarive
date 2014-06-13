@@ -29,24 +29,20 @@ my $role_id2;
     my $data = {
         role_actions=>_encode_json([
             {
-                action=>'User can change his password',
-                bl=>'*',
-                description=>'action.change_password'
+                action=>'action.change_password',
+                bl=>'*'
             },
             {
-                action=>'Administer baselines',
-                bl=>'*',
-                description=>'action.admin.baseline'
+                action=>'action.admin.baseline',
+                bl=>'*'
             },
             {
-                action=>'Administer configuration variables',
-                bl=>'*',
-                description=>'action.admin.config_list'
+                action=>'action.admin.config_list',
+                bl=>'*'
             },
             {
-                action=>'Admin Events',
-                bl=>'*',
-                description=>'action.admin.event'
+                action=>'action.admin.event',
+                bl=>'*'
             }]),
         mailbox=>'rol1@clarive.com',
         id=>-1,
@@ -65,9 +61,8 @@ my $role_id2;
     my $data = {
         role_actions=>_encode_json([
             {
-                action=>'User can change his password',
-                bl=>'*',
-                description=>'action.change_password'
+                action=>'action.change_password',
+                bl=>'*'
             }]),
         mailbox=>'',
         id=>-1,

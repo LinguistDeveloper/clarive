@@ -18,56 +18,53 @@ my $json;
 #####################
 
 {
-	$url = 'role/update';
+    $url = 'role/update';
     my $data = {
-		role_actions=>_encode_json([
-			{
-				action=>'User can change his password',
-				bl=>'*',
-				description=>'action.change_password'
-			},
-			{
-				action=>'Administer baselines',
-				bl=>'*',
-				description=>'action.admin.baseline'
-			},
-			{
-				action=>'Administer configuration variables',
-				bl=>'*',
-				description=>'action.admin.config_list'
-			},
-			{
-				action=>'Admin Events',
-				bl=>'*',
-				description=>'action.admin.event'
-			}]),
-		mailbox=>'rol1@clarive.com',
-		id=>-1,
-		description=>'mi rol 1',
-		name=>'rol_prueba1',
-	};
+        role_actions=>_encode_json([
+            {
+                action=>'action.change_password',
+                bl=>'*'
+            },
+            {
+                action=>'action.admin.baseline',
+                bl=>'*'
+            },
+            {
+                action=>'action.admin.config_list',
+                bl=>'*'
+            },
+            {
+                action=>'action.admin.event',
+                bl=>'*'
+            }]),
+        mailbox=>'rol1@clarive.com',
+        id=>-1,
+        description=>'mi rol 1',
+        name=>'rol_prueba1',
+    };
     $ag->post( URL($url), $data );
     $json = _decode_json( $ag->content );
+    $role_id1 = $json->{id};
     ok $json->{success}, 'Role created';
 }
 
 
 {
-	$url = 'role/update';
+    $url = 'role/update';
     my $data = {
-		role_actions=>_encode_json([
-			{
-				action=>'User can change his password',
-				bl=>'*',
-				description=>'action.change_password'
-			}]),
-		mailbox=>'',
-		id=>-1,
-		description=>'mi rol 2',
-		name=>'rol_prueba2',
-	};
+        role_actions=>_encode_json([
+            {
+                action=>'action.change_password',
+                bl=>'*'
+            }]),
+        mailbox=>'',
+        id=>-1,
+        description=>'mi rol 2',
+        name=>'rol_prueba2',
+    };
     $ag->post( URL($url), $data );
     $json = _decode_json( $ag->content );
+    $role_id2 = $json->{id};
     ok $json->{success}, 'Role created';
 }
 
