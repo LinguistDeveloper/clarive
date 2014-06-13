@@ -9,6 +9,8 @@ use utf8;
 use Time::Piece;
 use Time::Seconds;
 use File::Copy;
+#use Baseliner::LogfileRotate;
+use Switch;
 
 with 'Baseliner::Role::Service';
 
@@ -23,9 +25,11 @@ register 'config.daemon.purge' => {
 
 register 'config.purge' => {
     metadata => [
+        #{ id => 'keep_log_files', default => 30, name=> 'Number of days to keep /log files' },
         { id => 'keep_job_files', default => 30, name=> 'Number of days to keep job files' },
         { id => 'keep_jobs_ok', default => 30, name=> 'Number of days to keep OK job logs' },
         { id => 'keep_jobs_ko', default => 30, name=> 'Number of days to keep KO job logs' },
+        #{ id => 'keep_log_size', default => (1024*1024*4), name=> 'Max size in Bytes to keep logs' },   # 4MB to start with
         { id => 'keep_rotation_level', default => 7, name=> 'Number of compressed files  associated to a log file' },
         { id => 'keep_nginx-error_log_size', default => 4, name=> 'Max size in MBytes to keep nginx-error log' },
         { id => 'keep_nginx-access_log_size', default => 4, name=> 'Max size in MBytes to keep nginx-access log' },
@@ -55,6 +59,7 @@ register 'service.purge.daemon' => {
 register 'service.purge.run_once' => {
     handler => \&run_once,
 };
+
 
 sub run_once {
     my ( $self, $c, $opts )=@_;

@@ -19,7 +19,6 @@ $GZIP_FLAG='-qf'; # force writing over old logfiles
 
 sub new {
 	my ($class, %args) = @_;
-
 	croak("usage: new( File => filename 
 				[, Count    => cnt ]
 				[, Gzip     => lib or \"/path/to/gzip\" or no ] 
@@ -130,7 +129,7 @@ sub rotate {
     for($i = $self->{'Count'}; $i > 1; $i--) {
         $j = $i - 1;
         my $date;
-        my @files = Path::Class::dir( "/scm/logs//" )->children;
+        my @files = Path::Class::dir( $ENV{CLARIVE_BASE}.'/logs//' )->children;
         for(@files){
             my $quoted = quotemeta $curr;
             if ( $i == 3 && $_ =~ qr/^$quoted\.3\.(?<date>.*)\.gz$/ ) {
