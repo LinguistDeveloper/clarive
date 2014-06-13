@@ -1,0 +1,80 @@
+<%args>
+    $branch
+    $form
+    $commits
+    $prefix => 'Tag'
+</%args>
+<!-- link rel="stylesheet" type="text/css" href="/site/project/project.css" / -->
+
+<& /git/git.css &>
+
+<div id="project" style="width: 100%; padding: 10px 10px 10px 10px">
+  <div class="container body">
+    <div class="span-6 colborder prepend-top append-bottom" id="body">
+
+    <p>
+    <h1><% $prefix %>: <% $branch %></h1>
+
+<table class="summary-table" cellspacing="0">
+    <thead>
+        <tr>
+            <th class="first-child section-name">Sección</th>
+            <th class="section-description">Descripión</th>
+
+            <th class="section-score">Elementos</th>
+            <th class="last-child">Pases</th>
+        </tr>
+    </thead>
+
+    <tfoot>
+        <tr>
+            <td colspan="4">
+                Baseliner 5.0.2 for AIX 5.3 64-bit gcc
+            </td>
+        </tr>
+    </tfoot>
+
+    <tbody>
+        <tr class="last-child">
+            <td class="first-child section-name">Descripción</td>
+            <td class="section-description"><% $form->{description} %></td>
+            <td class="last-child section-score">12185</td>
+            <td class="overall-score" rowspan="4">2692</td>
+        </tr>
+    </tbody>
+</table>
+
+
+<table class="data-table" cellspacing="0">
+    <thead>
+        <tr>
+            <th class="data-name first-child"><% _loc( 'Commit' ) %></th>
+            <th class="data-score alt"><% _loc('Changes') %></th>
+            <th class="data-graph last-child">Situación</th>
+            <th class="data-graph last-child">Acciones</th>
+        </tr>
+    </thead>
+    <tbody> 
+% for my $commit ( @$commits ) {
+                <tr class="">
+                    <td class="data-name"><% $commit->{name} %><br />
+                        <span class="data-desc"><% $commit->{sha} %></span>
+                    </td>
+                    <td class="data-score alt"><% $commit->{changes} %><br />
+                        <span class="data-desc">-</span>
+                    </td>
+                    <td class="data-graph">
+                        <div class="data-bar" style="width:<% 10 %>%">&nbsp;</div>
+                    </td>
+                    <td class="data-desc">
+                        <a href=''>Analizar</a>
+                    </td>
+                </tr>
+% }
+    </tbody>
+</table>
+</p>
+</div>
+</div>
+</div>
+

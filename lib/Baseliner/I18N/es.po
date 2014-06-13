@@ -7429,4 +7429,157 @@ msgstr "Proceso Padre"
 msgid "Start Script"
 msgstr "Iniciar Script"
 
+########### GIT
+
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+# features/gitscm/lib/BaselinerX/GitServices.pm (11)
+msgid "Create a Git Revision Job"
+msgstr "Crear un Pase de una Revisión de Git"
+
+# features/gitscm/lib/BaselinerX/GitServices.pm (16)
+msgid "Checkout a Git Revision"
+msgstr "Hacer Checkout de una Revisión de Git"
+
+# features/gitscm/lib/BaselinerX/GitServices.pm (21)
+msgid "Update Baselines"
+msgstr "Actualiza Líneas Bases"
+
+# features/gitscm/lib/BaselinerX/GitServices.pm (31)
+msgid "Missing parameter revision"
+msgstr "Falta el parámetro revision"
+
+# features/gitscm/lib/BaselinerX/GitServices.pm (32)
+msgid "Missing parameter project"
+msgstr "Falta el parámetro project"
+
+# features/gitscm/lib/BaselinerX/GitServices.pm (66)
+msgid "Created job %1 of type %2 ok."
+msgstr "Creación de pase %1 de tipo %2 ok."
+
+# features/gitscm/lib/BaselinerX/GitServices.pm (111)
+msgid "*Git* Job Elements %1"
+msgstr "Elementos de pase *Git* %1"
+
+# features/gitscm/lib/BaselinerX/GitServices.pm (152)
+msgid "Promoted baseline %1 to %2"
+msgstr "Línea Base promocionada de %1 a %2"
+
+# features/gitscm/lib/BaselinerX/GitServices.pm (163)
+msgid "Demoted baseline %1 to %2"
+msgstr "Línea Base devuelta de %1 a %2"
+
+# features/gitscm/root/git/branch.html (51)
+msgid "Commit"
+msgstr "Commit"
+
+# features/gitscm/root/git/tag.html (51)
+msgid "Commit"
+msgstr "Commit"
+
+# features/gitscm/root/git/tag.html (52)
+msgid "Changes"
+msgstr "Cambios"
+
+# features/gitscm/lib/BaselinerX/Controller/GitSmart.pm (30)
+msgid "File %1 does not exist"
+msgstr "Fichero %1 no existe"
+
+# features/gitscm/lib/BaselinerX/Controller/GitSmart.pm (43)
+msgid "Invalid git repository path %1"
+msgstr "Invalid git repository path %1"
+
+# features/gitscm/lib/BaselinerX/Controller/GitTree.pm (21)
+msgid "tree"
+msgstr "ficheros"
+
+# features/gitscm/lib/BaselinerX/Controller/GitTree.pm (31)
+msgid "changes"
+msgstr "cambios"
+
+# features/gitscm/lib/BaselinerX/Controller/GitTree.pm (37)
+msgid "commits"
+msgstr "commits"
+
+# features/gitscm/lib/BaselinerX/Controller/GitTree.pm (158)
+msgid "%1"
+msgstr "%1"
+
+# features/gitscm/lib/BaselinerX/Controller/GitTree.pm (175)
+msgid "Job %1 created ok"
+msgstr "Pase %1 creado"
+
+# features/gitscm/lib/BaselinerX/Controller/GitTree.pm (178)
+msgid "Error creating job: %1"
+msgstr "Error creando pase: %1"
+
+# features/gitscm/lib/BaselinerX/Controller/GitTree.pm (192)
+msgid "Tag %1 created ok"
+msgstr "Etiqueta %1 creada"
+
+# features/gitscm/lib/BaselinerX/Controller/GitTree.pm (195)
+msgid "Error creating tag: %1"
+msgstr "Error creando etiqueta: %1"
+
+# features/gitscm/lib/BaselinerX/Provider/GitRevisions.pm (12)
+msgid "Git Revisions"
+msgstr "Revisiones de Git"
+
+# features/gitscm/root/comp/git/promote.js (9)
+msgid "Are you sure you want to promote %1 to baseline %2"
+msgstr "¿Quiere promocionar %1 al entorno %2?"
+
+# features/gitscm/root/comp/git/promote.js (14)
+msgid "Error creating job"
+msgstr "Error creando pase"
+
+# features/gitscm/root/comp/git/deploy.js (13)
+msgid "Are you sure you want to deploy %1 in baseline %2"
+msgstr "¿Quiere desplegar %1 en la línea base %2?"
+
+# features/gitscm/root/comp/git/deploy.js (16)
+msgid "Git"
+msgstr "Git"
+
+# features/gitscm/root/comp/git/deploy.js (18)
+msgid "Error creating job"
+msgstr "Error creando pase"
+
+# features/gitscm/root/comp/git/tag_commit.js (12)
+msgid "Commit"
+msgstr "Commit"
+
+# features/gitscm/root/comp/git/tag_commit.js (21)
+msgid "Creating Tag..."
+msgstr "Creando Etiqueta..."
+
+# features/gitscm/root/comp/git/tag_commit.js (24)
+msgid "Create Tag"
+msgstr "Creando Etiqueta"
+
+# features/gitscm/root/comp/git/tag_commit.js (30)
+msgid "Error during tag create"
+msgstr "Error durante la creación de la etiqueta"
+
+# features/gitscm/root/comp/git/tag_commit.js (42)
+msgid "New Tag"
+msgstr "Nueva Etiqueta"
+
+# features/gitscm/root/comp/git/demote.js (9)
+msgid "Are you sure you want to demote %1 to baseline %2"
+msgstr "¿Quiere devolver %1 al entorno %2?"
+
+# features/gitscm/root/comp/git/demote.js (12)
+msgid "Git"
+msgstr "Git"
+
+msgid "Create Tag..."
+msgstr "Crear Etiqueta..."
+
+msgid "Relative path"
+msgstr "Path relativo"
+
 ### EOF - do not write anything bellow this

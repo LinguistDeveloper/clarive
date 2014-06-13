@@ -1,0 +1,15 @@
+<style>
+#git-main {
+    font-size: 18px;
+    font-family: 'Lucida Grande', Consolas, Arial;
+    color: #3010A0;
+}
+</style>
+
+<div id="git-main">
+% for my $repo ( _array( $c->stash->{repositories} ) ) {
+
+<li><% $repo->{name} %></li>
+
+% }
+</div>
