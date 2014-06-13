@@ -637,7 +637,7 @@ sub update {
     my $category;
     my $modified_on;
     my $return_options = {};
-    
+
     given ( $action ) {
         #Casos especiales, por ejemplo la aplicacion GDI
         my $form = $p->{form};
@@ -664,6 +664,7 @@ sub update {
                     $return = 'Topic added';
                     $category = $topic->get_category;
                     $modified_on = $topic->ts;
+                    my $created_by = $p->{username};
                     my $id_category = $topic->id_category;
                     my $id_category_status = $topic->id_category_status;
                     
@@ -680,9 +681,9 @@ sub update {
                         name_category=>$category->{name}, 
                         category=>$category->{name}, 
                         category_name=>$category->{name}, 
-                        notify_default=>\@users, subject=>$subject, notify=>$notify }   # to the event
+                        notify_default=>\@users, subject=>$subject, created_by=>$created_by, notify=>$notify }   # to the events
                 });  
-                #$return_options->{reload} = 1;                 
+               #$return_options->{reload} = 1;                  
             } 
             => sub { # catch
                 mdb->topic->remove({ mid=>"$topic_mid" },{ multiple=>1 });
@@ -713,6 +714,7 @@ sub update {
                 my $id_category = $topic->id_category;
                 $modified_on = $topic->ts;
                 $category = $topic->get_category;
+                my $created_by = mdb->topic->find_one({ mid=> $topic_mid })->{created_by};
                 
                 my @users = $self->get_users_friend(mid => $topic_mid, id_category => $topic->id_category, id_status => $topic->id_category_status);
                 
@@ -729,7 +731,7 @@ sub update {
                     category_status => $status,
                 };
                     
-               { mid => $topic->mid, topic => $topic->title, subject => $subject, notify_default=>\@users, notify=>$notify }   # to the event
+               { mid => $topic->mid, topic => $topic->title, subject => $subject, notify_default=>\@users, created_by=>$created_by, notify=>$notify }   # to the event
             } => sub {
                 my $e = shift;
                 _throw $e;
