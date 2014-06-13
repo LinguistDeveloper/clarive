@@ -591,7 +591,7 @@ my $role_dev;
         projects_checked=>          [$project_mid1,$project_mid2],
         projects_parents_checked=>  '',  
         realname=>                  'test_user',
-        roles_checked=>             [$role_id1,$role_id2],
+        roles_checked=>             [$role_id1,$role_id2,$role_dev],
         type=>                      'roles_projects',
         username=>                  'test_user'
     };
