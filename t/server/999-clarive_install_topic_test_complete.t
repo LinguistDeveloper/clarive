@@ -485,7 +485,6 @@ my $role_dev;
     ok $json->{success}, 'Role created';
 }
 
-
 {
     $url = 'role/update';
     my $data = {
