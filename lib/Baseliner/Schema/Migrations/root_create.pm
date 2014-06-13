@@ -1,4 +1,4 @@
-package Baseliner::Schema::Migrations::root_create 2;
+package Baseliner::Schema::Migrations::root_create 3;
 use Mouse;
 
 sub upgrade {
