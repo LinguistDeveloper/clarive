@@ -20,6 +20,7 @@ my $project_mid2;
 my $user_mid;
 my $role_id1;
 my $role_id2;
+my $role_dev;
 
 #########################
 #       roles           #
@@ -472,12 +473,16 @@ my $role_id2;
             {
                     action => 'action.topicsfield.peticion.tarifa_it.read',
                     bl => '*'
-            }]);
+            }]),
         mailbox=>'desarrollador@clarive.com',
         id=>-1,
         description=>'Desarrollador',
         name=>'Desarrollador',
     };
+    $ag->post( URL($url), $data );
+    $json = _decode_json( $ag->content );
+    $role_dev = $json->{id};
+    ok $json->{success}, 'Role created';
 }
 
 
