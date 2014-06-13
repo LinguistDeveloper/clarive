@@ -1658,7 +1658,7 @@ sub update_project_security {
 
 sub save_doc {
     my ($self,$meta,$row, $doc, %p) = @_;
-    
+    $row->{created_on} = mdb->ts if !exists $row->{created_on};
     # not necessary, noboody cares about the original? $doc = Util->_clone($doc); # so that we don't change the original
     Util->_unbless( $doc );
     my $mid = ''. $p{mid};
