@@ -5,7 +5,8 @@ use warnings;
 use Baseliner::Utils;
 
 sub check {
-    my ($self)=@_;
+    my ($self, $arg)=@_;
+    my %args = map { $_=>1 } split /,/, $arg;
     my %ids;
     _log('Checking for migrations...');
     my @current = mdb->_migrations->find->all;
@@ -19,10 +20,12 @@ sub check {
         $ids{ $id } = 1;
         my $wh ={ _id=>$id };
         $wh->{'$or'} = [{version=>undef},{ '$and'=>[{version=>{'$gte'=>0+$version}}, {version=>{ '$ne'=>undef } }] }] if $version>0;
-        if( my $doc = mdb->_migrations->find_one($wh) ) {
+        my $doc = mdb->_migrations->find_one($wh);
+        if( $doc && !$args{$id} ) {
             _debug("====> Migration ok: $id (version: $version)" );
             next;
         } else {
+            say "Forcing migration for `$id`" if $args{$id};
             # lib/Clarive/Cmd/install->_ask_me()
             my $pkg = "Baseliner::Schema::Migrations::$id";
             _info( _loc('Running migration %1 (%2)...', $id,$version) ); 

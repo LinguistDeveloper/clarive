@@ -103,7 +103,7 @@ sub list : Local {
     my $p = $c->request->parameters;
     $p->{username} = $c->username;
 
-    if( $p->{id_report} =~ /^report\./ ) {
+    if( $$p{id_report} && $p->{id_report} =~ /^report\./ ) {
         my $report = Baseliner->registry->get( $p->{id_report} );
         my $config = undef; # TODO get config from custom forms
         $p->{dir} = uc($p->{dir}) eq 'DESC' ? -1 : 1;
@@ -386,8 +386,6 @@ sub get_meta_permissions : Private {
             }
         }else{
             my $write_action = 'action.topicsfield.' .  $parse_category . '.' .  $parse_id_field . '.' . $parse_status . '.write';
-            #my $write_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $_->{id_field} . '.' . lc $data->{name_status} . '.write';
-            #my $write_action = 'action.topicsfield.write.' . $_->{name_field};
             my $readonly = 0;
             if ( $is_root ) {
                     $_->{readonly} = \0;
@@ -406,9 +404,6 @@ sub get_meta_permissions : Private {
             
             my $read_action = 'action.topicsfield.' .  $parse_category . '.' .  $parse_id_field . '.read';
             my $read_action_status = 'action.topicsfield.' .  $parse_category . '.' .  $parse_id_field . '.' . $parse_status . '.read';
-            #my $read_action = 'action.topicsfield.' .  lc $data->{name_category} . '.' .  lc $_->{id_field} . '.' . lc $data->{name_status} . '.read';
-            #my $read_action = 'action.topicsfield.read.' . $_->{name_field} if ! $write_action;
-            #_error $read_action;
 
             if ( !$is_root ) {
                 if ($c->model('Permissions')->user_has_read_action( username=> $username, action => $read_action  ) || $c->model('Permissions')->user_has_read_action( username=> $username, action => $read_action_status  ) || ($readonly && $_->{hidden_if_protected} eq 'true')){
@@ -774,9 +769,7 @@ sub list_category : Local {
     $dir ||= 'asc';
     $sort ||= 'name';
     
-    my $order = { dir=> $dir,
-                  sort=> $sort};
-
+    my $order = { dir=> $dir, sort=> $sort};
     my @rows;
     
     if( !$p->{categoryId} ){    
@@ -843,7 +836,7 @@ sub list_label : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
     my ($dir, $sort, $cnt) = ( @{$p}{qw/dir sort/}, 0 );
-    $dir = lc $dir eq 'desc' ? -1 : 1;
+    $dir = $dir && lc $dir eq 'desc' ? -1 : 1;
     $sort ||= 'name';
     
     my @rows;

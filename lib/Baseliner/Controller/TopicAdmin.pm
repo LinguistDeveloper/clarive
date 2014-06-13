@@ -124,7 +124,7 @@ sub list_status : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
     my ($dir, $sort, $cnt) = ( @{$p}{qw/dir sort/}, 0 );
-    $dir = $dir =~ /desc/i ? -1 : 1;
+    $dir = $dir && $dir =~ /desc/i ? -1 : 1;
     $sort ||= 'seq';
 
     my $row;
