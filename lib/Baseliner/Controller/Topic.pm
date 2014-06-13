@@ -534,16 +534,16 @@ sub view : Local {
             # workflow category-status
             my @statuses = 
                 sort { ( $a->{seq} // 0 ) <=> ( $b->{seq} // 0 ) } 
-                grep { $_->{id_status} ne $topic_doc->{category_status_id} } 
+                grep { $_->{id_status} ne $topic_doc->{category_status}{id} } 
                 $c->model('Topic')->next_status_for_user(
                     id_category    => $category->{id},
-                    id_status_from => $topic_doc->{category_status_id},
+                    id_status_from => $topic_doc->{category_status}{id},
                     username       => $c->username,
                     topic_mid      => $topic_mid
                 );            
     
             my %tmp;
-            if ((substr $topic_doc->{category_status_type}, 0, 1) eq "F"){
+            if ((substr $topic_doc->{category_status}{type}, 0, 1) eq "F"){
                 $c->stash->{permissionEdit} = 0;
                 $c->stash->{permissionDelete} = 0;
             }
@@ -1110,7 +1110,7 @@ sub filters_list : Local {
             push @statuses,
                 {
                     id  => $i++,
-                    idfilter      => $r->{id},
+                    idfilter      => $r->{id_status},
                     text    => _loc($r->{name}),
                     cls     => 'forum status',
                     iconCls => 'icon-no',
