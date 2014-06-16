@@ -424,12 +424,12 @@ sub topics_for_user {
         my @not_in = map { abs $_ } grep { $_ < 0 } @statuses;
         my @in = @not_in ? grep { $_ > 0 } @statuses : @statuses;
         if (@not_in && @in){
-            $where->{'category_status.id'} = {'$nin' => mdb->str(@not_in), '$in' => mdb->str(@in) };    
+            $where->{'category_status.id_status'} = {'$nin' => mdb->str(@not_in), '$in' => mdb->str(@in) };    
         }else{
             if (@not_in){
-                $where->{'category_status.id'} = mdb->nin(@not_in);
+                $where->{'category_status.id_status'} = mdb->nin(@not_in);
             }else{
-                $where->{'category_status.id'} = mdb->in(@in);
+                $where->{'category_status.id_status'} = mdb->in(@in);
             }
         }
     }else {
@@ -439,11 +439,11 @@ sub topics_for_user {
             map { $tmp{ $_->{id_status_from} } = $_->{id_category} } 
                 $self->user_workflow( $username );
             my @status_ids = keys %tmp;
-            $where->{'category_status.id'} = mdb->in(@status_ids) if @status_ids > 0;
+            $where->{'category_status.id_status'} = mdb->in(@status_ids) if @status_ids > 0;
             $where->{'category_status.type'} = { '$nin' =>['F','FC'] }
         }
     }
-      
+    
     if( $p->{from_mid} || $p->{to_mid} ){
         my $rel_where = {};
         my $dir = length $$p{from_mid} ? ['from_mid','to_mid'] : ['to_mid','from_mid'];
@@ -477,7 +477,6 @@ sub topics_for_user {
     if( @mids_or ) {
         $where->{'$or'} = \@mids_or;
     }
-    
     #_debug( $order_by );
     my $rs = mdb->topic->find( $where )->fields({ mid=>1, labels=>1 })->sort( $order_by );
     $cnt = $rs->count;
@@ -530,7 +529,7 @@ sub topics_for_user {
             title  => sprintf("%s #%d - %s", $data->{category_name}, $mid, $data->{title}),
             allDay => \1
         };
-        $data->{category_status_name} = _loc($data->{category_status_name});
+        $data->{category_status_name} = _loc($data->{category_status}{name});
         $data->{category_name} = _loc($data->{category_name});
         my @projects_report = keys %{ delete $data->{projects_report} || {} };
         push @rows, {
@@ -638,7 +637,7 @@ sub update {
     my $category;
     my $modified_on;
     my $return_options = {};
-    
+
     given ( $action ) {
         #Casos especiales, por ejemplo la aplicacion GDI
         my $form = $p->{form};
@@ -665,6 +664,7 @@ sub update {
                     $return = 'Topic added';
                     $category = $topic->get_category;
                     $modified_on = $topic->ts;
+                    my $created_by = $p->{username};
                     my $id_category = $topic->id_category;
                     my $id_category_status = $topic->id_category_status;
                     
@@ -681,9 +681,9 @@ sub update {
                         name_category=>$category->{name}, 
                         category=>$category->{name}, 
                         category_name=>$category->{name}, 
-                        notify_default=>\@users, subject=>$subject, notify=>$notify }   # to the event
+                        notify_default=>\@users, subject=>$subject, created_by=>$created_by, notify=>$notify }   # to the events
                 });  
-                #$return_options->{reload} = 1;                 
+               #$return_options->{reload} = 1;                  
             } 
             => sub { # catch
                 mdb->topic->remove({ mid=>"$topic_mid" },{ multiple=>1 });
@@ -714,6 +714,7 @@ sub update {
                 my $id_category = $topic->id_category;
                 $modified_on = $topic->ts;
                 $category = $topic->get_category;
+                my $created_by = mdb->topic->find_one({ mid=> $topic_mid })->{created_by};
                 
                 my @users = $self->get_users_friend(mid => $topic_mid, id_category => $topic->id_category, id_status => $topic->id_category_status);
                 
@@ -730,7 +731,7 @@ sub update {
                     category_status => $status,
                 };
                     
-               { mid => $topic->mid, topic => $topic->title, subject => $subject, notify_default=>\@users, notify=>$notify }   # to the event
+               { mid => $topic->mid, topic => $topic->title, subject => $subject, notify_default=>\@users, created_by=>$created_by, notify=>$notify }   # to the event
             } => sub {
                 my $e = shift;
                 _throw $e;
@@ -1659,7 +1660,7 @@ sub update_project_security {
 
 sub save_doc {
     my ($self,$meta,$row, $doc, %p) = @_;
-    
+    $row->{created_on} = mdb->ts if !exists $row->{created_on};
     # not necessary, noboody cares about the original? $doc = Util->_clone($doc); # so that we don't change the original
     Util->_unbless( $doc );
     my $mid = ''. $p{mid};
@@ -1858,7 +1859,7 @@ sub update_category_status {
     my $doc =
         ref $mid_or_doc
         ? $mid_or_doc
-        : mdb->topic->find_one( { mid => "$mid_or_doc" }, { id_category_status => 1, 'category_status.id' => 1 } );
+        : mdb->topic->find_one( { mid => "$mid_or_doc" }, { id_category_status => 1, 'category_status.id_status' => 1 } );
     _fail _loc "Cannot update topic category status, topic not found: %1", $mid_or_doc unless ref $doc;
 
     $id_category_status //= $$doc{category_status}{id} // $$doc{id_category_status};
@@ -2779,12 +2780,12 @@ sub apply_filter{
                 my @not_in = map { abs $_ } grep { 0+$_ < 0 } @category_status_id;
                 my @in = @not_in ? grep { 0+$_ > 0 } @category_status_id : @category_status_id;
                 if (@not_in && @in){
-                    $where->{'category_status.id'} = [mdb->nin(@not_in), mdb->in(@in)];
+                    $where->{'category_status.id_status'} = [mdb->nin(@not_in), mdb->in(@in)];
                 }else{
                     if (@not_in){
-                        $where->{'category_status.id'} = mdb->nin(@not_in);
+                        $where->{'category_status.id_status'} = mdb->nin(@not_in);
                     }else{
-                        $where->{'category_status.id'} = mdb->in(@in);  
+                        $where->{'category_status.id_status'} = mdb->in(@in);  
                     }
                 } 
             }
@@ -2838,7 +2839,7 @@ sub group_by_status {
         {
             id_category_status      => 1,
             'category_status.color' => 1,
-            'category_status.id'    => 1,
+            'category_status.id_status'    => 1,
             'category_status.name'  => 1
         }
     );
