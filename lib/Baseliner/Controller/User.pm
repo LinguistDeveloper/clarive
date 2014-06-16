@@ -735,7 +735,7 @@ sub list_all : Local {
 sub change_pass : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
-    my $username = lc $c->username;
+    my $username = $c->username;
     my $row = ci->user->find({username => $username, active => mdb->true})->next;
     
     if ($row) {
