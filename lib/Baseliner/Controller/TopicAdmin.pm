@@ -1,7 +1,6 @@
 package Baseliner::Controller::TopicAdmin;
 use Baseliner::PlugMouse;
 use Baseliner::Utils;
-use Baseliner::Core::DBI;
 use DateTime;
 use Try::Tiny;
 use v5.10;

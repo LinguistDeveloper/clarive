@@ -2,7 +2,6 @@ package Baseliner::Controller::Rule;
 use Baseliner::Plug;
 use Baseliner::Utils qw(:basic _decode_json _strip_html);
 use Baseliner::Sugar;
-use Baseliner::Core::DBI;
 use DateTime;
 use Try::Tiny;
 use Time::HiRes qw(time);

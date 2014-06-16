@@ -4,7 +4,7 @@ Baseliner::Core::DBI - DBI convenience subs.
 
 =head1 SYNOPSIS
     
-    my $db = new Baseliner::Core::DBI({ model=>'Baseliner' });
+    my $db = new Baseliner::Core::DBI({ dbi=>$dbh });
     my %results = $db->hash( 'select * from table' );
     $db->commit;
 

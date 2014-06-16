@@ -232,10 +232,15 @@ sub eval : Local {
 sub sql {
     my ( $self, $sql_out, $code ) = @_;
     my $model = 'Baseliner';
-
+    my @conn = $code=~/^(.+?),(.*?),(.*?)\n(.*)$/s;
+    _fail _loc 'Missing first line DBI connect string. Ex: DBI:mysql:database=<db>;host=<hostname>;port=<port>,my-username,my-password'
+        unless @conn > 1;
+        
+    $code = pop @conn;
     my @sts = $self->sql_normalize( $code );
+    my $dbh = DBI->connect(@conn,{ LongReadLen=>100000000, LongTruncOk=>1, RaiseError => 1 });
+    my $db = Baseliner::Core::DBI->new({ dbi=>$dbh });
 
-    my $db = Baseliner::Core::DBI->new( {model => $model} );
     if ( $code !~ m/^[\s\W]*select/si ) {    # run script
         my @rets;
         for my $st ( split /\;/, $code ) {

@@ -1,7 +1,6 @@
 package Baseliner::Controller::User;
 use Baseliner::PlugMouse;
 use Baseliner::Utils;
-use Baseliner::Core::DBI;
 use Baseliner::Sugar;
 use Try::Tiny;
 use v5.10;

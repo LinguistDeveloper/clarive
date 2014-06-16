@@ -743,7 +743,6 @@ sub list_jobs : Private {
     my $username = $c->username;
     my @datas;
     my $SQL;
-    my $db = Baseliner::Core::DBI->new( {model => 'Baseliner'} );
 
     #Cogemos los proyectos que el usuario tiene permiso para ver jobs
     my @ids_project = $c->model( 'Permissions' )->user_projects_ids(
