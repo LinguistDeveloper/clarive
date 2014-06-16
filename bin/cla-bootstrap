@@ -58,7 +58,10 @@ use ExtUtils::Installed;
 my $instmod = ExtUtils::Installed->new();
 my %installed;
 foreach my $module ($instmod->modules()) {
-    my $version = $instmod->version($module) || "???";
+    my $version = $instmod->version($module) || do {
+       my $ver = eval "require $module; \$${module}::VERSION";
+       $@ ? -1 : length $ver ? $ver : '???';
+    };
     $installed{ $module } = $version;
 }
 if( $opts{'--installed'} ) {
@@ -95,7 +98,7 @@ my @pending = $opts{-f}    # force install?
     no warnings;
     grep {
         print "Checking if module $_ needed..." if $opts{'--verbose'};
-        my $missing = ! exists $installed{ $_ };
+        my $missing = !exists $installed{ $_ } || $installed{$_}==-1;
         # try to load it with require before say it's missing (YAML::XS is in YAML::LibYAML for instance...)
         if( $missing ) {
             my $out = Capture::Tiny::capture_merged( sub {
@@ -269,7 +272,6 @@ Catalyst::Component::ACCEPT_CONTEXT
 Catalyst::Controller::POD
 Catalyst::Controller::WrapCGI
 Catalyst::Devel
-Catalyst::Model::DBIC::Schema
 Catalyst::Plugin::Authentication
 Catalyst::Plugin::Authorization::Roles
 Catalyst::Plugin::Cache
@@ -282,7 +284,6 @@ Catalyst::Plugin::Session::State::Cookie
 Catalyst::Plugin::Session::Store::Cache
 Catalyst::Plugin::Session::Store::Redis
 Catalyst::Plugin::Session::Store::DBI
-Catalyst::Plugin::Session::Store::DBIC
 Catalyst::Plugin::Session::Store::File
 Catalyst::Plugin::Singleton
 Catalyst::Plugin::StackTrace
@@ -305,12 +306,7 @@ Convert::EBCDIC
 Crypt::Blowfish::Mod
 Crypt::OpenSSL::RSA
 Crypt::OpenSSL::Random
-DBD::Oracle
 DBI
-DBIx::Class
-DBIx::Class::Helper::ResultSet
-DBIx::Class::Schema::Loader
-DBIx::Class::TimeStamp
 DBIx::Simple
 Data::Compare
 Data::Page
