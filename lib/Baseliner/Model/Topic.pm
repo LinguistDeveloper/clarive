@@ -1363,7 +1363,7 @@ sub get_topics {
     
     # Am I parent or child?
     my @rel_topics = $field_meta->{parent_field} 
-        ? mdb->master_rel->find_values(from_mid => { to_mid=>"$topic_mid", rel_type=>'topic_topic', rel_field=>$id_field })->all
+        ? mdb->master_rel->find_values(from_mid => { to_mid=>"$topic_mid", rel_type=>'topic_topic', rel_field=>$id_field })
         : _array($$data{$id_field});
 
     @topics = map { $_->{categories} = $_->{category}; $_ } mdb->topic->find({ mid=>mdb->in(@rel_topics) })->fields({ _id=>0 })->all;
