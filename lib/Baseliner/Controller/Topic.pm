@@ -580,7 +580,8 @@ sub view : Local {
             
             my $category = mdb->category->find_one({ id=>"$id_category" });
             $c->stash->{category_meta} = $category->{forms};
-            my $first_status = ci->status->find_one({ id_status=>mdb->in( $category->{statuses} ), type=>'I' })  // _fail( _loc('Status not found: %1',  Util->_encode_json($category->{statuses}) ));
+
+            my $first_status = ci->status->find_one({ id_status=>mdb->in( $category->{statuses} ), type=>'I' }) // _fail( _loc('No initial state found '));
             
             my @statuses =
                 sort { ( $a->{seq} // 0 ) <=> ( $b->{seq} // 0 ) }
