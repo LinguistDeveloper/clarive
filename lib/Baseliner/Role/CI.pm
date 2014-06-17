@@ -142,7 +142,7 @@ sub update {
     my $d = { %$self, %data };  
     $class->new( $d )->save( changed=>$changed );
     # update attributes
-    $self->$_( $data{$_} ) for keys %data; 
+    $self->$_( $data{$_} ) for grep { $self->can($_) } keys %data; 
 }
 
 

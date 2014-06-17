@@ -276,7 +276,7 @@
                         var s = action_store;
                         var add_node = function(node ) {
                             //if( s.find('action', node.id ) < 0 ) {
-                                var rec = new Ext.data.Record({ action: node.id, description: node.text });
+                                var rec = new Ext.data.Record({ action: node.id, description: node.text, bl:'*' });
                                 s.add(rec);
                                 //s.sort('action', 'ASC');
                                 var parent_node = node.parentNode;
