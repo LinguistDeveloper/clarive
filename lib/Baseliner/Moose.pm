@@ -42,45 +42,40 @@ sub miss {
 sub has_ci {
     my $meta = shift;
     my $name = shift;
-    my %options;
-    if ( @_ > 0 && @_ % 2 ) {
-        $options{isa} = shift;
-        $options{is}  = 'rw';
-        $options{traits}  = ['CI'];
-        if( @_ > 1 ) {  # allow: has_ci 'att' => 'Obj', required=>1;
-            %options = ( %options, @_ );
+    
+    my %options = ( is=>'rw', isa=>'CI', traits=>['CI'] );
+    if ( @_ > 0 ) {
+        if( @_ % 2 ) {
+            # odd
+            $options{isa} = shift;
         }
+        %options = ( %options, @_ ); # allow: has_ci 'att' => 'Obj', required=>1;
+    } else {
+        # empty @_ == 0
+        $options{coerce}  = 1;
     }
-    else {
-        %options = @_;
-        $options{isa} ||= 'CI';
-        $options{is}  ||= 'rw';
-        $options{traits} ||= ['CI'];
-    }
- 
+
     $meta->add_attribute( $name, %options, );
 }
 
 sub has_cis {
     my $meta = shift;
     my $name = shift;
-    my %options;
-    if ( @_ > 0 && @_ % 2 ) {
-        my $cn = shift;  # class name
-        $cn = "ArrayRef[$cn]" unless $cn=~/^ArrayRef\[/;
-        $options{isa} = $cn;
-        $options{is}  = 'rw';
-        $options{traits}  = ['CIs'];
-        if( @_ > 1 ) {  # allow: has_ci 'att' => 'Obj', required=>1;
-            %options = ( %options, @_ );
+    my %options = ( is=>'rw', isa=>'CIs', traits=>['CIs'], default=>sub{[]} );
+    if ( @_ > 0 ) {
+        if( @_ % 2 ) {
+            # odd
+            my $cn = shift;  # class name
+            $cn = "ArrayRef[$cn]" unless $cn=~/^ArrayRef\[/;
+            $options{isa} = $cn;
         }
+        %options = ( %options, @_ ); # allow: has_ci 'att' => 'Obj', required=>1;
+    } else {
+        # empty @_ == 0
+        $options{coerce} = 1;
     }
-    else {
-        %options = @_;
-        $options{isa} ||= 'CIs';
-        $options{is}  ||= 'rw';
-        $options{traits} ||= ['CIs'];
-    }
+    $options{handles} //= {};
+    $options{handles}{"${name}_$_"} = $_ for ('push'); #qw/elements push map grep first get join count is_empty sort/;
     
     $meta->add_attribute( $name, %options, );
 }

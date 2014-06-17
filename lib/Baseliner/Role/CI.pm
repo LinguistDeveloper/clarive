@@ -42,15 +42,15 @@ coerce 'HashJSON' =>
   from 'Undef' => via { +{} };
 
 # deprecated, but kept for future reference
-#coerce 'CI' =>
-#  from 'Str' => via { length $_ ? Baseliner::CI->new( $_ ) : BaselinerX::CI::Empty->new()  }, 
-#  from 'Num' => via { Baseliner::CI->new( $_ ) }, 
-#  from 'ArrayRef' => via { my $first = [_array( $_ )]->[0]; defined $first ? Baseliner::CI->new( $first ) : BaselinerX::CI::Empty->new() }; 
-#
-#coerce 'CIs' => 
-#  from 'Str' => via { length $_ ? [ Baseliner::CI->new( $_ ) ] : [ BaselinerX::CI::Empty->new() ]  }, 
-#  from 'ArrayRef[Num]' => via { my $v = $_; [ map { Baseliner::CI->new( $_ ) } _array( $v ) ] },
-#  from 'Num' => via { [ Baseliner::CI->new( $_ ) ] }; 
+coerce 'CI' =>
+  from 'Str' => via { length $_ ? Baseliner::CI->new( $_ ) : BaselinerX::CI::Empty->new()  }, 
+  from 'Num' => via { Baseliner::CI->new( $_ ) }, 
+  from 'ArrayRef' => via { my $first = [_array( $_ )]->[0]; defined $first ? Baseliner::CI->new( $first ) : BaselinerX::CI::Empty->new() }; 
+
+coerce 'CIs' => 
+  from 'Str' => via { length $_ ? [ Baseliner::CI->new( $_ ) ] : [ BaselinerX::CI::Empty->new() ]  }, 
+  from 'ArrayRef[Num]' => via { my $v = $_; [ map { Baseliner::CI->new( $_ ) } _array( $v ) ] },
+  from 'Num' => via { [ Baseliner::CI->new( $_ ) ] }; 
 
 has mid      => qw(is rw isa Str);
 has active   => qw(is rw isa Bool default 1);
