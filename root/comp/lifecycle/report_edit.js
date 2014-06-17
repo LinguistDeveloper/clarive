@@ -334,18 +334,21 @@
                             var root = tree_selected.getRootNode();
                             var nodeCategories = root.firstChild;
                             for (var prop in nodeCategories.attributes.query) {
-                                var name_category = nodeCategories.attributes.query[prop].name_category;
-                                var id_category = nodeCategories.attributes.query[prop].id_category;
-                                for (i=0;i<name_category.length;i++){
-                                    if (name_category[i] == node.attributes.name ){
-                                        delete name_category[i];
+                                if (node.attributes.data){
+                                    var name_category = nodeCategories.attributes.query[prop].name_category;
+                                    var id_category = nodeCategories.attributes.query[prop].id_category;
+
+                                    for (i=0;i<name_category.length;i++){
+                                        if (name_category[i] == node.attributes.name ){
+                                            delete name_category[i];
+                                        }
                                     }
+                                    for (i=0;i<id_category.length;i++){
+                                        if (id_category[i] == node.attributes.data.id_category ){
+                                            delete id_category[i];
+                                        }
+                                    }                                      
                                 }
-                                for (i=0;i<id_category.length;i++){
-                                    if (id_category[i] == node.attributes.data.id_category ){
-                                        delete id_category[i];
-                                    }
-                                }                                
 
                             }
                             node.remove();
