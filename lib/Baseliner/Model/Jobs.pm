@@ -103,15 +103,6 @@ sub monitor {
         }
     }
     
-    # user content
-    #if( $username && ! $perm->is_root( $username ) && ! $perm->user_has_action( username=>$username, action=>'action.job.viewall' ) ) {
-    #    my @user_apps = $perm->user_projects_names( username=>$username ); # user apps
-    #    # TODO check cs topics relationship with projects
-    #    # $where->{'bali_job_items.application'} = { -in => \@user_apps } if ! ( grep { $_ eq '/'} @user_apps );
-    #    # username can view jobs where the user has access to view the jobcontents corresponding app
-    #    # username can view jobs if it has action.job.view for the job set of job_contents projects/app/subapl
-    #}
-    
     if( !Baseliner->is_root($username) ) {
         my @ids_project = $perm->user_projects_with_action(username => $username,
                                                             action => 'action.job.viewall',

@@ -424,12 +424,12 @@ sub topics_for_user {
         my @not_in = map { abs $_ } grep { $_ < 0 } @statuses;
         my @in = @not_in ? grep { $_ > 0 } @statuses : @statuses;
         if (@not_in && @in){
-            $where->{'category_status.id_status'} = {'$nin' => mdb->str(@not_in), '$in' => mdb->str(@in) };    
+            $where->{'category_status.id'} = {'$nin' => mdb->str(@not_in), '$in' => mdb->str(@in) };    
         }else{
             if (@not_in){
-                $where->{'category_status.id_status'} = mdb->nin(@not_in);
+                $where->{'category_status.id'} = mdb->nin(@not_in);
             }else{
-                $where->{'category_status.id_status'} = mdb->in(@in);
+                $where->{'category_status.id'} = mdb->in(@in);
             }
         }
     }else {
@@ -439,11 +439,11 @@ sub topics_for_user {
             map { $tmp{ $_->{id_status_from} } = $_->{id_category} } 
                 $self->user_workflow( $username );
             my @status_ids = keys %tmp;
-            $where->{'category_status.id_status'} = mdb->in(@status_ids) if @status_ids > 0;
+            $where->{'category_status.id'} = mdb->in(@status_ids) if @status_ids > 0;
             $where->{'category_status.type'} = { '$nin' =>['F','FC'] }
         }
     }
-    
+      
     if( $p->{from_mid} || $p->{to_mid} ){
         my $rel_where = {};
         my $dir = length $$p{from_mid} ? ['from_mid','to_mid'] : ['to_mid','from_mid'];
@@ -2780,12 +2780,12 @@ sub apply_filter{
                 my @not_in = map { abs $_ } grep { 0+$_ < 0 } @category_status_id;
                 my @in = @not_in ? grep { 0+$_ > 0 } @category_status_id : @category_status_id;
                 if (@not_in && @in){
-                    $where->{'category_status.id_status'} = [mdb->nin(@not_in), mdb->in(@in)];
+                    $where->{'category_status.id'} = [mdb->nin(@not_in), mdb->in(@in)];
                 }else{
                     if (@not_in){
-                        $where->{'category_status.id_status'} = mdb->nin(@not_in);
+                        $where->{'category_status.id'} = mdb->nin(@not_in);
                     }else{
-                        $where->{'category_status.id_status'} = mdb->in(@in);  
+                        $where->{'category_status.id'} = mdb->in(@in);  
                     }
                 } 
             }
@@ -2839,7 +2839,7 @@ sub group_by_status {
         {
             id_category_status      => 1,
             'category_status.color' => 1,
-            'category_status.id_status'    => 1,
+            'category_status.id'    => 1,
             'category_status.name'  => 1
         }
     );
