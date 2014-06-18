@@ -1801,6 +1801,75 @@ sub tar_dir {
     return 1;
 }
 
+=head2 zip_dir 
+
+Zip a directory
+
+    source_dir => directory to zip
+    zipfile    => full path to zip file
+    files      => [] 
+    include    => []
+    exclude    => []
+
+=cut
+sub zip_dir {
+    my (%p) =@_;
+    my $source_dir = $p{source_dir} // _fail _loc 'Missing parameter source_dir'; 
+    my $zipfile = $p{zipfile} // _fail _loc 'Missing parameter tarfile';
+    my $verbose = $p{verbose};
+    my %files = map { $_ => 1 } _array $p{files};
+    my @include = _array $p{include};
+    my @exclude = _array $p{exclude};
+
+    # open and close to reset file and attempt write
+    open my $ff, '>', $zipfile 
+       or _fail _loc 'Could not create zip file `%1`: %2', $zipfile, $!;
+    close $ff;
+    
+    
+    _fail _loc 'Could not find dir `%1` to zip', $source_dir 
+        unless -e $source_dir;
+    
+    use Archive::Zip qw( :ERROR_CODES :CONSTANTS ); 
+    # build local tar
+    my $zip = Archive::Zip->new or _throw $!;
+    my $dir = Util->_dir( $source_dir );
+    $dir->recurse( callback=>sub{
+        my $f = shift;
+        return if _file($zipfile) eq $f;
+        my $rel = $f->relative( $dir );
+        return if %files && !exists $files{$rel}; # check if file is in list
+        my $stat = $f->stat;
+        my $type = $f->is_dir ? 'd' : 'f';
+        my %attr = $type eq 'f' 
+            ? ( mtime=>$stat->mtime, mode=>$stat->mode )
+            : ( mtime => $stat->mtime, mode=>$stat->mode );
+        
+        for my $in ( @include ) {
+            return if "$f" !~ $in;
+        }
+        for my $ex ( @exclude ) {
+            return if "$f" =~ $ex;
+        }
+        
+        if( $f->is_dir ) {
+            # directory with empty data
+            say "zip_dir: add dir: `$f`: " . _to_json(\%attr) if $verbose;
+            my $dir_member = $zip->addDirectory( ''.$rel );
+        } else {
+            # file
+            say "zip_dir: add file `$f`: " . _to_json(\%attr) if $verbose;
+            $zip->addFile( ''.$f, ''.$rel, COMPRESSION_LEVEL_BEST_COMPRESSION  );
+            
+        }
+    });
+    say "zip_dir: writing tar file `$zipfile`" if $verbose;
+    unless ( $zip->writeToFileNamed( $zipfile ) == AZ_OK ) {
+        _fail 'Error writing file '.$zipfile;
+    }
+    return 1;
+}
+
 =head2 foreach_block
 
 Calls a code block for each group

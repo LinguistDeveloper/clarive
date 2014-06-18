@@ -37,11 +37,27 @@ register 'service.fileman.tar' => {
     handler => \&run_tar,
 };
 
+register 'service.fileman.zip' => {
+    name => 'Zip Local Files',
+    form => '/forms/zip_local.js',
+    icon => '/static/images/icons/package_add.png',
+    job_service  => 1,
+    handler => \&run_zip,
+};
+
 register 'service.fileman.tar_nature' => {
     name => 'Tar Nature Files',
     form => '/forms/tar_local_nature.js',
     job_service  => 1,
     handler => \&run_tar_nature,
+};
+
+register 'service.fileman.zip_nature' => {
+    name => 'Zip Nature Files',
+    form => '/forms/zip_local_nature.js',
+    icon => '/static/images/icons/package_add.png',
+    job_service  => 1,
+    handler => \&run_zip_nature,
 };
 
 register 'service.fileman.ship' => {
@@ -195,6 +211,18 @@ sub run_tar {
     Util->tar_dir( %$config ); 
 }
     
+sub run_zip {
+    my ($self, $c, $config ) = @_;
+
+    my $job   = $c->stash->{job};
+    my $log   = $job->logger;
+    my $stash = $c->stash;
+    
+    $log->info( _loc("Zip of directory '%1' into file '%2'", $config->{source_dir}, $config->{zipfile}), 
+            $config );
+    Util->zip_dir( %$config ); 
+}
+    
 sub run_tar_nature {
     my ($self, $c, $config ) = @_;
 
@@ -206,6 +234,19 @@ sub run_tar_nature {
     $log->info( _loc("Tar of directory '%1' into file '%2'", $config->{source_dir}, $config->{tarfile}), 
             $config );
     Util->tar_dir( %$config, files=>\@files ); 
+}
+    
+sub run_zip_nature {
+    my ($self, $c, $config ) = @_;
+
+    my $job   = $c->stash->{job};
+    my $log   = $job->logger;
+    my $stash = $c->stash;
+    
+    my @files = _array( $stash->{nature_item_paths} );
+    $log->info( _loc("Zip of directory '%1' into file '%2'", $config->{source_dir}, $config->{zipfile}), 
+            $config );
+    Util->zip_dir( %$config, files=>\@files ); 
 }
     
 sub run_write {
