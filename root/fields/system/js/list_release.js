@@ -13,6 +13,7 @@ params:
     release_field: '' 
     allowBlank: true
     single_mode: true
+    rel_type: 'topic_topic'
     meta_type: 'release'
 ---
 */

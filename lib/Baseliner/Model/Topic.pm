@@ -1285,7 +1285,8 @@ sub get_release {
     my @meta_local = _array($meta);
     my ($field_meta) = grep { $_->{id_field} eq $key } @meta_local;
     
-    my $where = { is_release => 1, rel_type=>'topic_topic', to_mid=>$topic_mid };
+    my $rel_type = $field_meta->{rel_type} or "topic_topic";
+    my $where = { is_release => 1, rel_type=>$rel_type, to_mid=>$topic_mid };
     $where->{rel_field} = $field_meta->{release_field} if $field_meta->{release_field};
     
     my ($release_row) = mdb->joins( master_rel => { rel_type=>'topic_topic', to_mid=>"$topic_mid" },
@@ -1360,12 +1361,16 @@ sub get_topics {
     my @topics;
     my $field_meta = [ grep { $_->{id_field} eq $id_field } _array($meta) ]->[0];
     
+    my $rel_type = $field_meta->{rel_type} or 'topic_topic';
     # Am I parent or child?
     my @rel_topics = $field_meta->{parent_field} 
-        ? mdb->master_rel->find_values(from_mid => { to_mid=>"$topic_mid", rel_type=>'topic_topic', rel_field=>$id_field })
+        ? mdb->master_rel->find_values(from_mid => { to_mid=>"$topic_mid", rel_type=>$rel_type, rel_field=>$id_field })
         : _array($$data{$id_field});
 
-    @topics = map { $_->{categories} = $_->{category}; $_ } mdb->topic->find({ mid=>mdb->in(@rel_topics) })->fields({ _id=>0 })->all;
+    my $rs = mdb->topic->find({ mid=>mdb->in(@rel_topics) })->fields({ _id=>0 });
+    $rs->sort({rel_seq=>1});
+    my @rs_ord = $rs->all;
+    @topics = map { $_->{categories} = $_->{category}; $_ } @rs_ord;
     @topics = $self->append_category( @topics );
     
     if( $opts{topic_child_data} ) {
@@ -1968,6 +1973,7 @@ sub set_topics {
     
     my $rel_field = $id_field;
     my $field_meta = [ grep { $_->{id_field} eq $id_field } _array($meta) ]->[0];
+    my $rel_type = $field_meta->{rel_type} or 'topic_topic';
     my $topic_direction = "from_mid";
     my $data_direction = "to_mid";
     if ( $field_meta->{parent_field} ) {
@@ -1978,7 +1984,7 @@ sub set_topics {
     # related topics
     my @new_topics = map { split /,/, $_ } _array( $topics ) ;
     my @old_topics = map { $$_{$data_direction} } 
-        mdb->master_rel->find({ $topic_direction=>$rs_topic->{mid}, rel_type=>'topic_topic', rel_field=>$rel_field })->all;
+        mdb->master_rel->find({ $topic_direction=>$rs_topic->{mid}, rel_type=>$rel_type, rel_field=>$rel_field })->all;
     
     # no diferences, get out
     return if !array_diff(@new_topics, @old_topics);
@@ -1999,7 +2005,7 @@ sub set_topics {
 
         my $rel_seq = 1;  # oracle may resolve this with a seq, but sqlite doesn't
         for (@new_topics){
-            my $rdoc = {$topic_direction => ''.$rs_topic->{mid}, $data_direction => "$_", rel_type =>'topic_topic', rel_field=>$rel_field, rel_seq=>0+($rel_seq++) };
+            my $rdoc = {$topic_direction => ''.$rs_topic->{mid}, $data_direction => "$_", rel_type =>$rel_type, rel_field=>$rel_field, rel_seq=>0+($rel_seq++) };
             mdb->master_rel->update_or_create($rdoc);
         }
 
@@ -2186,11 +2192,12 @@ sub set_release {
 
     my $release_field = $release_meta[0]->{release_field} // 'undef';
     my $name_field = $release_meta[0]->{name_field} // 'undef';
+    my $rel_type = $release_meta[0]->{rel_type} or 'topic_topic';
+
 
     my $topic_mid = $rs_topic->{mid};
     $self->cache_topic_remove($topic_mid);
-    
-    my $where = { rel_type=>'topic_topic', to_mid=>"$topic_mid" };
+    my $where = { is_release=>mdb->true, rel_type=>$rel_type, to_mid=>"$topic_mid" };
     $where->{rel_field} = $release_field if $release_field;
     my @rel_mids = map { $$_{from_mid} } mdb->master_rel->find()->fields({ from_mid=>1 })->all;
     my $release_row = mdb->topic->find_one({ is_release=>mdb->true, mid=>mdb->in(@rel_mids) });
@@ -2221,7 +2228,7 @@ sub set_release {
         if( $new_release ) {
             my $row_release = mdb->topic->find_one({ mid=>$new_release });
             mdb->master_rel->insert({ from_mid=>"$$row_release{mid}", to_mid=>"$topic_mid", 
-                    rel_type=>'topic_topic', rel_field=>$release_field, rel_seq=>mdb->seq('master_rel') });
+                    rel_type=>$rel_type, rel_field=>$release_field, rel_seq=>mdb->seq('master_rel') });
     
             if ($cancelEvent != 1){
                 event_new 'event.topic.modify_field' => { username   => $user,
