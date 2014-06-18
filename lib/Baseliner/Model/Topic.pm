@@ -1285,7 +1285,7 @@ sub get_release {
     my @meta_local = _array($meta);
     my ($field_meta) = grep { $_->{id_field} eq $key } @meta_local;
     
-    my $rel_type = $field_meta->{rel_type} or "topic_topic";
+    my $rel_type = $field_meta->{rel_type} // "topic_topic";
     my $where = { is_release => 1, rel_type=>$rel_type, to_mid=>$topic_mid };
     $where->{rel_field} = $field_meta->{release_field} if $field_meta->{release_field};
     
@@ -1361,7 +1361,7 @@ sub get_topics {
     my @topics;
     my $field_meta = [ grep { $_->{id_field} eq $id_field } _array($meta) ]->[0];
     
-    my $rel_type = $field_meta->{rel_type} or 'topic_topic';
+    my $rel_type = $field_meta->{rel_type} // 'topic_topic';
     # Am I parent or child?
     my @rel_topics = $field_meta->{parent_field} 
         ? mdb->master_rel->find_values(from_mid => { to_mid=>"$topic_mid", rel_type=>$rel_type, rel_field=>$id_field })
@@ -1973,7 +1973,7 @@ sub set_topics {
     
     my $rel_field = $id_field;
     my $field_meta = [ grep { $_->{id_field} eq $id_field } _array($meta) ]->[0];
-    my $rel_type = $field_meta->{rel_type} or 'topic_topic';
+    my $rel_type = $field_meta->{rel_type} // 'topic_topic';
     my $topic_direction = "from_mid";
     my $data_direction = "to_mid";
     if ( $field_meta->{parent_field} ) {
@@ -2192,7 +2192,7 @@ sub set_release {
 
     my $release_field = $release_meta[0]->{release_field} // 'undef';
     my $name_field = $release_meta[0]->{name_field} // 'undef';
-    my $rel_type = $release_meta[0]->{rel_type} or 'topic_topic';
+    my $rel_type = $release_meta[0]->{rel_type} // 'topic_topic';
 
 
     my $topic_mid = $rs_topic->{mid};
