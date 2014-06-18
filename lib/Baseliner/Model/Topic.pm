@@ -1997,11 +1997,13 @@ sub set_topics {
     };
     $notify->{project} = \@projects if @projects;
         
+    if(@old_topics){
+        my $rdoc = {$topic_direction=>''.$rs_topic->mid, rel_field=>$rel_field, rel_type => $rel_type };
+        my $rs_old_topics = DB->BaliMasterRel->search($rdoc)->delete;
+        mdb->master_rel->remove($rdoc,{multiple=>1});
+    }
+
     if( @new_topics ) {
-        if(@old_topics){
-            my $rdoc = {$topic_direction=>''.$rs_topic->{mid}, rel_field=>$rel_field };
-            mdb->master_rel->remove($rdoc,{multiple=>1});
-        }
 
         my $rel_seq = 1;  # oracle may resolve this with a seq, but sqlite doesn't
         for (@new_topics){
