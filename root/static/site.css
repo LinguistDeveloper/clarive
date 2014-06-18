@@ -31,9 +31,23 @@
 
 /* Scrollbars */
 
-::-webkit-scrollbar {
+::-webkit-scrollbar
+{
+    background-color: #F5F5F5;
     height: 9px;
     width: 9px;
+}
+
+::-webkit-scrollbar-thumb
+{
+    background-color: #999;
+    border: 0;
+    border-radius: 20px;
+}
+
+/*::-webkit-scrollbar {
+    height: 15px;
+    width: 15px;
 }
 
 ::-webkit-scrollbar-button:start:decrement,.fancy-scrollbar::-webkit-scrollbar-button:end:increment {
@@ -112,7 +126,7 @@
     -webkit-border-radius: 0px;
     display: block;
     height: 50px;
-}
+}*/
 
 /*  Job Items Search */
 .tab-style {
