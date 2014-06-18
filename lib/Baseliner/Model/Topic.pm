@@ -191,9 +191,10 @@ register 'registor.action.topic_category_fields' => {
         my %actions_category_fields;
         foreach my $category (@categories){
             my $meta = Baseliner::Model::Topic->get_meta( undef, $category->{id} );    
-
+_log "in: "._dump $category;
             my $cat_statuses = mdb->category->find_one({ id=>''.$category->{id} })->{statuses};
-            my @statuses = ci->status->find({ id_status=>{ '$in'=>$cat_statuses } })->all;
+
+            my @statuses = ci->status->find({ id_status=>mdb->in($cat_statuses) })->all;
             
             my $msg_edit = _loc('Can edit the field');
             my $msg_view = _loc('Can not view the field');
