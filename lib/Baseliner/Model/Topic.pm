@@ -424,12 +424,12 @@ sub topics_for_user {
         my @not_in = map { abs $_ } grep { $_ < 0 } @statuses;
         my @in = @not_in ? grep { $_ > 0 } @statuses : @statuses;
         if (@not_in && @in){
-            $where->{'category_status.id'} = {'$nin' => mdb->str(@not_in), '$in' => mdb->str(@in) };    
+            $where->{'category_status.id_status'} = {'$nin' => mdb->str(@not_in), '$in' => mdb->str(@in) };    
         }else{
             if (@not_in){
-                $where->{'category_status.id'} = mdb->nin(@not_in);
+                $where->{'category_status.id_status'} = mdb->nin(@not_in);
             }else{
-                $where->{'category_status.id'} = mdb->in(@in);
+                $where->{'category_status.id_status'} = mdb->in(@in);
             }
         }
     }else {
