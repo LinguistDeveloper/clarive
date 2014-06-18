@@ -368,7 +368,8 @@ sub topics_for_user {
     
     if ( $p->{unread} ){
         my @seen = map { $_->{mid} } mdb->master_seen->find({ username=>$username })->fields({ mid=>1, _id=>0 })->all;
-        push @mids_nin, mdb->nin( @seen );
+        #push @mids_nin, mdb->nin( @seen );
+        @mids_nin =  @seen ;
     }
     
     if ( $p->{created_for_me} ) {
@@ -479,6 +480,7 @@ sub topics_for_user {
         $where->{'$or'} = \@mids_or;
     }
     #_debug( $order_by );
+    _log _dump $where;
     my $rs = mdb->topic->find( $where )->fields({ mid=>1, labels=>1 })->sort( $order_by );
     $cnt = $rs->count;
     $start = 0 if length $start && $start>=$cnt; # reset paging if offset
