@@ -1,0 +1,65 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use v5.10;
+use FindBin qw($Bin);
+BEGIN {
+    if( ! $ENV{CLARIVE_HOME} ) {
+        our $script_home = $Bin . '/..';
+        chdir $script_home;
+        require Cwd;
+        $script_home = Cwd::realpath( $script_home );  # clean up the script_home path 
+        $ENV{CLARIVE_HOME} //= $script_home;
+    }
+    if( ! $ENV{CLARIVE_BASE} ) {
+        require Cwd;
+        $ENV{CLARIVE_BASE} = Cwd::realpath( $ENV{CLARIVE_HOME} . '/..' );
+    }
+}
+
+our $FULL_VERSION = do {
+    my $v = eval { 
+        my $branch = `git rev-parse --abbrev-ref HEAD`;
+        chomp $branch;
+        my @x = `cd $ENV{CLARIVE_HOME}; git describe --always --tags --candidates 1`;
+        my $version = $x[0];
+        chomp $version;
+        if( $version=~ /^(?<ver>.*)-(?<cnt>\d+)-g(?<sha>\w*)$/ ) {
+            ["release: $branch, patch: $+{ver}+$+{cnt}, sha: $+{sha}" , "${branch}_$+{ver}_$+{sha}", $+{sha}, $+{ver} ] 
+        } else {
+            [ "r$branch v$version", "${branch}_${version}", '', $branch ];
+        }
+    };
+    !$v ?  ['r6','??', '', '6'] : $v;
+};
+our $release_ver = $FULL_VERSION->[3];
+our $release = sprintf( 'clarive-%s', $release_ver );
+say "Packing Clarive release $release...";
+
+# create base dir structure
+mkdir "release";
+my $home = "release/$release";
+mkdir $home; 
+for my $dir ( qw(bin features root config) ) {
+    mkdir "$home/$dir";
+}
+
+# fatpack all libs into cla
+system qq{(echo "#!/usr/bin/env perl" ; fatpack file; cat bin/cla)> $home/bin/cla};
+
+# copy relevant files
+system qq{rsync -av root/ $home/root/};
+system qq{cp -r features/ext* $home/features};
+for my $fi ( qw(README LICENSE COPYRIGHT THIRD-PARTY-NOTICES config/clarive.yml bin/cla-bootstrap bin/cherryme) ) {
+    system qq{cp "$fi" $home/$fi};
+}
+
+# set file/dir permissions
+system qq{find '$home' -type f -exec chmod 600 {} \\;};
+system qq{chmod 700 $home/bin/cla};
+
+# pack deliverable
+my $tar = "$release.tar.gz";
+system "cd $home/.. ; tar czvf '$tar' $release";
+
+say "Done packing $release into $home/$tar";
