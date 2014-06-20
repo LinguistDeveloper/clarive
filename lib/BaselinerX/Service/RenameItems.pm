@@ -1,4 +1,4 @@
-﻿package BaselinerX::Service::RenameItems;
+package BaselinerX::Service::RenameItems;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Carp;

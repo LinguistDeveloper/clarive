@@ -1,4 +1,4 @@
-﻿package BaselinerX::Service::Init;
+package BaselinerX::Service::Init;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Baseliner::Sugar;
