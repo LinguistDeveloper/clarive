@@ -272,7 +272,6 @@ sub update : Local {
 sub list : Local {
     my ($self, $c, $dashboard_name) = @_;
     my $p = $c->req->params;
-
     # **********************************************************************************************************
     # TODO: Hay que controlar los dashboards por perfil ********************************************************
     # **********************************************************************************************************
@@ -324,7 +323,6 @@ sub list : Local {
         default {
             my $dashboard_id = $p->{dashboard_id} ? mdb->oid($p->{dashboard_id}) : undef;
             my @dashlets;
-            
             if ($dashboard_id){
                 my $dashboard = mdb->dashboard->find({_id => $dashboard_id})->next;
                 @dashlets = _array  $dashboard->{dashlets};
@@ -344,9 +342,8 @@ sub list : Local {
                     $where->{role} = {'$in' => \@roles};
                 }
                 $where->{is_system} = '0';
-                
                 my $dashboard = mdb->dashboard->find($where);
-                $dashboard->sort({is_main_desc => 1});
+                $dashboard->sort({is_main => -1});
                 if (mdb->dashboard->count($where) > 0){
                     my $i = 0;
                     my @dashboard;
@@ -369,6 +366,7 @@ sub list : Local {
                         $i++;
                     }
                     @dashboard = values %dash;
+
                     $c->stash->{dashboards} = \@dashboard;
                     
                 }else{

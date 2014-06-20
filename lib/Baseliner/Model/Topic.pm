@@ -191,9 +191,10 @@ register 'registor.action.topic_category_fields' => {
         my %actions_category_fields;
         foreach my $category (@categories){
             my $meta = Baseliner::Model::Topic->get_meta( undef, $category->{id} );    
-
+_log "in: "._dump $category;
             my $cat_statuses = mdb->category->find_one({ id=>''.$category->{id} })->{statuses};
-            my @statuses = ci->status->find({ id_status=>{ '$in'=>$cat_statuses } })->all;
+
+            my @statuses = ci->status->find({ id_status=>mdb->in($cat_statuses) })->all;
             
             my $msg_edit = _loc('Can edit the field');
             my $msg_view = _loc('Can not view the field');
@@ -367,7 +368,8 @@ sub topics_for_user {
     
     if ( $p->{unread} ){
         my @seen = map { $_->{mid} } mdb->master_seen->find({ username=>$username })->fields({ mid=>1, _id=>0 })->all;
-        push @mids_nin, mdb->nin( @seen );
+        #push @mids_nin, mdb->nin( @seen );
+        @mids_nin =  @seen ;
     }
     
     if ( $p->{created_for_me} ) {
@@ -424,12 +426,12 @@ sub topics_for_user {
         my @not_in = map { abs $_ } grep { $_ < 0 } @statuses;
         my @in = @not_in ? grep { $_ > 0 } @statuses : @statuses;
         if (@not_in && @in){
-            $where->{'category_status.id'} = {'$nin' => mdb->str(@not_in), '$in' => mdb->str(@in) };    
+            $where->{'category_status.id_status'} = {'$nin' => mdb->str(@not_in), '$in' => mdb->str(@in) };    
         }else{
             if (@not_in){
-                $where->{'category_status.id'} = mdb->nin(@not_in);
+                $where->{'category_status.id_status'} = mdb->nin(@not_in);
             }else{
-                $where->{'category_status.id'} = mdb->in(@in);
+                $where->{'category_status.id_status'} = mdb->in(@in);
             }
         }
     }else {
@@ -478,6 +480,7 @@ sub topics_for_user {
         $where->{'$or'} = \@mids_or;
     }
     #_debug( $order_by );
+    _log _dump $where;
     my $rs = mdb->topic->find( $where )->fields({ mid=>1, labels=>1 })->sort( $order_by );
     $cnt = $rs->count;
     $start = 0 if length $start && $start>=$cnt; # reset paging if offset
@@ -2599,7 +2602,7 @@ sub change_status {
     
     my $doc = mdb->topic->find_one({ mid=>"$mid" });
 
-    my $id_old_status = $p{id_old_status} || $doc->{category_status}{id};
+    my $id_old_status = $p{id_old_status} || $doc->{category_status}{id_status};
     my $status = $p{status} || $self->find_status_name($p{id_status});
     my $old_status = $p{old_status} || $self->find_status_name($id_old_status);
     my $callback = $p{callback};
@@ -2611,7 +2614,7 @@ sub change_status {
                 
                 _fail( _loc('Id not found: %1', $mid) ) unless $doc;
                 _fail _loc "Current topic status '%1' does not match the real status '%2'. Please refresh.", $doc->{category_status}{name}, $old_status 
-                    if $doc->{category_status}{id} != $id_old_status;
+                    if $doc->{category_status}{id_status} != $id_old_status;
                 # XXX check workflow for user?
                 # update mongo
                 my $modified_on = $doc->{modified_on};
