@@ -8,34 +8,34 @@
 </%perl>
 
 % if($is_release){
-% if( @parent_topics ) {
-    <ul class="nav nav-list">
+%     if( @parent_topics ) {
+      <ul class="nav nav-list">
         <li class="nav-header">
             <% _loc("Content") %>
         </li>
-    </ul>
-    <ul class="" style="margin-left: 20px">
-% foreach my $topic ( @parent_topics ) {
+      </ul>
+      <ul class="" style="margin-left: 20px">
+%         foreach my $topic ( @parent_topics ) {
         <li style="margin: 6px 0px 6px 0px">
             <& /partial/topic_name.html, topic=>$topic &>
         </li>
-% }
-    </ul>
-% }
-%}else{
-% if( @parent_topics ) {
-    <ul class="nav nav-list">
+%         }
+      </ul>
+%     }
+% } else {
+%     if( @parent_topics ) {
+      <ul class="nav nav-list">
         <li class="nav-header">
             <% _loc("Include into") %>
         </li>
-    </ul>
-    <ul class="" style="margin-left: 20px">
-% foreach my $topic ( @parent_topics ) {
+      </ul>
+      <ul class="" style="margin-left: 20px">
+%         foreach my $topic ( @parent_topics ) {
         <li style="margin: 6px 0px 6px 0px">
             <& /partial/topic_name.html, topic=>$topic &>
         </li>
-% }
-    </ul>
-% }
+%         }
+      </ul>
+%     }
 % }    
 

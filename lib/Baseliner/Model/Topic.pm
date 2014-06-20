@@ -772,8 +772,8 @@ sub update {
 sub append_category {
     my ($self, @topics ) =@_;
     return map {
-        $_->{name} = $_->{categories}->{name} ? _loc($_->{categories}->{name}) . ' #' . $_->{mid}: _loc($_->{name}) . ' #' . $_->{mid} ;
-        $_->{color} = $_->{categories}->{color} ? $_->{categories}->{color} : $_->{color};
+        $_->{name} = $_->{category}->{name} ? _loc($_->{category}->{name}) . ' #' . $_->{mid}: _loc($_->{name}) . ' #' . $_->{mid} ;
+        $_->{color} = $_->{category}->{color} ? $_->{category}->{color} : $_->{color};
         $_
     } @topics;
 }
@@ -1223,12 +1223,6 @@ sub get_data {
         ##CAMPOS DE SISTEMA ******************************************************************************************************
         ##************************************************************************************************************************
         
-        my @select_fields = ('title', 'id_category', 'categories.name', 'categories.color',
-                             'id_category_status', 'status.name', 'created_by', 'created_on', 'modified_by', 'modified_on',
-                             'deadline_min', 'description','progress', 'status.type', 'master.moniker' );
-        my @as_fields = ('title', 'id_category', 'name_category', 'color_category', 'id_category_status', 'name_status',
-                         'created_by', 'created_on', 'modified_by', 'modified_on', 'deadline_min', 'description', 'progress','type_status', 'moniker' );
-        
         $data = mdb->topic->find_one({ mid=>"$topic_mid" }) 
                 or _error( "topic mid $topic_mid document not found" );
         
@@ -1293,8 +1287,8 @@ sub get_release {
     my ($release_row) = mdb->joins( master_rel => { rel_type=>'topic_topic', to_mid=>"$topic_mid" },
                          from_mid => mid => topic => { is_release=>'1' });
     return {
-        color => $release_row->{categories}{color},
-        name  => $release_row->{categories}{name},
+        color => $release_row->{category}{color},
+        name  => $release_row->{category}{name},
         title => $release_row->{title},
         mid   => $release_row->{mid},
     };
