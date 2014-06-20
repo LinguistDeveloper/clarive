@@ -684,6 +684,37 @@ sub topic_images {
     say "Done migrating images";
 }
 
+sub topic_dates {
+    for my $t ( _dbis->query('select * from bali_topic')->hashes ) {
+       my %d = map { $_=>$$t{$_} } qw(modified_on modified_by);
+       mdb->topic->update({ mid=>$$t{mid} },{ '$set'=>\%d });
+    }
+}
+
+sub topic_assets {
+    for my $rel ( mdb->master_rel->find({ rel_type=>'topic_file_version' })->all ) {    
+        my $r = $db->query(q{select mid,filename,extension,created_on,created_by,filedata 
+           from bali_file_version where mid=?}, $$rel{to_mid});
+
+        my $asset = ci->asset->new(
+            name => $$r{filename},
+            #extension=>'xx',
+            created_by => $$r{created_by},
+            created_on => $$r{created_on},
+            ts         => $$r{created_on},
+        );
+        $asset->save;
+        $asset->put_data( $$r{filedata} );
+        
+        say "Migrating topic file from=$$rel{from_mid} to=$$rel{to_mid}";
+        my $topic = ci->new( $$rel{from_mid} );
+        my @ass = grep { defined } ( _array( $topic->assets ), $asset );
+        $topic->assets( \@ass );
+        $topic->save;
+        mdb->master_rel->remove({ _id=>$$rel{_id} });    
+    }
+}
+
 ####################################
 #
 # Integrity fixes
@@ -744,6 +775,26 @@ sub master_topic {
     }
 }
 
+# safely add MASTER_REL from Database to MDB (no deletes)
+sub master_rel_add {
+    my ($self,@mids)=@_;
+    my $db = Util->_dbis();
+    @mids = keys +{ map{$_->{mid}=>1} (mdb->master->find->all,$db->query('select * from bali_master')->hashes) }
+        unless @mids > 0;
+    
+    for my $mid ( @mids ) {
+        my %db = map { join(',',@{$_}{qw(from_mid to_mid rel_type rel_field)}) => $_ } 
+            $db->query("select * from bali_master_rel where from_mid=? or to_mid=?", $mid, $mid)->hashes;
+        my %mdb = map { join(',',@{$_}{qw(from_mid to_mid rel_type rel_field)}) => $_ } 
+            mdb->master_rel->find({ '$or'=>[{from_mid=>"$mid"},{to_mid=>"$mid"}] })->all;
+        for ( keys %db ) {
+            next if exists $mdb{$_};
+            _warn "INSERT REL into MDB: $_";
+            mdb->master_rel->insert( $db{$_} );
+        }
+    }
+}
+    
 # safely add and delete MASTER_REL from Database
 sub master_rel_fix {
     my ($self,@mids)=@_;
@@ -753,7 +804,7 @@ sub master_rel_fix {
     
     for my $mid ( @mids ) {
         my %db = map { join(',',@{$_}{qw(from_mid to_mid rel_type rel_field)}) => $_ } 
-            DB->BaliMasterRel->search({ -or=>[{from_mid=>$mid}, {to_mid=>$mid}] })->hashref->all;
+            $db->query("select * from bali_master_rel where from_mid=? or to_mid=?", $mid, $mid)->hashes;
         my %mdb = map { join(',',@{$_}{qw(from_mid to_mid rel_type rel_field)}) => $_ } 
             mdb->master_rel->find({ '$or'=>[{from_mid=>"$mid"},{to_mid=>"$mid"}] })->all;
         for ( keys %mdb ) {
