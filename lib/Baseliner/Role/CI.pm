@@ -398,7 +398,7 @@ sub load {
             unless ref $y eq 'HASH';
         $data = { %{ $data || {} }, %{ $y || {} } };   # TODO yaml should be blessed obj?
     }
-    else {  # dbic result source
+    else {  
         Util->_fail( Util->_loc('CI Storage method not supported: %1', $storage) );
     }
     # load post-data and merge
