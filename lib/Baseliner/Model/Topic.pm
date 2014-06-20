@@ -1465,6 +1465,8 @@ sub save_data {
             $topic_mid = $topic->save;   
             $topic_mid_new = $topic_mid; 
             $row{mid} = $topic_mid;
+            $row{modified_on} = $topic->ts;
+            $row{created_on} = $topic->ts;
 
             # update images
             for ( @imgs ) {
@@ -1655,6 +1657,7 @@ sub update_project_security {
 sub save_doc {
     my ($self,$meta,$row, $doc, %p) = @_;
     $row->{created_on} = mdb->ts if !exists $row->{created_on};
+    $row->{modified_on} = mdb->ts if !exists $row->{modified_on};
     # not necessary, noboody cares about the original? $doc = Util->_clone($doc); # so that we don't change the original
     Util->_unbless( $doc );
     my $mid = ''. $p{mid};
@@ -1859,8 +1862,10 @@ sub update_category_status {
     $id_category_status //= $$doc{category_status}{id} // $$doc{id_category_status};
     _fail _loc "Topic %1 does not have a status id", $$doc{mid} unless $id_category_status;
     
-    my $category_status = ci->status->find_one({ id_status=>''.$id_category_status })
+    my $category_status = ci->status->find_one({ id_status=>''.$id_category_status },{ yaml=>0, _id=>0 })
         || _fail _loc 'Status `%1` not found', $id_category_status;
+    
+    $$category_status{seq} += 0 if defined $$category_status{seq};
         
     my $d = {
         category_status      => $category_status,
