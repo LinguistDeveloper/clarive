@@ -191,7 +191,6 @@ register 'registor.action.topic_category_fields' => {
         my %actions_category_fields;
         foreach my $category (@categories){
             my $meta = Baseliner::Model::Topic->get_meta( undef, $category->{id} );    
-_log "in: "._dump $category;
             my $cat_statuses = mdb->category->find_one({ id=>''.$category->{id} })->{statuses};
 
             my @statuses = ci->status->find({ id_status=>mdb->in($cat_statuses) })->all;
@@ -422,7 +421,7 @@ sub topics_for_user {
     
     my $default_filter;
     if($p->{statuses}){
-        my @statuses = _array $p->{statuses};
+        my @statuses = _array( $p->{statuses} );
         my @not_in = map { abs $_ } grep { $_ < 0 } @statuses;
         my @in = @not_in ? grep { $_ > 0 } @statuses : @statuses;
         if (@not_in && @in){
@@ -480,8 +479,8 @@ sub topics_for_user {
         $where->{'$or'} = \@mids_or;
     }
     #_debug( $order_by );
-    _log _dump $where;
     my $rs = mdb->topic->find( $where )->fields({ mid=>1, labels=>1 })->sort( $order_by );
+    
     $cnt = $rs->count;
     $start = 0 if length $start && $start>=$cnt; # reset paging if offset
     $rs->skip( $start ) if $start >= 0 ;
@@ -1907,7 +1906,7 @@ sub deal_with_images{
         my ($ct,$enc,$img_data) = ( $img =~ /^(\S+);(\S+),(.*)$/ );
         $img_data = from_base64( $img_data );
         my $img_id = mdb->grid_insert( $img_data, parent_mid=>$topic_mid, content_type=>$ct ); 
-        my $img_md5 = mdb->grid->get( $img_id )->{md5};
+        # my $img_md5 = mdb->grid->get( $img_id )->{md5};
         $field =~ s{<img src="data:image/png;base64,(.*?)">}{<img class="bali-topic-editor-image" src="/topic/img/$img_id">};
     }
     
