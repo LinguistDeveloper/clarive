@@ -11,7 +11,6 @@ has migrate => qw(is rw default 0);
 has verbose => qw(is rw default 0);
 has trace   => qw(is ro default 0);
 has carp_always   => qw(is ro default 0);
-has dbic_trace => qw(is rw default 0); 
 
 has argv   => qw(is ro isa ArrayRef required 1);  # original command line ARGV
 has args   => qw(is ro isa HashRef required 1);  # original command line args
@@ -90,11 +89,6 @@ sub BUILD {
     if( my $carpa = $self->carp_always ) {
         require Carp::Always;
         $ENV{CARP_TIDY_OFF} = 1 if $carpa > 1; # turn off Carp::Tidy filtering
-    }
-
-    # dbic trace
-    if( $self->dbic_trace ) {
-        $ENV{DBIC_TRACE} = 1;
     }
 
     $Clarive::app = $self;  
