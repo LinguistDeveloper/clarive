@@ -541,7 +541,6 @@ sub view : Local {
                     username       => $c->username,
                     topic_mid      => $topic_mid
                 );            
-        
             my %tmp;
             if ((substr $topic_doc->{category_status}{type}, 0, 1) eq "F"){
                 $c->stash->{permissionEdit} = 0;
