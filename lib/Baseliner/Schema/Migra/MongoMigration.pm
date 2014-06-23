@@ -684,9 +684,9 @@ sub topic_images {
     say "Done migrating images";
 }
 
-sub topic_dates {
+sub topic_fields {
     for my $t ( _dbis->query('select * from bali_topic')->hashes ) {
-       my %d = map { $_=>$$t{$_} } qw(modified_on modified_by);
+       my %d = map { $_=>$$t{$_} } qw(description modified_on modified_by);
        mdb->topic->update({ mid=>$$t{mid} },{ '$set'=>\%d });
     }
 }
