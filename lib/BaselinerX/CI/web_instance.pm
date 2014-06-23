@@ -13,6 +13,7 @@ has stop_script => qw(is rw isa Str), default => '';
 has start_script => qw(is rw isa Str), default => '';
 has install => qw(is rw isa Str), default => '';
 has contingency => qw(is rw isa Str), default => '';
+has parameters => qw(is rw isa HashRef), default => sub{ +{} };
 has doc_root_dynamic_fixed => qw(is rw isa Str), default => '';
 has doc_root_static_fixed => qw(is rw isa Str), default => '';
 has server0 => qw(is rw isa Str), default => '';
@@ -39,6 +40,14 @@ sub store {
 	my $total = scalar (@cis);
 	
 	return { totalCount => $total, data => \@cis };
+}
+
+sub parse_vars {
+    my ($self,$str) = @_;
+    my $instance_parameters = $self->parameters // {};
+    my %vars = ( %{ +{%$self} }, %$instance_parameters );
+    return Util->parse_vars(\%vars,\%vars) unless length $str;
+    return Util->parse_vars( $str, \%vars );
 }
 
 1;
