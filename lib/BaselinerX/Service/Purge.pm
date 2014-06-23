@@ -133,11 +133,7 @@ sub run_once {
                     push( @particular_logs, $file->basename );
                 }
                 next unless grep { $_ eq $file->basename } @particular_logs;
-                #switch ($file->basename) {
-                #    case qr/^cla\-disp\-(.+)\.log$/  { next unless $filesize-1 > $config_files->{keep_disp_log_size}; }
-                #    case qr/^cla\-web\-(.+)\.log$/ { next unless $filesize-1 > $config_files->{keep_web_log_size};  }
-                #    else { next unless $filesize-1 > $config_files->{"keep_".$filename."_log_size"}; }
-                #}
+
                 if( $file->basename =~ qr/^cla\-disp\-(.+)\.log$/ ){
                     next unless $filesize-1 > $config_files->{keep_disp_log_size}*(1024*1024);
                 } elsif( $file->basename =~ qr/^cla\-web\-(.+)\.log$/ ){
@@ -145,23 +141,19 @@ sub run_once {
                 } else {
                     next unless $filesize-1 > $config_files->{"keep_".$filename."_log_size"}*(1024*1024);
                 }
-                # PID location
-                #my $pid_file;
-                #if($file->basename eq "mongod.log"){ 
-                #    $pid_file = Path::Class::file( $file->dir."/data/mongo/", "mongod.pid" ); 
-                #}else{
-                #    $pid_file = Path::Class::file( $file->dir, "$filename.pid" );
-                #}
+
                 my $pid_file = Path::Class::file( $file->dir, "$filename.pid" );
                 next unless -e $pid_file;
                 require Baseliner::LogfileRotate;
+                
+                _log "\tTruncating: ".$file->basename;
                 my $log = new Baseliner::LogfileRotate( File   => $file, 
                                 Count  => $config_files->{keep_rotation_level},
                                 Gzip  => 'lib',
                                 Post   => sub{
                                         if( $file->basename !~ qr/^cla\-disp\-(.+)\.log$/ ) {                                    
                                             open( my $opened_file, $pid_file );
-                                            _log _loc("Restarting process chomp( $opened_file ) for file $file->basename");
+                                            _log _loc("Restarting process ".chomp( $opened_file )." for file ".$file->basename);
                                             kill( "HUP", chomp( $opened_file ) ); 
                                         }
                                     },
