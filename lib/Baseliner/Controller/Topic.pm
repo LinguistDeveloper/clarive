@@ -529,17 +529,19 @@ sub view : Local {
                 _fail( _loc("User %1 is not allowed to access topic %2 contents", $c->username, $topic_mid) );    
             }
 
-            $c->stash->{category_meta} = $category->forms;
-            
-            #workflow category-status
-            #my $username = $c->is_root ? '' : $c->username;
-            my @statuses = sort { ( $a->{seq} // 0 ) <=> ( $b->{seq} // 0 ) } grep { $_->{id_status} ne $category->topics->status->id } $c->model('Topic')->next_status_for_user(
-                id_category    => $category->id,
-                id_status_from => $category->topics->status->id,
-                username       => $c->username,
-                topic_mid      => $topic_mid
-            );            
-            
+            $c->stash->{category_meta} = $category->{forms};
+
+            # workflow category-status
+            my @statuses = 
+                sort { ( $a->{seq} // 0 ) <=> ( $b->{seq} // 0 ) } 
+                grep { $_->{id_status} ne $topic_doc->{category_status}{id} } 
+                $c->model('Topic')->next_status_for_user(
+                    id_category    => $category->{id},
+                    id_status_from => $topic_doc->{category_status}{id},
+                    username       => $c->username,
+                    topic_mid      => $topic_mid
+                );            
+        
             my %tmp;
             if ((substr $topic_doc->{category_status}{type}, 0, 1) eq "F"){
                 $c->stash->{permissionEdit} = 0;
@@ -560,10 +562,6 @@ sub view : Local {
             }
                              
             $c->stash->{has_comments} = $c->model('Topic')->list_posts( mid=>$topic_mid, count_only=>1 );
-            _log( $c->model('Topic')->list_posts( mid=>$topic_mid) );
-            #$c->stash->{forms} = [
-            #    map { "/forms/$_" } split /,/,$topic->categories->forms
-            #];
      
             # jobs for release and changeset
             if ( $category->{is_changeset} || $category->{is_release} ) {
