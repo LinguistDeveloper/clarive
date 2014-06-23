@@ -56,12 +56,12 @@ baseliner:
     #     home: 
     #     - '{{CLARIVE_BASE}}/features'
     #     - '{{CLARIVE_HOME}}/features'
-            
     'Plugin::Session':
         host: '{{mongo.host}}'
         expires: 2592000 # One month
         dbname: '{{mongo.dbname}}'
         collectioname: 'session'
+        cookie_name: clarive-session
     
     PluginNamespace:
         prefix: BaselinerX
