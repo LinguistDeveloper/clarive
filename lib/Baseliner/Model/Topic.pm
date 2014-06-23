@@ -747,6 +747,7 @@ sub update {
                     try { $self->cache_topic_remove( $mid ) } catch { };  # dont care about these errors, usually due to related
                     ci->delete( $mid );
                     mdb->topic->remove({ mid=>"$mid" });
+                    mdb->master_seen->remove({ mid=>"$mid" });
                 }
                 $return = '%1 topic(s) deleted';
             } catch {
