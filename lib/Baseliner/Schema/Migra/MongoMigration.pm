@@ -684,14 +684,15 @@ sub topic_images {
     say "Done migrating images";
 }
 
-sub topic_dates {
+sub topic_fields {
     for my $t ( _dbis->query('select * from bali_topic')->hashes ) {
-       my %d = map { $_=>$$t{$_} } qw(modified_on modified_by);
+       my %d = map { $_=>$$t{$_} } qw(description modified_on modified_by);
        mdb->topic->update({ mid=>$$t{mid} },{ '$set'=>\%d });
     }
 }
 
 sub topic_assets {
+    my $db = _dbis;
     for my $rel ( mdb->master_rel->find({ rel_type=>'topic_file_version' })->all ) {    
         my $r = $db->query(q{select mid,filename,extension,created_on,created_by,filedata 
            from bali_file_version where mid=?}, $$rel{to_mid});
