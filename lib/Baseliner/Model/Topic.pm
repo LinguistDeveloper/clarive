@@ -772,8 +772,12 @@ sub update {
 sub append_category {
     my ($self, @topics ) =@_;
     return map {
-        $_->{name} = $_->{category}->{name} ? _loc($_->{category}->{name}) . ' #' . $_->{mid}: _loc($_->{name}) . ' #' . $_->{mid} ;
-        $_->{color} = $_->{category}->{color} ? $_->{category}->{color} : $_->{color};
+        $_->{name} = $_->{category}{name} 
+            ? _loc($_->{category}{name}) . ' #' . $_->{mid} 
+            : _loc($_->{name}) . ' #' . $_->{mid} ;
+        $_->{color} = $_->{category}{color} 
+            ? $_->{category}{color} 
+            : $_->{color};
         $_
     } @topics;
 }
@@ -782,9 +786,9 @@ sub append_category {
 sub field_parent_topics {
     my ($self,$data)=@_;
     my $is_release = 0;
-    my $category = $data->{category};
     my @parent_topics;
 
+    my $category = $data->{category};
     my $release = $category->{is_release};
     my $id_category = $category->{id};
     my $cat_doc = mdb->category->find_one({id=>"$id_category" }) // _fail _loc 'Category not found: %1', $id_category;
