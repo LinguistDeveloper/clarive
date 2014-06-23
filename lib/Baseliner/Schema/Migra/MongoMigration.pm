@@ -692,6 +692,7 @@ sub topic_fields {
 }
 
 sub topic_assets {
+    my $db = _dbis;
     for my $rel ( mdb->master_rel->find({ rel_type=>'topic_file_version' })->all ) {    
         my $r = $db->query(q{select mid,filename,extension,created_on,created_by,filedata 
            from bali_file_version where mid=?}, $$rel{to_mid});
