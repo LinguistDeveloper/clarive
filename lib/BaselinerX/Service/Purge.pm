@@ -150,14 +150,14 @@ sub run_once {
                 my $log = new Baseliner::LogfileRotate( File   => $file, 
                                 Count  => $config_files->{keep_rotation_level},
                                 Gzip  => 'lib',
-                                Post   => sub{
-                                        if( $file->basename !~ qr/^cla\-disp\-(.+)\.log$/ ) {                                    
-                                            my $pid = _file( $pid_file )->slurp;
-                                            #open( my $opened_file, $pid_file );
-                                            _log _loc("Restarting process ".$pid." for file ".$file->basename);
-                                            kill( "HUP", $pid ); 
-                                        }
-                                    },
+                                # Post   => sub{
+                                #         if( $file->basename !~ qr/^cla\-disp\-(.+)\.log$/ ) {                                    
+                                #             my $pid = _file( $pid_file )->slurp;
+                                #             #open( my $opened_file, $pid_file );
+                                #             _log _loc("Restarting process ".$pid." for file ".$file->basename);
+                                #             kill( "HUP", $pid ); 
+                                #         }
+                                #     },
                                 Dir    => $file->dir,
                                 Flock  => 'yes',
                                 Persist => 'yes',
