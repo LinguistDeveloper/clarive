@@ -142,8 +142,8 @@ sub run_once {
                     next unless $filesize-1 > $config_files->{"keep_".$filename."_log_size"}*(1024*1024);
                 }
 
-                my $pid_file = Path::Class::file( $file->dir, "$filename.pid" );
-                next unless -e $pid_file;
+                #my $pid_file = Path::Class::file( $file->dir, "$filename.pid" );
+                #next unless -e $pid_file;
                 require Baseliner::LogfileRotate;
                 
                 _log "\tTruncating: ".$file->basename;
