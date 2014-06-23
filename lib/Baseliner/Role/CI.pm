@@ -172,7 +172,6 @@ sub save {
     Baseliner->cache_remove( qr/^ci:/ );
     Baseliner->cache_remove( qr/ci:[0-9]+:/ );
     Baseliner->cache_remove( qr/:$mid:/ ) if length $mid;
-<<<<<<< HEAD
     
     # TODO make it mongo transaction bound, in case there are foreign tables
     if( $exists ) { 

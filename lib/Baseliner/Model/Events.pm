@@ -89,13 +89,14 @@ sub run_once {
                         subject         => $subject,
                         sender          => $config_email || 'clarive@clarive.com',
                         carrier         => 'email',
-                        template        => $notify->{template_path},
+                        template        => $template,
                         template_engine => 'mason',
                         _fail_on_error  => 1,   # so that it fails on template errors
                     };
-                    $model_messaging->{to} = { users => $notify->{carrier}{TO} } if (exists $notify->{carrier}{TO}) ;
-                    $model_messaging->{cc} = { users => $notify->{carrier}{CC} } if (exists $notify->{carrier}{CC}) ;
-                    $model_messaging->{bcc} = { users => $notify->{carrier}{BCC} } if (exists $notify->{carrier}{BCC}) ;
+                    
+                    $model_messaging->{to} = { users => $notification->{$template}->{TO} } if (exists $notification->{$template}->{TO}) ;
+                    $model_messaging->{cc} = { users => $notification->{$template}->{CC} } if (exists $notification->{$template}->{CC}) ;
+                    $model_messaging->{bcc} = { users => $notification->{$template}->{BCC} } if (exists $notification->{$template}->{BCC}) ;
                     
                     $model_messaging->{vars} = {%$topic,%$stash};
                     $model_messaging->{vars}->{subject} = $subject;
