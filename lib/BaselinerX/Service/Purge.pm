@@ -159,8 +159,10 @@ sub run_once {
                                 Count  => $config_files->{keep_rotation_level},
                                 Gzip  => 'lib',
                                 Post   => sub{
-                                    open( my $opened_file, $pid_file );
-                                    kill( "HUP", chomp( $opened_file ) ); 
+                                        if( $file->basename !~ qr/^cla\-disp\-(.+)\.log$/ ) {                                    
+                                            open( my $opened_file, $pid_file );
+                                            kill( "HUP", chomp( $opened_file ) ); 
+                                        }
                                     },
                                 Dir    => $file->dir,
                                 Flock  => 'yes',
