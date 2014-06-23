@@ -152,9 +152,10 @@ sub run_once {
                                 Gzip  => 'lib',
                                 Post   => sub{
                                         if( $file->basename !~ qr/^cla\-disp\-(.+)\.log$/ ) {                                    
-                                            open( my $opened_file, $pid_file );
-                                            _log _loc("Restarting process ".chomp( $opened_file )." for file ".$file->basename);
-                                            kill( "HUP", chomp( $opened_file ) ); 
+                                            my $pid = _file( $pid_file )->slurp;
+                                            #open( my $opened_file, $pid_file );
+                                            _log _loc("Restarting process ".$pid." for file ".$file->basename);
+                                            kill( "HUP", $pid ); 
                                         }
                                     },
                                 Dir    => $file->dir,
