@@ -161,6 +161,7 @@ sub run_once {
                                 Post   => sub{
                                         if( $file->basename !~ qr/^cla\-disp\-(.+)\.log$/ ) {                                    
                                             open( my $opened_file, $pid_file );
+                                            _log _loc("Restarting process chomp( $opened_file ) for file $file->basename");
                                             kill( "HUP", chomp( $opened_file ) ); 
                                         }
                                     },
