@@ -25,18 +25,18 @@ register 'config.daemon.purge' => {
 
 register 'config.purge' => {
     metadata => [
-        #{ id => 'keep_log_files', default => 30, name=> 'Number of days to keep /log files' },
-        { id => 'keep_job_files', default => 30, name=> 'Number of days to keep job files' },
-        { id => 'keep_jobs_ok', default => 30, name=> 'Number of days to keep OK job logs' },
-        { id => 'keep_jobs_ko', default => 30, name=> 'Number of days to keep KO job logs' },
-        #{ id => 'keep_log_size', default => (1024*1024*4), name=> 'Max size in Bytes to keep logs' },   # 4MB to start with
-        { id => 'keep_rotation_level', default => 7, name=> 'Number of compressed files  associated to a log file' },
-        { id => 'keep_nginx-error_log_size', default => 4, name=> 'Max size in MBytes to keep nginx-error log' },
-        { id => 'keep_nginx-access_log_size', default => 4, name=> 'Max size in MBytes to keep nginx-access log' },
-        { id => 'keep_mongod_log_size', default => 4, name=> 'Max size in MBytes to keep mongod log' },
-        { id => 'keep_redis_log_size', default => 4, name=> 'Max size in MBytes to keep redis log' },
-        { id => 'keep_disp_log_size', default => 4, name=> 'Max size in MBytes to keep cla-disp log' },
-        { id => 'keep_web_log_size', default => 4, name=> 'Max size in MBytes to keep cla-web log' },
+        { id => 'keep_log_files', default => 30, label=> 'Number of days to keep /log files' },
+        { id => 'keep_job_files', default => 30, label=> 'Number of days to keep job files' },
+        { id => 'keep_jobs_ok', default => 30, label=> 'Number of days to keep OK job logs' },
+        { id => 'keep_jobs_ko', default => 30, label=> 'Number of days to keep KO job logs' },
+        #{ id => 'keep_log_size', default => (1024*1024*4), label=> 'Max size in Bytes to keep logs' },   # 4MB to start with
+        { id => 'keep_rotation_level', default => 7, label=> 'Number of compressed files  associated to a log file' },
+        { id => 'keep_nginx-error_log_size', default => 4, label=> 'Max size in MBytes to keep nginx-error log' },
+        { id => 'keep_nginx-access_log_size', default => 4, label=> 'Max size in MBytes to keep nginx-access log' },
+        { id => 'keep_mongod_log_size', default => 4, label=> 'Max size in MBytes to keep mongod log' },
+        { id => 'keep_redis_log_size', default => 4, label=> 'Max size in MBytes to keep redis log' },
+        { id => 'keep_disp_log_size', default => 4, label=> 'Max size in MBytes to keep cla-disp log' },
+        { id => 'keep_web_log_size', default => 4, label=> 'Max size in MBytes to keep cla-web log' },
     ]
 };
 
