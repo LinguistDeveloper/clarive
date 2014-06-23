@@ -36,7 +36,6 @@
     }
    
     var state_id =id_report ? 'topic-grid-'+id_report : 'topic-grid';
-    //console.log( params );
     
     var base_params = { start: 0, limit: ps, typeApplication: typeApplication, 
         from_mid: params.from_mid,
@@ -72,9 +71,6 @@
 			sort: function(sorters, direction){
 				var col;
 				if( this.data.items.length > 0 ){
-                     // console.log(sorters);
-                     // console.dir(this.data);
-					// console.log(this.data.items[0].data[sorters]);
 					if(this.data.items[0].data[sorters] === '' ){
 						var res = sorters.replace(/\_[^_]+$/,"");
                         sorters = res;
@@ -97,7 +93,6 @@
 	}
 
     if( fields ) {
-        //console.log('Add fields');
         var columns = fields.columns;
         for(i=0;i<columns.length;i++){
             if (columns[i].ci_columns) {
@@ -408,7 +403,6 @@
                     if( cfg[col].hidden || cfg[col]._checker ) continue; 
                     var cell = gv.getCell(row,col); 
                     if( !cell ) break;
-                    //console.log( cell.innerHTML );
                     var text = args.no_html ? $(cell.innerHTML).text() : cell.innerHTML;
                     text = text.replace(/^\s+/,'');
                     text = text.replace(/\s+$/,'');
@@ -427,7 +421,6 @@
         }
         
         for( var i=0; i<cfg.length; i++ ) {
-            //console.log( cfg[i] );
             if( ! cfg[i].hidden && ! cfg[i]._checker ) 
                 data.columns.push({ id: cfg[i].dataIndex, name: cfg[i].report_header || cfg[i].header });
         }
@@ -1173,8 +1166,6 @@
         force_fit = false;
         columns = [ dragger, check_sm, col_map['topic_name'] ];
         Ext.each( fields.columns, function(r){ 
-            // r.meta_type, r.id, r.as, r.width, r.header
-            //console.log('cols');
         
             if(r.filter){
                 var filter_params = {type: type_filters[r.filter.type], dataIndex: r.category ? r.id + '_' + r.category : r.id};
@@ -1240,8 +1231,7 @@
             col.alias = r.category;
             col.header = _(r.header || r.as || r.text || r.id);
             col.width = r.width || col.width;
-            
-            //console.log(col);
+
             columns.push( col );
 
             if (r.ci_columns) {
@@ -1259,7 +1249,6 @@
                 }
                 else{
                     for(i=0;i<r.ci_columns.length;i++){
-                        //console.log(r.ci_columns[i]);
                         var ci_col = {
                             //dataIndex: r.category ? r.ci_columns + '_' + r.category : r.ci_columns,
                             header: r.category + ': ' + r.ci_columns[i],
@@ -1664,7 +1653,6 @@
         for( var i=0; i<selNodes.length; i++ ) {
             var node = selNodes[ i ];
             type = node.parentNode.attributes.id;
-            //if (type == 'C') console.log(node);
             var node_value = node.attributes.checked3 == -1 ? -1 * (node.attributes.idfilter) : node.attributes.idfilter;
             switch (type){
                 //Views
@@ -1852,7 +1840,6 @@
             */
             if(node.attributes.id == 'C' || node.attributes.id == 'L'){
                 node.eachChild(function(n) {
-                    //console.log(n.getUI());
                     var color = n.attributes.color;
                     if( ! color ) color = '#999';
                     var style = document.createElement('style');

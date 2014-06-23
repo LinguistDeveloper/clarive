@@ -457,17 +457,11 @@ Baseliner.Topic.StoreList = Ext.extend( Baseliner.JsonStore, {
 
         if( config.add_fields ) {
             var ff = {};
-            // Ext.each(fields, function(f){ 
-            //     return ff[f.name]=true });
             Ext.each( config.add_fields, function(f){
-                //if( !ff[f.name] ) fields.push(f);
                 fields.push(f);
             });
             delete config.add_fields;
         }
-
-        //console.log('Campos declarados en store');
-        //console.dir(fields);
 
         config = Ext.apply({
             root: 'data' , 
@@ -752,7 +746,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             items: self.status_items_menu
         });
         
-        self.btn_change_status = new Ext.Toolbar.Button({ text: _("Change status"), menu: self.status_menu, hidden: true }); 
+        self.btn_change_status = new Ext.Toolbar.Button({ text: _("Change status"), menu: self.status_menu, hidden: true });
         if (self.status_items_menu.length <= 0){
             self.btn_change_status.hide();
         }
