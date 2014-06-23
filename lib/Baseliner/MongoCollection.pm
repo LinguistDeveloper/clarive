@@ -251,7 +251,7 @@ sub find_hash_one {
 sub find_mid {
     my ($self,@mids)=@_;
     my @docs = $self->find({ mid=>mdb->in(@mids) })->all;
-    return @docs;
+    return @docs==1 ? $docs[0] : @docs;
 }
     
 1;

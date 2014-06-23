@@ -662,12 +662,12 @@ sub comment : Local {
                 my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$topic_mid", rel_type=>'topic_project' });
                 my @users = Baseliner->model("Topic")->get_users_friend(
                         id_category => $topic_row->{category}{id}, 
-                        id_status   => $topic_row->{category_status}{id_status}, 
+                        id_status   => $topic_row->{category_status}{id}, 
                         projects    => \@projects );
                 my $subject = _loc("%1 created a post for topic [%2] %3", $c->username, $topic_row->{mid}, $topic_row->{title} );
                 my $notify = { #'project', 'category', 'category_status'
                     category        => $topic_row->{category}{id},
-                    category_status => $topic_row->{category_status}{id_status},
+                    category_status => $topic_row->{category_status}{id},
                     project => \@projects,
                 };
                 # save the post
@@ -722,7 +722,7 @@ sub comment : Local {
                 my $subject = _loc("%1 deleted a post from topic [%2] %3", $c->username, $topic_row->{mid}, $topic_row->{title});
                 my $notify = { #'project', 'category', 'category_status'
                     category        => $topic_row->{category}{id},
-                    category_status => $topic_row->{category_status}{id_status},
+                    category_status => $topic_row->{category_status}{id},
                     project => \@projects
                 };
 
@@ -1290,7 +1290,7 @@ sub upload : Local {
             my @users = Baseliner->model("Topic")->get_users_friend(
                 mid         => $p->{topic_mid}, 
                 id_category => $topic->{category}{id}, 
-                id_status   => $topic->{category_status}{id_status},
+                id_status   => $topic->{category_status}{id},
                 #  projects    => \@projects  # get_users_friend ignores this
             );
             
@@ -1707,7 +1707,7 @@ sub change_status : Local {
     $c->stash->{json} = try {
         my $change_status_before;
         
-        my $id_cats = mdb->topic->find_one({ mid=>"$$p{mid}" },{ category_status=>1 })->{category_status}{id_status};
+        my $id_cats = mdb->topic->find_one({ mid=>"$$p{mid}" },{ category_status=>1 })->{category_status}{id};
         
         if ($p->{old_status} eq $id_cats ){
             $change_status_before = \0;

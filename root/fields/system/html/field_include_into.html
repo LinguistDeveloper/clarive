@@ -7,11 +7,10 @@
     my ($is_release, @parent_topics) = $c->model('Topic')->field_parent_topics($data);
 </%perl>
 
-% if($is_release){
-%     if( @parent_topics ) {
+%  if( @parent_topics ) {
       <ul class="nav nav-list">
         <li class="nav-header">
-            <% _loc("Content") %>
+            <% $is_release ? _loc("Content") : _loc("Include into") %>
         </li>
       </ul>
       <ul class="" style="margin-left: 20px">
@@ -21,21 +20,4 @@
         </li>
 %         }
       </ul>
-%     }
-% } else {
-%     if( @parent_topics ) {
-      <ul class="nav nav-list">
-        <li class="nav-header">
-            <% _loc("Include into") %>
-        </li>
-      </ul>
-      <ul class="" style="margin-left: 20px">
-%         foreach my $topic ( @parent_topics ) {
-        <li style="margin: 6px 0px 6px 0px">
-            <& /partial/topic_name.html, topic=>$topic &>
-        </li>
-%         }
-      </ul>
-%     }
-% }    
-
+%  }

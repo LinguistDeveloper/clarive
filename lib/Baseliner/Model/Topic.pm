@@ -421,16 +421,16 @@ sub topics_for_user {
     
     my $default_filter;
     if($p->{statuses}){
-        my @statuses = _array $p->{statuses};
+        my @statuses = _array( $p->{statuses} );
         my @not_in = map { abs $_ } grep { $_ < 0 } @statuses;
         my @in = @not_in ? grep { $_ > 0 } @statuses : @statuses;
         if (@not_in && @in){
-            $where->{'category_status.id_status'} = {'$nin' => mdb->str(@not_in), '$in' => mdb->str(@in) };    
+            $where->{'category_status.id'} = {'$nin' => mdb->str(@not_in), '$in' => mdb->str(@in) };    
         }else{
             if (@not_in){
-                $where->{'category_status.id_status'} = mdb->nin(@not_in);
+                $where->{'category_status.id'} = mdb->nin(@not_in);
             }else{
-                $where->{'category_status.id_status'} = mdb->in(@in);
+                $where->{'category_status.id'} = mdb->in(@in);
             }
         }
     }else {
@@ -480,6 +480,7 @@ sub topics_for_user {
     }
     #_debug( $order_by );
     my $rs = mdb->topic->find( $where )->fields({ mid=>1, labels=>1 })->sort( $order_by );
+    
     $cnt = $rs->count;
     $start = 0 if length $start && $start>=$cnt; # reset paging if offset
     $rs->skip( $start ) if $start >= 0 ;
@@ -771,8 +772,12 @@ sub update {
 sub append_category {
     my ($self, @topics ) =@_;
     return map {
-        $_->{name} = $_->{category}->{name} ? _loc($_->{category}->{name}) . ' #' . $_->{mid}: _loc($_->{name}) . ' #' . $_->{mid} ;
-        $_->{color} = $_->{category}->{color} ? $_->{category}->{color} : $_->{color};
+        $_->{name} = $_->{category}{name} 
+            ? _loc($_->{category}{name}) . ' #' . $_->{mid} 
+            : _loc($_->{name}) . ' #' . $_->{mid} ;
+        $_->{color} = $_->{category}{color} 
+            ? $_->{category}{color} 
+            : $_->{color};
         $_
     } @topics;
 }
@@ -781,9 +786,9 @@ sub append_category {
 sub field_parent_topics {
     my ($self,$data)=@_;
     my $is_release = 0;
-    my $category = $data->{category};
     my @parent_topics;
 
+    my $category = $data->{category};
     my $release = $category->{is_release};
     my $id_category = $category->{id};
     my $cat_doc = mdb->category->find_one({id=>"$id_category" }) // _fail _loc 'Category not found: %1', $id_category;
@@ -1465,6 +1470,8 @@ sub save_data {
             $topic_mid = $topic->save;   
             $topic_mid_new = $topic_mid; 
             $row{mid} = $topic_mid;
+            $row{modified_on} = $topic->ts;
+            $row{created_on} = $topic->ts;
 
             # update images
             for ( @imgs ) {
@@ -1655,6 +1662,7 @@ sub update_project_security {
 sub save_doc {
     my ($self,$meta,$row, $doc, %p) = @_;
     $row->{created_on} = mdb->ts if !exists $row->{created_on};
+    $row->{modified_on} = mdb->ts if !exists $row->{modified_on};
     # not necessary, noboody cares about the original? $doc = Util->_clone($doc); # so that we don't change the original
     Util->_unbless( $doc );
     my $mid = ''. $p{mid};
@@ -1853,15 +1861,18 @@ sub update_category_status {
     my $doc =
         ref $mid_or_doc
         ? $mid_or_doc
-        : mdb->topic->find_one( { mid => "$mid_or_doc" }, { id_category_status => 1, 'category_status.id_status' => 1 } );
+        : mdb->topic->find_one( { mid => "$mid_or_doc" }, { id_category_status => 1, 'category_status.id' => 1 } );
     _fail _loc "Cannot update topic category status, topic not found: %1", $mid_or_doc unless ref $doc;
 
     $id_category_status //= $$doc{category_status}{id} // $$doc{id_category_status};
     _fail _loc "Topic %1 does not have a status id", $$doc{mid} unless $id_category_status;
     
-    my $category_status = ci->status->find_one({ id_status=>''.$id_category_status })
+    my $category_status = ci->status->find_one({ id_status=>''.$id_category_status },{ yaml=>0, _id=>0 })
         || _fail _loc 'Status `%1` not found', $id_category_status;
-        
+    
+    $$category_status{seq} += 0 if defined $$category_status{seq};
+    $$category_status{id} = $$category_status{id_status};
+
     my $d = {
         category_status      => $category_status,
         id_category_status   => $$category_status{id_status},
@@ -1906,7 +1917,7 @@ sub deal_with_images{
         my ($ct,$enc,$img_data) = ( $img =~ /^(\S+);(\S+),(.*)$/ );
         $img_data = from_base64( $img_data );
         my $img_id = mdb->grid_insert( $img_data, parent_mid=>$topic_mid, content_type=>$ct ); 
-        my $img_md5 = mdb->grid->get( $img_id )->{md5};
+        # my $img_md5 = mdb->grid->get( $img_id )->{md5};
         $field =~ s{<img src="data:image/png;base64,(.*?)">}{<img class="bali-topic-editor-image" src="/topic/img/$img_id">};
     }
     
@@ -2595,7 +2606,7 @@ sub change_status {
     
     my $doc = mdb->topic->find_one({ mid=>"$mid" });
 
-    my $id_old_status = $p{id_old_status} || $doc->{category_status}{id_status};
+    my $id_old_status = $p{id_old_status} || $doc->{category_status}{id};
     my $status = $p{status} || $self->find_status_name($p{id_status});
     my $old_status = $p{old_status} || $self->find_status_name($id_old_status);
     my $callback = $p{callback};
@@ -2607,7 +2618,7 @@ sub change_status {
                 
                 _fail( _loc('Id not found: %1', $mid) ) unless $doc;
                 _fail _loc "Current topic status '%1' does not match the real status '%2'. Please refresh.", $doc->{category_status}{name}, $old_status 
-                    if $doc->{category_status}{id_status} != $id_old_status;
+                    if $doc->{_category_status}{id_status} != $id_old_status;
                 # XXX check workflow for user?
                 # update mongo
                 my $modified_on = $doc->{modified_on};
