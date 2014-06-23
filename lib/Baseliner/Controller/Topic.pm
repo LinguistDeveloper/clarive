@@ -534,14 +534,13 @@ sub view : Local {
             # workflow category-status
             my @statuses = 
                 sort { ( $a->{seq} // 0 ) <=> ( $b->{seq} // 0 ) } 
-                grep { $_->{id_status} ne $topic_doc->{category_status}{id_status} } 
+                grep { $_->{id_status} ne $topic_doc->{category_status}{id} } 
                 $c->model('Topic')->next_status_for_user(
                     id_category    => $category->{id},
-                    id_status_from => $topic_doc->{category_status}{id_status},
+                    id_status_from => $topic_doc->{category_status}{id},
                     username       => $c->username,
                     topic_mid      => $topic_mid
                 );            
-        
             my %tmp;
             if ((substr $topic_doc->{category_status}{type}, 0, 1) eq "F"){
                 $c->stash->{permissionEdit} = 0;

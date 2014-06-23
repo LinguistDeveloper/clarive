@@ -191,7 +191,6 @@ register 'registor.action.topic_category_fields' => {
         my %actions_category_fields;
         foreach my $category (@categories){
             my $meta = Baseliner::Model::Topic->get_meta( undef, $category->{id} );    
-_log "in: "._dump $category;
             my $cat_statuses = mdb->category->find_one({ id=>''.$category->{id} })->{statuses};
 
             my @statuses = ci->status->find({ id_status=>mdb->in($cat_statuses) })->all;
@@ -480,7 +479,6 @@ sub topics_for_user {
         $where->{'$or'} = \@mids_or;
     }
     #_debug( $order_by );
-    _log _dump $where;
     my $rs = mdb->topic->find( $where )->fields({ mid=>1, labels=>1 })->sort( $order_by );
     $cnt = $rs->count;
     $start = 0 if length $start && $start>=$cnt; # reset paging if offset
@@ -892,8 +890,8 @@ sub next_status_for_user {
         my @user_wf = $self->user_workflow( $username );
         @to_status = sort { ($a->{seq} // 0 ) <=> ( $b->{seq} // 0 ) } grep {
             $_->{id_category} eq $p{id_category}
-                && $_->{id_status_from} eq $p{id_status_from}
-                && $_->{id_status_to} ne $p{id_status_from}
+                && (( defined $_->{id_status_from} && defined $p{id_status_from} && $_->{id_status_from} eq $p{id_status_from} ) || ( ! defined $_->{id_status_from} && ! defined $p{id_status_from} ))
+                && (( defined $_->{id_status_to}   && defined $p{id_status_from} && $_->{id_status_to}   ne $p{id_status_from} ) || ( !( defined $_->{id_status_to} && defined $p{id_status_from})))
         } @user_wf;
     }
 
