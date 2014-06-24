@@ -855,7 +855,7 @@ sub list_filtered_topics: Private{
     my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.filtered_topics');	
     
     if($dashboard_id && looks_like_number($dashboard_id)){
-        my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
+        my $dashboard_rs = mdb->dashboard->find($dashboard_id);
         my @config_dashlet = grep {$_->{url}=~ 'list_filtered_topics'} _array _load($dashboard_rs->dashlets);
         
         if($config_dashlet[0]->{params}){

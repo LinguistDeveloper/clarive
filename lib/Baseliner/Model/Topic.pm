@@ -1999,7 +1999,6 @@ sub set_topics {
         
     if(@old_topics){
         my $rdoc = {$topic_direction=>''.$rs_topic->mid, rel_field=>$rel_field, rel_type => $rel_type };
-        my $rs_old_topics = DB->BaliMasterRel->search($rdoc)->delete;
         mdb->master_rel->remove($rdoc,{multiple=>1});
     }
 
