@@ -810,8 +810,8 @@ sub list_topics: Private{
     #CONFIGURATION DASHLET
     ##########################################################################################################
     my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.topics'); 
-    if($dashboard_id && looks_like_number( $dashboard_id ) ){
-        my $dashboard_rs = mdb->dashboard->find({_id => mdb->oid($dashboard_id)});
+    if($dashboard_id ) {
+        my $dashboard_rs = mdb->dashboard->find_one({_id => mdb->oid($dashboard_id)});
         my @config_dashlet = grep {$_->{url}=~ 'list_topics'} _array $dashboard_rs->{dashlets};
         
         if($config_dashlet[0]->{params}){
@@ -828,7 +828,7 @@ sub list_topics: Private{
     $c->stash->{topics} = \@rows ;
 }
 
-sub list_filtered_topics: Private{
+sub list_filtered_topics_old: Private{
     my ( $self, $c, $dashboard_id ) = @_;
     my $username = $c->username;
     #my (@topics, $topic, @datas, $SQL);
@@ -853,17 +853,16 @@ sub list_filtered_topics: Private{
     #CONFIGURATION DASHLET
     ##########################################################################################################
     my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.filtered_topics');	
-    
-    if($dashboard_id && looks_like_number($dashboard_id)){
-        my $dashboard_rs = $c->model('Baseliner::BaliDashboard')->find($dashboard_id);
-        my @config_dashlet = grep {$_->{url}=~ 'list_filtered_topics'} _array _load($dashboard_rs->dashlets);
+    if($dashboard_id ){
+        my $dashboard_rs = mdb->dashboard->find_one({_id => mdb->oid($dashboard_id)});
+        my @config_dashlet = grep {$_->{url}=~ 'list_filtered_topics'} _array $dashboard_rs->{dashlets};
         
         if($config_dashlet[0]->{params}){
             foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
                 $default_config->{$key} = $config_dashlet[0]->{params}->{$key};
-            };				
-        }		
-    }	
+            };              
+        }      
+    }   
     ##########################################################################################################		
     
     # go to the controller for the list
@@ -873,6 +872,12 @@ sub list_filtered_topics: Private{
         my @statuses = split /,/, $default_config->{statuses};
         my @status_ids = map {$_->{id_status}} ci->status->find({ name => mdb->in(@statuses)})->all;
         $p->{statuses} = \@status_ids;
+    }
+
+    if ( $default_config->{categories} && $default_config->{categories} ne 'ALL') {
+        my @categories = split /,/, $default_config->{categories};
+        my @categories_ids = map {$_->{id}} mdb->category->find({ name => mdb->in(@categories)})->all;
+        $p->{categories} = \@categories_ids;
     }
 
     my ($cnt, @rows) = $c->model('Topic')->topics_for_user( $p );

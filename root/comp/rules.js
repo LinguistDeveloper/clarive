@@ -469,6 +469,7 @@
             root.cascade(function(nc){
                 nc.attributes.expanded = nc.isExpanded();
             });
+            console.dir(root);
             var stmts = encode_tree( root );
             Baseliner.message( _('Rules'), _('Validating and saving rule...') );
             var json = Ext.util.JSON.encode( stmts );
