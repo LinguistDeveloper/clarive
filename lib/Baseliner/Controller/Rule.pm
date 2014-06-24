@@ -385,6 +385,7 @@ sub stmts_save : Local {
         } catch {
             _fail _loc "Corrupt or incorrect json rule tree: %1", shift(); 
         };
+        _log _dump $stmts;
         # check if DSL is buildable
         try { 
             $c->model('Rules')->dsl_build_and_test( $stmts ); 

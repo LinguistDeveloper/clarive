@@ -12,10 +12,10 @@
     return [
         bls,
         { xtype:'textfield', name: 'seq', fieldLabel:_('Sequence'), anchor:'100%', value: params.rec.seq==undefined ? 100 : params.rec.seq },
-        { xtype: 'checkbox', colspan: 1, fieldLabel: _('Bind releases'), name:'bind_releases', checked: bind_releases, allowBlank: true },
-        { xtype: 'checkbox', colspan: 1, fieldLabel: _('CI update'), name:'ci_update', checked: ci_update, allowBlank: true },
-        { xtype: 'checkbox', colspan: 1, fieldLabel: _('Frozen'), name:'frozen', checked: frozen, allowBlank: true },
-        { xtype: 'checkbox', colspan: 1, fieldLabel: _('Read only'), name:'readonly', checked: readonly, allowBlank: true },
+        { xtype: 'cbox', colspan: 1, fieldLabel: _('Bind releases'), name:'bind_releases', checked: bind_releases, allowBlank: true },
+        { xtype: 'cbox', colspan: 1, fieldLabel: _('CI update'), name:'ci_update', checked: ci_update, allowBlank: true },
+        { xtype: 'cbox', colspan: 1, fieldLabel: _('Frozen'), name:'frozen', checked: frozen, allowBlank: true },
+        { xtype: 'cbox', colspan: 1, fieldLabel: _('Read only'), name:'readonly', checked: readonly, allowBlank: true },
         {
             xtype: 'radiogroup',
             name: 'type',
