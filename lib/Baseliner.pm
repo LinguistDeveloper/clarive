@@ -73,13 +73,6 @@ __PACKAGE__->config( name => 'Baseliner', default_view => 'Mason' );
 __PACKAGE__->config( setup_components => { search_extra => [ 'BaselinerX' ] } );
 __PACKAGE__->config( xmlrpc => { xml_encoding => 'utf-8' } );
 
-#__PACKAGE__->config(
-#    'Plugin::Session' => {
-#        dbname   => 'clarive',
-#        expires  => 2592000, # One month
-#    },
-#);
-
 __PACKAGE__->config->{'Plugin::Static::Simple'}->{dirs} = [
         'static',
         qr/images/,
@@ -111,6 +104,8 @@ if( $ENV{BALI_CMD} ) {
     require Baseliner::Standalone;
 }
 
+__PACKAGE__->config->{'Plugin::Session'}{cookie_name} //= 'clarive-session';
+    
 use FindBin '$Bin';
 #$c->languages( ['es'] );
 __PACKAGE__->config(
