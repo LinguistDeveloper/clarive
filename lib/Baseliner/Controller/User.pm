@@ -741,7 +741,8 @@ sub change_pass : Local {
     if ($row) {
         if ( ci->user->encrypt_password( $username, $p->{oldpass} ) eq $row->{password} ) {
             if ( $p->{newpass} ) {
-                $row->update( password => ci->user->encrypt_password( $username, $p->{newpass} ) );
+                my $user = ci->new( $row->{mid} );
+                $user->update( password => ci->user->encrypt_password( $username, $p->{newpass} ) );
                 $c->stash->{json} = { msg => _loc('Password changed'), success => \1 };
             } else {
                 $c->stash->{json} = { msg => _loc('You must introduce a new password'), failure => \1 };
