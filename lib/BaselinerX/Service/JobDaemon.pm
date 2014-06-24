@@ -99,6 +99,7 @@ sub job_daemon {
                 }
                 _log _loc( "Starting job %1 for step %2", $job->name, $job->step );
                 $job->status('RUNNING');
+                $job->pid( $$ );  # to avoid killed
                 $job->save;
                 # get proc mode from job bl
                 my $mode = $^O eq 'Win32'
