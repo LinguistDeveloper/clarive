@@ -3278,6 +3278,7 @@ Baseliner.CBox = Ext.extend( Ext.form.Checkbox, {
     }
 });
 
+Ext.reg( 'cbox', Baseliner.CBox );
 
 Ext.apply(Ext.layout.FormLayout.prototype, {
     originalRenderItem: Ext.layout.FormLayout.prototype.originalRenderItem || Ext.layout.FormLayout.prototype.renderItem,
