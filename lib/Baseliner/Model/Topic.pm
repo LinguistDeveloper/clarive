@@ -1510,7 +1510,7 @@ sub save_data {
 
                 my $method    = $relation{$field};
                 my $new_value = $row{$field};
-                my $old_value = $old_values{$field};
+                my $old_value = $old_values{$field} // '' ;
                 
                 if ( !defined $old_value && $new_value ne '' || $new_value ne $old_value ) {
                     if ( $field eq 'id_category_status' ) {
@@ -2076,7 +2076,7 @@ sub set_cis {
 
     # related topics
     my @new_cis = _array( $cis ) ;
-    @new_cis  = split /,/, $new_cis[0] if $new_cis[0] =~ /,/ ;
+    @new_cis  = split /,/, $new_cis[0] if $new_cis[0] && $new_cis[0] =~ /,/ ;
     my @old_cis =
         map { $_->{to_mid} }
         mdb->master_rel->find({ from_mid=>$rs_topic->{mid}, rel_type=>$rel_type })->all;
@@ -2231,7 +2231,7 @@ sub set_release {
     $notify->{project} = \@projects if @projects;
 
     # check if arrays contain same members
-    if ( $new_release ne $old_release ) {
+    if ( $new_release && $new_release ne $old_release ) {
         if($release_row){
             my $rdoc = {from_mid => "$old_release", to_mid=>''.$topic_mid, rel_field => $release_field};
             mdb->master_rel->remove($rdoc,{multiple=>1});

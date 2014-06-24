@@ -173,6 +173,7 @@ sub save {
         }
     }
 
+<<<<<<< HEAD
     cache->remove( qr/^ci:/ );
     cache->remove( qr/ci:[0-9]+:/ );
     cache->remove( qr/:$mid:/ ) if length $mid;
