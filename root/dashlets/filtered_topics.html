@@ -40,7 +40,7 @@ html: /dashlets/filtered_topics.html
                             short_name: true
                         });
                         
-                        document.getElementById('<%$topic_id%>').innerHTML = name;
+                        document.getElementById('filtered_<%$topic_id%>').innerHTML = name;
                     </script>                    
                     
                     <td class="title-html" title="<% $topic->{title} %>" ><% $topic->{title} %></td>
