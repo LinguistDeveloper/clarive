@@ -36,7 +36,7 @@ sub update_category : Local {
     my $idsstatus = $p->{idsstatus};
     my $type = $p->{type};
     
-    Baseliner->cache_remove_like( qr/^topic:/ );
+    cache->remove_like( qr/^topic:/ );
     $c->registry->reload_all;
     my $assign_type = sub {
         my ($category) = @_;
@@ -160,7 +160,7 @@ sub update_status : Local {
     my $p = $c->req->params;
     my $action = $p->{action};
 
-    Baseliner->cache_remove_like( qr/^topic:/ );
+    cache->remove_like( qr/^topic:/ );
     $c->registry->reload_all;
     given ($action) {
         when ('add') {
@@ -239,7 +239,7 @@ sub update_label : Local {
     my @projects = split ",", $p->{projects};
     my $username = $c->username;
     
-    Baseliner->cache_remove_like( qr/^topic:/ );
+    cache->remove_like( qr/^topic:/ );
     $c->registry->reload_all;
     given ($action) {
         when ('add') {
@@ -297,7 +297,7 @@ sub update_category_admin : Local {
     my $idsstatus_to = $p->{idsstatus_to};
     my $job_type = $p->{job_type};
 
-    Baseliner->cache_remove_like( qr/^topic:/ );
+    cache->remove_like( qr/^topic:/ );
     $c->registry->reload_all;
     
     foreach my $role (_array $idsroles){
@@ -325,7 +325,7 @@ sub list_categories_admin : Local {
     my $cnt;
     my @rows;
 
-    Baseliner->cache_remove_like( qr/^topic:/ );
+    cache->remove_like( qr/^topic:/ );
 
     my %roles = mdb->role->find_hash_one( id=>{},{role=>1,_id=>0});
     my %statuses = ci->status->statuses;
@@ -585,7 +585,7 @@ sub update_fields : Local {
     my @ids_field = _array $p->{fields};
     my @values_field = _array $p->{params};
     
-    Baseliner->cache_remove_like( qr/^topic:/ );
+    cache->remove_like( qr/^topic:/ );
     $c->registry->reload_all;
     
     my $order = 1;
@@ -675,7 +675,7 @@ sub workflow : Local {
     my ($self,$c, $action) = @_;
     my $p = $c->request->parameters;
     my $cnt=0;
-    Baseliner->cache_remove_like( qr/^topic:/ );
+    cache->remove_like( qr/^topic:/ );
     $c->registry->reload_all;
     if( $action eq 'delete' ) {
         try {
@@ -698,7 +698,7 @@ sub create_clone : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     
-    Baseliner->cache_remove_like( qr/^topic:/ );
+    cache->remove_like( qr/^topic:/ );
     $c->registry->reload_all;
     try {
         my ($row) = 
@@ -754,7 +754,7 @@ sub list_filters : Local {
 sub duplicate : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    Baseliner->cache_remove_like( qr/^topic:/ );
+    cache->remove_like( qr/^topic:/ );
     $c->registry->reload_all;
     try{
         my $id_from = $$p{id_category};
@@ -785,7 +785,7 @@ sub delete_row : Local {
     my $id_role = $p->{id_role};
     my $id_status_from = $p->{id_status_from};    
     
-    Baseliner->cache_remove_like( qr/^topic:/ );
+    cache->remove_like( qr/^topic:/ );
     $c->registry->reload_all;
     try{
         mdb->category->update({ id =>"$id_category" },
@@ -802,7 +802,7 @@ sub delete_row : Local {
 sub update_system : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    Baseliner->cache_remove_like( qr/^topic:/ );
+    cache->remove_like( qr/^topic:/ );
     $c->registry->reload_all;
     try{
         Baseliner::Model::Topic->get_update_system_fields;
@@ -852,7 +852,7 @@ sub import : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     my @log;
-    Baseliner->cache_remove_like( qr/^topic:/ );
+    cache->remove_like( qr/^topic:/ );
     $c->registry->reload_all;
     try{
         mdb->txn( sub{

@@ -164,10 +164,10 @@ sub user_has_read_action {
     my @actions;
 
     for my $role ( @roles ) {
-        my @role_actions = _array(Baseliner->cache_get(":role:actions:$role:"));
+        my @role_actions = _array(cache->get(":role:actions:$role:"));
         if (!@role_actions){
             push @actions, map { $_->{action} } @{mdb->role->find({id=>$role})->next->{actions}};
-            Baseliner->cache_set(":role:actions:$role:",\@actions);
+            cache->set(":role:actions:$role:",\@actions);
             #_debug "NO CACHE for :role:actions:$role:";
         } else {
             push @actions, @role_actions;
@@ -233,10 +233,10 @@ sub user_actions_by_topic {
 
     my @roles = $self->user_roles_for_topic( %p );
     for my $role ( @roles ) {
-        my @actions = _array(Baseliner->cache_get(":role:actions:$role:"));
+        my @actions = _array(cache->get(":role:actions:$role:"));
         if ( !@actions ) {
            @actions = map { $_->{action} } @{mdb->role->find({id=>$role+0})->next->{actions}};
-           Baseliner->cache_set(":role:actions:$role:",\@actions);
+           cache->set(":role:actions:$role:",\@actions);
         } else {
             #_debug "CACHE HIT for :role:actions:$role:";
         }
@@ -454,7 +454,7 @@ sub list {
     my ( $self, %p ) = @_;
     my @ret;
     my $cache_key = ["user:permission:list:$p{username}:", %p ];
-    my $cached = Baseliner->cache_get( $cache_key );
+    my $cached = cache->get( $cache_key );
     if( ref $cached eq 'ARRAY' ) {
         return @$cached;
     }
@@ -467,7 +467,7 @@ sub list {
     # if its root, gimme all actions period.
     if( $p{username} && $self->is_root( $p{username} ) ) {
         my @ret = map { $_->{key} } Baseliner->model('Actions')->list;
-        Baseliner->cache_set( $cache_key, \@ret );
+        cache->set( $cache_key, \@ret );
         return @ret;
     }
     
@@ -512,12 +512,12 @@ sub is_root {
     my ( $self, $username ) = @_;
     $username or die _loc('Missing username');
     my $cached_key = "user:is_root:$username:";
-    my $cached = Baseliner->cache_get($cached_key);
+    my $cached = cache->get($cached_key);
     return $cached if defined $cached;
     my $is_root = 
         $username eq 'root' 
         || scalar( grep { 'action.admin.root' eq $_ } Baseliner->model('Users')->get_actions_from_user($username) );
-    Baseliner->cache_set( $cached_key, $is_root );
+    cache->set( $cached_key, $is_root );
     return $is_root;
 }
 

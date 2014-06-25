@@ -874,7 +874,7 @@ sub update_topic_labels : Local {
             mdb->topic->update({ mid => "$topic_mid"},{ '$set' => {labels => \@label_ids}});
         }
         $c->stash->{json} = { msg=>_loc('Labels assigned'), success=>\1 };
-        Baseliner->cache_remove( qr/:$topic_mid:/ ) if length $topic_mid;
+        cache->remove( qr/:$topic_mid:/ ) if length $topic_mid;
     }
     catch{
         $c->stash->{json} = { msg=>_loc('Error assigning Labels: %1', shift()), failure=>\1 }
@@ -886,7 +886,7 @@ sub update_topic_labels : Local {
 sub delete_topic_label : Local {
     my ($self,$c, $topic_mid, $label_id)=@_;
     try{
-        Baseliner->cache_remove( qr/:$topic_mid:/ ) if length $topic_mid;
+        cache->remove( qr/:$topic_mid:/ ) if length $topic_mid;
         mdb->topic->update({ mid => "$topic_mid" },{ '$pull'=>{ labels=>$label_id } },{ multiple=>1 });
         $c->stash->{json} = { msg=>_loc('Label deleted'), success=>\1, id=> $label_id };
     }

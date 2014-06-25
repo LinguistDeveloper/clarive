@@ -488,7 +488,7 @@ sub update : Local {
         }
     }
     }
-    Baseliner->cache_remove(qr/:$p->{username}:/);
+    cache->remove(qr/:$p->{username}:/);
 
     $c->forward('View::JSON');
 }

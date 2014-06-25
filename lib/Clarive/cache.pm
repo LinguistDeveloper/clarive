@@ -71,4 +71,6 @@ sub clear { $ccache->clear }
 sub remove_like { my $re=$_[1]; cache->remove($_) for cache->keys_like($re); } 
 sub keys_like { my $re=$_[1]; $re='.*' unless length $re; grep /$re/ => cache->keys; }
 
+setup();
+
 1;

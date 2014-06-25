@@ -490,7 +490,7 @@ sub topics_for_user {
     my @mids = map { $$_{mid} } @topics;  # keep order
     
     # get mid data from cache
-    my %mid_data = map { $$_{mid} => $_ } grep { $_ } map { Baseliner->cache_get("topic:view:$_:") } @mids; 
+    my %mid_data = map { $$_{mid} => $_ } grep { $_ } map { cache->get("topic:view:$_:") } @mids; 
     # now search thru 
     if( my @db_mids = grep { !exists $mid_data{$_} } @mids ) {
         #_debug( "CACHE==============================> MIDS: @mids, DBMIDS: @db_mids, MIDS_IN_CACHE: " . join',',keys %mid_data );
@@ -499,7 +499,7 @@ sub topics_for_user {
         $self->update_mid_data( \@db_mids, \%mid_data, $username );
     
         for my $db_mid ( @db_mids ) {
-            Baseliner->cache_set( "topic:view:$db_mid:", $mid_data{$db_mid} );
+            cache->set( "topic:view:$db_mid:", $mid_data{$db_mid} );
         }
     } else {
         _debug "CACHE =========> ALL TopicView data MIDS in CACHE";
@@ -1162,7 +1162,7 @@ our %meta_types = (
 sub get_meta {
     my ($self, $topic_mid, $id_category, $username) = @_;
 
-    my $cached = Baseliner->cache_get( "topic:meta:$topic_mid:") if $topic_mid;
+    my $cached = cache->get( "topic:meta:$topic_mid:") if $topic_mid;
     return $cached if $cached;
 
     my $id_cat =  $id_category
@@ -1197,7 +1197,7 @@ sub get_meta {
             $d
         } @cat_fields;
     
-    Baseliner->cache_set( "topic:meta:$topic_mid:", \@meta ) if length $topic_mid;
+    cache->set( "topic:meta:$topic_mid:", \@meta ) if length $topic_mid;
     
     return \@meta;
 }
@@ -1217,7 +1217,7 @@ sub get_data {
             $meta = $self->get_meta( $topic_mid );  
         }
         my $cache_key = ["topic:data:$topic_mid:", \%opts];
-        my $cached = Baseliner->cache_get( $cache_key ) unless $no_cache; 
+        my $cached = cache->get( $cache_key ) unless $no_cache; 
         if( defined $cached ) {
             _debug( "CACHE HIT get_data: topic_mid = $topic_mid" );
             return $cached;
@@ -1266,7 +1266,7 @@ sub get_data {
             my %all_labels = map { $_->{id} => $_ } mdb->label->find({ id=>mdb->in($data->{labels}) })->all;
             $data->{labels} = [ map { $all_labels{$_} } @labels ]; 
         }
-        Baseliner->cache_set( $cache_key, $data );
+        cache->set( $cache_key, $data );
     }
     
     return $data;
@@ -1405,7 +1405,7 @@ sub save_data {
     try {
         if ( length $topic_mid ) {
             _debug "Removing *$topic_mid* from cache";
-            Baseliner->cache_remove( qr/:$topic_mid:/ );
+            cache->remove( qr/:$topic_mid:/ );
         }
 
         my @std_fields =
@@ -2596,14 +2596,14 @@ sub cache_topic_remove {
 
     # refresh cache for related stuff 
     if ($topic_mid && $topic_mid ne -1) {    
-        Baseliner->cache_remove( qr/:$topic_mid:/ );
+        cache->remove( qr/:$topic_mid:/ );
         for my $rel_mid ( 
             map { $_->{from_mid} == $topic_mid ? $_->{to_mid} : $_->{from_mid} }
             mdb->master_rel->find({ '$or'=>[{from_mid=>"$topic_mid"},{to_mid=>"$topic_mid"}] })->all
             )
         {
             #_debug "TOPIC CACHE REL remove :$rel_mid:";
-            Baseliner->cache_remove( qr/:$rel_mid:/ );
+            cache->remove( qr/:$rel_mid:/ );
         }
     };
 }

@@ -128,7 +128,7 @@ sub tree_resolve {
             my @targets =  mdb->master->find_values( mid => { moniker=>qr/$tag/i, collection=>'topic' });
             push @rel_topics, @targets;
             for my $mid ( @targets ) {
-                Baseliner->cache_remove( qr/:$mid:/ );
+                cache->remove( qr/:$mid:/ );
                 # XXX missing rel_field...
                 mdb->master_rel->find_or_create({ to_mid=>$self->mid, from_mid=>$mid, rel_type=>$tag_relationship });
             }
@@ -138,7 +138,7 @@ sub tree_resolve {
             my @targets = mdb->master->find_values( mid=>{ moniker=>qr/$tag/i, collection=>'topic' });
             push @rel_cis, @targets;
             for my $mid ( @rel_cis ) {
-                Baseliner->cache_remove( qr/:$mid:/ );
+                cache->remove( qr/:$mid:/ );
                 # XXX missing rel_field...
                 mdb->master_rel->find_or_create({ to_mid=>$self->mid, from_mid=>$mid, rel_type=>$tag_relationship });
             }

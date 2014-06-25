@@ -60,9 +60,9 @@ class_has '_registrar_enabled' => ( is=>'rw', isa=>'HashRef', );
 sub registors {
     my ($self)=@_;
     my $reg = $self->registrar;
-    if( Baseliner->cache_get('registry:reload:all') && !Baseliner->cache_get('registry:reload_registor:'.$$) ) {
+    if( cache->get('registry:reload:all') && !cache->get('registry:reload_registor:'.$$) ) {
         _debug "Reload Registry Registor requested for $$";
-        Baseliner->cache_set('registry:reload_registor:'.$$, 1);
+        cache->set('registry:reload_registor:'.$$, 1);
         my @keys = keys %{ $self->registor_keys_added || {} };
         delete $reg->{$_} for @keys;
         $self->registor_data({});
@@ -73,8 +73,8 @@ sub registors {
 }
 
 sub reload_all {
-    Baseliner->cache_remove( qr/registry:/ );
-    Baseliner->cache_set( 'registry:reload:all', 1 );
+    cache->remove( qr/registry:/ );
+    cache->set( 'registry:reload:all', 1 );
 }
 
 sub _registrar {
