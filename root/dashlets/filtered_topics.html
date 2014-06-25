@@ -29,7 +29,7 @@ html: /dashlets/filtered_topics.html
 % my $date = Util->ago(Class::Date->new($topic->{created_on}));
 % my $topic_id = $topic->{topic_mid} . _nowstamp;
                 <tr>
-                    <td class="name-html" id="<%$topic_id%>" ><% "$topic->{category_name}" %></td>
+                    <td class="name-html" id="filtered_<%$topic_id%>" ><% "$topic->{category_name}" %></td>
     
                     <script>
                         var name = Baseliner.topic_name({ link: true,
