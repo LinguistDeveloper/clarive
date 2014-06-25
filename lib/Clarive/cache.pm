@@ -5,6 +5,7 @@ our $ccache;
 
 sub setup {
     # CHI cache setup
+    require Baseliner::Utils;
     my $setup_fake_cache = sub {
        { package Nop; sub AUTOLOAD{ } };
        $ccache = bless {} => 'Nop';
@@ -39,6 +40,13 @@ sub setup {
             Util->_debug( "CACHE Setup ok: " . join' ', @$cache_config );
         }
     }
+
+    # clear cache on restart
+    if( Clarive->debug ) {
+        cache->clear;  
+    }
+    
+    return 1;
 }
 
 sub keyify { 

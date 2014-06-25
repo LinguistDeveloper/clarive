@@ -264,9 +264,6 @@ around 'debug' => sub {
     sub cache_clear { shift; cache->clear( @_ ) }
     
     # cache setup
-    if( Clarive->debug ) {
-        cache->clear;  # clear cache on restart
-    }
     cache->remove( qr/registry:/ );
 
     # Beep
