@@ -78,7 +78,7 @@ sub encrypt_password {
 sub save_api_key  {
     my ($self, $p) = @_;
     $self = ref $self ? $self : Baseliner->user_ci( $p->{username} );
-    my $new_key = $p->{api_key} // Util->_md5( $p->{username} . ( int ( rand( 32 * 32 ) % time ) ) );
+    my $new_key = $p->{api_key_param} // Util->_md5( $p->{username} . ( int ( rand( 32 * 32 ) % time ) ) );
     $self->update( api_key=>$new_key );
     { api_key=>$new_key, msg=>'ok', success=>\1 };
 }

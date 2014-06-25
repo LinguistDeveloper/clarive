@@ -115,7 +115,7 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                 });
             };
             var save_apikey = function(){
-                Baseliner.ci_call('user', 'save_api_key', { api_key: api_key.getValue() }, function(res){
+                Baseliner.ci_call('user', 'save_api_key', { api_key_param: api_key.getValue() }, function(res){
                     Baseliner.message( _('API Key'), res.msg );
                 });
             };
