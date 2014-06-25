@@ -8,7 +8,7 @@
         value: params.rec.contents, name: 'contents' });
     
     return [
-        { xtype:'checkbox', name: 'parallel', fieldLabel:_('Parallel?'), checked: params.rec.parallel == '1' ? true : false },
+        { xtype:'cbox', name: 'parallel', fieldLabel:_('Parallel?'), checked: params.rec.parallel == '1' ? true : false },
         contents
     ]
 })
