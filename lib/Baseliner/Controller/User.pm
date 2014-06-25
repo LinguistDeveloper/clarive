@@ -165,7 +165,7 @@ sub user_data : Local {
     try {
         my $user = ci->user->find({ username => $c->username })->next;
         _fail _loc('User not found: %1', $c->username ) unless $user;
-        $c->stash->{json} = { data=>{ $user }, msg=>'ok', success=>\1 };
+        $c->stash->{json} = { data=> $user , msg=>'ok', success=>\1 };
     } catch {
         my $err = shift;
         $c->stash->{json} = { msg=>"$err", success=>\0 };
@@ -845,20 +845,17 @@ sub identicon {
             return $image->{image}->png;
     };
     if( ref $user ) {
-        if( length $user->{avatar} ) {
-            _debug "Avatar from db";
-            return $user->{avatar};
-        } else {
-            _debug "Generating and saving avatar";
-            my $png = try { 
-                $generate->();
-            } catch {
-                my $user_png = $c->path_to( "/root/static/images/icons/user.png");
-                $user_png->slurp;
-            };
-            $user->update(avatar => $png);
-            return $png;
-        }
+        _debug "Generating and saving avatar";
+        my $png = try { 
+            $generate->();
+        } catch {
+            my $user_png = $c->path_to( "/root/static/images/icons/user.png");
+            $user_png->slurp;
+        };
+        my $user_instance = ci->new($user->{mid});
+        $user_instance->update(avatar => $png);
+        #$user->update(avatar => $png);
+        return $png;
     }
     else {
         _debug "User not found, avatar generated anyway";
