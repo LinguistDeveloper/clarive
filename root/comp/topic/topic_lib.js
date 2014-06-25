@@ -1904,6 +1904,8 @@ Baseliner.comments_for_topic = function(args) {
 [% if ( can_edit ) { %]
 
                     | <a href="javascript:Baseliner.Topic.comment_edit( [%= topic_mid %], [%= id %])">[%= _("edit") %]</a>
+[% } %]
+[% if ( can_delete ) { %]
                     | <a href="javascript:Baseliner.Topic.comment_delete([%= topic_mid %], [%= id %], '[%= id_div_com %]')">[%= _("delete") %]</a>
 
 [% } %]

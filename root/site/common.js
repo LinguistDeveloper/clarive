@@ -93,7 +93,7 @@ Baseliner.js_reload = function() {
     Baseliner.loadFile( '/site/portal/Portlet.js', 'js' );
     Baseliner.loadFile( '/site/portal/PortalColumn.js', 'js' );
     Baseliner.loadFile( '/comp/topic/topic_lib.js', 'js' );
-
+    Baseliner.loadFile( '/root/site/prefs.js', 'js' );
     Baseliner.loadFile( '/static/site.css', 'css' );
     Baseliner.loadFile( '/static/final.css', 'css' );
 

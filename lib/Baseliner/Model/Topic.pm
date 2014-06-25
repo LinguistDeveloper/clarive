@@ -437,7 +437,7 @@ sub topics_for_user {
         if (!$p->{clear_filter}){          
             ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
             my %tmp;
-            map { $tmp{ $_->{id_status_from} } = $_->{id_category} } 
+            map { $tmp{ $_->{id_status_from} } = $_->{id_category} if ($_->{id_status_from}); } 
                 $self->user_workflow( $username );
             my @status_ids = keys %tmp;
             $where->{'category_status.id'} = mdb->in(@status_ids) if @status_ids > 0;
@@ -1364,7 +1364,8 @@ sub get_topics {
     my $rel_type = $field_meta->{rel_type} // 'topic_topic';
     # Am I parent or child?
     my @rel_topics = $field_meta->{parent_field} 
-        ? mdb->master_rel->find_values(from_mid => { to_mid=>"$topic_mid", rel_type=>$rel_type, rel_field=>$id_field })
+        ? mdb->master_rel->find_values(from_mid => { to_mid=>"$topic_mid", rel_type=>$rel_type, rel_field=>$field_meta->{parent_field}  })
+        #? mdb->master_rel->find_values(from_mid => { to_mid=>"$topic_mid", rel_type=>$rel_type, rel_field=>$id_field })
         : _array($$data{$id_field});
 
     my $rs = mdb->topic->find({ mid=>mdb->in(@rel_topics) })->fields({ _id=>0 });
@@ -1999,7 +2000,6 @@ sub set_topics {
         
     if(@old_topics){
         my $rdoc = {$topic_direction=>''.$rs_topic->mid, rel_field=>$rel_field, rel_type => $rel_type };
-        my $rs_old_topics = DB->BaliMasterRel->search($rdoc)->delete;
         mdb->master_rel->remove($rdoc,{multiple=>1});
     }
 

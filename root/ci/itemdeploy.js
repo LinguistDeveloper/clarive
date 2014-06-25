@@ -76,10 +76,10 @@
             value: params.order || 1,
             allowBlank: 0
         },
-        { xtype: 'checkbox', name: 'no_paths', fieldLabel: _('Options'), boxLabel: _("Do not deploy paths, only files"),
+        { xtype: 'cbox', name: 'no_paths', fieldLabel: _('Options'), boxLabel: _("Do not deploy paths, only files"),
             checked: params.no_paths == undefined ? true : params.no_paths
         },
-        { xtype: 'checkbox', name: 'path_deploy', fieldLabel: _('Path'), boxLabel: _("Deploy full workspace path"),
+        { xtype: 'cbox', name: 'path_deploy', fieldLabel: _('Path'), boxLabel: _("Deploy full workspace path"),
             checked: params.path_deploy == undefined ? false : params.path_deploy
         },
         deployments,

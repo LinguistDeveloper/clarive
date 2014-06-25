@@ -469,6 +469,7 @@
             root.cascade(function(nc){
                 nc.attributes.expanded = nc.isExpanded();
             });
+            console.dir(root);
             var stmts = encode_tree( root );
             Baseliner.message( _('Rules'), _('Validating and saving rule...') );
             var json = Ext.util.JSON.encode( stmts );
@@ -563,7 +564,7 @@
                     { text: _('Paste'), handler: function(item){ paste_node( node ) }, icon:'/static/images/icons/paste.png' },
                     { text: _('DSL'), handler: function(item){ dsl_node( node ) }, icon:'/static/images/icons/edit.png' },
                     { text: _('Toggle'), handler: function(item){ toggle_node(node) }, icon:'/static/images/icons/activate.png' },
-                    { text: _('Delete'), handler: function(item){ node.remove() }, icon:'/static/images/icons/delete.gif' } 
+                    { text: _('Delete'), handler: function(item){ delete node.parentNode.attributes.children; node.parentNode.removeChild(node, true);  }, icon:'/static/images/icons/delete.gif' } 
                 ]
             });
             stmts_menu.showAt(event.xy);
