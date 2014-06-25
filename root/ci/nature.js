@@ -44,7 +44,7 @@
     });
     
     return [
-        { xtype:'checkbox', fieldLabel: _('Exclude unparsed items'), name: 'only_parsed', checked: params.rec.only_parsed },
+        { xtype:'cbox', fieldLabel: _('Exclude unparsed items'), name: 'only_parsed', checked: params.rec.only_parsed },
         tabs
     ]; 
 })
