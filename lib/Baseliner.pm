@@ -201,7 +201,7 @@ around 'debug' => sub {
     $ENV{BALI_FAST} or Baseliner::Core::Registry->print_table;
     $ENV{BALI_WRITE_REGISTRY} and Baseliner::Core::Registry->write_registry_file;
 
-    if( ! Baseliner->debug ) {
+    if( ! Clarive->debug ) {
         # make immutable for speed
         my %cl=Class::MOP::get_all_metaclasses;
 
@@ -264,7 +264,7 @@ around 'debug' => sub {
     sub cache_clear { shift; cache->clear( @_ ) }
     
     # cache setup
-    if( Baseliner->debug ) {
+    if( Clarive->debug ) {
         cache->clear;  # clear cache on restart
     }
     cache->remove( qr/registry:/ );
@@ -481,7 +481,7 @@ sub _comp_names_search_prefixes {
 Replace the C<password> field in the debug log with asterisks.
 
 =cut
-if( Baseliner->debug ) {
+if( Clarive->debug ) {
     around dump_these => sub {
         my $orig = shift;
         my $c = shift;

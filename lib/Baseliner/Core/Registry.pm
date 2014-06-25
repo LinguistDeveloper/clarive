@@ -459,7 +459,7 @@ Registry:
     $table .= <<"";
 .----------------------------------------------------------------------------------------.
 
-    print STDERR $table . "\n" if Baseliner->debug && !$ENV{BALI_CMD};
+    print STDERR $table . "\n" if Clarive->debug && !$ENV{BALI_CMD};
 }
 1;
 

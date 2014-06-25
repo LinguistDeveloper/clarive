@@ -403,7 +403,7 @@ sub _warn {
 sub _debug {
     my $cal = looks_like_number($_[0]) && $_[0] < 0 ? -(shift()) : ($Baseliner::Utils::caller_level // 0);
     my ($cl,$fi,$li) = caller( $cal );
-    return unless Baseliner->debug;
+    return unless Clarive->debug;
     _log_me( 'debug', $cl,$fi,$li,@_);
 }
 
@@ -481,7 +481,7 @@ sub _dt { DateTime->now(time_zone=>_tz);  }
 
 # same as _now, but with hi res in debug mode
 sub _now_log {
-    if( Baseliner->can('debug') && Baseliner->debug ) {
+    if( Clarive->debug ) {
         my @t=split /\./, Time::HiRes::time(); 
         return sprintf "%s.%03d", Class::Date::date( $t[0]), substr $t[1], 0, 3;
     } else {
