@@ -224,30 +224,6 @@ around 'debug' => sub {
         #$_->meta->make_immutable for keys %pkgs;
     }
 
-    # mdb : master db setup
-    Baseliner->config->{mongo} //= {};
-    {
-        package mdb;
-        our $AUTOLOAD;
-        sub AUTOLOAD {
-            my $self = shift;
-            my $name = $AUTOLOAD;
-            my @a = reverse( split(/::/, $name));
-            my $db = $Baseliner::_mdb //( $Baseliner::_mdb = do{
-                my $conf = Baseliner->config->{mongo};
-                my $class = $conf->{class} // 'Baseliner::Mongo'; #'Baseliner::Schema::KV';
-                eval "require $class";
-                Util->_fail('Error loading mdb class: '. $@ ) if $@ ;
-                $class->new( $conf );
-            });
-            my $class = ref $db;
-            my $method = $class . '::' . $a[0];
-            @_ = ( $db, @_ );
-            goto &$method;
-        }
-    }
-    # mdb: establish connection now?
-
     # queue : worker queue
     {
         package queue;
@@ -278,96 +254,20 @@ around 'debug' => sub {
         }
     }
     
-    # ci : ci utilities setup
-    {
-        package ci;
-        our $AUTOLOAD;
-        sub AUTOLOAD {
-            my $self = shift;
-            my $name = $AUTOLOAD;
-            my ($method) = reverse( split(/::/, $name));
-            my $class = $method =~ /new|find|is_ci/ ? 'Baseliner::CI' : 'Baseliner::Role::CI';
-            if( $class->can($method) ) {
-                $method = $class . '::' . $method;
-                @_ = ( $class, @_ );
-                goto &$method;
-            } else {
-                return 'BaselinerX::CI::'.$method;
-            }
-        }
-    }
-
-    # CHI cache setup
-    our $ccache;
-    my $setup_fake_cache = sub {
-       { package Nop; sub AUTOLOAD{ } };
-       $ccache = bless {} => 'Nop';
-    };
-    if( !Baseliner->config->{cache} ) {
-        $setup_fake_cache->();
-    } else {
-        my $cache_type = Baseliner->config->{cache};
-        my $cache_defaults = {
-                fastmmap  => [ driver => 'FastMmap', root_dir   => Util->_tmp_dir . '/bali-cache', cache_size => '256m' ],
-                memory    => [ driver => 'Memory' ],
-                rawmemory => [ driver => 'RawMemory', datastore => {}, max_size => 1000 ],
-                sharedmem => [ driver => 'SharedMem', size => 1_000_000, shmkey=>93894384 ],
-                redis     => [ driver => 'BaselinerRedis', namespace => 'cache', server => ( Baseliner->config->{redis}{server} // 'localhost:6379' ), debug => 0 ],
-                mongo     => [ driver => 'Mongo' ] # not CHI
-        };
-        my $cache_config = ref $cache_type eq 'ARRAY' 
-            ? $cache_type :  ( $cache_defaults->{ $cache_type } // $cache_defaults->{fastmmap} );
-        $ccache = eval {
-            if( $cache_type eq 'mongo' ) {
-                require Baseliner::Cache;
-                Baseliner::Cache->new( @$cache_config );
-            } else {
-                require CHI;
-                CHI->new( @$cache_config );
-            }
-        }; 
-        if( $@ ) {
-            Util->_error( Util->_loc( "Error configuring cache: %1", $@ ) );
-            $setup_fake_cache->();
-        } else {
-            Util->_debug( "CACHE Setup ok: " . join' ', @$cache_config );
-        }
-    }
-
-    sub cache_keyify { 
-        my ($self,$key)=@_;
-        return ref $key ? Storable::freeze( $key ) : $key;
-    }
-    sub cache_set { 
-        my ($self,$key,$value)=@_;
-        return if !$ccache;
-        Util->_debug(-1, "+++ CACHE SET: " . ( ref $key ? Util->_to_json($key) : $key ) ) if $ENV{BALI_CACHE_TRACE}; 
-        Util->_debug( Util->_whereami ) if defined $ENV{BALI_CACHE_TRACE} && $ENV{BALI_CACHE_TRACE} > 1 ;
-        $ccache->set( $key, $value ) 
-    }
-    sub cache_get { 
-        my ($self,$key)=@_;
-        return if !$ccache;
-        return if $Baseliner::_no_cache;
-        return if !$ccache;
-        Util->_debug(-1, "--- CACHE GET: " . ( ref $key ? Util->_to_json($key) : $key ) ) if $ENV{BALI_CACHE_TRACE}; 
-        $ccache->get( $key ) 
-    }
-    sub cache_remove { 
-        my ($self,$key)=@_;
-        return if !$ccache;
-        ref $key eq 'Regexp' ?  $self->cache_remove_like($key) : $ccache->remove( $key ) ;
-    }
-    sub cache_keys { $ccache->get_keys( @_ ) }
-    sub cache_compute { $ccache->compute( @_ ) }
-    sub cache_clear { $ccache->clear }
-    sub cache_remove_like { my $re=$_[1]; Baseliner->cache_remove($_) for Baseliner->cache_keys_like($re); } 
-    sub cache_keys_like { my $re=$_[1]; $re='.*' unless length $re; grep /$re/ => Baseliner->cache_keys; }
-
+    # cache legacy, for unmigrated features
+    sub cache_get { shift; cache->get( @_ ) }
+    sub cache_set { shift; cache->set( @_ ) }
+    sub cache_remove { shift; cache->remove( @_ ) }
+    sub cache_remove_like { shift; cache->remove_like( @_ ) }
+    sub cache_keys { shift; cache->keys( @_ ) }
+    sub cache_keys_like { shift; cache->keys_like( @_ ) }
+    sub cache_clear { shift; cache->clear( @_ ) }
+    
+    # cache setup
     if( Baseliner->debug ) {
-        Baseliner->cache_clear;  # clear cache on restart
+        cache->clear;  # clear cache on restart
     }
-    Baseliner->cache_remove( qr/registry:/ );
+    cache->remove( qr/registry:/ );
 
     # Beep
     my $bali_env = $ENV{CATALYST_CONFIG_LOCAL_SUFFIX} // $ENV{BASELINER_CONFIG_LOCAL_SUFFIX};

@@ -10,8 +10,8 @@ use Baseliner::Utils qw(_fail _loc _error _warn _debug _throw _log _array _dump 
 # mongo connection
 has retry_frequency => qw(is rw isa Num default 5);
 has max_retries     => qw(is rw isa Num default 60);
-has mongo_client  => qw(is rw isa Any), default=>sub{ Baseliner->config->{mongo}{client} // {} };
-has mongo_db_name => qw(is rw isa Any), default=>sub{ Baseliner->config->{mongo}{dbname} // 'clarive' };
+has mongo_client  => qw(is rw isa Any), default=>sub{ Clarive->config->{mongo}{client} // {} };
+has mongo_db_name => qw(is rw isa Any), default=>sub{ Clarive->config->{mongo}{dbname} // 'clarive' };
 has mongo         => ( is=>'ro', isa=>'MongoDB::MongoClient', lazy=>1, default=>sub{
        my $self = shift;
        require MongoDB;
@@ -64,7 +64,6 @@ sub seq {
 sub collection {
     my ($self,$coll_name) = @_;
     my $coll = $self->db->get_collection( $coll_name );
-    #require Baseliner::MongoCollection;
     Baseliner::MongoCollection->new( _collection=>$coll, _db=>$self );
 }
 
@@ -407,7 +406,7 @@ sub clean_doc {
 }
 
 sub disconnect {
-    $Baseliner::_mdb = undef;
+    $Clarive::_mdb = undef;
 }
 
 =head2 query_build

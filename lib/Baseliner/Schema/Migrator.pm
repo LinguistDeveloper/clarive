@@ -6,11 +6,12 @@ use Baseliner::Utils;
 
 sub check {
     my ($self, $arg)=@_;
+    $arg //= '';
     my %args = map { $_=>1 } split /,/, $arg;
     my %ids;
-    _log('Checking for migrations...');
+    say('Checking for migrations...');
     my @current = mdb->_migrations->find->all;
-    my @candidates = Baseliner->path_to('lib/Baseliner/Schema/Migrations'), map { _dir($_->path,'lib/Baseliner/Schema/Migrations') } _array(Baseliner->features->list );
+    my @candidates = Clarive->path_to('lib/Baseliner/Schema/Migrations'), map { _dir($_->path,'lib/Baseliner/Schema/Migrations') } _array(Clarive->features->list );
     for my $f ( map { $_->children } grep { -e } @candidates ) {
         my ($id) = $f->basename =~ /^(.+)\.(.*?)$/;
         my $body = $f->slurp;
@@ -22,7 +23,7 @@ sub check {
         $wh->{'$or'} = [{version=>undef},{ '$and'=>[{version=>{'$gte'=>0+$version}}, {version=>{ '$ne'=>undef } }] }] if $version>0;
         my $doc = mdb->_migrations->find_one($wh);
         if( $doc && !$args{$id} ) {
-            _debug("====> Migration ok: $id (version: $version)" );
+            say("====> Migration ok: $id (version: $version)" );
             next;
         } else {
             say "Forcing migration for `$id`" if $args{$id};
@@ -47,7 +48,7 @@ sub check {
         _warn( _loc( 'Migration source not found: %1. Rolling back...', $doc->{_id} ) );
     }
     
-    _log('Migration check done.');
+    say('Migration check done.');
 }
 
 1;

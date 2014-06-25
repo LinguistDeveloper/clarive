@@ -322,4 +322,57 @@ sub clone {
     return Storable::thaw(Storable::freeze($obj));
 }
 
+sub config {
+   my $self = shift;
+   return $self->config;
+}
+
+sub path_to {
+   my $self = shift;
+   require Path::Class;
+   my $f = Path::Class::file( $self->home, @_ );
+   return -d $f ? Path::Class::dir("$f") : $f;
+}
+
+sub features {
+    my $self = shift;
+    return Clarive::Features->new(app=>$self);
+}
+
+# singleton Clarive package
+package Clarive {
+    our $AUTOLOAD;
+    sub app {
+        return $Clarive::app;
+    }
+    sub AUTOLOAD {
+        my $self = shift;
+        my $name = $AUTOLOAD;
+        my @a = reverse( split(/::/, $name));
+        my $app = $Clarive::app;
+        my $class = ref $app;
+        my $method = $class . '::' . $a[0];
+        @_ = ( $app, @_ );
+        goto &$method;
+    }
+}
+
+package Clarive::Feature {
+    use Mouse;
+    has path => qw(is ro isa Str required 1);
+}
+
+package Clarive::Features {
+    use Mouse;
+    has app => qw(is ro isa Any weak_ref 1 required 1);
+    sub list {
+        my ($self) = @_;
+        my $app = $self->app;
+        my @features = 
+            map { Clarive::Feature->new( path=>"$_" ) } 
+            grep { $_ =~ /^#/ } Path::Class::dir( $app->home, 'features' )->children;     
+        return @features;
+    }
+}
+
 1;

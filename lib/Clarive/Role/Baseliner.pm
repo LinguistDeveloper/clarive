@@ -8,6 +8,10 @@ with 'Clarive::Role::TempDir';
 
 sub setup_baseliner {
     my ($self)=@_;
+
+    require Clarive::mdb;
+    require Clarive::ci;
+    require Clarive::cache;
     
     $ENV{BASELINER_HOME} = $self->home;
 
