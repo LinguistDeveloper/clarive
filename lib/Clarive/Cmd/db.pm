@@ -1,50 +1,3 @@
-=head1 NAME
-
-Clarive DB Schema Deploy
-
-=head1 DESCRIPTION
-
-Deploy Clarive's schema to a database.
-
-=head1 USAGE
-
-  cla db-deploy [options]
-
-Options:
-
-  -h                      : this help
-  -deploy                 : actually execute statements in the db
-                              cla db-deploy --deploy
-  -run                    : Run DB statements interactively or from STDIN
-  -quote                  : quote table names
-  -drop                   : add drop statements
-  -grep                   : grep a string or re in the generated sql
-  -env                    : sets CLARIVE_ENV (local, test, prod, t, etc...)
-  -schema                 : schemas to deploy (does not work for migrations)
-                                cla db-deploy --schema BaliUser --schema BaliProject 
-
-Versioning Options:
-
-  --diff                  : diffs this schema against the database
-  --installversion        : installs versioning tables if needed
-  --upgrade               : upgrades database version
-  --from <version>        : from version (replaces current db version)
-  --to <version>          : to version (replaces current schema version)
-  --grep <re>             : filter diff statements with a reg. expression
-
-Examples:
-
-    cla db-deploy --env t   
-    cla db-deploy --env t --diff
-    cla db-deploy --env t --diff --deploy
-    cla db-deploy --env t --installversion   
-    cla db-deploy --env t --upgrade                   # print migration scripts only, no changes made
-    cla db-deploy --env t --upgrade --deploy          # print migration scripts only, no changes made
-    cla db-deploy --env t --upgrade --show --to 2     # same, but with schema version 2
-    cla db-deploy --env t --upgrade --show --from 1   # same, but with db version 2
-
-=cut
-
 package Clarive::Cmd::db;
 use Mouse;
 use Path::Class;
@@ -88,7 +41,7 @@ sub run_deploy {
 
     $t0 = [gettimeofday];
 
-    say "Baseliner DB Schema Deploy";
+    say "Clarive RDBMS Schema Deploy";
 
     require Carp::Always if exists $opts{carp};
     $ENV{BASELINER_DEBUG}=1 if exists $opts{debug};
@@ -149,5 +102,71 @@ sub run_deploy {
 
     exit 0;
 }
+
+sub run_upgrade {
+    my ($self,%opts) = @_;
+    require Clarive::mdb;
+    require Clarive::ci;
+    require Clarive::cache;
+    
+    require Baseliner::Schema::Migrator;
+    Baseliner::Schema::Migrator->check( $opts{migrate} );
+}
+
+=pod
+
+Clarive DB Schema Management. Deploys, fixes and migrates the DB
+
+=head1 cla db-upgrade
+
+Upgrades the schema to the latest version.
+
+Options:
+
+   --migrate migration_name
+
+Examples:
+
+   cla db-upgrade --migrate from61        # migrates from a Clarive 6.1 schema
+   cla db-upgrade --migrate from615       # migrates from a Clarive 6.1.5 schema
+
+=head1 cla db-deploy [options]
+
+Deploys the optional RDBMS (DBI-based) tables.
+
+Options:
+
+  -h                      : this help
+  -deploy                 : actually execute statements in the db
+                              cla db-deploy --deploy
+  -run                    : Run DB statements interactively or from STDIN
+  -quote                  : quote table names
+  -drop                   : add drop statements
+  -grep                   : grep a string or re in the generated sql
+  -env                    : sets CLARIVE_ENV (local, test, prod, t, etc...)
+  -schema                 : schemas to deploy (does not work for migrations)
+                                cla db-deploy --schema BaliUser --schema BaliProject 
+
+Versioning Options:
+
+  --diff                  : diffs this schema against the database
+  --installversion        : installs versioning tables if needed
+  --upgrade               : upgrades database version
+  --from <version>        : from version (replaces current db version)
+  --to <version>          : to version (replaces current schema version)
+  --grep <re>             : filter diff statements with a reg. expression
+
+Examples:
+
+    cla db-deploy --env t   
+    cla db-deploy --env t --diff
+    cla db-deploy --env t --diff --deploy
+    cla db-deploy --env t --installversion   
+    cla db-deploy --env t --upgrade                   # print migration scripts only, no changes made
+    cla db-deploy --env t --upgrade --deploy          # print migration scripts only, no changes made
+    cla db-deploy --env t --upgrade --show --to 2     # same, but with schema version 2
+    cla db-deploy --env t --upgrade --show --from 1   # same, but with db version 2
+
+=cut
 
 1;
