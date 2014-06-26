@@ -38,7 +38,7 @@ around delete => sub {
 around load_post_data => sub {
     my ($orig, $class, $mid ) = @_;
     return {} unless $mid;
-    my $data = Baseliner->model('Topic')->get_data( undef, $mid, with_meta=>1 );
+    my $data = model->Topic->get_data( undef, $mid, with_meta=>1 );
     delete $data->{mid};
     return $data;
 };
@@ -114,7 +114,7 @@ sub timeline {
 
 sub create_topic {
     my ($class, $p) = @_;
-    my ($msg, $topic_mid, $status, $title) = Baseliner->model('Topic')->update({ action=>'add', %$p });
+    my ($msg, $topic_mid, $status, $title) = model->Topic->update({ action=>'add', %$p });
     { msg=>$msg, mid=>$topic_mid, status=>$status, title=>$title };
 }
 
@@ -188,7 +188,7 @@ sub activity {
     # control event visualiz permissions
     my $name_category = Util->_name_to_id($self->name_category);
     my %topic_category = ();
-    my $user_categories_fields_meta = Baseliner->model('Users')->get_categories_fields_meta_by_user( 
+    my $user_categories_fields_meta = model->Users->get_categories_fields_meta_by_user( 
         username=>$$p{username}, categories=>{ $self->id_category => $self->name_category }, 
     );
     my @perm_events = grep { !exists $_->{field} || exists $user_categories_fields_meta->{$name_category}->{$_->{field}}} Util->_array( $events );
@@ -199,8 +199,8 @@ sub activity {
 sub comments {
     my ($self, $p )=@_;
     # comments
-    my $is_root = Baseliner->model('Permissions')->is_root($$p{username});
-    my $comments = Baseliner->model('Topic')->list_posts( mid=>$self->mid );
+    my $is_root = model->Permissions->is_root($$p{username});
+    my $comments = model->Topic->list_posts( mid=>$self->mid );
     for my $com ( @$comments ) {
         $$com{created_on} = join ' ', "$$com{created_on}" =~ /^(.*)T(.*)$/; # TODO use a standard user date format 
         $$com{topic_mid} = $self->mid;
@@ -221,7 +221,7 @@ sub is_in_active_job {
 
 sub get_data {
     my ($self, $meta)=@_;
-    Baseliner->model('Topic')->get_data( $meta, $self->mid, with_meta=>1 );
+    model->Topic->get_data( $meta, $self->mid, with_meta=>1 );
 }
 
 sub get_doc {
@@ -232,7 +232,7 @@ sub get_doc {
 sub get_meta {
     my ($self)=@_;
     my $mid = $self->mid if ref $self;
-    Baseliner->model('Topic')->get_meta( $mid );
+    model->Topic->get_meta( $mid );
 }
 
 sub get_category {

@@ -242,18 +242,6 @@ around 'debug' => sub {
         }
     }
     
-    # model : shortcut to Baseliner->model
-    {
-        package model;
-        our $AUTOLOAD;
-        sub AUTOLOAD {
-            my $self = shift;
-            my $name = $AUTOLOAD;
-            my ($method) = reverse( split(/::/, $name));
-            return Baseliner->model($method);
-        }
-    }
-    
     # cache legacy, for unmigrated features
     sub cache_get { shift; cache->get( @_ ) }
     sub cache_set { shift; cache->set( @_ ) }

@@ -379,7 +379,7 @@ sub load {
     # fix static generic calling from Baseliner::CI
     $self = $class if $self eq 'Baseliner::Role::CI';
     # check class is available, otherwise use a dummy ci class
-    $self = $class = 'BaselinerX::CI::Empty' unless _package_is_loaded( $class );
+    $self = $class = 'BaselinerX::CI::Empty' unless Clarive->load_class( $class );
     
     # load pre-data
     $data = { %$data, %{ $self->load_pre_data($mid, $data) || {} } };

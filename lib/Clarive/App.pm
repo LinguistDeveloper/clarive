@@ -316,6 +316,18 @@ sub parse_vars_raw {
     }
 }
 
+
+sub load_class {
+    my ($self,$class) = @_;
+    ( my $pkg = "$class.pm" ) =~ s{::}{\/}g;
+    if( !exists $INC{$pkg} ) { # check if it's loaded
+        #warn "LOAD=$pkg";
+        eval "use $class"; 
+        die $@ if $@;
+    }
+    return 1;
+}
+
 sub clone {
     my ($self,$obj) = @_;
     require Storable;
