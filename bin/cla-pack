@@ -49,17 +49,30 @@ system qq{(echo "#!/usr/bin/env perl" ; fatpack file; cat bin/cla)> $home/bin/cl
 
 # copy relevant files
 system qq{rsync -av root/ $home/root/};
+system qq{rsync -av lib/ $home/lib/};
 system qq{cp -r features/ext* $home/features};
 for my $fi ( qw(README LICENSE COPYRIGHT THIRD-PARTY-NOTICES config/clarive.yml bin/cla-bootstrap bin/cherryme) ) {
     system qq{cp "$fi" $home/$fi};
 }
 
+# cleanup some tmp data dirs
+system qq{rm -rf $home/root/identicon/*};
+
 # set file/dir permissions
 system qq{find '$home' -type f -exec chmod 600 {} \\;};
 system qq{chmod 700 $home/bin/cla};
+
+# add files that need to be in dir for globs TODO
+#system qq{mkdir -p $home/lib/Clarive && cp -r lib/Clarive/Cmd $home/lib/Clarive/};
+#system qq{mkdir -p $home/lib/Baseliner/Schema && cp -r lib/Baseliner/Schema/Migrations $home/lib/Baseliner/Schema/ };
+
+# create VERSION file, since we don't have .git
+open my $ff,'>',"$home/VERSION";
+print $ff $release_ver;
+close $ff;
 
 # pack deliverable
 my $tar = "$release.tar.gz";
 system "cd $home/.. ; tar czvf '$tar' $release";
 
-say "Done packing $release into $home/$tar";
+say "Done packing $release into release/$tar";

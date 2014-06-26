@@ -3,6 +3,7 @@
 .updates
 baseliner_local.conf
 baseliner_topic.conf
+release/
 etc/bali_cache
 etc/repo
 etc/dump
