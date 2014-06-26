@@ -1398,6 +1398,7 @@ sub get_files {
     my @assets = ci->asset->find({ mid => mdb->in(@ass_mids) })->all;
     my @files = map {
         +{
+            mid        => $$_{mid},
             filename   => $$_{name},
             filesize   => 0,
             version    => $$_{version},

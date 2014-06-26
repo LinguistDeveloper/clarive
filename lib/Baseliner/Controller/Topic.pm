@@ -1406,9 +1406,9 @@ sub file : Local {
 }
 
 sub download_file : Local {
-    my ( $self, $c, $md5 ) = @_;
-    my $p      = $c->req->params;
-    my $file = ci->asset->search_ci( md5=>$md5 );
+    my ( $self, $c, $mid ) = @_;
+    my $p = $c->req->params;
+    my $file = ci->find( $mid );
     if( defined $file ) {
         my $filename = $file->name;
         utf8::encode( $filename );
@@ -1416,7 +1416,7 @@ sub download_file : Local {
         $c->stash->{serve_body} = $file->slurp;
         $c->forward('/serve_file');
     } else {
-        $c->res->body(_loc('File %1 not found', $md5 ) );
+        $c->res->body(_loc('File %1 not found', $mid ) );
     }
 }
 

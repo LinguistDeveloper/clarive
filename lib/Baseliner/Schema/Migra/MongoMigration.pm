@@ -703,11 +703,19 @@ sub topic_fields {
 
 sub topic_assets {
     my $db = _dbis;
+    my @deleteables;
     for my $rel ( mdb->master_rel->find({ rel_type=>'topic_file_version' })->all ) {    
         
         # get file data
         my $r = $db->query(q{select mid,filename,extension,created_on,created_by,filedata 
            from bali_file_version where mid=?}, $$rel{to_mid})->hash;
+       
+        if( !$r ) {
+            # deleted file, invalid master_rel
+            _warn "Not found file mid=$$rel{to_mid}, skipped";
+            mdb->master_rel->remove({ _id=>$$rel{_id} });
+            next;
+        }
 
         # CREATE asset ci
         my $asset = ci->asset->new({
@@ -720,7 +728,7 @@ sub topic_assets {
         $asset->put_data( $$r{filedata} );
         
         # RELATE to topic ci
-        say "Migrating topic file from=$$rel{from_mid} to=$$rel{to_mid}, mid=$$asset{mid} ($$r{filename})";
+        say "Migrating topic file from=$$rel{from_mid} to=$$rel{to_mid} field=$$rel{rel_field}, mid=$$asset{mid} ($$r{filename})";
         #my $topic = ci->new( $$rel{from_mid} );
         #my @ass = grep { defined } ( _array( $topic->assets ), $asset );
         #$topic->assets( \@ass );
@@ -730,11 +738,12 @@ sub topic_assets {
         mdb->master_rel->update({ _id=>$$rel{_id} },{ '$set'=>{ to_mid=>$$asset{mid}, rel_type=>'topic_asset' } });    
         
         # DELETE old file CI
-        ci->delete( $$rel{to_mid} );
+        push @deleteables, $$rel{to_mid};
         
         # DELETE old relationship
         #mdb->master_rel->remove({ _id=>$$rel{_id} });    
     }
+    ci->delete( $_ ) for @deleteables;
 }
 
 sub master_doc_clean {
