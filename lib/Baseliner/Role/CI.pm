@@ -356,7 +356,7 @@ sub load {
     _fail _loc( "Missing mid %1", $mid ) unless length $mid;
     # in scope ? 
     my $scoped = $Baseliner::CI::mid_scope->{ $mid } if $Baseliner::CI::mid_scope;
-    #say STDERR "----> SCOPE $mid =" . join( ', ', keys( $Baseliner::CI::mid_scope // {}) ) if $Baseliner::CI::mid_scope && Baseliner->debug;
+    #say STDERR "----> SCOPE $mid =" . join( ', ', keys( $Baseliner::CI::mid_scope // {}) ) if $Baseliner::CI::mid_scope && Clarive->debug;
     return $scoped if $scoped;
     # in cache ?
     my $cache_key = "ci:$mid:";
