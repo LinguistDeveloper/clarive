@@ -1764,11 +1764,11 @@ sub update_txt {
         my $is_doc = ref $mid_or_doc eq 'HASH';
         my $mid = $is_doc ? $mid_or_doc->{mid} : $mid_or_doc;
         next unless length $mid;
-        for my $rel ( mdb->master_rel->find({ '$or'=>[ {from_mid=>"$mid"}, {to_mid=>"$mid"} ] }) ) {
+        for my $rel ( mdb->master_rel->find({ '$or'=>[ {from_mid=>"$mid"}, {to_mid=>"$mid"} ] })->all ) {
             my $mid2 = $rel->{from_mid} eq $mid ? $rel->{to_mid} : $rel->{from_mid};
             push @other, $mid2;
         }
-        my $txt = join ';', map { values %$_ } mdb->master->find({ mid=>mdb->in(@other) })->all;
+        my $txt = join ';', grep { defined && length($_) } map { values %$_ } mdb->master->find({ mid=>mdb->in(@other) })->all;
         if( $is_doc ) {
             $mid_or_doc->{_txt} = $txt;
         } else {
