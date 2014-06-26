@@ -1392,10 +1392,20 @@ sub get_cal {
     return \@cal; 
 }
 
-sub get_files{
+sub get_files {
     my ($self, $topic_mid, $id_field) = @_;
-    my @files = map { ci->asset->find_one({ mid=>"$_" }) } mdb->master_rel->find_values( to_mid => { from_mid=>"$topic_mid", rel_field=>$id_field });
-    return @files ? \@files : []; 
+    my @ass_mids = mdb->master_rel->find_values( to_mid => { from_mid => "$topic_mid", rel_field => $id_field } );
+    my @assets = ci->asset->find({ mid => mdb->in(@ass_mids) })->all;
+    my @files = map {
+        +{
+            filename   => $$_{name},
+            filesize   => 0,
+            version    => $$_{version},
+            created_by => $$_{created_by},
+            created_on => $$_{created_on}
+        };
+    } @assets;
+    return \@files;
 }
 
 sub save_data {
