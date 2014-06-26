@@ -456,35 +456,6 @@ if( Clarive->debug ) {
     };
 }
 
-sub enqueue {
-    my $c = shift;
-    my $jobid = ! ref $_[0] ? shift : 'jobid='. Util->_md5( int(rand($$)) . int(rand(9999999)) . Util->_nowstamp . $$ );
-    $c->stash->{finalize_queue} //= [];
-    push @{ $c->stash->{finalize_queue} }, ( $jobid => [ @_ ] );
-    $jobid;
-}
-
-around 'finalize' => sub {
-    my $orig = shift;
-    my $c = shift;
-    $c->$orig( @_ );
-
-    my $queue = $c->stash->{finalize_queue};
-    if( ref $queue eq 'ARRAY' ) {
-        while( @$queue ) {
-            my ($job_name, $job) = ( shift @$queue, shift @$queue );
-            Util->_debug( "Running finalize job $job_name" );
-            try { 
-                my ($code, @data) = @$job;
-                $code->( $c, @data );
-                Util->_debug( "DONE Running finalize job $job_name" );
-            } catch {
-                Util->_debug( "ERROR Running finalize job $job_name" );
-            };
-        }
-    }
-};
-
 # monkey patch this
 sub Class::Date::TO_JSON { $_[0]->string };
 
