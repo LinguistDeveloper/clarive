@@ -48,23 +48,7 @@ my $t0 = [ gettimeofday ];
 extends 'Catalyst';
 $DB::deep = 500; # makes the Perl Debugger Happier
 
-# determine version with a GIT DESCRIBE
-our $FULL_VERSION = do {
-    my $v = eval { 
-        my $branch = `git rev-parse --abbrev-ref HEAD`;
-        chomp $branch;
-        my @x = `cd $ENV{CLARIVE_HOME}; git describe --always --tags --candidates 1`;
-        my $version = $x[0];
-        chomp $version;
-        if( $version=~ /^(?<ver>.*)-(?<cnt>\d+)-g(?<sha>\w*)$/ ) {
-            ["release: $branch, patch: $+{ver}+$+{cnt}, sha: $+{sha}" , "${branch}_$+{ver}_$+{sha}", $+{sha} ] 
-        } else {
-            [ "r$branch v$version", "${branch}_${version}", ''];
-        }
-    };
-    !$v ?  ['r6','??'] : $v;
-};
-our $VERSION = $FULL_VERSION->[0];
+our $VERSION = Clarive->version;
 
 # find my parent to enable restarts
 $ENV{BASELINER_PARENT_PID} //= getppid();

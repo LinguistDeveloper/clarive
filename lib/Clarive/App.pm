@@ -17,6 +17,35 @@ has args   => qw(is ro isa HashRef required 1);  # original command line args
 has config => qw(is rw isa HashRef required 1);  # full config file (config/global.yml + $env.yml)
 has opts   => qw(is ro isa HashRef required 1);  # merged config + args
 
+has version => qw(is ro isa Str lazy 1), default => sub{
+    my $self = shift;
+    my $vfile = $self->path_to( 'VERSION' );
+    if( -e $vfile ) {
+        open my $ff, '<', $vfile;
+        my ($ver) = <$ff>;
+        chomp $ver;
+        close $ff;
+        return $ver;
+    } 
+    # determine version with a GIT DESCRIBE
+    my $FULL_VERSION = do {
+        my $v = eval { 
+            my $branch = `git rev-parse --abbrev-ref HEAD`;
+            chomp $branch;
+            my @x = `cd $ENV{CLARIVE_HOME}; git describe --always --tags --candidates 1`;
+            my $version = $x[0];
+            chomp $version;
+            if( $version=~ /^(?<ver>.*)-(?<cnt>\d+)-g(?<sha>\w*)$/ ) {
+                ["release: $branch, patch: $+{ver}+$+{cnt}, sha: $+{sha}" , "${branch}_$+{ver}_$+{sha}", $+{sha} ] 
+            } else {
+                [ "r$branch v$version", "${branch}_${version}", ''];
+            }
+        };
+        !$v ?  ['r6','??'] : $v;
+    };
+    $FULL_VERSION->[0];
+};
+
 has db => qw(is rw lazy 1 default), sub {
     require Clarive::DB;
     Clarive::DB->new;
