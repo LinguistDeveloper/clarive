@@ -5,13 +5,16 @@ use warnings;
 use Baseliner::Utils;
 
 sub check {
-    my ($self, $arg)=@_;
-    $arg //= '';
-    my %args = map { $_=>1 } split /,/, $arg;
+    my ($self, $migration)=@_;
+    $migration //= '';
+    my %args = map { $_=>1 } split /,/, $migration;
     my %ids;
     say('Checking for migrations...');
     my @current = mdb->_migrations->find->all;
-    my @candidates = Clarive->path_to('lib/Baseliner/Schema/Migrations'), map { _dir($_->path,'lib/Baseliner/Schema/Migrations') } _array(Clarive->features->list );
+    my @candidates = (
+        Clarive->path_to('lib/Baseliner/Schema/Migrations'), 
+        map { _dir($_->path,'lib/Baseliner/Schema/Migrations') } _array(Clarive->features->list) 
+    );
     for my $f ( map { $_->children } grep { -e } @candidates ) {
         my ($id) = $f->basename =~ /^(.+)\.(.*?)$/;
         my $body = $f->slurp;
@@ -26,6 +29,7 @@ sub check {
             say("====> Migration ok: $id (version: $version)" );
             next;
         } else {
+            _warn(_loc('Skipping migration %1 on user request',$id)),next if %args && !exists $args{ $id };
             say "Forcing migration for `$id`" if $args{$id};
             # lib/Clarive/Cmd/install->_ask_me()
             my $pkg = "Baseliner::Schema::Migrations::$id";
