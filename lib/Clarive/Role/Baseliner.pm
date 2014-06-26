@@ -14,6 +14,7 @@ sub setup_baseliner {
     require Clarive::ci;
     require Clarive::cache;
     require Clarive::model;
+    require Clarive::queue;
     
     $ENV{BASELINER_HOME} = $self->home;
 
