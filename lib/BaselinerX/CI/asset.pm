@@ -47,10 +47,20 @@ sub put_data {
     return $id;
 }
 
+sub info {
+    my($self)=@_;
+    return {} unless $self->id_data;
+    my $f = mdb->grid->get( $self->id_data );
+    return {} unless $f;
+    return $f->info // {};
+}
+
 sub slurp {
     my ($self)=@_;
     return unless $self->id_data;
-    return mdb->grid->get( $self->id_data );
+    my $f = mdb->grid->get( $self->id_data );
+    return unless $f;
+    return $f->slurp;
 }
 
 sub done_slurping {
