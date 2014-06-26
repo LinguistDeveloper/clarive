@@ -2624,7 +2624,6 @@ sub change_status {
     $p{id_status} or _throw 'Missing parameter id_status';
     
     my $doc = mdb->topic->find_one({ mid=>"$mid" });
-
     my $id_old_status = $p{id_old_status} || $doc->{category_status}{id};
     my $status = $p{status} || $self->find_status_name($p{id_status});
     my $old_status = $p{old_status} || $self->find_status_name($id_old_status);
@@ -2634,10 +2633,9 @@ sub change_status {
         => sub {
             # should I change the status?
             if( $p{change} ) {
-                
                 _fail( _loc('Id not found: %1', $mid) ) unless $doc;
                 _fail _loc "Current topic status '%1' does not match the real status '%2'. Please refresh.", $doc->{category_status}{name}, $old_status 
-                    if $doc->{_category_status}{id_status} != $id_old_status;
+                    if $doc->{category_status}{id} != $id_old_status;
                 # XXX check workflow for user?
                 # update mongo
                 my $modified_on = $doc->{modified_on};
