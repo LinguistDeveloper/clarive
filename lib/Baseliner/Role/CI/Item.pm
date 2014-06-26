@@ -4,9 +4,11 @@ with 'Baseliner::Role::CI';
 
 sub icon { '/static/images/icons/page.png' }
 
-has name         => qw(is rw isa Maybe[Str]);              # basename
 has dir          => qw(is rw isa Str default /);           # my parent
-has path         => qw(is rw isa Str default /);           # fullpath, with project, prefix
+has path    => qw(is rw isa Str), default=> sub{           # path includes the filename
+    my $self = shift;
+    return $self->name;
+};  
 has path_rel     => qw(is rw isa Str);                     # with prefix only 
 has path_in_repo => qw(is rw isa Str);                     # in case someone changes path, set this here
 has size         => qw(is rw isa Num default -1);
@@ -29,10 +31,8 @@ has item_relationship => qw(is rw isa Str default item_item); # rel_type
 has variables => qw(is rw isa HashRef), default=>sub{ +{} };
 has parse_tree => qw(is rw isa ArrayRef), default=>sub{ [] };
 
-sub filepath {
-    my ($self)=@_;
-    return $self->path;
-}
+sub filepath { $_[0]->path }
+sub filename { $_[0]->name }
 
 sub rename {
     my ($self, $expr)=@_;

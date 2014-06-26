@@ -320,29 +320,28 @@ sub job_items {
         for my $cs ( _array( $changesets )  ) {
             my %mid_files = 
                 map { $_->{to_mid} => $_->{rel_field} }
-                mdb->master_rel->find({ from_mid=>$cs->mid, rel_type=>'topic_file_version' })->all;
+                mdb->master_rel->find({ from_mid=>$cs->mid, rel_type=>'topic_asset' })->all;
 
-            my @files = DB->BaliFileVersion->search({ mid=>[ keys %mid_files ] },
-                    { select=>[qw(created_by created_on extension filename filesize md5 mid versionid)] })->hashref->all;
+            my @files = ci->asset->search_cis( mid=>mdb->in( keys %mid_files ) );
             my %meta = map { $_->{id_field} => $_ } grep { $_->{meta_type} && $_->{meta_type} eq 'file' } _array $cs->get_meta;
             my ($project) = ( map { $_->name } $cs->projects );
             $project //= '';
             TOPIC_FILE: for my $tfile ( @files ) {
-               my $mid = $tfile->{mid};
+               my $mid = $tfile->mid;
                my $fieldlet = $meta{ $mid_files{$mid} };
                my $co_dir = $fieldlet->{checkout_dir};
-               my $fullpath = ''.Util->_dir( "/", $project, $co_dir, $tfile->{filename} );
+               my $fullpath = ''.Util->_dir( "/", $project, $co_dir, $tfile->filename );
                # select only files for this BL
                if( $rename_mode && $fullpath =~ /{$all_bls}/ ) {
                    next TOPIC_FILE if $fullpath !~ /{$bl}/;  # not for this bl
                    $fullpath =~ s/{$bl}//g; # cleanup
                }
            
-               my $versionid = $tfile->{versionid};
-               my $item = BaselinerX::CI::topic_file->new(
+               my $versionid = $tfile->versionid;
+               my $item = ci->topic_file->new(
                     mid       => $mid,   # this ci has mid, but is not yet saved as such
-                    md5       => $tfile->{md5},
-                    size      => $tfile->{filesize},
+                    md5       => $tfile->info->{md5},
+                    size      => $tfile->info->{filesize},
                     path      => $fullpath,
                     versionid => $versionid,
                );

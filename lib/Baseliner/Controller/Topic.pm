@@ -1277,7 +1277,7 @@ sub upload : Local {
         my $x = $c->req->upload('qqfile');
         $f =  _file( $x->tempname );
     }else{
-        $f =  _file( $c->req->body );
+        $f =  _file( ''. $c->req->body );
     }
     _log "Uploading file " . $filename;
     try {
@@ -1304,8 +1304,6 @@ sub upload : Local {
                 name=>$filename, 
                 versionid=>$versionid, 
                 extension=>$extension, 
-                #md5 => $md5, 
-                # filesize => length( $body ), 
                 created_by => $c->username,
                 created_on => mdb->ts,
             );
@@ -1315,32 +1313,29 @@ sub upload : Local {
             if ($p->{topic_mid}){
                 my $subject = _loc("Created file %1 to topic [%2] %3", $filename, $topic->{mid}, $topic->{title});                            
                 event_new 'event.file.create' => {
-                    username => $c->username,
-                    mid      => $topic_mid,
-                    id_file  => $asset->mid,
-                    filename     => $filename,
-                    notify_default => \@users,
+                    username        => $c->username,
+                    mid             => $topic_mid,
+                    id_file         => $asset->mid,
+                    filename        => $filename,
+                    notify_default  => \@users,
                     subject         => $subject
                 };
+                
                 # tie file to topic
-                my $topic_ci = ci->new( $p->{topic_mid} );
-                $topic_ci->assets->push( $asset );
+                my $doc = { from_mid=>$topic_mid, to_mid=>$asset->mid, rel_type=>'topic_asset', rel_field=>$$p{filter} };
+                mdb->master_rel->update($doc,$doc,{ upsert=>1 });
             }
                     
             $c->res->body('{"success": "true", "msg":"' . _loc( 'Uploaded file %1', $filename ) . '", "file_uploaded_mid":"' . $file_mid . '"}');
-            #$c->stash->{ json } = { success => \1, msg => _loc( 'Uploaded file %1', $filename ), file_uploaded_mid => $file_mid };            
         } else {
             $c->res->body('{"success": "false", "msg":"' . _loc( 'You must save the topic before add new files' ) . '"}');
-            #$c->stash->{ json } = { success => \0, msg => _loc( 'You must save the topic before add new files' )};
         }
     } catch {
         my $err = shift;
-        _log "Error uploading file: " . $err;
-        $c->stash->{ json } = { success => \0, msg => $err };
+        _error( "Error uploading file: " . $err );
+        $c->res->status( 500 );
+        $c->res->body('{"success": "false", "msg":"' . $err . '"}');
     };
-    
-    #$c->res->content_type( 'text/html' );    # fileupload: true forms need this
-    #$c->forward( 'View::JSON' );
 }
 
 sub file : Local {
@@ -1351,45 +1346,46 @@ sub file : Local {
     try {
         my $msg; 
         if( $action eq 'delete' ) {
-            for my $md5 ( _array( $p->{md5} ) ) {
-                my $file = Baseliner->model('Baseliner::BaliFileVersion')->search({ md5=>$md5 })->first;
-                ref $file or _fail _loc("File id %1 not found", $md5 );
-                my $count = mdb->master_rel->find({ to_mid=>$file->mid })->count;
+            for my $mid ( _array( $p->{asset_mid} ) ) {
+                my $ass = ci->find( $mid );
+                ref $ass or _fail _loc("File id %1 not found", $mid );
+                my $count = mdb->master_rel->find({ to_mid=>$ass->mid })->count;  # only used when assets are shared by 2+ topics
                 
                 my $topic = mdb->topic->find_one({ mid=> "$$p{topic_mid}" });
                 my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$$p{topic_mid}", rel_type=>'topic_project' });
                 my @users = $c->model('Topic')->get_users_friend(
-                    id_category => $topic->id_category,
-                    id_status   => $topic->id_category_status,
+                    id_category => $topic->{category}{id},
+                    id_status   => $topic->{category_status}{id},
                     projects    => \@projects
                 );
                 
                 if( $count < 2 ) {
-                    _log "Deleting file " . $file->mid;
-                    my $subject = _loc("Deleted file %1", $file->filename);
+                    _log "Deleting file " . $ass->mid;
+                    my $subject = _loc("Deleted file %1", $ass->filename);
                     event_new 'event.file.remove' => {
                         username        => $c->username,
                         mid             => $topic_mid,
-                        id_file         => $file->mid,
-                        filename        => $file->filename,
+                        id_file         => $ass->mid,
+                        filename        => $ass->filename,
                         notify_default  => \@users,
                         subject         => $subject
                     };                  
-                    $file->delete;
+                    $ass->delete;
                     $msg = _loc( "File deleted ok" );
                 } else {
-                    my $subject = _loc("Detached file %1 from topic [%2] %3", $file->filename, $topic->mid, $topic->title,);
+                    # starting in 6.2 assets are not shared, may change back in the future
+                    my $subject = _loc("Detached file %1 from topic [%2] %3", $ass->filename, $topic->mid, $topic->title,);
                     event_new 'event.topic.file_remove' => {
                         username => $c->username,
                         mid      => $topic_mid,
-                        id_file  => $file->mid,
-                        filename => $file->filename,
+                        id_file  => $ass->mid,
+                        filename => $ass->filename,
                         notify_default => \@users,
                         subject         => $subject
                         }
                     => sub {
-                        my $rel = mdb->master_rel->find_one({ from_mid=>"$topic_mid", to_mid=>$file->mid });
-                        _log "Deleting file from topic $topic_mid ($rel) = " . $file->mid;
+                        my $rel = mdb->master_rel->find_one({ from_mid=>"$topic_mid", to_mid=>$ass->mid });
+                        _log "Deleting file from topic $topic_mid ($rel) = " . $ass->mid;
                         ref $rel or _fail _loc "File not attached to topic";
                         $rel -> delete;
                         $msg = _loc( "Relationship deleted ok" );
@@ -1408,12 +1404,12 @@ sub file : Local {
 sub download_file : Local {
     my ( $self, $c, $mid ) = @_;
     my $p = $c->req->params;
-    my $file = ci->find( $mid );
-    if( defined $file ) {
-        my $filename = $file->name;
+    my $ass = ci->find( $mid );
+    if( defined $ass ) {
+        my $filename = $ass->name;
         utf8::encode( $filename );
         $c->stash->{serve_filename} = $filename;
-        $c->stash->{serve_body} = $file->slurp;
+        $c->stash->{serve_body} = $ass->slurp;
         $c->forward('/serve_file');
     } else {
         $c->res->body(_loc('File %1 not found', $mid ) );
@@ -1421,31 +1417,29 @@ sub download_file : Local {
 }
 
 sub file_tree : Local {
-    my ($self,$c) = @_;
-    my $p = $c->request->parameters;
+    my ( $self, $c ) = @_;
+    my $p         = $c->request->parameters;
     my $topic_mid = $p->{topic_mid};
-    my @files = ();
-    # TODO mdb
-    if($topic_mid){
-        my @assets = mdb->master_rel->find_values( to_mid =>{ mid=>"$topic_mid", rel_type=>'topic_asset' });
+    my @files     = ();
+
+    if ($topic_mid) {
+        my @assets = mdb->master_rel->find_values( to_mid => { from_mid=>"$topic_mid", rel_type=>'topic_asset' } );
         @files = map {
             my $ass = $_;
-            my ( $size, $unit ) = _size_unit( $ass->filesize );
+            my ( $size, $unit ) = Util->_size_unit( $ass->filesize );
             $size = "$size $unit";
-            +{ %$ass, _id => $ass->mid, _parent => undef, _is_leaf => \1, size => $size }
-       }  ci->asset->search_cis( mid=>mdb->in(@assets) );
-    }else{
-        my @files_mid = _array $p->{files_mid};
+            +{ filename=>$ass->filename, versionid=>$ass->versionid, mid=>$ass->mid, _id => $ass->mid, _parent => undef, _is_leaf => \1, size => $size }
+        } ci->asset->search_cis( mid => mdb->in(@assets) );
+    } else {
+        my @files_mid = _array( $p->{files_mid} );
         @files = map {
-           my ( $size, $unit ) = _size_unit( $_->filesize );
-           $size = "$size $unit";
-           +{ $_->get_columns, _id => $_->mid, _parent => undef, _is_leaf => \1, size => $size }
-           } 
-           $c->model('Baseliner::BaliFileVersion')->search( { mid => \@files_mid } )->all;           
-        
+            my $ass = $_;
+            my ( $size, $unit ) = Util->_size_unit( $ass->filesize );
+            $size = "$size $unit";
+            +{ filename=>$ass->filename, versionid=>$ass->versionid, mid=>$ass->mid, _id => $ass->mid, _parent => undef, _is_leaf => \1, size => $size }
+        } ci->asset->search_cis( mid => mdb->in(@files_mid) );
     }
-
-    $c->stash->{json} = { total=>scalar( @files ), success=>\1, data=>\@files };
+    $c->stash->{json} = { total => scalar(@files), success => \1, data => \@files };
     $c->forward('View::JSON');
 }
 

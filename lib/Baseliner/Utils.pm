@@ -98,7 +98,6 @@ use Exporter::Tidy default => [
     case
     _utf8_on_all
     _to_utf8
-    _size_unit
     _dbis
     _hook
     _read_password

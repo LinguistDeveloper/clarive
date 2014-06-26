@@ -123,6 +123,10 @@ sub serialize {
     return \%data;
 }
 
+sub as_hash {
+    %{ shift->serialize };
+}
+
 # sets several attributes at once, like DBIC
 #   the ci must exist (self=ref)
 sub update {
