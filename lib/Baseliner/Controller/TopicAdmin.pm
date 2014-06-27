@@ -108,12 +108,18 @@ sub update_category : Local {
         when ('delete') {
             my $ids_category = $p->{idscategory};
             try{
-                mdb->category->remove({ id=>mdb->in($ids_category) });
-                $c->registry->reload_all;
-                $c->stash->{json} = { success => \1, msg=>_loc('Categories deleted') };
+                my @topics = ci->topic->find({'category.id' => mdb->in($ids_category)})->all;
+                if(@topics) {
+                    _throw "Delete all topics first from the selected categories to delete them";
+                }else{
+                    mdb->category->remove({ id=>mdb->in($ids_category) });
+                    $c->registry->reload_all;
+                    $c->stash->{json} = { success => \1, msg=>_loc('Categories deleted') };
+                }
             }
             catch{
-                $c->stash->{json} = { success => \0, msg=>_loc('Error deleting Categories') };
+                my $err = shift;
+                $c->stash->{json} = { success => \0, msg=>_loc('Error deleting Categories').": "._loc($err) };
             }
         }
     }
