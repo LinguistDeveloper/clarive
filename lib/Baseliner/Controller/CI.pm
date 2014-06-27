@@ -900,7 +900,8 @@ sub delete : Local {
     try {
         $c->cache_clear();
         for( grep { length } _array( $mids ) ) {
-            ci->delete( $_ );
+            my $ci = ci->find($_);
+            $ci ? $ci->delete : ci->delete($_);
         }
         $c->stash->{json} = { success=>\1, msg=>_loc('CIs deleted ok' ) };
     } catch {

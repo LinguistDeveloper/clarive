@@ -48,6 +48,17 @@ before save_data => sub {
     
 after delete => sub {
     my ($self, $mid ) = @_;
+    my @cats = mdb->category->find({statuses => mdb->in($self->{id_status})})->all;
+    foreach my $cat (@cats){
+        my $index = 0;
+        my @arr = _array $cat->{statuses};
+        foreach my $elem (_array $cat->{statuses}){
+            last if ($elem eq $self->{id_status});
+            $index++;
+        }    
+        delete $arr[$index];
+        mdb->category->update({_id => $cat->{_id}}, {'$set' => {statuses => \@arr}});
+    }
     Baseliner::Core::Registry->reload_all;
 };
 
