@@ -597,7 +597,6 @@ sub update_mid_data {
         $$data{file_name} = \@files;
     
         my @posts = ( map { $_->{name} } @all_cis{ keys %{$topic_post{$mid} || {}} } );
-        _debug [ @all_cis{ keys %{$topic_post{$mid} || {}} } ];
         $$data{numcomment} = scalar @posts;
         $$data{text} = '';
         

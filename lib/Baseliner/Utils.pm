@@ -134,15 +134,14 @@ use strict;
 use utf8;
 use v5.10;
 use Carp::Tidy $ENV{BASELINER_DEBUG} < 2 ? ( -clan=>['Baseliner'] ) : (); #,'Catalyst'];
-use DateTime;
 use Class::Date;
 use YAML::XS;
 use List::MoreUtils qw(:all);
 use Try::Tiny;
-use MIME::Lite;
 use Path::Class;
 use Term::ANSIColor;
 use Scalar::Util qw(looks_like_number);
+use Encode qw( decode_utf8 encode_utf8 is_utf8 );
 
 BEGIN {
     # enable a TO_JSON converter
@@ -239,7 +238,6 @@ sub _dump {
     };
 }
 
-use Encode qw( decode_utf8 encode_utf8 is_utf8 );
 sub _loc {
     return unless $_[0];
     #return loc( @_ );
@@ -441,7 +439,9 @@ sub _tz {
     $tz || 'CET';
 }
 
-sub _dt { DateTime->now(time_zone=>_tz);  }
+sub _dt { 
+    require DateTime;
+    DateTime->now(time_zone=>_tz);  }
 
 # same as _now, but with hi res in debug mode
 sub _now_log {
@@ -816,10 +816,12 @@ sub to_pages {
 }
 
 sub to_base64 {
-    return MIME::Lite::encode_base64( shift );
+    require MIME::Base64;
+    return MIME::Base64::encode_base64( shift );
 }
 
 sub from_base64 {
+    require MIME::Base64;
     return  MIME::Base64::decode_base64( shift() );
 }
 
@@ -1970,8 +1972,6 @@ sub stat_mode {
     return $mode; 
 }
 
-1;
-
 sub hide_passwords {
     my ($string) = @_;
 
@@ -1982,6 +1982,9 @@ sub hide_passwords {
     }
     return $string;
 }
+
+1;
+
 __END__
 
 =head1 LICENCE AND COPYRIGHT
