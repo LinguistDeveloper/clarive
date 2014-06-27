@@ -2872,7 +2872,7 @@ sub group_by_status {
             status    => $v[0]->{category_status}{name},
             color     => $v[0]->{category_status}{color},
             status_id => $v[0]->{category_status}{id},
-            count     => scalar @v
+            total     => scalar @v
             }
     } keys %statuses);
 }
