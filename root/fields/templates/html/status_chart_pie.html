@@ -11,21 +11,21 @@
     my ($topics, @topics_by_status) = Baseliner->model('Topic')->group_by_status(depth=>$depth,filter_category=>$filter_category,mid=>$$data{mid} );
     my @filter_topics_by_status;
     my @filter_status_names =  map {lc ($_)} split(',', $meta->{filter});
-    if(@filter_status_names){
+    if( @filter_status_names ){
         my %status_names;
         map {$status_names{lc ($_)} = 1 } @filter_status_names;
         @filter_topics_by_status = grep { _log $_->{status}; exists $status_names{lc($_->{status})}} @topics_by_status ;
-        my @others_topics_by_status = grep { !exists $status_names{lc($_->{status})}} @topics_by_status ;
-        my $others_total;
+        my @others_topics_by_status = grep { !exists $status_names{lc($_->{status})} } @topics_by_status ;
         my @others_id;
         my $others_id;
-        map {
-            $others_total += $_->{count};
+        my $others_total=0;
+        for( @others_topics_by_status ) {
+            $others_total += $_->{total};
             push @others_id, $_->{status_id};
-        } @others_topics_by_status;
+        }
         
         $others_id = join ',', @others_id;
-        push @filter_topics_by_status, { color => '#FF9933', status => 'Others', status_id => $others_id, count => $others_total};
+        push @filter_topics_by_status, { color => '#FF9933', status => 'Others', status_id => $others_id, total => $others_total} if $others_total > 0 ;
     }
     else{
         @filter_topics_by_status = @topics_by_status;
@@ -50,7 +50,7 @@
     var status_id = new Array();
 
 %foreach my $topic (_array @filter_topics_by_status){
-        data.push({ label: "<% _loc($topic->{status}) %>", status_id: "<%$topic->{status_id}%>", color:"<%$topic->{color}%>", data: [[1,<%$topic->{count}%>]]});
+        data.push({ label: "<% _loc($topic->{status}) %>", status_id: "<%$topic->{status_id}%>", color:"<%$topic->{color}%>", data: [[1,<%$topic->{total}%>]]});
         status_id["<% _loc($topic->{status}) %>"] = '<%$topic->{status_id}%>';
 %}
 
