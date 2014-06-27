@@ -108,9 +108,9 @@ sub update_category : Local {
         when ('delete') {
             my $ids_category = $p->{idscategory};
             try{
-                my @topics = ci->topic->find({'category.id' => mdb->in($ids_category)})->all;
-                if(@topics) {
-                    _throw "Delete all topics first from the selected categories to delete them";
+                my $topics = mdb->topic->find({'category.id' => mdb->in($ids_category)})->count;
+                if($topics > 0) {
+                    _fail _loc('Delete all topics first from the selected categories to delete them');
                 }else{
                     mdb->category->remove({ id=>mdb->in($ids_category) });
                     $c->registry->reload_all;
@@ -119,7 +119,7 @@ sub update_category : Local {
             }
             catch{
                 my $err = shift;
-                $c->stash->{json} = { success => \0, msg=>_loc('Error deleting Categories').": "._loc($err) };
+                $c->stash->{json} = { success => \0, msg=>_loc('Error deleting Categories') };
             }
         }
     }
