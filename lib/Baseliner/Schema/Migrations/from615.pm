@@ -3,8 +3,10 @@ use Mouse;
 
 sub upgrade {
     # master:
+    mdb->migra->mids;
     mdb->migra->master_rel_add;  # insert missing rels
     mdb->migra->topic_admin;
+    mdb->migra->statuses_from_db;
     mdb->migra->topic_fields;
     #mdb->migra->scheduler;
     #mdb->migra->config;
@@ -16,7 +18,6 @@ sub upgrade {
     mdb->migra->role;
     mdb->migra->topic_images;
     mdb->migra->posts;
-    mdb->migra->mids;
     mdb->migra->statuses;
     mdb->migra->master_doc_clean;
     mdb->migra->topic_assets;

@@ -739,7 +739,12 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         
         self.status_items_menu = [];
         for(i=0; i < obj_status_items_menu.length;i++){
-            self.status_items_menu.push({ text: _(obj_status_items_menu[i].status_name), id_status_to: obj_status_items_menu[i].id_status, id_status_from: obj_status_items_menu[i].id_status_from, handler: function(obj){ self.change_status(obj) } });
+            self.status_items_menu.push({ 
+                text: _(obj_status_items_menu[i].status_name), 
+                id_status_to: obj_status_items_menu[i].id_status, 
+                id_status_from: obj_status_items_menu[i].id_status_from, 
+                handler: function(obj){ self.change_status(obj) } 
+            });
         }
     
         self.status_menu = new Ext.menu.Menu({

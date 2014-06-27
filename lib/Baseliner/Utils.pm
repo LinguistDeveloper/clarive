@@ -1431,6 +1431,7 @@ sub _dbis {
     my( $dbh ) = @_;
     $dbh ||= Clarive->config->{rdbms}{connect_info} // Clarive->config->{baseliner}{'Model::Baseliner'}{connect_info};
     _fail( 'Missing RDBMS database configuration' ) unless length $dbh;
+    $ENV{NLS_LANG} = 'AMERICAN_AMERICA.AL32UTF8';  # needed when called from a Clarive Cmd
     require DBIx::Simple;
     my $conn = DBIx::Simple->connect( ref $dbh eq 'ARRAY' ? @$dbh : $dbh );
     $conn->dbh->do("alter session set nls_date_format='yyyy-mm-dd hh24:mi:ss'");

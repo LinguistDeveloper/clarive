@@ -2555,18 +2555,18 @@ sub root_workflow {
     for my $cat (@categories) {
         my @stats = map { $statuses{$_} } _array( $cat->{statuses} );
         map {
-            my $from      = $_->{id_status};
-            my $from_name = $_->{name};
+            my $stat_from = $_;
             map {
+                my $stat_to = $_;
                 push @wf, {
-                    id_status_from   => $from,
-                    status_name_from => $from_name,
-                    id_status        => $_->{id_status},
-                    id_status_to     => $_->{id_status},
-                    status_name      => $_->{name},
-                    status_bl        => $_->{bl},
+                    id_status_from   => $stat_from->{id_status},
+                    status_name_from => $stat_from->{name},
+                    id_status        => $stat_to->{id_status},
+                    id_status_to     => $stat_to->{id_status},
+                    status_name      => $stat_to->{name},
+                    status_bl        => $stat_to->{bl},
                     id_category      => $cat->{id},
-                    seq              => $_->{seq}
+                    seq              => $stat_to->{seq}
                 }
             } @stats;
         } @stats;

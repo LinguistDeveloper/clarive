@@ -674,6 +674,21 @@ sub statuses {
     
 }
 
+# make sure all statuses in DB are migrated to mongo
+sub statuses_from_db {
+    my @st = _dbis->query('select * from bali_topic_status')->hashes;
+    
+    for my $s ( @st )  {
+        my $ci = ci->status->search_ci( id_status=>$$s{id} );
+        next if $ci;
+        $$s{id_status} = delete $$s{id};
+        $$s{bls} = [ map { my $bl=ci->bl->search_ci(name=>$_); $bl ? $$bl{mid} : () } _array($$s{bl}) ];
+        $ci = ci->status->new($s);
+        $ci->save;
+        say "Created missing CI status for $$s{id_status} mid=$$ci{mid}";
+    }
+}
+
 sub topic_images {
     my $db = _dbis(); # otherwise we get nasty DESTROY errors
     my $rs = $db->query('select * from bali_topic_image');
@@ -719,7 +734,7 @@ sub topic_assets {
 
         # CREATE asset ci
         my $asset = ci->asset->new({
-            name       => $$r{filename}, #extension=>'xx',
+            name       => $$r{filename},
             created_by => $$r{created_by},
             created_on => $$r{created_on},
             ts         => $$r{created_on},
