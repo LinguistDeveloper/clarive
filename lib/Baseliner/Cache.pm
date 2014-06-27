@@ -6,7 +6,8 @@ use JSON::XS;
 sub set {
     my ($self,$key,$value)=@_;
     $key = JSON::XS->new->utf8->canonical->encode( $key ) if ref $key;
-    mdb->cache->update({ _id=>$key },{ _id=>$key,v=>(ref $value ? Storable::freeze($value) : undef) },{ upsert=>1 });
+    my $final_value = ref $value ? $value : bless( \$value => 'Cache::SV' );
+    mdb->cache->update({ _id=>$key },{ _id=>$key,v=>Storable::freeze($final_value) },{ upsert=>1 });
 }
 
 sub get {
@@ -16,7 +17,8 @@ sub get {
     return undef unless $doc;
     my $value = $doc->{v};
     return undef unless $value;
-    Storable::thaw($value);
+    my $ret = Storable::thaw($value);
+    return ref($ret) eq 'Cache::SV' ? $$ret : $ret;
 }
 
 sub remove {

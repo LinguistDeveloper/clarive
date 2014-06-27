@@ -9,23 +9,14 @@ May be attached to topics.
 package BaselinerX::CI::asset;
 use Baseliner::Moose;
 
+sub icon { '/static/images/icons/post.png' }
+
 with 'Baseliner::Role::CI::Item';
+with 'Baseliner::Role::CI::CCMDB';
 
 has id_data => qw(is rw isa Maybe[MongoDB::OID]);
 
-sub icon { '/static/images/icons/file.gif' }
 sub ci_form { '/ci/item.js' }
-
-#has _lines => qw(is rw isa ArrayRef lazy 1), default=>sub{
-#    my ($self)=@_;
-#    my @lines = Util->_file( $self->path )->slurp ;
-#    \@lines;
-#};
-
-#service 'view_source' => 'View Source' => sub {
-#    my ($self) = @_;
-#    $self->source;
-#};
 
 sub put_data {
     my ($self,$d)=@_;
@@ -34,7 +25,7 @@ sub put_data {
         mdb->grid->remove({ _id=>$self->id_data });
     }
     my $id = do { 
-        if( ref $d eq 'GLOB' ) {
+        if( ref($d) =~ /GLOB|IO::File/ ) {
             mdb->grid->put( $d, { parent_mid=>$self->mid, parent_collection=>'asset' });
         } else {
             my $ass = mdb->asset( $d, parent_mid=>$self->mid, parent_collection=>'asset' );
@@ -47,10 +38,26 @@ sub put_data {
     return $id;
 }
 
+method grid_file {
+    mdb->grid->get( $self->id_data );
+}
+
+sub info {
+    my($self)=@_;
+    return {} unless $self->id_data;
+    my $f = $self->grid_file;
+    return {} unless $f;
+    return $f->info // {};
+}
+
+sub filesize { shift->info->{length} }
+
 sub slurp {
     my ($self)=@_;
     return unless $self->id_data;
-    return mdb->grid->get( $self->id_data );
+    my $f = $self->grid_file;
+    return unless $f;
+    return $f->slurp;
 }
 
 sub done_slurping {
@@ -64,8 +71,20 @@ sub source {
     return scalar $self->slurp;
 }
 
-sub filename { $_[0]->name }
-sub filesize { 0 }   # XXX mdb
+=head2 checkout 
+
+Used by ChangesetServices to checkout topic
+attachments during a job.
+
+=cut 
+method checkout( :$dir ) {
+    my $dest = Util->_file($dir,$self->path);
+    $dest->dir->mkpath;
+    open( my $ff, '>:raw', $dest) or Util->_fail( Util->_loc("Could not checkout topic file '%1'", $dest) );
+    $self->grid_file->print( $ff );
+    close $ff;
+    1;
+}
 
 1;
 

@@ -237,9 +237,9 @@ sub login : Global {
         ########################################################
         my $time_user_block = Class::Date->new($attempts_query->{block_datetime});
         $time_user_block = $time_user_block + "$attempts_duration s";
-        my $block_expired = 1 if $time_user_block < mdb->ts;
+        my $block_expired = 1 if $time_user_block lt mdb->ts;
         ########################################################
-        if (($attempts_query->{block_datetime} == 0) || ($block_expired == 1)){
+        if (($attempts_query->{block_datetime} == 0) || ( $block_expired && $block_expired == 1)){
             # go to the main authentication worker
             $c->stash->{login} = $login; 
             $c->stash->{password} = $password;

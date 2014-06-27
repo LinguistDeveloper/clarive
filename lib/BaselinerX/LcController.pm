@@ -482,8 +482,14 @@ sub changeset : Local {
         push @rels, @releases;  # slow! join me!
         next if $bind_releases && @releases;
         # get the menus for the changeset
-        my ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu( $c, topic=>$topic, 
-            bl_state=>$bl, state_name=>$state_name, id_project=>$id_project, categories=>\%categories );
+        my ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu(
+            $c,
+            topic      => $topic,
+            bl_state   => $bl,
+            state_name => $state_name,
+            id_project => $id_project,
+            categories => \%categories
+        );
         my $node = {
             url  => '/lifecycle/topic_contents',
             icon => '/static/images/icons/changeset_lc.png',
@@ -516,7 +522,6 @@ sub changeset : Local {
     if( $bl ne "new" && @rels ) {
         my %unique_releases = map { $$_{mid} => $_ } @rels;
         for my $rel ( values %unique_releases ) {
-            $rel = $rel->{topic_topic};
             my ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu(
                 $c,
                 topic      => $rel,
@@ -564,10 +569,14 @@ sub promotes_and_demotes {
     my ( $topic, $bl_state, $state_name, $id_status_from, $id_project ) = @p{ qw/topic bl_state state_name id_status_from id_project/ };
     my ( @menu_s, @menu_p, @menu_d );
 
+    _fail _loc 'Missing topic parameter' unless $topic;
+    
     my $id_status_from_lc = $id_status_from ? $id_status_from: $topic->{id_category_status};
     my @user_workflow = _unique map {$_->{id_status_to} } Baseliner->model("Topic")->user_workflow( $c->username );
     my @user_roles = ci->user->roles( $c->username );
     my %statuses = ci->status->statuses;
+    my $cat = mdb->category->find_one({ id=>''.$topic->{id_category} },{ workflow=>1 });
+    _fail _loc 'Category %1 not found', $topic->{id_category} unless $cat;
     my $status_list = sub {
         my ($dir) = @_;
         return sort { $$a{seq} <=> $$b{seq} }
@@ -581,7 +590,7 @@ sub promotes_and_demotes {
            && $$_{id_status_to} ~~ @user_workflow
            && $$_{id_status_from} == $id_status_from_lc
            && $$_{job_type} eq $dir  # static,promote,demote
-        } _array( mdb->category->find_one({ id=>''.$topic->{id_category} },{ workflow=>1 })->{workflow} );
+        } _array( $$cat{workflow} );
     };
 
     # Static
@@ -662,32 +671,38 @@ sub promotes_and_demotes {
 
 sub cs_menu {
     my ($self, $c, %p ) = @_; 
-    my ( $topic, $bl_state, $state_name, $id_status_from, $id_project ) = @p{ qw/topic bl_state state_name id_status_from id_project/ };
+    my ( $topic, $bl_state, $state_name, $id_status_from, $id_project, $categories ) = @p{ qw/topic bl_state state_name id_status_from id_project categories/ };
     #return [] if $bl_state eq '*';
     my ( @menu, @menu_s, @menu_p, @menu_d );
-    my $sha = ''; #try { $self->head->{commit}->id } catch {''};
-    _log 'Generando menu';
-
+    my $sha = ''; 
+    
     push @menu, $self->menu_related();
 
     my ($deployable, $promotable, $demotable ) = ( {}, {}, {} );
-    my $is_release = $p{categories}{$topic->{id_category}}{is_release}; 
+    my $is_release = $$categories{$topic->{id_category}}{is_release}; 
     if ( $is_release ) {
         my @chi;
 
-        for ( ci->new($topic->{mid})->children( isa => 'topic', depth => 2) ) {
-            push @chi, $_ if $p{categories}{ $_->{id_category} }{is_changeset}
-        };
+        for my $t ( ci->new($topic->{mid})->children( isa => 'topic', depth => 2) ) {
+            push @chi, $t if $$categories{$t->{id_category}}{is_changeset};
+        }
         
         if( @chi ) {
            my ($menu_s, $menu_p, $menu_d );
-           ($deployable, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) = $self->promotes_and_demotes( $c, $chi[0], $bl_state, $state_name );
+           ($deployable, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) = $self->promotes_and_demotes( 
+                $c,
+                topic      => $chi[0],
+                bl_state   => $bl_state,
+                state_name => $state_name,
+                id_project => $id_project,
+            );
            push @menu_s, _array( $menu_s );
            push @menu_p, _array( $menu_p );
            push @menu_d, _array( $menu_d );
         }
     } else {
         my ( $menu_s, $menu_p, $menu_d );
+
         ( $deployable, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) = $self->promotes_and_demotes(
             $c,
             topic      => $topic,

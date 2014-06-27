@@ -8,7 +8,7 @@ __PACKAGE__->config(use_match => 0);
 # put something more than the UID ($<) in the folder. 
 #   the parentpid is usually given by the shell
 
-if( Baseliner->debug ) {
+if( Clarive->debug ) {
 my $ppid = getppid;
 $ppid < 2 and $ppid = $$;
 

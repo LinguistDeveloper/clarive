@@ -16,7 +16,7 @@ has ssh     => (
     lazy     => 1,
     default  => sub {
         my $self = shift;
-        Baseliner->debug and $Net::OpenSSH::debug |= 8;
+        Clarive->debug and $Net::OpenSSH::debug |= 8;
         my $uri = $self->_build_uri;
         require Net::OpenSSH;
         my $n = Net::OpenSSH->new( $uri );
@@ -96,7 +96,7 @@ sub get_dir {
     _mkpath( $local ) if !-d $local && !$file_to_file && $self->mkpath_on; # create local path
     my $method = $self->_method . "_get";
     my $ret = $self->ssh->$method( \%p, $remote, $local ); 
-    my $out = _slurp $p{stdout_file};
+    my $out = Util->_slurp( $p{stdout_file} );
     unlink $p{stdout_file};
     $self->ret( "$out" );
     $self->_throw_on_error;
@@ -153,7 +153,7 @@ sub put_dir {
     _log "URI=" . $self->_build_uri . ", L=$local, R=$remote";
     my $ret = $self->ssh->$method( \%p, $local, $remote ); 
 
-    my $out = _slurp $p{stdout_file};
+    my $out = Util->_slurp( $p{stdout_file} );
     unlink $p{stdout_file};
     $self->ret( $out );
     $self->_throw_on_error;
@@ -197,7 +197,7 @@ sub execute {
         #_fail _loc( 'Timeout %1 (%2)', $self->_build_uri, "@cmd" ) if $err =~ /ssh timeout alarm/; 
         #_fail _loc( 'ssh_agent execute error %1 (%2): %3', $self->_build_uri, "@cmd", $err ) if $err =~ /ssh timeout alarm/; 
     };
-    my $out = _slurp $p{stdout_file};
+    my $out = Util->_slurp( $p{stdout_file} );
     $out //= '';
     unlink $p{stdout_file};
     $self->ret( "$out" );

@@ -327,7 +327,7 @@ sub index : Private {
         my @features_list = Baseliner->features->list;
         # header_include hooks
         $c->stash->{header_include} = [
-            map { { name=>$_, content=>_slurp $_ } }
+            map { { name=>$_, content=>Util->_slurp($_) } }
             _unique
             grep { -e $_ } map { "" . Path::Class::dir( $_->path, 'root', 'include', 'head.html') }
                     @features_list 
@@ -476,7 +476,7 @@ Renders a Mason view by default, passing it all parameters as <%args>.
 sub end : ActionClass('RenderView') {
     my ( $self, $c ) = @_;
     # check for controlled errors in DEBUG mode
-    if( Baseliner->debug && _array( $c->error ) > 0 ) {
+    if( Clarive->debug && _array( $c->error ) > 0 ) {
         if( $c->req->params->{_bali_client_context} eq 'json' ) {
             _debug "ERROR handled as JSON...";
             my $err = join ',', _array $c->error ;

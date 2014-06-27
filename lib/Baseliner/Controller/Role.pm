@@ -99,7 +99,7 @@ sub action_tree_old : Local {
     foreach my $a ( @actions ) {
         my $key = $a->{key};
         ( my $folder = $key ) =~ s{^(\w+\.\w+)\..*$}{$1}g;
-        push @{ $tree{ $folder } }, { id=>$a->{key}, text=>_loc_decoded( $a->{name} ), leaf=>\1 }; 
+        push @{ $tree{ $folder } }, { id=>$a->{key}, text=>Util->_loc_decoded( $a->{name} ), leaf=>\1 }; 
     }
     my @tree_final = map { { id=>$_, text=>$_, leaf=>\0, children=>$tree{$_} } } sort keys %tree;
     $c->stash->{json} = \@tree_final;
@@ -108,7 +108,7 @@ sub action_tree_old : Local {
 
 sub action_tree : Local {
     my ( $self, $c ) = @_;
-    my $cached = Baseliner->cache_get( "roles:actions:");
+    my $cached = cache->get( "roles:actions:");
 
     my @actions;
 
@@ -118,13 +118,13 @@ sub action_tree : Local {
     } else {
         _log "NO LO ENCUENTRO";
         @actions = $c->model('Actions')->list;
-        Baseliner->cache_set( "roles:actions:", \@actions);        
+        cache->set( "roles:actions:", \@actions);        
     }
 
     my @tree_final;
     my %tree;
 
-    my $cached_tree = Baseliner->cache_get( "roles:tree:");
+    my $cached_tree = cache->get( "roles:tree:");
 
     if ( $cached_tree ) {
         @tree_final = _array $cached_tree;
@@ -151,7 +151,7 @@ sub action_tree : Local {
                 if ( @tokens ) { # not a leaf
                     push @$children, { id=>$id, text => $name, leaf=>\0, children=> $children_of->($id, @actions) };
                 } else { # a leaf
-                    push @$children, { id=>$id, text => sprintf( "%s (%s)",_loc_decoded( $action->{name} ), $id) , leaf=>\1 };
+                    push @$children, { id=>$id, text => sprintf( "%s (%s)",Util->_loc_decoded( $action->{name} ), $id) , leaf=>\1 };
                 }
 
             }
@@ -170,7 +170,7 @@ sub action_tree : Local {
                 push @tree_final, { id=>$key, text => $key, leaf=>\1 };
             }
         };
-        Baseliner->cache_set( "roles:tree:", \@tree_final);
+        cache->set( "roles:tree:", \@tree_final);
     };
     $c->stash->{json} = \@tree_final;
     $c->forward("View::JSON");
@@ -191,8 +191,8 @@ sub update : Local {
         }else{
             mdb->role->update( { id=>$row->{id}+0 }, $row );
         }
-        Baseliner->cache_remove(":role:actions:$p->{id}:") if $p->{id};
-        Baseliner->cache_remove(':role:ids:');
+        cache->remove(":role:actions:$p->{id}:") if $p->{id};
+        cache->remove(':role:ids:');
     };
     if( $@ ) {
         warn $@;
@@ -215,7 +215,7 @@ sub delete : Local {
     } else { 
         $c->stash->{json} = { success => \1, msg => _loc("Role '%1' modified", $p->{name} ) };
     }
-    Baseliner->cache_remove(':role:ids:');
+    cache->remove(':role:ids:');
     $c->forward('View::JSON');  
 }
 
@@ -252,7 +252,7 @@ sub duplicate : Local {
     } else { 
         $c->stash->{json} = { success => \1, msg => _loc("Role '%1' modified", $p->{name} ) };
     }
-    Baseliner->cache_remove(':role:ids:');
+    cache->remove(':role:ids:');
     $c->forward('View::JSON');  
 }
 

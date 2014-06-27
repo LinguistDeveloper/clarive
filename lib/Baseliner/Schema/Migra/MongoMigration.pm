@@ -533,9 +533,10 @@ sub config {
 
 sub notifications {
     my @notifs = _dbis->query('select * from bali_notification')->hashes;
+    require Baseliner::Model::Notification;
     for my $doc ( @notifs ) {
         delete $doc->{id};
-        $doc->{data} = Baseliner->model('Notification')->decode_data( $doc->{data});
+        $doc->{data} = Baseliner::Model::Notification->decode_data( $doc->{data});
         mdb->notification->insert($doc);
     }
 }
@@ -591,7 +592,8 @@ sub repository_repl {
 
 # add _txt to topic collection
 sub topic_rels {
-    Baseliner->model('Topic')->update_rels( map{ $$_{mid} } mdb->topic->find->fields({mid=>1})->all );
+    require Baseliner::Model::Topic;
+    Baseliner::Model::Topic->update_rels( map{ $$_{mid} } mdb->topic->find->fields({mid=>1})->all );
 }
 
 sub role {
@@ -672,6 +674,21 @@ sub statuses {
     
 }
 
+# make sure all statuses in DB are migrated to mongo
+sub statuses_from_db {
+    my @st = _dbis->query('select * from bali_topic_status')->hashes;
+    
+    for my $s ( @st )  {
+        my $ci = ci->status->search_ci( id_status=>$$s{id} );
+        next if $ci;
+        $$s{id_status} = delete $$s{id};
+        $$s{bls} = [ map { my $bl=ci->bl->search_ci(name=>$_); $bl ? $$bl{mid} : () } _array($$s{bl}) ];
+        $ci = ci->status->new($s);
+        $ci->save;
+        say "Created missing CI status for $$s{id_status} mid=$$ci{mid}";
+    }
+}
+
 sub topic_images {
     my $db = _dbis(); # otherwise we get nasty DESTROY errors
     my $rs = $db->query('select * from bali_topic_image');
@@ -689,31 +706,67 @@ sub topic_fields {
        my %d = map { $_=>$$t{$_} } qw(description modified_on modified_by);
        mdb->topic->update({ mid=>$$t{mid} },{ '$set'=>\%d });
     }
+    
+    # fix some old broken fields
+    for my $t ( mdb->topic->find->all ) {
+       my %d = ();
+       $d{modified_by} = $$t{created_by} if length $$t{created_by};
+       mdb->topic->update({ mid=>$$t{mid} },{ '$set'=>\%d }) if %d;
+    }
+    
 }
 
 sub topic_assets {
     my $db = _dbis;
+    my @deleteables;
     for my $rel ( mdb->master_rel->find({ rel_type=>'topic_file_version' })->all ) {    
+        
+        # get file data
         my $r = $db->query(q{select mid,filename,extension,created_on,created_by,filedata 
-           from bali_file_version where mid=?}, $$rel{to_mid});
+           from bali_file_version where mid=?}, $$rel{to_mid})->hash;
+       
+        if( !$r ) {
+            # deleted file, invalid master_rel
+            _warn "Not found file mid=$$rel{to_mid}, skipped";
+            mdb->master_rel->remove({ _id=>$$rel{_id} });
+            next;
+        }
 
-        my $asset = ci->asset->new(
-            name => $$r{filename},
-            #extension=>'xx',
+        # CREATE asset ci
+        my $asset = ci->asset->new({
+            name       => $$r{filename},
             created_by => $$r{created_by},
             created_on => $$r{created_on},
             ts         => $$r{created_on},
-        );
+        });
         $asset->save;
         $asset->put_data( $$r{filedata} );
         
-        say "Migrating topic file from=$$rel{from_mid} to=$$rel{to_mid}";
-        my $topic = ci->new( $$rel{from_mid} );
-        my @ass = grep { defined } ( _array( $topic->assets ), $asset );
-        $topic->assets( \@ass );
-        $topic->save;
-        mdb->master_rel->remove({ _id=>$$rel{_id} });    
+        # RELATE to topic ci
+        say "Migrating topic file from=$$rel{from_mid} to=$$rel{to_mid} field=$$rel{rel_field}, mid=$$asset{mid} ($$r{filename})";
+        #my $topic = ci->new( $$rel{from_mid} );
+        #my @ass = grep { defined } ( _array( $topic->assets ), $asset );
+        #$topic->assets( \@ass );
+        #$topic->save;
+        
+        # UPDATE old relation to new asset mid
+        mdb->master_rel->update({ _id=>$$rel{_id} },{ '$set'=>{ to_mid=>$$asset{mid}, rel_type=>'topic_asset' } });    
+        
+        # DELETE old file CI
+        push @deleteables, $$rel{to_mid};
+        
+        # DELETE old relationship
+        #mdb->master_rel->remove({ _id=>$$rel{_id} });    
     }
+    ci->delete( $_ ) for @deleteables;
+}
+
+sub master_doc_clean {
+    for my $m ( mdb->master_doc->find->all ) {
+        # delete yaml attribute
+        mdb->master_doc->update({ _id=>$$m{_id} },{ '$unset'=>{ yaml=>1 } });
+    }
+    
 }
 
 ####################################

@@ -154,7 +154,7 @@ sub log_rows : Private {
             mid      => $doc->{mid},  # job mid
             id_data  => $doc->{data},  # job mid
             job      => $job->{name},
-            text     => _markup( $doc->{text} ),
+            text     => Util->_markup( $doc->{text} ),
             step     => $doc->{step},
             prefix   => $doc->{prefix},
             milestone=> $doc->{milestone},
