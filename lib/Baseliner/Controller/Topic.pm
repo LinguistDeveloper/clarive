@@ -1554,39 +1554,63 @@ sub newjob : Local {
 sub kanban_status : Local {
     my ($self, $c ) = @_;
     my $p = $c->req->params;
-    my $topics = $p->{topics};
+    my $topic_list = $p->{topics};
     my $data = {};
     my @columns;
     $c->stash->{json} = try {
-        my @cats = _unique( mdb->topic->find_values( id_category=>{ mid=>mdb->in($topics) }) );
-
-        my @cat_status = mdb->category->find({ id =>mdb->in(@cats) })->fields({ statuses=>1 })->all;
+        my @topics = mdb->topic->find({ mid=>mdb->in($topic_list) })->fields({ id_category=>1, mid=>1, id_category_status=>1, _id=>0 })->all;
+        _fail( _loc('No topics available') ) unless @topics;
+        my %cats; push @{ $cats{ $$_{id_category} } }, $_ for @topics;
+        _fail( _loc('No categories found for topics') ) unless %cats;
+        my @cat_status = _unique map { _array($$_{statuses}) } mdb->category->find({ id =>mdb->in(keys %cats) })->fields({ statuses=>1 })->all;
+        _fail( _loc('No category status found for topics') ) unless @cat_status;
+        
         ## support multiple bls
-        my %status_cis = ci->status->statuses;
+        my %status_cis = map { $_->id_status => $_ } ci->status->search_cis;
+        
         my @statuses = map {
             my $st = $_;
-            my $bls = join ' ', map { $_->{moniker} } _array($st->{bl});  # XXX where are the multiple bls in ci status?
+            my $bls = join ' ', map { $_->{moniker} } _array( $st->bls ); 
             +{ id=>$$st{id_status}, name=>$$st{name}, seq=>$$st{seq}, bl=>$bls };
-        } sort { $$a{seq}<=>$$b{seq} } grep { defined } map { $status_cis{$_} } _unique map { _array($$_{statuses}) } @cat_status;
+        } sort { $$a{seq}<=>$$b{seq} } grep { defined } map { $status_cis{$_} } @cat_status;
 
         # given a user, find my workflow status froms and tos
-        my @roles = ci->user->roles( $c->username );
-        my @rs2 = mdb->joins({ merge=>'flat' }, topic=>[{ mid =>mdb->in($topics) },{ fields=>{ _txt=>0 } }], 
-            id_category=>id_category=>workflow=>{ id_role=>mdb->in(@roles) } );
+        my @transitions = model->Topic->non_root_workflow( $c->username, categories=>[keys %cats] );
         
         my %workflow;
         my %status_mids;
-        for my $wf ( @rs2 ) {
-            push @{ $workflow{ $wf->{mid} } }, $wf;
-            if( $wf->{id_status_from} == $wf->{id_category_status} ) {
-                push @{ $status_mids{ $wf->{id_status_from} } }, $wf->{mid};
-                push @{ $status_mids{ $wf->{id_status_to} } }, $wf->{mid};
+        my %visible_status;  # list with destination to statuses to reduce cruft on top of kanban
+        # for each workflow transition for this user:
+        for my $wf ( @transitions ) {
+            next if $$wf{id_status_from} == $$wf{id_status_to}; # don't need static promotions in Kanban
+            # for each mid in this category
+            for my $t ( _array $cats{ $$wf{id_category} } ) {
+                my $mid = $$t{mid};
+                push @{ $workflow{ $mid } }, {
+                    from_name          => $$wf{status_name_from},
+                    from_seq           => $$wf{seq_from},
+                    id_category_status => $$wf{id_status_from},
+                    id_status_from     => $$wf{id_status_from},
+                    id_status_to       => $$wf{id_status_to},
+                    mid                => $mid,
+                    to_name            => $$wf{status_name},
+                    to_seq             => $$wf{seq_to},
+                    id_category        => $$wf{id_category},
+                };
+                push @{ $status_mids{ $wf->{id_status_from} } }, $mid;
+                push @{ $status_mids{ $wf->{id_status_to} } }, $mid;
+                # visible status: only the ones that match topics current status + destination status
+                if( $$t{id_category_status} == $$wf{id_status_from} ) {
+                    $visible_status{ $$wf{id_status_from} } = 1;
+                    $visible_status{ $$wf{id_status_to} } = 1;
+                }
             }
         }
-        { success=>\1, msg=>'', statuses=>\@statuses, workflow=>\%workflow, status_mids=>\%status_mids };
+
+        { success=>\1, msg=>'', statuses=>\@statuses, visible_status=>\%visible_status, workflow=>\%workflow, status_mids=>\%status_mids };
     } catch {
         my $err = shift;
-        { success=>\0, msg=> _loc( "Error creating job: %1", "$err" ) };
+        { success=>\0, msg=> _loc( "Error rendering kanban: %1", "$err" ) };
     };
     $c->forward('View::JSON');
 }

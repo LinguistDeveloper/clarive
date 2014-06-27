@@ -2528,15 +2528,29 @@ Workflow for a user. Gets the user role, then search for workflows.
 
 =cut
 sub user_workflow {
-    my ( $self, $username ) = @_;
-    my @roles = Baseliner->model('Permissions')->user_role_ids($username);
+    my ( $self, $username, %p ) = @_;
+    
     return Baseliner->model('Permissions')->is_root( $username ) 
-        ? $self->root_workflow()
-        : _array( map { 
-                # add category id to workflow array
-                my $id_cat = $$_{id};
-                [ map { $$_{id_category}=$id_cat; $_ } _array($$_{workflow}) ]
-            } mdb->category->find({ 'workflow.id_role'=>mdb->in(@roles) })->all );
+        ? $self->root_workflow(%p) 
+        : $self->non_root_workflow($username, %p);
+}
+
+=head2 non_root_workflow
+
+Workflow for ordinary users. Usually 
+called by user_workflow.
+
+=cut
+sub non_root_workflow {
+    my ( $self, $username, %p ) = @_;
+    my @roles = Baseliner->model('Permissions')->user_role_ids($username);
+    my $where = { 'workflow.id_role'=>mdb->in(@roles) };
+    $where->{id} = mdb->in($p{categories}) if exists $p{categories};
+    return _array( map { 
+        # add category id to workflow array
+        my $id_cat = $$_{id};
+        [ map { $$_{id_category}=$id_cat; $_ } _array($$_{workflow}) ]
+    } mdb->category->find($where)->all );
 }
 
 =head2 root_workflow
@@ -2546,9 +2560,12 @@ all categ statuses to all categ statuses.
 
 =cut
 sub root_workflow {
-    my $self = shift;
+    my ($self,%p) = @_;
     my %statuses = ci->status->statuses;
-    my @categories = mdb->category->find->all;
+    my $where = {};
+    $where->{id} = mdb->in($p{categories}) if exists $p{categories};
+
+    my @categories = mdb->category->find($where)->all;
     my @wf;
 
     for my $cat (@categories) {
@@ -2559,13 +2576,15 @@ sub root_workflow {
                 my $stat_to = $_;
                 push @wf, {
                     id_status_from   => $stat_from->{id_status},
+                    seq_from         => $stat_from->{seq},
                     status_name_from => $stat_from->{name},
                     id_status        => $stat_to->{id_status},
                     id_status_to     => $stat_to->{id_status},
+                    seq_to           => $stat_to->{seq},
                     status_name      => $stat_to->{name},
                     status_bl        => $stat_to->{bl},
                     id_category      => $cat->{id},
-                    seq              => $stat_to->{seq}
+                    seq              => $stat_to->{seq},
                 }
             } @stats;
         } @stats;

@@ -1722,6 +1722,7 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
                 //console.log( res.workflow );
                 var statuses = res.statuses;
                 var workflow = res.workflow;
+                var visible_status = res.visible_status;
                 var status_mids = res.status_mids;
                 var col_num = statuses.length;
                 //var col_width = 1 / col_num;
@@ -1732,7 +1733,8 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
                 for( var i=0; i<col_num; i++ ) {
                     var cs = statuses[i];
                     var smids = status_mids[cs.id];
-                    cs.visible = col_num<10 || (smids && smids.length > 0); 
+                    //cs.visible = col_num<10 || (smids && smids.length > 0); 
+                    cs.visible = visible_status[ cs.id ];
                     if( cs.visible ) kvisible++;
                     self.statuses_hash[ cs.name ] = { colnum: i, hidden: !cs.visible };  // store colnum for status
                 }

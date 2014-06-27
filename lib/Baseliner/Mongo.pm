@@ -257,8 +257,13 @@ sub joins {
             for my $doc ( @docs ) {
                 $doc->{$doc_key} = $doc->{$to} unless $last_key;
                 $opts{merge} eq 'flat' 
-                ? do{ $doc = { %{ $m->{ $last_key ? $doc->{$last_key} : $doc->{$to} } }, %$doc } }
-                : do{ $doc = { $join_key=>$m->{ $last_key ? $doc->{$last_key} : $doc->{$to} }, %$doc } };
+                ? do{ 
+                    my $h = $m->{ $last_key ? $doc->{$last_key} : $doc->{$to} } // {};
+                    $doc = { %$h, %$doc } 
+                }
+                : do{ 
+                    $doc = { $join_key=>$m->{ $last_key ? $doc->{$last_key} : $doc->{$to} }, %$doc }
+                };
             }
             $last_key = $doc_key;
         }
