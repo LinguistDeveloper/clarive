@@ -280,10 +280,7 @@ sub tree_projects : Local {
     my ( $self, $c ) = @_;
     my @tree;
 
-    my @projects= Baseliner->model('Permissions')->user_projects( username=>$c->username );
-
-    my @projects_ids = map { $_ =~ /\/(.*)/; } @projects;
-     
+    my @projects_ids= Baseliner->model('Permissions')->user_projects_ids( username=>$c->username );
     my $projects =  ci->project->find({ active => mdb->true, mid => mdb->in(@projects_ids)})->sort({name=>1});
 
     while( my $r = $projects->next ) {
@@ -305,6 +302,7 @@ sub tree_projects : Local {
             expandable => \1
         };
     }
+    @tree = sort { lc($$a{text}) cmp lc($$b{text}) } @tree;
     $c->stash->{json} = \@tree;
     $c->forward('View::JSON');
 } 
@@ -848,10 +846,6 @@ sub tree_all : Local {
              $c->forward( 'View::JSON' );
         }
     }
-
-    #my @projects = Baseliner->model('Permissions')->user_projects_with_action(
-        #username=>$c->username, action=>'' 
-    #);
 }
 
 sub tree_favorites : Local {

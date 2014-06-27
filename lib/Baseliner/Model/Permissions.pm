@@ -275,18 +275,19 @@ ie, if the user has ANY role in them.
 =cut
 sub user_projects {
     my ( $self, %p ) = @_;
-    _throw 'Missing username' unless exists $p{ username };
+    _throw 'Missing username' unless exists $p{username};
     _throw 'with_role not supported anymore' if exists $p{with_role};
+    return map{ "project/$$_{mid}" } ci->project->find->fields({mid=>1})->all if $self->is_root($p{username});
     my @ret;
     my $project_security = ci->user->find({ username=>$p{ username } })->next->{project_security};
     my @id_roles = keys $project_security;
     foreach my $id_role (@id_roles){
         my @project_types = keys $project_security->{$id_role};
         foreach my $project_type (@project_types){
-            map {push @ret, "project/$_"} @{$project_security->{$id_role}->{$project_type}};
+            push @ret, "project/$_" for _unique _array( $project_security->{$id_role}->{$project_type} );
         }
     }
-    @ret
+    return _unique( @ret );
 }
 
 =head2 user_projects_ids( username=>Str )
@@ -297,7 +298,8 @@ Returns an array of project ids for the projects the user has access to.
 sub user_projects_ids {
     my ( $self, %p ) = @_;
     _throw 'Missing username' unless exists $p{username};
-    _unique map { values $_->{project} } values ci->user->find({ username=>$p{username} })->next->{project_security};
+    return map{ $$_{mid} } ci->project->find->fields({mid=>1})->all if $self->is_root($p{username});
+    return _unique map { values $_->{project} } values ci->user->find({ username=>$p{username} })->next->{project_security};
 }
 
 =head2 user_projects_ids_with_collection( username=>Str )
