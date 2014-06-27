@@ -680,8 +680,8 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             layout:'fit'
         });
         
-        Baseliner.Topic.file_del = function( topic_mid, md5, id_row ) {
-            Baseliner.ajaxEval( '/topic/file/delete', { md5 : md5, topic_mid: topic_mid }, function(res) {
+        Baseliner.Topic.file_del = function( topic_mid, mid, id_row ) {
+            Baseliner.ajaxEval( '/topic/file/delete', { asset_mid: mid, topic_mid: topic_mid }, function(res) {
                 if( res.success ) {
                     Baseliner.message( _('File'), res.msg );
                     Ext.fly( id_row ).remove();
@@ -739,7 +739,12 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         
         self.status_items_menu = [];
         for(i=0; i < obj_status_items_menu.length;i++){
-            self.status_items_menu.push({ text: _(obj_status_items_menu[i].status_name), id_status_to: obj_status_items_menu[i].id_status, id_status_from: obj_status_items_menu[i].id_status_from, handler: function(obj){ self.change_status(obj) } });
+            self.status_items_menu.push({ 
+                text: _(obj_status_items_menu[i].status_name), 
+                id_status_to: obj_status_items_menu[i].id_status, 
+                id_status_from: obj_status_items_menu[i].id_status_from, 
+                handler: function(obj){ self.change_status(obj) } 
+            });
         }
     
         self.status_menu = new Ext.menu.Menu({

@@ -5,12 +5,16 @@ use warnings;
 use Baseliner::Utils;
 
 sub check {
-    my ($self, $arg)=@_;
-    my %args = map { $_=>1 } split /,/, $arg;
+    my ($self, $migration)=@_;
+    $migration //= '';
+    my %args = map { $_=>1 } split /,/, $migration;
     my %ids;
-    _log('Checking for migrations...');
+    say('Checking for migrations...');
     my @current = mdb->_migrations->find->all;
-    my @candidates = Baseliner->path_to('lib/Baseliner/Schema/Migrations'), map { _dir($_->path,'lib/Baseliner/Schema/Migrations') } _array(Baseliner->features->list );
+    my @candidates = (
+        Clarive->path_to('lib/Baseliner/Schema/Migrations'), 
+        map { _dir($_->path,'lib/Baseliner/Schema/Migrations') } _array(Clarive->features->list) 
+    );
     for my $f ( map { $_->children } grep { -e } @candidates ) {
         my ($id) = $f->basename =~ /^(.+)\.(.*?)$/;
         my $body = $f->slurp;
@@ -22,9 +26,10 @@ sub check {
         $wh->{'$or'} = [{version=>undef},{ '$and'=>[{version=>{'$gte'=>0+$version}}, {version=>{ '$ne'=>undef } }] }] if $version>0;
         my $doc = mdb->_migrations->find_one($wh);
         if( $doc && !$args{$id} ) {
-            _debug("====> Migration ok: $id (version: $version)" );
+            say("====> Migration ok: $id (version: $version)" );
             next;
         } else {
+            _warn(_loc('Skipping migration %1 on user request',$id)),next if %args && !exists $args{ $id };
             say "Forcing migration for `$id`" if $args{$id};
             # lib/Clarive/Cmd/install->_ask_me()
             my $pkg = "Baseliner::Schema::Migrations::$id";
@@ -47,7 +52,7 @@ sub check {
         _warn( _loc( 'Migration source not found: %1. Rolling back...', $doc->{_id} ) );
     }
     
-    _log('Migration check done.');
+    say('Migration check done.');
 }
 
 1;

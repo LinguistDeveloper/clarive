@@ -98,7 +98,6 @@ use Exporter::Tidy default => [
     case
     _utf8_on_all
     _to_utf8
-    _size_unit
     _dbis
     _hook
     _read_password
@@ -339,7 +338,7 @@ sub isatty { no autodie; return open(my $tty, '+<', '/dev/tty'); }
 # internal log engine used by _log and _debug
 sub _log_me {
     my ($lev, $cl,$fi,$li, @msgs ) = @_;
-    my $logger = $Baseliner::logger // ( Baseliner->app ? Baseliner->app->{_logger} : '' );
+    my $logger = $Baseliner::logger // ( Baseliner->can('app') && Baseliner->app ? Baseliner->app->{_logger} : '' );
     my $log_out;
     if( ref $logger eq 'CODE' ) { # logger override
         $log_out = $logger->($lev, $cl,$fi,$li, @msgs );  # logger return if we should continue logging
@@ -403,7 +402,7 @@ sub _warn {
 sub _debug {
     my $cal = looks_like_number($_[0]) && $_[0] < 0 ? -(shift()) : ($Baseliner::Utils::caller_level // 0);
     my ($cl,$fi,$li) = caller( $cal );
-    return unless Baseliner->debug;
+    return unless Clarive->debug;
     _log_me( 'debug', $cl,$fi,$li,@_);
 }
 
@@ -481,7 +480,7 @@ sub _dt { DateTime->now(time_zone=>_tz);  }
 
 # same as _now, but with hi res in debug mode
 sub _now_log {
-    if( Baseliner->debug ) {
+    if( Clarive->debug ) {
         my @t=split /\./, Time::HiRes::time(); 
         return sprintf "%s.%03d", Class::Date::date( $t[0]), substr $t[1], 0, 3;
     } else {
@@ -1430,7 +1429,9 @@ sub _size_unit {
 
 sub _dbis {
     my( $dbh ) = @_;
-    $dbh ||= Baseliner->config->{'Model::Baseliner'}{connect_info};
+    $dbh ||= Clarive->config->{rdbms}{connect_info} // Clarive->config->{baseliner}{'Model::Baseliner'}{connect_info};
+    _fail( 'Missing RDBMS database configuration' ) unless length $dbh;
+    $ENV{NLS_LANG} = 'AMERICAN_AMERICA.AL32UTF8';  # needed when called from a Clarive Cmd
     require DBIx::Simple;
     my $conn = DBIx::Simple->connect( ref $dbh eq 'ARRAY' ? @$dbh : $dbh );
     $conn->dbh->do("alter session set nls_date_format='yyyy-mm-dd hh24:mi:ss'");

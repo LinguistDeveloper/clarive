@@ -65,7 +65,7 @@ sub parse {
             #my $coll = $ci->collection || 'ci';
             #mdb->master_rel->update_or_create({ from_mid=>''.$ci->mid, to_mid=>''.$item->mid, rel_type=> $coll . '_item' });
         }
-        Baseliner->cache_clear;
+        cache->clear;
     }
 
     if( @$tree ) {

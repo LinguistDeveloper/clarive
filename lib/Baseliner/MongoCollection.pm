@@ -206,7 +206,7 @@ sub find_hashed {
     }
     my %ret;
     while( my $r = $rs->next ) {
-        push @{ $ret{ $$r{$key} } }, $r
+        push @{ $ret{ $$r{$key} // '' } }, $r
     }
     return wantarray ? %ret : \%ret;
 };

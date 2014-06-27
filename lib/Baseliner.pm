@@ -48,23 +48,7 @@ my $t0 = [ gettimeofday ];
 extends 'Catalyst';
 $DB::deep = 500; # makes the Perl Debugger Happier
 
-# determine version with a GIT DESCRIBE
-our $FULL_VERSION = do {
-    my $v = eval { 
-        my $branch = `git rev-parse --abbrev-ref HEAD`;
-        chomp $branch;
-        my @x = `cd $ENV{CLARIVE_HOME}; git describe --always --tags --candidates 1`;
-        my $version = $x[0];
-        chomp $version;
-        if( $version=~ /^(?<ver>.*)-(?<cnt>\d+)-g(?<sha>\w*)$/ ) {
-            ["release: $branch, patch: $+{ver}+$+{cnt}, sha: $+{sha}" , "${branch}_$+{ver}_$+{sha}", $+{sha} ] 
-        } else {
-            [ "r$branch v$version", "${branch}_${version}", ''];
-        }
-    };
-    !$v ?  ['r6','??'] : $v;
-};
-our $VERSION = $FULL_VERSION->[0];
+our $VERSION = Clarive->version;
 
 # find my parent to enable restarts
 $ENV{BASELINER_PARENT_PID} //= getppid();
@@ -201,7 +185,7 @@ around 'debug' => sub {
     $ENV{BALI_FAST} or Baseliner::Core::Registry->print_table;
     $ENV{BALI_WRITE_REGISTRY} and Baseliner::Core::Registry->write_registry_file;
 
-    if( ! Baseliner->debug ) {
+    if( ! Clarive->debug ) {
         # make immutable for speed
         my %cl=Class::MOP::get_all_metaclasses;
 
@@ -224,150 +208,17 @@ around 'debug' => sub {
         #$_->meta->make_immutable for keys %pkgs;
     }
 
-    # mdb : master db setup
-    Baseliner->config->{mongo} //= {};
-    {
-        package mdb;
-        our $AUTOLOAD;
-        sub AUTOLOAD {
-            my $self = shift;
-            my $name = $AUTOLOAD;
-            my @a = reverse( split(/::/, $name));
-            my $db = $Baseliner::_mdb //( $Baseliner::_mdb = do{
-                my $conf = Baseliner->config->{mongo};
-                my $class = $conf->{class} // 'Baseliner::Mongo'; #'Baseliner::Schema::KV';
-                eval "require $class";
-                Util->_fail('Error loading mdb class: '. $@ ) if $@ ;
-                $class->new( $conf );
-            });
-            my $class = ref $db;
-            my $method = $class . '::' . $a[0];
-            @_ = ( $db, @_ );
-            goto &$method;
-        }
-    }
-    # mdb: establish connection now?
-
-    # queue : worker queue
-    {
-        package queue;
-        our $AUTOLOAD;
-        sub AUTOLOAD {
-            my $self = shift;
-            my $name = $AUTOLOAD;
-            my ($method) = reverse( split(/::/, $name));
-            my $queue = $Baseliner::_queue //( $Baseliner::_queue = do{
-                require Baseliner::Queue;
-                Baseliner::Queue->new;
-            });
-            $method = 'Baseliner::Queue::' . $method;
-            @_ = ( $queue, @_ );
-            goto &$method;
-        }
-    }
+    # cache legacy, for unmigrated features
+    sub cache_get { shift; cache->get( @_ ) }
+    sub cache_set { shift; cache->set( @_ ) }
+    sub cache_remove { shift; cache->remove( @_ ) }
+    sub cache_remove_like { shift; cache->remove_like( @_ ) }
+    sub cache_keys { shift; cache->keys( @_ ) }
+    sub cache_keys_like { shift; cache->keys_like( @_ ) }
+    sub cache_clear { shift; cache->clear( @_ ) }
     
-    # model : shortcut to Baseliner->model
-    {
-        package model;
-        our $AUTOLOAD;
-        sub AUTOLOAD {
-            my $self = shift;
-            my $name = $AUTOLOAD;
-            my ($method) = reverse( split(/::/, $name));
-            return Baseliner->model($method);
-        }
-    }
-    
-    # ci : ci utilities setup
-    {
-        package ci;
-        our $AUTOLOAD;
-        sub AUTOLOAD {
-            my $self = shift;
-            my $name = $AUTOLOAD;
-            my ($method) = reverse( split(/::/, $name));
-            my $class = $method =~ /new|find|is_ci/ ? 'Baseliner::CI' : 'Baseliner::Role::CI';
-            if( $class->can($method) ) {
-                $method = $class . '::' . $method;
-                @_ = ( $class, @_ );
-                goto &$method;
-            } else {
-                return 'BaselinerX::CI::'.$method;
-            }
-        }
-    }
-
-    # CHI cache setup
-    our $ccache;
-    my $setup_fake_cache = sub {
-       { package Nop; sub AUTOLOAD{ } };
-       $ccache = bless {} => 'Nop';
-    };
-    if( !Baseliner->config->{cache} ) {
-        $setup_fake_cache->();
-    } else {
-        my $cache_type = Baseliner->config->{cache};
-        my $cache_defaults = {
-                fastmmap  => [ driver => 'FastMmap', root_dir   => Util->_tmp_dir . '/bali-cache', cache_size => '256m' ],
-                memory    => [ driver => 'Memory' ],
-                rawmemory => [ driver => 'RawMemory', datastore => {}, max_size => 1000 ],
-                sharedmem => [ driver => 'SharedMem', size => 1_000_000, shmkey=>93894384 ],
-                redis     => [ driver => 'BaselinerRedis', namespace => 'cache', server => ( Baseliner->config->{redis}{server} // 'localhost:6379' ), debug => 0 ],
-                mongo     => [ driver => 'Mongo' ] # not CHI
-        };
-        my $cache_config = ref $cache_type eq 'ARRAY' 
-            ? $cache_type :  ( $cache_defaults->{ $cache_type } // $cache_defaults->{fastmmap} );
-        $ccache = eval {
-            if( $cache_type eq 'mongo' ) {
-                require Baseliner::Cache;
-                Baseliner::Cache->new( @$cache_config );
-            } else {
-                require CHI;
-                CHI->new( @$cache_config );
-            }
-        }; 
-        if( $@ ) {
-            Util->_error( Util->_loc( "Error configuring cache: %1", $@ ) );
-            $setup_fake_cache->();
-        } else {
-            Util->_debug( "CACHE Setup ok: " . join' ', @$cache_config );
-        }
-    }
-
-    sub cache_keyify { 
-        my ($self,$key)=@_;
-        return ref $key ? Storable::freeze( $key ) : $key;
-    }
-    sub cache_set { 
-        my ($self,$key,$value)=@_;
-        return if !$ccache;
-        Util->_debug(-1, "+++ CACHE SET: " . ( ref $key ? Util->_to_json($key) : $key ) ) if $ENV{BALI_CACHE_TRACE}; 
-        Util->_debug( Util->_whereami ) if defined $ENV{BALI_CACHE_TRACE} && $ENV{BALI_CACHE_TRACE} > 1 ;
-        $ccache->set( $key, $value ) 
-    }
-    sub cache_get { 
-        my ($self,$key)=@_;
-        return if !$ccache;
-        return if $Baseliner::_no_cache;
-        return if !$ccache;
-        Util->_debug(-1, "--- CACHE GET: " . ( ref $key ? Util->_to_json($key) : $key ) ) if $ENV{BALI_CACHE_TRACE}; 
-        $ccache->get( $key ) 
-    }
-    sub cache_remove { 
-        my ($self,$key)=@_;
-        return if !$ccache;
-        ref $key eq 'Regexp' ?  $self->cache_remove_like($key) : $ccache->remove( $key ) ;
-    }
-    sub cache_keys { $ccache->get_keys( @_ ) }
-    sub cache_compute { $ccache->compute( @_ ) }
-    sub cache_clear { $ccache->clear }
-    sub cache_remove_like { my $re=$_[1]; Baseliner->cache_remove($_) for Baseliner->cache_keys_like($re); } 
-    sub cache_keys_like { my $re=$_[1]; $re='.*' unless length $re; grep /$re/ => Baseliner->cache_keys; }
-
-    if( Baseliner->debug ) {
-        Baseliner->cache_clear;  # clear cache on restart
-    }
-    Baseliner->cache_remove( qr/registry:/ );
+    # cache setup
+    cache->remove( qr/registry:/ );
 
     # Beep
     my $bali_env = $ENV{CATALYST_CONFIG_LOCAL_SUFFIX} // $ENV{BASELINER_CONFIG_LOCAL_SUFFIX};
@@ -581,7 +432,7 @@ sub _comp_names_search_prefixes {
 Replace the C<password> field in the debug log with asterisks.
 
 =cut
-if( Baseliner->debug ) {
+if( Clarive->debug ) {
     around dump_these => sub {
         my $orig = shift;
         my $c = shift;
@@ -604,35 +455,6 @@ if( Baseliner->debug ) {
         return @ret;
     };
 }
-
-sub enqueue {
-    my $c = shift;
-    my $jobid = ! ref $_[0] ? shift : 'jobid='. Util->_md5( int(rand($$)) . int(rand(9999999)) . Util->_nowstamp . $$ );
-    $c->stash->{finalize_queue} //= [];
-    push @{ $c->stash->{finalize_queue} }, ( $jobid => [ @_ ] );
-    $jobid;
-}
-
-around 'finalize' => sub {
-    my $orig = shift;
-    my $c = shift;
-    $c->$orig( @_ );
-
-    my $queue = $c->stash->{finalize_queue};
-    if( ref $queue eq 'ARRAY' ) {
-        while( @$queue ) {
-            my ($job_name, $job) = ( shift @$queue, shift @$queue );
-            Util->_debug( "Running finalize job $job_name" );
-            try { 
-                my ($code, @data) = @$job;
-                $code->( $c, @data );
-                Util->_debug( "DONE Running finalize job $job_name" );
-            } catch {
-                Util->_debug( "ERROR Running finalize job $job_name" );
-            };
-        }
-    }
-};
 
 # monkey patch this
 sub Class::Date::TO_JSON { $_[0]->string };

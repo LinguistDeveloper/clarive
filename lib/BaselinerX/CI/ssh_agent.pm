@@ -16,7 +16,7 @@ has ssh     => (
     lazy     => 1,
     default  => sub {
         my $self = shift;
-        Baseliner->debug and $Net::OpenSSH::debug |= 8;
+        Clarive->debug and $Net::OpenSSH::debug |= 8;
         my $uri = $self->_build_uri;
         require Net::OpenSSH;
         my $n = Net::OpenSSH->new( $uri );

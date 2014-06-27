@@ -123,6 +123,10 @@ sub serialize {
     return \%data;
 }
 
+sub as_hash {
+    %{ shift->serialize };
+}
+
 # sets several attributes at once, like DBIC
 #   the ci must exist (self=ref)
 sub update {
@@ -169,9 +173,9 @@ sub save {
         }
     }
 
-    Baseliner->cache_remove( qr/^ci:/ );
-    Baseliner->cache_remove( qr/ci:[0-9]+:/ );
-    Baseliner->cache_remove( qr/:$mid:/ ) if length $mid;
+    cache->remove( qr/^ci:/ );
+    cache->remove( qr/ci:[0-9]+:/ );
+    cache->remove( qr/:$mid:/ ) if length $mid;
     
     # TODO make it mongo transaction bound, in case there are foreign tables
     if( $exists ) { 
@@ -224,7 +228,7 @@ sub delete {
         mdb->master_rel->remove({ '$or'=>[{from_mid=>"$mid"},{to_mid=>"$mid"}] },{multiple=>1});
         mdb->master_doc->remove({ mid=>"$mid" },{multiple=>1});
         mdb->master->remove({ mid=>"$mid" },{multiple=>1});
-        Baseliner->cache_remove( qr/^ci:/ );
+        cache->remove( qr/^ci:/ );
         delete $self->{mid} if ref $self;  # delete the mid value, in case a reuse is in place
         return 1;
     } else {
@@ -309,7 +313,7 @@ sub save_data {
             my $rdoc = { $my_rel => $master_row->{mid}, $other_rel => $other_mid, rel_type=>$rel_type_name, rel_field=>$rel->{field} };
             mdb->master_rel->find_or_create($rdoc);
             push @{$relations{ $rel->{field} }}, $other_mid;
-            Baseliner->cache_remove( qr/:$other_mid:/ );
+            cache->remove( qr/:$other_mid:/ );
         }
     }
     # now store the data
@@ -356,11 +360,11 @@ sub load {
     _fail _loc( "Missing mid %1", $mid ) unless length $mid;
     # in scope ? 
     my $scoped = $Baseliner::CI::mid_scope->{ $mid } if $Baseliner::CI::mid_scope;
-    #say STDERR "----> SCOPE $mid =" . join( ', ', keys( $Baseliner::CI::mid_scope // {}) ) if $Baseliner::CI::mid_scope && Baseliner->debug;
+    #say STDERR "----> SCOPE $mid =" . join( ', ', keys( $Baseliner::CI::mid_scope // {}) ) if $Baseliner::CI::mid_scope && Clarive->debug;
     return $scoped if $scoped;
     # in cache ?
     my $cache_key = "ci:$mid:";
-    my $cached = Baseliner->cache_get( $cache_key );
+    my $cached = cache->get( $cache_key );
     #Util->_warn( "Cached $mid" ) if $cached;
     return $cached if $cached;
 
@@ -379,7 +383,7 @@ sub load {
     # fix static generic calling from Baseliner::CI
     $self = $class if $self eq 'Baseliner::Role::CI';
     # check class is available, otherwise use a dummy ci class
-    $self = $class = 'BaselinerX::CI::Empty' unless _package_is_loaded( $class );
+    $self = $class = 'BaselinerX::CI::Empty' unless Clarive->load_class( $class );
     
     # load pre-data
     $data = { %$data, %{ $self->load_pre_data($mid, $data) || {} } };
@@ -445,7 +449,7 @@ sub load {
     $data->{ci_form} //= $self->ci_form if $Baseliner::CI::get_form;
     $data->{ci_class} //= $class;
     $Baseliner::CI::mid_scope->{ "$mid" } = $data if $Baseliner::CI::mid_scope;
-    Baseliner->cache_set($cache_key, $data);
+    cache->set($cache_key, $data);
     return $data;
 }
 
@@ -554,7 +558,7 @@ sub related_cis {
     return @$scoped if $scoped;
     # in cache ?
     my $cache_key = [ "ci:$mid:", \%opts ];
-    if( my $cached = Baseliner->cache_get( $cache_key ) ) {
+    if( my $cached = cache->get( $cache_key ) ) {
         return @$cached if ref $cached eq 'ARRAY';
     }
     my $where = {};
@@ -603,7 +607,7 @@ sub related_cis {
         $ci;
     } @data;
     $Baseliner::CI::mid_scope->{ $scope_key } = \@ret if $Baseliner::CI::mid_scope;
-    Baseliner->cache_set( $cache_key, \@ret );
+    cache->set( $cache_key, \@ret );
     return @ret;
 }
 
@@ -691,7 +695,7 @@ sub related {
     $mid // _fail 'Missing parameter `mid`';
     # in cache ? 
     my $cache_key = [ "ci:$mid:",  \%opts ];
-    if( my $cached = Baseliner->cache_get( $cache_key ) ) {
+    if( my $cached = cache->get( $cache_key ) ) {
         return @$cached if ref $cached eq 'ARRAY';
     }
     my $depth = $opts{depth} // 1;
@@ -727,7 +731,7 @@ sub related {
     }
     # filter
     @cis = $self_or_class->_filter_cis( %opts, _cis=>\@cis ) unless $opts{filter_early};
-    Baseliner->cache_set( $cache_key, \@cis );
+    cache->set( $cache_key, \@cis );
     return @cis;
 }
 

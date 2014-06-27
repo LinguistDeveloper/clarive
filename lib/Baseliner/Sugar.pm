@@ -224,7 +224,7 @@ sub events_by_mid {
     my $min_level = $p{min_level} // 0;
 
     my $cache_key = [ "events:$mid:", \%p ];
-    my $cached = Baseliner->cache_get( $cache_key );
+    my $cached = cache->get( $cache_key );
     return $cached if $cached;
 
     my @evs = mdb->event->find({ mid=>"$mid" })->sort({ ts=>-1 })->all;
@@ -248,7 +248,7 @@ sub events_by_mid {
         $d; 
     } @evs ];
 
-    Baseliner->cache_set( $cache_key, $ret );
+    cache->set( $cache_key, $ret );
 
     return $ret;
 }
