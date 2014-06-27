@@ -327,7 +327,7 @@ sub index : Private {
         my @features_list = Baseliner->features->list;
         # header_include hooks
         $c->stash->{header_include} = [
-            map { { name=>$_, content=>_slurp $_ } }
+            map { { name=>$_, content=>Util->_slurp($_) } }
             _unique
             grep { -e $_ } map { "" . Path::Class::dir( $_->path, 'root', 'include', 'head.html') }
                     @features_list 

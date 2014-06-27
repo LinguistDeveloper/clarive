@@ -573,6 +573,7 @@ sub view : Local {
                 $c->stash->{jobs} = \@jobs;
             }
             
+            # used by the Change status menu in the topic
             $c->stash->{status_items_menu} = _encode_json(\@statuses);
         } else {
             $id_category = $p->{new_category_id} // $p->{category_id};

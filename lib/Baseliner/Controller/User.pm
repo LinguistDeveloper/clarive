@@ -520,7 +520,7 @@ sub application_json : Local {
     $query and $query =~ s{\s+}{.*}g;  # convert query in regex
 
     foreach my $ns ( Baseliner->model('Permissions')->user_namespaces( $c->username ) ) {
-        my ($domain, $item ) = ns_split( $ns );
+        my ($domain, $item ) = Util->ns_split( $ns );
         next unless $item;
         next unless $domain =~ /application/;
         next if $query && $item !~ m/$query/i;

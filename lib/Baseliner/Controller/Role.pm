@@ -99,7 +99,7 @@ sub action_tree_old : Local {
     foreach my $a ( @actions ) {
         my $key = $a->{key};
         ( my $folder = $key ) =~ s{^(\w+\.\w+)\..*$}{$1}g;
-        push @{ $tree{ $folder } }, { id=>$a->{key}, text=>_loc_decoded( $a->{name} ), leaf=>\1 }; 
+        push @{ $tree{ $folder } }, { id=>$a->{key}, text=>Util->_loc_decoded( $a->{name} ), leaf=>\1 }; 
     }
     my @tree_final = map { { id=>$_, text=>$_, leaf=>\0, children=>$tree{$_} } } sort keys %tree;
     $c->stash->{json} = \@tree_final;
@@ -151,7 +151,7 @@ sub action_tree : Local {
                 if ( @tokens ) { # not a leaf
                     push @$children, { id=>$id, text => $name, leaf=>\0, children=> $children_of->($id, @actions) };
                 } else { # a leaf
-                    push @$children, { id=>$id, text => sprintf( "%s (%s)",_loc_decoded( $action->{name} ), $id) , leaf=>\1 };
+                    push @$children, { id=>$id, text => sprintf( "%s (%s)",Util->_loc_decoded( $action->{name} ), $id) , leaf=>\1 };
                 }
 
             }

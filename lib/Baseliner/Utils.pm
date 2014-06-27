@@ -15,8 +15,6 @@ Some utilities shared by different Baseliner modules and plugins.
 use Exporter::Tidy default => [
     qw(
     _loc
-    _loc_raw
-    _cut
     _log
     _info
     _debug
@@ -25,20 +23,11 @@ use Exporter::Tidy default => [
     _utf8
     _tz
     _ts
-    slashFwd
-    slashBack
-    slashSingle
-    _loc_ansi
-    _utf8_to_ansi
-    _guess_utf8
     _loc_unaccented
-    _loc_decoded
     _unique
     _throw
-    _say
     _dt
     _now
-    _now_ora
     _nowstamp
     parse_date
     parse_dt
@@ -61,32 +50,22 @@ use Exporter::Tidy default => [
     _tmp_file
     _damn
     _parameters
-    _notify_address
-    _replace_tags
     _strip_html
     is_number
     _dump
     _load
     _trim
     _array
-    ns_split
     to_pages
     to_base64
     from_base64
-    rs_hashref
     packages_that_do
     query_array
-    query_sql_build
     _file
     _dir
-    _slurp
     _fail
     _mason
     _textile
-    _pathxs
-    _uacc
-    _markup
-    zip_files
     hash_flatten
     parse_vars
     _to_json
@@ -94,14 +73,10 @@ use Exporter::Tidy default => [
     _repl
     _md5
     _html_escape
-    _join_quoted
-    case
     _utf8_on_all
     _to_utf8
     _dbis
     _hook
-    _read_password
-    _load_features
     _ci
     _any
     _ixhash
@@ -155,6 +130,7 @@ use Locale::Maketext::Simple (
         );
 
 #use Carp::Clan qw(^Baseliner:: ^BaselinerX::);
+use strict;
 use utf8;
 use v5.10;
 use Carp::Tidy $ENV{BASELINER_DEBUG} < 2 ? ( -clan=>['Baseliner'] ) : (); #,'Catalyst'];
@@ -164,13 +140,9 @@ use YAML::XS;
 use List::MoreUtils qw(:all);
 use Try::Tiny;
 use MIME::Lite;
-use Class::MOP;
-use Text::Unaccent::PurePerl qw/unac_string/;
 use Path::Class;
 use Term::ANSIColor;
-use strict;
 use Scalar::Util qw(looks_like_number);
-
 
 BEGIN {
     # enable a TO_JSON converter
@@ -200,23 +172,6 @@ sub ns_split {
     else {
         return ( '', $ns );  
     }
-}
-
-## base standard utilities subs
-sub slashFwd {
-    (my $path = $_[0]) =~ s{\\}{/}g ;
-    return $path;
-}
-
-sub slashBack {
-    (my $path = $_[0]) =~ s{/}{\\}g ;
-    return $path;
-}
-
-sub slashSingle {
-    (my $path = $_[0]) =~ s{//}{/}g ;
-    $path =~ s{\\\\}{\\}g ;
-    return $path;
 }
 
 sub _unique {
@@ -285,7 +240,6 @@ sub _dump {
 }
 
 use Encode qw( decode_utf8 encode_utf8 is_utf8 );
-use Encode::Guess qw/utf8/;
 sub _loc {
     return unless $_[0];
     #return loc( @_ );
@@ -303,16 +257,27 @@ sub _loc {
 sub _loc_raw { return loc( @_ ) }
 sub _loc_decoded { return _utf8( _loc(@_) ) }
 sub _loc_ansi { return _utf8_to_ansi( _loc(@_) ) }
-sub _loc_unaccented { unac_string( _loc_ansi(@_) ) }
+sub _loc_unaccented { 
+    require Text::Unaccent::PurePerl;
+    Text::Unaccent::PurePerl::unac_string( _loc_ansi(@_) ) 
+}
 
 sub _utf8 {
     my $msg = shift;
     is_utf8($msg) ? $msg : decode_utf8($msg);
 }
 
-sub _unac { my $s = "$_[0]"; $s = unac_string( $s ); return $s }
+sub _unac { 
+    require Text::Unaccent::PurePerl;
+    my $s = "$_[0]"; $s = Text::Unaccent::PurePerl::unac_string( $s ); 
+    return $s;
+}
 
-sub _guess_utf8 { ref guess_encoding( $_[0] ) }
+sub _guess_utf8 { 
+    require Encode::Guess;
+    Encode::Guess->import('utf8');
+    ref guess_encoding( $_[0] ) 
+}
 
 sub _utf8_to_ansi {
     return $_[0] unless _guess_utf8( $_[0] );
@@ -501,10 +466,6 @@ sub _nowstamp {
     return $t;
 }
 
-sub _now_ora {
-    return DateTime->now(time_zone=>_tz);
-}
-
 sub _cut {
     my ($index, $separator, $str ) = @_;
     my @s = split /$separator/, $str;
@@ -545,7 +506,8 @@ sub query_array {
 sub packages_that_do {
     my @roles = @_;
     my @packages;
-    my %cl=Class::MOP::get_all_metaclasses;
+    require Class::MOP;
+    my %cl=Class::MOP::get_all_metaclasses();
     for my $package ( grep !/::Role/, grep /^Baseliner/, keys %cl ) {
         #my $meta = Class::MOP::get_metaclass_by_name($package);
         my $meta = Class::MOP::Class->initialize($package);
@@ -859,11 +821,6 @@ sub to_base64 {
 
 sub from_base64 {
     return  MIME::Base64::decode_base64( shift() );
-}
-
-sub rs_hashref {
-    my $rs = shift;
-    $rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
 }
 
 =head2 _fail
@@ -1384,20 +1341,7 @@ sub _join_quoted {
 }
 
 
-sub case {
-    my ($val, %opts) = @_;
-    for my $key ( keys %opts ) {
-        if( $key ~~ $val ) {
-           ref $opts{$key} eq 'CODE' and return $opts{$key}->();
-           return $opts{$key};
-        }
-    }
-    return;
-}
-
 sub _utf8_on_all {
-    #return map { _to_utf8( $_ ) } @_;
-    #map { _log "SSSSSSSSSSSSSS=".  utf8::valid( $_) } @_;
     return map { Encode::_utf8_on( $_ ) if utf8::valid( $_); $_ } @_;
 }
 
@@ -1470,25 +1414,6 @@ sub _read_password {
     chomp $pass;
     say '';
     $pass;
-}
-
-sub _load_features {
-    my $dir = shift;
-    my %p = @_;
-    my $features = Path::Class::dir('./features');
-    my @dirs;
-    if( -d $features ) {
-        for my $dir ( map { Path::Class::dir( $_, $dir ) } $features->children ) {
-            next unless -d $dir;
-            push @dirs, $dir;
-            # if its lib, we load it
-            if( $p{use_lib} ) {
-                eval "use lib '$dir'";
-                die $@ if $@;
-            }
-        }
-    }
-    return @dirs;
 }
 
 sub _ci {

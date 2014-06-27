@@ -352,7 +352,7 @@ sub config_for_key {
     my $single_key = 0;
     eval { $config = Baseliner->registry->get( $key ) };
     if( $@ || !$config ) {  # try a shorter key if the key is not found
-        eval { $config = Baseliner->registry->get( _cut(-1, '\.', $key ) ) };
+        eval { $config = Baseliner->registry->get( Util->_cut(-1, '\.', $key ) ) };
         $single_key = 1 unless $@;
     }
     return $config;
