@@ -818,12 +818,20 @@ sub field_parent_topics {
             master_rel => {
                 rel_type => 'topic_topic',
                 to_mid   => $data->{topic_mid},
+                '$or'    => [ { rel_field => { '$nin' => \@fieldlets } }, { rel_field => undef } ],
                 #'$or'    => [ { rel_field => { '$nin' => \@fieldlets } }, { rel_field => undef } ]
             },
             from_mid => mid => topic => { '$or' => [ { is_release => { '$ne' => '1' } } ] }
         )->fields( { mid => 1, title => 1, progress => 1, category => 1 } )->all;
         @parent_topics = $self->append_category(@parent_topics);
     }
+    #- categories: {}
+    #  color: '#ff9900'
+    #  mid: '69'
+    #  name: 'Requerimiento #69'
+    #  progress: '0'
+    #  title: Requerimientos WebApp
+    
     return ($is_release, @parent_topics );
 }
 
