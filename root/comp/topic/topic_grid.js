@@ -1031,7 +1031,25 @@
             }
         };
         if (rec.json[this.dataIndex]) value = rec.json[this.dataIndex];
-        return value;
+        var render_obj = [];
+        if (value instanceof Array){
+            for (var i=0; i<value.length;i++){
+                if (typeof(value[i]) == 'object') {
+                    var tmp_obj = [];
+                    for (var j in value[i] ){
+                        console.log(value[i][j]);
+                        tmp_obj.push(j + ': ' + value[i][j]);
+                    }
+                    render_obj.push(tmp_obj.join(';'));
+                    //return JSON.stringify(value[i]);
+                }else{
+                    render_obj.push(value[i]);
+                }
+            }
+            return render_obj.join("<br>");
+        }else{
+            return value;    
+        }
     };  
 
     var search_field = new Baseliner.SearchField({
