@@ -386,6 +386,9 @@ sub user_projects_with_action {
     my $username  = $p{username};
     my $action    = $p{action};
     my $bl        = $p{bl} || '*';
+    if( $self->is_root($username) ) {
+        return map { $$_{mid} } ci->project->find->fields({ mid=>1, _id=>0 })->all;
+    }
     my $user = ci->user->find({ username=>$username })->next;
     my @id_roles = keys $user->{project_security};
     @id_roles = map { $_+0 } @id_roles;
@@ -396,7 +399,7 @@ sub user_projects_with_action {
             push @res, values $user->{project_security}->{$role->{id}};
         }
     }
-    _unique map { values $_ } @res;
+    return _unique map { values $_ } @res;
 }
 
 
