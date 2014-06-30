@@ -25,6 +25,7 @@ Baseliner.CLEditor = Ext.extend(Ext.form.TextArea, {
         Baseliner.CLEditor.superclass.initComponent.call(this);
         var self = this;
         self.loading_field = false;
+
         this.on('afterrender', function(){
             $.cleditor.buttons.fullscreen = {
                 name: 'fullscreen',
@@ -62,6 +63,8 @@ Baseliner.CLEditor = Ext.extend(Ext.form.TextArea, {
                 "rule image link unlink | cut copy paste pastetext | print source fullscreen"
             }, self );
             self.cleditor = $( self.el.dom ).cleditor(c)[0];
+            self.cleditor.disable(self.readOnly);
+
             self.on('resize', function(){
                 self.cleditor.refresh();
                 if( this.autofocus ) self.cleditor.focus();

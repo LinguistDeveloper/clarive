@@ -41,7 +41,8 @@ sub list_notifications : Local {
 
     my $rs = mdb->notification->find($where);
     $rs->skip($start);
-    $rs->limit($limit);
+    
+    $rs->limit($limit) unless $limit eq '-1';
     $rs->sort({$sort => $dir});
     
     my @rows;

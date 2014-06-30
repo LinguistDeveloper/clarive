@@ -118,6 +118,12 @@ sub process_queue {
             my $subject = $em->{subject};
             my $body = $em->{body};
 
+            #remove '?' from email comments notifications.
+            my $last = substr $body, -1;
+            if(Encode::encode("utf8", $last) eq "â\x80\x8B"){
+                $data = substr $data,0, -1;
+            }
+
             $body = Encode::encode("iso-8859-15", $body);
             # _log $body;
             $body =~ s{Ã\?}{Ñ}g;

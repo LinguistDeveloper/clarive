@@ -455,27 +455,25 @@ sub save_rule {
 
     my $ts_modified = 0;
     my $old_timestamp = ''.$p{old_ts};
-    my $actual_timestamp = mdb->rule->find({ id => ''.$p{id_rule}})->next->{ts};
-    my $previous_user = mdb->rule->find({ id => ''.$p{id_rule}})->next->{username};
-    if (!$actual_timestamp and !$previous_user){
-        $actual_timestamp = $old_timestamp;
-        $previous_user = $p{username};
-        mdb->rule->update({ id =>''.$p{id_rule} }, { '$set'=> { ts => $actual_timestamp, username => $previous_user } } ); 
+    my $rule = mdb->rule->find_one({ id => ''.$p{id_rule}});
+    my $actual_timestamp = $rule->{ts};
+    my $previous_user = $rule->{username};
+    $ts_modified = (''.$old_timestamp ne ''.$actual_timestamp) ||  ($p{username} ne $previous_user);
+    # if ( $ts_modified ){
+    #     $old_timestamp = '';
+    #     _log "RRRRRRRRRRRRRRRRRRRRRRRR por el if". $old_timestamp. " ". $actual_timestamp;
+    # }else{
+    #     _log "EEEEEEEEEEEEEEEEE por el else";
+    #     $old_timestamp = mdb->ts;
+    # }
+    mdb->rule->update({ id=>''.$p{id_rule} }, { '$set'=> { ts => mdb->ts, username => $p{username}, rule_tree=>$p{stmts_json} } } );
+    # now, version
+    # check if collection exists
+    if( ! mdb->collection('system.namespaces')->find({ name=>qr/rule_version/ })->count ) {
+        mdb->create_capped( 'rule_version' );
     }
-    $ts_modified = ''.$old_timestamp ne ''.$actual_timestamp || $p{username} ne $previous_user;
-    if ( $ts_modified ){
-        $old_timestamp = '';
-    }else{
-        $old_timestamp = mdb->ts;
-        mdb->rule->update({ id=>''.$p{id_rule} }, { '$set'=> { ts => $old_timestamp, username => $p{username}, rule_tree=>$p{stmts_json} } } );
-        # now, version
-        # check if collection exists
-        if( ! mdb->collection('system.namespaces')->find({ name=>qr/rule_version/ })->count ) {
-            mdb->create_capped( 'rule_version' );
-        }
-        delete $doc->{_id};
-        mdb->rule_version->insert({ %$doc, ts=>mdb->ts, username=>$p{username}, id_rule=>$p{id_rule}, rule_tree=>$p{stmts_json}, was=>($p{was}//'') });    
-    }
+    delete $doc->{_id};
+    mdb->rule_version->insert({ %$doc, ts=>mdb->ts, username=>$p{username}, id_rule=>$p{id_rule}, rule_tree=>$p{stmts_json}, was=>($p{was}//'') });    
     { old_ts => $old_timestamp, actual_ts => $actual_timestamp, previous_user => $previous_user };
 }
 
@@ -486,7 +484,7 @@ sub rollback_version : Local {
     my $ver = mdb->rule_version->find_one({ _id=>mdb->oid($version_id) });
     _fail _loc 'Version not found: %1', $version_id unless $ver;
     try {
-        $self->save_rule( id_rule=>$ver->{id_rule}, stmts_json=>$ver->{rule_tree}, username=>$ver->{username}, was=>$ver->{ts} );
+        $self->save_rule( id_rule=>$ver->{id_rule}, stmts_json=>$ver->{rule_tree}, username=>$ver->{username}, was=>$ver->{ts}, old_ts=>$ver->{ts} );
         $c->stash->{json} = { success=>\1, msg => _loc('Rule rollback to %1 (%2)', $ver->{ts}, $ver->{username} ) };
     } catch {
         my $err = shift;

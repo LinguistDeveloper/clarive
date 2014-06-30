@@ -22,8 +22,10 @@ params:
         width: '99%',
         value: data ? data[meta.bd_field] : '',
         height: meta.height ? parseInt(meta.height) : 397,
-        submitValue: false
+        submitValue: false, 
+        readOnly:  meta && meta.readonly ? meta.readonly : false
     });
+
 
     return [
         {   xtype: 'panel',

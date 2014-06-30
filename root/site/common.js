@@ -3277,6 +3277,7 @@ Baseliner.CBox = Ext.extend( Ext.form.Checkbox, {
             : this.checked ? 1 : 0 ;  
     }
 });
+Ext.reg( 'cbox', Baseliner.CBox );
 
 Ext.reg( 'cbox', Baseliner.CBox );
 
