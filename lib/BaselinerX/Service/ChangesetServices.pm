@@ -338,16 +338,10 @@ sub job_items {
                }
            
                my $versionid = $tfile->versionid;
-               my $item = ci->topic_file->new(
-                    mid       => $mid,   # this ci has mid, but is not yet saved as such
-                    md5       => $tfile->info->{md5},
-                    size      => $tfile->info->{filesize},
-                    path      => $fullpath,
-                    versionid => $versionid,
-               );
+               $tfile->fullpath( $fullpath );
                # if I'm the highest version, then save. Topic files are unique by project + path
                my $unique_key = $project . '&%&' . $fullpath;
-               $topic_files{$unique_key} = { item=>$item, row=>$tfile, mid=>$mid, versionid=>$versionid }
+               $topic_files{$unique_key} = { item=>$tfile, row=>$tfile, mid=>$mid, versionid=>$versionid }
                    if !exists $topic_files{$unique_key} || $topic_files{$unique_key}->{versionid} < $versionid;
             } 
         }
