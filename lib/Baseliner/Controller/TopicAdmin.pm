@@ -590,8 +590,8 @@ sub update_fields : Local {
     my $id_category = $p->{id_category};
     my @ids_field = _array $p->{fields};
     my @values_field = _array $p->{params};
-    
     cache->remove_like( qr/^topic:/ );
+    cache->remove_like( qr/^roles:/ );
     $c->registry->reload_all;
     
     my $order = 1;
@@ -621,7 +621,6 @@ sub update_fields : Local {
         $params = $self->params_normalize( $params );
         push @fields, { id_field => $$f{id_field}, params => $params };
     }    
-    
     mdb->category->update({ id=>"$id_category" },{ '$set'=>{ fieldlets=>\@fields } });
 
     $c->stash->{json} = { success => \1, msg=>_loc('fields modified') };
