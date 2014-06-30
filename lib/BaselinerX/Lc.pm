@@ -119,18 +119,32 @@ sub lc_for_project {
         mdb->master_rel->find({from_mid=>"$id_prj", rel_type=>'project_repository'})->fields({ to_mid=>1, _id=>0 })->all;
 
     for my $id_repo ( @repos ) {
-        my $repo = Baseliner::CI->new( $id_repo );
-        push @$nodes, {
-          node => $repo->name,
-          type => 'changeset',
-          url => '/lifecycle/branches',
-          active => 1,
-          icon => '/static/images/icons/lc/branches_obj.gif',
-          data => {
-            id_repo => $id_repo  
-          }
-          
-        }
+        try {
+            my $repo = ci->new( $id_repo );
+            push @$nodes, {
+              node => $repo->name,
+              type => 'changeset',
+              url => '/lifecycle/branches',
+              active => 1,
+              icon => '/static/images/icons/lc/branches_obj.gif',
+              data => {
+                id_repo => $id_repo  
+              }
+            };
+        } catch {
+            # publish an error node
+            my $err = shift;
+            my $msg = _loc('Error loading repository %1: %2', $id_repo, $err);
+            _error( $msg );
+            push @$nodes, {
+              node    => substr($msg,0,80), 
+              active  => 1,
+              leaf    => \1,
+              icon    => '/static/images/icons/error.png',
+              data    => { id_repo => $id_repo }
+            };
+            
+        };
     }
 
     # General bag for starting the deployment workflow
@@ -172,7 +186,16 @@ sub lc_for_project {
                 ref $_ eq 'BaselinerX::CI::status'
             } 
             BaselinerX::CI::status->query( { id_status =>mdb->in(@from_statuses) } );
-    }     
+    } else {
+        # publish an warning node
+        my $msg = _loc('User does not have access to states');
+        push @$nodes, {
+          node    => $msg,
+          active  => 1,
+          leaf    => \1,
+          icon    => '/static/images/icons/error.png',
+        };
+    }
 
     no strict;
     [ @$nodes, @states ];

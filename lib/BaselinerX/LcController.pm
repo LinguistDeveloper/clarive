@@ -333,7 +333,7 @@ sub tree_project : Local {
                 state_name => _loc($node->{name} // $node->{node}),
                 %{ $node->{data} || {} }
             },
-            leaf       => \0,
+            leaf       => $$node{leaf} // \0,
             expandable => \0
         };
     }
@@ -406,10 +406,21 @@ sub changeset : Local {
     if( $config->{show_changes_in_tree} || !$p->{id_status} ) { 
         for my $provider ( packages_that_do 'Baseliner::Role::LC::Changes' ) {
             #push @cs, $class;
-            my $prov = $provider->new( project=>$project );
-            my @changes = $prov->list( project=>$project, bl=>$bl, id_project=>$id_project, state_name=>$state_name );
-            _log _loc "---- provider $provider has %1 changesets", scalar @changes;
-            push @cs, @changes
+            try {
+                my $prov = $provider->new( project=>$project );
+                my @changes = $prov->list( project=>$project, bl=>$bl, id_project=>$id_project, state_name=>$state_name );
+                _log _loc "---- provider $provider has %1 changesets", scalar @changes;
+                push @cs, @changes;
+            } catch {
+                my $err = shift;
+                my $msg = _loc('Error loading changes for provider %1: %2', $provider, $err);
+                _error( $msg );
+                push @tree, {
+                    icon => '/static/images/icons/error.png',
+                    text => substr($msg,0,80), 
+                    leaf => \1,
+                };
+            };
         }
 
         # loop through the changeset objects (such as BaselinerX::GitChangeset)

@@ -1,9 +1,6 @@
 package BaselinerX::GitBranch;
 use Moose;
 
-#use constant controller => '/gittree/gitbranch';
-
-#has name => qw/is rw isa Str required 1/;
 has repo_dir => qw/is rw isa Str required 1/;
 has repo_name => qw/is rw isa Str required 1/;
 has project => qw/is rw isa Str required 1/;
