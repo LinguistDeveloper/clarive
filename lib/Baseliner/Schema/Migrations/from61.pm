@@ -20,6 +20,7 @@ sub upgrade {
     mdb->migra->posts;
     mdb->migra->statuses;
     mdb->migra->master_doc_clean;
+    mdb->migra->master_cal;
     mdb->migra->topic_assets;
     mdb->session->drop;
     mdb->cache->drop;

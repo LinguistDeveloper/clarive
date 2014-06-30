@@ -761,6 +761,12 @@ sub topic_assets {
     ci->delete( $_ ) for @deleteables;
 }
 
+sub master_cal {
+    for my $cal ( _dbis->query('select * from bali_master_cal')->hashes ) {
+        mdb->master_cal->update({ id=>$$cal{id} }, $cal,{ upsert=>1 });
+    }
+}
+
 sub master_doc_clean {
     for my $m ( mdb->master_doc->find->all ) {
         # delete yaml attribute
