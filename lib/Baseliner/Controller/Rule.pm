@@ -202,33 +202,58 @@ sub grid : Local {
     $c->forward("View::JSON");
 }
 
+sub compile_wsdl {
+    my ($self,$wsdl)=@_;
+    return try {
+        require XML::Compile::SOAP11;
+        require XML::Compile::SOAP::Daemon::CGI;
+        require XML::Compile::WSDL11;
+        require XML::Compile::SOAP::Util;
+        return XML::Compile::WSDL11->new( Util->parse_vars($wsdl,{ WSURL=>'http://fakeurl:8080/rule/soap/fake_for_compile' }) );
+    } catch {
+        my $err = shift;
+        _fail( _loc('Error compiling WSDL: <br /><pre>%1</pre>', Util->_html_escape($err)) );
+    };
+}
+
 sub save : Local {
     my ( $self, $c ) = @_;
     my $p    = $c->req->params;
-    my $data = {
-        rule_active => '1',
-        rule_name  => $p->{rule_name},
-        rule_when  => ( $p->{rule_type} eq 'chain' 
-            ? $p->{chain_default}  
-            : $p->{rule_when} ),
-        rule_event => $p->{rule_event},
-        rule_type  => $p->{rule_type},
-        rule_desc  => substr($p->{rule_desc},0,2000),
-        subtype => $p->{subtype},
-        wsdl => $p->{wsdl},
-        ts =>  mdb->ts,
-        username => $c->username
+    try {
+        if( $$p{wsdl} ) {
+            # soap envelope received, precompile for errors
+            $self->compile_wsdl($$p{wsdl});
+        }
+        my $data = {
+            rule_active => '1',
+            rule_name  => $p->{rule_name},
+            rule_when  => ( $p->{rule_type} eq 'chain' 
+                ? $p->{chain_default}  
+                : $p->{rule_when} ),
+            rule_event => $p->{rule_event},
+            rule_type  => $p->{rule_type},
+            rule_desc  => substr($p->{rule_desc},0,2000),
+            subtype => $p->{subtype},
+            wsdl => $p->{wsdl},
+            ts =>  mdb->ts,
+            username => $c->username
+        };
+        if ( length $p->{rule_id} ) {
+            my $doc = mdb->rule->find_one({ id=>"$p->{rule_id}" });
+            _fail _loc 'Rule %1 not found', $p->{rule_id} unless $doc;
+            mdb->rule->update({ id=>"$p->{rule_id}" },{ %$doc, %$data });
+        } else {
+            $data->{id} = mdb->seq('rule');
+            $data->{rule_seq} = 0+mdb->seq('rule_seq');
+            mdb->rule->insert($data);
+        }
+        $c->stash->{json} = { success => \1, msg => 'Creado' };
+    } catch {
+        my $err = shift;
+        my $msg = _loc('Error saving rule: %1', $err );
+        _error( $msg );
+        $c->stash->{json} = { success => \0, msg => $msg };
     };
-    if ( length $p->{rule_id} ) {
-        my $doc = mdb->rule->find_one({ id=>"$p->{rule_id}" });
-        _fail _loc 'Rule %1 not found', $p->{rule_id} unless $doc;
-        mdb->rule->update({ id=>"$p->{rule_id}" },{ %$doc, %$data });
-    } else {
-        $data->{id} = mdb->seq('rule');
-        $data->{rule_seq} = 0+mdb->seq('rule_seq');
-        mdb->rule->insert($data);
-    }
-    $c->stash->{json} = { success => \1, msg => 'Creado' };
     $c->forward("View::JSON");
 }
 
@@ -379,6 +404,8 @@ sub stmts_save : Local {
     my $error_checking_dsl = 0;
     try {
         my $id_rule = $p->{id_rule} or _throw 'Missing rule id';
+        my $doc = mdb->rule->find_one({ id=>$id_rule }) // _fail _loc 'Rule id %1 missing. Deleted?', $id_rule;
+        my $ignore_dsl_errors = $p->{ignore_dsl_errors} || $$doc{ignore_dsl_errors};
         # check json valid
         my $stmts = try { 
             _decode_json( $p->{stmts} );
@@ -387,21 +414,28 @@ sub stmts_save : Local {
         };
         _log _dump $stmts;
         # check if DSL is buildable
-        try { 
+        my $detected_errors = try { 
             $c->model('Rules')->dsl_build_and_test( $stmts ); 
+            return '';
         } catch {
+            my $err = shift;
+            _warn( $err );
             $error_checking_dsl = 1; 
-            return if $p->{ignore_dsl_errors};
-            _fail _loc "Error testing DSL build: %1", shift(); 
+            return $err if $ignore_dsl_errors;
+            _fail _loc "Error testing DSL build: %1", $err;
         };
-        $returned_ts = $self->save_rule( id_rule=>$id_rule, stmts_json=>$p->{stmts}, username=>$c->username, old_ts => $p->{old_ts} );
+        $returned_ts = $self->save_rule( id_rule=>$id_rule, stmts_json=>$p->{stmts}, username=>$c->username, old_ts => $p->{old_ts}, 
+            detected_errors   => $detected_errors,  # useful in case we want to warn user before doing something with this broken rule
+            ignore_dsl_errors =>( $$p{ignore_error_always} ? '1' : () ) );
         my $old_ts = $returned_ts->{old_ts};
         my $actual_ts = $returned_ts->{actual_ts};
         my $previous_user = $returned_ts->{previous_user};
         if ($returned_ts->{old_ts} ne ''){
-            $c->stash->{json} = { success=>\1, msg => _loc('Rule statements saved ok'), old_ts => $old_ts, actual_ts=> $actual_ts, username=>$c->username };
+            my ($short_errors) = $detected_errors =~ m/^([^\n]+)/s;
+            my $msg = $detected_errors ? _loc('Rule statements saved with errors: %1', $short_errors) : _loc('Rule statements saved ok');
+            $c->stash->{json} = { success=>\1, msg =>$msg, old_ts => $old_ts, actual_ts=> $actual_ts, username=>$c->username, detected_errors=>$detected_errors };
         } else {
-            $c->stash->{json} = { success=>\1, msg => _loc('An other user changed rule statements during edition process!'), old_ts => $old_ts, actual_ts=> $actual_ts, username=> $previous_user };
+            $c->stash->{json} = { success=>\1, msg => _loc('Another user changed rule statements while editing'), old_ts => $old_ts, actual_ts=> $actual_ts, username=> $previous_user , detected_errors=>$detected_errors};
         }
     } catch {
         my $err = shift;
@@ -457,20 +491,28 @@ sub save_rule {
     my $old_timestamp = ''.$p{old_ts};
     my $rule = mdb->rule->find_one({ id => ''.$p{id_rule}});
     my $actual_timestamp = $rule->{ts};
+    my %other_options;
+    defined $p{$_} and $other_options{$_}=$p{$_} for qw(detected_errors ignore_dsl_errors);
+    _debug(\%other_options );
     my $previous_user = $rule->{username};
+    if (!$actual_timestamp and !$previous_user){
+        $actual_timestamp = $old_timestamp;
+        $previous_user = $p{username};
+        mdb->rule->update({ id =>''.$p{id_rule} }, { '$set'=>{ ts=>$actual_timestamp, username=>$previous_user, %other_options } } ); 
+    }
     $ts_modified = (''.$old_timestamp ne ''.$actual_timestamp) ||  ($p{username} ne $previous_user);
-    # if ( $ts_modified ){
-    #     $old_timestamp = '';
-    #     _log "RRRRRRRRRRRRRRRRRRRRRRRR por el if". $old_timestamp. " ". $actual_timestamp;
-    # }else{
-    #     _log "EEEEEEEEEEEEEEEEE por el else";
-    #     $old_timestamp = mdb->ts;
-    # }
-    mdb->rule->update({ id=>''.$p{id_rule} }, { '$set'=> { ts => mdb->ts, username => $p{username}, rule_tree=>$p{stmts_json} } } );
-    # now, version
-    # check if collection exists
-    if( ! mdb->collection('system.namespaces')->find({ name=>qr/rule_version/ })->count ) {
-        mdb->create_capped( 'rule_version' );
+    if ( $ts_modified ){
+        $old_timestamp = '';
+    }else{
+        $old_timestamp = mdb->ts;
+        mdb->rule->update({ id=>''.$p{id_rule} }, { '$set'=> { ts => $old_timestamp, username => $p{username}, rule_tree=>$p{stmts_json}, %other_options } } );
+        # now, version
+        # check if collection exists
+        if( ! mdb->collection('system.namespaces')->find({ name=>qr/rule_version/ })->count ) {
+            mdb->create_capped( 'rule_version' );
+        }
+        delete $doc->{_id};
+        mdb->rule_version->insert({ %$doc, ts=>mdb->ts, username=>$p{username}, id_rule=>$p{id_rule}, rule_tree=>$p{stmts_json}, was=>($p{was}//'') });    
     }
     delete $doc->{_id};
     mdb->rule_version->insert({ %$doc, ts=>mdb->ts, username=>$p{username}, id_rule=>$p{id_rule}, rule_tree=>$p{stmts_json}, was=>($p{was}//'') });    
@@ -685,7 +727,12 @@ sub default : Path {
             my $err = shift;
             my $json = try { Util->_encode_json($p) } catch { '{ ... }' };
             _error "Error in Rule WS call '$id_rule/$meth': $json\n$err";
-            $ret = { msg=>"$err", success=>\0 }; 
+            # $ret = { msg=>"$err", success=>\0 }; 
+            $ret = +{
+                Fault => { faultcode => '999', faultstring => "$err", faultactor => "$wsurl", },
+                _RETURN_CODE => 404,
+                _RETURN_TEXT => 'sorry, not found'
+          };
         };
         return $ret;
     };
@@ -699,26 +746,41 @@ sub default : Path {
             $c->res->body( $wsdl_body );
         } else {
             # soap envelope received
-            require XML::Compile::SOAP11;
-            require XML::Compile::SOAP::Daemon::CGI;
-            require XML::Compile::WSDL11;
-            require XML::Compile::SOAP::Util;
-            my $wsdl = XML::Compile::WSDL11->new($wsdl_body);
+            my $wsdl = $self->compile_wsdl($wsdl_body);
             my $daemon = XML::Compile::SOAP::Daemon::CGI->new();
-            $daemon->operationsFromWSDL(
-                $wsdl,
-                default_callback => sub {
-                    my ($soap, $request_data, $cgi_request) = @_;
-                    $stash->{ws_request} = $request_data;
-                    my $res = $run_rule->();  # typically ws_response
-                    return $res;
-                },
-            );
-            $self->cgi_to_response($c, sub {
-                my $query = CGI->new;
-                $daemon->runCgiRequest(query => $query);
-            }); 
+            try {
+                $daemon->operationsFromWSDL(
+                    $wsdl,
+                    default_callback => sub {
+                        my ($soap, $request_data, $cgi_request) = @_;
+                        $stash->{ws_request} = $request_data;
+                        my $res = $run_rule->();  # typically ws_response
+                        if( ref $res eq 'HASH' && exists $$res{Fault} ) {
+                            # in case of error, add soap role, ie 'http://schemas.xmlsoap.org/soap/actor/next';
+                            $$res{Fault}{faultactor} = $soap->role;
+                        }
+                        return $res;
+                    },
+                );
+                $self->cgi_to_response($c, sub {
+                    my $query = CGI->new;
+                    $daemon->runCgiRequest(query => $query);
+                }); 
              
+            } catch {
+                my $err = shift;
+                if( ref $err eq 'Log::Report::Exception' ) {
+                    my $msg = sprintf('%s in %s', $$err{message}{_msgid}, $$err{message}{name});
+                    require XML::Simple;
+                    $c->res->body( XML::Simple::XMLout({ error=>$msg, raw=>"$err", message=>$$err{message} }, RootName=>'clarive') );
+                } else {
+                    my $msg = _loc( 'Error setting up WSDL operations: %1', $err );
+                    require XML::Simple;
+                    $c->res->body( XML::Simple::XMLout({ error=>$msg }, RootName=>'clarive') );
+                }
+                $c->res->status(500);
+            };
+            
         }
          
     } else {
@@ -730,7 +792,7 @@ sub default : Path {
             $c->res->body( Util->_dump($ret) );
         } elsif( $meth eq 'xml' ) {
             require XML::Simple;
-            $c->res->body( XML::Simple::XMLout($ret) );
+            $c->res->body( XML::Simple::XMLout($ret, RootName=>'clarive') );
             $c->res->content_type("text/xml; charset=utf-8");
         } else {
             $c->res->body( $ret );

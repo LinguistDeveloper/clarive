@@ -170,9 +170,16 @@
                 if( res.success ) {
                     Baseliner.message(_('Rule'), _('Rule saved successfully') );
                     wiz.destroy();
-                } else {
-                    Baseliner.error(_('Rule'), res.msg );
                 }
+            }, function(res){
+                Ext.Msg.show({
+                    title: _('Rule'),
+                    width: 800,
+                    height: 600,
+                    msg: res.msg,
+                    buttons: Ext.Msg.OK,
+                    icon: Ext.Msg.ERROR
+                });
             });
             //wiz.ownerCt.close();
         },

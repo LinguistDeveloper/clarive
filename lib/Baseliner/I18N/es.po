@@ -333,6 +333,15 @@ msgstr "Editar: %1 (%2)"
 msgid "Type: %1"
 msgstr "Tipo: %1"
 
+msgid "Go Back"
+msgstr "Volver"
+
+msgid "Save it anyway"
+msgstr "Guardar de todas formas"
+
+msgid "DSL validation failed"
+msgstr "Ha fallado la validación del DSL"
+
 msgid "Error during DSL Execution: %1"
 msgstr "Error durante la ejecución DSL: %1"
 
@@ -7033,7 +7042,7 @@ msgstr "Control"
 msgid "Rule statements saved ok"
 msgstr "Sentencias de la regla guardadas ok"
 
-msgid "An other user changed rule statements during edition process!"
+msgid "Another user changed rule statements while editing"
 msgstr "¡Otro usuario ha cambiado las sentencias de la regla durante el proceso de edición!"
 
 msgid "Simulation of modification of rule statements"
