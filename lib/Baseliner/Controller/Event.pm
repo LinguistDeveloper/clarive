@@ -44,14 +44,12 @@ sub log : Local {
     $dir ||= 'desc';
     $start||= 0;
     $limit ||= 30;
-
-    my $page = to_pages( start=>$start, limit=>$limit );
-    
     my $where={};
     $query and $where = mdb->query_build( query=>$query, fields=>[qw(id event_key )] );
     my $rs = mdb->event->find($where);
     $cnt = $rs->count;
-    $rs->skip($start)->limit($limit)->sort({ $sort=>$dir =~ /desc/i ? -1 : 1 });
+    $rs->skip($start)->sort({ $sort=>$dir =~ /desc/i ? -1 : 1 });
+    $rs->limit($limit) unless $limit eq '-1';
     my @rows = $rs->all;
     my @eventids = map { $_->{id} } @rows;
     my %rule_log;
@@ -84,7 +82,7 @@ sub log : Local {
         my $log_entries = $rule_log{ $e->{id} } // [];
         my @rules = map {
             my $log = $_;
-            my $rule = $all_rules->{$log->{id_rule}};
+            my $rule = $all_rules->{$log->{id_rule}} if exists $log->{id_rule};
             +{
                 %$log, 
                 _parent       => $e->{_id},
@@ -102,7 +100,7 @@ sub log : Local {
         push @final, ($e, @rules );
     }
     #_error \@rows;
-    $c->stash->{json} = { data => \@final, totalCount=>$cnt };
+    $c->stash->{json} = { data => \@final, totalCount=>scalar @final };
     $c->forward("View::JSON");
 }
 
