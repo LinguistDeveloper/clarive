@@ -753,7 +753,18 @@ sub default : Path {
                     $wsdl,
                     default_callback => sub {
                         my ($soap, $request_data, $cgi_request) = @_;
-                        $stash->{ws_request} = $request_data;
+                        if( ref $request_data eq 'HASH' ) {
+                            # if we have SOAP:Header, may break parse_vars with toString errors, 
+                            #   so strip out '{xxxx}' keys used by the LibXML soap header translation
+                            #   SOAP:Header could be included in the wsdl, but that's not its place:
+                            #   http://stackoverflow.com/questions/5726127/adding-soap-implicit-headers-to-wsdl
+                            #   the recommendation: strip header data out, so we do it:
+                            my %rr = map { $_ => $$request_data{$_} } 
+                                grep !/^\{/, keys %$request_data;
+                            $stash->{ws_request} = \%rr;
+                        } else {
+                            $stash->{ws_request} = $request_data;
+                        }
                         my $res = $run_rule->();  # typically ws_response
                         if( ref $res eq 'HASH' && exists $$res{Fault} ) {
                             # in case of error, add soap role, ie 'http://schemas.xmlsoap.org/soap/actor/next';
