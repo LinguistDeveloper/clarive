@@ -917,7 +917,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                 #     $_->{$field. "_$category"} = $_->{$field};
                 # }                  
             }else{
-                if ($_->{$field}  eq ''){
+                if ($_->{$field} && $_->{$field}  eq ''){
                     $_->{$field} = ' ';
                 }
 
@@ -1037,7 +1037,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
             #  TODO for sorting, do this before and save to report_results collection (capped?) 
             #       with query id and query ts, then sort
             #_error "MT===$mt, K==$k";
-			
+
             if( $mt =~ /ci|project|revision|user/ ) {
                 $row{'_'.$k} = $v;
 				$row{$k} = $scope_cis{$v} 
@@ -1173,7 +1173,11 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                 map { 
                     my $id=$_; 
                     my $r = $all_labels{$id};
-                    $id // '' . ";" . $r->{name} // '' . ";" . $r->{color} // '';
+                    if($r->{name} && $r->{color}){
+                      $id // '' . ";" . $r->{name} // '' . ";" . $r->{color} // '';
+                    }else{
+                      $id // '';
+                   }
                 } _array( $row{labels} )
             ];
 		}
