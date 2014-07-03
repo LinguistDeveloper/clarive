@@ -1423,7 +1423,7 @@ msgid "Delete All"
 msgstr "Borrar Todos"
 
 msgid "Warning"
-msgstr "Aviso"
+msgstr "Advertencia"
 
 msgid "Debug"
 msgstr "Debug"
@@ -1984,7 +1984,7 @@ msgid "Error while running chained service '%1' for step %2: %3"
 msgstr "Error mientras se ejecutaba el servicio '%1' para el paso %2: %3"
 
 msgid "Warning while running chained service '%1' for step %2: %3"
-msgstr "Problema encontrado mientras se ejecutaba el servicio '%1' para el paso %2: %3"
+msgstr "Warning encontrado mientras se ejecutaba el servicio '%1' para el paso %2: %3"
 
 msgid "Annotation"
 msgstr "Anotación"
