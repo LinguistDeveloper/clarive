@@ -803,7 +803,7 @@ Baseliner.store.CI = function(c) {
         url: '/ci/store',
         root: 'data' , 
         remoteSort: true,
-        //autoLoad: true,
+        autoLoad: true,
         totalProperty: 'totalCount', 
         fields: ['mid','item', 'name','bl','collection','class','classname', 'versionid', 'description', 'properties', 'pretty_properties','data', 'icon','moniker'] 
      }, c));
@@ -937,7 +937,7 @@ Baseliner.ci_box = function(c) {
     if( c.hiddenName == undefined ) c.hiddenName = c.name;
 	if( security != undefined ) bp.security = 1;
     var autoload = c.autoLoad != undefined ? c.autoLoad : true;
-    var store = new Baseliner.store.CI({ baseParams: bp });
+    var store = new Baseliner.store.CI({ autoLoad:true, baseParams: bp });
     store.on('load', function(){
         if( c.force_set_value )
            ci_box.setValue( value );
