@@ -100,7 +100,7 @@ sub log : Local {
         push @final, ($e, @rules );
     }
     #_error \@rows;
-    $c->stash->{json} = { data => \@final, totalCount=>scalar @final };
+    $c->stash->{json} = { data => \@final, totalCount=>$cnt };
     $c->forward("View::JSON");
 }
 
