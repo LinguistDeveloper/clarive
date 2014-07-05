@@ -1816,17 +1816,14 @@ sub update_rels {
         my %d;
        
         # resolve to_mids (parent_field)
-        my %parent_mapping = map { $_->{parent_field} => $_->{id_field} } grep { $_->{parent_field} } _array( $self->get_meta( $mid ) );
-        map { 
-           $d{ $parent_mapping{$_->{rel_field}} }{ $_->{from_mid} } = ();
-        } grep { exists $parent_mapping{$_->{rel_field}} }
-        _array( $rels_to{$mid} );
-        
+        my %parent_mapping = 
+            map { $_->{parent_field} => $_->{id_field} } 
+            grep { $_->{parent_field} } _array( $self->get_meta( $mid ) );
+        $d{ $parent_mapping{$_->{rel_field}} }{ $_->{from_mid} }=() 
+            for grep { exists $parent_mapping{$_->{rel_field}} } _array( $rels_to{$mid} );
         
         # resolve from_mids
-        map { 
-           $d{ $_->{rel_field} }{ $_->{to_mid} } = ();
-        } _array( $rels{$mid} );
+        $d{ $_->{rel_field} }{ $_->{to_mid} }=() for _array( $rels{$mid} );
         
         # now uniquify mids in each rel array
         %d = map { $_ => [ sort keys $d{$_} ] } keys %d; 
@@ -1837,6 +1834,10 @@ sub update_rels {
             (map { $$_{from_mid} } _array($rels_to{$mid}) )
         );
         $d{_txt} = join ';', grep { defined } @txts{ @all_rel_mids };
+        
+        # cleanup data empty keys (rel_fields empty)
+        delete $d{''};
+        delete $d{undef};
         
         # single value, no array: %d = map { my @to_mids = keys $d{$_}; $_ => @to_mids>1 ? [ sort @to_mids ] : @to_mids } keys %d; 
         if( $is_doc ) {
