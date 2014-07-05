@@ -12,7 +12,8 @@ sub config_load {
     my %ret ;
     
     my $env = $$args{env} or exists $$args{v} and warn "warn: env is not defined\n";
-    my @files = ( 'config/clarive.yml', "$$args{base}/config/clarive.yml", 'config/global.yml', "$$args{base}/config/global.yml" );
+    my @files_base = ( 'config/clarive.yml', "$$args{base}/config/clarive.yml", 'config/global.yml', "$$args{base}/config/global.yml" );
+    my @files;
     if( length $env ) {
         if( $env =~ m{[/\\](\w+)\.} ) {
             # looks like a dir
@@ -24,12 +25,19 @@ sub config_load {
         }
     }
     
-    push @files, $$args{config};  # config is a free config file that goes last and precedes the environment
+    push @files, $$args{config} if exists $$args{config};  # config is a free config file that goes last and precedes the environment
     my @loaded_config_files; 
+    
+    # in case we put env or config, make sure at least one was found
+    my $ffound=0;
+    if( @files && !grep { -e } @files ) {
+        die "ERROR: Could not find files for environment/config parameters.\nAttempted to load any of these without luck:\n    " 
+            . join ("\n    ", @files) . "\n";
+    }
     
     my $found = 0;
     # clarive.yml has product defaults, global.yml is a User Defined base config
-    for my $file ( @files ) {   # most important last
+    for my $file ( @files_base, @files ) {   # most important last
         next unless $file;
         if( -e $file ) {
             require YAML::XS;
