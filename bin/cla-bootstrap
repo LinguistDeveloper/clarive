@@ -58,6 +58,7 @@ use ExtUtils::Installed;
 my $instmod = ExtUtils::Installed->new();
 my %installed;
 foreach my $module ($instmod->modules()) {
+    next if $module =~ /\-/; # not sure where this comes from
     my $version = $instmod->version($module) || do {
        my $ver = eval "require $module; \$${module}::VERSION";
        $@ ? -1 : length $ver ? $ver : '???';
@@ -97,18 +98,19 @@ my @pending = $opts{-f}    # force install?
     : do {
     no warnings;
     grep {
-        print "Checking if module $_ needed..." if $opts{'--verbose'};
-        my $missing = !exists $installed{ $_ } || $installed{$_}==-1;
+        my $need = $_;
+        print "Checking if module $need needed..." if $opts{'--verbose'};
+        my $missing = !exists $installed{ $need } || $installed{$need}==-1;
         # try to load it with require before say it's missing (YAML::XS is in YAML::LibYAML for instance...)
         if( $missing ) {
             my $out = Capture::Tiny::capture_merged( sub {
-            eval("require $_");
+                eval("require $need");
                 $missing = $@;
             });
         }
         say $missing ? 'yes' : 'no' if $opts{'--verbose'};
         if($missing ) {
-            say "$_ -----> not installed. Scheduled for install." if $opts{'--verbose'};
+            say "$need -----> not installed. Scheduled for install." if $opts{'--verbose'};
             1;
         }
     } @needed;
@@ -377,6 +379,7 @@ Net::Telnet
 Package::Alias
 PadWalker
 Path::Class
+Perl::Critic
 Perl::Tidy
 Plack
 PocketIO
