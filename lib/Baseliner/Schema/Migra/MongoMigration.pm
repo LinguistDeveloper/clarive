@@ -842,17 +842,21 @@ sub master_rel_add {
     @mids = keys +{ map{$_->{mid}=>1} (mdb->master->find->all,$db->query('select * from bali_master')->hashes) }
         unless @mids > 0;
     
+    my $k = 0;
+    _debug "safely adding master_rel from DB (no deletes)...";
     for my $mid ( @mids ) {
+        next if $mid !~ /^\d+$/;   # we want only numeric mids from mongo, otherwise db query breaks
         my %db = map { join(',',@{$_}{qw(from_mid to_mid rel_type rel_field)}) => $_ } 
             $db->query("select * from bali_master_rel where from_mid=? or to_mid=?", $mid, $mid)->hashes;
         my %mdb = map { join(',',@{$_}{qw(from_mid to_mid rel_type rel_field)}) => $_ } 
             mdb->master_rel->find({ '$or'=>[{from_mid=>"$mid"},{to_mid=>"$mid"}] })->all;
         for ( keys %db ) {
             next if exists $mdb{$_};
-            _warn "INSERT REL into MDB: $_";
+            $k++;
             mdb->master_rel->insert( $db{$_} );
         }
     }
+    _debug "INSERTed REL into MDB: $k times";
 }
     
 # safely add and delete MASTER_REL from Database
@@ -1067,6 +1071,25 @@ sub topic_view {
             AND T.MID = ?
     };
 }
+
+package Baseliner::Schema::Migra::MongoMigration::Wrap {
+    our $AUTOLOAD;
+    sub AUTOLOAD {
+        my $self = shift;
+        my $name = $AUTOLOAD;
+        my ($meth) = reverse( split(/::/, $name));
+        {
+            local $Baseliner::Utils::caller_level = 1;
+            Util->_log( "MDB -> migra START: $meth" );
+        }
+        Baseliner::Schema::Migra::MongoMigration->$meth(@_);
+        {
+            local $Baseliner::Utils::caller_level = 1;
+            Util->_log( "MDB -> migra END: $meth" );
+        }
+    }
+}
+
 1;
 
 __END__

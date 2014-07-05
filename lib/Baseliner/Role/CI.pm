@@ -335,6 +335,7 @@ sub save_fields {
     my $yaml = Util->_dump($data);
     # update mongo master
     mdb->master->update({ mid=>"$mid" }, { '$set'=>{ %$master_row, yaml=>$yaml } }, { upsert=>1 });
+    # update master_doc
     if( my $row = mdb->master_doc->find_one({ mid=>"$mid" }) ) {
         my $id = $row->{_id};
         my $doc = { ( $master_row ? %$master_row : () ), %$row, %{ $data || {} } };

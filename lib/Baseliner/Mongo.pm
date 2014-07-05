@@ -354,7 +354,7 @@ sub index_all {
 sub migra {
     my ($self,%p)=@_;
     require Baseliner::Schema::Migra::MongoMigration;
-    return 'Baseliner::Schema::Migra::MongoMigration';
+    return 'Baseliner::Schema::Migra::MongoMigration::Wrap';
 }
 
 sub ixhash {
