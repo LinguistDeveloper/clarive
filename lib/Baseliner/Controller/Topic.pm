@@ -1080,6 +1080,7 @@ sub filters_list : Local {
     my @statuses;
     my @id_categories = map { $_->{id} } @categories_permissions;
     my @cat_statuses = mdb->category->find_values( statuses=>{ id=>mdb->in(@id_categories) } );
+#_log _dump \@cat_statuses;
     my $where = { '$and'=>[{ id_status=>mdb->in(@cat_statuses)}] };
     
     # intersect statuses with a reduced set?
@@ -1088,8 +1089,7 @@ sub filters_list : Local {
         my @status_id = _array( $status_id );
         push @{ $where->{'$and'} }, { id_status=>mdb->in(@status_id) };
     }
-    my $rs_status = ci->status->find($where)->sort({ seq=>1 });
-    
+    my $rs_status = ci->status->find($where)->sort({ seq=>1 });    
     my $is_root = Baseliner->model('Permissions')->is_root( $c->username );
     ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
     my %tmp;
@@ -1120,7 +1120,7 @@ sub filters_list : Local {
                     uiProvider => 'Baseliner.CBTreeNodeUI'                    
                 };
         }  
-
+        @statuses = sort { uc($a->{text}) cmp uc($b->{text}) } @statuses;
         push @tree, {
             id          => 'S',
             text        => _loc('Statuses'),
@@ -1130,8 +1130,7 @@ sub filters_list : Local {
             children    => \@statuses
         };
     }
-    
-    
+
     $c->stash->{json} = \@tree;
     $c->forward('View::JSON');
 }
