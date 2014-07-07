@@ -1804,7 +1804,7 @@ sub update_rels {
     # gather all text
     my @all_rel_mids = ( (map{$$_{to_mid}} _array(values %rels)), (map{$$_{from_mid}} _array(values %rels_to)) );
     my %txts = map { 
-        my $txt = join ';', grep { length } values %$_;
+        my $txt = join ';', _unique( grep { length } values %$_ );
         $$_{mid} => $txt;
     } mdb->master->find({ mid=>mdb->in(_unique(@all_rel_mids)) })->fields({ yaml=>0, _id=>0 })->all;
     
