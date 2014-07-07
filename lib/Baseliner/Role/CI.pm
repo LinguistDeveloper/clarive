@@ -585,7 +585,8 @@ sub related_cis {
     my $rs = mdb->master_rel->find( $where );
     ########
     if( $opts{order_by} ) {
-        Util->_error( "IGNORED: " . _dump( $opts{order_by} ) );   
+        Util->_error( "ORDER_BY IGNORED: " . _dump( $opts{order_by} ) );   
+        Util->_error( Util->_whereami() );
     }
     $rs->skip( $opts{start} ) if $opts{start} > 0;
     $rs->limit( $opts{limit} ) if $opts{limit} > 0;
