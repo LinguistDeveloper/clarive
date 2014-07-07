@@ -593,7 +593,24 @@ sub repository_repl {
 # add _txt to topic collection
 sub topic_rels {
     require Baseliner::Model::Topic;
-    Baseliner::Model::Topic->update_rels( map{ $$_{mid} } mdb->topic->find->fields({mid=>1})->all );
+    _debug('Updating all relationship doc fields for all topics, may take quite a while, be patient...');
+    my @alltopics = map{ $$_{mid} } mdb->topic->find->fields({mid=>1})->all;
+    my ($k,$tot)=(0,scalar(@alltopics));
+    my @group;
+    for my $mid ( @alltopics ) {
+        if( @group >= 100 ) {
+            Baseliner::Model::Topic->update_rels( @group );
+            _debug "Updated $k/$tot";
+            @group = ();
+        }
+        push @group, $mid; 
+        $k++;
+    }
+    if( @group ){
+        Baseliner::Model::Topic->update_rels( @group );
+        $k+=@group;
+        _debug "Updated $k/$tot";
+    }
 }
 
 sub role {
@@ -779,6 +796,29 @@ sub master_doc_clean {
 #
 # Integrity fixes
 #
+
+# insert (no update) 
+sub master_insert {
+    my $db = Util->_dbis();
+
+    my @misses;
+    # MASTER
+    my $rs = $db->query('select * from bali_master');
+    while ( my $r = $rs->hash ) {
+        my $mid = "$$r{mid}"; 
+        next if mdb->master->find({ mid=>$mid })->count;
+        _warn("MISSING master mid=$mid. Inserting.");
+        # inserts master
+        mdb->master->update({ mid=>$mid }, $r, { upsert=>1 });
+        push @misses, $mid;
+    }
+    
+    # inserts master_doc record after we have all masters
+    for my $mid (@misses) {
+        try { ci->new( $mid )->save } 
+        catch { warn "Could not write MASTER_DOC for $mid: " . shift() };  
+    }
+}
 
 sub master_and_rel {
     my ($self) = @_;

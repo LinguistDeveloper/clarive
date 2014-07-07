@@ -3,6 +3,7 @@ use Mouse;
 
 sub upgrade {
     # master:
+    mdb->migra->master_insert;
     mdb->migra->mids;
     mdb->migra->master_rel_add;  # insert missing rels
     mdb->migra->topic_admin;
