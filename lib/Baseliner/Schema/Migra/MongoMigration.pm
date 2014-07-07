@@ -593,7 +593,24 @@ sub repository_repl {
 # add _txt to topic collection
 sub topic_rels {
     require Baseliner::Model::Topic;
-    Baseliner::Model::Topic->update_rels( map{ $$_{mid} } mdb->topic->find->fields({mid=>1})->all );
+    _debug('Updating all relationship doc fields for all topics, may take quite a while, be patient...');
+    my @alltopics = map{ $$_{mid} } mdb->topic->find->fields({mid=>1})->all;
+    my ($k,$tot)=(0,scalar(@alltopics));
+    my @group;
+    for my $mid ( @alltopics ) {
+        if( @group >= 100 ) {
+            Baseliner::Model::Topic->update_rels( @group );
+            _debug "Updated $k/$tot";
+            @group = ();
+        }
+        push @group, $mid; 
+        $k++;
+    }
+    if( @group ){
+        Baseliner::Model::Topic->update_rels( @group );
+        $k+=@group;
+        _debug "Updated $k/$tot";
+    }
 }
 
 sub role {
@@ -780,6 +797,29 @@ sub master_doc_clean {
 # Integrity fixes
 #
 
+# insert (no update) 
+sub master_insert {
+    my $db = Util->_dbis();
+
+    my @misses;
+    # MASTER
+    my $rs = $db->query('select * from bali_master');
+    while ( my $r = $rs->hash ) {
+        my $mid = "$$r{mid}"; 
+        next if mdb->master->find({ mid=>$mid })->count;
+        _warn("MISSING master mid=$mid. Inserting.");
+        # inserts master
+        mdb->master->update({ mid=>$mid }, $r, { upsert=>1 });
+        push @misses, $mid;
+    }
+    
+    # inserts master_doc record after we have all masters
+    for my $mid (@misses) {
+        try { ci->new( $mid )->save } 
+        catch { warn "Could not write MASTER_DOC for $mid: " . shift() };  
+    }
+}
+
 sub master_and_rel {
     my ($self) = @_;
     my $db = Util->_dbis();
@@ -842,17 +882,21 @@ sub master_rel_add {
     @mids = keys +{ map{$_->{mid}=>1} (mdb->master->find->all,$db->query('select * from bali_master')->hashes) }
         unless @mids > 0;
     
+    my $k = 0;
+    _debug "safely adding master_rel from DB (no deletes)...";
     for my $mid ( @mids ) {
+        next if $mid !~ /^\d+$/;   # we want only numeric mids from mongo, otherwise db query breaks
         my %db = map { join(',',@{$_}{qw(from_mid to_mid rel_type rel_field)}) => $_ } 
             $db->query("select * from bali_master_rel where from_mid=? or to_mid=?", $mid, $mid)->hashes;
         my %mdb = map { join(',',@{$_}{qw(from_mid to_mid rel_type rel_field)}) => $_ } 
             mdb->master_rel->find({ '$or'=>[{from_mid=>"$mid"},{to_mid=>"$mid"}] })->all;
         for ( keys %db ) {
             next if exists $mdb{$_};
-            _warn "INSERT REL into MDB: $_";
+            $k++;
             mdb->master_rel->insert( $db{$_} );
         }
     }
+    _debug "INSERTed REL into MDB: $k times";
 }
     
 # safely add and delete MASTER_REL from Database
@@ -1067,6 +1111,25 @@ sub topic_view {
             AND T.MID = ?
     };
 }
+
+package Baseliner::Schema::Migra::MongoMigration::Wrap {
+    our $AUTOLOAD;
+    sub AUTOLOAD {
+        my $self = shift;
+        my $name = $AUTOLOAD;
+        my ($meth) = reverse( split(/::/, $name));
+        {
+            local $Baseliner::Utils::caller_level = 1;
+            Util->_log( "MDB -> migra START: $meth" );
+        }
+        Baseliner::Schema::Migra::MongoMigration->$meth(@_);
+        {
+            local $Baseliner::Utils::caller_level = 1;
+            Util->_log( "MDB -> migra END: $meth" );
+        }
+    }
+}
+
 1;
 
 __END__

@@ -24,6 +24,7 @@ The new instanciates a CI or throws an error otherwise.
 sub new {
     my $class = shift;
     my %args;
+    require Baseliner::Role::CI; 
     if( @_ == 0 ) {
         _throw "Missing CI mid";
     } elsif( @_ == 1 && ref $_[0] eq 'HASH' ) {

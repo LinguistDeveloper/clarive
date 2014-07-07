@@ -1490,19 +1490,30 @@
         
         category_fields_grid.on("rowdblclick", function(grid, rowIndex, e ) {
             var sel = grid.getStore().getAt(rowIndex);
+            var field_meta = sel.data.meta;
             var tree = new Baseliner.DataEditor({
                 title: _('Metadata'),
                 data: sel.data.params,
-                metadata: sel.data.meta
+                metadata: field_meta
             });
             
-            var props = new Baseliner.FormPanel({ title:_('Custom'), 
-                frame: false, border: false,
-                items:[ { xtype:'textarea', height: 80, fieldLabel: 'XXX' } ] });
+            var props = [];
+            var config_form;
+            if( field_meta.config_form ) {
+                config_form = new Baseliner.FormPanel({ 
+                    title:_('Custom'), 
+                    layout: 'fit',
+                    frame: false, border: false,
+                    items:[ { xtype:'textarea', height: 80, fieldLabel: 'XXX' } ] 
+                });
+                props.push( config_form ); 
+                // TODO call config_form url
+            }
+            props.push( tree );
            
             var field_config = new Ext.TabPanel({ 
                 activeTab: 0,
-                items: [ props, tree ]
+                items: props
             });
         
             var w = new Baseliner.Window({ layout:'fit',width:600, height:450, items: field_config });

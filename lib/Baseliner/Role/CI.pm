@@ -335,6 +335,7 @@ sub save_fields {
     my $yaml = Util->_dump($data);
     # update mongo master
     mdb->master->update({ mid=>"$mid" }, { '$set'=>{ %$master_row, yaml=>$yaml } }, { upsert=>1 });
+    # update master_doc
     if( my $row = mdb->master_doc->find_one({ mid=>"$mid" }) ) {
         my $id = $row->{_id};
         my $doc = { ( $master_row ? %$master_row : () ), %$row, %{ $data || {} } };
@@ -584,7 +585,8 @@ sub related_cis {
     my $rs = mdb->master_rel->find( $where );
     ########
     if( $opts{order_by} ) {
-        Util->_error( "IGNORED: " . _dump( $opts{order_by} ) );   
+        Util->_error( "ORDER_BY IGNORED: " . _dump( $opts{order_by} ) );   
+        Util->_error( Util->_whereami() );
     }
     $rs->skip( $opts{start} ) if $opts{start} > 0;
     $rs->limit( $opts{limit} ) if $opts{limit} > 0;

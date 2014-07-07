@@ -127,7 +127,8 @@ sub tree_project_jobs : Local {
     
     my @jobs = ci->parents( mid=>$id_project, rel_type=>'job_project',
         start=>1, rows=>20, no_rels=>1,
-        order_by=>{-desc=>'from_mid'} );
+        sort => { from_mid=>-1 },
+    );
 
     my @tree = map {
         my $icon   = $_->status_icon || 'job.png';

@@ -493,7 +493,9 @@
 
                     if( res.success ) {
                         rule_tree.is_dirty = false;
-                        Baseliner.message( _('Rule'), res.msg );
+                        var msgcfg = {};
+                        if( res.detected_errors ) msgcfg.image = '/static/images/icons/warn.png';
+                        Baseliner.message( _('Rule'), res.msg, msgcfg );
                         if( opt.callback ) {
                             opt.callback( res );
                         }
@@ -502,16 +504,40 @@
                     if( btn_save_tree ) btn_save_tree.enable();
                     if( btn_refresh_tree ) btn_refresh_tree.enable();
                     if( res.error_checking_dsl ) {
-                        Baseliner.confirm( _('DSL validation failed, save it anyway? Error: %1', res.msg ), function(){
-                            save_action({ ignore_dsl_errors: 1 }); // repeat    
+                        // show a decent window where to follow all errors that may come
+                        var errwin = new Baseliner.Window({ 
+                            title:_('Rule error'), 
+                            layout:'vbox', width: 800, height: 600, modal: true,
+                            bodyStyle: 'background-color: #ccc',
+                            layoutConfig: { align : 'stretch', pack  : 'start' },
+                            items:[
+                                { html:  String.format(
+                                    '<div id="boot"><h2><span class="error-title" style="">{0}</span></h2></div>', 
+                                    _('DSL validation failed')
+                                    ), flex:1 },
+                                new Baseliner.MonoTextArea({ value: res.msg, flex:10 }),
+                            ], 
+                            bbar: [
+                                '->',
+                                { xtype:'button', icon: '/static/images/icons/left.png', text: _('Go Back'), handler: function(){ errwin.close() } },
+                                { xtype:'button', icon: '/static/images/icons/save.png', text: _('Always Ignore for this Rule and Save'), handler: function(){
+                                    save_action({ ignore_dsl_errors: 1, ignore_error_always: 1 }); // repeat    
+                                    errwin.close();
+                                }},
+                                { xtype:'button', icon: '/static/images/icons/save.png', text: _('Ignore and Save'), handler: function(){
+                                    save_action({ ignore_dsl_errors: 1 }); // repeat    
+                                    errwin.close();
+                                }}
+                            ]
                         });
+                        errwin.show();
                     } else {
                         Baseliner.error( _('Error saving rule'), res.msg );
                     }
                 });
             };
             // ignore dsl errors if the rule is independent
-            save_action({ ignore_dsl_errors: rule_type=='independent' ? 1 : 0 });
+            save_action({ ignore_dsl_errors: 0 });
         };
         var rule_load_do = function(btn,load_versions){
             if(btn) btn.disable();

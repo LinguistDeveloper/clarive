@@ -568,7 +568,7 @@ sub view : Local {
                     mid      => $topic_mid,
                     rel_type => 'job_' . ( $category->{is_changeset} ? 'changeset' : 'release' ),
                     no_rels  => 1,
-                    order_by => { -desc => 'from_mid' }
+                    sort     => { from_mid => -1 },
                 );
                 $c->stash->{jobs} = \@jobs;
             }

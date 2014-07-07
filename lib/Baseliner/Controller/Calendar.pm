@@ -630,18 +630,6 @@ sub db_to_slots {
             calendar => { id=>$id_cal },
             id => id_cal => 
             calendar_window => {} );
-        # my @cals = mdb->calendar->search(
-        #     { 'me.id' => $id_cal },
-        #     {
-        #       prefetch=>'windows',
-        #       order_by=>[
-        #           { -asc =>'seq' },
-        #           { -asc=>'windows.id' }, # last creation/edit is most important
-        #           { -asc =>'windows.day' },
-        #           { -asc =>'windows.start_time' }
-        #       ]
-        #     }
-        # )->hashref->all;
     my $slots = Calendar::Slots->new();
     # create base (undefined) calendar
     if( $opts{ base } ) {
