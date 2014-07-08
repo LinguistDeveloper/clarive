@@ -1978,7 +1978,12 @@ sub hide_passwords {
     my @patterns = split "\n", Baseliner->model('ConfigStore')->get('config.global')->{password_patterns};
     for my $line ( @patterns ) {
         my ($pattern,$replace) = split /\|\|/,$line;
-        eval('$string'." =~ s/$pattern/$replace/gm");
+        my $regex = eval { qr[$pattern] };
+        if (!$@ ) {
+            eval('$string'." =~ s[$pattern][$replace]gm");
+        } else {
+            _debug(_loc("Incorrect regexp in config.global.password_patterns: $pattern"));
+        }
     }
     return $string;
 }
