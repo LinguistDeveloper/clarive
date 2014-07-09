@@ -442,16 +442,11 @@ sub topics_for_user {
                 $self->user_workflow( $username );
             # map { $tmp{$_->{id_status_from}} = $_->{id_category} && $tmp{$_->{id_status_to} = $_->{id_category}} } 
             #             $self->user_workflow( $username )
-            #Cherry. Lo de 6.2
-            my @status_ids = keys %tmp;
-            $where->{'category_status.id'} = mdb->in(@status_ids) if @status_ids > 0;
-            #cherry. Lo de 6.1
-            #my @workflow_filter;
-            #for my $status (keys %tmp){
-            #    push @workflow_filter, {'category.id' => $tmp{$status},'category_status.id' => $status};
-            #}
-            #$where->{'$or'} = \@workflow_filter;
-            #HASTA AQUI EL CHERRY cherry
+            my @workflow_filter;
+            for my $status (keys %tmp){
+                push @workflow_filter, {'category.id' => $tmp{$status},'category_status.id' => $status};
+            }
+            $where->{'$or'} = \@workflow_filter if @workflow_filter;
             $where->{'category_status.type'} = { '$nin' =>['F','FC'] }
         }
     }
