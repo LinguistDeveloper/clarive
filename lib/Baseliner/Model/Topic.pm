@@ -441,7 +441,6 @@ sub topics_for_user {
             map { $tmp{ $_->{id_status_from} } = $_->{id_category} if ($_->{id_status_from}); } 
                 $self->user_workflow( $username );
             # map { $tmp{$_->{id_status_from}} = $_->{id_category} && $tmp{$_->{id_status_to} = $_->{id_category}} } 
-            #             $self->user_workflow( $username )
             my @workflow_filter;
             for my $status (keys %tmp){
                 push @workflow_filter, {'category.id' => $tmp{$status},'category_status.id' => $status};
