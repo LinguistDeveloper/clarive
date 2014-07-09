@@ -332,7 +332,7 @@ sub job_items {
                my $co_dir = $fieldlet->{checkout_dir};
                my $fullpath = ''.Util->_dir( "/", $project, $co_dir, $tfile->filename );
                # select only files for this BL
-               if( $rename_mode && $fullpath =~ /{$all_bls}/ ) {
+               if( $rename_mode && $fullpath =~ /{($all_bls)}/ ) {
                    next TOPIC_FILE if $fullpath !~ /{$bl}/;  # not for this bl
                    $fullpath =~ s/{$bl}//g; # cleanup
                }

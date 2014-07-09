@@ -508,6 +508,7 @@ sub store : Local {
     my $valuesqry = $p->{valuesqry} ? ( $p->{mids} = $p->{query} ) : ''; # en valuesqry está el "mid" en cuestión
     my $query = $p->{query} unless $valuesqry;
     
+
     # in cache ?
     my $mid_param =  $p->{mid} || $p->{from_mid} || $p->{to_mid} ;
     my $cache_key;
@@ -626,14 +627,18 @@ sub store : Local {
         } @vars;
     }
     
+    _log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>ANTES" . _dump \@data; 
+
     if( ref $mids ) { 
         # return data ordered like the mids
         my @data_ordered;
         my %h = map { $_->{mid} => $_ } @data;
-        push @data_ordered, delete $h{ $_ } for @$mids;
-        push @data_ordered, values %h; # the rest of them at the bottom
+        exists $h{$_} and push @data_ordered, delete $h{ $_ } for @$mids;
+        push @data_ordered, grep { defined } values %h; # the rest of them at the bottom
         @data = @data_ordered; 
     }
+
+    _log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>DESPUES" . _dump \@data;     
 
     $c->stash->{json} = { data=>\@data, totalCount=>$total };
     $c->cache_set( $cache_key, $c->stash->{json} ) if $cache_key; 

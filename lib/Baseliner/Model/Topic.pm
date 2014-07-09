@@ -434,13 +434,19 @@ sub topics_for_user {
             }
         }
     }else {
-        if (!$p->{clear_filter}){          
+        if (!$p->{clear_filter}){  
+
             ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
             my %tmp;
             map { $tmp{ $_->{id_status_from} } = $_->{id_category} if ($_->{id_status_from}); } 
                 $self->user_workflow( $username );
-            my @status_ids = keys %tmp;
-            $where->{'category_status.id'} = mdb->in(@status_ids) if @status_ids > 0;
+            # map { $tmp{$_->{id_status_from}} = $_->{id_category} && $tmp{$_->{id_status_to} = $_->{id_category}} } 
+            #             $self->user_workflow( $username )
+            my @workflow_filter;
+            for my $status (keys %tmp){
+                push @workflow_filter, {'category.id' => $tmp{$status},'category_status.id' => $status};
+            }
+            $where->{'$or'} = \@workflow_filter if @workflow_filter;
             $where->{'category_status.type'} = { '$nin' =>['F','FC'] }
         }
     }
@@ -476,7 +482,13 @@ sub topics_for_user {
     }
     
     if( @mids_or ) {
-        $where->{'$or'} = \@mids_or;
+        if ( exists $where->{'$or'} ){
+            my @or = _array $where->{'$or'};
+            push @or,  @mids_or; 
+            $where->{'$or'} = \@or; 
+        }else{
+            $where->{'$or'} = \@mids_or;  
+        }
     }
     #_debug( $order_by );
     my $rs = mdb->topic->find( $where )->fields({ mid=>1, labels=>1 })->sort( $order_by );

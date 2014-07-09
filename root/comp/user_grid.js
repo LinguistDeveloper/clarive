@@ -701,6 +701,7 @@
             width: 730,
             closeAction: 'close',
             modal: true,
+            constrain: true,
             items: [
                 form_user
             ]

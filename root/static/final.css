@@ -244,18 +244,18 @@
 */
 
 .bl-label {
-  font-size: 10.998px;
-  font-weight: bold;
-  line-height: 14px;
+    font-size: 10.998px;
+    font-weight: bold;
+    line-height: 14px;
 
-  white-space: nowrap;
-  vertical-align: baseline;
-  background-color: #999999;
-  padding: 1px 4px 2px;
-  -webkit-border-radius: 3px;
+    white-space: nowrap;
+    vertical-align: baseline;
+    background-color: #999999;
+    padding: 1px 4px 2px;
+    -webkit-border-radius: 3px;
      -moz-border-radius: 3px;
           border-radius: 3px;
-  color: #FFFFFF !important;
+    color: #FFFFFF !important;
 }
 
 .bali-td-special {
@@ -269,40 +269,45 @@
 }
 
 .tabla {
- width: 100%;
- border-top:1px solid #fff;
- border-left:1px solid #fff;
- background-color:#fff;
- color: gray;
- font-family:arial,verdana,times;
- font-size:12px;
+    width: 100%;
+    border-top:1px solid #fff;
+    border-left:1px solid #fff;
+    background-color:#fff;
+    color: gray;
+    font-family:arial,verdana,times;
+    font-size:12px;
  }
  
 .tabla p {
- clear:both;
- width: 100%;
- margin: 0;
+    clear:both;
+    width: 100%;
+    margin: 0;
 }
 
 .tabla .titulo {
- padding: 5px;
- background-color: #fff;
- font-family:arial,verdana,times;
- float:left;
- border-right: 1px solid #fff;
- font-weight:bold;
- }
+    padding: 5px;
+    background-color: #fff;
+    font-family:arial,verdana,times;
+    float:left;
+    border-right: 1px solid #fff;
+    font-weight:bold;
+}
 
 .tabla .columna {
- padding: 5px;
- float:left;
- border-right: 1px solid #fff;
- border-bottom: 1px solid #fff;
- }
+    padding: 5px;
+    float:left;
+    border-right: 1px solid #fff;
+    border-bottom: 1px solid #fff;
+}
 
 @-moz-document url-prefix() {
-  .x-fieldset-body {
-    padding-left: 2px !important;
-    padding-right: 2px !important;
-  }
+    .x-fieldset-body {
+        padding-left: 2px !important;
+        padding-right: 2px !important;
+    }
+}
+
+.text_scroll .ext-mb-content  {
+    height: 200px;
+    overflow: auto;
 }

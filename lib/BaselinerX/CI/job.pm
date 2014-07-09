@@ -18,7 +18,11 @@ has current_service    => qw(is rw isa Any default Core);
 has root_dir           => qw(is rw isa Any);
 has schedtime          => qw(is rw isa TS coerce 1), default => sub { ''.mdb->now };
 has starttime          => qw(is rw isa TS coerce 1), default => sub { ''.mdb->now };
-has maxstarttime       => qw(is rw isa TS coerce 1), default => sub { ''.( Class::Date->new($_[0]->starttime) + '1D' ) };
+has maxstarttime       => qw(is rw isa TS coerce 1), default => sub { 
+    my ($self) = @_;
+    my $expiry_time = Baseliner->model('ConfigStore')->get( 'config.job', bl => $self->bl )->{expiry_time}->{normal} || "1D";
+    ''.( Class::Date->new($_[0]->starttime) + $expiry_time ) 
+};
 has endtime            => qw(is rw isa Any);
 has comments           => qw(is rw isa Any);
 has logfile            => qw(is rw isa Any lazy 1), default => sub { my $self=shift; ''.Util->_file($ENV{BASELINER_LOGHOME}, $self->name . '.log') };
@@ -177,7 +181,7 @@ sub _create {
 
     my $job_mid = $self->mid;
     my $changesets = $p{changesets};
-    my $config = Baseliner->model('ConfigStore')->get( 'config.job' );
+    my $config = Baseliner->model('ConfigStore')->get( 'config.job', $self->bl );
     
     my $status = $p{status} || 'IN-EDIT';
 
