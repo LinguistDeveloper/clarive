@@ -134,10 +134,9 @@ sub list : Local {
 sub update : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
-    
+    $p->{status_new} = $p->{status_new}[0] if (ref $p->{status_new} eq 'ARRAY');     # Only for IE8 
     $p->{username} = $c->username;
     my $return_options;   # used by event rules to return anything back to the form
-    
     try  {
         my ($isValid, @field_name) = (1,());
         #my ($isValid, @field_name) = $c->model('Topic')->check_fields_required( mid => $p->{topic_mid}, username => $c->username, data => $p);
