@@ -1205,9 +1205,7 @@ if( Prefs.routing ) {
         }
         
         // in case an alert box has scroll everything down, restore view by grabbing the viewport's first div
-        //  TODO consider putting this on Baseliner.error / Baseliner.Window close event
-        var first_div = Baseliner.viewport.getLayout().activeItem; // Baseliner.viewport.el.dom.childNodes[0];
-        if( first_div.el && Ext.get(first_div.el.id) ) first_div.el.dom.scrollIntoView()
+        Baseliner.scroll_top_into_view();
     };
 
     Baseliner.detachCurrentTab = function() {
