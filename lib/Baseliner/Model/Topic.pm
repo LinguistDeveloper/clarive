@@ -289,7 +289,7 @@ sub build_sort {
     } elsif( $sort eq 'category_status_name' ) {
         $order_by = { 'category_status_name' => $dir };
     } elsif( $sort eq 'topic_mid' ) {
-        $order_by = { mid => $dir };
+        $order_by = { _id => $dir };
     } else {
         $order_by = { $sort => $dir };
     }
