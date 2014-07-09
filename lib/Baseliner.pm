@@ -465,6 +465,12 @@ if( $ENV{CLARIVE_MIGRATE_NOW} ) {
     Baseliner::Schema::Migrator->check( $ENV{CLARIVE_MIGRATE_NOW} );
 }
 
+# clear cache on restart
+if( Clarive->debug ) {
+    cache->clear;  
+    Util->_debug( "Cache cleared" );
+}
+    
 # disconnect from mongo global just in case somebody connected during initializacion (like cache_remove)
 # otherwise mongo hell breaks loose
 mdb->disconnect;

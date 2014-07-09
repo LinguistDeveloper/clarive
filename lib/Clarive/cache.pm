@@ -41,11 +41,6 @@ sub setup {
         }
     }
 
-    # clear cache on restart
-    if( Clarive->debug ) {
-        cache->clear;  
-    }
-    
     return 1;
 }
 
