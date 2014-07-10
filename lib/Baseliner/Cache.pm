@@ -5,11 +5,9 @@ use JSON::XS;
 
 sub set {
     my ($self,$key,$value)=@_;
-    my $length = ref $value ?length(Storable::freeze($value)):length($value);
-    if( $length < 16777216){
+    if(length(Storable::freeze($value)) < 16777216){
         $key = JSON::XS->new->utf8->canonical->encode( $key ) if ref $key;
-        my $final_value = ref $value ? $value : bless( \$value => 'Cache::SV' );
-        mdb->cache->update({ _id=>$key },{ _id=>$key,v=>Storable::freeze($final_value) },{ upsert=>1 });
+        mdb->cache->update({ _id=>$key },{ _id=>$key,v=>(ref $value ? Storable::freeze($value) : undef) },{ upsert=>1 });
     }
 }
 
