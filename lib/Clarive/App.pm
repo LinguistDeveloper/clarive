@@ -86,6 +86,9 @@ around 'BUILDARGS' => sub {
     $ENV{BASELINER_ENV} = $args{env};
     $ENV{BASELINER_CONFIG_LOCAL_SUFFIX} = $args{env};
     
+    # make sure forked processes (dispatcher) will get ENV somehow
+    $ENV{CLARIVE_ENV} //= $args{env};
+    
     # resolve variables
     my $parsed_config = $self->parse_vars( $config, { %ENV, %$config, %args } );
     my $parsed_args   = $self->parse_vars( \%args, { %ENV, %$config, %args } );
