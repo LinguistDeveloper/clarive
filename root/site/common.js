@@ -116,6 +116,7 @@ Baseliner.error = function(title, format){
     Ext.Msg.show({
         title: title,
         msg: s,
+        cls: 'text_scroll',
         buttons: Ext.Msg.OK,
         icon: Ext.Msg.ERROR
     });

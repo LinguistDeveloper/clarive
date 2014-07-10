@@ -636,14 +636,14 @@
     
     var body_mini_tpl = function(){/*
                   <span style='font-weight:[%=font_weight%]; font-size: 12px; cursor: pointer; [%=strike%]' 
-                  onclick='javascript:Baseliner.show_topic_colored([%=mid%],"[%=category_name%]","[%=category_color%]", "[%=id%]");'>[%=value%][%=folders%]</span>
+                  onclick='javascript:Baseliner.show_topic_colored([%=mid%],"[%=category_name%]","[%=category_color%]", "[%=id%]");'>[%=value%][%=folders%] </span>
           */}.tmpl();
     
     var body_tpl = function(){/* 
                 <span style='font-weight:[%=font_weight%]; font-size: 14px; cursor: pointer; [%=strike%]' 
-                onclick='javascript:Baseliner.show_topic_colored([%=mid%],"[%=category_name%]","[%=category_color%]", "[%=id%]")'>[%=value%]</span>
+                onclick='javascript:Baseliner.show_topic_colored([%=mid%],"[%=category_name%]","[%=category_color%]", "[%=id%]")'>[%=value%] </span>
                         <br><div style='margin-top: 5px'>[%=modified_on%][%=folders%]
-                        <a href='javascript:Baseliner.open_monitor_query("[%=current_job%]")'>[%=current_job%]</a><font color='808080'></br>[%=who%]</font ></div> 
+                        <a href='javascript:Baseliner.open_monitor_query("[%=current_job%]")'>[%=current_job%] </a><font color='808080'></br>[%=who%] </font ></div> 
            */}.tmpl();
 
     var render_title = function(value,metadata,rec,rowIndex,colIndex,store) {

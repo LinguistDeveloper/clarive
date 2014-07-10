@@ -77,7 +77,7 @@
                                     if( ref $val eq 'SCALAR' ) {
                                         ${ $val };
                                     } elsif( length $val ) {
-                                        my $cd = Class::Date->new( $val );
+                                        my $cd = Class::Date->new( $val ) + (86399);
                                         my $st = $row->{overdue} ? 'color: #f34' : '';
                                         my $wd = $cd->wdayname;
                                         $wd = Encode::decode('UTF-8', $wd);

@@ -773,11 +773,18 @@ sub default : Path {
                         return $res;
                     },
                 );
-                $self->cgi_to_response($c, sub {
-                    my $query = CGI->new;
-                    $daemon->runCgiRequest(query => $query);
-                }); 
-             
+                # no warnings zone
+                {
+                    my @warns;
+                    local $SIG{__WARN__} = sub { push @warns, @_; };
+                    $self->cgi_to_response($c, sub {
+                        my $query = CGI->new;
+                        $daemon->runCgiRequest(query => $query);
+                    }); 
+
+                    # print WS warnings now
+                    _warn _loc('SOAP WS warnings detected: %1', join("\n",@warns)) if @warns;
+                }
             } catch {
                 my $err = shift;
                 if( ref $err eq 'Log::Report::Exception' ) {
