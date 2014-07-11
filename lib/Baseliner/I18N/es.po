@@ -379,7 +379,7 @@ msgid "Events"
 msgstr "Eventos"
 
 msgid "View Stash"
-msgstr "Ver pase"
+msgstr "Ver Stash"
 
 msgid "View Logfile"
 msgstr "Ver Fichero de Log"
