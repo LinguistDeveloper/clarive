@@ -292,8 +292,19 @@ sub save {
 # deprecated:
 sub index_sync { ... }
 
+=head2 index_all
+
+Builds all collection indexes. By default drops current
+indexes before creating them.
+
+    mdb->index_all;
+    mdb->index_all('master_doc');
+    mdb->index_all('master_doc', drop=>0 );  # do not drop current indexes before indexing
+
+=cut
 sub index_all {
-    my ($self, $collection)=@_;
+    my ($self, $collection, %p)=@_;
+    $p{drop} //= 1;
     my $idx = {
         topic => [
             [{ mid=>1 },{ unique=>1 }],
@@ -346,6 +357,7 @@ sub index_all {
     for my $cn ( keys %$idx ) {
         next if defined $collection && $cn ne $collection;
         my $coll = $self->collection($cn);
+        $self->$cn->drop_indexes if $p{drop};
         for my $ix ( @{ $idx->{$cn} } ) {
             $coll->ensure_index( @$ix );
         }

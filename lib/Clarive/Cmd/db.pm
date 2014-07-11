@@ -114,6 +114,17 @@ sub run_upgrade {
     Baseliner::Schema::Migrator->check( $opts{migrate} );
 }
 
+sub run_reindex {
+    require Clarive::mdb;
+    require Clarive::ci;
+    require Clarive::cache;
+    require Clarive::model;
+    
+    Util->_log( "Rebuilding all indexes..." );
+    mdb->index_all; 
+    Util->_log("Done." );
+}
+
 =pod
 
 Clarive DB Schema Management. Deploys, fixes and migrates the DB
@@ -130,6 +141,10 @@ Examples:
 
    cla db-upgrade --migrate from61        # migrates from a Clarive 6.1 schema
    cla db-upgrade --migrate from615       # migrates from a Clarive 6.1.5 schema
+
+=head1 cla db-reindex
+
+Reindexes the database, droping old-indexes.
 
 =head1 cla db-deploy [options]
 
