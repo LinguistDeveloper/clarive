@@ -305,7 +305,7 @@ indexes before creating them.
 sub index_all {
     my ($self, $collection, %p)=@_;
     $p{drop} //= 1;
-    my $idx = {
+    my $base_indexes = {
         topic => [
             [{ mid=>1 },{ unique=>1 }],
             [{ created_on=>1 }],
@@ -354,13 +354,32 @@ sub index_all {
             [{ mid=>1 },{ unique=>1 }],
         ],
     };
-    for my $cn ( keys %$idx ) {
-        next if defined $collection && $cn ne $collection;
-        my $coll = $self->collection($cn);
-        $self->$cn->drop_indexes if $p{drop};
-        for my $ix ( @{ $idx->{$cn} } ) {
-            $coll->ensure_index( @$ix );
+    
+    my $index_hash = sub{
+        my $idx = shift;
+        for my $cn ( keys %{ $idx || {} } ) {
+            next if defined $collection && $cn ne $collection;
+            Util->_debug( "Indexing collection: $cn..." );
+            my $coll = $self->collection($cn);
+            $self->$cn->drop_indexes if $p{drop};
+            for my $ix ( @{ $idx->{$cn} } ) {
+                $coll->ensure_index( @$ix );
+            }
         }
+    };
+    
+    $index_hash->($base_indexes);
+    
+    # load list from files
+    my @from_files = 
+        grep /\.yml$/,
+        map { $_->children }
+        grep { -d } map { $_->path_to('etc','index') } Clarive->features->list_and_home;
+     
+    for my $f ( @from_files ) {
+        my $i = Util->_load( ''.$f->slurp );
+        Util->_debug( "Processing index file $f" );
+        $index_hash->($i);
     }
 }
 
