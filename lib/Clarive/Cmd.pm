@@ -31,15 +31,20 @@ sub BUILD {
     my $self = shift;
     # placeholder for role hooks
     if( $self->help ) {
-        require Pod::Text::Termcap;
-        my $pkg = ref $self;
-        $self->_pod_for_package( $pkg );
-        for my $role( $self->meta->calculate_all_roles ) {
-            $self->_pod_for_package( $role->name );
-        }
+        $self->show_help;
         exit 0;
     }
 };
+
+sub show_help {
+    my $self = shift;
+    require Pod::Text::Termcap;
+    my $pkg = ref $self;
+    $self->_pod_for_package( $pkg );
+    for my $role( $self->meta->calculate_all_roles ) {
+        $self->_pod_for_package( $role->name );
+    }
+}
 
 sub _pod_for_package {
     my ($self, $pkg) = @_;
