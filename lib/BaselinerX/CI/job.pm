@@ -79,7 +79,16 @@ sub icon { '/static/images/icons/job.png' }
 
 before new_ci => sub {
     my ($self, $master_row, $data ) = @_;
-    $self->_create( %$self ) if ref $self eq __PACKAGE__;  # don't do this in job_run
+    $self->_create( %$self );
+};
+
+after new_ci => sub {
+    my ($self, $master_row, $data ) = @_;
+    try {
+        $self->_check_and_init( %$self ) 
+    } catch {
+        $self->delete;  
+    };
 };
 
 after delete => sub {
@@ -309,9 +318,14 @@ sub _create {
         @cs_cis 
     ]);
     $self->ns( 'job/' . $job_seq );
-    $self->save;
+}
+
+sub _check_and_init {
+    my ($self) = @_;
+    #$self->save;  # job_stash method needs an mid
     
     # first stash
+    my $stash = $self->stash_init;
     $self->job_stash($stash);
 
     event_new 'event.job.start' => { job=>$self, job_stash=>$stash };
@@ -321,7 +335,6 @@ sub _create {
     $self->run( same_exec => 1 );
     # check not exists pause on CHECK status, return ERROR!
     if( $self->status eq 'ERROR' ) { 
-        $self->delete;   # cleanup mongo and relationships
         # errors during CHECK fail back to the user
         _fail _loc "Error during Job Check: %1", $self->last_error;
     } else {
@@ -341,8 +354,7 @@ sub _create {
         }
     }
     
-    $self->save;
-    return $job_seq;
+    return $self->jobid;
 }
 
 sub gen_job_name {
