@@ -355,7 +355,7 @@ sub submit : Local {
                 event_new 'event.job.delete' => { username => $c->username, bl => $job_ci->bl, mid=>$p->{mid}, id_job=>$job_ci->jobid, jobname => $job_ci->name  }  => sub {
                     # be careful: may be cancelled already
                     $p->{mode} ne 'delete' and _fail _loc('Job already cancelled'); 
-                    $job_ci->delete;
+                    try { $job_ci->delete } catch { ci->delete( $p->{mid} ) };  # delete should work always
                 };
                 $msg = "Job %1 deleted";
             }
