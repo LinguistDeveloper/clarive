@@ -379,7 +379,7 @@ msgid "Events"
 msgstr "Eventos"
 
 msgid "View Stash"
-msgstr "Ver pase"
+msgstr "Ver Stash"
 
 msgid "View Logfile"
 msgstr "Ver Fichero de Log"
@@ -5203,7 +5203,7 @@ msgid "Generate API Key"
 msgstr "Genenar API Key"
 
 msgid "Parent Project"
-msgstr "Poyecto Padre"
+msgstr "Proyecto Padre"
 
 msgid "Engine Package"
 msgstr "Paquete Engine"
