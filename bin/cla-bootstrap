@@ -394,6 +394,7 @@ SQL::Translator
 SQL::Translator::Diff
 SQL::Translator::Parser::Oracle
 Scalar::Util
+Sereal
 Starman
 String::CRC32
 String::ShellQuote
