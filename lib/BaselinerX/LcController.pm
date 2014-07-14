@@ -208,8 +208,7 @@ sub topic_contents : Local {
     my @tree;
     my $topic_mid = $c->req->params->{topic_mid};
     my $state = $c->req->params->{state_id};
-    my $where = {};
-
+    my $where = { from_mid => $topic_mid };
     if ( $state ) {
         $where->{'category_status.id'} = "$state";
     }
@@ -225,8 +224,12 @@ sub topic_contents : Local {
             : $is_changeset ? '/static/images/icons/changeset_lc.png' :'/static/images/icons/topic.png' ;
 
         my @menu_related = $self->menu_related();
+
+        my @topic_project = mdb->topic->find_one({ mid=>$_->{topic_topic2}{mid} })->{_project_security}->{project};
+        my $title_project = "(" . mdb->project->find_one({ mid=>$topic_project[0][0] })->{name} . ")" if (@topic_project);
+
         push @tree, {
-            text       => $topic->{title},
+            text       => $title_project ." ". $_->{topic_topic2}{title},
             topic_name => {
                 mid             => $topic->{mid},
                 category_color  => $topic->{category}{color},
