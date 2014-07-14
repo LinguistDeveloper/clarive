@@ -239,7 +239,7 @@
                             fieldset.add( fields );
                             fieldset.doLayout();
                             //form.getForm().loadRecord( params.rec );
-                            form.getForm().setValues( params.rec );
+                            //form.getForm().setValues( params.rec );
                         }
                     });
             };
