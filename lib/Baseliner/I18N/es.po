@@ -379,7 +379,7 @@ msgid "Events"
 msgstr "Eventos"
 
 msgid "View Stash"
-msgstr "Ver pase"
+msgstr "Ver Stash"
 
 msgid "View Logfile"
 msgstr "Ver Fichero de Log"
@@ -1626,7 +1626,7 @@ msgstr "%1 no está en ninguna release."
 msgid "Cannot add item of type %1 to releases."
 msgstr "No se permite añadir el elemento de tipo %1 a una release."
 
-msgid "Error creating the job: %1"
+msgid "Error creating job: %1"
 msgstr "Error al crear el pase: %1"
 
 msgid "Error creating the release: %1"
@@ -3930,11 +3930,11 @@ msgstr "*Despliegue añadido* para '%1'"
 msgid "Cannot promote/demote changeset %1 to baseline %2 (job type %3)"
 msgstr "No es posible promover/devolver el cambio %1 al entorno %2 (tipo de pase: %3)"
 
-msgid "Changeset '%1' is in an active job: %2 (%3) with promote/demote to a different state (%4)"
-msgstr "Cambio '%1' está en un pase activo: %2 (%3) con promoción/devolución a un estadio diferente (%4)"
+msgid "'%1' is in an active job: %2 (%3) with promote/demote to a different state (%4)"
+msgstr "'%1' está en un pase activo: %2 (%3) con promoción/devolución a un estadio diferente (%4)"
 
-msgid "Changeset '%1' is in an active job to bl %3: %2"
-msgstr "Cambio '%1' está en un pase activo al entorno %3: %2"
+msgid "'%1' is in an active job to bl %3: %2"
+msgstr "'%1' está en un pase activo al entorno %3: %2"
 
 msgid "select or drop repository revisions"
 msgstr "seleccione o arrastre revisiones de repositorio"
@@ -5203,7 +5203,7 @@ msgid "Generate API Key"
 msgstr "Genenar API Key"
 
 msgid "Parent Project"
-msgstr "Poyecto Padre"
+msgstr "Proyecto Padre"
 
 msgid "Engine Package"
 msgstr "Paquete Engine"

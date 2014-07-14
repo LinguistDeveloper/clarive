@@ -355,7 +355,7 @@ sub submit : Local {
                 event_new 'event.job.delete' => { username => $c->username, bl => $job_ci->bl, mid=>$p->{mid}, id_job=>$job_ci->jobid, jobname => $job_ci->name  }  => sub {
                     # be careful: may be cancelled already
                     $p->{mode} ne 'delete' and _fail _loc('Job already cancelled'); 
-                    $job_ci->delete;
+                    try { $job_ci->delete } catch { ci->delete( $p->{mid} ) };  # delete should work always
                 };
                 $msg = "Job %1 deleted";
             }
@@ -426,12 +426,10 @@ sub submit : Local {
         }
     } catch {
         my $err = shift;
-        _error "Error during job creation: $err";
-        # clean up dbi transaction stuff
-        $err =~ s({UNKNOWN})()g;
-        $err =~ s{DBIx.*\(\):}{}g;
-        $err =~ s{ at./.*line.*}{}g;
-        $c->stash->{json} = { success => \0, msg => _loc("Error creating the job: %1", $err ) };
+        #$err =~ s{ at./.*line.*}{}g;
+        my $msg = _loc("Error creating job: %1", $err ) ;
+        _error( $msg );
+        $c->stash->{json} = { success => \0, msg=>$msg };
     };
     $c->forward('View::JSON');	
 }

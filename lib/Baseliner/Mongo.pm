@@ -15,6 +15,7 @@ has mongo_db_name => qw(is rw isa Any), default=>sub{ Clarive->config->{mongo}{d
 has mongo         => ( is=>'ro', isa=>'MongoDB::MongoClient', lazy=>1, default=>sub{
        my $self = shift;
        require MongoDB;
+       local $Baseliner::Utils::caller_level = 7;
        my $max = $self->max_retries;
        my $last_error;
        for my $retry (1..$max){
@@ -291,9 +292,20 @@ sub save {
 # deprecated:
 sub index_sync { ... }
 
+=head2 index_all
+
+Builds all collection indexes. By default drops current
+indexes before creating them.
+
+    mdb->index_all;
+    mdb->index_all('master_doc');
+    mdb->index_all('master_doc', drop=>0 );  # do not drop current indexes before indexing
+
+=cut
 sub index_all {
-    my ($self, $collection)=@_;
-    my $idx = {
+    my ($self, $collection, %p)=@_;
+    $p{drop} //= 1;
+    my $base_indexes = {
         topic => [
             [{ mid=>1 },{ unique=>1 }],
             [{ created_on=>1 }],
@@ -342,12 +354,32 @@ sub index_all {
             [{ mid=>1 },{ unique=>1 }],
         ],
     };
-    for my $cn ( keys %$idx ) {
-        next if defined $collection && $cn ne $collection;
-        my $coll = $self->collection($cn);
-        for my $ix ( @{ $idx->{$cn} } ) {
-            $coll->ensure_index( @$ix );
+    
+    my $index_hash = sub{
+        my $idx = shift;
+        for my $cn ( keys %{ $idx || {} } ) {
+            next if defined $collection && $cn ne $collection;
+            Util->_debug( "Indexing collection: $cn..." );
+            my $coll = $self->collection($cn);
+            $self->$cn->drop_indexes if $p{drop};
+            for my $ix ( @{ $idx->{$cn} } ) {
+                $coll->ensure_index( @$ix );
+            }
         }
+    };
+    
+    $index_hash->($base_indexes);
+    
+    # load list from files
+    my @from_files = 
+        grep /\.yml$/,
+        map { $_->children }
+        grep { -d } map { $_->path_to('etc','index') } Clarive->features->list_and_home;
+     
+    for my $f ( @from_files ) {
+        my $i = Util->_load( ''.$f->slurp );
+        Util->_debug( "Processing index file $f" );
+        $index_hash->($i);
     }
 }
 

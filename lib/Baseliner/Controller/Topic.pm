@@ -1521,7 +1521,7 @@ sub newjob : Local {
         };
         event_new 'event.job.new' => { username => $job_data->{username}, bl => $job_data->{bl}  } => sub {
 
-            my $job = ci->job->new( $job_data );
+            $job = ci->job->new( $job_data );
             $job->save;  # after save, CHECK and INIT run
             $job->job_stash({   # job stash autosaves into the stash table
                 status_from    => $p->{status_from},
@@ -1541,10 +1541,10 @@ sub newjob : Local {
         { success=>\1, msg=> _loc( "Job %1 created ok", $job->name ) };
     } catch {
         my $err = shift;
-        $err =~ s({UNKNOWN})()g;
-        $err =~ s{DBIx.*\(\):}{}g;
         $err =~ s{ at./.*line.*}{}g;
-        { success=>\0, msg=> _loc( "Error creating job: %1", "$err" ) };
+        my $msg = _loc( "Error creating job: %1", "$err" );
+        _error( $msg );
+        { success=>\0, msg=>$msg };
     };
     $c->forward('View::JSON');
 }

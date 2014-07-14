@@ -1038,7 +1038,7 @@ register 'statement.project.loop' => {
                 $stash->{project_lc} = lc $project->name;
                 $stash->{project_uc} = uc $project->name;
                 my $vars = variables_for_bl( $project, $stash->{bl} );
-                $stash->{job}->logger->info( _loc('Current project *%1* (%2)', $project->name, $stash->{bl} ), $vars );
+                $stash->{job}->logger->info( _loc('Current project *%%1* (%%2)', $project->name, $stash->{bl} ), $vars );
 
                 merge_data $stash, $vars, { _ctx => 'project_loop' }; 
                 
@@ -1068,7 +1068,7 @@ register 'statement.if.nature' => {
                     local $stash->{ nature_item_paths_del } = $nat_paths_del;
                     local $stash->{ nature_items_comma } = join(',', @$nat_paths );
                     local $stash->{ nature_items_quote } = "'" . join("' '", @$nat_paths ) . "'";
-                    $stash->{job}->logger->info( _loc('Nature Detected *%1*', $nature->name ), 
+                    $stash->{job}->logger->info( _loc('Nature Detected *%%1*', $nature->name ), 
                         +{ map { $_=>$stash->{$_} } qw/nature_items nature_item_paths nature_items_comma nature_items_quote/ } );
 
                     %s

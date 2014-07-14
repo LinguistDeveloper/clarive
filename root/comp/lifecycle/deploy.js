@@ -30,12 +30,13 @@
     Baseliner.confirm( _('Are you sure you want to deploy/rollback %1 to baseline %2 (%3)?', String.format("<b>{0}</b>", name), String.format("<b>{0}</b>",_(to_state_name)),bl_to ), function() { 
         Baseliner.message( _('Job'), _('Starting job check and initialization...') );
         Baseliner.ajaxEval( '/topic/newjob', { changesets:[mid], bl: bl_to, job_type: job_type, status_to: status_to, status_from: status_from, id_status_from: id_status_from }, function(res) {
-            if( res.success ) {
-                Baseliner.message( _('Job'), res.msg );
-                Baseliner.family_notify({ family:'jobs' });
-            } else {
-                Ext.Msg.alert( _('Error creating job'), res.msg );
-            }
+            Baseliner.message( _('Job'), res.msg );
+            // refresh the job grid
+            Baseliner.family_notify({ family:'jobs' });
+        }, function(res){
+            Ext.Msg.alert( _('Error creating job'), res.msg );
+            // refresh the job grid
+            Baseliner.family_notify({ family:'jobs' });
         });
     });
 })

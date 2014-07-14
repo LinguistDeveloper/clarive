@@ -79,7 +79,16 @@ sub icon { '/static/images/icons/job.png' }
 
 before new_ci => sub {
     my ($self, $master_row, $data ) = @_;
-    $self->_create( %$self ) if ref $self eq __PACKAGE__;  # don't do this in job_run
+    $self->_create( %$self );
+};
+
+after new_ci => sub {
+    my ($self, $master_row, $data ) = @_;
+    try {
+        $self->_check_and_init( %$self ) 
+    } catch {
+        $self->delete;  
+    };
 };
 
 after delete => sub {
@@ -265,17 +274,21 @@ sub _create {
         my @active_jobs = $cs->is_in_active_job;
         for my $active_job ( @active_jobs ) {
             _log _dump $active_job;
+            next if $active_job->mid eq $self->mid;
+            _debug( $cs );
             if ( $active_job->job_type ne 'static') {
                 my $ci_self_status = ci->new('moniker:'.$self->bl);
                 my ($self_status_to) = grep {$_->{type} eq 'D'} Util->_array($ci_self_status->parents( isa => 'status'));
                 my $ci_other_status = ci->new('moniker:'.$active_job->bl);
                 my ($other_status_to) = grep {$_->{type} eq 'D'} Util->_array($ci_other_status->parents( isa => 'status'));
                 if ( $self_status_to->{name} ne $other_status_to->{name} ) {
-                    _fail _loc("Changeset '%1' is in an active job: %2 (%3) with promote/demote to a different state (%4)", $cs->{name}, $active_job->name, $active_job->mid, $other_status_to->{name} )
+                    _fail _loc( "'%1' is in an active job: %2 (%3) with promote/demote to a different state (%4)",
+                        $cs->topic_name, $active_job->name, $active_job->mid, $other_status_to->{name} )
                 }
             }
             if ( $active_job->bl eq $self->bl ) {
-                _fail _loc("Changeset '%1' is in an active job to bl %3: %2", $cs->{name}, $active_job->name, $self->bl )
+                _fail _loc( "'%1' is in an active job to bl %3: %2", 
+                    $cs->topic_name, $active_job->name, $self->bl )
             }
         }
         push @cs_list, $cs->topic_name;
@@ -305,9 +318,14 @@ sub _create {
         @cs_cis 
     ]);
     $self->ns( 'job/' . $job_seq );
-    $self->save;
+}
+
+sub _check_and_init {
+    my ($self) = @_;
+    #$self->save;  # job_stash method needs an mid
     
     # first stash
+    my $stash = $self->stash_init;
     $self->job_stash($stash);
 
     event_new 'event.job.start' => { job=>$self, job_stash=>$stash };
@@ -317,7 +335,6 @@ sub _create {
     $self->run( same_exec => 1 );
     # check not exists pause on CHECK status, return ERROR!
     if( $self->status eq 'ERROR' ) { 
-        $self->delete;   # cleanup mongo and relationships
         # errors during CHECK fail back to the user
         _fail _loc "Error during Job Check: %1", $self->last_error;
     } else {
@@ -337,8 +354,7 @@ sub _create {
         }
     }
     
-    $self->save;
-    return $job_seq;
+    return $self->jobid;
 }
 
 sub gen_job_name {
