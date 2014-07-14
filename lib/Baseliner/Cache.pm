@@ -4,10 +4,13 @@ use URI::Escape qw(uri_escape uri_unescape);
 use JSON::XS;
 
 sub set {
-    my ($self,$key,$value)=@_;
-    $key = JSON::XS->new->utf8->canonical->encode( $key ) if ref $key;
-    my $final_value = ref $value ? $value : bless( \$value => 'Cache::SV' );
-    mdb->cache->update({ _id=>$key },{ _id=>$key,v=>Storable::freeze($final_value) },{ upsert=>1 });
+    my $length = ref $value ?length(Storable::freeze($value)):length($value);
+    if( $length < 16777216){
+        my ($self,$key,$value)=@_;
+        $key = JSON::XS->new->utf8->canonical->encode( $key ) if ref $key;
+        my $final_value = ref $value ? $value : bless( \$value => 'Cache::SV' );
+        mdb->cache->update({ _id=>$key },{ _id=>$key,v=>Storable::freeze($final_value) },{ upsert=>1 });
+    }
 }
 
 sub get {

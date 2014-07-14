@@ -247,10 +247,20 @@ sub events_by_mid {
         };  
         $d; 
     } @evs ];
+    my $purged = [];
+    foreach my $elem (@$ret){
+        my $key = $elem->{event_key};
+        my $vars = model->Registry->get($key)->vars;
+        my $event_db = mdb->event->find({ event_key => $key })->next;
+        my $event_data = _load( $event_db->{event_data} );
+        my $needed_data = +{ %$event_db, %$event_data };
+        my %res = map { $_=>$$needed_data{$_} } @$vars;
+        %res->{text} = $elem->{text};
+        push @$purged, \%res;
+    }
+    cache->set( $cache_key, $purged );
 
-    cache->set( $cache_key, $ret );
-
-    return $ret;
+    return $purged;
 }
 
 =head2 event_hook
