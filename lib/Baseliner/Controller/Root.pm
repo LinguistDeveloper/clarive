@@ -143,8 +143,8 @@ sub auto : Private {
     # api_key ?
     if( my $api_key = $c->request->params->{api_key} ) {
         my $user = ci->user->find({ api_key=>$api_key })->fields({username => 1, _id => 0})->next;
-        if( ref $user && ( my $auth = $c->authenticate({ id=>$user->username }, 'none') ) ) {
-            $c->session->{username} = $user->username;
+        if( ref $user && ( my $auth = $c->authenticate({ id=>$$user{username} }, 'none') ) ) {
+            $c->session->{username} = $user->{username};
             $c->session->{user} = $c->user_ci;
             event_new 'event.auth.failed'=>{ username=>$c->username, status=>401, mode=>'api_key' };
             return 1;
