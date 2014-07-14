@@ -60,7 +60,7 @@ system qq{rm -rf $home/root/identicon/*};
 
 # set file/dir permissions
 system qq{find '$home' -type f -exec chmod 600 {} \\;};
-system qq{chmod 700 $home/bin/cla};
+system qq{chmod 700 $home/bin/cla*};
 
 # add files that need to be in dir for globs TODO
 #system qq{mkdir -p $home/lib/Clarive && cp -r lib/Clarive/Cmd $home/lib/Clarive/};
