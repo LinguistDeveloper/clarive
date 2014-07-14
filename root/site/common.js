@@ -3273,7 +3273,7 @@ Baseliner.CBox = Ext.extend( Ext.form.Checkbox, {
             self.checked = value===false || value===0 || value==='0' || value==='' ? false : true;
         }
         this.on('afterrender', function(){
-            self.hidden_field = this.wrap.createChild({tag: 'input', type:'hidden', name: self.name, value: value ? 1 : 0 }, this.el);
+            self.hidden_field = this.wrap.createChild({tag: 'input', type:'hidden', name: self.name, value: self.checked ? 1 : 0 }, this.el);
         });
         this.on('check', function(obj,checked) {
             if( self.hidden_field ) self.hidden_field.dom.value = checked ? 1 : 0;
@@ -3286,8 +3286,6 @@ Baseliner.CBox = Ext.extend( Ext.form.Checkbox, {
             : this.checked ? 1 : 0 ;  
     }
 });
-Ext.reg( 'cbox', Baseliner.CBox );
-
 Ext.reg( 'cbox', Baseliner.CBox );
 
 Ext.apply(Ext.layout.FormLayout.prototype, {
