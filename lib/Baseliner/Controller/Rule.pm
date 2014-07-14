@@ -209,7 +209,10 @@ sub compile_wsdl {
         require XML::Compile::SOAP::Daemon::CGI;
         require XML::Compile::WSDL11;
         require XML::Compile::SOAP::Util;
-        return XML::Compile::WSDL11->new( Util->parse_vars($wsdl,{ WSURL=>'http://fakeurl:8080/rule/soap/fake_for_compile' }) );
+        return XML::Compile::WSDL11->new( Util->parse_vars($wsdl,{ 
+                    #server_type => 'BEA',
+                    WSURL=>'http://fakeurl:8080/rule/soap/fake_for_compile',
+                }) );
     } catch {
         my $err = shift;
         _fail( _loc('Error compiling WSDL: <br /><pre>%1</pre>', Util->_html_escape($err)) );
@@ -776,7 +779,10 @@ sub default : Path {
                 # no warnings zone
                 {
                     my @warns;
+                    # store warnings for later
                     local $SIG{__WARN__} = sub { push @warns, @_; };
+                    
+                    # run the WSDL in CGI mode
                     $self->cgi_to_response($c, sub {
                         my $query = CGI->new;
                         $daemon->runCgiRequest(query => $query);
