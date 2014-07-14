@@ -1,7 +1,6 @@
 (function(params){
     var data = params.data || {};
-    var rc = params.data.recursive=='on' ? true : false;
-    var recursive = new Ext.form.Checkbox({ name: 'recursive', checked: rc , fieldLabel: _("Recursive") });
+    var recursive = new Baseliner.CBox({ name: 'recursive', checked: params.data.recursive, fieldLabel: _("Recursive") });
     var local_path = new Baseliner.MonoTextArea({ fieldLabel: _('Local Path'), height: 80, name: 'local_path', 
         value: data.local_path!=undefined ? data.local_path : '${job_dir}/${project}',
         hidden: !( data.local_mode && data.local_mode=='local_files' )

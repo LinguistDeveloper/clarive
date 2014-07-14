@@ -3269,6 +3269,8 @@ Baseliner.CBox = Ext.extend( Ext.form.Checkbox, {
         if( value === undefined )  {
             value= self.default_value;
             self.checked = value;
+        } else {
+            self.checked = value===false || value===0 || value==='0' || value==='' ? false : true;
         }
         this.on('afterrender', function(){
             self.hidden_field = this.wrap.createChild({tag: 'input', type:'hidden', name: self.name, value: value ? 1 : 0 }, this.el);

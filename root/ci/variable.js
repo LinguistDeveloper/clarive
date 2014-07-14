@@ -139,15 +139,19 @@
         fields: [ 'role', 'name' ],
         url: '/ci/roles'
     });
-    var var_ci_mandatory = new Ext.form.Checkbox({
-        fieldLabel: _('CI Mandatory'), 
-        name: 'var_ci_mandatory',
-        checked: params.rec.var_ci_mandatory || true
-    });
-    var var_ci_multiple = new Ext.form.Checkbox({
+    
+    var var_ci_multiple = new Baseliner.CBox({
         fieldLabel: _('CI Multiple'), 
         name: 'var_ci_multiple',
-        checked: params.rec.var_ci_multiple || false
+        checked: params.rec.var_ci_multiple, 
+        default_value: false
+    });
+    
+    var var_ci_mandatory = new Baseliner.CBox({
+        fieldLabel: _('CI Mandatory'), 
+        name: 'var_ci_mandatory',
+        checked: params.rec.var_ci_mandatory,
+        default_value: true
     });
     
     var combo_opts = new Baseliner.ArrayGrid({ 

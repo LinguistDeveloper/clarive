@@ -1,8 +1,7 @@
 (function(params){
     var data = params.data || {};
-    var sl = params.data.slurp=='on' ? true : false;
     var ta = Baseliner.cols_templates['textarea'];
-    var slurp = new Ext.form.Checkbox({ name: 'slurp', checked: sl , fieldLabel: _("Slurp") });
+    var slurp = new Baseliner.CBox({ name: 'slurp', checked: params.data.slurp, fieldLabel: _("Slurp") });
     var item_mode = new Baseliner.ComboDouble({ 
         fieldLabel: _('Items Mode'), name:'items_mode', value: data.items_mode || 'all_files', 
         data: [ ['all_files',_('All files')], ['only_job_items',_('Job Items')] ]

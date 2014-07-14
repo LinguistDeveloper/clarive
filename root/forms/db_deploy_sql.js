@@ -1,5 +1,5 @@
 (function(params){
-    var transactional = new Ext.form.Checkbox({ name: 'transactional', checked: ( params.data.transactional=='on' ? true : false ) , fieldLabel: _("Transactional") });
+    var transactional = new Baseliner.CBox({ name: 'transactional', checked: params.data.transactional, fieldLabel: _("Transactional") });
     
     var split_mode = new Baseliner.ComboSingle({ fieldLabel: _('Split Mode'), name:'split_mode', value: params.data.split_mode || 'auto', data: [
             'auto',
