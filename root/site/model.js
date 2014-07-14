@@ -939,7 +939,7 @@ Baseliner.ci_box = function(c) {
     var autoload = c.autoLoad != undefined ? c.autoLoad : true;
     var store = new Baseliner.store.CI({ autoLoad:true, baseParams: bp });
     store.on('load', function(){
-        if( c.force_set_value )
+        if( value != undefined )
            ci_box.setValue( value );
     });
     var ci_box = new Baseliner.model.CISelect(Ext.apply({
@@ -952,13 +952,6 @@ Baseliner.ci_box = function(c) {
         allowBlank: true,
         showClass: show_class
     }, c )); 
-    if( autoload ) {
-        if( value != undefined && value.length > 0 )  {
-            store.load({ params: { mids: value } }); 
-        } else {
-            store.load();
-        }
-    }
     return ci_box;
 };
 
