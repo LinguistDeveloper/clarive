@@ -80,16 +80,17 @@ sub clean_match {
 sub order_matches {
     my ($self,$query,$config,@results) = @_;
     my $docs = [];
+    ( my $query_clean = $query ) =~ s/\W+//g;
     my $max_excerpt_size = $config->{max_excerpt_size} // 120;
     my $max_excerpt_tokens = $config->{max_excerpt_tokens} // 5;
     for my $doc ( @results ) {
         my @found;
         my $idexact  = $$doc{mid} eq $query;
-        my $idmatch  = length join '',( "$$doc{mid}" =~ /($query)/gsi );
-        my $tmatch  = length join '', ( "$$doc{title}" =~ /($query)/gsi );
+        my $idmatch  = length join '',( "$$doc{mid}" =~ /($query_clean)/gsi );
+        my $tmatch  = length join '', ( "$$doc{title}" =~ /($query_clean)/gsi );
         for my $doc_txt ( $$doc{info}, $$doc{text} ) {
             my $kfrag = 0;
-            while ( $doc_txt =~ /(?<bef>.{0,20})?(?<mat>$query)(?<aft>.{0,20})?/gsi ) {
+            while ( $doc_txt =~ /(?<bef>.{0,20})?(?<mat>$query_clean)(?<aft>.{0,20})?/gsi ) {
                 my $t = '';
                 if( $kfrag <= $max_excerpt_tokens ) {   # otherwise excerpt too long
                     my ( $bef, $mat, $aft ) = ( $+{bef}, $+{mat}, $+{aft} );
