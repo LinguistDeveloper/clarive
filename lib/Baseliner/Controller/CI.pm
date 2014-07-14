@@ -252,11 +252,7 @@ sub tree_objects {
             next if $m =~ /^\$\{/;
             push @where_mids, $m;
         }
-        if( scalar @where_mids == 1 ) {
-            $where->{mid} = $where_mids[0];
-        } elsif( @where_mids > 1 ) {
-            $where->{mid} = \@where_mids;
-        }
+        $where->{mid} = mdb->in(@where_mids);
     }
 
     my $rs = mdb->master_doc->query($where,$opts)->fields({ yaml=>0 });
@@ -571,7 +567,6 @@ sub store : Local {
                 }
             }
             $mids = [ _array($mids), _unique @security];
-            _log _dump $mids;
         }
 
         $class = "BaselinerX::CI::$class" if $class !~ /^Baseliner/;
@@ -627,8 +622,6 @@ sub store : Local {
         } @vars;
     }
     
-    _log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>ANTES" . _dump \@data; 
-
     if( ref $mids ) { 
         # return data ordered like the mids
         my @data_ordered;
@@ -637,8 +630,6 @@ sub store : Local {
         push @data_ordered, grep { defined } values %h; # the rest of them at the bottom
         @data = @data_ordered; 
     }
-
-    _log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>DESPUES" . _dump \@data;     
 
     $c->stash->{json} = { data=>\@data, totalCount=>$total };
     $c->cache_set( $cache_key, $c->stash->{json} ) if $cache_key; 
