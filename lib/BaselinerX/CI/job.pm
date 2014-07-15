@@ -1011,7 +1011,7 @@ sub run {
         $job_error = 1;
         $self->finish( 'ERROR' );
         $self->logger->error( _loc( 'Job failure: %1', $err ) );
-        $self->last_error( $err );
+        $self->last_error( substr($err,0,1024) );
         $self->job_stash( $stash );
     };
 
