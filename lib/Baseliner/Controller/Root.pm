@@ -436,8 +436,14 @@ sub cla_worker : Path('cla-worker') {
 
 sub cache_clear : Local {
     my ($self,$c) = @_; 
-    _fail 'No permission' unless $c->has_action('action.development.cache_clear');
-    $c->cache_clear;
+    $c->stash->{json} = try {
+        _fail 'No permission' unless $c->has_action('action.development.cache_clear');
+        $c->cache_clear;
+        { success=>\1, msg=>"CACHE CLEARED..." };
+    } catch {
+        { success=>\0, msg=>"No permission" };
+    };
+    $c->forward('View::JSON');
 }
 
 sub share_html : Local {
