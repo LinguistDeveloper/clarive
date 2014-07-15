@@ -437,13 +437,10 @@ sub topics_for_user {
         if (!$p->{clear_filter}){  
 
             ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
-            my %tmp;
-            map { $tmp{ $_->{id_status_from} } = $_->{id_category} if ($_->{id_status_from}); } 
-                $self->user_workflow( $username );
-            # map { $tmp{$_->{id_status_from}} = $_->{id_category} && $tmp{$_->{id_status_to} = $_->{id_category}} } 
             my @workflow_filter;
-            for my $status (keys %tmp){
-                push @workflow_filter, {'category.id' => $tmp{$status},'category_status.id' => $status};
+            my @my_workflow = $self->user_workflow( $username );
+            for my $wf ( @my_workflow ){
+                push @workflow_filter, {'category.id' => $$wf{id_category}, 'category_status.id' => $$wf{id_status_from} };
             }
             $where->{'$or'} = \@workflow_filter if @workflow_filter;
             $where->{'category_status.type'} = { '$nin' =>['F','FC'] }
