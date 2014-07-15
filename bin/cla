@@ -47,6 +47,7 @@ if( @pre_opts ) {
 
 # get command options
 my %opts = Getopt::Mini::getopt( hungry_flags=>1, define=>1 );
+%opts = process_dot_opts( %opts );
 my $argv = delete $opts{_argv};
 
 if( !$cmd ) {
@@ -67,3 +68,17 @@ my $app = Clarive::App->new( %opts );
 $app->do_cmd( cmd=>$cmd );
 
 exit 0;
+
+sub process_dot_opts {
+    my %opt = @_;
+    my %dots;
+    for my $k ( keys %opt ) {
+        if( $k=~/\./ )  {
+            my @pars = split /\./, $k;
+            my $ev = join '', map { "{$_}" } @pars;
+            eval "\$dots$ev = \$opt{\$k}";
+            die "ERROR: invalid dot option syntax: $k\n" if $@;
+        }
+    }
+    return ( %opt, %dots );
+}
