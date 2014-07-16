@@ -393,7 +393,7 @@ sub delivered {
     _fail _loc('Missing id') unless length $p{id};
 
     $p{where} ={'queue.id' => 0 + $p{id}};
-    my @queue = $self->transform(%p);
+#    my @queue = $self->transform(%p);
 
     my $act = '0';
     mdb->message->update(
@@ -404,7 +404,8 @@ sub delivered {
 				'queue.$.received' => mdb->ts,
 				'queue.$.active' => $act
 			}
-		}
+		},
+        { multiple=>1 }
 	);
 }
 

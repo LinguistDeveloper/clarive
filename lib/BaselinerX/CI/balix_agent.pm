@@ -47,6 +47,13 @@ with 'Baseliner::Role::CI::Agent';
 sub error;
 sub rmpath;
 
+sub BUILD {
+   my $self = shift;
+   $self->os ($self->server->os);
+};
+
+
+
 method mkpath ( $path ) {
     if ( $self->is_win ) {
         $self->execute( \'md', $path );

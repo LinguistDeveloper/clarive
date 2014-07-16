@@ -197,6 +197,7 @@ Returns a hash indexed by key pointing to an array of hashes
     say $users{ $id }->[0]->{name};
 
 =cut
+
 sub find_hashed {
     my ($self,$key,$where,$fields)=@_;
     my $rs = $self->find( $where );
@@ -206,10 +207,17 @@ sub find_hashed {
     }
     my %ret;
     while( my $r = $rs->next ) {
-        push @{ $ret{ $$r{$key} // '' } }, $r
+        if ( ref $$r{$key} eq 'ARRAY'){
+            for my $item ( @{$$r{$key}} ){
+                push @{ $ret{ $item // '' } }, $r    
+            }
+        }else{
+            push @{ $ret{ $$r{$key} // '' } }, $r   
+        }
     }
     return wantarray ? %ret : \%ret;
 };
+
 
 =head2 find_hash_one
 
@@ -220,6 +228,7 @@ Returns a hash indexed by key pointing to a SINGLE VALUE (no arrayref)
     say $users{ $id }{name};
 
 =cut
+
 sub find_hash_one {
     my ($self,$key,$where,$fields)=@_;
     my $rs = $self->find( $where );

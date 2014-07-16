@@ -50,7 +50,7 @@ sub show : Local {
             map {
                 +{ name=>$_, value=>$ENV{$_} }
             }
-            grep /BASELINER/i, keys %ENV
+            grep /(CLARIVE|BASELINER)/i, keys %ENV
         ];
         $c->stash->{tlc} = $Baseliner::TLC;
     }

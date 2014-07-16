@@ -1851,7 +1851,7 @@ Baseliner.jobs_for_topic = function(args) {
                             '[%= name %]')">
                                 [%= name %] ([%= username%])
                            </a> 
-                           - [%= _(status) %]  <small>[%= ts %]</small>
+                           - [%= _(status) %]  <small>[%= endtime %]</small>
                         </p>
                         <hr />
                     </div> 

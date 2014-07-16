@@ -61,7 +61,7 @@ sub run_daemon {
     _log "Sem daemon started";
     my $iteration=1;
     my $pending=0;
-    my $hostname = Util->my_hostname;
+    #my $hostname = Util->my_hostname;
     
     my $cr_iters = $config->{check_for_roadkill_iterations} // 1000;
     
@@ -76,7 +76,7 @@ sub run_daemon {
             return 1;
         });
         $iteration++; 
-        $pending = mdb->sem_queue->find({ status => 'waiting', hostname=>$hostname })->count;
+        $pending = mdb->sem_queue->find({ status => 'waiting', active=>1 })->count;
     } while ( ( $iteration <=  $iterations ) || $pending > 0 );
 
     _info "semaphore iteration finished " . $iteration . ' > ' . $iterations . ' or ' . $pending . " > 0\n";
@@ -104,7 +104,7 @@ sub process_queue {
 
         my @reqs = 
             mdb->sem_queue
-            ->find({ key=>$key, status => 'waiting', active=>1, hostname=>Util->my_hostname })
+            ->find({ key=>$key, status => 'waiting', active=>1 })
             ->sort( Tie::IxHash->new( seq=>1, ts=>1 ) )->all; 
             
         $free_slots = @reqs if $slots == -1;  # infinity
@@ -125,7 +125,7 @@ sub check_for_roadkill {
     my ($self, %p ) = @_;
     
     _debug _loc("RUNNING sem_check_for_roadkill");
-    my $rs = mdb->sem_queue->find({ status=>mdb->in('waiting', 'idle', 'granted', 'busy'), hostname=>Util->my_hostname });
+    my $rs = mdb->sem_queue->find({ status=>mdb->in('waiting', 'idle', 'granted', 'busy') });
     while( my $r = $rs->next ) {
         my $pid = $r->{pid};
         next unless $pid > 0;
@@ -144,9 +144,9 @@ sub cleanup {
     my $purge_date = ''.(Class::Date->now - $inter); 
     # roadkilled? old?
     mdb->sem_queue->remove({ 
-            status=>mdb->in('cancelled','done','killed'), 
-            ts_request=>{ '$lt'=>$purge_date }, 
-            hostname=>Util->my_hostname }, { multiple=>1 });
+                status=>mdb->in('cancelled','done','killed'), 
+                ts_request=>{ '$lt'=>$purge_date }, 
+            }, { multiple=>1 });
 }
 
 1;

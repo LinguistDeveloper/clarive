@@ -688,13 +688,15 @@
         if(rec.data.labels){
             tag_color_html = "";
             for(i=0;i<rec.data.labels.length;i++){
-                var label = rec.data.labels[i].split(';');
-                var label_name = label[1];
-                var label_color = label[2];
-                tag_color_html = tag_color_html
-                    //+ "<div id='boot'><span class='label' style='font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;float:left;padding:1px 4px 1px 4px;margin-right:4px;color:"
-                    + "<span style='font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;float:left;padding:1px 4px 1px 4px;margin-right:4px;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;"
-                    + "color: #fff;background-color:" + label_color + "'>" + label_name + "</span>";
+                if (rec.data.labels[i] != " "){
+                    var label = rec.data.labels[i].split(';');
+                    var label_name = label[1];
+                    var label_color = label[2];
+                    tag_color_html = tag_color_html
+                        //+ "<div id='boot'><span class='label' style='font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;float:left;padding:1px 4px 1px 4px;margin-right:4px;color:"
+                        + "<span style='font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;float:left;padding:1px 4px 1px 4px;margin-right:4px;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;"
+                        + "color: #fff;background-color:" + label_color + "'>" + label_name + "</span>";
+                }
             }
         }
         

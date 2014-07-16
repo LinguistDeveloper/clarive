@@ -66,6 +66,11 @@ use Exporter::Tidy default => [
     _fail
     _mason
     _textile
+    _pathxs
+    _uacc
+    _markup
+    zip_files
+zip_tree
     hash_flatten
     parse_vars
     _to_json
@@ -1036,12 +1041,55 @@ sub zip_files {
             $file = File::Spec->catfile( $p{pathprefix}, $file );
         };
         _log "ZIP ADD $file, $filepath";
-        $zip->addFile( $file, $filepath );
+ if(grep /compressed/, qx{file $file}) #evitar fallo en caso de fichero comprimido
+                {
+                        $zip->addFile( $file, $filepath )->desiredCompressionLevel(0);
+                }
+                else
+                {
+                        $zip->addFileOrDirectory( $file, $filepath );
+
+
+       # $zip->addFile( $file, $filepath );
     }
     $zip->writeToFileNamed($p{to}) == $Archive::Zip::AZ_OK
         or _throw "Error writing zip file $p{to}: $!";
     return $p{to};
+	}
 }
+sub zip_tree {
+my (%p) =@_;
+    my $source = $p{source} // _fail _loc 'Missing parameter source'; 
+    my $zipfile = $p{to} // _fail _loc 'Missing parameter zipfile';
+my $base = $p{base} // $source;
+    my $verbose = $p{verbose};
+
+    # open and close to reset file and attempt write
+         open my $ff, '>', $zipfile 
+         or _fail _loc 'Could not create zip file `%1`: %2', $zipfile, $!;
+        close $ff;
+require Archive::Zip;
+    _fail _loc 'Could not find dir `%1` to zip', $source 
+        unless -e $source;
+ # build local zip
+my $zip = Archive::Zip->new() or _throw $!;
+    _debug "Adding $source";
+    if (-d $source) {
+        $zip->addTree ($source, $base) == $Archive::Zip::AZ_OK
+        or _throw "Error adding directory $source: $!";
+
+    } else {
+        if (grep /compressed/, qx{file $source}) {
+            $zip->addFile ($source)->desiredCompressionLevel(0)
+        } else {
+           $zip->addFileOrDirectory($source); 
+        }
+    }
+$zip->writeToFileNamed($p{to}) == $Archive::Zip::AZ_OK
+ or _throw "Error writing zip file $p{to}: $!";
+    return $p{to};
+}
+
 
 =head2 hash_flatten ( \%stash, $prefix )
 
