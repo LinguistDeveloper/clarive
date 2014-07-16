@@ -134,11 +134,10 @@ use Locale::Maketext::Simple (
             Decode => 1,
         );
 
-#use Carp::Clan qw(^Baseliner:: ^BaselinerX::);
 use strict;
 use utf8;
 use v5.10;
-use Carp::Tidy $ENV{BASELINER_DEBUG} < 2 ? ( -clan=>['Baseliner'] ) : (); #,'Catalyst'];
+use Carp::Tidy $ENV{BASELINER_DEBUG} < 2 ? ( -clan=>['Clarive','Baseliner'] ) : (); 
 use Class::Date;
 use YAML::XS;
 use List::MoreUtils qw(:all);
