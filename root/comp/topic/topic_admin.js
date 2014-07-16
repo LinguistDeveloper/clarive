@@ -400,7 +400,6 @@
                 ta,
                 {
                     xtype: 'radiogroup',
-                    id: 'categorygroup',
                     fieldLabel: _('Type'),
                     defaults: {xtype: "radio",name: "type"},
                     items: [
