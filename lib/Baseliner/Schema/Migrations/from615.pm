@@ -14,7 +14,7 @@ sub upgrade {
     #mdb->migra->notifications;
     #mdb->migra->dashboards;
     #mdb->migra->daemons;
-    mdb->migra->repository_repl;
+    #mdb->migra->repository_repl;
     mdb->migra->topic_rels;
     mdb->migra->role;
     mdb->migra->topic_images;
