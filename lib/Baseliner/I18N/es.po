@@ -6151,7 +6151,7 @@ msgid "Job failure: %1"
 msgstr "Fallo del pase: %1"
 
 msgid "No need to rollback anything."
-msgstr "No es necesario dar marcha atrás nada"
+msgstr "No es necesario iniciar el rollback"
 
 msgid "Error during rollback. Baselines are inconsistent, manual intervention required."
 msgstr "Error durante la marcha atrás. Los entornos son inconsistentes, se requiere intervención manual"
@@ -6805,7 +6805,7 @@ msgid "Runner"
 msgstr "Ejecutador"
 
 msgid "Raw"
-msgstr "Minimizar"
+msgstr "Ver Original"
 
 msgid "Running..."
 msgstr "Ejecutando..."
