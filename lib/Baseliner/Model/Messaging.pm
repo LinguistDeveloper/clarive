@@ -354,11 +354,11 @@ sub inbox {
         $p{query} and $q{where} = mdb->query_build(query => $p{query}, where => $q{where}, fields=>[qw(sender body subject )]);
     }
 
-	my @queue = $self->transform(%q);
-	
+	my ($queue, $total_count) = $self->transform(%q);
+
     my @q;
 
-	foreach my $r (@queue){
+	foreach my $r (_array $queue){
     	if($r->{username} eq $p{username}){
     		push @q, $r;
 		}
@@ -383,8 +383,8 @@ sub inbox {
 	}
 	@messages = map { $_->{_id} .=''; $_ } @messages;
 
-    my $total = $q{limit} ? $q{limit} : scalar @messages;
-    return { data=>\@messages, total=>$total };
+    #my $total = $q{limit} ? $q{limit} : scalar @messages;
+    return { data=>\@messages, total=>$total_count };
 }
 
 sub delivered {
@@ -494,26 +494,37 @@ sub send_schedule_mail {
 
 sub transform {
 	my ($self, %p) = @_;
-	my @queue =
-	    map {
-	        my $msg = $_;
-	    	map {
-	           $_->{msg} = $msg; 
-	           $_
-	        } 
-	        _array(delete $msg->{queue}) 
-	    } 
-	   _array($self->mdb_message_query(%p));
-    return @queue;
+	my %message_json = $self->mdb_message_query(%p);
+    my @queue = @{$message_json{data}};
+    @queue = 
+    map {
+        my $msg = $_;
+    	map {
+           $_->{msg} = $msg; 
+           $_
+        } 
+        _array(delete $msg->{queue}) 
+    } @queue;
+
+
+    return (\@queue, $message_json{total_count});
 }
 
 sub mdb_message_query {
 	my ($self, %p) = @_;
 	my $rs = mdb->message->find( $p{where} );
+    my $total_count = $rs->count(); 
+
 	$rs->sort( $p{sort} ) if $p{sort};
 	$rs->skip( $p{skip} ) if $p{skip};
 	$rs->limit( $p{limit} ) if $p{limit};
-	return $rs->all;
+
+    my @data = $rs->all;
+    my %json;
+    $json{data} = \@data;
+    $json{total_count} = $total_count;
+
+	return %json; 
 }
 
 1;
