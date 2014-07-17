@@ -425,4 +425,11 @@ package Clarive::Features {
     }
 }
 
+# placeholders, to avoid warnings
+package mdb;
+package cache;
+package queue;
+package ci;
+package model;
+
 1;
