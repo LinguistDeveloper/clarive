@@ -984,6 +984,72 @@ my $init = sub {
     }
 };
 
+my $ci_coerce = sub {
+    my ($tc,$val,$params,$init_arg,$weaken) = @_;
+    # needs coersion?
+    if( ! $tc->check( $val ) ) {
+        # CIs
+        if( $tc->is_a_type_of('ArrayRef') ) {
+            match_on_type $val => (
+                'Undef' => sub {
+                    $params->{$init_arg} = [ BaselinerX::CI::Empty->new ];
+                },
+                'Num|Str' => sub {
+                    if( length $val ) {
+                        $params->{$init_arg} = [ map { $init->( $_, $weaken ) } split /,/, $val ];
+                        Scalar::Util::weaken( $params->{$init_arg}->[0] ) if $weaken;
+                        $weaken = 0;
+                    } else {
+                        $params->{$init_arg} = [ BaselinerX::CI::Empty->new ];
+                    }
+                },
+                'ArrayRef[Num]' => sub {
+                    my $arr = [];
+                    my $i = 0;
+                    for( @$val ) {
+                        if( defined $_ && length $_ ) {
+                            $arr->[ $i ] = $init->( $_, $weaken );
+                            Scalar::Util::weaken( $arr->[$i] ) if $weaken;
+                        } else {
+                            $arr->[ $i ] = BaselinerX::CI::Empty->new;
+                        }
+                        $i++;
+                    }
+                    $params->{$init_arg} = $arr;
+                    $weaken = 0;
+                },
+                # => sub { _fail 'not found...' } 
+            );
+        }
+        # CI
+        else {
+            match_on_type $val => (
+                'Undef' => sub {
+                    $params->{$init_arg} = BaselinerX::CI::Empty->new;
+                },
+                'Num|Str' => sub {
+                    if( length $val ) {
+                        $params->{$init_arg} = $init->( $val, $weaken );
+                    } else {
+                        $params->{$init_arg} = BaselinerX::CI::Empty->new;
+                    }
+                },
+                'ArrayRef[Num]' => sub {
+                    if( length $val->[0] ) {
+                        $params->{$init_arg} = $init->( $val->[0], $weaken );
+                    } else {
+                        $params->{$init_arg} = BaselinerX::CI::Empty->new;
+                    }
+                },
+                'ArrayRef[CI]' => sub {
+                    $params->{$init_arg} = $init->( $val->[0], $weaken );
+                    Scalar::Util::weaken( $params->{$init_arg}->[0] ) if $weaken;
+                    $weaken = 0;
+                },
+            );
+        }
+    }
+}; 
 around initialize_instance_slot => sub {
     my ($orig, $self) = (shift,shift);   # $self isa Moose::Meta::Attribute
     my ($meta_instance, $instance, $params) = @_;
@@ -996,69 +1062,18 @@ around initialize_instance_slot => sub {
         $gscope->{ $mid } //= $instance if defined $mid;
         my $val = $params->{$init_arg};
         my $tc = $self->type_constraint;
-        # needs coersion?
-        if( ! $tc->check( $val ) ) {
-            # CIs
-            if( $tc->is_a_type_of('ArrayRef') ) {
-                match_on_type $val => (
-                    'Undef' => sub {
-                        $params->{$init_arg} = [ BaselinerX::CI::Empty->new ];
-                    },
-                    'Num|Str' => sub {
-                        if( length $val ) {
-                            $params->{$init_arg} = [ map { $init->( $_, $weaken ) } split /,/, $val ];
-                            Scalar::Util::weaken( $params->{$init_arg}->[0] ) if $weaken;
-                            $weaken = 0;
-                        } else {
-                            $params->{$init_arg} = [ BaselinerX::CI::Empty->new ];
-                        }
-                    },
-                    'ArrayRef[Num]' => sub {
-                        my $arr = [];
-                        my $i = 0;
-                        for( @$val ) {
-                            if( defined $_ && length $_ ) {
-                                $arr->[ $i ] = $init->( $_, $weaken );
-                                Scalar::Util::weaken( $arr->[$i] ) if $weaken;
-                            } else {
-                                $arr->[ $i ] = BaselinerX::CI::Empty->new;
-                            }
-                            $i++;
-                        }
-                        $params->{$init_arg} = $arr;
-                        $weaken = 0;
-                    },
-                    # => sub { _fail 'not found...' } 
-                );
-            }
-            # CI
-            else {
-                match_on_type $val => (
-                    'Undef' => sub {
-                        $params->{$init_arg} = BaselinerX::CI::Empty->new;
-                    },
-                    'Num|Str' => sub {
-                        if( length $val ) {
-                            $params->{$init_arg} = $init->( $val, $weaken );
-                        } else {
-                            $params->{$init_arg} = BaselinerX::CI::Empty->new;
-                        }
-                    },
-                    'ArrayRef[Num]' => sub {
-                        if( length $val->[0] ) {
-                            $params->{$init_arg} = $init->( $val->[0], $weaken );
-                        } else {
-                            $params->{$init_arg} = BaselinerX::CI::Empty->new;
-                        }
-                    },
-                    'ArrayRef[CI]' => sub {
-                        $params->{$init_arg} = $init->( $val->[0], $weaken );
-                        Scalar::Util::weaken( $params->{$init_arg}->[0] ) if $weaken;
-                        $weaken = 0;
-                    },
-                );
-            }
-        }
+
+        Moose::Util::add_method_modifier( $instance->meta, 'around', [ $init_arg => sub{  
+            my $orig = shift;
+            my $self = shift;
+            my @vals = @_;
+            my $p2 = { $init_arg =>( @vals>1 ? \@vals : $vals[0] ) };
+            $ci_coerce->($tc,$val,$p2,$init_arg,$weaken);
+            $self->$orig( $p2->{$init_arg} ); 
+        }]);
+
+        $ci_coerce->($tc,$val,$params,$init_arg,$weaken);
+        
     }
     $self->$orig( @_ );
     $self->_weaken_value($instance) if $weaken;
