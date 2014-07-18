@@ -338,6 +338,8 @@
             fieldLabel: _('Trap timeout action'), name:'trap_timeout_action', value: attr.trap_timeout_action || 'abort', 
             data: [ ['abort',_('Abort')], ['skip',_('Skip')], ['retry',_('Retry')] ]
         });
+        var trap_rollback = new Ext.form.Checkbox({ fieldLabel:_('Trap in Rollback?'), checked: _bool(attr.trap_rollback,true) });
+
         var parallel_mode = new Baseliner.ComboDouble({ 
             fieldLabel: _('Parallel Mode'), name:'parallel_mode', value: attr.parallel_mode || 'none', 
             data: [ ['none',_('No Parallel')], ['fork',_('Fork and Wait')], ['nohup', _('Fork and Leave')] ]
@@ -345,7 +347,7 @@
         var semaphore_key = new Ext.form.TextField({ fieldLabel:_('Semaphore Key'), name:'semaphore_key', value: attr.semaphore_key });
         var timeout = new Ext.form.TextField({ fieldLabel:_('Timeout'), name:'timeout', value: attr.timeout });
         var opts = new Baseliner.FormPanel({ title:_('Options'), labelWidth: 150, style:{ padding:'5px 5px 5px 5px'}, defaults:{ anchor:'100%' }, items:[
-            enabled, data_key, needs_rollback_mode, needs_rollback_key, run_forward, run_rollback, timeout, semaphore_key, parallel_mode, error_trap, trap_timeout, trap_timeout_action
+            enabled, data_key, needs_rollback_mode, needs_rollback_key, run_forward, run_rollback, timeout, semaphore_key, parallel_mode, error_trap, trap_timeout, trap_timeout_action, trap_rollback
         ]});
         var btn_save_meta = new Ext.Button({ text:_('Save'), icon:'/static/images/icons/save.png', handler:function(){
             node.attributes = de.getData();
@@ -366,6 +368,7 @@
             node.attributes.error_trap = error_trap.getValue();
             node.attributes.trap_timeout = trap_timeout.getValue();
             node.attributes.trap_timeout_action = trap_timeout_action.getValue();
+            node.attributes.trap_rollback = trap_rollback.checked;
             node.attributes.semaphore_key = semaphore_key.getValue().trim();
             node.attributes.timeout = timeout.getValue();
             node.attributes.note = note.getValue();

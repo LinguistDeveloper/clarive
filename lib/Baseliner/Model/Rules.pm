@@ -78,17 +78,21 @@ sub parallel_run {
 }
 
 sub error_trap {
-    my ($stash, $trap_timeout,$trap_timeout_action, $mode, $code)= @_;
+    my ($stash, $trap_timeout,$trap_timeout_action, $trap_rollback, $mode, $code)= @_;
     my $job = $stash->{job};
     RETRY_TRAP:
     try {
         $code->();
     } catch {
         my $err = shift;
+        if ( $job->rollback && !$trap_rollback ) {
+            $job->logger->info( _loc "Ignoring trap errors in rollback.  Aborting task", $err );    
+            _fail( $err );            
+        };
         if( $mode eq 'ignore' ) {
             $job->logger->debug( _loc "Ignored error trapped in rule: %1", $err );    
             return;
-        }
+        };
         $job->logger->error( _loc "Error trapped in rule: %1", $err );    
         $job->status('TRAPPED');
         event_new 'event.rule.trap' => { username=>'internal', stash=>$stash, output=>$err } => sub {};
@@ -230,6 +234,7 @@ sub dsl_build {
         my $error_trap = $attr->{error_trap} if $attr->{error_trap} && $attr->{error_trap} ne 'none';
         my $trap_timeout = $attr->{trap_timeout} if $attr->{error_trap} && $attr->{error_trap} ne 'none';
         my $trap_timeout_action = $attr->{trap_timeout_action} if $attr->{error_trap} && $attr->{error_trap} ne 'none';
+        my $trap_rollback = $attr->{trap_rollback} if $attr->{error_trap} && $attr->{error_trap} ne 'none';
         my $needs_rollback_mode = $data->{needs_rollback_mode} // 'none'; 
         my $needs_rollback_key  = $data->{needs_rollback_key} // $name_id;
         my $parallel_mode = length $attr->{parallel_mode} && $attr->{parallel_mode} ne 'none' ? $attr->{parallel_mode} : '';
@@ -256,7 +261,7 @@ sub dsl_build {
         if( length $attr->{key} ) {
             push @dsl, sprintf('$stash->{needs_rollback}{q{%s}} = 1;', $needs_rollback_key) if $needs_rollback_mode eq 'nb_always';
             push @dsl, sprintf('parallel_run(q{%s},q{%s},$stash,sub{', $name, $parallel_mode) if $parallel_mode;
-            push @dsl, sprintf( 'error_trap($stash,"%s","%s","%s", sub {',$trap_timeout,$trap_timeout_action, $error_trap) if $error_trap; 
+            push @dsl, sprintf( 'error_trap($stash,"%s","%s","%s","%s", sub {',$trap_timeout,$trap_timeout_action, $trap_rollback, $error_trap) if $error_trap; 
             my $key = $attr->{key};
             my $reg = Baseliner->registry->get( $key );
             if( $reg->isa( 'BaselinerX::Type::Service' ) ) {
