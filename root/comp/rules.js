@@ -333,6 +333,11 @@
             fieldLabel: _('Error Trap'), name:'error_trap', value: attr.error_trap || 'none', 
             data: [ ['none',_('No Trap')], ['trap',_('Trap Errors')], ['ignore',_('Ignore Errors')] ]
         });
+        var trap_timeout = new Ext.form.TextField({ fieldLabel:_('Trap timeout (seconds)'), name:'trap_timeout', value: attr.trap_timeout || 0 });
+        var trap_timeout_action = new Baseliner.ComboDouble({ 
+            fieldLabel: _('Trap timeout action'), name:'trap_timeout_action', value: attr.trap_timeout_action || 'abort', 
+            data: [ ['abort',_('Abort')], ['skip',_('Skip')], ['retry',_('Retry')] ]
+        });
         var parallel_mode = new Baseliner.ComboDouble({ 
             fieldLabel: _('Parallel Mode'), name:'parallel_mode', value: attr.parallel_mode || 'none', 
             data: [ ['none',_('No Parallel')], ['fork',_('Fork and Wait')], ['nohup', _('Fork and Leave')] ]
@@ -340,7 +345,7 @@
         var semaphore_key = new Ext.form.TextField({ fieldLabel:_('Semaphore Key'), name:'semaphore_key', value: attr.semaphore_key });
         var timeout = new Ext.form.TextField({ fieldLabel:_('Timeout'), name:'timeout', value: attr.timeout });
         var opts = new Baseliner.FormPanel({ title:_('Options'), labelWidth: 150, style:{ padding:'5px 5px 5px 5px'}, defaults:{ anchor:'100%' }, items:[
-            enabled, data_key, needs_rollback_mode, needs_rollback_key, run_forward, run_rollback, timeout, semaphore_key, parallel_mode, error_trap
+            enabled, data_key, needs_rollback_mode, needs_rollback_key, run_forward, run_rollback, timeout, semaphore_key, parallel_mode, error_trap, trap_timeout, trap_timeout_action
         ]});
         var btn_save_meta = new Ext.Button({ text:_('Save'), icon:'/static/images/icons/save.png', handler:function(){
             node.attributes = de.getData();

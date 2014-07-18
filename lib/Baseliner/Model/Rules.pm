@@ -78,7 +78,7 @@ sub parallel_run {
 }
 
 sub error_trap {
-    my ($stash, $mode, $code)= @_;
+    my ($stash, $trap_timeout,$trap_timeout_action, $mode, $code)= @_;
     my $job = $stash->{job};
     RETRY_TRAP:
     try {
@@ -94,9 +94,25 @@ sub error_trap {
         event_new 'event.rule.trap' => { username=>'internal', stash=>$stash, output=>$err } => sub {};
         $job->save;
         my $last_status;
-        while( ($last_status = $job->load->{status} ) eq 'TRAPPED'  ||
-               ($last_status = $job->load->{status} ) eq 'TRAPPED_PAUSED' ) {
-            sleep 5;
+        my $timeout = $trap_timeout;
+        $last_status = $job->load->{status};
+        while( $last_status eq 'TRAPPED' || $last_status eq 'TRAPPED_PAUSED' ) {
+            if ( $last_status eq 'TRAPPED_PAUSED' ) {
+                sleep 5;
+            } else {
+                if ( $trap_timeout eq 0 ) {
+                    sleep 5;
+                } else {
+                    sleep 10;
+                    $timeout = $timeout - 10;
+                    if ( $timeout gt 0 ) {
+                        $job->logger->warn( _loc("%1 seconds remaining to cancel trap with action %2", $timeout, $trap_timeout_action) );
+                    } else {
+                        $job->trap_action({ action => $trap_timeout_action, comments => _loc("Trap timeout expired.  Action configured: %1", $trap_timeout_action)});
+                    }
+                }
+            }
+            $last_status = $job->load->{status};
         }
         if( $last_status eq 'RETRYING' ) {
             $job->logger->info( _loc "Retrying task", $err );    
@@ -212,6 +228,8 @@ sub dsl_build {
         my $run_forward = _bool($attr->{run_forward},1);  # if !defined, default is true
         my $run_rollback = _bool($attr->{run_rollback},1); 
         my $error_trap = $attr->{error_trap} if $attr->{error_trap} && $attr->{error_trap} ne 'none';
+        my $trap_timeout = $attr->{trap_timeout} if $attr->{error_trap} && $attr->{error_trap} ne 'none';
+        my $trap_timeout_action = $attr->{trap_timeout_action} if $attr->{error_trap} && $attr->{error_trap} ne 'none';
         my $needs_rollback_mode = $data->{needs_rollback_mode} // 'none'; 
         my $needs_rollback_key  = $data->{needs_rollback_key} // $name_id;
         my $parallel_mode = length $attr->{parallel_mode} && $attr->{parallel_mode} ne 'none' ? $attr->{parallel_mode} : '';
@@ -238,7 +256,7 @@ sub dsl_build {
         if( length $attr->{key} ) {
             push @dsl, sprintf('$stash->{needs_rollback}{q{%s}} = 1;', $needs_rollback_key) if $needs_rollback_mode eq 'nb_always';
             push @dsl, sprintf('parallel_run(q{%s},q{%s},$stash,sub{', $name, $parallel_mode) if $parallel_mode;
-            push @dsl, sprintf( 'error_trap($stash,"%s", sub {', $error_trap) if $error_trap; 
+            push @dsl, sprintf( 'error_trap($stash,"%s","%s","%s", sub {',$trap_timeout,$trap_timeout_action, $error_trap) if $error_trap; 
             my $key = $attr->{key};
             my $reg = Baseliner->registry->get( $key );
             if( $reg->isa( 'BaselinerX::Type::Service' ) ) {

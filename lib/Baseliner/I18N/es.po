@@ -1779,6 +1779,12 @@ msgstr "Capturado"
 msgid "TRAPPED_PAUSED"
 msgstr "Capturado en pausa"
 
+msgid "Trap timeout expired.  Action configured: %1"
+msgstr "Timeout de trap ha expirado.  Acción configurada: %1"
+
+msgid "%1 seconds remaining to cancel trap with action %2"
+msgstr "El trap se cancelará en %1 segundos con la acción %2"
+
 msgid "SKIPPING"
 msgstr "Ignorando"
 
