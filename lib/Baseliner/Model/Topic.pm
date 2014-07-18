@@ -116,7 +116,7 @@ register 'event.topic.modify_field' => {
         else {
             #$txt = '';
             require Algorithm::Diff::XS;
-            my $brk = sub { my $x = _strip_html(shift) // ''; [ $x =~ m{([\w|\.|\-]+)}gs ] };
+            my $brk = sub { my $x = ""; $x=_strip_html(shift); [ $x =~ m{([\w|\.|\-]+)}gs ] };
             my $aa = $brk->($vars[2]);
             my $bb = $brk->($vars[3]);
             my $d =Algorithm::Diff::XS::sdiff( $aa, $bb );
@@ -332,7 +332,9 @@ sub topics_for_user {
     my ($select,$order_by, $as, $group_by);
     if( !$sort ) {
         $order_by = { 'modified_on' => -1 };
-    } else {
+    } elsif ($sort eq 'projects'){
+        $order_by = $self->build_sort('_sort.projects',$dir);
+    }else {
         $order_by = $self->build_sort($sort,$dir);
     }
 
@@ -437,6 +439,11 @@ sub topics_for_user {
         if (!$p->{clear_filter}){  
 
             ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
+            my %tmp;
+            map { $tmp{ $_->{id_status_from} } = $_->{id_category} if ($_->{id_status_from}); } 
+                $self->user_workflow( $username );
+            # map { $tmp{$_->{id_status_from}} = $_->{id_category} && $tmp{$_->{id_status_to} = $_->{id_category}} } 
+            #             $self->user_workflow( $username )
             my @workflow_filter;
             my @my_workflow = $self->user_workflow( $username );
             for my $wf ( @my_workflow ){
@@ -1738,7 +1745,6 @@ sub save_doc {
     # expanded data
     $self->update_category( $doc, $row->{id_category} // ( ref $doc->{category} ? $doc->{category}{id} : $doc->{category} ) );
     $self->update_category_status( $doc, $row->{id_category_status} // $doc->{id_category_status} // $doc->{status_new}, $p{username}, $row->{modified_on} );
-    $self->update_rels( $doc ); 
 
     # detect modified fields
     require Hash::Diff;
@@ -1785,9 +1791,9 @@ sub save_doc {
 
 sub update_txt {
     my ($self,@mids_or_docs ) = @_;
-    my @mids = _unique map { ref $_ eq 'HASH' ? $_->{mid} : $_ } grep { length } @mids_or_docs;
+    my @mids = map { ref $_ eq 'HASH' ? $_->{mid} : $_ } grep { length } _unique( @mids_or_docs );
     my @other;
-    for my $mid_or_doc ( @mids_or_docs ) {
+    for my $mid_or_doc ( _unique( @mids_or_docs  ) ) {
         my $is_doc = ref $mid_or_doc eq 'HASH';
         my $mid = $is_doc ? $mid_or_doc->{mid} : $mid_or_doc;
         next unless length $mid;
@@ -1806,22 +1812,21 @@ sub update_txt {
 
 sub update_rels {
     my ($self,@mids_or_docs ) = @_;
-    my @mids = _unique map { ref $_ eq 'HASH' ? $_->{mid} : $_ } grep { length } @mids_or_docs;
+    my @mids = map { ref $_ eq 'HASH' ? $_->{mid} : $_ } grep { length } _unique( @mids_or_docs );
     my %rel_data;
     my %rels = mdb->master_rel->find_hashed(from_mid => { from_mid=>mdb->in(@mids) });
-    my %rels_to = mdb->master_rel->find_hashed(to_mid => { to_mid=>mdb->in(@mids) });
+    my %rels_to = mdb->master_rel->find_hashed({ to_mid=>mdb->in(@mids) });
     # gather all text
     my @all_rel_mids = ( (map{$$_{to_mid}} _array(values %rels)), (map{$$_{from_mid}} _array(values %rels_to)) );
     my %txts = map { 
-        my @valid = _unique grep { length } grep { defined } values %$_;
-        my @words = _unique map { s/\n+/ /g; grep { length($_) > 1 } grep /^\w/, split( /\b/, $_ ) } @valid; 
-        my $txt = join ';', _unique @valid, @words; 
-        ( $$_{mid} => $txt );
-    #} mdb->master_doc->find({ mid=>mdb->in(_unique(@all_rel_mids)) })->fields({ yaml=>0, _id=>0 })->all;
-    } mdb->master->find({ mid=>mdb->in(_unique(@all_rel_mids)) })->fields({ mid=>1, name=>1, moniker=>1, ns=>1, description=>1, _id=>0 })->all;
+        my $txt = join ';', _unique( grep { length } values %$_ );
+        $$_{mid} => $txt;
+    } mdb->master->find({ mid=>mdb->in(_unique(@all_rel_mids)) })->fields({ yaml=>0, _id=>0 })->all;
     
+    my %project_names = map { $$_{mid} => $$_{name} } ci->project->find->fields({ mid=>1, name=>1 })->all;
+
     # my %rels; map { push @{ $rels{$_->{from_mid}} },$_ } mdb->master_rel->find({ from_mid=>mdb->in(@mids) })->all;
-    for my $mid_or_doc ( @mids_or_docs ) {
+    for my $mid_or_doc ( _unique( @mids_or_docs  ) ) {
         my $is_doc = ref $mid_or_doc eq 'HASH';
         my $mid = $is_doc ? $mid_or_doc->{mid} : $mid_or_doc;
         next unless length $mid;
@@ -1841,17 +1846,21 @@ sub update_rels {
         %d = map { $_ => [ sort keys $d{$_} ] } keys %d; 
         
         # and put aggregate text in it, for searching purposes
-        my @my_rel_mids = ( 
+        my @all_rel_mids = ( 
             (map { $$_{to_mid} } _array($rels{$mid}) ), 
             (map { $$_{from_mid} } _array($rels_to{$mid}) )
         );
+        $d{_txt} = join ';', grep { defined } @txts{ @all_rel_mids };
         
-        $d{_txt} = join ';', grep { defined } @txts{ @my_rel_mids };
-        
+        my @pnames;
+        for my $rel ( _array( $rels{$mid} ) ) {
+            push @pnames, $project_names{$$rel{to_mid}} if $rel->{rel_type} eq 'topic_project' and $project_names{$$rel{to_mid}} ne '';
+        }
+        $d{_sort}{projects} = join '|', sort map { lc( $_ ) } @pnames;  
         # cleanup data empty keys (rel_fields empty)
         delete $d{''};
         delete $d{undef};
-
+        
         # single value, no array: %d = map { my @to_mids = keys $d{$_}; $_ => @to_mids>1 ? [ sort @to_mids ] : @to_mids } keys %d; 
         if( $is_doc ) {
             $mid_or_doc->{$_} = $d{$_} for keys %d;  # merge into doc
@@ -1859,6 +1868,7 @@ sub update_rels {
             mdb->topic->update({ mid=>"$mid" }, { '$set'=>\%d });
         }
     }
+    $self->update_txt( @mids_or_docs );
 }
 
 # update categories in mongo
