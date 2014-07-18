@@ -841,6 +841,7 @@ sub update : Local {
         $c->stash->{json}{mid} = $mid;
     } catch {
         my $err = shift;
+        $err = $err->message if $err->can('message');
         _error( $err );
         $c->stash->{json} = { success=>\0, msg=>_loc('CI error: %1', $err ) };
     };

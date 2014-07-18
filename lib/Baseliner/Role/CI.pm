@@ -144,9 +144,11 @@ sub update {
         
     # merge and recreate object
     my $d = { %$self, %data };  
-    $class->new( $d )->save( changed=>$changed );
-    # update attributes
-    $self->$_( $data{$_} ) for grep { $self->can($_) } keys %data; 
+    # update database only:
+    my $saved_obj =  $class->new( $d );
+    $saved_obj->save( changed=>$changed );
+    # update live attributes
+    $self->$_( $saved_obj->$_ ) for grep { $self->can($_) } keys %data; 
 }
 
 
