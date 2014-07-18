@@ -1776,6 +1776,9 @@ msgstr "Cancelado"
 msgid "TRAPPED"
 msgstr "Capturado"
 
+msgid "TRAPPED_PAUSED"
+msgstr "Capturado en pausa"
+
 msgid "SKIPPING"
 msgstr "Ignorando"
 
@@ -6778,13 +6781,16 @@ msgid "Skip"
 msgstr "Ignorar"
 
 msgid "Skips the job task that failed, ignoring the error"
-msgstr "Ignorar las tareas de pase que fallan, iggnorando el error"
+msgstr "Ignorar las tareas de pase que fallan, ignorando el error"
 
 msgid "Abort"
 msgstr "Abortar"
 
 msgid "The task will fail"
-msgstr "La tarea va a falalr"
+msgstr "La tarea va a fallar"
+
+msgid "The trap timeout countdown will be paused"
+msgstr "Se cancela la cuenta atras de la captura"
 
 msgid "Run In-process: %1"
 msgstr "Ejecución en progreso: %1"

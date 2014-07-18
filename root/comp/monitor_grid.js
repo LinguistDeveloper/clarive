@@ -576,14 +576,14 @@
                     if( res.success ) {
                         grid.getStore().reload();
                     } else {
-                        Ext.Msg.alert( _('Error'), _('Could not retry the job: %1', res.msg ) );
+                        Ext.Msg.alert( _('Error'), _('Could not %2 the job: %1', res.msg, action ) );
                     }
                 });
             }, this, 300, '');
         };
         trap_win = new Baseliner.Window({
             title: _('Error trapped'),
-            width: 400, height: 300,
+            width: 400, height: 350,
             padding: 5,
             modal: true,
             border: false,
@@ -604,8 +604,8 @@
                         { flex:1, border: false, style: 'margin-left:10px', html: _('The task will fail') }]},
                 { flex:1, layout:'hbox', padding: 20, 
                     items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Pause')+'</b>', icon:'/static/images/icons/paused.png', 
-                        handler:function(){trap_do(mid,'trap_pause')}  },
-                        { flex:1, border: false, style: 'margin-left:10px', html: _('The job') }]}
+                        handler:function(){trap_do(mid,'pause')}  },
+                        { flex:1, border: false, style: 'margin-left:10px', html: _('The trap timeout countdown will be paused') }]}
             ]
         });
         trap_win.show();
