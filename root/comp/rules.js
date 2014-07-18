@@ -364,6 +364,8 @@
             node.attributes.run_rollback = run_rollback.checked;
             node.attributes.parallel_mode = parallel_mode.getValue();
             node.attributes.error_trap = error_trap.getValue();
+            node.attributes.trap_timeout = trap_timeout.getValue();
+            node.attributes.trap_timeout_action = trap_timeout_action.getValue();
             node.attributes.semaphore_key = semaphore_key.getValue().trim();
             node.attributes.timeout = timeout.getValue();
             node.attributes.note = note.getValue();
