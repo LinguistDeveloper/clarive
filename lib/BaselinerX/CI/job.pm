@@ -367,7 +367,7 @@ sub gen_job_name {
 sub is_active {
     my $self = shift;
     if( my $status = $self->load->{status} ) {
-        return 1 if $status !~ /REJECTED|CANCELLED|TRAPPED|ERROR|FINISHED|KILLED|EXPIRED/;
+        return 1 if $status !~ /REJECTED|CANCELLED|TRAPPED|TRAPPED_PAUSED|ERROR|FINISHED|KILLED|EXPIRED/;
     }
     return 0;
 }
@@ -384,7 +384,7 @@ sub is_failed {
 sub is_running {
     my $self = shift;
     if( my $status = $self->load->{status} ) {
-        return 1 if $status =~ /RUNNING|PAUSE|TRAPPED/;
+        return 1 if $status =~ /RUNNING|PAUSE|TRAPPED|TRAPPED_PAUSED/;
     }
     return 0;
 }
@@ -597,7 +597,7 @@ sub trap_action {
     my ($self, $p)=@_;
     my $comments = $p->{comments} // _('no comment');
     my $action = $p->{action} // '';
-    my $job_status = $action eq 'retry' ? 'RETRYING' : $action eq 'skip' ? 'SKIPPING' : 'ERROR';
+    my $job_status = $action eq 'retry' ? 'RETRYING' : $action eq 'skip' ? 'SKIPPING' : $action eq 'pause' ? 'TRAPPED_PAUSED' :'ERROR';
     $self->logger->warn( _loc("Task response '*%1*' by *%2*: %3", _loc($action), $p->{username}, $comments), data=>$comments, username=>$p->{username} );
     $self->status( $job_status );
     $self->save;
@@ -614,6 +614,7 @@ sub status_icon {
         when( 'IN-EDIT' ) { 'log_w.gif'; }
         when( 'WAITING' ) { 'waiting.png'; }
         when( 'PAUSED' ) { 'paused.png'; }
+        when( 'TRAPPED_PAUSED' ) { 'paused.png'; }
         when( 'CANCELLED' ) { 'close.png'; }
         default { 'log_e.gif' }
     }

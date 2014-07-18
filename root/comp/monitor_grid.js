@@ -601,7 +601,11 @@
                 { flex:1, layout:'hbox', padding: 20, 
                     items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Abort')+'</b>', icon:'/static/images/icons/delete.gif', 
                         handler:function(){trap_do(mid,'abort')}  },
-                        { flex:1, border: false, style: 'margin-left:10px', html: _('The task will fail') }]}
+                        { flex:1, border: false, style: 'margin-left:10px', html: _('The task will fail') }]},
+                { flex:1, layout:'hbox', padding: 20, 
+                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Pause')+'</b>', icon:'/static/images/icons/paused.png', 
+                        handler:function(){trap_do(mid,'trap_pause')}  },
+                        { flex:1, border: false, style: 'margin-left:10px', html: _('The job') }]}
             ]
         });
         trap_win.show();
@@ -770,7 +774,7 @@
                 );
                 button_resume.hide();
             }
-            else if( sel.data.status_code == 'TRAPPED' ) {
+            else if( sel.data.status_code == 'TRAPPED' || sel.data.status_code == 'TRAPPED_PAUSED' ) {
                 Baseliner.trap_check(sel.data.mid);
                 button_resume.hide();
             }
@@ -862,6 +866,7 @@
         else if( status=='WAITING' ) icon='waiting.png';
         else if( status=='PAUSED' ) icon='paused.png';
         else if( status=='TRAPPED' ) icon='paused.png';
+        else if( status=='TRAPPED_PAUSED' ) icon='paused.png';
         else if( status=='CANCELLED' ) icon='close.png';
         else { icon='log_e.gif'; bold=true; }
         value = (bold?'<b>':'') + value + (bold?'</b>':'');
@@ -882,7 +887,7 @@
         if( status == 'APPROVAL' ) { // add a link to the approval main
             value = String.format("<a href='javascript:Baseliner.request_approval({0},\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id ); 
         }
-        else if( status == 'TRAPPED' ) { // add a link to the trap
+        else if( status == 'TRAPPED' || status == 'TRAPPED_PAUSED' ) { // add a link to the trap
             value = String.format("<a href='javascript:Baseliner.trap_check({0},\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id ); 
         }
         if( icon!=undefined ) {
@@ -1259,7 +1264,7 @@
         } else {
             button_cancel.setText( msg_cancel_delete[0] );
         }
-        if( rec.data.status_code === 'PAUSED' || rec.data.status_code === 'TRAPPED' ) {
+        if( rec.data.status_code === 'PAUSED' || rec.data.status_code === 'TRAPPED' || rec.data.status_code === 'TRAPPED_PAUSED' ) {
             button_resume.show();
         }
     });
