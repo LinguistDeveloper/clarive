@@ -14,13 +14,14 @@ sub upgrade {
     #mdb->migra->notifications;
     #mdb->migra->dashboards;
     #mdb->migra->daemons;
-    mdb->migra->repository_repl;
+    #mdb->migra->repository_repl;
     mdb->migra->topic_rels;
     mdb->migra->role;
     mdb->migra->topic_images;
     mdb->migra->posts;
     mdb->migra->statuses;
     mdb->migra->master_doc_clean;
+    mdb->migra->job_last_error;
     mdb->migra->master_cal;
     mdb->migra->topic_assets;
     mdb->session->drop;

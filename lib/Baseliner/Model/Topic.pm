@@ -445,8 +445,9 @@ sub topics_for_user {
             # map { $tmp{$_->{id_status_from}} = $_->{id_category} && $tmp{$_->{id_status_to} = $_->{id_category}} } 
             #             $self->user_workflow( $username )
             my @workflow_filter;
-            for my $status (keys %tmp){
-                push @workflow_filter, {'category.id' => $tmp{$status},'category_status.id' => $status};
+            my @my_workflow = $self->user_workflow( $username );
+            for my $wf ( @my_workflow ){
+                push @workflow_filter, {'category.id' => $$wf{id_category}, 'category_status.id' => $$wf{id_status_from} };
             }
             $where->{'$or'} = \@workflow_filter if @workflow_filter;
             $where->{'category_status.type'} = { '$nin' =>['F','FC'] }
@@ -2047,8 +2048,8 @@ sub set_topics {
 
         my $rel_seq = 1;  # oracle may resolve this with a seq, but sqlite doesn't
         for (@new_topics){
-            my $rdoc = {$topic_direction => ''.$rs_topic->{mid}, $data_direction => "$_", rel_type =>$rel_type, rel_field=>$rel_field, rel_seq=>0+($rel_seq++) };
-            mdb->master_rel->update_or_create($rdoc);
+            my $rdoc = { $topic_direction => ''.$rs_topic->{mid}, $data_direction => "$_", rel_type =>$rel_type, rel_field=>$rel_field };
+            mdb->master_rel->update($rdoc,{ %$rdoc, rel_seq=>0+($rel_seq++) },{ upsert=>1 });
         }
 
         my $topics = join(',', @new_topics);
@@ -2181,8 +2182,8 @@ sub set_revisions {
             mdb->master_rel->remove({ from_mid=>"$topic_mid", rel_type=>'topic_revision', rel_field=>$id_field });
             # now add
             for my $rev ( @rs_revs ) {
-                mdb->master_rel->insert({ to_mid=>"$$rev{mid}", from_mid=>"$topic_mid", rel_type=>'topic_revision', 
-                        rel_field=>$id_field, rel_seq=>mdb->seq('master_rel') });
+                my $rdoc = { to_mid=>"$$rev{mid}", from_mid=>"$topic_mid", rel_type=>'topic_revision', rel_field=>$id_field };
+                mdb->master_rel->update($rdoc,{ %$rdoc, rel_seq=>mdb->seq('master_rel') },{ upsert=>1 });
             }
             
             my $revisions = join(',', map { ci->new($_->{mid})->load->{name}} @rs_revs);
@@ -2269,8 +2270,8 @@ sub set_release {
         # release
         if( $new_release ) {
             my $row_release = mdb->topic->find_one({ mid=>$new_release });
-            mdb->master_rel->insert({ from_mid=>"$$row_release{mid}", to_mid=>"$topic_mid", 
-                    rel_type=>$rel_type, rel_field=>$release_field, rel_seq=>mdb->seq('master_rel') });
+            my $rdoc = { from_mid=>"$$row_release{mid}", to_mid=>"$topic_mid", rel_type=>$rel_type, rel_field=>$release_field };
+            mdb->master_rel->update($rdoc, { %$rdoc, rel_seq=>mdb->seq('master_rel') },{ upsert=>1 });
     
             if ($cancelEvent != 1){
                 event_new 'event.topic.modify_field' => { username   => $user,
@@ -2334,12 +2335,11 @@ sub set_projects {
         # projects
         if (@new_projects){
             my @name_projects;
-            
-            my $rs_projects = mdb->master_doc->find({mid => {'$in' => \@new_projects}});
+            my $rs_projects = mdb->master_doc->find({mid =>mdb->in(@new_projects) });
             while( my $project = $rs_projects->next){
                 push @name_projects,  $project->{name};
-                mdb->master_rel->insert({ to_mid=>''.$project->{mid}, from_mid=>"$topic_mid", rel_type=>'topic_project', 
-                        rel_field=>$id_field, rel_seq=>mdb->seq('master_rel') });
+                my $rdoc = { to_mid=>''.$project->{mid}, from_mid=>"$topic_mid", rel_type=>'topic_project', rel_field=>$id_field };
+                mdb->master_rel->update($rdoc, { %$rdoc, rel_seq=>mdb->seq('master_rel') },{ upsert=>1 });
             }
             
             my $projects = join(',', @name_projects);
@@ -2409,7 +2409,8 @@ sub set_users{
             my $rs_users = ci->user->find({mid => {'$or' => \@new_users}});
             while(my $user = $rs_users->next){
                 push @name_users,  $user->{username};
-                mdb->master_rel->insert({ to_mid=>''.$user->{mid}, from_mid=>"$topic_mid", rel_type=>'topic_users', rel_field => $id_field, rel_seq=>mdb->seq('master_rel') });
+                my $rdoc = { to_mid=>''.$user->{mid}, from_mid=>"$topic_mid", rel_type=>'topic_users', rel_field => $id_field };
+                mdb->master_rel->update($rdoc,{ %$rdoc, rel_seq=>mdb->seq('master_rel') },{ upsert=>1 });
             }
 
             my $users = join(',', @name_users);

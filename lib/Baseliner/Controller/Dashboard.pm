@@ -646,7 +646,7 @@ sub list_lastjobs: Private{
     my $where = {};
     $where->{'projects.mid'} = mdb->in(@mid_filters) if @mid_filters;
     $where->{collection} = 'job';
-    my @rs_search = mdb->master_doc->find( $where )->sort({ starttime => -1 })->all;
+    my @rs_search = mdb->master_doc->find( $where )->sort({ starttime => -1 })->limit($limit)->all;
 
     my $numrow = 0;
     my @lastjobs;
@@ -722,7 +722,7 @@ sub list_pending_jobs: Private{
     @filter_statuses = split /,/,$statuses;
     $where->{status} = mdb->in(@filter_statuses);
 
-    my @rs_search = mdb->master_doc->find( $where )->sort({ starttime => -1 })->all;
+    my @rs_search = mdb->master_doc->find( $where )->sort({ starttime => -1 })->limit($limit)->all;
 
     my $numrow = 0;
     my @pending_jobs;

@@ -40,27 +40,30 @@ say "Packing Clarive release $release...";
 mkdir "release";
 my $home = "release/$release";
 mkdir $home; 
-for my $dir ( qw(bin features root config) ) {
+for my $dir ( qw(bin features root config etc) ) {
     mkdir "$home/$dir";
 }
 
-# fatpack all libs into cla
-system qq{(echo "#!/usr/bin/env perl" ; fatpack file; cat bin/cla)> $home/bin/cla};
+# fatpack all libs into cla, don't add -X for no warnings - not compatible with unices... use an alias perl='perl -X' instead
+#system qq{(echo "#!/usr/bin/env perl" ; fatpack file; cat bin/cla)> $home/bin/cla};
+#system qq{(echo "#!/usr/bin/env perl" ; cat bin/cla)> $home/bin/cla};
 
 # copy relevant files
 system qq{rsync -av root/ $home/root/};
 system qq{rsync -av lib/ $home/lib/};
 system qq{cp -r features/ext* $home/features};
-for my $fi ( qw(README LICENSE COPYRIGHT THIRD-PARTY-NOTICES config/clarive.yml bin/cla-bootstrap bin/cherryme) ) {
+for my $fi ( qw(README LICENSE COPYRIGHT THIRD-PARTY-NOTICES config/clarive.yml bin/cla-bootstrap bin/cherryme bin/cla) ) {
     system qq{cp "$fi" $home/$fi};
 }
 
 # cleanup some tmp data dirs
 system qq{rm -rf $home/root/identicon/*};
+system qq{rm -rf $home/etc/artifacts/*};
 
 # set file/dir permissions
-system qq{find '$home' -type f -exec chmod 600 {} \\;};
-system qq{chmod 700 $home/bin/cla*};
+system qq{find '$home' -type f -exec chmod 644 {} \\;};
+system qq{find '$home' -type d -exec chmod 755 {} \\;};
+system qq{chmod 750 $home/bin/*};
 
 # add files that need to be in dir for globs TODO
 #system qq{mkdir -p $home/lib/Clarive && cp -r lib/Clarive/Cmd $home/lib/Clarive/};

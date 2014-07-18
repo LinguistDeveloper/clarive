@@ -60,6 +60,13 @@ register 'service.fileman.zip_nature' => {
     handler => \&run_zip_nature,
 };
 
+register 'service.fileman.zip' => {
+    name => 'Zip Files',
+    form => '/forms/zip_files.js',
+    job_service  => 1,
+    handler => \&run_zip,
+};
+
 register 'service.fileman.ship' => {
     name => 'Ship a File Remotely',
     form => '/forms/ship_remote.js',
@@ -235,6 +242,19 @@ sub run_tar_nature {
             $config );
     Util->tar_dir( %$config, files=>\@files ); 
 }
+
+sub run_zip {
+    my ($self, $c, $config ) = @_;
+
+    my $job   = $c->stash->{job};
+    my $log   = $job->logger;
+    my $stash = $c->stash;
+    
+    $log->info( _loc("Zip source '%1' into file '%2'", $config->{source}, $config->{to}), 
+            $config );
+    Util->zip_tree( %$config ); 
+}
+
     
 sub run_zip_nature {
     my ($self, $c, $config ) = @_;

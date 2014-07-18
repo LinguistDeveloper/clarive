@@ -40,6 +40,10 @@ around load_post_data => sub {
     return {} unless $mid;
     my $data = model->Topic->get_data( undef, $mid, with_meta=>1 );
     delete $data->{mid};
+
+    # XXX avoid strange errors in parse_vars_raw during job run: can't call method value on unblessed ref MongoDB/OID.pm
+    delete $data->{category}{_id}; 
+    
     return $data;
 };
 
@@ -237,7 +241,7 @@ sub get_meta {
 
 sub get_category {
     my ($self)=@_;
-    mdb->category->find_one({ id=>$self->id_category });
+    mdb->category->find_one({ id=>$self->id_category },{ _id=>0 });
 }
 
 sub velocities {

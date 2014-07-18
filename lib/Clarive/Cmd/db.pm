@@ -41,6 +41,7 @@ sub run_upgrade {
     require Clarive::mdb;
     require Clarive::ci;
     require Clarive::model;
+    require Clarive::cache;
     
     require Baseliner::Schema::Migrator;
     Baseliner::Schema::Migrator->check( $opts{migrate} );

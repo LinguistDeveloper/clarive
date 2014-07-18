@@ -785,11 +785,18 @@ sub master_cal {
 }
 
 sub master_doc_clean {
-    for my $m ( mdb->master_doc->find->all ) {
-        # delete yaml attribute
-        mdb->master_doc->update({ _id=>$$m{_id} },{ '$unset'=>{ yaml=>1 } });
+    # delete yaml attribute
+    mdb->master_doc->update({},{ '$unset'=>{ 'yaml'=>'' } },{ multiple=>1 });
+}
+
+sub job_last_error {
+    # clean last_error monstruosities
+    my @mids = ci->job->find->fields({mid=>1})->all; 
+    for my $j ( @mids ) {
+       my $job = ci->new( $$j{mid} );
+       $job->last_error( substr($job->last_error,0,1024) );
+       $job->save;
     }
-    
 }
 
 ####################################

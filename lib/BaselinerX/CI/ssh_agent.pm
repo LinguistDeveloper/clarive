@@ -208,12 +208,18 @@ sub execute {
 
 sub _build_uri {
     my ($self) = @_;
+    my $uri;
     if( $self->{user} ) {
-        return sprintf('%s@%s', $self->{user}, $self->server->hostname ); 
+        $uri =  sprintf('%s@%s', $self->{user}, $self->server->hostname ); 
     } 
     else {
-        return $self->server->hostname; 
+        $uri =  $self->server->hostname; 
     }
+    if ($self->{port_num}){
+        $uri.=':'.$self->{port_num};
+    }
+
+return $uri;
 }
 
 1;

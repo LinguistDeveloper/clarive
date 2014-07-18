@@ -36,6 +36,7 @@
     }
    
     var state_id =id_report ? 'topic-grid-'+id_report : 'topic-grid';
+    //console.log( params );
     
     var base_params = { start: 0, limit: ps, typeApplication: typeApplication, 
         from_mid: params.from_mid,
@@ -71,6 +72,9 @@
 			sort: function(sorters, direction){
 				var col;
 				if( this.data.items.length > 0 ){
+                     // console.log(sorters);
+                     // console.dir(this.data);
+					// console.log(this.data.items[0].data[sorters]);
 					if(this.data.items[0].data[sorters] === '' ){
 						var res = sorters.replace(/\_[^_]+$/,"");
                         sorters = res;
@@ -92,25 +96,11 @@
 		};		
 	}
 
+	 
     if( fields ) {
-        var columns = fields.columns;
-        for(i=0;i<columns.length;i++){
-            if (columns[i].ci_columns) {
-                if (typeof columns[i].ci_columns === 'string'){
-                     fields.ids.push( columns[i].id + '_' + columns[i].category + '_' + columns[i].ci_columns );
-                     //store_config.add_fields = { name: columns[i].id + '_' + columns[i].category + '_' + columns[i].ci_columns };
-                }
-                else{
-                    for(j=0;j<columns[i].ci_columns.length;j++){
-                         //console.dir(columns[i].ci_columns[j]);
-                         fields.ids.push( columns[i].id + '_' + columns[i].category + '_' + columns[i].ci_columns[j] );
-                         //store_config.add_fields = { name: columns[i].id + '_' + columns[i].category + '_' + columns[i].ci_columns[j] };    
-                    }
-                }
-            }
-        }
+        //console.log('Add fields');
+        //console.dir(fields);
         store_config.add_fields = fields.ids.map(function(r){ return Ext.isObject(r)?r:{ name: r } });
-        // console.dir(fields);
     }
 
     // Create store instances
@@ -403,6 +393,7 @@
                     if( cfg[col].hidden || cfg[col]._checker ) continue; 
                     var cell = gv.getCell(row,col); 
                     if( !cell ) break;
+                    //console.log( cell.innerHTML );
                     var text = args.no_html ? $(cell.innerHTML).text() : cell.innerHTML;
                     text = text.replace(/^\s+/,'');
                     text = text.replace(/\s+$/,'');
@@ -421,6 +412,7 @@
         }
         
         for( var i=0; i<cfg.length; i++ ) {
+            //console.log( cfg[i] );
             if( ! cfg[i].hidden && ! cfg[i]._checker ) 
                 data.columns.push({ id: cfg[i].dataIndex, name: cfg[i].report_header || cfg[i].header });
         }
@@ -688,13 +680,15 @@
         if(rec.data.labels){
             tag_color_html = "";
             for(i=0;i<rec.data.labels.length;i++){
-                var label = rec.data.labels[i].split(';');
-                var label_name = label[1];
-                var label_color = label[2];
-                tag_color_html = tag_color_html
-                    //+ "<div id='boot'><span class='label' style='font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;float:left;padding:1px 4px 1px 4px;margin-right:4px;color:"
-                    + "<span style='font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;float:left;padding:1px 4px 1px 4px;margin-right:4px;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;"
-                    + "color: #fff;background-color:" + label_color + "'>" + label_name + "</span>";
+                if (rec.data.labels[i] != " "){
+                    var label = rec.data.labels[i].split(';');
+                    var label_name = label[1];
+                    var label_color = label[2];
+                    tag_color_html = tag_color_html
+                        //+ "<div id='boot'><span class='label' style='font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;float:left;padding:1px 4px 1px 4px;margin-right:4px;color:"
+                        + "<span style='font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size: xx-small; font-weight:bolder;float:left;padding:1px 4px 1px 4px;margin-right:4px;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;"
+                        + "color: #fff;background-color:" + label_color + "'>" + label_name + "</span>";
+                }
             }
         }
         
@@ -1058,12 +1052,14 @@
         emptyText: _('<Enter your search string>')
     });
 
+    //var pager_tool = new Ext.ux.ProgressBarPager();
+
     var ps_plugin = new Ext.ux.PageSizePlugin({
         editable: false,
         width: 90,
         data: [
             ['5', 5], ['10', 10], ['15', 15], ['20', 20], ['25', 25], ['50', 50],
-            ['100', 100], ['200',200], ['500', 500], ['1000', 1000], [_('all rows'), -1 ]
+            ['100', 100], ['200',200], ['500', 500], ['1000', 1000], [_('all rows'), 10000000000 ]
         ],
         beforeText: _('Show'),
         afterText: _('rows/page'),
@@ -1093,11 +1089,13 @@
             Baseliner.PagingToolbar.superclass.onLoad.call(this,store,r,o);
         }
     });
+
     var ptool = new Baseliner.PagingToolbar({            
         store: store_topics,
         pageSize: ps,
         plugins:[
             ps_plugin,
+            //pager_tool
             new Ext.ux.ProgressBarPager()
         ],
         displayInfo: true,
@@ -1184,6 +1182,8 @@
         force_fit = false;
         columns = [ dragger, check_sm, col_map['topic_name'] ];
         Ext.each( fields.columns, function(r){ 
+            // r.meta_type, r.id, r.as, r.width, r.header
+            //console.log('cols');
         
             if(r.filter){
                 var filter_params = {type: type_filters[r.filter.type], dataIndex: r.category ? r.id + '_' + r.category : r.id};
@@ -1249,39 +1249,9 @@
             col.alias = r.category;
             col.header = _(r.header || r.as || r.text || r.id);
             col.width = r.width || col.width;
-
+            
+            //console.log(col);
             columns.push( col );
-
-            if (r.ci_columns) {
-                if (typeof r.ci_columns === 'string'){
-                    var ci_col = {
-                        //dataIndex: r.category ? r.ci_columns + '_' + r.category : r.ci_columns,
-                        header: r.category + ': ' + r.ci_columns,
-                        dataIndex: r.category ? r.id + '_' + r.category + '_' + r.ci_columns : r.category + '_' + r.ci_columns,
-                        //dataIndex: r.id,
-                        hidden: false, width: 80, sortable: true,
-                        renderer: render_default
-                    };
-                    //console.dir( ci_col );
-                    columns.push( ci_col );
-                }
-                else{
-                    for(i=0;i<r.ci_columns.length;i++){
-                        var ci_col = {
-                            //dataIndex: r.category ? r.ci_columns + '_' + r.category : r.ci_columns,
-                            header: r.category + ': ' + r.ci_columns[i],
-                            dataIndex: r.category ? r.id + '_' + r.category + '_' + r.ci_columns[i] : r.category + '_' + r.ci_columns[i],
-                            //dataIndex: r.id,
-                            hidden: false, width: 80, sortable: true,
-                            renderer: render_default
-                        };
-                        //console.dir( ci_col );
-                        columns.push( ci_col );  
-                    }
-                }
-                
-            }
-
         });
         //console.dir(columns);
     } else {
@@ -1671,6 +1641,7 @@
         for( var i=0; i<selNodes.length; i++ ) {
             var node = selNodes[ i ];
             type = node.parentNode.attributes.id;
+            //if (type == 'C') console.log(node);
             var node_value = node.attributes.checked3 == -1 ? -1 * (node.attributes.idfilter) : node.attributes.idfilter;
             switch (type){
                 //Views
@@ -1858,6 +1829,7 @@
             */
             if(node.attributes.id == 'C' || node.attributes.id == 'L'){
                 node.eachChild(function(n) {
+                    //console.log(n.getUI());
                     var color = n.attributes.color;
                     if( ! color ) color = '#999';
                     var style = document.createElement('style');

@@ -1039,6 +1039,7 @@ register 'statement.project.loop' => {
                 $stash->{project_uc} = uc $project->name;
                 my $vars = variables_for_bl( $project, $stash->{bl} );
                 $stash->{job}->logger->info( _loc('Current project *%%1* (%%2)', $project->name, $stash->{bl} ), $vars );
+                $stash->{current_project} = $project;
 
                 merge_data $stash, $vars, { _ctx => 'project_loop' }; 
                 
@@ -1061,7 +1062,7 @@ register 'statement.if.nature' => {
             if( my $nature = $stash->{natures}{'%s'} ) {
                 NAT: {  
                     $stash->{current_nature} = $nature;
-                    local $stash->{nature_items} = $stash->{project_items}{ $project->mid }{natures}{ $nature->mid };
+                    local $stash->{nature_items} = $stash->{project_items}{ $stash->{current_project}->mid }{natures}{ $nature->mid };
                     last NAT if !_array( $stash->{nature_items} );
                     my ($nat_paths, $nat_paths_del) = cut_nature_items( $stash, parse_vars(q{%s},$stash) );
                     local $stash->{ nature_item_paths } = $nat_paths;
