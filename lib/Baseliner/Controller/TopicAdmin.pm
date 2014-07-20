@@ -399,7 +399,9 @@ sub list_tree_fields : Local {
     }
 
     my $i = (scalar keys %conf_fields) + 1;
-    my @sys_fields = sort { $a->{params}->{field_order} <=> $b->{params}->{field_order} } grep { $_->{params}->{origin} eq 'system' && !exists $conf_fields{$_->{id_field}} } _array $system_fields;
+    my @sys_fields =
+        sort { $a->{params}->{field_order} <=> $b->{params}->{field_order} }
+        grep { $_->{params}->{origin} eq 'system' && !exists $conf_fields{ $_->{id_field} } } _array $system_fields;
     for ( @sys_fields ){
         push @system,   {
                             id          => $i++,
@@ -455,13 +457,13 @@ sub list_tree_fields : Local {
     };
     
 
-    my @template_dirs = map { $_->root . '/forms/*.js' } Baseliner->features->list;
+    my @template_dirs; # = map { $_->root . '/forms/*.js' } Baseliner->features->list;
     push @template_dirs, map { $_->root . '/fields/templates/js/*.js' } Baseliner->features->list;
     push @template_dirs, map { $_->root . '/fields/system/js/*.js' } Baseliner->features->list;
     
     push @template_dirs, $c->path_to( 'root/fields/templates/js' ) . "/*.js";
     push @template_dirs, $c->path_to( 'root/fields/system/js' ) . "/list*.js";
-    push @template_dirs, $c->path_to( 'root/forms' ) . "/*.js";
+    #push @template_dirs, $c->path_to( 'root/forms' ) . "/*.js";
     #@template_dirs = grep { -d } @template_dirs;
     
     my @tmp_templates = map {
@@ -510,19 +512,30 @@ sub list_tree_fields : Local {
         }
        @ret;
     } @template_dirs;
-
+    
     my @templates;
-    for my $template (  sort { $a->{metadata}->{params}->{field_order} <=> $b->{metadata}->{params}->{field_order} }
-                        grep { $_->{metadata}->{params}->{origin} eq 'template' && $_->{metadata}->{params}->{type} ne 'form'} @tmp_templates ) {
-        if( $template->{metadata}->{name} ){
-            $template->{metadata}->{params}->{name_field} = $template->{metadata}->{name};
+
+    # avoid warnings 
+    @tmp_templates = grep { defined $$_{metadata}{params}{type} } @tmp_templates;
+    
+    # common sorter by field order 
+    my $field_order_sorter = sub {
+        ($a->{metadata}{params}{field_order} // 0) <=> ($b->{metadata}{params}{field_order} // 0)
+    };
+    for my $template ( sort $field_order_sorter 
+            grep { defined $$_{metadata}{params}{origin} 
+            && $_->{metadata}{params}{origin} eq 'template' 
+            && $_->{metadata}{params}{type} ne 'form'} @tmp_templates 
+    ) {
+        if( $template->{metadata}{name} ){
+            $template->{metadata}{params}{name_field} = $template->{metadata}{name};
             push @templates,
                 {
                     id          => $i++,
-                    id_field    => $template->{metadata}->{name},
-                    text        => _loc ($template->{metadata}->{name}),
-                    params	    => $template->{metadata}->{params},
-                    leaf        => \1                  
+                    id_field    => $template->{metadata}{name},
+                    text        => _loc ($template->{metadata}{name}),
+                    params	    => $template->{metadata}{params},
+                    leaf        => \1,
                 };		
         }
     }
@@ -530,9 +543,7 @@ sub list_tree_fields : Local {
     my $j = 0;
     my @meta_system_listbox;
     my @data_system_listbox;
-    for my $system_listbox (  sort { $a->{metadata}->{params}->{field_order} <=> $b->{metadata}->{params}->{field_order} }
-                        grep {$_->{metadata}->{params}->{type} eq 'listbox'} @tmp_templates ) {
-        
+    for my $system_listbox ( sort $field_order_sorter grep { $_->{metadata}{params}{type} eq 'listbox'} @tmp_templates ) {
         push @meta_system_listbox, [$j++, _loc $system_listbox->{metadata}->{name}];
         push @data_system_listbox, $system_listbox->{metadata}->{params};
     }
@@ -557,9 +568,7 @@ sub list_tree_fields : Local {
     $j = 0;
     my @meta_forms;
     my @data_forms;
-    for my $forms (  sort { ( $a->{metadata}{params}{field_order} // -1 ) <=> ( $b->{metadata}{params}{field_order} // -1 ) }
-                        grep {$_->{metadata}->{params}->{type} eq 'form'} @tmp_templates ) {
-        
+    for my $forms (  sort $field_order_sorter grep {$_->{metadata}{params}{type} eq 'form'} @tmp_templates ) {
         push @meta_forms, [$j++, _loc $forms->{metadata}->{name}];
         push @data_forms, $forms->{metadata}->{params};
     }
@@ -621,6 +630,7 @@ sub update_fields : Local {
         $params = $self->params_normalize( $params );
         push @fields, { id_field => $$f{id_field}, params => $params };
     }    
+
     mdb->category->update({ id=>"$id_category" },{ '$set'=>{ fieldlets=>\@fields } });
 
     $c->stash->{json} = { success => \1, msg=>_loc('fields modified') };
@@ -643,13 +653,13 @@ sub get_conf_fields : Local {
     #Baseliner::Model::Topic->get_update_system_fields ($id_category);
     
     my @conf_fields = 
-        grep { !exists $_->{params}->{hidden} && $_->{params}->{origin} ne 'default' }
+        grep { !exists $_->{params}{hidden} && $_->{params}{origin} ne 'default' }
         map { +{ id_field => $_->{id_field}, params => $_->{params} } }
         _array( mdb->category->find_one({ id=>"$id_category" })->{fieldlets} )
         if length $id_category;
         
     my @system;
-    for ( sort { $a->{params}->{field_order} <=> $b->{params}->{field_order} } @conf_fields){
+    for ( sort { $a->{params}{field_order} <=> $b->{params}{field_order} } @conf_fields ){
         push @system,   {
                             id          => $_->{params}->{field_order},
                             id_field    => $_->{id_field},
@@ -670,7 +680,7 @@ sub get_conf_fields : Local {
                                 single_mode => { value     => [ \1, \0 ] },
                                 type        => { read_only => \0 },
                                 origin      => { read_only => \0 }
-                                },
+                             },
                         }
     }
 
