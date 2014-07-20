@@ -390,7 +390,7 @@ sub list_tree_fields : Local {
     my @system;
     my $system_fields = Baseliner::Model::Topic->get_system_fields();
     
-    my @temp_fields = _array( mdb->category->find_one({ id=>"$id_category" })->{fieldlets} );
+    my @temp_fields = _array( mdb->category->find_one({ id=>"$id_category" })->{fieldlets} ) if length $id_category;
     my %conf_fields;
     
     for(@temp_fields){
@@ -645,7 +645,9 @@ sub get_conf_fields : Local {
     my @conf_fields = 
         grep { !exists $_->{params}->{hidden} && $_->{params}->{origin} ne 'default' }
         map { +{ id_field => $_->{id_field}, params => $_->{params} } }
-        _array( mdb->category->find_one({ id=>"$id_category" })->{fieldlets} );
+        _array( mdb->category->find_one({ id=>"$id_category" })->{fieldlets} )
+        if length $id_category;
+        
     my @system;
     for ( sort { $a->{params}->{field_order} <=> $b->{params}->{field_order} } @conf_fields){
         push @system,   {
