@@ -1300,7 +1300,7 @@ sub rel_signature {
     my ($self,$mid) = @_;
     join ',', sort { $a <=> $b } _unique 
         map { ($_->{from_mid}, $_->{to_mid}) } 
-        mdb->master_rel->find({ '$or'=>[{ from_mid=>"$mid" },{ to_mid=>"$mid" }] })->all;
+        mdb->master_rel->find({ rel_type=>'topic_topic', '$or'=>[{ from_mid=>"$mid" },{ to_mid=>"$mid" }] })->all;
 }
 
 sub get_release {
