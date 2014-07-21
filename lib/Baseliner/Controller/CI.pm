@@ -1424,11 +1424,12 @@ Support the following CI specific calls:
 
 =cut
 sub default : Path Args(2) {
-    my ($self,$c,$arg,$meth) = @_;
+    my ($self,$c,$mid_or_class,$meth) = @_;
     my $p = $c->req->params;
+    
     my $collection = $p->{collection};
     my $res_key = delete $p->{_res_key}; # return call response in this hash key
-    my $mid = $p->{mid};
+    my $mid_as_param = $p->{mid};
     my $json = $c->req->{body_data};
     delete $p->{api_key};
     my $data = { username=>$c->username, %{ $p || {} }, %{ $json || {} } };
@@ -1441,26 +1442,29 @@ sub default : Path Args(2) {
         my $ret;
         $meth = "$meth";
         my $to_args = sub { my ($obj)=@_; ( Function::Parameters::info( (ref $obj || $obj).'::'.$meth ) ? %$data : $data ) };
-        if( Util->is_number( $arg ) ) {
-            my $ci = ci->new( $arg );
+        my $class = 'BaselinerX::CI::' . $mid_or_class;
+        if( Util->_package_is_loaded($class) ) {
+            # it's a static class 
+            _debug( 'static class' );
+            _fail( _loc "Method '%1' not found in class '%2'", $meth, $class) unless $class->can($meth) ;
+            $ret = $class->$meth( $to_args->($class) ); 
+        } elsif( my $ci = ci->new($mid_or_class) ) {  
+            # it's a CI and we instantiated it
+            _debug( 'mid instanciated' );
             _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
             $ret = $ci->$meth( $to_args->($ci) );
-        } elsif( my $ci = ci->find($arg) ) {   #  TODO this generates warnings in log when $arg is a classname
+        } elsif( length $mid_as_param ) {
+            my $ci = ci->new( $mid_as_param );
             _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
             $ret = $ci->$meth( $to_args->($ci) );
-        } elsif( length $mid ) {
-            my $ci = ci->new( $mid );
-            _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
-            $ret = $ci->$meth( $to_args->($ci) );
-        } elsif ( $arg eq 'undefined' && $collection ) {
+        } elsif ( $mid_or_class eq 'undefined' && $collection ) {
             my $pkg = "BaselinerX::CI::$collection";
             _fail( _loc "Method '%1' not found in class '%2'", $meth, $pkg) unless $pkg->can( $meth) ;
             $ret = $pkg->$meth( $to_args->($pkg) );
         } else {
-            my $pkg = "BaselinerX::CI::$arg";
-            _fail( _loc "Method '%1' not found in class '%2'", $meth, $pkg) unless $pkg->can( $meth) ;
-            $ret = $pkg->$meth( $to_args->($pkg) );
+            _fail( _loc "Method '%1' not found in mid or class '%2'", $meth, $mid_or_class);
         }
+
         # prepare response
         my $json_res = {};
         my $call_res = { success=>\1 };
@@ -1473,6 +1477,7 @@ sub default : Path Args(2) {
         } else {
             $json_res = { data => $ret };
         }
+        
         # direct response or into a key (like 'data'?)
         if( $res_key ) {
             $c->stash->{json} = { %$call_res, $res_key => $json_res };
@@ -1486,7 +1491,7 @@ sub default : Path Args(2) {
     } catch {
         my $err = shift;
         my $json = try { Util->_encode_json($p) } catch { '{ ... }' };
-        _error "Error in CI call '$arg/$meth': $json\n$err";
+        _error "Error in CI call '$mid_or_class/$meth': $json\n$err";
         $c->stash->{json} = { msg=>"$err", success=>\0 }; 
     };
     $c->forward('View::JSON');
