@@ -751,13 +751,21 @@ sub children {
     return $self_or_class->related( %opts, edge=>'out' );
 }
 
+=head2 list_by_name
+
+Returns instanciated cis of this same
+class.
+
+=cut
 sub list_by_name {
     my ($class, $p)=@_;
-    my $where = {};
-    $where->{name} = $p->{names} if defined $p->{names};
+    $class = ref $class if ref $class;
+    my $where = { collection=>Util->to_base_class($class) };
+    $where->{name} = mdb->in($p->{names}) if defined $p->{names};
     my $from = {};
-    $from->{limit} = $p->{rows} if defined $p->{rows};
-    [ map { ci->new( $_->{mid} ) } mdb->master->query($where, $from)->fields({ mid=>1 })->all ];
+    my $limit = $p->{limit} // $p->{rows};
+    $from->{limit} = $limit if defined $limit;
+    return [ map { ci->new( $_->{mid} ) } mdb->master->query($where, $from)->fields({ mid=>1 })->all ];
 }
 
 =head2 push_ci_unique
