@@ -714,7 +714,7 @@ sub update {
             event_new 'event.topic.modify' => $stash => sub {
                 my @field;
                 $topic_mid = $p->{topic_mid};
-
+                $self->cache_topic_remove( $topic_mid );
                 my $meta = $self->get_meta ($topic_mid, $p->{category});
                 $stash->{topic_meta} = $meta; 
                 
@@ -746,11 +746,13 @@ sub update {
                 };
                     
                { mid => $topic->mid, topic => $topic->title, subject => $subject, notify_default=>\@users, notify=>$notify }   # to the event
+
             } => sub {
                 my $e = shift;
                 _throw $e;
             };
         } 
+        $self->cache_topic_remove( $topic_mid );
         when ( 'delete' ) {
             $topic_mid = $p->{topic_mid};
             try {
