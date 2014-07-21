@@ -77,7 +77,9 @@ sub find {
     return try {
         ci->new( @args );
     } catch {
-        Util->_error( shift );
+        my $err = shift;
+        Util->_error( $err );
+        Util->_error( Util->_whereami );
         undef;   
     };
 }
