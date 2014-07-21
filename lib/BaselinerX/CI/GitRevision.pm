@@ -50,16 +50,16 @@ sub items {
         
     my @items;
     if ( $type eq 'demote' ) {
-        @items = $git->exec( qw/diff --name-status/, $tag_sha, $rev_sha . "~1" );
+        @items = map { Girl->unescape($_) } $git->exec( qw/diff --name-status/, $tag_sha, $rev_sha . "~1" );
         $diff_shas = [$tag_sha, $rev_sha . "~1"];
     } else {
         if ( $rev_sha ne $tag_sha ) {
             Util->_debug( "BL and REV distinct" );
-            @items = $git->exec( qw/diff --name-status/, $tag_sha, $rev_sha );
+            @items = map { Girl->unescape($_) } $git->exec( qw/diff --name-status/, $tag_sha, $rev_sha );
             $diff_shas = [ $tag_sha, $rev_sha ];
         } else {
             Util->_debug( "BL and REV equal" );
-            @items = $git->exec( qw/ls-tree -r --name-status/, $tag_sha );
+            @items =map { Girl->unescape($_) } $git->exec( qw/ls-tree -r --name-status/, $tag_sha );
             @items = map { my $item = 'M   ' . $_; } @items;
             $diff_shas = [ $tag_sha ];
         }
