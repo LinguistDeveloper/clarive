@@ -261,7 +261,7 @@ sub tree_objects {
     my (%forms, %icons);  # caches
     my @tree = map {
         my $row = $_;
-        my $data = $p{no_yaml} ? {} : _load( $row->{yaml} );
+        my $data = $p{no_yaml} ? {} : $row;
         my $row_class = $class_coll{ $row->{collection} };
         # the form may be in cache, otherwise ask the class for a sub form {} formname, otherwise use the collection name
         my $ci_form = $forms{ $row->{collection} } 
@@ -504,7 +504,6 @@ sub store : Local {
     my $valuesqry = $p->{valuesqry} ? ( $p->{mids} = $p->{query} ) : ''; # en valuesqry está el "mid" en cuestión
     my $query = $p->{query} unless $valuesqry;
     
-
     # in cache ?
     my $mid_param =  $p->{mid} || $p->{from_mid} || $p->{to_mid} ;
     my $cache_key;
