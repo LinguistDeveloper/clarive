@@ -237,13 +237,13 @@ sub topic_contents : Local {
                 is_release      => $is_release,
                 is_changeset    => $is_changeset,
             },
-            url        => '/lifecycle/tree_topic_get_files',
+            url        => '/lifecycle/topic_contents',
             data       => {
                topic_mid   => $topic->{to_mid},
                click       => $self->click_for_topic(  $topic->{category}{name}, $topic->{mid} ),
             },
             icon       => $icon, 
-            leaf       => \1,
+            leaf       => \0,
             expandable => \1,
             menu => \@menu_related
         };
