@@ -308,7 +308,7 @@ sub update_category_admin : Local {
     
     foreach my $role (_array $idsroles){
         mdb->category->update({ id=>"$id_category" },
-            { '$pull'=>{ workflow=>{ id_role=>"$role", id_status_from=>"$status_from", id_status_to=>mdb->in($idsstatus_to) } } },
+            { '$pull'=>{ workflow=>{ id_role=>"$role", id_status_from=>"$status_from", id_status_to=>mdb->in($idsstatus_to), job_type =>"$job_type" } } },
             { multiple=>1 }
         );
         if($idsstatus_to){
