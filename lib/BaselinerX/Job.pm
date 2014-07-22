@@ -110,6 +110,7 @@ register 'config.job.log' => {
         { id=>'lev', label=>_loc('Level'), width=>80 },
         { id=>'text', label=>_loc('Message'), width=>200 },
     ]
+};
 
 register 'event.job.new' => {
     description => 'New job',
