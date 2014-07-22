@@ -225,11 +225,13 @@ sub topic_contents : Local {
 
         my @menu_related = $self->menu_related();
 
-        my @topic_project = mdb->topic->find_one({ mid=>$_->{topic_topic2}{mid} })->{_project_security}->{project};
-        my $title_project = "(" . mdb->project->find_one({ mid=>$topic_project[0][0] })->{name} . ")" if (@topic_project);
+        my $mid_project = $_->{_project_security}->{project}[0];
+        my $project_name = $mid_project ? mdb->project->find_one({ mid=>$mid_project })->{name} : '';
+
+        my $title_project = "(" . $project_name . ")";
 
         push @tree, {
-            text       => $title_project ." ". $_->{topic_topic2}{title},
+            text       => $title_project ." ". $_->{title},
             topic_name => {
                 mid             => $topic->{mid},
                 category_color  => $topic->{category}{color},
@@ -248,7 +250,6 @@ sub topic_contents : Local {
             menu => \@menu_related
         };
     }
-
     $c->stash->{ json } = \@tree;
     $c->forward( 'View::JSON' );
 }
