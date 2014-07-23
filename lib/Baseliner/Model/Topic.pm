@@ -866,6 +866,7 @@ sub next_status_for_user {
     if ( !$is_root ) {
         @user_roles = Baseliner->model('Permissions')->user_roles_for_topic( username => $username, mid => $topic_mid  );
         $where->{'workflow.id_role'} = mdb->in(@user_roles);
+        my %my_roles = map { $_=>1 } @user_roles;
     
         # check if custom workflow for topic
         if( length $p{id_status_from} ) {
@@ -883,13 +884,16 @@ sub next_status_for_user {
                     : _fail(_loc('Category id `%1 `not found', $id_category));
         } else {
             # ok, user has workflow
+            my %uniq;
             my @all_to_status =
                 sort { $$a{seq} <=> $$b{seq} }
+                grep { $uniq{$$_{id_status}} // ($uniq{$$_{id_status}}=0)+1 }  # make unique by status_to
                 map {
                     my $sfrom = $statuses{ $$_{id_status_from} };
                     my $sto   = $statuses{ $$_{id_status_to} };
                     +{
                         id_status_from     => $$_{id_status_from},
+                        id_status_to       => $$_{id_status_to},
                         statuses_name_from => $$sfrom{name},
                         status_bl_from     => $$sfrom{bl},
                         id_status          => $$_{id_status_to},
@@ -899,9 +903,11 @@ sub next_status_for_user {
                         status_description => $$sto{description},
                         id_category        => $$_{id_category},
                         job_type           => $$_{job_type},
-                        seq                => $$sto{seq}
+                        seq                => ($$sto{seq} // 0)
                     };
-                } grep { defined } _array( $cat->{workflow} );
+                } 
+                grep { $my_roles{$$_{id_role}} }
+                grep { defined } _array( $cat->{workflow} );
             
             my @no_deployable_status = grep {$_->{status_type} ne 'D'} @all_to_status;
             my @deployable_status = grep {$_->{status_type} eq 'D'} @all_to_status; 
@@ -914,9 +920,9 @@ sub next_status_for_user {
                         push @to_status, $status;
                     }
                 }elsif ( $status->{job_type} eq 'demote' ) {
-                        if(Baseliner->model('Permissions')->user_has_action( username=> $username, action => 'action.topics.logical_change_status', bl=> $status->{status_bl_from}, mid => $topic_mid )){
-                            push @to_status, $status;
-                        }               
+                    if(Baseliner->model('Permissions')->user_has_action( username=> $username, action => 'action.topics.logical_change_status', bl=> $status->{status_bl_from}, mid => $topic_mid )){
+                        push @to_status, $status;
+                    }               
                 }else {
                     push @to_status, $status;
                 }
