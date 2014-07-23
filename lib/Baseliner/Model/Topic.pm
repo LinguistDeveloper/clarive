@@ -865,7 +865,7 @@ sub next_status_for_user {
     
     if ( !$is_root ) {
         @user_roles = Baseliner->model('Permissions')->user_roles_for_topic( username => $username, mid => $topic_mid  );
-        $where->{id_role} = mdb->in(@user_roles);
+        $where->{'workflow.id_role'} = mdb->in(@user_roles);
     
         # check if custom workflow for topic
         if( length $p{id_status_from} ) {
@@ -876,10 +876,11 @@ sub next_status_for_user {
         }
         
         my %statuses = ci->status->statuses;
+        
         if( !( my $cat = mdb->category->find_one($where) ) ) {
             my $catname = mdb->category->find_one({ id=>$id_category });
-            _fail $catname ? _loc( 'User does not have a workflow for category `%1`', $catname->{name} )
-                    : _loc('Category id `%1 `not found', $id_category);
+            $catname ? _warn(_loc( 'User does not have a workflow for category `%1`', $catname->{name} ))
+                    : _fail(_loc('Category id `%1 `not found', $id_category));
         } else {
             _fail _loc 
             # ok, user has workflow
