@@ -208,7 +208,7 @@ sub topic_contents : Local {
     my @tree;
     my $topic_mid = $c->req->params->{topic_mid};
     my $state = $c->req->params->{state_id};
-    my $where = { from_mid => $topic_mid };
+    my $where = {};  #example where { from_mid => $topic_mid };
     if ( $state ) {
         $where->{'category_status.id'} = "$state";
     }
@@ -225,13 +225,8 @@ sub topic_contents : Local {
 
         my @menu_related = $self->menu_related();
 
-        my $mid_project = $_->{_project_security}->{project}[0];
-        my $project_name = $mid_project ? mdb->project->find_one({ mid=>$mid_project })->{name} : '';
-
-        my $title_project = "(" . $project_name . ")";
-
         push @tree, {
-            text       => $title_project ." ". $_->{title},
+            text       => $topic->{title},
             topic_name => {
                 mid             => $topic->{mid},
                 category_color  => $topic->{category}{color},
