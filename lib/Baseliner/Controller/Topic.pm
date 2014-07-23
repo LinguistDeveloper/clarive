@@ -1105,7 +1105,7 @@ sub filters_list : Local {
             if ( $is_root ) {
                 $checked = \1;
             } else {
-                $checked = exists $tmp{$r->id} && (substr ($r->type, 0 , 1) ne 'F')? \1: \0;
+                $checked = exists $tmp{$r->id_status} && (substr ($r->type, 0 , 1) ne 'F')? \1: \0;
             }
             push @statuses,
                 {
