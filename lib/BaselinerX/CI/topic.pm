@@ -1,5 +1,6 @@
 package BaselinerX::CI::topic;
 use Baseliner::Moose;
+use Baseliner::Utils;
 with 'Baseliner::Role::CI::Topic';
 
 has title       => qw(is rw isa Any);
@@ -181,6 +182,11 @@ sub items {
 sub jobs {
     my ($self, $p )=@_;
     my @jobs = $self->parents( isa=>'job', %$p );
+    my $is_root = model->Permissions->is_root($p->{username});
+    my $has_permission = model->Permissions->user_has_action( username=> $p->{username}, action=>'action.job.monitor' );
+    if (!$has_permission and !$is_root){
+        @jobs = ();
+    }
     wantarray ? @jobs : \@jobs;
 }
 
