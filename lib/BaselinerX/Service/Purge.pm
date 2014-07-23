@@ -18,7 +18,7 @@ with 'Baseliner::Role::Service';
 register 'config.daemon.purge' => {
     name => 'Event daemon configuration',
     metadata => [
-        { id=>'frequency', label=>'event puge daemon frequency (secs)', default=>86400 },    
+        { id=>'frequency', label=>'event purge daemon frequency (secs)', default=>86400 },    
     ]
 };
 
@@ -37,6 +37,9 @@ register 'config.purge' => {
         { id => 'keep_redis_log_size', default => 4, label=> 'Max size in MBytes to keep redis log' },
         { id => 'keep_disp_log_size', default => 4, label=> 'Max size in MBytes to keep cla-disp log' },
         { id => 'keep_web_log_size', default => 4, label=> 'Max size in MBytes to keep cla-web log' },
+        { id => 'event_log_keep', default =>'7D', label=> 'Keep event log entries for how long, in duration format: 1M, 2D, etc. Set to blank to stop this purge.' },
+        { id => 'no_file_purge', default =>'0', label=> 'Set this to true (1) to prevent Clarive from purging log files' },
+        { id => 'no_job_purge', default =>'0', label=> 'Set this to true (1) to prevent Clarive from purging job logs' },
     ]
 };
 
@@ -67,12 +70,13 @@ sub run_once {
     my $now = Util->_ts(); # Class::Date->now object
     my $job_purge_count = 0;
     my $config_runner = Baseliner->model('ConfigStore')->get( 'config.job.runner');
+    my $config_purge = Baseliner->model('ConfigStore')->get( 'config.purge');
     my $job_home = $ENV{BASELINER_JOBHOME} || $ENV{BASELINER_TEMP} || File::Spec->tmpdir();
     $job_home = $job_home."/";
     my $logs_home = $ENV{CLARIVE_BASE}.'/logs/';
     $config_runner->{root} = $job_home;
-    #my @purged_jobs=[];
-    if( ref $config_runner && $config_runner->{root} ) {
+
+    if( !$config_purge->{no_job_purge} && (ref $config_runner && $config_runner->{root}) ) {
         #_log "Config root: ". $config_runner->{root};
         my $jobs = ci->job->find({})->sort({ _id=>1 });
         while (my $job= $jobs->next){
@@ -120,51 +124,62 @@ sub run_once {
         }
         ############## Control of logsize and old .gz ######################
         my $log_dir = Path::Class::dir( $logs_home );
-        my $config_files = Baseliner->model('ConfigStore')->get( 'config.purge');
-        require Proc::Exists;
-        _log "\n\n\nAnalyzing logs....";
-        while (my $file = $log_dir->next) {
-            next unless -f $file;
-            if ( $file->basename =~ /(?<filename>.+)\.log$/ ){
-                my $filename = $+{filename};
-                my $filesize = -s $file;
-                my @particular_logs = ("nginx-error.log", "nginx-access.log", "redis.log", "mongod.log");
-                if ( $file->basename =~ qr/^cla\-web\-(.+)\.log$/ or $file->basename =~ qr/^cla\-disp\-(.+)\.log$/ ) {
-                    push( @particular_logs, $file->basename );
-                }
-                next unless grep { $_ eq $file->basename } @particular_logs;
+        unless( $config_purge->{no_file_purge} ) {
+            require Proc::Exists;
+            _log "\n\n\nAnalyzing logs....";
+            while (my $file = $log_dir->next) {
+                next unless -f $file;
+                if ( $file->basename =~ /(?<filename>.+)\.log$/ ){
+                    my $filename = $+{filename};
+                    my $filesize = -s $file;
+                    my @particular_logs = ("nginx-error.log", "nginx-access.log", "redis.log", "mongod.log");
+                    if ( $file->basename =~ qr/^cla\-web\-(.+)\.log$/ or $file->basename =~ qr/^cla\-disp\-(.+)\.log$/ ) {
+                        push( @particular_logs, $file->basename );
+                    }
+                    next unless grep { $_ eq $file->basename } @particular_logs;
 
-                if( $file->basename =~ qr/^cla\-disp\-(.+)\.log$/ ){
-                    next unless $filesize-1 > $config_files->{keep_disp_log_size}*(1024*1024);
-                } elsif( $file->basename =~ qr/^cla\-web\-(.+)\.log$/ ){
-                    next unless $filesize-1 > $config_files->{keep_web_log_size}*(1024*1024);
-                } else {
-                    next unless $filesize-1 > $config_files->{"keep_".$filename."_log_size"}*(1024*1024);
-                }
+                    if( $file->basename =~ qr/^cla\-disp\-(.+)\.log$/ ){
+                        next unless $filesize-1 > $config_purge->{keep_disp_log_size}*(1024*1024);
+                    } elsif( $file->basename =~ qr/^cla\-web\-(.+)\.log$/ ){
+                        next unless $filesize-1 > $config_purge->{keep_web_log_size}*(1024*1024);
+                    } else {
+                        next unless $filesize-1 > $config_purge->{"keep_".$filename."_log_size"}*(1024*1024);
+                    }
 
-                #my $pid_file = Path::Class::file( $file->dir, "$filename.pid" );
-                #next unless -e $pid_file;
-                require Baseliner::LogfileRotate;
-                
-                _log "\tTruncating: ".$file->basename;
-                my $log = new Baseliner::LogfileRotate( File   => $file, 
-                                Count  => $config_files->{keep_rotation_level},
-                                Gzip  => 'lib',
-                                # Post   => sub{
-                                #         if( $file->basename !~ qr/^cla\-disp\-(.+)\.log$/ ) {                                    
-                                #             my $pid = _file( $pid_file )->slurp;
-                                #             #open( my $opened_file, $pid_file );
-                                #             _log _loc("Restarting process ".$pid." for file ".$file->basename);
-                                #             kill( "HUP", $pid ); 
-                                #         }
-                                #     },
-                                Dir    => $file->dir,
-                                Flock  => 'yes',
-                                Persist => 'yes',
-                                );
-                $log->rotate();
-                _log "\tDone truncating: ".$file->basename;
+                    #my $pid_file = Path::Class::file( $file->dir, "$filename.pid" );
+                    #next unless -e $pid_file;
+                    require Baseliner::LogfileRotate;
+                    
+                    _log "\tTruncating: ".$file->basename;
+                    my $log = new Baseliner::LogfileRotate( File   => $file, 
+                                    Count  => $config_purge->{keep_rotation_level},
+                                    Gzip  => 'lib',
+                                    # Post   => sub{
+                                    #         if( $file->basename !~ qr/^cla\-disp\-(.+)\.log$/ ) {                                    
+                                    #             my $pid = _file( $pid_file )->slurp;
+                                    #             #open( my $opened_file, $pid_file );
+                                    #             _log _loc("Restarting process ".$pid." for file ".$file->basename);
+                                    #             kill( "HUP", $pid ); 
+                                    #         }
+                                    #     },
+                                    Dir    => $file->dir,
+                                    Flock  => 'yes',
+                                    Persist => 'yes',
+                                    );
+                    $log->rotate();
+                    _log "\tDone truncating: ".$file->basename;
+                }
             }
+        }
+        
+        ####################### purge old event_log
+        my $event_log_keep = $config_purge->{event_log_keep};
+        if( length $event_log_keep ) { 
+            mdb->event_log->update(
+                { ts=>{ '$lt'=>''.( mdb->now() - $event_log_keep )}  },
+                { '$set'=>{ dsl=>'', log_output=>'', stash_data=>'' } },
+                { multiple=>1 },
+            );
         }
     }
     _log 'Done purging.';
