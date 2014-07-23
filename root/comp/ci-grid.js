@@ -95,13 +95,13 @@
             check_sm,
             { width: 16, hidden: true, dataIndex: 'icon', renderer: Baseliner.render_icon },
             { id:'item', header: _('Item'), dataIndex: 'item', width: 230, renderer: render_item },
-            { header: _('Collection'), width: 160, dataIndex: 'collection' },
-            { header: _('ID'), width: 30, dataIndex: 'mid' },
-            { header: _('Class'), hidden: true, width: 160, dataIndex: 'class' },
-            { header: _('Version'), width: 50, dataIndex: 'versionid' },
-            { header: _('Timestamp'), width: 80, dataIndex: 'ts' },
-            { header: _('Tags'), width: 140, dataIndex: 'tags', renderer: render_tags },
-            { header: _('Properties'), hidden: true, width: 250, dataIndex: 'properties', renderer: render_properties },
+            { header: _('Collection'), width: 160, dataIndex: 'collection'},
+            { header: _('ID'), width: 30, dataIndex: 'mid'},
+            { header: _('Class'), hidden: true, width: 160, dataIndex: 'class'},
+            { header: _('Version'), width: 50, dataIndex: 'versionid'},
+            { header: _('Timestamp'), width: 80, dataIndex: 'ts'},
+            { header: _('Tags'), width: 140, dataIndex: 'tags', renderer: render_tags},
+            { header: _('Properties'), hidden: true, width: 250, dataIndex: 'properties', renderer: render_properties},
             { header: _('Data'), hidden: false, width: 250, dataIndex: 'data', renderer: render_mapping_long }
         ]
     });
