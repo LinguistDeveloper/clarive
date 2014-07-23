@@ -299,7 +299,18 @@ sub user_projects_ids {
     my ( $self, %p ) = @_;
     _throw 'Missing username' unless exists $p{username};
     return map{ $$_{mid} } ci->project->find->fields({mid=>1})->all if $self->is_root($p{username});
-    return _unique map { values $_->{project} } values ci->user->find({ username=>$p{username} })->next->{project_security};
+
+    #return _unique map { values $_->{project} } values ci->user->find({ username=>$p{username} })->next->{project_security};
+    my $user = ci->user->find_one({ username=>$p{username} });
+    if ($user) {
+        my $project_security = $user->{project_security} ? $user->{project_security} : undef;
+        if ($project_security){
+            my @projects;
+            return _unique map {  values $_->{project}  } grep { $_->{project} } values %{$project_security};
+        }
+    }else{
+        return undef
+    }    
 }
 
 =head2 user_projects_ids_with_collection( username=>Str )
