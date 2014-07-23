@@ -882,7 +882,6 @@ sub next_status_for_user {
             $catname ? _warn(_loc( 'User does not have a workflow for category `%1`', $catname->{name} ))
                     : _fail(_loc('Category id `%1 `not found', $id_category));
         } else {
-            _fail _loc 
             # ok, user has workflow
             my @all_to_status =
                 sort { $$a{seq} <=> $$b{seq} }
