@@ -1588,7 +1588,7 @@ msgid "empty"
 msgstr "vacio"
 
 msgid "Surrogating as %1"
-msgstr "Subrogando a %1"
+msgstr "Impersonando a %1"
 
 msgid "Yes"
 msgstr "Sí"
@@ -4969,7 +4969,7 @@ msgid "Favorite moved ok"
 msgstr "Favorito movido ok"
 
 msgid "Surrogate..."
-msgstr "Subrogación..."
+msgstr "Impersonar..."
 
 msgid "Portal"
 msgstr "Portal"
@@ -5029,7 +5029,7 @@ msgid "Change User"
 msgstr "Cambiar usuario"
 
 msgid "Surrogate"
-msgstr "Subrogación"
+msgstr "Impersonar"
 
 msgid "Component Error"
 msgstr "Error del componente"
@@ -6856,7 +6856,7 @@ msgid "Job Log"
 msgstr "Log del pase"
 
 msgid "Surrogate Error"
-msgstr "Error de Subrogación"
+msgstr "Error al Impersonarse"
 
 msgid "Passwords do not match"
 msgstr "Contraseñas no encontradas"
