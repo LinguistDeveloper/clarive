@@ -179,7 +179,8 @@ sub ns_split {
 
 sub _unique {
     return () unless @_ > 0;
-    keys %{{ map {$_=>1} grep { defined } @_ }};
+    my %dup;    
+    grep { $dup{$_} // (($dup{$_}=0)+1) } @_;
 }
 
 # detect regex auto, use this instead of qr//
