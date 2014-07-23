@@ -849,8 +849,6 @@
                     emptyMsg: _('There are no rows available')
             }),        
             tbar: [ 
-                params.tbar,
-                '-',
                 new Baseliner.SearchField({
                     store: store,
                     params: {start: 0, limit: ps}
