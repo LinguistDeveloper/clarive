@@ -857,14 +857,15 @@ sub next_status_for_user {
     my @user_roles;
     my $username = $p{username};
     my $topic_mid = $p{topic_mid};
-    my $where = { id =>''.$p{id_category} };
+    my $id_category = ''.$p{id_category};
+    my $where = { id =>$id_category };
     $where->{'workflow.id_status_from'} = mdb->in($p{id_status_from}) if defined $p{id_status_from};
     my $is_root = Baseliner->model('Permissions')->is_root( $username );
     my @to_status;
     
     if ( !$is_root ) {
         @user_roles = Baseliner->model('Permissions')->user_roles_for_topic( username => $username, mid => $topic_mid  );
-        $where->{id_role} = mdb->in(@user_roles);
+        $where->{'workflow.id_role'} = mdb->in(@user_roles);
     
         # check if custom workflow for topic
         if( length $p{id_status_from} ) {
@@ -875,46 +876,52 @@ sub next_status_for_user {
         }
         
         my %statuses = ci->status->statuses;
-        my $cat = mdb->category->find_one($where);
-        _fail _loc 'Category not found `%1`', $p{id_category} unless $cat; 
-        my @all_to_status =
-            sort { $$a{seq} <=> $$b{seq} }
-            map {
-                my $sfrom = $statuses{ $$_{id_status_from} };
-                my $sto   = $statuses{ $$_{id_status_to} };
-                +{
-                    id_status_from     => $$_{id_status_from},
-                    statuses_name_from => $$sfrom{name},
-                    status_bl_from     => $$sfrom{bl},
-                    id_status          => $$_{id_status_to},
-                    status_name        => $$sto{name},
-                    status_type        => $$sto{type},
-                    status_bl          => $$sto{bl},
-                    status_description => $$sto{description},
-                    id_category        => $$_{id_category},
-                    job_type           => $$_{job_type},
-                    seq                => $$sto{seq}
-                };
-            } grep { defined } _array( $cat->{workflow} );
         
-        my @no_deployable_status = grep {$_->{status_type} ne 'D'} @all_to_status;
-        my @deployable_status = grep {$_->{status_type} eq 'D'} @all_to_status; 
-        
-        push @to_status, @no_deployable_status;
-        
-        foreach my $status (@deployable_status){
-            if ( $status->{job_type} eq 'promote' ) {
-                if(Baseliner->model('Permissions')->user_has_action( username=> $username, action => 'action.topics.logical_change_status', bl=> $status->{status_bl}, mid => $topic_mid )){
+        if( !( my $cat = mdb->category->find_one($where) ) ) {
+            my $catname = mdb->category->find_one({ id=>$id_category });
+            $catname ? _warn(_loc( 'User does not have a workflow for category `%1`', $catname->{name} ))
+                    : _fail(_loc('Category id `%1 `not found', $id_category));
+        } else {
+            # ok, user has workflow
+            my @all_to_status =
+                sort { $$a{seq} <=> $$b{seq} }
+                map {
+                    my $sfrom = $statuses{ $$_{id_status_from} };
+                    my $sto   = $statuses{ $$_{id_status_to} };
+                    +{
+                        id_status_from     => $$_{id_status_from},
+                        statuses_name_from => $$sfrom{name},
+                        status_bl_from     => $$sfrom{bl},
+                        id_status          => $$_{id_status_to},
+                        status_name        => $$sto{name},
+                        status_type        => $$sto{type},
+                        status_bl          => $$sto{bl},
+                        status_description => $$sto{description},
+                        id_category        => $$_{id_category},
+                        job_type           => $$_{job_type},
+                        seq                => $$sto{seq}
+                    };
+                } grep { defined } _array( $cat->{workflow} );
+            
+            my @no_deployable_status = grep {$_->{status_type} ne 'D'} @all_to_status;
+            my @deployable_status = grep {$_->{status_type} eq 'D'} @all_to_status; 
+            
+            push @to_status, @no_deployable_status;
+            
+            foreach my $status (@deployable_status){
+                if ( $status->{job_type} eq 'promote' ) {
+                    if(Baseliner->model('Permissions')->user_has_action( username=> $username, action => 'action.topics.logical_change_status', bl=> $status->{status_bl}, mid => $topic_mid )){
+                        push @to_status, $status;
+                    }
+                }elsif ( $status->{job_type} eq 'demote' ) {
+                        if(Baseliner->model('Permissions')->user_has_action( username=> $username, action => 'action.topics.logical_change_status', bl=> $status->{status_bl_from}, mid => $topic_mid )){
+                            push @to_status, $status;
+                        }               
+                }else {
                     push @to_status, $status;
                 }
-            }elsif ( $status->{job_type} eq 'demote' ) {
-                    if(Baseliner->model('Permissions')->user_has_action( username=> $username, action => 'action.topics.logical_change_status', bl=> $status->{status_bl_from}, mid => $topic_mid )){
-                        push @to_status, $status;
-                    }               
-            }else {
-                push @to_status, $status;
-            }
-        }    
+            }    
+        }
     } else {
         my @user_wf = $self->user_workflow( $username );
         @to_status = sort { ($a->{seq} // 0 ) <=> ( $b->{seq} // 0 ) } grep {
