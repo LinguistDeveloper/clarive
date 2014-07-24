@@ -235,7 +235,7 @@ sub user_actions_by_topic {
     for my $role ( @roles ) {
         my @actions = _array(cache->get(":role:actions:$role:"));
         if ( !@actions ) {
-           @actions = map { $_->{action} } @{mdb->role->find({id=>$role+0})->next->{actions}};
+           @actions = map { $_->{action} } @{mdb->role->find({id=>$role})->next->{actions}};
            cache->set(":role:actions:$role:",\@actions);
         } else {
             #_debug "CACHE HIT for :role:actions:$role:";
@@ -337,7 +337,7 @@ sub user_projects_ids_with_collection {
 
     foreach my $id_role (@user_roles){
         foreach my $actual_id (@roles){
-            if($id_role == $actual_id+0){
+            if($id_role == $actual_id){
                 my @project_types = keys $project_security->{$id_role};
                 foreach my $project_type (@project_types){
                     map { $ret{$id_role}{$project_type}{$_} = 1 } @{$project_security->{$id_role}->{$project_type}};
@@ -402,7 +402,7 @@ sub user_projects_with_action {
     }
     my $user = ci->user->find({ username=>$username })->next;
     my @id_roles = keys $user->{project_security};
-    @id_roles = map { $_+0 } @id_roles;
+    @id_roles = map { $_ } @id_roles;
     my @roles = mdb->role->find({ id=> { '$in'=>\@id_roles } })->fields( { _id=>0 } )->all;
     my @res;
     foreach my $role (@roles){
@@ -429,7 +429,7 @@ sub user_grants {
     my $user = ci->user->find({ username=>$username })->next;
     my $project_security = $user->{project_security};
     my @id_roles = keys $project_security;
-    @id_roles = map { $_+0 } @id_roles;
+    @id_roles = map { $_ } @id_roles;
     my @roles = mdb->role->find({ id=> { '$in'=>\@id_roles } })->fields( { _id=>0, actions=>0 } )->all;
     foreach my $id_role (keys $project_security ){
         foreach my $project_type (keys $project_security->{$id_role}){
