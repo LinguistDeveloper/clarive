@@ -337,7 +337,7 @@ sub user_projects_ids_with_collection {
 
     foreach my $id_role (@user_roles){
         foreach my $actual_id (@roles){
-            if($id_role == $actual_id){
+            if($id_role eq $actual_id){
                 my @project_types = keys $project_security->{$id_role};
                 foreach my $project_type (@project_types){
                     map { $ret{$id_role}{$project_type}{$_} = 1 } @{$project_security->{$id_role}->{$project_type}};
