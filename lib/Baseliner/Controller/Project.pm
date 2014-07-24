@@ -11,6 +11,7 @@ BEGIN {  extends 'Catalyst::Controller' }
 sub user_projects : Local {
     my ($self, $c) = @_;
     my $username = $c->username;
+    my $p = $c->request->parameters;
     my $collection = $p->{collection} // 'project';
     my @rows = Baseliner->model('Users')->get_projectnames_and_descriptions_from_user($username, $collection);
     $c->stash->{json} = { data=>\@rows, totalCount=>scalar(@rows)};	
