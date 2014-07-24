@@ -353,7 +353,7 @@ sub list : Local {
                 my $where = {};
                 my $is_root = $c->model('Permissions')->is_root( $c->username );
                 if (!$is_root) {             
-                    my @roles = map { $_->{id} } $c->model('Permissions')->user_roles( $c->username );
+                    my @roles = map { $_->{id} .'' } $c->model('Permissions')->user_roles( $c->username );
                     #$where->{"dashboard_roles.id_role"} = \@roles;
                     $where->{role} = {'$in' => \@roles};
                 }
