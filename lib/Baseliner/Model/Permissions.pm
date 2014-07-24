@@ -494,7 +494,7 @@ sub list {
         my @roles = mdb->role->find->all;
         foreach my $user (@users){
             my @id_roles = keys $user->{project_security};
-            @id_roles = map { 0+$_ } @id_roles;
+            @id_roles = map { $_ } @id_roles;
             my @user_roles = grep { $_->{id} ~~ @id_roles } @roles;
             foreach my $user_role (@user_roles){
                 my @actions;
@@ -547,7 +547,7 @@ sub user_roles {
     my @id_roles = $self->user_role_ids($username);
     my @roles;
     foreach my $id (@id_roles){
-        my $role = mdb->role->find({ id=>0+$id })->next;
+        my $role = mdb->role->find({ id=>$id })->next;
         my @actions = map { $_->{action} } @{ $role->{actions} };
         push @roles, { id=>$role->{id}, role=>$role->{role}, description=>$role->{description}, actions=>[ @actions ] };
     }
