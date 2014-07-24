@@ -474,7 +474,7 @@ sub list {
     if( ref $cached eq 'ARRAY' ) {
         return @$cached;
     }
-    my $bl = $p{bl} || 'any';
+    my $bl = $p{bl} || '*';
     my $username = $p{username};
     my $action = $p{action};
 

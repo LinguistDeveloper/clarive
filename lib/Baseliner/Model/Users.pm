@@ -185,8 +185,8 @@ sub get_users_from_mid_roles_topic {
 sub get_actions_from_user{
    my ($self, $username, @bl) = @_;
    my @roles = keys ci->user->find({ username=>$username })->next->{project_security};
-   my @id_roles = map { $_ } @roles;
-   my @actions = mdb->role->find({ id=>{ '$in'=>\@id_roles } })->fields( {actions=>1, _id=>0} )->all;
+   #my @id_roles = map { $_ } @roles;
+   my @actions = mdb->role->find({ id=>{ '$in'=>\@roles } })->fields( {actions=>1, _id=>0} )->all;
    my @final;
    foreach my $f (map { values $_->{actions} } @actions){
        if(@bl){
