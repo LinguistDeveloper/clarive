@@ -251,7 +251,6 @@ sub filter_queue {
     my @q;
 
     for my $r (@queue){
-        _log "RRRRRRRRRRRRRRRRR".$r;
         if($r->{active} eq '1' ){
             if(!$r->{msg}->{schedule_time} || ($r->{msg}->{schedule_time} eq '') ){
                 push (@q, $r);
