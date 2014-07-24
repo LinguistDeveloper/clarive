@@ -241,7 +241,7 @@ sub get_projectnames_and_descriptions_from_user{
     my @id_roles = keys %project_security;
     foreach my $id_role (@id_roles){
         #my @project_types = keys $project_security{$id_role};
-        push @id_projects, @{$project_security{$id_role}->{$collection}} if $project_security{$id_role}->{project};
+        push @id_projects, @{$project_security{$id_role}->{$collection}} if $project_security{$id_role}->{$collection};
     }
     mdb->master_doc->find({collection=>"$collection", mid=>mdb->in(@id_projects)})->fields({name=>1,description=>1, mid=>1, _id=>0})->all;
 }
