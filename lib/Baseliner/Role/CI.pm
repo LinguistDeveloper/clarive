@@ -982,7 +982,7 @@ our $gscope;
 
 my $init = sub {
     my ($val) = @_;
-    my $obj = $gscope->{$val};
+    my $obj = $gscope->{$val} if ref $gscope;
     if( defined $obj ) {
         $_[1] = 1;
         return $obj;
@@ -1067,19 +1067,26 @@ around initialize_instance_slot => sub {
     my $mid = $instance->mid // $params->{mid};
     my $weaken = 0;
     if( defined($init_arg) and exists $params->{$init_arg} ) {
-        $gscope->{ $mid } //= $instance if defined $mid;
+        $gscope->{ $mid } //= $instance if defined $mid;  # this is the scope, so that we cache while loading and avoid deep recursion errors
         my $val = $params->{$init_arg};
         my $tc = $self->type_constraint;
 
-        Moose::Util::add_method_modifier( $instance->meta, 'around', [ $init_arg => sub{  
-            my $orig = shift;
-            my $self = shift;
-            my @vals = @_;
-            my $p2 = { $init_arg =>( @vals>1 ? \@vals : $vals[0] ) };
-            $ci_coerce->($tc,$val,$p2,$init_arg,$weaken);
-            $self->$orig( $p2->{$init_arg} ); 
-        }]);
-
+        if( !exists $instance->meta->{_ci_around_modifiers}{$init_arg} ) {  # make sure defined only once for each object
+            Moose::Util::add_method_modifier( $instance->meta, 'around', [ $init_arg => sub{  
+                my $orig = shift;
+                my $self = shift;
+                my @vals = @_;
+                if( @vals ) {
+                    my $p2 = { $init_arg =>( @vals>1 ? \@vals : $vals[0] ) };
+                    $ci_coerce->($tc, $p2->{$init_arg},$p2,$init_arg,0);
+                    return $self->$orig( $p2->{$init_arg} ); 
+                } else {
+                    return $self->$orig(@vals);
+                }
+            }]);
+            $instance->meta->{_ci_around_modifiers}{$init_arg} = 1;
+        }
+        
         $ci_coerce->($tc,$val,$params,$init_arg,$weaken);
         
     }
