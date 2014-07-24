@@ -2427,6 +2427,7 @@ sub set_users{
     $notify->{project} = \@projects if @projects;
     
     # check if arrays contain same members
+    @new_users = grep { is_number($_) } @new_users;
     if ( array_diff(@new_users, @old_users) ) {
         my $rdoc = {from_mid => "$topic_mid", rel_type => 'topic_users', rel_field=>$id_field };
         mdb->master_rel->remove($rdoc,{multiple=>1});
