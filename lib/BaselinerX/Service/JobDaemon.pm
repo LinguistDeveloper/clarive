@@ -233,7 +233,7 @@ sub check_job_expired {
     while( my $doc = $rs->next ) {
         my $ci = ci->new( $doc->{mid} );
         _debug sprintf "Checking job row alive: job=%s, mid=%s, pid=%s, host=%s (my host=%s)", $ci->name, $ci->mid, $ci->pid, $ci->host, $hostname;
-        if( $ci->host eq $hostname ) {
+        if( $ci->host eq $hostname && $ci->step =~ /PRE|RUN|POST/ ) {
             if( $ci->pid>0 && !pexists($ci->pid) ) {
                 _warn "Not alive: " . $ci->name;
                 # TODO recheck is slow (sleeps), try forking
