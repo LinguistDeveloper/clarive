@@ -162,8 +162,8 @@ sub save {
     $bl = '*' if !length $bl; # fix empty submits from web
     # make sure we have a mid AND it's in mongo
     Util->_fail( Util->_loc('CI mid cannot start with `name:` nor `mid:`') ) if $mid && $mid=~/^(name|moniker):/;
-    my $row = mdb->master->find_one({ mid=>"$mid" }) if length $mid;
-    my $exists = length($mid) && $row; 
+    my $master_row = mdb->master->find_one({ mid=>"$mid" }) if length $mid;
+    my $exists = length($mid) && $master_row; 
     
     # try to get mid from ns
     my $ns = $self->ns;
@@ -182,19 +182,19 @@ sub save {
     # TODO make it mongo transaction bound, in case there are foreign tables
     if( $exists ) { 
         ######## UPDATE CI
-        if( $row ) {
-            $row->{bl} = join ',', Util->_array( $bl );
-            $row->{name} = $self->name;
-            $row->{active} = $self->active;
-            $row->{versionid} = $self->versionid || '1';
-            $row->{moniker} = $self->moniker;
-            $row->{ns} = $self->ns;
-            $row->{ts} = mdb->ts;
-            $self->update_ci( $row, undef, \%opts );
+        if( $master_row ) {
+            $master_row->{bl} = join ',', Util->_array( $bl );
+            $master_row->{name} = $self->name;
+            $master_row->{active} = $self->active;
+            $master_row->{versionid} = $self->versionid || '1';
+            $master_row->{moniker} = $self->moniker;
+            $master_row->{ns} = $self->ns;
+            $master_row->{ts} = mdb->ts;
+            $self->update_ci( $master_row, undef, \%opts );
         }
     } else {
         ######## NEW CI
-        $row = {
+        $master_row = {
                 collection => $collection,
                 name       => $self->name,
                 ns         => $self->ns,
@@ -207,16 +207,16 @@ sub save {
         # update mid into CI
         $mid = length($mid) ? $mid : mdb->seq('mid');
         $self->mid( $mid );
-        $$row{mid} = $mid;
+        $$master_row{mid} = $mid;
         # put a default name
         if( !length $self->name ) {
             my $name = $collection . ':' . $mid;
-            $$row{name} = $name;
+            $$master_row{name} = $name;
             $self->name( $name );
         }
         
         # now save the rest of the ci data (yaml)
-        $self->new_ci( $row, undef, \%opts );
+        $self->new_ci( $master_row, undef, \%opts );
     }
     return $mid; 
 }
@@ -240,21 +240,21 @@ sub delete {
 
 # hook
 sub update_ci {
-    my ( $self, $master_row, $data, $opts ) = @_;
+    my ( $self, $master_row, $master_doc, $opts ) = @_;
     # if no data=> supplied, save myself
     $opts //= {}; # maybe lost during bad arounds
     $opts->{save_type} = 'update';
-    $data = $self->serialize if !defined $data;
-    $self->save_data( $master_row, $data, $opts );
+    $master_doc = $self->serialize if !ref($master_doc) eq 'HASH' || !keys %$master_doc;
+    $self->save_data( $master_row, $master_doc, $opts );
 }
 
 sub new_ci {
-    my ( $self, $master_row, $data, $opts ) = @_;
+    my ( $self, $master_row, $master_doc, $opts ) = @_;
     # if no data=> supplied, save myself
     $opts //= {}; # maybe lost during bad arounds
     $opts->{save_type} = 'new';
-    $data = $self->serialize if !defined $data;
-    $self->save_data( $master_row, $data, $opts);
+    $master_doc = $self->serialize if !ref($master_doc) eq 'HASH' || !keys %$master_doc;
+    $self->save_data( $master_row, $master_doc, $opts);
 }
 
 sub field_is_ci {
@@ -269,21 +269,21 @@ sub field_is_ci {
 
 # save data to yaml and master_doc, does not use self
 sub save_data {
-    my ( $self, $master_row, $data, $opts ) = @_;
-    return unless ref $data;
+    my ( $self, $master_row, $master_doc, $opts ) = @_;
+    return unless ref $master_doc;
     
     # To fix not saving attributes modified in "before save_data"
-    #$data = { %$self, %$data };
+    #$master_doc = { %$self, %$master_doc };
 
     my $storage = $self->storage;
     # peek into if we need to store the relationship
     my @master_rel;
     my $meta = $self->meta;
-    for my $field ( keys %$data ) {
+    for my $field ( keys %$master_doc ) {
         if( my $type = $self->field_is_ci($field,$meta) ) { 
             my $rel_type = $self->rel_type->{ $field } or Util->_fail( Util->_loc( "Missing rel_type definition for %1 (class %2)", $field, ref $self || $self ) );
             next unless $rel_type;
-            my $v = delete($data->{$field});  # consider a split on ,  
+            my $v = delete($master_doc->{$field});  # consider a split on ,  
             $v = [ split /,/, $v ] unless ref $v;
             push @master_rel, { field=>$field, type=>$type, rel_type=>$rel_type, value=>$v }; 
             #_error( \@master_rel );
@@ -296,7 +296,7 @@ sub save_data {
         if( $type_cons->name eq 'BoolCheckbox' ) {
             my $attr_name = $attr->name;
             # fix the on versus nothing on form submit
-            $data->{ $attr_name } = 0 unless exists $data->{ $attr_name };
+            $master_doc->{ $attr_name } = 0 unless exists $master_doc->{ $attr_name };
         }
     }
     # master_rel relationships, if any
@@ -320,7 +320,7 @@ sub save_data {
     }
     # now store the data
     if( $storage eq 'yaml' ) {
-        $self->save_fields( $master_row, $data, undef, \%relations );
+        $self->save_fields( $master_row, $master_doc, undef, \%relations );
     } else {
         # temporary: multi-storage deprecated
         Util->_fail( Util->_loc('CI Storage method not supported: %1', $storage) );
@@ -329,25 +329,25 @@ sub save_data {
 }
 
 sub save_fields {
-    my ($self, $master_row, $data, $opts, $relations ) = @_;
+    my ($self, $master_row, $master_doc, $opts, $relations ) = @_;
     $opts //={};
     $opts->{master_only} //= 1;
     my $mid = $master_row->{mid};
     delete $master_row->{_id}; # $set fails if _id is in hash
-    my $yaml = Util->_dump($data);
+    my $yaml = Util->_dump($master_doc);
     # update mongo master
     mdb->master->update({ mid=>"$mid" }, { '$set'=>{ %$master_row, yaml=>$yaml } }, { upsert=>1 });
     # update master_doc
     if( my $row = mdb->master_doc->find_one({ mid=>"$mid" }) ) {
         my $id = $row->{_id};
-        my $doc = { ( $master_row ? %$master_row : () ), %$row, %{ $data || {} } };
+        my $doc = { ( $master_row ? %$master_row : () ), %$row, %{ $master_doc || {} } };
         my $final_doc = Util->_clone($doc);
         Util->_unbless($final_doc);
         mdb->clean_doc($final_doc);
         $final_doc->{_id} = $id;  # preserve OID object
         mdb->master_doc->save({ %$final_doc, %{ $relations || {} } });
     } else {
-        my $doc = { ( $master_row ? %$master_row : () ), %{ $data || {} }, mid=>"$mid" };
+        my $doc = { ( $master_row ? %$master_row : () ), %{ $master_doc || {} }, mid=>"$mid" };
         delete $doc->{yaml};
         my $final_doc = Util->_clone($doc);
         Util->_unbless($final_doc);
@@ -982,7 +982,7 @@ our $gscope;
 
 my $init = sub {
     my ($val) = @_;
-    my $obj = $gscope->{$val};
+    my $obj = $gscope->{$val} if ref $gscope;
     if( defined $obj ) {
         $_[1] = 1;
         return $obj;
@@ -1067,19 +1067,26 @@ around initialize_instance_slot => sub {
     my $mid = $instance->mid // $params->{mid};
     my $weaken = 0;
     if( defined($init_arg) and exists $params->{$init_arg} ) {
-        $gscope->{ $mid } //= $instance if defined $mid;
+        $gscope->{ $mid } //= $instance if defined $mid;  # this is the scope, so that we cache while loading and avoid deep recursion errors
         my $val = $params->{$init_arg};
         my $tc = $self->type_constraint;
 
-        Moose::Util::add_method_modifier( $instance->meta, 'around', [ $init_arg => sub{  
-            my $orig = shift;
-            my $self = shift;
-            my @vals = @_;
-            my $p2 = { $init_arg =>( @vals>1 ? \@vals : $vals[0] ) };
-            $ci_coerce->($tc,$val,$p2,$init_arg,$weaken);
-            $self->$orig( $p2->{$init_arg} ); 
-        }]);
-
+        if( !exists $instance->meta->{_ci_around_modifiers}{$init_arg} ) {  # make sure defined only once for each object
+            Moose::Util::add_method_modifier( $instance->meta, 'around', [ $init_arg => sub{  
+                my $orig = shift;
+                my $self = shift;
+                my @vals = @_;
+                if( @vals ) {
+                    my $p2 = { $init_arg =>( @vals>1 ? \@vals : $vals[0] ) };
+                    $ci_coerce->($tc, $p2->{$init_arg},$p2,$init_arg,0);
+                    return $self->$orig( $p2->{$init_arg} ); 
+                } else {
+                    return $self->$orig(@vals);
+                }
+            }]);
+            $instance->meta->{_ci_around_modifiers}{$init_arg} = 1;
+        }
+        
         $ci_coerce->($tc,$val,$params,$init_arg,$weaken);
         
     }
