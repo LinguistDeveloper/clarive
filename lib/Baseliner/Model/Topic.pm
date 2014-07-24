@@ -481,7 +481,12 @@ sub topics_for_user {
         my $w = {};
         $w->{'$in'} = \@mids_in if @mids_in;
         $w->{'$nin'} = \@mids_nin if @mids_nin;
-        $where->{mid} = $w;
+        if( ref $where->{mid} ) {
+            # there's also a topic_list mid
+            $where->{'$nor'} = [ {mid=>{'$not'=>delete($where->{mid})}}, {mid=>{'$not'=>$w}} ];
+        } else {
+            $where->{mid} = $w;
+        }
     }
     
     if( @mids_or ) {
