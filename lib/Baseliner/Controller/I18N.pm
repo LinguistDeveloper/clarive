@@ -24,9 +24,9 @@ sub js : Local {
         $c->languages( $c->session->{user}->languages );
     }
     $lang ||= $c->language;
-    my $text = $self->parse_po($c, 'lib', 'Baseliner', 'I18N', $lang . '.po');
+    my $text = $self->parse_po($c, $c->path_to('lib', 'Baseliner', 'I18N', $lang . '.po') );
     for my $feature ( $c->features->list ) {
-        $text .= $self->parse_po($c,  'features', $feature->id, 'lib', 'Baseliner', 'I18N', $lang . '.po' );
+        $text .= $self->parse_po($c, _file($feature->lib, 'Baseliner', 'I18N', $lang . '.po') );
     }
     $text .= ' "" : "" ';  # finish up
     $c->response->content_type('text/javascript; charset=utf-8');
@@ -35,9 +35,7 @@ sub js : Local {
 }
 
 sub parse_po {
-    my $self = shift;
-    my $c = shift;
-    my $file = $c->path_to( @_ );
+    my ($self,$c,$file) = @_;
     return try {
         open my $fh,'<:encoding(UTF-8)',$file or die $@;
         my ($key,$val,@po);
