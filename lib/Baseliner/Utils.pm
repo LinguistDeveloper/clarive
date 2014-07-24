@@ -1381,6 +1381,14 @@ sub _html_escape {
     $data =~ s/\&/&amp;/gs;
     $data =~ s/</&lt;/gs;
     $data =~ s/>/&gt;/gs;
+
+    #convert ASCII characters form SQL
+    $data =~ s/\\xE1/á/g;
+    $data =~ s/\\xE9/é/g;
+    $data =~ s/\\xED/í/g;
+    $data =~ s/\\xF3/ó/g;
+    $data =~ s/\\xFA/ú/g;
+
     $data
 }
 
