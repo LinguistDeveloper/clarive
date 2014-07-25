@@ -165,18 +165,6 @@ Baseliner.FieldEditor = Ext.extend( Ext.Panel, {
                     
                     if (!isNaN(attr.id)){
                         if (data.origin == 'template' ){
-                            var filter_store = new Baseliner.JsonStore({
-                                root: 'data' , 
-                                remoteSort: true,
-                                totalProperty:"totalCount", 
-                                url: '/topicadmin/list_filters',
-                                fields: [
-                                    {  name: 'name' },
-                                    {  name: 'filter_json' }
-                                ]
-                            });
-                            
-                            filter_store.load();                            
                             
                             var btn_cerrar_custom_field = new Ext.Toolbar.Button({
                                 text: _('Close'),
@@ -228,9 +216,6 @@ Baseliner.FieldEditor = Ext.extend( Ext.Panel, {
                                                 if(objTemp.filter === 'manual'){
                                                     objTemp.filter = txt_filters.getValue() ? txt_filters.getValue() : 'none' ;
                                                 }
-                                                else{
-                                                    objTemp.filter = combo_filters.getValue() ? combo_filters.getValue() : 'none' ;
-                                                }
                                             }
                                             if ( objTemp.single_mode != undefined){
                                                 var value = form.findField("valuesgroup").getValue().getGroupValue();
@@ -276,20 +261,6 @@ Baseliner.FieldEditor = Ext.extend( Ext.Panel, {
                                 hidden: true     
                             });
                             
-                            var combo_filters = new Ext.form.ComboBox({
-                                mode: 'local',
-                                triggerAction: 'all',
-                                forceSelection: true,
-                                editable: false,
-                                fieldLabel: _('Filter'),
-                                name: 'cmb_filter',
-                                hiddenName: 'filter',
-                                displayField: 'name',
-                                valueField: 'filter_json',
-                                hidden: true,                       
-                                store: filter_store
-                            });
-                            
                             var combo_system_fields = new Ext.form.ComboBox({
                                 mode: 'local',
                                 triggerAction: 'all',
@@ -305,11 +276,8 @@ Baseliner.FieldEditor = Ext.extend( Ext.Panel, {
                                 if (attr.data[combo_system_fields.getValue()].filter){
                                     if (attr.data[combo_system_fields.getValue()].filter === 'manual'){
                                         txt_filters.show();    
-                                    }else {
-                                        combo_filters.show();
                                     }
                                 }else{
-                                    combo_filters.hide();
                                     txt_filters.hide();
                                 };
                                 if (attr.data[combo_system_fields.getValue()].single_mode != undefined){
@@ -344,7 +312,6 @@ Baseliner.FieldEditor = Ext.extend( Ext.Panel, {
                                                     {boxLabel: _('Grid'), inputValue: 'grid'}
                                                 ]
                                             },                                          
-                                            combo_filters,
                                             txt_filters
                                         ]
                             });
