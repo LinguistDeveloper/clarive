@@ -1451,7 +1451,6 @@ sub list_users : Local {
     my (@rows, $users_friends);
     my $username = $c->username;
 
-
     if($p->{projects}){
         my @projects = _array $p->{projects};
         $users_friends = $c->model('Users')->get_users_friends_by_projects(\@projects);
@@ -1466,7 +1465,7 @@ sub list_users : Local {
             my @name_roles = map {lc ($_)} split /,/, $p->{roles};
             my @id_roles;
             foreach my $role_name (@name_roles){
-                push @id_roles, mdb->role->find_one({ role=>$role_name })->{id};
+                push @id_roles, mdb->role->find_one({ role=> qr/$role_name/i })->{id};
             }
             if (@id_roles){
                 $users_friends = $c->model('Users')->get_users_from_mid_roles(roles => \@id_roles, projects => \@topic_projects); 
@@ -1475,18 +1474,17 @@ sub list_users : Local {
             $users_friends = $c->model('Users')->get_users_friends_by_username($username);    
         }
     }
-    $row = ci->user->find({username => $users_friends})->sort({realname => 1}); 
+    my $row = ci->user->find({username => mdb->in($users_friends)})->sort({realname => 1});
     if($row){
         while( my $r = $row->next ) {
             push @rows,
               {
-                id 		=> $r->id,
-                username	=> $r->username,
-                realname	=> $r->realname
+                id 		=> $r->{mid},
+                username	=> $r->{username},
+                realname	=> $r->{realname}
               };
         }  
     }
-    
     $c->stash->{json} = { data=>\@rows };
     $c->forward('View::JSON');
 }

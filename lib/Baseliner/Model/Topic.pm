@@ -2425,7 +2425,7 @@ sub set_users{
         # users
         if (@new_users){
             my @name_users;
-            my $rs_users = ci->user->find({mid => {'$or' => \@new_users}});
+            my $rs_users = ci->user->find({mid => mdb->in(@new_users)});
             while(my $user = $rs_users->next){
                 push @name_users,  $user->{username};
                 my $rdoc = { to_mid=>''.$user->{mid}, from_mid=>"$topic_mid", rel_type=>'topic_users', rel_field => $id_field };
