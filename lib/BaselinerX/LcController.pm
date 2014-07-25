@@ -203,20 +203,42 @@ sub tree_topics_project : Local {
     $c->forward( 'View::JSON' );
 }
 
+sub topic_children_for_state {
+    my ($self,%p) = @_;
+    my $topic_mid = $p{topic_mid};
+    my $state_id = $p{state_id};
+    my $id_project = $p{id_project};
+    
+    # get all children topics
+    my @chi_topics = mdb->joins( master_rel=>{ rel_type=>'topic_topic', from_mid=>"$topic_mid" }, to_mid => mid => topic=>[{},{mid=>1}] );
+
+    # now filter them thru user visibility, current state 
+    my $where = {
+        username     => $p{username},
+        clear_filter => 1,
+        id_project   => $id_project,
+        topic_list   => [ map{ $$_{mid} } @chi_topics ],
+    }; 
+    if ( $state_id ) {
+        $where->{statuses} = [ "$state_id" ];
+    }
+
+    my ( $cnt, @topics ) = Baseliner->model('Topic')->topics_for_user($where);
+    
+    return @topics;
+}
+
 sub topic_contents : Local {
     my ($self,$c) = @_;
     my @tree;
-    my $topic_mid = $c->req->params->{topic_mid};
-    my $state = $c->req->params->{state_id};
-    my $where = {};  #example where { from_mid => $topic_mid };
-    if ( $state ) {
-        $where->{'category_status.id'} = "$state";
-    }
-
-    my @topics = mdb->joins( master_rel=>{ rel_type=>'topic_topic', from_mid=>"$topic_mid" },
-        to_mid => mid => 
-        topic => $where );
-
+    my $p = $c->req->params;
+    my $topic_mid = $p->{topic_mid};
+    my $state_id = $p->{state_id};
+    my $id_project = $p->{id_project};
+    
+    my @topics = grep { $$_{category}{is_changeset} }
+            $self->topic_children_for_state( username=>$c->username, topic_mid=>$topic_mid, state_id=>$state_id, id_project=>$id_project );
+    
     for my $topic ( @topics ) {
         my $is_release = $topic->{category}{is_release};
         my $is_changeset = $topic->{category}{is_changeset};
@@ -469,7 +491,10 @@ sub changeset : Local {
         }
     }
 
-    # topic changes
+    #################################################################
+    #
+    # topics for a state
+    #
     my $bind_releases = 0;
     my @changes = mdb->joins(
                 master_rel=>{ rel_type=>'topic_project', to_mid=>"$id_project" },
@@ -698,12 +723,13 @@ sub cs_menu {
 
     my ($deployable, $promotable, $demotable ) = ( {}, {}, {} );
     my $is_release = $$categories{$topic->{id_category}}{is_release}; 
+    
     if ( $is_release ) {
-        my @chi;
-
-        for my $t ( ci->new($topic->{mid})->children( isa => 'topic', depth => 2) ) {
-            push @chi, $t if $$categories{$t->{id_category}}{is_changeset};
-        }
+        # releases take the menu of their first child 
+        #   TODO but should be intersection
+        my @chi = 
+            grep { $$_{category}{is_changeset} }
+            $self->topic_children_for_state( username=>$c->username, topic_mid=>$topic->{mid}, state_id=>$id_status_from, id_project=>$id_project );
         
         if( @chi ) {
            my ($menu_s, $menu_p, $menu_d );
