@@ -224,11 +224,17 @@ sub tree_objects {
             #  consider creating a %class_coll of all classes
         }
     }
-    my $opts = { $p{order_by} // _id=>1 }; 
+    my $opts = {};
+    # order by from order_by or sort.
+    if ($p{order_by}) { $opts = { $p{order_by} => 1 } }
+    elsif ($p{sort}) { $opts = { $p{sort} } }
+    else { { $opts = { _id => 1 } }
+    }
     my $page;
+    my $limit = {};
     if( length $p{start} && length $p{limit} && $p{limit}>-1 ) {
-        $opts->{limit} = $p{limit};
-        $opts->{skip} = $p{start};
+         $limit->{limit} = $p{limit};
+         $limit->{skip} = $p{start};
     }
     my $where = {};
     
@@ -254,7 +260,8 @@ sub tree_objects {
         }
         $where->{mid} = mdb->in(@where_mids);
     }
-    my $rs = mdb->master_doc->query($where)->sort($opts)->fields({ yaml=>0 });
+
+    my $rs = mdb->master_doc->query($where,$limit)->sort($opts)->fields({ yaml=>0 });
     my $total = defined $page ? $rs->pager->total_entries : $rs->count;
     my $generic_icon = do { require Baseliner::Role::CI::Generic; Baseliner::Role::CI::Generic->icon() };
     my (%forms, %icons);  # caches
@@ -502,6 +509,7 @@ sub store : Local {
     my $p = $c->req->params;
     my $valuesqry = $p->{valuesqry} ? ( $p->{mids} = $p->{query} ) : ''; # en valuesqry está el "mid" en cuestión
     my $query = $p->{query} unless $valuesqry;
+    
     # in cache ?
     my $mid_param =  $p->{mid} || $p->{from_mid} || $p->{to_mid} ;
     my $cache_key;
@@ -579,7 +587,6 @@ sub store : Local {
         }
         my $classes = [ packages_that_do( @roles ) ];
         ($total, @data) = $self->tree_objects( class=>$classes, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty}, no_yaml=>$p->{with_data}?0:1);
-
     }
     else {
         ($total, @data) = $self->tree_objects( class=>$class, parent=>0, start=>$p->{start}, limit=>$p->{limit}, order_by=>$p->{order_by}, query=>$query, where=>$where, mids=>$mids, pretty=>$p->{pretty} , no_yaml=>$p->{with_data}?0:1);
