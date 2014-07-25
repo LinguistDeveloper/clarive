@@ -562,6 +562,22 @@ sub dashboards {
     }
 }
 
+sub role_id_fix {
+    my @tmp = map { $_->{_id} } mdb->role->find()->all;
+    for my $id (@tmp) {
+        my $idrole = mdb->role->find( { _id => $id } )->next->{id} . '';
+
+        mdb->role->update(
+            { _id => $id },
+            {
+                '$set' => {
+                    id => $idrole,
+                }
+            }
+        );
+    }
+}
+
 sub daemons {
     my @daemons = _dbis->query('select * from bali_daemon')->hashes;
     for my $daemon ( @daemons ) {
