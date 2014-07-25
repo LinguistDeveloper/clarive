@@ -74,8 +74,28 @@ sub combo_list {
 }
 
 sub name_with_bl {
+    my ($self, %p) = @_;
+    my $bl = $self->bls->[0] if Util->_array($self->bls);
+    return $self->name if $p{no_common} && $bl->moniker eq '*';
+    length $bl 
+        ? sprintf( '%s (%s)', $self->name, ($bl->moniker || $bl->name) )
+        : $self->name; 
+}
+
+=head2 names_with_bl
+
+Returns:
+     
+     ThisStateName (BL1)
+     ThisStateName (BL2)
+
+=cut
+sub names_with_bl {
     my ($self) = @_;
-    sprintf '%s (%s)', $self->name, $self->bl;
+    my @bls = map { $_->moniker || $_->name } Util->_array( $self->bls );
+    @bls 
+    ? ( map { sprintf( '%s (%s)', $self->name,$_ ) } @bls )
+    : ( $self->name );
 }
 
 sub statuses {

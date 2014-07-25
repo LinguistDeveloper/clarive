@@ -184,17 +184,21 @@ sub get_users_from_mid_roles_topic {
 
 sub get_actions_from_user{
    my ($self, $username, @bl) = @_;
-   my @roles = keys ci->user->find({ username=>$username })->next->{project_security};
-   my @id_roles = map { 0+$_ } @roles;
-   my @actions = mdb->role->find({ id=>{ '$in'=>\@id_roles } })->fields( {actions=>1, _id=>0} )->all;
    my @final;
-   foreach my $f (map { values $_->{actions} } @actions){
-       if(@bl){
-           if($f->{bl} ~~ @bl){
+   if(Baseliner->model('Permissions')->is_root($username)){
+      @final = Baseliner->model( 'Actions' )->list;   
+   }else{
+       my @roles = keys ci->user->find({ username=>$username })->next->{project_security};
+       #my @id_roles = map { $_ } @roles;
+       my @actions = mdb->role->find({ id=>{ '$in'=>\@roles } })->fields( {actions=>1, _id=>0} )->all;
+       foreach my $f (map { values $_->{actions} } @actions){
+           if(@bl){
+               if($f->{bl} ~~ @bl){
+                   push @final, $f->{action};
+               }
+           }else{
                push @final, $f->{action};
            }
-       }else{
-           push @final, $f->{action};
        }
    }
    _unique @final;
@@ -234,16 +238,16 @@ sub get_projects_from_user{
 
 
 sub get_projectnames_and_descriptions_from_user{
-    my ($self, $username) = @_;
+    my ($self, $username, $collection) = @_;
     my @id_projects;
     my @res;
     my %project_security = %{ci->user->find({username=>$username})->next->{project_security}};
     my @id_roles = keys %project_security;
     foreach my $id_role (@id_roles){
         #my @project_types = keys $project_security{$id_role};
-        push @id_projects, @{$project_security{$id_role}->{project}} if $project_security{$id_role}->{project};
+        push @id_projects, @{$project_security{$id_role}->{$collection}} if $project_security{$id_role}->{$collection};
     }
-    mdb->master_doc->find({collection=>'project', mid=>mdb->in(@id_projects)})->fields({name=>1,description=>1, mid=>1, _id=>0})->all;
+    mdb->master_doc->find({collection=>"$collection", mid=>mdb->in(@id_projects)})->fields({name=>1,description=>1, mid=>1, _id=>0})->all;
 }
 
 1;

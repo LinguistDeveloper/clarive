@@ -481,7 +481,12 @@ sub topics_for_user {
         my $w = {};
         $w->{'$in'} = \@mids_in if @mids_in;
         $w->{'$nin'} = \@mids_nin if @mids_nin;
-        $where->{mid} = $w;
+        if( ref $where->{mid} ) {
+            # there's also a topic_list mid
+            $where->{'$nor'} = [ {mid=>{'$not'=>delete($where->{mid})}}, {mid=>{'$not'=>$w}} ];
+        } else {
+            $where->{mid} = $w;
+        }
     }
     
     if( @mids_or ) {
@@ -508,8 +513,6 @@ sub topics_for_user {
     my %mid_data = map { $$_{mid} => $_ } grep { $_ } map { cache->get("topic:view:$_:") } @mids; 
     # now search thru 
     if( my @db_mids = grep { !exists $mid_data{$_} } @mids ) {
-        #_debug( "CACHE==============================> MIDS: @mids, DBMIDS: @db_mids, MIDS_IN_CACHE: " . join',',keys %mid_data );
-       
         # mongo - get additional data
         $self->update_mid_data( \@db_mids, \%mid_data, $username );
     
@@ -594,8 +597,9 @@ sub update_mid_data {
     
     my $user_security = Baseliner->model('Permissions')->user_projects_ids_with_collection(username => $username, with_role => 1);
     
+    my %datas = map { $$_{mid}=>$_ } mdb->topic->find({ mid=>mdb->in(@mids) },{ _txt=>0 })->all;
     for my $mid ( @mids ) {
-        my $data = mdb->topic->find_one({ mid=>"$mid" },{}) // do{ _error(_loc("Topic mid not found: %1",$mid)); next };
+        my $data = $datas{$mid}  // do{ _error(_loc("Topic mid not found: %1",$mid)); next };
         $$data{topic_mid} //= $mid;
         
         my @mids_cis_in  = keys %{ $cis_in{$mid} || {} };

@@ -818,11 +818,13 @@ sub list_category : Local {
         my $cat = mdb->category->find_one({ id=>mdb->in($p->{categoryId}) },{ statuses=>1 });
         my @statuses = sort { $a->seq <=> $b->seq } ci->status->search_cis( id_status=>mdb->in($$cat{statuses}) );
         for my $status ( @statuses ) {
-            push @rows, {
-                            id      => $status->id_status,
-                            bl      => $status->bl,
-                            name    => $status->name_with_bl,
-                        };
+            for my $bl_status ( _array( $status->bls ) ) {
+                push @rows, {
+                                id      => $status->id_status,
+                                bl      => $bl_status,
+                                name    => $status->name_with_bl( no_common=>1 ),
+                            };
+            }
         }
         $cnt = @rows;
     }
