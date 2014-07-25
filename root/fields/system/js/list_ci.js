@@ -30,7 +30,7 @@ params:
        Baseliner.ci_box(Ext.apply({
            fieldLabel: _(meta.name_field),
            name: meta.id_field,
-           mode: 'local',
+           mode: 'remote',
            singleMode: meta.single_mode,
            force_set_value: true,
            value: data[meta.id_field]!=undefined ? data[meta.id_field] : (meta.default_value!=undefined? meta.default_value: data[meta.id_field]),
