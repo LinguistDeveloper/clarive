@@ -52,8 +52,10 @@ sub begin : Private {
             $c->req->params( $d ); 
         } else {
             $json //= {};
-            delete $json->{as_json};
-            delete $json->{$_} for grep /^_bali/, keys $json;
+            if( ref $json eq 'HASH' ) {
+                delete $json->{as_json};
+                delete $json->{$_} for grep /^_bali/, keys $json;
+            }
             $c->req->{body_data} = $json;
         }
     }
