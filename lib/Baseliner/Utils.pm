@@ -617,7 +617,7 @@ sub _parse_template_mason {
     require HTML::Mason::Interp;
     my $comp_root = "". Baseliner->config->{root};
     my $data_dir = File::Spec->catdir(
-        File::Spec->tmpdir, sprintf('Baseliner_%d_mason_data_dir', $<));
+        _tmp_dir(), 'mason', sprintf('Baseliner_%d_mason_data_dir', $<));
     my $m = HTML::Mason::Interp->new(
         comp_root  => $comp_root,
         data_dir   => $data_dir,
