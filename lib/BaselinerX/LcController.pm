@@ -364,12 +364,12 @@ sub branches : Local {
         _debug _loc "---- provider ".$repo->name." has %1 changesets", scalar @changes;
         push @cs, @changes;
 
-        # loop through the changeset objects (such as BaselinerX::GitChangeset)
+        # loop through the branch objects 
         for my $cs ( @cs ) {
             my $menu = [];
             # get menu extensions (find packages that do)
             # get node menu
-            ref $cs->node_menu and push @$menu, _array $cs->node_menu;
+            push @$menu, _array $cs->node_menu if ref $cs->node_menu;
             push @tree, {
                 url        => $cs->node_url,
                 data       => $cs->node_data,
@@ -409,7 +409,7 @@ sub changeset : Local {
             try {
                 my $prov = $provider->new( project=>$project );
                 my @changes = $prov->list( project=>$project, bl=>$bl, id_project=>$id_project, state_name=>$state_name );
-                _log _loc "---- provider $provider has %1 changesets", scalar @changes;
+                _debug _loc "---- provider $provider has %1 changesets", scalar @changes;
                 push @cs, @changes;
             } catch {
                 my $err = shift;
@@ -580,28 +580,37 @@ sub promotes_and_demotes {
 
     _fail _loc 'Missing topic parameter' unless $topic;
     
-    my $id_status_from_lc = $id_status_from ? $id_status_from: $topic->{id_category_status};
+    my $id_status_from_lc = $id_status_from ? $id_status_from : $topic->{id_category_status};
     my @user_workflow = _unique map {$_->{id_status_to} } Baseliner->model("Topic")->user_workflow( $c->username );
     my @user_roles = ci->user->roles( $c->username );
     my %statuses = ci->status->statuses;
     my $cat = mdb->category->find_one({ id=>''.$topic->{id_category} },{ workflow=>1 });
     _fail _loc 'Category %1 not found', $topic->{id_category} unless $cat;
+    
     my $status_list = sub {
         my ($dir) = @_;
+        my %seen;
         return sort { $$a{seq} <=> $$b{seq} }
-        map { 
-            my $st = $statuses{ $$_{id_status_to} };
-            $st->{bl_from} = $statuses{ $$_{id_status_from} }{bl};
-            $st;
-        }
-        grep {
-           $$_{id_role} ~~ @user_roles 
-           && $$_{id_status_to} ~~ @user_workflow
-           && $$_{id_status_from} == $id_status_from_lc
-           && $$_{job_type} eq $dir  # static,promote,demote
-        } _array( $$cat{workflow} );
+            map { 
+                my $st = $statuses{ $$_{id_status_to} };
+                $st->{bl_from} = $statuses{ $$_{id_status_from} }{bl};
+                $st;
+            }
+            grep {
+               my $k = join',',$$_{id_status_from},$$_{id_status_to} ;
+               my $flag = exists $seen{$k};
+               $seen{$k} = 1;
+               $$_{id_role} ~~ @user_roles
+               && $$_{id_status_to} ~~ @user_workflow
+               && $$_{id_status_from} == $id_status_from_lc
+               && !$flag;
+            } 
+            grep {
+               $$_{job_type} eq $dir  # static,promote,demote
+            }
+            _array( $$cat{workflow} );
     };
-
+    
     # Static
     my @statics = $status_list->( 'static' );
 
@@ -630,7 +639,7 @@ sub promotes_and_demotes {
 
     # Promote
     my @status_to = $status_list->( 'promote' );
-
+    
     my $promotable={};
     for my $status ( @status_to ) {
         my ($ci_status) = ci->status->query({ id_status=>''.$status->{id_status}, name => $status->{name} });

@@ -93,9 +93,9 @@ Returns:
 sub names_with_bl {
     my ($self) = @_;
     my @bls = map { $_->moniker || $_->name } Util->_array( $self->bls );
-    @bls 
-    ? ( map { sprintf( '%s (%s)', $self->name,$_ ) } @bls )
-    : ( $self->name );
+    return @bls 
+        ? ( map { sprintf( '%s (%s)', $self->name,$_ ) } @bls )
+        : ( $self->name );
 }
 
 sub statuses {
