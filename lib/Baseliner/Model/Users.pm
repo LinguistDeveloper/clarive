@@ -185,7 +185,7 @@ sub get_users_from_mid_roles_topic {
 sub get_actions_from_user{
    my ($self, $username, @bl) = @_;
    my @final;
-   if(Baseliner->model('Permissions')->is_root($username)){
+   if($username eq 'root'){
       @final = Baseliner->model( 'Actions' )->list;   
    }else{
        my @roles = keys ci->user->find({ username=>$username })->next->{project_security};
