@@ -203,20 +203,42 @@ sub tree_topics_project : Local {
     $c->forward( 'View::JSON' );
 }
 
+sub topic_children_for_state {
+    my ($self,%p) = @_;
+    my $topic_mid = $p{topic_mid};
+    my $state_id = $p{state_id};
+    my $id_project = $p{id_project};
+    
+    # get all children topics
+    my @chi_topics = mdb->joins( master_rel=>{ rel_type=>'topic_topic', from_mid=>"$topic_mid" }, to_mid => mid => topic=>[{},{mid=>1}] );
+
+    # now filter them thru user visibility, current state 
+    my $where = {
+        username     => $p{username},
+        clear_filter => 1,
+        id_project   => $id_project,
+        topic_list   => [ map{ $$_{mid} } @chi_topics ],
+    }; 
+    if ( $state_id ) {
+        $where->{statuses} = [ "$state_id" ];
+    }
+
+    my ( $cnt, @topics ) = Baseliner->model('Topic')->topics_for_user($where);
+    
+    return @topics;
+}
+
 sub topic_contents : Local {
     my ($self,$c) = @_;
     my @tree;
-    my $topic_mid = $c->req->params->{topic_mid};
-    my $state = $c->req->params->{state_id};
-    my $where = {};  #example where { from_mid => $topic_mid };
-    if ( $state ) {
-        $where->{'category_status.id'} = "$state";
-    }
-
-    my @topics = mdb->joins( master_rel=>{ rel_type=>'topic_topic', from_mid=>"$topic_mid" },
-        to_mid => mid => 
-        topic => $where );
-
+    my $p = $c->req->params;
+    my $topic_mid = $p->{topic_mid};
+    my $state_id = $p->{state_id};
+    my $id_project = $p->{id_project};
+    
+    my @topics = grep { $$_{category}{is_changeset} }
+            $self->topic_children_for_state( username=>$c->username, topic_mid=>$topic_mid, state_id=>$state_id, id_project=>$id_project );
+    
     for my $topic ( @topics ) {
         my $is_release = $topic->{category}{is_release};
         my $is_changeset = $topic->{category}{is_changeset};
@@ -364,12 +386,12 @@ sub branches : Local {
         _debug _loc "---- provider ".$repo->name." has %1 changesets", scalar @changes;
         push @cs, @changes;
 
-        # loop through the changeset objects (such as BaselinerX::GitChangeset)
+        # loop through the branch objects 
         for my $cs ( @cs ) {
             my $menu = [];
             # get menu extensions (find packages that do)
             # get node menu
-            ref $cs->node_menu and push @$menu, _array $cs->node_menu;
+            push @$menu, _array $cs->node_menu if ref $cs->node_menu;
             push @tree, {
                 url        => $cs->node_url,
                 data       => $cs->node_data,
@@ -409,7 +431,7 @@ sub changeset : Local {
             try {
                 my $prov = $provider->new( project=>$project );
                 my @changes = $prov->list( project=>$project, bl=>$bl, id_project=>$id_project, state_name=>$state_name );
-                _log _loc "---- provider $provider has %1 changesets", scalar @changes;
+                _debug _loc "---- provider $provider has %1 changesets", scalar @changes;
                 push @cs, @changes;
             } catch {
                 my $err = shift;
@@ -469,7 +491,10 @@ sub changeset : Local {
         }
     }
 
-    # topic changes
+    #################################################################
+    #
+    # topics for a state
+    #
     my $bind_releases = 0;
     my @changes = mdb->joins(
                 master_rel=>{ rel_type=>'topic_project', to_mid=>"$id_project" },
@@ -580,28 +605,37 @@ sub promotes_and_demotes {
 
     _fail _loc 'Missing topic parameter' unless $topic;
     
-    my $id_status_from_lc = $id_status_from ? $id_status_from: $topic->{id_category_status};
+    my $id_status_from_lc = $id_status_from ? $id_status_from : $topic->{id_category_status};
     my @user_workflow = _unique map {$_->{id_status_to} } Baseliner->model("Topic")->user_workflow( $c->username );
     my @user_roles = ci->user->roles( $c->username );
     my %statuses = ci->status->statuses;
     my $cat = mdb->category->find_one({ id=>''.$topic->{id_category} },{ workflow=>1 });
     _fail _loc 'Category %1 not found', $topic->{id_category} unless $cat;
+    
     my $status_list = sub {
         my ($dir) = @_;
+        my %seen;
         return sort { $$a{seq} <=> $$b{seq} }
-        map { 
-            my $st = $statuses{ $$_{id_status_to} };
-            $st->{bl_from} = $statuses{ $$_{id_status_from} }{bl};
-            $st;
-        }
-        grep {
-           $$_{id_role} ~~ @user_roles 
-           && $$_{id_status_to} ~~ @user_workflow
-           && $$_{id_status_from} == $id_status_from_lc
-           && $$_{job_type} eq $dir  # static,promote,demote
-        } _array( $$cat{workflow} );
+            map { 
+                my $st = $statuses{ $$_{id_status_to} };
+                $st->{bl_from} = $statuses{ $$_{id_status_from} }{bl};
+                $st;
+            }
+            grep {
+               my $k = join',',$$_{id_status_from},$$_{id_status_to} ;
+               my $flag = exists $seen{$k};
+               $seen{$k} = 1;
+               $$_{id_role} ~~ @user_roles
+               && $$_{id_status_to} ~~ @user_workflow
+               && $$_{id_status_from} == $id_status_from_lc
+               && !$flag;
+            } 
+            grep {
+               $$_{job_type} eq $dir  # static,promote,demote
+            }
+            _array( $$cat{workflow} );
     };
-
+    
     # Static
     my @statics = $status_list->( 'static' );
 
@@ -630,7 +664,7 @@ sub promotes_and_demotes {
 
     # Promote
     my @status_to = $status_list->( 'promote' );
-
+    
     my $promotable={};
     for my $status ( @status_to ) {
         my ($ci_status) = ci->status->query({ id_status=>''.$status->{id_status}, name => $status->{name} });
@@ -689,12 +723,13 @@ sub cs_menu {
 
     my ($deployable, $promotable, $demotable ) = ( {}, {}, {} );
     my $is_release = $$categories{$topic->{id_category}}{is_release}; 
+    
     if ( $is_release ) {
-        my @chi;
-
-        for my $t ( ci->new($topic->{mid})->children( isa => 'topic', depth => 2) ) {
-            push @chi, $t if $$categories{$t->{id_category}}{is_changeset};
-        }
+        # releases take the menu of their first child 
+        #   TODO but should be intersection
+        my @chi = 
+            grep { $$_{category}{is_changeset} }
+            $self->topic_children_for_state( username=>$c->username, topic_mid=>$topic->{mid}, state_id=>$id_status_from, id_project=>$id_project );
         
         if( @chi ) {
            my ($menu_s, $menu_p, $menu_d );
