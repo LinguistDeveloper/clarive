@@ -97,7 +97,7 @@ sub repo_items {
             $blob=undef;
             $mask=undef;
         }
-        $repo_items{ $path2 // $path1 } = { mask=>$mask, blob=>$blob, status=>$status, old_path=>$path2?$path1:undef };
+        $repo_items{ Girl->unquote($path2) // Girl->unquote($path1) } = { mask=>$mask, blob=>$blob, status=>$status, old_path=>$path2?$path1:undef };
     }
     # now created 'D' items for renamed ones
     for my $path ( keys %repo_items ) {
