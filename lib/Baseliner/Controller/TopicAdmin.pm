@@ -452,7 +452,7 @@ sub list_tree_fields : Local {
     push @tree_fields, {
         id          => 'C',
         text        => _loc('Custom fields'),
-        expanded    => scalar @custom gt 0 ? \1 : \0,        
+        expanded    => \0,
         children    => \@custom
     };
     
@@ -558,12 +558,6 @@ sub list_tree_fields : Local {
                             leaf        => \1                             
                         };
     
-    #push @tree_fields, {
-    #    id          => 'T',
-    #    text        => _loc('Templates'),
-    #    children    => \@templates
-    #};
-    
     
     $j = 0;
     my @meta_forms;
@@ -586,6 +580,7 @@ sub list_tree_fields : Local {
     push @tree_fields, {
         id          => 'T',
         text        => _loc('Templates'),
+        expanded    => \1, 
         children    => \@templates
     };      
     
@@ -752,20 +747,6 @@ sub create_clone : Local {
     };
 
     $c->forward('View::JSON');    
-}
-
-sub list_filters : Local {
-    my ($self,$c) = @_;
-    my $p = $c->request->parameters;
-    
-    my @rows;
-    my @filters = $c->model('Baseliner::BaliTopicView')->search(undef, {order_by => 'name'})->hashref->all;
-    for (@filters){
-            push @rows, $_;
-    }
-    
-    $c->stash->{json} = {data=>\@rows};
-    $c->forward('View::JSON');
 }
 
 sub duplicate : Local {
