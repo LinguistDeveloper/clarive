@@ -421,7 +421,7 @@ sub failed {
 	
 	my $r;
 
-	for my $entry (_array @queue){
+	for my $entry (_array $queue){
 	    if ($entry->{id} eq $p{id}){
 	         $r = $entry;
 	         last;
