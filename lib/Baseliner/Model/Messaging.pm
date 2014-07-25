@@ -417,11 +417,11 @@ sub failed {
     _fail _loc('Missing id') unless length $p{id};
 
     $p{where} ={'queue.id' => 0 + $p{id}};
-    my @queue = $self->transform(%p);
+    my ($queue, $cnt) = $self->transform(%p);
 	
 	my $r;
 
-	for my $entry (@queue){
+	for my $entry (_array @queue){
 	    if ($entry->{id} eq $p{id}){
 	         $r = $entry;
 	         last;
@@ -450,8 +450,8 @@ sub failed {
 sub get {
     my ($self,%p)=@_;
     $p{where} ={'queue.id' => 0 + $p{id}}; 
-    my @queue = $self->transform(%p);
-    my ($row) = _array(@queue);
+    my ($queue, $cnt) = $self->transform(%p);
+    my ($row) = _array $queue;
     my $merged = { %{ delete $row->{msg} }, %$row }; 
     $merged->{_id} .='';
     return $merged if ref $row;
@@ -465,10 +465,10 @@ sub has_unread_messages {
     exists $p{username} and $search{where}->{'queue.username'} = delete $p{username} if $p{username};
     exists $p{carrier} and $search{where}->{'queue.carrier'} = delete $p{carrier};
 
-    my @queue = Baseliner->model('Messaging')->transform(%search);
+    my ($queue, $cnt) = Baseliner->model('Messaging')->transform(%search);
 
     my @q;
-    foreach my $r (@queue){
+    foreach my $r (_array $queue){
 	if (!$p{all}){
     	if($r->{active} eq '1'){
     		push (@q, $r);
