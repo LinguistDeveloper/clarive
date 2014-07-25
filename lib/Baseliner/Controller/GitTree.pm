@@ -197,7 +197,7 @@ sub branch_tree : Local {
             } 
             else {  # it's a file
                 $f = _file( $f );
-                my $fname = $f->basename;
+                my $fname = Girl->unquote($f->basename);
                 +{ 
                     text => "$fname",
                     leaf => \1,
