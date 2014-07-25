@@ -22,7 +22,8 @@ has instance_name => qw(is rw);
 has id            => qw(is ro default) => sub { lc( Sys::Hostname::hostname() ) };
 
 # From Starman (check lib/Starman/Server.pm for options)
-has [qw(backlog min_servers min_spare_servers max_spare_servers max_requests max_servers)] => qw(is rw isa Any);
+has max_requests => qw(is rw isa Any default 100);
+has [qw(backlog min_servers min_spare_servers max_spare_servers max_servers)] => qw(is rw isa Any);
 
 with 'Clarive::Role::EnvRequired';
 with 'Clarive::Role::Daemon';
