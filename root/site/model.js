@@ -2855,7 +2855,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                typeAhead: false,
                minChars: 1, 
                store: self.store_vars, 
-               editable: false, forceSelection: true, triggerAction: 'all',
+               editable: true, forceSelection: true, triggerAction: 'all',
                allowBlank: true
         });
         // adds variable on combo click

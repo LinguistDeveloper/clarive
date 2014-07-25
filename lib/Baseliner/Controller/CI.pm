@@ -224,11 +224,17 @@ sub tree_objects {
             #  consider creating a %class_coll of all classes
         }
     }
-    my $opts = { sort=>( $p{sort} // +{ _id=>1 } ) };
+    my $opts = {};
+    # order by from order_by or sort.
+    if ($p{order_by}) { $opts = { $p{order_by} => 1 } }
+    elsif ($p{sort}) { $opts = { $p{sort} } }
+    else { { $opts = { _id => 1 } }
+    }
     my $page;
+    my $limit = {};
     if( length $p{start} && length $p{limit} && $p{limit}>-1 ) {
-        $opts->{limit} = $p{limit};
-        $opts->{skip} = $p{start};
+         $limit->{limit} = $p{limit};
+         $limit->{skip} = $p{start};
     }
     my $where = {};
     
@@ -255,7 +261,7 @@ sub tree_objects {
         $where->{mid} = mdb->in(@where_mids);
     }
 
-    my $rs = mdb->master_doc->query($where,$opts)->fields({ yaml=>0 });
+    my $rs = mdb->master_doc->query($where,$limit)->sort($opts)->fields({ yaml=>0 });
     my $total = defined $page ? $rs->pager->total_entries : $rs->count;
     my $generic_icon = do { require Baseliner::Role::CI::Generic; Baseliner::Role::CI::Generic->icon() };
     my (%forms, %icons);  # caches
