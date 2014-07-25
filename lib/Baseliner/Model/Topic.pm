@@ -2404,6 +2404,7 @@ sub set_users{
     my $topic_mid = $rs_topic->{mid};
     
     my @new_users = _array( $users ) ;
+    _log "nuevos usuarios" . _dump @new_users;
     my @old_users = map { $$_{to_mid} } mdb->master_rel->find({from_mid =>"$topic_mid", rel_type=>'topic_users', rel_field=>$id_field })->all;
 
     my $notify = {
@@ -2425,7 +2426,7 @@ sub set_users{
         # users
         if (@new_users){
             my @name_users;
-            my $rs_users = ci->user->find({mid => {'$or' => \@new_users}});
+            my $rs_users = ci->user->find({mid => mdb->in(@new_users)});
             while(my $user = $rs_users->next){
                 push @name_users,  $user->{username};
                 my $rdoc = { to_mid=>''.$user->{mid}, from_mid=>"$topic_mid", rel_type=>'topic_users', rel_field => $id_field };
