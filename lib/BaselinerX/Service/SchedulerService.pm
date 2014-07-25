@@ -70,7 +70,7 @@ sub run_once {
         }
     }
     # get rid of zombies
-    BaselinerX::Service::Daemon->reap_children();
+    BaselinerX::Service::JobDaemon->reap_children();
 }
 
 sub road_kill {
