@@ -751,7 +751,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             items: self.status_items_menu
         });
         
-        self.btn_change_status = new Ext.Toolbar.Button({ text: _("Change status"), menu: self.status_menu, hidden: true });
+        self.btn_change_status = new Ext.Toolbar.Button({ text: _("Change State"), menu: self.status_menu, hidden: true });
         if (self.status_items_menu.length <= 0){
             self.btn_change_status.hide();
         }
