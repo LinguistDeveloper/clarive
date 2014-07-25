@@ -1449,7 +1449,11 @@ sub default : Path Args(2) {
         $meth = "$meth";
         my $to_args = sub { my ($obj)=@_; ( Function::Parameters::info( (ref $obj || $obj).'::'.$meth ) ? %$data : $data ) };
         my $class = 'BaselinerX::CI::' . $mid_or_class;
-        if( Util->_package_is_loaded($class) ) {
+        if( length $mid_as_param ) {
+            my $ci = ci->new( $mid_as_param );
+            _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
+            $ret = $ci->$meth( $to_args->($ci) );
+        } elsif( Util->_package_is_loaded($class) ) {
             # it's a static class 
             _debug( 'static class' );
             _fail( _loc "Method '%1' not found in class '%2'", $meth, $class) unless $class->can($meth) ;
@@ -1457,10 +1461,6 @@ sub default : Path Args(2) {
         } elsif( my $ci = ci->new($mid_or_class) ) {  
             # it's a CI and we instantiated it
             _debug( 'mid instanciated' );
-            _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
-            $ret = $ci->$meth( $to_args->($ci) );
-        } elsif( length $mid_as_param ) {
-            my $ci = ci->new( $mid_as_param );
             _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
             $ret = $ci->$meth( $to_args->($ci) );
         } elsif ( $mid_or_class eq 'undefined' && $collection ) {
