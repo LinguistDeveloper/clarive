@@ -24,6 +24,8 @@ sub upgrade {
     mdb->migra->job_last_error;
     mdb->migra->master_cal;
     mdb->migra->topic_assets;
+    mdb->migra->role_id_fix;
+
     mdb->session->drop;
     mdb->cache->drop;
 }
