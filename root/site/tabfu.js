@@ -1069,9 +1069,11 @@ if( Prefs.routing ) {
                         }
                         return;
                     } else {
-                        msg = xhr.responseText || _('Unknown error');
+                        msg = xhr.responseText;
                     }
-                    Baseliner.error_win(url,params,xhr, msg);
+                    // get rid of Unknown errors
+                    if( msg ) Baseliner.error_win(url,params,xhr, msg);
+                    else Baseliner.message( _('Connection lost?'), _('Server communication error'), { image:'/static/images/disconnected.png' });
                     return;
                 }
                 try {
