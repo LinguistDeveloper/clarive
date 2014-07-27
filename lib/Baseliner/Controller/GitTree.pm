@@ -5,6 +5,7 @@ use Try::Tiny;
 use namespace::clean;
 
 require Git::Wrapper;
+require Girl;
 
 BEGIN { extends 'Catalyst::Controller' }
 
@@ -181,7 +182,7 @@ sub branch_tree : Local {
             my ( $mod, $type, $sha, $f ) = $_ =~ /^(.+)\s(.+)\s(.+)\t(.*)$/;
             if( $type eq 'tree' ) {   # it's a directory
                 my $d = _dir( $f );
-                my $fname = $d->basename;
+                my $fname = Girl->unquote($d->basename);
                 +{ 
                     text => "$fname",
                     url  => '/gittree/branch_tree',
@@ -196,7 +197,7 @@ sub branch_tree : Local {
             } 
             else {  # it's a file
                 $f = _file( $f );
-                my $fname = $f->basename;
+                my $fname = Girl->unquote($f->basename);
                 +{ 
                     text => "$fname",
                     leaf => \1,

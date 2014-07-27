@@ -50,16 +50,16 @@ sub items {
         
     my @items;
     if ( $type eq 'demote' ) {
-        @items = map { Girl->unquote($_) } $git->exec( qw/diff --name-status/, $tag_sha, $rev_sha . "~1" );
+        @items = $git->exec( qw/diff --name-status/, $tag_sha, $rev_sha . "~1" );
         $diff_shas = [$tag_sha, $rev_sha . "~1"];
     } else {
         if ( $rev_sha ne $tag_sha ) {
             Util->_debug( "BL and REV distinct" );
-            @items = map { Girl->unquote($_) } $git->exec( qw/diff --name-status/, $tag_sha, $rev_sha );
+            @items = $git->exec( qw/diff --name-status/, $tag_sha, $rev_sha );
             $diff_shas = [ $tag_sha, $rev_sha ];
         } else {
             Util->_debug( "BL and REV equal" );
-            @items =map { Girl->unquote($_) } $git->exec( qw/ls-tree -r --name-status/, $tag_sha );
+            @items = $git->exec( qw/ls-tree -r --name-status/, $tag_sha );
             @items = map { my $item = 'M   ' . $_; } @items;
             $diff_shas = [ $tag_sha ];
         }
@@ -67,7 +67,7 @@ sub items {
     my %repo_items = $self->repo_items( $diff_shas );
     @items = map {
         my ( $status, $path ) = /^(.*?)\s+(.*)$/;
-        my $info = $repo_items{ $path } // _fail _loc "Could not find diff-tree data for item '%1'", $path; #{ status=>$status };
+        my $info = $repo_items{ Girl->unquote($path) } // _fail _loc "Could not find diff-tree data for item '%1'", $path; #{ status=>$status };
         my $fullpath = Util->_dir( "/", $path );
         BaselinerX::CI::GitItem->new(
             repo    => $repo,
@@ -97,7 +97,7 @@ sub repo_items {
             $blob=undef;
             $mask=undef;
         }
-        $repo_items{ $path2 // $path1 } = { mask=>$mask, blob=>$blob, status=>$status, old_path=>$path2?$path1:undef };
+        $repo_items{ Girl->unquote($path2) // Girl->unquote($path1) } = { mask=>$mask, blob=>$blob, status=>$status, old_path=>$path2?$path1:undef };
     }
     # now created 'D' items for renamed ones
     for my $path ( keys %repo_items ) {

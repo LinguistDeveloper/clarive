@@ -3,6 +3,8 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use Try::Tiny;
+require Girl;
+
 BEGIN { extends 'Catalyst::Controller' };
 
 __PACKAGE__->config->{namespace} = 'lifecycle';
@@ -787,7 +789,7 @@ sub repo_data : Local {
             my $f = join ' ',@f;
             my $file = _file($f);
             $sha = substr( $sha, 0, 8 );
-            my $basename = $file->basename;
+            my $basename = Girl->unquote($file->basename);
             $cnt-- > 0
                 ? +{
                     path    => "$f",
