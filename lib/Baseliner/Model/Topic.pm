@@ -1482,9 +1482,10 @@ sub save_data {
 
         my @imgs;
         
-        # XXX this should be a custom field (look in save_doc)
+        # XXX this should be a custom field someday (look in save_doc)
         $data->{description} =
-            $self->deal_with_images( {topic_mid => $topic_mid, field => $data->{description}} );
+            $self->deal_with_images( {topic_mid => $topic_mid, field => $data->{description}} )
+               if exists $data->{description}; # otherwise updates without description will overwrite this
 
         for ( @std_fields ) {
             if ( exists $data->{$_->{name}} ) {
