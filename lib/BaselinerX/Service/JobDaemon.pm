@@ -86,7 +86,7 @@ sub job_daemon {
         for my $roll ( @query_roll ) {
             my @docs = ci->job->find( $roll )->all;
             JOB: foreach my $job_doc ( @docs ) {
-                local Baseliner::_no_cache = 1;  # make sure we get a fresh CI
+                local $Baseliner::_no_cache = 1;  # make sure we get a fresh CI
                 my $job = ci->new( $job_doc->{mid} );  # reload job here, so that old jobs in the roll get refreshed
                 if( $job->status ne $job_doc->{status} ) {
                     _log _loc( "Skipping job %1 due to status discrepancy: %2 != %3", $job->name, $job->status, $job_doc->{status} );
@@ -99,9 +99,9 @@ sub job_daemon {
                     next JOB;
                 }
                 _log _loc( "Starting job %1 for step %2", $job->name, $job->step );
-                $job->status('RUNNING');
-                $job->pid( $$ );  # to avoid killed
-                $job->save;
+                # set job pid to 0 to avoid checking until it sets it's own pid
+                $job->update( status=>'RUNNING', pid=>0 );
+                
                 # get proc mode from job bl
                 my $mode = $^O eq 'Win32'
                     ? 'spawn'
@@ -111,9 +111,7 @@ sub job_daemon {
                 $loghome ||= $ENV{BASELINER_HOME} . './logs';
                 _mkpath $loghome;
                 my $logfile = File::Spec->catfile( $ENV{BASELINER_LOGHOME} || $ENV{BASELINER_HOME} || '.', $job->name . '.log' );
-                # set job pid to 0 to avoid checking until it sets it's own pid
-                $job->pid( $$ );
-                $job->save; 
+                
                 # launch the job proc
                 if( $mode eq 'spawn' ) {
                     _log "Spawning job (mode=$mode)";
