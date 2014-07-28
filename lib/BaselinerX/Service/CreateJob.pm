@@ -24,7 +24,6 @@ sub run_create {
 
     try {
         # create job CI
-        my $job;
         my $job_type = $config->{job_type} || 'static';
         my $job_data = {
             bl         => $bl,
