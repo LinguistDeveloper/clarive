@@ -618,7 +618,7 @@ sub view : Local {
             $c->stash->{template} = '/comp/topic/topic_main.js';
         }
     } catch {
-        $c->stash->{json} = { success=>\0, msg=>_loc("Problem found opening topic %1.  Perhaps it's been removed from the system.  The error message is: %2", $topic_mid, shift()) };
+        $c->stash->{json} = { success=>\0, msg=>_loc("Problem found opening topic %1. The error message is: %2", $topic_mid, shift()) };
         $c->forward('View::JSON');
     };
 }
