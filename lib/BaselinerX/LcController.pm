@@ -627,10 +627,12 @@ sub promotes_and_demotes {
                my $k = join',',$$_{id_status_from},$$_{id_status_to} ;
                my $flag = exists $seen{$k};
                $seen{$k} = 1;
+               !$flag;
+            } 
+            grep {
                $$_{id_role} ~~ @user_roles
                && $$_{id_status_to} ~~ @user_workflow
                && $$_{id_status_from} == $id_status_from_lc
-               && !$flag;
             } 
             grep {
                $$_{job_type} eq $dir  # static,promote,demote
