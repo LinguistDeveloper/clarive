@@ -634,8 +634,7 @@ sub build_job_contents {
     $jc->{list_releases} //= [ map { $_->topic_name } Util->_array( $self->releases ) ];
     $jc->{list_apps} //= [ map { $_->name } Util->_array( $self->projects ) ];
     $jc->{list_natures} //= [ map { $_->name } Util->_array( $self->natures ) ];
-    $self->job_contents( $jc );
-    $self->save if $saving;
+    $self->update( job_contents=>$jc ) if $saving;
     return $jc; 
 }
 

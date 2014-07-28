@@ -190,12 +190,6 @@ sub monitor {
         my @changesets = (); #_array $job_items{ $job->{id} };
         my $job_contents = $job->{job_contents} // {};
         
-        # list_contents, list_apps are cache vars
-        if( !keys %$job_contents ) {
-            if ( my $job_ci = try { ci->new( $job->{mid} ) } catch { '' } ) {   # if -- support legacy jobs without cis?
-                $job_contents = $job_ci->build_job_contents( 1 );  # also saves contents into doc
-            }
-        }
         my $last_log_message = $job->{last_log_message};
 
         # Scheduled, Today, Yesterday, Weekdays 1..7, 1..4 week ago, Last Month, Older
