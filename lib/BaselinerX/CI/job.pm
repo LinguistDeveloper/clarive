@@ -294,18 +294,57 @@ sub _create {
                     $cs->topic_name, $active_job->name, $self->bl )
             }
         }
-        push @cs_list, $cs->topic_name;
+
+        if($cs->is_changeset){
+            my $topic_ci = ci->new($cs->{mid});
+
+            my @projetcs = $topic_ci->projects;
+            my $logers = "\n\t Proyectos:\n";
+            for my $r (@projetcs){
+              $logers .=  "\t\t " . $r->{name} ."\n";
+            }
+            if ((scalar @projetcs) == 0) {
+                $logers .= "\t\t No hay\n";
+            }
+
+            my @rev = $topic_ci->revisions;
+            $logers .= "\t Revisiones:\n";
+            for my $r (@rev){
+              $logers .=  "\t\t " . $r->{name} . ". Repositorio: " . $r->{repo}->{name} ."\n";
+            }
+            if ((scalar @rev) == 0) {
+                $logers .= "\t\t No hay\n";
+            }
+
+
+            my @files = $topic_ci->files;
+            $logers .= "\t Ficheros:\n";
+            for my $r (@files){
+              $logers .=  "\t\t " . $r->{filename} . "\n";
+            }
+            if ((scalar @files) == 0) {
+                $logers .= "\t\t No hay\n";
+            }
+
+            push @cs_list, $cs->topic_name . $logers . "\n";
+        } else {
+            push @cs_list, $cs->topic_name ."\n";
+        }
     }
     _fail _loc('Missing job contents') unless @cs_list > 0;
 
     # log job items
-    if( @cs_list > 10 ) {
-        my $msg = _loc('Job contents: %1 total items', scalar(@cs_list) );
-        $log->info( $msg, data=>'==>'.join("\n==>", @cs_list) );
-    } else {
-        $log->info(_loc('Job contents: %1', join("\n", map { "<li><b>$_</b></li>" } @cs_list)) );
-    }
-    
+    # if( @cs_list > 10 ) {
+    #     my $msg = _loc('Job contents: %1 total items', scalar(@cs_list) );
+    #     $log->info( $msg, data=>'==>'.join("\n==>", @cs_list) );
+    # } else {
+    #     $log->info(_loc('Job contents: %1', join("\n", map { "<li><b>$_</b></li>" } @cs_list)) );
+    # }
+    #Añadimos un listado de los ficheros que contiene
+
+    my $msg = _loc('Job contents: %1 total items', scalar(@cs_list) );
+    $log->info( $msg , data=>"Entorno: " . $bl ."\n\n". '==>'.join("\n==>", @cs_list) );
+
     # add attributes to job ci
     $self->name( $name );
     $self->status( 'IN-EDIT' );
