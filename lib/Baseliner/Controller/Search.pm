@@ -12,8 +12,8 @@ register 'config.search' => {
         { id=>'block_lucy', text=>'Block the use of Lucy in searches', default=>1 },
         { id=>'provider_filter', text=>'Regex to filter provider packages', default=>'' },
         { id=>'lucy_boolop', text=>'AND or OR default', default=>'OR' },
-        { id=>'max_results', text=>'Number of results to return to user', default=>10_000 },
-        { id=>'max_results_provider', text=>'Limit sent to provider', default=>10_000 },
+        { id=>'max_results', text=>'Number of results to return to user', default=>100 },  # used by lucy only
+        { id=>'max_results_provider', text=>'Limit sent to provider', default=>200 },  # when no lucy, this is what goes to the user
         { id=>'max_excerpt_size', text=>'Max length of excerpt string', default=>120 },
         { id=>'max_excerpt_tokens', text=>'Max number of highlighted tokens excerpts', default=>5 },
     ]
