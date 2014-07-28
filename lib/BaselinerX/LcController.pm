@@ -562,7 +562,7 @@ sub changeset : Local {
                 topic      => $rel,
                 bl_state   => $bl,
                 state_name => $state_name,
-                id_status  => $p->{id_status},
+                id_status_from  => $p->{id_status},
                 id_project => $id_project,
                 categories => \%categories,
             );
