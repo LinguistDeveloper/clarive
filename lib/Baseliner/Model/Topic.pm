@@ -189,34 +189,37 @@ register 'registor.action.topic_category_fields' => {
         my @categories = mdb->category->find->sort({ name=>1 })->fields({ id=>1, name=>1 })->all;
         
         my %actions_category_fields;
+        my %statuses = ci->status->statuses;
+        my @statuses2 = map{ $$_{name_id}=_name_to_id($$_{name}); $_ } values %statuses;
         foreach my $category (@categories){
             my $meta = Baseliner::Model::Topic->get_meta( undef, $category->{id} );    
             my $cat_statuses = mdb->category->find_one({ id=>''.$category->{id} })->{statuses};
 
-            my @statuses = ci->status->find({ id_status=>mdb->in($cat_statuses) })->all;
-            
             my $msg_edit = _loc('Can edit the field');
             my $msg_view = _loc('Can not view the field');
             my $msg_in_category = _loc('in the category');
             my $msg_for_status = _loc('for the status');
+            my $cat_to_id = _name_to_id( $category->{name} );
             
             my $id_action;
             my $description;
             
             for my $field (_array $meta){
+                my $field_to_id = _name_to_id($field->{name_field});
                 if ($field->{fields}) {
                 	my @fields_form = _array $field->{fields};
                     
                     for my $field_form (@fields_form){
-                        $id_action = 'action.topicsfield.' . _name_to_id($category->{name}) . '.' 
-                                . _name_to_id($field->{name_field}) . '.' . _name_to_id($field_form->{id_field}) . '.read';
+                        my $field_form_to_id = _name_to_id($field_form->{id_field});
+                        $id_action = 'action.topicsfield.' . $cat_to_id . '.' 
+                                . $field_to_id . '.' . $field_form_to_id . '.read';
                         $description = $msg_view . ' ' . lc $field_form->{id_field} . ' ' . $msg_in_category . ' ' . lc $category->{name};
                         
                         $actions_category_fields{$id_action} = { id => $id_action, name => $description };
                         
-                        for my $status (@statuses){
-                            $id_action = 'action.topicsfield.' . _name_to_id($category->{name}) . '.' 
-                                    . _name_to_id($field->{name_field}) . '.' . _name_to_id($field_form->{id_field}) . '.' . _name_to_id($status->{name}) . '.write';
+                        for my $status (@statuses2){
+                            $id_action = 'action.topicsfield.' . $cat_to_id . '.' 
+                                    . $field_to_id . '.' . $field_form_to_id . '.' . $status->{name_id} . '.write';
                             $description = $msg_edit . ' ' . lc $field_form->{id_field} . ' ' . $msg_in_category . ' ' . lc $category->{name} . ' ' . $msg_for_status . ' ' . lc $status->{name};
                             
                             $actions_category_fields{$id_action} = { id => $id_action, name => $description };
@@ -226,18 +229,18 @@ register 'registor.action.topic_category_fields' => {
                 }
                 else{
 
-                    $id_action = 'action.topicsfield.' . _name_to_id($category->{name}) . '.' . _name_to_id($field->{name_field}) . '.read';
+                    $id_action = 'action.topicsfield.' . $cat_to_id . '.' . $field_to_id . '.read';
                     $description = $msg_view . ' ' . lc $field->{name_field} . ' ' . $msg_in_category . ' ' . lc $category->{name};
                     
                     $actions_category_fields{$id_action} = { id => $id_action, name => $description };
 
-                    for my $status (@statuses){
-                        $id_action = 'action.topicsfield.' . _name_to_id($category->{name}) . '.' . _name_to_id($field->{name_field}) . '.' . _name_to_id($status->{name}) . '.write';
+                    for my $status (@statuses2){
+                        $id_action = 'action.topicsfield.' . $cat_to_id . '.' . $field_to_id . '.' . $status->{name_id} . '.write';
                         $description = $msg_edit . ' ' . lc $field->{name_field} . ' ' . $msg_in_category . ' ' . lc $category->{name} . ' ' . $msg_for_status . ' ' . lc $status->{name};
                         
                         $actions_category_fields{$id_action} = { id => $id_action, name => $description };
 
-                        $id_action = 'action.topicsfield.' . _name_to_id($category->{name}) . '.' . _name_to_id($field->{name_field}) . '.' . _name_to_id($status->{name}) . '.read';
+                        $id_action = 'action.topicsfield.' . $cat_to_id . '.' . $field_to_id . '.' . $status->{name_id} . '.read';
                         $description = $msg_view . ' ' . lc $field->{name_field} . ' ' . $msg_in_category . ' ' . lc $category->{name} . ' ' . $msg_for_status . ' ' . lc $status->{name};
                         
                         $actions_category_fields{$id_action} = { id => $id_action, name => $description };
