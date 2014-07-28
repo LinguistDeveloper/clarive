@@ -190,10 +190,13 @@ register 'registor.action.topic_category_fields' => {
         
         my %actions_category_fields;
         my %statuses = ci->status->statuses;
-        my @statuses2 = map{ $$_{name_id}=_name_to_id($$_{name}); $_ } values %statuses;
+        for ( values %statuses ) {
+            $$_{name_id} = _name_to_id($$_{name});
+        }
         foreach my $category (@categories){
             my $meta = Baseliner::Model::Topic->get_meta( undef, $category->{id} );    
             my $cat_statuses = mdb->category->find_one({ id=>''.$category->{id} })->{statuses};
+            my @statuses2 = @statuses{ _array($cat_statuses) };
 
             my $msg_edit = _loc('Can edit the field');
             my $msg_view = _loc('Can not view the field');

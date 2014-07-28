@@ -1447,7 +1447,6 @@ sub file_tree : Local {
 sub list_users : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
-    my $row;
     my (@rows, $users_friends);
     my $username = $c->username;
 
