@@ -86,11 +86,12 @@ sub job_daemon {
         for my $roll ( @query_roll ) {
             my @docs = ci->job->find( $roll )->all;
             JOB: foreach my $job_doc ( @docs ) {
+                local Baseliner::_no_cache = 1;  # make sure we get a fresh CI
                 my $job = ci->new( $job_doc->{mid} );  # reload job here, so that old jobs in the roll get refreshed
                 if( $job->status ne $job_doc->{status} ) {
                     _log _loc( "Skipping job %1 due to status discrepancy: %2 != %3", $job->name, $job->status, $job_doc->{status} );
                     if( $discrepancies{ $job->mid } > 10 ) {  
-                        $job->save; # fixes the discrepancy
+                        #$job->save; # fixes the discrepancy
                         delete $discrepancies{ $job->mid };
                     } else {
                         $discrepancies{ $job->mid }++;
