@@ -9,6 +9,7 @@
             {  name: 'id' },
             {  name: 'role' },
             {  name: 'actions' },
+            {  name: 'invalid_actions' },
             //{  name: 'users' },
             {  name: 'description' },
             {  name: 'mailbox' }
@@ -20,8 +21,6 @@
     }
     
     //////////////// Role Create / Edit Window
-
-    <& /comp/search_field.mas &>
 
     var render_actions = function (val){
         if( val == null || val == undefined ) return '';
@@ -35,7 +34,17 @@
         }
         return str;
     }
-
+    
+    var render_options = function (val,m,rd,inx){
+        var kactions = rd.data.actions.length;
+        var kiactions = rd.data.invalid_actions.length;
+        return '<div id="boot" style="background: transparent">' + String.format('<button class="btn btn-mini" type="button" onclick="javascript:Ext.getCmp(\'{0}\').list_actions({1})">{2}</button>', grid.id, inx, _('Actions (%1)', kactions ) )
+            + ( kiactions == 0 ? '' : 
+                String.format(' <button class="btn btn-mini btn-danger" type="button" onclick="javascript:Ext.getCmp(\'{0}\').list_actions({1},true)" style="color: #">{2}</button>', grid.id,inx, _('Invalid (%1)', kiactions) ) 
+            )
+            + '</div>';
+        ;
+    }
 
         var ps = 100; //page_size
         store.load({params:{start:0 , limit: ps}}); 
@@ -49,16 +58,15 @@
             autoScroll: true,
             autoWidth: true,
             store: store,
-            viewConfig: [{
-                    forceFit: true
-            }],
+            viewConfig: { forceFit: true },
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
-            loadMask:'true',
+            loadMask: _('Loading'),
             columns: [
-                { header: _('Role'), width: 200, dataIndex: 'role', sortable: true },	
+                { header: _('Role'), width: 200, dataIndex: 'role', sortable: true, renderer: function(v){ return '<b>'+v+'</b>'} },	
                 { header: _('Description'), width: 200, dataIndex: 'description', sortable: true },	
                 { header: _('Mailbox'), width: 200, dataIndex: 'mailbox', sortable: true, renderer: Baseliner.escape_lt_gt  },
-                { header: _('Actions'), width: 400, dataIndex: 'actions', sortable: true, renderer: render_actions } 
+                { header: _('Options'), width: 200, dataIndex: 'role', sortable: true, renderer: render_options },
+                { header: _('Actions'), width: 400, dataIndex: 'actions', sortable: true, hidden: true, renderer: render_actions } 
               //, { header: _('Members'), width: 150, dataIndex: 'users', sortable: true }	
             ],
             autoSizeColumns: true,
@@ -71,7 +79,7 @@
                                 emptyMsg: "No hay registros disponibles"
                         }),        
             tbar: [ _('Search') + ': ', ' ',
-                new Ext.app.SearchField({
+                new Baseliner.SearchField({
                     store: store,
                     params: {start: 0, limit: ps},
                     emptyText: _('<Enter your search string>')
@@ -144,6 +152,29 @@
         });
 
     grid.getView().forceFit = true;
+    
+    grid.list_actions = function(ix,invalid){
+        var row = grid.store.getAt(ix);
+        var actions = [];
+        Ext.each( (invalid ? row.data.invalid_actions : row.data.actions),function(r){
+            actions.push([ (r.key||r.name), r.name ]);
+        });
+        var st = new Ext.data.SimpleStore({ fields: ['key','name'], data: actions });
+        var agrid = new Ext.grid.GridPanel({ 
+            store: st,
+            stripeRows: true,
+            autoScroll: true,
+            viewConfig: { forceFit: true },
+            loadMask: true,
+            columns: [
+               { header: _('Name'), width: 100, dataIndex: 'name', sortable: true  },
+               { header: _('Key'), width: 100, dataIndex: 'key', sortable: true  }
+            ]
+        });
+        var wt = invalid ? _('Invalid actions for role %1', row.data.role) : _('Actions for role %1', row.data.role);
+        var win = new Baseliner.Window({ title: wt, height: 400, width: 800, layout:'fit', items:[agrid] });
+        win.show();
+    };
 
     grid.on("rowdblclick", function(grid, rowIndex, e ) {
             var row = grid.getStore().getAt(rowIndex);

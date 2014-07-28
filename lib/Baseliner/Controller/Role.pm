@@ -2,7 +2,6 @@ package Baseliner::Controller::Role;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Baseliner::Core::Baseline;
-use JSON::XS;
 use Try::Tiny;
 use utf8;
 use Encode;
@@ -60,6 +59,7 @@ sub json : Local {
     while( my $r = $rs->next ) {
         my $rs_actions = $r->{actions};
         my @actions;
+        my @invalid_actions;
         for my $act (@$rs_actions){
             try {
                 my $action = $c->model('Registry')->get( $act->{action} );
@@ -67,12 +67,12 @@ sub json : Local {
                 $str->{bl} = $act->{bl} if $act->{bl} ne '*';
                 push @actions, $str;
             } catch {
-                push @actions, { name=>$act->{action}, key=>'' };
+                push @invalid_actions, { name=>$act->{action}, key=>'' };
             };
         }
         my $actions_txt = \@actions;
         next if $query
-            && !query_array($query, $r->{role}, $r->{description}, $r->{mailbox}, map { values %$_ } @actions );
+            && !query_array($query, $r->{role}, $r->{description}, $r->{mailbox}, map { values %$_ } @actions, @invalid_actions );
         
         # if the query has a dot, filter actions
         if( defined $query && $query =~ /\./ ) {
@@ -84,6 +84,7 @@ sub json : Local {
             id          => $r->{id},
             role        => $r->{role},
             actions     => $actions_txt,
+            invalid_actions => \@invalid_actions,
             description => $r->{description},
             mailbox => $r->{mailbox}
           }

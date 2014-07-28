@@ -5475,6 +5475,18 @@ msgstr "Ejecutando el comando: %1"
 msgid "Error running command %1"
 msgstr "Error ejecutando el comando %1"
 
+msgid "Actions (%1)"
+msgstr "Acciones (%1)"
+
+msgid "Invalid (%1)"
+msgstr "Inválidas (%1)"
+
+msgid "Actions for role %1"
+msgstr "Acciones para el rol %1"
+
+msgid "Invalid actions for role %1"
+msgstr "Acciones inválidas para el rol %1"
+
 msgid "Role %1 created."
 msgstr "Rol %1 creado."
 
