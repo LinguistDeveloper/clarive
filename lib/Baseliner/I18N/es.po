@@ -513,6 +513,12 @@ msgstr "Obsoleto"
 msgid "deprecated"
 msgstr "obsoleto"
 
+msgid "Connection lost?"
+msgstr "¿Fallo de conexión?"
+
+msgid "Server communication error"
+msgstr "Error de communicación con el servidor"
+
 msgid "Server communication failure. Check your connection."
 msgstr "Error de communicación con el servidor. Compruebe su conexión."
 
