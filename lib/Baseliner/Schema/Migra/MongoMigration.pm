@@ -986,7 +986,7 @@ sub topic {
     return if !$row;
     my $doc = { %$row, %$r };
     $doc->{category} = mdb->category->find_one( { id => $r->{id_category} } );
-    $doc->{category_status} = mdb->status->find_one( { id => $r->{id_category_status} } );
+    $doc->{category_status} = ci->status->find_one( { id => $r->{id_category_status} } );
     $doc->{calevent} = '';
 
     #$doc->{created_on} = Class::Date->new( $doc->{created_on_epoch} ).""; # not needed, dates are correct comming out of oraclej
