@@ -2921,7 +2921,7 @@ sub get_topics_mdb{
 sub get_fields_topic{
     my ($self) = @_;
 
-    my @fields = map {$_} keys mdb->topic->find_one(); #TODO: Improve to get all fields from topic collection. 
+    my @fields = map {$_} keys mdb->topic->find_one({},{ _txt=>0 }); #TODO: Improve to get all fields from topic collection. 
 
     return \@fields;
 }
