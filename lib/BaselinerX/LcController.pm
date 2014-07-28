@@ -501,22 +501,21 @@ sub changeset : Local {
     my @changes = mdb->joins(
                 master_rel=>{ rel_type=>'topic_project', to_mid=>"$id_project" },
                 from_mid=>mid=>topic=>{ is_changeset=>'1', 'category_status.id'=> "$p->{id_status}" });
+            
+    # find releases for each changesets
+    my @topic_topic = mdb->master_rel->find({ to_mid=>mdb->in(map{$$_{mid}}@changes), rel_type=>'topic_topic' })->all;
+    my %rels = map{ $$_{mid}=>$_ }mdb->topic->find({ mid=>mdb->in(map{$$_{from_mid}}@topic_topic), is_release=>mdb->true })->all;
     my %releases;
-    map { push @{ $releases{ $$_{to_mid} } } => $_ }
-        mdb->joins({ merge=>'flat' }, 
-            master_rel=>{ to_mid=>mdb->in(map{ $$_{mid} } @changes), rel_type=>'topic_topic' }, 
-            from_mid=>mid=>
-            topic=>{ is_release=>'1' } );
-    
+    push @{ $releases{ $$_{to_mid} } } => $rels{$$_{from_mid}} for @topic_topic;
+        
     $bind_releases = ci->status->find_one({ id_status=>''. $p->{id_status} })->{bind_releases};
-    
     my %categories = mdb->category->find_hash_one( id=>{},{ workflow=>0, fields=>0, statuses=>0, _id=>0 });
 
     my @rels;
     for my $topic (@changes) {
-        my @releases = _array( $releases{ $topic->{mid} } );
-        push @rels, @releases;  # slow! join me!
-        next if $bind_releases && @releases;
+        my @releases_for_changeset = _array( $releases{ $topic->{mid} } );
+        push @rels, @releases_for_changeset;  # slow! join me!
+        next if $bind_releases && @releases_for_changeset;
         # get the menus for the changeset
         my ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu(
             $c,
