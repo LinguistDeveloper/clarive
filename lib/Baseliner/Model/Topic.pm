@@ -1894,7 +1894,6 @@ sub update_rels {
             mdb->topic->update({ mid=>"$mid" }, { '$set'=>\%d });
         }
     }
-    $self->update_txt( @mids_or_docs );
 }
 
 # update categories in mongo

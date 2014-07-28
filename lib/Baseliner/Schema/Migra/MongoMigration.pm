@@ -614,7 +614,7 @@ sub topic_rels {
     my ($k,$tot)=(0,scalar(@alltopics));
     my @group;
     for my $mid ( @alltopics ) {
-        if( @group >= 100 ) {
+        if( @group >= 50 ) {
             Baseliner::Model::Topic->update_rels( @group );
             _debug "Updated $k/$tot";
             @group = ();
