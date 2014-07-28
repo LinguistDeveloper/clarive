@@ -277,7 +277,7 @@ sub search_provider_type { 'Job' };
 sub search_query {
     my ($self, %p ) = @_;
     
-    $p{limit} //= 1000;
+    $p{limit} //= 100;
     $p{query_id} = -1;
     my ($cnt, @rows ) = Baseliner->model('Jobs')->monitor(\%p);
     return map {
