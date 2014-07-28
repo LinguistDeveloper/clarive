@@ -95,7 +95,7 @@ sub infodetail : Local {
     my @roles;
     if($user->{project_security}){
         @roles = keys $user->{project_security};
-        @roles = map {$_+0} @roles;
+        @roles = map {$_} @roles;
     }
     my $roles_from_user = 
         mdb->role->find( 
@@ -203,7 +203,7 @@ sub infoactions : Local {
     my $data;
     
     if ($id_role) {
-        my $rs_actions = mdb->role->find({id=>$id_role+0})->next->{actions};
+        my $rs_actions = mdb->role->find({id=>$id_role})->next->{actions};
         foreach my $rs (_array $rs_actions) {
             my $desc = $rs->{action};
             eval { # it may fail for keys that are not in the registry
@@ -214,7 +214,7 @@ sub infoactions : Local {
         }
     }
     else{
-        my @user_roles = map{$_ + 0} keys ci->user->find({username=>$username})->next->{project_security};
+        my @user_roles = map{$_} keys ci->user->find({username=>$username})->next->{project_security};
         my @roles = mdb->role->find({id=>{'$in'=>\@user_roles}})->all;
         my @res;
         foreach my $role (@roles){
