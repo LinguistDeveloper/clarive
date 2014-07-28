@@ -346,7 +346,7 @@ sub user_projects_ids_with_collection {
             }
         }
     }
-    return \%ret;
+    return $with_role ? \%ret : values %ret;
 }
 
 sub user_can_topic_by_project {
