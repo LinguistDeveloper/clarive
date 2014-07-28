@@ -85,7 +85,9 @@ sub order_matches {
     my $max_excerpt_tokens = $config->{max_excerpt_tokens} // 5;
     for my $doc ( @results ) {
         my @found;
-        my $idexact  = $$doc{mid} eq $query;
+        my $idexact  = $$doc{mid} eq $query if $$doc{mid};
+        $idexact //= 0;
+        $$doc{mid} //= 0;
         my $idmatch  = length join '',( "$$doc{mid}" =~ /($query_clean)/gsi );
         my $tmatch  = length join '', ( "$$doc{title}" =~ /($query_clean)/gsi );
         for my $doc_txt ( $$doc{info}, $$doc{text} ) {
@@ -108,6 +110,7 @@ sub order_matches {
         push $docs, $doc;  # we don't filter results
     }
     #my $res = { results => , query => $query, matches => @$docs };
+    # TODO mid here may not come and maybe a string, don't order on it
     [ sort { 
         $$a{matches} == $$b{matches} ? $$a{mid} <=> $$b{mid} : $$b{matches} <=> $$a{matches} 
         } @$docs ];
