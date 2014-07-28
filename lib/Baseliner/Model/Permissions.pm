@@ -142,6 +142,7 @@ sub user_has_action {
         return @return;
     } else {
         push my @bl, _array $p{bl}, '*';
+        return 1 if $username eq 'root';  # root can surrogate always
         return 1 if $self->is_root( $username ) && $action ne 'action.surrogate';
         return scalar grep {$action eq $_ } Baseliner->model('Users')->get_actions_from_user($username, @bl);      
     }
