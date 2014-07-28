@@ -21,7 +21,7 @@ sub role_detail_json : Local {
     my $id = $p->{id};
     my @actions;
     if( defined $id ) {
-        my $r = mdb->role->find({ id=>0+$id })->next;
+        my $r = mdb->role->find({ id=>"$id" })->next;
         for my $user_action (@{$r->{actions}}){
             eval { # it may fail for keys that are not in the registry
                 my $action = $c->model('Registry')->get( $user_action->{action} );
@@ -113,10 +113,8 @@ sub action_tree : Local {
     my @actions;
 
     if ( $cached ) {
-        _log "LO ENCUENTRO";
         @actions = _array $cached;
     } else {
-        _log "NO LO ENCUENTRO";
         @actions = $c->model('Actions')->list;
         cache->set( "roles:actions:", \@actions);        
     }
@@ -184,12 +182,12 @@ sub update : Local {
     eval {
         my $role_actions = decode_json(encode('UTF-8', $p->{role_actions}));
         $row = {  role=>$p->{name}, description=>$p->{description}, mailbox=>$p->{mailbox}, actions=>$role_actions };
-        $row->{id} = $p->{id}+0 if $p->{id} >= 0;
+        $row->{id} = "$p->{id}" if $p->{id} >= 0;
         if ($p->{id} < 0){
-            $row->{id} = mdb->seq('role')+0;
+            $row->{id} = ''.mdb->seq('role');
             mdb->role->insert($row);
         }else{
-            mdb->role->update( { id=>$row->{id}+0 }, $row );
+            mdb->role->update( { id=>"$row->{id}" }, $row );
         }
         cache->remove(":role:actions:$p->{id}:") if $p->{id};
         cache->remove(':role:ids:');
@@ -207,7 +205,7 @@ sub delete : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     eval {
-        mdb->role->remove({ id=>$p->{id_role}+0 });
+        mdb->role->remove({ id=>"$p->{id_role}" });
     };
     if( $@ ) {
         warn $@;
@@ -233,7 +231,7 @@ sub duplicate : Local {
             my $dashboards = mdb->dashboard->find()->all;
             foreach my $dashboard ($dashboards){
                 my $roles = $dashboard->{role};
-                if (grep { 0+$_==$id_duplicated_role } @$roles ){
+                if (grep { $_==$id_duplicated_role } @$roles ){
                     push $roles, $r->{id};
                     mdb->dashboard->update({ _id=>$dashboard->{_id} }, $dashboard);        
                 }    
@@ -279,7 +277,7 @@ sub roleusers : Local {
     my $p = $c->req->params;
     try {
         my @data;
-        my $role_id = $p->{id_role}+0;
+        my $role_id = ''.$p->{id_role};
         my @role_users = ci->user->find({"project_security.$role_id"=>{'$exists'=>1}})->all;
         foreach my $user (@role_users){
             my @project_types = keys $user->{project_security}->{$role_id};
@@ -307,7 +305,7 @@ sub roleusers : Local {
 sub roleprojects : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    my $role_id = $p->{id_role}+0;
+    my $role_id = ''.$p->{id_role};
     try {
         my @role_users = ci->user->find({"project_security.$role_id"=>{'$exists'=>1}})->all;
         my %projects_users;
