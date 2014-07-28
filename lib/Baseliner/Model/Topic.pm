@@ -2529,7 +2529,7 @@ sub search_provider_name { 'Topics' };
 sub search_provider_type { 'Topic' };
 sub search_query {
     my ($self, %p ) = @_;
-    my ($cnt, @rows ) =  $self->topics_for_user({ username=>$p{username}, limit=>$p{limit} // 1000, query=>$p{query}, clear_filter => 1});
+    my ($cnt, @rows ) =  $self->topics_for_user({ username=>$p{username}, limit=>$p{limit} // 1000, query=>$p{query}, });
     my @mids = map { $_->{topic_mid} } @rows;
     #my %descs = mdb->topic->find_hashed(mid => { mid=>mdb->in(@mids) },{ description=>1, mid=>1 })->all;
     return map {
