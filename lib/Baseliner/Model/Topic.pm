@@ -1952,7 +1952,7 @@ sub update_category_status {
         status_new           => $$category_status{id_status},
         category_status_seq  => $$category_status{seq},
         category_status_type => $$category_status{type},
-        category_status_name => $$category_status{type},
+        category_status_name => $$category_status{name},
         name_status          => $$category_status{name},
         modified_by          => $username,
         modified_on          => $modified_on,
