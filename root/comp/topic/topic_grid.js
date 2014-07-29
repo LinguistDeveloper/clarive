@@ -753,6 +753,22 @@
         });
         return arr.join('\n');
     };
+
+    var render_file = function(value,metadata,rec,rowIndex,colIndex,store) {
+        if( !value ) return '';
+        var arr=[];
+        
+        // if ( !rec.json[this.dataIndex] ) {
+        //     var str = this.dataIndex;
+        //     var res = str.replace('_' +  this.alias,"");
+        //     value = rec.json[res];
+        // };      
+
+        Ext.each( value, function(v){
+            arr.push( typeof v=='object' ? v.moniker ? v.moniker : v.name : v );
+        });
+        return arr.join('<br>');
+    };
     
     // calendar meta_type, a little table precompiled
     var html_cal = function(){/*
@@ -1175,7 +1191,8 @@
         project : { sortable: true, width: 100, renderer: render_ci  },
         topic : { sortable: true, width: 100, renderer: render_topic_rel  },
         release : { sortable: true, width: 100, renderer: render_topic_rel  },
-        user : { sortable: true, width: 100, renderer: render_user  }
+        user : { sortable: true, width: 100, renderer: render_user  },
+        file: { sortable: false, width: 150, renderer: render_file}
     };
 
     if( fields ) {

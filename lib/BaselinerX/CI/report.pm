@@ -1038,7 +1038,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
             #       with query id and query ts, then sort
             #_error "MT===$mt, K==$k";
 
-            if( $mt =~ /ci|project|revision|user/ ) {
+            if( $mt =~ /ci|project|revision|user|file/ ) {
                 $row{'_'.$k} = $v;
 				$row{$k} = $scope_cis{$v} 
 					// do{ 
