@@ -50,24 +50,29 @@ sub json : Local {
     $start ||= 0;
     $limit ||= 60;
     my $rs = mdb->role->find();
+    $cnt = $rs->count();
     $rs->skip($start);
     $rs->limit($limit);
     $rs->sort($sort ? { $sort => $dir } : { role => 1 });
-    $cnt = mdb->role->count();
 
     my @rows;
+    my $reg = $c->registry;
     while( my $r = $rs->next ) {
         my $rs_actions = $r->{actions};
         my @actions;
         my @invalid_actions;
         for my $act (@$rs_actions){
+            my $key = $act->{action};
+            my $bl = $act->{bl};
             try {
-                my $action = $c->model('Registry')->get( $act->{action} );
-                my $str = { name=>$action->name,  key=>$act->{action} };
-                $str->{bl} = $act->{bl} if $act->{bl} ne '*';
+                my $action = $reg->get( $key );
+                my $str = { name=>$action->name,  key=>$key };
+                $str->{bl} = $bl if $bl ne '*';
                 push @actions, $str;
             } catch {
-                push @invalid_actions, { name=>$act->{action}, key=>'' };
+                #my $err = shift;
+                #_warn "Invalid Action in Role $$r{id}: $key: $err";
+                push @invalid_actions, { name=>$key, key=>'' };
             };
         }
         my $actions_txt = \@actions;
@@ -90,6 +95,18 @@ sub json : Local {
           }
     }
     $c->stash->{json} = { data => \@rows, totalCount => $cnt };     
+    $c->forward('View::JSON');
+}
+
+sub cleanup : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    my $id = $p->{id} || _fail 'Missing role id'; 
+    my $actions = $p->{actions} || _fail 'Missing actions'; 
+    my @keys = map { $$_{key} || $$_{name} } _array($actions);
+    _debug( \@keys );
+    mdb->role->update({ id=>"$id" },{ '$pull'=>{ actions=>{ action=>mdb->in(@keys) } } });
+    $c->stash->{json} = { success=>\1, msg=>_loc('Deleted') };
     $c->forward('View::JSON');
 }
 

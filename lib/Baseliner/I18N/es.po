@@ -6342,6 +6342,9 @@ msgstr "<b>Revisiones PLASTIC:</B> Procesando la revisión $_"
 msgid "Error parsing %1: %2"
 msgstr "Error parseando %1: %2"
 
+msgid "Delete Invalid Actions"
+msgstr "Borrar Acciones Inválidas"
+
 msgid "Skipping job %1 due to status discrepancy: %2 != %3"
 msgstr "Omitiendo el pase %1 debido a una discrepancia de estado: %2 != %3"
 

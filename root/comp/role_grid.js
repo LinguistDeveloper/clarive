@@ -172,7 +172,27 @@
             ]
         });
         var wt = invalid ? _('Invalid actions for role %1', row.data.role) : _('Actions for role %1', row.data.role);
-        var win = new Baseliner.Window({ title: wt, height: 400, width: 800, layout:'fit', items:[agrid] });
+        var btn_cleanup = !invalid ? '' : new Ext.Button({ 
+            icon:'/static/images/icons/delete.png', 
+            text:_('Delete Invalid Actions'), 
+            handler: function(){
+                var sm = agrid.getSelectionModel();						
+                var sel = sm.getSelected();
+                var actions = sel ? sel.data : row.data.invalid_actions;  // selected one or all
+                Baseliner.ajax_json('/role/cleanup', { id: row.data.id, actions: actions }, function(res){
+                    Baseliner.message(_('Delete'), res.msg );
+                    grid.store.reload();
+                    if( sel ) {
+                        agrid.store.remove(sel);
+                    } else {
+                        win.close();
+                    }
+                });
+        }});
+        var win = new Baseliner.Window({ 
+            title: wt, height: 400, width: 800, layout:'fit', items:[agrid],
+            tbar: [ btn_cleanup ]
+        });
         win.show();
     };
 
