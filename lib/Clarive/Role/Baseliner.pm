@@ -40,6 +40,7 @@ sub setup_baseliner {
     $ENV{BASELINER_LANG} = $self->lang;
     $ENV{BASELINER_NLS_LANG} = $self->nls_lang;
     $ENV{NLS_LANG} = $self->nls_lang;
+    $ENV{TMPDIR} //= $self->tmp_dir;  # used by File::Spec->tmpdir
     $ENV{BASELINER_TEMP} = $self->tmp_dir;
     $ENV{BASELINER_TMPHOME} = $self->tmp_dir;
     $ENV{BASELINER_LOGHOME} = $self->log_dir;
