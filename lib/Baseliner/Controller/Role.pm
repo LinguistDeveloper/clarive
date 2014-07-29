@@ -258,7 +258,7 @@ sub duplicate : Local {
 sub grid : Local {
     my ( $self, $c ) = @_;
     $c->forward('/baseline/load_baselines');
-    $c->stash->{template} = '/comp/role_grid.mas';
+    $c->stash->{template} = '/comp/role_grid.js';
 }
 
 sub all : Local {
