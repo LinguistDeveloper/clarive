@@ -44,7 +44,7 @@ class_has '_registrar_enabled' => ( is=>'rw', isa=>'HashRef', );
 
 {
     package Baseliner::Core::RegistryNode;
-    use Moose;
+    use Mouse;
 
     has key     => ( is => 'rw', isa => 'Str',     required => 1 );
     has id      => ( is => 'rw', isa => 'Str',     required => 1 );
