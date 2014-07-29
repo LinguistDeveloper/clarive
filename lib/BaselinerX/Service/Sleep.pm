@@ -24,6 +24,7 @@ sub run_sleep {
     $config ||= {};
     
     my $secs = $config->{seconds} || 5;
+    $log->info(_loc("Job sleeping %1 seconds", $secs));
     sleep $secs;
     return 1;
 }
