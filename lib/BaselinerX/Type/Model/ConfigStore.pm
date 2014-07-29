@@ -143,7 +143,7 @@ sub get {
                 #TODO no expasion needed when already of type: unless ref $data->{$data_key} =~ /HASH|ARRAY/ || blessed($data->{$data_key});
 
             # resolve vars
-            my $new_value = $data->{ $data_key } || '';
+            my $new_value = $data->{ $data_key } // '';
             #$new_value =~ s/\$\{ns\}/$p{ns}/g ; 
             #$new_value =~ s/\$\{bl\}/$p{bl}/g ; 
             #$new_value =~ s/\$\{key\}/$key/g ; 
