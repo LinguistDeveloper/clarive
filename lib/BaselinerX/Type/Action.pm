@@ -1,5 +1,5 @@
 package BaselinerX::Type::Action;
-use Baseliner::Plug;
+use Baseliner::PlugMouse;
 with 'Baseliner::Role::Registrable';
 
 register_class 'action' => __PACKAGE__;

@@ -1,5 +1,5 @@
 package BaselinerX::Type::Service;
-use Baseliner::Plug;
+use Baseliner::PlugMouse;
 use Baseliner::Utils;
 use Try::Tiny;
 

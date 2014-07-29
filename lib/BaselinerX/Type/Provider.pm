@@ -1,5 +1,5 @@
 package BaselinerX::Type::Provider;
-use Baseliner::Plug;
+use Baseliner::PlugMouse;
 with 'Baseliner::Role::Registrable';
 
 register_class 'provider' => __PACKAGE__;

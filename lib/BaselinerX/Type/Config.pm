@@ -1,5 +1,5 @@
 package BaselinerX::Type::Config;
-use Baseliner::Plug;
+use Baseliner::PlugMouse;
 use Baseliner::Utils;
 use Try::Tiny;
 with 'Baseliner::Role::Registrable';

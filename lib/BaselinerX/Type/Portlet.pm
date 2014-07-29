@@ -1,5 +1,5 @@
 package BaselinerX::Type::Portlet;
-use Baseliner::Plug;
+use Baseliner::PlugMouse;
 use Baseliner::Utils;
 
 with 'Baseliner::Role::Registrable';

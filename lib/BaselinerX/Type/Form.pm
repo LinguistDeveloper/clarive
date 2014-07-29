@@ -1,5 +1,5 @@
 package BaselinerX::Type::Form;
-use Baseliner::Plug;
+use Baseliner::PlugMouse;
 with 'Baseliner::Role::Registrable';
 
 register_class 'form' => __PACKAGE__;

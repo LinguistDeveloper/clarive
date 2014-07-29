@@ -1,5 +1,5 @@
 package BaselinerX::Type::Alias;
-use Baseliner::Plug;
+use Baseliner::PlugMouse;
 with 'Baseliner::Role::Registrable';
 
 register_class 'alias' => __PACKAGE__;

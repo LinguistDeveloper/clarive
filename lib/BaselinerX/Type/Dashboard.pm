@@ -1,5 +1,5 @@
 package BaselinerX::Type::Dashboard;
-use Baseliner::Plug;
+use Baseliner::PlugMouse;
 use Baseliner::Utils;
 
 with 'Baseliner::Role::Registrable';

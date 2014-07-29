@@ -1,5 +1,5 @@
 package Baseliner::Role::Registrable;
-use Moose::Role;
+use Mouse::Role;
 
 has key           => ( is => 'rw', isa => 'Any',    default  => '' );
 has module        => ( is => 'rw', isa => 'Str',    required => 1 );

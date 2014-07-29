@@ -1,5 +1,5 @@
 package BaselinerX::Type::Menu;
-use Baseliner::Plug;
+use Baseliner::PlugMouse;
 use Baseliner::Utils;
 use utf8;
 with 'Baseliner::Role::Registrable';
