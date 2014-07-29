@@ -305,7 +305,7 @@
 
     var check_sm = new Ext.grid.CheckboxSelectionModel({
         singleSelect: false,
-        sortable: false,
+        sortable: true,
         checkOnly: true
     });
     check_sm.on('selectionchange', function(){
@@ -374,7 +374,7 @@
         stripeRows: true,
         autoScroll: true,
         autoWidth: true,
-        sortable: false,
+        sortable: true,
         //header: false,
         //hideHeaders: true,
         store: store_ci,
