@@ -1,5 +1,4 @@
 package Baseliner::Core::Registry;
-
 use Moose;
 use MooseX::ClassAttribute;
 use Moose::Exporter;
@@ -33,12 +32,6 @@ class_has classes =>
       default => sub { {} },
     );
 
-class_has module_index =>
-    ( is      => 'rw',
-      isa     => 'HashRef',
-      default => sub { {} },
-    );
-
 class_has 'keys_enabled' => ( is=>'rw', isa=>'HashRef', default=>sub{{}} );
 class_has '_registrar_enabled' => ( is=>'rw', isa=>'HashRef', );
 
@@ -53,18 +46,18 @@ class_has '_registrar_enabled' => ( is=>'rw', isa=>'HashRef', );
     has init_rc => ( is => 'rw', isa => 'Int',     default  => 5 );
     has param   => ( is => 'rw', isa => 'HashRef', default  => sub { {} } );
     has instance => ( is => 'rw', isa => 'Object' );
+    has registor_key => ( is => 'rw', isa => 'Str' ), default=>'';
     has actions  => ( is => 'rw', isa => 'ArrayRef' );  # TODO deprecated
     has all_actions  => ( is => 'rw', isa => 'HashRef' );   # my actions, parent actions, etc. (cache)
 }	
 
 sub registors {
     my ($self)=@_;
-    my $reg = $self->registrar;
     if( cache->get('registry:reload:all') && !cache->get('registry:reload_registor:'.$$) ) {
         _debug "Reload Registry Registor requested for $$";
         cache->set('registry:reload_registor:'.$$, 1);
         my @keys = keys %{ $self->registor_keys_added || {} };
-        delete $reg->{$_} for @keys;
+        delete $self->registrar->{$_} for @keys;
         $self->registor_data({});
         return $self->registor_data;
     } else {
@@ -95,7 +88,7 @@ sub _registrar {
 # the 'register' command
 sub add {
     my ($self, $pkg, $key, $param)=@_;
-    return if $ENV{BALI_CMD} && $key =~ /^(menu|registor.menu)/;
+    return if $ENV{BALI_CMD} && $key =~ /^(menu|registor.menu)/;   # TODO the class should tell me it its superfluous in CLI mode
     my $reg = $self->registrar;
     $param //= {};
     if( ref $param eq 'HASH' ) {
@@ -108,8 +101,8 @@ sub add {
         my $node = Baseliner::Core::RegistryNode->new( $param );
         $node->param( $param );
         $node->param->{registry_node} = $node;
+        Scalar::Util::weaken( $node->param->{registry_node} );
         $reg->{$key} = $node;
-        push @{ $self->module_index->{ $param->{module} } }, $node;
     } else {
         #TODO register 'a.b.c' => 'BaselinerX::Service::MyService'
         die "Error registering '$pkg->$key': not a hashref. Not supported yet.";
@@ -191,23 +184,39 @@ sub _find_class {
 
 =head2 get_node
 
-Return the key registration object (node)
+Return the key registration object (node). 
+If not found, check registors are loaded and try 
+again.
 
 =cut
 sub get_node {
     my ($self,$key)=@_;
     $key || croak "Missing parameter \$key";
-    return ( $self->registrar->{$key} 
-        or $self->search_for_node( id=>$key ) 
-        or $self->get_partial($key) );
+    return $self->registrar->{$key} || do{
+        $self->registor_loader( $key );  # make sure registor data is loaded
+        $self->registrar->{$key};   
+    };
 }
 
-## return a registered object
-sub get { return $_[0]->get_instance($_[1]); }
+=head2 get_instance (get)
 
+Returns the actual instantiated object (ie isa BaselinerX::Type::Action)
+
+=cut
+sub get { return $_[0]->get_instance($_[1]); }
 sub get_instance {
     my ($self,$key)=@_;
-    my $node = $self->get_node($key) || die "Could not find key '$key' in the registry";
+    my $node = $self->get_node($key) || _fail _loc("Could not find key '%1' in the registry", $key);
+
+    # is it from registor? check data then
+    if( my $registor_key = $node->registor_key ) {
+        if( !$self->registors->{$registor_key} ) {
+            # we need a reload!
+            $self->registor_loader( $key );  # make sure registor data is loaded
+            $node = $self->get_node($key) || _fail _loc("Could not find key '%1' in the registry", $key);
+        }
+    }
+
     my $obj = $node->instance;
     return ( ref $obj ? $obj : $self->instantiate( $node ) );
 }
@@ -316,26 +325,6 @@ sub search_for_node {
             }
         }
         next if !$has_permission;
-        # if( ref $allowed_actions ) {
-        #     my %node_actions;
-        #     if( ref $node->all_actions ) {
-        #         %node_actions =  %{ $node->all_actions };  # found in cache
-        #     } else {
-        #         %node_actions = 
-        #                 map { $_ => 1 }
-        #                 map { # create list of all possible parent actions
-        #                     my @act = split /\./, $_;
-        #                     map { 
-        #                        join('.',@act[0..$_])
-        #                     } ( 2 .. $#act );
-        #                 } _array( $node_instance->action, $node_instance->actions );
-        #             ;
-        #         $node->all_actions( \%node_actions ); # caching
-        #     }
-        #     next if %node_actions && ! _any( sub{ $_ }, @node_actions{ _array($allowed_actions) } );
-        #     _dump %node_actions;
-        # }
-
 
         # query for attribute existence
         next if( $has_attribute && !defined $node->{$has_attribute} );
@@ -373,46 +362,68 @@ sub search_for {
     return map { $_->instance } @found_nodes;
 }
 
-sub registor_keys {
-    my ($self, $key_prefix )=@_;
+=head2 registor_loader
 
-    my @registor_data;
-    my @dynamic_keys;
+Given a registry node key, look for candidate 
+registors and check if their data is loaded. 
+
+If registor loaded, return. 
+
+If not, call registor node generator. Then register
+each one of them.
+
+=cut
+sub registor_loader {
+    my ($self, $key)=@_;
+
+    my @registor_nodes;
     my $reg = $self->registrar;
-
-    ($key_prefix) = split /\./, $key_prefix; # look for registor like 'registor.menu', 'registor.action', ...
-    return () unless $key_prefix; 
-    for my $key ( grep /^registor\.$key_prefix\./, keys %{ $reg || {} } ) {
-        if ( !$self->registors->{$key} ) {
-            _debug "Registor data needed $key...";
-            $self->registors->{$key} = 1;
-            my $registor = $self->get($key);
-            push @registor_data, { registor => $registor, data => $registor->generator->($key_prefix) };
+    my $registors = $self->registors;  
+    my ($key_prefix) = split /\./, $key; # look for registor like 'registor.menu', 'registor.action', ...
+    return unless $key_prefix; 
+    
+    # look in registry for candidate registors
+    for my $registor_key ( grep{ index($_, "registor.$key_prefix.")==0 } keys %{ $reg || {} } ) {
+        #    _debug( "Looking in registor $registor_key for key $key_prefix" );
+        # if registor not executed before, run it
+        if ( !$registors->{$registor_key} ) {
+            _debug "Registor data needed $registor_key...";
+            $registors->{$registor_key} = 1;
+            my $registor = $self->get($registor_key);
+            # call registor and retrieve keys
+            push @registor_nodes, { registor=>$registor, data=>$registor->generator->($key_prefix) };
+            _debug "Registor data loaded $registor_key";
         }
     }
+    return unless @registor_nodes; # nothing to register, leave
+    
+    # register into registry hash all registor data found
     my $flag = 0;
-    for my $regs ( @registor_data ) {
+    for my $regs ( @registor_nodes ) {
         my $data = $regs->{data};
         my $registor = $regs->{registor};
         next unless ref $data eq 'HASH'; 
+        # for each registry entry returned by Registor...
         for my $key ( keys %$data ) {
             next if exists $reg->{$key} && ! $data->{$key}->{_overwrite};
             #  register( $key, $data->{$key} );
-            Baseliner::Core::Registry->add( $registor->module, $key, $data->{$key} );
+            $data->{$key}{registor_key} = $registor->key;  # so everyone knows I come from a registor
+            $self->add( $registor->module, $key, $data->{$key} );
             $self->registor_keys_added->{$key} = 1;  # so we can delete from registry on remove
-            push @dynamic_keys, $key;
-            $flag = 1 unless $flag;
+            $flag ||= 1;
         }
     }
-    $self->initialize if $flag;
-    return @dynamic_keys;
+    # instanciate new keys in registry
+    #$self->initialize if $flag;
+    # everything should be in memory (registrar) now 
+    return;
 }
 
 sub starts_with {
     my ($self, $key_prefix )=@_;
     my @keys;
     my $reg = $self->registrar;
-    my @dynamic = $self->registor_keys( $key_prefix );
+    $self->registor_loader( $key_prefix );  # make sure registor data is loaded
     for my $key ( keys %{ $reg || {} } ) {
         push @keys, $key if index( $key, $key_prefix ) == 0;
     }
