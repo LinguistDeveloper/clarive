@@ -104,7 +104,7 @@ sub error_trap {
             if ( $last_status eq 'TRAPPED_PAUSED' ) {
                 sleep 5;
             } else {
-                if ( $trap_timeout eq 0 ) {
+                if ( !$trap_timeout || $trap_timeout eq '0' ) {
                     sleep 5;
                 } else {
                     sleep 10;
