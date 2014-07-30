@@ -56,19 +56,22 @@ params:
         name: meta.id_field,
         hiddenName: meta.id_field,          
         listEmptyText: no_items, 
-        field_ready: false,
         emptyText: _( meta.emptyText ),
+        field_ready: false,
         allowBlank: meta.allowBlank == 'false' ? false : true,
         disabled: meta.readonly!=undefined ? meta.readonly : false,
         store: project_box_store,
-        value: projects,
         singleMode: meta.single_mode == 'false' || !meta.single_mode ? false : true
     });
     
     project_box.field_ready = false;
     project_box_store.on('load',function(){
         project_box.field_ready = true;
+        project_box.setValue(projects);
     });
+
+
+    project_box_store.load({});
    
     if( meta.parent_field ) {
         var form = params.form.getForm();

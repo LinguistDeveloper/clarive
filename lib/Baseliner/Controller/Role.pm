@@ -198,7 +198,7 @@ sub update : Local {
     my $p = $c->req->params;
     my $row;
     eval {
-        my $role_actions = decode_json(encode('UTF-8', $p->{role_actions}));
+        my $role_actions = _decode_json(encode('UTF-8', $p->{role_actions}));
         $row = {  role=>$p->{name}, description=>$p->{description}, mailbox=>$p->{mailbox}, actions=>$role_actions };
         $row->{id} = "$p->{id}" if $p->{id} >= 0;
         if ($p->{id} < 0){

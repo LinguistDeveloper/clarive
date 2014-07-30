@@ -451,7 +451,7 @@ sub get {
     my ($self,%p)=@_;
     $p{where} ={'queue.id' => 0 + $p{id}}; 
     my @queue = $self->transform(%p);
-    my ($row) = @queue;
+    my ($row) = _array(@queue);
     my $merged = { %{ delete $row->{msg} }, %$row }; 
     $merged->{_id} .='';
     return $merged if ref $row;
