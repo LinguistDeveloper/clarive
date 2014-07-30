@@ -413,12 +413,23 @@ sub registor_loader {
             _debug "Registor data needed $registor_key...";
             $registors->{$registor_key} = 1;
             my $registor = $self->get($registor_key);
-            # call registor and retrieve keys
-            push @registor_nodes, { registor=>$registor, data=>$registor->generator->($key_prefix) };
-            _debug "Registor data loaded $registor_key";
+            # check cache for registor data, that way we have inter-worker communication
+            #    TODO unfortunately this still requires instantiation to occur, which is slow, but better than registor generation
+            if( my $cached_data = cache->get('registry:registor_data:'. $registor_key) ) {
+                push @registor_nodes, { registor=>$registor, data=>$cached_data };
+                _debug "Registor data from cache $registor_key";
+            } else {
+                # get data first time
+                # call registor and retrieve keys
+                my $registor_data = $registor->generator->($key_prefix);
+                cache->set('registry:registor_data:'. $registor_key, $registor_data );
+                push @registor_nodes, { registor=>$registor, data=>$registor_data };
+                _debug "Registor data loaded fresh $registor_key";
+            }
         }
     }
     return unless @registor_nodes; # nothing to register, leave
+    
     
     # register into registry hash all registor data found
     my $flag = 0;
