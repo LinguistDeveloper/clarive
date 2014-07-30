@@ -5,7 +5,7 @@ use Baseliner::Utils;
 use Data::Dumper;
 use Baseliner::Sugar;
 use Baseliner::Model::Users;
-
+use Try::Tiny;
 =head1 NAME
 
 Baseliner::Model::Permissions - Role and action management
