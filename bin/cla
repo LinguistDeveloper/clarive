@@ -48,6 +48,7 @@ if( @pre_opts ) {
 # get command options
 my %opts = Getopt::Mini::getopt( hungry_flags=>1, define=>1 );
 %opts = process_dot_opts( %opts );
+%opts = process_not_opts( %opts );
 my $argv = delete $opts{_argv};
 
 if( !$cmd ) {
@@ -69,6 +70,7 @@ $app->do_cmd( cmd=>$cmd );
 
 exit 0;
 
+# process all --key.k2.etc XX type keys, translated JSON style
 sub process_dot_opts {
     my %opt = @_;
     my %dots;
@@ -81,4 +83,16 @@ sub process_dot_opts {
         }
     }
     return ( %opt, %dots );
+}
+
+# process all --no-key options, treated as --key 0
+sub process_not_opts {
+    my %opt = @_;
+    for my $k ( keys %opt ) {
+        if( $k=~/^no-(.+)$/ )  {
+            my $k2 = $1;
+            $opt{$k2} = 0;
+        }
+    }
+    return %opt;
 }
