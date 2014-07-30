@@ -1331,12 +1331,11 @@ sub get_release {
 
     my @meta_local = _array($meta);
     my ($field_meta) = grep { $_->{id_field} eq $key } @meta_local;
-    
     my $rel_type = $field_meta->{rel_type} // "topic_topic";
     my $where = { is_release => 1, rel_type=>$rel_type, to_mid=>$topic_mid };
     $where->{rel_field} = $field_meta->{release_field} if $field_meta->{release_field};
     
-    my ($release_row) = mdb->joins( master_rel => { rel_type=>'topic_topic', to_mid=>"$topic_mid" },
+    my ($release_row) = mdb->joins( master_rel => { rel_type=>'topic_topic', to_mid=>"$topic_mid", rel_field=>$field_meta->{release_field} },
                          from_mid => mid => topic => { is_release=>'1' });
     return {
         color => $release_row->{category}{color},
