@@ -1796,7 +1796,7 @@ Zip a directory
 
 =cut
 sub zip_dir {
-    my (%p) =@_;
+    my ($self, %p) =@_;
     my $source_dir = $p{source_dir} // _fail _loc 'Missing parameter source_dir'; 
     my $zipfile = $p{zipfile} // _fail _loc 'Missing parameter tarfile';
     my $verbose = $p{verbose};

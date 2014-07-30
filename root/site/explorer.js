@@ -964,3 +964,16 @@ Baseliner.delete_search = function(n){
         );    
     });
 }
+
+Baseliner.download_specifications = function(n){
+    var name = n.attributes.data.click.title;
+    name = name.replace(/#+/g, '');
+    name = name.replace(/\s+/g, '_');
+    var id_release = n.attributes.data.topic_mid;
+    Baseliner.ajaxEval( '/lifecycle/check_download_specifications', {id_release: id_release, name_r: name }, function(res){
+        var fd = document.all.FD || document.all.FrameDownload;
+        fd.src =  '/lifecycle/get_specifications?id_release='+id_release+'&name='+name;
+    }, function (res) {
+        Baseliner.warning( _('Warning'), res.msg );
+    });
+}

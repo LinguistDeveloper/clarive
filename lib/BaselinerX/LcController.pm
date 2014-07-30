@@ -3,6 +3,7 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use Try::Tiny;
+use utf8;
 require Girl;
 
 BEGIN { extends 'Catalyst::Controller' };
@@ -10,6 +11,13 @@ BEGIN { extends 'Catalyst::Controller' };
 __PACKAGE__->config->{namespace} = 'lifecycle';
 
 register 'action.project.see_lc' => { name => 'User can access the project lifecycle' };
+
+register 'config.specifications' => {
+    metadata => [
+        { id => 'agrupadores', default => 'Release,Fast Track,Proyecto Especial,Entrega Independiente', label=> 'Elementos considerados agrupadores' },
+        { id => 'download_specification_directory', default => $ENV{CLARIVE_BASE}.'/tmp/specifications', label=> 'Directorio temporal de descarga de especificaciones' },
+    ]
+};
 
 sub tree_topic_get_files : Local {
     my ($self,$c) = @_;
@@ -101,6 +109,23 @@ sub category_contents : Local {
     
     my %categories = mdb->category->find_hash_one( id=>{},{ workflow=>0, fields=>0, statuses=>0, _id=>0 });
     
+    my @menu_related = $self->menu_related();
+
+    my $vars = Baseliner->model( 'ConfigStore' )->get( 'config.specifications' )->{agrupadores};
+    if($vars){
+        my $category = mdb->category->find_one({id=>$category_id});
+        my @agrupadores = ();
+        @agrupadores = split(',', $vars );
+        if( grep { $category->{name} eq $_ } @agrupadores ){
+            push @menu_related, {  text => _loc('Download specifications'),
+                                    icon => '/static/images/download.gif',
+                                    eval => {
+                                        handler => 'Baseliner.download_specifications'
+                                    }
+                                };
+        }
+    }
+
     my @tree = map {
         my $t = $_;
         my ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu(
@@ -1143,6 +1168,67 @@ sub menu_related {
                         }
                     };           
     return @menu;
+}
+
+sub get_specifications : Local {
+    my ($self, $c) = @_;
+    my $p = $c->request->parameters;
+    my $ucmserver = 'moniker:ucm';
+    my $name = $p->{name};
+    my $topic_mid = $p->{id_release};
+    my @topics = mdb->master_rel->find( { from_mid => $topic_mid } )->all;
+    my @mids = map { $_->{to_mid} } @topics;
+    @topics = mdb->topic->find( { mid=>{'$in'=>\@mids} } )->all;
+    my @result = grep { $_->{category_name} eq 'Petición' } @topics;
+    my $download_path = Baseliner->model( 'ConfigStore' )->get( 'config.specifications' )->{download_specification_directory};
+    my $agrupador_path;
+    mkdir $download_path unless -d $download_path;
+    foreach my $peticion (@result) {
+        my $ucm = ci->new($ucmserver) or _fail _loc 'UCM server not found';
+        $agrupador_path = $download_path.'/'.$peticion->{agrupador};
+        mkdir $agrupador_path unless -d $agrupador_path;
+        my $peticion_path = $agrupador_path.'/Peticion_'.$peticion->{mid};
+        mkdir $peticion_path if (!-d $peticion_path and $peticion->{especificaciones}[0] );
+        foreach my $specification ( @{ $peticion->{especificaciones} } ) {
+           my ( $file_name, $body ) =
+             $ucm->getfile( params => { docid => $specification->{id} } );
+           open my $temp_file, ">>:raw", $peticion_path.'/'.$file_name;
+           print $temp_file $body;
+           close $temp_file;
+        }
+    }
+    my $file_path = $agrupador_path.'.zip';
+    Baseliner::Utils->zip_dir(source_dir=>$agrupador_path,zipfile=>$file_path);
+    File::Path::rmtree $agrupador_path;
+    $c->stash->{serve_file} = $file_path;
+    $c->stash->{serve_filename} = $name.'_specifications.zip';
+    $c->forward('/serve_file');
+}
+
+sub check_download_specifications : Local {
+    my ($self, $c ) = @_;
+    my $p = $c->request->parameters;
+    my $exist_specifications = 0;
+    my $name_r = $p->{name_r};
+    my $topic_mid = $p->{id_release};
+    my @topics = mdb->master_rel->find( { from_mid => $topic_mid } )->all;
+    my @mids = map { $_->{to_mid} } @topics;
+    @topics = mdb->topic->find( { mid=>{'$in'=>\@mids} } )->all;
+    my @result = grep { $_->{category_name} eq 'Petición' } @topics;
+    my $i = 0;
+    my $peticion;
+    if (scalar @result) { 
+        while ($peticion = $result[$i]  and ! $exist_specifications) {
+            $exist_specifications = 1 if exists $peticion->{especificaciones} and scalar @{ $peticion->{especificaciones} };
+            $i++;
+        }
+    }
+    if($exist_specifications){
+        $c->stash->{json} = { success=>\1, msg=>'Serve specifications' };
+    } else {
+        $c->stash->{json} = { success=>\0, msg=>'No specifications found for download' };
+    }
+    $c->forward('View::JSON');
 }
 
 1;

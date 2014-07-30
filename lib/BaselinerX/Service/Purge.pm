@@ -180,6 +180,11 @@ sub run_once {
                 { multiple=>1 },
             );
         }
+
+
+        ############################ DELETE SPECIFICATIONS OF RELEASES ###########################################
+        my $specifications_download_path = Baseliner->model( 'ConfigStore' )->get( 'config.specifications' )->{download_specification_directory};
+        File::Path::rmtree $specifications_download_path;
     }
     _log 'Done purging.';
 }
