@@ -1054,13 +1054,11 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                             }
                             push @values, $tmp;    
                         }
-                        $scope_cis{$_->{mid}} = \@values;
+                        $scope_cis{$v} = \@values;
 
                         }
                         \@values;
-						#$scope_cis{$_->{mid}} = $_ for @objs;
-						#\@objs;
-						};
+				};
 				for my $category (@All_Categories){
                     $row{$k. "_$category"} = $row{$k};
                     $row{'_'.$k. "_$category"} = $row{'_'.$k};

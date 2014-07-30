@@ -1203,7 +1203,6 @@
         date : { sortable: true, width: 100, renderer: render_date  },
         bool : { sortable: true, width: 100, renderer: render_bool  },
         ci : { sortable: true, width: 100, renderer: render_ci  },
-        revision : { sortable: true, width: 100, renderer: render_ci  },
         project : { sortable: true, width: 100, renderer: render_ci  },
         topic : { sortable: true, width: 100, renderer: render_topic_rel  },
         release : { sortable: true, width: 100, renderer: render_topic_rel  },
