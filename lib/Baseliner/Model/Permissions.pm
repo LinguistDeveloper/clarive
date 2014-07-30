@@ -240,7 +240,7 @@ sub user_actions_by_topic {
                @actions = map { $_->{action} } @{mdb->role->find({id=>$role})->next->{actions}};
                cache->set(":role:actions:$role:",\@actions);
             }
-        }catch{}
+        }catch{};
         push @return, @actions;
     }
     return _unique @return;
