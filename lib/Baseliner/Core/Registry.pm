@@ -143,7 +143,7 @@ sub initialize {
     my $reg = $self->registrar;
     for my $key ( @namespaces ) {
         my $node = $reg->{$key};
-        next if( ref $node->instance );  ## already initialized
+        next if ref $node->instance;  ## already initialized
         push @{ $init_rc{ $node->init_rc } } , [ $key, $node ];
     }
 
@@ -414,7 +414,7 @@ sub registor_loader {
         }
     }
     # instanciate new keys in registry
-    #$self->initialize if $flag;
+    $self->initialize if $flag;
     # everything should be in memory (registrar) now 
     return;
 }
