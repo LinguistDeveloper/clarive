@@ -2859,8 +2859,8 @@ Baseliner.CSV = Ext.extend( Ext.util.Observable, {
                         } else {
                                 while (c < cc && '\r' !== chars[c] && '\n' !== chars[c] && ',' !== chars[c]) { end = ++c; }
                         }
-                        end = reviver(table.length-1, row.length, chars.slice(start, end).join(''));
-                        row.push(isNaN(end) ? end : +end);
+                        end = reviver(table.length-1, row.length, chars.slice(start, end).join('') );
+                        row.push(isNaN(end) ? end : end.length==0 ? '' : +end);
                         if (',' === chars[c]) { ++c; }
                 }
                 if ('\r' === chars[c]) { ++c; }

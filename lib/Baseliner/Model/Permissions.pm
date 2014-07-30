@@ -5,7 +5,7 @@ use Baseliner::Utils;
 use Data::Dumper;
 use Baseliner::Sugar;
 use Baseliner::Model::Users;
-
+use Try::Tiny;
 =head1 NAME
 
 Baseliner::Model::Permissions - Role and action management
@@ -235,12 +235,12 @@ sub user_actions_by_topic {
     my @roles = $self->user_roles_for_topic( %p );
     for my $role ( @roles ) {
         my @actions = _array(cache->get(":role:actions:$role:"));
-        if ( !@actions ) {
-           @actions = map { $_->{action} } @{mdb->role->find({id=>$role})->next->{actions}};
-           cache->set(":role:actions:$role:",\@actions);
-        } else {
-            #_debug "CACHE HIT for :role:actions:$role:";
-        }
+        try{
+            if ( !@actions ) {
+               @actions = map { $_->{action} } @{mdb->role->find({id=>$role})->next->{actions}};
+               cache->set(":role:actions:$role:",\@actions);
+            }
+        }catch{};
         push @return, @actions;
     }
     return _unique @return;
