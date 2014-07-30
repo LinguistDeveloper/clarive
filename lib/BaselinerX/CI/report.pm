@@ -1046,7 +1046,12 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                         my @values;
                         if (@objs){
                         for my $obj (@objs){
-                            my $tmp = $obj->{moniker} ? $obj->{moniker} : $obj->{name}; 
+                            my $tmp;
+                            if ( $mt =~ /ci|project|user|file/ ) {
+                                $tmp = $obj->{moniker} ? $obj->{moniker} : $obj->{name}; 
+                            } else {
+                                $tmp = $obj->{name};
+                            }
                             push @values, $tmp;    
                         }
                         $scope_cis{$_->{mid}} = \@values;
