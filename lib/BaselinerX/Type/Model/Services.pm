@@ -19,7 +19,7 @@ sub launch {
     my $ns = $p{ns} || '/';
     my $bl = $p{bl} || '*';
     my $data = $p{data} || {};
-    my $service = $c->registry->get($service_name) || die "Could not find service '$service_name'";
+    my $service = $c->registry->find($service_name) || $c->registry->find("service.$service_name") || die "Could not find service '$service_name'\n";
 
     # load the service's config data
     my $config_name = $service->config;

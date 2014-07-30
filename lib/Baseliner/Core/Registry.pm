@@ -109,7 +109,7 @@ sub add {
         $node->param->{registry_node} = $node;
         Scalar::Util::weaken( $node->param->{registry_node} );
         $reg->{$key} = $node;
-        push @{ $self->module_index->{ $param->{module} } }, $node;
+        push @{ $self->module_index->{ $param->{module} } }, $node; # used by Role/CI.pm
     } else {
         #TODO register 'a.b.c' => 'BaselinerX::Service::MyService'
         die "Error registering '$pkg->$key': not a hashref. Not supported yet.";
@@ -208,24 +208,40 @@ sub get_node {
 =head2 get_instance (get)
 
 Returns the actual instantiated object (ie isa BaselinerX::Type::Action)
+or fail.
 
 =cut
-sub get { return $_[0]->get_instance($_[1]); }
+sub get { 
+    my ($self,$key)=@_;
+    return $self->get_instance($key) // _fail _loc("Could not find key '%1' in the registry", $key); 
+}
+
 sub get_instance {
     my ($self,$key)=@_;
-    my $node = $self->get_node($key) || _fail _loc("Could not find key '%1' in the registry", $key);
+    my $node = $self->get_node($key) || return undef;
 
     # is it from registor? check data then
     if( my $registor_key = $node->registor_key ) {
         if( !$self->registors->{$registor_key} ) {
             # we need a reload!
             $self->registor_loader( $key );  # make sure registor data is loaded
-            $node = $self->get_node($key) || _fail _loc("Could not find key '%1' in the registry", $key);
+            $node = $self->get_node($key) || return undef;
         }
     }
 
     my $obj = $node->instance;
     return ( ref $obj ? $obj : $self->instantiate( $node ) );
+}
+
+=head2 find
+
+Returns the actual instantiated object (ie isa BaselinerX::Type::Action)
+or undef if not found.
+
+=cut
+sub find {
+    my ($self,$key)=@_;
+    return $self->get_instance($key); 
 }
 
 sub get_partial {
