@@ -32,6 +32,12 @@ class_has classes =>
       default => sub { {} },
     );
 
+class_has module_index =>
+    ( is      => 'rw',
+      isa     => 'HashRef',
+      default => sub { {} },
+    );
+
 class_has 'keys_enabled' => ( is=>'rw', isa=>'HashRef', default=>sub{{}} );
 class_has '_registrar_enabled' => ( is=>'rw', isa=>'HashRef', );
 
@@ -103,6 +109,7 @@ sub add {
         $node->param->{registry_node} = $node;
         Scalar::Util::weaken( $node->param->{registry_node} );
         $reg->{$key} = $node;
+        push @{ $self->module_index->{ $param->{module} } }, $node;
     } else {
         #TODO register 'a.b.c' => 'BaselinerX::Service::MyService'
         die "Error registering '$pkg->$key': not a hashref. Not supported yet.";
