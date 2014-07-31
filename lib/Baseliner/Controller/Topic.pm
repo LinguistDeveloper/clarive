@@ -1751,4 +1751,108 @@ sub change_status : Local {
     $c->forward('View::JSON');
 }
 
+sub xget_files : Local {
+    my ($self, $c) = @_;
+    my $p = $c->request->parameters;
+    my $ucmserver = 'moniker:ucm';
+    my $name = $p->{name};
+    my $topic_mid = $p->{id_release};
+    my @topics = mdb->master_rel->find( { from_mid => $topic_mid } )->all;
+    my @mids = map { $_->{to_mid} } @topics;
+    @topics = mdb->topic->find( { mid=>{'$in'=>\@mids} } )->all;
+    my @result = grep { $_->{category_name} eq 'Petición' } @topics;
+    my $download_path = Baseliner->model( 'ConfigStore' )->get( 'config.specifications' )->{download_specification_directory};
+    my $agrupador_path;
+    mkdir $download_path unless -d $download_path;
+    foreach my $peticion (@result) {
+        my $ucm = ci->new($ucmserver) or _fail _loc 'UCM server not found';
+        $agrupador_path = $download_path.'/'.$peticion->{agrupador};
+        mkdir $agrupador_path unless -d $agrupador_path;
+        my $peticion_path = $agrupador_path.'/Peticion_'.$peticion->{mid};
+        mkdir $peticion_path if (!-d $peticion_path and $peticion->{especificaciones}[0] );
+        foreach my $specification ( @{ $peticion->{especificaciones} } ) {
+           my ( $file_name, $body ) =
+             $ucm->getfile( params => { docid => $specification->{id} } );
+           open my $temp_file, ">>:raw", $peticion_path.'/'.$file_name;
+           print $temp_file $body;
+           close $temp_file;
+        }
+    }
+    my $file_path = $agrupador_path.'.zip';
+    Baseliner::Utils->zip_dir(source_dir=>$agrupador_path,zipfile=>$file_path);
+    File::Path::rmtree $agrupador_path;
+    $c->stash->{serve_file} = $file_path;
+    $c->stash->{serve_filename} = $name.'_specifications.zip';
+    $c->forward('/serve_file');
+}
+
+sub get_files : Local {
+    my ($self, $c) = @_;
+    my $p = $c->request->parameters;
+
+    my $username = $p->{username} || $c->username;
+    my $fields = $p->{field} // 'ALL';
+    my $mid = $p->{mid} || _throw _loc('Missing mid');
+
+    my $topic = ci->new($mid);
+    my @doc_fields = split /,/, $fields;
+    my ($cnt, @user_topics) = Baseliner->model('Topic')->topics_for_user({ username => $username, clear_filter => 1});
+    my $where = { mid => mdb->in(map {$_->{mid}} @user_topics), collection => 'topic'};
+
+    my @topics = $topic->children( where => $where, depth => -1 );
+
+    my $download_path = _tmp_dir."/downloads/";
+    #my $topic_path = $download_path._nowstamp."_".$mid;
+    my $topic_path = _mktmp( prefix => 'downloads');
+    _mkpath($topic_path);
+
+    for my $related ( @topics ) {
+        my $cat_meta;
+        my $cat_fields;
+        
+        if ( !$cat_meta->{$related->{name_category}} ) {
+            $cat_meta->{$related->{name_category}} = $related->get_meta;
+            $cat_fields->{$related->{name_category}} = [
+                map { 
+                    { id_field => $_->{id_field}, name_field => $_->{name_field} } 
+                }
+                grep { 
+                    'ALL' ~~ @doc_fields || $_->{id_field} ~~ @doc_fields
+                }
+                _array $cat_meta->{ $related->{name_category} }
+            ];
+        }
+        my $rel_data = ci->new($related->{mid})->get_data;
+        for my $field ( _array $cat_fields->{$related->{name_category}} ) {
+            if ( _array($rel_data->{$field->{id_field}}) ) {
+                my $read_action = 'action.topicsfield.'._name_to_id($related->{name_category}).'.'.$field->{id_field}.'.read';
+                if ( !Baseliner->model('Permissions')->user_has_read_action( username=> $username, action => $read_action ) ) {
+                    ###### TODO: get all file types not just ucm
+                    my ($field_meta) = grep {$_->{id_field} eq $field->{id_field}} _array($cat_meta->{ $related->{name_category} });
+                    if ( $field_meta->{ucmserver} ) {                    
+                        my $ucm = ci->new( $field_meta->{ucmserver} );
+                        my $related_path = $topic_path.'/'.$related->{name_category}.'_'.$related->{mid};
+                        _mkpath($related_path) if (!-d $related_path );
+                        foreach my $file ( _array($rel_data->{$field->{id_field}}) ) {
+                           my ( $file_name, $body ) =
+                             $ucm->getfile( params => { docid => $file->{id} } );
+                           open my $temp_file, ">>:raw", $related_path.'/'.$file_name;
+                           print $temp_file $body;
+                           close $temp_file;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    my $file_path = $topic_path.'.zip';
+    Baseliner::Utils->zip_dir(source_dir=>$topic_path,zipfile=>$file_path);
+    _rmpath $topic_path;
+
+    $c->stash->{serve_file} = $file_path;
+    $c->stash->{serve_filename} = $mid.'_'.$fields.'.zip';
+    $c->forward('/serve_file');
+}
+
 1;

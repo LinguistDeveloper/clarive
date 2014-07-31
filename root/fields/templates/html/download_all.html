@@ -1,0 +1,33 @@
+<%args>
+    $meta
+    $data
+</%args>
+
+% my $fields = Baseliner->model('Topic')->get_downloadable_files({ mid => $data->{topic_mid}, username => $c->username, field => $meta->{id_field}});
+% if ( $fields ) {
+    <ul class="nav nav-list">
+        <li class="nav-header">
+            <% _loc( $meta->{name_field} ) %>
+        </li>
+    </ul>
+    <ul class="" style="margin-left: 20px">
+% foreach my $file ( keys %$fields ) {
+%   my $target = 'FrameDownload';  # download or try to show on next tab?
+        <li>
+            <table>
+                <tr>
+                    <td style="border:0"><i class="icon-file"></i></td>
+                    <td class="bl-text-over"  style="border:0">
+                        <div class="bl-text-over" style="width:220px" title="<% $fields->{$file} %>">
+                            <a href="/topic/get_files?field=<% $file %>&mid=<% $data->{topic_mid} %>" target="<% $target %>">
+                                <% $fields->{$file} %>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+             </table>
+        </li>
+% }
+    </ul>
+
+%}

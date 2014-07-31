@@ -734,7 +734,8 @@ Creates a random tempdir inside the official temp dir.
 sub _mktmp {
    my %p = @_;
    my $suffix = [ _array($p{suffix}) ] || [];
-   return _dir( _tmp_dir(), join( '_', _nowstamp, $$, int( rand( 100000 ) ), @$suffix ) );
+   my $prefix = [ _array($p{prefix}) ] || [];
+   return _dir( _tmp_dir(), @$prefix, join( '_', _nowstamp, $$, int( rand( 100000 ) ), @$suffix ) );
 }
 
 =head2 _tmp_file( prefix=>'myprefix', extension=>'zip' )
@@ -1823,11 +1824,8 @@ sub zip_dir {
         my $rel = $f->relative( $dir );
         return if %files && !exists $files{$rel}; # check if file is in list
         my $stat = $f->stat;
+        _warn $stat;
         my $type = $f->is_dir ? 'd' : 'f';
-        my %attr = $type eq 'f' 
-            ? ( mtime=>$stat->mtime, mode=>$stat->mode )
-            : ( mtime => $stat->mtime, mode=>$stat->mode );
-        
         for my $in ( @include ) {
             return if "$f" !~ $in;
         }
@@ -1837,16 +1835,14 @@ sub zip_dir {
         
         if( $f->is_dir ) {
             # directory with empty data
-            say "zip_dir: add dir: `$f`: " . _to_json(\%attr) if $verbose;
             my $dir_member = $zip->addDirectory( ''.$rel );
         } else {
             # file
-            say "zip_dir: add file `$f`: " . _to_json(\%attr) if $verbose;
             $zip->addFile( ''.$f, ''.$rel, COMPRESSION_LEVEL_BEST_COMPRESSION  );
             
         }
     });
-    say "zip_dir: writing tar file `$zipfile`" if $verbose;
+    say "zip_dir: writing zip file `$zipfile`" if $verbose;
     unless ( $zip->writeToFileNamed( $zipfile ) == AZ_OK ) {
         _fail 'Error writing file '.$zipfile;
     }
