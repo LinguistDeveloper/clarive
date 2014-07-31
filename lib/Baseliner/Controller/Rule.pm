@@ -21,6 +21,11 @@ register 'menu.admin.rule' => {
     tab_icon => '/static/images/icons/rule.png'
 };
 
+register 'event.ws.soap_ready' => {
+    text => 'SOAP WS ready to return',
+    description => 'SOAP WS is ready',
+    vars => [],
+};
 
 sub list : Local {
     my ($self, $c) = @_;
@@ -787,7 +792,13 @@ sub default : Path {
                         my $query = CGI->new;
                         $daemon->runCgiRequest(query => $query);
                     }); 
-
+                
+                    # call event
+                    my $body = $c->res->body;
+                    my $ev_data = { soap_body=>"$body" };
+                    my $event_stash = event_new 'event.ws.soap_ready' => $ev_data;
+                    $c->res->body( $event_stash->{soap_body} );
+                    
                     # print WS warnings now
                     _warn _loc('SOAP WS warnings detected: %1', join("\n",@warns)) if @warns;
                 }
