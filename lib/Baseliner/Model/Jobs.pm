@@ -295,7 +295,7 @@ sub search_query {
             title => $r->{name},
             info  => $r->{ts},
             text  => join(', ', @text ),
-            url   => [ $r->{id}, $r->{name}, undef, undef, '/static/images/icons/job.png' ],
+            url   => [ $r->{mid}, $r->{name}, undef, undef, '/static/images/icons/job.png' ],
             type  => 'log'
         }
     } @rows;
