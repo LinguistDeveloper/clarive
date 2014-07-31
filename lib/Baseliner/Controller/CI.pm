@@ -75,7 +75,9 @@ sub dispatch {
             start  => $p->{start},
             limit  => $p->{limit},
             pretty => $p->{pretty},
-            query  => $p->{query}
+            query  => $p->{query},
+            sort   => $p->{sort},
+            dir     => $p->{dir}
         );
     } elsif ( $p->{type} eq 'object' ) {
         @tree = $self->tree_object_info( mid => $p->{mid}, parent => $p->{anode} );
@@ -87,7 +89,9 @@ sub dispatch {
             limit      => $p->{limit},
             query      => $p->{query},
             pretty     => $p->{pretty},
-            collection => $p->{collection}
+            collection => $p->{collection},
+            sort   => $p->{sort},
+            dir     => $p->{dir}
         );
     } elsif ( $p->{type} eq 'depend_to' ) {
         ( $total, @tree ) = $self->tree_object_depend(
@@ -97,7 +101,9 @@ sub dispatch {
             limit      => $p->{limit},
             query      => $p->{query},
             pretty     => $p->{pretty},
-            collection => $p->{collection}
+            collection => $p->{collection},
+            sort        => $p->{sort},
+            dir     => $p->{dir}
         );
     } elsif ( $p->{type} eq 'ci_request' ) {
         ( $total, @tree ) = $self->tree_ci_request(
@@ -107,7 +113,9 @@ sub dispatch {
             limit      => $p->{limit},
             query      => $p->{query},
             pretty     => $p->{pretty},
-            collection => $p->{collection}
+            collection => $p->{collection},
+            sort   => $p->{sort},
+            dir     => $p->{dir}
         );
     }
     
@@ -224,11 +232,30 @@ sub tree_objects {
             #  consider creating a %class_coll of all classes
         }
     }
-    my $opts = {};
-    # order by from order_by or sort.
-    if ($p{order_by}) { $opts = { $p{order_by} => 1 } }
-    elsif ($p{sort}) { $opts = { $p{sort} } }
-    else { { $opts = { _id => 1 } }
+    my $opts;
+    
+    my $dir = $p{dir};
+    if($dir =~ /desc/i){
+        $dir = -1;
+    }else{
+        $dir = 1;
+    }
+    my $sort_item;
+    my $sort_mid;
+    if ($p{sort}) {
+        my $sort = $p{sort};
+        if ($sort eq 'mid'){
+            $sort_mid = 1;
+            $opts = { ts => $dir };
+        }elsif($sort eq 'item'){     
+            #pasar a minusculas
+            $sort_item = 1;
+            $opts = { $p{sort} => $dir };
+        }else{
+            $opts = { $p{sort} => $dir };        
+        }        
+    } else { 
+        $opts = { _id => $dir };
     }
     my $page;
     my $limit = {};
@@ -262,6 +289,16 @@ sub tree_objects {
     }
 
     my $rs = mdb->master_doc->query($where,$limit)->sort($opts)->fields({ yaml=>0 });
+    my @all = $rs->all;
+    
+    if($sort_item == 1){
+        if($dir == 1){
+            @all = sort { uc $a->{name} cmp uc $b->{name} } @all;    
+        }else{
+            @all = sort { uc $b->{name} cmp uc $a->{name} } @all;    
+        }        
+    }
+    
     my $total = defined $page ? $rs->pager->total_entries : $rs->count;
     my $generic_icon = do { require Baseliner::Role::CI::Generic; Baseliner::Role::CI::Generic->icon() };
     my (%forms, %icons);  # caches
@@ -305,7 +342,7 @@ sub tree_objects {
             pretty_properties => $pretty,
             versionid         => $row->{versionid},
         }
-    } $rs->all;
+    } @all;
     ( $total, @tree );
 }
 
