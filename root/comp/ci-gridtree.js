@@ -16,6 +16,7 @@
     var store_ci = new Ext.ux.maximgb.tg.AdjacencyListStore({  
        autoLoad : true,  
        url: '/ci/gridtree',
+       remoteSort: true,
        baseParams: Ext.apply( { pretty: true }, params ),
        reader: new Ext.data.JsonReader({ id: '_id', root: 'data', totalProperty: 'totalCount', successProperty: 'success' }, record )
     }); 
