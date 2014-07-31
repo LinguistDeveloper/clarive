@@ -35,7 +35,10 @@ has _socket  => qw(is rw isa Any lazy 1), default => sub {
 sub socket { $_[0]->_socket };
 
 # MVS configuration and EBCDIC converter
-has mvs    => qw(is rw isa Bool default 0);
+has mvs    => qw(is rw isa Bool), default => sub {
+    my ($self) = @_;
+    return $self->os eq 'mvs';
+};
 has _ebc    => qw(is rw isa Any lazy 1), default=>sub{
     my $self = shift;
     require Convert::EBCDIC;
