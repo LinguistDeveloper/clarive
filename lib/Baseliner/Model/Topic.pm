@@ -1724,9 +1724,9 @@ sub update_project_security {
 }
 
 sub save_doc {
-    my ($self,$meta,$row, $doc, %p) = @_;
-    $row->{created_on} = mdb->ts if !exists $row->{created_on};
-    $row->{modified_on} = mdb->ts if !exists $row->{modified_on};
+    my ($self,$meta,$ci_topic, $doc, %p) = @_;
+    $ci_topic->{created_on} = mdb->ts if !exists $ci_topic->{created_on};
+    $ci_topic->{modified_on} = mdb->ts if !exists $ci_topic->{modified_on};
     # not necessary, noboody cares about the original? $doc = Util->_clone($doc); # so that we don't change the original
     Util->_unbless( $doc );
     my $mid = ''. $p{mid};
@@ -1768,8 +1768,8 @@ sub save_doc {
     }
     
     # expanded data
-    $self->update_category( $doc, $row->{id_category} // ( ref $doc->{category} ? $doc->{category}{id} : $doc->{category} ) );
-    $self->update_category_status( $doc, $row->{id_category_status} // $doc->{id_category_status} // $doc->{status_new}, $p{username}, $row->{modified_on} );
+    $self->update_category( $doc, $ci_topic->{id_category} // ( ref $doc->{category} ? $doc->{category}{id} : $doc->{category} ) );
+    $self->update_category_status( $doc, $ci_topic->{id_category_status} // $doc->{id_category_status} // $doc->{status_new}, $p{username}, $ci_topic->{modified_on} );
 
     # detect modified fields
     require Hash::Diff;
@@ -1806,8 +1806,9 @@ sub save_doc {
     # create/update mongo doc
     my $m = $doc->{mid};
     $m = 0+$m;
-    my $write_doc = { %$old_doc, %$row, %$doc, m=>$m };
-
+    my $ci_unblessed = Util->_unbless(Util->_clone($ci_topic));
+    my $write_doc = { %$old_doc, %$ci_unblessed, %$doc, m=>$m };
+    
     # save project collection security
     $self->update_project_security($write_doc);   # we need to send old data merged, in case the user has sent an incomplete topic (due to field security)
 
