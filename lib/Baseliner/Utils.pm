@@ -1824,7 +1824,6 @@ sub zip_dir {
         my $rel = $f->relative( $dir );
         return if %files && !exists $files{$rel}; # check if file is in list
         my $stat = $f->stat;
-        _warn $stat;
         my $type = $f->is_dir ? 'd' : 'f';
         for my $in ( @include ) {
             return if "$f" !~ $in;

@@ -1836,9 +1836,11 @@ sub get_files : Local {
                         foreach my $file ( _array($rel_data->{$field->{id_field}}) ) {
                            my ( $file_name, $body ) =
                              $ucm->getfile( params => { docid => $file->{id} } );
-                           open my $temp_file, ">>:raw", $related_path.'/'.$file_name;
-                           print $temp_file $body;
-                           close $temp_file;
+                           if ( $file_name ) {
+                               open my $temp_file, ">>:raw", $related_path.'/'.$file_name;
+                               print $temp_file $body;
+                               close $temp_file;
+                            }
                         }
                     }
                 }
