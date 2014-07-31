@@ -1887,7 +1887,7 @@
     /* change style for 'Topics' tab! */
     if( params.tabTopic_force==1 ) {
         panel.tab_icon = ''; // removes icon 
-        panel.title_force = '<span style="margin-left:10px;margin-right:10px;height: 14px"><img src="/static/images/icons/topic.png" /></span>'; // removes title
+        panel.title_force = '<span style="margin-left:10px;margin-right:10px;height: 13px"><img src="/static/images/icons/topic.png" /></span>'; // removes title
     }
         
     grid_topics.on('afterrender', function(){
