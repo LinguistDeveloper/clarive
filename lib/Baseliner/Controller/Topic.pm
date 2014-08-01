@@ -485,8 +485,8 @@ sub view : Local {
         $c->stash->{permissionDelete} = 0;
         $c->stash->{permissionGraph} = $c->model("Permissions")->user_has_action( username => $c->username, action => 'action.topics.view_graph');
         $c->stash->{permissionComment} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.GDI.comment' );
+        my $topic_ci;
         if ( $topic_mid ) {
-            my $topic_ci;
             try {
                 $topic_ci = ci->new( $topic_mid );
                 $c->stash->{viewKanban} = $topic_ci->children( isa => 'topic' );
@@ -562,14 +562,10 @@ sub view : Local {
             $c->stash->{has_comments} = $c->model('Topic')->list_posts( mid=>$topic_mid, count_only=>1 );
      
             # jobs for release and changeset
-            if ( $category->{is_changeset} || $category->{is_release} ) {
-                my @jobs = ci->parents(
-                    mid      => $topic_mid,
-                    rel_type => 'job_' . ( $category->{is_changeset} ? 'changeset' : 'release' ),
-                    no_rels  => 1,
-                    sort     => { from_mid => -1 },
-                );
-                $c->stash->{jobs} = \@jobs;
+            if( $category->is_changeset || $category->is_release ) {
+                my @jobs = $topic_ci->jobs({ username => $c->username});
+                _warn @jobs;
+                $c->stash->{jobs} = @jobs ? \@jobs: 0;
             }
             
             # used by the Change State menu in the topic
