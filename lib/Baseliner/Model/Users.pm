@@ -191,7 +191,9 @@ sub get_actions_from_user{
        my @roles = keys ci->user->find({ username=>$username })->next->{project_security};
        #my @id_roles = map { $_ } @roles;
        my @actions = mdb->role->find({ id=>{ '$in'=>\@roles } })->fields( {actions=>1, _id=>0} )->all;
+       @actions = grep {%{$_}} @actions; ######### DELETE RESULTS OF ACTIONS OF ROLES WITHOUT ACTIONS
        foreach my $f (map { values $_->{actions} } @actions){
+
            if(@bl){
                if($f->{bl} ~~ @bl){
                    push @final, $f->{action};
