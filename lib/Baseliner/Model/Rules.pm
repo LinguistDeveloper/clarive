@@ -1061,13 +1061,18 @@ register 'statement.project.loop' => {
                 $stash->{project_mid} = $project->mid;
                 $stash->{project_lc} = lc $project->name;
                 $stash->{project_uc} = uc $project->name;
-                my $vars = variables_for_bl( $project, $stash->{bl} );
-                $stash->{job}->logger->info( _loc('Current project *%%1* (%%2)', $project->name, $stash->{bl} ), $vars );
                 $stash->{current_project} = $project;
 
-                merge_data $stash, $vars, { _ctx => 'project_loop' }; 
-                
-                %s
+                my @project_bls = map { $_->{bl} } _array $project->bls;
+                if ( !@project_bls || $stash->{bl} ~~ @project_bls ) {
+                    my $vars = variables_for_bl( $project, $stash->{bl} );
+                    $stash->{job}->logger->info( _loc('Current project *%%1* (%%2)', $project->name, $stash->{bl} ), $vars );
+                    merge_data $stash, $vars, { _ctx => 'project_loop' }; 
+                    
+                    %s
+                } else {
+                    $stash->{job}->logger->info( _loc('Project *%1* skipped for bl %2', $project->name, $stash->{bl} ) );
+                }
             }
         }, $self->dsl_build( $n->{children}, %p ) );
     },

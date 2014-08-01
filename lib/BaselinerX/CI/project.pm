@@ -7,6 +7,7 @@ with 'Baseliner::Role::CI::VariableStash';
 
 sub icon { '/static/images/icons/project.png' }
 
+has_cis 'bls';
 has_cis 'repositories';
 has_ci 'parent_project';
 
@@ -15,10 +16,11 @@ has_cis 'folders';
 
 sub rel_type { 
     { 
+        bls            => [ from_mid => 'project_bl'],
         repositories   => [ from_mid => 'project_repository'],
         parent_project => [ from_mid => 'project_project'] ,
         assets         => [ from_mid => 'project_asset' ],
-        folders        => [ from_mid => 'project_folder' ],
+        folders        => [ from_mid => 'project_folder' ]
     },
 }
 
