@@ -174,7 +174,9 @@ sub lc_for_project {
                 mdb->category->find->fields({ workflow=>1 })->all;
 
         push @states, map {
-                my @bls = map { $_->{bl} } sort { $a->{seq} <=> $b->{seq} } _array $_->{bls};
+                my $project_ci = ci->new($id_prj);
+                my @project_bls = map { $_->{bl} } _array $project_ci->bls;
+                my @bls = map { $_->{bl} } sort { $a->{seq} <=> $b->{seq} } grep { !@project_bls || $_->{bl} ~~ @project_bls } _array $_->{bls};
                 my $bls_text = join ",", @bls;
                 +{  node   => $_->{type} ne "D" ? $_->{name}:"$_->{name} [$bls_text]",
                 type   => 'state',
