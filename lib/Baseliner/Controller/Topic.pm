@@ -562,7 +562,7 @@ sub view : Local {
             $c->stash->{has_comments} = $c->model('Topic')->list_posts( mid=>$topic_mid, count_only=>1 );
      
             # jobs for release and changeset
-            if( $category->is_changeset || $category->is_release ) {
+            if( $category->{is_changeset} || $category->{is_release} ) {
                 my @jobs = $topic_ci->jobs({ username => $c->username});
                 _warn @jobs;
                 $c->stash->{jobs} = @jobs ? \@jobs: 0;
