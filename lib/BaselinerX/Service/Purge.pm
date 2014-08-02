@@ -86,6 +86,13 @@ sub run_once {
             my $ci_job = ci->new($job->{mid});
             my $configdays = $ci_job->is_failed ? $config->{keep_jobs_ko} : $config->{keep_jobs_ok};
             my $limitdate = $now - "${configdays}D";
+            # delete job directories
+            my $purged_job_path = $job_home."$job->{name}";
+            my $purged_job_log_path = $logs_home."$job->{name}.log";
+            my $max_job_time = Time::Piece->strptime($endtime, "%Y-%m-%d %H:%M:%S");
+            $max_job_time = $max_job_time + ONE_DAY * $config->{keep_job_files};
+            my @temp = split( " ", $now );
+            #_log "Condition to delete job_dir and job_log  ".$max_job_time->datetime."<------>$temp[0]T$temp[1]";
             if ( length $endtime && $endtime < $limitdate && !$job->{purged} ) {
                 next if $ci_job->is_active;
                 _log "Purging job $job_name with mid $job->{mid} ($endtime < $limitdate)....";
@@ -93,6 +100,8 @@ sub run_once {
                 $ci_job->update( purged=>1 );
                 next if $opts->{dry_run};              
                 # delete job logs
+                _log "\tDeleting log $purged_job_log_path"; 
+                unlink $purged_job_log_path;
                 my $deleted_job_logs = mdb->job_log->find({ mid => $job->{mid}, lev => 'debug' });
                 while( my $actual = $deleted_job_logs->next ) {
                     my $query = mdb->job_log->find_one({ mid => "$job->{mid}", data=>{'$exists'=> '1'} }); 
@@ -104,22 +113,13 @@ sub run_once {
                         mdb->grid->delete($data);
                     }
                 }
-                # delete job directories
-                my $purged_job_path = $job_home."$job->{name}";
-                my $purged_job_log_path = $logs_home."$job->{name}.log";
-                my $max_job_time = Time::Piece->strptime($endtime, "%Y-%m-%d %H:%M:%S");
-                $max_job_time = $max_job_time + ONE_DAY * $config->{keep_job_files};
-                my @temp = split( " ", $now );
-                #_log "Condition to delete job_dir and job_log  ".$max_job_time->datetime."<------>$temp[0]T$temp[1]";
-                if( $max_job_time->datetime lt "$temp[0]T$temp[1]" ) {
-                    _log "\tDeleting log $purged_job_log_path"; 
-                    unlink $purged_job_log_path;
-                    _log "\tDeleting job directory $purged_job_path....";
-                    File::Path::remove_tree( $purged_job_path, {error => \my $err} );
-                    unlink $purged_job_path;
-                }
             } elsif( !$job->{purged} ) {
                 _log _loc 'Job not ready to purge yet: %1 (%2): %3', $job_name, $job->{mid}, "$endtime >= $limitdate";
+            }
+            if( $max_job_time->datetime lt "$temp[0]T$temp[1]" ) {
+                _log "\tDeleting job directory $purged_job_path....";
+                File::Path::remove_tree( $purged_job_path, {error => \my $err} );
+                unlink $purged_job_path;
             }
         }
         ############## Control of logsize and old .gz ######################
