@@ -1027,8 +1027,12 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 
     my @topics = map { 
         my %row = %$_;
+		_log ">>>>>>>>>>>>>>>>>>>>>>>>>>>FILA: " . _dump %row;
 
         while( my($k,$v) = each %row ) {
+            $row{$k} = Class::Date->new($v)->string if $k =~ /modified_on|created_on/;
+
+            my $mt = $meta_cfg_report{$k} || $meta{$k}{meta_type} || '';
 
             $row{$k} = Class::Date->new($v)->string if $k =~ /modified_on|created_on/;
             
@@ -1047,6 +1051,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                         if (@objs){
                         for my $obj (@objs){
                             my $tmp;
+
                             if ( $mt =~ /ci|project|user|file/ ) {
                                 $tmp = $obj->{moniker} ? $obj->{moniker} : $obj->{name}; 
                             } else {
