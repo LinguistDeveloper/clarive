@@ -1088,7 +1088,7 @@ register 'statement.if.nature' => {
         my ($self, $n , %p) = @_;
         my ($nature) = _array($n->{nature});  # in case we accidently get an array of natures
         sprintf(q{
-            if( my $nature = $stash->{natures}{'%s'} ) {
+            if( my $nature = $stash->{natures}{ $project->mid }{'%s'} ) {
                 NAT: {  
                     $stash->{current_nature} = $nature;
                     local $stash->{nature_items} = $stash->{project_items}{ $stash->{current_project}->mid }{natures}{ $nature->mid };
