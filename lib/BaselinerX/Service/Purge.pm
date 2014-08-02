@@ -25,7 +25,6 @@ register 'config.daemon.purge' => {
 
 register 'config.purge' => {
     metadata => [
-        { id => 'keep_log_files', default => 30, label=> 'Number of days to keep /log files' },
         { id => 'keep_job_files', default => 30, label=> 'Number of days to keep job files' },
         { id => 'keep_jobs_ok', default => 30, label=> 'Number of days to keep OK job logs' },
         { id => 'keep_jobs_ko', default => 30, label=> 'Number of days to keep KO job logs' },
