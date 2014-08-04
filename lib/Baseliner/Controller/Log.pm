@@ -423,7 +423,7 @@ sub log_data : Path('/job/log/data') {
     my $data = $logd ? $logd->slurp : '';
     if( $data ) {
         $data = uncompress($data) || $data;
-        $data = _html_escape( $data );
+        $data = _fixascii_sql( $data );
     }
     $c->res->body( "<pre>" . $data  . " " );
 }
@@ -468,7 +468,9 @@ sub log_highlight : Path('/job/log/highlight') {
     my $logd = mdb->grid->find_one({ _id=>$log->{data} });
     _fail _loc 'Log data not found: %1', $log->{data} unless $logd;
     my $data = $logd->slurp;
-    $c->stash->{data} = (uncompress($data) || $data)  . " ";
+    $data = uncompress($data) || $data;
+    $data = _fixascii_sql( $data );
+    $c->stash->{data} = $data;
     $c->stash->{template} = '/site/highlight.html';
 }
 

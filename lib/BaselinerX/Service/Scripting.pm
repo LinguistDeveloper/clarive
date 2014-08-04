@@ -74,8 +74,8 @@ sub run_local {
         chdir $orig;
         _log "CHDIR $orig";
     }
-    $out = _html_escape( $out );
     $out = encode("utf8",$out);
+    $out = _fixascii_sql( $out );
 
     my $r = { output=>$out, rc=>$rc, ret=>$ret };
 
