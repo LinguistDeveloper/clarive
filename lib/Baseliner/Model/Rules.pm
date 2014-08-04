@@ -1111,7 +1111,7 @@ register 'statement.if.any_nature' => {
     dsl => sub { 
         my ($self, $n , %p) = @_;
         sprintf(q{
-            if( _any { exists $stash->{natures}{$_} } split /,/, '%s' ) {
+            if( _any { exists $stash->{natures}{ $project->mid }{$_} } split /,/, '%s' ) {
                 %s
             }
         }, join(',',_array($n->{natures})), $self->dsl_build( $n->{children}, %p ) );
