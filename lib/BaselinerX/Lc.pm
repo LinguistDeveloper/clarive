@@ -79,7 +79,7 @@ sub lc_for_project {
     );
     my $is_root = Baseliner->model('Permissions')->is_root($username);
     my $has_permission = Baseliner->model('Permissions')->user_has_action( username=> $username, action=>'action.job.monitor' );
-    if (!$has_permission and !$is_root){
+    if ($has_permission || $is_root){
 
         push @nodes, {
             'node' => 'Jobs',
