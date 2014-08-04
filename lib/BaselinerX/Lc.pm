@@ -55,7 +55,6 @@ sub lc_for_project {
     #my $lc = $self->lc;
     #_log "LC==========> $lc , " . ref $lc;
     #my $nodes = $lc->{nodes}; $ch ||= {
-    
     my @nodes = (
           {
             'node' => 'Topics',
@@ -80,7 +79,7 @@ sub lc_for_project {
     );
     my $is_root = Baseliner->model('Permissions')->is_root($username);
     my $has_permission = Baseliner->model('Permissions')->user_has_action( username=> $username, action=>'action.job.monitor' );
-    if ($has_permission || $is_root){
+    if (!$has_permission and !$is_root){
 
         push @nodes, {
             'node' => 'Jobs',
@@ -118,7 +117,6 @@ sub lc_for_project {
                   },
         'type' => 'component',
     };
-
     my @repos =
         map { values %$_ }
         mdb->master_rel->find({from_mid=>"$id_prj", rel_type=>'project_repository'})->fields({ to_mid=>1, _id=>0 })->all;
