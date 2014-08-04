@@ -55,7 +55,8 @@ sub lc_for_project {
     #my $lc = $self->lc;
     #_log "LC==========> $lc , " . ref $lc;
     #my $nodes = $lc->{nodes}; $ch ||= {
-    my $nodes = [
+    
+    my @nodes = (
           {
             'node' => 'Topics',
             'icon' => '/static/images/icons/topic.png',
@@ -75,8 +76,13 @@ sub lc_for_project {
             'icon' => '/static/images/icons/release.gif',
             'url' => '/lifecycle/tree_project_releases',
             'type' => 'component',
-          },
-          {
+          }
+    );
+    my $is_root = Baseliner->model('Permissions')->is_root($username);
+    my $has_permission = Baseliner->model('Permissions')->user_has_action( username=> $username, action=>'action.job.monitor' );
+    if ($has_permission || $is_root){
+
+        push @nodes, {
             'node' => 'Jobs',
             'icon' => '/static/images/icons/job.png',
             'url' => '/lifecycle/tree_project_jobs',
@@ -88,31 +94,30 @@ sub lc_for_project {
                   comp => { url => '/job/monitor' },
                 }
             ],
-          },
-          {
-            'node' => 'Views',
-            'icon' => '/static/images/icons/directory.png',
-            'menu' => [
-                        {
-                          'icon' => '/static/images/icons/folder_new.gif',
-                          'text' => 'New Folder',
-                          'url' => '/fileversion/new_folder',
-                           'eval' => {
-                               handler=>'Baseliner.new_folder',
-                           },
-                        }
-                      ],
-            'url' => '/fileversion/tree_file_project',
-            'data' => {
-                        id_directory => '',
-                        'on_drop' => {
-                                       'url' => '/fileversion/drop'
-                                     }
-                      },
-            'type' => 'component',
-          },
-    ];
-    
+          }
+    };
+    push @nodes,{
+        'node' => 'Views',
+        'icon' => '/static/images/icons/directory.png',
+        'menu' => [
+                    {
+                      'icon' => '/static/images/icons/folder_new.gif',
+                      'text' => 'New Folder',
+                      'url' => '/fileversion/new_folder',
+                       'eval' => {
+                           handler=>'Baseliner.new_folder',
+                       },
+                    }
+                  ],
+        'url' => '/fileversion/tree_file_project',
+        'data' => {
+                    id_directory => '',
+                    'on_drop' => {
+                                   'url' => '/fileversion/drop'
+                                 }
+                  },
+        'type' => 'component',
+    };
 
     my @repos =
         map { values %$_ }
@@ -121,7 +126,7 @@ sub lc_for_project {
     for my $id_repo ( @repos ) {
         try {
             my $repo = ci->new( $id_repo );
-            push @$nodes, {
+            push @nodes, {
               node => $repo->name,
               type => 'changeset',
               url => '/lifecycle/branches',
@@ -136,7 +141,7 @@ sub lc_for_project {
             my $err = shift;
             my $msg = _loc('Error loading repository %1: %2', $id_repo, $err);
             _error( $msg );
-            push @$nodes, {
+            push @nodes, {
               node    => substr($msg,0,80), 
               active  => 1,
               leaf    => \1,
@@ -189,7 +194,7 @@ sub lc_for_project {
     } else {
         # publish an warning node
         my $msg = _loc('User does not have access to states');
-        push @$nodes, {
+        push @nodes, {
           node    => $msg,
           active  => 1,
           leaf    => \1,
@@ -198,7 +203,7 @@ sub lc_for_project {
     }
 
     no strict;
-    [ @$nodes, @states ];
+    [ @nodes, @states ];
 }
 
 =head2 project_repos project=>'...'
