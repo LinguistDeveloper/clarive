@@ -1397,6 +1397,8 @@ sub _fixascii_sql {
     $data =~ s/\\xED/í/g;
     $data =~ s/\\xF3/ó/g;
     $data =~ s/\\xFA/ú/g;
+    $data =~ s/\\Ã/í/g;
+    $data =~ s/\\Ã³/ó/g;
 
     $data
 }
