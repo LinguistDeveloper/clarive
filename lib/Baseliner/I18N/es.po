@@ -4224,6 +4224,9 @@ msgstr "Puede ver tópicos de la categoría"
 msgid "Can edit topic for this category"
 msgstr "Puede editar tópicos de la categoría"
 
+msgid "Can add/view comments in topics of this category"
+msgstr "Puede comentar/ver comentarios en tópicos de la categoría"
+
 msgid "Can edit the field"
 msgstr "Puede editar el campo"
 

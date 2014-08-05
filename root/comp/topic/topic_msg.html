@@ -163,7 +163,7 @@ padding: 2px 4px 2px 7px;
 <div class="clear"></div>
     <br><br>
     <ul class="nav nav-tabs" id="nav-tabs-<% $ii %>">
-        <li <% $tabactive[0] and 'class="active"' %>>
+        <li <% $tabactive[0] and 'class="active"' %> <%  $permissionComment? '' : ' style="display: none" ' %>>
             <a href="#comments<% $ii %>" id="tab-comments<% $ii %>" data-toggle="tab"><% _loc('Discussion') %></a>
         </li>
         <li <% $tabactive[1] and 'class="active"' %>>
