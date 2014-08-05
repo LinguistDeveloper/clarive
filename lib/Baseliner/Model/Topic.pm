@@ -2267,9 +2267,9 @@ sub set_release {
 
     my $topic_mid = $rs_topic->{mid};
     $self->cache_topic_remove($topic_mid);
-    my $where = { is_release=>mdb->true, rel_type=>$rel_type, to_mid=>"$topic_mid" };
+    my $where = { rel_type=>$rel_type, to_mid=>"$topic_mid" };
     $where->{rel_field} = $release_field if $release_field;
-    my @rel_mids = map { $$_{from_mid} } mdb->master_rel->find()->fields({ from_mid=>1 })->all;
+    my @rel_mids = map { $$_{from_mid} } mdb->master_rel->find($where)->fields({ from_mid=>1 })->all;
     my $release_row = mdb->topic->find_one({ is_release=>mdb->true, mid=>mdb->in(@rel_mids) });
     my $old_release = '';
     my $old_release_name = '';
