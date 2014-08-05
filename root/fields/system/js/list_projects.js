@@ -51,7 +51,7 @@ params:
     var project_box = new Baseliner.PagingProjects({
         origin: 'custom',
         fieldLabel: _(meta.name_field),
-        pageSize: ps,
+        pageSize: '',
         tpl: tpl,
         name: meta.id_field,
         hiddenName: meta.id_field,          
