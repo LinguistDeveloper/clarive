@@ -2289,7 +2289,7 @@ sub set_release {
     $notify->{project} = \@projects if @projects;
 
     # check if arrays contain same members
-    if ( $new_release && $new_release ne $old_release ) {
+    if ( $new_release ne $old_release ) {
         if($release_row){
             my $rdoc = {from_mid => "$old_release", to_mid=>''.$topic_mid, rel_field => $release_field};
             mdb->master_rel->remove($rdoc,{multiple=>1});
