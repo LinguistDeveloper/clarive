@@ -39,24 +39,30 @@ method connect( :$user='' ) {
     if( $self->connect_worker ) {
         $agent = try {
             my ($chi) = $self->children( isa=>'worker_agent' ) if $self->mid;
-            $chi->os( $self->os );
-            do { alarm 0; return $chi } if ref $chi;
+            if (ref $chi){
+                $chi->os( $self->os );
+                do { alarm 0; return $chi };
+            }
             BaselinerX::CI::worker_agent->new( server=>$self, timeout=>$self->agent_timeout, os=>$self->os, cap=>$user.'@'.$self->hostname );
         } catch { $err.=shift . "\n" };       
     } 
     if( !$agent && $self->connect_balix ) {
         $agent = try { 
             my ($chi) = $self->children( isa=>'balix_agent' ) if $self->mid;
-            $chi->os( $self->os );
-            do { alarm 0; return $chi } if ref $chi;
+            if (ref $chi){
+                $chi->os( $self->os );
+                do { alarm 0; return $chi };
+	    }
             BaselinerX::CI::balix_agent->new( user=>$user, server=>$self, os=>$self->os, timeout=>$self->agent_timeout );
         } catch { $err.=shift . "\n" };       
     }
     if( !$agent && $self->connect_ssh ) {
         $agent = try { 
             my ($chi) = $self->children( isa=>'ssh_agent' ) if $self->mid;
-            $chi->os( $self->os );
-            do { alarm 0; return $chi } if ref $chi;
+            if(ref $chi){
+	        $chi->os( $self->os );
+                do { alarm 0; return $chi };
+	    }
             BaselinerX::CI::ssh_agent->new( user=>$user, server=>$self, os=>$self->os, timeout=>$self->agent_timeout );
         } catch { $err.=shift . "\n" };       
     }
