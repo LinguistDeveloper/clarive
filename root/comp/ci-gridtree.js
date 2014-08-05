@@ -3,6 +3,7 @@
 </%args>
 
 (function(params){
+    console.log(params);
     delete params['tab_index'];  // this comes from the tab data
     var can_save = <% $save %>;
     var ps = 30;
@@ -369,6 +370,13 @@
         hidden: !can_save
     })
 
+    var hbl;
+    if(!store_ci.baseParams.has_bl){
+        hbl = true;
+    }
+    else{
+        hbl = false;
+    }
 
     var ci_grid = new Ext.ux.maximgb.tg.GridPanel({
         title: _('CI Class: %1', params.item),
@@ -442,8 +450,8 @@
             { id:'mid', header: _('ID'), width: 65, dataIndex: 'mid' , sortable: true},
             { header: _('Collection'), width: 50, dataIndex: 'collection' , sortable: true},
             { header: _('Moniker'), width: 160, dataIndex: 'moniker', renderer: render_moniker, sortable: true },
-            { header: _('Class'), hidden: true, width: 160, dataIndex: 'classname', sortable: true },
-            { header: _('Baseline'), width: 160, dataIndex: 'bl', renderer: Baseliner.render_bl, sortable: true },
+            { header: _('Class'),  width: 160, dataIndex: 'classname', sortable: true },
+            { header: _('Baseline'), hidden: hbl, width: 160, dataIndex: 'bl', renderer: Baseliner.render_bl, sortable: true },
             { header: _('Version'), width: 50, dataIndex: 'versionid', sortable: true },
             { header: _('Timestamp'), width: 100, dataIndex: 'ts', sortable: true },
             { header: _('Tags'), width: 140, hidden: true, dataIndex: 'tags', renderer: render_tags, sortable: true },
