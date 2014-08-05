@@ -213,6 +213,11 @@ sub form_for_ci {
 # adjacency flat tree
 sub tree_objects {
     my ($self, %p)=@_;
+
+    if($p{order_by}){
+        $p{sort} = $p{order_by};
+    }
+    
     my $class = $p{class};
     my $collection = $p{collection};
     my %class_coll;
