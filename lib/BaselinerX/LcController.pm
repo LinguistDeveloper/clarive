@@ -97,7 +97,7 @@ sub category_contents : Local {
     my ($cnt,@user_topics) = Baseliner->model('Topic')->topics_for_user( { username => $c->username, categories => $category_id, clear_filter => 1 });
     @user_topics = map { $_->{mid}} @user_topics;
 
-    my @rels = mdb->topic->find( { 'category_status.type' => mdb->nin('F','FC'), mid => mdb->in(@user_topics), id_category => "$category_id" })->all;
+    my @rels = mdb->topic->find( { 'category_status.type' => mdb->nin('F','FC'), mid => mdb->in(@user_topics) })->all;
     
     
     my %categories = mdb->category->find_hash_one( id=>{},{ workflow=>0, fields=>0, statuses=>0, _id=>0 });
@@ -114,7 +114,7 @@ sub category_contents : Local {
             icon => '/static/images/icons/release.png',
             url  => '/lifecycle/topic_contents',
             topic_name => {
-                mid            => $_->{mid},
+                mid            => $_->{mid}. ' ('.$_->{category_status}->{name}.')',
                 category_color => $_->{category}->{color},
                 category_name  => $_->{category}->{name},
                 is_release     => 1,
