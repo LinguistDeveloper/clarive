@@ -266,6 +266,7 @@ sub topic_contents : Local {
 
         push @tree, {
             text       => $topic->{title},
+            #text       => $_->{title},
             topic_name => {
                 mid             => $topic->{mid},
                 category_color  => $topic->{category}{color},
