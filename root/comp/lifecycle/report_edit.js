@@ -539,10 +539,13 @@
     
     var tabs = new Ext.TabPanel({ height: 600,activeTab: 0, items:[ options, seltab ]});
     
+
     var save_form = function(){
                 if( form_value.set_value ) form_value.set_value();
                 if( form_value.set_select ) form_value.set_select();
                 var dd = options.getValues();
+                var bt=tbar.items.get('btnSave');
+                bt.disable();
                 //console.dir(tree_selected.root);
                 if( tree_selected_is_loaded ) dd.selected = Baseliner.encode_tree( tree_selected.root );
                 //if( sql.editor ) dd.sql = sql.getValue();
@@ -564,16 +567,29 @@
                             buttons: Ext.Msg.OK, 
                             icon: Ext.Msg.INFO
                         });  
-                    }
+                    };
+                    bt.enable();
                 });
             };
-    var tbar = [ '->',
-        { text: _('Close'), icon:'/static/images/icons/close.png', handler: function(){ win.close() } },
-        { text: _('Save'),icon:'/static/images/icons/save.png', 
-          handler: save_form
-        }
-    ];
-    
+
+    var tbar = new Ext.Toolbar({ 
+        items:[ 
+            '->',
+            { 
+                id:'btnClose' 
+                ,text: _('Close'),
+                icon:'/static/images/icons/close.png', 
+                handler: function(){ win.close() } 
+            } 
+            ,{ 
+                id: 'btnSave',
+                text: _('Save'),
+                icon:'/static/images/icons/save.png', 
+                handler: save_form
+            } 
+        ] 
+    });
+
     win = new Baseliner.Window({
         title: title,
         autoHeight: true,
