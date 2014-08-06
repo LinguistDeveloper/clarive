@@ -108,7 +108,7 @@ sub category_contents : Local {
     map { $related{$_->{from_mid}} = 1 if !$related{$_->{from_mid}} } mdb->master_rel->find( { from_mid => mdb->in(@user_topics), rel_type => 'topic_topic' } )->all;
 
     my @tree = map {
-       my $leaf = $related{$_->{mid}} ? \0 : \1;
+        my $leaf = ci->new($_->{mid})->children( where => { collection => 'topic'}, depth => 1) ? \0 : \1;
        +{
             text => ' ('.$_->{category_status}->{name}.') '.$_->{title},
             icon => '/static/images/icons/release.png',
@@ -123,7 +123,9 @@ sub category_contents : Local {
                 topic_mid    => $t->{mid},
                 click       => $self->click_for_topic(  $t->{category}->{name}, $t->{mid} ),
             },
-            menu => [ @$menu],
+            leaf => $leaf,
+            expandable => !$leaf,
+            menu => \@menu_related
        }
     } @rels;
     #$c->stash->{release_only} = 1;
