@@ -180,6 +180,10 @@ sub run_once {
                 { multiple=>1 },
             );
         }
+
+
+        ############################ DELETE SPECIFICATIONS OF RELEASES ###########################################
+        _rmpath(_dir(_tmp_dir(),'downloads'));
     }
     _log 'Done purging.';
 }

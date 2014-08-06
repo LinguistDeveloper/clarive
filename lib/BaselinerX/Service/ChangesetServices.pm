@@ -500,8 +500,8 @@ sub nature_items {
                 if( $nature->push_item( $it ) ) {
                     my $id =  $nature->$nat_id;
                     my $mid =  $nature->mid;
-                    $stash->{natures}{ $id } = $nature;
-                    $stash->{natures}{ $mid } = $nature;
+                    $stash->{natures}{ $project->mid }{ $id } = $nature;
+                    $stash->{natures}{ $project->mid }{ $mid } = $nature;
                     $nature_names{ $nature->name } = ();
                     $job->push_ci_unique( 'natures', $nature_clon );
                     push @chosen, $it;

@@ -734,7 +734,8 @@ Creates a random tempdir inside the official temp dir.
 sub _mktmp {
    my %p = @_;
    my $suffix = [ _array($p{suffix}) ] || [];
-   return _dir( _tmp_dir(), join( '_', _nowstamp, $$, int( rand( 100000 ) ), @$suffix ) );
+   my $prefix = [ _array($p{prefix}) ] || [];
+   return _dir( _tmp_dir(), @$prefix, join( '_', _nowstamp, $$, int( rand( 100000 ) ), @$suffix ) );
 }
 
 =head2 _tmp_file( prefix=>'myprefix', extension=>'zip' )
@@ -1381,6 +1382,14 @@ sub _html_escape {
     $data =~ s/\&/&amp;/gs;
     $data =~ s/</&lt;/gs;
     $data =~ s/>/&gt;/gs;
+
+    #convert ASCII characters form SQL
+    $data =~ s/\\xE1/á/g;
+    $data =~ s/\\xE9/é/g;
+    $data =~ s/\\xED/í/g;
+    $data =~ s/\\xF3/ó/g;
+    $data =~ s/\\xFA/ú/g;
+
     $data
 }
 
@@ -1788,7 +1797,7 @@ Zip a directory
 
 =cut
 sub zip_dir {
-    my (%p) =@_;
+    my ($self, %p) =@_;
     my $source_dir = $p{source_dir} // _fail _loc 'Missing parameter source_dir'; 
     my $zipfile = $p{zipfile} // _fail _loc 'Missing parameter tarfile';
     my $verbose = $p{verbose};
@@ -1816,10 +1825,6 @@ sub zip_dir {
         return if %files && !exists $files{$rel}; # check if file is in list
         my $stat = $f->stat;
         my $type = $f->is_dir ? 'd' : 'f';
-        my %attr = $type eq 'f' 
-            ? ( mtime=>$stat->mtime, mode=>$stat->mode )
-            : ( mtime => $stat->mtime, mode=>$stat->mode );
-        
         for my $in ( @include ) {
             return if "$f" !~ $in;
         }
@@ -1829,16 +1834,14 @@ sub zip_dir {
         
         if( $f->is_dir ) {
             # directory with empty data
-            say "zip_dir: add dir: `$f`: " . _to_json(\%attr) if $verbose;
             my $dir_member = $zip->addDirectory( ''.$rel );
         } else {
             # file
-            say "zip_dir: add file `$f`: " . _to_json(\%attr) if $verbose;
             $zip->addFile( ''.$f, ''.$rel, COMPRESSION_LEVEL_BEST_COMPRESSION  );
             
         }
     });
-    say "zip_dir: writing tar file `$zipfile`" if $verbose;
+    say "zip_dir: writing zip file `$zipfile`" if $verbose;
     unless ( $zip->writeToFileNamed( $zipfile ) == AZ_OK ) {
         _fail 'Error writing file '.$zipfile;
     }

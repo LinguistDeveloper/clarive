@@ -74,8 +74,9 @@ sub run_local {
         chdir $orig;
         _log "CHDIR $orig";
     }
-
+    $out = _html_escape( $out );
     $out = encode("utf8",$out);
+
     my $r = { output=>$out, rc=>$rc, ret=>$ret };
 
     if( $rc ) {

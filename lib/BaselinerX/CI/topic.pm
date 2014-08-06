@@ -181,10 +181,10 @@ sub items {
 sub jobs {
     my ($self, $p )=@_;
     my @jobs = $self->parents( isa=>'job', %$p );
-    if( length $p->{username} ) {
-        my $has_permission = model->Permissions->user_has_action( username=> $p->{username}, action=>'action.job.monitor' );
+    if ( $p->{username} ) {
         my $is_root = Baseliner->model('Permissions')->is_root($p->{username});
-        if (!$has_permission && !$is_root){
+        my $has_permission = Baseliner->model('Permissions')->user_has_action( username=> $p->{username}, action=>'action.job.monitor' );
+        if (!$has_permission and !$is_root){
             @jobs = ();
         }
     }
@@ -203,7 +203,7 @@ sub activity {
         username=>$$p{username}, categories=>{ $self->id_category => $self->name_category }, 
     );
     my @perm_events = grep { !exists $_->{field} || exists $user_categories_fields_meta->{$name_category}->{$_->{field}}} Util->_array( $events );
-    @perm_events = map { $$_{text} = Util->_to_utf8( $$_{text} ); $_ } Util->_array($events);
+    @perm_events = map { $$_{text} = Util->_to_utf8( $$_{text} ); $_ } @perm_events;
     wantarray ? @perm_events : \@perm_events;
 }
 

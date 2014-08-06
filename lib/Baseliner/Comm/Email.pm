@@ -28,9 +28,9 @@ sub group_queue {
     $query{where}->{'queue.active'} = '1';
     $query{where}->{'queue.carrier'} = 'email';
 
-    my @queue = Baseliner->model('Messaging')->transform(%query);
+    my ($queue,$cnt) = Baseliner->model('Messaging')->transform(%query);
 
-    my @q = $self->filter_queue(@queue);
+    my @q = $self->filter_queue(_array $queue);
 
     my %email;
     foreach my $queue_item (@q){
@@ -249,7 +249,8 @@ sub filter_queue {
 
     my $now = Time::Piece->strptime(mdb->ts, $dateformat);
     my @q;
-    foreach my $r (@queue){
+
+    for my $r (@queue){
         if($r->{active} eq '1' ){
             if(!$r->{msg}->{schedule_time} || ($r->{msg}->{schedule_time} eq '') ){
                 push (@q, $r);

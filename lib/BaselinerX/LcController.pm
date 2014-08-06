@@ -3,6 +3,7 @@ use Baseliner::Plug;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use Try::Tiny;
+use utf8;
 require Girl;
 
 BEGIN { extends 'Catalyst::Controller' };
@@ -101,6 +102,8 @@ sub category_contents : Local {
     
     my %categories = mdb->category->find_hash_one( id=>{},{ workflow=>0, fields=>0, statuses=>0, _id=>0 });
     
+    my @menu_related = $self->menu_related();
+
     my @tree = map {
         my $t = $_;
         my ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu(

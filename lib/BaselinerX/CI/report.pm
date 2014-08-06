@@ -1027,18 +1027,18 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 
     my @topics = map { 
         my %row = %$_;
+		_log ">>>>>>>>>>>>>>>>>>>>>>>>>>>FILA: " . _dump %row;
 
         while( my($k,$v) = each %row ) {
-
             $row{$k} = Class::Date->new($v)->string if $k =~ /modified_on|created_on/;
-            
+
             my $mt = $meta{$k}{meta_type} // '';
             #  get additional fields ?   
             #  TODO for sorting, do this before and save to report_results collection (capped?) 
             #       with query id and query ts, then sort
             #_error "MT===$mt, K==$k";
 
-            if( $mt =~ /ci|project|revision|user/ ) {
+            if( $mt =~ /ci|project|revision|user|file/ ) {
                 $row{'_'.$k} = $v;
 				$row{$k} = $scope_cis{$v} 
 					// do{ 
@@ -1046,16 +1046,20 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                         my @values;
                         if (@objs){
                         for my $obj (@objs){
-                            my $tmp = $obj->{moniker} ? $obj->{moniker} : $obj->{name}; 
+                            my $tmp;
+
+                            if ( $mt =~ /ci|project|user|file/ ) {
+                                $tmp = $obj->{moniker} ? $obj->{moniker} : $obj->{name}; 
+                            } else {
+                                $tmp = $obj->{name};
+                            }
                             push @values, $tmp;    
                         }
-                        $scope_cis{$_->{mid}} = \@values;
+                        $scope_cis{$v} = \@values;
 
                         }
                         \@values;
-						#$scope_cis{$_->{mid}} = $_ for @objs;
-						#\@objs;
-						};
+				};
 				for my $category (@All_Categories){
                     $row{$k. "_$category"} = $row{$k};
                     $row{'_'.$k. "_$category"} = $row{'_'.$k};

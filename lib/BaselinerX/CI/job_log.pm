@@ -104,7 +104,8 @@ sub common_log {
         $doc->{service_key} = $self->current_service;
         
         if( $p{data} ) {
-            my $d = compress( $p{data} );  ## asset in grid
+            my $data = Util->hide_passwords( $p{data});
+            my $d = compress( $data );  ## asset in grid
             my $ass = mdb->asset( $d, parent=>$doc->{_id}, parent_mid=>$mid, id_log=>$id, filename=>$doc->{data_name}//'', parent_collection=>'log' );
             $ass->insert;
             $doc->{data} = $ass->id;
