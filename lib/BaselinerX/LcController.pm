@@ -381,6 +381,54 @@ sub tree_project : Local {
     $c->forward( 'View::JSON' );
 }
 
+# a generic dispatcher for repo contents - that way we avoid having to implement a controller for each repo
+sub list_repo_contents : Local {
+    my ($self,$c) = @_;
+    my @tree;
+    my $p = $c->req->params;
+    try {
+        my $id_repo = $p->{id_repo} or _throw 'missing repo id';
+        my $repo = Baseliner::CI->new( $id_repo );
+
+        #if( $config->{show_changes_in_tree} || !$p->{id_status} ) { 
+        
+        my @items = $repo->list_contents( request=>$p );
+        _debug _loc "---- provider ".$repo->name." has %1 changesets", scalar @items;
+
+        # loop through the repo objects
+        for my $it ( @items ) {
+            my $menu = [];
+            # get menu extensions (find packages that do)
+            # get node menu
+            push @$menu, _array $it->node_menu if ref $it->node_menu;
+            push @tree, {
+                url        => $it->node_url,
+                data       => $it->node_data,
+                #parent_data => { id_project=>$id_project, project=>$project }, 
+                menu       => $menu,
+                icon       => $it->icon,
+                text       => $it->text || $it->name,
+                leaf       => \0,
+                expandable => \0
+            };
+        }
+    } catch {
+        my $err = shift;   
+        my $msg = _loc('Error detected: %1', $err );
+        _error( $msg );
+        push @tree, { 
+            text => substr($msg,0,255), 
+            data => {},
+            icon => '/static/images/icons/error.png',
+            leaf=>\1,
+            expandable => \0
+        };
+    };
+
+    $c->stash->{ json } = \@tree;
+    $c->forward( 'View::JSON' );
+}
+
 sub branches : Local {
     my ($self,$c) = @_;
     my @tree;
@@ -397,29 +445,44 @@ sub branches : Local {
 
     if( $config->{show_changes_in_tree} || !$p->{id_status} ) { 
 
-        my $repo = Baseliner::CI->new( $id_repo );
+        try {
+            my $repo = Baseliner::CI->new( $id_repo );
 
-        my @changes = $repo->list_branches( project=>$project );
-        _debug _loc "---- provider ".$repo->name." has %1 changesets", scalar @changes;
-        push @cs, @changes;
+            my @changes = $repo->can('list_contents') 
+                ?  $repo->list_contents( request=>$p )
+                : $repo->list_branches( project=>$project );
+            _debug _loc "---- provider ".$repo->name." has %1 changesets", scalar @changes;
+            push @cs, @changes;
 
-        # loop through the branch objects 
-        for my $cs ( @cs ) {
-            my $menu = [];
-            # get menu extensions (find packages that do)
-            # get node menu
-            push @$menu, _array $cs->node_menu if ref $cs->node_menu;
-            push @tree, {
-                url        => $cs->node_url,
-                data       => $cs->node_data,
-                parent_data => { id_project=>$id_project, project=>$project }, 
-                menu       => $menu,
-                icon       => $cs->icon,
-                text       => $cs->text || $cs->name,
-                leaf       => \0,
+            # loop through the branch objects 
+            for my $cs ( @cs ) {
+                my $menu = [];
+                # get menu extensions (find packages that do)
+                # get node menu
+                push @$menu, _array $cs->node_menu if ref $cs->node_menu;
+                push @tree, {
+                    url        => $cs->node_url,
+                    data       => $cs->node_data,
+                    parent_data => { id_project=>$id_project, project=>$project }, 
+                    menu       => $menu,
+                    icon       => $cs->icon,
+                    text       => $cs->text || $cs->name,
+                    leaf       => \0,
+                    expandable => \0
+                };
+            }
+        } catch {
+            my $err = shift;   
+            my $msg = _loc('Error detected: %1', $err );
+            _error( $msg );
+            push @tree, { 
+                text => substr($msg,0,255),
+                data => {},
+                icon => '/static/images/icons/error.png',
+                leaf=>\1,
                 expandable => \0
             };
-        }
+        };
     }
 
     $c->stash->{ json } = \@tree;

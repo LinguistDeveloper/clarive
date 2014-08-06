@@ -11,6 +11,8 @@ requires 'list_elements';
 requires 'checkout';
 requires 'repository';
 
+sub content_url { '/lifecycle/branches' }   # TODO should be list_repo_contents, migrate Git, SVN
+
 sub method_scan {
     my($self,$stash)=@_;
 
