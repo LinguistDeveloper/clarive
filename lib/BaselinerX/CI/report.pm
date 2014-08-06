@@ -1032,10 +1032,6 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
         while( my($k,$v) = each %row ) {
             $row{$k} = Class::Date->new($v)->string if $k =~ /modified_on|created_on/;
 
-            my $mt = $meta_cfg_report{$k} || $meta{$k}{meta_type} || '';
-
-            $row{$k} = Class::Date->new($v)->string if $k =~ /modified_on|created_on/;
-            
             my $mt = $meta{$k}{meta_type} // '';
             #  get additional fields ?   
             #  TODO for sorting, do this before and save to report_results collection (capped?) 
