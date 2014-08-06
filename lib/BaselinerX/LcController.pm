@@ -248,21 +248,27 @@ sub topic_children_for_state {
 sub topic_contents : Local {
     my ($self,$c) = @_;
     my @tree;
-    my $p = $c->req->params;
-    my $topic_mid = $p->{topic_mid};
-    my $state_id = $p->{state_id};
-    my $id_project = $p->{id_project};
-    
-    my @topics = grep { $$_{category}{is_changeset} }
-            $self->topic_children_for_state( username=>$c->username, topic_mid=>$topic_mid, state_id=>$state_id, id_project=>$id_project );
-    
-    for my $topic ( @topics ) {
-        my $is_release = $topic->{category}{is_release};
-        my $is_changeset = $topic->{category}{is_changeset};
+    my $topic_mid = $c->req->params->{topic_mid};
+    my $state = $c->req->params->{state_id};
+    my @topics = ci->new($topic_mid)->children( where => { collection => 'topic'}, depth => 1);
+    _debug \@topics;
+    # mdb->master_rel->find( { from_mid => $topic_mid } )->all;
+    my @mids = map { $_->{mid} } @topics;
+    @topics = mdb->topic->find( { mid=>{'$in'=>\@mids} } )->all;
+    for ( @topics ) {
+        my $is_release = $_->{category}{is_release};
+        my $is_changeset = $_->{category}{is_changeset};
+
         my $icon = $is_release ? '/static/images/icons/release_lc.png'
             : $is_changeset ? '/static/images/icons/changeset_lc.png' :'/static/images/icons/topic.png' ;
 
         my @menu_related = $self->menu_related();
+
+        # my $mid_project = $_->{_project_security}->{project}[0];
+        # my $project_name = $mid_project ? mdb->project->find_one({ mid=>$mid_project })->{name} : '';
+
+        # my $title_project = "(" . $project_name . ")";
+        my $leaf = ci->new($_->{mid})->children( where => { collection => 'topic'}, depth => 1) ? \0 : \1;
 
         push @tree, {
             text       => $topic->{title},
@@ -280,8 +286,8 @@ sub topic_contents : Local {
                click       => $self->click_for_topic(  $topic->{category}{name}, $topic->{mid} ),
             },
             icon       => $icon, 
-            leaf       => \0,
-            expandable => \1,
+            leaf       => $leaf,
+            expandable => !$leaf,
             menu => \@menu_related
         };
     }
