@@ -110,13 +110,13 @@ sub category_contents : Local {
     my @tree = map {
        my $leaf = $related{$_->{mid}} ? \0 : \1;
        +{
-            text => $t->{title},
+            text => ' ('.$_->{category_status}->{name}.') '.$_->{title},
             icon => '/static/images/icons/release.png',
             url  => '/lifecycle/topic_contents',
             topic_name => {
-                mid            => $t->{mid},
-                category_color => $t->{category}->{color},
-                category_name  => $t->{category}->{name},
+                mid            => $_->{mid},
+                category_color => $_->{category}->{color},
+                category_name  => $_->{category}->{name},
                 is_release     => 1,
             },
             data => {
@@ -178,38 +178,40 @@ sub tree_topics_project : Local {
     my @tree;
     my $project = $c->req->params->{project} ;
     my $id_project = $c->req->params->{id_project} ;
-    my @categories  = map { $_->{id}} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'view' );
     
-    my $limit = 20;
-    my $skip = 0;
-    my $sort = { modified_on=>-1 };
-    
-    my $is_release = $c->stash->{release_only} ? mdb->true : mdb->false;
-    
-    # TODO no joins, just search the topic collection for project fields
-    my @topics = mdb->joins( 
-            master_rel=>{ to_mid=>"$id_project" }, 
-            from_mid => mid => 
-            topic => [
-                { id_category=>mdb->in(@categories), 'category.is_release'=>$is_release, 'category_status.type'=>{ '$not'=>qr/^F/ }  },
-                { limit=>$limit, skip=>$skip, sort=>$sort }
-            ]); 
-        
-    for my $topic ( @topics ) {
-        my $is_release = $topic->{category}{is_release};
-        my $is_changeset = $topic->{category}{is_changeset};
-        my $icon = $is_release ? '/static/images/icons/release_lc.png'
-            : $is_changeset ? '/static/images/icons/changeset_lc.png' :'/static/images/icons/topic.png' ;
-        push @tree,
-            $self->build_topic_tree( 
-                mid          => $topic->{mid},
-                topic        => $topic,
-                icon         => $icon,
-                is_release   => $is_release,
-                is_changeset => $is_changeset,
-            );
-    }
+    my ($cnt,@user_topics) = Baseliner->model('Topic')->topics_for_user( { username => $c->username, id_project => $id_project, clear_filter => 1 });
+    @user_topics = map { $_->{mid}} @user_topics;
 
+    my @rels = mdb->topic->find( { 'category_status.type' => mdb->nin('F','FC'), mid => mdb->in(@user_topics) })->all;
+    
+    my @menu_related = $self->menu_related();
+
+    my %related;
+    map { $related{$_->{from_mid}} = 1 if !$related{$_->{from_mid}} } mdb->master_rel->find( { from_mid => mdb->in(@user_topics), rel_type => 'topic_topic' } )->all;
+
+    my @tree = map {
+       my $leaf = $related{$_->{mid}} ? \0 : \1;
+       +{
+            text => $_->{title},
+            icon => '/static/images/icons/release.png',
+            url  => '/lifecycle/topic_contents',
+            topic_name => {
+                mid            => $_->{mid}. ' ('.$_->{category_status}->{name}.')',
+                category_color => $_->{category}->{color},
+                category_name  => $_->{category}->{name},
+                is_release     => 1,
+            },
+            data => {
+                topic_mid    => $_->{mid},
+                click       => $self->click_for_topic(  $_->{category}->{name}, $_->{mid} ),
+            },
+            leaf => $leaf,
+            expandable => !$leaf,
+            menu => \@menu_related
+       }
+    } @rels;
+    #$c->stash->{release_only} = 1;
+    #$c->forward('tree_topics_project');
     $c->stash->{ json } = \@tree;
     $c->forward( 'View::JSON' );
 }
