@@ -588,6 +588,9 @@ msgstr "no hay ventana de pase disponible para la fecha seleccionada"
 msgid "Create a job outside of the available time slots."
 msgstr "Chequee si quiere crear un pase fuera de ventana."
 
+msgid "No deploy destinations match all selected changesets"
+msgstr "No hay destinos de despliegue comunes para los cambios seleccionados"
+
 msgid "Mapping Description"
 msgstr "Descripción del Mapeo"
 
@@ -3582,7 +3585,7 @@ msgstr "Disponible"
 msgid "Enable Job"
 msgstr "Disponible para Pase"
 
-msgid "Are you sure you want to deploy/rollback %1 to baseline %2 (%3)?"
+msgid "Are you sure you want to deploy/rollback %1 to environment %2 (%3)?"
 msgstr "¿Quiere mover %1 al entorno de %2 (%3)?"
 
 msgid "Are you sure you want to delete the role %1?"
@@ -4543,16 +4546,16 @@ msgid "No artifacts found"
 msgstr "No se han encontrado artefactos"
 
 msgid "New file %1 attached to topic [%2] %3"
-msgstr "Nuevo fichero %1 adjuntado al tópico [%2] %3"
+msgstr "Nuevo fichero %1 adjuntado #%2 %3"
 
 msgid "%1 created a post for topic [%2] %3"
-msgstr "El usuario %1 ha comentado el tópico [%2] %3"
+msgstr "%1 ha comentado #%2 %3"
 
 msgid "%1 deleted a post from topic [%2] %3"
-msgstr "El usuario %1 ha borrado un comentario del tópico [%2] %3"
+msgstr "%1 ha borrado un comentario #%2 %3"
 
 msgid "User %1 has requested approval for job %2"
-msgstr "El usuario %1 ha solicitado aprobación para el pase %2"
+msgstr "%1 ha solicitado aprobación para el pase %2"
 
 msgid "Refresh All Nodes"
 msgstr "Refrescar todo el Árbol"
@@ -6449,6 +6452,9 @@ msgstr "Ignorar, si el fichero ta ha sido mandado por  cualquier tarea en la cad
 
 msgid "Reship, even file has already been shipped to node"
 msgstr "Reenviar, incluso si el fichero ha sido ya enciado al nodo"
+
+msgid "Topic %1 has already been selected"
+msgstr "El tópico %1 ya ha sido seleccionado"
 
 msgid "Remote Path"
 msgstr "Ruta remota"

@@ -33,22 +33,6 @@ sub load_baselines : Private {
     $c->stash->{baselines} = \@bl_arr;
 }
 
-# used by job_create (job/create) later sent to job_new.js
-sub load_baselines_for_action : Private {
-    my ($self,$c)=@_;
-    my $action = $c->stash->{action} or _throw "Missing stash parameter 'action'";
-    my @bl_arr = ();
-    my @bl_list = Baseliner::Core::Baseline->baselines_no_root();
-    return $c->stash->{baselines} = [ [ '*', 'Common' ] ] unless @bl_list > 0;
-    my $is_root = $c->model('Permissions')->is_root( $c->username );
-    foreach my $n ( @bl_list ) {
-        next unless $is_root or $c->model('Permissions')->user_has_action( username=>$c->username, action=>$action, bl=>$n->{bl} );
-        my $arr = [ $n->{bl}, _loc($n->{name}) ];
-        push @bl_arr, $arr;
-    }
-    $c->stash->{baselines} = \@bl_arr;
-}
-
 sub json : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;

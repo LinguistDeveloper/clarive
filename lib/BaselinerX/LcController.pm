@@ -98,23 +98,34 @@ sub category_contents : Local {
 
     my @rels = grep {!$seen{$_->{mid}}++} mdb->topic->find( { mid => mdb->in(@user_topics), id_category => "$category_id" })->all;
     
-    my @menu_related = $self->menu_related();
+    
+    my %categories = mdb->category->find_hash_one( id=>{},{ workflow=>0, fields=>0, statuses=>0, _id=>0 });
+    
     my @tree = map {
+        my $t = $_;
+        my ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu(
+            $c,
+            topic      => $t,
+            #bl_state   => $bl,
+            #state_name => $state_name,
+            #id_project => $id_project,
+            categories => \%categories
+        );
        +{
-            text => $_->{title},
+            text => $t->{title},
             icon => '/static/images/icons/release.png',
             url  => '/lifecycle/topic_contents',
             topic_name => {
-                mid            => $_->{mid},
-                category_color => $_->{category}->{color},
-                category_name  => $_->{category}->{name},
+                mid            => $t->{mid},
+                category_color => $t->{category}->{color},
+                category_name  => $t->{category}->{name},
                 is_release     => 1,
             },
             data => {
-                topic_mid    => $_->{mid},
-                click       => $self->click_for_topic(  $_->{category}->{name}, $_->{mid} ),
+                topic_mid    => $t->{mid},
+                click       => $self->click_for_topic(  $t->{category}->{name}, $t->{mid} ),
             },
-            menu => \@menu_related
+            menu => [ @$menu],
        }
     } @rels;
     #$c->stash->{release_only} = 1;
@@ -213,6 +224,7 @@ sub topic_children_for_state {
     
     # get all children topics
     my @chi_topics = mdb->joins( master_rel=>{ rel_type=>'topic_topic', from_mid=>"$topic_mid" }, to_mid => mid => topic=>[{},{mid=>1}] );
+    push @chi_topics, map { mdb->joins( master_rel=>{ rel_type=>'topic_topic', from_mid=>"$$_{mid}" }, to_mid => mid => topic=>[{},{mid=>1}] ) } @chi_topics;
 
     # now filter them thru user visibility, current state 
     my $where = {
@@ -545,6 +557,8 @@ sub changeset : Local {
                 promotable   => $promotable,
                 demotable    => $demotable,
                 deployable   => $deployable,
+                state_id     => $p->{id_status},
+                id_project   => $id_project,
                 state_name   => _loc($state_name),
                 topic_mid    => $topic->{mid},
                 topic_status => $topic->{id_category_status},
@@ -586,6 +600,7 @@ sub changeset : Local {
                     demotable    => $demotable,
                     deployable   => $deployable,
                     state_name   => _loc($state_name),
+                    id_project   => $id_project,
                     state_id     => $p->{id_status},
                     topic_mid    => $rel->{mid},
                     topic_status => $rel->{id_category_status},
@@ -600,16 +615,19 @@ sub changeset : Local {
 }
 
 sub promotes_and_demotes {
-    my ($self, $c, %p ) = @_; 
-    my ( $topic, $bl_state, $state_name, $id_status_from, $id_project ) = @p{ qw/topic bl_state state_name id_status_from id_project/ };
+    my ($self, %p ) = @_; 
+    my ( $username, $topic, $id_status_from, $id_project ) = @p{ qw/username topic id_status_from id_project/ };
     my ( @menu_s, @menu_p, @menu_d );
+    $id_status_from //= $topic->{category_status}{id};
 
     _fail _loc 'Missing topic parameter' unless $topic;
     
     my $id_status_from_lc = $id_status_from ? $id_status_from : $topic->{id_category_status};
-    my @user_workflow = _unique map {$_->{id_status_to} } Baseliner->model("Topic")->user_workflow( $c->username );
-    my @user_roles = ci->user->roles( $c->username );
+    my @user_workflow = _unique map {$_->{id_status_to} } Baseliner->model("Topic")->user_workflow( $username );
+    my @user_roles = ci->user->roles( $username );
     my %statuses = ci->status->statuses;
+    my %bls = map{ $$_{mid}=>$$_{moniker} || $$_{bl} }ci->bl->find->all;
+    my @bl_from = _array $statuses{ $id_status_from }{bls};
     my $cat = mdb->category->find_one({ id=>''.$topic->{id_category} },{ workflow=>1 });
     _fail _loc 'Category %1 not found', $topic->{id_category} unless $cat;
     
@@ -619,11 +637,10 @@ sub promotes_and_demotes {
         return sort { $$a{seq} <=> $$b{seq} }
             map { 
                 my $st = $statuses{ $$_{id_status_to} };
-                $st->{bl_from} = $statuses{ $$_{id_status_from} }{bl};
                 $st;
             }
             grep {
-               my $k = join',',$$_{id_status_from},$$_{id_status_to} ;
+               my $k = join',', ( map{ $_ // '' } $$_{id_status_from},$$_{id_status_to} );
                my $flag = exists $seen{$k};
                $seen{$k} = 1;
                !$flag;
@@ -634,7 +651,7 @@ sub promotes_and_demotes {
                && $$_{id_status_from} == $id_status_from_lc
             } 
             grep {
-               $$_{job_type} eq $dir  # static,promote,demote
+               ( $$_{job_type} // '' ) eq $dir  # static,promote,demote
             }
             _array( $$cat{workflow} );
     };
@@ -645,27 +662,25 @@ sub promotes_and_demotes {
     my ($cs_project) = ci->new($topic->{mid})->projects;
     my @project_bls = map { $_->{bl} } _array $cs_project->bls;
 
-    my $deployable={};
+    my $statics={};
     for my $status ( @statics ) {
-        my ($ci_status) = ci->status->query({ id_status => ''.$status->{id_status}, name=>$status->{name} });
-
-        for my $bl ( _array $ci_status->{bls} ) {        
+        for my $bl ( map { $bls{$_} } _array $status->{bls} ) {        
             if ( !@project_bls || $bl->{bl} ~~ @project_bls ){
-               $deployable->{ $bl->{bl} } = \1;
-               push @menu_s, {
-                   text => _loc( 'Deploy to %1 (%2)', _loc( $status->{name} ), $bl->{bl} ),
-                   eval => {
-                       url            => '/comp/lifecycle/deploy.js',
-                       title          => 'Deploy',
-                       job_type       => 'static',
-                       bl_to          => $bl->{bl},
-                       id_project     => $id_project,
-                       status_to      => $status->{id_status},
-                       status_to_name => _loc($status->{name}),
-                   },
-                   id_status_from => $id_status_from_lc,
-                   icon => '/static/images/silk/arrow_right.gif'
-               };
+                $statics->{ $bl } = \1;
+                push @menu_s, {
+                    text => _loc( 'Deploy to %1 (%2)', _loc( $status->{name} ), $bl ),
+                    eval => {
+                        url            => '/comp/lifecycle/deploy.js',
+                        title          => 'Deploy',
+                        job_type       => 'static',
+                        bl_to          => $bl,
+                        id_project     => $id_project,
+                        status_to      => $status->{id_status},
+                        status_to_name => _loc($status->{name}),
+                    },
+                    id_status_from => $id_status_from_lc,
+                    icon => '/static/images/silk/arrow_right.gif'
+                };
             }
         }
     }
@@ -675,25 +690,23 @@ sub promotes_and_demotes {
     
     my $promotable={};
     for my $status ( @status_to ) {
-        my ($ci_status) = ci->status->query({ id_status=>''.$status->{id_status}, name => $status->{name} });
-
-        for my $bl ( _array $ci_status->{bls} ) {        
+        for my $bl ( map { $bls{$_} } _array $status->{bls} ) {        
             if ( !@project_bls || $bl->{bl} ~~ @project_bls ){
-               $promotable->{ $bl->{bl} } = \1;
-               push @menu_p, {
-                   text => _loc( 'Promote to %1 (%2)', _loc( $status->{name} ), $bl->{bl} ),
-                   eval => {
-                       url            => '/comp/lifecycle/deploy.js',
-                       title          => 'To Promote',
-                       job_type       => 'promote',
-                       id_project     => $id_project,
-                       bl_to          => $bl->{bl},
-                       status_to      => $status->{id_status},
-                       status_to_name => _loc($status->{name}),
-                   },
-                   id_status_from => $id_status_from_lc,
-                   icon => '/static/images/silk/arrow_down.gif'
-               };
+                $promotable->{ $bl } = \1;
+                push @menu_p, {
+                    text => _loc( 'Promote to %1 (%2)', _loc( $status->{name} ), $bl ),
+                    eval => {
+                        url            => '/comp/lifecycle/deploy.js',
+                        title          => 'To Promote',
+                        job_type       => 'promote',
+                        id_project     => $id_project,
+                        bl_to          => $bl,
+                        status_to      => $status->{id_status},
+                        status_to_name => _loc($status->{name}),
+                    },
+                    id_status_from => $id_status_from_lc,
+                    icon => '/static/images/silk/arrow_down.gif'
+                };
             }
         }
     }
@@ -703,25 +716,27 @@ sub promotes_and_demotes {
 
     my $demotable={};
     for my $status ( @status_from ) {
-        if ( !@project_bls || $status->{statuses_from}{bl} ~~ @project_bls ){
-          $demotable->{ $status->{from_bl} } = \1;
-          push @menu_d, {
-              text => _loc( 'Demote to %1', _loc( $status->{name} ) ),
-              eval => {
-                  url            => '/comp/lifecycle/deploy.js',
-                  title          => 'Demote',
-                  job_type       => 'demote',
-                  id_project     => $id_project,
-                  bl_to          => $status->{from_bl},
-                  status_to      => $status->{id_status},
-                  status_to_name => _loc( $status->{name} ),
-              },
-              id_status_from => $id_status_from_lc,
-              icon => '/static/images/silk/arrow_up.gif'
-          };
+        for my $bl ( map { $bls{$_} } @bl_from ) {        
+            if ( !@project_bls || $status->{statuses_from}{bl} ~~ @project_bls ){
+                $demotable->{ $bl } = \1;
+                push @menu_d, {
+                    text => _loc( 'Demote to %1 (from %2)', _loc($status->{name}), $bl ),
+                    eval => {
+                        url            => '/comp/lifecycle/deploy.js',
+                        title          => 'Demote',
+                        job_type       => 'demote',
+                        id_project     => $id_project,
+                        bl_to          => $bl,
+                        status_to      => $status->{id_status},
+                        status_to_name => _loc( $status->{name} ),
+                    },
+                    id_status_from => $id_status_from_lc,
+                    icon => '/static/images/silk/arrow_up.gif'
+                };
+            }
         }
     }
-    return ( $deployable, $promotable, $demotable, \@menu_s, \@menu_p, \@menu_d );
+    return ( $statics, $promotable, $demotable, \@menu_s, \@menu_p, \@menu_d );
 }
 
 sub cs_menu {
@@ -746,10 +761,8 @@ sub cs_menu {
         if( @chi ) {
            my ($menu_s, $menu_p, $menu_d );
            ($deployable, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) = $self->promotes_and_demotes( 
-                $c,
+                username   => $c->username,
                 topic      => $chi[0],
-                bl_state   => $bl_state,
-                state_name => $state_name,
                 id_project => $id_project,
             );
            push @menu_s, _array( $menu_s );
@@ -760,10 +773,8 @@ sub cs_menu {
         my ( $menu_s, $menu_p, $menu_d );
 
         ( $deployable, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) = $self->promotes_and_demotes(
-            $c,
+            username   => $c->username,
             topic      => $topic,
-            bl_state   => $bl_state,
-            state_name => $state_name,
             id_project => $id_project
         );
         push @menu_s, _array($menu_s);

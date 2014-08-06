@@ -13,9 +13,9 @@ BEGIN {
     if( $ENV{BALI_PLUGINS} ) {
         @modules = split /,/, $ENV{BALI_PLUGINS};
     }
-    elsif( $ENV{BALI_FAST} ) {
+    elsif( $ENV{BALI_CMD} || $ENV{BALI_FAST} ) {
         @modules = qw/
-            StackTrace
+            Singleton           
             +Baseliner::Plugin::ConfigExternal
             +CatalystX::Features
             +CatalystX::Features::Lib
@@ -266,11 +266,12 @@ around 'debug' => sub {
 
     our $global_app;
     sub app {
-        Baseliner->instance and return __PACKAGE__->instance;
+        # TODO use this only: 
+        #         return bless {} => __PACKAGE__;  # so it won't break $c->{...} calls
+        Baseliner->instance and return __PACKAGE__->instance;  # depends on Catalyst Plugin "Singleton"
         my ($class, $c ) = @_;
         return $global_app = $c if ref $c;
         return $global_app if ref $global_app;
-
         return bless {} => 'Baseliner';  # so it won't break $c->{...} calls
     }
 

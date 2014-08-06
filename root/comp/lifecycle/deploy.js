@@ -1,6 +1,6 @@
 (function(d) {
     var node = d.node;
-    var action = d.action;
+    var menu_action = d.action;
     if( node == undefined ) node = {};
     if( node.attributes == undefined ) node.attributes = {};
     if( node.attributes.data == undefined ) node.attributes.data = {};
@@ -10,33 +10,26 @@
         Baseliner.error( _('Job'), _('Missing mid') );
         return;
     }
-
-    var bl = node.attributes.data.bl;
+    
+    var bl = node.attributes.data.bl || menu_action.bl_to;
     if( bl == undefined  ) {
         Ext.Msg.alert( _('Error'), _('Missing bl') );
         return;
     }
     var name = node.attributes.text;
-    var job_type = action.job_type;
-    if( bl == 'new' ) {
-        bl = 'DESA';  // XXX
-    }
+    var job_type = menu_action.job_type;
     var state_name = node.attributes.data.state_name;
-    var status_to = action.status_to;
-    var bl_to = action.bl_to;
-    var to_state_name = action.status_to_name;
+    var status_to = menu_action.status_to;
+    var bl_to = menu_action.bl_to;
+    var to_state_name = menu_action.status_to_name;
     var status_from = node.attributes.data.topic_status;
     var id_status_from = node.attributes.data.id_topic_status;
-    Baseliner.confirm( _('Are you sure you want to deploy/rollback %1 to baseline %2 (%3)?', String.format("<b>{0}</b>", name), String.format("<b>{0}</b>",_(to_state_name)),bl_to ), function() { 
-        Baseliner.message( _('Job'), _('Starting job check and initialization...') );
-        Baseliner.ajaxEval( '/topic/newjob', { changesets:[mid], bl: bl_to, job_type: job_type, status_to: status_to, status_from: status_from, id_status_from: id_status_from }, function(res) {
-            Baseliner.message( _('Job'), res.msg );
-            // refresh the job grid
-            Baseliner.family_notify({ family:'jobs' });
-        }, function(res){
-            Ext.Msg.alert( _('Error creating job'), res.msg );
-            // refresh the job grid
-            Baseliner.family_notify({ family:'jobs' });
-        });
-    });
+    var id_project = node.attributes.data.id_project;
+    var data = node.attributes.data;
+    var topic = { 
+            text: node.text, topic_mid: data.topic_mid, 
+            id_project: data.id_project, state_id: data.state_id, 
+            promotable: data.promotable, demotable: data.demotable, deployable: data.deployable 
+    };
+    Baseliner.add_tabcomp( '/job/create', _('New Job'), { node: topic, bl: bl_to, job_type: job_type } );
 })

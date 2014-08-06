@@ -1,6 +1,3 @@
-<%args>
-    $baselines
-</%args>
 <%doc>
     job_new.js - new job creation screen
 </%doc>
@@ -19,21 +16,16 @@
     my $today =  $now->strftime( $date_format ); # '%d/%m/%Y'
     ( my $picker_format = $date_format || 'd/m/Y' ) =~ s{%}{}g;
 
-    $baselines = [
-        map {
-            [ $_->[0], "$_->[0] - $_->[1]" ]
-        } _array( $baselines )
-    ];
-
     my $default_baseline = config_value( 'job_new.default_baseline' );
     my $custom_forms = $c->stash->{custom_forms}; # config_value( 'job_new.custom_form' );
     my $show_job_search_combo = config_value( 'site.show_job_search_combo' );
     my $show_no_cal = config_value( 'site.show_no_cal' ) // 1;
     my $has_no_cal = $c->is_root || $c->has_action( 'action.job.no_cal' ) // 1;
 </%perl>
-(function(){
+(function(opts){
+    if( !opts ) opts = {};
     // var custom_forms = <% js_dumper( [ _array $custom_forms ] ) %>;
-    var default_baseline = '<% $default_baseline %>';
+    var default_baseline = opts.bl || '<% $default_baseline %>';
     var has_no_cal = <% $has_no_cal ? 'true' : 'false'  %>;
     var show_no_cal = <% $show_no_cal ? 'true' : 'false'  %>;
     var show_job_search_combo = <% $show_job_search_combo ? 'true' : 'false'  %>;
@@ -42,7 +34,7 @@
     var today = '<% $today %>';
     var min_chars = 3; 
     var rel_cals = [];
-
+    
     var data_any_time = function() {
         var arr = [];
         var name = _('no calendar window');
@@ -78,7 +70,7 @@
     var job_grid_data = function(params) {
         // turn grid into JSON to post data
         var warn_missing = params!=undefined ? params.warn : false;
-        var cnt = jc_grid.getStore().getCount();
+        var cnt = jc_store.getCount();
         if( cnt == 0 ) {
             if( warn_missing ) {
                 Ext.Msg.show({icon: 'ext-mb-error', buttons: { cancel: true }, title: "Form Error", msg: _('Missing job contents') });
@@ -87,7 +79,7 @@
             }
         var json = [];
         for( i=0; i<cnt; i++) {
-            var rec = jc_grid.getStore().getAt(i);
+            var rec = jc_store.getAt(i);
             json.push( Ext.util.JSON.encode( rec.data )) ;
             }
         var json_res = '[' + json.join(',') + ']';
@@ -97,23 +89,55 @@
     var __now=new Date();
     __now.setSeconds(00);
 
+    
+    //****************  Job Type Radio
+    var job_type_radio = new Ext.form.RadioGroup({
+        name: 'job_type',
+        fieldLabel: _('Job Type'),
+        value: opts.job_type || 'promote',
+        listeners: {
+            change: { fn: function(t,checked) {
+                store_search.removeAll();
+                jc_store_topics = {};
+                jc_store.reload();
+                combo_baseline.setFieldLabel( checked.inputValue =='demote' ? label_orig : label_dest );
+                store_chain.load( {params: { type: checked.inputValue}});
+                } }
+            },
+        items: <% js_dumper(  $c->stash->{job_types} ) %>
+    });
+    
     //*************************************************
     //
     // Baseline Combo
     //
     var label_dest = _('Destination Baseline');
     var label_orig = _('Origin Baseline');
-    var store_baselines = new Ext.data.SimpleStore({
+    var store_baselines = new Baseliner.JsonStore({
+        url: '/job/bl_combo', 
         fields: ['bl', 'name'],
-        id: 0,
-        data : <% js_dumper( $baselines ) %>
+        root: 'data', totalProperty: 'totalCount', id: 'id'
+    });
+    store_baselines.on('load', function(){
+        // only set default value on combo if coming from lifecycle
+        if( default_baseline ) {
+            combo_baseline.setValue( default_baseline );
+        }
+        // alert?
+        var bl = combo_baseline.getValue();
+        if( store_baselines.data.length==0 && (bl=='' || !bl) ) {
+            Baseliner.error( _('Error'), _('No environments available for selected changesets') );
+            //   TODO check if deploys have envs, in that case user has no permissions
+            //    Baseliner.error(_('Error'), _( "User doesn't have permissions to create a job in any environment" ) );
+        }
     });
 
     var tpl_baseline = new Ext.XTemplate(
         '<tpl for=".">',
-            '<div class="search-item">{name}</div>',
+            '<div class="search-item">{bl} - {name}</div>',
         '</tpl>'
     );
+    var tpl_baseline_display = new Ext.XTemplate( '<div>{bl} - {name}</div>' );
     var changed = false;
     var combo_baseline = new Baseliner.SuperBox({
         name: 'bl',
@@ -124,19 +148,18 @@
         fieldLabel: label_dest,
         mode: 'local',
         store: store_baselines,
-        value: default_baseline,
         editable: false,
         forceSelection: true,
         triggerAction: 'all',
         itemSelector: 'div.search-item',
         tpl: tpl_baseline,
+        displayFieldTpl: tpl_baseline_display,
         allowBlank: false,
         listeners: {
             select: function() {
                 var bl_name = combo_baseline.getRawValue();
                 var bl = combo_baseline.getValue();
                 store_search.removeAll();
-                var jc_store = jc_grid.getStore();
                 var flag_remove_all = false;
                 // check if we have to remove all contents or not, depending on availability
                 jc_store.each( function(t){
@@ -187,13 +210,6 @@
     });
     store_chain.load(); // {params: { type: 'promote'}});
     
-    if( default_baseline.length == 0 ) {
-        combo_baseline.on( 'afterrender', function(){
-            var rec = store_baselines.getAt(0);
-            combo_baseline.setValue( rec.get('bl') );
-        });
-    }
-
     var check_no_cal = new Ext.form.Checkbox({
         name: 'check_no_cal',
         fieldLabel: '',
@@ -213,7 +229,6 @@
                 calendar_reload();
             }
         }
-
     });
 
     var job_date = new Ext.ux.form.DateFieldPlus({
@@ -265,8 +280,11 @@
             combo_time.setRawValue('');
             combo_time.fireEvent('change');
         }
-        if( jc_grid_remove ) jc_grid.getStore().removeAll();
+        if( jc_grid_remove ) jc_store.removeAll();
+        jc_store_topics = {};
         store_search.removeAll();
+        combo_baseline.setValue(null);
+        store_baselines.reload({ params:{ jsonData:{ bls: null } } });
         button_submit.disable();
         job_statistics.update( stats_tmpl({ eta:'-', p_success:'-' }) );
     };
@@ -331,7 +349,7 @@
     var calendar_reload = function( str_date ) {
         if( check_no_cal.checked ) return;
         try {
-            var cnt = jc_grid.getStore().getCount();
+            var cnt = jc_store.getCount();
 
             store_time.removeAll();
             combo_time.setRawValue('');
@@ -358,8 +376,10 @@
                                         arr_rels.push( rel );
                                     }
                                 });
-                                jc_row.set('revisions', arr_rels );
-                                jc_row.set('rels', ci.related );
+                                var rowmid = jc_row.data.mid;
+                                if( !row_data[rowmid] ) row_data[rowmid]={}; 
+                                row_data[rowmid].revisions = arr_rels;
+                                row_data[rowmid].rels = ci.related; 
                             });
                             rel_cals = res.cals ? res.cals : [];
                             job_statistics.update( stats_tmpl({ eta: res.stats?res.stats.eta:'-', p_success:res.stats?res.stats.p_success:'-' }) );
@@ -398,9 +418,9 @@
             var sm = jc_grid.getSelectionModel();
             var sel = sm.getSelected();
             if( sel ) {
-                jc_grid.getStore().remove(sel);
-                if (jc_grid.getStore().data.length == 0) { button_submit.disable(); }
-                calendar_reload();
+                jc_store.remove(sel);
+                delete jc_store_topics[ sel.data.mid ];
+                jc_store.reload();
             }
         }
     });
@@ -446,53 +466,82 @@
         }
     });
     var adder = 80;
-
+    var id_auto = Ext.id();
     var colModel = new Ext.grid.ColumnModel([
-        { 
-            dataIndex: 'icon', 
-            renderer: render_icon,
-            width: 60
-        },
         { header: _('Job Item'),
-             id:'item',
+             id: id_auto,
              width: 260 + adder,
              sortable: true,
              locked: false,
-             renderer: function(v){ return String.format("<b>{0}</b>", v) },
+             renderer: function(v){ 
+                 //return String.format("<b>{0}</b>", v) 
+                 return String.format('{0} <b>{1}</b>', Baseliner.topic_name({
+                    link: true,
+                    //parent_id: jc_store.id,
+                    mid: v.mid, 
+                    mini: false,
+                    size: '11',
+                    category_name: v.category_name,
+                    category_color: v.category_color,
+                    //category_icon: topic.category.icon,
+                    is_changeset: v.is_changeset,
+                    is_release: v.is_release
+                 }), v.title);
+             },
              dataIndex: 'item'},
-        { header: _('Item Type'),
-             width: 120 + adder,
+        { header: _('Created By'),
+             width: 40 + adder,
              sortable: true,
-             hidden: true,
-             dataIndex: 'ns_type'},
-        { header: _('User'),
-             width: 60 + adder,
+             hidden: false,
+             dataIndex: 'created_by',
+             renderer: Baseliner.render_user_field },
+        { header: _('Modified By'),
+             width: 40 + adder,
              sortable: true,
-             hidden: true,
-             dataIndex: 'user',
+             hidden: false,
+             dataIndex: 'modified_by',
              renderer: Baseliner.render_user_field },
         { header: _('ID'),
              width: 30 + adder,
+             hidden: true,
              sortable: true,
              dataIndex: 'mid' },
-        { header: _('Namespace'),
-             width: 98 + adder,
-             sortable: true,
-             dataIndex: 'ns' },
         { header: _('Last Updated'),
-             width: 110 + adder,
+             width: 50 + adder,
              sortable: true,
-             dataIndex: 'date' },
-        { header: _('Description'),
-             width: 240 + adder,
-             renderer: Baseliner.render_wrap,
-             sortable: true,
-             dataIndex: 'text'}
+             dataIndex: 'date' }
     ]);
 
-    var jc_store = new Ext.data.Store({});
+    var row_data = {};
+    var jc_record = Ext.data.Record.create([ '_id','_parent', '_is_leaf','ns','mid','topic_name','promotable','item','text','date','modified_by','created_by' ]);
+    var jc_store_topics = {};
+    var jc_store = new Ext.ux.maximgb.tg.AdjacencyListStore({  
+       autoLoad : true,  
+       url: '/job/jc_store',
+       reader: new Ext.data.JsonReader({ id: '_id', root: 'data', totalProperty: 'totalCount', successProperty: 'success' }, jc_record )
+    }); 
 
-    var jc_grid = new Ext.grid.GridPanel({
+    jc_store.on('beforeload',function(me,opts){
+        Ext.apply( opts.params, { jsonData: { topics: jc_store_topics } });
+        //opts.jsonData.topics.length = 0;
+    });
+    
+    jc_store.on('load',function(){
+        if (jc_store.data.length == 0) { 
+            button_submit.disable(); 
+        } 
+        var deploys = jc_store.reader.jsonData.deploys;
+        if( deploys ) {
+            var job_type = main_form.getForm().getValues()['job_type'];
+            store_baselines.reload({ params: { jsonData:{ bls: deploys[job_type] } } });
+        } else {
+            Baseliner.alert(_('No deploy destinations match all selected changesets') );
+        }
+        calendar_reload();
+    });
+
+    //var jc_grid = new Ext.grid.GridPanel({
+    var jc_grid = new Ext.ux.maximgb.tg.GridPanel({
         //fieldLabel:  _('Job Contents'),
         height: 300,
         anchor: '100%',
@@ -500,47 +549,83 @@
         style: 'border:1px solid #bbb; margin-top: 10px',
         border: false,
         ds: jc_store,
+        master_column_id : id_auto,
+        autoExpandColumn: id_auto,
         cm: colModel,
         enableDragDrop: true,
         ddGroup: 'explorer_dd',
         viewConfig: {
             enableRowBody: true,
-            forceFit: true,
-            getRowClass : function(rec, index, p, store){
-                // slot squares
-                var s = rec.data.moreInfo;
-                if( rec.data.revisions ) {
-                    if( !s ) s='';
-                    var arr = [];
-                    Ext.each( rec.data.revisions, function(rel){
-                        arr.push( rel.name );
-                    });
-                    s+= '<p><pre>' + arr.join(', ') + '</pre></p>';
-                }
-                if( s ) {
-                    s = s.replace( /\<br\>/g , ', ');
-                    p.body = String.format(
-                        '<div style="padding: 0px 0px 0px 64px;">{0}</div>'
-                        , s );
-                    return ' x-grid3-row-expanded';
-                } else {
-                    p.body = '';
-                    return ' ';
-                }
-            }
+            forceFit: true
         },
         tbar: [ button_remove_item, button_cis ]
     });
 
     jc_grid.on('rowclick', function(){
-        button_remove_item.enable();
+        var sm = jc_grid.getSelectionModel();
+        var sel = sm.getSelected();
+        if( sel && sel.data._parent === null ) {
+            button_remove_item.enable();
+        } else {
+            button_remove_item.disable();
+        }
         button_cis.enable();
     });
     jc_grid.on('rowdeselect', function(){
         button_remove_item.disable();
         button_cis.disable();
     });
+  
     
+    // text, topic_mid, promotable, demotable, deployable, ..., 
+    var jc_add_node = function(data) {
+        var bl = combo_baseline.getValue();
+        if( ! ( data.promotable || data.demotable || data.deployable ) ) {
+            Ext.Msg.alert( _('Error'),
+                _("Cannot promote/demote this entity type" ) );
+            return true; 
+        }
+        
+        // find job type from radio. 
+        var job_type = main_form.getForm().getValues()['job_type'];
+        if( !job_type ) job_type=opts.job_type;   // maybe radio not loaded yet on right-click deploy?
+        if( !job_type ) return;  // can't continue
+        var bl_hash = ( job_type == 'promote' ) ? data.promotable : ( job_type == 'demote' ) ? data.demotable : data.deployable;
+        var bl_item = bl_hash[ bl ];
+        
+        // auto-set our first environment?
+        /*
+        if( jc_store.getCount()==0 && !bl_item && !changed ) {
+            var first_bl;
+            for( var k in bl_hash ) {
+               first_bl = k;
+               break;
+            }
+            if( first_bl ) {
+                combo_baseline.setValue( first_bl ); 
+                job_type_radio.setValue( ??? );  
+            }
+        }
+        */
+        
+        bl = combo_baseline.getValue();
+        var bl_item = bl_hash[ bl ];
+        if ( bl && bl_item == undefined ) {  
+            Ext.Msg.alert( _('Error'),
+                _("Cannot promote/demote changeset %1 to environment %2 (job type %3)", '<b>' + data.text + '</b>', bl, job_type ) );
+        } else {
+            //add_node(n,bl_hash);
+            if( jc_store.find('mid', data.topic_mid ) > -1 ) {
+                Baseliner.message( _('New Job'), _('Topic %1 has already been selected', data.text),{ image:'/static/images/icons/error-7-64.png' });
+            } else {
+                jc_store_topics[ data.topic_mid ] = { text:data.text, data:data };
+                jc_store.reload();
+                calendar_reload();
+                button_submit.enable();
+            }
+        }
+        return (true); 
+    };
     // Drag and drop support
     jc_grid.on( 'render', function(){
         var el = jc_grid.getView().el.dom.childNodes[0].childNodes[1];
@@ -550,64 +635,12 @@
             copy: true,
             notifyDrop: function(dd, e, data) {
                 var n = dd.dragData.node;
-                var add_node = function(node,bl_hash) {
-                    var data = node.attributes.data;
-//                    console.dir(data);
-                    var mid = data.mid || data.topic_mid;
-                    var rec = new Ext.data.Record({
-                        ns: data.ns,
-                        mid: mid,
-                        icon: node.attributes.icon,
-                        promotable: bl_hash,
-                        //item: data.name,
-                        item: node.text,
-                        text: node.text 
-                    });
-                    // check for duplicate items
-                    if( jc_store.find('mid', rec.data.mid ) > -1 ) {
-                        Baseliner.error( _('New Job'), _('Topic %1 has already been selected', rec.data.text) );
-                    } else {
-                        jc_store.add(rec);
-                        //jc_store.sort('action', 'ASC');
-                        var parent_node = node.parentNode;
-                        // node.disable();
-                        calendar_reload();
-                        button_submit.enable();
-                        //tree_check_folder_enabled(parent_node);
-                    }
-                }
-                var attr = n.attributes;
-                var data = n.attributes.data;
-                var job_type = main_form.getForm().getValues()['job_type'];
-                var bl = combo_baseline.getValue();
-                if( ! ( data.promotable || data.demotable || data.deployable ) ) {
-                    Ext.Msg.alert( _('Error'),
-                        _("Cannot promote/demote this entity type" ) );
-                    return true; 
-                }
-                
-                var bl_hash = ( job_type == 'promote' ) ? data.promotable : ( job_type == 'demote' ) ? data.demotable : data.deployable;
-                var bl_item = bl_hash[ bl ];
-                
-                // auto-set our first environment?
-                if( jc_store.getCount()==0 && !bl_item && !changed ) {
-                    var first_bl;
-                    for( var k in bl_hash ) {
-                       first_bl = k;
-                       break;
-                    }
-                    if( first_bl ) combo_baseline.setValue( first_bl ); 
-                }
-                
-                bl = combo_baseline.getValue();
-                var bl_item = bl_hash[ bl ];
-                if ( bl_item == undefined ) {  
-                    Ext.Msg.alert( _('Error'),
-                        _("Cannot promote/demote changeset %1 to baseline %2 (job type %3)", '<b>' + n.text + '</b>', bl, job_type ) );
-                } else {
-                    add_node(n,bl_hash);
-                }
-                return (true); 
+                var d = n.attributes.data;
+                return jc_add_node({ 
+                    text: n.text, topic_mid: d.topic_mid, 
+                    id_project: d.id_project, state_id: d.state_id, 
+                    promotable: d.promotable, demotable: d.demotable, deployable: d.deployable 
+                });
              }
         });
     });
@@ -643,6 +676,8 @@
                         // reset everything
                         form_reset_all();
                         Baseliner.closeCurrentTab();
+                        // refresh the job grid, if any is open
+                        Baseliner.family_notify({ family:'jobs' });
                     },
                     failure: function(form,action){
                         //alert( 'ko' + action );
@@ -865,9 +900,9 @@
 
     var main_form = new Ext.FormPanel({
         url: '/job/submit',
+        tab_icon: '/static/images/icons/job.png',
         //frame: true,
         bodyStyle: { 'background-color': '#eee', padding: '10px 10px 10px 10px' },
-        title: _loc('Job Options'),
         forceFit: true,
         labelWidth: 100,
         tbar: tb,
@@ -881,20 +916,7 @@
             { layout:'column', bodyBorder: false, padding: 10, border: false, frame: false, bodyStyle: { 'background-color': '#eee'}, 
                 defaults:{ bodyBorder: false, border: false, bodyStyle: { 'background-color': '#eee'} }, items:[
                 { layout:'form', columnWidth: .5, border:false, defaults:{ border:false, anchor: '100%' }, items:[
-                    {
-                        xtype: 'radiogroup',
-                        name: 'job_type',
-                        fieldLabel: _('Job Type'),
-                        listeners: {
-                            change: { fn: function(t,checked) {
-                                store_search.removeAll();
-                                jc_grid.getStore().removeAll();
-                                combo_baseline.setFieldLabel( checked.inputValue =='demote' ? label_orig : label_dest );
-                                store_chain.load( {params: { type: checked.inputValue}});
-                                } }
-                            },
-                        items: <% js_dumper(  $c->stash->{job_types} ) %>
-                    },
+                    job_type_radio,
                     combo_baseline,
                     combo_chain
                 ]},
@@ -913,7 +935,7 @@
                     { width: 225, layout:'form', items: job_date, labelWidth: 40  },
                     { width: 470, layout:'form', items: combo_time , labelWidth: 40 },
                     time_not_available,
-                    { width: 30, layout:'form', items: button_show_cals, labelWidth: 40, bodyStyle: { 'margin-left':5 } },
+                    { width: 30, layout:'form', items: button_show_cals, labelWidth: 40, bodyStyle: { 'background-color':'#eee', 'margin-left':5 } },
                     { width: 30, layout:'form', items: button_refresh_cals, labelWidth: 40  }
                 ]
             },
@@ -935,6 +957,12 @@
             comments
         ]
     });
+    
+    main_form.on('afterrender', function(){
+        if( opts.node ) {
+            jc_add_node( opts.node );
+        }
+    });
 
     comments.on('afterrender', function(){
         if( Ext.isIE ) {
@@ -944,15 +972,6 @@
 
     Ext.form.Field.prototype.msgTarget = 'side';
     
-% unless( scalar _array _array( $c->stash->{baselines} ) ) {
-    Ext.MessageBox.show({
-        title: _('Error'),
-        msg: _( "User doesn't have permissions to create a job in any environment" ),
-        buttons: Ext.MessageBox.OK,
-        icon: Ext.MessageBox.ERROR
-        });
-% }
-
     //Ext.each( custom_forms, function(custom_form){ });
 % for my $custom_form ( _array $custom_forms ) {
     <& $custom_form &>

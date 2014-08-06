@@ -39,9 +39,28 @@ sub job_create : Path('/job/create')  {
                 @features_list 
     ];
     $c->stash->{action} = 'action.job.create';
-    $c->forward('/baseline/load_baselines_for_action');
-
     $c->stash->{template} = '/comp/job_new.js';
+}
+
+# fill job_new.js combo_baselines
+sub bl_combo : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->{body_data} // $c->req->params;
+  _debug( $p );
+    my $bls = $p->{bls};
+    my $action = 'action.job.create';  # we use the action to find which bls this role can create jobs on
+    my @bl_arr = ();
+    my @bl_list = Baseliner::Core::Baseline->baselines_no_root();
+    return $c->stash->{baselines} = [ [ '*', 'Common' ] ] unless @bl_list > 0;
+
+    my $is_root = $c->model('Permissions')->is_root( $c->username );
+    foreach my $n ( @bl_list ) {
+        next unless $is_root or $c->model('Permissions')->user_has_action( username=>$c->username, action=>$action, bl=>$n->{bl} );
+        my $arr = { bl=>$n->{bl}, name=>_loc($n->{name}) };
+        push @bl_arr, $arr if !defined $bls || $bls->{$n->{bl}};
+    }
+    $c->stash->{json} = { data=>\@bl_arr, totalCount=>scalar(@bl_arr) };
+    $c->forward('View::JSON');
 }
 
 sub chains : Local {
@@ -525,6 +544,127 @@ sub resume : Local {
         my $err = shift;
         $c->stash->{json} = { success => \0, msg => _loc("Error resuming the job: %1", $err ) };
     };
+    $c->forward('View::JSON');  
+}
+
+sub jc_store : Local  {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->{body_data} // $c->req->params;
+    my $topics = $$p{topics} || {} ;
+    my @data;
+    my $k = 1;
+    
+    my %deploys;
+    my %children;
+ 
+    my %deploy_changesets;
+    my $add_deploy = sub{
+        my ($cs,$id_project)=@_;
+        my ($static,$promote,$demote) = BaselinerX::LcController->promotes_and_demotes( 
+            username   => $c->username, 
+            topic      => $cs, 
+            id_project => $id_project,
+        );
+        # this assumes $static->{$_} is always true (\1)
+        $deploys{static}{$_}++ for keys %{ $static || {} };
+        $deploys{promote}{$_}++ for keys %{ $promote || {} };
+        $deploys{demote}{$_}++ for keys %{ $demote || {} };
+        $deploy_changesets{ $$cs{mid} }=1; # keep unique count
+    };
+    
+    for my $node ( values %$topics ) {
+        my $node_data = $$node{data};
+        my $mid = $$node_data{topic_mid} ;
+        my $ci = ci->new( $mid );
+        my $status_from = $ci->is_release ? $$node_data{state_id} : $ci->id_category_status;
+        my $id_project = $$node_data{id_project};
+        my $id = $k++;
+        
+        my @chi;
+        if( $ci->is_release ) {
+            my @changesets = grep { $_->is_changeset } $ci->children( isa=>'topic', no_rels=>1 );
+            my @cs_mids = map { $_->mid } @changesets;
+            my ($cnt, @cs_user) = model->Topic->topics_for_user({ username=>$c->username, clear_filter=>1, id_project=>$id_project, statuses=>[$status_from], topic_list=>\@cs_mids });
+            @chi = map {
+               my $cs_data = $_;
+               $children{ $$cs_data{mid} } = 1;
+               $add_deploy->( $cs_data, $id_project );
+               +{
+                    _id => $$cs_data{mid},
+                    _parent => ''.$mid,
+                    _is_leaf => \1,
+                    item     => {
+                        mid            => $$cs_data{mid},
+                        title          => $$cs_data{title},
+                        category_name  => $$cs_data{category}{name},
+                        category_color => $$cs_data{category}{color},
+                        is_release     => $$cs_data{category}{is_release},
+                        is_changeset   => $$cs_data{category}{is_changeset},
+                    },
+                    text=>$$cs_data{title},
+                    date=>$$cs_data{modified_on},
+                    modified_by=>$$cs_data{modified_by},
+                    created_by=>$$cs_data{created_by},
+                    ns=> "changeset/" . $$cs_data{mid},
+                    mid=>$$cs_data{mid},
+                    id_project => $id_project,
+                }
+            } 
+            grep {
+                $$_{category}{is_changeset}
+            } @cs_user;
+        }
+        my $topic_data = $ci->get_data;
+        
+        my $row = {
+            _id      => ''.$mid,
+            _is_leaf => @chi?\0:\1,
+            _parent  => undef,
+            item     => {
+                mid            => $mid,
+                title          => $$topic_data{title},
+                category_name  => $$topic_data{category}{name},
+                category_color => $$topic_data{category}{color},
+                is_release     => $ci->is_release,
+                is_changeset   => $ci->is_changeset
+            },
+            date=>$$topic_data{modified_on},
+            modified_by=>$$topic_data{modified_by},
+            created_by=>$$topic_data{created_by},
+            text => $$node{text},
+            ns   => $$node_data{ns},
+            mid  => $$node_data{topic_mid},
+            id_project => $id_project,
+        };
+        push @data, $row;
+        push @data, @chi if @chi;
+        
+        # now get all changesets and find where they can deploy
+        $add_deploy->( $topic_data, $id_project ) if $ci->is_changeset;
+    }
+    
+    # filter out first level changesets if inside release
+    @data = grep { !( $$_{_parent} xor $children{$$_{mid}} ) } @data;
+    
+    # now reduce to common deployables
+    my $total_cs = keys %deploy_changesets;
+    for my $jt ( keys %deploys ) {
+        for my $bl ( keys %{ $deploys{$jt} } ) {
+            delete $deploys{$jt}{$bl} if  $deploys{$jt}{$bl} < $total_cs;
+        }
+    }
+    
+    for my $t ( @data ) {
+        my $type = $$t{item}{is_release} ? 'release' : $$t{item}{is_changeset} ? 'changeset' : '';
+        next if $type ne 'changeset';
+    }
+    
+    if( @data ){  # make sure we initialize to get the blocked ones if we have data but no deploys
+        $deploys{$_} //= {} for qw(promote demote static) 
+    }
+    
+    #@data = sort{ $$a{_id} <=> $$b{_id} } @data;
+    $c->stash->{json} = { data=>\@data, totalCount=>scalar(@data), success=>\1, deploys=>\%deploys }; 
     $c->forward('View::JSON');  
 }
 

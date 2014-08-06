@@ -78,14 +78,14 @@ sub rel_type {
 sub icon { '/static/images/icons/job.png' }
 
 before new_ci => sub {
-    my ($self, $master_row, $data ) = @_;
-    $self->_create( %$self );
+    my ($self, $master_row, $master_doc ) = @_;
+    $self->_create( $master_row, $master_doc, %$self );
 };
 
 after new_ci => sub {
-    my ($self, $master_row, $data ) = @_;
+    my ($self, $master_row, $master_doc ) = @_;
     try {
-        $self->_check_and_init( %$self ) 
+        $self->_check_and_init;
     } catch {
         $self->delete;  
     };
@@ -185,7 +185,7 @@ sub stash {  # not just an alias
 
 
 sub _create {
-    my ($self, %p )=@_;
+    my ($self, $master_row, $master_doc, %p )=@_;
     my $bl = $p{bl} || '*';
 
     my $job_mid = $self->mid;
@@ -193,7 +193,6 @@ sub _create {
     my $config = Baseliner->model('ConfigStore')->get( 'config.job', $self->bl );
     
     my $status = $p{status} || 'IN-EDIT';
-
     #$now->set_time_zone('CET');
     my $now = mdb->now;
     my $end = $now + ( $config->{expiry_time}{normal} // '1D' );
@@ -253,20 +252,24 @@ sub _create {
     # create a hash stash
     my $stash = +{ %{ $self->stash_init || {} }, %topic_stash };
     $self->stash_init({});
-
-    # expand releases into changesets
+    
+    # separate releases into changesets
     my @releases; 
-    my @cs_cis = grep { ref } map {
-        my $cs = ref $_ ? $_ :  ci->new( $_ );
+    my @cs_cis;
+    my (%cs_uniq,%rel_uniq);
+    
+    for my $cs ( Util->_array( $changesets ) ) {
+        $cs = ref $cs ? $cs :  ci->new( $cs );
         if( $cs->is_release ) {
-            push @releases, $cs if $cs->is_release;
-            grep { $_->is_changeset } $cs->children( isa=>'topic', no_rels=>1 );
-        } elsif( $cs->is_changeset ) {
-            $cs
+            next if $rel_uniq{$cs->mid};
+            push @releases, $cs;
+            $rel_uniq{$cs->mid}=1;
         } else {
-            undef; 
+            next if $cs_uniq{$cs->mid};
+            push @cs_cis, $cs;
+            $cs_uniq{$cs->mid}=1;
         }
-    } Util->_array( $changesets );
+    }
 
     # create job contents
     my @cs_list;
