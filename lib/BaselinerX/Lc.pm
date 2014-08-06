@@ -127,12 +127,12 @@ sub lc_for_project {
         try {
             my $repo = ci->new( $id_repo );
             push @nodes, {
-              node => $repo->name,
-              type => 'changeset',
-              url => '/lifecycle/branches',
+              node   => $repo->name,
+              type   => 'changeset',
+              url    => $repo->content_url, 
               active => 1,
-              icon => '/static/images/icons/lc/branches_obj.gif',
-              data => {
+              icon   => $repo->icon,
+              data   => {
                 id_repo => $id_repo  
               }
             };

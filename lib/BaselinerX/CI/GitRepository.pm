@@ -13,7 +13,7 @@ has name           => qw(is rw isa Str);
 has default_branch => qw(is rw isa Str default HEAD);
 
 sub collection { 'GitRepository' }
-sub icon       { '/gitweb/images/icons/gitrepository.gif' }
+sub icon       { '/static/images/icons/git-repo.gif' }
 
 sub has_bl { 1 }
 
