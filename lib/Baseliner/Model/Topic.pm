@@ -513,13 +513,10 @@ sub topics_for_user {
     my $rs = mdb->topic->find( $where )->fields({ mid=>1, labels=>1 })->sort( $order_by );
     
     $cnt = $rs->count;
-    _log "TOPICOS ANTES: ".$cnt;
     $start = 0 if length $start && $start>=$cnt; # reset paging if offset
     $rs->skip( $start ) if $start >= 0 ;
     $rs->limit( $limit ) if $limit >= 0 ;
-
     my @topics = $rs->all;
-    _log "TOPICOS DESPUES: ". scalar @topics;
     my %mid_docs = map { $_->{mid}=>$_ } @topics; 
     my @mids = map { $$_{mid} } @topics;  # keep order
     
