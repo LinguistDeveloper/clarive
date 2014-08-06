@@ -10,6 +10,11 @@ sub get {
     return $user if defined $user;
 }
 
+sub user_exists {
+    my ($self,$username) = @_;
+    return !! ci->user->find({ username=>$username })->count;
+}
+
 # get user data from the database
 sub populate_from_ldap {
     my ($self, $who ) = @_;

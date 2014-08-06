@@ -7,47 +7,47 @@ Ext.onReady(function(){
     Ext.Ajax.timeout = 60000;
 
     Baseliner.doLoginForm = function(){
-                                /* 
-                                    Another way of getting the query:
-                                    var getParams = document.URL.split("?");
-                                    var tab_params = {};
-                                    if( getParams!=undefined && getParams[1] !=undefined ) {
-                                        tab_params = Ext.urlDecode(getParams[1]);
-                                    }
-                                */
-                                var ff = login_form.getForm();
-                                ff.submit({
-                                    success: function(form, action) {
-                                                    var last_login = form.findField('login').getValue();
-                                                    Baseliner.cookie.set( 'last_login', last_login ); 
-                                                    if( after_login_query.length > 0 ) {
-                                                        after_login = after_login + '?' + after_login_query;
-                                                    }
-                                                    document.location.href = after_login || '/';
-                                             },
-                                    failure: function(form, action) {
-                                                    if (action.result == undefined){
-                                                      var errorMask = Ext.fly( document.body ).mask( _('Server communication failure. Check your connection.') );
-                                                      errorMask.show();
-                                                      setTimeout(function(){ Ext.fly( document.body ).unmask(); }, 4000);
-                                                    }
-                                                    else if (action.result.block_datetime != 0) {
-                                                        Ext.Msg.show({
-                                                         title: '<% _loc('Login Failed') %>',
-                                                         msg: '<% _loc('Attempts exhausted, please wait') %>',
-                                                         width:300,
-                                                         wait:true,
-                                                         waitConfig: {interval: action.result.attempts_duration * 100}
-                                                     });
-                                                        setTimeout(function(){ Ext.Msg.hide(); }, action.result.attempts_duration * 1000);
-                                                    }
-                                                    else{
-                                                        Ext.Msg.alert('<% _loc('Login Failed') %>', action.result.msg );
-                                                        login_form.getForm().findField('login').focus('',100);
-                                                    }      
-                                              }
+        /* 
+            Another way of getting the query:
+            var getParams = document.URL.split("?");
+            var tab_params = {};
+            if( getParams!=undefined && getParams[1] !=undefined ) {
+                tab_params = Ext.urlDecode(getParams[1]);
+            }
+        */
+        var ff = login_form.getForm();
+        ff.submit({
+            success: function(form, action) {
+                            var last_login = form.findField('login').getValue();
+                            Baseliner.cookie.set( 'last_login', last_login ); 
+                            if( after_login_query.length > 0 ) {
+                                after_login = after_login + '?' + after_login_query;
+                            }
+                            document.location.href = after_login || '/';
+                     },
+            failure: function(form, action) {
+                            if (action.result == undefined){
+                              var errorMask = Ext.fly( document.body ).mask( _('Server communication failure. Check your connection.') );
+                              errorMask.show();
+                              setTimeout(function(){ Ext.fly( document.body ).unmask(); }, 4000);
+                            }
+                            else if (action.result.attempts_duration && action.result.block_datetime != 0) {
+                                var interval = action.result.attempts_duration * 100
+                                Ext.Msg.show({
+                                    title: '<% _loc('Login Failed') %>',
+                                    msg: '<% _loc('Attempts exhausted, please wait') %>',
+                                    width:300,
+                                    wait:true,
+                                    waitConfig: {interval: interval }
                                 });
-                           };
+                                setTimeout(function(){ Ext.Msg.hide(); }, action.result.attempts_duration * 1000);
+                            } else {
+                                Ext.Msg.alert('<% _loc('Login Failed') %>', action.result.msg );
+                                login_form.getForm().findField('login').focus('',100);
+                            }      
+                      }
+        });
+   };
 
     var login_form = new Ext.FormPanel({
             id: 'lf',
