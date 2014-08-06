@@ -2998,6 +2998,8 @@ sub get_status_history_topics{
     }else{
         return @status_changes;    
     }
+}
+
 sub get_downloadable_files {
     my ($self, $p) = @_;
 
@@ -3049,5 +3051,3 @@ sub get_downloadable_files {
 }
 
 1;
-
-
