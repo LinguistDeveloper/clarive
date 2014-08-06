@@ -484,7 +484,7 @@ sub view : Local {
         $c->stash->{permissionEdit} = 0;
         $c->stash->{permissionDelete} = 0;
         $c->stash->{permissionGraph} = $c->model("Permissions")->user_has_action( username => $c->username, action => 'action.topics.view_graph');
-#        $c->stash->{permissionComment} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.GDI.comment' );
+        $c->stash->{permissionComment} = 0;
         my $topic_ci;
         if ( $topic_mid ) {
             try {
