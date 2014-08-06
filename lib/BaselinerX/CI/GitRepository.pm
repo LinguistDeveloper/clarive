@@ -184,59 +184,6 @@ sub checkout {
     { ls=>\@ls, output=>$out }
 }
 
-################ DEPRECATED:
-
-sub checkout_for_job {
-    my ( $self, %p ) = @_;
-
-    my $job       = $self->job;
-    my $log       = $job->logger;
-    my $stash     = $job->job_stash;
-    my $bl        = $job->bl;
-    my $rev       = $p{rev};
-    my $prj       = $p{prj};
-    my $repo_name = $self->mid;
-
-    my $repo = $self->repository;
-    my $git  = $repo->git;
-
-
-    # cloning
-    my $path = $repo->path;
-    _log $job->root;
-    _log "Project=$prj, Repo=$repo_name, RepoDir=$path, Rev=$rev";
-
-    my $prjdir = _dir $prj, $repo_name;
-    my $dir = _dir $job->root, $prjdir, $self->rel_path;
-    $log->info( _loc "*Git*: cloning project %1 repository %2 (%3) into `%4`",
-        $prj, $repo_name, $path, $dir );
-    _rmpath $dir if -e $dir;
-    _mkpath $dir;
-    system( qw(git clone), $repo->path, "$dir" );
-    sleep 10;
-    # checkout tag/branch
-    my $repo_job = Girl::Repo->new( path => "$dir" );
-
-    # when static, merge theirs overrides us
-    my $checkout_and_merge = 0;    # put it in a config key TODO
-    if ( $checkout_and_merge && $job->job_type eq 'static' ) {
-
-        # checkout a bl, then merge-force the rev into it
-        #  problem: the job element list comes out untrue
-        my $lc = Baseliner->model( 'LCModel' )->lc;
-        my $bl_to = $lc->bl_to( $bl ) or _throw _loc "No bl_to defined for bl %1", $bl;
-        $repo_job->git->exec( qw/checkout/,                     $bl );
-        $repo_job->git->exec( qw/merge -s recursive -X theirs/, $rev );
-    } else {
-        $log->info(_loc("Checking out revision '%1'", $rev));
-        #$repo_job->git->exec( qw/reset --hard/, $rev );
-        $repo_job->git->exec( qw/checkout/, $rev );
-        #my @out = system( qw(cd $dir; git checkout), $rev );
-        # $log->info(_loc("Checked out revision %1", $rev), data => _dump @out);
-    }
-} ## end sub checkout
-
-
 sub list_elements {
     my ( $self, %p ) = @_;
 
