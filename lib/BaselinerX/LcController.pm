@@ -94,26 +94,21 @@ sub category_contents : Local {
     my ($self,$c) = @_;
     my %seen = ();
     my ($category_id) = _array($c->req->params->{category_id});
-    my ($cnt,@user_topics) = Baseliner->model('Topic')->topics_for_user( { username => $c->username, clear_filter => 1 });
+    my ($cnt,@user_topics) = Baseliner->model('Topic')->topics_for_user( { username => $c->username, categories => $category_id, clear_filter => 1 });
     @user_topics = map { $_->{mid}} @user_topics;
 
-    my @rels = grep {!$seen{$_->{mid}}++} mdb->topic->find( { mid => mdb->in(@user_topics), id_category => "$category_id" })->all;
+    my @rels = mdb->topic->find( { 'category_status.type' => mdb->nin('F','FC'), mid => mdb->in(@user_topics), id_category => "$category_id" })->all;
     
     
     my %categories = mdb->category->find_hash_one( id=>{},{ workflow=>0, fields=>0, statuses=>0, _id=>0 });
     
     my @menu_related = $self->menu_related();
 
+    my %related;
+    map { $related{$_->{from_mid}} = 1 if !$related{$_->{from_mid}} } mdb->master_rel->find( { from_mid => mdb->in(@user_topics), rel_type => 'topic_topic' } )->all;
+
     my @tree = map {
-        my $t = $_;
-        my ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu(
-            $c,
-            topic      => $t,
-            #bl_state   => $bl,
-            #state_name => $state_name,
-            #id_project => $id_project,
-            categories => \%categories
-        );
+       my $leaf = $related{$_->{mid}} ? \0 : \1;
        +{
             text => $t->{title},
             icon => '/static/images/icons/release.png',
@@ -251,10 +246,12 @@ sub topic_contents : Local {
     my $topic_mid = $c->req->params->{topic_mid};
     my $state = $c->req->params->{state_id};
     my @topics = ci->new($topic_mid)->children( where => { collection => 'topic'}, depth => 1);
-    _debug \@topics;
+
     # mdb->master_rel->find( { from_mid => $topic_mid } )->all;
     my @mids = map { $_->{mid} } @topics;
-    @topics = mdb->topic->find( { mid=>{'$in'=>\@mids} } )->all;
+    @topics = mdb->topic->find( { mid=>mdb->in(@mids) } )->all;
+    my %related;
+    map { $related{$_->{from_mid}} = 1 } mdb->master_rel->find( { from_mid => mdb->in(@mids), rel_type => 'topic_topic' } )->all;
     for ( @topics ) {
         my $is_release = $_->{category}{is_release};
         my $is_changeset = $_->{category}{is_changeset};
@@ -268,7 +265,7 @@ sub topic_contents : Local {
         # my $project_name = $mid_project ? mdb->project->find_one({ mid=>$mid_project })->{name} : '';
 
         # my $title_project = "(" . $project_name . ")";
-        my $leaf = ci->new($_->{mid})->children( where => { collection => 'topic'}, depth => 1) ? \0 : \1;
+        my $leaf = $related{$_->{mid}} ? \0 : \1;
 
         push @tree, {
             text       => $_->{title},
