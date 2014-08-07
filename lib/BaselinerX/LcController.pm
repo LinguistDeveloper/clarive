@@ -177,7 +177,6 @@ Left hand tree "Topics" in each one of the explorer projects.
 =cut
 sub tree_topics_project : Local {
     my ($self,$c) = @_;
-    my @tree;
     my $project = $c->req->params->{project} ;
     my $id_project = $c->req->params->{id_project} ;
     

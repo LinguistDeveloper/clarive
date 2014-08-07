@@ -559,7 +559,7 @@ sub view : Local {
                     }
                 }
             }
-            if (exists ($categories_comment{ $category->id })){
+            if (exists ($categories_comment{ $category->{id} })){
                 $c->stash->{permissionComment} = 1;
                 $c->stash->{has_comments} = $c->model('Topic')->list_posts( mid=>$topic_mid, count_only=>1 );
             } else {
