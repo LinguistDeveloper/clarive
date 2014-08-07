@@ -660,6 +660,18 @@ sub dsl : Local {
     $c->forward("View::JSON");
 }
 
+sub run_rule : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+    my $id_rule = $p->{id_rule} // _fail('Missing id_rule');
+    my $stash = $p->{stash};
+    
+    my $ret_rule = Baseliner->model('Rules')->run_single_rule( id_rule=>$id_rule, stash=>$stash );
+
+    $c->stash->{json} = { stash=>$stash, ret=>$ret_rule };
+    $c->forward("View::JSON");
+}
+
 sub dsl_try : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
