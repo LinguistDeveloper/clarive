@@ -917,8 +917,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         if( retry>10 ) return; // we're done
         setTimeout( function(){
             if( !self.form_topic ) return;
-            var is_ready = self.form_topic.is_ready();
-            if( is_ready ) {
+            if( self.form_topic.is_loaded ) {
                 self.original_record = data || self.form_topic.getValues();
             } else {
                 self.set_original_record(data,retry+1); // retry
