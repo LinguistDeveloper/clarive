@@ -48,6 +48,8 @@ Baseliner.CLEditor = Ext.extend(Ext.form.TextArea, {
                         // max
                         var main = self.editor_dom();
                         $(main).css({ position:'absolute', top:0, left:0, bottom:0, right:0, 'z-index':9999 });
+                        main.style.height = null;
+                        main.style.width = null;
                         self.$lastParent = main.parentElement;
                         document.body.appendChild( main );
                         self.cleditor.refresh();
