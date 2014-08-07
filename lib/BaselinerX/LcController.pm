@@ -271,19 +271,19 @@ sub topic_contents : Local {
         my $leaf = ci->new($_->{mid})->children( where => { collection => 'topic'}, depth => 1) ? \0 : \1;
 
         push @tree, {
-            text       => $topic->{title},
+            text       => $_->{title},
             #text       => $_->{title},
             topic_name => {
-                mid             => $topic->{mid},
-                category_color  => $topic->{category}{color},
-                category_name   => _loc($topic->{category}{name}),
+                mid             => $_->{mid},
+                category_color  => $_->{category}{color},
+                category_name   => _loc($_->{category}{name}),
                 is_release      => $is_release,
                 is_changeset    => $is_changeset,
             },
             url        => '/lifecycle/topic_contents',
             data       => {
-               topic_mid   => $topic->{to_mid},
-               click       => $self->click_for_topic(  $topic->{category}{name}, $topic->{mid} ),
+               topic_mid   => $_->{to_mid},
+               click       => $self->click_for_topic(  $_->{category}{name}, $_->{mid} ),
             },
             icon       => $icon, 
             leaf       => $leaf,
