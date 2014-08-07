@@ -159,7 +159,7 @@ sub user_has_read_action {
     my $username = $p{username};
     my $action = $p{action};
 
-    return 1 if $self->is_root( $username );
+    return 0 if $self->is_root( $username );
     my @roles = keys ci->user->find({username => $username})->next->{project_security};
 
     my @actions;

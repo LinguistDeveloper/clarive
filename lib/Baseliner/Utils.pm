@@ -78,6 +78,9 @@ zip_tree
     _repl
     _md5
     _html_escape
+    _fixascii_sql
+    _join_quoted
+    case
     _utf8_on_all
     _to_utf8
     _dbis
@@ -1383,6 +1386,11 @@ sub _html_escape {
     $data =~ s/</&lt;/gs;
     $data =~ s/>/&gt;/gs;
 
+    $data
+}
+
+sub _fixascii_sql {
+    my $data = shift;
     #convert ASCII characters form SQL
     $data =~ s/\\xE1/á/g;
     $data =~ s/\\xE9/é/g;
