@@ -2128,6 +2128,8 @@ sub set_topics {
         mdb->master_rel->remove($rdoc,{multiple=>1});
     }
 
+    Baseliner->cache_remove( qr/:$rs_topic->mid:/ ) if length $rs_topic->mid;
+
     $self->update_rels( @old_topics, @new_topics );
 }
 
