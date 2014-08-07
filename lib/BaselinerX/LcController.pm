@@ -120,8 +120,8 @@ sub category_contents : Local {
                 is_release     => 1,
             },
             data => {
-                topic_mid    => $t->{mid},
-                click       => $self->click_for_topic(  $t->{category}->{name}, $t->{mid} ),
+                topic_mid    => $_->{mid},
+                click       => $self->click_for_topic(  $_->{category}->{name}, $_->{mid} ),
             },
             leaf => $leaf,
             expandable => !$leaf,
