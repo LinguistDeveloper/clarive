@@ -2046,6 +2046,10 @@ sub set_cal {
 sub set_topics {
     my ($self, $rs_topic, $topics, $user, $id_field, $meta, $cancelEvent ) = @_;
     my @all_topics = ();
+
+    my $rs_cache = ''.$rs_topic->mid;
+    Baseliner->cache_remove( qr/:$rs_cache:/ ) if length $rs_cache;
+
     
     my $rel_field = $id_field;
     my $field_meta = [ grep { $_->{id_field} eq $id_field } _array($meta) ]->[0];
@@ -2127,8 +2131,6 @@ sub set_topics {
         my $rdoc = {from_mid => ''.$rs_topic->{mid}, rel_field => $rel_field };
         mdb->master_rel->remove($rdoc,{multiple=>1});
     }
-
-    Baseliner->cache_remove( qr/:$rs_topic->mid:/ ) if length $rs_topic->mid;
 
     $self->update_rels( @old_topics, @new_topics );
 }
