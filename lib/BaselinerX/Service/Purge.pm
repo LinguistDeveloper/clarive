@@ -39,6 +39,7 @@ register 'config.purge' => {
         { id => 'event_log_keep', default =>'7D', label=> 'Keep event log entries for how long, in duration format: 1M, 2D, etc. Set to blank to stop this purge.' },
         { id => 'no_file_purge', default =>'0', label=> 'Set this to true (1) to prevent Clarive from purging log files' },
         { id => 'no_job_purge', default =>'0', label=> 'Set this to true (1) to prevent Clarive from purging job logs' },
+        { id => 'keep_sent_messages', default =>'30D', label=> 'Keep sent messages in duration format: 1M, 2D, etc.' },
     ]
 };
 
@@ -180,6 +181,13 @@ sub run_once {
                 { multiple=>1 },
             );
         }
+
+        ############################ PURGE OLD SENT MESSAGES ###########################################
+        my $keep_sent_messages = $config_purge->{keep_sent_messages};
+        my @old_messages = mdb->message->find({created=>{'$lt'=>''.(mdb->now()-$keep_sent_messages)}})->all;
+        my @old_messages_ids = map {$_->{id}} @old_messages;
+        mdb->message_queue->remove({id_message=>{'$in'=>\@old_messages_ids}});
+        mdb->message->remove({id=>{'$in'=>\@old_messages_ids}});
 
 
         ############################ DELETE SPECIFICATIONS OF RELEASES ###########################################

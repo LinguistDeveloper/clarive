@@ -484,7 +484,7 @@ sub view : Local {
         $c->stash->{permissionEdit} = 0;
         $c->stash->{permissionDelete} = 0;
         $c->stash->{permissionGraph} = $c->model("Permissions")->user_has_action( username => $c->username, action => 'action.topics.view_graph');
-        $c->stash->{permissionComment} = $c->model('Permissions')->user_has_action( username=> $c->username, action=>'action.GDI.comment' );
+        $c->stash->{permissionComment} = 0;
         my $topic_ci;
         if ( $topic_mid ) {
             try {
@@ -508,6 +508,7 @@ sub view : Local {
         my %categories_edit = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'edit', topic_mid => $topic_mid );
         my %categories_delete = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'delete', topic_mid => $topic_mid );
         my %categories_view = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view', topic_mid => $topic_mid );
+        my %categories_comment = map { $_->{id} => 1} $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'comment', topic_mid => $topic_mid );
         
         if($topic_mid || $c->stash->{topic_mid} ){
      
@@ -558,8 +559,14 @@ sub view : Local {
                     }
                 }
             }
+            if (exists ($categories_comment{ $category->{id} })){
+                $c->stash->{permissionComment} = 1;
+                $c->stash->{has_comments} = $c->model('Topic')->list_posts( mid=>$topic_mid, count_only=>1 );
+            } else {
+                $c->stash->{permissionComment} = 0;
+                $c->stash->{has_comments} = 0;
+            }
                              
-            $c->stash->{has_comments} = $c->model('Topic')->list_posts( mid=>$topic_mid, count_only=>1 );
      
             # jobs for release and changeset
             if( $category->{is_changeset} || $category->{is_release} ) {
@@ -592,6 +599,7 @@ sub view : Local {
             
             $c->stash->{permissionEdit} = 1 if exists $categories_edit{$id_category};
             $c->stash->{permissionDelete} = 1 if exists $categories_delete{$id_category};
+            $c->stash->{permissionComment} = 1 if exists $categories_comment{$id_category};
             
             $c->stash->{has_comments} = 0;
             $c->stash->{topic_mid} = '';

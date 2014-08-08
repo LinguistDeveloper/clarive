@@ -443,6 +443,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             cls: 'x-btn-icon',
             icon: '/static/images/icons/project.png',
             handler: function(){
+                this.disable();
                 var that = this;
                 show_projects(function(){that.enable();});
             },
@@ -480,6 +481,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             cls: 'x-btn-icon',
             icon: '/static/images/icons/workspaces.png',
             handler: function(){
+                this.disable();
                 var that = this;
                 show_workspaces(function(){that.enable();});
             },
@@ -500,6 +502,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             cls: 'x-btn-icon',
             icon: '/static/images/ci/ci-grey.png',
             handler: function(){
+                this.disable();
                 var that = this;
                 show_ci(function(){that.enable();});
             },
@@ -519,6 +522,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             cls: 'x-btn-icon',
             icon: '/static/images/icons/release_explorer.png',
             handler: function(){
+                this.disable();
                 var that = this;
                 show_releases(function(){that.enable();});
             },
@@ -538,6 +542,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             cls: 'x-btn-icon',
             icon: '/static/images/icons/search_grey.png',
             handler: function(){
+                this.disable();
                 var that = this;
                 show_reports(function(){that.enable();});
             },
@@ -553,8 +558,8 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             listeners: Baseliner.gen_btn_listener()
         });        
 
-    var button_collapseall = new Ext.Button({
-        cls: 'x-btn-icon',
+	var button_collapseall = new Ext.Button({
+	    cls: 'x-btn-icon',
             icon: '/static/images/icons/collapseall.png',
             handler: function(){
                 if( self.$tree_releases ) self.$tree_releases.collapseAll();
@@ -651,6 +656,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                     tooltip: _('Refresh All Nodes'),
                     icon: '/static/images/icons/refresh-grey.gif',
                     handler: function(){
+                        this.disable();
                         var that = this;                        
                         self.current_tree().refresh_all(function(){that.enable();});
                     }

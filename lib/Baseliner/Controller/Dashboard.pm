@@ -1159,7 +1159,8 @@ sub topics_by_status: Local{
                     } else {
                         $wh->{"_project_security.$k"} = {'$in' => [ keys %{$v || {}} ]};
                     }
-                } ## end while ( my ( $k, $v ) = each...)                push @ors, $wh;
+                } ## end while ( my ( $k, $v ) = each...)                
+                push @ors, $wh;
             }
             my $where_undef = { '_project_security' => undef };
             push @ors, $where_undef;
@@ -1213,7 +1214,8 @@ sub topics_open_by_status: Local{
                     } else {
                         $wh->{"_project_security.$k"} = {'$in' => [ keys %{$v || {}} ]};
                     }
-                } ## end while ( my ( $k, $v ) = each...)                push @ors, $wh;
+                } ## end while ( my ( $k, $v ) = each...)                
+                push @ors, $wh;
             }
             my $where_undef = { '_project_security' => undef };
             push @ors, $where_undef;

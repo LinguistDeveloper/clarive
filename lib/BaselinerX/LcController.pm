@@ -94,41 +94,38 @@ sub category_contents : Local {
     my ($self,$c) = @_;
     my %seen = ();
     my ($category_id) = _array($c->req->params->{category_id});
-    my ($cnt,@user_topics) = Baseliner->model('Topic')->topics_for_user( { username => $c->username, clear_filter => 1 });
+    my ($cnt,@user_topics) = Baseliner->model('Topic')->topics_for_user( { username => $c->username, categories => $category_id, clear_filter => 1 });
     @user_topics = map { $_->{mid}} @user_topics;
 
-    my @rels = grep {!$seen{$_->{mid}}++} mdb->topic->find( { mid => mdb->in(@user_topics), id_category => "$category_id" })->all;
+    my @rels = mdb->topic->find( { 'category_status.type' => mdb->nin('F','FC'), mid => mdb->in(@user_topics) })->all;
     
     
     my %categories = mdb->category->find_hash_one( id=>{},{ workflow=>0, fields=>0, statuses=>0, _id=>0 });
     
     my @menu_related = $self->menu_related();
 
+    my %related;
+    map { $related{$_->{from_mid}} = 1 if !$related{$_->{from_mid}} } mdb->master_rel->find( { from_mid => mdb->in(@user_topics), rel_type => 'topic_topic' } )->all;
+
     my @tree = map {
-        my $t = $_;
-        my ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu(
-            $c,
-            topic      => $t,
-            #bl_state   => $bl,
-            #state_name => $state_name,
-            #id_project => $id_project,
-            categories => \%categories
-        );
+        my $leaf = ci->new($_->{mid})->children( where => { collection => 'topic'}, depth => 1) ? \0 : \1;
        +{
-            text => $t->{title},
+            text => ' ('.$_->{category_status}->{name}.') '.$_->{title},
             icon => '/static/images/icons/release.png',
             url  => '/lifecycle/topic_contents',
             topic_name => {
-                mid            => $t->{mid},
-                category_color => $t->{category}->{color},
-                category_name  => $t->{category}->{name},
+                mid            => $_->{mid}. ' ('.$_->{category_status}->{name}.')',
+                category_color => $_->{category}->{color},
+                category_name  => $_->{category}->{name},
                 is_release     => 1,
             },
             data => {
-                topic_mid    => $t->{mid},
-                click       => $self->click_for_topic(  $t->{category}->{name}, $t->{mid} ),
+                topic_mid    => $_->{mid},
+                click       => $self->click_for_topic(  $_->{category}->{name}, $_->{mid} ),
             },
-            menu => [ @$menu],
+            leaf => $leaf,
+            expandable => !$leaf,
+            menu => \@menu_related
        }
     } @rels;
     #$c->stash->{release_only} = 1;
@@ -180,41 +177,42 @@ Left hand tree "Topics" in each one of the explorer projects.
 =cut
 sub tree_topics_project : Local {
     my ($self,$c) = @_;
-    my @tree;
     my $project = $c->req->params->{project} ;
     my $id_project = $c->req->params->{id_project} ;
-    my @categories  = map { $_->{id}} Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'view' );
     
-    my $limit = 20;
-    my $skip = 0;
-    my $sort = { modified_on=>-1 };
-    
-    my $is_release = $c->stash->{release_only} ? mdb->true : mdb->false;
-    
-    # TODO no joins, just search the topic collection for project fields
-    my @topics = mdb->joins( 
-            master_rel=>{ to_mid=>"$id_project" }, 
-            from_mid => mid => 
-            topic => [
-                { id_category=>mdb->in(@categories), 'category.is_release'=>$is_release, 'category_status.type'=>{ '$not'=>qr/^F/ }  },
-                { limit=>$limit, skip=>$skip, sort=>$sort }
-            ]); 
-        
-    for my $topic ( @topics ) {
-        my $is_release = $topic->{category}{is_release};
-        my $is_changeset = $topic->{category}{is_changeset};
-        my $icon = $is_release ? '/static/images/icons/release_lc.png'
-            : $is_changeset ? '/static/images/icons/changeset_lc.png' :'/static/images/icons/topic.png' ;
-        push @tree,
-            $self->build_topic_tree( 
-                mid          => $topic->{mid},
-                topic        => $topic,
-                icon         => $icon,
-                is_release   => $is_release,
-                is_changeset => $is_changeset,
-            );
-    }
+    my ($cnt,@user_topics) = Baseliner->model('Topic')->topics_for_user( { username => $c->username, id_project => $id_project, clear_filter => 1 });
+    @user_topics = map { $_->{mid}} @user_topics;
 
+    my @rels = mdb->topic->find( { 'category_status.type' => mdb->nin('F','FC'), mid => mdb->in(@user_topics) })->all;
+    
+    my @menu_related = $self->menu_related();
+
+    my %related;
+    map { $related{$_->{from_mid}} = 1 if !$related{$_->{from_mid}} } mdb->master_rel->find( { from_mid => mdb->in(@user_topics), rel_type => 'topic_topic' } )->all;
+
+    my @tree = map {
+       my $leaf = $related{$_->{mid}} ? \0 : \1;
+       +{
+            text => $_->{title},
+            icon => '/static/images/icons/release.png',
+            url  => '/lifecycle/topic_contents',
+            topic_name => {
+                mid            => $_->{mid}. ' ('.$_->{category_status}->{name}.')',
+                category_color => $_->{category}->{color},
+                category_name  => $_->{category}->{name},
+                is_release     => 1,
+            },
+            data => {
+                topic_mid    => $_->{mid},
+                click       => $self->click_for_topic(  $_->{category}->{name}, $_->{mid} ),
+            },
+            leaf => $leaf,
+            expandable => !$leaf,
+            menu => \@menu_related
+       }
+    } @rels;
+    #$c->stash->{release_only} = 1;
+    #$c->forward('tree_topics_project');
     $c->stash->{ json } = \@tree;
     $c->forward( 'View::JSON' );
 }
@@ -248,39 +246,48 @@ sub topic_children_for_state {
 sub topic_contents : Local {
     my ($self,$c) = @_;
     my @tree;
-    my $p = $c->req->params;
-    my $topic_mid = $p->{topic_mid};
-    my $state_id = $p->{state_id};
-    my $id_project = $p->{id_project};
-    
-    my @topics = grep { $$_{category}{is_changeset} }
-            $self->topic_children_for_state( username=>$c->username, topic_mid=>$topic_mid, state_id=>$state_id, id_project=>$id_project );
-    
-    for my $topic ( @topics ) {
-        my $is_release = $topic->{category}{is_release};
-        my $is_changeset = $topic->{category}{is_changeset};
+    my $topic_mid = $c->req->params->{topic_mid};
+    my $state = $c->req->params->{state_id};
+    my @topics = ci->new($topic_mid)->children( where => { collection => 'topic'}, depth => 1);
+
+    # mdb->master_rel->find( { from_mid => $topic_mid } )->all;
+    my @mids = map { $_->{mid} } @topics;
+    @topics = mdb->topic->find( { mid=>mdb->in(@mids) } )->all;
+    my %related;
+    map { $related{$_->{from_mid}} = 1 } mdb->master_rel->find( { from_mid => mdb->in(@mids), rel_type => 'topic_topic' } )->all;
+    for ( @topics ) {
+        my $is_release = $_->{category}{is_release};
+        my $is_changeset = $_->{category}{is_changeset};
+
         my $icon = $is_release ? '/static/images/icons/release_lc.png'
             : $is_changeset ? '/static/images/icons/changeset_lc.png' :'/static/images/icons/topic.png' ;
 
         my @menu_related = $self->menu_related();
 
+        # my $mid_project = $_->{_project_security}->{project}[0];
+        # my $project_name = $mid_project ? mdb->project->find_one({ mid=>$mid_project })->{name} : '';
+
+        # my $title_project = "(" . $project_name . ")";
+        my $leaf = $related{$_->{mid}} ? \0 : \1;
+
         push @tree, {
-            text       => $topic->{title},
+            text       => $_->{title},
+            #text       => $_->{title},
             topic_name => {
-                mid             => $topic->{mid},
-                category_color  => $topic->{category}{color},
-                category_name   => _loc($topic->{category}{name}),
+                mid             => $_->{mid},
+                category_color  => $_->{category}{color},
+                category_name   => _loc($_->{category}{name}),
                 is_release      => $is_release,
                 is_changeset    => $is_changeset,
             },
             url        => '/lifecycle/topic_contents',
             data       => {
-               topic_mid   => $topic->{to_mid},
-               click       => $self->click_for_topic(  $topic->{category}{name}, $topic->{mid} ),
+               topic_mid   => $_->{to_mid},
+               click       => $self->click_for_topic(  $_->{category}{name}, $_->{mid} ),
             },
             icon       => $icon, 
-            leaf       => \0,
-            expandable => \1,
+            leaf       => $leaf,
+            expandable => !$leaf,
             menu => \@menu_related
         };
     }
