@@ -706,6 +706,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             text: _('Add Comment'),
             icon:'/static/images/icons/comment_new.gif',
             cls: 'x-btn-icon-text',
+            hidden: !self.permComment,
             handler: function() {
                 Baseliner.Topic.comment_edit( params.topic_mid, null, function(id_com){ self.detail_reload() });
             }
@@ -949,7 +950,9 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         self.btn_save_form.show();
 
         if(self.topic_mid){
-            self.btn_comment.show();
+            if( self.permComment ) {
+                self.btn_comment.show();
+            };
             //Baseliner.TopicExtension.toolbar.length > 0 ? self.btn_detail.hide(): self.btn_detail.show();
             self.btn_detail.show();
             if( self.permDelete ) {
@@ -980,7 +983,9 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 self.btn_save_form.show();
                 
                 if(self.topic_mid){
-                    self.btn_comment.show();
+                    if( self.permComment ) {
+                        self.btn_comment.show();
+                    };
                     self.btn_detail.show();
                     if( self.permDelete ) {
                         self.btn_delete_form.show();
@@ -1161,7 +1166,9 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                        
                         form2.findField("status").setValue(res.topic_status);
                         self.topic_mid = res.topic_mid;
-                        self.btn_comment.show();
+                        if( self.permComment ) {
+                            self.btn_comment.show();
+                        };
                         self.getTopToolbar().enable();
                         self.btn_detail.show();
                         if( self.permDelete ) {

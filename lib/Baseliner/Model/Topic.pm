@@ -168,7 +168,8 @@ register 'registor.action.topic_category' => {
             create => _loc('Can create topic for this category'),
             view   => _loc('Can view topic for this category'),
             edit   => _loc('Can edit topic for this category'),
-            delete => _loc('Can delete topic in this category')
+            delete => _loc('Can delete topic in this category'),
+            comment => _loc('Can add/view comments in topics of this category')
         );
 
         my @categories = mdb->category->find->sort({ name=>1 })->fields({ id=>1, name=>1 })->all;
@@ -507,6 +508,8 @@ sub topics_for_user {
         $where->{'$or'} = \@mids_or;  
     }
     #_debug( $order_by );
+    
+#_debug( $where );
     my $rs = mdb->topic->find( $where )->fields({ mid=>1, labels=>1 })->sort( $order_by );
     
     $cnt = $rs->count;
@@ -2501,8 +2504,10 @@ sub get_categories_permissions{
         $re_action = qr/^action\.topics\.(.*?)\.(edit|create)$/;
     } elsif ($type eq 'create') {
         $re_action = qr/^action\.topics\.(.*?)\.(create)$/;
-    } else {
+    } elsif ($type eq 'delete') {
         $re_action = qr/^action\.topics\.(.*?)\.(delete)$/;
+    } elsif ($type eq 'comment') {
+        $re_action = qr/^action\.topics\.(.*?)\.(comment)$/;
     }
 
     my @permission_categories;

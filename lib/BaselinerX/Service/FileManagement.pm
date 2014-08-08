@@ -218,17 +218,17 @@ sub run_tar {
     Util->tar_dir( %$config ); 
 }
     
-sub run_zip {
-    my ($self, $c, $config ) = @_;
-
-    my $job   = $c->stash->{job};
-    my $log   = $job->logger;
-    my $stash = $c->stash;
-    
-    $log->info( _loc("Zip of directory '%1' into file '%2'", $config->{source_dir}, $config->{zipfile}), 
-            $config );
-    Util->zip_dir( %$config ); 
-}
+#sub run_zip {
+#    my ($self, $c, $config ) = @_;
+#
+#    my $job   = $c->stash->{job};
+#    my $log   = $job->logger;
+#    my $stash = $c->stash;
+#    
+#    $log->info( _loc("Zip of directory '%1' into file '%2'", $config->{source_dir}, $config->{zipfile}), 
+#            $config );
+#    Util->zip_dir( %$config ); 
+#}
     
 sub run_tar_nature {
     my ($self, $c, $config ) = @_;
