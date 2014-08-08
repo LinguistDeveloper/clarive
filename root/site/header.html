@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+<meta http-equiv="X-UA-Compatible" content="IE=7,8,9" />
 <%perl>
     my $lang = $c->language;
     my $to_bool = sub{ 
@@ -197,10 +198,13 @@
                 Ext.get('bali-loading-mask').fadeOut({
                     remove:true,
                     callback: function(){
-                        /* var bw = $('#bali-browser-warn').show();
-                        var bw = $('#bali-browser-warn-mid').show();
-                        $("#bali-browser-version").html('4.5');
-                        */
+                         var ver = navigator.appVersion.match(/MSIE 7.0/g);
+                         if(ver == "MSIE 7.0"){
+                                $('.alert-error').fadeIn();
+                              // var bw = $('#bali-browser-warn').show();
+                              // var bw = $('#bali-browser-warn-mid').show();
+                            // $("#bali-browser-version").html('4.5');
+                         }                        
                     }
                 });
                 
@@ -212,6 +216,12 @@
 </head>
 <body>
 <div id="boot">
+<div id="boot" class="alert-error" style="display: none; position:absolute; left:0; bottom:0; width:100%; padding:5px; text-align:center;"> <img src="static/images/circular/warning.png" alt="0" /> 
+    <span style="color:#000;font-size:1.5em;">
+    <% _loc("%1 not supported in <b> mode compatibility </b> (Internet Explorer), Please disable it.", $c->config->{name}) %>
+    </span>  
+ <img src="static/images/circular/warning.png" alt="0" /> 
+</div>
 <div id="main-alert" style="top:0; left: 100px; width:80%; position: absolute; z-index: 999999">
 </div>
 </div>
