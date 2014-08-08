@@ -1100,19 +1100,41 @@ sub tree_all : Local {
         }
     }
 }
+sub check_user_favorites : Local {
+    my ($self,$c) = @_;
+    my $mid = $c;
+    my $user_ci = ci->new($mid);
+    my @fav_user = $user_ci->{favorites};
+    for my $item ( @fav_user ) {
+        for my $node (keys $item){
+            my @keys_data = keys $item->{$node}->{data};
+            foreach (@keys_data){
+                if($_=~/^id/){
+                    try{
+                        ci->new($item->{$node}->{data}->{$_});
+                    }catch{
+                        delete $user_ci->{favorites}->{$node};
+                    }
+                }
+            }
+        }
+    }
+    $user_ci->save;
+}
 
 sub tree_favorites : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
     my @tree;
     my $provider;
-    my $user = $c->user_ci; 
+    my $user_mid = $c->user_ci->{mid};
+    $self->check_user_favorites($user_mid);
+    my $user = ci->find($user_mid);
     my $root = length $p->{id_folder} 
         ? $user->favorites->{ $p->{id_folder} }{contents}
         : $user->favorites;
    
     $root //= {};
-    
     my $favs = [ map { $root->{$_} } sort { $a cmp $b }
         keys %$root ];
 
@@ -1144,6 +1166,8 @@ sub tree_workspaces : Local {
     }
     $c->stash->{json} = \@tree;
 }
+
+
 
 sub favorite_add : Local {
     my ($self,$c) = @_;
