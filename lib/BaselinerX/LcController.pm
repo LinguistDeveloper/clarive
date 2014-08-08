@@ -502,7 +502,7 @@ sub changeset : Local {
 
     my $p = $c->req->params;
 
-    my $bl = $p->{bl} or _throw "Missing bl";
+    my $bl = $p->{bl} || '*';
     my $project = $p->{project} or _throw 'missing project';
     my $state_name = $p->{state_name} or _throw 'missing state name';
     my $id_project = $p->{id_project} or _throw 'missing project id';
