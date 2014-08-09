@@ -415,8 +415,8 @@ sub list_repo_contents : Local {
                 menu       => $menu,
                 icon       => $it->icon,
                 text       => $it->text || $it->name,
-                leaf       => \0,
-                expandable => \0
+                leaf       => $it->node_data->{leaf} // \0,
+                expandable => !$it->node_data->{leaf} // \1
             };
         }
     } catch {
