@@ -1144,6 +1144,9 @@ Baseliner.show_revision = function( mid ) {
         if( res.url ) {
             if( res.url.type == 'iframe' ) {
                 Baseliner.add_iframe( res.url.url, _( res.title ), {} );
+            } else if ( res.url.type == 'file' ) {
+               var fd = document.all.FD || document.all.FrameDownload;
+               fd.src =  res.url.url;
             }
         }
     });
