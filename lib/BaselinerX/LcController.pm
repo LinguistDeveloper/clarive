@@ -1110,10 +1110,19 @@ sub check_user_favorites : Local {
             my @keys_data = keys $item->{$node}->{data};
             foreach (@keys_data){
                 if($_=~/^id/){
-                    try{
-                        ci->new($item->{$node}->{data}->{$_});
-                    }catch{
-                        delete $user_ci->{favorites}->{$node};
+                    if($_ eq "id_status"){
+                        try{
+                            ci->status->find_one({id_status =>$_});
+                        }catch{
+                            delete $user_ci->{favorites}->{$node};
+                        }
+                    }else{
+                        try{
+                            ci->new($item->{$node}->{data}->{$_});
+                        }catch{
+                            delete $user_ci->{favorites}->{$node};
+                        }
+
                     }
                 }
             }
