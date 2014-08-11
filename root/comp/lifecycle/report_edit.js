@@ -92,7 +92,7 @@
             case 'ci':
                 var ci_class = pn.attributes.collection || pn.attributes.ci_class;
                 if (ci_class != undefined && ci_class != '') {
-                    field=new Baseliner.ci_box({value: attr.value, name:'value', singleMode: false, force_set_value:true, 'class': ci_class, security: true });
+                    field=new Baseliner.ci_box({value: attr.value, name:'value', singleMode: false, force_set_value:false, 'class': ci_class, security: true });
                 }else{
                     var filter = pn.attributes.filter;
                     var topic_box_store = new Baseliner.store.Topics({
