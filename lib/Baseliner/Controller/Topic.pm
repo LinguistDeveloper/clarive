@@ -1675,6 +1675,8 @@ sub report_csv : Local {
     for( grep { length $_->{name} } _array( $data->{columns} ) ) {
         push @cols, qq{"$_->{name}"}; #"
     }
+    for(@cols){s/Comentarios/Mas info/g};
+    
     push @csv, join ';', @cols;
 
     for my $row ( _array( $data->{rows} ) ) {
