@@ -287,6 +287,7 @@
             combo_time.fireEvent('change');
         }
         if( jc_grid_remove ) jc_store.removeAll();
+        //topics = [];
         jc_store_topics = {};
         store_search.removeAll();
         hidden_baseline.setValue(null);
@@ -609,7 +610,7 @@
         
         // find job type from radio. 
         //var job_type = main_form.getForm().getValues()['job_type'];
-        if( !job_type ) return;  // can't continue
+        //if( !job_type ) return;  // can't continue
         var bl_hash = ( job_type == 'promote' ) ? data.promotable : ( job_type == 'demote' ) ? data.demotable : data.deployable;
         var bl_item = bl_hash[ bl ];
                 
