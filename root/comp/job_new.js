@@ -287,7 +287,10 @@
             combo_time.fireEvent('change');
         }
         if( jc_grid_remove ) jc_store.removeAll();
-        //topics = [];
+        topics = [];
+        var topics_json = '[]';                
+        store_transitions.baseParams.topics= topics_json;
+        store_transitions.reload();
         jc_store_topics = {};
         store_search.removeAll();
         hidden_baseline.setValue(null);
