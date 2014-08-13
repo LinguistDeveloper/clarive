@@ -6,17 +6,11 @@
     use Baseliner::Sugar;
     use utf8;
     my $iid = "div-" . _nowstamp;
-    $c->stash->{job_types} = [
-        { name=>'job_type', inputValue=> 'promote', boxLabel => _loc('Promote'), checked=>\1 },
-        { name=>'job_type', inputValue=> 'static', boxLabel => _loc('Static') },
-        { name=>'job_type', inputValue=> 'demote', boxLabel => _loc('Demote') }
-        ];
     my $now = _dt();
     my $date_format = config_value('calendar_date_format') || '%Y-%m-%d';
     my $today =  $now->strftime( $date_format ); # '%d/%m/%Y'
     ( my $picker_format = $date_format || 'd/m/Y' ) =~ s{%}{}g;
 
-    my $default_baseline = config_value( 'job_new.default_baseline' );
     my $custom_forms = $c->stash->{custom_forms}; # config_value( 'job_new.custom_form' );
     my $show_job_search_combo = config_value( 'site.show_job_search_combo' );
     my $show_no_cal = config_value( 'site.show_no_cal' ) // 1;
@@ -24,8 +18,10 @@
 </%perl>
 (function(opts){
     if( !opts ) opts = {};
-    // var custom_forms = <% js_dumper( [ _array $custom_forms ] ) %>;
-    var default_baseline = opts.bl || '<% $default_baseline %>';
+    var topics = [];
+    var job_type;
+    var bl;
+    var set_transition = '';
     var has_no_cal = <% $has_no_cal ? 'true' : 'false'  %>;
     var show_no_cal = <% $show_no_cal ? 'true' : 'false'  %>;
     var show_job_search_combo = <% $show_job_search_combo ? 'true' : 'false'  %>;
@@ -91,87 +87,97 @@
 
     
     //****************  Job Type Radio
-    var job_type_radio = new Ext.form.RadioGroup({
-        name: 'job_type',
-        fieldLabel: _('Job Type'),
-        value: opts.job_type || 'promote',
+    var hidden_job_type = new Ext.form.Hidden({ 
+        name: 'job_type', 
+        // value: job_type,
         listeners: {
-            change: { fn: function(t,checked) {
-                store_search.removeAll();
-                jc_store_topics = {};
-                jc_store.reload();
-                combo_baseline.setFieldLabel( checked.inputValue =='demote' ? label_orig : label_dest );
-                store_chain.load( {params: { type: checked.inputValue}});
-                } }
-            },
-        items: <% js_dumper(  $c->stash->{job_types} ) %>
-    });
-    
-    //*************************************************
-    //
-    // Baseline Combo
-    //
-    var label_dest = _('Destination Baseline');
-    var label_orig = _('Origin Baseline');
-    var store_baselines = new Baseliner.JsonStore({
-        url: '/job/bl_combo', 
-        fields: ['bl', 'name'],
-        root: 'data', totalProperty: 'totalCount', id: 'id'
-    });
-    store_baselines.on('load', function(){
-        // only set default value on combo if coming from lifecycle
-        if( default_baseline ) {
-            combo_baseline.setValue( default_baseline );
-        }
-        // alert?
-        var bl = combo_baseline.getValue();
-        if( store_baselines.data.length==0 && (bl=='' || !bl) ) {
-            Baseliner.error( _('Error'), _('No environments available for selected changesets') );
-            //   TODO check if deploys have envs, in that case user has no permissions
-            //    Baseliner.error(_('Error'), _( "User doesn't have permissions to create a job in any environment" ) );
+            change: { fn: function(t,v) {
+                job_type = v;
+                store_chain.load( {params: { type: v }});
+            } }
         }
     });
 
-    var tpl_baseline = new Ext.XTemplate(
+    //****************  BL to
+    var hidden_baseline_to = new Ext.form.Hidden({ 
+        name: 'bl_to'
+    });
+    
+    //****************  state to
+    var hidden_state_to = new Ext.form.Hidden({ 
+        name: 'state_to'
+    });
+    
+    //****************  BL
+    var hidden_baseline = new Ext.form.Hidden({ 
+        name: 'bl', 
+        listeners: {
+            change: { fn: function(t,v) {
+                bl = v;
+                } }
+        }
+    });
+    //*************************************************
+    //
+    // Transitions Combo
+    //
+    var store_transitions = new Baseliner.JsonStore({
+        url: '/lifecycle/job_transitions', 
+        fields: ['id', 'bl_to', 'job_type', 'job_bl', 'id_project', 'status_to', 'status_to_name', 'text'],
+        root: 'data', 
+        totalProperty: 'totalCount', 
+        id: 'id',
+        baseParams: {}
+    });
+
+    store_transitions.on('load', function(){
+        // only set default value on combo if coming from lifecycle
+        if( set_transition ) {
+            combo_transitions.setValue( set_transition );
+            var record = combo_transitions.findRecord('id', set_transition);
+            var index = combo_transitions.store.indexOf(record);
+            var data = combo_transitions.store.data.items[index].data;
+            hidden_job_type.setValue(data.job_type);
+            hidden_baseline.setValue(data.job_bl);
+            hidden_baseline_to.setValue(data.bl_to);
+            hidden_state_to.setValue(data.status_to);
+            //jc_store.reload();
+            calendar_reload();
+
+        }
+    });
+
+    var tpl_transitions = new Ext.XTemplate(
         '<tpl for=".">',
-            '<div class="search-item">{bl} - {name}</div>',
+            '<div class="search-item">{text}</div>',
         '</tpl>'
     );
-    var tpl_baseline_display = new Ext.XTemplate( '<div>{bl} - {name}</div>' );
-    var changed = false;
-    var combo_baseline = new Baseliner.SuperBox({
-        name: 'bl',
-        hiddenName: 'bl',
-        displayField:'name',
+    var tpl_transitions_display = new Ext.XTemplate( '<div>{text}</div>' );
+    var combo_transitions = new Ext.form.ComboBox({ //Baseliner.SuperBox({
+        name: 'transitions',
+        hiddenName: 'transitions',
+        displayField:'text',
         singleMode: true,
-        valueField: 'bl',
-        fieldLabel: label_dest,
+        valueField: 'id',
+        fieldLabel: _('Transition'),
         mode: 'local',
-        store: store_baselines,
+        store: store_transitions,
         editable: false,
         forceSelection: true,
         triggerAction: 'all',
         itemSelector: 'div.search-item',
-        tpl: tpl_baseline,
-        displayFieldTpl: tpl_baseline_display,
+        tpl: tpl_transitions,
+        displayFieldTpl: tpl_transitions_display,
         allowBlank: false,
         listeners: {
             select: function() {
-                var bl_name = combo_baseline.getRawValue();
-                var bl = combo_baseline.getValue();
-                store_search.removeAll();
-                var flag_remove_all = false;
-                // check if we have to remove all contents or not, depending on availability
-                jc_store.each( function(t){
-                    if( !t.data.promotable[ bl ] ) {
-                        flag_remove_all = true;
-                        return false;
-                    }
-                });
-                form_reset_all(flag_remove_all);
-                combo_baseline.setRawValue( bl_name );
-                if( !flag_remove_all ) calendar_reload();  // we still have job contents, so reload dates
-                changed = true;
+                var data = combo_transitions.store.data.items[combo_transitions.selectedIndex].data;
+                hidden_job_type.setValue(data.job_type);
+                hidden_baseline.setValue(data.job_bl);
+                hidden_baseline_to.setValue(data.bl_to);
+                hidden_state_to.setValue(data.status_to);
+                //jc_store.reload();
+                calendar_reload();
             }
         },
         anchor: '100%'
@@ -283,8 +289,10 @@
         if( jc_grid_remove ) jc_store.removeAll();
         jc_store_topics = {};
         store_search.removeAll();
-        combo_baseline.setValue(null);
-        store_baselines.reload({ params:{ jsonData:{ bls: null } } });
+        hidden_baseline.setValue(null);
+        hidden_baseline_to.setValue(null);
+        hidden_state_to.setValue(null);
+        // store_baselines.reload({ params:{ jsonData:{ bls: null } } });
         button_submit.disable();
         job_statistics.update( stats_tmpl({ eta:'-', p_success:'-' }) );
     };
@@ -358,7 +366,7 @@
             if( cnt > 0 ) {
                 var job_date_v = str_date ? str_date : job_date.getRawValue()
                 Baseliner.showLoadingMask(main_form.getEl(), _("Loading available time for %1...", job_date_v ) );
-                var bl  = combo_baseline.getValue();
+                var bl  = hidden_baseline.getValue();
                 var json_res = job_grid_data({ warn: false });
 
                 Baseliner.ajaxEval( '/job/build_job_window',
@@ -418,8 +426,20 @@
             var sm = jc_grid.getSelectionModel();
             var sel = sm.getSelected();
             if( sel ) {
+                var cont = 0;
+                Ext.each( topics, function( item_json ){
+                    var item = Ext.util.JSON.decode( item_json );
+                    if ( item.topic_mid == sel.data.mid ) {
+                        topics.splice(cont);
+                    }
+                    cont++;
+                });
                 jc_store.remove(sel);
                 delete jc_store_topics[ sel.data.mid ];
+
+                var topics_json = '[' + topics.join(',') + ']';                
+                store_transitions.baseParams.topics= topics_json;
+                store_transitions.reload();
                 jc_store.reload();
             }
         }
@@ -530,13 +550,7 @@
         if (jc_store.data.length == 0) { 
             button_submit.disable(); 
         } 
-        var deploys = jc_store.reader.jsonData.deploys;
-        if( deploys ) {
-            var job_type = main_form.getForm().getValues()['job_type'];
-            store_baselines.reload({ params: { jsonData:{ bls: deploys[job_type] } } });
-        } else {
-            Baseliner.alert(_('No deploy destinations match all selected changesets') );
-        }
+        var deploys = jc_store.reader.jsonData;
         calendar_reload();
     });
 
@@ -579,7 +593,14 @@
     
     // text, topic_mid, promotable, demotable, deployable, ..., 
     var jc_add_node = function(data) {
-        var bl = combo_baseline.getValue();
+        //var bl = hidden_baseline.getValue();
+        if ( !job_type ) {
+            job_type = data.job_type;
+        };
+        if ( !bl ) {
+            bl = data.bl_to;
+        };
+        var transition_id = combo_transitions.getValue();
         if( ! ( data.promotable || data.demotable || data.deployable ) ) {
             Ext.Msg.alert( _('Error'),
                 _("Cannot promote/demote this entity type" ) );
@@ -587,39 +608,37 @@
         }
         
         // find job type from radio. 
-        var job_type = main_form.getForm().getValues()['job_type'];
-        if( !job_type ) job_type=opts.job_type;   // maybe radio not loaded yet on right-click deploy?
+        //var job_type = main_form.getForm().getValues()['job_type'];
         if( !job_type ) return;  // can't continue
         var bl_hash = ( job_type == 'promote' ) ? data.promotable : ( job_type == 'demote' ) ? data.demotable : data.deployable;
         var bl_item = bl_hash[ bl ];
-        
-        // auto-set our first environment?
-        /*
-        if( jc_store.getCount()==0 && !bl_item && !changed ) {
-            var first_bl;
-            for( var k in bl_hash ) {
-               first_bl = k;
-               break;
-            }
-            if( first_bl ) {
-                combo_baseline.setValue( first_bl ); 
-                job_type_radio.setValue( ??? );  
-            }
-        }
-        */
-        
-        bl = combo_baseline.getValue();
-        var bl_item = bl_hash[ bl ];
-        if ( bl && bl_item == undefined ) {  
+                
+        var bl_item = bl_hash[ transition_id ];
+        if ( transition_id && bl_item == undefined ) {
+            var transition_msg = combo_transitions.getRawValue();
             Ext.Msg.alert( _('Error'),
-                _("Cannot promote/demote changeset %1 to environment %2 (job type %3)", '<b>' + data.text + '</b>', bl, job_type ) );
+                _("Changeset %1 cannot %2", '<b>' + data.text + '</b>', transition_msg ) );
+            // Ext.Msg.alert( _('Error'),
+            //     _("Cannot promote/demote changeset %1 to environment %2 (job type %3)", '<b>' + data.text + '</b>', bl, job_type ) );
         } else {
             //add_node(n,bl_hash);
             if( jc_store.find('mid', data.topic_mid ) > -1 ) {
                 Baseliner.message( _('New Job'), _('Topic %1 has already been selected', data.text),{ image:'/static/images/icons/error-7-64.png' });
             } else {
                 jc_store_topics[ data.topic_mid ] = { text:data.text, data:data };
+                topics.push( Ext.util.JSON.encode( { topic_mid:data.topic_mid, project: data.id_project, state: data.state_id} ) );
+                var topics_json = '[' + topics.join(',') + ']';
+                // topics.push( data.topic_mid + '|' + data.id_project + '|' + data.state_id );
+                
+                store_transitions.baseParams.topics= topics_json;
+                if ( topics.length == 1 ) {
+                    set_transition = data.id;
+                } else {
+                    set_transition = '';
+                }
+                store_transitions.reload();
                 jc_store.reload();
+
                 calendar_reload();
                 button_submit.enable();
             }
@@ -637,9 +656,14 @@
                 var n = dd.dragData.node;
                 var d = n.attributes.data;
                 return jc_add_node({ 
-                    text: n.text, topic_mid: d.topic_mid, 
-                    id_project: d.id_project, state_id: d.state_id, 
-                    promotable: d.promotable, demotable: d.demotable, deployable: d.deployable 
+                    text: n.text, 
+                    topic_mid: d.topic_mid, 
+                    id_project: d.id_project, 
+                    state_id: d.state_id, 
+                    promotable: d.promotable, 
+                    demotable: d.demotable, 
+                    deployable: d.deployable,
+                    job_type: d.job_type
                 });
              }
         });
@@ -703,8 +727,8 @@
         listeners: {
             beforeload: {
                 fn: function(store,opt) {
-                    var bl = combo_baseline.getValue();
-                    var job_type = main_form.getForm().getValues()['job_type'];
+                    //var bl = hidden_baseline.getValue();
+                    //var job_type = main_form.getForm().getValues()['job_type'];
                     store.baseParams.bl = bl;
                     store.baseParams.job_type = job_type;
                 }
@@ -916,8 +940,11 @@
             { layout:'column', bodyBorder: false, padding: 10, border: false, frame: false, bodyStyle: { 'background-color': '#eee'}, 
                 defaults:{ bodyBorder: false, border: false, bodyStyle: { 'background-color': '#eee'} }, items:[
                 { layout:'form', columnWidth: .5, border:false, defaults:{ border:false, anchor: '100%' }, items:[
-                    job_type_radio,
-                    combo_baseline,
+                    hidden_job_type,
+                    hidden_baseline,
+                    hidden_baseline_to,
+                    hidden_state_to,
+                    combo_transitions,
                     combo_chain
                 ]},
                 { columnWidth:.5, style: { 'margin-left': '20px' }, 

@@ -403,6 +403,8 @@ sub submit : Local {
             my $job_date = $p->{job_date};
             my $job_time = $p->{job_time};
             my $job_type = $p->{job_type};
+            my $bl_to    = $p->{bl_to};
+            my $state_to    = $p->{state_to};
             my $id_rule = $p->{id_rule};
             my $job_stash = try { _decode_json( $p->{job_stash} ) } catch { undef };
             
@@ -430,6 +432,8 @@ sub submit : Local {
                     comments     => $comments,
                     stash_init   => $job_stash, # only used to create the stash
                     changesets   => $contents, 
+                    bl_to        => $bl_to,
+                    state_to        => $state_to
             };
             
             $job_data->{schedtime} = Class::Date->new("$job_date $job_time")->string if length $job_date && length $job_time;

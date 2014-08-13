@@ -159,13 +159,15 @@ sub changeset_update {
             $log->debug( _loc('Topic %1 does not match category %2. Skipped', $cs->name, $category) );
             next;
         }
-        if( $stash->{rollback} || $job_type eq 'demote' ) {
+        if( $stash->{rollback} ) {
             # rollback to previous status
             $status = $status_on_rollback || $stash->{update_baselines_changesets}{ $cs->mid };
             if( !length $status ) {
                 _debug _loc 'No last status data for changeset %1. Skipped.', $cs->name;
                 next;
             }
+        } elsif ($job_type eq 'demote') {
+            $status = $status_on_rollback || $stash->{state_to};
         } else {
             # save for rollback
             _debug "Saving changeset status for rollback: " . $cs->mid . " = " . $cs->id_category_status;

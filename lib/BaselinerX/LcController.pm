@@ -687,62 +687,90 @@ sub changeset : Local {
     $c->forward( 'View::JSON' );
 }
 
+sub status_list {
+    my ( $self, %p ) = @_;
+    my ($dir, $topic, $username, $status, $all_statuses) = @p{ qw/dir topic username status statuses/ };
+    my %seen;
+
+    my %statuses;
+    if ( ref $all_statuses ) {
+        %statuses = %$all_statuses;
+    } else {
+        %statuses =  ci->status->statuses;
+    }
+    $status //= $topic->{category_status}{id};
+    my @user_roles = ci->user->roles( $username );
+    my @user_workflow = _unique map {$_->{id_status_to} } Baseliner->model("Topic")->user_workflow( $username );
+    my $cat = mdb->category->find_one({ id=>''.$topic->{category}->{id} },{ workflow=>1 });
+
+    _fail _loc 'Category %1 not found', $topic->{id_category} unless $cat;
+
+    return sort { $$a{seq} <=> $$b{seq} }
+        map { 
+            my $st = $statuses{ $$_{id_status_to} };
+            $st;
+        }
+        grep {
+           my $k = join',', ( map{ $_ // '' } $$_{id_status_from},$$_{id_status_to} );
+           my $flag = exists $seen{$k};
+           $seen{$k} = 1;
+           !$flag;
+        } 
+        grep {
+           $$_{id_role} ~~ @user_roles
+           && $$_{id_status_to} ~~ @user_workflow
+           && $$_{id_status_from} == $status
+        } 
+        grep {
+           ( $$_{job_type} // '' ) eq $dir  # static,promote,demote
+        }
+        _array( $$cat{workflow} );
+};
+
 sub promotes_and_demotes {
     my ($self, %p ) = @_; 
     my ( $username, $topic, $id_status_from, $id_project ) = @p{ qw/username topic id_status_from id_project/ };
     my ( @menu_s, @menu_p, @menu_d );
+
+    my $job_mode = $p{job_mode} // 0;
+
     $id_status_from //= $topic->{category_status}{id};
+    my %statuses = ci->status->statuses;
 
     _fail _loc 'Missing topic parameter' unless $topic;
     
     my $id_status_from_lc = $id_status_from ? $id_status_from : $topic->{id_category_status};
-    my @user_workflow = _unique map {$_->{id_status_to} } Baseliner->model("Topic")->user_workflow( $username );
-    my @user_roles = ci->user->roles( $username );
-    my %statuses = ci->status->statuses;
     my %bls = map{ $$_{mid}=>$$_{moniker} || $$_{bl} }ci->bl->find->all;
-    my @bl_from = _array $statuses{ $id_status_from }{bls};
-    my $cat = mdb->category->find_one({ id=>''.$topic->{id_category} },{ workflow=>1 });
-    _fail _loc 'Category %1 not found', $topic->{id_category} unless $cat;
-    
-    my $status_list = sub {
-        my ($dir) = @_;
-        my %seen;
-        return sort { $$a{seq} <=> $$b{seq} }
-            map { 
-                my $st = $statuses{ $$_{id_status_to} };
-                $st;
-            }
-            grep {
-               my $k = join',', ( map{ $_ // '' } $$_{id_status_from},$$_{id_status_to} );
-               my $flag = exists $seen{$k};
-               $seen{$k} = 1;
-               !$flag;
-            } 
-            grep {
-               $$_{id_role} ~~ @user_roles
-               && $$_{id_status_to} ~~ @user_workflow
-               && $$_{id_status_from} == $id_status_from_lc
-            } 
-            grep {
-               ( $$_{job_type} // '' ) eq $dir  # static,promote,demote
-            }
-            _array( $$cat{workflow} );
-    };
+    my @bl_from = _array $statuses{ $id_status_from }{bls};    
     
     # Static
-    my @statics = $status_list->( 'static' );
+    my @statics = $self->status_list( dir => 'static', topic => $topic, username => $username, status => $id_status_from_lc, statuses => \%statuses );
 
     my ($cs_project) = ci->new($topic->{mid})->projects;
     my @project_bls = map { $_->{bl} } _array $cs_project->bls;
 
     my $statics={};
+    my @job_transitions;
+
     for my $status ( @statics ) {
         for my $bl ( map { $bls{$_} } _array $status->{bls} ) {        
             if ( !@project_bls || $bl->{bl} ~~ @project_bls ){
                 $statics->{ $bl } = \1;
+                $statics->{'s'.$bl.$status->{id_status}} = \1;
+                push @job_transitions, {
+                    id             => 's'.$bl.$status->{id_status},
+                    bl_to          => $bl,
+                    job_type       => 'static',
+                    job_bl         => $bl,
+                    id_project     => $id_project,
+                    status_to      => $status->{id_status},
+                    status_to_name => _loc($status->{name}),
+                    text => _loc( 'Deploy to %1 (%2)', _loc( $status->{name} ), $bl ),
+                };
                 push @menu_s, {
                     text => _loc( 'Deploy to %1 (%2)', _loc( $status->{name} ), $bl ),
                     eval => {
+                        id   => 's'.$bl.$status->{id_status},
                         url            => '/comp/lifecycle/deploy.js',
                         title          => 'Deploy',
                         job_type       => 'static',
@@ -759,16 +787,30 @@ sub promotes_and_demotes {
     }
 
     # Promote
-    my @status_to = $status_list->( 'promote' );
+    my @status_to = $self->status_list( dir => 'promote', topic => $topic, username => $username, status => $id_status_from_lc, statuses => \%statuses );
     
     my $promotable={};
+    my $job_promotable={};
+
     for my $status ( @status_to ) {
         for my $bl ( map { $bls{$_} } _array $status->{bls} ) {        
             if ( !@project_bls || $bl->{bl} ~~ @project_bls ){
                 $promotable->{ $bl } = \1;
+                $promotable->{'p'.$bl.$status->{id_status}} = \1;
+                push @job_transitions, {
+                    id             => 'p'.$bl.$status->{id_status},
+                    bl_to          => $bl,
+                    job_type       => 'promote',
+                    job_bl         => $bl,
+                    id_project     => $id_project,
+                    status_to      => $status->{id_status},
+                    status_to_name => _loc($status->{name}),
+                    text => _loc( 'Promote to %1 (%2)', _loc( $status->{name} ), $bl ),
+                };
                 push @menu_p, {
                     text => _loc( 'Promote to %1 (%2)', _loc( $status->{name} ), $bl ),
                     eval => {
+                        id   => 'p'.$bl.$status->{id_status},
                         url            => '/comp/lifecycle/deploy.js',
                         title          => 'To Promote',
                         job_type       => 'promote',
@@ -785,44 +827,104 @@ sub promotes_and_demotes {
     }
 
     # Demote
-    my @status_from = $status_list->( 'demote' );
+    my @status_from = $self->status_list( dir => 'demote', topic => $topic, username => $username, status => $id_status_from_lc, statuses => \%statuses );
 
     my $demotable={};
+
     for my $status ( @status_from ) {
+        my @bl_to = _array $statuses{ $status->{id_status} }{bls};
         for my $bl ( map { $bls{$_} } @bl_from ) {        
-            if ( !@project_bls || $status->{statuses_from}{bl} ~~ @project_bls ){
+            if ( !@project_bls || $bl ~~ @project_bls ){
                 $demotable->{ $bl } = \1;
-                push @menu_d, {
-                    text => _loc( 'Demote to %1 (from %2)', _loc($status->{name}), $bl ),
-                    eval => {
-                        url            => '/comp/lifecycle/deploy.js',
-                        title          => 'Demote',
+                $demotable->{ 'd'.$bl.$status->{id_status} } = \1;
+                for my $bl_to ( map { $bls{$_} } @bl_to ) {
+                    push @job_transitions, {
+                        id             => 'd'.$bl.$status->{id_status},
+                        bl_to          => $bl_to,
                         job_type       => 'demote',
+                        job_bl         => $bl,
                         id_project     => $id_project,
-                        bl_to          => $bl,
                         status_to      => $status->{id_status},
-                        status_to_name => _loc( $status->{name} ),
-                    },
-                    id_status_from => $id_status_from_lc,
-                    icon => '/static/images/silk/arrow_up.gif'
-                };
+                        status_to_name => _loc($status->{name}),
+                        text => _loc( 'Demote to %1 (from %2)', _loc($status->{name}), $bl ),
+                    };
+                    push @menu_d, {
+                        text => _loc( 'Demote to %1 (from %2)', _loc($status->{name}), $bl ),
+                        eval => {
+                            id   => 'd'.$bl.$status->{id_status},
+                            url            => '/comp/lifecycle/deploy.js',
+                            title          => 'Demote',
+                            job_type       => 'demote',
+                            id_project     => $id_project,
+                            bl_to          => $bl,
+                            status_to      => $status->{id_status},
+                            status_to_name => _loc( $status->{name} ),
+                        },
+                        id_status_from => $id_status_from_lc,
+                        icon => '/static/images/silk/arrow_up.gif'
+                    };
+                }
             }
         }
     }
-    return ( $statics, $promotable, $demotable, \@menu_s, \@menu_p, \@menu_d );
+    if ( $job_mode ) {
+        return @job_transitions;
+    } else {
+        return ( $statics, $promotable, $demotable, \@menu_s, \@menu_p, \@menu_d );
+    }
+}
+
+sub job_transitions : Local {
+    my ($self,$c) = @_;
+    my $p = $c->req->params;
+    my $topic_projects = Util->_decode_json($p->{topics});
+    _warn $topic_projects;
+    my %categories = mdb->category->find_hash_one( id=>{},{ workflow=>0, fields=>0, statuses=>0, _id=>0 });
+
+    my @promotes_and_demotes;
+    my $cont=0;
+    for my $topic_project ( _array $topic_projects ) {
+        my ( $topic_mid, $project_mid, $id_status_from ) = ($topic_project->{topic_mid}, $topic_project->{project}, $topic_project->{state});
+
+        my $topic = mdb->topic->find_one({ mid => "$topic_mid"},{ _txt => 0});
+        my $ci_topic = ci->new($topic_mid);
+        my ($id_project) = map { $_->{mid}} $ci_topic->projects;
+
+        my $username = $c->username;
+        my @topic_transitions;
+        my @topic_transitions_keys;
+
+        try {
+            @topic_transitions = $self->cs_menu( $c, topic => $topic, username => $username, id_status_from => $id_status_from, id_project => $id_project, job_mode => 1, categories => \%categories );
+            @topic_transitions_keys = map {$_->{id}} @topic_transitions;
+        } catch {};
+
+        if ( $cont ) {
+            @promotes_and_demotes = grep { $_->{id} ~~ @topic_transitions_keys } @promotes_and_demotes;
+        } else {
+            $cont++;
+            @promotes_and_demotes = @topic_transitions;
+        }
+    }
+    $c->stash->{ json } = { data => \@promotes_and_demotes, totalCount => scalar @promotes_and_demotes};
+    $c->forward('View::JSON');
 }
 
 sub cs_menu {
     my ($self, $c, %p ) = @_; 
     my ( $topic, $bl_state, $state_name, $id_status_from, $id_project, $categories ) = @p{ qw/topic bl_state state_name id_status_from id_project categories/ };
+    #_warn \%p;
     #return [] if $bl_state eq '*';
+    my $job_mode = $p{job_mode} || 0;
     my ( @menu, @menu_s, @menu_p, @menu_d );
     my $sha = ''; 
+    my $username = $c->username;
     
     push @menu, $self->menu_related();
 
     my ($deployable, $promotable, $demotable ) = ( {}, {}, {} );
     my $is_release = $$categories{$topic->{id_category}}{is_release}; 
+    my @topic_transitions;
     
     if ( $is_release ) {
         # releases take the menu of their first child 
@@ -830,34 +932,43 @@ sub cs_menu {
         my @chi = 
             grep { $$_{category}{is_changeset} }
             $self->topic_children_for_state( username=>$c->username, topic_mid=>$topic->{mid}, state_id=>$id_status_from, id_project=>$id_project );
-        
+            
         if( @chi ) {
            my ($menu_s, $menu_p, $menu_d );
-           ($deployable, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) = $self->promotes_and_demotes( 
-                username   => $c->username,
-                topic      => $chi[0],
-                id_project => $id_project,
-            );
-           push @menu_s, _array( $menu_s );
-           push @menu_p, _array( $menu_p );
-           push @menu_d, _array( $menu_d );
+           if ( $job_mode ) {
+                @topic_transitions = $self->promotes_and_demotes( topic => $chi[0], username => $username, id_project => $id_project, job_mode => 1 );
+            } else {            
+               ($deployable, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) = $self->promotes_and_demotes( 
+                    username   => $c->username,
+                    topic      => $chi[0],
+                    id_project => $id_project
+                );
+               push @menu_s, _array( $menu_s );
+               push @menu_p, _array( $menu_p );
+               push @menu_d, _array( $menu_d );
+            }
         }
     } else {
         my ( $menu_s, $menu_p, $menu_d );
-
-        ( $deployable, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) = $self->promotes_and_demotes(
-            username   => $c->username,
-            topic      => $topic,
-            id_project => $id_project
-        );
-        push @menu_s, _array($menu_s);
-        push @menu_p, _array($menu_p);
-        push @menu_d, _array($menu_d);
+        if ( $job_mode ) {
+             @topic_transitions = $self->promotes_and_demotes( topic => $topic, username => $username, id_project => $id_project, job_mode => 1 );
+         } else {            
+            ( $deployable, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) = $self->promotes_and_demotes(
+                username   => $c->username,
+                topic      => $topic,
+                id_project => $id_project
+            );
+            push @menu_s, _array($menu_s);
+            push @menu_p, _array($menu_p);
+            push @menu_d, _array($menu_d);
+        }
     }
-
-    push @menu, ( @menu_s, @menu_p, @menu_d );  # deploys, promotes, then demotes
-
-    ( $deployable, $promotable, $demotable, \@menu );
+    if ( $job_mode ) {
+         return @topic_transitions;
+     } else {            
+        push @menu, ( @menu_s, @menu_p, @menu_d );  # deploys, promotes, then demotes
+        return ( $deployable, $promotable, $demotable, \@menu );
+    }
 }
 
 sub repository : Local {

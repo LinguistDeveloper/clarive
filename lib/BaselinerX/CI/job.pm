@@ -9,6 +9,8 @@ with 'Baseliner::Role::CI::Internal';
 has id_stash           => qw(is rw isa Any);
 has jobid              => qw(is rw isa Any);   # mdb->seq('job')
 has bl                 => qw(is rw isa Any);
+has bl_to              => qw(is rw isa Any);
+has state_to           => qw(is rw isa Any);
 has purged             => qw(is rw isa Bool default 0);
 has rollback           => qw(is rw isa BoolCheckbox default 0);
 has job_key            => qw(is rw isa Any), default => sub { Util->_md5() };
@@ -187,6 +189,8 @@ sub stash {  # not just an alias
 sub _create {
     my ($self, $master_row, $master_doc, %p )=@_;
     my $bl = $p{bl} || '*';
+    my $bl_to = $p{bl_to};
+    my $state_to = $p{state_to};
 
     my $job_mid = $self->mid;
     my $changesets = $p{changesets};
@@ -222,6 +226,8 @@ sub _create {
             comments     => $p{description},
             ns           => '/', # not used, deprecated
             bl           => $bl,
+            bl_to        => $bl_to,
+            state_to     => $state_to
     };
     $row_data->{job_key} = $p{job_key} if length $p{job_key};
     
@@ -276,7 +282,6 @@ sub _create {
     for my $cs ( @cs_cis ) {
         my @active_jobs = $cs->is_in_active_job;
         for my $active_job ( @active_jobs ) {
-            _log _dump $active_job;
             next if $active_job->mid eq $self->mid;
             _debug( $cs );
             if ( $active_job->job_type ne 'static') {
@@ -1024,7 +1029,9 @@ sub run {
     my $stash = { 
             %{ $prev_stash }, 
             job            => $self,
-            bl             => $self->bl, 
+            bl             => $self->bl,
+            bl_to          => $self->bl_to,
+            state_to       => $self->state_to,
             job_step       => $self->step,
             job_dir        => $self->job_dir,
             job_name       => $self->name,
