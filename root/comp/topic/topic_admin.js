@@ -1199,7 +1199,7 @@
                 //btn_update_fields,
                 btn_edit_fields,
                 //btn_form_category,
-                btn_admin_category,
+                btn_admin_category
                 //btn_tools_category
         ]       
     }); 
