@@ -1553,9 +1553,12 @@ sub save_data {
             for my $field ( keys %row ) {
                 $old_values{$field} = $topic->{$field}, my $method = $relation{$field};
                 $old_text{$field} = $method ? try { $topic->$method->name } : $topic->{$field};
-            }
+            };
             
-            $topic->update( name=>$row{title}, moniker=>$moniker, modified_by=>$data->{username}, %row );
+            my %update_row = %row;
+            delete %update_row->{id_category_status};
+
+            $topic->update( name=>$row{title}, moniker=>$moniker, modified_by=>$data->{username}, %update_row );
             
             for my $field ( keys %row ) {
                 next if $field eq 'response_time_min' || $field eq 'expr_response_time';
@@ -1565,9 +1568,10 @@ sub save_data {
                 my $new_value = $row{$field};
                 my $old_value = $old_values{$field} // '' ;
                 
-                if ( !defined $old_value && $new_value ne '' || $new_value ne $old_value ) {
-                    if ( $field eq 'id_category_status' ) {
 
+                if ( !defined $old_value && $new_value ne '' || $new_value ne $old_value ) {
+
+                    if ( $field eq 'id_category_status' ) {
                         # change status
                         my $id_status    = $new_value;
                         my $cb_ci_update = sub {
