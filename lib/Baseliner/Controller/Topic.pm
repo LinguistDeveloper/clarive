@@ -571,7 +571,6 @@ sub view : Local {
             # jobs for release and changeset
             if( $category->{is_changeset} || $category->{is_release} ) {
                 my @jobs = $topic_ci->jobs({ username => $c->username});
-                _warn @jobs;
                 $c->stash->{jobs} = @jobs ? \@jobs: 0;
             }
             
