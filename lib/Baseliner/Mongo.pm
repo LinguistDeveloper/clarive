@@ -354,6 +354,9 @@ sub index_all {
             [{'$**'=> "text"}],
             [{ mid=>1 },{ unique=>1 }],
         ],
+        sem => [
+            [{ key => 1},{ unique=>1, dropDups => 1 }]
+        ],
     };
     
     my $index_hash = sub{
