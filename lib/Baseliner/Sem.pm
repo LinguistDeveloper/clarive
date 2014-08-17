@@ -117,24 +117,28 @@ sub take {
     my $updated = 0;
 
     while ( !$updated ) {
-        _log(_loc 'Waiting for semaphore %1 (%2)', $self->key, $self->who);
+        _debug(_loc 'Waiting for semaphore %1 (%2)', $self->key, $self->who);
         my $res = mdb->sem->update({ key => $self->key, slots => { '$gt' => 0 }},{ '$inc' => { slots => -1} });
         $updated = $res->{updatedExisting};
         if ( !$updated ) {
             select(undef, undef, undef, .5);
         }
+        $que = mdb->sem_queue->find_one({ _id=>$id_queue });
+        if ($que->{status} ne 'waiting') {
+            $self->queue_released(1);
+            $updated = 1;
+        }
     }
-    _log(_loc 'Granted semaphore %1 (%2)', $self->key, $self->who);
+    _debug(_loc 'Granted semaphore %1 (%2)', $self->key, $self->who);
 
-    my $status = $que->{status};
-    # if( $status eq 'granted' ) {
+    if ( $que->{status} =~ /waiting|granted/ ) {    
         $que->{status} = 'busy';
         $que->{ts_grant} = mdb->ts;
         mdb->sem_queue->save( $que, { safe=>1 });
-    # }
-    # else {
-    #     _fail _loc 'Semaphore cancelled due to status `%1`', $status;
-    # }
+    } else {
+        _fail _loc('Cancelled semaphore %1 due to status %2', $self->key, $que->{status});
+    }
+
     return $self;
 }
 
