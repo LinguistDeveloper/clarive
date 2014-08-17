@@ -733,7 +733,7 @@ sub merge_calendars {
     $date_w <= 0  and $date_w += 7;
     my $date_s = $date->strftime('%Y%m%d');
     my %list;
-    _debug "CCCCCCCCCCCCCCCCCCCCC TOD=$date, W=$date_w, S=$date_s, START=$start_hour";
+    _debug "TOD=$date, W=$date_w, S=$date_s, START=$start_hour";
 
     # loop all slots in all calendars - calendars are sorted by the SEQ field
     for my $s ( map { $_->sorted } @slots_cal ) {
