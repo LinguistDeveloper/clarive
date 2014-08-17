@@ -15,7 +15,7 @@ sub rel_type {
 sub run {
     my ($self) = @_;
     use Baseliner::Utils;
-    _log _dump $self->arg; 
+    _debug $self->arg; 
     $self->server->execute( $self->script, $self->args );
 }
 

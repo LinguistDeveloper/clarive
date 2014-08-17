@@ -74,7 +74,7 @@ sub bali_service {
     $opts{ arg_list } = { map { $_ => 1 } keys %opts }; # so that we can differentiate between defaults and user-fed data
     $opts{ args } = \%opts;
     my $logger = Baseliner->model('Services')->launch($service_name, %opts, data=>\%opts, c=>$c );
-    #_log _dump $logger;
+    #_debug $logger;
     # exit ref $logger ? $logger->rc : $logger;
     exit $logger->rc;
 }

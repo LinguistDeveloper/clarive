@@ -248,7 +248,7 @@ sub related : Local {
     }
 
     $where = $c->model('Topic')->apply_filter( $username, $where, %filter );
-    #_log _dump $where;
+    #_debug $where;
 
     my ($cnt, @result_topics) = $c->model('Topic')->get_topics_mdb( $where, $username, $start, $limit );
 
@@ -416,7 +416,7 @@ sub get_meta_permissions : Private {
     my %hidden_field = map { $_ => 1} @hidden_field;
     $meta = [grep { !($hidden_field{ $_->{id_field} }) } _array $meta];
         
-    #_log _dump $meta;
+    #_debug $meta;
     return $meta
 }
 
@@ -1099,7 +1099,7 @@ sub filters_list : Local {
     my @statuses;
     my @id_categories = map { $_->{id} } @categories_permissions;
     my @cat_statuses = mdb->category->find_values( statuses=>{ id=>mdb->in(@id_categories) } );
-#_log _dump \@cat_statuses;
+#_debug \@cat_statuses;
     my $where = { '$and'=>[{ id_status=>mdb->in(@cat_statuses)}] };
     
     # intersect statuses with a reduced set?

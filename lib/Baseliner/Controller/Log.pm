@@ -53,9 +53,9 @@ sub auto_refresh : Path('/job/log/auto_refresh') {
     my $filter = $p->{filter};
        $filter = decode_json( $filter ) if $filter;
     my $where = { mid => $mid, 'exec' => 0+($p->{job_exec} || 1) };
-    #_log _dump ( $filter );
+    #_debug ( $filter );
     $where->{lev} = mdb->in( grep { $filter->{$_} } keys %$filter ) if ref($filter) eq 'HASH';
-    _log _dump $where;
+    _debug($where);
     my $rs = mdb->job_log->find($where)->sort({ id=>-1 });
     my $top = $rs->next;
     my $job = ci->job->find_one({ mid=>$mid });
@@ -223,7 +223,7 @@ sub logs_json : Path('/job/log/json') {
 sub jesSpool : Path('/job/log/jesSpool') {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
-    #_log _dump $p;
+    #_debug $p;
     $c->stash->{jobStore} = '/job/log/jobList?logId='.$p->{id}.'&jobId='.$p->{jobId}.'&jobName='.$p->{jobName};
     $c->stash->{jobName} = '/job/log/jesFile';
     # $c->stash->{template} = '/comp/repl.mas';
@@ -236,7 +236,7 @@ sub jobList : Path('/job/log/jobList') {
     my $p = $c->req->params;
     my $log;
 
-    _log _dump $p;
+    _debug $p;
     my $pkgIcon   = '/static/images/icons/package_green.gif';
     my $siteIcon  = '/static/images/site.gif';
     my $jobIcon   = '/static/images/book.gif';

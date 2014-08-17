@@ -420,7 +420,7 @@ sub stmts_save : Local {
         } catch {
             _fail _loc "Corrupt or incorrect json rule tree: %1", shift(); 
         };
-        _log _dump $stmts;
+        _debug $stmts;
         # check if DSL is buildable
         my $detected_errors = try { 
             $c->model('Rules')->dsl_build_and_test( $stmts ); 
@@ -457,7 +457,7 @@ sub get_rule_ts : Local{
     my ($self,$c)=@_;
     my $p = $c->req->params;
     try {
-        _log _dump $p;
+        _debug $p;
         my $ts = mdb->rule->find({id => ''.$p->{id_rule}})->next->{ts};
         $c->stash->{json} = { success=>\1, msg => 'ok', ts => $ts };
     } catch {

@@ -26,7 +26,7 @@ sub rest : Local {
     my ($self,$c)=@_;
     my $p = $c->req->parameters;
     _log "=== Starting Service $p->{service}";
-    _log _dump $p;
+    _debug $p;
 
     my $quiet_mode = exists $p->{quiet_mode};
 

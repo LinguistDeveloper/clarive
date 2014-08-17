@@ -85,7 +85,7 @@ sub newjob {
     my ($self, $c, $p ) = @_;
     my $bl = $p->{bl} or _throw 'Missing bl';
     #local *STDERR = *STDOUT;  # send stderr to stdout to avoid false error msg logs
-    #_log _dump $p;
+    #_debug $p;
     # revision: TAG0001@prjname:reponame
     _throw _loc('Missing parameter revision') unless defined $p->{revision};
     #_throw _loc('Missing parameter project') unless defined $p->{project};
@@ -100,7 +100,7 @@ sub newjob {
         $item;
     } _array $p->{revision};
 
-    _log _dump \@contents;
+    _debug \@contents;
 
     my $job_type = $p->{job_type} || 'static';
 
