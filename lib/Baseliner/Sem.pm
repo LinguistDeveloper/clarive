@@ -99,6 +99,7 @@ sub take {
     my $que;
     my $logged = 1;
     # wait until the daemon grants me out
+    _debug( _loc 'Waiting for semaphore %1 (%2)', $self->key, $self->who );
     mdb->create_capped('pipe');
     mdb->pipe->insert({ q=>'sem', w=>'sem-take', id_queue=>$id_queue });
     mdb->pipe->follow( where=>{ id_queue=>$id_queue }, code=>sub{
@@ -109,6 +110,7 @@ sub take {
         return 0 if $que = mdb->sem_queue->find_one({ _id=>$id_queue, status=>{ '$ne'=>'waiting' } });
         return 1;  
     });
+    _debug( _loc 'Granted semaphore %1 (%2)', $self->key, $self->who );
 
     my $status = $que->{status};
     if( $status eq 'granted' ) {
