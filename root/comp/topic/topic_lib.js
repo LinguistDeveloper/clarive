@@ -736,6 +736,43 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             allowDepress: false, toggleGroup: self.toggle_group
         });
         
+        var obj_deploy_items_menu = Ext.util.JSON.decode(self.menu_deploy);
+
+        self.menu_deploy = [];
+
+        for(i=0; i < obj_deploy_items_menu.menu.length;i++){
+            var topic = { 
+                text: _(obj_deploy_items_menu.menu[i].text), 
+                topic_mid: self.topic_mid, 
+                id: obj_deploy_items_menu.menu[i].eval.id,
+                id_project: obj_deploy_items_menu.menu[i].eval.id_project, 
+                state_id: obj_deploy_items_menu.menu[i].id_status_from, 
+                promotable: obj_deploy_items_menu.promotable, 
+                demotable: obj_deploy_items_menu.demotable, 
+                deployable: obj_deploy_items_menu.deployable, 
+                job_type: obj_deploy_items_menu.menu[i].eval.job_type,
+                state_to: obj_deploy_items_menu.menu[i].eval.state_to
+            };
+            self.menu_deploy.push({ 
+                text: _(obj_deploy_items_menu.menu[i].text), 
+                icon: obj_deploy_items_menu.menu[i].icon,
+                topic: topic,
+                handler: function(obj){ 
+                    Baseliner.add_tabcomp( '/job/create', _('New Job'), { node: obj.topic } );
+                } 
+            });
+        }
+
+        self.menu_deploy_final = new Ext.menu.Menu({
+            items: self.menu_deploy
+        });
+
+        self.btn_deploy = new Ext.Toolbar.Button({ text: _("New Job"), menu: self.menu_deploy_final, hidden: true });
+
+        if (self.menu_deploy.length <= 0){
+            self.btn_deploy.hide();
+        }
+
         var obj_status_items_menu = Ext.util.JSON.decode(self.status_items_menu);
         
         self.status_items_menu = [];
@@ -751,6 +788,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         self.status_menu = new Ext.menu.Menu({
             items: self.status_items_menu
         });
+
         
         self.btn_change_status = new Ext.Toolbar.Button({ text: _("Change State"), menu: self.status_menu, hidden: true });
         if (self.status_items_menu.length <= 0){
@@ -786,6 +824,11 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                     self.btn_change_status.hide();
                 }else{
                     self.btn_change_status.show();
+                }
+                if (self.menu_deploy.length <= 0){
+                    self.btn_deploy.hide();
+                }else{
+                    self.btn_deploy.show();
                 }
             }
             
@@ -974,6 +1017,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             var info = Baseliner.tabInfo[self.id];
             if( info!=undefined ) info.params.swEdit = 1;
             self.btn_change_status.hide();
+            self.btn_deploy.hide();
             if (!self.form_is_loaded){
                 Baseliner.ajaxEval( '/topic/json', { topic_mid: self.topic_mid, topic_child_data : true }, function(rec) {
                     self.load_form( rec );
@@ -1019,6 +1063,8 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 self.btn_delete_form,
                 self.btn_save_form,
                 '->',
+                self.btn_deploy,
+                '-',
                 self.btn_change_status,
                 self.btn_graph,
                 self.btn_kanban
@@ -1064,6 +1110,12 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         }
         else{
             self.btn_change_status.hide();
+        }
+        if(self.menu_deploy.length > 0){
+            self.btn_deploy.show();
+        }
+        else{
+            self.btn_deploy.hide();
         }
         
         self.btn_save_form.hide();

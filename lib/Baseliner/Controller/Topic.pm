@@ -519,6 +519,21 @@ sub view : Local {
             
             $category = mdb->category->find_one({ id=>$topic_doc->{category}{id} },{ fieldlets=>0 });
             
+            if ( $category->{is_changeset} ) {
+                if ( !$topic_doc->{category_status}->{bind_releases} ) {
+                    my ($id_project) = map {$_->{mid}} $topic_ci->projects;
+                    my ( $deployable, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) = BaselinerX::LcController->promotes_and_demotes(
+                        topic      => $topic_doc,
+                        username   => $c->username,
+                        id_project => $id_project
+                    );
+                    my $menu = { deployable => $deployable, promotable => $promotable, demotable => $demotable, menu => [_array $menu_s, _array $menu_p, _array $menu_d]};
+                    $c->stash->{menu_deploy} = _encode_json($menu);
+                } else {
+                    my $menu = { deployable => {}, promotable => {}, demotable => {}, menu => []};
+                    $c->stash->{menu_deploy} = _encode_json($menu);
+                }
+            }
             _fail( _loc('Category not found or topic deleted: %1', $topic_mid) ) unless $category;
             
             if ( !$categories_view{$category->{id} } ) {
@@ -583,7 +598,7 @@ sub view : Local {
             $c->stash->{category_meta} = $category->{forms};
 
             my $first_status = ci->status->find_one({ id_status=>mdb->in( $category->{statuses} ), type=>'I' }) // _fail( _loc('No initial state found '));
-            
+
             my @statuses =
                 sort { ( $a->{seq} // 0 ) <=> ( $b->{seq} // 0 ) }
                 grep { $_->{id_status} ne $first_status->{id_status} } 
