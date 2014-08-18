@@ -1,6 +1,6 @@
 package Baseliner::Controller::Rule;
 use Baseliner::Plug;
-use Baseliner::Utils qw(:basic _decode_json _strip_html);
+use Baseliner::Utils;
 use Baseliner::Sugar;
 use DateTime;
 use Try::Tiny;

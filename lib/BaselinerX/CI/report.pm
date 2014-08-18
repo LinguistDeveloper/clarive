@@ -765,7 +765,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 
 	#_log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS: " . _dump $self->selected ;
     #_log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS CI COLUMNS: " . _dump %selects_ci_columns;
-    _log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS CI COLUMNS COLLECTION: " . _dump %selects_ci_columns_collection_extends;
+    #_log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS CI COLUMNS COLLECTION: " . _dump %selects_ci_columns_collection_extends;
 	
 	#filters
 	my %dynamic_filter;
@@ -898,7 +898,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 		labels		=> 1
 	);
     my $fields = {  %select_system, map { $_=>1 } keys +{@selects}, _id=>0 };
-    _log "FIELDS==================>" . _dump( $fields );
+    #_log "FIELDS==================>" . _dump( $fields );
     #_log "SORT==================>" . _dump( @sort );
     my @data = $rs
       ->fields($fields)
@@ -1027,7 +1027,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 
     my @topics = map { 
         my %row = %$_;
-		_log ">>>>>>>>>>>>>>>>>>>>>>>>>>>FILA: " . _dump %row;
+		#_log ">>>>>>>>>>>>>>>>>>>>>>>>>>>FILA: " . _dump %row;
 
         while( my($k,$v) = each %row ) {
             $row{$k} = Class::Date->new($v)->string if $k =~ /modified_on|created_on/;
@@ -1138,8 +1138,8 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                                     }                                     
                                 }
                             }catch{
-                                _log "Key: $k";
-                                _log "Error Valor:($v)" ;
+                                _log("Key: $k");
+                                _log("Error Valor:($v)" );
                             };                                                                    
                         }
 
