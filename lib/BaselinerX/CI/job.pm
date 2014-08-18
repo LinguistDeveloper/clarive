@@ -169,7 +169,7 @@ sub job_stash {
             length $job_stash_str ? Util->_stash_load($job_stash_str) : +{};
         } catch { 
             my $err = shift;
-            _log(_loc("Error loading job stash: %1", $err));
+            Util->_log(_loc("Error loading job stash: %1", $err));
             +{};
         };
         return $job_stash;
@@ -239,7 +239,7 @@ sub _create {
     my $name = $config->{name}
         || $self->gen_job_name({ mask=>$config->{mask}, type=>$type, bl=>$bl, id=>$job_seq });
 
-    _log "****** Creating JOB id=" . $job_seq . ", name=$name, mask=" . $config->{mask};
+    _loc("****** Creating JOB id=" . $job_seq . ", name=$name, mask=" . $config->{mask});
 
     my $log = $self->logger;
 
@@ -482,7 +482,7 @@ sub run_inproc {
 
 method write_to_logfile( $txt ) {
     open my $ff, '>>', $self->logfile 
-        or _fail _log "Could not open logfile %1 for writing", $self->logfile;
+        or _fail _loc("Could not open logfile %1 for writing", $self->logfile);
     print $ff $txt;
     close $ff;
 }
@@ -991,7 +991,7 @@ sub run {
     $self->write_pid;
     if( !$p{same_exec} && ( ($self->endtime && $self->step) || $self->rollback ) ) {
         $self->exec( $self->exec + 1);  # endtime=job has run before, a way to detect first time
-        _log "Setting exec to " . $self->exec;
+        _loc("Setting exec to " . $self->exec);
     }
     my $milestones = $self->milestones;
     $milestones->{$self->exec}->{$self->step}->{start} = _now;
@@ -1020,7 +1020,7 @@ sub run {
         return 0;
     };
 
-    _log "=========| Starting JOB " . $self->jobid . ", rollback=" . $self->rollback;
+    _loc("=========| Starting JOB " . $self->jobid . ", rollback=" . $self->rollback);
 
     _debug( _loc('Rule Runner, STEP=%1, PID=%2, RULE_ID', $self->step, $self->pid ) );
      
