@@ -697,6 +697,7 @@
                 Baseliner.message( _('Job'), _('Starting job check and initialization...') );
                 form.submit({
                     params: { job_contents: json_res, window_type: wt  },
+                    timeout : 120000,
                     success: function(form,action){
                         //form submit ok
                         //alert( 'ok' + action );
@@ -715,6 +716,7 @@
                             Ext.Msg.show({ title: _('Failure'), msg: action.result.msg, width: 500, buttons: { ok: true } });
                         } else {
                             var msg = _('Unknown Error');
+                            console.dir(action)
                             if( action.failureType == 'connect' ) msg = _('Connection Error');
                             if( action.failureType == 'client' ) msg = _('Form Error');
                             Baseliner.error( _('Error'), msg );
