@@ -169,7 +169,7 @@ sub job_stash {
             length $job_stash_str ? Util->_stash_load($job_stash_str) : +{};
         } catch { 
             my $err = shift;
-            _log _loc "Error loading job stash: %1", $err;
+            _log _loc("Error loading job stash: %1", $err);
             +{};
         };
         return $job_stash;
