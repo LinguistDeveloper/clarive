@@ -736,35 +736,33 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             allowDepress: false, toggleGroup: self.toggle_group
         });
         
-        var obj_deploy_items_menu = Ext.util.JSON.decode(self.menu_deploy || []);
+        var obj_deploy_items_menu = Ext.util.JSON.decode(self.menu_deploy) || { menu: [] };
 
         self.menu_deploy = [];
 
-        if ( obj_deploy_items_menu.menu ) {
-            for(i=0; i < obj_deploy_items_menu.menu.length;i++){
-                var topic = { 
-                    text: _(obj_deploy_items_menu.menu[i].text), 
-                    topic_mid: self.topic_mid, 
-                    id: obj_deploy_items_menu.menu[i].eval.id,
-                    id_project: obj_deploy_items_menu.menu[i].eval.id_project, 
-                    state_id: obj_deploy_items_menu.menu[i].id_status_from, 
-                    promotable: obj_deploy_items_menu.promotable, 
-                    demotable: obj_deploy_items_menu.demotable, 
-                    deployable: obj_deploy_items_menu.deployable, 
-                    job_type: obj_deploy_items_menu.menu[i].eval.job_type,
-                    state_to: obj_deploy_items_menu.menu[i].eval.state_to
-                };
-                self.menu_deploy.push({ 
-                    text: _(obj_deploy_items_menu.menu[i].text), 
-                    icon: obj_deploy_items_menu.menu[i].icon,
-                    topic: topic,
-                    handler: function(obj){ 
-                        Baseliner.add_tabcomp( '/job/create', _('New Job'), { node: obj.topic } );
-                    } 
-                });
-            }
-        };
-        
+        for(i=0; i < obj_deploy_items_menu.menu.length;i++){
+            var topic = { 
+                text: _(obj_deploy_items_menu.menu[i].text), 
+                topic_mid: self.topic_mid, 
+                id: obj_deploy_items_menu.menu[i].eval.id,
+                id_project: obj_deploy_items_menu.menu[i].eval.id_project, 
+                state_id: obj_deploy_items_menu.menu[i].id_status_from, 
+                promotable: obj_deploy_items_menu.promotable, 
+                demotable: obj_deploy_items_menu.demotable, 
+                deployable: obj_deploy_items_menu.deployable, 
+                job_type: obj_deploy_items_menu.menu[i].eval.job_type,
+                state_to: obj_deploy_items_menu.menu[i].eval.state_to
+            };
+            self.menu_deploy.push({ 
+                text: _(obj_deploy_items_menu.menu[i].text), 
+                icon: obj_deploy_items_menu.menu[i].icon,
+                topic: topic,
+                handler: function(obj){ 
+                    Baseliner.add_tabcomp( '/job/create', _('New Job'), { node: obj.topic } );
+                } 
+            });
+        }
+
         self.menu_deploy_final = new Ext.menu.Menu({
             items: self.menu_deploy
         });
