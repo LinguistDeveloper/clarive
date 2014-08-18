@@ -1931,7 +1931,7 @@ Baseliner.activity_for_topic = function(args) {
                 html += function(){/*
                 <div style="margin-left: 20px">
                     <p><img style="margin: 5px" width=16 src="/user/avatar/[%= username %]/image.png" />
-                    [%= text %]&nbsp<small>[%= ts %]</small></p>
+                    [%= text %]&nbsp&nbsp<small>[%= ts %]</small></p>
                     <hr />
                 </div> 
                 */}.tmpl( ev );
