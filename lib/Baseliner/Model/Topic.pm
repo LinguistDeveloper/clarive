@@ -1218,7 +1218,7 @@ sub get_meta {
     return $cached if $cached;
 
     my $id_cat =  $id_category
-        // ( $topic_mid ? mdb->topic->find_one_value( id_category => { mid=>$topic_mid }) : undef );
+        // ( $topic_mid ? mdb->topic->find_one_value( id_category => { mid=>"$topic_mid" }) : undef );
     
     my @cat_fields;
     
