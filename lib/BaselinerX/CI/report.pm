@@ -79,7 +79,6 @@ sub report_list {
             #     expanded => \1,
             # },
     );
-    _debug("Report_list 6");
     return \@trees; 
 }
 
@@ -137,13 +136,10 @@ sub report_meta {
 
 sub my_searches {
     my ($self,$p) = @_;
-    _debug("my_searches 1");
     my $userci = Baseliner->user_ci( $p->{username} );
     my $username = $p->{username};
-    _debug("my_searches 2");
     
     my @searches = $self->search_cis( owner=>$username ); 
-    _debug("my_searches 3");
     my @mine;
     for my $folder ( @searches ){
         my $name           = $folder->name;
@@ -191,7 +187,6 @@ sub my_searches {
                 leaf    => \1,
             };
     }
-    _debug("my_searches 4");
     return \@mine;
 }
 
