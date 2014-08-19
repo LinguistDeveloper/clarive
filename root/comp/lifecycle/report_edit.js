@@ -560,6 +560,7 @@
                         lc_tree.refresh_all();
                         lc_tree.root.expand();
                         win.setTitle( dd.name );
+                        bt.enable();
                     } else {
                         Ext.Msg.show({  
                             title: _('Information'), 
@@ -567,8 +568,8 @@
                             buttons: Ext.Msg.OK, 
                             icon: Ext.Msg.INFO
                         });  
+                        bt.enable();
                     };
-                    bt.enable();
                 });
             };
 

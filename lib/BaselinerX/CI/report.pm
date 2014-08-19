@@ -169,8 +169,8 @@ sub my_searches {
                 data    => {
                     click   => {
                         icon    => '/static/images/icons/topic.png',
-                        url     => '/comp/topic/topic_grid.js',
-                        type    => 'comp',
+                        url     => '/comp/lifecycle/report_run.js',
+                        type    => 'eval',
                         title   => $name,
                     },
                 #     #store_fields   => $folder->fields,
@@ -245,8 +245,8 @@ sub public_searches {
 				data    => {
 					click   => {
 						icon    => '/static/images/icons/topic.png',
-						url     => '/comp/topic/topic_grid.js',
-						type    => 'comp',
+						url     => '/comp/lifecycle/report_run.js',
+						type    => 'eval',
 						title   => $folder->name,
 					},
 				# 	#store_fields   => $folder->fields,
@@ -255,7 +255,7 @@ sub public_searches {
 					id_report      => $folder->mid,
 					report_rows    => $folder->rows,
 					report_name    => $folder->name,
-					#column_mode    => 'full', #$folder->mode,
+					column_mode    => 'full', #$folder->mode,
 					hide_tree      => \1,
 				},
 				leaf    => \1,
@@ -508,7 +508,13 @@ sub selected_fields {
     my ($self, $p ) = @_; 
     my %ret = ( ids=>['mid','topic_mid','category_name','category_color','modified_on'] );
     my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
+
     my $meta = $p->{meta};
+
+    if ( !$meta ) {
+        my %meta_temp = map {  $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $p->{username}) );
+        $meta = \%meta_temp;
+    }   
 	
 	my @categories = map { $_->{data}->{id_category} } _array($fields{categories});
     my @status = values +{ ci->status->statuses( id_category=>\@categories ) };
