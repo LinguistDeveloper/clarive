@@ -98,7 +98,7 @@ other => [qw(
     ago
 )],
 logging => [qw(
-    _debug _debug _fail _throw _loc _error _whereami _warn
+    _debug _debug _fixascii_sql _throw _loc _error _whereami _warn
 )],
 basic => [qw(
     _array _file _dir _now _ci _load :logging 
