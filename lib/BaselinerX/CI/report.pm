@@ -1,6 +1,6 @@
 package BaselinerX::CI::report;
 use Baseliner::Moose;
-use Baseliner::Utils qw(:logging _array _loc _fail hash_flatten);
+use Baseliner::Utils;
 use v5.10;
 use Try::Tiny;
 
@@ -79,6 +79,7 @@ sub report_list {
             #     expanded => \1,
             # },
     );
+    _debug("Report_list 6");
     return \@trees; 
 }
 
@@ -136,16 +137,26 @@ sub report_meta {
 
 sub my_searches {
     my ($self,$p) = @_;
+    _debug("my_searches 1");
     my $userci = Baseliner->user_ci( $p->{username} );
     my $username = $p->{username};
-	
+    _debug("my_searches 2");
+    
     my @searches = $self->search_cis( owner=>$username ); 
+    _debug("my_searches 3");
     my @mine;
     for my $folder ( @searches ){
+        my $name           = $folder->name;
+        my $id_report      = $folder->mid;
+        # my $fields         = $folder->selected_fields({ meta=>$p->{meta}, username => $p->{username}  });
+        my $report_name    = $folder->name;
+        my $report_rows    = $folder->rows;
+        my $rows    = $folder->rows;
+        my $permissions = $folder->permissions;
         push @mine,
             {
                 mid     => $folder->mid,
-                text    => $folder->name,
+                text    => $name,
                 icon    => '/static/images/icons/topic.png',
                 menu    => [
                     {
@@ -164,22 +175,23 @@ sub my_searches {
                         icon    => '/static/images/icons/topic.png',
                         url     => '/comp/topic/topic_grid.js',
                         type    => 'comp',
-                        title   => $folder->name,
+                        title   => $name,
                     },
-                    #store_fields   => $folder->fields,
-                    #columns        => $folder->fields,
-                    fields         => $folder->selected_fields({ meta=>$p->{meta}, username => $p->{username}  }),
-                    id_report      => $folder->mid,
-                    report_name    => $folder->name,
-                    report_rows    => $folder->rows,
+                #     #store_fields   => $folder->fields,
+                #     #columns        => $folder->fields,
+                #     fields         => $fields,
+                    id_report      => $id_report,
+                    report_name    => $report_name,
+                    report_rows    => $report_rows,
                     #column_mode    => 'full', #$folder->mode,
                     hide_tree      => \1,
                 },
-                rows    => $folder->rows,
-                permissions => $folder->permissions,
+                rows    => $rows,
+                permissions => $permissions,
                 leaf    => \1,
             };
     }
+    _debug("my_searches 4");
     return \@mine;
 }
 
@@ -234,7 +246,7 @@ sub public_searches {
 				mid     => $folder->mid,
 				text    => sprintf( '%s (%s)', $folder->name, $folder->owner ), 
 				icon    => '/static/images/icons/topic.png',
-				#menu    => [ ],
+				menu    => [ ],
 				data    => {
 					click   => {
 						icon    => '/static/images/icons/topic.png',
@@ -242,9 +254,9 @@ sub public_searches {
 						type    => 'comp',
 						title   => $folder->name,
 					},
-					#store_fields   => $folder->fields,
-					#columns        => $folder->fields,
-					fields         => $folder->selected_fields({ meta => $p->{meta}, username => $p->{username} }),
+				# 	#store_fields   => $folder->fields,
+				# 	#columns        => $folder->fields,
+				# 	fields         => $folder->selected_fields({ meta => $p->{meta}, username => $p->{username} }),
 					id_report      => $folder->mid,
 					report_rows    => $folder->rows,
 					report_name    => $folder->name,
