@@ -1556,7 +1556,7 @@ sub save_data {
             };
             
             my %update_row = %row;
-            delete %update_row->{id_category_status};
+            delete $update_row{id_category_status};
 
             $topic->update( name=>$row{title}, moniker=>$moniker, modified_by=>$data->{username}, %update_row );
             
