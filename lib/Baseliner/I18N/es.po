@@ -7639,4 +7639,9 @@ msgstr "Crear Etiqueta..."
 msgid "Relative path"
 msgstr "Path relativo"
 
+msgid "Wait while retrieving fields list and format for report %1"
+msgstr "Espere mientras se busca la información de columnas y formatos del informe %1"
+
+msgid "Fields retrieved.  Now wait while generating report %1"
+msgstr "Información recuperada. Espere mientras se genera el informe %1"
 ### EOF - do not write anything bellow this
