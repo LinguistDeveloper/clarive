@@ -491,7 +491,8 @@
             { fieldLabel: _('Rows'), name: 'rows', xtype: 'textfield', anchor:'50%', allowBlank: false, value: lc_node.attributes.rows || 50 },
             new Baseliner.ComboDouble({
                 value: lc_node.attributes.permissions || 'private', name:'permissions', 
-                fieldLabel: _('Permissions'), data: [ ['private',_('Private')],['public',_('Public')] ] })
+                fieldLabel: _('Permissions'), data: [ ['private',_('Private')],['public',_('Public')] ] }),
+            new Baseliner.UserAndRoleBox({ fieldLabel: _('Users and roles'), name:'usersandroles', allowBlank: true, value: lc_node.attributes.usersandroles })
         ]
     });
     
@@ -549,7 +550,7 @@
                 //console.dir(tree_selected.root);
                 if( tree_selected_is_loaded ) dd.selected = Baseliner.encode_tree( tree_selected.root );
                 //if( sql.editor ) dd.sql = sql.getValue();
-                //console.dir(dd);
+                console.dir(dd);
                 var action = report_mid > 0 ? 'update':'add';
                 var data = { action:action, data:dd };
                 if( report_mid > 0 ) data.mid = report_mid;
