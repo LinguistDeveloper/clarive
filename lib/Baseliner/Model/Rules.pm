@@ -458,7 +458,7 @@ sub run_rules {
 # used by job_chain
 sub run_single_rule {
     my ($self, %p ) = @_;
-    local $Baseliner::_no_cache = 1;
+    #local $Baseliner::_no_cache = 1;
     $p{stash} //= {};
     my $rule = mdb->rule->find_one({ '$or'=>[ {id=>"$p{id_rule}"},{rule_name=>"$p{id_rule}"} ] });
     
@@ -466,13 +466,22 @@ sub run_single_rule {
     my @tree = $self->build_tree( $p{id_rule}, undef );
     #local $self->{tidy_up} = 0;
     my $t0=[Time::HiRes::gettimeofday];
-    my $dsl = try {
-        $self->dsl_build( \@tree, no_tidy=>0, %p ); 
-    } catch {
-        _fail( _loc("Error building DSL for rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, shift() ) ); 
-    };
-    my $elapsed = Time::HiRes::tv_interval( $t0 );
-    _debug( _loc('DSL build elapsed %1s', $elapsed) );
+
+    my $dsl = cache->get( 'rule_dsl:'.$p{id_rule} );
+
+    if ( !$dsl ) {
+        $dsl = try {
+            $self->dsl_build( \@tree, no_tidy=>0, %p ); 
+        } catch {
+            _fail( _loc("Error building DSL for rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, shift() ) ); 
+        };
+        my $elapsed = Time::HiRes::tv_interval( $t0 );
+        _debug( _loc('DSL build elapsed XXXX %1s', $elapsed) );
+        cache->set( 'rule_dsl:'.$p{id_rule}, $dsl );
+    } else {
+        my $elapsed = Time::HiRes::tv_interval( $t0 );
+        _debug( _loc('DSL retrieved from cache. Elapsed time %1s', $elapsed) );
+    }
     my $ret = try {
         ################### RUN THE RULE DSL ######################
         $self->dsl_run( dsl=>$dsl, stash=>$p{stash}, %p );
