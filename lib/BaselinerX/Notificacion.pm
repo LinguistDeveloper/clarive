@@ -2,6 +2,8 @@ package BaselinerX::Notificacion;
 use Baseliner::Plug;
 use Baseliner::Utils;
 
+with 'Baseliner::Role::Service';
+
 register 'action.admin.notification' => { name=>'Admin Notifications' };
 
 register 'menu.admin.notifications' => {
