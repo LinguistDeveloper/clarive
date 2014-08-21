@@ -15,6 +15,7 @@
     my $show_job_search_combo = config_value( 'site.show_job_search_combo' );
     my $show_no_cal = config_value( 'site.show_no_cal' ) // 1;
     my $has_no_cal = $c->is_root || $c->has_action( 'action.job.no_cal' ) // 1;
+    my $has_chain_perm = $c->is_root || $c->has_action( 'action.job.chain_change' ) // 1;
 </%perl>
 (function(opts){
     if( !opts ) opts = {};
@@ -201,7 +202,8 @@
         loadingText: _('Searching...'),
         allowBlank: false,
         editable: false,
-        lazyRender: true
+        lazyRender: true,
+        disabled: <% $has_chain_perm ? 'false':'true' %>
     });
     store_chain.on('beforeload', function(){
         store_chain.baseParams.type = 'promote';
