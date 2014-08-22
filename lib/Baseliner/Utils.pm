@@ -1260,9 +1260,7 @@ sub parse_vars {
           local $SIG{ALRM} = sub { alarm 0; die "parse_vars timeout - data structure too large?\n" };
           alarm( $ENV{BASELINER_PARSE_TIMEOUT} // $Baseliner::Utils::parse_vars_timeout // 30 );
           # flatten keys
-          _log "FFFF 1";
           my $flat = hash_flatten( $vars );
-          _log "FFFF 2";
           # now merge flat keys with originals, but originals have precedence
           $vars = { %$flat, %$vars };
 
@@ -1278,7 +1276,6 @@ sub parse_vars_raw {
     my $ref = ref $data;
     # block recursion
     $parse_vars_raw_scope or local $parse_vars_raw_scope={};
-    _log $ref;
     return () if $ref && exists $parse_vars_raw_scope->{"$data"};
     $parse_vars_raw_scope->{"$data"}=() if $ref;
     
