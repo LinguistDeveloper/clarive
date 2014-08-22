@@ -1255,7 +1255,6 @@ the timeout secs (or zero to disable);
 sub parse_vars {
     my ( $data, $vars, %args ) = @_;
     my $ret;
-    _log "En parse_vars";
     {
           local $SIG{ALRM} = sub { alarm 0; die "parse_vars timeout - data structure too large?\n" };
           alarm( $ENV{BASELINER_PARSE_TIMEOUT} // $Baseliner::Utils::parse_vars_timeout // 30 );
