@@ -15,6 +15,7 @@
     my $show_job_search_combo = config_value( 'site.show_job_search_combo' );
     my $show_no_cal = config_value( 'site.show_no_cal' ) // 1;
     my $has_no_cal = $c->is_root || $c->has_action( 'action.job.no_cal' ) // 1;
+    my $has_chain_perm = $c->is_root || $c->has_action( 'action.job.chain_change' ) // 1;
 </%perl>
 (function(opts){
     if( !opts ) opts = {};
@@ -201,7 +202,8 @@
         loadingText: _('Searching...'),
         allowBlank: false,
         editable: false,
-        lazyRender: true
+        lazyRender: true,
+        disabled: <% $has_chain_perm ? 'false':'true' %>
     });
     store_chain.on('beforeload', function(){
         store_chain.baseParams.type = 'promote';
@@ -697,6 +699,7 @@
                 Baseliner.message( _('Job'), _('Starting job check and initialization...') );
                 form.submit({
                     params: { job_contents: json_res, window_type: wt  },
+                    timeout : 120000,
                     success: function(form,action){
                         //form submit ok
                         //alert( 'ok' + action );
@@ -715,6 +718,7 @@
                             Ext.Msg.show({ title: _('Failure'), msg: action.result.msg, width: 500, buttons: { ok: true } });
                         } else {
                             var msg = _('Unknown Error');
+                            console.dir(action)
                             if( action.failureType == 'connect' ) msg = _('Connection Error');
                             if( action.failureType == 'client' ) msg = _('Form Error');
                             Baseliner.error( _('Error'), msg );

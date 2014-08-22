@@ -1298,7 +1298,7 @@ sub import : Local {
                         }
                         push @mids, $ci->{mid};
                     }
-                    _log _dump @mids;
+                    _debug @mids;
                     {success => \1, msg=>_loc('CIs created: %1, CIs updated: %2', $ins_rows, $upd_rows), mids=>\@mids, updated_mids=>\@updates_mids};
                  } catch {
                     my $err = shift;

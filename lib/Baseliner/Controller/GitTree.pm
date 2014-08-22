@@ -237,7 +237,7 @@ sub newjob : Local {
             $item;
         } ($ns);
 
-        _log _dump \@contents;
+        _debug \@contents;
 
         my $job_type = $p->{job_type} || 'static';
 

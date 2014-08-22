@@ -233,7 +233,7 @@ register 'report.jazztel.job_statistics_mes' => {
                 total       => $d->{total}
               };
         }
-        _log _dump @rows;
+        _debug @rows;
         my $cnt = scalar @rows;
         return {
             rows=>\@rows, total=>$cnt, config=>$config,

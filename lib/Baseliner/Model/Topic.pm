@@ -1218,7 +1218,7 @@ sub get_meta {
     return $cached if $cached;
 
     my $id_cat =  $id_category
-        // ( $topic_mid ? mdb->topic->find_one_value( id_category => { mid=>$topic_mid }) : undef );
+        // ( $topic_mid ? mdb->topic->find_one_value( id_category => { mid=>"$topic_mid" }) : undef );
     
     my @cat_fields;
     
@@ -1553,9 +1553,12 @@ sub save_data {
             for my $field ( keys %row ) {
                 $old_values{$field} = $topic->{$field}, my $method = $relation{$field};
                 $old_text{$field} = $method ? try { $topic->$method->name } : $topic->{$field};
-            }
+            };
             
-            $topic->update( name=>$row{title}, moniker=>$moniker, modified_by=>$data->{username}, %row );
+            my %update_row = %row;
+            delete %update_row->{id_category_status};
+
+            $topic->update( name=>$row{title}, moniker=>$moniker, modified_by=>$data->{username}, %update_row );
             
             for my $field ( keys %row ) {
                 next if $field eq 'response_time_min' || $field eq 'expr_response_time';
@@ -1565,9 +1568,10 @@ sub save_data {
                 my $new_value = $row{$field};
                 my $old_value = $old_values{$field} // '' ;
                 
-                if ( !defined $old_value && $new_value ne '' || $new_value ne $old_value ) {
-                    if ( $field eq 'id_category_status' ) {
 
+                if ( !defined $old_value && $new_value ne '' || $new_value ne $old_value ) {
+
+                    if ( $field eq 'id_category_status' ) {
                         # change status
                         my $id_status    = $new_value;
                         my $cb_ci_update = sub {
@@ -3005,6 +3009,115 @@ sub get_status_history_topics{
     }
 }
 
+sub upload {
+    my ($self, %c) = @_;
+    
+    my $f = $c{f};
+    my $p = $c{p};
+    my $username = $c{username};
+
+    my $filename = $p->{qqfile};
+    my ($extension) =  $filename =~ /\.(\S+)$/;
+    $extension //= '';
+    my $msg;
+    my $success;
+    my $status;
+    try {
+        if((length $p->{topic_mid}) and (mdb->topic->find_one({mid=>$p->{topic_mid}}))) {
+            my ($topic, $topic_mid, $file_mid);
+            $topic = mdb->topic->find_one({ mid=>"$p->{topic_mid}" });
+            $topic_mid = $topic->{mid};
+            my $file_field = $$p{filter};
+            #Comprobamos que el campo introducido es correcto
+            my $found = 0;
+            my $meta = model->topic->get_meta($topic_mid);
+            for my $field ( _array $meta ) {
+                if (( $field->{id_field} eq $file_field ) and ( $field->{type} eq 'upload_files' )) {
+                    $found = 1;
+                }
+            }
+            if (!$found){
+                $msg = "The related field does not exist for the topic: " .  $topic_mid;
+                $success = "false";
+                $status = 404;
+                return (success=>$success, msg=>$msg, status=>$status);
+            }
+            #Comprobamos que existe el fichero
+            if (!-e $f){
+                $msg = "The file " . $f . " does not exis: " .  $topic_mid;
+                $success = "false";
+                $status = 404;
+                return (success=>$success, msg=>$msg, status=>$status);
+            }
+
+            #my @projects = ci->children( mid=>$_->{mid}, does=>'Project' );
+            my @users = Baseliner->model("Topic")->get_users_friend(
+                mid         => $p->{topic_mid}, 
+                id_category => $topic->{category}{id}, 
+                id_status   => $topic->{category_status}{id},
+                #  projects    => \@projects  # get_users_friend ignores this
+            );
+            
+            my $versionid = 1;
+            # increase file version?  if same md5 found...
+            #if(mdb->grid->files->find_one({ md5=>$
+            #   $versionid = $file[0] + 1;
+            #}
+                
+            my $asset = ci->asset->new(
+                name=>$filename,
+                versionid=>$versionid,
+                extension=>$extension,
+                created_by => $username,
+                created_on => mdb->ts,
+            );
+            $asset->save;
+            $asset->put_data( $f->openr );
+            $file_mid = $asset->{mid};
+            
+            if ($p->{topic_mid}){
+                my $subject = _loc("Created file %1 to topic [%2] %3", $filename, $topic->{mid}, $topic->{title});                            
+                event_new 'event.file.create' => {
+                    username        => $username,
+                    mid             => $topic_mid,
+                    id_file         => $asset->mid,
+                    filename        => $filename,
+                    notify_default  => \@users,
+                    subject         => $subject
+                };
+                
+                # tie file to topic
+                my $doc = { from_mid=>$topic_mid, to_mid=>$asset->mid, rel_type=>'topic_asset', rel_field=>$$p{filter} };
+                mdb->master_rel->update($doc,$doc,{ upsert=>1 });
+            }
+            cache->remove( qr/:$topic_mid:/ );
+            $msg = _loc( 'Uploaded file %1', $filename ) . '", "file_uploaded_mid":"' . $file_mid;
+            $success = "true";
+            $status = 200;
+        } else {
+            if(!length $p->{topic_mid}){
+                $msg = "You must save the topic before add new files";
+                $success = "false";
+                $status = 404;
+            } else {
+                $msg = "The Topic with mid: " . $p->{topic_mid} . " does not exist";
+                $success = "false";
+                $status = 500;
+            }
+        }
+        return (success=>$success, msg=>$msg, status=>$status);
+    } catch {
+        my $err = shift;
+        _error( "Error uploading file: " . $err );
+        my $status = 500;
+        $msg = "The Topic with mid: " . $p->{topic_mid} . " does not exist'";
+        $success = "false";
+        return (success=>$success, msg=>$msg, status=>$status);
+
+    };
+}
+
+
 sub get_downloadable_files {
     my ($self, $p) = @_;
 
@@ -3051,8 +3164,6 @@ sub get_downloadable_files {
             }
         }
     }
-
     return $available_docs;
 }
-
 1;

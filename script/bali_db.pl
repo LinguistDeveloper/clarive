@@ -207,7 +207,7 @@ sub insert_row {
         push @rows, $row;
     }
     if( !$row || @rows >= $commit_num ) {
-        _log _dump( \@rows ) if exists $args{v};
+        _debug( \@rows ) if exists $args{v};
         
         my @cols = grep { $inserting ? $_ ne 'id' && $_ ne 'mid' : 1 } $src->columns;
         my $table = $src->name;

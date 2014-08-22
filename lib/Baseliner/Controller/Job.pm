@@ -16,6 +16,7 @@ BEGIN {
 
 register 'action.job.viewall' => { name=>'View All Jobs' };
 register 'action.job.restart' => { name=>'Restart Jobs' };
+register 'action.job.chain_change' => { name=>'Change default chain in job_new window' };
 
 register 'config.job.states' => {
   metadata => [

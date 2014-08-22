@@ -380,7 +380,7 @@ sub user_roles_for_topic {
         while( my ($k,$v) = each %{ $proj_coll_ids || {} } ) {
             $where->{"_project_security.$k"} = { '$in'=>[ undef, keys %{ $v || {} } ] }; 
         }
-        #_log _dump $where;
+        #_debug $where;
         push @roles, $role if !!mdb->topic->find($where)->count;
     }
     return @roles;

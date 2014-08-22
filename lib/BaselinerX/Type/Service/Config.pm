@@ -12,7 +12,7 @@ register 'service.config' => {
 
 sub run {
     my ($self,$c,$p)=@_;
-    #_log _dump $p;
+    #_debug $p;
     if( defined $p->{value} ) {
         $c->model('ConfigStore')->set( key=>$p->{key}, value=>$p->{value}, ns=>$p->{ns}, bl=>$p->{bl} );
     } elsif( exists $p->{l} ) {

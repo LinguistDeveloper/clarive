@@ -1,6 +1,6 @@
 package BaselinerX::CI::report;
 use Baseliner::Moose;
-use Baseliner::Utils qw(:logging _array _loc _fail hash_flatten);
+use Baseliner::Utils;
 use v5.10;
 use Try::Tiny;
 
@@ -9,6 +9,7 @@ with 'Baseliner::Role::CI::Internal';
 has selected    => qw(is rw isa ArrayRef), default => sub{ [] };
 has rows        => qw(is rw isa Num default 100);
 has permissions => qw(is rw isa Any default private);
+has usersandroles => qw(is rw isa Any default private);
 has sql         => qw(is rw isa Any);
 has mode        => qw(is rw isa Maybe[Str] default lock);
 has owner       => qw(is rw isa Maybe[Str]);
@@ -138,14 +139,22 @@ sub my_searches {
     my ($self,$p) = @_;
     my $userci = Baseliner->user_ci( $p->{username} );
     my $username = $p->{username};
-	
+    
     my @searches = $self->search_cis( owner=>$username ); 
     my @mine;
     for my $folder ( @searches ){
+        my $name           = $folder->name;
+        my $id_report      = $folder->mid;
+        # my $fields         = $folder->selected_fields({ meta=>$p->{meta}, username => $p->{username}  });
+        my $report_name    = $folder->name;
+        my $report_rows    = $folder->rows;
+        my $rows    = $folder->rows;
+        my $permissions = $folder->permissions;
+        my $usersandroles = $folder->usersandroles;
         push @mine,
             {
                 mid     => $folder->mid,
-                text    => $folder->name,
+                text    => $name,
                 icon    => '/static/images/icons/topic.png',
                 menu    => [
                     {
@@ -162,21 +171,22 @@ sub my_searches {
                 data    => {
                     click   => {
                         icon    => '/static/images/icons/topic.png',
-                        url     => '/comp/topic/topic_grid.js',
-                        type    => 'comp',
-                        title   => $folder->name,
+                        url     => '/comp/lifecycle/report_run.js',
+                        type    => 'eval',
+                        title   => $name,
                     },
-                    #store_fields   => $folder->fields,
-                    #columns        => $folder->fields,
-                    fields         => $folder->selected_fields({ meta=>$p->{meta}, username => $p->{username}  }),
-                    id_report      => $folder->mid,
-                    report_name    => $folder->name,
-                    report_rows    => $folder->rows,
+                #     #store_fields   => $folder->fields,
+                #     #columns        => $folder->fields,
+                #     fields         => $fields,
+                    id_report      => $id_report,
+                    report_name    => $report_name,
+                    report_rows    => $report_rows,
                     #column_mode    => 'full', #$folder->mode,
                     hide_tree      => \1,
                 },
-                rows    => $folder->rows,
-                permissions => $folder->permissions,
+                rows    => $rows,
+                permissions => $permissions,
+                usersandroles => $usersandroles,
                 leaf    => \1,
             };
     }
@@ -185,75 +195,39 @@ sub my_searches {
 
 sub public_searches {
     my ($self,$p) = @_;
-    my @searches = $self->search_cis( permissions=>'public' );
+
+    my @usersandroles = map { 'role/'.$_->{id}} model->Permissions->user_roles( $p->{username} );
+    push @usersandroles, 'user/'.ci->user->find_one({name => $p->{username}})->{mid};
+    push @usersandroles, undef;
+
+    my @searches = $self->search_cis( owner=> { '$ne' => $p->{username}}, permissions=>'public', usersandroles => mdb->in(@usersandroles) );
 	
-	my %user_categories;
-	my $user_categories_fields_meta;
-	
-	if (! Baseliner->model('Permissions')->is_root( $p->{username} )) {
-		%user_categories = map {
-			$_->{id} => $_->{name};
-		} Baseliner->model('Topic')->get_categories_permissions( username => $p->{username}, type => 'view' );
-		$user_categories_fields_meta = Baseliner->model('Users')->get_categories_fields_meta_by_user( username => $p->{username}, categories=> \%user_categories );
-	}
 	
 	my @public;
     for my $folder ( @searches ){
-		my $swAllowed = 0;
-        if (! Baseliner->model('Permissions')->is_root( $p->{username} )) {
-            my %fields = map { $_->{type}=> $_->{children} } _array( $folder->selected );
-            # check categories permissions
-            my @categories;
-            my @names_categories;
-            map {
-                push @categories, $_->{data}->{id_category};
-                push @names_categories, Util->_name_to_id($_->{data}->{name_category});
-            } _array($fields{categories});
-                        
-            my @user_cats = grep { exists $user_categories{ $_ } } @categories;
-            next if @categories > @user_cats;  # user cannot see category, skip this search
-            
-            my @selected =  map { $_->{id_field} } _array($fields{select});
-                
-            for my $field (@selected){
-                $swAllowed = 0;
-                for my $category (@names_categories){
-                    if (exists $user_categories_fields_meta->{$category}{$field}){
-                        $swAllowed = 1; 
-                        last;
-                    }
-                }
-                last if ($swAllowed == 0);
-            }
-        }else{
-            $swAllowed = 1; 
-        }
-
-		if($swAllowed == 1){
-			push @public,{
-				mid     => $folder->mid,
-				text    => sprintf( '%s (%s)', $folder->name, $folder->owner ), 
-				icon    => '/static/images/icons/topic.png',
-				#menu    => [ ],
-				data    => {
-					click   => {
-						icon    => '/static/images/icons/topic.png',
-						url     => '/comp/topic/topic_grid.js',
-						type    => 'comp',
-						title   => $folder->name,
-					},
-					#store_fields   => $folder->fields,
-					#columns        => $folder->fields,
-					fields         => $folder->selected_fields({ meta => $p->{meta}, username => $p->{username} }),
-					id_report      => $folder->mid,
-					report_rows    => $folder->rows,
-					report_name    => $folder->name,
-					#column_mode    => 'full', #$folder->mode,
-					hide_tree      => \1,
+		push @public,{
+			mid     => $folder->mid,
+			text    => sprintf( '%s (%s)', $folder->name, $folder->owner ), 
+			icon    => '/static/images/icons/topic.png',
+			menu    => [ ],
+			data    => {
+				click   => {
+					icon    => '/static/images/icons/topic.png',
+					url     => '/comp/lifecycle/report_run.js',
+					type    => 'eval',
+					title   => $folder->name,
 				},
-				leaf    => \1,
-			};
-		}
+			# 	#store_fields   => $folder->fields,
+			# 	#columns        => $folder->fields,
+			# 	fields         => $folder->selected_fields({ meta => $p->{meta}, username => $p->{username} }),
+				id_report      => $folder->mid,
+				report_rows    => $folder->rows,
+				report_name    => $folder->name,
+				column_mode    => 'full', #$folder->mode,
+				hide_tree      => \1,
+			},
+			leaf    => \1,
+		};
     }    
     return \@public;
 }
@@ -283,6 +257,7 @@ sub report_update {
                     $self->user( $user );
                     $self->owner( $username );
                     $self->permissions( $data->{permissions} );
+                    $self->usersandroles( $data->{usersandroles} );
                     $self->rows( $data->{rows} );
                     $self->sql( $data->{sql} );
                     $self->save;
@@ -297,7 +272,7 @@ sub report_update {
         }
         when ('update') {
             try{
-				my @cis = $self->search_cis( name=>$data->{name}, owner=>$username );
+                my @cis = $self->search_cis( name=>$data->{name}, owner=>$username );
                 if( @cis && $cis[0]->mid != $self->mid ) {
                     _fail _loc('Search name already exists, introduce another search name');
                 }
@@ -308,6 +283,7 @@ sub report_update {
                     $self->sql( $data->{sql} );
                     $self->owner( $username );
                     $self->permissions( $data->{permissions} );
+                    $self->usersandroles( $data->{usersandroles} );
                     $self->selected( $data->{selected} ) if ref $data->{selected}; # if the selector tab has not been show, this is submitted undef
                     $self->save;
                     $ret = { msg=>_loc('Search modified'), success=>\1, mid=>$self->mid };
@@ -501,7 +477,13 @@ sub selected_fields {
     my ($self, $p ) = @_; 
     my %ret = ( ids=>['mid','topic_mid','category_name','category_color','modified_on'] );
     my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
+
     my $meta = $p->{meta};
+
+    if ( !$meta ) {
+        my %meta_temp = map {  $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $p->{username}) );
+        $meta = \%meta_temp;
+    }   
 	
 	my @categories = map { $_->{data}->{id_category} } _array($fields{categories});
     my @status = values +{ ci->status->statuses( id_category=>\@categories ) };
@@ -765,7 +747,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 
 	#_log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS: " . _dump $self->selected ;
     #_log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS CI COLUMNS: " . _dump %selects_ci_columns;
-    _log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS CI COLUMNS COLLECTION: " . _dump %selects_ci_columns_collection_extends;
+    #_log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS CI COLUMNS COLLECTION: " . _dump %selects_ci_columns_collection_extends;
 	
 	#filters
 	my %dynamic_filter;
@@ -898,7 +880,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 		labels		=> 1
 	);
     my $fields = {  %select_system, map { $_=>1 } keys +{@selects}, _id=>0 };
-    _log "FIELDS==================>" . _dump( $fields );
+    #_log "FIELDS==================>" . _dump( $fields );
     #_log "SORT==================>" . _dump( @sort );
     my @data = $rs
       ->fields($fields)
@@ -1027,7 +1009,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 
     my @topics = map { 
         my %row = %$_;
-		_log ">>>>>>>>>>>>>>>>>>>>>>>>>>>FILA: " . _dump %row;
+		#_log ">>>>>>>>>>>>>>>>>>>>>>>>>>>FILA: " . _dump %row;
 
         while( my($k,$v) = each %row ) {
             $row{$k} = Class::Date->new($v)->string if $k =~ /modified_on|created_on/;
@@ -1138,8 +1120,8 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                                     }                                     
                                 }
                             }catch{
-                                _log "Key: $k";
-                                _log "Error Valor:($v)" ;
+                                _log("Key: $k");
+                                _log("Error Valor:($v)" );
                             };                                                                    
                         }
 

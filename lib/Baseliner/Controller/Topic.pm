@@ -248,7 +248,7 @@ sub related : Local {
     }
 
     $where = $c->model('Topic')->apply_filter( $username, $where, %filter );
-    #_log _dump $where;
+    #_debug $where;
 
     my ($cnt, @result_topics) = $c->model('Topic')->get_topics_mdb( $where, $username, $start, $limit );
 
@@ -416,7 +416,7 @@ sub get_meta_permissions : Private {
     my %hidden_field = map { $_ => 1} @hidden_field;
     $meta = [grep { !($hidden_field{ $_->{id_field} }) } _array $meta];
         
-    #_log _dump $meta;
+    #_debug $meta;
     return $meta
 }
 
@@ -519,6 +519,21 @@ sub view : Local {
             
             $category = mdb->category->find_one({ id=>$topic_doc->{category}{id} },{ fieldlets=>0 });
             
+            if ( $category->{is_changeset} ) {
+                if ( !$topic_doc->{category_status}->{bind_releases} ) {
+                    my ($id_project) = map {$_->{mid}} $topic_ci->projects;
+                    my ( $deployable, $promotable, $demotable, $menu_s, $menu_p, $menu_d ) = BaselinerX::LcController->promotes_and_demotes(
+                        topic      => $topic_doc,
+                        username   => $c->username,
+                        id_project => $id_project
+                    );
+                    my $menu = { deployable => $deployable, promotable => $promotable, demotable => $demotable, menu => [_array $menu_s, _array $menu_p, _array $menu_d]};
+                    $c->stash->{menu_deploy} = _encode_json($menu);
+                } else {
+                    my $menu = { deployable => {}, promotable => {}, demotable => {}, menu => []};
+                    $c->stash->{menu_deploy} = _encode_json($menu);
+                }
+            }
             _fail( _loc('Category not found or topic deleted: %1', $topic_mid) ) unless $category;
             
             if ( !$categories_view{$category->{id} } ) {
@@ -571,7 +586,6 @@ sub view : Local {
             # jobs for release and changeset
             if( $category->{is_changeset} || $category->{is_release} ) {
                 my @jobs = $topic_ci->jobs({ username => $c->username});
-                _warn @jobs;
                 $c->stash->{jobs} = @jobs ? \@jobs: 0;
             }
             
@@ -584,7 +598,7 @@ sub view : Local {
             $c->stash->{category_meta} = $category->{forms};
 
             my $first_status = ci->status->find_one({ id_status=>mdb->in( $category->{statuses} ), type=>'I' }) // _fail( _loc('No initial state found '));
-            
+
             my @statuses =
                 sort { ( $a->{seq} // 0 ) <=> ( $b->{seq} // 0 ) }
                 grep { $_->{id_status} ne $first_status->{id_status} } 
@@ -1085,7 +1099,7 @@ sub filters_list : Local {
     my @statuses;
     my @id_categories = map { $_->{id} } @categories_permissions;
     my @cat_statuses = mdb->category->find_values( statuses=>{ id=>mdb->in(@id_categories) } );
-#_log _dump \@cat_statuses;
+#_debug \@cat_statuses;
     my $where = { '$and'=>[{ id_status=>mdb->in(@cat_statuses)}] };
     
     # intersect statuses with a reduced set?
@@ -1276,71 +1290,23 @@ sub upload : Local {
     my $filename = $p->{qqfile};
     my ($extension) =  $filename =~ /\.(\S+)$/;
     $extension //= '';
-    
-    my $f;    
+    my $f;   
     if( $c->req->body eq ''){
         my $x = $c->req->upload('qqfile');
         $f =  _file( $x->tempname );
     }else{
         $f =  _file( ''. $c->req->body );
     }
-    _log "Uploading file " . $filename;
-    try {
-        if( length $p->{topic_mid} ) {
-            my ($topic, $topic_mid, $file_mid);
-            
-            $topic = mdb->topic->find_one({ mid=>"$p->{topic_mid}" });
-            $topic_mid = $topic->{mid};
-            #my @projects = ci->children( mid=>$_->{mid}, does=>'Project' );
-            my @users = Baseliner->model("Topic")->get_users_friend(
-                mid         => $p->{topic_mid}, 
-                id_category => $topic->{category}{id}, 
-                id_status   => $topic->{category_status}{id},
-                #  projects    => \@projects  # get_users_friend ignores this
+    my %response = Baseliner->model("Topic")->upload(
+                f           => $f, 
+                p           => $p, 
+                username    => $c->username,
             );
-            
-            my $versionid = 1;
-            # increase file version?  if same md5 found...
-            #if(mdb->grid->files->find_one({ md5=>$
-            #   $versionid = $file[0] + 1;
-            #}
-                
-            my $asset = ci->asset->new( 
-                name=>$filename, 
-                versionid=>$versionid, 
-                extension=>$extension, 
-                created_by => $c->username,
-                created_on => mdb->ts,
-            );
-            $asset->save;
-            $asset->put_data( $f->openr );
-            
-            if ($p->{topic_mid}){
-                my $subject = _loc("Created file %1 to topic [%2] %3", $filename, $topic->{mid}, $topic->{title});                            
-                event_new 'event.file.create' => {
-                    username        => $c->username,
-                    mid             => $topic_mid,
-                    id_file         => $asset->mid,
-                    filename        => $filename,
-                    notify_default  => \@users,
-                    subject         => $subject
-                };
-                
-                # tie file to topic
-                my $doc = { from_mid=>$topic_mid, to_mid=>$asset->mid, rel_type=>'topic_asset', rel_field=>$$p{filter} };
-                mdb->master_rel->update($doc,$doc,{ upsert=>1 });
-            }
-                    
-            $c->res->body('{"success": "true", "msg":"' . _loc( 'Uploaded file %1', $filename ) . '", "file_uploaded_mid":"' . $file_mid . '"}');
-        } else {
-            $c->res->body('{"success": "false", "msg":"' . _loc( 'You must save the topic before add new files' ) . '"}');
-        }
-    } catch {
-        my $err = shift;
-        _error( "Error uploading file: " . $err );
-        $c->res->status( 500 );
-        $c->res->body('{"success": "false", "msg":"' . $err . '"}');
-    };
+    if ($response{status} ne '200') {
+        c->res->status($response{status});
+    }
+    my $body = '{"success": "' . $response{success}. '", "msg": "' . $response{msg} .'"}';
+    $c->res->body($body);
 }
 
 sub file : Local {

@@ -14,10 +14,13 @@ params:
 (function(params){
     var meta = params.topic_meta;
     var data = params.topic_data;
-    
     var value = data[ meta.bd_field ];
     
     var options = meta[ 'options' ];
+
+    if (meta.allowBlank == 'false') allowBlank = false;
+    if (meta.allowBlank == 'true') allowBlank = true;
+    if (meta.allowBlank == undefined) allowBlank = true;
     
     var opt_arr = [];
     if( options != undefined  ) {
@@ -46,7 +49,8 @@ params:
         forceSelection: true,
         selectOnFocus: true,
         hidden: meta ? (meta.hidden ? meta.hidden : false): true,
-        disabled: meta && meta.readonly ? meta.readonly : false
+        disabled: meta && meta.readonly ? meta.readonly : false,
+        allowBlank: allowBlank
     });  
     
     combo.on('afterrender', function(){

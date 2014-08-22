@@ -917,7 +917,7 @@ Ext.extend( Baseliner.model.CICombo, Ext.form.ComboBox );
 
 // quick CI Select Box generator
 //   usage:
-//      Baseliner.ci_box({ name:'repo', class:'BaselinerX::CI::GitRepository', fieldLabel:_('Git Repository'), value: data.repo })
+//      Baseliner.ci_box({ name:'repo', 'class':'BaselinerX::CI::GitRepository', fieldLabel:_('Git Repository'), value: data.repo })
 
 Baseliner.ci_box = function(c) {
     var value = c.value; delete c.value;

@@ -98,7 +98,7 @@ other => [qw(
     ago
 )],
 logging => [qw(
-    _log _dump _debug _fail _throw _loc _error _whereami _warn
+    _debug _fail _fixascii_sql _throw _loc _error _whereami _warn
 )],
 basic => [qw(
     _array _file _dir _now _ci _load :logging 
@@ -1302,6 +1302,8 @@ sub parse_vars_raw {
         return \@tmp;
     } elsif( $ref eq 'SCALAR' ) {
         return parse_vars_raw( data=>$$data, vars=>$vars, throw=>$throw );
+    } elsif( $ref eq 'MongoDB::OID') {
+        return parse_vars_raw( data=>$$data{value}, vars=>$vars, throw=>$throw );
     } elsif($ref) {
         return parse_vars_raw( data=>_damn( $data ), vars=>$vars, throw=>$throw );
     } else {

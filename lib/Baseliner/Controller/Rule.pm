@@ -1,6 +1,6 @@
 package Baseliner::Controller::Rule;
 use Baseliner::Plug;
-use Baseliner::Utils qw(:basic _decode_json _strip_html);
+use Baseliner::Utils;
 use Baseliner::Sugar;
 use DateTime;
 use Try::Tiny;
@@ -420,10 +420,12 @@ sub stmts_save : Local {
         } catch {
             _fail _loc "Corrupt or incorrect json rule tree: %1", shift(); 
         };
-        _log _dump $stmts;
+        #_debug $stmts;
         # check if DSL is buildable
         my $detected_errors = try { 
-            $c->model('Rules')->dsl_build_and_test( $stmts ); 
+            my $dsl = $c->model('Rules')->dsl_build_and_test( $stmts );
+            _debug "Caching rule $id_rule for further use";
+            cache->set( 'rule_dsl:'.$id_rule, $dsl );
             return '';
         } catch {
             my $err = shift;
@@ -457,7 +459,7 @@ sub get_rule_ts : Local{
     my ($self,$c)=@_;
     my $p = $c->req->params;
     try {
-        _log _dump $p;
+        _debug $p;
         my $ts = mdb->rule->find({id => ''.$p->{id_rule}})->next->{ts};
         $c->stash->{json} = { success=>\1, msg => 'ok', ts => $ts };
     } catch {

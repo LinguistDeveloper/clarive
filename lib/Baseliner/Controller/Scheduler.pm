@@ -148,7 +148,7 @@ sub save_schedule : Local {
 
     _log "Valor de workdays: $workdays";
 
-    #_log _dump $p;
+    #_debug $p;
 
     try {
         if ( !$id ) {

@@ -79,7 +79,7 @@ sub run_once {
             }
             
             my $notification = Baseliner->model('Notification')->get_notifications({ event_key => $event_key, notify_default => \@notify_default, notify_scope => $notify_scope, mid => $stash->{mid} });
-            my $config_email = Baseliner->model( 'ConfigStore' )->get( 'config.comm.email.from' )->{from};
+            my $config_email = Baseliner->model( 'ConfigStore' )->get( 'config.comm.email' )->{from};
             if ($notification){
                 foreach  my $template (  keys $notification ){
                     my $topic = {};
