@@ -1255,11 +1255,14 @@ the timeout secs (or zero to disable);
 sub parse_vars {
     my ( $data, $vars, %args ) = @_;
     my $ret;
+    _log "En parse_vars";
     {
           local $SIG{ALRM} = sub { alarm 0; die "parse_vars timeout - data structure too large?\n" };
           alarm( $ENV{BASELINER_PARSE_TIMEOUT} // $Baseliner::Utils::parse_vars_timeout // 30 );
           # flatten keys
+          _log "FFFF 1";
           my $flat = hash_flatten( $vars );
+          _log "FFFF 2";
           # now merge flat keys with originals, but originals have precedence
           $vars = { %$flat, %$vars };
 
@@ -1269,13 +1272,13 @@ sub parse_vars {
     return $ret;
 }
 
-our $parse_vars_raw_scope;
 sub parse_vars_raw {
     my %args = @_;
     my ( $data, $vars, $throw, $cleanup ) = @args{ qw/data vars throw cleanup/ };
     my $ref = ref $data;
     # block recursion
     $parse_vars_raw_scope or local $parse_vars_raw_scope={};
+    _log $ref;
     return () if $ref && exists $parse_vars_raw_scope->{"$data"};
     $parse_vars_raw_scope->{"$data"}=() if $ref;
     
@@ -1302,6 +1305,8 @@ sub parse_vars_raw {
         return \@tmp;
     } elsif( $ref eq 'SCALAR' ) {
         return parse_vars_raw( data=>$$data, vars=>$vars, throw=>$throw );
+    } elsif( $ref eq 'MongoDB::OID') {
+        return parse_vars_raw( data=>$$data{value}, vars=>$vars, throw=>$throw );
     } elsif($ref) {
         return parse_vars_raw( data=>_damn( $data ), vars=>$vars, throw=>$throw );
     } else {
