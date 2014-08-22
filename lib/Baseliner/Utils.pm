@@ -1270,6 +1270,7 @@ sub parse_vars {
     return $ret;
 }
 
+our $parse_vars_raw_scope;
 sub parse_vars_raw {
     my %args = @_;
     my ( $data, $vars, $throw, $cleanup ) = @args{ qw/data vars throw cleanup/ };
