@@ -250,12 +250,11 @@ sub tree_objects {
     if ($p{sort}) {
         my $sort = $p{sort};
         if ($sort eq 'mid'){
-            $sort_mid = 1;
             $opts = { ts => $dir };
         }elsif($sort eq 'item'){     
-            #pasar a minusculas
-            $sort_item = 1;
-            $opts = { $p{sort} => $dir };
+            #pasar a minusculas en la migración
+            $opts = { "_sort.item" => $dir };
+            
         }else{
             $opts = { $p{sort} => $dir };        
         }        

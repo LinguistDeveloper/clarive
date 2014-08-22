@@ -5,7 +5,7 @@ use v5.10;
 use Moose::Util::TypeConstraints;
 use Try::Tiny;
 require Baseliner::CI;
-use Baseliner::Utils qw(_throw _fail _loc _log _debug _unique _array _load _dump _package_is_loaded _any);
+use Baseliner::Utils qw(_throw _fail _loc _warn _log _debug _unique _array _load _dump _package_is_loaded _any);
 use Baseliner::Sugar;
 use Data::Compare ();
 
@@ -68,6 +68,7 @@ has versionid   => qw(is rw isa Maybe[Str] default 1);
 has moniker     => qw(is rw isa Maybe[Str]);    # lazy 1);#,
 has created_by  => qw(is rw isa Maybe[Str]);
 has modified_by => qw(is rw isa Maybe[Str]);
+has sort_by     => qw(is rw isa HashRef);
     # default=>sub{   
     #     my $self = shift; 
     #     if( ref $self ) {
@@ -190,8 +191,10 @@ sub save {
             $master_row->{moniker} = $self->moniker;
             $master_row->{ns} = $self->ns;
             $master_row->{ts} = mdb->ts;
+            $master_row->{sort_by} = {name => uc $self->name};
             $self->update_ci( $master_row, undef, \%opts );
         }
+        _warn($master_row);
     } else {
         ######## NEW CI
         $master_row = {
@@ -199,11 +202,13 @@ sub save {
                 name       => $self->name,
                 ns         => $self->ns,
                 ts         => mdb->ts,
-                moniker    => $self->moniker,
+                moniker    => $self->moniker, 
                 bl         => join( ',', Util->_array( $bl ) ),
                 active     => $self->active // 1,
                 versionid  => $self->versionid || 1,
+                sort_by    => {name => uc $self->name}
         };
+        _warn($master_row);
         # update mid into CI
         $mid = length($mid) ? $mid : mdb->seq('mid');
         $self->mid( $mid );
