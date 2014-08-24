@@ -1417,7 +1417,8 @@ sub get_topics {
     my @rel_topics = $field_meta->{parent_field} 
         ? mdb->master_rel->find_values(from_mid => { to_mid=>"$topic_mid", rel_type=>$rel_type, rel_field=>$field_meta->{parent_field}  })
         #? mdb->master_rel->find_values(from_mid => { to_mid=>"$topic_mid", rel_type=>$rel_type, rel_field=>$id_field })
-        : _array($$data{$id_field});
+        : mdb->master_rel->find_values(to_mid => { from_mid=>"$topic_mid", rel_type=>$rel_type, rel_field=>$id_field  });
+        # : _array($$data{$id_field});
 
     my $rs = mdb->topic->find({ mid=>mdb->in(@rel_topics) })->fields({ _id=>0 });
     $rs->sort({rel_seq=>1});
