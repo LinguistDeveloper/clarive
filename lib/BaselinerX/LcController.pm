@@ -747,7 +747,7 @@ sub promotes_and_demotes {
     my @statics = $self->status_list( dir => 'static', topic => $topic, username => $username, status => $id_status_from_lc, statuses => \%statuses );
 
     my ($cs_project) = ci->new($topic->{mid})->projects;
-    my @project_bls = map { $_->{bl} } _array $cs_project->bls;
+    my @project_bls = map { $_->{bl} } _array $cs_project->bls if $cs_project;
 
     my $statics={};
     my @job_transitions;
