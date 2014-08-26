@@ -444,7 +444,7 @@ sub run_rules {
                 }
                 $p{onerror}->( { err=>$err_global, ret=>$ret, id=>$rule->{id}, dsl=>$dsl, stash=>$stash, output=>$runner_output, rc=>$rc } );
             } elsif( ! $p{onerror} ) {
-                _fail $err_global;
+                _fail "(rule $p{id_rule}): ".$err_global;
             }
         };
         push @rule_log, { ret=>$ret, id => $rule->{id}, dsl=>$dsl, stash=>$stash, output=>$runner_output, rc=>$rc };
@@ -463,11 +463,12 @@ sub run_single_rule {
     my $rule = mdb->rule->find_one({ '$or'=>[ {id=>"$p{id_rule}"},{rule_name=>"$p{id_rule}"} ] });
     
     _fail _loc 'Rule with id `%1` not found', $p{id_rule} unless $rule;
+    my $rule_id = $rule->{id};
     my @tree = $self->build_tree( $p{id_rule}, undef );
     #local $self->{tidy_up} = 0;
     my $t0=[Time::HiRes::gettimeofday];
 
-    my $dsl = cache->get( 'rule_dsl:'.$p{id_rule} );
+    my $dsl = cache->get( 'rule_dsl:'.$rule_id );
 
     if ( !$dsl ) {
         $dsl = try {
@@ -477,7 +478,7 @@ sub run_single_rule {
         };
         my $elapsed = Time::HiRes::tv_interval( $t0 );
         _debug( _loc('DSL build elapsed XXXX %1s', $elapsed) );
-        cache->set( 'rule_dsl:'.$p{id_rule}, $dsl );
+        cache->set( 'rule_dsl:'.$rule_id, $dsl );
     } else {
         my $elapsed = Time::HiRes::tv_interval( $t0 );
         _debug( _loc('DSL retrieved from cache. Elapsed time %1s', $elapsed) );

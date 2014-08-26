@@ -203,7 +203,7 @@
         allowBlank: false,
         editable: false,
         lazyRender: true,
-        disabled: <% $has_chain_perm ? 'false':'true' %>
+        hidden: <% $has_chain_perm ? 'false':'true' %>
     });
     store_chain.on('beforeload', function(){
         store_chain.baseParams.type = 'promote';

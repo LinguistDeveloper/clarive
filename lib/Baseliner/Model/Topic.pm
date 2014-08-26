@@ -898,7 +898,6 @@ sub next_status_for_user {
             $catname ? _warn(_loc( 'User does not have a workflow for category `%1`', $catname->{name} ))
                     : _fail(_loc('Category id `%1 `not found', $id_category));
         } else {
-            # ok, user has workflow
             my %uniq;
             my @all_to_status =
                 sort { $$a{seq} <=> $$b{seq} }
@@ -921,7 +920,7 @@ sub next_status_for_user {
                         seq                => ($$sto{seq} // 0)
                     };
                 } 
-                grep { $my_roles{$$_{id_role}} }
+                grep { $my_roles{$$_{id_role}} && $$_{id_status_from} eq $p{id_status_from}}
                 grep { defined } _array( $cat->{workflow} );
             
             my @no_deployable_status = grep {$_->{status_type} ne 'D'} @all_to_status;
@@ -1417,7 +1416,8 @@ sub get_topics {
     my @rel_topics = $field_meta->{parent_field} 
         ? mdb->master_rel->find_values(from_mid => { to_mid=>"$topic_mid", rel_type=>$rel_type, rel_field=>$field_meta->{parent_field}  })
         #? mdb->master_rel->find_values(from_mid => { to_mid=>"$topic_mid", rel_type=>$rel_type, rel_field=>$id_field })
-        : _array($$data{$id_field});
+        : mdb->master_rel->find_values(to_mid => { from_mid=>"$topic_mid", rel_type=>$rel_type, rel_field=>$id_field  });
+        # : _array($$data{$id_field});
 
     my $rs = mdb->topic->find({ mid=>mdb->in(@rel_topics) })->fields({ _id=>0 });
     $rs->sort({rel_seq=>1});

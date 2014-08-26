@@ -134,7 +134,7 @@
         disabled: true,
         allowBlank: true,
         baseParams: { name_format: 'short' },
-        value: params.rec.var_ci_role || 'ci',
+        value: params.rec.var_ci_role || 'CI',
         field: 'name',
         fields: [ 'role', 'name' ],
         url: '/ci/roles'
