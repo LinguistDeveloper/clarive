@@ -898,7 +898,6 @@ sub next_status_for_user {
             $catname ? _warn(_loc( 'User does not have a workflow for category `%1`', $catname->{name} ))
                     : _fail(_loc('Category id `%1 `not found', $id_category));
         } else {
-            # ok, user has workflow
             my %uniq;
             my @all_to_status =
                 sort { $$a{seq} <=> $$b{seq} }
@@ -921,7 +920,7 @@ sub next_status_for_user {
                         seq                => ($$sto{seq} // 0)
                     };
                 } 
-                grep { $my_roles{$$_{id_role}} }
+                grep { $my_roles{$$_{id_role}} && $$_{id_status_from} eq $p{id_status_from}}
                 grep { defined } _array( $cat->{workflow} );
             
             my @no_deployable_status = grep {$_->{status_type} ne 'D'} @all_to_status;
