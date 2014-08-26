@@ -1467,7 +1467,7 @@ sub save_data {
 
     try {
         if ( length $topic_mid ) {
-            _debug "Removing *$topic_mid* from cache";
+            #_debug "Removing *$topic_mid* from cache";
             cache->remove( qr/:$topic_mid:/ );
         }
 
