@@ -125,27 +125,33 @@ sub event_new {
     my $event_create = sub {
         my ($ed,@event_log) = @_;
         my $ev_id = mdb->seq('event');
+        # rgo: remember, top mongo doc size is 16MB. #11905 
+        # TODO large data should be in the Grid instead
+        my $event_data = substr( _dump($ed), 0, 4_096_000 );  # 4MB
         mdb->event->insert({
                 id            => $ev_id,
                 ts            => mdb->ts,
                 t             => mdb->ts_hires,
                 event_key     => $key,
-                event_data    => _dump($ed),
+                event_data    => $event_data,
                 event_status  => 'new',
                 module        => $module,
                 mid           => $ed->{mid},
                 username      => $ed->{username}
         });
         for my $log (@event_log) {
+            my $stash_data = substr( _dump($log->{ret}), 0, 1_024_000 ); # 1MB
+            my $log_output = substr( _dump($log->{output}), 0, 4_096_000 ); # 4MB
+            my $dsl = substr( $log->{dsl}, 0, 1_024_000 );
             my $log = {
                 id         => mdb->seq('event_log'),
                 id_event   => $ev_id,
                 id_rule    => $log->{id},
                 ts         => mdb->ts,
                 t          => mdb->ts_hires,
-                stash_data => _dump( $log->{ret} ),
+                stash_data => $stash_data, 
                 dsl        => $log->{dsl},
-                log_output => $log->{output},
+                log_output => $log_output,
             };
             mdb->event_log->insert($log);
         }
