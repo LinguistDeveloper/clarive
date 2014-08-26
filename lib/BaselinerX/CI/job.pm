@@ -90,6 +90,7 @@ after new_ci => sub {
         $self->_check_and_init;
     } catch {
         $self->delete;  
+        _fail shift;
     };
 };
 
@@ -1056,13 +1057,13 @@ sub run {
         );
         #$self->logger->debug( 'Stash after rules', $stash );
         $self->job_stash( $stash ); # saves stash to table
-        $self->finish( $self->final_status || 'FINISHED' );
+        $self->status( $self->final_status || 'FINISHED' );
     } catch {
         my $err = shift;   
         #$self->logger->debug( 'Stash after rules', $stash );
         $stash->{failing} = 1;
         $job_error = 1;
-        $self->finish( 'ERROR' );
+        $self->status( 'ERROR' );
         $self->logger->error( _loc( 'Job failure: %1', $err ) );
         $self->last_error( substr($err,0,1024) );
         $self->job_stash( $stash );
