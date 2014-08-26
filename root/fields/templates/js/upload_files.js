@@ -6,7 +6,7 @@ params:
     html: '/fields/templates/html/upload_files.html'
     js: '/fields/templates/js/upload_files.js'
     relation: 'system'
-    get_method: 'get_fi'    
+    get_method: 'get_files'    
     field_order: 3
     section: 'details'
     allowBlank: true

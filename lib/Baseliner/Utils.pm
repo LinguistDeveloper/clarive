@@ -1302,6 +1302,8 @@ sub parse_vars_raw {
         return \@tmp;
     } elsif( $ref eq 'SCALAR' ) {
         return parse_vars_raw( data=>$$data, vars=>$vars, throw=>$throw );
+    } elsif( $ref eq 'MongoDB::OID') {
+        return parse_vars_raw( data=>$$data{value}, vars=>$vars, throw=>$throw );
     } elsif($ref) {
         return parse_vars_raw( data=>_damn( $data ), vars=>$vars, throw=>$throw );
     } else {

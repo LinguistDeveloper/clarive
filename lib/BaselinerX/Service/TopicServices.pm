@@ -30,6 +30,13 @@ register 'service.topic.update' => {
     form => '/forms/topic_update.js' 
 };
 
+register 'service.topic.upload' => {
+    name => 'Asset topic file',
+    handler => \&upload,
+    job_service  => 0,
+    icon => '/static/images/icons/upload.gif',
+    form => '/forms/asset_file.js' 
+};
 
 sub web_request {
     my ( $self, $c, $config ) = @_;
@@ -196,6 +203,31 @@ sub update {
     my $data = $config->{data};
     my $user = $config->{username} // 'clarive';
 
+}
+
+sub upload {
+    my ( $self, $c, $config ) = @_;
+    my $stash = $c->stash;
+    my $filepath = $config->{path};
+    my $username = $config->{username} // 'clarive';
+    if ($username eq ''){$username = 'clarive'}
+    
+    my $p;
+    $p->{filter} = $config->{field};
+    $p->{topic_mid} = $config->{mid};
+    $filepath =~ m{^(.*)\/ (.*)$}x;
+    $p->{qqfile} = $2; #El nombre del fichero sin la ruta
+    my $f =  _file( ''. $filepath );
+
+    my %response = Baseliner->model("Topic")->upload(
+                f           => $f, 
+                p           => $p, 
+                username    => $username,
+        );
+    if ($response{status} ne '200') {
+        _fail _loc("Error asseting the file %1 to the topic %2. Error: %3", 
+            $p->{qqfile}, $p->{topic_mid}, $response{msg});
+    }   
 }
 
 1;

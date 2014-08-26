@@ -15,6 +15,7 @@ with 'Baseliner::Role::CI::Item';
 with 'Baseliner::Role::CI::CCMDB';
 
 has id_data => qw(is rw isa Maybe[MongoDB::OID]);
+has fullpath => qw(is rw isa Str); #fixes bug
 
 sub ci_form { '/ci/item.js' }
 

@@ -420,10 +420,12 @@ sub stmts_save : Local {
         } catch {
             _fail _loc "Corrupt or incorrect json rule tree: %1", shift(); 
         };
-        _debug $stmts;
+        #_debug $stmts;
         # check if DSL is buildable
         my $detected_errors = try { 
-            $c->model('Rules')->dsl_build_and_test( $stmts ); 
+            my $dsl = $c->model('Rules')->dsl_build_and_test( $stmts );
+            _debug "Caching rule $id_rule for further use";
+            cache->set( 'rule_dsl:'.$id_rule, $dsl );
             return '';
         } catch {
             my $err = shift;

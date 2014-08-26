@@ -9,6 +9,7 @@ with 'Baseliner::Role::CI::Internal';
 has selected    => qw(is rw isa ArrayRef), default => sub{ [] };
 has rows        => qw(is rw isa Num default 100);
 has permissions => qw(is rw isa Any default private);
+has usersandroles => qw(is rw isa Any default private);
 has sql         => qw(is rw isa Any);
 has mode        => qw(is rw isa Maybe[Str] default lock);
 has owner       => qw(is rw isa Maybe[Str]);
@@ -149,6 +150,7 @@ sub my_searches {
         my $report_rows    = $folder->rows;
         my $rows    = $folder->rows;
         my $permissions = $folder->permissions;
+        my $usersandroles = $folder->usersandroles;
         push @mine,
             {
                 mid     => $folder->mid,
@@ -184,6 +186,7 @@ sub my_searches {
                 },
                 rows    => $rows,
                 permissions => $permissions,
+                usersandroles => $usersandroles,
                 leaf    => \1,
             };
     }
@@ -192,75 +195,39 @@ sub my_searches {
 
 sub public_searches {
     my ($self,$p) = @_;
-    my @searches = $self->search_cis( permissions=>'public' );
+
+    my @usersandroles = map { 'role/'.$_->{id}} model->Permissions->user_roles( $p->{username} );
+    push @usersandroles, 'user/'.ci->user->find_one({name => $p->{username}})->{mid};
+    push @usersandroles, undef;
+
+    my @searches = $self->search_cis( owner=> { '$ne' => $p->{username}}, permissions=>'public', usersandroles => mdb->in(@usersandroles) );
 	
-	my %user_categories;
-	my $user_categories_fields_meta;
-	
-	if (! Baseliner->model('Permissions')->is_root( $p->{username} )) {
-		%user_categories = map {
-			$_->{id} => $_->{name};
-		} Baseliner->model('Topic')->get_categories_permissions( username => $p->{username}, type => 'view' );
-		$user_categories_fields_meta = Baseliner->model('Users')->get_categories_fields_meta_by_user( username => $p->{username}, categories=> \%user_categories );
-	}
 	
 	my @public;
     for my $folder ( @searches ){
-		my $swAllowed = 0;
-        if (! Baseliner->model('Permissions')->is_root( $p->{username} )) {
-            my %fields = map { $_->{type}=> $_->{children} } _array( $folder->selected );
-            # check categories permissions
-            my @categories;
-            my @names_categories;
-            map {
-                push @categories, $_->{data}->{id_category};
-                push @names_categories, Util->_name_to_id($_->{data}->{name_category});
-            } _array($fields{categories});
-                        
-            my @user_cats = grep { exists $user_categories{ $_ } } @categories;
-            next if @categories > @user_cats;  # user cannot see category, skip this search
-            
-            my @selected =  map { $_->{id_field} } _array($fields{select});
-                
-            for my $field (@selected){
-                $swAllowed = 0;
-                for my $category (@names_categories){
-                    if (exists $user_categories_fields_meta->{$category}{$field}){
-                        $swAllowed = 1; 
-                        last;
-                    }
-                }
-                last if ($swAllowed == 0);
-            }
-        }else{
-            $swAllowed = 1; 
-        }
-
-		if($swAllowed == 1){
-			push @public,{
-				mid     => $folder->mid,
-				text    => sprintf( '%s (%s)', $folder->name, $folder->owner ), 
-				icon    => '/static/images/icons/topic.png',
-				menu    => [ ],
-				data    => {
-					click   => {
-						icon    => '/static/images/icons/topic.png',
-						url     => '/comp/lifecycle/report_run.js',
-						type    => 'eval',
-						title   => $folder->name,
-					},
-				# 	#store_fields   => $folder->fields,
-				# 	#columns        => $folder->fields,
-				# 	fields         => $folder->selected_fields({ meta => $p->{meta}, username => $p->{username} }),
-					id_report      => $folder->mid,
-					report_rows    => $folder->rows,
-					report_name    => $folder->name,
-					column_mode    => 'full', #$folder->mode,
-					hide_tree      => \1,
+		push @public,{
+			mid     => $folder->mid,
+			text    => sprintf( '%s (%s)', $folder->name, $folder->owner ), 
+			icon    => '/static/images/icons/topic.png',
+			menu    => [ ],
+			data    => {
+				click   => {
+					icon    => '/static/images/icons/topic.png',
+					url     => '/comp/lifecycle/report_run.js',
+					type    => 'eval',
+					title   => $folder->name,
 				},
-				leaf    => \1,
-			};
-		}
+			# 	#store_fields   => $folder->fields,
+			# 	#columns        => $folder->fields,
+			# 	fields         => $folder->selected_fields({ meta => $p->{meta}, username => $p->{username} }),
+				id_report      => $folder->mid,
+				report_rows    => $folder->rows,
+				report_name    => $folder->name,
+				column_mode    => 'full', #$folder->mode,
+				hide_tree      => \1,
+			},
+			leaf    => \1,
+		};
     }    
     return \@public;
 }
@@ -290,6 +257,7 @@ sub report_update {
                     $self->user( $user );
                     $self->owner( $username );
                     $self->permissions( $data->{permissions} );
+                    $self->usersandroles( $data->{usersandroles} );
                     $self->rows( $data->{rows} );
                     $self->sql( $data->{sql} );
                     $self->save;
@@ -304,7 +272,7 @@ sub report_update {
         }
         when ('update') {
             try{
-				my @cis = $self->search_cis( name=>$data->{name}, owner=>$username );
+                my @cis = $self->search_cis( name=>$data->{name}, owner=>$username );
                 if( @cis && $cis[0]->mid != $self->mid ) {
                     _fail _loc('Search name already exists, introduce another search name');
                 }
@@ -315,6 +283,7 @@ sub report_update {
                     $self->sql( $data->{sql} );
                     $self->owner( $username );
                     $self->permissions( $data->{permissions} );
+                    $self->usersandroles( $data->{usersandroles} );
                     $self->selected( $data->{selected} ) if ref $data->{selected}; # if the selector tab has not been show, this is submitted undef
                     $self->save;
                     $ret = { msg=>_loc('Search modified'), success=>\1, mid=>$self->mid };
