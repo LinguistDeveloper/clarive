@@ -444,7 +444,7 @@
         autoExpandColumn: id_auto,
         columns:[
             check_sm,
-            { width: 16, hidden: true, dataIndex: 'icon', renderer: Baseliner.render_icon },
+            //{ width: 16, hidden: true, dataIndex: 'icon', renderer: Baseliner.render_icon },
             { id: id_auto, header: _('Item'), dataIndex: 'item', width: 300, renderer: render_item, sortable: true },
             { id:'mid', header: _('ID'), width: 65, dataIndex: 'mid' , sortable: true},
             { header: _('Collection'), width: 50, dataIndex: 'collection' , sortable: true},
