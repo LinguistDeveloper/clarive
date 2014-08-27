@@ -41,6 +41,10 @@
         if (node.attributes.data && node.attributes.data.id_category) baseParams.id_category = node.attributes.data.id_category;
         if (node.attributes.data && node.attributes.data.name_category) baseParams.name_category = node.attributes.data.name_category;
         treeLoader.baseParams = baseParams ;
+        Baseliner.showLoadingMask(selector.getEl(), _("Loading ...") );
+    });      
+    tree_all.getLoader().on("load", function(treeLoader, node) {
+        Baseliner.hideLoadingMask(selector.getEl());
     });      
 
     var tree_selected_loader = new Baseliner.TreeLoader({
