@@ -1310,12 +1310,16 @@ sub parse_vars_raw {
         # string
         return $data unless $data && $data =~ m/\$\{.+\}/;
         my $str = "$data";
-        while ( $str =~ m/\$\{.+\}/ ) {
-            my @matches = ($str =~ m/\$\{(.+?)\}/g);
+        my @discarded;
+        my @matches;
+        @matches = ($str =~ m/\$\{(.+?)\}/g);
+        while ( @matches && !(@matches ~~ @discarded) ) {
+            
             for my $match ( @matches ) {
                 if ( !$vars->{$match} ) {
                     _log _loc("Variable %1 not found", $match);
-                    $str =~ s/\$\{$match\}//g;
+                    push @discarded, $match;
+                    # $str =~ s/\$\{$match\}//g;
                 }
             }
             for my $k ( keys %$vars ) {
@@ -1332,6 +1336,7 @@ sub parse_vars_raw {
                     #$str =~ s/\$\{join\((\S+),$k\)\}/join($1,_array($v))/eg;   # TODO $v has a baddly comma joined list, should be an Arrayref
                 }
             }
+            @matches = ($str =~ m/\$\{(.+?)\}/g);
         }        
         # cleanup or throw unresolved vars
         if( $throw ) { 
