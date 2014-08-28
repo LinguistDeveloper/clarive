@@ -1310,27 +1310,29 @@ sub parse_vars_raw {
         # string
         return $data unless $data && $data =~ m/\$\{.+\}/;
         my $str = "$data";
-        for my $k ( keys %$vars ) {
-            my $v = $vars->{$k};
-            if( ref $v && $str =~ /^\$\{$k\}$/ ) {
-                $str = $v;
-            } elsif( ( ref $v || looks_like_number($v) ) && $str =~ /^\$\{$k\.([^\}]+)}$/ ) {
-                my $meth=$1;
-                $meth = join '', map { "{$_}" } split /\.+/, $meth;
-                $v = ci->new($v) if !ref $v;
-                $str = eval '$v->' . $meth;
-            } else {
-                $str =~ s/\$\{$k\}/$v/g;
-                # look for cis like this: ${ci(field.attrib)}
-                $str =~ s/\$\{ci\($k\)\.(.+)\}/ parse_vars("\${$1}", ci->new($v)) /eg;
-                $str =~ s/\$\{uc\($k\)\}/uc($v)/eg;
-                $str =~ s/\$\{lc\($k\)\}/lc($v)/eg;
-                $str =~ s/\$\{loc\($k\)\}/_loc($v)/eg;
-                $str =~ s/\$\{to_id\($k\)\}/_name_to_id($v)/eg;
-                #$str =~ s/\$\{join\((\S+),$k\)\}/join($1,_array($v))/eg;   # TODO $v has a baddly comma joined list, should be an Arrayref
+        while ( $str =~ m/\$\{.+\}/ ) {
+            my @matches = ($str =~ m/\$\{(.+?)\}/g);
+            for my $match ( @matches ) {
+                if ( !$vars->{$match} ) {
+                    _log _loc("Variable %1 not found", $match);
+                    $str =~ s/\$\{$match\}//g;
+                }
             }
-        }
-        
+            for my $k ( keys %$vars ) {
+                my $v = $vars->{$k};
+                if( ref $v && $str =~ /^\$\{$k\}$/ ) {
+                    $str = $v;
+                } else {
+                    $str =~ s/\$\{$k\}/$v/g;
+                    # look for cis like this: ${ci(field.attrib)}
+                    $str =~ s/\$\{ci\($k\)\.(.+)\}/ parse_vars("\${$1}", ci->new($v)) /eg;
+                    $str =~ s/\$\{uc\($k\)\}/uc($v)/eg;
+                    $str =~ s/\$\{lc\($k\)\}/lc($v)/eg;
+                    $str =~ s/\$\{to_id\($k\)\}/_name_to_id($v)/eg;
+                    #$str =~ s/\$\{join\((\S+),$k\)\}/join($1,_array($v))/eg;   # TODO $v has a baddly comma joined list, should be an Arrayref
+                }
+            }
+        }        
         # cleanup or throw unresolved vars
         if( $throw ) { 
             if( my @unresolved = $str =~ m/\$\{(.*?)\}/gs ) {

@@ -199,7 +199,7 @@ sub tree_topics_project : Local {
             icon => '/static/images/icons/release.png',
             url  => '/lifecycle/topic_contents',
             topic_name => {
-                mid            => $_->{mid}. ' ('.$_->{category_status}->{name}.')',
+                mid            => $_->{mid},
                 category_color => $_->{category}->{color},
                 category_name  => $_->{category}->{name},
                 category_status => "<b>(" . $_->{category_status}->{name} . ")</b>",
@@ -266,16 +266,10 @@ sub topic_contents : Local {
             : $is_changeset ? '/static/images/icons/changeset_lc.png' :'/static/images/icons/topic.png' ;
 
         my @menu_related = $self->menu_related();
-
-        # my $mid_project = $_->{_project_security}->{project}[0];
-        # my $project_name = $mid_project ? mdb->project->find_one({ mid=>$mid_project })->{name} : '';
-
-        # my $title_project = "(" . $project_name . ")";
+        
         my $leaf = $related{$_->{mid}} ? \0 : \1;
-
         push @tree, {
             text       => $_->{title},
-            #text       => $_->{title},
             topic_name => {
                 mid             => $_->{mid},
                 category_color  => $_->{category}{color},
@@ -286,7 +280,7 @@ sub topic_contents : Local {
             },
             url        => '/lifecycle/topic_contents',
             data       => {
-               topic_mid   => $_->{to_mid},
+               topic_mid   => $_->{topic_mid},
                click       => $self->click_for_topic(  $_->{category}{name}, $_->{mid} ),
             },
             icon       => $icon, 
