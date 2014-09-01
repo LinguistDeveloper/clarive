@@ -18,7 +18,7 @@ register 'service.topic.create' => {
     name => 'Create a new topic',
     handler => \&create,
     job_service  => 1,
-    icon => '/static/images/icons/folder_new.png',
+    icon => '/static/images/icons/folder_new.gif',
     form => '/forms/topic_create.js' 
 };
 

@@ -5,7 +5,7 @@ use Try::Tiny;
 
 with 'Baseliner::Role::Service';
 
-our $ICON_DEFAULT = '/static/images/icons/template_write.png';
+our $ICON_DEFAULT = '/static/images/icons/write.gif';
 
 register 'service.templating.transform' => {
     name => 'Transform Template',
