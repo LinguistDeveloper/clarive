@@ -10,6 +10,11 @@ register 'menu.admin.core.registry' => { label => 'List Registry Data', url=>'/c
 register 'menu.reports' => { label => 'Reports', actions=>['action.reports.%'] };
 register 'action.reports.view' => { name=>'View Reports' };
 register 'action.reports.dynamics' => { name=>'View dynamics fields' };
+register 'config.reports' => {
+    metadata => [
+           { id=>'fields_dynamics', label=>'Show dynamics fields', default => 'NO' },
+        ]
+};
 
 BEGIN { extends 'Catalyst::Controller' }
 

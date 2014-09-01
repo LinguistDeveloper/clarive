@@ -371,33 +371,36 @@ sub all_fields {
 			}
 		);
 		
-		my $has_action = Baseliner->model('Permissions')->user_has_action( username=> $username, action => 'action.reports.dynamics' );
-		if($has_action){
-			push @tree, {
-				text => _loc('Dynamic'),
-				leaf => \0,
-				icon     => '/static/images/icons/all.png',
-				#url  => '/ci/report/dynamic_fields',
-				draggable => \0,
-				children => [
-					map {
-						my $key = $_;
-						my ($prefix,$data_key) = split( /\./, $key, 2);
-						{
-							text     => $key,
-							icon     => '/static/images/icons/field-add.png',
-							id_field => $prefix,
-							data_key => $data_key,
-							type     => 'select_field',
-							leaf     => \1
-						}
-					} 
-					grep !/^_/, 
-					grep !/\.[0-9]+$/, 
-					mdb->topic->all_keys
-				],
-			};		
-		}
+        my $reports_config = Baseliner->model( 'ConfigStore' )->get( 'config.reports' );
+        if ($reports_config->{fields_dynamics} ne 'NO'){
+            my $has_action = Baseliner->model('Permissions')->user_has_action( username=> $username, action => 'action.reports.dynamics' );
+            if($has_action){
+                push @tree, {
+                    text => _loc('Dynamic'),
+                    leaf => \0,
+                    icon     => '/static/images/icons/all.png',
+                    #url  => '/ci/report/dynamic_fields',
+                    draggable => \0,
+                    children => [
+                        map {
+                            my $key = $_;
+                            my ($prefix,$data_key) = split( /\./, $key, 2);
+                            {
+                                text     => $key,
+                                icon     => '/static/images/icons/field-add.png',
+                                id_field => $prefix,
+                                data_key => $data_key,
+                                type     => 'select_field',
+                                leaf     => \1
+                            }
+                        } 
+                        grep !/^_/, 
+                        grep !/\.[0-9]+$/, 
+                        mdb->topic->all_keys
+                    ],
+                };      
+            }
+        }
 		
 		####push @tree, {
 		####	text => _loc('Commons'),

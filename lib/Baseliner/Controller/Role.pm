@@ -224,6 +224,16 @@ sub delete : Local {
     my $p = $c->req->params;
     eval {
         mdb->role->remove({ id=>"$p->{id_role}" });
+
+        #borramos roles del project_security de los usuarios que tengan ese rol
+        my @users = ci->user->find({"project_security.$p->{id_role}"=>{'$exists'=>1}})->fields({project_security=>1,mid=>1, _id=>0})->all;
+        foreach my $user (@users){
+            #quitar de project security del usuario ese rol que es $p->{id_role}
+            my $project_security = $user->{project_security};
+            delete $project_security->{$p->{id_role}};
+            my $ci = ci->new($user->{mid});
+            $ci->update(project_security=>$project_security);
+        }        
     };
     if( $@ ) {
         warn $@;
