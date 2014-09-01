@@ -487,7 +487,7 @@ sub nature_items {
     for my $project ( @projects ) {
         #my @items = @{ $stash->{items} || [] };
         my @items = @{ $stash->{project_items}{ $project->mid }{items} || [] };
-        $log->debug( _loc('Project items before for %1', $project->name), \@items );
+        # $log->debug( _loc('Project items before for %1', $project->name), \@items );
         my %nature_names;
         my @msg;
         for my $nature ( map { ci->new($_->{mid}) } @nat_rows ) {
@@ -517,10 +517,10 @@ sub nature_items {
             $stash->{project_items}{ $project->mid }{natures}{ $nature->mid } = \@chosen;
         }
         #$log->debug( _loc('Job natures after push'), $job->natures );
-        $log->debug( _loc('Project items for %1', $project->name), $stash->{project_items}{ $project->mid }{items} );
-        $log->debug( _loc('Project natures for %1', $project->name), $stash->{project_items}{ $project->mid }{natures} );
-        $log->debug( _loc('Nature check log'), \@msg );
-        $log->debug( _loc('Natures'), $stash->{natures} );
+        # $log->debug( _loc('Project items for %1', $project->name), $stash->{project_items}{ $project->mid }{items} );
+        # $log->debug( _loc('Project natures for %1', $project->name), $stash->{project_items}{ $project->mid }{natures} );
+        # $log->debug( _loc('Nature check log'), \@msg );
+        # $log->debug( _loc('Natures'), $stash->{natures} );
         my @nats = keys %nature_names;
         if( my $cnt = scalar @nats ) {
             $log->info( _loc('%1 nature(s) detected in job items: %2', $cnt, join ', ',@nats ) );

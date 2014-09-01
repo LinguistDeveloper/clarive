@@ -4992,6 +4992,9 @@ msgstr "Advertencia del navegador"
 msgid "This browser is not supported by %1"
 msgstr "Este navegador no es soportado por %1"
 
+msgid "%1 not supported in <b> mode compatibility </b> (Internet Explorer), Please disable it."
+msgstr "%1 no soporta el <b> modo compatibilidad </b> (Internet Explorer), Por favor, desactivelo."
+
 msgid "Baseliner"
 msgstr "Baseliner"
 
@@ -7644,4 +7647,3 @@ msgstr "Espere mientras se busca la información de columnas y formatos del info
 
 msgid "Fields retrieved.  Now wait while generating report %1"
 msgstr "Información recuperada. Espere mientras se genera el informe %1"
-### EOF - do not write anything bellow this

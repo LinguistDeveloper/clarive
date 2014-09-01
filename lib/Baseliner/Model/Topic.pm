@@ -1467,7 +1467,7 @@ sub save_data {
 
     try {
         if ( length $topic_mid ) {
-            _debug "Removing *$topic_mid* from cache";
+            #_debug "Removing *$topic_mid* from cache";
             cache->remove( qr/:$topic_mid:/ );
         }
 
@@ -1556,7 +1556,7 @@ sub save_data {
             };
             
             my %update_row = %row;
-            delete %update_row->{id_category_status};
+            delete $update_row{id_category_status};
 
             $topic->update( name=>$row{title}, moniker=>$moniker, modified_by=>$data->{username}, %update_row );
             
@@ -2046,6 +2046,10 @@ sub set_cal {
 sub set_topics {
     my ($self, $rs_topic, $topics, $user, $id_field, $meta, $cancelEvent ) = @_;
     my @all_topics = ();
+
+    my $rs_cache = ''.$rs_topic->mid;
+    Baseliner->cache_remove( qr/:$rs_cache:/ ) if length $rs_cache;
+
     
     my $rel_field = $id_field;
     my $field_meta = [ grep { $_->{id_field} eq $id_field } _array($meta) ]->[0];

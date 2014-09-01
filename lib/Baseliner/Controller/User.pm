@@ -329,7 +329,7 @@ sub update : Local {
                         $user->update(password=> ci->user->encrypt_password( $p->{username}, $p->{pass}) );
                     }
                     $user->update(alias => $p->{alias} ) if $p->{alias};
-                    $user->update(email => $p->{email} ) if $p->{email};
+                    $user->update(email => $p->{email} );
                     $user->update(phone => $p->{phone} ) if $p->{phone};                 
                     $user->update(active => $p->{active} ) if $p->{active};               
                     $user->save;                    

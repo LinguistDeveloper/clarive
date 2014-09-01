@@ -952,6 +952,10 @@ Baseliner.edit_search = function(n){
 
 Baseliner.delete_search = function(n){
     var node = n;
+    console.log(n);
+    if( ! node.attributes.mid){
+        node.attributes.mid = node.attributes.data.id_report;
+    }
     Baseliner.confirm( _('Are you sure you want to delete the search %1?', n.text), function(){
         Baseliner.ci_call( node.attributes.mid, 'report_update', { action:'delete' }, 
             function(response) {

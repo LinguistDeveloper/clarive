@@ -8,7 +8,7 @@
         cls: 'x-btn-icon-text',
         menu: { items:[] }
     });
-        
+
     var load_form = function(params){
         if( params.rec == undefined ) params.rec = {};            // master row record
         //if( params.rec.data == undefined ) params.rec.data = {};  //  yaml ci data
@@ -44,6 +44,33 @@
                });
             }
             else {
+                var failedFields = [];
+                form2.items.each(function(f){
+                   if(!f.validate()){
+                       failedFields.push(f.fieldLabel);
+                   }
+                });
+
+                var msg = '';
+                var elements = form.getValues();
+                for (var key1 in elements) {
+                   var obj = elements[key1];
+                   if('[object Object]' == Object.prototype.toString.call(obj)){
+                        for (var key2 in obj) {
+                            var subObj = obj[key2];
+                            if(subObj != null && '[object Object]' == Object.prototype.toString.call(subObj)){
+                                for (var key3 in subObj) {
+                                    if(failedFields.indexOf(key3)>-1){
+                                        if(key2==='*'){key2='common';};
+                                        msg = msg+'Field '+key3+' in tab '+key2+' of section '+key1+' is not valid.<br/><br/>';
+                                    }
+                                }
+                            }
+                        }
+                   }
+                }
+                if(msg.length>0){Baseliner.warning( _('Warning'), msg );};
+                //if(msg.length>0){Baseliner.alert(_('Warning'),msg);};
                 if( Ext.getCmp(btn_form_save.id) ) btn_form_save.enable();
             }
         };
