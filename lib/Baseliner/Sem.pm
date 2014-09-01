@@ -107,6 +107,7 @@ sub take {
     my ($self, %p) =@_;
     my ($package, $filename, $line) = caller;
     $self->queue_released(0);
+    my $config = config_get('config.sem.server');
     $self->who("$package ($line)") unless $self->who;
     _debug('No sem'),return $self if $ENV{CLARIVE_NO_SEMS};
     my $id_queue = $self->enqueue;
@@ -121,7 +122,7 @@ sub take {
         my $res = mdb->sem->update({ key => $self->key, slots => { '$gt' => 0 }},{ '$inc' => { slots => -1} });
         $updated = $res->{updatedExisting};
         if ( !$updated ) {
-            select(undef, undef, undef, .5);
+            select(undef, undef, undef, $config->{wait_interval});
         }
         $que = mdb->sem_queue->find_one({ _id=>$id_queue });
         if ($que->{status} ne 'waiting') {
@@ -152,7 +153,6 @@ sub release {
     $que->{ts_release} = mdb->ts;
     if( $que->{_id} ) {
         mdb->sem_queue->save( $que );
-        mdb->pipe->insert({ q=>'sem', w=>'sem-release', id_queue=>$self->id_queue });
     }
     $self->queue_released(1);
 }
