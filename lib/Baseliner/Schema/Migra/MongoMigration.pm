@@ -635,8 +635,8 @@ sub role {
     for my $role (@roles){
         my @actions_in_oracle = _dbis->query('select * from bali_roleaction')->hashes;
         my @actions_in_mongo;
-        if ($role->{id} > $highest_id){
-            $highest_id = $role->{id};
+        if ($role->{id}+0 > $highest_id){
+            $highest_id = $role->{id}+0;
         }
         foreach my $action (@actions_in_oracle){
             if($role->{id} eq $action->{id_role}){
