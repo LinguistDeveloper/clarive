@@ -341,6 +341,8 @@ sub topics_for_user {
         $order_by = { 'modified_on' => -1 };
     } elsif ($sort eq 'projects'){
         $order_by = $self->build_sort('_sort.projects',$dir);
+    }elsif ($sort eq 'title'){
+        $order_by = $self->build_sort('_sort.title',$dir);
     }else {
         $order_by = $self->build_sort($sort,$dir);
     }
@@ -1860,6 +1862,8 @@ sub update_rels {
     
     my %project_names = map { $$_{mid} => $$_{name} } ci->project->find->fields({ mid=>1, name=>1 })->all;
 
+    my %topic_titles = map{$$_{mid} => $$_{title}} mdb->topic->find({mid=> mdb->in(@mids)})->fields({mid=>1,title=>1,_id=>0})->all;
+
     # my %rels; map { push @{ $rels{$_->{from_mid}} },$_ } mdb->master_rel->find({ from_mid=>mdb->in(@mids) })->all;
     for my $mid_or_doc ( _unique( @mids_or_docs  ) ) {
         my $is_doc = ref $mid_or_doc eq 'HASH';
@@ -1892,6 +1896,13 @@ sub update_rels {
             push @pnames, $project_names{$$rel{to_mid}} if $rel->{rel_type} eq 'topic_project' and $project_names{$$rel{to_mid}} ne '';
         }
         $d{_sort}{projects} = join '|', sort map { lc( $_ ) } @pnames;  
+        
+        #adding title to sorting
+        my $title = lc $topic_titles{$mid};
+        $title =~ s/^\s+//;
+        $d{_sort}{title} = $title;
+
+
         # cleanup data empty keys (rel_fields empty)
         delete $d{''};
         delete $d{undef};
