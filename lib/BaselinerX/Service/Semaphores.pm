@@ -15,6 +15,7 @@ register 'config.sem.server' => {
         { id=>'purge_interval',  default=>'1D' },
         { id=>'iterations', default=>1000},
         { id=>'check_for_roadkill_iterations', default=>500},
+        { id=>'wait_interval', default=>'.5'}
     ],
 };
 
@@ -40,9 +41,7 @@ sub run_once {
     # cleanup killed rows, etc
     $self->cleanup( purge_interval=>$config->{purge_interval} ) if $config->{auto_purge} && $check_for_roadkill;
     # check for dead processes
-    $self->check_for_roadkill if $check_for_roadkill;
-    # process queue
-    $self->process_queue( %$config );
+    # $self->check_for_roadkill if $check_for_roadkill;
 }
 
 sub run_daemon {
@@ -51,12 +50,12 @@ sub run_daemon {
     my $iterations = $config->{iterations} || 1000;
     
     _log "Starting sem daemon with frequency '$freq'";
-    _log "Making sure the semaphore queue is Capped...";
+    # _log "Making sure the semaphore queue is Capped...";
     
     # mdb->pipe->drop;
-    mdb->create_capped('pipe');
-    mdb->pipe->find->all;
-    mdb->pipe->insert({ q=>'sem', w=>'sem-base', base=>1 });  # otherwise follow goes bezerk
+    # mdb->create_capped('pipe');
+    # mdb->pipe->find->all;
+    # mdb->pipe->insert({ q=>'sem', w=>'sem-base', base=>1 });  # otherwise follow goes bezerk
 
     _log "Sem daemon started";
     my $iteration=1;
@@ -66,59 +65,20 @@ sub run_daemon {
     my $cr_iters = $config->{check_for_roadkill_iterations} // 1000;
     
     do {
-        mdb->pipe->follow( where=>{ q=>'sem' }, iter=>$iterations, code=>sub{
-            try {
-                $self->run_once( $c, $config, !($iteration % $cr_iters) );
-            } catch {
-                my $err = shift;
-                _error "SEM DAEMON ERROR: $err";
-            };
-            return 1;
-        });
+        try {
+            $self->run_once( $c, $config, !($iteration % $cr_iters) );
+        } catch {
+            my $err = shift;
+            _error "SEM DAEMON ERROR: $err";
+        };
         $iteration++; 
-        $pending = mdb->sem_queue->find({ status => 'waiting', active=>1 })->count;
+        # $pending = mdb->sem_queue->find({ status => 'waiting', active=>1 })->count;
+        sleep 100;
     } while ( ( $iteration <=  $iterations ) || $pending > 0 );
 
     _info "semaphore iteration finished " . $iteration . ' > ' . $iterations . ' or ' . $pending . " > 0\n";
     
     # cleanup 
-    $self->cleanup( purge_interval=>$config->{purge_interval} ) if $config->{auto_purge};
-}
-
-sub process_queue {
-    my ( $self, %args ) = @_;
-    my $key_ant = '';
-    my $sem;
-    my $slots;
-    my $busy;
-    my $free_slots;
-    
-    my @sems = mdb->sem->find->all;
-    for my $sem ( @sems ) {
-        my $slots = $sem->{slots} // 1;
-        next if $slots == 0;
-        my $key = $sem->{key};
-        my $busy = mdb->sem_queue->find({ key=>$key, status=>'busy' })->all;
-        my $free_slots = $slots==-1 ? 1 : $slots - $busy;  # -1 = infinity
-        next if $free_slots < 1;
-
-        my @reqs = 
-            mdb->sem_queue
-            ->find({ key=>$key, status => 'waiting', active=>1 })
-            ->sort( Tie::IxHash->new( seq=>1, ts=>1 ) )->all; 
-            
-        $free_slots = @reqs if $slots == -1;  # infinity
-        
-        for( 1..$free_slots ) {
-            my $req = shift @reqs;
-            next if !ref $req;
-            my $id_queue = $req->{_id};
-            mdb->sem_queue->update({ _id=>$id_queue }, { '$set'=>{ status=>'granted', ts_grant=>_now() } }, { safe=>1 });
-            mdb->pipe->insert({ q=>'sem', w=>'sem-grant', id_queue=>$id_queue }); 
-            _log _loc 'Granted semaphore %1 to %2', $key, $req->{who};
-        }
-        
-    }
 }
 
 sub check_for_roadkill {

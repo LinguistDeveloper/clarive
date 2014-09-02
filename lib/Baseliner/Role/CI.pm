@@ -194,7 +194,6 @@ sub save {
             $master_row->{sort_by} = {name => uc $self->name};
             $self->update_ci( $master_row, undef, \%opts );
         }
-        _warn($master_row);
     } else {
         ######## NEW CI
         $master_row = {
@@ -208,7 +207,6 @@ sub save {
                 versionid  => $self->versionid || 1,
                 sort_by    => {name => uc $self->name}
         };
-        _warn($master_row);
         # update mid into CI
         $mid = length($mid) ? $mid : mdb->seq('mid');
         $self->mid( $mid );
