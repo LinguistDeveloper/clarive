@@ -110,18 +110,18 @@
 		var names_baselines = {};
 		
 		cb_events.on('additem', function(combo, value, record) {
-			var panel = Ext.getCmp('pnl_projects');
-			if(panel) panel.destroy();
-			panel = Ext.getCmp('pnl_categories');
-			if(panel) panel.destroy();
-			panel = Ext.getCmp('pnl_category_status');
-			if(panel) panel.destroy();
-			panel = Ext.getCmp('pnl_priority');
-			if(panel) panel.destroy();
-			panel = Ext.getCmp('pnl_baseline');
-			if(panel) panel.destroy();
-			panel = Ext.getCmp('pnl_field');
-			if(panel) panel.destroy();
+			var panel = Ext.getCmp('pnl_projects'); 
+			if(panel) panel.destroy(); 
+			panel = Ext.getCmp('pnl_categories'); 
+			if(panel) panel.destroy(); 
+			panel = Ext.getCmp('pnl_category_status'); 
+			if(panel) panel.destroy(); 
+			panel = Ext.getCmp('pnl_priority'); 
+			if(panel) panel.destroy(); 
+			panel = Ext.getCmp('pnl_baseline'); 
+			if(panel) panel.destroy(); 
+			panel = Ext.getCmp('pnl_field'); 
+			if(panel) panel.destroy(); 
 			Baseliner.ajaxEval( '/notification/get_scope?key=' + value, {}, function(res) {
 				if(res.success){
 					var scopes = new Array();
