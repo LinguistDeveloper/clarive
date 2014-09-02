@@ -207,7 +207,6 @@ sub save {
                 versionid  => $self->versionid || 1,
                 sort_by    => {name => uc $self->name}
         };
-        _warn($master_row);
         # update mid into CI
         $mid = length($mid) ? $mid : mdb->seq('mid');
         $self->mid( $mid );
