@@ -308,7 +308,6 @@ sub build_sort {
 #
 sub topics_for_user {
     my ($self, $p) = @_;
-_log _dump $p;
     my ($start, $limit, $query, $query_id, $dir, $sort, $cnt) = ( @{$p}{qw/start limit query query_id dir sort/}, 0 );
     $start||= 0;
     $limit ||= 100;
@@ -338,11 +337,7 @@ _log _dump $p;
     my ($select,$order_by, $as, $group_by);
     if( !$sort ) {
         $order_by = { 'modified_on' => -1 };
-    } elsif ($sort eq 'projects'){
-        $order_by = $self->build_sort('_sort.projects',$dir);
-    }elsif ($sort eq 'title'){
-        $order_by = $self->build_sort('_sort.title',$dir);
-    }else {
+    } else {
         $order_by = $self->build_sort($sort,$dir);
     }
 
@@ -512,7 +507,6 @@ _log _dump $p;
     
 #_debug( $where );
     my $rs = mdb->topic->find( $where )->fields({ mid=>1, labels=>1 })->sort( $order_by );
-_log "EEEEEEEEEEEEEEEEEEEEEEEEEEEE-->". _dump $order_by;    
     $cnt = $rs->count;
     $start = 0 if length $start && $start>=$cnt; # reset paging if offset
     $rs->skip( $start ) if $start >= 0 ;
