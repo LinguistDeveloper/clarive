@@ -2359,14 +2359,14 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                submitValue: false,
                id: self.id + '-combo',
                name: self.id + '-combo-name',
-               valueField: 'name', 
-               hiddenField: 'name', 
+               valueField: 'name',
+               hiddenField: 'name',
                displayField: 'name',
                mode: !self.type_in ? 'remote' : 'local',
                emptyText: _('<select variable>'),
                typeAhead: false,
                minChars: 1, 
-               store: !self.type_in ? self.store_vars : null, 
+               store: !self.type_in ? self.store_vars : new Ext.data.SimpleStore({ fields:[] }), 
                editable: true, 
                forceSelection: !self.type_in, 
                triggerAction: 'all',
@@ -2555,7 +2555,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
         return self.data;
     }, 
     getValue : function(){
-        alert( 'ggg' );
+        alert( 'Not Implemented' );
     }
 });
 
