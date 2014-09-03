@@ -40,6 +40,11 @@ has db => ( is=>'ro', isa=>'MongoDB::Database', lazy=>1, default=>sub{
        $self->mongo->get_database($self->mongo_db_name); 
     }, handles=>[qw(run_command eval)],
 );
+has db_cache => ( is=>'ro', isa=>'MongoDB::Database', lazy=>1, default=>sub{
+       my $self = shift;
+       $self->mongo->get_database($self->mongo_db_name . '-cache'); 
+    },
+);
 
 sub oid {
     my($self,$oid)=@_;
@@ -64,7 +69,12 @@ sub seq {
 
 sub collection {
     my ($self,$coll_name) = @_;
-    my $coll = $self->db->get_collection( $coll_name );
+
+    my $coll = $coll_name eq 'cache' 
+        ? $self->db_cache->get_collection( $coll_name )
+        : $self->db->get_collection( $coll_name );
+    
+    #require Baseliner::MongoCollection;
     Baseliner::MongoCollection->new( _collection=>$coll, _db=>$self );
 }
 
