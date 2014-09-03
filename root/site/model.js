@@ -2336,6 +2336,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
     forceLayout: true,
     activeItem: 0,
     show_tbar: true,
+    type_in: true,
     bodyStyle: {
         'background-color': 'white'
     },
@@ -2361,12 +2362,14 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                valueField: 'name', 
                hiddenField: 'name', 
                displayField: 'name',
-               mode:'remote',
+               mode: !self.type_in ? 'remote' : 'local',
                emptyText: _('<select variable>'),
                typeAhead: false,
                minChars: 1, 
-               store: self.store_vars, 
-               editable: true, forceSelection: true, triggerAction: 'all',
+               store: !self.type_in ? self.store_vars : null, 
+               editable: true, 
+               forceSelection: !self.type_in, 
+               triggerAction: 'all',
                allowBlank: true
         });
         // adds variable on combo click
@@ -2378,6 +2381,12 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
             if( ix!==undefined ) {
                 var rec = self.store_vars.getAt(ix);
                 self.add_field_from_rec( rec );
+            }
+            else if( self.type_in ) {
+                var varname = self.combo_vars.getRawValue();
+                if( varname.length > 0 ) {
+                    self.add_field_from_rec({ data:{ name: varname, var_type:'value', var_default:'' } });
+                }
             }
         }});
         self.btn_del = new Ext.Button({ icon:'/static/images/icons/delete.gif', handler:function(){
