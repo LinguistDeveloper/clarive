@@ -79,6 +79,7 @@ zip_tree
     _md5
     _html_escape
     _fixascii_sql
+    _fixCharacters_mail
     _join_quoted
     case
     _utf8_on_all
@@ -1410,6 +1411,23 @@ sub _fixascii_sql {
     $data =~ s/\\Ã³/ó/g;
 
     $data
+}
+
+sub _fixCharacters_mail {
+    my $d = shift;
+    return $d unless length $d;
+    require HTML::Strip;
+    my $hs = HTML::Strip->new();
+    my $clean_text = $hs->parse($d);
+    utf8::decode( $clean_text );
+    $clean_text =~ s{Ã\?}{Ñ}g;
+    $clean_text =~ s{Ã±}{ñ}g;
+    $clean_text =~ s{Ã¡}{á}g;
+    $clean_text =~ s{Ã©}{é}g;
+    $clean_text =~ s{Ã-}{í}g;
+    $clean_text =~ s{Ã³}{ó}g;
+    $clean_text =~ s{Ãº}{ú}g;
+    $clean_text;
 }
 
 sub _join_quoted {

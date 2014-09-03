@@ -125,12 +125,10 @@ sub process_queue {
                 $body = substr $body,0, -1;
             }
 
-            $body = Encode::encode("iso-8859-15", $body);
-            # _log $body;
-            $body =~ s{Ã\?}{Ñ}g;
-            $body =~ s{Ã±}{ñ}g;
+            #$body = Encode::encode("iso-8859-15", $body);
+            utf8::decode( $body );
+
             
-            utf8::downgrade($body);
             $result = $self->send(
                 server=>$config->{server},
                 to => join(';',@to),
