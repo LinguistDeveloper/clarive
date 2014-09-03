@@ -136,6 +136,8 @@ sub update : Local {
     my $p = $c->request->parameters;
     $p->{status_new} = $p->{status_new}[0] if (ref $p->{status_new} eq 'ARRAY');     # Only for IE8 
     $p->{username} = $c->username;
+    $p->{_sort}->{title} = lc $p->{title};
+    $p->{_sort}->{title} =~ s/^\s+//;
     my $return_options;   # used by event rules to return anything back to the form
     try  {
         my ($isValid, @field_name) = (1,());

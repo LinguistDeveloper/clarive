@@ -298,7 +298,7 @@ sub build_sort {
     } elsif( $sort eq 'topic_mid' ) {
         $order_by = { _id => $dir };
     } else {
-        $order_by = { $sort => $dir };
+        $order_by = { '_sort.'.$sort => $dir };
     }
     return $order_by;
 }
@@ -308,7 +308,7 @@ sub build_sort {
 #
 sub topics_for_user {
     my ($self, $p) = @_;
-    
+_log _dump $p;
     my ($start, $limit, $query, $query_id, $dir, $sort, $cnt) = ( @{$p}{qw/start limit query query_id dir sort/}, 0 );
     $start||= 0;
     $limit ||= 100;
@@ -320,7 +320,6 @@ sub topics_for_user {
     my $is_root = $perm->is_root( $username );
     my $topic_list = $p->{topic_list};
     my ( @mids_in, @mids_nin, @mids_or );
-
     if( length($query) ) {
         #$query =~ s{(\w+)\*}{topic "$1"}g;  # apparently "<str>" does a partial, but needs something else, so we put the collection name "job"
         my @mids_query;
@@ -511,7 +510,7 @@ sub topics_for_user {
     
 #_debug( $where );
     my $rs = mdb->topic->find( $where )->fields({ mid=>1, labels=>1 })->sort( $order_by );
-    
+_log "EEEEEEEEEEEEEEEEEEEEEEEEEEEE-->". _dump $order_by;    
     $cnt = $rs->count;
     $start = 0 if length $start && $start>=$cnt; # reset paging if offset
     $rs->skip( $start ) if $start >= 0 ;
