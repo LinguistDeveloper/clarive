@@ -1817,6 +1817,8 @@ sub save_doc {
     $self->update_project_security($write_doc);   # we need to send old data merged, in case the user has sent an incomplete topic (due to field security)
 
     mdb->topic->update({ mid=>"$doc->{mid}" }, $write_doc, { upsert=>1 });
+
+    $self->update_rels(($doc->{mid}));
 }
 
 sub update_txt {
