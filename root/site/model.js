@@ -2538,12 +2538,20 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                     vars_no_cache.push(v);
             });
             */
-            // get variable CI metadata 
-            Baseliner.ci_call('variable', 'list_by_name', { names: vars, bl: bl }, function(res){
-                Ext.each( res, function(var_ci){
-                    self.add_var_ci_field( mf, bl, var_ci );
+            if( self.type_in ) {
+                // in type_in mode, all are default text
+                Ext.each( vars, function(varname){
+                    self.add_var_ci_field( mf, bl, { name: varname });
                 });
-            });
+            } else {
+                // get variable CI metadata 
+                Baseliner.ci_call('variable', 'list_by_name', { names: vars, bl: bl }, function(res){
+                    Ext.each( res, function(var_ci){
+                        console.log( var_ci );
+                        self.add_var_ci_field( mf, bl, var_ci );
+                    });
+                });
+            }
         }
     },
     getData : function(bl){
