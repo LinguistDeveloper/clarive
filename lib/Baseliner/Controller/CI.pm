@@ -245,16 +245,13 @@ sub tree_objects {
     }else{
         $dir = 1;
     }
-    my $sort_item;
-    my $sort_mid;
+
     if ($p{sort}) {
         my $sort = $p{sort};
         if ($sort eq 'mid'){
             $opts = { ts => $dir };
-        }elsif($sort eq 'item'){     
-            #pasar a minusculas en la migración
-            $opts = { "_sort.item" => $dir };
-            
+        }elsif($sort eq 'item' or $sort eq 'name'){
+            $opts = { "_sort.name" => $dir };
         }else{
             $opts = { $p{sort} => $dir };        
         }        
@@ -293,15 +290,6 @@ sub tree_objects {
     }
 
     my $rs = mdb->master_doc->query($where,$limit)->sort($opts)->fields({ yaml=>0 });
-    my @all = $rs->all;
-    
-    if($sort_item == 1){
-        if($dir == 1){
-            @all = sort { uc $a->{name} cmp uc $b->{name} } @all;    
-        }else{
-            @all = sort { uc $b->{name} cmp uc $a->{name} } @all;    
-        }        
-    }
     
     my $total = defined $page ? $rs->pager->total_entries : $rs->count;
     my $generic_icon = do { require Baseliner::Role::CI::Generic; Baseliner::Role::CI::Generic->icon() };
@@ -346,7 +334,7 @@ sub tree_objects {
             pretty_properties => $pretty,
             versionid         => $row->{versionid},
         }
-    } @all;
+    } $rs->all;
     ( $total, @tree );
 }
 
