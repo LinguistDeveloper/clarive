@@ -345,7 +345,7 @@ sub save_fields {
         Util->_unbless($final_doc);
         mdb->clean_doc($final_doc);
         $final_doc->{_id} = $id;  # preserve OID object
-        $final_doc->{_sort} = {name=>lc $self->{name}};
+        $final_doc->{_sort} = {name=>lc $self->name};
         mdb->master_doc->save({ %$final_doc, %{ $relations || {} } });
     } else {
         my $doc = { ( $master_row ? %$master_row : () ), %{ $master_doc || {} }, mid=>"$mid" };
@@ -353,7 +353,7 @@ sub save_fields {
         my $final_doc = Util->_clone($doc);
         Util->_unbless($final_doc);
         mdb->clean_doc($final_doc);
-        $final_doc->{_sort} = {name=>lc $self->{name}};
+        $final_doc->{_sort} = {name=>lc $self->name};
         mdb->master_doc->insert({ %$final_doc, %{ $relations || {} } });
     }
     return $yaml;
