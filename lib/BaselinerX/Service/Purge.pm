@@ -83,7 +83,13 @@ sub run_once {
             my $job_name = $job->{name};
             my $endtime = $job->{endtime};
             my $config = Baseliner->model('ConfigStore')->get('config.purge', bl => $job->{bl});
-            my $ci_job = ci->new($job->{mid});
+            my $ci_job = try {
+                ci->new($job->{mid});
+            } catch {
+                _warn( "INVALID JOB=$job->{mid}" );
+                undef;
+            };
+            next unless $ci_job;
             my $configdays = $ci_job->is_failed ? $config->{keep_jobs_ko} : $config->{keep_jobs_ok};
             my $limitdate = $now - "${configdays}D";
             # delete job directories
@@ -114,9 +120,9 @@ sub run_once {
                     }
                 }
             } elsif( !$job->{purged} ) {
-                _log _loc 'Job not ready to purge yet: %1 (%2): %3', $job_name, $job->{mid}, "$endtime >= $limitdate";
+                _log 'Job not ready to purge yet: %1 (%2)', $job_name, $job->{mid};
             }
-            if( $max_job_time->datetime lt "$temp[0]T$temp[1]" ) {
+            if( $max_job_time->datetime lt "$temp[0]T$temp[1]" && -d $purged_job_path ) {
                 _log "\tDeleting job directory $purged_job_path....";
                 File::Path::remove_tree( $purged_job_path, {error => \my $err} );
                 unlink $purged_job_path;
