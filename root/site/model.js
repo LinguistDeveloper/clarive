@@ -2336,7 +2336,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
     forceLayout: true,
     activeItem: 0,
     show_tbar: true,
-    type_in: true,
+    type_in: false,
     bodyStyle: {
         'background-color': 'white'
     },
