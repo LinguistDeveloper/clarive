@@ -2336,6 +2336,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
     forceLayout: true,
     activeItem: 0,
     show_tbar: true,
+    type_in: true,
     bodyStyle: {
         'background-color': 'white'
     },
@@ -2358,15 +2359,17 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                submitValue: false,
                id: self.id + '-combo',
                name: self.id + '-combo-name',
-               valueField: 'name', 
-               hiddenField: 'name', 
+               valueField: 'name',
+               hiddenField: 'name',
                displayField: 'name',
-               mode:'remote',
+               mode: !self.type_in ? 'remote' : 'local',
                emptyText: _('<select variable>'),
                typeAhead: false,
                minChars: 1, 
-               store: self.store_vars, 
-               editable: true, forceSelection: true, triggerAction: 'all',
+               store: !self.type_in ? self.store_vars : new Ext.data.SimpleStore({ fields:[] }), 
+               editable: true, 
+               forceSelection: !self.type_in, 
+               triggerAction: 'all',
                allowBlank: true
         });
         // adds variable on combo click
@@ -2378,6 +2381,12 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
             if( ix!==undefined ) {
                 var rec = self.store_vars.getAt(ix);
                 self.add_field_from_rec( rec );
+            }
+            else if( self.type_in ) {
+                var varname = self.combo_vars.getRawValue();
+                if( varname.length > 0 ) {
+                    self.add_field_from_rec({ data:{ name: varname, var_type:'value', var_default:'' } });
+                }
             }
         }});
         self.btn_del = new Ext.Button({ icon:'/static/images/icons/delete.gif', handler:function(){
@@ -2529,12 +2538,20 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                     vars_no_cache.push(v);
             });
             */
-            // get variable CI metadata 
-            Baseliner.ci_call('variable', 'list_by_name', { names: vars, bl: bl }, function(res){
-                Ext.each( res, function(var_ci){
-                    self.add_var_ci_field( mf, bl, var_ci );
+            if( self.type_in ) {
+                // in type_in mode, all are default text
+                Ext.each( vars, function(varname){
+                    self.add_var_ci_field( mf, bl, { name: varname });
                 });
-            });
+            } else {
+                // get variable CI metadata 
+                Baseliner.ci_call('variable', 'list_by_name', { names: vars, bl: bl }, function(res){
+                    Ext.each( res, function(var_ci){
+                        console.log( var_ci );
+                        self.add_var_ci_field( mf, bl, var_ci );
+                    });
+                });
+            }
         }
     },
     getData : function(bl){
@@ -2546,7 +2563,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
         return self.data;
     }, 
     getValue : function(){
-        alert( 'ggg' );
+        alert( 'Not Implemented' );
     }
 });
 

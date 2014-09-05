@@ -1041,6 +1041,22 @@ sub clean_master_topic {
     } 
 }
 
+sub add_master_doc_sort{
+    _log "adding sorting properties to master_doc\n";
+    my @cis = mdb->master_doc->find->all;
+
+    foreach  (@cis){
+        my $new_name = $_->{name} ? lc $_->{name} : $_->{collection}.':'.$_->{mid};
+        mdb->master_doc->update({mid => $_->{mid}},{'$set'=>{_sort => {name => $new_name}}}); 
+    }
+}
+
+sub update_topic_rels{
+    _log "updating topics rels\n";
+    my @topics = map{$_->{mid}}mdb->topic->find->fields({mid=>1,_id=>0})->all;
+    Baseliner->model('Topic')->update_rels(@topics);
+}
+
 sub topic_view {
     qq{
     SELECT  T.MID TOPIC_MID,

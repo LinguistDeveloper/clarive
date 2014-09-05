@@ -68,7 +68,6 @@ has versionid   => qw(is rw isa Maybe[Str] default 1);
 has moniker     => qw(is rw isa Maybe[Str]);    # lazy 1);#,
 has created_by  => qw(is rw isa Maybe[Str]);
 has modified_by => qw(is rw isa Maybe[Str]);
-has sort_by     => qw(is rw isa HashRef);
     # default=>sub{   
     #     my $self = shift; 
     #     if( ref $self ) {
@@ -191,7 +190,6 @@ sub save {
             $master_row->{moniker} = $self->moniker;
             $master_row->{ns} = $self->ns;
             $master_row->{ts} = mdb->ts;
-            $master_row->{sort_by} = {name => uc $self->name};
             $self->update_ci( $master_row, undef, \%opts );
         }
     } else {
@@ -205,7 +203,6 @@ sub save {
                 bl         => join( ',', Util->_array( $bl ) ),
                 active     => $self->active // 1,
                 versionid  => $self->versionid || 1,
-                sort_by    => {name => uc $self->name}
         };
         # update mid into CI
         $mid = length($mid) ? $mid : mdb->seq('mid');
@@ -348,6 +345,7 @@ sub save_fields {
         Util->_unbless($final_doc);
         mdb->clean_doc($final_doc);
         $final_doc->{_id} = $id;  # preserve OID object
+        $final_doc->{_sort} = {name=>lc $self->name};
         mdb->master_doc->save({ %$final_doc, %{ $relations || {} } });
     } else {
         my $doc = { ( $master_row ? %$master_row : () ), %{ $master_doc || {} }, mid=>"$mid" };
@@ -355,6 +353,7 @@ sub save_fields {
         my $final_doc = Util->_clone($doc);
         Util->_unbless($final_doc);
         mdb->clean_doc($final_doc);
+        $final_doc->{_sort} = {name=>lc $self->name};
         mdb->master_doc->insert({ %$final_doc, %{ $relations || {} } });
     }
     return $yaml;

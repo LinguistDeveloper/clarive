@@ -1888,7 +1888,7 @@ sub update_rels {
         
         my @pnames;
         for my $rel ( _array( $rels{$mid} ) ) {
-            push @pnames, $project_names{$$rel{to_mid}} if $rel->{rel_type} eq 'topic_project' and $project_names{$$rel{to_mid}} ne '';
+            push @pnames, $project_names{$$rel{to_mid}} if $rel->{rel_type} eq 'topic_project' and $project_names{$$rel{to_mid}};
         }
         $d{_sort}{projects} = join '|', sort map { lc( $_ ) } @pnames;  
         
