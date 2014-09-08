@@ -1485,6 +1485,9 @@ msgstr "Ventana Urgente"
 msgid "Select at least one row"
 msgstr "Seleccione al menos una fila"
 
+msgid "Select at least one role and status to"
+msgstr "Seleccione al menos un rol y estado destino"
+
 msgid "Calendar '%1' modified"
 msgstr "Calendario '%1' modificado"
 

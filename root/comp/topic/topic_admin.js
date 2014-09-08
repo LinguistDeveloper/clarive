@@ -700,14 +700,15 @@
         
         var job_type_switch = function( rec, data ) {
             var sel = check_admin_status_sm.getSelections();
-            var flag = true;
+            var flag = false;
+            if (sel.length > 0 ) { flag = true; }
             for( var i=0; i<sel.length; i++ ) {
                 var bl = sel[i].data.bl;
                 if( bl==undefined || bl == ''  || bl == '*' ) 
                     flag = false;
             }
             if( flag && ( rec.data.is_changeset==1 || rec.data.is_release )
-                && data.bl!= undefined && data.bl!='' && data.bl != '*' ) {
+                && data.bl!= undefined && data.bl.bl!='' && data.bl.bl != '*' ) {
                 combo_job_type.show();
                 combo_job_type.setValue('promote');
             } else {
@@ -964,22 +965,26 @@
                                     combo_job_type.setValue('');
                                 }
 
-                                form.submit({
-                                    submitEmptyText: false,
-                                    params: {action: action, idsroles: roles_checked, idsstatus_to: statuses_to_checked},
-                                    success: function(f,a){
-                                        Baseliner.message(_('Success'), a.result.msg );
-                                        store_categories_admin.load({params:{categoryId: rec.data.id}});
-                                    },
-                                    failure: function(f,a){
-                                        Ext.Msg.show({  
-                                            title: _('Information'), 
-                                            msg: a.result.msg , 
-                                            buttons: Ext.Msg.OK, 
-                                            icon: Ext.Msg.INFO
-                                        });                         
-                                    }
-                                });
+                                if(roles_checked.length>0 && statuses_to_checked.length>0){
+                                    form.submit({
+                                        submitEmptyText: false,
+                                        params: {action: action, idsroles: roles_checked, idsstatus_to: statuses_to_checked},
+                                        success: function(f,a){
+                                            Baseliner.message(_('Success'), a.result.msg );
+                                            store_categories_admin.load({params:{categoryId: rec.data.id}});
+                                        },
+                                        failure: function(f,a){
+                                            Ext.Msg.show({  
+                                                title: _('Information'), 
+                                                msg: a.result.msg , 
+                                                buttons: Ext.Msg.OK, 
+                                                icon: Ext.Msg.INFO
+                                            });                         
+                                        }
+                                    });
+                                }
+                                else { Baseliner.message(_('Error'), _('Select at least one role and status to') ); }
+
                             }
                         }
                     },
