@@ -25,8 +25,9 @@ sub group_queue {
     
     my %query;
 
-    $query{where}->{'queue.active'} = '1';
-    $query{where}->{'queue.carrier'} = 'email';
+    $query{where}{'queue.active'} = '1';
+    $query{where}{'queue.carrier'} = 'email';
+    $query{is_daemon} = '1';
 
     my ($queue,$cnt) = Baseliner->model('Messaging')->transform(%query);
 

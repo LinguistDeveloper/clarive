@@ -513,7 +513,7 @@ sub transform {
 sub mdb_message_query {
 	my ($self, %p) = @_;
 	my $rs = mdb->message->find( $p{where} );
-    my $total_count = $rs->count(); 
+    my $total_count = $p{is_daemon} ? 0 : $rs->count(); 
 
 	$rs->sort( $p{sort} ) if $p{sort};
 	$rs->skip( $p{skip} ) if $p{skip};
