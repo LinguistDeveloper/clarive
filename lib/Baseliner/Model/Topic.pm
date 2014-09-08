@@ -2992,7 +2992,24 @@ sub get_status_history_topics{
     };
 
     my %my_topics;
-    my ($cnt, @rows ) = Baseliner->model('Topic')->topics_for_user({ username => $username, limit=>1000, query=>undef });
+
+    #############################################################
+
+    my $total = 1000;
+    my $i = 0;
+    my $limit = 100;
+    my @res;
+    my $cnt = 0;
+    for ($i=0; $i<$total; $i=$i+$limit){
+        if ($i+$limit>$total) { $limit = $total-$i; };
+        my ($partial_cnt, @res ) = Baseliner->model('Topic')->topics_for_user({ username => $username, start=>$i, limit=>$limit, query=>undef });
+        push @rows, @res;
+        $cnt = $cnt + $partial_cnt;
+    }
+
+    #############################################################
+
+    # my ($cnt, @rows ) = Baseliner->model('Topic')->topics_for_user({ username => $username, limit=>1000, query=>undef });
     map { $my_topics{$_->{mid}} = 1 } @rows;
 
     my @status_changes;
