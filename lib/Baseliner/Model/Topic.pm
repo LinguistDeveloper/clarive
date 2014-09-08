@@ -2996,6 +2996,7 @@ sub get_status_history_topics{
     #############################################################
 
     my $total = 1000;
+    my @rows;
     my $i = 0;
     my $limit = 100;
     my @res;
