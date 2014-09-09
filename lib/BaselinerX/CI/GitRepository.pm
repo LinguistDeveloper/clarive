@@ -8,9 +8,10 @@ require Girl;
 
 with 'Baseliner::Role::CI::Repository';
 
-has repo_dir       => qw(is rw isa Str);
-has name           => qw(is rw isa Str);
-has default_branch => qw(is rw isa Str default HEAD);
+has repo_dir        => qw(is rw isa Str);
+has name            => qw(is rw isa Str);
+has default_branch  => qw(is rw isa Str default HEAD);
+has revision_mode   => qw(is rw isa Str default diff);
 
 sub collection { 'GitRepository' }
 sub icon       { '/static/images/icons/git-repo.gif' }
@@ -62,12 +63,27 @@ sub git {
 sub group_items_for_revisions {
     my ($self,%p) = @_;
     my $revisions = $p{revisions};
-    my $tag = $p{tag};
-    my $top_rev = $self->top_revision( revisions=>$revisions, type=>$p{type}, tag=>$tag );
-    if( !$top_rev ) {
-        _fail _loc 'Could not find top revision in repository %1 for tag %2. Attempting to redeploy to environment?', $self->name, $tag
+    my $type = $p{type} || 'promote';
+    my @items;
+    if( $self->revision_mode eq 'show' ) {
+        my %all_revs = map { $_->sha_long => $_ } _array($revisions);
+        my @ordered_revs = $self->git->exec( 'rev-list', '--no-walk=sorted', keys %all_revs );
+        @ordered_revs = reverse @ordered_revs if $type eq 'demote';
+        _debug( \@ordered_revs );
+        my %items_uniq;
+        for my $rev ( map { $all_revs{$_} } @ordered_revs ) {
+            my @rev_items = $rev->show( type=>$p{type} );
+            $items_uniq{$_->path} = $_ for @rev_items;
+        }
+        @items = values %items_uniq;
+    } else {
+        my $tag = $p{tag} // _fail(_loc 'Missing parameter tag needed for top revision');
+        my $top_rev = $self->top_revision( revisions=>$revisions, type=>$p{type}, tag=>$tag );
+        if( !$top_rev ) {
+            _fail _loc 'Could not find top revision in repository %1 for tag %2. Attempting to redeploy to environment?', $self->name, $tag
+        }
+        @items = $top_rev->items( tag=>$tag, type=>$type );
     }
-    my @items = $top_rev->items( tag=>$tag, type=>$p{type} );
     # prepend path prefix for repo
     #  my $rel_path = $self->rel_path;
     #  @items = map {

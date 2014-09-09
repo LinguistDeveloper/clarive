@@ -9,6 +9,7 @@ with 'Baseliner::Role::CI::Revision';
 # has repo_dir;
 
 has sha => qw(is rw isa Str);
+has _sha_long => qw(is rw isa Str);
 has_ci 'repo';
 
 has moniker  => qw(is rw isa Maybe[Str] lazy 1), 
@@ -43,7 +44,7 @@ sub items {
     my $repo = $self->repo;
     my $git = $repo->git;
     
-    my $rev_sha  = $repo->git->exec( qw/rev-parse/, $self->sha );
+    my $rev_sha  = $self->sha_long; 
     my $tag_sha  = $repo->git->exec( qw/rev-parse/, $tag );
     
     my $diff_shas;
@@ -77,6 +78,43 @@ sub items {
             %$info,
         );
     } @items;
+    return @items;
+}
+
+sub sha_long {
+    my $self = shift;
+    # full rev-parsed sha 
+    my $fs = $self->_sha_long;
+    return $fs if length $fs;
+    return $self->_sha_long( $self->repo->git->exec( qw/rev-parse/, $self->sha ) );
+}
+
+# return all items in revision
+sub show {
+    my ($self, %p)=@_;
+    my $repo = $self->repo;
+    my $git = $repo->git;
+    
+    my $type = $p{type} // 'promote';
+    my $rev_sha  = $self->sha_long;
+    #my @items = $git->exec( qw/diff-tree --no-commit-id --name-status -r/, $tag_sha );
+    my %repo_items = $self->repo_items( $rev_sha );
+    my %demote_statuses = ( M=>'M', D=>'A', A=>'D' );
+    my @items = map {
+        my $path = $_;
+        my $info = $repo_items{ $path } // _fail _loc "Could not find diff-tree data for item '%1'", $path; #{ status=>$status };
+        my $fullpath = Util->_dir( "/", $path );
+        my $status = $type eq 'demote' ? $demote_statuses{ $$info{status} } : $$info{status}; # invert status on demote
+        $status ||= 'M'; # just in case...
+        BaselinerX::CI::GitItem->new(
+            repo    => $repo,
+            sha     => $rev_sha,
+            path    => "$fullpath",
+            versionid => $rev_sha,
+            %$info,
+            status => $status, 
+        );
+    } keys %repo_items; 
     return @items;
 }
 
