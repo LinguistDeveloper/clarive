@@ -85,11 +85,10 @@ sub order_matches {
     my $max_excerpt_tokens = $config->{max_excerpt_tokens} // 5;
     for my $doc ( @results ) {
         my @found;
-        my $idexact  = $$doc{mid} eq $query if $$doc{mid};
-        $idexact //= 0;
-        $$doc{mid} //= 0;
-        my $idmatch  = length join '',( "$$doc{mid}" =~ /($query_clean)/gsi );
-        my $tmatch  = length join '', ( "$$doc{title}" =~ /($query_clean)/gsi );
+        $$doc{mid} //= -1; 
+        my $idexact  = $$doc{mid} eq $query;
+        my $idmatch  = length join '',( "$$doc{mid}" =~ /($query)/gsi );
+        my $tmatch  = length join '', ( "$$doc{title}" =~ /($query)/gsi );
         for my $doc_txt ( $$doc{info}, $$doc{text} ) {
             my $kfrag = 0;
             while ( $doc_txt =~ /(?<bef>.{0,20})?(?<mat>$query_clean)(?<aft>.{0,20})?/gsi ) {
