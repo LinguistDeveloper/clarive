@@ -2123,7 +2123,6 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
                 if(n.attributes.topic_name ) {
                     var tn = n.attributes.topic_name;
                     n.setIconCls('no-icon');  // no icon on this node
-
                     if( !tn.category_color ) 
                         tn.category_color = '#999';
                     var span = String.format( Baseliner.tree_topic_style, tn.category_color );
