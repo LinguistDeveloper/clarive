@@ -562,6 +562,7 @@ sub related_cis {
     my $scoped = $Baseliner::CI::mid_scope->{ $scope_key } if $Baseliner::CI::mid_scope;
     return @$scoped if $scoped;
     # in cache ?
+    delete $opts{path};  # path are all visited cis and may be huge for a cache key
     my $cache_key = [ "ci:$mid:", \%opts ];
     if( my $cached = cache->get( $cache_key ) ) {
         return @$cached if ref $cached eq 'ARRAY';
@@ -700,8 +701,9 @@ sub related {
     my $mid = ref $self_or_class ? $self_or_class->mid : $opts{mid};
     $mid // _fail 'Missing parameter `mid`';
     # in cache ? 
-    my $cache_key = [ "ci:$mid:",  \%opts ];
-    if( my $cached = cache->get( $cache_key ) ) {
+    my $opath = delete $opts{path}; # path are all visited cis and may be huge for a cache key
+    my $cache_key = [ "ci:$mid:",  %opts ];
+    if( my $cached = Baseliner->cache_get( $cache_key ) ) {
         return @$cached if ref $cached eq 'ARRAY';
     }
     my $depth = $opts{depth} // 1;
@@ -709,7 +711,7 @@ sub related {
     $opts{depth_original} //= $depth;
     $opts{mode} //= 'flat';
     $opts{visited} //= {};
-    $opts{path} //= [];
+    $opts{path} //= $opath // [];
     push @{ $opts{path} }, $mid;
     return () if exists $opts{visited}{$mid};
     local $Baseliner::CI::_no_record = $opts{no_record} // 1; # make sure we *don't* include a _ci (rgo) 
