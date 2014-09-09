@@ -73,8 +73,9 @@ sub tree_project_releases : Local {
             url  => '/lifecycle/topic_contents',
             topic_name => {
                 mid            => $_->{mid},
-                category_color => $_->{category}{color},
-                category_name  => $_->{category}{name},
+                category_color => $_->{categories}{color},
+                category_name  => $_->{categories}{name},
+                category_status => "",
                 is_release     => 1,
             },
             data => {
@@ -110,13 +111,14 @@ sub category_contents : Local {
     my @tree = map {
         my $leaf = ci->new($_->{mid})->children( where => { collection => 'topic'}, depth => 1) ? \0 : \1;
        +{
-            text => ' ('.$_->{category_status}->{name}.') '.$_->{title},
+            text => $_->{title},
             icon => '/static/images/icons/release.png',
             url  => '/lifecycle/topic_contents',
             topic_name => {
                 mid            => $_->{mid}. ' ('.$_->{category_status}->{name}.')',
                 category_color => $_->{category}->{color},
                 category_name  => $_->{category}->{name},
+                category_status => "<b>(" . $_->{category_status}->{name} . ")</b>",
                 is_release     => 1,
             },
             data => {
@@ -200,6 +202,7 @@ sub tree_topics_project : Local {
                 mid            => $_->{mid}. ' ('.$_->{category_status}->{name}.')',
                 category_color => $_->{category}->{color},
                 category_name  => $_->{category}->{name},
+                category_status => "<b>(" . $_->{category_status}->{name} . ")</b>",
                 is_release     => 1,
             },
             data => {
@@ -277,6 +280,7 @@ sub topic_contents : Local {
                 mid             => $_->{mid},
                 category_color  => $_->{category}{color},
                 category_name   => _loc($_->{category}{name}),
+                category_status => "<b>(" . $_->{category_status}->{name} . ")</b>",
                 is_release      => $is_release,
                 is_changeset    => $is_changeset,
             },
