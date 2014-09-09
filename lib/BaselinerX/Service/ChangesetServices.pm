@@ -365,7 +365,7 @@ sub job_items {
             } grep {
                 # select only files for this BL
                 $rename_mode 
-                ? ( $_->path =~ /{$bl}/ || $_->path !~ /{$all_bls}/ )
+                ? ( $_->path =~ /{$bl}/ || $_->path !~ /{($all_bls)}/ )
                 : 1 
             } @repo_items;
             push @{ $pc->{repo_revisions_items} }, { repo=>$repo, revisions=>$revisions, items=>\@items };
