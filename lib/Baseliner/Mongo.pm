@@ -333,6 +333,8 @@ sub index_all {
         ],
         event => [
             [{ ts=>1 }],
+            [{ 'event_status'=>1, '_id'=>1 }],
+            [{ 'mid'=>1, 'ts'=>1 }],
         ],
         topic_image => [
             [{ id_hash => 1 }]
