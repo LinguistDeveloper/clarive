@@ -109,6 +109,7 @@ method top_revision( :$revisions, :$tag, :$type='promote' ) {
     my $git = $self->git;
     
     my @revisions = _array( $revisions );
+    my $top_rev;
     
     my %shas = map { 
         # make sure every sha is there, for better error messaging
@@ -137,40 +138,55 @@ method top_revision( :$revisions, :$tag, :$type='promote' ) {
     if( $type eq 'promote' ) {
         my $first_sha = $by_pos{1};
         _warn _loc "Tag %1 (sha %2) is already on top", $tag, $tag_sha if $first_sha eq $tag_sha;
-        return $shas{ $first_sha };
+        $top_rev = $shas{ $first_sha };
     }
     elsif( $type eq 'static' ) {
         my $first_sha = $by_pos{1};
-        return $shas{ $first_sha };
+        $top_rev = $shas{ $first_sha };
     }
     elsif( $type eq 'demote' ) {
         my $last_sha = $by_pos{ scalar @sorted };
         if( my $before_last = $git->exec( 'rev-parse', $last_sha . '~1' ) ) {
             _warn _loc "Tag %1 (sha %2) is already at the bottom", $tag, $tag_sha if $before_last eq $tag_sha;
-            return $shas{ $last_sha } // do {
+            $top_rev = $shas{ $last_sha } // do {
                 BaselinerX::CI::GitRevision->new( sha=>$before_last, name=>$tag, repo=>ci->new($self) );
             };
         } else {
             _warn _loc "Trying to demote all revisions in a repository, can't set tag %1 before %2", $tag, substr($last_sha,0,7);
-            return undef;
+            $top_rev = undef;
         }
     }
     
-    #for my $rev ( @revisions ) {
-    #    my $sha = $rev->{sha};
-    #    my $direction = $type eq 'demote'
-    #        ? $sha ."..". $tag
-    #        : $tag . ".." . $sha;
-    #    my @gitlog = $git->exec( 'rev-list', '--pretty=oneline', $direction );
-    #    _debug("top revision rev-list: ". join "\n", @gitlog);
-    #    @gitlog = map { my @parts = split " ", $_; shift @parts;} @gitlog;
-    #    my @intersect = sort(grep { ( $_ ~~ @shas ) } @gitlog);
-    #    _debug( "top revision common shas :" .  join "\n",@intersect );
-    #    if ( [sort @intersect] ~~ [sort @shas] ) {
-    #        return $rev;
-    #    }
-    #}
-    #return ();
+    if ( $top_rev ) {
+        my ($orig, $dest) = $type eq 'demote'
+           ? ($top_rev->{sha}, $tag_sha)
+           : ($tag_sha, $top_rev->{sha});
+
+
+        _debug _loc("Looking for common history between %1 and %2", $orig, $dest);
+        
+        try {
+            $git->exec( 'merge-base', '--is-ancestor', $orig, $dest);
+        } catch {
+            _fail _loc("Cannot %1 commit [%2] to %3 since they don't have common history and doing that may cause regressions.  You probably need to merge branches", _loc($type), substr($top_rev->{sha},0,6),$tag);
+        };
+
+        my $valid = 1;
+        for my $rev ( @revisions ) {
+            my $sha = $rev->{sha};
+
+            try {
+                $git->exec( 'merge-base', '--is-ancestor', $sha, $dest);
+            } catch {
+                _error _loc("Revision [%1] is not in the top revision's history", substr($sha,0,6));
+                $valid = 0;
+            };
+        }
+        if ( !$valid ) {
+            _fail _loc("Not all commits are in [%1] history.  You probably need to merge branches", substr($dest,0,6) );
+        }
+    }
+    return $top_rev;
 }
 
 sub checkout {

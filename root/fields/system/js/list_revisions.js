@@ -11,6 +11,7 @@ params:
     get_method: 'get_revisions'    
     set_method: 'set_revisions'
     meta_type: 'revision'
+    branch:
 ---
 */
 (function(params){
@@ -123,7 +124,7 @@ params:
                     else if ( ci !=undefined ) {
                         Baseliner.ajaxEval('/ci/sync',
                             { name: ci.name, 'class': ci['class'], ns: ci.ns, 
-                                ci_json: Ext.util.JSON.encode( ci.data ), repo: node_data.click.repo_mid, topic_mid: topic_data.topic_mid },
+                                ci_json: Ext.util.JSON.encode( ci.data ), repo: node_data.click.repo_mid, topic_mid: topic_data.topic_mid, branch: meta.branch },
                             function(res) {
                                 if( res.success ) {
                                     var mid = res.mid ;
