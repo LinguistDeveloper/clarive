@@ -75,7 +75,7 @@ sub tree_project_releases : Local {
                 mid            => $_->{mid},
                 category_color => $_->{category}->{color},
                 category_name  => $_->{category}->{name},
-                category_status => "",
+                category_status => "<b>(" . $_->{category_status}->{name} . ")</b>",
                 is_release     => 1,
             },
             data => {
@@ -596,6 +596,7 @@ sub changeset : Local {
 
     my @rels;
     my $rel_data = {};
+    my %statuses = map { $_->{id_status} => $_->{name}} ci->status->find()->all;
     for my $topic (@changes) {
         my @releases = _array( $releases{ $topic->{mid} } );
         push @rels, @releases;  # slow! join me!
@@ -621,11 +622,10 @@ sub changeset : Local {
             leaf => \1,
             menu => $menu,
             topic_name => {
-
                 mid             => $topic->{mid},
                 category_color  => $topic->{category}->{color},
                 category_name   => _loc($topic->{category}->{name}),
-                category_status => "<b>(" . _loc($state_name) . ")</b>",
+                category_status => "<b>(" . _loc($statuses{$topic_row->{id_category_status}}) . ")</b>",
                 is_release      => $topic->{category}->{is_release},
                 is_changeset    => $topic->{category}->{is_changeset},
             },
@@ -655,7 +655,7 @@ sub changeset : Local {
         _debug $node;
     }
     if( $bl ne "new" && @rels ) {
-        my %unique = map { $_->{mid} => $_ } @rels;
+        my %unique = map { $_->{topic_topic}{mid} => $_ } @rels;
         for my $rel ( values %unique ) {
             my $mid = $rel->{mid};
             my ( $deployable, $promotable, $demotable, $menu );
@@ -676,8 +676,8 @@ sub changeset : Local {
                 topic_name => {
                     mid             => $rel->{mid},
                     category_color  => $rel->{category}{color},
-                    category_status => "<b>(" . _loc($state_name) . ")</b>",
                     category_name   => $rel->{category}{name},
+                    category_status => "<b>(" . _loc($statuses{$rel->{id_category_status}}) . ")</b>",
                     is_release      => \1,
                 },
                 data => {
