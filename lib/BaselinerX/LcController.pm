@@ -602,14 +602,18 @@ sub changeset : Local {
         push @rels, @releases_for_changeset;  # slow! join me!
         next if $bind_releases && @releases_for_changeset;
         # get the menus for the changeset
-        my ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu(
-            $c,
-            topic      => $topic,
-            bl_state   => $bl,
-            state_name => $state_name,
-            id_project => $id_project,
-            categories => \%categories
-        );
+        my $topic_row = mdb->topic->find_one({ mid => "$topic->{mid}"});
+        my ( $deployable, $promotable, $demotable, $menu );
+        my %category_data;
+        if ( $topic->{_workflow} || !$category_data{$topic_row->{id_category}}) {
+            ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu( $c, topic => $topic, bl_state => $bl, state_name => $state_name );
+            $category_data{$topic_row->{id_category}} = { deployable => $deployable, promotable => $promotable, demotable => $demotable, menu => $menu};
+        } else {
+            $deployable = $category_data{$topic_row->{id_category}}{deployable};
+            $promotable = $category_data{$topic_row->{id_category}}{promotable};
+            $demotable = $category_data{$topic_row->{id_category}}{demotable};
+            $menu = $category_data{$topic_row->{id_category}}{menu};
+        };
         my $node = {
             url  => '/lifecycle/topic_contents',
             icon => '/static/images/icons/changeset_lc.png',
