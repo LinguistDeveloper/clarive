@@ -627,6 +627,7 @@ sub changeset : Local {
             leaf => \1,
             menu => $menu,
             topic_name => {
+
                 mid             => $topic->{mid},
                 category_color  => $topic->{category}->{color},
                 category_name   => _loc($topic->{category}->{name}),
