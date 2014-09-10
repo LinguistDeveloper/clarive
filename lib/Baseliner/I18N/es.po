@@ -7650,3 +7650,18 @@ msgstr "Espere mientras se busca la información de columnas y formatos del info
 
 msgid "Fields retrieved.  Now wait while generating report %1"
 msgstr "Información recuperada. Espere mientras se genera el informe %1"
+
+msgid "The changeset must be created and assigned to at least one project.  Please, save it first"
+msgstr "El tópico debe estar creado y asignado al menos a un proyecto.  Por favor, guárdelo primero"
+
+msgid "The revision must belong to %1 branch.  You probably need to merge branches"
+msgstr "La revisión debe pertenecer a la rama %1.  Probablemente necesite combinar ramas"
+
+msgid "Cannot %1 commit [%2] to %3 since they don't have common history and doing that may cause regressions.  You probably need to merge branches"
+msgstr "No se puede %1 la revision [%2] a %3 puesto que no tiene historia común con el entorno y puede provocar regresiones.  Probablemente es necesario combinar ramas antes de realizar este pase"
+
+msgid "Revision [%1] is not in the top revision's history"
+msgstr "La revisión [%1] no está en la historia de la revisión que se va a pasar"
+
+msgid "Not all commits are in [%1] history.  You probably need to merge branches"
+msgstr "No todas las revisiones están incluidas en la historia de [%1].  Probablemente es necesario combinar ramas antes de realizar este pase"

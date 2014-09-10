@@ -760,7 +760,10 @@ sub sync : Local {
     my $mid = delete $p->{mid};
     my $ns = delete $p->{ns};
     my $repo_mid = $p->{repo};
+    my $branch = $p->{branch};
+
     my $valid_repo = 1;
+    my $data = exists $p->{ci_json} ? _from_json( $p->{ci_json} ) : $p;
 
     if ( $p->{topic_mid} ) {
         my %topic_projects = map { $_=>1 } mdb->master_rel->find_values( to_mid => { from_mid=> "$p->{topic_mid}", rel_type=>'topic_project' });
@@ -769,18 +772,34 @@ sub sync : Local {
             $c->stash->{json} = { success=>\0, msg=>_loc('The changeset must be assigned to at least one project') };
             $valid_repo = 0;
         } else {
-            my @repo_projects = map { $_->{mid} } ci->new($repo_mid)->related( isa => 'project');
+            my $repo = ci->new($repo_mid);
+            my @repo_projects = map { $_->{mid} } $repo->related( isa => 'project');
 
             my $ok_repo = grep { defined } @topic_projects{ @repo_projects }; 
             if (!$ok_repo) {
                 $c->stash->{json} = { success=>\0, msg=>_loc('The revision does not belong to any of the changeset projects' ) };
                 $valid_repo = 0;
-            }             
+            } else {
+                if ( $branch ) {
+                    my $git = $repo->git;
+                    my @branches;
+                    for ( $git->exec( 'branch', '--contains',  $data->{sha} ) ) {
+                        $_ =~ s/[* ]//g;
+                        push @branches, $_;
+                    }
+                    if ( !($branch ~~ @branches) ) {
+                        $c->stash->{json} = { success=>\0, msg=>_loc('The revision must belong to %1 branch.  You probably need to merge branches', $branch ) };
+                        $valid_repo = 0;                        
+                    }
+                }
+            }
         }
+    } else {
+        $c->stash->{json} = { success=>\0, msg=>_loc('The changeset must be created and assigned to at least one project.  Save it first') };
+        $valid_repo = 0;
     }
 
     if ( $valid_repo ) {
-        my $data = exists $p->{ci_json} ? _from_json( $p->{ci_json} ) : $p;
 
         try {
             # check for prereq relationships
