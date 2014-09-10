@@ -601,10 +601,12 @@ sub changeset : Local {
     my %categories = mdb->category->find_hash_one( id=>{},{ workflow=>0, fields=>0, statuses=>0, _id=>0 });
 
     my @rels;
+    my $rel_data = {};
     for my $topic (@changes) {
-        my @releases_for_changeset = _array( $releases{ $topic->{mid} } );
-        push @rels, @releases_for_changeset;  # slow! join me!
-        next if $bind_releases && @releases_for_changeset;
+        my @releases = _array( $releases{ $topic->{mid} } );
+        push @rels, @releases;  # slow! join me!
+        next if $bind_releases && @releases;
+
         # get the menus for the changeset
         my $topic_row = mdb->topic->find_one({ mid => "$topic->{mid}"});
         my ( $deployable, $promotable, $demotable, $menu );
@@ -625,12 +627,12 @@ sub changeset : Local {
             leaf => \1,
             menu => $menu,
             topic_name => {
-                mid             => $td->{mid},
-                category_color  => $topic->categories->color,
-                category_name   => _loc($topic->categories->name),
+                mid             => $topic->{mid},
+                category_color  => $topic->{category}->{color},
+                category_name   => _loc($topic->{category}->{name}),
                 category_status => "<b>(" . _loc($state_name) . ")</b>",
-                is_release      => $topic->categories->is_release,
-                is_changeset    => $topic->categories->is_changeset,
+                is_release      => $topic->{category}->{is_release},
+                is_changeset    => $topic->{category}->{is_changeset},
             },
             data => {
                 ns           => 'changeset/' . $topic->{mid},
@@ -648,20 +650,28 @@ sub changeset : Local {
             },
         };
         # push @tree, $node if ! @rels;
+        for ( _array @releases ) {
+            if ( !$rel_data->{$_->{mid}} ) {
+                $rel_data->{$_->{mid}} = { deployable => $deployable, promotable => $promotable, demotable => $demotable, menu => $menu};
+            }
+        }
+        next if $bind_releases && @releases;
         push @tree, $node;
+        _debug $node;
     }
     if( $bl ne "new" && @rels ) {
-        my %unique_releases = map { $$_{mid} => $_ } @rels;
-        for my $rel ( values %unique_releases ) {
-            my ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu(
-                $c,
-                topic      => $rel,
-                bl_state   => $bl,
-                state_name => $state_name,
-                id_status_from  => $p->{id_status},
-                id_project => $id_project,
-                categories => \%categories,
-            );
+        my %unique = map { $_->{mid} => $_ } @rels;
+        for my $rel ( values %unique ) {
+            my $mid = $rel->{mid};
+            my ( $deployable, $promotable, $demotable, $menu );
+            if ( $rel_data->{$mid} ) {
+                $deployable = $rel_data->{$mid}{deployable};
+                $promotable = $rel_data->{$mid}{promotable};
+                $demotable = $rel_data->{$mid}{demotable};
+                $menu = $rel_data->{$mid}{menu};
+            } else {
+                ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu( $c, $rel, $bl, $state_name, $p->{id_status} );
+            }
             my $node = {
                 url  => '/lifecycle/topic_contents',
                 icon => '/static/images/icons/release_lc.png',
@@ -670,9 +680,9 @@ sub changeset : Local {
                 menu => $menu,
                 topic_name => {
                     mid             => $rel->{mid},
-                    category_color  => $rel->{categories}{color},
+                    category_color  => $rel->{category}{color},
                     category_status => "<b>(" . _loc($state_name) . ")</b>",
-                    category_name   => $rel->{categories}{name},
+                    category_name   => $rel->{category}{name},
                     is_release      => \1,
                 },
                 data => {
