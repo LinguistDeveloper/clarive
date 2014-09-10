@@ -625,11 +625,12 @@ sub changeset : Local {
             leaf => \1,
             menu => $menu,
             topic_name => {
-                mid             => $topic->{mid},
-                category_color  => $$topic{category}{color}, 
-                category_name   => _loc($$topic{category}{name}),
-                is_release      => $$topic{category}{is_release},
-                is_changeset    => $$topic{category}{is_changeset},
+                mid             => $td->{mid},
+                category_color  => $topic->categories->color,
+                category_name   => _loc($topic->categories->name),
+                category_status => "<b>(" . _loc($state_name) . ")</b>",
+                is_release      => $topic->categories->is_release,
+                is_changeset    => $topic->categories->is_changeset,
             },
             data => {
                 ns           => 'changeset/' . $topic->{mid},
@@ -669,8 +670,9 @@ sub changeset : Local {
                 menu => $menu,
                 topic_name => {
                     mid             => $rel->{mid},
-                    category_color  => $rel->{category}{color},
-                    category_name   => $rel->{category}{name},
+                    category_color  => $rel->{categories}{color},
+                    category_status => "<b>(" . _loc($state_name) . ")</b>",
+                    category_name   => $rel->{categories}{name},
                     is_release      => \1,
                 },
                 data => {
