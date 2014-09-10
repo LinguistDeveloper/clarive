@@ -105,7 +105,7 @@ method verify_revisions( :$revisions, :$tag, :$type='promote' ) {
     $self->top_revision( revisions=>$revisions, tag=>$tag, type=>$type );
 }
 
-method top_revision( :$revisions, :$tag, :$type='promote' ) {
+method top_revision( :$revisions, :$tag, :$type='promote', :$check_history=1 ) {
     my $git = $self->git;
     
     my @revisions = _array( $revisions );
@@ -157,7 +157,7 @@ method top_revision( :$revisions, :$tag, :$type='promote' ) {
         }
     }
     
-    if ( $top_rev ) {
+    if ( $top_rev &&  $check_history ) {
         my ($orig, $dest) = $type eq 'demote'
            ? ($top_rev->{sha}, $tag_sha)
            : ($tag_sha, $top_rev->{sha});
@@ -285,7 +285,7 @@ sub list_elements {
 method update_baselines( :$revisions, :$tag, :$type, :$ref=undef ) {
     my $git = $self->git;
 
-    my $top_rev = $ref // $self->top_revision( revisions=>$revisions, type=>$type, tag=>$tag );
+    my $top_rev = $ref // $self->top_revision( revisions=>$revisions, type=>$type, tag=>$tag , check_history => 0 );
     
     if( $type eq 'static' ) {
         _log( _loc "*Git* repository baselines not updated. Static job." );
