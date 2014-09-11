@@ -151,6 +151,13 @@ padding: 2px 4px 2px 7px;
         <script>
             var dtd = Ext.fly( '<% $did %>' );
             if( dtd.dom.innerHTML.trim().length > 0 ) dtd.show();
+            $('.bali-topic-editor-image').click(function(){
+            var imagen = $(this);
+            var src = $(this).attr('src');
+            var captura = new Baseliner.Window({ width: imagen.width()+25, height: imagen.height()+35,
+                closable: true, autoScroll: true, layout:'fit', html: "<img src="+src+"/>" });
+            if (imagen.width()>800) { captura.show(); }
+            });
         </script>
 % }
                 </tbody>

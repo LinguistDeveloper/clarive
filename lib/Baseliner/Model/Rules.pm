@@ -746,13 +746,42 @@ register 'statement.if.var.list' => {
 };
 
 register 'statement.try' => {
-    text => 'TRY statement', 
+    text => 'TRY statement (without catch)', 
     type => 'if',
     data => { },
     dsl => sub { 
         my ($self, $n , %p) = @_;
         sprintf(q{
             try {
+                %s
+            };
+        }, $self->dsl_build( $n->{children}, %p) );
+    },
+};
+
+register 'statement.try_with_catch' => {
+    text => 'TRY statement (needs a catch)', 
+    type => 'if',
+    data => { },
+    dsl => sub { 
+        my ($self, $n , %p) = @_;
+        sprintf(q{
+            try {
+                %s
+            }
+        }, $self->dsl_build( $n->{children}, %p) );
+    },
+};
+
+register 'statement.catch' => {
+    text => 'CATCH statement (needs a try_with_catch)', 
+    type => 'if',
+    data => { },
+    nested => 1,
+    dsl => sub { 
+        my ($self, $n , %p) = @_;
+        sprintf(q{
+            catch {
                 %s
             };
             
