@@ -549,6 +549,11 @@ Baseliner.Topic.StoreUsers = Ext.extend( Baseliner.JsonStore, {
 // if id_com is undefined, then its add, otherwise it's an edit
 Baseliner.Topic.comment_edit = function(topic_mid, id_com, cb) {
     var win_comment;    
+    /* rgo: works good, but we leave the old HtmlEditor for now TODO put CLEditor instead, with less buttons maybe?
+    var comment_field = new Baseliner.CLEditor({
+         listeners: { 'aftereditor': function(){ comment_field.cleditor.focus() } }
+    });
+    */
     //var comment_field = new Baseliner.MultiEditor
     var comment_field = new Baseliner.HtmlEditor({
         listeners: { 'initialize': function(){ comment_field.focus() } }
