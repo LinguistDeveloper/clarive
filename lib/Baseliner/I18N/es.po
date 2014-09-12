@@ -6838,13 +6838,13 @@ msgid "The trap timeout countdown will be paused"
 msgstr "Se cancela la cuenta atras de la captura"
 
 msgid "Run In-process: %1"
-msgstr "Ejecución en progreso: %1"
+msgstr "Ejecución en proceso: %1"
 
 msgid "Run In-Process"
-msgstr "Ejecución en progreso"
+msgstr "Ejecución en proceso"
 
 msgid "Run In-process"
-msgstr "Ejecución en progreso"
+msgstr "Ejecución en proceso"
 
 msgid "Status Code"
 msgstr "Código de Estado"
