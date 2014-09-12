@@ -40,7 +40,6 @@ baseliner:
     #login_page: /clarive/login.html
     decrypt_key: 1234567
     time_zone: CET
-    host: localhost
     web_host: '{{baseliner.host}}'
     web_port: '{{port}}'
     job_runner: service.job.runner.rule
