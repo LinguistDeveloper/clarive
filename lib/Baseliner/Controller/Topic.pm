@@ -713,7 +713,6 @@ sub comment : Local {
                             id_post         => $mid_post,
                             post            => $text,
                             notify_default  => [ $mentioned ],
-                            subject         => $subject,
                             notify=>$notify 
                         };
                     }
