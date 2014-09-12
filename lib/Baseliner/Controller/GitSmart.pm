@@ -35,8 +35,14 @@ sub git : Path('/git/') {
     my $p = $c->request->parameters;
     my $config = $c->stash->{git_config};
     my $cgi = $config->{gitcgi} or _throw 'Missing config.git.gitcgi';
-    _throw _loc("File %1 does not exist", $cgi) unless -e $cgi;
-    my $home = $config->{home} or _throw 'Missing config.git.repo';
+    if( ! -e $cgi ) {
+        $self->process_error( $c, 'internal error', _loc("File %1 does not exist", $cgi) );
+        return;
+    }
+    my $home = $config->{home} or do{
+        $self->process_error( $c, 'internal error', 'Missing config.git.repo' );   
+        return;
+    };
 
     # extract reponame from url
     my $flag = 2;
@@ -52,6 +58,8 @@ sub git : Path('/git/') {
     $repo = $fullpath->basename;  # should be something.git
     my $project = $args[0];
     my $reponame = $args[1];
+    my $lastarg = $args[-1];
+    $c->stash->{git_lastarg} = $lastarg;
     my $repopath = join('/', @args );
     _debug ">>> GIT ARGS (repopath): " . $repopath;
     _debug ">>> GIT HOME: $home";
@@ -135,20 +143,24 @@ sub git : Path('/git/') {
     # TODO - check if the user has "action.git.repo_new" :
     # $c->model('Git')->setup_new_repo( service=>$p->{service}, repo=>$repo, home=>$home );
 
+    # get git service 
+    my $service = $c->req->params->{service};
+    $service=$lastarg if !$service && $lastarg =~ /^git-/;  # last arg is service then? ie. git/prj/repo/git-upload-pack
+    $service //= $c->session->{git_last_service} // 'git-upload-pack';
+    $c->session->{git_last_service} //= $service;
+    $c->stash->{git_service} = $service;
+    _debug ">>> GIT SERVICE=$service";
+    
     # parse request body, if any, to find the commit sha and branch (ref)
     my $sha;
     my $ref;
     my $ref_prev;
+    my $bls = join '|', grep { $_ ne '*' } map { $_->bl } ci->bl->search_cis;
     if( ref ( my $fi = $c->req->body ) ) {
-        my $msg = _file( $fi->filename )->slurp;  # TODO go line by line
-        #open my $fin, '>/tmp/req'; 
-        #binmode $fin;
-        #print $fin $msg; 
-        #_debug $c->req->body;
-        #close $fin;
-        my ($msg1) = $msg =~ /^(.*)\0/;
-        if( $msg1 ) {
-            my ($top,$com,$r) = split / /, $msg1;
+        _debug "Checking BL tags in push $bls";
+        while( <$fi> ) {
+            # find SHA
+            my ($top,$com,$r) = split / /, $_;
             if( defined $com && $com =~ /^\w+$/ ) {
                 _debug "GIT TOP=$top";
                 _debug "GIT COMMIT SHA=$com";
@@ -158,8 +170,16 @@ sub git : Path('/git/') {
                 $ref_prev = substr $top, 4;
                 _debug "GIT REF_PREV=$ref_prev";
             }
+            # check BL tags
+            if( /refs\/tags\/($bls)/ ) {
+                my $tag = $1;
+                $self->process_error($c,'Push Error', _loc('Cannot update internal tag %1', $tag) );
+                return;
+            }
         }
+        seek $fi,0,0;  # reset fh
     }
+
 
     # run cgi
     my ($cgi_msg,$cgi_ret) = ('',0);
@@ -266,29 +286,48 @@ sub run_forked {
 
 sub process_error {
     my ($self,$c,$type,$err) = @_;
-    $err = _loc( "CLARIVE: %1: %2", $type, "\n$err\n" );
-    my ($git_ver) = $c->req->user_agent =~ /git\/(.+)$/;
-    $git_ver =~ s{\.GIT}{}g;  # ie. 2.1.0.GIT
-    my $service = $c->req->params->{service};
-    $c->session->{git_last_service} //= $service;
-    $service //= $c->session->{git_last_service} // 'git-upload-pack';
-    _debug ">>> GIT SERVICE=$service";
-    _debug ">>> GIT VERSION=$git_ver";
+    my $msg = _loc( "CLARIVE: %1: %2", $type, "$err\n" );
+    
+    # client version parse
     require version;
-    if( !length($git_ver) || version->parse($git_ver) < version->parse('1.8.3') ) {
-        _error( $err );
+    my ($git_ver) = $c->req->user_agent =~ /git\/([\d\.]+)/;
+    $git_ver =~ s/\.$//g; # ie. 2.1.0.GIT => 2.1.0.
+    $git_ver = try { version->parse($git_ver) } catch { version->parse('1.8.0') };
+
+    my $service = $c->stash->{git_service}; 
+    _debug ">>> GIT VERSION=$git_ver";
+    _error( $msg );
+    if( $c->stash->{git_lastarg} eq 'git-receive-pack' ) {
+        #my $m2 = 'refs/tags/CERT hook declined';
+        $msg = sprintf 
+        "%04x\002%s".
+        #"0033\002error: hook declined to update refs/tags/CERT\n".
+        #"003b\001000eunpack ok\n".
+        #"0024ng refs/tags/CERT hook declined\n".
+        #"%04x\001000eunpack ok\n".
+        #"%04xng %s\n".
+        "00000000\n", 5+length($msg),$msg; # ,31+length($m2),8+length($m2),$m2; 
+        $c->res->status( 200 );
+        $c->res->content_type( "application/x-git-receive-pack-result" );
+        $c->res->headers->header( 'Cache-Control'=>'no-cache, max-age=0, must-revalidate' );
+        $c->res->headers->header( 'Pragma' => 'no-cache' );
+        $c->res->headers->header( 'Expires'=>'Fri, 01 Jan 1980 00:00:00 GMT' );
+        $c->res->write( $msg );
+        $c->res->body( '' );
+    } 
+    elsif( !length($git_ver) || $git_ver < version->parse('1.8.3') ) {
         my $servtxt = sprintf "# service=%s\n",$service;
-        my $errtxt = sprintf "ERR %s\n",$err;
-        my $msg = sprintf "%04X%s0000%04X%s",4+length($servtxt),$servtxt,4+length($errtxt),$errtxt; #  "0036# service=git-receive-pack0000ERR This is a test\n";
+        my $errtxt = sprintf "ERR %s\n",$msg;
+        $msg = sprintf "%04x%s0000%04x%s",4+length($servtxt),$servtxt,4+length($errtxt),$errtxt; #  "0036# service=git-receive-pack0000ERR This is a test\n";
         $c->res->status( 200 );
         $c->res->content_type( "application/x-$service-advertisement" );
         $c->res->body( $msg );
         return;
     } else {
-        # 1.8.3 on can handle this error message style
+        # >= 1.8.3 on can handle this error message style
         $c->res->status( 500 );
         $c->res->content_type( 'text/plain' );
-        $c->res->body( $err );
+        $c->res->body( $msg );
         return;
     }
 }
