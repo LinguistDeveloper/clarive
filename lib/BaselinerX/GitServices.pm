@@ -9,6 +9,7 @@ with 'Baseliner::Role::Service';
 
 register 'action.git.repository_access' => {name => "Access git repository for pull/push"};
 register 'action.git.repository_read' => {name => "Access git repository for pull"};
+register 'action.git.update_tags' => {name => "Can update system tags in repositories"};
 
 register 'config.git' => {
     metadata => [

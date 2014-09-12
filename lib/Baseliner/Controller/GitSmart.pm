@@ -173,8 +173,11 @@ sub git : Path('/git/') {
             # check BL tags
             if( /refs\/tags\/($bls)/ ) {
                 my $tag = $1;
-                $self->process_error($c,'Push Error', _loc('Cannot update internal tag %1', $tag) );
-                return;
+                my $can_tags = Baseliner->model("Permissions")->user_has_action(username=>$c->username,action=>'action.git.update_tags', bl=>$tag );
+                if ( !$can_tags ) {
+                    $self->process_error($c,'Push Error', _loc('Cannot update internal tag %1', $tag) );
+                    return;
+                }
             }
         }
         seek $fi,0,0;  # reset fh
