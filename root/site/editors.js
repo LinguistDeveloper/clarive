@@ -1,4 +1,5 @@
 Baseliner.HtmlEditor = Ext.extend(Ext.form.HtmlEditor, {
+    defaultValue: (Ext.isOpera || Ext.isIE6) ? '&#160;' : '',
     initComponent : function(){
         var self = this;
         Baseliner.HtmlEditor.superclass.initComponent.call(this);
