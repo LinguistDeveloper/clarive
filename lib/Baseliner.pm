@@ -189,6 +189,7 @@ around 'debug' => sub {
         # make immutable for speed
         my %cl=Class::MOP::get_all_metaclasses;
 
+        # generic classes
         for my $package (
             grep !/(Baseliner|Baseliner::Cmd|Baseliner::Moose|Baseliner::Role::.*|Baseliner::View::.*|BaselinerX::CI::.*)$/, 
             grep /^Baseliner/, 
@@ -196,7 +197,9 @@ around 'debug' => sub {
         {
             my $meta = $cl{ $package };
             next if ref $meta eq 'Moose::Meta::Role';
-            $meta->make_immutable unless $meta->is_immutable;   # slow loadup... ~1s
+            unless( $meta->is_immutable ) {
+                $meta->make_immutable ;   # slow loadup... ~1s
+            }
         }
 
         #my %pkgs;
@@ -322,7 +325,6 @@ sub username {
         return undef;   
     } and return $user;
 }
-
 sub user_ci {
     my ($c,$username) = @_;
     ci->user->search_ci( name=>( $username // $c->username ) );
