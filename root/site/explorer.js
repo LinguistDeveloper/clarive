@@ -249,7 +249,7 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
                         menu_item.click_data = { action: menu_item.comp }; // need this before to preserve scope
                         menu_item.handler = function(item) {
                             item.click_data.node = item.node;   
-                            var d = { node: item.node, action: menu_item.comp };
+                            var d = menu_item.comp.data ||{ node: item.node, action: menu_item.comp };
                             Baseliner.add_tabcomp( item.url, _(menu_item.comp.title), d );
                         };
                     } else if( menu_item.page != undefined ) {
