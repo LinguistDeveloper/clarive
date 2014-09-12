@@ -4558,13 +4558,13 @@ msgid "%1 mentioned you in a comment #%2: %3"
 msgstr "%1 te ha mencionado en el comentario #%2: %3"
 
 msgid "%1 created a post for #%2 %3"
-msgstr "El usuario %1 ha comentado #%2 %3"
+msgstr "%1 ha comentado #%2 %3"
 
 msgid "@%1 created a post for #%2 %3"
-msgstr "El usuario %1 ha comentado #%2 %3"
+msgstr "%1 ha comentado #%2 %3"
 
 msgid "@%1 deleted a post from #%2 %3"
-msgstr "El usuario %1 ha borrado un comentario en #%2 %3"
+msgstr "%1 ha borrado un comentario en #%2 %3"
 
 msgid "User %1 has requested approval for job %2"
 msgstr "%1 ha solicitado aprobación para el pase %2"
