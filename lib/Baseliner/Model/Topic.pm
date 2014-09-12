@@ -45,6 +45,16 @@ register 'event.post.delete' => {
     },
 };
 
+register 'event.post.mention' => {
+    text => '%1 mentioned you in a comment: %3',
+    description => 'User mentioned another user in a comment',
+    vars => ['username', 'ts', 'post', 'mentioned'],
+    filter => $post_filter,
+    notify => {
+        scope => ['project', 'category', 'category_status'],
+    },
+};
+
 register 'event.file.create' => {
     text => '%1 posted a file: %3',
     description => 'User uploaded a file',

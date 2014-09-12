@@ -701,6 +701,23 @@ sub comment : Local {
                     subject         => $subject,
                     notify=>$notify 
                 };
+                # mentioned people? event this...
+                while( $text =~ /\@([^\s\W\n]+)/gm ) {
+                    my $mentioned = $1;
+                    if( ci->user->find_one({ username=>$mentioned }) ) {
+                        event_new 'event.post.mention' => {
+                            username        => $c->username,
+                            mentioned       => $mentioned,
+                            mid             => $topic_mid,
+                            data            => ci->new($topic_mid)->{_ci},
+                            id_post         => $mid_post,
+                            post            => $text,
+                            notify_default  => \@users,
+                            subject         => $subject,
+                            notify=>$notify 
+                        };
+                    }
+                }
             } else {
                 my $post = ci->find( $id_com );
                 _fail( _loc("This comment does not exist anymore") ) unless $post;
