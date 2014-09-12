@@ -474,6 +474,7 @@ sub encode_recipients {
 sub get_notifications {
 	my ( $self, $p ) = @_;
     my $event_key = $p->{event_key} or _throw 'Missing parameter event_key';
+    my $ev = Baseliner->registry->get( $event_key );
     my $notify_scope = $p->{notify_scope}; #or _throw 'Missing parameter notify_scope';
     my $mid = $p->{mid};
     my @notify_default = _array ($p->{notify_default});
@@ -483,10 +484,11 @@ sub get_notifications {
     
     my $name_config = $event_key;
     $name_config =~ s/event.//g;
-    my $template = Baseliner->model( 'ConfigStore' )->get( 'config.notifications')->{$name_config."_template_default"};
-	if (!$template || $template eq ''){
-    	$template =  Baseliner->model( 'ConfigStore' )->get( 'config.notifications' )->{template_default};
-    }
+    
+    # rgo: use the event to get it's defaults! 
+    my $template = $ev->template;
+    $template ||= Baseliner->model( 'ConfigStore' )->get( 'config.notifications.' . $name_config . '.template_default')->{template_default};
+    $template ||=  Baseliner->model( 'ConfigStore' )->get( 'config.notifications.template_default' )->{template_default};
     
     if(!$self->exclude_default( {event_key => $event_key} )){
         for my $notify ( values %$send_notification ) {

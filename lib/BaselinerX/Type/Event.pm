@@ -56,6 +56,7 @@ has 'name' => ( is => 'rw', isa => 'Str', default => sub { shift->key } );
 has 'type' => ( is => 'rw', isa => 'Str', default => 'trigger' );
 has 'description' => ( is => 'rw', isa => 'Str', default => 'An Event' );
 has 'notify' => ( is => 'rw', isa => 'HashRef' );
+has 'template' => ( is => 'rw', isa => 'Str' );
 has 'use_semaphore' => ( is => 'rw', isa => 'Bool', default => 1 );
 has 'text' => (
     is      => 'rw',

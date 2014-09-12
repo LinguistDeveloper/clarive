@@ -31,6 +31,8 @@ register 'event.post.create' => {
     vars => ['username', 'ts', 'post'],
     filter => $post_filter,
     notify => {
+        #scope => ['project', 'category', 'category_status', 'priority','baseline'],
+        template => '/email/generic_post.html',
         scope => ['project', 'category', 'category_status'],
     },
 };
@@ -51,6 +53,7 @@ register 'event.post.mention' => {
     vars => ['username', 'ts', 'post', 'mentioned'],
     filter => $post_filter,
     notify => {
+        template => '/email/generic_post.html',
         scope => ['project', 'category', 'category_status'],
     },
 };

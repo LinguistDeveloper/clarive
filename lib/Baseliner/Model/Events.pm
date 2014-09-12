@@ -90,7 +90,11 @@ sub run_once {
                 foreach  my $template (  keys $notification ){
                     my $topic = {};
                     $topic = mdb->topic->find_one({ mid => "$stash->{mid}"}) if $stash->{mid};
-                    my $subject = parse_vars($stash->{subject},{%$stash,%$topic} ) || $event_key;
+                    my $subject = parse_vars($stash->{subject},{%$stash,%$topic} ) || try{ 
+                            my $ev = Baseliner->registry->get( $event_key );
+                            my $msg = Util->_strip_html($ev->event_text( $stash ));
+                            substr( $msg, 0, 80 ) . ( length($msg)>80 ? '...' : '' );
+                        } || $event_key;
                     my $model_messaging = {
                         subject         => $subject,
                         sender          => $config_email || 'clarive@clarive.com',
