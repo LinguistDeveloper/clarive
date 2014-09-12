@@ -860,7 +860,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             self.btn_delete_form.hide();
         }
         if( ! params.title ) {
-            self.setTitle( Baseliner.topic_title( params.topic_mid, params.category, params.category_color, null, self.id_title ) ) 
+            self.setTitle( Baseliner.topic_title( params.topic_mid, params.category||params.category_name, params.category_color, null, self.id_title ) ) 
         }
         
         self.title = params.title;

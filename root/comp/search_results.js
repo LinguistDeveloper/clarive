@@ -88,7 +88,7 @@
                                         Baseliner.add_tabcomp( "/ci/edit", r.url[1], { mid: r.url[0], load: true, action:'edit' } );
                                     }
                                     else if( r.type == 'topic' ) {
-                                        Baseliner.add_tabcomp( "/topic/view", r.url[1], { topic_mid: r.url[0], title:r.url[1] } );
+                                        Baseliner.add_tabcomp( "/topic/view", null, { topic_mid: r.url[0], topic_name: r.url[1], category_color: r.url[2], category_name: r.url[3]  } );
                                     }
                                 }
                             });

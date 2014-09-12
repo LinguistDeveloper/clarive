@@ -2579,7 +2579,7 @@ sub search_query {
             title => sprintf( '%s', $_->{title} ),
             text  => $desc,
             info  => $info,
-            url   => [ $_->{topic_mid}, $_->{topic_name}, $_->{category_color} ],
+            url   => [ $_->{topic_mid}, $_->{topic_name}, $_->{category_color}, $_->{category_name} ],
             type  => 'topic',
             mid   => $r->{topic_mid},
             id    => $r->{topic_mid},
