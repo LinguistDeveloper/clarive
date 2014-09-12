@@ -486,10 +486,10 @@ sub get_notifications {
     $name_config =~ s/event.//g;
     
     # rgo: use the event to get it's defaults! 
-    my $template = $ev->template;
-    _debug( "template for $event_key: $template" );
+    my $template = $ev->notify->{template};
     $template ||= Baseliner->model( 'ConfigStore' )->get( 'config.notifications.' . $name_config . '.template_default')->{template_default};
     $template ||=  Baseliner->model( 'ConfigStore' )->get( 'config.notifications.template_default' )->{template_default};
+    _info( "template for $event_key: $template" );
     
     if(!$self->exclude_default( {event_key => $event_key} )){
         for my $notify ( values %$send_notification ) {
