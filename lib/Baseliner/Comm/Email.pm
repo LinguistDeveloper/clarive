@@ -12,8 +12,14 @@ sub daemon {
 
     my $frequency = $config->{frequency};
     _log _loc "Email daemon started with frequency %1, timeout %2, max_message_size %3", @{ $config }{ qw/frequency timeout max_message_size/ };
+    require Baseliner::Sem;
+    my $sem = Baseliner::Sem->new( key=>'email_daemon', who=>"email_daemon", internal=>1 );
     for( 1..1000 ) {
+        $sem->take;
         $self->process_queue( $c, $config );
+        if ( $sem ) {
+            $sem->release;
+        }
         sleep $frequency;
     }
     _log "Email daemon stopping.";

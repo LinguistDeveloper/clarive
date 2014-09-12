@@ -60,9 +60,11 @@ sub job_daemon {
         exec $cmd;
     };
     _log "Job daemon started with frequency ${freq}s";
-
+    require Baseliner::Sem;
+    my $sem = Baseliner::Sem->new( key=>'job_daemon', who=>"job_daemon", internal=>1 );
     # set job query order
     for( 1..1000 ) {
+        $sem->take;
         my $now = mdb->now;
 
         my @query_roll = (
@@ -129,6 +131,9 @@ sub job_daemon {
         $self->check_job_expired($config);
         $self->check_cancelled();
         last if $EXIT_NOW;
+        if ( $sem ) {
+            $sem->release;
+        }
         sleep $freq;    
         last if $EXIT_NOW;
     }

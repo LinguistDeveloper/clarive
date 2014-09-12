@@ -22,8 +22,14 @@ register 'service.event.daemon' => {
         my ($self, $c, $config ) = @_;
         $config->{frequency} ||= 15 ;
         _log _loc "Event daemon starting with frequency %1, timeout %2", $config->{frequency}, $config->{timeout};
+        require Baseliner::Sem;
+        my $sem = Baseliner::Sem->new( key=>'event_daemon', who=>"event_daemon", internal=>1 );
         for( 1..1000 ) {
+            $sem->take;
             $self->run_once( $c, $config );
+            if ( $sem ) {
+                $sem->release;
+            }
             sleep( $config->{frequency} );
         } 
         # purge old events

@@ -155,6 +155,7 @@ sub release {
         mdb->sem_queue->save( $que );
     }
     $self->queue_released(1);
+    _debug(_loc 'Released semaphore %1 (%2)', $self->key, $self->who);
 }
 
 sub purge { 
