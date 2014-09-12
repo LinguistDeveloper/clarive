@@ -213,25 +213,6 @@ sub _create {
 
     my $type = $p{job_type} || $p{type} || $config->{type};
     
-    my $row_data = {
-            name         => 'temp' . $$,
-            mid          => $job_mid,
-            starttime    => "$starttime",
-            schedtime    => "$starttime",
-            maxstarttime => "$maxstarttime",
-            status       => $status,
-            step         => $p{step} || 'PRE',
-            type         => $type,
-            id_rule      => $p{id_rule},
-            username     => $p{username} || $config->{username} || 'internal',
-            comments     => $p{description},
-            ns           => '/', # not used, deprecated
-            bl           => $bl,
-            bl_to        => $bl_to,
-            state_to     => $state_to
-    };
-    $row_data->{job_key} = $p{job_key} if length $p{job_key};
-    
     # create db row
     my $job_seq = mdb->seq('job');
     $self->jobid( $job_seq );
