@@ -16,7 +16,8 @@ extends 'Clarive::Cmd';
 has listen    => qw(is rw isa Str default localhost:8089);
 has host      => qw(is rw isa Str);
 has port      => qw(is rw isa Str);
-has unpack    => qw(is rw isa Bool default 1);
+has unpack    => qw(is rw isa Bool default 0);
+has quotemeta => qw(is rw isa Bool default 0);
 
 sub run {
     my ($self, %opts)=@_;
@@ -53,10 +54,12 @@ sub run {
             if( $self->unpack ) {
                 for( split /\n/, $resas ) {
                     my $hh = unpack( 'H*', $_ );
-                    print "\t<-- $_ [$hh]\n"; 
+                    print "\t<-- ".($self->quotemeta ? quotemeta($_) : $_ )." [$hh]\n"; 
                 }
             } else {
-                print "$resas" =~ s/\n/\n\t<-- /gr;
+                for( split /\n/, $resas ) {
+                   print "\t<-- " . ($self->quotemeta ? quotemeta($_) : $_ ) . "\n";
+                }
             }
         
             $c->send_response( $response );
@@ -90,6 +93,7 @@ Options:
   --port                  listen port
   --host                  listen host
   --unpack                shows hex block for each line of incoming
+  --quotemeta             escapes special characters in string output
 
 =cut
 
