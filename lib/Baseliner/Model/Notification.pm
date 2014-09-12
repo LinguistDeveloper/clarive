@@ -489,7 +489,7 @@ sub get_notifications {
     my $template = $ev->notify->{template};
     $template ||= Baseliner->model( 'ConfigStore' )->get( 'config.notifications.' . $name_config . '.template_default')->{template_default};
     $template ||=  Baseliner->model( 'ConfigStore' )->get( 'config.notifications.template_default' )->{template_default};
-    _info( "template for $event_key: $template" );
+    _log( "template for $event_key: $template" );
     
     if(!$self->exclude_default( {event_key => $event_key} )){
         for my $notify ( values %$send_notification ) {
