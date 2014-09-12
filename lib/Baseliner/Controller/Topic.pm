@@ -712,7 +712,7 @@ sub comment : Local {
                             data            => ci->new($topic_mid)->{_ci},
                             id_post         => $mid_post,
                             post            => $text,
-                            notify_default  => \@users,
+                            notify_default  => [ $mentioned ],
                             subject         => $subject,
                             notify=>$notify 
                         };
