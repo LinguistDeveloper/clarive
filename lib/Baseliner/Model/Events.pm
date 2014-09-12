@@ -93,7 +93,7 @@ sub run_once {
                     my $subject = parse_vars($stash->{subject},{%$stash,%$topic} ) || try{ 
                             my $ev = Baseliner->registry->get( $event_key );
                             my $msg = Util->_strip_html($ev->event_text( $stash ));
-                            substr( $msg, 0, 80 ) . ( length($msg)>80 ? '...' : '' );
+                            substr( $msg, 0, 120 ) . ( length($msg)>120 ? '...' : '' );
                         } || $event_key;
                     my $model_messaging = {
                         subject         => $subject,

@@ -682,7 +682,7 @@ sub comment : Local {
                         id_category => $topic_row->{category}{id}, 
                         id_status   => $topic_row->{category_status}{id}, 
                         projects    => \@projects );
-                my $subject = _loc("%1 created a post for topic [%2] %3", $c->username, $topic_row->{mid}, $topic_row->{title} );
+                my $subject = _loc("@%1 created a post for #%2 %3", $c->username, $topic_row->{mid}, $topic_row->{title} );
                 my $notify = { #'project', 'category', 'category_status'
                     category        => $topic_row->{category}{id},
                     category_status => $topic_row->{category_status}{id},
@@ -753,7 +753,7 @@ sub comment : Local {
                 my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$mids[0]", rel_type=>'topic_project' });
                 my @users = Baseliner->model("Topic")->get_users_friend(id_category => $topic_row->{category}{id}, 
                     id_status=>$topic_row->{category}{status}, projects=>\@projects);
-                my $subject = _loc("%1 deleted a post from topic [%2] %3", $c->username, $topic_row->{mid}, $topic_row->{title});
+                my $subject = _loc("@%1 deleted a post from #%2 %3", $c->username, $topic_row->{mid}, $topic_row->{title});
                 my $notify = { #'project', 'category', 'category_status'
                     category        => $topic_row->{category}{id},
                     category_status => $topic_row->{category_status}{id},

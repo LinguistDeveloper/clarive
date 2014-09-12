@@ -48,9 +48,9 @@ register 'event.post.delete' => {
 };
 
 register 'event.post.mention' => {
-    text => '%1 mentioned you in a comment: %3',
+    text => '%1 mentioned you in a comment #%2: %3',
     description => 'User mentioned another user in a comment',
-    vars => ['username', 'ts', 'post', 'mentioned'],
+    vars => ['username', 'mid', 'post', 'mentioned','ts'],
     filter => $post_filter,
     notify => {
         template => '/email/generic_post.html',
