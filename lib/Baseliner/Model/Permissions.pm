@@ -609,14 +609,13 @@ sub users_with_roles {
         }
         $where->{'$or'} = \@ors;
         _warn $where;
-        @users = map { $_->{name} } BaselinerX::CI::user->find($where)->all;
+        @users = map { $_->{name} } ci->user->find($where)->all;
     } else {
-        @users = map { $_->{username} } DB->BaliRoleuser->search({ id_role => \@roles },{ columns => ['username']})->hashref->all;
-        # for my $role ( @roles ) {
-        #     my $wh;
-        #     $wh->{"project_security.$role"} = { '$ne' => undef };
-        #     push @ors, $wh;
-        # }
+        for my $role ( @roles ) {
+            my $wh;
+            $wh->{"project_security.$role"} = {'$exists'=> '1' };
+            push @ors, $wh;
+        }
     }
 
     my @root_users;
