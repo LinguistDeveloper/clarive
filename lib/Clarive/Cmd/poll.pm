@@ -112,10 +112,10 @@ sub run {
             if ( !$self->url_mongo ) {
                 $m = MongoDB::MongoClient->new( $self->app->config->{mongo}{client});
             } else {
-                $m = {
+                $m = MongoDB::MongoClient->new({
                     host => $self->url_mongo,
                     auto_connect => 1
-                }
+                })
             }
             my $db_name = $self->app->config->{mongo}{dbname} // 'clarive';
             my $db = $m->get_database( $db_name ); 
