@@ -53,8 +53,8 @@ register 'service.purge.daemon' => {
                     my ($self, $c, $config ) = @_;
                     $config->{frequency} ||= 86400;
                     require Baseliner::Sem;
-                    my $sem = Baseliner::Sem->new( key=>'purge_daemon', who=>"purge_daemon", internal=>1 );
                     for( 1..1000 ) {
+                        my $sem = Baseliner::Sem->new( key=>'purge_daemon', who=>"purge_daemon", internal=>1 );
                         $sem->take;
                         $self->run_once();
                         if ( $sem ) {

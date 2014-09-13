@@ -1002,7 +1002,7 @@ sub run {
         return 0;
     };
 
-    _loc("=========| Starting JOB " . $self->jobid . ", rollback=" . $self->rollback);
+    _loc("=========| Starting JOB " . $self->jobid . ", rollback=" . $self->rollback . ", hostname =". $self->host);
 
     _debug( _loc('Rule Runner, STEP=%1, PID=%2, RULE_ID', $self->step, $self->pid ) );
      
