@@ -21,6 +21,7 @@ with 'Clarive::Role::TempDir';
 
 has url_web       => qw(is rw isa Any);
 has url_nginx     => qw(is rw isa Any);
+has url_mongo     => qw(is rw isa Any);
 has api_key       => qw(is rw isa Any);
 has pid_filter    => qw(is rw isa Any);
 has web           => qw(is rw isa Any default 1);
@@ -107,7 +108,15 @@ sub run {
         require MongoDB;
         try {
             sayts "connecting to MongoDB...";
-            my $m = MongoDB::MongoClient->new( $self->app->config->{mongo}{client});
+            my $m;
+            if ( !$self->url_mongo ) {
+                $m = MongoDB::MongoClient->new( $self->app->config->{mongo}{client});
+            } else {
+                $m = {
+                    host => $self->url_mongo,
+                    auto_connect => 1
+                }
+            }
             my $db_name = $self->app->config->{mongo}{dbname} // 'clarive';
             my $db = $m->get_database( $db_name ); 
             sayts "OK: connected to Mongo database $db_name";
