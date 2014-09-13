@@ -109,13 +109,14 @@ sub run {
         try {
             sayts "connecting to MongoDB...";
             my $m;
+            #sayts($self->app->config->{mongo}{client});
             if ( !$self->url_mongo ) {
                 $m = MongoDB::MongoClient->new( $self->app->config->{mongo}{client});
             } else {
-                $m = MongoDB::MongoClient->new({
+                $m = MongoDB::MongoClient->new(
                     host => $self->url_mongo,
                     auto_connect => 1
-                })
+                )
             }
             my $db_name = $self->app->config->{mongo}{dbname} // 'clarive';
             my $db = $m->get_database( $db_name ); 
