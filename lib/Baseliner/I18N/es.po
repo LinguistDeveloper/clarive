@@ -7671,3 +7671,7 @@ msgstr "La revisión [%1] no está en la historia de la revisión que se va a pa
 
 msgid "Not all commits are in [%1] history.  You probably need to merge branches"
 msgstr "No todas las revisiones están incluidas en la historia de [%1].  Probablemente es necesario combinar ramas antes de realizar este pase"
+
+msgid "Job %1 status has changed to %2 and it cannot be %3.  Refresh your job monitor to see it\'s actual status"
+msgstr "El estado del pase %1 ha cambiado a %2 y no puede ser %3.  Refresque el monitor de pases para ver su estado real"
+### EOF - do not write anything bellow this
