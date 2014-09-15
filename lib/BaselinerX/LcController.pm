@@ -73,8 +73,8 @@ sub tree_project_releases : Local {
             url  => '/lifecycle/topic_contents',
             topic_name => {
                 mid            => $_->{mid},
-                category_color => $_->{categories}{color},
-                category_name  => $_->{categories}{name},
+                category_color => $_->{category}->{color},
+                category_name  => $_->{category}->{name},
                 category_status => "",
                 is_release     => 1,
             },
