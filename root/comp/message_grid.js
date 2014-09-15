@@ -166,7 +166,11 @@ Ext.override(Ext.form.HtmlEditor, {
         };
 
 
-
+        var check_sm_events = new Ext.grid.CheckboxSelectionModel({
+            singleSelect: false,
+            sortable: false,
+            checkOnly: true
+        });
         // create the grid
         var grid = new Ext.grid.GridPanel({
             region: 'center',
@@ -181,8 +185,10 @@ Ext.override(Ext.form.HtmlEditor, {
                     forceFit: true
             }],
             selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+            sm: check_sm_events,
             loadMask:'true',
             columns: [
+                check_sm_events,
                 { header: _('Id'), width: 80, dataIndex: 'id', hidden: true, sortable: true },	
                 { header: _('Message Id'), width: 80, dataIndex: 'id_message', hidden: true, sortable: true },	
                 { header: _('From'), width: 200, dataIndex: 'sender', sortable: true },	
@@ -216,10 +222,14 @@ Ext.override(Ext.form.HtmlEditor, {
                     handler: function() {
                         var sm = grid.getSelectionModel();
                         if (sm.hasSelection()) {
-                            var sel = sm.getSelected();
-                            message_view(sel.data.id, sel.data.id_message);
+                            if(sm.selections.length == '1'){
+                                var sel = sm.getSelected();
+                                message_view(sel.data.id, sel.data.id_message);
+                            }else{
+                                Ext.Msg.alert('Error', _('Select only one row'));    
+                            }
                         } else {
-                            Ext.Msg.alert('Error', _('Select at least one row'));	
+                            Ext.Msg.alert('Error', _('Select one row'));	
                         };
                     }
                 }),
@@ -230,19 +240,43 @@ Ext.override(Ext.form.HtmlEditor, {
                     handler: function() {
                         var sm = grid.getSelectionModel();
                         var sel = sm.getSelected();
-                        Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete the message') + ' <b>' + sel.data.subject + '</b>?', 
-                            function(btn){ 
-                                if(btn=='yes') {
-                                    var conn = new Ext.data.Connection();
-                                    conn.request({
-                                        url: '/message/delete',
-                                        params: { id_message: sel.data.id_message, id_queue: sel.data.id },
-                                        success: function(resp,opt) { grid.getStore().remove(sel); },
-                                        failure: function(resp,opt) { Ext.Msg.alert(_('Error'), _('Could not delete the message')); }
-                                    });	
-                                }
-                            } );
-                    }
+                        if (sm.hasSelection()) {
+                            if(sm.selections.length == '1'){
+                                Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete the message') + ' <b>' + sel.data.subject + '</b>?', 
+                                    function(btn){ 
+                                        if(btn=='yes') {
+                                            var conn = new Ext.data.Connection();
+                                            conn.request({
+                                                url: '/message/delete',
+                                                params: { id_message: sel.data.id_message, id_queue: sel.data.id },
+                                                success: function(resp,opt) { grid.getStore().remove(sel); },
+                                                failure: function(resp,opt) { Ext.Msg.alert(_('Error'), _('Could not delete the message')); }
+                                            }); 
+                                        }
+                                    } );
+                            }else if (sm.selections.length > '1'){
+                                Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete the ') + ' <b>' + sm.selections.length + '</b> selected messages?',
+                                    function(btn){ 
+                                        if(btn=='yes') {
+                                            var error_items = 0;
+                                            var total_items = sm.selections.length;
+                                            for( var x=0; x < total_items ; x++ ) {
+                                                var conn = new Ext.data.Connection();
+                                                conn.request({
+                                                    url: '/message/delete',
+                                                    params: { id_message: sm.selections.items[x].data.id_message, id_queue: sm.selections.items[x].data.id},
+                                                    success: function(resp,opt) { grid.getStore().remove(sm.selections.items[error_items]); },
+                                                    failure: function(resp,opt) { error_items++; Ext.Msg.alert(_('Error'), _('Could not delete the message')); }
+                                                });
+                                            }
+                                        }
+                                    } );
+                            }
+                        }else{
+                            Ext.Msg.alert('Error', _('Select at least one row'));
+                        }   
+
+                    }                    
                 }),
                 '->'
                 ]
@@ -250,13 +284,13 @@ Ext.override(Ext.form.HtmlEditor, {
 
     grid.getView().forceFit = true;
 
-    grid.on("rowclick", function(grid, rowIndex, e ) {
-            var row = grid.getStore().getAt(rowIndex);
-            message_view( row.get('id'), row.get('id_message') );
-            var cell = grid.getView().getCell(rowIndex,3);
-            if(row.get('swreaded') == '0'){
-                Ext.fly(cell).update('<div style="padding-left: 5px;padding-top: 3px">' + row.get('subject') + '</div>', false);				
-            }
+    grid.on("rowdblclick", function(grid, rowIndex, e ) {
+           var row = grid.getStore().getAt(rowIndex);
+           message_view( row.get('id'), row.get('id_message') );
+           // var cell = grid.getView().getCell(rowIndex,3);
+           // if(row.get('swreaded') == '0'){
+           //     Ext.fly(cell).update('<div style="padding-left: 5px;padding-top: 3px">' + row.get('subject') + '</div>', false);				
+           // }
     });
     
     var panel = new Ext.Panel({
