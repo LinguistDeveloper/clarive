@@ -208,7 +208,7 @@ method put_file( :$local, :$remote, :$group='', :$user=$self->user  ) {
         $self->_execute( 'chown', "${user}:${group}", $remote );
     }
     $self->_crc_match( $local, $remote )  
-        or Util->_fail( Util->_loc("Failed CRC check for remote file '%1'", $remote ) );
+        or Util->_fail( Util->_loc("Failed CRC check for remote file '%1'. Remote filesystem full?", $remote ) );
     return $self->tuple;  
 }
 
