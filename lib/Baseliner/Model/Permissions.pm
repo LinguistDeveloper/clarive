@@ -586,8 +586,10 @@ sub users_with_roles {
     my $mid = $p{mid};
     my @users;
 
-    my $topic           = mdb->topic->find_one( { mid => $mid } );
-    my $proj_coll_roles = $topic->{_project_security};
+    my $topic = $mid ? mdb->topic->find_one( { mid => $mid } ): {};
+    my $proj_coll_roles = $topic->{_project_security} || '';
+
+    _warn $proj_coll_roles;
 
     my $where;
     my @ors;
@@ -605,15 +607,16 @@ sub users_with_roles {
             }
             push @ors, { '$and' => \@ands };
         }
+        $where->{'$or'} = \@ors;
+        _warn $where;
+        @users = map { $_->{name} } ci->user->find($where)->all;
     } else {
         for my $role ( @roles ) {
             my $wh;
-            $wh->{"project_security.$role"} = { '$ne' => undef };
+            $wh->{"project_security.$role"} = {'$exists'=> '1' };
             push @ors, $wh;
         }
     }
-    $where->{'$or'} = \@ors;
-    @users = map { $_->{name} } BaselinerX::CI::user->search_cis(%$where);
 
     my @root_users;
     if ( $include_root ) {      

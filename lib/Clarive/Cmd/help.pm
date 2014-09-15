@@ -8,7 +8,7 @@ our $CAPTION = 'This help';
 sub run {
     my ($self, %opts)=@_;
     print <<FIN;
-Clarive|Software - Copyright (c) 2013 VASSLabs 
+Clarive - Copyright(C) 2010-2014 Clarive Software, Inc.
 
 usage: cla [-h] [-v] [--config file] command <command-args>
 

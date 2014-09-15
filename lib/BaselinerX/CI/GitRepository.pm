@@ -75,6 +75,7 @@ sub group_items_for_revisions {
             my @rev_items = $rev->show( type=>$p{type} );
             $items_uniq{$_->path} = $_ for @rev_items;
         }
+        # TODO --- in demote, blob is empty for deleted items status=D, which in demote are changed to status=A
         @items = values %items_uniq;
     } else {
         my $tag = $p{tag} // _fail(_loc 'Missing parameter tag needed for top revision');

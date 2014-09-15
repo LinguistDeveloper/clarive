@@ -1,5 +1,5 @@
 package Baseliner::MongoSession;
-use Mouse;
+use Moose;
 our $VERSION = '0.02';
 use namespace::autoclean;
 use Storable;

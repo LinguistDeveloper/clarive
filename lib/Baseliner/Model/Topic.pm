@@ -31,6 +31,8 @@ register 'event.post.create' => {
     vars => ['username', 'ts', 'post'],
     filter => $post_filter,
     notify => {
+        #scope => ['project', 'category', 'category_status', 'priority','baseline'],
+        template => '/email/generic_post.html',
         scope => ['project', 'category', 'category_status'],
     },
 };
@@ -41,6 +43,17 @@ register 'event.post.delete' => {
     vars => ['username', 'ts', 'post'],
     filter => $post_filter,
     notify => {
+        scope => ['project', 'category', 'category_status'],
+    },
+};
+
+register 'event.post.mention' => {
+    text => '%1 mentioned you in a comment #%2: %3',
+    description => 'User mentioned another user in a comment',
+    vars => ['username', 'mid', 'post', 'mentioned','ts'],
+    filter => $post_filter,
+    notify => {
+        template => '/email/generic_post.html',
         scope => ['project', 'category', 'category_status'],
     },
 };
@@ -2579,7 +2592,7 @@ sub search_query {
             title => sprintf( '%s', $_->{title} ),
             text  => $desc,
             info  => $info,
-            url   => [ $_->{topic_mid}, $_->{topic_name}, $_->{category_color} ],
+            url   => [ $_->{topic_mid}, $_->{topic_name}, $_->{category_color}, $_->{category_name} ],
             type  => 'topic',
             mid   => $r->{topic_mid},
             id    => $r->{topic_mid},

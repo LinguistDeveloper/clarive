@@ -1,4 +1,5 @@
 Baseliner.HtmlEditor = Ext.extend(Ext.form.HtmlEditor, {
+    defaultValue: (Ext.isOpera || Ext.isIE6) ? '&#160;' : '',
     initComponent : function(){
         var self = this;
         Baseliner.HtmlEditor.superclass.initComponent.call(this);
@@ -25,21 +26,24 @@ Baseliner.CLEditor = Ext.extend(Ext.form.TextArea, {
         Baseliner.CLEditor.superclass.initComponent.call(this);
         var self = this;
         self.loading_field = false;
+        self.addEvents(['aftereditor']);
 
         this.on('afterrender', function(){
             $.cleditor.buttons.fullscreen = {
                 name: 'fullscreen',
                 image: '../../images/icons/fullscreen-24.png',
-                tooltip: 'full screen',
-                title: "Full Screen",
+                tooltip: _('full screen'),
+                title: _("Full Screen"),
                 command: "fullscreen",
                 popupName: "fullscreen",
                 getEnabled: function(){ return true },
                 buttonClick: function(){
                     if( self.fullscreen ) {
                         // minimize
+                        // TODO in Chrome, after minimize, can't paste images
                         var main = self.editor_dom();
                         $(main).css({ position:'', top:'', left:'', bottom:'', right:'' });
+                        if( self.iframe_last_height ) self.cleditor.$frame.css({ height: self.iframe_last_height });
                         self.$lastParent.appendChild( main );
                         self.cleditor.refresh();
                         self.cleditor.focus();
@@ -55,6 +59,11 @@ Baseliner.CLEditor = Ext.extend(Ext.form.TextArea, {
                         self.cleditor.refresh();
                         self.cleditor.focus();
                         self.fullscreen = true;
+                        
+                        // fix the iframe height, otherwise full window text looks awkward
+                        var iframe = self.cleditor.$frame;
+                        self.iframe_last_height = iframe.height();
+                        iframe.css({ height: '94%' });
                     }
                 }
             };
@@ -71,28 +80,37 @@ Baseliner.CLEditor = Ext.extend(Ext.form.TextArea, {
                 self.cleditor.refresh();
                 if( this.autofocus ) self.cleditor.focus();
             });
-            if( this.autofocus ) 
-            this.cleditor.focus();
+            if( this.autofocus ) this.cleditor.focus();
+            
         });
         if( Ext.isChrome ) {
             var foo_load = function(i){
                 if( i < 0 ) return;
             setTimeout( function(){  // TODO detect when the CLEditor is loaded
+            
                     if( !self.cleditor ) 
                         foo_load( i-- );
-                    else
-                self.cleditor.$frame[0].contentDocument.onpaste = function(e){ 
-                    var items = e.clipboardData.items;
-                    var blob = items[0].getAsFile();
-                    var reader = new FileReader();
-                    reader.onload = function(event){
-                        self.cleditor.execCommand('inserthtml',
-                            String.format('<img src="{0}" />', event.target.result) );
-                        //self.insertAtCursor( String.format('<img src="{0}" />', event.target.result) );
-                    }; 
-                    reader.readAsDataURL(blob); 
-                };
-                }, 500);
+                    else {
+                        var iframe = self.editor_iframe() ;
+                        if( iframe ) {
+                            // fix caret cursor not showing on focus.
+                            iframe.contentDocument.body.style.height = '90%';
+                            iframe.contentDocument.documentElement.style.height = '100%'
+                            self.fireEvent('aftereditor', self );
+                        }
+                        self.cleditor.$frame[0].contentDocument.onpaste = function(e){ 
+                            var items = e.clipboardData.items;
+                            var blob = items[0].getAsFile();
+                            var reader = new FileReader();
+                            reader.onload = function(event){
+                                self.cleditor.execCommand('inserthtml',
+                                    String.format('<img src="{0}" />', event.target.result) );
+                                //self.insertAtCursor( String.format('<img src="{0}" />', event.target.result) );
+                            }; 
+                            reader.readAsDataURL(blob); 
+                        };
+                    }
+                }, 800);
             };
             foo_load(5);
         }
@@ -104,6 +122,11 @@ Baseliner.CLEditor = Ext.extend(Ext.form.TextArea, {
     },
     editor_dom : function(){
         return this.cleditor ? this.cleditor.$main[0] : null;
+    },
+    editor_iframe : function(){
+        var eldom = this.editor_dom();
+        if( !eldom ) return;
+        return eldom.children[1];
     },
     show : function(){
         Baseliner.CLEditor.superclass.show.apply(this, arguments);
@@ -907,7 +930,6 @@ VL.FileView = Ext.extend( Ext.BoxComponent, {
     delete_editor : function(){
         this.editor.destroy();
         this.el.dom.innerHTML = "";
-        XX = this.el;
     },
     setup_change_event : function(){
         var self = this;

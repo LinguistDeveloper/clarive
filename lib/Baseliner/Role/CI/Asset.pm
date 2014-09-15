@@ -7,7 +7,7 @@ has id_data => qw(is rw isa Maybe[MongoDB::OID]);
 sub get_data {
     my ($self)=@_;
     return unless $self->id_data;
-    return mdb->grid->get( $self->id_data );
+    return mdb->grid->get( $self->id_data );  # may have utf8 issues and need a utf8::decode? see post.pm
 }
 
 sub put_data {

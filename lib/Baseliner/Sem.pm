@@ -146,7 +146,11 @@ sub take {
 sub release { 
     my ($self, %p) =@_;
     if ( !$self->queue_released ) {
-        my $res = mdb->sem->update({ key => $self->key },{ '$inc' => { slots => 1} });
+        if ( !$self->internal ){
+            mdb->sem->update({ key => $self->key },{ '$inc' => { slots => 1 } });
+        } else {
+            mdb->sem->update({ key => $self->key },{ '$set' => { slots => 0+$self->slots } });
+        }
     }
     my $que = mdb->sem_queue->find_one({ _id=>$self->id_queue });
     $que->{status} = 'done'; 
@@ -155,6 +159,7 @@ sub release {
         mdb->sem_queue->save( $que );
     }
     $self->queue_released(1);
+    _debug(_loc 'Released semaphore %1 (%2)', $self->key, $self->who);
 }
 
 sub purge { 

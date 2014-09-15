@@ -4554,11 +4554,17 @@ msgstr "No se han encontrado artefactos"
 msgid "New file %1 attached to topic [%2] %3"
 msgstr "Nuevo fichero %1 adjuntado #%2 %3"
 
-msgid "%1 created a post for topic [%2] %3"
+msgid "%1 mentioned you in a comment #%2: %3"
+msgstr "%1 te ha mencionado en el comentario #%2: %3"
+
+msgid "%1 created a post for #%2 %3"
 msgstr "%1 ha comentado #%2 %3"
 
-msgid "%1 deleted a post from topic [%2] %3"
-msgstr "%1 ha borrado un comentario #%2 %3"
+msgid "@%1 created a post for #%2 %3"
+msgstr "%1 ha comentado #%2 %3"
+
+msgid "@%1 deleted a post from #%2 %3"
+msgstr "%1 ha borrado un comentario en #%2 %3"
 
 msgid "User %1 has requested approval for job %2"
 msgstr "%1 ha solicitado aprobación para el pase %2"
@@ -6838,13 +6844,13 @@ msgid "The trap timeout countdown will be paused"
 msgstr "Se cancela la cuenta atras de la captura"
 
 msgid "Run In-process: %1"
-msgstr "Ejecución en progreso: %1"
+msgstr "Ejecución en proceso: %1"
 
 msgid "Run In-Process"
-msgstr "Ejecución en progreso"
+msgstr "Ejecución en proceso"
 
 msgid "Run In-process"
-msgstr "Ejecución en progreso"
+msgstr "Ejecución en proceso"
 
 msgid "Status Code"
 msgstr "Código de Estado"

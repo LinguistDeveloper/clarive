@@ -22,8 +22,14 @@ register 'service.event.daemon' => {
         my ($self, $c, $config ) = @_;
         $config->{frequency} ||= 15 ;
         _log _loc "Event daemon starting with frequency %1, timeout %2", $config->{frequency}, $config->{timeout};
+        require Baseliner::Sem;
+        my $sem = Baseliner::Sem->new( key=>'event_daemon', who=>"event_daemon", internal=>1 );
         for( 1..1000 ) {
+            $sem->take;
             $self->run_once( $c, $config );
+            if ( $sem ) {
+                $sem->release;
+            }
             sleep( $config->{frequency} );
         } 
         # purge old events
@@ -84,7 +90,11 @@ sub run_once {
                 foreach  my $template (  keys $notification ){
                     my $topic = {};
                     $topic = mdb->topic->find_one({ mid => "$stash->{mid}"}) if $stash->{mid};
-                    my $subject = parse_vars($stash->{subject},{%$stash,%$topic} ) || $event_key;
+                    my $subject = parse_vars($stash->{subject},{%$stash,%$topic} ) || try{ 
+                            my $ev = Baseliner->registry->get( $event_key );
+                            my $msg = Util->_strip_html($ev->event_text( $stash ));
+                            substr( $msg, 0, 120 ) . ( length($msg)>120 ? '...' : '' );
+                        } || $event_key;
                     my $model_messaging = {
                         subject         => $subject,
                         sender          => $config_email || 'clarive@clarive.com',

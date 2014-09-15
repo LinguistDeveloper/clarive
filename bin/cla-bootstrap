@@ -340,6 +340,7 @@ Graph
 Hash::Diff
 HTML::Mason
 HTML::Strip
+HTTP::Daemon
 IO::All
 IO::Compress::Gzip
 Image::Identicon
