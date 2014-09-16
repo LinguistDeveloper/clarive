@@ -31,7 +31,7 @@ use Exporter::Tidy default => [qw/
     event_new
     event_hook
     events_by_key
-    events_by_mid
+    activity_by_mid
     /
 ];
 
