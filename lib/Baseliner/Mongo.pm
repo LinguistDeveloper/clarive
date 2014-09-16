@@ -323,19 +323,25 @@ sub index_all {
             [{ created_on=>1, mid=>1 }],
             [{ created_on=>1, m=>1 }],
             [{'$**'=> "text"}],
+            [{ '_project_security'=>1, category_name=>1 }],
         ],
         job_log => [
             [{ id=>1 }],
             [{ mid=>1 }],
         ],
-        role => [
-            [{ id=>1 }],
+        cache => [
+            [{ _id=>1 }],
         ],
         event => [
             [{ ts=>1 }],
+            [{ 'event_status'=>1, '_id'=>1 }],
         ],
-        topic_image => [
-            [{ id_hash => 1 }]
+        event_log =>[
+            [{ 'id_event'=>1 }],
+        ],
+        'fs.files' =>[ 
+            [{ parent_mid=>1 }],
+            [{ topic_mid=>1 }],
         ],
         notification => [
             [{'$**'=> "text"}],
@@ -352,6 +358,7 @@ sub index_all {
             [{ to_mid  =>1 }],
             [{ from_mid  =>1 }],
             [{ rel_type=>1 }],
+            [{ from_mid=>1, to_mid=>1 }],
         ],
         category => [
           [{ id=>1 }],
@@ -363,9 +370,15 @@ sub index_all {
         master_doc => [
             [{'$**'=> "text"}],
             [{ mid=>1 },{ unique=>1 }],
+            [{ name=>1, moniker=>1, collection=>1 }],
+            [{ status=>1, pid=>1, collection=>1 }],
+            [{ status=>1, maxstarttime=>1, collection=>1 }],
         ],
         sem => [
-            [{ key => 1},{ unique=>1, dropDups => 1 }]
+            [{ key => 1},{ unique=>1, dropDups => 1 }],
+        ],
+        topic_image => [
+            [{ id_hash => 1 }],
         ],
     };
     

@@ -73,8 +73,9 @@ sub tree_project_releases : Local {
             url  => '/lifecycle/topic_contents',
             topic_name => {
                 mid            => $_->{mid},
-                category_color => $_->{category}{color},
-                category_name  => $_->{category}{name},
+                category_color => $_->{category}->{color},
+                category_name  => $_->{category}->{name},
+                category_status => "<b>(" . $_->{category_status}->{name} . ")</b>",
                 is_release     => 1,
             },
             data => {
@@ -110,13 +111,14 @@ sub category_contents : Local {
     my @tree = map {
         my $leaf = ci->new($_->{mid})->children( where => { collection => 'topic'}, depth => 1) ? \0 : \1;
        +{
-            text => ' ('.$_->{category_status}->{name}.') '.$_->{title},
+            text => $_->{title},
             icon => '/static/images/icons/release.png',
             url  => '/lifecycle/topic_contents',
             topic_name => {
                 mid            => $_->{mid}. ' ('.$_->{category_status}->{name}.')',
                 category_color => $_->{category}->{color},
                 category_name  => $_->{category}->{name},
+                category_status => "<b>(" . $_->{category_status}->{name} . ")</b>",
                 is_release     => 1,
             },
             data => {
@@ -197,9 +199,10 @@ sub tree_topics_project : Local {
             icon => '/static/images/icons/release.png',
             url  => '/lifecycle/topic_contents',
             topic_name => {
-                mid            => $_->{mid}. ' ('.$_->{category_status}->{name}.')',
+                mid            => $_->{mid},
                 category_color => $_->{category}->{color},
                 category_name  => $_->{category}->{name},
+                category_status => "<b>(" . $_->{category_status}->{name} . ")</b>",
                 is_release     => 1,
             },
             data => {
@@ -263,26 +266,21 @@ sub topic_contents : Local {
             : $is_changeset ? '/static/images/icons/changeset_lc.png' :'/static/images/icons/topic.png' ;
 
         my @menu_related = $self->menu_related();
-
-        # my $mid_project = $_->{_project_security}->{project}[0];
-        # my $project_name = $mid_project ? mdb->project->find_one({ mid=>$mid_project })->{name} : '';
-
-        # my $title_project = "(" . $project_name . ")";
+        
         my $leaf = $related{$_->{mid}} ? \0 : \1;
-
         push @tree, {
             text       => $_->{title},
-            #text       => $_->{title},
             topic_name => {
                 mid             => $_->{mid},
                 category_color  => $_->{category}{color},
                 category_name   => _loc($_->{category}{name}),
+                category_status => "<b>(" . $_->{category_status}->{name} . ")</b>",
                 is_release      => $is_release,
                 is_changeset    => $is_changeset,
             },
             url        => '/lifecycle/topic_contents',
             data       => {
-               topic_mid   => $_->{to_mid},
+               topic_mid   => $_->{topic_mid},
                click       => $self->click_for_topic(  $_->{category}{name}, $_->{mid} ),
             },
             icon       => $icon, 
@@ -597,19 +595,26 @@ sub changeset : Local {
     my %categories = mdb->category->find_hash_one( id=>{},{ workflow=>0, fields=>0, statuses=>0, _id=>0 });
 
     my @rels;
+    my $rel_data = {};
+    my %statuses = map { $_->{id_status} => $_->{name}} ci->status->find()->all;
     for my $topic (@changes) {
-        my @releases_for_changeset = _array( $releases{ $topic->{mid} } );
-        push @rels, @releases_for_changeset;  # slow! join me!
-        next if $bind_releases && @releases_for_changeset;
+        my @releases = _array( $releases{ $topic->{mid} } );
+        push @rels, @releases;  # slow! join me!
+        next if $bind_releases && @releases;
+
         # get the menus for the changeset
-        my ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu(
-            $c,
-            topic      => $topic,
-            bl_state   => $bl,
-            state_name => $state_name,
-            id_project => $id_project,
-            categories => \%categories
-        );
+        my $topic_row = mdb->topic->find_one({ mid => "$topic->{mid}"});
+        my ( $deployable, $promotable, $demotable, $menu );
+        my %category_data;
+        if ( $topic->{_workflow} || !$category_data{$topic_row->{id_category}}) {
+            ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu( $c, topic => $topic, bl_state => $bl, state_name => $state_name );
+            $category_data{$topic_row->{id_category}} = { deployable => $deployable, promotable => $promotable, demotable => $demotable, menu => $menu};
+        } else {
+            $deployable = $category_data{$topic_row->{id_category}}{deployable};
+            $promotable = $category_data{$topic_row->{id_category}}{promotable};
+            $demotable = $category_data{$topic_row->{id_category}}{demotable};
+            $menu = $category_data{$topic_row->{id_category}}{menu};
+        };
         my $node = {
             url  => '/lifecycle/topic_contents',
             icon => '/static/images/icons/changeset_lc.png',
@@ -618,10 +623,11 @@ sub changeset : Local {
             menu => $menu,
             topic_name => {
                 mid             => $topic->{mid},
-                category_color  => $$topic{category}{color}, 
-                category_name   => _loc($$topic{category}{name}),
-                is_release      => $$topic{category}{is_release},
-                is_changeset    => $$topic{category}{is_changeset},
+                category_color  => $topic->{category}->{color},
+                category_name   => _loc($topic->{category}->{name}),
+                category_status => "<b>(" . _loc($statuses{$topic_row->{id_category_status}}) . ")</b>",
+                is_release      => $topic->{category}->{is_release},
+                is_changeset    => $topic->{category}->{is_changeset},
             },
             data => {
                 ns           => 'changeset/' . $topic->{mid},
@@ -639,20 +645,28 @@ sub changeset : Local {
             },
         };
         # push @tree, $node if ! @rels;
+        for ( _array @releases ) {
+            if ( !$rel_data->{$_->{mid}} ) {
+                $rel_data->{$_->{mid}} = { deployable => $deployable, promotable => $promotable, demotable => $demotable, menu => $menu};
+            }
+        }
+        next if $bind_releases && @releases;
         push @tree, $node;
+        _debug $node;
     }
     if( $bl ne "new" && @rels ) {
-        my %unique_releases = map { $$_{mid} => $_ } @rels;
-        for my $rel ( values %unique_releases ) {
-            my ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu(
-                $c,
-                topic      => $rel,
-                bl_state   => $bl,
-                state_name => $state_name,
-                id_status_from  => $p->{id_status},
-                id_project => $id_project,
-                categories => \%categories,
-            );
+        my %unique = map { $_->{topic_topic}{mid} => $_ } @rels;
+        for my $rel ( values %unique ) {
+            my $mid = $rel->{mid};
+            my ( $deployable, $promotable, $demotable, $menu );
+            if ( $rel_data->{$mid} ) {
+                $deployable = $rel_data->{$mid}{deployable};
+                $promotable = $rel_data->{$mid}{promotable};
+                $demotable = $rel_data->{$mid}{demotable};
+                $menu = $rel_data->{$mid}{menu};
+            } else {
+                ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu( $c, $rel, $bl, $state_name, $p->{id_status} );
+            }
             my $node = {
                 url  => '/lifecycle/topic_contents',
                 icon => '/static/images/icons/release_lc.png',
@@ -663,6 +677,7 @@ sub changeset : Local {
                     mid             => $rel->{mid},
                     category_color  => $rel->{category}{color},
                     category_name   => $rel->{category}{name},
+                    category_status => "<b>(" . _loc($statuses{$rel->{id_category_status}}) . ")</b>",
                     is_release      => \1,
                 },
                 data => {

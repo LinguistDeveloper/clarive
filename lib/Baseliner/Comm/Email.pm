@@ -13,8 +13,8 @@ sub daemon {
     my $frequency = $config->{frequency};
     _log _loc "Email daemon started with frequency %1, timeout %2, max_message_size %3", @{ $config }{ qw/frequency timeout max_message_size/ };
     require Baseliner::Sem;
-    my $sem = Baseliner::Sem->new( key=>'email_daemon', who=>"email_daemon", internal=>1 );
     for( 1..1000 ) {
+        my $sem = Baseliner::Sem->new( key=>'email_daemon', who=>"email_daemon", internal=>1 );
         $sem->take;
         $self->process_queue( $c, $config );
         if ( $sem ) {
@@ -31,8 +31,9 @@ sub group_queue {
     
     my %query;
 
-    $query{where}->{'queue.active'} = '1';
-    $query{where}->{'queue.carrier'} = 'email';
+    $query{where}{'queue.active'} = '1';
+    $query{where}{'queue.carrier'} = 'email';
+    $query{is_daemon} = '1';
 
     my ($queue,$cnt) = Baseliner->model('Messaging')->transform(%query);
 
@@ -130,12 +131,10 @@ sub process_queue {
                 $body = substr $body,0, -1;
             }
 
-            $body = Encode::encode("iso-8859-15", $body);
-            # _log $body;
-            $body =~ s{Ã\?}{Ñ}g;
-            $body =~ s{Ã±}{ñ}g;
+            #$body = Encode::encode("iso-8859-15", $body);
+            utf8::decode( $body );
+
             
-            utf8::downgrade($body);
             $result = $self->send(
                 server=>$config->{server},
                 to => join(';',@to),

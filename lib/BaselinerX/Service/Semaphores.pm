@@ -65,8 +65,8 @@ sub run_daemon {
     my $cr_iters = $config->{check_for_roadkill_iterations} // 1000;
     
     require Baseliner::Sem;
-    my $sem = Baseliner::Sem->new( key=>'sem_daemon', who=>"sem_daemon", internal=>1 );
     do {
+        my $sem = Baseliner::Sem->new( key=>'sem_daemon', who=>"sem_daemon", internal=>1 );
         $sem->take;
         try {
             $self->run_once( $c, $config, !($iteration % $cr_iters) );

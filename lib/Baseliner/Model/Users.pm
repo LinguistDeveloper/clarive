@@ -182,8 +182,13 @@ sub get_users_from_mid_roles_topic {
         push @mega_ors, $total_where;
     }
 
-    $mega_where->{'$or'} = \@mega_ors;
-    my @users = map {$_->{name}} _array(ci->user->find($mega_where)->all);
+    my @users;
+    if ( @mega_ors ) {
+        $mega_where->{'$or'} = \@mega_ors;
+        @users = map {$_->{name}} _array(ci->user->find($mega_where)->all);
+    } else {
+        @users = Baseliner->model('Permissions')->users_with_roles( roles => \@roles, include_root => 0);        
+    }
     return wantarray ? @users : \@users; 
 }
 

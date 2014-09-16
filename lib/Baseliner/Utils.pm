@@ -79,6 +79,7 @@ zip_tree
     _md5
     _html_escape
     _fixascii_sql
+    _fixCharacters_mail
     _join_quoted
     case
     _utf8_on_all
@@ -631,7 +632,7 @@ sub _parse_template_mason {
 
 sub my_hostname {
    require Sys::Hostname;
-   return Baseliner->config->{host} || lc( Sys::Hostname::hostname() ); 
+   return Clarive->config->{host} || Baseliner->config->{host} || lc( Sys::Hostname::hostname() ); 
 }
 
 sub _notify_address {
@@ -1310,27 +1311,34 @@ sub parse_vars_raw {
         # string
         return $data unless $data && $data =~ m/\$\{.+\}/;
         my $str = "$data";
-        for my $k ( keys %$vars ) {
-            my $v = $vars->{$k};
-            if( ref $v && $str =~ /^\$\{$k\}$/ ) {
-                $str = $v;
-            } elsif( ( ref $v || looks_like_number($v) ) && $str =~ /^\$\{$k\.([^\}]+)}$/ ) {
-                my $meth=$1;
-                $meth = join '', map { "{$_}" } split /\.+/, $meth;
-                $v = ci->new($v) if !ref $v;
-                $str = eval '$v->' . $meth;
-            } else {
-                $str =~ s/\$\{$k\}/$v/g;
-                # look for cis like this: ${ci(field.attrib)}
-                $str =~ s/\$\{ci\($k\)\.(.+)\}/ parse_vars("\${$1}", ci->new($v)) /eg;
-                $str =~ s/\$\{uc\($k\)\}/uc($v)/eg;
-                $str =~ s/\$\{lc\($k\)\}/lc($v)/eg;
-                $str =~ s/\$\{loc\($k\)\}/_loc($v)/eg;
-                $str =~ s/\$\{to_id\($k\)\}/_name_to_id($v)/eg;
-                #$str =~ s/\$\{join\((\S+),$k\)\}/join($1,_array($v))/eg;   # TODO $v has a baddly comma joined list, should be an Arrayref
+        my @discarded;
+        my @matches;
+        @matches = ($str =~ m/\$\{(.+?)\}/g);
+        while ( @matches && !(@matches ~~ @discarded) ) {
+            
+            for my $match ( @matches ) {
+                if ( !$vars->{$match} ) {
+                    _log _loc("Variable %1 not found", $match);
+                    push @discarded, $match;
+                    # $str =~ s/\$\{$match\}//g;
+                }
             }
-        }
-        
+            for my $k ( keys %$vars ) {
+                my $v = $vars->{$k};
+                if( ref $v && $str =~ /^\$\{$k\}$/ ) {
+                    $str = $v;
+                } else {
+                    $str =~ s/\$\{$k\}/$v/g;
+                    # look for cis like this: ${ci(field.attrib)}
+                    $str =~ s/\$\{ci\($k\)\.(.+)\}/ parse_vars("\${$1}", ci->new($v)) /eg;
+                    $str =~ s/\$\{uc\($k\)\}/uc($v)/eg;
+                    $str =~ s/\$\{lc\($k\)\}/lc($v)/eg;
+                    $str =~ s/\$\{to_id\($k\)\}/_name_to_id($v)/eg;
+                    #$str =~ s/\$\{join\((\S+),$k\)\}/join($1,_array($v))/eg;   # TODO $v has a baddly comma joined list, should be an Arrayref
+                }
+            }
+            @matches = ($str =~ m/\$\{(.+?)\}/g);
+        }        
         # cleanup or throw unresolved vars
         if( $throw ) { 
             if( my @unresolved = $str =~ m/\$\{(.*?)\}/gs ) {
@@ -1403,6 +1411,23 @@ sub _fixascii_sql {
     $data =~ s/\\Ã³/ó/g;
 
     $data
+}
+
+sub _fixCharacters_mail {
+    my $d = shift;
+    return $d unless length $d;
+    require HTML::Strip;
+    my $hs = HTML::Strip->new();
+    my $clean_text = $hs->parse($d);
+    utf8::decode( $clean_text );
+    $clean_text =~ s{Ã\?}{Ñ}g;
+    $clean_text =~ s{Ã±}{ñ}g;
+    $clean_text =~ s{Ã¡}{á}g;
+    $clean_text =~ s{Ã©}{é}g;
+    $clean_text =~ s{Ã-}{í}g;
+    $clean_text =~ s{Ã³}{ó}g;
+    $clean_text =~ s{Ãº}{ú}g;
+    $clean_text;
 }
 
 sub _join_quoted {

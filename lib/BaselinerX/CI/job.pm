@@ -591,6 +591,10 @@ sub approve {
     if( ! $self->can_approve( username=>$p->{username} ) ) {
         _fail _loc 'User %1 is not authorized to approve job %2', $p->{username}, $self->name;
     }
+
+    if( $self->status ne 'APPROVAL' ) {
+        _fail _loc 'Job %1 status has changed to %2 and it cannot be %3.  Refresh your job monitor to see it\'s actual status', $self->name, _loc($self->status), _loc('approved');
+    }
     event_new 'event.job.approved' => 
         { username => $self->username, name=>$self->name, step=>$self->step, status=>$self->status, bl=>$self->bl, comments=>$comments } => sub {
         $self->logger->info( _loc('*Job Approved by %1*: %2', $p->{username}, $comments), data=>$comments, username=>$p->{username} );
@@ -608,6 +612,10 @@ sub reject {
     if( ! $self->can_approve( username=>$p->{username} ) ) {
         _fail _loc 'User %1 is not authorized to approve job %2', $p->{username}, $self->name;
     }
+    if( $self->status ne 'APPROVAL' ) {
+        _fail _loc 'Job %1 status has changed to %2 and it cannot be %3.  Refresh your job monitor to see it\'s actual status', $self->name, _loc($self->status), _loc('rejected');
+    }
+
     event_new 'event.job.rejected' => 
         { username => $self->username, name=>$self->name, step=>$self->step, status=>$self->status, bl=>$self->bl, comments=>$comments } => sub {
         $self->logger->error( _loc('*Job Rejected by %1*: %2', $p->{username}, $comments), data=>$comments, username=>$p->{username} );
@@ -1002,7 +1010,7 @@ sub run {
         return 0;
     };
 
-    _loc("=========| Starting JOB " . $self->jobid . ", rollback=" . $self->rollback);
+    _loc("=========| Starting JOB " . $self->jobid . ", rollback=" . $self->rollback . ", hostname =". $self->host);
 
     _debug( _loc('Rule Runner, STEP=%1, PID=%2, RULE_ID', $self->step, $self->pid ) );
      

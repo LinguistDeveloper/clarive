@@ -156,14 +156,14 @@ sub changeset_update {
 
     for my $cs ( _array( $stash->{changesets} ) ) {
         if( length $category && $cs->id_category_status == $category) {
-            $log->debug( _loc('Topic %1 does not match category %2. Skipped', $cs->name, $category) );
+            $log->debug( _loc('Topic %1 does not match category %2. Skipped', $cs->title, $category) );
             next;
         }
         if( $stash->{rollback} ) {
             # rollback to previous status
             $status = $status_on_rollback || $stash->{update_baselines_changesets}{ $cs->mid };
             if( !length $status ) {
-                _debug _loc 'No last status data for changeset %1. Skipped.', $cs->name;
+                _debug _loc 'No last status data for changeset %1. Skipped.', $cs->title;
                 next;
             }
         } elsif ($job_type eq 'demote') {
@@ -173,10 +173,9 @@ sub changeset_update {
             _debug "Saving changeset status for rollback: " . $cs->mid . " = " . $cs->id_category_status;
             $stash->{update_baselines_changesets}{ $cs->mid } = $cs->id_category_status;
         }
-        my $status_row = ci->status->find_one({ id_status=>''.$status });
-        _fail _loc 'Status row not found for status `%1`', $status unless $status_row;
-        my $status_name = $status_row->{name};
-        $log->info( _loc( 'Moving changeset %1 to stage *%2*', $cs->name, $status_name ) );
+        my $status_name = ci->status->find_one({ id_status=>''.$status })->{name};
+        _fail _loc 'Status row not found for status `%1`', $status_name unless $status_name;
+        $log->info( _loc( 'Moving changeset %1 (#%2) to stage *%3*', $cs->title, $cs->mid, $status_name ) );
         Baseliner->model('Topic')->change_status(
            change          => 1, 
            username        => $job->username,

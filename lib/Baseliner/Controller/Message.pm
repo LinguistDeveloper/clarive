@@ -100,7 +100,7 @@ sub inbox : Local {
     my $p = $c->req->params;
     $c->stash->{username} = $p->{username} || $c->username;
     $c->stash->{query_id} = $p->{query};	
-    $c->stash->{template} = '/comp/message_grid.mas';    
+    $c->stash->{template} = '/comp/message_grid.js';    
 }
 
 sub to_and_cc : Local {

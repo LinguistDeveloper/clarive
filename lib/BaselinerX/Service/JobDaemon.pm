@@ -61,20 +61,23 @@ sub job_daemon {
     };
     _log "Job daemon started with frequency ${freq}s";
     require Baseliner::Sem;
-    my $sem = Baseliner::Sem->new( key=>'job_daemon', who=>"job_daemon", internal=>1 );
+    my $hostname = Util->my_hostname();
     # set job query order
     for( 1..1000 ) {
+        my $sem = Baseliner::Sem->new( key=>'job_daemon', who=>"job_daemon", internal=>1 );
         $sem->take;
+        #sleep 20;
         my $now = mdb->now;
 
         my @query_roll = (
                 # Immediate chain (PRE, POST or now=1 )
-                { 
+                {   
                     '$or' => [ 
                         { step => 'PRE', status=>'READY' }, 
                         { step => 'POST', status=>mdb->in('READY','ERROR','KILLED','EXPIRED','REJECTED') }, 
                         { now=>1 }, 
-                    ]
+                    ], 
+                    host => mdb->in([$hostname,'',undef])
                 }, 
                 # Scheduled chain (RUN and now<>0 )
                 { 
@@ -82,7 +85,8 @@ sub job_daemon {
                     maxstarttime     => { '$gt',  "$now" },
                     status           => 'READY',
                     step             => 'RUN',
-                    now              => { '$ne' => 1 },
+                    now              => { '$ne' => 1 }, 
+                    host         => mdb->in([$hostname,'',undef])
                 } 
         );
         for my $roll ( @query_roll ) {
@@ -102,7 +106,7 @@ sub job_daemon {
                 }
                 _log _loc( "Starting job %1 for step %2", $job->name, $job->step );
                 # set job pid to 0 to avoid checking until it sets it's own pid
-                $job->update( status=>'RUNNING', pid=>0 );
+                $job->update( status=>'RUNNING', pid=>0, host => $hostname );
                 
                 # get proc mode from job bl
                 my $mode = $^O eq 'Win32'

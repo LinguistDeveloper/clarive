@@ -22,8 +22,8 @@ sub run { # bucle de demonio aqui
     _log "Starting service.scheduler";
     my $iterations = $config->{iterations};
     require Baseliner::Sem;
-    my $sem = Baseliner::Sem->new( key=>'scheduler_daemon', who=>"scheduler_daemon", internal=>1 );
     for( 1..$iterations ) {  # bucle del servicio, se pira a cada 1000, y el dispatcher lo rearranca de nuevo
+        my $sem = Baseliner::Sem->new( key=>'scheduler_daemon', who=>"scheduler_daemon", internal=>1 );
         $sem->take;
         $self->run_once($c,$config);
         $self->road_kill($c,$config);

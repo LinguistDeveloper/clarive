@@ -76,8 +76,7 @@ sub log_rows : Private {
     ($sort, $dir) = split /\s+/, $sort if $sort =~ /\s/; # sort may have dir in it, ie: "id asc"
     $dir = defined $dir && lc $dir eq 'desc' ? -1 : 1; 
     # include direction in sort, so that both fields follow the same sort
-    my $sort_ix = Tie::IxHash->new( $sort ? ( $sort => $dir ) : (), $sort ne 'id' ? ( id=>$dir ):() );
-    
+    my $sort_ix = Tie::IxHash->new( $sort ? ( $sort => $dir ) : (), (defined($sort) && $sort ne 'id') || !defined($sort) ? ( id => $dir ): () );
     $filter = decode_json( $filter ) if $filter;
     my $config = $c->registry->get( 'config.job.log' );
     my @rows = ();
