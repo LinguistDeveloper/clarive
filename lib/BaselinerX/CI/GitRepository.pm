@@ -26,6 +26,7 @@ service 'create_tags' => {
         my ($self,$c,$config) = @_;
         my $ref = $config->{'ref'};
         my $existing = $config->{'existing'} || 'detect';
+        my $tag_filter = join '|', split ',', $config->{'tag_filter'};
         my $git = $self->git;
         if( !$ref ) {
             ($ref) = reverse $git->exec( 'rev-list', $self->default_branch // 'HEAD' );
@@ -33,6 +34,7 @@ service 'create_tags' => {
         my @out;
         for my $blci ( BaselinerX::CI::bl->search_cis ) {
             my $bl = $blci->bl;
+            next if $tag_filter && $bl !~ /^($tag_filter)$/;
             next if $bl eq '*';
             if( $existing eq 'detect' ) {
                 next if try { 
