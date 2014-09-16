@@ -1057,6 +1057,43 @@ sub update_topic_rels{
     Baseliner->model('Topic')->update_rels(@topics);
 }
 
+sub activity{
+    _log "creating activities log for topics from events log\n";
+    my $events = mdb->event->find({event_key=>{'$not'=>qr/^event.rule/i}});
+    my @ev_errors;
+    while( my $event = $events->next  ) {
+        try{
+            my $key = $event->{event_key};
+            my $ev = Baseliner->model('Registry')->get($key);
+            if( _array( $ev->{vars} ) > 0 ) {
+                
+                my $ed_reduced={};
+                my $ed = _load $event->{event_data};
+                foreach (_array $ev->{vars}){             
+                    $ed_reduced->{$_} = $ed->{$_};
+                }
+                $ed_reduced->{ts} = $event->{ts};
+                mdb->activity->insert({
+                    vars            => $ed_reduced,
+                    event_key       => $key,
+                    event_id        => $event->{id},
+                    mid             => $event->{mid},
+                    module          => $event->{module},
+                    ts              => $event->{ts},
+                    username        => $event->{username},
+                    text            => $ev->{text},
+                    ev_level        => $ev->{ev_level},
+                    level           => $ev->{level}
+                });
+            }    
+            } catch{
+                push @ev_errors, $event;
+            }        
+    }
+    _log "numero total de eventos erroneos ". scalar @ev_errors ;
+    _log _dump @ev_errors;
+}
+
 sub topic_view {
     qq{
     SELECT  T.MID TOPIC_MID,
