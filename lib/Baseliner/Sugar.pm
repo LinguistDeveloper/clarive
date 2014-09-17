@@ -285,6 +285,7 @@ sub activity_by_mid {
         my $vars = model->Registry->get($elem->{event_key})->vars;
         my %res = map { $_=>$$elem{$_} } @$vars;
         $res{ts} = $elem->{ts};
+        $res{username} = $elem->{username};
         $res{text} = $elem->{text};
         push @$purged, \%res;
     }
