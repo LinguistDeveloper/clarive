@@ -408,12 +408,24 @@ sub run_rules {
     for my $rule ( @rules ) {
         my ($runner_output, $rc, $dsl, $ret,$err);
         try {
-            my @tree = $self->build_tree( $rule->{id}, undef );
-            $dsl = try {
-                $self->dsl_build( \@tree, %p ); 
-            } catch {
-                _fail( _loc("Error building DSL for rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, shift() ) ); 
-            };
+            my $t0=[Time::HiRes::gettimeofday];
+
+            my $dsl = cache->get( 'rule_dsl:'.$rule->{id} );
+
+            if ( !$dsl ) {
+                my @tree = $self->build_tree( $rule->{id}, undef );
+                $dsl = try {
+                    $self->dsl_build( \@tree, no_tidy=>0, %p ); 
+                } catch {
+                    _fail( _loc("Error building DSL for rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, shift() ) ); 
+                };
+                my $elapsed = Time::HiRes::tv_interval( $t0 );
+                _debug( _loc('DSL build elapsed XXXX %1s', $elapsed) );
+                cache->set( 'rule_dsl:'.$rule->{id}, $dsl );
+            } else {
+                my $elapsed = Time::HiRes::tv_interval( $t0 );
+                _debug( _loc('DSL retrieved from cache. Elapsed time %1s', $elapsed) );
+            }
             ################### RUN THE RULE DSL ######################
             require Capture::Tiny;
             ($runner_output) = Capture::Tiny::tee_merged(sub{
