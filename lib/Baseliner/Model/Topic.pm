@@ -787,6 +787,9 @@ sub update {
                     ci->delete( $mid );
                     mdb->topic->remove({ mid=>"$mid" });
                     mdb->master_seen->remove({ mid=>"$mid" });
+
+                    #we must delete activity for this topic
+                    mdb->activity->remove({mid=>$mid});
                 }
                 $return = '%1 topic(s) deleted';
             } catch {
