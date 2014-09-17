@@ -27,6 +27,7 @@ sub upgrade {
     mdb->migra->role_id_fix;
     mdb->migra->add_master_doc_sort;
     mdb->migra->update_topic_rels;
+    mdb->migra->activity;
     
     mdb->session->drop;
     mdb->cache->drop;

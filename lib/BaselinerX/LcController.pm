@@ -768,8 +768,8 @@ sub promotes_and_demotes {
     my @job_transitions;
 
     for my $status ( @statics ) {
-        for my $bl ( map { $bls{$_} } _array $status->{bls} ) {        
-            if ( !@project_bls || $bl->{bl} ~~ @project_bls ){
+        for my $bl ( map { $bls{$_} } _array $status->{bls} ) {      
+            if ( !@project_bls || $bl ~~ @project_bls ){
                 $statics->{ $bl } = \1;
                 $statics->{'s'.$bl.$status->{id_status}} = \1;
                 push @job_transitions, {

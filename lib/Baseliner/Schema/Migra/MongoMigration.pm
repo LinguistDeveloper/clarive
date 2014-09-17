@@ -630,6 +630,7 @@ sub topic_rels {
 }
 
 sub role {
+    mdb->role->drop;
     my @roles = _dbis->query('select * from bali_role')->hashes;
     my $highest_id = 0;
     for my $role (@roles){
