@@ -1362,7 +1362,7 @@ sub file : Local {
                     $msg = _loc( "File deleted ok" );
                 } else {
                     # starting in 6.2 assets are not shared, may change back in the future
-                    my $subject = _loc("Detached file %1 from topic [%2] %3", $ass->filename, $topic->mid, $topic->title,);
+                    my $subject = _loc("Detached file %1 from #%2 %3", $ass->filename, $topic->mid, $topic->title,);
                     event_new 'event.topic.file_remove' => {
                         username => $c->username,
                         mid      => $topic_mid,
