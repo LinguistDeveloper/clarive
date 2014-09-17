@@ -1058,7 +1058,7 @@ sub update_topic_rels{
 }
 
 sub activity{
-    _log "creating activities log for topics from events log\n";
+    _log "creating activity log for topics from events collection\n";
     my $events = mdb->event->find({event_key=>{'$not'=>qr/^event.rule/i}});
     my @ev_errors;
     while( my $event = $events->next  ) {
