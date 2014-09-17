@@ -411,6 +411,7 @@
                             labelWidth: 150,
                             width: 800, height: 600,
                             labelAlign: 'right',
+                            labelSeparator: '',
                             autoScroll: true,
                             tbar: [
                                 '->',

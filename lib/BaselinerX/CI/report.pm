@@ -748,6 +748,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
     my %selects_ci_columns = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) . '_' . $_->{category} => $_->{ci_columns} } grep { exists $_->{ci_columns}} _array($fields{select});
     my %selects_ci_columns_collection_extends = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) . '_' . $_->{category} => $_->{collection_extends} } grep { exists $_->{ci_columns}} _array($fields{select});
 
+    my %meta_cfg_report = map { $_->{id_field} => $_->{meta_type} } _array($fields{select});
 	#_log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS: " . _dump $self->selected ;
     #_log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS CI COLUMNS: " . _dump %selects_ci_columns;
     #_log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS CI COLUMNS COLLECTION: " . _dump %selects_ci_columns_collection_extends;
@@ -1017,7 +1018,8 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
         while( my($k,$v) = each %row ) {
             $row{$k} = Class::Date->new($v)->string if $k =~ /modified_on|created_on/;
 
-            my $mt = $meta{$k}{meta_type} // '';
+            #my $mt = $meta{$k}{meta_type} // '';
+            my $mt = $meta_cfg_report{$k} || $meta{$k}{meta_type} || '';
             #  get additional fields ?   
             #  TODO for sorting, do this before and save to report_results collection (capped?) 
             #       with query id and query ts, then sort

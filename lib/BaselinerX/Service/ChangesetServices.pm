@@ -173,9 +173,8 @@ sub changeset_update {
             _debug "Saving changeset status for rollback: " . $cs->mid . " = " . $cs->id_category_status;
             $stash->{update_baselines_changesets}{ $cs->mid } = $cs->id_category_status;
         }
-        my $status_row = ci->status->find_one({ id_status=>''.$status });
-        _fail _loc 'Status row not found for status `%1`', $status unless $status_row;
-        my $status_name = $status_row->name;
+        my $status_name = ci->status->find_one({ id_status=>''.$status })->{name};
+        _fail _loc 'Status row not found for status `%1`', $status_name unless $status_name;
         $log->info( _loc( 'Moving changeset %1 (#%2) to stage *%3*', $cs->title, $cs->mid, $status_name ) );
         Baseliner->model('Topic')->change_status(
            change          => 1, 
