@@ -13,7 +13,7 @@ sub set {
     if( length($frozen) < 16777216){
         $key = JSON::XS->new->utf8->canonical->encode( $key ) if ref $key;
         return if length $key >= 1024;
-        mdb->cache->update({ _id=>$key },{ _id=>$key,v=>(ref $value ? Storable::freeze($value) : undef) },{ upsert=>1 });
+        mdb->cache->update({ _id=>$key },{ _id=>$key,v=>$frozen },{ upsert=>1 });
     }
 }
 

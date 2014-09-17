@@ -13,7 +13,7 @@ has id_category_status => qw(is rw isa Any);
 #has_ci 'projects';
 #has_cis 'jobs';
 # has_cis 'assets';
-has_cis 'posts';
+#has_cis 'posts';
 
 sub rel_type {
     { 
