@@ -138,6 +138,7 @@
         region: 'west',
         width: 300,
         split: true,
+        selModel: new Ext.grid.RowSelectionModel({ singleSelect : true }),
         collapsible: true,
         viewConfig: {
             enableRowBody: true,
@@ -167,9 +168,9 @@
             search_field,
             { xtype: 'button', handler: function(){ rules_store.reload() }, icon:'/static/images/icons/refresh.gif', cls:'x-btn-icon' },
             { xtype:'button', icon: '/static/images/icons/add.gif', cls: 'x-btn-icon', handler: rule_add },
-            { xtype:'button', icon: '/static/images/icons/edit.gif', cls: 'x-btn-icon', handler: rule_edit },
-            { xtype:'button', icon: '/static/images/icons/delete.gif', cls: 'x-btn-icon', handler: rule_del },
-            { xtype:'button', icon: '/static/images/icons/activate.png', cls: 'x-btn-icon', handler: rule_activate },
+            { xtype:'button', icon: '/static/images/icons/edit.gif', id: 'x-btn-edit', cls: 'x-btn-icon', handler: rule_edit, disabled: true },
+            { xtype:'button', icon: '/static/images/icons/delete.gif', id: 'x-btn-del', cls: 'x-btn-icon', handler: rule_del, disabled: true},
+            { xtype:'button', icon: '/static/images/icons/activate.png', id: 'x-btn-act', cls: 'x-btn-icon', handler: rule_activate, disabled: true },
             { xtype:'button', icon: '/static/images/icons/wrench.png', cls: 'x-btn-icon', menu:[
                 { text: _('Import'), icon: '/static/images/icons/import.png', handler: rule_import },
                 { text: _('Export'), icon: '/static/images/icons/export.png', handler: rule_export }
@@ -182,6 +183,9 @@
         var rec = rules_store.getAt( ix ); 
         var get_rule_ts = Baseliner.ajaxEval('/rule/get_rule_ts', { id_rule: rec.data.id }, function(response){
             if (response.success){
+                Ext.getCmp('x-btn-edit')['enable']();
+                Ext.getCmp('x-btn-del')['enable']();
+                Ext.getCmp('x-btn-act')['enable']();
                 var old_ts = response.ts;
                 if( rec ) {
                     var tab_arr = tabpanel.find( 'id_rule', rec.data.id );
