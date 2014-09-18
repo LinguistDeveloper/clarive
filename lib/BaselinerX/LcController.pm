@@ -108,7 +108,7 @@ sub category_contents : Local {
     map { $related{$_->{from_mid}} = 1 } mdb->master_rel->find( { from_mid => mdb->in(@user_topics), rel_type => 'topic_topic' } )->all;
 
     my @tree = map {
-        my $leaf = my $leaf = $related{$_->{mid}} ? \0 : \1;
+        my $leaf = $related{$_->{mid}} ? \0 : \1;
        +{
             text => $_->{title},
             icon => '/static/images/icons/release.png',
