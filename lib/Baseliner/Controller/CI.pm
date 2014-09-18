@@ -555,6 +555,7 @@ sub store : Local {
     my $collection = delete $p->{collection};
     my $action = delete $p->{action};
     my $where = {};
+    $where->{active} = '1';
     local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
 
     if ( defined $mid_param ) {
