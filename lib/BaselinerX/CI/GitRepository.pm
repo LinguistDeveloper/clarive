@@ -70,7 +70,7 @@ sub group_items_for_revisions {
     if( $self->revision_mode eq 'show' ) {
         my %all_revs = map { $_->sha_long => $_ } _array($revisions);
         my @ordered_revs = $self->git->exec( 'rev-list', '--no-walk=sorted', keys %all_revs );
-        @ordered_revs = reverse @ordered_revs if $type eq 'demote';
+        @ordered_revs = reverse @ordered_revs if $type ne 'demote';
         _debug( \@ordered_revs );
         my %items_uniq;
         for my $rev ( map { $all_revs{$_} } @ordered_revs ) {
