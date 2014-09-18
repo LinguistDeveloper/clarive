@@ -662,8 +662,15 @@ sub changeset : Local {
                     $demotable = $rel_data->{$mid}{demotable};
                     $menu = $rel_data->{$mid}{menu};
                 } else {
-
-                    ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu( $c, $rel, $bl, $state_name, $p->{id_status} );
+                    ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu(
+                        $c,
+                        topic      => $rel,
+                        bl_state   => $bl,
+                        state_name => $state_name,
+                        id_status_from  => $p->{id_status},
+                        id_project => $id_project,
+                        categories => \%categories,
+                    );
                 }
                 my $node = {
                     url  => '/lifecycle/topic_contents',
