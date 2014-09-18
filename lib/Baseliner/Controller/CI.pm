@@ -240,7 +240,7 @@ sub tree_objects {
     my $opts;
     
     my $dir = $p{dir};
-    if($dir =~ /desc/i){
+    if( $dir && $dir =~ /desc/i){
         $dir = -1;
     }else{
         $dir = 1;

@@ -296,7 +296,8 @@ sub get_field_bodies {
             _debug "************ HIT CACHE ( $cache->{modified_on} == $modified_on ) for $file";
             $field->{body} = ["$file", $cache->{body}, 0];
         } else {
-            _debug "************ NOOO CACHE ( $cache->{modified_on} != $modified_on )  for $file";
+            _debug $cache ? "***** NO CACHE ( $cache->{modified_on} != $modified_on )  for $file"
+                : "***** NO CACHE for $file";
             my $body = _mason( $field->{js} );
             $field_cache{ "$file" } = { modified_on=>$modified_on, body => $body };
             $field->{body} = ["$file", $body, 1 ];
@@ -405,7 +406,7 @@ sub get_meta_permissions : Private {
             my $read_action_status = 'action.topicsfield.' .  $parse_category . '.' .  $parse_id_field . '.' . $parse_status . '.read';
 
             if ( !$is_root ) {
-                if ($c->model('Permissions')->user_has_read_action( username=> $username, action => $read_action  ) || $c->model('Permissions')->user_has_read_action( username=> $username, action => $read_action_status  ) || ($readonly && $_->{hidden_if_protected} eq 'true')){
+                if ($c->model('Permissions')->user_has_read_action( username=> $username, action => $read_action  ) || $c->model('Permissions')->user_has_read_action( username=> $username, action => $read_action_status  ) || ($readonly && $_->{hidden_if_protected} && $_->{hidden_if_protected} eq 'true')){
                     push @hidden_field, $_->{id_field};
                 }
             } 
