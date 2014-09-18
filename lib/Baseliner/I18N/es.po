@@ -2493,6 +2493,9 @@ msgstr "Borrando..."
 msgid "Error during delete"
 msgstr "Error durante el borrado"
 
+msgid "Error detected: %1"
+msgstr "Error detectado: %1"
+
 msgid "Renaming..."
 msgstr "Renombrando..."
 

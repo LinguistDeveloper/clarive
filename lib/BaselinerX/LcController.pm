@@ -716,9 +716,9 @@ sub status_list {
     $status //= $topic->{category_status}{id};
     my @user_roles = ci->user->roles( $username );
     my @user_workflow = _unique map {$_->{id_status_to} } Baseliner->model("Topic")->user_workflow( $username );
-    my $cat = mdb->category->find_one({ id=>''.$topic->{category}->{id} },{ workflow=>1 });
-
-    _fail _loc 'Category %1 not found', $topic->{id_category} unless $cat;
+    my $cat = mdb->category->find_one({ id=>''.$topic->{category}{id} },{ workflow=>1 });
+    
+    _fail _loc( 'Category %1 not found for topic %2', $topic->{category}{id}, $topic->{mid} ) unless $cat;
 
     return sort { $$a{seq} <=> $$b{seq} }
         map { 
