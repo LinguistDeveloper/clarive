@@ -320,6 +320,7 @@ sub index_all {
             [{ mid=>1 },{ unique=>1 }],
             [{ created_on=>1 }],
             [{ modified_on=>1 }],
+            [{ modified_on=>-1 }],
             [{ created_on=>1, mid=>1 }],
             [{ created_on=>1, m=>1 }],
             [{'$**'=> "text"}],
@@ -328,12 +329,19 @@ sub index_all {
         job_log => [
             [{ id=>1 }],
             [{ mid=>1 }],
+            [{ mid=>1, lev=>1, exec=>1 }],
         ],
         cache => [
             [{ _id=>1 }],
         ],
         event => [
+            [{ id=>1 }],
+            [{ mid=>1 }],
+            [{ mid=>1, ts=>1 }],
+            [{ mid=>1, event_key=>1, ts=>1 }],
             [{ ts=>1 }],
+            [{ event_key=>1 }],
+            [{ 'event_status'=>1 }],
             [{ 'event_status'=>1, '_id'=>1 }],
         ],
         event_log =>[
@@ -360,6 +368,9 @@ sub index_all {
             [{ rel_type=>1 }],
             [{ from_mid=>1, to_mid=>1 }],
         ],
+        message => [
+            [{ queue=>1 }],
+        ],
         category => [
           [{ id=>1 }],
         ],
@@ -367,10 +378,15 @@ sub index_all {
           [{ role=>1 }],
           [{ id=>1 }],  
         ],
+        master_seen => [
+            [{ mid=>1, username=>1 }],
+        ],
         master_doc => [
             [{'$**'=> "text"}],
             [{ mid=>1 },{ unique=>1 }],
             [{ name=>1, moniker=>1, collection=>1 }],
+            [{ step=>1, status=>1 }],
+            [{ collection=>1, name=>1 }],
             [{ status=>1, pid=>1, collection=>1 }],
             [{ status=>1, maxstarttime=>1, collection=>1 }],
         ],
