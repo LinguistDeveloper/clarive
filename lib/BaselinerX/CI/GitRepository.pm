@@ -141,11 +141,11 @@ method top_revision( :$revisions, :$tag, :$type='promote', :$check_history=1 ) {
     if( $type eq 'promote' ) {
         my $first_sha = $by_pos{1};
         _warn _loc "Tag %1 (sha %2) is already on top", $tag, $tag_sha if $first_sha eq $tag_sha;
-        $top_rev = $shas{ $first_sha };
+        $top_rev = $shas{ $first_sha } // $first_sha;
     }
     elsif( $type eq 'static' ) {
         my $first_sha = $by_pos{1};
-        $top_rev = $shas{ $first_sha };
+        $top_rev = $shas{ $first_sha } // $first_sha;
     }
     elsif( $type eq 'demote' ) {
         my $last_sha = $by_pos{ scalar @sorted };
@@ -164,7 +164,6 @@ method top_revision( :$revisions, :$tag, :$type='promote', :$check_history=1 ) {
         my ($orig, $dest) = $type eq 'demote'
            ? ($top_rev->{sha}, $tag_sha)
            : ($tag_sha, $top_rev->{sha});
-
 
         _debug _loc("Looking for common history between %1 and %2", $orig, $dest);
         
@@ -295,11 +294,24 @@ method update_baselines( :$revisions, :$tag, :$type, :$ref=undef ) {
         return;
     }
 
-    $top_rev = $top_rev->{sha} if ref $top_rev;
-    
-    my $tag_sha = $git->exec( 'rev-parse', $tag );
-    
+    $top_rev = $top_rev->{sha} if ref $top_rev;  # new tag location
+    my $tag_sha = $git->exec( 'rev-parse', $tag );  # bl tag
+    my $previous = BaselinerX::CI::GitRevision->new( sha=>$tag_sha, name=>$tag );
     my $out='';
+
+    # no need to update if it's already there
+    if( $top_rev eq $tag_sha ) {
+        return {
+            current  => $top_rev,
+            previous => $previous,  
+            no_change => 1,
+            output   => $out
+        };
+    } 
+    
+    # rgo: TODO in show revision_mode people deploy earlier commits over the tag base, which leads
+    #    to a undefined deployment situation
+    
     if( $type eq 'promote' ) {
         _debug( _loc "Promote baseline $tag to $top_rev: tag -f $tag $top_rev" );
         $out = $git->exec( qw/tag -f/, $tag, $top_rev );
@@ -317,7 +329,6 @@ method update_baselines( :$revisions, :$tag, :$type, :$ref=undef ) {
         _log _loc( "Updated baseline %1 to %2", $tag, $top_rev);
     }
     
-    my $previous = BaselinerX::CI::GitRevision->new( sha => $tag_sha, name => $tag );
     return {
         current  => $top_rev,
         previous => $previous,  
