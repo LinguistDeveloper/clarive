@@ -1012,7 +1012,7 @@ sub run {
 
     _loc("=========| Starting JOB " . $self->jobid . ", rollback=" . $self->rollback . ", hostname =". $self->host);
 
-    _debug( _loc('Rule Runner, STEP=%1, PID=%2, RULE_ID', $self->step, $self->pid ) );
+    _debug( _loc('Rule Runner, STEP=%1, PID=%2, RULE_ID=%3', $self->step, $self->pid, $self->id_rule ) );
      
     # prepare stash for rules
     my $prev_stash = $self->job_stash;
