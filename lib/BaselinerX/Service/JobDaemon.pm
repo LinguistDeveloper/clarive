@@ -35,6 +35,7 @@ register 'config.job.daemon' => {
         {  id=>'wait_for_killed', label=>'Seconds to wait before declaring job killed', type=>'int', default=>10 },
         {  id=>'mode', label=>'Job Spawn Mode (spawn,fork,detach)', type=>'str', default=>'detach' },
         {  id=>'unified_log', label=>'Set true to have jobs report to dispatcher log', type=>'bool', default=>0 },
+        {  id=>'job_host_affinity', label=>'All steps of jobs must been executed in the same host', type=>'bool', default=>1}
     ]
 };
 
@@ -69,27 +70,28 @@ sub job_daemon {
         #sleep 20;
         my $now = mdb->now;
 
-        my @query_roll = (
-                # Immediate chain (PRE, POST or now=1 )
-                {   
-                    '$or' => [ 
-                        { step => 'PRE', status=>'READY' }, 
-                        { step => 'POST', status=>mdb->in('READY','ERROR','KILLED','EXPIRED','REJECTED') }, 
-                        { now=>1 }, 
-                    ], 
-                    host => mdb->in([$hostname,'',undef])
-                }, 
-                # Scheduled chain (RUN and now<>0 )
-                { 
-                    schedtime        => { '$lte', "$now" },
-                    maxstarttime     => { '$gt',  "$now" },
-                    status           => 'READY',
-                    step             => 'RUN',
-                    now              => { '$ne' => 1 }, 
-                    host         => mdb->in([$hostname,'',undef])
-                } 
+        # Immediate chain (PRE, POST or now=1 )
+        my @query_roll = ( 
+            {   
+                '$or' => [ 
+                    { step => 'PRE', status=>'READY' }, 
+                    { step => 'POST', status=>mdb->in('READY','ERROR','KILLED','EXPIRED','REJECTED') }, 
+                    { now=>1 }, 
+                ], 
+                
+            },
+        # Scheduled chain (RUN and now<>0 )
+            { 
+                schedtime        => { '$lte', "$now" },
+                maxstarttime     => { '$gt',  "$now" },
+                status           => 'READY',
+                step             => 'RUN',
+                now              => { '$ne' => 1 }, 
+                host         => mdb->in([$hostname,'',undef])
+            }
         );
         for my $roll ( @query_roll ) {
+            $roll->{host} = mdb->in([$hostname,'',undef]) if $config->{job_host_affinity};
             my @docs = ci->job->find( $roll )->all;
             JOB: foreach my $job_doc ( @docs ) {
                 local $Baseliner::_no_cache = 1;  # make sure we get a fresh CI

@@ -262,6 +262,7 @@ sub events_by_mid {
         my $needed_data = +{ %$event_db, %$event_data };
         my %res = map { $_=>$$needed_data{$_} } @$vars;
         $res{ts} = $elem->{ts};
+        $res{username} = $elem->{username};
         $res{text} = $elem->{text};
         push @$purged, \%res;
     }
