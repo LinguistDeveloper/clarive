@@ -560,6 +560,7 @@ sub dashboards {
         } 
         mdb->dashboard->insert( $dash );   
     }
+    mdb->dashboard->remove({'$or'=>[dashlets => qr/^---.*/i, system_params => qr/^---.*/i]});
 }
 
 sub role_id_fix {
@@ -1061,6 +1062,8 @@ sub update_topic_rels{
 sub activity{
     _log "creating activity log for topics from events collection\n";
     my $events = mdb->event->find({event_key=>{'$not'=>qr/^event.rule/i}});
+    my $total_events = $events->count();
+    my $counter = 0;
     my @ev_errors;
     while( my $event = $events->next  ) {
         try{
@@ -1086,6 +1089,8 @@ sub activity{
                     ev_level        => $ev->{ev_level},
                     level           => $ev->{level}
                 });
+                $counter++;
+                _log "$counter/$total_events events converted to activity" if $total_events % 1000 == 0;
             }    
             } catch{
                 push @ev_errors, $event;
