@@ -507,194 +507,207 @@ sub changeset : Local {
     # get all the changes for this project + baseline
     my @cs;
 
-    if( $config->{show_changes_in_tree} || !$p->{id_status} ) { 
-        for my $provider ( packages_that_do 'Baseliner::Role::LC::Changes' ) {
-            #push @cs, $class;
-            try {
-                my $prov = $provider->new( project=>$project );
-                my @changes = $prov->list( project=>$project, bl=>$bl, id_project=>$id_project, state_name=>$state_name );
-                _debug _loc "---- provider $provider has %1 changesets", scalar @changes;
-                push @cs, @changes;
-            } catch {
-                my $err = shift;
-                my $msg = _loc('Error loading changes for provider %1: %2', $provider, $err);
-                _error( $msg );
-                push @tree, {
-                    icon => '/static/images/icons/error.png',
-                    text => substr($msg,0,80), 
-                    leaf => \1,
+    try {
+        if( $config->{show_changes_in_tree} || !$p->{id_status} ) { 
+            for my $provider ( packages_that_do 'Baseliner::Role::LC::Changes' ) {
+                #push @cs, $class;
+                try {
+                    my $prov = $provider->new( project=>$project );
+                    my @changes = $prov->list( project=>$project, bl=>$bl, id_project=>$id_project, state_name=>$state_name );
+                    _debug _loc "---- provider $provider has %1 changesets", scalar @changes;
+                    push @cs, @changes;
+                } catch {
+                    my $err = shift;
+                    my $msg = _loc('Error loading changes for provider %1: %2', $provider, $err);
+                    _error( $msg );
+                    push @tree, {
+                        icon => '/static/images/icons/error.png',
+                        text => substr($msg,0,80), 
+                        leaf => \1,
+                    };
                 };
-            };
-        }
+            }
 
-        # loop through the changeset objects (such as BaselinerX::GitChangeset)
-        for my $cs ( @cs ) {
-            my $menu = [];
-            # get menu extensions (find packages that do)
-            # get node menu
-            ref $cs->node_menu and push @$menu, _array $cs->node_menu;
-            push @tree, {
-                url        => $cs->node_url,
-                data       => $cs->node_data,
-                parent_data => { id_project=>$id_project, bl=>$bl, project=>$project }, 
-                menu       => $menu,
-                icon       => $cs->icon,
-                text       => $cs->text || $cs->name,
-                leaf       => \0,
-                expandable => \0
-            };
-        }
-    }
-
-    ## add what's in this baseline 
-    my $repos = Baseliner::CI->new( $id_project )->repositories;
-    # ( Girl::Repo->new( path=>"$path" ), $rev, $project );
-
-    if ( $bl ne '*' ) {
-        for( _array $repos ) {
-            my $d = $_->load;
-            push @tree, {
-                url  => '/lifecycle/repository',
-                icon => '/static/images/icons/repo.gif',
-                text => $d->{name},
-                leaf => \1,
-                data => {
-                    bl    => $bl,
-                    name  => $d->{name},
-                    repo_path  => $d->{repo_dir},
-                    click => {
-                        url   => '/lifecycle/repository',
-                        type  => 'comp',
-                        icon  => '/static/images/icons/repo.gif',
-                        title => "$d->{name} - $bl",
-                    }
-                  },
+            # loop through the changeset objects (such as BaselinerX::GitChangeset)
+            for my $cs ( @cs ) {
+                my $menu = [];
+                # get menu extensions (find packages that do)
+                # get node menu
+                ref $cs->node_menu and push @$menu, _array $cs->node_menu;
+                push @tree, {
+                    url        => $cs->node_url,
+                    data       => $cs->node_data,
+                    parent_data => { id_project=>$id_project, bl=>$bl, project=>$project }, 
+                    menu       => $menu,
+                    icon       => $cs->icon,
+                    text       => $cs->text || $cs->name,
+                    leaf       => \0,
+                    expandable => \0
+                };
             }
         }
-    }
 
-    #################################################################
-    #
-    # topics for a state
-    #
-    my $bind_releases = 0;
-    my @changes = mdb->joins(
-                master_rel=>{ rel_type=>'topic_project', to_mid=>"$id_project" },
-                from_mid=>mid=>topic=>{ is_changeset=>'1', 'category_status.id'=> "$p->{id_status}" });
+        ## add what's in this baseline 
+        my $repos = Baseliner::CI->new( $id_project )->repositories;
+        # ( Girl::Repo->new( path=>"$path" ), $rev, $project );
+
+        if ( $bl ne '*' ) {
+            for( _array $repos ) {
+                my $d = $_->load;
+                push @tree, {
+                    url  => '/lifecycle/repository',
+                    icon => '/static/images/icons/repo.gif',
+                    text => $d->{name},
+                    leaf => \1,
+                    data => {
+                        bl    => $bl,
+                        name  => $d->{name},
+                        repo_path  => $d->{repo_dir},
+                        click => {
+                            url   => '/lifecycle/repository',
+                            type  => 'comp',
+                            icon  => '/static/images/icons/repo.gif',
+                            title => "$d->{name} - $bl",
+                        }
+                      },
+                }
+            }
+        }
+
+        #################################################################
+        #
+        # topics for a state
+        #
+        my $bind_releases = 0;
+        my @changes = mdb->joins(
+                    master_rel=>{ rel_type=>'topic_project', to_mid=>"$id_project" },
+                    from_mid=>mid=>topic=>{ is_changeset=>'1', 'category_status.id'=> "$p->{id_status}" });
+                
+        # find releases for each changesets
+        my @topic_topic = mdb->master_rel->find({ to_mid=>mdb->in(map{$$_{mid}}@changes), rel_type=>'topic_topic' })->all;
+        my %rels = map{ $$_{mid}=>$_ }mdb->topic->find({ mid=>mdb->in(map{$$_{from_mid}}@topic_topic), is_release=>mdb->true })->all;
+        my %releases;
+        push @{ $releases{ $$_{to_mid} } } => $rels{$$_{from_mid}} for @topic_topic;
             
-    # find releases for each changesets
-    my @topic_topic = mdb->master_rel->find({ to_mid=>mdb->in(map{$$_{mid}}@changes), rel_type=>'topic_topic' })->all;
-    my %rels = map{ $$_{mid}=>$_ }mdb->topic->find({ mid=>mdb->in(map{$$_{from_mid}}@topic_topic), is_release=>mdb->true })->all;
-    my %releases;
-    push @{ $releases{ $$_{to_mid} } } => $rels{$$_{from_mid}} for @topic_topic;
-        
-    $bind_releases = ci->status->find_one({ id_status=>''. $p->{id_status} })->{bind_releases};
-    my %categories = mdb->category->find_hash_one( id=>{},{ workflow=>0, fields=>0, statuses=>0, _id=>0 });
+        $bind_releases = ci->status->find_one({ id_status=>''. $p->{id_status} })->{bind_releases};
+        my %categories = mdb->category->find_hash_one( id=>{},{ workflow=>0, fields=>0, statuses=>0, _id=>0 });
 
-    my @rels;
-    my $rel_data = {};
-    my %statuses = map { $_->{id_status} => $_->{name}} ci->status->find()->all;
-    for my $topic (@changes) {
-        my @releases = _array( $releases{ $topic->{mid} } );
-        push @rels, @releases;  # slow! join me!
-        next if $bind_releases && @releases;
+        my @rels;
+        my $rel_data = {};
+        my %statuses = map { $_->{id_status} => $_->{name}} ci->status->find()->all;
+        for my $topic (@changes) {
+            my @releases = _array( $releases{ $topic->{mid} } );
+            push @rels, @releases;  # slow! join me!
+            next if $bind_releases && @releases;
 
-        # get the menus for the changeset
-        my $topic_row = mdb->topic->find_one({ mid => "$topic->{mid}"});
-        my ( $deployable, $promotable, $demotable, $menu );
-        my %category_data;
-        if ( $topic->{_workflow} || !$category_data{$topic_row->{id_category}}) {
-            ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu( $c, topic => $topic, bl_state => $bl, state_name => $state_name );
-            $category_data{$topic_row->{id_category}} = { deployable => $deployable, promotable => $promotable, demotable => $demotable, menu => $menu};
-        } else {
-            $deployable = $category_data{$topic_row->{id_category}}{deployable};
-            $promotable = $category_data{$topic_row->{id_category}}{promotable};
-            $demotable = $category_data{$topic_row->{id_category}}{demotable};
-            $menu = $category_data{$topic_row->{id_category}}{menu};
-        };
-        my $node = {
-            url  => '/lifecycle/topic_contents',
-            icon => '/static/images/icons/changeset_lc.png',
-            text => $topic->{title},
-            leaf => \1,
-            menu => $menu,
-            topic_name => {
-                mid             => $topic->{mid},
-                category_color  => $topic->{category}->{color},
-                category_name   => _loc($topic->{category}->{name}),
-                category_status => "<b>(" . _loc($statuses{$topic_row->{id_category_status}}) . ")</b>",
-                is_release      => $topic->{category}->{is_release},
-                is_changeset    => $topic->{category}->{is_changeset},
-            },
-            data => {
-                ns           => 'changeset/' . $topic->{mid},
-                bl           => $bl,
-                name         => $topic->{title},
-                promotable   => $promotable,
-                demotable    => $demotable,
-                deployable   => $deployable,
-                state_id     => $p->{id_status},
-                id_project   => $id_project,
-                state_name   => _loc($state_name),
-                topic_mid    => $topic->{mid},
-                topic_status => $topic->{id_category_status},
-                click        => $self->click_for_topic(  _loc($$topic{category}{name}), $topic->{mid} )
-            },
-        };
-        # push @tree, $node if ! @rels;
-        for ( _array @releases ) {
-            if ( !$rel_data->{$_->{mid}} ) {
-                $rel_data->{$_->{mid}} = { deployable => $deployable, promotable => $promotable, demotable => $demotable, menu => $menu};
-            }
-        }
-        next if $bind_releases && @releases;
-        push @tree, $node;
-    }
-    if( $bl ne "new" && @rels ) {
-        my %unique = map { $_->{mid} => $_ } @rels;
-        for my $rel ( values %unique ) {
-            my $mid = $rel->{mid};
+            # get the menus for the changeset
+            my $topic_row = mdb->topic->find_one({ mid => "$topic->{mid}"});
             my ( $deployable, $promotable, $demotable, $menu );
-            if ( $rel_data->{$mid} ) {
-                $deployable = $rel_data->{$mid}{deployable};
-                $promotable = $rel_data->{$mid}{promotable};
-                $demotable = $rel_data->{$mid}{demotable};
-                $menu = $rel_data->{$mid}{menu};
+            my %category_data;
+            if ( $topic->{_workflow} || !$category_data{$topic_row->{id_category}}) {
+                ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu( $c, topic => $topic, bl_state => $bl, state_name => $state_name );
+                $category_data{$topic_row->{id_category}} = { deployable => $deployable, promotable => $promotable, demotable => $demotable, menu => $menu};
             } else {
-
-                ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu( $c, $rel, $bl, $state_name, $p->{id_status} );
-            }
+                $deployable = $category_data{$topic_row->{id_category}}{deployable};
+                $promotable = $category_data{$topic_row->{id_category}}{promotable};
+                $demotable = $category_data{$topic_row->{id_category}}{demotable};
+                $menu = $category_data{$topic_row->{id_category}}{menu};
+            };
             my $node = {
                 url  => '/lifecycle/topic_contents',
-                icon => '/static/images/icons/release_lc.png',
-                text => $rel->{title},
-                leaf => \0,
+                icon => '/static/images/icons/changeset_lc.png',
+                text => $topic->{title},
+                leaf => \1,
                 menu => $menu,
                 topic_name => {
-                    mid             => $rel->{mid},
-                    category_color  => $rel->{category}{color},
-                    category_name   => $rel->{category}{name},
-                    category_status => "<b>(" . _loc($statuses{$rel->{id_category_status}}) . ")</b>",
-                    is_release      => \1,
+                    mid             => $topic->{mid},
+                    category_color  => $topic->{category}->{color},
+                    category_name   => _loc($topic->{category}->{name}),
+                    category_status => "<b>(" . _loc($statuses{$topic_row->{id_category_status}}) . ")</b>",
+                    is_release      => $topic->{category}->{is_release},
+                    is_changeset    => $topic->{category}->{is_changeset},
                 },
                 data => {
-                    ns           => 'changeset/' . $rel->{mid},
+                    ns           => 'changeset/' . $topic->{mid},
                     bl           => $bl,
-                    name         => $rel->{title},
+                    name         => $topic->{title},
                     promotable   => $promotable,
                     demotable    => $demotable,
                     deployable   => $deployable,
-                    state_name   => _loc($state_name),
-                    id_project   => $id_project,
                     state_id     => $p->{id_status},
-                    topic_mid    => $rel->{mid},
-                    topic_status => $rel->{id_category_status},
-                    click        => $self->click_for_topic(  _loc($rel->{category}{name}), $rel->{mid} )
+                    id_project   => $id_project,
+                    state_name   => _loc($state_name),
+                    topic_mid    => $topic->{mid},
+                    topic_status => $topic->{id_category_status},
+                    click        => $self->click_for_topic(  _loc($$topic{category}{name}), $topic->{mid} )
                 },
             };
+            # push @tree, $node if ! @rels;
+            for ( _array @releases ) {
+                if ( !$rel_data->{$_->{mid}} ) {
+                    $rel_data->{$_->{mid}} = { deployable => $deployable, promotable => $promotable, demotable => $demotable, menu => $menu};
+                }
+            }
+            next if $bind_releases && @releases;
             push @tree, $node;
         }
-    }
+        if( $bl ne "new" && @rels ) {
+            my %unique = map { $_->{mid} => $_ } @rels;
+            for my $rel ( values %unique ) {
+                my $mid = $rel->{mid};
+                my ( $deployable, $promotable, $demotable, $menu );
+                if ( $rel_data->{$mid} ) {
+                    $deployable = $rel_data->{$mid}{deployable};
+                    $promotable = $rel_data->{$mid}{promotable};
+                    $demotable = $rel_data->{$mid}{demotable};
+                    $menu = $rel_data->{$mid}{menu};
+                } else {
+
+                    ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu( $c, $rel, $bl, $state_name, $p->{id_status} );
+                }
+                my $node = {
+                    url  => '/lifecycle/topic_contents',
+                    icon => '/static/images/icons/release_lc.png',
+                    text => $rel->{title},
+                    leaf => \0,
+                    menu => $menu,
+                    topic_name => {
+                        mid             => $rel->{mid},
+                        category_color  => $rel->{category}{color},
+                        category_name   => $rel->{category}{name},
+                        category_status => "<b>(" . _loc($statuses{$rel->{id_category_status}}) . ")</b>",
+                        is_release      => \1,
+                    },
+                    data => {
+                        ns           => 'changeset/' . $rel->{mid},
+                        bl           => $bl,
+                        name         => $rel->{title},
+                        promotable   => $promotable,
+                        demotable    => $demotable,
+                        deployable   => $deployable,
+                        state_name   => _loc($state_name),
+                        id_project   => $id_project,
+                        state_id     => $p->{id_status},
+                        topic_mid    => $rel->{mid},
+                        topic_status => $rel->{id_category_status},
+                        click        => $self->click_for_topic(  _loc($rel->{category}{name}), $rel->{mid} )
+                    },
+                };
+                push @tree, $node;
+            }
+        }
+    } catch {
+        my $err = shift;
+        my $msg = _loc('Error detected: %1', $err );
+        _error( $msg );
+        push @tree, {
+            text => substr($msg,0,255),
+            data => {},
+            icon => '/static/images/icons/error.png',
+            leaf=>\1,
+            expandable => \0
+        }; 
+    };
     $c->stash->{ json } = \@tree;
     $c->forward( 'View::JSON' );
 }
