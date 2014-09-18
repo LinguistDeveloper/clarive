@@ -650,6 +650,41 @@ sub title_row : Local {
     $c->forward('View::JSON');
 }
 
+sub data_user_event : Local {
+    my ($self, $c, $action) = @_;
+    my $username = $c->request->parameters->{username};
+    if( $action eq 'get' ) {
+        try {
+            my $user_mid = ci->user->find_one({username=>$username})->{mid};
+            my $user = ci->new($user_mid);
+            my $name = $user->{realname};
+            my $email = $user->{email};
+            my $phone = $user->{phone};
+            my $data = '';
+            if ($name ne ''){
+                $data .= "<b>Nombre</b>: " . $name . "<br><br>";
+            }
+            if ($email ne ''){
+                $data .= "<b>E-mail</b>: " . $email . "<br><br>";
+            }
+            if ($phone ne ''){
+                $data .= "<b>Phone Number</b>: " . $phone . "<br><br>";
+            }
+            if ($data eq ''){
+                $data .= "No se tienen datos del usuario <b>" . $username . "</b>.<br>";
+            }else{
+                $data = "<b>Nombre de usuario</b>: " . $username . "<br><br>" . $data;
+            }
+            $c->stash->{json} = { msg => $data, failure => \0 };
+        } catch {
+            my $err = shift;
+            _error( $err );
+            $c->stash->{json} = { msg => _loc('It seems that the user %1 does not already exist in Clarive', $username ), failure => \1 };
+        };
+    }
+    $c->forward('View::JSON');
+}
+
 sub comment : Local {
     my ($self, $c, $action) = @_;
     my $p = $c->request->parameters;

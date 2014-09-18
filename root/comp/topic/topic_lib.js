@@ -97,7 +97,7 @@ Baseliner.topic_name = function(args) {
         if( mid )
             mid = '#' + mid;
         else
-		    mid = '';
+            mid = '';
         var cat_name = args.short_name ? _(args.category_name).replace( /[^A-Z]/g, '' ) : _(args.category_name); //Cambiarlo en un futuro por un contador de categorias
         if( cat_name )
             cat_name = cat_name + ' ';
@@ -525,6 +525,23 @@ Baseliner.Topic.comment_delete = function(topic_mid, id_com, id_div ) {
                     el.fadeOut({ duration: .5, callback: function(e){ e.remove() } });
                 }
             } catch(eee) { }
+        }
+    });
+};
+
+
+Baseliner.Topic.data_user_event = function( username ) {
+    Baseliner.ajaxEval( '/topic/data_user_event/get', { username: username }, function(res) {
+        if( res.failure ) {
+            Baseliner.error( _('Error'), res.msg );
+        } else {
+            Ext.Msg.show({
+                title:'Datos del usuario ' + username,
+                msg: res.msg,
+                buttons: Ext.Msg.OK,
+                //icon: Ext.Msg.INFO
+                icon: 'ext-mb-info'
+            });
         }
     });
 };
@@ -1935,10 +1952,16 @@ Baseliner.activity_for_topic = function(args) {
             Ext.each( res, function(ev){
                 html += function(){/*
                 <div style="margin-left: 20px">
-                    <p><img style="margin: 5px" width=16 src="/user/avatar/[%= username %]/image.png" />
-                    [%= text %]&nbsp&nbsp<small>[%= ts %]</small></p>
-                    <hr />
-                </div> 
+                    <p>
+                        <a href="javascript:Baseliner.Topic.data_user_event('[%= username %]')">
+                            <img style="margin: 5px" width=16 src="/user/avatar/[%= username %]/image.png" />
+                        </a>
+                        [%= text %]&nbsp&nbsp
+                        <small>
+                            [%= ts %]
+                        </small>
+                    </p>
+                <hr /></div> 
                 */}.tmpl( ev );
             });
             div.innerHTML = res.length 
@@ -1966,7 +1989,9 @@ Baseliner.comments_for_topic = function(args) {
                     <p>[%= text %]</p>
 [%   } %]
 
-                    <p><small><img style="margin: 0px 5px 2px 0px" width=16 src="/user/avatar/[%= created_by %]/image.png" />
+                    <p>
+                    <a href="javascript:Baseliner.Topic.data_user_event('[%= created_by %]')">
+                    <small><img style="margin: 0px 5px 2px 0px" width=16 src="/user/avatar/[%= created_by %]/image.png" /></a>
                     <b>[%= created_by %]</b>, [%= created_on %]
 
 [% if ( can_edit ) { %]
