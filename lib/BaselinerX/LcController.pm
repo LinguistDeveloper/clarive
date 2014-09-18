@@ -97,25 +97,24 @@ sub category_contents : Local {
     my ($category_id) = _array($c->req->params->{category_id});
     my ($cnt,@user_topics) = Baseliner->model('Topic')->topics_for_user( { username => $c->username, categories => $category_id, clear_filter => 1 });
     @user_topics = map { $_->{mid}} @user_topics;
-
+ 
     my @rels = mdb->topic->find( { 'category_status.type' => mdb->nin('F','FC'), mid => mdb->in(@user_topics) })->all;
-    
     
     my %categories = mdb->category->find_hash_one( id=>{},{ workflow=>0, fields=>0, statuses=>0, _id=>0 });
     
     my @menu_related = $self->menu_related();
 
     my %related;
-    map { $related{$_->{from_mid}} = 1 if !$related{$_->{from_mid}} } mdb->master_rel->find( { from_mid => mdb->in(@user_topics), rel_type => 'topic_topic' } )->all;
+    map { $related{$_->{from_mid}} = 1 } mdb->master_rel->find( { from_mid => mdb->in(@user_topics), rel_type => 'topic_topic' } )->all;
 
     my @tree = map {
-        my $leaf = ci->new($_->{mid})->children( where => { collection => 'topic'}, depth => 1) ? \0 : \1;
+        my $leaf = my $leaf = $related{$_->{mid}} ? \0 : \1;
        +{
             text => $_->{title},
             icon => '/static/images/icons/release.png',
             url  => '/lifecycle/topic_contents',
             topic_name => {
-                mid            => $_->{mid}. ' ('.$_->{category_status}->{name}.')',
+                mid            => $_->{mid},
                 category_color => $_->{category}->{color},
                 category_name  => $_->{category}->{name},
                 category_status => "<b>(" . $_->{category_status}->{name} . ")</b>",
@@ -130,8 +129,6 @@ sub category_contents : Local {
             menu => \@menu_related
        }
     } @rels;
-    #$c->stash->{release_only} = 1;
-    #$c->forward('tree_topics_project');
     $c->stash->{ json } = \@tree;
     $c->forward( 'View::JSON' );
 }
@@ -652,10 +649,9 @@ sub changeset : Local {
         }
         next if $bind_releases && @releases;
         push @tree, $node;
-        _debug $node;
     }
     if( $bl ne "new" && @rels ) {
-        my %unique = map { $_->{topic_topic}{mid} => $_ } @rels;
+        my %unique = map { $_->{mid} => $_ } @rels;
         for my $rel ( values %unique ) {
             my $mid = $rel->{mid};
             my ( $deployable, $promotable, $demotable, $menu );
@@ -665,6 +661,7 @@ sub changeset : Local {
                 $demotable = $rel_data->{$mid}{demotable};
                 $menu = $rel_data->{$mid}{menu};
             } else {
+
                 ( $deployable, $promotable, $demotable, $menu ) = $self->cs_menu( $c, $rel, $bl, $state_name, $p->{id_status} );
             }
             my $node = {
@@ -717,7 +714,6 @@ sub status_list {
     my @user_roles = ci->user->roles( $username );
     my @user_workflow = _unique map {$_->{id_status_to} } Baseliner->model("Topic")->user_workflow( $username );
     my $cat = mdb->category->find_one({ id=>''.$topic->{category}->{id} },{ workflow=>1 });
-
     _fail _loc 'Category %1 not found', $topic->{id_category} unless $cat;
 
     return sort { $$a{seq} <=> $$b{seq} }
