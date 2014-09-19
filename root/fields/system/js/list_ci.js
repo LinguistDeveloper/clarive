@@ -36,7 +36,8 @@ params:
            value: data[meta.id_field]!=undefined ? data[meta.id_field] : (meta.default_value!=undefined? meta.default_value: data[meta.id_field]),
            allowBlank: meta.allowBlank=='false' ? false : true,
            disabled: meta.readonly!=undefined ? meta.readonly : false,
-           showClass: meta.show_class==undefined ? false : meta.show_class
+           showClass: meta.show_class==undefined ? false : meta.show_class,
+           order_by: meta.order_by ? meta.order_by : undefined,
        }, ci) )
     ]
 })
