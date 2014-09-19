@@ -129,7 +129,7 @@ sub log_rows : Private {
     
     #my $pager = $rs->pager;
     #$cnt = $pager->total_entries;
-
+    
     my $qre = qr/\.\w+$/;
     while( my $doc = $rs->next ) {
         my $more = $doc->{more};
@@ -167,6 +167,7 @@ sub log_rows : Private {
             ns       => $doc->{ns},
             pid      => $doc->{pid},
             provider => $doc->{provider},
+            rule     => $doc->{rule},
             datalen  => $data_len,
             data     => $data,
             more     => { more=>$more, data_name=> $doc->{data_name}, data=> $data_len ? \1 : \0, file=>$file },
