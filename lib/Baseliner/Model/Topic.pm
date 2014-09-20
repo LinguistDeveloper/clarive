@@ -2206,7 +2206,7 @@ sub set_cis {
                 text_new  => ( $field_meta->{modify_text_new} // '%1 modified topic (%2): %4 ' ),
                 mid => $rs_topic->{mid},
             } => sub {
-                my $subject = _loc("#%1 %2 updated.  %3 changed", $rs_topic->{mid}, $rs_topic->{title}, $name_field);
+                my $subject = _loc("#%1 %2 updated: %3 changed", $rs_topic->{mid}, $rs_topic->{title}, $name_field);
                 { mid => $rs_topic->{mid}, topic => $rs_topic->{title}, subject => $subject, notify => $notify }    # to the event
             } => sub {
                 _throw _loc( 'Error modifying Topic: %1', shift() );
@@ -2256,7 +2256,7 @@ sub set_revisions {
                                                     text_new      => '%1 modified topic: %2 ( %4 )',
                                                     mid => $rs_topic->{mid},
                                                    } => sub {
-                                                    my $subject = _loc("#%1 %2 updated.  New revisions", $rs_topic->{mid}, $rs_topic->title);
+                                                    my $subject = _loc("#%1 %2 updated: new revisions", $rs_topic->{mid}, $rs_topic->title);
 
                     { mid => $rs_topic->{mid}, topic => $rs_topic->{title}, subject => $subject, notify => $notify }   # to the event
                 } ## end try
@@ -2274,7 +2274,7 @@ sub set_revisions {
                                                     text_new      => '%1 deleted all revisions',
                                                     mid => $rs_topic->{mid},
                                                    } => sub {
-                                                    my $subject = _loc("#%1 %2 updated.  All revisions removed", $rs_topic->{mid}, $rs_topic->title);
+                                                    my $subject = _loc("#%1 %2 updated: all revisions removed", $rs_topic->{mid}, $rs_topic->title);
                     { mid => $rs_topic->{mid}, topic => $rs_topic->{title}, subject => $subject, notify => $notify }   # to the event
                 } ## end try
                 => sub {
@@ -2341,7 +2341,7 @@ sub set_release {
                                                     text_new      => '%1 modified topic: changed %2 to %4',
                                                     mid => $rs_topic->{mid},
                                                    } => sub {
-                                                    my $subject = _loc("#%1 %2 updated.  %4 changed to %3", $rs_topic->{mid}, $rs_topic->{title}, $row_release->{title}, $name_field);
+                                                    my $subject = _loc("#%1 %2 updated: %4 changed to %3", $rs_topic->{mid}, $rs_topic->{title}, $row_release->{title}, $name_field);
                     { mid => $rs_topic->{mid}, topic => $rs_topic->{title}, subject => $subject, notify => $notify }   # to the event
                 } ## end try
                 => sub {
@@ -2358,7 +2358,7 @@ sub set_release {
                                                     text_new      => '%1 deleted %2 %3',
                                                     mid => $rs_topic->{mid},
                                                    } => sub {
-                                                    my $subject = _loc("#%1 %2 updated.  Removed from %4 %3", $rs_topic->{mid}, $rs_topic->{title}, $old_release_name, $release_field);
+                                                    my $subject = _loc("#%1 %2 updated: removed from %4 %3", $rs_topic->{mid}, $rs_topic->{title}, $old_release_name, $release_field);
 
                     { mid => $rs_topic->{mid}, topic => $rs_topic->{title}, subject => $subject, notify => $notify}   # to the event
                 } ## end try
@@ -2412,7 +2412,7 @@ sub set_projects {
                                                     text_new      => '%1 modified topic: %2 ( %4 )',
                                                     mid => $rs_topic->{mid},
                                                    } => sub {
-                                                    my $subject = _loc("#%1 %2 updated.  %4 (%3)", $rs_topic->{mid}, $rs_topic->{title}, $projects, $name_field);
+                                                    my $subject = _loc("#%1 %2 updated: %4 (%3)", $rs_topic->{mid}, $rs_topic->{title}, $projects, $name_field);
                     { mid => $rs_topic->{mid}, topic => $rs_topic->{title}, subject => $subject, notify => $notify }   # to the event
                 } ## end try
                 => sub {
@@ -2429,7 +2429,7 @@ sub set_projects {
                                                     text_new      => '%1 deleted %2',
                                                     mid => $rs_topic->{mid},
                                                    } => sub {
-                                                    my $subject = _loc("#%1 %2 updated.  %3 deleted", $rs_topic->{mid}, $rs_topic->{title}, $name_field );
+                                                    my $subject = _loc("#%1 %2 updated: %3 deleted", $rs_topic->{mid}, $rs_topic->{title}, $name_field );
                     { mid => $rs_topic->{mid}, topic => $rs_topic->{title}, subject => $subject, notify => $notify }   # to the event
                 } ## end try
                 => sub {
@@ -2770,7 +2770,7 @@ sub change_status {
                 category_status => $p{id_status},
             };
 
-            my $subject = _loc("#%1 %2.  Status changed to %3", $mid, $doc->{title}, $status );
+            my $subject = _loc("%3: #%1 %2", $mid, $doc->{title}, $status );
             +{ mid => $mid, title => $doc->{title}, notify_default => \@users, subject => $subject, notify => $notify } ;       
         } 
         => sub {

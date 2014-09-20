@@ -4419,23 +4419,23 @@ msgstr "#%1 %2: Campo '%3' modificado"
 msgid "#%1 %2 updated"
 msgstr "#%1 %2 actualizado"
 
-msgid "#%1 %2 updated.  New revisions"
-msgstr "#%1 %2 actualizado. Nuevas revisiones"
+msgid "#%1 %2 updated: new revisions"
+msgstr "#%1 %2 actualizado: nuevas revisiones"
 
-msgid "#%1 %2 updated.  All revisions removed"
-msgstr "#%1 %2 actualizado.  Todas las revisiones eliminadas"
+msgid "#%1 %2 updated: all revisions removed"
+msgstr "#%1 %2 actualizado: todas las revisiones eliminadas"
 
-msgid "#%1 %2 updated.  %4 changed to %3"
-msgstr "#%1 %2 actualizado.  %4 cambiado a %3"
+msgid "#%1 %2 updated: %4 changed to %3"
+msgstr "#%1 %2 actualizado:  %4 cambiado a %3"
 
-msgid "#%1 %2 updated.  %4 (%3)"
-msgstr "#%1 %2 actualizado.  %4 (%3)"
+msgid "#%1 %2 updated: %4 (%3)"
+msgstr "#%1 %2 actualizado: %4 (%3)"
 
-msgid "#%1 %2 updated.  %3 deleted"
-msgstr "#%1 %2 actualizado.  %3 borrado"
+msgid "#%1 %2 updated: %3 deleted"
+msgstr "#%1 %2 actualizado: %3 borrado"
 
-msgid "#%1 %2.  Status changed to %3"
-msgstr "#%1 %2.  Estado cambiado a %3"
+msgid "%3: #%1 %2"
+msgstr "%3: #%1 %2"
 
 msgid "More info"
 msgstr "Más info"
@@ -6042,11 +6042,11 @@ msgstr "Error añadiendo el tópico %1: %2"
 
 msgid "Toópico no encontrado"
 
-msgid "#%1 %2 updated.  %3 changed"
-msgstr "Tópico [%1] %2 actualizado.  %3 cambiado"
+msgid "#%1 %2 updated: %3 changed"
+msgstr "#%1 %2 actualizado: %3 cambiado"
 
-msgid "#%1 %2 updated.  Removed from %4 %3"
-msgstr "Tópico [%1] %2 actualizado.  Borrado de %4 %3"
+msgid "#%1 %2 updated: removed from %4 %3"
+msgstr "#%1 %2 actualizado: borrado de %4 %3"
 
 msgid "Id not found: %1"
 msgstr "Id no encontrado: %1"
