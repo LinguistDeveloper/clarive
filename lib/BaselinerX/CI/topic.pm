@@ -216,7 +216,7 @@ sub comments {
     my $is_root = model->Permissions->is_root($$p{username});
     my $comments = model->Topic->list_posts( mid=>$self->mid );
     for my $com ( @$comments ) {
-        $$com{created_on} = join ' ', "$$com{created_on}" =~ /^(.*)T(.*)$/; # TODO use a standard user date format 
+        #$$com{created_on} = join ' ', "$$com{created_on}" =~ /^(.*)T(.*)$/; # TODO use a standard user date format 
         $$com{topic_mid} = $self->mid;
         $$com{can_edit} = $is_root ? \1 : $$com{created_by} eq $$p{username} ? \1:\0;   # XXX for now the owner cannot edit or delete her own post
         $$com{can_delete} = $is_root ? \1 : \0;
