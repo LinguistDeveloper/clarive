@@ -1068,7 +1068,7 @@ sub activity{
     my @ev_errors;
     while ($total_events <= $inc){  
         my $limit = $tot+$inc;
-        my @events = mdb->event->find({event_key=>{'$not'=>qr/^event.rule/i}})->skip($tot)->limit($inc)->all;
+        my @events = mdb->event->find({event_key=>{'$not'=>qr/^event\.(rule|repository)/i}})->skip($tot)->limit($inc)->all;
         $total_events = @events;
         $tot += $inc;
         if($total_events == 0){
@@ -1107,7 +1107,7 @@ sub activity{
         }
     }
     _log "numero total de eventos erroneos ". scalar @ev_errors ;
-    _log _dump @ev_errors;
+    _log _dump map{$_->{mid} => $_->{event_key}; } @ev_errors;
 }
 
 sub topic_view {

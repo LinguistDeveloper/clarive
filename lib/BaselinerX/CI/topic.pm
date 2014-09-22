@@ -195,7 +195,15 @@ sub activity {
     my ($self, $p )=@_;
     # activity (activities)
     require Baseliner::Sugar;
-    my $activity = Baseliner::Sugar::activity_by_mid( $self->mid, min_level => 2 );
+
+    my $activity;
+    if(Baseliner->config->{activity_from_event} == 1){
+        _log "listing events";
+        $activity = Baseliner::Sugar::events_by_mid( $self->mid, min_level => 2 );
+    } else{
+        _log "listing activities";
+        $activity = Baseliner::Sugar::activity_by_mid( $self->mid, min_level => 2 );
+    }
     
     # control activity visualiz permissions
     my $name_category = Util->_name_to_id($self->name_category);
