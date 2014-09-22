@@ -1061,40 +1061,50 @@ sub update_topic_rels{
 
 sub activity{
     _log "creating activity log for topics from events collection\n";
-    my $events = mdb->event->find({event_key=>{'$not'=>qr/^event.rule/i}});
-    my $total_events = $events->count();
-    my $counter = 0;
+    my $ultra_tot = 0;
+    my $tot = 0;
+    my $inc = 1000;
+    my $total_events = 0;
     my @ev_errors;
-    while( my $event = $events->next  ) {
-        try{
-            my $key = $event->{event_key};
-            my $ev = Baseliner->model('Registry')->get($key);
-            if( _array( $ev->{vars} ) > 0 ) {
-                
-                my $ed_reduced={};
-                my $ed = _load $event->{event_data};
-                foreach (_array $ev->{vars}){             
-                    $ed_reduced->{$_} = $ed->{$_};
-                }
-                $ed_reduced->{ts} = $event->{ts};
-                mdb->activity->insert({
-                    vars            => $ed_reduced,
-                    event_key       => $key,
-                    event_id        => $event->{id},
-                    mid             => $event->{mid},
-                    module          => $event->{module},
-                    ts              => $event->{ts},
-                    username        => $event->{username},
-                    text            => $ev->{text},
-                    ev_level        => $ev->{ev_level},
-                    level           => $ev->{level}
-                });
-                $counter++;
-                _log "$counter/$total_events events converted to activity" if $total_events % 1000 == 0;
-            }    
+    while ($total_events <= $inc){  
+        my $limit = $tot+$inc;
+        my @events = mdb->event->find({event_key=>{'$not'=>qr/^event.rule/i}})->skip($tot)->limit($inc)->all;
+        $total_events = @events;
+        $tot += $inc;
+        if($total_events == 0){
+           last; 
+        }
+        $ultra_tot += $total_events;
+        _log "$ultra_tot events converted to activity" if $ultra_tot % 500 == 0;
+        foreach my $event (@events) {
+            try{
+                my $key = $event->{event_key};
+                my $ev = Baseliner->model('Registry')->get($key);
+                if( _array( $ev->{vars} ) > 0 ) {
+                    
+                    my $ed_reduced={};
+                    my $ed = _load $event->{event_data};
+                    foreach (_array $ev->{vars}){             
+                        $ed_reduced->{$_} = $ed->{$_};
+                    }
+                    $ed_reduced->{ts} = $event->{ts};
+                    mdb->activity->insert({
+                        vars            => $ed_reduced,
+                        event_key       => $key,
+                        event_id        => $event->{id},
+                        mid             => $event->{mid},
+                        module          => $event->{module},
+                        ts              => $event->{ts},
+                        username        => $event->{username},
+                        text            => $ev->{text},
+                        ev_level        => $ev->{ev_level},
+                        level           => $ev->{level}
+                    });
+                }    
             } catch{
                 push @ev_errors, $event;
             }        
+        }
     }
     _log "numero total de eventos erroneos ". scalar @ev_errors ;
     _log _dump @ev_errors;
