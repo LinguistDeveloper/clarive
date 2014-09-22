@@ -4407,35 +4407,35 @@ msgstr "Casilla de verificación"
 msgid "Numberfield"
 msgstr "Campo numérico"
 
-msgid "New topic (%1): [%2] %3"
-msgstr "Nuevo tópico (%1): [%2] %3"
+msgid "New topic: %1 #%2 %3"
+msgstr "Nuevo tópico: %1 #%2 %3"
 
-msgid "Topic updated (%1): [%2] %3"
-msgstr "Tópico modificado (%1): [%2] %3"
+msgid "Topic updated: %1 #%2 %3"
+msgstr "Tópico modificado: %1 #%2 %3"
 
 msgid "#%1 %2: Field '%3' updated"
-msgstr "Tópico [%1] %2 actualizado: Campo '%3' modificado"
+msgstr "#%1 %2: Campo '%3' modificado"
 
 msgid "#%1 %2 updated"
-msgstr "Tópico [%1] %2 actualizado"
+msgstr "#%1 %2 actualizado"
 
 msgid "#%1 %2 updated.  New revisions"
-msgstr "Tópico [%1] %2 actualizado.  Nuevas revisiones"
+msgstr "#%1 %2 actualizado. Nuevas revisiones"
 
 msgid "#%1 %2 updated.  All revisions removed"
-msgstr "Tópico [%1] %2 actualizado.  Todas las revisiones eliminadas"
+msgstr "#%1 %2 actualizado.  Todas las revisiones eliminadas"
 
 msgid "#%1 %2 updated.  %4 changed to %3"
-msgstr "Tópico [%1] %2 actualizado.  %4 cambiado a %3"
+msgstr "#%1 %2 actualizado.  %4 cambiado a %3"
 
 msgid "#%1 %2 updated.  %4 (%3)"
-msgstr "Tópico [%1] %2 actualizado.  %4 (%3)"
+msgstr "#%1 %2 actualizado.  %4 (%3)"
 
 msgid "#%1 %2 updated.  %3 deleted"
-msgstr "Tópico [%1] %2 actualizado.  %3 borrado"
+msgstr "#%1 %2 actualizado.  %3 borrado"
 
 msgid "#%1 %2.  Status changed to %3"
-msgstr "Tópico [%1] %2.  Estado cambiado a %3"
+msgstr "#%1 %2.  Estado cambiado a %3"
 
 msgid "More info"
 msgstr "Más info"
@@ -7139,13 +7139,13 @@ msgid "Error adding project: %1"
 msgstr "Error añadiendo el proyecto: %1"
 
 msgid "Created file %1 to #%2 %3"
-msgstr "Fichero %1 creado para el tópico [%2] %3"
+msgstr "Fichero %1 creado para el tópico #%2 %3"
 
 msgid "Deleted file %1"
 msgstr "Fichero borrado %1"
 
 msgid "Detached file %1 from #%2 %3"
-msgstr "Fichero %1 destacado para el tópico [%2] %3"
+msgstr "Fichero %1 desligado del tópico #%2 %3"
 
 msgid "The user %1 has created job %2 for %3 bl"
 msgstr "El usuario %1 ha creado el pase %2 para %3 bl"

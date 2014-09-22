@@ -453,14 +453,12 @@ sub topics_for_user {
         }
     }else {
         if (!$p->{clear_filter}){  
-
             ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
             my %tmp;
             map { $tmp{ $_->{id_status_from} } = $_->{id_category} if ($_->{id_status_from}); } 
                 $self->user_workflow( $username );
             my @status_ids = keys %tmp;
-            $where->{'category_status.id'} = mdb->in(@status_ids) if @status_ids > 0;
-
+            $where->{'category_status.id'} = mdb->in(@status_ids) if @status_ids > 0 && scalar _array $p->{statuses} > 0;
             # map { $tmp{$_->{id_status_from}} = $_->{id_category} && $tmp{$_->{id_status_to} = $_->{id_category}} } 
             # my @workflow_filter;
             # for my $status (keys %tmp){
@@ -713,7 +711,7 @@ sub update {
                         category_status => $id_category_status,
                     };
                     
-                    my $subject = _loc("New topic (%1): [%2] %3", $category->{name}, $topic->mid, $topic->title);
+                    my $subject = _loc("New topic: %1 #%2 %3", $category->{name}, $topic->mid, $topic->title);
                     { mid => $topic->mid, title => $topic->title, 
                         topic=>$topic->title, 
                         name_category=>$category->{name}, 
@@ -756,7 +754,7 @@ sub update {
                 my @users = $self->get_users_friend(mid => $topic_mid, id_category => $topic->id_category, id_status => $topic->id_category_status);
                 
                 $return = 'Topic modified';
-                my $subject = _loc("Topic updated (%1): [%2] %3", $category->{name}, $topic->mid, $topic->title);
+                my $subject = _loc("Topic updated: %1 #%2 %3", $category->{name}, $topic->mid, $topic->title);
                 $rollback = 0;
                 if ( %change_status ) {
                     $self->change_status( %change_status );

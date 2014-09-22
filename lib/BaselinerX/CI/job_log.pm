@@ -102,7 +102,7 @@ sub common_log {
         $doc->{prefix} = $p{prefix} if $p{prefix};
         $doc->{milestone} = "$p{milestone}" if $p{milestone};
         $doc->{service_key} = $self->current_service;
-        
+        $doc->{rule} =  $self->job->{id_rule} if defined $self->job->{id_rule};
         if( $p{data} ) {
             my $data = Util->hide_passwords( $p{data});
             my $d = compress( $data );  ## asset in grid
