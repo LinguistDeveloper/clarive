@@ -453,14 +453,12 @@ sub topics_for_user {
         }
     }else {
         if (!$p->{clear_filter}){  
-
             ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
             my %tmp;
             map { $tmp{ $_->{id_status_from} } = $_->{id_category} if ($_->{id_status_from}); } 
                 $self->user_workflow( $username );
             my @status_ids = keys %tmp;
-            $where->{'category_status.id'} = mdb->in(@status_ids) if @status_ids > 0;
-
+            $where->{'category_status.id'} = mdb->in(@status_ids) if @status_ids > 0 && scalar _array $p->{statuses} > 0;
             # map { $tmp{$_->{id_status_from}} = $_->{id_category} && $tmp{$_->{id_status_to} = $_->{id_category}} } 
             # my @workflow_filter;
             # for my $status (keys %tmp){
@@ -518,7 +516,7 @@ sub topics_for_user {
     }
     #_debug( $order_by );
     
-#_debug( $where );
+    #_debug( $where );
     my $rs = mdb->topic->find( $where )->fields({ mid=>1, labels=>1 })->sort( $order_by );
     $cnt = $rs->count;
     $start = 0 if length $start && $start>=$cnt; # reset paging if offset
@@ -713,7 +711,7 @@ sub update {
                         category_status => $id_category_status,
                     };
                     
-                    my $subject = _loc("New topic (%1): [%2] %3", $category->{name}, $topic->mid, $topic->title);
+                    my $subject = _loc("New topic: %1 #%2 %3", $category->{name}, $topic->mid, $topic->title);
                     { mid => $topic->mid, title => $topic->title, 
                         topic=>$topic->title, 
                         name_category=>$category->{name}, 
@@ -756,7 +754,7 @@ sub update {
                 my @users = $self->get_users_friend(mid => $topic_mid, id_category => $topic->id_category, id_status => $topic->id_category_status);
                 
                 $return = 'Topic modified';
-                my $subject = _loc("Topic updated (%1): [%2] %3", $category->{name}, $topic->mid, $topic->title);
+                my $subject = _loc("Topic updated: %1 #%2 %3", $category->{name}, $topic->mid, $topic->title);
                 $rollback = 0;
                 if ( %change_status ) {
                     $self->change_status( %change_status );
@@ -787,6 +785,9 @@ sub update {
                     ci->delete( $mid );
                     mdb->topic->remove({ mid=>"$mid" });
                     mdb->master_seen->remove({ mid=>"$mid" });
+
+                    #we must delete activity for this topic
+                    mdb->activity->remove({mid=>$mid});
                 }
                 $return = '%1 topic(s) deleted';
             } catch {
@@ -1288,7 +1289,7 @@ sub get_data {
         
         $data = mdb->topic->find_one({ mid=>"$topic_mid" }) 
                 or _error( "topic mid $topic_mid document not found" );
-        
+        my @labels = _array( $data->{labels} );
         $data->{topic_mid} = "$topic_mid";
         $data->{action_status} = $self->getAction($data->{type_status});
         $data->{created_on_epoch} = Class::Date->new( $data->{created_on} )->epoch;
@@ -1320,9 +1321,8 @@ sub get_data {
         # for my $f ( grep { exists $custom_fields{$_} } keys %{ $doc || {} } ) {
         #    $data->{ $f } = $doc->{$f}; 
         # }
-        my @labels = _array( $data->{labels} );
         if( @labels > 0 ) {
-            my %all_labels = map { $_->{id} => $_ } mdb->label->find({ id=>mdb->in($data->{labels}) })->all;
+            my %all_labels = map { $_->{id} => $_ } mdb->label->find({ id=>mdb->in(@labels) })->all;
             $data->{labels} = [ map { $all_labels{$_} } @labels ]; 
         }
         cache->set( $cache_key, $data );
@@ -2691,7 +2691,7 @@ sub list_posts {
     if( $p{count_only} ) {
         return mdb->master_rel->find({ from_mid=>"$mid", rel_type=>'topic_post' })->count;
     } 
-    my @posts = sort { $a->ts cmp $b->ts } ci->new( $mid )->children( isa=>'post' );
+    my @posts = sort { $b->ts cmp $a->ts } ci->new( $mid )->children( isa=>'post' );
     my @rows;
     for my $r ( @posts ) {
         push @rows, {

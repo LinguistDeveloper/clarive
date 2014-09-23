@@ -53,6 +53,7 @@
             {  name: 'lev' },
             {  name: 'section' },
             {  name: 'step' },
+            {  name: 'rule' },
             {  name: 'exec' },
             {  name: 'prefix' },
             {  name: 'milestone' },
@@ -483,6 +484,7 @@
                 { header: _('Module'), width: 280, id: 'module', dataIndex: 'module', sortable: true, hidden: true, editor: new Ext.form.TextArea() },
                 { header: _('Milestone'), width: 40, id: 'milestone', dataIndex: 'milestone', sortable: true, hidden: true },
                 { header: _('Log Id'), width: 80, dataIndex: 'id', sortable: true, hidden: true },
+                { header: _('Rule Id'), width: 80, dataIndex: 'rule', sortable: true, hidden: true },
                 { header: _('Actions'), width: 100, dataIndex: 'more', renderer: Baseliner.actionsRenderer, sortable: true } 
             ],
             bbar: new Ext.PagingToolbar({

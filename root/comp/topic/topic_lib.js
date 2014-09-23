@@ -1150,6 +1150,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
     detail_reload : function(){
         var self = this;
         // using jquery cos the self.detail.load() method callback is not consistent in IE8
+        if (self.topic_mid && self.swEdit==1){ self.swEdit = 0};
         $( self.detail.body.dom ).load( '/topic/view', 
             { topic_mid: self.topic_mid, ii: self.ii, html: 1, categoryId: self.new_category_id, topic_child_data : true },
             function( responseText, textStatus, req ){

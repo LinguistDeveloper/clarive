@@ -318,6 +318,7 @@ sub index_all {
     my $base_indexes = {
         topic => [
             [{ mid=>1 },{ unique=>1 }],
+            [{ '_sort.title' => 1}],
             [{ created_on=>1 }],
             [{ modified_on=>1 }],
             [{ modified_on=>-1 }],

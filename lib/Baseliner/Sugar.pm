@@ -32,6 +32,7 @@ use Exporter::Tidy default => [qw/
     event_hook
     events_by_key
     events_by_mid
+    activity_by_mid
     /
 ];
 
@@ -139,6 +140,28 @@ sub event_new {
                 mid           => $ed->{mid},
                 username      => $ed->{username}
         });
+
+        if( _array( $ev->{vars} ) > 0 ) {
+            my $ed_reduced={};
+            foreach (_array $ev->{vars}){
+                $ed_reduced->{$_} = $ed->{$_};
+            }
+            $ed_reduced->{ts} = mdb->ts;
+
+            mdb->activity->insert({
+                vars            => $ed_reduced,
+                event_key       => $key,
+                event_id        => $ev_id,
+                mid             => $ed->{mid},
+                module          => $module,
+                ts              => mdb->ts,
+                username        => $ed->{username},
+                text            => $ev->{text},
+                ev_level        => $ev->{ev_level},
+                level           => $ev->{level}
+            });    
+        }
+        
         for my $log (@event_log) {
             my $stash_data = substr( _dump($log->{ret}), 0, 1_024_000 ); # 1MB
             my $log_output = substr( _dump($log->{output}), 0, 4_096_000 ); # 4MB
@@ -255,12 +278,56 @@ sub events_by_mid {
     } @evs ];
     my $purged = [];
     foreach my $elem (@$ret){
-        my $key = $elem->{event_key};
-        my $vars = model->Registry->get($key)->vars;
-        my $event_db = mdb->event->find({ event_key => $key })->next;
-        my $event_data = _load( $event_db->{event_data} );
-        my $needed_data = +{ %$event_db, %$event_data };
-        my %res = map { $_=>$$needed_data{$_} } @$vars;
+        my $vars = model->Registry->get($elem->{event_key})->vars;
+        my %res = map { $_=>$$elem{$_} } @$vars;
+        $res{ts} = $elem->{ts};
+        $res{username} = $elem->{username};
+        $res{text} = $elem->{text};
+        push @$purged, \%res;
+    }
+    cache->set( $cache_key, $purged );
+
+
+    return $purged;
+}
+
+
+sub activity_by_mid {
+    my ($mid, %p ) = @_;
+    my $min_level = $p{min_level} // 0;
+
+    my $cache_key = [ "activities:$mid:", \%p ];
+    my $cached = cache->get( $cache_key );
+    return $cached if $cached;
+
+    my @acts = mdb->activity->find({ mid=>"$mid" })->sort({ ts=>-1 })->all;
+
+    my $ret = !@acts ? [] : [
+      grep {
+         $_->{ev_level} == 0 || $_->{level} >= $min_level;
+      }
+      map { 
+        # merge 2 hashes
+        delete $_->{_id};
+        my $event_data =  $_->{vars};
+        delete $_->{vars};
+        my $d = { %$_ , %$event_data };
+        
+        try {
+            my $ev = Baseliner->model('Registry')->get( $d->{event_key} ); # this throws an exception if key not found
+            $d->{text} = $ev->event_text( $d );
+            $d->{ev_level} = $ev->level;
+        } catch {
+            my $err = shift;
+            Util->_error( Util->_loc('Error in event text generator: %1', $err) );
+        };  
+        $d; 
+    } @acts ];
+
+    my $purged = [];
+    foreach my $elem (@$ret){
+        my $vars = model->Registry->get($elem->{event_key})->vars;
+        my %res = map { $_=>$$elem{$_} } @$vars;
         $res{ts} = $elem->{ts};
         $res{username} = $elem->{username};
         $res{text} = $elem->{text};
