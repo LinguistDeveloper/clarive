@@ -264,7 +264,7 @@ sub get_projectnames_and_descriptions_from_user{
     my $where = {collection=>"$collection", mid=>mdb->in(@id_projects)};
     $where->{name} = qr/$query/i if length($query);
     $where->{active} = '1';
-    mdb->master_doc->find($where)->fields({name=>1,description=>1, mid=>1, _id=>0})->all;
+    mdb->master_doc->find($where)->fields({name=>1,description=>1, mid=>1, _id=>0})->sort({ name=>1 })->all;
 }
 
 1;
