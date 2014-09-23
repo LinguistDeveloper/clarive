@@ -1160,17 +1160,17 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
         
         # labels
 		if($row{labels}){
-			$row{labels} = [ 
-                map { 
-                    my $id=$_; 
-                    my $r = $all_labels{$id};
-                    if($r->{name} && $r->{color}){
-                      $id // '' . ";" . $r->{name} // '' . ";" . $r->{color} // '';
-                    }else{
-                      $id // '';
-                   }
-                } _array( $row{labels} )
-            ];
+            my @tmp_labels;
+            map { 
+                my $id=$_; 
+                my $r = $all_labels{$id};
+                if($r->{name} && $r->{color}){
+                    push @tmp_labels, $id . ";" . $r->{name} . ";" . $r->{color};
+                }else{
+                    push @tmp_labels, $id // '';
+               }
+            } _array( $row{labels} );
+            $row{labels} = \@tmp_labels;
 		}
 		
         $row{category_color} = $row{category}{color};
