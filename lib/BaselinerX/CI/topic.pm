@@ -92,7 +92,7 @@ sub timeline {
     } grep { $_->{plan_end_date} } @cal;
     
     # events
-    my %events = map { $_->{text} => $_ } @{ Baseliner::Sugar::events_by_mid( $self->mid ) };
+    my %events = map { $_->{text} => $_ } @{ Baseliner::Sugar::activity_by_mid( $self->mid ) };
     push @data, map {
         my $start = $_->{ts};
         +{
@@ -193,16 +193,25 @@ sub jobs {
 
 sub activity {
     my ($self, $p )=@_;
-    # activity (events)
+    # activity (activities)
     require Baseliner::Sugar;
-    my $events = Baseliner::Sugar::events_by_mid( $self->mid, min_level => 2 );
-    # control event visualiz permissions
+
+    my $activity;
+    if(Baseliner->config->{activity_from_event} == 1){
+        _log "listing events";
+        $activity = Baseliner::Sugar::events_by_mid( $self->mid, min_level => 2 );
+    } else{
+        _log "listing activities";
+        $activity = Baseliner::Sugar::activity_by_mid( $self->mid, min_level => 2 );
+    }
+    
+    # control activity visualiz permissions
     my $name_category = Util->_name_to_id($self->name_category);
     my %topic_category = ();
     my $user_categories_fields_meta = model->Users->get_categories_fields_meta_by_user( 
         username=>$$p{username}, categories=>{ $self->id_category => $self->name_category }, 
     );
-    my @perm_events = grep { !exists $_->{field} || exists $user_categories_fields_meta->{$name_category}->{$_->{field}}} Util->_array( $events );
+    my @perm_events = grep { !exists $_->{field} || exists $user_categories_fields_meta->{$name_category}->{$_->{field}}} Util->_array( $activity );
     if ( !Baseliner->model('Permissions')->user_has_action(username => $$p{username},action => "action.topics.$name_category.comment" )) {
         @perm_events = grep { $_->{event_key} !~ /\.post\./ } @perm_events;
     }
@@ -216,7 +225,7 @@ sub comments {
     my $is_root = model->Permissions->is_root($$p{username});
     my $comments = model->Topic->list_posts( mid=>$self->mid );
     for my $com ( @$comments ) {
-        $$com{created_on} = join ' ', "$$com{created_on}" =~ /^(.*)T(.*)$/; # TODO use a standard user date format 
+        #$$com{created_on} = join ' ', "$$com{created_on}" =~ /^(.*)T(.*)$/; # TODO use a standard user date format 
         $$com{topic_mid} = $self->mid;
         $$com{can_edit} = $is_root ? \1 : $$com{created_by} eq $$p{username} ? \1:\0;   # XXX for now the owner cannot edit or delete her own post
         $$com{can_delete} = $is_root ? \1 : \0;
