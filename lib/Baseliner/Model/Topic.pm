@@ -1289,7 +1289,7 @@ sub get_data {
         
         $data = mdb->topic->find_one({ mid=>"$topic_mid" }) 
                 or _error( "topic mid $topic_mid document not found" );
-        
+        my @labels = _array( $data->{labels} );
         $data->{topic_mid} = "$topic_mid";
         $data->{action_status} = $self->getAction($data->{type_status});
         $data->{created_on_epoch} = Class::Date->new( $data->{created_on} )->epoch;
@@ -1321,9 +1321,8 @@ sub get_data {
         # for my $f ( grep { exists $custom_fields{$_} } keys %{ $doc || {} } ) {
         #    $data->{ $f } = $doc->{$f}; 
         # }
-        my @labels = _array( $data->{labels} );
         if( @labels > 0 ) {
-            my %all_labels = map { $_->{id} => $_ } mdb->label->find({ id=>mdb->in($data->{labels}) })->all;
+            my %all_labels = map { $_->{id} => $_ } mdb->label->find({ id=>mdb->in(@labels) })->all;
             $data->{labels} = [ map { $all_labels{$_} } @labels ]; 
         }
         cache->set( $cache_key, $data );
