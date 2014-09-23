@@ -799,6 +799,7 @@ sub comment : Local {
                     subject         => $subject,
                     notify          => $notify
                 };
+                cache->remove( qr/:$mid_topic:/ ) if length $mid_topic;
             }
             $c->stash->{json} = { msg => _loc('Delete comment ok'), failure => \0 };
         } catch {
