@@ -4758,6 +4758,9 @@ msgstr "Naturalezas no incluidas en la dirección de este elemento: %1"
 msgid "Error trying to fatpack perl code. Could not find fatpack code in `%1`"
 msgstr "Error al intentar hacer fatpack sobre el código perl. No se ha podido encontrae el código del fatpack en `%1`"
 
+msgid "Topic #%1 not found. Deleted?"
+msgstr "Tópico #%1 no encontrado. ¿Se ha borrado?"
+
 msgid "Config value %1 deleted"
 msgstr "Valor de configiración %1 borrado"
 

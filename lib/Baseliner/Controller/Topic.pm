@@ -311,25 +311,30 @@ sub json : Local {
     my $p = $c->request->parameters;
     my $topic_mid = $p->{topic_mid};
      
-    my $ret = {};
-    
-    my $meta = $c->model('Topic')->get_meta( $topic_mid );
-    my $data = $c->model('Topic')->get_data( $meta, $topic_mid, %$p );
+    try {
+        my $ret = {};
+        mdb->topic->find({ mid=>"$topic_mid" })->count or _fail(_loc('Topic #%1 not found. Deleted?', $topic_mid)); 
+        my $meta = $c->model('Topic')->get_meta( $topic_mid );
+        my $data = $c->model('Topic')->get_data( $meta, $topic_mid, %$p );
 
-    $meta = $self->get_meta_permissions ($c, $meta, $data);
-    
-    $meta = $self->get_field_bodies( $meta );
-    
-    $ret->{topic_meta} = $meta;
-    
-    if (exists $data->{ci_mid}){
-        my $data_ci = _ci($data->{ci_mid})->{_ci};
-        $data->{ci_parent} = $data_ci;
-    }
-    
-    $ret->{topic_data} = $data;
-    $ret->{rel_signature} = $c->model('Topic')->rel_signature($topic_mid);
-    $c->stash->{json} = $ret;
+        $meta = $self->get_meta_permissions ($c, $meta, $data);
+        
+        $meta = $self->get_field_bodies( $meta );
+        
+        $ret->{topic_meta} = $meta;
+        
+        if (exists $data->{ci_mid}){
+            my $data_ci = _ci($data->{ci_mid})->{_ci};
+            $data->{ci_parent} = $data_ci;
+        }
+        
+        $ret->{topic_data} = $data;
+        $ret->{rel_signature} = $c->model('Topic')->rel_signature($topic_mid);
+        $c->stash->{json} = $ret;
+    } catch {
+        my $err = shift;   
+        $c->stash->{json} = { success=>\0, msg=>$err };
+    };
     
     $c->forward('View::JSON');
 }
@@ -655,7 +660,7 @@ sub data_user_event : Local {
     my $username = $c->request->parameters->{username};
     if( $action eq 'get' ) {
         try {
-            my $user_mid = ci->user->find_one({username=>$username})->{mid};
+            my $user_mid = ( ci->user->find_one({username=>$username}) // _fail(_loc('User not found: %1', $username)) )->{mid};
             my $user = ci->new($user_mid);
             my $name = $user->{realname};
             my $email = $user->{email};
@@ -699,7 +704,7 @@ sub comment : Local {
             _log $text;
 
             my $topic_row = mdb->topic->find_one({ mid=>"$topic_mid" });
-            _fail( _loc("Topic with id %1 not found (deleted?)", $topic_mid ) ) unless $topic_row;
+            _fail( _loc("Topic #%1 not found. Deleted?", $topic_mid ) ) unless $topic_row;
             
             my $topic;
             if( ! length $id_com ) {  # optional, if exists then is not add, it's an edit
@@ -1748,7 +1753,10 @@ sub change_status : Local {
     $c->stash->{json} = try {
         my $change_status_before;
         
-        my $id_cats = mdb->topic->find_one({ mid=>"$$p{mid}" },{ category_status=>1 })->{category_status}{id};
+        my $id_cats = ( 
+            mdb->topic->find_one({ mid=>"$$p{mid}" },{ category_status=>1 }) 
+            // _fail(_loc("Topic #%1 not found. Deleted?", $$p{mid}))  
+        )->{category_status}{id};
         
         if ($p->{old_status} eq $id_cats ){
             $change_status_before = \0;

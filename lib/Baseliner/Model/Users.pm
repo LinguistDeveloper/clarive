@@ -251,6 +251,7 @@ sub get_projects_from_user{
 
 sub get_projectnames_and_descriptions_from_user{
     my ($self, $username, $collection, $query) = @_;
+    $collection ||='project';
     my @id_projects;
     my @res;
     my %project_security = %{ci->user->find({username=>$username})->next->{project_security}};
@@ -260,8 +261,8 @@ sub get_projectnames_and_descriptions_from_user{
         #my @project_types = keys $project_security{$id_role};
         push @id_projects, @{$project_security{$id_role}->{$collection}} if $project_security{$id_role}->{$collection};
     }
-    my $where = {collection=>"$collection", mid=>mdb->in(@id_projects)}; 
-    $where->{name} = qr/$query/i if length($query);    
+    my $where = {collection=>"$collection", mid=>mdb->in(@id_projects)};
+    $where->{name} = qr/$query/i if length($query);
     $where->{active} = '1';
     mdb->master_doc->find($where)->fields({name=>1,description=>1, mid=>1, _id=>0})->all;
 }
