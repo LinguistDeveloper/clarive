@@ -52,7 +52,7 @@ Returns a role row or undef if it doesn't exist.
 =cut
 sub role_exists {
     my ($self, $role_name ) = @_;
-    my $role = dbm->role->find({ role=>$role_name })->next;
+    my $role = mdb->role->find({ role=>$role_name })->next;
     return ref $role;
 }
 
