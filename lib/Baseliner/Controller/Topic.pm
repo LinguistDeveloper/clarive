@@ -853,7 +853,6 @@ sub list_category : Local {
                 my @statuses = _array( $category->{statuses} );
 
                 my $type = $category->{is_changeset} ? 'C' : $category->{is_release} ? 'R' : 'N';
-                
                 my @fieldlets =
                     map { $_->{name_field} }
                     sort { ( $a->{field_order} // 100 ) <=> ( $b->{field_order} // 100 ) }
