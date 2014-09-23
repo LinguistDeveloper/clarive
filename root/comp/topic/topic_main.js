@@ -1,4 +1,5 @@
 <%args>
+    $topic_mid
     $swEdit
     $permissionEdit
     $permissionDelete
@@ -12,6 +13,7 @@
 </%args>
 
 (function(params){
+    var topic_mid = '<% $topic_mid %>';
     var swEdit = <% $swEdit == 1 ? 1 : 0 %>;
     var permEdit = <% $permissionEdit ? 'true' : 'false' %>;
     var permDelete = <% $permissionDelete ? 'true' : 'false' %>;
