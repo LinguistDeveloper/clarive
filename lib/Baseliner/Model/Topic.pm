@@ -2690,16 +2690,19 @@ sub list_posts {
 
     if( $p{count_only} ) {
         return mdb->master_rel->find({ from_mid=>"$mid", rel_type=>'topic_post' })->count;
-    } 
+    }
     my @posts = sort { $b->ts cmp $a->ts } ci->new( $mid )->children( isa=>'post' );
     my @rows;
     for my $r ( @posts ) {
-        push @rows, {
-            created_on   => $r->created_on || $r->ts,
-            created_by   => $r->created_by,
-            text         => $r->text,
-            content_type => $r->content_type,
-            id           => $r->mid,
+        try{
+            push @rows, {
+                created_on   => $r->created_on || $r->ts,
+                created_by   => $r->created_by,
+                text         => $r->text,
+                content_type => $r->content_type,
+                id           => $r->mid,
+            };
+        }catch{
         };
     }
     return \@rows;
