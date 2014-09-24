@@ -255,7 +255,7 @@ App::Ack
 Archive::Tar
 Archive::Zip
 Array::Utils
-Authen::NTLM
+Authen::SASL::Perl::NTLM
 CGI
 CGI::Carp
 CGI::Fast
