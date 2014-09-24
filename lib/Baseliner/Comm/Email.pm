@@ -137,6 +137,9 @@ sub process_queue {
             
             $result = $self->send(
                 server=>$config->{server},
+                auth=>$config->{smtp_auth},
+                user=>$config->{smtp_user},
+                password=>$config->{smtp_password},
                 to => join(';',@to),
                 cc => join(';',@cc),
                 body => $body,
@@ -200,10 +203,14 @@ sub send {
     
     my $server=$p{server} || "localhost";
     
-    require Net::SMTP;
-    Net::SMTP->new($server) or _throw "Error al intentar conectarse al servidor SMTP '$server': $!\n";	
+    #require Net::SMTP;
+    Net::SMTP->new($server) or _throw "Error al intentar conectarse al servidor SMTP '$server': $!\n";
 
-    MIME::Lite->send('smtp', $server, Timeout=>60);  ## a veces hay que comentar esta línea
+    if ( $p{auth} ) {
+        MIME::Lite->send('smtp', $server, Timeout=>60, AuthUser=>$p{user}, AuthPass=>$p{password});  ## a veces hay que comentar esta línea
+    } else {
+        MIME::Lite->send('smtp', $server, Timeout=>60);  ## a veces hay que comentar esta línea
+    }
 
     if( !(@to>0 or @cc>0) ) { ### nadie va a recibir este correo
         _throw "No he podido enviar el correo '$subject'. No hay recipientes en la lista TO o CC.\n";
