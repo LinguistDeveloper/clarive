@@ -9,7 +9,7 @@ sub upgrade {
     mdb->migra->topic_admin;
     mdb->migra->statuses_from_db;
     mdb->migra->topic_fields;
-    mdb->migra->scheduler;
+    #mdb->migra->scheduler;
     mdb->migra->config;
     mdb->migra->notifications;
     mdb->migra->dashboards;
