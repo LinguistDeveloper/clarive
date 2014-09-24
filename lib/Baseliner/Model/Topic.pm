@@ -280,8 +280,8 @@ sub build_project_security {
             my $wh = {};
             my $count = scalar keys %{ $proj_coll_ids || {} };
             while ( my ( $k, $v ) = each %{ $proj_coll_ids || {} } ) {
-#                if ( $k eq 'project' && $count gt 1) {
-                if ( $k eq 'project' ) {
+                if ( $k eq 'project' && $count gt 1) {
+#                if ( $k eq 'project' ) {
                     $wh->{"_project_security.$k"} = {'$in' => [ undef, keys %{$v || {}} ]};
                 } else {
                     $wh->{"_project_security.$k"} = {'$in' => [ keys %{$v || {}} ]};
@@ -2981,7 +2981,7 @@ sub get_topics_mdb{
         _throw _loc('Missing username') if !$username;
 
         $self->build_project_security( $where, $username );
-        _warn $where;
+        #_warn $where;
 
         my $rs_topics = mdb->topic->find($where);
         my $cnt = $rs_topics->count;
