@@ -456,7 +456,7 @@ sub run_rules {
                 }
                 $p{onerror}->( { err=>$err_global, ret=>$ret, id=>$rule->{id}, dsl=>$dsl, stash=>$stash, output=>$runner_output, rc=>$rc } );
             } elsif( ! $p{onerror} ) {
-                _fail "(rule $p{id_rule}): ".$err_global;
+                _fail "(rule $rule->{id}): ".$err_global;
             }
         };
         push @rule_log, { ret=>$ret, id => $rule->{id}, dsl=>$dsl, stash=>$stash, output=>$runner_output, rc=>$rc };
