@@ -457,6 +457,9 @@ Baseliner.AceEditor = Ext.extend( Ext.BoxComponent, {
         //self.ownerCt.doLayout();
         //self.ownerCt.setHeight( 300 );
     },
+    setReadOnly : function() {
+        return this.editor.setReadOnly(true);
+    },
     wipe_out : function(){
         var self = this;
         self.editor.destroy();
