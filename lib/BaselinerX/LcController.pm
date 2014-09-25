@@ -599,7 +599,6 @@ sub changeset : Local {
         for my $topic (@changes) {
             my @releases = _array( $releases{ $topic->{mid} } );
             push @rels, @releases;  # slow! join me!
-            next if $bind_releases && @releases;
 
             # get the menus for the changeset
             my $topic_row = mdb->topic->find_one({ mid => "$topic->{mid}"});

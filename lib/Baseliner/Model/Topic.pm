@@ -516,7 +516,7 @@ sub topics_for_user {
     }
     #_debug( $order_by );
     
-#_debug( $where );
+    #_debug( $where );
     my $rs = mdb->topic->find( $where )->fields({ mid=>1, labels=>1 })->sort( $order_by );
     $cnt = $rs->count;
     $start = 0 if length $start && $start>=$cnt; # reset paging if offset
@@ -1289,7 +1289,7 @@ sub get_data {
         
         $data = mdb->topic->find_one({ mid=>"$topic_mid" }) 
                 or _error( "topic mid $topic_mid document not found" );
-        
+        my @labels = _array( $data->{labels} );
         $data->{topic_mid} = "$topic_mid";
         $data->{action_status} = $self->getAction($data->{type_status});
         $data->{created_on_epoch} = Class::Date->new( $data->{created_on} )->epoch;
@@ -1321,9 +1321,8 @@ sub get_data {
         # for my $f ( grep { exists $custom_fields{$_} } keys %{ $doc || {} } ) {
         #    $data->{ $f } = $doc->{$f}; 
         # }
-        my @labels = _array( $data->{labels} );
         if( @labels > 0 ) {
-            my %all_labels = map { $_->{id} => $_ } mdb->label->find({ id=>mdb->in($data->{labels}) })->all;
+            my %all_labels = map { $_->{id} => $_ } mdb->label->find({ id=>mdb->in(@labels) })->all;
             $data->{labels} = [ map { $all_labels{$_} } @labels ]; 
         }
         cache->set( $cache_key, $data );
@@ -2691,16 +2690,19 @@ sub list_posts {
 
     if( $p{count_only} ) {
         return mdb->master_rel->find({ from_mid=>"$mid", rel_type=>'topic_post' })->count;
-    } 
+    }
     my @posts = sort { $b->ts cmp $a->ts } ci->new( $mid )->children( isa=>'post' );
     my @rows;
     for my $r ( @posts ) {
-        push @rows, {
-            created_on   => $r->created_on || $r->ts,
-            created_by   => $r->created_by,
-            text         => $r->text,
-            content_type => $r->content_type,
-            id           => $r->mid,
+        try{
+            push @rows, {
+                created_on   => $r->created_on || $r->ts,
+                created_by   => $r->created_by,
+                text         => $r->text,
+                content_type => $r->content_type,
+                id           => $r->mid,
+            };
+        }catch{
         };
     }
     return \@rows;

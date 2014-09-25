@@ -112,9 +112,6 @@ sub list : Local {
     } elsif( $p->{id_report} ) {
         my $filter = $p->{filter} ? _decode_json($p->{filter}) : undef;
         my $start = $p->{start} // 0;
-        
-
-        #_log ">>>>>>>>>>>>>>>>>>>>>>>>FILTER: " . _dump $filter;
         for my $f (_array $filter){
             my @temp = split('_', $f->{field});
             #$f->{field} = join('_',@temp[0..$#temp-1]);
@@ -122,7 +119,7 @@ sub list : Local {
         }
         
         my ($cnt, @rows ) = ci->new( $p->{id_report} )->run( start=>$start, username=>$c->username, limit=>$p->{limit}, query=>$p->{topic_list}, filter=>$filter, query_search=>$p->{query} );
-        #_log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>JSON: " . _dump  @rows;    
+           
         $c->stash->{json} = { data=>\@rows, totalCount=>$cnt };
     } else {
         my ($cnt, @rows ) = $c->model('Topic')->topics_for_user( $p );
@@ -802,6 +799,7 @@ sub comment : Local {
                     subject         => $subject,
                     notify          => $notify
                 };
+                cache->remove( qr/:$mid_topic:/ ) if length $mid_topic;
             }
             $c->stash->{json} = { msg => _loc('Delete comment ok'), failure => \0 };
         } catch {
@@ -856,7 +854,6 @@ sub list_category : Local {
                 my @statuses = _array( $category->{statuses} );
 
                 my $type = $category->{is_changeset} ? 'C' : $category->{is_release} ? 'R' : 'N';
-                
                 my @fieldlets =
                     map { $_->{name_field} }
                     sort { ( $a->{field_order} // 100 ) <=> ( $b->{field_order} // 100 ) }

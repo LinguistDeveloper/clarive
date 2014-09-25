@@ -53,7 +53,8 @@ register 'service.notify.create' => {
             if ( $_ =~ /role\/(.*)/ ) {
                 push @users,  map { $_->{username} } ci->user->find({ "project_security.$1"=>{'$exists'=>1 } })->all;
             } elsif ( $_ =~ /user\/(.*)/ ) {
-                my $user = ci->new($1);
+                my $user_mid = $1;
+                my $user = ci->new($user_mid);
                 push @users, $user->{username};
             } else {
                 push @users, $_;
@@ -67,7 +68,8 @@ register 'service.notify.create' => {
             if ( $_ =~ /role\/(.*)/ ) {
                 push @users,  map { $_->{username} } ci->user->find({ "project_security.$1"=>{'$exists'=>1 } })->all;
             } elsif ( $_ =~ /user\/(.*)/ ) {
-                my $user = ci->new($1);
+                my $user_mid = $1;
+                my $user = ci->new($user_mid);
                 push @users, $user->{username};
             } else {
                 push @users, $_;

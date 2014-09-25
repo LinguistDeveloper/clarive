@@ -236,9 +236,10 @@
             listeners: {
                 'afterrender':function(){
                     if( !can_save ) {
-                        var mask = this.el.mask();
+                        // TODO provisional: this is commented pending a better solution and more generic
+                        /*var mask = this.el.mask();
                         mask.setStyle( 'opacity', 0);
-                        mask.setStyle( 'height', 5000 );
+                        mask.setStyle( 'height', 5000 );*/
                     }
                 }
             }

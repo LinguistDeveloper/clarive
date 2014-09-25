@@ -861,7 +861,7 @@ sub import : Local {
                 next if !defined $data;
                 my $is_new;
                 my $topic_cat;
-                delete $data->{id};
+                my $id = delete $data->{id};
                 delete $data->{_id};
                 my $statuses = delete $data->{statuses};
                 
@@ -869,9 +869,12 @@ sub import : Local {
                 push @log => "----------------| Category: $data->{name} |----------------";
                 $topic_cat = mdb->category->find({ name=>$data->{name} })->count;
                 $is_new = !$topic_cat;
+                my $name = $data->{name};
                 if( $is_new ) {
+                    $data->{id} = ''.mdb->seq( 'category' );
                     $topic_cat = mdb->category->insert( $data );
                     push @log => _loc('Created category %1', $data->{name} );
+                    $id = $data->{id};
                 } else {
                     $topic_cat = mdb->category->update({ name=>$data->{name} },{ '$set'=>$data });
                     push @log => _loc('Updated category %1', $data->{name} );
@@ -894,13 +897,12 @@ sub import : Local {
                         push @final_statuses, $$status{id_status};
                     }
                 }   
-                mdb->category->update({ id=>$$topic_cat{id} },{ '$set'=>{ statuses=>\@final_statuses } });
+                mdb->category->update({ id=>$id },{ '$set'=>{ statuses=>\@final_statuses } });
 
                 # TODO workflow ? 
-                
                 push @log => $is_new 
-                    ? _loc('Topic category created with id %1 and name %2:', $topic_cat->id, $topic_cat->name) 
-                    : _loc('Topic category %1 updated', $topic_cat->name) ;
+                    ? _loc('Topic category created with id %1 and name %2:', $id, $name) 
+                    : _loc('Topic category %1 updated', $name) ;
             }
         });   # txn end
         
