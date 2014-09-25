@@ -490,6 +490,7 @@ sub topics_for_user {
         my @topics_project = map { $$_{from_mid} } 
             mdb->master_rel->find({ to_mid=>"$$p{id_project}", rel_type=>'topic_project' })->all;
         push @mids_in, grep { length } @topics_project;
+        push @mids_in, 'xxx' if !@topics_project;
     }
     
     if( @mids_in || @mids_nin ) {
