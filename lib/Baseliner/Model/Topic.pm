@@ -1726,7 +1726,7 @@ sub save_data {
 sub update_project_security {
     my ($self, $doc )=@_;
 
-    my $meta = Baseliner->model('Topic')->get_meta ($doc->{mid});
+    my $meta = Baseliner->model('Topic')->get_meta ($doc->{mid}, $doc->{id_category});
     my %project_collections; 
     for my $field ( grep { $_->{meta_type} && $_->{meta_type} eq 'project' && length $_->{collection} } @$meta ) {
         my @secs = _array($doc->{ $field->{id_field} });
