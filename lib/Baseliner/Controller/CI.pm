@@ -1507,7 +1507,8 @@ sub default : Path Args(2) {
             _debug( 'static class' );
             _fail( _loc "Method '%1' not found in class '%2'", $meth, $class) unless $class->can($meth) ;
             $ret = $class->$meth( $to_args->($class) ); 
-        } elsif( my $ci = ci->$collection->find_one($mid_or_class) ) {  
+        #} elsif( my $ci = ci->$collection->find_one($mid_or_class) ) {  
+        } elsif( my $ci = ci->new($mid_or_class) ) {
             # it's a CI and we instantiated it
             _debug( 'mid instanciated' );
             _fail( _loc "Method '%1' not found in class '%2'", $meth, ref $ci) unless $ci->can( $meth) ;
@@ -1541,8 +1542,8 @@ sub default : Path Args(2) {
             $c->stash->{json} = { %$call_res, %$json_res };
         # not a HASH, pure response
         } else { 
-            #$c->stash->{json} = $json_res;
-            $c->stash->{json} = { %$call_res, $res_key => $json_res };
+            $c->stash->{json} = $json_res;
+            #$c->stash->{json} = { %$call_res, $res_key => $json_res };
         }
     } catch {
         my $err = shift;
