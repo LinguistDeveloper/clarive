@@ -2752,7 +2752,8 @@ sub change_status {
                     if $doc->{category_status}{id} != $id_old_status;
                 # XXX check workflow for user?
                 # update mongo
-                my $modified_on = $doc->{modified_on};
+                #my $modified_on = $doc->{modified_on};
+                my $modified_on = mdb->ts;
                 $self->update_category_status( $mid, $p{id_status}, $p{username}, $modified_on );
                 
                 $self->cache_topic_remove( $mid );
