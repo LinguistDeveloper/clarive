@@ -1113,10 +1113,12 @@ our $hf_scope;
 sub merge_pushing {
     my ($h1, $h2 ) = @_;
     my %merged;
-    while( my($k2,$v2) = each %$h2 ) {
+    for my $k2 ( keys %$h2 ) {
+        my $v2 = $h2->{$k2};
         $merged{ $k2 } = $v2;  
     }
-    while( my($k1,$v1) = each %$h1 ) {
+    for my $k1 ( keys %$h1 ) {
+        my $v1 = $h1->{$k1};    
         if( exists $merged{$k1} ) {
             my $v2 = delete $merged{$k1};
             if( !defined $v2 ) {
@@ -1151,7 +1153,8 @@ sub hash_flatten {
         $hf_scope->{$refaddr}=() if $refstash;
     }
     if( $refstash eq 'HASH' ) {
-        while( my ($k,$v) = each %$stash ) {
+        for my $k ( keys %$stash ) {
+            my $v = $stash->{$k};
             %flat = merge_pushing( \%flat, scalar hash_flatten($v, $prefix ? "$prefix.$k" : $k ) );
         }
     } 
@@ -1206,15 +1209,16 @@ sub hash_shallow {
     $ret //= {};
     my $r = ref $h;
     if( $r eq 'HASH' ) {
-        while( my($k,$v) = each %$h ) {
-           my $vv = hash_shallow( $v, $ret );
-           next unless defined $vv;
-           if( exists $ret->{$k} ) {
-               $ret->{$k} = [ $ret->{$k} ] unless ref $ret->{$k} eq 'ARRAY';
-               push( @{ $ret->{$k} }, $vv );
-           } else {
-               $ret->{$k} = $vv;
-           }
+        for my $k ( keys %$h ) {
+            my $v = $h->{$k};
+            my $vv = hash_shallow( $v, $ret );
+            next unless defined $vv;
+            if( exists $ret->{$k} ) {
+                $ret->{$k} = [ $ret->{$k} ] unless ref $ret->{$k} eq 'ARRAY';
+                push( @{ $ret->{$k} }, $vv );
+            } else {
+                $ret->{$k} = $vv;
+            }
         }
         return undef;
     }
