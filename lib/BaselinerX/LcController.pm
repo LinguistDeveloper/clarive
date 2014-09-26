@@ -455,16 +455,17 @@ sub branches : Local {
                 : $repo->list_branches( project=>$project );
             _debug _loc "---- provider ".$repo->name." has %1 changesets", scalar @changes;
             push @cs, @changes;
-
             # loop through the branch objects 
             for my $cs ( @cs ) {
                 my $menu = [];
                 # get menu extensions (find packages that do)
                 # get node menu
+                my $data = $cs->node_data;
+                $data->{repo_mid} = $id_repo;
                 push @$menu, _array $cs->node_menu if ref $cs->node_menu;
                 push @tree, {
                     url        => $cs->node_url,
-                    data       => $cs->node_data,
+                    data       => $data, #$cs->node_data,
                     parent_data => { id_project=>$id_project, project=>$project }, 
                     menu       => $menu,
                     icon       => $cs->icon,
@@ -598,7 +599,6 @@ sub changeset : Local {
         for my $topic (@changes) {
             my @releases = _array( $releases{ $topic->{mid} } );
             push @rels, @releases;  # slow! join me!
-            next if $bind_releases && @releases;
 
             # get the menus for the changeset
             my $topic_row = mdb->topic->find_one({ mid => "$topic->{mid}"});

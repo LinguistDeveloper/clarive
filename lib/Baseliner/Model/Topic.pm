@@ -490,6 +490,7 @@ sub topics_for_user {
         my @topics_project = map { $$_{from_mid} } 
             mdb->master_rel->find({ to_mid=>"$$p{id_project}", rel_type=>'topic_project' })->all;
         push @mids_in, grep { length } @topics_project;
+        push @mids_in, 'xxx' if !@topics_project;
     }
     
     if( @mids_in || @mids_nin ) {
@@ -1726,7 +1727,7 @@ sub save_data {
 sub update_project_security {
     my ($self, $doc )=@_;
 
-    my $meta = Baseliner->model('Topic')->get_meta ($doc->{mid});
+    my $meta = Baseliner->model('Topic')->get_meta ($doc->{mid}, $doc->{id_category});
     my %project_collections; 
     for my $field ( grep { $_->{meta_type} && $_->{meta_type} eq 'project' && length $_->{collection} } @$meta ) {
         my @secs = _array($doc->{ $field->{id_field} });
@@ -1742,7 +1743,7 @@ sub update_project_security {
 
 sub save_doc {
     my ($self,$meta,$ci_topic, $doc, %p) = @_;
-    $ci_topic->{created_on} = mdb->ts if !exists $ci_topic->{created_on};
+    #$ci_topic->{created_on} = mdb->ts if !exists $ci_topic->{created_on};
     $ci_topic->{modified_on} = mdb->ts if !exists $ci_topic->{modified_on};
     # not necessary, noboody cares about the original? $doc = Util->_clone($doc); # so that we don't change the original
     Util->_unbless( $doc );
@@ -1752,7 +1753,7 @@ sub save_doc {
     my @custom_fields = @{ $p{custom_fields} };
     my %meta = map { $_->{id_field} => $_ } @$meta;
     my $old_doc = mdb->topic->find_one({ mid=>"$mid" }) // {};
-    
+    $ci_topic->{created_on} = mdb->ts if !exists $old_doc->{created_on};
     # clear master_seen for everyone else
     mdb->master_seen->remove({ mid=>"$mid", username=>{ '$ne' => $p{username} } });
  
@@ -2690,16 +2691,19 @@ sub list_posts {
 
     if( $p{count_only} ) {
         return mdb->master_rel->find({ from_mid=>"$mid", rel_type=>'topic_post' })->count;
-    } 
+    }
     my @posts = sort { $b->ts cmp $a->ts } ci->new( $mid )->children( isa=>'post' );
     my @rows;
     for my $r ( @posts ) {
-        push @rows, {
-            created_on   => $r->created_on || $r->ts,
-            created_by   => $r->created_by,
-            text         => $r->text,
-            content_type => $r->content_type,
-            id           => $r->mid,
+        try{
+            push @rows, {
+                created_on   => $r->created_on || $r->ts,
+                created_by   => $r->created_by,
+                text         => $r->text,
+                content_type => $r->content_type,
+                id           => $r->mid,
+            };
+        }catch{
         };
     }
     return \@rows;
@@ -2748,7 +2752,8 @@ sub change_status {
                     if $doc->{category_status}{id} != $id_old_status;
                 # XXX check workflow for user?
                 # update mongo
-                my $modified_on = $doc->{modified_on};
+                #my $modified_on = $doc->{modified_on};
+                my $modified_on = mdb->ts;
                 $self->update_category_status( $mid, $p{id_status}, $p{username}, $modified_on );
                 
                 $self->cache_topic_remove( $mid );
