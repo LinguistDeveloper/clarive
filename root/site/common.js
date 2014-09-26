@@ -1140,16 +1140,41 @@ Baseliner.read_pdf = function( url ) {
 };
 
 Baseliner.show_revision = function( mid ) {
+
+    
     Baseliner.ajaxEval( '/ci/url', { mid: mid }, function(res){
-        if( res.url ) {
-            if( res.url.type == 'iframe' ) {
-                Baseliner.add_iframe( res.url.url, _( res.title ), {} );
-            } else if ( res.url.type == 'file' ) {
-               var fd = document.all.FD || document.all.FrameDownload;
-               fd.src =  res.url.url;
-            }
+
+        if( res.url.branch ) { // SVN
+            var url =  res.url.url;
+            var title =  res.url.title;
+            var params = {
+                repo_dir: res.url.repo_dir,
+                rev_num: res.url.rev_num,
+                branch: res.url.branch
+            };
+
+            Baseliner.add_tabcomp( url, title, params );             
+        }else{ // GIT
+            if( res.url ) {
+                Baseliner.ajaxEval( '/ci/url', { mid: mid }, function(res){
+                    if( res.url ) {
+                        if( res.url.type == 'iframe' ) {
+                            Baseliner.add_iframe( res.url.url, _( res.title ), {} );
+                        } else if ( res.url.type == 'file' ) {
+                           var fd = document.all.FD || document.all.FrameDownload;
+                           fd.src =  res.url.url;
+                        }
+                    }
+                }); 
+            }           
         }
-    });
+ 
+
+     });
+
+        
+
+
 };
 
 Baseliner.show_ci = function( mid ) {
