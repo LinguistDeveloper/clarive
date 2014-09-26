@@ -1743,7 +1743,7 @@ sub update_project_security {
 
 sub save_doc {
     my ($self,$meta,$ci_topic, $doc, %p) = @_;
-    $ci_topic->{created_on} = mdb->ts if !exists $ci_topic->{created_on};
+    #$ci_topic->{created_on} = mdb->ts if !exists $ci_topic->{created_on};
     $ci_topic->{modified_on} = mdb->ts if !exists $ci_topic->{modified_on};
     # not necessary, noboody cares about the original? $doc = Util->_clone($doc); # so that we don't change the original
     Util->_unbless( $doc );
@@ -1753,7 +1753,7 @@ sub save_doc {
     my @custom_fields = @{ $p{custom_fields} };
     my %meta = map { $_->{id_field} => $_ } @$meta;
     my $old_doc = mdb->topic->find_one({ mid=>"$mid" }) // {};
-    
+    $ci_topic->{created_on} = mdb->ts if !exists $old_doc->{created_on};
     # clear master_seen for everyone else
     mdb->master_seen->remove({ mid=>"$mid", username=>{ '$ne' => $p{username} } });
  
