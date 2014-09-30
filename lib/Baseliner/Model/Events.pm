@@ -99,7 +99,7 @@ sub run_once {
                         subject         => $subject,
                         sender          => $config_email || 'clarive@clarive.com',
                         carrier         => 'email',
-                        template        => $template,
+                        template        => $notification->{$template}->{template_path},
                         template_engine => 'mason',
                         _fail_on_error  => 1,   # so that it fails on template errors
                     };
