@@ -238,7 +238,7 @@ sub get_rules_notifications{
                         	my @roles;
                         	if ( exists $notification->{$key}{carrier}{$carrier}->{$type}->{'*'} ){
                             	if (exists $notify_scope->{project}){
-                                	@roles = Baseliner->model('Users')->get_roles_from_projects(mid => $mid, $notify_scope->{project});
+                                	@roles = Baseliner->model('Users')->get_roles_from_projects($notify_scope->{project});
                             	}
                                 else{
                             		@roles = ('*');
