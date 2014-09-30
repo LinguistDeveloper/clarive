@@ -104,15 +104,15 @@ sub run_once {
                         _fail_on_error  => 1,   # so that it fails on template errors
                     };
                     
-                    $model_messaging->{to} = { users => $notification->{$template}->{TO} } if (exists $notification->{$template}->{TO}) ;
-                    $model_messaging->{cc} = { users => $notification->{$template}->{CC} } if (exists $notification->{$template}->{CC}) ;
-                    $model_messaging->{bcc} = { users => $notification->{$template}->{BCC} } if (exists $notification->{$template}->{BCC}) ;
+                    $model_messaging->{to} = { users => $notification->{$template}->{carrier}->{TO} } if (exists $notification->{$template}->{carrier}->{TO}) ;
+                    $model_messaging->{cc} = { users => $notification->{$template}->{carrier}->{CC} } if (exists $notification->{$template}->{carrier}->{CC}) ;
+                    $model_messaging->{bcc} = { users => $notification->{$template}->{carrier}->{BCC} } if (exists $notification->{$template}->{carrier}->{BCC}) ;
                     
                     $model_messaging->{vars} = {%$topic,%$stash};
                     $model_messaging->{vars}->{subject} = $subject;
-                    $model_messaging->{vars}->{to} = { users => $notification->{$template}->{TO} } if (exists $notification->{$template}->{TO}) ;
-                    $model_messaging->{vars}->{cc} = { users => $notification->{$template}->{CC} } if (exists $notification->{$template}->{CC}) ;
-                    $model_messaging->{vars}->{bcc} = { users => $notification->{$template}->{BCC} } if (exists $notification->{$template}->{BCC}) ;
+                    $model_messaging->{vars}->{to} = { users => $notification->{$template}->{carrier}->{TO} } if (exists $notification->{$template}->{carrier}->{TO}) ;
+                    $model_messaging->{vars}->{cc} = { users => $notification->{$template}->{carrier}->{CC} } if (exists $notification->{$template}->{carrier}->{CC}) ;
+                    $model_messaging->{vars}->{bcc} = { users => $notification->{$template}->{carrier}->{BCC} } if (exists $notification->{$template}->{carrier}->{BCC}) ;
                         
                     my $rc_notify = 0;
                     my $err = '';
