@@ -203,7 +203,7 @@ sub send {
     
     my $server=$p{server} || "localhost";
     
-    #require Net::SMTP;
+    require Net::SMTP;
     Net::SMTP->new($server) or _throw "Error al intentar conectarse al servidor SMTP '$server': $!\n";
 
     if ( $p{auth} ) {

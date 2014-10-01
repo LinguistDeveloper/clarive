@@ -169,6 +169,7 @@ sub get_rules_notifications{
         			foreach $type (keys $data->{recipients}->{$carrier}){
             			my @values;
                 		foreach my $key_value (keys $data->{recipients}->{$carrier}->{$type}){
+                            #my $key = Util->_md5( $row_send->{template_path} . '#' . ( $row_send->{subject} // '') );
                             my $key = Util->_md5( $row_send->{template_path} . '#' . ( $row_send->{subject} // '') );
                             $notification->{$key}{subject}       = $row_send->{subject};
                             $notification->{$key}{template_path} = $row_send->{template_path};
@@ -238,7 +239,7 @@ sub get_rules_notifications{
                         	my @roles;
                         	if ( exists $notification->{$key}{carrier}{$carrier}->{$type}->{'*'} ){
                             	if (exists $notify_scope->{project}){
-                                	@roles = Baseliner->model('Users')->get_roles_from_projects(mid => $mid, $notify_scope->{project});
+                                	@roles = Baseliner->model('Users')->get_roles_from_projects($notify_scope->{project});
                             	}
                                 else{
                             		@roles = ('*');
@@ -486,7 +487,7 @@ sub get_notifications {
     
     # rgo: use the event to get it's defaults! 
     my $template = $ev->notify->{template};
-    $template ||= Baseliner->model( 'ConfigStore' )->get( 'config.notifications.' . $name_config . '.template_default')->{template_default};
+    $template ||= Baseliner->model( 'ConfigStore' )->get( 'config.notifications.' . $name_config . '.template_default', enforce_metadata => 0)->{template_default};
     $template ||=  Baseliner->model( 'ConfigStore' )->get( 'config.notifications.template_default' )->{template_default};
     _log( "template for $event_key: $template" );
     
