@@ -604,7 +604,7 @@ sub update_mid_data {
     map { $topic_project{$_->{from_mid}}{$_->{to_mid}}=1 } grep { $$_{rel_type} eq 'topic_project' } @rel_from;
     map { $topic_file{$_->{from_mid}}{$_->{to_mid}}=1 } grep { $$_{rel_type} eq 'topic_asset' } @rel_from;
     map { $topic_post{$_->{from_mid}}{$_->{to_mid}}=1 } grep { $$_{rel_type} eq 'topic_post' } @rel_from;
-    map { $assignee{$_->{from_mid}}{$_->{to_mid}}=1 } grep { $$_{rel_type} eq 'topic_user' } @rel_from;
+    map { $assignee{$_->{from_mid}}{$_->{to_mid}}=1 } grep { $$_{rel_type} eq 'topic_users' } @rel_from;
     map { $folders{$_->{to_mid}}{$_->{from_mid}}=1 } grep { $$_{rel_type} eq 'folder_ci' } @rel_to;
         
     my %labels = map { $_->{id} => $_ } mdb->label->find->all;
