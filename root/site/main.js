@@ -19,8 +19,13 @@ Ext.onReady(function(){
     Baseliner.search_box_go = function(q,opts) {
         if( !q ) q=Baseliner.search_box.getValue();
         if( q==undefined || q.length== 0 ) return;
-        Baseliner.add_tabcomp('/comp/search_results.js', undefined,
+        var res = /^#(\S+)$/.exec(q);
+        if( res && res.length > 1 ) { // [0] is the full match
+            Baseliner.add_tabcomp( "/topic/view", null, { topic_mid: res[1] } );
+        } else {
+            Baseliner.add_tabcomp('/comp/search_results.js', undefined,
                 { query: q, opts: opts || {}, tab_icon: '/static/images/icons/search.png' });
+        }
     };
     search_box.on('specialkey', function(f, e){
         if(e.getKey() == e.ENTER){
