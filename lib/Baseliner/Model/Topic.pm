@@ -306,8 +306,9 @@ sub build_sort {
     if( $sort eq 'topic_name' ) {
         #$order_by = Tie::IxHash->new( 'category.name'=>$dir, mid=>$dir ); 
         $order_by = Tie::IxHash->new( created_on=>$dir, mid=>$dir );  # TODO "m" is the numeric mid, should change eventually
-    } elsif( $sort eq 'category_status_name' ) {
-        $order_by = { 'category_status_name' => $dir };
+    } elsif( ($sort eq 'category_status_name') || ($sort eq 'modified_on') || 
+        ($sort eq 'created_on') || ($sort eq 'modified_by') || ($sort eq 'created_by') || ($sort eq 'category_name') ) {
+        $order_by = { $sort => $dir };
     } elsif( $sort eq 'topic_mid' ) {
         $order_by = { _id => $dir };
     } else {
