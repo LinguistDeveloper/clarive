@@ -436,7 +436,7 @@ sub stmts_save : Local {
         };
         $returned_ts = $self->save_rule( id_rule=>$id_rule, stmts_json=>$p->{stmts}, username=>$c->username, old_ts => $p->{old_ts}, 
             detected_errors   => $detected_errors,  # useful in case we want to warn user before doing something with this broken rule
-            ignore_dsl_errors =>( $$p{ignore_error_always} ? '1' : () ) );
+            ignore_dsl_errors =>( $$p{ignore_error_always} ? '1' : undef ) );
         my $old_ts = $returned_ts->{old_ts};
         my $actual_ts = $returned_ts->{actual_ts};
         my $previous_user = $returned_ts->{previous_user};
