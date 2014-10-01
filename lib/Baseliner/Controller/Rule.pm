@@ -511,19 +511,15 @@ sub save_rule {
         mdb->rule->update({ id =>''.$p{id_rule} }, { '$set'=>{ ts=>$actual_timestamp, username=>$previous_user, %other_options } } ); 
     }
     $ts_modified = (''.$old_timestamp ne ''.$actual_timestamp) ||  ($p{username} ne $previous_user);
-    if ( $ts_modified ){
-        $old_timestamp = '';
-    }else{
-        $old_timestamp = mdb->ts;
-        mdb->rule->update({ id=>''.$p{id_rule} }, { '$set'=> { ts => $old_timestamp, username => $p{username}, rule_tree=>$p{stmts_json}, %other_options } } );
-        # now, version
-        # check if collection exists
-        if( ! mdb->collection('system.namespaces')->find({ name=>qr/rule_version/ })->count ) {
-            mdb->create_capped( 'rule_version' );
-        }
-        delete $doc->{_id};
-        mdb->rule_version->insert({ %$doc, ts=>mdb->ts, username=>$p{username}, id_rule=>$p{id_rule}, rule_tree=>$p{stmts_json}, was=>($p{was}//'') });    
+
+    $old_timestamp = mdb->ts;
+    mdb->rule->update({ id=>''.$p{id_rule} }, { '$set'=> { ts => $old_timestamp, username => $p{username}, rule_tree=>$p{stmts_json}, %other_options } } );
+    # now, version
+    # check if collection exists
+    if( ! mdb->collection('system.namespaces')->find({ name=>qr/rule_version/ })->count ) {
+        mdb->create_capped( 'rule_version' );
     }
+
     delete $doc->{_id};
     mdb->rule_version->insert({ %$doc, ts=>mdb->ts, username=>$p{username}, id_rule=>$p{id_rule}, rule_tree=>$p{stmts_json}, was=>($p{was}//'') });    
     { old_ts => $old_timestamp, actual_ts => $actual_timestamp, previous_user => $previous_user };
