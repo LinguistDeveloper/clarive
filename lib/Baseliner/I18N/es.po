@@ -7657,6 +7657,9 @@ msgstr "Crear Etiqueta..."
 msgid "Relative path"
 msgstr "Path relativo"
 
+msgid "Index"
+msgstr "Índice"
+
 msgid "Wait while retrieving fields list and format for report %1"
 msgstr "Espere mientras se busca la información de columnas y formatos del informe %1"
 
@@ -7680,7 +7683,6 @@ msgstr "No todas las revisiones están incluidas en la historia de [%1].  Probab
 
 msgid "Job %1 status has changed to %2 and it cannot be %3.  Refresh your job monitor to see it\'s actual status"
 msgstr "El estado del pase %1 ha cambiado a %2 y no puede ser %3.  Refresque el monitor de pases para ver su estado real"
-### EOF - do not write anything bellow this
 
 msgid "Scheme"
 msgstr "Esquema"
