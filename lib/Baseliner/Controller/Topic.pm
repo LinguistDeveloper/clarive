@@ -1733,7 +1733,10 @@ sub img : Local {
     my ($self, $c, $id ) = @_;
     my $p = $c->req->params;
     my $img = mdb->grid->get( "$id" );
-    $img //= do{ my $doc = mdb->grid->files->find_one({ md5=>$id }); mdb->grid->get($$doc{_id}) if $doc };
+    $img //= do {
+        my $doc = mdb->grid->files->find_one({ _id=>mdb->oid($id) });
+        mdb->grid->get( $$doc{_id} ) if $doc;
+    };
     if( $img ) {
         $c->res->content_type( $$img{content_type} || 'image/png');
         $c->res->body( $img->slurp );
