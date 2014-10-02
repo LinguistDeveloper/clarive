@@ -372,6 +372,7 @@ Baseliner.AceEditor = Ext.extend( Ext.BoxComponent, {
         self.changed_lines = [];
         Baseliner.AceEditor.superclass.initComponent.call(this);
         self.addEvents( 'aftereditor', 'docchange' );
+        //self.create_editor();
         self.on('afterrender', function(){
             self.create_editor();
             //self.editor.gotoLine( 0,0,false );
@@ -699,7 +700,7 @@ Baseliner.AceEditor = Ext.extend( Ext.BoxComponent, {
     scroller_height : function(){
         return $(self.editor.renderer.scrollBar.inner).height();
     },
-    refresh_me: function(){ },
+    refresh_me: function(){  },
     editor_focus: function(){ this.editor.focus() }
 });
 

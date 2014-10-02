@@ -1140,11 +1140,8 @@ Baseliner.read_pdf = function( url ) {
 };
 
 Baseliner.show_revision = function( mid ) {
-
-    
     Baseliner.ajaxEval( '/ci/url', { mid: mid }, function(res){
-
-        if( res.url.branch ) { // SVN
+        if( res.url.repo_type == 'svn' ) { // SVN
             var url =  res.url.url;
             var title =  res.url.title;
             var params = {
@@ -1171,10 +1168,6 @@ Baseliner.show_revision = function( mid ) {
  
 
      });
-
-        
-
-
 };
 
 Baseliner.show_ci = function( mid ) {
