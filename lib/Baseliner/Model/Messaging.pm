@@ -82,7 +82,8 @@ register 'service.notify.create' => {
             to => { users => $final_to },
             cc => { users => $final_cc },
             template        => $template,
-            template_engine => 'mason',            
+            template_engine => 'mason',        
+            utf8 => 1,    
             subject => $config->{subject},
             carrier => 'email',
             vars => {
@@ -225,7 +226,6 @@ Or to destination actions:
 =cut
 sub notify {
     my ($self,%p)=@_;
-
     my @carriers = _array( $p{carriers} , $p{carrier} );
 
     if ( $p{sender} ) {
