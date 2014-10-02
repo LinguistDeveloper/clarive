@@ -132,7 +132,7 @@ sub process_queue {
             # }
 
             #$body = Encode::encode("iso-8859-15", $body);
-            $body =~ s/[^\x00-\x7f]//g;
+            #$body =~ s/[^\x00-\x7f]//g;
             #utf8::decode( $body );
 
             
