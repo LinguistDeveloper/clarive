@@ -228,13 +228,9 @@ sub send {
         Type      => 'multipart/mixed'
     );
     
-    use MIME::QuotedPrint qw(encode_qp); 
-
-    $body = encode_qp($body); 
-
     $msg->attach(
         Data     => $body,
-        Type     => 'text/html',
+        Type     => 'text/html; charset=utf-8',
         Encoding => 'base64'
     );
 
