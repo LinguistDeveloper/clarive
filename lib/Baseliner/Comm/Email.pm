@@ -132,7 +132,7 @@ sub process_queue {
             # }
 
             #$body = Encode::encode("iso-8859-15", $body);
-            utf8::decode( $body );
+            $body = utf8::decode( $body );
 
             
             $result = $self->send(
