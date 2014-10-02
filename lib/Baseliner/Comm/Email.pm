@@ -229,9 +229,8 @@ sub send {
     );
     
     use MIME::QuotedPrint qw(encode_qp); 
-    use Encode qw(encode); 
 
-    $body = encode_qp(encode("UTF-8", $body)); 
+    $body = encode_qp($body); 
 
     $msg->attach(
         Data     => $body,
