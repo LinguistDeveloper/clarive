@@ -960,6 +960,7 @@ sub _mason {
     my $comp_root = $p{comp_root} ? [[root=>"$p{comp_root}"]] : [ @mason_features, [ root=>"". Baseliner->config->{root} ] ];
     my $data_dir = File::Spec->catdir( _tmp_dir(), 'mason', sprintf('Baseliner_%d_mason_data_dir', $<));
     my $m = HTML::Mason::Interp->new(
+        ( $p{utf8} ? (preamble => "use utf8;") : () ),
         comp_root  => $comp_root,
         data_dir   => $data_dir,
         out_method => \$body,

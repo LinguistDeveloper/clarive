@@ -129,7 +129,7 @@ register 'event.topic.modify_field' => {
         else {
             #$txt = '';
             require Algorithm::Diff::XS;
-            my $brk = sub { my $x = ""; $x=_strip_html(shift); [ $x =~ m{([\w|\.|\-]+)}gs ] };
+            my $brk = sub { my $x = ""; $x=_strip_html(shift); if($x eq undef) { $x = ""; }; [ $x =~ m{([\w|\.|\-]+)}gs ] };
             my $aa = $brk->($vars[2]);
             my $bb = $brk->($vars[3]);
             my $d =Algorithm::Diff::XS::sdiff( $aa, $bb );
@@ -2170,7 +2170,7 @@ sub set_cis {
     @new_cis  = split /,/, $new_cis[0] if $new_cis[0] && $new_cis[0] =~ /,/ ;
     my @old_cis =
         map { $_->{to_mid} }
-        mdb->master_rel->find({ from_mid=>$rs_topic->{mid}, rel_type=>$rel_type })->all;
+        mdb->master_rel->find({ from_mid=>$rs_topic->{mid}, rel_type=>$rel_type, rel_field=>$id_field })->all;
 
     my @del_cis = array_minus( @old_cis, @new_cis );
     my @add_cis = array_minus( @new_cis, @old_cis );
@@ -2322,7 +2322,7 @@ sub set_release {
     $notify->{project} = \@projects if @projects;
 
     # check if arrays contain same members
-    if ( $new_release ne $old_release ) {
+    if ( $new_release && $new_release ne $old_release ) {
         if($release_row){
             my $rdoc = {from_mid => "$old_release", to_mid=>''.$topic_mid, rel_field => $release_field};
             mdb->master_rel->remove($rdoc,{multiple=>1});
