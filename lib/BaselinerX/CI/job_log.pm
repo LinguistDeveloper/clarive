@@ -105,7 +105,7 @@ sub common_log {
         $doc->{rule} =  $self->job->{id_rule} if defined $self->job->{id_rule};
         if( $p{data} ) {
             my $data = Util->hide_passwords( $p{data});
-            my $d = compress( $data );  ## asset in grid
+            my $d = try { compress($data) } catch { $data };  ## asset in grid  TODO find a better solution than storing the raw data... encode/decode?
             my $ass = mdb->asset( $d, parent=>$doc->{_id}, parent_mid=>$mid, id_log=>$id, filename=>$doc->{data_name}//'', parent_collection=>'log' );
             $ass->insert;
             $doc->{data} = $ass->id;

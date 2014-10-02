@@ -251,19 +251,28 @@ sub get_projects_from_user{
 
 sub get_projectnames_and_descriptions_from_user{
     my ($self, $username, $collection, $query) = @_;
-    my @id_projects;
-    my @res;
-    my %project_security = %{ci->user->find({username=>$username})->next->{project_security}};
-    my @id_roles = keys %project_security;
-
-    foreach my $id_role (@id_roles){
-        #my @project_types = keys $project_security{$id_role};
-        push @id_projects, @{$project_security{$id_role}->{$collection}} if $project_security{$id_role}->{$collection};
+    $collection ||='project';
+    my $is_root = Baseliner->model('Permissions')->is_root( $username );
+    my $where;
+    if ($is_root){
+        $where = {collection=>"$collection"};
+    }else{
+        my @id_projects;
+        my @res;
+        my %project_security = %{ci->user->find({username=>$username})->next->{project_security}};
+        my @id_roles = keys %project_security;
+        foreach my $id_role (@id_roles){
+            #my @project_types = keys $project_security{$id_role};
+            push @id_projects, @{$project_security{$id_role}->{$collection}} if $project_security{$id_role}->{$collection};
+        }
+        $where = {collection=>"$collection", mid=>mdb->in(@id_projects)};
     }
-    my $where = {collection=>"$collection", mid=>mdb->in(@id_projects)}; 
-    $where->{name} = qr/$query/i if length($query);    
+
+    if ( !is_number($query) ) { # Exclude mids
+        $where->{name} = qr/$query/i if length($query);
+    }
     $where->{active} = '1';
-    mdb->master_doc->find($where)->fields({name=>1,description=>1, mid=>1, _id=>0})->all;
+    mdb->master_doc->find($where)->fields({name=>1,description=>1, mid=>1, _id=>0})->sort({ name=>1 })->all;
 }
 
 1;

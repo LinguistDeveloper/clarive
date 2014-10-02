@@ -4419,23 +4419,23 @@ msgstr "#%1 %2: Campo '%3' modificado"
 msgid "#%1 %2 updated"
 msgstr "#%1 %2 actualizado"
 
-msgid "#%1 %2 updated.  New revisions"
-msgstr "#%1 %2 actualizado. Nuevas revisiones"
+msgid "#%1 %2 updated: new revisions"
+msgstr "#%1 %2 actualizado: nuevas revisiones"
 
-msgid "#%1 %2 updated.  All revisions removed"
-msgstr "#%1 %2 actualizado.  Todas las revisiones eliminadas"
+msgid "#%1 %2 updated: all revisions removed"
+msgstr "#%1 %2 actualizado: todas las revisiones eliminadas"
 
-msgid "#%1 %2 updated.  %4 changed to %3"
-msgstr "#%1 %2 actualizado.  %4 cambiado a %3"
+msgid "#%1 %2 updated: %4 changed to %3"
+msgstr "#%1 %2 actualizado:  %4 cambiado a %3"
 
-msgid "#%1 %2 updated.  %4 (%3)"
-msgstr "#%1 %2 actualizado.  %4 (%3)"
+msgid "#%1 %2 updated: %4 (%3)"
+msgstr "#%1 %2 actualizado: %4 (%3)"
 
-msgid "#%1 %2 updated.  %3 deleted"
-msgstr "#%1 %2 actualizado.  %3 borrado"
+msgid "#%1 %2 updated: %3 deleted"
+msgstr "#%1 %2 actualizado: %3 borrado"
 
-msgid "#%1 %2.  Status changed to %3"
-msgstr "#%1 %2.  Estado cambiado a %3"
+msgid "%3: #%1 %2"
+msgstr "%3: #%1 %2"
 
 msgid "More info"
 msgstr "Más info"
@@ -4757,6 +4757,9 @@ msgstr "Naturalezas no incluidas en la dirección de este elemento: %1"
 
 msgid "Error trying to fatpack perl code. Could not find fatpack code in `%1`"
 msgstr "Error al intentar hacer fatpack sobre el código perl. No se ha podido encontrae el código del fatpack en `%1`"
+
+msgid "Topic #%1 not found. Deleted?"
+msgstr "Tópico #%1 no encontrado. ¿Se ha borrado?"
 
 msgid "Config value %1 deleted"
 msgstr "Valor de configiración %1 borrado"
@@ -6039,11 +6042,11 @@ msgstr "Error añadiendo el tópico %1: %2"
 
 msgid "Toópico no encontrado"
 
-msgid "#%1 %2 updated.  %3 changed"
-msgstr "Tópico [%1] %2 actualizado.  %3 cambiado"
+msgid "#%1 %2 updated: %3 changed"
+msgstr "#%1 %2 actualizado: %3 cambiado"
 
-msgid "#%1 %2 updated.  Removed from %4 %3"
-msgstr "Tópico [%1] %2 actualizado.  Borrado de %4 %3"
+msgid "#%1 %2 updated: removed from %4 %3"
+msgstr "#%1 %2 actualizado: borrado de %4 %3"
 
 msgid "Id not found: %1"
 msgstr "Id no encontrado: %1"
@@ -7654,6 +7657,9 @@ msgstr "Crear Etiqueta..."
 msgid "Relative path"
 msgstr "Path relativo"
 
+msgid "Index"
+msgstr "Índice"
+
 msgid "Wait while retrieving fields list and format for report %1"
 msgstr "Espere mientras se busca la información de columnas y formatos del informe %1"
 
@@ -7677,7 +7683,6 @@ msgstr "No todas las revisiones están incluidas en la historia de [%1].  Probab
 
 msgid "Job %1 status has changed to %2 and it cannot be %3.  Refresh your job monitor to see it\'s actual status"
 msgstr "El estado del pase %1 ha cambiado a %2 y no puede ser %3.  Refresque el monitor de pases para ver su estado real"
-### EOF - do not write anything bellow this
 
 msgid "Scheme"
 msgstr "Esquema"

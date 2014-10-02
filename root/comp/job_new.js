@@ -358,6 +358,7 @@
         }
 
         Baseliner.hideLoadingMask( main_form.getEl() );
+        main_form.doLayout();
     });
 
     var calendar_reload = function( str_date ) {

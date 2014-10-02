@@ -164,7 +164,7 @@ sub git : Path('/git/') {
             if( defined $com && $com =~ /^\w+$/ ) {
                 _debug "GIT TOP=$top";
                 _debug "GIT COMMIT SHA=$com";
-                _debug "GIT REF=$r";
+                _debug "GIT REF=$r" if $r || ($r||='');
                 $sha = $com;
                 $ref = $r;
                 $ref_prev = substr $top, 4;
@@ -341,10 +341,10 @@ sub event_this {
     try {
         if( $sha ) {  
             my $g = Girl::Repo->new( path=>"$fullpath" );
-            my $repo_row = DB->BaliMaster->search( { collection => 'GitRepository', yaml => { like => "%repo_dir: ".$fullpath."%"} } )->first;
+            my $repo_row = ci->GitRepository->find_one({ repo_dir=>$fullpath }); 
             my $repo_id;
             if ($repo_row) {
-                $repo_id = $repo_row->mid;
+                $repo_id = $repo_row->{mid};
             } else {
                 master_new 'GitRepository' => {
                     name    => "$fullpath",
@@ -372,8 +372,8 @@ sub event_this {
                     => { username=>$c->username, repository=>$repo, message=>$title, commit=>$commit, diff=>$diff, branch=>$ref_short, ref=>$ref, sha=>$sha }
                     => sub { 
                         my $mid;
-                        my $master = DB->BaliMaster->search({ ns=>"git.revision/$sha" })->first;
-                        if( ! $master ) {
+                        my $rev = ci->GitRevision->find_one({ sha=>"$sha" });
+                        if( ! $rev ) {
                             my $commit2 = substr( $sha, 0, 7 );
                             my $msg = substr( $commit->message, 0, 15 );
                             master_new 'GitRevision' => {
@@ -385,7 +385,7 @@ sub event_this {
                                 };
 
                         } else {
-                            $mid = $master->mid;
+                            $mid = $rev->{mid};
                         }
                         { mid => $mid, title => $title };
                 };

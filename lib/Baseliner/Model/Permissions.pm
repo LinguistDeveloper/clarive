@@ -607,9 +607,6 @@ sub users_with_roles {
             }
             push @ors, { '$and' => \@ands };
         }
-        $where->{'$or'} = \@ors;
-        _warn $where;
-        @users = map { $_->{name} } ci->user->find($where)->all;
     } else {
         for my $role ( @roles ) {
             my $wh;
@@ -617,6 +614,9 @@ sub users_with_roles {
             push @ors, $wh;
         }
     }
+    $where->{'$or'} = \@ors;
+    _warn $where;
+    @users = map { $_->{name} } ci->user->find($where)->all;
 
     my @root_users;
     if ( $include_root ) {      
