@@ -756,14 +756,16 @@ sub comment : Local {
                     }
                 }
             } else {
-                my $post = ci->find( $id_com );
+                #my $post = ci->find( $id_com );
+                my $post = ci->new( $id_com );
+                $post->put_data( $text );               
                 _fail( _loc("This comment does not exist anymore") ) unless $post;
-                $post->update( text=>$text, content_type=>$content_type );
+                $post->update(content_type=>$content_type );
             }
 
             # modified_on 
             mdb->topic->update({ mid=>"$topic_mid" },{ '$set'=>{ modified_on=>mdb->ts } });
-
+            cache->remove( qr/:$topic_mid:/ ) if length $topic_mid;
             $c->stash->{json} = {
                 msg     => _loc('Comment added'),
                 id      => $id_com,

@@ -132,7 +132,8 @@ sub process_queue {
             # }
 
             #$body = Encode::encode("iso-8859-15", $body);
-            utf8::decode( $body );
+            #$body =~ s/[^\x00-\x7f]//g;
+            #utf8::decode( $body );
 
             
             $result = $self->send(
@@ -232,6 +233,8 @@ sub send {
         Type     => 'text/html',
         Encoding => 'base64'
     );
+
+    $msg->attr('Content-Type.charset' => 'utf8');
 
     require Compress::Zlib;
     foreach my $attach (@attach) {

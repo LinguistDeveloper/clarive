@@ -124,6 +124,44 @@
     font-size: 13px;
 }
 
+#boot .added-code{
+    color:#468847;
+    background-color: #F2FFF7;
+    margin:0;
+    font-family:inherit;
+    font-weight:bold;
+    text-rendering:optimizelegibility;
+    font-family: Courier New, Courier;
+}
+
+#boot .deleted-code{
+    color:#b94a48;
+    background-color: #FFF2F2;
+    margin:0;
+    font-weight:bold;
+    text-rendering:optimizelegibility;
+    font-family: Courier New, Courier;
+}
+
+#boot .permanent-code{
+    color:#333;
+    background-color: #FCFCFC;
+    margin:0;
+    font-weight:bold;
+    text-rendering:optimizelegibility;
+    font-family: Courier New, Courier;
+}
+
+#boot .line-number{
+    color:#AAA;
+    background-color: #EEE;
+    margin:0;
+    text-align: center;
+    font-weight:bold;
+    text-rendering:optimizelegibility;
+    font-family: Courier New, Courier;
+    font-size:small;
+}
 
 .name-html {
 	width: 20px;

@@ -282,6 +282,8 @@
                     Ext.each( forms, function(form_url){
                         add_ci_form( form_url, params );
                     });
+                }, function(res){
+                    // No ci form ignore
                 });
                 //form.getForm().loadRecord( params.rec );
             }
