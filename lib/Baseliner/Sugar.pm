@@ -143,8 +143,11 @@ sub event_new {
 
         if( _array( $ev->{vars} ) > 0 ) {
             my $ed_reduced={};
+            # fix "unhandled" Mongo errors due to unblessed structures
+            my $ed_cloned = Util->_clone($ed); 
+            Util->_unbless( $ed_cloned );
             foreach (_array $ev->{vars}){
-                $ed_reduced->{$_} = $ed->{$_};
+                $ed_reduced->{$_} = $ed_cloned->{$_};
             }
             $ed_reduced->{ts} = mdb->ts;
 
