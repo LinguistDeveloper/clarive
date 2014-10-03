@@ -27,6 +27,18 @@ register 'event.ws.soap_ready' => {
     vars => [],
 };
 
+sub begin : Private {  
+     my ($self,$c,$meth,$id_rule) = @_;
+     if( length $id_rule ) { 
+         my $rule = $self->rule_from_url( $id_rule );
+         if( $rule->{authtype} eq 'none' ) {
+             $c->stash->{auth_skip} = 1 
+         } else {
+             $c->stash->{auth_logon_type} = $meth; 
+         }
+     }
+}
+
 sub list : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
@@ -242,6 +254,7 @@ sub save : Local {
             rule_type  => $p->{rule_type},
             rule_desc  => substr($p->{rule_desc},0,2000),
             subtype => $p->{subtype},
+            authtype => $p->{authtype},
             wsdl => $p->{wsdl},
             ts =>  mdb->ts,
             username => $c->username
@@ -714,6 +727,13 @@ Soap webservices.
 
 =cut
 
+sub rule_from_url {
+    my ($self,$id_rule)=@_;
+    my $where = { '$or'=>[ {id=>"$id_rule"}, {rule_name=>"$id_rule"}] };
+    my $rule = mdb->rule->find_one($where,{ rule_tree=>0 }) or _fail _loc 'Rule %1 not found', $id_rule;
+    return $rule;
+}
+
 sub default : Path {
     my ($self,$c,$meth,$id_rule,@args) = @_;
     my $p = $c->req->params;
@@ -733,7 +753,7 @@ sub default : Path {
     my $where = { '$or'=>[ {id=>"$id_rule"}, {rule_name=>"$id_rule"}] };
     my $run_rule = sub{
         try {
-            my $rule = mdb->rule->find_one($where,{ rule_type=>1 }) or _fail _loc 'Rule %1 not found', $id_rule;
+            my $rule = $self->rule_from_url( $id_rule );
             _fail _loc 'Rule %1 not independent: %2',$id_rule, $rule->{rule_type} if $rule->{rule_type} ne 'independent' ;
             my $ret_rule = Baseliner->model('Rules')->run_single_rule( id_rule=>$id_rule, stash=>$stash, contained=>1 );
             _debug( _loc( 'Rule WS Elapsed: %1s', $$stash{_rule_elapsed} ) );
@@ -755,7 +775,7 @@ sub default : Path {
         return $ret;
     };
     if( $meth eq 'soap' ) {
-        my $doc = mdb->rule->find_one($where); 
+        my $doc = $self->rule_from_url( $id_rule );
         my $wsdl_body = Util->parse_vars( $doc->{wsdl}, $stash );
         $stash->{ws_operation} = $args[0];
         
@@ -831,7 +851,7 @@ sub default : Path {
     } else {
         $run_rule->();
         if( $meth eq 'json' ) {
-            $c->stash->{json} = $ret;
+            $c->stash->{json} = ref $ret ? $ret : {};
             $c->forward('View::JSON');
         } elsif( $meth eq 'yaml' ) {
             $c->res->body( Util->_dump($ret) );

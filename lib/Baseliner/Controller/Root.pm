@@ -148,11 +148,11 @@ sub auto : Private {
         if( ref $user && ( my $auth = $c->authenticate({ id=>$$user{username} }, 'none') ) ) {
             $c->session->{username} = $user->{username};
             $c->session->{user} = $c->user_ci;
-            event_new 'event.auth.failed'=>{ username=>$c->username, status=>401, mode=>'api_key' };
             return 1;
         } else {
-            $c->stash->{json} = { success=>\0, msg=>'invalid api-key' };
-            $c->forward('View::JSON');
+            event_new 'event.auth.failed'=>{ username=>$c->username, status=>401, mode=>'api_key' };
+            $c->stash->{auth_logon_type} = 'json';
+            $c->stash->{last_msg} = _loc('invalid api-key');
         }
     }
     
@@ -168,6 +168,16 @@ sub auto : Private {
     } elsif( $c->stash->{auth_basic} ) {
         my $ret = $c->forward('/auth/login_basic');
         return $ret; 
+    } elsif( $c->stash->{auth_logon_type} eq 'raw' ) {   # used by Rule WS
+        $c->res->body(_loc('Error: Authentication required') );
+        $c->res->status(401);
+        return 0;
+    } elsif( $c->stash->{auth_logon_type} eq 'json' ) {   # used by Rule WS
+        $c->stash->{json}{success} = \0;
+        $c->stash->{json}{msg} = $c->stash->{last_msg} // _loc('Error: Authentication required');
+        $c->res->status(401);
+        $c->forward('View::JSON');
+        return 0;
     } else {
         #$c->forward('/auth/logoff');
         $c->stash->{after_login} = '/' . $path;
