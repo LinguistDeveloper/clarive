@@ -136,6 +136,7 @@ sub monitor {
       $where->{job_type} = $p->{filter_type};
     }
         
+    $query_id ||='';
     if($query_id ne '-1'){
         #Cuando viene por el dashboard
         my @jobs = split(",",$query_id);
