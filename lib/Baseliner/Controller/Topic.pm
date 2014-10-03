@@ -1736,7 +1736,7 @@ sub img : Local {
     my $p = $c->req->params;
     my $img = mdb->grid->get( "$id" );
     $img //= do {
-        my $doc = mdb->grid->files->find_one({ _id=>mdb->oid($id) });
+        my $doc = mdb->grid->files->find_one({ '$or'=>[{ _id=>mdb->oid($id) },{ md5=>$id }] });
         mdb->grid->get( $$doc{_id} ) if $doc;
     };
     if( $img ) {
