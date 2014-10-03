@@ -229,7 +229,7 @@ sub send {
     );
     
     $msg->attach(
-        Data     => Encode::encode_utf8($body),
+        Data     => $body,
         Type     => 'text/html',
         Encoding => 'base64'
     );
