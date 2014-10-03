@@ -126,7 +126,7 @@
 
 #boot .added-code{
     color:#468847;
-    background-color: #F2FFF7;
+    background-color: #D3FFD7;
     margin:0;
     font-family:inherit;
     font-weight:bold;
@@ -136,7 +136,7 @@
 
 #boot .deleted-code{
     color:#b94a48;
-    background-color: #FFF2F2;
+    background-color: #FFD3D3;
     margin:0;
     font-weight:bold;
     text-rendering:optimizelegibility;

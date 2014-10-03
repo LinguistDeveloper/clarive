@@ -321,11 +321,13 @@
 		            var regexp_add = new RegExp("^\\+[\s\S]*");
 					var regexp_del = new RegExp("^\\-[\s\S]*");
 		            changes[i].code_chunks.forEach(function(element, index, array){
-						var stats = element.stats;
-						var beginig_orig = stats.split(' ')[0].split(',');
-						var beginig_last = stats.split(' ')[1].split(',');
-						var origin_start = Math.abs(beginig_orig[0]);
-						var last_start = Math.abs(beginig_last[0]);
+						if(element.stats){
+							var stats = element.stats;
+							var beginig_orig = stats.split(' ')[0].split(',');
+							var beginig_last = stats.split(' ')[1].split(',');
+							var origin_start = Math.abs(beginig_orig[0]);
+							var last_start = Math.abs(beginig_last[0]);
+						}
 						res = res+"<tr><td colspan=3>"+stats+"</td></tr>";
 						var lines = element.code.split("\n");
 						lines.pop();
@@ -352,10 +354,6 @@
 		           [% } %]
 		       </div>
 		*/}.tmpl({ repo_mid: repo_mid, repo_dir: repo_dir, branch: branch, rev_num: res.commit_info.revision, author: res.commit_info.author, date: res.commit_info.date, comment: res.commit_info.comment, changes: res.changes });
-
-
-
-
     	panel.update(html);
     }, function(res){
          Baseliner.error( _('Error'), _(res.msg) );
