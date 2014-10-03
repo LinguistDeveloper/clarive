@@ -909,7 +909,7 @@ register 'statement.fail' => {
     dsl=>sub{
         my ($self, $n, %p ) = @_;
         sprintf(q{
-            Util->_fail( q{%s} );
+            Util->_fail( qq{%s} );
         }, $n->{msg}, $self->dsl_build( $n->{children}, %p ) );
     }
 };
