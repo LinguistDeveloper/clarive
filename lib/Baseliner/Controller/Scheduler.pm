@@ -62,7 +62,7 @@ sub json : Local {
     my @rows;
     my %rule_names = map { $_->{id} => $_ } mdb->rule->find->fields({ rule_tree=>0 })->all;
     while ( my $r = $rs->next ) {
-        $r->{what_name} = $r->{what} eq 'service' 
+        $r->{what_name} = ( $r->{what} && $r->{what} eq 'service' )
             ? $r->{service}
             : _loc('Rule: %1 (%2)', $rule_names{ $r->{id_rule} }{rule_name}, $r->{id_rule} ); 
         $r->{id}=''.delete $r->{_id};
