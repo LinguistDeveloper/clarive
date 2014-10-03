@@ -4,22 +4,16 @@
     var repo_mid = params.repo_mid;
     var revisions = params.revisions;
     var cons = new Baseliner.AceEditor();
-
-    cons.on("aftereditor", function(){ 
-        //alert(1);
-
-                Baseliner.ajax_json('/svntree/view_file', { filepath: path, filename: file, repo_mid: repo_mid }, function(res){
+    cons.on("aftereditor", function(){
+                Baseliner.ajax_json('/svntree/view_file', { filepath: path, filename: file, repo_mid: repo_mid, rev_num: params.rev_num }, function(res){
                     cons.setValue(res.file_content);
                     cons.setReadOnly();
                 }, function(res){
                      Baseliner.error( _('Error'), _(res.msg) );
                 });
 
-
-
     });
-    
-//console.log (cons);
+
     var revisionsStore = new Baseliner.JsonStore({
         autoLoad: true,
         remoteSort: true,
@@ -41,19 +35,8 @@
         items: cons,
         tbar: [ '<b>'+path+file+'</b>', '| ',
            rev_combo
-        ],
-        listeners:{ 
-            // "afterrender": function(){
-            // }
-            "aftereditor": function(){
-                alert(1);
-            }            
-        }
+        ]
     });
-
-    //cons.setValue('dsfsadfsdfsdf');
-
-
 
 
     var func_file_history = function(revision){

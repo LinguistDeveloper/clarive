@@ -3,13 +3,12 @@
     var rev_num = params.rev_num;
     var txt = new Ext.form.TextArea({ height:'100%', width:'100%', value:'' });
     var branch = params.branch;
-
+    var repo_mid = params.repo_mid;
     var panel = new Ext.Panel({ 
         layout:'fit',
         html:'',
         bodyStyle:{ 'background-color':'#fff', padding:' 5px 5px 5px 5px', overflow:'auto'}
-    });
-    
+    });    
     var html = Baseliner.ajax_json('/svntree/view_diff', { repo_dir: repo_dir, rev_num: rev_num, branch: branch }, function(res){
     	var html = function(){/*
 		       <div id="boot" ><center>
@@ -22,15 +21,22 @@
 		           <tr><td style="white-space: nowrap"><img style="width: 16px" src="/user/avatar/[%= author %]/image.png" />&nbsp;[%= author %]</td><td style="white-space: nowrap">[%= date %]</td><td>[%= comment %]</td></tr>
 		           </tbody>
 		           </table>
-
 		           [% for(var i=0; i < changes.length; i++) { %]
    			           <table class="table table-bordered table-condensed" style="width: 70%">
 		           	   <thead>
 			               	<tr>
 			               		<th style="font-family: Courier New, Courier, monospace;" colspan=3>
-			               			[%= changes[i].path %] [%= changes[i].revision1 %] =&gt; [%= changes[i].revision2 %] 
-			               			<a class="btn btn-mini" onclick="Baseliner.ajaxEval( '/comp/view_file.js', {repo_dir: 'svn://192.168.110.128/opt/clarive/otrosvn/misvn/trunk/', file:'codigo1.c', repo_mid:'19447', branch:'trunk'}, function(res){ return res;})">Original file</a>
-			               			<!-- <a class="btn btn-mini" onclick="Baseliner.ajaxEval( '/comp/view_file.js', {repo_dir: 'svn://192.168.110.128/opt/clarive/otrosvn/misvn/trunk/', file:'codigo1.c', repo_mid:'19447', branch:'trunk'}, function(res){ return res;})">Original file</a>-->
+			               			[%= changes[i].path %] [%= changes[i].revision1 %] =&gt; [%= changes[i].revision2 %]
+			               			<a class="btn btn-mini" onclick="Baseliner.add_tabcomp( 
+			               												'/comp/view_file.js', 
+			               												'[%= branch %]:[[%= rev_num %]] [%= changes[i].path %]',
+			               												{   repo_dir:'[%= repo_dir+'/'+branch %]', 
+			               													file:'[%= changes[i].path %]',
+			               													repo_mid:'[%= repo_mid %]', 
+			               													branch:'[%= branch %]', 
+			               													rev_num:'[%= rev_num %]'
+			               												}
+			               			)">[%= _('Original file') %]</a>
 			               		</th>
 			               	</tr>
 			           </thead>
@@ -334,7 +340,10 @@
 		           </table>
 		           [% } %]
 		       </div>
-		*/}.tmpl({ rev_num: res.commit_info.revision, author: res.commit_info.author, date: res.commit_info.date, comment: res.commit_info.comment, changes: res.changes });
+		*/}.tmpl({ repo_mid: repo_mid, repo_dir: repo_dir, branch: branch, rev_num: res.commit_info.revision, author: res.commit_info.author, date: res.commit_info.date, comment: res.commit_info.comment, changes: res.changes });
+
+
+
 
     	panel.update(html);
     }, function(res){
