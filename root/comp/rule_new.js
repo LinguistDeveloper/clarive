@@ -103,8 +103,10 @@
         : new Baseliner.AceEditor({ fieldLabel:_('WSDL'), anchor:'100%', height: 300, name:'wsdl', value: params.rec.wsdl, hidden: params.rec.subtype!='soap' });
     var subtype = new Baseliner.ComboSingle({ fieldLabel: _('Web Service Type'), name:'subtype', value: params.rec.subtype, data: [
                 '-', 'soap' ]});
+    var authtype = new Baseliner.ComboDouble({ fieldLabel: _('Authentication'), name:'authtype', value: params.rec.authtype||'required', 
+            data: [ ['required',_('Auth Required')], ['none',_('No login needed')] ]});
     var webservice_form = new Ext.form.FieldSet({
-        hidden: true, border: false, height: 400, anchor:'100%', items: [ subtype, wsdl ]
+        hidden: true, border: false, height: 400, anchor:'100%', items: [ subtype, wsdl, authtype ]
     });
     subtype.on('select', function(){
         if( subtype.getValue() == 'soap' ) {
