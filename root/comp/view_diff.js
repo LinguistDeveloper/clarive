@@ -331,14 +331,14 @@
 						lines.pop();
 						lines.forEach(function(element, index, array){
 						    if(element.search(regexp_add)>=0){
-						        res = res+"<tr><td width=\"1\" class=\"line-number\"  style=\"border-style:none; border-collapse: collapse;\">"+"</td><td width=\"1\" class=\"line-number\">"+last_start+"</td><td class=\"added-code\">" + escapeHtmlEntities(element).substr(1) + "</td></tr>";
+						        res = res+"<tr><td width=\"1\" class=\"line-number\">"+"</td><td width=\"1\" class=\"line-number\">"+last_start+"</td><td class=\"added-code\">" + escapeHtmlEntities(element).substr(1) + "</td></tr>";
 						    	last_start++;
 						    }else if(element.search(regexp_del)>=0){
-						        res = res + "<tr><td width=\"1\" class=\"line-number\" style=\"border-style:none;\">"+origin_start+"</td><td width=\"1\" class=\"line-number\">"+"</td><td class=\"deleted-code\">" + escapeHtmlEntities(element).substr(1) + "</td></tr>";
+						        res = res + "<tr><td width=\"1\" class=\"line-number\">"+origin_start+"</td><td width=\"1\" class=\"line-number\">"+"</td><td class=\"deleted-code\">" + escapeHtmlEntities(element).substr(1) + "</td></tr>";
 						    	origin_start++;
 						    }else if(element.search("\\ No newline at end of file")>=0){
 						    } else {
-						        res = res + "<tr><td width=\"1\" class=\"line-number\" style=\"border-style:none;\">"+origin_start+"</td><td width=\"1\" class=\"line-number\">"+last_start+"</td><td class=\"permanent-code\">" + escapeHtmlEntities(element) + "</td></tr>";
+						        res = res + "<tr><td width=\"1\" class=\"line-number\">"+origin_start+"</td><td width=\"1\" class=\"line-number\">"+last_start+"</td><td class=\"permanent-code\">" + escapeHtmlEntities(element) + "</td></tr>";
 						    	origin_start++;
 						    	last_start++;
 						    }
