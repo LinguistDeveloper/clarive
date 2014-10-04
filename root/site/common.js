@@ -3845,6 +3845,17 @@ Baseliner.datatable = function( el, opts, cb) {
 };
 
 Baseliner.datatable_toggle = function(el){
-    var obj = $( '#'+$(el).dataTable().api().table().container().id + ' .row-fluid' );
-    obj.toggle();
+    var foo = function(){
+        var obj = $( '#'+$(el).dataTable().api().table().container().id + ' .row-fluid' );
+        obj.toggle();
+    };
+    if( !$.fn.DataTable ) {
+        Baseliner.require("/static/datatables/js/jquery.dataTables.js", function(){
+            Baseliner.require("/static/datatables/js/dataTables.bootstrap.js", function(){
+                foo();
+            });
+        });
+    } else {
+        foo();
+    }
 };
