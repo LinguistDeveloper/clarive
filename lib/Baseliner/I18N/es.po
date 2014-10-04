@@ -7504,6 +7504,42 @@ msgstr "Proceso Padre"
 msgid "Start Script"
 msgstr "Iniciar Script"
 
+msgid "No data available in table"
+msgstr "No hay data disponible en tabla"
+
+msgid "Showing _START_ to _END_ of _TOTAL_ entries"
+msgstr "Mostrando _START_ a _END_ de _TOTAL_ filas"
+
+msgid "Showing 0 to 0 of 0 entries"
+msgstr "Mostrando 0 filas"
+
+msgid "(filtered from _MAX_ total entries)"
+msgstr "(filtrado de _MAX_ filas totales)"
+
+msgid "Show _MENU_ entries"
+msgstr "Mostrar _MENU_ filas"
+
+msgid "Processing..."
+msgstr "Processing..."
+
+msgid "Search:"
+msgstr "Buscar: "
+
+msgid "No matching records found"
+msgstr "No se han encontrado filas"
+
+msgid "First"
+msgstr "Primero"
+
+msgid "Last"
+msgstr "Último"
+
+msgid ": activate to sort column ascending"
+msgstr ": activar ordenación de columna ascendiente"
+
+msgid ": activate to sort column descending"
+msgstr ": activar ordenación de columna descendiente"
+
 ########### GIT
 
 msgid ""

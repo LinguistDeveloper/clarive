@@ -5,11 +5,13 @@
 
 
 <%perl>
+my $iid = Util->_md5;
+my @topics;
 if( ! $meta->{hidden} ) { 
     my $names = { name=>'ID', name=>'ID', title=>'Title', name_status=>'Status', created_by=>'Created By', created_on=>'Created On', modified_by=>'Modified By', modified_on=>'Modified On' };
     
     my $ix = 0;
-    my @topics = Util->_array( $data->{$meta->{id_field}} );
+    @topics = Util->_array( $data->{$meta->{id_field}} );
     my $cols = ref $meta->{columns} ? $meta->{columns} : do {
         [ map { [ split /,/ ] } split /;/, $meta->{columns} ]
     };
@@ -24,13 +26,22 @@ if( ! $meta->{hidden} ) {
 </%perl>
     
     <tr>
-        <th colspan="2" style="padding: 10px 0 10px 0"><h5 style="border-bottom: 1px solid #bbb"><% _loc($meta->{name_field}) %></h5></th>
+        <th colspan="2" style="padding: 10px 0 10px 0">
+            <h5 style="border-bottom: 1px solid #bbb">
+                  <% _loc($meta->{name_field}) %>
+% if( @topics && $$meta{datatable} ne 'none' ) {
+                   <div style="float:right; cursor:pointer">
+                       <img src="/static/images/icons/services-16.png" onclick="javascript:Baseliner.datatable_toggle('#<% $iid %>')">
+                   </div>
+% }
+            </h5>
+        </th>
     </tr>
     <tr>
       <td style="<% $meta->{framed} and 'text-transform: uppercase; font-size: 10px; font-weight:bold; background-color: #eee; text-align: center' %>" >
      
 % if( @topics && scalar @topics > 0 ) {
-          <table class="table table-bordered" style="margin-top: 10px; width: 100%">
+        <table class="table table-bordered" style="margin-top: 10px; width: 100%" id="<% $iid %>">
               <thead>
                 <tr>
 % foreach my $h ( @head ) {
@@ -79,3 +90,20 @@ if( ! $meta->{hidden} ) {
 % }# data
 
 % } # hidden
+
+<script>
+    (function(){
+% if( $$meta{datatable} =~ /^(1|always)$/ ) {
+    Baseliner.datatable('#<% $iid %>',{});
+% } elsif( $$meta{datatable} eq 'paging' ) { 
+    Baseliner.datatable('#<% $iid %>',{ paging: true, ordering: false, sorting: false });
+% } elsif( $$meta{datatable} eq 'ordering' ) { 
+    Baseliner.datatable('#<% $iid %>',{ paging: false, ordering: true, sorting: false });
+% } elsif( $$meta{datatable} eq 'sorting' ) { 
+    Baseliner.datatable('#<% $iid %>',{ paging: false, ordering: false, sorting: true });
+% } elsif( Util->is_number($$meta{datatable}) && @topics > $$meta{datatable} ) { 
+    Baseliner.datatable('#<% $iid %>',{ paging: true, ordering: true, sorting: true });
+% } 
+    })();
+</script>
+

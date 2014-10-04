@@ -3799,3 +3799,52 @@ Baseliner.ComboStatus = Ext.extend( Baseliner.ComboDoubleRemote, {
     fields: [ 'id_status', 'name' ]
 });
 
+Baseliner.datatable = function( el, opts, cb) {
+    var foo = function(){
+        $.extend(true,opt,{
+            //scrollY: 200, 
+            ordering: true,
+            searching: true,
+            paging: true,
+            language: {
+                "emptyTable":     _("No data available in table"),
+                "info":           _("Showing _START_ to _END_ of _TOTAL_ entries"),
+                "infoEmpty":      _("Showing 0 to 0 of 0 entries"),
+                "infoFiltered":   _("(filtered from _MAX_ total entries)"),
+                "infoPostFix":    "",
+                "thousands":      ",",
+                "lengthMenu":     _("Show _MENU_ entries"),
+                "loadingRecords": _("Loading..."),
+                "processing":     _("Processing..."),
+                "search":         _("Search:"),
+                "zeroRecords":    _("No matching records found"),
+                "paginate": {
+                    "first":      _("First"),
+                    "last":       _("Last"),
+                    "next":       _("Next"),
+                    "previous":   _("Previous")
+                },
+                "aria": {
+                    "sortAscending":  _(": activate to sort column ascending"),
+                    "sortDescending": _(": activate to sort column descending")
+                }
+            }
+        },opts);
+        $(el).DataTable(opt);
+        if( Ext.isFunction(cb) ) cb(); 
+    };
+    if( !$.fn.DataTable ) {
+        Baseliner.require("/static/datatables/js/jquery.dataTables.js", function(){
+            Baseliner.require("/static/datatables/js/dataTables.bootstrap.js", function(){
+                foo();
+            });
+        });
+    } else {
+        foo();
+    }
+};
+
+Baseliner.datatable_toggle = function(el){
+    var obj = $( '#'+$(el).dataTable().api().table().container().id + ' .row-fluid' );
+    obj.toggle();
+};
