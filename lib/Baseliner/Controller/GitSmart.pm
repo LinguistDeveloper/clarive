@@ -341,7 +341,7 @@ sub event_this {
     try {
         if( $sha ) {  
             my $g = Girl::Repo->new( path=>"$fullpath" );
-            my $repo_row = ci->GitRepository->find_one({ repo_dir=>$fullpath }); 
+            my $repo_row = ci->GitRepository->find_one({ repo_dir=>"$fullpath" }); 
             my $repo_id;
             if ($repo_row) {
                 $repo_id = $repo_row->{mid};
