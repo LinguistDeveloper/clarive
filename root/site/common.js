@@ -3843,14 +3843,17 @@ Baseliner.datatable = function( el, opts, cb) {
     }
 };
 
-Baseliner.datatable_toggle = function(el){
+Baseliner.datatable_toggle = function(el,show){
     var foo = function(){
         var dt = $(el).dataTable();
         // toggle dataEditor controls
         var obj = $( '#'+ dt.api().table().container().id + ' .row-fluid' );
-        obj.toggle();
+        if( show === false ) 
+            obj.hide();
+        else 
+            obj.toggle();
         // change page length so that we can see the whole table
-        if( ! obj.is(':visible') ) {
+        if( !obj.is(':visible') || show===false) {
             $(el).data('oldlen', dt.api().page.len() );
             dt.api().page.len(10e10);
         } else {

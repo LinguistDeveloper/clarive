@@ -29,7 +29,7 @@ if( ! $meta->{hidden} ) {
         <th colspan="2" style="padding: 10px 0 10px 0">
             <h5 style="border-bottom: 1px solid #bbb">
                   <% _loc($meta->{name_field}) %>
-% if( @topics && $$meta{datatable} ne 'none' ) {
+% if( @topics && $$meta{datatable} ne 'never' ) {
                    <div style="float:right; cursor:pointer">
                        <img src="/static/images/icons/services-16.png" onclick="javascript:Baseliner.datatable_toggle('#<% $iid %>')">
                    </div>
@@ -93,17 +93,15 @@ if( ! $meta->{hidden} ) {
 
 <script>
     (function(){
-% if( $$meta{datatable} =~ /^(1|always)$/ ) {
+% if( $$meta{datatable} eq 'always' ) {
     Baseliner.datatable('#<% $iid %>',{});
-% } elsif( $$meta{datatable} eq 'paging' ) { 
-    Baseliner.datatable('#<% $iid %>',{ paging: true, ordering: false, searching: false });
-% } elsif( $$meta{datatable} eq 'ordering' ) { 
-    Baseliner.datatable('#<% $iid %>',{ paging: false, ordering: true, searching: false });
-% } elsif( $$meta{datatable} eq 'sorting' ) { 
-    Baseliner.datatable('#<% $iid %>',{ paging: false, ordering: false, searching: true });
 % } elsif( Util->is_number($$meta{datatable}) && @topics > $$meta{datatable} ) { 
     Baseliner.datatable('#<% $iid %>',{ paging: true, ordering: true, searching: true });
-% } 
+% } elsif( $$meta{datatable} ne 'never' ) {
+    Baseliner.datatable('#<% $iid %>',{ paging: true, ordering: true, searching: true }, function(){
+        Baseliner.datatable_toggle('#<% $iid %>',false);  // false => hide now
+    });
+% }
     })();
 </script>
 
