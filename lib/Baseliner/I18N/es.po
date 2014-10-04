@@ -7514,7 +7514,7 @@ msgid "Showing 0 to 0 of 0 entries"
 msgstr "Mostrando 0 filas"
 
 msgid "(filtered from _MAX_ total entries)"
-msgstr "(filtrado de _MAX_ filas totales)"
+msgstr "(filtrado de _MAX_ filas)"
 
 msgid "Show _MENU_ entries"
 msgstr "Mostrar _MENU_ filas"
