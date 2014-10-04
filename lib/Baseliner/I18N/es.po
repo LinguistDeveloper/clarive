@@ -7540,6 +7540,12 @@ msgstr ": activar ordenación de columna ascendiente"
 msgid ": activate to sort column descending"
 msgstr ": activar ordenación de columna descendiente"
 
+msgid "prev"
+msgstr "ant"
+
+msgid "next"
+msgstr "sig"
+
 ########### GIT
 
 msgid ""

@@ -3820,8 +3820,8 @@ Baseliner.datatable = function( el, opts, cb) {
                 "paginate": {
                     "first":      _("First"),
                     "last":       _("Last"),
-                    "next":       _("Next"),
-                    "previous":   _("Previous")
+                    "next":       '',
+                    "previous":   '',
                 },
                 "aria": {
                     "sortAscending":  _(": activate to sort column ascending"),
