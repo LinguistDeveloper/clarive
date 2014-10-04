@@ -96,13 +96,13 @@ if( ! $meta->{hidden} ) {
 % if( $$meta{datatable} =~ /^(1|always)$/ ) {
     Baseliner.datatable('#<% $iid %>',{});
 % } elsif( $$meta{datatable} eq 'paging' ) { 
-    Baseliner.datatable('#<% $iid %>',{ paging: true, ordering: false, sorting: false });
+    Baseliner.datatable('#<% $iid %>',{ paging: true, ordering: false, searching: false });
 % } elsif( $$meta{datatable} eq 'ordering' ) { 
-    Baseliner.datatable('#<% $iid %>',{ paging: false, ordering: true, sorting: false });
+    Baseliner.datatable('#<% $iid %>',{ paging: false, ordering: true, searching: false });
 % } elsif( $$meta{datatable} eq 'sorting' ) { 
-    Baseliner.datatable('#<% $iid %>',{ paging: false, ordering: false, sorting: true });
+    Baseliner.datatable('#<% $iid %>',{ paging: false, ordering: false, searching: true });
 % } elsif( Util->is_number($$meta{datatable}) && @topics > $$meta{datatable} ) { 
-    Baseliner.datatable('#<% $iid %>',{ paging: true, ordering: true, sorting: true });
+    Baseliner.datatable('#<% $iid %>',{ paging: true, ordering: true, searching: true });
 % } 
     })();
 </script>

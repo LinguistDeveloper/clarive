@@ -3801,11 +3801,10 @@ Baseliner.ComboStatus = Ext.extend( Baseliner.ComboDoubleRemote, {
 
 Baseliner.datatable = function( el, opts, cb) {
     var foo = function(){
-        $.extend(true,opt,{
-            //scrollY: 200, 
+        var opt = $.extend({
+            paging: true,
             ordering: true,
             searching: true,
-            paging: true,
             language: {
                 "emptyTable":     _("No data available in table"),
                 "info":           _("Showing _START_ to _END_ of _TOTAL_ entries"),
@@ -3831,7 +3830,7 @@ Baseliner.datatable = function( el, opts, cb) {
             }
         },opts);
         $(el).DataTable(opt);
-        if( Ext.isFunction(cb) ) cb(); 
+        if(Ext.isFunction(cb)) cb(); 
     };
     if( !$.fn.DataTable ) {
         Baseliner.require("/static/datatables/js/jquery.dataTables.js", function(){
