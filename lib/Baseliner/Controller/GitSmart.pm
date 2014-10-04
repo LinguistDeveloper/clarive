@@ -27,7 +27,7 @@ sub begin : Private {  #TODO control auth here
      } elsif( ! length $c->username ) {
          $c->stash->{auth_basic} = 1;
      } 
-     _debug "GIT USER=" . $c->username;
+     _debug "GIT USER=" . ( $c->username // '');
 }
 
 sub git : Path('/git/') {
