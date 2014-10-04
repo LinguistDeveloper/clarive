@@ -3845,8 +3845,18 @@ Baseliner.datatable = function( el, opts, cb) {
 
 Baseliner.datatable_toggle = function(el){
     var foo = function(){
-        var obj = $( '#'+$(el).dataTable().api().table().container().id + ' .row-fluid' );
+        var dt = $(el).dataTable();
+        // toggle dataEditor controls
+        var obj = $( '#'+ dt.api().table().container().id + ' .row-fluid' );
         obj.toggle();
+        // change page length so that we can see the whole table
+        if( ! obj.is(':visible') ) {
+            $(el).data('oldlen', dt.api().page.len() );
+            dt.api().page.len(10e10);
+        } else {
+            dt.api().page.len( $(el).data('oldlen') || 10 );
+        }
+        dt.api().draw();
     };
     if( !$.fn.DataTable ) {
         Baseliner.require("/static/datatables/js/jquery.dataTables.js", function(){
