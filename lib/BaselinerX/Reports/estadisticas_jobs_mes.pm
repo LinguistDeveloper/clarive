@@ -10,7 +10,7 @@ register 'config.reports.estadisticas_jobs_mes' => {
     ],
 };
 
-register 'report.jazztel.job_statistics_mes' => {
+register 'report.clarive.job_statistics_mes' => {
     name => 'Estadísticas de JOBS por Mes',
     data => { },
     form => '/reports/listado_jobs.js', 

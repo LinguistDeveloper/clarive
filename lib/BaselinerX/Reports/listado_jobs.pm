@@ -10,7 +10,7 @@ register 'config.reports.listado_jobs' => {
     ],
 };
 
-register 'report.jazztel.jobs' => {
+register 'report.clarive.jobs' => {
     name => 'Listado de JOBS',
     data => { },
     form => '/reports/listado_jobs.js', 
