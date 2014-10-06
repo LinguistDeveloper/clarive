@@ -7546,6 +7546,12 @@ msgstr "ant"
 msgid "next"
 msgstr "sig"
 
+msgid "Your interface version is not up-to-date (%1 != %2). Do you want to refresh now?"
+msgstr "La versión de la interfaz está desactualizada (%1 != %2). Quieres refrescar ahora?"
+
+msgid "Please, refresh the page as soon as possible"
+msgstr "Por favor, refresque la página cuanto antes"
+
 ########### GIT
 
 msgid ""
