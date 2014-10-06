@@ -95,7 +95,20 @@ sub error_trap {
         };
         $job->logger->error( _loc "Error trapped in rule: %1", $err );    
         $job->status('TRAPPED');
-        event_new 'event.rule.trap' => { username=>'internal', stash=>$stash, output=>$err } => sub {};
+
+        ## Avoid error if . in stash keys
+        my @keys = grep { /\./ } keys %$stash;
+
+        if ( @keys ) {
+            _debug("Stash contains variables with '.'.". join ',', @keys ."  Removed to avoid errors");
+            map { delete( $stash->{$_} )} @keys;
+        };
+        
+        event_new 'event.rule.trap' => { username=>'internal', stash=>$stash, output=>$err } => sub {} => sub{
+            # catch and ignore
+            my $err = shift;
+            _warn( _loc('Could not store event for trapped error: %1', $err ) );
+        }; 
         $job->save;
         my $last_status;
         my $timeout = $trap_timeout;
@@ -186,7 +199,8 @@ sub build_tree {
         if( $rule->{rule_type} eq 'chain' ) {
             return $self->init_job_tasks;
         }
-        _fail _loc 'Rule tree is empty for rule %1', $id_rule;
+        _warn _loc 'Rule tree is empty for rule %1', $id_rule;
+        return ();
     }
 }
 

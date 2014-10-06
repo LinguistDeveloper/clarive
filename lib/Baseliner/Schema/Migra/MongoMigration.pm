@@ -1084,6 +1084,7 @@ sub activity{
                     
                     my $ed_reduced={};
                     my $ed = _load $event->{event_data};
+                    Util->_unbless( $ed );
                     foreach (_array $ev->{vars}){             
                         $ed_reduced->{$_} = $ed->{$_};
                     }

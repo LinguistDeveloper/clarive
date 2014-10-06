@@ -23,8 +23,8 @@ register 'service.event.daemon' => {
         $config->{frequency} ||= 15 ;
         _log _loc "Event daemon starting with frequency %1, timeout %2", $config->{frequency}, $config->{timeout};
         require Baseliner::Sem;
-        my $sem = Baseliner::Sem->new( key=>'event_daemon', who=>"event_daemon", internal=>1 );
         for( 1..1000 ) {
+            my $sem = Baseliner::Sem->new( key=>'event_daemon', who=>"event_daemon", internal=>1 );
             $sem->take;
             $self->run_once( $c, $config );
             if ( $sem ) {
