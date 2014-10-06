@@ -10,7 +10,7 @@ register 'config.reports.estadisticas_jobs_bl' => {
     ],
 };
 
-register 'report.jazztel.job_statistics_bl' => {
+register 'report.clarive.job_statistics_bl' => {
     name => 'Estadísticas de JOBS por Entorno',
     data => { },
     form => '/reports/listado_jobs.js', 
