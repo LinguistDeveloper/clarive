@@ -95,6 +95,15 @@ sub error_trap {
         };
         $job->logger->error( _loc "Error trapped in rule: %1", $err );    
         $job->status('TRAPPED');
+
+        ## Avoid error if . in stash keys
+        my @keys = grep { /\./ } keys %$stash;
+
+        if ( @keys ) {
+            _debug("Stash contains variables with '.'.". join ',', @keys ."  Removed to avoid errors");
+            map { delete( $stash->{$_} )} @keys;
+        };
+        
         event_new 'event.rule.trap' => { username=>'internal', stash=>$stash, output=>$err } => sub {} => sub{
             # catch and ignore
             my $err = shift;
