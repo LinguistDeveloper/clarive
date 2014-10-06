@@ -93,6 +93,7 @@ if( ! $meta->{hidden} ) {
 
 <script>
     (function(){
+        try {  // to support legacy
 % if( $$meta{datatable} eq 'always' ) {
     Baseliner.datatable('#<% $iid %>',{});
 % } elsif( Util->is_number($$meta{datatable}) && @topics > $$meta{datatable} ) { 
@@ -102,6 +103,9 @@ if( ! $meta->{hidden} ) {
         Baseliner.datatable_toggle('#<% $iid %>',false);  // false => hide now
     });
 % }
+       } catch(e){
+            Baseliner.js_reload();
+       }
     })();
 </script>
 
