@@ -387,6 +387,15 @@ msgstr "Ver Fichero de Log"
 msgid "Inbox"
 msgstr "Buzón"
 
+msgid "Delete all"
+msgstr "Borrar todos"
+
+msgid "Are you sure you want to delete all the inbox messages?"
+msgstr "¿Está seguro de que quiere borrar todos los mensajes del buzón?"
+
+msgid "Could not delete all the inbox messages"
+msgstr "No se han podido borrar todos los mensajes del buzón"
+
 msgid "User not found: %1"
 msgstr "Usuario no encontrado: %1"
 

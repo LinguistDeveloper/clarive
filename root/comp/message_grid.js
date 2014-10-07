@@ -281,6 +281,25 @@ Ext.override(Ext.form.HtmlEditor, {
 
                     }                    
                 }),
+                new Ext.Toolbar.Button({
+                    text: _('Delete all'),
+                    icon:'/static/images/del.gif',
+                    cls: 'x-btn-text-icon',
+                    handler: function() {
+                        Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete all the inbox messages?'),
+                        function(btn){ 
+                            if(btn=='yes') {
+                                var conn = new Ext.data.Connection();
+                                conn.request({
+                                    url: '/message/delete_all',
+                                    params: { username: username},
+                                    success: function(resp,opt) { store.load({params:{start:0 , limit: ps, query_id: '<% $c->stash->{query_id} %>' }});},
+                                    failure: function(resp,opt) { Ext.Msg.alert(_('Error'), _('Could not delete all the inbox messages')); }
+                                });
+                            }
+                        } );
+                    }
+                }),
                 '->'
                 ]
         });
