@@ -1,24 +1,61 @@
 <%args>
-	$subject 
-	$message
+    $msg
+    $to
+    $cc
 </%args>
 <head>
     <meta http-equiv="Content-Language" content="en" />
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
     <title>Accion</title>
-	<& /email/style.css &>
+    <& /email/style.css &>
 </head>
+ 
+<style>
+body {
+    font-family: arial;
+    font-size: 10pt;
+}
+.backGroundPrimeraFila {
+    font-family: Verdana;
+    font-size: 8pt;
+    font-weight: bold;
+    color: #CCCCCC;
+    background-color: #666666;
+    vertical-align: middle;
+}
+.backGroundFilaDatos {
+    font-family: Verdana;
+    font-size: 8pt;
+    color: #111111;
+    background-color: #ffffff;
+    vertical-align: top;
+}
+</style>
+<body> 
+<div id="tablaContenedor_div">
+<TABLE cellpadding="0" cellspacing="0" width="100%">
+    <TR>
+        <TD>
+            <img src='/static/themes/clarive/images/logo.png'>
+        </TD>
+    </TR>
+    <TR height="20">
+        <TD class="backGroundPrimeraFila" nowrap="nowrap" height="14">
+            &nbsp;CLARIVE Release Manager
+        </TD>
+    </TR>
+</TABLE>
+</div>
 
-<body>
-    <div class='box'>
-        <div class="error">
-            <h2>SCM: <% $subject %></h2>
-        </div>
-    </div>
-    <div class='box'>
-        <div class="trace error">
-            <p><% $message %></p>
-        </div>
-    </div>
+<p>
+<% $msg %>
+</p>
+
+<p>
+% if ( $ENV{BASELINER_DEBUG} ) {
+Enviado a: <% join ",",@$to %>
+%}
+</p>
 </body>
+
 
