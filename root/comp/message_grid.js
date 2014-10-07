@@ -265,7 +265,10 @@ Ext.override(Ext.form.HtmlEditor, {
                                                 conn.request({
                                                     url: '/message/delete',
                                                     params: { id_message: sm.selections.items[x].data.id_message, id_queue: sm.selections.items[x].data.id},
-                                                    success: function(resp,opt) { grid.getStore().remove(sm.selections.items[error_items]); },
+                                                    success: function(resp,opt) { 
+                                                        grid.getStore().remove(sm.selections.items[error_items]);
+                                                        store.load({params:{start:0 , limit: ps, query_id: '<% $c->stash->{query_id} %>' }});
+                                                    },
                                                     failure: function(resp,opt) { error_items++; Ext.Msg.alert(_('Error'), _('Could not delete the message')); }
                                                 });
                                             }
