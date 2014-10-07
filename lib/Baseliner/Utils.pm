@@ -91,6 +91,7 @@ zip_tree
     _ixhash
     _package_is_loaded
     _regex
+    _get_dotted_keys
 )],
 other => [qw(
     _load_yaml_from_comment
@@ -1696,6 +1697,50 @@ sub async_request {
     $headers{'run-token'} = $run_token;
     Baseliner->app->session->{$run_token} = 1;
     $s->write_request( $request->method, "$uri", %headers, $request->content );
+}
+
+=head2 _get_dotted_keys
+
+Identify keys with '.' in a structure recursively
+
+Use:
+    _get_dotted_keys( $struct, '$struct' );
+
+Returns ARRAY:
+
+    - key: Eliminar .gitkeep
+      parent: $stash->{job}->{service_levels}->{PRE}
+    - key: Entorno_ultima_actuacion.X
+      parent: $stash
+
+In your code after that you can remove those keys
+
+    my @keys = _get_dotted_keys( $stash, '$stash');
+
+    for my $key ( @keys ) {
+        my $parent = eval($key->{parent});
+        delete $parent->{$key->{key}};
+    }
+
+=cut
+
+sub _get_dotted_keys {
+    my $var = shift;
+    my $parent = shift;
+    my @keys;
+
+    for my $key ( keys %$var ) {
+        if ( $key && $key =~ /\./ ) {  
+            push @keys, { parent => $parent, key => $key};
+        };
+        my $ref = ref $var->{$key};
+        if ( $ref && ($ref eq 'HASH' || $ref eq 'HASHREF' || $ref =~ /Baseliner/) ) {
+            my @new_keys = _get_dotted_keys( $var->{$key}, $parent."->{".$key."}" );
+            push @keys, @new_keys if @new_keys;
+        }
+    }
+
+    return @keys;
 }
 
 =head2 package_and_instance
