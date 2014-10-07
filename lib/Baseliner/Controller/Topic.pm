@@ -1170,9 +1170,11 @@ sub filters_list : Local {
     my %tmp;
 
     if ( !$is_root ) {
-        map { $tmp{$_->{id_status_from}} = 'id' } 
+        map { $tmp{$_->{id_status_from}} = $_->{id_category} } 
                     Baseliner->model('Topic')->user_workflow( $c->username );        
     };
+
+    my %id_categories_hash = map { $_ => '1' } @id_categories;
 
     if( $rs_status->count > 1 ){
         while( my $r = $rs_status->next ) {
@@ -1181,7 +1183,9 @@ sub filters_list : Local {
             if ( $is_root ) {
                 $checked = \1;
             } else {
-                $checked = exists $tmp{$r->{id_status}} && (substr ($r->{type}, 0 , 1) ne 'F')? \1: \0;
+                #$checked = exists $tmp{$r->{id_status}} && (substr ($r->{type}, 0 , 1) ne 'F')? \1: \0;
+                $checked = exists $tmp{$r->{id_status}} && $id_categories_hash{$tmp{$r->{id_status}}} && (substr ($r->{type}, 0 , 1) ne 'F')? \1: \0;
+
             }
             push @statuses,
                 {

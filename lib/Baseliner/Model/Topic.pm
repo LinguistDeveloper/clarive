@@ -411,9 +411,9 @@ sub topics_for_user {
             }
         }            
     }
-    
+    my @categories;
     if($p->{categories}){
-        my @categories = _array( $p->{categories} );
+        @categories = _array( $p->{categories} );
         my @user_categories = map {
             $_->{id};
         } Baseliner->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
@@ -435,7 +435,7 @@ sub topics_for_user {
     }else{
         # all categories, but limited by user permissions
         #   XXX consider removing this check on root and other special permissions
-        my @categories  = map { $_->{id}} Baseliner::Model::Topic->get_categories_permissions( username => $username, type => 'view' );
+        @categories  = map { $_->{id}} Baseliner::Model::Topic->get_categories_permissions( username => $username, type => 'view' );
         $where->{'category.id'} = mdb->in(@categories);
     }
     
@@ -459,8 +459,14 @@ sub topics_for_user {
             my %tmp;
             map { $tmp{ $_->{id_status_from} } = $_->{id_category} if ($_->{id_status_from}); } 
                 $self->user_workflow( $username );
-            my @status_ids = keys %tmp;
-            $where->{'category_status.id'} = mdb->in(@status_ids) if @status_ids > 0 && scalar(_array($p->{statuses})) > 0;
+             my @workflow_revert;
+             map { push @workflow_revert, [$tmp{$_}, $_] } keys %tmp;
+             my %category_hash = map { $_ => '1' } @categories;
+             my @status_ids;
+             foreach my $actual (@workflow_revert){
+                 push @status_ids, @$actual[1] if $category_hash{@$actual[0]};
+             }
+             $where->{'category_status.id'} = mdb->in(@status_ids) if @status_ids > 0;
             # map { $tmp{$_->{id_status_from}} = $_->{id_category} && $tmp{$_->{id_status_to} = $_->{id_category}} } 
             # my @workflow_filter;
             # for my $status (keys %tmp){
