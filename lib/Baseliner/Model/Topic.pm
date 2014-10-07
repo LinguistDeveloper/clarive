@@ -3107,11 +3107,30 @@ sub upload {
             );
             
             my $versionid = 1;
-            # increase file version?  if same md5 found...
-            #if(mdb->grid->files->find_one({ md5=>$
-            #   $versionid = $file[0] + 1;
-            #}
-                
+            #Comprobamos que non existe un fichero con el mismo md5 y el mismo título $filename
+            my $body = scalar $f->slurp;
+            my $md5 = _md5 ($f);
+
+            my @files_mid = map{$_->{to_mid}}mdb->master_rel->find({ from_mid=>$topic_mid, rel_type=> 'topic_asset'})->all;
+            my $last_copy;
+            for my $file_mid (@files_mid){
+                my $asset = ci->asset->find_one({mid=>$file_mid});
+                my $md5_saved = mdb->grid->files->find_one({ _id=>mdb->oid($asset->{id_data})})->{md5};
+                if (($asset->{name} eq $filename) && ($md5_saved eq $md5)){
+                    if (!ref $last_copy){
+                        $last_copy = $asset;
+                    }elsif( $last_copy->{versionid} < $asset->{versionid} ){
+                            $last_copy = $asset;
+                            #La version mas nueva es la que ya existe o son iguales asique nos quedamos con la que tenemos
+                    }
+                }   
+            }
+
+            #Ahora comprobaamos la version que ponemos al fichero;
+            if (ref $last_copy){
+                $versionid = $last_copy->{versionid} + 1;
+            }
+
             my $asset = ci->asset->new(
                 name=>$filename,
                 versionid=>$versionid,
