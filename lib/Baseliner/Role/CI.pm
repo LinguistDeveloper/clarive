@@ -139,7 +139,7 @@ sub update {
     my $changed = +{ map { $_ => $data{$_} } grep { 
         ( defined $self->{$_} && !defined $data{$_} ) 
         || ( !defined $self->{$_} && defined $data{$_} ) 
-        || !Data::Compare::Compare( $self->{$_}, $data{$_}+0 )
+        || !Data::Compare::Compare( $self->{$_}, $data{$_} )
         } keys %data } ;
         
     # merge and recreate object
