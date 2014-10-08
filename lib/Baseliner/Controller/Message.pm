@@ -95,6 +95,23 @@ sub delete : Local {
     $c->forward('View::JSON');	
 }
 
+sub delete_all : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    eval {
+        _log _dump $p->{username};
+        $c->model('Messaging')->delete_all( username=>$p->{username});
+    };
+    if( $@ ) {
+        warn $@;
+        $c->stash->{json} = { success => \0, msg => _loc("Error deleting the message ").$@  };
+    } else { 
+        $c->stash->{json} = { success => \1, msg => _loc("All Messages deleted" ) };
+    }
+    $c->forward('View::JSON');  
+}
+
+
 sub inbox : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;

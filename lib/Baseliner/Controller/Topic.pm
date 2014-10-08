@@ -699,7 +699,7 @@ sub comment : Local {
             _throw( _loc( 'Missing id' ) ) unless defined $topic_mid;
             my $text = $p->{text};
             _log $text;
-
+            my $msg = _loc('Comment added');
             my $topic_row = mdb->topic->find_one({ mid=>"$topic_mid" });
             _fail( _loc("Topic #%1 not found. Deleted?", $topic_mid ) ) unless $topic_row;
             
@@ -760,6 +760,7 @@ sub comment : Local {
                 my $post = ci->new( $id_com );
                 $post->put_data( $text );               
                 _fail( _loc("This comment does not exist anymore") ) unless $post;
+                $msg = _loc("Comment modified");
                 $post->update(content_type=>$content_type );
             }
 
@@ -767,7 +768,7 @@ sub comment : Local {
             mdb->topic->update({ mid=>"$topic_mid" },{ '$set'=>{ modified_on=>mdb->ts } });
             cache->remove( qr/:$topic_mid:/ ) if length $topic_mid;
             $c->stash->{json} = {
-                msg     => _loc('Comment added'),
+                msg     => $msg,
                 id      => $id_com,
                 success => \1
             };
@@ -1170,9 +1171,11 @@ sub filters_list : Local {
     my %tmp;
 
     if ( !$is_root ) {
-        map { $tmp{$_->{id_status_from}} = 'id' } 
+        map { $tmp{$_->{id_status_from}} = $_->{id_category} } 
                     Baseliner->model('Topic')->user_workflow( $c->username );        
     };
+
+    my %id_categories_hash = map { $_ => '1' } @id_categories;
 
     if( $rs_status->count > 1 ){
         while( my $r = $rs_status->next ) {
@@ -1181,7 +1184,9 @@ sub filters_list : Local {
             if ( $is_root ) {
                 $checked = \1;
             } else {
-                $checked = exists $tmp{$r->{id_status}} && (substr ($r->{type}, 0 , 1) ne 'F')? \1: \0;
+                #$checked = exists $tmp{$r->{id_status}} && (substr ($r->{type}, 0 , 1) ne 'F')? \1: \0;
+                $checked = exists $tmp{$r->{id_status}} && $id_categories_hash{$tmp{$r->{id_status}}} && (substr ($r->{type}, 0 , 1) ne 'F')? \1: \0;
+
             }
             push @statuses,
                 {

@@ -175,6 +175,30 @@ sub create {
     return $msg;
 }
 
+sub delete_all {
+    my ( $self, %p ) = @_;
+    _log "En el delete all del model";
+    _log $p{username};
+    my @messages;
+    my %q;
+    $q{where}->{'queue.username'} = $p{username};
+    my ($queue, $total_count) = Baseliner->model('Messaging')->transform(%q);
+    my @q;
+
+    foreach my $r (_array $queue){
+        
+        if($r->{username} eq $p{username}){
+            push @q, $r;
+        }
+    }
+    foreach my $r (@q){
+        my $message = { %{ delete $r->{msg} }, %$r, swreaded => $r->{swreaded}  };
+        push @messages, $message;
+    }
+    my @mm = map { +{ id_message=>$$_{_id}, id_queue=>$$_{id} } } @messages;
+    $self->delete(%$_) for @mm;
+}
+
 sub delete {
     my ( $self, %p ) = @_;
     my $msg = mdb->message->update(

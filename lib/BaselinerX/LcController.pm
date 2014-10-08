@@ -439,7 +439,6 @@ sub branches : Local {
     my $project = $p->{project} or _throw 'missing project';
     my $id_project = $p->{id_project} or _throw 'missing project id';
     my $id_repo = $p->{id_repo} or _throw 'missing repo id';
-
     my $config = config_get 'config.lc';
     # provider-by-provider:
     # get all the changes for this project + baseline
@@ -452,7 +451,7 @@ sub branches : Local {
 
             my @changes = $repo->can('list_contents') 
                 ?  $repo->list_contents( request=>$p )
-                : $repo->list_branches( project=>$project );
+                : $repo->list_branches( project=>$project, repo_mid=>$id_repo );
             _debug _loc "---- provider ".$repo->name." has %1 changesets", scalar @changes;
             push @cs, @changes;
             # loop through the branch objects 
