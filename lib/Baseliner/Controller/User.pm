@@ -297,7 +297,8 @@ sub update : Local {
                 if ($old_username ne $p->{username}){
                     my $user_ci = ci->user->find_one({ username => $p->{username}});
                     if ($user_ci) {
-                        $c->stash->{json} = { msg=>_loc('User name already exists, introduce another user name'), failure=>\1 };    
+                        $c->stash->{json} = { msg=>_loc('User name already exists, introduce another user name'), failure=>\1 };
+                        _fail _loc("User name already exists, introduce another user name");  
                     }else{
                         $user_ci = ci->user->find_one({ username => $old_username});
                         my $user_mid = $user_ci->{mid};
