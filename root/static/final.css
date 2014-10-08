@@ -349,3 +349,32 @@
     height: 160px;
     overflow: auto;
 }
+
+.nav > li > span {
+  display: block;
+}
+
+.nav > li > span:hover {
+  text-decoration: none;
+  background-color: #ccc;
+  font-weight: bold;
+  color: #fff;
+}
+
+.nav-list > li > span,
+.nav-list .nav-header {
+  margin-right: -15px;
+  margin-left: -15px;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.nav-list > li > span {
+  padding: 3px 15px;
+}
+
+.nav-list > .active > span,
+.nav-list > .active > span:hover {
+  color: #ffffff;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
+  background-color: #0088cc;
+}
