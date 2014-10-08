@@ -305,6 +305,7 @@ Compress::Zlib
 Config::General
 Config::INI::Writer
 Config::JFDI
+Config::Tiny
 Convert::EBCDIC
 Crypt::Blowfish::Mod
 Crypt::OpenSSL::RSA

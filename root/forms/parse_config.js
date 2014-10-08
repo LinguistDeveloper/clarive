@@ -7,6 +7,7 @@
           ['yaml',_('YAML')], 
           ['general',_('General')], 
           ['json',_('JSON')], 
+          ['ini',_('Ini')], 
           ['xml',_('XML')]
         ]
     });

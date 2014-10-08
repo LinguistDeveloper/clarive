@@ -621,11 +621,16 @@ sub run_parse_config {
             my $f = Config::General->new(-String=>$body, %$opts );
             +{ $f->getall };
         }
+        : $type eq 'ini' ? do {
+            require Config::Tiny;
+            my ($ini) = Config::Tiny->read_string( $body );
+            return +{ %$ini } // {};
+        }
         : $type eq 'xml' ? do {
             require XML::Simple;
             my $xml = XML::Simple::XMLin( "$body", KeepRoot=>1, %$opts ); 
             +{ %$xml }; # convert internal xml to hash
-        } : +{};
+        } : _fail(_loc('Unknown config file type: %1', $type));
     } catch {
         my $err = shift;
         _fail _loc('Error parsing config file `%1` (type %2, encoding %3): %4', $config_file, $type, $enc, $err ) ;
