@@ -1995,10 +1995,6 @@ Baseliner.comments_for_topic = function(args) {
                     <small><img style="margin: 0px 5px 2px 0px" width=16 src="/user/avatar/[%= created_by %]/image.png" /></a>
                     <b>[%= created_by %]</b>, [%= created_on %]
 
-[% if ( can_edit ) { %]
-
-                    | <a href="javascript:Baseliner.Topic.comment_edit( [%= topic_mid %], [%= id %])">[%= _("edit") %]</a>
-[% } %]
 [% if ( can_delete ) { %]
                     | <a href="javascript:Baseliner.Topic.comment_delete([%= topic_mid %], [%= id %], '[%= id_div_com %]')">[%= _("delete") %]</a>
 
