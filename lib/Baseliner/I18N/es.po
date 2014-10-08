@@ -5753,10 +5753,10 @@ msgid "Template Var"
 msgstr "Variables de la plantilla"
 
 msgid "File Encoding"
-msgstr "Codificación de ficheros"
+msgstr "Encoding del Fichero"
 
 msgid "Content Encoding"
-msgstr "Codificación de contenido"
+msgstr "Encoding del Contenido"
 
 msgid "CI Class"
 msgstr "Clase CI"
