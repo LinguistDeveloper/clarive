@@ -115,6 +115,7 @@ register 'service.fileman.rmtree' => {
 
 register 'service.fileman.parse_config' => {
     name => 'Parse a Config File',
+    form => '/forms/parse_config.js',
     icon => '/static/images/icons/drive_go.png',
     job_service  => 1,
     handler => \&run_parse_config,
@@ -592,8 +593,10 @@ sub run_parse_config {
     my $log   = $job->logger;
     my $stash = $c->stash;
     my $config_file = $config->{config_file};
-    my $root_key    = $config->{root_key};
     my $fail_if_not_found  = $config->{fail_if_not_found};
+    my $type = $config->{type} || 'yaml';
+    my $opts = $config->{opts} || {};
+    my $enc = $config->{encoding} || 'utf8';
     
     if( !-e $config_file ) {
         my $msg = _loc( "Config file not found in '%1'", $config_file );
@@ -604,12 +607,29 @@ sub run_parse_config {
         }
     }
     
-    my $body = _file($config_file)->slurp;
+    open my $ff, '<:'.$enc , "$config_file" 
+        or _fail( _loc('Error opening config file: %1: %2', $config_file, $!) );
+    my $body = do { local $/; <$ff> }; # slurp file
     if( !length $body ) {
         _fail _loc("Config file is empty: '%1'", $config_file);
         return;
     }
-    my $vars = _load( $body );
+    my $vars = try { 
+          $type eq 'yaml' ? _load( $body ) 
+        : $type eq 'json' ? _decode_json( $body ) 
+        : $type eq 'general' ? do { require Config::General; 
+            my $f = Config::General->new(-String=>$body, %$opts );
+            +{ $f->getall };
+        }
+        : $type eq 'xml' ? do {
+            require XML::Simple;
+            my $xml = XML::Simple::XMLin( "$body", KeepRoot=>1, %$opts ); 
+            +{ %$xml }; # convert internal xml to hash
+        } : +{};
+    } catch {
+        my $err = shift;
+        _fail _loc('Error parsing config file `%1` (type %2, encoding %3): %4', $config_file, $type, $enc, $err ) ;
+    };
     return $vars;
 }
 
