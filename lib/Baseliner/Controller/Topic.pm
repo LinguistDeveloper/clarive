@@ -699,7 +699,7 @@ sub comment : Local {
             _throw( _loc( 'Missing id' ) ) unless defined $topic_mid;
             my $text = $p->{text};
             _log $text;
-
+            my $msg = _loc('Comment added');
             my $topic_row = mdb->topic->find_one({ mid=>"$topic_mid" });
             _fail( _loc("Topic #%1 not found. Deleted?", $topic_mid ) ) unless $topic_row;
             
@@ -758,16 +758,18 @@ sub comment : Local {
             } else {
                 #my $post = ci->find( $id_com );
                 my $post = ci->new( $id_com );
-                $post->put_data( $text );               
+                $post->save;
+                $post->put_data( $text );
                 _fail( _loc("This comment does not exist anymore") ) unless $post;
-                $post->update(content_type=>$content_type );
+                $msg = _loc("Comment modified");
+                #$post->update(content_type=>$content_type );
             }
 
             # modified_on 
             mdb->topic->update({ mid=>"$topic_mid" },{ '$set'=>{ modified_on=>mdb->ts } });
             cache->remove( qr/:$topic_mid:/ ) if length $topic_mid;
             $c->stash->{json} = {
-                msg     => _loc('Comment added'),
+                msg     => $msg,
                 id      => $id_com,
                 success => \1
             };
