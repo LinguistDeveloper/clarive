@@ -758,10 +758,11 @@ sub comment : Local {
             } else {
                 #my $post = ci->find( $id_com );
                 my $post = ci->new( $id_com );
-                $post->put_data( $text );               
+                $post->save;
+                $post->put_data( $text );
                 _fail( _loc("This comment does not exist anymore") ) unless $post;
                 $msg = _loc("Comment modified");
-                $post->update(content_type=>$content_type );
+                #$post->update(content_type=>$content_type );
             }
 
             # modified_on 
