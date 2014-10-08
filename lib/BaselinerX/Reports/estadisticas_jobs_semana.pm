@@ -10,7 +10,7 @@ register 'config.reports.estadisticas_jobs_semana' => {
     ],
 };
 
-register 'report.jazztel.job_statistics_semana' => {
+register 'report.clarive.job_statistics_semana' => {
     name => 'Estadísticas de JOBS por Semana',
     data => { },
     form => '/reports/listado_jobs.js', 

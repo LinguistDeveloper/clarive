@@ -113,8 +113,11 @@ sub common_log {
         
         # save top level for this statement if higher
         my $loglevels = $self->log_levels;
-        my $top_service_level = $self->job->service_levels->{ $self->job->step }{ $self->current_service };
-        $self->job->service_levels->{ $self->job->step }{ $self->current_service } = $lev 
+        my $curr_service = $self->current_service;
+        $curr_service =~ s/\.//g;
+
+        my $top_service_level = $self->job->service_levels->{ $self->job->step }{ $curr_service };
+        $self->job->service_levels->{ $self->job->step }{ $curr_service } = $lev 
             if $loglevels->{$lev} > ( $top_service_level ? $loglevels->{$top_service_level} : 0 ); 
 
         # print out too

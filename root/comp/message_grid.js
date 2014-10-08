@@ -265,7 +265,10 @@ Ext.override(Ext.form.HtmlEditor, {
                                                 conn.request({
                                                     url: '/message/delete',
                                                     params: { id_message: sm.selections.items[x].data.id_message, id_queue: sm.selections.items[x].data.id},
-                                                    success: function(resp,opt) { grid.getStore().remove(sm.selections.items[error_items]); },
+                                                    success: function(resp,opt) { 
+                                                        grid.getStore().remove(sm.selections.items[error_items]);
+                                                        store.load({params:{start:0 , limit: ps, query_id: '<% $c->stash->{query_id} %>' }});
+                                                    },
                                                     failure: function(resp,opt) { error_items++; Ext.Msg.alert(_('Error'), _('Could not delete the message')); }
                                                 });
                                             }
@@ -277,6 +280,25 @@ Ext.override(Ext.form.HtmlEditor, {
                         }   
 
                     }                    
+                }),
+                new Ext.Toolbar.Button({
+                    text: _('Delete all'),
+                    icon:'/static/images/del.gif',
+                    cls: 'x-btn-text-icon',
+                    handler: function() {
+                        Ext.Msg.confirm(_('Confirmation'), _('Are you sure you want to delete all the inbox messages?'),
+                        function(btn){ 
+                            if(btn=='yes') {
+                                var conn = new Ext.data.Connection();
+                                conn.request({
+                                    url: '/message/delete_all',
+                                    params: { username: username},
+                                    success: function(resp,opt) { store.load({params:{start:0 , limit: ps, query_id: '<% $c->stash->{query_id} %>' }});},
+                                    failure: function(resp,opt) { Ext.Msg.alert(_('Error'), _('Could not delete all the inbox messages')); }
+                                });
+                            }
+                        } );
+                    }
                 }),
                 '->'
                 ]

@@ -95,7 +95,26 @@ sub error_trap {
         };
         $job->logger->error( _loc "Error trapped in rule: %1", $err );    
         $job->status('TRAPPED');
-        event_new 'event.rule.trap' => { username=>'internal', stash=>$stash, output=>$err } => sub {};
+
+        ## Avoid error if . in stash keys
+        my @keys = _get_dotted_keys( $stash, '$stash');
+
+        if ( @keys ) {
+            my @complete_keys;
+            for my $key ( @keys ) {
+                push @complete_keys, $key->{parent}.'->{'.$key->{key}.'}';
+                my $parent = eval($key->{parent});
+                delete $parent->{$key->{key}};
+            }
+            _debug("Stash contains variables with '.' removed to avoid errors:\n\n". join(", ", @complete_keys));
+        };
+
+        event_new 'event.rule.trap' => { username=>'internal', stash=>$stash, output=>$err } => sub {} => sub{
+            # catch and ignore
+            my $err = shift;
+            _warn( _loc('Could not store event for trapped error: %1', $err ) );
+        }; 
+
         $job->save;
         my $last_status;
         my $timeout = $trap_timeout;
@@ -186,7 +205,8 @@ sub build_tree {
         if( $rule->{rule_type} eq 'chain' ) {
             return $self->init_job_tasks;
         }
-        _fail _loc 'Rule tree is empty for rule %1', $id_rule;
+        _warn _loc 'Rule tree is empty for rule %1', $id_rule;
+        return ();
     }
 }
 
@@ -909,7 +929,7 @@ register 'statement.fail' => {
     dsl=>sub{
         my ($self, $n, %p ) = @_;
         sprintf(q{
-            Util->_fail( qq{%s} );
+            Util->_fail( q{%s} );
         }, $n->{msg}, $self->dsl_build( $n->{children}, %p ) );
     }
 };

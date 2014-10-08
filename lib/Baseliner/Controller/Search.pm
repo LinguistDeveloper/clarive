@@ -89,6 +89,7 @@ sub order_matches {
         my $idexact  = $$doc{mid} eq $query;
         my $idmatch  = length join '',( "$$doc{mid}" =~ /($query)/gsi );
         my $tmatch  = length join '', ( "$$doc{title}" =~ /($query)/gsi );
+        $$doc{info} = substr($$doc{info},0,255).'...' if length($$doc{info}) > 255;
         for my $doc_txt ( $$doc{info}, $$doc{text} ) {
             my $kfrag = 0;
             while ( $doc_txt =~ /(?<bef>.{0,20})?(?<mat>$query_clean)(?<aft>.{0,20})?/gsi ) {

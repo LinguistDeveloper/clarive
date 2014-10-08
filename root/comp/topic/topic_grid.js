@@ -1285,6 +1285,35 @@
             
             //console.log(col);
             columns.push( col );
+                        if (r.ci_columns) {
+                if (typeof r.ci_columns === 'string'){
+                    var ci_col = {
+                        //dataIndex: r.category ? r.ci_columns + '_' + r.category : r.ci_columns,
+                        header: r.category + ': ' + r.ci_columns,
+                        dataIndex: r.category ? r.id + '_' + r.category + '_' + r.ci_columns : r.category + '_' + r.ci_columns,
+                        //dataIndex: r.id,
+                        hidden: false, width: 80, sortable: true,
+                        renderer: render_default
+                    };
+                    //console.dir( ci_col );
+                    columns.push( ci_col );
+                }
+                else{
+                    for(i=0;i<r.ci_columns.length;i++){
+                        var ci_col = {
+                            //dataIndex: r.category ? r.ci_columns + '_' + r.category : r.ci_columns,
+                            header: r.category + ': ' + r.ci_columns[i],
+                            dataIndex: r.category ? r.id + '_' + r.category + '_' + r.ci_columns[i] : r.category + '_' + r.ci_columns[i],
+                            //dataIndex: r.id,
+                            hidden: false, width: 80, sortable: true,
+                            renderer: render_default
+                        };
+                        //console.dir( ci_col );
+                        columns.push( ci_col );
+                   }
+                }
+
+            }
         });
         //console.dir(columns);
     } else {

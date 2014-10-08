@@ -33,7 +33,7 @@ register 'config.comm.email' => {
         { id=>'domain', name=>'Email domain', default=>'exchange.local' },
         { id=>'max_attempts', name=>'Max attempts', default=>10 },
         { id=>'baseliner_url', name=>'Base URL to access baseliner', default=>'http://localhost:3000' },
-        { id=>'default_template', name=>'Default template for emails', default=>'' },
+        { id=>'default_template', name=>'Default template for emails', default=>'/email/generic.html' },
         { id=>'smtp_auth', name=>'SMTP needs authentication', default=>0 },
         { id=>'smtp_user', name=>'SMTP server user', default=>'' },
         { id=>'smtp_password', name=>'SMTP server password', default=>''}

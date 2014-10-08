@@ -283,6 +283,40 @@ Ext.onReady(function(){
         tabpanel.header.setVisibilityMode(Ext.Element.DISPLAY);
         tabpanel.header.hide();
     }    
+
+    // VERSION checker
+    //
+    Baseliner.version = -1;
+    Baseliner.version_refresh = 60000;
+    Baseliner.version_check = function(repeat){
+        Baseliner.ajax_json('/static/version.json',{ _catch_conn_errors: true },function(res){
+            if(!res) res ={};
+            if( Baseliner.version == -1 ) {
+                Baseliner.version = res.version;
+                if(repeat) setTimeout( function(){ Baseliner.version_check(true) }, Baseliner.version_refresh);
+            } else if( Baseliner.version != res.version ) {
+                Baseliner.confirm(_('Your interface version is not up-to-date (%1 != %2). Do you want to refresh now?', 
+                    Baseliner.version, res.version), function(){
+                        window.location.href = window.location.href; 
+                    if(repeat) setTimeout( function(){ Baseliner.version_check(true) }, Baseliner.version_refresh * 2 );
+                },function(){
+                    Baseliner.message( _('Please, refresh the page as soon as possible'),null,{ image:'/static/images/warnmsg.png' } );
+                    if(repeat) setTimeout( function(){ Baseliner.version_check(true) }, Baseliner.version_refresh * 2 );
+                });
+            } else {
+                if(repeat) setTimeout( function(){ Baseliner.version_check(true) }, Baseliner.version_refresh );
+            }
+        },function(){
+            if(repeat) setTimeout( function(){ Baseliner.version_check(true) }, Baseliner.version_refresh * 2 );
+        });
+    };
+    
+    if( Baseliner.version_started == undefined ) {
+        setTimeout( function(){ Baseliner.version_check(true) }, Baseliner.version_refresh );
+        Baseliner.version_started = true;
+    }
+    
+    
     // global key captures
     /* 
     window.history.forward(1);

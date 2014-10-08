@@ -27,7 +27,7 @@ sub begin : Private {  #TODO control auth here
      } elsif( ! length $c->username ) {
          $c->stash->{auth_basic} = 1;
      } 
-     _debug "GIT USER=" . $c->username;
+     _debug "GIT USER=" . ( $c->username // '');
 }
 
 sub git : Path('/git/') {
@@ -341,7 +341,7 @@ sub event_this {
     try {
         if( $sha ) {  
             my $g = Girl::Repo->new( path=>"$fullpath" );
-            my $repo_row = ci->GitRepository->find_one({ repo_dir=>$fullpath }); 
+            my $repo_row = ci->GitRepository->find_one({ repo_dir=>"$fullpath" }); 
             my $repo_id;
             if ($repo_row) {
                 $repo_id = $repo_row->{mid};

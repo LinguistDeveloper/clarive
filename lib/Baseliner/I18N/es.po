@@ -387,6 +387,15 @@ msgstr "Ver Fichero de Log"
 msgid "Inbox"
 msgstr "Buzón"
 
+msgid "Delete all"
+msgstr "Borrar todos"
+
+msgid "Are you sure you want to delete all the inbox messages?"
+msgstr "¿Está seguro de que quiere borrar todos los mensajes del buzón?"
+
+msgid "Could not delete all the inbox messages"
+msgstr "No se han podido borrar todos los mensajes del buzón"
+
 msgid "User not found: %1"
 msgstr "Usuario no encontrado: %1"
 
@@ -7503,6 +7512,54 @@ msgstr "Proceso Padre"
 
 msgid "Start Script"
 msgstr "Iniciar Script"
+
+msgid "No data available in table"
+msgstr "No hay data disponible en tabla"
+
+msgid "Showing _START_ to _END_ of _TOTAL_ entries"
+msgstr "Mostrando _START_ a _END_ de _TOTAL_ filas"
+
+msgid "Showing 0 to 0 of 0 entries"
+msgstr "Mostrando 0 filas"
+
+msgid "(filtered from _MAX_ total entries)"
+msgstr "(filtrado de _MAX_ filas)"
+
+msgid "Show _MENU_ entries"
+msgstr "Mostrar _MENU_ filas"
+
+msgid "Processing..."
+msgstr "Processing..."
+
+msgid "Search:"
+msgstr "Buscar: "
+
+msgid "No matching records found"
+msgstr "No se han encontrado filas"
+
+msgid "First"
+msgstr "Primero"
+
+msgid "Last"
+msgstr "Último"
+
+msgid ": activate to sort column ascending"
+msgstr ": activar ordenación de columna ascendiente"
+
+msgid ": activate to sort column descending"
+msgstr ": activar ordenación de columna descendiente"
+
+msgid "prev"
+msgstr "ant"
+
+msgid "next"
+msgstr "sig"
+
+msgid "Your interface version is not up-to-date (%1 != %2). Do you want to refresh now?"
+msgstr "La versión de la interfaz está desactualizada (%1 != %2). Quieres refrescar ahora?"
+
+msgid "Please, refresh the page as soon as possible"
+msgstr "Por favor, refresque la página cuanto antes"
 
 ########### GIT
 

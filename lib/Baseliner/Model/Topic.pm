@@ -129,7 +129,7 @@ register 'event.topic.modify_field' => {
         else {
             #$txt = '';
             require Algorithm::Diff::XS;
-            my $brk = sub { my $x = ""; $x=_strip_html(shift); if($x eq undef) { $x = ""; }; [ $x =~ m{([\w|\.|\-]+)}gs ] };
+            my $brk = sub { my $x = ""; $x=_strip_html(shift); $x//=''; [ $x =~ m{([\w|\.|\-]+)}gs ] };
             my $aa = $brk->($vars[2]);
             my $bb = $brk->($vars[3]);
             my $d =Algorithm::Diff::XS::sdiff( $aa, $bb );
@@ -411,9 +411,9 @@ sub topics_for_user {
             }
         }            
     }
-    
+    my @categories;
     if($p->{categories}){
-        my @categories = _array( $p->{categories} );
+        @categories = _array( $p->{categories} );
         my @user_categories = map {
             $_->{id};
         } Baseliner->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
@@ -435,7 +435,7 @@ sub topics_for_user {
     }else{
         # all categories, but limited by user permissions
         #   XXX consider removing this check on root and other special permissions
-        my @categories  = map { $_->{id}} Baseliner::Model::Topic->get_categories_permissions( username => $username, type => 'view' );
+        @categories  = map { $_->{id}} Baseliner::Model::Topic->get_categories_permissions( username => $username, type => 'view' );
         $where->{'category.id'} = mdb->in(@categories);
     }
     
@@ -459,8 +459,14 @@ sub topics_for_user {
             my %tmp;
             map { $tmp{ $_->{id_status_from} } = $_->{id_category} if ($_->{id_status_from}); } 
                 $self->user_workflow( $username );
-            my @status_ids = keys %tmp;
-            $where->{'category_status.id'} = mdb->in(@status_ids) if @status_ids > 0 && scalar(_array($p->{statuses})) > 0;
+             my @workflow_revert;
+             map { push @workflow_revert, [$tmp{$_}, $_] } keys %tmp;
+             my %category_hash = map { $_ => '1' } @categories;
+             my @status_ids;
+             foreach my $actual (@workflow_revert){
+                 push @status_ids, @$actual[1] if $category_hash{@$actual[0]};
+             }
+             $where->{'category_status.id'} = mdb->in(@status_ids) if @status_ids > 0;
             # map { $tmp{$_->{id_status_from}} = $_->{id_category} && $tmp{$_->{id_status_to} = $_->{id_category}} } 
             # my @workflow_filter;
             # for my $status (keys %tmp){
@@ -3107,11 +3113,30 @@ sub upload {
             );
             
             my $versionid = 1;
-            # increase file version?  if same md5 found...
-            #if(mdb->grid->files->find_one({ md5=>$
-            #   $versionid = $file[0] + 1;
-            #}
-                
+            #Comprobamos que non existe un fichero con el mismo md5 y el mismo título $filename
+            my $body = scalar $f->slurp;
+            my $md5 = _md5 ($f);
+
+            my @files_mid = map{$_->{to_mid}}mdb->master_rel->find({ from_mid=>$topic_mid, rel_type=> 'topic_asset'})->all;
+            my $last_copy;
+            for my $file_mid (@files_mid){
+                my $asset = ci->asset->find_one({mid=>$file_mid});
+                my $md5_saved = mdb->grid->files->find_one({ _id=>mdb->oid($asset->{id_data})})->{md5};
+                if (($asset->{name} eq $filename) && ($md5_saved eq $md5)){
+                    if (!ref $last_copy){
+                        $last_copy = $asset;
+                    }elsif( $last_copy->{versionid} < $asset->{versionid} ){
+                            $last_copy = $asset;
+                            #La version mas nueva es la que ya existe o son iguales asique nos quedamos con la que tenemos
+                    }
+                }   
+            }
+
+            #Ahora comprobaamos la version que ponemos al fichero;
+            if (ref $last_copy){
+                $versionid = $last_copy->{versionid} + 1;
+            }
+
             my $asset = ci->asset->new(
                 name=>$filename,
                 versionid=>$versionid,
