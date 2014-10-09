@@ -1055,6 +1055,10 @@ if( Prefs.routing ) {
                 if( Ext.isIE7 || Ext.isIE8 ) Ext.fly( document.body ).unmask();
                 if( !success ) {
                     if( params._ignore_conn_errors ) return;
+                    if( params._catch_conn_errors  ) {
+                        if(Ext.isFunction(scope)) scope( comp, foo );
+                        return;
+                    }
                     var msg;
                     if( xhr.status==401 ) {
                         var comp = Baseliner.eval_response( xhr.responseText, params, url );
@@ -1065,16 +1069,11 @@ if( Prefs.routing ) {
                     } else if( xhr.status==404 ) {
                         msg = _("Not found: %1", url );
                     } else if( xhr.status==0 || xhr.status==502 ) {
-                        if( params._catch_conn_errors  ) {
-                            if(Ext.isFunction(scope)) scope( comp, foo );
-                            return;
-                        } else {
-                            var yn = confirm( _('Server not available. Retry?') );  // an alert does not ask for images from the server
-                            if( yn ) {
-                                the_request();
-                            }
-                            return;
+                        var yn = confirm( _('Server not available. Retry?') );  // an alert does not ask for images from the server
+                        if( yn ) {
+                            the_request();
                         }
+                        return;
                     } else {
                         msg = xhr.responseText;
                     }
