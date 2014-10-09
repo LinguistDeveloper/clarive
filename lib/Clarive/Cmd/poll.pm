@@ -80,20 +80,21 @@ sub run {
     my $pid_filter = $self->pid_filter;
     $pid_filter = qr/$pid_filter/i if $pid_filter;
     
-    for my $pidfile ( glob(file($self->pid_dir,'*.pid')), glob(file($self->app->base,'data','mongo','*.lock')) ) { 
-        next if $pid_filter && $pidfile !~ $pid_filter;
-        sayts "pid_file=$pidfile";
-        my $pid = $self->_find_pid( $pidfile );
-        next if( length $self->opts->{pid} && $self->opts->{pid} != $pid );
-        sayts "checking pid exists=$pid";
-        if( ! pexists($pid) ) {
-            errts "KO: pid $pid not found.";
-            $rc = $self->error_rc;
-        } else {
-            sayts "OK: pid exists=$pid";
+    if ( !$opts->{remote} ) {
+        for my $pidfile ( glob(file($self->pid_dir,'*.pid')), glob(file($self->app->base,'data','mongo','*.lock')) ) { 
+            next if $pid_filter && $pidfile !~ $pid_filter; 
+            sayts "pid_file=$pidfile";
+            my $pid = $self->_find_pid( $pidfile );
+            sayts "checking pid exists=$pid";
+            if( ! pexists($pid) ) {
+                errts "KO: pid $pid not found.";
+                $rc = $self->error_rc;
+            } else {
+                sayts "OK: pid exists=$pid";
+            }
         }
     }
-
+    
     if( $self->web ) {
         sayts "connecting to Clarive Web Server...";
         $rc += $self->call_web( %opts, url=>$self->url_web );
