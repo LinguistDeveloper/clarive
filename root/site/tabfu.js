@@ -817,8 +817,8 @@ if( Prefs.routing ) {
     Baseliner.add_tabcomp = function( comp_url, ptitle, params ){
         if( params == undefined ) params = {};
         Baseliner.ajaxEval( comp_url, params, function(comp) {
-            var unescape_title = unescape(comp.tab_title || ptitle);
-            var unescape_ptitle = unescape(ptitle);
+            var unescape_title = comp.tab_title || ptitle ? unescape(comp.tab_title || ptitle):null;
+            var unescape_ptitle = ptitle ? unescape(ptitle):null;
             var id = Baseliner.addNewTabItem( comp, unescape_ptitle, params );
             Baseliner.tabInfo[id] = { url: comp_url, title: unescape_title, params: params, type: 'comp' };
             try { 
