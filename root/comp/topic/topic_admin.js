@@ -1135,31 +1135,31 @@
         }
     });
     
-    var btn_tools_category = new Ext.Toolbar.Button({
-        icon:'/static/images/icons/wrench.png',
-        cls: 'x-btn-text-icon',
-        disabled: false,
-        menu: [
-            { text: _('Import'), 
-                icon: '/static/images/icons/import.png',
-                handler: function(){
-                    category_import();
-                 }
-            },
-            { text: _('Export'), 
-                icon: '/static/images/icons/export.png',
-                handler: function(){ 
-                    var sm = grid_categories.getSelectionModel();
-                    if (sm.hasSelection()) {
-                        var sel = sm.getSelected();
-                        category_export(sel);
-                    } else {
-                        Baseliner.message( _('ERROR'), _('Select at least one row'));    
-                    };          
-                 }
-            }
-        ]
-    });     
+    // var btn_tools_category = new Ext.Toolbar.Button({
+    //     icon:'/static/images/icons/wrench.png',
+    //     cls: 'x-btn-text-icon',
+    //     disabled: false,
+    //     menu: [
+    //         { text: _('Import'), 
+    //             icon: '/static/images/icons/import.png',
+    //             handler: function(){
+    //                 category_import();
+    //              }
+    //         },
+    //         { text: _('Export'), 
+    //             icon: '/static/images/icons/export.png',
+    //             handler: function(){ 
+    //                 var sm = grid_categories.getSelectionModel();
+    //                 if (sm.hasSelection()) {
+    //                     var sel = sm.getSelected();
+    //                     category_export(sel);
+    //                 } else {
+    //                     Baseliner.message( _('ERROR'), _('Select at least one row'));    
+    //                 };          
+    //              }
+    //         }
+    //     ]
+    // });     
     
     var check_categories_sm = new Ext.grid.CheckboxSelectionModel({
         singleSelect: false,
@@ -1204,8 +1204,8 @@
                 //btn_update_fields,
                 btn_edit_fields,
                 //btn_form_category,
-                btn_admin_category,
-                btn_tools_category
+                btn_admin_category
+                //btn_tools_category
         ]       
     }); 
     
