@@ -594,7 +594,27 @@ Baseliner.Topic.comment_edit = function(topic_mid, id_com, cb) {
                    if( ! res.failure ) { 
                        Baseliner.message(_('Success'), res.msg );
                        win_comment.close();
-                       if( Ext.isFunction(cb) ) cb( res.id_com );
+                       if( Ext.isFunction(cb)){
+                            cb( res.id_com );
+                       } else if(cb != null){
+                            var my_self = Ext.getCmp(cb);
+                            $( my_self.detail.body.dom ).load( '/topic/view', 
+                                { topic_mid: my_self.topic_mid, ii: my_self.ii, html: 1, 
+                                    categoryId: my_self.new_category_id, topic_child_data : true },
+                                function( responseText, textStatus, req ){
+                                    var success = textStatus == 'success';
+                                    if( !success ) {
+                                        my_self.detail.update( responseText );
+                                        var layout = my_self.getLayout().setActiveItem( my_self.detail );
+                                    } else {
+                                        my_self.detail.body.parent().setStyle('width', null);
+                                        my_self.detail.body.parent().parent().setStyle('width', null);
+                                        my_self.detail.body.setStyle('width', null);
+                                        my_self.detail.body.setStyle('height', null);
+                                    }
+                                });
+                            my_self.detail.body.setStyle('overflow', 'auto');                           
+                       }
                    } else {
                        Baseliner.error( _('Error'), res.msg );
                     }
@@ -1979,6 +1999,7 @@ Baseliner.comments_for_topic = function(args) {
         if( div ) {
             Ext.each( res, function(com){
                 com.id_div_com = Ext.id();
+                com.parent = args.parent_id;
                 html += function(){/*
                 <div style="margin-left: 20px" id="[%= id_div_com %]">  <!-- class 'well' -->
 
@@ -1995,6 +2016,10 @@ Baseliner.comments_for_topic = function(args) {
                     <small><img style="margin: 0px 5px 2px 0px" width=16 src="/user/avatar/[%= created_by %]/image.png" /></a>
                     <b>[%= created_by %]</b>, [%= created_on %]
 
+[% if ( can_edit ) { %]
+
+                    | <a href="javascript:Baseliner.Topic.comment_edit( [%= topic_mid %], [%= id %], '[%= parent %]')">[%= _("edit") %]</a>
+[% } %]
 [% if ( can_delete ) { %]
                     | <a href="javascript:Baseliner.Topic.comment_delete([%= topic_mid %], [%= id %], '[%= id_div_com %]')">[%= _("delete") %]</a>
 

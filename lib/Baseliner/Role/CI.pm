@@ -129,6 +129,22 @@ sub as_hash {
 
 # sets several attributes at once, like DBIC
 #   the ci must exist (self=ref)
+
+
+sub compare_data{
+    my (%p) = @_;
+    try{
+         return Data::Compare::Compare($p{data1}, $p{data2});
+    }catch{
+        try{
+            return Data::Compare::Compare($p{data1}, $p{data2}+0);
+        }catch{
+            return Data::Compare::Compare($p{data1}, $p{data2}+'');
+        }
+    };
+}
+
+
 sub update {
     my $self = shift;
     my %data = ref $_[0] eq 'HASH' ? %{ $_[0] } : @_; 
@@ -139,7 +155,7 @@ sub update {
     my $changed = +{ map { $_ => $data{$_} } grep { 
         ( defined $self->{$_} && !defined $data{$_} ) 
         || ( !defined $self->{$_} && defined $data{$_} ) 
-        || !Data::Compare::Compare( $self->{$_}, $data{$_} )
+        || compare_data(data1 => $self->{$_}, $data{$_})
         } keys %data } ;
         
     # merge and recreate object
