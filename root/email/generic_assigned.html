@@ -1,0 +1,34 @@
+<%args>
+	$title 
+	$username
+    $subject
+    $mid
+    $to
+    $name_category
+</%args>
+<head>
+    <meta http-equiv="Content-Language" content="en" />
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <title>Accion</title>
+	<& /email/style.css &>
+</head>
+
+<body>
+    <div class='box'>
+        <div class="error">
+            <h2>CLARIVE: <% $subject %></h2>
+        </div>
+    </div>
+    <div class='box'>
+        <div class="trace error">
+            <p>El t&oacute;pico <% $title %> de la categor&iacute;a <% $name_category %> ha sido modificado/creado por <% $username %></p>
+            <p>Pulse <a href="<% Baseliner->config->{web_url}."/tab/topic/view?topic_mid=".${mid} %>">aqu&iacute;</a> para revisarlo</p>
+        </div>
+    </div>
+% if ( $ENV{BASELINER_DEBUG} ) {
+    <div class='box'>
+            <p>Enviado a: <% join ",",@{$to->{users}} %></p>
+    </div>
+%}
+</body>
+
