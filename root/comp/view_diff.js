@@ -22,7 +22,7 @@
 							[% for(var i=0; i < changes.length; i++) { %]
 								[% temp_id = Ext.id(); code_section[changes[i].path] = temp_id; %]
 								<li>
-									<span style="padding: 5px; cursor: pointer; cursor: hand;" onclick="var elem = document.getElementById('[%= temp_id %]'); elem.scrollIntoView(true);">[%= changes[i].path %]</span>
+									<span style="padding: 5px; cursor: pointer; cursor: hand;" onclick="var elem = document.getElementById('[%= temp_id %]'); elem.scrollIntoView(true); Baseliner.scroll_top_into_view();">[%= changes[i].path %]</span>
 								</li>
 							[% } %]
 		       			</ul>
