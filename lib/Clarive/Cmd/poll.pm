@@ -80,7 +80,7 @@ sub run {
     my $pid_filter = $self->pid_filter;
     $pid_filter = qr/$pid_filter/i if $pid_filter;
     
-    if ( !$opts->{remote} ) {
+    if ( !$opts{remote} ) {
         for my $pidfile ( glob(file($self->pid_dir,'*.pid')), glob(file($self->app->base,'data','mongo','*.lock')) ) { 
             next if $pid_filter && $pidfile !~ $pid_filter; 
             sayts "pid_file=$pidfile";
@@ -94,7 +94,7 @@ sub run {
             }
         }
     }
-    
+
     if( $self->web ) {
         sayts "connecting to Clarive Web Server...";
         $rc += $self->call_web( %opts, url=>$self->url_web );
