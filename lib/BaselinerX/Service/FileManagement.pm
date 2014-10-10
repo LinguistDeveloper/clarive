@@ -463,12 +463,16 @@ sub run_ship {
             }
 
             # rollback ?
+            my $is_rollback_no_backup = 0;
             if( $job_mode eq 'rollback' && $rollback_mode =~ /^rollback/ ) {
                 if( -e $bkp_local ) {
                     $log->debug( _loc( "Rollback switch to local file '%1'", $bkp_local ) );
                     $local = $bkp_local;
                 } elsif( $rollback_mode eq 'rollback_force' ) {
                     _fail _loc 'Could not find rollback file %1', $bkp_local;
+                } else {
+                    $is_rollback_no_backup = 1;
+                    $log->debug( _loc( "Rollback switch to local file '%1', but no for the file '%2'", $bkp_local, $remote ) );
                 }
             }
             
@@ -490,10 +494,18 @@ sub run_ship {
                 }
                 $stash->{needs_rollback}{ $needs_rollback_key } = 1 if $needs_rollback_mode eq 'nb_before';
                 # send file remotely
-                $agent->put_file(
-                    local  => "$local",
-                    remote => "$remote",
-                );
+                if(!$is_rollback_no_backup){
+                    $agent->put_file(
+                        local  => "$local",
+                        remote => "$remote",
+                    );
+                }else{ #El fichero no existía previamente
+                    $agent->delete_file(
+                        server => $server_str,
+                        remote => "$remote"
+                    );
+                }
+
                 $sent_files->{$hostname}{$local_key_md5}{"$remote"} = _now();
             }
             $stash->{needs_rollback}{ $needs_rollback_key } = 1 if $needs_rollback_mode eq 'nb_after';
