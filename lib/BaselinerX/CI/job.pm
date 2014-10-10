@@ -634,7 +634,7 @@ sub trap_action {
     my ($self, $p)=@_;
     my $comments = $p->{comments} // _('no comment');
     my $action = $p->{action} // '';
-    if ( $self->status !~ /TRAPPED/ ) {
+    if ( $self->status =~ /TRAPPED/ ) {
         my $job_status = $action eq 'retry' ? 'RETRYING' : $action eq 'skip' ? 'SKIPPING' : $action eq 'pause' ? 'TRAPPED_PAUSED' :'ERROR';
         $self->logger->warn( _loc("Task response '*%1*' by *%2*: %3", _loc($action), $p->{username}, $comments), data=>$comments, username=>$p->{username} );
         $self->status( $job_status );
