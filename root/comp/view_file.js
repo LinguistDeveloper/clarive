@@ -8,6 +8,7 @@
                 Baseliner.ajax_json('/svntree/view_file', { filepath: path, filename: file, repo_mid: repo_mid, rev_num: params.rev_num }, function(res){
                     cons.setValue(res.file_content);
                     cons.setReadOnly();
+                    cons.goTop();
                 }, function(res){
                      Baseliner.error( _('Error'), _(res.msg) );
                 });
@@ -44,6 +45,7 @@
         Baseliner.ajax_json('/svntree/view_file_revision', { filepath: path, filename: file, repo_mid: repo_mid, revision: revision }, function(res){
             cons.setValue(res.file_content);
             cons.setReadOnly();
+            cons.goTop();
         }, function(res){
              Baseliner.error( _('Error'), _(res.msg) );
         });
