@@ -6481,7 +6481,7 @@ msgid "Skip, if file already sent by any task in job chain"
 msgstr "Ignorar, si el fichero ta ha sido mandado por  cualquier tarea en la cadena de pase"
 
 msgid "Reship, even file has already been shipped to node"
-msgstr "Reenviar, incluso si el fichero ha sido ya enciado al nodo"
+msgstr "Reenviar, incluso si el fichero ha sido ya enviado al nodo"
 
 msgid "Topic %1 has already been selected"
 msgstr "El tópico %1 ya ha sido seleccionado"

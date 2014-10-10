@@ -251,7 +251,7 @@ sub get_rules_notifications{
                             @tmp_users = Baseliner->model('Users')->get_users_from_mid_roles_topic( roles => \@roles, mid => $mid );
                         }
                         when ('Fields')         {
-                            my @fields = map {lc($_)} keys $notification->{$key}{carrier}{$carrier}->{$type};
+                            my @fields = keys $notification->{$key}{carrier}{$carrier}->{$type};
                             my $topic = mdb->topic->find_one({mid=>"$mid"});
                             my @users_mid;
                             for my $field (@fields){
