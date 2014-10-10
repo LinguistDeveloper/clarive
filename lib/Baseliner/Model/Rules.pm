@@ -31,12 +31,12 @@ has tidy_up => qw(is rw isa Bool default 1);
 
 register 'event.rule.failed' => {
     description => 'Rule failed',
-    vars => ['dsl', 'rc', 'ret', 'rule', 'rule_name', 'stash', 'output']
+    vars => ['rc', 'ret', 'rule', 'rule_name']
 };
 
 register 'event.rule.trap' => {
     description => 'Rule error trapped',
-    vars => ['stash', 'output']
+    vars => ['job_name','bl', 'step', 'output']
 };
 
 sub init_job_tasks {

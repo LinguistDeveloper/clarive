@@ -382,6 +382,9 @@ sub index_all {
         master_seen => [
             [{ mid=>1, username=>1 }],
         ],
+        activity => [
+            [{ mid=>1, ts=>-1 }],
+        ],
         master_doc => [
             [{'$**'=> "text"}],
             [{ mid=>1 },{ unique=>1 }],
