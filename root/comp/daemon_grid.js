@@ -23,20 +23,24 @@
     
     var render_instances = function(value,metadata,rec,rowIndex,colIndex,store) {
     	var instances = '';
-    	if ( value ) {
+    	if ( value.length > 0 ) {
 	    	Ext.each(value, function(row){
 	            instances += '<li>' + row.instance + '</li>';
 	        });
+    	} else {
+    		instances = _('All');
     	}
 	    return instances ;
     };
 
     var render_active_instances = function(value,metadata,rec,rowIndex,colIndex,store) {
     	var instances = '';
-    	if ( value ) {
+    	if ( value.length > 0 ) {
 	    	Ext.each(value, function(row){
 	            instances += '<li>(' + row.pid + ') ' + row.disp_id +  '</li>';
 	        });
+    	} else {
+    		instances = _('None');
     	}
 	    return instances ;
     };
