@@ -121,6 +121,14 @@ register 'service.fileman.parse_config' => {
     handler => \&run_parse_config,
 };
 
+register 'service.fileman.write_config' => {
+    name => 'Write a Config File',
+    form => '/forms/write_config.js',
+    icon => '/static/images/icons/drive_go.png',
+    job_service  => 1,
+    handler => \&run_write_config,
+};
+
 sub run_load_files {
     my ($self, $c, $config ) = @_;
     return $self->file_foreach( $c->stash, $config );
@@ -637,5 +645,76 @@ sub run_parse_config {
     };
     return $vars;
 }
+
+sub run_write_config {
+    my ($self, $c, $config ) = @_;
+
+    my $job   = $c->stash->{job};
+    my $log   = $job->logger;
+    my $stash = $c->stash;
+    my $config_file = $config->{config_file};
+    my $fail_if_not_found  = $config->{fail_if_not_found};
+    
+    my $type = $config->{type} || 'yaml';
+    my $varname = $config->{varname};
+    my $input_type = $config->{input_type} || 'yaml';
+    my $opts = $config->{opts} || {};
+    my $enc = $config->{encoding} || 'utf8';
+    
+    my $write_to_file = sub{
+        my $body = shift; 
+        open my $ff, '>:'.$enc , "$config_file" 
+            or _fail( _loc('Error opening config file: %1: %2', $config_file, $!) );
+        print $ff $body;
+        close $ff;
+    };
+    
+    my $data = do { 
+        if( $input_type eq 'var' ) {
+            my $varname = $config->{varname} || _fail(_loc('Missing config file data variable name'));
+            $$stash{$varname} or _fail _loc("Config data is missing from stash: %1", $varname );;
+        } else {
+            $config->{config_data};
+        }
+    };
+    
+    my $body = try { 
+          $type eq 'yaml' ? do {
+             Util->_dump( $data ); 
+          }
+        : $type eq 'json' ? do{ 
+            Util->_encode_json( $data );
+        }
+        : $type eq 'general' ? do { require Config::General; 
+            require Config::General;
+            Config::General->new(-ConfigHash=>$data, %$opts )->save_string;
+        }
+        : $type eq 'ini' ? do {
+            require Config::Tiny;
+            my $ct = Config::Tiny->new;
+            _fail _loc 'Config data is not a hash' unless ref $data eq 'HASH';
+            for my $k ( keys $data ) {
+                if( ref $$data{$k} eq 'HASH' ) {
+                    $ct->{$k}{$_} = $$data{$k}{$_} for keys $$data{$k};
+                } else {
+                    $ct->{_}{$k}  = $$data{$k};
+                }
+            }
+            $ct->write_string;
+        }
+        : $type eq 'xml' ? do {
+            require XML::Simple;
+            XML::Simple::XMLout( $data, %$opts ); 
+        } 
+        : _fail(_loc('Unknown config file type: %1', $type));
+    } catch {
+        my $err = shift;
+        _fail _loc('Error writing config file `%1` from variable `%2` (type %3, encoding %4): %5', 
+            $config_file, $varname, $type, $enc, $err ) ;
+    };
+    $write_to_file->( $body );
+    return '';
+}
+
 
 1;
