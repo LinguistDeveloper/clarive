@@ -12,9 +12,11 @@
         if( input_type.getValue()=='var' ) {
             varname.show();
             tabpanel.hideTabStripItem( config_data );
+            tabpanel.setActiveTab( opts );
         } else {
             varname.hide();
             tabpanel.unhideTabStripItem( config_data );
+            tabpanel.setActiveTab( config_data );
         }
     });
     var varname = new Ext.form.TextField({ 
@@ -42,7 +44,7 @@
            hide_save: true, hide_cancel: true,
            data: data.config_data || {} 
     });
-    var tabpanel = new Ext.TabPanel({ activeTab: 0, height: 300, fieldLabel: _('Arguments'), items: [ config_data, opts ] });
+    var tabpanel = new Ext.TabPanel({ activeTab:(params.data.input_type=='data'?0:1), height: 300, fieldLabel: _('Arguments'), items: [ config_data, opts ] });
     tabpanel.on('afterrender', function(){
         if( params.data.input_type=='data' ) tabpanel.unhideTabStripItem( config_data );
         else tabpanel.hideTabStripItem( config_data );
