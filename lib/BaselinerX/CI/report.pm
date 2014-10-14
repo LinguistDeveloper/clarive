@@ -728,6 +728,18 @@ sub get_where {
 
 
 method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=undef, :$query_search=undef ) {
+    # setup a temporary alternative connection if configured
+    my $has_rep_db = exists Baseliner->config->{mongo}{reports};
+    my $db2 =
+        Baseliner::Mongo->new( 
+            mongo_client => Baseliner->config->{mongo}{reports}{client} // mdb->connection, 
+            db_name => Baseliner->config->{mongo}{reports}{db_name} // mdb->db_name )
+        if $has_rep_db;
+    # so we can connect to a secondary:
+    local $MongoDB::Cursor::slave_okay = 1 if $has_rep_db;
+    # make mdb point to $db2 for now
+    local $Clarive::_mdb = $db2 if $has_rep_db;
+
     my $rows = $limit // $self->rows;
 
 	my $rel_query;
