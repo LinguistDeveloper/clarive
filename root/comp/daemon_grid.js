@@ -10,7 +10,7 @@
 		    {  name: 'id' },
 		    {  name: 'service' },
 		    {  name: 'pid' },
-		    {  name: 'hostname' },
+		    {  name: 'instances' },
 		    {  name: 'exists' },
 		    {  name: 'active' },
 		    {  name: 'config' },
@@ -20,6 +20,14 @@
 
     <& /comp/search_field.mas &>
     
+    var render_instances = function(value,metadata,rec,rowIndex,colIndex,store) {
+    	var instances = '';
+    	Ext.each(value, function(row){
+            instances += '<li>' + row.instance + '</li>';
+        });
+	    return instances ;
+    };
+
     var render_name = function(value,metadata,rec,rowIndex,colIndex,store) {
 	    return "<div style='font-weight:bold; font-size: 16px;'>" + value + "</div>" ;
     };
@@ -158,32 +166,53 @@
 
     var add_edit = function(rec) {
 	    var win;
-	    
 	    var blank_image = new Ext.BoxComponent({autoEl: {tag: 'img', src: Ext.BLANK_IMAGE_URL}, widht:10});
 	    
 	    var schedule_service = Baseliner.combo_services({ hiddenName: 'service' });
 
-	    var combo_host = new Ext.form.ComboBox({
-		    mode: 'local',
-		    value: 'localhost',
-		    triggerAction: 'all',
-		    forceSelection: true,
-		    editable: true,
-		    fieldLabel: _('Host'),
-		    name: 'hostname',
-		    hiddenName: 'hostname',
-		    displayField: 'name',
-		    valueField: 'value',
-		    //En un futuro se cargaran los distintos Host
-		    store: 	new Baseliner.JsonStore({
-				    fields : ['name', 'value'],
-				    data   : [{name : 'localhost',   value: 'localhost'}]
-			    })
-	    });
+	    // var combo_host = new Ext.form.ComboBox({
+		   //  mode: 'local',
+		   //  value: 'localhost',
+		   //  triggerAction: 'all',
+		   //  forceSelection: true,
+		   //  editable: true,
+		   //  fieldLabel: _('Host'),
+		   //  name: 'hostname',
+		   //  hiddenName: 'hostname',
+		   //  displayField: 'name',
+		   //  valueField: 'value',
+		   //  //En un futuro se cargaran los distintos Host
+		   //  store: 	new Baseliner.JsonStore({
+				 //    fields : ['name', 'value'],
+				 //    data   : [{name : 'localhost',   value: 'localhost'}]
+			  //   })
+	    // });
+
+// 		var instances = new Ext.form.TextField({
+//             name: 'instances',
+//             fieldLabel: _('Active instances'),
+//             width: 150,
+// //            value: rec.instances,
+//             labelWidth: 250
+//         });
+		var tf = Baseliner.cols_templates['textfield'];
+
+		var instances = new Baseliner.GridEditor({
+		    title: _('Active instances'),
+		    height: 200,
+		    witdth: 400,
+		    name: 'instances',
+		    records: rec && rec.data ? rec.data.instances: [],
+		    preventMark: false,        
+		    columns: [
+		        Ext.apply({ dataIndex:'instance', header: _('Instance') }, tf() )
+		    ],
+		    viewConfig: { forceFit: true }
+		});
 
 	    var title = 'Create daemon';
 	    
-	    var form_daemon = new Ext.FormPanel({
+	    var form_daemon = new Baseliner.FormPanel({
 		    frame: true,
 		    url:'/daemon/update',
 		    buttons: [
@@ -192,31 +221,20 @@
 			    type: 'submit',
 			    handler: function() {
 				    var form = form_daemon.getForm();
-				    if(form.getValues()['id'] == -1){
-				    	action = 'add';
-				    }else{
-				    	action = 'update';
-				    }
     
 				    if (form.isValid()) {
-				           form.submit({
-					       params: {action: action},
-					       success: function(f,a){
-					           Baseliner.message(_('Success'), a.result.msg );
-					           form.findField("id").setValue(a.result.daemon_id);
-					           schedule_service.disable();
+				    	var params = form_daemon.getValues();
+					    if(form.getValues()['id'] == -1){
+					    	params.action = 'add';
+					    }else{
+					    	params.action = 'update';
+					    }
+
+				    	Baseliner.ajax_json('/daemon/update', params , function(f,a){
+					           Baseliner.message(_('Success'), f.msg );
 					           store.load();
-					           win.setTitle(_('Edit daemon'));
-					       },
-					       failure: function(f,a){
-					           Ext.Msg.show({  
-						       title: _('Information'), 
-						       msg: a.result.msg , 
-						       buttons: Ext.Msg.OK, 
-						       icon: Ext.Msg.INFO
-					           }); 						
-					       }
-				           });
+					           win.close();
+				        });
 				    }
 
 			    }
@@ -232,7 +250,7 @@
 		    items: [
 			    { xtype: 'hidden', name: 'id', value: -1 },
 			    schedule_service,
-			    combo_host,
+				instances,
 			    {
 			    xtype: 'radiogroup',
 			    id: 'stategroup',
@@ -282,7 +300,7 @@
 		    { header: _('Active'), width: 100, dataIndex: 'active', sortable: true, renderer: render_active },	
 		    { header: _('Running'), width: 100, dataIndex: 'exists', sortable: true, renderer: render_running },	
 		    { header: _('Last Process ID'), width: 100, dataIndex: 'pid', sortable: true },	
-		    { header: _('Hostname'), width: 200, dataIndex: 'hostname', sortable: true }	
+		    { header: _('Instances'), width: 200, dataIndex: 'instances', sortable: true, renderer: render_instances }	
 	    ],
 	    autoSizeColumns: true,
 	    deferredRender:true,

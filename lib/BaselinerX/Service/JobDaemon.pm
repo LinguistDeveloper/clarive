@@ -60,12 +60,12 @@ sub job_daemon {
         _log "Restart command: $cmd";
         exec $cmd;
     };
-    _log "Job daemon started with frequency ${freq}s";
+    _log "Job daemon started with frequency ${freq}s for dispatcher instance $config->{id}";
     require Baseliner::Sem;
-    my $hostname = Util->my_hostname();
+    my $hostname = $config->{id} || Util->my_hostname();
     # set job query order
     for( 1..1000 ) {
-        my $sem = Baseliner::Sem->new( key=>'job_daemon', who=>"job_daemon", internal=>1 );
+        my $sem = Baseliner::Sem->new( key=>'job_daemon', who=>"job_daemon", internal=>1, disp_id => $config->{id} );
         $sem->take;
         #sleep 20;
         my $now = mdb->now;
