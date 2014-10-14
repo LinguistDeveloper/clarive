@@ -33,6 +33,8 @@ register 'service.dispatcher' => {
 
 has failed_services => qw(is rw isa HashRef), default=>sub{ +{} };
 has disp_id => qw(is rw isa Any), default => sub{ $ENV{CLARIVE_DISPATCHER_ID} || lc( Sys::Hostname::hostname() ) };
+#has hostname => qw(is rw isa Any), default => sub{ lc( Sys::Hostname::hostname() ) };
+has session => qw(is rw isa Any), default => sub{ mdb->run_command({'whatsmyuri' => 1})->{you} };
 
 sub run {
     my ( $self, $c, $config ) = @_;
@@ -40,6 +42,25 @@ sub run {
     #TODO if 'start' fork and go nohup .. or proc::background my self in windows
     #TODO if 'stop' go die
     _log "Starting dispatcher $self->{disp_id}...";
+
+    my $dispatcher = mdb->dispatcher->find_one( { disp_id => $self->disp_id } );
+
+    if ( $dispatcher && $dispatcher->{hostname} ne $self->hostname && $dispatcher->{status} eq 'running' ) {
+        _fail _loc("Cannot start instance %1. Already running in host %2", $self->instance, $dispatcher->{hostname});
+    }
+
+    mdb->dispatcher->update(
+        { disp_id => $self->disp_id },
+        {   '$set' => {
+                disp_id  => $self->disp_id,
+                hostname => $self->hostname,
+                ts       => mdb->ts,
+                session  => $self->session,
+                status => 'running'
+            }
+        },
+        { upsert => 1}
+    );
 
     if ( exists $config->{list} ) {
         $self->list;
@@ -61,7 +82,7 @@ sub list {
             my $pid = $instance->{pid};
 
             if ($pid) {
-                my $exists = pexists( $daemon->{pid} );
+                my $exists = pexists( $instance->{pid} );
                 my $e_text = $exists ? 'running' : 'missing';
                 my $disp_id   = $daemon->{disp_id};
                 print $daemon->{service} . " ($disp_id:$pid): $e_text", "\n";
@@ -91,6 +112,10 @@ sub stop_all {
             }
         }
     }
+    mdb->dispatcher->remove(
+        { disp_id => $self->disp_id }
+    );
+
 
     # bye!
     _log "Goodbye!";
@@ -135,6 +160,7 @@ sub dispatcher {
     $SIG{HUP}  = sub { $self->restart_all( $c, @args ); $sigs{HUP} and $sigs{HUP}->() unless ref $sigs{HUP}  ne 'CODE' };
     $SIG{TERM} = sub { $self->stop_all( $c, @args ); $sigs{TERM} and $sigs{TERM}->() };
     $SIG{STOP} = sub { $self->stop_all( $c, @args ); $sigs{STOP} and $sigs{STOP}->() };
+    $SIG{INT} = sub { $self->stop_all( $c, @args ); $sigs{INT} and $sigs{INT}->() };
     $SIG{USR1} = sub { $self->restart_all( $c, @args ); $sigs{USR1} and $sigs{USR1}->() };
 
     # reaps child process to avoid zombies
@@ -146,6 +172,15 @@ sub dispatcher {
 
     while (1) {
         _log _loc('Checking for daemons started/stopped');
+
+        mdb->dispatcher->update(
+            { disp_id => $self->disp_id },
+            {   '$set' => {
+                    ts       => mdb->ts
+                }
+            }
+        );
+
         my @daemons = ();
 
         try {
