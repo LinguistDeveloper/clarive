@@ -11,10 +11,11 @@
 		    {  name: 'service' },
 		    {  name: 'pid' },
 		    {  name: 'instances' },
+		    {  name: 'active_instances' },
 		    {  name: 'exists' },
 		    {  name: 'active' },
 		    {  name: 'config' },
-		    {  name: 'params' }
+		    {  name: 'params' },
 	    ]
     });
 
@@ -22,9 +23,21 @@
     
     var render_instances = function(value,metadata,rec,rowIndex,colIndex,store) {
     	var instances = '';
-    	Ext.each(value, function(row){
-            instances += '<li>' + row.instance + '</li>';
-        });
+    	if ( value ) {
+	    	Ext.each(value, function(row){
+	            instances += '<li>' + row.instance + '</li>';
+	        });
+    	}
+	    return instances ;
+    };
+
+    var render_active_instances = function(value,metadata,rec,rowIndex,colIndex,store) {
+    	var instances = '';
+    	if ( value ) {
+	    	Ext.each(value, function(row){
+	            instances += '<li>(' + row.pid + ') ' + row.disp_id +  '</li>';
+	        });
+    	}
 	    return instances ;
     };
 
@@ -296,11 +309,12 @@
 	    columns: [
 		    { width: 40, sortable: false, renderer: render_icon },	
 		    { header: _('Service'), width: 300, dataIndex: 'service', sortable: true, renderer: render_name },	
-		    { header: _('Config'), width: 200, dataIndex: 'config', sortable: true },	
+		    { header: _('Config'), width: 200, dataIndex: 'config', sortable: true, hidden: true },	
 		    { header: _('Active'), width: 100, dataIndex: 'active', sortable: true, renderer: render_active },	
-		    { header: _('Running'), width: 100, dataIndex: 'exists', sortable: true, renderer: render_running },	
-		    { header: _('Last Process ID'), width: 100, dataIndex: 'pid', sortable: true },	
-		    { header: _('Instances'), width: 200, dataIndex: 'instances', sortable: true, renderer: render_instances }	
+		    // { header: _('Running'), width: 100, dataIndex: 'exists', sortable: true, renderer: render_running },	
+		    // { header: _('Last Process ID'), width: 100, dataIndex: 'pid', sortable: true },	
+		    { header: _('Instances'), width: 200, dataIndex: 'instances', sortable: true, renderer: render_instances },
+		    { header: _('Active instances'), width: 200, dataIndex: 'active_instances', sortable: true, renderer: render_active_instances }	
 	    ],
 	    autoSizeColumns: true,
 	    deferredRender:true,
