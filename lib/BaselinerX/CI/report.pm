@@ -1036,7 +1036,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                             my $tmp;
 
                             if ( $mt =~ /ci|project|user|file/ ) {
-                                $tmp = $obj->{moniker} ? $obj->{moniker} : $obj->{name}; 
+                                $tmp = $obj->{name} ? $obj->{name} : $obj->{moniker}; 
                             } else {
                                 $tmp = $obj->{name};
                             }
