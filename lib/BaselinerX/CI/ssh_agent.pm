@@ -111,6 +111,13 @@ sub put_file {
     $self->put_dir( @_, file_to_file=>1 );
 }
 
+sub delete_file {
+    my $self = shift;
+    my %p = @_;
+    my $server = $p{server};
+    my $file = $p{remote};
+    $self->execute( 'ssh', $server, 'rm', $file );
+}
 
 =head2 put_dir
 
