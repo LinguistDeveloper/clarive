@@ -7,13 +7,24 @@ sub list {
     my ( $self, %p ) = @_;
     
     my $query = {};
-    $p{all} and delete $query->{active};
     $query->{active} = defined $p{active} ? $p{active} : '1';
+    $p{all} and delete $query->{active};
 
-    if(defined $p{id}){
-        $query->{hostname} = $p{id};
+    if(defined $p{disp_id}){
+        $query = {
+            '$or' => [
+                { 'instances.instance' => { '$in'     => [ $p{disp_id}, undef, [] ] } },
+                { instances => { '$exists' => 0 } },
+                { instances => [] }
+            ]
+        };
     }elsif(defined $p{no_id}){
-        $query->{hostname} = {'$ne' => $p{no_id}};
+#        $query->{'instances.instance'} = {'$nin' => [ $p{no_id} ]};
+        $query = {
+                'instances.instance' => { '$nin'     => [ $p{no_id} ] }, 
+                instances => { '$nin' => [undef,[]] }
+        };
+
     }
 
     my @daemons = mdb->daemon->find($query)->all;
@@ -33,8 +44,7 @@ sub request_start_stop {
     mdb->daemon->update(
         {_id => $id},
         {   '$set' => {
-                active => $action eq 'start' ? '1' : '0', 
-                last_ping => mdb->ts
+                active => $action eq 'start' ? '1' : '0'
             }
         });
 }
@@ -51,8 +61,8 @@ sub service_start {
     my ( $self, %p ) = @_;
 
     my @services = Util->_array_all( $p{services}, $p{service} );
-    my $disp_id = $p{hostname};
-    $self->mark_as_pending( id=>$p{id} );
+    my $disp_id = $p{disp_id};
+    $self->mark_as_pending( id=>$p{id}, disp_id => $p{disp_id} );
 
     _throw 'No service specified' unless @services;
 
@@ -61,6 +71,7 @@ sub service_start {
     my @started;
     for my $service_name ( @services ) {
         my $params = join ' ', map { "$_=$params{$_}" } keys %params;
+        $params .= '--id '.$disp_id;
         my $cmd = "perl $ENV{BASELINER_PERL_OPTS} $0 $service_name $params";
         _debug "Starting service background command '$cmd'";
         my $proc = Proc::Background->new($cmd)
@@ -69,7 +80,7 @@ sub service_start {
           {
             service => $service_name,
             pid     => $proc->pid,
-            host    => $disp_id,
+            disp_id    => $disp_id,
             owner   => $ENV{USER} || $ENV{USERNAME}
           };
     }
@@ -85,11 +96,11 @@ sub service_start_forked {
     my ( $self, %p ) = @_;
 
     my @services = Util->_array_all( $p{services}, $p{service} );
-    $self->mark_as_pending( id=>$p{id} );
+    $self->mark_as_pending( id=>$p{id}, disp_id => $p{disp_id});
 
     _throw 'No service specified' unless @services;
 
-    my $disp_id = $p{hostname};
+    my $disp_id = $p{disp_id};
     my %params = Util->_array_all( $p{params}, $p{param} );
     my $params = join ' ', map { "$_=$params{$_}" } keys %params;
 
@@ -116,7 +127,7 @@ sub service_start_forked {
           {
             service => $service_name,
             pid     => $pid,
-            host    => $disp_id,
+            disp_id    => $disp_id,
             owner   => $ENV{USER} || $ENV{USERNAME}
           };
     }
@@ -129,17 +140,18 @@ Just kill it. Optionally 'kill it' with a signal.
 
 =cut
 sub kill_daemon {
-    my ( $self, $daemon, $signal ) = @_;
+    my ( $self, $daemon, $signal, $disp_id ) = @_;
 
     $signal ||= 9;
     $self->mark_as_pending( id=>$daemon->{_id}.'' );
 
-    if( kill $signal,$daemon->{pid} ) {
+    my ($instance) = grep { $_->{disp_id} eq $disp_id} _array $daemon->{active_instances};
+
+    if( kill $signal,$instance->{pid} ) {
         mdb->daemon->update(
-            {_id => $daemon->{_id}},
-            {   '$set' =>{
-                    pid => '0',
-                    last_ping => mdb->ts
+            {_id => $daemon->{_id} },
+            {   '$pull' => {
+                    active_instances => {disp_id => $disp_id }
                 }
             });
         _log "Daemon " . $daemon->{service} . " stopped";
@@ -147,7 +159,7 @@ sub kill_daemon {
         _log "Could not kill daemon "
             . $daemon->{service}
             . " with pid "
-            . $daemon->{pid};
+            . $instance->{pid};
     }
 }
 
@@ -158,13 +170,18 @@ Put the pid field to -1 to indicate that the daemon is either starting or stoppi
 =cut
 sub mark_as_pending {
     my ($self, %p) = @_;
-    my $rs = mdb->daemon->update(
-            {_id => mdb->oid($p{id})},
-            {   '$set' => {
-                    last_ping => mdb->ts,
-                    pid => '-1'
-                }
-            });
+
+    my $instance = mdb->daemon->find_one({_id => mdb->oid($p{id}),'active_instances.disp_id' => $p{disp_id}});
+    if ( $instance ) {
+        my $rs = mdb->daemon->update(
+                {_id => mdb->oid($p{id}),'active_instances.disp_id' => $p{disp_id}},
+                {   '$set' => {
+                        'active_instances.$.last_ping' => mdb->ts,
+                        'active_instances.$.pid' => '-1',
+                        'active_instances.$.status' => 'pending'
+                    }
+                });
+    }
 }
 
 1;
