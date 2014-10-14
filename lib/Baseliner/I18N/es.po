@@ -7746,3 +7746,6 @@ msgstr "Esquema"
 
 msgid "Service Name"
 msgstr "Nombre del servicio"
+
+msgid "Active instances"
+msgstr "Instancias activas"

@@ -32,13 +32,14 @@ sub list : Local {
     }
     
     my @rows;
-    my $where = $query ? mdb->query_build(query => $query, fields=>[qw(service hostname)]) : {};
+    my $where = $query ? mdb->query_build(query => $query, fields=>[qw(service)]) : {};
     my $rs = mdb->daemon->find($where);
     $rs->sort($sort ? { $sort => $dir } : {service => 1});
     $rs->limit($limit);
     $rs->skip($start);
     $cnt = mdb->daemon->count($where);
     while( my $r = $rs->next ) {
+        _log _dump $r;
         $r->{exists} = pexists( $r->{pid} ) if $r->{pid} > 0;
         $r->{exists} = -1 if $r->{pid} == -1 ;
         $r->{exists} = 1 if $r->{pid} > 0 ;
@@ -70,34 +71,45 @@ sub stop : Local {
 sub update : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
+
+    _log _dump $p;
+
     my $action = $p->{action};
     #my $id_daemon = $p->{id};
 
+_warn($action);
     given ($action) {
     when ('add') {
         try{
+            #my @instances = map { $_->{instance} } _array($p->{instances});
+            _log "Antes del insert";
             my $daemon = mdb->daemon->insert({
                     service => $p->{service},
-                    hostname => $p->{hostname},
+                    instances => $p->{instances},
                     active  => $p->{state},
-                    last_ping => mdb->ts,
+#                    last_ping => mdb->ts,
                 });
+            _log "Después del insert";
             
             $c->stash->{json} = { msg=>_loc('Daemon added'), success=>\1, daemon_id=> $daemon.'' };
         }
         catch{
+            _warn("En el catch: ".shift());
             $c->stash->{json} = { msg=>_loc('Error adding Daemon: %1', shift()), failure=>\1 }
         }
     }
     when ('update') {
         try{
+            #my @instances = map { $_->{instance} } _array($p->{instances});
             my $id_daemon = $p->{id};
             my $daemon = mdb->daemon->update(
                 {_id => mdb->oid($id_daemon)},
                 {   '$set' => { 
-                        hostname => $p->{hostname},
+#                        hostname => $p->{hostname},
                         active => $p->{state},
-                        last_ping => mdb->ts,
+                        instances => $p->{instances},
+                        
+#                        last_ping => mdb->ts,
                     }
                 });
             $c->stash->{json} = { msg=>_loc('Daemon modified'), success=>\1, daemon_id=> $id_daemon.'' };
