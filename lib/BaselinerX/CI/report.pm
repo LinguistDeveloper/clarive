@@ -308,7 +308,7 @@ sub report_update {
 sub dynamic_fields {
     my ($self,$p) = @_;
     my @tree;
-    push @tree, mdb->topic->all_keys;
+    push @tree, _unique grep { defined } map { $$_{id_field} } _array( model->Topic->get_meta );
     return \@tree;
 }
 
@@ -379,7 +379,7 @@ sub all_fields {
                     text => _loc('Dynamic'),
                     leaf => \0,
                     icon     => '/static/images/icons/all.png',
-                    #url  => '/ci/report/dynamic_fields',
+                    url  => '/ci/report/dynamic_fields',
                     draggable => \0,
                     children => [
                         map {
