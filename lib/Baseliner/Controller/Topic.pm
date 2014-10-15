@@ -1453,10 +1453,10 @@ sub file_tree : Local {
     my ( $self, $c ) = @_;
     my $p         = $c->request->parameters;
     my $topic_mid = $p->{topic_mid};
+    my $rel_field = $p->{filter};
     my @files     = ();
-
     if ($topic_mid) {
-        my @assets = mdb->master_rel->find_values( to_mid => { from_mid=>"$topic_mid", rel_type=>'topic_asset' } );
+        my @assets = mdb->master_rel->find_values( to_mid => { from_mid=>"$topic_mid", rel_field=>"$rel_field", rel_type=>'topic_asset' } );
         @files = map {
             my $ass = $_;
             my ( $size, $unit ) = Util->_size_unit( $ass->filesize );
