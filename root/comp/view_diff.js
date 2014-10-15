@@ -1,6 +1,7 @@
 (function(params){
     var repo_dir = params.repo_dir;
     var rev_num = params.rev_num;
+    var controller = params.controller;
     var txt = new Ext.form.TextArea({ height:'100%', width:'100%', value:'' });
     var branch = params.branch;
     var repo_mid = params.repo_mid;
@@ -13,7 +14,7 @@
     }); 
 
 
-    var html = Baseliner.ajax_json('/svntree/view_diff', { repo_dir: repo_dir, rev_num: rev_num, branch: branch }, function(res){
+    var html = Baseliner.ajax_json('/'+controller+'/view_diff', { repo_dir: repo_dir, rev_num: rev_num, branch: branch }, function(res){
     	var html = function(){/*
 		       <div id="boot" >
 		       		<div class="well sidebar-nav" style="position: fixed; padding-top: 20px;">
@@ -62,7 +63,8 @@
 				               													file:'[%= changes[i].path %]',
 				               													repo_mid:'[%= repo_mid %]', 
 				               													branch:'[%= branch %]', 
-				               													rev_num:'[%= rev_num %]'
+				               													rev_num:'[%= rev_num %]',
+				               													controller:'[%= controller %]'
 				               												}
 				               											)">[%= _('Original file') %]
 				               			</a>
@@ -372,7 +374,7 @@
 			           [% } %]
 		       		</div>
 		       	</div>
-		*/}.tmpl({ temp_id: temp_id, code_section: code_section, repo_mid: repo_mid, repo_dir: repo_dir, branch: branch, rev_num: res.commit_info.revision, author: res.commit_info.author, date: res.commit_info.date, comment: res.commit_info.comment, changes: res.changes });
+		*/}.tmpl({ controller: controller, temp_id: temp_id, code_section: code_section, repo_mid: repo_mid, repo_dir: repo_dir, branch: branch, rev_num: res.commit_info.revision, author: res.commit_info.author, date: res.commit_info.date, comment: res.commit_info.comment, changes: res.changes });
     	panel.update(html);
     }, function(res){
          Baseliner.error( _('Error'), _(res.msg) );
