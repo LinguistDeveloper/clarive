@@ -278,9 +278,9 @@ sub tree_objects {
     
     $where->{collection} = $collection if $collection;
     $where = { %$where, %{ $p{where} } } if $p{where};
-    
+    my $mids = $p{mids};
     # search for variables in mids 
-    if( defined $p{mids} && length $p{mids} ) {
+    if( defined $p{mids} && @$mids ) {
         my @where_mids;
         for my $m ( _array( $p{mids} ) ) {
             next if $m =~ /^\$\{/;

@@ -24,7 +24,7 @@ sub BUILD {
     $self->setup_pid_file();
     $self->setup_baseliner();
     
-    $ENV{BASELINER_DISPATCHER_ID} = $self->id;
+    $ENV{CLARIVE_DISPATCHER_ID} = $self->id;
 }
 
 sub run {

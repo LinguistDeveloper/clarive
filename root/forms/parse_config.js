@@ -1,7 +1,7 @@
 (function(params){
     var data = params.data || {};
     
-    var dir_mode = new Baseliner.ComboDouble({ 
+    var file_type = new Baseliner.ComboDouble({ 
         fieldLabel: _('Type'), name:'type', value: data.type || 'yaml', 
         data: [ 
           ['yaml',_('YAML')], 
@@ -21,7 +21,7 @@
         
         new Baseliner.MonoTextArea({ fieldLabel: _('File Path'), height: 80, name: 'config_file', value: params.data.config_file }),
         { xtype:'textfield', fieldLabel: _('File Encoding'), name: 'encoding', value: params.data.encoding||'utf8' },
-        dir_mode, 
+        file_type, 
        { xtype: 'tabpanel', activeTab: 0, height: 300, fieldLabel: _('Arguments'), items: [ opts ] }
     ];
 })

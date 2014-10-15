@@ -44,6 +44,8 @@ has id_queue => qw(is rw isa MongoDB::OID);
 has id_sem   => qw(is rw isa MongoDB::OID);
 has internal => qw(is rw isa Bool default 0);
 has queue_released => qw(is rw isa Bool default 1);
+has disp_id => qw(is rw isa Any), default => sub{ lc( Sys::Hostname::hostname() ) };
+has session => qw(is rw isa Any), default => sub{ mdb->run_command({'whatsmyuri' => 1})->{you} };
 
 sub BUILD {
     my ($self) = @_;
@@ -95,8 +97,9 @@ sub enqueue {
         active     => 1,
         pid        => $$, 
         ts_request => mdb->ts,
-        hostname   => Util->my_hostname,
+        hostname   => $self->disp_id,
         status     => 'waiting',
+        session    => $self->session
     };
 
     my $id_queue = mdb->sem_queue->insert( $doc, { safe=>1 });
@@ -122,6 +125,21 @@ sub take {
         my $res = mdb->sem->update({ key => $self->key, slots => { '$gt' => 0 }},{ '$inc' => { slots => -1} });
         $updated = $res->{updatedExisting};
         if ( !$updated ) {
+            my @running_queues = mdb->sem_queue->find({ key => $self->key, status => 'busy' })->all;
+            _debug("Looking for busy queues");
+            if ( @running_queues ) {
+                _debug("Found ".scalar @running_queues." running queues");
+                my @sessions = map { $_->{session} } @running_queues;
+                my $sess = join "|", @sessions;
+                my @active_sessions = grep { /^$sess$/ } map { $_->{client} } grep { $_->{client} } _array(mdb->db->eval('db.$cmd.sys.inprog.findOne({$all:1});')->{inprog});
+                if ( !@active_sessions ) {
+                    _debug("No active sessions found for queues");
+                    mdb->sem_queue->update({ key => $self->key, status => 'busy' }, {'$set' => { status => 'killed' }}, { multiple=>1 });
+                    mdb->sem->update({ key => $self->key, slots => 0 },{ '$inc' => { slots => scalar @running_queues } });
+                }
+            } else {
+                mdb->sem->update({ key => $self->key, slots => 0 },{ '$inc' => { slots => 1 } });
+            }
             select(undef, undef, undef, $config->{wait_interval});
         }
         $que = mdb->sem_queue->find_one({ _id=>$id_queue });
