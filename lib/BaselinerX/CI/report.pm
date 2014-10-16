@@ -263,7 +263,8 @@ sub report_update {
                     $self->save;
                     $ret = { msg=>_loc('Search added'), success=>\1, mid=>$self->mid };
                 } else {
-                    _fail _loc('Search name already exists, introduce another search name');
+                    #_fail _loc('Search name already exists, introduce another search name');
+                    $ret = { msg=>_loc('Search name already exists, introduce another search name')};
                 }
             }
             catch{
