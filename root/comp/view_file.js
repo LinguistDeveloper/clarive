@@ -1,6 +1,7 @@
 (function(params){
     var path = params.repo_dir;
     var file = params.file;
+    var controller = params.controller;
     var repo_mid = params.repo_mid;
     var revisions = params.revisions;
     var cons = new Baseliner.AceEditor();
@@ -9,13 +10,13 @@
         remoteSort: true,
         totalProperty:"totalCount", 
         id: 'id',
-        url: '/svntree/get_file_revisions',
+        url: '/'+controller+'/get_file_revisions',
         baseParams:{ filepath: path, filename: file },
         fields: [ 'name' ]
     });
     var rev_combo = new Ext.form.ComboBox({ triggerAction: 'all', mode: 'local', name:'name', displayField: 'name', valueField: 'name', fieldLabel: 'revision', store: revisionsStore });
     cons.on("aftereditor", function(){
-                Baseliner.ajax_json('/svntree/view_file', { filepath: path, filename: file, repo_mid: repo_mid, rev_num: params.rev_num }, function(res){
+                Baseliner.ajax_json('/'+controller+'/view_file', { filepath: path, filename: file, repo_mid: repo_mid, rev_num: params.rev_num }, function(res){
                     cons.setValue(res.file_content);
                     cons.setReadOnly();
                     cons.goTop();
@@ -39,7 +40,7 @@
 
     var func_file_history = function(revision){
         revision = revision.substring(1);
-        Baseliner.ajax_json('/svntree/view_file', { filepath: path, filename: file, repo_mid: repo_mid, rev_num: revision }, function(res){
+        Baseliner.ajax_json('/'+controller+'/view_file', { filepath: path, filename: file, repo_mid: repo_mid, rev_num: revision }, function(res){
             cons.setValue(res.file_content);
             cons.setReadOnly();
             cons.goTop();
