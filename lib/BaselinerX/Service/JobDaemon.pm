@@ -86,8 +86,7 @@ sub job_daemon {
                 maxstarttime     => { '$gt',  "$now" },
                 status           => 'READY',
                 step             => 'RUN',
-                now              => { '$ne' => 1 }, 
-                host         => mdb->in([$hostname,'',undef])
+                now              => { '$ne' => 1 }
             }
         );
         for my $roll ( @query_roll ) {
