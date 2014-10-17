@@ -980,6 +980,7 @@ sub run {
     my ($self, %p) = @_;
 
     local $Baseliner::CI::_no_record = 1; # prevent _ci in CIs
+    Clarive->debug(1); # a job is always in debug mode
     
     $self->final_status( $self->last_finish_status ) if $self->step eq 'POST'; # post should not change status at end
     $self->status('RUNNING');
@@ -1108,6 +1109,7 @@ sub run {
     $self->build_job_contents(1);
     $self->save;
    
+    Util->_debug( Util->_loc('Job %1 saved and ready for: step `%2` and status `%3`', $self->name, $self->step, $self->status ) );
     unlink $self->pid_file;
     
     return $self->status;
