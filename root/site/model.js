@@ -2503,6 +2503,20 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
     },
     var_to_meta : function( ci, bl ){
         var self = this;
+        var var_ci_mandatory;
+        var var_ci_multiple;
+        if (ci.var_ci_mandatory == 1){
+            var_ci_mandatory = 'false';
+        }else{
+            var_ci_mandatory = 'true';
+        }
+
+        if (ci.var_ci_multiple == 1){
+            var_ci_multiple = 'false';
+        }else{
+            var_ci_multiple = 'true';
+        }
+
         var meta = {
             id: ci.name,
             type: ci.var_type,
@@ -2510,7 +2524,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
             'default': ci.var_default,
             classname: ci.var_ci_class,
             role: ci.var_ci_role,
-            field_attributes: { allowBlank: !ci.var_ci_mandatory, singleMode: !ci.var_ci_multiple },
+            field_attributes: { allowBlank: var_ci_mandatory, singleMode: var_ci_multiple },
             options: ci.var_combo_options
         };
         return meta;
