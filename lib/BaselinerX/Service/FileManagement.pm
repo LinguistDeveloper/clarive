@@ -382,6 +382,7 @@ sub run_ship {
         my $server_str = "$user\@".$server->name;
         _debug "Connecting to server " . $server_str;
         my $agent = $server->connect( user=>$user );
+        $agent -> throw_errors(1);
         my $cnt = 0;
 
         my ( @locals, @backup_files );
