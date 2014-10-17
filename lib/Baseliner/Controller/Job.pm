@@ -423,9 +423,7 @@ sub submit : Local {
                     bl           => $bl,
                     job_type     => $job_type,
                     window_type  => $p->{window_type},  # $p->{check_no_cal} has 'on' if no job window available
-                    status       => 'IN-EDIT',
                     approval     => $approval,
-                    step         => 'PRE',
                     username     => $username,
                     runner       => $runner,
                     id_rule      => $id_rule,
