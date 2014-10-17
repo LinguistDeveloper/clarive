@@ -407,7 +407,7 @@ sub dsl_run {
 sub run_rules {
     my ($self, %p) = @_;
     my $when = $p{when};
-    local $Baseliner::_no_cache = 1;
+    local $Baseliner::_no_cache = 0;
     my @rules = 
         $p{id_rule} 
             ? ( mdb->rule->find_one({ '$or'=>[ {id=>"$p{id_rule}"},{rule_name=>"$p{id_rule}"} ] }) )
@@ -490,7 +490,7 @@ sub run_rules {
 # used by job_chain
 sub run_single_rule {
     my ($self, %p ) = @_;
-    #local $Baseliner::_no_cache = 1;
+    local $Baseliner::_no_cache = 0;
     $p{stash} //= {};
     my $rule = mdb->rule->find_one({ '$or'=>[ {id=>"$p{id_rule}"},{rule_name=>"$p{id_rule}"} ] });
     
