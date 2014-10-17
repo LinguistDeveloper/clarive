@@ -2134,10 +2134,9 @@ sub set_topics {
             #Buscamos los que se van a borrar, cogemos los mids de las relaciones viejas
             my @old_relations_mids = map{$_->{$topic_direction}}DB->BaliMasterRel->search($rdoc)->hashref->all;
             #Borramos las relaciones
-            DB->BaliMasterRel->search($rdoc)->delete;
             mdb->master_rel->remove($rdoc,{multiple=>1});
             #Borramos de cache los topicos con relaciones antiguas
-            for my $rel (@old_relations_mids) { Baseliner->cache_remove(qr/:$rel:/); }
+            for my $rel (@old_relations_mids) { cache->remove(qr/:$rel:/); }
         }
 
         my $rel_seq = 1;  # oracle may resolve this with a seq, but sqlite doesn't
@@ -2358,7 +2357,7 @@ sub set_release {
     # check if arrays contain same members
     if ( $new_release && $new_release ne $old_release ) {
         if($release_row){
-            my $rdoc = {from_mid => "$old_release", to_mid=>''.$topic_mid, rel_field => $release_field};
+            my $rdoc = {from_mid => "$old_release", to_mid=>''.$topic_mid, rel_field => $release_field, rel_type=>$rel_type};
             mdb->master_rel->remove($rdoc,{multiple=>1});
         }
         # release
@@ -2383,7 +2382,8 @@ sub set_release {
                 };                
             }
         }else{
-            mdb->master_rel->remove({from_mid => $old_release, to_mid=>$topic_mid },{multiple=>1});
+            mdb->master_rel->remove({from_mid => $old_release, to_mid=>$topic_mid, rel_type=>$rel_type, rel_field => $release_field },{multiple=>1});
+	    $self->cache_topic_remove($old_release);
             if ($cancelEvent != 1){            
                 event_new 'event.topic.modify_field' => { username   => $user,
                                                     field      => $id_field,
