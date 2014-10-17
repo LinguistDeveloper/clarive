@@ -1104,10 +1104,11 @@ sub run {
         $self->goto_next_step( $self->final_status ); 
         $self->final_step('END') if $self->step eq 'POST'; # from POST we goto END always
     }
-    unlink $self->pid_file;
     $self->step( $self->final_step );
-    $self->build_job_contents;
+    $self->build_job_contents(1);
     $self->save;
+   
+    unlink $self->pid_file;
     
     return $self->status;
 }
