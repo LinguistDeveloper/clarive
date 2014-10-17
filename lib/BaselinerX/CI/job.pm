@@ -112,7 +112,7 @@ around status => sub {
     my $step = $self->step;
     if( defined $status && $self->{status} ne $status ) {
         my @who = caller(3) ;
-        _debug "Status has changed to $status by " . join(', ', $who[0], $who[2] );
+        Util->_debug( "Status has changed to $status by " . join(', ', $who[0], $who[2] ) );
     }
     $self->status_trans( Util->_loc($status) );
     return defined $status 
@@ -221,7 +221,7 @@ sub _create {
     my $name = $config->{name}
         || $self->gen_job_name({ mask=>$config->{mask}, type=>$type, bl=>$bl, id=>$job_seq });
 
-    _loc("****** Creating JOB id=" . $job_seq . ", name=$name, mask=" . $config->{mask});
+    Util->_log("****** Creating JOB id=" . $job_seq . ", name=$name, mask=" . $config->{mask});
 
     my $log = $self->logger;
 
@@ -265,7 +265,6 @@ sub _create {
         my @active_jobs = $cs->is_in_active_job;
         for my $active_job ( @active_jobs ) {
             next if $active_job->mid eq $self->mid;
-            _debug( $cs );
             if ( $active_job->job_type ne 'static') {
                 my $ci_self_status = ci->new('moniker:'.$self->bl);
                 my ($self_status_to) = grep {$_->{type} eq 'D'} Util->_array($ci_self_status->parents( isa => 'status'));
@@ -597,7 +596,9 @@ sub approve {
     }
     event_new 'event.job.approved' => 
         { username => $self->username, name=>$self->name, step=>$self->step, status=>$self->status, bl=>$self->bl, comments=>$comments } => sub {
-        $self->logger->info( _loc('*Job Approved by %1*: %2', $p->{username}, $comments), data=>$comments, username=>$p->{username} );
+        $self->logger->info( _loc('*Job Approved by %1*: %2', $p->{username}, $comments), 
+            data=>sprintf("%s\n%s", $comments, join ',', $self->step, $self->status, $self->exec, $self->pid), 
+            username=>$p->{username} );
         $self->status( 'READY' );
         $self->username( $p->{username} );   # TODO make this line optional, set a checkbox in the interface [ x ] make me owner
         $self->final_status( '' );
@@ -1014,9 +1015,9 @@ sub run {
         return 0;
     };
 
-    _loc("=========| Starting JOB " . $self->jobid . ", rollback=" . $self->rollback . ", hostname =". $self->host);
+    Util->_log("=========| Starting JOB " . $self->jobid . ", rollback=" . $self->rollback . ", hostname =". $self->host);
 
-    _debug( _loc('Rule Runner, STEP=%1, PID=%2, RULE_ID=%3', $self->step, $self->pid, $self->id_rule ) );
+    Util->_debug( _loc('Rule Runner, STEP=%1, PID=%2, RULE_ID=%3', $self->step, $self->pid, $self->id_rule ) );
      
     # prepare stash for rules
     my $prev_stash = $self->job_stash;
@@ -1175,7 +1176,7 @@ sub finish {
     my ($self, $status ) = @_;
     $status ||= 'FINISHED';
 
-    _debug( "JOB FINISHED=$status, rollback=". $self->rollback );
+    Util->_debug( "JOB FINISHED=$status, rollback=". $self->rollback );
 
     event_new 'event.job.end_step' => { job=>$self, job_stash=>$self->stash, status=>$self->status, bl=>$self->bl, step=>$self->step };
     if( $self->step eq 'POST' ) {
