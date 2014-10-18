@@ -85,6 +85,10 @@ sub error_trap {
         $code->();
     } catch {
         my $err = shift;
+        if( !$job ) { # we're in a event rule, not a job
+            _error( _loc( "Error ignored in rule: %1", $err ) );
+            return;
+        }
         if ( $job->rollback && !$trap_rollback ) {
             $job->logger->info( _loc "Ignoring trap errors in rollback.  Aborting task", $err );    
             _fail( $err );            
