@@ -1,5 +1,28 @@
 (function(params){
     var data = params.data || {};
+    
+    // error handling
+    var errors = new Baseliner.ComboSingle({ fieldLabel: _('Errors'), name:'errors', value: data.errors || 'fail', data: [
+        'fail',
+        'warn',
+        'custom',
+        'silent'
+    ]});
+    var custom_error = new Ext.Panel({ 
+        layout:'column', fieldLabel:_('Return Codes'), frame: true, 
+        hidden: data.errors!='custom',
+        items: [
+            { layout:'form', columnWidth:.33, labelAlign:'top', frame: true, items: { xtype:'textfield', anchor:'100%', fieldLabel: _('Ok'), name: 'rc_ok', value: data.rc_ok } },
+            { layout:'form', columnWidth:.33, labelAlign:'top', frame: true, items: { xtype:'textfield', anchor:'100%', fieldLabel: _('Warn'), name: 'rc_warn', value: data.rc_warn } },
+            { layout:'form', columnWidth:.33, labelAlign:'top', frame: true, items: { xtype:'textfield', anchor:'100%', fieldLabel: _('Error'), name: 'rc_error', value: data.rc_error } }
+        ],
+        show_hide : function(){ 
+            errors.getValue()=='custom' ? this.show() : this.hide();
+            this.doLayout();
+        }
+    });
+    errors.on('select', function(){ custom_error.show_hide() });
+
     return [
         //{ xtype:'textfield', fieldLabel: _('User'), name: 'user', value: params.data.user },
         { xtype:'textarea', fieldLabel: _('Path'), height: 80, name: 'path', value: params.data.path },
@@ -27,6 +50,8 @@
         }, 
         { xtype:'textarea', fieldLabel: _('Home Directory'), height: 80, name: 'home', value: params.data.home },
         { xtype:'textarea', fieldLabel: _('Stdin'), height: 80, name: 'stdin', value: params.data.stdin },
+        errors,
+        custom_error,
         new Baseliner.ErrorOutputTabs({ data: data }) 
     ]
 })

@@ -13,7 +13,7 @@ our $ICON_DEFAULT = '/static/images/icons/step_run.png';
 register 'service.scripting.local' => {
     name => 'Run a local script',
     form => '/forms/script_local.js',
-    icon => $ICON_DEFAULT,
+    icon => '/static/images/icons/script-local.png',
     job_service  => 1,
     handler => \&run_local,
 };
@@ -43,6 +43,7 @@ sub run_local {
     my $stash = $c->stash;
     my $fail_on_error = $config->{fail_on_error} // 1;
     my $output_files = $config->{output_files};
+    my $errors = $config->{errors} || 'fail';
     
     # rollback basics
     my $task  = $stash->{current_task_name};
@@ -79,16 +80,25 @@ sub run_local {
 
     my $r = { output=>$out, rc=>$rc, ret=>$ret };
 
-    if( $rc ) {
-        my $msg = _loc('Error running command %1', join ' ', @cmd);
-        $job->logger->error( $msg , qq{RC: $rc\nRET: $ret\nOUTPUT: $out} ); 
-        $self->publish_output_files( 'error', $job, $output_files );
-        _fail $msg if $fail_on_error; 
+    my $lev_custom = '';
+    if( $errors eq 'custom' ) {
+        $lev_custom = 'warn' if length $config->{rc_warn} && List::MoreUtils::any { Util->in_range($_, $config->{rc_warn}) } _array($rc);
+        $lev_custom = 'fail' if length $config->{rc_error} && List::MoreUtils::any { Util->in_range($_, $config->{rc_error}) } _array($rc);
+        # OK resets any previous error
+        $lev_custom = 'silent' if length $config->{rc_ok} && List::MoreUtils::any { Util->in_range($_, $config->{rc_ok}) } _array($rc);
+        Util->_debug( _loc('Custom error detected: %1 (rc=%2)', $lev_custom, join(',',map { $_ } _array($rc)) ) );
+    }
+    if( ($errors eq 'custom' && $lev_custom ) || List::MoreUtils::any {$_} _array($rc) ) {
+        my $ms = _loc 'Error running command %1', join ' ', @cmd; #, ($out // 'script not found or could not be executed (check chmod or chown)');
+        Util->_fail($ms) if $errors eq 'fail' || $lev_custom eq 'fail';
+        Util->_warn($ms) if $errors eq 'warn' || $lev_custom eq 'warn';
+        Util->_debug($ms) if $errors eq 'silent' || $lev_custom eq 'silent';
     } else {
         $self->publish_output_files( 'info', $job,$output_files );
         $self->check_output_errors($stash, ($fail_on_error ? 'fail' : 'error'),$log,$out,$config);
         $job->logger->info( _loc('Finished command %1' , join ' ', @cmd ), qq{RC: $rc\nRET: $ret\nOUTPUT: $out} ); 
     }
+        
     $stash->{needs_rollback}{ $needs_rollback_key } = 1 if $needs_rollback_mode eq 'nb_after'; # only if everything went alright
     return $r;
 }
