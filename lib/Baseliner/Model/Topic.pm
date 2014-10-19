@@ -2133,7 +2133,7 @@ sub set_topics {
         for (@mid_check_old_relations){
             my $rdoc = {$data_direction => "$_->{topic_mid}", rel_type =>$rel_type, rel_field=>$rel_field};
             #Buscamos los que se van a borrar, cogemos los mids de las relaciones viejas
-            my @old_relations_mids = map{$_->{$topic_direction}}DB->BaliMasterRel->search($rdoc)->hashref->all;
+            my @old_relations_mids = map{$_->{$topic_direction}}mdb->master_rel->find($rdoc)->all;
             #Borramos las relaciones
             mdb->master_rel->remove($rdoc,{multiple=>1});
             #Borramos de cache los topicos con relaciones antiguas
