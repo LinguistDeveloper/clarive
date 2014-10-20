@@ -121,6 +121,7 @@ sub isValid {
     my ( $self, $p ) = @_;
     my $data = $p->{data} or _throw 'Missing parameter data';
     my $notify_scope = $p->{notify_scope} or _throw 'Missing parameter notify_scope';
+    my $mid = $p->{mid};
     my $valid = 1;
     
     SCOPE: foreach my $key (keys %{$data->{scopes}}){
@@ -129,14 +130,32 @@ sub isValid {
             next SCOPE;
         }
 
-        if( !exists $notify_scope->{$key} ){
-            $valid = 0;
-            last SCOPE; 
-        }else{ 
+        if ( !exists $notify_scope->{$key} ) {
+            if ( $mid && $notify_scope->{key} eq 'project' ) {
+                my @chi = ci->new($mid)->children();
+                my @projs = _unique map{ $_->{mid}} map {$_->projects} @chi;
+                my $found = 0;
+                PROJECT: for (@projs) {
+                        if ( $_ ~~ @data_scope ) {
+                            $found = 1;
+                            last PROJECT;
+                        }
+                    }
+                    if ( !$found ) {
+                        $valid = 0;
+                        last SCOPE;
+                    }
+            }
+            else {
+                $valid = 0;
+                last SCOPE;
+            }
+        }
+        else {
             my @event_scope = _array $notify_scope->{$key};
 
             my $found = 0;
-            EVENT: for ( @event_scope ) {
+            EVENT: for (@event_scope) {
                 if ( $_ ~~ @data_scope ) {
                     $found = 1;
                     last EVENT;
