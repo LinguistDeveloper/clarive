@@ -6715,10 +6715,10 @@ msgid "Needs Rollback Key"
 msgstr "se necesita clave de la marcha atrás"
 
 msgid "Run Forward"
-msgstr "Ejecución"
+msgstr "Sólo en Marcha Adelante"
 
 msgid "Run Rollback"
-msgstr "Ejecución de la marcha atrás"
+msgstr "Sólo en Marcha Atrás"
 
 msgid "Error Trap"
 msgstr "Captura del error"

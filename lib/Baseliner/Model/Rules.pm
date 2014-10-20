@@ -236,8 +236,6 @@ sub dsl_build {
     require Data::Dumper;
     my $spaces = sub { '   ' x $_[0] };
     my $level = 0;
-    my $stash = $p{stash};
-    my $is_rollback = $stash->{rollback};
     local $Data::Dumper::Terse = 1;
     for my $s ( _array $stmts ) {
         local $p{no_tidy} = 1; # just one tidy is enough
@@ -268,8 +266,19 @@ sub dsl_build {
             push @dsl, sprintf( 'local $stash->{_sem} = semaphore({ key=>parse_vars(q{%s},$stash), who=>q{%s} }, $stash)->take;', $semaphore_key, $name ) . "\n"; 
         }
         my $timeout = $attr->{timeout};
-        do{ _debug _loc("*Skipped* task %1 in run forward", $name); next; } if !$is_rollback && !$run_forward;
-        do{ _debug _loc("*Skipped* task %1 in run rollback", $name); next; } if $is_rollback && !$run_rollback;
+        my $rb_close_me = 0;
+        if( !$run_forward && !$run_rollback ) {
+            push @dsl, sprintf( 'if( 0 ) { # not forward or backwards ')."\n";
+            $rb_close_me = 1;
+        }
+        elsif( !$run_forward ) {
+            push @dsl, sprintf( 'if( $$stash{rollback} ) { # only if we are going backwards ')."\n";
+            $rb_close_me = 1;
+        }
+        elsif( !$run_rollback ) {
+            push @dsl, sprintf( 'if( !$$stash{rollback} ) { # only if we are going forward ')."\n";
+            $rb_close_me = 1;
+        }
         my ($data_key) = $attr->{data_key} =~ /^\s*(\S+)\s*$/ if $attr->{data_key};
         my $closure = $attr->{closure};
         push @dsl, sprintf( '# task: %s', $name ) . "\n"; 
@@ -305,6 +314,7 @@ sub dsl_build {
             _debug $s;
             _fail _loc 'Missing dsl/service key for node %1', $name;
         }
+        push @dsl, "}\n" if $rb_close_me;
     }
 
     my $dsl = join "\n", @dsl;
