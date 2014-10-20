@@ -230,7 +230,7 @@ sub get_rules_notifications{
 
             my $valid = 0;
     		if ($notify_scope) {
-                $valid = $self->isValid({ data => $data, notify_scope => $notify_scope});    
+                $valid = $self->isValid({ data => $data, notify_scope => $notify_scope, mid => $mid});    
             }else{
                 $valid = 1 unless keys $data->{scopes};
             }
