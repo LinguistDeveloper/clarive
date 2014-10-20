@@ -474,9 +474,12 @@ sub find_rollback_deps {
     my @later_jobs = 
        grep {
           # ignore later jobs that broke during PRE - XXX better to check if rollback needed flag is on?
-          $_->step eq 'PRE' && $_->status eq 'ERROR' 
-          ? 0
-          : 1;
+          my $stash = $_->job_stash;
+          my $needs_rollback =  $stash->{needs_rollback} // {} if $stash;
+          ( !$_->step_status->{RUN} && $_->status eq 'ERROR' && !keys($needs_rollback) ) ? 0  # ignore errors when RUN has not executed
+          : ( $_->step eq 'END' && $_->status eq 'FINISHED' && $_->rollback ) ? 0    # ignore this job, rollback was ok
+          : ( $_->status eq 'CANCELLED' ) ? 0  # ignore this job
+          : 1; # otherwise, include it
        }
        ci->job->search_cis( bl=>$self->bl, projects=>mdb->in(@projects), endtime=>{ '$gt'=>$self->endtime } );
     # TODO check if there are later jobs for the same repository
