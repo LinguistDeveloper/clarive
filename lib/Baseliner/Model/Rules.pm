@@ -444,7 +444,7 @@ sub run_rules {
         try {
             my $t0=[Time::HiRes::gettimeofday];
 
-            my $dsl = cache->get( 'rule_dsl:'.$rule->{id} ) unless $stash->{rollback};
+            my $dsl = cache->get( 'rule_dsl:'.$rule->{id} );
 
             if ( !$dsl ) {
                 my @tree = $self->build_tree( $rule->{id}, undef );
@@ -515,7 +515,7 @@ sub run_single_rule {
     #local $self->{tidy_up} = 0;
     my $t0=[Time::HiRes::gettimeofday];
 
-    my $dsl = cache->get( 'rule_dsl:'.$rule_id ) unless $stash->{rollback};
+    my $dsl = cache->get( 'rule_dsl:'.$rule_id );
 
     if ( !$dsl ) {
         $dsl = try {
