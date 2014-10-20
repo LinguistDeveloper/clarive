@@ -1057,19 +1057,30 @@ sub file : Local {
     if( $pane eq 'hist' ) {
         my @log = $g->git->exec( 'log', '--pretty=oneline', '--decorate', $ref, '--', $path );
         my @formatted_log;
-        for (@log) {
+        for my $data (@log) {
             my $rev_data = {};
-            $_ =~ /^(.+?)\s\(.*?\)\s(.*)$/;
-            my $commit = $1;
-            my $revs = $2;
+            my $commit;
+            my $revs;
             my $author;
             my $date;
-            my @log_data = $g->git->exec( 'rev-list', '--pretty', $commit );
+            my @log_data;
+            try{
+                $data =~ /^(.+?)\s\(.*?\)\s(.*)$/;
+                $commit = $1;
+                $revs = $2;
+                @log_data = $g->git->exec( 'rev-list', '--pretty', $commit );
+            }catch{
+                $data =~ /^(.+?)\s(.*)$/;
+                $commit = $1;
+                $revs = $2;
+                @log_data = $g->git->exec( 'rev-list', '--pretty', $commit );
+            }
+
             map {
-                if ( $_ =~ /^Author:\s(.*)$/ ) {
+                if ( $data =~ /^Author:\s(.*)$/ ) {
                     $author = $1;
                 }
-                if ( $_ =~ /^Date:\s(.*)$/ ) {
+                if ( $data =~ /^Date:\s(.*)$/ ) {
                     $date = $1;
                 }
 
