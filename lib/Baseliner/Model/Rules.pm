@@ -434,7 +434,7 @@ sub run_rules {
         try {
             my $t0=[Time::HiRes::gettimeofday];
 
-            my $dsl = cache->get( 'rule_dsl:'.$rule->{id} );
+            my $dsl = cache->get( 'rule_dsl:'.$rule->{id} ) unless $stash->{rollback};
 
             if ( !$dsl ) {
                 my @tree = $self->build_tree( $rule->{id}, undef );
@@ -444,11 +444,11 @@ sub run_rules {
                     _fail( _loc("Error building DSL for rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, shift() ) ); 
                 };
                 my $elapsed = Time::HiRes::tv_interval( $t0 );
-                _debug( _loc('DSL build elapsed XXXX %1s', $elapsed) );
+                _debug( _loc('DSL build elapsed time: %1s', $elapsed) );
                 cache->set( 'rule_dsl:'.$rule->{id}, $dsl );
             } else {
                 my $elapsed = Time::HiRes::tv_interval( $t0 );
-                _debug( _loc('DSL retrieved from cache. Elapsed time %1s', $elapsed) );
+                _debug( _loc('DSL retrieved from cache. Elapsed time: %1s', $elapsed) );
             }
             ################### RUN THE RULE DSL ######################
             require Capture::Tiny;
@@ -496,6 +496,7 @@ sub run_single_rule {
     my ($self, %p ) = @_;
     local $Baseliner::_no_cache = 0;
     $p{stash} //= {};
+    my $stash = $p{stash};
     my $rule = mdb->rule->find_one({ '$or'=>[ {id=>"$p{id_rule}"},{rule_name=>"$p{id_rule}"} ] });
     
     _fail _loc 'Rule with id `%1` not found', $p{id_rule} unless $rule;
@@ -504,7 +505,7 @@ sub run_single_rule {
     #local $self->{tidy_up} = 0;
     my $t0=[Time::HiRes::gettimeofday];
 
-    my $dsl = cache->get( 'rule_dsl:'.$rule_id );
+    my $dsl = cache->get( 'rule_dsl:'.$rule_id ) unless $stash->{rollback};
 
     if ( !$dsl ) {
         $dsl = try {
@@ -513,11 +514,11 @@ sub run_single_rule {
             _fail( _loc("Error building DSL for rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, shift() ) ); 
         };
         my $elapsed = Time::HiRes::tv_interval( $t0 );
-        _debug( _loc('DSL build elapsed XXXX %1s', $elapsed) );
+        _debug( _loc('DSL build elapsed time: %1s', $elapsed) );
         cache->set( 'rule_dsl:'.$rule_id, $dsl );
     } else {
         my $elapsed = Time::HiRes::tv_interval( $t0 );
-        _debug( _loc('DSL retrieved from cache. Elapsed time %1s', $elapsed) );
+        _debug( _loc('DSL retrieved from cache. Elapsed time: %1s', $elapsed) );
     }
     my $ret = try {
         ################### RUN THE RULE DSL ######################
