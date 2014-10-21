@@ -130,7 +130,7 @@ sub isValid {
             next SCOPE;
         }
 
-        if ( !exists $notify_scope->{$key} ) {
+        if ( !exists $notify_scope->{$key} || scalar(_array($notify_scope->{$key})) == 0 ) {
             if ( $mid && $key eq 'project' ) {
                 my @chi = ci->new($mid)->children();
                 my @projs = _unique map{ $_->{mid}} map {$_->projects} @chi;
