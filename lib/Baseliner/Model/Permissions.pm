@@ -589,7 +589,7 @@ sub users_with_roles {
     my $topic = $mid ? mdb->topic->find_one( { mid => $mid } ): {};
     my $proj_coll_roles = $topic->{_project_security} || '';
 
-    _warn $proj_coll_roles;
+#    _warn $proj_coll_roles;
 
     my $where;
     my @ors;
