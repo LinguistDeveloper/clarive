@@ -131,7 +131,7 @@ sub isValid {
         }
 
         if ( !exists $notify_scope->{$key} ) {
-            if ( $mid && $notify_scope->{key} eq 'project' ) {
+            if ( $mid && $key eq 'project' ) {
                 my @chi = ci->new($mid)->children();
                 my @projs = _unique map{ $_->{mid}} map {$_->projects} @chi;
                 my $found = 0;
