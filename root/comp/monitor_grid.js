@@ -665,9 +665,11 @@
       tooltip: _('Tools'),
       icon: '/static/images/icons/wrench.png',
       menu: [
+% if( model->Permissions->user_has_action(username=>$c->username, action=>'action.job.run_in_proc') ) {
             { text: _('Run In-process'), handler:function(){ run_inproc() },
               icon: '/static/images/icons/job.png'
             },
+% }
             {
                 text: _('Export'),
                 icon:'/static/images/download.gif',

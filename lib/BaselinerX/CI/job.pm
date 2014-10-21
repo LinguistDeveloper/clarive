@@ -446,8 +446,20 @@ sub resume {
 
 sub run_inproc {
     my ($self, $p) = @_;
+    Util->_log(Util->_loc('************** %1 Requested JOB IN-PROC %2 ***************', $p->{username}, $self->name) );
+    
+    # check permissions
+    if( ! model->Permissions->user_has_action(username=>$p->{username}, action=>'action.job.run_in_proc') ) {
+        Util->_fail( Util->_loc('User %1 does not have permissions to start jobs in process', $p->{username}) );
+    }
+    
+    # check status, only READY allowed
+    if( $self->status ne 'READY' ) {
+        Util->_fail( Util->_loc('Cannot start job since status %1 != %2', $self->status, 'READY') );
+    }
+    $self->logger->info( Util->_loc('User %1 has started job in process', $p->{username}) );
     require Capture::Tiny;
-    Util->_log('************** Starting JOB IN-PROC %1 ***************', $self->name );
+    Util->_log(Util->_loc('************** Starting JOB IN-PROC %1 ***************', $self->name) );
     my ($err,$out);
     try {
         ($out) = Capture::Tiny::tee_merged( sub {
@@ -456,7 +468,7 @@ sub run_inproc {
     } catch {
         $err = shift;
     };
-    Util->_log('************** Finished JOB IN-PROC %1 ***************', $self->name );
+    Util->_log(Util->_loc('************** Finished JOB IN-PROC %1 ***************', $self->name) );
     try { $self->write_to_logfile( $out ) } catch { _error shift() };
     return { output=>$out, error=>$err };
 }
