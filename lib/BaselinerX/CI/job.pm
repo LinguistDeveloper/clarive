@@ -1058,6 +1058,7 @@ sub run {
 
     ROLLBACK:
     my $job_error = 0;
+    my $end_status = '';
     try {
         my $ret = Baseliner->model('Rules')->run_single_rule( 
             id_rule => $self->id_rule, 
@@ -1065,18 +1066,15 @@ sub run {
             stash   => $stash,
             simple_error => 2,  # hide "Error Running Rule...Error DSL" even as _error
         );
-        #$self->logger->debug( 'Stash after rules', $stash );
         $self->job_stash( $stash ); # saves stash to table
-	#$self->status( $self->final_status || 'FINISHED' );
-	$self->finish( $self->final_status || 'FINISHED' );
+        
+        $end_status = $self->final_status || 'FINISHED';
     } catch {
         my $err = shift;   
-        #$self->logger->debug( 'Stash after rules', $stash );
         $stash->{failing} = 1;
         $job_error = 1;
-        #$self->status( 'ERROR' );
-        $self->finish( 'ERROR' );
-	$self->logger->error( _loc( 'Job failure: %1', $err ) );
+        $end_status = 'ERROR';
+        $self->logger->error( _loc( 'Job failure: %1', $err ) );
         $self->last_error( substr($err,0,1024) );
         $self->job_stash( $stash );
     };
@@ -1086,6 +1084,7 @@ sub run {
     my @needing_rollback = map { $_ } grep { $nr->{$_} } keys %$nr;
     if( $job_error ) {
         if( @needing_rollback && !$self->rollback ) {
+            $self->finish( $end_status );
             # rinse and repeat
             $stash->{rollback} = 1;
             $stash->{job} = $self;
@@ -1101,12 +1100,14 @@ sub run {
         }
     }
 
-    $self->save;
-    goto ROLLBACK if $rollback_now;
-
-    #$self->logger->debug( "Job natures....", $self->natures );
-    #$self->logger->debug( "Job children", $self->children );
+    if( $rollback_now ) {
+        # finish job and start rollback
+        $self->save;
+        goto ROLLBACK if $rollback_now;
+    }
     
+    $self->finish( $end_status );
+
     # last line on log
     if( $self->status eq 'ERROR' ) {
         $self->logger->error( _loc( 'Job step %1 finished with error', $self->step, $self->status ) );
