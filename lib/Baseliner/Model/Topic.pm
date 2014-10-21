@@ -2844,6 +2844,7 @@ sub get_users_friend {
     );
     if (@roles){
         @users = Baseliner->model('Users')->get_users_from_mid_roles( mid => $mid, roles => \@roles);
+        @users = _unique @users;
     }
     return @users
 }
