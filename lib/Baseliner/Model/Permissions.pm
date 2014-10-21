@@ -615,7 +615,7 @@ sub users_with_roles {
         }
     }
     $where->{'$or'} = \@ors;
-    _warn $where;
+#    _warn $where;
     @users = map { $_->{name} } ci->user->find($where)->all;
 
     my @root_users;
