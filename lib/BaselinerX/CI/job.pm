@@ -685,13 +685,13 @@ sub gen_job_key {
 
 # used by the job monitor 
 sub build_job_contents {
-    my ($self, $saving) =@_;
+    my ($self, $save_this) =@_;
     my $jc = {};
     $jc->{list_changesets} //= [ map { $_->topic_name } Util->_array( $self->changesets ) ];
     $jc->{list_releases} //= [ map { $_->topic_name } Util->_array( $self->releases ) ];
     $jc->{list_apps} //= [ map { $_->name } Util->_array( $self->projects ) ];
     $jc->{list_natures} //= [ map { $_->name } Util->_array( $self->natures ) ];
-    if( $saving ) {
+    if( $save_this ) {
         $self->update( job_contents=>$jc );
     } else {
         $self->job_contents($jc);
@@ -1121,7 +1121,7 @@ sub run {
         $self->final_step('END') if $self->step eq 'POST'; # from POST we goto END always
     }
     $self->step( $self->final_step );
-    $self->build_job_contents(1);
+    $self->build_job_contents(0);
     $self->save;
    
     Util->_debug( Util->_loc('Job %1 saved and ready for: step `%2` and status `%3`', $self->name, $self->step, $self->status ) );
