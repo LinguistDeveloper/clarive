@@ -3821,7 +3821,7 @@ Baseliner.datatable = function( el, opts, cb) {
                     "first":      _("First"),
                     "last":       _("Last"),
                     "next":       '',
-                    "previous":   '',
+                    "previous":   ''
                 },
                 "aria": {
                     "sortAscending":  _(": activate to sort column ascending"),
