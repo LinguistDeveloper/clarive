@@ -2940,8 +2940,18 @@ Baseliner.GridEditor = Ext.extend( Ext.grid.GridPanel, {
                     var col_s = col.split(',');
                     if( col_s[0] == undefined ) return;
                     ct = Baseliner.cols_templates[ col_s[1] ] || Baseliner.cols_templates['textarea'];
-					//console.dir(ct);
-                    ct = ct();  // templates are functions
+                    var values = {};
+                    if( col_s[4] != undefined ) {
+                        var data = [];
+                        data = col_s[4].split('#');
+                        values.data = [];
+                        Ext.each(data,function(value) {
+                            values.data.push([value,value]);
+                        })
+                        // values.data = data;
+                        values.default_value = col_s[3];
+                    };
+                    ct = ct(values);  // templates are functions
                     if( col_s[2] != undefined ) ct.width = col_s[2];
                     if( col_s[3] ) ct.default_value = col_s[3];
                     ct.sortable = true;
