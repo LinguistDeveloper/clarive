@@ -332,6 +332,11 @@
             hidden: !( !data.needs_rollback_mode || data.needs_rollback_mode!='none' ),
             value: Baseliner.name_to_id(node.text) 
         });
+        if (needs_rollback_mode.getValue()!='none'){
+            needs_rollback_key.show();
+        }else{
+            needs_rollback_key.hide();
+        }
         var enabled = new Ext.form.Checkbox({ fieldLabel:_('Enabled'), checked: node.disabled===true?false:true });
         var run_forward = new Ext.form.Checkbox({ fieldLabel:_('Run Forward'), checked: _bool(attr.run_forward,true) });
         var run_rollback = new Ext.form.Checkbox({ fieldLabel:_('Run Rollback'), checked: _bool(attr.run_rollback,true) });
