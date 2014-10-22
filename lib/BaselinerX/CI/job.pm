@@ -1251,7 +1251,8 @@ sub pause {
         my $t = 0;
         $self->logger->debug( _loc('Setting pause timeout at %1 seconds', $timeout ) );
         # select continuously
-        while( $self->load->{status} eq 'PAUSED' ) {
+        my $last_status;
+        while( 1 ) {
             $self->logger->info( _loc('Paused. Reason: %1', $p{reason} )) if $p{verbose};
             sleep $freq;
             $t += $freq;
@@ -1261,8 +1262,11 @@ sub pause {
                 _fail $msg unless $p{no_fail}; 
                 last;
             }
+            $last_status = $self->load->{status};
+            if ( $self->load->{status} ne 'PAUSED' ) {
+                last;
+            }
         }
-        my $last_status = $self->load->{status};
         $self->logger->debug( _loc('Pause finished due to status %1', $last_status) );
         if( $last_status =~ /CANCEL/ ) {
             _fail _loc('Job cancelled while in pause');
