@@ -1,6 +1,4 @@
 (function(params){
-    var timeout_ajax = Ext.Ajax.timeout;
-    Ext.Ajax.timeout = 600000;
     var ps = 30;
     var rules_store = new Baseliner.JsonStore({
         url: '/rule/grid', root: 'data',
@@ -923,6 +921,5 @@
         if( !at ) return { title: panel.title, id: panel.body.id };
         return { title: at.title, id: at.body.id };
     };
-    Ext.Ajax.timeout = timeout_ajax;
     return panel;
 })
