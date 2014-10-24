@@ -4,8 +4,6 @@
 </%perl>
 
 (function(params){
-    var timeout_ajax = Ext.Ajax.timeout;
-    Ext.Ajax.timeout = 600000;
     var ps_maxi = 25; //page_size for !mini mode
     var ps_mini = 50; //page_size for mini mode
     var ps = ps_maxi; // current page_size
@@ -110,6 +108,7 @@
     //var store_label = new Baseliner.Topic.StoreLabel();
     var store_topics = new Baseliner.Topic.StoreList(store_config);
    
+    store_topics.proxy.conn.timeout = 600000;
     var loading;
     store_topics.on('beforeload',function(){
         if( custom_form_url && custom_form.is_loaded ) {
@@ -1972,6 +1971,5 @@
         return { title: grid_topics.title, id: Baseliner.grid_scroller( grid_topics ).id };
     };
 
-    Ext.Ajax.timeout = timeout_ajax;
     return panel;
 })
