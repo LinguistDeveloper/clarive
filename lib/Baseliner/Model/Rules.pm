@@ -99,6 +99,7 @@ sub error_trap {
         };
         $job->logger->error( _loc "Error trapped in rule: %1", $err );    
         $job->status('TRAPPED');
+        $job->save;
 
         ## Avoid error if . in stash keys
         my @keys = _get_dotted_keys( $stash, '$stash');
@@ -119,9 +120,10 @@ sub error_trap {
             _warn( _loc('Could not store event for trapped error: %1', $err ) );
         }; 
 
-        $job->save;
         my $last_status;
         my $timeout = $trap_timeout;
+        LOOP:
+        sleep 4;
         $last_status = $job->load->{status};
         while( $last_status eq 'TRAPPED' || $last_status eq 'TRAPPED_PAUSED' ) {
             if ( $last_status eq 'TRAPPED_PAUSED' ) {
@@ -144,13 +146,14 @@ sub error_trap {
         if( $last_status eq 'RETRYING' ) {
             $job->logger->info( _loc "Retrying task", $err );    
             goto RETRY_TRAP;
-        } 
-        elsif( $last_status eq 'SKIPPING' ) {
+        } elsif( $last_status eq 'SKIPPING' ) {
             $job->logger->info( _loc "Skipping task", $err );    
             return;
-        } else { # ERROR
+        } elsif( $last_status eq 'ERROR' ) { # ERROR
             $job->logger->info( _loc "Aborting task", $err );    
             _fail( $err );
+        } else {
+           goto LOOP; 
         }
     };
 }
