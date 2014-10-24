@@ -706,13 +706,20 @@ sub run_write_config {
             require Config::Tiny;
             my $ct = Config::Tiny->new;
             _fail _loc 'Config data is not a hash' unless ref $data eq 'HASH';
-            for my $k ( keys $data ) {
-                if( ref $$data{$k} eq 'HASH' ) {
-                    $ct->{$k}{$_} = $$data{$k}{$_} for keys $$data{$k};
-                } else {
-                    $ct->{_}{$k}  = $$data{$k};
+            # recursively create a ini compatible structure
+            my $loadhash;
+            $loadhash = sub{
+                my ($sec,$out,$in) = @_;
+                for my $k ( keys $in ) {
+                    #warn "$sec, K=$k";
+                    if( ref $$in{$k} eq 'HASH' ) {
+                        $loadhash->(($sec eq '_'?$k:"$sec.$k"),$out,$$in{$k});
+                    } else {
+                        $out->{$sec}{$k} = $$in{$k};
+                    }
                 }
-            }
+            };
+            $loadhash->('_',$ct,$data);
             $ct->write_string;
         }
         : $type eq 'xml' ? do {
