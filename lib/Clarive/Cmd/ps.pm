@@ -25,7 +25,9 @@ sub run {
     } glob $self->pid_dir . '/cla*.pid';
     
     foreach my $p ( @{$t->table} ){
-        my $lin = sprintf($FORMAT,
+        my $line = sub {
+            my ($type) = @_;
+            sprintf($FORMAT,
               $p->pid,
               $p->ppid,
               ( $^O eq 'cygwin' ? '??' : $p->pctcpu . '%' ),
@@ -33,16 +35,17 @@ sub run {
               #$p->ttydev,
               $p->state,
               scalar(localtime($p->start)),
-              ( $^O eq 'cygwin' ? $p->fname : $p->cmndline)
-        );
+              $self->filter_cmd($type, $^O eq 'cygwin' ? $p->fname : $p->cmndline) 
+            );
+        };
         for my $pid ( @pids ) {
             if( $pid->{pid}>1 && ($pid->{pid} == $p->pid || $pid->{pid} == $p->ppid) ) {
                 if( $pid->{type} eq 'server' ) {
-                    $server{ $p->pid } = $lin;
+                    $server{ $p->pid } = $line->($pid->{type});
                 } elsif( $pid->{type} eq 'job' ) {
-                    $jobs{ $p->pid } = $lin;
+                    $jobs{ $p->pid } = $line->($pid->{type});
                 } else {
-                    $disp{ $p->pid } = $lin;
+                    $disp{ $p->pid } = $line->($pid->{type});
                 }
             }
         }
@@ -60,6 +63,7 @@ sub run {
 }
 
 sub run_filter {
+    my ($self) = @_; 
     my $FORMAT = "%-6s %-6s %-8s %-24s %s";
     my $t = new Proc::ProcessTable;
     my @disp;
@@ -72,7 +76,7 @@ sub run_filter {
               #$p->ttydev,
               $p->state,
               scalar(localtime($p->start)),
-              ( $^O eq 'cygwin' ? $p->fname : $p->cmndline));
+              $self->filter_cmd( $^O eq 'cygwin' ? $p->fname : $p->cmndline) );
         given( $^O eq 'cygwin' ? $p->fname : $p->cmndline ) {
             when( /starman|plackup|bali_server|start_server/ ) {
                 push @server, $lin;
@@ -89,6 +93,17 @@ sub run_filter {
     say "--------------|   Server   |-----------";
     say $top if @server;
     say for @server;
+}
+
+sub filter_cmd {
+    my ($self,$type,$cmd) = @_;
+    if( $type eq 'job' && $cmd !~ /^clarive/ ) {
+        $cmd =~ s/(\n|\r)+/ /g;
+        $cmd = "internal: $cmd";
+    }
+    $cmd =~ s/\s+/ /g;
+    $cmd = substr( $cmd, 0, 64 );
+    return $cmd;
 }
 
 1;
