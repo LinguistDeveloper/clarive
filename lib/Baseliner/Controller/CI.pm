@@ -1493,6 +1493,8 @@ sub default : Path Args(2) {
     #     $p->{$field} = $self->upload_file( $field );
     # }
     local $Baseliner::CI::_no_record = 1;
+    local $Baseliner::_no_cache = 1;  # make sure we get a fresh CI
+    local $Baseliner::CI::mid_scope = {}; # more freshness, paranoid 
     try {
         my $ret;
         $meth = "$meth";

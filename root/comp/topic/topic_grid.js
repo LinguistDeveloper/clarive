@@ -108,6 +108,7 @@
     //var store_label = new Baseliner.Topic.StoreLabel();
     var store_topics = new Baseliner.Topic.StoreList(store_config);
    
+    store_topics.proxy.conn.timeout = 600000;
     var loading;
     store_topics.on('beforeload',function(){
         if( custom_form_url && custom_form.is_loaded ) {

@@ -17,6 +17,7 @@ BEGIN {
 register 'action.job.viewall' => { name=>'View All Jobs' };
 register 'action.job.restart' => { name=>'Restart Jobs' };
 register 'action.job.chain_change' => { name=>'Change default chain in job_new window' };
+register 'action.job.run_in_proc' => { name=>'Run Jobs In-Proc, within the Web Server' };
 
 register 'config.job.states' => {
   metadata => [
@@ -423,9 +424,7 @@ sub submit : Local {
                     bl           => $bl,
                     job_type     => $job_type,
                     window_type  => $p->{window_type},  # $p->{check_no_cal} has 'on' if no job window available
-                    status       => 'IN-EDIT',
                     approval     => $approval,
-                    step         => 'PRE',
                     username     => $username,
                     runner       => $runner,
                     id_rule      => $id_rule,

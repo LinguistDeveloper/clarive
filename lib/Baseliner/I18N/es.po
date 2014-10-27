@@ -1080,6 +1080,9 @@ msgstr "Para iniciar la búsqueda es necesario un mínimo de %1 caracteres."
 msgid "Are you sure you want to delete the job"
 msgstr "¿Está seguro de que quiere borrar el pase"
 
+msgid "Are you sure you want to resume the job?"
+msgstr "¿Está seguro de que quiere reanudar el pase?"
+
 msgid "Job %1 is currently running and cannot be deleted"
 msgstr "Pase %1 está actualmente en ejecución y no puede borrarse"
 
@@ -4542,8 +4545,8 @@ msgstr "Aplicar filtro"
 msgid "To upload files to UCM, the topic needs to be created. Save topic first?"
 msgstr "Para subir ficheros a UCM, el tópico tiene que estar creado.  Desea guardarlo primero?"
 
-msgid "Job cannot be rescheduled unless its status is '%1' (current: %2)"
-msgstr "El pase sólo puede ser replanificado en %1 (actual: %2)"
+msgid "Job %1 cannot be rescheduled unless its status is '%2' (current: %3)"
+msgstr "El pase %1 sólo puede ser replanificado en estado %2 (actual: %3)"
 
 msgid "Processing.  Please wait"
 msgstr "Procesando.  Espere por favor"
@@ -6715,10 +6718,10 @@ msgid "Needs Rollback Key"
 msgstr "se necesita clave de la marcha atrás"
 
 msgid "Run Forward"
-msgstr "Ejecución"
+msgstr "Sólo en Marcha Adelante"
 
 msgid "Run Rollback"
-msgstr "Ejecución de la marcha atrás"
+msgstr "Sólo en Marcha Atrás"
 
 msgid "Error Trap"
 msgstr "Captura del error"

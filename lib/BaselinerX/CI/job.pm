@@ -112,7 +112,7 @@ around status => sub {
     my $step = $self->step;
     if( defined $status && $self->{status} ne $status ) {
         my @who = caller(3) ;
-        _debug "Status has changed to $status by " . join(', ', $who[0], $who[2] );
+        Util->_debug( "Status has changed to $status by " . join(', ', $who[0], $who[2] ) );
     }
     $self->status_trans( Util->_loc($status) );
     return defined $status 
@@ -221,7 +221,7 @@ sub _create {
     my $name = $config->{name}
         || $self->gen_job_name({ mask=>$config->{mask}, type=>$type, bl=>$bl, id=>$job_seq });
 
-    _loc("****** Creating JOB id=" . $job_seq . ", name=$name, mask=" . $config->{mask});
+    Util->_log("****** Creating JOB id=" . $job_seq . ", name=$name, mask=" . $config->{mask});
 
     my $log = $self->logger;
 
@@ -265,7 +265,6 @@ sub _create {
         my @active_jobs = $cs->is_in_active_job;
         for my $active_job ( @active_jobs ) {
             next if $active_job->mid eq $self->mid;
-            _debug( $cs );
             if ( $active_job->job_type ne 'static') {
                 my $ci_self_status = ci->new('moniker:'.$self->bl);
                 my ($self_status_to) = grep {$_->{type} eq 'D'} Util->_array($ci_self_status->parents( isa => 'status'));
@@ -447,8 +446,20 @@ sub resume {
 
 sub run_inproc {
     my ($self, $p) = @_;
+    Util->_log(Util->_loc('************** %1 Requested JOB IN-PROC %2 ***************', $p->{username}, $self->name) );
+    
+    # check permissions
+    if( ! model->Permissions->user_has_action(username=>$p->{username}, action=>'action.job.run_in_proc') ) {
+        Util->_fail( Util->_loc('User %1 does not have permissions to start jobs in process', $p->{username}) );
+    }
+    
+    # check status, only READY allowed
+    if( $self->status ne 'READY' ) {
+        Util->_fail( Util->_loc('Cannot start job since status %1 != %2', $self->status, 'READY') );
+    }
+    $self->logger->info( Util->_loc('User %1 has started job in process', $p->{username}) );
     require Capture::Tiny;
-    Util->_log('************** Starting JOB IN-PROC %1 ***************', $self->name );
+    Util->_log(Util->_loc('************** Starting JOB IN-PROC %1 ***************', $self->name) );
     my ($err,$out);
     try {
         ($out) = Capture::Tiny::tee_merged( sub {
@@ -457,7 +468,7 @@ sub run_inproc {
     } catch {
         $err = shift;
     };
-    Util->_log('************** Finished JOB IN-PROC %1 ***************', $self->name );
+    Util->_log(Util->_loc('************** Finished JOB IN-PROC %1 ***************', $self->name) );
     try { $self->write_to_logfile( $out ) } catch { _error shift() };
     return { output=>$out, error=>$err };
 }
@@ -475,9 +486,12 @@ sub find_rollback_deps {
     my @later_jobs = 
        grep {
           # ignore later jobs that broke during PRE - XXX better to check if rollback needed flag is on?
-          $_->step eq 'PRE' && $_->status eq 'ERROR' 
-          ? 0
-          : 1;
+          my $stash = $_->job_stash;
+          my $needs_rollback =  $stash->{needs_rollback} // {} if $stash;
+          ( !$_->step_status->{RUN} && $_->status eq 'ERROR' && !keys($needs_rollback) ) ? 0  # ignore errors when RUN has not executed
+          : ( $_->step eq 'END' && $_->status eq 'FINISHED' && $_->rollback ) ? 0    # ignore this job, rollback was ok
+          : ( $_->status eq 'CANCELLED' ) ? 0  # ignore this job
+          : 1; # otherwise, include it
        }
        ci->job->search_cis( bl=>$self->bl, projects=>mdb->in(@projects), endtime=>{ '$gt'=>$self->endtime } );
     # TODO check if there are later jobs for the same repository
@@ -544,7 +558,7 @@ sub reschedule {
     my $username = $p{username} or _throw 'Missing username';
     my $realuser = $p{realuser} || $username;
 
-    _fail _loc("Job cannot be rescheduled unless its status is '%1' (current: %2)", $self->name, _loc('READY')."|"._loc('APPROVAL'), _loc($self->status) )
+    _fail _loc("Job %1 cannot be rescheduled unless its status is '%2' (current: %3)", $self->name, _loc('READY')."|"._loc('APPROVAL'), _loc($self->status) )
         if $self->status ne 'READY' && $self->status ne 'APPROVAL';
 
     my $msg;
@@ -597,7 +611,9 @@ sub approve {
     }
     event_new 'event.job.approved' => 
         { username => $self->username, name=>$self->name, step=>$self->step, status=>$self->status, bl=>$self->bl, comments=>$comments } => sub {
-        $self->logger->info( _loc('*Job Approved by %1*: %2', $p->{username}, $comments), data=>$comments, username=>$p->{username} );
+        $self->logger->info( _loc('*Job Approved by %1*: %2', $p->{username}, $comments), 
+            data=>sprintf("%s\n%s", $comments, join ',', $self->step, $self->status, $self->exec, $self->pid), 
+            username=>$p->{username} );
         $self->status( 'READY' );
         $self->username( $p->{username} );   # TODO make this line optional, set a checkbox in the interface [ x ] make me owner
         $self->final_status( '' );
@@ -669,13 +685,13 @@ sub gen_job_key {
 
 # used by the job monitor 
 sub build_job_contents {
-    my ($self, $saving) =@_;
+    my ($self, $save_this) =@_;
     my $jc = {};
     $jc->{list_changesets} //= [ map { $_->topic_name } Util->_array( $self->changesets ) ];
     $jc->{list_releases} //= [ map { $_->topic_name } Util->_array( $self->releases ) ];
     $jc->{list_apps} //= [ map { $_->name } Util->_array( $self->projects ) ];
     $jc->{list_natures} //= [ map { $_->name } Util->_array( $self->natures ) ];
-    if( $saving ) {
+    if( $save_this ) {
         $self->update( job_contents=>$jc );
     } else {
         $self->job_contents($jc);
@@ -979,6 +995,7 @@ sub run {
     my ($self, %p) = @_;
 
     local $Baseliner::CI::_no_record = 1; # prevent _ci in CIs
+    Clarive->debug(1); # a job is always in debug mode
     
     $self->final_status( $self->last_finish_status ) if $self->step eq 'POST'; # post should not change status at end
     $self->status('RUNNING');
@@ -1014,9 +1031,9 @@ sub run {
         return 0;
     };
 
-    _loc("=========| Starting JOB " . $self->jobid . ", rollback=" . $self->rollback . ", hostname =". $self->host);
+    Util->_log("=========| Starting JOB " . $self->jobid . ", rollback=" . $self->rollback . ", hostname =". $self->host);
 
-    _debug( _loc('Rule Runner, STEP=%1, PID=%2, RULE_ID=%3', $self->step, $self->pid, $self->id_rule ) );
+    Util->_debug( _loc('Rule Runner, STEP=%1, PID=%2, RULE_ID=%3', $self->step, $self->pid, $self->id_rule ) );
      
     # prepare stash for rules
     my $prev_stash = $self->job_stash;
@@ -1041,6 +1058,7 @@ sub run {
 
     ROLLBACK:
     my $job_error = 0;
+    my $end_status = '';
     try {
         my $ret = Baseliner->model('Rules')->run_single_rule( 
             id_rule => $self->id_rule, 
@@ -1048,18 +1066,15 @@ sub run {
             stash   => $stash,
             simple_error => 2,  # hide "Error Running Rule...Error DSL" even as _error
         );
-        #$self->logger->debug( 'Stash after rules', $stash );
         $self->job_stash( $stash ); # saves stash to table
-	#$self->status( $self->final_status || 'FINISHED' );
-	$self->finish( $self->final_status || 'FINISHED' );
+        
+        $end_status = $self->final_status || 'FINISHED';
     } catch {
         my $err = shift;   
-        #$self->logger->debug( 'Stash after rules', $stash );
         $stash->{failing} = 1;
         $job_error = 1;
-        #$self->status( 'ERROR' );
-        $self->finish( 'ERROR' );
-	$self->logger->error( _loc( 'Job failure: %1', $err ) );
+        $end_status = 'ERROR';
+        $self->logger->error( _loc( 'Job failure: %1', $err ) );
         $self->last_error( substr($err,0,1024) );
         $self->job_stash( $stash );
     };
@@ -1069,6 +1084,7 @@ sub run {
     my @needing_rollback = map { $_ } grep { $nr->{$_} } keys %$nr;
     if( $job_error ) {
         if( @needing_rollback && !$self->rollback ) {
+            $self->finish( $end_status );
             # rinse and repeat
             $stash->{rollback} = 1;
             $stash->{job} = $self;
@@ -1084,12 +1100,14 @@ sub run {
         }
     }
 
-    $self->save;
-    goto ROLLBACK if $rollback_now;
-
-    #$self->logger->debug( "Job natures....", $self->natures );
-    #$self->logger->debug( "Job children", $self->children );
+    if( $rollback_now ) {
+        # finish job and start rollback
+        $self->save;
+        goto ROLLBACK if $rollback_now;
+    }
     
+    $self->finish( $end_status );
+
     # last line on log
     if( $self->status eq 'ERROR' ) {
         $self->logger->error( _loc( 'Job step %1 finished with error', $self->step, $self->status ) );
@@ -1103,10 +1121,12 @@ sub run {
         $self->goto_next_step( $self->final_status ); 
         $self->final_step('END') if $self->step eq 'POST'; # from POST we goto END always
     }
-    unlink $self->pid_file;
     $self->step( $self->final_step );
-    $self->build_job_contents;
+    $self->build_job_contents(0);
     $self->save;
+   
+    Util->_debug( Util->_loc('Job %1 saved and ready for: step `%2` and status `%3`', $self->name, $self->step, $self->status ) );
+    unlink $self->pid_file;
     
     return $self->status;
 }
@@ -1175,7 +1195,7 @@ sub finish {
     my ($self, $status ) = @_;
     $status ||= 'FINISHED';
 
-    _debug( "JOB FINISHED=$status, rollback=". $self->rollback );
+    Util->_debug( "JOB FINISHED=$status, rollback=". $self->rollback );
 
     event_new 'event.job.end_step' => { job=>$self, job_stash=>$self->stash, status=>$self->status, bl=>$self->bl, step=>$self->step };
     if( $self->step eq 'POST' ) {
@@ -1231,7 +1251,8 @@ sub pause {
         my $t = 0;
         $self->logger->debug( _loc('Setting pause timeout at %1 seconds', $timeout ) );
         # select continuously
-        while( $self->load->{status} eq 'PAUSED' ) {
+        my $last_status;
+        while( 1 ) {
             $self->logger->info( _loc('Paused. Reason: %1', $p{reason} )) if $p{verbose};
             sleep $freq;
             $t += $freq;
@@ -1241,8 +1262,11 @@ sub pause {
                 _fail $msg unless $p{no_fail}; 
                 last;
             }
+            $last_status = $self->load->{status};
+            if ( $self->load->{status} ne 'PAUSED' ) {
+                last;
+            }
         }
-    my $last_status = $self->load->{status};
         $self->logger->debug( _loc('Pause finished due to status %1', $last_status) );
         if( $last_status =~ /CANCEL/ ) {
             _fail _loc('Job cancelled while in pause');

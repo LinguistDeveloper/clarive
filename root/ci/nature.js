@@ -35,10 +35,10 @@
         fieldLabel: _('Configuration'),
         height: 430,
         items: [
+            variables,
             { xtype:'panel', layout:'vbox', 
                layoutConfig:{ align:'stretch' },
                anchor: '100%', title:_('Paths'), items: [ include, exclude ] },
-            variables,
             parsers 
         ]
     });

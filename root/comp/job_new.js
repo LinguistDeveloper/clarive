@@ -707,7 +707,7 @@
                         Baseliner.message(_('New Job'), action.result.msg);
                         // reset everything
                         form_reset_all();
-                        Baseliner.closeCurrentTab();
+                        main_form.destroy();
                         // refresh the job grid, if any is open
                         Baseliner.family_notify({ family:'jobs' });
                     },

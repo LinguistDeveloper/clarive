@@ -21,6 +21,7 @@ with 'Clarive::Role::TempDir';
 
 has url_web       => qw(is rw isa Any);
 has url_nginx     => qw(is rw isa Any);
+has url_mongo     => qw(is rw isa Any);
 has api_key       => qw(is rw isa Any);
 has pid_filter    => qw(is rw isa Any);
 has web           => qw(is rw isa Any default 1);
@@ -79,17 +80,18 @@ sub run {
     my $pid_filter = $self->pid_filter;
     $pid_filter = qr/$pid_filter/i if $pid_filter;
     
-    for my $pidfile ( glob(file($self->pid_dir,'*.pid')), glob(file($self->app->base,'data','mongo','*.lock')) ) { 
-        next if $pid_filter && $pidfile !~ $pid_filter;
-        sayts "pid_file=$pidfile";
-        my $pid = $self->_find_pid( $pidfile );
-        next if( length $self->opts->{pid} && $self->opts->{pid} != $pid );
-        sayts "checking pid exists=$pid";
-        if( ! pexists($pid) ) {
-            errts "KO: pid $pid not found.";
-            $rc = $self->error_rc;
-        } else {
-            sayts "OK: pid exists=$pid";
+    if ( !$opts{remote} ) {
+        for my $pidfile ( glob(file($self->pid_dir,'*.pid')), glob(file($self->app->base,'data','mongo','*.lock')) ) { 
+            next if $pid_filter && $pidfile !~ $pid_filter; 
+            sayts "pid_file=$pidfile";
+            my $pid = $self->_find_pid( $pidfile );
+            sayts "checking pid exists=$pid";
+            if( ! pexists($pid) ) {
+                errts "KO: pid $pid not found.";
+                $rc = $self->error_rc;
+            } else {
+                sayts "OK: pid exists=$pid";
+            }
         }
     }
 
@@ -107,7 +109,16 @@ sub run {
         require MongoDB;
         try {
             sayts "connecting to MongoDB...";
-            my $m = MongoDB::MongoClient->new( $self->app->config->{mongo}{client});
+            my $m;
+            #sayts($self->app->config->{mongo}{client});
+            if ( !$self->url_mongo ) {
+                $m = MongoDB::MongoClient->new( $self->app->config->{mongo}{client});
+            } else {
+                $m = MongoDB::MongoClient->new(
+                    host => $self->url_mongo,
+                    auto_connect => 1
+                )
+            }
             my $db_name = $self->app->config->{mongo}{dbname} // 'clarive';
             my $db = $m->get_database( $db_name ); 
             sayts "OK: connected to Mongo database $db_name";

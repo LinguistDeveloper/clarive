@@ -281,6 +281,7 @@ sub build_project_security {
             my $count = scalar keys %{ $proj_coll_ids || {} };
             while ( my ( $k, $v ) = each %{ $proj_coll_ids || {} } ) {
                 if ( $k eq 'project' && $count gt 1) {
+#                if ( $k eq 'project' ) {
                     $wh->{"_project_security.$k"} = {'$in' => [ undef, keys %{$v || {}} ]};
                 } else {
                     $wh->{"_project_security.$k"} = {'$in' => [ keys %{$v || {}} ]};
@@ -796,7 +797,7 @@ sub update {
                     mdb->master_seen->remove({ mid=>"$mid" });
 
                     #we must delete activity for this topic
-                    mdb->activity->remove({mid=>$mid});
+                    #mdb->activity->remove({mid=>$mid});
                 }
                 $return = '%1 topic(s) deleted';
             } catch {
@@ -2111,6 +2112,33 @@ sub set_topics {
     }
 
     if( @new_topics ) {
+        #Tenemos que ver primero que los new topics para ese campo exista que sea single
+        my @category_single_mode;
+        my @categories = _unique map{$_->{category_id}}mdb->topic->find({mid=>mdb->in(@new_topics)})->fields({category_id=>1, _id=>0})->all;
+        for my $topic_category (@categories){
+            my $meta = Baseliner->model('Topic')->get_meta(undef, $topic_category);
+            my @data_field = map {$_}grep{$_->{parent_field} eq $id_field} grep { exists $_->{parent_field}} @$meta;
+            if (!@data_field){
+                @data_field = map {$_}grep{$_->{release_field} eq $id_field} grep { exists $_->{release_field}} @$meta;
+            }
+            if ((@data_field) && ($data_field[0]->{single_mode} eq 'true')){
+                push @category_single_mode, $topic_category;
+            }
+        }
+        my $where;
+        $where->{'category.id'} = mdb->nin(@category_single_mode);
+        $where->{'mid'} = mdb->nin(@new_topics);
+        my @mid_check_old_relations= mdb->topic->find({mid=>mdb->in(@new_topics), 
+            category_id=>mdb->in(@category_single_mode)})->fields({topic_mid=>1, _id=>0})->all;
+        for (@mid_check_old_relations){
+            my $rdoc = {$data_direction => "$_->{topic_mid}", rel_type =>$rel_type, rel_field=>$rel_field};
+            #Buscamos los que se van a borrar, cogemos los mids de las relaciones viejas
+            my @old_relations_mids = map{$_->{$topic_direction}}mdb->master_rel->find($rdoc)->all;
+            #Borramos las relaciones
+            mdb->master_rel->remove($rdoc,{multiple=>1});
+            #Borramos de cache los topicos con relaciones antiguas
+            for my $rel (@old_relations_mids) { cache->remove(qr/:$rel:/); }
+        }
 
         my $rel_seq = 1;  # oracle may resolve this with a seq, but sqlite doesn't
         for (@new_topics){
@@ -2330,7 +2358,7 @@ sub set_release {
     # check if arrays contain same members
     if ( $new_release && $new_release ne $old_release ) {
         if($release_row){
-            my $rdoc = {from_mid => "$old_release", to_mid=>''.$topic_mid, rel_field => $release_field};
+            my $rdoc = {from_mid => "$old_release", to_mid=>''.$topic_mid, rel_field => $release_field, rel_type=>$rel_type};
             mdb->master_rel->remove($rdoc,{multiple=>1});
         }
         # release
@@ -2355,7 +2383,8 @@ sub set_release {
                 };                
             }
         }else{
-            mdb->master_rel->remove({from_mid => $old_release, to_mid=>$topic_mid },{multiple=>1});
+            mdb->master_rel->remove({from_mid => $old_release, to_mid=>$topic_mid, rel_type=>$rel_type, rel_field => $release_field },{multiple=>1});
+	    $self->cache_topic_remove($old_release);
             if ($cancelEvent != 1){            
                 event_new 'event.topic.modify_field' => { username   => $user,
                                                     field      => $id_field,
@@ -2815,6 +2844,7 @@ sub get_users_friend {
     );
     if (@roles){
         @users = Baseliner->model('Users')->get_users_from_mid_roles( mid => $mid, roles => \@roles);
+        @users = _unique @users;
     }
     return @users
 }
@@ -2952,6 +2982,7 @@ sub get_topics_mdb{
         _throw _loc('Missing username') if !$username;
 
         $self->build_project_security( $where, $username );
+        #_warn $where;
 
         my $rs_topics = mdb->topic->find($where);
         my $cnt = $rs_topics->count;

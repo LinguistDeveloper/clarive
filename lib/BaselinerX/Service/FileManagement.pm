@@ -382,6 +382,7 @@ sub run_ship {
         my $server_str = "$user\@".$server->name;
         _debug "Connecting to server " . $server_str;
         my $agent = $server->connect( user=>$user );
+        # $agent -> throw_errors(1);  # TODO needed, but may fail sometimes...
         my $cnt = 0;
 
         my ( @locals, @backup_files );
@@ -520,7 +521,7 @@ sub run_ship {
             
             if( length $chown ) {
                 _debug "chown $chown $remote";
-                $agent->chown( $chmod, "$remote" );
+                $agent->chown( $chown, "$remote" );
                 $log->warn( _loc("Error doing a chown '%1' to file '%2': %3", $chown,$remote, $agent->output ), $agent->tuple_str ) if $agent->rc && $agent->rc!=512;
             }
             if( length $chmod ) {

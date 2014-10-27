@@ -95,25 +95,40 @@
                 break;
             case 'ci':
                 var ci_class = pn.attributes.collection || pn.attributes.ci_class;
+                var meta_type = pn.attributes.meta_type;
                 if (ci_class != undefined && ci_class != '') {
                     field=new Baseliner.ci_box({value: attr.value, name:'value', singleMode: false, force_set_value:false, 'class': ci_class, security: true });
                 }else{
                     var filter = pn.attributes.filter;
-                    var topic_box_store = new Baseliner.store.Topics({
-                        baseParams: { 
-                            topic_child_data: true, 
-                            show_release: 0, 
-                            filter: filter
-                        } 
-                    });
-                    
-                    field = new Baseliner.TopicBox({
-                        fieldLabel: pn.text,                         
-                        name: 'value',
-                        store: topic_box_store,
-                        value: attr.value,
-                        singleMode: false
-                    });
+                    if(meta_type == 'user'){
+                        var user_box_store = new Baseliner.Topic.StoreUsers({
+                            autoLoad: true,
+                            baseParams: { roles: filter }
+                        });
+
+                        field = new Baseliner.model.Users({
+                            fieldLabel: pn.text,
+                            name: 'value',
+                            store: user_box_store,
+                            value: attr.value,
+                            singleMode: false
+                        });
+                    } else {
+                        var topic_box_store = new Baseliner.store.Topics({
+                            baseParams: { 
+                                topic_child_data: true, 
+                                show_release: 0, 
+                                filter: filter
+                            } 
+                        });
+                        field = new Baseliner.TopicBox({
+                            fieldLabel: pn.text,                         
+                            name: 'value',
+                            store: topic_box_store,
+                            value: attr.value,
+                            singleMode: false
+                        });
+                    }
                 }
                 oper_by_type = oper_in;                
                 

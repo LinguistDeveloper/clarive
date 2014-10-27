@@ -219,7 +219,6 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
         
         // menus and click events go in here
         if( node.attributes.menu || ( node.attributes.data && node.attributes.data.click ) ) {
-
             var m = Baseliner.explorer_menu;
             m.removeAll(); 
             var node_menu_items = new Array(); 
@@ -890,7 +889,6 @@ Baseliner.open_apply_filter_from_release = function(n){
         border: false,
         dataUrl : '/ci/report/report_list',
         useArrows: true,
-        autoScroll: true,
         animate: true,
         enableDD: true,
         containerScroll: true,
@@ -911,6 +909,7 @@ Baseliner.open_apply_filter_from_release = function(n){
         padding: 10,
         border: false,
         frame: false,
+        autoScroll: true,
         height: 400,
         items: [
             tree_filters

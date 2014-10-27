@@ -85,6 +85,10 @@ sub error_trap {
         $code->();
     } catch {
         my $err = shift;
+        if( !$job ) { # we're in a event rule, not a job
+            _error( _loc( "Error ignored in rule: %1", $err ) );
+            return;
+        }
         if ( $job->rollback && !$trap_rollback ) {
             $job->logger->info( _loc "Ignoring trap errors in rollback.  Aborting task", $err );    
             _fail( $err );            
@@ -95,6 +99,7 @@ sub error_trap {
         };
         $job->logger->error( _loc "Error trapped in rule: %1", $err );    
         $job->status('TRAPPED');
+        $job->save;
 
         ## Avoid error if . in stash keys
         my @keys = _get_dotted_keys( $stash, '$stash');
@@ -115,9 +120,10 @@ sub error_trap {
             _warn( _loc('Could not store event for trapped error: %1', $err ) );
         }; 
 
-        $job->save;
         my $last_status;
         my $timeout = $trap_timeout;
+        LOOP:
+        sleep 4;
         $last_status = $job->load->{status};
         while( $last_status eq 'TRAPPED' || $last_status eq 'TRAPPED_PAUSED' ) {
             if ( $last_status eq 'TRAPPED_PAUSED' ) {
@@ -140,13 +146,14 @@ sub error_trap {
         if( $last_status eq 'RETRYING' ) {
             $job->logger->info( _loc "Retrying task", $err );    
             goto RETRY_TRAP;
-        } 
-        elsif( $last_status eq 'SKIPPING' ) {
+        } elsif( $last_status eq 'SKIPPING' ) {
             $job->logger->info( _loc "Skipping task", $err );    
             return;
-        } else { # ERROR
+        } elsif( $last_status eq 'ERROR' ) { # ERROR
             $job->logger->info( _loc "Aborting task", $err );    
             _fail( $err );
+        } else {
+           goto LOOP; 
         }
     };
 }
@@ -232,8 +239,6 @@ sub dsl_build {
     require Data::Dumper;
     my $spaces = sub { '   ' x $_[0] };
     my $level = 0;
-    my $stash = $p{stash};
-    my $is_rollback = $stash->{rollback};
     local $Data::Dumper::Terse = 1;
     for my $s ( _array $stmts ) {
         local $p{no_tidy} = 1; # just one tidy is enough
@@ -264,8 +269,19 @@ sub dsl_build {
             push @dsl, sprintf( 'local $stash->{_sem} = semaphore({ key=>parse_vars(q{%s},$stash), who=>q{%s} }, $stash)->take;', $semaphore_key, $name ) . "\n"; 
         }
         my $timeout = $attr->{timeout};
-        do{ _debug _loc("*Skipped* task %1 in run forward", $name); next; } if !$is_rollback && !$run_forward;
-        do{ _debug _loc("*Skipped* task %1 in run rollback", $name); next; } if $is_rollback && !$run_rollback;
+        my $rb_close_me = 0;
+        if( !$run_forward && !$run_rollback ) {
+            push @dsl, sprintf( 'if( 0 ) { # not forward or backwards ')."\n";
+            $rb_close_me = 1;
+        }
+        elsif( !$run_forward ) {
+            push @dsl, sprintf( 'if( $$stash{rollback} ) { # only if we are going backwards ')."\n";
+            $rb_close_me = 1;
+        }
+        elsif( !$run_rollback ) {
+            push @dsl, sprintf( 'if( !$$stash{rollback} ) { # only if we are going forward ')."\n";
+            $rb_close_me = 1;
+        }
         my ($data_key) = $attr->{data_key} =~ /^\s*(\S+)\s*$/ if $attr->{data_key};
         my $closure = $attr->{closure};
         push @dsl, sprintf( '# task: %s', $name ) . "\n"; 
@@ -301,6 +317,7 @@ sub dsl_build {
             _debug $s;
             _fail _loc 'Missing dsl/service key for node %1', $name;
         }
+        push @dsl, "}\n" if $rb_close_me;
     }
 
     my $dsl = join "\n", @dsl;
@@ -407,7 +424,7 @@ sub dsl_run {
 sub run_rules {
     my ($self, %p) = @_;
     my $when = $p{when};
-    local $Baseliner::_no_cache = 1;
+    local $Baseliner::_no_cache = 0;
     my @rules = 
         $p{id_rule} 
             ? ( mdb->rule->find_one({ '$or'=>[ {id=>"$p{id_rule}"},{rule_name=>"$p{id_rule}"} ] }) )
@@ -430,7 +447,8 @@ sub run_rules {
         try {
             my $t0=[Time::HiRes::gettimeofday];
 
-            my $dsl = cache->get( 'rule_dsl:'.$rule->{id} );
+            my $dsl = mdb->grid->find_one({id_rule=> "$rule->{id}"});
+            $dsl = $dsl->slurp if $dsl;
 
             if ( !$dsl ) {
                 my @tree = $self->build_tree( $rule->{id}, undef );
@@ -440,11 +458,11 @@ sub run_rules {
                     _fail( _loc("Error building DSL for rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, shift() ) ); 
                 };
                 my $elapsed = Time::HiRes::tv_interval( $t0 );
-                _debug( _loc('DSL build elapsed XXXX %1s', $elapsed) );
-                cache->set( 'rule_dsl:'.$rule->{id}, $dsl );
+                _debug( _loc('DSL build elapsed time: %1s', $elapsed) );
+                mdb->grid_insert( $dsl ,id_rule => "$rule->{id}" );
             } else {
                 my $elapsed = Time::HiRes::tv_interval( $t0 );
-                _debug( _loc('DSL retrieved from cache. Elapsed time %1s', $elapsed) );
+                _debug( _loc('DSL retrieved from cache. Elapsed time: %1s', $elapsed) );
             }
             ################### RUN THE RULE DSL ######################
             require Capture::Tiny;
@@ -490,8 +508,9 @@ sub run_rules {
 # used by job_chain
 sub run_single_rule {
     my ($self, %p ) = @_;
-    #local $Baseliner::_no_cache = 1;
+    local $Baseliner::_no_cache = 0;
     $p{stash} //= {};
+    my $stash = $p{stash};
     my $rule = mdb->rule->find_one({ '$or'=>[ {id=>"$p{id_rule}"},{rule_name=>"$p{id_rule}"} ] });
     
     _fail _loc 'Rule with id `%1` not found', $p{id_rule} unless $rule;
@@ -500,7 +519,9 @@ sub run_single_rule {
     #local $self->{tidy_up} = 0;
     my $t0=[Time::HiRes::gettimeofday];
 
-    my $dsl = cache->get( 'rule_dsl:'.$rule_id );
+    my $dsl = mdb->grid->find_one({id_rule=> "$rule_id"});
+    $dsl = $dsl->slurp if $dsl;
+
 
     if ( !$dsl ) {
         $dsl = try {
@@ -509,11 +530,11 @@ sub run_single_rule {
             _fail( _loc("Error building DSL for rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, shift() ) ); 
         };
         my $elapsed = Time::HiRes::tv_interval( $t0 );
-        _debug( _loc('DSL build elapsed XXXX %1s', $elapsed) );
-        cache->set( 'rule_dsl:'.$rule_id, $dsl );
+        _debug( _loc('DSL build elapsed time: %1s', $elapsed) );
+        mdb->grid_insert( $dsl ,id_rule => "$rule_id" );
     } else {
         my $elapsed = Time::HiRes::tv_interval( $t0 );
-        _debug( _loc('DSL retrieved from cache. Elapsed time %1s', $elapsed) );
+        _debug( _loc('DSL retrieved from cache. Elapsed time: %1s', $elapsed) );
     }
     my $ret = try {
         ################### RUN THE RULE DSL ######################

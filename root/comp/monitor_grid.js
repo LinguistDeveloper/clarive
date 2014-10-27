@@ -665,9 +665,11 @@
       tooltip: _('Tools'),
       icon: '/static/images/icons/wrench.png',
       menu: [
+% if( model->Permissions->user_has_action(username=>$c->username, action=>'action.job.run_in_proc') ) {
             { text: _('Run In-process'), handler:function(){ run_inproc() },
               icon: '/static/images/icons/job.png'
             },
+% }
             {
                 text: _('Export'),
                 icon:'/static/images/download.gif',
@@ -746,32 +748,37 @@
             );
         }
     };
+    
+    Baseliner.resume_job = function(mid,name) {
+        Ext.Msg.confirm(_('Confirmation'),  '<b>' + name + '</b>: ' + _('Are you sure you want to resume the job?'), 
+            function(btn){ 
+                if(btn=='yes') {
+                    Baseliner.ci_call( mid, 'resume',  {}, function(res){
+                        if( !res.msg ) { 
+                            grid.getStore().reload();
+                            Baseliner.message( _('Success'), res.data );
+                        } else {
+                            grid.getStore().reload();
+                            Ext.Msg.alert( _('Error'), _('Could not resume the job: %1', res.msg ) );
+                        }
+                    });
+                }
+            }
+        );
+    };
 
+    // TODO this button is deprecated, remove it after a month from this commit
     var button_resume = new Ext.Toolbar.Button({
         text: _('Resume'),
         hidden: true,
         icon:'/static/images/icons/play.png',
         cls: 'x-btn-text-icon',
-        handler: function() {
+        handler: function(){
             var sm = grid.getSelectionModel();
             var sel = sm.getSelected();
             var mode;
             if( sel.data.status_code == 'PAUSED' ) {
-                Ext.Msg.confirm(_('Confirmation'),  '<b>' + sel.data.name + '</b>: ' + _('Are you sure you want to resume the job?'), 
-                    function(btn){ 
-                        if(btn=='yes') {
-                            Baseliner.ci_call( sel.data.mid, 'resume',  {}, function(res){
-                                if( !res.msg ) { 
-                                    grid.getStore().reload();
-                                    Baseliner.message( _('Success'), res.data );
-                                } else {
-                                    grid.getStore().reload();
-                                    Ext.Msg.alert( _('Error'), _('Could not resume the job: %1', res.msg ) );
-                                }
-                            });
-                        }
-                    }
-                );
+                Baseliner.resume_job(sel.data.mid,sel.data.name);
                 button_resume.hide();
             }
             else if( sel.data.status_code == 'TRAPPED' || sel.data.status_code == 'TRAPPED_PAUSED' ) {
@@ -887,6 +894,11 @@
         if( status == 'APPROVAL' ) { // add a link to the approval main
             value = String.format("<a href='javascript:Baseliner.request_approval({0},\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id ); 
         }
+% if( $c->stash->{user_action}->{'action.job.resume'} ) {
+        else if( status == 'PAUSED' ) { // add a link to the approval main
+            value = String.format("<a href='javascript:Baseliner.resume_job({0},\"{3}\",\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id, rec.data.name ); 
+        }
+% }
         else if( status == 'TRAPPED' || status == 'TRAPPED_PAUSED' ) { // add a link to the trap
             value = String.format("<a href='javascript:Baseliner.trap_check({0},\"{2}\");'><b>{1}</b></a>", rec.data.mid, value, grid.id ); 
         }
@@ -1186,7 +1198,6 @@
                             var curr = Date.parseDate(sel.data.schedtime, 'Y-m-d H:i:s' );
                             var fupdatepanel = new Baseliner.FormPanel({
                                 frame: true,
-                                url: '/job/job_update', 
                                 items: [
                                     {
                                         xtype: 'datefield',
