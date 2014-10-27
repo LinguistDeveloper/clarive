@@ -64,6 +64,7 @@
 				               													repo_mid:'[%= repo_mid %]', 
 				               													branch:'[%= branch %]', 
 				               													rev_num:'[%= rev_num %]',
+				               													revid: '[%= changes[i].revid %]',
 				               													controller:'[%= controller %]'
 				               												}
 				               											)">[%= _('Original file') %]

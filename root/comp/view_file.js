@@ -16,7 +16,7 @@
     });
     var rev_combo = new Ext.form.ComboBox({ triggerAction: 'all', mode: 'local', name:'name', displayField: 'name', valueField: 'name', fieldLabel: 'revision', store: revisionsStore });
     cons.on("aftereditor", function(){
-                Baseliner.ajax_json('/'+controller+'/view_file', { filepath: path, filename: file, repo_mid: repo_mid, rev_num: params.rev_num }, function(res){
+                Baseliner.ajax_json('/'+controller+'/view_file', { filepath: path, filename: file, repo_mid: repo_mid, rev_num: params.rev_num, revid: params.revid }, function(res){
                     cons.setValue(res.file_content);
                     cons.setReadOnly();
                     cons.goTop();
