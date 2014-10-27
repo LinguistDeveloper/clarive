@@ -447,7 +447,8 @@ sub run_rules {
         try {
             my $t0=[Time::HiRes::gettimeofday];
 
-            my $dsl = cache->get( 'rule_dsl:'.$rule->{id} );
+            my $dsl = mdb->grid->find_one({id_rule=> "$rule->{id}"});
+            $dsl = $dsl->slurp if $dsl;
 
             if ( !$dsl ) {
                 my @tree = $self->build_tree( $rule->{id}, undef );
@@ -458,7 +459,7 @@ sub run_rules {
                 };
                 my $elapsed = Time::HiRes::tv_interval( $t0 );
                 _debug( _loc('DSL build elapsed time: %1s', $elapsed) );
-                cache->set( 'rule_dsl:'.$rule->{id}, $dsl );
+                mdb->grid_insert( $dsl ,id_rule => "$rule->{id}" );
             } else {
                 my $elapsed = Time::HiRes::tv_interval( $t0 );
                 _debug( _loc('DSL retrieved from cache. Elapsed time: %1s', $elapsed) );
@@ -518,7 +519,9 @@ sub run_single_rule {
     #local $self->{tidy_up} = 0;
     my $t0=[Time::HiRes::gettimeofday];
 
-    my $dsl = cache->get( 'rule_dsl:'.$rule_id );
+    my $dsl = mdb->grid->find_one({id_rule=> "$rule_id"});
+    $dsl = $dsl->slurp if $dsl;
+
 
     if ( !$dsl ) {
         $dsl = try {
@@ -528,7 +531,7 @@ sub run_single_rule {
         };
         my $elapsed = Time::HiRes::tv_interval( $t0 );
         _debug( _loc('DSL build elapsed time: %1s', $elapsed) );
-        cache->set( 'rule_dsl:'.$rule_id, $dsl );
+        mdb->grid_insert( $dsl ,id_rule => "$rule_id" );
     } else {
         my $elapsed = Time::HiRes::tv_interval( $t0 );
         _debug( _loc('DSL retrieved from cache. Elapsed time: %1s', $elapsed) );

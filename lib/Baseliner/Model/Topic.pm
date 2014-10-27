@@ -797,7 +797,7 @@ sub update {
                     mdb->master_seen->remove({ mid=>"$mid" });
 
                     #we must delete activity for this topic
-                    mdb->activity->remove({mid=>$mid});
+                    #mdb->activity->remove({mid=>$mid});
                 }
                 $return = '%1 topic(s) deleted';
             } catch {

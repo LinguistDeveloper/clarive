@@ -438,7 +438,8 @@ sub stmts_save : Local {
         my $detected_errors = try { 
             my $dsl = $c->model('Rules')->dsl_build_and_test( $stmts );
             _debug "Caching rule $id_rule for further use";
-            cache->set( 'rule_dsl:'.$id_rule, $dsl );
+            mdb->grid->remove({id_rule=> "$id_rule"});
+            mdb->grid_insert( $dsl ,id_rule => $id_rule );
             return '';
         } catch {
             my $err = shift;
