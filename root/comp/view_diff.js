@@ -17,9 +17,10 @@
     var html = Baseliner.ajax_json('/'+controller+'/view_diff', { repo_dir: repo_dir, rev_num: rev_num, branch: branch }, function(res){
     	var html = function(){/*
 		       <div id="boot" >
-		       		<div class="well sidebar-nav" style="position: fixed; padding-top: 20px;">
-		       			<ul class="nav nav-list" style="padding-right: 0px; padding-left: 0px;">
-							<li class="nav-header" style="padding-bottom: 10px;">[%= _('Modified files of revision') %]</li>
+					[% id_panel = Ext.id(); %]
+		       		<div class="well sidebar-nav" style="position: fixed;">
+		       			<p data-toggle="collapse" data-target='#[%= id_panel %]' style="cursor: hand; cursor:pointer; font-weight: bold; color: #888">[%= _('Modified files of revision (collapse/expand)') %]</p>
+		       			<ul id='[%= id_panel %]' class="nav nav-list" style="padding-right: 0px; padding-left: 0px;">
 							[% for(var i=0; i < changes.length; i++) { %]
 								[% temp_id = Ext.id(); code_section[changes[i].path] = temp_id; %]
 								<li>
@@ -28,7 +29,8 @@
 							[% } %]
 		       			</ul>
 		       		</div>
-		       		<div>
+		       		
+		       		<div style="padding-top: 80px;">
 			       	   <center>
 			           <h3>Revision number [%= rev_num %]</h3>
 			           <table class="table table-bordered table-condensed" style="width: 50%">
