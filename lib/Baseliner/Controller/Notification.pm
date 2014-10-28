@@ -305,7 +305,7 @@ sub import : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
     my @log;
-    cache->remove_like( qr/^notify:/ );
+    cache->remove({ d=>'notify' }); # qr/^notify:/;
     $c->registry->reload_all;
     try{
         mdb->txn( sub {

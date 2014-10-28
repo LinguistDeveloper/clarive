@@ -5,6 +5,7 @@ use Baseliner::MongoCursor;
 use Baseliner::MongoCollection;
 use Try::Tiny;
 use Function::Parameters qw(:strict);
+use DateTime::Tiny;
 use Baseliner::Utils qw(_fail _loc _error _warn _debug _throw _log _array _dump _ixhash);
 
 # mongo connection
@@ -22,7 +23,7 @@ has mongo         => ( is=>'ro', isa=>'MongoDB::MongoClient', lazy=>1, default=>
            my $cli = try {
                local $Baseliner::logger = undef;  # if we're in a job, dont' try to write to db in _log()
                _log sprintf "Mongo: new connection to db `%s`",$self->mongo_db_name;
-               return MongoDB::MongoClient->new($self->mongo_client);
+               return MongoDB::MongoClient->new({ %{ $self->mongo_client }, dt_type=>'DateTime' });
            } catch {
                my $err = shift;
                $last_error = _loc( "Mongo error connecting to %1: %2", $self->mongo_db_name, $err );
@@ -70,7 +71,7 @@ sub seq {
 sub collection {
     my ($self,$coll_name) = @_;
 
-    my $coll = $coll_name eq 'cache' 
+    my $coll = $coll_name =~ /^cache/ 
         ? $self->db_cache->get_collection( $coll_name )
         : $self->db->get_collection( $coll_name );
     
@@ -396,6 +397,9 @@ sub index_all {
         ],
         sem => [
             [{ key => 1},{ unique=>1, dropDups => 1 }],
+        ],
+        sem_queue => [
+            [{ status=>1, key=>1 }],
         ],
         topic_image => [
             [{ id_hash => 1 }],

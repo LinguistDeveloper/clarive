@@ -1136,14 +1136,18 @@
                                 ],
                                 buttons: [
                                     {text:_('Rerun'), handler:function(f){ 
+                                        var but = this;
+                                        but.disable();
                                         var form_data = form_res.getForm().getValues();                                     
                                         Baseliner.ci_call( 'job', 'reset', form_data, 
                                             function(res){ 
                                                 Baseliner.message( sel.data.name, _('Job Restarted') );
+                                                but.enable();
                                                 store.reload();
                                                 win_res.close();
                                             },
                                             function(res) { 
+                                                but.enable();
                                                 Baseliner.error(_('Error'), _('Could not rerun the job: %1', res.msg) );
                                             }
                                         );

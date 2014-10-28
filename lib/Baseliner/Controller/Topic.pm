@@ -767,7 +767,7 @@ sub comment : Local {
 
             # modified_on 
             mdb->topic->update({ mid=>"$topic_mid" },{ '$set'=>{ modified_on=>mdb->ts } });
-            cache->remove( qr/:$topic_mid:/ ) if length $topic_mid;
+            cache->remove({ mid=>"$topic_mid" }) if length $topic_mid;  # qr/:$topic_mid:/ )
             $c->stash->{json} = {
                 msg     => $msg,
                 id      => $id_com,
@@ -808,7 +808,7 @@ sub comment : Local {
                     subject         => $subject,
                     notify          => $notify
                 };
-                cache->remove( qr/:$mid_topic:/ ) if length $mid_topic;
+                cache->remove({ mid=>"$mid_topic" }) if length $mid_topic; # qr/:$mid_topic:/ ) 
             }
             $c->stash->{json} = { msg => _loc('Delete comment ok'), failure => \0 };
         } catch {
@@ -945,7 +945,7 @@ sub update_topic_labels : Local {
             mdb->topic->update({ mid => "$topic_mid"},{ '$set' => {labels => \@label_ids}});
         }
         $c->stash->{json} = { msg=>_loc('Labels assigned'), success=>\1 };
-        cache->remove( qr/:$topic_mid:/ ) if length $topic_mid;
+        cache->remove({ mid=>"$topic_mid" }) if length $topic_mid; # qr/:$topic_mid:/ ) 
     }
     catch{
         $c->stash->{json} = { msg=>_loc('Error assigning Labels: %1', shift()), failure=>\1 }
@@ -957,7 +957,7 @@ sub update_topic_labels : Local {
 sub delete_topic_label : Local {
     my ($self,$c, $topic_mid, $label_id)=@_;
     try{
-        cache->remove( qr/:$topic_mid:/ ) if length $topic_mid;
+        cache->remove({ mid=>"$topic_mid" }) if length $topic_mid; # qr/:$topic_mid:/ 
         mdb->topic->update({ mid => "$topic_mid" },{ '$pull'=>{ labels=>$label_id } },{ multiple=>1 });
         $c->stash->{json} = { msg=>_loc('Label deleted'), success=>\1, id=> $label_id };
     }

@@ -543,8 +543,8 @@ sub store : Local {
     my $mid_param =  $p->{mid} || $p->{from_mid} || $p->{to_mid} ;
     my $cache_key;
     if( defined $mid_param ) {
-        $cache_key = ["ci:store:$mid_param:", $p ];
-        if( my $cc = $c->cache_get( $cache_key ) ) {   # not good during testing mode
+        $cache_key = { d=>'ci:store', mid=>"$mid_param", p=>$p }; # ["ci:store:$mid_param:", $p ];
+        if( my $cc = cache->get( $cache_key ) ) {   # not good during testing mode
             #$c->stash->{json} = $cc;
             #return $c->forward('View::JSON');
         }
@@ -667,7 +667,7 @@ sub store : Local {
     }
 
     $c->stash->{json} = { data=>\@data, totalCount=>$total };
-    $c->cache_set( $cache_key, $c->stash->{json} ) if $cache_key; 
+    cache->set( $cache_key, $c->stash->{json} ) if $cache_key; 
     $c->forward('View::JSON');
 }
 
@@ -888,7 +888,7 @@ sub update : Local {
                 my $rel_type = $collection . '_' . ci->new( $to_mid )->collection;   # XXX consider sending the rel_type from js 
                 my $doc = { from_mid=>"$mid", to_mid=>"$to_mid", rel_type=>$rel_type };
                 mdb->master_rel->insert($doc);
-                $c->cache_remove( qr/:$to_mid:/ );
+                cache->remove({ mid=>"$to_mid" }); # qr/:$to_mid:/ );
             }
         }
         $c->stash->{json} = { success=>\1, msg=>_loc('CI %1 saved ok', $name) };
@@ -915,8 +915,8 @@ sub load : Local {
     local $Baseliner::CI::get_form = 1;
     my $cache_key;
     if( length $mid ) {
-        $cache_key = [ "ci:load:$mid:", $p ];
-        if( my $cc = $c->cache_get( $cache_key ) ) {
+        $cache_key = { d=>'ci:load', mid=>"$mid", p=>$p }; # [ "ci:load:$mid:", $p ];
+        if( my $cc = cache->get( $cache_key ) ) {
             $c->stash->{json} = $cc;
             return $c->forward('View::JSON');
         }
@@ -939,7 +939,7 @@ sub load : Local {
         _error( $err );
         $c->stash->{json} = { success=>\0, msg=>_loc('CI load error: %1', $err ) };
     };
-    $c->cache_set( $cache_key, $c->stash->{json} ) if defined $cache_key;
+    cache->set( $cache_key, $c->stash->{json} ) if defined $cache_key;
     $c->forward('View::JSON');
 }
 
@@ -949,7 +949,7 @@ sub delete : Local {
     my $mids = delete $p->{mids};
 
     try {
-        $c->cache_clear();
+        cache->clear;
         for( grep { length } _array( $mids ) ) {
             my $ci = ci->find($_);
             $ci ? $ci->delete : ci->delete($_);
@@ -1111,7 +1111,7 @@ sub json_tree : Local {
             my $recurse;
             $recurse = sub {
                 my $chi = shift;
-                my $name = $chi->{name};
+                my $name = $chi->{name} // '';
                 $name = substr($name,0,30).'...' if length $name > 30;
                 $k++;
                 +{

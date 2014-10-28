@@ -72,7 +72,7 @@ sub registors {
 }
 
 sub reload_all {
-    cache->remove( qr/registry:/ );
+    cache->remove( qr/^registry:/ );
     cache->set( 'registry:reload:all', 1 );
 }
 

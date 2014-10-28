@@ -537,14 +537,14 @@ sub topics_for_user {
     my @mids = map { $$_{mid} } @topics;  # keep order
     
     # get mid data from cache
-    my %mid_data = map { $$_{mid} => $_ } grep { $_ } map { cache->get("topic:view:$_:") } @mids; 
+    my %mid_data = map { $$_{mid} => $_ } grep { $_ } map { cache->get({ d=>'topic:view', mid=>"$_" }) } @mids; 
     # now search thru 
     if( my @db_mids = grep { !exists $mid_data{$_} } @mids ) {
         # mongo - get additional data
         $self->update_mid_data( \@db_mids, \%mid_data, $username );
     
         for my $db_mid ( @db_mids ) {
-            cache->set( "topic:view:$db_mid:", $mid_data{$db_mid} );
+            cache->set({ d=>'topic:view', mid=>"$db_mid" }, $mid_data{$db_mid} );
         }
     } else {
         _debug "CACHE =========> ALL TopicView data MIDS in CACHE";
@@ -1232,7 +1232,7 @@ our %meta_types = (
 sub get_meta {
     my ($self, $topic_mid, $id_category, $username) = @_;
 
-    my $cached = cache->get( "topic:meta:$topic_mid:") if $topic_mid;
+    my $cached = cache->get({ mid=>"$topic_mid", d=>"topic:meta" }) if $topic_mid;
     return $cached if $cached;
 
     my $id_cat =  $id_category
@@ -1267,7 +1267,7 @@ sub get_meta {
             $d
         } @cat_fields;
     
-    cache->set( "topic:meta:$topic_mid:", \@meta ) if length $topic_mid;
+    cache->set({ d=>'topic:meta', mid=>"$topic_mid" }, \@meta ) if length $topic_mid;
     
     return \@meta;
 }
@@ -1286,7 +1286,7 @@ sub get_data {
         if( !$meta && $with_meta ) {
             $meta = $self->get_meta( $topic_mid );  
         }
-        my $cache_key = ["topic:data:$topic_mid:", \%opts];
+        my $cache_key = { d=>'topic:data', mid=>"$topic_mid", opts=>\%opts }; # ["topic:data:$topic_mid:", \%opts];
         my $cached = cache->get( $cache_key ) unless $no_cache; 
         if( defined $cached ) {
             _debug( "CACHE HIT get_data: topic_mid = $topic_mid" );
@@ -1486,7 +1486,7 @@ sub save_data {
     try {
         if ( length $topic_mid ) {
             #_debug "Removing *$topic_mid* from cache";
-            cache->remove( qr/:$topic_mid:/ );
+            cache->remove({ mid=>"$topic_mid" }); # qr/:$topic_mid:/ );
         }
 
         my @std_fields =
@@ -2077,8 +2077,7 @@ sub set_topics {
     my @all_topics = ();
 
     my $rs_cache = ''.$rs_topic->mid;
-    Baseliner->cache_remove( qr/:$rs_cache:/ ) if length $rs_cache;
-
+    cache->remove({ mid=>"$rs_cache" }) if length $rs_cache; # qr/:$rs_cache:/ ) 
     
     my $rel_field = $id_field;
     my $field_meta = [ grep { $_->{id_field} eq $id_field } _array($meta) ]->[0];
@@ -2137,7 +2136,7 @@ sub set_topics {
             #Borramos las relaciones
             mdb->master_rel->remove($rdoc,{multiple=>1});
             #Borramos de cache los topicos con relaciones antiguas
-            for my $rel (@old_relations_mids) { cache->remove(qr/:$rel:/); }
+            for my $rel (@old_relations_mids) { cache->remove({ mid=>"$rel" }) }
         }
 
         my $rel_seq = 1;  # oracle may resolve this with a seq, but sqlite doesn't
@@ -2757,14 +2756,14 @@ sub cache_topic_remove {
 
     # refresh cache for related stuff 
     if ($topic_mid && $topic_mid ne -1) {    
-        cache->remove( qr/:$topic_mid:/ );
+        cache->remove({ mid=>"$topic_mid" }); #qr/:$topic_mid:/;
         for my $rel_mid ( 
             map { $_->{from_mid} == $topic_mid ? $_->{to_mid} : $_->{from_mid} }
             mdb->master_rel->find({ '$or'=>[{from_mid=>"$topic_mid"},{to_mid=>"$topic_mid"}] })->all
             )
         {
             #_debug "TOPIC CACHE REL remove :$rel_mid:";
-            cache->remove( qr/:$rel_mid:/ );
+            cache->remove({ mid=>"$rel_mid" }); # qr/:$rel_mid:/
         }
     };
 }
@@ -3194,7 +3193,7 @@ sub upload {
                 my $doc = { from_mid=>$topic_mid, to_mid=>$asset->mid, rel_type=>'topic_asset', rel_field=>$$p{filter} };
                 mdb->master_rel->update($doc,$doc,{ upsert=>1 });
             }
-            cache->remove( qr/:$topic_mid:/ );
+            cache->remove({ mid=>"$topic_mid" }); # qr/:$topic_mid:/ );
             $msg = _loc( 'Uploaded file %1', $filename ) . '", "file_uploaded_mid":"' . $file_mid;
             $success = "true";
             $status = 200;
