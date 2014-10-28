@@ -255,7 +255,7 @@ sub events_by_mid {
     my ($mid, %p ) = @_;
     my $min_level = $p{min_level} // 0;
 
-    my $cache_key = [ "events:$mid:", \%p ];
+    my $cache_key = { mid=>"$mid", d=>'events', opts=>\%p }; # [ "events:$mid:", \%p ];
     my $cached = cache->get( $cache_key );
     return $cached if $cached;
 
@@ -299,7 +299,7 @@ sub activity_by_mid {
     my ($mid, %p ) = @_;
     my $min_level = $p{min_level} // 0;
 
-    my $cache_key = [ "activities:$mid:", \%p ];
+    my $cache_key = { mid=>"$mid", d=>'activities', opts=>\%p }; # [ "activities:$mid:", \%p ];
     my $cached = cache->get( $cache_key );
     return $cached if $cached;
 

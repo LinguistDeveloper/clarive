@@ -191,9 +191,8 @@ sub save {
         }
     }
 
-    cache->remove( qr/^ci:/ );
-    cache->remove( qr/ci:[0-9]+:/ );
-    cache->remove( qr/:$mid:/ ) if length $mid;
+    cache->remove({ d=>'ci' });
+    cache->remove({ mid=>$mid }) if length $mid;
     
     # TODO make it mongo transaction bound, in case there are foreign tables
     if( $exists ) { 
@@ -246,7 +245,7 @@ sub delete {
         mdb->master_rel->remove({ '$or'=>[{from_mid=>"$mid"},{to_mid=>"$mid"}] },{multiple=>1});
         mdb->master_doc->remove({ mid=>"$mid" },{multiple=>1});
         mdb->master->remove({ mid=>"$mid" },{multiple=>1});
-        cache->remove( qr/^ci:/ );
+        cache->remove({ d=>'ci' });
         delete $self->{mid} if ref $self;  # delete the mid value, in case a reuse is in place
         return 1;
     } else {
@@ -331,7 +330,7 @@ sub save_data {
             my $rdoc = { $my_rel => $master_row->{mid}, $other_rel => $other_mid, rel_type=>$rel_type_name, rel_field=>$rel->{field} };
             mdb->master_rel->find_or_create($rdoc);
             push @{$relations{ $rel->{field} }}, $other_mid;
-            cache->remove( qr/:$other_mid:/ );
+            cache->remove({ mid=>$other_mid });
         }
     }
     # now store the data
@@ -352,7 +351,7 @@ sub save_fields {
     delete $master_row->{_id}; # $set fails if _id is in hash
     my $yaml = Util->_dump($master_doc);
     # update mongo master
-    mdb->master->update({ mid=>"$mid" }, { '$set'=>{ %$master_row, yaml=>$yaml } }, { upsert=>1 });
+    mdb->master->update({ mid=>"$mid" }, { '$set'=>{ %$master_row, yaml=>$yaml } }, { upsert=>1, safe=>1 });
     # update master_doc
     if( my $row = mdb->master_doc->find_one({ mid=>"$mid" }) ) {
         my $id = $row->{_id};
@@ -362,7 +361,7 @@ sub save_fields {
         mdb->clean_doc($final_doc);
         $final_doc->{_id} = $id;  # preserve OID object
         $final_doc->{_sort} = {name=>lc $self->name};
-        mdb->master_doc->save({ %$final_doc, %{ $relations || {} } });
+        mdb->master_doc->save({ %$final_doc, %{ $relations || {} } },{ safe=>1 });
     } else {
         my $doc = { ( $master_row ? %$master_row : () ), %{ $master_doc || {} }, mid=>"$mid" };
         delete $doc->{yaml};
@@ -370,7 +369,7 @@ sub save_fields {
         Util->_unbless($final_doc);
         mdb->clean_doc($final_doc);
         $final_doc->{_sort} = {name=>lc $self->name};
-        mdb->master_doc->insert({ %$final_doc, %{ $relations || {} } });
+        mdb->master_doc->insert({ %$final_doc, %{ $relations || {} } },{ safe=>1 });
     }
     return $yaml;
 }
@@ -384,7 +383,7 @@ sub load {
     #say STDERR "----> SCOPE $mid =" . join( ', ', keys( $Baseliner::CI::mid_scope // {}) ) if $Baseliner::CI::mid_scope && Clarive->debug;
     return $scoped if $scoped;
     # in cache ?
-    my $cache_key = "ci:$mid:";
+    my $cache_key = { d=>'ci', mid=>"$mid" }; #"ci:$mid:";
     my $cached = cache->get( $cache_key );
     #Util->_warn( "Cached $mid" ) if $cached;
     return $cached if $cached;
@@ -579,7 +578,7 @@ sub related_cis {
     return @$scoped if $scoped;
     # in cache ?
     delete $opts{path};  # path are all visited cis and may be huge for a cache key
-    my $cache_key = [ "ci:$mid:", \%opts ];
+    my $cache_key = { d=>'ci', mid=>"$mid", a=>'related_cis', b=>\%opts }; #[ "ci:$mid:", \%opts ];
     if( my $cached = cache->get( $cache_key ) ) {
         return @$cached if ref $cached eq 'ARRAY';
     }
@@ -718,8 +717,8 @@ sub related {
     $mid // _fail 'Missing parameter `mid`';
     # in cache ? 
     my $opath = delete $opts{path}; # path are all visited cis and may be huge for a cache key
-    my $cache_key = [ "ci:$mid:",  %opts ];
-    if( my $cached = Baseliner->cache_get( $cache_key ) ) {
+    my $cache_key = { d=>'ci', mid=>"$mid", a=>'related', b=>\%opts }; #[ "ci:$mid:",  %opts ];
+    if( my $cached = cache->get( $cache_key ) ) {
         return @$cached if ref $cached eq 'ARRAY';
     }
     my $depth = $opts{depth} // 1;

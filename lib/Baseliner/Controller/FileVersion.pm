@@ -234,7 +234,7 @@ sub rename_folder : Local {
             $ci->update( name=>$name );
             # clean cache for topics/cis in this folder
             for my $chi_mid ( map { $_->{to_mid} } mdb->master_rel->find({ from_mid=>"$id" })->all ) {
-                $c->cache_remove( qr/:$chi_mid:/ ) if defined $chi_mid;
+                cache->remove({ mid=>"$chi_mid" }) if defined $chi_mid; # qr/:$chi_mid:/ ) 
             }
         }
         $c->stash->{json} = { success=>\1, msg=>_loc('Folder renamed'), name=>$name };
@@ -267,7 +267,7 @@ sub move_file : Local {
     # now create new location
     my $q = { from_mid=>$p->{to_directory}, to_mid=>$p->{from_file}, rel_type=>'folder_ci', rel_field=>'cis' };
     mdb->master_rel->update($q, $q,{ upsert=>1 });
-    $c->cache_remove( qr/:$p->{from_file}:/ );
+    cache->remove( qr/:$p->{from_file}:/ );
         
     $c->stash->{json} = { success=>\1, msg=>_loc('File moved') };
     $c->forward('View::JSON');
@@ -282,7 +282,7 @@ sub move_topic : Local {
         if($p->{from_directory}){
             mdb->master_rel->update({ to_mid=>$topic_mid, from_mid=>$p->{from_directory} },{ '$set'=>{ from_mid=>$p->{to_directory} } });
             # _fail(_loc('Source topic #%1 does not exist or is not in this folder anymore', $topic_mid )) unless $old_row;
-            $c->cache_remove( qr/:$$p{from_directory}:/ );
+            cache->remove( qr/:$$p{from_directory}:/ );
         } else {
             mdb->master_rel->update(
                 { to_mid => $topic_mid, from_mid => $p->{to_directory} },
@@ -290,8 +290,8 @@ sub move_topic : Local {
                 { upsert => 1 }
             );
         }
-        $c->cache_remove( qr/:$$p{to_directory}:/ );
-        $c->cache_remove( qr/:$topic_mid:/ );
+        cache->remove( qr/:$$p{to_directory}:/ );
+        cache->remove({ mid=>"$topic_mid" }); # qr/:$topic_mid:/ );
         $c->stash->{json} = { success=>\1, msg=>_loc('OK') };
     } catch {
         $c->stash->{json} = { success=>\0, msg=>shift() };
@@ -306,7 +306,7 @@ sub remove_topic : Local {
     
     if($p->{id_directory}){
         mdb->master_rel->remove({ from_mid=>"$p->{id_directory}", to_mid=>"$topic_mid", rel_type=>'folder_ci' });
-        $c->cache_remove( qr/:$topic_mid:/ );
+        cache->remove({ mid=>"$topic_mid" }); # qr/:$topic_mid:/ );
     }
     $c->stash->{json} = { success=>\1, msg=>_loc('OK') };
     $c->forward('View::JSON');

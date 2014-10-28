@@ -1,8 +1,27 @@
+#
+# Clarive Base Config File
+# ========================
+#
+#  DO NOT CHANGE THIS FILE!
+#
+#  Instead create environment files at  $CLARIVE_BASE/config/myenv.yml
+#  note: after changing environment files a full stop and start 
+#  of webserver/dispatcher needed. 
+#  web-reload is not enough
+#
 lang: en_US.UTF-8
 port: 3000
-cache: mongo
+    
+# cache configure
+cache: mongo 
+cache_config:
+   expire_seconds: 90000   # a bug in mongo prevents us from setting it to a day, 86400
+
+# redis is used by the queue workers
 redis:
     server: 'localhost:6379'
+
+# mongo database setup
 mongo:
     dbname: clarive
     retry_frequency: 5

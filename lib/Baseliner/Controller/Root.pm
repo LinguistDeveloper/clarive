@@ -450,7 +450,7 @@ sub cache_clear : Local {
     my ($self,$c) = @_; 
     $c->stash->{json} = try {
         _fail 'No permission' unless $c->has_action('action.development.cache_clear');
-        $c->cache_clear;
+        cache->clear;
         { success=>\1, msg=>"CACHE CLEARED..." };
     } catch {
         { success=>\0, msg=>"No permission" };
