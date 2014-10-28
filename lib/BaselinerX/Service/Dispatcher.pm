@@ -225,7 +225,7 @@ sub check_daemon {
     my $new_disp = $p->{new_disp} // 0;
 
     my ($instance) = grep { $_->{disp_id} eq $self->disp_id } _array $daemon->{active_instances};
-    _debug("Found instance: "._dump $instance);
+#    _debug("Found instance: "._dump $instance);
     
     if ( !$daemon->{active} ) {
         if ( !$new_disp ) {
