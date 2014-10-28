@@ -398,6 +398,9 @@ sub index_all {
         sem => [
             [{ key => 1},{ unique=>1, dropDups => 1 }],
         ],
+        sem_queue => [
+            [{ status=>1, key=>1 }],
+        ],
         topic_image => [
             [{ id_hash => 1 }],
         ],
