@@ -139,7 +139,8 @@
             {  name: 'host' },
             {  name: 'owner' },
             {  name: 'comments' },
-            {  name: 'grouping' },
+            {  name: 'when' },
+            {  name: 'ago' },
             {  name: 'day' },
             {  name: 'status_code' },
             {  name: 'status' },
@@ -320,12 +321,12 @@
       return;
     };
     var item_job_states = [
-        {  text: _('All'), handler: function(){ 
+        {  text: _('All'), hideOnClick:false, handler: function(){ 
               menu_job_states.items.each( function(i){
                   if( i.checked===false ) i.setChecked(true,false);
               });
         }},
-        {  text: _('Check None'), handler: function(){ 
+        {  text: _('Check None'), hideOnClick:false, handler: function(){ 
               menu_job_states.items.each( function(i){
                   if( i.checked===true ) i.setChecked(false,false);
               });
@@ -339,9 +340,10 @@
                   id_status: x.name,
                   text: _(x.name),
                   checked: job_states_check_state[x.name],
+                  hideOnClick:false,
                   checkHandler: function (obj) {
                       modify_job_states_check_state(obj.id_status);
-                      //item.parentMenu.ownerCt.setText( '<b>' + _('Baseline: %1',  x.bl ) + '</b>' );
+                      //item.parentMenu.ownerCt.setText( '<b>' + status_count + '</b>' );
                       store.baseParams.job_state_filter = Ext.util.JSON.encode(to_perl_bool(job_states_check_state));
                       store.reload();
                   }
@@ -428,16 +430,14 @@
     });
     // end
 
-    var group_field = 'grouping';
-
     var store = new Baseliner.GroupingStore({
             reader: reader,
             url: '/job/monitor_json',
             baseParams: { limit: ps, query_id: '<% $query_id %>', query: params.query },
             remoteSort: true,
             remoteGroup: true,
+            //groupField: 'when',
             sortInfo: { field: 'starttime', direction: "DESC" }
-//            groupField: group_field
     });
     
     // var paging = new Ext.PagingToolbar({
@@ -878,6 +878,11 @@
         return Baseliner.render_wrap( v.join(', ') );
     };
 
+    var render_ago = function(v,meta,rec,rowIndex,colIndex,store) {
+        if( ! v ) return '';
+        return rec.data.ago;
+    };
+
     var render_level = function(value,metadata,rec,rowIndex,colIndex,store) {
         var icon;
         var bold = false;
@@ -952,7 +957,8 @@
             deferredRender: true,
             startCollapsed: false,
             hideGroupedColumn: true,
-            // groupTextTpl: '{[ values.rs[0].data["day"] ]}',
+            //groupTextTpl: '{[ values.rs[0].data["day"] ]}',
+            //groupTextTpl: '{[ values.rs[0].data["ago"] ]}',  // TODO use this only when field is "when"
             getRowClass: function(record, index, p, store){
                 var css='';
                 p.body='';
@@ -1041,7 +1047,7 @@
                 { header: _('Owner'), width: 120, dataIndex: 'owner', sortable: true, hidden: true },	
                 { header: _('Runner'), width: 80, dataIndex: 'runner', sortable: true, hidden: true },	
                 { header: _('Rule'), width: 80, dataIndex: 'rule_name', sortable: false, hidden: true },	
-                { header: _('Grouping'), width: 120, dataIndex: 'grouping', hidden: true },	
+                { header: _('When'), width: 120, dataIndex: 'when', hidden: true, sortable: true, renderer: render_ago },	
                 { header: _('Comments'), hidden: true, width: 150, dataIndex: 'comments', sortable: true },
                 { header: _('PRE Start Date'), width: 130, dataIndex: 'pre_start', sortable: true , hidden: true }, 
                 { header: _('PRE End Date'), width: 130, dataIndex: 'pre_end', sortable: true , hidden: true }, 
