@@ -22,8 +22,12 @@ register 'action.job.run_in_proc' => { name=>'Run Jobs In-Proc, within the Web S
 register 'config.job.states' => {
   metadata => [
     { id      => "states",
-      default => [qw/EXPIRED RUNNING FINISHED CANCELLED ERROR KILLED 
-          WAITING IN-EDIT READY APPROVAL ROLLBACK REJECTED PAUSED RESUME SUSPENDED ROLLBACKFAIL ROLLEDBACK PENDING SUPERSEDED/]
+      default => [qw/
+          EXPIRED RUNNING FINISHED CANCELLED ERROR KILLED 
+          TRAPPED TRAPPED_PAUSED
+          WAITING IN-EDIT READY APPROVAL ROLLBACK REJECTED 
+          PAUSED RESUME SUSPENDED ROLLBACKFAIL ROLLEDBACK PENDING SUPERSEDED
+          /]
     }
   ]
 };

@@ -4,7 +4,7 @@ with 'Baseliner::Role::CI';
 
 has only_parsed => qw(is rw isa BoolCheckbox coerce 1 default 0);
 
-sub icon { '/static/images/icons/nature.gif' }
+sub icon { '/static/images/nature/nature.png' }
 
 =head2 filter_items
 

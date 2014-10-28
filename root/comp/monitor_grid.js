@@ -247,7 +247,16 @@
     });
     
             
-    var nature_menu = natures.map(function (x) {
+    var nature_menu = [{
+          text: _('All-f'),
+          handler: function (item) {
+            item.parentMenu.ownerCt.setText('');
+            delete store.baseParams.filter_nature;
+            store.reload();
+          }
+      },'-'
+    ];
+    nature_menu.push( natures.map(function (x) {
 
       // Por defecto siempre se van a mostrar en uppercase, pero tampoco est￡ de m￡s filtrar un poco esto.
       var nature_name = x.name == 'ZOS'      ? 'z/OS' 
@@ -266,21 +275,11 @@
           return;
         }
       }
-    });
+    }));
     
-    nature_menu.push({
-      icon: '/static/images/icons/all.png',
-      text: _('All-f'),
-      handler: function (item) {
-        item.parentMenu.ownerCt.setText( _('Nature') );
-        delete store.baseParams.filter_nature;
-        store.reload();
-      }
-    });
-   
     var nature_menu_btn = new Ext.Button({
       //text: _('Natures'),
-      icon: '/static/images/icons/nature.gif',
+      icon: '/static/images/nature/nature.png',
       menu: nature_menu
     });
 
@@ -320,47 +319,66 @@
       }
       return;
     };
-    var item_job_states = job_states_json.map(function (x) {
-      return {
-        id_status: x.name,
-        text: _(x.name),
-        checked: job_states_check_state[x.name],
-        checkHandler: function (obj) {
-          modify_job_states_check_state(obj.id_status);
-          store.load({
-            params: {
-              job_state_filter: Ext.util.JSON.encode(to_perl_bool(job_states_check_state))
-            }
-          });
-        }
-      };
-    });
+    var item_job_states = [
+        {  text: _('All'), handler: function(){ 
+              menu_job_states.items.each( function(i){
+                  if( i.checked===false ) i.setChecked(true,false);
+              });
+        }},
+        {  text: _('Check None'), handler: function(){ 
+              menu_job_states.items.each( function(i){
+                  if( i.checked===true ) i.setChecked(false,false);
+              });
+        }},
+        '-'
+    ];
+    item_job_states.push(  
+        job_states_json
+            .map(function (x) {
+              return {
+                  id_status: x.name,
+                  text: _(x.name),
+                  checked: job_states_check_state[x.name],
+                  checkHandler: function (obj) {
+                      modify_job_states_check_state(obj.id_status);
+                      //item.parentMenu.ownerCt.setText( '<b>' + _('Baseline: %1',  x.bl ) + '</b>' );
+                      store.baseParams.job_state_filter = Ext.util.JSON.encode(to_perl_bool(job_states_check_state));
+                      store.reload();
+                  }
+              }
+            })
+            .sort(function(a,b){ 
+                if(a.text== b.text) return 0;
+                return a.text > b.text? 1: -1;
+            })
+    );
     var menu_job_states = new Ext.menu.Menu({
       items: item_job_states
     });
 
     // Baseline Filter
 
-    var menu_list = <%$envs_json%>.map(function (x) {
-      return {
-        text: String.format('{0}: {1}', x.bl, x.name ),
-        icon: '/static/images/icons/baseline.gif',
-        handler: function (item) {
-          item.parentMenu.ownerCt.setText( '<b>' + _('Baseline: %1',  x.bl ) + '</b>' );
-          store.baseParams.filter_bl = x.bl;
-          store.reload();
-        }
-      };
-    });
+    var menu_list = [];
     menu_list.push({
-      icon: '/static/images/icons/all.png',
       text: _('All'),
       handler: function (item) {
-        item.parentMenu.ownerCt.setText( _('Baseline') );
+        item.parentMenu.ownerCt.setText('');
         delete store.baseParams.filter_bl;
         store.reload();
       }
-    });
+    },'-');
+    menu_list.push( <%$envs_json%>.map(function (x) {
+          return {
+            text: String.format('{0}: {1}', x.bl, x.name ),
+            icon: '/static/images/icons/baseline.gif',
+            handler: function (item) {
+              item.parentMenu.ownerCt.setText( '<b>' + _('Baseline: %1',  x.bl ) + '</b>' );
+              store.baseParams.filter_bl = x.bl;
+              store.reload();
+            }
+          };
+        })
+    );
     var menu_bl = new Ext.Button({
       //text: _("Baseline"),
       icon: '/static/images/icons/baseline.gif',
@@ -372,6 +390,15 @@
     var menu_type_filter = new Ext.Button({
       text: _('Type'),
       menu: [
+          {
+            text: _('All'),
+            handler: function (item) {
+               item.parentMenu.ownerCt.setText( _('Type') );
+               delete store.baseParams.filter_type;
+               store.reload();
+            }
+          },
+          '-',
           {
             text: _('promote'),
             icon: '/static/images/icons/arrow_right.gif',
@@ -396,14 +423,6 @@
                store.baseParams.filter_type = 'static';
                store.reload();
             }            
-          },{
-            text: _('All'),
-            icon: '/static/images/icons/all.png',
-            handler: function (item) {
-               item.parentMenu.ownerCt.setText( _('Type') );
-               delete store.baseParams.filter_type;
-               store.reload();
-            }
           }
       ]
     });
