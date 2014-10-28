@@ -2212,8 +2212,8 @@ Baseliner.MetaForm = Ext.extend( Ext.Panel, {
         else if( meta.type == 'ci' ) {
             var bp = { _whoami:'MetaForm', bl: bl };
             if( meta.role && meta.role != 'CI' ) bp.role = meta.role;
+            else if( meta.classname ) bp.classname = meta.classname;
             else bp.role = 'CI';  // avoids a bad store call
-            if( meta.classname ) bp.classname = meta.classname;
             var store = new Baseliner.store.CI({ baseParams: bp });
             store.on('load', function(){
                 if( self.data && self.data[id]!== undefined )
@@ -2506,15 +2506,15 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
         var var_ci_mandatory;
         var var_ci_multiple;
         if (ci.var_ci_mandatory == 1){
-            var_ci_mandatory = 'false';
+            var_ci_mandatory = false;
         }else{
-            var_ci_mandatory = 'true';
+            var_ci_mandatory = true;
         }
 
         if (ci.var_ci_multiple == 1){
-            var_ci_multiple = 'false';
+            var_ci_multiple = false;
         }else{
-            var_ci_multiple = 'true';
+            var_ci_multiple = true;
         }
 
         var meta = {
