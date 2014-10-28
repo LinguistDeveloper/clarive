@@ -308,6 +308,7 @@ sub job_items {
             $projects{ $project->mid }{repos}{ $repo->mid }{repo} //= $repo;
             push @{ $projects{ $project->mid }{repos}{ $repo->mid }{revisions} }, $rev; 
         }
+        _debug("Changeset $cs->{mid} detected for job");
     }
     
     for my $project_group ( values %projects ) {
@@ -458,16 +459,25 @@ sub checkout {
     _fail _loc 'Missing job_dir' unless length $job_dir;
     
     my $cnt = 0;
-    my @item_paths;
     my @items = _array( $stash->{items} );
     for my $item ( @items ) {
-        push @item_paths, $item->path;
         $item->checkout( dir=>$job_dir );
         $cnt++;
     }
-    
-    $log->info( _loc('Checked out %1 item(s) to %2', $cnt, $job_dir), [ map { "($_->{status}) $_->{path} ($_->{versionid})" } @items ] );
-    
+
+    $log->info(
+        _loc( 'Checked out %1 item(s) to %2', $cnt, $job_dir ),
+        [   map {
+                    my $path = $_->path;
+                    $path =~ s/\n//g;
+
+                      "("
+                    . $_->status . ") "
+                    . $path . " ("
+                    . $_->versionid . ")"
+            } @items
+        ]
+    );
 }
 
 sub nature_items {
