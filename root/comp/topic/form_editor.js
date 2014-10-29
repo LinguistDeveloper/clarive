@@ -374,16 +374,18 @@ Baseliner.FieldEditor = Ext.extend( Ext.Panel, {
         
             var props = [];
             var config_form;
-            if( field_meta.config_form ) {
-                config_form = new Baseliner.FormPanel({ 
-                    title:_('Custom'), 
-                    layout: 'fit',
-                    frame: false, border: false,
-                    items:[ { xtype:'textarea', height: 80, fieldLabel: 'XXX' } ] 
-                });
-                props.push( config_form ); 
-                // TODO call config_form url
-            }
+            try{
+                if( field_meta.config_form ) {
+                    config_form = new Baseliner.FormPanel({ 
+                        title:_('Custom'), 
+                        layout: 'fit',
+                        frame: false, border: false,
+                        items:[ { xtype:'textarea', height: 80, fieldLabel: 'XXX' } ] 
+                    });
+                    props.push( config_form ); 
+                    // TODO call config_form url
+                }
+            }catch(err){};
             props.push( tree );
 
             var field_config = new Ext.TabPanel({ 
