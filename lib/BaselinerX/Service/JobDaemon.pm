@@ -134,7 +134,7 @@ sub job_daemon {
             }
         }
         $self->check_job_expired($config);
-        $self->check_cancelled();
+        $self->check_cancelled($config);
         last if $EXIT_NOW;
         if ( $sem ) {
             $sem->release;
@@ -239,7 +239,7 @@ sub check_job_expired {
     #   but if they have any of these statuses, they should have a pid>0 and exist, otherwise they are dead
     my @running = ('RUNNING','PAUSED','TRAPPED');
     $rs = ci->job->find({ status => mdb->in(@running) });
-    my $hostname = Util->my_hostname();
+    my $hostname = $config->{id};
     while( my $doc = $rs->next ) {
         _debug sprintf "Checking job row alive: job=%s, mid=%s, pid=%s, host=%s (my host=%s)", $doc->{name}, $doc->{mid}, $doc->{pid}, $doc->{host}, $hostname;
         if( $doc->{host} eq $hostname && $doc->{step} =~ /PRE|RUN|POST/ ) {
@@ -288,16 +288,16 @@ sub check_job_expired {
 
 # Cancelled by user in monitor
 sub check_cancelled {
-    my ($self)=@_;
-    my $hostname = Util->my_hostname();
+    my ($self, $config)=@_;
+    my $hostname = $config->{id};
     my $rs = ci->job->find({ 
             status => 'CANCELLED', '$or'=>[ {pid=>{'$gt' => 0}},{ pid=>{ '$ne'=>'0'}} ] 
     });
     while( my $doc = $rs->next ) {
-        my $job = ci->new( $doc->{mid} );
-        _debug sprintf "Looking for job kill candidate: job=%s, mid=%s, pid=%s, host=%s (my host=%s)", $job->name, $job->mid, $job->pid, $job->host, $hostname;
-        if( $job->host eq $hostname ) {
-            if( $job->pid > 0  ) {
+        _debug sprintf "Looking for job kill candidate: job=%s, mid=%s, pid=%s, host=%s (my host=%s)", $doc->{name}, $doc->{mid}, $doc->{pid}, $doc->{host}, $hostname;
+        if( $doc->{host} eq $hostname ) {
+            if( $doc->{pid} > 0  ) {
+                my $job = ci->new( $doc->{mid} );
                 if( pexists($job->pid) ) {
                     my $sig = 16;
                     _warn "Killing job (sig=$sig): " . $job->name;
