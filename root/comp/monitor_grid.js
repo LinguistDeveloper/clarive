@@ -1168,7 +1168,9 @@
                                             function(res){ 
                                                 Baseliner.message( sel.data.name, _('Job Restarted') );
                                                 but.enable();
-                                                store.reload();
+                                                try{
+                                                    store.reload();
+                                                }catch(err){};
                                                 win_res.close();
                                             },
                                             function(res) { 
