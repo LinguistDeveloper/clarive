@@ -243,6 +243,39 @@
     var dsl_node = function( node ) {
         node.getOwnerTree().rule_dsl(node,true);
     };
+    var copy_node = function( node ) {
+        var copy = clone_node( node ); 
+        clipboard = { node: copy };
+    };
+    var copy_shortcut = function( node ) {
+        var id_shortcut = (Baseliner.name_to_id(node.text || 'LABEL') + '_' + new Date().format('Ymdhis')).toUpperCase();
+        clipboard = { call_shortcut: id_shortcut, node: node };
+    }
+    var paste_node = function( node ) {
+        if( clipboard && clipboard.call_shortcut ) { // it's a shortcut!
+            if( clipboard.node.attributes ) {
+                clipboard.node.attributes.id_shortcut = clipboard.call_shortcut;
+            } else {
+                Baseliner.error( _('Shortcut'), _('Could not find source node for shortcut') );
+                return;
+            }
+            node.appendChild({
+                text: clipboard.node.text,
+                call_shortcut: clipboard.call_shortcut,
+                key: 'statement.shortcut', 
+                leaf: true,
+                icon: '/static/images/icons/shortcut.png'
+            });
+        } else if( clipboard ) {
+            var p = clipboard.node;
+            p.id = Ext.id();
+            p.cascade(function(n_chi){
+                n_chi.id = Ext.id();
+            });
+            node.appendChild( p );
+        }
+        //clipboard = 
+    };
     var export_node = function( node ) {
         //node.getOwnerTree().rule_export(node,true);
         var stmts = encode_tree( node,true );
@@ -279,27 +312,13 @@
             items: impbox, layout:'fit' });       
         win.show();
     };
-    var copy_node = function( node ) {
-        var copy = clone_node( node ); 
-        clipboard = { node: copy };
-    };
-    var paste_node = function( node ) {
-        if( clipboard ) {
-            var p = clipboard.node;
-            p.id = Ext.id();
-            p.cascade(function(n_chi){
-                n_chi.id = Ext.id();
-            });
-            node.appendChild( p );
-        }
-        //clipboard = 
-    };
     var node_decorate = function( node ) {
         var attr = node.attributes;
         var rf = _bool(attr.run_forward,true);
         var rr = _bool(attr.run_rollback,true);
         var props = [], parallel_mode=[], data_key='';
         var semaphore_key='';
+        var shortcut = false;
         if( !attr.disabled ) {
             if( rf && !rr ) {
                 props.push('NO ROLLBACK');
@@ -319,6 +338,9 @@
             if( attr.semaphore_key ) {
                 semaphore_key = '\u00D8 ' + attr.semaphore_key;
             }
+            if( attr.id_shortcut ) {
+                shortcut = true ;
+            }
         }
         if( attr.note ) node.setTooltip( attr.note );
         var nel = node.ui.getTextEl();
@@ -331,8 +353,10 @@
             if( semaphore_key.length ) badges += '<span class="label" style="font-size: 9px; background-color:#906060">'+semaphore_key+'</span>&nbsp;';
             if( props.length ) badges += props.map(function(r){ return '<span class="badge" style="font-size: 9px;">'+r+'</span>&nbsp;' }).join('');
             if( parallel_mode.length ) badges += parallel_mode.map(function(r){ return '<span class="badge" style="font-size: 9px; background-color:#609060; text-transform: uppercase;">'+r+'</span>&nbsp;' }).join('');
+            if( shortcut ) badges += '<img style="height: 12px" src="/static/images/icons/shortcut.png" />';
             if( badges.length ) {
-                nel.insertAdjacentHTML( 'afterEnd', '<span id="boot" parent-node-props="'+nn+'" style="margin: 0px 0px 0px 4px; background: transparent">'+badges+'</span>');
+                nel.insertAdjacentHTML( 'afterEnd', 
+                    '<span id="boot" parent-node-props="'+nn+'" style="margin: 0px 0px 0px 4px; background: transparent">'+badges+'</span>');
             }
         }
     };
@@ -642,6 +666,7 @@
                     { text: _('Note'), handler: function(){ meta_node( node, 2 ) }, icon:'/static/images/icons/field.png' },
                     { text: _('Copy'), handler: function(item){ copy_node( node ) }, icon:'/static/images/icons/copy.gif' },
                     { text: _('Cut'), handler: function(item){ cut_node( node ) }, icon:'/static/images/icons/cut.gif' },
+                    { text: _('Copy Shortcut'), handler: function(item){ copy_shortcut( node ) }, icon:'/static/images/icons/shortcut-add.png' },
                     { text: _('Paste'), handler: function(item){ paste_node( node ) }, icon:'/static/images/icons/paste.png' },
                     { text: _('DSL'), handler: function(item){ dsl_node( node ) }, icon:'/static/images/icons/edit.png' },
                     { text: _('Export'), handler: function(item){ export_node( node ) }, icon:'/static/images/icons/export.png' },
