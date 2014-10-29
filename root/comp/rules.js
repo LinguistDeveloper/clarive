@@ -243,6 +243,42 @@
     var dsl_node = function( node ) {
         node.getOwnerTree().rule_dsl(node,true);
     };
+    var export_node = function( node ) {
+        //node.getOwnerTree().rule_export(node,true);
+        var stmts = encode_tree( node,true );
+        var json = Ext.util.JSON.encode( stmts[0] );
+        var win = new Baseliner.Window({ height: 400, width: 800, 
+            items: new Baseliner.MonoTextArea({ value: json }), layout:'fit' });       
+        win.show();
+    };
+    var import_node = function( node_parent ) {
+        //node.getOwnerTree().rule_export(node,true);
+        if( node_parent.leaf ) {
+            Baseliner.error(_('Import'), _('Cannot import into leaf node') );
+            return;
+        }
+        var impbox = new Baseliner.MonoTextArea({ value: '' });
+        var importer = function(){
+            var json = impbox.getValue(); 
+            var ndata = Ext.util.JSON.decode( json );
+            var processnode = function(n){
+                var at = n.attributes;
+                delete at.loader;
+                at.id = Ext.id();
+                return Ext.apply({ 
+                    children: n.children.map(function(chi){ return processnode(chi) }),
+                }, at );
+            }
+            var node = processnode(ndata);
+            node_parent.appendChild( node );
+            win.close();
+        }
+        var win = new Baseliner.Window({ 
+            height: 400, width: 800, 
+            tbar: ['->', { xtype:'button', text:_('Import'), icon: '/static/images/icons/import.png', handler: importer }],
+            items: impbox, layout:'fit' });       
+        win.show();
+    };
     var copy_node = function( node ) {
         var copy = clone_node( node ); 
         clipboard = { node: copy };
@@ -489,7 +525,6 @@
             root.cascade(function(nc){
                 nc.attributes.expanded = nc.isExpanded();
             });
-            console.dir(root);
             var stmts = encode_tree( root );
             Baseliner.message( _('Rules'), _('Validating and saving rule...') );
             var json = Ext.util.JSON.encode( stmts );
@@ -609,6 +644,8 @@
                     { text: _('Cut'), handler: function(item){ cut_node( node ) }, icon:'/static/images/icons/cut.gif' },
                     { text: _('Paste'), handler: function(item){ paste_node( node ) }, icon:'/static/images/icons/paste.png' },
                     { text: _('DSL'), handler: function(item){ dsl_node( node ) }, icon:'/static/images/icons/edit.png' },
+                    { text: _('Export'), handler: function(item){ export_node( node ) }, icon:'/static/images/icons/export.png' },
+                    { text: _('Import Here'), handler: function(item){ import_node( node ) }, icon:'/static/images/icons/import.png' },
                     { text: _('Toggle'), handler: function(item){ toggle_node(node) }, icon:'/static/images/icons/activate.png' },
                     { text: _('Delete'), handler: function(item){ delete node.parentNode.attributes.children; node.parentNode.removeChild(node, true);  }, icon:'/static/images/icons/delete.gif' } 
                 ]

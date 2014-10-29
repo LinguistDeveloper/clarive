@@ -1158,6 +1158,9 @@ msgstr "Rehacer"
 msgid "Undo"
 msgstr "Deshacer"
 
+msgid "Import Here"
+msgstr "Importar Aquí"
+
 msgid "Import"
 msgstr "Importar"
 

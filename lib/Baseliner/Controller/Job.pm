@@ -52,7 +52,7 @@ sub job_create : Path('/job/create')  {
 sub bl_combo : Local {
     my ($self,$c)=@_;
     my $p = $c->req->{body_data} // $c->req->params;
-  _debug( $p );
+    
     my $bls = $p->{bls};
     my $action = 'action.job.create';  # we use the action to find which bls this role can create jobs on
     my @bl_arr = ();
