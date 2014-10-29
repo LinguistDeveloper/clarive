@@ -766,7 +766,7 @@ sub comment : Local {
             }
 
             # modified_on 
-            mdb->topic->update({ mid=>"$topic_mid" },{ '$set'=>{ modified_on=>mdb->ts } });
+            mdb->topic->update({ mid=>"$topic_mid" },{ '$set'=>{ modified_on=>mdb->ts, modified_by=>$c->username } });
             cache->remove({ mid=>"$topic_mid" }) if length $topic_mid;  # qr/:$topic_mid:/ )
             $c->stash->{json} = {
                 msg     => $msg,
