@@ -13,8 +13,6 @@
         tbar: [],
         bodyStyle:{ 'background-color':'#fff', padding:' 5px 5px 5px 5px', overflow:'auto'}
     });
-
-
     var html = Baseliner.ajax_json('/'+controller+'/view_diff', { repo_dir: repo_dir, rev_num: rev_num, branch: branch }, function(res){
     	var get_section_ids = function(){
     		for(var i=0; i < res.changes.length; i++) {

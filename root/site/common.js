@@ -1141,13 +1141,14 @@ Baseliner.read_pdf = function( url ) {
 
 Baseliner.show_revision = function( mid ) {
     Baseliner.ajaxEval( '/ci/url', { mid: mid }, function(res){
-        if( res.url.repo_type == 'svn' ) { // SVN
+        if( res.url.repo_type == 'svn' || res.url.repo_type == 'plastic' ) { // SVN OR PLASTIC
             var url =  res.url.url;
             var title =  res.url.title;
             var params = {
                 repo_dir: res.url.repo_dir,
                 rev_num: res.url.rev_num,
-                branch: res.url.branch
+                branch: res.url.branch,
+                controller: res.url.controller
             };
 
             Baseliner.add_tabcomp( url, title, params );             
