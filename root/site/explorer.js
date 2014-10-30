@@ -372,13 +372,22 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             self.$tree_projects.onload = callback;     
         };
 
-        var show_favorites = function(callback) {
+        var show_favorites = function(callback,switch_on_empty) {
             if( !self.$tree_favorites ) {
                 self.$tree_favorites = new Baseliner.ExplorerTree({ dataUrl : '/lifecycle/tree' , baseParams: { favorites: true } });
                 self.add( self.$tree_favorites );
             }
             self.getLayout().setActiveItem( self.$tree_favorites );
             self.$tree_favorites.onload = callback;
+            if( switch_on_empty ) {
+                self.$tree_favorites.on('load', function(){
+                    // if we don't have any favorites, switch to the projects view
+                    if( self.$tree_favorites.root && !self.$tree_favorites.root.hasChildNodes() ) {
+                        show_projects();
+                        button_projects.toggle(true);
+                    }
+                });
+            }
         };
 
         var show_workspaces = function(callback) {
@@ -677,7 +686,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
 
 
         Baseliner.Explorer.superclass.initComponent.call(this);
-        self.on('afterrender', function(){ show_favorites(function() { button_favorites.enable(); }); button_collapse.hide(); });
+        self.on('afterrender', function(){ show_favorites(function() { button_favorites.enable(); },true); button_collapse.hide(); });
         self.on('beforeexpand', function() { button_stick.show();})
         self.on('beforecollapse', function() { button_stick.hide();})
     },
