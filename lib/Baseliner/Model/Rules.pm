@@ -263,6 +263,8 @@ sub dsl_build {
         my $needs_rollback_mode = $data->{needs_rollback_mode} // 'none'; 
         my $needs_rollback_key  = $data->{needs_rollback_key} // $name_id;
         my $parallel_mode = length $attr->{parallel_mode} && $attr->{parallel_mode} ne 'none' ? $attr->{parallel_mode} : '';
+        push @dsl, sprintf( '%s:', $attr->{goto_label} ) . "\n" if length $attr->{goto_label};  
+        push @dsl, sprintf( 'sub %s {', $attr->{id_shortcut} ) . "\n" if length $attr->{id_shortcut};  
 
         if( my $semaphore_key = $attr->{semaphore_key} ) {
             # consider using a hash: $stash->{_sem}{ $semaphore_key } = ...
@@ -318,6 +320,10 @@ sub dsl_build {
             _fail _loc 'Missing dsl/service key for node %1', $name;
         }
         push @dsl, "}\n" if $rb_close_me;
+        if( length $attr->{id_shortcut} ) {
+            push @dsl, "};\n";
+            push @dsl, sprintf( "%s();\n", $attr->{id_shortcut} );
+        }
     }
 
     my $dsl = join "\n", @dsl;
@@ -952,6 +958,18 @@ register 'statement.fail' => {
         sprintf(q{
             Util->_fail( q{%s} );
         }, $n->{msg}, $self->dsl_build( $n->{children}, %p ) );
+    }
+};
+
+register 'statement.shortcut' => {
+    text => 'Task Shortcut',
+    data => { call_shortcut => 'SHORTCUT_NAME' },
+    icon => '/static/images/icons/shortcut.png',
+    dsl=>sub{
+        my ($self, $n, %p ) = @_;
+        sprintf(q{
+            %s();
+        }, $n->{call_shortcut} );
     }
 };
 

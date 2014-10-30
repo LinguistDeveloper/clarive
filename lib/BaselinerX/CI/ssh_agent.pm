@@ -19,7 +19,10 @@ has ssh     => (
         Clarive->debug and $Net::OpenSSH::debug |= 8;
         my $uri = $self->_build_uri;
         require Net::OpenSSH;
-        my $n = Net::OpenSSH->new( $uri );
+        my $n = Net::OpenSSH->new( $uri, 
+            master_opts      => [ -F => '/dev/null' ],
+            default_ssh_opts => [ -F => '/dev/null' ] 
+        );
         $n->error and _throw "ssh: Could not connect to $uri: " . $n->error;
         $n;
     },

@@ -1158,6 +1158,9 @@ msgstr "Rehacer"
 msgid "Undo"
 msgstr "Deshacer"
 
+msgid "Import Here"
+msgstr "Importar Aquí"
+
 msgid "Import"
 msgstr "Importar"
 
@@ -2420,6 +2423,12 @@ msgstr "Incorporando ficheros"
 
 msgid "Checkin"
 msgstr "Incorporar"
+
+msgid "Check All"
+msgstr "Marcar Todas"
+
+msgid "Check None"
+msgstr "Marcar Ninguno"
 
 msgid "Paused"
 msgstr "Retenido"

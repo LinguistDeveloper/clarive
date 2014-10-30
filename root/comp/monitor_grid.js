@@ -139,7 +139,8 @@
             {  name: 'host' },
             {  name: 'owner' },
             {  name: 'comments' },
-            {  name: 'grouping' },
+            {  name: 'when' },
+            {  name: 'ago' },
             {  name: 'day' },
             {  name: 'status_code' },
             {  name: 'status' },
@@ -247,7 +248,16 @@
     });
     
             
-    var nature_menu = natures.map(function (x) {
+    var nature_menu = [{
+          text: _('All-f'),
+          handler: function (item) {
+            item.parentMenu.ownerCt.setText('');
+            delete store.baseParams.filter_nature;
+            store.reload();
+          }
+      },'-'
+    ];
+    nature_menu.push( natures.map(function (x) {
 
       // Por defecto siempre se van a mostrar en uppercase, pero tampoco est￡ de m￡s filtrar un poco esto.
       var nature_name = x.name == 'ZOS'      ? 'z/OS' 
@@ -266,21 +276,11 @@
           return;
         }
       }
-    });
+    }));
     
-    nature_menu.push({
-      icon: '/static/images/icons/all.png',
-      text: _('All-f'),
-      handler: function (item) {
-        item.parentMenu.ownerCt.setText( _('Nature') );
-        delete store.baseParams.filter_nature;
-        store.reload();
-      }
-    });
-   
     var nature_menu_btn = new Ext.Button({
       //text: _('Natures'),
-      icon: '/static/images/icons/nature.gif',
+      icon: '/static/images/nature/nature.png',
       menu: nature_menu
     });
 
@@ -320,47 +320,67 @@
       }
       return;
     };
-    var item_job_states = job_states_json.map(function (x) {
-      return {
-        id_status: x.name,
-        text: _(x.name),
-        checked: job_states_check_state[x.name],
-        checkHandler: function (obj) {
-          modify_job_states_check_state(obj.id_status);
-          store.load({
-            params: {
-              job_state_filter: Ext.util.JSON.encode(to_perl_bool(job_states_check_state))
-            }
-          });
-        }
-      };
-    });
+    var item_job_states = [
+        {  text: _('All'), hideOnClick:false, handler: function(){ 
+              menu_job_states.items.each( function(i){
+                  if( i.checked===false ) i.setChecked(true,false);
+              });
+        }},
+        {  text: _('Check None'), hideOnClick:false, handler: function(){ 
+              menu_job_states.items.each( function(i){
+                  if( i.checked===true ) i.setChecked(false,false);
+              });
+        }},
+        '-'
+    ];
+    item_job_states.push(  
+        job_states_json
+            .map(function (x) {
+              return {
+                  id_status: x.name,
+                  text: _(x.name),
+                  checked: job_states_check_state[x.name],
+                  hideOnClick:false,
+                  checkHandler: function (obj) {
+                      modify_job_states_check_state(obj.id_status);
+                      //item.parentMenu.ownerCt.setText( '<b>' + status_count + '</b>' );
+                      store.baseParams.job_state_filter = Ext.util.JSON.encode(to_perl_bool(job_states_check_state));
+                      store.reload();
+                  }
+              }
+            })
+            .sort(function(a,b){ 
+                if(a.text== b.text) return 0;
+                return a.text > b.text? 1: -1;
+            })
+    );
     var menu_job_states = new Ext.menu.Menu({
       items: item_job_states
     });
 
     // Baseline Filter
 
-    var menu_list = <%$envs_json%>.map(function (x) {
-      return {
-        text: String.format('{0}: {1}', x.bl, x.name ),
-        icon: '/static/images/icons/baseline.gif',
-        handler: function (item) {
-          item.parentMenu.ownerCt.setText( '<b>' + _('Baseline: %1',  x.bl ) + '</b>' );
-          store.baseParams.filter_bl = x.bl;
-          store.reload();
-        }
-      };
-    });
+    var menu_list = [];
     menu_list.push({
-      icon: '/static/images/icons/all.png',
       text: _('All'),
       handler: function (item) {
-        item.parentMenu.ownerCt.setText( _('Baseline') );
+        item.parentMenu.ownerCt.setText('');
         delete store.baseParams.filter_bl;
         store.reload();
       }
-    });
+    },'-');
+    menu_list.push( <%$envs_json%>.map(function (x) {
+          return {
+            text: String.format('{0}: {1}', x.bl, x.name ),
+            icon: '/static/images/icons/baseline.gif',
+            handler: function (item) {
+              item.parentMenu.ownerCt.setText( '<b>' + _('Baseline: %1',  x.bl ) + '</b>' );
+              store.baseParams.filter_bl = x.bl;
+              store.reload();
+            }
+          };
+        })
+    );
     var menu_bl = new Ext.Button({
       //text: _("Baseline"),
       icon: '/static/images/icons/baseline.gif',
@@ -372,6 +392,15 @@
     var menu_type_filter = new Ext.Button({
       text: _('Type'),
       menu: [
+          {
+            text: _('All'),
+            handler: function (item) {
+               item.parentMenu.ownerCt.setText( _('Type') );
+               delete store.baseParams.filter_type;
+               store.reload();
+            }
+          },
+          '-',
           {
             text: _('promote'),
             icon: '/static/images/icons/arrow_right.gif',
@@ -396,20 +425,10 @@
                store.baseParams.filter_type = 'static';
                store.reload();
             }            
-          },{
-            text: _('All'),
-            icon: '/static/images/icons/all.png',
-            handler: function (item) {
-               item.parentMenu.ownerCt.setText( _('Type') );
-               delete store.baseParams.filter_type;
-               store.reload();
-            }
           }
       ]
     });
     // end
-
-    var group_field = 'grouping';
 
     var store = new Baseliner.GroupingStore({
             reader: reader,
@@ -417,8 +436,8 @@
             baseParams: { limit: ps, query_id: '<% $query_id %>', query: params.query },
             remoteSort: true,
             remoteGroup: true,
+            //groupField: 'when',
             sortInfo: { field: 'starttime', direction: "DESC" }
-//            groupField: group_field
     });
     
     // var paging = new Ext.PagingToolbar({
@@ -859,6 +878,11 @@
         return Baseliner.render_wrap( v.join(', ') );
     };
 
+    var render_ago = function(v,meta,rec,rowIndex,colIndex,store) {
+        if( ! v ) return '';
+        return rec.data.ago;
+    };
+
     var render_level = function(value,metadata,rec,rowIndex,colIndex,store) {
         var icon;
         var bold = false;
@@ -933,7 +957,8 @@
             deferredRender: true,
             startCollapsed: false,
             hideGroupedColumn: true,
-            // groupTextTpl: '{[ values.rs[0].data["day"] ]}',
+            //groupTextTpl: '{[ values.rs[0].data["day"] ]}',
+            //groupTextTpl: '{[ values.rs[0].data["ago"] ]}',  // TODO use this only when field is "when"
             getRowClass: function(record, index, p, store){
                 var css='';
                 p.body='';
@@ -1022,7 +1047,7 @@
                 { header: _('Owner'), width: 120, dataIndex: 'owner', sortable: true, hidden: true },	
                 { header: _('Runner'), width: 80, dataIndex: 'runner', sortable: true, hidden: true },	
                 { header: _('Rule'), width: 80, dataIndex: 'rule_name', sortable: false, hidden: true },	
-                { header: _('Grouping'), width: 120, dataIndex: 'grouping', hidden: true },	
+                { header: _('When'), width: 120, dataIndex: 'when', hidden: true, sortable: true, renderer: render_ago },	
                 { header: _('Comments'), hidden: true, width: 150, dataIndex: 'comments', sortable: true },
                 { header: _('PRE Start Date'), width: 130, dataIndex: 'pre_start', sortable: true , hidden: true }, 
                 { header: _('PRE End Date'), width: 130, dataIndex: 'pre_end', sortable: true , hidden: true }, 
@@ -1143,7 +1168,9 @@
                                             function(res){ 
                                                 Baseliner.message( sel.data.name, _('Job Restarted') );
                                                 but.enable();
-                                                store.reload();
+                                                try{
+                                                    store.reload();
+                                                }catch(err){};
                                                 win_res.close();
                                             },
                                             function(res) { 

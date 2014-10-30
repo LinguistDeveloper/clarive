@@ -22,8 +22,12 @@ register 'action.job.run_in_proc' => { name=>'Run Jobs In-Proc, within the Web S
 register 'config.job.states' => {
   metadata => [
     { id      => "states",
-      default => [qw/EXPIRED RUNNING FINISHED CANCELLED ERROR KILLED 
-          WAITING IN-EDIT READY APPROVAL ROLLBACK REJECTED PAUSED RESUME SUSPENDED ROLLBACKFAIL ROLLEDBACK PENDING SUPERSEDED/]
+      default => [qw/
+          EXPIRED RUNNING FINISHED CANCELLED ERROR KILLED 
+          TRAPPED TRAPPED_PAUSED
+          WAITING IN-EDIT READY APPROVAL ROLLBACK REJECTED 
+          PAUSED RESUME SUSPENDED ROLLBACKFAIL ROLLEDBACK PENDING SUPERSEDED
+          /]
     }
   ]
 };
@@ -48,7 +52,7 @@ sub job_create : Path('/job/create')  {
 sub bl_combo : Local {
     my ($self,$c)=@_;
     my $p = $c->req->{body_data} // $c->req->params;
-  _debug( $p );
+    
     my $bls = $p->{bls};
     my $action = 'action.job.create';  # we use the action to find which bls this role can create jobs on
     my @bl_arr = ();

@@ -1013,6 +1013,9 @@ my $init = sub {
 
 my $ci_coerce = sub {
     my ($tc,$val,$params,$init_arg,$weaken) = @_;
+    
+    local $SIG{__DIE__} = undef; # avoid Moose::Util "isa" errors popping up
+
     # needs coersion?
     if( ! $tc->check( $val ) ) {
         # CIs

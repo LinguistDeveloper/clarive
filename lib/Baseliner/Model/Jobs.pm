@@ -33,6 +33,7 @@ our $group_keys = {
     schedtime    => 'schedtime',
     maxstarttime => 'maxstarttime',
     endtime      => 'endtime',
+    when         => 'schedtime',
     comments     => 'comments',
     username     => 'username',
     rollback     => 'rollback',
@@ -73,11 +74,14 @@ sub monitor {
     my @order_by;
     if ( length($groupby) ) {
         $groupdir = $groupdir eq 'ASC' ? 1 : -1;
-        @order_by = ( $group_keys->{$groupby} => $groupdir, $group_keys->{$sort} => $dir );
+        @order_by = ( 
+            $group_keys->{$groupby} => ($groupby eq 'when'?-1:$groupdir), 
+            $group_keys->{$sort} => $dir 
+        );
     } else {
         @order_by = ( $group_keys->{$sort} => $dir );
     }
-
+    
     $start=$p->{next_start} if $p->{next_start} && $start && $query;
 
     my $page = to_pages( start=>$start, limit=>$limit );
@@ -194,7 +198,7 @@ sub monitor {
         my $last_log_message = $job->{last_log_message};
 
         # Scheduled, Today, Yesterday, Weekdays 1..7, 1..4 week ago, Last Month, Older
-        my $grouping='';
+        my $when='';
         my $day;  
         my $sdt = parse_dt( '%Y-%m-%d %H:%M:%S', $job->{starttime} // $job->{ts}  );
         my $dur =  $today - $sdt; 
@@ -216,7 +220,7 @@ sub monitor {
           : $dur->{days} == 0  ? $sdt < $today ? [ 2,  _loc( $sdt->day_name ) ]
                                : $sdt > $ahora ? [ 0,  _loc('Upcoming') ] : [ 1,  _loc('Today') ]
           :                      [ 0,  _loc('Upcoming') ];
-        $grouping = $day->[0];
+        $when = $day->[0];
         my ($last_exec) = sort { $b cmp $a } keys %{$job->{milestones}};
 
         push @rows, {
@@ -226,7 +230,7 @@ sub monitor {
             bl           => $job->{bl},
             bl_text      => $job->{bl},  #TODO resolve bl name
             ts           => $job->{ts},
-            # show only date if grouping 
+            # show only date if when 
             starttime    => ( $groupby eq 'starttime' ? substr($job->{starttime},0,10) : $job->{starttime} ), 
             schedtime    => ( $groupby eq 'schedtime' ? substr($job->{schedtime},0,10) : $job->{schedtime} ),
             maxstarttime => ( $groupby eq 'maxstarttime' ? substr($job->{maxstarttime},0,10) : $job->{maxstarttime} ),
@@ -238,7 +242,8 @@ sub monitor {
             has_warnings => $job->{has_warnings},
             key          => $job->{job_key},
             last_log     => $last_log_message,
-            grouping     => $grouping,
+            when         => $when,
+            ago          => Util->ago($job->{schedtime}),
             day          => ucfirst( $day->[1] ),
             step         => $step,
             step_code    => $job->{step},
