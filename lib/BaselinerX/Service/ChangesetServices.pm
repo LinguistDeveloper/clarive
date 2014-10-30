@@ -94,7 +94,7 @@ sub update_changesets_bls {
     
     if ( !$job->is_failed( status => 'last_finish_status') ) {
         for my $cs ( @changesets ) {
-            my $id_bl = ci->new('moniker:'.$bl)->{mid};
+            my $id_bl = ci->bl->find_one({ bl => $bl })->{mid};
             my $topic = mdb->topic->find_one({ mid => "$cs->{mid}"});
             my @cs_bls = _array $topic->{bls};
             if (!( $id_bl ~~ @cs_bls)) {

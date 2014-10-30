@@ -1088,6 +1088,30 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                 for my $slot ( keys %$cal ) {
                     $cal->{$slot}{$_} //= '' for qw(end_date plan_end_date start_date plan_start_date);
                 }
+            }elsif( $mt =~ /history/ ) {
+                my $data;
+                $data->{topic_mid} = $_->{mid};
+                my @status_changes = Baseliner->model('Topic')->status_changes( $data );
+                my $html = '
+                <ul class="" style="margin-left: 20px">
+                <table class="table table-bordered table-condensed">
+                    <tbody>';
+                for my $ch ( grep { $_->{old_status} ne $_->{status}} @status_changes ) {
+                    $html .= '
+                        <tr>
+                            <td style="font: 13px OpenSans, Lato, Calibri, Tahoma; color: #111" title="'.$ch->{username} .'">' . Util->ago( $ch->{when} ) . ' </td>
+                            <td class="status-html" style="font-size: 10px; font-weight: bold; padding:4px">'. $ch->{old_status} .'</td>
+                            <td>-</td>
+                            <td class="status-html" style="font-size: 10px; font-weight: bold; padding:4px"> '. $ch->{status} .'</td>
+                        </tr>';
+                }
+                    $html .= '
+                    </tbody>
+                </table>
+                </ul>';
+                for my $category (@All_Categories){
+                    $row{$k. "_$category"} = $html if (exists $row{$k. "_$category"});
+                }
             }
 
 

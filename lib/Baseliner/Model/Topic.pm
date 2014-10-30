@@ -37,6 +37,18 @@ register 'event.post.create' => {
     },
 };
 
+register 'event.post.edit' => {
+    text => '%1 edited a comment: %3',
+    description => 'User edited a comment',
+    vars => ['username', 'ts', 'post'],
+    filter => $post_filter,
+    notify => {
+        #scope => ['project', 'category', 'category_status', 'priority','baseline'],
+        template => '/email/generic_post.html',
+        scope => ['project', 'category', 'category_status'],
+    },
+};
+
 register 'event.post.delete' => {
     text => '%1 deleted a comment: %3',
     description => 'User deleted a comment',
@@ -85,6 +97,16 @@ register 'event.topic.file_remove' => {
 register 'event.topic.create' => {
     text => '%1 created a topic of %2',
     description => 'User created a topic',
+    use_semaphore => 0,
+    vars => ['username', 'category', 'ts', 'scope'],
+    notify => {
+        scope => ['project', 'category', 'category_status'],
+    },
+};
+
+register 'event.topic.delete' => {
+    text => '%1 deleted a topic of %2',
+    description => 'User deleted a topic',
     use_semaphore => 0,
     vars => ['username', 'category', 'ts', 'scope'],
     notify => {
@@ -785,23 +807,36 @@ sub update {
         } 
         $self->cache_topic_remove( $topic_mid );
         when ( 'delete' ) {
-            $topic_mid = $p->{topic_mid};
-            try {
+            my $stash = { topic_data=>$p, username=>$p->{username}, return_options=>$return_options };
+            event_new 'event.topic.delete' => $stash => sub {
+                $topic_mid = $p->{topic_mid};
                 for my $mid ( _array( $topic_mid ) ) {
                     # delete master row and bali_topic row
                     #      -- delete cascade does not clear up the cache
 
                     try { $self->cache_topic_remove( $mid ) } catch { };  # dont care about these errors, usually due to related
                     ci->delete( $mid );
+                    my $topic = mdb->topic->find_one({ mid=>"$mid" });
                     mdb->topic->remove({ mid=>"$mid" });
                     mdb->master_seen->remove({ mid=>"$mid" });
+                    
+                    my @users = $self->get_users_friend(mid => $mid, id_category => $topic->{id_category}, id_status => $topic->{id_category_status});
+                    
+                    $return = 'Topic deleted';
+                    my $subject = _loc("Topic deleted: %1 #%2 %3", $topic->{category_name}, $topic->{mid}, $topic->{title});
+
+                    my $notify = {
+                        category => $topic->{id_category}
+                    };
+                        
+                   { mid => $topic->{mid}, topic => $topic->{title}, subject => $subject, notify_default=>\@users, notify=>$notify }   # to the event
 
                     #we must delete activity for this topic
                     #mdb->activity->remove({mid=>$mid});
                 }
-                $return = '%1 topic(s) deleted';
-            } catch {
-                _throw _loc( 'Error deleting topic: %1', shift() );
+
+            } => sub {
+                _throw _loc( 'Error deleting Topic %1: %2', $topic_mid, shift() );
             };
         } 
         when ( 'close' ) {
@@ -2733,7 +2768,7 @@ sub list_posts {
     for my $r ( @posts ) {
         try{
             push @rows, {
-                created_on   => $r->created_on || $r->ts,
+                created_on   => $r->ts || $r->created_on,
                 created_by   => $r->created_by,
                 text         => $r->text,
                 content_type => $r->content_type,

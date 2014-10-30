@@ -2,38 +2,45 @@
     var repo_dir = params.repo_dir;
     var rev_num = params.rev_num;
     var controller = params.controller;
-    var txt = new Ext.form.TextArea({ height:'100%', width:'100%', value:'' });
     var branch = params.branch;
     var repo_mid = params.repo_mid;
     var temp_id;
 	var code_section = {};
     var panel = new Ext.Panel({ 
+        frame: false,
         layout:'fit',
         html:'',
+        tbar: [],
         bodyStyle:{ 'background-color':'#fff', padding:' 5px 5px 5px 5px', overflow:'auto'}
-    }); 
-
-
+    });
     var html = Baseliner.ajax_json('/'+controller+'/view_diff', { repo_dir: repo_dir, rev_num: rev_num, branch: branch }, function(res){
+    	var get_section_ids = function(){
+    		for(var i=0; i < res.changes.length; i++) {
+    			temp_id = Ext.id(); 
+    			code_section[res.changes[i].path] = temp_id;
+    		}
+    	};
+
+    	get_section_ids();
+    	var children = [];
+		var goto_link = function(n){
+        	var elem = document.getElementById(n.val); 
+        	elem.scrollIntoView(true);
+        	Baseliner.scroll_top_into_view();
+	    }
+    	for(var key in code_section){
+    	 	var val = code_section[key];
+    	 	children.push({text: key, leaf: true, val: val, handler: goto_link});
+    	}
+		panel.getTopToolbar().add({ text:_('Files'), menu:children });
+    	panel.doLayout();
+
     	var html = function(){/*
 		       <div id="boot" >
-					[% id_panel = Ext.id(); %]
-		       		<div class="well sidebar-nav" style="position: fixed;">
-		       			<p data-toggle="collapse" data-target='#[%= id_panel %]' style="cursor: hand; cursor:pointer; font-weight: bold; color: #888">[%= _('Modified files of revision (collapse/expand)') %]</p>
-		       			<ul id='[%= id_panel %]' class="nav nav-list" style="padding-right: 0px; padding-left: 0px;">
-							[% for(var i=0; i < changes.length; i++) { %]
-								[% temp_id = Ext.id(); code_section[changes[i].path] = temp_id; %]
-								<li>
-									<span style="padding: 5px; cursor: pointer; cursor: hand;" onclick="var elem = document.getElementById('[%= temp_id %]'); elem.scrollIntoView(true); Baseliner.scroll_top_into_view();">[%= changes[i].path %]</span>
-								</li>
-							[% } %]
-		       			</ul>
-		       		</div>
-		       		
-		       		<div style="padding-top: 80px;">
+		       		<div>
 			       	   <center>
 			           <h3>Revision number [%= rev_num %]</h3>
-			           <table class="table table-bordered table-condensed" style="width: 50%">
+			           <table class="table table-bordered table-condensed" style="width: 60%">
 			           <thead>
 			           <tr><th width="1">[%= _('Author') %]</th><th width="1" style="white-space: nowrap">[%= _('Upload Date') %]</th><th>[%= _('Comment') %]</th></tr>
 			           </thead>
@@ -53,7 +60,7 @@
 			           </table>
 			           
 			           [% for(var i=0; i < changes.length; i++) { %]
-					           <table class="table table-bordered table-condensed" style="width: 70%">
+					           <table class="table table-bordered table-condensed" style="width: 90%">
 			           	   <thead>
 				               	<tr>
 				               		<th id='[%= code_section[changes[i].path] %]' style="font-family: Courier New, Courier, monospace;" colspan=3>
@@ -76,7 +83,6 @@
 				           </thead>
 				           <tbody>
 			           [%
-
 			            escapeHtmlEntities = function (text) {
 				            return text.replace(/[\u00A0-\u2666<>\& \t\s]/g, function(c) {
 				                return '&' + 
@@ -369,7 +375,6 @@
 							    }
 							});
 						});
-
 						%]
 			           [%= res.replace(/\&#9;/gm, '&nbsp;&nbsp;&nbsp;&nbsp;') %]
 			           </tbody>

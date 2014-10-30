@@ -29,7 +29,7 @@
 
     });
 
-    rev_combo.on( 'select', function(param){ console.log(param); func_file_history(param.value);});
+    rev_combo.on( 'select', function(param){ func_file_history(param.value);});
     rev_combo.setEditable(false);
 
     var pnl = new Ext.Panel({ 
