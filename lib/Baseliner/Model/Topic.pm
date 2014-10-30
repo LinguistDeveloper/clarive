@@ -2745,7 +2745,7 @@ sub list_posts {
     for my $r ( @posts ) {
         try{
             push @rows, {
-                created_on   => $r->created_on || $r->ts,
+                created_on   => $r->ts || $r->created_on,
                 created_by   => $r->created_by,
                 text         => $r->text,
                 content_type => $r->content_type,
