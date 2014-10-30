@@ -217,6 +217,10 @@
             title: _('Edit: %1', node.text),
             items: item
         }, opts));
+        win.on('destroy', function(){ 
+            var rule_tree = tabpanel.activeTab;
+            if( rule_tree ) rule_tree.focus();
+        });
         item.on('destroy', function(){
             if( !Ext.isFunction(foo) ) foo = function(d){ 
                 node.getOwnerTree().is_dirty=true; 
@@ -774,6 +778,24 @@
         // best place to decorate
         rule_tree.on('append', function(t,p,n){
             setTimeout( function(){ node_decorate(n) }, 500 ) ;
+        });
+        rule_tree.on('afterrender', function(){
+            new Ext.KeyMap( rule_tree.el, {
+                key: 'scpr', scope: rule_tree.el,
+                stopEvent: true,
+                fn: function(key){  
+                    var node = rule_tree.getSelectionModel().selNode;
+                    if( node ) {
+                        if( key=='R'.charCodeAt() ) rename_node(node);
+                        else if( key=='C'.charCodeAt() ) edit_node(node);
+                        else if( key=='P'.charCodeAt() ) meta_node(node);
+                        else if( key=='N'.charCodeAt() ) meta_node(node,2);
+                        else if( key=='T'.charCodeAt() ) toggle_node(node);
+                    }
+                    
+                    return false;
+                }
+            });
         });
         
         rule_tree.rule_dsl = function(from,include){
