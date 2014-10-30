@@ -264,7 +264,7 @@ sub dsl_build {
         my $needs_rollback_key  = $data->{needs_rollback_key} // $name_id;
         my $parallel_mode = length $attr->{parallel_mode} && $attr->{parallel_mode} ne 'none' ? $attr->{parallel_mode} : '';
         push @dsl, sprintf( '%s:', $attr->{goto_label} ) . "\n" if length $attr->{goto_label};  
-        push @dsl, sprintf( 'sub %s {', $attr->{id_shortcut} ) . "\n" if length $attr->{id_shortcut};  
+        push @dsl, sprintf( 'sub %s {', $attr->{sub_name} ) . "\n" if length $attr->{sub_name};  
 
         if( my $semaphore_key = $attr->{semaphore_key} ) {
             # consider using a hash: $stash->{_sem}{ $semaphore_key } = ...
@@ -320,9 +320,9 @@ sub dsl_build {
             _fail _loc 'Missing dsl/service key for node %1', $name;
         }
         push @dsl, "}\n" if $rb_close_me;
-        if( length $attr->{id_shortcut} ) {
+        if( length $attr->{sub_name} ) {
             push @dsl, "};\n";
-            push @dsl, sprintf( "%s();\n", $attr->{id_shortcut} );
+            push @dsl, sprintf( "%s();\n", $attr->{sub_name} ) if $attr->{sub_mode} eq 'run';
         }
     }
 
@@ -855,6 +855,7 @@ register 'statement.let.merge' => {
     data => { value=>{} },
     dsl => sub { 
         my ($self, $n, %p ) = @_;
+        local $Data::Dumper::Terse = 1;
         sprintf(q{
            merge_data( $stash, %s );
         }, Data::Dumper::Dumper($n->{value}), $self->dsl_build( $n->{children}, %p ) );
@@ -949,6 +950,22 @@ register 'statement.step' => {
     }
 };
 
+register 'statement.sub' => {
+    text => 'SUB',
+    sub_mode => 'declare',
+    description=> 'Just group tasks under this but do not run it',
+    on_drop_js => q{
+        node.attributes.sub_name = new_id_for_task("GROUP"); 
+    },
+    icon => '/static/images/icons/group2.gif',
+    dsl=>sub{
+        my ($self, $n, %p ) = @_;
+        sprintf(q{
+            %s
+        }, $self->dsl_build($n->{children}) );
+    }
+};
+
 register 'statement.fail' => {
     text => 'FAIL',
     data => { msg => 'abort here' },
@@ -963,13 +980,41 @@ register 'statement.fail' => {
 
 register 'statement.shortcut' => {
     text => 'Task Shortcut',
-    data => { call_shortcut => 'SHORTCUT_NAME' },
     icon => '/static/images/icons/shortcut.png',
+    form => '/forms/shortcut.js',
     dsl=>sub{
         my ($self, $n, %p ) = @_;
+        my $scut = $n->{data}{call_shortcut};
+        local $Data::Dumper::Terse = 1;
+        my $local_stash = '';
+        if( ref $n->{data}{stash_data} eq 'HASH' ) {
+            $local_stash .= sprintf('local $$stash{%s} = %s;'."\n", $_, Data::Dumper::Dumper($n->{data}{stash_data}{$_}) )
+                for keys $n->{data}{stash_data};
+        }
         sprintf(q{
-            %s();
-        }, $n->{call_shortcut} );
+            {
+                %s
+                _debug(_loc('Shortcut jumping to %%1', q{%s}) );
+                if( ! do {no strict; defined &{ *{ __PACKAGE__ . '::%s' }; } } ) {
+                    _fail( _loc('Missing shortcut `%1`', q{%s} ) );
+                }
+                %s();
+            }
+        }, $local_stash, $scut, $scut,$scut,$scut );
+    }
+};
+
+register 'statement.log' => {
+    text => 'LOG message or variable',
+    data => { msg => '', level=>'info', content_type=>'literal' },
+    icon => '/static/images/icons/log-msg.gif',
+    form => '/forms/log.js',
+    dsl=>sub{
+        my ($self, $n, %p ) = @_;
+        my $txt = sprintf( ($n->{data}{content_type} eq 'literal' ? 'qq{%s}' : '%s'), $n->{data}{text} );
+        sprintf(q{
+            Util->_%s(%s); 
+        }, $n->{data}{level}, $txt);
     }
 };
 

@@ -1,9 +1,9 @@
 (function(params){
     var data = params.data || {};
     var stash_data = new Baseliner.DataEditor({ 
-        name:'stash_data', title: _('Config Data'), 
+        name:'stash_data', 
         hide_save: true, hide_cancel: true,
-        title: _('Variables'),
+        title: _('Stash Data'),
         data: data.stash_data || {} 
     });
     var tabpanel = new Ext.TabPanel({ activeTab: 0, height: 300, fieldLabel: _('Stash Data'), items: [ stash_data ] });

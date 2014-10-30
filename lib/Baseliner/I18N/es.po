@@ -414,6 +414,12 @@ msgstr "Cortar"
 msgid "Paste"
 msgstr "Pegar"
 
+msgid "Copy Shortcut"
+msgstr "Copiar Acceso Directo"
+
+msgid "Missing shortcut `%1`"
+msgstr "Acceso directo no encontrado `%1`"
+
 msgid "Empty"
 msgstr "Vacío"
 

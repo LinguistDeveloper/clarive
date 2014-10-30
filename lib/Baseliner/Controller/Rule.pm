@@ -312,6 +312,9 @@ sub palette : Local {
         $n->{leaf} = \1;
         $n->{key} = $key;
         $n->{text} = $s->{text} // $key;
+        $n->{run_sub} = $s->{run_sub} // \1;
+        $n->{on_drop} = !!$s->{on_drop};
+        $n->{on_drop_js} = $s->{on_drop_js};
         $n->{nested} = $s->{nested} // 0;
         $n->{icon} = $s->icon // $parse_path;
         $n;

@@ -230,9 +230,6 @@
     };
     
     var clipboard;
-    var cut_node = function( node ) {
-        clipboard = { node: node };
-    };
     var clone_node = function(node){    
         var copy = new Ext.tree.TreeNode( Ext.apply({}, node.attributes) ) 
         node.eachChild( function( chi ){
@@ -245,34 +242,54 @@
     };
     var copy_node = function( node ) {
         var copy = clone_node( node ); 
-        clipboard = { node: copy };
+        clipboard = { node: copy, mode:'copy' };
     };
+    var cut_node = function( node ) {
+        clipboard = { node: node, mode:'cut' };
+    };
+    var new_id_for_task = function(text){
+        return (Baseliner.name_to_id(text || 'LABEL') + '_' + new Date().format('Ymdhis')).toUpperCase();
+    }
     var copy_shortcut = function( node ) {
-        var id_shortcut = (Baseliner.name_to_id(node.text || 'LABEL') + '_' + new Date().format('Ymdhis')).toUpperCase();
-        clipboard = { call_shortcut: id_shortcut, node: node };
+        clipboard = { mode:'shortcut', node: node };
     }
     var paste_node = function( node ) {
-        if( clipboard && clipboard.call_shortcut ) { // it's a shortcut!
+        if( clipboard && clipboard.mode=='shortcut' ) { 
+            // paste as a shortcut
             if( clipboard.node.attributes ) {
-                clipboard.node.attributes.id_shortcut = clipboard.call_shortcut;
+                // maybe a declared sub group 
+                if( !clipboard.node.attributes.sub_name ) 
+                    clipboard.node.attributes.sub_name = new_id_for_task(clipboard.node.text);
             } else {
                 Baseliner.error( _('Shortcut'), _('Could not find source node for shortcut') );
                 return;
             }
+            clipboard.node.attributes.has_shortcut = true;
             node.appendChild({
                 text: clipboard.node.text,
-                call_shortcut: clipboard.call_shortcut,
+                data: { call_shortcut: clipboard.node.attributes.sub_name },
                 key: 'statement.shortcut', 
                 leaf: true,
                 icon: '/static/images/icons/shortcut.png'
             });
         } else if( clipboard ) {
+            // paste normal
             var p = clipboard.node;
             p.id = Ext.id();
+            if( clipboard.mode=='copy' ) {
+                p.attributes.sub_name = new_id_for_task( p.text );
+                delete p.attributes.has_shortcut;
+            }
             p.cascade(function(n_chi){
                 n_chi.id = Ext.id();
+                if( clipboard.mode=='copy' ) {
+                    p.attributes.sub_name = new_id_for_task( p.text );
+                    delete n_chi.attributes.has_shortcut;
+                }
             });
             node.appendChild( p );
+        } else {
+            Baseliner.message( _('Paste'), _('Nothing in clipboard to paste') );
         }
         //clipboard = 
     };
@@ -338,7 +355,7 @@
             if( attr.semaphore_key ) {
                 semaphore_key = '\u00D8 ' + attr.semaphore_key;
             }
-            if( attr.id_shortcut ) {
+            if( attr.has_shortcut ) {
                 shortcut = true ;
             }
         }
@@ -353,7 +370,7 @@
             if( semaphore_key.length ) badges += '<span class="label" style="font-size: 9px; background-color:#906060">'+semaphore_key+'</span>&nbsp;';
             if( props.length ) badges += props.map(function(r){ return '<span class="badge" style="font-size: 9px;">'+r+'</span>&nbsp;' }).join('');
             if( parallel_mode.length ) badges += parallel_mode.map(function(r){ return '<span class="badge" style="font-size: 9px; background-color:#609060; text-transform: uppercase;">'+r+'</span>&nbsp;' }).join('');
-            if( shortcut ) badges += '<img style="height: 12px" src="/static/images/icons/shortcut.png" />';
+            if( shortcut ) badges += '<img style="height: 12px; margin-top: -5px" src="/static/images/icons/shortcut.png" />';
             if( badges.length ) {
                 nel.insertAdjacentHTML( 'afterEnd', 
                     '<span id="boot" parent-node-props="'+nn+'" style="margin: 0px 0px 0px 4px; background: transparent">'+badges+'</span>');
@@ -414,9 +431,11 @@
             data: [ ['none',_('No Parallel')], ['fork',_('Fork and Wait')], ['nohup', _('Fork and Leave')] ]
         });
         var semaphore_key = new Ext.form.TextField({ fieldLabel:_('Semaphore Key'), name:'semaphore_key', value: attr.semaphore_key });
+        var sub_name = new Ext.form.TextField({ fieldLabel:_('Sub Name'), name:'sub_name', readOnly: true, value: attr.sub_name });
         var timeout = new Ext.form.TextField({ fieldLabel:_('Timeout'), name:'timeout', value: attr.timeout });
         var opts = new Baseliner.FormPanel({ title:_('Options'), labelWidth: 150, style:{ padding:'5px 5px 5px 5px'}, defaults:{ anchor:'100%' }, items:[
-            enabled, data_key, needs_rollback_mode, needs_rollback_key, run_forward, run_rollback, timeout, semaphore_key, parallel_mode, error_trap, trap_timeout, trap_timeout_action, trap_rollback
+            enabled, data_key, needs_rollback_mode, needs_rollback_key, run_forward, run_rollback, timeout, semaphore_key, parallel_mode, 
+            error_trap, trap_timeout, trap_timeout_action, trap_rollback, sub_name
         ]});
         var btn_save_meta = new Ext.Button({ text:_('Save'), icon:'/static/images/icons/save.png', handler:function(){
             node.attributes = de.getData();
@@ -469,7 +488,7 @@
         Baseliner.ajaxEval( '/rule/edit_key', { key: key }, function(res){
             if( res.success ) {
                 if( res.form ) {
-                    Baseliner.ajaxEval( res.form, { data: node.attributes.data || {} }, function(comp){
+                    Baseliner.ajaxEval( res.form, { data: node.attributes.data || {}, attributes: node.attributes }, function(comp){
                         var params = {};
                         var save_form = function(){
                             form.data = form.getValues();
@@ -517,6 +536,16 @@
                 var copy = new Ext.tree.TreeNode( Ext.apply({}, attr1) );
                 copy.attributes.palette = false;
                 copy.setText( copy.attributes.name );  // keep original node text name
+                if( !copy.attributes.data ) copy.attributes.data={};
+                if( copy.attributes.on_drop_js ) {
+                    try {
+                        eval("var foo = function(node,rule_tree){"+ copy.attributes.on_drop_js +"}"); 
+                        foo(copy);
+                    } catch(err) {
+                        Baseliner.error(_('Node Error'), _('Error loading node: %1', err ) );
+                        return false;
+                    }
+                }
                 //n2.getOwnerTree().is_dirty = true;
                 e.dropNode = copy;
             }
@@ -665,7 +694,7 @@
                     { text: _('Properties'), handler: function(){ meta_node( node ) }, icon:'/static/images/icons/leaf.gif' },
                     { text: _('Note'), handler: function(){ meta_node( node, 2 ) }, icon:'/static/images/icons/field.png' },
                     { text: _('Copy'), handler: function(item){ copy_node( node ) }, icon:'/static/images/icons/copy.gif' },
-                    { text: _('Cut'), handler: function(item){ cut_node( node ) }, icon:'/static/images/icons/cut.gif' },
+                    { text: _('Cut'), handler: function(item){ cut_node( node ) }, icon:'/static/images/icons/cut_edit.gif' },
                     { text: _('Copy Shortcut'), handler: function(item){ copy_shortcut( node ) }, icon:'/static/images/icons/shortcut-add.png' },
                     { text: _('Paste'), handler: function(item){ paste_node( node ) }, icon:'/static/images/icons/paste.png' },
                     { text: _('DSL'), handler: function(item){ dsl_node( node ) }, icon:'/static/images/icons/edit.png' },
@@ -886,6 +915,7 @@
         tabpanel.setActiveTab( tab );
         tabpanel.changeTabIcon( tab, '/static/images/icons/rule.png' );
     };
+    
     /* 
     var tree = new Ext.tree.TreePanel({
         region: 'center',
