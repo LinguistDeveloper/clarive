@@ -1131,21 +1131,14 @@
                                 displayField: 'username'
                             });
                             var step_field = sel.data.step_code == 'END' ? 'PRE' : sel.data.step_code;
-                            var step_combo = new Ext.form.ComboBox({
-                                name: 'step',
-                                hiddenName: 'step',
-                                fieldLabel: _('Initial Step'),
-                                store: steps,
-                                valueField: 'step',
-                                lazyRender: false,
-                                value: step_field,
-                                mode: 'local',
-                                editable: true,
-                                triggerAction: 'all',
-                                displayField: 'step'
-                            });
                             var run_now = sel.data.step_code == 'END' ? true : false;
                             var mid = sel.data.mid;
+                            var step_buttons = new Ext.Container({ layout: { type:'hbox' }, fieldLabel: _('Initial Step'), border: false,
+                                items: ['PRE','RUN','POST','END'].map(function(st){ 
+                                    return { xtype:'button', text: st, enableToggle: true, width: 45, style:{ 'font-weight':(step_field==st?'bold':'') },
+                                        toggleGroup: 'step_buttons', allowDepress: false, pressed: step_field==st };
+                                })
+                            });
                             var form_res = new Ext.FormPanel({ 
                                 frame: false,
                                 height: 150,
@@ -1157,13 +1150,16 @@
                                     { xtype: 'hidden', name:'job_name', value: sel.data.name },
                                     { xtype: 'hidden', name:'starttime',fieldLabel: _('Start Date'), value: sel.data.starttime },
                                     { xtype: 'checkbox', name: 'run_now', fieldLabel : _("Run Now"), checked: run_now },
-                                    step_combo
+                                    step_buttons
                                 ],
                                 buttons: [
                                     {text:_('Rerun'), handler:function(f){ 
                                         var but = this;
                                         but.disable();
                                         var form_data = form_res.getForm().getValues();                                     
+                                        step_buttons.items.each(function(btn){
+                                            if( btn.pressed ) form_data.step = btn.text;
+                                        });
                                         Baseliner.ci_call( 'job', 'reset', form_data, 
                                             function(res){ 
                                                 Baseliner.message( sel.data.name, _('Job Restarted') );
