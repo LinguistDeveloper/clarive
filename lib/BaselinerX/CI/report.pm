@@ -1106,10 +1106,6 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                         </tr>';
                 }
                     $html .= '
-                        <tr>
-                            <td style="font: 13px OpenSans, Lato, Calibri, Tahoma; color: #111;"> '.Util->ago( $data->{created_on_epoch} ) .'</td>
-                            <td colspan=3 class="status-html" style="font-size: 10px; font-weight: bold;"> '. _loc("Created") .'</td>
-                        </tr>
                     </tbody>
                 </table>
                 </ul>';
