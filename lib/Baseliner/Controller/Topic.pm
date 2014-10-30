@@ -702,7 +702,20 @@ sub comment : Local {
             my $msg = _loc('Comment added');
             my $topic_row = mdb->topic->find_one({ mid=>"$topic_mid" });
             _fail( _loc("Topic #%1 not found. Deleted?", $topic_mid ) ) unless $topic_row;
-            
+
+            # notification data
+            my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$topic_mid", rel_type=>'topic_project' });
+            my @users = Baseliner->model("Topic")->get_users_friend(
+                    id_category => $topic_row->{category}{id}, 
+                    id_status   => $topic_row->{category_status}{id}, 
+                    projects    => \@projects );
+            my $subject = _loc("@%1 created a post for #%2 %3", $c->username, $topic_row->{mid}, $topic_row->{title} );
+            my $notify = { #'project', 'category', 'category_status'
+                category        => $topic_row->{category}{id},
+                category_status => $topic_row->{category_status}{id},
+                project => \@projects,
+            };
+
             my $topic;
             if( ! length $id_com ) {  # optional, if exists then is not add, it's an edit
                 
@@ -714,18 +727,7 @@ sub comment : Local {
                 });
                 local $Baseliner::CI::ci_record = 1;
 
-                # notification data
-                my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>"$topic_mid", rel_type=>'topic_project' });
-                my @users = Baseliner->model("Topic")->get_users_friend(
-                        id_category => $topic_row->{category}{id}, 
-                        id_status   => $topic_row->{category_status}{id}, 
-                        projects    => \@projects );
-                my $subject = _loc("@%1 created a post for #%2 %3", $c->username, $topic_row->{mid}, $topic_row->{title} );
-                my $notify = { #'project', 'category', 'category_status'
-                    category        => $topic_row->{category}{id},
-                    category_status => $topic_row->{category_status}{id},
-                    project => \@projects,
-                };
+                
                 # save the post
                 my $mid_post = $post->save;
                 $post->put_data( $text ); 
@@ -758,8 +760,20 @@ sub comment : Local {
             } else {
                 #my $post = ci->find( $id_com );
                 my $post = ci->new( $id_com );
+                #$post->update(modified_by => $c->username);
+                $post->update(ts => mdb->ts);
                 $post->save;
                 $post->put_data( $text );
+                event_new 'event.post.edit' => {
+                    username        => $c->username,
+                    mid             => $topic_mid,
+                    data            => ci->new($topic_mid)->{_ci},
+                    id_post         => $id_com,
+                    post            => $text,
+                    notify_default  => \@users,
+                    subject         => $subject,
+                    notify=>$notify 
+                };
                 _fail( _loc("This comment does not exist anymore") ) unless $post;
                 $msg = _loc("Comment modified");
                 #$post->update(content_type=>$content_type );
@@ -808,9 +822,14 @@ sub comment : Local {
                     subject         => $subject,
                     notify          => $notify
                 };
+                mdb->topic->update({ mid=>"$mid_topic" },{ '$set'=>{ modified_on=>mdb->ts, modified_by=>$c->username } });
                 cache->remove({ mid=>"$mid_topic" }) if length $mid_topic; # qr/:$mid_topic:/ ) 
             }
-            $c->stash->{json} = { msg => _loc('Delete comment ok'), failure => \0 };
+            $c->stash->{json} = {
+                msg     => _loc('Delete comment ok'),
+                id      => $id_com,
+                failure => \0
+            };
         } catch {
             my $err = shift;
             _error( $err );

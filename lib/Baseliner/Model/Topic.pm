@@ -37,6 +37,18 @@ register 'event.post.create' => {
     },
 };
 
+register 'event.post.edit' => {
+    text => '%1 edited a comment: %3',
+    description => 'User edited a comment',
+    vars => ['username', 'ts', 'post'],
+    filter => $post_filter,
+    notify => {
+        #scope => ['project', 'category', 'category_status', 'priority','baseline'],
+        template => '/email/generic_post.html',
+        scope => ['project', 'category', 'category_status'],
+    },
+};
+
 register 'event.post.delete' => {
     text => '%1 deleted a comment: %3',
     description => 'User deleted a comment',
