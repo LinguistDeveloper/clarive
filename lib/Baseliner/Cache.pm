@@ -76,10 +76,17 @@ sub get {
         fields => { _id=>0, d=>0, mid=>0, t=>0 }
     });
     return undef unless $doc;
-    #mdb->cache->update({ _id=>$key_frozen }, { '$set'=>{ t=>Util->_dt() } });
     my $value = $doc->{v};
     return undef unless $value;
-    return $self->decoder->decode($value);
+    return try { 
+        $self->decoder->decode($value);
+    } catch { 
+        my $err = shift;
+        Util->_error( Util->_loc('Cache decode error of key `%1` (`%2`)', Util->_dump($key), $key_frozen ) );
+        Util->_error( $value );
+        mdb->cache->remove({ _id=>$key_frozen });
+        undef;
+    };
 }
 
 sub remove {

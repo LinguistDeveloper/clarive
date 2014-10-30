@@ -471,6 +471,7 @@ if( $ENV{CLARIVE_MIGRATE_NOW} ) {
 # clear cache on restart
 if( Clarive->debug ) {
     cache->clear;  
+    mdb->grid->remove({ id_rule=>{ '$exists'=>1 } });
     Util->_debug( "Cache cleared" );
 }
     
