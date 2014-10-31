@@ -119,14 +119,14 @@ sub take {
     # wait until the daemon grants me out
     # NO DAEMON NOW: Try to update sem document decreasing slots
     my $updated = 0;
-
+    my $cont = 0;
     while ( !$updated ) {
         _debug(_loc 'Waiting for semaphore %1 (%2)', $self->key, $self->who);
         my $res = mdb->sem->update({ key => $self->key, slots => { '$gt' => 0 }},{ '$inc' => { slots => -1} });
         $updated = $res->{updatedExisting};
-        if ( !$updated ) {
-            my @running_queues = mdb->sem_queue->find({ key => $self->key, status => 'busy' })->all;
+        if ( !$updated && $cont > 0 ) {
             _debug("Looking for busy queues");
+            my @running_queues = mdb->sem_queue->find({ key => $self->key, status => 'busy' })->all;
             if ( @running_queues ) {
                 _debug("Found ".scalar @running_queues." running queues");
                 my @sessions = map { $_->{session} } @running_queues;
@@ -140,6 +140,8 @@ sub take {
             } else {
                 mdb->sem->update({ key => $self->key, slots => 0 },{ '$inc' => { slots => 1 } });
             }
+            select(undef, undef, undef, $config->{wait_interval});
+        } elsif ( $cont == 0 ) {
             select(undef, undef, undef, $config->{wait_interval});
         }
         $que = mdb->sem_queue->find_one({ _id=>$id_queue });

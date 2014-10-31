@@ -808,36 +808,36 @@ sub update {
         $self->cache_topic_remove( $topic_mid );
         when ( 'delete' ) {
             my $stash = { topic_data=>$p, username=>$p->{username}, return_options=>$return_options };
-            event_new 'event.topic.delete' => $stash => sub {
                 $topic_mid = $p->{topic_mid};
                 for my $mid ( _array( $topic_mid ) ) {
-                    # delete master row and bali_topic row
-                    #      -- delete cascade does not clear up the cache
+                    event_new 'event.topic.delete' => $stash => sub {
+                        # delete master row and bali_topic row
+                        #      -- delete cascade does not clear up the cache
 
-                    try { $self->cache_topic_remove( $mid ) } catch { };  # dont care about these errors, usually due to related
-                    ci->delete( $mid );
-                    my $topic = mdb->topic->find_one({ mid=>"$mid" });
-                    mdb->topic->remove({ mid=>"$mid" });
-                    mdb->master_seen->remove({ mid=>"$mid" });
-                    
-                    my @users = $self->get_users_friend(mid => $mid, id_category => $topic->{id_category}, id_status => $topic->{id_category_status});
-                    
-                    $return = 'Topic deleted';
-                    my $subject = _loc("Topic deleted: %1 #%2 %3", $topic->{category_name}, $topic->{mid}, $topic->{title});
-
-                    my $notify = {
-                        category => $topic->{id_category}
-                    };
+                        try { $self->cache_topic_remove( $mid ) } catch { };  # dont care about these errors, usually due to related
+                        ci->delete( $mid );
+                        my $topic = mdb->topic->find_one({ mid=>"$mid" });
+                        mdb->topic->remove({ mid=>"$mid" });
+                        mdb->master_seen->remove({ mid=>"$mid" });
                         
-                   { mid => $topic->{mid}, topic => $topic->{title}, subject => $subject, notify_default=>\@users, notify=>$notify }   # to the event
+                        my @users = $self->get_users_friend(mid => $mid, id_category => $topic->{id_category}, id_status => $topic->{id_category_status});
+                        
+                        $return = 'Topic deleted';
+                        my $subject = _loc("Topic deleted: %1 #%2 %3", $topic->{category_name}, $topic->{mid}, $topic->{title});
 
-                    #we must delete activity for this topic
-                    #mdb->activity->remove({mid=>$mid});
+                        my $notify = {
+                            category => $topic->{id_category}
+                        };
+                            
+                       { mid => $topic->{mid}, topic => $topic->{title}, subject => $subject, notify_default=>\@users, notify=>$notify }   # to the event
+
+                        #we must delete activity for this topic
+                        #mdb->activity->remove({mid=>$mid});
+                    } => sub {
+                        _throw _loc( 'Error deleting Topic %1: %2', $topic_mid, shift() );
+                    };
                 }
 
-            } => sub {
-                _throw _loc( 'Error deleting Topic %1: %2', $topic_mid, shift() );
-            };
         } 
         when ( 'close' ) {
             try {
