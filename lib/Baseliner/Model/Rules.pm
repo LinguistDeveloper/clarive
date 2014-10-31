@@ -453,7 +453,7 @@ sub run_rules {
         try {
             my $t0=[Time::HiRes::gettimeofday];
 
-            if( my $dsl = mdb->grid->find_one({id_rule=> "$rule->{id}"}) ) {
+            if( $dsl = mdb->grid->find_one({id_rule=> "$rule->{id}"}) ) {
                 $dsl = $dsl->slurp;
                 utf8::decode( $dsl );
             }
@@ -527,7 +527,8 @@ sub run_single_rule {
     #local $self->{tidy_up} = 0;
     my $t0=[Time::HiRes::gettimeofday];
 
-    if( my $dsl = mdb->grid->find_one({id_rule=> "$rule->{id}"}) ) {
+    my $dsl;
+    if( $dsl = mdb->grid->find_one({id_rule=> "$rule->{id}"}) ) {
         $dsl = $dsl->slurp;
         utf8::decode( $dsl );
     }
