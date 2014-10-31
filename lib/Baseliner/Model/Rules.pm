@@ -453,8 +453,10 @@ sub run_rules {
         try {
             my $t0=[Time::HiRes::gettimeofday];
 
-            my $dsl = mdb->grid->find_one({id_rule=> "$rule->{id}"});
-            $dsl = $dsl->slurp if $dsl;
+            if( my $dsl = mdb->grid->find_one({id_rule=> "$rule->{id}"}) ) {
+                $dsl = $dsl->slurp;
+                utf8::decode( $dsl );
+            }
 
             if ( !$dsl ) {
                 my @tree = $self->build_tree( $rule->{id}, undef );
@@ -525,9 +527,10 @@ sub run_single_rule {
     #local $self->{tidy_up} = 0;
     my $t0=[Time::HiRes::gettimeofday];
 
-    my $dsl = mdb->grid->find_one({id_rule=> "$rule_id"});
-    $dsl = $dsl->slurp if $dsl;
-
+    if( my $dsl = mdb->grid->find_one({id_rule=> "$rule->{id}"}) ) {
+        $dsl = $dsl->slurp;
+        utf8::decode( $dsl );
+    }
 
     if ( !$dsl ) {
         $dsl = try {
