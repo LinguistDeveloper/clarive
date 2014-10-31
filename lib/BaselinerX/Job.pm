@@ -67,13 +67,7 @@ register 'menu.job.list' => {
     index    => 20,
 };
 
-#register 'menu.job.list' => { label => 'List Current Jobs', url=>'/maqueta/list.mas', title=>'Job Monitor' };
-#register 'menu.job.exec' => { label => 'Exec Current Jobs', url_run=>'/maqueta/list.mas', title=>'Job Monitor' };
-#register 'menu.job.hist' => { label => 'Historical Data', handler => 'function(){ Ext.Msg.alert("Hello"); }' };
-#register 'menu.job.hist.all' => { label => 'List all Jobs', url=>'/core/registry', title=>'Registry'  };
-
 register 'portlet.monitor' => { name=>'Job Monitor', url_comp=>'/job/monitor_portlet', url_max=>'/job/monitor', active=>1 };
-#register 'portlet.guin' => { name=>'Job Monitor', url=>'/site/guin.html', url_max=>'/site/guin.html', active=>1 };
 
 register 'service.job.new' => {
     name => 'Schedule a new job',

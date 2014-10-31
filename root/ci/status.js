@@ -29,7 +29,10 @@
                 {boxLabel: _('Canceled'), inputValue: 'FC', checked: params.rec.type == 'FC'},
                 {boxLabel: _('Final'), inputValue: 'F', checked: params.rec.type == 'F'}
             ]
-        }
+        },
+        { xtype:'textfield', name: 'color', fieldLabel:_('Color'), anchor:'100%', value: params.rec.color||'' },
+        { xtype:'textfield', name: 'status_icon', fieldLabel:_('Icon Path'), anchor:'100%', 
+            value: params.rec.status_icon||'' }
     ]
 })
 

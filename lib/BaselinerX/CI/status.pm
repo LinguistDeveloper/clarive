@@ -24,8 +24,9 @@ has readonly      => qw(is rw isa Any), default=>'0';
 has seq           => qw(is rw isa Any);
 has type          => qw(is rw isa Any), default=>'G';
 has color         => qw(is rw isa Any);
+has status_icon    => qw(is rw isa Str), default=>'';
 
-sub icon { '/static/images/icons/baseline.gif' }
+sub icon { '/static/images/icons/status.png' }
 sub collection { 'status' }
 sub rel_type {
     { 
