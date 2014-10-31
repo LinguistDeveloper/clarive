@@ -59,15 +59,15 @@ register 'registor.menu.topics' => {
            my $id = _name_to_id( $name );
            $data->{color} //= 'transparent';
            "menu.topic.status.$id" => {
-                label    => qq[<span style="white-space: nowrap; text-transform: uppercase; font-size: 8px; font-weight: bold; font-family: Helvetica, Verdana, Helvetica, Arial, sans-serif;">$name</span>],
-                title    => qq[<span style="white-space: nowrap; text-transform: uppercase; margin-bottom: 2px; font-size: 9px; font-family: \"Helvetica Neue\", Helvetica, Verdana, Helvetica, Arial, sans-serif; ">$name</span>],
+                label    => qq[<span style="white-space: nowrap; text-transform: uppercase; font-weight: bold; padding-bottom: 1px; font-size: 10px; font-family: Helvetica, Verdana, Helvetica, Arial, sans-serif;">$name</span>],
+                title    => qq[<span style="white-space: nowrap; text-transform: uppercase; padding-bottom: 1px; font-size: 10px; font-family: \"Helvetica Neue\", Helvetica, Verdana, Helvetica, Arial, sans-serif; ">$name</span>],
                 index    => $seq++,
                 hideOnClick => 0,
                 #actions  => ["action.topics.$id.create"],
                 url_comp => '/topic/grid?status_id=' . $data->{id_status},
                 #comp_data => { new_category_name=>$name, new_category_id=>$data->{id} },
-                icon     => $data->{status_icon}||'',
-                tab_icon => $data->{status_icon}||'',
+                icon     => $data->{status_icon}||'/static/images/icons/status.png',
+                tab_icon => $data->{status_icon}||'/static/images/icons/status.png',
            }
        } sort { lc $a->{name} cmp lc $b->{name} } 
            ci->status->find->fields({ id_status=>1, name=>1, color=>1, seq=>1, status_icon=>1 })->all;
