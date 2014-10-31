@@ -647,7 +647,7 @@
                 jc_store.reload();
 
                 calendar_reload();
-                button_submit.enable();
+                //button_submit.enable();
             }
         }
         return (true); 
