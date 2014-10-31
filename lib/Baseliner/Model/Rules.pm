@@ -1059,6 +1059,19 @@ register 'statement.var.set' => {
     },
 };
 
+register 'statement.var.set_expr' => {
+    text => 'SET EXPR', data => {},
+    type => 'let',
+    holds_children => 0, 
+    form => '/forms/set_expr.js', 
+    dsl => sub { 
+        my ($self, $n, %p ) = @_;
+        sprintf(q{
+            $stash->{'%s'} = do { %s };
+        }, ( $n->{variable} || Util->_name_to_id($n->{text}) ), $n->{expr} );
+    },
+};
+
 register 'statement.var.set_to_ci' => {
     text => 'SET VAR to CI', data => {},
     type => 'let',
