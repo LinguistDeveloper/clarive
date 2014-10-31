@@ -53,6 +53,25 @@ register 'registor.menu.topics' => {
            }
        } sort { lc $a->{name} cmp lc $b->{name} } @cats;
 
+       my %menu_statuses = map {
+           my $data = $_;
+           my $name = _loc( $_->{name} );
+           my $id = _name_to_id( $name );
+           $data->{color} //= 'transparent';
+           "menu.topic.status.$id" => {
+                label    => qq[<span style="white-space: nowrap; text-transform: uppercase; font-size: 8px; font-weight: bold; font-family: Helvetica, Verdana, Helvetica, Arial, sans-serif;">$name</span>],
+                title    => qq[<span style="white-space: nowrap; text-transform: uppercase; margin-bottom: 2px; font-size: 9px; font-family: \"Helvetica Neue\", Helvetica, Verdana, Helvetica, Arial, sans-serif; ">$name</span>],
+                index    => $seq++,
+                hideOnClick => 0,
+                #actions  => ["action.topics.$id.create"],
+                url_comp => '/topic/grid?status_id=' . $data->{id_status},
+                #comp_data => { new_category_name=>$name, new_category_id=>$data->{id} },
+                icon     => $data->{status_icon}||'',
+                tab_icon => $data->{status_icon}||'',
+           }
+       } sort { lc $a->{name} cmp lc $b->{name} } 
+           ci->status->find->fields({ id_status=>1, name=>1, color=>1, seq=>1, status_icon=>1 })->all;
+
        my $menus = {
             'menu.topic' => {
                     label => _loc('Topics'),
@@ -71,8 +90,15 @@ register 'registor.menu.topics' => {
             },
             'menu.topic._sep_' => { index=>3, separator=>1 },
             %menu_create,
+            %menu_statuses,
             %menu_view,
        };
+       $menus->{'menu.topic.status'} = {
+                    label    => _loc('Status'),
+                    icon     => '/static/images/icons/status.png',
+                    index => 2,
+                    #actions  => ['action.topics.%.create'],
+             } if %menu_statuses;
        $menus->{'menu.topic.create'} = {
                     label    => _loc('Create'),
                     icon     => '/static/images/icons/add.gif',
