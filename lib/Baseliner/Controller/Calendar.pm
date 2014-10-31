@@ -168,11 +168,11 @@ sub calendar_update : Path( '/job/calendar_update' ) {
                 });
                 $new_id = $new_id_cal;
                 if ( $p->{ copyof } ) {
-                    my $copyOf = int( $p->{ copyof } );
+                    #my $copyOf = int( $p->{ copyof } );
+                    my $copyOf = $p->{ copyof };
                     $_id = mdb->calendar->find_one( { ns=>$p->{ns}, bl=>$p->{ bl } } );
-                    my $rs = mdb->calendar_window->find({ id_cal => $copyOf });
-
-                    while ( my $r = $rs->next ) {
+                    my @rs = mdb->calendar_window->find({ id_cal => $copyOf })->all;
+                    for my $r (@rs) {
                         mdb->calendar_window->insert({
                             id         => mdb->seq('calendar_window'),
                             start_time => $r->{start_time},
