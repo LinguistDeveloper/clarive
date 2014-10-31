@@ -81,6 +81,15 @@ sub collection {
 
 sub grid { $_[0]->db->get_gridfs }
 
+sub grid_slurp {
+    my ($self,$where) = @_; 
+    my $doc = $self->grid->find_one($where);
+    return unless $doc;
+    my $data = $doc->slurp;
+    utf8::decode($data);
+    return $data;
+}
+
 sub grid_insert {  
     my ($self, $in, %opts) = @_;
     my $fh;
