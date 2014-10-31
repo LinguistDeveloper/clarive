@@ -1202,10 +1202,16 @@ sub filters_list : Local {
             my $checked;
 
             if ( $is_root ) {
-                $checked = \1;
+                #Si no es un estado final, lo sacamos marcado
+                if(($r->{type} ne 'F') and ($r->{type} ne 'FC')){
+                    $checked = \1;
+                }else{
+                    $checked = \0;
+                }
             } else {
                 #$checked = exists $tmp{$r->{id_status}} && (substr ($r->{type}, 0 , 1) ne 'F')? \1: \0;
                 $checked = exists $tmp{$r->{id_status}} && $id_categories_hash{$tmp{$r->{id_status}}} && (substr ($r->{type}, 0 , 1) ne 'F')? \1: \0;
+
 
             }
             push @statuses,
