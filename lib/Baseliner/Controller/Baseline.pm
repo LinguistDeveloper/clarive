@@ -40,7 +40,7 @@ sub json : Local {
     my @bl_list =
     map {
         my $bl = $_->{bl} eq '*' ? $common : $_->{bl};
-        +{  name        => _loc($_->{name}),
+        +{  name        => $_->{name},
             description => $_->{description} || _loc($_->{name}),
             id          => $_->{bl},
             bl          => $_->{bl},
