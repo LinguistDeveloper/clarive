@@ -478,25 +478,32 @@ sub topics_for_user {
         }
     }else {
         if (!$p->{clear_filter}){  
-            ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
-            my %tmp;
-            map { $tmp{ $_->{id_status_from} } = $_->{id_category} if ($_->{id_status_from}); } 
-                $self->user_workflow( $username );
-             my @workflow_revert;
-             map { push @workflow_revert, [$tmp{$_}, $_] } keys %tmp;
-             my %category_hash = map { $_ => '1' } @categories;
-             my @status_ids;
-             foreach my $actual (@workflow_revert){
-                 push @status_ids, @$actual[1] if $category_hash{@$actual[0]};
-             }
-             $where->{'category_status.id'} = mdb->in(@status_ids) if @status_ids > 0;
+            my @status_ids;
+            if(!$is_root){
+                ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
+                my %tmp;
+                map { $tmp{ $_->{id_status_from} } = $_->{id_category} if ($_->{id_status_from}); } 
+                    $self->user_workflow( $username );
+                 my @workflow_revert;
+                 map { push @workflow_revert, [$tmp{$_}, $_] } keys %tmp;
+                 my %category_hash = map { $_ => '1' } @categories;
+                 foreach my $actual (@workflow_revert){
+                     push @status_ids, @$actual[1] if $category_hash{@$actual[0]};
+                 }
+            }else{
+                @status_ids = _unique map{_array $_->{statuses}}mdb->category->find({id=>mdb->in(@categories)})->all;
+                @status_ids = map{$_->{id_status}}ci->status->find({id_status=>mdb->in(@status_ids), type=>mdb->nin(['F','FC'])})->all;
+            }
+            
+            $where->{'category_status.id'} = mdb->in(@status_ids) if @status_ids > 0;
             # map { $tmp{$_->{id_status_from}} = $_->{id_category} && $tmp{$_->{id_status_to} = $_->{id_category}} } 
             # my @workflow_filter;
             # for my $status (keys %tmp){
             #     push @workflow_filter, {'category.id' => $tmp{$status},'category_status.id' => $status};
             # }
             # $where->{'$or'} = \@workflow_filter if @workflow_filter;
-            $where->{'category_status.type'} = { '$nin' =>['F','FC'] }
+            $where->{'category_status.type'} = { '$nin' =>['F','FC'] };
+            
         }
     }
       
