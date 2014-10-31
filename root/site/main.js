@@ -315,6 +315,8 @@ Ext.onReady(function(){
         setTimeout( function(){ Baseliner.version_check(true) }, Baseliner.version_refresh );
         Baseliner.version_started = true;
     }
+
+    moment.locale( Prefs.language );
     
     
     // global key captures

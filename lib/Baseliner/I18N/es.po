@@ -15,6 +15,12 @@ msgstr "%d/%m/%Y"
 msgid "js_date_format"
 msgstr "d/m/Y"
 
+msgid "js_dt_format"
+msgstr "d/m/Y h:i:s"
+
+msgid "js_dtd_format"
+msgstr "D d/m/Y h:i:s"
+
 msgid "Monday"
 msgstr "Lunes"
 

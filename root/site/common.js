@@ -2794,6 +2794,10 @@ Baseliner.render_checkbox = function(v){
         : '<img src="/static/images/icons/delete.gif">';
 };
         
+Baseliner.render_ago = function(t,p){
+    return moment(t).fromNow();  // TODO use the user prefs for timezone and language
+};
+        
 Baseliner.cols_templates = {
       id : function(){ return {width: 10 } },
       index : function(){ return {width: 10, renderer:function(v,m,r,i){return i+1} } },

@@ -635,7 +635,7 @@
     var body_tpl = function(){/* 
                 <span style='font-weight:[%=font_weight%]; font-size: 14px; cursor: pointer; [%=strike%]' 
                 onclick='javascript:Baseliner.show_topic_colored([%=mid%],"[%=category_name%]","[%=category_color%]", "[%=id%]")'>[%=value%] </span>
-                        <br><div style='margin-top: 5px'>[%=modified_on%][%=folders%]
+                        <br><div style='margin-top: 5px'><span style="font-weight:bold;color:#111;">[%= ago %]</span> <font color='333'>[%= new Date(modified_on).format(Prefs.js_dtd_format) %]</font>[%=folders%]
                         <a href='javascript:Baseliner.open_monitor_query("[%=current_job%]")'>[%=current_job%] </a><font color='808080'></br>[%=who%] </font ></div> 
            */}.tmpl();
 
@@ -699,7 +699,8 @@
                         value: value, 
                         strike: strike,
                         modified_on: date_modified_on, 
-                        who: _('by %1', modified_by), 
+                        who: _('by %1', modified_by||_('internal')), 
+                        ago: moment(date_modified_on).fromNow(),
                         mid: mid,
                         category_name: category_name,
                         category_color: category_color,
@@ -712,7 +713,8 @@
                         value: value, 
                         strike: strike,
                         modified_on: date_modified_on, 
-                        who: _('by %1', modified_by), 
+                        who: _('by %1', modified_by||_('internal')), 
+                        ago: moment(date_modified_on).fromNow(),
                         mid: mid,
                         category_name: category_name, 
                         category_color: category_color, 
@@ -1179,7 +1181,8 @@
         category_status_name : { header: _('Status'), sortable: true, dataIndex: 'category_status_name', width: 50, renderer: render_status },
         title : { header: _('Title'), dataIndex: 'title', width: 250, sortable: true, renderer: render_title},
         progress : { header: _('%'), dataIndex: 'progress', width: 25, sortable: true, hidden: true, renderer: render_progress },
-        numcomment : { header: _('More info'), report_header: _('Comments'), sortable: true, dataIndex: 'numcomment', width: 45, renderer: render_actions },         
+        numcomment : { header: _('Info'), report_header: _('Comments'), sortable: true, dataIndex: 'numcomment', width: 45, renderer: render_actions },         
+        ago : { header: _('When'), report_header: _('When'), sortable: true, dataIndex: 'modified_on', width: 40, renderer: Baseliner.render_ago },         
         projects : { header: _('Projects'), dataIndex: 'projects', sortable: true, width: 60, renderer: render_project },
         topic_mid : { header: _('MID'), hidden: true, sortable: true, dataIndex: 'topic_mid', renderer: render_default},    
         moniker : { header: _('Moniker'), hidden: true, sortable: true, dataIndex: 'moniker', renderer: render_default},    
@@ -1319,7 +1322,7 @@
         //console.dir(columns);
     } else {
          columns = [ dragger, check_sm ];
-         var cols = ['topic_name', 'category_name', 'category_status_name', 'title', 'progress',
+         var cols = ['topic_name', 'category_name', 'category_status_name', 'ago', 'title', 'progress',
             'numcomment', 'projects', 'topic_mid', 'moniker', 'cis_out', 'cis_in', 'references_out',
             'references_in', 'assignee', 'modified_by', 'modified_on', 'created_on', 'created_by', 'current_job'];
          Ext.each( cols, function(col){

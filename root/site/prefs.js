@@ -1,5 +1,7 @@
 Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
     js_date_format: _('js_date_format'),
+    js_dt_format: _('js_dt_format'),
+    js_dtd_format: _('js_dtd_format'),
     is_logged_in: true,
     toolbar_height: 28,
     constructor: function(config){
