@@ -43,7 +43,6 @@ register 'registor.menu.topics' => {
            $data->{color} //= 'transparent';
            "menu.topic.create.$id" => {
                 label    => qq[<div id="boot" style="background:transparent"><span class="label" style="background-color:$data->{color}">$name</span></div>],
-                title    => _loc ('New: %1', $name),
                 index    => $seq++,
                 actions  => ["action.topics.$id.create"],
                 url_comp => '/topic/view?swEdit=1',
@@ -625,6 +624,8 @@ sub view : Local {
             
             my $category = mdb->category->find_one({ id=>"$id_category" });
             $c->stash->{category_meta} = $category->{forms};
+            $c->stash->{category_name} = $category->{name};
+            $c->stash->{category_color} = $category->{color};
 
             my $first_status = ci->status->find_one({ id_status=>mdb->in( $category->{statuses} ), type=>'I' }) // _fail( _loc('No initial state found '));
 
@@ -1063,6 +1064,19 @@ sub filters_list : Local {
     my @views;
     
     ####Defaults views################################################################
+    push @views, {
+        id  => $i++,
+        idfilter      => 1,
+        text    => _loc('Modified Today'),
+        filter  => '{"modified_today":true}',
+        default    => \1,
+        cls     => 'forum default',
+        iconCls => 'icon-no',
+        checked => \0,
+        leaf    => 'true',
+        uiProvider => 'Baseliner.CBTreeNodeUI_system'
+    };
+    
     push @views, {
         id  => $i++,
         idfilter      => 1,

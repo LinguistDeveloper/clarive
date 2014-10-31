@@ -25,12 +25,14 @@ Baseliner.tree_topic_style = [
     'border-radius:0px"></span>'
 ].join('');
 
-Baseliner.topic_title = function( mid, category, color, literal_only, id) {
+Baseliner.topic_title = function( mid, category, color, literal_only, id, opts) {
     var uppers = category ? category.replace( /[^A-Z]/g, '' ) : '';
     var pad_for_tab = 'margin: 0 0 -3px 0; padding: 2px 4px 2px 4px; line-height: 12px;'; // so that tabs stay aligned
     if(!id) id = Ext.id();
     if (literal_only){
         return uppers + ' #' + mid;   
+    }else if( opts && opts.new_tab ) {
+        return String.format( '<span id="boot" style="background:transparent; margin-bottom: 0px"><span id="{4}" class="label" style="{3}; background-color:{0}">{1}: {2}</span></span>', color, _('New'), _(category), pad_for_tab, id )
     }else{
         return color 
             ? String.format( '<span id="boot" style="background:transparent; margin-bottom: 0px"><span id="{4}" class="label" style="{3}; background-color:{1}">{2} #{0}</span></span>', mid, color, uppers, pad_for_tab, id )

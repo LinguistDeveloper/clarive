@@ -961,7 +961,7 @@ Baseliner.Grid.Buttons = {};
 Baseliner.Grid.Buttons.Add = Ext.extend( Ext.Toolbar.Button, {
     constructor: function(config) {
         config = Ext.apply({
-            text: _('New'),
+            text: _('Create'),
             //icon:'/static/images/icons/add.gif',
             //cls: 'x-btn-text-icon'
             iconCls: 'sprite add'

@@ -1210,7 +1210,7 @@ msgid "Submit"
 msgstr "Enviar"
 
 msgid "New"
-msgstr "Crear"
+msgstr "Nuevo"
 
 msgid "Add"
 msgstr "Crear"
@@ -3287,6 +3287,9 @@ msgstr "Asignadas a Mí"
 
 msgid "Created Today"
 msgstr "Creadas Hoy"
+
+msgid "Modified Today"
+msgstr "Modificadas Hoy"
 
 msgid "Month"
 msgstr "Mes"

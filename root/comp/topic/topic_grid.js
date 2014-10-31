@@ -299,10 +299,19 @@
             add_topic();
         }       
     });
-    
+   
+    var topic_create_for_category = function(args){
+        Baseliner.add_tabcomp('/topic/view?swEdit=1', args.title , { 
+            title: args.title, new_category_id: args.id,
+            new_category_name: args.name, _parent_grid: grid_topics.id } );
+    };
+
     var add_topic = function() {
         var win;
-        
+        if( params.id_category!=undefined ) {
+            topic_create_for_category({ id: params.id_category });
+            return;
+        }
         var render_category = function(value,metadata,rec,rowIndex,colIndex,store){
             var color = rec.data.color;
             var ret = '<div id="boot"><span class="label" style="float:left;padding:2px 8px 2px 8px;background: '+ color + '">' + value + '</span></div>';
@@ -327,10 +336,7 @@
         
         topic_category_grid.on("rowdblclick", function(grid, rowIndex, e ) {
             var r = grid.getStore().getAt(rowIndex);
-            var title = _(r.get( 'name' ));
-            Baseliner.add_tabcomp('/topic/view?swEdit=1', title , { 
-                title: title, new_category_id: r.get( 'id' ), 
-                new_category_name: r.get( 'name' ), _parent_grid: grid_topics.id } );
+            topic_create_for_category({ id: r.get('id'), name: r.get('name') });
             win.close();
         });     
         

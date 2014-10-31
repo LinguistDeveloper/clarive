@@ -392,6 +392,11 @@ sub topics_for_user {
         $where->{created_on} = { '$lte' => "$now1", '$gte' => ''.($now2-'1D') };
     }
     
+    if($p->{modified_today}){
+        my $now1 = my $now2 = mdb->now;
+        $where->{modified_on} = { '$lte' => "$now1", '$gte' => ''.($now2-'1D') };
+    }
+    
     if ( $p->{assigned_to_me} ) {
         my $ci_user = ci->user->find_one({ name=>$username });
         if ($ci_user) {
