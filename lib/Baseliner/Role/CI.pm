@@ -132,7 +132,7 @@ sub as_hash {
 
 
 sub compare_data{
-    my (%p) = @_;
+    my ($self,%p) = @_;
     try{
          return Data::Compare::Compare($p{data1}, $p{data2});
     }catch{
@@ -144,7 +144,6 @@ sub compare_data{
     };
 }
 
-
 sub update {
     my $self = shift;
     my %data = ref $_[0] eq 'HASH' ? %{ $_[0] } : @_; 
@@ -155,7 +154,7 @@ sub update {
     my $changed = +{ map { $_ => $data{$_} } grep { 
         ( defined $self->{$_} && !defined $data{$_} ) 
         || ( !defined $self->{$_} && defined $data{$_} ) 
-        || compare_data(data1 => $self->{$_}, $data{$_})
+        || $self->compare_data(data1=>$self->{$_}, data2=>$data{$_})
         } keys %data } ;
         
     # merge and recreate object
@@ -166,7 +165,6 @@ sub update {
     # update live attributes
     $self->$_( $saved_obj->$_ ) for grep { $self->can($_) } keys %data; 
 }
-
 
 sub save {
     my ($self,%opts) = @_;
