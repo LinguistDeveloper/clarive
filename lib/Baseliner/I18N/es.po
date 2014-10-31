@@ -6210,8 +6210,8 @@ msgstr "El pase no fue pausado"
 msgid "Job restarted by user %1, execution %2, step %3"
 msgstr "Pase reiniciado por el usuario %1, ejecución %2, paso %3"
 
-msgid "Job %1 rescheduled by user %2 to %3"
-msgstr "Pase %1 reprogramado por el usuario %2 a %3"
+msgid "Job %1 rescheduled by user %2 from `%3` to `%4`"
+msgstr "Pase %1 reprogramado por el usuario %2 de `%3` a `%4`"
 
 msgid "*Job Approved by %1*: %2"
 msgstr "*Pase Aprobado por %1*: %2"
