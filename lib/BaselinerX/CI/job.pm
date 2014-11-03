@@ -28,6 +28,7 @@ has endtime            => qw(is rw isa Any);
 has comments           => qw(is rw isa Any);
 has logfile            => qw(is rw isa Any lazy 1), default => sub { my $self=shift; ''.Util->_file($ENV{BASELINER_LOGHOME}, $self->name . '.log') };
 has step               => qw(is rw isa Str default CHECK);
+has window_type        => qw(is rw isa Str default normal);
 has exec               => qw(is rw isa Num), default=>1;
 has status             => qw(is rw isa Any default IN-EDIT);
 has status_trans       => qw(is rw isa Any);  # translation of status so that it shows in searches
@@ -194,7 +195,7 @@ sub _create {
 
     my $job_mid = $self->mid;
     my $changesets = $p{changesets};
-    my $config = Baseliner->model('ConfigStore')->get( 'config.job', $self->bl );
+    my $config = model->ConfigStore->get( 'config.job', bl=>$self->bl );
     
     my $status = $p{status} || 'IN-EDIT';
     #$now->set_time_zone('CET');
