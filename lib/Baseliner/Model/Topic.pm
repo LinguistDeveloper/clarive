@@ -419,7 +419,7 @@ sub topics_for_user {
     }else{
         # all categories, but limited by user permissions
         #   XXX consider removing this check on root and other special permissions
-        my @categories  = map { $_->{id}} Baseliner::Model::Topic->get_categories_permissions( username => $username, type => 'view' );
+        @categories  = map { $_->{id}} Baseliner::Model::Topic->get_categories_permissions( username => $username, type => 'view' );
         $where->{'category.id'} = mdb->in(@categories);
     }
 
