@@ -34,6 +34,7 @@ register 'config.job' => {
         { id=>'normal_window', label => 'Normal Window Name', default => 'N' },
         { id=>'emer_window', label => 'Emergency Window Name', default => 'U' },
         { id=>'expiry_time', label => 'Time to expiry a job in hours', type=>'hash', default=>'{ N=>"1D", U=>"1h" }' }, 
+        { id=>'approval_expiry_time', label => 'Time to expiry a job in approval state', default=>'1D' }, 
     ],
     relationships => [ { id=>'natures', label => 'Technologies', type=>'list', config=> 'config.tech' },
         { id=>'releases', label => 'Releases', type=>'list', config=> 'config.release' },
