@@ -2740,13 +2740,13 @@ called by user_workflow.
 =cut
 sub non_root_workflow {
     my ( $self, $username, %p ) = @_;
-    my @roles = Baseliner->model('Permissions')->user_role_ids($username);
-    my $where = { 'workflow.id_role'=>mdb->in(@roles) };
+    my %roles = map { $_=>1 } Baseliner->model('Permissions')->user_role_ids($username);
+    my $where = { 'workflow.id_role'=>mdb->in(keys %roles) };
     $where->{id} = mdb->in($p{categories}) if exists $p{categories};
     return _array( map { 
         # add category id to workflow array
         my $id_cat = $$_{id};
-        [ map { $$_{id_category}=$id_cat; $_ } _array($$_{workflow}) ]
+        [ map { $$_{id_category}=$id_cat; $_ } grep { $roles{$$_{id_role}} } _array($$_{workflow}) ]
     } mdb->category->find($where)->all );
 }
 
