@@ -246,6 +246,7 @@
     };
     var copy_node = function( node ) {
         var copy = clone_node( node ); 
+        node.getOwnerTree().is_dirty = true;
         clipboard = { node: copy, mode:'copy' };
     };
     var cut_node = function( node ) {
