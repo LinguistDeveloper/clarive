@@ -304,7 +304,11 @@ sub build_project_security {
                 my $wh = {};
                 my @categories_by_role;
                 my $count = scalar keys %{ $vpre || {} };
-                my @actions_by_idrole = map { $_->{action} }mdb->role_action->find({id_role=>"$kpre", action=> qr/^action.topics\./ })->all;
+                my @actions_by_idrole = 
+                    map { $_->{action} }
+                    map { _array($_->{actions}) } 
+                    mdb->role->find({id=>"$kpre", 'actions.action'=> qr/^action.topics\./ })->all;
+                
                 for my $action (@actions_by_idrole) {
                     my ($category) = $action =~ /action\.topics\.(.*?)\./;
                     push @categories_by_role, $all_categories{$category};
@@ -319,7 +323,8 @@ sub build_project_security {
                     else {
                         $wh->{"_project_security.$k"} = { '$in' => [ keys %{ $v || {} } ] };
                     }
-                    if (@categories) { $wh->{'category.id'} = { '$in' => [ _unique @total ] } ;
+                    if (@categories) { 
+                        $wh->{'category.id'} = { '$in' => [ _unique @total ] } ;
                     }
                     else {
                         $wh->{'category.id'} = { '$in' => [ _unique @categories_by_role ] };
