@@ -281,13 +281,13 @@
             var p = clipboard.node;
             p.id = Ext.id();
             if( clipboard.mode=='copy' ) {
-                p.attributes.sub_name = new_id_for_task( p.text );
+                if( p.attributes.sub_name ) p.attributes.sub_name = new_id_for_task( p.text );
                 delete p.attributes.has_shortcut;
             }
             p.cascade(function(n_chi){
                 n_chi.id = Ext.id();
                 if( clipboard.mode=='copy' ) {
-                    p.attributes.sub_name = new_id_for_task( p.text );
+                    if( n_chi.attributes.sub_name ) n_chi.attributes.sub_name = new_id_for_task( n_chi.text );
                     delete n_chi.attributes.has_shortcut;
                 }
             });

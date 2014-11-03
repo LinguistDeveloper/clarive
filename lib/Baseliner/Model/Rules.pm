@@ -952,7 +952,7 @@ register 'statement.sub' => {
     sub_mode => 'declare',
     description=> 'Just group tasks under this but do not run it',
     on_drop_js => q{
-        node.attributes.sub_name = new_id_for_task("GROUP"); 
+        node.attributes.sub_name = new_id_for_task("SUB"); 
     },
     icon => '/static/images/icons/group2.gif',
     dsl=>sub{
