@@ -1,5 +1,6 @@
 (function(params) {
     var repo_path = '<% $c->stash->{repo_path} %>';
+    var repo_type = '<% $c->stash->{collection} %>';
     var bl = '<% $c->stash->{bl} %>';
     var store = {
         reload: function() {
@@ -94,7 +95,7 @@
     });
     tree.getLoader().on("beforeload", function(treeLoader, node) {
         var loader = tree.getLoader();
-        loader.baseParams = { path: node.attributes.path, repo_path: repo_path, bl: bl };
+        loader.baseParams = { path: node.attributes.path, repo_path: repo_path, bl: bl, repo_type: repo_type, leaf: node.leaf };
     });
 
     tree.on('dblclick', function(node, ev){
@@ -102,6 +103,7 @@
     });
 
     var show_properties = function( path, name, version, leaf ) {
+console.log("ENTRA EN SHOW PROPERTIES");
         //var style_cons = 'background-color: #000; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", Courier';
         var style_cons = 'margin: 10px 10px 10px 10px';
         //var output = new Ext.form.TextArea({
@@ -114,7 +116,7 @@
             title: _('%1', name),
             //closable: true,
             style: style_cons,
-            data: {path: path, version: version, ref: bl, repo_path: repo_path },
+            data: {path: path, version: version, ref: bl, repo_path: repo_path, repo_type: repo_type },
             //tbar: [ ],
             height: 300
         });
@@ -137,6 +139,10 @@
         + '</div>');
     
     var properties_load = function( panel, args ) {
+
+console.log("PROPERTIES_LOAD===>");
+console.log(args);
+
         Baseliner.ajaxEval( '/lifecycle/file', args, function(res){
             if( res == undefined ) return;
             if( res.info == undefined ) return;
@@ -165,6 +171,9 @@
 
     function properties_toggle(item, pressed){
         if( ! pressed ) return;
+console.log("Entra en properties toggle...");
+console.log(item);
+console.log(pressed);
         var pane = item.initialConfig.pane;
         var panel = properties.getActiveTab();
         properties.pane = pane;
@@ -225,10 +234,15 @@
     });
 
     properties.on( 'tabchange', function( t, panel ) {
+console.log("Entra en properties on===>");
+console.log(t);
+console.log(panel);
         var data = panel.initialConfig.data;
         data.pane = properties.pane;
         properties_load( panel, data );
     });
+
+
 
     var panel = new Ext.Panel({
         layout: 'border',
