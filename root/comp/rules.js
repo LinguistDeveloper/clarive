@@ -254,7 +254,6 @@
     };
     var copy_node = function( node ) {
         var copy = clone_node( node ); 
-        node.getOwnerTree().is_dirty = true;
         clipboard = { node: copy, mode:'copy' };
     };
     var cut_node = function( node ) {
@@ -300,6 +299,7 @@
                     delete n_chi.attributes.has_shortcut;
                 }
             });
+            node.getOwnerTree().is_dirty = true;
             node.appendChild( p );
         } else {
             Baseliner.message( _('Paste'), _('Nothing in clipboard to paste') );
