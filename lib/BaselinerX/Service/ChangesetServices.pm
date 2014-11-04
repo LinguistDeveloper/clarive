@@ -491,7 +491,7 @@ sub nature_items {
     $stash->{natures} = {}; 
     my $nat_id = $config->{nature_id} // 'name';  # moniker?
    
-    my @nat_rows = ci->nature->find->fields({ mid=>1 })->all;
+    my @nat_rows =  ci->nature->find({active=>'1'})->fields({ mid=>1 })->all;
     my @projects = _array( $job->projects );
     for my $project ( @projects ) {
         #my @items = @{ $stash->{items} || [] };
