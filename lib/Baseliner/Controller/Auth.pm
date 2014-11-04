@@ -253,10 +253,10 @@ sub login : Global {
                 # go to the main authentication worker
                 $c->stash->{login} = $login; 
                 $c->stash->{password} = $password;
-                $c->forward('authenticate');
+                my $auth_ok = $c->forward('authenticate');
                 $msg = $c->stash->{auth_message};
                 # check if user logins correctly into corresponding realm
-                if( $c->forward('authenticate') ) {
+                if( $auth_ok ) {
                     # authentication ok, but user ci exists in db?
                     if( model->Users->user_exists( $c->username ) ) {
                         $msg //= _loc("OK");
