@@ -1769,16 +1769,16 @@ Baseliner.print = function(opts, share) {
     if( opts.cb ) {
         opts.cb( ww, dw );
     }
-    
-    if( share ) {
-        var html_final = $(dw).contents().html();
-        ww.close();
-        Baseliner.ajax_json('/share_html', { title: title, html: html_final }, function(res){
-            window.open( res.url, title );
-        });
+    if(!Ext.isIE8){
+        if((share)) {
+            var html_final = $(dw).contents().html();
+            ww.close();
+            Baseliner.ajax_json('/share_html', { title: title, html: html_final }, function(res){
+                window.open( res.url, title );
+            });
+        }
+        // ww.print(); // needs to be called after all styles are loaded
     }
-    
-    // ww.print(); // needs to be called after all styles are loaded
 }
 
 Baseliner.grid_scroller = function( grid ) {
