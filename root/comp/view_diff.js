@@ -1,9 +1,14 @@
 (function(params){
     var repo_dir = params.repo_dir;
     var rev_num = params.rev_num;
+    var revid = params.revid;
     var controller = params.controller;
     var branch = params.branch;
     var repo_mid = params.repo_mid;
+    var file_diff = params.file_diff;
+	if(!file_diff){
+		file_diff = '';
+	}
     var temp_id;
 	var code_section = {};
     var panel = new Ext.Panel({ 
@@ -13,7 +18,7 @@
         tbar: [],
         bodyStyle:{ 'background-color':'#fff', padding:' 5px 5px 5px 5px', overflow:'auto'}
     });
-    var html = Baseliner.ajax_json('/'+controller+'/view_diff', { repo_dir: repo_dir, rev_num: rev_num, branch: branch }, function(res){
+    var html = Baseliner.ajax_json('/'+controller+'/view_diff'+file_diff, { repo_dir: repo_dir, rev_num: rev_num, branch: branch, revid: revid, file: params.file }, function(res){
     	var get_section_ids = function(){
     		for(var i=0; i < res.changes.length; i++) {
     			temp_id = Ext.id(); 
