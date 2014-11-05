@@ -44,7 +44,7 @@
         if(activate){
             if(comp.pane == 'history'){
                 cons.destroy();
-                Baseliner.ajax_json('/'+controller+'/get_file_history', { filepath: path, filename: file, repo_mid: repo_mid, rev_num: params.rev_num, revid: params.revid }, function(res){
+                Baseliner.ajax_json('/'+controller+'/get_file_history', { filepath: path, filename: file, repo_mid: repo_mid, rev_num: rev_num, revid: revid }, function(res){
                     var store = new Ext.data.ArrayStore({
                         fields: [
                            {name: 'author'  },
