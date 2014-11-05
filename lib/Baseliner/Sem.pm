@@ -91,7 +91,7 @@ sub enqueue {
     my $doc = { 
         key        => $self->key,
         who        => $self->who,
-        seq        => $seq, 
+        seq        => 0+$seq, 
         ts         => Time::HiRes::time(), 
         caller     => "$package ($line)",
         active     => 1,
@@ -116,6 +116,10 @@ sub take {
     my $id_queue = $self->enqueue;
     my $que;
     my $logged = 1;
+
+    alarm $p{timeout} if length $p{timeout};
+    local $SIG{ALRM} = sub{ _fail(_loc('Timeout wating for semaphore: %1',$p{timeout})) } if length $p{timeout};
+    
     # wait until the daemon grants me out
     # NO DAEMON NOW: Try to update sem document decreasing slots
     my $updated = 0;
@@ -140,9 +144,10 @@ sub take {
             } else {
                 mdb->sem->update({ key => $self->key, slots => 0 },{ '$inc' => { slots => 1 } });
             }
-            select(undef, undef, undef, $config->{wait_interval});
+            select(undef, undef, undef, $p{wait_interval} // $config->{wait_interval});
         } elsif ( $cont == 0 ) {
-            select(undef, undef, undef, $config->{wait_interval});
+            select(undef, undef, undef, $p{wait_interval} // $config->{wait_interval});
+            $cont++;
         }
         $que = mdb->sem_queue->find_one({ _id=>$id_queue });
         if ($que->{status} ne 'waiting') {
@@ -160,6 +165,7 @@ sub take {
         _fail _loc('Cancelled semaphore %1 due to status %2', $self->key, $que->{status});
     }
 
+    alarm 0 if $p{timeout};
     return $self;
 }
 
