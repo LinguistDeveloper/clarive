@@ -35,6 +35,8 @@ use Baseliner::Mouse;
 use Baseliner::Utils;
 use Baseliner::Sugar;
 use Try::Tiny;
+use strict;
+use warnings;
 
 has key      => qw(is rw isa Str required 1);
 has sem      => qw(is rw isa Any);
@@ -62,6 +64,7 @@ sub BUILD {
             $self->id_sem( $doc->{_id} );
         }
     }
+
     return $doc;
 }
 
@@ -72,7 +75,9 @@ sub create {
         $id = mdb->sem->insert({
                 key       => $self->key,
                 internal  => ''.$self->internal,
-                slots     => 0+$self->slots,
+                slots     => 0,
+                active    => '1',
+                maxslots  => 0+$self->slots,
                 %p
             }, { safe => 1 }
         );
@@ -88,13 +93,15 @@ sub enqueue {
     my $caller = "$package ($line)";
     # now add request to queue
     my $seq = mdb->seq( 'sem' );
+    my $id_queue = mdb->oid;
     my $doc = { 
+        _id        => $id_queue,
         key        => $self->key,
         who        => $self->who,
         seq        => 0+$seq, 
         ts         => Time::HiRes::time(), 
         caller     => "$package ($line)",
-        active     => 1,
+        active     => '1',
         pid        => $$, 
         ts_request => mdb->ts,
         hostname   => $self->disp_id,
@@ -102,7 +109,7 @@ sub enqueue {
         session    => $self->session
     };
 
-    my $id_queue = mdb->sem_queue->insert( $doc, { safe=>1 });
+    mdb->sem->update({ key=>$self->key },{ '$push'=>{ queue=>$doc } });
     $self->id_queue( $id_queue );
 }
 
@@ -110,7 +117,7 @@ sub take {
     my ($self, %p) =@_;
     my ($package, $filename, $line) = caller;
     $self->queue_released(0);
-    my $config = config_get('config.sem.server');
+    my $wait_interval = $p{wait_interval} // Clarive->config->{semaphore_wait_interval} // .5;
     $self->who("$package ($line)") unless $self->who;
     _debug('No sem'),return $self if $ENV{CLARIVE_NO_SEMS};
     my $id_queue = $self->enqueue;
@@ -118,50 +125,66 @@ sub take {
     my $logged = 1;
 
     alarm $p{timeout} if length $p{timeout};
-    local $SIG{ALRM} = sub{ _fail(_loc('Timeout wating for semaphore: %1',$p{timeout})) } if length $p{timeout};
+    local $SIG{ALRM} = sub{ _fail(_loc('Timeout wating for semaphore: %1s',$p{timeout})) } if length $p{timeout};
     
     # wait until the daemon grants me out
     # NO DAEMON NOW: Try to update sem document decreasing slots
     my $updated = 0;
     my $cont = 0;
     while ( !$updated ) {
-        _debug(_loc 'Waiting for semaphore %1 (%2)', $self->key, $self->who);
-        my $res = mdb->sem->update({ key => $self->key, slots => { '$gt' => 0 }},{ '$inc' => { slots => -1} });
+        my $print_msgs = !( $cont % int(10/$wait_interval) );  # 10 seconds for every message
+        _debug(_loc 'Waiting for semaphore %1 (%2)', $self->key, $self->who) if $print_msgs;
+        my $maxslots = $self->maxslots; 
+        # attempt to get my semaphore here:
+        #my $ret = mdb->sem->find_and_modify({
+        #    query=>{ key=>$self->key, slots=>{ '$lt' => 0+$maxslots }, 'queue._id'=>$self->id_queue,  },
+        #    update=>{ '$inc' => { slots => 1}, '$set'=>{ 'queue.$.status'=>'busy', 'queue.$.ts_grant'=>mdb->ts } },
+        #    new => 1,
+        #    #fields=>{},
+        #});
+        #$updated = !! $ret;
+        #warn _dump($ret) if $ret;
+        my $res = mdb->sem->update(
+            { key=>$self->key, slots=>{ '$lt' => 0+$maxslots }, 'queue._id'=>$self->id_queue },
+            { '$inc' => { slots => 1}, '$set'=>{ 'queue.$.status'=>'busy', 'queue.$.ts_grant'=>mdb->ts } },
+        );
         $updated = $res->{updatedExisting};
+        last if $updated;
         if ( !$updated && $cont > 0 ) {
-            _debug("Looking for busy queues");
-            my @running_queues = mdb->sem_queue->find({ key => $self->key, status => 'busy' })->all;
+            _debug("Looking for busy queues") if $print_msgs;
+            my $doc = mdb->sem->find_one({ key=>$self->key }) // {};
+            my @running_queues = grep { $_->{status} eq 'busy' } _array($doc->{queue});
             if ( @running_queues ) {
-                _debug("Found ".scalar @running_queues." running queues");
-                my @sessions = map { $_->{session} } @running_queues;
-                my $sess = join "|", @sessions;
-                my @active_sessions = grep { /^$sess$/ } map { $_->{client} } grep { $_->{client} } _array(mdb->db->eval('db.$cmd.sys.inprog.findOne({$all:1});')->{inprog});
-                if ( !@active_sessions ) {
-                    _debug("No active sessions found for queues");
-                    mdb->sem_queue->update({ key => $self->key, status => 'busy' }, {'$set' => { status => 'killed' }}, { multiple=>1 });
-                    mdb->sem->update({ key => $self->key, slots => 0 },{ '$inc' => { slots => scalar @running_queues } });
+                _debug("Found ".scalar @running_queues." running queues. Checking if they are alive..");
+                my %active_sessions = map { $_->{client}=>1 } grep { $_->{client} } _array(mdb->db->eval('db.$cmd.sys.inprog.findOne({$all:1});')->{inprog});
+                for my $qitem ( @running_queues ) {
+                    if( !$active_sessions{ $qitem->{session} } ) {
+                        mdb->sem->update(
+                            { key => $self->key, 'queue._id'=>$qitem->{_id} },
+                            { '$inc'  => { slots => -1 }, '$pull' => { queue => { _id => $qitem->{_id}, status => 'busy' } } },
+                            { multiple=>1 },
+                        );
+                    }
                 }
-            } else {
-                mdb->sem->update({ key => $self->key, slots => 0 },{ '$inc' => { slots => 1 } });
             }
-            select(undef, undef, undef, $p{wait_interval} // $config->{wait_interval});
         } elsif ( $cont == 0 ) {
-            select(undef, undef, undef, $p{wait_interval} // $config->{wait_interval});
             $cont++;
         }
-        $que = mdb->sem_queue->find_one({ _id=>$id_queue });
-        if ($que->{status} ne 'waiting') {
+        
+        select(undef, undef, undef, $wait_interval );
+        # now check for interface changes
+        my $doc = mdb->sem->find_one({ 'queue._id'=>$id_queue, 'queue.status'=>mdb->in('cancelled','granted') },{ 'queue.$'=>1 });
+        $que = $doc->{queue}->[0] if $doc && ref $doc->{queue};
+        if ( $que && $que->{status} =~ /cancelled|granted/ ) {
+            # it's something else, probably granted or cancelled thru the interface
+            _debug( _loc('Status changed to %1 from outside for semaphore %2 (%3)', $que->{status}, $self->key, $self->who) );
             $self->queue_released(1);
             $updated = 1;
         }
     }
     _debug(_loc 'Granted semaphore %1 (%2)', $self->key, $self->who);
 
-    if ( $que->{status} =~ /waiting|granted/ ) {    
-        $que->{status} = 'busy';
-        $que->{ts_grant} = mdb->ts;
-        mdb->sem_queue->save( $que, { safe=>1 });
-    } else {
+    if( $que && $que->{status} eq 'cancelled' ) {
         _fail _loc('Cancelled semaphore %1 due to status %2', $self->key, $que->{status});
     }
 
@@ -169,20 +192,27 @@ sub take {
     return $self;
 }
 
+sub maxslots {
+    my ($self)=@_;
+    my $doc = mdb->sem->find_one({ key=>$self->key },{ maxslots=>1 });
+    return 1 unless $doc; 
+    return 0+( $doc->{maxslots} // 1 );
+}
+
 sub release { 
     my ($self, %p) =@_;
     if ( !$self->queue_released ) {
-        if ( !$self->internal ){
-            mdb->sem->update({ key => $self->key },{ '$inc' => { slots => 1 } });
-        } else {
-            mdb->sem->update({ key => $self->key },{ '$set' => { slots => 0+$self->slots } });
-        }
-    }
-    my $que = mdb->sem_queue->find_one({ _id=>$self->id_queue });
-    $que->{status} = 'done'; 
-    $que->{ts_release} = mdb->ts;
-    if( $que->{_id} ) {
-        mdb->sem_queue->save( $que );
+        _debug( _loc('Releasing busy semaphore %1 (%2)', $self->key,$self->who ) );
+        mdb->sem->update(
+            { key => $self->key, 'queue._id'=>$self->id_queue },
+            { '$inc' => { slots => -1 }, '$pull' => { queue =>{ _id => $self->id_queue, status=>'busy' } } }
+        );
+    } else {
+        _debug( _loc('Releasing granted semaphore %1 (%2)', $self->key,$self->who ) );
+        mdb->sem->update(
+            { key => $self->key, 'queue._id'=>$self->id_queue },
+            { '$pull' => { queue => { _id => $self->id_queue, status=>'granted' } } }
+        );
     }
     $self->queue_released(1);
     _debug(_loc 'Released semaphore %1 (%2)', $self->key, $self->who);
@@ -190,7 +220,7 @@ sub release {
 
 sub purge { 
     my ($self, %p) =@_;
-    mdb->sem_queue->remove({ key=>$self->key }, { multiple=>1 });
+    mdb->sem->update({ key=>$self->key }, { '$pull'=>{queue=>{} } });
 }
 
 sub DEMOLISH {

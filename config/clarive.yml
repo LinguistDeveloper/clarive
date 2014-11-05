@@ -12,6 +12,9 @@
 lang: en_US.UTF-8
 port: 3000
     
+# frequency of semaphore attempts
+semaphore_wait_interval: .1
+    
 # cache configure
 cache: mongo 
 cache_config:
