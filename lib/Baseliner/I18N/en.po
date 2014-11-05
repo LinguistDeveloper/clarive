@@ -11,6 +11,12 @@ msgstr "%m/%d/%Y"
 msgid "js_date_format"
 msgstr "m/d/Y"
 
+msgid "js_dt_format"
+msgstr "m/d/Y h:i:s"
+
+msgid "js_dtd_format"
+msgstr "D m/d/Y h:i:s"
+
 msgid "status_new"
 msgstr "Status"
 

@@ -453,10 +453,7 @@ sub run_rules {
         try {
             my $t0=[Time::HiRes::gettimeofday];
 
-            if( $dsl = mdb->grid->find_one({id_rule=> "$rule->{id}"}) ) {
-                $dsl = $dsl->slurp;
-                utf8::decode( $dsl );
-            }
+            $dsl = mdb->grid_slurp({id_rule=> "$rule->{id}"});
 
             if ( !$dsl ) {
                 my @tree = $self->build_tree( $rule->{id}, undef );
@@ -527,11 +524,7 @@ sub run_single_rule {
     #local $self->{tidy_up} = 0;
     my $t0=[Time::HiRes::gettimeofday];
 
-    my $dsl;
-    if( $dsl = mdb->grid->find_one({id_rule=> "$rule->{id}"}) ) {
-        $dsl = $dsl->slurp;
-        utf8::decode( $dsl );
-    }
+    my $dsl = mdb->grid_slurp({id_rule=> "$rule->{id}"});
 
     if ( !$dsl ) {
         $dsl = try {
@@ -959,7 +952,7 @@ register 'statement.sub' => {
     sub_mode => 'declare',
     description=> 'Just group tasks under this but do not run it',
     on_drop_js => q{
-        node.attributes.sub_name = new_id_for_task("GROUP"); 
+        node.attributes.sub_name = new_id_for_task("SUB"); 
     },
     icon => '/static/images/icons/group2.gif',
     dsl=>sub{
@@ -1056,6 +1049,19 @@ register 'statement.var.set' => {
         sprintf(q{
             $stash->{'%s'} = parse_vars( q{%s}, $stash ); 
         }, $n->{variable}, $n->{value}, $self->dsl_build( $n->{children}, %p ) );
+    },
+};
+
+register 'statement.var.set_expr' => {
+    text => 'SET EXPR', data => {},
+    type => 'let',
+    holds_children => 0, 
+    form => '/forms/set_expr.js', 
+    dsl => sub { 
+        my ($self, $n, %p ) = @_;
+        sprintf(q{
+            $stash->{'%s'} = do { %s };
+        }, ( $n->{variable} || Util->_name_to_id($n->{text}) ), $n->{expr} );
     },
 };
 

@@ -24,6 +24,7 @@ has icon               => ( is => 'rw', isa => 'Str', default => '' );
 has cls                => ( is => 'rw', isa => 'Str', default => 'bali-main-menu' );
 has comp_data          => ( is => 'rw', isa => 'HashRef', default => sub { +{} } );
 has separator          => ( is => 'rw', isa => 'Bool', default => 0 );
+has hideOnClick        => ( is => 'rw', isa => 'Bool', default =>1 );
 
 sub ext_menu_json {
     my ($self, %p)=@_;
@@ -38,7 +39,7 @@ sub ext_menu {
     my ($self, %p)=@_;
     #my $ret={ xtype=> 'tbbutton', text=> _loc($self->{label}) };
     return '-' if $self->separator;
-    my $ret={ text=> \"_('$self->{label}')" };
+    my $ret={ text=> \"_('$self->{label}')", hideOnClick=>\( $self->hideOnClick ) };
     my @children;
     my $top_level = delete $p{top_level};
     for( sort { sprintf('%05d-%s',$a->index,$a->label) cmp sprintf('%05d-%s',$b->index,$b->label) } grep {$_->index && $_->label} $self->get_children(%p) ) {

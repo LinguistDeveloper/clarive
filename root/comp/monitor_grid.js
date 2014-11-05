@@ -1240,7 +1240,7 @@
                                     fieldLabel: _('Time'),
                                         anchor: '100%',
                                     allowBlank: false,
-                                    value: curr.format('H:i:s'),
+                                    value: curr.format('H:i'),
                                     strategy: new Ext.ux.form.Spinner.TimeStrategy()				  
                                   }		   
                                 ]

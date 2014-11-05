@@ -1035,27 +1035,11 @@ sub topics_by_category: Local{
                 $_->{id};
             } $c->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
 
+    my $is_root = $perm->is_root( $username );
+    if( $username && ! $is_root){
+        Baseliner->model('Topic')->build_project_security( $where, $username, $is_root, @user_categories );
+    }
     $where->{'category.id'} = mdb->in(@user_categories);
-
-    if( $username && ! $perm->is_root( $username )){
-            my @proj_coll_roles = Baseliner->model('Permissions')->user_projects_ids_with_collection(username=>$username);
-            my @ors;
-            for my $proj_coll_ids ( @proj_coll_roles ) {
-                my $wh = {};
-                my $count = scalar keys %{ $proj_coll_ids || {} };
-                while ( my ( $k, $v ) = each %{ $proj_coll_ids || {} } ) {
-                    if ( $k eq 'project' && $count gt 1) {
-                        $wh->{"_project_security.$k"} = {'$in' => [ undef, keys %{$v || {}} ]};
-                    } else {
-                        $wh->{"_project_security.$k"} ={'$in' => [ keys %{$v || {}} ]};
-                    }
-                } ## end while ( my ( $k, $v ) = each...)
-                push @ors, $wh;
-            }
-            my $where_undef = { '_project_security' => undef };
-            push @ors, $where_undef;
-            $where->{'$or'} = \@ors;
-        }
 
     @topics_by_category = _array (mdb->topic->aggregate( [
         { '$match' => $where },
@@ -1090,28 +1074,13 @@ sub topics_open_by_category: Local{
                 $_->{id};
             } $c->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
 
+
+    my $is_root = $perm->is_root( $username );
+    if( $username && ! $is_root){
+        Baseliner->model('Topic')->build_project_security( $where, $username, $is_root, @user_categories );
+    }
     $where->{'category.id'} = mdb->in(@user_categories);
     $where->{'category_status.type'} = mdb->nin(('F','FC'));
-
-    if( $username && ! $perm->is_root( $username )){
-            my @proj_coll_roles = Baseliner->model('Permissions')->user_projects_ids_with_collection(username=>$username);
-            my @ors;
-            for my $proj_coll_ids ( @proj_coll_roles ) {
-                my $wh = {};
-                my $count = scalar keys %{ $proj_coll_ids || {} };
-                while ( my ( $k, $v ) = each %{ $proj_coll_ids || {} } ) {
-                    if ( $k eq 'project' && $count gt 1) {
-                        $wh->{"_project_security.$k"} = {'$in' => [ undef, keys %{$v || {}} ]};
-                    } else {
-                        $wh->{"_project_security.$k"} = {'$in' => [ keys %{$v || {}} ]};
-                    }
-                } ## end while ( my ( $k, $v ) = each...)
-                push @ors, $wh;
-            }
-            my $where_undef = { '_project_security' => undef };
-            push @ors, $where_undef;
-            $where->{'$or'} = \@ors;
-        }
 
     @topics_open_by_category = _array (mdb->topic->aggregate( [
         { '$match' => $where },
@@ -1142,30 +1111,14 @@ sub topics_by_status: Local{
     my $perm = Baseliner->model('Permissions');
 
     my @user_categories =  map {
-                $_->{id};
-            } $c->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
+        $_->{id};
+    } $c->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
 
+    my $is_root = $perm->is_root( $username );
+    if( $username && ! $is_root){
+        Baseliner->model('Topic')->build_project_security( $where, $username, $is_root, @user_categories );
+    }
     $where->{'category.id'} = mdb->in(@user_categories);
-
-    if( $username && ! $perm->is_root( $username )){
-            my @proj_coll_roles = Baseliner->model('Permissions')->user_projects_ids_with_collection(username=>$username);
-            my @ors;
-            for my $proj_coll_ids ( @proj_coll_roles ) {
-                my $wh = {};
-                my $count = scalar keys %{ $proj_coll_ids || {} };
-                while ( my ( $k, $v ) = each %{ $proj_coll_ids || {} } ) {
-                    if ( $k eq 'project' && $count gt 1) {
-                        $wh->{"_project_security.$k"} = {'$in' => [ undef, keys %{$v || {}} ]};
-                    } else {
-                        $wh->{"_project_security.$k"} = {'$in' => [ keys %{$v || {}} ]};
-                    }
-                } ## end while ( my ( $k, $v ) = each...)                
-                push @ors, $wh;
-            }
-            my $where_undef = { '_project_security' => undef };
-            push @ors, $where_undef;
-            $where->{'$or'} = \@ors;
-        }
 
     @topics_by_status = _array(mdb->topic->aggregate( [
         { '$match' => $where },
@@ -1199,28 +1152,13 @@ sub topics_open_by_status: Local{
                 $_->{id};
             } $c->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
 
+    my $is_root = $perm->is_root( $username );
+    if( $username && ! $is_root){
+        Baseliner->model('Topic')->build_project_security( $where, $username, $is_root, @user_categories );
+    }
+
     $where->{'category.id'} = mdb->in(@user_categories);
     $where->{'category_status.type'} = mdb->nin(('F','FC'));
-
-    if( $username && ! $perm->is_root( $username )){
-            my @proj_coll_roles = Baseliner->model('Permissions')->user_projects_ids_with_collection(username=>$username);
-            my @ors;
-            for my $proj_coll_ids ( @proj_coll_roles ) {
-                my $wh = {};
-                my $count = scalar keys %{ $proj_coll_ids || {} };
-                while ( my ( $k, $v ) = each %{ $proj_coll_ids || {} } ) {
-                    if ( $k eq 'project' && $count gt 1) {
-                        $wh->{"_project_security.$k"} = {'$in' => [ undef, keys %{$v || {}} ]};
-                    } else {
-                        $wh->{"_project_security.$k"} = {'$in' => [ keys %{$v || {}} ]};
-                    }
-                } ## end while ( my ( $k, $v ) = each...)                
-                push @ors, $wh;
-            }
-            my $where_undef = { '_project_security' => undef };
-            push @ors, $where_undef;
-            $where->{'$or'} = \@ors;
-        }
 
     @topics_open_by_status = _array(mdb->topic->aggregate( [
         { '$match' => $where },

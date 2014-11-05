@@ -22,13 +22,14 @@ has schedtime          => qw(is rw isa TS coerce 1), default => sub { ''.mdb->no
 has starttime          => qw(is rw isa TS coerce 1), default => sub { ''.mdb->now };
 has maxstarttime       => qw(is rw isa TS coerce 1), default => sub { 
     my ($self) = @_;
-    my $expiry_time = Baseliner->model('ConfigStore')->get( 'config.job', bl => $self->bl )->{expiry_time}->{normal} || "1D";
-    ''.( Class::Date->new($_[0]->starttime) + $expiry_time ) 
+    return ''.( Class::Date->new($self->schedtime) + $self->expiry_time ) 
 };
+has maxapprovaltime    => qw(is rw isa Any);
 has endtime            => qw(is rw isa Any);
 has comments           => qw(is rw isa Any);
 has logfile            => qw(is rw isa Any lazy 1), default => sub { my $self=shift; ''.Util->_file($ENV{BASELINER_LOGHOME}, $self->name . '.log') };
 has step               => qw(is rw isa Str default CHECK);
+has window_type        => qw(is rw isa Str default normal);
 has exec               => qw(is rw isa Num), default=>1;
 has status             => qw(is rw isa Any default IN-EDIT);
 has status_trans       => qw(is rw isa Any);  # translation of status so that it shows in searches
@@ -195,12 +196,12 @@ sub _create {
 
     my $job_mid = $self->mid;
     my $changesets = $p{changesets};
-    my $config = Baseliner->model('ConfigStore')->get( 'config.job', $self->bl );
+    my $config = model->ConfigStore->get( 'config.job', bl=>$self->bl );
     
     my $status = $p{status} || 'IN-EDIT';
     #$now->set_time_zone('CET');
     my $now = mdb->now;
-    my $end = $now + ( $config->{expiry_time}{normal} // '1D' );
+    my $end = $now + $self->expiry_time ;
 
     $p{starttime}    ||= "$now";
     $p{maxstarttime} ||= "$end";
@@ -531,7 +532,7 @@ sub reset {   # aka restart
     event_new 'event.job.rerun' => { job=>$self } => sub {
         my $now = mdb->now;
         if( $p{run_now} || $self->schedtime < $now ) {
-            my $end = $now + ( $config->{expiry_time}{normal} // '1D' );
+            my $end = $now + $self->expiry_time;
             $self->schedtime( "$now" );
             $self->starttime( "$now" );
             $self->maxstarttime( "$end" );
@@ -562,15 +563,28 @@ sub reschedule {
         if $self->status ne 'READY' && $self->status ne 'APPROVAL';
 
     my $msg;
+    my $oldtime = $self->schedtime;
     event_new 'event.job.reschedule' => { job=>$self } => sub {
         my $newtime = Class::Date->new( "$p->{date} $p->{time}" );
         $self->schedtime( "$newtime" );
+        $self->maxstarttime( ''. ( $newtime + $self->expiry_time ) );
         $self->save;
         my $log = $self->logger;
-        $msg = _loc("Job %1 rescheduled by user %2 to %3", $self->name, $realuser, $newtime );
+        $msg = _loc("Job %1 rescheduled by user %2 from `%3` to `%4`", $self->name, $realuser, $oldtime, $newtime );
         $log->info($msg);
     };
     return { msg=>$msg };
+}
+
+sub expiry_time {
+    my ($self,%p) = @_;
+
+    $p{bl} ||= ref $self ? $self->bl : '*';
+    my $window_type = $self->window_type || 'N';
+
+    my $exp = Baseliner->model('ConfigStore')->get( 'config.job', bl=>$p{bl} )->{expiry_time};
+    my $ret = ref $exp eq 'HASH' ? $exp->{ $window_type } : $exp;
+    return $ret || "1D";
 }
 
 sub cancel {

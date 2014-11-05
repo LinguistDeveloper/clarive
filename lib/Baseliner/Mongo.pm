@@ -81,6 +81,15 @@ sub collection {
 
 sub grid { $_[0]->db->get_gridfs }
 
+sub grid_slurp {
+    my ($self,$where) = @_; 
+    my $doc = $self->grid->find_one($where);
+    return unless $doc;
+    my $data = $doc->slurp;
+    utf8::decode($data);
+    return $data;
+}
+
 sub grid_insert {  
     my ($self, $in, %opts) = @_;
     my $fh;
@@ -325,13 +334,17 @@ sub index_all {
             [{ modified_on=>-1 }],
             [{ created_on=>1, mid=>1 }],
             [{ created_on=>1, m=>1 }],
+            [{ name_category=>1 }],
             [{'$**'=> "text"}],
             [{ '_project_security'=>1, category_name=>1 }],
+            [{ '_sort.numcomment'=>1, _project_security=>1, category_status=>1, 'category.id'=>1 }],
         ],
         job_log => [
             [{ id=>1 }],
             [{ mid=>1 }],
+            [{ mid=>1, exec=>1 }],
             [{ mid=>1, lev=>1, exec=>1 }],
+            [{ mid=>1, exec=>1, ts=>1, t=>1 }],
         ],
         cache => [
             [{ _id=>1 }],
@@ -352,6 +365,7 @@ sub index_all {
         'fs.files' =>[ 
             [{ parent_mid=>1 }],
             [{ topic_mid=>1 }],
+            [{ id_rule=>1 }],
         ],
         notification => [
             [{'$**'=> "text"}],
@@ -397,6 +411,7 @@ sub index_all {
         ],
         sem => [
             [{ key => 1},{ unique=>1, dropDups => 1 }],
+            [{ key=>1 }],
         ],
         sem_queue => [
             [{ status=>1, key=>1 }],

@@ -1,5 +1,7 @@
 <%args>
     $topic_mid
+    $category_name => undef
+    $category_color => undef
     $swEdit
     $permissionEdit
     $permissionDelete
@@ -14,6 +16,8 @@
 
 (function(params){
     var topic_mid = '<% $topic_mid %>';
+    var category_name = '<% $category_name %>';
+    var category_color = '<% $category_color %>';
     var swEdit = <% $swEdit == 1 ? 1 : 0 %>;
     var permEdit = <% $permissionEdit ? 'true' : 'false' %>;
     var permDelete = <% $permissionDelete ? 'true' : 'false' %>;
@@ -54,8 +58,10 @@
 
     Baseliner.edit_check( topic_main, true );  // block window closing from the beginning
 
-    //topic_main.tab_title = null; //Baseliner.topic_title( params.topic_mid, _(params.category), params.category_color, params.title );
-    //topic_main.tab_icon = null;
+    if( !params.topic_mid ) {
+        topic_main.title = Baseliner.topic_title( null, category_name, category_color, null,null,{ new_tab:true });
+        topic_main.tab_title = topic_main.title;  // make sure nobody overwrites me text
+    }
     
     topic_main.print_hook = function(){
         var t = params.topic_mid || topic_main.title;

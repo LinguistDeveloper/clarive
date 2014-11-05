@@ -100,7 +100,7 @@ other => [qw(
     ago
 )],
 logging => [qw(
-    _debug _fail _fixascii_sql _throw _loc _error _whereami _warn
+    _debug _fail _log _info _fixascii_sql _throw _loc _error _whereami _warn
 )],
 basic => [qw(
     _array _file _dir _now _ci _load :logging 
@@ -326,7 +326,7 @@ sub _log_me {
         }
         $cl =~ s{^Baseliner}{B};
         my $pid = sprintf('%s', $$);
-        my $msg = join '', _now_log(), "[$pid] [$cl:$li] ", $first, @msgs ;
+        my $msg = join '', '('.uc(substr($lev,0,1)).')', _now_log(), "[$pid] [$cl:$li] ", $first, @msgs ;
         #if( !$ENV{BALI_CMD} && ( my $cat_log = Baseliner->log ) ) {
             #$cat_log->$lev( $msg );
         if( ( ( $^O ne 'Win32' && -t STDOUT ) || $ENV{BASELINER_LOGCOLOR} ) && !$Baseliner::no_log_color) { 

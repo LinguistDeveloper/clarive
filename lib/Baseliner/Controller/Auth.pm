@@ -143,22 +143,38 @@ sub authenticate : Private {
     my ( $self, $c ) = @_;
     my $login    = $c->stash->{login} // _throw _loc('Missing login');
     my $password = $c->stash->{password};
-    
+    my ($realm,$username) = $login =~ m{^(\w+)/(.+)$};
     my $auth; 
-    _debug "AUTH START=$login";
-
-    if( $login =~ /^local\/(.*)$/i ) {
-        $login = $1;
-        my $local_store = try { $c->config->{authentication}{realms}{local}{store}{users}{ $login } } catch { +{} };
+    _debug "AUTH START login=$login, username=$username, realm=$realm";
+    
+    # auth by rule?
+    my $auth_stash = { login=>$login, realm=>$realm, username=>$username, password=>$password, login_data=>{ login_ok=>undef } };
+    event_new 'event.auth.attempt' => $auth_stash;
+    
+    if( $$auth_stash{login_data}{login_ok} ) {
+        # rule says it's ok
+        _debug "AUTH RULE OK=$login";
+        $auth = $c->authenticate({ id=>$login }, 'none');
+    }
+    elsif( defined $$auth_stash{login_data}{login_ok} ) {
+        # rule says it's not ok
+        _debug "AUTH RULE KO=$login";
+        $c->stash->{auth_message} = _loc( $$auth_stash{login_data}{login_msg}, _array($$auth_stash{login_data}{login_msg_params}) )
+            if $$auth_stash{login_data}{login_msg};
+        $auth = undef;
+    }
+    elsif( lc($realm) eq 'local' ) {
+        $login = $username;
+        my $local_store = try { $c->config->{authentication}{realms}{local}{store}{users}{ $username } } catch { +{} };
         _debug $c->config->{authentication}{realms}{local};
         _debug $local_store; 
         if( exists $local_store->{api_key} && $password eq $local_store->{ api_key } ) {
             _debug "Login with API_KEY";
-            $auth = $c->authenticate({ id=>$login }, 'none');
+            $auth = $c->authenticate({ id=>$username }, 'none');
         } else {
             $auth = try {
                 # see the password: _debug BaselinerX::CI::user->encrypt_password( $login, $password ) ;
-                $c->authenticate({ id=>$login, password=>BaselinerX::CI::user->encrypt_password( $login, $password ) }, 'local');
+                $c->authenticate({ id=>$username, password=>BaselinerX::CI::user->encrypt_password( $username, $password ) }, 'local');
             } catch {
                 $c->log->error( "**** LOGIN ERROR: " . shift() );
             }; # realm may not exist
@@ -198,7 +214,7 @@ sub authenticate : Private {
     } else {
         _error "AUTH KO: $login";
         $c->logout;  # destroy $c->user
-        $c->stash->{auth_message} = _loc("Invalid User or Password");
+        $c->stash->{auth_message} ||= _loc("Invalid User or Password");
         return 0;
     }
 }
@@ -237,10 +253,10 @@ sub login : Global {
                 # go to the main authentication worker
                 $c->stash->{login} = $login; 
                 $c->stash->{password} = $password;
-                $c->forward('authenticate');
+                my $auth_ok = $c->forward('authenticate');
                 $msg = $c->stash->{auth_message};
                 # check if user logins correctly into corresponding realm
-                if( $c->forward('authenticate') ) {
+                if( $auth_ok ) {
                     # authentication ok, but user ci exists in db?
                     if( model->Users->user_exists( $c->username ) ) {
                         $msg //= _loc("OK");

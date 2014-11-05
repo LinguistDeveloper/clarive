@@ -104,7 +104,6 @@ sub get {
 
     # load all values for the keyinto a temp hash
     my $where;
-    $where->{bl} = $p{bl} if $p{bl};
     $where->{ns} = $p{ns} if $p{ns};
     $where->{'$or'} = [{key => qr/^$key\./}, {key => qr/^$key$/}];
 

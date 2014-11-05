@@ -383,7 +383,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 self.$tree_favorites.on('load', function(){
                     // if we don't have any favorites, switch to the projects view
                     if( self.$tree_favorites.root && !self.$tree_favorites.root.hasChildNodes() ) {
-                        show_projects();
+                        show_projects(function(){button_projects.enable();});
                         button_projects.toggle(true);
                     }
                 });

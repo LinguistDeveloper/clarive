@@ -45,6 +45,10 @@ Baseliner.require = function(url, cb){
     require([url + '?' + Date.now()], cb );
 };
 
+Baseliner.clone = function(obj){
+    return Ext.util.JSON.decode( Ext.util.JSON.encode(obj) );
+};
+
 // In-edit counter - keep the window for closing if it's more than > 0
 Baseliner.is_in_edit = function(){
     var flag = false;
@@ -961,7 +965,7 @@ Baseliner.Grid.Buttons = {};
 Baseliner.Grid.Buttons.Add = Ext.extend( Ext.Toolbar.Button, {
     constructor: function(config) {
         config = Ext.apply({
-            text: _('New'),
+            text: _('Create'),
             //icon:'/static/images/icons/add.gif',
             //cls: 'x-btn-text-icon'
             iconCls: 'sprite add'
@@ -2792,6 +2796,10 @@ Baseliner.render_checkbox = function(v){
     return v 
         ? '<img src="/static/images/icons/checkbox.png">'
         : '<img src="/static/images/icons/delete.gif">';
+};
+        
+Baseliner.render_ago = function(t,p){
+    return moment(t).fromNow();  // TODO use the user prefs for timezone and language
 };
         
 Baseliner.cols_templates = {

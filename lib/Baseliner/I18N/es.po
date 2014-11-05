@@ -15,6 +15,12 @@ msgstr "%d/%m/%Y"
 msgid "js_date_format"
 msgstr "d/m/Y"
 
+msgid "js_dt_format"
+msgstr "d/m/Y h:i:s"
+
+msgid "js_dtd_format"
+msgstr "D d/m/Y h:i:s"
+
 msgid "Monday"
 msgstr "Lunes"
 
@@ -1204,7 +1210,7 @@ msgid "Submit"
 msgstr "Enviar"
 
 msgid "New"
-msgstr "Crear"
+msgstr "Nuevo"
 
 msgid "Add"
 msgstr "Crear"
@@ -3281,6 +3287,9 @@ msgstr "Asignadas a Mí"
 
 msgid "Created Today"
 msgstr "Creadas Hoy"
+
+msgid "Modified Today"
+msgstr "Modificadas Hoy"
 
 msgid "Month"
 msgstr "Mes"
@@ -6210,11 +6219,14 @@ msgstr "El pase no fue pausado"
 msgid "Job restarted by user %1, execution %2, step %3"
 msgstr "Pase reiniciado por el usuario %1, ejecución %2, paso %3"
 
-msgid "Job %1 rescheduled by user %2 to %3"
-msgstr "Pase %1 reprogramado por el usuario %2 a %3"
+msgid "Job %1 rescheduled by user %2 from `%3` to `%4`"
+msgstr "Pase %1 reprogramado por el usuario %2 de `%3` a `%4`"
 
 msgid "*Job Approved by %1*: %2"
 msgstr "*Pase Aprobado por %1*: %2"
+
+msgid "Job Approved by"
+msgstr "Pase Aprobado por"
 
 msgid "*Job Rejected by %1*: %2"
 msgstr "*Pase Rechazado por %1*: %2"
@@ -7767,3 +7779,15 @@ msgstr "Nombre del servicio"
 
 msgid "Active instances"
 msgstr "Instancias activas"
+
+msgid "Click here to review"
+msgstr "Click aquí para revisarlo"
+
+msgid "View this in a browser."
+msgstr "Ver en el navegador"
+
+msgid "Status of approval"
+msgstr "Estado de aprobación"
+
+msgid "Topic %1 of category %2 has been modified/created by %3"
+msgstr "Tópico %1 de la categoría %2 ha sido modificado/creado por %3"

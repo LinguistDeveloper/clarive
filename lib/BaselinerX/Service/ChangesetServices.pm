@@ -491,7 +491,7 @@ sub nature_items {
     $stash->{natures} = {}; 
     my $nat_id = $config->{nature_id} // 'name';  # moniker?
    
-    my @nat_rows = ci->nature->find->fields({ mid=>1 })->all;
+    my @nat_rows =  ci->nature->find({active=>'1'})->fields({ mid=>1 })->all;
     my @projects = _array( $job->projects );
     for my $project ( @projects ) {
         #my @items = @{ $stash->{items} || [] };
@@ -575,10 +575,14 @@ sub request_approval {
     my $job      = $c->stash->{job};
     my $log      = $job->logger;
     my $bl       = $job->bl;
+
     my @projects = map {$_->{mid} } _array($job->{projects});
     my @project_names = map {$_->{name} } _array($job->{projects});
     my @changesets = map {$_->{mid} } _array($job->{changesets});
     my $subject = _loc("Applications: %1. Requesting approval for job %2", "(".join(",",@project_names).")",$job->name);
+
+    my $job_config = model->ConfigStore->get( 'config.job', bl=>$bl );
+
     my $notify = {
         project => \@projects
     };
@@ -588,6 +592,12 @@ sub request_approval {
         $job->approval_config( $config );
         $job->final_status( 'APPROVAL' );
 
+        my $now = Class::Date->now();
+        my $maxapprovaltime
+            = $job->schedtime < $now
+            ? '' . ( $now + $job_config->{approval_expiry_time} ) : '' . ( $now + $job_config->{approval_expiry_time} ) gt ''.$job->schedtime
+            ? ''.$job->schedtime : '' . ( $now + $job_config->{approval_expiry_time} );
+        $job->maxapprovaltime($maxapprovaltime);
     };
     1;
 }

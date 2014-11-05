@@ -43,7 +43,6 @@ register 'registor.menu.topics' => {
            $data->{color} //= 'transparent';
            "menu.topic.create.$id" => {
                 label    => qq[<div id="boot" style="background:transparent"><span class="label" style="background-color:$data->{color}">$name</span></div>],
-                title    => _loc ('New: %1', $name),
                 index    => $seq++,
                 actions  => ["action.topics.$id.create"],
                 url_comp => '/topic/view?swEdit=1',
@@ -52,6 +51,25 @@ register 'registor.menu.topics' => {
                 tab_icon => '/static/images/icons/topic.png'
            }
        } sort { lc $a->{name} cmp lc $b->{name} } @cats;
+
+       my %menu_statuses = map {
+           my $data = $_;
+           my $name = _loc( $_->{name} );
+           my $id = _name_to_id( $name );
+           $data->{color} //= 'transparent';
+           "menu.topic.status.$id" => {
+                label    => qq[<span style="white-space: nowrap; text-transform: uppercase; font-weight: bold; padding-bottom: 1px; font-size: 10px; font-family: Helvetica, Verdana, Helvetica, Arial, sans-serif;">$name</span>],
+                title    => qq[<span style="white-space: nowrap; text-transform: uppercase; padding-bottom: 1px; font-size: 10px; font-family: \"Helvetica Neue\", Helvetica, Verdana, Helvetica, Arial, sans-serif; ">$name</span>],
+                index    => $seq++,
+                hideOnClick => 0,
+                #actions  => ["action.topics.$id.create"],
+                url_comp => '/topic/grid?status_id=' . $data->{id_status},
+                #comp_data => { new_category_name=>$name, new_category_id=>$data->{id} },
+                icon     => $data->{status_icon}||'/static/images/icons/status.png',
+                tab_icon => $data->{status_icon}||'/static/images/icons/status.png',
+           }
+       } sort { lc $a->{name} cmp lc $b->{name} } 
+           ci->status->find->fields({ id_status=>1, name=>1, color=>1, seq=>1, status_icon=>1 })->all;
 
        my $menus = {
             'menu.topic' => {
@@ -71,8 +89,15 @@ register 'registor.menu.topics' => {
             },
             'menu.topic._sep_' => { index=>3, separator=>1 },
             %menu_create,
+            %menu_statuses,
             %menu_view,
        };
+       $menus->{'menu.topic.status'} = {
+                    label    => _loc('Status'),
+                    icon     => '/static/images/icons/status.png',
+                    index => 2,
+                    #actions  => ['action.topics.%.create'],
+             } if %menu_statuses;
        $menus->{'menu.topic.create'} = {
                     label    => _loc('Create'),
                     icon     => '/static/images/icons/add.gif',
@@ -599,6 +624,8 @@ sub view : Local {
             
             my $category = mdb->category->find_one({ id=>"$id_category" });
             $c->stash->{category_meta} = $category->{forms};
+            $c->stash->{category_name} = $category->{name};
+            $c->stash->{category_color} = $category->{color};
 
             my $first_status = ci->status->find_one({ id_status=>mdb->in( $category->{statuses} ), type=>'I' }) // _fail( _loc('No initial state found '));
 
@@ -1040,6 +1067,19 @@ sub filters_list : Local {
     push @views, {
         id  => $i++,
         idfilter      => 1,
+        text    => _loc('Modified Today'),
+        filter  => '{"modified_today":true}',
+        default    => \1,
+        cls     => 'forum default',
+        iconCls => 'icon-no',
+        checked => \0,
+        leaf    => 'true',
+        uiProvider => 'Baseliner.CBTreeNodeUI_system'
+    };
+    
+    push @views, {
+        id  => $i++,
+        idfilter      => 1,
         text    => _loc('Created Today'),
         filter  => '{"today":true}',
         default    => \1,
@@ -1202,10 +1242,16 @@ sub filters_list : Local {
             my $checked;
 
             if ( $is_root ) {
-                $checked = \1;
+                #Si no es un estado final, lo sacamos marcado
+                if(($r->{type} ne 'F') and ($r->{type} ne 'FC')){
+                    $checked = \1;
+                }else{
+                    $checked = \0;
+                }
             } else {
                 #$checked = exists $tmp{$r->{id_status}} && (substr ($r->{type}, 0 , 1) ne 'F')? \1: \0;
                 $checked = exists $tmp{$r->{id_status}} && $id_categories_hash{$tmp{$r->{id_status}}} && (substr ($r->{type}, 0 , 1) ne 'F')? \1: \0;
+
 
             }
             push @statuses,

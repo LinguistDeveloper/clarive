@@ -31,9 +31,10 @@ register 'config.job' => {
         { id=>'comment', label => 'Comment', type=>'text' },
         { id=>'check_rfc', label => 'Check RFC on creation', type=>'text', default=>0 },
         { id=>'step', label => 'Which phase of the job, pre, post or run', default => 'RUN' },
-        { id=>'normal_window', label => 'Normal Window Name', default => 'normal' },
-        { id=>'emer_window', label => 'Emergency Window Name', default => 'emergency' },
-        { id=>'expiry_time', label => 'Time to expiry a job in hours', type=>'hash', default=>'{ normal=>"1D", emergency=>"1H" }' }, 
+        { id=>'normal_window', label => 'Normal Window Name', default => 'N' },
+        { id=>'emer_window', label => 'Emergency Window Name', default => 'U' },
+        { id=>'expiry_time', label => 'Time to expiry a job in hours', type=>'hash', default=>'{ N=>"1D", U=>"1h" }' }, 
+        { id=>'approval_expiry_time', label => 'Time to expiry a job in approval state', default=>'1D' }, 
     ],
     relationships => [ { id=>'natures', label => 'Technologies', type=>'list', config=> 'config.tech' },
         { id=>'releases', label => 'Releases', type=>'list', config=> 'config.release' },
@@ -67,13 +68,7 @@ register 'menu.job.list' => {
     index    => 20,
 };
 
-#register 'menu.job.list' => { label => 'List Current Jobs', url=>'/maqueta/list.mas', title=>'Job Monitor' };
-#register 'menu.job.exec' => { label => 'Exec Current Jobs', url_run=>'/maqueta/list.mas', title=>'Job Monitor' };
-#register 'menu.job.hist' => { label => 'Historical Data', handler => 'function(){ Ext.Msg.alert("Hello"); }' };
-#register 'menu.job.hist.all' => { label => 'List all Jobs', url=>'/core/registry', title=>'Registry'  };
-
 register 'portlet.monitor' => { name=>'Job Monitor', url_comp=>'/job/monitor_portlet', url_max=>'/job/monitor', active=>1 };
-#register 'portlet.guin' => { name=>'Job Monitor', url=>'/site/guin.html', url_max=>'/site/guin.html', active=>1 };
 
 register 'service.job.new' => {
     name => 'Schedule a new job',

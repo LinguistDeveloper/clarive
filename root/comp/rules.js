@@ -202,10 +202,18 @@
     var encode_tree = function( root, include ){
         var stmts = [];
         if( include ) {
-            stmts.push({ attributes: root.attributes, children: encode_tree( root ) });
+            var attr = Baseliner.clone( root.attributes );
+            delete attr.loader;
+            delete attr.id;
+            delete attr.children;
+            stmts.push({ attributes: attr, children: encode_tree( root ) });
         } else {
             root.eachChild( function(n){
-                stmts.push({ attributes: n.attributes, children: encode_tree( n ) });
+                var attr = Baseliner.clone( n.attributes );
+                delete attr.loader;
+                delete attr.id;
+                delete attr.children;
+                stmts.push({ attributes: attr, children: encode_tree( n ) });
             });
         }
         return stmts;
@@ -281,16 +289,17 @@
             var p = clipboard.node;
             p.id = Ext.id();
             if( clipboard.mode=='copy' ) {
-                p.attributes.sub_name = new_id_for_task( p.text );
+                if( p.attributes.sub_name ) p.attributes.sub_name = new_id_for_task( p.text );
                 delete p.attributes.has_shortcut;
             }
             p.cascade(function(n_chi){
                 n_chi.id = Ext.id();
                 if( clipboard.mode=='copy' ) {
-                    p.attributes.sub_name = new_id_for_task( p.text );
+                    if( n_chi.attributes.sub_name ) n_chi.attributes.sub_name = new_id_for_task( n_chi.text );
                     delete n_chi.attributes.has_shortcut;
                 }
             });
+            node.getOwnerTree().is_dirty = true;
             node.appendChild( p );
         } else {
             Baseliner.message( _('Paste'), _('Nothing in clipboard to paste') );
@@ -301,8 +310,21 @@
         //node.getOwnerTree().rule_export(node,true);
         var stmts = encode_tree( node,true );
         var json = Ext.util.JSON.encode( stmts[0] );
+        var editor = new Baseliner.MonoTextArea({ value: json });
+        var btn_beau = new Ext.Button({ text:_('Beautify'), handler: function(){
+            Baseliner.require('/static/jsbeautifier/beautify.js',function(x){
+                json = x.js_beautify(json,{});
+                editor.setValue( json );
+            });
+        }});
+        var btn_root = new Ext.Button({ text:_('Remove Root'), handler: function(){
+            json = Ext.util.JSON.encode( stmts[0].children );
+            editor.setValue( json );
+        }});
+        
         var win = new Baseliner.Window({ height: 400, width: 800, 
-            items: new Baseliner.MonoTextArea({ value: json }), layout:'fit' });       
+            tbar: [btn_beau,'-', (stmts[0] && stmts[0].children ? btn_root : null) ],
+            items: editor, layout:'fit' });       
         win.show();
     };
     var import_node = function( node_parent ) {
@@ -323,13 +345,26 @@
                     children: n.children.map(function(chi){ return processnode(chi) }),
                 }, at );
             }
-            var node = processnode(ndata);
-            node_parent.appendChild( node );
+            if( Ext.isArray(ndata) ) {
+                Ext.each(ndata, function(nn){
+                    var node = processnode(nn);
+                    node_parent.appendChild( node );
+                });
+            } else {
+                var node = processnode(ndata);
+                node_parent.appendChild( node );
+            }
             win.close();
         }
+        var btn_beau = new Ext.Button({ text:_('Beautify'), handler: function(){
+            Baseliner.require('/static/jsbeautifier/beautify.js',function(x){
+                var json = x.js_beautify(impbox.getValue(),{});
+                impbox.setValue( json );
+            });
+        }});
         var win = new Baseliner.Window({ 
             height: 400, width: 800, 
-            tbar: ['->', { xtype:'button', text:_('Import'), icon: '/static/images/icons/import.png', handler: importer }],
+            tbar: [btn_beau, '->', { xtype:'button', text:_('Import'), icon: '/static/images/icons/import.png', handler: importer }],
             items: impbox, layout:'fit' });       
         win.show();
     };

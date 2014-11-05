@@ -365,7 +365,7 @@ register 'event.job.cancel_running' => {
 sub submit : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
-    my $config = $c->registry->get('config.job')->data;
+    my $config = model->ConfigStore->get( 'config.job', bl=>$p->{bl});
     my $runner = $config->{runner};
     my $job_name;
     my $username = $c->username;
@@ -440,7 +440,11 @@ sub submit : Local {
                     state_to        => $state_to
             };
             
-            $job_data->{schedtime} = Class::Date->new("$job_date $job_time")->string if length $job_date && length $job_time;
+            if ( length $job_date && length $job_time ) {
+                $job_data->{schedtime} = Class::Date->new("$job_date $job_time")->string ;
+                _warn("expiry_time for $p->{window_type} = $config->{expiry_time}{$p->{window_type}}");
+                $job_data->{maxstarttime} = Class::Date->new("$job_date $job_time") + ( $config->{expiry_time}{$p->{window_type}} // '1D' )
+            }
 
             event_new 'event.job.new' => { username => $c->username, bl => $job_data->{bl}  } => sub {
                 my $job = ci->job->new( $job_data );
