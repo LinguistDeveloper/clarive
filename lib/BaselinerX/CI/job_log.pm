@@ -123,8 +123,8 @@ sub common_log {
         # print out too
         {
             local $Baseliner::logger = undef;  # prevent recursivity
-            Baseliner::Utils::_log_lev( 5, sprintf "[JOB %d][%s] %s", $self->jobid, $lev, $text );
-            Baseliner::Utils::_log_lev( 5, substr($p{data},0,1024*10) )
+            Baseliner::Utils::_log_lev( $lev, 5, sprintf "[JOB %d] %s", $self->jobid, $text );
+            Baseliner::Utils::_log_lev( $lev, 5, substr($p{data},0,1024*10) )
                 if Clarive->debug && defined $p{data} && !$p{data_name}; # no files wanted!
         }
 
