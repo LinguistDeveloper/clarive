@@ -44,14 +44,52 @@
         if(activate){
             if(comp.pane == 'history'){
                 cons.destroy();
-                cons = new Ext.Panel({ layout:'form', items:[ new Ext.form.TextField({ fieldLabel:'history' }) ] });
                 Baseliner.ajax_json('/'+controller+'/get_file_history', { filepath: path, filename: file, repo_mid: repo_mid, rev_num: params.rev_num, revid: params.revid }, function(res){
+                    var store = new Ext.data.ArrayStore({
+                        fields: [
+                           {name: 'author'  },
+                           {name: 'date'    },
+                           {name: 'commit'  },
+                           {name: 'comment' }
+                        ]
+                    });
+                    store.loadData(res.history);
 
+                    cons = new Ext.grid.GridPanel({
+                        store: store,
+
+                        columns: [
+                            {
+                                id       : 'author',
+                                header   : _('Author'),  
+                                dataIndex: 'author'
+                            },
+                            {
+                                id       : 'date',
+                                header   : _('Date'),  
+                                dataIndex: 'date',
+                                width    : 200
+                            },
+                            {
+                                id       : 'commit',
+                                header   : _('Commit'),  
+                                dataIndex: 'commit'
+                            },
+                            {
+                                id       : 'comment',
+                                header   : _('Comment'),  
+                                dataIndex: 'comment'
+                            }
+                        ],
+                        stripeRows: true,
+                        autoExpandColumn: 'comment',
+                        title: _('File history'),
+                    });
+                    pnl.add( cons );
+                    pnl.doLayout();
                 }, function(res){
                      Baseliner.error( _('Error'), _(res.msg) );
-                });    
-                pnl.add( cons );
-                pnl.doLayout();
+                });     
             }else if(comp.pane == 'diff'){
                 cons.destroy();
                 Baseliner.ajaxEval('/comp/view_diff.js', { repo_dir: path, file: file, rev_num: rev_num, revid: revid, controller: controller, file_diff: '_file',  }, function(comp){
