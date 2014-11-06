@@ -2,6 +2,7 @@
     var path = params.repo_dir;
     var file = params.file;
     var revid = params.revid;
+    var branch = params.branch;
     var rev_num = params.rev_num;
     var controller = params.controller;
     var repo_mid = params.repo_mid;
@@ -20,7 +21,7 @@
         if(revision){
             rev_num = revision;
         }
-        Baseliner.ajax_json('/'+controller+'/view_file', { filepath: path, filename: file, repo_mid: repo_mid, rev_num: rev_num, revid: params.revid }, function(res){
+        Baseliner.ajax_json('/'+controller+'/view_file', { filepath: path, filename: file, repo_mid: repo_mid, rev_num: rev_num, revid: params.revid, branch: branch }, function(res){
             revid = res.revid;
             cons.setValue(res.file_content);
             cons.setReadOnly();
@@ -92,7 +93,7 @@
                 });     
             }else if(comp.pane == 'diff'){
                 cons.destroy();
-                Baseliner.ajaxEval('/comp/view_diff.js', { repo_dir: path, file: file, rev_num: rev_num, revid: revid, controller: controller, file_diff: '_file',  }, function(comp){
+                Baseliner.ajaxEval('/comp/view_diff.js', { repo_dir: path, file: file, rev_num: rev_num, revid: revid, controller: controller, file_diff: '_file', branch: branch }, function(comp){
                     cons = comp;
                     pnl.add( cons );
                     pnl.doLayout();
