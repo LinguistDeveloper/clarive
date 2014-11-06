@@ -35,7 +35,8 @@ register 'config.job.daemon' => {
         {  id=>'wait_for_killed', label=>'Seconds to wait before declaring job killed', type=>'int', default=>10 },
         {  id=>'mode', label=>'Job Spawn Mode (spawn,fork,detach)', type=>'str', default=>'detach' },
         {  id=>'unified_log', label=>'Set true to have jobs report to dispatcher log', type=>'bool', default=>0 },
-        {  id=>'job_host_affinity', label=>'All steps of jobs must been executed in the same host', type=>'bool', default=>1}
+        {  id=>'job_host_affinity', label=>'All steps of jobs must been executed in the same host', type=>'bool', default=>1},
+        {  id=>'id', label=>'All steps of jobs must been executed in the same host', default=> sub { lc( Sys::Hostname::hostname() )}}
     ]
 };
 
@@ -62,7 +63,7 @@ sub job_daemon {
     };
     _log "Job daemon started with frequency ${freq}s for dispatcher instance $config->{id}";
     require Baseliner::Sem;
-    my $hostname = $config->{id} || Util->my_hostname();
+    my $hostname = $config->{id};
     # set job query order
     for( 1..1000 ) {
         #sleep 20;
