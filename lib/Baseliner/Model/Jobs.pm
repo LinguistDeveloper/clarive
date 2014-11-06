@@ -240,6 +240,7 @@ sub monitor {
             rollback     => $job->{rollback},
             has_errors   => $job->{has_errors},
             has_warnings => $job->{has_warnings},
+            approval_expiration => $job->{maxapprovaltime},
             key          => $job->{job_key},
             last_log     => $last_log_message,
             when         => $when,
