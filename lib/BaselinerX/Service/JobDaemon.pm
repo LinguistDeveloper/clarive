@@ -128,6 +128,8 @@ sub job_daemon {
                             my $pid = $self->runner_spawn( mid=>$job->mid, runner=>$job->runner, step=>$step, jobid=>$job->mid, logfile=>$logfile );
                         } elsif( $mode =~ /fork|detach/i ) {
                             _log "Forking job " . $job->mid . " (mode=$mode), logfile=$logfile";
+                            _log _loc 'Precompile check for job %1 rule %2', $job->name, $job->id_rule;
+                            $self->precompile_rule( $job->id_rule );
                             $self->runner_fork( mid=>$job->mid, runner=>'Core', step=>$step, jobid=>$job->jobid, logfile=>$logfile, mode=>$mode, unified_log=>$config->{unified_log} );
                         } else {
                             _throw _loc("Unrecognized mode '%1'", $mode );
@@ -225,6 +227,20 @@ sub runner_fork {
     } else {
         _log _loc("***** ERROR: Could not fork job '%1'", $p{jobid} );
     }
+}
+
+sub precompile_rule {
+    my ($self,$id_rule) = @_;
+    return unless length $id_rule;
+    require Baseliner::CompiledRule;
+    my $r = Baseliner::CompiledRule->new( id_rule=>$id_rule );
+    try { 
+        $r->compile;
+        _log _loc "Rule %1 precompile status=%2", $r->rule_name, $r->compile_status;
+    } catch {
+        my $err = shift;
+        _log _loc "Error trapped while precompiling rule %1. No action taken.", $id_rule;
+    };
 }
 
 # expired or pid alive

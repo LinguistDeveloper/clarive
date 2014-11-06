@@ -6262,7 +6262,7 @@ msgid "Job pausing..."
 msgstr "Pausando el pase..."
 
 msgid "Setting pause timeout at %1 seconds"
-msgstr "estableciendo el tiempo de espera de la pauda en %1 segundos"
+msgstr "estableciendo el tiempo de espera de la pausa en %1 segundos"
 
 msgid "Pause finished due to status %1"
 msgstr "Pausa terminada debido al estado %1"

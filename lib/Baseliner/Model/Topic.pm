@@ -296,6 +296,7 @@ sub build_project_security {
     my ($self,$where,$username,$is_root, @categories) = @_;
     $is_root //= Baseliner->model('Permissions')->is_root( $username );
     if( $username && ! $is_root ){
+        # TODO stop using category names in permissions
         my %all_categories = map { _name_to_id($_->{name}) => $_->{id} } mdb->category->find->all;
         my @proj_coll_roles = Baseliner->model('Permissions')->user_projects_ids_with_collection( username => $username, with_role=>1);
         my @ors;
