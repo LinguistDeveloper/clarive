@@ -593,10 +593,10 @@ sub request_approval {
         $job->final_status( 'APPROVAL' );
 
         my $now = Class::Date->now();
+        my $schedtime = Class::Date->new($job->schedtime);
         my $maxapprovaltime
-            = $job->schedtime < $now
-            ? '' . ( $now + $job_config->{approval_expiry_time} ) : '' . ( $now + $job_config->{approval_expiry_time} ) gt ''.$job->schedtime
-            ? ''.$job->schedtime : '' . ( $now + $job_config->{approval_expiry_time} );
+            = $schedtime < $now
+            ? '' . ( $now + $job_config->{approval_expiry_time} ) : ''.($schedtime + $job_config->{approval_delay});
         $job->maxapprovaltime($maxapprovaltime);
     };
     1;

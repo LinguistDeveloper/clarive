@@ -32,6 +32,7 @@
             {  name: 'active' },
             {  name: 'host' },
             {  name: 'pid' },
+            {  name: 'seq' },
             {  name: 'hostname' },
             {  name: 'caller' },
             {  name: 'wait_time' },
@@ -180,8 +181,8 @@
         return up + down;
     };
 
-    Baseliner.queue_move = function(action,id) {
-        Baseliner.ajaxEval( '/semaphore/queue_move', { id: id, action: action }, function(res) {
+    Baseliner.queue_move = function(action,id_from,id_to) {
+        Baseliner.ajaxEval( '/semaphore/queue_move', { id_from: id_from, id_to: id_to, action: action }, function(res) {
             Baseliner.message( _("Moved up"), res.message ); 
             store_queue.load();
         });
@@ -190,11 +191,11 @@
         if( rec.data.status != 'waiting' ) return '';
         var up = rowIndex == 0
             ? '<img src="/static/images/icons/arrow-up.gif" style="visibility: hidden"></img>'
-            : '<a href="#" onclick="javascript:Baseliner.queue_move(\'up\', '+ rec.data.id +' )">'
+            : '<a href="#" onclick="javascript:Baseliner.queue_move(\'up\', \''+ rec.data.id +'\',\''+ store_queue.getAt(rowIndex-1).id+'\' )">'
                 + '<img src="/static/images/icons/arrow-up.gif"></img></a>';
         var down = rowIndex == store_queue.getCount() -1  
             ? ''
-            : '<a href="#" onclick="javascript:Baseliner.queue_move(\'down\', '+ rec.data.id +' )">'
+            : '<a href="#" onclick="javascript:Baseliner.queue_move(\'down\',\''+ rec.data.id +'\',\''+ store_queue.getAt(rowIndex+1).id +'\')">'
             + '<img src="/static/images/icons/arrow-down.gif"></img></a>';
         return up + down;
     };
@@ -202,11 +203,11 @@
     var render_status = function(value,metadata,rec,rowIndex,colIndex,store) {
         var img = value;
         if( value == 'waiting' ) 
-            img = '<img src="/static/images/icons/stop.png" alt="'+value+'"/>';
+            img = '<img src="/static/images/icons/waiting.png" alt="'+value+'"/>';
         else if( value == 'granted' ) 
             img = '<img src="/static/images/icons/asterisk_orange.png" alt="'+value+'"/>';
         else if( value == 'busy' ) 
-            img = '<img src="/static/images/icons/small_loading.gif" alt="'+value+'"/>';
+            img = '<img src="/static/images/loading-fast.gif" alt="'+value+'"/>';
         else if( value == 'idle' ) 
             img = '<img src="/static/images/icons/write.gif" alt="'+value+'"/>';
         else if( value == 'done' ) 
@@ -285,7 +286,8 @@
                 params: {start: 0, limit: ps},
                 emptyText: _('<Enter your search string>')
             }),
-            button_grant, button_cancel, button_purge, button_activate, button_deactivate,
+            button_grant, button_cancel, 
+            //button_activate, button_deactivate,
             '->', button_queue_refresh
         ]
     });
@@ -310,7 +312,7 @@
         tbar: tbar_queue,
         bbar: [
             _('Legend') + ': ',
-            '<img src="/static/images/icons/stop.png" />', _('Waiting'),
+            '<img src="/static/images/icons/waiting.png" />', _('Waiting'),
             '<img src="/static/images/icons/asterisk_orange.gif" />', _('Granted'),
             '<img src="/static/images/icons/small_loading_static.gif" />', _('Busy'),
             '<img src="/static/images/icons/drop-yes.gif" />', _('Done'),
@@ -328,6 +330,7 @@
             { header: _('Semaphore'), width: 200, hidden: true, dataIndex: 'key', sortable: false, menuDisabled: true },    
             { width: 30, dataIndex: 'status', sortable: false, renderer: render_status, menuDisabled: true},
             { header: _('Who'), width: 200, dataIndex: 'who', sortable: false , menuDisabled: true},    
+            { header: _('Sequence'), width: 60, dataIndex: 'seq', sortable: false , menuDisabled: true}, 
             { header: _('Process'), width: 60, dataIndex: 'pid', sortable: false , menuDisabled: true}, 
             { header: _('Host'), width: 60, dataIndex: 'hostname', sortable: false , menuDisabled: true}, 
             { header: _('Status Text'), width: 100, dataIndex: 'status', hidden: true, sortable: false , menuDisabled: true},   
