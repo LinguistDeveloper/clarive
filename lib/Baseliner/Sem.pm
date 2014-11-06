@@ -140,7 +140,7 @@ sub take {
         # check the current queue 
         my $doc = mdb->sem->find_one({ key=>$self->key });
         _fail _loc('Cancelled semaphore %1 due to missing record', $self->key) unless $doc;
-        my $maxslots = $doc->{maxslots};
+        my $maxslots = $doc->{maxslots} // 0;
         my $minseq;
         my (@running_queues);
         for my $que ( _array($doc->{queue}) ){
@@ -240,7 +240,6 @@ sub release {
     }
     $self->must_release(0);
     $self->released(1);
-    _debug(_loc 'Released semaphore %1 (%2)', $self->key, $self->who);
 }
 
 sub purge { 
