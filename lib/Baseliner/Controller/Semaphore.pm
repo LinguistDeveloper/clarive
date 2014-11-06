@@ -113,11 +113,11 @@ sub queue : Local {
     $where = {};
     $where->{'$and'}= [{ queue=>{'$exists'=>1} },{ queue=>{'$ne'=>[]} } ];
     
-    my $rs = mdb->sem->find( $where )->sort(Tie::IxHash->new( key=>1, seq=>-1, ts=>-1 ) );
+    my $rs = mdb->sem->find( $where )->sort(Tie::IxHash->new( key=>1 ) );
     $rs->skip( $start ) if length $start;
     $rs->limit( $limit ) if length $limit;
     while( my $doc = $rs->next ) {
-        for my $r ( _array( $doc->{queue} ) ) {
+        for my $r ( sort { $$a{seq}<=>$$b{seq} } _array( $doc->{queue} ) ) {
             $r->{who} ||= $r->{caller};
             $r->{id} = '' . delete $r->{_id};
             $r->{wait_time} = $$r{ts_grant} && $$r{ts_request} ? (Class::Date->new($r->{ts_grant}) - Class::Date->new($r->{ts_request}))->second . 's': '';
@@ -151,20 +151,16 @@ Parameters:
 sub change_slot  : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
+    my $sem;
     try { 
-        my $sem = mdb->sem->find_one({ key=>$p->{key} });
-        _throw _loc("Semaphore '%1' not found", $p->{key} ) unless ref $sem;
         if( $p->{action} eq 'add' ) {
-            $sem->{slots} = $sem->{slots} + 1;
+            $sem = mdb->sem->find_and_modify({ query=>{ key=>$p->{key} }, update=>{ '$inc'=>{ maxslots=>1 } }, new=>1 });
         }
         elsif( $p->{action} eq 'del' ) {
-            $sem->{slots} = $sem->{slots} - 1;
+            $sem = mdb->sem->find_and_modify({ query=>{ key=>$p->{key} }, update=>{ '$inc'=>{ maxslots=>-1 } }, new=>1 });
         }
-        else {
-            $sem->{slots} = $p->{slots} if defined $p->{slots};
-        }
-        mdb->sem->save( $sem );
-        $c->stash->{json} = { message=>_loc("Semaphore %1 slots changed to %2", $sem->{key}, $sem->{slots}) };
+        $sem or _fail _loc 'Semaphore not found %1', $p->{key};
+        $c->stash->{json} = { message=>_loc("Semaphore %1 slots changed to %2", $p->{key}, $sem->{maxslots}) };
     } catch {
         $c->stash->{json} = { message=>shift };
     };
@@ -180,23 +176,31 @@ from the sequence.
 sub queue_move  : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
+    my ($to,$to_queue);
+    my $id_from = $p->{id_from} or _throw _loc("Missing parameter id from");
+    my $id_to  = $p->{id_to} or _throw _loc("Missing parameter id to");
     try { 
-        my $id = $p->{id} or _throw _loc("Missing parameter id");
-        my $que = mdb->sem_queue->find_one({ _id=>mdb->oid($id) });
-        _throw _loc("Semaphore request '%1' not found", $id ) unless ref $que;
-        # TODO needs to be combined with a timestamp hires and ordered by ts + seq
-        if( $p->{action} eq 'up' ) {
-            $que->{seq} = $que->{seq} + 1;
-        }
-        elsif( $p->{action} eq 'down' ) {
-            $que->{seq} = $que->{seq} - 1;
-        } else {
-            _throw _loc("Action %1 not found", $p->{action} );
-        }
-        mdb->sem_queue->save( $que );
-        $c->stash->{json} = { message=>_loc("Semaphore %1 precedence changed to %2", $que->{key}, $que->{seq} ) };
+        # switch sequences
+        $to = mdb->sem->find_and_modify({ 
+                query=>{ queue=>{'$elemMatch'=>{_id=>mdb->oid($id_to), status=>'waiting'}}}, 
+                update=>{ '$set'=>{'queue.$.seq'=>-1} } });
+        _fail _loc 'Destination semaphore does not exist. Please, refresh' unless $to;
+        ($to_queue) = grep { "$$_{_id}" eq $id_to } _array( $to->{queue} );
+        _fail _loc 'Destination semaphore does not exist. Please, refresh' unless $to_queue;
+        
+        my $from = mdb->sem->find_and_modify({ 
+                query=>{ queue=>{ '$elemMatch'=>{ _id=>mdb->oid($id_from), status=>'waiting' }}}, 
+                update=>{ '$set'=>{'queue.$.seq'=>$to_queue->{seq}} } });
+        _fail _loc 'Source semaphore does not exist. Please, refresh' unless $from;
+        my ($from_queue) = grep { "$$_{_id}" eq $id_from } _array( $from->{queue} );
+
+        mdb->sem->update({ 'queue._id'=>mdb->oid($id_to) },{ '$set'=>{'queue.$.seq'=>$from_queue->{seq} } });
+        $c->stash->{json} = { message=>_loc("Semaphore queue precedence changed to %2", $p->{action} ) };
     } catch {
-        $c->stash->{json} = { message=>shift };
+        my $err = shift;
+        # if we updated to -1, let's reset back
+        mdb->sem->update({ 'queue._id'=>mdb->oid($id_to) },{ '$set'=>{'queue.$.seq'=>$to_queue->{seq} } }) if $to_queue;
+        $c->stash->{json} = { message=>$err };
     };
     $c->forward('View::JSON');
 }
