@@ -42,10 +42,12 @@ has key      => qw(is rw isa Str required 1);
 has sem      => qw(is rw isa Any);
 has who      => qw(is rw isa Any);
 has slots    => qw(is rw isa Num default 1);
+has seq      => qw(is rw isa Num default), sub { 0+mdb->seq('sem') };
 has id_queue => qw(is rw isa MongoDB::OID);
 has id_sem   => qw(is rw isa MongoDB::OID);
 has internal => qw(is rw isa Bool default 0);
-has queue_released => qw(is rw isa Bool default 1);
+has must_release => qw(is rw isa Bool default 0);
+has released     => qw(is rw isa Bool default 0);
 has disp_id => qw(is rw isa Any), default => sub{ lc( Sys::Hostname::hostname() ) };
 has session => qw(is rw isa Any), default => sub{ mdb->run_command({'whatsmyuri' => 1})->{you} };
 
@@ -92,7 +94,7 @@ sub enqueue {
     my ($package, $filename, $line) = caller;
     my $caller = "$package ($line)";
     # now add request to queue
-    my $seq = mdb->seq( 'sem' );
+    my $seq = $self->seq;
     my $id_queue = mdb->oid;
     my $doc = { 
         _id        => $id_queue,
@@ -116,7 +118,7 @@ sub enqueue {
 sub take { 
     my ($self, %p) =@_;
     my ($package, $filename, $line) = caller;
-    $self->queue_released(0);
+    $self->must_release(0);
     my $wait_interval = $p{wait_interval} // Clarive->config->{semaphore_wait_interval} // .5;
     $self->who("$package ($line)") unless $self->who;
     _debug('No sem'),return $self if $ENV{CLARIVE_NO_SEMS};
@@ -139,7 +141,7 @@ sub take {
         my $doc = mdb->sem->find_one({ key=>$self->key });
         _fail _loc('Cancelled semaphore %1 due to missing record', $self->key) unless $doc;
         my $maxslots = $doc->{maxslots};
-        my $maxseq;
+        my $minseq;
         my (@running_queues);
         for my $que ( _array($doc->{queue}) ){
             my $s = $que->{status};
@@ -149,39 +151,55 @@ sub take {
                 push @running_queues, $que ;
             }
             elsif( $s eq 'waiting' ) {
-                # maxseq enforces that semaphores are consumed in order
-                $maxseq = $que->{seq} if !defined $maxseq || $que->{seq} < $maxseq;
+                # minseq enforces that semaphores are consumed in order
+                $minseq = $que->{seq} if !defined $minseq || ( $que->{seq} > -1 && $que->{seq} < $minseq );
             }
             elsif( $qid eq $id_str && $s eq 'granted' ) {
                 # granted or cancelled thru the web interface
                 _debug( _loc('Status changed to %1 from outside for semaphore %2 (%3)', $que->{status}, $self->key, $self->who) );
-                $self->queue_released(1);
+                # no slots taken, granted manually
+                mdb->sem->update(
+                    { key=>$self->key, queue=>{'$elemMatch'=>{ _id=>$self->id_queue } } },
+                    { '$set'=>{ 'queue.$.status'=>'busy',  'queue.$.ts_grant'=>mdb->ts, 'queue.$.granted'=>'1' } }
+                );
+                $self->must_release(0);
                 last TAKEN;
             }
             elsif( $qid eq $id_str && $s eq 'cancelled' ) {
-                $self->queue_released(1);
+                $self->must_release(0);
                 _fail _loc('Cancelled semaphore %1 due to status %2', $self->key, $que->{status});
             }
         }
         
         my $res = mdb->sem->update(
-            { key=>$self->key, slots=>{ '$lt' => 0+$maxslots }, 'queue._id'=>$self->id_queue, 'queue.seq'=>{ '$lte'=>0+$maxseq } },
+            { key=>$self->key, slots=>{ '$lt' => 0+$maxslots }, queue=>{ '$elemMatch'=>{ _id=>$self->id_queue, seq=>{ '$gt'=>-1, '$lte'=>0+$minseq }}} },
             { '$inc' => { slots => 1}, '$set'=>{ 'queue.$.status'=>'busy', 'queue.$.ts_grant'=>mdb->ts } },
         );
         $updated = $res->{updatedExisting};
-        last TAKEN if $updated;
-        if ( !$updated && $cont > 0 ) {
-            #_debug("Looking for busy queues") if $print_msgs;
+        if( $updated ) {
+            $self->must_release(1);
+            _debug(_loc 'Taken semaphore %1 (%2), seq %3 from min %4', $self->key,$self->who,$self->seq, $minseq );
+            last TAKEN;
+        } elsif ( $cont > 0 ) {
             if ( @running_queues ) {
-                _debug("Found ".scalar @running_queues." running queues. Checking if they are alive..");
+                _debug("Found ".scalar @running_queues." running queues. Checking if they are alive..") if $print_msgs;
                 my %active_sessions = map { $_->{client}=>1 } grep { $_->{client} } _array(mdb->db->eval('db.$cmd.sys.inprog.findOne({$all:1});')->{inprog});
                 for my $qitem ( @running_queues ) {
                     if( !$active_sessions{ $qitem->{session} } ) {
-                        mdb->sem->update(
-                            { key => $self->key, 'queue._id'=>$qitem->{_id} },
-                            { '$inc'  => { slots => -1 }, '$pull' => { queue => { _id => $qitem->{_id}, status => 'busy' } } },
-                            { multiple=>1 },
-                        );
+                        if( !$qitem->{granted} ) {
+                            mdb->sem->update(
+                                { key => $self->key, queue=>{'$elemMatch'=>{_id=>$qitem->{_id}, status=>'busy', granted=>{'$exists'=>0} } } },
+                                { '$inc'  => { slots => -1 }, '$pull' => { queue => { _id => $qitem->{_id}, status => 'busy' } } },
+                                { multiple=>1 },
+                            );
+                        } else {
+                            # granted semaphores do not decrease slot
+                            mdb->sem->update(
+                                { key => $self->key, queue=>{'$elemMatch'=>{_id=>$qitem->{_id},status=>'busy', granted=>{'$exists'=>1} } } },
+                                { '$pull' => { queue => { _id => $qitem->{_id}, status => 'busy' } } },
+                                { multiple=>1 },
+                            );
+                        }
                     }
                 }
             }
@@ -206,20 +224,22 @@ sub maxslots {
 
 sub release { 
     my ($self, %p) =@_;
-    if ( !$self->queue_released ) {
+    return if $self->released;
+    if ( $self->must_release ) {
         _debug( _loc('Releasing busy semaphore %1 (%2)', $self->key,$self->who ) );
         mdb->sem->update(
             { key => $self->key, 'queue._id'=>$self->id_queue },
             { '$inc' => { slots => -1 }, '$pull' => { queue =>{ _id => $self->id_queue, status=>'busy' } } }
         );
     } else {
-        _debug( _loc('Releasing granted semaphore %1 (%2)', $self->key,$self->who ) );
+        _debug( _loc('Releasing not busy semaphore %1 (%2)', $self->key,$self->who ) );
         mdb->sem->update(
-            { key => $self->key, 'queue._id'=>$self->id_queue },
-            { '$pull' => { queue => { _id => $self->id_queue, status=>'granted' } } }
+            { key => $self->key , 'queue._id'=>$self->id_queue},
+            { '$pull' => { queue => { _id => $self->id_queue } } }
         );
     }
-    $self->queue_released(1);
+    $self->must_release(0);
+    $self->released(1);
     _debug(_loc 'Released semaphore %1 (%2)', $self->key, $self->who);
 }
 
