@@ -110,6 +110,7 @@ use Try::Tiny;
         is $s->{maxslots}, 1, 'maxslots is 1 at the end';
     }
 
+    # test child death release
     if(1) {
         my $maxchi = 40;
         my $maxloop = 1000;
