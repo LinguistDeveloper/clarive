@@ -10,6 +10,35 @@ register 'event.auth.saml_ok' => { name => 'Login by SAML Ok', vars=>['username'
 register 'event.auth.saml_failed' => { name => 'Login by SAML Failed', vars=>['username','mode'] } ;
 register 'event.auth.surrogate_ok' => { name => 'Surrogate Ok', vars=>['username','mode'] } ;
 register 'event.auth.surrogate_failed' => { name => 'Surrogate Failed', vars=>['username','to_user'] } ;
+register 'event.auth.attempt' => { name => 'User Login Attempt', vars=>['username'] } ;
+
+register 'service.auth.ok' => {
+    name => 'Authorize User Login',
+    icon => '/static/images/icons/user_add.gif', 
+    handler=>sub{
+        my ($self, $c, $data ) = @_;
+        $c->stash->{login_data}{login_ok} = 1;
+    }
+};
+
+register 'service.auth.deny' => {
+    name => 'Deny User Login',
+    icon => '/static/images/icons/user_delete.gif', 
+    handler=>sub{
+        my ($self, $c, $data ) = @_;
+        $c->stash->{login_data}{login_ok} = 0;
+    }
+};
+
+register 'service.auth.message' => {
+    name => 'Login Error Message',
+    icon => '/static/images/icons/user_delete.gif', 
+    data => { msg=>'User authentication denied by rule', args=>[] },
+    handler=>sub{
+        my ($self, $c, $data ) = @_;
+        $c->stash->{login_data}{login_msg} = $data->{msg};
+    }
+};
 
 1;
 

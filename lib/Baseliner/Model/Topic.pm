@@ -293,23 +293,45 @@ register 'registor.action.topic_category_fields' => {
 };
 
 sub build_project_security {
-    my ($self,$where,$username,$is_root) = @_;
+    my ($self,$where,$username,$is_root, @categories) = @_;
     $is_root //= Baseliner->model('Permissions')->is_root( $username );
     if( $username && ! $is_root ){
-        my @proj_coll_roles = Baseliner->model('Permissions')->user_projects_ids_with_collection(username=>$username);
+        my %all_categories = map { _name_to_id($_->{name}) => $_->{id} } mdb->category->find->all;
+        my @proj_coll_roles = Baseliner->model('Permissions')->user_projects_ids_with_collection( username => $username, with_role=>1);
         my @ors;
-        for my $proj_coll_ids ( @proj_coll_roles ) {
-            my $wh = {};
-            my $count = scalar keys %{ $proj_coll_ids || {} };
-            while ( my ( $k, $v ) = each %{ $proj_coll_ids || {} } ) {
-                if ( $k eq 'project' && $count gt 1) {
-#                if ( $k eq 'project' ) {
-                    $wh->{"_project_security.$k"} = {'$in' => [ undef, keys %{$v || {}} ]};
-                } else {
-                    $wh->{"_project_security.$k"} = {'$in' => [ keys %{$v || {}} ]};
+        for my $proj_coll_ids (@proj_coll_roles) {
+            while ( my ( $kpre, $vpre ) = each %{ $proj_coll_ids || {} } ) {
+                my $wh = {};
+                my @categories_by_role;
+                my $count = scalar keys %{ $vpre || {} };
+                my @actions_by_idrole = 
+                    map { $_->{action} }
+                    map { _array($_->{actions}) } 
+                    mdb->role->find({id=>"$kpre", 'actions.action'=> qr/^action.topics\./ })->all;
+                
+                for my $action (@actions_by_idrole) {
+                    my ($category) = $action =~ /action\.topics\.(.*?)\./;
+                    push @categories_by_role, $all_categories{$category};
                 }
-            } ## end while ( my ( $k, $v ) = each...)
-            push @ors, $wh;
+                my %hash1 = map { $_ => 'a' } @categories;
+                my %hash2 = map { $_ => '' } @categories_by_role;                
+                my @total = grep { $hash1{$_} } keys %hash2;
+                while ( my ( $k, $v ) = each %{ $vpre || {} } ) {
+                    if ( $k eq 'project' && $count gt 1 ) {
+                        $wh->{"_project_security.$k"} = { '$in' => [ undef, keys %{ $v || {} } ] };
+                    }
+                    else {
+                        $wh->{"_project_security.$k"} = { '$in' => [ keys %{ $v || {} } ] };
+                    }
+                    if (@categories) { 
+                        $wh->{'category.id'} = { '$in' => [ _unique @total ] } ;
+                    }
+                    else {
+                        $wh->{'category.id'} = { '$in' => [ _unique @categories_by_role ] };
+                    }
+                } ## end while ( my ( $k, $v ) = each...)
+                push @ors, $wh;
+            } ## end while ( my ( $kpre, $vpre ) = each...)
         }
         my $where_undef = { '_project_security' => undef };
         push @ors, $where_undef;
@@ -378,9 +400,36 @@ sub topics_for_user {
     } else {
         $order_by = $self->build_sort($sort,$dir);
     }
+    my @categories;
+    if($p->{categories}){
+        @categories = _array( $p->{categories} );
+        my @user_categories = map {
+            $_->{id};
+        } Baseliner->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
+
+        my @not_in = map { abs $_ } grep { $_ < 0 } @categories;
+        my @in = @not_in ? grep { $_ > 0 } @categories : @categories;
+        if (@not_in && @in){
+            @user_categories = grep{ not $_ ~~ @not_in } @user_categories;
+            $where->{'category.id'} = mdb->in(@in,@user_categories);
+        }else{
+            if (@not_in){
+                @in = grep{ not $_ ~~ @not_in } @user_categories;
+                $where->{'category.id'} = mdb->in(@in);
+            }else{
+                $where->{'category.id'} = mdb->in(@in);
+            }
+        }        
+        #$where->{'category.id'} = \@categories;
+    }else{
+        # all categories, but limited by user permissions
+        #   XXX consider removing this check on root and other special permissions
+        @categories  = map { $_->{id}} Baseliner::Model::Topic->get_categories_permissions( username => $username, type => 'view' );
+        $where->{'category.id'} = mdb->in(@categories);
+    }
 
     # project security - grouped by - into $or 
-    $self->build_project_security( $where, $username, $is_root );
+    $self->build_project_security( $where, $username, $is_root, @categories );
     
     if( $topic_list ) {
         $where->{mid} = mdb->in($topic_list);
@@ -438,33 +487,6 @@ sub topics_for_user {
                 $where->{'labels'} = { '$in' => mdb->str(@in)};
             }
         }            
-    }
-    my @categories;
-    if($p->{categories}){
-        @categories = _array( $p->{categories} );
-        my @user_categories = map {
-            $_->{id};
-        } Baseliner->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
-
-        my @not_in = map { abs $_ } grep { $_ < 0 } @categories;
-        my @in = @not_in ? grep { $_ > 0 } @categories : @categories;
-        if (@not_in && @in){
-            @user_categories = grep{ not $_ ~~ @not_in } @user_categories;
-            $where->{'category.id'} = mdb->in(@in,@user_categories);
-        }else{
-            if (@not_in){
-                @in = grep{ not $_ ~~ @not_in } @user_categories;
-                $where->{'category.id'} = mdb->in(@in);
-            }else{
-                $where->{'category.id'} = mdb->in(@in);
-            }
-        }        
-        #$where->{'category.id'} = \@categories;
-    }else{
-        # all categories, but limited by user permissions
-        #   XXX consider removing this check on root and other special permissions
-        @categories  = map { $_->{id}} Baseliner::Model::Topic->get_categories_permissions( username => $username, type => 'view' );
-        $where->{'category.id'} = mdb->in(@categories);
     }
     
     my $default_filter;
@@ -2718,13 +2740,13 @@ called by user_workflow.
 =cut
 sub non_root_workflow {
     my ( $self, $username, %p ) = @_;
-    my @roles = Baseliner->model('Permissions')->user_role_ids($username);
-    my $where = { 'workflow.id_role'=>mdb->in(@roles) };
+    my %roles = map { $_=>1 } Baseliner->model('Permissions')->user_role_ids($username);
+    my $where = { 'workflow.id_role'=>mdb->in(keys %roles) };
     $where->{id} = mdb->in($p{categories}) if exists $p{categories};
     return _array( map { 
         # add category id to workflow array
         my $id_cat = $$_{id};
-        [ map { $$_{id_category}=$id_cat; $_ } _array($$_{workflow}) ]
+        [ map { $$_{id_category}=$id_cat; $_ } grep { $roles{$$_{id_role}} } _array($$_{workflow}) ]
     } mdb->category->find($where)->all );
 }
 

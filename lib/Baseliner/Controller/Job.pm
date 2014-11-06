@@ -370,7 +370,6 @@ sub submit : Local {
     my $job_name;
     my $username = $c->username;
     
-    _log "JJJJJJJJJJJJJJJJJJJJJJJJJ: "._dump $config;
     #TODO move this whole thing to the Model Jobs
     try {
         use Baseliner::Sugar;

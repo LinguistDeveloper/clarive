@@ -12,6 +12,7 @@
             {  name: 'key' },
             {  name: 'active' },
             {  name: 'slots' },
+            {  name: 'maxslots' },
             {  name: 'busy' },
             {  name: 'waiting' }
         ]
@@ -247,15 +248,17 @@
                 getRowClass : function(rec, index, p, store){
                         // slot squares
                         var slots = rec.data.slots;
+                        var maxslots = rec.data.maxslots;
                         var occ = rec.data.busy || 0;
                         var waiting = rec.data.waiting || 0;
                         var is_infinite = rec.data.slots == -1;
                         p.body = String.format( '<div style="margin: 0 0 0 32;"><table><tr>'
-                            + '<td style="width: 80px; background-color: #89cd79; padding: 2 4 2 4;"><center>{3}: {0}</td>'
-                            + '<td style="width: 80px; background-color: #e7dc65; padding: 2 4 2 4;"><center>{4}: {1}</td>'
-                            + '<td style="width: 80px; background-color: #ed9e9e; padding: 2 4 2 4;"><center>{5}: {2}</td>'
+                            + '<td style="width: 80px; background-color: #89cd79; padding: 2 4 2 4;"><center>{4}: {0}</td>'
+                            + '<td style="width: 80px; background-color: #89cd79; padding: 2 4 2 4;"><center>{5}: {1}</td>'
+                            + '<td style="width: 80px; background-color: #e7dc65; padding: 2 4 2 4;"><center>{6}: {2}</td>'
+                            + '<td style="width: 80px; background-color: #ed9e9e; padding: 2 4 2 4;"><center>{7}: {3}</td>'
                             + '</tr></table></div>'
-                            , (is_infinite ? '\u221E' : slots), occ, waiting, _('slots'), _('busy'), _('waiting') );
+                            , slots, (is_infinite ? '\u221E' : maxslots), occ, waiting, _('slots'), _('max'), _('busy'), _('waiting') );
                         var css = '';
                         if( rec.data.active == 0  ) 
                             css = index % 2 > 0 ? 'level-row debug-odd' : 'level-row debug-even' ;

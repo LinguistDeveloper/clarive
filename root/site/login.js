@@ -4,7 +4,8 @@ Ext.onReady(function(){
 
     var after_login = "<% $c->stash->{after_login} %>"; 
     var after_login_query = "<% $c->stash->{after_login_query} %>";
-    Ext.Ajax.timeout = 60000;
+    
+    var login_txt = '<% _loc("Login") %>';
 
     Baseliner.doLoginForm = function(){
         /* 
@@ -15,6 +16,8 @@ Ext.onReady(function(){
                 tab_params = Ext.urlDecode(getParams[1]);
             }
         */
+        login_button.setText( '<img src="/static/images/loading-fast.gif" />' );
+        login_button.disable();
         var ff = login_form.getForm();
         ff.submit({
             success: function(form, action) {
@@ -26,6 +29,8 @@ Ext.onReady(function(){
                             document.location.href = after_login || '/';
                      },
             failure: function(form, action) {
+                            login_button.setText( login_txt );
+                            login_button.enable();
                             if (action.result == undefined){
                               var errorMask = Ext.fly( document.body ).mask( _('Server communication failure. Check your connection.') );
                               errorMask.show();
@@ -49,17 +54,21 @@ Ext.onReady(function(){
         });
    };
 
+    var login_button = new Ext.Button({ 
+        text: login_txt,
+        handler: Baseliner.doLoginForm
+    });
     var login_form = new Ext.FormPanel({
             id: 'lf',
             url: '/login',
             frame: true,
             bodyStyle:'padding:5px 5px 0',
             cls: 'centered',
+            labelAlign: 'right',
+            timeout: 120,  // this is in seconds, give it 2 minutes in case there's a slow rule checking identity or something
             defaults: { width: 150 },
             buttons: [
-                { text: '<% _loc('Login') %>',
-                  handler: Baseliner.doLoginForm
-                },
+                login_button,
                 { text: '<% _loc('Reset') %>',
                   handler: function() {
                                 login_form.getForm().findField('login').focus('',100);

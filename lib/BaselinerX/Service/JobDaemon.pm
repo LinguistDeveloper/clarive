@@ -233,11 +233,24 @@ sub check_job_expired {
     #_log( "Checking for expired jobs..." );
     my $rs = ci->job->find({ 
             maxstarttime => { '$lt' => _now }, 
-            status => 'READY',
+            status => mdb->in('READY','APPROVAL'),
     });
     while( my $doc = $rs->next ) {
-        _log( _loc("Job %1 expired (mid=%3, maxstartime=%2)" , $doc->{name}, $doc->{maxstarttime}, $doc->{mid} ) );
         my $ci = ci->new( $doc->{mid} ) or do { _error _loc 'Job ci not found for id_job=%1', $doc->{id}; next };
+        $ci->logger->error( _loc("Job %1 expired (mid=%3, maxstartime=%2)" , $doc->{name}, $doc->{maxstarttime}, $doc->{mid} ) );
+        $ci->status('EXPIRED');
+        $ci->endtime( _now );
+        $ci->save;
+    }
+
+    #_log( "Checking for expired jobs..." );
+    $rs = ci->job->find({ 
+            maxapprovaltime => { '$lt' => _now }, 
+            status => mdb->in('APPROVAL'),
+    });
+    while( my $doc = $rs->next ) {
+        my $ci = ci->new( $doc->{mid} ) or do { _error _loc 'Job ci not found for id_job=%1', $doc->{id}; next };
+        $ci->logger->error( _loc("Job %1 approval time expired (mid=%3, maxapprovaltime=%2)" , $doc->{name}, $doc->{maxapprovaltime}, $doc->{mid} ) );
         $ci->status('EXPIRED');
         $ci->endtime( _now );
         $ci->save;

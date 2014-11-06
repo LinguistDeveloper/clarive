@@ -6225,6 +6225,9 @@ msgstr "Pase %1 reprogramado por el usuario %2 de `%3` a `%4`"
 msgid "*Job Approved by %1*: %2"
 msgstr "*Pase Aprobado por %1*: %2"
 
+msgid "Job Approved by"
+msgstr "Pase Aprobado por"
+
 msgid "*Job Rejected by %1*: %2"
 msgstr "*Pase Rechazado por %1*: %2"
 
@@ -7776,3 +7779,15 @@ msgstr "Nombre del servicio"
 
 msgid "Active instances"
 msgstr "Instancias activas"
+
+msgid "Click here to review"
+msgstr "Click aquí para revisarlo"
+
+msgid "View this in a browser."
+msgstr "Ver en el navegador"
+
+msgid "Status of approval"
+msgstr "Estado de aprobación"
+
+msgid "Topic %1 of category %2 has been modified/created by %3"
+msgstr "Tópico %1 de la categoría %2 ha sido modificado/creado por %3"

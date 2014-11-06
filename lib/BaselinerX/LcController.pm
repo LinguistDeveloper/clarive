@@ -563,6 +563,7 @@ sub changeset : Local {
                         bl    => $bl,
                         name  => $d->{name},
                         repo_path  => $d->{repo_dir},
+                        collection => $d->{collection},
                         click => {
                             url   => '/lifecycle/repository',
                             type  => 'comp',
@@ -1012,14 +1013,33 @@ sub repository : Local {
 sub repo_data : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
+    my $repo_type = $p->{repo_type};
+    my $bl = $p->{bl};
     my $repo_path = $p->{repo_path};
     my $path = $p->{path} // '';
     length $path and $path = "$path/";
-    my $g = Girl::Repo->new( path=>"$repo_path" );
-    my @ls = $g->git->exec( 'ls-tree', '-l', $p->{bl}, $path );
-    my $cnt = 100;
-    $c->stash->{json} = [
-        grep { defined }
+    my @ls;
+    my @res;
+    if($repo_type eq 'PlasticRepository'){
+        my $cmd = "cm find \"labels where name='$bl' on repository '$repo_path'\" --format={changeset} --nototal";
+        my $out = `$cmd`;
+        $out =~ s/\s//;
+        my $tag_sha = $out;
+        if($tag_sha){
+            my $cmd = "cm ls $p->{path} --tree=$tag_sha\@$repo_path --format={fullpath}#-#{revid}#-#{changeset}#-#{itemid}#-#{type}#-#{size}#-#{name}";
+            my @all_files = `$cmd`;
+            map { my @parts = split '#-#',$_;
+                  my $name = $parts[6]; 
+                  $name =~ s/\n//; 
+                  my $type = $parts[4]; 
+                  push @res, {path=>$parts[0], item=>$parts[6], size=>$parts[5], version=>$parts[2], leaf=>($type ne 'dir' ? \1 : \0 )} if !($name eq '.' and $type eq 'dir') 
+            } @all_files;
+        }
+    }else{
+        my $g = Girl::Repo->new( path=>"$repo_path" );
+        @ls = $g->git->exec( 'ls-tree', '-l', $p->{bl}, $path );
+        my $cnt = 100;
+        @res = grep { defined }
         map { 
             my ($attr, $type, $sha, $size, @f) = split /\s+/, $_;
             my $f = join ' ',@f;
@@ -1035,7 +1055,11 @@ sub repo_data : Local {
                     leaf    => ( $type eq 'blob' ? \1 : \0 )
                 }
                 : undef
-        } @ls 
+        } @ls;   
+    }
+    my $cnt = 100;
+    $c->stash->{json} = [
+        @res
     ];
     $c->forward('View::JSON');
 }
@@ -1048,59 +1072,63 @@ sub file : Local {
     my $version = $p->{version};
     my $repo_path = $p->{repo_path};
     my $pane = $p->{pane} || 'hist'; # hist, diff, source, blame
-
+    my $repo_type = $p->{repo_type};
     my $res = { pane => $pane };
+    if($repo_type eq 'PlasticRepository'){
+_log "PARAMS LC FILE===>"._dump $p;
 
-    # TODO separate concerns, put this in Git Repo provider
-    #      Baseliner::Repo->new( 'git:repo@tag:file' )
-    my $g = Girl::Repo->new( path=>"$repo_path" );
-    if( $pane eq 'hist' ) {
-        my @log = $g->git->exec( 'log', '--pretty=oneline', '--decorate', $ref, '--', $path );
-        my @formatted_log;
-        for my $data (@log) {
-            my $rev_data = {};
-            my $commit;
-            my $revs;
-            my $author;
-            my $date;
-            my @log_data;
-            try{
-                $data =~ /^(.+?)\s\(.*?\)\s(.*)$/;
-                $commit = $1;
-                $revs = $2;
-                @log_data = $g->git->exec( 'rev-list', '--pretty', $commit );
-            }catch{
-                $data =~ /^(.+?)\s(.*)$/;
-                $commit = $1;
-                $revs = $2;
-                @log_data = $g->git->exec( 'rev-list', '--pretty', $commit );
-            }
-
-            map {
-                if ( $data =~ /^Author:\s(.*)$/ ) {
-                    $author = $1;
-                }
-                if ( $data =~ /^Date:\s(.*)$/ ) {
-                    $date = $1;
+    }else{
+        # TODO separate concerns, put this in Git Repo provider
+        #      Baseliner::Repo->new( 'git:repo@tag:file' )
+        my $g = Girl::Repo->new( path=>"$repo_path" );
+        if( $pane eq 'hist' ) {
+            my @log = $g->git->exec( 'log', '--pretty=oneline', '--decorate', $ref, '--', $path );
+            my @formatted_log;
+            for my $data (@log) {
+                my $rev_data = {};
+                my $commit;
+                my $revs;
+                my $author;
+                my $date;
+                my @log_data;
+                try{
+                    $data =~ /^(.+?)\s\(.*?\)\s(.*)$/;
+                    $commit = $1;
+                    $revs = $2;
+                    @log_data = $g->git->exec( 'rev-list', '--pretty', $commit );
+                }catch{
+                    $data =~ /^(.+?)\s(.*)$/;
+                    $commit = $1;
+                    $revs = $2;
+                    @log_data = $g->git->exec( 'rev-list', '--pretty', $commit );
                 }
 
-            }
-            grep {
-                /Author:|Date:/
-            } @log_data;
-            push @formatted_log, { commit => $commit, revs => $revs, author => $author, date => $date};
-        };
-        $res->{info} = \@formatted_log;
+                map {
+                    if ( $data =~ /^Author:\s(.*)$/ ) {
+                        $author = $1;
+                    }
+                    if ( $data =~ /^Date:\s(.*)$/ ) {
+                        $date = $1;
+                    }
+
+                }
+                grep {
+                    /Author:|Date:/
+                } @log_data;
+                push @formatted_log, { commit => $commit, revs => $revs, author => $author, date => $date};
+            };
+            $res->{info} = \@formatted_log;
+        }
+        elsif( $pane eq 'diff' ) {
+            my @log = $g->git->exec( 'diff', $ref, '--', $path );
+            $res->{info} = \@log;
+        }
+        elsif( $pane eq 'source' ) {
+            my @log = $g->git->exec( 'cat-file', '-p', $version );
+            $res->{info} = \@log;
+        }
     }
-    elsif( $pane eq 'diff' ) {
-        my @log = $g->git->exec( 'diff', $ref, '--', $path );
-        $res->{info} = \@log;
-    }
-    elsif( $pane eq 'source' ) {
-        my @log = $g->git->exec( 'cat-file', '-p', $version );
-        $res->{info} = \@log;
-    }
-    
+_log "RES=========>"._dump $res;
     $c->stash->{json} = $res;
     $c->forward('View::JSON');
 }

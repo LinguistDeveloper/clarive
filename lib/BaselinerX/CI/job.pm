@@ -24,6 +24,7 @@ has maxstarttime       => qw(is rw isa TS coerce 1), default => sub {
     my ($self) = @_;
     return ''.( Class::Date->new($self->schedtime) + $self->expiry_time ) 
 };
+has maxapprovaltime    => qw(is rw isa Any);
 has endtime            => qw(is rw isa Any);
 has comments           => qw(is rw isa Any);
 has logfile            => qw(is rw isa Any lazy 1), default => sub { my $self=shift; ''.Util->_file($ENV{BASELINER_LOGHOME}, $self->name . '.log') };
@@ -531,7 +532,7 @@ sub reset {   # aka restart
     event_new 'event.job.rerun' => { job=>$self } => sub {
         my $now = mdb->now;
         if( $p{run_now} || $self->schedtime < $now ) {
-            my $end = $now + ( $config->{expiry_time}{normal} // '1D' );
+            my $end = $now + $self->expiry_time;
             $self->schedtime( "$now" );
             $self->starttime( "$now" );
             $self->maxstarttime( "$end" );
@@ -577,10 +578,12 @@ sub reschedule {
 
 sub expiry_time {
     my ($self,%p) = @_;
-    $p{wintype} ||= 'normal';
+
     $p{bl} ||= ref $self ? $self->bl : '*';
+    my $window_type = $self->window_type || 'N';
+
     my $exp = Baseliner->model('ConfigStore')->get( 'config.job', bl=>$p{bl} )->{expiry_time};
-    my $ret = ref $exp eq 'HASH' ? $exp->{ $p{wintype} } : $exp;
+    my $ret = ref $exp eq 'HASH' ? $exp->{ $window_type } : $exp;
     return $ret || "1D";
 }
 

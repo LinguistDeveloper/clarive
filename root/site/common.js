@@ -45,6 +45,10 @@ Baseliner.require = function(url, cb){
     require([url + '?' + Date.now()], cb );
 };
 
+Baseliner.clone = function(obj){
+    return Ext.util.JSON.decode( Ext.util.JSON.encode(obj) );
+};
+
 // In-edit counter - keep the window for closing if it's more than > 0
 Baseliner.is_in_edit = function(){
     var flag = false;
