@@ -299,11 +299,12 @@ sub _utf8_to_ansi {
 # used by Job::Log.pm (why?)
 sub _log_lev {
     my $lev = shift;
+    my $calllev = shift;
     return unless any { $_ } @_;
-    my ($cl,$fi,$li) = caller($lev);
+    my ($cl,$fi,$li) = caller($calllev);
     $cl =~ s{^Baseliner}{B};
     my $pid = sprintf('%s', $$);
-    print STDERR ( _now()."[$pid] [$cl:$li] ", @_, "\n" );
+    print STDERR ( '('.uc(substr($lev,0,1)//'?').') '. _now()."[$pid] [$cl:$li] ", @_, "\n" );
 }
 
 sub isatty { no autodie; return open(my $tty, '+<', '/dev/tty'); }

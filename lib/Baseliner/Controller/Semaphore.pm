@@ -41,12 +41,10 @@ sub change_status : Local {
         my $id = $params->{id} or _throw 'Missing id';
         my $status = $params->{status} or _throw 'Missing status parameter';
         my $from_status = { granted=>'waiting', cancelled=>'waiting' };
-        my $q = mdb->sem_queue->find_one({ _id=>mdb->oid($id), status=>mdb->in($from_status->{$status}) });
-        _fail _loc 'Semaphore not found or status changed from %1', $from_status->{$status} unless $q;
-        my $sem = $q->{key};
-        my $who = $q->{who} || $q->{caller};
-        $q->{status} = $status;
-        mdb->sem_queue->save( $q );
+        my $sem = $params->{sem};
+        my $who = $params->{who};
+        my $res = mdb->sem->update({ 'queue._id'=>mdb->oid($id), 'queue.status'=>mdb->in($from_status->{$status}) },{  '$set'=>{ 'queue.$.status'=>$status } });
+        _fail _loc 'Semaphore not found or status changed from %1', $status unless $res->{updateExisting};
         $c->stash->{json} = { message=>_loc("Granted semaphore %1 to %2", $sem, $who) };
     } catch {
         $c->stash->{json} = { message=>shift };
@@ -74,7 +72,7 @@ sub sems : Local {
         }
     );
     my @rows;
-    my $rs = mdb->sem->find( $where )->sort({ $sort => $dir });
+    my $rs = mdb->sem->find( $where )->sort({ $sort => $dir })->limit(100);
     while( my $r = $rs->next ) {
         if( ($cnt++>=$start) && ( $limit ? scalar @rows < $limit : 1 ) ) {
             $r->{waiting} = mdb->sem_queue->find({ key=>$r->{key}, status=>'waiting' })->all;
@@ -102,7 +100,8 @@ sub queue : Local {
     my $p = $c->request->parameters;
     my ($start, $limit, $query, $dir, $sort ) = @{$p}{qw/start limit query dir sort/};
     my $cnt;
-    $sort||='id';
+    $sort||='key';
+    $limit ||= 50;
     my $where = {};
     $query and $where = mdb->query_build( query=>$query, fields=>{
         key      =>'key',
@@ -111,17 +110,22 @@ sub queue : Local {
         status   =>'status',
     });
     my @rows;
-    my $rs = mdb->sem_queue->find( $where )->sort(Tie::IxHash->new( key=>1, seq=>-1, ts=>-1 ) );
+    $where = {};
+    $where->{'$and'}= [{ queue=>{'$exists'=>1} },{ queue=>{'$ne'=>[]} } ];
+    
+    my $rs = mdb->sem->find( $where )->sort(Tie::IxHash->new( key=>1, seq=>-1, ts=>-1 ) );
     $rs->skip( $start ) if length $start;
     $rs->limit( $limit ) if length $limit;
-    while( my $r = $rs->next ) {
-        $r->{who} ||= $r->{caller};
-        $r->{id} = '' . delete $r->{_id};
-        $r->{wait_time} = $$r{ts_grant} && $$r{ts_request} ? (Class::Date->new($r->{ts_grant}) - Class::Date->new($r->{ts_request}))->second . 's': '';
-        $r->{run_time} = $$r{ts_release} && $$r{ts_grant} ? (Class::Date->new($r->{ts_release}) - Class::Date->new($r->{ts_grant}))->second . 's' : '';
-        push @rows, $r;
+    while( my $doc = $rs->next ) {
+        for my $r ( _array( $doc->{queue} ) ) {
+            $r->{who} ||= $r->{caller};
+            $r->{id} = '' . delete $r->{_id};
+            $r->{wait_time} = $$r{ts_grant} && $$r{ts_request} ? (Class::Date->new($r->{ts_grant}) - Class::Date->new($r->{ts_request}))->second . 's': '';
+            $r->{run_time} = $$r{ts_release} && $$r{ts_grant} ? (Class::Date->new($r->{ts_release}) - Class::Date->new($r->{ts_grant}))->second . 's' : '';
+            push @rows, $r;
+        }
     }
-    
+
     #@rows = sort { $a->{ $sort } cmp $b->{ $sort } } @rows if $sort;
     $c->stash->{json} = {
         totalCount=>scalar @rows,
