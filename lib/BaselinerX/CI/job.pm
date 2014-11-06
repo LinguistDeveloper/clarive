@@ -1250,13 +1250,11 @@ sub pause {
     my $saved_status = $self->load->{status};
     #check if paused job. Init or Check can't paused!
     if ($self->step =~ /INIT|CHECK/){
-        $self->status('ERROR');
-        $self->save;
-        $self->logger->warn( _loc('Cannot paused job on CHECK or INIT status') );
-        _fail _loc('Cannot paused job on CHECK or INIT status'); 
+        $self->update( status=>'ERROR' );
+        $self->logger->warn( _loc('Cannot pause job on CHECK or INIT status') );
+        _fail _loc('Cannot pause job on CHECK or INIT status'); 
     }else{
-        $self->status('PAUSED');
-        $self->save;
+        $self->update( status=>'PAUSE' );
         $p{reason} ||= _loc('unspecified');
         $self->logger->info( _loc('Paused. Reason: %1', $p{reason} ), milestone=>1, data=>$p{details} );
         
