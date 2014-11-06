@@ -1,5 +1,6 @@
 (function(params){
     var path = params.repo_dir;
+    if(path.indexOf('/') != -1) path = path.substring(0,path.indexOf('/'));
     var file = params.file;
     var revid = params.revid;
     var branch = params.branch;
