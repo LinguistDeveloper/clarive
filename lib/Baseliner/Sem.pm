@@ -121,39 +121,57 @@ sub take {
     $self->who("$package ($line)") unless $self->who;
     _debug('No sem'),return $self if $ENV{CLARIVE_NO_SEMS};
     my $id_queue = $self->enqueue;
-    my $que;
+    my $id_str = "$id_queue";
     my $logged = 1;
 
     alarm $p{timeout} if length $p{timeout};
     local $SIG{ALRM} = sub{ _fail(_loc('Timeout wating for semaphore: %1s',$p{timeout})) } if length $p{timeout};
     
     # wait until the daemon grants me out
-    # NO DAEMON NOW: Try to update sem document decreasing slots
     my $updated = 0;
     my $cont = 0;
-    while ( !$updated ) {
-        my $print_msgs = !( $cont % int(10/$wait_interval) );  # 10 seconds for every message
+    TAKEN: while ( !$updated ) {
+        # 10 seconds for every message
+        my $print_msgs = !( $cont % int(10/$wait_interval) );  
         _debug(_loc 'Waiting for semaphore %1 (%2)', $self->key, $self->who) if $print_msgs;
-        my $maxslots = $self->maxslots; 
-        # attempt to get my semaphore here:
-        #my $ret = mdb->sem->find_and_modify({
-        #    query=>{ key=>$self->key, slots=>{ '$lt' => 0+$maxslots }, 'queue._id'=>$self->id_queue,  },
-        #    update=>{ '$inc' => { slots => 1}, '$set'=>{ 'queue.$.status'=>'busy', 'queue.$.ts_grant'=>mdb->ts } },
-        #    new => 1,
-        #    #fields=>{},
-        #});
-        #$updated = !! $ret;
-        #warn _dump($ret) if $ret;
+        
+        # check the current queue 
+        my $doc = mdb->sem->find_one({ key=>$self->key });
+        _fail _loc('Cancelled semaphore %1 due to missing record', $self->key) unless $doc;
+        my $maxslots = $doc->{maxslots};
+        my $maxseq;
+        my (@running_queues);
+        for my $que ( _array($doc->{queue}) ){
+            my $s = $que->{status};
+            my $qid = "$$que{_id}"; 
+            if( $s eq 'busy' ) {
+                # busy queues may be checked to see if client is alive
+                push @running_queues, $que ;
+            }
+            elsif( $s eq 'waiting' ) {
+                # maxseq enforces that semaphores are consumed in order
+                $maxseq = $que->{seq} if !defined $maxseq || $que->{seq} < $maxseq;
+            }
+            elsif( $qid eq $id_str && $s eq 'granted' ) {
+                # granted or cancelled thru the web interface
+                _debug( _loc('Status changed to %1 from outside for semaphore %2 (%3)', $que->{status}, $self->key, $self->who) );
+                $self->queue_released(1);
+                last TAKEN;
+            }
+            elsif( $qid eq $id_str && $s eq 'cancelled' ) {
+                $self->queue_released(1);
+                _fail _loc('Cancelled semaphore %1 due to status %2', $self->key, $que->{status});
+            }
+        }
+        
         my $res = mdb->sem->update(
-            { key=>$self->key, slots=>{ '$lt' => 0+$maxslots }, 'queue._id'=>$self->id_queue },
+            { key=>$self->key, slots=>{ '$lt' => 0+$maxslots }, 'queue._id'=>$self->id_queue, 'queue.seq'=>{ '$lte'=>0+$maxseq } },
             { '$inc' => { slots => 1}, '$set'=>{ 'queue.$.status'=>'busy', 'queue.$.ts_grant'=>mdb->ts } },
         );
         $updated = $res->{updatedExisting};
-        last if $updated;
+        last TAKEN if $updated;
         if ( !$updated && $cont > 0 ) {
-            _debug("Looking for busy queues") if $print_msgs;
-            my $doc = mdb->sem->find_one({ key=>$self->key }) // {};
-            my @running_queues = grep { $_->{status} eq 'busy' } _array($doc->{queue});
+            #_debug("Looking for busy queues") if $print_msgs;
             if ( @running_queues ) {
                 _debug("Found ".scalar @running_queues." running queues. Checking if they are alive..");
                 my %active_sessions = map { $_->{client}=>1 } grep { $_->{client} } _array(mdb->db->eval('db.$cmd.sys.inprog.findOne({$all:1});')->{inprog});
@@ -172,21 +190,8 @@ sub take {
         }
         
         select(undef, undef, undef, $wait_interval );
-        # now check for interface changes
-        my $doc = mdb->sem->find_one({ 'queue._id'=>$id_queue, 'queue.status'=>mdb->in('cancelled','granted') },{ 'queue.$'=>1 });
-        $que = $doc->{queue}->[0] if $doc && ref $doc->{queue};
-        if ( $que && $que->{status} =~ /cancelled|granted/ ) {
-            # it's something else, probably granted or cancelled thru the interface
-            _debug( _loc('Status changed to %1 from outside for semaphore %2 (%3)', $que->{status}, $self->key, $self->who) );
-            $self->queue_released(1);
-            $updated = 1;
-        }
     }
     _debug(_loc 'Granted semaphore %1 (%2)', $self->key, $self->who);
-
-    if( $que && $que->{status} eq 'cancelled' ) {
-        _fail _loc('Cancelled semaphore %1 due to status %2', $self->key, $que->{status});
-    }
 
     alarm 0 if $p{timeout};
     return $self;
