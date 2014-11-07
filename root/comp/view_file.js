@@ -101,9 +101,10 @@
                 });
             }else if(comp.pane == 'blame'){
                 cons.destroy();
-                cons = new Ext.Panel({ layout:'form', items:[ new Ext.form.TextField({ fieldLabel:'blame' }) ] });
+                cons = new Ext.Panel({  });
                 Baseliner.ajax_json('/'+controller+'/get_file_blame', { filepath: path, filename: file, repo_mid: repo_mid, rev_num: params.rev_num, revid: params.revid }, function(res){
-
+                    if(!res.suported)
+                        Baseliner.warning( _('Warning'), _(res.msg));
                 }, function(res){
                      Baseliner.error( _('Error'), _(res.msg) );
                 });
