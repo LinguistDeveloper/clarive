@@ -326,28 +326,14 @@ sub index_all {
     my ($self, $collection, %p)=@_;
     $p{drop} //= 1;
     my $base_indexes = {
-        topic => [
-            [{ mid=>1 },{ unique=>1 }],
-            [{ '_sort.title' => 1}],
-            [{ created_on=>1 }],
-            [{ modified_on=>1 }],
-            [{ modified_on=>-1 }],
-            [{ created_on=>1, mid=>1 }],
-            [{ created_on=>1, m=>1 }],
-            [{ name_category=>1 }],
-            [{'$**'=> "text"}],
-            [{ '_project_security'=>1, category_name=>1 }],
-            [{ '_sort.numcomment'=>1, _project_security=>1, category_status=>1, 'category.id'=>1 }],
-        ],
-        job_log => [
-            [{ id=>1 }],
-            [{ mid=>1 }],
-            [{ mid=>1, exec=>1 }],
-            [{ mid=>1, lev=>1, exec=>1 }],
-            [{ mid=>1, exec=>1, ts=>1, t=>1 }],
+        activity => [
+            [{ mid=>1, ts=>-1 }],
         ],
         cache => [
             [{ _id=>1 }],
+        ],
+        category => [
+            [{ id=>1 }],
         ],
         event => [
             [{ id=>1 }],
@@ -367,8 +353,12 @@ sub index_all {
             [{ topic_mid=>1 }],
             [{ id_rule=>1 }],
         ],
-        notification => [
-            [{'$**'=> "text"}],
+        job_log => [
+            [{ id=>1 }],
+            [{ mid=>1 }],
+            [{ mid=>1, exec=>1 }],
+            [{ mid=>1, lev=>1, exec=>1 }],
+            [{ mid=>1, exec=>1, ts=>1, t=>1 }],
         ],
         master => [
             [{ mid=>1 },{ unique=>1 }],
@@ -384,24 +374,11 @@ sub index_all {
             [{ rel_type=>1 }],
             [{ from_mid=>1, to_mid=>1 }],
         ],
-        message => [
-            [{ queue=>1 }],
-        ],
-        category => [
-          [{ id=>1 }],
-        ],
-        role => [
-          [{ role=>1 }],
-          [{ id=>1 }],  
-        ],
         master_seen => [
             [{ mid=>1, username=>1 }],
         ],
-        activity => [
-            [{ mid=>1, ts=>-1 }],
-        ],
         master_doc => [
-            [{'$**'=> "text"}],
+            [{'$**'=> "text"},{ background=>1 }],
             [{ mid=>1 },{ unique=>1 }],
             [{ name=>1, moniker=>1, collection=>1 }],
             [{ step=>1, status=>1 }],
@@ -409,12 +386,37 @@ sub index_all {
             [{ status=>1, pid=>1, collection=>1 }],
             [{ status=>1, maxstarttime=>1, collection=>1 }],
         ],
-        sem => [
-            [{ key => 1},{ unique=>1, dropDups => 1 }],
-            [{ key=>1 }],
+        message => [
+            [{ queue=>1 }],
         ],
-        sem_queue => [
-            [{ status=>1, key=>1 }],
+        notification => [
+            [{'$**'=> "text"},{ background=>1 }],
+        ],
+        role => [
+          [{ role=>1 }],
+          [{ id=>1 }],  
+        ],
+        rule => [
+            [{ id=>1 }],
+            [{ rule_name=>1 }],
+        ],
+        sem => [
+            [{ key=>1 },{ unique=>1, dropDups => 1 }],
+            [{ key=>1, 'queue._id'=>1 }],
+            [{ key=>1, 'queue._id'=>1, 'queue.seq'=>1 }],
+        ],
+        topic => [
+            [{ mid=>1 },{ unique=>1 }],
+            [{ '_sort.title' => 1}],
+            [{ created_on=>1 }],
+            [{ modified_on=>1 }],
+            [{ modified_on=>-1 }],
+            [{ created_on=>1, mid=>1 }],
+            [{ created_on=>1, m=>1 }],
+            [{ name_category=>1 }],
+            [{'$**'=> "text"},{ background=>1 }],
+            [{ '_project_security'=>1, category_name=>1 }],
+            [{ '_sort.numcomment'=>1, _project_security=>1, category_status=>1, 'category.id'=>1 }],
         ],
         topic_image => [
             [{ id_hash => 1 }],
@@ -429,7 +431,12 @@ sub index_all {
             my $coll = $self->collection($cn);
             $self->$cn->drop_indexes if $p{drop};
             for my $ix ( @{ $idx->{$cn} } ) {
-                $coll->ensure_index( @$ix );
+                try {
+                    $coll->ensure_index( @$ix );
+                } catch {
+                    my $err = shift;
+                    _error(_loc('Error indexing collection %1 (index: %2): %3', $cn, Util->_encode_json($ix), $err ));
+                };
             }
         }
     };

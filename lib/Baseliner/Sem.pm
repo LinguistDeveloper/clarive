@@ -134,8 +134,8 @@ sub take {
     my $cont = 0;
     TAKEN: while ( !$updated ) {
         # 10 seconds for every message
-        my $print_msgs = !( $cont % int(10/$wait_interval) );  
-        _debug(_loc 'Waiting for semaphore %1 (%2)', $self->key, $self->who) if $print_msgs;
+        my $print_msgs = !( ($cont-1) % int(10/$wait_interval) );  
+        _debug(_loc 'Waiting for semaphore %1 (%2)', $self->key, $self->who) if $cont && $print_msgs;
         
         # check the current queue 
         my $doc = mdb->sem->find_one({ key=>$self->key });
@@ -209,7 +209,6 @@ sub take {
         
         select(undef, undef, undef, $wait_interval );
     }
-    _debug(_loc 'Granted semaphore %1 (%2)', $self->key, $self->who);
 
     alarm 0 if $p{timeout};
     return $self;

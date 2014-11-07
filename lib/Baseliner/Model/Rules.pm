@@ -2,6 +2,7 @@ package Baseliner::Model::Rules;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Baseliner::Sugar;
+use Baseliner::CompiledRule;
 use Try::Tiny;
 use v5.10;
 
@@ -222,12 +223,13 @@ sub _is_true {
     return (ref $v eq 'SCALAR' && !${$v}) || $v eq 'false' || !$v;
 }
 
+# called when rule is saved
 sub dsl_build_and_test {
     my ($self,$stmts, %p )=@_;
     my $dsl = $self->dsl_build( $stmts, %p ); 
-    my $stash = {};
-    eval "sub{ $dsl }";
-    die $@ if $@; 
+    my $rule = Baseliner::CompiledRule->new( id_rule=>$p{id_rule}, dsl=>$dsl, ts=>$p{ts} ); # send ts so its stored as this rule save timestamp
+    $rule->compile;
+    die $rule->errors if $rule->errors;
     return $dsl;
 }
 
@@ -268,7 +270,7 @@ sub dsl_build {
 
         if( my $semaphore_key = $attr->{semaphore_key} ) {
             # consider using a hash: $stash->{_sem}{ $semaphore_key } = ...
-            push @dsl, sprintf( 'local $stash->{_sem} = semaphore({ key=>parse_vars(q{%s},$stash), who=>q{%s} }, $stash)->take;', $semaphore_key, $name ) . "\n"; 
+            push @dsl, sprintf( 'local $stash->{_sem} = semaphore({ key=>parse_vars(q{%s},$stash), who=>parse_vars(q{%s},$stash) }, $stash)->take;', $semaphore_key, $name ) . "\n"; 
         }
         my $timeout = $attr->{timeout};
         my $rb_close_me = 0;
@@ -322,7 +324,7 @@ sub dsl_build {
         push @dsl, "}\n" if $rb_close_me;
         if( length $attr->{sub_name} ) {
             push @dsl, "};\n";
-            push @dsl, sprintf( "%s();\n", $attr->{sub_name} ) if $attr->{sub_mode} eq 'run';
+            push @dsl, sprintf( "%s();\n", $attr->{sub_name} ) if $attr->{sub_mode} && $attr->{sub_mode} eq 'run';
         }
     }
 
@@ -369,61 +371,33 @@ sub wait_for_children {
 
 sub dsl_run {
     my ($self, %p ) = @_;
-    my $dsl = $p{dsl};
+    my $id_rule = $p{id_rule};
     local $@;
     my $ret;
     my $stash = $p{stash} // {};
     
-    local $SIG{ALRM} = sub { die "Timeout running rule\n" };
-    alarm 0;
-    
     merge_into_stash( $stash, BaselinerX::CI::variable->default_hash ); 
-    my $err;
+    
     ## local $Baseliner::Utils::caller_level = 3;
     ############################## EVAL DSL Tasks
-    if( $p{contained} ) {
-        # contained mode avoids leaking variables and subs into the current package
-        my $eval_pkg = 'Rule_' . Util->_md5;
-        $$stash{_rule_package} = $eval_pkg;
-        my $t0=[Time::HiRes::gettimeofday];
-        $ret = eval qq{
-            package $eval_pkg { 
-                use Baseliner::Model::Rules; 
-                use Baseliner::Plug;
-                use Baseliner::Utils;
-                use Baseliner::Sugar;
-                sub{ $dsl }->() 
-            }
-        };
-        $err = $@;
-        $$stash{_rule_elapsed} = Time::HiRes::tv_interval( $t0 );
-    } else {
-        my $t0=[Time::HiRes::gettimeofday];
-        $ret = eval $dsl;
-        $err = $@;
-        $$stash{_rule_elapsed} = Time::HiRes::tv_interval( $t0 );
-    }
+    my $rule = Baseliner::CompiledRule->new( id_rule=>$id_rule, dsl=>$p{dsl} );
+    $rule->compile;
+    $rule->run(stash=>$stash);  # if there's a compile error it wont run
     ##############################
-    alarm 0;
-    $$stash{_rule_err} = $err;
     
-    # wait for children to finish
-    $self->wait_for_children( $stash );
     
-    # reset log reporting to "Core"
-    if( my $job = $stash->{job} ) {
-        $job->back_to_core;
-    }
-
-    if( length $err ) {
+    if( my $err = $rule->errors ) {
         if( $p{simple_error} ) {
             _error( _loc("Error during DSL Execution: %1", $err) ) unless $p{simple_error} > 1;
             _fail $err;
         } else {
             _fail( _loc("Error during DSL Execution: %1", $err) );
         }
+        _debug "DSL:\n",  $self->dsl_listing( $rule->dsl );
+    } else {
+        _debug "DSL:\n",  $self->dsl_listing( $rule->dsl ) if $p{logging};
     }
-    return $stash;
+    return { stash=>$stash, dsl=>($rule->dsl || $rule->package) };  # TODO storing dsl everywhere maybe a waste of space
 }
 
 # used by events
@@ -449,39 +423,24 @@ sub run_rules {
     }
 
     for my $rule ( @rules ) {
-        my ($runner_output, $rc, $dsl, $ret,$err);
+        my ($runner_output, $rc, $ret,$err);
+        my $id_rule = $rule->{id};
         try {
             my $t0=[Time::HiRes::gettimeofday];
 
-            $dsl = mdb->grid_slurp({id_rule=> "$rule->{id}"});
-
-            if ( !$dsl ) {
-                my @tree = $self->build_tree( $rule->{id}, undef );
-                $dsl = try {
-                    $self->dsl_build( \@tree, no_tidy=>0, %p ); 
-                } catch {
-                    _fail( _loc("Error building DSL for rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, shift() ) ); 
-                };
-                my $elapsed = Time::HiRes::tv_interval( $t0 );
-                _debug( _loc('DSL build elapsed time: %1s', $elapsed) );
-                mdb->grid_insert( $dsl ,id_rule => "$rule->{id}" );
-            } else {
-                my $elapsed = Time::HiRes::tv_interval( $t0 );
-                _debug( _loc('DSL retrieved from cache. Elapsed time: %1s', $elapsed) );
-            }
             ################### RUN THE RULE DSL ######################
             require Capture::Tiny;
             ($runner_output) = Capture::Tiny::tee_merged(sub{
                 try {
-                    $ret = $self->dsl_run( dsl=>$dsl, stash=>$stash, simple_error=>$p{simple_error} );
+                    $ret = $self->dsl_run( id_rule=>$id_rule, stash=>$stash, simple_error=>$p{simple_error} );
                 } catch {
-                    $err = shift // _loc('Unknown error running rule: %1', $rule->{id} ); 
+                    $err = shift // _loc('Unknown error running rule: %1', $id_rule ); 
                 };
             });
             # report controlled errors
             if( $err ) {
                 if ( $rule->{rule_when} !~ /online/ ) {
-                    event_new 'event.rule.failed' => { username => 'internal', dsl => $dsl, rule => $rule->{id}, rule_name => $rule->{rule_name}, stash => $stash, output => $runner_output } => sub {};
+                    event_new 'event.rule.failed' => { username => 'internal', dsl=>$ret->{dsl}, rule=>$id_rule, rule_name=>$rule->{rule_name}, stash=>$stash, output => $runner_output } => sub {};
                 }           
                 if( $p{simple_error} ) {
                     _error( _loc("Error running rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, $err ) ) unless $p{simple_error} > 1; 
@@ -495,14 +454,14 @@ sub run_rules {
             $rc = 1;
             if( ref $p{onerror} eq 'CODE') {
                 if ( $rule->{rule_when} !~ /online/ ) {
-                    event_new 'event.rule.failed' => { username => 'internal', dsl => $dsl, rc => $rc, ret => $ret, rule => $rule->{id}, rule_name => $rule->{rule_name}, stash => $stash, output => $runner_output } => sub {};
+                    event_new 'event.rule.failed' => { username => 'internal', dsl=>$ret->{dsl}, rc=>$rc, ret=>$ret->{stash}, rule => $id_rule, rule_name => $rule->{rule_name}, stash => $stash, output => $runner_output } => sub {};
                 }
-                $p{onerror}->( { err=>$err_global, ret=>$ret, id=>$rule->{id}, dsl=>$dsl, stash=>$stash, output=>$runner_output, rc=>$rc } );
+                $p{onerror}->( { err=>$err_global, ret=>$ret->{stash}, id=>$id_rule, dsl=>$ret->{dsl}, stash=>$stash, output=>$runner_output, rc=>$rc } );
             } elsif( ! $p{onerror} ) {
-                _fail "(rule $rule->{id}): ".$err_global;
+                _fail "(rule $id_rule): ".$err_global;
             }
         };
-        push @rule_log, { ret=>$ret, id => $rule->{id}, dsl=>$dsl, stash=>$stash, output=>$runner_output, rc=>$rc };
+        push @rule_log, { ret=>$ret->{stash}, id => $id_rule, dsl=>$ret->{dsl}, stash=>$stash, output=>$runner_output, rc=>$rc };
     }
     if( $sem ) {
         $sem->release;
@@ -524,30 +483,13 @@ sub run_single_rule {
     #local $self->{tidy_up} = 0;
     my $t0=[Time::HiRes::gettimeofday];
 
-    my $dsl = mdb->grid_slurp({id_rule=> "$rule->{id}"});
-
-    if ( !$dsl ) {
-        $dsl = try {
-            $self->dsl_build( \@tree, no_tidy=>0, %p ); 
-        } catch {
-            _fail( _loc("Error building DSL for rule '%1' (%2): %3", $rule->{rule_name}, $rule->{rule_when}, shift() ) ); 
-        };
-        my $elapsed = Time::HiRes::tv_interval( $t0 );
-        _debug( _loc('DSL build elapsed time: %1s', $elapsed) );
-        mdb->grid_insert( $dsl ,id_rule => "$rule_id" );
-    } else {
-        my $elapsed = Time::HiRes::tv_interval( $t0 );
-        _debug( _loc('DSL retrieved from cache. Elapsed time: %1s', $elapsed) );
-    }
     my $ret = try {
         ################### RUN THE RULE DSL ######################
-        $self->dsl_run( dsl=>$dsl, stash=>$p{stash}, %p );
-        _debug "DSL:\n",  $self->dsl_listing( $dsl ) if $p{logging};
+        $self->dsl_run( id_rule=>$rule_id, stash=>$p{stash}, %p );
     } catch {
-        _debug "DSL:\n",  $self->dsl_listing( $dsl );
         _fail( _loc("Error running rule '%1': %2", $rule->{rule_name}, shift() ) ); 
     };
-    return { ret=>$ret, dsl=>$dsl };
+    return { ret=>$ret, dsl=>'' };
 }
 
 sub dsl_listing {
@@ -993,7 +935,7 @@ register 'statement.shortcut' => {
                 %s
                 _debug(_loc('Shortcut jumping to %%1', q{%s}) );
                 if( ! do {no strict; defined &{ *{ __PACKAGE__ . '::%s' }; } } ) {
-                    _fail( _loc('Missing shortcut `%1`', q{%s} ) );
+                    _fail( _loc('Missing shortcut `%%1`', q{%s} ) );
                 }
                 %s();
             }
@@ -1236,7 +1178,7 @@ register 'statement.project.loop' => {
                     
                     %s
                 } else {
-                    $stash->{job}->logger->info( _loc('Project *%1* skipped for bl %2', $project->name, $stash->{bl} ) );
+                    $stash->{job}->logger->info( _loc('Project *%%1* skipped for bl %2', $project->name, $stash->{bl} ) );
                 }
             }
         }, $self->dsl_build( $n->{children}, %p ) );

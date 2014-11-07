@@ -143,6 +143,7 @@ sub delete : Local {
         _fail _loc('Row with id %1 not found', $p->{id_rule} ) unless $row;
         my $name = $row->{rule_name};
         mdb->rule->remove({ id=>"$p->{id_rule}" },{ multiple=>1 });
+        mdb->grid->remove({ id_rule=>"$p->{id_rule}" });
         # TODO delete rule_version? its capped, it can't be deleted... may be good to keep history
         $c->stash->{json} = { success=>\1, msg=>_loc('Rule %1 deleted', $name) };
     } catch {
@@ -436,10 +437,12 @@ sub stmts_save : Local {
         } catch {
             _fail _loc "Corrupt or incorrect json rule tree: %1", shift(); 
         };
+        
+        my $ts = mdb->ts;
         #_debug $stmts;
         # check if DSL is buildable
         my $detected_errors = try { 
-            my $dsl = $c->model('Rules')->dsl_build_and_test( $stmts );
+            my $dsl = $c->model('Rules')->dsl_build_and_test( $stmts, id_rule=>$id_rule, ts=>$ts );
             _debug "Caching rule $id_rule for further use";
             mdb->grid->remove({id_rule=> "$id_rule"});
             mdb->grid_insert( $dsl ,id_rule => $id_rule );
@@ -451,7 +454,7 @@ sub stmts_save : Local {
             return $err if $ignore_dsl_errors;
             _fail _loc "Error testing DSL build: %1", $err;
         };
-        $returned_ts = $self->save_rule( id_rule=>$id_rule, stmts_json=>$p->{stmts}, username=>$c->username, old_ts => $p->{old_ts}, 
+        $returned_ts = $self->save_rule( id_rule=>$id_rule, stmts_json=>$p->{stmts}, username=>$c->username, ts=>$ts, old_ts=>$p->{old_ts}, 
             detected_errors   => $detected_errors,  # useful in case we want to warn user before doing something with this broken rule
             ignore_dsl_errors =>( $$p{ignore_error_always} ? '1' : undef ) );
         my $old_ts = $returned_ts->{old_ts};
@@ -517,10 +520,9 @@ sub save_rule {
     my $ts_modified = 0;
     my $old_timestamp = ''.$p{old_ts};
     my $rule = mdb->rule->find_one({ id => ''.$p{id_rule}});
-    my $actual_timestamp = $rule->{ts};
+    my $actual_timestamp = $p{ts} || $rule->{ts};
     my %other_options;
     defined $p{$_} and $other_options{$_}=$p{$_} for qw(detected_errors ignore_dsl_errors);
-    _debug(\%other_options );
     my $previous_user = $rule->{username};
     if (!$actual_timestamp and !$previous_user){
         $actual_timestamp = $old_timestamp;
@@ -529,7 +531,7 @@ sub save_rule {
     }
     $ts_modified = (''.$old_timestamp ne ''.$actual_timestamp) ||  ($p{username} ne $previous_user);
 
-    $old_timestamp = mdb->ts;
+    $old_timestamp = $p{ts} // mdb->ts;
     mdb->rule->update({ id=>''.$p{id_rule} }, { '$set'=> { ts => $old_timestamp, username => $p{username}, rule_tree=>$p{stmts_json}, %other_options } } );
     # now, version
     # check if collection exists

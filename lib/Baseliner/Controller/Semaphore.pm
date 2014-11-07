@@ -62,8 +62,9 @@ sub sems : Local {
     my $p = $c->request->parameters;
     my ($start, $limit, $query, $dir, $sort ) = @{$p}{qw/start limit query dir sort/};
     my $cnt;
+    $start||=0;
     $sort||='key';
-    $dir = uc $dir eq 'DESC' ? -1 : 1;
+    $dir = $dir && uc $dir eq 'DESC' ? -1 : 1;
     my $where = { internal=>mdb->nin(1,'1',undef) };
     $query and $where = mdb->query_build(
         query  => $query,
