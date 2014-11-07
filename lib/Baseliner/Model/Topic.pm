@@ -1484,6 +1484,8 @@ sub get_cis {
     $where->{rel_type} = $field_meta->{rel_type} if ref $field_meta eq 'HASH' && defined $field_meta->{rel_type};
     $where->{rel_field} = $id_field;
     my @cis = map { $_->{to_mid} } mdb->master_rel->find($where)->fields({ to_mid=>1 })->all;
+
+    $data->{"$id_field._ci_name_list"} = join ', ', map { $_->{name} } mdb->master->find({mid=>mdb->in(@cis)})->all;
     return @cis ? \@cis : [];    
 }
 
