@@ -1324,8 +1324,9 @@ sub parse_vars_raw {
         while ( @matches && !(@matches ~~ @discarded) ) {
             
             for my $match ( @matches ) {
-                if ( !$vars->{$match} ) {
-                    _log _loc("Variable %1 not found", $match);
+                my ($match_in_fn) = $match =~ /^\w+\((\w+).*\)/;
+                if ( !$vars->{$match} && !$vars->{$match_in_fn} ) {
+                    _log _loc("Variable %1 not found", $match_in_fn||$match);
                     push @discarded, $match;
                     # $str =~ s/\$\{$match\}//g;
                 }
@@ -1341,11 +1342,13 @@ sub parse_vars_raw {
                     $str =~ s/\$\{uc\($k\)\}/uc($v)/eg;
                     $str =~ s/\$\{lc\($k\)\}/lc($v)/eg;
                     $str =~ s/\$\{to_id\($k\)\}/_name_to_id($v)/eg;
+                    $str =~ s/\$\{nvl\($k,(.+)\)\}/ $v ? $v : $1/eg;
                     #$str =~ s/\$\{join\((\S+),$k\)\}/join($1,_array($v))/eg;   # TODO $v has a baddly comma joined list, should be an Arrayref
                 }
             }
             @matches = ($str =~ m/\$\{(.+?)\}/g);
         }        
+        $str =~ s/\$\{nvl\((\w+),(\w+)\)\}/$2/g;
         # cleanup or throw unresolved vars
         if( $throw ) { 
             if( my @unresolved = $str =~ m/\$\{(.*?)\}/gs ) {
