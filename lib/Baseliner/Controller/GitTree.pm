@@ -78,7 +78,16 @@ sub branch_commits : Local {
         $c->forward('View::JSON');
         return;
     }
-    
+    ###########################################################
+    my $used_commits;
+    my @svnRevisions = ci->SvnRevision->search_cis();
+    foreach(@svnRevisions){
+        if($_->{repo}->{mid} eq $repo_mid){
+            $used_commits->{$_->{sha}} = 1;
+        }
+    }
+    @rev_list = grep { my ( $rev_sha, $rev_txt )= $_ =~ /^(.+?) (.*)/; !$used_commits->{$rev_sha};} @rev_list;
+    ###########################################################
     my $data = [
         map {
             my ( $rev_sha, $rev_txt )= $_ =~ /^(.+?) (.*)/;
