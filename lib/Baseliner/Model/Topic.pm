@@ -2013,7 +2013,7 @@ sub update_category {
     _fail _loc "Cannot update topic category, topic not found: %1", $mid_or_doc unless ref $doc;
     
     $id_cat //= $doc->{id_category};
-   
+       
     my $category = mdb->category->find_one({ id=>"$id_cat" },{ workflow=>0, fieldlets=>0 })
         or _fail _loc 'Category %1 not found', $id_cat;
     my $d = {
@@ -2427,7 +2427,7 @@ sub set_release {
     $notify->{project} = \@projects if @projects;
 
     # check if arrays contain same members
-    if ( $new_release && $new_release ne $old_release ) {
+    if ( $new_release ne $old_release ) {
         if($release_row){
             my $rdoc = {from_mid => "$old_release", to_mid=>''.$topic_mid, rel_field => $release_field, rel_type=>$rel_type};
             mdb->master_rel->remove($rdoc,{multiple=>1});
@@ -2455,7 +2455,7 @@ sub set_release {
             }
         }else{
             mdb->master_rel->remove({from_mid => $old_release, to_mid=>$topic_mid, rel_type=>$rel_type, rel_field => $release_field },{multiple=>1});
-	    $self->cache_topic_remove($old_release);
+	        $self->cache_topic_remove($old_release);
             if ($cancelEvent != 1){            
                 event_new 'event.topic.modify_field' => { username   => $user,
                                                     field      => $id_field,
