@@ -210,12 +210,17 @@ sub tree : Local {
 sub grid : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
-    my @rules = mdb->rule->find->fields({ rule_tree=>0 })->sort( mdb->ixhash( rule_seq=>-1, _id=>-1 ) )->all;
+    my $where = {};
+    if( $p->{query} ) {
+        my $qre = qr/\Q$p->{query}\E/i; 
+        push @{ $where->{'$or'} }, +{ $_=>$qre } for qw(rule_tree rule_name id rule_event rule_type);
+    }
+    my @rules = mdb->rule->find($where)->fields({ rule_tree=>0 })->sort( mdb->ixhash( rule_seq=>-1, _id=>-1 ) )->all;
     @rules = map {
         $_->{event_name} = $c->registry->get( $_->{rule_event} )->name if $_->{rule_event};
         $_
     } @rules;
-    @rules = grep { join(',',values %$_) =~ qr/$p->{query}/i } @rules if length $p->{query}; 
+    #@rules = grep { join(',',values %$_) =~ qr/$p->{query}/i } @rules if length $p->{query}; 
     $c->stash->{json} = { totalCount=>scalar(@rules), data => \@rules };
     $c->forward("View::JSON");
 }
@@ -307,8 +312,6 @@ sub palette : Local {
         my $key = $_;
         my $s = $c->registry->get( $key );
         my $n= { palette => 1 };
-        my $type = $types{ $s->{type} };
-        my $parse_path = "/static/images/icons/$s->{type}.gif";
         $n->{holds_children} = defined $s->{holds_children} ? \($s->{holds_children}) : \1;
         $n->{leaf} = \1;
         $n->{key} = $key;
@@ -317,7 +320,12 @@ sub palette : Local {
         $n->{on_drop} = !!$s->{on_drop};
         $n->{on_drop_js} = $s->{on_drop_js};
         $n->{nested} = $s->{nested} // 0;
-        $n->{icon} = $s->icon // $parse_path;
+        $n->{icon} = $s->icon // ( !$s->{type} 
+            ? '/static/images/icons/help.png'
+            : do{ 
+                my $type = $types{ $s->{type} };
+                "/static/images/icons/$s->{type}.gif";
+            });
         $n;
     } 
     Baseliner->registry->starts_with( 'statement.' );
