@@ -624,7 +624,7 @@
             btn_refresh_tree.disable();
             var save_action = function(opts){
                 if( !opts ) opts={};
-                var args = { id_rule: id_rule, stmts: json, old_ts: old_ts };
+                var args = { id_rule: id_rule, stmts: json, old_ts: old_ts, timeout: 600000 };
                 Ext.apply(args, opts);
                 Baseliner.ajaxEval( '/rule/stmts_save', args, function(res) {
                     old_ts = res.old_ts;
@@ -746,8 +746,54 @@
             stmts_menu.showAt(event.xy);
         };
         var btn_save_tree = new Ext.Button({ text: _('Save'), icon:'/static/images/icons/save.png', handler: rule_save });
-        var btn_refresh_tree = new Ext.Button({ text: _('Reload'), icon:'/static/images/icons/refresh.gif', handler: function(){ rule_load(btn_refresh_tree) } });
+        var btn_refresh_tree = new Ext.Button({ text: '', icon:'/static/images/icons/refresh.gif', handler: function(){ rule_load(btn_refresh_tree) } });
         var btn_dsl = new Ext.Button({ text: _('DSL'), icon:'/static/images/icons/edit.png', handler: function() { rule_tree.rule_dsl() } });
+        
+        // node search system
+        var btn_search = new Ext.Button({ icon:IC('search.png'), menu:[
+            { text: _('Search'), hideOnClick: false, handler: function(){ search_nodes(search_box.getValue()) } },
+            { text: _('Regular Expression'), hideOnClick: false, checked: (Prefs.search_box_re==undefined?true:Prefs.search_box_re), handler:function(){ Prefs.search_box_re=!this.checked; } },
+            { text: _('Ignore Case'), hideOnClick: false, checked: (Prefs.search_box_icase==undefined?false:Prefs.search_box_icase), handler:function(){ Prefs.search_box_icase=!this.checked; } }
+        ]});
+        var search_box = new Ext.form.TextField({ width: 120, enableKeyEvents: true });
+        search_box.on('specialkey', function(f, e){
+            if(e.getKey() == e.ENTER){
+                var opts = {};
+                //if( e.ctrlKey || e.altKey || e.shiftKey ) opts.force_new_tab = true;
+                search_nodes(search_box.getValue());
+                //search_box.setSize( 120 );
+            }
+        });
+        var search_nodes = function(str){
+            var re_opts = '';
+            if(Prefs.search_box_icase) re_opts += 'i';
+            if(!Prefs.search_box_re) str=str.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1");
+            var re = new RegExp(str,re_opts);
+            var root = rule_tree.root;
+            btn_search.setText( '<img src="/static/images/loading-fast.gif" />') ;
+            var expand_parents = function(n){
+                if(n.parentNode) {
+                    expand_parents(n.parentNode);
+                    n.parentNode.expand();
+                }
+            };
+            var search_node = function(n){
+                var attr = Baseliner.clone(n.attributes);
+                delete attr.children;
+                delete attr.loader;
+                if( re.test( Ext.util.JSON.encode(attr) ) ) {
+                    expand_parents(n);
+                    try { n.ui.getEl().children[0].style.backgroundColor = '#fff8dc'; } catch(e){ };
+                }
+                else { 
+                    try { n.ui.getEl().children[0].style.backgroundColor = null; } catch(e){ };
+                }
+                n.eachChild( search_node );
+            };
+            btn_search.setText( '' );
+            root.eachChild( search_node );
+        };
+        
         var btn_version_tree = new Ext.Button({ enableToggle: true, pressed: false, icon:'/static/images/icons/history.png', 
             handler: function() { 
                 if( btn_version_tree.pressed ) {
@@ -790,6 +836,8 @@
                 btn_save_tree,
                 btn_refresh_tree,
                 btn_dsl,
+                '-',
+                search_box, btn_search,
                 '->',
                 { xtype:'button', icon:'/static/images/icons/expandall.png', tooltip:_('Expand All'), handler: function() { rule_tree.expandAll() } },
                 { xtype:'button', icon:'/static/images/icons/collapseall.png',tooltip:_('Collapse All'),  handler: function() { rule_tree.collapseAll() } },
@@ -815,8 +863,8 @@
             setTimeout( function(){ node_decorate(n) }, 500 ) ;
         });
         rule_tree.on('afterrender', function(){
-            new Ext.KeyMap( rule_tree.el, {
-                key: 'scpr', scope: rule_tree.el,
+            new Ext.KeyMap( rule_tree.body, {
+                key: 'scpr', scope: rule_tree.body,
                 stopEvent: true,
                 fn: function(key){  
                     var node = rule_tree.getSelectionModel().selNode;
