@@ -819,6 +819,22 @@ Baseliner.SearchField = Ext.extend(Ext.form.TwinTriggerField, {
     }
 });
     
+Baseliner.SearchSimple = Ext.extend(Baseliner.SearchField,{
+    initComponent : function(){
+        var self = this;
+        self.store = {  // the SearchField needs a store, but the tree doesnt have one
+            baseParams: {},
+            reload: function(config){
+                if(Ext.isFunction(self.handler)) {
+                    self.handler.call(self,config);
+                }
+            }
+        };
+        Baseliner.SearchSimple.superclass.initComponent.call(this);
+    },
+    width: 240,
+    emptyText: _('<search>')
+});
 
 Baseliner.merge = function() {
     // copy reference to target object

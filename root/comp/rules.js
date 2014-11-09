@@ -695,6 +695,7 @@
             if(btn) btn.enable();
         };
         var rule_load = function(btn,load_versions){
+            search_clear(); 
             if( rule_tree.is_dirty ) {
                 if( rule_tree.close_me() ) {
                     rule_load_do(btn,load_versions);
@@ -756,21 +757,16 @@
             { text: _('Regular Expression'), hideOnClick: false, checked: (Prefs.search_box_re==undefined?true:Prefs.search_box_re), handler:function(){ Prefs.search_box_re=!this.checked; } },
             { text: _('Ignore Case'), hideOnClick: false, checked: (Prefs.search_box_icase==undefined?false:Prefs.search_box_icase), handler:function(){ Prefs.search_box_icase=!this.checked; } }
         ]});
-        var search_fake_store = {  // the SearchField needs a store, but the tree doesnt have one
-            baseParams: {},
-            reload: function(config){
-                var t = search_box.getValue();
+        var search_box = new Baseliner.SearchSimple({ 
+            width: 140,
+            handler: function(){
+                var t = this.getValue();
                 if( t && t.length>0 ) { 
                     search_nodes(t);
                 } else {
                     search_clear();
                 }
             }
-        };
-        var search_box = new Baseliner.SearchField({
-            store: search_fake_store,
-            width: 140,
-            emptyText: _('<search>')
         });
         var search_clear = function(){
             var clear_node = function(n){

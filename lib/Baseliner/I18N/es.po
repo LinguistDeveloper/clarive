@@ -720,6 +720,12 @@ msgstr "Buscar"
 msgid "Searching..."
 msgstr "Buscando"
 
+msgid "Regular Expression"
+msgstr "Expresión Regular"
+
+msgid "Ignore Case"
+msgstr "Ignorar Mayúsculas"
+
 msgid "Failure"
 msgstr "Error"
 
