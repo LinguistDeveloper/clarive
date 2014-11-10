@@ -50,6 +50,9 @@ mongo:
         #dt_type
         #inflate_dbrefs: 1
 
+# experimental: activates websockets server and socketio
+websockets: 0
+    
 # Baseliner Framework default config
 baseliner:
     name: ϲʟᴀʀɪᴠе

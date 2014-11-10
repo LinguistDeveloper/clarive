@@ -317,8 +317,31 @@ Ext.onReady(function(){
     }
 
     moment.locale( Prefs.language );
-    
-    
+
+% if( Clarive->opts->{websockets} ) { 
+    // XXX this is not serious yet, no production use, just for play from REPL
+    // Socket.io startup, if we can
+    Baseliner.Socket = Ext.extend( Ext.util.Observable, {
+        constructor: function(){
+            var self = this;
+            Baseliner.require("/static/socketio/socket.js", function(io){
+                self.socket = io ? io.connect() : window.io ? window.io.connect() : null; 
+            });
+        },
+        on: function(ev,cb){
+            var self = this;
+            if( !self.socket ) console.log( 'No socket' );
+            self.socket.on(ev,data,cb);
+        },
+        emit: function(ev,data,cb){
+            var self = this;
+            if( !self.socket ) console.log( 'No socket' );
+            self.socket.emit(ev,data,cb);
+        }
+    });
+    Baseliner.socket = new Baseliner.Socket();
+% }
+
     // global key captures
     /* 
     window.history.forward(1);

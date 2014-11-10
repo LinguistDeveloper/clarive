@@ -1,12 +1,14 @@
 package Clarive::PSGI::Web;
 use Plack::Builder;
+use strict;
+use warnings;
 
 our $PP = $$;
 
 eval {
-    #warn ">>>>>>>>>>>>>>RELOADING";
     require Baseliner;
 };
+
 if( $@ ) {
     print "\n\nBaseliner Startup Error:\n";
     print "-------------------------\n";
@@ -15,32 +17,16 @@ if( $@ ) {
     die $@;
 }
 
-=pod 
-
-    package Clarive::MM;
-    use strict;
-    use Mojo::Base 'Mojolicious';
-    #use Mojo::UserAgent;
-    our $app = __PACKAGE__->new;
-    my $routes = $app->routes->namespaces([]);
-    my $clients = {};
-
-    $routes->any( '/' => sub {
-        my $self = shift;
-        $self->render_json({ aa=>22 });
-    });
-    $routes->websocket( '/connect' => sub {
-        my $self = shift;
-        $app->log->debug(sprintf '***** Client connected: %s', $self->tx);
-        Mojo::IOLoop->stream($self->tx->connection)->timeout(300);  # 5 minutes
-        my $id = sprintf "%s", $self->tx;
-        $clients->{$id} = $self->tx;
-    });
-
-=cut
-
 builder {
-    #mount '/ws' => $Clarive::MM::app->start;
+    # socketio
+    if( Clarive->opts->{'websockets'} ) {
+        require Clarive::Pocket;
+        mount '/socket.io' => Clarive::Pocket->build;
+    } else {
+        mount '/socket.io' => sub{ 
+            # avoids 401 errors TODO consider sending something that deactivates socketio clients
+        }; 
+    }
     #mount '/' => sub { [ 0, ["Content-Type","text/html"], ["Hello=$PP"] ]; };
     mount '/check_status' => sub {
         my $p = shift;

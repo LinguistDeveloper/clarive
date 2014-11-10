@@ -13,7 +13,7 @@ has workers    => qw(is ro);
 has socket     => qw(is ro);
 has daemon     => qw(is ro);
 has port       => qw(is ro default) => sub { '3000' };
-has engine     => qw(is ro default) => sub { 'Starman' };
+has engine     => qw(is ro default) => sub { Clarive->opts->{websockets} ? 'Twiggy::Prefork' : 'Starman' };
 has restarter  => qw(is rw default) => sub { 0 };
 has trace      => qw(is rw default) => sub { 0 };
 
