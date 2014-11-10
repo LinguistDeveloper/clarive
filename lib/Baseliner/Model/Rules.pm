@@ -1152,7 +1152,9 @@ register 'statement.perl.code' => {
     dsl => sub { 
         my ($self, $n, %p ) = @_;
         sprintf(q{
+          {  
             %s;
+          }
         }, $n->{code} // '' );
     },
 };
