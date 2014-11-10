@@ -22,12 +22,10 @@ sub drop : Local {
     $c->forward('View::JSON');
 }
 
-sub tree_file_project : Local {
-    my ($self,$c) = @_;
-    my $p = $c->request->parameters;
+sub gen_tree : Private {
+    my ($self, $p ) = @_;
 
     my @tree;
-    
     # show child folders
     my @fids = map { $_->{to_mid} } mdb->master_rel->find({ from_mid=>$p->{id_directory} || $p->{id_project}, rel_type=>'project_folder' })->all;
     my @folders = mdb->master_doc->find({ mid=>mdb->in(@fids) })->sort({ name=>1 })->all;
@@ -36,7 +34,7 @@ sub tree_file_project : Local {
     }
     # show child content
     if( $p->{id_directory} ) {
-        my %categories  = map { $_->{id}=>1 } Baseliner::Model::Topic->get_categories_permissions( username => $c->username, type => 'view' );
+        my %categories  = map { $_->{id}=>1 } Baseliner::Model::Topic->get_categories_permissions( username => $p->{username}, type => 'view' );
         my $remove_item = {   
             text => _loc('Remove from folder'),
             icon => '/static/images/icons/folder_delete.png',
@@ -63,6 +61,14 @@ sub tree_file_project : Local {
             }
         }        
     }
+    return @tree;
+}
+
+sub tree_file_project : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+
+    my @tree = $self->gen_tree({ id_project=>$p->{id_project}, id_directory=>$p->{id_directory}, username=>$c->username });
     
     $c->stash->{json} = \@tree;
     $c->forward('View::JSON');
