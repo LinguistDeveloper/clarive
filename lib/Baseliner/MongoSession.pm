@@ -13,6 +13,12 @@ has collectionname => (
     lazy_build => 1,
 );
 
+use Sereal;
+has _encoder => qw(is rw isa Object lazy 1 default), sub{ 
+    Sereal::Encoder->new({ compress=>1, compress_threshold=>1_024_000, compress_level=>1, canonical=>1 }) 
+}; 
+has _decoder => qw(is rw isa Object lazy 1 default), sub{ Sereal::Decoder->new }; 
+
 sub _cfg_or_default {
     my ($self, $name, $default) = @_;
 
@@ -28,7 +34,13 @@ sub _build_collectionname {
 
 sub _serialize {
     my ($self, $data) = @_;
-    my $d = Storable::freeze( $data );
+    my $d = $self->_encoder->encode( $data );
+    return $d;
+}
+
+sub _deserialize {
+    my ($self, $data, $type) = @_;
+    my $d = try { $self->_decoder->decode($data) } catch { try { Storable::thaw( $data ) } catch { $data } }; # XXX Storable is legacy, deprecate
     return $d;
 }
 
@@ -54,10 +66,10 @@ sub get_session_data {
 
     # rgo: $prefix can be either session or expires (but not sure), session includes sessiond data.
     return $prefix eq 'session' && length $found->{$prefix} 
-        ? Storable::thaw($found->{$prefix}) 
+        ? $self->_deserialize($found->{$prefix}, $found->{type}) 
         : $prefix eq 'expires' 
             ? $found->{$prefix}
-            : try { Storable::thaw($found->{$prefix}) } catch { $found->{$prefix} };
+            : $self->_deserialize($found->{$prefix},$found->{type});
 }
 
 sub store_session_data {
@@ -76,7 +88,7 @@ sub store_session_data {
     }
 
     $self->collection->update({ _id => $id },
-        { '$set' => { $prefix => $serialized } }, { upsert => 1 });
+        { '$set' => { $prefix => $serialized, type=>'sereal' }, '$currentDate'=>{t=>boolean::true} }, { upsert => 1 });
 }
 
 sub delete_session_data {
@@ -84,7 +96,7 @@ sub delete_session_data {
 
     my ($prefix, $id) = split(/:/, $key);
 
-    my $found = $self->collection->find_one({ _id => $id });
+    my $found = $self->collection->find_one({ '$or'=>[ {_id => $id},{ _id=>$key }] });
     return unless $found;
 
     if (exists($found->{$prefix})) {
