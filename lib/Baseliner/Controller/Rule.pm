@@ -306,38 +306,39 @@ sub palette : Local {
     #    { text => _loc('if role'), statement=>'if_role', leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1, },
     #    { text => _loc('if project'), statement=>'if_project', leaf => \1, holds_children=>\1, icon =>$if_icon, palette=>\1, },
     #);
-    my @control = sort { $a->{text} cmp $b->{text} } 
-        grep { !$query || join(',',%$_) =~ $query } 
+    my @control = 
+        sort { ($a->{text}//'') cmp ($b->{text}//'') } 
+        grep { !$query || join(',',grep{defined}%$_) =~ $query } 
         map {
-        my $key = $_;
-        my $s = $c->registry->get( $key );
-        my $n= { palette => 1 };
-        $n->{holds_children} = defined $s->{holds_children} ? \($s->{holds_children}) : \1;
-        $n->{leaf} = \1;
-        $n->{key} = $key;
-        $n->{text} = $s->{text} // $key;
-        $n->{run_sub} = $s->{run_sub} // \1;
-        $n->{on_drop} = !!$s->{on_drop};
-        $n->{on_drop_js} = $s->{on_drop_js};
-        $n->{nested} = $s->{nested} // 0;
-        $n->{icon} = $s->icon // ( !$s->{type} 
-            ? '/static/images/icons/help.png'
-            : do{ 
-                my $type = $types{ $s->{type} };
-                "/static/images/icons/$s->{type}.gif";
-            });
-        $n;
-    } 
-    Baseliner->registry->starts_with( 'statement.' );
-    push @tree, {
-        icon     => '/static/images/icons/control.gif',
-        text     => _loc('Control'),
-        draggable => \0,
-        expanded => \1,
-        isTarget => \0,
-        leaf     => \0,
-        children => \@control,
-    };
+            my $key = $_;
+            my $s = $c->registry->get( $key );
+            my $n= { palette => 1 };
+            $n->{holds_children} = defined $s->{holds_children} ? \($s->{holds_children}) : \1;
+            $n->{leaf} = \1;
+            $n->{key} = $key;
+            $n->{text} = $s->{text} // $key;
+            $n->{run_sub} = $s->{run_sub} // \1;
+            $n->{on_drop} = !!$s->{on_drop};
+            $n->{on_drop_js} = $s->{on_drop_js};
+            $n->{nested} = $s->{nested} // 0;
+            $n->{icon} = $s->icon // ( !$s->{type} 
+                ? '/static/images/icons/help.png'
+                : do{ 
+                    my $type = $types{ $s->{type} };
+                    "/static/images/icons/$s->{type}.gif";
+                });
+            $n;
+        } 
+        Baseliner->registry->starts_with( 'statement.' );
+        push @tree, {
+            icon     => '/static/images/icons/control.gif',
+            text     => _loc('Control'),
+            draggable => \0,
+            expanded => \1,
+            isTarget => \0,
+            leaf     => \0,
+            children => \@control,
+        };
 
     my @services = sort $c->registry->starts_with('service');
     push @tree, {
@@ -349,7 +350,7 @@ sub palette : Local {
         expanded => \1,
         children=> [ 
           sort { uc $a->{text} cmp uc $b->{text} }
-          grep { !$query || join(',', values %$_) =~ $query }
+          grep { !$query || join(',', grep{defined}values %$_) =~ $query }
           map {
             my $n = $_;
             my $service_key = $n->{key};
@@ -380,7 +381,7 @@ sub palette : Local {
         expanded => length $query ? \1 : \0,
         children=> [ 
           sort { uc $a->{text} cmp uc $b->{text} }
-          grep { !$query || join(',', values %$_) =~ $query }
+          grep { !$query || join(',', grep{defined}values %$_) =~ $query }
           map {
             my $n = $_;
             my $service_key = $n->{key};
@@ -659,6 +660,8 @@ sub dsl : Local {
     #_debug "\n\n" . $p->{stmts} . "\n\n";;
     my $stmts = _decode_json( $p->{stmts} ) if $p->{stmts};
     try {
+        my $id_rule = $p->{id_rule};
+        my $doc = mdb->rule->find_one({ id=>$id_rule },{ rule_tree=>0 }) // {};
         my $rule_type = $p->{rule_type} or _throw 'Missing parameter rule_type';
         my $data;
         if( $rule_type eq 'chain' ) {
@@ -676,7 +679,7 @@ sub dsl : Local {
             # loose rule 
             $data = {};
         }
-        my $dsl = $c->model('Rules')->dsl_build( $stmts ); 
+        my $dsl = $c->model('Rules')->dsl_build( $stmts, id_rule=>"temp_$id_rule", rule_name=>$$doc{rule_name} ); 
         $c->stash->{json} = { success=>\1, dsl=>$dsl, data_yaml => _dump( $data ) };
     } catch {
         my $err = shift; _error $err;

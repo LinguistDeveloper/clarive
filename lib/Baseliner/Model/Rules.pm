@@ -226,7 +226,7 @@ sub _is_true {
 # called when rule is saved
 sub dsl_build_and_test {
     my ($self,$stmts, %p )=@_;
-    my $dsl = $self->dsl_build( $stmts, %p ); 
+    my $dsl = $self->dsl_build( $stmts, id_rule=>$p{id_rule}, %p ); 
     my $rule = Baseliner::CompiledRule->new( id_rule=>$p{id_rule}, dsl=>$dsl, ts=>$p{ts} ); # send ts so its stored as this rule save timestamp
     $rule->compile;
     die $rule->errors if $rule->errors;
@@ -236,6 +236,11 @@ sub dsl_build_and_test {
 sub dsl_build {
     my ($self,$stmts, %p )=@_;
     return '' if !$stmts || ( ref $stmts eq 'HASH' && !%$stmts );
+    my $id_rule = $p{id_rule} //  '';
+    my $rule_name = $p{rule_name} // do {
+        my $doc = $p{doc} // ( $id_rule ?  mdb->rule->find_one({ id=>"$id_rule" }) : {} );
+        $$doc{rule_name} || $id_rule || '';
+    };
     #_debug $stmts;
     my @dsl;
     require Data::Dumper;
@@ -290,9 +295,9 @@ sub dsl_build {
         my $closure = $attr->{closure};
         push @dsl, sprintf( '# task: %s', $name ) . "\n"; 
         if( $closure ) {
-            push @dsl, sprintf( 'current_task($stash, q{%s}, sub{', $name )."\n";
+            push @dsl, sprintf( 'current_task($stash, q{%s}, q{%s}, q{%s}, sub{', $id_rule, $rule_name, $name )."\n";
         } elsif( ! $attr->{nested} ) {
-            push @dsl, sprintf( 'current_task($stash, q{%s});', $name )."\n";
+            push @dsl, sprintf( 'current_task($stash, q{%s}, q{%s}, q{%s});', $id_rule, $rule_name, $name )."\n";
         }
         if( length $timeout && $timeout > 0 ) {
             push @dsl, sprintf( 'alarm %s;', $timeout )."\n";
@@ -380,7 +385,7 @@ sub dsl_run {
     
     ## local $Baseliner::Utils::caller_level = 3;
     ############################## EVAL DSL Tasks
-    my $rule = Baseliner::CompiledRule->new( id_rule=>$id_rule, dsl=>$p{dsl} );
+    my $rule = Baseliner::CompiledRule->new( ( $id_rule ? (id_rule=>$id_rule):() ), dsl=>$p{dsl} );
     $rule->compile;
     $rule->run(stash=>$stash);  # if there's a compile error it wont run
     ##############################
@@ -535,8 +540,12 @@ sub project_changes {
 }
 
 sub current_task {
-    my ($stash,$name, $code)=@_;
+    my ($stash,$id_rule, $rule_name, $name, $code)=@_;
     $name = parse_vars( $name, $stash );  # so we can have vars in task names
+    $Baseliner::_rule_current_id = $id_rule;
+    $Baseliner::_rule_current_name = $rule_name;
+    $stash->{current_rule_id} = $id_rule;
+    $stash->{current_rule_name} = $rule_name;
     $stash->{current_task_name} = $name;
     if( my $job = $stash->{job} ) {
         $job->start_task( $name );
@@ -1088,7 +1097,7 @@ register 'statement.perl.eval' => {
                     _fail "ERROR in EVAL: $@";
                 }
             }
-        }, $n->{data_key}, $n->{code} // '', $self->dsl_build( $n->{children}, %p ) );
+        }, $n->{data_key} // '', $n->{code} // '', $self->dsl_build( $n->{children}, %p ) );
     },
 };
 
@@ -1263,7 +1272,7 @@ sub include_rule {
     my ($self, $id_rule, %p) = @_;
     my @tree = $self->build_tree( $id_rule, undef );
     my $dsl = try {
-        $self->dsl_build( \@tree, %p ); 
+        $self->dsl_build( \@tree, id_rule=>$id_rule, %p ); 
     } catch {
         _fail( _loc("Error building DSL for rule '%1': %2", $id_rule, shift() ) ); 
     };

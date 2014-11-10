@@ -1066,19 +1066,13 @@
         plugins: [ menu_tab ],
         items: []
     });
-    var palette_fake_store = {  // the SearchField needs a store, but the tree doesnt have one
-        baseParams: {},
-        reload: function(config){
+    var search_palette = new Baseliner.SearchSimple({ 
+        width: 220,
+        handler: function(){
             var lo = palette.getLoader();
-            lo.baseParams = palette_fake_store.baseParams;
+            lo.baseParams = this.store.baseParams;
             lo.load( palette.root );
         }
-    };
-    var search_palette = new Baseliner.SearchField({
-        store: palette_fake_store,
-        width: 220,
-        params: {start: 0, limit: ps },
-        emptyText: _('<search>')
     });
     var palette = new Ext.tree.TreePanel({
         region: 'east',

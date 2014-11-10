@@ -59,7 +59,7 @@ sub dsl_build {
     my @tree = model->Rules->build_tree( $self->id_rule, undef );
     return unless @tree;
     my $dsl = try {
-        model->Rules->dsl_build( \@tree, no_tidy=>0, %p ); 
+        model->Rules->dsl_build( \@tree, no_tidy=>0, id_rule=>$self->id_rule, rule_name=>$self->rule_name, %p ); 
     } catch {
         _fail( _loc("Error building DSL for rule `%1`: %2", $self->id_rule, shift() ) ); 
     };
