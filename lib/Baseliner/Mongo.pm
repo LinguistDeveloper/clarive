@@ -364,14 +364,15 @@ sub index_all {
             [{ mid=>1 },{ unique=>1 }],
             [{ collection=>1 }],
             [{ name=>1 }],
+            [{ moniker=>1 }],
         ],
         master_rel => [
             [{ from_mid=>1, to_mid=>1, rel_type=>1, rel_field=>1 },{ unique=>1 }],
             [{ from_mid=>1, rel_type=>1 }],
             [{ to_mid  =>1, rel_type=>1 }],
+            [{ to_mid=>1, from_mid =>1, rel_type=>1 }],
             [{ to_mid  =>1 }],
             [{ from_mid  =>1 }],
-            [{ rel_type=>1 }],
             [{ from_mid=>1, to_mid=>1 }],
         ],
         master_seen => [
@@ -416,10 +417,15 @@ sub index_all {
             [{ name_category=>1 }],
             [{'$**'=> "text"},{ background=>1 }],
             [{ '_project_security'=>1, category_name=>1 }],
+            [{ '_project_security'=>1, 'category.id'=>1, 'category_status.type'=>1 }],
             [{ '_sort.numcomment'=>1, _project_security=>1, category_status=>1, 'category.id'=>1 }],
         ],
         topic_image => [
             [{ id_hash => 1 }],
+        ],
+        'fs.files' => [
+            'db.fs.files.ensureIndex({ topic_mid: 1 })',
+            'db.fs.files.ensureIndex({ parent_mid: 1 })',
         ],
     };
     
@@ -429,10 +435,15 @@ sub index_all {
             next if defined $collection && $cn ne $collection;
             Util->_debug( "Indexing collection: $cn..." );
             my $coll = $self->collection($cn);
-            $self->$cn->drop_indexes if $p{drop};
+            $self->$cn->drop_indexes if $p{drop} && $cn ne 'fs.files';
             for my $ix ( @{ $idx->{$cn} } ) {
                 try {
-                    $coll->ensure_index( @$ix );
+                    if( ref $ix eq 'ARRAY' ) {
+                        $coll->ensure_index( @$ix );
+                    } else {
+                        _log _loc 'Eval collection %1 index %2', $cn, $ix;
+                        mdb->db->eval($ix); 
+                    }
                 } catch {
                     my $err = shift;
                     _error(_loc('Error indexing collection %1 (index: %2): %3', $cn, Util->_encode_json($ix), $err ));
