@@ -4,6 +4,7 @@ extends 'Clarive::Cmd';
 use v5.10;
 use strict;
 use Proc::ProcessTable;
+use Proc::Exists 'pexists';
 use Path::Class;
 
 our $CAPTION = 'list server processes';
@@ -17,12 +18,17 @@ sub run {
     my (%disp, %server, %jobs);
     my $top = sprintf($FORMAT, "PID", "PPID", "CPU", "MEM", "STAT", "START", "COMMAND");
     $opts{v} and say "PID_DIR = " . $self->pid_dir;
-    my @pids = map {
+    my %pids = map {
         my $pid = file( $_ )->slurp;
         $pid =~ s/^([0-9]+).*$/$1/gs;
         $opts{v} and say "PID detected [$pid] in $_";
-        { type=>( /-web/ ? 'server' : /-job/ ? 'job' : '' ), pid=>$pid };
+        my $type = /-web/ ? 'server' : /-job/ ? 'job' : 'disp';
+        $pid>0 && pexists($pid) ? ( $pid => { type=>$type, pid=>$pid } ) : ();
     } glob $self->pid_dir . '/cla*.pid';
+
+    say "PARENT PIDS: " . Clarive->yaml( \%pids ) if $opts{v};
+    
+    my %procs = ( job=>{},server=>{},disp=>{} );
     
     foreach my $p ( @{$t->table} ){
         my $line = sub {
@@ -38,28 +44,39 @@ sub run {
               $self->filter_cmd($type, $^O eq 'cygwin' ? $p->fname : $p->cmndline) 
             );
         };
-        for my $pid ( @pids ) {
-            if( $pid->{pid}>1 && ($pid->{pid} == $p->pid || $pid->{pid} == $p->ppid) ) {
-                if( $pid->{type} eq 'server' ) {
-                    $server{ $p->pid } = $line->($pid->{type});
-                } elsif( $pid->{type} eq 'job' ) {
-                    $jobs{ $p->pid } = $line->($pid->{type});
-                } else {
-                    $disp{ $p->pid } = $line->($pid->{type});
-                }
-            }
+        
+        no warnings;
+        if( my $parent = $pids{$p->ppid} || $pids{$p->pid} ) {
+            my $type = $parent->{type};
+            $procs{$type}{$p->pid} = +{ %$parent, line=>$line->($type) }; 
+            $pids{$p->pid} = $parent;
+        } else {
+            my $type = $parent->{type};
         }
+        
+        #for my $pid ( @pids ) {
+        #    if( $pid->{pid}>1 && ($pid->{pid} == $p->pid || $pid->{pid} == $p->ppid) ) {
+        #        if( $pid->{type} eq 'server' || $server_pids{$p->ppid} ) {
+        #            $server{ $p->pid } = $line->($pid->{type});
+        #            $server_pids{$p->pid}=1;
+        #        } elsif( $pid->{type} eq 'job' ) {
+        #            $jobs{ $p->pid } = $line->($pid->{type});
+        #        } else {
+        #            $disp{ $p->pid } = $line->($pid->{type});
+        #        }
+        #    }
+        #}
     }
 
     say "--------------|    Jobs    |-----------";
-    say $top if %jobs;
-    say $jobs{$_} for sort keys %jobs;
+    say $top if keys $procs{job};
+    say $procs{job}{$_}{line} for sort keys $procs{job};
     say "--------------| Dispatcher |-----------";
-    say $top if %disp;
-    say $disp{$_} for sort keys %disp;
+    say $top if keys $procs{disp};
+    say $procs{disp}{$_}{line} for sort keys $procs{disp};
     say "--------------|   Server   |-----------";
-    say $top if %server;
-    say $server{$_} for sort keys %server;
+    say $top if keys $procs{server};
+    say $procs{server}{$_}{line} for sort keys $procs{server};
 }
 
 sub run_filter {
