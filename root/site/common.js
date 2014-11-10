@@ -2165,7 +2165,7 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
                     if( !tn.category_color ) 
                         tn.category_color = '#999';
                     var span = String.format( Baseliner.tree_topic_style, tn.category_color );
-                    n.setText( String.format( '{0}<b>{1} #{2}</b>: {3} {4}', span, tn.category_name, tn.mid, tn.category_status, n.text ) );
+                    n.setText( String.format( '{0}<b>{1} #{2}</b>: {3}{4}', span, tn.category_name, tn.mid, (tn.category_status ? tn.category_status+' ' : '' ), n.text ) );
                     n.ui = new Baseliner.TreeMultiTextNode( n );  // DD support for the whole node
                 } else if(n.attributes.category_name ) {
                     var tn = n.attributes.category_name;
