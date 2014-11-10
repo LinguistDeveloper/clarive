@@ -1141,13 +1141,8 @@ register 'statement.js.code' => {
     dsl => sub { 
         my ($self, $n, %p ) = @_;
         sprintf(q{
-            require JE;
-            my $je = JE->new;
-            my $jstash = Util->_clone($stash);
-            Util->_unbless($jstash);
-            $je->new_function( stash => sub { defined $_[1] ? $jstash->{$_[0]} = $_[1]->value : $jstash->{$_[0]} } );
-            $je->eval(q{%s});
-            do { $stash->{$_} = $jstash->{$_} if !exists $stash->{$_} } for keys $jstash;
+            require Baseliner::JS;
+            Baseliner::JS->run( stash=>$stash, code=>q{%s} ); 
         }, $n->{code} // '()',  $self->dsl_build( $n->{children}, %p ) );
     },
 };
