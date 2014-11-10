@@ -781,7 +781,9 @@ sub default : Path {
         } catch {
             my $err = shift;
             my $json = try { Util->_encode_json($p) } catch { '{ ... }' };
-            _error "Error in Rule WS call '$id_rule/$meth': $json\n$err";
+            my $msg = "Error in Rule WS call '$id_rule/$meth': $json\n$err";
+            _error $msg;
+            event_new 'event.ws.rule_error', { msg=>$msg };
             # $ret = { msg=>"$err", success=>\0 }; 
             $ret = +{
                 Fault => { faultcode => '999', faultstring => "$err", faultactor => "$wsurl", },
@@ -853,10 +855,12 @@ sub default : Path {
                 my $err = shift;
                 if( ref $err eq 'Log::Report::Exception' ) {
                     my $msg = sprintf('%s in %s', $$err{message}{_msgid}, $$err{message}{name});
+                    event_new 'event.ws.soap_error' => { msg=>$msg };
                     require XML::Simple;
                     $c->res->body( XML::Simple::XMLout({ error=>$msg, raw=>"$err", message=>$$err{message} }, RootName=>'clarive') );
                 } else {
                     my $msg = _loc( 'Error setting up WSDL operations: %1', $err );
+                    event_new 'event.ws.wsdl_error' => { msg=>$msg };
                     require XML::Simple;
                     $c->res->body( XML::Simple::XMLout({ error=>$msg }, RootName=>'clarive') );
                 }
