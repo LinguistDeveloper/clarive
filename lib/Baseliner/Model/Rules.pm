@@ -1180,7 +1180,7 @@ register 'statement.project.loop' => {
                     
                     %s
                 } else {
-                    $stash->{job}->logger->info( _loc('Project *%%1* skipped for bl %2', $project->name, $stash->{bl} ) );
+                    $stash->{job}->logger->info( _loc('Project *%%1* skipped for bl %%2', $project->name, $stash->{bl} ) );
                 }
             }
         }, $self->dsl_build( $n->{children}, %p ) );
