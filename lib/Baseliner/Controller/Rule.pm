@@ -212,8 +212,7 @@ sub grid : Local {
     my $p = $c->req->params;
     my $where = {};
     if( $p->{query} ) {
-        my $qre = qr/\Q$p->{query}\E/i; 
-        push @{ $where->{'$or'} }, +{ $_=>$qre } for qw(rule_tree rule_name id rule_event rule_type);
+        mdb->query_build( where=>$where, query=>$p->{query}, fields=>[qw(rule_tree rule_name id rule_event rule_type)] ); 
     }
     my @rules = mdb->rule->find($where)->fields({ rule_tree=>0 })->sort( mdb->ixhash( _id=>-1 ) )->all;
     @rules = map {
