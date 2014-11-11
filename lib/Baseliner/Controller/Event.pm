@@ -46,7 +46,7 @@ sub log : Local {
     $limit ||= 30;
     my $where={};
     $query and $where = mdb->query_build( query=>$query, fields=>[qw(id event_key )] );
-    my $rs = mdb->event->find($where);
+    my $rs = mdb->event->find($where)->fields({event_data => 0});
     $cnt = $rs->count;
     $rs->skip($start)->sort({ $sort=>$dir =~ /desc/i ? -1 : 1 });
     $rs->limit($limit) unless $limit eq '-1';
