@@ -556,6 +556,17 @@ You can use an ARRAY for shorthand too:
         ]);
 
     Or use where=>$where for merging. 
+    
+Possible queries:
+   
+    term
+    "term"  - case insensitive
+    Term  - case insensitive
+    T?rm  - match 1 char in ?
+    T*rm  - match 0 to many chars in *
+    /term regex.*/  - regex
+    +term1 +term2  - AND query
+    +term1 -term2  - AND + NOT query
 
 =cut
 sub query_build {
@@ -567,46 +578,55 @@ sub query_build {
     my $where = $p{where} // {};
     my @fields = ref $p{fields} eq 'HASH' ? keys( %{ $p{fields} } ) : _array($p{fields});
     # build columns   -----    TODO use field:lala
-    $p{query} =~ s{\*}{.*}g;
-    $p{query} =~ s{\?}{.}g;
     $p{query} = Encode::encode('UTF-8',$p{query});
     @terms = grep { defined($_) && length($_) } Util->split_with_quotes($p{query});  
     my @terms_normal = grep(!/^\+|^\-/,@terms);
     my @terms_plus = grep(/^\+/,@terms);
     my @terms_minus = grep(/^\-/,@terms);
+    my $re_gen = sub{
+        my ($term,$is_re,$insensitive)=@_;
+        if( !$is_re && $term=~/[\*\?]/ ) {
+            # we're not regex, but have * or ? in term, turn into regex
+            $is_re = 1;
+            $term =~ s{\*}{.*}g;
+            $term =~ s{\?}{.}g;
+        }
+        return $insensitive 
+            ? ( $is_re ? qr/$term/i : qr/\Q$term\E/i )
+            : ( $is_re ? qr/$term/ : qr/\Q$term\E/ );
+    };
     my $all_or_one = sub {
         my $term = shift;
         my $insensitive = 1;
+        my $is_re = 0;
         if( $term =~ /^([^:]+):(.+)$/ ) {
             my ($k,$v) = ($1,$2);
-            $v =~ s/^"//;
-            $v =~ s/"$//;
+            $is_re = 1 if $v =~ s{^/(.*)/$}{$1};
             $insensitive = 0 if $v=~/[A-Z]/;
-            return ($v,$insensitive,$k);
+            $insensitive = 0 if $v =~ s/^"(.*)"$/$1/ && !$is_re;
+            return ($v,$is_re,$insensitive,$k);
         } else {
-            $term =~ s/^"//;
-            $term =~ s/"$//;
+            $is_re = 1 if $term =~ s{^/(.*)/$}{$1};
             $insensitive = 0 if $term=~/[A-Z]/;
-            return ($term,$insensitive,@_);
+            $insensitive = 0 if $term =~ s/^"(.*)"$/$1/ && !$is_re;
+            return ($term,$is_re,$insensitive,@_);
         }
     };
     my @ors = map {
-        my ($term,$insensitive,@term_fields) = $all_or_one->($_,@fields);
+        my ($term,$is_re,$insensitive,@term_fields) = $all_or_one->($_,@fields);
         map {
-            +{ $_ => $insensitive ? qr/$term/i : qr/$term/ }
+            +{ $_ => $re_gen->($term,$is_re,$insensitive) }
         } @term_fields;
     } @terms_normal;
-    #push @ors, { 1=>1 } if ! @terms_normal;
     my @wh_and = (
         ( @ors ? {'$or' => \@ors} : () ),
-        ( @terms_plus ? { '$and'=>[ map { my $v=substr($_,1); my $insensitive; ($v,$insensitive,@fields)=$all_or_one->($v,@fields); 
-                { '$or'=>[map { +{$_ => $insensitive ? qr/$v/i : qr/$v/} } @fields] } } @terms_plus ]} : () 
+        ( @terms_plus ? { '$and'=>[ map { my $v=substr($_,1); ($v,my $is_re,my $insensitive,@fields)=$all_or_one->($v,@fields); 
+                { '$or'=>[map { +{$_ => $re_gen->($v,$is_re,$insensitive) } } @fields] } } @terms_plus ]} : () 
         ),
-        ( @terms_minus ? { '$and'=>[ map { my $v=substr($_,1); my $insensitive; ($v,$insensitive,@fields)=$all_or_one->($v,@fields); 
-                { '$and'=>[map { +{$_ => {'$not' => $insensitive ? qr/$v/i : qr/$v/} } } @fields] } } @terms_minus ]} : () 
+        ( @terms_minus ? { '$and'=>[ map { my $v=substr($_,1); ($v,my $is_re,my $insensitive,@fields)=$all_or_one->($v,@fields); 
+                { '$and'=>[map { +{$_ => {'$not' => $re_gen->($v,$is_re,$insensitive) } } } @fields] } } @terms_minus ]} : () 
         ),
     );
-    #push @ors, { 1=>1 } if ! @terms_normal;
     $where->{'$and'} = \@wh_and if @wh_and;
     return $where;
 }
