@@ -717,6 +717,9 @@ msgstr "Calendario"
 msgid "Search"
 msgstr "Buscar"
 
+msgid "Read More..."
+msgstr "Más Información..."
+
 msgid "Searching..."
 msgstr "Buscando"
 
@@ -1455,6 +1458,9 @@ msgstr "Hora"
 msgid "Add Job Items"
 msgstr "Elementos del Pase"
 
+msgid "More Info"
+msgstr "Más Información"
+
 msgid "More Info..."
 msgstr "Más Información..."
 
@@ -1476,6 +1482,9 @@ msgstr "Borrar Todos"
 msgid "Warning"
 msgstr "Advertencia"
 
+msgid "Attention"
+msgstr "Atención"
+
 msgid "Debug"
 msgstr "Debug"
 
@@ -1490,6 +1499,27 @@ msgstr "Éxito"
 
 msgid "Rerun"
 msgstr "Reiniciar"
+
+msgid "View Messages"
+msgstr "Ver Mensajes"
+
+msgid "Compose"
+msgstr "Componer"
+
+msgid "Alert"
+msgstr "Aviso"
+
+msgid "Publish"
+msgstr "Publicar"
+
+msgid "System Messages"
+msgstr "Mensajes de Sistema"
+
+msgid "Are you sure you want to broadcast this message?"
+msgstr "¿Seguro que quieres enviar este mensaje?"
+
+msgid "Are you sure you want to broadcast this message to all users?"
+msgstr "¿Seguro que quieres transmitir este mensaje a todos los usuarios?"
 
 msgid "Are you sure you want to rerun the job"
 msgstr "¿Seguro que quiere reiniciar el pase"

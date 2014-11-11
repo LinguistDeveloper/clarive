@@ -1,5 +1,5 @@
 package Baseliner::Controller::Message;
-use Mouse;
+use Baseliner::Plug;
 use Baseliner::Utils;
 use Try::Tiny;
 BEGIN {  extends 'Catalyst::Controller' }
@@ -185,6 +185,111 @@ sub test_message : Local {
         my $err = shift;
         $c->stash->{json} = { success => \0, msg => $err };
     };
+    $c->forward('View::JSON');
+}
+
+# System messages
+register 'action.admin.sms' =>  { name=>'System Messages' };
+register 'menu.admin.sms' => { label => 'System Messages', icon=>'/static/images/icons/sms.gif', actions=>['action.admin.sms'], url_eval=>'/comp/sms.js', index=>1000 };
+
+sub sms_create : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    try {
+        model->Permissions->user_has_action( username=>$c->username, action=>'action.admin.sms' ) || _fail _loc 'Unauthorized';
+        my $title = $p->{title} || _fail _loc 'Missing message title';
+        my $text = $p->{text} || _fail _loc 'Missing message text';
+        my $more = $p->{more} || '';
+        my $username = $p->{username} || undef;
+        my $_id = mdb->oid;
+        my $exp = Class::Date->now + ( $p->{expires} || '1D' );
+        
+        my $ret = mdb->sms->update({ _id=>$_id },{ 
+            '$set'=>{ title=>$title, text=>$text, more=>$more, from=>$c->username, username=>$username, ua=>$c->req->user_agent, expires=>"$exp" }, 
+            '$currentDate'=>{ t=>boolean::true } },{upsert=>1}
+        );
+        $c->stash->{json} = { success => \1, msg=>$ret, _id=>"$_id" };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { success => \0, msg => $err };
+    };
+    $c->forward('View::JSON');
+}
+
+sub sms_del : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    try {
+        my $_id = $p->{_id} || _fail _loc 'Missing message id';
+        if( $p->{action} eq 'cancel' ) {
+            mdb->sms->update({ _id=>mdb->oid($_id) },{ '$set'=>{ expires=>mdb->ts } });
+        } else{
+            mdb->sms->remove({ _id=>mdb->oid($_id) });
+        }
+        $c->stash->{json} = { success => \1, _id=>"$_id" };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { success => \0, msg => $err };
+    };
+    $c->forward('View::JSON');
+}
+
+sub sms_get : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    try {
+        my $_id = $p->{_id};
+        my $msg = mdb->sms->find_and_modify({ 
+            query=>{ _id=>mdb->oid($_id) }, 
+            update=>{ '$push'=>{ 'shown'=>{u=>$c->username, ts=>mdb->ts, ua=>$c->req->user_agent, add=>$c->req->address } } },
+            new=>1,
+        });
+        $$msg{_id} .= '';
+        $c->stash->{no_system_messages} = 1;
+        $c->stash->{json} = { success => \1, msg=>$msg };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { success => \0, msg => $err };
+    };
+    $c->forward('View::JSON');
+}
+
+sub sms_ack : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    try {
+        if( my $_id = $p->{_id} ) {
+            mdb->sms->update({ _id=>mdb->oid($_id) },{ '$push'=>{ 'read'=>{u=>$c->username, ts=>mdb->ts, ua=>$c->req->user_agent, add=>$c->req->address } } });
+        }
+        $c->stash->{json} = { success => \1 };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { success => \0, msg => $err };
+    };
+    $c->forward('View::JSON');
+}
+
+sub sms_list : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+    try {
+        my $ts = mdb->ts;
+        my @sms = map { 
+            $$_{_id}.=''; 
+            $$_{expired} = $$_{expires} gt $ts ? \0 : \1;
+            $_ 
+        } mdb->sms->find->fields({ t=>0 })->sort({ t=>-1 })->all;
+        $c->stash->{json} = { success => \1, data=>\@sms, totalCount=>scalar @sms };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { success => \0, msg => $err };
+    };
+    $c->forward('View::JSON');
+}
+
+sub sms_wipe : Local {
+    my ( $self, $c ) = @_;
+    mdb->sms->remove({});
     $c->forward('View::JSON');
 }
 

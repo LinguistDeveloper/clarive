@@ -15,6 +15,15 @@ use Baseliner::Utils;
 
 sub encode_json {
     my($self, $c, $data) = @_;
+
+    if( ref $data eq 'HASH' && ( my $msg = delete $c->stash->{__broadcast} ) && !$c->session->{login_from_api} ) {
+        $$data{__broadcast} = $msg if ref $msg eq 'HASH';
+    }
+    
+    if( !ref $data ) {
+        Util->_throw( 'Missing JSON data in stash');
+    }
+    
     my $encoder = $self->{_json_encoder} // ( $self->{_json_encoder} = JSON::XS->new->allow_blessed->convert_blessed );
     $encoder->max_depth([1024]);
     $encoder->encode($data);
@@ -23,13 +32,26 @@ sub encode_json {
 sub process {
     my $self = shift;
     my ($c) = @_;
+    
+    $self->system_messages($c);
+    
     $self->next::method(@_);
+    
     my $output = $c->res->output;
     if( $c->config->{'Baseliner::View::JSON'}->{decode_utf8} ) {
         $output = Encode::decode_utf8($output)
             unless $c->stash->{no_json_decode};
     }
     $c->res->output( $output );
+}
+
+sub system_messages {
+    my ( $self, $c ) = @_;
+    return if $c->stash->{no_system_messages};
+    my @all = mdb->sms->find({ username=>{ '$in'=>[undef,$c->username] }, expires=>{ '$gt'=>mdb->ts } })->fields({ _id=>1 })->all;
+    if( my @sms = map { $$_{_id}.=''; $_ } @all ) {
+        $c->stash->{__broadcast}{system_messages} = \@sms;
+    }
 }
 
 

@@ -395,14 +395,29 @@ Baseliner.JsonStore = Ext.extend( Ext.data.JsonStore, {
         }
         this.on('exception', Baseliner.store_exception_handler );
         this.on('beforeload', Baseliner.store_exception_params );
-        this.on('load', function(){ self.is_loaded=true });
+        this.on('load', function(){ 
+            if( self.reader.jsonData && self.reader.jsonData.__broadcast ) {
+                Baseliner.broadcast_process( self.reader.jsonData.__broadcast );
+                delete self.reader.jsonData.__broadcast;
+            }
+            self.is_loaded=true;
+        });
     }
 });
 
 Baseliner.GroupingStore = Ext.extend( Ext.data.GroupingStore, {
-    listeners: {
-        exception: Baseliner.store_exception_handler,
-        beforeload: Baseliner.store_exception_params 
+    constructor: function(c){
+        Baseliner.GroupingStore.superclass.constructor.call(this,c);
+        var self = this;
+        this.on('exception', Baseliner.store_exception_handler );
+        this.on('beforeload', Baseliner.store_exception_params );
+        this.on('load', function(){ 
+            if( self.reader.jsonData && self.reader.jsonData.__broadcast ) {
+                Baseliner.broadcast_process( self.reader.jsonData.__broadcast );
+                delete self.reader.jsonData.__broadcast;
+            }
+            self.is_loaded=true;
+        });
     }
 });
 

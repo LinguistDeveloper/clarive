@@ -996,20 +996,56 @@ if( Prefs.routing ) {
         }
     };
 
-    Baseliner.system_message = function(msg_data) {
-       if( !msg_data ) msg_data={};
-       // control that if the message is visible, don't show it again - but no control against dismissed messages
-       if( msg_data.id && $('#'+msg_data.id).length > 0 ) return; 
-       Ext.apply({ title: _('Warning'), text: _('Unknown') }, msg_data);
-       var msg = function(){/* 
-        <div class="alert" style="margin: 0;">
-          <button type="button" class="close" data-dismiss="alert">&times;</button>
-          <strong>[%= title %]</strong> [%= text %]
-        </div>
-        */}.tmpl(msg_data);
-        $(msg).appendTo("#main-alert").hide().fadeIn();
+    Baseliner.broadcast_process = function(chn){
+        Ext.each(chn.system_messages, function(sms){ Baseliner.system_message(sms) });
+    }
+    Baseliner.system_message_rcvd = {};
+    Baseliner.system_message = function(msg) {
+        if( !msg._id ) return; 
+        var _id = msg._id;
+        // control that if the message is visible, don't show it again 
+        if( $('#'+_id).length > 0 ) return; 
+        if( Baseliner.system_message_rcvd[ _id ] != undefined ) return; 
+        Baseliner.ajax_json('/message/sms_get', { _id: _id }, function(res){
+            var msg_data = res.msg;
+           if( !msg_data ) msg_data={};
+           msg_data = Ext.apply({ title: _('Attention'), text: _('Unknown') }, msg_data);
+           Baseliner.system_message_rcvd[ _id ]=msg_data;
+           msg_data.div_id = 'sms-' + _id;
+           var msg = function(){/* 
+            <div class="alert" id="[%= div_id %]" style="margin: 0;">
+              <button type="button" class="close" data-dismiss="alert">&times;</button>
+              <strong>[%= title %]</strong>: [%= text %]
+              [% if( more && more.length>0 ) { %]
+                <div style="float: right">
+                <a href="javascript:Baseliner.system_more('[%= _id %]')">[%= _('Read More...') %]</a>
+                </div>
+              [% } %]
+            </div>
+            */}.tmpl(msg_data);
+            $(msg).appendTo("#main-alert").hide().fadeIn();
+            $('#'+msg_data.div_id).on('remove',function(){ 
+                Baseliner.ajax_json('/message/sms_ack', { _id: _id }, function(res){ },function(){ });
+            });
+        });
     };
-
+    Baseliner.system_more = function(_id){
+        var msg = Baseliner.system_message_rcvd[ _id ];
+        if(!msg) return;
+        var html = function(){/*
+            <div id="boot">
+            <div style="padding: 10px 10px 10px 10px;">
+              <h2>[%= title %]</h2>
+              <h4>[%= text %]</h4>
+              <hr />
+              <p>
+              [%= more %]
+              </p>
+            </div>
+            </div>
+         */}.tmpl(msg);
+        new Baseliner.Window({ width:800, height:600, layout:'fit', html: html, bodyStyle:'background: #fff' }).show();
+    }
     // sends request with application/json
             // TODO consider making this a RESTful engine, with GET, PUT, POST, DELETE, etc.., and changing the CI interface too
     Baseliner.ajax_json = function( url, params, foo, scope ){
@@ -1087,8 +1123,9 @@ if( Prefs.routing ) {
                     var comp = Baseliner.eval_response( xhr.responseText, params, url );
                     var is_object = Ext.isObject( comp );
                     // system message
-                    if( is_object && comp._system_message ) {
-                        Baseliner.system_message(comp._system_message);
+                    if( is_object && comp.__broadcast ) {
+                        Baseliner.broadcast_process( comp.__broadcast );
+                        delete comp.__broadcast;
                     }
                     // detect logout
                     if( is_object && comp.logged_out && !params._ignore_conn_errors ) {
