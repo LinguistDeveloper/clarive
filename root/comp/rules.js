@@ -233,6 +233,8 @@
             if( !Ext.isFunction(foo) ) foo = function(d){ 
                 node.getOwnerTree().is_dirty=true; 
                 node.attributes.data = d; 
+                node.getOwnerTree().search_clear();
+                node.getOwnerTree().search_nodes();
             };
             if( item.data ) foo(item.data); // item.data is only set if modified
             win.close();
@@ -695,7 +697,7 @@
             if(btn) btn.enable();
         };
         var rule_load = function(btn,load_versions){
-            search_clear(); 
+            rule_tree.search_clear(); 
             if( rule_tree.is_dirty ) {
                 if( rule_tree.close_me() ) {
                     rule_load_do(btn,load_versions);
@@ -752,8 +754,8 @@
         
         // node search system
         var btn_search = new Ext.Button({ icon:IC('search.png'), menu:[
-            { text: _('Search'), hideOnClick: false, handler: function(){ search_nodes(search_box.getValue()) } },
-            { text: _('Clear'), hideOnClick: false, handler: function(){ search_clear() } },
+            { text: _('Search'), hideOnClick: false, handler: function(){ rule_tree.search_nodes(search_box.getValue()) } },
+            { text: _('Clear'), hideOnClick: false, handler: function(){ rule_tree.search_clear() } },
             { text: _('Regular Expression'), hideOnClick: false, checked: (Prefs.search_box_re==undefined?true:Prefs.search_box_re), handler:function(){ Prefs.search_box_re=!this.checked; } },
             { text: _('Ignore Case'), hideOnClick: false, checked: (Prefs.search_box_icase==undefined?false:Prefs.search_box_icase), handler:function(){ Prefs.search_box_icase=!this.checked; } }
         ]});
@@ -762,52 +764,12 @@
             handler: function(){
                 var t = this.getValue();
                 if( t && t.length>0 ) { 
-                    search_nodes(t);
+                    rule_tree.search_nodes(t);
                 } else {
-                    search_clear();
+                    rule_tree.search_clear();
                 }
             }
         });
-        var search_clear = function(){
-            var clear_node = function(n){
-                try { n.ui.getEl().children[0].style.backgroundColor = null; } catch(e){ };
-                n.eachChild(clear_node);
-            };
-            clear_node(rule_tree.root);
-            btn_search.setText( '' );
-        };
-        var search_nodes = function(str){
-            var re_opts = '';
-            rule_tree.search_found = rule_tree.search_total = 0;
-            if(Prefs.search_box_icase) re_opts += 'i';
-            if(!Prefs.search_box_re) str=str.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1");
-            var re = new RegExp(str,re_opts);
-            var root = rule_tree.root;
-            btn_search.setText( '<img src="/static/images/loading-fast.gif" />') ;
-            var expand_parents = function(n){
-                if(n.parentNode) {
-                    expand_parents(n.parentNode);
-                    n.parentNode.expand();
-                }
-            };
-            var search_node = function(n){
-                var attr = Baseliner.clone(n.attributes);
-                delete attr.children;
-                delete attr.loader;
-                if( re.test( Ext.util.JSON.encode(attr) ) ) {
-                    expand_parents(n);
-                    try { n.ui.getEl().children[0].style.backgroundColor = '#fff8dc'; } catch(e){ };
-                    rule_tree.search_found++;
-                }
-                else { 
-                    try { n.ui.getEl().children[0].style.backgroundColor = null; } catch(e){ };
-                }
-                rule_tree.search_total++;
-                n.eachChild( search_node );
-            };
-            root.eachChild( search_node );
-            btn_search.setText( _('(%1/%2)', rule_tree.search_found||0, rule_tree.search_total||0) );
-        };
         
         var btn_version_tree = new Ext.Button({ enableToggle: true, pressed: false, icon:'/static/images/icons/history.png', 
             handler: function() { 
@@ -895,6 +857,48 @@
                 }
             });
         });
+        
+        rule_tree.search_clear = function(){
+            var clear_node = function(n){
+                try { n.ui.getEl().children[0].style.backgroundColor = null; } catch(e){ };
+                n.eachChild(clear_node);
+            };
+            clear_node(rule_tree.root);
+            btn_search.setText( '' );
+        };
+        rule_tree.search_nodes = function(str){
+            if( str == undefined ) str = search_box.getValue()
+            var re_opts = '';
+            rule_tree.search_found = rule_tree.search_total = 0;
+            if(Prefs.search_box_icase) re_opts += 'i';
+            if(!Prefs.search_box_re) str=str.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1");
+            var re = new RegExp(str,re_opts);
+            var root = rule_tree.root;
+            btn_search.setText( '<img src="/static/images/loading-fast.gif" />') ;
+            var expand_parents = function(n){
+                if(n.parentNode) {
+                    expand_parents(n.parentNode);
+                    n.parentNode.expand();
+                }
+            };
+            var search_node = function(n){
+                var attr = Baseliner.clone(n.attributes);
+                delete attr.children;
+                delete attr.loader;
+                if( re.test( Ext.util.JSON.encode(attr) ) ) {
+                    expand_parents(n);
+                    try { n.ui.getEl().children[0].style.backgroundColor = '#fff8dc'; } catch(e){ };
+                    rule_tree.search_found++;
+                }
+                else { 
+                    try { n.ui.getEl().children[0].style.backgroundColor = null; } catch(e){ };
+                }
+                rule_tree.search_total++;
+                n.eachChild( search_node );
+            };
+            root.eachChild( search_node );
+            btn_search.setText( _('(%1/%2)', rule_tree.search_found||0, rule_tree.search_total||0) );
+        };
         
         rule_tree.rule_dsl = function(from,include){
             var root = from || rule_tree.root;
