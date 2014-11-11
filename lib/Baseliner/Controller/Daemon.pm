@@ -39,7 +39,6 @@ sub list : Local {
     $rs->skip($start);
     $cnt = mdb->daemon->count($where);
     while( my $r = $rs->next ) {
-        _log _dump $r;
         $r->{exists} = pexists( $r->{pid} ) if $r->{pid} > 0;
         $r->{exists} = -1 if $r->{pid} == -1 ;
         $r->{exists} = 1 if $r->{pid} > 0 ;
