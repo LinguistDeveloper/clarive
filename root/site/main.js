@@ -320,7 +320,9 @@ Ext.onReady(function(){
         Baseliner.version_started = true;
     }
 
-     Cla.moment.locale( Prefs.language );
+    // create the global moment object
+    Cla.moment = require('moment');
+    Cla.moment.locale( Prefs.language );
 
 % if( Clarive->opts->{websockets} ) { 
     // XXX this is not serious yet, no production use, just for play from REPL

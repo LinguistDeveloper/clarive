@@ -2830,7 +2830,7 @@ Baseliner.render_checkbox = function(v){
 };
         
 Baseliner.render_ago = function(t,p){
-    return moment(t).fromNow();  // TODO use the user prefs for timezone and language
+    return Cla.moment(t).fromNow();  // TODO use the user prefs for timezone and language
 };
         
 Baseliner.cols_templates = {
