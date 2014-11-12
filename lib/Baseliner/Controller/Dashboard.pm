@@ -87,7 +87,6 @@ sub json : Local {
 
     my @dashboard_list = ();
 
-    _warn $p;
     if ( $p->{username} ) {
         my $where = {};
         my @dashboard_ids;
@@ -398,7 +397,6 @@ sub list : Local {
                     @roles = map { $_->{id} } mdb->role->find()->all;
                 }
                 my $default_dashboard = ci->user->find_one({ name => $c->username })->{dashboard};
-                _warn "RRRRRRRRRRR $default_dashboard";
                 my @dashboard_ids = ($default_dashboard) if $default_dashboard;
                 push @dashboard_ids, map { grep { $_ ne $default_dashboard } _array($_->{dashboards})} mdb->role->find({ id => mdb->in(@roles)})->all;
                 my @dashboards;

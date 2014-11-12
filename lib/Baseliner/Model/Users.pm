@@ -196,7 +196,6 @@ sub get_actions_from_user{
    my ($self, $username, @bl) = @_;
    my @final;
 
-   _warn "UUUUUUUUUUUUUUUUU".$username;
    if($username eq 'root' || $username eq 'local/root'){
       @final = Baseliner->model( 'Actions' )->list;   
    }else{

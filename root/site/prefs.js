@@ -154,12 +154,6 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                                });
                              }
                          }
-                     },
-                     { 
-                         text: _('Cancelar'),
-                         handler: function() {
-                             win_change.close();  
-                         }
                      }
                 ]
             });

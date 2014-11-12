@@ -54,7 +54,6 @@ sub prefs_load {
 
 sub default_dashboard {
     my ($self,$p)=@_;
-     _warn $p;
     $self = ci->user->search_ci( name=>$p->{username} ) unless ref $self;
     my $default_dashboard = $self->dashboard || '';
     { dashboard => $default_dashboard, msg => 'ok'};
@@ -62,7 +61,6 @@ sub default_dashboard {
 
 sub change_default_dashboard {
     my ($self,$p)=@_;
-     _warn $p;
     $self = ci->user->search_ci( name=>$p->{username} ) unless ref $self;
     $self->dashboard($p->{dashboard});
     $self->save;
