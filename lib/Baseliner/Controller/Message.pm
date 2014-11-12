@@ -237,7 +237,8 @@ sub sms_del : Local {
     my $p = $c->req->params;
     try {
         my $_id = $p->{_id} || _fail _loc 'Missing message id';
-        if( $p->{action} eq 'cancel' ) {
+        my $action = $p->{action} || 'del'; 
+        if( $action eq 'cancel' ) {
             mdb->sms->update({ _id=>mdb->oid($_id) },{ '$set'=>{ expires=>mdb->ts } });
         } else{
             mdb->sms->remove({ _id=>mdb->oid($_id) });
