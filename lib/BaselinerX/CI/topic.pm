@@ -213,7 +213,7 @@ sub activity {
     );
     my @perm_events = grep { !exists $_->{field} || exists $user_categories_fields_meta->{$name_category}->{$_->{field}}} Util->_array( $activity );
     if ( !Baseliner->model('Permissions')->user_has_action(username => $$p{username},action => "action.topics.$name_category.comment" )) {
-        @perm_events = grep { $_->{event_key} !~ /\.post\./ } @perm_events;
+        @perm_events = grep { ($_->{event_key}//'') !~ /\.post\./ } @perm_events;
     }
     @perm_events = map { $$_{text} = Util->_to_utf8( $$_{text} ); $_ } @perm_events;
     wantarray ? @perm_events : \@perm_events;

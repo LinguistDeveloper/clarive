@@ -312,7 +312,7 @@ sub build_project_security {
                 
                 for my $action (@actions_by_idrole) {
                     my ($category) = $action =~ /action\.topics\.(.*?)\./;
-                    push @categories_by_role, $all_categories{$category};
+                    push @categories_by_role, $all_categories{$category} if $category;
                 }
                 my %hash1 = map { $_ => 'a' } @categories;
                 my %hash2 = map { $_ => '' } @categories_by_role;                
