@@ -233,6 +233,8 @@
             if( !Ext.isFunction(foo) ) foo = function(d){ 
                 node.getOwnerTree().is_dirty=true; 
                 node.attributes.data = d; 
+                node.attributes.ts = new Date(); 
+                node.attributes.who = Prefs.username;
                 node.getOwnerTree().search_clear();
                 node.getOwnerTree().search_nodes();
             };
@@ -370,54 +372,6 @@
             items: impbox, layout:'fit' });       
         win.show();
     };
-    var node_decorate = function( node ) {
-        var attr = node.attributes;
-        var rf = _bool(attr.run_forward,true);
-        var rr = _bool(attr.run_rollback,true);
-        var props = [], parallel_mode=[], data_key='';
-        var semaphore_key='';
-        var shortcut = false;
-        if( !attr.disabled ) {
-            if( rf && !rr ) {
-                props.push('NO ROLLBACK');
-            }
-            else if( rr && !rf ) {
-                props.push('ROLLBACK');
-            }
-            else if( !rr && !rf ) {
-                props.push('NO RUN');
-            }
-            if( attr.parallel_mode && attr.parallel_mode!='none' ) {
-                parallel_mode.push( attr.parallel_mode );
-            }
-            if( attr.data_key ) {
-                data_key = '= ' + attr.data_key;
-            }
-            if( attr.semaphore_key ) {
-                semaphore_key = '\u00D8 ' + attr.semaphore_key;
-            }
-            if( attr.has_shortcut ) {
-                shortcut = true ;
-            }
-        }
-        if( attr.note ) node.setTooltip( attr.note );
-        var nel = node.ui.getTextEl();
-        if( nel ) {
-            var nn = node.id;
-            // cleanup if no properties, needed by save on properties panel
-            $( "[parent-node-props='"+nn+"']" ).remove();
-            var badges='';
-            if( data_key.length ) badges += '<span class="label" style="font-size: 9px; background-color:#606090">'+data_key+'</span>&nbsp;';
-            if( semaphore_key.length ) badges += '<span class="label" style="font-size: 9px; background-color:#906060">'+semaphore_key+'</span>&nbsp;';
-            if( props.length ) badges += props.map(function(r){ return '<span class="badge" style="font-size: 9px;">'+r+'</span>&nbsp;' }).join('');
-            if( parallel_mode.length ) badges += parallel_mode.map(function(r){ return '<span class="badge" style="font-size: 9px; background-color:#609060; text-transform: uppercase;">'+r+'</span>&nbsp;' }).join('');
-            if( shortcut ) badges += '<img style="height: 12px; margin-top: -5px" src="/static/images/icons/shortcut.png" />';
-            if( badges.length ) {
-                nel.insertAdjacentHTML( 'afterEnd', 
-                    '<span id="boot" parent-node-props="'+nn+'" style="margin: 0px 0px 0px 4px; background: transparent">'+badges+'</span>');
-            }
-        }
-    };
     var toggle_node = function( node ) {
         node.disabled ? node.enable() : node.disable();
         node.attributes.active = node.disabled ? 0 : 1;
@@ -501,8 +455,10 @@
             node.attributes.semaphore_key = semaphore_key.getValue().trim();
             node.attributes.timeout = timeout.getValue();
             node.attributes.note = note.getValue();
+            node.attributes.ts = new Date();
+            node.attributes.who = Prefs.username;
             node.setText( node.attributes.text );
-            node_decorate( node );  // change the node's look
+            node.getOwnerTree().node_decorate( node );  // change the node's look
             // data save
             if( !node.attributes.data ) node.attributes.data={};
             Ext.apply(node.attributes.data, opts.getValues() );
@@ -628,6 +584,7 @@
                 if( !opts ) opts={};
                 var args = { id_rule: id_rule, stmts: json, old_ts: old_ts, timeout: 600000 };
                 Ext.apply(args, opts);
+                var rt_id = rule_tree.id;
                 Baseliner.ajaxEval( '/rule/stmts_save', args, function(res) {
                     old_ts = res.old_ts;
                     if ( old_ts == ''){
@@ -641,10 +598,11 @@
                     if( btn_refresh_tree ) btn_refresh_tree.enable();
 
                     if( res.success ) {
-                        rule_tree.is_dirty = false;
                         var msgcfg = {};
                         if( res.detected_errors ) msgcfg.image = '/static/images/icons/warn.png';
                         Baseliner.message( _('Rule'), res.msg, msgcfg );
+                        if( !Ext.getCmp(rt_id) ) return;  // in case the save is too long and the tree is gone
+                        rule_tree.is_dirty = false;
                         if( opt.callback ) {
                             opt.callback( res );
                         }
@@ -751,13 +709,30 @@
         var btn_save_tree = new Ext.Button({ text: _('Save'), icon:'/static/images/icons/save.png', handler: rule_save });
         var btn_refresh_tree = new Ext.Button({ text: '', icon:'/static/images/icons/refresh.gif', handler: function(){ rule_load(btn_refresh_tree) } });
         var btn_dsl = new Ext.Button({ text: _('DSL'), icon:'/static/images/icons/edit.png', handler: function() { rule_tree.rule_dsl() } });
+        var blame_now = function(){
+            if( this.checked ) {
+                rule_tree.blame_time = this.tdiff;
+                rule_tree.redecorate();
+            }
+        }
+        var menu_blame_time = new Ext.menu.Menu({ items:[
+              { text:_('Off'), checked: true, group:'blame-time', tdiff: null, hideOnClick:false, checkHandler: blame_now },
+              { text:'1H', checked: true, group:'blame-time', tdiff: 3600000, hideOnClick:false, checkHandler: blame_now },
+              { text:'12H', checked: false, group:'blame-time', tdiff: 43200000, hideOnClick:false, checkHandler: blame_now },
+              { text:'1D', checked: false, group:'blame-time', tdiff: 86400000, hideOnClick:false, checkHandler: blame_now },
+              { text:'7D', checked: false, group:'blame-time', tdiff: 86400000, hideOnClick:false, checkHandler: blame_now },
+              { text:'30D', checked: false, group:'blame-time', tdiff: 2592000000, hideOnClick:false, checkHandler: blame_now },
+              { text:_('All'), checked: false, group:'blame-time', tdiff: -1, hideOnClick:false, checkHandler: blame_now }
+            ] });
         
         // node search system
         var btn_search = new Ext.Button({ icon:IC('search.png'), menu:[
             { text: _('Search'), hideOnClick: false, handler: function(){ rule_tree.search_nodes(search_box.getValue()) } },
             { text: _('Clear'), hideOnClick: false, handler: function(){ rule_tree.search_clear() } },
             { text: _('Regular Expression'), hideOnClick: false, checked: (Prefs.search_box_re==undefined?true:Prefs.search_box_re), handler:function(){ Prefs.search_box_re=!this.checked; } },
-            { text: _('Ignore Case'), hideOnClick: false, checked: (Prefs.search_box_icase==undefined?false:Prefs.search_box_icase), handler:function(){ Prefs.search_box_icase=!this.checked; } }
+            { text: _('Ignore Case'), hideOnClick: false, checked: (Prefs.search_box_icase==undefined?false:Prefs.search_box_icase), handler:function(){ Prefs.search_box_icase=!this.checked; } },
+            '-',
+            { text:_('Blame By Time'), menu: menu_blame_time }
         ]});
         var search_box = new Baseliner.SearchSimple({ 
             width: 140,
@@ -837,7 +812,7 @@
         };
         // best place to decorate
         rule_tree.on('append', function(t,p,n){
-            setTimeout( function(){ node_decorate(n) }, 500 ) ;
+            setTimeout( function(){ rule_tree.node_decorate(n) }, 500 ) ;
         });
         rule_tree.on('afterrender', function(){
             new Ext.KeyMap( rule_tree.body, {
@@ -868,6 +843,7 @@
         };
         rule_tree.search_nodes = function(str){
             if( str == undefined ) str = search_box.getValue()
+            if( str==undefined || str=='' ) return;
             var re_opts = '';
             rule_tree.search_found = rule_tree.search_total = 0;
             if(Prefs.search_box_icase) re_opts += 'i';
@@ -898,6 +874,68 @@
             };
             root.eachChild( search_node );
             btn_search.setText( _('(%1/%2)', rule_tree.search_found||0, rule_tree.search_total||0) );
+        };
+        
+        rule_tree.redecorate = function(n){
+            if(!n) n = rule_tree.root;
+            rule_tree.node_decorate(n);
+            n.eachChild( rule_tree.redecorate );
+        };
+        rule_tree.node_decorate = function( node ) {
+            var attr = node.attributes;
+            var rf = _bool(attr.run_forward,true);
+            var rr = _bool(attr.run_rollback,true);
+            var props = [], parallel_mode=[], data_key='';
+            var blame = false;
+            var semaphore_key='';
+            var shortcut = false;
+            if( !attr.disabled ) {
+                if( rf && !rr ) {
+                    props.push('NO ROLLBACK');
+                }
+                else if( rr && !rf ) {
+                    props.push('ROLLBACK');
+                }
+                else if( !rr && !rf ) {
+                    props.push('NO RUN');
+                }
+                if( attr.parallel_mode && attr.parallel_mode!='none' ) {
+                    parallel_mode.push( attr.parallel_mode );
+                }
+                if( attr.data_key ) {
+                    data_key = '= ' + attr.data_key;
+                }
+                if( attr.semaphore_key ) {
+                    semaphore_key = '\u00D8 ' + attr.semaphore_key;
+                }
+                if( attr.has_shortcut ) {
+                    shortcut = true ;
+                }
+                if( attr.ts ) {
+                    var ts = Cla.moment(attr.ts);
+                    var bt = rule_tree.blame_time;
+                    if( bt!=undefined && ( bt==-1 || ((new Date() - ts ) < bt) ) )
+                        blame = String.format('{0}: {1}', attr.who, ts.fromNow() );
+                }
+            }
+            if( attr.note ) node.setTooltip( attr.note );
+            var nel = node.ui.getTextEl();
+            if( nel ) {
+                var nn = node.id;
+                // cleanup if no properties, needed by save on properties panel
+                $( "[parent-node-props='"+nn+"']" ).remove();
+                var badges='';
+                if( data_key.length ) badges += '<span class="label" style="font-size: 9px; background-color:#606090">'+data_key+'</span>&nbsp;';
+                if( semaphore_key.length ) badges += '<span class="label" style="font-size: 9px; background-color:#906060">'+semaphore_key+'</span>&nbsp;';
+                if( props.length ) badges += props.map(function(r){ return '<span class="badge" style="font-size: 9px;">'+r+'</span>&nbsp;' }).join('');
+                if( parallel_mode.length ) badges += parallel_mode.map(function(r){ return '<span class="badge" style="font-size: 9px; background-color:#609060; text-transform: uppercase;">'+r+'</span>&nbsp;' }).join('');
+                if( shortcut ) badges += '<img style="height: 12px; margin-top: -5px" src="/static/images/icons/shortcut.png" />';
+                if( blame ) badges += '<span class="label" style="font-size: 9px; background-color:#606090">'+blame+'</span>&nbsp;';
+                if( badges.length ) {
+                    nel.insertAdjacentHTML( 'afterEnd', 
+                        '<span id="boot" parent-node-props="'+nn+'" style="margin: 0px 0px 0px 4px; background: transparent">'+badges+'</span>');
+                }
+            }
         };
         
         rule_tree.rule_dsl = function(from,include){
