@@ -238,8 +238,7 @@ sub sql {
         
     $code = pop @conn;
     my @sts = $self->sql_normalize( $code );
-    my $dbh = DBI->connect(@conn,{ LongReadLen=>100000000, LongTruncOk=>1, RaiseError => 1 });
-    my $db = Baseliner::Core::DBI->new({ dbi=>$dbh });
+    my $dbs = Util->_dbis( \@conn );
 
     if ( $code !~ m/^[\s\W]*select/si ) {    # run script
         my @rets;
@@ -248,12 +247,12 @@ sub sql {
             $st =~ s{\s+$}{}g;
             next unless $st;
             next if $st =~ /^--/;
-            my $cnt = $db->do( $st );
+            my $cnt = $dbs->dbh->do( $st );
             push @rets,
                 {
                 Rows            => $cnt,
-                'Error Code'    => $db->dbh->err,
-                'Error Message' => $db->dbh->errstr,
+                'Error Code'    => $dbs->dbh->err,
+                'Error Message' => $dbs->dbh->errstr,
                 Statement       => $st
                 };
         } ## end for my $st ( split /\;/...)
@@ -261,14 +260,19 @@ sub sql {
     } elsif ( $sql_out eq 'hash' ) {    # select returning hash on first col
         my %results;
         for my $st ( @sts ) {
-            %results = $db->hash( $st );
+            for my $row ( $dbs->arrays( $st ) ) {
+                next unless ref $row eq 'ARRAY';
+                my $first = pop @$row;
+                $first // next;
+                $results{$first} = $row;
+            }
         }
         return \%results;
     } else {                            # select returning array ref
         my @results;
         for my $st ( @sts ) {
             next unless $st;
-            push @results, $db->array_hash( $st );
+            push @results, $dbs->hashes( $st );
         }
         return \@results;
     } ## end else [ if ( $code !~ m/^[\s\W]*select/si)]

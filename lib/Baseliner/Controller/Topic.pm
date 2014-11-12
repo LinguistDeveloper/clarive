@@ -2,7 +2,6 @@ package Baseliner::Controller::Topic;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Baseliner::Sugar;
-use Baseliner::Core::DBI;
 use DateTime;
 use Try::Tiny;
 use v5.10;

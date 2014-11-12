@@ -2,7 +2,6 @@ package Baseliner::Controller::Dashboard;
 use Baseliner::Plug;
 use Baseliner::Utils qw(:default _load_yaml_from_comment);
 use Baseliner::Sugar;
-use Baseliner::Core::DBI;
 use Try::Tiny;
 use Scalar::Util qw(looks_like_number);
 use v5.10;
