@@ -194,7 +194,10 @@
         });
 
         if( !Ext.isIE ) { $('#bali-loading .progress .bar').width('98%');}
-        require(['/site/main.js'], function(main){
+        require(['moment', '/site/main.js'], function(main){
+            // create the global moment object
+            Cla.moment = require('moment');
+            
             // after main loaded
             if( Ext.get('bali-loading') )
                 Ext.get('bali-loading').remove();

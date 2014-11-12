@@ -316,7 +316,7 @@ Ext.onReady(function(){
         Baseliner.version_started = true;
     }
 
-    moment.locale( Prefs.language );
+     Cla.moment.locale( Prefs.language );
 
 % if( Clarive->opts->{websockets} ) { 
     // XXX this is not serious yet, no production use, just for play from REPL

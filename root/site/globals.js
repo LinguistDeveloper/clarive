@@ -9,6 +9,7 @@ This is non reloadable, otherwise everything is reset.
 Ext.ns('Baseliner');
 Ext.ns('Baseliner.store');
 Ext.ns('Baseliner.model');
+window.Cla = Baseliner;
 
 Baseliner.tabInfo = {};
 Baseliner.keyMap = {};
