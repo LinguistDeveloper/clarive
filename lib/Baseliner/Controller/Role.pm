@@ -28,7 +28,7 @@ sub role_detail_json : Local {
             };
         }
         if( $r ) {
-            $c->stash->{json} = { data=>[{  id=>$r->{id}, name=>$r->{role}, description=>$r->{description}, mailbox=>$r->{mailbox}, actions=>[ @actions ] }]  };
+            $c->stash->{json} = { data=>[{  id=>$r->{id}, name=>$r->{role}, description=>$r->{description}, mailbox=>$r->{mailbox}, dashboards=>$r->{dashboards}, actions=>[ @actions ] }]  };
             $c->forward('View::JSON');
         }
     }
@@ -91,7 +91,8 @@ sub json : Local {
             actions     => $actions_txt,
             invalid_actions => \@invalid_actions,
             description => $r->{description},
-            mailbox => $r->{mailbox}
+            mailbox => $r->{mailbox},
+            dashboards => $r->{dashboards}
           }
     }
     $c->stash->{json} = { data => \@rows, totalCount => $cnt };     
@@ -199,7 +200,7 @@ sub update : Local {
     my $row;
     eval {
         my $role_actions = _decode_json(encode('UTF-8', $p->{role_actions}));
-        $row = {  role=>$p->{name}, description=>$p->{description}, mailbox=>$p->{mailbox}, actions=>$role_actions };
+        $row = {  role=>$p->{name}, description=>$p->{description}, mailbox=>$p->{mailbox},dashboards=>$p->{dashboards}, actions=>$role_actions };
         $row->{id} = "$p->{id}" if $p->{id} >= 0;
         if ($p->{id} < 0){
             $row->{id} = ''.mdb->seq('role');

@@ -263,6 +263,41 @@ Baseliner.UserAndRoleBox = function(c) {
 };
 Ext.extend( Baseliner.UserAndRoleBox, Ext.ux.form.SuperBoxSelect );
 
+Baseliner.DashboardBox = function(c) {
+    console.dir(c);
+    var tpl = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
+    var store = new Baseliner.JsonStore({
+        root: 'data' , remoteSort: true, autoLoad: true,
+        id: 'id', 
+        totalProperty: 'totalCount', 
+        baseParams: c.baseParams || {},
+        url: '/dashboard/json',
+        fields: ['id','name'] 
+    });
+    Baseliner.DashboardBox.superclass.constructor.call(this, Ext.apply({
+        name: c.name || 'dashboards',
+        hiddenName: c.name || 'dashboards',
+        displayField: 'name',
+        valueField: 'id',
+        store: store,
+        allowBlank: true,
+        msgTarget: 'under',
+        allowAddNewData: true,
+        addNewDataOnBlur: true, 
+        emptyText: _('select dashboards'),
+        triggerAction: 'all',
+        resizable: true,
+        mode: 'remote',
+        fieldLabel: _('To'),
+        typeAhead: true,
+        tpl: '<tpl for="."><div class="x-combo-list-item">{name}</div></tpl>',
+        displayFieldTpl: tpl,
+        value: '',
+        extraItemCls: 'x-tag'
+    }, c));
+};
+Ext.extend( Baseliner.DashboardBox, Ext.ux.form.SuperBoxSelect );
+
 
 function returnOpposite(hexcolor) {
     var r = parseInt(hexcolor.substr(0,2),16);
