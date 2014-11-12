@@ -228,7 +228,7 @@ sub sms_set_indexes : Private {
     }
     else {
         # reconfigure expire seconds
-        mdb->sms->run_command([ collMod=>"sms", index=>{keyPattern=>{t=>1}, expireAfterSeconds=>$expire_secs }]);
+        mdb->db->run_command([ collMod=>"sms", index=>{keyPattern=>{t=>1}, expireAfterSeconds=>$expire_secs }]);
     }
 }
 
