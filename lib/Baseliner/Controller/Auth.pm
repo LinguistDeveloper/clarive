@@ -144,6 +144,8 @@ sub authenticate : Private {
     my $login    = $c->stash->{login} // _throw _loc('Missing login');
     my $password = $c->stash->{password};
     my ($realm,$username) = $login =~ m{^(\w+)/(.+)$};
+    $username //= $login;
+    $realm //= '';
     my $auth; 
     _debug "AUTH START login=$login, username=$username, realm=$realm";
     
