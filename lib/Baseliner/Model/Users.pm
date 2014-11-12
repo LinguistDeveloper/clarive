@@ -250,18 +250,24 @@ sub get_projects_from_user{
 
 
 sub get_projectnames_and_descriptions_from_user{
-    my ($self, $username, $collection, $query) = @_;
+    my ($self, $username, $collection, $query, $roles) = @_;
     $collection ||='project';
     my $is_root = Baseliner->model('Permissions')->is_root( $username );
     my $where;
+    my @roles_filter_names = Util->_array_or_commas($roles);
     if ($is_root){
         $where = {collection=>"$collection"};
     }else{
+        my @roles_filter_ids;
+        if ( @roles_filter_names ) {
+            push @roles_filter_ids, map { $_->{id} } mdb->role->find({ role => mdb->in(@roles_filter_names)})->all;
+        }
         my @id_projects;
         my @res;
-        my %project_security = %{ci->user->find({username=>$username})->next->{project_security}};
+        my %project_security = %{ci->user->find_one({username=>$username})->{project_security}};
         my @id_roles = keys %project_security;
         foreach my $id_role (@id_roles){
+            next if ( @roles_filter_ids && !($id_role ~~ @roles_filter_ids ));
             #my @project_types = keys $project_security{$id_role};
             push @id_projects, @{$project_security{$id_role}->{$collection}} if $project_security{$id_role}->{$collection};
         }
