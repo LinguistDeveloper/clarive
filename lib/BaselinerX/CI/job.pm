@@ -1,6 +1,6 @@
 package BaselinerX::CI::job;
 use Baseliner::Moose;
-use Baseliner::Utils qw(:logging _now);
+use Baseliner::Utils qw(:logging _now :other);
 use Baseliner::Sugar qw(event_new);
 use Try::Tiny;
 use v5.10;
@@ -268,9 +268,9 @@ sub _create {
             next if $active_job->mid eq $self->mid;
             if ( $active_job->job_type ne 'static') {
                 my $ci_self_status = ci->new('moniker:'.$self->bl);
-                my ($self_status_to) = grep {$_->{type} eq 'D'} Util->_array($ci_self_status->parents( isa => 'status'));
+                my ($self_status_to) = grep {$_->{type} eq 'D'} Util->_array($ci_self_status->parents( where => {collection => 'status'}, docs_only => 1));
                 my $ci_other_status = ci->new('moniker:'.$active_job->bl);
-                my ($other_status_to) = grep {$_->{type} eq 'D'} Util->_array($ci_other_status->parents( isa => 'status'));
+                my ($other_status_to) = grep {$_->{type} eq 'D'} Util->_array($ci_other_status->parents( where => {collection => 'status'}, docs_only => 1));
                 if ( $self_status_to->{name} ne $other_status_to->{name} ) {
                     _fail _loc( "'%1' is in an active job: %2 (%3) with promote/demote to a different state (%4)",
                         $cs->topic_name, $active_job->name, $active_job->mid, $other_status_to->{name} )
@@ -677,18 +677,11 @@ sub trap_action {
 
 sub status_icon {
     my ($self, $status, $rollback) = @_; 
-    given( $status || $self->status) {
-        when( 'RUNNING' ) { 'gears.gif'; }
-        when( 'READY' ) { 'waiting.png'; }
-        when( 'APPROVAL' ) { 'user_delete.gif'; }
-        when( 'FINISHED' && !( $rollback || $self->rollback) ) { 'log_i.gif' }
-        when( 'IN-EDIT' ) { 'log_w.gif'; }
-        when( 'WAITING' ) { 'waiting.png'; }
-        when( 'PAUSED' ) { 'paused.png'; }
-        when( 'TRAPPED_PAUSED' ) { 'paused.png'; }
-        when( 'CANCELLED' ) { 'close.png'; }
-        default { 'log_e.gif' }
-    }
+
+    my $st = $status || $self->status;
+    my $rb = $rollback || $self->rollback;
+
+    Util->job_icon( $st, $rb );
 }
 
 

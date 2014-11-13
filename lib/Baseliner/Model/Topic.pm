@@ -3077,7 +3077,7 @@ sub get_fields_topic{
 
 sub group_by_status { 
     my ($self,%p) = @_;
-    my @topics = _array(ci->new( $p{mid} )->children( where => { collection => 'topic'}, depth => $p{depth} ));
+    my @topics = _array(ci->new( $p{mid} )->children( where => { collection => 'topic'}, depth => $p{depth}, docs_only => 1 ));
     @topics = grep { $_->{name_category} eq $p{filter_category} } @topics if $p{filter_category};
     @topics = map { $_->{mid} } @topics;
 

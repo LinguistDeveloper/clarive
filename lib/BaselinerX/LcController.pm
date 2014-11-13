@@ -139,13 +139,13 @@ sub tree_project_jobs : Local {
     
     my @jobs = ci->parents( mid=>$id_project, rel_type=>'job_project',
         start=>1, rows=>20, no_rels=>1,
-        sort => { from_mid=>-1 },
+        sort => { from_mid=>-1 }, docs_only => 1
     );
 
     my @tree = map {
-        my $icon   = $_->status_icon || 'job.png';
+        my $icon   = Util->job_icon($_->{status},$_->{rollback}) || 'job.png';
        +{
-            text => sprintf('%s [%s]', $_->name, $_->endtime) ,
+            text => sprintf('%s [%s]', $_->{name}, $_->{endtime}) ,
             icon => '/static/images/icons/'.$icon,
             leaf => \1,
             menu => [
@@ -153,8 +153,8 @@ sub tree_project_jobs : Local {
                   icon => '/static/images/icons/job.png',
                   text => _loc('Open...'),
                   page => {
-                      url => sprintf( "/job/log/dashboard?mid=%s&name=%s", $_->mid, $_->name ),
-                      title => $_->name,
+                      url => sprintf( "/job/log/dashboard?mid=%s&name=%s", $_->{mid}, $_->{name} ),
+                      title => $_->{name},
                   }
                 }
             ],
@@ -248,7 +248,7 @@ sub topic_contents : Local {
     my @tree;
     my $topic_mid = $c->req->params->{topic_mid};
     my $state = $c->req->params->{state_id};
-    my @topics = ci->new($topic_mid)->children( where => { collection => 'topic'}, depth => 1);
+    my @topics = ci->new($topic_mid)->children( mids_only => 1, where => { collection => 'topic'}, depth => 1);
 
     # mdb->master_rel->find( { from_mid => $topic_mid } )->all;
     my @mids = map { $_->{mid} } @topics;
@@ -1404,9 +1404,8 @@ sub topics_for_release : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
 
-    my @cis = ci->new($p->{id_release})->children( rel_type => "topic_topic", depth => -1);
+    my @cis = ci->new($p->{id_release})->children( mids_only => 1, where => { collection => 'topic'}, depth => -1);
 
-    #my @topics = _unique map { $_->{_ci}->{mid} } @cis;
     my @topics = _unique map { $_->{mid} } @cis;
     push @topics, $p->{id_release};        
 

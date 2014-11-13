@@ -95,6 +95,7 @@ zip_tree
 )],
 other => [qw(
     _load_yaml_from_comment
+    job_icon
     _markdown
     hash_shallow
     ago
@@ -352,6 +353,23 @@ sub _log {
     return unless any { $_ } @_;
     my ($cl,$fi,$li) = caller( ($Baseliner::Utils::caller_level // 0) );
     _log_me( 'info', $cl, $fi, $li, @_ );
+}
+
+sub job_icon {
+    my ($status, $rollback) = @_;
+
+    given( $status ) {
+        when( 'RUNNING' ) { 'gears.gif'; }
+        when( 'READY' ) { 'waiting.png'; }
+        when( 'APPROVAL' ) { 'user_delete.gif'; }
+        when( 'FINISHED' ) { if (!$rollback) { 'log_i.gif' } else { 'close.png' } }
+        when( 'IN-EDIT' ) { 'log_w.gif'; }
+        when( 'WAITING' ) { 'waiting.png'; }
+        when( 'PAUSED' ) { 'paused.png'; }
+        when( 'TRAPPED_PAUSED' ) { 'paused.png'; }
+        when( 'CANCELLED' ) { 'close.png'; }
+        default { 'log_e.gif' }
+    }
 }
 
 sub _info {    # info is the same as _log, but in a job, reports as info instead as debug
@@ -2128,6 +2146,7 @@ sub hide_passwords {
     }
     return $string;
 }
+
 
 1;
 

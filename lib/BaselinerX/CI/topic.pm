@@ -180,13 +180,13 @@ sub items {
 
 sub jobs {
     my ($self, $p )=@_;
-    my @jobs = $self->parents( isa=>'job', %$p );
+    my @jobs = $self->parents( isa=>'job', docs_only => 1, %$p );
     if ( $p->{username} ) {
         my $is_root = Baseliner->model('Permissions')->is_root($p->{username});
-        my $has_permission = Baseliner->model('Permissions')->user_has_action( username=> $p->{username}, action=>'action.job.view_monitor' );
-        if (!$has_permission and !$is_root){
-            @jobs = ();
-        }
+        # my $has_permission = Baseliner->model('Permissions')->user_has_action( username=> $p->{username}, action=>'action.job.view_monitor' );
+        # if (!$has_permission && !$is_root){
+        #     @jobs = ();
+        # }
     }
     wantarray ? @jobs : \@jobs;
 }
