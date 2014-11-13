@@ -671,10 +671,8 @@ sub related_cis {
     }
 
     $where->{rel_type} = $opts{rel_type} if defined $opts{rel_type};
-    # paging support
-    $opts{start} //= 0;
-    $opts{limit} //= 0; # causes normal stuff to miss relationships
     $where->{'$and'} = \@ands if @ands;
+
     ######### rel query
     #_warn $where;
     my $rs = mdb->master_rel->find( $where );
@@ -683,9 +681,6 @@ sub related_cis {
         Util->_error( "ORDER_BY IGNORED: " . _dump( $opts{order_by} ) );   
         Util->_error( Util->_whereami() );
     }
-    $rs->skip( $opts{start} ) if $opts{start} > 0;
-    $rs->limit( $opts{limit} ) if $opts{limit} > 0;
-    $rs->sort( $opts{sort} ) if ref $opts{sort};
 
     my @data = $rs->all;
     local $Baseliner::CI::no_rels = 1 if $opts{no_rels};
@@ -816,7 +811,17 @@ sub related {
         push @ands, $opts{where};
     } 
 
-    @cis = mdb->master_doc->find( {'$and' => \@ands} )->fields( $opts{fields} || {})->all;
+    # paging support
+    $opts{start} //= 0;
+    $opts{limit} //= 0; # causes normal stuff to miss relationships
+
+    my $rs = mdb->master_doc->find( {'$and' => \@ands} )->fields( $opts{fields} || {});
+
+    $rs->skip( $opts{start} ) if $opts{start} > 0;
+    $rs->limit( $opts{limit} ) if $opts{limit} > 0;
+    $rs->sort( $opts{sort} ) if ref $opts{sort};
+
+    @cis = $rs->all;
     
     if ( $opts{mids_only} ) {
         @cis = map { +{ mid => $_->{mid} } } @cis;
