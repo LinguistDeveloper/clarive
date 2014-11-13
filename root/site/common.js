@@ -782,6 +782,50 @@ Baseliner.combo_baseline = function(params) {
     return combo;
 };
 
+Baseliner.combo_dashboard = function(params) {
+    if( params==undefined) params={};
+    var store = new Baseliner.JsonStore({
+        root: 'data' , 
+        remoteSort: true,
+        autoLoad: true,
+        totalProperty:"totalCount", 
+        baseParams: params.request || {},
+        id: 'id', 
+        url: '/dashboard/json',
+        fields: ['id','name'] 
+    });
+    var valueField = params.valueField || 'id';
+    var combo = new Ext.form.ComboBox({
+           fieldLabel: _("Dashboard"),
+           name: params.name || 'dashboard',
+           hiddenName: params.hiddenName || 'dashboard',
+           valueField: valueField, 
+           displayField: params.displayField || 'name',
+           typeAhead: false,
+           minChars: 1,
+           mode: 'remote', 
+           store: store,
+           editable: true,
+           forceSelection: true,
+           triggerAction: 'all',
+           allowBlank: false
+    });
+    if( params.select_first ) {
+        combo.store.on('load',function(store) {
+            combo.setValue(store.getAt(0).get( valueField ));
+        });
+    } else if( params.value ) {
+        combo.store.on('load',function(store) {
+            var ix = store.find( valueField, params.value ); 
+            if( ix > -1 ) combo.setValue(store.getAt(ix).get( valueField ));
+        });
+    }
+    if( params.on_select ) {
+        combo.on( 'select', params.on_select );
+    }
+    return combo;
+};
+
 Baseliner.isArray = function(obj) {
     return Object.prototype.toString.call(obj) === '[object Array]';
 };

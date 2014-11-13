@@ -81,6 +81,44 @@ sub grid : Local {
 }
 
 
+sub json : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+
+    my @dashboard_list = ();
+
+    if ( $p->{username} ) {
+        my $where = {};
+        my @dashboard_ids;
+        if ( !$c->model('Permissions')->is_root( $c->username ) ) {
+            my @roles = map { $_->{id} } $c->model('Permissions')->user_roles( $c->username );
+            $where = { id => mdb->in(@roles) };
+            @dashboard_ids = map { mdb->oid($_) } map { _array( $_->{dashboards} ) } mdb->role->find( $where )->all;
+        } else {
+            @dashboard_ids = map { mdb->oid('' . $_->{_id}) } mdb->dashboard->find()->fields( { _id => 1 } )->all;
+        }
+        map {
+            push @dashboard_list,
+            map {
+                +{
+                    name => $_->{name},
+                    id   => '' . $_->{_id}
+                }
+            } mdb->dashboard->find_one( { _id => $_ } )
+        } @dashboard_ids;
+    }
+    else {
+        @dashboard_list
+            = map { +{ name => $_->{name}, id => '' . $_->{_id} } }
+            mdb->dashboard->find()->all;
+    }
+
+    $c->stash->{json}
+        = { totalCount => scalar(@dashboard_list), data => \@dashboard_list };
+    $c->forward('View::JSON');
+}
+
+
 sub list_dashboard : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
@@ -292,7 +330,7 @@ sub list : Local {
     # **********************************************************************************************************
     given ($dashboard_name) {
         when ('project') {
-            my $system_dashboard = mdb->dashboard->find({name => 'Clarive projects'})->next;
+            my $system_dashboard = mdb->dashboard->find_one({name => 'Clarive projects'});
             my @dashlets;
             my $is_columns;
             my $dashboard_id;
@@ -339,7 +377,7 @@ sub list : Local {
             my $dashboard_id = $p->{dashboard_id} ? mdb->oid($p->{dashboard_id}) : undef;
             my @dashlets;
             if ($dashboard_id){
-                my $dashboard = mdb->dashboard->find({_id => $dashboard_id})->next;
+                my $dashboard = mdb->dashboard->find_one({_id => $dashboard_id});
                 @dashlets = _array  $dashboard->{dashlets};
                 for my $dash ( @dashlets ) {
                     if($dash->{url}){
@@ -351,19 +389,27 @@ sub list : Local {
             }else{
                 my $where = {};
                 my $is_root = $c->model('Permissions')->is_root( $c->username );
+                my @dashboards = ();
+                my @roles;
                 if (!$is_root) {             
-                    my @roles = map { $_->{id} } $c->model('Permissions')->user_roles( $c->username );
-                    #$where->{"dashboard_roles.id_role"} = \@roles;
-                    $where->{role} = {'$in' => \@roles};
+                    @roles = map { $_->{id} } $c->model('Permissions')->user_roles( $c->username );
+                } else {
+                    @roles = map { $_->{id} } mdb->role->find()->all;
                 }
+                my $default_dashboard = ci->user->find_one({ name => $c->username })->{dashboard};
+                my @dashboard_ids = ($default_dashboard) if $default_dashboard;
+                push @dashboard_ids, map { grep { $_ ne $default_dashboard } _array($_->{dashboards})} mdb->role->find({ id => mdb->in(@roles)})->all;
+                my @dashboards;
+                map { push @dashboards, mdb->dashboard->find_one( { _id => mdb->oid($_) } ) } @dashboard_ids;
+                $where->{role} = {'$in' => \@roles};
                 $where->{is_system} = '0';
-                my $dashboard = mdb->dashboard->find($where);
-                $dashboard->sort({is_main => -1});
-                if (mdb->dashboard->count($where) > 0){
+                @dashboards = mdb->dashboard->find($where)->sort({is_main => -1})->all if !@dashboards;
+
+                if ( scalar @dashboards ){
                     my $i = 0;
                     my @dashboard;
                     my %dash;
-                    while (my $dashboard = $dashboard->next){
+                    for my $dashboard ( @dashboards ){
                         if($i == 0){
                             @dashlets = _array $dashboard->{dashlets};
                             for my $dash ( @dashlets ) {

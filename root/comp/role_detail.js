@@ -32,7 +32,9 @@
             {  xtype: 'hidden', name: 'id', value: -1 }, 
             {  xtype: 'textfield', name: 'name', fieldLabel: _('Role Name'), allowBlank: false }, 
             {  xtype: 'textarea', name: 'description', height: 100, fieldLabel: _('Description') },
-            {  xtype: 'textfield', name: 'mailbox', fieldLabel: _('Mailbox') } 
+            {  xtype: 'textfield', name: 'mailbox', fieldLabel: _('Mailbox') },
+            new Baseliner.DashboardBox({ fieldLabel: _('Dashboards'), name:'dashboards', allowBlank: false })
+            // {  xtype: 'textfield', name: 'default_dashboard', fieldLabel: _('Default default_dashboard') }
         ]
     });
 
@@ -326,7 +328,8 @@
             {  name: 'actions' },
             {  name: 'bl' },
             {  name: 'description' },
-            {  name: 'mailbox' }
+            {  name: 'mailbox' },
+            {  name: 'dashboards' }
         ]
     });
 

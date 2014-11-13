@@ -25,6 +25,7 @@ has seq           => qw(is rw isa Any);
 has type          => qw(is rw isa Any), default=>'G';
 has color         => qw(is rw isa Any);
 has status_icon    => qw(is rw isa Str), default=>'';
+has status_ignore_closed => qw(is rw isa BoolCheckbox);
 
 sub icon { '/static/images/icons/status.png' }
 sub collection { 'status' }

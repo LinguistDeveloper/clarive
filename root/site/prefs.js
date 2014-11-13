@@ -108,6 +108,7 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
             }
             var img = String.format('<img width="32" id="{0}" style="border: 2px solid #bbb" src="/user/avatar/image.png?{1}" />', img_id, rnd );
             var api_key = res.data.api_key;
+            var default_dashboard = res.data.dashboard;
             var gen_apikey = function(){
                 Baseliner.ci_call('user', 'save_api_key', {}, function(res){
                     Baseliner.message( _('API Key'), res.msg );
@@ -122,6 +123,40 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                 });
             };
             var api_key = new Ext.form.TextArea({ height: 50, anchor:'90%',fieldLabel:_('API Key'), value: api_key });
+             var change_dashboard_form = new Ext.FormPanel({
+                url: '/user/change_dashboard',
+                frame: false,
+                border: false,
+                labelWidth: 100, 
+                timeout: 120,
+                 items: [
+                     new Baseliner.DashboardBox({ fieldLabel: _('Default dashboard'), name:'dashboard', singleMode: true, allowBlank: true, baseParams: { username: true }, value: default_dashboard })
+                 ],
+                 buttons: [
+                     { text: _('Aceptar'),
+                          handler: function() {
+                             var form = change_dashboard_form.getForm();
+
+                             if (form.isValid()) {
+                               form.submit({
+                                   success: function(f,a){
+                                         Baseliner.message(_('Success'), a.result.msg );
+                                         win_change.close(); 
+                                   },
+                                   failure: function(f,a){
+                                         Ext.Msg.show({  
+                                             title: _('Information'), 
+                                             msg: a.result.msg , 
+                                             buttons: Ext.Msg.OK, 
+                                             icon: Ext.Msg.INFO
+                                           });                       
+                                   }
+                               });
+                             }
+                         }
+                     }
+                ]
+            });
             var preftabs = new Ext.TabPanel({ 
                 activeTab: 0, 
                 items: [
@@ -133,6 +168,13 @@ Baseliner.Prefs = Ext.extend(Ext.util.Observable, {
                             { xtype:'button', width: 80, fieldLabel: _('Change avatar'), scale:'large', text:_('Change Avatar'), handler:gen_avatar },
                             { xtype:'container', fieldLabel: _('Upload avatar'), items: [ upload ] }
                           ]
+                    },
+                    { xtype:'panel', layout:'form', frame: false, border: false,
+                        title: _('Default dashboard'),
+                        bodyStyle: { 'background-color':'#fff', padding: '10px 10px 10px 10px' },
+                        items: [
+                            change_dashboard_form
+                        ]
                     },
                     { title: _('API'), layout:'form', frame: false, border: false, 
                         bodyStyle: { 'background-color':'#fff', padding: '10px 10px 10px 10px' },

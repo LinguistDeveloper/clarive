@@ -163,7 +163,7 @@ sub infodetail : Local {
 sub user_data : Local {
     my ($self, $c) = @_;
     try {
-        my $user = ci->user->find({ username => $c->username })->next;
+        my $user = ci->user->find_one({ username => $c->username });
         _fail _loc('User not found: %1', $c->username ) unless $user;
         $c->stash->{json} = { data=> $user , msg=>'ok', success=>\1 };
     } catch {
@@ -683,6 +683,23 @@ sub change_pass : Local {
         }
     } else {
         $c->stash->{json} = { msg => _loc( 'Error changing Password %1', shift() ), failure => \1 };
+    }
+
+    $c->forward('View::JSON');
+}
+
+sub change_dashboard : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+    my $username = $c->username;
+    my $row = ci->user->find_one({username => $username, active => mdb->true});
+    
+    if ($row) {
+        my $user = ci->new( $row->{mid} );
+        $user->update( dashboard => $p->{dashboard} );
+        $c->stash->{json} = { msg => _loc('Default dashboard changed'), success => \1 };
+    } else {
+        $c->stash->{json} = { msg => _loc( 'Error changing default dashboard %1', shift() ), failure => \1 };
     }
 
     $c->forward('View::JSON');

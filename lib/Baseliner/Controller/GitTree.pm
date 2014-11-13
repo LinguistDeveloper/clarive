@@ -80,8 +80,8 @@ sub branch_commits : Local {
     }
     ###########################################################
     my $used_commits;
-    my @svnRevisions = ci->SvnRevision->search_cis();
-    foreach(@svnRevisions){
+    my @gitRevisions = ci->GitRevision->search_cis();
+    foreach(@gitRevisions){
         if($_->{repo}->{mid} eq $repo_mid){
             $used_commits->{$_->{sha}} = 1;
         }

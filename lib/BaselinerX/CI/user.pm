@@ -1,16 +1,18 @@
 package BaselinerX::CI::user;
 use Baseliner::Moose;
+use Baseliner::Utils;
 with 'Baseliner::Role::CI::Internal';
 
-has api_key          => qw(is rw isa Any);
-has email            => qw(is rw isa Any);
-has avatar           => qw(is rw isa Any);
-has phone            => qw(is rw isa Any);
-has username         => qw(is rw isa Any);
-has password         => qw(is rw isa Any);
-has realname         => qw(is rw isa Any);
-has alias            => qw(is rw isa Any);
-has project_security => qw(is rw isa Any), default => sub { +{} };
+has api_key             => qw(is rw isa Any);
+has email               => qw(is rw isa Any);
+has avatar              => qw(is rw isa Any);
+has phone               => qw(is rw isa Any);
+has username            => qw(is rw isa Any);
+has password            => qw(is rw isa Any);
+has realname            => qw(is rw isa Any);
+has alias               => qw(is rw isa Any);
+has project_security    => qw(is rw isa Any), default => sub { +{} };
+has dashboard           => qw(is rw isa Any);
 
 has favorites  => qw(is rw isa HashRef), default => sub { +{} };
 has workspaces => qw(is rw isa HashRef), default => sub { +{} };
@@ -37,7 +39,7 @@ sub workspace_create {
         my $b = Crypt::Blowfish::Mod->new( $key );
         $p->{password} = $b->encrypt( $p->{password} // '' ); 
     }
-    my $user = ci->find( name=>$p->{username} ); 
+    my $user = ci->user->find_one( { name=>$p->{username} }); 
     $user->workspaces->{$id} = $p; 
     $user->save;
     { id_workspace => $p->{id_workspace} }
@@ -45,9 +47,24 @@ sub workspace_create {
 
 sub prefs_load {
     my ($self,$p)=@_;
-    $self = ci->find( name=>$p->{username} ) unless ref $self;
+    $self = ci->user->search_ci( { name=>$p->{username} }) unless ref $self;
     my $prefs = $self->prefs;
     $prefs;
+}
+
+sub default_dashboard {
+    my ($self,$p)=@_;
+    $self = ci->user->search_ci( name=>$p->{username} ) unless ref $self;
+    my $default_dashboard = $self->dashboard || '';
+    { dashboard => $default_dashboard, msg => 'ok'};
+}
+
+sub change_default_dashboard {
+    my ($self,$p)=@_;
+    $self = ci->user->search_ci( name=>$p->{username} ) unless ref $self;
+    $self->dashboard($p->{dashboard});
+    $self->save;
+    { msg => 'ok'};
 }
 
 sub prefs_save {
