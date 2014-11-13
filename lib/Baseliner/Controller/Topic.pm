@@ -516,7 +516,7 @@ sub view : Local {
         if ( $topic_mid ) {
             try {
                 $topic_ci = ci->new( $topic_mid );
-                $c->stash->{viewKanban} = $topic_ci->children( isa => 'topic' );
+                $c->stash->{viewKanban} = $topic_ci->children( where=>{collection => 'topic'} );
             } catch {
                 $c->stash->{viewKanban} = 0;
             };
@@ -826,7 +826,7 @@ sub comment : Local {
             _fail( _loc("This comment does not exist anymore") ) unless $post;
             my $text = $post->text;
             # find my parents to notify via events
-            my @mids = map { $_->mid } $post->parents( isa=>'topic', mids_only => 1 );
+            my @mids = map { $_->mid } $post->parents( where => {collection=>'topic'}, mids_only => 1 );
             # delete the record
             $post->delete;
             # now notify my parents

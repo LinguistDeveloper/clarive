@@ -220,7 +220,7 @@ sub get_rules_notifications{
     
     my $notification = {};
     my @rs_notify = mdb->notification->find({event_key => $event_key, is_active => mdb->true, action => $action})->all;
-    #my @prj_mid = map { $_->{mid} } ci->related( mid => $mid, isa => 'project') if $mid;
+    #my @prj_mid = map { $_->{mid} } ci->related( mid => $mid, where=>{collection => 'project'}) if $mid;
     
     if ( @rs_notify ) {
 		foreach my $row_send ( @rs_notify ){

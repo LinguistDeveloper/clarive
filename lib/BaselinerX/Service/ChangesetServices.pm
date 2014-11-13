@@ -150,7 +150,7 @@ sub changeset_update {
     my $status = $status_on_ok || $stash->{status_to};
     if ( !$status ) {
         my $ci_self_status = ci->bl->search_ci( bl => $bl);
-        ($status) = grep {$_->{type} eq 'D'} _array($ci_self_status->parents( isa => 'status'));
+        ($status) = grep {$_->{type} eq 'D'} _array($ci_self_status->parents( where=>{collection => 'status'}));
     }
 
     $stash->{update_baselines_changesets} //= {};

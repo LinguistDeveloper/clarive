@@ -38,7 +38,7 @@ method connect( :$user='' ) {
         if $tmout;
     if( $self->connect_worker ) {
         $agent = try {
-            my ($chi) = $self->children( isa=>'worker_agent' ) if $self->mid;
+            my ($chi) = $self->children( where=>{collection=>'worker_agent'} ) if $self->mid;
             if (ref $chi){
                 $chi->os( $self->os );
                 do { alarm 0; return $chi };
@@ -48,7 +48,7 @@ method connect( :$user='' ) {
     } 
     if( !$agent && $self->connect_balix ) {
         $agent = try { 
-            my ($chi) = $self->children( isa=>'balix_agent' ) if $self->mid;
+            my ($chi) = $self->children( where=>{collection=>'balix_agent'} ) if $self->mid;
             if (ref $chi){
                 $chi->os( $self->os );
                 do { alarm 0; return $chi };
@@ -58,7 +58,7 @@ method connect( :$user='' ) {
     }
     if( !$agent && $self->connect_ssh ) {
         $agent = try { 
-            my ($chi) = $self->children( isa=>'ssh_agent' ) if $self->mid;
+            my ($chi) = $self->children( where=>{collection=>'ssh_agent'} ) if $self->mid;
             if(ref $chi){
 	        $chi->os( $self->os );
                 do { alarm 0; return $chi };

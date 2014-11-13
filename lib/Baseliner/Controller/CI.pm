@@ -774,7 +774,7 @@ sub sync : Local {
             $valid_repo = 0;
         } else {
             my $repo = ci->new($repo_mid);
-            my @repo_projects = map { $_->{mid} } $repo->related( isa => 'project');
+            my @repo_projects = map { $_->{mid} } $repo->related( where=>{collection => 'project'});
 
             my $ok_repo = grep { defined } @topic_projects{ @repo_projects }; 
             if (!$ok_repo) {
