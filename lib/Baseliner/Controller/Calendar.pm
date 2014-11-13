@@ -483,7 +483,8 @@ sub build_job_window : Path('/job/build_job_window') {
         
         my @res; my @durs; my $succ=1;
         my $any_succ = 0;
-        while( my ($pb,$v) = each %stats ) {
+        for my $pb ( keys %stats ) {
+            my $v = $stats{$pb};
             my @dur = @{ $$v{dur} // [] };
             push @durs, (Util->stat_mode(@dur)) if @dur;   # TODO weighted avg by project?
             my ($ok,$ko) = @{$v}{qw(ok ko)};
@@ -496,7 +497,12 @@ sub build_job_window : Path('/job/build_job_window') {
             $avg = Util->to_dur(List::Util::sum(@durs));
         }
         
-        $c->stash->{json} = {success=>\1, data => $hour_store, cis=>_damn( \%cis ), cals=>\@rel_cals, stats=>{ eta=>$avg, p_success=>$any_succ?int($succ*100).'%':'?' } };
+        $c->stash->{json} = {success=>\1, 
+            data=>$hour_store, 
+            cis=>{},    # XXX need to send \%cis, but unblessed
+            cals=>\@rel_cals, 
+            stats=>{ eta=>$avg, p_success=>$any_succ?int($succ*100).'%':'?' } 
+        };
     } catch {
         my $error = shift;
         _error $error;
