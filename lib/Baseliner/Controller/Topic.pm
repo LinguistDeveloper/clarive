@@ -724,7 +724,6 @@ sub comment : Local {
             my $content_type = $p->{content_type};
             _throw( _loc( 'Missing id' ) ) unless defined $topic_mid;
             my $text = $p->{text};
-            _log $text;
             my $msg = _loc('Comment added');
             my $topic_row = mdb->topic->find_one({ mid=>"$topic_mid" });
             _fail( _loc("Topic #%1 not found. Deleted?", $topic_mid ) ) unless $topic_row;
