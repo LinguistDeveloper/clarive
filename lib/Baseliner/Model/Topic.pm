@@ -337,6 +337,16 @@ sub build_project_security {
         my $where_undef = { '_project_security' => undef };
         push @ors, $where_undef;
         $where->{'$or'} = \@ors;
+        #IF EXISTS OTHER OR IN WHERE RECEIVED FROM PARAMETER... MERGE...
+        if (($where)) { 
+            my $last_where = $where;
+            $where->{'$or'} = \@ors;
+            for my $item ( _array $last_where ) {
+                while ( my ( $k, $v ) = each %{ $item || {} } ) {
+                    $where->{$k} = $v;
+                }
+            }
+        }
     }
 }
 

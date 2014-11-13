@@ -1403,8 +1403,10 @@ sub build_topic_tree {
 sub topics_for_release : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
+    my $depth;
+    if($p->{id_report}){ $depth = ci->report->find_one({ mid => $p->{id_report} })->{recursivelevel} // "2" }
 
-    my @cis = ci->new($p->{id_release})->children( mids_only => 1, where => { collection => 'topic'}, depth => -1);
+    my @cis = ci->new($p->{id_release})->children( mids_only => 1, where => { collection => 'topic'}, depth => $depth);
 
     my @topics = _unique map { $_->{mid} } @cis;
     push @topics, $p->{id_release};        
@@ -1427,6 +1429,7 @@ sub menu_related {
                         eval => {
                             handler => 'Baseliner.open_apply_filter_from_release'
                         }
+                        
                     };           
     return @menu;
 }

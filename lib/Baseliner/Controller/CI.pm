@@ -1506,7 +1506,7 @@ sub default : Path Args(2) {
             $ret = $ci->$meth( $to_args->($ci) );
         } elsif( Util->_package_is_loaded($class) ) {
             # it's a static class 
-            _debug( 'static class' );
+            # _debug( 'static class' );
             _fail( _loc "Method '%1' not found in class '%2'", $meth, $class) unless $class->can($meth) ;
             $ret = $class->$meth( $to_args->($class) ); 
         #} elsif( my $ci = ci->$collection->find_one($mid_or_class) ) {  

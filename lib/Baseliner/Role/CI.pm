@@ -1040,10 +1040,12 @@ sub search_ci {
 sub search_cis {
     my ($class,%p) = @_;
     my $search_one = delete $p{_ci_search_one};
+    my $sort = $p{sort} // "_id";
+    delete $p{sort};
     $class = $p{class} // $class;
     $class = 'BaselinerX::CI::' . $class unless $class =~ /::/ || ref $class;
     my $coll = $class->collection;
-    my $rs = mdb->master_doc->find({ collection=>$coll, %p })->fields({ mid=>1 })->sort({ _id=>1 });
+    my $rs = mdb->master_doc->find({ collection=>$coll, %p })->fields({ mid=>1 })->sort({ $sort=>1 });
     if( $search_one ) {
         my $doc = $rs->next; 
         return undef if !$doc;
