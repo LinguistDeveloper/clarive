@@ -848,8 +848,10 @@ Baseliner.move_folder_item = function(node_data1, node_data2){
         data_from = node_data1.attributes.data;
         data_to = node_data2.attributes.data;
         data_from_type = data_from.type || 'topic';
+        // move_file, move_topic, move_directory
         Baseliner.ajaxEval( '/fileversion/move_' + data_from_type,{ from_file: data_from.id_file,
                                                                     from_directory: node_data1.attributes.id_directory || data_from.id_directory,
+                                                                    parent_folder: node_data1.attributes.parent_folder || data_from.parent_folder,
                                                                     from_topic_mid: data_from.topic_mid,
                                                                     to_directory: data_to.id_directory,
                                                                     project: data_to.id_project},
