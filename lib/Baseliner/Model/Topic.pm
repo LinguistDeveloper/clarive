@@ -2887,6 +2887,7 @@ sub change_status {
             };
 
             my $subject = _loc("%3: #%1 %2", $mid, $doc->{title}, $status );
+            mdb->master_cal->update({ mid => "$mid", slotname => $status, end_data => undef }, { '$set' => { end_date => ''.Class::Date->now }});
             +{ mid => $mid, title => $doc->{title}, notify_default => \@users, subject => $subject, notify => $notify } ;       
         } 
         => sub {
