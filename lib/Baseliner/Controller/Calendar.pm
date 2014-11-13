@@ -497,9 +497,13 @@ sub build_job_window : Path('/job/build_job_window') {
             $avg = Util->to_dur(List::Util::sum(@durs));
         }
         
-        $c->stash->{json} = {success=>\1, 
+        my $cis2 = Util->_clone( \%cis );
+        Util->_unbless( $cis2 );
+         
+        $c->stash->{json} = {
+            success=>\1, 
             data=>$hour_store, 
-            cis=>{},    # XXX need to send \%cis, but unblessed
+            cis=>$cis2,
             cals=>\@rel_cals, 
             stats=>{ eta=>$avg, p_success=>$any_succ?int($succ*100).'%':'?' } 
         };
