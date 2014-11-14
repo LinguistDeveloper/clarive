@@ -337,6 +337,16 @@ sub build_project_security {
         my $where_undef = { '_project_security' => undef };
         push @ors, $where_undef;
         $where->{'$or'} = \@ors;
+        #IF EXISTS OTHER OR IN WHERE RECEIVED FROM PARAMETER... MERGE...
+        if (($where)) { 
+            my $last_where = $where;
+            $where->{'$or'} = \@ors;
+            for my $item ( _array $last_where ) {
+                while ( my ( $k, $v ) = each %{ $item || {} } ) {
+                    $where->{$k} = $v;
+                }
+            }
+        }
     }
 }
 
@@ -2800,7 +2810,7 @@ sub list_posts {
     if( $p{count_only} ) {
         return mdb->master_rel->find({ from_mid=>"$mid", rel_type=>'topic_post' })->count;
     }
-    my @posts = sort { $b->ts cmp $a->ts } ci->new( $mid )->children( isa=>'post' );
+    my @posts = sort { $b->ts cmp $a->ts } ci->new( $mid )->children( where=>{collection=>'post'} );
     my @rows;
     for my $r ( @posts ) {
         try{
@@ -2877,6 +2887,7 @@ sub change_status {
             };
 
             my $subject = _loc("%3: #%1 %2", $mid, $doc->{title}, $status );
+            mdb->master_cal->update({ mid => "$mid", slotname => $status, end_data => undef }, { '$set' => { end_date => ''.Class::Date->now }});
             +{ mid => $mid, title => $doc->{title}, notify_default => \@users, subject => $subject, notify => $notify } ;       
         } 
         => sub {
@@ -3077,7 +3088,7 @@ sub get_fields_topic{
 
 sub group_by_status { 
     my ($self,%p) = @_;
-    my @topics = _array(ci->new( $p{mid} )->children( where => { collection => 'topic'}, depth => $p{depth} ));
+    my @topics = _array(ci->new( $p{mid} )->children( where => { collection => 'topic'}, depth => $p{depth}, docs_only => 1 ));
     @topics = grep { $_->{name_category} eq $p{filter_category} } @topics if $p{filter_category};
     @topics = map { $_->{mid} } @topics;
 

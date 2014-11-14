@@ -1947,18 +1947,26 @@ Baseliner.jobs_for_topic = function(args) {
         var jh = '';
         if( div ) {
             Ext.each( res, function(job){
-                //jh += Baseliner.tmpl( 'tmpl_topic_jobs', job ); 
-                jh += function(){/*
-                    <div style="margin-left: 20px">
-                        <p><a href="javascript:Baseliner.addNewTab('/job/log/dashboard?mid=[%= mid %]&name=[%= name %]',
-                            '[%= name %]')">
-                                [%= name %] ([%= username%])
-                           </a> 
-                           - [%= _(status) %]  <small>[%= endtime %]</small>
-                        </p>
-                        <hr />
-                    </div> 
-                */}.tmpl( job );
+                if ( args.link == 1 ) {
+                    //jh += Baseliner.tmpl( 'tmpl_topic_jobs', job ); 
+                    jh += function(){/*
+                        <div style="margin-left: 20px">
+                            <p><a href="javascript:Baseliner.addNewTab('/job/log/dashboard?mid=[%= mid %]&name=[%= name %]',
+                                '[%= name %]')">
+                                    [%= name %] ([%= username%])
+                               </a> 
+                               - [%= _(status) %]  <small>[%= endtime %]</small>
+                            </p>
+                            <hr />
+                        </div> 
+                    */}.tmpl( job );
+                } else {
+                    jh += function(){/*
+                        <div style="margin-left: 20px">
+                            <p>[%= name %] ([%= username%]) - [%= _(status) %]  <small>[%= endtime %]</small></p>
+                        </div> 
+                    */}.tmpl( job );                    
+                }
             });
             div.innerHTML = res.length 
                 ? jh 

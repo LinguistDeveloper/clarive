@@ -564,11 +564,83 @@ sub ci_form {
     return -e $fullpath  ? $component : '';
 }
 
-sub related_cis {
-    my ($self_or_class, %opts )=@_;
-    my $mid = ref $self_or_class ? $self_or_class->mid : $opts{mid};
+sub related_mids {
+    my ( $self, %opts ) = @_;
+
+    my $mid = $opts{mid};
     $mid // _fail 'Missing parameter `mid`';
-    $mid = ''. $mid;
+
+    my $opath = delete $opts{path}; # path are all visited cis and may be huge for a cache key
+    my $visited = delete $opts{visited}; # visited cis may be huge for a cache key
+
+    my $cache_key = { d=>'ci', mid=>"$mid", a=>'related', b=>\%opts }; #[ "ci:$mid:",  %opts ];
+    if( my $cached = cache->get( $cache_key ) ) {
+        return @$cached if ref $cached eq 'ARRAY';
+    }
+    my $depth = $opts{depth} // 1;
+    $opts{depth} //= 1;
+    $opts{depth_original} //= $depth;
+    $opts{mode} //= 'flat';
+    $opts{visited} //= {};
+    $opts{path} //= $opath // [];
+    push @{ $opts{path} }, $mid;
+    my @mids_to_visit = _array($mid);
+    my @not_visited_mids = ();
+
+    for my $mid_to_visit ( @mids_to_visit ) {
+        if (!exists $visited->{$opts{edge}}->{$mid_to_visit}) {
+            push @not_visited_mids, $mid_to_visit;
+            $visited->{$opts{edge}}->{$mid_to_visit} = 1;
+        }
+    }
+    if ( !@not_visited_mids ) {
+        return () ;
+    } else {
+        $mid = \@not_visited_mids;
+    }
+
+    local $Baseliner::CI::_no_record = $opts{no_record} // 1; # make sure we *don't* include a _ci (rgo) 
+    $visited->{$opts{edge}}->{ $mid } = 1;
+    $opts{visited} = $visited;
+    local $Baseliner::ci_unique = {} unless defined $Baseliner::ci_unique;
+    
+    # get my related cis
+    my @cis = $self->related_cis( %opts );
+    # unique?
+    @cis = grep { !exists $Baseliner::ci_unique->{$_->{mid}} && ($Baseliner::ci_unique->{$_->{mid}}=1) } @cis
+        if $opts{unique} ;
+    # filter before
+    @cis = $self->_filter_cis( %opts, _cis=>\@cis ) if $opts{filter_early};
+    # now delve deeper if needed
+    $depth --;
+    if( $depth<0 || $depth>0 ) {
+        my $path = [ _array $opts{path} ];  # need another ref in order to preserve opts{path}
+
+        if( $opts{mode} eq 'tree' ) {
+            for my $ci( @cis ) {
+                push @{ $ci->{ci_rel} }, $self->related_mids( %opts, mid=>$ci->{mid}, depth=>$depth, path=>$path );
+            }
+        } else {  # flat mode
+            my @mids = map { $_->{mid} } @cis;
+            push @cis, 
+                $self->related_mids(
+                    %opts,
+                    mid   => \@mids,
+                    depth => $depth,
+                    path  => $path
+                );
+        }
+    }
+    # filter
+    @cis = $self->_filter_cis( %opts, _cis=>\@cis ) unless $opts{filter_early};
+    cache->set( $cache_key, \@cis );
+    return @cis;
+}
+
+sub related_cis {
+    my ($self, %opts )=@_;
+    my $mid = $opts{mid};
+    $mid // _fail 'Missing parameter `mid`';
     # in scope ? 
     #local $Baseliner::CI::mid_scope = {} unless $Baseliner::CI::mid_scope;
     my $scope_key =  "related_cis:$mid:" . Storable::freeze( \%opts );
@@ -580,46 +652,49 @@ sub related_cis {
     if( my $cached = cache->get( $cache_key ) ) {
         return @$cached if ref $cached eq 'ARRAY';
     }
+    my $where_mid;
     my $where = {};
+
+    if ( ref $mid ) {
+        $where_mid = mdb->in($mid);
+    } else {
+        $where_mid = ''. $mid;
+    }
     my @ands;
     my $edge = $opts{edge} // '';
     if( $edge ) {
         my $dir_normal = $edge =~ /^out/ ? 'to_mid' : 'from_mid';
         my $dir_reverse = $edge =~ /^out/ ? 'from_mid' : 'to_mid';
-        $where->{$dir_reverse} = $mid;
+        $where->{$dir_reverse} = $where_mid;
     } else {
-        push @ands, { '$or'=> [ {from_mid=>$mid}, {to_mid=>$mid} ] };
+        push @ands, { '$or'=> [ {from_mid=>$where_mid}, {to_mid=>$where_mid} ] };
     }
-    if( $opts{where} ) {
-        my @mids = grep { $_ ne $mid } map {$_->{mid} } mdb->master_doc->find($opts{where})->fields({ mid=>1, _id=>0 })->all;
-        push @ands, { '$or'=> [ { from_mid=>mdb->in(@mids), to_mid=>$mid }, {to_mid=>mdb->in(@mids), from_mid=>$mid} ] };
-    } 
+
     $where->{rel_type} = $opts{rel_type} if defined $opts{rel_type};
-    # paging support
-    $opts{start} //= 0;
-    $opts{limit} //= 0; # causes normal stuff to miss relationships
     $where->{'$and'} = \@ands if @ands;
+
     ######### rel query
+    #_warn $where;
     my $rs = mdb->master_rel->find( $where );
     ########
     if( $opts{order_by} ) {
         Util->_error( "ORDER_BY IGNORED: " . _dump( $opts{order_by} ) );   
         Util->_error( Util->_whereami() );
     }
-    $rs->skip( $opts{start} ) if $opts{start} > 0;
-    $rs->limit( $opts{limit} ) if $opts{limit} > 0;
-    $rs->sort( $opts{sort} ) if ref $opts{sort};
 
     my @data = $rs->all;
     local $Baseliner::CI::no_rels = 1 if $opts{no_rels};
+    my $rel_edge = $edge =~ /^out/
+        ? 'child'
+        : 'parent';
+
     my @ret = map {
-        my $rel_edge = $_->{from_mid} == $mid
-            ? 'child'
-            : 'parent';
         my $rel_mid = $rel_edge eq 'child'
             ? $_->{to_mid}
             : $_->{from_mid}; 
-        my $ci = Baseliner::CI->new( $rel_mid );
+        my $ci;
+        $ci = { mid => $rel_mid };
+
         # adhoc ci data with relationship info
         if( $Baseliner::CI::_edge ) {
             $ci->{_edge} = { rel=>$rel_edge, rel_type=>$_->{rel_type}, mid=>$mid, depth=>$opts{depth_original}-$opts{depth}, path=>$opts{path} };
@@ -713,46 +788,46 @@ sub related {
     my ($self_or_class, %opts)=@_;
     my $mid = ref $self_or_class ? $self_or_class->mid : $opts{mid};
     $mid // _fail 'Missing parameter `mid`';
-    # in cache ? 
-    my $opath = delete $opts{path}; # path are all visited cis and may be huge for a cache key
-    my $cache_key = { d=>'ci', mid=>"$mid", a=>'related', b=>\%opts }; #[ "ci:$mid:",  %opts ];
-    if( my $cached = cache->get( $cache_key ) ) {
-        return @$cached if ref $cached eq 'ARRAY';
+
+    my @edges;
+
+    #Decide if execute in, out or both
+    if ( exists $opts{edge} ) {
+        @edges = ($opts{edge})
+    } else {
+        @edges = ( 'in', 'out');
     }
-    my $depth = $opts{depth} // 1;
-    $opts{depth} //= 1;
-    $opts{depth_original} //= $depth;
-    $opts{mode} //= 'flat';
-    $opts{visited} //= {};
-    $opts{path} //= $opath // [];
-    push @{ $opts{path} }, $mid;
-    return () if exists $opts{visited}{$mid};
-    local $Baseliner::CI::_no_record = $opts{no_record} // 1; # make sure we *don't* include a _ci (rgo) 
-    $opts{visited}{ $mid } = 1;
-    local $Baseliner::ci_unique = {} unless defined $Baseliner::ci_unique;
+
+    my @cis;
+
+    for my $edge ( @edges ){
+        $opts{edge} = $edge;
+        push @cis, $self_or_class->related_mids( %opts, mid => $mid );
+    }
+
+    my @ands = ( { mid => mdb->in(map{$_->{mid}} @cis)} );
+
+    if( $opts{where} ) {
+        push @ands, $opts{where};
+    } 
+
+    # paging support
+    $opts{start} //= 0;
+    $opts{limit} //= 0; # causes normal stuff to miss relationships
+
+    my $rs = mdb->master_doc->find( {'$and' => \@ands} )->fields( $opts{fields} || {});
+
+    $rs->skip( $opts{start} ) if $opts{start} > 0;
+    $rs->limit( $opts{limit} ) if $opts{limit} > 0;
+    $rs->sort( $opts{sort} ) if ref $opts{sort};
+
+    @cis = $rs->all;
     
-    # get my related cis
-    my @cis = $self_or_class->related_cis( %opts );
-    # unique?
-    @cis = grep { !exists $Baseliner::ci_unique->{$_->{mid}} && ($Baseliner::ci_unique->{$_->{mid}}=1) } @cis
-        if $opts{unique} ;
-    # filter before
-    @cis = $self_or_class->_filter_cis( %opts, _cis=>\@cis ) if $opts{filter_early};
-    # now delve deeper if needed
-    $depth --;
-    if( $depth<0 || $depth>0 ) {
-        my $path = [ _array $opts{path} ];  # need another ref in order to preserve opts{path}
-        if( $opts{mode} eq 'tree' ) {
-            for my $ci( @cis ) {
-                push @{ $ci->{ci_rel} }, $ci->related( %opts, depth=>$depth, path=>$path );
-            }
-        } else {  # flat mode
-            push @cis, map { $_->related( %opts, depth=>$depth, path=>$path ) } @cis;
-        }
+    if ( $opts{mids_only} ) {
+        @cis = map { +{ mid => $_->{mid} } } @cis;
+    } elsif ( !$opts{docs_only} ) {
+         @cis = map { ci->new($_->{mid}) } @cis;
     }
-    # filter
-    @cis = $self_or_class->_filter_cis( %opts, _cis=>\@cis ) unless $opts{filter_early};
-    cache->set( $cache_key, \@cis );
     return @cis;
 }
 
@@ -970,10 +1045,12 @@ sub search_ci {
 sub search_cis {
     my ($class,%p) = @_;
     my $search_one = delete $p{_ci_search_one};
+    my $sort = $p{sort} // "_id";
+    delete $p{sort};
     $class = $p{class} // $class;
     $class = 'BaselinerX::CI::' . $class unless $class =~ /::/ || ref $class;
     my $coll = $class->collection;
-    my $rs = mdb->master_doc->find({ collection=>$coll, %p })->fields({ mid=>1 })->sort({ _id=>1 });
+    my $rs = mdb->master_doc->find({ collection=>$coll, %p })->fields({ mid=>1 })->sort({ $sort=>1 });
     if( $search_one ) {
         my $doc = $rs->next; 
         return undef if !$doc;

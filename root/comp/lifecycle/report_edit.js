@@ -41,7 +41,7 @@
         if (node.attributes.data && node.attributes.data.id_category) baseParams.id_category = node.attributes.data.id_category;
         if (node.attributes.data && node.attributes.data.name_category) baseParams.name_category = node.attributes.data.name_category;
         treeLoader.baseParams = baseParams ;
-        Baseliner.showLoadingMask(selector.getEl(), _("Loading ...") );
+        Baseliner.showLoadingMask(selector.getEl(), _("Loading...") );
     });      
     tree_all.getLoader().on("load", function(treeLoader, node) {
         Baseliner.hideLoadingMask(selector.getEl());
@@ -309,7 +309,18 @@
             if (nodeCategories.attributes.query) {
                 query = nodeCategories.attributes.query;
             }
-            query[node.getDepth()-2] = {id_category : [node.attributes.data.id_category], name_category: [node.attributes.data.name_category], relation: [node.attributes.data.relation] };
+            if(parent.attributes.data){
+                var length = query[parent.attributes.data.id_category].relation.length;
+                for (var i = 1; i<length; i++) {
+                    if (query[parent.attributes.data.id_category].relation[i].id_category == attr.data.id_category){
+                        query[parent.attributes.data.id_category].relation[i] = {id_category : [node.attributes.data.id_category], name_category: [node.attributes.data.name_category], relation: [node.attributes.data.relation]};
+                    }
+                };
+            } else {
+                query[node.attributes.data.id_category].id_category = [node.attributes.data.id_category], 
+                query[node.attributes.data.id_category].name_category = [node.attributes.data.name_category]
+                //query[node.attributes.data.id_category].relation = [node.attributes.data.relation], 
+            }
             nodeCategories.attributes.query = query;
         };
         
@@ -317,7 +328,6 @@
         
         form_value.add(options);
         form_value.items.each(function(fi){
-            //fi.on('blur', function(){ set_select() });
             fi.on('change', function(){ set_select() });
         });
         form_value.setTitle( String.format('{0}', node.text) );
@@ -352,23 +362,21 @@
                         handler: function(item){ 
                             var root = tree_selected.getRootNode();
                             var nodeCategories = root.firstChild;
-                            for (var prop in nodeCategories.attributes.query) {
-                                if (node.attributes.data){
-                                    var name_category = nodeCategories.attributes.query[prop].name_category;
-                                    var id_category = nodeCategories.attributes.query[prop].id_category;
-
-                                    for (i=0;i<name_category.length;i++){
-                                        if (name_category[i] == node.attributes.name ){
-                                            delete name_category[i];
-                                        }
+                            if((node.parentNode.text == _('Categories'))){
+                                //is child...
+                                for (var prop in nodeCategories.attributes.query){
+                                    if (nodeCategories.attributes.query[prop].name_category == node.text){
+                                        delete nodeCategories.attributes.query[prop];
                                     }
-                                    for (i=0;i<id_category.length;i++){
-                                        if (id_category[i] == node.attributes.data.id_category ){
-                                            delete id_category[i];
-                                        }
-                                    }                                      
                                 }
-
+                            } else {
+                                for (var prop in nodeCategories.attributes.query){
+                                    for (var i = 0; i < nodeCategories.attributes.query[prop].relation.length; i++) {
+                                        if (nodeCategories.attributes.query[prop].relation[i] != undefined && nodeCategories.attributes.query[prop].relation[i].name_category == node.text){
+                                            delete nodeCategories.attributes.query[prop].relation[i];
+                                        }
+                                    };
+                                }
                             }
                             node.remove();
                         }, 
@@ -450,20 +458,30 @@
                     if (nodeCategories.attributes.query) {
                         query = nodeCategories.attributes.query;
                     }
-                    if (query[target.getDepth()+1-2]) {
-                        var arr;
-                        arr = query[target.getDepth()+1-2].id_category;
-                        arr.push(copy.attributes.data.id_category)
-                        query[target.getDepth()+1-2].id_category = arr;
-                        arr = query[target.getDepth()+1-2].name_category;
-                        arr.push(copy.attributes.data.name_category);
-                        query[target.getDepth()+1-2].name_category = arr;
-                        arr = query[target.getDepth()+1-2].relation;
-                        arr.push(copy.attributes.data.relation);
-                        query[target.getDepth()+1-2].relation = arr;                        
-                        
-                    }else{
-                        query[target.getDepth()+1-2] = {id_category : [copy.attributes.data.id_category], name_category: [copy.attributes.data.name_category], relation: [copy.attributes.data.relation]};
+                    if ((query[copy.id]) && (target.getDepth()+1-2 == 0)) {
+                        // can't repeat category
+                        flag = false;
+                    } else {
+                        if(target.getDepth()+1-2 == 1){
+                            var arr = {};
+                            var id;
+                            arr = target.parentNode.childNodes;
+                            if (parseInt(arr[0].id)) { id = arr[0].id } else { id = nodeCategories.attributes.children[0].data.id_category };
+                            var datos = {
+                                id_category : [copy.attributes.data.id_category], 
+                                name_category: [copy.attributes.data.name_category],
+                                relation: [copy.attributes.data.relation]
+                            };
+                            query[id].relation.push(datos);
+                        } else if(target.getDepth()+1-2 == 0){
+                            query[copy.id] = {
+                                id_category : [copy.attributes.data.id_category], 
+                                name_category: [copy.attributes.data.name_category],
+                                relation: [copy.attributes.data.relation]
+                            };
+                        } else {
+                            flag = false;
+                        }
                     }
                     nodeCategories.attributes.query = query;                    
                     copy.leaf = false;
@@ -508,6 +526,7 @@
         items : [
             { fieldLabel: _('Name'), name: 'name', xtype: 'textfield', anchor:'50%', allowBlank: false, value: is_new ? _('New search') : lc_node.text },
             { fieldLabel: _('Rows'), name: 'rows', xtype: 'textfield', anchor:'50%', allowBlank: false, value: lc_node.attributes.rows || 50 },
+            { fieldLabel: _('Recursive level'), name: 'recursivelevel', xtype: 'textfield', anchor:'50%', emptyText: _('Default: 2 - No limit: -1'), allowBlank: false, value: lc_node.attributes.recursivelevel || "2" },
             new Baseliner.ComboDouble({
                 value: lc_node.attributes.permissions || 'private', name:'permissions', 
                 fieldLabel: _('Permissions'), data: [ ['private',_('Private')],['public',_('Public')] ] }),
@@ -569,7 +588,6 @@
                 //console.dir(tree_selected.root);
                 if( tree_selected_is_loaded ) dd.selected = Baseliner.encode_tree( tree_selected.root );
                 //if( sql.editor ) dd.sql = sql.getValue();
-                console.dir(dd);
                 var action = report_mid > 0 ? 'update':'add';
                 var data = { action:action, data:dd };
                 if( report_mid > 0 ) data.mid = report_mid;

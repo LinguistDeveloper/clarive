@@ -8,6 +8,7 @@ with 'Baseliner::Role::CI::Internal';
 
 has selected    => qw(is rw isa ArrayRef), default => sub{ [] };
 has rows        => qw(is rw isa Num default 100);
+has recursivelevel   => qw(is rw isa Num default 2);
 has permissions => qw(is rw isa Any default private);
 has usersandroles => qw(is rw isa Any default private);
 has sql         => qw(is rw isa Any);
@@ -23,6 +24,40 @@ sub rel_type {
     }
 }
 
+sub root_reports {
+    my ($self,$p) = @_;
+
+    my @usersandroles = map { 'role/'.$_->{id}} Baseliner->model('Permissions')->user_roles( $p->{username} );
+    push @usersandroles, 'user/'.ci->user->find_one({name => $p->{username}})->{mid};
+    push @usersandroles, undef;
+
+    my @searches = $self->search_cis( sort=>"name" );
+    my @public;
+    for my $folder ( @searches ){
+        push @public,{
+            mid     => $folder->mid,
+            text    => sprintf( '%s (%s)', $folder->name, $folder->owner ), 
+            icon    => '/static/images/icons/topic.png',
+            menu    => [ ],
+            data    => {
+                click   => {
+                    icon    => '/static/images/icons/topic.png',
+                    url     => '/comp/lifecycle/report_run.js',
+                    type    => 'eval',
+                    title   => $folder->name,
+                },
+                id_report      => $folder->mid,
+                report_rows    => $folder->rows,
+                report_name    => $folder->name,
+                column_mode    => 'full', #$folder->mode,
+                hide_tree      => \1,
+            },
+            leaf    => \1,
+        };
+    }    
+    return \@public;
+}
+
 
 sub report_list {
     my ($self,$p) = @_;
@@ -32,7 +67,6 @@ sub report_list {
     my $reports_available = $self->reports_available({ username=>$p->{username}, meta=>\%meta });
     my $reports_from_rule = $self->reports_from_rule({ username=>$p->{username}, meta=>\%meta });
     my $public = $self->public_searches({ meta=>\%meta, username=>$p->{username} });
-	
     my @trees = (
             {
                 text => _loc('My Reports'),
@@ -59,38 +93,44 @@ sub report_list {
                 children => $public,
                 data => [],
                 expanded => \1,
-            },
-            {
-                text => _loc('Internal Reports'),
-                icon => '/static/images/icons/table.png',
-                mid => -1,
-                draggable => \0,
-                children => $reports_available,
-                url => '/ci/report/reports_available',
-                data => [],
-                expanded => \1,
-            },
-            {
-                text => _loc('Rule Reports'),
-                icon => '/static/images/icons/table.png',
-                mid => -1,
-                draggable => \0,
-                children => $reports_from_rule,
-                url => '/ci/report/reports_from_rule',
-                data => [],
-                expanded => \1,
-            },
-            # {
-            #     text => _loc('Custom Reports'),
-            #     icon => '/static/images/icons/table_edit.png',
-            #     mid => -1,
-            #     draggable => \0,
-            #     #children => $customized,
-            #     url => '/ci/report/reports_available',
-            #     data => [],
-            #     expanded => \1,
-            # },
+            }
     );
+    if ($p->{show_reports} eq 'true'){
+        push @trees, ({
+            text => _loc('Internal Reports'),
+            icon => '/static/images/icons/table.png',
+            mid => -1,
+            draggable => \0,
+            children => $reports_available,
+            url => '/ci/report/reports_available',
+            data => [],
+            expanded => \1,
+        });
+        push @trees, ({
+            text => _loc('Rule Reports'),
+            icon => '/static/images/icons/table.png',
+            mid => -1,
+            draggable => \0,
+            children => $reports_from_rule,
+            url => '/ci/report/reports_from_rule',
+            data => [],
+            expanded => \1,
+        });
+    }
+    #root user can view all reports of all users.
+    if (Baseliner->model('Permissions')->is_root( $p->{username} )){
+        my $root_reports = $self->root_reports({ meta=>\%meta, username=>$p->{username} });
+        push @trees, ({
+                text => _loc('All') . " (Root)",
+                icon => '/static/images/icons/report.png',
+                url => '/ci/report/root_reports',
+                mid => -1,
+                draggable => \0,
+                children => $p->{show_reports} ? undef : $root_reports,
+                data => [],
+                expanded => $p->{show_reports} ? \0 : \1,
+            });
+    }
     return \@trees; 
 }
 
@@ -112,13 +152,6 @@ sub reports_available {
             text => $name,
             icon => $reg->icon,
             leaf => \1,
-            # menu => [
-            #     {
-            #         text   => _loc('Customize') . '...',
-            #         icon   => '/static/images/icons/table_edit.png',                        
-            #         eval   => { handler => 'Baseliner.custom_report' }
-            #     },
-            # ], 
             data    => {
                 click   => {
                     icon    => '/static/images/icons/topic.png',
@@ -191,17 +224,17 @@ sub my_searches {
     my $userci = Baseliner->user_ci( $p->{username} );
     my $username = $p->{username};
     
-    my @searches = $self->search_cis( owner=>$username ); 
+    my @searches = $self->search_cis( owner=>$username, sort=>"name"); 
     my @mine;
     for my $folder ( @searches ){
         my $name           = $folder->name;
         my $id_report      = $folder->mid;
-        # my $fields         = $folder->selected_fields({ meta=>$p->{meta}, username => $p->{username}  });
         my $report_name    = $folder->name;
         my $report_rows    = $folder->rows;
         my $rows    = $folder->rows;
         my $permissions = $folder->permissions;
         my $usersandroles = $folder->usersandroles;
+        my $recursivelevel = $folder->recursivelevel;
         push @mine,
             {
                 mid     => $folder->mid,
@@ -226,18 +259,16 @@ sub my_searches {
                         type    => 'eval',
                         title   => $name,
                     },
-                #     #store_fields   => $folder->fields,
-                #     #columns        => $folder->fields,
-                #     fields         => $fields,
+                    # fields         => $folder->selected_fields({ meta=>$p->{meta}, username => $p->{username}  }),
                     id_report      => $id_report,
                     report_name    => $report_name,
                     report_rows    => $report_rows,
-                    #column_mode    => 'full', #$folder->mode,
                     hide_tree      => \1,
                 },
                 rows    => $rows,
                 permissions => $permissions,
                 usersandroles => $usersandroles,
+                recursivelevel => $recursivelevel,
                 leaf    => \1,
             };
     }
@@ -251,8 +282,13 @@ sub public_searches {
     push @usersandroles, 'user/'.ci->user->find_one({name => $p->{username}})->{mid};
     push @usersandroles, undef;
 
-    my @searches = $self->search_cis( owner=> { '$ne' => $p->{username}}, permissions=>'public', usersandroles => mdb->in(@usersandroles) );
-	
+    # my @searches = $self->search_cis( owner=> { '$ne' => $p->{username}}, permissions=>'public', usersandroles => mdb->in(@usersandroles) );
+	my @searches = $self->search_cis( 
+        owner=> { '$ne' => $p->{username}}, 
+        permissions=>'public', 
+        '$or'=>[{usersandroles => mdb->in(_unique @usersandroles)},{usersandroles => '' }],
+        sort=>"name" 
+        );
 	
 	my @public;
     for my $folder ( @searches ){
@@ -309,6 +345,7 @@ sub report_update {
                     $self->owner( $username );
                     $self->permissions( $data->{permissions} );
                     $self->usersandroles( $data->{usersandroles} );
+                    $self->recursivelevel( $data->{recursivelevel} );
                     $self->rows( $data->{rows} );
                     $self->sql( $data->{sql} );
                     $self->save;
@@ -336,6 +373,7 @@ sub report_update {
                     $self->owner( $username );
                     $self->permissions( $data->{permissions} );
                     $self->usersandroles( $data->{usersandroles} );
+                    $self->recursivelevel( $data->{recursivelevel} );
                     $self->selected( $data->{selected} ) if ref $data->{selected}; # if the selector tab has not been show, this is submitted undef
                     $self->save;
                     $ret = { msg=>_loc('Search modified'), success=>\1, mid=>$self->mid };
@@ -377,23 +415,12 @@ sub all_fields {
 	
 	
 	my %categories;
-	$categories{$id_category} = $name_category;
+    $categories{$id_category} = $name_category if($id_category);
 	my $user_categories_fields_meta = Baseliner->model('Users')->get_categories_fields_meta_by_user( username => $username );	
 	
 	
 	my @fieldlets = _array( Baseliner->model('Topic')->get_meta(undef, $id_category, $username) );
-	
-	#_error \@fieldlets;
-	####my %common_list = ( created_on=>1, created_by=>1, modified_on=>1, modified_by=>1 );
-	####my %hidden_list = ( labels=>1, included_into=>1, progress=>1, 
-	####	 ( map {$_->{id_field}=>1} grep {$_->{type} eq 'separator' || $_->{meta_type} eq 'history'} grep {exists $_->{type}} @fieldlets) );
-	#### 
-	####my %common_fields = map { $_->{id_field} => $_ } 
-	####	# any fields that are 'system', or are in the common_list and are not in the hidden list
-	####	grep { ($_->{origin} eq 'system' || exists $common_list{$_->{id_field}}) 
-	####		&& !exists $hidden_list{$_->{id_field}} } 
-	####	@fieldlets;
-			
+
 	if(!$id_category){	
 		my @children =	map {
 							my $name_id  = Util->_name_to_id($_->{name});
@@ -405,8 +432,7 @@ sub all_fields {
 							$_->{data}	= {
 								'id_category' 	=> $_->{id},
 								'name_category' => $_->{name},
-								'fields' 		=> \@fields,
-								'relation'		=> ''};
+								'fields' 		=> \@fields};
 							$_->{type}='category'; $_->{leaf}=\0;
 							$_
 						} 
@@ -453,34 +479,8 @@ sub all_fields {
                 };      
             }
         }
-		
-		####push @tree, {
-		####	text => _loc('Commons'),
-		####	leaf => \0,
-		####	icon     => '/static/images/icons/topic.png',
-		####	draggable => \0,
-		####	children => [
-		####		map {
-		####			{
-		####				text      => _loc( $_->{name_field} ),
-		####				icon      => '/static/images/icons/field-add.png',
-		####				id_field  => $_->{id_field},
-		####				header    => $_->{name_field},
-		####				meta_type => $_->{meta_type},
-		####				gridlet   => $_->{gridlet},
-		####				type      => 'select_field',
-		####				leaf      => \1,
-		####			}
-		####		} 
-		####		sort { lc $a->{name_field} cmp lc $b->{name_field} } 
-		####		values %common_fields
-		####	],
-		####};	
 	}
 	else{
-		#my %categories;
-		#$categories{$id_category} = $name_category;
-		#my $user_categories_fields_meta = Baseliner->model('Users')->get_categories_fields_meta_by_user( username=>$username, categories=> \%categories );
 		map { 
 			push @tree, { 
 				text        => _loc($user_categories_fields_meta->{$name_category}->{$_}->{name_field}),
@@ -499,7 +499,6 @@ sub all_fields {
 		
 		}
 		sort { lc $a cmp lc $b }
-		####grep { !exists $common_fields{$_} && !exists $hidden_list{$_} } 		
 		keys $user_categories_fields_meta->{$name_category}; 		
 		
 	}
@@ -802,21 +801,21 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 		}
 	};
 	#_log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>QUERY: " . _dump $rel_query;
-	#_log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>QUERY: " . _dump $self->selected;
-	
-	my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
-    #_log ">>>>>>>>>>>>>>>>>>>>>>>FIELDS: " . _dump %fields;
-	my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $username) );  # XXX should be by category, same id fields may step on each other
-	my @selects = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) => $_->{category} } _array($fields{select});
+    # _log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>QUERY: " . _dump $self->selected;
+    
+    my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
+    my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $username) );  # XXX should be by category, same id fields may step on each other
+    my @selects = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) => $_->{category} } _array($fields{select});
+    # _log ">>>>>>>>>>>>>>>>>>>>>>>FIELDS: " . _dump %fields;
 
     my %selects_ci_columns = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) . '_' . $_->{category} => $_->{ci_columns} } grep { exists $_->{ci_columns}} _array($fields{select});
     my %selects_ci_columns_collection_extends = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) . '_' . $_->{category} => $_->{collection_extends} } grep { exists $_->{ci_columns}} _array($fields{select});
-
     my %meta_cfg_report = map { $_->{id_field} => $_->{meta_type} } _array($fields{select});
-	#_log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS: " . _dump $self->selected ;
-    #_log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS CI COLUMNS: " . _dump %selects_ci_columns;
-    #_log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS CI COLUMNS COLLECTION: " . _dump %selects_ci_columns_collection_extends;
-	
+
+    # _log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS: " . _dump $self->selected ;
+    # _log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS CI COLUMNS: " . _dump %selects_ci_columns;
+    # _log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS CI COLUMNS COLLECTION: " . _dump %selects_ci_columns_collection_extends;
+
 	#filters
 	my %dynamic_filter;
 	
@@ -857,68 +856,62 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
     _fail( _loc("Missing 'Categories' in search configuration") ) unless keys %{ $rel_query || {} };	
     
 	foreach my $key (sort { $b <=> $a} keys $rel_query) {
+        my $wh = {};
 		my @ids_category = _array $rel_query->{$key}->{id_category};
 		my @names_category = _array $rel_query->{$key}->{name_category};
 		my @relation = _array $rel_query->{$key}->{relation};
-
-		my $length = scalar @ids_category;
-		if ($key eq '0'){
-			map{
-				$where = $self->get_where({filters_where => $fields{where}, name_category => $_, dynamic_filter => \%dynamic_filter, where => $where });
-				$where->{id_category} = {'$in' => \@ids_category };
-				if (exists $queries{'1'}){
-					for my $relation ( keys $queries{'1'} ){
-						my @mids = keys $queries{'1'}{$relation};
-						if (!exists $where->{$relation}){
-							$where->{$relation} = {'$in' => \@mids};
-						}
-					}
-				}
-				#push @All_Categories, Util->_unac($_);  ###########################################################################################33
-                push @All_Categories, $_;
-			} @names_category;
-		}else{
-			my $length = scalar @ids_category;
-			for (my $i = 0; $i < $length; $i++){
-                push @All_Categories, $names_category[$i];
-				$where = $self->get_where({filters_where => $fields{where}, name_category => $names_category[$i], dynamic_filter => \%dynamic_filter, where => $where  });
-
-				$where->{id_category} = {'$in' => [$ids_category[$i]] };
-				my @data = mdb->topic->find($where)->all;
-
-				if (@data) {
-                    map {
-                        $queries{$key}->{$relation[$i]}->{$_->{mid}} = 1;
-                        $categories_queries->{$names_category[$i]}->{$_->{mid}} = $_;
-                    } @data;
-                }else{
-                        $queries{$key}->{$relation[$i]}->{-1} = 1;    
+        my $length = scalar @ids_category;
+		map{
+            $where = $self->get_where({filters_where => $fields{where}, name_category => $_, dynamic_filter => \%dynamic_filter, where => $where });
+            $where->{id_category} = {'$in' => \@ids_category };
+            my @data = mdb->topic->find($where)->all;
+            if (@data && scalar @relation > 1) {
+                my $rel_name;
+                my $name_relation;
+                my $length_rel = scalar @relation;
+                for (my $i=0;$i<$length_rel;$i++){
+                    if($relation[$i]){
+                        $rel_name = $relation[$i]->{"relation"}[0];
+                        $name_relation = $relation[$i]->{"name_category"}[0];
+                        my @data_relation = mdb->topic->find({name_category=>qr/^$name_relation$/i})->all;
+                        my %data_to_compare = map { $_->{mid} => 1 } @data_relation; 
+                        my @all_mids;
+                        map {
+                            if (ref $_->{$rel_name} eq'ARRAY'){
+                                $queries{$rel_name}->{$_->{$rel_name}[0]} = 1 if (($_->{$rel_name}[0]) && ($data_to_compare{$_->{$rel_name}[0]}));
+                                push @all_mids, $_->{$rel_name}[0] if (($_->{$rel_name}[0]) &&($data_to_compare{$_->{$rel_name}[0]}));
+                                $categories_queries->{$_->{name_category}}->{$_->{mid}} = $_ if (($_->{$rel_name}[0]) && ($data_to_compare{$_->{$rel_name}[0]}));
+                            } else {
+                                $queries{$rel_name}->{$_->{$rel_name}} = 1 if (($_->{$rel_name}) && ($data_to_compare{$_->{$rel_name}}));
+                                push @all_mids, $_->{$rel_name} if (($_->{$rel_name}) &&($data_to_compare{$_->{$rel_name}}));
+                                $categories_queries->{$_->{name_category}}->{$_->{mid}} = $_ if (($_->{$rel_name}) && ($data_to_compare{$_->{$rel_name}}));
+                            }
+                        } @data;
+                        map{
+                            $categories_queries->{$_->{name_category}}->{$_->{mid}} = $_ if ($queries{$rel_name}->{$_->{mid}});    
+                        } @data_relation;
+                    #if exists mismatch rel_name...
+                    if ($where->{$rel_name}) {
+                        push @all_mids, _array $where->{$rel_name}->{'$in'};
+                    }
+                    $where->{$rel_name} = { '$in' => \@all_mids };
+                    }
                 }
-				$where = undef;
-			}
-		}
+            }
+            push @All_Categories, $_;
+        } @names_category;
 	}	
 
 	
     # filter user projects
-    if( $username && ! Baseliner->model('Permissions')->is_root( $username )){
-      my @proj_coll_roles = Baseliner->model('Permissions')->user_projects_ids_with_collection(username=>$username);
-      my @ors;
-      for my $proj_coll_ids ( @proj_coll_roles ) {
-          my $wh = {};
-          my $count = scalar keys %{ $proj_coll_ids || {} };
-          while ( my ( $k, $v ) = each %{ $proj_coll_ids || {} } ) {
-              if ( $k eq 'project' && $count gt 1) {
-                  $wh->{"_project_security.$k"} = {'$in' => [ undef, keys %{$v || {}} ]};
-              } else {
-                  $wh->{"_project_security.$k"} = {'$in' => [ keys %{$v || {}} ]};
-              }
-          } ## end while ( my ( $k, $v ) = each...)          
-          push @ors, $wh;
-      }
-	  my $where_undef = { '_project_security' => undef };
-	  push @ors, $where_undef;
-      $where->{'$or'} = \@ors;
+    my $is_root = Baseliner->model('Permissions')->is_root( $username );
+    if( $username && ! $is_root){
+      my @categories;
+        for my $category (@All_Categories) {
+            my $id_category = mdb->category->find_one({name=>qr/^$category$/i})->{id};
+            push @categories, $id_category;
+        }
+        Baseliner->model('Topic')->build_project_security( $where, $username, $is_root, @categories );
 	}
 
     if( length $query ) {
@@ -934,7 +927,6 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
     Baseliner->model('Topic')->build_field_query( $query_search, $where, $username ) if length $query_search;	
 
     my $rs = mdb->topic->find($where);
-
     my $cnt = $rs->count;
     $rows = $cnt if ($rows eq '-1') ;
     $rs->sort({ @sort });
@@ -948,24 +940,24 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 		labels		=> 1
 	);
     my $fields = {  %select_system, map { $_=>1 } keys +{@selects}, _id=>0 };
-    #_log "FIELDS==================>" . _dump( $fields );
+    # _log "FIELDS==================>" . _dump( $fields );
     #_log "SORT==================>" . _dump( @sort );
     my @data = $rs
       ->fields($fields)
       ->skip( $start )
       ->limit($rows)
       ->all;
-	
-	my @parse_data;  
-	map {
+    my @parse_data;  
+    map {
         foreach my $field (keys $fields){
             if (!exists $_->{$field}) {
-                #_log ">>>>>>>>>>>>>>>>>Field: " . $field;
+                # _log ">>>>>>>>>>>>>>>>>Field: " . $field;
                 next if ($field eq '_id' || $field eq '0');
                 $_->{$field} = ' ';
-                # for my $category (@All_Categories){
-                #     $_->{$field. "_$category"} = $_->{$field};
-                # }                  
+                for my $category (@selects){
+                    # $_->{$field. "_$category"} = $_->{$field};
+                    # $meta_cfg_report{$field . "_$category"} = $meta_cfg_report{$field} if ($meta_cfg_report{$field});
+                }                  
             }else{
                 if ($_->{$field} && $_->{$field}  eq ''){
                     $_->{$field} = ' ';
@@ -973,103 +965,93 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 
             }
         }
+        if (%queries){
+            for my $relation ( keys %queries ){
+                my @ids_where;
+                if ( ref $where->{'$or'} eq 'HASH' ) {
+                    @ids_where = $where->{'$or'}->{$relation}->{'$in'};
+                }
+                else {
+                    push @ids_where, _array $where->{$relation}->{'$in'}
+                }
+                my %ids_where = map { $_ => 1 } @ids_where;
 
-		if (exists $queries{'1'}){
-			for my $relation ( keys $queries{'1'} ){
-				my @ids_where;
-				if (ref $where->{$relation} eq 'HASH'){
-					@ids_where = _array $where->{$relation}->{'$in'};
-				}else{
-					push @ids_where, $where->{$relation};
-				}
-				my %ids_where =  map { $_ => 1 } @ids_where;
-				
-				for my $field (_array $_->{$relation}){
-					next unless $ids_where{$field}; #Para evitar que cuando haya filtros saque todos los correspondientes a la peticion
-					if ( exists $queries{'1'}{$relation}{$field} ){#mids
-						my %tmp_row;
-						my $i = 1;
-						my $value;
-						my %alias;
+                for my $field (_array $_->{$relation}){
+                    next unless $ids_where{$field}; #Para evitar que cuando haya filtros saque todos los correspondientes a la peticion
+                    if ( exists $queries{$relation}{$field} ){ #mids
+                        my %tmp_row;
+                        my $i = 1;
+                        my $value;
+                        my %alias;
                         use Storable 'dclone';
                         my $tmp_data = dclone $_;
-                        $tmp_data->{$relation} = $field;                        
-						for my $select (@selects){
-							if ($i % 2 == 0){
-								if (exists  $categories_queries->{$select}){
-									my @fields = split( /\./, $value);
-									my $tmp_value = $categories_queries->{$select}->{$field};
-									for my $inner_field ( @fields ) {
-										$tmp_value = $tmp_value->{$inner_field};
-									}
-									#my $tmp_ref = $_;
+                        $tmp_data->{$relation} = $field;  
+                        for my $select (@selects){
+                            if ($i % 2 == 0){  
+                                if (exists $categories_queries->{$select}){
+                                    my @fields = split( /\./, $value);
+                                    my $tmp_value = $categories_queries->{$select}->{$field};
+                                    for my $inner_field ( @fields ) {
+                                        $tmp_value = $tmp_value->{$inner_field};
+                                    }
+                                    #my $tmp_ref = $_;
                                     my $tmp_ref = $tmp_data;
-									for my $inner_field ( @fields ) {
-										if ( ref $tmp_ref->{$inner_field} eq 'HASH' ){
-											$tmp_ref = $tmp_ref->{$inner_field};
-										}
-										else{
-											#$tmp_ref->{$inner_field}= $tmp_value;
-											$tmp_ref->{$inner_field . "_$select"}= $tmp_value;
-										}
-									}
+                                    for my $inner_field ( @fields ) {
+                                        if ( ref $tmp_ref->{$inner_field} eq 'HASH' ){
+                                            $tmp_ref = $tmp_ref->{$inner_field};
+                                        }
+                                        else{
+                                            $tmp_ref->{$inner_field . "_$select"}= $tmp_value;
+                                            $meta_cfg_report{$inner_field . "_$select"} = $meta_cfg_report{$inner_field} if (($meta_cfg_report{$inner_field}) && ($meta_cfg_report{$inner_field} eq 'release' || $meta_cfg_report{$inner_field} eq 'topic'));
+                                        }
+                                    }
                                     $tmp_ref->{'mid' . "_$select"} = $field;
                                     $tmp_ref->{'category_color' . "_$select"} = $categories_queries->{$select}->{$field}->{category}->{color};
                                     $tmp_ref->{'category_name' . "_$select"} = $categories_queries->{$select}->{$field}->{category}->{name};
                                     $tmp_ref->{'modified_on' . "_$select"} = $categories_queries->{$select}->{$field}->{modified_on};
                                     $tmp_ref->{'modified_by' . "_$select"} = $categories_queries->{$select}->{$field}->{modified_by};
                                     $tmp_ref->{$relation . "_$select"} = $field; 
-									#$_->{'mid' . "_$select"} = $field;
-									#$_->{'category_color' . "_$select"} = $categories_queries->{$select}->{$field}->{category}->{color};
-									#$_->{'category_name' . "_$select"} = $categories_queries->{$select}->{$field}->{category}->{name};
-									#$_->{'modified_on' . "_$select"} = $categories_queries->{$select}->{$field}->{modified_on};
-									#$_->{'modified_by' . "_$select"} = $categories_queries->{$select}->{$field}->{modified_by};
-								}else{
-									
-									my @fields = split( /\./, $value);
-									my $tmp_value = $tmp_data;
-									for my $inner_field ( @fields ) {
-										$tmp_value = $tmp_value->{$inner_field};
-									}
-									my $tmp_ref = $tmp_data;
-									for my $inner_field ( @fields ) {
-										if ( ref $tmp_ref->{$inner_field} eq 'HASH' ){
-											$tmp_ref = $tmp_ref->{$inner_field};
-										}
-										else{
-											$tmp_ref->{$inner_field . "_$select"}= $tmp_value;
-										}
-									}	
-                                    $tmp_ref->{$relation . "_$select"} = $field; 								
-								}
-								$value = '';
-							}else{
-								$value = $select;
-							}
-							$i++;
-						}
-						#use Storable 'dclone';
-						#my $tmp_data = dclone $_;
-						#$tmp_data->{$relation} = $field;
-						#push @parse_data, $tmp_data;
+                                }else{
+                                    my @fields = split( /\./, $value);
+                                    my $tmp_value = $tmp_data;
+                                    for my $inner_field ( @fields ) {
+                                        $tmp_value = $tmp_value->{$inner_field};
+                                    }
+                                    my $tmp_ref = $tmp_data;
+                                    for my $inner_field ( @fields ) {
+                                        if ( ref $tmp_ref->{$inner_field} eq 'HASH' ){
+                                            $tmp_ref = $tmp_ref->{$inner_field};
+                                        }
+                                        else{
+                                            $tmp_ref->{$inner_field . "_$select"} = $tmp_value;
+                                            # delete $tmp_ref->{$inner_field} if ($tmp_ref->{$inner_field . "_$select"});
+                                            # $meta_cfg_report{$inner_field . "_$select"} = $meta_cfg_report{$inner_field} if ($meta_cfg_report{$inner_field});
+                                        }
+                                    }   
+                                    # $tmp_ref->{$relation . "_$select"} = $field; 
+                                }
+                                $value = '';
+                            }else{
+                                $value = $select;
+                            }
+                            $i++;
+                        }
                         push @parse_data, $tmp_data;
-					}
-				}
-			}
-		}else{
+                    }
+                }
+            }
+        }else{
             my $parse_category = $_->{category}{name};
-            #my $parse_category = Util->_unac($_->{category}{name});
-            # $parse_category = $parse_category;
             foreach my $field (keys $_){
                 $_->{$field . "_$parse_category"} = $_->{$field};
             }
         }
-	} @data;
-	
-	@parse_data = @data if !@parse_data;
-	
-	#_log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump @parse_data;
-	
+    } @data;
+    
+    @parse_data = @data if !@parse_data;
+    
+    #_log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump @parse_data;
+    
     my %scope_topics;
     my %scope_cis;
     my %all_labels = map { $_->{id} => $_ } mdb->label->find->all;
@@ -1077,7 +1059,6 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 
     my @topics = map { 
         my %row = %$_;
-		#_log ">>>>>>>>>>>>>>>>>>>>>>>>>>>FILA: " . _dump %row;
 
         while( my($k,$v) = each %row ) {
             $row{$k} = Class::Date->new($v)->string if $k =~ /modified_on|created_on/;
@@ -1118,23 +1099,10 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
             } elsif( $mt =~ /release|topic/ ) {
                 $row{$k} = $scope_topics{$v} 
                     // do {
-                        my @objs = mdb->topic->find({ mid=>mdb->in($v) },
-                                { title=>1, mid=>1, is_changeset=>1, is_release=>1, category=>1, _id=>0 })->all;
+                        my @objs = mdb->topic->find({ mid=>mdb->in($v) },{ title=>1, mid=>1, is_changeset=>1, is_release=>1, category=>1, _id=>0 })->all;
                         $scope_topics{$_->{mid}} = $_ for @objs; 
                         \@objs;   
-                    };
-				for my $category (@All_Categories){
-					if( exists $row{$k . "_$category"} ){
-						my $tmp = $row{$k . "_$category"};
-						$row{$k . "_$category"} = $scope_topics{$tmp} 
-							// do {
-								my @objs = mdb->topic->find({ mid=>mdb->in($tmp) },
-										{ title=>1, mid=>1, is_changeset=>1, is_release=>1, category=>1, _id=>0 })->all;
-								$scope_topics{$_->{mid}} = $_ for @objs; 
-								\@objs;   
-							};
-					}
-				}					
+                    } if ($v);				
             } elsif( $mt eq 'calendar' && ( my $cal = ref $row{$k} ? $row{$k} : undef ) ) { 
                 for my $slot ( keys %$cal ) {
                     $cal->{$slot}{$_} //= '' for qw(end_date plan_end_date start_date plan_start_date);
@@ -1143,28 +1111,15 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                 my $data;
                 $data->{topic_mid} = $_->{mid};
                 my @status_changes = Baseliner->model('Topic')->status_changes( $data );
-                my $html = '
-                <ul class="" style="margin-left: 20px">
-                <table class="table table-bordered table-condensed">
-                    <tbody>';
+                my $html = '<div style="width:250px">';
                 for my $ch ( grep { $_->{old_status} ne $_->{status}} @status_changes ) {
-                    $html .= '
-                        <tr>
-                            <td style="font: 13px OpenSans, Lato, Calibri, Tahoma; color: #111" title="'.$ch->{username} .'">' . Util->ago( $ch->{when} ) . ' </td>
-                            <td class="status-html" style="font-size: 10px; font-weight: bold; padding:4px">'. $ch->{old_status} .'</td>
-                            <td>-</td>
-                            <td class="status-html" style="font-size: 10px; font-weight: bold; padding:4px"> '. $ch->{status} .'</td>
-                        </tr>';
+                    $html .= '<p style="font: 11px OpenSans, Lato, Calibri, Tahoma; color: #111;"><b>'. $ch->{old_status} .'</b> -> <b>'. $ch->{status} .' </b>  (' . Util->ago( $ch->{when} ) . ') </p>'."\n";
                 }
-                    $html .= '
-                    </tbody>
-                </table>
-                </ul>';
+                $html .= '</div>';
                 for my $category (@All_Categories){
-                    $row{$k. "_$category"} = $html if (exists $row{$k. "_$category"});
+                    $row{$k. "_$category"} = $html;
                 }
             }
-
 
             #my $parse_key =  Util->_unac($k); 
             my $parse_key =  $k;

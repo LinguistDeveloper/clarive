@@ -523,7 +523,7 @@ sub view : Local {
         if ( $topic_mid ) {
             try {
                 $topic_ci = ci->new( $topic_mid );
-                $c->stash->{viewKanban} = $topic_ci->children( isa => 'topic' );
+                $c->stash->{viewKanban} = $topic_ci->children( where=>{collection => 'topic'} );
             } catch {
                 $c->stash->{viewKanban} = 0;
             };
@@ -619,8 +619,10 @@ sub view : Local {
      
             # jobs for release and changeset
             if( $category->{is_changeset} || $category->{is_release} ) {
-                my @jobs = $topic_ci->jobs({ username => $c->username});
-                $c->stash->{jobs} = @jobs ? \@jobs: 0;
+                my $is_root = Baseliner->model('Permissions')->is_root($c->username);
+                my $has_permission = Baseliner->model('Permissions')->user_has_action( username=> $c->username, action=>'action.job.monitor' );
+
+                $c->stash->{jobs} = $has_permission ? 1 : 0;
             }
             
             # used by the Change State menu in the topic
@@ -731,7 +733,6 @@ sub comment : Local {
             my $content_type = $p->{content_type};
             _throw( _loc( 'Missing id' ) ) unless defined $topic_mid;
             my $text = $p->{text};
-            _log $text;
             my $msg = _loc('Comment added');
             my $topic_row = mdb->topic->find_one({ mid=>"$topic_mid" });
             _fail( _loc("Topic #%1 not found. Deleted?", $topic_mid ) ) unless $topic_row;
@@ -833,7 +834,7 @@ sub comment : Local {
             _fail( _loc("This comment does not exist anymore") ) unless $post;
             my $text = $post->text;
             # find my parents to notify via events
-            my @mids = map { $_->mid } $post->parents( isa=>'topic' );
+            my @mids = map { $_->mid } $post->parents( where => {collection=>'topic'}, mids_only => 1 );
             # delete the record
             $post->delete;
             # now notify my parents
