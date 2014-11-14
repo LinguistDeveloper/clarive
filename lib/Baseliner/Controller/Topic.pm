@@ -612,8 +612,10 @@ sub view : Local {
      
             # jobs for release and changeset
             if( $category->{is_changeset} || $category->{is_release} ) {
-                my @jobs = $topic_ci->jobs({ username => $c->username});
-                $c->stash->{jobs} = @jobs ? \@jobs: 0;
+                my $is_root = Baseliner->model('Permissions')->is_root($c->username);
+                my $has_permission = Baseliner->model('Permissions')->user_has_action( username=> $c->username, action=>'action.job.monitor' );
+
+                $c->stash->{jobs} = $has_permission ? 1 : 0;
             }
             
             # used by the Change State menu in the topic
