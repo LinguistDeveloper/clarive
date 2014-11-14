@@ -92,21 +92,22 @@ sub report_list {
                 children => $public,
                 data => [],
                 expanded => \1,
-            },
-            {
-                text => _loc('Reports Available'),
-                icon => '/static/images/icons/table.png',
-                mid => -1,
-                draggable => \0,
-                children => $reports_available,
-                url => '/ci/report/reports_available',
-                data => [],
-                expanded => \1,
-            },
+            }
     );
+    if ($p->{show_reports} eq 'true'){
+        push @trees, ({
+            text => _loc('Reports Available'),
+            icon => '/static/images/icons/table.png',
+            mid => -1,
+            draggable => \0,
+            children => $reports_available,
+            url => '/ci/report/reports_available',
+            data => [],
+            expanded => \1,
+        });
+    }
     #root user can view all reports of all users.
-    my $all_root = $p->{all_root} // 1;
-    if (Baseliner->model('Permissions')->is_root( $p->{username} ) && $all_root){
+    if (Baseliner->model('Permissions')->is_root( $p->{username} )){
         my $root_reports = $self->root_reports({ meta=>\%meta, username=>$p->{username} });
         push @trees, ({
                 text => _loc('All') . " (Root)",
@@ -114,9 +115,9 @@ sub report_list {
                 url => '/ci/report/root_reports',
                 mid => -1,
                 draggable => \0,
-                #children => $root_reports,
+                children => $p->{show_reports} ? undef : $root_reports,
                 data => [],
-                expanded => \0,
+                expanded => $p->{show_reports} ? \0 : \1,
             });
     }
     return \@trees; 
