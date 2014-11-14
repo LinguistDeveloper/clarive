@@ -887,7 +887,6 @@ Baseliner.open_topic_grid_from_release = function(n){
 Baseliner.open_apply_filter_from_release = function(n){
     var name = n.attributes.data.click.title;
     var id_release = n.attributes.data.topic_mid;
-    
     var win;
     var treeRoot = new Ext.tree.AsyncTreeNode({
         draggable: false,
@@ -906,21 +905,18 @@ Baseliner.open_apply_filter_from_release = function(n){
     });
     
     tree_filters.on('dblclick', function(n, ev){
-        console.log(n.attributes.data);
-        Baseliner.ajaxEval( '/comp/lifecycle/report_run.js', { 
-            id_report: n.attributes.data.id_report, 
-            report_name: n.attributes.data.report_name, 
-            report_rows: n.attributes.data.report_rows, 
-            hide_tree: n.attributes.data.hide_tree, 
-            tab_icon: '/static/images/icons/topic.png' }, 
-            function(res){
-
-        });
-        // Baseliner.ajaxEval( '/lifecycle/topics_for_release', { id_release: id_release }, function(res){
-        //     Baseliner.message(_("Fields retrieved.  Now wait while generating report %1", n.attributes.data.report_name)); 
-        //     Baseliner.add_tabcomp('/comp/topic/topic_grid.js', _('Related: %1', name), { id_report: n.attributes.data.id_report, data_report: n.attributes.data ,topic_list: res.topics, tab_icon: '/static/images/icons/topic.png' });
-        // });
-        // Baseliner.message(_("Wait while retrieving fields list and format for report %1", n.attributes.data.report_name));          
+        Baseliner.ajaxEval( '/lifecycle/topics_for_release', { id_release: id_release, id_report: n.attributes.data.id_report }, function(res){
+            Baseliner.ajaxEval( '/comp/lifecycle/report_run.js', { 
+                id_report: n.attributes.data.id_report, 
+                report_name: n.attributes.data.report_name, 
+                report_rows: n.attributes.data.report_rows, 
+                hide_tree: n.attributes.data.hide_tree, 
+                topic_list: res.topics,
+                tab_icon: '/static/images/icons/topic.png' }, 
+                function(res){
+                    //N/D
+            });
+        });         
         win.close();
     });
     

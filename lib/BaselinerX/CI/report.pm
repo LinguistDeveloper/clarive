@@ -758,7 +758,6 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 
     my %selects_ci_columns = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) . '_' . $_->{category} => $_->{ci_columns} } grep { exists $_->{ci_columns}} _array($fields{select});
     my %selects_ci_columns_collection_extends = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) . '_' . $_->{category} => $_->{collection_extends} } grep { exists $_->{ci_columns}} _array($fields{select});
-
     my %meta_cfg_report = map { $_->{id_field} => $_->{meta_type} } _array($fields{select});
 
     # _log ">>>>>>>>>>>>>>>>>>>>>SELECT FIELDS: " . _dump $self->selected ;
@@ -889,7 +888,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 		labels		=> 1
 	);
     my $fields = {  %select_system, map { $_=>1 } keys +{@selects}, _id=>0 };
-    #_log "FIELDS==================>" . _dump( $fields );
+    # _log "FIELDS==================>" . _dump( $fields );
     #_log "SORT==================>" . _dump( @sort );
     my @data = $rs
       ->fields($fields)
@@ -951,7 +950,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                                         }
                                         else{
                                             $tmp_ref->{$inner_field . "_$select"}= $tmp_value;
-                                            # $meta_cfg_report{$inner_field . "_$select"} = $meta_cfg_report{$inner_field} if ($meta_cfg_report{$inner_field});
+                                            $meta_cfg_report{$inner_field . "_$select"} = $meta_cfg_report{$inner_field} if (($meta_cfg_report{$inner_field}) && ($meta_cfg_report{$inner_field} eq 'release' || $meta_cfg_report{$inner_field} eq 'topic'));
                                         }
                                     }
                                     $tmp_ref->{'mid' . "_$select"} = $field;
@@ -1051,7 +1050,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                         my @objs = mdb->topic->find({ mid=>mdb->in($v) },{ title=>1, mid=>1, is_changeset=>1, is_release=>1, category=>1, _id=>0 })->all;
                         $scope_topics{$_->{mid}} = $_ for @objs; 
                         \@objs;   
-                    };				
+                    } if ($v);				
             } elsif( $mt eq 'calendar' && ( my $cal = ref $row{$k} ? $row{$k} : undef ) ) { 
                 for my $slot ( keys %$cal ) {
                     $cal->{$slot}{$_} //= '' for qw(end_date plan_end_date start_date plan_start_date);
