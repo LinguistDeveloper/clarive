@@ -2,7 +2,7 @@
     if( !report ) report = {};
     var url = report.url || '/comp/topic/topic_grid.js';
     
-    Baseliner.ci_call( 'report', 'report_meta', { key: report.id_report }, function(grid_params){
+    Baseliner.ci_call( 'report', 'report_meta', { id_report: report.id_report, id_report_rule: report.id_report_rule }, function(grid_params){
         if( !Ext.isObject(grid_params) ) {
             Baseliner.message( _('Report'), _('Invalid report meta for id %1', report.id_report ) );
             return;

@@ -30,11 +30,12 @@ sub report_list {
     my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $p->{username}) );  # XXX should be by category, same id fields may step on each other
     my $mine = $self->my_searches({ username=>$p->{username}, meta=>\%meta });
     my $reports_available = $self->reports_available({ username=>$p->{username}, meta=>\%meta });
+    my $reports_from_rule = $self->reports_from_rule({ username=>$p->{username}, meta=>\%meta });
     my $public = $self->public_searches({ meta=>\%meta, username=>$p->{username} });
 	
     my @trees = (
             {
-                text => _loc('My Searches'),
+                text => _loc('My Reports'),
                 icon => '/static/images/icons/report.png',
                 mid => -1,
                 draggable => \0,
@@ -50,7 +51,7 @@ sub report_list {
                 expanded => \1,
             },
             {
-                text => _loc('Public Searches'),
+                text => _loc('Public Reports'),
                 icon => '/static/images/icons/report.png',
                 url => '/ci/report/public_searches',
                 mid => -1,
@@ -60,12 +61,22 @@ sub report_list {
                 expanded => \1,
             },
             {
-                text => _loc('Reports Available'),
+                text => _loc('Internal Reports'),
                 icon => '/static/images/icons/table.png',
                 mid => -1,
                 draggable => \0,
                 children => $reports_available,
                 url => '/ci/report/reports_available',
+                data => [],
+                expanded => \1,
+            },
+            {
+                text => _loc('Rule Reports'),
+                icon => '/static/images/icons/table.png',
+                mid => -1,
+                draggable => \0,
+                children => $reports_from_rule,
+                url => '/ci/report/reports_from_rule',
                 data => [],
                 expanded => \1,
             },
@@ -127,12 +138,52 @@ sub reports_available {
     return \@tree;
 }
 
+sub reports_from_rule {
+    my ($self,$p) = @_;
+    my $userci = Baseliner->user_ci( $p->{username} );
+    my $username = $p->{username};
+    my @tree;
+    for my $rule ( mdb->rule->find({ rule_type=>'report' })->sort({ id=>1 })->all ) {
+        my $n = {
+            key => "$$rule{_id}",
+            text => $$rule{rule_name},
+            icon => '/static/images/icons/rule.png',
+            leaf => \1,
+            data    => {
+                click   => {
+                    icon    => '/static/images/icons/topic.png',
+                    url     => '/comp/topic/topic_report.js',
+                    type    => 'eval',
+                    title   => $$rule{rule_name},
+                },
+                id_report_rule => "$$rule{_id}",
+                report_name    => $$rule{rule_name},
+                hide_tree      => \1,
+                #custom_form    => $reg->form,    
+            }
+        };
+        push @tree, $n;
+    }
+    return \@tree;
+}
+
 sub report_meta {
     my ($self,$p) = @_;
+    _debug( $p );
     my $key = $p->{key};
     my $config = $p->{config} // {};
-    my $report = Baseliner->registry->get( $key );
-    return $report->meta_handler->( $config );
+    if( my $id = $p->{id_report_rule} ) {
+        my $cr = Baseliner::CompiledRule->new( _id=>$p->{id_report_rule} );
+        my $stash = {};
+        $cr->compile;
+        $cr->run( stash=>$stash ); 
+        return $stash->{report_meta} // {};  # grid_params, 
+    } elsif( my $key = $p->{id_report} ) {
+        my $report = Baseliner->registry->get( $key );
+        return $report->meta_handler->( $config );
+    } else {
+        _fail 'Missing report id';
+    }
 }
 
 sub my_searches {

@@ -507,6 +507,15 @@ msgstr "Informes"
 msgid "Reports Available"
 msgstr "Informes Disponibles"
 
+msgid "My Reports"
+msgstr "Mis Informes"
+
+msgid "Public Reports"
+msgstr "Informes Públicos"
+
+msgid "Rule Reports"
+msgstr "Informes de Regla"
+
 msgid "Custom Reports"
 msgstr "Informes Customizados"
 

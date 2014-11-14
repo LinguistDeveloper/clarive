@@ -13,7 +13,7 @@
     var parse_typeApplication = (typeApplication != '') ? '/' + typeApplication : '';
     var query_id = '<% $c->stash->{query_id} %>';
     var id_project = '<% $c->stash->{id_project} %>';
-    var id_report = params.id_report;
+    var id_report = params.id_report || params.id_report_rule;
     var report_type = params.report_type || 'topics';
     var custom_form_url = params.custom_form;
     var custom_form_data = params.custom_form_data || {};
@@ -58,7 +58,8 @@
     
 	var store_config;
     if( id_report ) {
-        base_params.id_report = id_report;
+        base_params.id_report = params.id_report;
+        base_params.id_report_rule = params.id_report_rule;
 		store_config = {
 			baseParams: base_params,
 			remoteSort: false,

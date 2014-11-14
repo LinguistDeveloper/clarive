@@ -145,6 +145,13 @@ sub list : Local {
         my ($cnt, @rows ) = ci->new( $p->{id_report} )->run( start=>$start, username=>$c->username, limit=>$p->{limit}, query=>$p->{topic_list}, filter=>$filter, query_search=>$p->{query} );
            
         $c->stash->{json} = { data=>\@rows, totalCount=>$cnt };
+    } elsif( my $id = $p->{id_report_rule} ) {
+        my $cr = Baseliner::CompiledRule->new( _id=>$p->{id_report_rule} );
+        my $stash = { report_data=>[] };
+        $cr->compile;
+        $cr->run( stash=>$stash ); 
+        _fail _loc 'Invalid report data for report %1',$id unless ref $$stash{report_data} eq 'ARRAY';
+        $c->stash->{json} = { data=>$$stash{report_data}, totalCount=>scalar( @{$$stash{report_data} || []} ) };
     } else {
         my ($cnt, @rows ) = $c->model('Topic')->topics_for_user( $p );
         $c->stash->{json} = { data=>\@rows, totalCount=>$cnt };
