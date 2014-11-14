@@ -80,12 +80,8 @@ sub branch_commits : Local {
     }
     ###########################################################
     my $used_commits;
-    my @gitRevisions = ci->GitRevision->search_cis();
-    foreach(@gitRevisions){
-        if($_->{repo}->{mid} eq $repo_mid){
-            $used_commits->{$_->{sha}} = 1;
-        }
-    }
+    my @gitRevisions = mdb->master_doc->find({ collection=>'GitRevision', repo=>$repo_mid})->fields({sha=>1, _id=>0})->all;
+    map { $used_commits->{$_->{sha}} = 1 } @gitRevisions;
     @rev_list = grep { my ( $rev_sha, $rev_txt )= $_ =~ /^(.+?) (.*)/; !$used_commits->{$rev_sha};} @rev_list;
     ###########################################################
     my $data = [
