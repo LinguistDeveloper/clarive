@@ -636,6 +636,7 @@ sub topics_for_user {
     my @rows;
     my %seen;
     for my $mid (@mids) {
+        #This is to avoid duplicates in grid ... unsolved mistery: duplicates in @mids
         next if $seen{$mid};
         $seen{$mid}=1;
         #next if !$mid_data{$mid};
