@@ -519,6 +519,45 @@ msgstr "Informes de Regla"
 msgid "Custom Reports"
 msgstr "Informes Customizados"
 
+msgid "Internal Reports"
+msgstr "Informes Internos"
+
+msgid "Job Stats by Environment"
+msgstr "Estadísticas de JOBS por Entorno"
+
+msgid "Job List"
+msgstr "Listado de JOBS"
+
+msgid "Weekly Job Stats" 
+msgstr "Estadísticas de JOBS por Semana"
+
+msgid "Monthly Job Stats"
+msgstr "Estadísticas de JOBS por Mes"
+
+msgid "#Failed"
+msgstr "#Fallidos"
+
+msgid "%Failed"
+msgstr "%Fallidos"
+
+msgid "#Cancelled"
+msgstr "%Cancelados"
+
+msgid "%Cancelled" 
+msgstr "%Cancelados"
+
+msgid "#Correct"
+msgstr "#Correctos"
+
+msgid "%Correct"
+msgstr "%Correctos"
+
+msgid "Total Execs"
+msgstr "Total ejecuciones"
+
+msgid "Avg Execs"
+msgstr "Avg ejecuciones"
+
 msgid "Customize"
 msgstr "Customizar"
 

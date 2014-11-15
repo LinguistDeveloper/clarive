@@ -1545,7 +1545,7 @@
     grid_topics.on("rowdblclick", function(grid, rowIndex, e ) {
         var r = grid.getStore().getAt(rowIndex);
 
-        if ( report_type == 'jobs' ) {
+        if ( report_type == 'custom' ) {
             Baseliner.openLogTab(r.data.job_id, r.data.nombre_job);
         } else {
             Baseliner.show_topic_from_row( r, grid_topics );

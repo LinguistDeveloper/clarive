@@ -147,7 +147,15 @@ sub list : Local {
         $c->stash->{json} = { data=>\@rows, totalCount=>$cnt };
     } elsif( my $id = $p->{id_report_rule} ) {
         my $cr = Baseliner::CompiledRule->new( _id=>$p->{id_report_rule} );
-        my $stash = { report_data=>[] };
+        my $stash = { 
+            report_data => [],
+            report_params => {
+                %$p,
+                filter      => $p->{filter} ? _decode_json($p->{filter}) : undef,
+                start       => $p->{start} // 0,
+                dir         => uc($p->{dir}) eq 'DESC' ? -1 : 1,
+            }
+        };
         $cr->compile;
         $cr->run( stash=>$stash ); 
         _fail _loc 'Invalid report data for report %1',$id unless ref $$stash{report_data} eq 'ARRAY';

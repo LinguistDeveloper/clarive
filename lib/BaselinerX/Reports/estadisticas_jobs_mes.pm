@@ -11,7 +11,7 @@ register 'config.reports.estadisticas_jobs_mes' => {
 };
 
 register 'report.clarive.job_statistics_mes' => {
-    name => 'Estadísticas de JOBS por Mes',
+    name => 'Monthly Job Stats', 
     data => { },
     form => '/reports/listado_jobs.js', 
     security_handler => sub{
@@ -43,8 +43,8 @@ register 'report.clarive.job_statistics_mes' => {
                     {id => 'total', text => 'Total jobs'}
                 ],
             },
-            report_name => 'Estadisticas de JOBS por MES',
-            report_type => 'jobs',
+            report_name => _loc('Monthly Job Stats'),
+            report_type => 'custom',
             # report_rows => 100,
             hide_tree => \1,
         };

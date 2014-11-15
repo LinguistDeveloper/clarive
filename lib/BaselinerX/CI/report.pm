@@ -95,6 +95,20 @@ sub report_list {
                 expanded => \1,
             }
     );
+    #root user can view all reports of all users.
+    if (Baseliner->model('Permissions')->is_root( $p->{username} )){
+        my $root_reports = $self->root_reports({ meta=>\%meta, username=>$p->{username} });
+        push @trees, ({
+                text => _loc('All') . " (Root)",
+                icon => '/static/images/icons/report.png',
+                url => '/ci/report/root_reports',
+                mid => -1,
+                draggable => \0,
+                children => $p->{show_reports} ? undef : $root_reports,
+                data => [],
+                expanded => $p->{show_reports} ? \0 : \1,
+            });
+    }
     if ($p->{show_reports} eq 'true'){
         push @trees, ({
             text => _loc('Internal Reports'),
@@ -117,20 +131,6 @@ sub report_list {
             expanded => \1,
         });
     }
-    #root user can view all reports of all users.
-    if (Baseliner->model('Permissions')->is_root( $p->{username} )){
-        my $root_reports = $self->root_reports({ meta=>\%meta, username=>$p->{username} });
-        push @trees, ({
-                text => _loc('All') . " (Root)",
-                icon => '/static/images/icons/report.png',
-                url => '/ci/report/root_reports',
-                mid => -1,
-                draggable => \0,
-                children => $p->{show_reports} ? undef : $root_reports,
-                data => [],
-                expanded => $p->{show_reports} ? \0 : \1,
-            });
-    }
     return \@trees; 
 }
 
@@ -149,7 +149,7 @@ sub reports_available {
         my $name = $reg->name // $key;
         my $n = {
             key => $key,
-            text => $name,
+            text => _loc($name),
             icon => $reg->icon,
             leaf => \1,
             data    => {

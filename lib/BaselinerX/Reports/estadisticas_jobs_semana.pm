@@ -11,7 +11,7 @@ register 'config.reports.estadisticas_jobs_semana' => {
 };
 
 register 'report.clarive.job_statistics_semana' => {
-    name => 'Estadísticas de JOBS por Semana',
+    name => 'Weekly Job Stats', 
     data => { },
     form => '/reports/listado_jobs.js', 
     security_handler => sub{
@@ -40,8 +40,8 @@ register 'report.clarive.job_statistics_semana' => {
                     {id => 'total', text => 'Total'}
                 ],
             },
-            report_name => 'Estadisticas de JOBS por Semana',
-            report_type => 'jobs',
+            report_name => _loc('Weekly Job Stats'),
+            report_type => 'custom',
             # report_rows => 100,
             hide_tree => \1,
         };
