@@ -632,7 +632,7 @@ sub related_mids {
         }
     }
     # filter
-    @cis = $self->_filter_cis( %opts, _cis=>\@cis ) unless $opts{filter_early};
+    #@cis = $self->_filter_cis( %opts, _cis=>\@cis ) unless $opts{filter_early};
     cache->set( $cache_key, \@cis );
     return @cis;
 }
