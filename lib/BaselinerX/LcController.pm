@@ -46,7 +46,7 @@ sub tree_topic_get_files : Local {
                   id_topic => $id_topic,
                   sw_get_files =>\1
                },
-               icon       => '/static/images/icons/directory.png',
+               icon       => '/static/images/icons/folder.png',
                leaf       => \0,
                expandable => \1
            };           
@@ -1360,13 +1360,14 @@ sub build_topic_tree {
     my %p    = @_;
     my @menu_related = $self->menu_related();
     my $category = $p{category} // $p{topic}{category} // $p{topic}{categories};
+    my $topic_title = $p{topic}{title};   ## TODO use meta_type eq 'title'
 
     return +{
-        text     => $p{topic}{title},
+        text     => $topic_title,
         calevent => {
             mid    => $p{mid},
             color  => $category->{color},
-            title  => $p{topic}{title},
+            title  => $topic_title,
             allDay => \1
         },
         url        => '/lifecycle/tree_topic_get_files',
@@ -1377,10 +1378,11 @@ sub build_topic_tree {
             is_release     => $p{is_release} // $category->{is_release},
             is_changeset   => $p{is_changeset} // $category->{is_changeset},
         },
+        moniker => ($p{moniker} || Util->_name_to_id($topic_title)),
         children => [
             {
                 text => _loc('Files'),
-                icon => '/static/images/icons/directory.png',
+                icon => '/static/images/icons/folder.png',
                 url  => '/lifecycle/tree_topic_get_files',
                 leaf => \0,
                 data => {

@@ -269,7 +269,12 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
                             if(item.eval.handler){
                                 eval(item.eval.handler + '(item.node);');
                             }
+                            else if( item.eval.url ) {
+                                var params = Ext.apply({ data:node.attributes.data },item.eval.data||item.click_data);
+                                Baseliner.ajaxEval( item.eval.url, params , function(comp) { });
+                            } 
                             else{
+                                // TODO this is not used anywhere? can't access
                                 Baseliner.ajaxEval( item.url, item.click_data , function(comp) {
                                     // no op
                                     var x = 0;
@@ -756,7 +761,7 @@ Baseliner.TextFieldWin = Ext.extend( Ext.Window, {
 
         if (form.isValid()) {
             form.submit({
-                params: { parent_id: data.id_directory, project_id: data.id_project },
+                params: { parent_id: data.id_folder, project_id: data.id_project },
                 success: function(f,a){
                     Baseliner.message(_('Success'), a.result.msg );
                     self.fireEvent('saved', a.result, self);
@@ -805,7 +810,7 @@ Baseliner.rename_folder = function(node){
 };
 
 Baseliner.delete_folder = function(node){
-    Baseliner.ajaxEval( '/fileversion/delete_folder',{ id_directory: node.attributes.data.id_directory },
+    Baseliner.ajaxEval( '/fileversion/delete_folder',{ id_folder: node.attributes.data.id_folder },
         function(response) {
             if ( response.success ) {
                 Baseliner.message( _('Success'), response.msg );
@@ -822,7 +827,7 @@ Baseliner.delete_folder = function(node){
 Baseliner.remove_folder_item = function(node_data1, node_data2){
     if(node_data1.attributes.data.topic_mid ) {
         Baseliner.ajaxEval( '/fileversion/remove_topic',{ topic_mid: node_data1.attributes.data.topic_mid,
-                                                          id_directory: node_data1.attributes.id_directory },
+                                                          id_folder: node_data1.attributes.id_folder },
             function(response) {
                 if ( response.success ) {
                     //var explorer = node_data1.ownerTree;
@@ -850,10 +855,10 @@ Baseliner.move_folder_item = function(node_data1, node_data2){
         data_from_type = data_from.type || 'topic';
         // move_file, move_topic, move_directory
         Baseliner.ajaxEval( '/fileversion/move_' + data_from_type,{ from_file: data_from.id_file,
-                                                                    from_directory: node_data1.attributes.id_directory || data_from.id_directory,
+                                                                    from_directory: node_data1.attributes.id_folder || data_from.id_folder,
                                                                     parent_folder: node_data1.attributes.parent_folder || data_from.parent_folder,
                                                                     from_topic_mid: data_from.topic_mid,
-                                                                    to_directory: data_to.id_directory,
+                                                                    to_directory: data_to.id_folder,
                                                                     project: data_to.id_project},
             function(response) {
                 if ( response.success ) {
@@ -871,8 +876,8 @@ Baseliner.move_folder_item = function(node_data1, node_data2){
 
 Baseliner.open_topic_grid_from_folder = function(n){
     var name = n.text;
-    var id_directory = n.attributes.data.id_directory;
-    Baseliner.ajaxEval( '/fileversion/topics_for_folder', { id_directory: id_directory }, function(res){
+    var id_folder = n.attributes.data.id_folder;
+    Baseliner.ajaxEval( '/fileversion/topics_for_folder', { id_folder: id_folder }, function(res){
         Baseliner.add_tabcomp('/comp/topic/topic_grid.js', _('Topics: %1', name), { topic_list: res.topics, tab_icon: '/static/images/icons/topic.png' });
     });
 }
@@ -947,8 +952,8 @@ Baseliner.open_apply_filter_from_release = function(n){
 
 Baseliner.open_kanban_from_folder = function(n){
     var name = n.text;
-    var id_directory = n.attributes.data.id_directory;
-    Baseliner.ajaxEval( '/fileversion/topics_for_folder', { id_directory: id_directory }, function(res){
+    var id_folder = n.attributes.data.id_folder;
+    Baseliner.ajaxEval( '/fileversion/topics_for_folder', { id_folder: id_folder }, function(res){
         if( ! res.topics || res.topics.length < 1 ) {
             Baseliner.message( _('Kanban'), _('Folder does not contain any topics') );
             return;

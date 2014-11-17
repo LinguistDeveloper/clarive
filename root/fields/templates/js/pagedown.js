@@ -9,6 +9,7 @@ params:
     allowBlank: 0
     section: 'head'
     height: 400
+    meta_type: 'content'
 */
 
 (function(params){
