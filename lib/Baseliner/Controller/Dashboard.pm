@@ -389,7 +389,6 @@ sub list : Local {
             }else{
                 my $where = {};
                 my $is_root = $c->model('Permissions')->is_root( $c->username );
-                my @dashboards = ();
                 my @roles;
                 if (!$is_root) {             
                     @roles = map { $_->{id} } $c->model('Permissions')->user_roles( $c->username );
@@ -399,6 +398,7 @@ sub list : Local {
                 my $default_dashboard = ci->user->find_one({ name => $c->username })->{dashboard};
                 my @dashboard_ids = ($default_dashboard) if $default_dashboard;
                 push @dashboard_ids, map { grep { $_ ne $default_dashboard } _array($_->{dashboards})} mdb->role->find({ id => mdb->in(@roles)})->all;
+                my @dashboards;
                 map { push @dashboards, mdb->dashboard->find_one( { _id => mdb->oid($_) } ) } @dashboard_ids;
                 $where->{role} = {'$in' => \@roles};
                 $where->{is_system} = '0';

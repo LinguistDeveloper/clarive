@@ -632,7 +632,6 @@ sub related_mids {
         }
     }
     # filter
-    @cis = $self->_filter_cis( %opts, _cis=>\@cis ) unless $opts{filter_early};
     cache->set( $cache_key, \@cis );
     return @cis;
 }
@@ -670,7 +669,7 @@ sub related_cis {
         push @ands, { '$or'=> [ {from_mid=>$where_mid}, {to_mid=>$where_mid} ] };
     }
 
-    $where->{rel_type} = $opts{rel_type} if defined $opts{rel_type};
+    $where->{rel_type} = mdb->in($opts{rel_type}) if defined $opts{rel_type};
     $where->{'$and'} = \@ands if @ands;
 
     ######### rel query
@@ -827,6 +826,7 @@ sub related {
         @cis = map { +{ mid => $_->{mid} } } @cis;
     } elsif ( !$opts{docs_only} ) {
          @cis = map { ci->new($_->{mid}) } @cis;
+         @cis = $self_or_class->_filter_cis( %opts, _cis=>\@cis ) unless $opts{filter_early};
     }
     return @cis;
 }

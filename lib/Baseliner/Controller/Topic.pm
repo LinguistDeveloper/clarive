@@ -145,6 +145,21 @@ sub list : Local {
         my ($cnt, @rows ) = ci->new( $p->{id_report} )->run( start=>$start, username=>$c->username, limit=>$p->{limit}, query=>$p->{topic_list}, filter=>$filter, query_search=>$p->{query} );
            
         $c->stash->{json} = { data=>\@rows, totalCount=>$cnt };
+    } elsif( my $id = $p->{id_report_rule} ) {
+        my $cr = Baseliner::CompiledRule->new( _id=>$p->{id_report_rule} );
+        my $stash = { 
+            report_data => [],
+            report_params => {
+                %$p,
+                filter      => $p->{filter} ? _decode_json($p->{filter}) : undef,
+                start       => $p->{start} // 0,
+                dir         => uc($p->{dir}) eq 'DESC' ? -1 : 1,
+            }
+        };
+        $cr->compile;
+        $cr->run( stash=>$stash ); 
+        _fail _loc 'Invalid report data for report %1',$id unless ref $$stash{report_data} eq 'ARRAY';
+        $c->stash->{json} = { data=>$$stash{report_data}, totalCount=>scalar( @{$$stash{report_data} || []} ) };
     } else {
         my ($cnt, @rows ) = $c->model('Topic')->topics_for_user( $p );
         $c->stash->{json} = { data=>\@rows, totalCount=>$cnt };
@@ -453,7 +468,7 @@ sub new_topic : Local {
     
     my $ret = try {
         my $id_category = $p->{new_category_id};
-        my $name_category = $p->{new_category_name};
+        my $name_category = $p->{new_category_name} || mdb->category->find_one({id=>"$p->{new_category_id}"})->{name};
         my ($st) = grep { $$_{type} eq 'I' } values +{ ci->status->statuses( id_category=>"$id_category" ) };
         _fail( _loc('The topic category %1 does not have any initial status assigned. Contact your administrator.', $name_category) ) 
             unless $st;
@@ -506,6 +521,7 @@ sub view : Local {
     try {
     
         my $topic_doc;
+        _warn $p;
         $c->stash->{ii} = $p->{ii};    
         $c->stash->{swEdit} =  ref($p->{swEdit}) eq 'ARRAY' ? $p->{swEdit}->[0]:$p->{swEdit} ;
         $c->stash->{permissionEdit} = 0;
@@ -516,7 +532,7 @@ sub view : Local {
         if ( $topic_mid ) {
             try {
                 $topic_ci = ci->new( $topic_mid );
-                $c->stash->{viewKanban} = $topic_ci->children( where=>{collection => 'topic'} );
+                $c->stash->{viewKanban} = $topic_ci->children( where=>{collection => 'topic'}, mids_only => 1 );
             } catch {
                 $c->stash->{viewKanban} = 0;
             };

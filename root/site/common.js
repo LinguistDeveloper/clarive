@@ -2266,11 +2266,11 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
         if( node_data2.on_drop != undefined ) {
             var on_drop = node_data2.on_drop;
             if( on_drop.url != undefined ) {
-                var p = { tree: self, node1: n1, node2: n2, id_file: node_data1.id_file  };
+                var p = { node1: node_data1, node2: node_data2, id_file: node_data1.id_file  };
                 if( n2.parentNode && n2.parentNode.attributes.data ) 
                     p.id_project = n2.parentNode.attributes.data.id_project
                         
-                Baseliner.ajaxEval( on_drop.url, p, function(res){
+                Baseliner.ajax_json( on_drop.url, p, function(res){
                     if( res ) {
                         if( res.success ) {
                             Baseliner.message(  _('Drop'), res.msg );

@@ -97,7 +97,7 @@ sub lc_for_project {
     };
     push @nodes,{
         'node' => 'Views',
-        'icon' => '/static/images/icons/directory.png',
+        'icon' => '/static/images/icons/views.png',
         'menu' => [
                     {
                       'icon' => '/static/images/icons/folder_new.gif',
@@ -110,7 +110,7 @@ sub lc_for_project {
                   ],
         'url' => '/fileversion/tree_file_project',
         'data' => {
-                    id_directory => '',
+                    id_folder => '',
                     'on_drop' => {
                                    'url' => '/fileversion/drop'
                                  }

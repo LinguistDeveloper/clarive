@@ -11,7 +11,7 @@ register 'config.reports.listado_jobs' => {
 };
 
 register 'report.clarive.jobs' => {
-    name => 'Listado de JOBS',
+    name => 'Job List', 
     data => { },
     form => '/reports/listado_jobs.js', 
     security_handler => sub{
@@ -50,8 +50,8 @@ register 'report.clarive.jobs' => {
                     {id => 'ejecuciones', text => 'Ejecuciones', meta_type => 'number'}
                 ],
             },
-            report_name => 'Listado de JOBS',
-            report_type => 'jobs',
+            report_name => _loc('Job List'), 
+            report_type => 'custom',
             # report_rows => 100,
             hide_tree => \1,
         };

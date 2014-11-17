@@ -1,0 +1,41 @@
+index-content { }
+
+@media screen and (min-width: 992px){ .on-page-well {
+    position: fixed; 
+    width: 263px;
+}}
+
+.main-header h2 {
+    border-right: 0px;
+}
+.main-header {
+    margin-bottom: 20px;
+}
+
+a {
+    color: #006cbc;
+    text-decoration: none;
+}
+
+.content {
+    font-family: "PT Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: #494747;
+    font-size: 16px;
+}
+
+.main-title {
+}
+
+.content h1 {
+    font-size: 30px;
+}
+.content h2 {
+    font-size: 24px;
+}
+.content h3 {
+    font-size: 20px;
+}
+
+.sub-menu ul {
+    margin-left: 8px;
+}

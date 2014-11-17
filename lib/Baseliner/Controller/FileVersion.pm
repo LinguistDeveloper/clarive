@@ -10,53 +10,80 @@ BEGIN {  extends 'Catalyst::Controller' }
 sub drop : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
+    #_debug($p);
     
-    my $cnt = mdb->master_rel->find({ from_mid=>$$p{id_project}, to_mid=>$$p{id_file} })->count;
-    if ($cnt){
-        $c->stash->{json} = { success=>\0, msg=>_loc('File already exists') };
+    if( $$p{id_file} ) {
+        my $cnt = mdb->master_rel->find({ from_mid=>$$p{id_project}, to_mid=>$$p{id_file} })->count;
+        if ($cnt){
+            $c->stash->{json} = { success=>\0, msg=>_loc('File already exists') };
+        } else {
+            mdb->master_rel->insert({ from_mid=>$$p{id_project}, to_mid=>$$p{id_file}, rel_type=>'project_asset', rel_field=>'assets' });
+            $c->stash->{json} = { success=>\1, msg=>_loc('File added to project') };
+        }
+    } elsif( $$p{node1} && $$p{node2} ) {
+        mdb->master_rel->remove({ from_mid=>$$p{node1}{parent_folder}, to_mid=>$$p{node1}{id_folder}, rel_type=>'folder_folder' });
+        # dropped on a project?
+        my $ret = mdb->master_rel->update(
+            { from_mid=>$$p{node2}{id_project}, to_mid=>$$p{node1}{id_folder}, rel_type=>'project_folder' },
+            { from_mid=>$$p{node2}{id_project}, to_mid=>$$p{node1}{id_folder}, rel_type=>'project_folder' },
+            { upsert=>1 },
+        ) if !$$p{node2}{id_folder} && $$p{node2}{id_project}; # dropped on a project
+        # dropped on a folder?
+        mdb->master_rel->update(
+            { from_mid=>$$p{node2}{id_folder}, to_mid=>$$p{node1}{id_folder}, rel_type=>'folder_folder' },
+            { '$set'=>{ from_mid=>$$p{node2}{id_folder}, to_mid=>$$p{node1}{id_folder}, rel_type=>'folder_folder'} },
+            { upsert=>1 },
+        ) if !$$ret{n};
+        $c->stash->{json} = { success=>\1, msg=>_loc('Folder moved') };
+        
     } else {
-        mdb->master_rel->insert({ from_mid=>$$p{id_project}, to_mid=>$$p{id_file}, rel_type=>'project_asset', rel_field=>'assets' });
-        $c->stash->{json} = { success=>\1, msg=>_loc('File added to project') };
+        $c->stash->{json} = { success=>\0, msg=>_loc('Missing file id') };
     }
     $c->forward('View::JSON');
 }
 
 sub gen_tree : Private {
     my ($self, $p ) = @_;
-
+    
     my @tree;
     # show child folders
-    my @fids = map { $_->{to_mid} } mdb->master_rel->find({ from_mid=>$p->{id_directory} || $p->{id_project}, rel_type=>'project_folder' })->all;
+    my @fids;
+    if( $p->{id_folder} ) {
+        push @fids, map { $_->{to_mid} } mdb->master_rel->find({ from_mid=>$p->{id_folder}, rel_type=>'folder_folder' })->all;
+    } elsif( $p->{id_project} ) {
+        push @fids, map { $_->{to_mid} } mdb->master_rel->find({ from_mid=>$p->{id_project}, rel_type=>'project_folder' })->all;
+    }
     my @folders = mdb->master_doc->find({ mid=>mdb->in(@fids) })->sort({ name=>1 })->all;
     foreach my $folder (@folders) {
-        push @tree, $self->build_item_directory($folder, $p->{id_project});
+        push @tree, $self->build_item_directory($folder, $p->{id_project}, $p->{id_folder});
     }
     # show child content
-    if( $p->{id_directory} ) {
+    if( $p->{id_folder} ) {
         my %categories  = map { $_->{id}=>1 } Baseliner::Model::Topic->get_categories_permissions( username => $p->{username}, type => 'view' );
-        my $remove_item = {   
+        my $remove_item = {
             text => _loc('Remove from folder'),
             icon => '/static/images/icons/folder_delete.png',
             eval => {
                 handler => 'Baseliner.remove_folder_item'
             }
         };
-        my @mids = map { $_->{to_mid} } mdb->master_rel->find({ from_mid=>$p->{id_directory}, rel_type=>'folder_ci' })->all;
+        my @mids = map { $_->{to_mid} } mdb->master_rel->find({ from_mid=>$p->{id_folder}, rel_type=>'folder_ci' })->all;
         my @cis = mdb->master_doc->find({ mid=>mdb->in(@mids) })->sort(mdb->ixhash(name=>1))->all;
             
+        my %topics = map { $$_{mid} =>$_ } mdb->topic->find({ mid=>mdb->in(map{ $$_{mid} }grep{ defined }@cis) })->all;
         foreach my $ci ( @cis ){
             if( $ci->{collection} eq 'topic' && $categories{$ci->{id_category}} ) {
-                my $topic = mdb->topic->find_one({ mid=>"$ci->{mid}" }) or _fail _loc 'Topic mid not found: %1', $ci->{mid};
+                my $topic = $topics{$ci->{mid}} // _fail _loc 'Topic mid not found: %1', $ci->{mid};
                 my @topic_tree = BaselinerX::LcController->build_topic_tree( mid=>$ci->{mid}, topic=>$topic, icon=>'' );
                 push @tree, map { 
                     my $i = $_;
                     $i->{menu} ||= [];
                     push @{ $i->{menu} } => $remove_item;
-                    $i->{id_directory} = $p->{id_directory};
+                    $i->{id_folder} = $p->{id_folder};
                     $i;
                 } @topic_tree;
             } else {
-                push @tree, $self->build_item_file($ci, $p->{id_directory});
+                push @tree, $self->build_item_file($ci, $p->{id_folder});
             }
         }        
     }
@@ -67,7 +94,7 @@ sub tree_file_project : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
 
-    my @tree = $self->gen_tree({ id_project=>$p->{id_project}, id_directory=>$p->{id_directory}, username=>$c->username });
+    my @tree = $self->gen_tree({ id_project=>$p->{id_project}, id_folder=>$p->{id_folder}, username=>$c->username });
     
     $c->stash->{json} = \@tree;
     $c->forward('View::JSON');
@@ -92,15 +119,18 @@ sub new_folder : Local {
             try{
                 $self->folder_length( $folder_name );
                 my $prj = ci->find( $project_id ) // _fail _loc 'Project not found';
-                $folder = ci->folder->new( name=>$folder_name, parent_folder=>$parent_id );
+                $folder = ci->folder->new( name=>$folder_name );
+                $folder->parent_folder( $parent_id ) if $parent_id;
                 $folder->save;
-                my $folders = $prj->folders // [];
-                push $folders => $folder;
-                $prj->update( folders=>$folders );
+                if( !$parent_id ) {
+                    my $folders = $prj->folders // [];
+                    push $folders => $folder;
+                    $prj->update( folders=>$folders );
+                }
                 $c->stash->{json} = {
                     msg     => _loc('Folder added'),
                     success => \1,
-                    node    => $self->build_item_directory({ mid=>$folder->mid, name=>$folder_name }, $project_id)
+                    node    => $self->build_item_directory({ mid=>$folder->mid, name=>$folder_name }, $project_id, $parent_id)
                 };
             } catch {
                 $folder->delete if $folder && $folder->mid;
@@ -116,7 +146,7 @@ sub delete_folder : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
     
-    my $id_directory = $p->{id_directory};
+    my $id_folder = $p->{id_folder};
     my $remove_cis = $p->{remove_cis};  # TODO find children and delete them? consider asking one-by-one, or all
 
     try{
@@ -138,7 +168,7 @@ sub delete_folder : Local {
             ci->delete( $mid );
             $del_folder->($_) for @chi;
         };
-        $del_folder->($_) for _array( $id_directory );
+        $del_folder->($_) for _array( $id_folder );
         $c->stash->{json} = { msg=>_loc('Folder deleted'), success=>\1};
     } catch {
         $c->stash->{json} = { msg=>_loc('Error deleting folder: %1', shift()), failure=>\1 }
@@ -148,15 +178,20 @@ sub delete_folder : Local {
 }
 
 sub build_item_directory {
-    my ($self, $folder, $id_project) = @_;
+    my ($self, $folder, $id_project, $parent_folder) = @_;
     my @menu_folder = $self->get_menu_folder();
+    my $project_name = 'ZZ'; # XXX nooooooooooooooooooooooo
     return  {
         text    => $folder->{name},
         leaf    =>\0,
         url     => '/fileversion/tree_file_project',
         data    => {
-            id_directory => $folder->{mid},
+            id_folder => $folder->{mid},
             id_project => $id_project,
+            parent_folder => $parent_folder,
+            project_name => $project_name, 
+            doc_url   => '/doc/folder:'. $folder->{mid} . '/',
+            doc_title => $folder->{name},
             type => 'directory',
             on_drop => {
                 handler => 'Baseliner.move_folder_item'
@@ -167,13 +202,14 @@ sub build_item_directory {
 }
 
 sub build_item_file {
-    my ($self,$file,$id_directory) = @_;
+    my ($self,$file,$id_folder) = @_;
     return  {
         text    => $file->{name} . ' <span style="color:#999">(v' . $file->{versionid} . ')</span>',
         leaf    =>\1,
         data    => {
             id_file => $file->{mid},
-            id_directory => $id_directory,
+            id_folder => $id_folder,
+            id_parent => 0,
             type => 'file',
             on_drop => {
                 handler => 'Baseliner.move_folder_item'
@@ -196,12 +232,20 @@ sub get_menu_folder {
                                     handler => 'Baseliner.open_topic_grid_from_folder'
                                 }
                             };    
+    push @menu_folder, {  text => _loc('Doc'),
+                                icon => '/static/images/icons/document.png',
+                                url     => '/comp/lifecycle/report_run.js',
+                                eval => {
+                                    url => '/comp/doc_from_tree.js',
+                                }
+                            };    
     push @menu_folder, {  text => _loc('Kanban'),
                                 icon => '/static/images/icons/kanban.png',
                                 eval => {
                                     handler => 'Baseliner.open_kanban_from_folder'
                                 }
                             };    
+    # push @menu_folder, '-';
     push @menu_folder, { text => _loc('New Folder'),
                             icon => '/static/images/icons/folder_new.gif',
                             eval => {
@@ -253,10 +297,30 @@ sub rename_folder : Local {
 sub move_directory : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
+    my ($node,$to,$project,$parent_folder) = @{$p}{qw(from_directory to_directory project parent_folder)};
+    my $dest_coll = ( mdb->master_doc->find_one({ mid=>"$to" }) // {} )->{collection};
     
-    my $ret;
-    $ret = mdb->master_rel->update({ from_mid=>$p->{project}, rel_type=>'project_folder' }, { '$set'=>{ from_mid=>"$p->{to_directory}" } }); 
-    $ret = mdb->master_rel->update({ from_mid=>$p->{from_directory}, rel_type=>'folder_folder' }, { '$set'=>{ from_mid=>"$p->{to_directory}" } }); 
+    if( $parent_folder ) {
+        mdb->master_rel->remove({ from_mid=>"$parent_folder", to_mid=>"$node", rel_type=>'folder_folder' });
+    } 
+    
+    if( $dest_coll eq 'folder' ) {
+        # destination is a folder
+        my $ret = mdb->master_rel->update(
+            { from_mid=>$project, to_mid=>$node, rel_type=>'project_folder' }, 
+            { '$set'=>{ from_mid=>"$to", rel_type=>'folder_folder' } }); 
+        mdb->master_rel->update(
+            { from_mid=>$to, to_mid=>$node, rel_type=>'folder_folder' },
+            { '$set'=>{ from_mid=>$to, to_mid=>$node, rel_type=>'folder_folder', rel_field=>'folders' } },
+            { upsert=>1 }) if !$ret->{n};
+    }
+    elsif( $dest_coll eq 'project' ) {
+        # destination is a project
+        
+    }
+    else {
+        _warn('Invalid drop collection %1', $dest_coll );
+    }
     
     $c->stash->{json} = { success=>\1, msg=>_loc('Folder moved') };
     $c->forward('View::JSON');
@@ -309,8 +373,8 @@ sub remove_topic : Local {
     my $p = $c->request->parameters;
     my $topic_mid = $p->{topic_mid} || _fail _loc 'Missing %1', 'topic_mid';
     
-    if($p->{id_directory}){
-        mdb->master_rel->remove({ from_mid=>"$p->{id_directory}", to_mid=>"$topic_mid", rel_type=>'folder_ci' });
+    if($p->{id_folder}){
+        mdb->master_rel->remove({ from_mid=>"$p->{id_folder}", to_mid=>"$topic_mid", rel_type=>'folder_ci' });
         cache->remove({ mid=>"$topic_mid" }); # qr/:$topic_mid:/ );
     }
     $c->stash->{json} = { success=>\1, msg=>_loc('OK') };
@@ -321,7 +385,7 @@ sub topics_for_folder : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
     ## XXX list only topics, not all cis... or change sub name to cis_for_folder
-    my @topics = map { $_->{to_mid} } mdb->master_rel->find({ from_mid=>$p->{id_directory}, rel_type=>'folder_ci' })->all;
+    my @topics = map { $_->{mid} } ci->related( mid=>$p->{id_folder}, depth=>-1, rel_type=>['folder_folder','folder_ci'], mids_only=>1 );
     $c->stash->{json} = { success=>\1, topics=>\@topics };
     $c->forward('View::JSON');
 }

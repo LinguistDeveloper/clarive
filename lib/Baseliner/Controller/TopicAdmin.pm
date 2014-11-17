@@ -596,6 +596,7 @@ sub update_fields : Local {
     my @values_field = _array $p->{params};
     cache->remove_like( qr/^topic:/ );
     cache->remove_like( qr/^roles:/ );
+    cache->remove({ d=>"topic:meta" });
     $c->registry->reload_all;
     
     my $order = 1;

@@ -17,8 +17,8 @@ has_cis 'cis';
 
 sub rel_type { 
     { 
-        parent_folder  => [ from_mid => 'folder_folder'],
-        cis            => [ from_mid => 'folder_ci'],
+        parent_folder  => [ to_mid => 'folder_folder'],
+        cis            => [ to_mid => 'folder_ci'],
     },
 }
 

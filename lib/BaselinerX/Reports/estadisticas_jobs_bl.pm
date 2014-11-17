@@ -11,7 +11,7 @@ register 'config.reports.estadisticas_jobs_bl' => {
 };
 
 register 'report.clarive.job_statistics_bl' => {
-    name => 'Estadísticas de JOBS por Entorno',
+    name => 'Job Stats by Environment', 
     data => { },
     form => '/reports/listado_jobs.js', 
     security_handler => sub{
@@ -31,20 +31,20 @@ register 'report.clarive.job_statistics_bl' => {
                     'total'
                 ],
                 columns => [
-                    {id => 'entorno',  text => 'Entorno'},
-                    {id => 'fallidos',     text => 'Fallidos'},
-                    {id => 'pct_fallidos',     text => '%Fallidos'},
-                    {id => 'cancelados',     text => 'Cancelados'},
-                    {id => 'pct_cancelados',     text => '%Cancelados'},
-                    {id => 'correctos',    text => 'Correctos'},
-                    {id => 'pct_correctos',    text => '%Correctos'},
-                    {id => 'total_ejecuciones',    text => 'Total ejecuciones'},
-                    {id => 'avg_ejecuciones',    text => 'Avg Ejecuciones'},
-                    {id => 'total', text => 'Total jobs'}
+                    {id => 'entorno',  text => _loc('Environment') }, # 'Entorno'},
+                    {id => 'fallidos',     text => _loc('#Failed') }, # 'Fallidos'},
+                    {id => 'pct_fallidos',     text => _loc('%Failed') }, # '%Fallidos'},
+                    {id => 'cancelados',     text => _loc('#Cancelled') }, # 'Cancelados'},
+                    {id => 'pct_cancelados',     text => _loc('%Cancelled') }, # '%Cancelados'},
+                    {id => 'correctos',    text => _loc('#Correct') }, # 'Correctos'},
+                    {id => 'pct_correctos',    text => _loc('%Correct') }, # '%Correctos'},
+                    {id => 'total_ejecuciones',    text => _loc('Total Execs') }, # 'Total ejecuciones'},
+                    {id => 'avg_ejecuciones',    text => _loc('Avg Execs') }, # 'Avg Ejecuciones'},
+                    {id => 'total', text => _loc('Total Jobs')}
                 ],
             },
-            report_name => 'Estadisticas de JOBS por BL',
-            report_type => 'jobs',
+            report_name => _loc('Job Stats by Environment'), 
+            report_type => 'custom',
             # report_rows => 100,
             hide_tree => \1,
         };

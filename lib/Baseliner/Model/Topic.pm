@@ -634,7 +634,11 @@ sub topics_for_user {
     }
 
     my @rows;
+    my %seen;
     for my $mid (@mids) {
+        #This is to avoid duplicates in grid ... unsolved mistery: duplicates in @mids
+        next if $seen{$mid};
+        $seen{$mid}=1;
         #next if !$mid_data{$mid};
         my $data = $mid_data{$mid} // do { _error("MISSING mid_data for MID=$mid"); +{ mid=>$mid } };
         $data->{calevent} = {
@@ -1069,6 +1073,7 @@ sub get_system_fields {
                 field_order      => -1,
                 font_weigth      => 'bold',
                 section          => 'head',
+                meta_type        => 'title',
                 field_order_html => 1,
                 allowBlank       => \0,
                 system_force     => \1
@@ -1350,6 +1355,13 @@ sub get_meta {
     cache->set({ d=>'topic:meta', mid=>"$topic_mid" }, \@meta ) if length $topic_mid;
     
     return \@meta;
+}
+
+sub get_meta_hash {
+    my $self = shift;
+    my $meta = $self->get_meta( @_ );
+    my %meta = map { $_->{id_field} => $_ } @{ $meta || [] };
+    return \%meta;
 }
 
 sub get_data {

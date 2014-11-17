@@ -32,7 +32,21 @@ has rule_name      => qw(is rw isa Str), default=>'none';
 has doc            => qw(is rw isa Any lazy 1), default=>sub{ 
     my $self = shift;
     my $id_rule = ''.$self->id_rule;
-    mdb->rule->find_one({ '$or'=>[{id=>"$id_rule"},{rule_name=>$id_rule}]  },{ _id=>0, rule_tree=>0 });
+    mdb->rule->find_one({ '$or'=>[{_id=>mdb->oid($id_rule)},{id=>"$id_rule"},{rule_name=>$id_rule}]  },{ _id=>0, rule_tree=>0 });
+};
+
+around BUILDARGS => sub{
+    my $orig = shift;
+    my $self = shift;
+    my %p = ref $_[0] ? %{$_[0]} : @_;
+    if( ref $p{id_rule} eq 'MongoDB::OID' || defined $p{_id} ) {
+        my $id = $p{_id} ? mdb->oid($p{_id}) : $p{id_rule};
+        my $doc = mdb->rule->find_one({ _id=>$id },{ _id=>0, rule_tree=>0 });
+        _fail _loc 'Could not find rule for id %1', $id unless $doc; 
+        $p{id_rule} = $$doc{id};
+        $p{doc} ||= $doc;
+    }
+    $self->$orig( %p );
 };
 
 sub errors {
@@ -90,7 +104,7 @@ sub compile {
     # provided or get dsl ourselves?
     my $dsl = $self->dsl;
     if( !$dsl ) {
-        my $doc = $self->doc // mdb->rule->find_one({ '$or'=>[{id=>"$id_rule"},{rule_name=>$id_rule}] },{ ts=>1 }) // _fail( _loc('Rule %1 not found', $self->id_rule) );
+        my $doc = $self->doc // mdb->rule->find_one({ '$or'=>[{_id=>mdb->oid($id_rule)},{id=>"$id_rule"},{rule_name=>$id_rule}] },{ ts=>1 }) // _fail( _loc('Rule %1 not found', $self->id_rule) );
         $self->ts( $doc->{ts} );
         _debug('Loaded ts=' . $self->ts . ',' . $self->id_rule );
         $dsl = mdb->grid_slurp({ id_rule=>"$id_rule" });

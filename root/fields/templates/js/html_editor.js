@@ -9,6 +9,7 @@ params:
     section: 'body'
     data: 'clob'
     field_order_html: 99
+    meta_type: 'content'
 ---
 */
 (function(params){
