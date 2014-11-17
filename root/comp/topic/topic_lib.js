@@ -839,10 +839,18 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             self.btn_change_status.hide();
         }
         
+        self.btn_docgen = new Ext.Toolbar.Button({
+            icon:'/static/images/icons/document.png',
+            tooltip: _('Generate Document'),
+            handler: function(){ self.show_docgen() }, 
+            hidden: self.viewKanban==undefined?true:!self.viewKanban
+        });
+            
         self.btn_kanban = new Ext.Toolbar.Button({
             icon:'/static/images/icons/kanban.png',
             cls: 'x-btn-icon',
             enableToggle: true, 
+            tooltip: _('Open Kanban'),
             handler: function(){ self.show_kanban() }, 
             hidden: self.viewKanban==undefined?true:!self.viewKanban,
             allowDepress: false, toggleGroup: self.toggle_group
@@ -851,6 +859,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         self.btn_graph = new Ext.Toolbar.Button({
             icon:'/static/images/ci/ci-grey.png',
             cls: 'x-btn-icon',
+            tooltip: _('Open CI Graph'),
             hidden: self.permGraph==undefined?true:!self.permGraph,
             enableToggle: true, handler: show_graph, allowDepress: false, toggleGroup: self.toggle_group
         });
@@ -1110,11 +1119,17 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
                 self.btn_deploy,
                 '-',
                 self.btn_change_status,
+                self.btn_docgen,
                 self.btn_graph,
                 self.btn_kanban
             ]
         });
         return tb;
+    },
+    show_docgen : function(){
+        var self = this;
+        var url = String.format('/doc/topic:{0}/index.html', self.topic_mid );
+        var win = window.open( url, '_blank' );
     },
     show_kanban : function(){
         var self = this;
