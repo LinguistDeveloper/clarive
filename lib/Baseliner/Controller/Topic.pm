@@ -521,7 +521,6 @@ sub view : Local {
     try {
     
         my $topic_doc;
-        _warn $p;
         $c->stash->{ii} = $p->{ii};    
         $c->stash->{swEdit} =  ref($p->{swEdit}) eq 'ARRAY' ? $p->{swEdit}->[0]:$p->{swEdit} ;
         $c->stash->{permissionEdit} = 0;
