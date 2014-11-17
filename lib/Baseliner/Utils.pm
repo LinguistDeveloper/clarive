@@ -1280,6 +1280,7 @@ the timeout secs (or zero to disable);
 =cut
 sub parse_vars {
     my ( $data, $vars, %args ) = @_;
+    return $data unless ref $vars eq 'HASH';
     my $ret;
     {
           local $SIG{ALRM} = sub { alarm 0; die "parse_vars timeout - data structure too large?\n" };

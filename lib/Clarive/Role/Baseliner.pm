@@ -50,6 +50,7 @@ sub setup_baseliner {
     $ENV{BASELINER_PERL_OPTS} = ''; # XXX 
     $ENV{BASELINER_DEBUG} = $self->debug; 
     $ENV{BASELINER_LOGCOLOR} = 1; # force colorize even in log files
+    $ENV{BASELINER_PARSE_TIMEOUT} = $ENV{CLARIVE_PARSE_TIMEOUT}; 
     
     # TLC
     $Baseliner::TLC = $Clarive::TLC;
