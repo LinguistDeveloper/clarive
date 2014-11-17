@@ -214,11 +214,18 @@ sub grid : Local {
     if( $p->{query} ) {
         mdb->query_build( where=>$where, query=>$p->{query}, fields=>[qw(rule_tree rule_name id rule_event rule_type)] ); 
     }
-    my @rules = mdb->rule->find($where)->fields({ rule_tree=>0 })->sort( mdb->ixhash( _id=>-1 ) )->all;
-    @rules = map {
-        $_->{event_name} = $c->registry->get( $_->{rule_event} )->name if $_->{rule_event};
-        $_
-    } @rules;
+    my $rs = mdb->rule->find($where)->fields({ rule_tree=>0 })->sort( mdb->ixhash( _id=>-1 ) );
+    my @rules;
+    while (my $rule = $rs->next) {
+        $rule->{event_name} = $c->registry->get( $rule->{rule_event} )->name if $rule->{rule_event};
+        push @rules, $rule;
+        # $_->{event_name} = $c->registry->get( $_->{rule_event} )->name if $_->{rule_event};
+        # $_
+    }
+    # @rules = map {
+    #     $_->{event_name} = $c->registry->get( $_->{rule_event} )->name if $_->{rule_event};
+    #     $_
+    # } @rules;
     #@rules = grep { join(',',values %$_) =~ qr/$p->{query}/i } @rules if length $p->{query}; 
     $c->stash->{json} = { totalCount=>scalar(@rules), data => \@rules };
     $c->forward("View::JSON");
