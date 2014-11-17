@@ -385,7 +385,7 @@ sub topics_for_folder : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
     ## XXX list only topics, not all cis... or change sub name to cis_for_folder
-    my @topics = map { $_->{to_mid} } mdb->master_rel->find({ from_mid=>$p->{id_folder}, rel_type=>'folder_ci' })->all;
+    my @topics = map { $_->{mid} } ci->related( mid=>$p->{id_folder}, depth=>-1, rel_type=>['folder_folder','folder_ci'], mids_only=>1 );
     $c->stash->{json} = { success=>\1, topics=>\@topics };
     $c->forward('View::JSON');
 }
