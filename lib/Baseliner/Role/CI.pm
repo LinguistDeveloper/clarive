@@ -669,7 +669,7 @@ sub related_cis {
         push @ands, { '$or'=> [ {from_mid=>$where_mid}, {to_mid=>$where_mid} ] };
     }
 
-    $where->{rel_type} = $opts{rel_type} if defined $opts{rel_type};
+    $where->{rel_type} = mdb->in($opts{rel_type}) if defined $opts{rel_type};
     $where->{'$and'} = \@ands if @ands;
 
     ######### rel query
