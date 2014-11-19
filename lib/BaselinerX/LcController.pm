@@ -862,17 +862,46 @@ sub promotes_and_demotes {
     my @status_from = $self->status_list( dir => 'demote', topic => $topic, username => $username, status => $id_status_from_lc, statuses => \%statuses );
 
     my $demotable={};
-
+    my $config = config_get( 'config.job' );
+    _warn $config;
     for my $status ( @status_from ) {
         my @bl_to = _array $statuses{ $status->{id_status} }{bls};
         for my $bl ( map { $bls{$_} } @bl_from ) {        
             if ( !@project_bls || $bl ~~ @project_bls ){
                 $demotable->{ $bl } = \1;
                 $demotable->{ 'd'.$bl.$status->{id_status} } = \1;
-                for my $bl_to ( map { $bls{$_} } @bl_to ) {
+                if ( $config->{demote_to_bl} ) {
+                    for my $bl_to ( map { $bls{$_} } @bl_to ) {
+                        push @job_transitions, {
+                            id             => 'd'.$bl.$status->{id_status},
+                            bl_to          => $bl_to,
+                            job_type       => 'demote',
+                            job_bl         => $bl,
+                            id_project     => $id_project,
+                            status_to      => $status->{id_status},
+                            status_to_name => _loc($status->{name}),
+                            text => _loc( 'Demote to %1 (%3) from %2', _loc($status->{name}), $bl, $bl_to ),
+                        };
+                        push @menu_d, {
+                            text => _loc( 'Demote to %1 (%3) from %2', _loc($status->{name}), $bl, $bl_to ),
+                            eval => {
+                                id   => 'd'.$bl.$status->{id_status},
+                                url            => '/comp/lifecycle/deploy.js',
+                                title          => 'Demote',
+                                job_type       => 'demote',
+                                id_project     => $id_project,
+                                bl_to          => $bl,
+                                status_to      => $status->{id_status},
+                                status_to_name => _loc( $status->{name} ),
+                            },
+                            id_status_from => $id_status_from_lc,
+                            icon => '/static/images/silk/arrow_up.gif'
+                        };
+                    }
+                } else {
                     push @job_transitions, {
                         id             => 'd'.$bl.$status->{id_status},
-                        bl_to          => $bl_to,
+                        bl_to          => $bl_to[0],
                         job_type       => 'demote',
                         job_bl         => $bl,
                         id_project     => $id_project,
@@ -895,6 +924,7 @@ sub promotes_and_demotes {
                         id_status_from => $id_status_from_lc,
                         icon => '/static/images/silk/arrow_up.gif'
                     };
+
                 }
             }
         }
