@@ -1,5 +1,6 @@
 $(document).ready(function() {
     if( !window.Cla ) window.Cla = {};
+    Cla.loading = true;
     Cla.get_content = function(mid,cb){
         $.ajax({
             type: 'POST',
@@ -57,7 +58,9 @@ $(document).ready(function() {
                 $('.doc-info-box').show();
                 $('.on-page').html(on_page);
                 $(".on-page-well").show();
-                History.pushState({ },_(res.title), doc.moniker );
+                Cla.clicking = true; 
+                History.pushState({ who:'show', mid: mid },_(res.title), doc.moniker );
+                Cla.clicking = false; 
             });
         } else {
             alert( _('Missing mid for document') );
@@ -111,7 +114,9 @@ $(document).ready(function() {
                 function (dispose) {
                     // dispose: object with X, Y of the last line add to the PDF 
                     //          this allow the insertion of new lines after html
-                    pdf.save( Baseliner.name_to_id(Cla.doc_title)+'.pdf' );
+                    var fn = Baseliner.name_to_id(Cla.doc_title)+'.pdf';
+                    //pdf.save(fn);
+                    pdf.output('save', fn );
                     if( cb ) cb(pdf);
                 }, margins
             );
@@ -155,6 +160,7 @@ $(document).ready(function() {
             Cla.to_pdf( ifr.body );
         });
         $(".pdf-all").click(function(){
+            $('.pdf-all').attr('disabled',true);
             var ifr = Cla.doc_iframe();
             // var fd = $('#full-doc');
             var fd = $('body', ifr);
@@ -169,6 +175,7 @@ $(document).ready(function() {
                 if( k==0 ) {
                     Cla.to_pdf(ifr.body, function(pdf){
                         $(ifr.document).html('');
+                        $('.pdf-all').removeAttr('disabled');
                     });
                 }
             };
@@ -202,7 +209,7 @@ $(document).ready(function() {
     Cla.gen_menu = function(row){
         return function(){/*
               [% if( children.length > 0 ) { %]
-                  <li class="[%= active ? 'active' : '' %]"><a href="#" class="js-sub-menu-toggle">
+                  <li class="[%= active ? 'active' : '' %]"><a href="javascript:void(0);" class="js-sub-menu-toggle">
                      <i class="fa [%= icon %] fa-fw"></i><span class="text">[%= text %]</span>
                         <i class="toggle-icon fa fa-angle-left"></i></a>
                         <ul class="sub-menu">
@@ -212,7 +219,7 @@ $(document).ready(function() {
                         </ul>
                   </li>
               [% } else { %]
-                  <li class="[%= active ? 'active' : '' %]"><a href="#" mid="[%= topic_mid %]" type="[%= type %]" moniker="[%= moniker %]" class="js-menu-entry">
+                  <li class="[%= active ? 'active' : '' %]"><a href="javascript:void(0);" mid="[%= topic_mid %]" type="[%= type %]" moniker="[%= moniker %]" class="js-menu-entry">
                      [% if( icon && icon!='' ) { %]
                          <i class="fa [%= icon %] fa-fw"></i><span class="text">[%= text %]</span></a></li>
                      [% } %]
@@ -240,7 +247,7 @@ $(document).ready(function() {
               [% } else { %]
                   <ul class="list-unstyled">
                   <li>
-                  <a href="#" mid="[%= topic_mid %]" path="[%=path%]" moniker="[%=moniker%]" class="index-content">
+                  <a href="javascript:void(0);" mid="[%= topic_mid %]" path="[%=path%]" moniker="[%=moniker%]" class="index-content">
                      [% if( icon && icon!='' ) { %]
                          <i class="fa [%= icon %] fa-fw"></i>
                      [% } %]
@@ -255,7 +262,7 @@ $(document).ready(function() {
     Cla.gen_breadcrumb = function(path){
         if( path.constructor !== Array ) path=path.split('/');
         $('.breadcrumb').html(function(){/*
-            <li><i class="fa fa-home"></i><a href="#" class="breadcrumb-home">Home</a></li>
+            <li><i class="fa fa-home"></i><a href="javascript:void(0);" class="breadcrumb-home">Home</a></li>
             [% for(var i=0; i<path.length && path[i].length>0; i++ ){ %]  
                 <li class="active">[%= path[i] %]</li>
             [% } %]
@@ -268,6 +275,7 @@ $(document).ready(function() {
     
     var index_by_moniker ={};
     var index_by_mid ={};
+    var all_mids = [];
     var index_all =[];
     var index_html ='';
     Cla.fetch_document = function(cb){
@@ -282,7 +290,7 @@ $(document).ready(function() {
                 var reg_index = function(row){  // recursive register index
                     row.mid = row.topic_mid;
                     if( row.moniker ) index_by_moniker[ row.moniker ] = row;
-                    if( row.mid ) index_by_mid[ row.mid ] = row;
+                    if( row.mid ) index_by_mid[ row.mid ] = row, all_mids.push( row.mid );
                     $.each( row.children, function(ix,row2){ reg_index(row2) } );
                 };
                 $.each(res.menu, function(ix, row) {           
@@ -310,48 +318,102 @@ $(document).ready(function() {
         $(".on-page-well").hide();
         $(".doc-info-box").hide();
         Cla.gen_breadcrumb(''); 
-        History.pushState({}, Cla.doc_title, 'index.html' );
+        Cla.clicking = true; 
+        History.pushState({ who:'index' }, Cla.doc_title, 'index.html' );
+        Cla.clicking = false; 
     };
     
     // MAIN =====================================================================
     // what's our url?
-    var url = window.location.pathname.split('/'); 
-    Cla.home_url = '/'+ url.slice(1,3).join('/') + '/';
-    Cla.doc_id = url[2];
-    Cla.doc_title = window.document.title;
-    // get the structure and load the menu and index
-    Cla.fetch_document(function(){
-        var moniker = url[3];
-        if( moniker && moniker!='index.html' ) {
-            Cla.show_content( index_by_moniker[moniker] || index_by_mid[moniker] );
-        } else {
-            Cla.show_index();
+    Cla.from_url = function(pathname){
+        var url = pathname.split('/'); 
+        Cla.home_url = '/'+ url.slice(1,3).join('/') + '/';
+        Cla.doc_id = url[2];
+        Cla.doc_title = window.document.title;
+        // get the structure and load the menu and index
+        Cla.fetch_document(function(){
+            var moniker = url[3];
+            if( moniker && moniker!='index.html' ) {
+                Cla.show_content( index_by_moniker[moniker] || index_by_mid[moniker] );
+            } else {
+                Cla.show_index();
+            }
+            Cla.loading = false;
+        });
+    }
+    Cla.from_url( window.location.pathname );
+    
+    // back and fw browser buttons
+    History.Adapter.bind(window,'popstate',function(){ 
+        var state = History.getState();     
+        if( Cla.loading ) return;
+        //History.log(state.data, state.title, state.url);
+        if( !Cla.clicking ) {
+            var mid = state.data.mid;
+            if( state.data.who=='index' ) {
+                Cla.show_index();
+            } else if( state.data.who=='search' ) {
+                Cla.search_query( state.data.q );
+            } else if( mid ) {
+                Cla.show_content( index_by_mid[mid] );
+            }
         }
+        //History.log('History.stateChange: ' + $.param(state.data) + ' ' + state.url, event);
+        // check state object here and control the display of articles or UI elements
+        // eg if state.data.page === 1 then hide all pages except for page 1
     });
     
+    Cla.search_query = function(t){
+        $.ajax({ 
+            url:'/search/query', 
+            type: 'POST',
+            dataType:'json', 
+            contentType: 'application/json',
+            data: JSON.stringify({ provider: 'Baseliner::Model::Topic', topic_list: all_mids, query: t, _merge_with_params: 1 }),
+            success: function(res){
+                var rows = res.results;
+                var title = _('Search results for: %1', t);
+                $('.main-header .main-title').html( title );
+                if( rows.length>0 ) {
+                    Cla.gen_breadcrumb( [_('Search Results')] ); 
+                    History.pushState({ who:'search', q: t },_(title), 'search?query='+t );
+                    var results = function(){/*
+                         [% for(var i=0; i<rows.length; i++) { %]
+                             <a class="search-result" href="javascript:void(0);" mid="[%= rows[i].id %]">[%= rows[i].title %]</a>
+                             <p>[%= rows[i].excerpt ||  _('...') %]</p>
+                         [% } %]
+                    */}.tmpl({ rows: rows });
+                    $('#content-body').html(results);
+                    $('.search-result').click(function(){
+                        var mid= $(this).attr('mid');
+                        Cla.show_content( index_by_mid[mid] );
+                    });
+                } else {
+                    $('.search-results').html('No results found');
+                }
+            }
+        });
+    };
+    
+    $('.searchbox input[type="search"]').keydown(function(k) {
+        var e = $(this);
+        if( k.keyCode == 13 ) {
+            setTimeout(function() {
+                var t = e.val();
+                if (t.length > 2) {
+                    Cla.search_query(t);
+                } else $(".main-content").show()
+            }, 0)
+        }
+    });
+
     /*
     function e() {
         $(window).width() < 977 ? $(".left-sidebar").hasClass("minified") && ($(".left-sidebar").removeClass("minified"), $(".left-sidebar").addClass("init-minified")) : $(".left-sidebar").hasClass("init-minified") && $(".left-sidebar").removeClass("init-minified").addClass("minified")
     }
 
 
-    $mainContentCopy = $(".main-content").clone(), $('.searchbox input[type="search"]').keydown(function() {
-        var e = $(this);
-        setTimeout(function() {
-            var t = e.val();
-            if (t.length > 2) {
-                var o = new RegExp(t, "i"),
-                    n = [];
-                $(".widget-header h3").each(function() {
-                    var e = $(this).text().match(o);
-                    "" != e && null != e && n.push($(this).parents(".widget"))
-                }), n.length > 0 ? ($(".main-content .widget").hide(), $.each(n, function(e, t) {
-                    t.show()
-                })) : console.log("widget not found")
-            } else $(".main-content .widget").show()
-        }, 0)
-    });
-    
+    $mainContentCopy = $(".main-content").clone(),     
     $(".bs-switch").length > 0 && $(".bs-switch").bootstrapSwitch(), $(".demo-only-page-blank").length > 0 && $(".content-wrapper").css("min-height", $(".wrapper").outerHeight(!0) - $(".top-bar").outerHeight(!0));
     */
     
