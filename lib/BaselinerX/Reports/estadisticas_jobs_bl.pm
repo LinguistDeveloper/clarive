@@ -146,7 +146,7 @@ register 'report.clarive.job_statistics_bl' => {
         _warn $where;
         my @rows;
         # Baseliner->model('Topic')->build_field_query( $query, $where, $username ) if length $query;
-        # Baseliner->model('Topic')->build_project_security( $where, $username );
+        # Baseliner->model('Permissions')->build_project_security( $where, $username );
 
         my @docs = _array(
             mdb->master_doc->aggregate(

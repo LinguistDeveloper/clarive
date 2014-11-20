@@ -292,64 +292,6 @@ register 'registor.action.topic_category_fields' => {
     }
 };
 
-sub build_project_security {
-    my ($self,$where,$username,$is_root, @categories) = @_;
-    $is_root //= Baseliner->model('Permissions')->is_root( $username );
-    if( $username && ! $is_root ){
-        # TODO stop using category names in permissions
-        my %all_categories = map { _name_to_id($_->{name}) => $_->{id} } mdb->category->find->all;
-        my @proj_coll_roles = Baseliner->model('Permissions')->user_projects_ids_with_collection( username => $username, with_role=>1);
-        my @ors;
-        for my $proj_coll_ids (@proj_coll_roles) {
-            while ( my ( $kpre, $vpre ) = each %{ $proj_coll_ids || {} } ) {
-                my $wh = {};
-                my @categories_by_role;
-                my $count = scalar keys %{ $vpre || {} };
-                my @actions_by_idrole = 
-                    map { $_->{action} }
-                    map { _array($_->{actions}) } 
-                    mdb->role->find({id=>"$kpre", 'actions.action'=> qr/^action.topics\./ })->all;
-                
-                for my $action (@actions_by_idrole) {
-                    my ($category) = $action =~ /action\.topics\.(.*?)\./;
-                    push @categories_by_role, $all_categories{$category} if $category;
-                }
-                my %hash1 = map { $_ => 'a' } @categories;
-                my %hash2 = map { $_ => '' } @categories_by_role;                
-                my @total = grep { $hash1{$_} } keys %hash2;
-                while ( my ( $k, $v ) = each %{ $vpre || {} } ) {
-                    if ( $k eq 'project' && $count gt 1 ) {
-                        $wh->{"_project_security.$k"} = { '$in' => [ undef, keys %{ $v || {} } ] };
-                    }
-                    else {
-                        $wh->{"_project_security.$k"} = { '$in' => [ keys %{ $v || {} } ] };
-                    }
-                    if (@categories) { 
-                        $wh->{'category.id'} = { '$in' => [ _unique @total ] } ;
-                    }
-                    else {
-                        $wh->{'category.id'} = { '$in' => [ _unique @categories_by_role ] };
-                    }
-                } ## end while ( my ( $k, $v ) = each...)
-                push @ors, $wh;
-            } ## end while ( my ( $kpre, $vpre ) = each...)
-        }
-        my $where_undef = { '_project_security' => undef };
-        push @ors, $where_undef;
-        $where->{'$or'} = \@ors;
-        #IF EXISTS OTHER OR IN WHERE RECEIVED FROM PARAMETER... MERGE...
-        if (($where)) { 
-            my $last_where = $where;
-            $where->{'$or'} = \@ors;
-            for my $item ( _array $last_where ) {
-                while ( my ( $k, $v ) = each %{ $item || {} } ) {
-                    $where->{$k} = $v;
-                }
-            }
-        }
-    }
-}
-
 sub build_field_query {
     my ($self,$query,$where,$username) = @_;
     my %all_fields = map { $_->{id_field} => undef } _array($self->get_meta(undef,undef,$username));
@@ -440,7 +382,7 @@ sub topics_for_user {
     }
 
     # project security - grouped by - into $or 
-    $self->build_project_security( $where, $username, $is_root, @categories );
+    Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @categories );
     
     if( $topic_list ) {
         $where->{mid} = mdb->in($topic_list);
@@ -3076,7 +3018,7 @@ sub get_topics_mdb{
         $where = {} if !$where;
         _throw _loc('Missing username') if !$username;
 
-        $self->build_project_security( $where, $username );
+        Baseliner->model('Permissions')->build_project_security( $where, $username );
         #_warn $where;
 
         my $rs_topics = mdb->topic->find($where);

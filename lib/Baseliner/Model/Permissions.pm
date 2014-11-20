@@ -349,38 +349,98 @@ sub user_projects_ids_with_collection {
     return $with_role ? \%ret : values %ret;
 }
 
+sub build_project_security {
+    my ($self,$where,$username,$is_root, @categories) = @_;
+    $is_root //= $self->is_root( $username );
+    if( $username && ! $is_root ){
+        # TODO stop using category names in permissions
+        my %all_categories = map { _name_to_id($_->{name}) => $_->{id} } mdb->category->find->all;
+        my @proj_coll_roles = $self->user_projects_ids_with_collection( username => $username, with_role=>1);
+        my @ors;
+        for my $proj_coll_ids (@proj_coll_roles) {
+            while ( my ( $kpre, $vpre ) = each %{ $proj_coll_ids || {} } ) {
+                my $wh = {};
+                my @categories_by_role;
+                my $count = scalar keys %{ $vpre || {} };
+                my @actions_by_idrole = 
+                    map { $_->{action} }
+                    map { _array($_->{actions}) } 
+                    mdb->role->find({id=>"$kpre", 'actions.action'=> qr/^action.topics\./ })->all;
+                
+                for my $action (@actions_by_idrole) {
+                    my ($category) = $action =~ /action\.topics\.(.*?)\./;
+                    push @categories_by_role, $all_categories{$category} if $category;
+                }
+                my %hash1 = map { $_ => 'a' } @categories;
+                my %hash2 = map { $_ => '' } @categories_by_role;                
+                my @total = grep { $hash1{$_} } keys %hash2;
+                while ( my ( $k, $v ) = each %{ $vpre || {} } ) {
+                    if ( $k eq 'project' && $count gt 1 ) {
+                        $wh->{"_project_security.$k"} = { '$in' => [ undef, keys %{ $v || {} } ] };
+                    }
+                    else {
+                        $wh->{"_project_security.$k"} = { '$in' => [ keys %{ $v || {} } ] };
+                    }
+                    if (@categories) { 
+                        $wh->{'category.id'} = { '$in' => [ _unique @total ] } ;
+                    }
+                    else {
+                        $wh->{'category.id'} = { '$in' => [ _unique @categories_by_role ] };
+                    }
+                } ## end while ( my ( $k, $v ) = each...)
+                push @ors, $wh;
+            } ## end while ( my ( $kpre, $vpre ) = each...)
+        }
+        my $where_undef = { '_project_security' => undef };
+        push @ors, $where_undef;
+        $where->{'$or'} = \@ors;
+        if ($where) { 
+            my $last_where = $where;
+            $where->{'$or'} = \@ors;
+            for my $item ( _array $last_where ) {
+                while ( my ( $k, $v ) = each %{ $item || {} } ) {
+                    $where->{$k} = $v;
+                }
+            }
+        }
+    }
+}
+
 sub user_can_topic_by_project {
     my ($self,%p)=@_; 
     my $username = $p{username};
     my $mid = $p{mid} // _fail('Missing mid');
     return 1 if $self->is_root($username);
-    my @proj_coll_roles = $self->user_projects_ids_with_collection(%p);
-    my $where = { mid=>"$mid" };
-    my @ors;
-    for my $proj_coll_ids ( @proj_coll_roles ) {
-        my $wh = {};
-        while( my ($k,$v) = each %{ $proj_coll_ids || {} } ) {
-            $wh->{"_project_security.$k"} = { '$in'=>[ undef, keys %{ $v || {} } ] } ;
-        }
-        push @ors, $wh;
-    }
-    $where->{'$or'} = \@ors;
+    my $where = {};
+     my $is_root = $self->is_root( $username );
+     my @categories;
+     push @categories, mdb->topic->find_one({mid=>"$mid"})->{id_category};
+     $where->{'category.id'} = { '$in' => [ _unique @categories ] };
+     $where->{mid} = $mid;
+     if( $username && ! $is_root){
+         $self->build_project_security( $where, $username, $is_root, @categories );
+     }
     return !!mdb->topic->find($where)->count;
 }
 
 sub user_roles_for_topic {
     my ($self,%p)=@_; 
     my $username = $p{username};
-    my $mid = $p{mid};
+    my $mid = $p{mid} // '';
+    my $is_root = $self->is_root( $username );
     my $proj_coll_roles = $self->user_projects_ids_with_collection(%p, with_role => 1);
     my @roles;
     for my $role ( keys %{$proj_coll_roles} ) {
         my $where = { mid=>"$mid" };
-        my $proj_coll_ids = $proj_coll_roles->{$role};
-        while( my ($k,$v) = each %{ $proj_coll_ids || {} } ) {
-            $where->{"_project_security.$k"} = { '$in'=>[ undef, keys %{ $v || {} } ] }; 
+        my @categories;
+        if ($mid){
+            my $id_category = mdb->topic->find_one({mid=>"$mid"})->{id_category};
+            push @categories, $id_category if ($id_category);
         }
-        #_debug $where;
+        $where->{'category.id'} = { '$in' => [ _unique @categories ] };
+        if( $username && ! $is_root){
+            $self->build_project_security( $where, $username, $is_root, @categories );
+        }
         push @roles, $role if !!mdb->topic->find($where)->count;
     }
     return @roles;
@@ -452,7 +512,7 @@ which means that there's some role in there
 =cut
 sub user_namespaces {
     my ($self, $username ) = @_;
-    my @perms = Baseliner->model('Permissions')->user_grants( $username );
+    my @perms = $self->user_grants( $username );
     return sort { $a cmp $b } _unique( map { $_->{ns} } @perms );
 }
 

@@ -1081,7 +1081,7 @@ sub topics_by_category: Local{
 
     my $is_root = $perm->is_root( $username );
     if( $username && ! $is_root){
-        Baseliner->model('Topic')->build_project_security( $where, $username, $is_root, @user_categories );
+        Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
     }
     $where->{'category.id'} = mdb->in(@user_categories);
 
@@ -1121,7 +1121,7 @@ sub topics_open_by_category: Local{
 
     my $is_root = $perm->is_root( $username );
     if( $username && ! $is_root){
-        Baseliner->model('Topic')->build_project_security( $where, $username, $is_root, @user_categories );
+        Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
     }
     $where->{'category.id'} = mdb->in(@user_categories);
     $where->{'category_status.type'} = mdb->nin(('F','FC'));
@@ -1160,7 +1160,7 @@ sub topics_by_status: Local{
 
     my $is_root = $perm->is_root( $username );
     if( $username && ! $is_root){
-        Baseliner->model('Topic')->build_project_security( $where, $username, $is_root, @user_categories );
+        Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
     }
     $where->{'category.id'} = mdb->in(@user_categories);
 
@@ -1198,7 +1198,7 @@ sub topics_open_by_status: Local{
 
     my $is_root = $perm->is_root( $username );
     if( $username && ! $is_root){
-        Baseliner->model('Topic')->build_project_security( $where, $username, $is_root, @user_categories );
+        Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
     }
 
     $where->{'category.id'} = mdb->in(@user_categories);

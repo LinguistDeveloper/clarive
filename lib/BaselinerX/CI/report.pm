@@ -911,7 +911,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
             my $id_category = mdb->category->find_one({name=>qr/^$category$/i})->{id};
             push @categories, $id_category;
         }
-        Baseliner->model('Topic')->build_project_security( $where, $username, $is_root, @categories );
+        Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @categories );
 	}
 
     if( length $query ) {
