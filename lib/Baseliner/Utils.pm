@@ -1454,6 +1454,7 @@ sub _fixCharacters_mail {
     $clean_text =~ s{Ã¡}{á}g;
     $clean_text =~ s{Ã©}{é}g;
     $clean_text =~ s{Ã-}{í}g;
+    $clean_text =~ s{Ã}{í}g;
     $clean_text =~ s{Ã³}{ó}g;
     $clean_text =~ s{Ãº}{ú}g;
     $clean_text;
