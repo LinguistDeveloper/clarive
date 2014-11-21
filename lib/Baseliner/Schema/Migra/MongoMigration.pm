@@ -671,6 +671,7 @@ sub topic_admin {
             $trans->( $$_{params}{system_force} );
             $$_{params}{field_order} += 0;
             $$_{params}{field_order_html} += 0;
+            $$_{params}{single_mode} = $$_{params}{single_mode} ? 'true':'false' if exists $$_{params}{single_mode};
             $_ } @fi ];
         my @wf = _dbis->query('select id_role,id_status_from,id_status_to,job_type from bali_topic_categories_admin where id_category=?', $$tc{id} )->hashes;
         $$tc{workflow} = [ @wf ];
