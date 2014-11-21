@@ -387,7 +387,7 @@
                                 if( ! ci ) return;
                                 var arr_rels = [];
                                 Ext.each( ci.related, function( rel ){
-                                    if( rel._edge.rel_type == 'topic_revision' && rel._edge.rel == 'child' ) {
+                                    if( rel._edge && rel._edge.rel_type == 'topic_revision' && rel._edge.rel == 'child' ) {
                                         arr_rels.push( rel );
                                     }
                                 });
