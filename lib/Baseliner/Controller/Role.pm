@@ -20,7 +20,7 @@ sub role_detail_json : Local {
     my $id = $p->{id};
     my @actions;
     if( defined $id ) {
-        my $r = mdb->role->find({ id=>"$id" })->next;
+        my $r = mdb->role->find_one({ id=>"$id" });
         for my $user_action (@{$r->{actions}}){
             eval { # it may fail for keys that are not in the registry
                 my $action = $c->model('Registry')->get( $user_action->{action} );

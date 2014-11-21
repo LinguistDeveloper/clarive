@@ -36,6 +36,8 @@ register 'config.job' => {
         { id=>'expiry_time', label => 'Time to expiry a job in hours', type=>'hash', default=>'{ N=>"1D", U=>"1h" }' }, 
         { id=>'approval_expiry_time', label => 'Time to expiry a job in approval state', default=>'1D' }, 
         { id=>'approval_delay', label => 'Delay after start running job to allow approval', default=>'0h' },
+        { id=>'demote_to_bl', label => '1 to offer demote to each bl in destination state', default=>'0' },
+
     ],
     relationships => [ { id=>'natures', label => 'Technologies', type=>'list', config=> 'config.tech' },
         { id=>'releases', label => 'Releases', type=>'list', config=> 'config.release' },

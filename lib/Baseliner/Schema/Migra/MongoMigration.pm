@@ -640,13 +640,14 @@ sub role {
         if ($role->{id}+0 > $highest_id){
             $highest_id = $role->{id}+0;
         }
+        $role->{id} = "$role->{id}";
         foreach my $action (@actions_in_oracle){
             if($role->{id} eq $action->{id_role}){
                 push @actions_in_mongo, {action => $action->{action}, bl => $action->{bl}};
             }
         }
         $role->{actions} = \@actions_in_mongo;
-        mdb->role->update({ id=>$$role{id} },$role,{ upsert=>1 }); 
+        mdb->role->update({ id=>"$$role{id}" },$role,{ upsert=>1 }); 
     }
     mdb->master_seq->remove({ _id => 'role'});
     mdb->master_seq->insert({ _id => 'role', seq => $highest_id });
