@@ -2855,9 +2855,9 @@ sub status_changes {
     my ($self, $data) = @_;
     my @status_changes;
     my $cont = 0;
-    for my $ev ( mdb->event->find({ event_key=>'event.topic.change_status', mid=>$data->{topic_mid} })->sort({ ts=>-1 })->limit(20)->all ) {
+    for my $ev ( mdb->activity->find({ event_key=>'event.topic.change_status', mid=>$data->{topic_mid} })->sort({ ts=>-1 })->limit(20)->all ) {
         try {
-            my $ed = _load( $ev->{event_data} );
+            my $ed = $ev->{vars};
             push @status_changes, {
                 old_status => $ed->{old_status},
                 status     => $ed->{status},
