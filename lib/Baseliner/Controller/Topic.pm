@@ -631,6 +631,8 @@ sub view : Local {
                 my $has_permission = Baseliner->model('Permissions')->user_has_action( username=> $c->username, action=>'action.job.monitor' );
 
                 $c->stash->{jobs} = $has_permission ? 1 : 0;
+            } else {
+                $c->stash->{jobs} = -1;
             }
             
             # used by the Change State menu in the topic
