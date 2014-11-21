@@ -731,7 +731,12 @@ sub status_list {
         %statuses =  ci->status->statuses;
     }
     $status //= $topic->{category_status}{id};
-    my @user_roles = ci->user->roles( $username );
+    my @user_roles;
+    if ( model->Permissions->is_root($username) ) {
+        @user_roles = map {$_->{id}} mdb->role->find({ })->all;
+    } else {
+        @user_roles = ci->user->roles( $username );
+    }
     my @user_workflow = _unique map {$_->{id_status_to} } Baseliner->model("Topic")->user_workflow( $username );
     my $cat = mdb->category->find_one({ id=>''.$topic->{category}{id} },{ workflow=>1 });
     
