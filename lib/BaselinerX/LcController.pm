@@ -821,12 +821,15 @@ sub promotes_and_demotes {
     # Promote
     my @status_to = $self->status_list( dir => 'promote', topic => $topic, username => $username, status => $id_status_from_lc, statuses => \%statuses );
     
+    _warn \@status_to;
+
     my $promotable={};
     my $job_promotable={};
 
     for my $status ( @status_to ) {
-        for my $bl ( map { $bls{$_} } _array $status->{bls} ) {        
-            if ( !@project_bls || $bl->{bl} ~~ @project_bls ){
+        for my $bl ( map { $bls{$_} } _array $status->{bls} ) {
+
+            if ( !@project_bls || $bl ~~ @project_bls ){
                 $promotable->{ $bl } = \1;
                 $promotable->{'p'.$bl.$status->{id_status}} = \1;
                 push @job_transitions, {
