@@ -15,13 +15,8 @@
 </head>
 
 <body style="font-family:Bitstream Vera Sans,Trebuchet MS,Verdana,Tahoma;color:#333;margin: 0px;background-color: #fff;border: 0.1px solid #aaa;border-radius: 10px;font-size: 1em;">
-    <div class="infos" style="background-color: #eee;border: 1px solid #755;padding: 8px;margin: 5px 40px 0px;text-align: center;font-size: x-small;border-radius: 10px;">
-        <a style="color: #000;font-weight: bold;" href="<% Baseliner->config->{web_url}."/tab/topic/view?topic_mid=".${mid} %>" target="_blank">
-        <% _loc('View this in a browser.') %>
-        </a>
-    </div>
     <div class="box" style="position: relative;padding: 4px;margin: 10px;">
-        <div class="page-header" style="position: relative;text-align: right;padding: 4px;margin: 10px;">
+        <div class="page-header" style="position: relative;text-align: right;">
             <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAcIAAABJCAIAAAFWfYErAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJ
 bWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdp
 bj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6
@@ -536,7 +531,7 @@ AHQOiL8EiKuA+DE0TYDD8T8DfvAfGjL/oRgUUh+BuBFoWT+2uGbAE6zwNIAczBFoCmC2gRJlLxCr
 APFvIGaFyl8D4kKg7XthNmzAhoEKNgHpt1BNIMPKQLkFKA4Kk/0ID6LFAnriA2JNWJ5BjiEYBgBd
 3wt03QzbdgAAAABJRU5ErkJggg==" /> <% $subject %></h2>
         </div>
-         <div class="rowbody" style="background-color: #eee;border: 0.1px solid #755;padding: 8px;margin: 5px 10px 10px;margin-bottom: 10px;">
+         <div class="rowbody" style="background-color: #eee;border: 0.01em solid #755;padding: 8px;margin: 5px 10px 10px;margin-bottom: 10px;">
             <p><% _loc('Topic %1 (%2) has been assigned to you',$mid,$name_category) %>
             <p><a style="color: #000;font-weight: bold;" href="<% Baseliner->config->{web_url}."/tab/topic/view?topic_mid=".${mid} %>"><% _loc('Click here to review') %>
              </a></p>

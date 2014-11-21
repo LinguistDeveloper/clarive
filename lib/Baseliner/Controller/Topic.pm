@@ -758,7 +758,8 @@ sub comment : Local {
                 project => \@projects,
             };
 
-            my $topic;
+            my @name_projects = map { ci->project->find_one({mid=>$_})->{name} } _array(mdb->topic->find_one({mid=>"$topic_mid"})->{_project_security}->{project});
+
             if( ! length $id_com ) {  # optional, if exists then is not add, it's an edit
                 
                 my $post = ci->post->new({   
@@ -781,6 +782,7 @@ sub comment : Local {
                     post            => $text,
                     notify_default  => \@users,
                     subject         => $subject,
+                    project        => \@name_projects,
                     notify=>$notify 
                 };
                 # mentioned people? event this...
@@ -814,6 +816,7 @@ sub comment : Local {
                     post            => $text,
                     notify_default  => \@users,
                     subject         => $subject,
+                    project        => \@name_projects,
                     notify=>$notify 
                 };
                 _fail( _loc("This comment does not exist anymore") ) unless $post;
