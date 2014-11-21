@@ -844,7 +844,7 @@ register 'statement.parallel.wait' => {
     dsl => sub { 
         my ($self, $n, %p ) = @_;
         sprintf(q{
-            $self->wait_for_children( $stash );
+            Baseliner::Model::Rules->wait_for_children( $stash );
         });
     },
 };
