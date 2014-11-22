@@ -280,7 +280,7 @@ sub user_projects {
     _throw 'with_role not supported anymore' if exists $p{with_role};
     return map{ "project/$$_{mid}" } ci->project->find->fields({mid=>1})->all if $self->is_root($p{username});
     my @ret;
-    my $project_security = ci->user->find({ username=>$p{ username } })->next->{project_security};
+    my $project_security = ci->user->find_one({ username=>$p{ username } },{ project_security=>1 })->{project_security};
     my @id_roles = keys $project_security;
     foreach my $id_role (@id_roles){
         my @project_types = keys $project_security->{$id_role};
@@ -301,7 +301,7 @@ sub user_projects_ids {
     _throw 'Missing username' unless exists $p{username};
     return map{ $$_{mid} } ci->project->find->fields({mid=>1})->all if $self->is_root($p{username});
 
-    #return _unique map { values $_->{project} } values ci->user->find({ username=>$p{username} })->next->{project_security};
+    #return _unique map { values $_->{project} } values ci->user->find_one({ username=>$p{username} })->{project_security};
     my $user = ci->user->find_one({ username=>$p{username} });
     if ($user) {
         my $project_security = $user->{project_security} ? $user->{project_security} : undef;
@@ -329,7 +329,7 @@ sub user_projects_ids_with_collection {
     $p{roles} //= '';
     my @roles = split(/,/, $p{roles} );
     my %ret;
-    my $user = ci->user->find({ username=>$username })->next;
+    my $user = ci->user->find_one({ username=>$username },{ project_security=>1 });
     my $project_security = $user->{project_security};
     if(!@roles){
         @roles = keys $project_security;
@@ -461,7 +461,7 @@ sub user_projects_with_action {
     if( $self->is_root($username) ) {
         return map { $$_{mid} } ci->project->find->fields({ mid=>1, _id=>0 })->all;
     }
-    my $user = ci->user->find({ username=>$username })->next;
+    my $user = ci->user->find_one({ username=>$username },{ project_security=>1 });
     my @id_roles = keys $user->{project_security};
     @id_roles = map { $_ } @id_roles;
     my @roles = mdb->role->find({ id=> { '$in'=>\@id_roles } })->fields( { _id=>0 } )->all;
@@ -487,7 +487,7 @@ Returns a list of roles a user has.
 sub user_grants {
     my ($self, $username, %p ) = @_;
     my @ret;
-    my $user = ci->user->find({ username=>$username })->next;
+    my $user = ci->user->find_one({ username=>$username },{ project_security=>1 });
     my $project_security = $user->{project_security};
     my @id_roles = keys $project_security;
     @id_roles = map { $_ } @id_roles;
@@ -551,7 +551,7 @@ sub list {
     if($username){
         @ret = Baseliner->model('Users')->get_actions_from_user($username, ($bl));
     }else{
-        my @users = ci->user->find->all;
+        my @users = ci->user->find->fields({ mid=>1, project_security=>1 })->all;
         my @roles = mdb->role->find->all;
         foreach my $user (@users){
             my @id_roles = keys $user->{project_security};
@@ -618,7 +618,7 @@ sub user_roles {
 sub user_role_ids {
     my ( $self, $username ) = @_;
     $username or _throw 'Missing parameter username';	
-    my $u = ci->user->find_one({ username=>$username });
+    my $u = ci->user->find_one({ username=>$username },{ project_security=>1 });
     return $u ? keys $u->{project_security} : ();
 }
 
@@ -630,7 +630,7 @@ List all users that have roles
 sub all_users {
     my ( $self ) = @_;
     my @ret;
-    my @users = ci->user->find->all;
+    my @users = ci->user->find->fields({ mid=>1, username=>1, project_security=>1 })->all;
     foreach my $user (@users){
         if (keys $user->{project_security}){
             push @ret, $user->{username};
@@ -676,7 +676,7 @@ sub users_with_roles {
     }
     $where->{'$or'} = \@ors;
 #    _warn $where;
-    @users = map { $_->{name} } ci->user->find($where)->all;
+    @users = map { $_->{name} } ci->user->find($where)->fields({ name=>1 })->all;
 
     my @root_users;
     if ( $include_root ) {      
@@ -688,7 +688,7 @@ sub users_with_roles {
              }
         }
         my @where = map { { "project_security.$_"=>{'$exists'=> '1' } } } @root_ids;
-        @root_users = map { $_->{name} } ci->user->find({'$or' =>\@where})->all;
+        @root_users = map { $_->{name} } ci->user->find({'$or' =>\@where})->fields({ name=>1 })->all;
 
     }
     return @users, @root_users;
