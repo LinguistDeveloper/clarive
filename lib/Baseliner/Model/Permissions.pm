@@ -31,18 +31,18 @@ register 'action.admin.root' => { name=>'Root action - can do anything' };
 Creates a Role
 
 =cut
+# XXX deprecated - not used anywhere? strange role name based creation
 sub create_role {
     my ($self, $name, $description ) = @_;
 
     $description ||= _loc( 'The %1 role', $name );
-    my $role;
-    if($role = mdb->role->find({ role=>$name })->next){
+    my $role = mdb->role->find_one({ role=>$name });
+    if($role ){
         mdb->role->update({ role=>$name }, {'$set' => { id=>$role->{id}, role=>$name, description=>$description } } );
     } else {
         mdb->role->insert({ id=>mdb->seq('role'), role=>$name, description=>$description });
     }
-    mdb->role->find({ role=>$name })->next;
-    return mdb->role->find({ role=>$name })->next;
+    return mdb->role->find_one({ role=>$name });
 }
 
 =head2 role_exists $role_name
@@ -52,8 +52,7 @@ Returns a role row or undef if it doesn't exist.
 =cut
 sub role_exists {
     my ($self, $role_name ) = @_;
-    my $role = mdb->role->find({ role=>$role_name })->next;
-    return ref $role;
+    return !! mdb->role->find_one({ role=>$role_name },{ _id=>1 });  # faster than count
 }
 
 =head2 add_action $action, $role_name
@@ -61,10 +60,11 @@ sub role_exists {
 Adds an action to a role.
 
 =cut
+# XXX deprecated - not used anywhere? strange role name based creation
 sub add_action {
     my ($self, $action, $role_name, %p ) = @_;
     my $bl = $p{bl} || '*';
-    my $role = mdb->role->find({ role=>$role_name })->next;
+    my $role = mdb->role->find_one({ role=>$role_name });
     if( ref $role ) {
         if(grep { $_->{action} eq $action } @{$role->{actions}}) {
             die _loc( 'Action %1 already belongs to role %2', $action, $role_name );
@@ -83,10 +83,11 @@ sub add_action {
 Removes an action from a role.
 
 =cut
+# XXX deprecated - not used anywhere? strange role name based creation
 sub remove_action {
     my ($self, $action, $role_name, %p ) = @_;
     my $bl = $p{bl} || '*';
-    my $role = mdb->role->find({ role=>$role_name })->next;
+    my $role = mdb->role->find_one({ role=>$role_name });
     if( ref $role ) {
         #my $actions = $role->bali_roleactions->search({ action=>$action })->delete;
         my @actions = grep { !($action eq $_->{action} && $bl eq $_->{bl}) } @{$role->{actions}};
@@ -102,11 +103,12 @@ sub remove_action {
 Deletes a role by role id or by role name.
 
 =cut
+# XXX deprecated - not used anywhere? strange role name based creation
 sub delete_role {
     my ( $self, %p ) = @_;
     
     if( $p{id} ) {
-        my $role = mdb->role->find({ id=>$p{id} })->next;
+        my $role = mdb->role->find_one({ id=>$p{id} });
         die _loc( 'Role with id "%1" not found', $p{id} ) unless ref $role;
         my $role_name = $role->{role};
         mdb->role->remove({ role=>$role_name, id=>$p{id} });
@@ -160,14 +162,14 @@ sub user_has_read_action {
     my $action = $p{action};
 
     return 0 if $self->is_root( $username );
-    my @roles = keys ci->user->find({username => $username})->next->{project_security};
+    my @roles = keys ci->user->find_one({username => $username},{ project_security=>1 })->{project_security};
 
     my @actions;
 
     for my $role ( @roles ) {
         my @role_actions = _array(cache->get(":role:actions:$role:"));
         if (!@role_actions){
-            push @actions, map { $_->{action} } @{mdb->role->find({id=>$role})->next->{actions}};
+            push @actions, map { $_->{action} } @{mdb->role->find_one({id=>$role},{ actions=>1 })->{actions}};
             cache->set(":role:actions:$role:",\@actions);
             #_debug "NO CACHE for :role:actions:$role:";
         } else {
@@ -237,7 +239,7 @@ sub user_actions_by_topic {
         my @actions = _array(cache->get(":role:actions:$role:"));
         try{
             if ( !@actions ) {
-               @actions = map { $_->{action} } @{mdb->role->find({id=>$role})->next->{actions}};
+               @actions = map { $_->{action} } @{mdb->role->find_one({id=>$role},{ actions=>1 })->{actions}};
                cache->set(":role:actions:$role:",\@actions);
             }
         }catch{};
@@ -420,7 +422,7 @@ sub user_can_topic_by_project {
      if( $username && ! $is_root){
          $self->build_project_security( $where, $username, $is_root, @categories );
      }
-    return !!mdb->topic->find($where)->count;
+    return !!mdb->topic->find_one($where,{ _id=>1 });  # faster than count
 }
 
 sub user_roles_for_topic {
@@ -434,14 +436,14 @@ sub user_roles_for_topic {
         my $where = { mid=>"$mid" };
         my @categories;
         if ($mid){
-            my $id_category = mdb->topic->find_one({mid=>"$mid"})->{id_category};
+            my $id_category = mdb->topic->find_one({mid=>"$mid"},{ id_category=>1 })->{id_category};
             push @categories, $id_category if ($id_category);
         }
         $where->{'category.id'} = { '$in' => [ _unique @categories ] };
         if( $username && ! $is_root){
             $self->build_project_security( $where, $username, $is_root, @categories );
         }
-        push @roles, $role if !!mdb->topic->find($where)->count;
+        push @roles, $role if !!mdb->topic->find_one($where,{ _id=>1 });
     }
     return @roles;
 }
@@ -608,7 +610,7 @@ sub user_roles {
     my @id_roles = $self->user_role_ids($username);
     my @roles;
     foreach my $id (@id_roles){
-        my $role = mdb->role->find({ id=>$id })->next;
+        my $role = mdb->role->find_one({ id=>$id });
         my @actions = map { $_->{action} } @{ $role->{actions} };
         push @roles, { id=>$role->{id}, role=>$role->{role}, description=>$role->{description}, actions=>[ @actions ] };
     }
