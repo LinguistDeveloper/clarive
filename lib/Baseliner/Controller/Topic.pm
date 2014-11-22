@@ -783,7 +783,7 @@ sub comment : Local {
                 event_new 'event.post.create' => {
                     username        => $c->username,
                     mid             => $topic_mid,
-                    data            => ci->new($topic_mid)->{_ci},
+                    data            => _ci($topic_mid)->{_ci},
                     id_post         => $mid_post,
                     post            => $text,
                     notify_default  => \@users,
@@ -799,7 +799,7 @@ sub comment : Local {
                             username        => $c->username,
                             mentioned       => $mentioned,
                             mid             => $topic_mid,
-                            data            => ci->new($topic_mid)->{_ci},
+                            data            => _ci($topic_mid)->{_ci},
                             id_post         => $mid_post,
                             post            => $text,
                             notify_default  => [ $mentioned ],
