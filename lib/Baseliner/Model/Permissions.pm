@@ -351,58 +351,75 @@ sub user_projects_ids_with_collection {
     return $with_role ? \%ret : values %ret;
 }
 
+=head2 build_project_security
+
+Generates a mongo where query for the topic collection
+from the user project_security.
+
+    @filter_categories - limit categories to this list, otherwise 
+      queries for all lists will be generated
+
+The complexity here with roles comes from the fact
+that roles' actions allow/deny user access to certain topic
+categories only. So we have to multiply:
+
+     project collection x category
+
+=cut
 sub build_project_security {
-    my ($self,$where,$username,$is_root, @categories) = @_;
+    my ($self,$where,$username,$is_root, @filter_categories) = @_;
     $is_root //= $self->is_root( $username );
-    if( $username && ! $is_root ){
-        # TODO stop using category names in permissions
-        my %all_categories = map { _name_to_id($_->{name}) => $_->{id} } mdb->category->find->all;
-        my @proj_coll_roles = $self->user_projects_ids_with_collection( username => $username, with_role=>1);
-        my @ors;
-        for my $proj_coll_ids (@proj_coll_roles) {
-            while ( my ( $kpre, $vpre ) = each %{ $proj_coll_ids || {} } ) {
-                my $wh = {};
-                my @categories_by_role;
-                my $count = scalar keys %{ $vpre || {} };
-                my @actions_by_idrole = 
-                    map { $_->{action} }
-                    map { _array($_->{actions}) } 
-                    mdb->role->find({id=>"$kpre", 'actions.action'=> qr/^action.topics\./ })->all;
-                
-                for my $action (@actions_by_idrole) {
-                    my ($category) = $action =~ /action\.topics\.(.*?)\./;
-                    push @categories_by_role, $all_categories{$category} if $category;
-                }
-                my %hash1 = map { $_ => 'a' } @categories;
-                my %hash2 = map { $_ => '' } @categories_by_role;                
-                my @total = grep { $hash1{$_} } keys %hash2;
-                while ( my ( $k, $v ) = each %{ $vpre || {} } ) {
-                    if ( $k eq 'project' && $count gt 1 ) {
-                        $wh->{"_project_security.$k"} = { '$in' => [ undef, keys %{ $v || {} } ] };
-                    }
-                    else {
-                        $wh->{"_project_security.$k"} = { '$in' => [ keys %{ $v || {} } ] };
-                    }
-                    if (@categories) { 
-                        $wh->{'category.id'} = { '$in' => [ _unique @total ] } ;
-                    }
-                    else {
-                        $wh->{'category.id'} = { '$in' => [ _unique @categories_by_role ] };
-                    }
-                } ## end while ( my ( $k, $v ) = each...)
-                push @ors, $wh;
-            } ## end while ( my ( $kpre, $vpre ) = each...)
+    return if !$username || $is_root;
+    # TODO stop using category names in permissions
+    my %all_categories = map { _name_to_id($_->{name}) => $_->{id} } mdb->category->find->all;
+    my $user_security = $self->user_projects_ids_with_collection( username => $username, with_role=>1);
+    my @ors;
+    my %cat_filter = map { $_ => '' } @filter_categories;
+    my %role_actions = map { $$_{id}=>$$_{actions} } 
+        mdb->role->find({ id=>mdb->in(keys $user_security), 'actions.action'=> qr/^action.topics\./  })
+        ->fields({ id=>1, actions=>1 })->all;
+
+    # iterate user security
+    while ( my ( $id_role, $colls ) = each %$user_security ) {
+        my $wh;
+        my $count = scalar keys %{ $colls || {} };
+        my @actions_by_idrole = map { $_->{action} } _array( $role_actions{$id_role} );
+        
+        my %categories_for_role;
+        for my $action (@actions_by_idrole) {
+            my ($category) = $action =~ /action\.topics\.(.*?)\./;
+            $categories_for_role{ $all_categories{$category} }=1 if $category && exists $all_categories{$category};
         }
-        my $where_undef = { '_project_security' => undef };
-        push @ors, $where_undef;
+        my @filtered_categories = grep { exists $cat_filter{$_} } keys %categories_for_role if @filter_categories;
+        while ( my ( $coll, $collmid ) = each %{ $colls || {} } ) {
+            if (@filter_categories) { 
+                next unless @filtered_categories;
+                $wh->{'category.id'} = { '$in' => \@filtered_categories } ;
+            } else {
+                my @cfr = keys %categories_for_role;
+                next unless @cfr;
+                $wh->{'category.id'} = { '$in' => \@cfr };
+            }
+            if ( $coll eq 'project' && $count gt 1 ) {
+                # lax: if collection is project then topics with no project can be seen by all
+                $wh->{"_project_security.$coll"} = { '$in' => [ undef, keys %{ $collmid || {} } ] };
+            } else {
+                # strict: if collection is NOT project, then security is tight, no topics seen
+                $wh->{"_project_security.$coll"} = { '$in' => [ keys %{ $collmid || {} } ] };
+            }
+        } 
+        push @ors, $wh if $wh;
+    } 
+    
+    my $where_undef = { '_project_security' => undef };
+    push @ors, $where_undef;
+    $where->{'$or'} = \@ors;
+    if ($where) { 
+        my $last_where = $where;
         $where->{'$or'} = \@ors;
-        if ($where) { 
-            my $last_where = $where;
-            $where->{'$or'} = \@ors;
-            for my $item ( _array $last_where ) {
-                while ( my ( $k, $v ) = each %{ $item || {} } ) {
-                    $where->{$k} = $v;
-                }
+        for my $item ( _array $last_where ) {
+            while ( my ( $k, $v ) = each %{ $item || {} } ) {
+                $where->{$k} = $v;
             }
         }
     }
