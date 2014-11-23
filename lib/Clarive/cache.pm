@@ -52,8 +52,8 @@ sub keyify {
 sub set { 
     my ($self,$key,$value)=@_;
     return if !$ccache;
-    Util->_debug(-1, "+++ CACHE SET: " . ( ref $key ? Util->_to_json($key) : $key ) ) if $ENV{BALI_CACHE_TRACE}; 
-    Util->_debug( Util->_whereami ) if defined $ENV{BALI_CACHE_TRACE} && $ENV{BALI_CACHE_TRACE} > 1 ;
+    Util->_debug(-1, "+++ CACHE SET: " . ( ref $key ? Util->_to_json($key) : $key ) ) if $ENV{CLARIVE_CACHE_TRACE}; 
+    Util->_debug( Util->_whereami ) if $ENV{CLARIVE_CACHE_TRACE} > 1 ;
     $ccache->set( $key, $value ) 
 }
 sub get { 
@@ -61,7 +61,7 @@ sub get {
     return if !$ccache;
     return if $Clarive::_no_cache || $Baseliner::_no_cache;
     return if !$ccache;
-    Util->_debug(-1, "--- CACHE GET: " . ( ref $key ? Util->_to_json($key) : $key ) ) if $ENV{BALI_CACHE_TRACE}; 
+    Util->_debug(-1, "--- CACHE GET: " . ( ref $key ? Util->_to_json($key) : $key ) ) if $ENV{CLARIVE_CACHE_TRACE}; 
     $ccache->get( $key ) 
 }
 sub remove { 
