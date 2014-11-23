@@ -58,7 +58,9 @@ sub setup_baseliner {
     $Baseliner::TLC_MSG = $Clarive::TLC_MSG;
     
     # CONFIG
+    my $app_config = $self->app->opts // {};
     my $baseliner_config = $self->app->opts->{baseliner} // {};
+    $baseliner_config = +{ %$app_config, %$baseliner_config };
     $baseliner_config->{mongo} //= $self->app->config->{mongo};
     $baseliner_config->{redis} //= $self->app->config->{redis};
     
