@@ -379,13 +379,13 @@ sub index_all {
             [{ mid=>1, username=>1 }],
         ],
         master_doc => [
-            [{'$**'=> "text"},{ background=>1 }],
             [{ mid=>1 },{ unique=>1 }],
             [{ name=>1, moniker=>1, collection=>1 }],
             [{ step=>1, status=>1 }],
             [{ collection=>1, name=>1 }],
             [{ status=>1, pid=>1, collection=>1 }],
             [{ status=>1, maxstarttime=>1, collection=>1 }],
+            [{'$**'=> "text"},{ background=>1 }],
         ],
         message => [
             [{ queue=>1 }],
@@ -413,12 +413,16 @@ sub index_all {
             [{ modified_on=>1 }],
             [{ modified_on=>-1 }],
             [{ created_on=>1, mid=>1 }],
+            [{ mid=>1, 'category.id'=>1 }],
             [{ created_on=>1, m=>1 }],
             [{ name_category=>1 }],
-            [{'$**'=> "text"},{ background=>1 }],
+            [{ 'category.id'=>1, 'category_status.id'=>1, 'category_status.type'=>1 }],
+            [{ '_project_security.project'=>1, 'category.id'=>1 }],
+            [{ '_project_security.area'=>1, 'category.id'=>1 }],
             [{ '_project_security'=>1, category_name=>1 }],
             [{ '_project_security'=>1, 'category.id'=>1, 'category_status.type'=>1 }],
             [{ '_sort.numcomment'=>1, _project_security=>1, category_status=>1, 'category.id'=>1 }],
+            [{'$**'=> "text"},{ background=>1 }],
         ],
         topic_image => [
             [{ id_hash => 1 }],
@@ -433,12 +437,17 @@ sub index_all {
         my $idx = shift;
         for my $cn ( keys %{ $idx || {} } ) {
             next if defined $collection && $cn ne $collection;
-            Util->_debug( "Indexing collection: $cn..." );
+            Util->_log( "Indexing collection: $cn..." );
             my $coll = $self->collection($cn);
-            $self->$cn->drop_indexes if $p{drop} && $cn ne 'fs.files';
+            if( $p{drop} && $cn ne 'fs.files' ) {
+                Util->_info('Dropping indexes first.');
+                $self->$cn->drop_indexes;
+            }
             for my $ix ( @{ $idx->{$cn} } ) {
+                my $json = Util->_encode_json($ix);
                 try {
                     if( ref $ix eq 'ARRAY' ) {
+                        _log "ENSURING $cn INDEX: $json";
                         $coll->ensure_index( @$ix );
                     } else {
                         _log _loc 'Eval collection %1 index %2', $cn, $ix;
@@ -446,7 +455,7 @@ sub index_all {
                     }
                 } catch {
                     my $err = shift;
-                    _error(_loc('Error indexing collection %1 (index: %2): %3', $cn, Util->_encode_json($ix), $err ));
+                    _error(_loc('Error indexing collection %1 (index: %2): %3', $cn, $json, $err ));
                 };
             }
         }
@@ -462,7 +471,7 @@ sub index_all {
      
     for my $f ( @from_files ) {
         my $i = Util->_load( ''.$f->slurp );
-        Util->_debug( "Processing index file $f" );
+        Util->_log( "Processing index file $f" );
         $index_hash->($i);
     }
 }

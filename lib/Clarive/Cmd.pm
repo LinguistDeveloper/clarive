@@ -13,6 +13,7 @@ has app => qw(is ro required 1),
                 verbose 
                 args 
                 argv
+                pos
             /];
 
 # command opts have the app opts + especific command opts from config

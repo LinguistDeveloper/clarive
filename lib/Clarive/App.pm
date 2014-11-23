@@ -14,6 +14,7 @@ has carp_always   => qw(is ro default 0);
 
 has argv   => qw(is ro isa ArrayRef required 1);  # original command line ARGV
 has args   => qw(is ro isa HashRef required 1);  # original command line args
+has pos    => qw(is ro isa ArrayRef required 1);  # positional cmd line arguments
 has config => qw(is rw isa HashRef required 1);  # full config file (config/global.yml + $env.yml)
 has opts   => qw(is ro isa HashRef required 1);  # merged config + args
 
@@ -81,6 +82,7 @@ around 'BUILDARGS' => sub {
     $args{argv} = \@ARGV;
     $args{lang} //= $ENV{CLARIVE_LANG};
     $args{args} = $self->clone( \%args );
+    $args{pos} = defined $args{''} ? [ ref $args{''} ? @{ $args{''} } : $args{''} ] : [];
 
     #Force legacy ENVs to $args{env}
     $ENV{BASELINER_ENV} = $args{env};
