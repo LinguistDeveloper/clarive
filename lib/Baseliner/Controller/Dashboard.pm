@@ -673,11 +673,19 @@ sub list_baseline : Private {
 
 
 sub list_lastjobs: Private{
-    my ( $self, $c, $dashboard_id ) = @_;
+    my ( $self, $c, $dashboard_id, $params ) = @_;
     my $perm = Baseliner->model('Permissions');
-    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.lastjobs');	
+
+    #######################################################################################################
+    #CONFIGURATION DASHLET
+    ##########################################################################################################
+    my $config = get_config_dashlet( 'list_lastjobs', $dashboard_id, $params );
+    ##########################################################################################################
+    $c->stash->{dashboard_id} = $config->{dashboard_id};
+
     my @mid_filters = ();
-    my $limit = $default_config->{rows} // 10;
+    my $limit = $config->{rows} // 10;
+    my $statuses = $config->{statuses} // 'ALL';
     my $username = $c->username;
 
     if( !$perm->is_root($username) ) {
@@ -690,27 +698,18 @@ sub list_lastjobs: Private{
     my $where = {};
     $where->{'projects.mid'} = mdb->in(@mid_filters) if @mid_filters;
     $where->{collection} = 'job';
-    my @rs_search = mdb->master_doc->find( $where )->sort({ starttime => -1 })->limit($limit)->all;
+
+    my @filter_statuses;
+    if ( $statuses && $statuses ne 'ALL' ) {
+        @filter_statuses = split /,/,$statuses;
+        $where->{status} = mdb->in(@filter_statuses);
+    }
+    my @rs_search = mdb->master_doc->find( $where )->sort({ starttime => -1 })->all;
 
     my $numrow = 0;
     my @lastjobs;
+    my $default_config;
     
-    #######################################################################################################
-    #CONFIGURATION DASHLET
-    ##########################################################################################################
-    
-    if($dashboard_id){
-        my $dashboard_rs = mdb->dashboard->find({_id => mdb->oid($dashboard_id)});
-        my @config_dashlet = grep {$_->{url}=~ 'list_lastjobs'} _array $dashboard_rs->{dashlets};
-        
-        if($config_dashlet[0]->{params}){
-            foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
-                $default_config->{$key} = $config_dashlet[0]->{params}->{$key};
-            };              
-        }       
-    }   
-    ##########################################################################################################
-
     for my $doc ( @rs_search ) {
         last if $numrow >= $limit;
         try {
@@ -766,33 +765,17 @@ sub list_pending_jobs: Private{
     @filter_statuses = split /,/,$statuses;
     $where->{status} = mdb->in(@filter_statuses);
 
-    my @rs_search = mdb->master_doc->find( $where )->sort({ starttime => -1 })->limit($limit)->all;
+    my @rs_search = mdb->master_doc->find( $where )->sort({ starttime => -1 })->all;
 
     my $numrow = 0;
     my @pending_jobs;
     my $default_config;
     
-    #######################################################################################################
-    #CONFIGURATION DASHLET
-    ##########################################################################################################
-    
-     if($dashboard_id){
-        my $dashboard_rs = mdb->dashboard->find({_id => mdb->oid($dashboard_id)});
-        my @config_dashlet = grep {$_->{url}=~ 'list_pending_jobs'} _array $dashboard_rs->{dashlets};
-        
-        if($config_dashlet[0]->{params}){
-            foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
-                $default_config->{$key} = $config_dashlet[0]->{params}->{$key};
-            };				
-        }		
-    }	
-    ##########################################################################################################
-    my @lastjobs;
     for my $doc ( @rs_search ) {
-        last if $numrow > $limit;
+        last if $numrow >= $limit;
         try {
             my $job = ci->new( $doc->{mid} );
-            push @lastjobs,
+            push @pending_jobs,
                 {
                 mid       => $job->mid,
                 name      => $job->name,
@@ -800,14 +783,16 @@ sub list_pending_jobs: Private{
                 rollback  => $job->rollback,
                 status    => $job->status,
                 starttime => $job->starttime,
-                endtime   => $job->endtime
+                endtime   => $job->endtime,
+                bl => $job->bl,
+                apps => join ",", _array($job->{job_contents}->{list_apps})
                 };
             $numrow++;
         } catch {
             _log "FAILURE Searching job ".$doc->{mid}.": " . shift;
         };
     }
-    $c->stash->{lastjobs} =\@lastjobs;
+    $c->stash->{pending_jobs} =\@pending_jobs;
 }
 
 sub list_emails: Private{

@@ -731,7 +731,12 @@ sub status_list {
         %statuses =  ci->status->statuses;
     }
     $status //= $topic->{category_status}{id};
-    my @user_roles = ci->user->roles( $username );
+    my @user_roles;
+    if ( model->Permissions->is_root($username) ) {
+        @user_roles = map {$_->{id}} mdb->role->find({ })->all;
+    } else {
+        @user_roles = ci->user->roles( $username );
+    }
     my @user_workflow = _unique map {$_->{id_status_to} } Baseliner->model("Topic")->user_workflow( $username );
     my $cat = mdb->category->find_one({ id=>''.$topic->{category}{id} },{ workflow=>1 });
     
@@ -821,12 +826,15 @@ sub promotes_and_demotes {
     # Promote
     my @status_to = $self->status_list( dir => 'promote', topic => $topic, username => $username, status => $id_status_from_lc, statuses => \%statuses );
     
+    _warn \@status_to;
+
     my $promotable={};
     my $job_promotable={};
 
     for my $status ( @status_to ) {
-        for my $bl ( map { $bls{$_} } _array $status->{bls} ) {        
-            if ( !@project_bls || $bl->{bl} ~~ @project_bls ){
+        for my $bl ( map { $bls{$_} } _array $status->{bls} ) {
+
+            if ( !@project_bls || $bl ~~ @project_bls ){
                 $promotable->{ $bl } = \1;
                 $promotable->{'p'.$bl.$status->{id_status}} = \1;
                 push @job_transitions, {

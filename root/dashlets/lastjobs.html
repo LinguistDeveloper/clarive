@@ -4,6 +4,7 @@ description: List of last jobs
 config: config.dashlet.lastjobs
 url: /dashboard/list_lastjobs
 html: /dashlets/lastjobs.html
+title: Jobs
 
 -->
 <%perl>
@@ -12,7 +13,7 @@ html: /dashlets/lastjobs.html
     my $status_id = "status". _nowstamp;
 </%perl>
 
-    <div style="clear:left;">
+    <div style="clear:left;border-width:1px;">
         <h2><% _loc("Jobs") %></h2>
         <script language="javascript">
             function render_level ( obj, td_id ) {
@@ -56,25 +57,34 @@ html: /dashlets/lastjobs.html
                 }
             };
         </script>
-            <table class="table table-bordered table-condensed dashboard">
-                <thead>
-                    <tr>
-                        <th><% _loc("Job") %></th>
-                        <th><% _loc("Status") %></th>
-                        <th><% _loc("Start") %></th>
-                        <th><% _loc("End") %></th>
-                    </tr>
-                </thead>
-                    <tbody>
+            <table style="font-size: 80%;">
+                <tr>
+                    <td>
+                        <table width="550" >
+                            <tr>
+                                <th style="width:15%"><% _loc("Job") %></th>
+                                <th style="width:20%"><% _loc("Status") %></th>
+                                <th style="width:15%"><% _loc("Projects") %></th>
+                                <th style="width:15%"><% _loc("Start") %></th>
+                                <th style="width:15%"><% _loc("End") %></th>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div style="width:550px; height:353px; overflow-y:auto;">
+                            <table  class="table table-striped" width="550" >
 %my $row = 0;
 %foreach my $lastjob (_array @lastjobs){
 %$row = $row + 1;
-                    <tr>
-                        <td><b><a href="javascript:Baseliner.addNewTab('/job/log/dashboard?mid=<%$lastjob->{mid}%>&name=<%$lastjob->{name}%>', _('Log <%$lastjob->{name}%>') );"><%$lastjob->{name}%></a></b></td>
-                        <td id='row<%$row%>_<%$status_id%>'><%$lastjob->{status}%></td>
-                        <td><% length($lastjob->{starttime}) ? $lastjob->{starttime}: '' %></td>
-                        <td><% length($lastjob->{endtime}) ? $lastjob->{endtime}: '' %> </td>
-                    </tr>
+                                <tr>
+                                    <td style="width:15%"><b><a href="javascript:Baseliner.addNewTab('/job/log/dashboard?mid=<%$lastjob->{mid}%>&name=<%$lastjob->{name}%>', _('Log <%$lastjob->{name}%>') );"><%$lastjob->{name}%></a></b></td>
+                                    <td style="width:20%" id='row<%$row%>_<%$status_id%>'><%$lastjob->{status}%></td>
+                                    <td style="width:15%"><% length($lastjob->{apps}) ? $lastjob->{apps}: '' %></td>
+                                    <td style="width:15%"><% length($lastjob->{starttime}) ? $lastjob->{starttime}: '' %></td>
+                                    <td style="width:15%"><% length($lastjob->{endtime}) ? $lastjob->{endtime}: '' %> </td>
+                                </tr>
                 <script>
                     var details_job = new Object();
                     details_job.status = '<%$lastjob->{status}%>';
@@ -84,7 +94,10 @@ html: /dashlets/lastjobs.html
                     render_level(details_job, 'row<%$row%>_<%$status_id%>');
                 </script>
 %}            
-            </tbody>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
         </table>
     </div>
 

@@ -3,7 +3,7 @@
     $topic_mid
     $topic_meta
     $topic_data
-    $jobs => 0
+    $jobs => -1
     $has_comments
     $HTMLbuttons => 0
     $permissionEdit => 0
@@ -176,7 +176,7 @@ padding: 2px 4px 2px 7px;
         <li <% $tabactive[1] and 'class="active"' %>>
             <a href="#activity<% $ii %>" id="tab-activity<% $ii %>" data-toggle="tab"><% _loc('Activity') %></a>
         </li>
-        <li <% $tabactive[2] and 'style="display: none"' %>>
+        <li <% $jobs eq -1 and 'style="display: none"' %>>
             <a href="#jobs<% $ii %>" id="tab-jobs<% $ii %>" data-toggle="tab"><% _loc('Jobs') %></a>
         </li>
 <!--         <li <% $tabactive[3] and 'class="active"' %>>
