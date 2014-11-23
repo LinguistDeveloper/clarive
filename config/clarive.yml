@@ -32,6 +32,7 @@ mongo:
     client:
         host: 'localhost:27017'
         auto_reconnect: 1
+        query_timeout: -1
         #auto_connect: 1
         #host: 'mongodb://localhost:27017,localhost2:27018'
         #w
@@ -41,7 +42,6 @@ mongo:
         #username
         #password
         #db_name
-        #query_timeout: -1
         #max_bson_size
         #find_master: 1
         #ssl
