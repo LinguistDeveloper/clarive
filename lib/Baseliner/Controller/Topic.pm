@@ -1919,7 +1919,7 @@ sub xget_files : Local {
 sub grid_count : Local {
     my ($self,$c)=@_;
     if( my $lq = $c->req->params->{lq} ) {
-        my $cnt = mdb->topic->find($lq)->count;
+        my $cnt = mdb->topic->find($lq)->fields({_id=>1})->count;
         $c->stash->{json} = { count=>$cnt };
     } else {
         $c->stash->{json} = { count=>9999999 };
