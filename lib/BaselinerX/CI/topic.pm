@@ -190,7 +190,7 @@ sub activity {
     require Baseliner::Sugar;
 
     my $activity;
-    if(Baseliner->config->{activity_from_event} == 1){
+    if( (Baseliner->config->{activity_from_event}//0) == 1){
         _log "listing events";
         $activity = Baseliner::Sugar::events_by_mid( $self->mid, min_level => 2 );
     } else{
