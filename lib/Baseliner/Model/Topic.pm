@@ -536,14 +536,18 @@ sub topics_for_user {
     #_debug( $order_by );
     
     #_debug( $where );
-    my $rs = mdb->topic->find( $where )->fields({ mid=>1, labels=>1 })->sort( $order_by );
-    $cnt = $rs->count;
-    $start = 0 if length $start && $start>=$cnt; # reset paging if offset
+    my $rs = mdb->topic->find( $where ); 
+    #_debug( $rs->explain );
+    $rs->fields({ mid=>1, labels=>1 }); 
+    # $cnt = $rs->count;
+    # $start = 0 if length $start && $start>=$cnt; # reset paging if offset
+    $rs->sort( $order_by );
     $rs->skip( $start ) if $start >= 0 ;
     $rs->limit( $limit ) if $limit >= 0 ;
     my @topics = $rs->all;
     my %mid_docs = map { $_->{mid}=>$_ } @topics; 
     my @mids = map { $$_{mid} } @topics;  # keep order
+    $cnt ||= $p->{last_count} // scalar(@topics);
     
     # get mid data from cache
     my %mid_data = map { $$_{mid} => $_ } grep { $_ } map { cache->get({ d=>'topic:view', mid=>"$_" }) } @mids; 
@@ -602,7 +606,7 @@ sub topics_for_user {
             }
         };
     }
-    return $cnt, @rows ;
+    return { count=>$cnt, last_query=>$where, sort=>$order_by }, @rows ;
 }
 
 
@@ -2637,7 +2641,7 @@ sub search_provider_type { 'Topic' };
 sub search_query {
     my ($self, %p ) = @_;
     my $params = $p{params} // {};
-    my ($cnt, @rows ) =  $self->topics_for_user({ username=>$p{username}, limit=>$p{limit} // 1000, query=>$p{query}, topic_list=>$params->{topic_list}, clear_filter => 1});
+    my ($info, @rows ) =  $self->topics_for_user({ username=>$p{username}, limit=>$p{limit} // 1000, query=>$p{query}, topic_list=>$params->{topic_list}, clear_filter => 1});
     my @mids = map { $_->{topic_mid} } @rows;
     #my %descs = mdb->topic->find_hashed(mid => { mid=>mdb->in(@mids) },{ description=>1, mid=>1 })->all;
     return map {

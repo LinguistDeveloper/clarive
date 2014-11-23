@@ -868,7 +868,7 @@ sub list_topics: Private{
     
     # go to the controller for the list
     my $p = { limit => $default_config->{rows}, username=>$c->username };
-    my ($cnt, @rows) = $c->model('Topic')->topics_for_user( $p );
+    my ($info, @rows) = $c->model('Topic')->topics_for_user( $p );
     $c->stash->{topics} = \@rows ;
 }
 
@@ -885,7 +885,7 @@ sub list_filtered_topics_old: Private{
     
     # go to the controller for the list
     my $p = { limit => $default_config->{rows}, username=>$c->username };
-    my ($cnt, @rows) = $c->model('Topic')->topics_for_user( $p );
+    my ($info, @rows) = $c->model('Topic')->topics_for_user( $p );
     $c->stash->{topics} = \@rows ;
 }
 
@@ -924,7 +924,7 @@ sub list_filtered_topics: Private{
         $p->{categories} = \@categories_ids;
     }
 
-    my ($cnt, @rows) = $c->model('Topic')->topics_for_user( $p );
+    my ($info, @rows) = $c->model('Topic')->topics_for_user( $p );
     $c->stash->{filtered_topics} = \@rows ;
 }
 
@@ -1244,7 +1244,7 @@ sub list_status_changed: Local{
     #my @user_project_ids = Baseliner->model("Permissions")->user_projects_ids( username => $c->username);
     
     my %my_topics;
-    my ($cnt, @rows ) = Baseliner->model('Topic')->topics_for_user({ username => $c->username, limit=>1000, query=>undef, clear_filter => 1 });
+    my ($info, @rows ) = Baseliner->model('Topic')->topics_for_user({ username => $c->username, limit=>1000, query=>undef, clear_filter => 1 });
     map { $my_topics{$_->{mid}} = 1 } @rows;
 
     

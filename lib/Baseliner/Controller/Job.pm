@@ -596,7 +596,7 @@ sub jc_store : Local  {
         if( $ci->is_release ) {
             my @changesets = grep { $_->is_changeset } $ci->children( where=>{collection=>'topic'}, no_rels=>1 );
             my @cs_mids = map { $_->mid } @changesets;
-            my ($cnt, @cs_user) = model->Topic->topics_for_user({ username=>$c->username, clear_filter=>1, id_project=>$id_project, statuses=>[$status_from], topic_list=>\@cs_mids });
+            my ($info, @cs_user) = model->Topic->topics_for_user({ username=>$c->username, clear_filter=>1, id_project=>$id_project, statuses=>[$status_from], topic_list=>\@cs_mids });
             @chi = map {
                my $cs_data = $_;
                $children{ $$cs_data{mid} } = 1;

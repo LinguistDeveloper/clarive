@@ -95,7 +95,7 @@ sub category_contents : Local {
     my ($self,$c) = @_;
     my %seen = ();
     my ($category_id) = _array($c->req->params->{category_id});
-    my ($cnt,@user_topics) = Baseliner->model('Topic')->topics_for_user( { username => $c->username, categories => $category_id, clear_filter => 1 });
+    my ($info,@user_topics) = Baseliner->model('Topic')->topics_for_user( { username => $c->username, categories => $category_id, clear_filter => 1 });
     @user_topics = map { $_->{mid}} @user_topics;
  
     my @rels = mdb->topic->find( { 'category_status.type' => mdb->nin('F','FC'), mid => mdb->in(@user_topics) })->all;
@@ -179,7 +179,7 @@ sub tree_topics_project : Local {
     my $project = $c->req->params->{project} ;
     my $id_project = $c->req->params->{id_project} ;
     
-    my ($cnt,@user_topics) = Baseliner->model('Topic')->topics_for_user( { username => $c->username, id_project => $id_project, clear_filter => 1 });
+    my ($info,@user_topics) = Baseliner->model('Topic')->topics_for_user( { username => $c->username, id_project => $id_project, clear_filter => 1 });
     @user_topics = map { $_->{mid}} @user_topics;
 
     my @rels = mdb->topic->find( { 'category_status.type' => mdb->nin('F','FC'), mid => mdb->in(@user_topics) })->all;
@@ -238,7 +238,7 @@ sub topic_children_for_state {
         $where->{statuses} = [ "$state_id" ];
     }
 
-    my ( $cnt, @topics ) = Baseliner->model('Topic')->topics_for_user($where);
+    my ( $info, @topics ) = Baseliner->model('Topic')->topics_for_user($where);
     
     return @topics;
 }

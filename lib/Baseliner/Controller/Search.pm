@@ -60,7 +60,6 @@ sub query_raw : Local {
     my $config   = $c->stash->{search_config};
     my $provider = $p->{provider} or _throw _loc('Missing provider');
     my $query    = $p->{query} // _throw _loc('Missing query');
-    _error( $p );
     my @results  = $provider->search_query( username=>$c->username, query=>$query, language=>$c->languages->[0], limit=>$config->{max_results_provider}, params=>$p, ); 
      
     $c->stash->{json} = {

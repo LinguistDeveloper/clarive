@@ -161,8 +161,8 @@ sub list : Local {
         _fail _loc 'Invalid report data for report %1',$id unless ref $$stash{report_data} eq 'ARRAY';
         $c->stash->{json} = { data=>$$stash{report_data}, totalCount=>scalar( @{$$stash{report_data} || []} ) };
     } else {
-        my ($cnt, @rows ) = $c->model('Topic')->topics_for_user( $p );
-        $c->stash->{json} = { data=>\@rows, totalCount=>$cnt };
+        my ($info, @rows ) = $c->model('Topic')->topics_for_user( $p );
+        $c->stash->{json} = { data=>\@rows, totalCount=>$$info{count}, last_query=>$$info{last_query} };
     }
    $c->forward('View::JSON');
 }
@@ -1913,6 +1913,17 @@ sub xget_files : Local {
     $c->forward('/serve_file');
 }
 
+sub grid_count : Local {
+    my ($self,$c)=@_;
+    if( my $lq = $c->req->params->{lq} ) {
+        my $cnt = mdb->topic->find($lq)->count;
+        $c->stash->{json} = { count=>$cnt };
+    } else {
+        $c->stash->{json} = { count=>9999999 };
+    }
+    $c->forward('View::JSON');
+}
+
 sub get_files : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
@@ -1923,7 +1934,7 @@ sub get_files : Local {
 
     my $topic = ci->new($mid);
     my @doc_fields = split /,/, $fields;
-    my ($cnt, @user_topics) = Baseliner->model('Topic')->topics_for_user({ username => $username, clear_filter => 1});
+    my ($info, @user_topics) = Baseliner->model('Topic')->topics_for_user({ username => $username, clear_filter => 1});
     my $where = { mid => mdb->in(map {$_->{mid}} @user_topics), collection => 'topic'};
 
     my @topics = $topic->children( where => $where, depth => -1 );

@@ -1464,8 +1464,20 @@
     ui: sb
 */
 
-
-    grid_topics.store.on('load', function() {
+    // count() is a slow business, so we defer it to after it's all loaded
+    //   we also recount on every page, so that we can reset paging on results changing (TODO?)
+    var deferred_count = function(st,r,o){
+        var lq = st.reader.jsonData.last_query;
+        Cla.ajax_json('/topic/grid_count', { lq: lq }, function(res){
+            if( st.totalLength != res.count ) {
+                st.totalLength = res.count;
+                st.baseParams.last_count = res.count;
+                ptool.onLoad(st,r,o);
+            }
+        });
+    }
+    grid_topics.store.on('load', function(st,r,o) {
+        deferred_count(st,r,o);
         for( var ix=0; ix < grid_topics.store.getCount(); ix++ ) {
             //var rec = grid_topics.store.getAt( ix );
             var cell = grid_topics.view.getCell( ix, 0 );
