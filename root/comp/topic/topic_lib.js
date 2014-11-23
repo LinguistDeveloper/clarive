@@ -3526,6 +3526,7 @@ Cla.topic_grid = function(params){
     //   we also recount on every page, so that we can reset paging on results changing (TODO?)
     var deferred_count = function(st,r,o){
         var lq = st.reader.jsonData.last_query;
+        if( !lq ) return;
         Cla.ajax_json('/topic/grid_count', { lq: lq }, function(res){
             if( st.totalLength != res.count ) {
                 st.totalLength = res.count;
