@@ -1940,7 +1940,7 @@ sub get_files : Local {
 
     my $topic = ci->new($mid);
     my @doc_fields = split /,/, $fields;
-    my ($info, @user_topics) = Baseliner->model('Topic')->topics_for_user({ username => $username, clear_filter => 1});
+    my ($info, @user_topics) = Baseliner->model('Topic')->topics_for_user({ username => $username, query=>$mid, clear_filter => 1});
     my $where = { mid => mdb->in(map {$_->{mid}} @user_topics), collection => 'topic'};
 
     my @topics = $topic->children( where => $where, depth => -1 );
@@ -1978,12 +1978,15 @@ sub get_files : Local {
                         my $related_path = $topic_path.'/'.$related->{name_category}.'_'.$related->{mid};
                         _mkpath($related_path) if (!-d $related_path );
                         foreach my $file ( _array($rel_data->{$field->{id_field}}) ) {
-                           my ( $file_name, $body ) =
-                             $ucm->getfile( params => { docid => $file->{id} } );
-                           if ( $file_name ) {
-                               open my $temp_file, ">>:raw", $related_path.'/'.$file_name;
-                               print $temp_file $body;
-                               close $temp_file;
+                            my ( $file_name, $body, $status ) =
+                                $ucm->getfile( params => { docid => $file->{id} } );
+                            if(0+$status < 0){
+                                $file_name =  "ID_FILE_".$file->{id}."_NOT_PRESENT";
+                                $body = '';
+                            }
+                            open my $temp_file, ">>:raw", $related_path.'/'.$file_name;
+                            print $temp_file $body;
+                            close $temp_file;
                             }
                         }
                     }

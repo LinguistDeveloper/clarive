@@ -214,6 +214,7 @@ sub serve_file : Private {
     my $filename = $c->stash->{serve_filename} or _throw 'Missing filename on stash';
     my $file= $c->stash->{serve_file};
     my $body= $c->stash->{serve_body};
+    my $status = $c->stash->{serve_status} // 0;
     if( defined $file ) {
         $c->serve_static_file( $file );
     } 
@@ -228,6 +229,18 @@ sub serve_file : Private {
     $c->res->header('X-UA-Compatible', 'chrome=1');
     $c->res->headers->remove_header('Pragma');
     $c->res->content_type('application-download;charset=utf-8');
+    if(0+$status < 0){
+        $c->res->headers->remove_header('Cache-Control');
+        $c->res->headers->remove_header('Pragma');
+        $c->res->content_type(' text/html;charset=utf-8');
+        $c->res->body( "<script>alert('File not avaible in the server!')</script>" );
+    }else{
+        $c->res->headers->remove_header('Cache-Control');
+        $c->res->header('Content-Disposition', qq[attachment; filename=$filename]);
+        $c->res->header('X-UA-Compatible', 'chrome=1');
+        $c->res->headers->remove_header('Pragma');
+        $c->res->content_type('application-download;charset=utf-8');
+    }
 }
 
 sub theme : Private {
