@@ -451,7 +451,7 @@ sub branches : Local {
 
             my @changes = $repo->can('list_contents') 
                 ?  $repo->list_contents( request=>$p )
-                : $repo->list_branches( project=>$project, repo_mid=>$id_repo );
+                : $repo->list_branches( project=>$project, repo_mid=>$id_repo, username => $c->username );
             _debug _loc "---- provider ".$repo->name." has %1 changesets", scalar @changes;
             push @cs, @changes;
             # loop through the branch objects 

@@ -1,5 +1,6 @@
 package BaselinerX::GitBranch;
 use Moose;
+use Baseliner::Utils;
 
 has repo_dir => qw/is rw isa Str required 1/;
 has repo_name => qw/is rw isa Str required 1/;
@@ -16,6 +17,7 @@ has demotable => qw/is rw isa Bool default 0/;
 has status => qw/is rw isa Str default trunk/;   # trunk, merged, pending (merge)
 has description => qw/is rw isa Any /, default => '';
 has repo_mid => qw/is rw isa Any/;
+has username => qw/is rw isa Any/;
 
 with 'Baseliner::Role::LC::Changeset';
 
@@ -33,33 +35,41 @@ sub node_url { '/gittree/branch' }
 
 sub node_menu {
     my $self = shift;
+
     my @menu;
     my $sha = ''; #try { $self->head->{commit}->id } catch {''};
-    push @menu,
-        {
-        text => 'Deploy',
-        eval => { url => '/comp/git/deploy.js', title => 'Deploy' },
-        icon => '/static/images/silk/arrow_right.gif'
+    if ( model->Permissions->user_has_action( username => $self->username, action => 'action.git.close_branch') ) {
+        push @menu, {
+            text => _loc('Close branch'),
+            eval => { url => '/comp/git/close.js', title => 'Close branch' },
+            icon => '/static/images/icons/delete.gif'
         };
-    $self->promotable and push @menu,
-        {
-        text => 'To Promote',
-        eval => { url => '/comp/git/promote.js', title => 'Promote' },
-        icon => '/static/images/silk/arrow_down.gif'
-        };
-    $self->demotable and push @menu,
-        {
-        text => 'Demote',
-        eval => { url => '/comp/git/demote.js', title => 'Demote' },
-        icon => '/static/images/silk/arrow_up.gif'
-        };
-    push @menu,
-        {
-        text => 'Create Tag...',
-        eval => { url => '/comp/git/tag_commit.js', title => 'Create Tag...' },
-        icon => '/static/images/icons/tag.gif',
-        data => { sha => $sha },
-        };
+    };
+    # push @menu,
+    #     {
+    #     text => 'Deploy',
+    #     eval => { url => '/comp/git/deploy.js', title => 'Deploy' },
+    #     icon => '/static/images/silk/arrow_right.gif'
+    #     };
+    # $self->promotable and push @menu,
+    #     {
+    #     text => 'To Promote',
+    #     eval => { url => '/comp/git/promote.js', title => 'Promote' },
+    #     icon => '/static/images/silk/arrow_down.gif'
+    #     };
+    # $self->demotable and push @menu,
+    #     {
+    #     text => 'Demote',
+    #     eval => { url => '/comp/git/demote.js', title => 'Demote' },
+    #     icon => '/static/images/silk/arrow_up.gif'
+    #     };
+    # push @menu,
+    #     {
+    #     text => 'Create Tag...',
+    #     eval => { url => '/comp/git/tag_commit.js', title => 'Create Tag...' },
+    #     icon => '/static/images/icons/tag.gif',
+    #     data => { sha => $sha },
+    #     };
     \@menu;
 }
 
