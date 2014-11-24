@@ -78,7 +78,7 @@
     });
     
 
-    var current_job = function() { return store.reader.jsonData.job }
+    var current_job = function() { return store.reader.jsonData.data[0] }
     var current_hash = function() { return store.reader.jsonData.job_key }
 
     store.on( 'beforeload', function( obj, opt ) {
@@ -430,9 +430,9 @@
                  }
     };
 
-    var button_cancel = new Ext.Toolbar.Button({ text : _('Resume Job'), icon: '/static/images/icons/play.png', cls: 'x-btn-text-icon', hidden: true,
+    var button_resume = new Ext.Toolbar.Button({ text : _('Resume Job'), icon: '/static/images/icons/play.png', cls: 'x-btn-text-icon', hidden: false,
         handler: function(){
-            Baseliner.ajaxEval( '/job/resume', { mid: current_job().mid, confirm: _('Do you wish to resume job %1',current_job().job_name) }, function(res) {
+            Baseliner.ci_call( current_job().mid, 'resume', { confirm: _('Do you wish to resume job %1',current_job().job) }, function(res) {
                 Baseliner.message( _('Resume Job'), res.msg );
             });
         } 
@@ -511,6 +511,7 @@
                     cls: 'x-btn-text-icon',
                     handler: annotation
                 },
+                button_resume,
 % if( $user_action->{'action.admin.default'} ) {
                 new Ext.Toolbar.Button({ 
                     text: _('Advanced'),

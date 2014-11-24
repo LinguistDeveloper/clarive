@@ -6298,7 +6298,7 @@ msgid "Job resumed by user %1"
 msgstr "Pase reanudado por el usuario %1"
 
 msgid "Job was not paused"
-msgstr "El pase no fue pausado"
+msgstr "El pase no está en pausa"
 
 msgid "Job restarted by user %1, execution %2, step %3"
 msgstr "Pase reiniciado por el usuario %1, ejecución %2, paso %3"

@@ -55,7 +55,6 @@ sub auto_refresh : Path('/job/log/auto_refresh') {
     my $where = { mid => $mid, 'exec' => 0+($p->{job_exec} || 1) };
     #_debug ( $filter );
     $where->{lev} = mdb->in( grep { $filter->{$_} } keys %$filter ) if ref($filter) eq 'HASH';
-    _debug($where);
     my $rs = mdb->job_log->find($where)->sort({ id=>-1 });
     my $top = $rs->next;
     my $job = ci->job->find_one({ mid=>$mid });
