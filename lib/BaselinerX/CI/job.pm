@@ -777,7 +777,7 @@ sub summary {
     
     my @log_all = mdb->job_log->find({ mid => $self->mid, exec =>0+$p{job_exec} })
         ->fields({ step=>1, service_key=>1, ts=>1, t=>1 })
-        ->sort(Tie::IxHash->new( ts=>1, t=>1 ))->all;
+        ->sort(mdb->ixhash( ts=>1, t=>1 ))->all;
     
     my %log_max; 
     my $last_serv;

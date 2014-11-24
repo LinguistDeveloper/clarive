@@ -356,6 +356,7 @@ sub index_all {
         job_log => [
             [{ id=>1 }],
             [{ mid=>1 }],
+            [[ ts=>1, t=>1 ]],
             [{ mid=>1, exec=>1 }],
             [{ mid=>1, lev=>1, exec=>1 }],
             [{ mid=>1, exec=>1, ts=>1, t=>1 }],
@@ -383,6 +384,7 @@ sub index_all {
             [{ name=>1, moniker=>1, collection=>1 }],
             [{ step=>1, status=>1 }],
             [{ collection=>1, name=>1 }],
+            [[ collection=>1, starttime=>-1 ]],  # job monitor
             [{ status=>1, pid=>1, collection=>1 }],
             [{ status=>1, maxstarttime=>1, collection=>1 }],
             [{'$**'=> "text"},{ background=>1 }],
@@ -400,6 +402,11 @@ sub index_all {
         rule => [
             [{ id=>1 }],
             [{ rule_name=>1 }],
+            [[ rule_seq=>1, _id=>-1 ]],
+            [[ rule_seq=>1, ts=>-1 ]],
+        ],
+        rule_version => [
+            [{ ts=>1 }],
         ],
         sem => [
             [{ key=>1 },{ unique=>1, dropDups => 1 }],

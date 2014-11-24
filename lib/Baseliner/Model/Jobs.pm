@@ -11,7 +11,6 @@ use Try::Tiny;
 use Data::Dumper;
 use utf8;
 use Class::Date;
-use Tie::IxHash;
 
 register 'action.search.job' => { name => 'Search jobs' };
 
@@ -170,8 +169,7 @@ sub monitor {
         $where = { %$where, %$where_filter };
     }
     
-
-    my $rs = mdb->master_doc->find({ collection=>'job', %$where })->sort(Tie::IxHash->new( @order_by ));
+    my $rs = mdb->master_doc->find({ collection=>'job', %$where })->sort(mdb->ixhash( @order_by ));
     $cnt = $rs->count;
     $rs->limit($limit)->skip($start) unless $limit eq -1;
     

@@ -114,7 +114,7 @@ sub queue : Local {
     $where = {};
     $where->{'$and'}= [{ queue=>{'$exists'=>1} },{ queue=>{'$ne'=>[]} } ];
     
-    my $rs = mdb->sem->find( $where )->sort(Tie::IxHash->new( key=>1 ) );
+    my $rs = mdb->sem->find( $where )->sort([ key=>1 ]);
     $rs->skip( $start ) if length $start;
     $rs->limit( $limit ) if length $limit;
     while( my $doc = $rs->next ) {

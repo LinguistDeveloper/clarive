@@ -409,7 +409,7 @@ sub palette : Local {
         @services ]
     };
 
-    my @rules = mdb->rule->find->sort( mdb->ixhash( rule_seq=>1, _id=>-1) )->all; 
+    my @rules = mdb->rule->find->fields({ id=>1, rule_name=>1 })->sort( mdb->ixhash( rule_seq=>1, _id=>-1) )->all; 
     push @tree, {
         id=>$cnt++,
         leaf=>\0,
