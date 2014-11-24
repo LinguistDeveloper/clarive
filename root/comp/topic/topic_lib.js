@@ -2067,10 +2067,10 @@ Cla.topic_grid = function(params){
     var ps = ps_maxi; // current page_size
     var filter_current;
     var stop_filters = false;
-    var typeApplication = '<% $c->stash->{typeApplication} %>';
+    var typeApplication = params.typeApplication; 
     var parse_typeApplication = (typeApplication != '') ? '/' + typeApplication : '';
-    var query_id = '<% $c->stash->{query_id} %>';
-    var id_project = '<% $c->stash->{id_project} %>';
+    var query_id = params.query_id; 
+    var id_project = params.id_project; 
     var id_report = params.id_report || params.id_report_rule;
     var report_type = params.report_type || 'topics';
     var custom_form_url = params.custom_form;
@@ -2078,6 +2078,7 @@ Cla.topic_grid = function(params){
     var report_rows = params.report_rows;
     var report_name = params.report_name;
     var fields = params.fields;
+    var status_id = params.status_id;
 
     if(params.data_report){
      report_rows = params.data_report.report_rows;
@@ -2105,13 +2106,11 @@ Cla.topic_grid = function(params){
     };  // for store_topics
 
     // this grid may be limited for a given category category id 
-    var category_id = '<% $c->stash->{category_id} %>';
+    var category_id = params.category_id;
     if( category_id ) {
         params.id_category = category_id;
         base_params.categories = category_id;
     }
-    var status_id = [];
-    status_id = params.status_id ? params.status_id.split(',') : '<% $c->stash->{status_id} %>' ? '<% $c->stash->{status_id} %>' : undefined;
     base_params.statuses = status_id;
     
 	var store_config;
@@ -3402,6 +3401,13 @@ Cla.topic_grid = function(params){
         filters: fields_filter
     });
     
+    // toolbar
+    var tbar=[ search_field ];
+    if( !typeApplication ) {
+        tbar = tbar.concat([ btn_add, btn_edit, btn_custom ]);
+    }
+    tbar = tbar.concat([ '->', btn_clear_state, btn_reports, btn_kanban, btn_mini ]);
+    
     var grid_topics = new Ext.grid.GridPanel({
         region: 'center',
         //title: _('Topics'),
@@ -3419,28 +3425,10 @@ Cla.topic_grid = function(params){
         deferredRender: true,
         ddGroup: 'explorer_dd',
         viewConfig: {forceFit: force_fit},
-%if ( !$c->stash->{typeApplication} ){
-        sm: check_sm,
-%}
+        sm: !typeApplication ? check_sm : null,
         //loadMask:'true',
         columns: columns,
-        tbar:   [ 
-                search_field
-                ,
-%if ( !$c->stash->{typeApplication} ){              
-                btn_add,
-                btn_edit,
-                btn_custom,
-                // btn_delete,
-%}              
-                //btn_labels
-                '->',
-                btn_clear_state,
-                btn_reports,
-                btn_kanban,
-                btn_mini
-                //btn_close
-        ],      
+        tbar: tbar,      
         bbar: ptool
     });
     
@@ -4040,8 +4028,7 @@ Cla.topic_grid = function(params){
             params: {
                 start:0 , limit: ps,
                 topic_list: params.topic_list,
-                //query_id: '<% $c->stash->{query_id} %>', id_project: '<% $c->stash->{id_project} %>',
-                query_id: '<% $c->stash->{query_id} %>', 
+                query_id: params.query_id, 
                 typeApplication: typeApplication
             }
         });
