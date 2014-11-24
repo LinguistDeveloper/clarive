@@ -451,7 +451,7 @@ sub index_all {
                 $self->$cn->drop_indexes;
             }
             for my $ix ( @{ $idx->{$cn} } ) {
-                my $json = Util->_encode_json($ix);
+                my $json = ref $ix ? Util->_encode_json($ix) : $ix;
                 try {
                     if( ref $ix eq 'ARRAY' ) {
                         _log "ENSURING $cn INDEX: $json";
