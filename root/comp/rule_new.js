@@ -71,7 +71,7 @@
             wiz.last = wiz.current;
             wiz.button_setup();
             job_chain_form.hide();
-            webservice_form.hide();
+            webservice_form.show();
             msg_job.hide();
             msg_ev.hide();
             grid_events.hide();
@@ -79,7 +79,7 @@
             wiz.last = wiz.current;
             wiz.button_setup();
             job_chain_form.hide();
-            webservice_form.show();
+            webservice_form.hide();
             msg_job.hide();
             msg_ev.hide();
             grid_events.hide();
