@@ -235,11 +235,14 @@ sub user_actions_by_topic {
     my @return;
 
     my @roles = $self->user_roles_for_topic( %p );
+    my %roles_actions = map { $$_{id}=>[ map { $$_{action} } grep { defined } _array($$_{actions}) ] } 
+        mdb->role->find({ id=>mdb->in(@roles) },{ id=>1, actions=>1 })->all;
+    
     for my $role ( @roles ) {
         my @actions = _array(cache->get(":role:actions:$role:"));
         try{
             if ( !@actions ) {
-               @actions = map { $_->{action} } @{mdb->role->find_one({id=>$role},{ actions=>1 })->{actions}};
+               @actions = _array( $roles_actions{$role} ); 
                cache->set(":role:actions:$role:",\@actions);
             }
         }catch{};
