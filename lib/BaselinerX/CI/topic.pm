@@ -9,6 +9,7 @@ has name        => qw(is rw isa Any);
 has category    => qw(is rw isa Any);
 has name_category    => qw(is rw isa Any);
 has id_category_status => qw(is rw isa Any);
+has _doc => qw(is rw isa HashRef);
 
 #has_ci 'projects';
 #has_cis 'jobs';
@@ -242,7 +243,12 @@ sub get_data {
 
 sub get_doc {
     my ($self, @rest)=@_;
-    mdb->topic->find_one({ mid=>$self->mid }, @rest); 
+    my $doc = $self->_doc;
+    return $doc if defined $doc;
+    @rest = ( { _txt=>0 } ) unless @rest;
+    $doc = mdb->topic->find_one({ mid=>$self->mid }, @rest ); 
+    $self->_doc($doc);
+    return $doc;
 }
 
 sub get_meta {
