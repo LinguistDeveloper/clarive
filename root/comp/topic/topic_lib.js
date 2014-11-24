@@ -2061,6 +2061,38 @@ Baseliner.comments_for_topic = function(args) {
     });
 };
 
+/* 
+ *********************************************************************************
+ * Topic Grid
+ *********************************************************************************
+ */
+Baseliner.PagingToolbar = Ext.extend( Ext.PagingToolbar, {
+    onLoad: function(store,r,o) {
+        var p = this.getParams();
+        if( o.params && o.params[p.start] ) {
+            var st = o.params[p.start];
+            var ap = Math.ceil((this.cursor+this.pageSize)/this.pageSize);
+            if( ap > this.getPageData().pages ) { 
+                delete o.params[p.start];
+            }
+        }
+        Baseliner.PagingToolbar.superclass.onLoad.call(this,store,r,o);
+    }
+});
+
+Baseliner.open_topic_grid = function(dir,title,mid){
+   var gridp ={ tab_icon: '/static/images/icons/topic.png' } ;
+   if( dir ) {
+       gridp[ dir=='in' ? 'to_mid' : 'from_mid' ] = mid;
+       gridp[ 'tab_icon' ] = '/static/images/icons/topic_' + dir + '.png';
+   }
+   Baseliner.add_tabcomp('/comp/topic/topic_grid.js',  _('#%1 %2', mid, shorten_title( title )), gridp ); 
+};
+
+Baseliner.open_monitor_query = function(q){
+    Baseliner.add_tabcomp('/job/monitor', null, { query: q });
+}
+    
 Cla.topic_grid = function(params){
     var ps_maxi = 25; //page_size for !mini mode
     var ps_mini = 50; //page_size for mini mode
@@ -2154,7 +2186,6 @@ Cla.topic_grid = function(params){
 		};		
 	}
 
-	 
     if( fields ) {
         //console.log('Add fields');
         //console.dir(fields);
@@ -2687,10 +2718,6 @@ Cla.topic_grid = function(params){
 
 
     
-    Baseliner.open_monitor_query = function(q){
-        Baseliner.add_tabcomp('/job/monitor', null, { query: q });
-    }
-    
     var body_mini_tpl = function(){/*
                   <span style='font-weight:[%=font_weight%]; font-size: 12px; cursor: pointer; [%=strike%]' 
                   onclick='javascript:Baseliner.show_topic_colored([%=mid%],"[%=category_name%]","[%=category_color%]", "[%=id%]");'>[%=value%][%=folders%] </span>
@@ -2993,14 +3020,6 @@ Cla.topic_grid = function(params){
         } 
         return t;
     }
-    Baseliner.open_topic_grid = function(dir,title,mid){
-       var gridp ={ tab_icon: '/static/images/icons/topic.png' } ;
-       if( dir ) {
-           gridp[ dir=='in' ? 'to_mid' : 'from_mid' ] = mid;
-           gridp[ 'tab_icon' ] = '/static/images/icons/topic_' + dir + '.png';
-       }
-       Baseliner.add_tabcomp('/comp/topic/topic_grid.js',  _('#%1 %2', mid, shorten_title( title )), gridp ); 
-    };
     var render_actions = function(value,metadata,rec,rowIndex,colIndex,store) {
         var actions_html = new Array();
         var swGo = false;
@@ -3174,19 +3193,6 @@ Cla.topic_grid = function(params){
             }
         },
         forceSelection: true
-    });
-    Baseliner.PagingToolbar = Ext.extend( Ext.PagingToolbar, {
-        onLoad: function(store,r,o) {
-            var p = this.getParams();
-            if( o.params && o.params[p.start] ) {
-                var st = o.params[p.start];
-                var ap = Math.ceil((this.cursor+this.pageSize)/this.pageSize);
-                if( ap > this.getPageData().pages ) { 
-                    delete o.params[p.start];
-                }
-            }
-            Baseliner.PagingToolbar.superclass.onLoad.call(this,store,r,o);
-        }
     });
 
     var ptool = new Baseliner.PagingToolbar({            
