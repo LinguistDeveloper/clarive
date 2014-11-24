@@ -325,8 +325,10 @@ Returns an array of project ids for the projects the user has access to with the
 
 sub user_projects_ids_with_collection {
     my ( $self, %p ) = @_;
-    my $sec_projects;
+    my $cache_key = { %p, d=>'topic' };
     my $with_role = $p{with_role} // 0;
+    defined && return( $with_role ? $_ : values(%$_) ) for cache->get($cache_key);
+    my $sec_projects;
     my $username = $p{username};
     $p{roles} //= '';
     my @roles = split(/,/, $p{roles} );
@@ -348,6 +350,7 @@ sub user_projects_ids_with_collection {
             }
         }
     }
+    cache->set($cache_key,\%ret);
     return $with_role ? \%ret : values %ret;
 }
 
@@ -371,7 +374,7 @@ sub build_project_security {
     $is_root //= $self->is_root( $username );
     return if !$username || $is_root;
     # TODO stop using category names in permissions
-    my %all_categories = map { _name_to_id($_->{name}) => $_->{id} } mdb->category->find->all;
+    my %all_categories = map { _name_to_id($_->{name}) => $_->{id} } mdb->category->find->fields({ name=>1, id=>1 })->all;
     my $user_security = $self->user_projects_ids_with_collection( username => $username, with_role=>1);
     my @ors;
     my %cat_filter = map { $_ => '' } @filter_categories;

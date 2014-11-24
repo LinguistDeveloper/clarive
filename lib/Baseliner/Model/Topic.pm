@@ -1335,7 +1335,7 @@ sub get_data {
         ##CAMPOS DE SISTEMA ******************************************************************************************************
         ##************************************************************************************************************************
         
-        $data = mdb->topic->find_one({ mid=>"$topic_mid" }) 
+        $data = mdb->topic->find_one({ mid=>"$topic_mid" },{ _txt=>0 }) 
                 or _error( "topic mid $topic_mid document not found" );
         my @labels = _array( $data->{labels} );
         $data->{topic_mid} = "$topic_mid";
@@ -2597,6 +2597,9 @@ sub get_categories_permissions{
     my $order = delete $param{order};
     my $topic_mid = delete $param{topic_mid};
     
+    my $cache_key = { d=>'topic:meta', %param };
+    ref($_) && return @$_ for cache->get($cache_key);
+    
     my $dir = $order->{dir} && $order->{dir} =~ /desc/i ? -1 : 1;
     my $sort = $order->{sort} || 'name';
     
@@ -2629,6 +2632,7 @@ sub get_categories_permissions{
     my %granted_categories = map { $_ => 1 } @permission_categories;
     @categories = grep { $granted_categories{_name_to_id( $_->{name} )}} @categories;
 
+    cache->set($cache_key, \@categories );
     return @categories;
 }
 

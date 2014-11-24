@@ -491,6 +491,7 @@ sub update : Local {
     }
     }
     cache->remove(qr/:$p->{username}:/);
+    cache->remove({ d=>'security' });
 
     $c->forward('View::JSON');
 }

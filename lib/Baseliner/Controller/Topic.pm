@@ -380,7 +380,8 @@ sub get_meta_permissions : Private {
     my ($username, $meta, $data, $name_category, $name_status,$id_category) = @p{qw(username meta data name_category name_status id_category)};
     my @hidden_field;
     
-    my $cache_key = { d=>'topic:meta', cat=>($id_category//$data->{category}{id}//_fail('Missing category.id')), u=>$username };
+    my $mid = $data->{topic_mid};
+    my $cache_key = { d=>'topic', mid=>$mid, cat=>($id_category//$data->{category}{id}//_fail('Missing category.id')), u=>$username };
     defined && return $_ for cache->get($cache_key);
     
     my $parse_category = $data->{name_category} ? _name_to_id($data->{name_category}) : _name_to_id($name_category);
@@ -538,7 +539,7 @@ sub view : Local {
             } catch {
                 $c->stash->{viewKanban} = 0;
             };
-            $topic_doc = mdb->topic->find_one({ mid => "$topic_mid" });
+            $topic_doc = $topic_ci->get_doc;
         } else {
             $c->stash->{viewKanban} = 0;
         }
