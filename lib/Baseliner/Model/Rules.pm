@@ -324,7 +324,11 @@ sub dsl_build {
             my $reg = Baseliner->registry->get( $key );
             if( $reg->isa( 'BaselinerX::Type::Service' ) ) {
                 push @dsl, $spaces->($level) . '{';
-                push @dsl, $spaces->($level) . sprintf(q{   my $config = parse_vars %s, $stash;}, Data::Dumper::Dumper( $data ) );
+                if( length $attr->{sub_name} ) {
+                    push @dsl, $spaces->($level) . sprintf(q{   my $config = parse_vars +{ %{ %s || {} }, %{ delete($$stash{shortcut_config}) // {}} }, $stash;}, Data::Dumper::Dumper( $data ) );
+                } else {
+                    push @dsl, $spaces->($level) . sprintf(q{   my $config = parse_vars %s, $stash;}, Data::Dumper::Dumper( $data ) );
+                }
                 push @dsl, $spaces->($level) . sprintf(q{   launch( "%s", q{%s}, $stash, $config => '%s' );}, $key, $name, ($data_key//'') );
                 push @dsl, $spaces->($level) . '}';
                 #push @dsl, $spaces->($level) . sprintf('merge_data($stash, $ret );', Data::Dumper::Dumper( $data ) );
@@ -948,6 +952,9 @@ register 'statement.shortcut' => {
         my $scut = $n->{data}{call_shortcut};
         local $Data::Dumper::Terse = 1;
         my $local_stash = '';
+        if( ref $n->{data}{config_data} eq 'HASH' ) {
+            $n->{data}{stash_data}{shortcut_config} = $n->{data}{config_data};
+        }
         if( ref $n->{data}{stash_data} eq 'HASH' ) {
             $local_stash .= sprintf('local $$stash{%s} = %s;'."\n", $_, Data::Dumper::Dumper($n->{data}{stash_data}{$_}) )
                 for keys $n->{data}{stash_data};

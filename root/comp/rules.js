@@ -283,7 +283,7 @@
             clipboard.node.attributes.has_shortcut = true;
             node.appendChild({
                 text: clipboard.node.text,
-                data: { call_shortcut: clipboard.node.attributes.sub_name },
+                data: { call_shortcut: clipboard.node.attributes.sub_name, source_key: clipboard.node.attributes.key },
                 key: 'statement.shortcut', 
                 leaf: true,
                 icon: '/static/images/icons/shortcut.png'
