@@ -2397,8 +2397,8 @@ Cla.topic_grid = function(params){
 
     var add_topic = function() {
         var win;
-        if( params.id_category!=undefined ) {
-            topic_create_for_category({ id: params.id_category });
+        if( category_id!=undefined ) {
+            topic_create_for_category({ id: category_id });
             return;
         }
         var render_category = function(value,metadata,rec,rowIndex,colIndex,store){
