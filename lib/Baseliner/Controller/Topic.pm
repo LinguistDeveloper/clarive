@@ -1987,7 +1987,6 @@ sub get_files : Local {
                             open my $temp_file, ">>:raw", $related_path.'/'.$file_name;
                             print $temp_file $body;
                             close $temp_file;
-                            }
                         }
                     }
                 }
