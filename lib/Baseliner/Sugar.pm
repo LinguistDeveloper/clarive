@@ -314,7 +314,7 @@ sub activity_by_mid {
         delete $_->{_id};
         my $event_data =  $_->{vars};
         delete $_->{vars};
-        my $d = { %$_ , %$event_data };
+        my $d = $_ && $event_data ? { %$_ , %$event_data } : $_ ? %$_ : $event_data ? %$event_data : {};
         
         try {
             my $ev = Baseliner->model('Registry')->get( $d->{event_key} ); # this throws an exception if key not found
