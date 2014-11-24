@@ -7878,3 +7878,6 @@ msgstr "Tópico %1 de la categoría %2 ha sido modificado/creado por %3"
 
 msgid "Ignore finished statuses"
 msgstr "Ignorar estados finales"
+
+msgid "View in tree"
+msgstr "Ver en el árbol de proyecto"

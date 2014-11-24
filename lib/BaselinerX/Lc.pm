@@ -170,7 +170,8 @@ sub lc_for_project {
                 }
                 map { _array($$_{workflow}) }
                 mdb->category->find->fields({ workflow=>1 })->all;
-
+        push @from_statuses, map { $_->{id_status} } ci->status->find({ view_in_tree => '1' })->sort({ seq=>1 })->all; 
+        
         push @states, map {
                 my $project_ci = ci->new($id_prj);
                 my @project_bls = map { $_->{bl} } _array $project_ci->bls;

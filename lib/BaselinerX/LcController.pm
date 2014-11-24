@@ -826,8 +826,6 @@ sub promotes_and_demotes {
     # Promote
     my @status_to = $self->status_list( dir => 'promote', topic => $topic, username => $username, status => $id_status_from_lc, statuses => \%statuses );
     
-    _warn \@status_to;
-
     my $promotable={};
     my $job_promotable={};
 
@@ -871,7 +869,7 @@ sub promotes_and_demotes {
 
     my $demotable={};
     my $config = config_get( 'config.job' );
-    _warn $config;
+
     for my $status ( @status_from ) {
         my @bl_to = _array $statuses{ $status->{id_status} }{bls};
         for my $bl ( map { $bls{$_} } @bl_from ) {        
