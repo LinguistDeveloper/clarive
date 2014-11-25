@@ -1447,7 +1447,7 @@ sub topics_for_release : Local {
         $depth = ci->report->find_one({ mid => $p->{id_report} })->{recursivelevel} // "2" 
     }
     
-    my @cis = ci->new($p->{id_release})->children( mids_only => 1, where => { collection => 'topic'}, depth => $depth);
+    my @cis = ci->new($p->{id_release})->children( mids_only => 1, rel_type => 'topic_topic', where => { collection => 'topic'}, depth => $depth);
 
     my @topics = _unique map { $_->{mid} } @cis;
     push @topics, $p->{id_release};        
