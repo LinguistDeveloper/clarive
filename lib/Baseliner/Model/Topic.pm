@@ -2591,13 +2591,13 @@ sub set_labels {
 sub get_categories_permissions{
     my ($self, %param) = @_;
     
+    my $cache_key = { d=>'topic:meta', %param };
+    ref($_) && return @$_ for cache->get($cache_key);
+    
     my $username = delete $param{username};
     my $type = delete $param{type};
     my $order = delete $param{order};
     my $topic_mid = delete $param{topic_mid};
-    
-    my $cache_key = { d=>'topic:meta', %param };
-    ref($_) && return @$_ for cache->get($cache_key);
     
     my $dir = $order->{dir} && $order->{dir} =~ /desc/i ? -1 : 1;
     my $sort = $order->{sort} || 'name';
