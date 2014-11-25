@@ -33,7 +33,7 @@
             {  xtype: 'textfield', name: 'name', fieldLabel: _('Role Name'), allowBlank: false }, 
             {  xtype: 'textarea', name: 'description', height: 100, fieldLabel: _('Description') },
             {  xtype: 'textfield', name: 'mailbox', fieldLabel: _('Mailbox') },
-            new Baseliner.DashboardBox({ fieldLabel: _('Dashboards'), name:'dashboards', allowBlank: false })
+            new Baseliner.DashboardBox({ fieldLabel: _('Dashboards'), name:'dashboards', allowBlank: true })
             // {  xtype: 'textfield', name: 'default_dashboard', fieldLabel: _('Default default_dashboard') }
         ]
     });

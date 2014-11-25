@@ -1247,7 +1247,7 @@ sub pause {
         $self->logger->warn( _loc('Cannot pause job on CHECK or INIT status') );
         _fail _loc('Cannot pause job on CHECK or INIT status'); 
     }else{
-        $self->update( status=>'PAUSE' );
+        $self->update( status=>'PAUSED' );
         $p{reason} ||= _loc('unspecified');
         $self->logger->info( _loc('Paused. Reason: %1', $p{reason} ), milestone=>1, data=>$p{details} );
         

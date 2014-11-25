@@ -12,6 +12,8 @@ has repo_dir        => qw(is rw isa Str);
 has name            => qw(is rw isa Str);
 has default_branch  => qw(is rw isa Str default HEAD);
 has revision_mode   => qw(is rw isa Str default diff);
+has include   => qw(is rw isa Any);
+has exclude   => qw(is rw isa Any);
 
 sub collection { 'GitRepository' }
 sub icon       { '/static/images/icons/git-repo.gif' }
@@ -389,14 +391,23 @@ sub list_branches {
     my $repo_dir  = $self->{repo_dir};
     my $project = $p{project};
 
-    _debug $self;
-
     my @changes;
 
     my $repo = Girl::Repo->new( path => $repo_dir );    # TODO combine repos
 
     my @heads = $repo->heads;    # git local branches
                                  #$p{bl} and @heads = grep { $_->name =~ /^$p{bl}/ } @heads;
+
+    if ( _array($self->include) ) {
+        my $includes = '^('.join('|', _array($self->include)).')$'; 
+        @heads = grep { $_->{name} =~ /$includes/ } @heads;
+    }
+
+    if ( _array($self->exclude) ) {
+        my $excludes = '^('.join('|', _array($self->exclude)).')$'; 
+        @heads = grep { $_->{name} !~ /$excludes/ } @heads;
+    }
+
     push @changes, map {
 
         BaselinerX::GitBranch->new(
@@ -407,12 +418,27 @@ sub list_branches {
                 repo_name => $repo_name,
                 project   => $project,
                 repo_mid  => $self->mid,
+                username  => $p{username}
             }
         );
     } @heads;
 
     return @changes;
 } ## end sub list_branches
+
+sub close_branch {
+    my ( $self, $p ) = @_;
+
+    _warn $p;
+
+    my $branch = $p->{branch};
+
+    my @exclude = _array($self->exclude);
+    if ( !($branch ~~ @exclude) ) {
+        push @exclude, $branch;
+        $self->update( exclude => \@exclude );
+    }
+}
 
 method commits_for_branch( :$tag=undef, :$branch ) {
     my $git = $self->git;

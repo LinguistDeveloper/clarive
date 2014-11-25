@@ -7,7 +7,8 @@
 
 	var ci_update = params.rec.ci_update == undefined ? false : params.rec.ci_update;
 	var frozen = params.rec.frozen == undefined ? false : params.rec.frozen;
-	var readonly = params.rec.readonly == undefined ? false : params.rec.readonly;
+    var readonly = params.rec.readonly == undefined ? false : params.rec.readonly;
+	var view_in_tree = params.rec.view_in_tree == undefined ? false : params.rec.view_in_tree;
 
     return [
         bls,
@@ -16,6 +17,7 @@
         { xtype: 'cbox', colspan: 1, fieldLabel: _('CI update'), name:'ci_update', checked: ci_update, allowBlank: true },
         { xtype: 'cbox', colspan: 1, fieldLabel: _('Frozen'), name:'frozen', checked: frozen, allowBlank: true },
         { xtype: 'cbox', colspan: 1, fieldLabel: _('Read only'), name:'readonly', checked: readonly, allowBlank: true },
+        { xtype: 'cbox', colspan: 1, fieldLabel: _('View in tree'), name:'view_in_tree', checked: view_in_tree, allowBlank: true },
         {
             xtype: 'radiogroup',
             name: 'type',

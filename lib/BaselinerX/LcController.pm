@@ -451,7 +451,7 @@ sub branches : Local {
 
             my @changes = $repo->can('list_contents') 
                 ?  $repo->list_contents( request=>$p )
-                : $repo->list_branches( project=>$project, repo_mid=>$id_repo );
+                : $repo->list_branches( project=>$project, repo_mid=>$id_repo, username => $c->username );
             _debug _loc "---- provider ".$repo->name." has %1 changesets", scalar @changes;
             push @cs, @changes;
             # loop through the branch objects 
@@ -826,8 +826,6 @@ sub promotes_and_demotes {
     # Promote
     my @status_to = $self->status_list( dir => 'promote', topic => $topic, username => $username, status => $id_status_from_lc, statuses => \%statuses );
     
-    _warn \@status_to;
-
     my $promotable={};
     my $job_promotable={};
 
@@ -871,7 +869,7 @@ sub promotes_and_demotes {
 
     my $demotable={};
     my $config = config_get( 'config.job' );
-    _warn $config;
+
     for my $status ( @status_from ) {
         my @bl_to = _array $statuses{ $status->{id_status} }{bls};
         for my $bl ( map { $bls{$_} } @bl_from ) {        
@@ -1449,7 +1447,7 @@ sub topics_for_release : Local {
         $depth = ci->report->find_one({ mid => $p->{id_report} })->{recursivelevel} // "2" 
     }
     
-    my @cis = ci->new($p->{id_release})->children( mids_only => 1, where => { collection => 'topic'}, depth => $depth);
+    my @cis = ci->new($p->{id_release})->children( mids_only => 1, rel_type => 'topic_topic', where => { collection => 'topic'}, depth => $depth);
 
     my @topics = _unique map { $_->{mid} } @cis;
     push @topics, $p->{id_release};        
