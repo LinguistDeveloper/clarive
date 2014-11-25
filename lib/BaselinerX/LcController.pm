@@ -955,8 +955,7 @@ sub job_transitions : Local {
         my ( $topic_mid, $project_mid, $id_status_from ) = ($topic_project->{topic_mid}, $topic_project->{project}, $topic_project->{state});
 
         my $topic = mdb->topic->find_one({ mid => "$topic_mid"},{ _txt => 0});
-        my $ci_topic = ci->new($topic_mid);
-        my ($id_project) = map { $_->{mid}} $ci_topic->projects;
+        my $id_project = $project_mid;
 
         my $username = $c->username;
         my @topic_transitions;
