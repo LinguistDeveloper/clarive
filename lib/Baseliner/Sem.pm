@@ -142,15 +142,12 @@ sub take {
         _fail _loc('Cancelled semaphore %1 due to missing record', $self->key) unless $doc;
         my $maxslots = $doc->{maxslots} // 0;
         my $minseq;
-        my (@running_queues);
+        my (@active_queues);
         for my $que ( _array($doc->{queue}) ){
             my $s = $que->{status};
             my $qid = "$$que{_id}"; 
-            if( $s eq 'busy' ) {
-                # busy queues may be checked to see if client is alive
-                push @running_queues, $que ;
-            }
-            elsif( $s eq 'waiting' ) {
+            push @active_queues, $que;
+            if( $s eq 'waiting' ) {
                 # minseq enforces that semaphores are consumed in order
                 $minseq = $que->{seq} if !defined $minseq || ( $que->{seq} > -1 && $que->{seq} < $minseq );
             }
@@ -181,17 +178,24 @@ sub take {
             _debug(_loc 'Taken semaphore %1 (%2), seq %3 from min %4', $self->key,$self->who,$self->seq, $minseq );
             last TAKEN;
         } elsif ( $cont > 0 ) {
-            if ( @running_queues ) {
-                _debug("Found ".scalar @running_queues." running queues. Checking if they are alive..") if $print_msgs;
+            if ( @active_queues ) {
+                _debug("Found ".scalar @active_queues." running queues. Checking if they are alive..") if $print_msgs;
                 my %active_sessions = map { $_->{client}=>1 } grep { $_->{client} } _array(mdb->db->eval('db.$cmd.sys.inprog.findOne({$all:1});')->{inprog});
-                for my $qitem ( @running_queues ) {
+                for my $qitem ( @active_queues ) {
                     if( !$active_sessions{ $qitem->{session} } ) {
                         if( !$qitem->{granted} ) {
+                            # waiting and dead? removed from queue
+                            mdb->sem->update(
+                                { key => $self->key, queue=>{'$elemMatch'=>{_id=>$qitem->{_id}, status=>'waiting', granted=>{'$exists'=>0} } } },
+                                { '$pull' => { queue => { _id => $qitem->{_id}, status => 'waiting' } } },
+                                { multiple=>1 },
+                            ) if $qitem->{status} eq 'waiting';
+                            # busy and dead? removed from queue and slot increased
                             mdb->sem->update(
                                 { key => $self->key, queue=>{'$elemMatch'=>{_id=>$qitem->{_id}, status=>'busy', granted=>{'$exists'=>0} } } },
                                 { '$inc'  => { slots => -1 }, '$pull' => { queue => { _id => $qitem->{_id}, status => 'busy' } } },
                                 { multiple=>1 },
-                            );
+                            ) if $qitem->{status} eq 'busy';
                         } else {
                             # granted semaphores do not decrease slot
                             mdb->sem->update(
