@@ -1454,7 +1454,7 @@ sub upload : Local {
                 username    => $c->username,
             );
     if ($response{status} ne '200') {
-        c->res->status($response{status});
+        $c->res->status($response{status});
     }
     my $body = '{"success": "' . $response{success}. '", "msg": "' . $response{msg} .'"}';
     $c->res->body($body);

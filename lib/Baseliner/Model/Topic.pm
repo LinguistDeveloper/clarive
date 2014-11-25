@@ -3152,9 +3152,8 @@ sub upload {
     my $success;
     my $status;
     try {
-        if((length $p->{topic_mid}) and (mdb->topic->find_one({mid=>$p->{topic_mid}}))) {
-            my ($topic, $topic_mid, $file_mid);
-            $topic = mdb->topic->find_one({ mid=>"$p->{topic_mid}" });
+        if((length $p->{topic_mid}) && (my $topic = mdb->topic->find_one({mid=>$p->{topic_mid}},{ mid=>1, category=>1 }))) {
+            my ($topic_mid, $file_mid);
             $topic_mid = $topic->{mid};
             my $file_field = $$p{filter};
             #Comprobamos que el campo introducido es correcto
@@ -3189,53 +3188,51 @@ sub upload {
             
             my $versionid = 1;
             #Comprobamos que non existe un fichero con el mismo md5 y el mismo título $filename
-            my $body = scalar $f->slurp;
             my $md5 = _md5 ($f);
 
             my @files_mid = map{$_->{to_mid}}mdb->master_rel->find({ from_mid=>$topic_mid, rel_type=> 'topic_asset'})->all;
-            my $last_copy;
+            my $highest_version;
+            
             for my $file_mid (@files_mid){
                 my $asset = ci->asset->find_one({mid=>$file_mid});
-                my $md5_saved = mdb->grid->files->find_one({ _id=>mdb->oid($asset->{id_data})})->{md5};
-                if (($asset->{name} eq $filename) && ($md5_saved eq $md5)){
-                    if (!ref $last_copy){
-                        $last_copy = $asset;
-                    }elsif( $last_copy->{versionid} < $asset->{versionid} ){
-                            $last_copy = $asset;
-                            #La version mas nueva es la que ya existe o son iguales asique nos quedamos con la que tenemos
+                $asset->{md5} = mdb->grid->files->find_one({ _id=>mdb->oid($asset->{id_data})})->{md5};
+                if ( $asset->{name} eq $filename ) {
+                    # asset is already up
+                    if( !$highest_version->{versionid} ||  $asset->{versionid} > $highest_version->{versionid} ) {
+                        $highest_version = $asset;
                     }
                 }   
             }
-
-            #Ahora comprobaamos la version que ponemos al fichero;
-            if (ref $last_copy){
-                $versionid = $last_copy->{versionid} + 1;
+            
+            if( $highest_version ) {
+                _fail( _loc('File is already the latest version') ) if $highest_version->{md5} eq $md5;
+                $versionid = $highest_version->{versionid} + 1; 
             }
 
-            my $asset = ci->asset->new(
+            my $new_asset = ci->asset->new(
                 name=>$filename,
                 versionid=>$versionid,
                 extension=>$extension,
                 created_by => $username,
                 created_on => mdb->ts,
             );
-            $asset->save;
-            $asset->put_data( $f->openr );
-            $file_mid = $asset->{mid};
+            $new_asset->save;
+            $new_asset->put_data( $f->openr );
+            $file_mid = $new_asset->{mid};
             
             if ($p->{topic_mid}){
                 my $subject = _loc("Created file %1 to topic [%2] %3", $filename, $topic->{mid}, $topic->{title});                            
                 event_new 'event.file.create' => {
                     username        => $username,
                     mid             => $topic_mid,
-                    id_file         => $asset->mid,
+                    id_file         => $new_asset->mid,
                     filename        => $filename,
                     notify_default  => \@users,
                     subject         => $subject
                 };
                 
                 # tie file to topic
-                my $doc = { from_mid=>$topic_mid, to_mid=>$asset->mid, rel_type=>'topic_asset', rel_field=>$$p{filter} };
+                my $doc = { from_mid=>$topic_mid, to_mid=>$new_asset->mid, rel_type=>'topic_asset', rel_field=>$$p{filter} };
                 mdb->master_rel->update($doc,$doc,{ upsert=>1 });
             }
             cache->remove({ mid=>"$topic_mid" }); # qr/:$topic_mid:/ );
@@ -3256,12 +3253,10 @@ sub upload {
         return (success=>$success, msg=>$msg, status=>$status);
     } catch {
         my $err = shift;
-        _error( "Error uploading file: " . $err );
+        my $msg = _loc('Error uploading file: %1', $err );
+        _error( $msg );
         my $status = 500;
-        $msg = "The Topic with mid: " . $p->{topic_mid} . " does not exist'";
-        $success = "false";
         return (success=>$success, msg=>$msg, status=>$status);
-
     };
 }
 
