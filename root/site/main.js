@@ -291,8 +291,9 @@ Ext.onReady(function(){
     Baseliner.version_check = function(repeat){
         $.ajax({ url:'/static/version.json', type: 'GET',
             success: function(res){
-                res = Ext.decode(res);
-                if(!res) res ={};
+                if(!res) return;
+                if( !Ext.isObject(res) ) try { res = Ext.decode(res) } catch(ee){};
+                if( !Ext.isObject(res) ) return;
                 if( Baseliner.version == -1 ) {
                     Baseliner.version = res.version;
                     if(repeat) setTimeout( function(){ Baseliner.version_check(true) }, Baseliner.version_refresh);

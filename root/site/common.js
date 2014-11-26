@@ -84,7 +84,7 @@ Baseliner.errorWin = function( p_title, p_html ) {
     win.show();
 };
 
-Baseliner.js_reload = function() {
+Baseliner.js_reload = function(msg) {
     // if you reload globals.js, tabs lose their info, and hell breaks loose
     Baseliner.loadFile( '/i18n/js', 'js' );
     Baseliner.loadFile( '/site/common.js', 'js' );
@@ -102,7 +102,7 @@ Baseliner.js_reload = function() {
     Baseliner.loadFile( '/static/site.css', 'css' );
     Baseliner.loadFile( '/static/final.css', 'css' );
 
-    Baseliner.message(_('JS'), _('Reloaded successfully') );  
+    if( msg ) Baseliner.message(_('JS'), _('Reloaded successfully') );  
 };
 
 Baseliner.alert = function(title, format){
