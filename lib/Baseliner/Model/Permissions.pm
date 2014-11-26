@@ -138,16 +138,23 @@ sub user_has_action {
     _check_parameters( \%p, qw/username action/ ); 
     my $username = $p{username};
     my $action = delete $p{action};
+    my $ret = 0;
+    return 1 if $self->is_root( $username );
 
     if ( $p{mid} ) {
         my @return = grep { /$action/ } $self->user_actions_by_topic(%p);
-        return @return;
+        $ret = !!@return;
     } else {
         push my @bl, _array $p{bl}, '*';
         return 1 if $username eq 'root';  # root can surrogate always
         return 1 if $self->is_root( $username ) && $action ne 'action.surrogate';
-        return scalar grep {$action eq $_ } Baseliner->model('Users')->get_actions_from_user($username, @bl);      
+        $ret = scalar grep {$action eq $_ } Baseliner->model('Users')->get_actions_from_user($username, @bl);      
     }
+    
+    if( $p{fail} && !$ret ) {
+        _fail _loc 'User %1 does not have permissions to action %2', $username, $action;
+    }
+    return $ret;
 }
 
 =head2 user_has_action username=>Str, action=>Str
