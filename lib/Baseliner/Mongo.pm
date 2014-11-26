@@ -184,11 +184,6 @@ sub find_master {
     return $row;
 }
 
-sub master     { $_[0]->collection('master') }
-sub master_rel { $_[0]->collection('master_rel') }
-sub master_cal { $_[0]->collection('master_cal') }
-sub master_doc { $_[0]->collection('master_doc') }
-
 sub master_all {
     my ($self,$where)=@_;
     return $self->master->find($where)->all;
@@ -384,7 +379,8 @@ sub index_all {
             [{ mid=>1 },{ unique=>1 }],
             [{ name=>1, moniker=>1, collection=>1 }],
             [{ step=>1, status=>1 }],
-            [{ starttime=>-1 }],  # used by Dashboards.pm
+            [{ projects=>1 }],
+            [{ starttime=>-1 }],  # used by Dashboards.pm and monitor_json
             [{ collection=>1, name=>1 }],
             [[ collection=>1, starttime=>-1 ]],  # job monitor
             [{ status=>1, pid=>1, collection=>1 }],
@@ -676,6 +672,14 @@ sub AUTOLOAD {
           : $self->collection( $coll )
 }
 
+sub trace_results {
+    my ($class,$callstr,$elapsed)=@_;
+    my $ela = sprintf "%0.6fs", $elapsed;
+    my $high = '!' x int( $elapsed / .05 );
+    Util->_debug( "TRACE:\n\n  $callstr\n\n  $ela ELAPSED $high\n" );
+    Util->_debug( "STACK: " . Util->_whereami ) if $ENV{CLARIVE_TRACE} =~ /stack|all/;
+}
+
 package Baseliner::Mongo::TraceCollecion {
     use strict;
     our $AUTOLOAD;
@@ -696,20 +700,20 @@ package Baseliner::Mongo::TraceCollecion {
         my $t0=[Time::HiRes::gettimeofday];
         my @ret = ( $self->{coll}->$meth(@_) );
         my $elapsed = Time::HiRes::tv_interval( $t0 );
-        my $high = '!' x int( $elapsed / .05 );
         my $tfilter = $ENV{CLARIVE_TRACE}!~/(\d+)ms/ || ($1/1000)<$elapsed;
         if( @ret == 1 ) {
             my $ret = $ret[0]; 
-            if( ref $ret eq 'MongoDB::Cursor' ) {
+            if( ref($ret) =~ /MongoDB::Cursor|Baseliner::MongoCursor/ ) {
                 # find()
                 return bless { cur=>$ret, collname=>$collname, callstr=>$callstr } => 'Baseliner::Mongo::TraceCursor';
             } elsif( $meth ne 'DESTROY' && $collname ne 'cache' && $tfilter ) {
                 # find_one(), update, find_and_modify, etc
-                my $ela = sprintf "%0.6fs", $elapsed;
-                Util->_debug( "TRACE:\n\n  $callstr\n\n  $ela ELAPSED $high" );
-                Util->_debug( "STACK: " . Util->_whereami ) if $ENV{CLARIVE_TRACE} =~ /stack|all/;
+                Baseliner::Mongo->trace_results($callstr,$elapsed);
             }
             return $ret; 
+        } elsif( @ret>1 && ($ENV{CLARIVE_TRACE}!~/cache/ && $collname ne 'cache') ) {
+            Baseliner::Mongo->trace_results("$callstr->$meth()",$elapsed);
+            return @ret;
         } else {
             return @ret;
         }
@@ -726,7 +730,6 @@ package Baseliner::Mongo::TraceCursor {
         my $t0=[Time::HiRes::gettimeofday];
         my @ret = ( $self->{cur}->$meth(@_) );
         my $elapsed = Time::HiRes::tv_interval( $t0 );
-        my $high = '!' x int( $elapsed / .05 );
         my $callstr = $self->{callstr};
         my $collname = $self->{collname};
         my $tfilter = $ENV{CLARIVE_TRACE}!~/(\d+)ms/ || ($1/1000)<$elapsed;
@@ -734,12 +737,10 @@ package Baseliner::Mongo::TraceCursor {
                 && ($ENV{CLARIVE_TRACE}!~/cache/ && $collname ne 'cache') 
                 && $tfilter 
             ) || $ENV{CLARIVE_TRACE}=~/all/ ) {
-            my $ela = sprintf "%0.6fs", $elapsed;
-            Util->_debug( "RUN:\n\n  $callstr->$meth()\n\n  $ela ELAPSED $high\n" );
-            Util->_debug( Util->_whereami ) if $ENV{CLARIVE_TRACE} =~ /stack|all/;
+            Baseliner::Mongo->trace_results("$callstr->$meth()",$elapsed);
         } else {
             my $ret = $ret[0]; 
-            if( ref $ret eq 'MongoDB::Cursor' ) {
+            if( ref($ret) =~ /MongoDB::Cursor|Baseliner::MongoCursor/ ) {
                 my $d = Data::Dumper->new(\@_);
                 $d->Indent(0)->Purity(1)->Quotekeys(0)->Terse(1)->Deepcopy(1);
                 my $dump = join ',', $d->Dump;
