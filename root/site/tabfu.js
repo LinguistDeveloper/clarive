@@ -1203,12 +1203,12 @@ if( Prefs.routing ) {
                     
                     if( has_errors ) {
                         Baseliner.version_check(false); // maybe error is due to new UI version
-                        Baseliner.js_reload();  // let's reload common.js, model.js, etc., may fix the problem
+                        Baseliner.js_reload(false);  // let's reload common.js, model.js, etc., may fix the problem
                     }
                 }
                 catch(e){
                     Baseliner.version_check(false);
-                    Baseliner.js_reload();  // let's reload common.js, model.js, etc., may fix the problem
+                    Baseliner.js_reload(false);  // let's reload common.js, model.js, etc., may fix the problem
                     if( params._ignore_conn_errors ) return;
                     Baseliner.error_win(url,params,xhr,e);
                     if( Baseliner.DEBUG ) {
