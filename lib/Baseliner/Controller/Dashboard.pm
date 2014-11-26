@@ -1236,7 +1236,7 @@ sub list_status_changed: Local{
 
     my @status_changes;
     my @mid_topics;
-    my @topics = mdb->event->find($query)->sort({ ts=>-1 })->all;
+    my @topics = mdb->activity->find($query)->sort({ ts=>-1 })->all;
     map {
         my $ed = _load( $_->{event_data} );
         if ( (exists $my_topics{$ed->{topic_mid}} || Baseliner->model("Permissions")->is_root( $c->username ) ) && $ed->{old_status} ne $ed->{status}){
