@@ -110,9 +110,7 @@ sub monitor {
         my @ids_project = $perm->user_projects_with_action(username => $username,
                                                             action => 'action.job.viewall',
                                                             level => 1);
-        
-        my $rs_jobs1 = mdb->master_rel->find({rel_type => 'job_project', to_mid => mdb->in(@ids_project) });
-        push @mid_filters, { mid=>mdb->in( map { $_->{from_mid} } $rs_jobs1->all ) };
+        $where->{projects} = mdb->in( sort @ids_project );
     }
     
     if( length $p->{job_state_filter} ) {
@@ -177,7 +175,7 @@ sub monitor {
         return ($cnt, $rs->all );
     }
 
-    my %rule_names = map { $_->{id} => $_ } mdb->rule->find->fields({ rule_tree=>0 })->all;
+    my %rule_names = map { $_->{id} => $_ } mdb->rule->find->fields({ id=>1, rule_name=>1 })->all;
             
     my @rows;
     my $now = _dt();
