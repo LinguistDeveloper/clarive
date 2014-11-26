@@ -287,7 +287,7 @@ Ext.onReady(function(){
     // VERSION checker
     //
     Baseliner.version = -1;
-    Baseliner.version_refresh = 60000;
+    Baseliner.version_refresh = 180000;
     Baseliner.version_check = function(repeat){
         $.ajax({ url:'/static/version.json', type: 'GET',
             success: function(res){
