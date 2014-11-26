@@ -3,6 +3,7 @@ use Moose;
 use Baseliner::Utils;
 use Try::Tiny;
 use namespace::clean;
+use Baseliner::Sugar;
 
 require Git::Wrapper;
 require Girl;
@@ -78,12 +79,29 @@ sub branch_commits : Local {
         $c->forward('View::JSON');
         return;
     }
-    ###########################################################
-    my $used_commits;
-    my @gitRevisions = mdb->master_doc->find({ collection=>'GitRevision', repo=>$repo_mid})->fields({sha=>1, _id=>0})->all;
-    map { $used_commits->{$_->{sha}} = 1 } @gitRevisions;
-    @rev_list = grep { my ( $rev_sha, $rev_txt )= $_ =~ /^(.+?) (.*)/; !$used_commits->{$rev_sha};} @rev_list;
-    ###########################################################
+    my $hide_used = config_get('config.git')->{hide_used_commits};
+    if (  $hide_used ) {    
+        ###########################################################;
+        my $no_ci_commits;
+        my $all_commits;
+        my @gitRevisions = mdb->master_doc->find({ collection=>'GitRevision', repo=>$repo_mid})->fields({sha=>1, mid=>1, _id=>0})->all;
+        map { $no_ci_commits->{$_->{sha}} = 1 } @gitRevisions;
+        map { $all_commits->{$_->{sha}} = $_->{mid} } @gitRevisions;
+        ###########################################################
+        my $used_commits;
+        my @inCsRevisions = mdb->master_rel->find({ to_mid => mdb->in( map {$_->{mid}} @gitRevisions), rel_type => 'topic_revision'})->fields({to_mid=>1, _id=>0})->all;
+        map { $used_commits->{$_->{to_mid}} = 1 } @inCsRevisions;
+        ###########################################################
+        
+        @rev_list = 
+        grep { 
+            my ( $rev_sha, $rev_txt )= $_ =~ /^(.+?) (.*)/; 
+            my $not_exists = !$no_ci_commits->{$rev_sha}; 
+            my $not_used = $all_commits->{$rev_sha} && !$used_commits->{ $all_commits->{$rev_sha} };
+            $not_exists || $not_used;
+        } @rev_list;
+        ###########################################################
+    }
     my $data = [
         map {
             my ( $rev_sha, $rev_txt )= $_ =~ /^(.+?) (.*)/;
