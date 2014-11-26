@@ -1222,7 +1222,7 @@ sub list_status_changed: Local{
     
     my $query = {
         event_key   => 'event.topic.change_status',
-        ts			=> { '$lte' => ''.$fecha2, '$gte' => ''.$fecha1 },
+        ts          => { '$lte' => ''.$fecha2, '$gte' => ''.$fecha1 },
     };
     
     #my @user_categories =  map { $_->{id} } $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view' );
@@ -1237,20 +1237,21 @@ sub list_status_changed: Local{
     my @status_changes;
     my @mid_topics;
     my @topics = mdb->activity->find($query)->sort({ ts=>-1 })->all;
+
     map {
         my $ed = $_->{vars} ;
-        if ( (exists $my_topics{$ed->{topic_mid}} || Baseliner->model("Permissions")->is_root( $c->username ) ) && $ed->{old_status} ne $ed->{status}){
-            push @status_changes, { old_status => $ed->{old_status}, status => $ed->{status}, username => $ed->{username}, when => $_->{ts}, mid => $ed->{topic_mid} };
-            push @mid_topics, $ed->{topic_mid};
+        if ( (exists $my_topics{$_->{mid}} || Baseliner->model("Permissions")->is_root( $c->username ) ) && $ed->{old_status} ne $ed->{status}){
+            push @status_changes, { old_status => $ed->{old_status}, status => $ed->{status}, username => $ed->{username}, when => $_->{ts}, mid => $_->{mid} };
+            push @mid_topics, $_->{mid};
         }
     } @topics;
     
     @status_changes = sort { $a->{mid} <=> $b->{mid} } @status_changes;
-    @mid_topics = _unique map {$_} @mid_topics ;
+    @mid_topics = _unique @mid_topics ;
     
     my %topics_categories;
     $topics_categories{ $_->{mid} } = { color=>$_->{category}{color}, name=>$_->{category}{name} } 
-        for mdb->topic->find({ mid=>mdb->in(@mid_topics) })->all;
+     for   mdb->topic->find({ mid=>mdb->in(@mid_topics) })->all;
     
     $c->stash->{list_topics} = \%topics_categories;
     $c->stash->{list_status_changed} = \@status_changes;
