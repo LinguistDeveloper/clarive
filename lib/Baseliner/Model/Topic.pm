@@ -2069,7 +2069,13 @@ sub deal_with_images{
         # my $img_md5 = mdb->grid->get( $img_id )->{md5};
         $field =~ s{<img src="data:image/png;base64,(.*?)">}{<img class="bali-topic-editor-image" src="/topic/img/$img_id">};
     }
-    
+
+    for my $img ( $field =~ m{<img*(.*?)>} ){
+        if ( !($img =~ m/class/) ){
+            $field =~ s{$img}{ class="bali-topic-editor-image" $img};            
+        }
+    }
+
     return $field;
 }
 
