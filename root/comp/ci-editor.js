@@ -8,7 +8,7 @@
         cls: 'x-btn-icon-text',
         menu: { items:[] }
     });
-
+    var btn_form_save;
     var load_form = function(params){
         if( params.rec == undefined ) params.rec = {};            // master row record
         //if( params.rec.data == undefined ) params.rec.data = {};  //  yaml ci data
@@ -16,7 +16,6 @@
         var mid = params.mid;
         var beforesubmit = [];
         var is_active = params.rec.active == undefined ? true : params.rec.active;
-
         var activate_save = function(){
             setTimeout( function(){
                 if( Ext.getCmp(btn_form_save.id) ) btn_form_save.enable();
@@ -139,7 +138,7 @@
             handler: function() { cardpanel.destroy() }
         });
 
-        var btn_form_save = new Ext.Button({
+        btn_form_save = new Ext.Button({
             text: _('Save'),
             icon:'/static/images/icons/save.png',
             cls: 'x-btn-icon-text',
@@ -150,7 +149,7 @@
                 submit_form( false )
             }
         });
-
+btn_form_save.disable();
         var btn_data = new Ext.Button({
             text: _('Data'),
             icon:'/static/images/icons/detail.png',
@@ -207,6 +206,7 @@
         var form = new Baseliner.FormPanel({
             url:'/ci/update',
             padding: 10,
+fields_loaded: 0,
             defaults: {
                allowBlank: false,
                anchor: '100%'
@@ -244,6 +244,11 @@
                 }
             }
         });
+//form.on('field_loaded', function(){ form.fields_loaded--; console.log('quedan fields ==>'+form.fields_loaded); if(form.fields_loaded == 0){ cardpanel.fireEvent('form_loaded'); } });
+
+
+
+
         txt_cont.on('afterrender', function(){
             set_txt();
         });
@@ -269,17 +274,20 @@
                             //form.getForm().loadRecord( params.rec );
                             form.getForm().setValues( params.rec );
                         }
+//form.fireEvent('field_loaded');
                     });
             };
             if( params.ci_form ) {
                 // XXX deprecated: (ci_form inconsistent with cache)
                 Ext.each( params.ci_form, function(form_url){
+//form.fields_loaded++;
                     add_ci_form( form_url, params );
                 });
             } else {
                 Baseliner.ci_call( params.mid, 'ci_form', { collection: params.collection }, function(res){
                     var forms = res.data;
                     Ext.each( forms, function(form_url){
+//form.fields_loaded++;
                         add_ci_form( form_url, params );
                     });
                 }, function(res){
@@ -330,7 +338,7 @@
             'background-color' : 'white'
        }
     });
-
+cardpanel.on('children_loaded', function() { console.log('entra enable btn');btn_form_save.enable(); });
     cardpanel.on('afterrender', function(){
         if( params.load ) {
             Baseliner.ajaxEval( '/ci/load', { mid: params.mid }, function(res) {
@@ -371,6 +379,10 @@
                 cardpanel.setTitle( _('CI: %1' , rec.name ) );
                 cardpanel.ownerCt.changeTabIcon( cardpanel, rec.icon );
                 cardpanel.body.setStyle({ overflow: 'hidden' });
+f.addEvents('children_loaded');
+f.on('children_loaded', function() { console.log('lanza evento en padre...'); cardpanel.fireEvent('children_loaded'); });
+
+
                 cardpanel.doLayout(); // otherwise, no tbar
             });
         } else {
@@ -381,6 +393,7 @@
                 cardpanel.add( f );
                 cardpanel.getLayout().setActiveItem( f );
                 //cardpanel.setTitle( _('CI: %1' , params.name ) );
+btn_form_save.enable();
                 cardpanel.doLayout();
             });
         }

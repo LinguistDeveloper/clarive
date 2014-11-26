@@ -2372,6 +2372,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
     layout: 'card',
     forceLayout: true,
     activeItem: 0,
+fields_loaded: 0,
     show_tbar: true,
     type_in: false,
     bodyStyle: {
@@ -2383,6 +2384,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
     },
     initComponent: function(){
         var self = this;
+self.on('field_loaded', function(){ self.fields_loaded--; console.log('quedan fields ==>'+self.fields_loaded); if(self.fields_loaded == 0){ var parent = self.findParentByType(self, Ext.Panel); parent.fireEvent('children_loaded'); } });
         if( !self.data ) {
             self.data = {};
         } else if( !Ext.isObject(self.data) ) {
@@ -2487,7 +2489,9 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                     });
                     if( bl.id == def_bl ) self.getLayout().setActiveItem( mf );
                     // load form
+self.fields_loaded++;
                     self.meta_for_data( mf, bl.id );
+
                 });
                 tbar.doLayout();
                 self.doLayout();
@@ -2572,6 +2576,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
     meta_for_data : function(mf,bl){
         var self = this;
         var vars=[];
+console.log('pasa');
         if( !self.data ) return;
         var bl_data = self.data[bl];
         mf.data = bl_data;
@@ -2580,6 +2585,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
             vars.push( v ); 
         }
         if( vars.length > 0 ) {
+console.log('pasa2');
             /*
             var vars_no_cache = [];
             Ext.each( vars, function(v) {
@@ -2594,11 +2600,13 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                 Ext.each( vars, function(varname){
                     self.add_var_ci_field( mf, bl, { name: varname });
                 });
+self.fireEvent('field_loaded');
             } else {
                 // get variable CI metadata 
                 Baseliner.ci_call('variable', 'list_by_name', { names: vars, bl: bl }, function(res){
                     Ext.each( res, function(var_ci){
                         self.add_var_ci_field( mf, bl, var_ci );
+self.fireEvent('field_loaded');
                     });
                 });
             }
