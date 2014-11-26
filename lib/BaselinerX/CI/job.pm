@@ -1268,7 +1268,7 @@ sub pause {
                 last;
             }
             $last_status = $self->load->{status};
-            if ( $self->load->{status} ne 'PAUSED' ) {
+            if ( $last_status ne 'PAUSED' ) {
                 last;
             }
         }

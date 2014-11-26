@@ -508,8 +508,8 @@ sub end : ActionClass('RenderView') {
     my ( $self, $c ) = @_;
     
     # check for controlled errors in DEBUG mode
-    if( Clarive->debug && _array( $c->error ) > 0 ) {
-        if( $c->req->params->{_bali_client_context} eq 'json' ) {
+    if( _array( $c->error ) > 0 ) {
+        if( Clarive->debug && $c->req->params->{_bali_client_context} eq 'json' ) {
             _debug "ERROR handled as JSON...";
             my $err = join ',', _array $c->error ;
             $c->log->error( $_ ) for _array $c->error ;
@@ -517,6 +517,13 @@ sub end : ActionClass('RenderView') {
             $c->clear_errors; # return call as normal
             $c->stash->{json} = { msg=>$err };
             $c->forward( 'View::JSON');
+        } else {
+            my $err = join ',', _array $c->error ;
+            $c->log->error( $_ ) for _array $c->error ;
+            $err =~ s{^Caught exception in (\S+) "(.*)"$}{$2}g; # nasty but best TODO fail with objects _fail { msg=>'xxx' }
+            $c->res->body( $err );
+            $c->res->status(500);
+            $c->clear_errors;
         }
     }
     # set correct content-type, for Mason

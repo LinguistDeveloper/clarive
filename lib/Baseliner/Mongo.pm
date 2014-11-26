@@ -328,6 +328,7 @@ sub index_all {
     my $base_indexes = {
         activity => [
             [{ mid=>1, ts=>-1 }],
+            [{ ts=>-1 }],  # Dashboards.pm
         ],
         cache => [
             [{ _id=>1 }],
@@ -383,6 +384,7 @@ sub index_all {
             [{ mid=>1 },{ unique=>1 }],
             [{ name=>1, moniker=>1, collection=>1 }],
             [{ step=>1, status=>1 }],
+            [{ starttime=>-1 }],  # used by Dashboards.pm
             [{ collection=>1, name=>1 }],
             [[ collection=>1, starttime=>-1 ]],  # job monitor
             [{ status=>1, pid=>1, collection=>1 }],
