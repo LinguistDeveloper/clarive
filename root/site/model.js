@@ -2372,7 +2372,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
     layout: 'card',
     forceLayout: true,
     activeItem: 0,
-fields_loaded: 0,
+pending_fields: 0,
     show_tbar: true,
     type_in: false,
     bodyStyle: {
@@ -2384,7 +2384,7 @@ fields_loaded: 0,
     },
     initComponent: function(){
         var self = this;
-self.on('field_loaded', function(){ self.fields_loaded--; console.log('quedan fields ==>'+self.fields_loaded); if(self.fields_loaded == 0){ var parent = self.findParentByType(self, Ext.Panel); parent.fireEvent('children_loaded'); } });
+self.on('field_loaded', function(){ self.pending_fields--; if(self.pending_fields == 0){ var parent = self.findParentByType(self, Ext.Panel); parent.fireEvent('children_loaded'); } });
         if( !self.data ) {
             self.data = {};
         } else if( !Ext.isObject(self.data) ) {
@@ -2454,6 +2454,7 @@ self.on('field_loaded', function(){ self.fields_loaded--; console.log('quedan fi
                     });
                 }
                 var def_bl = self.force_bl || '*';
+self.pending_fields = records.length;
                 Ext.each(records, function(bl){
                     var name = bl.id == '*' ? 'Common' : bl.id; 
                     // create metaform
@@ -2489,7 +2490,6 @@ self.on('field_loaded', function(){ self.fields_loaded--; console.log('quedan fi
                     });
                     if( bl.id == def_bl ) self.getLayout().setActiveItem( mf );
                     // load form
-self.fields_loaded++;
                     self.meta_for_data( mf, bl.id );
 
                 });
@@ -2576,7 +2576,6 @@ self.fields_loaded++;
     meta_for_data : function(mf,bl){
         var self = this;
         var vars=[];
-console.log('pasa');
         if( !self.data ) return;
         var bl_data = self.data[bl];
         mf.data = bl_data;
@@ -2585,7 +2584,7 @@ console.log('pasa');
             vars.push( v ); 
         }
         if( vars.length > 0 ) {
-console.log('pasa2');
+self.pending_fields = self.pending_fields + vars.length;
             /*
             var vars_no_cache = [];
             Ext.each( vars, function(v) {
@@ -2599,8 +2598,8 @@ console.log('pasa2');
                 // in type_in mode, all are default text
                 Ext.each( vars, function(varname){
                     self.add_var_ci_field( mf, bl, { name: varname });
-                });
 self.fireEvent('field_loaded');
+                });
             } else {
                 // get variable CI metadata 
                 Baseliner.ci_call('variable', 'list_by_name', { names: vars, bl: bl }, function(res){
@@ -2611,6 +2610,7 @@ self.fireEvent('field_loaded');
                 });
             }
         }
+self.fireEvent('field_loaded');
     },
     getData : function(bl){
         var self = this;

@@ -206,7 +206,7 @@ btn_form_save.disable();
         var form = new Baseliner.FormPanel({
             url:'/ci/update',
             padding: 10,
-fields_loaded: 0,
+pending_fields: 0,
             defaults: {
                allowBlank: false,
                anchor: '100%'
@@ -244,7 +244,9 @@ fields_loaded: 0,
                 }
             }
         });
-//form.on('field_loaded', function(){ form.fields_loaded--; console.log('quedan fields ==>'+form.fields_loaded); if(form.fields_loaded == 0){ cardpanel.fireEvent('form_loaded'); } });
+
+
+form.on('field_loaded', function(){ form.pending_fields--; if(form.pending_fields == 0){ cardpanel.fireEvent('form_loaded'); } });
 
 
 
@@ -273,21 +275,23 @@ fields_loaded: 0,
                             fieldset.doLayout();
                             //form.getForm().loadRecord( params.rec );
                             form.getForm().setValues( params.rec );
+form.fireEvent('field_loaded');
                         }
 //form.fireEvent('field_loaded');
                     });
             };
             if( params.ci_form ) {
+if(params.ci_form.constructor === Array) form.pending_fields = form.pending_fields+params.ci_form.length; else form.pending_fields++;
                 // XXX deprecated: (ci_form inconsistent with cache)
                 Ext.each( params.ci_form, function(form_url){
-//form.fields_loaded++;
                     add_ci_form( form_url, params );
+
                 });
             } else {
                 Baseliner.ci_call( params.mid, 'ci_form', { collection: params.collection }, function(res){
                     var forms = res.data;
+if(forms.constructor === Array) form.pending_fields = form.pending_fields+forms.length; else form.pending_fields++;
                     Ext.each( forms, function(form_url){
-//form.fields_loaded++;
                         add_ci_form( form_url, params );
                     });
                 }, function(res){
@@ -338,7 +342,7 @@ fields_loaded: 0,
             'background-color' : 'white'
        }
     });
-cardpanel.on('children_loaded', function() { console.log('entra enable btn');btn_form_save.enable(); });
+cardpanel.on('children_loaded', function() { btn_form_save.enable(); });
     cardpanel.on('afterrender', function(){
         if( params.load ) {
             Baseliner.ajaxEval( '/ci/load', { mid: params.mid }, function(res) {
@@ -348,6 +352,7 @@ cardpanel.on('children_loaded', function() { console.log('entra enable btn');btn
                     cardpanel.destroy();
                     return;
                 }
+cardpanel.on('form_loaded', function() { if(res.rec.ci_class != 'BaselinerX::CI::project') btn_form_save.enable(); }); 
                 var c = Ext.apply({
                         collection: rec.collection,
                         item: rec.collection,
@@ -380,7 +385,7 @@ cardpanel.on('children_loaded', function() { console.log('entra enable btn');btn
                 cardpanel.ownerCt.changeTabIcon( cardpanel, rec.icon );
                 cardpanel.body.setStyle({ overflow: 'hidden' });
 f.addEvents('children_loaded');
-f.on('children_loaded', function() { console.log('lanza evento en padre...'); cardpanel.fireEvent('children_loaded'); });
+f.on('children_loaded', function() { cardpanel.fireEvent('children_loaded'); });
 
 
                 cardpanel.doLayout(); // otherwise, no tbar
