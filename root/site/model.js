@@ -264,7 +264,6 @@ Baseliner.UserAndRoleBox = function(c) {
 Ext.extend( Baseliner.UserAndRoleBox, Ext.ux.form.SuperBoxSelect );
 
 Baseliner.DashboardBox = function(c) {
-    console.dir(c);
     var tpl = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
     var store = new Baseliner.JsonStore({
         root: 'data' , remoteSort: true, autoLoad: true,

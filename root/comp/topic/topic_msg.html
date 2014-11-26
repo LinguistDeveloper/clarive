@@ -153,10 +153,11 @@ padding: 2px 4px 2px 7px;
             if( dtd.dom.innerHTML.trim().length > 0 ) dtd.show();
             $('.bali-topic-editor-image').click(function(){
             var imagen = $(this);
+            imagen.css('display', 'block');
             var src = $(this).attr('src');
-            var captura = new Baseliner.Window({ width: imagen.width()+25, height: imagen.height()+35,
+            var captura = new Baseliner.Window({ title:'Zoom image', width: ($(window).width() - 20), height: ($(window).height() - 20),
                 closable: true, autoScroll: true, layout:'fit', html: "<img src="+src+"/>" });
-            if (imagen.width()>800) { captura.show(); }
+            if (imagen.width()>600) { captura.show(); }
             });
         </script>
 % }

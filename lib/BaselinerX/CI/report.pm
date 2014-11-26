@@ -479,29 +479,29 @@ sub all_fields {
                 };      
             }
         }
-	}
-	else{
-		map { 
-			push @tree, { 
-				text        => _loc($user_categories_fields_meta->{$name_category}->{$_}->{name_field}),
-				id_field	=> $_,
-				icon        => '/static/images/icons/field-add.png',
-				type        => 'select_field',
-				meta_type   => $user_categories_fields_meta->{$name_category}->{$_}->{meta_type},
-				collection  => $user_categories_fields_meta->{$name_category}->{$_}->{collection},
+    }
+    else{
+        map {
+            push @tree, { 
+                text        => _loc($user_categories_fields_meta->{$name_category}->{$_}->{name_field}),
+                id_field    => $_,
+                icon        => '/static/images/icons/field-add.png',
+                type        => 'select_field',
+                meta_type   => $user_categories_fields_meta->{$name_category}->{$_}->{meta_type},
+                collection  => $user_categories_fields_meta->{$name_category}->{$_}->{collection},
                 collection_extends  => $user_categories_fields_meta->{$name_category}->{$_}->{collection_extends},
-				ci_class	=> $user_categories_fields_meta->{$name_category}->{$_}->{ci_class},
-				filter      => $user_categories_fields_meta->{$name_category}->{$_}->{filter},				
-				gridlet     => $user_categories_fields_meta->{$name_category}->{$_}->{gridlet},
-				category    => $p->{name_category},
-				leaf        =>\1
-			};
-		
-		}
-		sort { lc $a cmp lc $b }
-		keys $user_categories_fields_meta->{$name_category}; 		
-		
-	}
+                ci_class    => $user_categories_fields_meta->{$name_category}->{$_}->{ci_class},
+                filter      => $user_categories_fields_meta->{$name_category}->{$_}->{filter},              
+                gridlet     => $user_categories_fields_meta->{$name_category}->{$_}->{gridlet},
+                category    => $p->{name_category},
+                leaf        =>\1
+            } if !($_ eq 'priority' && $user_categories_fields_meta->{$name_category}->{$_}->{meta_type} eq 'priority'); # temporal solution to hide system_priority
+        
+        }
+        sort { lc $a cmp lc $b }
+        keys $user_categories_fields_meta->{$name_category};        
+        
+    }
     return \@tree;
 }
 

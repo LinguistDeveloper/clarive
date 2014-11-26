@@ -1136,6 +1136,7 @@ if( Prefs.routing ) {
     
         if( Ext.isIE7 || Ext.isIE8 ) Ext.fly( document.body ).mask( _('Sending Request...') );  // so slow, better to mask the whole thing
         var timeout = params.timeout || 120000; // in milliseconds, use zero 0 to disable
+        
         var request_data = {
             url: url,
             timeout: timeout,
@@ -1172,6 +1173,7 @@ if( Prefs.routing ) {
                 }
                 try {
                     // this is for js components that return a component
+                    var has_errors = false; // for component eval errors
                     var comp = Baseliner.eval_response( xhr.responseText, params, url );
                     var is_object = Ext.isObject( comp );
                     // system message
@@ -1187,6 +1189,7 @@ if( Prefs.routing ) {
                         if( Ext.isFunction(scope) ) {  // scope is catch
                             scope( comp, foo );
                         } else {
+                            has_errors = true;
                             Baseliner.error( _('Loading Error'), comp.msg );
                         }
                     }
@@ -1194,10 +1197,18 @@ if( Prefs.routing ) {
                         foo( comp, scope );
                     }
                     else if( !params._ignore_conn_errors ) {
+                        has_errors = true;
                         Baseliner.error_win(url,params,xhr,e);
+                    }
+                    
+                    if( has_errors ) {
+                        Baseliner.version_check(false); // maybe error is due to new UI version
+                        Baseliner.js_reload(false);  // let's reload common.js, model.js, etc., may fix the problem
                     }
                 }
                 catch(e){
+                    Baseliner.version_check(false);
+                    Baseliner.js_reload(false);  // let's reload common.js, model.js, etc., may fix the problem
                     if( params._ignore_conn_errors ) return;
                     Baseliner.error_win(url,params,xhr,e);
                     if( Baseliner.DEBUG ) {

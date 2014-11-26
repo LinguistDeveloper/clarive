@@ -36,9 +36,11 @@
 </script>
 %}
 % if( $show_name_tooltip ) {
+%    my $title = $title_short->($topic->{title});
+%    $title =~ s/\"/\\\"/g;
 <script>
     var obj_topic_name = Ext.query('#topic<% $topic_id %>');
-    obj_topic_name[0].setAttribute("title", "<% $title_short->($topic->{title}) %>");
+    obj_topic_name[0].setAttribute("title", "<% $title %>");
 </script>
 % }
 

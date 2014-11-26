@@ -86,7 +86,7 @@ Ext.onReady(function(){
     tbar_items.push( '<img src="/static/images/icons/share_this.png" style="border:0px;" onclick="Baseliner.print_current_tab(true)" onmouseover="this.style.cursor=\'pointer\'" />');
     tbar_items.push( '<img src="/static/images/icons/printer.png" style="border:0px;" onclick="Baseliner.print_current_tab()" onmouseover="this.style.cursor=\'pointer\'" />');
     if( Prefs.stash.show_js_reload && Baseliner.DEBUG )
-        tbar_items.push( '<img src="/static/images/icons/js-reload.png" style="border:0px;" onclick="Baseliner.js_reload()" onmouseover="this.style.cursor=\'pointer\'" />' );
+        tbar_items.push( '<img src="/static/images/icons/js-reload.png" style="border:0px;" onclick="Baseliner.js_reload(true)" onmouseover="this.style.cursor=\'pointer\'" />' );
     tbar_items.push( '<img src="/static/images/icons/refresh.gif" style="border:0px;" onclick="Baseliner.refreshCurrentTab()" onmouseover="this.style.cursor=\'pointer\'" />');
     tbar_items.push( '-');
 
@@ -287,12 +287,13 @@ Ext.onReady(function(){
     // VERSION checker
     //
     Baseliner.version = -1;
-    Baseliner.version_refresh = 60000;
+    Baseliner.version_refresh = 180000;
     Baseliner.version_check = function(repeat){
         $.ajax({ url:'/static/version.json', type: 'GET',
             success: function(res){
-                res = Ext.decode(res);
-                if(!res) res ={};
+                if(!res) return;
+                if( !Ext.isObject(res) ) try { res = Ext.decode(res) } catch(ee){};
+                if( !Ext.isObject(res) ) return;
                 if( Baseliner.version == -1 ) {
                     Baseliner.version = res.version;
                     if(repeat) setTimeout( function(){ Baseliner.version_check(true) }, Baseliner.version_refresh);

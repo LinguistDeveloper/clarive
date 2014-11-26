@@ -170,6 +170,7 @@ sub test : Local {
 
 sub main : Local {
     my ( $self, $c ) = @_;
+    model->Permissions->user_has_action( username=>$c->username, action=>'action.development.repl', fail=>1 );
     $c->stash->{template} = '/comp/repl.js';
 }
 
