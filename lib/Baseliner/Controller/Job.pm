@@ -320,7 +320,7 @@ sub refresh_now : Local {
             $filter->{language} = $c->languages->[0];
             $filter->{list_only} = 1;
             my ($cnt, @rows ) = Baseliner->model('Jobs')->monitor($filter);
-            my $max_id = max map { $_->{mid} } @rows;
+            my $max_id = $rows[0]->{mid} if @rows;
             _debug "Comparing max_id=$max_id and top_id=$p->{top}";
             if( $max_id != $p->{top} ) {
                 $need_refresh = \1;

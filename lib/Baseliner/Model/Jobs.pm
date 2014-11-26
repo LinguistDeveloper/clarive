@@ -67,7 +67,7 @@ sub monitor {
     $limit||=50;
     $groupby //= '';
 
-    $sort ||= 'mid';
+    $sort ||= 'starttime';
     $dir = !$dir ? -1 : lc $dir eq 'desc' ? -1 : 1; 
 
     my @order_by;
@@ -168,13 +168,14 @@ sub monitor {
     }
     
     my $rs = mdb->master_doc->find({ collection=>'job', %$where })->sort(mdb->ixhash( @order_by ));
+    
+    if( $p->{list_only} ) {    # used by the refresh auto, for speed
+        return (0, $rs->fields({ mid=>1 })->next );
+    }
+
     $cnt = $rs->count;
     $rs->limit($limit)->skip($start) unless $limit eq -1;
     
-    if( $p->{list_only} ) {    # used by the refresh auto, for speed
-        return ($cnt, $rs->all );
-    }
-
     my %rule_names = map { $_->{id} => $_ } mdb->rule->find->fields({ id=>1, rule_name=>1 })->all;
             
     my @rows;
