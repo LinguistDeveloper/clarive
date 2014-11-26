@@ -946,7 +946,6 @@ sub job_transitions : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
     my $topic_projects = Util->_decode_json($p->{topics});
-    _warn $topic_projects;
     my %categories = mdb->category->find_hash_one( id=>{},{ workflow=>0, fields=>0, statuses=>0, _id=>0 });
 
     my @promotes_and_demotes;
