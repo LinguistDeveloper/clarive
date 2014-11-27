@@ -213,7 +213,7 @@ or fail.
 =cut
 sub get { 
     my ($self,$key)=@_;
-    return $self->get_instance($key) // _fail _loc("Could not find key '%1' in the registry", $key); 
+    return $self->get_instance($key) // '';# _fail _loc("Could not find key '%1' in the registry", $key); 
 }
 
 sub get_instance {
