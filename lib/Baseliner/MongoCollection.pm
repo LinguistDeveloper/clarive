@@ -180,7 +180,7 @@ Returns the value for a given key or undef if not found.
 sub find_one_value {
     my $self = shift;
     my $key = shift;
-    my $doc = $self->find_one( @_ );
+    my $doc = $self->find_one( @_==0 ? ({},{ $key=>1 }) : @_==1 ? (@_, { $key=>1 }) : @_ );
     if( ref $doc ) {
         return $$doc{$key};
     } else {
