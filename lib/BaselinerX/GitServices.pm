@@ -21,6 +21,7 @@ register 'config.git' => {
         { id=>'home', label=>'Path to git repositories', default=>File::Spec->catdir($ENV{BASELINER_HOME},'etc','repo')  },
         { id=>'path', label=>'Path to git binary', default=>'/usr/bin/git'  },
         { id=>'show_changes_in_tree', label=>'Show tags in the Lifecycle tree', default=>'1' },
+        { id=>'hide_used_commits', label=>'Hide commits already added to changeset', default=>'1' },
     ]
 };
 

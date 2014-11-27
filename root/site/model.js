@@ -2371,6 +2371,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
     layout: 'card',
     forceLayout: true,
     activeItem: 0,
+pending_fields: 0,
     show_tbar: true,
     type_in: false,
     bodyStyle: {
@@ -2382,6 +2383,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
     },
     initComponent: function(){
         var self = this;
+self.on('field_loaded', function(){ self.pending_fields--; if(self.pending_fields == 0){ var parent = self.findParentByType(self, Ext.Panel); parent.fireEvent('children_loaded'); } });
         if( !self.data ) {
             self.data = {};
         } else if( !Ext.isObject(self.data) ) {
@@ -2451,6 +2453,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                     });
                 }
                 var def_bl = self.force_bl || '*';
+self.pending_fields = records.length;
                 Ext.each(records, function(bl){
                     var name = bl.id == '*' ? 'Common' : bl.id; 
                     // create metaform
@@ -2487,6 +2490,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                     if( bl.id == def_bl ) self.getLayout().setActiveItem( mf );
                     // load form
                     self.meta_for_data( mf, bl.id );
+
                 });
                 tbar.doLayout();
                 self.doLayout();
@@ -2579,6 +2583,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
             vars.push( v ); 
         }
         if( vars.length > 0 ) {
+self.pending_fields = self.pending_fields + vars.length;
             /*
             var vars_no_cache = [];
             Ext.each( vars, function(v) {
@@ -2592,16 +2597,19 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                 // in type_in mode, all are default text
                 Ext.each( vars, function(varname){
                     self.add_var_ci_field( mf, bl, { name: varname });
+self.fireEvent('field_loaded');
                 });
             } else {
                 // get variable CI metadata 
                 Baseliner.ci_call('variable', 'list_by_name', { names: vars, bl: bl }, function(res){
                     Ext.each( res, function(var_ci){
                         self.add_var_ci_field( mf, bl, var_ci );
+self.fireEvent('field_loaded');
                     });
                 });
             }
         }
+self.fireEvent('field_loaded');
     },
     getData : function(bl){
         var self = this;
