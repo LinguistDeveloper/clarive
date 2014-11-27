@@ -461,18 +461,30 @@ sub user_can_topic_by_project {
     my ($self,%p)=@_; 
     my $username = $p{username};
     my $mid = $p{mid} // _fail('Missing mid');
+
     return 1 if $self->is_root($username);
-    my $where = {};
-     my $is_root = $self->is_root( $username );
-     my @categories;
-     push @categories, mdb->topic->find_one({mid=>"$mid"})->{id_category};
-     $where->{'category.id'} = { '$in' => [ _unique @categories ] };
-     $where->{mid} = $mid;
-     if( $username && ! $is_root){
-         $self->build_project_security( $where, $username, $is_root, @categories );
-     }
-    return !!mdb->topic->find_one($where,{ _id=>1 });  # faster than count
+    my @actions = _array($self->user_actions_by_topic( %p )->{positive});
+    my $action = "action.topics."._name_to_id(mdb->topic->find_one({mid=>"$mid"},{category=>1})->{category}->{name});
+    
+    return grep { /^$action\./ } @actions;
+
 }
+# sub user_can_topic_by_project {
+#     my ($self,%p)=@_; 
+#     my $username = $p{username};
+#     my $mid = $p{mid} // _fail('Missing mid');
+#     return 1 if $self->is_root($username);
+#     my $where = {};
+#      my $is_root = $self->is_root( $username );
+#      my @categories;
+#      push @categories, mdb->topic->find_one({mid=>"$mid"})->{id_category};
+#      $where->{'category.id'} = { '$in' => [ _unique @categories ] };
+#      $where->{mid} = $mid;
+#      if( $username && ! $is_root){
+#          $self->build_project_security( $where, $username, $is_root, @categories );
+#      }
+#     return !!mdb->topic->find_one($where,{ _id=>1 });  # faster than count
+# }
 
 sub user_roles_for_topic {
     my ($self,%p)=@_; 
