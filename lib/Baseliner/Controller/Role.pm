@@ -218,6 +218,7 @@ sub update : Local {
         $c->stash->{json} = { success => \1, msg => _loc("Role '%1' modified", $p->{name} ), id=> $row->{id}  };
     }
     cache->remove({ d=>'security' });
+    cache->remove({ d=>"topic:meta" });
     $c->forward('View::JSON');  
 }
 
@@ -245,6 +246,7 @@ sub delete : Local {
     }
     cache->remove(':role:ids:');
     cache->remove({ d=>'security' });
+    cache->remove({ d=>"topic:meta" });
     $c->forward('View::JSON');  
 }
 
@@ -331,6 +333,7 @@ sub roleusers : Local {
         $c->stash->{json} = { success => \0, msg => _loc("Error deleting the role ").$@  };
     };
     cache->remove({ d=>'security' });
+    cache->remove({ d=>"topic:meta" });
     $c->forward('View::JSON');  
 }
 
@@ -373,6 +376,7 @@ sub roleprojects : Local {
         $c->stash->{json} = { success => \0, msg => _loc("Error deleting the role ").$@  };
     };
     cache->remove({ d=>'security' });
+    cache->remove({ d=>"topic:meta" });
     $c->forward('View::JSON');  
 }
 
