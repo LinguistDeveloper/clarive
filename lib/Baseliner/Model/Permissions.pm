@@ -502,12 +502,12 @@ sub user_roles_for_topic {
             my $role_sec_all = $user_security->{$role};
             my $role_ok = 1;
             my @role_sec = keys %$role_sec_all; 
-            if ( Array::Utils::array_minus(@role_sec, @topic_sec) ) {
-                #say "El role $role no tiene derechos";
-                next;
-            } else {
-                #say "El role $role puede que sí tenga derechos";
-            }
+            # if ( Array::Utils::array_minus(@role_sec, @topic_sec) ) {
+            #     #say "El role $role no tiene derechos";
+            #     next;
+            # } else {
+            #     #say "El role $role puede que sí tenga derechos";
+            # }
             my @common_sec = Array::Utils::intersect(@role_sec, @topic_sec);
             for my $sec ( @common_sec ) {
                 my @sec_for_role = _array($role_sec_all->{$sec});
