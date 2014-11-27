@@ -729,6 +729,7 @@ sub update {
                     my $notify = {
                         category        => $id_category,
                         category_status => $id_category_status,
+                        project         => [map { $_->{mid} } $topic->projects]
                     };
                     
                     my $subject = _loc("New topic: %1 #%2 %3", $category->{name}, $topic->mid, $topic->title);
