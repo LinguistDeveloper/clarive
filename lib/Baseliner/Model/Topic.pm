@@ -2591,7 +2591,7 @@ sub set_labels {
 sub get_categories_permissions{
     my ($self, %param) = @_;
     
-    my $cache_key = { d=>'topic:meta', %param };
+    my $cache_key = { d=>'topic:meta', p=>\%param };
     ref($_) && return @$_ for cache->get($cache_key);
     
     my $username = delete $param{username};
@@ -2615,12 +2615,12 @@ sub get_categories_permissions{
     } elsif ($type eq 'comment') {
         $re_action = qr/^action\.topics\.(.*?)\.(comment)$/;
     }
-
+    
     my @permission_categories;
-    my $rs = mdb->category->find( $param{id} ? { id=>"$param{id}" } : () );
-    $rs->fields({ id=>1 }) if !$param{all_fields}; 
+    my $where = { id=>"$param{id}" } if $param{id};
+    my $rs = mdb->category->find($where);
+    $rs->fields({ id=>1, name=>1,  }) if !$param{all_fields}; 
     my @categories  = $rs->sort({ $sort=>$dir })->all;
-
     if ( Baseliner->model('Permissions')->is_root( $username) ) {
         return @categories;
     }
