@@ -7,6 +7,7 @@ use Try::Tiny;
 use Function::Parameters qw(:strict);
 use DateTime::Tiny;
 use Baseliner::Utils qw(_fail _loc _error _warn _debug _throw _log _array _dump _ixhash);
+use v5.10;
 
 # mongo connection
 has retry_frequency => qw(is rw isa Num default 5);
@@ -661,23 +662,29 @@ sub txn {
 }
 
 our $AUTOLOAD;
+our $TRACE_DB = $ENV{CLARIVE_TRACE} =~ /db/;
+
 sub AUTOLOAD {
     my $self = shift;
-    my ($collname) = reverse( split(/::/, $AUTOLOAD));
+    my $collname = ( split /::/, $AUTOLOAD )[-1];
     Util->_fail('The method is `joins` not `join`') if $collname eq 'join';
     #Util->_debug( "TRACE: $coll: ". join('; ',caller) ) if $ENV{CLARIVE_TRACE};
     my $coll = $self->collection($collname);
-    return $ENV{CLARIVE_TRACE}
+    return $TRACE_DB
           ? bless { orig=>$self, coll=>$coll, collname=>$collname } => 'Baseliner::Mongo::TraceCollecion'
           : $coll; 
 }
 
 sub trace_results {
     my ($class,$callstr,$elapsed,$caller)=@_;
+    state %counts;
     my $ela = sprintf "%0.6fs", $elapsed;
     my $ler = sprintf "%s:%s", @{ $caller || [ caller(1) ] }[1..2];
     my $high = '!' x int( $elapsed / .05 );
-    Util->_debug( "TRACE: $ler\n\n  $callstr\n\n  $ela ELAPSED $high\n" );
+    my $cnt = ++$counts{ $callstr };
+    return unless $ENV{CLARIVE_TRACE}!~/(\d+)ms/ || ($1/1000)<$elapsed;
+    return unless $ENV{CLARIVE_TRACE}!~/(\d+)cnt/ || ($1<$cnt);
+    Util->_debug( "TRACE: $ler\n\n  $callstr\n\n  $ela ELAPSED". ($cnt>1 ? ", $cnt CNT" : '' ) . " $high\n" );
     Util->_debug( "STACK: " . Util->_whereami ) if $ENV{CLARIVE_TRACE} =~ /stack|all/;
 }
 
@@ -686,7 +693,7 @@ package Baseliner::Mongo::TraceCollecion {
     our $AUTOLOAD;
     sub AUTOLOAD {
         my $self = shift;
-        my ($meth) = reverse( split(/::/, $AUTOLOAD));
+        my $meth = ( split /::/, $AUTOLOAD )[-1];
         my $collname = $self->{coll}->name;
         my $callstr ='';
         if( $ENV{CLARIVE_TRACE}=~/db|all/ && $meth ne 'DESTROY' && ( $ENV{CLARIVE_TRACE}!~/cache/ && $collname ne 'cache' ) ) {
@@ -700,13 +707,12 @@ package Baseliner::Mongo::TraceCollecion {
         my $t0=[Time::HiRes::gettimeofday];
         my @ret = $self->{coll}->$meth(@_);
         my $elapsed = Time::HiRes::tv_interval( $t0 );
-        my $tfilter = $ENV{CLARIVE_TRACE}!~/(\d+)ms/ || ($1/1000)<$elapsed;
         if( @ret == 1 ) {
             my $ret = $ret[0]; 
             if( ref($ret) =~ /MongoDB::Cursor|Baseliner::MongoCursor/ ) {
                 # find()
                 return bless { cur=>$ret, collname=>$collname, callstr=>$callstr } => 'Baseliner::Mongo::TraceCursor';
-            } elsif( $meth ne 'DESTROY' && $collname ne 'cache' && $tfilter ) {
+            } elsif( $meth ne 'DESTROY' && $collname ne 'cache' ) {
                 # find_one(), update, find_and_modify, etc
                 Baseliner::Mongo->trace_results($callstr,$elapsed,[caller(0)]);
             }
@@ -725,16 +731,14 @@ package Baseliner::Mongo::TraceCursor {
     our $AUTOLOAD;
     sub AUTOLOAD {
         my $self = shift;
-        my ($meth) = reverse( split(/::/, $AUTOLOAD));
+        my $meth = ( split /::/, $AUTOLOAD )[-1];
         my $t0=[Time::HiRes::gettimeofday];
         my @ret = $self->{cur}->$meth(@_);
         my $elapsed = Time::HiRes::tv_interval( $t0 );
         my $callstr = $self->{callstr};
         my $collname = $self->{collname};
-        my $tfilter = $ENV{CLARIVE_TRACE}!~/(\d+)ms/ || ($1/1000)<$elapsed;
         if( ( $meth=~/all|count|next/ 
                 && ($ENV{CLARIVE_TRACE}!~/cache/ && $collname ne 'cache') 
-                && $tfilter 
             ) || $ENV{CLARIVE_TRACE}=~/all/ ) {
             Baseliner::Mongo->trace_results("$callstr->$meth()",$elapsed,[caller(0)]);
         } else {
