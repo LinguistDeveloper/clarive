@@ -40,6 +40,7 @@ if( ! $meta->{hidden} ) {
     <tr>
       <td style="<% $meta->{framed} and 'text-transform: uppercase; font-size: 10px; font-weight:bold; background-color: #eee; text-align: center' %>" >
      
+% @topics = grep { $c->model('Permissions')->user_can_topic_by_project( mid=>$_->{mid}, username=>$c->username) } @topics;
 % if( @topics && scalar @topics > 0 ) {
         <table class="table table-bordered" style="margin-top: 10px; width: 100%" id="<% $iid %>">
               <thead>
@@ -51,7 +52,6 @@ if( ! $meta->{hidden} ) {
               </thead>
               <tbody>
 % foreach my $topic ( @topics ) {
-%    if ( $c->model('Permissions')->user_can_topic_by_project( mid=>$topic->{mid}, username=>$c->username) ) {
                 <tr>
 % foreach my $h ( @head  ) {
 %    my $val =  $topic->{ $$h{key} } // $topic->{data}{ $$h{key} };
@@ -76,7 +76,6 @@ if( ! $meta->{hidden} ) {
              </td>
 % }
              </tr>
-% } # if 
 % }
               </tbody>
           </table>
