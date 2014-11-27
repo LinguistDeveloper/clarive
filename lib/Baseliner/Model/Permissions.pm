@@ -489,10 +489,11 @@ sub user_can_topic_by_project {
 sub user_roles_for_topic {
     my ($self,%p)=@_; 
     my $username = $p{username} // _fail "Missing username";
-    my $mid = $p{mid} // _fail "Missing mid" ;
+    my $mid = $p{mid} // '';#_fail "Missing mid" ;
     use Array::Utils;
     my $user_security = ci->user->find_one( {name => $username}, { project_security => 1, _id => 0} )->{project_security};
-    my $topic_security = mdb->topic->find_one( {mid => "$mid"}, { _project_security => 1, _id => 0} )->{_project_security};
+    my $topic_security;
+    $topic_security = mdb->topic->find_one( {mid => "$mid"}, { _project_security => 1, _id => 0} )->{_project_security} if $mid;
 
     my @roles_for_topic;
 
