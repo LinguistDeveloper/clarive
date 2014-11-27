@@ -142,7 +142,7 @@ sub user_has_action {
     return 1 if $self->is_root( $username );
 
     if ( $p{mid} ) {
-        my @return = grep { /$action/ } $self->user_actions_by_topic(%p);
+        my @return = grep { /$action/ } _array($self->user_actions_by_topic(%p)->{positive});
         $ret = !!@return;
     } else {
         push my @bl, _array $p{bl}, '*';
@@ -229,7 +229,7 @@ sub user_actions_list {
     if ( $self->is_root( $username ) ) {
         @actions = map { $_->{key} } Baseliner->model( 'Actions' )->list;
     } elsif ( $mid ) {
-        @actions = $self->user_actions_by_topic( %p );
+        @actions = _array($self->user_actions_by_topic( %p )->{positive});
     } else {
         @actions = Baseliner->model('Users')->get_actions_from_user( $username, @bl );
     } ## end else [ if ( $self->is_root( $username...))]
@@ -242,20 +242,39 @@ sub user_actions_by_topic {
     my @return;
 
     my @roles = $self->user_roles_for_topic( %p );
-    my %roles_actions = map { $$_{id}=>[ map { $$_{action} } grep { defined } _array($$_{actions}) ] } 
-        mdb->role->find({ id=>mdb->in(@roles) },{ id=>1, actions=>1 })->all;
-    
-    for my $role ( @roles ) {
-        my @actions = _array(cache->get(":role:actions:$role:"));
-        try{
-            if ( !@actions ) {
-               @actions = _array( $roles_actions{$role} ); 
-               cache->set(":role:actions:$role:",\@actions);
-            }
-        }catch{};
-        push @return, @actions;
+
+    my %actions_all = map { $_->{id} => [ map { $_->{action} } _array($_->{actions})] } mdb->role->find({ id => mdb->in(@roles)},{ id => 1, actions => 1})->all;
+    my %all_negative_actions = map { $_ => [ grep { /\.read$/ } _array($actions_all{$_}) ] } keys %actions_all;
+
+    my @positive_actions = _unique(map { grep { !/\.read$/} _array($actions_all{$_}) } keys %actions_all);
+    my @all_keys = keys %actions_all;
+
+    my @negative_actions;
+
+    if ( @all_keys ) {
+        @negative_actions = _array($all_negative_actions{$all_keys[0]});
+
+        for my $i ( 1 .. scalar(keys %all_negative_actions) - 1) {
+            my @role_negative_actions = _array($all_negative_actions{$all_keys[$i]});
+            @negative_actions = Array::Utils::intersect(@negative_actions, @role_negative_actions)
+        }
+        @negative_actions = _unique(@negative_actions);
     }
-    return _unique @return;
+    #map {} mdb->role->find({ id => mdb->in(@roles)},{ id => 1, actions => 1})->all     
+    # my %roles_actions = map { $$_{id}=>[ map { $$_{action} } grep { defined } _array($$_{actions}) ] } 
+    #     mdb->role->find({ id=>mdb->in(@roles) },{ id=>1, actions=>1 })->all;
+    
+    # for my $role ( @roles ) {
+    #     my @actions = _array(cache->get(":role:actions:$role:"));
+    #     try{
+    #         if ( !@actions ) {
+    #            @actions = _array( $roles_actions{$role} ); 
+    #            cache->set(":role:actions:$role:",\@actions);
+    #         }
+    #     }catch{};
+    #     push @return, @actions;
+    # }
+    return { positive => \@positive_actions, negative => \@negative_actions};
 }
 
 =head2 user_has_project( username=>Str, project_name=>Str | project_id )
@@ -456,6 +475,46 @@ sub user_can_topic_by_project {
 }
 
 sub user_roles_for_topic {
+    my ($self,%p)=@_; 
+    my $username = $p{username} // _fail "Missing username";
+    my $mid = $p{mid} // _fail "Missing mid" ;
+    use Array::Utils;
+    my $user_security = ci->user->find_one( {name => $username}, { project_security => 1, _id => 0} )->{project_security};
+    my $topic_security = mdb->topic->find_one( {mid => "$mid"}, { _project_security => 1, _id => 0} )->{_project_security};
+
+    my @roles_for_topic;
+
+    if ( $topic_security ) {
+        my @topic_sec = keys %$topic_security;
+        ROLE: for my $role ( keys %$user_security ) {
+            my $role_sec_all = $user_security->{$role};
+            my $role_ok = 1;
+            my @role_sec = keys %$role_sec_all; 
+            if ( Array::Utils::array_minus(@role_sec, @topic_sec) ) {
+                #say "El role $role no tiene derechos";
+                next;
+            } else {
+                #say "El role $role puede que sí tenga derechos";
+            }
+            my @common_sec = Array::Utils::intersect(@role_sec, @topic_sec);
+            for my $sec ( @common_sec ) {
+                my @sec_for_role = _array($role_sec_all->{$sec});
+                my @sec_for_topic = _array($topic_security->{$sec});
+                if ( !Array::Utils::intersect( @sec_for_role, @sec_for_topic) ) {
+                    #say "El role $role no tiene derechos por $sec";
+                    next ROLE;
+                }
+            }
+            push @roles_for_topic, $role;
+        }
+    } else {
+        @roles_for_topic = keys %$user_security;
+    }
+
+    return @roles_for_topic;
+}
+
+sub user_roles_for_topic_old {
     my ($self,%p)=@_; 
     my $username = $p{username};
     my $mid = $p{mid} // '';
