@@ -388,7 +388,8 @@ sub get_meta_permissions : Private {
     my $parse_status = $data->{name_status} ? _name_to_id($data->{name_status}) : _name_to_id($name_status);
     
     my $is_root = model->Permissions->is_root( $username );
-    my $user_actions = model->Permissions->user_actions_by_topic( username=> $username, mid => $data->{topic_mid} );
+    my $user_security = ci->user->find_one( {name => $username}, { project_security => 1, _id => 0} )->{project_security};
+    my $user_actions = model->Permissions->user_actions_by_topic( username=> $username, mid => $data->{topic_mid}, user_security => $user_security );
     my @user_actions_for_topic = $user_actions->{positive};
     my @user_read_actions_for_topic = $user_actions->{negative};
 
@@ -636,7 +637,6 @@ sub view : Local {
      
             # jobs for release and changeset
             if( $category->{is_changeset} || $category->{is_release} ) {
-                my $is_root = Baseliner->model('Permissions')->is_root($c->username);
                 my $has_permission = Baseliner->model('Permissions')->user_has_action( username=> $c->username, action=>'action.job.monitor' );
 
                 $c->stash->{jobs} = $has_permission ? 1 : 0;
@@ -1968,10 +1968,16 @@ sub get_files : Local {
             ];
         }
         my $rel_data = ci->new($related->{mid})->get_data;
+        my $user_security = ci->user->find_one( {name => $username}, { project_security => 1, _id => 0} )->{project_security};
+        my $user_actions = model->Permissions->user_actions_by_topic( username=> $username, user_security => $user_security );
+        my @user_actions_for_topic = $user_actions->{positive};
+        my @user_read_actions_for_topic = $user_actions->{negative};
+
         for my $field ( _array $cat_fields->{$related->{name_category}} ) {
             if ( _array($rel_data->{$field->{id_field}}) ) {
+
                 my $read_action = 'action.topicsfield.'._name_to_id($related->{name_category}).'.'.$field->{id_field}.'.read';
-                if ( !Baseliner->model('Permissions')->user_has_read_action( username=> $username, action => $read_action ) ) {
+                if ( !( $read_action ~~ @user_read_actions_for_topic) ) {
                     ###### TODO: get all file types not just ucm
                     my ($field_meta) = grep {$_->{id_field} eq $field->{id_field}} _array($cat_meta->{ $related->{name_category} });
                     if ( $field_meta->{ucmserver} ) {                    

@@ -116,6 +116,11 @@ sub get_categories_fields_meta_by_user {
         map { $categories{$_->{id}} = $_->{name} } Baseliner->model('Topic')->get_categories_permissions( username => $username, type => 'view' );        
     }
     
+    my $is_root = model->Permissions->is_root( $username );
+    my $user_security = ci->user->find_one( {name => $username}, { project_security => 1, _id => 0} )->{project_security};
+    my $user_actions = model->Permissions->user_actions_by_topic( username=> $username, user_security => $user_security );
+    my @user_read_actions_for_topic = $user_actions->{negative};
+
     for my $key ( keys %categories ){
         my %fields_perm;
         my $parse_category =  _name_to_id($categories{$key});
@@ -124,7 +129,8 @@ sub get_categories_fields_meta_by_user {
         for my $field ( @fieldlets){
             my $view_action = 'action.topicsfield.' .  $parse_category . '.' .  $field->{id_field} . '.read';  
 
-            if (!Baseliner->model('Permissions')->user_has_read_action( username=> $username, action => $view_action )){
+            if (!($view_action ~~ @user_read_actions_for_topic)){
+            #if (!Baseliner->model('Permissions')->user_has_read_action( username=> $username, action => $view_action )){
                 $fields_perm{$field->{id_field}} = $field;
             };
         }
