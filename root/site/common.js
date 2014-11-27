@@ -2224,23 +2224,25 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
                     if( !tn.category_color ) 
                         tn.category_color = '#999';
                     var span = String.format( Baseliner.tree_topic_style, tn.category_color );
-                    n.setText( String.format( '{0}<b>{1} #{2}</b>: {3}{4}', span, tn.category_name, tn.mid, (tn.category_status ? tn.category_status+' ' : '' ), n.text ) );
+                    n.setText( String.format( '{0}<span title="{4}"><b>{1} #{2}</b>: {3}{4}</span>', span, tn.category_name, tn.mid, (tn.category_status ? tn.category_status+' ' : '' ), n.text ) );
                     n.ui = new Baseliner.TreeMultiTextNode( n );  // DD support for the whole node
                 } else if(n.attributes.category_name ) {
                     var tn = n.attributes.category_name;
                     n.setIconCls('no-icon');  // no icon on this node
-                    var span = String.format( Baseliner.tree_topic_style, tn.category_color );
+                    var span = String.format( Baseliner.tree_topic_style, tn.category_color);
                     n.setText( String.format( '{0}<b>{1}</b>', span, tn.category_name ) );
                 } else if(n.attributes.category_color ) {
                     // color box and nothing else
-                    var span = String.format( Baseliner.tree_topic_style, n.attributes.category_color );
+                    var span = String.format( Baseliner.tree_topic_style, n.attributes.category_color);
                     n.setIconCls('no-icon');  // no icon on this node
                     n.setText( String.format( '{0}{1}', span, n.text ) );
                     n.ui = new Baseliner.TreeMultiTextNode( n );  // DD support for the whole node
+                } else if(n.attributes.data && n.attributes.data.desc && !n.attributes.id_favorite ) {
+                    n.setText( String.format( '<span title="{1}">{0}</span>', n.text, n.attributes.data.desc) );
                 }
             });
         });
-        self.on('dblclick', function(n, ev){     
+        self.on('dblclick', function(n, ev){    
             if( n.leaf ) 
                 self.click_handler({ node: n });
         });

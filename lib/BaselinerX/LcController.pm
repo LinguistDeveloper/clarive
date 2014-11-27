@@ -331,6 +331,7 @@ sub tree_projects : Local {
             data       => {
                 id_project => $r->{mid},
                 project    => $r->{name},
+                desc       => $r->{description},
                 click => {
                     url   => '/dashboard/list/project',
                     type  => 'html',
