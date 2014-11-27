@@ -675,7 +675,7 @@ sub AUTOLOAD {
 sub trace_results {
     my ($class,$callstr,$elapsed,$caller)=@_;
     my $ela = sprintf "%0.6fs", $elapsed;
-    my $ler = sprintf "%s;%s;%s", @$caller;
+    my $ler = sprintf "%s:%s", @{ $caller || [ caller(1) ] }[1..2];
     my $high = '!' x int( $elapsed / .05 );
     Util->_debug( "TRACE: $ler\n\n  $callstr\n\n  $ela ELAPSED $high\n" );
     Util->_debug( "STACK: " . Util->_whereami ) if $ENV{CLARIVE_TRACE} =~ /stack|all/;
@@ -708,11 +708,11 @@ package Baseliner::Mongo::TraceCollecion {
                 return bless { cur=>$ret, collname=>$collname, callstr=>$callstr } => 'Baseliner::Mongo::TraceCursor';
             } elsif( $meth ne 'DESTROY' && $collname ne 'cache' && $tfilter ) {
                 # find_one(), update, find_and_modify, etc
-                Baseliner::Mongo->trace_results($callstr,$elapsed,[caller(8)]);
+                Baseliner::Mongo->trace_results($callstr,$elapsed,[caller(0)]);
             }
             return $ret; 
         } elsif( @ret>1 && ($ENV{CLARIVE_TRACE}!~/cache/ && $collname ne 'cache') ) {
-            Baseliner::Mongo->trace_results("$callstr",$elapsed,[caller(8)]);
+            Baseliner::Mongo->trace_results("$callstr",$elapsed,[caller(0)]);
             return @ret;
         } else {
             return @ret;
@@ -736,7 +736,7 @@ package Baseliner::Mongo::TraceCursor {
                 && ($ENV{CLARIVE_TRACE}!~/cache/ && $collname ne 'cache') 
                 && $tfilter 
             ) || $ENV{CLARIVE_TRACE}=~/all/ ) {
-            Baseliner::Mongo->trace_results("$callstr->$meth()",$elapsed,[caller(8)]);
+            Baseliner::Mongo->trace_results("$callstr->$meth()",$elapsed,[caller(0)]);
         } else {
             my $ret = $ret[0]; 
             if( ref($ret) =~ /MongoDB::Cursor|Baseliner::MongoCursor/ ) {
