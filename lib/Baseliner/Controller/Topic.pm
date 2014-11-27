@@ -928,9 +928,9 @@ sub list_category : Local {
         
         my @categories;
         if( $p->{action} && $p->{action} eq 'create' ){
-            @categories  = $c->model('Topic')->get_categories_permissions( username => $c->username, type => $p->{action}, order => $order);
+            @categories  = $c->model('Topic')->get_categories_permissions( username => $c->username, type => $p->{action}, order => $order, all_fields=>1);
         } else {
-            @categories  = $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view', order => $order);
+            @categories  = $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view', order => $order, all_fields=>1);
         }
         
         if(@categories){
@@ -1175,11 +1175,7 @@ sub filters_list : Local {
         
     my @categories;
     my $category_id = $c->req->params->{category_id};
-    my @categories_permissions  = $c->model('Topic')->get_categories_permissions( username => $c->username, type => 'view' );
-    if($category_id){
-        @categories_permissions = grep { $_->{id} == $category_id } @categories_permissions;
-    }
-
+    my @categories_permissions  = $c->model('Topic')->get_categories_permissions( id=>$category_id, username => $c->username, type => 'view' );
     
     if(@categories_permissions && scalar @categories_permissions gt 1){
         for( @categories_permissions ) {

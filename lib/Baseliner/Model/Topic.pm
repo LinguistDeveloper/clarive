@@ -2617,7 +2617,9 @@ sub get_categories_permissions{
     }
 
     my @permission_categories;
-    my @categories  = mdb->category->find->sort({ $sort=>$dir })->all;
+    my $rs = mdb->category->find( $param{id} ? { id=>"$param{id}" } : () );
+    $rs->fields({ id=>1 }) if !$param{all_fields}; 
+    my @categories  = $rs->sort({ $sort=>$dir })->all;
 
     if ( Baseliner->model('Permissions')->is_root( $username) ) {
         return @categories;
@@ -2737,7 +2739,7 @@ sub root_workflow {
     my $where = {};
     $where->{id} = mdb->in($p{categories}) if exists $p{categories};
 
-    my @categories = mdb->category->find($where)->all;
+    my @categories = mdb->category->find($where)->fields({ statuses=>1, id=>1 })->all;
     my @wf;
 
     for my $cat (@categories) {
