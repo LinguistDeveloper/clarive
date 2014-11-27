@@ -141,6 +141,7 @@ sub compile {
                 use Baseliner::Model::Rules;
                 use Baseliner::Utils;
                 use Baseliner::Sugar;
+                use Try::Tiny;
                 $warnings_str
                 sub ts { '$ts' }
                 sub run { 
