@@ -790,6 +790,7 @@ register 'statement.try_with_catch' => {
     data => { },
     dsl => sub { 
         my ($self, $n , %p) = @_;
+        require Try::Tiny;
         sprintf(q{
             try {
                 %s
