@@ -643,9 +643,6 @@ sub update_mid_data {
     my %datas = map { $$_{mid}=>$_ } mdb->topic->find({ mid=>mdb->in(@mids) },{ _txt=>0 })->all;
 
     for my $mid ( @mids ) {
-        my $user_actions = model->Permissions->user_actions_by_topic( username=> $username, mid => $mid );
-        my @user_actions_for_topic = $user_actions->{positive};
-
         my $data = $datas{$mid}  // do{ _error(_loc("Topic mid not found: %1",$mid)); next };
         $$data{topic_mid} //= $mid;
         
@@ -667,14 +664,6 @@ sub update_mid_data {
         $$data{text} = '';
         
         $$data{is_closed} = defined $$data{category_status} && $$data{category_status} eq 'F' ? \1 : \0;
-        $$data{sw_edit} = 1  if "action.topics.$$data{category_name}.edit" ~~ @user_actions_for_topic;# user can edit?
-
-            # if Baseliner->model( 'Permissions' )->user_has_action(
-            #         username => $username,
-            #         security => $user_security,
-            #         action   => "action.topics.$$data{category_name}.edit",
-            #         mid      => $mid,
-            # );
         
         # for all projects that are not areas, etc
         $$data{projects} = [];  # does not use what is in the topic doc
