@@ -663,20 +663,21 @@ sub txn {
 our $AUTOLOAD;
 sub AUTOLOAD {
     my $self = shift;
-    my $name = $AUTOLOAD;
-    my ($coll) = reverse( split(/::/, $name));
-    Util->_fail('The method is `joins` not `join`') if $coll eq 'join';
+    my ($collname) = reverse( split(/::/, $AUTOLOAD));
+    Util->_fail('The method is `joins` not `join`') if $collname eq 'join';
     #Util->_debug( "TRACE: $coll: ". join('; ',caller) ) if $ENV{CLARIVE_TRACE};
+    my $coll = $self->collection($collname);
     return $ENV{CLARIVE_TRACE}
-          ? bless { coll=>$self->collection($coll) } => 'Baseliner::Mongo::TraceCollecion'
-          : $self->collection( $coll )
+          ? bless { orig=>$self, coll=>$coll, collname=>$collname } => 'Baseliner::Mongo::TraceCollecion'
+          : $coll; 
 }
 
 sub trace_results {
-    my ($class,$callstr,$elapsed)=@_;
+    my ($class,$callstr,$elapsed,$caller)=@_;
     my $ela = sprintf "%0.6fs", $elapsed;
+    my $ler = sprintf "%s;%s;%s", @$caller;
     my $high = '!' x int( $elapsed / .05 );
-    Util->_debug( "TRACE:\n\n  $callstr\n\n  $ela ELAPSED $high\n" );
+    Util->_debug( "TRACE: $ler\n\n  $callstr\n\n  $ela ELAPSED $high\n" );
     Util->_debug( "STACK: " . Util->_whereami ) if $ENV{CLARIVE_TRACE} =~ /stack|all/;
 }
 
@@ -685,8 +686,7 @@ package Baseliner::Mongo::TraceCollecion {
     our $AUTOLOAD;
     sub AUTOLOAD {
         my $self = shift;
-        my $name = $AUTOLOAD;
-        my ($meth) = reverse( split(/::/, $name));
+        my ($meth) = reverse( split(/::/, $AUTOLOAD));
         my $collname = $self->{coll}->name;
         my $callstr ='';
         if( $ENV{CLARIVE_TRACE}=~/db|all/ && $meth ne 'DESTROY' && ( $ENV{CLARIVE_TRACE}!~/cache/ && $collname ne 'cache' ) ) {
@@ -698,7 +698,7 @@ package Baseliner::Mongo::TraceCollecion {
             $callstr = "mdb->$collname->$meth($dump)";
         }
         my $t0=[Time::HiRes::gettimeofday];
-        my @ret = ( $self->{coll}->$meth(@_) );
+        my @ret = $self->{coll}->$meth(@_);
         my $elapsed = Time::HiRes::tv_interval( $t0 );
         my $tfilter = $ENV{CLARIVE_TRACE}!~/(\d+)ms/ || ($1/1000)<$elapsed;
         if( @ret == 1 ) {
@@ -708,11 +708,11 @@ package Baseliner::Mongo::TraceCollecion {
                 return bless { cur=>$ret, collname=>$collname, callstr=>$callstr } => 'Baseliner::Mongo::TraceCursor';
             } elsif( $meth ne 'DESTROY' && $collname ne 'cache' && $tfilter ) {
                 # find_one(), update, find_and_modify, etc
-                Baseliner::Mongo->trace_results($callstr,$elapsed);
+                Baseliner::Mongo->trace_results($callstr,$elapsed,[caller(8)]);
             }
             return $ret; 
         } elsif( @ret>1 && ($ENV{CLARIVE_TRACE}!~/cache/ && $collname ne 'cache') ) {
-            Baseliner::Mongo->trace_results("$callstr->$meth()",$elapsed);
+            Baseliner::Mongo->trace_results("$callstr",$elapsed,[caller(8)]);
             return @ret;
         } else {
             return @ret;
@@ -725,10 +725,9 @@ package Baseliner::Mongo::TraceCursor {
     our $AUTOLOAD;
     sub AUTOLOAD {
         my $self = shift;
-        my $name = $AUTOLOAD;
-        my ($meth) = reverse( split(/::/, $name));
+        my ($meth) = reverse( split(/::/, $AUTOLOAD));
         my $t0=[Time::HiRes::gettimeofday];
-        my @ret = ( $self->{cur}->$meth(@_) );
+        my @ret = $self->{cur}->$meth(@_);
         my $elapsed = Time::HiRes::tv_interval( $t0 );
         my $callstr = $self->{callstr};
         my $collname = $self->{collname};
@@ -737,7 +736,7 @@ package Baseliner::Mongo::TraceCursor {
                 && ($ENV{CLARIVE_TRACE}!~/cache/ && $collname ne 'cache') 
                 && $tfilter 
             ) || $ENV{CLARIVE_TRACE}=~/all/ ) {
-            Baseliner::Mongo->trace_results("$callstr->$meth()",$elapsed);
+            Baseliner::Mongo->trace_results("$callstr->$meth()",$elapsed,[caller(8)]);
         } else {
             my $ret = $ret[0]; 
             if( ref($ret) =~ /MongoDB::Cursor|Baseliner::MongoCursor/ ) {
@@ -747,7 +746,7 @@ package Baseliner::Mongo::TraceCursor {
                 return bless { cur=>$ret, collname=>$collname, callstr=>$self->{callstr}."->$meth($dump)" } => 'Baseliner::Mongo::TraceCursor';
             }
         }
-        return @ret > 1 ? @ret : $ret[0];
+        return wantarray ? @ret : $ret[0];
     }
 }
 
