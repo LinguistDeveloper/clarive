@@ -331,6 +331,8 @@ sub index_all {
         ],
         category => [
             [{ id=>1 }],
+            [{ name=>1 }],
+            [{ 'workflow.id_role'=>1 }],
         ],
         event => [
             [{ id=>1 }],
@@ -381,6 +383,7 @@ sub index_all {
             [{ name=>1, moniker=>1, collection=>1 }],
             [{ step=>1, status=>1 }],
             [{ projects=>1 }],
+            [{ collection=>1 }],
             [{ starttime=>-1 }],  # used by Dashboards.pm and monitor_json
             [{ collection=>1, name=>1 }],
             [[ collection=>1, starttime=>-1 ]],  # job monitor
@@ -396,7 +399,7 @@ sub index_all {
         ],
         role => [
           [{ role=>1 }],
-          [{ id=>1 }],  
+          [{ id=>1 }], 
         ],
         rule => [
             [{ id=>1 }],
@@ -680,7 +683,7 @@ sub trace_results {
     state %counts;
     my $ela = sprintf "%0.6fs", $elapsed;
     my $ler = sprintf "%s:%s", @{ $caller || [ caller(1) ] }[1..2];
-    my $high = '!' x int( $elapsed / .05 );
+    my $high = '!' x int( $elapsed / .001 );
     my $cnt = ++$counts{ $callstr };
     return unless $ENV{CLARIVE_TRACE}!~/(\d+)ms/ || ($1/1000)<$elapsed;
     return unless $ENV{CLARIVE_TRACE}!~/(\d+)cnt/ || ($1<$cnt);
