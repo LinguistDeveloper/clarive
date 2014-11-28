@@ -41,7 +41,10 @@ if( ! $meta->{hidden} ) {
     </tr>
     <tr>
       <td style="<% $meta->{framed} and 'text-transform: uppercase; font-size: 10px; font-weight:bold; background-color: #eee; text-align: center' %>" >
-% @topics = grep { $c->model('Permissions')->user_can_topic_by_project( mid=>$_->{mid}, username=>$c->username) } @topics;
+% my %topics_security = map { $_->{mid} => $_->{_project_security}} mdb->topic->find({ mid => mdb->in(map{$_->{mid}} @topics)},{mid=>1, _project_security =>1})->all;
+% my $user_security = ci->user->find_one({ name => $c->username })->{project_security};
+
+% @topics = grep { $c->model('Permissions')->user_can_topic_by_project( mid=>$_->{mid}, username => $c->username, topic_security=>$topics_security{$_->{mid}}, user_security=>$user_security) } @topics;
 % if (@hide_list_statuses && scalar @hide_list_statuses > 0){ for my $status (_array @hide_list_statuses){ @topics = grep { $_->{"category_status"}{type} ne "$status" } @topics } };
 % if( @topics && scalar @topics > 0 ) {
         <table class="table table-bordered" style="margin-top: 10px; width: 100%" id="<% $iid %>">
