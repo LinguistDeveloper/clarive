@@ -761,6 +761,7 @@ sub update {
                 push @meta_filter, $_
                    for grep { exists $p->{$_->{id_field}}} _array($meta);
                 $meta = \@meta_filter;
+                _warn $p;
                 my ($topic, %change_status) = $self->save_data($meta, $topic_mid, $p);
                 
                 $topic_mid    = $topic->mid;
@@ -1608,6 +1609,7 @@ sub save_data {
             $topic->update( name=>$row{title}, moniker=>$moniker, modified_by=>$data->{username}, %update_row );
             
             for my $field ( keys %row ) {
+                _warn "Cambiando $field";
                 next if $field eq 'response_time_min' || $field eq 'expr_response_time';
                 next if $field eq 'deadline_min'      || $field eq 'expr_deadline';
 
@@ -1617,6 +1619,7 @@ sub save_data {
                 
 
                 if ( !defined $old_value && $new_value ne '' || $new_value ne $old_value ) {
+                    _warn "Ha Cambiado a $new_value";
 
                     if ( $field eq 'id_category_status' ) {
                         # change status
@@ -1692,7 +1695,7 @@ sub save_data {
                             new_value => $method
                                 && $topic->$method ? $topic->$method->name : $topic->{$field},
                             mid => $topic->mid,
-                            } => sub {
+                        } => sub {
                             my $subject = _loc( "#%1 %2: Field '%3' updated",
                                 $topic->mid, $topic->title, $description{$field} );
                             {
@@ -1701,11 +1704,11 @@ sub save_data {
                                 subject => $subject,
                                 notify  => $notify
                             }    # to the event
-                            } => sub {
+                        } => sub {
 
                             #_throw _loc( 'Error modifying Topic: %1', shift() );
                             _throw shift;
-                            };
+                        };
 
                     } 
                 } 
@@ -2230,6 +2233,7 @@ sub set_cis {
 
     my $field_meta = [ grep { $_->{id_field} eq $id_field } _array($meta) ]->[0];
     my $name_field = $field_meta->{name_field};
+    _warn "Estoy en set_cis";
 
     my $rel_type = $field_meta->{rel_type} or _fail "Missing rel_type for field $id_field";
 

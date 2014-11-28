@@ -47,7 +47,6 @@ before save_data => sub {
         $$data{moniker} = uc $self->name;
         $self->moniker( $$data{moniker} );
     }
-    cache->remove('all_status');
 };
     
 after delete => sub {
@@ -115,11 +114,7 @@ sub statuses {
             $p{id_status} = $in;
         }
     }
-    my %statuses = cache->get('all_status');
-    if ( !%statuses ) {
-        %statuses = map { $$_{id_status} => $_ } grep { length $$_{id_status} } $self->find(\%p)->fields({ _id=>0, yaml=>0 })->all;
-        cache->set('all_status',\%statuses);
-    }
+    my %statuses = map { $$_{id_status} => $_ } grep { length $$_{id_status} } $self->find(\%p)->fields({ _id=>0, yaml=>0 })->all;
     return %statuses;
 }
 
