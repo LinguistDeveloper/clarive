@@ -149,7 +149,7 @@
                 submit_form( false )
             }
         });
-btn_form_save.disable();
+
         var btn_data = new Ext.Button({
             text: _('Data'),
             icon:'/static/images/icons/detail.png',
