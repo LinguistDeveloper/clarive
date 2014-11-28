@@ -179,7 +179,7 @@ sub lc_for_project {
                 my @bls = map { $_->{bl} } sort { $a->{seq} <=> $b->{seq} } grep { !@project_bls || $_->{bl} ~~ @project_bls } _array $_->{bls};
                 my $bls_text = join ",", @bls;
                 #+{  node   => $_->{type} ne "D" ? $_->{name}:"$_->{name} [$bls_text]",
-                +{  node   => !$bls_text || $bls_text ne '*' ? $_->{name}:"$_->{name} [$bls_text]",
+                +{  node   => !$bls_text || $bls_text eq '*' ? $_->{name}:"$_->{name} [$bls_text]",
                 type   => 'state',
                 active => 1,
                 data => { id_status => $_->{id_status}, },
