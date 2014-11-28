@@ -8,9 +8,6 @@ use Proc::Exists qw(pexists);
 use Array::Utils qw(:all);
 use v5.10;
 
-
-#Una prueba de commit
-
 BEGIN { extends 'Catalyst::Model' }
 
 my $post_filter = sub {
@@ -1447,7 +1444,7 @@ sub get_cis {
     $where->{rel_field} = $id_field;
     my @cis = map { $_->{to_mid} } mdb->master_rel->find($where)->fields({ to_mid=>1 })->all;
 
-    $data->{"$id_field._ci_name_list"} = join ', ', map { $_->{name} } mdb->master->find({mid=>mdb->in(@cis)})->all;
+    $data->{"$id_field._ci_name_list"} = join ', ', map { $_->{name} } mdb->master->find({mid=>mdb->in(@cis)})->all if @cis;
     return @cis ? \@cis : [];    
 }
 
@@ -1471,9 +1468,7 @@ sub get_topics {
         : mdb->master_rel->find_values(to_mid => { from_mid=>"$topic_mid", rel_type=>$rel_type, rel_field=>$id_field  });
         # : _array($$data{$id_field});
 
-    my $rs = mdb->topic->find({ mid=>mdb->in(@rel_topics) })->fields({ _id=>0 });
-    $rs->sort({rel_seq=>1});
-    my @rs_ord = $rs->all;
+    my @rs_ord = mdb->topic->find({ mid=>mdb->in(@rel_topics) })->fields({ _id=>0 })->sort({rel_seq=>1})->all if @rel_topics;
     @topics = map { $_->{categories} = $_->{category}; $_ } @rs_ord;
     @topics = $self->append_category( @topics );
     

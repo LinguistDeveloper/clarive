@@ -531,6 +531,8 @@ sub view : Local {
     try {
     
         my $topic_doc;
+
+        $c->stash->{user_security} = ci->user->find_one({ name => $c->username })->{project_security};
         $c->stash->{ii} = $p->{ii};    
         $c->stash->{swEdit} =  ref($p->{swEdit}) eq 'ARRAY' ? $p->{swEdit}->[0]:$p->{swEdit} ;
         $c->stash->{permissionEdit} = 0;

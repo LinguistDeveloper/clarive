@@ -9,6 +9,7 @@
     $permissionEdit => 0
     $permissionDelete => 0
     $permissionComment => 0
+    $user_security
 </%args>
 <%perl>
     use Baseliner::Utils;
@@ -80,6 +81,7 @@ padding: 2px 4px 2px 7px;
 }
 
 </style>
+% 
 % my @form = grep { $_->{fields} } _array( $topic_meta );
 % my @head = sort { $a->{field_order_html} <=> $b->{field_order_html} } grep { $_->{section} && $_->{section} eq 'head' } _array( $topic_meta );
 % my @details = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'details' } _array( $topic_meta );
@@ -103,7 +105,7 @@ padding: 2px 4px 2px 7px;
 % foreach my $field ( @head ) {
 % if ($field->{html}){
     <!-- <% $field->{html} %> -->
-    <& $field->{html}, data=>$topic_data, meta=>$field &>
+    <& $field->{html}, data=>$topic_data, meta=>$field, user_security=>$user_security&>
 %}
 % }
                 </tbody>
@@ -118,7 +120,7 @@ padding: 2px 4px 2px 7px;
 % foreach my $field ( @body ) {
 % if ($field->{html}){
     <!-- <% $field->{html} %> -->
-    <& $field->{html}, data=>$topic_data, meta=>$field &>
+    <& $field->{html}, data=>$topic_data, meta=>$field, user_security=>$user_security &>
 %}    
 % }
 
@@ -128,7 +130,7 @@ padding: 2px 4px 2px 7px;
 % foreach my $field ( @between ) {
 % if ($field->{html}){
     <!-- <% $field->{html} %> -->
-    <& $field->{html}, data=>$topic_data, meta=>$field &>
+    <& $field->{html}, data=>$topic_data, meta=>$field, user_security=>$user_security &>
 %}
 % }                                 
                             
@@ -143,7 +145,7 @@ padding: 2px 4px 2px 7px;
 % foreach my $field ( @details ) {
 % if ($field->{html}){
     <!-- <% $field->{html} %> -->
-    <& $field->{html}, data=>$topic_data, meta=>$field &>
+    <& $field->{html}, data=>$topic_data, meta=>$field, user_security=>$user_security &>
 %}
 % }                                 
                         </td>
