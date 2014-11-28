@@ -761,7 +761,6 @@ sub update {
                 push @meta_filter, $_
                    for grep { exists $p->{$_->{id_field}}} _array($meta);
                 $meta = \@meta_filter;
-                _warn $p;
                 my ($topic, %change_status) = $self->save_data($meta, $topic_mid, $p);
                 
                 $topic_mid    = $topic->mid;
@@ -1609,7 +1608,6 @@ sub save_data {
             $topic->update( name=>$row{title}, moniker=>$moniker, modified_by=>$data->{username}, %update_row );
             
             for my $field ( keys %row ) {
-                _warn "Cambiando $field";
                 next if $field eq 'response_time_min' || $field eq 'expr_response_time';
                 next if $field eq 'deadline_min'      || $field eq 'expr_deadline';
 
@@ -1619,7 +1617,6 @@ sub save_data {
                 
 
                 if ( !defined $old_value && $new_value ne '' || $new_value ne $old_value ) {
-                    _warn "Ha Cambiado a $new_value";
 
                     if ( $field eq 'id_category_status' ) {
                         # change status
