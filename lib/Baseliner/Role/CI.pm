@@ -80,6 +80,17 @@ has job     => qw(is rw isa Baseliner::Role::JobRunner),
             BaselinerX::CI::job->new;
         };
 
+before save_data => sub {
+    my ($self, $master_row, $data ) = @_;
+
+    my $class = ref $self;
+    my @cis = $class->find({ mid => { '$ne' => $self->mid}, name => $self->name })->all;
+    if ( @cis ) {
+        _fail _loc("There's already one CI named ". $self->name." with class ".$class);
+    }
+
+};
+
 sub storage { 'yaml' }   # ie. yaml, deprecated: for now, no other method supported
 
 # methods 
