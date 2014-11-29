@@ -844,7 +844,6 @@ Create or update a CI.
 sub update : Local {
     my ($self, $c, $action) = @_;
     my $p = $c->req->params;
-    _debug $p;
     my $form_data = $p->{form_data};
     _fail _loc 'Invalid data format: form data is not hash' unless ref $form_data eq 'HASH';
     # cleanup
