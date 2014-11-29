@@ -12,6 +12,12 @@ BEGIN { extends 'Catalyst::Controller::WrapCGI' }
 
 register 'action.admin.rules' => { name=>'Admin Rules' };
 
+register 'config.rules' => {
+    metadata => [
+        { id => 'auto_change_vars', name => 'Auto change variable names', type => 'text', default => '0', label => 'CAUTION ... USE AT YOUR OWN RISK'}
+    ]
+};
+
 register 'menu.admin.rule' => {
     label    => 'Rules',
     title    => _loc ('Rules'),
