@@ -440,11 +440,17 @@ sub palette : Local {
 sub stmts_save : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
+    $self->local_stmts_save($c,$p);
+    $c->forward("View::JSON");
+}
+
+sub local_stmts_save {
+    my ($self,$c,$p) = @_;
     my $returned_ts;
     my $error_checking_dsl = 0;
     try {
         my $id_rule = $p->{id_rule} or _throw 'Missing rule id';
-        my $doc = mdb->rule->find_one({ id=>$id_rule }) // _fail _loc 'Rule id %1 missing. Deleted?', $id_rule;
+        my $doc = mdb->rule->find_one({ id=>''.$id_rule }) // _fail _loc 'Rule id %1 missing. Deleted?', $id_rule;
         my $ignore_dsl_errors = $p->{ignore_dsl_errors} || $$doc{ignore_dsl_errors};
         # check json valid
         my $stmts = try { 
@@ -486,7 +492,7 @@ sub stmts_save : Local {
         my $err = shift;
         $c->stash->{json} = { success=>\0, msg => "$err", error_checking_dsl=>$error_checking_dsl };
     };
-    $c->forward("View::JSON");
+
 }
 
 ##################################################################################
