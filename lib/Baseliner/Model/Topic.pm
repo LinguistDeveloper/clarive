@@ -2616,7 +2616,7 @@ sub get_categories_permissions{
     my @permission_categories;
     my $where = { id=>"$param{id}" } if $param{id};
     my $rs = mdb->category->find($where);
-    $rs->fields({ id=>1, name=>1,  }) if !$param{all_fields}; 
+    $rs->fields({ id=>1, name=>1, color=>1 }) if !$param{all_fields}; 
     my @categories  = $rs->sort({ $sort=>$dir })->all;
     if ( Baseliner->model('Permissions')->is_root( $username) ) {
         return @categories;
