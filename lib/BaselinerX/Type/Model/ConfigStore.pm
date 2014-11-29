@@ -438,7 +438,8 @@ sub set {
     _throw 'Missing parameter value' unless defined $p{value};
 
     my $registry_data = $self->search_registry( query=> $p{key} );
-    my ($original) = _array($registry_data->{data} // []) if $registry_data->{config_key} eq $p{key};
+    my ($original) = _array($registry_data->{data} // []) if $registry_data && $registry_data->{data} && $registry_data->{data}[0]->{key} eq $p{key};
+    _warn $original;
     
     $self->delete( %p );
     
