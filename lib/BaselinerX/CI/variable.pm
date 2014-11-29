@@ -1,6 +1,7 @@
 package BaselinerX::CI::variable;
 use Baseliner::Moose;
 use Baseliner::Utils;
+use Baseliner::Sugar;
 
 has var_type             => qw(is rw isa Str);
 has var_ci_class         => qw(is rw isa Maybe[Str]);
@@ -18,6 +19,7 @@ after save => sub {
 
     if ( $self->name ne $self->old_name ) {    
         $self->change_var_names();
+        $self->change_var_names_in_rules() if config_get('config.rules')->{auto_rename_vars};
         $self->old_name($self->name);
         $self->save;
     }
@@ -67,6 +69,27 @@ sub change_var_names {
         if ( $changed ) {
             $prj->variables( $vars );
             $prj->save;
+        }
+    }
+}
+
+sub change_var_names_in_rules {
+    my ($self) = @_;
+    my $new_name = $self->{name};
+    my $old_name = $self->{old_name};
+
+    my @rules = mdb->rule->find()->all;
+
+    for my $rule ( @rules ) {
+        my $tree = $rule->{rule_tree};
+        
+        
+        if ( $tree && $tree =~ /\{$old_name\}|\"$old_name\"|\'$old_name\'/  ) {
+            $tree =~ s/\{$old_name\}/\{$new_name\}/g;
+            $tree =~ s/\"$old_name\"/\"$new_name\"/g;
+            $tree =~ s/\'$old_name\'/\'$new_name\'/g;
+            _debug _log("Updating variable name from $old_name to $new_name in rule $rule->{id}");
+            Baseliner::Controller::Rule->local_stmts_save( {username => 'clarive', id_rule => $rule->{id} , stmts => $tree, old_ts => $rule->{ts} }); 
         }
     }
 }
