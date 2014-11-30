@@ -137,7 +137,25 @@ sub action_tree : Local {
         @actions = $c->model('Actions')->list;
         cache->set( "roles:actions:", \@actions);        
     }
-
+    
+    if( length( my $query = $c->req->params->{query}) ) {
+        my @qrs = map { qr/\Q$_\E/i } split /\s+/, $query;
+        my @tree_query;
+        foreach my $act ( sort { $a->{key} cmp $b->{key} } @actions ) {
+            #( my $folder = $key ) =~ s{^(\w+\.\w+)\..*$}{$1}g;
+            my $key = $act->{key};
+            ( my $folder = $key ) =~ s{^(\w+\.\w+)\..*$}{$1}g;
+            my $name = $act->{name};
+            my $txt = "$key,$name";
+            if( List::MoreUtils::all(sub{ $txt =~ $_ }, @qrs) ) {
+                #_debug( $act );
+                push @tree_query, { id=>$key, text =>( $name ne $key ? "$name" : "$key" ), icon=>'/static/images/icons/action.gif', leaf=>\1 };
+            }
+        }
+        $c->stash->{json} = \@tree_query;
+        $c->forward("View::JSON");
+        return;
+    }
     my @tree_final;
     my %tree;
 
@@ -146,47 +164,35 @@ sub action_tree : Local {
     if ( $cached_tree ) {
         @tree_final = _array $cached_tree;
     } else {
-
-        my $children_of;
-
-        $children_of = sub {
-            my ( $parent, @actions ) = @_;
-            my $children;
-
-            for my $action ( @actions ) {
-
-                my $key = $action->{key};
-                next if $key !~ /^$parent\.(.*)/; # skip if not children
-
-                my @tokens = split /\./, $1; # split in tokens
-                my $name = shift @tokens;
-                my $id = $parent.".".$name; # add myself to parent
-                
-                next if $tree{$id}; # skip if already in tree
-                $tree{$id}=1; # declarate myself as in tree
-
-                if ( @tokens ) { # not a leaf
-                    push @$children, { id=>$id, text => $name, leaf=>\0, children=> $children_of->($id, @actions) };
-                } else { # a leaf
-                    push @$children, { id=>$id, text => sprintf( "%s (%s)",Util->_loc_decoded( $action->{name} ), $id) , leaf=>\1 };
-                }
-
-            }
-            return [ sort { $a->{id} cmp $b->{id} } _array $children ];
-        };
-
-        foreach my $key ( sort map { $_->{key} } @actions ) {
-            ( my $folder = $key ) =~ s{^(\w+\.\w+)\..*$}{$1}g;
-            next if $tree{$folder};
-            $tree{$folder}=1;
-            
-            if ( $folder ne $key ) {
-                my $children = $children_of->( $folder, @actions );
-                push @tree_final, { id=>$folder, text=>$folder, leaf=>\0, children => $children };
-            } else {
-                push @tree_final, { id=>$key, text => $key, leaf=>\1 };
+        my %folders;
+        for my $act ( sort { $a->{key} cmp $b->{key} } @actions ) {
+            my $key = $$act{key};
+            my @kp = split /\./, $key;
+            my $perm = pop @kp;
+            my $folder = pop @kp;
+            my $parent = join '.',@kp;
+            my $fkey = $parent ? "$parent.$folder" : $folder; 
+            $folders{$fkey} //= { key=>$fkey, text=>$folder, leaf=>\0, icon=>'/static/images/icons/action_folder.gif', parents=>\@kp };
+            my $node = { text=>$$act{name}, id=>$key, key=>$key, icon=>'/static/images/icons/action.gif', leaf=>\1 };
+            push @{ $folders{$fkey}{children} }, $node;
+        }
+        # now create intermediate folders
+        my $push_parent;
+        $push_parent = sub{
+            my ($fkey) = @_;
+            my $fnode = $folders{$fkey};
+            my $parents = delete $$fnode{parents};
+            if( $parents && @$parents ) {
+                my $pn = pop @$parents;
+                my $parent = join '.', @$parents, $pn;
+                #say "$fkey INTO $parent";
+                $folders{$parent} //= { key=>$parent, text=>$pn, icon=>'/static/images/icons/action_folder.gif', leaf=>\0, parents=>$parents };
+                push @{ $folders{$parent}{children} }, $fnode;
+                $push_parent->($parent);
             }
         };
+        $push_parent->($_) for sort keys %folders;
+        @tree_final = @{ $folders{'action'}{children} };
         cache->set( "roles:tree:", \@tree_final);
     };
     $c->stash->{json} = \@tree_final;
