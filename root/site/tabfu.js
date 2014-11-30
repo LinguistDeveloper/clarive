@@ -1899,3 +1899,7 @@ Baseliner.whereami = function(cons){
     //if( cons ) console.log(stack);
     return stack;
 }
+
+Cla.log = function(msg){
+    console.log(msg); 
+}

@@ -1,62 +1,45 @@
 (function(params){
    var new_role_form = new Ext.FormPanel({
         url: '/role/update',
-        region: 'center',
+        region: 'north',
         frame: true,
         labelWidth: 100, 
+        height: 110,
+        layout:'column',
         defaults: { width: 250,  msgTarget: 'under' },
-        buttons: [
-            {  text: _('OK'),
-                handler: function(){ 
-                    var ff = new_role_form.getForm();
-                    if( ! ff.isValid() ) return;
-                    var actions_json = action_grid_data();
-                    ff.submit({
-                        params: { role_actions: actions_json },
-                        success: function(form, action) { 
-                            ff.findField("id").setValue(action.result.id);
-                            var grid = Ext.getCmp( params.id_grid ); 
-                            if( grid ) {
-                                grid.getStore().load();
-                            }
-                            Baseliner.message(_("Save role"), _("Role saved successfully"));
-                        },
-                        failure: function(form, action) { Baseliner.message( _("Save role")), _("Failure") + ":" + action.result.msg; }
-                    });
-                }
-            },
-            {  text: _('Cancel') , handler: function(){  role_panel.destroy() } },
-            {  text: _('Close') , handler: function(){  role_panel.destroy() } }
-        ],
         items: [
-            {  xtype: 'hidden', name: 'id', value: -1 }, 
-            {  xtype: 'textfield', name: 'name', fieldLabel: _('Role Name'), allowBlank: false }, 
-            {  xtype: 'textarea', name: 'description', height: 100, fieldLabel: _('Description') },
-            {  xtype: 'textfield', name: 'mailbox', fieldLabel: _('Mailbox') },
-            new Baseliner.DashboardBox({ fieldLabel: _('Dashboards'), name:'dashboards', allowBlank: true })
+            { columnWidth: .5,layout:'form', defaults:{ anchor:'100%' }, items:[
+                {  xtype: 'hidden', name: 'id', value: -1 }, 
+                {  xtype: 'textfield', name: 'name', fieldLabel: _('Role Name'), allowBlank: false }, 
+                {  xtype: 'textarea', name: 'description', height: 60, fieldLabel: _('Description') }
+              ]
+            },
+            { columnWidth: .5, layout:'form', defaults:{ anchor:'100%' }, bodyStyle:{ 'padding-left':'10px' }, items:[
+                {  xtype: 'textfield', name: 'mailbox', fieldLabel: _('Mailbox') },
+                new Baseliner.DashboardBox({ fieldLabel: _('Dashboards'), name:'dashboards', allowBlank: true })
+              ]
+            }
             // {  xtype: 'textfield', name: 'default_dashboard', fieldLabel: _('Default default_dashboard') }
         ]
     });
 
-
+    var render_action = function(value,metadata,rec,rowIndex,colIndex,store) {
+        var v = String.format('{0} (<code>{1}</code>)', _(value), rec.data.action );
+        return v;
+    }
     var cm = new Ext.grid.ColumnModel({
         defaults: {
             sortable: true // columns are not sortable by default           
         },
         columns: [
-                { header: _('Action'), width: 200, dataIndex: 'action', sortable: true },	
-                { header: _('Description'), width: 200, dataIndex: 'description', sortable: true, renderer: Baseliner.render_loc },
-                { header: _('Baseline'), width: 150, dataIndex: 'bl', sortable: true,
+                { header: '', width: 20, dataIndex: 'action', sortable: false, renderer: function(){ return String.format('<img src="{0}"/>', IC('action.gif')) } },
+                { header: _('Description'), width: 200, dataIndex: 'description', sortable: true, renderer: render_action },
+                { header: _('Baseline'), width: 50, dataIndex: 'bl', sortable: true,
                           renderer: Baseliner.render_bl,
                           editor: new Baseliner.model.ComboBaseline()
                 }
         ]
     });
-
-
-
-
-
 
     //////////////// Actions Tree
     var treeLoader = new Ext.tree.TreeLoader({
@@ -115,9 +98,19 @@
                 expand: tree_check
             }
     });
-
     
-    var new_role_tree = new Ext.tree.TreePanel({
+    var search_box = new Baseliner.SearchSimple({ 
+        width: 220,
+        handler: function(){
+            var lo = action_tree.getLoader();
+            lo.baseParams = this.store.baseParams;
+            Baseliner.showLoadingMask( action_tree.getEl() );
+            lo.load( action_tree.root, function(){
+                Baseliner.hideLoadingMask( action_tree.getEl() );
+            });
+        }
+    });
+    var action_tree = new Cla.Tree({
         title: _('Available Actions'),
         loader: treeLoader,
         loadMask: true,
@@ -129,17 +122,16 @@
         autoScroll: true,
         rootVisible: false,
         root: treeRoot,
+        tbar: [ search_box ],
         listeners: {
             'render': function() {
-                this.getEl().mask(_("Loading"), 'x-mask-loading').setHeight( 99999 );
+                Baseliner.showLoadingMask( this.getEl() , _('Loading...') );
             },
             'load': function() {
-                new_role_tree.getEl().unmask();
+                this.getEl().unmask();
             }          
         }
     });
-    
-    // Baseliner.showLoadingMask( new_role_tree.getEl() , _('Loading...') );
 
     var store_role_users=new Baseliner.JsonStore({ 
         root: 'data',
@@ -196,31 +188,39 @@
     var role_navigator = new Ext.TabPanel({
         region:'west',
         split: true,
-        width: '50%',
+        width: '45%',
         colapsible: true,
         activeTab: 0,
-        items: [ new_role_tree, role_users, role_projects ]
+        items: [ action_tree, role_users, role_projects ]
     });
     //////////////// Actions belonging to a role
     var action_store=new Ext.data.Store({ fields: [ {  name: 'action' }, {  name: 'description' }, { name: 'bl' } ] });
     
-    //////var cm = new Ext.grid.ColumnModel({
-    //////    defaults: {
-    //////        sortable: true // columns are not sortable by default           
-    //////    },
-    //////    columns: [
-    //////            { header: _('Action'), width: 200, dataIndex: 'action', sortable: true },	
-    //////            { header: _('Description'), width: 200, dataIndex: 'description', sortable: true, renderer: Baseliner.render_loc },
-    //////            { header: _('Baseline'), width: 150, dataIndex: 'bl', sortable: true,
-    //////                      renderer: Baseliner.render_bl,
-    //////                      editor: new Baseliner.model.ComboBaseline()
-    //////            }
-    //////    ]
-    //////});
-    
+    var search_grid = new Baseliner.SearchSimple({ 
+        width: 220,
+        handler: function(){
+            var v = this.getRawValue();
+            if( !v || !v.length ) {
+                this.el.dom.value = '';
+                action_store.clearFilter();
+                return;
+            }
+            var res = v.split(/\s+/).map(function(vv){ return new RegExp(vv,'i') });
+            action_store.filterBy(function(rec) {
+                var all = 0;
+                for(var i=0; i<res.length; i++){
+                    if( res[i].test(rec.data.description+';'+rec.data.action) ) {
+                        all++;
+                    }
+                }
+                return all == res.length;
+            });
+        }
+    });
+
     var grid_role = new Ext.grid.EditorGridPanel({
         title: _('Role Actions'),
-        region: 'south',
+        region: 'center',
         stripeRows: true,
         autoScroll: true,
         store: action_store,
@@ -230,7 +230,9 @@
         height: 300,
         width: 350,
         cm: cm,
-        bbar: [ 
+        sm: new Baseliner.RowSelectionModel({ singleSelect: true }),
+        tbar: [ 
+            search_grid, '->',
             new Ext.Toolbar.Button({
                 text: _('Delete'),
                 icon:'/static/images/del.gif',
@@ -269,6 +271,7 @@
     };
 
     grid_role.on('afterrender', function(){
+        Baseliner.showLoadingMask( grid_role.getEl() , _('Loading...') );
         ////////// Setup the Drop Target - now that the window is shown
         var secondGridDropTarget = new Baseliner.DropTarget(grid_role.getView().scroller.dom, {
                 comp: grid_role,
@@ -353,8 +356,9 @@
                 var ff = new_role_form.getForm();
                 ff.loadRecord( rec );
             }
+            Baseliner.hideLoadingMask( grid_role.getEl() );
         } catch(e) {
-            Ext.Msg.alert("<% _loc('Error') %>", "<% _loc('Could not load role form data') %>: " + e.description );
+            Cla.error(_('Error'), _('Could not load role form data') + ': ' + e.description );
         }
     });
 
@@ -367,6 +371,30 @@
     var role_panel = new Ext.Panel({
         layout: 'border',
         tab_icon:'/static/images/icons/users.gif',
+        tbar: [
+            '->',
+            {  text: _('Save'),
+                icon: IC('save'),
+                handler: function(){ 
+                    var ff = new_role_form.getForm();
+                    if( ! ff.isValid() ) return;
+                    var actions_json = action_grid_data();
+                    ff.submit({
+                        params: { role_actions: actions_json },
+                        success: function(form, action) { 
+                            ff.findField("id").setValue(action.result.id);
+                            var grid = Ext.getCmp( params.id_grid ); 
+                            if( grid ) {
+                                grid.getStore().load();
+                            }
+                            Baseliner.message(_("Save role"), _("Role saved successfully"));
+                        },
+                        failure: function(form, action) { Baseliner.message( _("Save role")), _("Failure") + ":" + action.result.msg; }
+                    });
+                }
+            },
+            {  text: _('Close') , icon: IC('close'), handler: function(){  role_panel.destroy() } }
+        ],
         title: panel_title,
           items : [
               new_role_form,
