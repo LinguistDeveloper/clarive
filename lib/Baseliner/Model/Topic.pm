@@ -200,11 +200,11 @@ register 'action.topics.logical_change_status' => {
 register 'registor.action.topic_category' => {
     generator => sub {
         my %type_actions_category = (
-            create => _loc('Can create topic for this category'),
-            view   => _loc('Can view topic for this category'),
-            edit   => _loc('Can edit topic for this category'),
-            delete => _loc('Can delete topic in this category'),
-            comment => _loc('Can add/view comments in topics of this category')
+            create => 'Can create topic for category `%1`',
+            view   => 'Can view topic for category `%1`',
+            edit   => 'Can edit topic for category `%1`',
+            delete => 'Can delete topic in category `%1`',
+            comment => 'Can add/view comments in topics of category `%1`',
         );
 
         my @categories = mdb->category->find->sort({ name=>1 })->fields({ id=>1, name=>1 })->all;
@@ -213,7 +213,7 @@ register 'registor.action.topic_category' => {
         foreach my $action ( keys %type_actions_category ) {
             foreach my $category (@categories) {
                 my $id_action = 'action.topics.' . _name_to_id( $category->{name} ) . '.' . $action;
-                $actions_category{$id_action} = { id => $id_action, name => $type_actions_category{$action} };
+                $actions_category{$id_action} = { id => $id_action, name => _loc($type_actions_category{$action},$category->{name}) };
             }
         }
         return \%actions_category;
@@ -234,10 +234,10 @@ register 'registor.action.topic_category_fields' => {
             my $cat_statuses = mdb->category->find_one({ id=>''.$category->{id} })->{statuses};
             my @statuses2 = @statuses{ _array($cat_statuses) };
 
-            my $msg_edit = _loc('Can edit the field');
-            my $msg_view = _loc('Can not view the field');
-            my $msg_in_category = _loc('in the category');
-            my $msg_for_status = _loc('for the status');
+            my $msg_view = 'Cannot view the field %1 in category %2';
+            my $msg_edit_s = 'Can edit the field %1 in category %2 for the status %3';
+            my $msg_view_s = 'Cannot view the field %1 in category %2 for the status %3';
+        
             my $cat_to_id = _name_to_id( $category->{name} );
             
             my $id_action;
@@ -250,40 +250,27 @@ register 'registor.action.topic_category_fields' => {
                     
                     for my $field_form (@fields_form){
                         my $field_form_to_id = _name_to_id($field_form->{id_field});
-                        $id_action = 'action.topicsfield.' . $cat_to_id . '.' 
-                                . $field_to_id . '.' . $field_form_to_id . '.read';
-                        $description = $msg_view . ' ' . lc $field_form->{id_field} . ' ' . $msg_in_category . ' ' . lc $category->{name};
-                        
+                        $id_action = join '.', 'action.topicsfield', $cat_to_id, $field_to_id, $field_form_to_id, 'read';
+                        $description = _loc($msg_view, $field_form->{name_field}, $category->{name} );
                         $actions_category_fields{$id_action} = { id => $id_action, name => $description };
-                        
                         for my $status (@statuses2){
-                            $id_action = 'action.topicsfield.' . $cat_to_id . '.' 
-                                    . $field_to_id . '.' . $field_form_to_id . '.' . $status->{name_id} . '.write';
-                            $description = $msg_edit . ' ' . lc $field_form->{id_field} . ' ' . $msg_in_category . ' ' . lc $category->{name} . ' ' . $msg_for_status . ' ' . lc $status->{name};
-                            
+                            $id_action = join '.', 'action.topicsfield', $cat_to_id, $field_to_id, $field_form_to_id, $status->{name_id}, 'write';
+                            $description = _loc($msg_edit_s, $field_form->{name_field}, $category->{name}, $status->{name});
                             $actions_category_fields{$id_action} = { id => $id_action, name => $description };
-                            
                         }                    
                     }
                 }
                 else{
-
                     $id_action = 'action.topicsfield.' . $cat_to_id . '.' . $field_to_id . '.read';
-                    $description = $msg_view . ' ' . lc $field->{name_field} . ' ' . $msg_in_category . ' ' . lc $category->{name};
-                    
+                    $description = _loc($msg_view, $field->{name_field}, $category->{name});
                     $actions_category_fields{$id_action} = { id => $id_action, name => $description };
-
                     for my $status (@statuses2){
                         $id_action = 'action.topicsfield.' . $cat_to_id . '.' . $field_to_id . '.' . $status->{name_id} . '.write';
-                        $description = $msg_edit . ' ' . lc $field->{name_field} . ' ' . $msg_in_category . ' ' . lc $category->{name} . ' ' . $msg_for_status . ' ' . lc $status->{name};
-                        
+                        $description = _loc($msg_edit_s, $field->{name_field}, $category->{name}, $status->{name} );
                         $actions_category_fields{$id_action} = { id => $id_action, name => $description };
-
                         $id_action = 'action.topicsfield.' . $cat_to_id . '.' . $field_to_id . '.' . $status->{name_id} . '.read';
-                        $description = $msg_view . ' ' . lc $field->{name_field} . ' ' . $msg_in_category . ' ' . lc $category->{name} . ' ' . $msg_for_status . ' ' . lc $status->{name};
-                        
+                        $description = _loc($msg_view_s, $field->{name_field}, $category->{name}, $status->{name} );
                         $actions_category_fields{$id_action} = { id => $id_action, name => $description };
-
                     }
                 }
             }

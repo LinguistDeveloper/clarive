@@ -4341,26 +4341,32 @@ msgstr "Múltiple"
 msgid "Select a category"
 msgstr "Seleccione una categoría"
 
-msgid "Can create topic for this category"
-msgstr "Puede crear tópicos de la categoría"
+msgid "Cannot view the field %1 in category %2"
+msgstr "No puede ver el campo `%1` en la  categoría `%2`"
 
-msgid "Can view topic for this category"
-msgstr "Puede ver tópicos de la categoría"
+msgid "Can edit the field %1 in category %2 for the status %3"
+msgstr "Puede ver el campo `%1` en la  categoría `%2` para el estado `%3`"
 
-msgid "Can edit topic for this category"
-msgstr "Puede editar tópicos de la categoría"
+msgid "Cannot view the field %1 in category %2 for the status %3"
+msgstr "No puede ver el campo `%1` en la  categoría `%2` para el estado `%3`"
 
-msgid "Can add/view comments in topics of this category"
-msgstr "Puede comentar/ver comentarios en tópicos de la categoría"
+msgid "Can create topic for category `%1`"
+msgstr "Puede crear tópicos de la categoría `%1`"
+
+msgid "Can view topic for category `%1`"
+msgstr "Puede ver tópicos de la categoría `%1`"
+
+msgid "Can edit topic for category `%1`"
+msgstr "Puede editar tópicos de la categoría `%1`"
+
+msgid "Can delete topic in category `%1`"
+msgstr "Puede borrar tópicos de la categoría `%1`"
+
+msgid "Can add/view comments in topics of category `%1`"
+msgstr "Puede comentar/ver comentarios en tópicos de la categoría `%1`"
 
 msgid "Can edit the field"
 msgstr "Puede editar el campo"
-
-msgid "in the category"
-msgstr "en la categoria"
-
-msgid "for the status"
-msgstr "para el estado"
 
 msgid "Can not view the field"
 msgstr "No puede ver el campo"
