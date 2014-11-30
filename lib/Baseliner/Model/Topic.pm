@@ -8,9 +8,6 @@ use Proc::Exists qw(pexists);
 use Array::Utils qw(:all);
 use v5.10;
 
-
-#Una prueba de commit
-
 BEGIN { extends 'Catalyst::Model' }
 
 my $post_filter = sub {
@@ -716,6 +713,7 @@ sub update {
                     my $notify = {
                         category        => $id_category,
                         category_status => $id_category_status,
+                        project         => [map { $_->{mid} } $topic->projects]
                     };
                     
                     my $subject = _loc("New topic: %1 #%2 %3", $category->{name}, $topic->mid, $topic->title);
@@ -1433,7 +1431,7 @@ sub get_cis {
     $where->{rel_field} = $id_field;
     my @cis = map { $_->{to_mid} } mdb->master_rel->find($where)->fields({ to_mid=>1 })->all;
 
-    $data->{"$id_field._ci_name_list"} = join ', ', map { $_->{name} } mdb->master->find({mid=>mdb->in(@cis)})->all;
+    $data->{"$id_field._ci_name_list"} = join ', ', map { $_->{name} } mdb->master->find({mid=>mdb->in(@cis)})->all if @cis;
     return @cis ? \@cis : [];    
 }
 
@@ -1457,9 +1455,7 @@ sub get_topics {
         : mdb->master_rel->find_values(to_mid => { from_mid=>"$topic_mid", rel_type=>$rel_type, rel_field=>$id_field  });
         # : _array($$data{$id_field});
 
-    my $rs = mdb->topic->find({ mid=>mdb->in(@rel_topics) })->fields({ _id=>0 });
-    $rs->sort({rel_seq=>1});
-    my @rs_ord = $rs->all;
+    my @rs_ord = mdb->topic->find({ mid=>mdb->in(@rel_topics) })->fields({ _id=>0 })->sort({rel_seq=>1})->all if @rel_topics;
     @topics = map { $_->{categories} = $_->{category}; $_ } @rs_ord;
     @topics = $self->append_category( @topics );
     
@@ -1683,7 +1679,7 @@ sub save_data {
                             new_value => $method
                                 && $topic->$method ? $topic->$method->name : $topic->{$field},
                             mid => $topic->mid,
-                            } => sub {
+                        } => sub {
                             my $subject = _loc( "#%1 %2: Field '%3' updated",
                                 $topic->mid, $topic->title, $description{$field} );
                             {
@@ -1692,11 +1688,11 @@ sub save_data {
                                 subject => $subject,
                                 notify  => $notify
                             }    # to the event
-                            } => sub {
+                        } => sub {
 
                             #_throw _loc( 'Error modifying Topic: %1', shift() );
                             _throw shift;
-                            };
+                        };
 
                     } 
                 } 
@@ -2221,6 +2217,7 @@ sub set_cis {
 
     my $field_meta = [ grep { $_->{id_field} eq $id_field } _array($meta) ]->[0];
     my $name_field = $field_meta->{name_field};
+    _warn "Estoy en set_cis";
 
     my $rel_type = $field_meta->{rel_type} or _fail "Missing rel_type for field $id_field";
 
@@ -2606,7 +2603,7 @@ sub get_categories_permissions{
     my @permission_categories;
     my $where = { id=>"$param{id}" } if $param{id};
     my $rs = mdb->category->find($where);
-    $rs->fields({ id=>1, name=>1,  }) if !$param{all_fields}; 
+    $rs->fields({ id=>1, name=>1, color=>1 }) if !$param{all_fields}; 
     my @categories  = $rs->sort({ $sort=>$dir })->all;
     if ( Baseliner->model('Permissions')->is_root( $username) ) {
         return @categories;

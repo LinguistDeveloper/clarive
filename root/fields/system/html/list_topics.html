@@ -1,6 +1,7 @@
 <%args>
     $meta
     $data
+    $user_security
 </%args>
 
 
@@ -23,6 +24,8 @@ if( ! $meta->{hidden} ) {
     if( ! @head ) {
         @head = map { +{ key=>$_, name=>( $names->{$_} // $_ )  } } qw/name title name_status created_by created_on modified_by modified_on/
     }
+    my @hide_list_statuses;
+    @hide_list_statuses = map { [ split /,/ ] } $meta->{hide_list_statuses} if $meta->{hide_list_statuses};
 </%perl>
     
     <tr>
@@ -38,9 +41,10 @@ if( ! $meta->{hidden} ) {
         </th>
     </tr>
     <tr>
+% if (@hide_list_statuses && scalar @hide_list_statuses > 0){ for my $status (_array @hide_list_statuses){ @topics = grep { $_->{"category_status"}{type} ne "$status" } @topics } };
       <td style="<% $meta->{framed} and 'text-transform: uppercase; font-size: 10px; font-weight:bold; background-color: #eee; text-align: center' %>" >
-     
-% @topics = grep { $c->model('Permissions')->user_can_topic_by_project( mid=>$_->{mid}, username=>$c->username) } @topics;
+
+% @topics = grep { $c->model('Permissions')->user_can_topic_by_project( mid=>$_->{mid}, username => $c->username, topic_security=>$_->{_project_security}, user_security=>$user_security) } @topics;
 % if( @topics && scalar @topics > 0 ) {
         <table class="table table-bordered" style="margin-top: 10px; width: 100%" id="<% $iid %>">
               <thead>

@@ -302,7 +302,7 @@ sub search {
     my @rows;
     while( my $r = $rs->next ) {
             my $config = $self->config_for_key( $r->{key} ) or warn 'No config for ' . $r->{key};
-            my $metadata = { type=>'?', default=>'', label=>$r->{key} };  # default values
+            my $metadata = { type=>'?', default=>'', label=>$r->{label} };  # default values
             if( $config ) {
                 try { $metadata = $config->metadata_for_key( $r->{key} ) or warn 'No metadata for ' . $r->{key}; } catch {_log $r->{key};};
             }
@@ -437,6 +437,10 @@ sub set {
     _throw 'Missing parameter key' unless $p{key};
     _throw 'Missing parameter value' unless defined $p{value};
 
+    my $registry_data = $self->search_registry( query=> $p{key} );
+    my ($original) = _array($registry_data->{data} // []) if $registry_data && $registry_data->{data} && $registry_data->{data}[0]->{key} eq $p{key};
+    _warn $original;
+    
     $self->delete( %p );
     
     my $row = mdb->config->insert(
@@ -444,7 +448,8 @@ sub set {
             value   => $p{value}, 
             ns      => $ns, 
             bl      => $bl,
-            ts      => mdb->ts
+            ts      => mdb->ts,
+            label   => $original->{config_label}
         }
     );
     return $row;

@@ -777,6 +777,7 @@ register 'statement.try' => {
     dsl => sub { 
         my ($self, $n , %p) = @_;
         sprintf(q{
+            use Try::Tiny;
             try {
                 %s
             };
@@ -791,6 +792,7 @@ register 'statement.try_with_catch' => {
     dsl => sub { 
         my ($self, $n , %p) = @_;
         sprintf(q{
+            use Try::Tiny;
             try {
                 %s
             }

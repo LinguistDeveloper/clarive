@@ -12,6 +12,17 @@ BEGIN { extends 'Catalyst::Controller::WrapCGI' }
 
 register 'action.admin.rules' => { name=>'Admin Rules' };
 
+register 'config.rules' => {
+    metadata => [
+        {   id      => 'auto_rename_vars',
+            name    => 'Auto rename variables in rules',
+            type    => 'text',
+            default => '0',
+            label   => 'CAUTION: If activated, varible names will be changed in rules when renamed in cis. USE AT YOUR OWN RISK'
+        }
+    ]
+};
+
 register 'menu.admin.rule' => {
     label    => 'Rules',
     title    => _loc ('Rules'),
@@ -440,38 +451,11 @@ sub palette : Local {
 sub stmts_save : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
-    my $returned_ts;
+    $p->{username} = $c->username;
     my $error_checking_dsl = 0;
     try {
-        my $id_rule = $p->{id_rule} or _throw 'Missing rule id';
-        my $doc = mdb->rule->find_one({ id=>$id_rule }) // _fail _loc 'Rule id %1 missing. Deleted?', $id_rule;
-        my $ignore_dsl_errors = $p->{ignore_dsl_errors} || $$doc{ignore_dsl_errors};
-        # check json valid
-        my $stmts = try { 
-            _decode_json( $p->{stmts} );
-        } catch {
-            _fail _loc "Corrupt or incorrect json rule tree: %1", shift(); 
-        };
-        
-        my $ts = mdb->ts;
-        #_debug $stmts;
-        # check if DSL is buildable
-        my $detected_errors = try { 
-            my $dsl = $c->model('Rules')->dsl_build_and_test( $stmts, id_rule=>$id_rule, ts=>$ts );
-            _debug "Caching rule $id_rule for further use";
-            mdb->grid->remove({id_rule=> "$id_rule"});
-            mdb->grid_insert( $dsl ,id_rule => $id_rule );
-            return '';
-        } catch {
-            my $err = shift;
-            _warn( $err );
-            $error_checking_dsl = 1; 
-            return $err if $ignore_dsl_errors;
-            _fail _loc "Error testing DSL build: %1", $err;
-        };
-        $returned_ts = $self->save_rule( id_rule=>$id_rule, stmts_json=>$p->{stmts}, username=>$c->username, ts=>$ts, old_ts=>$p->{old_ts}, 
-            detected_errors   => $detected_errors,  # useful in case we want to warn user before doing something with this broken rule
-            ignore_dsl_errors =>( $$p{ignore_error_always} ? '1' : undef ) );
+        my ($detected_errors,$returned_ts);
+        ($detected_errors,$returned_ts,$error_checking_dsl) = $self->local_stmts_save($p);
         my $old_ts = $returned_ts->{old_ts};
         my $actual_ts = $returned_ts->{actual_ts};
         my $previous_user = $returned_ts->{previous_user};
@@ -487,6 +471,42 @@ sub stmts_save : Local {
         $c->stash->{json} = { success=>\0, msg => "$err", error_checking_dsl=>$error_checking_dsl };
     };
     $c->forward("View::JSON");
+}
+
+sub local_stmts_save {
+    my ($self,$p) = @_;
+    my $returned_ts;
+    my $error_checking_dsl = 0;
+    my $id_rule = $p->{id_rule} or _throw 'Missing rule id';
+    my $doc = mdb->rule->find_one({ id=>''.$id_rule }) // _fail _loc 'Rule id %1 missing. Deleted?', $id_rule;
+    my $ignore_dsl_errors = $p->{ignore_dsl_errors} || $$doc{ignore_dsl_errors};
+    # check json valid
+    my $stmts = try { 
+        _decode_json( $p->{stmts} );
+    } catch {
+        _fail _loc "Corrupt or incorrect json rule tree: %1", shift(); 
+    };
+    
+    my $ts = mdb->ts;
+    #_debug $stmts;
+    # check if DSL is buildable
+    my $detected_errors = try { 
+        my $dsl = Baseliner->model('Rules')->dsl_build_and_test( $stmts, id_rule=>$id_rule, ts=>$ts );
+        _debug "Caching rule $id_rule for further use";
+        mdb->grid->remove({id_rule=> "$id_rule"});
+        mdb->grid_insert( $dsl ,id_rule => $id_rule );
+        return '';
+    } catch {
+        my $err = shift;
+        _warn( $err );
+        $error_checking_dsl = 1; 
+        return $err if $ignore_dsl_errors;
+        _fail _loc "Error testing DSL build: %1", $err;
+    };
+    $returned_ts = $self->save_rule( id_rule=>$id_rule, stmts_json=>$p->{stmts}, username=>$p->{username}, ts=>$ts, old_ts=>$p->{old_ts}, 
+        detected_errors   => $detected_errors,  # useful in case we want to warn user before doing something with this broken rule
+        ignore_dsl_errors =>( $$p{ignore_error_always} ? '1' : undef ) );
+    return ($detected_errors,$returned_ts,$error_checking_dsl);
 }
 
 ##################################################################################
