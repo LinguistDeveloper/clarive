@@ -55,7 +55,7 @@ sub gen_tree : Private {
     }
     my @folders = mdb->master_doc->find({ mid=>mdb->in(@fids) })->sort({ name=>1 })->all;
     foreach my $folder (@folders) {
-        push @tree, $self->build_item_directory($folder, $p->{id_project}, $p->{id_folder});
+        push @tree, $self->build_item_directory($folder, $p->{id_project}, $p->{id_folder}, $p->{username});
     }
     # show child content
     if( $p->{id_folder} ) {
