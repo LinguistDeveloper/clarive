@@ -225,6 +225,7 @@ Right click menu on a folder.
 =cut
 sub get_menu_folder {
     my $self = shift;
+    my $username = shift;
     my @menu_folder;
     push @menu_folder, {  text => _loc('Topics'),
                                 icon => '/static/images/icons/topic.png',
