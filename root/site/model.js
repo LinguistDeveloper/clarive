@@ -2592,6 +2592,7 @@ Baseliner.VariableForm = Ext.extend( Ext.Panel, {
                 // in type_in mode, all are default text
                 Ext.each( vars, function(varname){
                     self.add_var_ci_field( mf, bl, { name: varname });
+                });
             } else {
                 // get variable CI metadata 
                 Baseliner.ci_call('variable', 'list_by_name', { names: vars, bl: bl }, function(res){
