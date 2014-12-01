@@ -140,7 +140,6 @@ sub changeset_update {
     my $category       = $config->{category};
     my $status_on_ok   = $job->is_failed( status => 'last_finish_status') ? $config->{status_on_fail} : $config->{status_on_ok};
     my $status_on_rollback = $job->is_failed( status => 'last_finish_status') ? $config->{status_on_rollback_fail} : $config->{status_on_rollback_ok};
-    my $ignore_closed_statuses = $config->{status_ignore_closed};
 
     if ( $job_type eq 'static' ) {
         $self->log->info( _loc "Changesets status not updated. Static job." );
@@ -159,13 +158,6 @@ sub changeset_update {
         if( length $category && $cs->id_category_status == $category) {
             $log->debug( _loc('Topic %1 does not match category %2. Skipped', $cs->title, $category) );
             next;
-        }
-        if ($ignore_closed_statuses){
-            my $type_cs = ci->status->find_one({id_status=>$cs->id_category_status})->{type};
-            if( $type_cs eq 'FC' || $type_cs eq 'F' ){
-                _debug _loc 'Status closed for changeset %1, Skipped.', $cs->title;
-                next;
-            }
         }
 
         if( $stash->{rollback} ) {
