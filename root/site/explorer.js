@@ -130,6 +130,10 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
             node.attributes.is_refreshing = true;
         });
 
+        self.on('beforeload', function(node) { 
+            node.attributes.is_refreshing = true;
+        });
+
         self.on('expandnode', function(node, deep, anim) { 
             node.attributes.is_refreshing = false;
         });
