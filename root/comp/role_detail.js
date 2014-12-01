@@ -378,6 +378,7 @@
                 handler: function(){ 
                     var ff = new_role_form.getForm();
                     if( ! ff.isValid() ) return;
+                    action_store.clearFilter();
                     var actions_json = action_grid_data();
                     ff.submit({
                         params: { role_actions: actions_json },
