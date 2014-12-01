@@ -492,6 +492,7 @@ sub update : Local {
     }
     cache->remove(qr/:$p->{username}:/);
     cache->remove({ d=>'security' });
+    cache->remove({ d=>"topic:meta" });
 
     $c->forward('View::JSON');
 }
