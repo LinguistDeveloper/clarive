@@ -8,7 +8,7 @@
         cls: 'x-btn-icon-text',
         menu: { items:[] }
     });
-    var btn_form_save;
+
     var load_form = function(params){
         if( params.rec == undefined ) params.rec = {};            // master row record
         //if( params.rec.data == undefined ) params.rec.data = {};  //  yaml ci data
@@ -16,6 +16,7 @@
         var mid = params.mid;
         var beforesubmit = [];
         var is_active = params.rec.active == undefined ? true : params.rec.active;
+
         var activate_save = function(){
             setTimeout( function(){
                 if( Ext.getCmp(btn_form_save.id) ) btn_form_save.enable();
@@ -138,7 +139,7 @@
             handler: function() { cardpanel.destroy() }
         });
 
-        btn_form_save = new Ext.Button({
+        var btn_form_save = new Ext.Button({
             text: _('Save'),
             icon:'/static/images/icons/save.png',
             cls: 'x-btn-icon-text',
@@ -206,7 +207,6 @@
         var form = new Baseliner.FormPanel({
             url:'/ci/update',
             padding: 10,
-pending_fields: 0,
             defaults: {
                allowBlank: false,
                anchor: '100%'
@@ -244,13 +244,6 @@ pending_fields: 0,
                 }
             }
         });
-
-
-form.on('field_loaded', function(){ form.pending_fields--; if(form.pending_fields == 0){ cardpanel.fireEvent('form_loaded'); } });
-
-
-
-
         txt_cont.on('afterrender', function(){
             set_txt();
         });
@@ -277,7 +270,6 @@ form.on('field_loaded', function(){ form.pending_fields--; if(form.pending_field
                             form.getForm().setValues( params.rec );
 form.fireEvent('field_loaded');
                         }
-//form.fireEvent('field_loaded');
                     });
             };
             if( params.ci_form ) {
@@ -342,7 +334,6 @@ if(forms.constructor === Array) form.pending_fields = form.pending_fields+forms.
             'background-color' : 'white'
        }
     });
-cardpanel.on('children_loaded', function() { btn_form_save.enable(); });
     cardpanel.on('afterrender', function(){
         if( params.load ) {
             Baseliner.ajaxEval( '/ci/load', { mid: params.mid }, function(res) {
@@ -352,7 +343,6 @@ cardpanel.on('children_loaded', function() { btn_form_save.enable(); });
                     cardpanel.destroy();
                     return;
                 }
-cardpanel.on('form_loaded', function() { if(res.rec.ci_class != 'BaselinerX::CI::project') btn_form_save.enable(); }); 
                 var c = Ext.apply({
                         collection: rec.collection,
                         item: rec.collection,
@@ -384,10 +374,6 @@ cardpanel.on('form_loaded', function() { if(res.rec.ci_class != 'BaselinerX::CI:
                 cardpanel.setTitle( _('CI: %1' , rec.name ) );
                 cardpanel.ownerCt.changeTabIcon( cardpanel, rec.icon );
                 cardpanel.body.setStyle({ overflow: 'hidden' });
-f.addEvents('children_loaded');
-f.on('children_loaded', function() { cardpanel.fireEvent('children_loaded'); });
-
-
                 cardpanel.doLayout(); // otherwise, no tbar
             });
         } else {
@@ -398,7 +384,6 @@ f.on('children_loaded', function() { cardpanel.fireEvent('children_loaded'); });
                 cardpanel.add( f );
                 cardpanel.getLayout().setActiveItem( f );
                 //cardpanel.setTitle( _('CI: %1' , params.name ) );
-btn_form_save.enable();
                 cardpanel.doLayout();
             });
         }
