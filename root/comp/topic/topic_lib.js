@@ -843,7 +843,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             icon:'/static/images/icons/document.png',
             tooltip: _('Generate Document'),
             handler: function(){ self.show_docgen() }, 
-            hidden: self.viewKanban==undefined?true:!self.viewKanban
+            hidden: self.viewDocs==undefined?true:!self.viewDocs
         });
             
         self.btn_kanban = new Ext.Toolbar.Button({

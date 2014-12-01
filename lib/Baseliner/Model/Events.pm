@@ -28,8 +28,9 @@ register 'service.event.daemon' => {
             sleep( $config->{frequency} );
         } 
         # purge old events
-        my $dt = _dt->subtract( days => ( $config->{purge_days} || 30 ) );
+        my $dt = _dt->subtract( days => ( $config->{purge_time} || 30 ) );
         $dt =  $dt->strftime('%Y-%m-%d %T');
+        mdb->event_log->remove({ ts=>{ '$lt'=>$dt } });
         return 0;
     }
 };
@@ -67,6 +68,7 @@ sub run_once {
                         stash_data=> _dump( $rule->{ret} ), 
                         return_code=>$rule->{rc}, 
                         dsl => $rule->{dsl},
+                        ts => mdb->ts,
                         log_output => $rule->{output},
                     });
                     $rc += $rule->{rc} if $rule->{rc};
@@ -125,7 +127,7 @@ sub run_once {
                         
                         mdb->event_log->insert({
                             id=>mdb->seq('event_log'), id_event=> $ev->{id}, stash_data=> _dump( $model_messaging ), return_code=>$rc_notify, 
-                            log_output => $err, dsl=>'',
+                            ts=>mdb->ts, log_output => $err, dsl=>'',
                         });
                     }
                 }

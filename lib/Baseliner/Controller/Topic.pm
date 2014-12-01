@@ -381,11 +381,12 @@ sub get_meta_permissions : Private {
     my @hidden_field;
     
     my $mid = $data->{topic_mid};
-    my $cache_key = { d=>'topic', mid=>$mid, cat=>($id_category//$data->{category}{id}//_fail('Missing category.id')), u=>$username };
+    my $cache_key = { d=>'topic:meta', cat=>($id_category//$data->{category}{id}//_fail('Missing category.id')), u=>$username };
     defined && return $_ for cache->get($cache_key);
     
     my $parse_category = $data->{name_category} ? _name_to_id($data->{name_category}) : _name_to_id($name_category);
     my $parse_status = $data->{name_status} ? _name_to_id($data->{name_status}) : _name_to_id($name_status);
+    my $sec = $data->{_project_security};
     
     my $is_root = model->Permissions->is_root( $username );
     my $user_security = ci->user->find_one( {name => $username}, { project_security => 1, _id => 0} )->{project_security};
@@ -544,12 +545,17 @@ sub view : Local {
             try {
                 $topic_ci = ci->new( $topic_mid );
                 $c->stash->{viewKanban} = $topic_ci->children( where=>{collection => 'topic'}, mids_only => 1 );
+                my $is_root = Baseliner->model('Permissions')->is_root($c->username);
+                $c->stash->{viewDocs} = $c->stash->{viewKanban} && ( $is_root || Baseliner->model('Permissions')->user_has_action( username=> $c->username, action=>'action.home.generate_docs' ));  
+
             } catch {
                 $c->stash->{viewKanban} = 0;
+                $c->stash->{viewDocs} = 0;
             };
             $topic_doc = $topic_ci->get_doc;
         } else {
             $c->stash->{viewKanban} = 0;
+            $c->stash->{viewDocs} = 0;
         }
 
         if ($c->is_root){
@@ -1177,7 +1183,7 @@ sub filters_list : Local {
         
     my @categories;
     my $category_id = $c->req->params->{category_id};
-    my @categories_permissions  = $c->model('Topic')->get_categories_permissions( id=>$category_id, username => $c->username, type => 'view' );
+    my @categories_permissions  = $c->model('Topic')->get_categories_permissions( id=>$category_id, username=>$c->username, type=>'view', all_fields=>1 );
     
     if(@categories_permissions && scalar @categories_permissions gt 1){
         for( @categories_permissions ) {
