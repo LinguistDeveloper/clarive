@@ -9,6 +9,8 @@ register 'action.home.show_menu' => { name => 'User can access the menu' } ;
 register 'action.home.view_workspace' => { name => 'User can access the workspace view' } ;
 register 'action.home.view_releases' => { name => 'User can access the releases view' } ;
 register 'action.home.hide_project_repos' => { name => 'User cannot access the repositories in a project' } ; 
+register 'action.home.generate_docs' => { name => 'User can generate docs from topics and views' } ; 
+
 
 use Try::Tiny;
 use MIME::Base64;

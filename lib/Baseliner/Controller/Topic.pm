@@ -544,12 +544,17 @@ sub view : Local {
             try {
                 $topic_ci = ci->new( $topic_mid );
                 $c->stash->{viewKanban} = $topic_ci->children( where=>{collection => 'topic'}, mids_only => 1 );
+                my $is_root = Baseliner->model('Permissions')->is_root($c->username);
+                $c->stash->{viewDocs} = $c->stash->{viewKanban} && ( $is_root || Baseliner->model('Permissions')->user_has_action( username=> $c->username, action=>'action.home.generate_docs' ));  
+
             } catch {
                 $c->stash->{viewKanban} = 0;
+                $c->stash->{viewDocs} = 0;
             };
             $topic_doc = $topic_ci->get_doc;
         } else {
             $c->stash->{viewKanban} = 0;
+            $c->stash->{viewDocs} = 0;
         }
 
         if ($c->is_root){

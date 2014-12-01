@@ -130,7 +130,7 @@ sub new_folder : Local {
                 $c->stash->{json} = {
                     msg     => _loc('Folder added'),
                     success => \1,
-                    node    => $self->build_item_directory({ mid=>$folder->mid, name=>$folder_name }, $project_id, $parent_id)
+                    node    => $self->build_item_directory({ mid=>$folder->mid, name=>$folder_name }, $project_id, $parent_id, $c->username)
                 };
             } catch {
                 $folder->delete if $folder && $folder->mid;
@@ -178,8 +178,8 @@ sub delete_folder : Local {
 }
 
 sub build_item_directory {
-    my ($self, $folder, $id_project, $parent_folder) = @_;
-    my @menu_folder = $self->get_menu_folder();
+    my ($self, $folder, $id_project, $parent_folder, $username) = @_;
+    my @menu_folder = $self->get_menu_folder($username);
     my $project_name = 'ZZ'; # XXX nooooooooooooooooooooooo
     return  {
         text    => $folder->{name},
@@ -231,14 +231,18 @@ sub get_menu_folder {
                                 eval => {
                                     handler => 'Baseliner.open_topic_grid_from_folder'
                                 }
-                            };    
-    push @menu_folder, {  text => _loc('Doc'),
-                                icon => '/static/images/icons/document.png',
-                                url     => '/comp/lifecycle/report_run.js',
-                                eval => {
-                                    url => '/comp/doc_from_tree.js',
-                                }
-                            };    
+                            };
+    my $is_root = Baseliner->model('Permissions')->is_root($username);
+    my $has_permission = Baseliner->model('Permissions')->user_has_action( username=> $username, action=>'action.home.generate_docs' );  
+    if ( $has_permission || $is_root ) {
+        push @menu_folder, {  text => _loc('Doc'),
+                                    icon => '/static/images/icons/document.png',
+                                    url     => '/comp/lifecycle/report_run.js',
+                                    eval => {
+                                        url => '/comp/doc_from_tree.js',
+                                    }
+                                };    
+    }
     push @menu_folder, {  text => _loc('Kanban'),
                                 icon => '/static/images/icons/kanban.png',
                                 eval => {
