@@ -117,39 +117,41 @@ sub lc_for_project {
                   },
         'type' => 'component',
     };
-    my @repos =
-        map { values %$_ }
-        mdb->master_rel->find({from_mid=>"$id_prj", rel_type=>'project_repository'})->fields({ to_mid=>1, _id=>0 })->all;
+    $has_permission = Baseliner->model('Permissions')->user_has_action( username=> $username, action=>'action.home.hide_project_repos' );
+    if ( !$has_permission || $is_root ){
+        my @repos =
+            map { values %$_ }
+            mdb->master_rel->find({from_mid=>"$id_prj", rel_type=>'project_repository'})->fields({ to_mid=>1, _id=>0 })->all;
 
-    for my $id_repo ( @repos ) {
-        try {
-            my $repo = ci->new( $id_repo );
-            push @nodes, {
-              node   => $repo->name,
-              type   => 'changeset',
-              url    => $repo->content_url, 
-              active => 1,
-              icon   => $repo->icon,
-              data   => {
-                id_repo => $id_repo  
-              }
+        for my $id_repo ( @repos ) {
+            try {
+                my $repo = ci->new( $id_repo );
+                push @nodes, {
+                  node   => $repo->name,
+                  type   => 'changeset',
+                  url    => $repo->content_url, 
+                  active => 1,
+                  icon   => $repo->icon,
+                  data   => {
+                    id_repo => $id_repo  
+                  }
+                };
+            } catch {
+                # publish an error node
+                my $err = shift;
+                my $msg = _loc('Error loading repository %1: %2', $id_repo, $err);
+                _error( $msg );
+                push @nodes, {
+                  node    => substr($msg,0,80), 
+                  active  => 1,
+                  leaf    => \1,
+                  icon    => '/static/images/icons/error.png',
+                  data    => { id_repo => $id_repo }
+                };
+                
             };
-        } catch {
-            # publish an error node
-            my $err = shift;
-            my $msg = _loc('Error loading repository %1: %2', $id_repo, $err);
-            _error( $msg );
-            push @nodes, {
-              node    => substr($msg,0,80), 
-              active  => 1,
-              leaf    => \1,
-              icon    => '/static/images/icons/error.png',
-              data    => { id_repo => $id_repo }
-            };
-            
-        };
+        }
     }
-
     # General bag for starting the deployment workflow
     # Show states only if user has action for that project
     

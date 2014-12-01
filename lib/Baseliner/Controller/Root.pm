@@ -8,6 +8,7 @@ register 'action.home.show_lifecycle' => { name => 'User can access the lifecycl
 register 'action.home.show_menu' => { name => 'User can access the menu' } ;
 register 'action.home.view_workspace' => { name => 'User can access the workspace view' } ;
 register 'action.home.view_releases' => { name => 'User can access the releases view' } ;
+register 'action.home.hide_project_repos' => { name => 'User cannot access the repositories in a project' } ; 
 
 use Try::Tiny;
 use MIME::Base64;
