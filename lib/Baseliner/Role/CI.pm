@@ -79,6 +79,27 @@ has job     => qw(is rw isa Baseliner::Role::JobRunner),
         lazy    => 1, default => sub {
             BaselinerX::CI::job->new;
         };
+
+
+before save_data => sub {
+    my ($self, $master_row, $data ) = @_;
+
+    my $class = ref $self;
+    if ( _array($self->unique_keys) ) {
+        for my $key ( _array($self->unique_keys) ) {
+            my %where = map { $_ => $self->$_ } _array($key);
+            my @cis = $class->find({ mid => { '$ne' => $self->mid}, %where })->all;
+            if ( @cis ) {
+                _fail _loc("Trying to duplicate key: %1", "['".join("','", _array($key))."']");
+            }
+        }
+    }
+};
+
+# i.e.['name'] or ['moniker'] or ['name','moniker']
+sub unique_keys {
+    []
+}
 sub storage { 'yaml' }   # ie. yaml, deprecated: for now, no other method supported
 
 # methods 

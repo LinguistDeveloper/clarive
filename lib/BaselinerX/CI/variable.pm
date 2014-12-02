@@ -27,6 +27,11 @@ after save => sub {
 
 sub icon { '/static/images/icons/element_copy.png' }
 
+sub unique_keys {
+    [
+        ['name']
+    ]
+}
 sub has_bl { 0 }
 
 sub default_hash {
