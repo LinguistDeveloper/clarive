@@ -291,10 +291,10 @@ method update_baselines( :$revisions, :$tag, :$type, :$ref=undef ) {
 
     my $top_rev = $ref // $self->top_revision( revisions=>$revisions, type=>$type, tag=>$tag , check_history => 0 );
     
-    if( $type eq 'static' ) {
-        _log( _loc "*Git* repository baselines not updated. Static job." );
-        return;
-    }
+    # if( $type eq 'static' ) {
+    #     _log( _loc "*Git* repository baselines not updated. Static job." );
+    #     return;
+    # }
 
     $top_rev = $top_rev->{sha} if ref $top_rev;  # new tag location
     my $tag_sha = $git->exec( 'rev-parse', $tag );  # bl tag
