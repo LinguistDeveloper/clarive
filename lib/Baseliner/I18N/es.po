@@ -4345,7 +4345,7 @@ msgid "Cannot view the field %1 in category %2"
 msgstr "No puede ver el campo `%1` en la  categoría `%2`"
 
 msgid "Can edit the field %1 in category %2 for the status %3"
-msgstr "Puede ver el campo `%1` en la  categoría `%2` para el estado `%3`"
+msgstr "Puede editar el campo `%1` en la  categoría `%2` para el estado `%3`"
 
 msgid "Cannot view the field %1 in category %2 for the status %3"
 msgstr "No puede ver el campo `%1` en la  categoría `%2` para el estado `%3`"
