@@ -1044,6 +1044,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
             my $parse_category = $_->{category}{name};
             foreach my $field (keys $_){
                 $_->{$field . "_$parse_category"} = $_->{$field};
+                $meta_cfg_report{$field . "_$parse_category"} = $meta_cfg_report{$field} ;
             }
         }
     } @data;
@@ -1099,7 +1100,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
             } elsif( $mt =~ /release|topic/ ) {
                 $row{$k} = $scope_topics{$v} 
                     // do {
-                        my @objs = mdb->topic->find({ mid=>mdb->in($v) },{ title=>1, mid=>1, is_changeset=>1, is_release=>1, category=>1, _id=>0 })->all;
+                        my @objs = mdb->topic->find({ mid=>mdb->in($v) })->fields({ title=>1, mid=>1, is_changeset=>1, is_release=>1, category=>1, _id=>0 })->all;
                         $scope_topics{$_->{mid}} = $_ for @objs; 
                         \@objs;   
                     } if ($v);				
@@ -1245,7 +1246,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
     #} @data;
 	} @parse_data;
 	
-    #_debug @topics;
+    # _debug \@topics;
 	#_log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump @topics;
     return ( 0+$cnt, @topics );
 }
