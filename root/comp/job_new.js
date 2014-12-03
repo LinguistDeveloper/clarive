@@ -646,7 +646,7 @@
                 store_transitions.reload();
                 jc_store.reload();
 
-                calendar_reload();
+                // calendar_reload();
                 //button_submit.enable();
             }
         }

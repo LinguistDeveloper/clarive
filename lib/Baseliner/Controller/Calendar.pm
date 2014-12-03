@@ -438,18 +438,20 @@ sub build_job_window : Path('/job/build_job_window') {
         my %cis;  # keep track of all ci relations found
         my $depth_default = 4;
         # $contents = $c->model('Jobs')->container_expand( $contents );
+        my @collections = map { /BaselinerX::CI::(.*)/ } packages_that_do( 'Baseliner::Role::CI::Revision' );
+        push @collections, map { /BaselinerX::CI::(.*)/ } packages_that_do( 'Baseliner::Role::CI::Infrastructure' );
         for my $item ( _array( $contents ) ) {
             my $mid = $item->{mid};
             my $ci = _ci( $mid );
             # recurse into ci relations up to depth
             my @related; 
-            push @related, $ci->children( depth => $depth_default, does => [ 'Infrastructure', 'Revision' ] ) ;   
-            my @projects = $ci->children( depth => 1, does => [ 'Project'] ) ;   
+            push @related, $ci->children( depth => $depth_default, where => { collection => mdb->in(@collections) }, docs_only => 1 ) ;   
+            my @projects = $ci->children( depth => 1, where => { collection => 'Project'}, docs_only => 1 ) ;   
             push @all_projects, @projects;
             push @related, @projects;
 
             # ask for nature from revisions TODO this is a placeholder still, revisions need to support nature
-            my @natures = grep { defined } map { $_->nature if $_->can('nature') } $ci, @related;
+            my @natures = grep { defined } map { $_->{natures} if $_->{natures} } $ci, @related;
             _debug "Natures for $mid: ", @natures;
             # save for later
             $cis{ $mid } = { ci=>$ci, related=>\@related, natures=>\@natures };
@@ -497,13 +499,13 @@ sub build_job_window : Path('/job/build_job_window') {
             $avg = Util->to_dur(List::Util::sum(@durs));
         }
         
-        my $cis2 = Util->_clone( \%cis );
-        Util->_unbless( $cis2 );
+        #my $cis2 = Util->_clone( \%cis );
+        #Util->_unbless( $cis2 );
          
         $c->stash->{json} = {
             success=>\1, 
             data=>$hour_store, 
-            cis=>$cis2,
+            cis=>\%cis,
             cals=>\@rel_cals, 
             stats=>{ eta=>$avg, p_success=>$any_succ?int($succ*100).'%':'?' } 
         };
