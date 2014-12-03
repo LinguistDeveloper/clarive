@@ -3006,7 +3006,8 @@ sub apply_filter{
 }
 
 sub get_topics_mdb{
-    my ($self, $where, $username, $start, $limit) = @_;
+    my ($self, %p ) = @_;
+    my ($where, $username, $start, $limit, $fields) = @p{qw(where username start limit fields)}; 
     try{
         $where = {} if !$where;
         _throw _loc('Missing username') if !$username;
@@ -3015,6 +3016,7 @@ sub get_topics_mdb{
         #_warn $where;
 
         my $rs_topics = mdb->topic->find($where);
+        $rs_topics->fields($fields) if $fields;
         my $cnt = $rs_topics->count;
         $rs_topics->skip($start) if ($start);
         $rs_topics->limit($limit) if ($limit);

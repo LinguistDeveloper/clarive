@@ -286,7 +286,8 @@ sub related : Local {
     $where = $c->model('Topic')->apply_filter( $username, $where, %filter );
     #_debug $where;
 
-    my ($cnt, @result_topics) = $c->model('Topic')->get_topics_mdb( $where, $username, $start, $limit );
+    my ($cnt, @result_topics) = $c->model('Topic')->get_topics_mdb( where=>$where, username=>$username, start=>$start, limit=>$limit, 
+            fields=>{ category=>1, mid=>1, title=>1, });
 
     my @topics = map {
         $_->{name} = _loc($_->{category}->{name}) . ' #' . $_->{mid};
