@@ -1885,8 +1885,8 @@ sub update_rels {
     my ($self,@mids_or_docs ) = @_;
     my @mids = map { ref $_ eq 'HASH' ? $_->{mid} : $_ } grep { length } _unique( @mids_or_docs );
     my %rel_data;
-    my %rels = mdb->master_rel->find_hashed(from_mid => { from_mid=>mdb->in(@mids) });
-    my %rels_to = mdb->master_rel->find_hashed({ to_mid=>mdb->in(@mids) });
+    my %rels = mdb->master_rel->find_hashed(to_mid => { from_mid=>mdb->in(@mids) });
+    my %rels_to = mdb->master_rel->find_hashed(from_mid=> { to_mid=>mdb->in(@mids) });
     # gather all text
     my @all_rel_mids = ( (map{$$_{to_mid}} _array(values %rels)), (map{$$_{from_mid}} _array(values %rels_to)) );
     my %txts = map { 
