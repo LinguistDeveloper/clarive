@@ -311,7 +311,7 @@ sub get_search_query_topic {
     return $where;
 }
 
-# our %field_cache;
+our %field_cache;
 
 sub get_field_bodies {
     my ($self, $meta ) = @_;
@@ -326,18 +326,18 @@ sub get_field_bodies {
         }
         _fail _loc("Template not found: %1 (%2)", $field->{js}, $file ) unless -e $file;
         # CACHE check - consider using Mason -- has its own cache
-        # my $modified_on = $file->stat->mtime;
-        # my $cache = $field_cache{ "$file" };
-        # if( defined $cache && $cache->{modified_on} == $modified_on ) {
-        #     _debug "************ HIT CACHE ( $cache->{modified_on} == $modified_on ) for $file";
-        #     $field->{body} = ["$file", $cache->{body}, 0];
-        # } else {
-        #     _debug $cache ? "***** NO CACHE ( $cache->{modified_on} != $modified_on )  for $file"
-        #         : "***** NO CACHE for $file";
-            my $body = _mason( $field->{js} );
-            # $field_cache{ "$file" } = { modified_on=>$modified_on, body => $body };
-            $field->{body} = ["$file", $body, 1 ];
-        # }
+        my $modified_on = $file->stat->mtime;
+        my $cache = $field_cache{ "$file" };
+        if( defined $cache && $cache->{modified_on} == $modified_on ) {
+            _debug "************ HIT CACHE ( $cache->{modified_on} == $modified_on ) for $file";
+            $field->{body} = ["$file", $cache->{body}, 0];
+        } else {
+            _debug $cache ? "***** NO CACHE ( $cache->{modified_on} != $modified_on )  for $file"
+                : "***** NO CACHE for $file";
+          my $body = _mason( $field->{js} );
+          # $field_cache{ "$file" } = { modified_on=>$modified_on, body => $body };
+          $field->{body} = ["$file", $body, 1 ];
+        }
     }
     return $meta;
 }
