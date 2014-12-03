@@ -188,7 +188,7 @@ sub run_once {
         my $event_log_keep = $config_purge->{event_log_keep};
         if( length $event_log_keep ) { 
             mdb->event_log->update(
-                { ts=>{ '$lt'=>''.( mdb->now() - $event_log_keep )}  },
+                { '$or'=>[ {ts=>{ '$lt'=>''.( mdb->now() - $event_log_keep )}}, {ts=>undef} ] },
                 { '$set'=>{ dsl=>'', log_output=>'', stash_data=>'' } },
                 { multiple=>1 },
             );
