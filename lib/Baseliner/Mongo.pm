@@ -425,6 +425,8 @@ sub index_all {
             [{ mid=>1, 'category.id'=>1 }],
             [{ created_on=>1, m=>1 }],
             [{ name_category=>1 }],
+            [{ 'category.is_release'=>1 }],
+            [{ 'category_name'=>1 }],
             [{ 'category.id'=>1, 'category_status.id'=>1, 'category_status.type'=>1 }],
             [{ '_project_security.project'=>1, 'category.id'=>1 }],
             [{ '_project_security.area'=>1, 'category.id'=>1 }],
