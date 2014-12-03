@@ -377,11 +377,14 @@ sub json : Local {
 
 sub get_meta_permissions : Private {
     my ($self, %p) = @_;
-    my ($username, $meta, $data, $name_category, $name_status,$id_category) = @p{qw(username meta data name_category name_status id_category)};
+    my ($username, $meta, $data, $name_category, $name_status,$id_category,$id_status) = 
+        @p{qw(username meta data name_category name_status id_category id_status)};
     my @hidden_field;
     
     my $mid = $data->{topic_mid};
-    my $cache_key = { d=>'topic:meta', cat=>($id_category//$data->{category}{id}//_fail('Missing category.id')), u=>$username };
+    my $cache_key = { d=>'topic:meta', 
+        st=>($id_status//$$data{category_status}{id}//$name_status//_fail('Missing id_status')), 
+        cat=>($id_category//$data->{category}{id}//_fail('Missing category.id')), u=>$username };
     defined && return $_ for cache->get($cache_key);
     
     my $parse_category = $data->{name_category} ? _name_to_id($data->{name_category}) : _name_to_id($name_category);
@@ -488,7 +491,7 @@ sub new_topic : Local {
         $meta = $self->get_field_bodies( $meta );
         my $data = $c->model('Topic')->get_data( $meta, undef );
         map{ $data->{$_} = 'off'}  grep {$_ =~ '_done' && $data->{$_} eq 'on' } _array $data;
-        $meta = $self->get_meta_permissions( username=>$c->username, meta=>$meta, data=>$data, id_category=>$id_category, name_category=>$name_category, name_status=>$name_status);
+        $meta = $self->get_meta_permissions( username=>$c->username, meta=>$meta, data=>$data, id_category=>$id_category, id_status=>$st->{id_status}, name_category=>$name_category, name_status=>$name_status);
         +{
             success             => \1,
             new_category_id     => $id_category,
