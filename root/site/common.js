@@ -2250,7 +2250,8 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
 			if(self.onload){
 				self.onload();
 			};
-        });		
+        });
+        self.addEvents('beforerefresh');
     },
     drop_handler : function(e) {
         var self = this;
@@ -2333,9 +2334,11 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
         var self = this;
         var sm = self.getSelectionModel();
         var node = sm.getSelectedNode();
+
         if( node ){
             //self.refresh_node( node );
             if (!node.attributes.is_refreshing){
+                self.fireEvent('beforerefresh', self);
                 node.attributes.is_refreshing = true;
                 self.refresh_node( node, callback );    
             }

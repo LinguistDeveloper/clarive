@@ -147,7 +147,11 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
             //node.attributes.is_refreshing = false;
         });
 
-        
+        self.on('beforerefresh', function(node) { 
+            self.tool_bar.disable_all();
+            //node.attributes.is_refreshing = true;
+        });
+
         self.addEvents( 'favorite_added' );
         
     },
