@@ -224,8 +224,11 @@ sub topic_children_for_state {
     my $id_project = $p{id_project};
     
     # get all children topics
-    my @chi_topics = mdb->joins( master_rel=>{ rel_type=>'topic_topic', from_mid=>"$topic_mid" }, to_mid => mid => topic=>[{},{mid=>1}] );
-    push @chi_topics, map { mdb->joins( master_rel=>{ rel_type=>'topic_topic', from_mid=>"$$_{mid}" }, to_mid => mid => topic=>[{},{mid=>1}] ) } @chi_topics;
+    # my @chi_topics = mdb->joins( master_rel=>{ rel_type=>'topic_topic', from_mid=>"$topic_mid" }, to_mid => mid => topic=>[{},{mid=>1}] );
+    # push @chi_topics, map { mdb->joins( master_rel=>{ rel_type=>'topic_topic', from_mid=>"$$_{mid}" }, to_mid => mid => topic=>[{},{mid=>1}] ) } @chi_topics;
+
+    my @changeset_categories = map { $_->{id} } mdb->category->find({ is_changeset => '1'})->fields({id=>1, _id =>0})->all;
+    my @chi_topics = ci->new($topic_mid)->children( where => { collection => 'topic', id_category => mdb->in(@changeset_categories)}, mids_only => 1);
 
     # now filter them thru user visibility, current state 
     my $where = {
@@ -581,6 +584,7 @@ sub changeset : Local {
         # topics for a state
         #
         my $bind_releases = 0;
+        
         my @changes = mdb->joins(
                     master_rel=>{ rel_type=>'topic_project', to_mid=>"$id_project" },
                     from_mid=>mid=>topic=>{ is_changeset=>'1', 'category_status.id'=> "$p->{id_status}" });

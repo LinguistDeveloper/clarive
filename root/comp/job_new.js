@@ -660,6 +660,7 @@
             ddGroup: 'explorer_dd',
             copy: true,
             notifyDrop: function(dd, e, data) {
+                Baseliner.showLoadingMask(main_form.getEl(), _("Calculating topic contents..." ) );
                 var n = dd.dragData.node;
                 var d = n.attributes.data;
                 return jc_add_node({ 
