@@ -79,7 +79,7 @@ attachments during a job.
 
 =cut 
 method checkout( :$dir ) {
-    my $dest = Util->_file($dir,$self->path);
+    my $dest = Util->_file($dir,$self->fullpath || $self->path);
     $dest->dir->mkpath;
     open( my $ff, '>:raw', $dest) or Util->_fail( Util->_loc("Could not checkout topic file '%1'", $dest) );
     $self->grid_file->print( $ff );
