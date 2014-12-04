@@ -327,7 +327,6 @@ sub job_items {
 
             my @files = ci->asset->search_cis( mid=>mdb->in( keys %mid_files ) );
             my %meta = map { $_->{id_field} => $_ } grep { $_->{meta_type} && $_->{meta_type} eq 'file' } _array $cs->get_meta;
-            _warn "Meta: ". _dump \%meta;
             my ($project) = ( map { $_->name } $cs->projects );
             $project //= '';
             TOPIC_FILE: for my $tfile ( @files ) {
@@ -335,7 +334,6 @@ sub job_items {
                my $fieldlet = $meta{ $mid_files{$mid} };
                my $co_dir = $fieldlet->{checkout_dir};
                my $fullpath = ''.Util->_dir( "/", $project, $co_dir, $tfile->filename );
-               _warn "Full path: ". $fullpath;
                # select only files for this BL
                if( $rename_mode && $fullpath =~ /{($all_bls)}/ ) {
                    next TOPIC_FILE if $fullpath !~ /{$bl}/;  # not for this bl
@@ -375,8 +373,7 @@ sub job_items {
         }
         $project->{items} = \@items;
         $stash->{project_items}{ $project->mid }{items} = \@items;
-        _warn \@items;
-        $all_items{ $_->{fullpath} }=$_ for @items;
+        $all_items{ $_->{fullpath} || $_->{path}}=$_ for @items;
         push @project_changes, $pc; 
     }
     # put unique items into stash
@@ -385,7 +382,7 @@ sub job_items {
     # create name list
     my %name_list;
     for my $i ( _array( $stash->{items} ) ) {
-        my $f = $i->path;
+        my $f = $i->{fullpath} || $i->{path};
         next unless $f;
         $f = _file( $f )->basename;
         $name_list{ "$f" } = 1;
@@ -472,7 +469,7 @@ sub checkout {
     $log->info(
         _loc( 'Checked out %1 item(s) to %2', $cnt, $job_dir ),
         [   map {
-                    my $path = $_->path;
+                    my $path = $_->{fullpath} || $_->{path};
                     $path =~ s/\n//g;
 
                       "("
@@ -511,7 +508,7 @@ sub nature_items {
                 if( $commit_items && $it->ns && !ci->find( ns=>$it->ns) ) {
                     $it->save;
                 }
-                push @msg, "item = " . $it->path;
+                push @msg, "item = " . $it->{fullpath};
                 if( $nature->push_item( $it ) ) {
                     my $id =  $nature->$nat_id;
                     my $mid =  $nature->mid;

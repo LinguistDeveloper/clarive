@@ -38,13 +38,13 @@ sub item_match {
     my $match = 0;
     for my $in ( @include ) {
         next unless length $in;
-        if( $item->path =~ /$in/ ) {
+        if( $item->{path} =~ /$in/ || ($item->{fullpath} && $item->{fullpath} =~ /$in/ )) {
             $match = 1; 
         }
     }
     for my $ex ( @exclude ) {
         next unless length $ex;
-        if( $item->path =~ /$ex/ ) {
+        if( $item->{path} =~ /$ex/ || ($item->{fullpath} && $item->{fullpath} =~ /$ex/ )) {
             return 0;
         }
     }
