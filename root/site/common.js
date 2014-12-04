@@ -2251,7 +2251,7 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
 				self.onload();
 			};
         });
-        self.addEvents('beforerefresh');
+        self.addEvents('beforerefresh','afterrefresh');
     },
     drop_handler : function(e) {
         var self = this;
@@ -2338,7 +2338,7 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
         if( node ){
             //self.refresh_node( node );
             if (!node.attributes.is_refreshing){
-                self.fireEvent('beforerefresh', self);
+                self.fireEvent('beforerefresh', self,node);
                 node.attributes.is_refreshing = true;
                 self.refresh_node( node, callback );    
             }
@@ -2355,7 +2355,11 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
         var self = this;
         if( node != undefined ) {
             var is = node.isExpanded();
-            self.loader.load( node, callback );
+            self.loader.load( node, function(){
+                self.fireEvent('afterrefresh', self, node);
+                node.attributes.is_refreshing = false;
+                if( Ext.isFunction(callback) ) callback(node); 
+            });
             if( is ) node.expand();
         }
     }

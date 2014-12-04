@@ -152,6 +152,11 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
             //node.attributes.is_refreshing = true;
         });
 
+        self.on('afterrefresh', function(node) {
+            self.tool_bar.enable_all();
+            //node.attributes.is_refreshing = true;
+        });
+
         self.addEvents( 'favorite_added' );
         
     },
@@ -340,7 +345,7 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
             cls: 'x-btn-text-icon',
             icon: '/static/images/icons/refresh.gif',
             handler: function() {
-                self.refresh(function(node){node.attributes.is_refreshing = false;});
+                self.refresh();
             }
         });
         Baseliner.explorer_menu.showAt(event.xy);
@@ -707,11 +712,13 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 refresh_count--;
                 // alert('ena:' + refresh_count);
                 if ( refresh_count == 0 ) {
+                    button_refresh.setIcon( IC('refresh.gif') );
                     tool_bar.enable();
                 }
             },
             disable_all: function() {
                 refresh_count++;
+                button_refresh.setIcon('/static/images/loading-fast.gif');
                 // alert('dis:' + refresh_count);
                 tool_bar.disable();
             }
