@@ -327,6 +327,7 @@ sub job_items {
 
             my @files = ci->asset->search_cis( mid=>mdb->in( keys %mid_files ) );
             my %meta = map { $_->{id_field} => $_ } grep { $_->{meta_type} && $_->{meta_type} eq 'file' } _array $cs->get_meta;
+            _warn "Meta: ". _dump \%meta;
             my ($project) = ( map { $_->name } $cs->projects );
             $project //= '';
             TOPIC_FILE: for my $tfile ( @files ) {
@@ -334,6 +335,7 @@ sub job_items {
                my $fieldlet = $meta{ $mid_files{$mid} };
                my $co_dir = $fieldlet->{checkout_dir};
                my $fullpath = ''.Util->_dir( "/", $project, $co_dir, $tfile->filename );
+               _warn "Full path: ". $fullpath;
                # select only files for this BL
                if( $rename_mode && $fullpath =~ /{($all_bls)}/ ) {
                    next TOPIC_FILE if $fullpath !~ /{$bl}/;  # not for this bl
@@ -359,7 +361,7 @@ sub job_items {
             push @items, map {
                 my $it = $_;
                 $it->rename( sub{ s/{$bl}//g } ) if $rename_mode;
-                $it->path_in_repo( $it->path );  # otherwise source/checkout may not work
+                $it->path_in_repo( $it->{path} );  # otherwise source/checkout may not work
                 $it->path_rel( '' . _dir('/', $repo->rel_path, $it->path) );  # no project name, good for deploying
                 $it->path( '' . _dir('/', $project->name, $repo->rel_path, $it->path) );  # prepend project name
                 $it;
@@ -373,7 +375,8 @@ sub job_items {
         }
         $project->{items} = \@items;
         $stash->{project_items}{ $project->mid }{items} = \@items;
-        $all_items{ $_->path }=$_ for @items;
+        _warn \@items;
+        $all_items{ $_->{fullpath} }=$_ for @items;
         push @project_changes, $pc; 
     }
     # put unique items into stash
