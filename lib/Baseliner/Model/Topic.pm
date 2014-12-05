@@ -1591,6 +1591,8 @@ sub save_data {
             
             my %update_row = %row;
             delete $update_row{id_category_status};
+            #update last modified on ci!
+            $topic->{ts} = mdb->now->string;
 
             $topic->update( name=>$row{title}, moniker=>$moniker, modified_by=>$data->{username}, %update_row );
             
@@ -1662,7 +1664,6 @@ sub save_data {
                             change => 1
                         );
                     } else {
-
                         # report event
                         my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>$topic_mid, rel_type=>'topic_project' });
                         my $notify = {
