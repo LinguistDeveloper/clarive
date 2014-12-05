@@ -1327,6 +1327,7 @@ sub get_data {
         
         my %rel_fields = map { $_->{id_field} => 1  } grep { defined $_->{relation} && $_->{relation} eq 'system' } _array( $meta );
         my %method_fields = map { $_->{id_field} => $_->{get_method}  } grep { $_->{get_method} } _array( $meta );
+        _warn \%method_fields;
         my %metadata = map { $_->{id_field} => $_  } _array( $meta );
 
         # build rel fields from master_rel
@@ -1339,6 +1340,10 @@ sub get_data {
         
         foreach my $key  (keys %method_fields){
             my $method_get = $method_fields{ $key };
+            if ( $key eq 'nivel_de_importancia' ) {
+                _warn "FFFFFFFFFFFFFFF";
+                _warn $data->{ $key };
+            }
             $data->{ $key } =  $self->$method_get( $topic_mid, $key, $meta, $data, %opts );
         }
         
@@ -1426,9 +1431,10 @@ sub get_revisions {
 sub get_cis {
     my ($self, $topic_mid, $id_field, $meta, $data ) = @_;
     my $field_meta = [ grep { $_->{id_field} eq $id_field } _array( $meta ) ]->[0];
-    my $where = { from_mid => $topic_mid };
+    my $where = { from_mid => "$topic_mid" };
     $where->{rel_type} = $field_meta->{rel_type} if ref $field_meta eq 'HASH' && defined $field_meta->{rel_type};
     $where->{rel_field} = $id_field;
+    _warn $where;
     my @cis = map { $_->{to_mid} } mdb->master_rel->find($where)->fields({ to_mid=>1 })->all;
 
     $data->{"$id_field._ci_name_list"} = join ', ', map { $_->{name} } mdb->master->find({mid=>mdb->in(@cis)})->all if @cis;
@@ -1591,6 +1597,8 @@ sub save_data {
             
             my %update_row = %row;
             delete $update_row{id_category_status};
+            #update last modified on ci!
+            $topic->{ts} = mdb->now->string;
 
             $topic->update( name=>$row{title}, moniker=>$moniker, modified_by=>$data->{username}, %update_row );
             
@@ -1662,7 +1670,6 @@ sub save_data {
                             change => 1
                         );
                     } else {
-
                         # report event
                         my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>$topic_mid, rel_type=>'topic_project' });
                         my $notify = {
@@ -2226,7 +2233,7 @@ sub set_cis {
     @new_cis  = split /,/, $new_cis[0] if $new_cis[0] && $new_cis[0] =~ /,/ ;
     my @old_cis =
         map { $_->{to_mid} }
-        mdb->master_rel->find({ from_mid=>$rs_topic->{mid}, rel_type=>$rel_type, rel_field=>$id_field })->all;
+        mdb->master_rel->find({ from_mid=>"$rs_topic->{mid}", rel_type=>$rel_type, rel_field=>$id_field })->all;
 
     my @del_cis = array_minus( @old_cis, @new_cis );
     my @add_cis = array_minus( @new_cis, @old_cis );
@@ -2891,8 +2898,8 @@ sub check_fields_required {
     if (!$is_root){
         if($mid != -1){
             my $meta = Baseliner->model('Topic')->get_meta( $mid );
-            my %fields_required =  map { $_->{bd_field} => $_->{name_field} } grep { $_->{allowBlank} && $_->{allowBlank} eq 'false' && $_->{origin} ne 'system' } _array( $meta );
-            my $data = Baseliner->model('Topic')->get_data( $meta, $mid );  
+            my %fields_required =  map { $_->{id_field} => $_->{name_field} } grep { $_->{allowBlank} && $_->{allowBlank} eq 'false' && $_->{origin} ne 'system' } _array( $meta );
+            my $data = Baseliner->model('Topic')->get_data( $meta, $mid, no_cache => 1 );  
             
             for my $field ( keys %fields_required){
                 next if !Baseliner->model('Permissions')->user_has_action( 
@@ -2917,7 +2924,7 @@ sub check_fields_required {
             my $status = ci->status->find_one({ id_status=>''. $data->{status_new} });
             
             my %fields_required =
-                map { $_->{bd_field} => $_->{name_field} }
+                map { $_->{id_field} => $_->{name_field} }
                 grep { $_->{allowBlank} && $_->{allowBlank} eq 'false' && $_->{origin} ne 'system' } _array($meta);
             for my $field ( keys %fields_required){
                 next if !Baseliner->model('Permissions')->user_has_action( 

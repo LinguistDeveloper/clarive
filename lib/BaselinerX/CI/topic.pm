@@ -192,10 +192,10 @@ sub activity {
 
     my $activity;
     if( (Baseliner->config->{activity_from_event}//0) == 1){
-        _log "listing events";
+        _debug "listing events";
         $activity = Baseliner::Sugar::events_by_mid( $self->mid, min_level => 2 );
     } else{
-        _log "listing activities";
+        _debug "listing activities";
         $activity = Baseliner::Sugar::activity_by_mid( $self->mid, min_level => 2 );
     }
     

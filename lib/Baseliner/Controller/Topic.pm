@@ -612,7 +612,7 @@ sub view : Local {
 
             # workflow category-status
             my @statuses = 
-                sort { ( $a->{seq} // 0 ) <=> ( $b->{seq} // 0 ) } 
+                sort { ( $a->{status_name} ) cmp ( $b->{status_name} ) }
                 grep { $_->{id_status} ne $topic_doc->{category_status}{id} } 
                 $c->model('Topic')->next_status_for_user(
                     id_category    => $category->{id},
@@ -669,7 +669,7 @@ sub view : Local {
             my $first_status = ci->status->find_one({ id_status=>mdb->in( $category->{statuses} ), type=>'I' }) // _fail( _loc('No initial state found '));
 
             my @statuses =
-                sort { ( $a->{seq} // 0 ) <=> ( $b->{seq} // 0 ) }
+                sort { ( $a->{status_name} ) cmp ( $b->{status_name} ) }
                 grep { $_->{id_status} ne $first_status->{id_status} } 
                 $c->model('Topic')->next_status_for_user(
                     id_category    => $id_category,
