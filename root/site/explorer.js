@@ -100,13 +100,19 @@ Baseliner.TreeMultiTextNode = Ext.extend( Ext.tree.TreeNodeUI, {
         var nodes = [this.iconNode, this.textNode, this.elNode];
         if( this.textNode == undefined || this.textNode.childNodes == undefined ) 
              return nodes;
-        var nodelist = this.textNode.childNodes;
-        //var imax = ( Ext.isIE71 || Ext.isIE81 ) ? 2 : nodelist.length;
-        for( var i=0; i < nodelist.length; i++) {
-            var cn = Baseliner.class_name( nodelist[i] );
-            if( ! ( cn=='Text' && Ext.isIE ) ) 
-                nodes.push( nodelist[i] );
+        var recurse_children = function(par) {
+            if( !par ) return;
+            var nodelist = par.childNodes;
+            if( !nodelist ) return;
+            //var imax = ( Ext.isIE71 || Ext.isIE81 ) ? 2 : nodelist.length;
+            for( var i=0; i < nodelist.length; i++) {
+                var cn = Baseliner.class_name( nodelist[i] );
+                if( ! ( cn=='Text' && Ext.isIE ) ) 
+                    nodes.push( nodelist[i] );
+                recurse_children( nodelist[i] );
+            }
         }
+        recurse_children( this.textNode );
         //this.textNode.childNodes.each(function(){ alert(1) });
         //Ext.each( this.textNode.childNodes, function(n){ nodes.push(n) });
         return nodes;
