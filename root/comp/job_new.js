@@ -627,10 +627,12 @@
                 _("Changeset %1 cannot %2", '<b>' + data.text + '</b>', transition_msg ) );
             // Ext.Msg.alert( _('Error'),
             //     _("Cannot promote/demote changeset %1 to environment %2 (job type %3)", '<b>' + data.text + '</b>', bl, job_type ) );
+            Baseliner.hideLoadingMask( main_form.getEl() );
         } else {
             //add_node(n,bl_hash);
             if( jc_store.find('mid', data.topic_mid ) > -1 ) {
                 Baseliner.message( _('New Job'), _('Topic %1 has already been selected', data.text),{ image:'/static/images/icons/error-7-64.png' });
+                Baseliner.hideLoadingMask( main_form.getEl() );
             } else {
                 jc_store_topics[ data.topic_mid ] = { text:data.text, data:data };
                 topics.push( Ext.util.JSON.encode( { topic_mid:data.topic_mid, project: data.id_project, state: data.state_id} ) );
