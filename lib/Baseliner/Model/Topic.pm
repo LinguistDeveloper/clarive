@@ -1327,7 +1327,6 @@ sub get_data {
         
         my %rel_fields = map { $_->{id_field} => 1  } grep { defined $_->{relation} && $_->{relation} eq 'system' } _array( $meta );
         my %method_fields = map { $_->{id_field} => $_->{get_method}  } grep { $_->{get_method} } _array( $meta );
-        _warn \%method_fields;
         my %metadata = map { $_->{id_field} => $_  } _array( $meta );
 
         # build rel fields from master_rel
@@ -1340,10 +1339,6 @@ sub get_data {
         
         foreach my $key  (keys %method_fields){
             my $method_get = $method_fields{ $key };
-            if ( $key eq 'nivel_de_importancia' ) {
-                _warn "FFFFFFFFFFFFFFF";
-                _warn $data->{ $key };
-            }
             $data->{ $key } =  $self->$method_get( $topic_mid, $key, $meta, $data, %opts );
         }
         
@@ -1434,7 +1429,6 @@ sub get_cis {
     my $where = { from_mid => "$topic_mid" };
     $where->{rel_type} = $field_meta->{rel_type} if ref $field_meta eq 'HASH' && defined $field_meta->{rel_type};
     $where->{rel_field} = $id_field;
-    _warn $where;
     my @cis = map { $_->{to_mid} } mdb->master_rel->find($where)->fields({ to_mid=>1 })->all;
 
     $data->{"$id_field._ci_name_list"} = join ', ', map { $_->{name} } mdb->master->find({mid=>mdb->in(@cis)})->all if @cis;
@@ -2224,7 +2218,6 @@ sub set_cis {
 
     my $field_meta = [ grep { $_->{id_field} eq $id_field } _array($meta) ]->[0];
     my $name_field = $field_meta->{name_field};
-    _warn "Estoy en set_cis";
 
     my $rel_type = $field_meta->{rel_type} or _fail "Missing rel_type for field $id_field";
 
