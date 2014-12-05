@@ -2892,7 +2892,7 @@ sub check_fields_required {
     if (!$is_root){
         if($mid != -1){
             my $meta = Baseliner->model('Topic')->get_meta( $mid );
-            my %fields_required =  map { $_->{bd_field} => $_->{name_field} } grep { $_->{allowBlank} && $_->{allowBlank} eq 'false' && $_->{origin} ne 'system' } _array( $meta );
+            my %fields_required =  map { $_->{id_field} => $_->{name_field} } grep { $_->{allowBlank} && $_->{allowBlank} eq 'false' && $_->{origin} ne 'system' } _array( $meta );
             my $data = Baseliner->model('Topic')->get_data( $meta, $mid );  
             
             for my $field ( keys %fields_required){
@@ -2918,7 +2918,7 @@ sub check_fields_required {
             my $status = ci->status->find_one({ id_status=>''. $data->{status_new} });
             
             my %fields_required =
-                map { $_->{bd_field} => $_->{name_field} }
+                map { $_->{id_field} => $_->{name_field} }
                 grep { $_->{allowBlank} && $_->{allowBlank} eq 'false' && $_->{origin} ne 'system' } _array($meta);
             for my $field ( keys %fields_required){
                 next if !Baseliner->model('Permissions')->user_has_action( 
