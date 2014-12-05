@@ -248,7 +248,7 @@ Baseliner.escape_lt_gt = function(str) {
 Baseliner.render_job = function(value,metadata,rec,rowIndex,colIndex,store) {
     if( value!=undefined && value!='' ) {
         var id_job = rec.data.id_job;
-        return "<a href='#' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/list?mid="+id_job+"\",\""+ _("Log") + " " +value+"\"); return false;'>" + value + "</a>" ;
+        return "<a href='javascript:void(0)' onclick='javascript:Baseliner.addNewTabComp(\"/job/log/list?mid="+id_job+"\",\""+ _("Log") + " " +value+"\"); return false;'>" + value + "</a>" ;
     } else {
         return '';
     }
@@ -892,7 +892,16 @@ Baseliner.SearchSimple = Ext.extend(Baseliner.SearchField,{
         Baseliner.SearchSimple.superclass.initComponent.call(this);
     },
     width: 240,
-    emptyText: _('<search>')
+    emptyText: _('<search>'),
+    handler: function(){
+        var self = this;
+        var t = self.getValue();
+        if( t && t.length>0 ) { 
+            self.tree.search_nodes(t);
+        } else {
+            self.tree.search_clear();
+        }
+    }
 });
 
 Baseliner.merge = function() {
@@ -1041,9 +1050,8 @@ Baseliner.Grid.Buttons.Add = Ext.extend( Ext.Toolbar.Button, {
     constructor: function(config) {
         config = Ext.apply({
             text: _('Create'),
-            //icon:'/static/images/icons/add.gif',
-            //cls: 'x-btn-text-icon'
-            iconCls: 'sprite add'
+            icon: IC('add.gif'),
+            cls: 'x-btn-text-icon'
         }, config);
         Baseliner.Grid.Buttons.Add.superclass.constructor.call(this, config);
     }
@@ -1053,10 +1061,9 @@ Baseliner.Grid.Buttons.Edit = Ext.extend( Ext.Toolbar.Button, {
     constructor: function(config) {
         config = Ext.apply({
             text: _('Edit'),
-            //icon: '/static/images/icons/edit.gif',
-            //cls: 'x-btn-text-icon',
-            disabled: true,
-            iconCls: 'sprite edit'
+            icon: IC('edit.gif'),
+            cls: 'x-btn-text-icon',
+            disabled: true
         }, config);
         Baseliner.Grid.Buttons.Edit.superclass.constructor.call(this, config);
     }
@@ -1066,10 +1073,9 @@ Baseliner.Grid.Buttons.Delete = Ext.extend( Ext.Toolbar.Button, {
     constructor: function(config) {
         config = Ext.apply({
             text: _('Delete'),
-            //icon:'/static/images/icons/delete.gif',
-            //cls: 'x-btn-text-icon',
-            disabled: true,
-            iconCls: 'sprite delete'
+            icon: IC('delete.gif'),
+            cls: 'x-btn-text-icon',
+            disabled: true
         }, config);
         Baseliner.Grid.Buttons.Delete.superclass.constructor.call(this, config);
     }
@@ -1082,7 +1088,6 @@ Baseliner.Grid.Buttons.Start = Ext.extend( Ext.Toolbar.Button, {
             icon:'/static/images/start.gif',
             cls: 'x-btn-text-icon',         
             disabled: true
-            //iconCls: 'sprite delete'
         }, config);
         Baseliner.Grid.Buttons.Start.superclass.constructor.call(this, config);
     }
@@ -1095,7 +1100,6 @@ Baseliner.Grid.Buttons.Stop = Ext.extend( Ext.Toolbar.Button, {
             icon:'/static/images/stop.gif',
             disabled: true,
             cls: 'x-btn-text-icon'
-                //iconCls: 'sprite delete'
         }, config);
         Baseliner.Grid.Buttons.Stop.superclass.constructor.call(this, config);
     }
