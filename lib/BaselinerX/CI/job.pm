@@ -413,7 +413,7 @@ sub is_failed {
 sub is_running {
     my $self = shift;
     if( my $status = $self->load->{status} ) {
-        return 1 if $status =~ /RUNNING|PAUSE|TRAPPED|TRAPPED_PAUSED/;
+        return 1 if $status =~ /RUNNING|PAUSED|TRAPPED|TRAPPED_PAUSED/;
     }
     return 0;
 }

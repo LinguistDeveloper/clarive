@@ -22,13 +22,15 @@
         loadingText: _('Searching...'),
         allowBlank: true,
         editable: false,
-        lazyRender: true
+        lazyRender: true,
+        value: data.id_rule
     });
 
     return [
         job_type,
         combo_bl,
         combo_chain,
+        { xtype:'textfield', fieldLabel: _('Scheduled time'), name: 'schedtime', value: data.schedtime },
         { xtype:'textfield', fieldLabel: _('Changesets'), name: 'changesets', value: data.changesets },
         { xtype:'textfield', fieldLabel: _('Username'), name: 'username', value: data.username },
         { xtype:'textarea', fieldLabel: _('Comments'), height: 80, name: 'comments', value: data.comments }
