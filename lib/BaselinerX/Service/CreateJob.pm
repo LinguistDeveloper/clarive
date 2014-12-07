@@ -31,6 +31,7 @@ sub run_create {
             username   => $config->{username} || 'clarive',
             comments   => $config->{comments},
             changesets => \@changesets,
+            id_rule => $config->{id_rule} // ''
         };
         my $job;
         event_new 'event.job.new' => { username => $job_data->{username}, bl => $job_data->{bl}  } => sub {
