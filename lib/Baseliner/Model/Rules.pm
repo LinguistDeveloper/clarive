@@ -863,7 +863,7 @@ register 'statement.foreach' => {
     dsl => sub { 
         my ($self, $n, %p ) = @_;
         sprintf(q{
-            foreach my $item ( _array( $stash->{'%s'} ) ) {
+            foreach my $item ( _array_or_commas( $stash->{'%s'} ) ) {
                 local $stash->{'%s'} = $item;
                 %s
             }
