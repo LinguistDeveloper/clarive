@@ -103,7 +103,7 @@
         width: 220,
         handler: function(){
             var lo = action_tree.getLoader();
-            lo.baseParams = this.store.baseParams;
+            lo.baseParams = { query: this.getValue() };
             Baseliner.showLoadingMask( action_tree.getEl() );
             lo.load( action_tree.root, function(){
                 Baseliner.hideLoadingMask( action_tree.getEl() );

@@ -73,7 +73,7 @@ Baseliner.user_seen_row = function(grid,mid){
     } else {
         var ix = store.find('topic_mid', mid );
         if( ix<0 ) return;
-        var row = store.getAt( ix );
+        row = store.getAt( ix );
         if( !row ) return;
     }
     row.data.user_seen = true;

@@ -848,7 +848,7 @@ Baseliner.SearchField = Ext.extend(Ext.form.TwinTriggerField, {
     hideTrigger1:true,
     width:280,
     hasSearch : false,
-    emptyText: '<% _loc("<Enter your search string>") %>',
+    emptyText: _("<search>"),
     paramName : 'query',
 
     onTrigger1Click : function(){
@@ -881,29 +881,42 @@ Baseliner.SearchField = Ext.extend(Ext.form.TwinTriggerField, {
 Baseliner.SearchSimple = Ext.extend(Baseliner.SearchField,{
     initComponent : function(){
         var self = this;
-        self.store = {  // the SearchField needs a store, but the tree doesnt have one
-            baseParams: {},
-            reload: function(config){
-                if(Ext.isFunction(self.handler)) {
-                    self.handler.call(self,config);
-                }
-            }
-        };
+        self.on('afterrender', function(){
+            self.hasSearch = !! self.getRawValue().length;
+            if( self.hasSearch ) self.triggers[0].show();
+            else self.triggers[0].hide();
+        });
         Baseliner.SearchSimple.superclass.initComponent.call(this);
     },
-    width: 240,
-    emptyText: _('<search>'),
-    handler: function(){
+    onTrigger1Click : function(){
         var self = this;
-        var t = self.getValue();
-        if( t && t.length>0 ) { 
-            self.tree.search_nodes(t);
-        } else {
-            self.tree.search_clear();
+        if(this.hasSearch){
+            this.el.dom.value = '';
+            
+            if( self.cleaner ) {
+                self.cleaner(this.el.dom.value);
+            } else if( self.handler ) {
+                self.handler(this.el.dom.value);
+            }
+            this.triggers[0].hide();
+            this.hasSearch = false;
         }
+    },
+    onTrigger2Click : function(){
+        var self = this;
+        var v = this.getRawValue();
+        if(v.length < 1){ //>
+            this.onTrigger1Click();
+            return;
+        }
+        if( self.handler ) {
+            self.handler(v);
+        }
+        this.hasSearch = true;
+        this.triggers[0].show();
     }
 });
-
+    
 Baseliner.merge = function() {
     // copy reference to target object
     var target = arguments[0] || {}, i = 1, length = arguments.length, deep = true, options;

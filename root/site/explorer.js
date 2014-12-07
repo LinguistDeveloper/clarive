@@ -325,6 +325,38 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
         }
         // add base menu
         m.add( base_menu_items );
+        // add search box
+        if( node.attributes && node.attributes.has_query ) {
+            var query = node.attributes.data.query;
+            var query_box = new Baseliner.SearchSimple({ 
+                width: 120,
+                value: query, 
+                iconCls: 'no-icon',
+                handler: function(){
+                    var t = this.getValue();
+                    $( "[parent-node-props='"+node.id+"']" ).remove(); // remove search indicator
+                    if( !t || !t.length ) {
+                        delete node.attributes.data.query;
+                        this.triggers[0].hide();
+                    } else {
+                        node.attributes.data.query = t;
+                        // indicator that a search is in effect 
+                        var nel = node.ui.getTextEl();
+                        if( nel ) {
+                            var badge = '<span class="badge" style="font-size: 9px;">'+t+'</span>';
+                            nel.insertAdjacentHTML( 'afterEnd', '<span id="boot" parent-node-props="'+node.id+'" style="margin: 0px 0px 0px 4px; background: transparent">'+badge+'</span>');
+                        }
+                        this.triggers[0].show();
+                    }
+                    if( node.isExpanded() ) 
+                        self.refresh();
+                    else
+                        node.expand();
+                    m.hide();
+                }
+            });
+            m.add(query_box);
+        }
         if( node.attributes != undefined && node.attributes.id_favorite !=undefined ) {
             m.add( this.menu_favorite_del() );
             m.add( this.menu_favorite_rename() );

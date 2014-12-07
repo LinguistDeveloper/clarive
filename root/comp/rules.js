@@ -1112,7 +1112,7 @@
         width: 220,
         handler: function(){
             var lo = palette.getLoader();
-            lo.baseParams = this.store.baseParams;
+            lo.baseParams = { query: this.getValue() };
             lo.load( palette.root );
         }
     });
