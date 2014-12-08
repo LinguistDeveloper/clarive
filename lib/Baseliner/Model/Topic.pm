@@ -2138,7 +2138,20 @@ sub set_topics {
     }
 
     if( @new_topics ) {
-        #Tenemos que ver primero que los new topics para ese campo exista que sea single
+        # check if field is editable
+        if( !length($$field_meta{js}) ){
+            _fail _loc 'Field `%1` cannot be edited', $$field_meta{name_field};
+        }
+        # apply filters, if any
+        my $filter = $$field_meta{filter};
+        if( length($filter) && $filter ne 'none' ) {
+            my $where = Util->_decode_json($filter);
+            $where->{mid} = mdb->in(@new_topics);
+            my @filtered_topics = mdb->topic->find($where)->fields({ mid=>1, _id=>0 })->all;
+            _fail _loc 'Incorrect type of topics added to field %1', _loc($$field_meta{name_field}) 
+                unless @filtered_topics == @new_topics;
+        }
+        # Tenemos que ver primero que los new topics para ese campo exista que sea single
         my @category_single_mode;
         my @categories = _unique map{$_->{category_id}}mdb->topic->find({mid=>mdb->in(@new_topics)})->fields({category_id=>1, _id=>0})->all;
         for my $topic_category (@categories){
