@@ -2621,6 +2621,107 @@ sub get_categories_permissions{
     return @categories;
 }
 
+sub get_meta_permissions {
+    my ($self, %p) = @_;
+    my ($username, $meta, $data, $name_category, $name_status,$id_category,$id_status) = 
+        @p{qw(username meta data name_category name_status id_category id_status)};
+    my @hidden_field;
+    
+    my $mid = $data->{topic_mid};
+    my $cache_key = { d=>'topic:meta', 
+        st=>($id_status//$$data{category_status}{id}//$name_status//_fail('Missing id_status')), 
+        cat=>($id_category//$data->{category}{id}//_fail('Missing category.id')), u=>$username };
+    defined && return $_ for cache->get($cache_key);
+    
+    my $parse_category = $data->{name_category} ? _name_to_id($data->{name_category}) : _name_to_id($name_category);
+    my $parse_status = $data->{name_status} ? _name_to_id($data->{name_status}) : _name_to_id($name_status);
+    my $sec = $data->{_project_security};
+    
+    my $is_root = model->Permissions->is_root( $username );
+    my $user_security = ci->user->find_one( {name => $username}, { project_security => 1, _id => 0} )->{project_security};
+    my $user_actions = model->Permissions->user_actions_by_topic( username=> $username, mid => $data->{topic_mid}, user_security => $user_security );
+    my @user_actions_for_topic = $user_actions->{positive};
+    my @user_read_actions_for_topic = $user_actions->{negative};
+
+    for (_array $meta){
+        my $parse_id_field = _name_to_id($_->{name_field});
+        
+        if($_->{fieldlets}){
+        	my @fields_form = _array $_->{fieldlets};
+            for my $field_form ( @fields_form ){
+                my $parse_field_form_id = $field_form->{id_field};
+                my $write_action = 'action.topicsfield.' .  $parse_category 
+                		. '.' .  $parse_id_field . '.' .  $parse_field_form_id . '.' . $parse_status . '.write';
+                #my $write_action = 'action.topicsfield.write.' . $_->{name_field};
+                #print ">>>>>>>>>Accion: " . $write_action . "\n";
+                
+                if ( $is_root ) {
+                        $field_form->{readonly} = \0;
+                        $field_form->{allowBlank} = 'true' unless $field_form->{id_field} eq 'title';
+                } else {
+                    my $has_action = $write_action  ~~ @user_actions_for_topic;
+                    # my $has_action = model->Permissions->user_has_action( username=> $username, action => $write_action, mid => $data->{topic_mid} );
+                    if ( $has_action ){
+                        $field_form->{readonly} = \0;
+                    }else{
+                        $field_form->{readonly} = \1;
+                    }
+                }                    
+                my $read_action = 'action.topicsfield.' .  $parse_category 
+                        . '.' .  $parse_id_field . '.' .  $parse_field_form_id  . '.read';
+                #my $read_action = 'action.topicsfield.read.' . $_->{name_field} if ! $write_action;
+                #_error $read_action;
+                #print ">>>>>>>>>Accion: " . $read_action . "\n";
+        
+                if ( $is_root ) {
+                        $field_form->{hidden} = \0;
+                } else {
+
+                    if ( $read_action ~~ @user_read_actions_for_topic ){
+                    # if (model->Permissions->user_has_read_action( username=> $username, action => $read_action )){
+                        $field_form->{hidden} = \1;
+                        #push @hidden_field, $field_form->{id_field};
+                    }
+                }
+            }
+        }else{
+            my $write_action = 'action.topicsfield.' .  $parse_category . '.' .  $parse_id_field . '.' . $parse_status . '.write';
+            my $readonly = 0;
+            if ( $is_root ) {
+                    $_->{readonly} = \0;
+                    $_->{allowBlank} = 'true' unless $_->{id_field} eq 'title';
+            } else {
+                my $has_action = $write_action ~~ @user_actions_for_topic;
+                #my $has_action = model->Permissions->user_has_action( username=> $username, action => $write_action, mid => $data->{topic_mid} );
+                # _log "Comprobando ".$write_action."= ".$has_action;
+                if ( $has_action ){
+                    $_->{readonly} = \0;
+                }else{
+                    $_->{readonly} = \1;    
+                    $readonly = 1;
+                }
+            }
+            
+            my $read_action = 'action.topicsfield.' .  $parse_category . '.' .  $parse_id_field . '.read';
+            my $read_action_status = 'action.topicsfield.' .  $parse_category . '.' .  $parse_id_field . '.' . $parse_status . '.read';
+
+            if ( !$is_root ) {
+                if ( $read_action ~~ @user_read_actions_for_topic || $read_action_status ~~ @user_read_actions_for_topic || ($readonly && $_->{hidden_if_protected} && $_->{hidden_if_protected} eq 'true')){
+                    push @hidden_field, $_->{id_field};
+                }
+            } 
+
+        }
+    }
+    
+    my %hidden_field = map { $_ => 1} @hidden_field;
+    $meta = [grep { !($hidden_field{ $_->{id_field} }) } _array $meta];
+        
+    #_debug $meta;
+    cache->set($cache_key,$meta);
+    return $meta
+}
+
 # Global search
 
 with 'Baseliner::Role::Search';
