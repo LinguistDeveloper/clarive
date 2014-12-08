@@ -2084,8 +2084,8 @@ sub cleanup_images {
 }
 
 sub set_cal {
-    my ($self, $rs_topic, $cal_data, $user, $id_field ) = @_;
-    my $mid = $rs_topic->{mid};
+    my ($self, $ci_topic, $cal_data, $user, $id_field ) = @_;
+    my $mid = $ci_topic->{mid};
     mdb->master_cal->remove({ mid=>$mid, rel_field=>$id_field },{ multiple=>1 });
    
     for my $row ( _array( $cal_data ) ) {
@@ -2101,11 +2101,11 @@ sub set_cal {
 }
 
 sub set_topics {
-    my ($self, $rs_topic, $topics, $user, $id_field, $meta, $cancelEvent ) = @_;
+    my ($self, $ci_topic, $topics, $user, $id_field, $meta, $cancelEvent ) = @_;
     my @all_topics = ();
 
-    my $rs_cache = ''.$rs_topic->mid;
-    cache->remove({ mid=>"$rs_cache" }) if length $rs_cache; # qr/:$rs_cache:/ ) 
+    my $mid = ''.$ci_topic->mid;
+    cache->remove({ mid=>"$mid" }) if length $mid; # qr/:$rs_cache:/ ) 
     
     my $rel_field = $id_field;
     my $field_meta = [ grep { $_->{id_field} eq $id_field } _array($meta) ]->[0];
@@ -2120,38 +2120,32 @@ sub set_topics {
     # related topics
     my @new_topics = map { split /,/, $_ } _array( $topics ) ;
     my @old_topics = map { $$_{$data_direction} } 
-        mdb->master_rel->find({ $topic_direction=>$rs_topic->{mid}, rel_type=>$rel_type, rel_field=>$rel_field })->all;
+        mdb->master_rel->find({ $topic_direction=>$mid, rel_type=>$rel_type, rel_field=>$rel_field })->all;
     
     # no diferences, get out
     return if !array_diff(@new_topics, @old_topics);
 
-    my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>$rs_topic->{mid}, rel_type=>'topic_project' });
+    my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>$mid, rel_type=>'topic_project' });
     my $notify = {
-        category        => $rs_topic->{id_category},
-        category_status => $rs_topic->{id_category_status},
+        category        => $ci_topic->{id_category},
+        category_status => $ci_topic->{id_category_status},
         field           => $id_field
     };
     $notify->{project} = \@projects if @projects;
         
     if(@old_topics){
-        my $rdoc = {$topic_direction=>''.$rs_topic->mid, rel_field=>$rel_field, rel_type => $rel_type };
+        my $rdoc = {$topic_direction=>$mid, rel_field=>$rel_field, rel_type => $rel_type };
         mdb->master_rel->remove($rdoc,{multiple=>1});
     }
 
     if( @new_topics ) {
         # check if field is editable
-        if( !length($$field_meta{js}) ){
-            _fail _loc 'Field `%1` cannot be edited', $$field_meta{name_field};
+        if( ! $$field_meta{editable} ) {
+            _fail _loc 'Field `%1` is not editable in topic #%2', $$field_meta{name_field}, $mid;
         }
         # apply filters, if any
-        my $filter = $$field_meta{filter};
-        if( length($filter) && $filter ne 'none' ) {
-            my $where = Util->_decode_json($filter);
-            $where->{mid} = mdb->in(@new_topics);
-            my @filtered_topics = mdb->topic->find($where)->fields({ mid=>1, _id=>0 })->all;
-            _fail _loc 'Incorrect type of topics added to field %1', _loc($$field_meta{name_field}) 
-                unless @filtered_topics == @new_topics;
-        }
+        $self->test_field_filter( field_meta=>$field_meta, mids=>\@new_topics ) 
+            or _fail _loc 'Incorrect type of topics added to field %1', _loc($$field_meta{name_field});
         # Tenemos que ver primero que los new topics para ese campo exista que sea single
         my @category_single_mode;
         my @categories = _unique map{$_->{category_id}}mdb->topic->find({mid=>mdb->in(@new_topics)})->fields({category_id=>1, _id=>0})->all;
@@ -2182,7 +2176,7 @@ sub set_topics {
 
         my $rel_seq = 1;  # oracle may resolve this with a seq, but sqlite doesn't
         for (@new_topics){
-            my $rdoc = { $topic_direction => ''.$rs_topic->{mid}, $data_direction => "$_", rel_type =>$rel_type, rel_field=>$rel_field };
+            my $rdoc = { $topic_direction => ''.$mid, $data_direction => "$_", rel_type =>$rel_type, rel_field=>$rel_field };
             mdb->master_rel->update($rdoc,{ %$rdoc, rel_seq=>0+($rel_seq++) },{ upsert=>1 });
         }
 
@@ -2195,11 +2189,11 @@ sub set_topics {
                                                 old_value           => '',
                                                 new_value           => $topics,
                                                 text_new            => '%1 modified topic: %2 ( %4 )',
-                                                mid => $rs_topic->{mid},
+                                                mid => $mid,
                                                } => sub {
-                                my $subject = _loc("#%1 %2 updated", $rs_topic->{mid}, $rs_topic->{title});
+                                my $subject = _loc("#%1 %2 updated", $mid, $ci_topic->{title});
 
-                                { mid => $rs_topic->{mid}, topic => $rs_topic->{title}, subject => $subject, notify => $notify }   # to the event
+                                { mid => $mid, topic => $ci_topic->{title}, subject => $subject, notify => $notify }   # to the event
             } ## end try
             => sub {
                 _throw _loc( 'Error modifying Topic: %1', shift() );
@@ -2214,25 +2208,39 @@ sub set_topics {
                                                 old_value           => '',
                                                 new_value           => '',
                                                 text_new            => '%1 deleted all attached topics of ' . $id_field ,
-                                                mid => $rs_topic->{mid},
+                                                mid => $mid,
                                                } => sub {
-                                my $subject = _loc("#%1 %2 updated", $rs_topic->{mid}, $rs_topic->{title});
-                { mid => $rs_topic->{mid}, topic => $rs_topic->{title}, subject => $subject, notify => $notify }   # to the event
+                                my $subject = _loc("#%1 %2 updated", $mid, $ci_topic->{title});
+                { mid => $mid, topic => $ci_topic->{title}, subject => $subject, notify => $notify }   # to the event
             } ## end try
             => sub {
                 _throw _loc( 'Error modifying Topic: %1', shift() );
             };
         }
 
-        my $rdoc = {from_mid => ''.$rs_topic->{mid}, rel_field => $rel_field };
+        my $rdoc = {from_mid => $mid, rel_field => $rel_field };
         mdb->master_rel->remove($rdoc,{multiple=>1});
     }
 
     $self->update_rels( @old_topics, @new_topics );
 }
 
+sub test_field_filter {
+    my ($self,%p) = @_; 
+    my $field_meta = $p{field_meta} // _throw 'Missing field_meta';
+    my $mids = $p{mids} // _throw 'Missing mids';
+    my $filter = $$field_meta{filter};
+    if( length($filter) && $filter ne 'none' ) {
+        $filter = Util->_decode_json($filter) if !ref $filter;
+        my $where = $self->apply_filter({ mid=>mdb->in($mids) }, %$filter );
+        my @filtered_topics = mdb->topic->find($where)->fields({ mid=>1, _id=>0 })->all;
+        return @filtered_topics == _array($mids); 
+    }
+    return 1;
+}
+
 sub set_cis {
-    my ($self, $rs_topic, $cis, $user, $id_field, $meta, $cancelEvent ) = @_;
+    my ($self, $ci_topic, $cis, $user, $id_field, $meta, $cancelEvent ) = @_;
 
     my $field_meta = [ grep { $_->{id_field} eq $id_field } _array($meta) ]->[0];
     my $name_field = $field_meta->{name_field};
@@ -2244,7 +2252,7 @@ sub set_cis {
     @new_cis  = split /,/, $new_cis[0] if $new_cis[0] && $new_cis[0] =~ /,/ ;
     my @old_cis =
         map { $_->{to_mid} }
-        mdb->master_rel->find({ from_mid=>"$rs_topic->{mid}", rel_type=>$rel_type, rel_field=>$id_field })->all;
+        mdb->master_rel->find({ from_mid=>"$ci_topic->{mid}", rel_type=>$rel_type, rel_field=>$id_field })->all;
 
     my @del_cis = array_minus( @old_cis, @new_cis );
     my @add_cis = array_minus( @new_cis, @old_cis );
@@ -2252,21 +2260,21 @@ sub set_cis {
     if( @add_cis || @del_cis ) {
         my ($del_cis, $add_cis) = ( '', '' );
         if( @del_cis ) {
-            mdb->master_rel->remove({ from_mid => $rs_topic->{mid}, to_mid=>mdb->in(@del_cis), rel_type=>$rel_type, rel_field=>$id_field },{multiple=>1});
+            mdb->master_rel->remove({ from_mid => $ci_topic->{mid}, to_mid=>mdb->in(@del_cis), rel_type=>$rel_type, rel_field=>$id_field },{multiple=>1});
             $del_cis = join(',', map { ci->new($_)->name . '[-]' } @del_cis );
         }
         if( @add_cis ) {
             for( @add_cis ) {
-                my $rdoc = { from_mid => ''.$rs_topic->{mid}, to_mid=>"$_", rel_type=>$rel_type, rel_field=>$id_field };
+                my $rdoc = { from_mid => ''.$ci_topic->{mid}, to_mid=>"$_", rel_type=>$rel_type, rel_field=>$id_field };
                 mdb->master_rel->insert($rdoc);
             }
             $add_cis = join(',', map { ci->new($_)->name . '[+]' } @add_cis );
         }
         
-        my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>$rs_topic->{mid}, rel_type=>'topic_project' });
+        my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>$ci_topic->{mid}, rel_type=>'topic_project' });
         my $notify = {
-            category        => $rs_topic->{id_category},
-            category_status => $rs_topic->{id_category_status},
+            category        => $ci_topic->{id_category},
+            category_status => $ci_topic->{id_category_status},
             field           => $id_field
         };
         $notify->{project} = \@projects if @projects;
@@ -2278,10 +2286,10 @@ sub set_cis {
                 old_value => $del_cis,
                 new_value => join(',', grep { length } $add_cis, $del_cis ),
                 text_new  => ( $field_meta->{modify_text_new} // '%1 modified topic (%2): %4 ' ),
-                mid => $rs_topic->{mid},
+                mid => $ci_topic->{mid},
             } => sub {
-                my $subject = _loc("#%1 %2 updated: %3 changed", $rs_topic->{mid}, $rs_topic->{title}, $name_field);
-                { mid => $rs_topic->{mid}, topic => $rs_topic->{title}, subject => $subject, notify => $notify }    # to the event
+                my $subject = _loc("#%1 %2 updated: %3 changed", $ci_topic->{mid}, $ci_topic->{title}, $name_field);
+                { mid => $ci_topic->{mid}, topic => $ci_topic->{title}, subject => $subject, notify => $notify }    # to the event
             } => sub {
                 _throw _loc( 'Error modifying Topic: %1', shift() );
             };            
@@ -2290,20 +2298,20 @@ sub set_cis {
 }
 
 sub set_revisions {
-    my ($self, $rs_topic, $revisions, $user, $id_field, $meta, $cancelEvent ) = @_;
+    my ($self, $ci_topic, $revisions, $user, $id_field, $meta, $cancelEvent ) = @_;
     
-    my $topic_mid = $rs_topic->{mid};
+    my $topic_mid = $ci_topic->{mid};
     
     my ($name_field) =  map {$_->{name_field}} grep {$_->{id_field} eq $id_field} _array $meta;
 
     # related topics
     my @new_revisions = _array( $revisions ) ;
-    my @old_revisions = map {$_->{to_mid}} mdb->master_rel->find({ from_mid => $rs_topic->{mid}, rel_type=>'topic_revision' })->all;
+    my @old_revisions = map {$_->{to_mid}} mdb->master_rel->find({ from_mid => $ci_topic->{mid}, rel_type=>'topic_revision' })->all;
    
-    my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>$rs_topic->{mid}, rel_type=>'topic_project' });
+    my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>$ci_topic->{mid}, rel_type=>'topic_project' });
     my $notify = {
-        category        => $rs_topic->{id_category},
-        category_status => $rs_topic->{id_category_status},
+        category        => $ci_topic->{id_category},
+        category_status => $ci_topic->{id_category_status},
         field           => $id_field
     };
     $notify->{project} = \@projects if @projects;
@@ -2328,11 +2336,11 @@ sub set_revisions {
                                                     old_value      => '',
                                                     new_value  => $revisions,
                                                     text_new      => '%1 modified topic: %2 ( %4 )',
-                                                    mid => $rs_topic->{mid},
+                                                    mid => $ci_topic->{mid},
                                                    } => sub {
-                                                    my $subject = _loc("#%1 %2 updated: new revisions", $rs_topic->{mid}, $rs_topic->title);
+                                                    my $subject = _loc("#%1 %2 updated: new revisions", $ci_topic->{mid}, $ci_topic->title);
 
-                    { mid => $rs_topic->{mid}, topic => $rs_topic->{title}, subject => $subject, notify => $notify }   # to the event
+                    { mid => $ci_topic->{mid}, topic => $ci_topic->{title}, subject => $subject, notify => $notify }   # to the event
                 } ## end try
                 => sub {
                     _throw _loc( 'Error modifying Topic: %1', shift() );
@@ -2346,24 +2354,24 @@ sub set_revisions {
                                                     old_value      => '',
                                                     new_value  => '',
                                                     text_new      => '%1 deleted all revisions',
-                                                    mid => $rs_topic->{mid},
+                                                    mid => $ci_topic->{mid},
                                                    } => sub {
-                                                    my $subject = _loc("#%1 %2 updated: all revisions removed", $rs_topic->{mid}, $rs_topic->title);
-                    { mid => $rs_topic->{mid}, topic => $rs_topic->{title}, subject => $subject, notify => $notify }   # to the event
+                                                    my $subject = _loc("#%1 %2 updated: all revisions removed", $ci_topic->{mid}, $ci_topic->title);
+                    { mid => $ci_topic->{mid}, topic => $ci_topic->{title}, subject => $subject, notify => $notify }   # to the event
                 } ## end try
                 => sub {
                     _throw _loc( 'Error modifying Topic: %1', shift() );
                 };
             }
 
-            my $rdoc = {from_mid => ''.$rs_topic->{mid}, rel_type => 'topic_revision', rel_field=>$id_field };
+            my $rdoc = {from_mid => ''.$ci_topic->{mid}, rel_type => 'topic_revision', rel_field=>$id_field };
             mdb->master_rel->remove($rdoc,{multiple=>1});
         }
     }
 }
 
 sub set_release {
-    my ($self, $rs_topic, $release, $user, $id_field, $meta, $cancelEvent) = @_;
+    my ($self, $ci_topic, $release, $user, $id_field, $meta, $cancelEvent) = @_;
     
     my @release_meta = grep { $_->{id_field} eq $id_field } _array $meta;
 
@@ -2372,7 +2380,7 @@ sub set_release {
     my $rel_type = $release_meta[0]->{rel_type} // 'topic_topic';
 
 
-    my $topic_mid = $rs_topic->{mid};
+    my $topic_mid = $ci_topic->{mid};
     $self->cache_topic_remove($topic_mid);
     my $where = { rel_type=>$rel_type, to_mid=>"$topic_mid" };
     $where->{rel_field} = $release_field if $release_field;
@@ -2387,10 +2395,10 @@ sub set_release {
         
     my ($new_release) = _array( $release );
 
-    my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>$rs_topic->{mid}, rel_type=>'topic_project' });
+    my @projects = mdb->master_rel->find_values( to_mid=>{ from_mid=>$ci_topic->{mid}, rel_type=>'topic_project' });
     my $notify = {
-        category        => $rs_topic->{id_category},
-        category_status => $rs_topic->{id_category_status},
+        category        => $ci_topic->{id_category},
+        category_status => $ci_topic->{id_category_status},
         field           => $id_field
     };
     $notify->{project} = \@projects if @projects;
@@ -2413,10 +2421,10 @@ sub set_release {
                                                     old_value      => $old_release_name,
                                                     new_value  => $row_release->{title},
                                                     text_new      => '%1 modified topic: changed %2 to %4',
-                                                    mid => $rs_topic->{mid},
+                                                    mid => $ci_topic->{mid},
                                                    } => sub {
-                                                    my $subject = _loc("#%1 %2 updated: %4 changed to %3", $rs_topic->{mid}, $rs_topic->{title}, $row_release->{title}, $name_field);
-                    { mid => $rs_topic->{mid}, topic => $rs_topic->{title}, subject => $subject, notify => $notify }   # to the event
+                                                    my $subject = _loc("#%1 %2 updated: %4 changed to %3", $ci_topic->{mid}, $ci_topic->{title}, $row_release->{title}, $name_field);
+                    { mid => $ci_topic->{mid}, topic => $ci_topic->{title}, subject => $subject, notify => $notify }   # to the event
                 } ## end try
                 => sub {
                     _throw _loc( 'Error modifying Topic: %1', shift() );
@@ -2431,11 +2439,11 @@ sub set_release {
                                                     old_value      => $old_release_name,
                                                     new_value  => '',
                                                     text_new      => '%1 deleted %2 %3',
-                                                    mid => $rs_topic->{mid},
+                                                    mid => $ci_topic->{mid},
                                                    } => sub {
-                                                    my $subject = _loc("#%1 %2 updated: removed from %4 %3", $rs_topic->{mid}, $rs_topic->{title}, $old_release_name, $release_field);
+                                                    my $subject = _loc("#%1 %2 updated: removed from %4 %3", $ci_topic->{mid}, $ci_topic->{title}, $old_release_name, $release_field);
 
-                    { mid => $rs_topic->{mid}, topic => $rs_topic->{title}, subject => $subject, notify => $notify}   # to the event
+                    { mid => $ci_topic->{mid}, topic => $ci_topic->{title}, subject => $subject, notify => $notify}   # to the event
                 } ## end try
                 => sub {
                     _throw _loc( 'Error modifying Topic: %1', shift() );
@@ -2447,8 +2455,8 @@ sub set_release {
 }
 
 sub set_projects {
-    my ($self, $rs_topic, $projects, $user, $id_field, $meta, $cancelEvent ) = @_;
-    my $topic_mid = $rs_topic->{mid};
+    my ($self, $ci_topic, $projects, $user, $id_field, $meta, $cancelEvent ) = @_;
+    my $topic_mid = $ci_topic->{mid};
     my ($name_field) =  map {$_->{name_field}} grep {$_->{id_field} eq $id_field} _array $meta;
     
     my @new_projects = sort { $a <=> $b } _array( $projects ) ;
@@ -2456,8 +2464,8 @@ sub set_projects {
         mdb->master_rel->find({ from_mid=>"$topic_mid", rel_type=>'topic_project', rel_field=>$id_field })->all;
 
     my $notify = {
-        category        => $rs_topic->{id_category},
-        category_status => $rs_topic->{id_category_status},
+        category        => $ci_topic->{id_category},
+        category_status => $ci_topic->{id_category_status},
         field           => $id_field
     };
     $notify->{project} = \@old_projects if @old_projects;
@@ -2485,10 +2493,10 @@ sub set_projects {
                                                     old_value      => '',
                                                     new_value  => $projects,
                                                     text_new      => '%1 modified topic: %2 ( %4 )',
-                                                    mid => $rs_topic->{mid},
+                                                    mid => $ci_topic->{mid},
                                                    } => sub {
-                                                    my $subject = _loc("#%1 %2 updated: %4 (%3)", $rs_topic->{mid}, $rs_topic->{title}, $projects, $name_field);
-                    { mid => $rs_topic->{mid}, topic => $rs_topic->{title}, subject => $subject, notify => $notify }   # to the event
+                                                    my $subject = _loc("#%1 %2 updated: %4 (%3)", $ci_topic->{mid}, $ci_topic->{title}, $projects, $name_field);
+                    { mid => $ci_topic->{mid}, topic => $ci_topic->{title}, subject => $subject, notify => $notify }   # to the event
                 } ## end try
                 => sub {
                     _throw _loc( 'Error modifying Topic: %1', shift() );
@@ -2502,10 +2510,10 @@ sub set_projects {
                                                     old_value      => '',
                                                     new_value  => '',
                                                     text_new      => '%1 deleted %2',
-                                                    mid => $rs_topic->{mid},
+                                                    mid => $ci_topic->{mid},
                                                    } => sub {
-                                                    my $subject = _loc("#%1 %2 updated: %3 deleted", $rs_topic->{mid}, $rs_topic->{title}, $name_field );
-                    { mid => $rs_topic->{mid}, topic => $rs_topic->{title}, subject => $subject, notify => $notify }   # to the event
+                                                    my $subject = _loc("#%1 %2 updated: %3 deleted", $ci_topic->{mid}, $ci_topic->{title}, $name_field );
+                    { mid => $ci_topic->{mid}, topic => $ci_topic->{title}, subject => $subject, notify => $notify }   # to the event
                 } ## end try
                 => sub {
                     _throw _loc( 'Error modifying Topic: %1', shift() );
@@ -2516,19 +2524,19 @@ sub set_projects {
 }
 
 sub set_users{
-    my ($self, $rs_topic, $users, $user, $id_field, $meta, $cancelEvent ) = @_;
-    my $topic_mid = $rs_topic->{mid};
+    my ($self, $ci_topic, $users, $user, $id_field, $meta, $cancelEvent ) = @_;
+    my $topic_mid = $ci_topic->{mid};
     
     my @new_users = _array( $users ) ;
     my @old_users = map { $$_{to_mid} } mdb->master_rel->find({from_mid =>"$topic_mid", rel_type=>'topic_users', rel_field=>$id_field })->all;
 
     my $notify = {
-        category        => $rs_topic->{id_category},
-        category_status => $rs_topic->{id_category_status},
+        category        => $ci_topic->{id_category},
+        category_status => $ci_topic->{id_category_status},
         field           => $id_field
     };
 
-    my $name_category = mdb->category->find_one({ id=>$rs_topic->{id_category} })->{name};
+    my $name_category = mdb->category->find_one({ id=>$ci_topic->{id_category} })->{name};
     
     my @projects = sort { $a <=> $b } map { $_->{to_mid} } 
         mdb->master_rel->find({ from_mid=>"$topic_mid", rel_type=>'topic_project', rel_field=>$id_field })->all;
@@ -2556,9 +2564,9 @@ sub set_users{
                                                 old_value      => '',
                                                 new_value  => $users,
                                                 text_new      => '%1 modified topic: %2 ( %4 )',
-                                                mid => $rs_topic->{mid},
+                                                mid => $ci_topic->{mid},
                                                } => sub {
-                { mid => $rs_topic->{mid}, topic => $rs_topic->{title}, notify => $notify, subject => _loc("Topic %1 (%2) has been assigned to you",$rs_topic->{mid},$name_category) }   # to the event
+                { mid => $ci_topic->{mid}, topic => $ci_topic->{title}, notify => $notify, subject => _loc("Topic %1 (%2) has been assigned to you",$ci_topic->{mid},$name_category) }   # to the event
             } ## end try
             => sub {
                 _throw _loc( 'Error modifying Topic: %1', shift() );
@@ -2571,9 +2579,9 @@ sub set_users{
                                                     old_value      => '',
                                                     new_value  => '',
                                                     text_new      => '%1 deleted all users',
-                                                    mid => $rs_topic->{mid},
+                                                    mid => $ci_topic->{mid},
                                                    } => sub {
-                    { mid => $rs_topic->{mid}, topic => $rs_topic->{title}, notify => $notify }   # to the event
+                    { mid => $ci_topic->{mid}, topic => $ci_topic->{title}, notify => $notify }   # to the event
                 } ## end try
                 => sub {
                     _throw _loc( 'Error modifying Topic: %1', shift() );
@@ -2585,7 +2593,7 @@ sub set_users{
 }
 
 sub set_labels {
-    my ($self, $rs_topic, $labels ) = @_;
+    my ($self, $ci_topic, $labels ) = @_;
     
     # XXX do nothing, now labels are in the mongo doc
 }
