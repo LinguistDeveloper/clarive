@@ -382,6 +382,10 @@ sub topics_for_user {
         $where->{modified_on} = { '$lte' => "$now1", '$gte' => ''.($now2-'1D') };
     }
     
+    if( $p->{is_release} ){
+        $where->{'category.is_release'} = '1';
+    }
+    
     if ( $p->{assigned_to_me} ) {
         my $ci_user = ci->user->find_one({ name=>$username });
         if ($ci_user) {
