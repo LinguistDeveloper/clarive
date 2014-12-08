@@ -21,6 +21,12 @@ sub run_create {
     my $stash = $c->stash;
     my @changesets = Util->_array_or_commas($config->{changesets});
     my $bl = $config->{bl};
+    # for my $cs ( @changesets ) {
+    #     my $ci = ci->new($cs);
+    #     if ( my ($job) = $ci->is_in_active_job ) {
+    #         _fail _loc( "'%1' is in an active job to bl %3: %2", $ci->topic_name, $job->{name}, $job->{bl} )
+    #     }
+    # }
 
     try {
         # create job CI
@@ -30,8 +36,10 @@ sub run_create {
             job_type   => $job_type,
             username   => $config->{username} || 'clarive',
             comments   => $config->{comments},
-            changesets => \@changesets,
+            changesets => \@changesets
         };
+        $job_data->{id_rule} = $config->{id_rule} if $config->{id_rule};
+        $job_data->{schedtime} = $config->{schedtime} if $config->{schedtime};
         my $job;
         event_new 'event.job.new' => { username => $job_data->{username}, bl => $job_data->{bl}  } => sub {
 

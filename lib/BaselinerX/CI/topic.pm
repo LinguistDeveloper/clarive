@@ -230,8 +230,9 @@ sub comments {
 sub is_in_active_job {
     my ($self )=@_;
     my @active_jobs;
-    if ( $self->jobs ) {
-        @active_jobs = grep { ref $_ eq 'BaselinerX::CI::job' && $_->is_active } $self->jobs;
+    my @jobs = $self->jobs;
+    if ( @jobs ) {
+        @active_jobs = grep { ref $_ eq 'BaselinerX::CI::job' && $_->is_active } map { ci->new($_->{mid})} @jobs;
     }
     return @active_jobs;
 }
