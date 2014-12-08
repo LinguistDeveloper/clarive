@@ -1941,7 +1941,6 @@ node2:
 sub topic_drop : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
-    _debug($p);
     my $n1 = delete $p->{node1};
     my $n2 = delete $p->{node2};
     my $mid1 = $n1->{topic_mid};
@@ -1961,27 +1960,28 @@ sub topic_drop : Local {
                 my @mids;
 
                 META: for my $fm (@$meta) {
-                    if ( my $dt = $fm->{drop_target} ) {
-                        $kmatches++;
-                        my $id_field = $$fm{id_field};
-                        # if filter, test if filter matches and avoid later errors
-                        next META if !model->Topic->test_field_filter( field_meta=>$fm, mids=>$from_mid );
-                        next META if !$$fm{editable};
+                    my $dt = $fm->{drop_target};
+                    next META unless !length($dt) || $dt;# if not defined, it's a drop target; if defined then it depends
+                    next META if $$fm{meta_type} !~ /(topic|release)/;
+                    $kmatches++;
+                    next META if !$$fm{editable};
+                    # if filter, test if filter matches and avoid later errors
+                    next META if !model->Topic->test_field_filter( field_meta=>$fm, mids=>$from_mid );
 
-                        if ( ref $$fm{readonly} eq 'SCALAR' && ${ $$fm{readonly} } ) {
-                            $c->stash->{json} = { success => \0, msg=> _loc( 'User %1 does not have permission to drop into field %2', $c->username, _loc( $$fm{name_field} )) };
-                            last META;
-                        }
-                        if ( !$fm->{single_mode} ) {
-                            push @mids, _array( $$data{$id_field} );
-                        }
-                        push @mids, $from_mid;
-                        # save operation for later
-                        push @targets, { id_field=>$id_field, mid=>$to_mid, fm=>$fm, oper=>sub{ 
-                            model->Topic->update({ action=>'update', topic_mid=>$to_mid, $id_field=>\@mids, username=>$c->username });
-                            $c->stash->{json} = { success => \1, msg => _loc( 'Topic #%1 added to #%2 in field `%3`', $from_mid, $to_mid, _loc( $$fm{name_field} ) ) };
-                        } };
+                    my $id_field = $$fm{id_field};
+                    if ( ref $$fm{readonly} eq 'SCALAR' && ${ $$fm{readonly} } ) {
+                        $c->stash->{json} = { success => \0, msg=> _loc( 'User %1 does not have permission to drop into field %2', $c->username, _loc( $$fm{name_field} )) };
+                        last META;
                     }
+                    if ( !$fm->{single_mode} ) {
+                        push @mids, _array( $$data{$id_field} );
+                    }
+                    push @mids, $from_mid;
+                    # save operation for later
+                    push @targets, { id_field=>$id_field, mid=>$to_mid, fm=>$fm, oper=>sub{ 
+                        model->Topic->update({ action=>'update', topic_mid=>$to_mid, $id_field=>\@mids, username=>$c->username });
+                        $c->stash->{json} = { success => \1, msg => _loc( 'Topic #%1 added to #%2 in field `%3`', $from_mid, $to_mid, _loc( $$fm{name_field} ) ) };
+                    } };
                 }
             }
             if( !@targets ) {
@@ -2004,7 +2004,9 @@ sub topic_drop : Local {
             }
         } catch {
             my $err = shift;
-            $c->stash->{json} = { success => \0, msg => _loc('Error adding topic #%1 to #%2: %3', $from_mid, $to_mid, $err) };
+            my $msg = _loc('Error adding topic #%1 to #%2: %3', $from_mid, $to_mid, $err);
+            _error( $msg );
+            $c->stash->{json} = { success => \0, msg=>$msg };
         };
     } else {
         $c->stash->{json} = { success => \0, msg => _loc('Missing mid') };

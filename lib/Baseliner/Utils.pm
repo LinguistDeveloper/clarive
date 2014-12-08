@@ -420,18 +420,18 @@ sub _logts {
     }
 }
 
-
-use JSON::XS;
 sub _decode_json {
-    my $data = shift;
-    $data = encode_utf8($data) if is_utf8($data);
-    return decode_json($data); 
+    my $json = shift;
+    require JSON::XS;
+    $json = encode_utf8($json) if is_utf8($json);
+    return JSON::XS::decode_json($json); 
 }
 
 sub _encode_json {
     my $data = shift;
+    require JSON::XS;
     #$data = encode_utf8($data) if is_utf8($data);
-    return decode_utf8( encode_json($data) ); 
+    return decode_utf8( JSON::XS::encode_json($data) ); 
 }
 
 sub _throw {

@@ -2300,12 +2300,10 @@ Baseliner.Tree = Ext.extend( Ext.tree.TreePanel, {
                         } else {
                             Baseliner.message( _('Drop'), res.msg );
                             //Ext.Msg.alert( _('Error'), res.msg );
-                            return false;
                         }
-                    } else {
-                        return true;
                     }
                 });
+                return false;
             }else{
                 if(on_drop.handler != undefined ){
                     eval(on_drop.handler + '(n1, n2);');                

@@ -35,4 +35,5 @@
         });
     }
     foo();
+    return false;
 })
