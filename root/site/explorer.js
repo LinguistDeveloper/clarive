@@ -6,23 +6,6 @@ Baseliner.user_can_reports = <% $c->model('Permissions')->user_has_any_action( a
 
 var base_menu_items = [ ];
 
-// only one right click menu showed at once, so create a static entity
-Baseliner.explorer_menu = new Ext.menu.Menu({
-    items: base_menu_items,
-    listeners: {
-        itemclick: function(item) {
-            switch (item.id) {
-                case 'delete-node':
-                    var n = item.parentMenu.contextNode;
-                    if (n.parentNode) {
-                        n.remove();
-                    }
-                    break;
-            }
-        }
-    }
-});
-
 /*
  * Baseliner.TreeLoader
  *
@@ -247,8 +230,22 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
         
         // menus and click events go in here
         if( node.attributes.menu || ( node.attributes.data && node.attributes.data.click ) ) {
-            var m = Baseliner.explorer_menu;
-            m.removeAll(); 
+            var tree_menu = new Ext.menu.Menu({
+                items: base_menu_items,
+                listeners: {
+                    itemclick: function(item) {
+                        switch (item.id) {
+                            case 'delete-node':
+                                var n = item.parentMenu.contextNode;
+                                if (n.parentNode) {
+                                    n.remove();
+                                }
+                                break;
+                        }
+                    }
+                }
+            });
+            tree_menu.removeAll(); 
             var node_menu_items = new Array(); 
 
             // click turns into a menu-item Open...
@@ -317,19 +314,32 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
                     item.url  = url;
                 }
             }
-            m.add( node_menu_items );
-            if( node_menu_items.length > 0 ) m.add('-');
+            tree_menu.add( node_menu_items );
+            if( node_menu_items.length > 0 ) tree_menu.add('-');
         } else {
-            var m = Baseliner.explorer_menu;
-            m.removeAll(); 
+            var m = new Ext.menu.Menu({
+                items: base_menu_items,
+                listeners: {
+                    itemclick: function(item) {
+                        switch (item.id) {
+                            case 'delete-node':
+                                var n = item.parentMenu.contextNode;
+                                if (n.parentNode) {
+                                    n.remove();
+                                }
+                                break;
+                        }
+                    }
+                }
+            });
         }
         // add base menu
-        m.add( base_menu_items );
+        tree_menu.add( base_menu_items );
         // add search box
         if( node.attributes && node.attributes.has_query ) {
             var query = node.attributes.data.query;
             var query_box = new Baseliner.SearchSimple({ 
-                width: 120,
+                width: 180,
                 value: query, 
                 iconCls: 'no-icon',
                 handler: function(){
@@ -343,7 +353,7 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
                         // indicator that a search is in effect 
                         var nel = node.ui.getTextEl();
                         if( nel ) {
-                            var badge = '<span class="badge" style="font-size: 9px;">'+t+'</span>';
+                            var badge = '<span class="badge" style="font-size: 9px; background-color: #bbb;"><img style="width: 12px; height: 12px" src="/static/images/icons/search-small.png" />'+t+'</span>';
                             nel.insertAdjacentHTML( 'afterEnd', '<span id="boot" parent-node-props="'+node.id+'" style="margin: 0px 0px 0px 4px; background: transparent">'+badge+'</span>');
                         }
                         this.triggers[0].show();
@@ -352,19 +362,19 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
                         self.refresh();
                     else
                         node.expand();
-                    m.hide();
+                    tree_menu.hide();
                 }
             });
-            m.add(query_box);
+            tree_menu.add(query_box);
         }
         if( node.attributes != undefined && node.attributes.id_favorite !=undefined ) {
-            m.add( this.menu_favorite_del() );
-            m.add( this.menu_favorite_rename() );
+            tree_menu.add( this.menu_favorite_del() );
+            tree_menu.add( this.menu_favorite_rename() );
         } else {
-            m.add( this.menu_favorite_add() );
+            tree_menu.add( this.menu_favorite_add() );
         }
         if( Baseliner.DEBUG ) {
-            m.add({ text: _('Properties'), icon:'/static/images/icons/properties.png', handler: function(n){
+            tree_menu.add({ text: _('Properties'), icon:'/static/images/icons/properties.png', handler: function(n){
                 var sm = self.getSelectionModel();
                 var node = sm.getSelectedNode();
                 var d = node.attributes;
@@ -377,7 +387,7 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
                 //node.attributes.loader = loader;
             }});
         }
-        m.add({
+        tree_menu.add({
             xtype: 'menuitem',
             text: _('Refresh Node'),
             cls: 'x-btn-text-icon',
@@ -386,7 +396,7 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
                 self.refresh();
             }
         });
-        Baseliner.explorer_menu.showAt(event.xy);
+        tree_menu.showAt(event.xy);
     }
 });
 
