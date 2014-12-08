@@ -2667,29 +2667,19 @@ sub get_meta_permissions {
         	my @fields_form = _array $_->{fieldlets};
             for my $field_form ( @fields_form ){
                 my $parse_field_form_id = $field_form->{id_field};
-                my $write_action = 'action.topicsfield.' .  $parse_category 
-                		. '.' .  $parse_id_field . '.' .  $parse_field_form_id . '.' . $parse_status . '.write';
-                #my $write_action = 'action.topicsfield.write.' . $_->{name_field};
-                #print ">>>>>>>>>Accion: " . $write_action . "\n";
-                
+                my $write_action = join '.', 'action.topicsfield', $parse_category, $parse_id_field,  $parse_field_form_id, $parse_status, 'write';
                 if ( $is_root ) {
                         $field_form->{readonly} = \0;
                         $field_form->{allowBlank} = 'true' unless $field_form->{id_field} eq 'title';
                 } else {
                     my $has_action = $write_action  ~~ @user_actions_for_topic;
-                    # my $has_action = model->Permissions->user_has_action( username=> $username, action => $write_action, mid => $data->{topic_mid} );
                     if ( $has_action ){
                         $field_form->{readonly} = \0;
                     }else{
                         $field_form->{readonly} = \1;
                     }
                 }                    
-                my $read_action = 'action.topicsfield.' .  $parse_category 
-                        . '.' .  $parse_id_field . '.' .  $parse_field_form_id  . '.read';
-                #my $read_action = 'action.topicsfield.read.' . $_->{name_field} if ! $write_action;
-                #_error $read_action;
-                #print ">>>>>>>>>Accion: " . $read_action . "\n";
-        
+                my $read_action = join '.', 'action.topicsfield',  $parse_category,  $parse_id_field,  $parse_field_form_id, 'read';
                 if ( $is_root ) {
                         $field_form->{hidden} = \0;
                 } else {
@@ -3067,7 +3057,7 @@ sub user_can_search {
 }
 
 sub apply_filter{
-    my ($self, $username, $where, %filter) = @_;
+    my ($self, $where, %filter) = @_;
 
     for my $key (keys %filter){
         given ($key) {

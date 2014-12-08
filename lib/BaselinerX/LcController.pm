@@ -134,7 +134,7 @@ sub category_contents : Local {
                 topic_mid    => $_->{mid},
                 click       => $self->click_for_topic(  $_->{category}->{name}, $_->{mid} ),
                 'on_drop' => {
-                       'url' => '/topic/release_drop',
+                       'url' => '/comp/topic/topic_drop.js',
                  },
             },
             leaf => $leaf,

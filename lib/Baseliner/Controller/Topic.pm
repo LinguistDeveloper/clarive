@@ -283,7 +283,7 @@ sub related : Local {
         }
     }
 
-    $where = $c->model('Topic')->apply_filter( $username, $where, %filter );
+    $where = $c->model('Topic')->apply_filter( $where, %filter );
     #_debug $where;
 
     my ($cnt, @result_topics) = $c->model('Topic')->get_topics_mdb( where=>$where, username=>$username, start=>$start, limit=>$limit, 
@@ -1938,7 +1938,7 @@ node2:
 
 =cut
 
-sub release_drop : Local {
+sub topic_drop : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
     _debug($p);
@@ -1946,36 +1946,65 @@ sub release_drop : Local {
     my $n2 = delete $p->{node2};
     my $mid1 = $n1->{topic_mid};
     my $mid2 = $n2->{topic_mid};
+    my ($from_mid,$to_mid);
+    my $kmatches = 0;
+    my @targets;
     
     if ( $mid1 && $mid2 ) {
         try {
-            my $meta = model->Topic->get_meta($mid2);
-            my $data = mdb->topic->find_one( { mid => $mid2 } );
-            $meta = model->Topic->get_meta_permissions( username => $c->username, meta => $meta, data => $data );
-            my @mids;
+            PAIR: for my $pair ( [$mid1,$mid2],[$mid2,$mid1] ) {
+                ($from_mid,$to_mid) = @$pair;
+                my $meta = model->Topic->get_meta($to_mid);
+                my @ids = map { $_=>1 } grep { defined } map { $$_{id_field} } @$meta;
+                my $data = mdb->topic->find_one({ mid => $to_mid },{ category=>1, category_status=>1, id_status=>1, @ids });
+                $meta = model->Topic->get_meta_permissions( username => $c->username, meta => $meta, data=>$data );
+                my @mids;
 
-            for my $mt (@$meta) {
-                if ( my $dt = $mt->{drop_target} ) {
-                    my $id = $$mt{id_field};
+                META: for my $fm (@$meta) {
+                    if ( my $dt = $fm->{drop_target} ) {
+                        $kmatches++;
+                        my $id_field = $$fm{id_field};
+                        # if filter, test if filter matches and avoid later errors
+                        next META if !model->Topic->test_field_filter( field_meta=>$fm, mids=>$from_mid );
+                        next META if !$$fm{editable};
 
-                    if ( ref $$mt{readonly} eq 'SCALAR' && ${ $$mt{readonly} } ) {
-                        $c->stash->{json} = { success => \0, msg     => _loc( 'User %1 does not have permission to drop into field %2', $c->username, _loc( $$mt{name_field} )) };
-                        last;
+                        if ( ref $$fm{readonly} eq 'SCALAR' && ${ $$fm{readonly} } ) {
+                            $c->stash->{json} = { success => \0, msg=> _loc( 'User %1 does not have permission to drop into field %2', $c->username, _loc( $$fm{name_field} )) };
+                            last META;
+                        }
+                        if ( !$fm->{single_mode} ) {
+                            push @mids, _array( $$data{$id_field} );
+                        }
+                        push @mids, $from_mid;
+                        # save operation for later
+                        push @targets, { id_field=>$id_field, mid=>$to_mid, fm=>$fm, oper=>sub{ 
+                            model->Topic->update({ action=>'update', topic_mid=>$to_mid, $id_field=>\@mids, username=>$c->username });
+                            $c->stash->{json} = { success => \1, msg => _loc( 'Topic #%1 added to #%2 in field `%3`', $from_mid, $to_mid, _loc( $$fm{name_field} ) ) };
+                        } };
                     }
-                    if ( !$mt->{single_mode} ) {
-                        push @mids, _array( $$data{$id} );
-                    }
-                    push @mids, $mid1;
-                    model->Topic->update( { action => 'update', topic_mid => $mid2, $id => \@mids, username => $c->username } );
-                    $c->stash->{json} = { success => \1, msg     => _loc( 'Topic #%1 added to #%2 in field `%3`', $mid1, $mid2, _loc( $$mt{name_field} ) )
-                    };
-                    last;
                 }
             }
-            $c->stash->{json} //= { success => \0, msg => _loc( 'No drop fields available in topic %1', $mid2 ) };
+            if( !@targets ) {
+                my $msg = $kmatches ? _loc('No editable or matching fields found in topics #%1 and #%2', $mid1, $mid2)
+                    :  _loc( 'No drop fields available in topics %1 or %2', $mid1, $mid2 );
+                $c->stash->{json} //= { success => \0, msg =>$msg };
+            }
+            elsif( @targets > 1 ) {
+                # more than one possible field? 
+                if( $p->{selected_id_field} ) {
+                    # user told me which one
+                    map { $$_{oper}->() } grep { $$_{id_field} eq $p->{selected_id_field} && $$_{mid} eq $p->{selected_mid} } @targets; 
+                } else {
+                    # ask user
+                    $c->stash->{json} = { success =>\1, targets=>[ map { my $r=$$_{fm}; $$r{mid}=$$_{mid}; $r } @targets ] };
+                }
+            }
+            else {
+                (shift @targets)->{oper}->();  # only 1 operation, run it
+            }
         } catch {
             my $err = shift;
-            $c->stash->{json} = { success => \0, msg => _loc('Error adding topic #%1 to #%2: %3', $mid1, $mid2, $err) };
+            $c->stash->{json} = { success => \0, msg => _loc('Error adding topic #%1 to #%2: %3', $from_mid, $to_mid, $err) };
         };
     } else {
         $c->stash->{json} = { success => \0, msg => _loc('Missing mid') };
