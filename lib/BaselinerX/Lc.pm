@@ -57,10 +57,11 @@ sub lc_for_project {
     #my $nodes = $lc->{nodes}; $ch ||= {
     my @nodes = (
           {
-            'node' => 'Topics',
-            'icon' => '/static/images/icons/topic.png',
-            'url' => '/lifecycle/tree_topics_project',
-            'data' => {
+            node => 'Topics',
+            icon => '/static/images/icons/topic.png',
+            url => '/lifecycle/tree_topics_project',
+            has_query => 1,
+            data => {
                         'click' => {
                                      'icon' => '/static/images/icons/topic.png',
                                      'url' => '/topic/grid',
@@ -68,13 +69,14 @@ sub lc_for_project {
                                      'type' => 'comp'
                                    }
                       },
-            'type' => 'component',
+            type => 'component',
           },
           {
-            'node' => 'Releases',
-            'icon' => '/static/images/icons/release.gif',
-            'url' => '/lifecycle/tree_project_releases',
-            'type' => 'component',
+            node => 'Releases',
+            icon => '/static/images/icons/release.gif',
+            url => '/lifecycle/tree_project_releases',
+            type => 'component',
+            has_query => 1,
           }
     );
     my $is_root = Baseliner->model('Permissions')->is_root($username);
@@ -207,7 +209,6 @@ sub lc_for_project {
         };
     }
 
-    no strict;
     [ @nodes, @states ];
 }
 

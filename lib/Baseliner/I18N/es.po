@@ -1464,6 +1464,9 @@ msgstr "Borrar Pase"
 msgid "View Log"
 msgstr "Ver Log de Pase"
 
+msgid "<search>"
+msgstr "<buscar>"
+
 msgid "<Enter your search string>"
 msgstr "<Introduzca cadena de búsqueda>"
 
@@ -5248,7 +5251,7 @@ msgid "Installing..."
 msgstr "Instalando..."
 
 msgid "Drop"
-msgstr "Tirar"
+msgstr "Soltar"
 
 msgid "Form Editor"
 msgstr "Editor de Formularios"

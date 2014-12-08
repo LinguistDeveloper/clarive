@@ -1921,4 +1921,66 @@ sub get_files : Local {
     $c->forward('/serve_file');
 }
 
+=pod
+
+---
+node1:
+  topic_mid: '131290'
+node2:
+  click:
+    icon: /static/images/icons/topic.png
+    title: 'Paquete #103132'
+    type: comp
+    url: /topic/view?topic_mid=103132
+  on_drop:
+    url: /lifecycle/release_drop
+  topic_mid: '103132'
+
+=cut
+
+sub release_drop : Local {
+    my ($self,$c) = @_;
+    my $p = $c->request->parameters;
+    _debug($p);
+    my $n1 = delete $p->{node1};
+    my $n2 = delete $p->{node2};
+    my $mid1 = $n1->{topic_mid};
+    my $mid2 = $n2->{topic_mid};
+    
+    if ( $mid1 && $mid2 ) {
+        try {
+            my $meta = model->Topic->get_meta($mid2);
+            my $data = mdb->topic->find_one( { mid => $mid2 } );
+            $meta = model->Topic->get_meta_permissions( username => $c->username, meta => $meta, data => $data );
+            my @mids;
+
+            for my $mt (@$meta) {
+                if ( my $dt = $mt->{drop_target} ) {
+                    my $id = $$mt{id_field};
+
+                    if ( ref $$mt{readonly} eq 'SCALAR' && ${ $$mt{readonly} } ) {
+                        $c->stash->{json} = { success => \0, msg     => _loc( 'User %1 does not have permission to drop into field %2', $c->username, _loc( $$mt{name_field} )) };
+                        last;
+                    }
+                    if ( !$mt->{single_mode} ) {
+                        push @mids, _array( $$data{$id} );
+                    }
+                    push @mids, $mid1;
+                    model->Topic->update( { action => 'update', topic_mid => $mid2, $id => \@mids, username => $c->username } );
+                    $c->stash->{json} = { success => \1, msg     => _loc( 'Topic #%1 added to #%2 in field `%3`', $mid1, $mid2, _loc( $$mt{name_field} ) )
+                    };
+                    last;
+                }
+            }
+            $c->stash->{json} //= { success => \0, msg => _loc( 'No drop fields available in topic %1', $mid2 ) };
+        } catch {
+            my $err = shift;
+            $c->stash->{json} = { success => \0, msg => _loc('Error adding topic #%1 to #%2: %3', $mid1, $mid2, $err) };
+        };
+    } else {
+        $c->stash->{json} = { success => \0, msg => _loc('Missing mid') };
+    }
+    $c->forward('View::JSON');
+}
+
 1;

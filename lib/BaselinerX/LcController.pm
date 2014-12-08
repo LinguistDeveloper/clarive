@@ -60,10 +60,18 @@ sub tree_project_releases : Local {
     my ($self,$c) = @_;
     my %seen = ();
     
-    my $id_project = $c->req->params->{id_project};
-    my @topics = map { $$_{from_mid} } mdb->master_rel->find({ to_mid=>"$id_project", rel_type=>'topic_project' })->all;
-    my @rels = mdb->topic->find({ is_release=>'1', mid=>mdb->in(@topics) })->all;
-
+    my $p = $c->req->params;
+    my $id_project = $p->{id_project};
+    my $query = $p->{query};
+    my ( $info, @rels ) = model->Topic->topics_for_user({
+        username     => $c->username,
+        id_project   => $id_project,
+        is_release => 1,
+        clear_filter => 1,
+        ( $query ? ( query => $query ) : () )
+    });
+    #my @topics = map { $$_{from_mid} } mdb->master_rel->find({ to_mid=>"$id_project", rel_type=>'topic_project' })->all;
+    #my @rels = mdb->topic->find({ is_release=>'1', mid=>mdb->in(@topics) })->all;
 
     my @menu_related = $self->menu_related();
     my @tree = map {
@@ -94,8 +102,10 @@ sub tree_project_releases : Local {
 sub category_contents : Local {
     my ($self,$c) = @_;
     my %seen = ();
-    my ($category_id) = _array($c->req->params->{category_id});
-    my ($info,@user_topics) = Baseliner->model('Topic')->topics_for_user( { username => $c->username, categories => $category_id, clear_filter => 1 });
+    my $p = $c->req->params;
+    my ($category_id) = _array($p->{category_id});
+    my $query = $p->{query};
+    my ($info,@user_topics) = model->Topic->topics_for_user({ username=>$c->username, categories=>$category_id, clear_filter=>1, ($query?(query=>$query):()) });
     @user_topics = map { $_->{mid}} @user_topics;
  
     my @rels = mdb->topic->find( { 'category_status.type' => mdb->nin('F','FC'), mid => mdb->in(@user_topics) })->all;
@@ -123,6 +133,9 @@ sub category_contents : Local {
             data => {
                 topic_mid    => $_->{mid},
                 click       => $self->click_for_topic(  $_->{category}->{name}, $_->{mid} ),
+                'on_drop' => {
+                       'url' => '/topic/release_drop',
+                 },
             },
             leaf => $leaf,
             expandable => !$leaf,
@@ -176,10 +189,17 @@ Left hand tree "Topics" in each one of the explorer projects.
 =cut
 sub tree_topics_project : Local {
     my ($self,$c) = @_;
-    my $project = $c->req->params->{project} ;
-    my $id_project = $c->req->params->{id_project} ;
+    my $p = $c->req->params;
+    my $project = $p->{project} ;
+    my $query = $p->{query};
+    my $id_project = $p->{id_project} ;
     
-    my ($info,@user_topics) = Baseliner->model('Topic')->topics_for_user( { username => $c->username, id_project => $id_project, clear_filter => 1 });
+    my ( $info, @user_topics ) = model->Topic->topics_for_user({
+        username     => $c->username,
+        id_project   => $id_project,
+        clear_filter => 1,
+        ( $query ? ( query => $query ) : () )
+    });
     @user_topics = map { $_->{mid}} @user_topics;
 
     my @rels = mdb->topic->find( { 'category_status.type' => mdb->nin('F','FC'), mid => mdb->in(@user_topics) })->all;
@@ -249,8 +269,9 @@ sub topic_children_for_state {
 sub topic_contents : Local {
     my ($self,$c) = @_;
     my @tree;
-    my $topic_mid = $c->req->params->{topic_mid};
-    my $state = $c->req->params->{state_id};
+    my $p = $c->req->params;
+    my $topic_mid = $p->{topic_mid};
+    my $state = $p->{state_id};
     my @topics = ci->new($topic_mid)->children( mids_only => 1, where => { collection => 'topic'}, depth => 1);
 
     # mdb->master_rel->find( { from_mid => $topic_mid } )->all;
@@ -303,6 +324,7 @@ sub tree_releases : Local {
             text => $_->{name},
             icon => '/static/images/icons/release.png',
             url  => '/lifecycle/category_contents?category_id='.$_->{id},
+            has_query => 1,
             category_name => {
                 category_id => $_->{id},
                 category_color => $_->{color},
@@ -366,6 +388,7 @@ sub tree_project : Local {
         next if exists $node->{active} && ! $node->{active};
         my $type = $node->{type};
         push @tree, {
+            %$node,
             #id         => $node->{type} . ':' . $id,
             text       => _loc( $node->{name} // $node->{node} ),  # name is official, node is deprecated
             url        => $node->{url} || '/lifecycle/changeset',
