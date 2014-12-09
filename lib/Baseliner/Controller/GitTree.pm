@@ -361,12 +361,21 @@ sub view_diff_file : Local{
         $offset = 1;
     }
     $lines[1+$offset] =~ /Author: (.+)/;
-    $commit_info->{author} = $1;
+    $commit_info->{author} = _to_utf8 $1;
     $lines[2+$offset] =~ /Date: (.+)/;
-    $commit_info->{date} = $1;
-    $commit_info->{comment} = join("\n", @lines[4+$offset..$#lines]);
-    my @diff_lines = _array $g->git->exec( 'diff', $previous_commit.'..'.$actual_commit, '--', $file);
-    my $diff = join("\n", @diff_lines[4..$#diff_lines]);
+    $commit_info->{date} = _to_utf8 $1;
+    $commit_info->{comment} = _to_utf8 join("\n", @lines[4+$offset..$#lines]);
+    my $diff;
+    if($previous_commit eq $actual_commit){
+        require Text::Diff;
+        my $file_content = join("\n", _array $g->git->exec( 'cat-file', '-p', $file_sha));
+        my $previous_content = '';
+        $diff = _to_utf8 Text::Diff::diff(\$previous_content, \$file_content, { STYLE => 'Unified' });
+
+    }else{
+        my @diff_lines = _array $g->git->exec( 'diff', $previous_commit.'..'.$actual_commit, '--', $file);
+        $diff = join("\n", @diff_lines[4..$#diff_lines]);
+    }
     my @changes;
     my @parts;
     map { push @parts, $_ if $_ } split /(.*)(@@ .+ @@[ |\n].+)/s, $diff;
@@ -391,7 +400,7 @@ sub view_diff_file : Local{
 
 
 
-
+######### METHODS NOT IMPLEMENTED TO GIT JET ###########################################3
 sub view_diff : Local {
     my ($self, $c ) = @_;
     my $node = $c->req->params;
