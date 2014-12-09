@@ -145,7 +145,7 @@
                         Baseliner.warning( _('Warning'), _(res.msg));
                     else{
                         cons.destroy();
-                        cons = new Ext.Panel({ html:'<pre>'+res.msg+'</pre>' });
+                        cons = new Ext.Panel({ autoScroll:true, html:'<pre>'+res.msg+'</pre>' });
                         pnl.add( cons );
                         pnl.doLayout();
                     }
