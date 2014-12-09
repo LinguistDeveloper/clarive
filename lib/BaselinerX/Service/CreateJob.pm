@@ -21,12 +21,6 @@ sub run_create {
     my $stash = $c->stash;
     my @changesets = Util->_array_or_commas($config->{changesets});
     my $bl = $config->{bl};
-    # for my $cs ( @changesets ) {
-    #     my $ci = ci->new($cs);
-    #     if ( my ($job) = $ci->is_in_active_job ) {
-    #         _fail _loc( "'%1' is in an active job to bl %3: %2", $ci->topic_name, $job->{name}, $job->{bl} )
-    #     }
-    # }
 
     try {
         # create job CI
