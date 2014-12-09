@@ -378,9 +378,13 @@ sub view_diff_file : Local{
     }
     my @changes;
     my @parts;
-    map { push @parts, $_ if $_ } split /(.*)(@@ .+ @@[ |\n].+)/s, $diff;
+    while ($diff ne ''){
+        my @slides = split /(.*)(@@ .+ @@[ |\n].+)/s, $diff;
+        push @parts, $slides[-1];
+        $diff = $slides[1];
+    }
     my @code_chunks;
-    foreach(@parts){
+    foreach(reverse @parts){
         $_ =~ /@@ (?<stats>.+) @@[ |\n](?<code>.*)/sg;
         my $stats = $+{stats};
         my $code = _to_utf8 $+{code};
