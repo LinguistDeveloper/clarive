@@ -1097,7 +1097,7 @@ sub repo_data : Local {
                   push @res, {path=>$parts[0], item=>$parts[6], size=>$parts[5], version=>$parts[2], leaf=>($type ne 'dir' ? \1 : \0 )} if !($name eq '.' and $type eq 'dir') 
             } @all_files;
         }
-    }else{
+    }elsif($repo_type eq 'GitRepository'){
         my $g = Girl::Repo->new( path=>"$repo_path" );
         @ls = $g->git->exec( 'ls-tree', '-l', $p->{bl}, $path );
         my $cnt = 100;
@@ -1114,6 +1114,7 @@ sub repo_data : Local {
                     item    => "$basename",
                     size    => $size,
                     version => $sha,
+                    bl      => $p->{bl},
                     leaf    => ( $type eq 'blob' ? \1 : \0 )
                 }
                 : undef
@@ -1137,8 +1138,6 @@ sub file : Local {
     my $repo_type = $p->{repo_type};
     my $res = { pane => $pane };
     if($repo_type eq 'PlasticRepository'){
-_log "PARAMS LC FILE===>"._dump $p;
-
     }else{
         # TODO separate concerns, put this in Git Repo provider
         #      Baseliner::Repo->new( 'git:repo@tag:file' )
@@ -1190,7 +1189,6 @@ _log "PARAMS LC FILE===>"._dump $p;
             $res->{info} = \@log;
         }
     }
-_log "RES=========>"._dump $res;
     $c->stash->{json} = $res;
     $c->forward('View::JSON');
 }
