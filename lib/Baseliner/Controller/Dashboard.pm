@@ -704,14 +704,13 @@ sub list_lastjobs: Private{
         @filter_statuses = split /,/,$statuses;
         $where->{status} = mdb->in(@filter_statuses);
     }
-    my @rs_search = mdb->master_doc->find( $where )->sort({ starttime => -1 })->all;
+    my $rs_search = mdb->master_doc->find( $where )->limit($limit)->sort({ starttime => -1 });
 
     my $numrow = 0;
     my @lastjobs;
     my $default_config;
     
-    for my $doc ( @rs_search ) {
-        last if $numrow >= $limit;
+    while ( my $doc = $rs_search->next() ) {
         try {
             my $job = ci->new( $doc->{mid} );
             push @lastjobs,
