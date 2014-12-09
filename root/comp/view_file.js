@@ -9,20 +9,32 @@
     var repo_mid = params.repo_mid;
     var revisions = params.revisions;
     var cons = new Baseliner.AceEditor();
+    var params_view_file;
+    if(controller == 'gittree'){
+        params_file_revisions = { repo_dir: params.repo_dir, filename: file, sha: rev_num, bl: params.bl };
+    }else{
+        params_file_revisions = { filepath: path, filename: file, rev_num: rev_num };
+    }
     var revisionsStore = new Baseliner.JsonStore({
         autoLoad: true,
         remoteSort: true,
         totalProperty:"totalCount", 
         id: 'id',
         url: '/'+controller+'/get_file_revisions',
-        baseParams:{ filepath: path, filename: file, rev_num: rev_num },
+        baseParams: params_file_revisions,
         fields: [ 'name' ]
     });
     var gen_editor = function(revision) {
         if(revision){
             rev_num = revision;
         }
-        Baseliner.ajax_json('/'+controller+'/view_file', { filepath: path, filename: file, repo_mid: repo_mid, rev_num: rev_num, revid: params.revid, branch: branch }, function(res){
+        var params_view_file;
+        if(controller == 'gittree'){
+            params_view_file = { repo_dir: params.repo_dir, filename: file, repo_mid: repo_mid, sha: rev_num, bl: params.bl };
+        }else{
+            params_view_file = { filepath: path, filename: file, repo_mid: repo_mid, rev_num: rev_num, revid: params.revid, branch: branch };
+        }
+        Baseliner.ajax_json('/'+controller+'/view_file', params_view_file, function(res){
             revid = res.revid;
             cons.setValue(res.file_content);
             cons.setReadOnly();
@@ -46,7 +58,13 @@
         if(activate){
             if(comp.pane == 'history'){
                 cons.destroy();
-                Baseliner.ajax_json('/'+controller+'/get_file_history', { filepath: path, filename: file, repo_mid: repo_mid, rev_num: rev_num, revid: revid }, function(res){
+                var params_file_history;
+                if(controller == 'gittree'){
+                    params_file_history = { repo_dir: params.repo_dir, filename: file, repo_mid: repo_mid, sha: rev_num, bl: params.bl };
+                }else{
+                    params_file_history = { filepath: path, filename: file, repo_mid: repo_mid, rev_num: rev_num, revid: revid };
+                }
+                Baseliner.ajax_json('/'+controller+'/get_file_history', params_file_history, function(res){
                     var store = new Ext.data.ArrayStore({
                         fields: [
                            {name: 'author'  },
@@ -91,25 +109,54 @@
                     pnl.doLayout();
                 }, function(res){
                      Baseliner.error( _('Error'), _(res.msg) );
-                });     
+                });
+            ///////////////
+            //           //
+            //    DIFF   //
+            //           //
+            ///////////////
             }else if(comp.pane == 'diff'){
+                var params_view_diff;
+                if(controller == 'gittree'){
+                    params_view_diff = { repo_dir: params.repo_dir, file: file, rev_num: rev_num, bl: params.bl, controller: controller, file_diff: '_file' };
+                }else{
+                    params_view_diff = { repo_dir: path, file: file, rev_num: rev_num, revid: revid, controller: controller, file_diff: '_file', branch: branch };
+                }
                 cons.destroy();
-                Baseliner.ajaxEval('/comp/view_diff.js', { repo_dir: path, file: file, rev_num: rev_num, revid: revid, controller: controller, file_diff: '_file', branch: branch }, function(comp){
+                Baseliner.ajaxEval('/comp/view_diff.js', params_view_diff, function(comp){
                     cons = comp;
                     pnl.add( cons );
                     pnl.doLayout();
                 });
+            ////////////////
+            //            //
+            //    BLAME   //
+            //            //
+            ////////////////
             }else if(comp.pane == 'blame'){
-                cons.destroy();
-                cons = new Ext.Panel({  });
-                Baseliner.ajax_json('/'+controller+'/get_file_blame', { filepath: path, filename: file, repo_mid: repo_mid, rev_num: params.rev_num, revid: params.revid }, function(res){
+                var params_blame;
+                if(controller == 'gittree'){
+                    params_blame = { repo_dir: params.repo_dir, filename: file, sha: rev_num, bl: params.bl };
+                }else{
+                    params_blame = { filepath: path, filename: file, repo_mid: repo_mid, rev_num: params.rev_num, revid: params.revid };
+                }
+                Baseliner.ajax_json('/'+controller+'/get_file_blame', params_blame, function(res){
                     if(!res.suported)
                         Baseliner.warning( _('Warning'), _(res.msg));
+                    else{
+                        cons.destroy();
+                        cons = new Ext.Panel({ autoScroll:true, html:'<pre>'+res.msg+'</pre>' });
+                        pnl.add( cons );
+                        pnl.doLayout();
+                    }
                 }, function(res){
                      Baseliner.error( _('Error'), _(res.msg) );
                 });
-                pnl.add( cons );
-                pnl.doLayout();
+            /////////////////
+            //             //
+            //    SOURCE   //
+            //             //
+            /////////////////
             }else if(comp.pane == 'source'){
                 cons.destroy();
                 cons = new Baseliner.AceEditor();
@@ -136,7 +183,8 @@
     });
 
     var func_file_history = function(revision){
-        revision = revision.substring(1);
+        if(controller != 'gittree')
+            revision = revision.substring(1);
         rev_num = revision;
         if(typeof cons.setValue === 'undefined'){
             cons.destroy();

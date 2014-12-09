@@ -229,22 +229,22 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
         node.select();
         
         // menus and click events go in here
-        if( node.attributes.menu || ( node.attributes.data && node.attributes.data.click ) ) {
-            var tree_menu = new Ext.menu.Menu({
-                items: base_menu_items,
-                listeners: {
-                    itemclick: function(item) {
-                        switch (item.id) {
-                            case 'delete-node':
-                                var n = item.parentMenu.contextNode;
-                                if (n.parentNode) {
-                                    n.remove();
-                                }
-                                break;
-                        }
+        var tree_menu = new Ext.menu.Menu({
+            items: base_menu_items,
+            listeners: {
+                itemclick: function(item) {
+                    switch (item.id) {
+                        case 'delete-node':
+                            var n = item.parentMenu.contextNode;
+                            if (n.parentNode) {
+                                n.remove();
+                            }
+                            break;
                     }
                 }
-            });
+            }
+        });
+        if( node.attributes.menu || ( node.attributes.data && node.attributes.data.click ) ) {
             tree_menu.removeAll(); 
             var node_menu_items = new Array(); 
 
@@ -333,8 +333,6 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
                 }
             });
         }
-        // add base menu
-        tree_menu.add( base_menu_items );
         // add search box
         if( node.attributes && node.attributes.has_query ) {
             var query = node.attributes.data.query;
