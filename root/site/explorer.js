@@ -353,7 +353,7 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
                         // indicator that a search is in effect 
                         var nel = node.ui.getTextEl();
                         if( nel ) {
-                            var badge = '<span class="badge" style="font-size: 9px; background-color: #bbb;"><img style="width: 12px; height: 12px" src="/static/images/icons/search-small.png" />'+t+'</span>';
+                            var badge = '<span class="badge" style="font-size: 9px; background-color: #bbb;"><img style="width: 12px; height: 12px; margin-right: 4px;" src="/static/images/icons/search-small-white.png" />'+t+'</span>';
                             nel.insertAdjacentHTML( 'afterEnd', '<span id="boot" parent-node-props="'+node.id+'" style="margin: 0px 0px 0px 4px; background: transparent">'+badge+'</span>');
                         }
                         this.triggers[0].show();
