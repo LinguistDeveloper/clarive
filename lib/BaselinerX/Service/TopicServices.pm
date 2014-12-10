@@ -38,6 +38,26 @@ register 'service.topic.upload' => {
     form => '/forms/asset_file.js' 
 };
 
+register 'service.topic.load' => {
+    name => 'Load topic data',
+    handler => \&load,
+    job_service  => 0,
+    icon => '/static/images/icons/document.png',
+    form => '/forms/topic_load.js' 
+};
+
+sub load {
+    my ( $self, $c, $config ) = @_;
+
+    my $mid = $config->{topic} // _fail(_loc("Missing mid"));
+
+    my $topic = mdb->topic->find_one({ mid => "$mid"});
+    if ( !$topic ) {
+        _fail(_loc("Topic %1 not found", $mid));
+    } 
+    return $topic;
+    
+}
 sub web_request {
     my ( $self, $c, $config ) = @_;
 
