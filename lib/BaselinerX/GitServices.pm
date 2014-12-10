@@ -50,6 +50,25 @@ register 'service.git.link_revision_to_topic' => {
     form => '/forms/link_revision.js'
 };
 
+register 'service.git.create_tag' => {
+    name    => 'Create a tag in the repository',
+    icon    => '/gitweb/images/icons/git.png',
+    form    => '/forms/git_create_tag.js',
+    handler => \&create_tag,
+};
+
+sub create_tag {
+    my ($self, $c, $p) = @_;
+
+    my $repo_mid = $p->{repo} // _fail(_loc("Missing repo mid"));
+    my $tag = $p->{tag} // _fail(_loc("Missing tag name"));
+    my $sha = $p->{sha} // _fail(_loc("Missing sha"));
+ 
+    my $repo = ci->new($repo_mid);
+    my $git = $repo->git;
+    
+    $git->exec( 'tag', '-f', $tag, $sha );
+}
 sub link_revision {
     my ($self, $c, $p) = @_;
 
