@@ -646,6 +646,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 if( self.$tree_workspaces ) self.$tree_workspaces.collapseAll();
                 if( self.$tree_favorites ) self.$tree_favorites.collapseAll();
                 if( self.$tree_projects ) self.$tree_projects.collapseAll();
+                if( self.$tree_reports )  self.$tree_reports.collapseAll();
                 this.enable();
             },
             tooltip: _('Collapse All'),
@@ -655,6 +656,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 if( self.$tree_workspaces ) self.$tree_workspaces.refresh_all(callback);
                 if( self.$tree_favorites ) self.$tree_favorites.refresh_all(callback);
                 if( self.$tree_projects ) self.$tree_projects.refresh_all(callback);
+                if( self.$tree_reports ) self.$tree_reports.refresh_all(callback);
             },
             listeners: Baseliner.gen_btn_listener()
         });       
