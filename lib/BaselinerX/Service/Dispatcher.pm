@@ -46,7 +46,7 @@ sub run {
     my $dispatcher = mdb->dispatcher->find_one( { disp_id => $self->disp_id } );
 
     if ( $dispatcher && $dispatcher->{hostname} ne $self->hostname && $dispatcher->{status} eq 'running' ) {
-        _fail _loc("Cannot start instance %1. Already running in host %2", $self->instance, $dispatcher->{hostname});
+        _fail _loc("Cannot start instance %1. Already running in host %2", $self->{disp_id}, $dispatcher->{hostname});
     }
 
     mdb->dispatcher->update(
