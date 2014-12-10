@@ -229,22 +229,22 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
         node.select();
         
         // menus and click events go in here
-        if( node.attributes.menu || ( node.attributes.data && node.attributes.data.click ) ) {
-            var tree_menu = new Ext.menu.Menu({
-                items: base_menu_items,
-                listeners: {
-                    itemclick: function(item) {
-                        switch (item.id) {
-                            case 'delete-node':
-                                var n = item.parentMenu.contextNode;
-                                if (n.parentNode) {
-                                    n.remove();
-                                }
-                                break;
-                        }
+        var tree_menu = new Ext.menu.Menu({
+            items: base_menu_items,
+            listeners: {
+                itemclick: function(item) {
+                    switch (item.id) {
+                        case 'delete-node':
+                            var n = item.parentMenu.contextNode;
+                            if (n.parentNode) {
+                                n.remove();
+                            }
+                            break;
                     }
                 }
-            });
+            }
+        });
+        if( node.attributes.menu || ( node.attributes.data && node.attributes.data.click ) ) {
             tree_menu.removeAll(); 
             var node_menu_items = new Array(); 
 
@@ -333,8 +333,6 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
                 }
             });
         }
-        // add base menu
-        tree_menu.add( base_menu_items );
         // add search box
         if( node.attributes && node.attributes.has_query ) {
             var query = node.attributes.data.query;
@@ -353,7 +351,7 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
                         // indicator that a search is in effect 
                         var nel = node.ui.getTextEl();
                         if( nel ) {
-                            var badge = '<span class="badge" style="font-size: 9px; background-color: #bbb;"><img style="width: 12px; height: 12px" src="/static/images/icons/search-small.png" />'+t+'</span>';
+                            var badge = '<span class="badge" style="font-size: 9px; background-color: #bbb;"><img style="width: 12px; height: 12px; margin-right: 4px;" src="/static/images/icons/search-small-white.png" />'+t+'</span>';
                             nel.insertAdjacentHTML( 'afterEnd', '<span id="boot" parent-node-props="'+node.id+'" style="margin: 0px 0px 0px 4px; background: transparent">'+badge+'</span>');
                         }
                         this.triggers[0].show();

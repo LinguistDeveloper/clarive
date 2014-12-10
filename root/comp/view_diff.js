@@ -18,7 +18,13 @@
         tbar: [],
         bodyStyle:{ 'background-color':'#fff', padding:' 5px 5px 5px 5px', overflow:'auto'}
     });
-    var html = Baseliner.ajax_json('/'+controller+'/view_diff'+file_diff, { repo_dir: repo_dir, rev_num: rev_num, branch: branch, revid: revid, file: params.file }, function(res){
+    var params_view_diff;
+    if(controller == 'gittree'){
+        params_view_diff = { repo_dir: params.repo_dir, file: params.file, sha: rev_num, bl: params.bl  };
+    }else{
+        params_view_diff = { repo_dir: repo_dir, rev_num: rev_num, branch: branch, revid: revid, file: params.file };
+    }
+    var html = Baseliner.ajax_json('/'+controller+'/view_diff'+file_diff, params_view_diff, function(res){
     	var get_section_ids = function(){
     		for(var i=0; i < res.changes.length; i++) {
     			temp_id = Ext.id(); 
@@ -364,7 +370,9 @@
 							}
 							res = res+"<tr><td colspan=3>"+stats+"</td></tr>";
 							var lines = element.code.split("\n");
-							lines.pop();
+							var regexp_final = new RegExp("");
+							if(element.code.search(regexp_del)>=0)
+								lines.pop();
 							lines.forEach(function(element, index, array){
 							    if(element.search(regexp_add)>=0){
 							        res = res+"<tr><td width=\"1\" class=\"line-number\">"+"</td><td width=\"1\" class=\"line-number\">"+last_start+"</td><td class=\"added-code\">" + escapeHtmlEntities(element).substr(1) + "</td></tr>";

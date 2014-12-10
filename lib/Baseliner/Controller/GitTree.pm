@@ -281,4 +281,266 @@ sub newjob : Local {
     $c->forward('View::JSON');
 }
 
+
+#########################################################################
+#########################################################################
+####### FINISH ########
+sub view_file : Local {
+    my ($self, $c ) = @_;
+    my $node = $c->req->params;
+    my $g = Girl::Repo->new( path=>$node->{repo_dir} );
+    $c->stash->{json} = try {
+        my $out = join("\n", _array $g->git->exec( 'cat-file', '-p', $node->{sha}));
+        { success=>\1, msg=> _loc( "Success viewing file<->"), file_content=> _to_utf8 ($out), rev_num=>$node->{sha} };
+    } catch {
+        my $err = shift;
+        { success=>\0, msg=> _loc( "Error viewing file: %1", "$err" ) };
+    };
+    $c->forward('View::JSON');
+}
+
+
+sub get_file_revisions : Local {
+    my ($self, $c ) = @_;
+    my $node = $c->req->params;
+    my $g = Girl::Repo->new( path=>$node->{repo_dir} );
+    my @commits;
+    map { push @commits, $1 if $_=~ /^commit ([a-f0-9]{40})/} $g->git->exec( 'log', $node->{bl}, '--', $node->{filename});
+    my @res = map { my $sha_version = $g->git->exec( 'rev-list', '--objects', $_.':'.$node->{filename}); {name=>substr($sha_version, 0,8)} } @commits;
+    $c->stash->{json} = try {
+        \@res;
+    } catch {
+        my $err = shift;
+        { success=>\0, msg=> _loc( "Error viewing file revisions: %1", "$err" ) };
+    };
+    $c->forward('View::JSON');    
+}
+
+sub get_file_blame : Local{
+    my ($self, $c) = @_;
+    my $node = $c->req->params;
+    my $g = Girl::Repo->new( path=>$node->{repo_dir} );
+    my @commits;
+    map { push @commits, $1 if $_=~ /^commit ([a-f0-9]{40})/} $g->git->exec( 'log', $node->{bl}, '--', $node->{filename});
+    my $find_commit = {};
+    map { my $sha_version = $g->git->exec( 'rev-list', '--objects', $_.':'.$node->{filename}); $find_commit->{substr($sha_version, 0,8)} = $_; } @commits;
+    $c->stash->{json} = try {
+        my $out = join("\n", _array $g->git->exec( 'blame', $find_commit->{$node->{sha}}, '--', $node->{filename}));
+        { success=>\1, msg=> $out, suported=>\1 };
+    } catch {
+        my $err = shift;
+        { success=>\0, msg=> _loc( "Error loading file blame: %1", "$err" ) };
+    };    
+    $c->forward('View::JSON');
+}
+
+sub view_diff_file : Local{
+    my ($self, $c) = @_;
+    my $node = $c->req->params;
+    my $file = $node->{file};
+    my $repo = $node->{repo_dir};
+    my $file_sha = $node->{sha};
+    my $bl = $node->{bl};
+    my $g = Girl::Repo->new( path=>$repo );
+    my @commits;
+    map { push @commits, $1 if $_=~ /^commit ([a-f0-9]{40})/} $g->git->exec( 'log', $bl, '--', $file);
+    my $find_commit = {};
+    map { my $sha_version = $g->git->exec( 'rev-list', '--objects', $_.':'.$file); $find_commit->{substr($sha_version, 0,8)} = $_; } @commits;
+    my $actual_commit = $find_commit->{$file_sha};
+    my $previous_commit = '-1';
+    my $total_commits = scalar @commits;
+    my $i = 0;
+    map { $previous_commit = $commits[$i+1] if $actual_commit eq $_ && $i < $total_commits-1; $i++; } @commits; 
+    $previous_commit = $actual_commit if $previous_commit eq '-1';
+    my $commit_info;
+    my @lines = $g->git->exec( 'log','-1', $actual_commit);
+    $lines[0] =~ /commit ([a-f0-9]+)/;
+    $commit_info->{revision} = substr($1, 0,8);
+    my $offset = 0;
+    if($lines[1] =~ /^Merge/){
+        $offset = 1;
+    }
+    $lines[1+$offset] =~ /Author: (.+)/;
+    $commit_info->{author} = _to_utf8 $1;
+    $lines[2+$offset] =~ /Date: (.+)/;
+    $commit_info->{date} = _to_utf8 $1;
+    $commit_info->{comment} = _to_utf8 join("\n", @lines[4+$offset..$#lines]);
+    my $diff;
+    if($previous_commit eq $actual_commit){
+        require Text::Diff;
+        my $file_content = join("\n", _array $g->git->exec( 'cat-file', '-p', $file_sha));
+        my $previous_content = '';
+        $diff = _to_utf8 Text::Diff::diff(\$previous_content, \$file_content, { STYLE => 'Unified' });
+
+    }else{
+        my @diff_lines = _array $g->git->exec( 'diff', $previous_commit.'..'.$actual_commit, '--', $file);
+        $diff = join("\n", @diff_lines[4..$#diff_lines]);
+    }
+    my @changes;
+    my @parts;
+    while ($diff ne ''){
+        my @slides = split /(.*)(@@ .+ @@[ |\n].+)/s, $diff;
+        push @parts, $slides[-1];
+        $diff = $slides[1];
+    }
+    my @code_chunks;
+    foreach(reverse @parts){
+        $_ =~ /@@ (?<stats>.+) @@[ |\n](?<code>.*)/sg;
+        my $stats = $+{stats};
+        my $code = _to_utf8 $+{code};
+        push @code_chunks, { stats=>$stats, code=>$code };
+    }
+    push @changes, { path=> $file, revision1=>substr($previous_commit, 0,8), revision2=>substr($actual_commit, 0,8), code_chunks=>\@code_chunks };
+    $c->stash->{json} = try {
+        { success=>\1, msg=> _loc( "Success loading file diff"), changes=> \@changes, commit_info=>$commit_info };
+    } catch {
+        my $err = shift;
+        { success=>\0, msg=> _loc( "Error loading file diff: %1", "$err" ) };
+    };    
+    $c->forward('View::JSON');
+}
+
+######################
+
+
+
+######### METHODS NOT IMPLEMENTED TO GIT JET ###########################################3
+sub view_diff : Local {
+    my ($self, $c ) = @_;
+    my $node = $c->req->params;
+    my $branch = $node->{branch};
+    my $changeset_node = $node->{rev_num};
+    my $path = $node->{repo_dir};
+    my @parts = split '@', $path;
+    my @changes;
+    my $cmd;
+    $c->stash->{json} = try {
+        require Text::Diff;
+        my $commit_info;
+        $cmd = "cm find \"changesets where ChangesetId=$changeset_node on repository '$path'\" --nototal --format={changesetid}#-#{date}#-#{comment}#-#{owner}#-#{Parent}";
+        my @info_changeset = split '#-#', `$cmd`;
+        $commit_info->{author}   = _to_utf8 $info_changeset[3];
+        $commit_info->{date}     = $info_changeset[1];
+        $commit_info->{revision} = $info_changeset[0];
+        $commit_info->{comment}  = _to_utf8 $info_changeset[2];
+        my $parent_changeset = $info_changeset[4];
+        $parent_changeset =~ s/\n//;
+        $cmd = "cm ls --tree=$changeset_node\@$path -r --format={fullpath}#-#{revid}#-#{changeset}#-#{itemid}#-#{type}";
+        my @all_files_actual = `$cmd`;
+        $cmd = "cm ls --tree=$parent_changeset\@$path -r --format={fullpath}#-#{revid}#-#{changeset}#-#{itemid}#-#{type}";
+        my @all_files_parent = `$cmd`;
+        my $old_files;
+        foreach(@all_files_parent) {
+            my @info = split '#-#', $_;
+            my $type = $info[4];
+            $type =~ s/\n//;
+            next if $type eq 'dir';
+            my $itemid = $info[3];
+            $itemid=~ s/\n//;
+            $old_files->{$itemid}=$info[1]; 
+        }
+        foreach(@all_files_actual){
+            my ($fullpath, $revid, $changeset, $itemid, $type) = split '#-#', $_;
+            $type =~ s/\n//;
+            next if $type eq 'dir';
+            $cmd = "cm cat revid:$revid\@"."rep:$parts[0]\@"."repserver:$parts[1]";
+            my $actual_content = `$cmd`;
+            my $old_content;
+            if($old_files->{$itemid}){
+                $cmd =  "cm cat revid:$old_files->{$itemid}\@"."rep:$parts[0]\@"."repserver:$parts[1]";
+                $old_content = `$cmd`;
+            }else{
+                $old_content = '';   
+            }
+            my $diff = _to_utf8 Text::Diff::diff(\$old_content, \$actual_content, { STYLE => 'Unified' });
+            next if $diff eq '';
+            my @parts;
+            map { push @parts, $_ if $_ } split /(.*)(@@ .+ @@\n.+)/s, $diff;
+            my @code_chunks;
+            foreach(@parts){
+                $_ =~ /@@ (?<stats>.+) @@\n(?<code>.*)/sg;
+                my $stats = $+{stats};
+                my $code = _to_utf8 $+{code};
+                push @code_chunks, { stats=>$stats, code=>$code };
+            }
+            push @changes, { path=> $fullpath, revision1=>$parent_changeset, revision2=>$changeset_node, code_chunks=>\@code_chunks, revid=>$revid };
+        }
+        @changes = reverse(@changes);
+        { success=>\1, msg=> _loc( "Success loading diffs"), changes=> \@changes, commit_info=>$commit_info };
+    } catch {
+        my $err = shift;
+        { success=>\0, msg=> _loc( "Error loading diffs: %1", "$err" ) };
+    };
+    $c->forward('View::JSON');
+}
+
+
+sub get_commits_history : Local {
+    my ($self, $c ) = @_;
+    my $node = $c->req->params;
+    $c->stash->{json} = try {
+        my @commits = $self->get_log_history({url=>"$node->{repo_dir}$node->{branch}"});
+        { success=>\1, msg=> _loc( "Success loading commits history"), commits=>\@commits, totalCount=>scalar @commits };
+    } catch {
+        my $err = shift;
+        { success=>\0, msg=> _loc( "Error loading commits history: %1", "$err" ) };
+    };    
+    $c->forward('View::JSON');
+}
+
+
+sub get_log_history {
+    my ($self, $args) = @_;
+    my $url = $args->{url};
+    my @parts = split '/', $url;
+    my $branch = join '/',@parts[1..scalar @parts-1];
+    my $cmd = "cm find \"changesets where branch='/$branch' on repository '$parts[0]'\" --nototal --format={owner}#-#{date}#-#{changesetid}#-#{comment}";
+    my $out = `$cmd`;
+    my @lines = split '\n', $out;
+    my @commits;
+    foreach(@lines){
+        my @parts = split '#-#', $_;
+        my $date = $parts[1];
+        $date = Util->parse_date('MM/dd/yyyy',$date);
+        $date =~ s/T/ /;
+        my $ago = Util->ago($date);
+        my $comment = _to_utf8  $parts[3];
+        push @commits, {author=>$parts[0],ago=>$ago,revision=>$parts[2],comment=>$comment};
+    }
+    reverse @commits;
+}
+
+
+
+sub get_file_history : Local{
+    my ($self, $c) = @_;
+    my $node = $c->req->params;
+    my $repo = $node->{filepath};
+    my $file = $node->{filename};
+    my $rev_num = $node->{rev_num};
+    my $revid = $node->{revid};
+    my @res;
+    $c->stash->{json} = try {
+        my $cmd = "cm find \"revision where id=$revid on repository '$repo'\" --nototal --format={itemid}";
+        my $itemid = `$cmd`;
+        $itemid =~ s/\n//g;
+        $cmd = "cm find \"revisions where itemid=$itemid on repository '$repo'\" --nototal --format={owner}#-#{date}#-#{changeset}#-#{comment}";
+        my @history = `$cmd`;
+        foreach(reverse @history){
+            my ($author, $date, $revision) = split '#-#', $_;
+            $cmd = "cm find \"changeset where changesetid=$revision on repository '$repo'\" --nototal --format={comment}";
+            my $comment = `$cmd`;
+            $comment =~ s/\n/ /g;
+            push @res, [$author, $date, $revision, _to_utf8 $comment];
+        }
+        { success=>\1, msg=> _loc( "Success loading file history"), history=>\@res, totalCount=>scalar @res };
+    } catch {
+        my $err = shift;
+        { success=>\0, msg=> _loc( "Error loading file history: %1", "$err" ) };
+    };    
+    $c->forward('View::JSON');
+}
+
+#########################################################################
+#########################################################################
 1;

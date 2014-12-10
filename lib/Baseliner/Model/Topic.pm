@@ -2144,7 +2144,7 @@ sub set_topics {
             _fail _loc 'Field `%1` is not editable in topic #%2', $$field_meta{name_field}, $mid;
         }
         # apply filters, if any
-        $self->test_field_filter( field_meta=>$field_meta, mids=>\@new_topics ) 
+        $self->test_field_match( field_meta=>$field_meta, mids=>\@new_topics ) 
             or _fail _loc 'Incorrect type of topics added to field %1', _loc($$field_meta{name_field});
         # Tenemos que ver primero que los new topics para ese campo exista que sea single
         my @category_single_mode;
@@ -2225,14 +2225,14 @@ sub set_topics {
     $self->update_rels( @old_topics, @new_topics );
 }
 
-sub test_field_filter {
+sub test_field_match {
     my ($self,%p) = @_; 
     my $field_meta = $p{field_meta} // _throw 'Missing field_meta';
     my $mids = $p{mids} // _throw 'Missing mids';
-    my $filter = $$field_meta{filter};
-    if( length($filter) && $filter ne 'none' ) {
-        $filter = Util->_decode_json($filter) if !ref $filter;
-        my $where = $self->apply_filter({ mid=>mdb->in($mids) }, %$filter );
+    my $categories = $$field_meta{categories};
+    if( length($categories) && $categories ne 'none' ) {
+        $categories = Util->_load($categories) if !ref $categories;
+        my $where = { mid=>mdb->in($mids), 'category.id'=>mdb->in($categories) };
         my @filtered_topics = mdb->topic->find($where)->fields({ mid=>1, _id=>0 })->all;
         return @filtered_topics == _array($mids); 
     }

@@ -537,10 +537,11 @@ sub selected_fields {
     if ( !$meta ) {
         my %meta_temp = map {  $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $p->{username}) );
         $meta = \%meta_temp;
-    }   
+    }
 	
 	my @categories = map { $_->{data}->{id_category} } _array($fields{categories});
     my @status = values +{ ci->status->statuses( id_category=>\@categories ) };
+    my @cols_roles = Baseliner->model('Permissions')->user_projects_ids_with_collection( username => $p->{username} );
 	
 	my %filters;
 	for my $filter ( _array($fields{where}) ) {
@@ -563,19 +564,20 @@ sub selected_fields {
 					if($type->{value} eq 'default'){
 						my $collection = $filter->{collection} // $filter->{ci_class} ;
 						my @cis;
-						my (@options, @values);
+						my (@options, @values, @mids);
 						
-						my @cols_roles = Baseliner->model('Permissions')->user_projects_ids_with_collection( username => $p->{username} );
-						my $sw_finded = 0;
-						for my $collections ( @cols_roles ) {
-							if(exists $collections->{$collection}){
-								$sw_finded = 1;
-								for my $key (keys $collections->{$collection}){
-									push @cis, ci->search_cis( collection => $collection, mid => $key );
+						for my $sec ( @cols_roles ) {
+							if(exists $sec->{$collection}){
+								for my $ci_mid (keys $sec->{$collection}){
+                                    push @mids, $ci_mid;
 								}
 							}
 						}
-						@cis = ci->search_cis( collection => $collection ) if ($sw_finded == 0);						
+                        if( @mids ) {
+                            @cis = ci->$collection->find({ mid=>mdb->in(@mids) })->fields({ _id=>0, name=>1, mid=>1 })->sort({ name=>1 })->all;
+                        } else {
+                            @cis = ci->$collection->find({})->fields({ _id=>0, name=>1, mid=>1 })->sort({ name=>1 })->all;
+                        }
 						
 						map {
 							push @options, $_->{name};

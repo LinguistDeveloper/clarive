@@ -1966,7 +1966,7 @@ sub topic_drop : Local {
                     $kmatches++;
                     next META if !$$fm{editable};
                     # if filter, test if filter matches and avoid later errors
-                    next META if !model->Topic->test_field_filter( field_meta=>$fm, mids=>$from_mid );
+                    next META if !model->Topic->test_field_match( field_meta=>$fm, mids=>$from_mid );
 
                     my $id_field = $$fm{id_field};
                     if ( ref $$fm{readonly} eq 'SCALAR' && ${ $$fm{readonly} } ) {
