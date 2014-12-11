@@ -1,4 +1,4 @@
------------------------------------------------------- 6.2.3+570 ------------------------------------------------------------
+---------------------------------------------- 6.2.4 December 2014 ----------------------------------------------
 38d32f8 (FIX) cant start if already running instance
 020b68d change strip_html to _fixCharacters_mail
 e3a7e3e New copyright in login
@@ -476,7 +476,7 @@ e106f90 Temporaly disabled comments-edit
 7fc4a2b (FIX) bug with comments 2
 b14be66 (FIX) bug with comments
 
----------------------------------------------- 6.2.3 -----------------------------------------------------
+---------------------------------------------- 6.2.3 September 2014 ----------------------------------------------
 7ba6cd0 ini file added to config file system, requires Config Tiny
 b110194 parse config service now parses xml, json and general apache
 777247c Change message edit comment and force id_data to be integer when compare
@@ -627,7 +627,7 @@ ad7f40c (FIX) cache not saving scalars
 8577a8a Added cached rules in muli-run (pre-online)
 
 
----------------------------------------------- 6.2.2 -----------------------------------------------------
+---------------------------------------------- 6.2.2 August 2014 -----------------------------------------------------
 52133e3 tag filter in git tag service
 4932d7d no label separator ":" on rule task forms
 770778e adding to exporter new activity_by_mid sub
@@ -685,7 +685,7 @@ e5d7c2a (FIX) status in lctree
 4b7d902 More improvement in performance when opening state in lc
 
 
----------------------------------------------- 6.2.1 -----------------------------------------------------
+---------------------------------------------- 6.2.1 June 2014 ----------------------------------------------
 6209cd1 git smart - bl overwrite check to avoid git push --tags overwriting bl tags
 4651353 git streaming cgi, fast and lean; corrected error handling. merged from 6.1 gitscm feature TODO: sha parsing is slow
 1dd0eb5 zoom for images >800px in description topics
@@ -1090,7 +1090,7 @@ d994060 update_rels now (FIX) for _unique on hashes which stringifies them, now 
 16f1210 cleanup warning
 6228ba4 (FIX) query broken by + and - in search box that go into regex
 
----------------------------------------------- 6.2.0 -----------------------------------------------------
+---------------------------------------------- 6.2.0 May 2014 ----------------------------------------------
 2081027 Sereal added to dependencies, but not used in code just yet
 99c2b10 (FIX) job creation ordering on save, now split in 2 parts, create before and after new_ci with no saving within saving
 0177d5b (FIX) job creation "new on undefined" error, (FIX) messaging, now refresh monitor always cleanup english (FIX) changeset name not showing (sometimes name on topic ci es empty)
@@ -1310,7 +1310,7 @@ bb2574e add create user for notifications tags subjects
 89b2fb9 (FIX) created_today problems at searching topics
 0af8f13 (FIX) problems at listing and searching topics
 
----------------------------------------------- 6.2.0b -----------------------------------------------------
+---------------------------------------------- 6.2.0b April 2014 ----------------------------------------------
 3d62efd registry reload all when category changes, avoid menu unrefreshed, etc
 03b85fe Git is now core, not a feature anymore, not optional
 9bc8c20 migrator id filter, warning cleanup

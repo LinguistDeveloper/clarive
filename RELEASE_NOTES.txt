@@ -1,4 +1,4 @@
------------------------------------------------------- 6.2.4 ------------------------------------------------------------
+---------------------------------------------- 6.2.4 December 2014 ----------------------------------------------
 · Huge performance improvements
 · Git viewer renewed
 · New tasks in task bar (Create git tag & load topic data)
@@ -39,7 +39,7 @@
 · New trap action: Pause
 · Many minor fixes
 
----------------------------------------------- 6.2.3 -----------------------------------------------------
+---------------------------------------------- 6.2.3 September 2014 ----------------------------------------------
 · Masive deletion of all inbox message
 · Generic repository navigation interfaz (SVN, PlasticSCM and Git)
 · New version of interface warning for users (refresh needed)
@@ -50,7 +50,7 @@
 · Performance improved in semaphores
 · Many minor fixes
 
----------------------------------------------- 6.2.2 -----------------------------------------------------
+---------------------------------------------- 6.2.2 August 2014 -----------------------------------------------------
 · Tag filter in git tag service
 · Topic history from activity instead of events
 · Semphores in daemons and job host persistance
@@ -59,7 +59,7 @@
 · Improved performance when expanding state in lc
 · Many minor fixes
 
----------------------------------------------- 6.2.1 -----------------------------------------------------
+---------------------------------------------- 6.2.1 June 2014 ----------------------------------------------
 · Git Smart improved
 · Added try-catch rules
 · Git revision_mode system now allows for checkout of individual commits
@@ -82,7 +82,7 @@
 · New field types for topics
 · Many minor fixes
 
----------------------------------------------- 6.2.0 -----------------------------------------------------
+---------------------------------------------- 6.2.0 May 2014 ----------------------------------------------
 · Job creation ordering on save, now split in 2 parts, create before and after new_ci with no saving within saving
 · Fixes for IE8
 · Mongo connection rationalized
@@ -100,7 +100,7 @@
 · Remove Oracle complete
 · Many minor fixes
 
----------------------------------------------- 6.2.0b -----------------------------------------------------
+---------------------------------------------- 6.2.0b April 2014 ----------------------------------------------
 · Oracle to MongoDB
 · Git is now core, not a feature anymore, not optional
 · New Clarive install procedure
@@ -119,4 +119,3 @@
 · Purge daemon refactored
 · Login and logout (auth) events
 · Many minor fixes
-
