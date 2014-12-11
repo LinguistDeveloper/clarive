@@ -569,7 +569,7 @@ sub check_dates {
 
     # produce the hour list for matching calendars
     my $hours = @ns_cals
-            ? $self->merge_calendars( ns=>@ns_cals, bl=>$bl, date=>$date )
+            ? $self->merge_calendars( ns=>mdb->in(@ns_cals), bl=>$bl, date=>$date )
             : {};
     # remove X
     while( my ($k,$v) = each %$hours ) {
