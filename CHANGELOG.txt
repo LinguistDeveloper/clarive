@@ -1,0 +1,1606 @@
+------------------------------------------------------ 6.2.3+570 ------------------------------------------------------------
+38d32f8 (FIX) cant start if already running instance
+020b68d change strip_html to _fixCharacters_mail
+e3a7e3e New copyright in login
+cc32eea Added form for service to create git tag
+5ac8739 Added form for service to load topic
+5aba9b8 New service to load topic data into stash
+b860e73 (FIX) open tag
+e26e4e9 new attempt for fix the characters in mail templates
+b84ca07 (FIX) collapseall button in clarive explorer for reports
+8094468 (FIX) save topic relations broken, control based on filter but filter is no good as matcher; added "categories" as matcher
+bb33972 (FIX) contextual menu in explorer
+65b8e01 make scrollable blame tab
+8fb898f (FIX) chunks of code un diff file
+f2e7e12 added content to diff if its the first commit of the file
+1d67aad first aproach to new git look
+67e5d85 speedup: open field list for reports
+b17b4d6 white search node icon
+ef3d1e6 internal: topic grid gets its own lib, too big to handle
+e649c26 Remove comments and indent
+6f9330c Changed lastjobs query to rs with limit instead of array and last if count
+b1cd876 (FIX) using topic meta_types on drop to avoid strange filters errors; cleanups various
+a354b07 separated field filter tester; renamed old rs_topic to ci_topic for better readability
+7957bef field metadata editable calculated from js field
+34d19df topic drop js based, with drop field selector
+66ebd44 enabled search for topics and releases in lifecycle
+42a6d91 control that related topics saved to field match filter (if any)
+cb7852e added is_release query to user topics
+b65795f relocated get_meta_permissions to model
+61f41a9 (FIX) search making explorer menu grow due to li nodes; now create one menu each time.
+ee5cefc Added scheuled time to service create job
+52aecaa Added chain to service create job
+6467afd Foreach statement with Util->_array_or_commas
+79a86a5 Foreach statement with _array_or_commas
+5ad76d8 explorer menu with search; new SearchSimple now allows x for cleanup
+0382ef1 Remove warns from topic model
+5e29760 (FIX) remove mask when cs already selected in job_new
+e19125d (FIX) drag in explorer nodes ... without bold
+0c13d13 (FIX) cannot drag lifecycle nodes full text
+29a162c (FIX) drag in explorer nodes
+e5696f8 New version of common.js
+c49b4a2 no more sprites in buttons, (FIX) ie8 can't see icons, broken since datatables included, commit 950c81
+a981b59 (FIX) alphanumeric mid in get_cis and set_cis
+f74a259 Required fields with id_field instead of bd_field
+5385ee8 (FIX) timestamp in ci topic on update
+80e941d order statuses by name in status change list
+e04a376 (FIX) checkout of assets
+0ba20bf (FIX) detect paths in natures for files attached to changesets
+77f5365 (FIX) fullpath in job elements from file fields
+814be8a Optimize new_job panel when dropping topics
+b0ecb45 Ultimate protection of toolbar during refresing of any node in explorer
+cde65b3 (FIX) disable toolbar when refreshing
+333d718 Optimize new job window for huge number of changesets
+159a9a2 (FIX) report not showing related release topic; reduced fields in find
+0dcf9b9 purge event_log now takes care of blanks
+fdde9c1 (FIX) translation on can edit action
+ddf037f simplifyed topic related call
+f65d732 (FIX) huge infinite related problem on topic save
+ce8360d new indexes added for topic related
+22a3908 (FIX) incorrect field permissions after saving anc change status of topic
+00acf13 rollback no field cache, not a problem
+b552f4f JS cache for topic fields disabled ... blank page in create after restart
+d3c2ea7 Ensure all nodes have finised refreshing before enabling toolbar in explorer
+8364290 New js version
+46e287c Disable explorer toolbar when refreshing any node
+f586365 Unique keys in CIs
+75ecc36 Update tags in git repository even in static jobs
+0136613 (FIX) do not refresh refreshing nodes in explorer tree
+fb8ed5c (FIX) close each method
+1371b83 (FIX) clearfilter in role actions search box
+aa0f388 Revert "first attemp loading ci children"
+d0bf828 added missing ts to events so that they get purged
+943d57b Remove duplicate names control for cis (temporary)
+ba0cff5 get_meta_permissions all_fields missing; better cache key for remove later
+b2ab257 Secure gen docs ... just for users with home.generate_docs action
+86c74aa Hide repos in tree for users with hide action
+94b98cc Revert change to ignore closed statuses in chngeset status change in jobs
+2321695 role admin search in tree and actions
+bcb7cab better registor action descriptions for topic/topicsfields, added name_field
+d13d9c4 fastest action tree builder for role admin; new tree icons
+5a373d2 (FIX) color in category baloons in filters
+c58dfa0 Change name of variables in rules if variable CI renamed depending on config.rules.auto_rename_vars
+fc5cb54 Keep label in config variables
+d5809d7 Keep label in db saved config keys
+8603e92 (FIX) cant save config value
+1cf3795 Added config to change vars in rules
+c5e2f02 Change var name in projects when changed variable ci name
+5e0afbc Controlling not duplicate names in cis of the same class
+21d5830 Remove unused debug
+35ccded Remove debug from topic model
+9a1e236 Remove bls from states in tree if only * is available
+e109952 Remove bls from states in tree if no bls available
+bd8d637 Activate save button in ci-editor
+bf99982 Remove cache for statuses
+b03bbb6 Reduce number of user queries and status queries
+e6ecd9c Filter status first in list_topic.html
+1630d2b Merge list_topic.html
+b56fd58 new option for topics configuration, hide_list_statuses
+cf5461c make sure to cleanup cache for topic-meta changes
+2143e82 (FIX) broken try-catch task in rules
+5bb38a1 Added use try::tiny to try statements
+abd17ad Added try::tiny to try statement
+99305a6 Added require Try::Tiny to try statement
+8df5a9d Added project to topic.create notify scope
+dae2f60 (FIX) broken get category permissions for user
+18c94ee More performance improvements when opening topic
+66c9397 added missing indexes for category; new trace exclamtion increase to .001
+d78fde0 speedup of get_categories_permissions
+3a75896 trace now has a counter, CLARIVE_TRACE=20cnt to count queries with more than 20 calls
+fdfc552 (FIX) TRACE caller
+f5f0c59 Remove sw_edit from topic grid
+90a6a8e (FIX) broken trace for arrays, mid not found
+4390433 perf: find_one_value small speedup with project of value fields
+f616027 added description Tooltip in lctree for projects and releases
+087ada5 Improve topic grid performance
+8547d74 remove fail on user_roles_for_topic, users cant create new topics
+b89a3d4 Remove wider user security than topic security control
+36d4c63 (FIX) user_can_topic_by_project ... faster
+2a0bf74 Dont show table if empty after security filter
+b37e72c Superfast user_actions_by_topic and user_roles_for_topic
+6f9e12d Dont throw error if registry key not found
+db7f606 implemented option to hide or not commit asociated to a changeset
+6dcc7c2 cleanup unnecessary warning
+f6da3cd job refresh fixes, was refreshing all the time for users not root
+525448d hide system priority in reports
+4cfd584 better trace results (with all()), some methods not showing; added dashboard and monitor sort index
+cf97182 (FIX) monitor_json slow query - mids based query, to a more concise project based one
+6f1c940 (FIX) zoom for images bigger than 600px
+9bbee12 (FIX) daily status changes in dashboard
+75ea75c Use vars instead of load data in last change status
+563d90d Use activity for las change status in dashboard
+76877b0 cleanup console.dir() in file
+e88d8ab dont' show message on js_reload auto from request errors
+9bf70c8 show messages of js reloaded
+d121927 indexes to (FIX) broken/slow dashboard
+312500f slower version check
+56c5b2c js_reload on UI errors (silent, no message shown), recheck version also on errors
+bdb4353 REPL check action; now user_has_action can fail straight from the inside for simplified code
+41e96df show text in Catalyst errors in production mode
+d2f4c79 Execute $self->load just once in pause job
+7f42b29 Always wait first loop in trap.  Use update instead of save to change status
+47bf34d first attemp loading ci children
+22d5b69 file upload detect latest version is already the same fixes
+eb1f77d (FIX) double quotes in topic titles
+3ae7d69 (FIX) 2 waiting for queue forever due to seq control - we need to remove waiting queue items that are dead clients
+758d492 (FIX) broken semaphore controller
+1fb7e5e (FIX) deploy releases with more than one project
+b55c5a7 added escaped characters in top search
+873ecfc (FIX) incorrect can't open topic errors
+5c0536c (FIX) show more related topics than expected.  Filter topic_topic relations
+c15c995 Resume paused job from job log
+0ce645d Remove duplicates from list of states in project LC
+bc3b63e Force status to be shown in project LC
+c0d00a2 Allow blank in role dashboards
+eb89974 Close branches feature in Git repositories. Include/Exclude branches in git repositories
+d324689 Correct _ci as its used afterwarrdss
+b3e89a0 (FIX) missing webservice options in independent rule
+9947669 rule shortcut now allow for form configuration of source form
+cf6e62e (FIX) index_all of fs.files
+f403793 (FIX) broken reload topic grid tab, no states
+28b329c (FIX) close method get_files
+4c755dd (FIX) not a hash error on activity open
+ecb7e7e (FIX) downloads from 6.1 0dd9493 & 6d0f63b5
+8246564 (FIX) downloads from 6.1 0dd9493 & 6d0f63b5
+f4dab63 (FIX) rule palette broken due to sort area overflow, due to ixhash index not finding a {} hash based index; also reviewed other ixhash sorts looking for matching indexes
+35adae5 perf faster role check outside loop
+5848e76 cache usage for permissions in many places, with new cache domain d=>'security', also put mid in cache for mid deletion when needed
+87d8cef get_doc in CI topic now caches... should be also used by the load_pre instead of get_data
+550a2ea topic_grid globals externalized
+5055da7 (FIX) broken topic grid open from menu due to stash params in lib
+c57037d merge base config .yml values with baseliner, allowing for just "authentication" instead of "baseliner: authentication"
+30f6099 default value for activity from event config
+74777f8 new mdb trace system with words db,stack,100ms, etc
+6ccc1f5 upgrade ui version due to new topic grid
+4115179 faster count due to projection? not sure
+a00f28c perf: cache slow opening of topics due to horrorific get_meta_permissions
+ee9f3c7 (FIX) count 999999 in reports
+41450c4 db-reindex better control and index_all better logging; db-dump dumps critical collections by default new pos App param for positional arguments array
+1d746a1 perf: topic grid is now a preloaded function in topic_lib.js
+2bf8062 topic grid count is now deferred
+b1927ad query_timeout -1 to avoid recv is now the standard
+a322d9b build_topic_security query builder cleanup of unnecessary 'category.id=>{ $in=>[] } and a little speedup
+cc81e06 permissions perf role projections and find_one instead of next and count
+53242a1 permissions perf user projections and find_one instead of count and next
+e0bccbf Event daemon does not keep cursor open.  Fixes #16525
+749f3cc Remove DB from dashboard controller
+7396653 (FIX) dashboards
+4a8dbee (FIX) root can promote/demote to all defined status in any workflow
+b420e56 (FIX) cant open changeset with promotes
+1d61a3a (FIX) single_mode in fields migration from 6.1
+a7dd989 Show jobs tab only for changesets and releases
+37d4d7b Topic history from activity instead of events
+89f599a (FIX) job new rel._edge alert if not exists
+8fc120d (FIX) ci() resolution in parse vars
+689175f (FIX) role migration ... id is alphanumeric
+bf9e130 Demote to bls option in config
+1810a9b (FIX) not finding wait_for_children
+4aa9848 add name_projects on generic_post template
+a9dd3cf (FIX) í Characters for mail template 2
+1e4c9f1 Relocate build_project_security to Permissions
+afaec4c search in docgen, search now takes additional params like topic_list; (FIX) missing webfont
+170c7f0 (FIX) í Characters for mail template
+6d6a285 Remove warn from topic controller
+7850f6c (FIX) rule grid buffer error
+98b69b3 missing fontawesome
+7092625 missing docgen images
+727c680 (FIX) topics for folder now returns all topics recursively
+fb448b4 allow CI related rel_type arrays
+c164de9 parse_vars return empty on missing vars hash, allow use of CLARIVE_PARSE_VARS_TIMEOUT
+d766922 (FIX) missing var after merge
+f7a9706 open docgen from a topic, for showing things like releases, projects as docs
+64bf188 clean cache after filedlet addition
+37cfa85 DocGen system ready, but missing search. Folders fixed. Added history JS for doc history control, jspdf for pdf generation
+3d911e8 (FIX) readonly topic when created from category grid
+4fd1d3d Avoid repeated topics in grid
+3121fab started translation of internal reports; set them as 'custom' reports instead of jobs
+751240d (FIX) add releases to new job
+e92ba31 (FIX) error in new job
+febf6c8 rule report system. needs a task with a nice form for the metadata and a rule type similar to "jobs", but its working alright for now
+3b117a3 allow compiledrules to be instanciated from rule _id, better strategy moving forward to refer to rules by their _id
+45cb786 root can apply all reports existing for release
+8d6047c change _strip_html characters in mail template generic_post #16174
+5c0bbfa optimizing display of commits in gitTree
+4e07509 Default depth to -1 in topics_for_release
+25f6646 update reports,fixed meta/filters, REPL script to update #16138 3
+45bd862 View jobs tab even if the user cant access monitor
+b484ec5 Remove links from topic jobs if user has no permissions
+1593cad Set enddate in slots with name equal to new status if end_date empty
+cb3c892 Related with paging
+6a9759b update reports,fixed meta/filters, REPL script to update 2
+90a3bcc Remove log from topic controller
+24bbeac (FIX) isa in related
+6384d96 Need For Speed in related
+54835f4 Remove warning in dashboard controller
+b459de0 (FIX) issues moving folders in views
+c3dd373 (FIX) the last (FIX) for cis sent to new job, now cis are sent cloned/unblessed to avoid json conversion errors
+9277bfc (FIX) broken unbless in cis for job new (Server unavailable error)
+040d2fd new checkbox for ignore finished statuses on Update Changesets
+506e7f7 Dashboard control finished
+4a131a1 quick (FIX) gitRevisions
+c826f30 Dashboard for roles and user preferences
+f629eb0 remove Baseliner::Core::DBI, old stuff, REPL now based on DBIx::Simple with first line conn string
+9385a38 (FIX) filter user_projects by role in controller
+4919d88 (FIX) recursive projects in notification for releases with no project
+f7bb484 cleanup action warning in sms
+84b8422 cleanup auth warnings
+42a529e sms: (FIX) set expiry error on system messages
+aeb02ec cleanup annoying undef warnings
+75a553f sms indexes with auto expiry after 31 days so that messages do not linger
+ecf6372 (FIX) error due to momentjs object unsynchronized and global use
+e893816 rule editor: new blame system for nodes by time
+00566e5 (FIX) version.json 405 error in console, due to POSTing to a static file under nginx
+9f45eb8 Cla - new js global object as a clone of Baseliner; (FIX) momentjs console warning of deprecation of global object
+4ed4bae mongo db query semantics now includes /regex/ and quotes "term" are case insensitive
+c6d40d5 Unselect event_data field in events list ... unused
+0dc8210 Removed log
+c50631e rule tree re-search on node change
+e126827 use standard search semantics in rule search
+569c28c system messages completed and working, with new __broadcast system__ now needs an action field - that will shut user access, request restart or force restart
+1a78924 (FIX) undefined in file tree due to undef category_status
+073055a sessions are now Sereal based for speed and reduced data size, since we're storing huge CI user in there (revise this?)
+c8e0123 rule event for ws calls when rule fails
+b75978e added indexes to mongo, deleted some useless, added fs file indexes, now support evalled indexes
+386814e docgen - separate fileversion tree generation into gen_tree
+fb18520 api started, with JS counterpart - js task now works with a Cla.xxx api access, but still needs some normalization thoughts
+86e7e06 rules: include the rule_name and id_rule everywhere so that we know we are running something from another rule. cleanup some palette search warnings; make sure we don't put id_rule into the compiled rule when trying it out
+d44818b revert back CODE isolation, not ready for it yet
+dd3508d (FIX) rule ordering in grid, now orders by creation date _id, also cleanup warnings
+5ba5904 new cla ps, with full pid tree detection - has 1 quirk, jobs show up under dispatcher until they are fully independent
+9f64dd7 websockets with pocketio and socketio in experimental mode with new websockets: 0 config option
+fec63ee Isolate code in rules
+3c3f8f4 (FIX) cant remove release from a topic
+10757ba parse_vars: only discard vars in functions, added nvl(a,b) for null value resolution
+9dea3b0 rule search: search simple for building a basic search box
+88645aa rule full search on grid, no re though, and cleanup some warnings
+20a0fbc rule search: better box for searching, search clear
+22bd405 rule search box and longer timeout
+ebb7b6e excluding commits wich have been previously added to some changeset
+cc9e683 Recover ci names in get_cis (lost in 6.2)
+a85b5ac Added pending_jobs dashlet
+05a9504 added message for not implemented functionalities
+afc82bf job pause - better to use update than save
+127e56c hostname is now the variable that overrides hostname in my_hostname
+85da41b new compiled rule system in place, job daemon now precompiles rules in forking mode
+f85a0d6 put new semaphore indexes in place, reduce debug messages, mongo index_all now has error trapping and text indexes are background indexes
+10c75c9 Default id for job daemon
+68c3d56 quickfix repo_dir
+0f78507 Clean double release message
+46d0098 Approval expiration with delay after job schedule time
+ebc5706 semaphore controller and interface now working, with new maxlots and sequence change
+a9580c3 (FIX) proble viewing original file through view_file->diff combination
+f007533 sempahores: (FIX) release issues, document being double release, etc. added sequential semaphore take
+52d0610 semaphores seq control added
+6f21be1 semaphores revamp, no more sem_queue, the queue is in the sem collection for better atomicity. maxslots and slots are now separated, but controller needs revision for changing maxslots; and test case added
+038d3b3 quick (FIX) view_file
+33c1f2f added history of files in view_file
+30b8e67 remove metas and change enconding email
+a7ceee0 added toggle functionality in view_file and added view_diff_file
+faef0d9 (FIX) sem blockage due to missing cont++
+c59b555 (FIX) images in generic_post OK
+4f949f4 Revert "fix images in generic_post"
+b2623c6 (FIX) images in generic_post
+ed43c3a Merge with branch 6.2#8994. Update templates for email
+9ef8a47 added level (X) to job log printed messages
+c23f453 rule export/import partial now has beautifier and remove root options
+8f06951 added jsbeautifier js library, Baseliner.clone() to centralize cloning data structures
+1611f05 I##15710. Inactive nature has already been into job-chain
+16d0021 auth (FIX) double login from login form, added 120 seconds login timeout to support auth rules that may be slow
+dae2585 authenticate by rule event.auth.attempt
+f764efc html view rule works into IE8
+f5379bc (FIX) dashboard project security
+411379c added (X) level letter to Util logger
+3531ae0 Dirty tree in rule when copy-paste
+1643a54 (FIX) action.job.view_monitor in ci topic jobs method
+6ba329f (FIX) user seeing all states in topic grid
+b2b7b66 (FIX) no topics in topic grid for users
+1b6d620 (FIX) no topics on grid for users with categories permissions
+f70198b added tree by label
+f4ea3a6 Approval with expiration
+cc8ba1f Ask for changes when copy-àste node rule
+1c73417 Merge with branch 6.2#13738. Rebuild project security, added new level with categories from role
+1e7112b (FIX) sub_name forced even if it's not a sub
+ae06c10 (FIX) 'if' on favorites button caused not reactivation
+44b0bc4 Delete more than one calendar each time. Bug #15561
+05ac265 Jobs started by daemon one at a time (true balance)
+4c96d2d Expiry time of jobs based on scheduled time
+f5f7c37 topic create limited to current category on grid; made all topic new tabs the same; new filter: Modified Today
+1da4c72 missing status icon
+a1774d7 momentjs and ago in topic grid
+7986ddf better font size for state topic grids
+c309706 mongo grid_slurp with embedded decode for utf8
+46a9d98 (FIX) warning - compare_data in CI no working
+3651df1 new indexes that were missing
+4dd271f SET EXPR rule palette statement added
+9b30964 added momentjs library
+ac4ea73 (FIX) bug cannot copy windows calendar
+c9f85cf Fuilter status correctly checked ones for root users
+67186e5 cleanup old mvs stuff
+5c6f31b job rescehdule now resets maxstartdate field to scheduled time. job creation now sets maxstartdate to scheduled field
+6609987 new menu Topic grid by status, status now has icon and color edit fields
+c8e668f Show correctly filter topics by status. Bug 15420
+98e8896 (FIX) bug 14494. al crear el pase el botón de Crear está habilitado sin tener contenido
+f0297fc Added history commits for branch
+0b06bfa Don´t translate bl name
+4c44c1c properly scope dsl variables
+6b3b2a1 decode utf8 from grid rule, gridfs is a bitch
+1bbbccb (FIX) one event for each deleted topic
+6a31078 Do sem to wait at least one loop it cant update before checking killed sem-queues
+4b567ad explorer - select projects as first panel if favorites are empty
+84a767d shortcut keys in rules
+4647575 step buttons in monitor
+18b2b54 clipboard-shortcut system for rules
+a38a25a cache decode error detection; clear rule cache on start
+82a6992 (FIX) find bl as ci->new
+c575cbf remove create_on in field history - reports
+ac56a66 (FIX) history field in reports - From 6.1
+6aa975e (FIX) access to diff throug commit in changeset
+16d8d4c Create event when delete a topic
+830d648 added new tbar in view_file
+c4ab64e Show edition time in a comment if it was edited
+fb7bc6e Event for comment edit
+450eebc (FIX) bug B#14495. Cannot open the field before save it into field_category_topics administration
+68521ca (FIX) Bug #15259. Last user that update the topic was not updated when add a comment
+41dc4d5 (FIX) hostname by daemon id when checking cancelled jobs
+ff0503f missing rule shortcut icons
+fd160e6 copy-paste shortcuts within the same rule
+8103e71 rule import-export nodes; some cleanups
+da61c37 I#15206 cannot read property 'reload' of null
+691a09e (FIX) bug project into notifications
+5f8fab8 (FIX) monitor column when with ago visualizer, make menu stick on checkbox change
+05b6a0e monitor job status menu (FIX) allow for All/none, new nature icon
+be23e2b Ignore ssh config for ssh connections
+2d64a24 Remove debug from dispatcher
+ccd9dc4 JobDaemon instanciates job in check alive just when
+f636ca3 Removed \n in changesets
+1a32d54 (FIX) that old "isa" error popping up in jobs
+515c10a collapse/expand file navigation menu
+74d3770 sem_queue index missing
+3a37b4d cache revamp to (FIX) slow cache performance due to regex
+3d0cc2c cache testing
+f9f3513 (FIX) dont show more than one vars
+d8ee43a Revert commit b2a9195c7a9441d6179c0f3259a50bf13bdf9758. It should be put again
+65ce2f5 added file revision navigation
+b7fdb6e Added compatibility for view files and diff for svn and plastic
+413bdc0 Remove console.log en el model.js
+c39907a Remove $dsl redefined warning
+1cc53e0 Don't show vars into nature items
+e073c6a Compiled rules saved in grid
+b2a9195 Vars CI type show only whose ci-class
+e6711d9 job monitor but rerun with disable mode to (FIX) repeating button pressing
+f0c2ac1 commented line that removes activities when removing a topic
+8bbc41d nested hash write config support
+5e2ab4e cla ps (FIX) long lines, make them shorter and put internal
+79316ef delay and retry TRAPPED to (FIX) sync errors with mongo
+a60531e Removed change Ext.Ajax.Timeout because it doesn't work
+57bc230 Removed change Ext.Ajax.Timeout because it doesn't work
+721e20a Timeout in reports grows up to 10 minutes
+e6c1a7f Force pause to at least do one loop ... let mongoDB to update status
+550cea8 Reload field  'needs_rollback_mode'. I#14483
+149c21f Added combos to grid_editor
+111c481 (FIX) IE8 dont work
+595c5ca Change Ajax timeout into rules.js
+1757231 (FIX) creating job closes the current tab instead of the next
+b306a6d closed the gap in double job save with final_status, fixes approvals that are being approved before the job has actually finished
+8c78c1c make sure build_job_contents does not save the job
+187a85e job pause/resume is now a link in monitor
+2097489 secure the in_proc button
+e8e43a3 Removed _warn from permissions
+6795ca9 (FIX) fileman.ship chown with its own variable
+4da37dc (FIX) Notify default duplicate users into events
+4b7a3cb Remove warning in permissions
+94f856b Final check projects in children for notifications
+a33ded3 (FIX) key in check projects in notify
+8469320 Added mid in isvalid when notifying
+3fc632d Added find children projects in no projects in scope for notifications
+52c56fd allow rollback of jobs when later jobs are rollbacked I#14395
+ed09f19 removed rollback exception for rule creation, not needed anymore due to rollback code being dynamic
+a81be62 make rollback be written to the rule to avoid problems with a cached DSL
+6dfadfe Show file in tag and revision
+16b636f Dont read rule from cache if rollback mode
+8cd050d Delete BaliMasterRel from a 6.1  cherry-pick->delete old relations when single mode in set_topics
+604e6fb introducing error control for local scripts
+e296f1d trap errors and ignore errors did not work outside of a job
+c9ce110 No check ci multiple in a variable and into a project is a singleMode field
+c564122 Merge with branch 6.1#12613.fix filter for users on reports
+1e60c26 Added remote option in mongo poll 2
+42e1a85 Added remote option in mongo poll
+d9ca165 Revert: Homogeinize security in build_project_security
+9b269a1 Homogeinize security in build_project_security
+6245187 Poll mongodb accepts url_mongo ... now works well
+22deb2b Poll mongodb accepts url_mongo ... now works
+af9a586 Poll mongodb accepts url_mongo
+1202cb6 Added rel_field and rel_type in some Master Rel tables querys
+4890115 Delete relations when reasign a topic witch have and the rel_field is single_mode type
+ee5ee5c (FIX) scroll on filter from release
+f1110a4 (FIX) PRE step message on top of job
+b35aed1 put file sometimes fails for no reason
+f7871b1 Change Ajax timeout into topic_grid
+cc322dd job run is always in debug mode
+febf6aa Force use cache in rules execution
+e8a4f82 make sure build_job_contents does not resave the CI (just for efficiency, should not be a problem). Also delay the pid file deleting to later to make sure that we only delete it when we're done
+d80fd51 fixes for logging from jobs
+867acc4 make sure we instanciate fresh ci in the web-server, try to (FIX) job approval reruning PRE
+10786b1 Change attr throw_errors to 1
+031e3ab No disable save buttom when try to save a report with a name that exists before
+108bef3 Remove forced job affinity
+92e7f59 making compatible view_diff and vieew_file for plastic and svn
+803cd29 Show in topic_edit->file fields->only each files no all of the asset into the topic
+29e4bcd Added text if no intances in daemon grid
+ca67bac (FIX) write config file tabpanel default tab
+0d47065 Added dispatcher collection
+68caabc Added active instances to daemon grid
+6197aff report separate, secondary connection supported
+e4d7c08 report dynamic fields are now fast again
+0ee3086 Show name instead of moniker into reports cis
+ca16c4c (FIX) ci filter into reports when edit them.
+6fef9b5 write config file, still under work
+6065f31 Daemons in parallel
+6c895de Service.fileman.ship delete files in rolback when they wasn't before the forward
+edf8237 event auth now goes to activity; stash cleaned out of rule fail events; activity index added
+c1ffeb7 (FIX) show rev nuum of opened file
+a7df4b2 (FIX) condition for trap actions
+0d496c8 (FIX) scroll position viewing file code
+5dcc574 (FIX) translate
+3479d47 (FIX) sending notifications by field
+03116cc Change message into generic_assigned.html
+086963e Recovery html template 'generic_assigned'
+a67039f Revert import/export categories
+32971a7 Control trap action if job not trapped anymore
+cb1cef0 Reload comment after edit it. (FIX) finally bug editing comments
+f9077db (FIX) unescaped titles in tabfu
+ed470dc _catch_conn_errors for all kinds of errors, not just 500, 502 (fixes 405 nginx error)
+b25cdba (FIX) scrollIntoView in document navigation
+e106f90 Temporaly disabled comments-edit
+34f4519 added easy way to navegate through modified files in diff section
+7fc4a2b (FIX) bug with comments 2
+b14be66 (FIX) bug with comments
+
+---------------------------------------------- 6.2.3 -----------------------------------------------------
+7ba6cd0 ini file added to config file system, requires Config Tiny
+b110194 parse config service now parses xml, json and general apache
+777247c Change message edit comment and force id_data to be integer when compare
+36a8688 fail when rename a username with a with one that already exist
+510f3a5 Added (FIX) for svnscm
+5b22c16 added to topics for user & filter list with category permissions with user
+0cd2ffd Generic template for rule email
+2afbbd1 Masive deletion of all inbox message
+2bd465d Refresh inbox when delete more than 1 message
+1ae2f4b Remove keys with dots in stash before calling trap new event
+5bc32db File asset into topic versioned
+ca3cff2 version.json refresh now robust against disconnection from server, added _catch_conn_errors to trap conn errors
+8fa92df Remove . from tasks names when saving service levels in job
+c46a931 (FIX) show ci-related columns into reports. Revert part of commit 32752a7f0c
+e78810c missing version.json
+de28075 unbless event data before inserting into activity
+1d03eb8 interface version control
+6e0b432 Removed . variables in stash before trap event
+0fd88fa support form legacy dataeditor
+5d637cf trap event_new errors for error.trap due to complex stash being retrofitted into mongo hash (with dots due to hash flatten)
+0acd04a (FIX) instantiate sem inside the loop
+3d1dab4 Replace jazztel by clarive in report registration
+7a723a2 shorter search results info block
+c1a0780 better message datatables
+7e001b7 datatable better default is now on/off (always,never), and auto on numbering
+eed2c0d pushed wrong extjs patch, missing files
+0318765 extjs without the swf flash and charting
+0b588ce better toggle for datatable
+21fbf23 no prev - next text in datatables
+a31685a (FIX) no translations on datatable
+a111f0f cleanup warnings...
+377abc7 (FIX) first time toggle not working due to unloaded datatable
+68b2b32 (FIX) gitsmart event errors due to path unhnadled
+950c816 datatables for html table sorting
+0ec0de3 (FIX) all repos checkout
+d0cd12b Restore q in fail
+fa885f8 (FIX) broken events due to Mongo type unhandled
+2d6ab0b (FIX) css svn
+71069ab cleanup baseliner licenses
+e443323 (FIX) broken images in topics
+9339115 cleanup warnings
+64441c9 quick fix
+44eeca6 remove our oss copyright
+6ac9e04 authtype option for rules now allows for open, noauth rule WS
+e322764 Added new style
+6008f0b Added view original file from diff
+11fdc7a Message as qq in fail statement
+e241154 Remove wide characters in email body 7
+47925b7 (FIX) images not showing in topics
+c9feaf5 Can edit comments ( without refresh)
+ed36fe5 Remove wide characters in email body 6
+6a62482 (FIX) and modifications for svnscm
+0a92723 Remove wide characters in email body 5
+e624df6 Remove wide characters in email body 4
+1e8447b Remove wide characters in email body 3
+38750d4 Remove wide characters in email body
+b68e289 Remove wide characters in email body
+0d94ab4 Remove wide characters in body
+1674a23 Solved plomen with characters into email notifications
+dd01d75 missing mongoization for GitSmart event generation
+a4331df added preamble UTF8 to HTML::Mason::Interp
+7b2d2c3 added rel_field to set_cis
+3cdf4ee (FIX) warning due to odd  hash structure
+51b11b3 (FIX) rollback rule from history
+154a444 new #mid search box system
+8df9114 yet another round of topic message cleanups
+380b456 translations for page system
+519550d Show 'Asignada A' into topic_list
+33b22a7 (FIX) load data into asignated to field into a topic
+a37f124 More topic sort by field
+81ed643 Order topics by more fields because it doesn't do it
+21aa629 Catch not registered template for event 2
+25f6acb Catch not registered template for event
+9015738 Register auth events out of the controller
+9584077 (FIX) carrier in event daemon
+78593b5 (FIX) notification templates in event daemon
+a964ad5 (FIX) get_rules when roles selected
+d3095e5 uncomment require Net::SMTP
+d264280 Add is_root into get_projectnames_and_descriptions_from_user.
+665eb74 Exclude mids in user_projects query
+4ed7cfb Dolayout al abrir new_job
+16d6497 separate tmpl tmplating system to use elsewhere
+a0f8de3 no more each in hash_flatten, (FIX) unparsed variables in parse_vars "${wl_instance.name}"
+3a44aa5 (FIX) log Step:NULL due to fail in compress (Wide character). TODO: encode/decode compress? usa a more modern library?
+e8ea8d9 Authen::SASL::Perl::NTLM in cla-bootstrap
+697e8b6 Auth::NTLM in cla-bootstrap
+cc6eb23 Notification with security
+f2c279c Included method url for Svn
+c44a910 (FIX) no change field modified_on when event.topic.change_status
+4eaf194 (FIX) change field created_on when event.topic.modify
+b0a0b7f Avoid all topics view if no topics for project in LC
+0275d19 Revert commit 514d7414 (FIX) bug "master row not found" when try to create a ci whitch don't has a custum js
+c2254da Save proyect security correctly when create a new topic
+33bdac4 added view_diff.js and view_file.js into comp for svnscm
+514d741 (FIX) bug "master row not found" when try to create a ci whitch don't has a custum jsº
+d76047f DBDest ci added to core
+f6f6801 Config for auth notify
+039da4c Authen::SASL::Perl::NTLM in cla-bootstrap
+e4c5eee updated svnscm
+3214229 (FIX) bug sending e-mail with $1 var
+6f67d47 (FIX) id_rule in fail message
+bb6dadc (FIX) error in events find into notifications colelction
+de20342 Delete scheduler->migration from 61 because of is no oracle
+5c93820 (FIX) dont load tree if bind_releases
+574bd88 Remove topic->cache when delete a comment
+5d2a1ff (FIX) error when inconsistent comment into a topic
+49906b9 project combo sorting by name
+6e93b7a better error control when topics are deleted by another user
+d097795 (FIX) empty () parenthesis in project combo
+748362a provisional (FIX) for visualice tabs in the variable field of projects
+5ca74cf (FIX) show labels into the topic view
+61a2bef (FIX) undefined labels into reports
+36b4b98 (FIX) importing topic_categories implementation
+6484e85 (FIX) issue at listing lot of topics. Index added to topic
+a184e87 (FIX) show edit tab when force-reload a topic  after create it.
+13b4eeb adding config param to retrieve events for a topic from its events or its activity
+11564c5 Comment correctly ordered
+0efc722 Show date in each topic-comment
+e9bb7b1 migration of activity splitted to better performance
+12f576d Incluir regla dentro de acciones->columnas en el log de un pase el id de la regla.Merge branch 6.2#13059
+917c655 included field order_by in list_ci.js config.Merge with branch 6.2#13023
+f3d1189 list topics for users that haven't workflow
+06b181b more concise topic messages, following the standard category
+ab44819 cs_menu neeeds positionals, broken state topic list in lifecycle, maybe more related to commit 108e264
+fcf24a1 added mid of repository in branches
+0d0c97d adding migration info
+df6b65d Filter CIs using "active" property. I#12975.Merge branch 6.2#13014
+f8ccd4b Show user information in activity and comments tabs. Click into avatar. Merge branch 6.2#13002
+70204f5 try-catch for better error control in state errors in lifecycle
+e77596a cleanup warning in lccontroller
+eab886d debug message with the rule id in the job
+7316644 latest indexes for a faster mongo
+53ac623 better message in category not found error
+37156f2 (FIX) deploy topics in LCTree. Merge with branch 6.2#12917
+e04e6d8 changing messages "topic []" to "#" so it's more concise
+e099534 git top_revision now always returns a sha event if TAG=top, and dont try to change tags if tag is already=top
+4b81228 cleanup warnings
+c20d0e5 (FIX) problem with incorrect blob from show-type repositories, sorted commits where reversed
+dd4fb39 (FIX) hash in to  project
+107b3e9 fixes migration issue with roles and bug at LcController
+481f01d Config for job_host_affinity
+8a76b35 disabled rules tab button and multiselection. Merge branch 6.2#12316
+f033a8b deleting activity when deleting topic
+cf9c0be (FIX) username value into activity tab
+753d39a (FIX) broken topic circular reference to posts
+ad7f40c (FIX) cache not saving scalars
+3f0c882 small fixes in migration
+8577a8a Added cached rules in muli-run (pre-online)
+
+
+---------------------------------------------- 6.2.2 -----------------------------------------------------
+52133e3 tag filter in git tag service
+4932d7d no label separator ":" on rule task forms
+770778e adding to exporter new activity_by_mid sub
+6006384 now loading topic activity from a new, faster and beautyfull collection
+72d79a7 (FIX) show mid instead of name into ci fields in reports.
+b5d6d66 (FIX) call property name in Update ChangeSet rule
+3e784f3 Status change in approval/rejection message translated
+4bb52fc Check job status before approve/reject
+0b9fe04 Added disk full to CRC error log in balix
+507477f Borrado masivo mensajes buzón usuario. checkbox para seleccionar los mensajes. Para ver mensaje con el boton ver con un mensaje seleccionado o con doble click sobre el
+8dd9c91 Remove bls from state name in lc
+e1f84a9 mongo 2.6 key size cannot be equal to 1024 apparently
+f260691 do not try to cache keys > 1024, (FIX) mongo 2.6 error Btree::insert: key too large to index
+a05f02f (FIX) open topics from lifecycle
+45b7bbe (FIX) Moving changeset [blank] message in job
+5188bbe (FIX) unrecognized characters emails
+63ec4f2 (FIX) delete vars not parseables
+9f6fea1 Parse_vars with loop to solve all variables in strings
+0cfe24d Fixes default order in job_log
+129f171 dont cache the path to the related cis since it's just info and breaks key length
+8465766 (FIX) fail to compile mongo.pm due to leftover parenthesis
+a8a431c cleanup warnings in search
+67c22b3 Remove bls from state name in lc
+9149a98 status lc releases name
+bd0e6b6 event index on mid and ts
+d99ccb1 (FIX) email daemon issue
+c64ff19 Semphores in daemons and job host persistance
+9570733 (FIX) permissions for 6.2 when notifications to roles with no topic users
+35c892f (FIX) event.daemon error notifying rules to roles if no projects for topic #12666
+6ec6987 cleaner message
+c4b8da2 _log not _info
+c40c2aa (FIX) not getting template for notification, its inside a hash!
+7cee095 more concise messages for event.post
+01822b2 use event default template and subject (event_text) when creating a notification
+9472c4d no subject makes it pick up event subject by default?
+ff19822 default user in mentioned is the mentioned, not all users
+784ddac explorer menu item override for more menu data to go through
+3020ba5 (FIX) CLEditor cursor caret not showing on focus, also (FIX) fullscreen inner height only going to half of the screen
+05a2524 (FIX) strange character at end of comment (!!!) a problem with the HtmlEditor, fast patched from here http://www.sencha.com/forum/archive/index.php/t-73293.html
+f1e3efc (FIX) utf8 accented characters in comments, possible problem with gridfs data not decoded?
+7400ecf added mention event, which fires whenever someone mentions you, TODO can we notify from here?
+4bb4863 (FIX) topic title when opening from search results
+eb68b8c cleanup unused variable in job creation
+2d35dab (FIX) cla web not starting in production mode
+ec34369 cleanup translation in-process
+31dbdc4 (FIX) copyright
+bfeb439 cla proxy --quotemeta option added
+44a9150 removed baseliner.host = localhost from the default clarive.yml, that way we (FIX) the default host=localhost which is daemon dangerous
+959039f cla proxy command for a client proxy, TODO=a reverse proxy implementation
+50d6f98 Added action for system tags change
+69acac2 Added semaphores for daemon loops to avoid duplicate processing
+108e2644 Improved performance when expanding state in lc
+130601a (FIX) undefined in changeset title in lc
+e5d7c2a (FIX) status in lctree
+4b7d902 More improvement in performance when opening state in lc
+
+
+---------------------------------------------- 6.2.1 -----------------------------------------------------
+6209cd1 git smart - bl overwrite check to avoid git push --tags overwriting bl tags
+4651353 git streaming cgi, fast and lean; corrected error handling. merged from 6.1 gitscm feature TODO: sha parsing is slow
+1dd0eb5 zoom for images >800px in description topics
+f924773 Added try-catch rules
+ec634d6 (FIX) closed topics not found in global search
+83a8cb8 (FIX) top_revision ... dont check history if called from update_baseline
+3451527 todo on the demote of D status
+b102bd7 - Added job control for commits not in history (merged from 6.1) - Added branch meta to list_revision.js.  Revisions dropped must belong to branch in meta
+9e487e0 (FIX) broken regex for environment files
+2cf1317 git revision_mode system now allows for checkout of individual commits
+0ac4269 (FIX) promote combo in topicadmin workflow
+bb9b6ac small fix, @rows not defined in model/topic.pm
+73cab2f Avoid result set bigger than 16M in get_status_history_topics of model topic
+6886b5f (FIX) broken variable form in project, no combo list
+8ff2e72 (FIX) purge accesing to an unexisting job
+0bedf8a removed from615 migration file
+ee8bc78 (FIX) small issue that generates lots of warnings at migration
+183bc55 ordering CIs successsss
+6e2af33 (FIX) variableform not showing variables
+59d3296 variableform (FIX) js errors for null store
+3099757 VariableForm type_in vars
+04234a8 mongo cache is now on -cache database
+af0e2b2 now updating rels at saving topic
+2ce4c2a finally (FIX) ordering topics by projects and title
+da5ade7 (FIX) sortind by title in topic. Left trim made to avoid misleading orderings
+d04fcda (FIX) ordering topics by title
+0bfb713 (FIX) problem with fields creating new notifications
+3305e15 (FIX) problem with fields creating new notifications
+9b74b1e (FIX) migration at roles ids
+5cb6a99 Remove warn from ci role 2
+c4063d8 Remove warn from ci role
+5994024 Removed pipe from semaphores.  Daemon just cleans sem_queue
+52b6912 Let semaphores to be cancelled from the interface
+331727c Sems without daemon ... first attempt
+23f9f6f new config report for show dynamics field, default 'no'
+b43211a (FIX) errors in log nginx
+dd6f1ed (FIX) no finish job with error into monitor.
+66096c4 Show loading mask while loading categories in report-edit
+1739e5a Merge with 6.1#11474. Change to false force set value on report_edit
+6bf050c Merge with branch 6.1#11296. (FIX) problem of compatibility with IE8 in project.js and added message of invalid fields in ci-editor
+95cdfd2 (FIX) cannot delete e-mail from an user. I #10537
+78b0116 Solved bug related with favorites I#11565
+09c1b54 Merge with Branch 6.1#11506. (FIX) update favorites for a user. (FIX) delete search from favorite tree
+498af8e Merge with branch 6.1#11517. add meta compatibility for IE 7 8 and 9
+372f6b0 remove topic cache on update rels 2
+788dbb5 remove topic cache on update rels
+60f0793 Remove some useless debug lines from changeset services
+bbaf96c check for event data size in event_new, (FIX) for #11905
+285305d Delete debug
+76f6b24 Show ci bl column but hidden
+ca72e50 Remove extra columun with the icon into ci-gridtree
+a950a0a Change default CI Role value from ci to CI
+22eefb9 (FIX) _fail in job check_and_init
+254b0cd (FIX) next_status_for user only workflow for role and topic_status
+cfc17dd Added rule id to online error
+ead991c (FIX) get_topics ... retrieve data from master_rel always
+c335af1 Save id in cache for rule when called as ws
+1a51c2b (FIX) open topic if no project selected
+8642dc0 (FIX) default chain not sent if disabled
+ec10478 ordering issue
+2245a91 (FIX) mongodb::oid in parse_vars final
+632ab2e (FIX) mongodb::oid in parse_vars with scope
+db18902 (FIX) mongodb::oid in parse_vars without _logs
+1403403 (FIX) mongodb::oid in parse_vars
+a381ed4 Save compiled rule DSL in cache ... when save rules
+f6cdebd Fixes fullpath error in jobs when checking out topic files
+00a4e27 Some fixes for IE
+a3410c8 (FIX) bug. No allowBlank working into combo fields
+c7ca372 (FIX) bug into field "upload files" (Topic Administration)
+72533dc Added role/user security to report publish
+8f96d4b Added action to change chains in job_new window
+ae20eca Remove registry errors for notification
+90aca49 Register config comm for daemons
+573d310 Servico para asset a file. Merge with branch '6.2-upload_files-service'. Changeset #11399.
+55412cc (FIX) warning on hash usage
+324cbe3 (FIX) bug. _fail import error because it was deleted from Util->loggin. Include again into logging
+6083416 Messages while report execution
+ed3b15b (FIX) fields for reports calculated in run time instead of when populating tree
+e2b361c Increase form submit timeout to job_new form
+0159e95 add fixascii tu loggin
+cd20aa9 (FIX) search category for topic in get_meta
+6e010c3 Dont load fields in data for reports tree
+f802ac9 Space between activity text and date in topic activity
+7637f75 Space between activity text and date in topic activity
+d013717 Space between activity text and date in topic activity
+103a903 (FIX) wrong ts in topic activity
+00897b0 Increase form submit timeout to job_new form
+0413a4c (FIX) deploy menu if no menu 2
+8dc3555 (FIX) deploy menu if no menu
+99acb39 (FIX) _log in everywhere :P
+ff367db (FIX) _log in job.pm
+e293395 (FIX) _log _loc in job.pm
+b23148a (FIX) _log _loc in job.pm
+5de8c65 Remove warnings from topic_msg.html
+0e552a4 Remove _log _dump
+98e6216 Added start waiting and granted debug to sem.pm
+07d537d Remove log
+0845cef (FIX) no calendar windows for Sundays
+119775c New job menu in topic view
+b3b604c Remove topic dump from topic controller
+d14050d (FIX) change status in topic edition
+e13497d (FIX) bug. Cannot open topic_admin in IE8-> related with remove tools button
+f2c7265 Comment button tools in admin-topic-grid, because of bad working in 6.2 release
+8c2ec8a Button clean all resets the transitions combo
+49dc6d4 (FIX) return if not job_type in new_job panel
+32d8839 (FIX) CSV exporting renaming column
+2ac36a8 Remastered job_new window with same menu options than lc instead of bls.  Jobs with bl_to and state_to
+588bc72 Added file download capability for file revisions
+99b6339 Do leaf and expandable variable in lc
+7c1777c No crash when no bl in changeset
+a0a10e6 modified_on index on mdb topic
+9843088 Added to purge service old messages purge
+805aa76 (FIX) fullscreen in CLEditor
+ea3505b rule/run_rule controller for free running rules with id + stash
+9930ffb (FIX) error related with cherry-pick
+c67180f (FIX) warnings when start the clarive web
+ab577ea Removed debug from topic.pm
+8a8b2cd Added release status to release name in tree_releases
+0bfca71 (FIX) expandable releases in release tree
+e4accb4 (FIX) status in lc topics
+7e27b94 (FIX) save report several times if fast click on save button
+82666b8 (FIX) release tree filtering user_topics on category_id
+34e971b (FIX) permissionComment not initialized
+4bfdc1b (FIX) cherry-pick error
+4e9257a (FIX) children in topic_contents in tree releases
+181655b (FIX) topic_contents error if no project in security
+2a4f6b7 Users without comment action cant see post activity in open topics
+79a59bb (FIX) topic status dashlets permissions
+1ff1cc2 Users without comment action cant see post activity in topics
+9e68422 Cherry-pick
+d9823f1 Added action.topics.*.comment.  Can add/view comments in topics
+ea756af added new (FIX) ascii sql
+cd1e5c1 cherry-pcik
+b9f9bd7 Cambio #9754 Valor por defecto en campo listbox de CI
+0f7bf33 english translate baseline => environment
+c6efad0 Incidencia #9553 resuelta
+a35352d CLEditor upgrade to 1.4.4 to solve IE10, 11 problems
+3263fd8 update licencing in file
+354a83e Solucionado problema con el merge relacionado con el collapseall y los botones
+f26463d Changeset 8843. Added colapse_all button in clarive explorer
+be56f60 Add scrollbar for Rules. Changeset #9163
+583da4b Changeset 9082 Campo fecha no se muestra como obligatorio a pesar de allowBlank=false
+6608b19 Changeset #8838. Quitar el título de algunos tabs
+b6a17ce Branch master#8983 merged into branch master. Campo tópico Fecha Maxima no recupera la fecha del anterior guardado
+307629d Mod2 - tildes en SQL #5677
+bf4c73e (FIX) show fields in reports for root user
+029752a Hide Jobs node if user cant access monitor in LC tree 3
+6e03cd8 Hide Jobs node if user cant access monitor in LC tree
+7bb9d7c Remove warn from topic controller
+ee9da9b Merge with branch 6.1#11420. (FIX) false alert when close topic before not saved changes
+f718cd6 Merge con 6.1#11291. (FIX) problem by clicking fast on clarive explorer buttons
+462091a cleanup old git deprecated stuff
+9cdcd46 new LC repository dispatch system that avoids having to have a Controller for each repository type
+6741809 LC now gets the repository icon from the "icon" property
+e4d3b30 (FIX) login error due to LDAP authorizing user upper/lowercase, but user does not exist as CI. Now checks username exists as CI. TODO=add a config option to allow ignore case funcionality, transforming the username to the case in the DB
+26ef9d0 (FIX) duplicated line because of a cherry-pick
+f9da3f7 (FIX) show revisions in reports
+7c6b94f (FIX) topic->jobs when called from ci->job->_create
+4e2c69e Remove not available bls from states in explorer
+8484ff7 Adapt security for topic jobs to 6.1
+6b67947 (FIX) exists if no row in master
+16da76c (FIX) cherry-pick } no appear
+32a0e84 Remove logs and some howsekeeping for download all documents feature
+7b78006 (FIX) download all related documents of a topic
+d07e541 Updates for revision columns in reports
+e34e540 Added name of revisions in reports
+9a5d2d9 (FIX) cherry-pick error in activity for user
+b377b72 Descargar especificaciones de un agrupador. Merge con rama 6.1#11024
+a712c61 Added render file name in reports
+41b2462 Added job log for sleep task
+fd0dd71 Remove warnings on legacy rules without trap info
+d252a87 Comment _log in topic model
+3a2ef5e cleanup warning == numeric
+a6f09df Changeset 5182. Merge with 6.1#5182. Log file with changeset information (FIX) as a a CI. logs configurations changed to be into a log file with revisions, files, etc
+7fe3699 (FIX) transform in messaging ... all occurrences 2
+059ba0a (FIX) transform in messaging ... all occurrences
+6276ede Remove log from email daemon
+7beee5c (FIX) activity for user.  Utf-8 to list of perm events
+2b68656 (FIX) activity for user
+0df5d00 (FIX) activity for user
+25defe5 Remove _log from utils
+7c67ba2 Check if number in set_users
+e94a674 Merge con 6.1#10842.fix job logs ascii characters from SQL
+1d36cdb (FIX) transform in email daemon
+51fe939 Hide password in $data
+2204f22 (FIX) check natures by project in jobs part II
+bc6d266 (FIX) detected killed job in check and init
+0e1ef23 job branch - new job system, pending jobs from releases
+19d02c8 (FIX) set_release master relatations in topics
+7359ae4 Solved generic seerver undefined os
+9c06bba Hide Jobs node if user cant access monitor in LC tree 4
+0c3dcf4 Hide Jobs node if user cant access monitor in LC tree 2
+0c7a3cd (FIX) check natures by project in jobs
+06ecd52 BLs in ptoject not mandatory
+8e8de3e Added bls for project
+12e5fe1 (FIX) any_nature service
+219f20c (FIX) not working deleting all releases from combo fields
+7f89002 delete pageSize for list_projects
+1368012 (FIX) ordering issue inside project cis
+51fb732 bl column hidden
+b6b6090 bls showing if necessary
+c46ce1b Solved show all topics when open it from the upper menu
+6fd917c Remove job_log keep parameter.  Was not in use
+cf18b3a Really separate job-dir purge from jot-log purge
+75296ba (FIX) is_changeset in topic.pm
+3d1fd6e Remove job tab in topics if no jobs for user
+32549c0 (FIX) problem when a user has roles without actions
+0f4214d mvs is now a dynamic method in balix
+3fdb274 force generic server os into agent everytime since the machine is master on this info
+3e53624 make balix use the os value for mvs and (FIX) connection to MVS/ZOS servers
+5f65bc2 (FIX) job opening from search results
+46db7a5 new event soap_ready allows for post soap editing
+4e5afa4 removed topic assets relationship, it's fieldlet based, so that master_rel gets the correct rel_field
+b1da70e (FIX) asset save-delete errors by unblessing topic ci before saving doc
+38e0543 sorting cis finished
+f596d05 change icon size for topic tab
+74ad809 registor data now cached
+ca41251 make cla job.daemon work again (no service. prefix needed)
+edf8031 cla now treats "--no-option" as "--option 0"
+553ffb4 (FIX) related get_release topics
+1520dfc Merge con la rama 6.1#11104. csv import replace char 0 for empty value
+95c4806 (FIX) legacy rules without trap_timeout
+c947522 Solved user-actions-list when the project_security is not well updated 3
+42ecd7c Solved user-actions-list when the project_security is not well updated 2
+202328d Solved user-actions-list when the project_security is not well updated
+55b6ab4 (FIX) CIs not opening, retrieving module_index method
+68160c5 (FIX) list_project can not recovery data on load
+1a400bb Solved view error of the mailbox into clarive
+bff7c33 Corregido error en la creacion de roles
+9a849a2 (FIX) web not loading due to initialized registry from registors
+8d3c8a2 role grid now can cleanup invalid actions on request
+981d384 move .mas to .js for modernity
+9da5e34 registry cleanup and (FIX) registor reload detection and speedup registor key check
+0eb88e0 change Registry::Node to Mouse speeds up registry instantiation 3x fold!! Noticeable in registors
+3f5a756 (FIX) cache-mongo not saving single scalar values due to lost Cache::SV trick in merging and patching
+cd60d9c Return data if value is 0
+7c818ff (FIX) category_status_name in topic doc
+c61e067 set all mason paths to standard tmp_dir make TMPDIR = tmp_dir to change the way File::Spec->tmpdir works
+91ec4c6 registrables are Mouse based now for performance (30% more or less)
+f28f6c9 (FIX) job monitor not showing job contents
+7f9c9c0 ordering CIs OK
+95143d9 limit search results to 200 in CI, job and topic
+df6183f reduce job search results to 100
+3512275 translate communication error
+f36e8b9 translate job starting message
+e90273b update_txt should not be used, its redundant with update_rels and creates huuuge _txt
+ccf1d58 job pid set to 0 to avoid checking entirely until job actually sets its own pid, and use update for safer ci writing, (FIX) typo
+297f6d4 (FIX) possible place for job CI external overwrite, make sure we skip cache
+f6db7e7 (FIX) job contents build in monitor probably overwriting job with save()
+a2f40c1 (FIX) too many rows in superbox search for topics
+c626b7a (FIX) no user permissions for topics due to revamped user_projects_ids_with_collection, with_role was 1 always
+6c1d6eb (FIX) no deploy menu for some releases when topics in another state
+cb5b6b9 (FIX) bind_releases not working when topic in 2 releases for the same state
+89e4c3d ID role as a string fixed
+1aaaf82 (FIX) filter project combo
+f4f5055 (FIX) duplicate items in CI topicfields
+00742da (FIX) certain promotions available for non-root users, due to bad flag when lots of roles had the same transition
+b0b5b92 Role grid viewer new look, more compact with action buttons so it can be readable at last
+2a1f362 (FIX) Update Changesets status error not found id_status
+591c0d5 clear_filter makes search behave differently, probably old stuff
+939c8cf cleanup error message "Perhaps deleted?", better use the message returned
+62dd481 cleanup search warnings
+575d387 user root can always surrogate. Period.
+69c0ce9 (FIX) statuses selected in registor topic_category_fields, cleanup warnings
+17de6a0 cleanup warning
+3c2c092 speedup a little registor for topic_category_fields
+507e23a role id stringification in controller, fixes issues with opening role viewer
+f71a2b1 (FIX) description overwritten on topic update
+d494c3e change Unknown error for a more subtle message of communication problems also adding some red images/icons for errors
+63e58bb max_requests defaults now to 100 for better memory cleanup, may be increased in the future if leakage is fixed
+74c46601 Change status is now Change State
+bf07f4d (FIX) dont break, better error control when receiving json data that is not a HASH
+62eeace (FIX) unquote of repository files in repo navigation
+38322a4 (FIX) unquote of repository files
+5fa6a6f (FIX) unquote of item paths
+99f82ba (FIX) error reap_children on dispatcher
+d340102 parse git items with accents
+a2d921c (FIX) error job restart button - give priority when mid is a param
+b7a36ab (FIX) _log topic model
+e514a0c (FIX) error list_users and set_users in Topic
+b5b6b9d mason tmp dir not File::Spec
+91f90d4 (FIX) deep recursive user root
+0be1136 (FIX) topic_admin list_filters controller error (not mongoized TopicView table for grid saved filters), removed "filter" combo for List fieldlets
+f4bb202 (FIX) order_by in CI project FINAL
+97d567b (FIX) lifecycle release children filtered by project and state
+5d23a4c (FIX) duplicate promotes and demotes in lifecycle
+fa9de19 (FIX) order_by in CI project and enabled editable for combo
+8c0e061 (FIX) root without actions login issue
+68b0b92 (FIX) states with bl () workflow admin in topic_admin
+851f774 role_id_fix migration
+2e0b5c5 allow an intersect of topic_list and children of id_project in topics_for_user, needed for correcting lifecycle filtering
+78eb498 speedup grid loading with a single find in Mongo, find_one in a loop is too slow
+bd6d934 changed bl any to *, removed parse roles id
+b5b5078 (FIX) features translations for js not working for features outside clarive_home
+d93a500 (FIX) CI method coercion data leak which prevents values from changing also make sure we don't declare a method coercion twice
+2ff8f21 cleanup rename variables for readability also make sure that we avoid autovivification on $master_doc
+284b282 (FIX) where collection dynamic
+48f3ef0 (FIX) where collection dynamic
+0420cd9 (FIX) params collection
+269919b lost params on user_projects for collection
+abdb291 remove +0 from roles id
+2a227f4 changed operator == by eq
+335b4e9 remove +0 from id roles
+73cfedf undelete file TopicServices.pm
+d5c652c undone stringify roles id on method list
+a67f1da (FIX) method list on dashboard to get id roles as string
+311b7b1 (FIX) missing username error on job creation
+caac5c1 (FIX) filter status on topics
+c446603 (FIX) filter status on topics
+7df8d6c (FIX) filter status on topics
+2b5348b (FIX) return on method user_projects_ids, when user is not root
+eb72199 (FIX) exception on method get_projectnames_and_descriptions_from_user when it doesn't have a project key
+71a485d (FIX) user_all collection being created by list_all controller behind the user admin card
+9995c2f purge added event_log purge, added enablers for other purges
+c5d727b now ordering cis, string issues detected
+85cff26 Surrogate is Impersonar, (FIX) translation
+4dabdc4 (FIX) duplicate status to in "Change Status" and filter workflow by user role
+157aa57 _unique now maintains original order
+3014777 (FIX) security problem showing jobs through changesets tabs
+8df2622 remove fail - loc
+66ec050 (FIX) mongoization error in where, user does not have an workflow error
+2f2624f give a better error when user does not have a category workflow, or user ci does not exist
+c4b55ae Quick (FIX) in release menu
+ff22000 wrong name Girl method into GitRevision
+3fe4b1e (FIX) set variables into ci-editor.js
+85d80cc Commit para solucionar una mala terminación de una sección tras hacer un cherry-pick
+7f6ef72 Merge con 6.1#10552. Activated chidren in section releases of clarive explorer
+3f53d89 Merge con 6.1#10349. (FIX) duplicate items in topic fields list_ci.js
+3acc00b Worflow from/to with distinct job_type allowed
+625727b Register job events out of controller
+0da7acf New service to create job from rules
+7672460 Merge con branch 6.1#9913.fix change message when change topic rels
+a22219a Merge con rama 6.1#10662.allow filtering in notifications field written
+c210119 Added trap in rollback property to rules
+ca08c8a Added timeout and action to trap (FIX) js
+e8fb313 Added timeout and action to trap
+31a368a added trapped_paused behaviour
+cdfc7e2 Added trapped pause
+de53a1f (FIX) pagging problem in mailbox
+93b0424 (FIX) lower(name) is for DBI, now order by name
+048674e (FIX) prefs.js JS reload problem, path not ok
+1015476 (FIX) list_by_name for CIs was not returning anything due to mongo migration, fixes variable metadata (combo) for CI type variables
+9323a53 (FIX) controller CI error/warning on ci->find of mid=classname, now detect if its a classname than use it
+cde34d6 (FIX) data.data in CI.store load, and Variable form error not showing CI combo when adding variable
+f598345 error whereami in ci->find
+ba02f3b Errores de relaciones entre topicos y actualizaciones de caché
+6666f94 Girl unquote to (FIX) escaped Git file name sequences
+901f74d Activated chidren from release menu
+52a7b7d (FIX) category fieldlet editor warnings and KO from parsing forms/*.js
+fb3a28b Baseliner.FieldEditor panel component
+6459bc6 list_topics_grid just an experiment, giving KO warnings
+6da7732 CI method setter coercion now works
+401193c (FIX) CI update attributes not coerced, now make sure we use instanciated version. (FIX) long moose message on CI save
+4a49dfb topics ordering by project
+32752a7 (FIX) problem in paging toolbar when all resusults are sown
+6258f84 (FIX) warnings about mdb a reserved word
+de1fe4e (FIX) strange job errors due to OID stringification, _id
+c05fbba add Clarive to the stack in Carp Tidy
+dcc1192 (FIX) translations
+98ba217 cla-pack no fatpack for now
+dc2adcd modified method find_hashed to deal with array field
+b9a73f4 Correct uri if not username in ssh_agent
+bc7de7e Merge con la rama 6.1#10547. (FIX) duplicate radiobutton group in topic admins
+316366a Added CLARIVE env variables in about
+3665514 Added files to tar service panel
+315ea02 (FIX) port_num in ssh_agent
+738c893 Added service.fileman.zip service
+d0cd458 Report correct os in balix_agent
+b8fc52f Avoid error if compressed in zip
+fd17f40 Removed _log
+7698150 Removed hostname in filters for sem_queue
+5b8059a Merge con rama 6.1#10486. Incidencia producción Clarive - Titulo petición aparece undifined
+a23709f Cambio #10425. Add project name in tree releases
+a759b86 (FIX) length check in cache_set
+ae50d46 Chageset 6.1#10408. Change ts-endtime for topics job tab
+ffb36c3 (FIX) cache problem in activity topic. Merge con la rama 6.1#10403
+c7dc505 (FIX) message queue not marked as active when duplicated
+ba65d81 (FIX) dont migrate repository_repl in 6.1.5 - master
+b988974 (FIX) upserts in set_[relationships] for Topic
+94005d2 cla-pack now includes etc/ and sets permissions to 644 and 755
+baf18ed (FIX) cache failures in migration, CIs need it
+527eb35 cla now can take dot-options, such as mongo.dbname xxxxx
+91b5797 (FIX) dsl compile errors due to incorrect use of $project in between dsls
+67601bd cleanup warning
+33bc806 job last_error should have max 1024 otherwise may have a huge log breaks everything.
+b6425ef topics not showing for root, (FIX) workflow map so that all categories are shown
+6784b5a dashboard limit on job list
+132d224 catalyst features now includes BASE from default
+5480deb (FIX) error mesage wiping chache
+78ab3e4 quick (FIX) in cache.pm
+89f87b9 CBox (FIX) to avoid submitting as true all checkboxes
+8d436d0 ci-editor now does not load rec, each fieldlet should have a value: xxxx
+cbdcaaa ci_box force_set_value always true now
+6e4b5b9 (FIX) indexes not well written
+42cd9ba (FIX) auth_key authentication error due to mongoization
+8c82bf7 cla pack change +x on all cla* files
+7342d06 change Checkbox to CBox, CBox now supports '0', 0,'', false, all Perl style falses
+5ca1ab1 (FIX) CIs not loading in ci_box due to change to Combo
+6b97970 itemdeploy CI gone, rule comments for more info
+ef81f58 (FIX) length problem on set cache and reduce event cache content
+d994060 update_rels now (FIX) for _unique on hashes which stringifies them, now works correctly and _txt only has moniker, name, ns and description. update_rels added to save_doc, otherwise only saving relationships
+16f1210 cleanup warning
+6228ba4 (FIX) query broken by + and - in search box that go into regex
+
+---------------------------------------------- 6.2.0 -----------------------------------------------------
+2081027 Sereal added to dependencies, but not used in code just yet
+99c2b10 (FIX) job creation ordering on save, now split in 2 parts, create before and after new_ci with no saving within saving
+0177d5b (FIX) job creation "new on undefined" error, (FIX) messaging, now refresh monitor always cleanup english (FIX) changeset name not showing (sometimes name on topic ci es empty)
+5ac7646 job delete always, no matter if ci instaciates or not
+9543536 (FIX) *%1* sprintf warnings in jobs
+dafee55 cla db cleanup, db-deploy dbi gone Clarive auto help now a function
+904027e index_all now indexes yml files in etc/index better Clarive feature system
+139b024 Cambio #10442. Eliminar boton Sistema de la administraciónd e tópicos
+1211efc Corregido "Ver pase" por "ver Stash"
+8c25643 Corregida traduccion "Poyecto Padre"
+e6c4f7e db-reindex command, index_all with drop
+9b013d2 configure CLARIVE_ENV after --env so that the dispatcher processes can start with the correct env
+dd72a50 (FIX) problem creating Topics in IE8. Merge con 6.1#9504
+88d1a3d Solved problema con dashboards para usuario sin workflow
+761a312 mongo connect at the end of Baseliner start
+37e15d4 (FIX) ordering topics by id
+5313d9c rescroll main window back
+3507f36 Solved problema con dashboards
+9e5ab56 (FIX) regexp eval in hide_passwords and added regexp validation before apply
+7f226dc (FIX) expiration time from config in new job
+0807eff (FIX) bl detection in changeset files in job_items
+0413972 (FIX) error in notification
+7a953b4 (FIX) filter workflow on topics_for_user
+d55637b (FIX) error displaying date grid_editor template
+9589ef0 (FIX) meta_type on reports cfg
+d5a121c (FIX) incorrect html view in topics on IE 11
+5a58a8b (FIX) autoload on ci/store
+585a2a7 (FIX) null items on method ci/store
+b386c8d scrollbar chrome square
+a5bef4d (FIX) surrogate when user not exist #7928
+2745ce2 (FIX) huge error message into baseliner.error msg_box, property constrain on user modal window
+3373514 (FIX) warnings in webservice Conflicts: 	lib/Baseliner/Controller/Rule.pm
+f8c14bc Sorted statuses filter in topics
+c09a84c master_insert migration added, lots of missing master rows, master_docs udpate_rels migration slow/big for large dbs fixed
+4c1d13e topic _txt now _unique()
+1166b58 fixing load() not found errors on db-upgrade
+abd38d6 fixing rel order_by now sort, better error to find unmigrated
+73b6ab8 mongo migration messaging clean and migra-> tracking
+cbfed79 cleanup hash keys in update_fields
+83f6c36 cla --env now checked if exists, otherwise errors out
+c93b9c4 Merge con rapa rod-soap
+1445f14     (FIX) error reporting with standard soap fault;     wsdl compile validation on save;     rule ignore errors always added, idependent rules compile check active     again;
+8c1d9de added bootstrap Perl::Critic, cleanup warnings
+f1cb109 Solucionada incidencia 9169
+5b1d002 (FIX) pagging toolbar in events
+986ea4d (FIX) pagging toolbar in events
+37109cf flex fieldlet config form system started, but not working yet. config_form: [url] parameter accepted but nothing done, needs ajax_eval Call
+b959c6d checkout asset files instead of topic_files
+372b376 lifecycle error visibility using dummy node
+57c55b9 (FIX) not all states showing for root - missing "all roles" for root
+ffbefcf (FIX) Include Into fields showing always on the right
+498f265 (FIX) missing calendar migration
+77e892f (FIX) ? from from email post comment
+b58d2f0 (FIX) some uninitialized value
+4e3a527 (FIX) some uninitialized value
+f977d7c (FIX) render column as an object on reports
+d562cca Borrar caché tras modificar/añadir campos en un tópico
+fe467e2 (FIX) unique id in filtered topics dashlet 2
+c2c0830 (FIX) unique id in filtered topics dashlet
+09fd81c (FIX) rollback rule version
+67faf55 (FIX) disable on CLEditor
+c745d23 (FIX) checkbox issue
+7cf853b (FIX) problem showing all notifications
+a4db9e2 (FIX) not all projects showing for root, (FIX) permissions, list all ids for root (FIX) sorting with mongo, use Perl lc sorting for lifecycle tree projects
+478f0dc kanban fixes, now only shows current plus destination statuses; mdb joins fixes for not HASH reference errors
+1d4c28b re-fix at deleting topic categories
+13ef78a added more control at deleting categories
+6348015 (FIX) status issue
+58fac0e use total in pie chart and hide Others when it's 0
+db8b259 faster Util loading with delayed DateTime and MIME::Lite loading
+8113924 Utils cleanup, old subs removed, others not yet exported by deafult to speedup loading and reduce cruft
+add0846 (FIX) graphics of changes on topics
+a7eac23 asset icon change
+b0a5986 (FIX) missing status migration (only in DB), (FIX) not using UTF8 in NLS_LANG due to missing Baseliner setup environment in Clarive Cmd; topic change status menu with blanks
+200bca0 (FIX) lifecycle error not showing topics for state
+a450fc4 (FIX) pie chart fieldlet not rendering
+42029eb asset upload/download working
+bd1b018 cached model helper
+011f8f3 Baseliner->enqueue system removed, which adds code blocks to a finalize stage in the execution chain (originally BdE?)
+e3ebfb0 model and queue helpers are now Clarivified 6.1 and 6.1.5 migrations added
+8320647 (FIX) asset migration, assets from topic now downloadeable
+75c1954 VERSION identifier moved to Clarive->version
+421462c cla-pack with full lib, otherwise controllers, model, etc. won't work
+f55b06b model helper implemented in Clarive Clarive->load_class is now the official class check+load engine, available from your app object
+737d7ba (FIX) warnings
+fcec926 asset info
+4c29e4d baseliner debug is now clarive debug
+5a13d7c cleanups
+5733459 (FIX) get_files for assets (wip)
+cefad45 remove baseliner model calls from migration, (FIX) asset (wip) and add master cleanup (remove yaml) migration
+5d2718b make migration skipper with --migrate work, now only runs the give arg
+e681f22 (FIX) warnings for undefined values, (FIX) update_txt missing "all"
+16b8af8 (FIX) problem changing topic status
+c18ac74 new cla db-update
+48e2650 cache debug clear on cla startup, cache support single value storage
+c1dfb20 Clarification of Baseliner->debug, now Clarive->debug
+63055f2 remap Baseliner->cache_xxxx to cache->xxxx following clarivification
+40e305d (FIX) problem saving api key
+2e0bcc4 Clarivification of Baseliner mdb,cache and ci, which allows us to run certain things without requiring Baseliner.pm. Clarive feature system, based on Baseliner, started.
+ff03fc4 (FIX) updating avatar and showing api key
+70e1356 User can edit owned comments in topics
+a606636 (FIX) delete child on settings rules
+3785c7b (FIX) all checkboxes on CIs
+0f12a4b lib/BaselinerX/Service/ChangesetServices.pm
+3155000 (FIX) error in topic details
+81a38e9 Solucionado problema con dashboard_filter_topics dado por cherry-pick desde 6.1
+383523d Solucionados errores derivados de los cherry-pick de otras ramas
+4b1f68e starting to (FIX) cbox issue on cis
+3c21422 cbox xtype (Baseliner.CBox)
+46db2bf (FIX) error applying a new password
+d112588 set pid with RUNNING to (FIX) C#9904 (I#9865)
+e7ee653 Remove next if not pid_file
+c287f57 Removed HUP when processing file
+71342d2 (FIX) pid detection when restarting processes
+243c286 Log for start processing file
+47b59ab Log for daemon restarts
+f3c159b (FIX) dont kill dispatcher when purging
+15890a7 Added rel_type in list_release and list_topics 4
+fdaba0d Added rel_type in list_release and list_topics 3
+5a93b26 Added rel_type in list_release and list_topics 2
+56223d2 Added rel_type in list_release and list_topics
+835ea24 Changed name by label in config
+94369c2 Added zip services to file management library
+0c7937c Corregidos errores derivados de los merges
+1149172 (FIX) action delete on search filter
+5f52d5d Incidencia #9508. El usuario desarrollo_TOL no puede cambiar su clave.
+d51fc26 (FIX) save reports
+25e8cc9 left join converted to inner join on reports
+c9e5981 Restore Changed code by pre in topic activity
+ef4a33a Changed code by pre in topic activity
+ca482e3 Added - to special chars in topic activity
+22d5fa9 Deleted cis web_cluster and instance file from branch master
+143a253 Cherry pick from master
+5138b0f Parse vars in subject notification
+f8e56dd (FIX) undefined variable $query, not detected due to the use of PlugMouse
+5eafc94 New filtered_topics dashboard
+5c4f239 New filtered_topics dashboard
+feb539d Removed debug
+e4ea5b6 Merge with branch 6.1#8262_2 done
+fc54e2f Changes  branch 6.1#8262_2.
+55e01f2 Changeset 8561 solved: Fallo en reinicio de pases
+4dd689b (FIX) paused job not permitted on status check or init
+b850ac9 (FIX) no parse_vars method detected
+8c3db48 orregido merge automatico
+d4f133c Corregido un merge automatico
+1c3e3e5 clarive-session is now our default cookie name
+ababeaf (FIX) missing db in topic_assets sub
+6a34d70 Changes to be commited cherry-pick (FIX) public reports visibility
+4e3ff5e (FIX) public reports visibility 2
+f925137 (FIX) public reports visibility
+86b1911 (FIX) role problem
+7ac5599 added new method get_status_history_topics
+526a2e4 Added hide passwords with global config
+69f3714 Added ci description in get_cis
+5c89ea4 (FIX) paused job not permitted on status check or init final
+6969ab2 paused job
+d0bae7b Dashboard
+156cf04 (FIX) roles with users
+7e4a1ea (FIX) topic comment can_edit always true in js
+3968d9a Changeset #8600. Monitor pases reseteo fecha máxima en roolback e icono de mensaje fijo
+f0a97c1 changes
+8c6b2db Branch 6.1#8772 merged with 6.1 branch
+5a43d38 Global config
+ca71427 cherry pick
+286625c cleanup performance - unnecessary loading of Config::General and IO::File, and Mojolicious
+9489d8a (FIX) translation No xxxxx found messages to spanish
+1f0d2e5 (FIX) space in ts for activity log
+571b3d9 (FIX) space in ts for activity log
+7060461 (FIX) space in ts for activity log
+464bc13 (FIX) order in topic grid
+ad4341a New services to add/update topics in rules (part 1) #8835
+2ade0fe Added username to change_status panel
+87b2ec3 New service/task to change topic status
+4cf7bf0 (FIX) warnings and (FIX) non shown change status combo from topics
+6cd9e35 Change has_comments inizializated
+10c6677 Translate files
+89bd4a1 Incidencia #9061 traducciones incorrectas Resuelto
+3bb04ab (FIX) warning in topic.pm
+5f9f750 (FIX) topicservices compile errors
+5acabed Declared variable @lastjobs
+cb71089 Cherry-pick solved
+678590e Changeset 9264. Error al añadir/quitar permisos a los roles
+9367817 topic description  not migrated
+277b477 (FIX) included/related topic name and color in right side topic detail
+7859029 Changeset #9387 y #9385
+873a583 (FIX) decimal numbers on topic activity
+2decd78 (FIX) scrollbar in Google Chrome
+677a1cf (FIX) id->id_status issue with topics
+784e5d6 Resuelta incidencia #9508. El usuario desarrollo_TOL no puede cambiar su clave
+01bf46c Update 6.1#7039 again
+f1f56b3 Cambio #9754 Valor por defecto en campo listbox de CI
+55404d7 small issue (FIX) at deleting topics
+275af32 topic modified_on date default, find_one_hashed return scalar when only one
+ff97bdb cleanups loggin, mongo defaults, etc.
+a5e59f1 topic_assets and dates migrations, rel migration one-way
+6fe32a4 included in topic color fix
+1549f13 (FIX) wrong initial dashboard
+37a5c22 cleanup DBIC stuff
+032d460 cla-pack - build a releaseable, fatpacked clarive needs to pack .po files separatedly into HOME/lang
+c1c7ccb cleanup bom utf8 which causes fatpacker to fail
+ceae62e cleanup unused deployment module
+631dcb4 (FIX) listing non-read topics
+ec7c0b0 change status fixed
+d50baab some category_status fixes
+fd04128 (FIX) bug with empty statuses in topic.pm
+1859336 has_ci and has_cis coercions activated
+0122faf (FIX) -in to $in
+fbacb28 cleanup old comment
+8f37334 last table gone, not mongoified
+aedb9ec cleanup dbi not used, repl DBI sql mode
+f6c7a62 (FIX) bug find_values with all detected while migrating
+f4dbab0 (FIX) problem adding actions to role, including common bl by defauld
+cda5d36 (FIX) problem creating topic without state
+0898d0e (FIX) update/save topic bug
+a94fd01 (FIX) bootstrap not detecting missing modules that had no version deleted DBIC and DBD Oracle dependencies
+bb2574e add create user for notifications tags subjects
+89b2fb9 (FIX) created_today problems at searching topics
+0af8f13 (FIX) problems at listing and searching topics
+
+---------------------------------------------- 6.2.0b -----------------------------------------------------
+3d62efd registry reload all when category changes, avoid menu unrefreshed, etc
+03b85fe Git is now core, not a feature anymore, not optional
+9bc8c20 migrator id filter, warning cleanup
+975610e test 999 working
+4bb3fd8 (FIX) other roles tests
+86a2e98 (FIX) bug in test file
+3d0966f added Developer role to more testing
+4484742 added Developer role to more testing
+2c091f2 test 999 workflow added
+15dde22 env now gets loaded later for baseliner, allow env to be a file
+d64b9e7 (FIX) topic category_status hashing on save_doc avoid category method vs. category attribute/accessor collision warning
+8ab470e CLARIVE_DIE_ON_WARN = 1 makes clarive die on any warning --migration <name> parameter lets you force migration run for a given migration
+119e531 term size any bootstraped, used by catalyst for wider debug messages
+fd34070 english translate baseline => environment
+23c9488 (FIX) category export
+dbdad4d workflow admin errors (duplicate, etc) fixed
+5b0aefe reorder test cases, make ordering matter har test case support make server the only test type by default
+7c487d3 added test file and clarive_install_topic_finished
+18443b8 (FIX) bug editing topics
+ddbf73e Incidencia #9553 resuelta
+43ce3dd finished clarive install topic test
+ab2abb7 updating test files
+240c423 added test creating user with roles and projects
+97ba78d fixing test file
+e76dd23 updating master test file for topics
+0dc0abd added massive test file
+c882422 initial test roles
+b8a91e3 added project test file
+150b07f added category test file
+bcf4a1a status test added
+b3d9f5e (FIX) enviroment test
+3f62d36 (FIX) test file name
+a2e38d5 (FIX) test file name
+3671a1c adding test files
+f0aa452 (FIX) warning in Mongo.pm on traying to access to an undefined env. var
+69bf83c (FIX) warning in Mongo.pm on traying to access to an undefined env. var
+86ea14b cherry pick raul comit (FIX) decimal numbers on topic activity
+24d208f update licencing in file
+4a76fcc Solucionado problema con el merge relacionado con el collapseall y los botones
+7397d07 root user auto creation migrator mdb->xxxx->find_mid model-> shortcut
+46f43cb Changeset #9223. Mejora asignación de defectos a cambios
+aba6f40 Cherry pick from 6.1
+64fcc28 Changeset 8843. Added colapse_all button in clarive explorer
+df3dc0e category "fields" renamed to "fieldlets" to avoid confusion with mdb cursor fields
+450f0ed BaliPost now really gone
+173fc0b Added user count to about information
+833f67f CLARIVE_TRACE for mdb collection calls (FIX) migration minor errors and overlooked conversions
+0a41648 DB is GONE! Still missing a few mongoizations for post and topic image... _dbis now uses the 'Model::Baseliner' connection
+a3824e9 fix: no mdb->workflow
+393b492 TopicAdmin migration finished, needs testing lots of failures still Priority system gone user_role_ids and some niceties too
+cc40b8d Adder colapse all and expand all button in clarive explorer
+0c2bab9 (FIX) merging project_security at adding more projects to a user
+c6f963c Add scrollbar for Rules. Changeset #9163
+a3fd4fc Changeset root/site/explorer.js
+1630cd8 (FIX) delete new images on topic update
+7586b28 (FIX) NULL step when compress fail in logger
+dcab0aa Render users as join of array #9210
+341bb79 Deprecate service.topic.status
+fb9ab98 delete _id
+ba8036e (FIX) broken compile
+9032388 ci update with Data::Compare
+d5bc520 lib/Baseliner/I18N/es.po
+89e8c80 Status properly translated
+468b9ea added all_project function
+048791b include project controler
+7cfa6bb premerge
+c123080 (FIX) update issue
+d6e62c8 migrate mids now fine tuned and in mdb->migra
+bf82f47 (FIX) mdb->false bug
+e086047 (FIX) mdb->true issue
+2e35ef7 (FIX) creating users
+beb3a1a Changeset #9141, Botones del Arbol Explorador se quedan deshabilitados al cambiar entre ellos
+5b08b16 Changeset 9082 Campo fecha no se muestra como obligatorio a pesar de allowBlank=false
+c9c7507 (FIX) ci saving, mid now stringificable, be careful with ci->new( 'name:' or 'moniker:'), not allowed ci->coll->search_ci preferred
+23bb3e4 (FIX) problem creating roles
+c0fceb0 (FIX) mdb->true in some mongo querys
+6da3682 Cambio en traducciones
+bbfecdc fixing get_columns calls
+1e29c59 repl standard msg mongoified
+e65e36f master, master_rel, master_cal anhillated schema master gone, bali_topic done with post and fileversion still unfinished
+0bb65c7 changed exists
+d41c8bc (FIX) cagada de Saul with mdb->in
+389c52a replacing  for mdb->in
+6b82160 Changeset #8838. Quitar el título de algunos tabs
+ee49680 Branch master#8983 merged into branch master. Campo tópico Fecha Maxima no recupera la fecha del anterior guardado
+c2eff6c Branch  master#8821 edit button is not enabled from topics
+53b4c56 surrogate not validate user
+68fe160 post and asset still mongoing, missing gridfs
+c54d20c cleanup job comment
+a02dd62 bali_topic, bali_master and bali_master_rel mongogo
+f7cc63d mdb true and false
+ab2bd38 cleanup ie comma
+c44c2a7 increased fastmmap cache size to 256
+fb1aed3 app name Clarive is now ϲʟᴀʀɪᴠе
+600ce18 (FIX) user ci migration 6.2 merge
+61a9af5 cleanup 6.2 merge warnings
+89c4180 merge 7625user - User, Roles and Project mongoization rgo fixed: is_root did not consider 'root' username as a is_root Conflicts: 	lib/Baseliner/Controller/Auth.pm 	lib/Baseliner/Controller/Role.pm 	lib/Baseliner/Controller/User.pm 	lib/Baseliner/Model/Permissions.pm 	lib/Baseliner/Schema/Migra/MongoMigration.pm
+dfdd882 6.2 final merge step1 - Mongoification FileVersion Squashed commit of the following:
+77e6915 Nuevos campos para el ci de web_instance para Telefónica Changeset #8982. Mejora #8971
+15e981b clarive.yml rollback
+d85035a Internatinalization language. Cherry-pick from bran 6.1
+5bf6b45 Language internationalization from branch 6.1#8262_2
+aa15549 web-start Starman parameters added: max_requests, backlog, max_servers, etc...
+7495487 web-start --listen array type "Starting server" fixed
+74c7cb4 New web_cluster and web_instance
+41c73a6 delete attribute required 1 from has server
+92a866d New web_cluster and web_instance ci
+92345e3 change language file merge problems
+6472e19 deleted repeated msgids
+728544e Task #8262 : Message translation. Translate all messages until now. I had to modify some of them because of the simple and double quote use to create the messages into the code.
+5bd8b39 INCLUDE rule can't have nested task
+0ea174e dashboard update fix
+224968a Added templates for grids
+69a2e9e Added color to status CI
+290f21c Added PRE/RUN start/end columns to monitor
+89282dc Removed Tablas from js
+ac4cdb7 (FIX) out when no includes 3
+d8fe64a (FIX) out when no includes 2
+8441b10 (FIX) out when no includes
+b8ea627 (FIX) ok when dont match 3
+8b76cb5 (FIX) ok when dont match 2
+9deac4d (FIX) ok when dont match
+c278362 (FIX) use finddepth in recursive ship files
+2a6abf6 Allow sed in job items only
+02c5204 Allow recursive copy files in ship remote service
+9483024 Group by string correspondences as ours
+9acaea7 (FIX) order and group by contents in monitor
+1b4f748 (FIX) default config in last_jobs
+7d3d828 Guillermo changes on changeset #6261. Change a msg into monitor_grid and (FIX) an error msg into jobs
+a774ecc CLEditor upgrade to 1.4.4 to solve IE10, 11 problems
+4db0121 dashboard parameters issue fixed
+5de7d48 cherrypick prettier msg with author, date
+db80b18 search cleanup debug messages
+aef91ba (FIX) topic _txt was not used in search
+d692d5f no save in topic update_categories
+1c5fd83 _txt topic doc field for better searching
+6de982d search control excerpt size
+5907766 no search refilter, better ci re matching
+1b32a8f Lucy is not the search default anymore, homemade highlighting and ordering, more results for less money
+1c8210b (FIX) totalcount related query for right pagination
+2e4a051 (FIX) template to take id_field in unique id
+3a95205 Change help listen and Starting web message
+b102c1e only executes {HUP} if code
+c2646c5 by default not stop redis server cause by default it is not started
+3ca62a1 redis doesn't start by default
+6997e48 (FIX) statuses in topic controller
+efe23dc cleanup useless debug date
+af3a907 Error login no connection solved
+02e5caf Removed MVS files
+36a9a5e Log JCL
+360157d JES config and publish JCL in log
+16dd0ac (FIX) argument list too long errors by putting arguments with more than 32K in a stdin data stream sent to the openssh library
+390cb39 Added subject to event.job.approval_request
+09ffce2 (FIX) refresh lifecycle
+313da45 (FIX) only allowed categories and topics seen in releases view
+8bec825 Strip html in generic_post
+7bedb7c New email template for topic assigned subject with category
+6b85171 (FIX) refresh lifecycle
+1df8c83 Remove _dump
+3c9a248 Remove _dump in jobs model
+25ce07a useless dump clogging log
+8a84ea4 (FIX) render_number
+a271a96 Added star/end step to milestones in job ci with exec
+271b132 Added star/end step to milestones in job ci
+968dfa7 (FIX) include conditions
+dde12d3 (FIX) return $row for $log operations
+4eb77c8 (FIX) jes log
+113a21f Add cygwin fname for ProcessTable in run_filter sub
+613fd0e Change att names for mongo, nginx and redis
+e0c632a parse vars timeout now 30 secs and controlled by env BASELINER_PARSE_TIMEOUT
+b00bd3e (FIX) dashboard _id missing
+35a9674 dashboard id hotfix
+aa76cb0 (FIX) surrogate window error #7928 Conflicts: 	lib/Baseliner/Controller/Auth.pm 	lib/Baseliner/Controller/Topic.pm 	root/static/final.css
+d49f49b login attempts control #7663 Conflicts: 	lib/Baseliner/Controller/Auth.pm 	lib/Baseliner/Controller/Topic.pm 	root/static/final.css
+d59e86e online help
+3501a98 remove ../lib/Clarive/Cmd/install.pm
+fbcb430 add config file generation functionality from installpm to config.pm
+3a65f65 remove old templates, add yml template
+4bb5904 rule soap webservice uri fixed, no query part
+bd37350 (FIX) rule migration JSON PP boolean import errors by exporting the rule tree as JSON
+8f1a499 (FIX) user can remove labels with write permissions 2
+2c478ab (FIX) user can remove labels with write permissions
+53f6555 rule soap ws implemented
+eb91575 Change package name Broker.pm
+05f6015 remove broker.pm
+ff229d1 independent rule soap with subtype implemented
+e3b2fd7 (FIX) no scroll in variables for project
+cc8b289 Added username to job activity in topic_msg
+11088cb (FIX) merge problems in approval template
+f83b91b Added list apps to subject in event.job.approval_request
+392bf63 (FIX) subject in approval template
+0f34ff4 (FIX) no topic_mid for roles 2
+63c2bc8 (FIX) no topic_mid for roles
+3234af9 (FIX) field recipents in notifications
+a90cdb6 (FIX) cancelEvent for user fields
+74de093 Force do layout for hidden cards in variable forms ... remove parameters in doLayout
+5bbbbba Force do layout for hidden cards in variable forms
+10e885d Sort actions grid in role edit panel
+259a9ba (FIX) tranlation of message for relationship change
+8448ba0 Comment _debug when no children to wait for to avoid problem in remedy createProblem
+5500a2d (FIX) translation on topic concurrent change
+369134b bali command now service.*
+2dadd59 (FIX) daemon starting multiple times, no pid stored
+16ac12f REPL mongoization fixes, use _id instead, (FIX) duplicate nodes when saving new
+170a021 deleted Baseliner.preferences, old style preferences config based
+ff533de show moniker template ci_box
+a8acabb (FIX) ordering by rule at monitor_grid
+b90d128 (FIX) view problems in firefox
+40a90da visualizacion firefox
+55121f8 (FIX) keep topic_list in related topic grids
+1b3a731 (FIX) warning while doing in, nin with undefs with [undef,...]
+aa836c6 mongo 2.6 errors with '$' needed on multiple update, (FIX) wrong update
+5d4920f topic modification message with duration and fixes
+e40eb4c distinct messages for the topic relationship changed while editing
+c7d1a32 Single-mode (FIX) when false is typed in meta
+4c68f7e Assume _array when field selected for notification
+928c631 rel_signature checks if topic relationships changed while user was editing
+188d75c (FIX) columns in tpl_cfg for release and topic boxes
+85ee369 auto-migration system available - use --migrate with any command to run
+351aae3 (FIX) columns in tpl_cfg for release and topic boxes
+ac86623 new property tpl_cfg to show topic list as a table
+67684fc (FIX) die if empty file when calculating CRC
+b52b937 (FIX) datetime in comments
+a81289d (FIX) export to csv with ;
+0734887 (FIX) create user with correct password
+1633cb6 bali_repo disappears, repo-> mongoified by using mongo directly
+f66afa9 merge branch 7587 - BaliDaemon mongoized Squashed commit of the following:
+d6fee08 dashboard mongoifed - #7472
+ac20fef cleanup logs in rule controller
+a56d6b4 display_field outside the box
+fa20fa0 new rule url ws runner /rule/ID/TYPE, cleanup warnings
+79afd18 cleanup dead code comments
+4250415 new property display_field to show a different field in topics box, method get_topics_mdb
+f074708 Rule fix
+337dc7d (FIX) rule problem when old rules where saved
+649f64e (FIX) rule problem when old rules where saved
+6144ef8 6.1#7039 - purge live log files, mongo etc
+e254198 (FIX) mongo warnings in regex /u due to unicode character
+fb5c750 bali_config migration to mongo missing, migration classes renamed
+f703335 missing self on cache_topic_remove
+008483e auto migrations, notify migrator
+88bfd80 (FIX) warnings for configstore and rules, (FIX) JobDaemon service name
+1a2a7d3 parse_vars now supports nested attributes for any ref or number (instanced to ci) type of var
+f864504 prove now for all t types
+f86c693 baliconfig and notification already in mongo, delete
+6cfda5d (FIX) notification merge missed file
+f0a857f finished #7314-config, BaliConfig mongoization
+fd53c67 finished #6437, merge resolved Conflicts: 	lib/Baseliner/Controller/Notification.pm 	lib/Baseliner/Model/Notification.pm 	lib/Baseliner/Schema/Migra/MongoMigration.pm 	root/comp/topic/topic_grid.js
+2931ac4 (FIX) query to get releases from projects
+d18d284 topic status changer task, web service caller now accepts body
+2542dae (FIX) multi-press button refresh on lifecycle
+2b0d334 (FIX) report property ci
+fa3b9eb traza
+a8c6de7 traza
+d7a6739 traza
+5e15da9 detect property as CI on reports
+3df44ab delete parse accent
+003ba1e new property collection_extends to get related data on reports
+70c8084 term field search working as designed, needs more tests
+25d8ff7 estimated job duration now sums on projects individually
+6f207e8 job stats better empty message
+6781068 (FIX) success rate msg
+b08136d job stats in job new
+40e7679 trazas
+d894780 trazas
+4feb251 parse key
+d26b109 parse key
+e87aaca trazas
+18f8d3a (FIX) values in report
+a8d3892 (FIX) controller report to Report
+b604da5 added new controller report
+3690306 report: extra columns ci
+91f860e (FIX) auth failed event on invalid login
+4d1e6a6 purge system implemented
+29a3c1b rule filter grid query now with ignore case
+8aca73e add some job email styling text
+28030d4 (FIX) repl initial text error
+d7c8e80 (FIX) comments not saved to job ci
+f35ebb3 rename daemon
+324c2bd avoid undefined errors in job email
+74dc0f7 notification event combo with event names
+ca073d0 new application version scheme
+8b28952 login and logout (auth) events
+3f2c9b7 job email with nice clarive banner
+768c5ed a little format for email errors
+bfee934 method status_name in topic CI
+b95c4ab not working anymore
+9635adf loc function for parse_vars
+b62c75e (FIX) subject parsing for job notifications, avoid circular reference
+21d8a68 subject parsing within messaging
+e91628e ssh agent not throwing errors
+c3e6f0f notification error - could not create new rows
+bb58427 notifications mongofied and subject templates
