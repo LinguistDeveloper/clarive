@@ -145,6 +145,10 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
             self.tool_bar.enable_all();
             //node.attributes.is_refreshing = true;
         });
+        
+        self.loader.on('loadexception', function(loader, node, res) {
+            self.tool_bar.enable_all();
+        });
 
         self.addEvents( 'favorite_added' );
         
@@ -759,7 +763,8 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
             enable_all: function() {
                 refresh_count--;
                 // alert('ena:' + refresh_count);
-                if ( refresh_count == 0 ) {
+                if ( refresh_count <= 0 ) {
+                    refresh_count = 0;
                     button_refresh.setIcon( IC('refresh.gif') );
                     tool_bar.enable();
                 }
