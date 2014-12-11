@@ -1046,7 +1046,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
             my $parse_category = $_->{category}{name};
             foreach my $field (keys $_){
                 $_->{$field . "_$parse_category"} = $_->{$field};
-                $meta_cfg_report{$field . "_$parse_category"} = $meta_cfg_report{$field} ;
+                $meta_cfg_report{$field . "_$parse_category"} = $meta_cfg_report{$field} if (($meta_cfg_report{$field}) && ($meta_cfg_report{$field} eq 'release' || $meta_cfg_report{$field} eq 'topic'));
             }
         }
     } @data;
