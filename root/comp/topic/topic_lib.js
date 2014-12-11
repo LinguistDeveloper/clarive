@@ -1857,25 +1857,34 @@ Baseliner.TopicForm = Ext.extend( Baseliner.FormPanel, {
                     });
                     var colspan =  field.colspan || self.form_columns;
                     var cw = field.colWidth || ( colspan / self.form_columns );
-                    var p_style = {};
-                    if( Ext.isIE && !all_hidden ) p_style['margin-top'] = '8px';
-                    p_style['padding-right'] = '10px';
-                    var p_opts = { layout:'form', style: p_style, border: false, columnWidth: cw };
-                    var p = new Ext.Container( p_opts );
-                    // p.on('afterrender',function(){
+                    var placeholder_style = {};
+                    if( Ext.isIE && !all_hidden ) placeholder_style['margin-top'] = '8px';
+                    placeholder_style['padding-right'] = '10px';
+                    var placeholder_opts = { layout:'form', style: placeholder_style, border: false, columnWidth: cw };
+                    var placeholder = new Ext.Container( placeholder_opts );
+                    // placeholder.on('afterrender',function(){
                     //     if(field.readonly){
                     //         var mask = this.el.mask();
                     //         mask.setStyle('opacity', 0);
                     //         mask.setStyle('height', 5000);
                     //     };            
                     // });                    
+                    
+                    // help text underneath field
+                    var add_undertext = function(cont){
+                        if( field.undertext ) {
+                            cont.add({ xtype:'panel', border: false, html: field.undertext, style:'padding-left: 4px' });
+                        }
+                    }
                     if( fieldlet.items ) {
                         if( fieldlet.on_submit ) self.on_submit_events.push( fieldlet.on_submit );
-                        p.add( fieldlet.items ); 
-                        self.add ( p );
+                        placeholder.add( fieldlet.items ); 
+                        add_undertext(placeholder);
+                        self.add ( placeholder );
                     } else {
-                        p.add( fieldlet ); 
-                        self.add ( p );
+                        placeholder.add( fieldlet ); 
+                        add_undertext(placeholder);
+                        self.add( placeholder );
                     }
                 }
             }
