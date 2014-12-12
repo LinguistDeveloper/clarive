@@ -282,7 +282,7 @@ sub dsl_build {
         my $trap_timeout_action = $attr->{trap_timeout_action} if $attr->{error_trap} && $attr->{error_trap} ne 'none';
         my $trap_rollback = $attr->{trap_rollback} if $attr->{error_trap} && $attr->{error_trap} ne 'none';
         my $needs_rollback_mode = $data->{needs_rollback_mode} // 'none'; 
-        my $needs_rollback_key  = $data->{needs_rollback_key} // $name_id;
+        my $needs_rollback_key  = $data->{needs_rollback_key} // '';
         my $parallel_mode = length $attr->{parallel_mode} && $attr->{parallel_mode} ne 'none' ? $attr->{parallel_mode} : '';
         push @dsl, sprintf( '%s:', $attr->{goto_label} ) . "\n" if length $attr->{goto_label};  
         push @dsl, sprintf( 'sub %s {', $attr->{sub_name} ) . "\n" if length $attr->{sub_name};  
@@ -298,12 +298,22 @@ sub dsl_build {
             $rb_close_me = 1;
         }
         elsif( !$run_forward ) {
-            push @dsl, sprintf( 'if( $$stash{rollback} ) { # only if we are going backwards ')."\n";
+            if ( !$needs_rollback_key || $needs_rollback_key eq '<always>') {
+                push @dsl, sprintf( 'if( $$stash{rollback} ) { # only if we are going backwards ')."\n";
+            } else {
+                push @dsl, sprintf( 'if( $$stash{rollback} && $stash->{needs_rollback}{q{%s}} ) { # only if we are going backwards ', $needs_rollback_key)."\n";
+            }
             $rb_close_me = 1;
         }
         elsif( !$run_rollback ) {
             push @dsl, sprintf( 'if( !$$stash{rollback} ) { # only if we are going forward ')."\n";
             $rb_close_me = 1;
+        }
+        else {
+            if ( $needs_rollback_key && $needs_rollback_key ne '<always>') {
+                push @dsl, sprintf( 'if( !$$stash{rollback} || ( $$stash{rollback} && $stash->{needs_rollback}{q{%s}} )) { # forward or back if rollback_key ', $needs_rollback_key)."\n";
+                $rb_close_me = 1;
+            } 
         }
         my ($data_key) = $attr->{data_key} =~ /^\s*(\S+)\s*$/ if $attr->{data_key};
         my $closure = $attr->{closure};
@@ -318,7 +328,7 @@ sub dsl_build {
         }
         push @dsl, sprintf( '_debug(q{=====| Current Rule Task: %s} );', $name)."\n" if $p{verbose}; 
         if( length $attr->{key} ) {
-            push @dsl, sprintf('$stash->{needs_rollback}{q{%s}} = 1;', $needs_rollback_key) if $needs_rollback_mode eq 'nb_always';
+            push @dsl, sprintf('$stash->{needs_rollback}{q{%s}} = $stash->{job_step};', $needs_rollback_key || $name_id) if $needs_rollback_mode eq 'nb_always';
             push @dsl, sprintf('parallel_run(q{%s},q{%s},$stash,sub{', $name, $parallel_mode) if $parallel_mode;
             push @dsl, sprintf( 'error_trap($stash,"%s","%s","%s","%s", sub {',$trap_timeout || 0,$trap_timeout_action || "", $trap_rollback || '1', $error_trap) if $error_trap; 
             my $key = $attr->{key};
