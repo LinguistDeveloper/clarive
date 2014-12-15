@@ -1,3 +1,19 @@
+---------------------------------------------- HEAD (f40fdd1) ----------------------------------------------
+[FIXES]
+· (#17566) change var message to msg in generic.html
+· (#17566) added vars to,cc and mid
+· blocked toolbar in explorer due to uncontrolled enabling
+· Fixed search ns in calendars
+· blank field, meta_cfg is added only for release or topic.
+
+[ENHANCEMENTS]
+· Rollback if needed after reject approval request. Fixed execute task only if key in needs_rollback.  Rollback executes PRE if need_rollback in that step
+· added undertext property to fieldlet with allows to document field
+
+[DOCUMENTATION]
+· Release notes with sha
+· Release notes and changelog updated
+
 ---------------------------------------------- 6.2.4 December 2014 (38d32f8) ----------------------------------------------
 · (FIX) cant start if already running instance
 · change strip_html to _fixCharacters_mail

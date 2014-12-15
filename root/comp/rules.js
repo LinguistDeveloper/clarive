@@ -396,16 +396,26 @@
             data: [ ['nb_after',_('Rollback Needed After')], ['nb_before',_('Rollback Needed Before')], 
                     ['nb_always',_('Rollback Needed Always')], ['none',_('No Rollback Necessary')] ]
         });
-        needs_rollback_mode.on('select', function(){ needs_rollback_mode.getValue()!='none' ? needs_rollback_key.show() : needs_rollback_key.hide() }); 
+        needs_rollback_mode.on('select', function(){ 
+            if (needs_rollback_mode.getValue()!='none'){
+                needs_rollback_key.setValue(Baseliner.name_to_id(node.text));
+                // needs_rollback_key.show();
+            }else{
+                // needs_rollback_key.hide();
+                needs_rollback_key.setValue('<always>');
+            }
+        });
         var needs_rollback_key = new Ext.form.TextField({ 
             name: 'needs_rollback_key', fieldLabel:_('Needs Rollback Key'), 
-            hidden: !( !data.needs_rollback_mode || data.needs_rollback_mode!='none' ),
-            value: Baseliner.name_to_id(node.text) 
+            // hidden: !( !data.needs_rollback_mode || data.needs_rollback_mode!='none' ),
+            value: data.needs_rollback_key || '<always>' //Baseliner.name_to_id(node.text) 
         });
         if (needs_rollback_mode.getValue()!='none'){
-            needs_rollback_key.show();
+            needs_rollback_key.setValue(Baseliner.name_to_id(node.text));
+            // needs_rollback_key.show();
         }else{
-            needs_rollback_key.hide();
+            // needs_rollback_key.hide();
+            needs_rollback_key.setValue('<always>');
         }
         var enabled = new Ext.form.Checkbox({ fieldLabel:_('Enabled'), checked: node.disabled===true?false:true });
         var run_forward = new Ext.form.Checkbox({ fieldLabel:_('Run Forward'), checked: _bool(attr.run_forward,true) });

@@ -75,6 +75,7 @@ sub job_daemon {
                 '$or' => [ 
                     { step => 'PRE', status=>'READY' }, 
                     { step => 'POST', status=>mdb->in('READY','ERROR','KILLED','EXPIRED','REJECTED') }, 
+                    { step => mdb->in('PRE','RUN','POST'), status=>'REJECTED' }, 
                     { now=>1 }, 
                 ], 
                 

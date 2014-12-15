@@ -65,7 +65,7 @@ sub run_local {
     }
     my @cmd = ($path, _array( $args ) );
     $job->logger->info( _loc('Running command: %1', join ' ', @cmd), \@cmd ); 
-    $stash->{needs_rollback}{ $needs_rollback_key } = 1 if $needs_rollback_mode eq 'nb_before';
+    $stash->{needs_rollback}{ $needs_rollback_key } = $job->step if $needs_rollback_mode eq 'nb_before';
     my ($out) = Capture::Tiny::tee_merged(sub{ 
         local %ENV = ( %ENV, %$environment );
         $ret = system @cmd ;
@@ -99,7 +99,7 @@ sub run_local {
         $job->logger->info( _loc('Finished command %1' , join ' ', @cmd ), qq{RC: $rc\nRET: $ret\nOUTPUT: $out} ); 
     }
         
-    $stash->{needs_rollback}{ $needs_rollback_key } = 1 if $needs_rollback_mode eq 'nb_after'; # only if everything went alright
+    $stash->{needs_rollback}{ $needs_rollback_key } = $job->step if $needs_rollback_mode eq 'nb_after'; # only if everything went alright
     return $r;
 }
 
@@ -152,7 +152,7 @@ sub run_remote {
         }
         
         my $agent = $server->connect( user=>$user );
-        $stash->{needs_rollback}{ $needs_rollback_key } = 1 if $needs_rollback_mode eq 'nb_before';
+        $stash->{needs_rollback}{ $needs_rollback_key } = $job->step if $needs_rollback_mode eq 'nb_before';
         $agent->execute( { chdir=>$home }, $path_parsed, _array($args_parsed) );
         my $out = $agent->output;
         my $rc = $agent->rc;
@@ -182,7 +182,7 @@ sub run_remote {
                 $agent->tuple_str );
         }
         push @rets, { output=>$out, rc=>$rc, ret=>$ret };
-        $stash->{needs_rollback}{ $needs_rollback_key } = 1 if $needs_rollback_mode eq 'nb_after';  # after only one ok, needs rollback
+        $stash->{needs_rollback}{ $needs_rollback_key } = $job->step if $needs_rollback_mode eq 'nb_after';  # after only one ok, needs rollback
     }
     return @rets > 1 ? \@rets : $rets[0];
 }

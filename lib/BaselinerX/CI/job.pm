@@ -12,6 +12,7 @@ has bl                 => qw(is rw isa Any);
 has bl_to              => qw(is rw isa Any);
 has state_to           => qw(is rw isa Any);
 has purged             => qw(is rw isa Bool default 0);
+has is_rejected        => qw(is rw isa Bool default 0);
 has rollback           => qw(is rw isa BoolCheckbox default 0);
 has job_key            => qw(is rw isa Any), default => sub { Util->_md5() };
 has job_type           => qw(is rw isa Any default promote);  # promote, demote, static
@@ -530,6 +531,13 @@ sub reset {   # aka restart
 
     my $msg;
     event_new 'event.job.rerun' => { job=>$self } => sub {
+        # prepare stash for rules
+        my $prev_stash = $self->job_stash;
+        my $stash = { 
+                %{ $prev_stash }, 
+               needs_rollback => {},
+        };
+        $self->job_stash($stash);
         my $now = mdb->now;
         if( $p{run_now} || $self->schedtime < $now ) {
             my $end = $now + $self->expiry_time;
@@ -541,8 +549,10 @@ sub reset {   # aka restart
         $self->pid( 0 );
         $self->status( 'READY' );
         $self->final_status( '' );
+        $self->last_finish_status( '' );
         $self->step( $p{step} || 'PRE' );
         $self->username( $username );
+        $self->is_rejected(0);
         my $exec = $self->exec + 1;
         $self->exec( $exec );
         $self->save;
@@ -652,9 +662,13 @@ sub reject {
         $self->status( 'REJECTED' );
         $self->final_status( '' );
         $self->last_finish_status( 'REJECTED' );  # saved for POST
-        $self->step('POST');
+        my $nr = $self->job_stash->{needs_rollback} // {};
+        my ($needing_rollback) = Util->_unique(sort { $a cmp $b } map { $nr->{$_}} grep { $nr->{$_} && $nr->{$_} =~ /PRE|RUN/ } keys %$nr);
+
+        $self->step( $needing_rollback || 'POST');
         # $self->goto_next_step();
         $self->username( $p->{username} );   # TODO make this line optional, set a checkbox in the interface [ x ] make me owner
+        $self->is_rejected(1);
         $self->save;
     };
     { success=>1 }
@@ -1058,7 +1072,7 @@ sub run {
             rollback       => $self->rollback,
             username       => $self->username,
             changesets     => $self->changesets,
-            needs_rollback => {},
+#            needs_rollback => $self->needs_rollback //,
     };
     
     event_new 'event.job.start_step' => { job=>$self, job_stash=>$prev_stash, status=>$self->status, bl=>$self->bl, step=>$self->step };
@@ -1067,6 +1081,9 @@ sub run {
     my $job_error = 0;
     my $end_status = '';
     try {
+        if ( $self->last_finish_status eq 'REJECTED' ) {
+            _fail(_loc("Job rejected.  Treated as failed"));
+        }
         my $ret = Baseliner->model('Rules')->run_single_rule( 
             id_rule => $self->id_rule, 
             logging => 1,
@@ -1088,15 +1105,19 @@ sub run {
 
     my $rollback_now = 0;
     my $nr = $stash->{needs_rollback} // {};
-    my @needing_rollback = map { $_ } grep { $nr->{$_} } keys %$nr;
+    my @needing_rollback = Util->_unique(sort { $a cmp $b } map { $nr->{$_}} grep { $nr->{$_} && $nr->{$_} =~ /PRE|RUN/ } keys %$nr);
     if( $job_error ) {
         if( @needing_rollback && !$self->rollback ) {
+            $self->step( $needing_rollback[0] );
             $self->finish( $end_status );
             # rinse and repeat
+            $self->last_finish_status( '' );
+            $self->final_status( '' );
             $stash->{rollback} = 1;
             $stash->{job} = $self;
             $self->rollback( 1 );
             $self->status( 'RUNNING' );
+            $self->is_rejected(0);
             $self->exec( $self->exec + 1);
             $rollback_now = 1;
             $self->logger->info( "Starting *Rollback*", \@needing_rollback );
@@ -1118,7 +1139,12 @@ sub run {
     # last line on log
     if( $self->status eq 'ERROR' ) {
         $self->logger->error( _loc( 'Job step %1 finished with error', $self->step, $self->status ) );
-        $self->step eq 'POST' ? $self->final_step('END') : $self->final_step( 'POST' );
+        if ($self->step eq 'POST') {
+            $self->status('REJECTED') if $self->is_rejected;
+            $self->final_step('END');
+        } else {
+            $self->final_step( 'POST' );
+        }
     } elsif( $self->status eq 'FINISHED' ) { 
         $self->logger->info( _loc( 'Job step %1 finished ok', $self->step ) );
         $self->goto_next_step( $self->final_status );  # goto_next_step only works for jobs 'FINISHED'

@@ -5,6 +5,7 @@ use Carp;
 use Try::Tiny;
 use Path::Class;
 use Baseliner::Sugar;
+use Class::Date;
 use utf8;
 
 with 'Baseliner::Role::Service';
@@ -34,7 +35,18 @@ sub run_create {
             changesets => \@changesets
         };
         $job_data->{id_rule} = $config->{id_rule} if $config->{id_rule};
-        $job_data->{schedtime} = $config->{schedtime} if $config->{schedtime};
+        my $expiry_time = "1D";
+
+        if ( $config->{expiry_time} ) {
+            $expiry_time = $config->{expiry_time};
+        }
+
+        if ($config->{schedtime})  {
+            $job_data->{schedtime} = $config->{schedtime};
+        }
+
+        $job_data->{maxstarttime} = Class::Date->new($job_data->{schedtime}) + $expiry_time;
+
         my $job;
         event_new 'event.job.new' => { username => $job_data->{username}, bl => $job_data->{bl}  } => sub {
 

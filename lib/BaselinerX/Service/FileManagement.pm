@@ -501,7 +501,7 @@ sub run_ship {
                 if( $create_dir eq 'create' && !$agent->file_exists("$remote_dir") ) {
                     $agent->mkpath( "$remote_dir" );
                 }
-                $stash->{needs_rollback}{ $needs_rollback_key } = 1 if $needs_rollback_mode eq 'nb_before';
+                $stash->{needs_rollback}{ $needs_rollback_key } = $job->step if $needs_rollback_mode eq 'nb_before';
                 # send file remotely
                 if(!$is_rollback_no_backup){
                     $agent->put_file(
@@ -517,7 +517,7 @@ sub run_ship {
 
                 $sent_files->{$hostname}{$local_key_md5}{"$remote"} = _now();
             }
-            $stash->{needs_rollback}{ $needs_rollback_key } = 1 if $needs_rollback_mode eq 'nb_after';
+            $stash->{needs_rollback}{ $needs_rollback_key } = $job->step if $needs_rollback_mode eq 'nb_after';
             
             if( length $chown ) {
                 _debug "chown $chown $remote";
