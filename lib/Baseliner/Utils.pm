@@ -1005,7 +1005,9 @@ sub _pathxs {
 
 sub _markdown {
     require Text::Markdown;
-    my $txt = Text::Markdown::markdown( @_ );
+    my ($txt,$mdopts, %p) = @_;
+    $txt =~ s{##:([^:]+):}{/topic/download_file/$p{mid}/$1};
+    $txt = Text::Markdown::markdown( $txt, $mdopts );
     $txt =~ s{^\<p\>}{};
     $txt =~ s{\</p\>\n?$}{};
     $txt ;

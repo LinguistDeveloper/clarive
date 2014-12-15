@@ -4311,6 +4311,9 @@ msgstr "Campo de texto"
 msgid "Upload files"
 msgstr "Subir ficheros"
 
+msgid "Attach Files"
+msgstr "Adjuntar Ficheros"
+
 msgid "Progress bar"
 msgstr "Barra de progreso"
 

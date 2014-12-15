@@ -1436,18 +1436,31 @@ sub file : Local {
 }
 
 sub download_file : Local {
-    my ( $self, $c, $mid ) = @_;
+    my ( $self, $c, $mid, $fn ) = @_;
     my $p = $c->req->params;
     my $ass = ci->find( $mid );
-    if( defined $ass ) {
-        my $filename = $ass->name;
-        utf8::encode( $filename );
-        $c->stash->{serve_filename} = $filename;
-        $c->stash->{serve_body} = $ass->slurp;
-        $c->forward('/serve_file');
-    } else {
-        $c->res->body(_loc('File %1 not found', $mid ) );
-    }
+    try {
+        if( defined $ass ) {
+            if( $ass->does('Baseliner::Role::CI::Topic') ) {
+                # it's a topic! find an asset that matches the filename
+                my @res = $ass->related( isa=>'asset', where=>{ name=>$fn } );
+                $ass = @res > 1 ? _fail( _loc 'More than one asset found for topic %1 matching name `%2`',$mid,$fn)
+                    : @res == 0 ? _fail( _loc 'No asset found for topic %1 matching name `%2`',$mid,$fn)
+                    : $res[0];
+            }
+            my $filename = $ass->name;
+            utf8::encode( $filename );
+            $c->stash->{serve_filename} = $filename;
+            $c->stash->{serve_body} = $ass->slurp;
+            $c->forward('/serve_file');
+        } else {
+            $c->res->body(_loc('File %1 not found', $mid ) );
+        }
+    } catch {
+        my $err = shift;
+        _error( $err );
+        $c->res->body( $err );
+    };
 }
 
 sub file_tree : Local {

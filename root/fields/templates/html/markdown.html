@@ -4,7 +4,7 @@
 </%args>
 <%perl>
     my $val = $data->{$meta->{display_field}} || $data->{$meta->{bd_field}};
-    $val = Util->_markdown( $val );
+    $val = Util->_markdown( $val, {}, mid=>$$data{mid} );
 </%perl>
 % if( !$meta->{hidden} ) {
 %  if( !$meta->{hide_title} ) {

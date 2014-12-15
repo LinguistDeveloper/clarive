@@ -1,5 +1,5 @@
 /*
-name: Upload files
+name: Attach Files
 params:
     origin: 'template'
     type: 'upload_files'
