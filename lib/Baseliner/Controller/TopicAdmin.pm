@@ -516,7 +516,7 @@ sub list_tree_fields : Local {
     my @templates;
 
     # avoid warnings 
-    @tmp_templates = grep { defined $$_{metadata}{params}{type} } @tmp_templates;
+    @tmp_templates = map { $$_{metadata}{params}{type} //='generic'; $_ } @tmp_templates;
     
     # common sorter by field order 
     my $field_order_sorter = sub {
@@ -581,7 +581,7 @@ sub list_tree_fields : Local {
         id          => 'T',
         text        => _loc('Templates'),
         expanded    => \1, 
-        children    => \@templates
+        children    => [ sort { lc $$a{text} cmp lc $$b{text} } @templates ],
     };      
     
     $c->stash->{json} = \@tree_fields;
