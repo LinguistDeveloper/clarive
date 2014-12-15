@@ -33,7 +33,12 @@ sub run_create {
             changesets => \@changesets
         };
         $job_data->{id_rule} = $config->{id_rule} if $config->{id_rule};
-        $job_data->{schedtime} = $config->{schedtime} if $config->{schedtime};
+
+        if ( $config->{schedtime} ) {
+            $job_data->{schedtime} = $config->{schedtime};
+            $job_data->{maxstarttime} = Class::Date->new($config->{schedtime}) + "1D";
+        }
+
         my $job;
         event_new 'event.job.new' => { username => $job_data->{username}, bl => $job_data->{bl}  } => sub {
 
