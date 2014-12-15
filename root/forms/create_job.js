@@ -31,6 +31,7 @@
         combo_bl,
         combo_chain,
         { xtype:'textfield', fieldLabel: _('Scheduled time'), name: 'schedtime', value: data.schedtime },
+        { xtype:'textfield', fieldLabel: _('Expiration time'), name: 'expiry_time', value: data.expiry_time },
         { xtype:'textfield', fieldLabel: _('Changesets'), name: 'changesets', value: data.changesets },
         { xtype:'textfield', fieldLabel: _('Username'), name: 'username', value: data.username },
         { xtype:'textarea', fieldLabel: _('Comments'), height: 80, name: 'comments', value: data.comments }
