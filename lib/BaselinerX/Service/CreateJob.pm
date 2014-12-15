@@ -21,6 +21,7 @@ sub run_create {
     my $stash = $c->stash;
     my @changesets = Util->_array_or_commas($config->{changesets});
     my $bl = $config->{bl};
+    my $job_stash = $config->{job_stash};
 
     try {
         # create job CI
@@ -39,6 +40,7 @@ sub run_create {
 
             $job = ci->job->new( $job_data );
             $job->save;  # after save, CHECK and INIT run
+            $job->job_stash( $job_stash, 'merge') if ref $job_stash;
             # $job->job_stash({   # job stash autosaves into the stash table
             #     status_from    => $config->{status_from},
             #     status_to      => $config->{status_to},

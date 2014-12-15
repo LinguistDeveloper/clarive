@@ -25,15 +25,29 @@
         lazyRender: true,
         value: data.id_rule
     });
+    
+    var job_stash = new Baseliner.DataEditor({ 
+           name:'job_stash', title: _('Job Stash'), 
+           height: 400,
+           hide_save: true, hide_cancel: true,
+           data: data.job_stash || {} 
+    });
 
     return [
-        job_type,
-        combo_bl,
-        combo_chain,
-        { xtype:'textfield', fieldLabel: _('Scheduled time'), name: 'schedtime', value: data.schedtime },
-        { xtype:'textfield', fieldLabel: _('Changesets'), name: 'changesets', value: data.changesets },
-        { xtype:'textfield', fieldLabel: _('Username'), name: 'username', value: data.username },
-        { xtype:'textarea', fieldLabel: _('Comments'), height: 80, name: 'comments', value: data.comments }
+        { xtype:'tabpanel', height: '100%', activeTab: 0, items:[
+            { xtype:'panel', frame: true, border: false, height: 500, layout:'form', defaults:{ anchor:'100%' }, title:_('Options'), items:[
+                job_type,
+                combo_bl,
+                combo_chain,
+                { xtype:'textfield', fieldLabel: _('Scheduled time'), name: 'schedtime', value: data.schedtime },
+                { xtype:'textfield', fieldLabel: _('Changesets'), name: 'changesets', value: data.changesets },
+                { xtype:'textfield', fieldLabel: _('Username'), name: 'username', value: data.username },
+                { xtype:'textarea', fieldLabel: _('Comments'), height: 80, name: 'comments', value: data.comments }
+                ]
+            },
+            job_stash
+            ]
+        }
     ]
 })
 
