@@ -86,30 +86,28 @@ Cla.topic_grid = function(params){
     if( id_report ) {
         base_params.id_report = params.id_report;
         base_params.id_report_rule = params.id_report_rule;
-		store_config = {
-			baseParams: base_params,
-			remoteSort: false,
-			listeners: {
-				'beforeload': function( obj, opt ) {
-					if( opt !== undefined && opt.params !== undefined )
-						filter_current = Baseliner.merge( filter_current, opt.params );
-				}
-			}
-            ,
-			sort: function(sorters, direction){
-				var col;
-				if( this.data.items.length > 0 ){
-                     // console.log(sorters);
-                     // console.dir(this.data);
-					// console.log(this.data.items[0].data[sorters]);
-					if(this.data.items[0].data[sorters] === '' ){
-						var res = sorters.replace(/\_[^_]+$/,"");
-                        sorters = res;
-					}
-				}
-				this.superclass().sort.call(this, sorters, direction);
-			}			
-		};			
+        store_config = {
+            baseParams: base_params,
+            remoteSort: true,
+            listeners: {
+                'beforeload': function( obj, opt ) {
+                    if( opt !== undefined && opt.params !== undefined )
+                        filter_current = Baseliner.merge( filter_current, opt.params );
+                }
+            }
+            // ,
+            // sort: function(sorters, direction){
+            //     var col;
+            //     if( this.data.items.length > 0 ){
+            //         // console.log(this.data.items[0].data[sorters]);
+            //         if(this.data.items[0].data[sorters] === '' ){
+            //             var res = sorters.replace(/\_[^_]+$/,"");
+            //             sorters = res;
+            //         }
+            //     }
+            //     this.superclass().sort.call(this, sorters, direction);
+            // }           
+        };          
     }else{
 		store_config = {
 			baseParams: base_params,
@@ -913,7 +911,7 @@ Cla.topic_grid = function(params){
     
     var render_topic_rel = function(value,metadata,rec,rowIndex,colIndex,store) {
         var arr = [];
-        console.log( metadata ); 
+        // console.log( metadata ); 
         
         if ( !rec.json[this.dataIndex] ) {
             var str = this.dataIndex;

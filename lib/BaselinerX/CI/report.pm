@@ -780,7 +780,7 @@ sub get_where {
 }
 
 
-method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=undef, :$query_search=undef ) {
+method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=undef, :$query_search=undef, :$sort=undef, :$sortdir=undef ) {
     # setup a temporary alternative connection if configured
     my $has_rep_db = exists Baseliner->config->{mongo}{reports};
     my $db2 =
@@ -804,7 +804,6 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	};
 	#_log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>QUERY: " . _dump $rel_query;
     # _log ">>>>>>>>>>>>>>>>>>>>>>>>>>>>QUERY: " . _dump $self->selected;
-    
     my %fields = map { $_->{type}=>$_->{children} } _array( $self->selected );
     my %meta = map { $_->{id_field} => $_ } _array( Baseliner->model('Topic')->get_meta(undef, undef, $username) );  # XXX should be by category, same id fields may step on each other
     my @selects = map { ( $_->{meta_select_id} // $select_field_map{$_->{id_field}} // $_->{id_field} ) => $_->{category} } _array($fields{select});
@@ -923,8 +922,21 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	if( exists $where->{'status_new'} ){
 		$where->{'category_status.id'} = delete $where->{'status_new'};
 	}
-	
-    my @sort = map { $_->{id_field} => 0+($_->{sort_direction} // 1) } _array($fields{sort});
+    
+    my @sort;
+    if ($sort) {
+        my @categories;
+        if ($categories_queries){
+            for (keys $categories_queries) { push(@categories,$_) };
+        } else {
+            for (@All_Categories) { push(@categories,$_) };
+        }
+        for (@categories) { $sort =~ s/_$_//g; };
+        $sort = "mid" if ($sort eq 'topic_mid');
+        @sort = map { $_ => $sortdir } _array($sort);
+    } else{
+        @sort = map { $_->{id_field} => 0+($_->{sort_direction} // 1) } _array($fields{sort});
+    }
 
     Baseliner->model('Topic')->build_field_query( $query_search, $where, $username ) if length $query_search;	
 
@@ -1247,7 +1259,13 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
         \%row;
     #} @data;
 	} @parse_data;
-	
+    # order data with text not ci-mid.
+    if (@sort) {
+        if (exists $meta_cfg_report{$sort[0]} && $meta_cfg_report{$sort[0]} =~ /ci|project/){
+            @topics = sort { lc($a->{$sort[0]}[0]) cmp lc($b->{$sort[0]}[0]) } @topics; 
+        }
+    }
+
     # _debug \@topics;
 	#_log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump @topics;
     return ( 0+$cnt, @topics );

@@ -141,8 +141,8 @@ sub list : Local {
             #$f->{field} = join('_',@temp[0..$#temp-1]);
             $f->{category} = $temp[$#temp];
         }
-        
-        my ($cnt, @rows ) = ci->new( $p->{id_report} )->run( start=>$start, username=>$c->username, limit=>$p->{limit}, query=>$p->{topic_list}, filter=>$filter, query_search=>$p->{query} );
+        my $dir = $p->{dir} && uc($p->{dir}) eq 'DESC' ? -1 : 1;        
+        my ($cnt, @rows ) = ci->new( $p->{id_report} )->run( start=>$start, username=>$c->username, limit=>$p->{limit}, query=>$p->{topic_list}, filter=>$filter, query_search=>$p->{query}, sort=>$p->{sort}, sortdir=>$dir );
            
         $c->stash->{json} = { data=>\@rows, totalCount=>$cnt };
     } elsif( my $id = $p->{id_report_rule} ) {
