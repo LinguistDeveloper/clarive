@@ -21,7 +21,9 @@ Ext.onReady(function(){
         if( q==undefined || q.length== 0 ) return;
         var res = /^#(\S+)$/.exec(q);
         if( res && res.length > 1 ) { // [0] is the full match
-            Baseliner.add_tabcomp( "/topic/view", null, { topic_mid: res[1] } );
+            Baseliner.ajaxEval( '/topic/title_row',{ mid: res[1] },function(result){
+                Baseliner.add_tabcomp( "/topic/view", null, { topic_mid: res[1], topic_name: result.row.title, category_color: result.row.category_color, category_name: result.row.category_name  } );
+                });
         } else {
             Baseliner.add_tabcomp('/comp/search_results.js', undefined,
                 { query: q, opts: opts || {}, tab_icon: '/static/images/icons/search.png' });

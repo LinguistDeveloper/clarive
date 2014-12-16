@@ -433,7 +433,6 @@ sub view : Local {
     my $category;
     
     try {
-    
         my $topic_doc;
 
         $c->stash->{user_security} = ci->user->find_one({ name => $c->username })->{project_security};
@@ -450,12 +449,12 @@ sub view : Local {
                 $c->stash->{viewKanban} = $topic_ci->children( where=>{collection => 'topic'}, mids_only => 1 );
                 my $is_root = Baseliner->model('Permissions')->is_root($c->username);
                 $c->stash->{viewDocs} = $c->stash->{viewKanban} && ( $is_root || Baseliner->model('Permissions')->user_has_action( username=> $c->username, action=>'action.home.generate_docs' ));  
+                $topic_doc = $topic_ci->get_doc;
 
             } catch {
                 $c->stash->{viewKanban} = 0;
                 $c->stash->{viewDocs} = 0;
             };
-            $topic_doc = $topic_ci->get_doc;
         } else {
             $c->stash->{viewKanban} = 0;
             $c->stash->{viewDocs} = 0;
@@ -613,8 +612,13 @@ sub title_row : Local {
     my ($self, $c ) = @_;
     my $mid = $c->req->params->{mid};
     my $row = mdb->topic->find_one({ mid=>"$mid" },{ mid=>1, title=>1, category_name=>1, category_color=>1 });
-    $c->stash->{json} = { success=>$row ? \1 : \0, row => $row };
-    $c->forward('View::JSON');
+    if ($row){
+        $c->stash->{json} = { success=>$row ? \1 : \0, row => $row };
+        $c->forward('View::JSON');
+    }else {
+        _fail(_loc("Problem found opening topic %1. The error message is: %2", $mid, _loc('Topic not found')));
+    }
+    
 }
 
 sub data_user_event : Local {

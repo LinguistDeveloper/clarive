@@ -680,15 +680,15 @@ Cla.topic_grid = function(params){
         var modified_by = rec.data.modified_by;
         
         //#######################################Ñapa
-        if ( rec.json['mid_' + this.alias] ){
-            mid = rec.json['mid_' + this.alias];
-            category_name = rec.json['category_name_' + this.alias];
-            category_color = rec.json['category_color_' + this.alias];
+        // if ( rec.json['mid_' + this.alias] ){
+            // mid = rec.json['mid_' + this.alias];
+            // category_name = rec.json['category_name_' + this.alias];
+            // category_color = rec.json['category_color_' + this.alias];
             // var modified_on_to_date = new Date(rec.json['modified_on_' + this.alias]);
             // date_modified_on = modified_on_to_date.dateFormat('M j, Y, g:i a');
             // date_modified_on = modified_on_to_date.dateFormat('M j, Y, g:i a');
-            modified_by = rec.json['modified_by_' + this.alias];
-        }
+            // modified_by = rec.json['modified_by_' + this.alias];
+        // }
         //#######################################
         
         var tag_color_html;
