@@ -177,32 +177,39 @@ sub reports_from_rule {
     my $username = $p->{username};
     my @tree;
     for my $rule ( mdb->rule->find({ rule_type=>'report' })->sort({ id=>1 })->all ) {
-        my $n = {
-            key => "$$rule{_id}",
-            text => $$rule{rule_name},
-            icon => '/static/images/icons/rule.png',
-            leaf => \1,
-            data    => {
-                click   => {
-                    icon    => '/static/images/icons/topic.png',
-                    url     => '/comp/topic/topic_report.js',
-                    type    => 'eval',
-                    title   => $$rule{rule_name},
-                },
-                id_report_rule => "$$rule{_id}",
-                report_name    => $$rule{rule_name},
-                hide_tree      => \1,
-                #custom_form    => $reg->form,    
-            }
-        };
-        push @tree, $n;
+        my $cr = Baseliner::CompiledRule->new( _id=>$rule->{_id} );
+        my $stash = {};
+        $cr->compile;
+        $cr->run( stash=>$stash ); 
+        my $can = $stash->{report_security}->(username => $p->{username}) // {};  # grid_params, 
+        if ( $can ) 
+        {
+            my $n = {
+                key => "$$rule{_id}",
+                text => $$rule{rule_name},
+                icon => '/static/images/icons/rule.png',
+                leaf => \1,
+                data    => {
+                    click   => {
+                        icon    => '/static/images/icons/topic.png',
+                        url     => '/comp/topic/topic_report.js',
+                        type    => 'eval',
+                        title   => $$rule{rule_name},
+                    },
+                    id_report_rule => "$$rule{_id}",
+                    report_name    => $$rule{rule_name},
+                    hide_tree      => \1,
+                    #custom_form    => $reg->form,    
+                }
+            };
+            push @tree, $n;
+        }
     }
     return \@tree;
 }
 
 sub report_meta {
     my ($self,$p) = @_;
-    _debug( $p );
     my $key = $p->{key};
     my $config = $p->{config} // {};
     if( my $id = $p->{id_report_rule} ) {
@@ -210,7 +217,7 @@ sub report_meta {
         my $stash = {};
         $cr->compile;
         $cr->run( stash=>$stash ); 
-        return $stash->{report_meta} // {};  # grid_params, 
+        return $stash->{report_meta}->(%$config) // {};  # grid_params, 
     } elsif( my $key = $p->{id_report} ) {
         my $report = Baseliner->registry->get( $key );
         return $report->meta_handler->( $config );

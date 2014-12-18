@@ -3436,7 +3436,7 @@ sub getCategoryAcronyms {
         mdb->category->find( {}, { _id => -1, name => 1, acronym => 1 } )->all;
         cache->set('category:acronyms',\%acr);
         $acronyms = \%acr;
-        _log _dump $acronyms;
+        _log "FFFFFFFFFFFFFFFFFF:"._dump $acronyms;
     }
     return _encode_json($acronyms);
 }

@@ -158,8 +158,9 @@ sub list : Local {
         };
         $cr->compile;
         $cr->run( stash=>$stash ); 
-        _fail _loc 'Invalid report data for report %1',$id unless ref $$stash{report_data} eq 'ARRAY';
-        $c->stash->{json} = { data=>$$stash{report_data}, totalCount=>scalar( @{$$stash{report_data} || []} ) };
+        my $report_data = $$stash{report_data}->(%$p);
+        _fail _loc 'Invalid report data for report %1',$id unless ref $report_data->{data} eq 'ARRAY';
+        $c->stash->{json} = { data=>$report_data->{data}, totalCount=>$report_data->{cnt} || []};
     } else {
         my ($info, @rows ) = $c->model('Topic')->topics_for_user( $p );
         $c->stash->{json} = { data=>\@rows, totalCount=>$$info{count}, last_query=>$$info{last_query} };
