@@ -249,7 +249,7 @@ Baseliner.UserAndRoleBox = function(c) {
         msgTarget: 'under',
         allowAddNewData: true,
         addNewDataOnBlur: true, 
-        emptyText: _('select users or roles'),
+        // emptyText: _('select users or roles'),
         triggerAction: 'all',
         resizable: true,
         mode: 'remote',
