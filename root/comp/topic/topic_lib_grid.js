@@ -332,7 +332,7 @@ Cla.topic_grid = function(params){
 
     var add_topic = function() {
         var win;
-        if( category_id!=undefined ) {
+        if( category_id!=undefined && category_id!='' ) {
             topic_create_for_category({ id: category_id });
             return;
         }
