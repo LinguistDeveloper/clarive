@@ -43,7 +43,27 @@
         return "<div style='color: blue;cursor: pointer;' onclick=Baseliner.add_tabcomp('/comp/view_diff.js','" + str_title + "'," + str_params + ");>"+_('DIFF')+"</div>";
     };
 
+    var search_form = new Ext.form.TextField({ enableKeyEvents : true });
+    search_form.on('keypress', function(obj,e){ 
+		if(e.which == 13 || e.keyCode == 13){ 
+			Baseliner.ajax_json('/'+controller+'/get_commits_search', { repo_dir: repo_dir, branch: branch, query: this.getValue() }, 
+				function(res){
+					pagingBar.pageSize = res.commits.length;
+					store_history.loadData(res);
+				}
+			);
+		}
+    });
+
+	var pagingBar = new Ext.PagingToolbar({
+        pageSize: ps,
+        store: store_history,
+        displayInfo: true,
+        plugins: new Ext.ux.ProgressBarPager()
+    });
+
 	var grid = new Ext.grid.GridPanel({
+			tbar : [ _('Search'),search_form ],
 	        store: store_history,
 	        columns: [
 	            {id:'company',header: _("Ago"), width: 75, dataIndex: 'ago'},
@@ -65,12 +85,7 @@
 	            minHeight: 100
 	        }),
 
-	        bbar: new Ext.PagingToolbar({
-	            pageSize: ps,
-	            store: store_history,
-	            displayInfo: true,
-	            plugins: new Ext.ux.ProgressBarPager()
-	        })
+	        bbar: pagingBar
 	});
 
 	var panel = new Ext.Panel({ 

@@ -76,19 +76,22 @@ sub node_menu {
 sub _click {
     my $self = shift;
     +{
-            url      => sprintf( '/gitweb.cgi?p=%s;a=shortlog;h=%s', $self->repo_dir, $self->name ),
-            type     => 'iframe',
-            #url      => '/gitpage/branch',
-            #type     => 'html',
+            url      => '/comp/view_commits_history.js',
+            type     => 'comp',
             repo_dir => $self->repo_dir,
-            title    => $self->name,
+            title    => 'history: '.$self->name,
             repo_mid => $self->repo_mid,
+            branch   => $self->name,
+            controller => 'gittree',
      }
 }
+
+
 sub node_data { 
     my $self = shift;
     +{  repo_dir   => $self->repo_dir,
         name       => $self->name,
+        controller => 'gittree',
         branch     => $self->name,
         bl_to      => $self->bl_to,
         bl_from    => $self->bl_from,

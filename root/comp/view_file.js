@@ -11,7 +11,7 @@
     var cons = new Baseliner.AceEditor();
     var params_view_file;
     if(controller == 'gittree'){
-        params_file_revisions = { repo_dir: params.repo_dir, filename: file, sha: rev_num, bl: params.bl };
+        params_file_revisions = { repo_dir: params.repo_dir, filename: file, sha: rev_num, bl: params.bl, branch: branch };
     }else{
         params_file_revisions = { filepath: path, filename: file, rev_num: rev_num };
     }
@@ -30,7 +30,7 @@
         }
         var params_view_file;
         if(controller == 'gittree'){
-            params_view_file = { repo_dir: params.repo_dir, filename: file, repo_mid: repo_mid, sha: rev_num, bl: params.bl };
+            params_view_file = { repo_dir: params.repo_dir, filename: file, repo_mid: repo_mid, sha: rev_num, bl: params.bl, branch: branch };
         }else{
             params_view_file = { filepath: path, filename: file, repo_mid: repo_mid, rev_num: rev_num, revid: params.revid, branch: branch };
         }
@@ -40,6 +40,8 @@
             cons.setReadOnly();
             cons.goTop();
             rev_combo.setValue('r'+res.rev_num);
+            if(controller == 'gittree')
+                rev_num = res.rev_num; 
             pnl.add(cons);
         }, function(res){
              Baseliner.error( _('Error'), _(res.msg) );
@@ -56,6 +58,11 @@
 
     var toggleHandler = function(comp, activate){
         if(activate){
+            ////////////////////////
+            //                    //
+            //    FILE_HISSTORY   //
+            //                    //
+            ////////////////////////
             if(comp.pane == 'history'){
                 cons.destroy();
                 var params_file_history;

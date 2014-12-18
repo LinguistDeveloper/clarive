@@ -20,7 +20,7 @@
     });
     var params_view_diff;
     if(controller == 'gittree'){
-        params_view_diff = { repo_dir: params.repo_dir, file: params.file, sha: rev_num, bl: params.bl  };
+        params_view_diff = { repo_dir: params.repo_dir, file: params.file, sha: rev_num, bl: params.bl, branch: branch  };
     }else{
         params_view_diff = { repo_dir: repo_dir, rev_num: rev_num, branch: branch, revid: revid, file: params.file };
     }
@@ -76,6 +76,11 @@
 				               	<tr>
 				               		<th id='[%= code_section[changes[i].path] %]' style="font-family: Courier New, Courier, monospace;" colspan=3>
 				               			[%= changes[i].path %] [%= changes[i].revision1 %] =&gt; [%= changes[i].revision2 %]
+				               			[% 
+				               			   if(branch == undefined || controller == 'gittree'){
+											   branch = '';
+				               			   }
+				               			%]
 				               			<a class="btn btn-mini" onclick="Baseliner.add_tabcomp( 
 				               												'/comp/view_file.js', 
 				               												'[%= branch %]:[[%= rev_num %]] [%= changes[i].path %]',
