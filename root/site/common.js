@@ -2013,13 +2013,14 @@ Baseliner.CIGrid = Ext.extend( Ext.grid.GridPanel, {
             //dragger,
             sm
         ];
-        var cols_keys = ['icon', 'mid', 'name', 'versionid', 'collection', 'properties' ];
+        var cols_keys = ['icon', 'mid', 'name', 'versionid', 'collection', 'bl', 'properties' ];
         var cols_templates = {
           icon : { width: 40, dataIndex: 'icon', renderer: Baseliner.render_icon },
           mid: { width: 40, dataIndex: 'mid', header: _('ID') },
           name: { header: _('Name'), width: 240, dataIndex: 'name', renderer: Baseliner.render_ci },
           'class': { header: _('Class'), width: 120, dataIndex: 'class' },
           collection: { header: _('Collection'), width: 120, dataIndex: 'collection' },
+          bl: { header: _('Baseline'), width: 120, dataIndex: 'bl' },
           rel_type: { header: _('Relationship'), width: 120, dataIndex: 'rel_type' },
           properties: { header: _('Properties'), width: 240, dataIndex: 'pretty_properties' },
           versionid: { header: _('Version'), width: 80, dataIndex: 'versionid' }

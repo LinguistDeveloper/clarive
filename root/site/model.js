@@ -909,7 +909,7 @@ Baseliner.model.CICombo = function(c) {
         '<tpl for="."><div class="search-item">',
             //'<h3><span>{ns_type}<br />{user}</span><img src="{icon}" />{name}</h3>',
         '<span id="boot" style="background: transparent">',
-        '<table><tr><td><img src="{icon}" />&nbsp;</td><td><strong>{name}</strong> {[values.classname ? "(" + values.classname + ")" : ""]}</td></tr></table>',
+        '<table><tr><td><img src="{icon}" />&nbsp;</td><td><strong>{name}</strong> {[values.bl ? "(<strong>" + values.bl + "</strong>)" : ""]} {[values.classname ? "(" + values.classname + ")" : ""]}</td></tr></table>',
         '</span>',
         '<tpl if="pretty_properties">',
             '<br />{pretty_properties}',
