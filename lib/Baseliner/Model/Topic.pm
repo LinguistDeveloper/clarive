@@ -3056,7 +3056,11 @@ sub check_fields_required {
 sub get_short_name {
     my ($self, %p) = @_;
     my $name = $p{name} or _throw 'Missing parameter name';
-    $name =~ s/[^A-Z]//g;    
+    my $acronyms = _decode_json($self->getCategoryAcronyms());
+    
+    if ( $acronyms->{$name} ) {
+        $name = $acronyms->{name};
+    }
     return $name; 
 }
 
@@ -3413,5 +3417,27 @@ sub get_downloadable_files {
         }
     }
     return $available_docs;
+}
+
+sub getCategoryAcronyms {
+    my ($self, $p) = @_;
+    my $acronyms = cache->get('category:acronyms');
+
+    if ( !$acronyms ) {
+        my %acr = map {
+            my $acronym = $_->{acronym} // '';
+            if ( !$acronym ) {
+                $acronym = $_->{name};
+                $acronym =~ s/[^A-Z]//g;
+            }
+            $_->{name}, $acronym 
+        }
+
+        mdb->category->find( {}, { _id => -1, name => 1, acronym => 1 } )->all;
+        cache->set('category:acronyms',\%acr);
+        $acronyms = \%acr;
+        _log _dump $acronyms;
+    }
+    return _encode_json($acronyms);
 }
 1;

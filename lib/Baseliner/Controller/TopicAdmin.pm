@@ -68,6 +68,7 @@ sub update_category : Local {
                         id => mdb->seq('category'),
                         name => $p->{name},
                         color => $p->{category_color},
+                        acronym => $p->{acronym},
                         statuses => $idsstatus // [], 
                         description => $p->{description} ? $p->{description} : ''
                     };
@@ -92,6 +93,7 @@ sub update_category : Local {
                 mdb->category->update({ id=>"$id_category" }, {
                     '$set' => {
                         name        => $p->{name},
+                        acronym => $p->{acronym},
                         color       => $p->{category_color},
                         description => $p->{description},
                         ( $idsstatus ? (statuses=>$idsstatus) : () ),
@@ -123,7 +125,7 @@ sub update_category : Local {
             }
         }
     }
-    
+    cache->remove('category:acronyms');
     $c->forward('View::JSON');    
 }
 

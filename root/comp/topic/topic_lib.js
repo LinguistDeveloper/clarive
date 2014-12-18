@@ -26,7 +26,21 @@ Baseliner.tree_topic_style = [
 ].join('');
 
 Baseliner.topic_title = function( mid, category, color, literal_only, id, opts) {
-    var uppers = category ? category.replace( /[^A-Z]/g, '' ) : '';
+    var uppers = '';
+
+    if ( category ) {
+        var mid_start = category.indexOf('#');
+
+        if ( mid_start != -1 ) {
+            category = category.substr(0, mid_start - 1);
+        }
+        var acronyms = Ext.util.JSON.decode( '<% $c->model('Topic')->getCategoryAcronyms() %>');
+        if ( !acronyms[category] ) {
+            uppers = category;
+        } else {
+            uppers = acronyms[category];
+        }
+    }
     var pad_for_tab = 'margin: 0 0 -3px 0; padding: 2px 4px 2px 4px; line-height: 12px;'; // so that tabs stay aligned
     if(!id) id = Ext.id();
     if (literal_only){
@@ -46,7 +60,20 @@ Baseliner.show_category = function(category_id, title, params) {
 };
 
 Baseliner.category_title = function( id, category, color, id) {
-    var uppers = category ? category.replace( /[^A-Z]/g, '' ) : '';
+    var uppers = '';
+    if ( category ) {
+        var mid_start = category.indexOf('#');
+
+        if ( mid_start != -1 ) {
+            category = category.substr(0, mid_start - 1);
+        }
+        var acronyms = Ext.util.JSON.decode( '<% $c->model('Topic')->getCategoryAcronyms() %>');
+        if ( !acronyms[category] ) {
+            uppers = category;
+        } else {
+            uppers = acronyms[category];
+        }
+    }
     var pad_for_tab = 'margin: 0 0 -3px 0; padding: 2px 4px 2px 4px; line-height: 12px;'; // so that tabs stay aligned
     if(!id) id = Ext.id();
     return String.format( '<span id="boot" style="background:transparent; margin-bottom: 0px"><span id="{4}" class="label" style="{3}; background-color:{1}">{2}</span></span>', id, color, uppers, pad_for_tab, id );
@@ -100,7 +127,23 @@ Baseliner.topic_name = function(args) {
             mid = '#' + mid;
         else
             mid = '';
-        var cat_name = args.short_name ? _(args.category_name).replace( /[^A-Z]/g, '' ) : _(args.category_name); //Cambiarlo en un futuro por un contador de categorias
+
+        var uppers = '';
+        if ( args.category_name ) {
+            var mid_start = args.category_name.indexOf('#');
+
+            if ( mid_start != -1 ) {
+                args.category_name = args.category_name.substr(0, mid_start - 1);
+            }
+            var acronyms = Ext.util.JSON.decode( '<% $c->model('Topic')->getCategoryAcronyms() %>');
+            if ( !acronyms[args.category_name] ) {
+                uppers = args.category_name;
+            } else {
+                uppers = acronyms[args.category_name];
+            }
+        }
+
+        var cat_name = args.short_name ? uppers : _(args.category_name); //Cambiarlo en un futuro por un contador de categorias
         if( cat_name )
             cat_name = cat_name + ' ';
         else
@@ -376,6 +419,7 @@ Baseliner.Topic.StoreCategory = Ext.extend( Baseliner.JsonStore, {
             fields: [ 
                 {  name: 'id' },
                 {  name: 'name' },
+                {  name: 'acronym' },
                 {  name: 'color' },
                 {  name: 'description' },
                 {  name: 'type' },

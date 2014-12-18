@@ -32,7 +32,7 @@
 % if( $show_short_name ) {
 <script>
     var obj_topic_name = Ext.query('#topic<%$topic_id %>');
-    obj_topic_name[0].innerHTML = Baseliner.topic_title( '<% $topic->{mid} %>', '<% $topic->{name} %>', '<% $topic->{category}{color} %>', true );
+    obj_topic_name[0].innerHTML = Baseliner.topic_title( '<% $topic->{mid} %>', '<% $topic->{category}{name} %>', '<% $topic->{category}{color} %>', true );
 </script>
 %}
 % if( $show_name_tooltip ) {

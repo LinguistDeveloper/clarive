@@ -7893,3 +7893,10 @@ msgstr "Ignorar estados finales"
 
 msgid "View in tree"
 msgstr "Ver en el árbol de proyecto"
+
+msgid "Acronym"
+msgstr "Acrónimo"
+
+msgid "acronym"
+msgstr "acrónimo"
+

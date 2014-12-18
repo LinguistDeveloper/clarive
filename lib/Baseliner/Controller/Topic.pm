@@ -865,6 +865,7 @@ sub list_category : Local {
                     id            => $category->{id},
                     category      => $category->{id},
                     name          => $p->{swnotranslate} ? $category->{name}: _loc($category->{name}),
+                    acronym       => $category->{acronym},
                     color         => $category->{color},
                     type          => $type,
                     forms         => $forms,

@@ -354,6 +354,12 @@
             regex: /^[^\.]+$/,
             regexText: _('Character dot not allowed')
         });
+        var acronym = new Ext.form.TextField({ 
+            name:'acronym', fieldLabel:_('Acronym'),
+            allowBlank:false, emptyText:_('Short name for the category'),
+            regex: /^[^\.]+$/,
+            regexText: _('Character dot not allowed')
+        });
         //   Color settings 
         var category_color = new Ext.form.Hidden({ name:'category_color' });
         category_color.setValue(rec ? rec.data.color : '#999');
@@ -397,6 +403,7 @@
                 { xtype: 'hidden', name: 'id', value: -1 },
                 category_color,
                 category_name_field,
+                acronym,
                 ta,
                 {
                     xtype: 'radiogroup',
@@ -534,6 +541,7 @@
         });
 
         if(rec){
+            console.dir(rec);
             var ff = form_category.getForm();
             ff.loadRecord( rec );
             title = 'Edit category';
@@ -1187,7 +1195,8 @@
         columns: [
             { hidden: true, dataIndex:'id' },
             check_categories_sm,
-            { header: 'Category', dataIndex: 'name', width:50, sortable: true, renderer: render_category },
+            { header: _('Category'), dataIndex: 'name', width:50, sortable: true, renderer: render_category },
+            { header: _('Acronym'), dataIndex: 'acronym', width:15, sortable: true },
             { header: _('Description'), dataIndex: 'description', sortable: true },
             { header: _('Type'), dataIndex: 'type', width:50, sortable: false, renderer: render_category_type }
         ],
