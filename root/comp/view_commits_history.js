@@ -18,16 +18,9 @@
 		var comment_length = 25;
         var str_title = branch + ": [" + rec.data.revision + "] " + repo_dir;
         if (str_title.length > comment_length && controller != 'plastictree'){ 
-            var i = str_title.lastIndexOf('/');
-            var actual = str_title.indexOf('/');
-            var c = -1;
-            var temp;
-            while (actual < comment_length && c != actual){
-                temp = str_title.indexOf('/', actual+1);
-                c = actual;
-                actual = temp > comment_length ? actual : temp;
-            }
-            str_title = str_title.substr(0, actual+1) + '...' + str_title.substr(i);
+            var center = str_title.length/2;
+            var surplus_str = str_title.length - comment_length;
+            str_title = str_title.substr(0, center-surplus_str/2) + '...' + str_title.substr(center+surplus_str/2);
         }
         str_title = escape(str_title);
 
