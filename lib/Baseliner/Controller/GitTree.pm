@@ -557,6 +557,7 @@ sub get_log_history {
     my @array_logs = $g->git->exec( 'log', $branch, '--skip='.$args->{start}, '-n', $args->{last} );
     my @commits;
     my $log = {};
+    $log->{comment} = '';
     foreach(@array_logs){
         my $author;
         my $date;
@@ -567,7 +568,6 @@ sub get_log_history {
             $log->{author} = $author;
         }elsif( $_=~/^Date:\s*(.+)/){
             $date = $1;
-            #$date =~ s/^\s*//g;
             my $date_time = Time::Piece->strptime($date, "%c %z");
             my $date_str = $date_time->datetime;
             $log->{ago} = Util->ago($date_str);
