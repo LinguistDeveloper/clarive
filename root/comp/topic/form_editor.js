@@ -149,8 +149,8 @@ Baseliner.FieldEditor = Ext.extend( Ext.Panel, {
                         }             
                 }
             ],
-            bbar: [ '->', btn_save_config ]
-        });
+            // bbar: [ '->', btn_save_config ] IE10 not compatible here
+        }); 
         
         category_fields_grid.on( 'afterrender', function(){
             var el = this.el.dom; 
@@ -408,7 +408,8 @@ Baseliner.FieldEditor = Ext.extend( Ext.Panel, {
                           { columnWidth: .02, items: blank_image },
                           { columnWidth: .49, items: category_fields_grid },
                           { xtype: 'hidden', name: 'id_category', value: self.id_category }
-                        ]  
+                        ],
+                bbar: [ '->', btn_save_config ]
             }
         ];
         Baseliner.FieldEditor.superclass.initComponent.call(this);
