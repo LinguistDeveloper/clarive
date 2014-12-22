@@ -355,9 +355,10 @@ sub json : Local {
         my $meta = $c->model('Topic')->get_meta( $topic_mid );
         my $data = $c->model('Topic')->get_data( $meta, $topic_mid, %$p );
 
+
         $meta = model->Topic->get_meta_permissions( username=>$c->username, meta=>$meta, data=>$data );
-        
         $meta = $self->get_field_bodies( $meta );
+        
         
         $ret->{topic_meta} = $meta;
         
@@ -590,6 +591,7 @@ sub view : Local {
         if( $p->{html} ) {
             my $meta = $c->model('Topic')->get_meta( $topic_mid, $id_category );
             my $data = $c->model('Topic')->get_data( $meta, $topic_mid, topic_child_data=>$p->{topic_child_data} );
+            $meta = $self->get_field_bodies( $meta );
             $meta = model->Topic->get_meta_permissions( username=>$c->username, meta=>$meta, data=>$data );
 
             my $write_action = 'action.topicsfield.' .  _name_to_id($topic_doc->{name_category}) . '.labels.' . _name_to_id($topic_doc->{name_status}) . '.write';
