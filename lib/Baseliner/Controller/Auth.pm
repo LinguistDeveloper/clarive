@@ -29,8 +29,8 @@ we get into a /logout loop
 =cut
 sub logout : Global {
     my ( $self, $c ) = @_;
-    $c->full_logout;
     event_new 'event.auth.logout'=>{ username=>$c->username, mode=>'url' };
+    $c->full_logout;
     $c->res->redirect( $c->req->params->{redirect} || $c->uri_for('/') );
 }
 
@@ -41,8 +41,8 @@ JSON based logoff, used by the logout menu option
 =cut
 sub logoff : Global {
     my ( $self, $c ) = @_;
-    $c->full_logout;
     event_new 'event.auth.logout'=>{ username=>$c->username, mode=>'logoff' };
+    $c->full_logout;
     $c->stash->{json} = { success=>\1 };
     $c->forward('View::JSON');
 }
@@ -151,6 +151,11 @@ sub authenticate : Private {
     
     # auth by rule?
     my $auth_stash = { login=>$login, realm=>$realm, username=>$username, password=>$password, login_data=>{ login_ok=>undef } };
+    if ( ci->user->find_one({name=>"$username"}) || $username eq 'local/root' ){
+        $auth_stash->{password} = "*******" ;
+    } else {
+        $auth_stash->{login} = $login . " (user not exists)";
+    }
     event_new 'event.auth.attempt' => $auth_stash;
     
     if( $$auth_stash{login_data}{login_ok} ) {
