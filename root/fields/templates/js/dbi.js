@@ -6,7 +6,6 @@ params:
     html: '/fields/templates/html/row_body.html'
     js: '/fields/templates/js/dbi.js'
     field_order: 1
-    allowBlank: 0
     section: 'body'
     value_field: id
     display_field: name

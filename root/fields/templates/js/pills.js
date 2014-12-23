@@ -6,7 +6,7 @@ params:
     html: '/fields/templates/html/pills.html'
     js: '/fields/templates/js/pills.js'
     field_order: 1
-    allowBlank: 0
+    allowBlank: 'false'
     section: 'body'
     options: 'option1,#ddb;option2,#bdd;option3,#dbd'
     default_value: option1

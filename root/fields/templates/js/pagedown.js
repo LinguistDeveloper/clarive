@@ -6,7 +6,7 @@ params:
     js: '/fields/templates/js/pagedown.js'
     field_order: 1
     field_order_html: 1000
-    allowBlank: 0
+    allowBlank: 'false'
     section: 'head'
     height: 400
     meta_type: 'content'

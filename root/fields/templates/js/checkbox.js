@@ -6,7 +6,6 @@ params:
     html: '/fields/system/html/field_checkbox.html'
     js: '/fields/templates/js/checkbox.js'
     field_order: 1
-    allowBlank: 0
     section: 'body'
 */
 

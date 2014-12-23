@@ -8,7 +8,7 @@ params:
     get_method: get_cal
     field_order: 1
     field_order_html: 1000
-    allowBlank: 0
+    allowBlank: 'false'
     height: 300
     width: 100%
     columns: 'Milestone[slotname];Planned End Date[plan_end_date],datefield;End Date[end_date],datefield' 

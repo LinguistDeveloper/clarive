@@ -6,7 +6,7 @@ params:
     html: '/fields/templates/html/row_body.html'
     js: '/fields/templates/js/combo.js'
     field_order: 1
-    allowBlank: 0
+    allowBlank: 'false'
     section: 'body'
     options: 'option1,option2,option3'
 */
