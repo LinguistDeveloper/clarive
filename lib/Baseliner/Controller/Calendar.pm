@@ -220,7 +220,8 @@ sub calendar_slot_edit : Path( '/job/calendar_slot_edit' ) {
     $c->stash->{ panel } = $p->{ panel };
     my $id     = $p->{ id };
     my $id_cal = $p->{ id_cal };
-    my $win    = mdb->calendar_window->find_one( { id => ''.$id } );
+    my $win;
+    $win = mdb->calendar_window->find_one( { id => ''.$id } ) if ($id);
     my $pdia   = $p->{ pdia };
     my $activa = 0;
 
@@ -274,16 +275,17 @@ sub calendar_submit : Path('/job/calendar_submit') {
     my $ven_fin     = $p->{ ven_fin };
     my $ven_tipo    = $p->{ ven_tipo };
     my $date_str    = $p->{ date };
-    my $currentDate = $self->parseDateTime( $date_str ) if ( $date_str );
+    my $currentDate;
+    $currentDate = $self->parseDateTime( $date_str ) if ( $date_str );
     my $new_id;
 
     try {
         my @diaList;
         if ( $ven_dia eq "L-V" ) {
-            my @diaList = ( 0 .. 4 );
+            @diaList = ( 0 .. 4 );
         }
         elsif ( $ven_dia eq "L-D" ) {
-            my @diaList = ( 0 .. 6 );
+            @diaList = ( 0 .. 6 );
         }
         else {
             push @diaList, $ven_dia;
@@ -300,11 +302,12 @@ sub calendar_submit : Path('/job/calendar_submit') {
                 }
             }
             elsif ( $cmd eq "A" or $cmd eq "AD" ) {
+                my $last_row = mdb->calendar_window->find_one({start_time=>"$ven_ini", day=>0+$ven_dia, id_cal=>"$id_cal"});
+                $id = $last_row->{id} if ($last_row && $last_row->{id});
                 my $active = ( $cmd eq "A" );
-                my $_ci;
                 $new_id = ''.mdb->seq('calendar_window');
                 unless ( $id ) {    #new row
-                    $_ci = mdb->calendar_window->insert({
+                    mdb->calendar_window->insert({
                         id         => $new_id,
                         id_cal     => $id_cal,
                         day        => $ven_dia,
@@ -314,13 +317,13 @@ sub calendar_submit : Path('/job/calendar_submit') {
                         end_time   => $ven_fin,
                         start_date => $self->parseDateTimeToDbix( $currentDate ),
                         end_date   => $self->parseDateTimeToDbix( $currentDate )
-                    });                    
+                    });  
                 }
                 else {    #existing
                     my $row = mdb->calendar_window->find_one({ id => $id });
                     mdb->calendar_window->remove({ id => $id });
                     # we need to recreate the id so this gets precedence in db_to_slots()
-                    $_ci = mdb->calendar_window->insert({
+                    mdb->calendar_window->insert({
                         id         => $new_id,
                         id_cal     => $id_cal,
                         day        => $ven_dia,

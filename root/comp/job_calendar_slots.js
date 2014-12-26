@@ -78,6 +78,7 @@ my $firstday = Class::Date->new( $c->stash->{monday} );
                     print qq[ onclick='javascript: Baseliner.editId("$panel", "$id_cal", "$id", "$datet")'>];
                 }	
                 my $date_icon = ' <img height=12 onmouseover="$(this).tooltip()" src="/static/images/icons/calendar.png" />' if $slot->type eq 'date';
+
                 print qq[ $startt - $endt$date_icon</TD>];	
                 #print sprintf q{<td style="font-size:8px" rowspan=%s>%s - %s (%s)</td>}, $span, $slot->start, $slot->end, $span;
             }
@@ -110,22 +111,34 @@ my $firstday = Class::Date->new( $c->stash->{monday} );
 <TABLE border="0" width="100%" cellpadding="2">
 <TR>
         <TD width=20 class="slot_N" height=20>&nbsp;</TD>
-        <TD width=50><% _loc("Normal") %></TD>
+        <TD width=100><% _loc("Normal") %></TD>
 
         <TD width=10>&nbsp;</TD>
 
         <TD width=20 class="slot_U">&nbsp;</TD>
-        <TD width=50><% _loc("Urgent") %></TD>
+        <TD width=100><% _loc("Urgent") %></TD>
 
         <TD width=10>&nbsp;</TD>
 
         <TD width=20 class="slot_X">&nbsp;</TD>
-        <TD width=50><% _loc("No Job") %></TD>
+        <TD width=100><% _loc("No Job") %></TD>
 
         <TD width=10>&nbsp;</TD>
 
         <TD width=20 class="slot_B">&nbsp;</TD>
         <TD ><% _loc("Empty") %></TD>
+
+</TR>
+<TR>
+        <TD width=20 class="slot_N_off" height=20>&nbsp;</TD>
+        <TD width=100><% _loc("Normal") . " <i>(" . _loc("No Job") .")</i>" %></TD>
+
+        <TD width=10>&nbsp;</TD>
+
+        <TD width=20 class="slot_U_off">&nbsp;</TD>
+        <TD width=100><% _loc("Urgent") . " <i>(" . _loc("No Job") .")</i>" %></TD>
+
+        <TD width=10>&nbsp;</TD>
 
 </TR>
 </TABLE>
