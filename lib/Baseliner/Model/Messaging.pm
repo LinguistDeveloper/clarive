@@ -88,9 +88,6 @@ register 'service.notify.create' => {
             carrier => 'email',
             vars => {
                 msg => $config->{body},
-                subject => $config->{subject},
-                to => $final_to,
-                cc => $final_cc
             }
         );
         return { msg_id => 999, config=>$config }; 
