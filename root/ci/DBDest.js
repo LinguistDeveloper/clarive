@@ -45,5 +45,6 @@
         layout:'form', items: grid, width: 800, height: 400 
     }).show();
     */
-    return [ project, grid, tables ];
+    return [ project, grid, tables, new Ext.form.TextField({ fieldLabel:'name', name:'fakename', hidden: true }), 
+       new Ext.form.TextField({ fieldLabel:'pass', name:'fakepassword', inputType:'password', hidden:true }) ];
 })

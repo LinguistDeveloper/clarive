@@ -253,6 +253,7 @@
             bl_combo.getStore().on( 'load', function(){
                 bl_combo.setValue( params.rec.bl );
             });
+            form.getForm().el.set({ autocomplete: 'off' });
             var add_ci_form = function(form_url, params) {
                     Baseliner.ajaxEval( form_url, params, function(res){
                         if( res != undefined ) {

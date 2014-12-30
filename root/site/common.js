@@ -2917,7 +2917,11 @@ Baseliner.cols_templates = {
       checkbox  : function(){ return { align: 'center', width: 10, editor: new Ext.form.Checkbox({submitValue: false}), default_value: false, renderer: Baseliner.render_checkbox } },
       ci_box    : function(p){ return { editor: Baseliner.ci_box( p || {} ), default_value:'' } },
       combo_dbl : function(p){ return { editor: new Baseliner.ComboDouble( p ), default_value:p.default_value } },
-      password  : function(){ return { editor: new Ext.form.TextField({submitValue: false, inputType:'password' }), default_value:'', renderer: function(v){ return '********' } } },
+      password  : function(){
+        var ed = new Ext.form.TextField({submitValue: false, inputType:'password' });
+        ed.on('afterrender', function(cmp){ cmp.el.set({ autocomplete:'off'}) });
+        return { editor: ed, default_value:'', renderer: function(v){ if (v) { return '********'; } else { return ''; } } } 
+      },
       textarea  : function(){ return { editor: new Ext.form.TextArea({submitValue: false}), default_value:'', renderer: Baseliner.render_wrap } }
 };
 
