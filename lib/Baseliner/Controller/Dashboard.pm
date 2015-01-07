@@ -932,7 +932,8 @@ sub list_my_topics: Private{
     ##########################################################################################################		
     
     # go to the controller for the list
-    my $p = { limit => $default_config->{rows}, username=>$c->username, clear_filter => 1 };
+    my $limit = $default_config->{rows} && $default_config->{rows} ne 'ALL'? $default_config->{rows}:'';
+    my $p = { limit => $limit, username=>$c->username };
 
     if ( $default_config->{categories} && $default_config->{categories} ne 'ALL') {
         my @categories = split /,/, $default_config->{categories};
