@@ -1,11 +1,11 @@
 (function(params){
     var path = params.repo_dir;
-    if(path.indexOf('/') != -1) path = path.substring(0,path.indexOf('/'));
     var file = params.file;
     var revid = params.revid;
     var branch = params.branch;
     var rev_num = params.rev_num;
     var controller = params.controller;
+    if(path.indexOf('/') != -1 && controller != 'svntree') path = path.substring(0,path.indexOf('/'));
     var repo_mid = params.repo_mid;
     var revisions = params.revisions;
     var cons = new Baseliner.AceEditor();
@@ -13,7 +13,7 @@
     if(controller == 'gittree'){
         params_file_revisions = { repo_dir: params.repo_dir, filename: file, sha: rev_num, bl: params.bl, branch: branch };
     }else{
-        params_file_revisions = { filepath: path, filename: file, rev_num: rev_num };
+        params_file_revisions = { repo_dir: params.repo_dir, filepath: path, filename: file, rev_num: rev_num, branch: branch };
     }
     var revisionsStore = new Baseliner.JsonStore({
         autoLoad: true,
@@ -32,7 +32,7 @@
         if(controller == 'gittree'){
             params_view_file = { repo_dir: params.repo_dir, filename: file, repo_mid: repo_mid, sha: rev_num, bl: params.bl, branch: branch };
         }else{
-            params_view_file = { filepath: path, filename: file, repo_mid: repo_mid, rev_num: rev_num, revid: params.revid, branch: branch };
+            params_view_file = { filepath: path, filename: file, repo_mid: repo_mid, rev_num: rev_num, revid: params.revid, branch: branch, repo_dir: params.repo_dir };
         }
         Baseliner.ajax_json('/'+controller+'/view_file', params_view_file, function(res){
             revid = res.revid;
@@ -69,7 +69,7 @@
                 if(controller == 'gittree'){
                     params_file_history = { repo_dir: params.repo_dir, filename: file, repo_mid: repo_mid, sha: rev_num, bl: params.bl };
                 }else{
-                    params_file_history = { filepath: path, filename: file, repo_mid: repo_mid, rev_num: rev_num, revid: revid };
+                    params_file_history = { filepath: path, filename: file, repo_mid: repo_mid, rev_num: rev_num, revid: revid, branch: branch, repo_dir: params.repo_dir };
                 }
                 Baseliner.ajax_json('/'+controller+'/get_file_history', params_file_history, function(res){
                     var store = new Ext.data.ArrayStore({
@@ -145,7 +145,7 @@
                 if(controller == 'gittree'){
                     params_blame = { repo_dir: params.repo_dir, filename: file, sha: rev_num, bl: params.bl };
                 }else{
-                    params_blame = { filepath: path, filename: file, repo_mid: repo_mid, rev_num: params.rev_num, revid: params.revid };
+                    params_blame = { filepath: path, filename: file, repo_mid: repo_mid, rev_num: rev_num, revid: params.revid, branch: branch, repo_dir: params.repo_dir };
                 }
                 Baseliner.ajax_json('/'+controller+'/get_file_blame', params_blame, function(res){
                     if(!res.suported)
@@ -177,6 +177,10 @@
     };
     var button_style = 'normal 11px tahoma,verdana,helvetica';
     var source_button = new Ext.Button({ pane: 'source', text: _('source'), style: button_style, enableToggle: true, toggleGroup: 'properties_tg', toggleHandler: toggleHandler, pressed: true });
+    var file_path = path+file;
+    if(controller == 'svntree'){
+        file_path = path+'/'+branch+'/'+file;
+    }
     var pnl = new Ext.Panel({ 
         layout:'fit',
         items: cons,
@@ -184,7 +188,7 @@
                 new Ext.Button({ pane: 'history', text: _('history'), style: button_style, enableToggle: true, toggleGroup: 'properties_tg', toggleHandler: toggleHandler, pressed: false }),
                 new Ext.Button({ pane: 'diff', text: _('diff'), style: button_style, enableToggle: true, toggleGroup: 'properties_tg', toggleHandler: toggleHandler, pressed: false }),
                 new Ext.Button({ pane: 'blame', text: _('blame'), style: button_style, enableToggle: true, toggleGroup: 'properties_tg', toggleHandler: toggleHandler, pressed: false }),
-                '<b>'+path+file+'</b>', '| ',
+                '<b>'+file_path+'</b>', '| ',
                 rev_combo
         ]
     });
