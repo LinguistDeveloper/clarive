@@ -1,0 +1,54 @@
+<!--
+name: My Topics
+description: List of open topics assigned to me
+config: config.dashlet.my_topics
+url: /dashboard/list_my_topics
+html: /dashlets/my_topics.html
+-->
+<%perl>
+    use Baseliner::Utils;
+    use Class::Date;
+    my @topics = $c->stash->{my_topics};
+</%perl>
+
+    <div style="clear:left;">
+        <h2><% _loc('My Topics') %></h2>
+        <table class="table table-bordered table-condensed dashboard">
+            <thead>
+                <tr>
+                    <th><% _loc('Name') %></th>
+                    <th><% _loc('Title') %></th>
+                    <th><% _loc('Status') %></th>                    
+                    <th><% _loc('Modified') %></th>
+                    
+                </tr>
+            </thead>
+            <tbody>
+%foreach my $topic (_array @topics){
+% my $numcomment = $topic->{numcomment} ? " ($topic->{numcomment})" : '';
+% my $date = Util->ago(Class::Date->new($topic->{modified_on}));
+% my $topic_id = $topic->{topic_mid} . _nowstamp;
+                <tr>
+                    <td class="name-html" id="filtered_<%$topic_id%>" ><% "$topic->{category_name}" %></td>
+    
+                    <script>
+                        var name = Baseliner.topic_name({ link: true,
+                            mid: '<%$topic->{topic_mid}%>', 
+                            size: '10',
+                            category_name: '<% "$topic->{category_name}" %>',
+                            category_color: '<% "$topic->{category_color}" %>',
+                            short_name: true
+                        });
+                        
+                        document.getElementById('filtered_<%$topic_id%>').innerHTML = name;
+                    </script>                    
+                    
+                    <td class="title-html" title="<% $topic->{title} %>" ><% $topic->{title} %></td>
+                    <td class="status-html"><span><% $topic->{category_status_name} .  $numcomment%></span></td>
+                    <td class="created-html"><img  width=16 src="/user/avatar/<% $topic->{modified_by} %>/image.png" /> <% $topic->{modified_by}%>, <%$date%></td>
+                    
+                </tr>
+%}
+            </tbody>
+        </table>
+    </div>
