@@ -80,11 +80,15 @@
 				               			   if(branch == undefined || controller == 'gittree'){
 											   branch = '';
 				               			   }
+				               			   var repo = repo_dir;
+				               			   if(controller != 'svntree'){
+												repo = repo +'/'+branch;
+				               			   }
 				               			%]
 				               			<a class="btn btn-mini" onclick="Baseliner.add_tabcomp( 
 				               												'/comp/view_file.js', 
 				               												'[%= branch %]:[[%= rev_num %]] [%= changes[i].path %]',
-				               												{   repo_dir:'[%= repo_dir+'/'+branch %]', 
+				               												{   repo_dir:'[%= repo %]', 
 				               													file:'[%= changes[i].path %]',
 				               													repo_mid:'[%= repo_mid %]', 
 				               													branch:'[%= branch %]', 

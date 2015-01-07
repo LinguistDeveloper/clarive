@@ -1,9 +1,11 @@
 (function(params){
+console.log(params);
     var path = params.repo_dir;
     var file = params.file;
     var revid = params.revid;
     var branch = params.branch;
     var rev_num = params.rev_num;
+    rev_num = rev_num.replace('r', '');
     var controller = params.controller;
     if(path.indexOf('/') != -1 && controller != 'svntree') path = path.substring(0,path.indexOf('/'));
     var repo_mid = params.repo_mid;

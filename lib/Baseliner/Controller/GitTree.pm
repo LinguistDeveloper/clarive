@@ -614,7 +614,7 @@ sub commit_search {
     push @array_logs, $g->git->exec( 'log', $node->{branch}, '--author="'.$query.'"', '-i', { cmd_unquoted=>1 } );
     push @array_logs, $g->git->exec( '"log"', '"'.$node->{branch}.'"', '--grep="'.$query.'"', '-i', { cmd_unquoted=>1 } );
     $query =~ s/\.\*//;
-    push @array_logs, try{ $g->git->exec( 'log', $node->{branch}, '-1', $query ) }catch{} if $query =~ /^[a-fA-F0-9]+/;
+    push @array_logs, try{ $g->git->exec( 'log', $query, '-n', '1' ) }catch{} if $query =~ /^[a-fA-F0-9]+/;
     $query = $node->{query};
     
     my $since = '';
