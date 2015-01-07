@@ -911,7 +911,7 @@ sub list_filtered_topics: Private{
     $c->stash->{filtered_topics} = \@rows ;
 }
 
-sub list_MY_topics: Private{
+sub list_my_topics: Private{
     my ( $self, $c, $dashboard_id ) = @_;
     my $username = $c->username;
     #my (@topics, $topic, @datas, $SQL);
@@ -941,9 +941,9 @@ sub list_MY_topics: Private{
     }
 
     $p->{assigned_to_me} = 1;
-    
+
     my ($info, @rows) = $c->model('Topic')->topics_for_user( $p );
-    $c->stash->{filtered_topics} = \@rows ;
+    $c->stash->{my_topics} = \@rows ;
 }
 
 sub list_jobs : Private {
