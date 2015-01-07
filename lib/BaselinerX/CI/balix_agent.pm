@@ -344,7 +344,8 @@ sub _get_file {
         $char = $self->_ebc->toascii( $char ) if $self->mvs;
         $header .= $char;
         if ( $header =~ /\$D / ) {
-            ( $filename, $filesize, $header ) = split( /\$/, $header );
+            ( $header, $filesize, my @fileparts ) = reverse split( /\$/, $header );
+            $filename = join '$', reverse @fileparts;
             $filesize =~ s/^B (.*?)/$1/g;
             $filename =~ s/^F (.*?)/$1/g;
             $remaining = $filesize * 2;
