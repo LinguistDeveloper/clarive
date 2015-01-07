@@ -1,33 +1,32 @@
 <!--
-name: Filtered Topics
-description: List of topics filtered by category and status
-config: config.dashlet.filtered_topics
-url: /dashboard/list_filtered_topics
-html: /dashlets/filtered_topics.html
+name: My Topics
+description: List of open topics assigned to me
+config: config.dashlet.my_topics
+url: /dashboard/list_my_topics
+html: /dashlets/my_topics.html
 -->
 <%perl>
     use Baseliner::Utils;
     use Class::Date;
-    my @topics = $c->stash->{filtered_topics};
+    my @topics = $c->stash->{my_topics};
 </%perl>
 
     <div style="clear:left;">
-        <h2><% _loc('Pending Topics') %></h2>
+        <h2><% _loc('My Topics') %></h2>
         <table class="table table-bordered table-condensed dashboard">
             <thead>
                 <tr>
                     <th><% _loc('Name') %></th>
                     <th><% _loc('Title') %></th>
-                    <th><% _loc('Assignee') %></th>                    
                     <th><% _loc('Status') %></th>                    
-                    <th><% _loc('Created') %></th>
+                    <th><% _loc('Modified') %></th>
                     
                 </tr>
             </thead>
             <tbody>
 %foreach my $topic (_array @topics){
 % my $numcomment = $topic->{numcomment} ? " ($topic->{numcomment})" : '';
-% my $date = Util->ago(Class::Date->new($topic->{created_on}));
+% my $date = Util->ago(Class::Date->new($topic->{modified_on}));
 % my $topic_id = $topic->{topic_mid} . _nowstamp;
                 <tr>
                     <td class="name-html" id="filtered_<%$topic_id%>" ><% "$topic->{category_name}" %></td>
@@ -45,9 +44,8 @@ html: /dashlets/filtered_topics.html
                     </script>                    
                     
                     <td class="title-html" title="<% $topic->{title} %>" ><% $topic->{title} %></td>
-                    <td class="title-html" title="<% join ",",_array($topic->{assignee}) %>" ><% join ",",_array($topic->{assignee}) %></td>
                     <td class="status-html"><span><% $topic->{category_status_name} .  $numcomment%></span></td>
-                    <td class="created-html"><img  width=16 src="/user/avatar/<% $topic->{created_by} %>/image.png" /> <% $topic->{created_by}%>, <%$date%></td>
+                    <td class="created-html"><img  width=16 src="/user/avatar/<% $topic->{modified_by} %>/image.png" /> <% $topic->{modified_by}%>, <%$date%></td>
                     
                 </tr>
 %}

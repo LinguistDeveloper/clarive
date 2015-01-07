@@ -66,11 +66,10 @@ register 'config.dashlet.filtered_topics' => {
         ]
 };
 
-register 'config.dashlet.filtered_topics' => {
+register 'config.dashlet.my_topics' => {
     metadata => [
-           { id=>'rows', label=>'Number of rows', default => 7 },
-           { id=>'categories', label=>'List of categories', default => 'ALL' },
-           { id=>'statuses', label=>'List of statuses', default => 'ALL' },
+           { id=>'rows', label=>'Number of rows', default => 'ALL' },
+           { id=>'categories', label=>'List of categories', default => 'ALL' }
         ]
 };
 
@@ -880,7 +879,7 @@ sub list_filtered_topics: Private{
     
     #CONFIGURATION DASHLET
     ##########################################################################################################
-    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.filtered_topics');	
+    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.filtered_topics');    
     if($dashboard_id ){
         my $dashboard_rs = mdb->dashboard->find_one({_id => mdb->oid($dashboard_id)});
         my @config_dashlet = grep {$_->{url}=~ 'list_filtered_topics'} _array $dashboard_rs->{dashlets};
@@ -891,7 +890,7 @@ sub list_filtered_topics: Private{
             };              
         }      
     }   
-    ##########################################################################################################		
+    ##########################################################################################################      
     
     # go to the controller for the list
     my $p = { limit => $default_config->{rows}, username=>$c->username, clear_filter => 1 };
@@ -910,6 +909,42 @@ sub list_filtered_topics: Private{
 
     my ($info, @rows) = $c->model('Topic')->topics_for_user( $p );
     $c->stash->{filtered_topics} = \@rows ;
+}
+
+sub list_my_topics: Private{
+    my ( $self, $c, $dashboard_id ) = @_;
+    my $username = $c->username;
+    #my (@topics, $topic, @datas, $SQL);
+    
+    #CONFIGURATION DASHLET
+    ##########################################################################################################
+    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.filtered_topics');	
+    if($dashboard_id ){
+        my $dashboard_rs = mdb->dashboard->find_one({_id => mdb->oid($dashboard_id)});
+        my @config_dashlet = grep {$_->{url}=~ 'list_filtered_topics'} _array $dashboard_rs->{dashlets};
+        
+        if($config_dashlet[0]->{params}){
+            foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
+                $default_config->{$key} = $config_dashlet[0]->{params}->{$key};
+            };              
+        }      
+    }   
+    ##########################################################################################################		
+    
+    # go to the controller for the list
+    my $limit = $default_config->{rows} && $default_config->{rows} ne 'ALL'? $default_config->{rows}:'';
+    my $p = { limit => $limit, username=>$c->username };
+
+    if ( $default_config->{categories} && $default_config->{categories} ne 'ALL') {
+        my @categories = split /,/, $default_config->{categories};
+        my @categories_ids = map {$_->{id}} mdb->category->find({ name => mdb->in(@categories)})->all;
+        $p->{categories} = \@categories_ids;
+    }
+
+    $p->{assigned_to_me} = 1;
+
+    my ($info, @rows) = $c->model('Topic')->topics_for_user( $p );
+    $c->stash->{my_topics} = \@rows ;
 }
 
 sub list_jobs : Private {
