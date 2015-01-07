@@ -25,6 +25,13 @@ params:
     if (meta.allowBlank == 'false') allowBlank = false;
     if (meta.allowBlank == 'true') allowBlank = true;
     if (meta.allowBlank == undefined) allowBlank = true;
+
+    var maxValue;
+    if ( meta.maxValue == 'none' || meta.maxValue == undefined ) {
+        maxValue = Number.MAX_SAFE_INTEGER;
+    } else {
+        maxValue = meta.maxValue;
+    }
     
     return [
         {
@@ -49,6 +56,7 @@ params:
                 }
             },
             hidden: meta ? (meta.hidden ? meta.hidden : false): true,
+            maxValue: maxValue,
             msgTarget: 'under'
         }
     ]

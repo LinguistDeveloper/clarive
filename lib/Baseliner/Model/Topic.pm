@@ -2925,6 +2925,8 @@ sub change_status {
     my $status = $p{status} || $self->find_status_name($p{id_status});
     my $old_status = $p{old_status} || $self->find_status_name($id_old_status);
     my $callback = $p{callback};
+    my @projects = map {$_->{mid}} ci->new($mid)->projects;
+
     event_new 'event.topic.change_status'
         => { mid => $mid, username => $p{username}, old_status => $old_status, id_old_status=> $id_old_status, id_status=>$p{id_status}, status => $status }
         => sub {
@@ -2947,6 +2949,7 @@ sub change_status {
             my @users = $self->get_users_friend(mid => $mid, id_category => $doc->{id_category}, id_status => $p{id_status});
             
             my $notify = {
+                project         => \@projects,
                 category        => $doc->{id_category},
                 category_status => $p{id_status},
             };

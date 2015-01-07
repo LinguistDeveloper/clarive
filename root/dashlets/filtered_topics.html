@@ -18,6 +18,7 @@ html: /dashlets/filtered_topics.html
                 <tr>
                     <th><% _loc('Name') %></th>
                     <th><% _loc('Title') %></th>
+                    <th><% _loc('Assignee') %></th>                    
                     <th><% _loc('Status') %></th>                    
                     <th><% _loc('Created') %></th>
                     
@@ -44,6 +45,7 @@ html: /dashlets/filtered_topics.html
                     </script>                    
                     
                     <td class="title-html" title="<% $topic->{title} %>" ><% $topic->{title} %></td>
+                    <td class="title-html" title="<% join ",",_array($topic->{assignee}) %>" ><% join ",",_array($topic->{assignee}) %></td>
                     <td class="status-html"><span><% $topic->{category_status_name} .  $numcomment%></span></td>
                     <td class="created-html"><img  width=16 src="/user/avatar/<% $topic->{created_by} %>/image.png" /> <% $topic->{created_by}%>, <%$date%></td>
                     

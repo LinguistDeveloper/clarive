@@ -66,14 +66,6 @@ register 'config.dashlet.filtered_topics' => {
         ]
 };
 
-register 'config.dashlet.filtered_topics' => {
-    metadata => [
-           { id=>'rows', label=>'Number of rows', default => 7 },
-           { id=>'categories', label=>'List of categories', default => 'ALL' },
-           { id=>'statuses', label=>'List of statuses', default => 'ALL' },
-        ]
-};
-
 sub grid : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
