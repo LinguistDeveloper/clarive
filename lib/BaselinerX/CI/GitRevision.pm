@@ -2,7 +2,7 @@ package BaselinerX::CI::GitRevision;
 use Baseliner::Moose;
 use Baseliner::Utils qw(:logging _array);
 require Girl;
-
+use Baseliner::Utils;
 with 'Baseliner::Role::CI::Revision';
 
 # has sha;
@@ -28,10 +28,16 @@ sub rel_type { { repo => [ from_mid => 'repo_revision' ] } }
 sub collection { 'GitRevision' }
 sub icon { '/gitweb/images/icons/commite.png' }
 
+# sub url {
+#     my $self = shift;
+#     my $repo_dir = $self->repo->repo_dir;
+#     { url=>sprintf( '/gitweb.cgi?p=%s;a=commitdiff;h=%s', $repo_dir, $self->sha ), type=>'iframe' },
+# }
+
 sub url {
     my $self = shift;
     my $repo_dir = $self->repo->repo_dir;
-    { url=>sprintf( '/gitweb.cgi?p=%s;a=commitdiff;h=%s', $repo_dir, $self->sha ), type=>'iframe' },
+    { url => '/comp/view_diff.js', repo_dir => $repo_dir, rev_num => $self->sha, branch => '', title => $self->name, repo_type=> 'git', controller=>'gittree'},
 }
 
 sub items {

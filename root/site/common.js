@@ -1238,34 +1238,17 @@ Baseliner.read_pdf = function( url ) {
 
 Baseliner.show_revision = function( mid ) {
     Baseliner.ajaxEval( '/ci/url', { mid: mid }, function(res){
-        if( res.url.repo_type == 'svn' || res.url.repo_type == 'plastic' ) { // SVN OR PLASTIC
-            var url =  res.url.url;
-            var title =  res.url.title;
-            var params = {
-                repo_dir: res.url.repo_dir,
-                rev_num: res.url.rev_num,
-                branch: res.url.branch,
-                controller: res.url.controller
-            };
-
-            Baseliner.add_tabcomp( url, title, params );             
-        }else{ // GIT
-            if( res.url ) {
-                Baseliner.ajaxEval( '/ci/url', { mid: mid }, function(res){
-                    if( res.url ) {
-                        if( res.url.type == 'iframe' ) {
-                            Baseliner.add_iframe( res.url.url, _( res.title ), {} );
-                        } else if ( res.url.type == 'file' ) {
-                           var fd = document.all.FD || document.all.FrameDownload;
-                           fd.src =  res.url.url;
-                        }
-                    }
-                }); 
-            }           
-        }
- 
-
-     });
+        var url =  res.url.url;
+        var title =  res.url.title;
+        var params = {
+            repo_dir: res.url.repo_dir,
+            rev_num: res.url.rev_num,
+            branch: res.url.branch,
+            controller: res.url.controller,
+            sha: res.url.rev_num
+        };
+        Baseliner.add_tabcomp( url, title, params );             
+    });
 };
 
 Baseliner.show_ci = function( mid ) {
