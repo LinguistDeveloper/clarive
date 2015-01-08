@@ -171,6 +171,7 @@
 			    hidden: show, //**************************************************************
 			    handler: function(){
 				    var form = form_dashboard.getForm();
+console.log(form);
 				    if(form.getValues()['id'] == -1){
 				    	action = 'add';
 				    }else{
