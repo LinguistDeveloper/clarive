@@ -51,7 +51,7 @@ html: /dashlets/filtered_topics.html
                     
                     <td class="title-html" title="<% $topic->{title} %>" ><% $topic->{title} %></td>
                     <td class="title-html" title="<% join ",",_array($topic->{assignee}) %>" ><% join ",",_array($topic->{assignee}) %></td>
-                    <td class="status-html" title="<% _loc("Created by %1 %2", $topic->{created_by}, $date) %>"><span><% $topic->{category_status_name} .  $numcomment%></span></td>
+                    <td class="status-html" title="<% _loc("Last modified by %1 %2", $topic->{modified_by}, $date) %>"><span><% $topic->{category_status_name} .  $numcomment%></span></td>
                     <td class="title-html"><% $str_projs %></td>
                     
                 </tr>
