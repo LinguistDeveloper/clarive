@@ -284,26 +284,23 @@ sub update : Local {
             try{
                 my @roles;
                 my  $row = mdb->dashboard->find({name => $p->{name}})->next;
-                if(!$row){
-                    foreach (_array $p->{roles}){
-                        push @roles, $_;
-                    }
-                    mdb->dashboard->update( 
-                        {_id => mdb->oid($p->{id})},
-                        {
-                            '$set' => {
-                                name => $p->{name},
-                                description => $p->{description},
-                                is_main => $p->{dashboard_main_check} ? '1': '0',
-                                is_columns => $p->{type} eq 'T' ? '1': '0',
-                                dashlets => \@dashlets,
-                                role => \@roles,                            
-                            }
-                        });
-                    $c->stash->{json} = { msg => _loc('Dashboard modified'), success => \1, dashboard_id => $p->{id} };
-                }else{
-                    $c->stash->{json} = { msg => _loc('Dashboard name already exists, introduce another dashboard'), failure => \1 };
+                foreach (_array $p->{roles}){
+                    push @roles, $_;
                 }
+                mdb->dashboard->update( 
+                    {_id => mdb->oid($p->{id})},
+                    {
+                        '$set' => {
+                            name => $p->{name},
+                            description => $p->{description},
+                            is_main => $p->{dashboard_main_check} ? '1': '0',
+                            is_columns => $p->{type} eq 'T' ? '1': '0',
+                            dashlets => \@dashlets,
+                            role => \@roles,                            
+                        }
+                    }
+                );
+                $c->stash->{json} = { msg => _loc('Dashboard modified'), success => \1, dashboard_id => $p->{id} };
             }
             catch{
                 $c->stash->{json} = { msg => _loc('Error modifying dashboard: %1', shift()), failure => \1 };
