@@ -925,7 +925,7 @@ sub list_my_topics: Private{
     my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.filtered_topics');	
     if($dashboard_id ){
         my $dashboard_rs = mdb->dashboard->find_one({_id => mdb->oid($dashboard_id)});
-        my @config_dashlet = grep {$_->{url}=~ 'list_filtered_topics'} _array $dashboard_rs->{dashlets};
+        my @config_dashlet = grep {$_->{url}=~ 'list_my_topics'} _array $dashboard_rs->{dashlets};
         
         if($config_dashlet[0]->{params}){
             foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
