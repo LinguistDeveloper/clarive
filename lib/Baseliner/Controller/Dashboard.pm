@@ -228,8 +228,7 @@ sub update : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
     my $action = $p->{action};
-    my (@dashlets);
-_log _dump $p; 
+    my (@dashlets); 
     my $i = 0;
     
     foreach my $dashlet (_array $p->{dashlets}){
