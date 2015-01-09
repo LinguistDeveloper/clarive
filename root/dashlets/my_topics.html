@@ -19,15 +19,20 @@ html: /dashlets/my_topics.html
                     <th><% _loc('Name') %></th>
                     <th><% _loc('Title') %></th>
                     <th><% _loc('Status') %></th>                    
-                    <th><% _loc('Modified') %></th>
+                    <th><% _loc('Projects') %></th>
                     
                 </tr>
             </thead>
             <tbody>
-%foreach my $topic (_array @topics){
-% my $numcomment = $topic->{numcomment} ? " ($topic->{numcomment})" : '';
-% my $date = Util->ago(Class::Date->new($topic->{modified_on}));
-% my $topic_id = $topic->{topic_mid} . _nowstamp;
+% my %projs = map { $_->{mid} => $_->{name}} ci->project->find()->all;
+% foreach my $topic (_array @topics){
+%   my @topic_projs = $topic->{_project_security} && $topic->{_project_security}->{project}?_array($topic->{_project_security}->{project}):();
+%   my @proj_names = ();
+%   @proj_names = map { $projs{$_} } @topic_projs;
+%   my $str_projs = join ',',@proj_names;
+%   my $numcomment = $topic->{numcomment} ? " ($topic->{numcomment})" : '';
+%   my $date = Util->ago(Class::Date->new($topic->{modified_on}));
+%   my $topic_id = $topic->{topic_mid} . _nowstamp;
                 <tr>
                     <td class="name-html" id="my_<%$topic_id%>" ><% "$topic->{category_name}" %></td>
     
@@ -45,7 +50,7 @@ html: /dashlets/my_topics.html
                     
                     <td class="title-html" title="<% $topic->{title} %>" ><% $topic->{title} %></td>
                     <td class="status-html"><span><% $topic->{category_status_name} .  $numcomment%></span></td>
-                    <td class="created-html"><img  width=16 src="/user/avatar/<% $topic->{modified_by} %>/image.png" /> <% $topic->{modified_by}%>, <%$date%></td>
+                    <td class="title-html" title="<% $date %>" ><% $str_projs %></td>
                     
                 </tr>
 %}
