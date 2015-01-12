@@ -284,26 +284,23 @@ sub update : Local {
             try{
                 my @roles;
                 my  $row = mdb->dashboard->find({name => $p->{name}})->next;
-                if(!$row){
-                    foreach (_array $p->{roles}){
-                        push @roles, $_;
-                    }
-                    mdb->dashboard->update( 
-                        {_id => mdb->oid($p->{id})},
-                        {
-                            '$set' => {
-                                name => $p->{name},
-                                description => $p->{description},
-                                is_main => $p->{dashboard_main_check} ? '1': '0',
-                                is_columns => $p->{type} eq 'T' ? '1': '0',
-                                dashlets => \@dashlets,
-                                role => \@roles,                            
-                            }
-                        });
-                    $c->stash->{json} = { msg => _loc('Dashboard modified'), success => \1, dashboard_id => $p->{id} };
-                }else{
-                    $c->stash->{json} = { msg => _loc('Dashboard name already exists, introduce another dashboard'), failure => \1 };
+                foreach (_array $p->{roles}){
+                    push @roles, $_;
                 }
+                mdb->dashboard->update( 
+                    {_id => mdb->oid($p->{id})},
+                    {
+                        '$set' => {
+                            name => $p->{name},
+                            description => $p->{description},
+                            is_main => $p->{dashboard_main_check} ? '1': '0',
+                            is_columns => $p->{type} eq 'T' ? '1': '0',
+                            dashlets => \@dashlets,
+                            role => \@roles,                            
+                        }
+                    }
+                );
+                $c->stash->{json} = { msg => _loc('Dashboard modified'), success => \1, dashboard_id => $p->{id} };
             }
             catch{
                 $c->stash->{json} = { msg => _loc('Error modifying dashboard: %1', shift()), failure => \1 };
@@ -925,7 +922,7 @@ sub list_my_topics: Private{
     my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.filtered_topics');	
     if($dashboard_id ){
         my $dashboard_rs = mdb->dashboard->find_one({_id => mdb->oid($dashboard_id)});
-        my @config_dashlet = grep {$_->{url}=~ 'list_filtered_topics'} _array $dashboard_rs->{dashlets};
+        my @config_dashlet = grep {$_->{url}=~ 'list_my_topics'} _array $dashboard_rs->{dashlets};
         
         if($config_dashlet[0]->{params}){
             foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
