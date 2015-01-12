@@ -537,8 +537,10 @@ sub view_diff : Local {
 sub get_commits_history : Local {
     my ($self, $c ) = @_;
     my $node = $c->req->params;
+    my $sort = $node->{sort} // '';
+    my $dir = $node->{dir} // '';
     $c->stash->{json} = try {
-        my @commits = $self->get_log_history({url=>$node->{repo_dir}, branch=>$node->{branch}, start=>$node->{start}, last=>$node->{start}+$node->{limit}  });
+        my @commits = $self->get_log_history({url=>$node->{repo_dir}, branch=>$node->{branch}, start=>$node->{start}, last=>$node->{start}+$node->{limit}, sort=>$sort, dir=>$dir  });
         my $g = Girl::Repo->new( path=>$node->{repo_dir} );
         my $totalCount = $g->git->exec( 'rev-list', $node->{branch}, '--count');
         { success=>\1, msg=> _loc( "Success loading commits history"), commits=>\@commits, totalCount=>$totalCount };
@@ -570,6 +572,7 @@ sub get_log_history {
             $date = $1;
             my $date_time = Time::Piece->strptime($date, "%c %z");
             my $date_str = $date_time->datetime;
+            $log->{date} = $date_str;
             $log->{ago} = Util->ago($date_str);
         }elsif( $_=~/^Merge: (.+)/){
             $merge = $1;
@@ -610,25 +613,20 @@ sub commit_search {
     my $g = Girl::Repo->new( path=>$repo_dir );
     my $query = $node->{query};
     my @array_logs;
-    $query =~ s/ /.*/;
-    push @array_logs, $g->git->exec( 'log', $node->{branch}, '--author="'.$query.'"', '-i', { cmd_unquoted=>1 } );
-    push @array_logs, $g->git->exec( '"log"', '"'.$node->{branch}.'"', '--grep="'.$query.'"', '-i', { cmd_unquoted=>1 } );
-    $query =~ s/\.\*//;
-    push @array_logs, try{ $g->git->exec( 'log', $query, '-n', '1' ) }catch{} if $query =~ /^[a-fA-F0-9]+/;
-    $query = $node->{query};
-    
-    my $since = '';
-    my $until = '';
-    my @date_query;
-    if($query =~ /--since=(\d{4}-\d{2}-\d{2})/){
-        $since = "--since='$1'";
-        push @date_query, $since;
+
+    my @query_params;
+    my @query_commit;
+    push @query_params, "--since=\"$1\"" if $query =~ /--since="([^".]+)"/;
+    push @query_params, "--until=\"$1\"" if $query =~ /--until="([^".]+)"/; # && $1 =~ /\d{4}-\d{2}-\d{2}/
+    push @query_params, "--author=\"$1\"" if $query =~ /--author="([^".]+)"/;
+    if($query =~ /--comment="([^".]+)"/){
+        my $comment = $1;
+        $comment =~ s/ /.*/g;
+        push @query_params, "--grep=\"$comment\"";
     }
-    if($query =~ /--until=(\d{4}-\d{2}-\d{2})/){
-        $until = "--until='$1'";
-        push @date_query, $until;
-    }
-    push @array_logs, $g->git->exec( 'log', $node->{branch}, @date_query) if scalar @date_query;
+    push @query_commit, "\"$1\"", "-n", "1" if $query =~ /--commit="([^".]+)"/;
+    push @array_logs, $g->git->exec( 'log', @query_params, '-i', { cmd_unquoted=>1 } ) if scalar @query_params;
+    push @array_logs, $g->git->exec( 'log', @query_commit, { cmd_unquoted=>1 } ) if scalar @query_commit;
 
     my @commits;
     my $log = {};
@@ -644,6 +642,7 @@ sub commit_search {
             $date = $1;
             my $date_time = Time::Piece->strptime($date, "%c %z");
             my $date_str = $date_time->datetime;
+            $log->{date} = $date_str;
             $log->{ago} = Util->ago($date_str);
         }elsif( $_=~/^Merge: (.+)/){
             $merge = $1;
@@ -656,6 +655,8 @@ sub commit_search {
             $commit = $1;
             $log->{revision} = substr($commit,0,8);
         }else{
+            $log->{comment} = '' if !$log->{comment};
+            $_ = '' if !$_;
             $log->{comment} = $log->{comment}."\n".$_;
         }
     }

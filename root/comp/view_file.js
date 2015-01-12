@@ -1,5 +1,4 @@
 (function(params){
-console.log(params);
     var path = params.repo_dir;
     var file = params.file;
     var revid = params.revid;

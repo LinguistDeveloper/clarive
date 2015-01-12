@@ -5,13 +5,12 @@
 	var ps = 50;
 	var controller = params.click.controller;
 	var store_history = new Baseliner.JsonStore({
-	    root: 'commits', 
-	    remoteSort: true, 
+	    root: 'commits',
 	    autoLoad: true,
 	    totalProperty:"totalCount", 
 	    baseParams: { repo_dir: repo_dir, branch: branch, start: 0, limit: ps },  
 	    url: '/'+controller+'/get_commits_history', 
-	    fields: ['ago','author','revision','comment'] 
+	    fields: ['ago','author','revision','comment', 'date'],
 	});
 
 	var render_diff_btn = function(value,metadata,rec,rowIndex,colIndex,store){       
@@ -63,30 +62,34 @@
         plugins: new Ext.ux.ProgressBarPager()
     });
 
-	var grid = new Ext.grid.GridPanel({
-			tbar : [ _('Search'),search_form ],
-	        store: store_history,
-	        columns: [
-	            {id:'company',header: _("Ago"), width: 75, dataIndex: 'ago'},
-	            {header: _("Author"), width: 70, sortable: true, dataIndex: 'author'},
-	            {header: _("Revision"), width: 50, sortable: true, dataIndex: 'revision'},
-	            {header: _("Comment"), width: 450, dataIndex: 'comment'},
-	            {header: _('DIFF'), width: 50, dataIndex: 'diff_btn', renderer: render_diff_btn }
-	        ],
-	        stripeRows: true,
-	        autoExpandColumn: 'company',
-	        height:320,
-	        width:600,
-	        frame:true,
-	        title:_('Commits history of branch'),
-            viewConfig: {
-                forceFit: true
-            },
-	        plugins: new Ext.ux.PanelResizer({
-	            minHeight: 100
-	        }),
+	var render_ago = function(value,metadata,rec,rowIndex,colIndex,store){
+		return store.getAt(rowIndex).data.ago;
+	};
 
-	        bbar: pagingBar
+	var grid = new Ext.grid.GridPanel({
+		tbar : [ _('Search'),search_form ],
+        store: store_history,
+        columns: [
+            {header: _("Ago"), width: 75, dataIndex: 'date', sortable: true, dataIndex: 'date', renderer: render_ago },
+            {header: _("Author"), width: 70, sortable: true, dataIndex: 'author', sortable: true},
+            {header: _("Revision"), width: 50, sortable: true, dataIndex: 'revision', sortable: true},
+            {header: _("Comment"), width: 450, dataIndex: 'comment', sortable: true},
+            {header: _('DIFF'), width: 50, dataIndex: 'diff_btn', renderer: render_diff_btn }
+        ],
+        stripeRows: true,
+        autoExpandColumn: 'company',
+        height:320,
+        width:600,
+        frame:true,
+        title:_('Commits history of branch'),
+        viewConfig: {
+            forceFit: true
+        },
+        plugins: new Ext.ux.PanelResizer({
+            minHeight: 100
+        }),
+
+        bbar: pagingBar
 	});
 
 	var panel = new Ext.Panel({ 
