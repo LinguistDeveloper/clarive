@@ -661,7 +661,7 @@ Cla.topic_grid = function(params){
     var body_tpl = function(){/* 
                 <span style='font-weight:[%=font_weight%]; font-size: 14px; cursor: pointer; [%=strike%]' 
                 onclick='javascript:Baseliner.show_topic_colored([%=mid%],"[%=category_name%]","[%=category_color%]", "[%=id%]")'>[%=value%] </span>
-                        <br><div style='margin-top: 5px'><span style="font-weight:bold;color:#111;">[%= ago %]</span> <font color='333'>[%= new Date(modified_on).format(Prefs.js_dtd_format) %]</font>[%=folders%]
+                        <br><div style='margin-top: 5px'><span style="font-weight:bold;color:#111;">[%= ago %] </span> <font color='333'>[%= new Date(modified_on).format(Prefs.js_dtd_format) %] </font>[%=folders%]
                         <a href='javascript:Baseliner.open_monitor_query("[%=current_job%]")'>[%=current_job%] </a><font color='808080'></br>[%=who%] </font ></div> 
            */}.tmpl();
 
