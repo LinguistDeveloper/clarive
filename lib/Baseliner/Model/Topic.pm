@@ -919,10 +919,10 @@ sub next_status_for_user {
         if( length $p{id_status_from} ) {
             my $doc = mdb->topic->find_one({ mid=>$topic_mid },{ mid=>1, _workflow=>1, category_status=>1 });
             if( $doc->{_workflow} && ( my $_tos = $doc->{_workflow}{ $p{id_status_from} } ) ) {
-                $where->{id_status_to} = mdb->in($_tos); 
+                $where->{"workflow.id_status_to"} = mdb->in($_tos); 
             }
         }
-        
+                
         my %statuses = ci->status->statuses;
         
         if( !( my $cat = mdb->category->find_one($where) ) ) {
