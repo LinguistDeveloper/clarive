@@ -632,6 +632,7 @@
     win = new Baseliner.Window({
         title: title,
         autoHeight: true,
+        constrain: true, 
         width: 800,
         height: 600,
         layout:'fit',
