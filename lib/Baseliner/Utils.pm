@@ -1006,7 +1006,6 @@ sub _pathxs {
 sub _markdown {
     require Text::Markdown;
     my ($txt,$mdopts, %p) = @_;
-    $txt = _markdown_escape $txt;
     $txt =~ s{##:([^:]+):}{/topic/download_file/$p{mid}/$1};
     $txt = Text::Markdown::markdown( $txt, $mdopts );
     $txt =~ s{^\<p\>}{};
@@ -1025,61 +1024,6 @@ sub _uacc {
     }
 }
 
-
-sub _markdown_escape {
-    my $text = shift;
-    my @chars = split("", $text);
-    my @escaped_symbols = ('\\','*','_','[',']','(',')','#','-','+','.','!','{','}', '`');
-    my $i = 0;
-    foreach my $char (@chars){
-        if(grep { $_ eq $char } @escaped_symbols){
-            $chars[$i] = "\\$char";
-        }
-        $i++;
-    }
-    return join '', @chars;
-}
-
-sub _markup_escape {
-    my $txt = shift;
-    $txt =~ s/\\\*/\&\#42\;/g;
-    $txt =~ s/\\\`/\&\#96\;/g;
-    $txt =~ s/\\\\/\&\#92\;/g;
-    $txt =~ s/\\\_/\&\#95\;/g;
-    $txt =~ s/\\\[/\&\#91\;/g;
-    $txt =~ s/\\\]/\&\#93\;/g;
-    $txt =~ s/\\\(/\&\#40\;/g;
-    $txt =~ s/\\\)/\&\#41\;/g;
-    $txt =~ s/\\\#/\&\#35\;/g;
-    $txt =~ s/\\\-/\&\#45\;/g;
-    $txt =~ s/\\\+/\&\#43\;/g;
-    $txt =~ s/\\\./\&\#46\;/g;
-    $txt =~ s/\\\!/\&\#33\;/g;
-    $txt =~ s/\\\{/\&\#123\;/g;
-    $txt =~ s/\\\}/\&\#124\;/g;
-    $txt;
-}
-
-sub _markup_unescape {
-    my $txt = shift;
-    $txt =~ s/\&\#42\;/\*/g;
-    $txt =~ s/\&\#96\;/\`/g;
-    $txt =~ s/\&\#92\;/\\/g;
-    $txt =~ s/\&\#95\;/\_/g;
-    $txt =~ s/\&\#91\;/\[/g;
-    $txt =~ s/\&\#93\;/\]/g;
-    $txt =~ s/\&\#40\;/\(/g;
-    $txt =~ s/\&\#41\;/\)/g;
-    $txt =~ s/\&\#35\;/\#/g;
-    $txt =~ s/\&\#45\;/\-/g;
-    $txt =~ s/\&\#43\;/\+/g;
-    $txt =~ s/\&\#46\;/\./g;
-    $txt =~ s/\&\#33\;/\!/g;
-    $txt =~ s/\&\#123\;/\{/g;
-    $txt =~ s/\&\#124\;/\}/g;
-    $txt;
-}
-
 =head2 _markup
 
 Baseliner flavored markup.
@@ -1087,11 +1031,9 @@ Baseliner flavored markup.
 =cut
 sub _markup {
     my $txt = shift;
-    $txt = _markup_escape $txt;
     $txt =~ s{\*\*(.*?)\*\*}{<span><b>$1</b></span>}g;
     $txt =~ s{\*(.*?)\*}{<b>$1</b>}g;
     $txt =~ s{\`(.*?)\`}{<code>$1</code>}g;
-    $txt = _markup_unescape $txt; ## se podría quitar si se muestra como html
     $txt ;
 }
 
