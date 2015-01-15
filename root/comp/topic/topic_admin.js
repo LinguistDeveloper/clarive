@@ -541,7 +541,6 @@
         });
 
         if(rec){
-            console.dir(rec);
             var ff = form_category.getForm();
             ff.loadRecord( rec );
             title = 'Edit category';
