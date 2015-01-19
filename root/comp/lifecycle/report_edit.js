@@ -79,7 +79,30 @@
         var ftype = attr.field || attr.where;
         switch( ftype ) {
             case 'string':
-                oper_by_type = oper_string;
+                var opt_arr = [];
+                if( pn.attributes.options != undefined  ) {
+                    var vv = pn.attributes.options.split(',');
+                    Ext.each(vv, function(v){
+                        opt_arr.push([v]);
+                    });
+                    var stor = new Ext.data.ArrayStore({
+                        fields: [ "value" ],
+                        data : opt_arr
+                    });
+                    field = new Baseliner.SuperBox({
+                        name: 'value',
+                        xtype: 'combo',
+                        fieldLabel: _('ComboBox'),
+                        store: stor,
+                        triggerAction: 'all',
+                        valueField: 'value',
+                        displayField: 'value',
+                        singleMode: true,
+                        mode: 'local',
+                        value: attr.value
+                    });
+                }          
+                oper_by_type = oper_string;               
                 break;
             case 'number': 
                 field={ xtype:'textfield', name:'value', maskRe:/[0-9]/, fieldLabel: pn.text, value: attr.value==undefined ? 0 :  parseFloat(attr.value) };

@@ -440,7 +440,8 @@ sub all_fields {
 								'id_category' 	=> $_->{id},
 								'name_category' => $_->{name},
 								'fields' 		=> \@fields};
-							$_->{type}='category'; $_->{leaf}=\0;
+							$_->{type}='category'; 
+                            $_->{leaf}=\0;
 							$_
 						} 
 						sort { defined($a->{name_field})  cmp defined($b->{name_field})  }
@@ -501,6 +502,7 @@ sub all_fields {
                 filter      => $user_categories_fields_meta->{$name_category}->{$_}->{filter},              
                 gridlet     => $user_categories_fields_meta->{$name_category}->{$_}->{gridlet},
                 category    => $p->{name_category},
+                options     => $user_categories_fields_meta->{$name_category}->{$_}->{options},
                 leaf        =>\1
             } if !($_ eq 'priority' && $user_categories_fields_meta->{$name_category}->{$_}->{meta_type} eq 'priority'); # temporal solution to hide system_priority
         
