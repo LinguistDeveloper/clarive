@@ -917,7 +917,7 @@ sub next_status_for_user {
     
         # check if custom workflow for topic
         if( length $p{id_status_from} ) {
-            my $doc = mdb->topic->find_one({ mid=>$topic_mid },{ mid=>1, _workflow=>1, category_status=>1 });
+            my $doc = mdb->topic->find_one({ mid=>"$topic_mid" },{ mid=>1, _workflow=>1, category_status=>1 });
             if( $doc->{_workflow} && ( my $_tos = $doc->{_workflow}{ $p{id_status_from} } ) ) {
                 $where->{"workflow.id_status_to"} = mdb->in($_tos); 
             }
