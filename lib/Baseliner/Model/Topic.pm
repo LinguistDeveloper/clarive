@@ -914,11 +914,11 @@ sub next_status_for_user {
         @user_roles = Baseliner->model('Permissions')->user_roles_for_topic( username => $username, mid => $topic_mid  );
         $where->{'workflow.id_role'} = mdb->in(@user_roles);
         my %my_roles = map { $_=>1 } @user_roles;
-    
+        my $_tos;
         # check if custom workflow for topic
         if( length $p{id_status_from} ) {
-            my $doc = mdb->topic->find_one({ mid=>$topic_mid },{ mid=>1, _workflow=>1, category_status=>1 });
-            if( $doc->{_workflow} && ( my $_tos = $doc->{_workflow}{ $p{id_status_from} } ) ) {
+            my $doc = mdb->topic->find_one({ mid=>"$topic_mid" },{ mid=>1, _workflow=>1, category_status=>1 });
+            if( $doc->{_workflow} && ( $_tos = $doc->{_workflow}{ $p{id_status_from} } ) ) {
                 $where->{"workflow.id_status_to"} = mdb->in($_tos); 
             }
         }
@@ -954,6 +954,11 @@ sub next_status_for_user {
                 } 
                 grep { $my_roles{$$_{id_role}} && $$_{id_status_from} eq $p{id_status_from}}
                 grep { defined } _array( $cat->{workflow} );
+
+                if($_tos){
+                    my %tos = map { $_ => $_ } _array $_tos;
+                    @all_to_status = grep { $tos{$_->{id_status_to}}  } @all_to_status;
+                }
             
             my @no_deployable_status = grep {$_->{status_type} ne 'D'} @all_to_status;
             my @deployable_status = grep {$_->{status_type} eq 'D'} @all_to_status; 
