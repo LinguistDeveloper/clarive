@@ -307,15 +307,47 @@ sub newjob : Local {
 #########################################################################
 ####### FINISH ########
 
+sub is_binary_file : {
+    my ($self, %params ) = @_;
+    my $g = $params{gitApi};
+    my $commit_file = $params{commit_file};
+    my $filename = $params{filename};
+    my @diff = _array $g->git->exec( 'diff-tree', '--minimal', '-p', $commit_file, '--', $filename);
+    my $i = 0;
+    my $isBinary = 0;
+    foreach(@diff){
+        if($_ =~ /Binary files/){
+            $isBinary = 1;
+            last;
+        }
+        $i++;
+        last if $i>6;
+    }
+    return $isBinary;
+}
 
 sub view_file : Local {
     my ($self, $c ) = @_;
     my $node = $c->req->params;
     my $g = Girl::Repo->new( path=>$node->{repo_dir} );
     my $commit_file;
-    if($g->git->exec( 'cat-file', '-t', $node->{sha}) eq 'commit'){
+    my $type = $g->git->exec( 'cat-file', '-t', $node->{sha});
+    if($type eq 'commit'){
         $commit_file = $node->{sha};
-        $node->{sha} = substr($g->git->exec( 'rev-list', '--objects', $node->{sha}.":$node->{filename}"), 0, 8);
+        my $rev_list = $g->git->exec( 'rev-list', '--objects', $node->{sha}.":$node->{filename}");
+        $node->{sha} = $self->return_sha8($rev_list);
+    }elsif($type eq 'tree'){
+        my @commits;
+        my $label = $node->{bl} ? $node->{bl} : $node->{branch};
+        my @logs = $g->git->exec( 'log', $label, '--', $node->{filename});
+        map { push @commits, $1 if $_=~ /^commit ([a-f0-9]{40})/} @logs;
+        for my $commit (@commits){
+            my @sha_version = _array $g->git->exec( 'rev-list', '--objects', $commit.':'.$node->{filename});
+            if($sha_version[0] =~ /^$node->{sha}/){
+                $commit_file = $commit;
+                last;
+            }
+        }
     }else{
         my @commits;
         my $label = $node->{bl} ? $node->{bl} : $node->{branch};
@@ -330,7 +362,11 @@ sub view_file : Local {
         }
     }
     $c->stash->{json} = try {
-        my $out = join("\n", $g->git->exec( 'cat-file', '-p', $node->{sha}));
+        my $out;
+        if($self->is_binary_file(gitApi=>$g, commit_file=>$commit_file, filename=>$node->{filename})){
+            $out = 'It\'s a Binary file (view method not applicable)';
+        }
+        $out = join("\n", $g->git->exec( 'cat-file', '-p', $node->{sha})) if !$out;
         { success=>\1, msg=> _loc( "Success viewing file"), file_content=> _to_utf8 ($out), rev_num=>substr($commit_file,0,8) };
     } catch {
         my $err = shift;
@@ -368,8 +404,18 @@ sub get_file_blame : Local{
     my $node = $c->req->params;
     my $g = Girl::Repo->new( path=>$node->{repo_dir} );
     my $out; 
-    $out = join("\n", $g->git->exec( 'blame', $node->{sha}, '--', $node->{filename}));
-    $out = _html_escape $out;
+    my $rev_list = $g->git->exec( 'rev-list', '--objects', $node->{sha}.":$node->{filename}");
+    # Know if the git object is a directory
+    if(ref $rev_list eq 'ARRAY'){
+        $out = "$node->{filename} is a directory, Blame method is not applicable...";
+    }else{
+        if($self->is_binary_file(gitApi=>$g, commit_file=>$node->{sha}, filename=>$node->{filename})){
+            $out = 'It\'s a Binary file (blame method not applicable)';   
+        }else{
+            $out = join("\n", $g->git->exec( 'blame', $node->{sha}, '--', $node->{filename}));
+            $out = _html_escape $out;
+        }
+    }
     $c->stash->{json} = try {
         { success=>\1, msg=> $out, suported=>\1 };
     } catch {
@@ -380,6 +426,17 @@ sub get_file_blame : Local{
 }
 
 
+sub return_sha8 {
+    my ($self, $rev_list) = @_;
+    # If $rev_list is an array ref, then its a git directory
+    if(ref $rev_list eq 'ARRAY'){
+        my @revs = _array $rev_list;
+        return substr($revs[0], 0, 8);
+    }else{
+        return substr($rev_list, 0, 8);
+    }
+}
+
 sub view_diff_file : Local{
     my ($self, $c) = @_;
     my $node = $c->req->params;
@@ -388,7 +445,8 @@ sub view_diff_file : Local{
     my $actual_commit = $node->{sha};
     my $g = Girl::Repo->new( path=>$repo );
     my @commits;
-    map { push @commits, $1 if $_=~ /^commit ([a-f0-9]{40})/} $g->git->exec( 'log', $actual_commit, '--', $file);
+    my @actual_log = $g->git->exec( 'log', $actual_commit, '--', $file);
+    map { push @commits, $1 if $_=~ /^commit ([a-f0-9]{40})/} @actual_log;
     my $previous_commit = '-1';
     my $total_commits = scalar @commits;
     my $i = 0;
@@ -407,26 +465,32 @@ sub view_diff_file : Local{
     $commit_info->{comment} = _to_utf8 join("\n", @lines[4+$offset..$#lines]);
     my $diff;
     require Text::Diff;
-    my $file_sha = substr($g->git->exec( 'rev-list', '--objects', $actual_commit.":$node->{file}"), 0, 8);
-    my @array_file_content = $g->git->exec( 'cat-file', '-p', $file_sha);
-    my $previous_file_sha = substr($g->git->exec( 'rev-list', '--objects', $previous_commit.":$node->{file}"), 0, 8);
-    my $file_content = join("\n", @array_file_content );
-    my @array_previous_file_content = $g->git->exec( 'cat-file', '-p', $previous_file_sha);
-    my $previous_content = $previous_commit eq $actual_commit ? '' : join("\n", @array_previous_file_content);
-    $diff = _to_utf8 Text::Diff::diff(\$previous_content, \$file_content, { STYLE => 'Unified' });
-    my @changes;
-    my @parts;
-    while ($diff ne ''){
-        my @slides = split /(.*)(@@ .+ @@[ |\n].+)/s, $diff;
-        push @parts, $slides[-1];
-        $diff = $slides[1];
-    }
+    my $rev_list = $g->git->exec( 'rev-list', '--objects', $actual_commit.":$node->{file}");
+    my $file_sha = $self->return_sha8($rev_list);
     my @code_chunks;
-    foreach(reverse @parts){
-        $_ =~ /@@ (?<stats>.+) @@[ |\n](?<code>.*)/sg;
-        my $stats = $+{stats};
-        my $code = _to_utf8 $+{code};
-        push @code_chunks, { stats=>$stats, code=>$code };
+    my @changes;
+    if($self->is_binary_file(gitApi=>$g, commit_file=>$actual_commit, filename=>$file)){
+        push @code_chunks, { stats=>'-0,0 +0,0', code=>'It\'s a Binary file (diff method not applicable)' };
+    }else{
+        my @array_file_content = $g->git->exec( 'cat-file', '-p', $file_sha);
+        $rev_list = $g->git->exec( 'rev-list', '--objects', $previous_commit.":$node->{file}");
+        my $previous_file_sha = $self->return_sha8($rev_list);
+        my $file_content = join("\n", @array_file_content );
+        my @array_previous_file_content = $g->git->exec( 'cat-file', '-p', $previous_file_sha);
+        my $previous_content = $previous_commit eq $actual_commit ? '' : join("\n", @array_previous_file_content);
+        $diff = _to_utf8 Text::Diff::diff(\$previous_content, \$file_content, { STYLE => 'Unified' });
+        my @parts;
+        while ($diff ne ''){
+            my @slides = split /(.*)(@@ .+ @@[ |\n].+)/s, $diff;
+            push @parts, $slides[-1];
+            $diff = $slides[1];
+        }
+        foreach(reverse @parts){
+            $_ =~ /@@ (?<stats>.+) @@[ |\n](?<code>.*)/sg;
+            my $stats = $+{stats};
+            my $code = _to_utf8 $+{code};
+            push @code_chunks, { stats=>$stats, code=>$code };
+        }
     }
     push @changes, { path=> $file, revision1=>substr($previous_commit, 0,8), revision2=>substr($actual_commit, 0,8), code_chunks=>\@code_chunks };
     $c->stash->{json} = try {
@@ -442,11 +506,17 @@ sub view_diff_file : Local{
 sub get_file_history : Local{
     my ($self, $c) = @_;
     my $node = $c->req->params;
+    my $history_limit = 200;
     my $file = $node->{file};
     my $repo = $node->{repo_dir};
     my $g = Girl::Repo->new( path=>$node->{repo_dir} );
-    my @logs;    
-    map { push @logs, [$g->git->exec( 'log', '-1', $1)] if $_=~ /^commit ([a-f0-9]{40})/} $g->git->exec( 'log', $node->{sha}, '--', $node->{filename});
+    my @logs;
+    my $i=0;
+    foreach($g->git->exec( 'log', $node->{sha}, '--', $node->{filename})){
+        push @logs, [$g->git->exec( 'log', '-1', $1)] if $_=~ /^commit ([a-f0-9]{40})/;
+        $i++;
+        last if $i>$history_limit;
+    }
     my @res;
     for(@logs){
         my @log = _array $_;
@@ -506,20 +576,24 @@ sub view_diff : Local {
         foreach(@parts){
             my $i = index($_, '@@');
             my $diff_info = substr($_, 0, $i);
-            my ($path, $revision1, $revision2) = $diff_info =~ /diff --git a\/(.+) .+index ([a-f0-9]{7})\.{2}([a-f0-9]{7}) /s;
-            my $diff_code = substr($_, $i);
-            my @parts;
-            while ($diff_code ne ''){
-                my @slides = split /(.*)(@@ .+ @@[ |\n].+)/s, $diff_code;
-                push @parts, $slides[-1];
-                $diff_code = $slides[1] // '';
-            }
+            my ($path, $revision1, $revision2) = $diff_info =~ /diff --git a\/(.+) b\/.+index ([a-f0-9]{7})\.{2}([a-f0-9]{7})/s;
             my @code_chunks;
-            foreach(reverse @parts){
-                $_ =~ /@@ (?<stats>.+) @@[ |\n](?<code>.*)/sg;
-                my $stats = $+{stats};
-                my $code = _to_utf8 $+{code};
-                push @code_chunks, { stats=>$stats, code=>$code };
+            if(!($diff_info =~ /Binary files/s)){
+                my $diff_code = substr($_, $i);
+                my @parts;
+                while ($diff_code ne ''){
+                    my @slides = split /(.*)(@@ .+ @@[ |\n].+)/s, $diff_code;
+                    push @parts, $slides[-1];
+                    $diff_code = $slides[1] // '';
+                }
+                foreach(reverse @parts){
+                    $_ =~ /@@ (?<stats>.+) @@[ |\n](?<code>.*)/sg;
+                    my $stats = $+{stats};
+                    my $code = _to_utf8 $+{code};
+                    push @code_chunks, { stats=>$stats, code=>$code };
+                }
+            }else{
+                push @code_chunks, { stats=>'-0,0 +0,0', code=>'It\'s a Binary file (diff method not applicable)' };   
             }
             if($path){
                 push @changes, { path=> $path, revision1=>$revision1, revision2=>$revision2, code_chunks=>\@code_chunks };

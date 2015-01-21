@@ -1,4 +1,5 @@
 (function(params){
+
     var repo_dir = params.repo_dir;
     var rev_num = params.rev_num;
     var revid = params.revid;
@@ -378,6 +379,9 @@
 								var last_start = Math.abs(beginig_last[0]);
 							}
 							res = res+"<tr><td colspan=3>"+stats+"</td></tr>";
+							if(!element.code){
+								element.code = '';
+							}
 							var lines = element.code.split("\n");
 							var regexp_final = new RegExp("");
 							if(element.code.search(regexp_del)>=0)
