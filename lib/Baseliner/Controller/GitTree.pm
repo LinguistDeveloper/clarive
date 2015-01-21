@@ -513,8 +513,10 @@ sub get_file_history : Local{
     my @logs;
     my $i=0;
     foreach($g->git->exec( 'log', $node->{sha}, '--', $node->{filename})){
-        push @logs, [$g->git->exec( 'log', '-1', $1)] if $_=~ /^commit ([a-f0-9]{40})/;
-        $i++;
+        if($_=~ /^commit ([a-f0-9]{40})/){
+            push @logs, [$g->git->exec( 'log', '-1', $1)];
+            $i++;
+        }
         last if $i>$history_limit;
     }
     my @res;
