@@ -199,6 +199,13 @@ has backup_dir         => qw(is rw isa Any lazy 1), default => sub {
     return ''.Util->_file( $self->job_dir, '_backups' );
 };
 sub logger { 'BaselinerX::Type::Service::Container::Job::Logger' }
+sub back_to_core {}
+our $AUTOLOAD;
+sub AUTOLOAD {
+    shift;
+    my $name = $AUTOLOAD;
+    Util->_warn("Ignored NoOp Method $name called in Job container.");
+}
 
 package BaselinerX::Type::Service::Container::Job::Logger;
 #use Moose;  # no need for a new
