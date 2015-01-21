@@ -1196,17 +1196,30 @@ sub file : Local {
 sub tree : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
-    if( $p->{favorites} && $p->{favorites} eq 'true' ) {
-        $c->forward( 'tree_favorites' );
-    } elsif( $p->{show_workspaces} && $p->{show_workspaces} eq 'true' ) {
-        $c->forward( 'tree_workspaces' );    
-    } elsif( $p->{show_releases} && $p->{show_releases} eq 'true' ) {
-        $c->forward( 'tree_releases' );
-    } elsif( $p->{show_ci} && $p->{show_ci} eq 'true' ) {
-        $c->forward( '/ci/list' );
-    } else {
-        $c->forward( 'tree_all' );
-    }
+    try {
+        if( $p->{favorites} && $p->{favorites} eq 'true' ) {
+            $c->forward( 'tree_favorites' );
+        } elsif( $p->{show_workspaces} && $p->{show_workspaces} eq 'true' ) {
+            $c->forward( 'tree_workspaces' );    
+        } elsif( $p->{show_releases} && $p->{show_releases} eq 'true' ) {
+            $c->forward( 'tree_releases' );
+        } elsif( $p->{show_ci} && $p->{show_ci} eq 'true' ) {
+            $c->forward( '/ci/list' );
+        } else {
+            $c->forward( 'tree_all' );
+        }
+    } catch {
+        my $err = shift;
+        my $msg = _loc('Error detected: %1', $err );
+        _error( $msg );
+        $c->stash->{json} = [{ 
+            text => substr($msg,0,255),
+            data => {},
+            icon => '/static/images/icons/error.png',
+            leaf=>\1,
+            expandable => \0
+        }]; 
+    };
     $c->forward( 'View::JSON' );
 }
 
@@ -1237,22 +1250,21 @@ sub check_user_favorites : Local {
     my @fav_user = $user_ci->{favorites};
     for my $item ( @fav_user ) {
         for my $node (keys $item){
-            my @keys_data = keys $item->{$node}->{data};
-            foreach (@keys_data){
-                if($_=~/^id/){
-                    if($_ eq "id_status"){
+            my @keys_data = keys $item->{$node}{data} if $item->{$node}{data};
+            foreach my $k (@keys_data){
+                if( $k =~ /^id/ ){
+                    if($k eq "id_status"){
                         try{
-                            ci->status->find_one({id_status =>$_});
+                            ci->status->find_one({id_status =>$k});
                         }catch{
                             delete $user_ci->{favorites}->{$node};
                         }
                     }else{
                         try{
-                            ci->new($item->{$node}->{data}->{$_});
+                            ci->new($item->{$node}->{data}->{$k});
                         }catch{
                             delete $user_ci->{favorites}->{$node};
                         }
-
                     }
                 }
             }
