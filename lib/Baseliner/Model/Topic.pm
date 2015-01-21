@@ -262,6 +262,7 @@ register 'registor.action.topic_category_fields' => {
                     $description = _loc($msg_view, $field->{name_field}, $category->{name});
                     $actions_category_fields{$id_action} = { id => $id_action, name => $description };
                     for my $status (@statuses2){
+                        next unless length($cat_to_id) && length($field_to_id) && length($status->{name_id});
                         $id_action = 'action.topicsfield.' . $cat_to_id . '.' . $field_to_id . '.' . $status->{name_id} . '.write';
                         $description = _loc($msg_edit_s, $field->{name_field}, $category->{name}, $status->{name} );
                         $actions_category_fields{$id_action} = { id => $id_action, name => $description };
