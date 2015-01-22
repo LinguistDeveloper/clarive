@@ -219,24 +219,6 @@ sub branch_tree : Local {
             else {  # it's a file
                 $f = _file( $f );
                 my $fname = Girl->unquote($f->basename);
-                #+{ 
-                #    text => "$fname",
-                #    leaf => \1,
-                #    data => {
-                #        click => {
-                #            #url      => '/gitpage/show_file/' . $sha,
-                #            #type     => 'html',
-                #            # url      => sprintf( '/gitweb.cgi?p=%s;a=blob;f=%s;h=%s;hb=%s', $node->{repo_dir}, $f, $node->{branch}, $sha ),
-                #            url      => sprintf( '/gitweb.cgi?p=%s;a=blob;f=%s;h=%s;hb=%s', $node->{repo_dir}, $f, $sha, $node->{branch} ),
-                #            type     => 'iframe',
-                #            title    => sprintf("%s:%s", $node->{branch}, $fname),
-                #        },
-                #        tab_icon => '/static/images/icons/leaf.gif',
-                #        file     => "$f",
-                #        repo_dir => $node->{repo_dir},
-                #    },
-                # }
-
                 +{ 
                     text => "$fname",
                     leaf => \1,
@@ -702,9 +684,10 @@ sub commit_search {
         push @query_params, "--grep=\"$comment\"";
     }
     push @query_commit, "\"$1\"", "-n", "1" if $query =~ /--commit="([^".]+)"/;
-    push @array_logs, $g->git->exec( 'log', @query_params, '-i', { cmd_unquoted=>1 } ) if scalar @query_params;
-    push @array_logs, $g->git->exec( 'log', @query_commit, { cmd_unquoted=>1 } ) if scalar @query_commit;
-
+    try{
+        push @array_logs, $g->git->exec( 'log', @query_params, '-i', { cmd_unquoted=>1 } ) if scalar @query_params;
+        push @array_logs, $g->git->exec( 'log', @query_commit, { cmd_unquoted=>1 } ) if scalar @query_commit;
+    }catch{};
     my @commits;
     my $log = {};
     foreach(@array_logs){
