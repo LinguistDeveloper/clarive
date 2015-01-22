@@ -774,7 +774,7 @@ sub comment : Local {
             _fail( _loc("This comment does not exist anymore") ) unless $post;
             my $text = $post->text;
             # find my parents to notify via events
-            my @mids = map { $_->mid } $post->parents( where => {collection=>'topic'}, mids_only => 1 );
+            my @mids = map { $_->{mid} } $post->parents( where => {collection=>'topic'}, mids_only => 1 );
             # delete the record
             $post->delete;
             # now notify my parents
