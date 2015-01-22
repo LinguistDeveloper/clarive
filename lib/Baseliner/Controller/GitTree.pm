@@ -313,6 +313,7 @@ sub is_binary_file : {
     my $commit_file = $params{commit_file};
     my $filename = $params{filename};
     my @diff = _array $g->git->exec( 'diff-tree', '--minimal', '-p', $commit_file, '--', $filename);
+    @diff = _array $g->git->exec( 'diff', '--minimal', '-p', $commit_file, '--', $filename) if !@diff;
     my $i = 0;
     my $isBinary = 0;
     foreach(@diff){
