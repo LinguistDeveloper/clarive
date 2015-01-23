@@ -1939,8 +1939,8 @@ sub update_rels {
         $d{_txt} = join ';', grep { defined } @txts{ @all_rel_mids };
         
         my @pnames;
-        for my $rel ( _array( $rels{$mid} ) ) {
-            push @pnames, $project_names{$$rel{to_mid}} if $rel->{rel_type} eq 'topic_project' and $project_names{$$rel{to_mid}};
+        for my $rel ( _array(values %rels) ) {
+            push @pnames, $project_names{$rel->{to_mid}} if $rel->{rel_type} eq 'topic_project' and $project_names{ $$rel{to_mid} } and $rel->{from_mid} eq $mid_or_doc;
         }
         $d{_sort}{projects} = join '|', sort map { lc( $_ ) } @pnames;  
         
