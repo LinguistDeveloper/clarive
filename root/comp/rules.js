@@ -52,10 +52,36 @@
         }
     };
     
+
+    // use a form so file can download
+    var form_export_file = new Ext.form.FormPanel({
+        url: '/rule/export_file', renderTo:'run-panel', style:{ display: 'none'},
+        items: [
+            { xtype:'hidden', name:'id_rule'},
+            { xtype:'hidden', name:'format'}
+        ]
+    });
+    var rule_export_file = function(){
+        var sm = rules_grid.getSelectionModel();
+        if( sm.hasSelection() ) {
+            var form = form_export_file.getForm(); 
+            form.findField('id_rule').setValue( sm.getSelected().data.id );
+            form.findField('format').setValue( 'yaml' );
+            var el = form.getEl().dom;
+            var targetD = document.createAttribute("target");
+            targetD.nodeValue = 'FrameDownload';
+            el.setAttributeNode(targetD);
+            el.action = '/rule/export_file';
+            el.submit(); 
+        } else {
+            Baseliner.message( _('Error'), _('Select rows first') );
+        }
+    };
+    
     var rule_import = function(){
-        var data = new Baseliner.MonoTextArea({ value:'' });
+        var yaml = new Baseliner.MonoTextArea({ fieldLabel:_('YAML'), value:'' });
         var btn_imp = new Ext.Button({ text: _('Import YAML'), handler: function(){
-            Baseliner.ajaxEval('/rule/import', { data: data.getValue(), type:'yaml' }, function(res){
+            Baseliner.ajaxEval('/rule/import', { data: yaml.getValue(), type:'yaml' }, function(res){
                 if( res.success ) { 
                     rules_store.reload();
                     Baseliner.message( _('Import'), _('Imported rule: %1', res.rule_name) );
@@ -65,7 +91,21 @@
                 Baseliner.error( _('Rule Export'), res.msg );
             });
         }});
-        var win = new Baseliner.Window({ title:_('Import'), layout:'fit', width: 800, height: 600, tbar:[btn_imp], items:data });
+        var win = new Baseliner.Window({ title:_('Import'), layout:'fit', width: 800, height: 600, tbar:[btn_imp], items:yaml });
+        win.show();
+    };
+    
+    var rule_import_file = function(){
+        var up = new Baseliner.UploadPanel({
+            title: _('Drag and Drop Files Here'),
+            url: '/rule/import_file',
+            height: 300
+        });
+        up.on('complete', function(){
+            rules_store.reload();
+        });
+        var win = new Baseliner.Window({ title:_('Import'), layout:'form', 
+            width: 600, height: 300, tbar:[_('Select or Drag and Drop Rule Files Here')], items:up });
         win.show();
     };
     
@@ -172,8 +212,11 @@
             { xtype:'button', icon: '/static/images/icons/delete.gif', id: 'x-btn-del', cls: 'x-btn-icon', handler: rule_del, disabled: true},
             { xtype:'button', icon: '/static/images/icons/activate.png', id: 'x-btn-act', cls: 'x-btn-icon', handler: rule_activate, disabled: true },
             { xtype:'button', icon: '/static/images/icons/wrench.png', cls: 'x-btn-icon', menu:[
-                { text: _('Import'), icon: '/static/images/icons/import.png', handler: rule_import },
-                { text: _('Export'), icon: '/static/images/icons/export.png', handler: rule_export }
+                { text: _('Import YAML'), icon: '/static/images/icons/import.png', handler: rule_import },
+                { text: _('Import from File'), icon: '/static/images/icons/import.png', handler: rule_import_file },
+                '-',
+                { text: _('Export YAML'), icon: '/static/images/icons/export.png', handler: rule_export },
+                { text: _('Export to File'), icon: '/static/images/icons/export.png', handler: rule_export_file }
             ]}
         ]
     });

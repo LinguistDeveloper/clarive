@@ -117,6 +117,46 @@ sub export : Local {
     $c->forward("View::JSON");
 }
 
+sub export_file : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+    my $id_rule = $p->{id_rule};
+    try {
+        my $doc = mdb->rule->find_one({ id=>"$id_rule" });
+        _fail _loc('Row with id %1 not found', $p->{id_rule} ) unless $doc;
+        #$doc->{rule_tree} = $doc->{rule_tree} ? _decode_json($doc->{rule_tree}) : [];
+        delete $doc->{_id};
+        my $yaml = _dump($doc);
+        $c->stash->{serve_body} = $yaml;
+        $c->stash->{serve_filename} = Util->_name_to_id( $doc->{rule_name} ) . '.yaml';
+        $c->forward('/serve_file');
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { success=>\0, msg => $err };
+    };
+}
+
+sub import_rule {
+    my ($self,%p)=@_;
+    my $data = $p{data} // _throw 'Missing rule';
+    $p{type} //= 'yaml';
+    my $rule = $p{type} eq 'yaml' ? _load( $data ) : {} ;
+    delete $rule->{id};
+    delete $rule->{rule_id};
+    delete $rule->{_id};
+    my $doc = mdb->rule->find_one({ rule_name=>$rule->{rule_name} });
+    if( $doc ) {
+        $rule->{rule_name} = sprintf '%s (%s)', $rule->{rule_name}, _now();
+    }
+    # rule tree should be stored as JSON to avoid import/export discrepancies while migrating it to YAML
+    $rule->{rule_tree} = Util->_encode_json($rule->{rule_tree}) if ref $rule->{rule_tree}; 
+    $rule->{id} = mdb->seq('rule');
+    $rule->{rule_seq} = 0+ mdb->seq('rule_seq');
+    $rule->{rule_active} = '1';
+    mdb->rule->insert($rule);
+    return $rule;
+}
+
 sub import : Local {
     my ($self,$c)=@_;
     my $p = $c->req->params;
@@ -125,25 +165,36 @@ sub import : Local {
     _fail _loc('Missing data') if !length $data;
     
     try {
-        my $rule = $type eq 'yaml' ? _load( $data ) : {} ;
-        delete $rule->{id};
-        delete $rule->{rule_id};
-        delete $rule->{_id};
-        my $doc = mdb->rule->find_one({ rule_name=>$rule->{rule_name} });
-        if( $doc ) {
-            $rule->{rule_name} = sprintf '%s (%s)', $rule->{rule_name}, _now();
-        }
-        #$rule->{rule_tree} = Util->_encode_json($rule->{rule_tree});
-        $rule->{id} = mdb->seq('rule');
-        $rule->{rule_seq} = 0+ mdb->seq('rule_seq');
-        $rule->{rule_active} = '1';
-        mdb->rule->insert($rule);
+        my $rule = $self->import_rule( data=>$data );
         $c->stash->{json} = { success=>\1, name=>$rule->{rule_name} };
     } catch {
         my $err = shift;
         $c->stash->{json} = { success=>\0, msg => $err };
     };
     $c->forward("View::JSON");
+}
+
+sub import_file : Local {
+    my ($self,$c)=@_;
+    my $p = $c->req->params;
+
+    my $filename = $p->{qqfile};
+    my $type     = $p->{type} // 'yaml';
+    
+    my $f = _file( $c->req->body );
+    _log "Importing rule from file: " . $filename;
+    try {
+        my $data = ''.$f->slurp;
+        _log "Rule file length: " . length $data;
+        my $rule = $self->import_rule( data=>$data );
+        $c->stash->{json} = { success=>\1, msg => _loc( 'Rule imported %1', $rule->{rule_name} ), name=>$rule->{rule_name} };
+    } catch {
+        my $err = shift;
+        my $msg = "Error importing rule: " . $err;
+        $c->stash->{json} = { success=>\0, msg=>$msg };
+    };
+
+    $c->forward( 'View::JSON' );
 }
 
 sub delete : Local {
@@ -618,7 +669,7 @@ sub stmts_load : Local {
 
             );
             while( my $rv = $rs->next ) {
-                my $ver_tree = Util->_decode_json($rv->{rule_tree}); 
+                my $ver_tree = try { Util->_decode_json($rv->{rule_tree}) } catch { +{} }; 
                 my @ver_tree = Baseliner->model('Rules')->tree_format( @$ver_tree );
                 my $text = _loc('Version: %1 (%2)', $rv->{ts}, $rv->{username} );
                 $text .= ' was: '.$rv->{was} if $rv->{was};
