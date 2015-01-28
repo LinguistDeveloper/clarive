@@ -115,7 +115,7 @@ sub monitor {
     
     if( length $p->{job_state_filter} ) {
         my @job_state_filters = do {
-                my $job_state_filter = Util->decode_json( $p->{job_state_filter} );
+                my $job_state_filter = Util->_decode_json( $p->{job_state_filter} );
                 _unique grep { $job_state_filter->{$_} } keys %$job_state_filter;
         };
         $where->{status} = mdb->in( \@job_state_filters );
