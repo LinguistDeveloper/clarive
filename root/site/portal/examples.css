@@ -58,20 +58,3 @@ pre.code{
 .x-grid3-row-body p {
     margin:5px 5px 10px 5px !important;
 }
-
-.dd-arrow-down.dd-arrow-down-invisible {
-    display: none;
-    visibility: hidden;
-}
- 
-.dd-arrow-down {
-    background-image: url(icons/tab-drop-arrow-down.png);
-    display: block;
-    visibility: visible;
-    z-index: 20000;
-    position: absolute;
-    width: 16px;
-    height: 16px;
-    top: 0;
-    left: 0;
-}
