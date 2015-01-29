@@ -176,33 +176,37 @@ sub reports_from_rule {
     my $userci = Baseliner->user_ci( $p->{username} );
     my $username = $p->{username};
     my @tree;
-    for my $rule ( mdb->rule->find({ rule_type=>'report' })->sort({ id=>1 })->all ) {
-        my $cr = Baseliner::CompiledRule->new( _id=>$rule->{_id} );
-        my $stash = {};
-        $cr->compile;
-        $cr->run( stash=>$stash ); 
-        my $can = $stash->{report_security}->(username => $p->{username}) // {};  # grid_params, 
-        if ( $can ) 
-        {
-            my $n = {
-                key => "$$rule{_id}",
-                text => $$rule{rule_name},
-                icon => '/static/images/icons/rule.png',
-                leaf => \1,
-                data    => {
-                    click   => {
-                        icon    => '/static/images/icons/topic.png',
-                        url     => '/comp/topic/topic_report.js',
-                        type    => 'eval',
-                        title   => $$rule{rule_name},
-                    },
-                    id_report_rule => "$$rule{_id}",
-                    report_name    => $$rule{rule_name},
-                    hide_tree      => \1,
-                    #custom_form    => $reg->form,    
-                }
-            };
-            push @tree, $n;
+    for my $rule ( mdb->rule->find({ rule_type=>'report', active => mdb->true })->sort({ id=>1 })->all ) {
+        try {
+            my $cr = Baseliner::CompiledRule->new( _id=>$rule->{_id} );
+            my $stash = {};
+            $cr->compile;
+            $cr->run( stash=>$stash ); 
+            my $can = $stash->{report_security}->(username => $p->{username}) // {};  # grid_params, 
+            if ( $can ) 
+            {
+                my $n = {
+                    key => "$$rule{_id}",
+                    text => $$rule{rule_name},
+                    icon => '/static/images/icons/rule.png',
+                    leaf => \1,
+                    data    => {
+                        click   => {
+                            icon    => '/static/images/icons/topic.png',
+                            url     => '/comp/topic/topic_report.js',
+                            type    => 'eval',
+                            title   => $$rule{rule_name},
+                        },
+                        id_report_rule => "$$rule{_id}",
+                        report_name    => $$rule{rule_name},
+                        hide_tree      => \1,
+                        #custom_form    => $reg->form,    
+                    }
+                };
+                push @tree, $n;
+            }
+        } catch {
+            _warn "Rule ".$rule->{_id}." is not valid as report: ".shift;
         }
     }
     return \@tree;
