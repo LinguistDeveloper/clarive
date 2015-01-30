@@ -63,7 +63,7 @@
                         var r = results[ir];
                         var url;
                         if( r.type == 'topic' ) {
-                            r.title = ['<table><tr><td>', Baseliner.topic_name({ category_name:r.url[1], category_color:r.url[2] }),
+                            r.title = ['<table><tr><td>', Baseliner.topic_name({ category_name:r.url[1], category_color:r.url[2], mid:r.mid }),
                                 '&nbsp;</td><td><h4>', r.title, '</h4></td></tr></table>' ].join(''); 
                         }
                         var block = block_tmpl(r);
