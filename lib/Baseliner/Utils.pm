@@ -1508,13 +1508,24 @@ sub _fixCharacters_mail {
     my $hs = HTML::Strip->new();
     my $clean_text = $hs->parse($d);
     utf8::decode( $clean_text );
+    #Ñ
     $clean_text =~ s{Ã\?}{&Ntilde;}g;
     $clean_text =~ s{Ã±}{&ntilde;}g;
+    #minus
     $clean_text =~ s{Ã¡}{&aacute;}g;
     $clean_text =~ s{Ã©}{&eacute;}g;
-    $clean_text =~ s{Ã-}{&iacute;}g;
     $clean_text =~ s{Ã³}{&oacute;}g;
     $clean_text =~ s{Ãº}{&uacute;}g;
+    $clean_text =~ s{Ã­}{&iacute;}g;
+    #answer
+    $clean_text =~ s{Ã¿}{&iquest;}g;
+    $clean_text =~ s{Â¡}{&iexcl;}g;
+    #minus
+    # $clean_text =~ s{Ã¡}{&Aacute;}g;
+    # $clean_text =~ s{Ã�}{&Eacute;}g;
+    # $clean_text =~ s{Ã�}{&Oacute;}g;
+    # $clean_text =~ s{Ãº}{&Uacute;}g;
+    # $clean_text =~ s{Ã�­}{&Iacute;}g;
     $clean_text;
 }
 

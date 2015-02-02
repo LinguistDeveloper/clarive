@@ -629,6 +629,7 @@ Baseliner.Topic.comment_edit = function(topic_mid, id_com, cb) {
             var id = cardcom.getLayout().activeItem.id;
             if( id == comment_field.getId() ) {
                 text = comment_field.getValue();
+                text = text.toLowerCase();
                 content_type = 'html';
             } else {
                 text = code.getValue();
