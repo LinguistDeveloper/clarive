@@ -1082,7 +1082,7 @@
                         if (sm.hasSelection())
                         {
                             var sel = sm.getSelected();
-                            Baseliner.addNewTabComp('/job/log/list?mid=' + sel.data.mid, sel.data.name );
+                            Baseliner.addNewTabComp('/job/log/list?mid=' + sel.data.mid+'&auto_refresh=1', sel.data.name );
                         } else {
                             Ext.Msg.alert(_('Error'), _('Select a row first'));   
                         };

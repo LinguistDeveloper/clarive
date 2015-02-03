@@ -4,11 +4,13 @@
     $job_exec => 1
     $user_action
     $service_name
+    $auto_refresh
 </%args>
 (function(params){
     if( !params ) params = {};
     var ps = 500; //page_size
     var mid = '<% $mid %>' ;
+    var auto_refresh = '<% $auto_refresh %>';
     var job_exec = '<% $job_exec %>' ;
     var job_exec_max = job_exec;
     var filter_key = 'log_filter_<% $mid . int(rand(9999999999)) %>' ;
@@ -165,6 +167,8 @@
         interval: 3000
     };
     var autorefresh = new Ext.util.TaskRunner();
+
+    if (auto_refresh == 1) { button_autorefresh.toggle(true); }
 
     //Annotations
     var annotation = function(r) {

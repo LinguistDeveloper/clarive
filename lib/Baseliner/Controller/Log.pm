@@ -14,6 +14,7 @@ sub logs_list : Path('/job/log/list') {
     $c->stash->{mid} = $mid // $p->{mid};
     $c->stash->{service_name} = $p->{service_name};
     $c->stash->{annotate_now} = $p->{annotate_now};
+    $c->stash->{auto_refresh} = $p->{auto_refresh};
     my $job = ci->new( $p->{mid} );
     $c->stash->{job_exec} = ref $job ? $job->exec : 1;
     $c->forward('/permissions/load_user_actions');
