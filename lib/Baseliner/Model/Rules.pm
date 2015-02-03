@@ -1210,12 +1210,12 @@ register 'statement.project.loop' => {
                 my @project_bls = map { $_->{bl} } _array $project->bls;
                 if ( !@project_bls || $stash->{bl} ~~ @project_bls ) {
                     my $vars = variables_for_bl( $project, $stash->{bl} );
-                    $stash->{job}->logger->info( _loc('Current project *%%1* (%%2)', $project->name, $stash->{bl} ), $vars );
+                    $stash->{job}->logger->info( _loc('Current project *%%1* (%%2)', _markdown_escape($project->name), _markdown_escape($stash->{bl}) ), $vars );
                     merge_data $stash, $vars, { _ctx => 'project_loop' }; 
                     
                     %s
                 } else {
-                    $stash->{job}->logger->info( _loc('Project *%%1* skipped for bl %%2', $project->name, $stash->{bl} ) );
+                    $stash->{job}->logger->info( _loc('Project *%%1* skipped for bl %%2', _markdown_escape($project->name), _markdown_escape($stash->{bl}) ) );
                 }
             }
         }, $self->dsl_build( $n->{children}, %p ) );
@@ -1242,7 +1242,7 @@ register 'statement.if.nature' => {
                     local $stash->{ nature_item_paths_del } = $nat_paths_del;
                     local $stash->{ nature_items_comma } = join(',', @$nat_paths );
                     local $stash->{ nature_items_quote } = "'" . join("' '", @$nat_paths ) . "'";
-                    $stash->{job}->logger->info( _loc('Nature Detected *%%1*', $nature->name ), 
+                    $stash->{job}->logger->info( _loc('Nature Detected *%%1*', _markdown_escape($nature->name) ), 
                         +{ map { $_=>$stash->{$_} } qw/nature_items nature_item_paths nature_items_comma nature_items_quote/ } );
 
                     %s

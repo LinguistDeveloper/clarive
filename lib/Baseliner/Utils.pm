@@ -1006,7 +1006,7 @@ sub _pathxs {
 sub _markdown {
     require Text::Markdown;
     my ($txt,$mdopts, %p) = @_;
-    $txt = _markdown_escape($txt);
+    #$txt = _markdown_escape($txt);
     $txt =~ s{##:([^:]+):}{/topic/download_file/$p{mid}/$1};
     $txt = Text::Markdown::markdown( $txt, $mdopts );
     $txt =~ s{^\<p\>}{};
@@ -1086,11 +1086,11 @@ Baseliner flavored markup.
 =cut
 sub _markup {
     my $txt = shift;
-    $txt = _markup_escape($txt);
+    #$txt = _markup_escape($txt);
     $txt =~ s{\*\*(.*?)\*\*}{<span><b>$1</b></span>}g;
     $txt =~ s{\*(.*?)\*}{<b>$1</b>}g;
     $txt =~ s{\`(.*?)\`}{<code>$1</code>}g;
-    $txt = _markup_unescape($txt); ## se podría quitar si se muestra como html
+    #$txt = _markup_unescape($txt); ## se podría quitar si se muestra como html
     $txt ;
 }
 

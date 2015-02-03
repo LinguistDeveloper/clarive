@@ -34,7 +34,7 @@ sub parse_files {
             my $tree = $p->parse( $file );
             if( ref($tree) && ! keys %$tree ) {
                 next if $fail_mode eq 'skip';
-                my $msg = _loc( "Parser *%1* could not parse '%2'", $p->name, $path);
+                my $msg = _loc( "Parser *%1* could not parse '%2'", _markdown_escape($p->name), _markdown_escape($path));
                 _warn $msg if $fail_mode eq 'warn'; 
                 _fail $msg if $fail_mode eq 'fail'; 
             }

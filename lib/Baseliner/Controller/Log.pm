@@ -502,7 +502,7 @@ sub upload_file : Path('/job/log/upload_file') {
     _log "Uploading to log " . $filename;
     try {
         my $job = ci->new( $mid );
-        my $msg = length $text  ? $text : _loc( "User *%1* has uploaded file '%2'", $c->username, $filename);  
+        my $msg = length $text  ? $text : _loc( "User *%1* has uploaded file '%2'", _markdown_escape($c->username), _markdown_escape($filename));  
         $job->logger->$level( $msg, data=>''.$f->slurp, data_name=>"$filename", more=>'file', username=>$c->username );
         $c->stash->{ json } = { success => \1, msg => _loc( 'File saved to job %1 log: %2', $job->name, $filename ) } ;            
     } catch {

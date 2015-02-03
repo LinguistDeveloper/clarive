@@ -680,11 +680,11 @@ sub trap_action {
     my $action = $p->{action} // '';
     if ( $self->status =~ /TRAPPED/ ) {
         my $job_status = $action eq 'retry' ? 'RETRYING' : $action eq 'skip' ? 'SKIPPING' : $action eq 'pause' ? 'TRAPPED_PAUSED' :'ERROR';
-        $self->logger->warn( _loc("Task response '*%1*' by *%2*: %3", _loc($action), $p->{username}, $comments), data=>$comments, username=>$p->{username} );
+        $self->logger->warn( _loc("Task response '*%1*' by *%2*: %3", _loc(_markdown_escape($action)), _markdown_escape($p->{username}), _markdown_escape($comments)), data=>$comments, username=>$p->{username} );
         $self->status( $job_status );
         $self->save;
     } else {
-        $self->logger->warn( _loc("Task response ignored (status not trapped) '*%1*' by *%2*: %3", _loc($action), $p->{username}, $comments), data=>$comments, username=>$p->{username} );
+        $self->logger->warn( _loc("Task response ignored (status not trapped) '*%1*' by *%2*: %3", _loc(_markdown_escape($action)), _markdown_escape($p->{username}), _markdown_escape($comments)), data=>$comments, username=>$p->{username} );
     }
     { success=>1 }
 }

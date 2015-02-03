@@ -176,7 +176,7 @@ sub changeset_update {
         }
         my $status_name = ci->status->find_one({ id_status=>''.$status })->{name};
         _fail _loc 'Status row not found for status `%1`', $status_name unless $status_name;
-        $log->info( _loc( 'Moving changeset %1 (#%2) to stage *%3*', $cs->title, $cs->mid, $status_name ) );
+        $log->info( _loc( 'Moving changeset %1 (#%2) to stage *%3*', _markdown_escape($cs->title), _markdown_escape($cs->mid), _markdown_escape($status_name) ) );
         Baseliner->model('Topic')->change_status(
            change          => 1, 
            username        => $job->username,
