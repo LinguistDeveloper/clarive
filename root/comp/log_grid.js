@@ -168,7 +168,7 @@
     };
     var autorefresh = new Ext.util.TaskRunner();
 
-    if (auto_refresh == 1) { button_autorefresh.toggle(true); }
+    if (auto_refresh == 1) { button_autorefresh.toggle(true); autorefresh.start(task); }
 
     //Annotations
     var annotation = function(r) {
