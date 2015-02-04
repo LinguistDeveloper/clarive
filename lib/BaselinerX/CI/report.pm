@@ -176,7 +176,7 @@ sub reports_from_rule {
     my $userci = Baseliner->user_ci( $p->{username} );
     my $username = $p->{username};
     my @tree;
-    for my $rule ( mdb->rule->find({ rule_type=>'report', active => mdb->true })->sort({ id=>1 })->all ) {
+    for my $rule ( mdb->rule->find({ rule_type=>'report', rule_active => mdb->true })->sort({ id=>1 })->all ) {
         try {
             my $cr = Baseliner::CompiledRule->new( _id=>$rule->{_id} );
             my $stash = {};

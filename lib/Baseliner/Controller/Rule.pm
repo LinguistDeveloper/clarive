@@ -621,9 +621,9 @@ sub save_rule {
     mdb->rule->update({ id=>''.$p{id_rule} }, { '$set'=> { ts => $old_timestamp, username => $p{username}, rule_tree=>$p{stmts_json}, %other_options } } );
     # now, version
     # check if collection exists
-    if( ! mdb->collection('system.namespaces')->find({ name=>qr/rule_version/ })->count ) {
-        mdb->create_capped( 'rule_version' );
-    }
+    # if( ! mdb->collection('system.namespaces')->find({ name=>qr/rule_version/ })->count ) {
+    #     mdb->create_capped( 'rule_version' );
+    # }
 
     delete $doc->{_id};
     mdb->rule_version->insert({ %$doc, ts=>mdb->ts, username=>$p{username}, id_rule=>$p{id_rule}, rule_tree=>$p{stmts_json}, was=>($p{was}//'') });    
@@ -823,7 +823,7 @@ Soap webservices.
 
 sub rule_from_url {
     my ($self,$id_rule)=@_;
-    my $where = { '$or'=>[ {id=>"$id_rule"}, {rule_name=>"$id_rule"}] };
+    my $where = { rule_active => mdb->true,'$or'=>[ {id=>"$id_rule"}, {rule_name=>"$id_rule"}] };
     my $rule = mdb->rule->find_one($where,{ rule_tree=>0 }) or _fail _loc 'Rule %1 not found', $id_rule;
     return $rule;
 }
