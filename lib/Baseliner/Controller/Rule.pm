@@ -621,9 +621,9 @@ sub save_rule {
     mdb->rule->update({ id=>''.$p{id_rule} }, { '$set'=> { ts => $old_timestamp, username => $p{username}, rule_tree=>$p{stmts_json}, %other_options } } );
     # now, version
     # check if collection exists
-    if( ! mdb->collection('system.namespaces')->find({ name=>qr/rule_version/ })->count ) {
-        mdb->create_capped( 'rule_version' );
-    }
+    # if( ! mdb->collection('system.namespaces')->find({ name=>qr/rule_version/ })->count ) {
+    #     mdb->create_capped( 'rule_version' );
+    # }
 
     delete $doc->{_id};
     mdb->rule_version->insert({ %$doc, ts=>mdb->ts, username=>$p{username}, id_rule=>$p{id_rule}, rule_tree=>$p{stmts_json}, was=>($p{was}//'') });    
