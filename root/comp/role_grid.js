@@ -47,7 +47,6 @@
     }
 
         var ps = 100; //page_size
-        store.load({params:{start:0 , limit: ps}}); 
 
         // create the grid
         var grid = new Ext.grid.GridPanel({
@@ -150,6 +149,8 @@
                 '->'
                 ]
         });
+
+    store.load({params:{start:0 , limit: ps}}); 
 
     grid.getView().forceFit = true;
     

@@ -342,7 +342,7 @@
             var rec = role_data_store.getAt(0);
             //////// Load form and grid data
             action_store.removeAll();
-            if( rec ) {
+            if( rec && rec.data.id ) {
                 // Grid
                 var gs = action_store;
                 var rd = rec.data.actions;
@@ -363,9 +363,7 @@
     });
 
     ////////// Single Role Data Load
-    if( params.id_role!=undefined ) {
-       role_data_store.load({ params:{ id: params.id_role } }); 
-    }
+    role_data_store.load({ params:{ id: params.id_role } }); 
 
     var panel_title = params.id_role ? _('Role: %1', params.role ) : _('New Role');
     var role_panel = new Ext.Panel({
