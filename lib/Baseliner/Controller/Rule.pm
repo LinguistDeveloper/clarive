@@ -823,7 +823,7 @@ Soap webservices.
 
 sub rule_from_url {
     my ($self,$id_rule)=@_;
-    my $where = { '$or'=>[ {id=>"$id_rule"}, {rule_name=>"$id_rule"}] };
+    my $where = { rule_active => mdb->true,'$or'=>[ {id=>"$id_rule"}, {rule_name=>"$id_rule"}] };
     my $rule = mdb->rule->find_one($where,{ rule_tree=>0 }) or _fail _loc 'Rule %1 not found', $id_rule;
     return $rule;
 }
