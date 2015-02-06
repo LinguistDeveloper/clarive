@@ -12,9 +12,9 @@
     var cons = new Baseliner.AceEditor();
     var params_view_file;
     if(controller == 'gittree'){
-        params_file_revisions = { repo_dir: params.repo_dir, filename: file, sha: rev_num, bl: params.bl, branch: branch };
+        params_file_revisions = { repo_dir: params.repo_dir, filename: file, sha: rev_num, bl: params.bl, branch: branch, repo_mid: params.repo_mid };
     }else{
-        params_file_revisions = { repo_dir: params.repo_dir, filepath: path, filename: file, rev_num: rev_num, branch: branch };
+        params_file_revisions = { repo_dir: params.repo_dir, filepath: path, filename: file, rev_num: rev_num, branch: branch, repo_mid: params.repo_mid };
     }
     var revisionsStore = new Baseliner.JsonStore({
         autoLoad: true,
@@ -31,9 +31,9 @@
         }
         var params_view_file;
         if(controller == 'gittree'){
-            params_view_file = { repo_dir: params.repo_dir, filename: file, repo_mid: repo_mid, sha: rev_num, bl: params.bl, branch: branch };
+            params_view_file = { repo_dir: params.repo_dir, filename: file, repo_mid: repo_mid, sha: rev_num, bl: params.bl, branch: branch, repo_mid: params.repo_mid };
         }else{
-            params_view_file = { filepath: path, filename: file, repo_mid: repo_mid, rev_num: rev_num, revid: params.revid, branch: branch, repo_dir: params.repo_dir };
+            params_view_file = { filepath: path, filename: file, repo_mid: repo_mid, rev_num: rev_num, revid: params.revid, branch: branch, repo_dir: params.repo_dir,repo_mid: params.repo_mid };
         }
         Baseliner.ajax_json('/'+controller+'/view_file', params_view_file, function(res){
             revid = res.revid;
@@ -126,9 +126,9 @@
             }else if(comp.pane == 'diff'){
                 var params_view_diff;
                 if(controller == 'gittree'){
-                    params_view_diff = { repo_dir: params.repo_dir, file: file, rev_num: rev_num, bl: params.bl, controller: controller, file_diff: '_file' };
+                    params_view_diff = { repo_dir: params.repo_dir, file: file, rev_num: rev_num, bl: params.bl, controller: controller, file_diff: '_file', repo_mid: params.repo_mid };
                 }else{
-                    params_view_diff = { repo_dir: path, file: file, rev_num: rev_num, revid: revid, controller: controller, file_diff: '_file', branch: branch };
+                    params_view_diff = { repo_dir: path, file: file, rev_num: rev_num, revid: revid, controller: controller, file_diff: '_file', branch: branch, repo_mid: params.repo_mid };
                 }
                 cons.destroy();
                 Baseliner.ajaxEval('/comp/view_diff.js', params_view_diff, function(comp){

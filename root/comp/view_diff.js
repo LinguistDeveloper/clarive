@@ -1,5 +1,4 @@
 (function(params){
-
     var repo_dir = params.repo_dir;
     var rev_num = params.rev_num;
     var revid = params.revid;
@@ -21,9 +20,9 @@
     });
     var params_view_diff;
     if(controller == 'gittree'){
-        params_view_diff = { repo_dir: params.repo_dir, file: params.file, sha: rev_num, bl: params.bl, branch: branch  };
+        params_view_diff = { repo_dir: params.repo_dir, file: params.file, sha: rev_num, bl: params.bl, branch: branch, repo_mid: repo_mid  };
     }else{
-        params_view_diff = { repo_dir: repo_dir, rev_num: rev_num, branch: branch, revid: revid, file: params.file };
+        params_view_diff = { repo_dir: repo_dir, rev_num: rev_num, branch: branch, revid: revid, file: params.file, repo_mid: repo_mid };
     }
     var html = Baseliner.ajax_json('/'+controller+'/view_diff'+file_diff, params_view_diff, function(res){
     	var get_section_ids = function(){
