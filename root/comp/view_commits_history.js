@@ -8,7 +8,7 @@
 	    root: 'commits',
 	    autoLoad: true,
 	    totalProperty:"totalCount", 
-	    baseParams: { repo_dir: repo_dir, branch: branch, start: 0, limit: ps },  
+	    baseParams: { repo_dir: repo_dir, branch: branch, start: 0, limit: ps, repo_mid: repo_mid },  
 	    url: '/'+controller+'/get_commits_history', 
 	    fields: ['ago','author','revision','comment', 'date'],
 	});
@@ -39,13 +39,13 @@
     search_form.on('keypress', function(obj,e){ 
 		if(e.which == 13 || e.keyCode == 13){
 			if(this.getValue() == ''){
-				Baseliner.ajax_json('/'+controller+'/get_commits_history', { repo_dir: repo_dir, branch: branch, start: 0, limit: ps }, 
+				Baseliner.ajax_json('/'+controller+'/get_commits_history', { repo_dir: repo_dir, branch: branch, start: 0, limit: ps, repo_mid: repo_mid }, 
 					function(res){
 						store_history.loadData(res);
 					}
 				);
 			} else {
-				Baseliner.ajax_json('/'+controller+'/get_commits_search', { repo_dir: repo_dir, branch: branch, query: this.getValue() }, 
+				Baseliner.ajax_json('/'+controller+'/get_commits_search', { repo_dir: repo_dir, branch: branch, query: this.getValue(), repo_mid: repo_mid }, 
 					function(res){
 						pagingBar.pageSize = res.commits.length;
 						store_history.loadData(res);
