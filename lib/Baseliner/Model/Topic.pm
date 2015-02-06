@@ -1877,6 +1877,7 @@ sub update_txt {
     my ($self,@mids_or_docs ) = @_;
     my @mids = map { ref $_ eq 'HASH' ? $_->{mid} : $_ } grep { length } _unique( @mids_or_docs );
     my @other;
+    my $txt;
     for my $mid_or_doc ( _unique( @mids_or_docs  ) ) {
         my $is_doc = ref $mid_or_doc eq 'HASH';
         my $mid = $is_doc ? $mid_or_doc->{mid} : $mid_or_doc;
@@ -1885,13 +1886,14 @@ sub update_txt {
             my $mid2 = $rel->{from_mid} eq $mid ? $rel->{to_mid} : $rel->{from_mid};
             push @other, $mid2;
         }
-        my $txt = join ';', grep { defined && length($_) } map { values %$_ } mdb->master->find({ mid=>mdb->in(@other) })->all;
-        if( $is_doc ) {
-            $mid_or_doc->{_txt} = $txt;
-        } else {
-            mdb->topic->update({ mid=>"$mid" }, { '$set'=>{ _txt=>$txt } });
-        }
+        $txt = join ';', grep { defined && length($_) && ref $_ ne 'HASH' } map { values %$_ } mdb->master->find({ mid=>mdb->in(@other) })->all;
+        # if( $is_doc ) {
+        #     $mid_or_doc->{_txt} = $txt;
+        # } else {
+        #     mdb->topic->update({ mid=>"$mid" }, { '$set'=>{ _txt=>$txt } });
+        # }
     }
+    $txt;
 }
 
 sub update_rels {
@@ -1902,10 +1904,6 @@ sub update_rels {
     my %rels_to = mdb->master_rel->find_hashed(from_mid=> { to_mid=>mdb->in(@mids) });
     # gather all text
     my @all_rel_mids = ( (map{$$_{to_mid}} _array(values %rels)), (map{$$_{from_mid}} _array(values %rels_to)) );
-    my %txts = map { 
-        my $txt = join ';', _unique( grep { length } values %$_ );
-        $$_{mid} => $txt;
-    } mdb->master->find({ mid=>mdb->in(_unique(@all_rel_mids)) })->fields({ yaml=>0, _id=>0 })->all;
     
     my %project_names = map { $$_{mid} => $$_{name} } ci->project->find->fields({ mid=>1, name=>1 })->all;
 
@@ -1936,7 +1934,7 @@ sub update_rels {
             (map { $$_{to_mid} } _array($rels{$mid}) ), 
             (map { $$_{from_mid} } _array($rels_to{$mid}) )
         );
-        $d{_txt} = join ';', grep { defined } @txts{ @all_rel_mids };
+        $d{_txt} = $self->update_txt(@mids_or_docs);
         
         my @pnames;
         for my $rel ( _array(values %rels) ) {

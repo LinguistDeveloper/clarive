@@ -422,6 +422,7 @@ Baseliner.Topic.StoreCategory = Ext.extend( Baseliner.JsonStore, {
                 {  name: 'acronym' },
                 {  name: 'color' },
                 {  name: 'description' },
+                {  name: 'default_grid' },
                 {  name: 'type' },
                 {  name: 'statuses' },
                 {  name: 'forms' },
@@ -1780,7 +1781,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
         }else{
             category_name = d.categories.name;
         }
-        return String.format('<a href="#" onclick="javascript:Baseliner.show_topic_colored({0},\'{1}\',\'{2}\');return false;">{3}</a>',
+        return String.format('<a href="javascript:void(0);" onclick="javascript:Baseliner.show_topic_colored({0},\'{1}\',\'{2}\');return false;">{3}</a>',
             d.mid,
             category_name,
             d.color,
