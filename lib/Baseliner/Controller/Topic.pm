@@ -118,6 +118,13 @@ sub grid : Local {
     $c->stash->{query_id} = $p->{query};
     if ($p->{category_id} && $c->stash->{category_id} != $p->{category_id}) {
         $c->stash->{category_id} = $p->{category_id};
+        my $cat = mdb->category->find_one({ id=>''.$p->{category_id} }) // _fail _loc 'Category with id %1 not found', $p->{category_id};
+        if( my $id_report = $cat->{default_grid} ) {
+            my $rep = ci->new( $id_report );
+            my $fields = $rep->selected_fields({ username=>$c->username });
+            _debug( $fields );
+            $c->stash->{default_grid} = $id_report;
+        }
     }
     $c->stash->{template} = '/comp/topic/topic_grid.js';
 }
@@ -876,6 +883,7 @@ sub list_category : Local {
                     is_release    => $category->{is_release},
                     is_changeset  => $category->{is_changeset},
                     description   => $category->{description},
+                    default_grid  => $category->{default_grid},
                     statuses      => \@statuses,
                     fields        => \@fieldlets,
                     #priorities    => \@priorities
