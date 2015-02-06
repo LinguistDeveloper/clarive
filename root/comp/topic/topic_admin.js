@@ -341,6 +341,8 @@
             autoLoad: true
         });
 
+        var combo_grid = Cla.ci_box({ name:'default_grid', isa:'report', fieldLabel:_('Default Grid'), value: rec ? rec.data.default_grid : '' })
+
         var ta = new Ext.form.TextArea({
             name: 'description',
             height: 130,
@@ -416,7 +418,8 @@
                     ]
                 },
                 color_button,
-                { xtype: 'panel', style: { 'margin-top': '20px' }, layout: 'form', items: [ combo_providers ] },
+                { xtype: 'panel', style: { 'margin-top': '20px' }, defaults:{ anchor:'100%' }, layout: 'form', 
+                    items: [ combo_grid, combo_providers ] },
                 { xtype:'checkboxgroup', name:'readonly', fieldLabel:_('Options'),
                     items:[
                         { xtype:'checkbox', name:'readonly', boxLabel:_('Readonly') }
