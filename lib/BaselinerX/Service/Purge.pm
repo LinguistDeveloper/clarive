@@ -36,10 +36,13 @@ register 'config.purge' => {
         { id => 'keep_redis_log_size', default => 4, label=> 'Max size in MBytes to keep redis log' },
         { id => 'keep_disp_log_size', default => 4, label=> 'Max size in MBytes to keep cla-disp log' },
         { id => 'keep_web_log_size', default => 4, label=> 'Max size in MBytes to keep cla-web log' },
-        { id => 'event_log_keep', default =>'7D', label=> 'Keep event log entries for how long, in duration format: 1M, 2D, etc. Set to blank to stop this purge.' },
         { id => 'no_file_purge', default =>'0', label=> 'Set this to true (1) to prevent Clarive from purging log files' },
         { id => 'no_job_purge', default =>'0', label=> 'Set this to true (1) to prevent Clarive from purging job logs' },
         { id => 'keep_sent_messages', default =>'30D', label=> 'Keep sent messages in duration format: 1M, 2D, etc.' },
+        { id => 'event_log_keep', default =>'7D', label=> 'Keep event log entries for how long, in duration format: 1M, 2D, etc. Set to blank to stop this purge.' },
+        { id => 'event_ko_purge', default =>'1', label=> 'Keep ko event log entries (0 or 1)' },
+        { id => 'event_ok_purge', default =>'1', label=> 'Keep ok event log entries (0 or 1)' },
+        { id => 'event_auth_purge', default =>'0', label=> 'Keep login event log entries (0 or 1)' },
     ]
 };
 
@@ -185,14 +188,6 @@ sub run_once {
         }
         
         ####################### purge old event_log
-        my $event_log_keep = $config_purge->{event_log_keep};
-        if( length $event_log_keep ) { 
-            mdb->event_log->update(
-                { '$or'=>[ {ts=>{ '$lt'=>''.( mdb->now() - $event_log_keep )}}, {ts=>undef} ] },
-                { '$set'=>{ dsl=>'', log_output=>'', stash_data=>'' } },
-                { multiple=>1 },
-            );
-        }
 
         ############################ PURGE OLD SENT MESSAGES ###########################################
         my $keep_sent_messages = $config_purge->{keep_sent_messages};
@@ -204,6 +199,52 @@ sub run_once {
 
         ############################ DELETE SPECIFICATIONS OF RELEASES ###########################################
         _rmpath(_dir(_tmp_dir(),'downloads'));
+    }
+    
+    my $event_log_keep = $config_purge->{event_log_keep};
+    my $event_ok_purge = $config_purge->{event_ok_purge};
+    my $event_ko_purge = $config_purge->{event_ok_purge};
+    my $event_auth_purge = $config_purge->{event_auth_purge};
+
+    if ( $event_ok_purge || $event_ko_purge || $event_auth_purge ) {
+        if( length $event_log_keep ) { 
+            _log "Purging events";
+
+            if ( $event_ok_purge ) {
+                _log "Purging ok events";
+                my @events_ok = map { $_->{id} } mdb->event->find(
+                    {   event_status => 'ok',
+                        ts           => { '$lt' => '' . ( mdb->now() - $event_log_keep )},
+                        event_key    => { '$nin' => [qr/event\.auth/]}
+                    }
+                )->all;
+                _log _loc("Purging %1 auth events",scalar @events_ok);
+                mdb->event->remove({ id=>mdb->in(@events_ok)}, { multiple=>1 });
+                mdb->event_log->remove({ id_event=>mdb->in(@events_ok)}, { multiple=>1 });
+            }
+            if ( $event_ko_purge ) {
+                _log "Purging ko events";
+                my @events_ko = map { $_->{id} } mdb->event->find(
+                    {   event_status => 'ko',
+                        ts           => { '$lt' => '' . ( mdb->now() - $event_log_keep )},
+                        event_key    => { '$nin' => [qr/event\.auth/]}
+                    }
+                )->all;
+                _log _loc("Purging %1 ko events",scalar @events_ko);
+                mdb->event->remove({ id=>mdb->in(@events_ko)}, { multiple=>1 });
+                mdb->event_log->remove({ id_event=>mdb->in(@events_ko)}, { multiple=>1 });
+            }
+            if ( $event_auth_purge ) {
+                my @events_auth = map { $_->{id} } mdb->event->find( 
+                    {   ts           => { '$lt' => '' . ( mdb->now() - $event_log_keep )},
+                        event_key    => qr/event\.auth/
+                    }
+                )->all;
+                _log _loc("Purging %1 auth events",scalar @events_auth);
+                mdb->event->remove({ id=>mdb->in(@events_auth)}, { multiple=>1 });
+                mdb->event_log->remove({ id_event=>mdb->in(@events_auth)}, { multiple=>1 });
+            }
+        }
     }
     _log 'Done purging.';
 }
