@@ -528,6 +528,19 @@ sub get_file_history : Local{
     $c->forward('View::JSON');
 }
 
+sub get_tags : Local {
+    my ($self, $c) = @_;
+    my $cmd = "git tag";
+    my @tags = `$cmd`;
+    $c->stash->{json} = try {
+        my @res = map { $_ =~ s/\n//; {name=>$_} } @tags;
+        \@res;
+    } catch {
+        my $err = shift;
+        { success=>\0, msg=> _loc( "Error loading tags: %1", "$err" ) };
+    };    
+    $c->forward('View::JSON');    
+}
 
 sub view_diff : Local {
     my ($self, $c ) = @_;
@@ -548,7 +561,12 @@ sub view_diff : Local {
         $lines[2+$offset] =~ /Date: (.+)/;
         $commit_info->{date} = _to_utf8 $1;
         $commit_info->{comment} = _to_utf8 join("\n", @lines[4+$offset..$#lines]);
-        my @array_show = $g->git->exec( 'show', $sha);
+        my @array_show;
+        if($node->{tag}){
+            @array_show = $g->git->exec( 'diff', $node->{tag}, $node->{sha});
+        }else{
+            @array_show = $g->git->exec( 'show', $sha);
+        }
         my $show = join("\n", @array_show );
         my @parts;
         while ($show ne ''){
@@ -599,9 +617,14 @@ sub get_commits_history : Local {
     my $sort = $node->{sort} // '';
     my $dir = $node->{dir} // '';
     $c->stash->{json} = try {
-        my @commits = $self->get_log_history({url=>$node->{repo_dir}, branch=>$node->{branch}, start=>$node->{start}, last=>$node->{start}+$node->{limit}, sort=>$sort, dir=>$dir  });
+        my @commits = $self->get_log_history({url=>$node->{repo_dir}, branch=>$node->{branch}, start=>$node->{start}, last=>$node->{start}+$node->{limit}, sort=>$sort, dir=>$dir, tag=>$node->{tag}, commit=>$node->{commit} });
         my $g = Girl::Repo->new( path=>$node->{repo_dir} );
-        my $totalCount = $g->git->exec( 'rev-list', $node->{branch}, '--count');
+        my $totalCount;
+        if($node->{tag}){
+            $totalCount = $g->git->exec( 'rev-list', "$node->{tag}..$node->{commit}", '--count');
+        }else{    
+            $totalCount = $g->git->exec( 'rev-list', $node->{branch}, '--count');
+        }    
         { success=>\1, msg=> _loc( "Success loading commits history"), commits=>\@commits, totalCount=>$totalCount };
     } catch {
         my $err = shift;
@@ -615,7 +638,12 @@ sub get_log_history {
     my $repo_dir = $args->{url};
     my $branch = $args->{branch};
     my $g = Girl::Repo->new( path=>$repo_dir );
-    my @array_logs = $g->git->exec( 'log', $branch, '--skip='.$args->{start}, '-n', $args->{last} );
+    my @array_logs;
+    if($args->{tag}){
+        @array_logs = $g->git->exec( 'log', "$args->{tag}..$args->{commit}",'--skip='.$args->{start}, '-n', $args->{last} );
+    }else{
+        @array_logs = $g->git->exec( 'log', $branch, '--skip='.$args->{start}, '-n', $args->{last} );
+    }
     my @commits;
     my $log = {};
     $log->{comment} = '';

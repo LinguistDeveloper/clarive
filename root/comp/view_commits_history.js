@@ -3,12 +3,17 @@
 	var branch = params.branch;
 	var repo_mid = params.repo_mid;
 	var ps = 50;
-	var controller = params.click.controller;
+	var controller;
+    if(!params.controller){
+        controller = params.click.controller;
+    }else{
+        controller = params.controller;
+    }
 	var store_history = new Baseliner.JsonStore({
 	    root: 'commits',
 	    autoLoad: true,
 	    totalProperty:"totalCount", 
-	    baseParams: { repo_dir: repo_dir, branch: branch, start: 0, limit: ps, repo_mid: repo_mid },  
+	    baseParams: { repo_dir: repo_dir, branch: branch, start: 0, limit: ps, repo_mid: repo_mid, tag: params.tag, commit: params.commit },  
 	    url: '/'+controller+'/get_commits_history', 
 	    fields: ['ago','author','revision','comment', 'date'],
 	});

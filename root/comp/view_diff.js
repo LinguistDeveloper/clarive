@@ -15,16 +15,68 @@
         frame: false,
         layout:'fit',
         html:'',
-        tbar: [],
-        bodyStyle:{ 'background-color':'#fff', padding:' 5px 5px 5px 5px', overflow:'auto'}
+        region: 'center',
+        bodyStyle:{ 'background-color':'#fff', padding:' 5px 5px 5px 5px', overflow:'auto'},
+    	border: false
     });
+
+    var panel2 = new Ext.Panel({ 
+        frame: false,
+        layout:'fit',
+        region: 'south',
+        height: 300,
+        hidden: true,
+        border: false
+    });
+
+    var parent_panel = new Ext.Panel({ 
+        frame: false,
+        layout: 'border',
+        tbar: [ ],
+        items: [ panel, panel2 ],
+        border: false
+    });
+
+    var tagsStore = new Baseliner.JsonStore({
+        autoLoad: true,
+        remoteSort: true,
+        totalProperty:"totalCount", 
+        id: 'id',
+        url: '/'+controller+'/get_tags',
+        fields: [ 'name' ]
+    });
+
+    var get_combo_tags = function(){
+		var tags_combo = new Ext.form.ComboBox({ triggerAction: 'all', mode: 'local', name:'name', displayField: 'name', valueField: 'name', fieldLabel: 'tags', store: tagsStore , width: 100});
+		tags_combo.setValue(_('Tag to compare'));
+		tags_combo.setEditable( false );
+		tags_combo.on( 'select', function(param){
+			params_view_diff.tag = param.value;
+			params_view_diff.commit = params_view_diff.sha;
+			params_view_diff.controller = controller;
+			Baseliner.ajaxEval('/comp/view_commits_history.js', params_view_diff, function(comp){
+	        	panel2.add(comp); 
+	            panel2.show();
+	        });
+	 		Baseliner.ajax_json('/'+controller+'/view_diff', params_view_diff, function(res_diff_tag){
+	 			generate_diff(res_diff_tag);
+	 		});
+		});
+		return tags_combo;
+    };
+
+    if(controller == 'gittree' && file_diff == ''){
+    	parent_panel.getTopToolbar().add(get_combo_tags());
+    }
+
     var params_view_diff;
     if(controller == 'gittree'){
-        params_view_diff = { repo_dir: params.repo_dir, file: params.file, sha: rev_num, bl: params.bl, branch: branch, repo_mid: repo_mid  };
+        params_view_diff = { repo_dir: params.repo_dir, file: params.file, sha: rev_num, bl: params.bl, branch: branch, repo_mid: repo_mid };
     }else{
         params_view_diff = { repo_dir: repo_dir, rev_num: rev_num, branch: branch, revid: revid, file: params.file, repo_mid: repo_mid };
     }
-    var html = Baseliner.ajax_json('/'+controller+'/view_diff'+file_diff, params_view_diff, function(res){
+
+    var generate_diff = function(res){
     	var get_section_ids = function(){
     		for(var i=0; i < res.changes.length; i++) {
     			temp_id = Ext.id(); 
@@ -43,14 +95,21 @@
     	 	var val = code_section[key];
     	 	children.push({text: key, leaf: true, val: val, handler: goto_link});
     	}
-		panel.getTopToolbar().add({ text:_('Files'), menu:children });
+    	parent_panel.getTopToolbar().removeAll();
+    	parent_panel.getTopToolbar().add({ text:_('Files'), menu:children });
+    	if(controller == 'gittree' && file_diff == ''){
+    		parent_panel.getTopToolbar().add(get_combo_tags());
+    	}
+    	
+	    parent_panel.doLayout();
     	panel.doLayout();
 
     	var html = function(){/*
 		       <div id="boot" >
 		       		<div>
 			       	   <center>
-			           <h3>Revision number [%= rev_num %]</h3>
+			           [% if(tag){ tag = "compared to tag "+tag } %]
+			           <h3>Revision number [%= rev_num %] [%= tag %]</h3>
 			           <table class="table table-bordered table-condensed" style="width: 60%">
 			           <thead>
 			           <tr><th width="1">[%= _('Author') %]</th><th width="1" style="white-space: nowrap">[%= _('Upload Date') %]</th><th>[%= _('Comment') %]</th></tr>
@@ -407,10 +466,13 @@
 			           [% } %]
 		       		</div>
 		       	</div>
-		*/}.tmpl({ controller: controller, temp_id: temp_id, code_section: code_section, repo_mid: repo_mid, repo_dir: repo_dir, branch: branch, rev_num: res.commit_info.revision, author: res.commit_info.author, date: res.commit_info.date, comment: res.commit_info.comment, changes: res.changes });
+		*/}.tmpl({ controller: controller, temp_id: temp_id, code_section: code_section, repo_mid: repo_mid, repo_dir: repo_dir, branch: branch, rev_num: res.commit_info.revision, author: res.commit_info.author, date: res.commit_info.date, comment: res.commit_info.comment, changes: res.changes, tag: params_view_diff.tag });
     	panel.update(html);
-    }, function(res){
+    }
+
+
+    var html = Baseliner.ajax_json('/'+controller+'/view_diff'+file_diff, params_view_diff, generate_diff, function(res){
          Baseliner.error( _('Error'), _(res.msg) );
     });
-    return panel;
+    return parent_panel;
 })
