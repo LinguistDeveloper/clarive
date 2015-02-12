@@ -37,14 +37,6 @@
         border: false
     });
 
-    var tagsStore = new Baseliner.JsonStore({
-        autoLoad: true,
-        remoteSort: true,
-        totalProperty:"totalCount", 
-        id: 'id',
-        url: '/'+controller+'/get_tags',
-        fields: [ 'name' ]
-    });
 
     var get_combo_tags = function(){
 		var tags_combo = new Ext.form.ComboBox({ triggerAction: 'all', mode: 'local', name:'name', displayField: 'name', valueField: 'name', fieldLabel: 'tags', store: tagsStore , width: 100});
@@ -66,6 +58,14 @@
     };
 
     if(controller == 'gittree' && file_diff == ''){
+	    var tagsStore = new Baseliner.JsonStore({
+	        autoLoad: true,
+	        remoteSort: true,
+	        totalProperty:"totalCount", 
+	        id: 'id',
+	        url: '/'+controller+'/get_tags',
+	        fields: [ 'name' ]
+	    });
     	parent_panel.getTopToolbar().add(get_combo_tags());
     }
 
