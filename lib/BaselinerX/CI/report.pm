@@ -1078,52 +1078,58 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
     
     @parse_data = @data if !@parse_data;
     
-    #_log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump @parse_data;
+    _log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump @parse_data;
     
     my %scope_topics;
     my %scope_cis;
     my %all_labels = map { $_->{id} => $_ } mdb->label->find->all;
     my %ci_columns;
 
+    my $cont=1;
     my @topics = map { 
         my %row = %$_;
 
-        while( my($k,$v) = each %row ) {
+        for my $k ( keys %row ) {
+            my $v = $row{$k};
+
             $row{$k} = Class::Date->new($v)->string if $k =~ /modified_on|created_on/;
 
             #my $mt = $meta{$k}{meta_type} // '';
             my $mt = $meta_cfg_report{$k} || $meta{$k}{meta_type} || '';
-            #  get additional fields ?   
-            #  TODO for sorting, do this before and save to report_results collection (capped?) 
-            #       with query id and query ts, then sort
-            #_error "MT===$mt, K==$k";
 
-            if( $mt =~ /ci|project|revision|user|file/ ) {
-                $row{'_'.$k} = $v;
-				$row{$k} = $scope_cis{$v} 
-					// do{ 
-						my @objs = mdb->master_doc->find({ mid=>mdb->in($v) },{ _id=>0 })->all;
-                        my @values;
-                        if (@objs){
-                        for my $obj (@objs){
+            if( $mt =~ /revision|ci|project|user|file/ ) {
+                $row{ '_' . $k } = $v;
+
+                $row{$k} = $scope_cis{$v} // do {
+                    my @objs
+                        = mdb->master_doc->find(
+                        { mid => mdb->in( _array($v) ) },
+                        { _id => 0 } )->all;
+                    my @values;
+                    if (@objs) {
+                        for my $obj (@objs) {
                             my $tmp;
 
                             if ( $mt =~ /ci|project|user|file/ ) {
-                                $tmp = $obj->{name} ? $obj->{name} : $obj->{moniker}; 
-                            } else {
+                                $tmp
+                                    = $obj->{name}
+                                    ? $obj->{name}
+                                    : $obj->{moniker};
+                            }
+                            else {
                                 $tmp = $obj->{name};
                             }
-                            push @values, $tmp;    
+                            push @values, $tmp;
                         }
                         $scope_cis{$v} = \@values;
 
-                        }
-                        \@values;
-				};
-				for my $category (@All_Categories){
-                    $row{$k. "_$category"} = $row{$k};
-                    $row{'_'.$k. "_$category"} = $row{'_'.$k};
-				}
+                    }
+                    \@values;
+                };
+                for my $category (@All_Categories) {
+                    $row{ $k . "_$category" } = $row{$k};
+                    $row{ '_' . $k . "_$category" } = $row{ '_' . $k };
+                }
             } elsif( $mt =~ /release|topic/ ) {
                 $row{$k} = $scope_topics{$v} 
                     // do {
@@ -1280,7 +1286,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
     }
 
     # _debug \@topics;
-	#_log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump @topics;
+	# _log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump @topics;
     return ( 0+$cnt, @topics );
 }
 
