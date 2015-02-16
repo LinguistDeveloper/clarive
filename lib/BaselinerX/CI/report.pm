@@ -1171,7 +1171,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                                     my $ci_extends;
                                     if(exists $selects_ci_columns_collection_extends{$parse_key}){
                                         my @mid_extends = map { $_->{mid} } $ci->related( where => {collection => $selects_ci_columns_collection_extends{$parse_key}});
-                                        $ci_extends = ci->new($mid_extends[0]);
+                                        $ci_extends = ci->new($mid_extends[0]) if @mid_extends;
                                     }
 
                                     for my $ci_column (_array $selects_ci_columns{$parse_key}){
