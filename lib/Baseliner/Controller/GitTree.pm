@@ -289,26 +289,17 @@ sub newjob : Local {
 #########################################################################
 ####### FINISH ########
 
-sub is_binary_file : {
+sub is_binary_file {
     my ($self, %params ) = @_;
+    my $isBinary = 0;
     my $g = $params{gitApi};
     my $commit_file = $params{commit_file};
     my $filename = $params{filename};
-    my @diff = ();
     try{
-        @diff = _array $g->git->exec( 'diff-tree', '--minimal', '-p', $commit_file, '--', $filename);
-        @diff = _array $g->git->exec( 'diff', '--minimal', '-p', $commit_file, '--', $filename) if !@diff;
-    }catch{};
-    my $i = 0;
-    my $isBinary = 0;
-    foreach(@diff){
-        if($_ =~ /Binary files/){
-            $isBinary = 1;
-            last;
-        }
-        $i++;
-        last if $i>6;
-    }
+        my $cmd = "git --git-dir $g->{path} diff --no-index --numstat /dev/null $filename";
+        my $res = `$cmd`;
+        $isBinary = $res =~ m/-\s*-/;
+    }catch{ };
     return $isBinary;
 }
 
