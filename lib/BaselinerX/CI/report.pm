@@ -1078,7 +1078,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
     
     @parse_data = @data if !@parse_data;
     
-    _log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump @parse_data;
+    # _log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump @parse_data;
     
     my %scope_topics;
     my %scope_cis;
