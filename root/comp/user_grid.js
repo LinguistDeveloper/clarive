@@ -275,8 +275,6 @@
             width: 50,
             handler: function() {
                 win.close();
-                store.load();
-                grid.getSelectionModel().clearSelections();
             }
         })
         
@@ -307,6 +305,8 @@
                             },
                             success: function(f,a){
                             Baseliner.message(_('Success'), a.result.msg );
+                            store.load();
+                            grid.getSelectionModel().clearSelections();
                             store_user_roles_projects.load({ params: {username: form.getValues()['username']} });
                             form.findField("id").setValue(a.result.user_id);
                             form.findField("username").getEl().dom.setAttribute('readOnly', true);
