@@ -447,8 +447,8 @@ method commits_for_branch( :$tag=undef, :$branch ) {
     my $bl_exists = $git->exec( 'rev-parse', $tag, { on_error_empty=>1 });
     Util->_fail( Util->_loc('Error: could not find tag %1 in repository. Repository tags are configured?', $tag) ) unless $bl_exists;
     my @rev_list = $git->exec( 'rev-list', '--pretty=oneline', '--right-only','--max-count=30', $tag."...".$branch );
-    # rgo - we need merges too - my @rev_list = $git->exec( 'rev-list', '--no-merges', '--pretty=oneline', '--right-only','--max-count=30', $tag."...".$branch );
-    # @rev_list = $git->exec( 'rev-list', '--no-merges', '--pretty=oneline', '--right-only','--max-count=30', $branch );
+    my $commit_tag = $git->exec( 'rev-list', '--pretty=oneline', '--right-only','--max-count=1', $tag );
+    push @rev_list, $commit_tag;
     return @rev_list;
 }
 
