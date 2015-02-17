@@ -24,6 +24,7 @@ html: /dashlets/jobs.html
                 </tr>
             </thead>
             <tbody>
+% if( model->Permissions->user_has_action(username=>$c->username, action=>'action.job.view_monitor') ) {
 %foreach my $job (_array @jobs){          
                 <tr>
                     <td><%$job->{project}%></td>
@@ -40,6 +41,7 @@ html: /dashlets/jobs.html
 %}
                     <td><%$job->{last_duration}%></td>
                 </tr>
+%}
 %}
             </tbody>    
         </table>

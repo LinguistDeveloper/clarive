@@ -75,6 +75,7 @@ title: Jobs
                     <td>
                         <div style="width:550px; height:353px; overflow-y:auto;">
                             <table  class="table table-striped" width="550" >
+% if( model->Permissions->user_has_action(username=>$c->username, action=>'action.job.view_monitor') ) {
 %my $row = 0;
 %foreach my $lastjob (_array @lastjobs){
 %$row = $row + 1;
@@ -93,7 +94,8 @@ title: Jobs
                     details_job.mid = '<%$lastjob->{mid}%>';
                     render_level(details_job, 'row<%$row%>_<%$status_id%>');
                 </script>
-%}            
+%}           
+%}           
                             </table>
                         </div>
                     </td>

@@ -95,16 +95,20 @@ html: /dashlets/baselines.html
         <h4><%$entorno->{bl}%></h4>
         
         <div class="progress">
+% if( model->Permissions->user_has_action(username=>$c->username, action=>'action.job.view_monitor') ) {
+
           <div class="progress-bar progress-bar-success" style="width: <%$entorno->{porcentOk}%>%" onmouseover="this.style.cursor='pointer'" onClick="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs/<%$dashboard_id%>/<%$projects%>/ok/<%$entorno->{bl}%>', _('<%$entorno->{bl}%> - <%$entorno->{totOk}%>/<%$entorno->{total}%> OK'));">
             <span class="sr-only"><%$entorno->{totOk}%></span>
           </div>
           <div class="progress-bar progress-bar-danger" style="width: <%$entorno->{porcentError}%>%" onmouseover="this.style.cursor='pointer'" onClick="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs/<%$dashboard_id%>/<%$projects%>/nook/<%$entorno->{bl}%>', _('<%$entorno->{bl}%> - <%$entorno->{totError}%>/<%$entorno->{total}%> ERROR'));">
             <span class="sr-only" ><%$entorno->{totError}%></span>
           </div>
+%}        
         </div>        
 %}        
-
+% if( model->Permissions->user_has_action(username=>$c->username, action=>'action.job.view_monitor') ) {
         <div style="text-align:right;"><b><a href="javascript:Baseliner.addNewTabComp('/dashboard/viewjobs/<%$dashboard_id%>/<%$projects%>', _('Running jobs'));"><% _loc("Running jobs") %></a></b></div>
+%}        
     </div>
 
 
