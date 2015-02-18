@@ -524,8 +524,9 @@ sub get_file_history : Local{
 
 sub get_tags : Local {
     my ($self, $c) = @_;
-    my $cmd = "git tag";
-    my @tags = `$cmd`;
+    my $node = $c->req->params;
+    my $g = Girl::Repo->new( path=>$node->{repo_dir} );
+    my @tags = $g->git->exec( 'tag' );
     $c->stash->{json} = try {
         my @res = map { $_ =~ s/\n//; {name=>$_} } @tags;
         \@res;

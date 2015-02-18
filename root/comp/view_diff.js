@@ -58,10 +58,12 @@
     };
 
     if(controller == 'gittree' && file_diff == ''){
+	    var params_get_tags = { repo_dir: params.repo_dir };
 	    var tagsStore = new Baseliner.JsonStore({
 	        autoLoad: true,
 	        remoteSort: true,
 	        totalProperty:"totalCount", 
+	        baseParams: params_get_tags,
 	        id: 'id',
 	        url: '/'+controller+'/get_tags',
 	        fields: [ 'name' ]
