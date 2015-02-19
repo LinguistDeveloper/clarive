@@ -2670,7 +2670,7 @@ sub get_meta_permissions {
     
     my $is_root = model->Permissions->is_root( $username );
     my $user_security = ci->user->find_one( {name => $username}, { project_security => 1, _id => 0} )->{project_security};
-    my $user_actions = model->Permissions->user_actions_by_topic( username=> $username, mid => $data->{topic_mid}, user_security => $user_security );
+    my $user_actions = model->Permissions->user_actions_by_topic( username=> $username, user_security => $user_security );
     my @user_actions_for_topic = $user_actions->{positive};
     my @user_read_actions_for_topic = $user_actions->{negative};
 
