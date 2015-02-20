@@ -2992,8 +2992,11 @@ sub get_users_friend {
 
     my @users;
     my $mid = $p{mid};
-    #my @roles = _unique map { $_->{id_role} } grep { $$_{id_status_from} == $p{id_status} } _array(mdb->category->find_one({ id => ''.$p{id_category} })->{workflow});
-    my @roles = _unique map { $_->{id_role} } _array(mdb->category->find_one({ id => ''.$p{id_category} })->{workflow});
+    my @roles = _unique map { $_->{id_role} } grep { $$_{id_status_from} == $p{id_status} } _array(
+        mdb->category->find_one( 
+            { id => ''.$p{id_category} },
+            { workflow=>1 })->{workflow}
+    );
     if (@roles){
         @users = Baseliner->model('Users')->get_users_from_mid_roles( mid => $mid, roles => \@roles);
         @users = _unique @users;
