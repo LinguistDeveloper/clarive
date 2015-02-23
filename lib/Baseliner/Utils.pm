@@ -1518,14 +1518,11 @@ sub _fixCharacters_mail {
     $clean_text =~ s{Ãº}{&uacute;}g;
     $clean_text =~ s{Ã­}{&iacute;}g;
     #answer
-    $clean_text =~ s{Ã¿}{&iquest;}g;
+    $clean_text =~ s{Â¿}{&iquest;}g;
     $clean_text =~ s{Â¡}{&iexcl;}g;
+    $clean_text =~ s{Â°}{&deg;}g;
     #minus
-    # $clean_text =~ s{Ã¡}{&Aacute;}g;
-    # $clean_text =~ s{Ã�}{&Eacute;}g;
-    # $clean_text =~ s{Ã�}{&Oacute;}g;
-    # $clean_text =~ s{Ãº}{&Uacute;}g;
-    # $clean_text =~ s{Ã�­}{&Iacute;}g;
+    # $clean_text =~ s{ÃÁ}{&Eacute;}g;
     $clean_text;
 }
 
