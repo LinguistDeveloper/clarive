@@ -397,19 +397,18 @@ sub list : Local {
                 }
                 my $default_dashboard = ci->user->find_one({ name => $c->username })->{dashboard};
                 my @dashboard_ids = ($default_dashboard) if $default_dashboard;
-                push @dashboard_ids, map { grep { $default_dashboard && $_ ne $default_dashboard } _array($_->{dashboards})} mdb->role->find({ id => mdb->in(@roles)})->all;
+                push @dashboard_ids, map { grep { $_ ne $default_dashboard } _array($_->{dashboards})} mdb->role->find({ id => mdb->in(@roles)})->all;
                 my @dashboards;
                 map { push @dashboards, mdb->dashboard->find_one( { _id => mdb->oid($_) } ) } @dashboard_ids;
                 $where->{role} = {'$in' => \@roles};
                 $where->{is_system} = '0';
-                @dashboards = mdb->dashboard->find($where)->sort({is_main => -1})->all if !@dashboards;
-
+                @dashboards = mdb->dashboard->find($where)->sort({is_main => -1})->all if scalar @dashboards eq 0;
                 if ( scalar @dashboards ){
                     my $i = 0;
                     my @dashboard;
                     my %dash;
                     for my $dashboard ( @dashboards ){
-                        if($i == 0){
+                        if($i eq 0){
                             @dashlets = _array $dashboard->{dashlets};
                             for my $dash ( @dashlets ) {
                                 if($dash->{url}){
