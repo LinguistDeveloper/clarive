@@ -629,7 +629,7 @@ sub update_mid_data {
     
     my $user_security = Baseliner->model('Permissions')->user_projects_ids_with_collection(username => $username, with_role => 1);
     
-    my %datas = map { $$_{mid}=>$_ } mdb->topic->find({ mid=>mdb->in(@mids) },{ _txt=>0 })->all;
+    my %datas = map { $$_{mid}=>$_ } mdb->topic->find({ mid=>mdb->in(@mids) })->fields({ _txt=>0 })->all;
 
     for my $mid ( @mids ) {
         my $data = $datas{$mid}  // do{ _error(_loc("Topic mid not found: %1",$mid)); next };
