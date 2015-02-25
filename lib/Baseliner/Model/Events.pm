@@ -91,7 +91,8 @@ sub run_once {
                     foreach  my $template (  keys $notification ){
                         my $topic = {};
                         $topic = mdb->topic->find_one({ mid => "$stash->{mid}"}) if $stash->{mid};
-                        my $subject = parse_vars($stash->{subject},{%$stash,%$topic} ) || try{ 
+                        my $subject_parse = $notification->{$template}->{subject} // $stash->{subject};
+                        my $subject = parse_vars($subject_parse,{%$stash,%$topic} ) || try{ 
                                 my $ev = Baseliner->registry->get( $event_key );
                                 my $msg = Util->_strip_html($ev->event_text( $stash ));
                                 substr( $msg, 0, 120 ) . ( length($msg)>120 ? '...' : '' );
@@ -104,7 +105,7 @@ sub run_once {
                             template_engine => 'mason',
                             _fail_on_error  => 1,   # so that it fails on template errors
                         };
-                        
+
                         $model_messaging->{to} = { users => $notification->{$template}->{carrier}->{TO} } if (exists $notification->{$template}->{carrier}->{TO}) ;
                         $model_messaging->{cc} = { users => $notification->{$template}->{carrier}->{CC} } if (exists $notification->{$template}->{carrier}->{CC}) ;
                         $model_messaging->{bcc} = { users => $notification->{$template}->{carrier}->{BCC} } if (exists $notification->{$template}->{carrier}->{BCC}) ;
