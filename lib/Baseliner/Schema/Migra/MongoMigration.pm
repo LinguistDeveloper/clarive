@@ -615,9 +615,10 @@ sub topic_rels {
     my ($k,$tot)=(0,scalar(@alltopics));
     my @group;
     for my $mid ( @alltopics ) {
-        if( @group >= 50 ) {
+        if( @group >= 150 ) {
+            _debug "Updating... $k/$tot";
             Baseliner::Model::Topic->update_rels( @group );
-            _debug "Updated $k/$tot";
+            _debug "OK. Updated $k/$tot";
             @group = ();
         }
         push @group, $mid; 
@@ -812,10 +813,13 @@ sub master_doc_clean {
 sub job_last_error {
     # clean last_error monstruosities
     my @mids = ci->job->find->fields({mid=>1})->all; 
+    my ($k,$tot)=(0,scalar(@mids));
     for my $j ( @mids ) {
        my $job = ci->new( $$j{mid} );
        $job->last_error( substr($job->last_error,0,1024) );
        $job->save;
+       $k++;
+       _debug "Updated job_last_error $k/$tot" if !($k % 10) || $tot < 10;
     }
 }
 
