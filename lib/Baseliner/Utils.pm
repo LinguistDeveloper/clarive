@@ -1398,6 +1398,7 @@ sub parse_vars_raw {
         my $str = "$data";
         my @discarded;
         my @matches;
+        my $str_orig = $str;
         @matches = ($str =~ m/\$\{(.+?)\}/g);
         while ( @matches && !(@matches ~~ @discarded) ) {
             
@@ -1424,6 +1425,7 @@ sub parse_vars_raw {
                     #$str =~ s/\$\{join\((\S+),$k\)\}/join($1,_array($v))/eg;   # TODO $v has a baddly comma joined list, should be an Arrayref
                 }
             }
+            last if $str eq $str_orig;  # avoid infinite recursion in case no substitution possible
             @matches = ($str =~ m/\$\{(.+?)\}/g);
         }        
         $str =~ s/\$\{nvl\((\w+),(\w+)\)\}/$2/g;
