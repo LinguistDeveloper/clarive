@@ -17,6 +17,15 @@ Baseliner.PagingToolbar = Ext.extend( Ext.PagingToolbar, {
     }
 });
 
+var shorten_title = function(t){
+    if( !t || t.length==0 ) {
+        t = '';
+    } else if( t.length > 12 ) {
+        t = t.substring(0,12) + '\u2026'; 
+    } 
+    return t;
+}
+
 Baseliner.open_topic_grid = function(dir,title,mid){
    var gridp ={ tab_icon: '/static/images/icons/topic.png' } ;
    if( dir ) {
@@ -947,15 +956,7 @@ Cla.topic_grid = function(params){
         });
         return arr.join("<br>");
     }
-    
-    var shorten_title = function(t){
-        if( !t || t.length==0 ) {
-            t = '';
-        } else if( t.length > 12 ) {
-            t = t.substring(0,12) + '\u2026'; 
-        } 
-        return t;
-    }
+
     var render_actions = function(value,metadata,rec,rowIndex,colIndex,store) {
         var actions_html = new Array();
         var swGo = false;
