@@ -50,6 +50,15 @@ mongo:
         #dt_type
         #inflate_dbrefs: 1
 
+# control what and how mongo indexes work
+index:
+    weights:  
+        topic: 
+            mid: 10
+            title: 5
+        master_doc:
+            mid: 10
+            name: 5
 # experimental: activates websockets server and socketio
 websockets: 0
     
@@ -179,3 +188,4 @@ license:
     -----END RSA PRIVATE KEY-----
 
 '
+
