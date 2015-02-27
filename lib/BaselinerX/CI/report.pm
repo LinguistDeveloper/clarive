@@ -879,7 +879,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
             $where = $self->get_where({filters_where => $fields{where}, name_category => $_, dynamic_filter => \%dynamic_filter, where => $where });
             $where->{id_category} = {'$in' => \@ids_category };
             my @data = mdb->topic->find($where)->all;
-            if (@data && scalar @relation > 1) {
+            if (@data && scalar @relation >= 1) {
                 my $rel_name;
                 my $name_relation;
                 my $length_rel = scalar @relation;
@@ -1071,7 +1071,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
             my $parse_category = $_->{category}{name};
             foreach my $field (keys $_){
                 $_->{$field . "_$parse_category"} = $_->{$field};
-                $meta_cfg_report{$field . "_$parse_category"} = $meta_cfg_report{$field} if (($meta_cfg_report{$field}) && ($meta_cfg_report{$field} eq 'release' || $meta_cfg_report{$field} eq 'topic'));
+                # $meta_cfg_report{$field . "_$parse_category"} = $meta_cfg_report{$field} if (($meta_cfg_report{$field}) && ($meta_cfg_report{$field} eq 'release' || $meta_cfg_report{$field} eq 'topic'));
             }
         }
     } @data;
