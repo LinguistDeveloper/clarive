@@ -73,6 +73,12 @@ register 'config.dashlet.my_topics' => {
         ]
 };
 
+register 'config.dashlet.topics_open_by_status' => {
+    metadata => [
+           { id=>'categories', label=>'List of categories', default => 'ALL' }
+        ]
+};
+
 sub grid : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
@@ -1203,13 +1209,15 @@ sub topics_by_status: Local{
 }
 
 sub topics_open_by_status: Local{
-    my ( $self, $c, $action ) = @_;
+    my ( $self, $c, $dashboard_id ) = @_;
     #my $p = $c->request->parameters;
     my (@topics_open_by_status, @datas);
 
     my $where = {};
     my $username = $c->username;
     my $perm = Baseliner->model('Permissions');
+
+    my $config = get_config_dashlet('topics_open_by_status', $dashboard_id);
 
     my @user_categories =  map {
                 $_->{id};
@@ -1219,6 +1227,17 @@ sub topics_open_by_status: Local{
     if( $username && ! $is_root){
         Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
     }
+
+    _warn $config->{categories};
+
+    if ( $config->{categories} && $config->{categories} ne 'ALL') {
+        use Array::Utils qw(:all);
+        my @categories = split /,/, $config->{categories};
+        my @categories_ids = map {$_->{id}} mdb->category->find({ name => mdb->in(@categories)})->all;
+        @user_categories = intersect(@categories_ids,@user_categories);
+    }
+
+    _warn \@user_categories;
 
     $where->{'category.id'} = mdb->in(@user_categories);
     $where->{'category_status.type'} = mdb->nin(('F','FC'));
