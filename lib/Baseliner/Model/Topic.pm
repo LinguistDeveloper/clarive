@@ -1902,9 +1902,6 @@ sub update_rels {
     my %rel_data;
     my %rels = mdb->master_rel->find_hashed(to_mid => { from_mid=>mdb->in(@mids) });
     my %rels_to = mdb->master_rel->find_hashed(from_mid=> { to_mid=>mdb->in(@mids) });
-    # gather all text
-    my @all_rel_mids = ( (map{$$_{to_mid}} _array(values %rels)), (map{$$_{from_mid}} _array(values %rels_to)) );
-    
     my %project_names = map { $$_{mid} => $$_{name} } ci->project->find->fields({ mid=>1, name=>1 })->all;
 
     my %topic_titles = map{$$_{mid} => $$_{title}} mdb->topic->find({mid=> mdb->in(@mids)})->fields({mid=>1,title=>1,_id=>0})->all;
@@ -1934,7 +1931,7 @@ sub update_rels {
             (map { $$_{to_mid} } _array($rels{$mid}) ), 
             (map { $$_{from_mid} } _array($rels_to{$mid}) )
         );
-        $d{_txt} = $self->update_txt(@mids_or_docs);
+        $d{_txt} = $self->update_txt(@all_rel_mids);
         
         my @pnames;
         for my $rel ( _array(values %rels) ) {
