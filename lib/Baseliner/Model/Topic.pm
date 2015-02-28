@@ -1261,7 +1261,8 @@ sub get_meta {
     my @cat_fields;
     
     if ($id_cat){
-        @cat_fields = _array( mdb->category->find_one({ id=>mdb->in($id_cat) })->{fieldlets} );
+        my $catdoc = mdb->category->find_one({ id=>mdb->in($id_cat) });
+        @cat_fields = _array( $catdoc->{fieldlets} );
     }else{
         if($username){
             my @user_categories =  map { $_->{id} } $self->get_categories_permissions( username => $username, type => 'view',  );
