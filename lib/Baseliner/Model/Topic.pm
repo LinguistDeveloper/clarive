@@ -1886,7 +1886,7 @@ sub update_txt {
             my $mid2 = $rel->{from_mid} eq $mid ? $rel->{to_mid} : $rel->{from_mid};
             push @other, $mid2;
         }
-        $txt = join ';', grep { defined && length($_) && ref $_ ne 'HASH' } map { values %$_ } mdb->master->find({ mid=>mdb->in(@other) })->all;
+        $txt = join ';', grep { defined && length($_) && ref $_ ne 'HASH' } map { values %$_ } mdb->master_doc->find({ mid=>mdb->in(@other) })->fields({ mid=>1, name=>1, title=>1 })->all;
         # if( $is_doc ) {
         #     $mid_or_doc->{_txt} = $txt;
         # } else {
