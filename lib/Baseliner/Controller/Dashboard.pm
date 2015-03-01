@@ -1188,6 +1188,7 @@ sub topics_by_status: Local{
         Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
     }
     $where->{'category.id'} = mdb->in(@user_categories);
+    my %colors = map { $_->{id_status} => $_->{color} } ci->status->find()->all;
 
     @topics_by_status = _array(mdb->topic->aggregate( [
         { '$match' => $where },
@@ -1199,7 +1200,7 @@ sub topics_by_status: Local{
         push @datas, {
                     total         => $topic->{total},
                     status        => $topic->{status},
-                    color		  => $topic->{color},
+                    color         => $colors{$topic->{_id}}, #$topic->{color},
                     status_id     => $topic->{_id}
                 };
      }
@@ -1228,8 +1229,6 @@ sub topics_open_by_status: Local{
         Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
     }
 
-    _warn $config->{categories};
-
     if ( $config->{categories} && $config->{categories} ne 'ALL') {
         use Array::Utils qw(:all);
         my @categories = split /,/, $config->{categories};
@@ -1237,11 +1236,9 @@ sub topics_open_by_status: Local{
         @user_categories = intersect(@categories_ids,@user_categories);
     }
 
-    _warn \@user_categories;
-
     $where->{'category.id'} = mdb->in(@user_categories);
     $where->{'category_status.type'} = mdb->nin(('F','FC'));
-
+    my %colors = map { $_->{id_status} => $_->{color} } ci->status->find()->all;
     @topics_open_by_status = _array(mdb->topic->aggregate( [
         { '$match' => $where },
         { '$group' => { _id => '$category_status.id', 'status' => {'$max' => '$category_status.name'},'color' => {'$max' => '$category_status.color'}, 'total' => { '$sum' => 1 }} },
@@ -1252,7 +1249,7 @@ sub topics_open_by_status: Local{
         push @datas, {
                     total         => $topic->{total},
                     status        => $topic->{status},
-                    color		  => $topic->{color},
+                    color		  => $colors{$topic->{_id}}, #$topic->{color},
                     status_id     => $topic->{_id}
                 };
      }
