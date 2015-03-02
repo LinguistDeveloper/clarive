@@ -574,7 +574,7 @@ sub store : Local {
     }
 
     if( length $bl && $bl ne '*' ) {
-        $where->{bl} = qr/^($bl|\*)$/;  # XXX XXX XXX  use rels from master_rel?
+        $where->{bl} = qr/($bl|\*)/;  # XXX XXX XXX  use rels from master_rel?
     }
     
     # used by value in a CIGrid
