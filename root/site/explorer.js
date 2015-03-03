@@ -1005,7 +1005,7 @@ Baseliner.open_apply_filter_from_release = function(n){
         Baseliner.ajaxEval( '/lifecycle/topics_for_release', { id_release: id_release, id_report: n.attributes.data.id_report }, function(res){
             Baseliner.ajaxEval( '/comp/lifecycle/report_run.js', { 
                 id_report: n.attributes.data.id_report, 
-                report_name: n.attributes.data.report_name, 
+                report_name: _('%1: %2', name, n.attributes.data.report_name), //n.attributes.data.report_name, 
                 report_rows: n.attributes.data.report_rows, 
                 hide_tree: n.attributes.data.hide_tree, 
                 topic_list: res.topics,

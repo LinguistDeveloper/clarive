@@ -103,7 +103,11 @@ sub update_changesets_bls {
                 $p{topic_mid} = $cs->{mid};
                 $p{bls} = \@cs_bls;
                 Baseliner->model('Topic')->update( { action => 'update', %p } );
-                $log->info( _loc("Added %1 to changeset %2 bls",$bl,$cs->{mid}) );        
+                $log->info( _loc("Added %1 to changeset %2 bls",$bl,$cs->{mid}) );
+                mdb->master_rel->remove({from_mid=>$cs->{mid},rel_type=>'topic_bl',rel_field=>'bls'},{multiple=>1});
+                for my $bl_id ( @cs_bls ) {
+                    mdb->master_rel->update({from_mid=>$cs->{mid}, to_mid=>$bl_id, rel_type=>'topic_bl',rel_field=>'bls'},{'$set'=>{from_mid=>$cs->{mid}, to_mid=>$bl_id, rel_type=>'topic_bl',rel_field=>'bls'}},{upsert=>1});
+                }
             }            
         }
     }

@@ -796,15 +796,15 @@ sub get_where {
 method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=undef, :$query_search=undef, :$sort=undef, :$sortdir=undef ) {
     # setup a temporary alternative connection if configured
     my $has_rep_db = exists Baseliner->config->{mongo}{reports};
-    my $db2 =
-        Baseliner::Mongo->new( 
+    my $mdb2 = !$has_rep_db
+        ? $Clarive::_mdb 
+        : Baseliner::Mongo->new( 
             mongo_client => Baseliner->config->{mongo}{reports}{client} // mdb->connection, 
-            db_name => Baseliner->config->{mongo}{reports}{db_name} // mdb->db_name )
-        if $has_rep_db;
+            db_name => Baseliner->config->{mongo}{reports}{db_name} // mdb->db_name );
     # so we can connect to a secondary:
     local $MongoDB::Cursor::slave_okay = 1 if $has_rep_db;
     # make mdb point to $db2 for now
-    local $Clarive::_mdb = $db2 if $has_rep_db;
+    # local $Clarive::_mdb = $db2 if $has_rep_db;
 
     my $rows = $limit // $self->rows;
 
@@ -878,8 +878,8 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 		map{
             $where = $self->get_where({filters_where => $fields{where}, name_category => $_, dynamic_filter => \%dynamic_filter, where => $where });
             $where->{id_category} = {'$in' => \@ids_category };
-            my @data = mdb->topic->find($where)->all;
-            if (@data && scalar @relation > 1) {
+            my @data = $mdb2->topic->find($where)->all;
+            if (@data && scalar @relation >= 1) {
                 my $rel_name;
                 my $name_relation;
                 my $length_rel = scalar @relation;
@@ -887,7 +887,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                     if($relation[$i]){
                         $rel_name = $relation[$i]->{"relation"}[0];
                         $name_relation = $relation[$i]->{"name_category"}[0];
-                        my @data_relation = mdb->topic->find({name_category=>qr/^$name_relation$/i})->all;
+                        my @data_relation = $mdb2->topic->find({name_category=>qr/^$name_relation$/i})->all;
                         my %data_to_compare = map { $_->{mid} => 1 } @data_relation; 
                         my @all_mids;
                         map {
@@ -922,7 +922,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
     if( $username && ! $is_root){
       my @categories;
         for my $category (@All_Categories) {
-            my $id_category = mdb->category->find_one({name=>qr/^$category$/i})->{id};
+            my $id_category = $mdb2->category->find_one({name=>qr/^$category$/i})->{id};
             push @categories, $id_category;
         }
         Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @categories );
@@ -953,7 +953,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 
     Baseliner->model('Topic')->build_field_query( $query_search, $where, $username ) if length $query_search;	
 
-    my $rs = mdb->topic->find($where);
+    my $rs = $mdb2->topic->find($where);
     my $cnt = $rs->count;
     $rows = $cnt if ($rows eq '-1') ;
     $rs->sort({ @sort });
@@ -1071,7 +1071,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
             my $parse_category = $_->{category}{name};
             foreach my $field (keys $_){
                 $_->{$field . "_$parse_category"} = $_->{$field};
-                $meta_cfg_report{$field . "_$parse_category"} = $meta_cfg_report{$field} if (($meta_cfg_report{$field}) && ($meta_cfg_report{$field} eq 'release' || $meta_cfg_report{$field} eq 'topic'));
+                # $meta_cfg_report{$field . "_$parse_category"} = $meta_cfg_report{$field} if (($meta_cfg_report{$field}) && ($meta_cfg_report{$field} eq 'release' || $meta_cfg_report{$field} eq 'topic'));
             }
         }
     } @data;
@@ -1082,7 +1082,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
     
     my %scope_topics;
     my %scope_cis;
-    my %all_labels = map { $_->{id} => $_ } mdb->label->find->all;
+    my %all_labels = map { $_->{id} => $_ } $mdb2->label->find->all;
     my %ci_columns;
 
     my $cont=1;
@@ -1102,7 +1102,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 
                 $row{$k} = $scope_cis{$v} // do {
                     my @objs
-                        = mdb->master_doc->find(
+                        = $mdb2->master_doc->find(
                         { mid => mdb->in( _array($v) ) },
                         { _id => 0 } )->all;
                     my @values;
@@ -1133,7 +1133,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
             } elsif( $mt =~ /release|topic/ ) {
                 $row{$k} = $scope_topics{$v} 
                     // do {
-                        my @objs = mdb->topic->find({ mid=>mdb->in($v) })->fields({ title=>1, mid=>1, is_changeset=>1, is_release=>1, category=>1, _id=>0 })->all;
+                        my @objs = $mdb2->topic->find({ mid=>mdb->in($v) })->fields({ title=>1, mid=>1, is_changeset=>1, is_release=>1, category=>1, _id=>0 })->all;
                         $scope_topics{$_->{mid}} = $_ for @objs; 
                         \@objs;   
                     } if ($v);				

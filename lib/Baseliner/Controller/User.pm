@@ -184,7 +184,7 @@ sub user_info : Local {
         }
         my $user = ci->user->find({ username => $username })->fields({username => 1, active => 1, realmane => 1, alias => 1, phone => 1, mid => 1, _id => 0})->next;
         _fail _loc('User not found: %1', $c->username ) unless $user;
-        $c->stash->{json} = { $user, msg=>'ok', success=>\1 };
+        $c->stash->{json} = { %$user, msg=>'ok', success=>\1 };
     } catch {
         my $err = shift;
         $c->stash->{json} = { msg=>"$err", success=>\0 };

@@ -181,7 +181,7 @@ sub items {
 
 sub jobs {
     my ($self, $p )=@_;
-    my @jobs = $self->parents( where=>{collection=>'job'}, docs_only => 1, %$p );
+    my @jobs = sort { $b->{endtime} cmp $a->{endtime} } $self->parents( where=>{collection=>'job'}, docs_only => 1, %$p );
     wantarray ? @jobs : \@jobs;
 }
 

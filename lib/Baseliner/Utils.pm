@@ -1398,6 +1398,7 @@ sub parse_vars_raw {
         my $str = "$data";
         my @discarded;
         my @matches;
+        my $str_orig = $str;
         @matches = ($str =~ m/\$\{(.+?)\}/g);
         while ( @matches && !(@matches ~~ @discarded) ) {
             
@@ -1424,6 +1425,7 @@ sub parse_vars_raw {
                     #$str =~ s/\$\{join\((\S+),$k\)\}/join($1,_array($v))/eg;   # TODO $v has a baddly comma joined list, should be an Arrayref
                 }
             }
+            last if $str eq $str_orig;  # avoid infinite recursion in case no substitution possible
             @matches = ($str =~ m/\$\{(.+?)\}/g);
         }        
         $str =~ s/\$\{nvl\((\w+),(\w+)\)\}/$2/g;
@@ -1518,14 +1520,11 @@ sub _fixCharacters_mail {
     $clean_text =~ s{Ãº}{&uacute;}g;
     $clean_text =~ s{Ã­}{&iacute;}g;
     #answer
-    $clean_text =~ s{Ã¿}{&iquest;}g;
+    $clean_text =~ s{Â¿}{&iquest;}g;
     $clean_text =~ s{Â¡}{&iexcl;}g;
+    $clean_text =~ s{Â°}{&deg;}g;
     #minus
-    # $clean_text =~ s{Ã¡}{&Aacute;}g;
-    # $clean_text =~ s{Ã�}{&Eacute;}g;
-    # $clean_text =~ s{Ã�}{&Oacute;}g;
-    # $clean_text =~ s{Ãº}{&Uacute;}g;
-    # $clean_text =~ s{Ã�­}{&Iacute;}g;
+    # $clean_text =~ s{ÃÁ}{&Eacute;}g;
     $clean_text;
 }
 

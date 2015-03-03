@@ -629,7 +629,7 @@ sub update_mid_data {
     
     my $user_security = Baseliner->model('Permissions')->user_projects_ids_with_collection(username => $username, with_role => 1);
     
-    my %datas = map { $$_{mid}=>$_ } mdb->topic->find({ mid=>mdb->in(@mids) },{ _txt=>0 })->all;
+    my %datas = map { $$_{mid}=>$_ } mdb->topic->find({ mid=>mdb->in(@mids) })->fields({ _txt=>0 })->all;
 
     for my $mid ( @mids ) {
         my $data = $datas{$mid}  // do{ _error(_loc("Topic mid not found: %1",$mid)); next };
@@ -1261,7 +1261,8 @@ sub get_meta {
     my @cat_fields;
     
     if ($id_cat){
-        @cat_fields = _array( mdb->category->find_one({ id=>mdb->in($id_cat) })->{fieldlets} );
+        my $catdoc = mdb->category->find_one({ id=>mdb->in($id_cat) });
+        @cat_fields = _array( $catdoc->{fieldlets} );
     }else{
         if($username){
             my @user_categories =  map { $_->{id} } $self->get_categories_permissions( username => $username, type => 'view',  );
@@ -1874,37 +1875,27 @@ sub save_doc {
 }
 
 sub update_txt {
-    my ($self,@mids_or_docs ) = @_;
-    my @mids = map { ref $_ eq 'HASH' ? $_->{mid} : $_ } grep { length } _unique( @mids_or_docs );
-    my @other;
-    my $txt;
-    for my $mid_or_doc ( _unique( @mids_or_docs  ) ) {
-        my $is_doc = ref $mid_or_doc eq 'HASH';
-        my $mid = $is_doc ? $mid_or_doc->{mid} : $mid_or_doc;
-        next unless length $mid;
-        for my $rel ( mdb->master_rel->find({ '$or'=>[ {from_mid=>"$mid"}, {to_mid=>"$mid"} ] })->all ) {
-            my $mid2 = $rel->{from_mid} eq $mid ? $rel->{to_mid} : $rel->{from_mid};
-            push @other, $mid2;
-        }
-        $txt = join ';', grep { defined && length($_) && ref $_ ne 'HASH' } map { values %$_ } mdb->master->find({ mid=>mdb->in(@other) })->all;
-        # if( $is_doc ) {
-        #     $mid_or_doc->{_txt} = $txt;
-        # } else {
-        #     mdb->topic->update({ mid=>"$mid" }, { '$set'=>{ _txt=>$txt } });
-        # }
-    }
-    $txt;
+    my ($self,@rels ) = @_;
+    return '' unless @rels;
+    my $txt = join ';', grep { defined && length($_) && ref $_ ne 'HASH' } 
+        map { values %$_ } 
+        mdb->master_doc->find({ mid=>mdb->in(@rels) })->fields({ mid=>1, name=>1, title=>1 })->all;
+    return $txt;
 }
 
 sub update_rels {
     my ($self,@mids_or_docs ) = @_;
     my @mids = map { ref $_ eq 'HASH' ? $_->{mid} : $_ } grep { length } _unique( @mids_or_docs );
-    my %rel_data;
-    my %rels = mdb->master_rel->find_hashed(to_mid => { from_mid=>mdb->in(@mids) });
+    my %rels_from = mdb->master_rel->find_hashed(to_mid => { from_mid=>mdb->in(@mids) });
     my %rels_to = mdb->master_rel->find_hashed(from_mid=> { to_mid=>mdb->in(@mids) });
-    # gather all text
-    my @all_rel_mids = ( (map{$$_{to_mid}} _array(values %rels)), (map{$$_{from_mid}} _array(values %rels_to)) );
-    
+
+    my %rels_out; 
+    map { push @{ $rels_out{ $$_{from_mid} } }, $$_{to_mid} } 
+        mdb->master_rel->find({ from_mid=>mdb->in(@mids) })->fields({ to_mid=>1, from_mid=>1 })->all;
+    my %rels_in; 
+    map { push @{ $rels_in{ $$_{to_mid} } }, $$_{from_mid} } 
+        mdb->master_rel->find({ to_mid=>mdb->in(@mids) })->fields({ to_mid=>1, from_mid=>1 })->all;
+
     my %project_names = map { $$_{mid} => $$_{name} } ci->project->find->fields({ mid=>1, name=>1 })->all;
 
     my %topic_titles = map{$$_{mid} => $$_{title}} mdb->topic->find({mid=> mdb->in(@mids)})->fields({mid=>1,title=>1,_id=>0})->all;
@@ -1924,20 +1915,20 @@ sub update_rels {
             for grep { exists $parent_mapping{$_->{rel_field}} } _array( $rels_to{$mid} );
         
         # resolve from_mids
-        $d{ $_->{rel_field} }{ $_->{to_mid} }=() for _array( $rels{$mid} );
+        $d{ $_->{rel_field} }{ $_->{to_mid} }=() for _array( $rels_from{$mid} );
         
         # now uniquify mids in each rel array
         %d = map { $_ => [ sort keys $d{$_} ] } keys %d; 
         
         # and put aggregate text in it, for searching purposes
         my @all_rel_mids = ( 
-            (map { $$_{to_mid} } _array($rels{$mid}) ), 
-            (map { $$_{from_mid} } _array($rels_to{$mid}) )
+            (_array($rels_out{$mid}) ), 
+            (_array($rels_in{$mid}) )
         );
-        $d{_txt} = $self->update_txt(@mids_or_docs);
+        $d{_txt} = $self->update_txt(@all_rel_mids);
         
         my @pnames;
-        for my $rel ( _array(values %rels) ) {
+        for my $rel ( _array(values %rels_from) ) {
             push @pnames, $project_names{$rel->{to_mid}} if $rel->{rel_type} eq 'topic_project' and $project_names{ $$rel{to_mid} } and $rel->{from_mid} eq $mid_or_doc;
         }
         $d{_sort}{projects} = join '|', sort map { lc( $_ ) } @pnames;  
@@ -2973,7 +2964,7 @@ sub status_changes {
     my ($self, $data) = @_;
     my @status_changes;
     my $cont = 0;
-    for my $ev ( mdb->activity->find({ event_key=>'event.topic.change_status', mid=>$data->{topic_mid} })->sort({ ts=>-1 })->limit(20)->all ) {
+    for my $ev ( mdb->activity->find({ event_key=>'event.topic.change_status', mid=>$data->{topic_mid} })->sort({ ts=>-1 })->limit(100)->all ) {
         try {
             my $ed = $ev->{vars};
             push @status_changes, {

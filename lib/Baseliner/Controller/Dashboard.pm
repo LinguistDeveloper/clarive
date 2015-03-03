@@ -73,6 +73,12 @@ register 'config.dashlet.my_topics' => {
         ]
 };
 
+register 'config.dashlet.topics_open_by_status' => {
+    metadata => [
+           { id=>'categories', label=>'List of categories', default => 'ALL' }
+        ]
+};
+
 sub grid : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
@@ -397,19 +403,18 @@ sub list : Local {
                 }
                 my $default_dashboard = ci->user->find_one({ name => $c->username })->{dashboard};
                 my @dashboard_ids = ($default_dashboard) if $default_dashboard;
-                push @dashboard_ids, map { grep { $_ ne $default_dashboard } _array($_->{dashboards})} mdb->role->find({ id => mdb->in(@roles)})->all if $default_dashboard;
+                push @dashboard_ids, map { grep { $_ ne $default_dashboard } _array($_->{dashboards})} mdb->role->find({ id => mdb->in(@roles)})->all;
                 my @dashboards;
                 map { push @dashboards, mdb->dashboard->find_one( { _id => mdb->oid($_) } ) } @dashboard_ids;
                 $where->{role} = {'$in' => \@roles};
                 $where->{is_system} = '0';
-                @dashboards = mdb->dashboard->find($where)->sort({is_main => -1})->all if !@dashboards;
-
+                @dashboards = mdb->dashboard->find($where)->sort({is_main => -1})->all if scalar @dashboards eq 0;
                 if ( scalar @dashboards ){
                     my $i = 0;
                     my @dashboard;
                     my %dash;
                     for my $dashboard ( @dashboards ){
-                        if($i == 0){
+                        if($i eq 0){
                             @dashlets = _array $dashboard->{dashlets};
                             for my $dash ( @dashlets ) {
                                 if($dash->{url}){
@@ -1183,6 +1188,7 @@ sub topics_by_status: Local{
         Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
     }
     $where->{'category.id'} = mdb->in(@user_categories);
+    my %colors = map { $_->{id_status} => $_->{color} } ci->status->find()->all;
 
     @topics_by_status = _array(mdb->topic->aggregate( [
         { '$match' => $where },
@@ -1194,7 +1200,7 @@ sub topics_by_status: Local{
         push @datas, {
                     total         => $topic->{total},
                     status        => $topic->{status},
-                    color		  => $topic->{color},
+                    color         => $colors{$topic->{_id}}, #$topic->{color},
                     status_id     => $topic->{_id}
                 };
      }
@@ -1204,13 +1210,15 @@ sub topics_by_status: Local{
 }
 
 sub topics_open_by_status: Local{
-    my ( $self, $c, $action ) = @_;
+    my ( $self, $c, $dashboard_id ) = @_;
     #my $p = $c->request->parameters;
     my (@topics_open_by_status, @datas);
 
     my $where = {};
     my $username = $c->username;
     my $perm = Baseliner->model('Permissions');
+
+    my $config = get_config_dashlet('topics_open_by_status', $dashboard_id);
 
     my @user_categories =  map {
                 $_->{id};
@@ -1221,9 +1229,16 @@ sub topics_open_by_status: Local{
         Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
     }
 
+    if ( $config->{categories} && $config->{categories} ne 'ALL') {
+        use Array::Utils qw(:all);
+        my @categories = split /,/, $config->{categories};
+        my @categories_ids = map {$_->{id}} mdb->category->find({ name => mdb->in(@categories)})->all;
+        @user_categories = intersect(@categories_ids,@user_categories);
+    }
+
     $where->{'category.id'} = mdb->in(@user_categories);
     $where->{'category_status.type'} = mdb->nin(('F','FC'));
-
+    my %colors = map { $_->{id_status} => $_->{color} } ci->status->find()->all;
     @topics_open_by_status = _array(mdb->topic->aggregate( [
         { '$match' => $where },
         { '$group' => { _id => '$category_status.id', 'status' => {'$max' => '$category_status.name'},'color' => {'$max' => '$category_status.color'}, 'total' => { '$sum' => 1 }} },
@@ -1234,7 +1249,7 @@ sub topics_open_by_status: Local{
         push @datas, {
                     total         => $topic->{total},
                     status        => $topic->{status},
-                    color		  => $topic->{color},
+                    color		  => $colors{$topic->{_id}}, #$topic->{color},
                     status_id     => $topic->{_id}
                 };
      }

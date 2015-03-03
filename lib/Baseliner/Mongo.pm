@@ -389,13 +389,15 @@ sub index_all {
             [[ collection=>1, starttime=>-1 ]],  # job monitor
             [{ status=>1, pid=>1, collection=>1 }],
             [{ status=>1, maxstarttime=>1, collection=>1 }],
-            [{'$**'=> "text"},{ background=>1 }],
+            [{'$**'=> "text"},{ 
+                    weights=>{ %{ Clarive->config->{index}{weights}{master_doc} || {} } }, 
+                    language_override=>'_lang', background=>1 }],
         ],
         message => [
             [{ queue=>1 }],
         ],
         notification => [
-            [{'$**'=> "text"},{ background=>1 }],
+            [{'$**'=> "text"},{ language_override=>'_lang', background=>1 }],
         ],
         role => [
           [{ role=>1 }],
@@ -433,7 +435,9 @@ sub index_all {
             [{ '_project_security'=>1, category_name=>1 }],
             [{ '_project_security'=>1, 'category.id'=>1, 'category_status.type'=>1 }],
             [{ '_sort.numcomment'=>1, _project_security=>1, category_status=>1, 'category.id'=>1 }],
-            [{'$**'=> "text"},{ background=>1 }],
+            [{'$**'=> "text"},{ 
+                    weights=>{ %{ Clarive->config->{index}{weights}{topic} || {} } }, 
+                    language_override=>'_lang', background=>1 }],
         ],
         topic_image => [
             [{ id_hash => 1 }],
