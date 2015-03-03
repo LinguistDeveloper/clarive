@@ -1036,7 +1036,8 @@ if( Prefs.routing ) {
             if( Ext.isFunction(comp) ) return comp(params);
         }
         // eval
-        try { eval("comp = " + text ) } catch(e) {} // this is for (function(){})(); with semicolon, etc.
+        try { comp = JSON.parse(text) } catch(e) {}
+        if( comp == undefined ) try { eval("comp = " + text ) } catch(e) {} // this is for (function(){})(); with semicolon, etc.
         if( comp == undefined ) eval("comp = ( " + text + " )");  // json, pure js, closures (function(){ })
         
         if( Ext.isFunction( comp ) && !compiled_func ) {
@@ -1182,7 +1183,7 @@ if( Prefs.routing ) {
                         delete comp.__broadcast;
                     }
                     // detect logout
-                    if( is_object && comp.logged_out && !params._ignore_conn_errors ) {
+                    if( is_object && comp.logged_out && !params._ignore_conn_errors ) {               
                         login_or_error();
                     }
                     else if( !params._handle_res && is_object && comp.success!=undefined && !comp.success ) {  // XXX this should come after the next else
@@ -1229,7 +1230,7 @@ if( Prefs.routing ) {
         }
             
         var the_request = function() { Ext.Ajax.request(request_data); };
-        if( params.confirm != undefined ) {
+        if( params.confirm != undefined ) {          
             var msg = params.confirm;
             delete params['confirm'];
             Ext.Msg.confirm(_('Confirmation'),  msg , function(btn) {
