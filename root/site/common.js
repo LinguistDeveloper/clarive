@@ -2935,7 +2935,8 @@ Baseliner.CSV = Ext.extend( Ext.util.Observable, {
                                 while (c < cc && '\r' !== chars[c] && '\n' !== chars[c] && ',' !== chars[c]) { end = ++c; }
                         }
                         end = reviver(table.length-1, row.length, chars.slice(start, end).join('') );
-                        row.push(isNaN(end) ? end : end.length==0 ? '' : +end);
+                        row.push(end);
+                        // row.push(isNaN(end) ? end : end.length==0 ? '' : +end); ## comprueba si es numerico.. problem: 001 convierte a -> 1
                         if (',' === chars[c]) { ++c; }
                 }
                 if ('\r' === chars[c]) { ++c; }
