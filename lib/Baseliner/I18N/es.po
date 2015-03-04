@@ -3970,7 +3970,7 @@ msgid "Severity"
 msgstr "Severidad"
 
 msgid "Do you wish to resume job %1"
-msgstr "Seguro que quiere reiniciar el job %1"
+msgstr "Seguro que quiere reanudar el job %1"
 
 msgid "Delete Log"
 msgstr "Borrar log"
