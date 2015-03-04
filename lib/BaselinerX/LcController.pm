@@ -660,6 +660,7 @@ sub changeset : Local {
                     bl           => $bl,
                     name         => $topic->{title},
                     promotable   => $promotable,
+                    is_release   => 0,
                     demotable    => $demotable,
                     deployable   => $deployable,
                     state_id     => $p->{id_status},
@@ -698,8 +699,16 @@ sub changeset : Local {
                         id_status_from  => $p->{id_status},
                         id_project => $id_project,
                         categories => \%categories,
+                        is_release => 1
                     );
                 }
+                my @menu_release;
+                for my $deploy ( _array($menu) ) {
+                    $deploy->{eval}->{is_release} = 1;
+                    push @menu_release, $deploy;
+                }
+                $menu = \@menu_release;
+                #_warn $menu;
                 my $node = {
                     url  => '/lifecycle/topic_contents',
                     icon => '/static/images/icons/release_lc.png',
@@ -719,6 +728,7 @@ sub changeset : Local {
                         name         => $rel->{title},
                         promotable   => $promotable,
                         demotable    => $demotable,
+                        is_release   => 1,    
                         deployable   => $deployable,
                         state_name   => _loc($state_name),
                         id_project   => $id_project,
@@ -798,6 +808,7 @@ sub promotes_and_demotes {
     my ( @menu_s, @menu_p, @menu_d );
 
     my $job_mode = $p{job_mode} // 0;
+    #_warn $topic;
 
     $id_status_from //= $topic->{category_status}{id};
     my %statuses = ci->status->statuses;
@@ -828,6 +839,7 @@ sub promotes_and_demotes {
                     job_type       => 'static',
                     job_bl         => $bl,
                     id_project     => $id_project,
+                    is_release     => $topic->{category}->{is_release},
                     status_to      => $status->{id_status},
                     status_to_name => _loc($status->{name}),
                     text => _loc( 'Deploy to %1 (%2)', _loc( $status->{name} ), $bl ),
@@ -841,6 +853,7 @@ sub promotes_and_demotes {
                         job_type       => 'static',
                         bl_to          => $bl,
                         id_project     => $id_project,
+                        is_release     => $topic->{category}->{is_release},
                         status_to      => $status->{id_status},
                         status_to_name => _loc($status->{name}),
                     },
@@ -869,6 +882,7 @@ sub promotes_and_demotes {
                     job_type       => 'promote',
                     job_bl         => $bl,
                     id_project     => $id_project,
+                    is_release     => $topic->{category}->{is_release},
                     status_to      => $status->{id_status},
                     status_to_name => _loc($status->{name}),
                     text => _loc( 'Promote to %1 (%2)', _loc( $status->{name} ), $bl ),
@@ -881,6 +895,7 @@ sub promotes_and_demotes {
                         title          => 'To Promote',
                         job_type       => 'promote',
                         id_project     => $id_project,
+                        is_release     => $topic->{category}->{is_release},
                         bl_to          => $bl,
                         status_to      => $status->{id_status},
                         status_to_name => _loc($status->{name}),
@@ -912,6 +927,7 @@ sub promotes_and_demotes {
                             job_type       => 'demote',
                             job_bl         => $bl,
                             id_project     => $id_project,
+                            is_release     => $topic->{category}->{is_release},
                             status_to      => $status->{id_status},
                             status_to_name => _loc($status->{name}),
                             text => _loc( 'Demote to %1 (%3) from %2', _loc($status->{name}), $bl, $bl_to ),
@@ -924,6 +940,7 @@ sub promotes_and_demotes {
                                 title          => 'Demote',
                                 job_type       => 'demote',
                                 id_project     => $id_project,
+                                is_release     => $topic->{category}->{is_release},
                                 bl_to          => $bl,
                                 status_to      => $status->{id_status},
                                 status_to_name => _loc( $status->{name} ),
@@ -939,6 +956,7 @@ sub promotes_and_demotes {
                         job_type       => 'demote',
                         job_bl         => $bl,
                         id_project     => $id_project,
+                        is_release     => $topic->{category}->{is_release},
                         status_to      => $status->{id_status},
                         status_to_name => _loc($status->{name}),
                         text => _loc( 'Demote to %1 (from %2)', _loc($status->{name}), $bl ),
@@ -951,6 +969,7 @@ sub promotes_and_demotes {
                             title          => 'Demote',
                             job_type       => 'demote',
                             id_project     => $id_project,
+                            is_release     => $topic->{category}->{is_release},
                             bl_to          => $bl,
                             status_to      => $status->{id_status},
                             status_to_name => _loc( $status->{name} ),

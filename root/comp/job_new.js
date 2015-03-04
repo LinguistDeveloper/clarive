@@ -134,7 +134,7 @@
     store_transitions.on('load', function(){
         // only set default value on combo if coming from lifecycle
         if( set_transition ) {
-            combo_transitions.setValue( set_transition );
+            combo_transitions.setValue( set_transition == 'none' ? '': set_transition );
             var record = combo_transitions.findRecord('id', set_transition);
             var index = combo_transitions.store.indexOf(record);
             var data = combo_transitions.store.data.items[index].data;
@@ -145,7 +145,7 @@
             //jc_store.reload();
             calendar_reload();
 
-        }
+        } 
     });
 
     var tpl_transitions = new Ext.XTemplate(
@@ -446,6 +446,10 @@
 
                 var topics_json = '[' + topics.join(',') + ']';                
                 store_transitions.baseParams.topics= topics_json;
+                if ( topics.length == 0 ) {
+                    set_transition = 'none';
+                }
+                store_transitions.reload();
                 store_transitions.reload();
                 jc_store.reload();
             }
@@ -516,6 +520,11 @@
                  }), v.title);
              },
              dataIndex: 'item'},
+        { header: _('Project'),
+             width: 20 + adder,
+             sortable: true,
+             hidden: false,
+             dataIndex: 'project_name'},
         { header: _('Created By'),
              width: 40 + adder,
              sortable: true,
@@ -540,7 +549,7 @@
     ]);
 
     var row_data = {};
-    var jc_record = Ext.data.Record.create([ '_id','_parent', '_is_leaf','ns','mid','topic_name','promotable','item','text','date','modified_by','created_by' ]);
+    var jc_record = Ext.data.Record.create([ '_id','_parent', '_is_leaf','ns','mid','topic_name','project_name','promotable','item','text','date','modified_by','created_by' ]);
     var jc_store_topics = {};
     var jc_store = new Ext.ux.maximgb.tg.AdjacencyListStore({  
        autoLoad : true,  
@@ -634,26 +643,40 @@
                 Baseliner.message( _('New Job'), _('Topic %1 has already been selected', data.text),{ image:'/static/images/icons/error-7-64.png' });
                 Baseliner.hideLoadingMask( main_form.getEl() );
             } else {
-                jc_store_topics[ data.topic_mid ] = { text:data.text, data:data };
-                topics.push( Ext.util.JSON.encode( { topic_mid:data.topic_mid, project: data.id_project, state: data.state_id} ) );
-                var topics_json = '[' + topics.join(',') + ']';
-                // topics.push( data.topic_mid + '|' + data.id_project + '|' + data.state_id );
-                
-                store_transitions.baseParams.topics= topics_json;
-                if ( topics.length == 1 ) {
-                    set_transition = data.id;
+                var project = data.id_project;
+                if ( data.is_release  == 1 ) {
+                    Ext.Msg.confirm( _('Confirmation'), _('Do you want to add all release changesets in the same state from all projects?'), 
+                    function(btn){ 
+                        if(btn=='yes') {
+                            project = 'all';
+                        }
+                        add_node(data, project);
+                    } );
                 } else {
-                    set_transition = '';
+                    add_node(data,project);
                 }
-                store_transitions.reload();
-                jc_store.reload();
-
-                // calendar_reload();
-                //button_submit.enable();
             }
         }
         return (true); 
     };
+    function add_node(data,project) {
+        jc_store_topics[ data.topic_mid ] = { text:data.text, data:data, project: project };
+        topics.push( Ext.util.JSON.encode( { topic_mid:data.topic_mid, project: data.id_project, state: data.state_id} ) );
+        var topics_json = '[' + topics.join(',') + ']';
+        // topics.push( data.topic_mid + '|' + data.id_project + '|' + data.state_id );
+        
+        store_transitions.baseParams.topics= topics_json;
+        if ( topics.length == 1 ) {
+            set_transition = data.id;
+        } else {
+            set_transition = '';
+        }
+        store_transitions.reload();
+        jc_store.reload();
+
+        // calendar_reload();
+        //button_submit.enable();
+    }
     // Drag and drop support
     jc_grid.on( 'render', function(){
         var el = jc_grid.getView().el.dom.childNodes[0].childNodes[1];
@@ -666,7 +689,8 @@
                 var n = dd.dragData.node;
                 var d = n.attributes.data;
                 return jc_add_node({ 
-                    text: n.text, 
+                    text: n.text,
+                    is_release: d.is_release,
                     topic_mid: d.topic_mid, 
                     id_project: d.id_project, 
                     state_id: d.state_id, 
@@ -722,7 +746,6 @@
                             Ext.Msg.show({ title: _('Failure'), msg: action.result.msg, width: 500, buttons: { ok: true } });
                         } else {
                             var msg = _('Unknown Error');
-                            console.dir(action)
                             if( action.failureType == 'connect' ) msg = _('Connection Error');
                             if( action.failureType == 'client' ) msg = _('Form Error');
                             Baseliner.error( _('Error'), msg );
