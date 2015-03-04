@@ -647,6 +647,15 @@ sub run_parse_config {
             my ($ini) = Config::Tiny->read_string( $body );
             return +{ %$ini } // {};
         }
+        : $type eq 'props' ? do {
+            require Config::Properties;
+            open my $fh, '<', \$body;
+
+            my $properties = Config::Properties->new();
+            $properties->load($fh);
+            my %props = $properties->properties;
+            return +{ %props } // {};
+        }
         : $type eq 'xml' ? do {
             require XML::Simple;
             my $xml = XML::Simple::XMLin( "$body", KeepRoot=>1, %$opts ); 
