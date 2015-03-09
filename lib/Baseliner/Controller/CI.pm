@@ -592,7 +592,7 @@ sub store : Local {
     my @data;
     my $total = 0; 
 
-    if( my $class = $p->{class} // $p->{classname} // $p->{isa} // $collection ? 'BaselinerX::CI::'.$collection : '' ) {
+    if( my $class = $p->{class} // $p->{classname} // $p->{isa} // ($collection ? 'BaselinerX::CI::'.$collection : '') ) {
 
         if( $p->{security} ){  #Parámetro desde informes
             my @security;
