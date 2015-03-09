@@ -129,7 +129,7 @@ sub run_once {
                     }
                 }
             } elsif( !$job->{purged} ) {
-                _log 'Job not ready to purge yet: %1 (%2)', $job_name, $job->{mid};
+                _log _loc('Job not ready to purge yet: %1 (%2)', $job_name, $job->{mid});
             }
             if( $max_job_time->datetime lt "$temp[0]T$temp[1]" && -d $purged_job_path ) {
                 _log "\tDeleting job directory $purged_job_path....";
