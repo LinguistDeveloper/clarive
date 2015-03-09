@@ -121,7 +121,7 @@ sub run_once {
                 while( my $actual = $deleted_job_logs->next ) {
                     my $query = mdb->job_log->find_one({ mid => "$job->{mid}", data=>{'$exists'=> '1'} }); 
                     my $data;
-                    mdb->job_log->remove({ mid => $actual->{mid} });
+                    mdb->job_log->remove({ mid => $actual->{mid} }) if $actual->{level} eq 'debug';
                     if(ref $query){
                         _log "\tDeleting field data of ".$job->{mid}."....";
                         $data = $query->{data};
