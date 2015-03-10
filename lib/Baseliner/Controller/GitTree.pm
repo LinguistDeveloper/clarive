@@ -635,9 +635,9 @@ sub get_log_history {
     my $g = Girl::Repo->new( path=>$repo_dir );
     my @array_logs;
     if($args->{tag}){
-        @array_logs = $g->git->exec( 'log', "$args->{tag}..$args->{commit}",'--skip='.$args->{start}, '-n', $args->{last} );
+        @array_logs = $g->git->exec( 'log', '--decorate', "$args->{tag}..$args->{commit}",'--skip='.$args->{start}, '-n', $args->{last} );
     }else{
-        @array_logs = $g->git->exec( 'log', $branch, '--skip='.$args->{start}, '-n', $args->{last} );
+        @array_logs = $g->git->exec( 'log', '--decorate', $branch, '--skip='.$args->{start}, '-n', $args->{last} );
     }
     my @commits;
     my $log = {};
@@ -665,7 +665,14 @@ sub get_log_history {
                 $log->{comment} = '';
             }
             $commit = $1;
-            $log->{revision} = substr($commit,0,8);
+            $commit=~/^([a-f0-9]*) \((.*)\)/;
+            my $revision = $1;
+            my $text_tags = $2;
+            my @tags = split ', ', $text_tags if $text_tags;
+            @tags = map { $_=~ s/tag: //g; $_ } @tags;
+            my $txt = join ', ', @tags;
+            $log->{tags} = $txt if $text_tags; 
+            $log->{revision} = substr($revision,0,8);
         }else{
             $log->{comment} = $log->{comment}."\n".$_;
         }

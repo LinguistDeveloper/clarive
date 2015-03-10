@@ -15,7 +15,7 @@
 	    totalProperty:"totalCount", 
 	    baseParams: { repo_dir: repo_dir, branch: branch, start: 0, limit: ps, repo_mid: repo_mid, tag: params.tag, commit: params.commit },  
 	    url: '/'+controller+'/get_commits_history', 
-	    fields: ['ago','author','revision','comment', 'date'],
+	    fields: ['ago','author','revision','comment', 'date', 'tags'],
 	});
 
 	var render_diff_btn = function(value,metadata,rec,rowIndex,colIndex,store){       
@@ -78,7 +78,8 @@
             {header: _("Ago"), width: 75, dataIndex: 'date', sortable: true, dataIndex: 'date', renderer: render_ago },
             {header: _("Author"), width: 70, sortable: true, dataIndex: 'author', sortable: true},
             {header: _("Revision"), width: 50, sortable: true, dataIndex: 'revision', sortable: true},
-            {header: _("Comment"), width: 450, dataIndex: 'comment', sortable: true},
+            {header: _("Comment"), width: 400, dataIndex: 'comment', sortable: true},
+            {header: _("Bls"), width: 80, dataIndex: 'tags', sortable: true},
             {header: _('DIFF'), width: 50, dataIndex: 'diff_btn', renderer: render_diff_btn }
         ],
         stripeRows: true,
