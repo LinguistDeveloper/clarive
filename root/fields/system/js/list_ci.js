@@ -1,4 +1,4 @@
-  /*
+/*
 name: CIs
 params:
     js: '/fields/system/js/list_ci.js'

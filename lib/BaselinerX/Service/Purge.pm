@@ -121,7 +121,7 @@ sub run_once {
                 while( my $actual = $deleted_job_logs->next ) {
                     my $query = mdb->job_log->find_one({ mid => "$job->{mid}", data=>{'$exists'=> '1'} }); 
                     my $data;
-                    mdb->job_log->remove({ mid => $actual->{mid} });
+                    mdb->job_log->remove({ mid => $actual->{mid} }) if $actual->{level} eq 'debug';
                     if(ref $query){
                         _log "\tDeleting field data of ".$job->{mid}."....";
                         $data = $query->{data};
@@ -129,7 +129,7 @@ sub run_once {
                     }
                 }
             } elsif( !$job->{purged} ) {
-                _log 'Job not ready to purge yet: %1 (%2)', $job_name, $job->{mid};
+                _log _loc('Job not ready to purge yet: %1 (%2)', $job_name, $job->{mid});
             }
             if( $max_job_time->datetime lt "$temp[0]T$temp[1]" && -d $purged_job_path ) {
                 _log "\tDeleting job directory $purged_job_path....";

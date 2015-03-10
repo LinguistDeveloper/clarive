@@ -320,11 +320,11 @@ sub tree_objects {
             item              => ( $row->{name} // $data->{name} // $noname ),
             ci_form           => $ci_form,
             type              => 'object',
-            class             => $row_class, 
-            classname         => $row_class, 
+            class             => $row_class || '', 
+            classname         => $row_class || '', 
             collection        => $row->{collection},
             moniker           => $row->{moniker},
-            icon              => ( $icons{ $row_class } // ( $icons{$row_class} = $row_class ? $row_class->icon : $generic_icon ) ),
+            icon              => $row_class && $icons{ $row_class } ? $icons{$row_class} : $generic_icon,
             ts                => $row->{ts},
             bl                => $row->{bl},
             description       => $data->{description} // '',
@@ -536,6 +536,7 @@ sub roles : Local {
 sub store : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
+    _warn $p;
     my $valuesqry = $p->{valuesqry} ? ( $p->{mids} = $p->{query} ) : ''; # en valuesqry está el "mid" en cuestión
     my $query = $p->{query} unless $valuesqry;
     
@@ -591,7 +592,7 @@ sub store : Local {
     my @data;
     my $total = 0; 
 
-    if( my $class = $p->{class} // $p->{classname} // $p->{isa} ) {
+    if( my $class = $p->{class} // $p->{classname} // $p->{isa} // ($collection ? 'BaselinerX::CI::'.$collection : '') ) {
 
         if( $p->{security} ){  #Parámetro desde informes
             my @security;

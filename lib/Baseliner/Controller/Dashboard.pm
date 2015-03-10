@@ -75,7 +75,9 @@ register 'config.dashlet.my_topics' => {
 
 register 'config.dashlet.topics_open_by_status' => {
     metadata => [
-           { id=>'categories', label=>'List of categories', default => 'ALL' }
+           { id=>'categories', label=>'List of categories', default => 'ALL' },
+           { id=>'final', label=>'Final statuses? (1/0)', default => '0' },
+           { id=>'all_statuses', label=>'All statuses? (1/0)', default => '0' },
         ]
 };
 
@@ -1236,8 +1238,22 @@ sub topics_open_by_status: Local{
         @user_categories = intersect(@categories_ids,@user_categories);
     }
 
+    my %all_statuses;
+    my @final_statuses;
+    my %status_names;
+
+    map { 
+        $status_names{$_->{id_status}} = {$_->{name},$_->{color}};
+        if ( $_->{type} =~ /^F/ ) {
+            push @final_statuses, $_->{id_status}
+        }
+    } ci->status->find()->all;
+
+    if ( $config->{all_statuses} ) {
+        %all_statuses = map { map { $_ => 1} _array($_->{statuses}) } mdb->category->find({ id => mdb->in(@user_categories)})->all;
+    }
     $where->{'category.id'} = mdb->in(@user_categories);
-    $where->{'category_status.type'} = mdb->nin(('F','FC'));
+    $where->{'category_status.type'} = mdb->nin(('F','FC')) if !$config->{final} || ($config->{final} && $config->{final} eq 0);
     my %colors = map { $_->{id_status} => $_->{color} } ci->status->find()->all;
     @topics_open_by_status = _array(mdb->topic->aggregate( [
         { '$match' => $where },
@@ -1252,7 +1268,19 @@ sub topics_open_by_status: Local{
                     color		  => $colors{$topic->{_id}}, #$topic->{color},
                     status_id     => $topic->{_id}
                 };
-     }
+        delete $all_statuses{$topic->{_id}};
+    }
+    if ( $config->{all_statuses} ) {
+        for my $id_status ( keys %all_statuses ) {
+            push @datas, {
+                total         => 0,
+                status        => $status_names{$id_status}->{name},
+                color         => $status_names{$id_status}->{name},
+                status_id     => $id_status
+            };            
+        }
+    }
+
     $c->stash->{topics_open_by_status} = \@datas;
     $c->stash->{topics_open_by_status_title} = _loc('Topics open by status');
 

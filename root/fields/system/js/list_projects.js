@@ -23,6 +23,7 @@ params:
     var meta = params.topic_meta;
     
     var projects = [];
+    var firstload = true;
     
     if(data && data[meta.bd_field] ){
         var val_projects = data[meta.bd_field];
@@ -69,9 +70,13 @@ params:
     });
     
     project_box.field_ready = false;
+
     project_box_store.on('load',function(){
         project_box.field_ready = true;
-        project_box.setValue(projects);
+        if ( projects && firstload ) { 
+            firstload = false;
+            project_box.setValue( projects );
+        }
     });
 
 

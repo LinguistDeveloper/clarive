@@ -3970,7 +3970,7 @@ msgid "Severity"
 msgstr "Severidad"
 
 msgid "Do you wish to resume job %1"
-msgstr "Seguro que quiere reiniciar el job %1"
+msgstr "Seguro que quiere reanudar el job %1"
 
 msgid "Delete Log"
 msgstr "Borrar log"
@@ -7899,4 +7899,7 @@ msgstr "Acrónimo"
 
 msgid "acronym"
 msgstr "acrónimo"
+
+msgid "Do you want to add all release changesets in the same state from all projects?"
+msgstr "¿Quieres añadir todos los cambios de la release que están en el mismo estado de todos los proyectos?"
 

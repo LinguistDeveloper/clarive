@@ -589,8 +589,10 @@ sub jc_store : Local  {
         my $mid = $$node_data{topic_mid} ;
         my $ci = ci->new( $mid );
         my $status_from = $ci->is_release ? $$node_data{state_id} : $ci->id_category_status;
-        my $id_project = $$node_data{id_project};
+        my $id_project = $$node{project} eq 'all' ? '': $$node_data{id_project};
         my $id = $k++;
+
+        my %projects = map {$_->{mid} => $_->{name}} ci->project->find()->all;
         
         my @chi;
         if( $ci->is_release ) {
@@ -620,6 +622,7 @@ sub jc_store : Local  {
                     ns=> "changeset/" . $$cs_data{mid},
                     mid=>$$cs_data{mid},
                     id_project => $id_project,
+                    project_name => join(',',_array($$cs_data{project_report}))
                 }
             } 
             grep {
@@ -646,7 +649,7 @@ sub jc_store : Local  {
             text => $$node{text},
             ns   => $$node_data{ns},
             mid  => $$node_data{topic_mid},
-            id_project => $id_project,
+            id_project => $id_project
         };
         push @data, $row;
         push @data, @chi if @chi;
