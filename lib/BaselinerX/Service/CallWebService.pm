@@ -64,8 +64,10 @@ sub web_request {
 
     my $response = $ua->request( $request );
 
-    _fail sprintf qq/HTTP request failed: %s\nUrl: %s\nArgs: %s/, $response->status_line, $url, _to_json($args)
-        unless $response->is_success;
+    if( ! $response->is_success ) {
+        _error( $response->decoded_content );
+        _fail sprintf qq/HTTP request failed: %s\nUrl: %s\nArgs: %s/, $response->status_line, $url, _to_json($args);
+    }
     my $content = $response->decoded_content;
         #if( $encoding ne 'utf-8' ) {
         #Encode::from_to($content, $encoding, 'utf-8' ) if $content;
