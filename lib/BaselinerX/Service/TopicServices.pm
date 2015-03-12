@@ -2,6 +2,7 @@ package BaselinerX::Service::TopicServices;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Path::Class;
+use utf8;
 #use Try::Tiny;
 
 with 'Baseliner::Role::Service';
@@ -234,7 +235,7 @@ sub upload {
     
     my $p;
     $p->{filter} = $config->{field};
-    $p->{topic_mid} = $config->{mid};
+    $p->{topic_mid} = "$config->{mid}";
     $filepath =~ m{^(.*)\/ (.*)$}x;
     $p->{qqfile} = $2; #El nombre del fichero sin la ruta
     my $f =  _file( ''. $filepath );
