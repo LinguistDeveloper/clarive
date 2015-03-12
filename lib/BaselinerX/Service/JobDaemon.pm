@@ -2,6 +2,7 @@ package BaselinerX::Service::JobDaemon;
 use Baseliner::Plug;
 use Baseliner::Utils;
 use Try::Tiny;
+use utf8;
 
 with 'Baseliner::Role::Service';
 

@@ -7,6 +7,7 @@ use Try::Tiny;
 use Proc::Exists qw(pexists);
 use Array::Utils qw(:all);
 use v5.10;
+use utf8;
 
 BEGIN { extends 'Catalyst::Model' }
 

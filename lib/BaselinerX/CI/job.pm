@@ -4,6 +4,7 @@ use Baseliner::Utils qw(:logging _now :other);
 use Baseliner::Sugar qw(event_new);
 use Try::Tiny;
 use v5.10;
+use utf8;
 with 'Baseliner::Role::CI::Internal';
 
 has id_stash           => qw(is rw isa Any);
