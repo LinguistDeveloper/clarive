@@ -28,6 +28,7 @@ sub web_request {
     my $body = $config->{body} || '';
     my $timeout = $config->{timeout};
     my $encoding = $config->{encoding} || 'utf-8';
+    my $accept_any_cert = $config->{accept_any_cert};
 
     if( $encoding ne 'utf-8' ) {
         Encode::from_to($url, 'utf-8', $encoding ) if $url;
@@ -48,6 +49,9 @@ sub web_request {
     my $request = HTTP::Request->new( $method => $uri );
     $request->authorization_basic($config->{username}, $config->{password}) if $config->{username};
     my $ua = LWP::UserAgent->new();
+    if($accept_any_cert){
+        $ua->ssl_opts( verify_hostname => 0 );
+    }
     $ua->timeout( $timeout ) if $timeout;
     for my $k ( keys %$headers ) {
         $ua->default_header( $k => $headers->{$k} );
