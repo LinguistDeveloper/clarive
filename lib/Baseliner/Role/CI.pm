@@ -197,6 +197,7 @@ sub save {
     # make sure we have a mid AND it's in mongo
     Util->_fail( Util->_loc('CI mid cannot start with `name:` nor `mid:`') ) if $mid && $mid=~/^(name|moniker):/;
     my $master_row = mdb->master->find_one({ mid=>"$mid" }) if length $mid;
+    my $master_old;
     my $exists = length($mid) && $master_row; 
     
     # try to get mid from ns
@@ -216,6 +217,7 @@ sub save {
     if( $exists ) { 
         ######## UPDATE CI
         if( $master_row ) {
+            $master_old = +{ %$master_row };
             $master_row->{bl} = join ',', Util->_array( $bl );
             $master_row->{name} = $self->name;
             $master_row->{active} = $self->active;
@@ -223,7 +225,7 @@ sub save {
             $master_row->{moniker} = $self->moniker;
             $master_row->{ns} = $self->ns;
             $master_row->{ts} = mdb->ts;
-            $self->update_ci( $master_row, undef, \%opts );
+            $self->update_ci( $master_row, undef, \%opts, $master_old );
         }
     } else {
         ######## NEW CI
@@ -273,12 +275,12 @@ sub delete {
 
 # hook
 sub update_ci {
-    my ( $self, $master_row, $master_doc, $opts ) = @_;
+    my ( $self, $master_row, $master_doc, $opts, $master_old ) = @_;
     # if no data=> supplied, save myself
     $opts //= {}; # maybe lost during bad arounds
     $opts->{save_type} = 'update';
     $master_doc = $self->serialize if !ref($master_doc) eq 'HASH' || !keys %$master_doc;
-    $self->save_data( $master_row, $master_doc, $opts );
+    $self->save_data( $master_row, $master_doc, $opts, $master_old, 1, 2, 3 );
 }
 
 sub new_ci {
@@ -302,7 +304,7 @@ sub field_is_ci {
 
 # save data to yaml and master_doc, does not use self
 sub save_data {
-    my ( $self, $master_row, $master_doc, $opts ) = @_;
+    my ( $self, $master_row, $master_doc, $opts, $master_old ) = @_;
     return unless ref $master_doc;
     
     # To fix not saving attributes modified in "before save_data"
