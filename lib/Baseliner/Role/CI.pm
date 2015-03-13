@@ -281,7 +281,7 @@ sub update_ci {
     $opts //= {}; # maybe lost during bad arounds
     $opts->{save_type} = 'update';
     $master_doc = $self->serialize if !ref($master_doc) eq 'HASH' || !keys %$master_doc;
-    $self->save_data( $master_row, $master_doc, $opts, $master_old, 1, 2, 3 );
+    $self->save_data( $master_row, $master_doc, $opts, $master_old );
 }
 
 sub new_ci {

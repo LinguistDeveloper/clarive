@@ -98,5 +98,11 @@ sub change_var_names_in_rules {
         }
     }
 }
+
+sub is_ci {
+    my ($self)=@_;
+    return $self->var_ci_class || $self->var_ci_role;
+}
+
 1;
 
