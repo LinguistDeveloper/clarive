@@ -171,10 +171,11 @@ sub update {
     my $class = ref $self || _fail _loc 'CI must exist for update to work';
     
     # detect changed fields, in case it's a new row then all data is changed
+    # TODO there's contaminated data coming thru from project variables
     my $changed = +{ map { $_ => $data{$_} } grep { 
         ( defined $self->{$_} && !defined $data{$_} ) 
         || ( !defined $self->{$_} && defined $data{$_} ) 
-        || $self->compare_data(data1=>$self->{$_}, data2=>$data{$_})
+        || !$self->compare_data(data1=>$self->{$_}, data2=>$data{$_})
         } keys %data } ;
         
     # merge and recreate object
