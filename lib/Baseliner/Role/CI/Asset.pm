@@ -17,9 +17,7 @@ sub put_data {
         mdb->grid->remove({ _id=>$self->id_data });
     }
     my $cn = Util->to_base_class( $self );
-    my $ass = mdb->asset( $d, parent_mid=>$self->mid, parent_collection=>$cn );
-    $ass->insert;
-    my $id = $ass->id;
+    my $id = mdb->grid_add( $d, parent_mid=>$self->mid, parent_collection=>$cn );
     $self->update( id_data=>$id );
     return $id;
 }
