@@ -156,9 +156,10 @@ sub list : Local {
     } elsif( my $id = $p->{id_report_rule} ) {
         my $cr = Baseliner::CompiledRule->new( _id=>$p->{id_report_rule} );
         my $stash = { 
-            report_data => [],
+            report_data => { data=>[], count=>0 },
             report_params => {
                 %$p,
+                step        => 'data',
                 filter      => $p->{filter} ? _decode_json($p->{filter}) : undef,
                 start       => $p->{start} // 0,
                 dir         => uc($p->{dir}) eq 'DESC' ? -1 : 1,
@@ -166,7 +167,7 @@ sub list : Local {
         };
         $cr->compile;
         $cr->run( stash=>$stash ); 
-        my $report_data = $$stash{report_data}->(%$p);
+        my $report_data = ref $$stash{report_data} eq 'CODE' ? $$stash{report_data}->(%$p) : $$stash{report_data};
         _fail _loc 'Invalid report data for report %1',$id unless ref $report_data->{data} eq 'ARRAY';
         $c->stash->{json} = { data=>$report_data->{data}, totalCount=>$report_data->{cnt} || []};
     } else {
