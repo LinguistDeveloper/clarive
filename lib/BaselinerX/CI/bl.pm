@@ -21,6 +21,7 @@ after save_data => sub {
     # update statuses in topics
     if( $$opts{changed}{bl} && defined $$old{bl} ) {
         mdb->master_doc->update({ bl=>$$old{bl} },{ '$set'=>{ bl=>$self->bl } });
+        mdb->master_doc->update({ bl_to=>$$old{bl} },{ '$set'=>{ bl_to=>$self->bl } });
         mdb->topic->update({ bl=>$$old{bl} },{ '$set'=>{ bl=>$self->bl } });
         mdb->master_doc->update({ 'variables.'.$$old{bl} =>{'$exists'=>1} },
         { '$rename'=>{ 'variables.'.$$old{bl} =>'variables.'.$self->bl } },
