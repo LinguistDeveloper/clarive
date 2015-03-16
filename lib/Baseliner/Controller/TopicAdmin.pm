@@ -91,17 +91,30 @@ sub update_category : Local {
             try{
                 my $id_category = $p->{id};
                 my $iss = $assign_type->({});
+                my $old = mdb->category->find_one({ id=>"$id_category" });
                 mdb->category->update({ id=>"$id_category" }, {
                     '$set' => {
-                        name        => $p->{name},
-                        acronym => $p->{acronym},
-                        color       => $p->{category_color},
-                        description => $p->{description},
+                        name          => $p->{name},
+                        acronym       => $p->{acronym},
+                        color         => $p->{category_color},
+                        description   => $p->{description},
                         default_grid  => $p->{default_grid},
                         ( $idsstatus ? (statuses=>$idsstatus) : () ),
                         %$iss
                     }
                 });
+                # change all topics
+                if( $old->{name} ne $p->{name} || $old->{color} ne $p->{category_color} ) {
+                    mdb->topic->update({ 'category.id'=>"$id_category" },
+                        { '$set'=>{ 
+                                'category.name'=>$p->{name}, name_category => $p->{name}, category_name=> $p->{name},
+                                'category.description' => $p->{description},
+                                'category.color' => $p->{category_color}, category_color => $p->{category_color},
+                            } },
+                        { multiple=>1 }
+                    );
+                    cache->remove_like( qr/^topic:/ );
+                }
                 $c->registry->reload_all;
                 $c->stash->{json} = { msg=>_loc('Category modified'), success=>\1, category_id=> $id_category };
             }
