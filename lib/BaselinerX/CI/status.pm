@@ -48,6 +48,17 @@ before save_data => sub {
     }
 };
     
+after save_data => sub {
+    my ($self, $master_row, $data, $opts, $old ) = @_;
+    # update statuses in topics
+    if( $$opts{changed}{name} && defined $$old{name} ) {
+        my $ret = mdb->topic->update(
+            { 'category_status.id'=>mdb->in($self->mid) },
+            { '$set'=>{ 'category_status.name'=>$self->name, name_status=>$self->name } },
+            { multiple => 1 });
+    }
+};
+
 after delete => sub {
     my ($self, $mid ) = @_;
     my @cats = mdb->category->find({statuses => mdb->in($self->{id_status})})->all;
