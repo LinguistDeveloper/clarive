@@ -566,7 +566,6 @@
         }
         var job = current_job();
         if( job != undefined ) {
-            job_exec_max = job.exec;
             job_exec = store.baseParams.job_exec || job_exec;
             menu_exec_review();
         }
