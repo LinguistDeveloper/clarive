@@ -8,6 +8,10 @@ has grid     => qw(is rw isa Any required 1);
 has id       => qw(is rw isa MongoDB::OID);
 has filename => qw(is rw isa Str default noname);
 
+has parent => qw(is rw isa Any), default=>'';
+has parent_mid => qw(is rw isa Any), default=>'';
+has parent_collection => qw(is rw isa Any), default=>'';
+
 around BUILDARGS => sub {
     my ($orig,$self,$in,%opts) = @_;
     $in //= '';
@@ -45,7 +49,12 @@ sub insert {
     # $grid->insert($fh, {"filename" => "mydbfile"});
     # TODO match md5, add mid to asset in case it exists
     my $md5 = Util->_md5( $self->fh );
-    my $id = $self->grid->insert($self->fh, { filename=>$self->filename, md5=>$md5, %p } );
+    my $id = $self->grid->insert($self->fh, { 
+            filename=>$self->filename, 
+            md5=>$md5, parent_mid=>$self->parent_mid, 
+            parent_collection=>$self->parent_collection, 
+            parent => $self->parent,
+            %p });
     $self->id( $id );
 }
 

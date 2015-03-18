@@ -69,7 +69,7 @@ sub common_log {
     $p{'dump'} and $p{data}=_dump( delete $p{'dump'} );  # auto dump data if its a ref
     my $job_exec = 0+$self->exec;
     my $jobid = $self->jobid;
-    my $mid = ''.$self->job->mid;
+    my $jobmid = ''.$self->job->mid;
     my $row;
     # set max level
     if( my $log_level = $self->log_levels->{ $lev } ) {
@@ -91,7 +91,7 @@ sub common_log {
     $text = Baseliner::Utils::hide_passwords($text);    
     try {
         my $id = 0+ mdb->seq('job_log_id');  # numeric, good for sorting
-        my $doc = { id=>$id, mid =>$mid, text=> $text, lev=>$lev, module=>$module, exec=>$job_exec, ts=>Util->_now(), t=>Time::HiRes::time() };
+        my $doc = { id=>$id, mid =>$jobmid, text=> $text, lev=>$lev, module=>$module, exec=>$job_exec, ts=>Util->_now(), t=>Time::HiRes::time() };
         
         $doc->{_id} = mdb->job_log->insert($doc); 
         
@@ -106,9 +106,8 @@ sub common_log {
         if( $p{data} ) {
             my $data = Util->hide_passwords( $p{data});
             my $d = try { compress($data) } catch { $data };  ## asset in grid  TODO find a better solution than storing the raw data... encode/decode?
-            my $ass = mdb->asset( $d, parent=>$doc->{_id}, parent_mid=>$mid, id_log=>$id, filename=>$doc->{data_name}//'', parent_collection=>'log' );
-            $ass->insert;
-            $doc->{data} = $ass->id;
+            my $id_ass = mdb->grid_add( $d, filename=>($doc->{data_name}//'logdata'), parent_collection=>'log', id_log=>$id, parent=>$doc->{_id}, parent_mid=>$jobmid, ); 
+            $doc->{data} = $id_ass;
         }
         
         # save top level for this statement if higher

@@ -683,4 +683,63 @@ sub jc_store : Local  {
     $c->forward('View::JSON');  
 }
 
+#
+# Dashlets:
+#
+sub by_status : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+    try {
+        my %st;
+        my $d = mdb->now - '30D';
+        my $wh = 0 ? { endtime=>{'$gt'=>"$d"} } : {};  # TODO params control time range
+        map { $st{$$_{status}}++ } ci->job->find($wh)->fields({ status=>1,_id=>0 })->all;
+        $c->stash->{json} = { success => \1, data=>\%st };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { success => \0, msg => _loc("Error grouping jobs: %1", $err ) };
+    };
+    $c->forward('View::JSON');  
+}
+
+sub burndown : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+    try {
+        my %ret = map { $_ => 0 } 0..23;
+        my $d = mdb->now - '30D';
+        my $wh = 0 ? { endtime=>{'$gt'=>"$d"} } : {};  # TODO params control time range
+        for my $job( ci->job->find($wh)->fields({ status=>1, endtime=>1, _id=>0 })->all ) {
+            my $hour = Class::Date->new($job->{endtime})->hour;
+            $ret{ $hour }++; 
+        }
+        $c->stash->{json} = { success => \1, data=>\%ret };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { success => \0, msg => _loc("Error grouping jobs: %1", $err ) };
+    };
+    $c->forward('View::JSON');  
+}
+
+sub job_stats : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+    try {
+        my %ret = map { $_ => 0 } 0..23;
+        my $d = mdb->now - '30D';
+        my $wh = 0 ? { endtime=>{'$gt'=>"$d"} } : {};  # TODO params control time range
+
+        # use the internal report 
+        my $report = $c->registry->get( 'report.clarive.job_statistics_bl' );
+        my $config = undef; 
+        my $rep_param = { dir=>uc($p->{dir}) eq 'DESC' ? -1 : 1 };
+        my $rep_data = $report->data_handler->($report,$config,$rep_param);
+        $c->stash->{json} = { data=>$rep_data->{rows}, totalCount=>$rep_data->{total}, config=>$rep_data->{config} };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { success => \0, msg => _loc("Error grouping jobs: %1", $err ) };
+    };
+    $c->forward('View::JSON');  
+}
+
 1;

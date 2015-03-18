@@ -39,8 +39,8 @@
 
 
     var get_combo_tags = function(){
-		var tags_combo = new Ext.form.ComboBox({ triggerAction: 'all', mode: 'local', name:'name', displayField: 'name', valueField: 'name', fieldLabel: 'tags', store: tagsStore , width: 100});
-		tags_combo.setValue(_('Tag to compare'));
+		var tags_combo = new Ext.form.ComboBox({ triggerAction: 'all', mode: 'local', name:'name', displayField: 'name', valueField: 'name', fieldLabel: 'tags', store: tagsStore , width: 150});
+		tags_combo.setValue(_('Parallel?'));
 		tags_combo.setEditable( false );
 		tags_combo.on( 'select', function(param){
 			params_view_diff.tag = param.value;
@@ -111,10 +111,10 @@
 		       		<div>
 			       	   <center>
 			           [% if(tag){ tag = "compared to tag "+tag } %]
-			           <h3>Revision number [%= rev_num %] [%= tag %]</h3>
+			           <h3>[%= _('Revision') %] [%= rev_num %] [%= tag %]</h3>
 			           <table class="table table-bordered table-condensed" style="width: 60%">
 			           <thead>
-			           <tr><th width="1">[%= _('Author') %]</th><th width="1" style="white-space: nowrap">[%= _('Upload Date') %]</th><th>[%= _('Comment') %]</th></tr>
+			           <tr><th width="33%">[%= _('User') %]</th><th width="33%" style="white-space: nowrap">[%= _('Last Updated') %]</th><th width="33%">[%= _('Comment') %]</th></tr>
 			           </thead>
 			           <tbody>
 			           <tr>
@@ -157,7 +157,7 @@
 				               													revid: '[%= changes[i].revid %]',
 				               													controller:'[%= controller %]'
 				               												}
-				               											)">[%= _('Original file') %]
+				               											)">[%= _('Raw') %]
 				               			</a>
 				               		</th>
 				               	</tr>

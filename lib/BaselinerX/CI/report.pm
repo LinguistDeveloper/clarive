@@ -177,37 +177,25 @@ sub reports_from_rule {
     my $username = $p->{username};
     my @tree;
     for my $rule ( mdb->rule->find({ rule_type=>'report', rule_active => mdb->true })->sort({ id=>1 })->all ) {
-        try {
-            my $cr = Baseliner::CompiledRule->new( _id=>$rule->{_id} );
-            my $stash = {};
-            $cr->compile;
-            $cr->run( stash=>$stash ); 
-            my $can = $stash->{report_security}->(username => $p->{username}) // {};  # grid_params, 
-            if ( $can ) 
-            {
-                my $n = {
-                    key => "$$rule{_id}",
-                    text => $$rule{rule_name},
-                    icon => '/static/images/icons/rule.png',
-                    leaf => \1,
-                    data    => {
-                        click   => {
-                            icon    => '/static/images/icons/topic.png',
-                            url     => '/comp/topic/topic_report.js',
-                            type    => 'eval',
-                            title   => $$rule{rule_name},
-                        },
-                        id_report_rule => "$$rule{_id}",
-                        report_name    => $$rule{rule_name},
-                        hide_tree      => \1,
-                        #custom_form    => $reg->form,    
-                    }
-                };
-                push @tree, $n;
+        my $n = {
+            key => "$$rule{_id}",
+            text => $$rule{rule_name},
+            icon => '/static/images/icons/rule.png',
+            leaf => \1,
+            data    => {
+                click   => {
+                    icon    => '/static/images/icons/topic.png',
+                    url     => '/comp/topic/topic_report.js',
+                    type    => 'eval',
+                    title   => $$rule{rule_name},
+                },
+                id_report_rule => "$$rule{_id}",
+                report_name    => $$rule{rule_name},
+                hide_tree      => \1,
+                #custom_form    => $reg->form,    
             }
-        } catch {
-            _warn "Rule ".$rule->{_id}." is not valid as report: ".shift;
-        }
+        };
+        push @tree, $n;
     }
     return \@tree;
 }
@@ -218,10 +206,20 @@ sub report_meta {
     my $config = $p->{config} // {};
     if( my $id = $p->{id_report_rule} ) {
         my $cr = Baseliner::CompiledRule->new( _id=>$p->{id_report_rule} );
-        my $stash = {};
+        my $stash = { 
+            step=>'meta', 
+            report_params => +{ %$p },
+            report_meta=>{ 
+                fields => { ids => ['info'], columns => [ {id => 'info', text => 'Info' } ],
+                },
+                report_name => 'No Data',
+                report_type => 'jobs',
+                hide_tree => \1,
+            }
+        };
         $cr->compile;
         $cr->run( stash=>$stash ); 
-        return $stash->{report_meta}->(%$config) // {};  # grid_params, 
+        return ( ref $$stash{report_meta} eq 'CODE' ? $stash->{report_meta}->(%$config) : $stash->{report_meta} ) // {};  # grid_params, 
     } elsif( my $key = $p->{id_report} ) {
         my $report = Baseliner->registry->get( $key );
         return $report->meta_handler->( $config );

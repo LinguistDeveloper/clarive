@@ -324,7 +324,7 @@ sub tree_objects {
             classname         => $row_class || '', 
             collection        => $row->{collection},
             moniker           => $row->{moniker},
-            icon              => $row_class && $icons{ $row_class } ? $icons{$row_class} : $generic_icon,
+            icon              => ( $icons{ $row_class } // ( $icons{$row_class} = $row_class ? $row_class->icon : $generic_icon ) ),
             ts                => $row->{ts},
             bl                => $row->{bl},
             description       => $data->{description} // '',
@@ -351,7 +351,7 @@ sub tree_object_depend {
         $where->{to_mid} = $p{to};
         $dir = 'from_mid';
     }
-    my @rels = mdb->master_rel->find_values( $dir => $where)->all;
+    my @rels = mdb->master_rel->find_values( $dir => $where);
     my $rs = mdb->master_doc->find({ mid=>mdb->in(@rels) })->limit($p{limit})->skip($p{start})->sort({ _id=>1 });
     my $total = $rs->count;
     my $cnt = $p{parent} * 10;
@@ -592,7 +592,7 @@ sub store : Local {
     my @data;
     my $total = 0; 
 
-    if( my $class = $p->{class} // $p->{classname} // $p->{isa} // $collection ? 'BaselinerX::CI::'.$collection : '' ) {
+    if( my $class = $p->{class} // $p->{classname} // $p->{isa} // ($collection ? 'BaselinerX::CI::'.$collection : '') ) {
 
         if( $p->{security} ){  #Parámetro desde informes
             my @security;

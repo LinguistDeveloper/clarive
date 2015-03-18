@@ -1245,7 +1245,8 @@ Baseliner.show_revision = function( mid ) {
             rev_num: res.url.rev_num,
             branch: res.url.branch,
             controller: res.url.controller,
-            sha: res.url.rev_num
+            sha: res.url.rev_num,
+            repo_mid: res.url.repo_mid
         };
         Baseliner.add_tabcomp( url, title, params );             
     });

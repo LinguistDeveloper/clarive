@@ -123,14 +123,16 @@ sub grid_insert {
     return $id;
 }
 
+# TODO deprecate this and just use grid_add
 sub asset {
     my ($self, $in, %opts) = @_;
     require Baseliner::Schema::Asset;
     return Baseliner::Schema::Asset->new( $in, grid=>$self->db->get_gridfs, %opts );
 }
 
-sub asset_new {
+sub grid_add {
     my ($self,$in,%opts) = @_;
+    $opts{caller} //= (caller(0))[3];
     $in //= '';
     my $fh;
     if( !ref $in ) {
@@ -144,16 +146,11 @@ sub asset_new {
     elsif( ref $in eq 'Path::Class::File' ) {
         $fh = $in->open('r');
     }
-    elsif( ref $in eq 'GLOB' ) {
+    elsif( ref($in) =~ /GLOB|IO::File/ ) {
         $fh = $in;
     }
     else {
-        # open the string like a file
-        my $basic_fh;
-        open($basic_fh, '<', \$in);
-        # turn the file handle into a FileHandle
-        $fh = FileHandle->new;
-        $fh->fdopen($basic_fh, 'r');
+        _fail _loc 'Invalid asset data type: %1', ref($in);
     }
     
     _fail _loc 'Could not get filehandle for asset' unless $fh; 

@@ -4,6 +4,7 @@ use Baseliner::Utils qw(:logging _now :other);
 use Baseliner::Sugar qw(event_new);
 use Try::Tiny;
 use v5.10;
+use utf8;
 with 'Baseliner::Role::CI::Internal';
 
 has id_stash           => qw(is rw isa Any);
@@ -100,7 +101,7 @@ after delete => sub {
     my ($self, $mid)=@_;
     $mid //= $self->mid;
     mdb->job_log->remove({ mid=>''.$mid }, { multiple=>1 });
-    mdb->grid->remove({ mid=>''.$mid });
+    mdb->grid->remove({ parent_mid=>''.$mid });
 };
 
 # report status in debug
@@ -158,15 +159,20 @@ sub job_stash {
             $new_stash = { %{ $prev_stash || {} }, %$new_stash };
         }
         my $serial_stash = Util->_stash_dump($new_stash);  # better serialization for stash
-        mdb->grid->remove({ parent_mid=>''.$self->mid }, { multiple=>1 });
-        my $id = mdb->asset_new( $serial_stash, parent_collection=>'job', parent_mid=>''.$self->mid  );
+        mdb->grid->remove({ what=>'job_stash', parent_mid=>''.$self->mid }, { multiple=>1 });
+        my $id = mdb->grid_add( $serial_stash, what=>'job_stash', parent_collection=>'job', parent_mid=>''.$self->mid  );
         $self->id_stash( "$id" );  
         return $new_stash;
     } else {
         # get
         my $stash_file = mdb->grid->get( mdb->oid( $self->id_stash ) ) if $self->id_stash;  # MongoDB::GridFS::File
-        $stash_file = mdb->grid->find_one({ parent_mid=>''.$self->mid }) if !$stash_file;  # second attempt, in case id_stash not saved to job CI
-        return {} if !$stash_file;
+        $stash_file = mdb->grid->find_one({ what=>'job_stash', parent_mid=>''.$self->mid }) if !$stash_file;  # second attempt, in case id_stash not saved to job CI
+        if( !$stash_file ) {
+            Util->_debug(_loc 'No previous job stash for this job. Job stash initialized');
+            return {};
+        } else {
+            Util->_debug(_loc 'Found job stash for this job');
+        }
         my $job_stash_str = $stash_file->slurp;
         my $job_stash = try { 
             length $job_stash_str ? Util->_stash_load($job_stash_str) : +{};

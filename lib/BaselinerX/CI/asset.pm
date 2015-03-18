@@ -29,9 +29,8 @@ sub put_data {
         if( ref($d) =~ /GLOB|IO::File/ ) {
             mdb->grid->put( $d, { parent_mid=>$self->mid, parent_collection=>'asset' });
         } else {
-            my $ass = mdb->asset( $d, parent_mid=>$self->mid, parent_collection=>'asset' );
-            $ass->insert;
-            $ass->id;
+            my $id_ass = mdb->grid_add( $d, parent_mid=>$self->mid, parent_collection=>'asset' );
+            $id_ass;
         }
     };
     Util->_fail( Util->_loc('Could not insert asset') ) unless $id;

@@ -28,6 +28,7 @@ sub web_request {
     my $body = $config->{body} || '';
     my $timeout = $config->{timeout};
     my $encoding = $config->{encoding} || 'utf-8';
+    my $accept_any_cert = $config->{accept_any_cert};
 
     if( $encoding ne 'utf-8' ) {
         Encode::from_to($url, 'utf-8', $encoding ) if $url;
@@ -48,6 +49,9 @@ sub web_request {
     my $request = HTTP::Request->new( $method => $uri );
     $request->authorization_basic($config->{username}, $config->{password}) if $config->{username};
     my $ua = LWP::UserAgent->new();
+    if($accept_any_cert){
+        $ua->ssl_opts( verify_hostname => 0 );
+    }
     $ua->timeout( $timeout ) if $timeout;
     for my $k ( keys %$headers ) {
         $ua->default_header( $k => $headers->{$k} );
@@ -60,8 +64,10 @@ sub web_request {
 
     my $response = $ua->request( $request );
 
-    _fail sprintf qq/HTTP request failed: %s\nUrl: %s\nArgs: %s/, $response->status_line, $url, _to_json($args)
-        unless $response->is_success;
+    if( ! $response->is_success ) {
+        _error( $response->decoded_content );
+        _fail sprintf qq/HTTP request failed: %s\nUrl: %s\nArgs: %s/, $response->status_line, $url, _to_json($args);
+    }
     my $content = $response->decoded_content;
         #if( $encoding ne 'utf-8' ) {
         #Encode::from_to($content, $encoding, 'utf-8' ) if $content;
