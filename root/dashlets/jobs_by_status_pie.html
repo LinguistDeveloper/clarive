@@ -1,0 +1,74 @@
+<!--
+name: Jobs By Status Pie
+description: Chart pie (Jobs by status)
+url: /dashboard/generic
+html: /dashlets/jobs_by_status_pie.html
+-->
+
+% my $graph_id = 'jobs_by_status_' . Util->_nowstamp();
+
+<div id="principal" style="clear:left;" >
+    <h2><% _loc('Job By Status (7 days)') %></h2><br>
+		<div id="<%$graph_id%>" 
+			style="width: 250px; height: 250px; float: left; " 
+			onmouseout="document.body.style.cursor='default';"></div>
+		<div id="<%$graph_id%>legend" ></div>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        var data = [];
+        var statuses = [];
+        Cla.ajax_json('/job/by_status', { }, function(res){
+            for( var k in res.data ) {
+                data.push({ label: k, data: res.data[k] });
+                statuses[k] = k;
+            };
+            // DEFAULT
+            $.plot($("#<%$graph_id%>"), data, 
+            {
+                series: {
+                    statuses: statuses,
+                    pie: {
+                        show: true,
+                        radius: 0.9,
+                        innerRadius: 0.5,
+                        //tilt: 0.7,
+                        label: {
+                            show: true,
+                            radius: 3/4,
+                            formatter: function(label, series){
+                                return '<div style="font-size:8pt;text-align:center;padding:2px;color:white;">'+Math.round(series.percent)+'%</div>';
+                            },
+                            background: { opacity: 0 },
+                            threshold: 0.03
+                        }
+                    }
+                },
+                legend: {
+                    show: true,
+                    container: '#<%$graph_id%>legend'
+
+                },
+                grid: {
+                    hoverable: true,
+                    clickable: true
+                }        
+            });
+            $("#<%$graph_id%>").bind("plothover", pieHover);
+            $("#<%$graph_id%>").bind("plotclick", pieClick);    
+        });
+    });
+
+    function pieHover(event, pos, obj) 
+    {
+        if (!obj) return;
+        document.body.style.cursor='pointer';
+    }
+
+    function pieClick(event, pos, obj) 
+    {
+        if (!obj) return;
+        Baseliner.add_tabcomp('/comp/monitor', null, { job_state_filter: obj.series.statuses[obj.series.label] });
+    }
+</script>
