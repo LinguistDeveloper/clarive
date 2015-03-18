@@ -8,7 +8,7 @@ html: /dashlets/jobs_by_status_pie.html
 % my $graph_id = 'jobs_by_status_' . Util->_nowstamp();
 
 <div id="principal" style="clear:left;" >
-    <h2><% _loc('Job By Status (7 days)') %></h2><br>
+    <h2><% _loc('Jobs By Status (7 days)') %></h2><br>
 		<div id="<%$graph_id%>" 
 			style="width: 250px; height: 250px; float: left; " 
 			onmouseout="document.body.style.cursor='default';"></div>
@@ -21,7 +21,7 @@ html: /dashlets/jobs_by_status_pie.html
         var statuses = [];
         Cla.ajax_json('/job/by_status', { }, function(res){
             for( var k in res.data ) {
-                data.push({ label: _loc(k), data: res.data[k] });
+                data.push({ label: _(k), data: res.data[k], color: (k=='FINISHED'?'#5cb85c':(k=='ERROR'?'#d9534f':null) ) });
                 statuses[k] = k;
             };
             // DEFAULT
@@ -48,7 +48,6 @@ html: /dashlets/jobs_by_status_pie.html
                 legend: {
                     show: true,
                     container: '#<%$graph_id%>legend'
-
                 },
                 grid: {
                     hoverable: true,
