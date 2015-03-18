@@ -7903,3 +7903,8 @@ msgstr "acrónimo"
 msgid "Do you want to add all release changesets in the same state from all projects?"
 msgstr "¿Quieres añadir todos los cambios de la release que están en el mismo estado de todos los proyectos?"
 
+msgid "Job By Status (7 days)"
+msgstr "Pases por estado (7 días)"
+
+msgid "Job Burndown"
+msgstr "Pases por franja horaria"
