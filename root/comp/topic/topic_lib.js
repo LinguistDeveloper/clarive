@@ -856,7 +856,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
             items: self.menu_deploy
         });
 
-        self.btn_deploy = new Ext.Toolbar.Button({ text: _("New Job"), menu: self.menu_deploy_final, hidden: true });
+        self.btn_deploy = new Ext.Toolbar.Button({ text: _("New Job"), icon: IC('job.png'), menu: self.menu_deploy_final, hidden: true });
 
         if (self.menu_deploy.length <= 0){
             self.btn_deploy.hide();
@@ -879,7 +879,7 @@ Baseliner.TopicMain = Ext.extend( Ext.Panel, {
         });
 
         
-        self.btn_change_status = new Ext.Toolbar.Button({ text: _("Change State"), menu: self.status_menu, hidden: true });
+        self.btn_change_status = new Ext.Toolbar.Button({ text: _("Change State"), icon:IC('state.gif'), menu: self.status_menu, hidden: true });
         if (self.status_items_menu.length <= 0){
             self.btn_change_status.hide();
         }

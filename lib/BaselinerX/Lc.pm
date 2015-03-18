@@ -189,7 +189,7 @@ sub lc_for_project {
                 data => { id_status => $_->{id_status}, },
                 bl     => $bls[0],
                 bl_to  => $bls[0],                               # XXX
-                icon   => '/static/images/icons/lc/history.gif',
+                icon   => '/static/images/icons/state.gif',
                 seq => $_->{seq}
                 };
             } sort {
