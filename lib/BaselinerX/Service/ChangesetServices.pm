@@ -102,6 +102,7 @@ sub update_changesets_bls {
                 my %p;
                 $p{topic_mid} = $cs->{mid};
                 $p{bls} = \@cs_bls;
+                $p{username} = $stash->{username};
                 Baseliner->model('Topic')->update( { action => 'update', %p } );
                 $log->info( _loc("Added %1 to changeset %2 bls",$bl,$cs->{mid}) );
                 mdb->master_rel->remove({from_mid=>$cs->{mid},rel_type=>'topic_bl',rel_field=>'bls'},{multiple=>1});

@@ -37,6 +37,7 @@ register 'config.comm.email' => {
         { id=>'server', name=>'Email server', default=>'smtp.example.com' },
         { id=>'from', name=>'Email default sender', default=>'user <user@mailserver>' },
         { id=>'domain', name=>'Email domain', default=>'exchange.local' },
+        { id=>'auto_generate_empty_emails', name=>'Auto generate emails for users with empty email field', default=>'0' },
         { id=>'max_attempts', name=>'Max attempts', default=>10 },
         { id=>'baseliner_url', name=>'Base URL to access baseliner', default=>'http://localhost:3000' },
         { id=>'default_template', name=>'Default template for emails', default=>'/email/generic.html' },
