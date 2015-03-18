@@ -126,11 +126,6 @@ sub run_once {
                         _log "\tDeleting field data of ".$job->{mid}."....";
                         $data = $query->{data};
                         mdb->grid->delete($data);
-                    } else {
-                        if ( $actual->{more} eq 'jes' ) {
-                            _log "\tRemoving jes data of ".$job->{mid}."....";
-                            mdb->jes_log->remove({ id_log => 0+$actual->{id}});
-                        }
                     }
                 }
             } elsif( !$job->{purged} ) {

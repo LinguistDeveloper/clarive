@@ -21,7 +21,7 @@ html: /dashlets/jobs_by_status_pie.html
         var statuses = [];
         Cla.ajax_json('/job/by_status', { }, function(res){
             for( var k in res.data ) {
-                data.push({ label: _loc(k), data: res.data[k] });
+                data.push({ label: k, data: res.data[k] });
                 statuses[k] = k;
             };
             // DEFAULT
@@ -56,7 +56,7 @@ html: /dashlets/jobs_by_status_pie.html
                 }        
             });
             $("#<%$graph_id%>").bind("plothover", pieHover);
-            $("#<%$graph_id%>").bind("plotclick", pieClick(k));    
+            $("#<%$graph_id%>").bind("plotclick", pieClick);    
         });
     });
 
@@ -69,7 +69,6 @@ html: /dashlets/jobs_by_status_pie.html
     function pieClick(event, pos, obj) 
     {
         if (!obj) return;
-        // Baseliner.add_tabcomp('/comp/monitor', null, { job_state_filter: obj.series.statuses[obj.series.label] });
-        alert(obj.series.statuses[obj.series.label]);
+        Baseliner.add_tabcomp('/comp/monitor', null, { job_state_filter: obj.series.statuses[obj.series.label] });
     }
 </script>
