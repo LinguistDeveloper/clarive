@@ -1,0 +1,63 @@
+<!--
+name: Job Stats by Environment
+description: Stats grouped by Environment
+url: /dashboard/generic
+html: /dashlets/job_stats_by_env.html
+-->
+
+% my $graph_id = 'job_stats_by_env_' . Util->_nowstamp();
+
+<div id="principal" style="clear:left;" >
+    <h2><% _loc('Job Stats (All)') %></h2><br>
+		<div id="<%$graph_id%>" 
+			style="width: 100%; height: 250px; float: left; " 
+			onmouseout="document.body.style.cursor='default';"></div>
+</div>
+
+<script type="text/javascript">
+ 
+    function gd(year, month, day) {
+        return new Date(year, month, day).getTime();
+    }
+ 
+    $(function () {
+        var id = "#<% $graph_id %>";
+        var data = [];
+        Cla.ajax_json('/job/job_stats', { }, function(res){
+            console.log( res );
+            var html = function(){/*
+               <table class="table">
+                  <tr>
+                      <th>[%= _("Environment") %]</th>
+                      <th>[%= _("Jobs") %]</th>
+                      <th>[%= _("Runs") %]</th>
+                      <th>[%= _("#Correct") %]</th>
+                      <th>[%= _("#Failed") %]</th>
+                      <th>[%= _("#Cancelled") %]</th>
+                      <th>[%= _("%Correct") %]</th>
+                      <th>[%= _("%Failed") %]</th>
+                      <th>[%= _("%Cancelled") %]</th>
+                  </tr>
+               [% for( var i=0; i<data.length; i++) { %]
+                  <tr>
+                  <td style="font-weight: bold">[%= data[i].entorno %]</td>
+                  <td>[%= data[i].total %]</td>
+                  <td>[%= data[i].total_ejecuciones %]</td>
+                  <td style="color: #10b040">[%= data[i].correctos %]</td>
+                  <td style="color: #f01010">[%= data[i].fallidos %]</td>
+                  <td style="color: #f01010">[%= data[i].cancelados %]</td>
+                  <td style="color: #10b040">[%= data[i].pct_correctos %]</td>
+                  <td style="color: #f01010">[%= data[i].pct_fallidos %]</td>
+                  <td style="color: #f01010">[%= data[i].pct_cancelados %]</td>
+                  </tr>
+               [% } %]
+               </table>
+            */}.tmpl(res);
+            
+            $(id).html( html );
+
+        });
+    });
+</script>
+
+
