@@ -35,7 +35,7 @@
         };
 
         var render_cal = function(v,metadata,rec,rowIndex,colIndex,store) {
-            return String.format('<a href="javascript:Baseliner.edit_calendar(\'{1}\', \'{2}\')" style="font-size: 13px;">{0}</a>',
+            return String.format('<a href="" onclick="javascript:Baseliner.edit_calendar(\'{1}\', \'{2}\'); return false" style="font-size: 13px;">{0}</a>',
                 v, grid.id, rowIndex );
         };
 
