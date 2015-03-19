@@ -672,8 +672,14 @@ Baseliner.Calendar =  function(c) {
     });
     var cal;
     var tbarr = [
-          { xtype:'button', iconCls:'x-btn-icon', icon:'/static/images/icons/arrow_left.gif', handler:function(){ cal.fullCalendar("prev") } },
-          { xtype:'button', iconCls:'x-btn-icon', icon:'/static/images/icons/arrow_right.gif', handler:function(){ cal.fullCalendar("next") } },
+          { xtype:'button', iconCls:'x-btn-icon', icon:'/static/images/icons/arrow_left.gif', handler:function(){ 
+              cal.fullCalendar("prev"); 
+              load_cal_events();
+          }},
+          { xtype:'button', iconCls:'x-btn-icon', icon:'/static/images/icons/arrow_right.gif', handler:function(){ 
+              cal.fullCalendar("next"); 
+              load_cal_events();
+          }},
           '-',
           { xtype:'button', text:_('Today'), handler:function(){ cal.fullCalendar("today") } },
           '-',
@@ -687,7 +693,11 @@ Baseliner.Calendar =  function(c) {
           '-',
           { xtype:'button', text:_('Month'), handler:function(){ cal.fullCalendar("changeView", "month") } } ,
           '-',
-          { xtype:'button', iconCls:'x-btn-icon', icon:'/static/images/icons/refresh.gif', handler:function(){ cal.fullCalendar("refetchEvents") } }
+          { xtype:'button', iconCls:'x-btn-icon', icon:'/static/images/icons/refresh.gif', handler:function(){ 
+                // cal.fullCalendar("refetchEvents") 
+                // refresh: delete everything and start over
+                load_cal_events();
+           } }
         ];
     if( c.tbar_end ) tbarr.push( c.tbar_end );
     var panel = new Ext.Panel( Ext.apply({
@@ -696,6 +706,29 @@ Baseliner.Calendar =  function(c) {
       items: cal_div
     }, c ));
 
+    panel.on('show', function(){
+        load_cal_events();
+    });
+
+    var load_cal_events = function(){
+        if( !cal ) return;
+        cal.fullCalendar("removeEvents") ;
+        var view = cal.fullCalendar('getView');
+        Cla.ajax_json( '/calendar/events', { start: moment(view.start).format(), end: moment(view.end).format() }, function(res){
+            Ext.each( res.events, function(ev){
+                cal.fullCalendar('renderEvent',
+                    {
+                        title: ev.title,
+                        color: ev.color,
+                        start: ev.start,
+                        end: ev.end,
+                        allDay: ev.allDay
+                    }, true 
+                );
+            });
+        });
+    };
+    
     cal_div.on('afterrender', function(){
         var date = new Date();
         var d = date.getDate();
@@ -749,10 +782,13 @@ Baseliner.Calendar =  function(c) {
             Baseliner.ajaxEval( event_new_url, data, function(res) { 
                 if( res && res.success ) {
                     //var allday = res.allday!=undefined ? res.allday : true;
+                    var title = data.text;
                     // create the event
+                    var tn = data.topic_name || {};
                     cal.fullCalendar('renderEvent',
                         Ext.apply({
-                            title: _('[untitled]')
+                            title: _('%1 #%2', tn.category_name, tn.mid),
+                            color: tn.category_color
                             //start: date,
                             //end: date,
                             //allDay: allday
@@ -794,6 +830,7 @@ Baseliner.Calendar =  function(c) {
             events: []
         }, c.fullCalendarConfig ));
         panel.calendar = cal.data('fullCalendar'); // new Calendar() in fullcalendar
+        load_cal_events();
     });
 
     panel.fullCalendar = function( p ) {
