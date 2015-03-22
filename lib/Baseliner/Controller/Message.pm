@@ -123,6 +123,7 @@ sub inbox : Local {
 sub to_and_cc : Local {
     my ( $self, $c ) = @_;
     my $p = $c->req->params;
+    my $query = $p->{query};
     try {
         my @data;
         #my $id = 1;
@@ -137,9 +138,10 @@ sub to_and_cc : Local {
                 ns => $ns,
             }
         } ci->user->find()->all, mdb->role->find()->all;
-        if( $p->{query} ) {
+        if( $query ) {
             my $re = qr/$p->{query}/i;
             @data = grep { join( ',',values(%$_) ) =~ $re } @data ;
+            push @data, { type=>'Email', name=>$_, long=>'', id=>$_, ns=>$_ } for split /\|/, $query;
         }
         $c->stash->{json} = { success => \1, data=>\@data, totalCount=>scalar(@data) };
     } catch {
