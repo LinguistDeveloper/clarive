@@ -496,9 +496,21 @@ sub share_html : Local {
 sub shared : Local {
     my ( $self, $c, @id ) = @_;
     _debug \@id;
-    my $doc = mdb->shared_html->find_one({ _id=>join('/',@id) });
-    $c->res->content_type( $doc->{content_type} || 'text/html' );
-    $c->res->body( $doc->{html} );
+    if( $id[0] =~ /folder:/ ) {
+        #$c->forward( '/' . join('/', @id).'/' );
+        if( ! $c->username ) {
+            my $public_username = 'public';
+            if( my $auth = $c->authenticate({ id=>$public_username }, 'none') ) {
+                $c->session->{username} = $public_username;
+                $c->session->{user} = $c->user_ci;
+            }
+        }
+        $c->forward( '/doc/default' );
+    } else {
+        my $doc = mdb->shared_html->find_one({ _id=>join('/',@id) });
+        $c->res->content_type( $doc->{content_type} || 'text/html' );
+        $c->res->body( $doc->{html} );
+    }
 }
 
 =head2 end
