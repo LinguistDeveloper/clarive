@@ -57,6 +57,9 @@ around 'BUILDARGS' => sub {
     my $self = shift;
     my %args = ref $_[0] ? %{ $_[0] } : @_;
     
+    # save orig 
+    my $arg_orig = $self->clone(\%args);
+
     # home and env need to be setup first
     $args{env}  //= $ENV{CLA_ENV} // $ENV{CLARIVE_ENV}; # // 'local';
 
@@ -81,7 +84,7 @@ around 'BUILDARGS' => sub {
     
     $args{argv} = \@ARGV;
     $args{lang} //= $ENV{CLARIVE_LANG};
-    $args{args} = $self->clone( \%args );
+    $args{args} = $arg_orig;
     $args{pos} = defined $args{''} ? [ ref $args{''} ? @{ $args{''} } : $args{''} ] : [];
 
     #Force legacy ENVs to $args{env}
@@ -160,9 +163,9 @@ sub do_cmd {
     my ($cmd,$altcmd,$altrun,$cmd_pkg) = @p{ qw/cmd altcmd altrun cmd_pkg/ };
     $cmd or die "ERROR: missing or invalid command"; 
     
+    # merge config, args and specific cmd config: cmd config needs to come in between
     my %args   = %{ $self->args };
-    my %config = %{ $self->config };
-    # merge config, args and specific cmd config
+    my %config = %{ $self->opts };  # use opts since it's resolved fully
     my %opts = ( %config, %{ ref $config{$cmd} eq 'HASH' ? $config{$cmd} : {} }, %args ); 
     
     if( $cmd =~ /\./ ) {
@@ -213,9 +216,11 @@ sub do_cmd {
     
     # run command
     if( $cmd_package->can('new') ) {
+        # moose class command
         my $instance = $cmd_package->new( app=>$self, opts=>\%opts, %opts );
         $instance->$runsub( %opts );
     } else {
+        # plain perl package, not a class
         $cmd_package->$runsub( app=>$self, opts=>\%opts );
     }
 }
