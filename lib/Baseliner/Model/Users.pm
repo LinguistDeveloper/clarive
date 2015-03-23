@@ -205,7 +205,9 @@ sub get_actions_from_user{
    if($username eq 'root' || $username eq 'local/root'){
       @final = Baseliner->model( 'Actions' )->list;   
    }else{
-       my @roles = keys ci->user->find_one({ name=>$username })->{project_security};
+       my $user = ci->user->find_one({ name=>$username });
+       _fail _loc 'User %1 not found', $username unless $user;
+       my @roles = keys $user->{project_security};
        #my @id_roles = map { $_ } @roles;
        my @actions = mdb->role->find({ id=>{ '$in'=>\@roles } })->fields( {actions=>1, _id=>0} )->all;
        @actions = grep {%{$_}} @actions; ######### DELETE RESULTS OF ACTIONS OF ROLES WITHOUT ACTIONS

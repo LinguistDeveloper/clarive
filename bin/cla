@@ -49,6 +49,7 @@ if( @pre_opts ) {
 my %opts = Getopt::Mini::getopt( hungry_flags=>1, define=>1 );
 %opts = process_dot_opts( %opts );
 %opts = process_not_opts( %opts );
+%opts = process_json_opts( %opts );
 my $argv = delete $opts{_argv};
 
 if( !$cmd ) {
@@ -93,6 +94,19 @@ sub process_not_opts {
             my $k2 = $1;
             $opt{$k2} = 0;
         }
+    }
+    return %opt;
+}
+
+# process --json '{ }' structures
+sub process_json_opts {
+    my %opt = @_;
+    if( my $json = delete $opt{json} ) {
+        require JSON::XS;
+        my $d = JSON::XS->new->decode($json);  # TODO allow_barekey would be nice, but JSON::XS does not allow it
+        my $type = ref $d;
+        die "Invalid --json: has to he an Object (hash), not $type\n" unless $type eq 'HASH';
+        %opt = ( %opt, %$d ); 
     }
     return %opt;
 }
