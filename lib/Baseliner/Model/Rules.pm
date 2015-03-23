@@ -65,7 +65,17 @@ sub parallel_run {
     my ($name, $mode, $stash, $code)= @_;
     my $job = $stash->{job};
      
-    if( my $chi_pid = fork ) {
+    my $chi_pid = fork;
+    if( !defined $chi_pid ) {
+        # could not fork
+        require Proc::ProcessTable;
+        my @children;
+        for my $p (_array( Proc::ProcessTable->new->table )){
+            push @children, $p->pid if $p->ppid == $$;
+        }
+        my $msg = _loc( "Children, number=%1, list=%2", scalar(@children), join(',',@children) ); 
+        _fail( _loc('Could not fork child from parent pid %1. Check max processes available with `ulimit -u`.',$$), data=>$msg );  
+    } elsif( $chi_pid ) {
         # parent
         _log _loc 'Forked child task %1 with pid %2', $name, $chi_pid; 
         if( $mode eq 'fork' ) {
