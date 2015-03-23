@@ -620,8 +620,9 @@ sub list_baseline : Private {
     if ( @ids_project ) {
 
         my $date = Class::Date->now();
+        my $date_tocero = Class::Date->new( [$date->year,$date->month,$date->day,"00","00","00"]);
         my $days = $bl_days.'D';
-        $date = $date - $days;
+        $date = $date_tocero - $days;
         my $date_str = $date->ymd;
         $date_str  =~ s/\//\-/g;
 
@@ -1080,6 +1081,8 @@ sub viewjobs : Local {
         
         my $days = ( $config->{bl_days} // 7 ) . 'D';
         my $start = mdb->now - $days; 
+        $start = Class::Date->new( [$start->year,$start->month,$start->day,"00","00","00"]);
+
         @jobs = ci->job->find({ endtime => { '$gt' => "$start" }, status=>mdb->in(@status), bl=>$bl })->all;
         
     }else{
