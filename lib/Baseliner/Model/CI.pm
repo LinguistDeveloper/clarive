@@ -1,6 +1,7 @@
 package Baseliner::Model::CI;
 use Baseliner::Plug;
-use Baseliner::Utils qw(packages_that_do _fail _array _warn);
+use Baseliner::Utils qw(packages_that_do _fail _array _warn _loc _log);
+with 'Baseliner::Role::Service';
 use v5.10;
 
 BEGIN { extends 'Catalyst::Model' }
@@ -23,5 +24,15 @@ register 'registor.action.ci' => {
     }
 };
 
+register 'service.ci.update' => {
+    handler=>sub{
+        my ($self,$c,$config)=@_;
+        my $args = $config->{args};
+        my $ci = ci->user->search_ci( username=>'lisette' );# %{ $args->{query} || _fail('Missing parameter: query') } );
+        _fail _loc 'User not found for query %1', JSON::XS->new->encode($args->{query}) unless $ci;
+        $ci->update( %{ $args->{update} || _fail('Missing parameter: update') } );
+        _log _loc "Update user ok";
+    }
+};
 1;
 
