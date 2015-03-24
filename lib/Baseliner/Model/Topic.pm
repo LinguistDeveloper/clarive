@@ -867,6 +867,15 @@ sub field_parent_topics {
             $params->{origin} ne "system"
         } _array( $cat_doc->{fieldlets} );
 
+    push @fieldlets, map {
+            my $params = $_->{params};
+            $params->{parent_field};
+        }
+        grep {
+            my $params = $_->{params};
+            $params->{parent_field};
+        } _array( $cat_doc->{fieldlets} );
+
     if ($release) {
         $is_release     = 1;
         @parent_topics = mdb->joins(

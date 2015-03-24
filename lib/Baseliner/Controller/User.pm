@@ -669,7 +669,7 @@ sub list : Local {
 sub change_pass : Local {
     my ($self,$c) = @_;
     my $p = $c->request->parameters;
-    my $username = $c->username;
+    my $username = $p->username;
     my $row = ci->user->find({username => $username, active => mdb->true})->next;
     
     if ($row) {
