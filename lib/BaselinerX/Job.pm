@@ -71,8 +71,6 @@ register 'menu.job.list' => {
     index    => 20,
 };
 
-register 'portlet.monitor' => { name=>'Job Monitor', url_comp=>'/job/monitor_portlet', url_max=>'/job/monitor', active=>1 };
-
 register 'service.job.new' => {
     name => 'Schedule a new job',
     config => 'config.job',

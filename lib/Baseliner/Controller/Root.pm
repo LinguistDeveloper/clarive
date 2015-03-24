@@ -339,19 +339,6 @@ sub index : Private {
                 unshift @{ $c->stash->{menus} }, '"<span style=\'font-weight: bold;color: #f34\'>'.$tlc_msg. '</span>"';
             }
         }
-        $c->stash->{portlets} = [
-                map {
-                    +{
-                       key      => $_->key, 
-                       title    => $_->title, 
-                       url_comp => $_->url_comp, 
-                       url_max  => $_->url_max, 
-                       url      => $_->url,
-                    }
-                }
-            grep { $_->active }
-            $c->model('Registry')->search_for( key=>'portlet.', allowed_actions=>\@actions, username => $c->username )
-        ];
         my @features_list = Baseliner->features->list;
         # header_include hooks
         $c->stash->{header_include} = [
