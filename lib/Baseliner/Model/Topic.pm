@@ -1115,7 +1115,7 @@ sub get_system_fields {
         {
             id_field => 'include_into',
             params   => {
-                name_field  => 'Include into',
+                name_field  => 'Included in',
                 bd_field    => 'include_into',
                 origin      => 'default',
                 html        => $pathHTML . 'field_include_into.html',
