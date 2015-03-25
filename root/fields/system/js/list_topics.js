@@ -15,6 +15,8 @@ params:
     meta_type: 'topic'
     rel_type: 'topic_topic'
     parent_field: ''
+    copy_fields: ''
+    tpl_cfg: ''
 ---
 */
 
@@ -99,43 +101,71 @@ params:
             tpl_cfg: tpl_cfg
         });
         
-        if( meta.copy_fields ) {
+        if( meta.copy_fields && meta.copy_fields != 'none' ) {
             topic_box.on( 'additem', function(sb,val,rec){
+                console.dir(rec);
                 if( topic_box.getValue() == topics ) return;
-                var rec_data = rec.json.data;
+                var rec_data = rec.json;
                 if( !rec_data ) return;
-
+                var new_line = '\n - ';
                 // copy fields?
                 //    [["description","descripcion"], ["precondiciones", "precondiciones" ], ["pasos", "pasos"] ]
-                var ct;
-                if( Ext.isString(meta.copy_fields) ) {
-                    ct = Ext.decode( meta.copy_fields );
-                } else if ( Ext.isArray( meta.copy_fields ) ) {
-                    ct = meta.copy_fields;
-                }
-                Ext.each( ct, function(frel){
-                    var from_field = frel[0];
-                    var to_field = frel[1] || from_field;
-                    var fdata = rec_data[ from_field ];
-                    //console.log( [from_field,to_field,fdata].join('\n') );
-                    if( fdata == undefined ) return;
-                    var ff = $(form.el.dom).find('[name="'+to_field+'"]');
-                    ff = Ext.getCmp( ff.attr('id') );
+                var non_replace = ["priority","color_category","cancelEvent","_id","form","category_name","category_status_id","deadline_min","created_on","modified_by","category","id_category","category_status_name","category_status_seq","topic_post","name","response_time_min","id_category_status","active","username","is_release","is_changeset","created_by","short_name","status","name_category","topic_mid","category_color","mid","_cis","color","category_id","_project_security","name_status","id_priority","txt_rsptime_expr_min","progress","_sort","category_status","expr_deadline","category_status_type","modified_on","status_new","txt_deadline_expr_min"];
+                if ( meta.copy_fields != 'all' ) {
+                    var ct;
+                    if( Ext.isString(meta.copy_fields) ) {
+                        ct = Ext.decode( meta.copy_fields );
+                    } else if ( Ext.isArray( meta.copy_fields ) ) {
+                        ct = meta.copy_fields;
+                    }
+                    var replacing_fields = [];
+                    Ext.each( ct, function(frel){
+                        if (non_replace.indexOf(frel[0]) != -1) return;
+                        replacing_fields.push(frel[0]);
+                    });
+                    if (confirm( _('You are about to replace the contents of the following fields: \n - %1\n\nAre you sure?',replacing_fields.join(new_line),'\n' ) )) {
+                        Ext.each( ct, function(frel){
+                            if (non_replace.indexOf(frel[0]) != -1) return;
+                            var from_field = frel[0];
+                            var to_field = frel[1] || from_field;
+                            var fdata = rec_data[ from_field ];
+                            //console.log( [from_field,to_field,fdata].join('\n') );
+                            if( fdata == undefined ) return;
+                            var ff = $(form.el.dom).find('[name="'+to_field+'"]');
+                            ff = Ext.getCmp( ff.attr('id') );
 
-                    //var ff = form.findField( to_field ); // this wont find fields within tbar
-                    if( ff ) ff.setValue( fdata );
-                    //if( ff ) ff.val( fdata ); // this does not fire the setValue()
-                });
+                            //var ff = form.findField( to_field ); // this wont find fields within tbar
+                            if( ff ) ff.setValue( fdata );
+                            //if( ff ) ff.val( fdata ); // this does not fire the setValue()
+                        });
+                    };
+
+                } else {
+                    var replacing_fields = [];
+
+                    Ext.each( Object.keys(rec_data), function(frel){
+                        if (non_replace.indexOf(frel) != -1) return;
+                        replacing_fields.push(frel);
+                    });
+
+                    if (confirm( _('You are about to replace the contents of the following fields: \n - %1\n\nAre you sure?',replacing_fields.join(new_line),'\n' ) )) {
+                        Ext.each( replacing_fields, function(frel){
+                            if (non_replace.indexOf(frel) != -1) return;
+                            var from_field = frel;
+                            var to_field = from_field;
+                            var fdata = rec_data[ from_field ];
+                            if( fdata == undefined ) return;
+                            var ff = $(form.el.dom).find('[name="'+to_field+'"]');
+                            ff = Ext.getCmp( ff.attr('id') );
+
+                            if( ff ) ff.setValue( fdata );
+                        });
+                    };
+                }
             });
         }
     }
 	var obj = [];
-//	if (meta.list_type == 'grid') {
-//        var allow;
-//        allow = meta.allowBlank == undefined ? true : ( meta.allowBlank == 'false' || !meta.allowBlank ? false : true );
-//        // alert(meta.name_field + " " + allow);
-//		obj.push(Baseliner.field_label_top( _(meta.name_field), meta.hidden, allow, meta.readonly ))	;
-//	}
 	obj.push(topic_box);	
 	
 	return obj
