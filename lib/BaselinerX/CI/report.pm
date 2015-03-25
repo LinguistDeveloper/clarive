@@ -1283,10 +1283,10 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
 	} @parse_data;
     # order data with text not ci-mid.
     if (@sort) {
-        if (exists $meta_cfg_report{$sort[0]} && $meta_cfg_report{$sort[0]} =~ /ci|project/ && $sort[1] eq '1'){
-            @topics = sort { lc($a->{$sort[0]}[0]) cmp lc($b->{$sort[0]}[0]) } @topics; 
+        if (exists $meta_cfg_report{$sort[0]} && $meta_cfg_report{$sort[0]} =~ /ci|project/){
+            @topics = sort { $sort[1] eq '1' ? lc($a->{$sort[0]}[0]) cmp lc($b->{$sort[0]}[0]) : lc($b->{$sort[0]}[0]) cmp lc($a->{$sort[0]}[0]) } @topics; 
         } else {
-            @topics = sort { lc($b->{$sort[0]}[0]) cmp lc($a->{$sort[0]}[0]) } @topics; 
+            @topics = sort { $sort[1] eq '1' ? lc($a->{$sort}) cmp lc($b->{$sort}) : lc($b->{$sort}) cmp lc($a->{$sort}) } @topics; 
         }
     }
 
