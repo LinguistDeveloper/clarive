@@ -110,7 +110,7 @@ params:
                 var new_line = '\n - ';
                 // copy fields?
                 //    [["description","descripcion"], ["precondiciones", "precondiciones" ], ["pasos", "pasos"] ]
-                var non_replace = ["priority","color_category","cancelEvent","_id","form","category_name","category_status_id","deadline_min","created_on","modified_by","category","id_category","category_status_name","category_status_seq","topic_post","name","response_time_min","id_category_status","active","username","is_release","is_changeset","created_by","short_name","status","name_category","topic_mid","category_color","mid","_cis","color","category_id","_project_security","name_status","id_priority","txt_rsptime_expr_min","progress","_sort","category_status","expr_deadline","category_status_type","modified_on","status_new","txt_deadline_expr_min"];
+                var non_replace = ["moniker","priority","color_category","cancelEvent","_id","form","category_name","category_status_id","deadline_min","created_on","modified_by","category","id_category","category_status_name","category_status_seq","topic_post","name","response_time_min","id_category_status","active","username","is_release","is_changeset","created_by","short_name","status","name_category","topic_mid","category_color","mid","_cis","color","category_id","_project_security","name_status","id_priority","txt_rsptime_expr_min","progress","_sort","category_status","expr_deadline","category_status_type","modified_on","status_new","txt_deadline_expr_min"];
                 if ( meta.copy_fields != 'all' ) {
                     var ct;
                     if( Ext.isString(meta.copy_fields) ) {
