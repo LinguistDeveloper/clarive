@@ -51,12 +51,15 @@ sub menu : Local {
     my $doc_title = $p->{doc_title}//'';
     if( $doc_id =~ /folder:(.+)/ ) {
         my $id_folder = $1;
+        _debug "Generating tree of id_folder $id_folder for user $username";
         @tree = Baseliner::Controller::FileVersion->gen_tree({ username=>$username, id_folder=>$id_folder });
         if( my $folder = ci->new( $id_folder ) ) {
             $doc_title = $folder->name;
         }
+        _debug( \@tree );
         my $menuify; $menuify = sub{
             my ($item_path,@t) = @_;    
+            _debug "Item path " . _dump($item_path);
             return map {
                 my $row = $_;
                 my $text = $$row{text};

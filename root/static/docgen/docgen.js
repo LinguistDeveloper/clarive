@@ -327,12 +327,12 @@ $(document).ready(function() {
     // what's our url?
     Cla.from_url = function(pathname){
         var url = pathname.split('/'); 
-        Cla.home_url = '/'+ url.slice(1,3).join('/') + '/';
-        Cla.doc_id = url[2];
+        Cla.home_url = '/'+ url.slice(1,url.length-1).join('/') + '/';
+        Cla.doc_id = url[url.length-2];  // folder:99999
         Cla.doc_title = window.document.title;
         // get the structure and load the menu and index
         Cla.fetch_document(function(){
-            var moniker = url[3];
+            var moniker = url[url.length-1];
             if( moniker && moniker!='index.html' ) {
                 Cla.show_content( index_by_moniker[moniker] || index_by_mid[moniker] );
             } else {
