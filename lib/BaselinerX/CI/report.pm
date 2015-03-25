@@ -1017,24 +1017,28 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                                     my @fields = split( /\./, $value);
                                     my $tmp_value = $categories_queries->{$select}->{$field};
                                     for my $inner_field ( @fields ) {
-                                        $tmp_value = $tmp_value->{$inner_field};
+                                        if($tmp_value->{$inner_field}){
+                                            $tmp_value = $tmp_value->{$inner_field};
+                                        } else {
+                                            $tmp_value = $tmp_data->{$inner_field};
+                                        }
                                     }
                                     #my $tmp_ref = $_;
                                     my $tmp_ref = $tmp_data;
                                     for my $inner_field ( @fields ) {
                                         if ( ref $tmp_ref->{$inner_field} eq 'HASH' ){
                                             $tmp_ref = $tmp_ref->{$inner_field};
-                                        }
-                                        else{
-                                            $tmp_ref->{$inner_field . "_$select"}= $tmp_value;
+                                        } else{
+                                            $tmp_ref->{$inner_field . "_$select"}= $tmp_value if ($tmp_value);
                                             $meta_cfg_report{$inner_field . "_$select"} = $meta_cfg_report{$inner_field} if (($meta_cfg_report{$inner_field}) && ($meta_cfg_report{$inner_field} eq 'release' || $meta_cfg_report{$inner_field} eq 'topic'));
+                                            delete $meta_cfg_report{$inner_field} if $meta_cfg_report{$inner_field . "_$select"};
                                         }
                                     }
-                                    $tmp_ref->{'mid' . "_$select"} = $field;
-                                    $tmp_ref->{'category_color' . "_$select"} = $categories_queries->{$select}->{$field}->{category}->{color};
-                                    $tmp_ref->{'category_name' . "_$select"} = $categories_queries->{$select}->{$field}->{category}->{name};
-                                    $tmp_ref->{'modified_on' . "_$select"} = $categories_queries->{$select}->{$field}->{modified_on};
-                                    $tmp_ref->{'modified_by' . "_$select"} = $categories_queries->{$select}->{$field}->{modified_by};
+                                    $tmp_ref->{'mid' . "_$select"} = $categories_queries->{$select}->{$field}->{mid} // $tmp_data->{mid};
+                                    $tmp_ref->{'category_color' . "_$select"} = $categories_queries->{$select}->{$field}->{category}->{color} // $tmp_data->{category}->{color};
+                                    $tmp_ref->{'category_name' . "_$select"} = $categories_queries->{$select}->{$field}->{category}->{name} // $tmp_data->{category}->{name};
+                                    $tmp_ref->{'modified_on' . "_$select"} = $categories_queries->{$select}->{$field}->{modified_on} // $tmp_data->{modified_on};
+                                    $tmp_ref->{'modified_by' . "_$select"} = $categories_queries->{$select}->{$field}->{modified_by} // $tmp_data->{modified_by};
                                     $tmp_ref->{$relation . "_$select"} = $field; 
                                 }else{
                                     my @fields = split( /\./, $value);
@@ -1048,9 +1052,10 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                                             $tmp_ref = $tmp_ref->{$inner_field};
                                         }
                                         else{
-                                            $tmp_ref->{$inner_field . "_$select"} = $tmp_value;
-                                            # delete $tmp_ref->{$inner_field} if ($tmp_ref->{$inner_field . "_$select"});
-                                            # $meta_cfg_report{$inner_field . "_$select"} = $meta_cfg_report{$inner_field} if ($meta_cfg_report{$inner_field});
+                                            $tmp_ref->{$inner_field . "_$select"} = $tmp_value if ($tmp_value);
+                                            # $meta_cfg_report{$inner_field . "_$select"} = $meta_cfg_report{$inner_field} if (($meta_cfg_report{$inner_field}) && ($meta_cfg_report{$inner_field} eq 'release' || $meta_cfg_report{$inner_field} eq 'topic'));
+                                            # delete $meta_cfg_report{$inner_field} if ($meta_cfg_report{$inner_field . "_$select"});
+
                                         }
                                     }   
                                     # $tmp_ref->{$relation . "_$select"} = $field; 
