@@ -1484,10 +1484,18 @@ sub get_topics {
     
     if( $opts{topic_child_data} ) {
         @topics = map {
+            my $meta = $self->get_meta($_->{mid}, $_->{id_category});
             my $data = $self->get_data( undef, $_->{mid}, with_meta=>1 ) ;
             $_->{description} //= $data->{description};
             $_->{name_status} //= $data->{name_status};
             $_->{data} //= $data;
+            # _warn $meta;
+            my @topic_fields = map { $_->{id_field} } grep { $_->{get_method} eq 'get_topics' } _array($meta);
+
+            for my $topic_field ( @topic_fields ) {
+                _warn "Adding ". '_title_list_'.$topic_field;
+                $_->{$topic_field.'._title_list'} = '<li>'.join('</li><li>', map { $_->{title} } _array($data->{$topic_field})).'</li>' if _array($data->{$topic_field});
+            };
             $_
         } @topics;
     }

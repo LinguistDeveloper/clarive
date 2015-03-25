@@ -296,16 +296,15 @@ sub related : Local {
     $where = $c->model('Topic')->apply_filter( $where, %filter );
     #_debug $where;
 
-    my ($cnt, @result_topics) = $c->model('Topic')->get_topics_mdb( where=>$where, username=>$username, start=>$start, limit=>$limit, 
-            fields=>{ category=>1, mid=>1, title=>1, });
-
+    my ($cnt, @result_topics) = $c->model('Topic')->get_topics_mdb( where=>$where, username=>$username, start=>$start, limit=>$limit,
+            fields=>{ _txt=>0 });
+            # fields=>{ category=>1, mid=>1, title=>1, });
     my @topics = map {
         $_->{name} = _loc($_->{category}->{name}) . ' #' . $_->{mid};
         $_->{color} = $_->{category}{color};
         $_->{short_name} = $c->model('Topic')->get_short_name( name => $_->{category}->{name} ) . ' #' . $_->{mid};
         $_
     }  @result_topics;
-
     
 
     $c->stash->{json} = { totalCount => $cnt, data => \@topics };
