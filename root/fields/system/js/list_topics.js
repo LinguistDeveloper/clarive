@@ -16,6 +16,7 @@ params:
     rel_type: 'topic_topic'
     parent_field: ''
     copy_fields: ''
+    copy_fields_exclude: ''
     tpl_cfg: ''
 ---
 */
@@ -103,7 +104,7 @@ params:
         
         if( meta.copy_fields && meta.copy_fields != 'none' ) {
             topic_box.on( 'additem', function(sb,val,rec){
-                console.dir(rec);
+
                 if( topic_box.getValue() == topics ) return;
                 var rec_data = rec.json;
                 if( !rec_data ) return;
@@ -111,6 +112,14 @@ params:
                 // copy fields?
                 //    [["description","descripcion"], ["precondiciones", "precondiciones" ], ["pasos", "pasos"] ]
                 var non_replace = ["moniker","ts","topic","txtcategory_old","versionid","m","ns","bl","priority","color_category","cancelEvent","_id","form","category_name","category_status_id","deadline_min","created_on","modified_by","category","id_category","category_status_name","category_status_seq","topic_post","name","response_time_min","id_category_status","active","username","is_release","is_changeset","created_by","short_name","status","name_category","topic_mid","category_color","mid","_cis","color","category_id","_project_security","name_status","id_priority","txt_rsptime_expr_min","progress","_sort","category_status","expr_deadline","category_status_type","modified_on","status_new","txt_deadline_expr_min"];
+
+                if ( meta.copy_fields_exclude ) {
+                    if( Ext.isString(meta.copy_fields_exclude) ) {
+                        non_replace.push( Ext.decode( meta.copy_fields_exclude ) );
+                    } else if ( Ext.isArray( meta.copy_fields_exclude ) ) {
+                        non_replace.push( meta.copy_fields_exclude );
+                    }
+                }
                 if ( meta.copy_fields != 'all' ) {
                     var ct;
                     if( Ext.isString(meta.copy_fields) ) {
