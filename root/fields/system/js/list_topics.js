@@ -116,11 +116,15 @@ params:
 
                 // copy_fields_exclude: [ "title", "field_x"]
                 if ( meta.copy_fields_exclude ) {
+                    var new_fields;
                     if( Ext.isString(meta.copy_fields_exclude) ) {
-                        non_replace.push( Ext.decode( meta.copy_fields_exclude ) );
+                        new_fields = Ext.decode( meta.copy_fields_exclude );
                     } else if ( Ext.isArray( meta.copy_fields_exclude ) ) {
-                        non_replace.push( meta.copy_fields_exclude );
+                        new_fields = meta.copy_fields_exclude;
                     }
+                    Ext.each( new_fields, function(field){
+                        non_replace.push(field);
+                    });
                 }
 
                 // copy_fields_rename: { "template_title": "title", "field_orig": "field_target" }
