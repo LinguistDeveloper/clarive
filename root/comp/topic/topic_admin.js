@@ -1198,6 +1198,7 @@
             { hidden: true, dataIndex:'id' },
             check_categories_sm,
             { header: _('Category'), dataIndex: 'name', width:50, sortable: true, renderer: render_category },
+            { header: _('ID'), dataIndex: 'id', width:10, sortable: true },
             { header: _('Acronym'), dataIndex: 'acronym', width:15, sortable: true },
             { header: _('Description'), dataIndex: 'description', sortable: true },
             { header: _('Type'), dataIndex: 'type', width:50, sortable: false, renderer: render_category_type }
