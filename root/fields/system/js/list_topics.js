@@ -17,6 +17,7 @@ params:
     parent_field: ''
     copy_fields: ''
     copy_fields_exclude: ''
+    copy_fields_rename: ''
     tpl_cfg: ''
 ---
 */
@@ -113,11 +114,22 @@ params:
                 //    [["description","descripcion"], ["precondiciones", "precondiciones" ], ["pasos", "pasos"] ]
                 var non_replace = ["moniker","ts","topic","txtcategory_old","versionid","m","ns","bl","priority","color_category","cancelEvent","_id","form","category_name","category_status_id","deadline_min","created_on","modified_by","category","id_category","category_status_name","category_status_seq","topic_post","name","response_time_min","id_category_status","active","username","is_release","is_changeset","created_by","short_name","status","name_category","topic_mid","category_color","mid","_cis","color","category_id","_project_security","name_status","id_priority","txt_rsptime_expr_min","progress","_sort","category_status","expr_deadline","category_status_type","modified_on","status_new","txt_deadline_expr_min"];
 
+                // copy_fields_exclude: [ "title", "field_x"]
                 if ( meta.copy_fields_exclude ) {
                     if( Ext.isString(meta.copy_fields_exclude) ) {
                         non_replace.push( Ext.decode( meta.copy_fields_exclude ) );
                     } else if ( Ext.isArray( meta.copy_fields_exclude ) ) {
                         non_replace.push( meta.copy_fields_exclude );
+                    }
+                }
+
+                // copy_fields_rename: { "template_title": "title", "field_orig": "field_target" }
+                var renamed_fields = {};
+                if ( meta.copy_fields_rename ) {
+                    if( Ext.isString(meta.copy_fields_rename) ) {
+                        renamed_fields = Ext.decode( meta.copy_fields_rename );
+                    } else if ( Ext.isArray( meta.copy_fields_rename ) ) {
+                        renamed_fields = meta.copy_fields_rename;
                     }
                 }
                 if ( meta.copy_fields != 'all' ) {
@@ -151,17 +163,23 @@ params:
 
                 } else {
                     var replacing_fields = [];
+                    var replacing_fields_target = [];
 
                     Ext.each( Object.keys(rec_data), function(frel){
                         if (non_replace.indexOf(frel) != -1) return;
                         replacing_fields.push(frel);
+                        if ( renamed_fields[frel] ) {
+                            replacing_fields_target.push(renamed_fields[frel);
+                        } else {
+                            replacing_fields_target.push(frel);
+                        }
                     });
 
-                    if (confirm( _('You are about to replace the contents of the following fields: \n - %1\n\nAre you sure?',replacing_fields.join(new_line),'\n' ) )) {
+                    if (confirm( _('You are about to replace the contents of the following fields: \n - %1\n\nAre you sure?',replacing_fields_target.join(new_line),'\n' ) )) {
                         Ext.each( replacing_fields, function(frel){
                             if (non_replace.indexOf(frel) != -1) return;
                             var from_field = frel;
-                            var to_field = from_field;
+                            var to_field = renamed_fields[frel] || from_field;
                             var fdata = rec_data[ from_field ];
                             if( fdata == undefined ) return;
                             var ff = $(form.el.dom).find('[name="'+to_field+'"]');
