@@ -148,6 +148,7 @@
 		    
 		    var roles_box = new Baseliner.model.Roles({
 			    store: roles_box_store,
+			    allowBlank: true,
 			    hidden: show  //*******************************************************************
 		    });
 		    
