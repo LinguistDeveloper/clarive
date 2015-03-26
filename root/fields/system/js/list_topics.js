@@ -169,7 +169,7 @@ params:
                         if (non_replace.indexOf(frel) != -1) return;
                         replacing_fields.push(frel);
                         if ( renamed_fields[frel] ) {
-                            replacing_fields_target.push(renamed_fields[frel);
+                            replacing_fields_target.push(renamed_fields[frel]);
                         } else {
                             replacing_fields_target.push(frel);
                         }
