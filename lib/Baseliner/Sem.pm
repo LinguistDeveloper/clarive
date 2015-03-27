@@ -232,13 +232,13 @@ sub release {
         _debug( _loc('Releasing busy semaphore %1 (%2)', $self->key,$self->who ) );
         mdb->sem->update(
             { key => $self->key, 'queue._id'=>$self->id_queue },
-            { '$inc' => { slots => -1 }, '$pull' => { queue =>{ _id => $self->id_queue, status=>'busy' } } }
+            { '$inc' => { slots => -1 }, '$pull' => { queue =>{ _id => $self->id_queue, status=>'busy', pid => $$ } } }
         );
     } else {
         _debug( _loc('Releasing not busy semaphore %1 (%2)', $self->key,$self->who ) );
         mdb->sem->update(
             { key => $self->key , 'queue._id'=>$self->id_queue},
-            { '$pull' => { queue => { _id => $self->id_queue } } }
+            { '$pull' => { queue => { _id => $self->id_queue, pid => $$ } } }
         );
     }
     $self->must_release(0);
