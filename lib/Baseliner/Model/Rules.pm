@@ -63,7 +63,8 @@ sub init_job_tasks {
 
 sub parallel_run {
     my ($name, $mode, $stash, $code)= @_;
-    my $job = $stash->{job};
+    
+    my $stash_child = Util->_clone( $stash ); # save stash completely, so that parent does not destroy something by the time fork() child is ready
      
     my $chi_pid = fork;
     if( !defined $chi_pid ) {
@@ -86,6 +87,8 @@ sub parallel_run {
         # child
         mdb->disconnect;    # will reconnect later
         my ( $ret, $err );
+        $stash = $stash_child;
+        
         try {
             $ret = $code->();
         }
