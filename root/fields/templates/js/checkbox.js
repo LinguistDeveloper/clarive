@@ -7,16 +7,19 @@ params:
     js: '/fields/templates/js/checkbox.js'
     field_order: 1
     section: 'body'
+    default_value: 'false'
 */
 
 (function(params){
     var meta = params.topic_meta;
     var data = params.topic_data;
+    var default_value = meta.default_value == 'true'?true:false;
+
+    var checked = data && data[ meta.bd_field ]=='1'  ? true:  data && data[ meta.bd_field ]=='0'  ? false : default_value;
     
     var checkbox = new Baseliner.CBox({
         name: meta.id_field,
-        checked: data && data[ meta.bd_field ]=='1'  ? true : false,
-        default_value: false,
+        checked: checked,
         disabled: meta ? meta.readonly : true,
         hidden: meta ? (meta.hidden ? meta.hidden : false): true,
         anchor: meta.anchor || '100%',
