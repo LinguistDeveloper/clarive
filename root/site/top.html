@@ -81,12 +81,17 @@
     <link rel="stylesheet" type="text/css" href="<% $theme_dir %>/style.css" />
 % }
 
+    <!-- D3 and C3 -->
     <script>
         requirejs.config({
             paths:{
-                'd3': '/static/d3/d3.v2'
+                'd3': '/static/d3/d3.min',
+                'c3': '/static/c3/c3.min'
             }
         });
     </script>
+    <!-- C3 Stylesheet -->
+    <link href="/static/c3/c3.css" rel="stylesheet" type="text/css">
+
 
 %# consider including templates <& /site/templates.html &>, and adding it to JS Reload menu option for testing
