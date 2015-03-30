@@ -132,7 +132,7 @@ Ext.onReady(function(){
             //collapsed: true,
             hidden: true,
             height: 300,
-            tbar_end: [ '->', { xtype:'button', text:'#', handler:function(){ Baseliner.tabCalendar() } } ],
+            tbar_end : [ '->', { xtype:'button', icon: IC('tab.png'), handler:function(){ Baseliner.tabCalendar() } } ],
             fullCalendarConfig: {
                 events: Baseliner.calendar_events,
                 timeFormat: { '':'H(:mm)', agenda:'H:mm{ - H:mm}' }

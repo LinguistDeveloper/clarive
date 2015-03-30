@@ -64,8 +64,8 @@ register 'registor.menu.topics' => {
                 #actions  => ["action.topics.$id.create"],
                 url_comp => '/topic/grid?status_id=' . $data->{id_status},
                 #comp_data => { new_category_name=>$name, new_category_id=>$data->{id} },
-                icon     => $data->{status_icon}||'/static/images/icons/status.png',
-                tab_icon => $data->{status_icon}||'/static/images/icons/status.png',
+                icon     => $data->{status_icon}||'/static/images/icons/state.gif',
+                tab_icon => $data->{status_icon}||'/static/images/icons/state.gif',
            }
        } sort { lc $a->{name} cmp lc $b->{name} } 
            ci->status->find->fields({ id_status=>1, name=>1, color=>1, seq=>1, status_icon=>1 })->all;
@@ -92,8 +92,8 @@ register 'registor.menu.topics' => {
             %menu_view,
        };
        $menus->{'menu.topic.status'} = {
-                    label    => _loc('Status'),
-                    icon     => '/static/images/icons/status.png',
+                    label    => _loc('State'),
+                    icon     => '/static/images/icons/state.gif',
                     index => 2,
                     #actions  => ['action.topics.%.create'],
              } if %menu_statuses;

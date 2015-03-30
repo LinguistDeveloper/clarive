@@ -1017,30 +1017,38 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                                     my @fields = split( /\./, $value);
                                     my $tmp_value = $categories_queries->{$select}->{$field};
                                     for my $inner_field ( @fields ) {
-                                        $tmp_value = $tmp_value->{$inner_field};
+                                        if($tmp_value->{$inner_field}){
+                                            $tmp_value = $tmp_value->{$inner_field};
+                                        } else {
+                                            $tmp_value = $tmp_data->{$inner_field};
+                                        }
                                     }
                                     #my $tmp_ref = $_;
                                     my $tmp_ref = $tmp_data;
                                     for my $inner_field ( @fields ) {
                                         if ( ref $tmp_ref->{$inner_field} eq 'HASH' ){
                                             $tmp_ref = $tmp_ref->{$inner_field};
-                                        }
-                                        else{
-                                            $tmp_ref->{$inner_field . "_$select"}= $tmp_value;
-                                            $meta_cfg_report{$inner_field . "_$select"} = $meta_cfg_report{$inner_field} if (($meta_cfg_report{$inner_field}) && ($meta_cfg_report{$inner_field} eq 'release' || $meta_cfg_report{$inner_field} eq 'topic'));
+                                        } else{
+                                            $tmp_ref->{$inner_field . "_$select"}= $tmp_value if ($tmp_value);
+                                            $meta_cfg_report{$inner_field . "_$select"} = $meta_cfg_report{$inner_field} if (($meta_cfg_report{$inner_field}) && ($meta_cfg_report{$inner_field} eq 'release' || $meta_cfg_report{$inner_field} eq 'ci'));
+                                            delete $meta_cfg_report{$inner_field} if $meta_cfg_report{$inner_field . "_$select"};
                                         }
                                     }
-                                    $tmp_ref->{'mid' . "_$select"} = $field;
-                                    $tmp_ref->{'category_color' . "_$select"} = $categories_queries->{$select}->{$field}->{category}->{color};
-                                    $tmp_ref->{'category_name' . "_$select"} = $categories_queries->{$select}->{$field}->{category}->{name};
-                                    $tmp_ref->{'modified_on' . "_$select"} = $categories_queries->{$select}->{$field}->{modified_on};
-                                    $tmp_ref->{'modified_by' . "_$select"} = $categories_queries->{$select}->{$field}->{modified_by};
+                                    $tmp_ref->{'mid' . "_$select"} = $categories_queries->{$select}->{$field}->{mid} // $tmp_data->{mid};
+                                    $tmp_ref->{'category_color' . "_$select"} = $categories_queries->{$select}->{$field}->{category}->{color} // $tmp_data->{category}->{color};
+                                    $tmp_ref->{'category_name' . "_$select"} = $categories_queries->{$select}->{$field}->{category}->{name} // $tmp_data->{category}->{name};
+                                    $tmp_ref->{'modified_on' . "_$select"} = $categories_queries->{$select}->{$field}->{modified_on} // $tmp_data->{modified_on};
+                                    $tmp_ref->{'modified_by' . "_$select"} = $categories_queries->{$select}->{$field}->{modified_by} // $tmp_data->{modified_by};
                                     $tmp_ref->{$relation . "_$select"} = $field; 
                                 }else{
                                     my @fields = split( /\./, $value);
                                     my $tmp_value = $tmp_data;
                                     for my $inner_field ( @fields ) {
-                                        $tmp_value = $tmp_value->{$inner_field};
+                                        if($tmp_value->{$inner_field}){
+                                            $tmp_value = $tmp_value->{$inner_field};
+                                        } else {
+                                            $tmp_value = $tmp_data->{$inner_field};
+                                        }
                                     }
                                     my $tmp_ref = $tmp_data;
                                     for my $inner_field ( @fields ) {
@@ -1048,9 +1056,10 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                                             $tmp_ref = $tmp_ref->{$inner_field};
                                         }
                                         else{
-                                            $tmp_ref->{$inner_field . "_$select"} = $tmp_value;
-                                            # delete $tmp_ref->{$inner_field} if ($tmp_ref->{$inner_field . "_$select"});
-                                            # $meta_cfg_report{$inner_field . "_$select"} = $meta_cfg_report{$inner_field} if ($meta_cfg_report{$inner_field});
+                                            $tmp_ref->{$inner_field . "_$select"} = $tmp_value if ($tmp_value);
+                                            $meta_cfg_report{$inner_field . "_$select"} = $meta_cfg_report{$inner_field} if (($meta_cfg_report{$inner_field}) && ($meta_cfg_report{$inner_field} eq 'release' || $meta_cfg_report{$inner_field} eq 'topic' || $meta_cfg_report{$inner_field} eq 'ci'));
+                                            # delete $meta_cfg_report{$inner_field} if ($meta_cfg_report{$inner_field . "_$select"});
+
                                         }
                                     }   
                                     # $tmp_ref->{$relation . "_$select"} = $field; 
@@ -1069,11 +1078,11 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
             my $parse_category = $_->{category}{name};
             foreach my $field (keys $_){
                 $_->{$field . "_$parse_category"} = $_->{$field};
-                # $meta_cfg_report{$field . "_$parse_category"} = $meta_cfg_report{$field} if (($meta_cfg_report{$field}) && ($meta_cfg_report{$field} eq 'release' || $meta_cfg_report{$field} eq 'topic'));
+                # $meta_cfg_report{$field . "_$parse_category"} = $meta_cfg_report{$field};# if (($meta_cfg_report{$field}) && ($meta_cfg_report{$field} eq 'release' || $meta_cfg_report{$field} eq 'topic'));
             }
         }
     } @data;
-    
+
     @parse_data = @data if !@parse_data;
     
     # _log ">>>>>>>>>>>>>>>>>>>>>>>DATA: " . _dump @parse_data;
@@ -1091,6 +1100,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
             my $v = $row{$k};
 
             $row{$k} = Class::Date->new($v)->string if $k =~ /modified_on|created_on/;
+
 
             #my $mt = $meta{$k}{meta_type} // '';
             my $mt = $meta_cfg_report{$k} || $meta{$k}{meta_type} || '';
@@ -1279,7 +1289,9 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
     # order data with text not ci-mid.
     if (@sort) {
         if (exists $meta_cfg_report{$sort[0]} && $meta_cfg_report{$sort[0]} =~ /ci|project/){
-            @topics = sort { lc($a->{$sort[0]}[0]) cmp lc($b->{$sort[0]}[0]) } @topics; 
+            @topics = sort { $sort[1] eq '1' ? lc($a->{$sort[0]}[0]) cmp lc($b->{$sort[0]}[0]) : lc($b->{$sort[0]}[0]) cmp lc($a->{$sort[0]}[0]) } @topics; 
+        } else {
+            @topics = sort { $sort[1] eq '1' ? lc($a->{$sort}) cmp lc($b->{$sort}) : lc($b->{$sort}) cmp lc($a->{$sort}) } @topics; 
         }
     }
 

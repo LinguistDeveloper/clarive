@@ -30,12 +30,12 @@ html: /dashlets/jobs.html
                     <td><%$job->{project}%></td>
                     <td><%$job->{bl}%></td>
 %if($job->{id_ok}){
-                    <td><%$job->{last_ok}%> dias (<b><a href="javascript:Baseliner.addNewTab('/job/log/dashboard?mid=<%$job->{mid_ok}%>&name=<%$job->{name_ok}%>', _('Log <%$job->{name_ok}%>') );" style="font-family: Tahoma;">#<%$job->{id_ok}%></a></b>)</td>
+                    <td><%$job->{last_ok}%> <% _loc('days') %> (<b><a href="javascript:Baseliner.addNewTab('/job/log/dashboard?mid=<%$job->{mid_ok}%>&name=<%$job->{name_ok}%>', _('Log <%$job->{name_ok}%>') );" style="font-family: Tahoma;">#<%$job->{id_ok}%></a></b>)</td>
 %}else{
                     <td> ------------- </td>  
 %}
 %if($job->{id_err}){
-                    <td><%$job->{last_err}%> dias (<b><a href="javascript:Baseliner.addNewTab('/job/log/dashboard?mid=<%$job->{mid_err}%>&name=<%$job->{name_err}%>', _('Log <%$job->{name_err}%>') );" style="font-family: Tahoma; color:red;">#<%$job->{id_err}%></a></b>)</td>
+                    <td><%$job->{last_err}%> <% _loc('days') %>  (<b><a href="javascript:Baseliner.addNewTab('/job/log/dashboard?mid=<%$job->{mid_err}%>&name=<%$job->{name_err}%>', _('Log <%$job->{name_err}%>') );" style="font-family: Tahoma; color:red;">#<%$job->{id_err}%></a></b>)</td>
 %}else{
                     <td> ------------- </td>  
 %}

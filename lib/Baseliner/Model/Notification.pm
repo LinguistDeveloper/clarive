@@ -563,9 +563,13 @@ sub get_notifications {
     
     # rgo: use the event to get it's defaults! 
     my $template = $ev->{notify}->{template};
-    $template ||= Baseliner->model( 'ConfigStore' )->get( 'config.notifications.' . $name_config . '.template_default', enforce_metadata => 0)->{template_default};
-    $template ||=  Baseliner->model( 'ConfigStore' )->get( 'config.notifications.template_default' )->{template_default};
-    _log( "template for $event_key: $template" );
+    $template ||= Baseliner->model( 'ConfigStore' )->get( 'config.notifications.' . $name_config, enforce_metadata => 0)->{template_default};
+    $template ||=  Baseliner->model( 'ConfigStore' )->get( 'config.notifications' )->{template_default};
+    if ($template) { 
+        _log( "template for $event_key: $template" ); 
+    } else {
+        _error( _("Could not find template for $event_key") );
+    }
     
     if(!$self->exclude_default( {event_key => $event_key} )){
         for my $notify ( values %$send_notification ) {

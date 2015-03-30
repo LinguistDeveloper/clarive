@@ -10,7 +10,7 @@ html: /dashlets/job_stats_by_env.html
 <div id="principal" style="clear:left;" >
     <h2><% _loc('Job Stats (All)') %></h2><br>
 		<div id="<%$graph_id%>" 
-			style="width: 95%; height: 250px; float: left; " 
+			style="width: 95%; height: 100%; float: left; " 
 			onmouseout="document.body.style.cursor='default';"></div>
 </div>
 
@@ -24,7 +24,6 @@ html: /dashlets/job_stats_by_env.html
         var id = "#<% $graph_id %>";
         var data = [];
         Cla.ajax_json('/job/job_stats', { }, function(res){
-            console.log( res );
             var html = function(){/*
                <table class="table">
                   <tr>
