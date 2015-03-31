@@ -25,6 +25,8 @@ has seq           => qw(is rw isa Any);
 has type          => qw(is rw isa Any), default=>'G';
 has color         => qw(is rw isa Any);
 has status_icon    => qw(is rw isa Str), default=>'';
+has max_inactivity_time => => qw(is rw isa Str), default=>'0';
+has max_time_in_status => => qw(is rw isa Str), default=>'0';
 has view_in_tree  => qw(is rw isa BoolCheckbox);
 
 sub icon { '/static/images/icons/status.png' }
