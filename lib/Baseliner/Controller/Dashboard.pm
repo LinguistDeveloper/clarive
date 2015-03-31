@@ -66,6 +66,14 @@ register 'config.dashlet.filtered_topics' => {
         ]
 };
 
+register 'config.dashlet.list_releases' => {
+    metadata => [
+           { id=>'rows', label=>'Number of rows', default => 7 },
+           { id=>'categories', label=>'List of categories', default => 'ALL' },
+           { id=>'statuses', label=>'List of statuses', default => 'ALL' },
+        ]
+};
+
 register 'config.dashlet.my_topics' => {
     metadata => [
            { id=>'rows', label=>'Number of rows', default => 'ALL' },
@@ -918,6 +926,46 @@ sub list_filtered_topics: Private{
 
     my ($info, @rows) = $c->model('Topic')->topics_for_user( $p );
     $c->stash->{filtered_topics} = \@rows ;
+}
+
+sub list_releases: Private{
+    my ( $self, $c, $dashboard_id ) = @_;
+    my $username = $c->username;
+    #my (@topics, $topic, @datas, $SQL);
+    
+    #CONFIGURATION DASHLET
+    ##########################################################################################################
+    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.list_releases');    
+    if($dashboard_id ){
+        my $dashboard_rs = mdb->dashboard->find_one({_id => mdb->oid($dashboard_id)});
+        my @config_dashlet = grep {$_->{url}=~ 'list_releases'} _array $dashboard_rs->{dashlets};
+        
+        if($config_dashlet[0]->{params}){
+            foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
+                $default_config->{$key} = $config_dashlet[0]->{params}->{$key};
+            };              
+        }      
+    }   
+    ##########################################################################################################      
+    
+    # go to the controller for the list
+    my $p = { limit => $default_config->{rows}, username=>$c->username, clear_filter => 1 };
+
+    if ( $default_config->{statuses} && $default_config->{statuses} ne 'ALL') {
+        my @statuses = split /,/, $default_config->{statuses};
+        my @status_ids = map {$_->{id_status}} ci->status->find({ name => mdb->in(@statuses)})->all;
+        $p->{statuses} = \@status_ids;
+    }
+
+    if ( $default_config->{categories} && $default_config->{categories} ne 'ALL') {
+        my @categories = split /,/, $default_config->{categories};
+        my @categories_ids = map {$_->{id}} mdb->category->find({ name => mdb->in(@categories)})->all;
+        my @categories_ids = map {$_->{id}} mdb->category->find({ is_release => '1', name => mdb->in(@categories)})->all;
+        $p->{categories} = \@categories_ids;
+    }
+
+    my ($info, @rows) = $c->model('Topic')->topics_for_user( $p );
+    $c->stash->{list_releases} = \@rows ;
 }
 
 sub list_my_topics: Private{
