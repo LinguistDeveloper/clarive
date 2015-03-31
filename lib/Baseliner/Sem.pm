@@ -229,17 +229,22 @@ sub release {
     my ($self, %p) =@_;
     return if $self->released;
     if ( $self->must_release ) {
-        _debug( _loc('Releasing busy semaphore %1 (%2)', $self->key,$self->who ) );
-        mdb->sem->update(
+        my $res = mdb->sem->update(
             { key => $self->key, 'queue._id'=>$self->id_queue },
             { '$inc' => { slots => -1 }, '$pull' => { queue =>{ _id => $self->id_queue, status=>'busy', pid => $$ } } }
         );
+        if ( $res->{updatedExisting} ) {
+            _debug( _loc('Released busy semaphore %1 (%2)', $self->key,$self->who ) );
+        }
+
     } else {
-        _debug( _loc('Releasing not busy semaphore %1 (%2)', $self->key,$self->who ) );
-        mdb->sem->update(
+        my $res = mdb->sem->update(
             { key => $self->key , 'queue._id'=>$self->id_queue},
             { '$pull' => { queue => { _id => $self->id_queue, pid => $$ } } }
         );
+        if ( $res->{updatedExisting} ) {
+            _debug( _loc('Released not busy semaphore %1 (%2)', $self->key,$self->who ) );
+        }
     }
     $self->must_release(0);
     $self->released(1);

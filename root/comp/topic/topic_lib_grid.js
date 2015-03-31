@@ -688,7 +688,7 @@ Cla.topic_grid = function(params){
         // var date_modified_on = rec.data.modified_on ? rec.data.modified_on.dateFormat('M j, Y, g:i a') : '';
         var modified_by = rec.data.modified_by;
         
-        if ( rec.json['mid_' + this.alias] ){
+        if ( rec.json['mid_' + this.alias] && rec.json['category_name_' + this.alias] && rec.json['category_color_' + this.alias]){
             mid = rec.json['mid_' + this.alias];
             category_name = rec.json['category_name_' + this.alias];
             category_color = rec.json['category_color_' + this.alias];
