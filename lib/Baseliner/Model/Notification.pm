@@ -25,6 +25,7 @@ register 'menu.admin.notifications' => {
 register 'config.notifications' => {
     metadata => [
         { id => 'template_default', label => 'Template by default', default => '/email/generic_topic.html'},
+        { id => 'exclude_default', label => 'Exclude all default notifications', default => '0'}
     ]
 };
 
