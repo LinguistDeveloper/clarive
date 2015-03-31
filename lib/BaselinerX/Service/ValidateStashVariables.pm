@@ -20,6 +20,7 @@ sub validate {
     my $status = 'ok';
 
     my $variables = $c->{config}->{variables};
+
     my $stash = $c->{stash};
 
     if ( $variables ) {
@@ -31,7 +32,7 @@ sub validate {
             for my $token ( @tokens ) {
                 $value = $value->{$token};
                 push @name, $token;
-                if ( !$value ) {
+                if ( !$value || ( ref $value =~ /ARRAY/ && scalar @$value == 0) || ( ref $value =~ /HASH/ && scalar(keys %$value) == 0)) {
                     $status = 'ko';
                     $msg .= " - "._loc("%1 must be filled", join(".",@name))."<br>";
                     last;
@@ -39,6 +40,7 @@ sub validate {
             };
 
             if ( $value ) {
+
                 if ( $variables->{$var} && $variables->{$var} ne '???' ) {
                     my $qr = qr($variables->{$var});
                     try {
@@ -51,6 +53,7 @@ sub validate {
                             $msg .= " - "._loc("Error parsing %1: %2", $var, shift)."<br>";                    
                     };
                 }
+
             }
         }
     }
