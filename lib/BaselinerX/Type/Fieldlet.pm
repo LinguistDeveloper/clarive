@@ -1,23 +1,30 @@
 package BaselinerX::Type::Fieldlet;
 use Baseliner::PlugMouse;
 with 'Baseliner::Role::Registrable';
+with 'Baseliner::Role::Palette';
 
 register_class 'fieldlet' => __PACKAGE__;
 sub service_noun { 'fieldlet' }
 
-has name_field => (is=>'rw', isa=>'Str', default=>'');
-has id_field   => (is=>'rw', isa=>'Str', default=>'');
-has bd_field   => ( is=> 'rw', isa=> 'Str', default=>sub{ 
+has name		=> (is=>'rw', isa=>'Str', default=>'');
+has name_field 	=> (is=>'rw', isa=>'Str', default=>'');
+has id_field   	=> (is=>'rw', isa=>'Str', default=>'');
+has form		=> (is=>'rw', isa=>'Str', default=>'');
+has html_file	=> (is=>'rw', isa=>'Str', default=>'');
+has js_file		=> (is=>'rw', isa=>'Str', default=>'');
+has bd_field   	=> ( is=> 'rw', isa=> 'Str', default=>sub{ 
     my $self = shift;
     return $self->id_field;
 });
 
-sub dsl {
-    my ($self, $n, %p ) = @_;
-    sprintf(q{
-        push @{ $stash->{fieldlets} }, %s; 
-    }, Data::Dumper::Dumper($n->{data}));
-}
+has dsl            => ( is => 'rw', isa => 'CodeRef', default=>sub{
+	return sub{
+	    my ($self, $n, %p ) = @_;
+	    sprintf(q{
+	        push @{ $stash->{fieldlets} }, %s; 
+	    }, Data::Dumper::Dumper($n->{data}));
+	};
+});
 
 1;
 
