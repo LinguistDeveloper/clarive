@@ -943,7 +943,6 @@
 
 				//if(rec && rec.data){
 				var notification_id = form.findField('notification_id').getValue();
-				alert(notification_id);
 				if(notification_id =! '-1'){
 					params.id = notification_id;
 				};
