@@ -72,7 +72,7 @@
         var win;
         
         var title = 'Create notification';
-		
+
 		var store_events = new Baseliner.JsonStore({
 			url: '/notification/list_events',
 			fields: ['kind','key','description']   
@@ -692,11 +692,12 @@
 										mode: 'local',
 										triggerAction: 'all',
 										forceSelection: true,
-										editable: false,
+										editable: true,
+										minChars: 2,
 										displayField : 'name',
 										valueField: 'id',
 										store: store_recipients1,
-										tpl: '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><div style="font-size:16px;"><strong>{name}</strong></div>{description}</span></div></tpl>'
+										tpl: '<tpl for="."><div class="x-combo-list-item"><span id="boot" style="background: transparent"><div><strong>{name}</strong></div>{description}</span></div></tpl>'
 									});
 									
 									obj_recipient.on('additem', function(combo, value, record) {
@@ -942,8 +943,8 @@
 
 				//if(rec && rec.data){
 				var notification_id = form.findField('notification_id').getValue();
-				if(notification_id >= 0){
-					//params.id = rec.data.id;
+				alert(notification_id);
+				if(notification_id =! '-1'){
 					params.id = notification_id;
 				};
 								
@@ -1029,13 +1030,13 @@
 				form.submit({
 					params: params,					
 					success: function(f,a){
-						Baseliner.message(_('Success'), a.result.msg );
 						form.findField('notification_id').setValue(a.result.notification_id);
-						win.setTitle('Edit notification');
+						win.setTitle(_('Edit notification'));
+						Baseliner.message(_('Success'), a.result.msg );
 						store_notifications.reload();
 					},
 					failure: function(f,a){
-						Baseliner.message(_('Success'), a.result.msg );	
+						Baseliner.message(_('Error'), a.result.msg );	
 					}
 				});
 			}
