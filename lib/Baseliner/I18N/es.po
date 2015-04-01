@@ -4428,6 +4428,9 @@ msgstr "EXCLUIR"
 msgid "Notification added"
 msgstr "Notificación añadida"
 
+msgid "Notification updated"
+msgstr "Notificación actualizada"
+
 msgid "Error adding notification"
 msgstr "Error añadiendo notificación"
 

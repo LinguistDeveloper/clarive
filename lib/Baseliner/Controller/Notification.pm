@@ -173,9 +173,10 @@ sub save_notification : Local {
         $data->{recipients} = _decode_json($p->{recipients});
         #convert data to mongo style
         $data = Baseliner->model('Notification')->decode_data(_dump $data);
+        my $id_notification = $p->{notification_id} eq '-1' ? '' : $p->{notification_id};
         my $notification = mdb->notification->update(
             {
-                _id             => mdb->oid($p->{notification_id})
+                _id             => mdb->oid($id_notification)
             },
             {   event_key       => $p->{event},
                 action          => $p->{action},
@@ -188,9 +189,9 @@ sub save_notification : Local {
         );
 
         if($p->{notification_id} eq '-1'){
-            $c->stash->{json} = { success => \1, msg => 'Notification created', notification_id => $notification->{upserted}->{value} };         
+            $c->stash->{json} = { success => \1, msg => _loc('Notification added'), notification_id => $notification->{upserted}->{value} };         
         }else{
-            $c->stash->{json} = { success => \1, msg => 'Notification updated', notification_id => $p->{notification_id} }; 
+            $c->stash->{json} = { success => \1, msg => _loc('Notification updated'), notification_id => $p->{notification_id} }; 
         }
     }catch{
         my $err = shift;
@@ -332,7 +333,7 @@ sub import : Local {
                 #    ? _loc('Notify created with id %1 and event_key %2:', $notify->id, $notify->event_key) 
                 #    : _loc('Notify %1 updated', $notify->event_key) ;
 
-                push @log, _loc('Notify created with id %1 and event_key %2:', $id, $data->{event_key}) ;
+                push @log, _loc('Notify created with id %1 and event_key: %2', $id, $data->{event_key}) ;
             }
         });   # txn end
         
