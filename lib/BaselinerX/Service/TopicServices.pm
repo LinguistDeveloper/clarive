@@ -155,7 +155,7 @@ sub change_status {
     my $new_status = $config->{new_status} // _fail _loc 'Missing or invalid parameter new_status';
 
     # Let's check that all topics exist in the system   
-    my @topic_mids = Util->_array_or_commas( $topics);
+    my @topic_mids = Util->_array_or_commas($topics);
     my @topic_rows;
 
     # Generate the list of old_statuses valid to do the change
@@ -289,6 +289,7 @@ sub related {
     my $return = [];
     my $mid = $config->{mid} // die _loc("Missing mid");
     my $statuses = $config->{related_status} // [];
+    my $not_in_statuses = $config->{not_in_statuses} // 'off';
     my $categories = $config->{related_categories} // [];
     my $depth = $config->{depth} // 1;
     my $query_type = $config->{query_type} // 'children';
@@ -298,13 +299,19 @@ sub related {
     my $ci = ci->new($mid);
     my $where = { collection => 'topic'};
     $where->{'id_category'} = mdb->in($categories) if $categories;
-    $where->{'id_category_status'} = mdb->in($statuses) if $statuses;
+    if ( $statuses ) {
+        if ( $not_in_statuses eq 'on' ) {
+            $where->{'id_category_status'} = mdb->nin($statuses);
+        } else {
+            $where->{'id_category_status'} = mdb->in($statuses);
+        }
+    }
 
     _warn $where;
     my @related_mids = map {$_->{mid}} $ci->$query_type( where => $where, mids_only => 1, depth => $depth);
     $condition->{mid} = mdb->in(@related_mids);
 
-    my @related = mdb->topic->find($condition)->fields({})->all;
+    my @related = mdb->topic->find($condition)->fields({_txt => 0})->all;
 
     return \@related;
 
