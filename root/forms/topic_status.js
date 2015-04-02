@@ -1,9 +1,12 @@
 (function(params){
     var data = params.data || {};
+    var oldstatus = new Baseliner.StatusBox({ name: 'old_status', fieldLabel: _('Old statuses'), value: data.old_status || ''  });
+    var newstatus = new Baseliner.StatusBox({ name: 'new_status', fieldLabel: _('New status'), singleMode:true, value: data.new_status || ''  });
+
     return [
         { xtype:'textfield', fieldLabel: _('Topics'), name: 'topics', value: data.topics },
-        { xtype:'textfield', fieldLabel: _('Old status'), name: 'old_status', value: data.old_status },
-        { xtype:'textfield', fieldLabel: _('New status'), name: 'new_status', value: data.new_status },
+        oldstatus,
+        newstatus,
         { xtype:'textfield', fieldLabel: _('User'), name: 'username', value: data.username }
     ]
 })

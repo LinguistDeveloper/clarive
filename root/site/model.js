@@ -1210,6 +1210,70 @@ Baseliner.ComboStatus = Ext.extend( Baseliner.ComboDoubleRemote, {
     fields: [ 'id_status', 'name' ]
 });
 
+Baseliner.StatusBox = function(c) {
+    var tpl = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
+    var store = new Baseliner.JsonStore({
+        root: 'data' , remoteSort: true, autoLoad: true,
+        id: 'id_status', 
+        totalProperty: 'totalCount', 
+        baseParams: c.baseParams || {},
+        url: '/ci/status/combo_list',
+        fields: ['id_status','name'] 
+    });
+    Baseliner.StatusBox.superclass.constructor.call(this, Ext.apply({
+        name: c.name || 'status',
+        hiddenName: c.name || 'status',
+        displayField: 'name',
+        valueField: 'id_status',
+        store: store,
+        allowBlank: true,
+        msgTarget: 'under',
+        allowAddNewData: true,
+        addNewDataOnBlur: true, 
+        triggerAction: 'all',
+        resizable: true,
+        mode: 'remote',
+        fieldLabel: _('To'),
+        typeAhead: true,
+        tpl: '<tpl for="."><div class="x-combo-list-item">{name}</div></tpl>',
+        displayFieldTpl: tpl,
+        extraItemCls: 'x-tag'
+    }, c));
+};
+Ext.extend( Baseliner.StatusBox, Ext.ux.form.SuperBoxSelect );
+
+Baseliner.CategoryBox = function(c) {
+    var tpl = new Ext.XTemplate( '<tpl for=".">{name}</tpl>' );
+    var store = new Baseliner.JsonStore({
+        root: 'data' , remoteSort: true, autoLoad: true,
+        id: 'id', 
+        totalProperty: 'totalCount', 
+        baseParams: c.baseParams || {},
+        url: '/topic/category_list',
+        fields: ['id','name'] 
+    });
+    Baseliner.CategoryBox.superclass.constructor.call(this, Ext.apply({
+        name: c.name || 'categories',
+        hiddenName: c.name || 'categories',
+        displayField: 'name',
+        valueField: 'id',
+        store: store,
+        allowBlank: true,
+        msgTarget: 'under',
+        allowAddNewData: true,
+        addNewDataOnBlur: true, 
+        triggerAction: 'all',
+        resizable: true,
+        mode: 'remote',
+        fieldLabel: _('To'),
+        typeAhead: true,
+        tpl: '<tpl for="."><div class="x-combo-list-item">{name}</div></tpl>',
+        displayFieldTpl: tpl,
+        extraItemCls: 'x-tag'
+    }, c));
+};
+Ext.extend( Baseliner.CategoryBox, Ext.ux.form.SuperBoxSelect );
+
 /*
 
 A Revision draganddrop superbox inside a form-ready panel.

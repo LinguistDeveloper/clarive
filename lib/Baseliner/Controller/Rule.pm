@@ -851,7 +851,6 @@ sub default : Path {
             _fail _loc 'Rule %1 not independent: %2',$id_rule, $rule->{rule_type} if $rule->{rule_type} ne 'independent' ;
             my $ret_rule = Baseliner->model('Rules')->run_single_rule( id_rule=>$id_rule, stash=>$stash, contained=>1 );
             _debug( _loc( 'Rule WS Elapsed: %1s', $$stash{_rule_elapsed} ) );
-            _debug( $stash );
             $ret = defined $stash->{ws_response} 
                 ? $stash->{ws_response} 
                 : ref $ret_rule->{ret} ? $ret_rule->{ret} : { output=>$ret_rule->{ret}, stash=>$stash };

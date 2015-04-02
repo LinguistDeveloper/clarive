@@ -47,6 +47,38 @@ register 'service.topic.load' => {
     form => '/forms/topic_load.js' 
 };
 
+register 'service.topic.related' => {
+    name => 'Load topic related',
+    handler => \&related,
+    job_service  => 0,
+    icon => '/static/images/icons/spacetree.png',
+    form => '/forms/topic_related.js' 
+};
+
+register 'service.topic.inactivity_daemon' => {
+    name    => 'Watch for topics without activity in statuses',
+    config  => 'config.job.daemon',
+    daemon  => 1,
+    handler => \&inactivity_daemon,
+};
+
+register 'config.topic.inactivity_daemon' => {
+    metadata=> [
+        {  id=>'frequency', label=>'Inactivity daemon Frequency', type=>'int', default=>600 }
+    ]
+};
+
+
+sub inactivity_daemon {
+    my ($self,$c,$config)=@_;
+    my $freq = $config->{frequency};
+
+    for( 1..1000 ) {
+
+    }
+    _log "Topic inactivity daemon stopped.";
+}
+
 sub load {
     my ( $self, $c, $config ) = @_;
 
@@ -251,4 +283,30 @@ sub upload {
     }   
 }
 
+sub related {
+    my ( $self, $c, $config ) = @_;
+
+    my $return = [];
+    my $mid = $config->{mid} // die _loc("Missing mid");
+    my $statuses = $config->{related_status} // [];
+    my $categories = $config->{related_categories} // [];
+    my $depth = $config->{depth} // 1;
+    my $query_type = $config->{query_type} // 'children';
+    my @fields = $config->{fields} ? split(',',$config->{fields}):();
+    my $condition = {};
+
+    my $ci = ci->new($mid);
+    my $where = { collection => 'topic'};
+    $where->{'id_category'} = mdb->in($categories) if $categories;
+    $where->{'id_category_status'} = mdb->in($statuses) if $statuses;
+
+    _warn $where;
+    my @related_mids = map {$_->{mid}} $ci->$query_type( where => $where, mids_only => 1, depth => $depth);
+    $condition->{mid} = mdb->in(@related_mids);
+
+    my @related = mdb->topic->find($condition)->fields({})->all;
+
+    return \@related;
+
+}
 1;

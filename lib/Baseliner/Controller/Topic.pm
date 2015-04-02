@@ -840,6 +840,23 @@ sub comment : Local {
     $c->forward('View::JSON');
 }
 
+sub category_list : Local { #this is for ComboCategories
+    my ($self, $c) = @_;
+    my @cats = mdb->category->find()->fields({ id => 1, name => 1, _id => 0 })->all;
+
+    my $return = {
+        data => [
+            map { +{ id => $_->{id}, name => $_->{name} } } 
+            sort { lc $a->{name} cmp lc $b->{name} }
+            @cats
+        ],
+        totalCount=>scalar @cats
+    };
+    $c->stash->{json} = $return;
+    $c->forward('View::JSON');
+}
+
+
 sub list_category : Local {
     my ($self, $c) = @_;
     my $p = $c->request->parameters;
