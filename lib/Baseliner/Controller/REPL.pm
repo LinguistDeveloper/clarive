@@ -72,14 +72,14 @@ register 'menu.development.ext_examples' => {
 #     action     => 'action.development.gui_designer',
 #     index      => 1000,
 # };
-register 'menu.development.baliref' => {
-    label              => 'Baseliner Reference',
-    url_browser_window => '/pod',
-    title              => 'Baseliner Reference',
-    index              => 999,
-    action => 'action.development.baliref',
-    index      => 100,
-};
+# register 'menu.development.baliref' => {
+#     label              => 'Baseliner Reference',
+#     url_browser_window => '/pod',
+#     title              => 'Baseliner Reference',
+#     index              => 999,
+#     action => 'action.development.baliref',
+#     index      => 100,
+# };
 
 ##########################################################################
 register 'menu.development.sequences' =>{
