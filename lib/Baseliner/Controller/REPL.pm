@@ -65,13 +65,13 @@ register 'menu.development.ext_examples' => {
     action     => 'action.development.ext_examples',
     index      => 1000,
 };
-register 'menu.development.gui_designer' => {
-    label      => 'GUI Designer',
-    url_iframe => '/static/gui/index.html',
-    title      => 'GUI Designer',
-    action     => 'action.development.gui_designer',
-    index      => 1000,
-};
+# register 'menu.development.gui_designer' => {
+#     label      => 'GUI Designer',
+#     url_iframe => '/static/gui/index.html',
+#     title      => 'GUI Designer',
+#     action     => 'action.development.gui_designer',
+#     index      => 1000,
+# };
 register 'menu.development.baliref' => {
     label              => 'Baseliner Reference',
     url_browser_window => '/pod',
