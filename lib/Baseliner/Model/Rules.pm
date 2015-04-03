@@ -1164,6 +1164,23 @@ register 'statement.perl.do' => {
     },
 };
 
+register 'statement.perl.group' => {
+    text => 'GROUP',data => { },
+    icon => '/static/images/icons/group.gif', 
+    dsl => sub { 
+        my ($self, $n, %p ) = @_;
+        sprintf(q{
+            {
+                my $dk = '%s';
+                my $ret = do { 
+                    %s 
+                }; 
+                $stash->{$dk} = $ret if length $dk;
+            }
+        }, $n->{data_key} // '', $self->dsl_build( $n->{children}, %p ) );
+    },
+};
+
 register 'statement.perl.for' => {
     text => 'FOR eval', data => { varname=>'x', code=>'()' },
     type => 'loop',
