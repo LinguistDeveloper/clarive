@@ -52,13 +52,13 @@ sub BUILD {
         $self->handler( \&{ $self->module().'::'.$self->id } );
     }
     ## add service to admin menu
-    if( $self->show_in_menu ) {
-        register 'menu.admin.service.'.$self->id => { label=>$self->name || $self->key, url=>'/'.$self->key, title=>$self->name || $self->key }; 
-        #register 'menu.admin.dfldfj' => { init_rc=>9999, label=>'asdfd', url=>'/ldkfjd', title=>'asdfasdf' }; 
-    }
+    # if( $self->show_in_menu ) {
+    #     register 'menu.admin.service.'.$self->id => { label=>$self->name || $self->key, url=>'/'.$self->key, title=>$self->name || $self->key }; 
+    #     #register 'menu.admin.dfldfj' => { init_rc=>9999, label=>'asdfd', url=>'/ldkfjd', title=>'asdfasdf' }; 
+    # }
 }
 
-register 'menu.admin.service' => { label=>'Services', title=>'Services', action => 'menu.admin.service.%', index=>1000 }; 
+#register 'menu.admin.service' => { label=>'Services', title=>'Services', action => 'menu.admin.service.%', index=>1000 }; 
 
 sub dispatch {
     my ($self, %p )=@_;
