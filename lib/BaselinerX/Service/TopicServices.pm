@@ -300,14 +300,13 @@ sub related {
     my $where = { collection => 'topic'};
     $where->{'id_category'} = mdb->in($categories) if $categories;
     if ( $statuses ) {
-        if ( $not_in_statuses eq 'on' ) {
+        if ( $not_in_status eq 'on' ) {
             $where->{'id_category_status'} = mdb->nin($statuses);
         } else {
             $where->{'id_category_status'} = mdb->in($statuses);
         }
     }
 
-    _warn $where;
     my @related_mids = map {$_->{mid}} $ci->$query_type( where => $where, mids_only => 1, depth => $depth);
     $condition->{mid} = mdb->in(@related_mids);
 
