@@ -289,7 +289,7 @@ sub related {
     my $return = [];
     my $mid = $config->{mid} // die _loc("Missing mid");
     my $statuses = $config->{related_status} // [];
-    my $not_in_statuses = $config->{not_in_statuses} // 'off';
+    my $not_in_statuses = $config->{not_in_status} // 'off';
     my $categories = $config->{related_categories} // [];
     my $depth = $config->{depth} // 1;
     my $query_type = $config->{query_type} // 'children';
@@ -300,7 +300,7 @@ sub related {
     my $where = { collection => 'topic'};
     $where->{'id_category'} = mdb->in($categories) if $categories;
     if ( $statuses ) {
-        if ( $not_in_status eq 'on' ) {
+        if ( $not_in_statuses eq 'on' ) {
             $where->{'id_category_status'} = mdb->nin($statuses);
         } else {
             $where->{'id_category_status'} = mdb->in($statuses);
