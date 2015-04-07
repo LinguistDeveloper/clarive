@@ -178,10 +178,10 @@ sub change_status {
     #Let's get the new_status id
     my $new_status_id;
 
-    if ( is_number( $new_status ) ) {
-        ($new_status_id) = map {$_->{id_status}} ci->status->find_one( {id_status => $new_status} );
+    if ( loo_number( $new_status ) ) {
+        ($new_status_id) = map {$_->{id_status}} ci->status->find_one( {id_status => "$new_status"} );
     } else {
-        ($new_status_id) = map {$_->{id_status}} ci->status->find_one( {name => $new_status} );
+        ($new_status_id) = map {$_->{id_status}} ci->status->find_one( {name => "$new_status"} );
     }
 
     if ( !$new_status_id ) {
