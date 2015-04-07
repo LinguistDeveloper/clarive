@@ -310,7 +310,7 @@ sub related {
     my @related_mids = map {$_->{mid}} $ci->$query_type( where => $where, mids_only => 1, depth => $depth);
     $condition->{mid} = mdb->in(@related_mids);
 
-    my @related = mdb->topic->find($condition)->fields({_txt => 0})->all;
+    my @related = mdb->topic->find({%$where,%$condition})->fields({_txt => 0})->all;
 
     return \@related;
 
