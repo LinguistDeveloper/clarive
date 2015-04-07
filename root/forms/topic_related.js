@@ -17,6 +17,7 @@
         { xtype : "checkbox", name : "not_in_status", checked: data.not_in_status=='on' ? true : false, boxLabel : _('Not in statuses') },
         ccategory,
         { xtype:'numberfield', fieldLabel: _('Depth'), name: 'depth', value: data.depth || 1 },
+        { xtype : "checkbox", name : "include_event_mid", checked: data.include_event_mid=='on' ? true : false, boxLabel : _('Do not exclude event mid') },
         { xtype:'textfield', fieldLabel: _('Fields'), name: 'fields', value: data.fields }
     ]
 })

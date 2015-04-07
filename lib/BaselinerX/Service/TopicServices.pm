@@ -287,17 +287,21 @@ sub related {
     my ( $self, $c, $config ) = @_;
 
     my $return = [];
+    my $stash = $c->stash;
+    my $event_mid = $stash->{mid};
     my $mid = $config->{mid} // die _loc("Missing mid");
     my $statuses = $config->{related_status} // [];
     my $not_in_statuses = $config->{not_in_status} // 'off';
     my $categories = $config->{related_categories} // [];
     my $depth = $config->{depth} // 1;
+    my $include_event_mid = $config->{include_event_mid} eq 'on' ? '':$event_mid;
     my $query_type = $config->{query_type} // 'children';
     my @fields = $config->{fields} ? split(',',$config->{fields}):();
     my $condition = {};
 
     my $ci = ci->new($mid);
     my $where = { collection => 'topic'};
+    $where->{mid} = {'$ne' => $include_event_mid} if $include_event_mid;
     $condition->{'category.id'} = mdb->in($categories) if $categories;
     if ( $statuses ) {
         if ( $not_in_statuses eq 'on' ) {
