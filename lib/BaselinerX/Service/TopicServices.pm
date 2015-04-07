@@ -298,17 +298,18 @@ sub related {
 
     my $ci = ci->new($mid);
     my $where = { collection => 'topic'};
-    $condition->{'id_category'} = mdb->in($categories) if $categories;
+    $condition->{'category.id'} = mdb->in($categories) if $categories;
     if ( $statuses ) {
         if ( $not_in_statuses eq 'on' ) {
-            $condition->{'id_category_status'} = mdb->nin($statuses);
+            $condition->{'category_status.id'} = mdb->nin($statuses);
         } else {
-            $condition->{'id_category_status'} = mdb->in($statuses);
+            $condition->{'category_status.id'} = mdb->in($statuses);
         }
     }
 
     my @related_mids = map {$_->{mid}} $ci->$query_type( where => $where, mids_only => 1, depth => $depth);
     $condition->{mid} = mdb->in(@related_mids);
+    _warn $condition;
     my @related = mdb->topic->find($condition)->fields({_txt => 0})->all;
 
     return \@related;
