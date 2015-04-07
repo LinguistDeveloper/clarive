@@ -1525,6 +1525,25 @@ sub _fixascii_sql {
     $data
 }
 
+
+sub _fix_utf8_to_xml_entities {
+    my $data = shift;
+    $data =~ s/á/&#225;/g;
+    $data =~ s/Á/&#193;/g;
+    $data =~ s/é/&#233;/g;
+    $data =~ s/É/&#201;/g;
+    $data =~ s/í/&#237;/g;
+    $data =~ s/Í/&#205;/g;
+    $data =~ s/ó/&#243;/g;
+    $data =~ s/Ó/&#211;/g;
+    $data =~ s/ú/&#250;/g;
+    $data =~ s/Ú/&#218;/g;
+    $data =~ s/ñ/&#241;/g;
+    $data =~ s/Ñ/&#209;/g;
+    $data;
+}
+
+
 sub _fixCharacters_mail {
     my $d = shift;
     return $d unless length $d;
