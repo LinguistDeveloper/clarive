@@ -92,7 +92,7 @@ register 'registor.menu.topics' => {
             %menu_view,
        };
        $menus->{'menu.topic.status'} = {
-                    label    => _loc('State'),
+                    label    => _loc('Status'),
                     icon     => '/static/images/icons/state.gif',
                     index => 2,
                     #actions  => ['action.topics.%.create'],

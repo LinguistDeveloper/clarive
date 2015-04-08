@@ -4471,7 +4471,7 @@ msgstr "No llegides"
 msgid "Created for Me"
 msgstr "Creades per Mi"
 
-msgid "Change State"
+msgid "Change Status"
 msgstr "Canviar estat"
 
 msgid "Changed status"

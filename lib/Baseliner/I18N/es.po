@@ -4200,9 +4200,6 @@ msgstr "%1 de %2 filas totales"
 msgid "Include into"
 msgstr "Incluido en"
 
-msgid "Included in"
-msgstr "Incluido en"
-
 msgid "Delete Folder"
 msgstr "Borrar Carpeta"
 
@@ -4518,7 +4515,7 @@ msgstr "No leídas"
 msgid "Created for Me"
 msgstr "Creadas por Mí"
 
-msgid "Change State"
+msgid "Change Status"
 msgstr "Cambiar estado"
 
 msgid "Changed status"
