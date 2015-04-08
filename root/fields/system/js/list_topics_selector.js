@@ -16,7 +16,7 @@ params:
     rel_type: 'topic_topic'
     parent_field: ''
     filter_field: ''
-    filter_data:''
+    filter_data: ''
 ---
 */
 
