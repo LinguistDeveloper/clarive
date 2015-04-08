@@ -1636,7 +1636,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
         if( self.topic_grid == undefined ) self.topic_grid = {};
         self.combo = new Baseliner.TopicCombo({
             store: self.combo_store, 
-            width: 600,
+            width: 400,
             height: 80,
             pageSize: parseInt(self.pageSize),
             singleMode: true, 
