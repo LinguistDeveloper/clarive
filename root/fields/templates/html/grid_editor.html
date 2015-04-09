@@ -78,10 +78,14 @@
                                         ${ $val };
                                     } elsif( length $val ) {
                                         my $cd = Class::Date->new( $val ) + (86399);
-                                        my $st = $row->{overdue} ? 'color: #f34' : '';
-                                        my $wd = $cd->wdayname;
-                                        $wd = Encode::decode('UTF-8', $wd);
-                                        _loc($wd) . " " . $cd->string . " - <span style='$st;font-weight: bold'>" . Util->ago( $cd ) . '</span>';
+                                        if ( $cd ) {
+                                            my $st = $row->{overdue} ? 'color: #f34' : '';
+                                            my $wd = $cd->wdayname;
+                                            $wd = Encode::decode('UTF-8', $wd);
+                                            _loc($wd) . " " . $cd->string . " - <span style='$st;font-weight: bold'>" . Util->ago( $cd ) . '</span>';
+                                        } else {
+                                            $val;
+                                        }
                                     } else {
                                         $val
                                     }
