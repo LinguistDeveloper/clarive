@@ -89,12 +89,12 @@ html: /dashlets/job_burndown.html
             $.plot( $(id), [
                     {
                         data: trend,
-                        label: _('Jobs last 30D'),
+                        label: _('Jobs last 1000D'),
                         lines: { show: true}
                     },
                     {
                         data: data1,
-                        label: _('Jobs last 7D'),
+                        label: _('Jobs last 100D'),
                         lines: { show: true}
                     }
                 ],
