@@ -31,16 +31,16 @@ register 'report.clarive.job_statistics_mes' => {
                     'total'
                 ],
                 columns => [
-                    {id => 'mes',  text => 'Mes'},
-                    {id => 'fallidos',     text => 'Fallidos'},
-                    {id => 'pct_fallidos',     text => '%Fallidos'},
-                    {id => 'cancelados',     text => 'Cancelados'},
-                    {id => 'pct_cancelados',     text => '%Cancelados'},
-                    {id => 'correctos',    text => 'Correctos'},
-                    {id => 'pct_correctos',    text => '%Correctos'},
-                    {id => 'total_ejecuciones',    text => 'Total ejecuciones'},
-                    {id => 'avg_ejecuciones',    text => 'Avg Ejecuciones'},
-                    {id => 'total', text => 'Total jobs'}
+                    {id => 'mes',  text => _loc('Month')},
+                    {id => 'fallidos',     text => _loc('Failed')},
+                    {id => 'pct_fallidos',     text => _loc('%Failed')},
+                    {id => 'cancelados',     text => _loc('Cancelled')},
+                    {id => 'pct_cancelados',     text => _loc('%Cancelled')},
+                    {id => 'correctos',    text => _loc('Correct')},
+                    {id => 'pct_correctos',    text => _loc('%Correct')},
+                    {id => 'total_ejecuciones',    text => _loc('Total runs')},
+                    {id => 'avg_ejecuciones',    text => _loc('Avg runs')},
+                    {id => 'total', text => _loc('Total jobs')}
                 ],
             },
             report_name => _loc('Monthly Job Stats'),
@@ -201,18 +201,18 @@ register 'report.clarive.job_statistics_mes' => {
         );
 
         my $meses = {
-            '01' => 'Enero',
-            '02' => 'Febrero',
-            '03' => 'Marzo',
-            '04' => 'Abril',
-            '05' => 'Mayo',
-            '06' => 'Junio',
-            '07' => 'Julio',
-            '08' => 'Agosto',
-            '09' => 'Septiembre',
-            '10' => 'Octubre',
-            '11' => 'Noviembre',
-            '12' => 'Diciembre'
+            '01' => 'January',
+            '02' => 'February',
+            '03' => 'March',
+            '04' => 'April',
+            '05' => 'May',
+            '06' => 'June',
+            '07' => 'July',
+            '08' => 'August',
+            '09' => 'September',
+            '10' => 'October',
+            '11' => 'November',
+            '12' => 'December'
         };
         for my $d (@docs) {
             my ($anyo,$mes) = $d->{_id} =~ /^(.*?)-(.*)$/;
@@ -221,7 +221,7 @@ register 'report.clarive.job_statistics_mes' => {
 
             push @rows,
               {
-                mes      => $anyo." ".$meses->{$mes},
+                mes      => $anyo." "._loc($meses->{$mes}),
                 fallidos      => $d->{fail},
                 pct_fallidos => sprintf('%.2f',$d->{fail}/$d->{total}*100),
                 cancelados      => $d->{cancelled},
