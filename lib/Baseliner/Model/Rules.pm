@@ -353,6 +353,9 @@ sub dsl_build {
                 if( length $attr->{sub_name} ) {
                     push @dsl, $spaces->($level) . sprintf(q{   my $config = parse_vars +{ %{ %s || {} }, %{ delete($$stash{shortcut_config}) // {}} }, $stash;}, Data::Dumper::Dumper( $data ) );
                 } else {
+                    if($key eq 'service.web.request'){
+                        $data->{body} = Util->_fix_utf8_to_xml_entities($data->{body});
+                    }
                     push @dsl, $spaces->($level) . sprintf(q{   my $config = parse_vars %s, $stash;}, Data::Dumper::Dumper( $data ) );
                 }
                 push @dsl, $spaces->($level) . sprintf(q{   launch( "%s", q{%s}, $stash, $config => '%s' );}, $key, $name, ($data_key//'') );

@@ -133,7 +133,14 @@ sub repo_items {
     my @all = grep /^:/, $git->exec( qw/diff-tree -r -c -M -C/, _array($diff_shas) );
     # process output
     for my $blob_line ( @all ) {
-        my ($x,$mask,$y,$blob,$status,$path) = split /\s+/, $blob_line, 6;
+        my @parts = split /\s+/, $blob_line;
+        my ($x, $x2, $mask,$y, $y2, $blob,$status,$path);
+        if(scalar @parts == 6){
+            ($x,$mask,$y,$blob,$status,$path) = @parts;
+        }else{
+            ($x, $x2, $mask,$y, $y2, $blob,$status,$path) = @parts;
+            $status = 'M';
+        }
         my ($path1,$path2) = split /\t+/, $path;
         $mask = substr( $mask, -3 );
         $status = 'M' if $status !~ /^(D|A|M)/;  # some statuses are like R089 and C089, for renamed items
