@@ -726,8 +726,8 @@ sub burndown : Local {
             \%ret;
         };
         # now send 7D against 30D average
-        my $data0 = $burndown->('30D');
-        my $data1 = $burndown->('7D');
+        my $data0 = $burndown->('1000D');
+        my $data1 = $burndown->('100D');
         _log( $data0 );
         _log( $data1 );
         $c->stash->{json} = { success => \1, data0=>$data0, data1=>$data1 };
