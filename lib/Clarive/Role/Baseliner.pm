@@ -43,7 +43,7 @@ sub setup_baseliner {
     $ENV{TMPDIR} //= $self->tmp_dir;  # used by File::Spec->tmpdir
     $ENV{BASELINER_TEMP} = $self->tmp_dir;
     $ENV{BASELINER_TMPHOME} = $self->tmp_dir;
-    $ENV{BASELINER_LOGHOME} = $self->log_dir;
+    $ENV{BASELINER_LOGHOME} //= $self->log_dir;
     $ENV{BASELINER_JOBHOME} = $self->job_dir;
     $ENV{BASELINER_PIDHOME} = $self->pid_dir;
     $ENV{CLARIVE_MIGRATE_NOW} = $self->app->migrate;

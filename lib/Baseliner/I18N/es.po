@@ -4518,6 +4518,9 @@ msgstr "Creadas por Mí"
 msgid "Change Status"
 msgstr "Cambiar estado"
 
+msgid "Change State"
+msgstr "Cambiar estadio"
+
 msgid "Changed status"
 msgstr "Estado cambiado"
 

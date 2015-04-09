@@ -32,8 +32,8 @@ params:
 	var id_required = Ext.id()
 	//var lbl_required = 'lbl_' + meta.id_field + '_' + id
 	
-	if(data && data[ meta.bd_field] ){
-		var eval_topics = data[ meta.bd_field ];
+	if(data && data[ meta.id_field] ){
+		var eval_topics = data[ meta.id_field ];
 		for(i=0; i<eval_topics.length;i++){
 			topics.push(eval_topics[i].mid);
 		}
