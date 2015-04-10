@@ -173,7 +173,7 @@ Cla.topic_grid = function(params){
     
     var init_buttons = function(action) {
         btn_edit[ action ]();
-        // btn_delete[ action ]();
+        btn_delete[ action ]();
     }
     
     var button_no_filter = new Ext.Button({
@@ -527,36 +527,41 @@ Cla.topic_grid = function(params){
             Baseliner.refreshCurrentTab();
         }
     });
-    
-    // var btn_delete = new Baseliner.Grid.Buttons.Delete({
-    //     disabled: true,
-    //     handler: function() {
-    //         var sm = grid_topics.getSelectionModel();
-    //         var sel = sm.getSelected();
-    //         var topic_names=[];
-    //         var topic_mids=[];
-    //         Ext.each( sm.getSelections(), function(sel){
-    //             topic_names.push( sel.data.category_name + ' #' + sel.data.topic_mid );
-    //             topic_mids.push( sel.data.topic_mid );
-    //         });
-    //         if( topic_names.length > 0 ) {
-    //             var names = topic_names.slice(0,10).join(',');
-    //             if( topic_names.length > 10 ) {
-    //                 names += _(' (and %1 more)', topic_names.length-10 );
-    //             }
-    //             Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the topic(s)') + ': <br /><b>' + names + '</b>?', 
-    //                 function(btn){ 
-    //                     if(btn=='yes') {
-    //                         Baseliner.Topic.delete_topic({ topic_mids: topic_mids, success: function(){ 
-    //                             grid_topics.getStore().remove(sm.getSelections());
-    //                             init_buttons('disable') 
-    //                         }});
-    //                     }
-    //                 }
-    //             );
-    //         }
-    //     }
-    // });
+    var can_delete = true;
+
+% if ( Baseliner->model('Permissions')->is_root( $c->username ) ) {
+        can_delete = false;
+%}
+    var btn_delete = new Baseliner.Grid.Buttons.Delete({
+        disabled: true,
+        hidden: can_delete,
+        handler: function() {
+            var sm = grid_topics.getSelectionModel();
+            var sel = sm.getSelected();
+            var topic_names=[];
+            var topic_mids=[];
+            Ext.each( sm.getSelections(), function(sel){
+                topic_names.push( sel.data.category_name + ' #' + sel.data.topic_mid );
+                topic_mids.push( sel.data.topic_mid );
+            });
+            if( topic_names.length > 0 ) {
+                var names = topic_names.slice(0,10).join(',');
+                if( topic_names.length > 10 ) {
+                    names += _(' (and %1 more)', topic_names.length-10 );
+                }
+                Ext.Msg.confirm( _('Confirmation'), _('Are you sure you want to delete the topic(s)') + ': <br /><b>' + names + '</b>?', 
+                    function(btn){ 
+                        if(btn=='yes') {
+                            Baseliner.Topic.delete_topic({ topic_mids: topic_mids, success: function(){ 
+                                grid_topics.getStore().remove(sm.getSelections());
+                                init_buttons('disable') 
+                            }});
+                        }
+                    }
+                );
+            }
+        }
+    });
     
     var btn_mini = new Ext.Toolbar.Button({
         icon:'/static/images/icons/updown_.gif',
@@ -1341,7 +1346,7 @@ Cla.topic_grid = function(params){
     // toolbar
     var tbar=[ search_field ];
     if( !typeApplication ) {
-        tbar = tbar.concat([ btn_add, btn_edit, btn_custom ]);
+        tbar = tbar.concat([ btn_add, btn_edit, btn_custom, btn_delete ]);
     }
     tbar = tbar.concat([ '->', btn_clear_state, btn_reports, btn_kanban, btn_mini ]);
     
