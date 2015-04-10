@@ -15,7 +15,7 @@
     <tr>
       <td >
           <img style="margin: 0px 5px 2px 0px" width=16 src="/user/avatar/<% $data->{$meta->{display_field}} %>/image.png" />
-          <% $data->{$meta->{display_field}}  || $data->{$meta->{bd_field}}%>, <small><%$datetime->dmy %> <%$datetime->hms%></small>    
+          <% $data->{$meta->{display_field}}  || $data->{$meta->{id_field}}%>, <small><%$datetime->dmy %> <%$datetime->hms%></small>    
       </td>
     </tr>
 % }

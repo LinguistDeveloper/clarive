@@ -2,7 +2,7 @@
     $meta
     $data
 </%args>
-% my $val = $data->{$meta->{display_field}}  || $data->{$meta->{bd_field}};
+% my $val = $data->{$meta->{id_field}} || $data->{$meta->{display_field}}  || $data->{$meta->{id_field}};
 % if( defined $val && !$meta->{hidden} ) {
     <tr>
       <th><% _loc($meta->{name_field}) %>:</th>

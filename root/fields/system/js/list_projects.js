@@ -25,8 +25,8 @@ params:
     var projects = [];
     var firstload = true;
     
-    if(data && data[meta.bd_field] ){
-        var val_projects = data[meta.bd_field];
+    if(data && data[meta.id_field] ){
+        var val_projects = data[meta.id_field];
         for(i=0; i<val_projects.length;i++){
             var p = val_projects[i];
             if( p==undefined || p.mid == undefined ) continue;
