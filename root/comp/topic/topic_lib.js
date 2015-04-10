@@ -1613,7 +1613,7 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
         });
 
         Baseliner.TopicGrid.superclass.constructor.call( this, Ext.apply({
-            height: 200,
+            height: 150,
             enableDragDrop: true,   
             pageSize: 10, // used by the combo             
             store: store,
