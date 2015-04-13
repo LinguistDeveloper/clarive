@@ -17,6 +17,7 @@ html: /dashlets/jobs_by_status_pie.html
       Type:
         <input type="radio" name="type" value="bar" onclick="graph_type='bar';graph.transform('donut');">  Donut
         <input type="radio" name="type" value="line" onclick="graph_type='line';graph.transform('pie');" checked>  Pie
+        <br>
       Last:
         <input type="radio" name="period" value="day" onclick="reload_jobs('1D','Last day');">  Day
         <input type="radio" name="period" value="week" onclick="reload_jobs( '7D','Last week');">  Week
