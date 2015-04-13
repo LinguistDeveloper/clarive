@@ -689,12 +689,20 @@ sub jc_store : Local  {
 sub by_status : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
+
+    my $period = $p->{period} // '1D';
     try {
         my %st;
-        my $d = mdb->now - '30D';
-        my $wh = 0 ? { endtime=>{'$gt'=>"$d"} } : {};  # TODO params control time range
+        my $d = Class::Date->now - $period;
+        $Class::Date::DATE_FORMAT="%Y-%m-%d";
+        my $wh = { endtime=>{'$gt'=>"$d"} };  # TODO params control time range
         map { $st{$$_{status}}++ } ci->job->find($wh)->fields({ status=>1,_id=>0 })->all;
-        $c->stash->{json} = { success => \1, data=>\%st };
+        my @data = ();
+        for ( keys %st ) {
+            push @data, [$_,$st{$_}];
+        }
+        _warn \@data;
+        $c->stash->{json} = { success => \1, data=>\@data };
     } catch {
         my $err = shift;
         $c->stash->{json} = { success => \0, msg => _loc("Error grouping jobs: %1", $err ) };
@@ -728,8 +736,6 @@ sub burndown : Local {
         # now send 7D against 30D average
         my $data0 = $burndown->('1000D');
         my $data1 = $burndown->('100D');
-        _log( $data0 );
-        _log( $data1 );
         $c->stash->{json} = { success => \1, data0=>$data0, data1=>$data1 };
     } catch {
         my $err = shift;

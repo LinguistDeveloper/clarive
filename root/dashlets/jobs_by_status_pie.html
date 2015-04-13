@@ -7,68 +7,65 @@ html: /dashlets/jobs_by_status_pie.html
 
 % my $graph_id = 'jobs_by_status_' . Util->_nowstamp();
 
-<div id="principal" style="clear:left;" >
-    <h2><% _loc('Jobs By Status (7 days)') %></h2><br>
+<div id="jobs_by_status_pie" style="clear:left;" >
+    <h2><% _loc('Jobs By Status') %></h2>
+    <div align="right">
+        <img src="/static/images/icons/config.gif" onclick="e = document.getElementById('jobs_by_status_pie_setup'); if (e.style.display == 'block') { e.style.display = 'none' } else { e.style.display = 'block' }"/>
+        <img src="/static/images/icons/refresh.gif"/ onclick="reload_jobs(graph_period,graph_title);">
+    </div>
+    <div id="jobs_by_status_pie_setup" style='display:none;border-style: ridge;border-width: 4px;padding: 10px;'>
+      Type:
+        <input type="radio" name="type" value="bar" onclick="graph_type='bar';graph.transform('donut');">  Donut
+        <input type="radio" name="type" value="line" onclick="graph_type='line';graph.transform('pie');" checked>  Pie
+        <input type="radio" name="type" value="spline" onclick="graph_type='spline';graph.transform('gauge');">  Gauge
+        <br>
+      Last:
+        <input type="radio" name="period" value="day" onclick="reload_jobs('1D','Last day');">  Day
+        <input type="radio" name="period" value="week" onclick="reload_jobs( '7D','Last week');">  Week
+        <input type="radio" name="period" value="month" onclick="reload_jobs( '1M','Last month');" checked>  Month
+        <input type="radio" name="period" value="quarter" onclick="reload_jobs( '3M','Last quarter');">  Quarter
+        <input type="radio" name="period" value="year" onclick="reload_jobs( '1Y','Last year');">  Year
+    </div>
+
 		<div id="<%$graph_id%>" 
-			style="width: 250px; height: 250px; float: left; " 
-			onmouseout="document.body.style.cursor='default';"></div>
-		<div id="<%$graph_id%>legend" ></div>
+			style="width: 250px; height: 250px; margin:0px auto; " 
+			onmouseout="document.body.style.cursor='default';">
+        </div>
 </div>
 
 <script type="text/javascript">
-    $(function () {
-        var data = [];
-        var statuses = [];
-        Cla.ajax_json('/job/by_status', { }, function(res){
-            for( var k in res.data ) {
-                data.push({ label: _(k), data: res.data[k], color: (k=='FINISHED'?'#5cb85c':(k=='ERROR'?'#d9534f':null) ) });
-                statuses[k] = k;
-            };
-            // DEFAULT
-            $.plot($("#<%$graph_id%>"), data, 
-            {
-                series: {
-                    statuses: statuses,
-                    pie: {
-                        show: true,
-                        radius: 0.9,
-                        innerRadius: 0.5,
-                        //tilt: 0.7,
-                        label: {
-                            show: true,
-                            radius: 3/4,
-                            formatter: function(label, series){
-                                return '<div style="font-size:8pt;text-align:center;padding:2px;color:white;">'+Math.round(series.percent)+'%</div>';
-                            },
-                            background: { opacity: 0 },
-                            threshold: 0.03
-                        }
-                    }
-                },
-                legend: {
-                    show: true,
-                    container: '#<%$graph_id%>legend'
-                },
-                grid: {
-                    hoverable: true,
-                    clickable: true
-                }        
+    var graph;
+    var graph_type = 'donut';
+    var period = '1M';
+    var graph_period;
+    var graph_title;
+
+    var reload_jobs = function( period, title ) {
+        var id = "#<% $graph_id %>";
+        graph_title = title;
+        if ( !period ) period = graph_period;
+        graph_period = period;
+        if (graph) graph.unload();
+
+        Cla.ajax_json('/job/by_status', { period: period }, function(res){
+            require(['d3','c3'], function(d3,c3){
+                graph = c3.generate({
+                     bindto: id,
+                     data: {
+                         columns: res.data,
+                         type : graph_type,
+                         colors: {'FINISHED':'#5cb85c','ERROR':'#d9534f'}
+                     },
+                     donut: {
+                         title: title
+                     }
+                });
             });
-            $("#<%$graph_id%>").bind("plothover", pieHover);
-            $("#<%$graph_id%>").bind("plotclick", pieClick(k));    
         });
+    };
+
+    $(function () {
+        reload_jobs( '1M','Last month' );
     });
 
-    function pieHover(event, pos, obj) 
-    {
-        if (!obj) return;
-        document.body.style.cursor='pointer';
-    }
-
-    function pieClick(event, pos, obj) 
-    {
-        if (!obj) return;
-        // Baseliner.add_tabcomp('/comp/monitor', null, { job_state_filter: obj.series.statuses[obj.series.label] });
-        alert(obj.series.statuses[obj.series.label]);
-    }
 </script>
