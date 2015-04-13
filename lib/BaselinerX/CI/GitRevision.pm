@@ -131,12 +131,16 @@ sub repo_items {
     my $repo = $self->repo;
     my $git = $repo->git;
     my @all = grep /^:/, $git->exec( qw/diff-tree -r -c -M -C/, _array($diff_shas) );
-    # process output
+        # process output
     for my $blob_line ( @all ) {
-        my ($x,$mask,$y,$blob,$status,$path) = split /\s+/, $blob_line, 6;
-        my ($path1,$path2) = split /\t+/, $path;
+        my ($x, $x2, $mask,$y, $y2, $blob,$status,$path);
+        ($x,$mask,$y,$blob,$status,$path) = split /\s+/, $blob_line, 6;
+        if(length $y == 6){
+            ($x, $x2, $mask,$y, $y2, $blob,$status,$path) = split /\s+/, $blob_line;
+        }
+        my ($path1,$path2) = split /\ {7}|\t/, $path;
         $mask = substr( $mask, -3 );
-        $status = 'M' if $status !~ /^(D|A|M)/;  # some statuses are like R089 and C089, for renamed items
+        $status = 'M' if !($status =~ /^D$|^A$|^M$/);  # some statuses are like R089 and C089, for renamed items
         if( $blob =~ /^0+$/ || $status eq 'D' ) {  # turn 00000000 blobs into undef blobs
             $blob=undef;
             $mask=undef;
