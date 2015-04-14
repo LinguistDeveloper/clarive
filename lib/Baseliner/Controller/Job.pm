@@ -693,8 +693,8 @@ sub by_status : Local {
     my $period = $p->{period} // '1D';
     try {
         my %st;
-        my $d = Class::Date->now - $period;
-        $Class::Date::DATE_FORMAT="%Y-%m-%d";
+        my $d = substr(Class::Date->now - $period,0,10);
+
         my $wh = { endtime=>{'$gt'=>"$d"} };  # TODO params control time range
         map { $st{$$_{status}}++ } ci->job->find($wh)->fields({ status=>1,_id=>0 })->all;
         my @data = ();
