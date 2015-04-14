@@ -710,6 +710,51 @@ sub by_status : Local {
     $c->forward('View::JSON');  
 }
 
+sub burndown_new : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+
+    my $date = $p->{date} // "".Class::Date->now;
+    my $period = $p->{period} // '1D';
+    
+    try {
+
+        my $now = Class::Date->new($date);
+        my $yesterday = $now - $period;
+
+        $Class::Date::DATE_FORMAT="%Y-%m-%d";
+        my @jobs = ci->job->find( { starttime => { '$gt' => ''.$yesterday } } )->all;
+
+        my %job_stats;
+        my @hours = ('x');
+        my $cont = Class::Date->now->hour;
+
+        map { $job_stats{$_ % 24} = 0; push @hours, ($_ % 24)} $cont .. $cont + 23;
+
+        for my $job ( @jobs ) {
+            next if !$job->{endtime};
+            my $start = Class::Date->new($job->{starttime});
+            my $end = Class::Date->new($job->{endtime});
+            for ( @hours ) {
+                if ( $start->hour <= $_ && $end->hour >= $_ ) {
+                    $job_stats{$_}++;
+                }
+            }
+        }
+
+        my @data = ('last '.$period);
+        for (@hours) {
+            next if $_ eq 'x';
+            push @data, $job_stats{$_};
+        }
+        $c->stash->{json} = { success => \1, data=>[\@hours,\@data] };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { success => \0, msg => _loc("Error grouping jobs: %1", $err ) };
+    };
+    $c->forward('View::JSON');  
+}
+
 # TODO filter by my apps
 sub burndown : Local {
     my ( $self, $c ) = @_;

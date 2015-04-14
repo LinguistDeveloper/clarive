@@ -1,0 +1,99 @@
+<!--
+name: Last day jobs burndown
+description: Graph last day's job burndown
+url: /dashboard/generic
+html: /dashlets/job_burndown_day.html
+-->
+<%perl>
+    use Baseliner::Utils;
+    use Class::Date;
+    my $graph_id = "job_burndown_day". _nowstamp;
+    my @topics = $c->stash->{list_releases};
+    my $title = "Job burndown";
+</%perl>
+
+	
+	<div id="job_burndown_day" style="clear:left;" >
+    <h2><%$title%></h2>
+    <div align="right">
+        <img src="/static/images/icons/config.gif" onclick="e = document.getElementById('job_burndown_day_setup'); if (e.style.display == 'block') { e.style.display = 'none' } else { e.style.display = 'block' }"/>
+        <img src="/static/images/icons/refresh.gif"/ onclick="reload_jobs_<% $graph_id %>( period_<% $graph_id %> );">
+    </div><br>
+    <div id="job_burndown_day_setup" style='display:none;border-style: ridge;border-width: 4px;padding: 10px;'>
+      Type:
+        <input type="radio" name="job_burndown_type" value="bar" onclick="graph_type_jobs_burndown_day='bar';graph_jobs_burndown_day.transform('bar');">  Bar
+        <input type="radio" name="job_burndown_type" value="line" onclick="graph_type_jobs_burndown_day='line';graph_jobs_burndown_day.transform('line');">  Line
+        <input type="radio" name="job_burndown_type" value="spline" onclick="graph_type_jobs_burndown_day='spline';graph_jobs_burndown_day.transform('spline');">  Spline
+        <input type="radio" name="job_burndown_type" value="area" onclick="graph_type_jobs_burndown_day='area-spline';graph_jobs_burndown_day.transform('area-spline');" checked>  Area
+        <input type="radio" name="job_burndown_type" value="step" onclick="graph_type_jobs_burndown_day='area-step';graph_jobs_burndown_day.transform('area-step');">  Step
+        <br>
+      Last:
+        <input type="radio" name="job_burndown_group" value="day" onclick="reload_jobs_<% $graph_id %>('1D');" checked>  Day
+        <input type="radio" name="job_burndown_group" value="week" onclick="reload_jobs_<% $graph_id %>( '7D');">  Week
+        <input type="radio" name="job_burndown_group" value="month" onclick="reload_jobs_<% $graph_id %>( '1M');">  Month
+        <input type="radio" name="job_burndown_group" value="quarter" onclick="reload_jobs_<% $graph_id %>( '3M');">  Quarter
+        <input type="radio" name="job_burndown_group" value="year" onclick="reload_jobs_<% $graph_id %>( '1Y');">  Year
+
+    </div>
+		<div id="<%$graph_id%>" 
+			style="width:500px;height:250px;float: left;" 
+			onmouseout="document.body.style.cursor='default';"></div>
+	</div>
+
+
+<script type="text/javascript">
+    var graph_jobs_burndown_day;
+    var graph_type_jobs_burndown_day = 'area-spline';
+    var period_<% $graph_id %> = '1D';
+
+    var reload_jobs_<% $graph_id %> = function( period ) {
+      var id = "#<% $graph_id %>";
+      Cla.ajax_json('/job/burndown_new', { period: period }, function(res){
+       period_<% $graph_id %> = period;
+       require(['d3','c3'], function(d3,c3){
+           graph_jobs_burndown_day = c3.generate({
+                bindto: id,
+                data: {
+                    x: 'x',
+                    columns: res.data,
+                    type: graph_type_jobs_burndown_day
+                },
+                bar: {
+                    width: {
+                        ratio: 0.4 // this makes bar width 50% of length between ticks
+                    }
+                    // or
+                    //width: 100 // this makes bar width 100px
+                },
+                grid: {
+                    x: {
+                        show: true
+                    },
+                    y: {
+                        show: true
+                    }
+                },
+                axis: {
+                    x: {
+                        type: 'category',
+                        tick: {
+                            multiline: false
+                        }
+                    },
+                    y: {
+                      label: {
+                        text: '# jobs',
+                        position: 'outer-middle'
+                      }
+                    }
+                }
+           });
+       });
+      });
+
+    };
+
+    $(function () {
+        reload_jobs_<% $graph_id %>( period_<% $graph_id %> );
+    });
+</script>
