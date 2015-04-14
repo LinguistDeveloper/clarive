@@ -720,10 +720,9 @@ sub burndown_new : Local {
     try {
 
         my $now = Class::Date->new($date);
-        my $yesterday = $now - $period;
+        my $yesterday = substr($now - $period, 0, 10);
 
-        $Class::Date::DATE_FORMAT="%Y-%m-%d";
-        my @jobs = ci->job->find( { starttime => { '$gt' => ''.$yesterday } } )->all;
+        my @jobs = ci->job->find( { starttime => { '$gt' => $yesterday } } )->all;
 
         my %job_stats;
         my @hours = ('x');
