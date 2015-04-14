@@ -60,49 +60,45 @@ register 'report.clarive.trending_requests_by_month' => {
         my @close_status = map { $_->{name}} ci->status->find({ type => 'F'})->all;
         my @cancel_status = map { $_->{name}} ci->status->find({ type => 'FC'})->all;
 
-        my $where = {};
+        my $where = {'event_key' => 'event.topic.create'};
         my $where_closed = { 'vars.status' => mdb->in(@close_status), 'event_key' => 'event.topic.change_status'};
         my $where_cancelled = { 'vars.status' => mdb->in(@cancel_status), 'event_key' => 'event.topic.change_status'};
 
         # Condiciones customizables
         if ( $p->{cb_date} eq 1 ) {
-          $where->{created_on} = {
-              '$ne'  => undef,
-              '$nin' => [ '' ],
-          };              
           if ( $p->{to_date} ) {
-              $where->{created_on}->{'$lte'} = $p->{to_date};
+              $where->{ts}->{'$lte'} = $p->{to_date};
               $where_closed->{ts}->{'$lte'} = $p->{to_date};
               $where_cancelled->{ts}->{'$lte'} = $p->{to_date};
           }
           if ( $p->{from_date} ) {
-              $where->{created_on}->{'$gte'} = $p->{from_date};
+              $where->{ts}->{'$gte'} = $p->{from_date};
               $where_closed->{ts}->{'$gte'} = $p->{from_date};
               $where_cancelled->{ts}->{'$gte'} = $p->{from_date};
           }
         };
 
         if ( $p->{chk_categories} eq 1 ) {
-          $where->{'category.id'} = mdb->in(_array($p->{categories}));
           my @mids = map {$_->{mid}} mdb->topic->find({'category.id' => mdb->in(_array($p->{categories}))})->fields({ _id=>0,mid=>1})->all;
+          $where->{mid} = mdb->in(@mids);
           $where_closed->{mid} = mdb->in(@mids);
           $where_cancelled->{mid} = mdb->in(@mids);
         };
 
         if ( $p->{chk_users} eq 1 ) {
             my @usernames = map {$_->{name}} BaselinerX::CI::user->search_cis( mid => mdb->in(_array $p->{users}));
-            $where->{created_by} = mdb->in( @usernames );
+            $where->{username} = mdb->in( @usernames );
             $where_closed->{username} = mdb->in( @usernames );
             $where_cancelled->{username} = mdb->in( @usernames );
         };
 
         my @new = _array(
-            mdb->topic->aggregate(
+            mdb->activity->aggregate(
                 [
                     {'$match' => $where},
                     {
                         '$group' => {
-                            _id    => { '$substr' => [ '$created_on',0,7] },
+                            _id    => { '$substr' => [ '$ts',0,7] },
                             'total' => {'$sum' => 1}
                         }
                     },
