@@ -9,7 +9,7 @@ html: /dashlets/job_burndown_day.html
     use Class::Date;
     my $graph_id = "job_burndown_day". _nowstamp;
     my @topics = $c->stash->{list_releases};
-    my $title = "Job burndown";
+    my $title = "Job execution trend";
 </%perl>
 
 	
@@ -28,11 +28,11 @@ html: /dashlets/job_burndown_day.html
         <input type="radio" name="job_burndown_type" value="step" onclick="graph_type_jobs_burndown_day='area-step';graph_jobs_burndown_day.transform('area-step');">  Step
         <br>
       Last:
-        <input type="radio" name="job_burndown_group" value="day" onclick="reload_jobs_<% $graph_id %>('1D');" checked>  Day
+        <input type="radio" name="job_burndown_group" value="day" onclick="reload_jobs_<% $graph_id %>('1D');">  Day
         <input type="radio" name="job_burndown_group" value="week" onclick="reload_jobs_<% $graph_id %>( '7D');">  Week
         <input type="radio" name="job_burndown_group" value="month" onclick="reload_jobs_<% $graph_id %>( '1M');">  Month
         <input type="radio" name="job_burndown_group" value="quarter" onclick="reload_jobs_<% $graph_id %>( '3M');">  Quarter
-        <input type="radio" name="job_burndown_group" value="year" onclick="reload_jobs_<% $graph_id %>( '1Y');">  Year
+        <input type="radio" name="job_burndown_group" value="year" onclick="reload_jobs_<% $graph_id %>( '1Y');" checked>  Year
 
     </div>
 		<div id="<%$graph_id%>" 
@@ -44,7 +44,7 @@ html: /dashlets/job_burndown_day.html
 <script type="text/javascript">
     var graph_jobs_burndown_day;
     var graph_type_jobs_burndown_day = 'area-spline';
-    var period_<% $graph_id %> = '1D';
+    var period_<% $graph_id %> = '1Y';
 
     var reload_jobs_<% $graph_id %> = function( period ) {
       var id = "#<% $graph_id %>";

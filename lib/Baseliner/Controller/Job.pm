@@ -727,9 +727,8 @@ sub burndown_new : Local {
 
         my %job_stats;
         my @hours = ('x');
-        my $cont = Class::Date->now->hour;
-
-        map { $job_stats{$_ % 24} = 0; push @hours, ($_ % 24)} $cont .. $cont + 23;
+        
+        map { $job_stats{$_} = 0; push @hours, ($_)} 0 .. 23;
 
         for my $job ( @jobs ) {
             next if !$job->{endtime};
