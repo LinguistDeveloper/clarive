@@ -11,19 +11,19 @@ html: /dashlets/jobs_by_status_pie.html
     <h2><% _loc('Jobs By Status') %></h2>
     <div align="right">
         <img src="/static/images/icons/config.gif" onclick="e = document.getElementById('jobs_by_status_pie_setup'); if (e.style.display == 'block') { e.style.display = 'none' } else { e.style.display = 'block' }"/>
-        <img src="/static/images/icons/refresh.gif"/ onclick="reload_jobs(graph_period,graph_title);">
+        <img src="/static/images/icons/refresh.gif"/ onclick="reload_jobs_<% $graph_id %>(graph_period_<% $graph_id %>,graph_title_<% $graph_id %>);">
     </div>
     <div id="jobs_by_status_pie_setup" style='display:none;border-style: ridge;border-width: 4px;padding: 10px;'>
       Type:
-        <input type="radio" name="type" value="bar" onclick="graph_type='donut';graph.transform('donut');"  checked>  Donut
-        <input type="radio" name="type" value="line" onclick="graph_type='pie';graph.transform('pie');">  Pie
+        <input type="radio" name="type_<% $graph_id %>" value="bar" onclick="graph_type_<% $graph_id %>='donut';graph_<% $graph_id %>.transform('donut');"  checked>  Donut
+        <input type="radio" name="type_<% $graph_id %>" value="line" onclick="graph_type_<% $graph_id %>='pie';graph_<% $graph_id %>.transform('pie');">  Pie
         <br>
       Last:
-        <input type="radio" name="period" value="day" onclick="reload_jobs('1D','Last day');">  Day
-        <input type="radio" name="period" value="week" onclick="reload_jobs( '7D','Last week');">  Week
-        <input type="radio" name="period" value="month" onclick="reload_jobs( '1M','Last month');" checked>  Month
-        <input type="radio" name="period" value="quarter" onclick="reload_jobs( '3M','Last quarter');">  Quarter
-        <input type="radio" name="period" value="year" onclick="reload_jobs( '1Y','Last year');">  Year
+        <input type="radio" name="period_<% $graph_id %>" value="day" onclick="reload_jobs_<% $graph_id %>('1D','Last day');">  Day
+        <input type="radio" name="period_<% $graph_id %>" value="week" onclick="reload_jobs_<% $graph_id %>( '7D','Last week');">  Week
+        <input type="radio" name="period_<% $graph_id %>" value="month" onclick="reload_jobs_<% $graph_id %>( '1M','Last month');" checked>  Month
+        <input type="radio" name="period_<% $graph_id %>" value="quarter" onclick="reload_jobs_<% $graph_id %>( '3M','Last quarter');">  Quarter
+        <input type="radio" name="period_<% $graph_id %>" value="year" onclick="reload_jobs_<% $graph_id %>( '1Y','Last year');">  Year
     </div>
 
 		<div id="<%$graph_id%>" 
@@ -33,26 +33,25 @@ html: /dashlets/jobs_by_status_pie.html
 </div>
 
 <script type="text/javascript">
-    var graph;
-    var graph_type = 'donut';
-    var period = '1M';
-    var graph_period;
-    var graph_title;
+    var graph_<% $graph_id %>;
+    var graph_type_<% $graph_id %> = 'donut';
+    var graph_period_<% $graph_id %> = '1M';
+    var graph_title_<% $graph_id %> = 'Last month';
 
-    var reload_jobs = function( period, title ) {
+    var reload_jobs_<% $graph_id %> = function( period, title ) {
         var id = "#<% $graph_id %>";
-        graph_title = title;
-        if ( !period ) period = graph_period;
-        graph_period = period;
-        if (graph) graph.unload();
+        graph_title_<% $graph_id %> = title;
+        if ( !period ) period = graph_period_<% $graph_id %>;
+        graph_period_<% $graph_id %> = period;
+        if (graph_<% $graph_id %>) graph_<% $graph_id %>.unload();
 
         Cla.ajax_json('/job/by_status', { period: period }, function(res){
             require(['d3','c3'], function(d3,c3){
-                graph = c3.generate({
+                graph_<% $graph_id %> = c3.generate({
                      bindto: id,
                      data: {
                          columns: res.data,
-                         type : graph_type,
+                         type : graph_type_<% $graph_id %>,
                          colors: {'FINISHED':'#5cb85c','ERROR':'#d9534f'}
                      },
                      donut: {
@@ -64,7 +63,7 @@ html: /dashlets/jobs_by_status_pie.html
     };
 
     $(function () {
-        reload_jobs( '1M','Last month' );
+        reload_jobs_<% $graph_id %>( graph_period_<% $graph_id %>,graph_title_<% $graph_id %> );
     });
 
 </script>
