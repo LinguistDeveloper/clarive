@@ -92,6 +92,7 @@ use Exporter::Tidy default => [
     _package_is_loaded
     _regex
     _get_dotted_keys
+    _reg_line
 )],
 other => [qw(
     _load_yaml_from_comment
@@ -2258,7 +2259,41 @@ sub hide_passwords {
     return $string;
 }
 
-
+sub _reg_line {
+    my %p = @_;
+    _warn \%p;
+    
+    my @x = _array($p{x});
+    my @y = _array($p{y});
+    my ($m, $d, $b, @xy, @x2, @xy_res, @x_res_sq, @y_res_sq) = (0); #vars,+ arrays
+    my $n = $#x + 1; 
+    my $sum_x = Sum(@x);
+    my $sum_y = Sum(@y);
+    foreach my $i (0..$#x) #need one loop
+        {                 
+        $x2[$i]=$x[$i]*$x[$i]; #needed for summation of x[i]**2  
+        $xy[$i]=$x[$i]*$y[$i]; #needed for summation of x[i]*y[i]
+        $xy_res[$i] = abs($y[$i] - ($sum_x/$n))*abs($x[$i] - ($sum_x/$n)); #needed for summation of residuals of x[i]*y[i] in r2
+        $y_res_sq[$i] = (abs($y[$i] - ($sum_y/$n)))**2; #needed for summa+tions in y-sigma and r2 calcs
+        $x_res_sq[$i] = (abs($x[$i] - ($sum_y/$n)))**2; #needed for summa+tions in x-sigma and r2 calcs
+        }       
+    my $y_sigma = sqrt(Sum(@y_res_sq)/($#y)); #calculate the sigma of data in+ y-array
+    my $x_sigma = sqrt(Sum(@x_res_sq)/($#x)); #calculate the sigma of data in+ x-array
+    $d = ($n*Sum(@x2)) - (Sum(@x)*Sum(@x)); #calculate the deviation
+    $m = (($n*Sum(@xy))-(Sum(@x)*Sum(@y)))/$d; #calculate the slope
+    $b = ((Sum(@x2)*Sum(@y)) - (Sum(@xy)*Sum(@x)))/$d; #calculate the inte+rcept
+    _debug "Slope = $m,  Intercept = $b";
+    
+    my @line = map { sprintf("%.2f",$b+$m*$x[$_]) } 0..scalar(@x)-1;
+    return \@line;
+    
+    sub Sum #quick function for doing summing called many many times above
+    {   
+        my $sum = 0;
+        $sum += $_ for @_; 
+        return $sum;       
+    }
+}
 1;
 
 __END__

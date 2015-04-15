@@ -26,13 +26,13 @@ sub validate {
     if ( $variables ) {
         for my $var ( keys %$variables ) {
             my @tokens = split /\./, $var;
-            my $value = $stash;
+            my $value;
             my @name;
 
             for my $token ( @tokens ) {
-                $value = $value->{$token};
+                $value = $stash->{$token};
                 push @name, $token;
-                if ( !$value || ( ref $value =~ /ARRAY/ && scalar @$value == 0) || ( ref $value =~ /HASH/ && scalar(keys %$value) == 0)) {
+                if ( !$value || ( ref($value) =~ /ARRAY/ && scalar @$value == 0) || ( ref($value) =~ /HASH/ && scalar(keys %$value) == 0)) {
                     $status = 'ko';
                     $msg .= " - "._loc("%1 must be filled", join(".",@name))."<br>";
                     last;
