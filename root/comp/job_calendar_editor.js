@@ -88,7 +88,6 @@
                                 value: '<% $cal->{description} %>'
                             } ] },
                         { layout: 'form', columnWidth: 0.5, items: [
-                            //Baseliner.ci_box({ name:'ns', role:['Infrastructure','Project'] , fieldLabel:_('Namespace'), value: cal_ns != 'Global' ? cal_ns : undefined , emptyText: _('Global'), force_set_value: cal_ns && cal_ns != '' ? true: false  }),
                             {  xtype: 'combo', 
                                        name: 'bl', 
                                        hiddenName: 'bl',
@@ -102,7 +101,8 @@
                                        value: '<% $cal->{bl}  %>',
                                        displayField:'name', 
                                        allowBlank: false
-                            }
+                            },
+                            Baseliner.ci_box({ name:'ns', role:['Infrastructure','Project'], width: 180, fieldLabel:_('Namespace'), value: cal_ns != 'Global' ? cal_ns : undefined , emptyText: _('Global'), force_set_value: cal_ns && cal_ns != '' ? true: false  }),
                        ]}
                     ]}
                 ]
