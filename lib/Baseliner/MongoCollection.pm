@@ -18,7 +18,7 @@ sub search {
     my ($self,%p) = @_;
     my $query = delete $p{query} or Util->_throw( 'search: missing query');
     my $limit = delete $p{limit} // 1000;
-    my $mongo_version = $self->_db->eval('db.version()'), 0,1;
+    my $mongo_version = $self->_db->eval('db.version()');
     if($mongo_version le '2.6.8'){
         $self->_db->run_command([ text=>$self->name, search=>$query, limit=>$limit, %p ]) ;
     }else{
