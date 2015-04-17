@@ -2,8 +2,7 @@
     $meta
     $data
 </%args>
-
-% my $fields = Baseliner->model('Topic')->get_downloadable_files({ mid => $data->{topic_mid}, username => $c->username, field => $meta->{id_field}});
+% my $fields = Baseliner->model('Topic')->get_downloadable_files({ mid => $data->{topic_mid}, username => $c->username, field => $meta->{id_field}, files_fields=>$meta->{files_fields}, files_categories=>$meta->{categories}});
 % if ( $fields ) {
     <ul class="nav nav-list">
         <li class="nav-header">
