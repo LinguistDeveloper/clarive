@@ -3507,9 +3507,7 @@ sub get_downloadable_files {
     my ($self, $p) = @_;
 
     my $categories = $p->{files_categories} // 'ALL';
-    my @cats = $categories eq 'ALL' ? 
-        map { $_->{name} } model->Topic->get_categories_permissions( username => $p->{username}, type => 'view' ) :
-        split /,/, $categories;
+    my @cats = split /,/, $categories;
 
     my $field = $p->{field} || _throw _loc('Missing field');
 
@@ -3520,12 +3518,11 @@ sub get_downloadable_files {
 
     my $where;
     $where->{username} = $p->{username} || _throw _loc('Missing username');
-    $where->{query_id} = $p->{mid};
 
     my ($cnt, @user_topics) = Baseliner->model('Topic')->topics_for_user( $where );
 
     my $filter = { 
-        # mid => mdb->in(map {$_->{mid}} @user_topics), 
+        mid => mdb->in(map {$_->{mid}} @user_topics), 
         collection => 'topic',
         name_category => mdb->in(@cats)
     };
@@ -3537,17 +3534,12 @@ sub get_downloadable_files {
         my $rel_data = ci->new($related->{mid})->get_meta;
         my @cat_fields;
         push @cat_fields, 
-            map {  { id_field => $_->{id_field}, name_field => $_->{name_field}, name_category => $related->{name_category} } } 
+            map {  { id_field => $_->{id_field}, name_field => $_->{name_field}, name_category => $_->{name_category} } } 
             grep { $_->{type} && $_->{type} eq 'upload_files' } _array($rel_data);
-        for my $cat_field (@cat_fields){
-            my $read_action = 'action.topicsfield.'._name_to_id($cat_field->{name_category}).'.'.$cat_field->{id_field}.'.read';
-            my $write_action = 'action.topicsfield.'._name_to_id($cat_field->{name_category}).'.'.$cat_field->{id_field}.'.write';
-            if ( !model->Permissions->user_has_read_action( username=> $p->{username}, action => $read_action) ) {
-                if ($fields eq 'ALL'){
-                    $available_docs->{$cat_field->{id_field}} = $cat_field->{name_field};
-                } else {
-                    $available_docs->{$cat_field->{id_field}} = $cat_field->{name_field} if ($filter_docs{$cat_field->{name_field}});
-                }
+        for my $field (@cat_fields){
+            my $read_action = 'action.topicsfield.'._name_to_id($field->{name_category}).'.'.$field->{id_field}.'.read';
+            if ( !model->Permissions->user_has_read_action( username=> $p->{username}, action => $read_action ) ) {
+                $available_docs->{$field->{id_field}} = $field->{name_field} if ($filter_docs{$field->{name_field}});
             }
         }
     }
