@@ -12,7 +12,15 @@ html: /dashlets/job_burndown_day.html
     my $title = "Job execution trend";
 </%perl>
 
-	
+<style>
+    .c3-region.workhours {
+      fill: red;
+    }
+    .c3-region.nonworkhours {
+      fill: green;
+    }
+</style>
+
 	<div id="job_burndown_day" style="clear:left;" >
     <h2><%$title%></h2>
     <div align="right">
@@ -21,11 +29,11 @@ html: /dashlets/job_burndown_day.html
     </div><br>
     <div id="job_burndown_day_setup_graph_title_<% $graph_id %>" style='display:none;border-style: ridge;border-width: 4px;padding: 10px;'>
       Type:
-        <input type="radio" name="job_burndown_type_graph_title_<% $graph_id %>" value="bar" onclick="graph_type_jobs_burndown_day='bar';graph_jobs_burndown_day.transform('bar');">  Bar
-        <input type="radio" name="job_burndown_type_graph_title_<% $graph_id %>" value="line" onclick="graph_type_jobs_burndown_day='line';graph_jobs_burndown_day.transform('line');">  Line
-        <input type="radio" name="job_burndown_type_graph_title_<% $graph_id %>" value="spline" onclick="graph_type_jobs_burndown_day='spline';graph_jobs_burndown_day.transform('spline');">  Spline
-        <input type="radio" name="job_burndown_type_graph_title_<% $graph_id %>" value="area" onclick="graph_type_jobs_burndown_day='area-spline';graph_jobs_burndown_day.transform('area-spline');" checked>  Area
-        <input type="radio" name="job_burndown_type_graph_title_<% $graph_id %>" value="step" onclick="graph_type_jobs_burndown_day='area-step';graph_jobs_burndown_day.transform('area-step');">  Step
+        <input type="radio" name="job_burndown_type_graph_title_<% $graph_id %>" value="bar" onclick="graph_type_jobs_burndown_day='bar';graph_jobs_burndown_day_<% $graph_id %>.transform('bar');">  Bar
+        <input type="radio" name="job_burndown_type_graph_title_<% $graph_id %>" value="line" onclick="graph_type_jobs_burndown_day='line';graph_jobs_burndown_day_<% $graph_id %>.transform('line');">  Line
+        <input type="radio" name="job_burndown_type_graph_title_<% $graph_id %>" value="spline" onclick="graph_type_jobs_burndown_day='spline';graph_jobs_burndown_day_<% $graph_id %>.transform('spline');">  Spline
+        <input type="radio" name="job_burndown_type_graph_title_<% $graph_id %>" value="area" onclick="graph_type_jobs_burndown_day='area';graph_jobs_burndown_day_<% $graph_id %>.transform('area');" checked>  Area
+        <input type="radio" name="job_burndown_type_graph_title_<% $graph_id %>" value="step" onclick="graph_type_jobs_burndown_day='area-step';graph_jobs_burndown_day_<% $graph_id %>.transform('area-step');">  Step
         <br>
       Last:
         <input type="radio" name="job_burndown_group_graph_title_<% $graph_id %>" value="day" onclick="reload_jobs_<% $graph_id %>('1D');">  Day
@@ -42,8 +50,8 @@ html: /dashlets/job_burndown_day.html
 
 
 <script type="text/javascript">
-    var graph_jobs_burndown_day;
-    var graph_type_jobs_burndown_day = 'area-spline';
+    var graph_jobs_burndown_day_<% $graph_id %>;
+    var graph_type_jobs_burndown_day = 'area';
     var period_<% $graph_id %> = '1Y';
 
     var reload_jobs_<% $graph_id %> = function( period ) {
@@ -51,7 +59,7 @@ html: /dashlets/job_burndown_day.html
       Cla.ajax_json('/job/burndown_new', { period: period }, function(res){
        period_<% $graph_id %> = period;
        require(['d3','c3'], function(d3,c3){
-           graph_jobs_burndown_day = c3.generate({
+           graph_jobs_burndown_day_<% $graph_id %> = c3.generate({
                 bindto: id,
                 data: {
                     x: 'x',
@@ -82,11 +90,14 @@ html: /dashlets/job_burndown_day.html
                     },
                     y: {
                       label: {
-                        text: '# jobs',
+                        text: '# jobs ',
                         position: 'outer-middle'
                       }
                     }
-                }
+                },
+                regions: [
+                    {axis: 'x', start: 8, end: 18, class: 'workhours'}
+                ]
            });
        });
       });
