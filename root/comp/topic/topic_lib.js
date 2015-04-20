@@ -145,7 +145,7 @@ Baseliner.topic_name = function(args) {
 
         var cat_name = args.short_name ? uppers : _(args.category_name); //Cambiarlo en un futuro por un contador de categorias
         if( cat_name )
-            cat_name = cat_name + ' ';
+            cat_name = cat_name + '';
         else
             cat_name = ''
         var color = args.category_color;
@@ -183,9 +183,9 @@ Baseliner.topic_name = function(args) {
         var cursor = args.link ? 'cursor:pointer' : '';
 
         var ret = args.mini 
-            ? String.format('<span id="boot" onclick=\'{4}\' style="{5};background: transparent" ><span class="{0}" style="{5};{1};padding: 1px 1px 1px 1px; margin: 0px 4px -10px 0px;border-radius:0px">&nbsp;</span><span style="{5};font-weight:bolder;font-size:11px">{2}{3}</span></span>', 
+            ? String.format('<span id="boot" onclick=\'{4}\' style="{5};background: transparent" ><span class="{0}" style="{5};{1};padding: 1px 1px 1px 1px; margin: 0px 4px -10px 0px;border-radius:0px">&nbsp;</span><span style="{5};font-weight:bolder;font-size:11px">{2} {3}</span></span>', 
                 cls, [style,args.style].join(';'), cat_name, mid, on_click, cursor )
-            : String.format('<span id="boot" onclick=\'{4}\'><span class="{0}" style="{1};{5}">{2}{3}</span></span>', 
+            : String.format('<span id="boot" onclick=\'{4}\'><span class="{0}" style="{1};{5}">{2} {3}</span></span>', 
                 cls, [style,args.style].join(';'), cat_name, mid, on_click, cursor );
         return ret;
 };
