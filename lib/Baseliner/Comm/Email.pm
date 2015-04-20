@@ -179,11 +179,12 @@ sub resolve_address {
             return $username;
         } else {        
             my $config = Baseliner->model('ConfigStore')->get( 'config.comm.email' );
-
+            my $ret = '';
             if ( $config->{auto_generate_empty_emails} ) {                
                 my $domain = $config->{domain};
-                return "$username\@$domain" if $domain;        
+                $ret = "$username\@$domain" if $domain;        
             }
+            return $ret;
         }
     }
 }

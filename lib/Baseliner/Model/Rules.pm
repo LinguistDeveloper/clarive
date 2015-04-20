@@ -63,9 +63,20 @@ sub init_job_tasks {
 
 sub parallel_run {
     my ($name, $mode, $stash, $code)= @_;
-    my $job = $stash->{job};
+    
+    my $stash_child = Util->_clone( $stash ); # save stash completely, so that parent does not destroy something by the time fork() child is ready
      
-    if( my $chi_pid = fork ) {
+    my $chi_pid = fork;
+    if( !defined $chi_pid ) {
+        # could not fork
+        require Proc::ProcessTable;
+        my @children;
+        for my $p (_array( Proc::ProcessTable->new->table )){
+            push @children, $p->pid if $p->ppid == $$;
+        }
+        my $msg = _loc( "Children, number=%1, list=%2", scalar(@children), join(',',@children) ); 
+        _fail( _loc('Could not fork child from parent pid %1. Check max processes available with `ulimit -u`.',$$), data=>$msg );  
+    } elsif( $chi_pid ) {
         # parent
         _log _loc 'Forked child task %1 with pid %2', $name, $chi_pid; 
         if( $mode eq 'fork' ) {
@@ -76,6 +87,8 @@ sub parallel_run {
         # child
         mdb->disconnect;    # will reconnect later
         my ( $ret, $err );
+        $stash = $stash_child;
+        
         try {
             $ret = $code->();
         }
@@ -262,6 +275,7 @@ sub dsl_build {
     my $spaces = sub { '   ' x $_[0] };
     my $level = 0;
     local $Data::Dumper::Terse = 1;
+    local $Data::Dumper::Deparse = 1;
     for my $s ( _array $stmts ) {
         local $p{no_tidy} = 1; # just one tidy is enough
         my $children = $s->{children} || {};
@@ -339,6 +353,9 @@ sub dsl_build {
                 if( length $attr->{sub_name} ) {
                     push @dsl, $spaces->($level) . sprintf(q{   my $config = parse_vars +{ %{ %s || {} }, %{ delete($$stash{shortcut_config}) // {}} }, $stash;}, Data::Dumper::Dumper( $data ) );
                 } else {
+                    if($key eq 'service.web.request'){
+                        $data->{body} = Util->_fix_utf8_to_xml_entities($data->{body});
+                    }
                     push @dsl, $spaces->($level) . sprintf(q{   my $config = parse_vars %s, $stash;}, Data::Dumper::Dumper( $data ) );
                 }
                 push @dsl, $spaces->($level) . sprintf(q{   launch( "%s", q{%s}, $stash, $config => '%s' );}, $key, $name, ($data_key//'') );

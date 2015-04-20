@@ -1,0 +1,59 @@
+<!--
+name: Job Daily View
+description: View of Jobs by Hour
+config: config.dashlet.jobs_by_hour
+url: /dashboard/generic
+html: /dashlets/jobs_by_hour.html
+-->
+
+% my $graph_id = 'jobs_by_hour_' . Util->_nowstamp();
+
+<div id="principal" style="clear:left;" >
+    <h2><% _loc('Jobs Daily (7 days)') %></h2><br>
+		<div id="<%$graph_id%>" 
+			style="width: 95%; height: 250px; float: left; " 
+			onmouseout="document.body.style.cursor='default';"></div>
+</div>
+
+<script type="text/javascript">
+ 
+    function gd(year, month, day) {
+        return new Date(year, month, day).getTime();
+    }
+ 
+    $(function () {
+        var id = "#<% $graph_id %>";
+        var data = [];
+        var ticks = [];
+        Cla.ajax_json('/job/by_hour', { }, function(res){
+            for( var k in res.data ) {
+                data.push([k,res.data[k] ]);
+            };
+            for( var i=0; i<24; i++ ) {
+                //var hr = ( i>11 ? (i-12)+'pm' : i+'am' );
+                ticks.push([i,i+'h']); 
+            }
+             
+            $.plot( $(id), [
+                    {
+                        data: data,
+                        label: _('Jobs'),
+                        lines: { show: true}
+                    }
+                ],
+                {
+                    legend: { show: true },
+                    xaxis: { 
+                        ticks: ticks,
+                        axisLabelUseCanvas: true,
+                        labelAngle: -90
+                    }
+                }
+            );
+             
+
+        });
+    });
+</script>
+
+

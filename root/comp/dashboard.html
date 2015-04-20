@@ -43,7 +43,7 @@
               <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown">Dashboards <span class="caret"></span></button>
               <ul class="dropdown-menu">
 % for my $dashboard (_array $dashboards) {
-                <li><a href="javascript:Baseliner.addNewTab('/dashboard/list?dashboard_id=<% $dashboard->{id} %>', _('<% $dashboard->{name} %>') );"><% $dashboard->{name} %></a></li>
+<li><a href="javascript:Baseliner.addNewTab('/dashboard/list?dashboard_id=<% $dashboard->{id} %>', _('<% $dashboard->{name} %>'), { tab_icon:'/static/images/icons/dashboard.png' } );"><% $dashboard->{name} %></a></li>
 %}
               </ul>
             </div>

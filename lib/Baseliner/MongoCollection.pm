@@ -1,6 +1,7 @@
 package Baseliner::MongoCollection;
 use Moose;
 use Try::Tiny;
+use Baseliner::Utils;
 
 has _collection => ( is=>'ro', isa=>'MongoDB::Collection', required=>1, handles=>qr/.*/ );
 has _db => ( is=>'ro', isa=>'Object', weak_ref=>1 );
@@ -17,7 +18,13 @@ sub search {
     my ($self,%p) = @_;
     my $query = delete $p{query} or Util->_throw( 'search: missing query');
     my $limit = delete $p{limit} // 1000;
-    $self->_db->run_command([ text=>$self->name, search=>$query, limit=>$limit, %p ]) ; #->{results} ;
+    my $mongo_version = $self->_db->eval('db.version()');
+    if($mongo_version le '2.6.8'){
+        $self->_db->run_command([ text=>$self->name, search=>$query, limit=>$limit, %p ]) ;
+    }else{
+        #TODO: Include options like limit
+        $self->_db->where({'$text' => {'$search' => $query } });
+    }
 }
 
 sub search_re {

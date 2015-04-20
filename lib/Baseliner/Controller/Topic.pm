@@ -64,8 +64,8 @@ register 'registor.menu.topics' => {
                 #actions  => ["action.topics.$id.create"],
                 url_comp => '/topic/grid?status_id=' . $data->{id_status},
                 #comp_data => { new_category_name=>$name, new_category_id=>$data->{id} },
-                icon     => $data->{status_icon}||'/static/images/icons/status.png',
-                tab_icon => $data->{status_icon}||'/static/images/icons/status.png',
+                icon     => $data->{status_icon}||'/static/images/icons/state.gif',
+                tab_icon => $data->{status_icon}||'/static/images/icons/state.gif',
            }
        } sort { lc $a->{name} cmp lc $b->{name} } 
            ci->status->find->fields({ id_status=>1, name=>1, color=>1, seq=>1, status_icon=>1 })->all;
@@ -92,8 +92,8 @@ register 'registor.menu.topics' => {
             %menu_view,
        };
        $menus->{'menu.topic.status'} = {
-                    label    => _loc('Status'),
-                    icon     => '/static/images/icons/status.png',
+                    label    => _loc('State'),
+                    icon     => '/static/images/icons/state.gif',
                     index => 2,
                     #actions  => ['action.topics.%.create'],
              } if %menu_statuses;
@@ -1426,7 +1426,7 @@ sub file : Local {
                     $msg = _loc( "File deleted ok" );
                 } else {
                     # starting in 6.2 assets are not shared, may change back in the future
-                    my $subject = _loc("Detached file %1 from #%2 %3", $ass->filename, $topic->mid, $topic->title,);
+                    my $subject = _loc("Detached file %1 from #%2 %3", $ass->filename, $topic->{mid}, $topic->{title});
                     event_new 'event.topic.file_remove' => {
                         username => $c->username,
                         mid      => $topic_mid,
@@ -1436,15 +1436,15 @@ sub file : Local {
                         subject         => $subject
                         }
                     => sub {
-                        my $rel = mdb->master_rel->find_one({ from_mid=>"$topic_mid", to_mid=>$ass->mid });
-                        _log "Deleting file from topic $topic_mid ($rel) = " . $ass->mid;
-                        ref $rel or _fail _loc "File not attached to topic";
-                        $rel -> delete;
+                        _log _loc("Deleting file %1 from topic %2",$ass->name,$topic_mid);
+                        my $rel = mdb->master_rel->remove({ from_mid=>"$topic_mid", to_mid=>$ass->mid });
+                        _fail _loc "File not attached to topic" if $rel ne '1';
                         $msg = _loc( "Relationship deleted ok" );
                     };
                 }
             }
         }
+        cache->remove({mid=>"$topic_mid"});
         $c->stash->{ json } = { success => \1, msg => $msg };
     } catch {
         my $err = shift;

@@ -70,7 +70,7 @@ use Exporter::Tidy default => [
     _uacc
     _markup
     zip_files
-zip_tree
+    zip_tree
     hash_flatten
     parse_vars
     _to_json
@@ -1344,10 +1344,6 @@ sub parse_vars {
     {
           local $SIG{ALRM} = sub { alarm 0; die "parse_vars timeout - data structure too large?\n" };
           alarm( $ENV{BASELINER_PARSE_TIMEOUT} // $Baseliner::Utils::parse_vars_timeout // 30 );
-          # flatten keys
-          my $flat = hash_flatten( $vars );
-          # now merge flat keys with originals, but originals have precedence
-          $vars = { %$flat, %$vars };
 
           $ret = parse_vars_raw( data=>$data, vars=>$vars, throw=>$args{throw} );
           alarm 0;
@@ -1364,12 +1360,13 @@ sub parse_vars_raw {
     $parse_vars_raw_scope or local $parse_vars_raw_scope={};
     return () if $ref && exists $parse_vars_raw_scope->{"$data"};
     $parse_vars_raw_scope->{"$data"}=() if $ref;
+    my $stack = $args{stack};
     
     if( $ref eq 'HASH' ) {
         my %ret;
         for my $k ( keys %$data ) {
             my $v = $data->{$k};
-            $ret{$k} = parse_vars_raw( data=>$v, vars=>$vars, throw=>$throw );
+            $ret{$k} = parse_vars_raw( data=>$v, vars=>$vars, throw=>$throw, stack=>$stack );
         }
         return \%ret;
     } elsif( $ref =~ /Baseliner/ ) {
@@ -1377,58 +1374,83 @@ sub parse_vars_raw {
         my %ret;
         for my $k ( keys %$data ) {
             my $v = $data->{$k};
-            $ret{$k} = parse_vars_raw( data=>$v, vars=>$vars, throw=>$throw );
+            $ret{$k} = parse_vars_raw( data=>$v, vars=>$vars, throw=>$throw, stack=>$stack );
         }
         return bless \%ret => $class;
     } elsif( $ref eq 'ARRAY' ) {
         my @tmp;
         for my $i ( @$data ) {
-            push @tmp, parse_vars_raw( data=>$i, vars=>$vars, throw=>$throw );
+            push @tmp, parse_vars_raw( data=>$i, vars=>$vars, throw=>$throw, stack=>$stack );
         }
         return \@tmp;
     } elsif( $ref eq 'SCALAR' ) {
-        return parse_vars_raw( data=>$$data, vars=>$vars, throw=>$throw );
+        return parse_vars_raw( data=>$$data, vars=>$vars, throw=>$throw,stack=>$stack );
     } elsif( $ref eq 'MongoDB::OID') {
-        return parse_vars_raw( data=>$$data{value}, vars=>$vars, throw=>$throw );
+        return parse_vars_raw( data=>$$data{value}, vars=>$vars, throw=>$throw,stack=>$stack );
     } elsif($ref) {
-        return parse_vars_raw( data=>_damn( $data ), vars=>$vars, throw=>$throw );
+        return parse_vars_raw( data=>_damn( $data ), vars=>$vars, throw=>$throw,stack=>$stack );
     } else {
         # string
-        return $data unless $data && $data =~ m/\$\{.+\}/;
+        return $data unless $data && $data =~ m/\$\{[^\}]+\}/;
         my $str = "$data";
-        my @discarded;
-        my @matches;
-        my $str_orig = $str;
-        @matches = ($str =~ m/\$\{(.+?)\}/g);
-        while ( @matches && !(@matches ~~ @discarded) ) {
-            
-            for my $match ( @matches ) {
-                my ($match_in_fn) = $match =~ /^\w+\((\w+).*\)/;
-                if ( !$vars->{$match} && !$vars->{$match_in_fn} ) {
-                    _log _loc("Variable %1 not found", $match_in_fn||$match);
-                    push @discarded, $match;
-                    # $str =~ s/\$\{$match\}//g;
+        while(1) {
+            # ref replaces
+            if( $str =~ /^\$\{([^\}]+)\}$/ ) {
+                # just the var: "${my_server}"
+
+                # control recursion and create a path for a clearer error message
+                my $k = $1;
+                _fail _loc 'Deep recursion in parse_vars for variable `%1`, path %2', $k, '${'.join('}/${',_array($stack->{path})).'}' 
+                    if exists $stack->{unresolved}{$k};
+                $stack->{unresolved}{$k}=1;
+                $stack->{path} or local $stack->{path} = []; 
+                push @{ $stack->{path} }, $k;
+
+                # just a var
+                if( exists $vars->{$k} ) {
+                    $str = parse_vars_raw(data=>$vars->{$k},vars=>$vars,throw=>$throw,stack=>$stack); 
+                    delete $stack->{unresolved}{$k};
+                    last;
+                }
+                # dot?
+                my @keys = split( /\./, $k) if $k =~ /[\.\w]+/;
+                if( @keys > 1 ) {
+                    my $k2 = join('}{', @keys );
+                    if( eval('exists $vars->{'.$k2.'}') ) {
+                        $str = parse_vars_raw( data=>eval('$vars->{'.$k2.'}'), vars=>$vars, throw=>$throw,stack=>$stack);
+                        delete $stack->{unresolved}{$k};
+                        last;
+                    }
+                }
+                if( $k =~ /^(uc|lc)\(([^\)]+)\)/ ) {
+                    my $v = parse_vars_raw( data=>'${'.$2.'}', vars=>$vars, throw=>$throw,stack=>$stack );
+                    $str = $1 eq 'uc' ? uc($v) : lc($v);
+                    last;
+                }
+                if( $k =~ /^to_id\(([^\)]+)\)/ ) {
+                    $str = _name_to_id(parse_vars_raw( data=>$1, vars=>$vars, throw=>$throw,stack=>$stack ));
+                    last;
+                }
+                if( $k =~ /^nvl\(([^\)]+),(.+)\)/ ) {
+                    $str = $vars->{$1} // $2;
+                    last;
+                }
+                if( $k =~ /^ci\(([^\)]+)\)/ ) {
+                    $str = ci->new( $1 );   # better than ci->find, this way it fails when mid not found
+                    last;
+                }
+                if( $k =~ /^ci\(([^\)]+)\)\.(.+)/ ) {
+                    my $ci = ci->new( $1 );
+                    $str = $ci->can($2) ? $ci->$2 : $ci->{$2};
+                    last;
                 }
             }
-            for my $k ( keys %$vars ) {
-                my $v = $vars->{$k};
-                if( ref $v && $str =~ /^\$\{$k\}$/ ) {
-                    $str = $v;
-                } else {
-                    $str =~ s/\$\{$k\}/$v/g;
-                    # look for cis like this: ${ci(field.attrib)}
-                    $str =~ s/\$\{ci\($k\)\.(.+)\}/ parse_vars("\${$1}", ci->new($v)) /eg;
-                    $str =~ s/\$\{uc\($k\)\}/uc($v)/eg;
-                    $str =~ s/\$\{lc\($k\)\}/lc($v)/eg;
-                    $str =~ s/\$\{to_id\($k\)\}/_name_to_id($v)/eg;
-                    $str =~ s/\$\{nvl\($k,(.+)\)\}/ $v ? $v : $1/eg;
-                    #$str =~ s/\$\{join\((\S+),$k\)\}/join($1,_array($v))/eg;   # TODO $v has a baddly comma joined list, should be an Arrayref
-                }
+            else {
+                # a string with more text, ex: "sudo ${my_user} ; ls ${my_path}"
+                $str =~ s/(\$\{[^\}]+\})/parse_vars_raw(data=>$1,vars=>$vars,throw=>$throw,stack=>$stack)/eg;
             }
-            last if $str eq $str_orig;  # avoid infinite recursion in case no substitution possible
-            @matches = ($str =~ m/\$\{(.+?)\}/g);
-        }        
-        $str =~ s/\$\{nvl\((\w+),(\w+)\)\}/$2/g;
+            last;
+        }
         # cleanup or throw unresolved vars
         if( $throw ) { 
             if( my @unresolved = $str =~ m/\$\{(.*?)\}/gs ) {
@@ -1502,6 +1524,25 @@ sub _fixascii_sql {
 
     $data
 }
+
+
+sub _fix_utf8_to_xml_entities {
+    my $data = shift;
+    $data =~ s/á/&#225;/g;
+    $data =~ s/Á/&#193;/g;
+    $data =~ s/é/&#233;/g;
+    $data =~ s/É/&#201;/g;
+    $data =~ s/í/&#237;/g;
+    $data =~ s/Í/&#205;/g;
+    $data =~ s/ó/&#243;/g;
+    $data =~ s/Ó/&#211;/g;
+    $data =~ s/ú/&#250;/g;
+    $data =~ s/Ú/&#218;/g;
+    $data =~ s/ñ/&#241;/g;
+    $data =~ s/Ñ/&#209;/g;
+    $data;
+}
+
 
 sub _fixCharacters_mail {
     my $d = shift;

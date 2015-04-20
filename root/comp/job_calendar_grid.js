@@ -35,7 +35,7 @@
         };
 
         var render_cal = function(v,metadata,rec,rowIndex,colIndex,store) {
-            return String.format('<a href="javascript:Baseliner.edit_calendar(\'{1}\', \'{2}\')" style="font-size: 13px;">{0}</a>',
+            return String.format('<a href="" onclick="javascript:Baseliner.edit_calendar(\'{1}\', \'{2}\'); return false" style="font-size: 13px;">{0}</a>',
                 v, grid.id, rowIndex );
         };
 
@@ -99,10 +99,10 @@
                         {  xtype: 'textfield', name: 'seq', fieldLabel: _('Precedence'), allowBlank: false, value: 100 }, 
                         {
                             xtype: 'radiogroup',
-                            fieldLabel: 'Modo de creacion',
+                            fieldLabel: _('Creation Mode'),
                             items: [
-                                {boxLabel: 'Crear como nuevo', name: 'rbMode', inputValue: '1', checked: true},
-                                {boxLabel: 'Crear como copia de otro', name: 'rbMode', inputValue: '2'}
+                                {boxLabel: _('Create as New'), name: 'rbMode', inputValue: '1', checked: true},
+                                {boxLabel: _('Create as Copy'), name: 'rbMode', inputValue: '2'}
                             ],
                             listeners: {
                                 'change': function(rg,checked){
@@ -142,7 +142,7 @@
                                    displayField:'name', 
                                    allowBlank: false
                         },	
-                        Baseliner.ci_box({ name:'ns', role:'Project', fieldLabel:_('Namespace'), emptyText: _('Global') })
+                        Baseliner.ci_box({ name:'ns', role:'Project', fieldLabel:_('Scope'), emptyText: _('Global') })
                     ]
                 });
                 var win = new Ext.Window({
@@ -186,9 +186,9 @@
                 { header: _('Calendar'), width: 200, dataIndex: 'name', sortable: true, renderer: render_cal },	
                 { header: _('Precedence'), width: 80, dataIndex: 'seq', sortable: true },	
                 { header: _('Baseline'), width: 100, dataIndex: 'bl_desc', sortable: true, renderer: render_bl },	
-                { header: _('Namespace'), width: 150, dataIndex: 'ns', sortable: true, renderer: render_ns },	
+                { header: _('Scope'), width: 150, dataIndex: 'ns', sortable: true, renderer: render_ns },	
                 { header: _('Description'), width: 200, dataIndex: 'description', sortable: true, hidden: true, renderer: Baseliner.render_wrap },	
-                { header: _('Namespace Description'), width: 200, dataIndex: 'ns_desc', hidden: true, sortable: true }	
+                { header: _('Scope Description'), width: 200, dataIndex: 'ns_desc', hidden: true, sortable: true }	
             ],
             autoSizeColumns: true,
             deferredRender:true,
@@ -307,7 +307,7 @@
                 //                           displayField:'name', 
                 //                           allowBlank: false
                 //                },	
-                //                Baseliner.ci_box({ name:'ns', role:'Project', fieldLabel:_('Namespace'), emptyText: _('Global') })
+                //                Baseliner.ci_box({ name:'ns', role:'Project', fieldLabel:_('Scope'), emptyText: _('Global') })
                 //            ]
                 //        });
                 //        var win = new Ext.Window({

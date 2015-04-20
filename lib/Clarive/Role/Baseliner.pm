@@ -43,7 +43,7 @@ sub setup_baseliner {
     $ENV{TMPDIR} //= $self->tmp_dir;  # used by File::Spec->tmpdir
     $ENV{BASELINER_TEMP} = $self->tmp_dir;
     $ENV{BASELINER_TMPHOME} = $self->tmp_dir;
-    $ENV{BASELINER_LOGHOME} = $self->log_dir;
+    $ENV{BASELINER_LOGHOME} //= $self->log_dir;
     $ENV{BASELINER_JOBHOME} = $self->job_dir;
     $ENV{BASELINER_PIDHOME} = $self->pid_dir;
     $ENV{CLARIVE_MIGRATE_NOW} = $self->app->migrate;
@@ -75,7 +75,7 @@ sub bali_service {
     my $c = Baseliner::Standalone->new;
     Baseliner->app( $c );
     $opts{ arg_list } = { map { $_ => 1 } keys %opts }; # so that we can differentiate between defaults and user-fed data
-    $opts{ args } = \%opts;
+    $opts{ args } = $self->args;  # plain command-line args
     my $logger = Baseliner->model('Services')->launch($service_name, %opts, data=>\%opts, c=>$c );
     #_debug $logger;
     # exit ref $logger ? $logger->rc : $logger;

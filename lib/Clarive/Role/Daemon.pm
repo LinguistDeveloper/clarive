@@ -14,7 +14,7 @@ has opts_file => qw(is rw isa Str lazy 1 default), sub {
 };
 has signal     => qw(is rw default) => sub { 'TERM' };  # standard kill signal
 has wait       => qw(is ro default) => sub { 30 };  # seconds to wait for shutdown before killing
-has log_file      => qw(is rw lazy 1 default), sub { $_[0]->log_dir . '/' . $_[0]->instance_name . '.log' };
+has log_file      => qw(is rw lazy 1 default), sub { $ENV{BASELINER_LOGHOME} ? $ENV{BASELINER_LOGHOME}.'/'. $_[0]->instance_name . '.log' : $_[0]->log_dir . '/' . $_[0]->instance_name . '.log' };
 has log_keep      => qw(is rw default) => sub { 10 };
 
 with 'Clarive::Role::TempDir';

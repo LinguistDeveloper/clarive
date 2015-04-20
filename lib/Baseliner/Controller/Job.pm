@@ -702,7 +702,43 @@ sub by_status : Local {
     $c->forward('View::JSON');  
 }
 
+# TODO filter by my apps
 sub burndown : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+    try {
+        my $burndown = sub{
+            my $t = shift;
+            my $d = mdb->now - $t;
+            my %ret = map { $_ => 0 } 0..23;
+            my $wh = $t ? { endtime=>{'$gt'=>"$d"} } : {};  # TODO params control time range
+            my $tot = 0;
+            for my $job( ci->job->find($wh)->fields({ status=>1, endtime=>1, _id=>0 })->all ) {
+                my $hour = Class::Date->new($job->{endtime})->hour;
+                $ret{ $hour }++; 
+                $tot++;
+            }
+            for( sort { $a <=> $b } keys %ret ) {
+                my $diff = $tot - $ret{$_};
+                $ret{$_} = $diff; 
+                $tot = $diff;
+            }
+            \%ret;
+        };
+        # now send 7D against 30D average
+        my $data0 = $burndown->('30D');
+        my $data1 = $burndown->('7D');
+        _log( $data0 );
+        _log( $data1 );
+        $c->stash->{json} = { success => \1, data0=>$data0, data1=>$data1 };
+    } catch {
+        my $err = shift;
+        $c->stash->{json} = { success => \0, msg => _loc("Error grouping jobs: %1", $err ) };
+    };
+    $c->forward('View::JSON');  
+}
+
+sub by_hour : Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
     try {

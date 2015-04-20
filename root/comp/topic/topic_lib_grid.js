@@ -688,17 +688,11 @@ Cla.topic_grid = function(params){
         // var date_modified_on = rec.data.modified_on ? rec.data.modified_on.dateFormat('M j, Y, g:i a') : '';
         var modified_by = rec.data.modified_by;
         
-        //#######################################Ñapa
-        // if ( rec.json['mid_' + this.alias] ){
-            // mid = rec.json['mid_' + this.alias];
-            // category_name = rec.json['category_name_' + this.alias];
-            // category_color = rec.json['category_color_' + this.alias];
-            // var modified_on_to_date = new Date(rec.json['modified_on_' + this.alias]);
-            // date_modified_on = modified_on_to_date.dateFormat('M j, Y, g:i a');
-            // date_modified_on = modified_on_to_date.dateFormat('M j, Y, g:i a');
-            // modified_by = rec.json['modified_by_' + this.alias];
-        // }
-        //#######################################
+        if ( rec.json['mid_' + this.alias] && rec.json['category_name_' + this.alias] && rec.json['category_color_' + this.alias]){
+            mid = rec.json['mid_' + this.alias];
+            category_name = rec.json['category_name_' + this.alias];
+            category_color = rec.json['category_color_' + this.alias];
+        }
         
         var tag_color_html;
         tag_color_html = '';
@@ -1086,7 +1080,7 @@ Cla.topic_grid = function(params){
                 if (typeof(value[i]) == 'object') {
                     var tmp_obj = [];
                     for (var j in value[i] ){
-                        console.log(value[i][j]);
+                        // console.log(value[i][j]);
                         tmp_obj.push(j + ': ' + value[i][j]);
                     }
                     render_obj.push(tmp_obj.join(';'));
