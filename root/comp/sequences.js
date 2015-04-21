@@ -26,7 +26,7 @@
     	);	    	
 	}});
 
-	var btn_refresh = new Ext.Button({ text:_('Refresh'), icon:'/static/images/icons/refresh.gif', handler: function(){
+	var btn_refresh = new Ext.Button({ text:_('Refresh'), icon:'/static/images/icons/refresh.png', handler: function(){
 		var hash={};
 		store.load();
    		Ext.each(store.reader.jsonData.data,function(row){

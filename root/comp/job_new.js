@@ -941,7 +941,7 @@
         cls: 'x-btn-icon',
         layout: 'form',
         tooltip: _('Reload Calendar Slots'),
-        icon: '/static/images/icons/refresh.gif',
+        icon: '/static/images/icons/refresh.png',
         handler: function(){ calendar_reload(); }
     });
     combo_time.on('enable', function(){ button_show_cals.enable(); });

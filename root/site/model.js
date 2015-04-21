@@ -693,7 +693,7 @@ Baseliner.Calendar =  function(c) {
           '-',
           { xtype:'button', text:_('Month'), handler:function(){ cal.fullCalendar("changeView", "month") } } ,
           '-',
-          { xtype:'button', iconCls:'x-btn-icon', icon:'/static/images/icons/refresh.gif', handler:function(){ 
+          { xtype:'button', iconCls:'x-btn-icon', icon:'/static/images/icons/refresh.png', handler:function(){ 
                 // cal.fullCalendar("refetchEvents") 
                 // refresh: delete everything and start over
                 load_cal_events();

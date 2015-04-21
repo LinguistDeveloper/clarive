@@ -611,7 +611,7 @@
             layoutConfig: { align:'stretch' },
             items: [
                 { flex:1, layout:'hbox', padding: 20, 
-                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Retry')+'</b>', icon:'/static/images/icons/refresh.gif', 
+                    items:[{ flex:1, xtype:'button', height: 50, text:'<b>'+_('Retry')+'</b>', icon:'/static/images/icons/refresh.png', 
                         handler:function(){trap_do(mid,'retry')} },
                         { flex:1, border: false, style: 'margin-left:10px', html: _('Retries the job task that failed') }]},
                 { flex:1, layout:'hbox', padding: 20, 

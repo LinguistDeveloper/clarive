@@ -565,7 +565,7 @@
             { text:_('Sort'), expanded: true, type:'sort', leaf: false, children:[], icon:'/static/images/icons/folder_go.png' }
         ]);
     };
-    var reload_all = new Ext.Button({ icon:'/static/images/icons/refresh.gif', handler: function(){ 
+    var reload_all = new Ext.Button({ icon:'/static/images/icons/refresh.png', handler: function(){ 
         tree_all.getLoader().load( tree_all.root );
         tree_all.root.expand();
     }});

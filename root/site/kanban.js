@@ -58,7 +58,7 @@ Baseliner.Kanban = Ext.extend( Ext.ux.Portal, {
             '<img src="/static/images/icons/kanban.png" />',
             'KANBAN',
             '-',
-            { icon:'/static/images/icons/refresh.gif', iconCls:'x-btn-icon', handler: function(){ self.refresh() } },
+            { icon:'/static/images/icons/refresh.png',tooltip: _('Refresh Node'), iconCls:'x-btn-icon', handler: function(){ self.refresh() } },
             self.status_btn,
             '->',
             self.tab_btn,
