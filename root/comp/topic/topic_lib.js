@@ -239,7 +239,6 @@ Baseliner.TopicBox = Ext.extend( Ext.ux.form.SuperBoxSelect, {
     // stackItems: true,
     initComponent: function(){
         var self = this;
-
         if (self.tpl_cfg){
             var columns = self.tpl_cfg.split(';');
             var header = [];
@@ -309,9 +308,24 @@ Baseliner.TopicBox = Ext.extend( Ext.ux.form.SuperBoxSelect, {
             '</div></tpl>' );
         
         Baseliner.TopicBox.superclass.initComponent.call(this);
-    }
+    },
     // }, 
-    // get_save_data : function(){
+    get_save_data : function(){
+        return this.hidden_value;
+    },
+    listeners:{ 
+        additem: function(obj,v){
+            if(obj.getValue()){
+                obj.hidden_value = obj.getValue();
+            }
+
+        },
+        removeItem: function(obj,v){
+            obj.hidden_value = obj.getValue();
+        }
+
+    }
+
     //     var self = this;
     //     var mids = [];
     //     self.store.each(function(row){
