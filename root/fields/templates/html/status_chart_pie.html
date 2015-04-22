@@ -9,7 +9,8 @@
 
     if ( $filter_category ) {
         if ( !is_number($filter_category) ) {
-            $filter_category = mdb->category->find_one({ name => $filter_category })->{id};
+            my $cat = mdb->category->find_one({ name => $filter_category });
+            $filter_category = $cat->{id} if $cat; 
         }
     }
     my $depth = $meta->{depth} || 1;
