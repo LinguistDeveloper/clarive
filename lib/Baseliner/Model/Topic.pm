@@ -3520,11 +3520,12 @@ sub get_downloadable_files {
 
     my $where;
     $where->{username} = $p->{username} || _throw _loc('Missing username');
+    $where->{query_id} = $p->{mid};
 
     my ($cnt, @user_topics) = Baseliner->model('Topic')->topics_for_user( $where );
 
     my $filter = { 
-        mid => mdb->in(map {$_->{mid}} @user_topics), 
+        # mid => mdb->in(map {$_->{mid}} @user_topics), 
         collection => 'topic',
         name_category => mdb->in(@cats)
     };
@@ -3540,7 +3541,8 @@ sub get_downloadable_files {
             grep { $_->{type} && $_->{type} eq 'upload_files' } _array($rel_data);
         for my $cat_field (@cat_fields){
             my $read_action = 'action.topicsfield.'._name_to_id($cat_field->{name_category}).'.'.$cat_field->{id_field}.'.read';
-            if ( !model->Permissions->user_has_read_action( username=> $p->{username}, action => $read_action ) ) {
+            my $write_action = 'action.topicsfield.'._name_to_id($cat_field->{name_category}).'.'.$cat_field->{id_field}.'.write';
+            if ( !model->Permissions->user_has_read_action( username=> $p->{username}, action => $read_action) ) {
                 if ($fields eq 'ALL'){
                     $available_docs->{$cat_field->{id_field}} = $cat_field->{name_field};
                 } else {
