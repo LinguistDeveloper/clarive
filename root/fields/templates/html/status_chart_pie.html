@@ -6,6 +6,12 @@
     use Baseliner::Utils;
     my $graph_id = "graph1". _nowstamp;
     my $filter_category = $meta->{filter_category} || '';
+
+    if ( $filter_category ) {
+        if ( !is_number($filter_category) ) {
+            $filter_category = mdb->category->find_one({ name => $filter_category })->{id};
+        }
+    }
     my $depth = $meta->{depth} || 1;
     
     my ($topics, @topics_by_status) = Baseliner->model('Topic')->group_by_status(depth=>$depth,filter_category=>$filter_category,mid=>$$data{mid} );
