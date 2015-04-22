@@ -89,7 +89,7 @@ Ext.onReady(function(){
     tbar_items.push( '<img src="/static/images/icons/printer.png" style="border:0px;" onclick="Baseliner.print_current_tab()" onmouseover="this.style.cursor=\'pointer\'" />');
     if( Prefs.stash.show_js_reload && Baseliner.DEBUG )
         tbar_items.push( '<img src="/static/images/icons/js-reload.png" style="border:0px;" onclick="Baseliner.js_reload(true)" onmouseover="this.style.cursor=\'pointer\'" />' );
-    tbar_items.push( '<img src="/static/images/icons/refresh.gif" style="border:0px;" onclick="Baseliner.refreshCurrentTab()" onmouseover="this.style.cursor=\'pointer\'" />');
+    tbar_items.push( '<img src="/static/images/icons/refresh.png" style="border:0px;" onclick="Baseliner.refreshCurrentTab()" onmouseover="this.style.cursor=\'pointer\'" />');
     tbar_items.push( '-');
 
     if( Prefs.is_logged_in ) { 

@@ -206,7 +206,7 @@
         ],
         tbar: [ 
             search_field,
-            { xtype: 'button', handler: function(){ rules_store.reload() }, icon:'/static/images/icons/refresh.gif', cls:'x-btn-icon' },
+            { xtype: 'button', handler: function(){ rules_store.reload() }, icon:'/static/images/icons/refresh.png', cls:'x-btn-icon' },
             { xtype:'button', icon: '/static/images/icons/add.gif', cls: 'x-btn-icon', handler: rule_add },
             { xtype:'button', icon: '/static/images/icons/edit.gif', id: 'x-btn-edit', cls: 'x-btn-icon', handler: rule_edit, disabled: true },
             { xtype:'button', icon: '/static/images/icons/delete.gif', id: 'x-btn-del', cls: 'x-btn-icon', handler: rule_del, disabled: true},
@@ -760,7 +760,7 @@
             stmts_menu.showAt(event.xy);
         };
         var btn_save_tree = new Ext.Button({ text: _('Save'), icon:'/static/images/icons/save.png', handler: rule_save });
-        var btn_refresh_tree = new Ext.Button({ text: '', icon:'/static/images/icons/refresh.gif', handler: function(){ rule_load(btn_refresh_tree) } });
+        var btn_refresh_tree = new Ext.Button({ text: '', icon:'/static/images/icons/refresh.png', handler: function(){ rule_load(btn_refresh_tree) } });
         var btn_dsl = new Ext.Button({ text: _('DSL'), icon:'/static/images/icons/edit.png', handler: function() { rule_tree.rule_dsl() } });
         var blame_now = function(){
             if( this.checked ) {
@@ -1182,7 +1182,7 @@
         resizable: true,
         tbar: [
             search_palette,
-            { xtype:'button', icon:'/static/images/icons/refresh.gif', 
+            { xtype:'button',tooltip: _('Refresh Node'), icon:'/static/images/icons/refresh.png', 
                 handler: function(){
                     palette.loader.load( palette.root ); 
                 }

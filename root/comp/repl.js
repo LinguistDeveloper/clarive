@@ -161,7 +161,8 @@ To do:
         containerScroll : true,          
         tbar: [ search,
             {   xtype: 'button',
-                icon:'/static/images/icons/refresh.gif',
+                tooltip:_('Refresh Node'),
+                icon:'/static/images/icons/refresh.png',
                 cls: 'x-btn-icon',
                 handler: function(){
                     tree.removeAll();
