@@ -649,6 +649,8 @@ Baseliner.Topic.comment_edit = function(topic_mid, id_com, cb) {
                 text = code.getValue();
                 content_type = 'code';
             }
+            var text_length = text.replace(/\s+|&nbsp;|<br>/g, '');
+            if(text_length.length == 0) { Baseliner.message( _('Error'), _('Missing data') ); return; };
             Baseliner.ajaxEval( '/topic/comment/add',
                 { topic_mid: topic_mid, id_com: id_com, text: text, content_type: content_type },
                 function(res) {
