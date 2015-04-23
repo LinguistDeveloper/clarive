@@ -1,5 +1,6 @@
 package Baseliner::Mongo;
 use Mouse;
+
 use MongoDB;
 use Baseliner::MongoCursor;
 use Baseliner::MongoCollection;
