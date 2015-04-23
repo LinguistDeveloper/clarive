@@ -148,7 +148,8 @@ Ext.onReady(function(){
     } 
 
     if( Prefs.site.show_dashboard ) {
-        tabs.push({title:_('Dashboard'), closable: false, autoLoad: {url:'/dashboard/list', scripts: true}, cls: 'tab-style', tab_icon: '/static/images/icons/dashboard.png' });
+        // tabs.push({title:_('Dashboard'), closable: false, autoLoad: {url:'/site/dashboard.html', scripts: true}, cls: 'tab-style', tab_icon: '/static/images/icons/dashboard.png' });
+        tabs.push( new Cla.Dashboard() );
     }
 
     var menuTab = new Ext.ux.TabCloseMenu({

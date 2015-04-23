@@ -1,7 +1,7 @@
 <%perl>
     use Baseliner::Utils;
     my $dashboards = $c->stash->{dashboards};
-    my $dashboardlets = $c->stash->{dashboardlets};
+    my $dashlets = $c->stash->{dashlets};
 </%perl>
 
 <style>
@@ -43,7 +43,7 @@
               <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown">Dashboards <span class="caret"></span></button>
               <ul class="dropdown-menu">
 % for my $dashboard (_array $dashboards) {
-<li><a href="javascript:Baseliner.addNewTab('/dashboard/list?dashboard_id=<% $dashboard->{id} %>', _('<% $dashboard->{name} %>'), { tab_icon:'/static/images/icons/dashboard.png' } );"><% $dashboard->{name} %></a></li>
+<li><a href="javascript:Baseliner.addNewTab('/dashboard/show?dashboard_id=<% $dashboard->{id} %>', _('<% $dashboard->{name} %>'), { tab_icon:'/static/images/icons/dashboard.png' } );"><% $dashboard->{name} %></a></li>
 %}
               </ul>
             </div>
@@ -55,8 +55,8 @@
 <table width="100%">
     <tr>
         <td width="50%" style="padding: 0 5px 0 5px">
-% if($dashboardlets){        
-% for my $dash ( sort { $a->{order} <=> $b->{order} } _array $dashboardlets ) {
+% if($dashlets){        
+% for my $dash ( sort { $a->{order} <=> $b->{order} } _array $dashlets ) {
 % if ($dash->{order} % 2 != 0){
     <& $dash->{html} &>
 % }}
@@ -64,7 +64,7 @@
         <td >&nbsp;<td>
         <td width="50%" style="padding: 0 5px 0 5px">
             
-% for my $dash ( sort { $a->{order} <=> $b->{order} } _array $dashboardlets ) {
+% for my $dash ( sort { $a->{order} <=> $b->{order} } _array $dashlets ) {
 % if ($dash->{order} % 2 == 0){
     <& $dash->{html} &>
 % }}            
@@ -75,9 +75,9 @@
 %}else{
 
         
-% if($dashboardlets){
+% if($dashlets){
 <div style='padding: 10px;'>
-% for my $dash ( sort { $a->{order} <=> $b->{order} } _array $dashboardlets ) {
+% for my $dash ( sort { $a->{order} <=> $b->{order} } _array $dashlets ) {
 
     <& $dash->{html} &>
 % }

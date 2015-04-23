@@ -89,6 +89,84 @@ register 'config.dashlet.topics_open_by_status' => {
         ]
 };
 
+##################################################
+
+sub init : Local {
+    my ($self,$c) = @_;
+    my $p = $c->req->params;
+
+    # run the dashboard rule
+    # TODO find default
+    my $id_rule = $p->{dashboard_id};
+
+    # find a default dashboard
+    if( !$id_rule ) {
+        my $rule = mdb->rule->find_one({ rule_type=>'dashboard', default_dashboard=>mdb->true }); # first default rule? 
+        $rule = mdb->rule->find_one({ rule_type=>'dashboard' }) unless $rule; # any rule then?
+        if( $rule ) {
+            $id_rule = $rule->{id};
+        } else {
+            _warn _loc 'No default rule found for user %1', $c->username;
+        }
+    }
+
+    # create a system default dashboard
+    if( ! mdb->rule->find_one({ id=>"$id_rule" }) ) {
+        _warn _loc 'No default dashboard %1', 
+        $id_rule = mdb->seq('rule');
+        my $default_dashboard = Util->_load(join '', <DATA>) || _fail _loc 'Could not find default dashboard data!';
+        mdb->rule->insert({ %$default_dashboard, rule_name=>_loc('Default Dashboard'), rule_seq=>0+$id_rule, id=>"$id_rule" });
+    }
+
+    $id_rule or _fail _loc 'No dashboard defined';
+
+    # now run the dashboard rule
+    my $cr = Baseliner::CompiledRule->new( id_rule=>"$id_rule" );
+    my $stash = { 
+        dashboard_data => { data=>[], count=>0 },
+        dashboard_params => {
+            %$p,
+        }
+    };
+    $cr->compile;
+    $cr->run( stash=>$stash ); 
+    my $dashlets = $$stash{dashlets} // [];
+
+    my $k = 1;
+    $dashlets = [ map{ 
+        $$_{order} = $k++;
+        # merge default data with node
+        if( $$_{key} && (my $reg = $c->registry->get($$_{key})) ){
+            $$_{data} = +{ %{ $reg->{data} || {} }, %{ $$_{data} || {} } } ;
+            $$_{js_file} = $reg->{js_file}; # overwrite important stuff
+        }
+        $_;
+    } _array($dashlets) ];
+
+    ## TODO merge user configurations to dashlets
+    _debug( $dashlets );
+
+    # now list the dashboards for user
+    my @rules = mdb->rule->find({ rule_type=>'dashboard' })->all;
+    my $dashboards = [ map{ {id=>$_->{id}, name=>$_->{rule_name} }  } @rules ];
+
+    $c->stash->{json} = { dashlets=>$dashlets, dashboards=>$dashboards };
+    $c->forward( 'View::JSON' );
+}
+
+register 'dashlet.job.burndown' => {
+    form=> '/dashlets/job_burndown_config.js',
+    name=> 'Job Burndown', 
+    icon=> '/static/images/icons/job.png',
+    js_file => '/dashlets/job_burndown.js',
+    data => {
+        days_avg  => '1000D',
+        days_last => '100D',
+    }
+};
+
+##################################################
+
 sub grid : Local {
     my ($self, $c) = @_;
     my $p = $c->req->params;
@@ -1390,3 +1468,16 @@ sub list_status_changed: Local{
 
 
 1;
+
+__DATA__
+rule_active: '1'
+default_dashboard: 1
+rule_desc: ''
+rule_event: ~
+rule_name: Default Dashboard
+rule_tree: '[{"attributes":{"palette":false,"icon":"/static/images/icons/job.png","isTarget":false,"html":"/dashlets/job_burndown.html","text":"Job
+  Burndown","key":"dashlet.job.burndown","leaf":true,"name":"Job Burndown","data":{},"expanded":false},"children":[]}]'
+rule_type: dashboard
+subtype: '-'
+ts: 2015-04-23 19:04:18
+username: root

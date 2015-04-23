@@ -90,6 +90,7 @@ Baseliner.js_reload = function(msg) {
     Baseliner.loadFile( '/site/common.js', 'js' );
     Baseliner.loadFile( '/site/tabfu.js', 'js' );
     Baseliner.loadFile( '/site/model.js', 'js' );
+    Baseliner.loadFile( '/site/dashboard.js', 'js' );
     Baseliner.loadFile( '/site/kanban.js', 'js' );
     Baseliner.loadFile( '/site/explorer.js', 'js' ); 
     Baseliner.loadFile( '/site/editors.js', 'js' ); 
