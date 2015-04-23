@@ -1283,7 +1283,16 @@ if( Prefs.routing ) {
         var id = panel.getId();
         var info = Baseliner.tabInfo[id];
         
-        if( info!=undefined ) {
+        if( panel.refresh_tab ) {
+            // I have my own "cloner"
+            var clone = panel.refresh_tab();
+            tabpanel.remove( panel );
+            var new_comp = tabpanel.insert( tab_index, clone );
+            if( clone.tab_icon ) tabpanel.changeTabIcon( clone, clone.tab_icon );
+            tabpanel.setActiveTab( new_comp );
+        }
+        else if( info!=undefined ) {
+            // standard component
             if( info.params==undefined ) info.params={};
             info.params.tab_index = activeTabIndex;
             if( info.type == 'comp' ) {
@@ -1300,8 +1309,9 @@ if( Prefs.routing ) {
                 var new_id = Baseliner.addNewTabItem( clone, clone.title, info.params );
                 Baseliner.tabInfo[new_id] = info;
             }
-        } else {
-            // non-components: portal, dashboard, etc.
+        } 
+        else {
+            // non-components: portal, etc.
             var closable = panel.initialConfig.closable;
             var tab_index = tabpanel.items.findIndex('id', panel.id );
             var p = panel.cloneConfig();
