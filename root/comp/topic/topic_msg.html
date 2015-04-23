@@ -87,6 +87,7 @@ padding: 2px 4px 2px 7px;
 % my @details = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'details' } _array( $topic_meta );
 % my @between = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'between' } _array( $topic_meta );
 % my @body = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'body' } _array( $topic_meta ) ;
+% my @more = sort { $a->{field_order} <=> $b->{field_order} } grep { $_->{section} && $_->{section} eq 'more' } _array( $topic_meta ) ;
 % if (@form) {
 <div id="boot" >
 % foreach my $field (  @form ) {
@@ -138,6 +139,7 @@ padding: 2px 4px 2px 7px;
                     </tr>
 % } 
 
+
 % if( @details ) {
 %    my $did = int rand 999999;
                     <tr>
@@ -182,7 +184,12 @@ padding: 2px 4px 2px 7px;
         <li <% $jobs eq -1 and 'style="display: none"' %>>
             <a href="#jobs<% $ii %>" id="tab-jobs<% $ii %>" data-toggle="tab"><% _loc('Jobs') %></a>
         </li>
-<!--         <li <% $tabactive[3] and 'class="active"' %>>
+% if( @more ) {    
+        <li <% $tabactive[3] and 'class="active"' %>>
+            <a href="#more<% $ii %>" id="tab-more<% $ii %>" data-toggle="tab"><% _loc('More info') %></a>
+        </li>
+% } 
+<!--         <li <% $tabactive[4] and 'class="active"' %>>
             <a href="#timeline<% $ii %>" id="tab-timeline<% $ii %>" data-toggle="tab"><% _loc('Timeline') %></a>
         </li>
  -->    </ul>
@@ -201,7 +208,26 @@ padding: 2px 4px 2px 7px;
                 <div id="topic-jobs<% $ii %>"><img src="/static/images/loading-fast.gif" style="padding-left: 5px" /></div>
             </div> <!-- jobs tab -->
 
-            <div class="tab-pane <% $tabactive[3] and 'active' %>" id="timeline<% $ii %>">
+            <div class="tab-pane <% $tabactive[3] and 'active' %>" id="more<% $ii %>">
+                <div id="topic-more<% $ii %>">
+% if( @more ) {
+                    <tr>
+                        <td colspan=2 >
+% foreach my $field ( @more ) {
+% if ($field->{html}){
+    <!-- <% $field->{html} %> -->
+    <& $field->{html}, data=>$topic_data, meta=>$field, user_security=>$user_security &>
+%}
+% }                                 
+                            
+                        </td>
+                    </tr>
+% } 
+
+                </div>
+            </div> <!-- jobs tab -->
+
+            <div class="tab-pane <% $tabactive[4] and 'active' %>" id="timeline<% $ii %>">
                 <div id="topic-timeline<% $ii %>" style="border: 1px solid #aaa"></div>
             </div> <!-- timeline tab -->
 
@@ -232,7 +258,10 @@ padding: 2px 4px 2px 7px;
                                 parent_id: ii,
                                 link: <% $jobs %>
                             });
-                        } // if tab
+                        } else if( target_id == "tab-more"+ii && topic_mid != '' ) {
+
+                            document.getElementById("topic-more<% $ii %>").innerHTML = more_html ;
+                        }// if tab
                     };
                     //$("#timeline<% $ii %> a").click(function(){
                     var curr_tab = <% $tabactive[0] ? 'true' : 'false' %> ? 'comments' : 'activity';
