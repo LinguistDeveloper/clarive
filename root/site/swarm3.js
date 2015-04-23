@@ -8,7 +8,9 @@ Cla.Swarm3 = Ext.extend( Ext.Panel, {
             '-',
             { text:_('First'), handler:function(){ self.first() } },
             '-',
-            { text:_('Add'), handler:function(){ self.add() } }
+            { text:_('Add'), handler:function(){ self.add() } },
+            '-',
+            { text:_('Del'), handler:function(){ self.del() } }
         ];
 
         Cla.Swarm3.superclass.initComponent.call(this);
