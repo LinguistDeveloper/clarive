@@ -393,7 +393,7 @@ Baseliner.ExplorerTree = Ext.extend( Baseliner.Tree, {
             xtype: 'menuitem',
             text: _('Refresh Node'),
             cls: 'x-btn-text-icon',
-            icon: '/static/images/icons/refresh.gif',
+            icon: '/static/images/icons/refresh.png',
             handler: function() {
                 self.refresh();
             }
@@ -765,7 +765,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
                 // alert('ena:' + refresh_count);
                 if ( refresh_count <= 0 ) {
                     refresh_count = 0;
-                    button_refresh.setIcon( IC('refresh.gif') );
+                    button_refresh.setIcon( IC('refresh.png') );
                     tool_bar.enable();
                 }
             },

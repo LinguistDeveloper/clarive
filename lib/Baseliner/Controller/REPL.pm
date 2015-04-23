@@ -56,6 +56,7 @@ register 'menu.development.ext_api' => {
     url_iframe => '/static/ext/docs/index.html',
     title      => 'ExtJS API',
     action     => 'action.development.ext_api',
+    icon     => '/static/images/icons/EXTjs_color.png',
     index      => 1000,
 };
 register 'menu.development.ext_examples' => {
@@ -88,7 +89,7 @@ register 'menu.development.sequences' =>{
     url_comp => '/repl/sequences',
     title    => 'Sequences',
     action   => 'action.development.sequences',
-    #icon     => '/static/images/icons/console.png',
+    icon     => '/static/images/icons/sequence.png',
     #index    => 10, 
 };
 

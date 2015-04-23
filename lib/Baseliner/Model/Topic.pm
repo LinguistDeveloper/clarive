@@ -3177,7 +3177,13 @@ sub get_fields_topic{
 sub group_by_status { 
     my ($self,%p) = @_;
     my @topics = _array(ci->new( $p{mid} )->children( where => { collection => 'topic'}, depth => $p{depth}, docs_only => 1 ));
-    @topics = grep { $_->{name_category} eq $p{filter_category} } @topics if $p{filter_category};
+    if ( $p{filter_category} ) {
+        if ( is_number($p{filter_category} ) ) {
+            @topics = grep { $_->{id_category} eq $p{filter_category}} @topics;
+        } else {
+            @topics = grep { $_->{name_category} eq $p{filter_category} } @topics;
+        }
+    }
     @topics = map { $_->{mid} } @topics;
 
     my %statuses = mdb->topic->find_hashed(

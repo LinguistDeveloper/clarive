@@ -1666,7 +1666,8 @@ Baseliner.TopicGrid = Ext.extend( Ext.grid.GridPanel, {
         });
         var btn_reload = new Ext.Button({
             disabled: self.readOnly ? self.readOnly : false,
-            icon: '/static/images/icons/refresh.gif',
+            icon: '/static/images/icons/refresh.png',
+            tooltip: _('Refresh'),
             handler: function(){ self.refresh() }
         });
         self.tbar = [ self.combo, btn_reload, btn_delete ];

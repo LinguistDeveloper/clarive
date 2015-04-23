@@ -165,7 +165,7 @@
         ],
         tbar: [ 
             search_field,
-            { icon:'/static/images/icons/refresh.gif', handler: function(){ store_events.reload(); }, tooltip:_('Reload') },
+            { icon:'/static/images/icons/refresh.png', handler: function(){ store_events.reload(); }, tooltip:_('Reload') },
             { icon:'/static/images/icons/delete.gif', handler: del_event , tooltip:_('Delete event')},
             { icon:'/static/images/icons/hourglass.png', handler: function(){ event_status_change('new') }, tooltip:_('Reset event status') }
         ],

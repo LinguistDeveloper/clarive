@@ -237,7 +237,7 @@
                 params: {start: 0, limit: ps },
                 emptyText: _('<Enter your search string>')
             }),
-            Baseliner.img_button( '/static/images/icons/refresh.gif', function(){ store.load() } ),
+            Baseliner.img_button( '/static/images/icons/refresh.png', function(){ store.load() } ),
             button_add, button_del, button_edit, button_clone, button_raw,
             '->', _('Grouping') + ':', button_by_type, button_by_project 
         ],

@@ -144,7 +144,7 @@
                 autoSizeColumns: true,
                 viewConfig: { forceFit: true },
                 tbar: [
-                    { icon:'/static/images/icons/refresh.gif', handler: function(){ self.store.reload() } }, '-',
+                    { icon:'/static/images/icons/refresh.png', handler: function(){ self.store.reload() }, tooltip:_('Reload')  }, '-',
                     { text:_('Download Patches'), icon:'/static/images/icons/features/database.png', handler: function(){ self.pull() } }, '-',
                     { text:_('Checkout'), icon:'/static/images/icons/features/checkout.png', handler: function(){ 
                          if( self.sm.hasSelection() ) {

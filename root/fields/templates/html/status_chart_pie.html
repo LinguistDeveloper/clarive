@@ -6,6 +6,13 @@
     use Baseliner::Utils;
     my $graph_id = "graph1". _nowstamp;
     my $filter_category = $meta->{filter_category} || '';
+
+    if ( $filter_category ) {
+        if ( !is_number($filter_category) ) {
+            my $cat = mdb->category->find_one({ name => $filter_category });
+            $filter_category = $cat->{id} if $cat; 
+        }
+    }
     my $depth = $meta->{depth} || 1;
     
     my ($topics, @topics_by_status) = Baseliner->model('Topic')->group_by_status(depth=>$depth,filter_category=>$filter_category,mid=>$$data{mid} );
@@ -64,13 +71,13 @@
                     radius: 0.9,
                     tilt: 0.7,
                     label: {
-                        show: false,
+                        show: true,
                         radius: 0.5,
                         formatter: function(label, series){
-                            return '<div style="font-size:8pt;color:white;margin-left:-5px">'+Math.round(series.percent)+'%</div>';
+                            return '<div style="font-size:7pt;color:white">'+Math.round(series.percent)+'%</div>';
                         },
                         background: { opacity: 0 },
-                        threshold: 0.03
+                        threshold: 0.1
                     }
                 }
             },
