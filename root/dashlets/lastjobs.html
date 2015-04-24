@@ -27,7 +27,7 @@ title: Jobs
                 if( status=='RUNNING' ) { icon='gears.gif'; bold=true }
                 else if( status=='READY' ) icon='log_d.gif';
                 else if( status=='APPROVAL' ) icon='verify.gif';
-                else if( status=='FINISHED' && rollback!=1 ) { icon='log_i.gif'; bold=true; }
+                else if( status=='FINISHED' && rollback!=1 ) { icon='log_i.png'; bold=true; }
                 else if( status=='IN-EDIT' ) icon='log_w.gif';
                 else { icon='log_e.gif'; bold=true; }
                 var value = (bold?'<b>' + _(status) + '</b>': _(status));
