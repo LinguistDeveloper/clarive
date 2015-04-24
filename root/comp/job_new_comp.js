@@ -201,7 +201,7 @@
 // '<div class="search-item"><img src="/static/images/icons/time.gif"/>\t{displayText}</b></div>',
     var time_tpl = new Ext.XTemplate(
         '<tpl for=".">',
-        '<div class="search-item"><img src="/static/images/chromium/history_favicon.png"/><span><b>{displayText}</span></b></div>',
+        '<div class="search-item"><img src="/static/images/icons/slot.png"/><span><b>{displayText}</span></b></div>',
         '</tpl>'
         );
 

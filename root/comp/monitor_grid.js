@@ -893,20 +893,20 @@
         if( status=='RUNNING' ) { icon='gears.gif'; bold=true }
         else if( status=='READY' ) icon='waiting.png';
         else if( status=='APPROVAL' ) icon='user_delete.gif';
-        else if( status=='FINISHED' && rollback!=1 ) { icon='log_i.gif'; bold=true; }
+        else if( status=='FINISHED' && rollback!=1 ) { icon='log_i.png'; bold=true; }
         else if( status=='IN-EDIT' ) icon='log_w.gif';
         else if( status=='WAITING' ) icon='waiting.png';
         else if( status=='PAUSED' ) icon='paused.png';
         else if( status=='TRAPPED' ) icon='paused.png';
         else if( status=='TRAPPED_PAUSED' ) icon='paused.png';
         else if( status=='CANCELLED' ) icon='close.png';
-        else { icon='log_e.gif'; bold=true; }
+        else { icon='log_e.png'; bold=true; }
         value = (bold?'<b>':'') + value + (bold?'</b>':'');
 
         // Rollback?
         if( status == 'FINISHED' && rollback == 1 )  {
             value += ' (' + _('Rollback OK') + ')';
-            icon = 'log_e.gif';
+            icon = 'log_e.png';
         } 
         else if( status == 'ERROR' && rollback == 1 )  {
             value += ' (' + _('Rollback Failed') + ')';

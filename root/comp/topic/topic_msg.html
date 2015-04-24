@@ -172,6 +172,13 @@ padding: 2px 4px 2px 7px;
         </table>
 %}
 
+% if( @more ) {
+%    $tabactive[3] = 1;
+%    $tabactive[4] = 0;
+%    $tabactive[2] = 0;
+%    $tabactive[1] = 0;
+%    $tabactive[0] = 0;
+%}    
 <div class="clear"></div>
     <br><br>
     <ul class="nav nav-tabs" id="nav-tabs-<% $ii %>">
