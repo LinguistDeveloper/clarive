@@ -369,7 +369,7 @@ sub job_icon {
         when( 'PAUSED' ) { 'paused.png'; }
         when( 'TRAPPED_PAUSED' ) { 'paused.png'; }
         when( 'CANCELLED' ) { 'close.png'; }
-        default { 'log_e.gif' }
+        default { 'log_e.png' }
     }
 }
 

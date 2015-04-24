@@ -900,13 +900,13 @@
         else if( status=='TRAPPED' ) icon='paused.png';
         else if( status=='TRAPPED_PAUSED' ) icon='paused.png';
         else if( status=='CANCELLED' ) icon='close.png';
-        else { icon='log_e.gif'; bold=true; }
+        else { icon='log_e.png'; bold=true; }
         value = (bold?'<b>':'') + value + (bold?'</b>':'');
 
         // Rollback?
         if( status == 'FINISHED' && rollback == 1 )  {
             value += ' (' + _('Rollback OK') + ')';
-            icon = 'log_e.gif';
+            icon = 'log_e.png';
         } 
         else if( status == 'ERROR' && rollback == 1 )  {
             value += ' (' + _('Rollback Failed') + ')';

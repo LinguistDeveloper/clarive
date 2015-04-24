@@ -33,13 +33,13 @@ title: Pending jobs
                 else if( status=='PAUSED' ) icon='paused.png';
                 else if( status=='TRAPPED' ) icon='paused.png';
                 else if( status=='TRAPPED_PAUSED' ) icon='paused.png';
-                else { icon='log_e.gif'; bold=true; }
+                else { icon='log_e.png'; bold=true; }
                 var value = (bold?'<b>' + _(status) + '</b>': _(status));
         
                 // Rollback?
                 if( status == 'FINISHED' && rollback == 1 )  {
                     value += ' (<% _loc("Rollback OK") %>)';
-                    icon = 'log_e.gif';
+                    icon = 'log_e.png';
                 }
                 else if( status == 'ERROR' && rollback == 1 )  {
                     value += ' (<% _loc("Rollback Failed") %>)';
