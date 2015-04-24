@@ -287,7 +287,7 @@
         else if( value=='error' ) icon='log_e.png';
         else if( value=='comment' ) icon='post.gif';
         if( icon!=undefined ) {
-            return "<img alt='"+value+"' border=0 src='/static/images/"+icon+"' />" ;
+            return "<img alt='"+value+"' border=0 src='/static/images/icons/"+icon+"' />" ;
         } else {
             return value;
         }
