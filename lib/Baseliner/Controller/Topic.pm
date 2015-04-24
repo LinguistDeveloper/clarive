@@ -138,7 +138,9 @@ sub list : Local {
     if( $$p{id_report} && $p->{id_report} =~ /^report\./ ) {
         my $report = Baseliner->registry->get( $p->{id_report} );
         my $config = undef; # TODO get config from custom forms
+        my $sort = $p->{sort};
         $p->{dir} = uc($p->{dir}) eq 'DESC' ? -1 : 1;
+        $p->{sort} = { $sort => $p->{dir} } if ($p->{sort});
         my $rep_data = $report->data_handler->($report,$config,$p);
         $c->stash->{json} = { data=>$rep_data->{rows}, totalCount=>$rep_data->{total}, config=>$rep_data->{config} };
     } elsif( $p->{id_report} ) {
