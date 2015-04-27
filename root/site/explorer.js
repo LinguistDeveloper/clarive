@@ -601,7 +601,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
         
         var button_releases = new Ext.Button({
             cls: 'x-btn-icon',
-            icon: '/static/images/icons/release_explorer.png',
+            icon: '/static/images/icons/release.gif',
             handler: function(){
                 this.disable();
                 var that = this;
