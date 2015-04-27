@@ -8,16 +8,27 @@ use v5.10;
 
 BEGIN {  extends 'Catalyst::Controller' }
 
-register 'menu.admin.dashboard' => {
-    label    => 'Dashboard',
-    title    => _loc ('Admin Dashboard'),
-    action   => 'action.admin.dashboard',
-    url_comp => '/dashboard/grid',
-    icon     => '/static/images/icons/dashboard.png',
-    tab_icon => '/static/images/icons/dashboard.png'
+register 'dashlet.job.burndown' => {
+    form=> '/dashlets/job_burndown_config.js',
+    name=> 'Job Burndown', 
+    icon=> '/static/images/icons/job.png',
+    js_file => '/dashlets/job_burndown.js',
+    data => {
+        days_avg  => '1000D',
+        days_last => '100D',
+    }
 };
 
-register 'action.admin.dashboard' => { name=>'View and Admin dashboards' };
+register 'dashlet.job.status_pie' => {
+    form=> '/dashlets/job_status_pie_config.js',
+    name=> 'Job Status pie', 
+    icon=> '/static/images/silk/chart_pie.png',
+    js_file => '/dashlets/job_status_pie.js',
+    data => {
+        days_avg  => '1000',
+        days_last => '100D',
+    }
+};
 
 ##Configuración del dashboard
 register 'config.dashboard' => {
@@ -154,16 +165,6 @@ sub init : Local {
     $c->forward( 'View::JSON' );
 }
 
-register 'dashlet.job.burndown' => {
-    form=> '/dashlets/job_burndown_config.js',
-    name=> 'Job Burndown', 
-    icon=> '/static/images/icons/job.png',
-    js_file => '/dashlets/job_burndown.js',
-    data => {
-        days_avg  => '1000D',
-        days_last => '100D',
-    }
-};
 
 ##################################################
 
