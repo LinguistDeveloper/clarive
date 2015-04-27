@@ -101,7 +101,7 @@
                 
     var btn_buzon = new Ext.Toolbar.Button({
         text: _('Inbox'),
-        icon:'/static/images/icons/envelope.gif',
+        icon:'/static/images/icons/envelope.png',
         cls: 'x-btn-text-icon',
         disabled: true,
         handler: function(){

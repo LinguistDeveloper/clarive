@@ -2,7 +2,7 @@
 /*  Job Log Grid Rows */
 
 .icon-inbox {
-    background-image: url(/static/images/icons/envelope.gif) !important;
+    background-image: url(/static/images/icons/envelope.png) !important;
 }
 
 .level-row .x-grid3-cell-inner{

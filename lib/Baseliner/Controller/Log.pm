@@ -241,7 +241,7 @@ sub jobList : Path('/job/log/jobList') {
     my $siteIcon  = '/static/images/site.gif';
     my $jobIcon   = '/static/images/book.gif';
     my $spoolIcon = '/static/images/page.gif';
-    my $infoIcon  = '/static/images/log_i.gif';
+    my $infoIcon  = '/static/images/icons/log_i.png';
 
     if ( $p->{logId} ) {
         # (log data)->search( { id_log => $p->{logId} }, { order_by => 'path, id' } );

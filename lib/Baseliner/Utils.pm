@@ -363,13 +363,13 @@ sub job_icon {
         when( 'RUNNING' ) { 'gears.gif'; }
         when( 'READY' ) { 'waiting.png'; }
         when( 'APPROVAL' ) { 'user_delete.gif'; }
-        when( 'FINISHED' ) { if (!$rollback) { 'log_i.gif' } else { 'close.png' } }
+        when( 'FINISHED' ) { if (!$rollback) { 'log_i.png' } else { 'close.png' } }
         when( 'IN-EDIT' ) { 'log_w.gif'; }
         when( 'WAITING' ) { 'waiting.png'; }
         when( 'PAUSED' ) { 'paused.png'; }
         when( 'TRAPPED_PAUSED' ) { 'paused.png'; }
         when( 'CANCELLED' ) { 'close.png'; }
-        default { 'log_e.gif' }
+        default { 'log_e.png' }
     }
 }
 

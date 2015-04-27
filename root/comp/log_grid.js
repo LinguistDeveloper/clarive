@@ -282,12 +282,12 @@
     Baseliner.levRenderer = function(value,metadata,rec,rowIndex,colIndex,store) {
         var icon;
         if( value=='debug' ) icon='log_d.gif';
-        else if( value=='info' ) icon='log_i.gif';
+        else if( value=='info' ) icon='log_i.png';
         else if( value=='warning' || value=='warn' ) icon='log_w.gif';
-        else if( value=='error' ) icon='log_e.gif';
+        else if( value=='error' ) icon='log_e.png';
         else if( value=='comment' ) icon='post.gif';
         if( icon!=undefined ) {
-            return "<img alt='"+value+"' border=0 src='/static/images/"+icon+"' />" ;
+            return "<img alt='"+value+"' border=0 src='/static/images/icons/"+icon+"' />" ;
         } else {
             return value;
         }
