@@ -56,7 +56,7 @@ register 'menu.development.ext_api' => {
     url_iframe => '/static/ext/docs/index.html',
     title      => 'ExtJS API',
     action     => 'action.development.ext_api',
-    icon     => '/static/images/icons/EXTjs_color.png',
+    icon     => '/static/images/icons/extjs.png',
     index      => 1000,
 };
 register 'menu.development.ext_examples' => {
@@ -64,6 +64,7 @@ register 'menu.development.ext_examples' => {
     url_iframe => '/static/ext/examples/index.html',
     title      => 'ExtJS Examples',
     action     => 'action.development.ext_examples',
+    icon     => '/static/images/icons/extjs_examples.png',
     index      => 1000,
 };
 # register 'menu.development.gui_designer' => {
