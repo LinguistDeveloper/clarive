@@ -76,6 +76,21 @@ sub git : Path('/git/') {
         $home = $fullpath->dir->absolute;
         _log ">>> GIT USER: " . $c->username;
         _log ">>> GIT HOME REPO: $home"; 
+        my $git_repo = ci->GitRepository->find_one({ repo_dir => qr/^$fullpath/ });
+        $git_repo = _ci($git_repo->{mid}) if $git_repo;
+
+        my @proj_repo = _unique map { $_->{mid} } ci->project->find({repositories=>mdb->in($git_repo->{mid})})->fields({mid=>1,name=>1})->all;
+        my @proj_user = _unique(Baseliner->model('Permissions')->user_projects_ids(username=>"aagit"));
+
+        my $grant = 0;
+        for (@proj_repo){
+            $grant = $_ ~~ @proj_user;
+            last if $grant;   
+        }
+        if (!$c->model('Permissions')->user_has_action(username=>$c->username,action=>'action.git.repository_access') || !$grant) {
+            $self->process_error( $c, _loc('User: %1 does not have access to the project %2', $c->username, $project ) );
+            return;
+        } 
     } elsif( length $project && length $reponame ) {
         ($ci_prj)  = ci->search_cis( '$or'=>[ {name=>$project}, {moniker=>$project} ], collection=>'project' );
         ($ci_repo) = ci->search_cis( '$or'=>[ {name=>$reponame}, {moniker=>$reponame}, {moniker=>lc($project)."_".$reponame} ], collection=>'GitRepository' );
@@ -111,7 +126,6 @@ sub git : Path('/git/') {
         $c->response->status( 401 );
         return;
     }
-    
     # Check permissions
     if( ! length $c->username ) {
         if( ! exists $c->req->params->{service} ) {  # first request has param 'service'
