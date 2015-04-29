@@ -80,7 +80,7 @@ sub git : Path('/git/') {
         $git_repo = _ci($git_repo->{mid}) if $git_repo;
 
         my @proj_repo = _unique map { $_->{mid} } ci->project->find({repositories=>mdb->in($git_repo->{mid})})->fields({mid=>1,name=>1})->all;
-        my @proj_user = _unique(Baseliner->model('Permissions')->user_projects_ids(username=>"aagit"));
+        my @proj_user = _unique(Baseliner->model('Permissions')->user_projects_ids(username=>$c->username));
 
         my $grant = 0;
         for (@proj_repo){
