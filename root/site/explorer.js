@@ -542,7 +542,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
 
         var button_favorites = new Ext.Button({
             cls: 'x-btn-icon',
-            icon: '/static/images/icons/star-gray.png',
+            icon: '/static/images/icons/favorite.png',
             tooltip: _('Favorites'),
             handler: function(){
                 var that = this;
