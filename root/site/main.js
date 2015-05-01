@@ -106,7 +106,7 @@ Ext.onReady(function(){
             user_menu.push({ text: _('Change password'), handler: function(){ Baseliner.change_password(); }, icon:'/static/images/icons/password.png' });
         }
         if( Prefs.stash.can_surrogate ) {
-            user_menu.push({ text: _('Surrogate...'), handler: function(){ Baseliner.surrogate();}, index: 80, icon: '/static/images/icons/users.gif' });
+            user_menu.push({ text: _('Surrogate...'), handler: function(){ Baseliner.surrogate();}, index: 80, icon: '/static/images/icons/surrogate.png' });
         }
         
         user_menu.push({ text: _('Logout') , handler: function(){ Baseliner.logout(); }, index: 999, icon: '/static/images/icons/logout.png' });

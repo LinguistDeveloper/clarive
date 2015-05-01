@@ -1839,7 +1839,7 @@ Baseliner.DataEditor = function(c) {
         self.getLayout().setActiveItem( 0 );
     };
     var btn_editor = new Ext.Button({
-        tooltip: _('Edit'), icon:'/static/images/icons/table_edit.png', handler: view_editor,
+        tooltip: _('Edit'), icon:'/static/images/icons/edit.gif', handler: view_editor,
         pressed: true, allowDepress:false, enableToggle:true, toggleGroup:'dataeditor-btn'});
 
     var view_json = function(){

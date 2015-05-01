@@ -95,7 +95,7 @@
                 menu_view,
                 new Ext.Toolbar.Button({
                     text: _('Add'),
-                    icon:'/static/images/drop-add.gif',
+                    icon:'/static/images/icons/add.gif',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         edit_config();
@@ -103,7 +103,7 @@
                 }),
                 new Ext.Toolbar.Button({
                     text: _('Edit'),
-                    icon:'/static/images/drop-edit2.gif',
+                    icon:'/static/images/icons/edit.gif',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel(); if (sm.hasSelection()) {
@@ -116,7 +116,7 @@
                 }),
                 new Ext.Toolbar.Button({
                     text: _('Delete'),
-                    icon:'/static/images/del.gif',
+                    icon:'/static/images/icons/delete.gif',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();						

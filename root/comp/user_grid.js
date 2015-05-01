@@ -75,7 +75,7 @@
 
     var btn_surrogate = new Ext.Toolbar.Button({
         text: _('Surrogate'),
-        icon:'/static/images/icons/users.gif',
+        icon:'/static/images/icons/surrogate.png',
         cls: 'x-btn-text-icon',
         disabled: true,
         handler: function() {

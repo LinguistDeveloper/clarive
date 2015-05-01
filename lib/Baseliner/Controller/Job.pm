@@ -722,19 +722,19 @@ sub burndown_new : Local {
         my $now = Class::Date->new($date);
         my $yesterday = substr($now - $period, 0, 10);
 
-        my @jobs = ci->job->find( { starttime => { '$gt' => $yesterday } } )->all;
+        my $jobs = ci->job->find( { starttime => { '$gt' => $yesterday } } );
 
         my %job_stats;
         my @hours = ('x');
         
         map { $job_stats{$_} = 0; push @hours, ($_)} 0 .. 23;
 
-        for my $job ( @jobs ) {
+        while ( my $job = $jobs->next() ) {
             next if !$job->{endtime};
             my $start = Class::Date->new($job->{starttime});
             my $end = Class::Date->new($job->{endtime});
             for ( @hours ) {
-                _warn "Start: ".$start->hour.", End: ".$end->hour;
+                # _warn "Start: ".$start->hour.", End: ".$end->hour;
                 if ( $start->hour <= $_ && $end->hour >= $_ ) {
                     $job_stats{$_}++;
                 } else {
