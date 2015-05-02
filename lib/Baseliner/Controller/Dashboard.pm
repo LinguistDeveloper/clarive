@@ -42,6 +42,18 @@ register 'dashlet.topic.status_pie' => {
     }
 };
 
+register 'dashlet.topic.category_pie' => {
+    form=> '/dashlets/topic_category_pie_config.js',
+    name=> 'Topic Category pie', 
+    icon=> '/static/images/silk/chart_pie.png',
+    js_file => '/dashlets/topic_category_pie.js',
+    data => {
+        categories => '',
+        statues => '',
+        condition => ''
+    }
+};
+
 sub init : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
@@ -106,12 +118,11 @@ sub init : Local {
     $c->forward( 'View::JSON' );
 }
 
-sub topics_by_status: Local {
+sub topics_by_category: Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
 
-    _warn $p;
-    my (@topics_by_status, @colors, @data, %status );
+    my (@topics_by_category, $colors, @data );
     my $condition = $p->{condition};
     my $group_threshold = $p->{group_threshold};
     my $categories = $p->{categories};
@@ -145,7 +156,88 @@ sub topics_by_status: Local {
     }
 
     $where->{'category.id'} = mdb->in(@user_categories);
-    my %colors = map { $_->{id_status} => $_->{color} } ci->status->find()->all;
+
+    @topics_by_category = _array(mdb->topic->aggregate( [
+        { '$match' => $where },
+        { '$group' => { 
+            _id => '$category.id', 
+            'category' => {'$max' => '$category.name'},
+            'color' => {'$max' => '$category.color'}, 
+            'total' => { '$sum' => 1 },
+            'topics_list' => { '$push' => '$mid'}
+          } 
+        },
+        { '$sort' => { total => -1}}
+    ]));
+    
+    my $total = 0;
+    my $topics_list;
+    map { $total += $_->{total} } @topics_by_category;
+    my $others = 0;
+    my @other_topics = ();
+    foreach my $topic (@topics_by_category){
+        if ( $topic->{total}*100/$total <= $group_threshold ) {
+            $others += $topic->{total};
+            push @other_topics, _array($topic->{topics_list});
+        } else {
+            push @data, [
+                $topic->{category},$topic->{total}
+            ];
+            $topics_list->{$topic->{category}} = $topic->{topics_list};
+        }
+
+        $colors->{$topic->{category}} = $topic->{color};
+    }
+    if ( $others ) {
+        push @data, [
+            _loc('Other'),$others
+        ];                    
+        $topics_list->{_loc('Other')} = \@other_topics;
+        $colors->{_loc('Other')} = "#DDDDDD";
+    }
+    $c->stash->{json} = { success => \1, colors=>$colors,data=>\@data,topics_list=>$topics_list };
+    $c->forward('View::JSON'); 
+}
+
+sub topics_by_status: Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+
+    my (@topics_by_status, $colors, @data, %status );
+    my $condition = $p->{condition};
+    my $group_threshold = $p->{group_threshold};
+    my $categories = $p->{categories};
+    my $statuses = $p->{statuses};
+    my $not_in_status = $p->{not_in_status};
+
+    my $where = {};
+    if ( $statuses ) {
+        if ( $not_in_status ) {
+            $where->{'category_status.id'} = mdb->nin($statuses);
+        } else {
+            $where->{'category_status.id'} = mdb->in($statuses);
+        }
+    }
+    my $username = $c->username;
+    my $perm = Baseliner->model('Permissions');
+
+    my @user_categories =  map {
+        $_->{id};
+    } $c->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
+
+    if ( $categories ) {
+        use Array::Utils qw(:all);
+        my @categories_ids = _array($categories);
+        @user_categories = intersect(@categories_ids,@user_categories);
+    }
+
+    my $is_root = $perm->is_root( $username );
+    if( $username && ! $is_root){
+        Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
+    }
+
+    $where->{'category.id'} = mdb->in(@user_categories);
+    my %status_colors = map { $_->{id_status} => $_->{color} } ci->status->find()->all;
 
     @topics_by_status = _array(mdb->topic->aggregate( [
         { '$match' => $where },
@@ -176,20 +268,18 @@ sub topics_by_status: Local {
             $topics_list->{$topic->{status}} = $topic->{topics_list};
         }
         $status{$topic->{_id}} = $topic->{status};
-        push @colors, [
-            $topic->{status},$colors{$topic->{_id}}
-        ]
+        $colors->{$topic->{status}} = $status_colors{$topic->{_id}};
     }
     if ( $others ) {
         push @data, [
             _loc('Other'),$others
         ];                    
         $topics_list->{_loc('Other')} = \@other_topics;
+        $colors->{_loc('Other')} = "#DDDDDD";
     }
-    $c->stash->{json} = { success => \1, colors=>\@colors,data=>\@data,topics_list=>$topics_list };
+    $c->stash->{json} = { success => \1, colors=>$colors,data=>\@data,topics_list=>$topics_list };
     $c->forward('View::JSON'); 
 }
-
 
 ##################### DEPRECATED
 ##Configuración del dashboard
@@ -1318,45 +1408,6 @@ sub viewjobs : Local {
 
     $c->stash->{jobs} = @jobs ? join(',', map {$_->{mid}} @jobs) : -1;
     $c->forward('/job/monitor/Dashboard');
-}
-
-sub topics_by_category: Local{
-    my ( $self, $c, $action ) = @_;
-    #my $p = $c->request->parameters;
-    my (@topics_by_category, @datas);
-
-
-    my $where = {};
-    my $username = $c->username;
-    my $perm = Baseliner->model('Permissions');
-
-    my @user_categories =  map {
-                $_->{id};
-            } $c->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
-
-    my $is_root = $perm->is_root( $username );
-    if( $username && ! $is_root){
-        Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
-    }
-    $where->{'category.id'} = mdb->in(@user_categories);
-
-    @topics_by_category = _array (mdb->topic->aggregate( [
-        { '$match' => $where },
-        { '$group' => { _id => '$category.id', 'category' => {'$max' => '$category.name'},'color' => {'$max' => '$category.color'}, 'total' => { '$sum' => 1 }} },
-        { '$sort' => { total => -1}}
-    ]));
-    
-    foreach my $topic (@topics_by_category){
-        push @datas, {
-                    total           => $topic->{total},
-                    category        => $topic->{category},
-                    color           => $topic->{color},
-                    category_id     => $topic->{_id}
-                };
-     }
-    $c->stash->{topics_by_category} = \@datas;
-    $c->stash->{topics_by_category_title} = _loc('Topics by category');
-
 }
 
 sub topics_open_by_category: Local{

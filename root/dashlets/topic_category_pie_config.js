@@ -12,7 +12,7 @@
         { xtype : "checkbox", name : "not_in_status", checked: data.not_in_status=='on' ? true : false, boxLabel : _('Not in statuses') },
         ccategory,
         { xtype:'textfield', fieldLabel: _('Condition'), name: 'condition', value: data.condition },
-        { xtype:'numberfield', fieldLabel: _('Others threshold'), name: 'group_threshold', value: data.group_threshold || 5},
+        { xtype:'numberfield', fieldLabel: _('Others threshold'), name: 'group_threshold', value: data.group_threshold || 5 },
         {
             xtype: 'radiogroup',
             name: 'type',
