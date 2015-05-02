@@ -25,11 +25,173 @@ register 'dashlet.job.status_pie' => {
     icon=> '/static/images/silk/chart_pie.png',
     js_file => '/dashlets/job_status_pie.js',
     data => {
-        days_avg  => '1000',
-        days_last => '100D',
+        period  => '1M',
+        type => 'donut',
     }
 };
 
+register 'dashlet.topic.status_pie' => {
+    form=> '/dashlets/topic_status_pie_config.js',
+    name=> 'Topic Status pie', 
+    icon=> '/static/images/silk/chart_pie.png',
+    js_file => '/dashlets/topic_status_pie.js',
+    data => {
+        categories => '',
+        statues => '',
+        condition => ''
+    }
+};
+
+sub init : Local {
+    my ($self,$c) = @_;
+    my $p = $c->req->params;
+
+    # run the dashboard rule
+    # TODO find default
+    my $id_rule = $p->{dashboard_id};
+
+    # find a default dashboard
+    if( !$id_rule ) {
+        my $rule = mdb->rule->find_one({ rule_type=>'dashboard', default_dashboard=>mdb->true }); # first default rule? 
+        $rule = mdb->rule->find_one({ rule_type=>'dashboard' }) unless $rule; # any rule then?
+        if( $rule ) {
+            $id_rule = $rule->{id};
+        } else {
+            _warn _loc 'No default rule found for user %1', $c->username;
+        }
+    }
+
+    # create a system default dashboard
+    if( ! mdb->rule->find_one({ id=>"$id_rule" }) ) {
+        _warn _loc 'No default dashboard %1', 
+        $id_rule = mdb->seq('rule');
+        my $default_dashboard = Util->_load(join '', <DATA>) || _fail _loc 'Could not find default dashboard data!';
+        mdb->rule->insert({ %$default_dashboard, rule_name=>_loc('Default Dashboard'), rule_seq=>0+$id_rule, id=>"$id_rule" });
+    }
+
+    $id_rule or _fail _loc 'No dashboard defined';
+
+    # now run the dashboard rule
+    my $cr = Baseliner::CompiledRule->new( id_rule=>"$id_rule" );
+    my $stash = { 
+        dashboard_data => { data=>[], count=>0 },
+        dashboard_params => {
+            %$p,
+        }
+    };
+    $cr->compile;
+    $cr->run( stash=>$stash ); 
+    my $dashlets = $$stash{dashlets} // [];
+
+    my $k = 1;
+    $dashlets = [ map{ 
+        $$_{order} = $k++;
+        # merge default data with node
+        if( $$_{key} && (my $reg = $c->registry->get($$_{key})) ){
+            $$_{data} = +{ %{ $reg->{data} || {} }, %{ $$_{data} || {} } } ;
+            $$_{js_file} = $reg->{js_file}; # overwrite important stuff
+            $$_{form} = $reg->{form}; # overwrite important stuff
+        }
+        $_;
+    } _array($dashlets) ];
+
+    ## TODO merge user configurations to dashlets
+    _debug( $dashlets );
+
+    # now list the dashboards for user
+    my @rules = mdb->rule->find({ rule_type=>'dashboard' })->all;
+    my $dashboards = [ map{ {id=>$_->{id}, name=>$_->{rule_name} }  } @rules ];
+
+    $c->stash->{json} = { dashlets=>$dashlets, dashboards=>$dashboards };
+    $c->forward( 'View::JSON' );
+}
+
+sub topics_by_status: Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+
+    _warn $p;
+    my (@topics_by_status, @colors, @data, %status );
+    my $condition = $p->{condition};
+    my $group_threshold = $p->{group_threshold};
+    my $categories = $p->{categories};
+    my $statuses = $p->{statuses};
+    my $not_in_status = $p->{not_in_status};
+
+    my $where = {};
+    if ( $statuses ) {
+        if ( $not_in_status ) {
+            $where->{'category_status.id'} = mdb->nin($statuses);
+        } else {
+            $where->{'category_status.id'} = mdb->in($statuses);
+        }
+    }
+    my $username = $c->username;
+    my $perm = Baseliner->model('Permissions');
+
+    my @user_categories =  map {
+        $_->{id};
+    } $c->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
+
+    if ( $categories ) {
+        use Array::Utils qw(:all);
+        my @categories_ids = _array($categories);
+        @user_categories = intersect(@categories_ids,@user_categories);
+    }
+
+    my $is_root = $perm->is_root( $username );
+    if( $username && ! $is_root){
+        Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
+    }
+
+    $where->{'category.id'} = mdb->in(@user_categories);
+    my %colors = map { $_->{id_status} => $_->{color} } ci->status->find()->all;
+
+    @topics_by_status = _array(mdb->topic->aggregate( [
+        { '$match' => $where },
+        { '$group' => { 
+            _id => '$category_status.id', 
+            'status' => {'$max' => '$category_status.name'},
+            'color' => {'$max' => '$category_status.color'}, 
+            'total' => { '$sum' => 1 },
+            'topics_list' => { '$push' => '$mid'}
+          } 
+        },
+        { '$sort' => { total => -1}}
+    ]));
+    
+    my $total = 0;
+    my $topics_list;
+    map { $total += $_->{total} } @topics_by_status;
+    my $others = 0;
+    my @other_topics = ();
+    foreach my $topic (@topics_by_status){
+        if ( $topic->{total}*100/$total <= $group_threshold ) {
+            $others += $topic->{total};
+            push @other_topics, _array($topic->{topics_list});
+        } else {
+            push @data, [
+                $topic->{status},$topic->{total}
+            ];
+            $topics_list->{$topic->{status}} = $topic->{topics_list};
+        }
+        $status{$topic->{_id}} = $topic->{status};
+        push @colors, [
+            $topic->{status},$colors{$topic->{_id}}
+        ]
+    }
+    if ( $others ) {
+        push @data, [
+            _loc('Other'),$others
+        ];                    
+        $topics_list->{_loc('Other')} = \@other_topics;
+    }
+    $c->stash->{json} = { success => \1, colors=>\@colors,data=>\@data,topics_list=>$topics_list };
+    $c->forward('View::JSON'); 
+}
+
+
+##################### DEPRECATED
 ##Configuración del dashboard
 register 'config.dashboard' => {
     metadata => [
@@ -101,70 +263,6 @@ register 'config.dashlet.topics_open_by_status' => {
 };
 
 ##################################################
-
-sub init : Local {
-    my ($self,$c) = @_;
-    my $p = $c->req->params;
-
-    # run the dashboard rule
-    # TODO find default
-    my $id_rule = $p->{dashboard_id};
-
-    # find a default dashboard
-    if( !$id_rule ) {
-        my $rule = mdb->rule->find_one({ rule_type=>'dashboard', default_dashboard=>mdb->true }); # first default rule? 
-        $rule = mdb->rule->find_one({ rule_type=>'dashboard' }) unless $rule; # any rule then?
-        if( $rule ) {
-            $id_rule = $rule->{id};
-        } else {
-            _warn _loc 'No default rule found for user %1', $c->username;
-        }
-    }
-
-    # create a system default dashboard
-    if( ! mdb->rule->find_one({ id=>"$id_rule" }) ) {
-        _warn _loc 'No default dashboard %1', 
-        $id_rule = mdb->seq('rule');
-        my $default_dashboard = Util->_load(join '', <DATA>) || _fail _loc 'Could not find default dashboard data!';
-        mdb->rule->insert({ %$default_dashboard, rule_name=>_loc('Default Dashboard'), rule_seq=>0+$id_rule, id=>"$id_rule" });
-    }
-
-    $id_rule or _fail _loc 'No dashboard defined';
-
-    # now run the dashboard rule
-    my $cr = Baseliner::CompiledRule->new( id_rule=>"$id_rule" );
-    my $stash = { 
-        dashboard_data => { data=>[], count=>0 },
-        dashboard_params => {
-            %$p,
-        }
-    };
-    $cr->compile;
-    $cr->run( stash=>$stash ); 
-    my $dashlets = $$stash{dashlets} // [];
-
-    my $k = 1;
-    $dashlets = [ map{ 
-        $$_{order} = $k++;
-        # merge default data with node
-        if( $$_{key} && (my $reg = $c->registry->get($$_{key})) ){
-            $$_{data} = +{ %{ $reg->{data} || {} }, %{ $$_{data} || {} } } ;
-            $$_{js_file} = $reg->{js_file}; # overwrite important stuff
-        }
-        $_;
-    } _array($dashlets) ];
-
-    ## TODO merge user configurations to dashlets
-    _debug( $dashlets );
-
-    # now list the dashboards for user
-    my @rules = mdb->rule->find({ rule_type=>'dashboard' })->all;
-    my $dashboards = [ map{ {id=>$_->{id}, name=>$_->{rule_name} }  } @rules ];
-
-    $c->stash->{json} = { dashlets=>$dashlets, dashboards=>$dashboards };
-    $c->forward( 'View::JSON' );
-}
-
 
 ##################################################
 
@@ -1302,44 +1400,6 @@ sub topics_open_by_category: Local{
 
 }
 
-sub topics_by_status: Local{
-    my ( $self, $c, $action ) = @_;
-    #my $p = $c->request->parameters;
-    my (@topics_by_status, @datas);
-
-    my $where = {};
-    my $username = $c->username;
-    my $perm = Baseliner->model('Permissions');
-
-    my @user_categories =  map {
-        $_->{id};
-    } $c->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
-
-    my $is_root = $perm->is_root( $username );
-    if( $username && ! $is_root){
-        Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
-    }
-    $where->{'category.id'} = mdb->in(@user_categories);
-    my %colors = map { $_->{id_status} => $_->{color} } ci->status->find()->all;
-
-    @topics_by_status = _array(mdb->topic->aggregate( [
-        { '$match' => $where },
-        { '$group' => { _id => '$category_status.id', 'status' => {'$max' => '$category_status.name'},'color' => {'$max' => '$category_status.color'}, 'total' => { '$sum' => 1 }} },
-        { '$sort' => { total => -1}}
-    ]));
-    
-    foreach my $topic (@topics_by_status){
-        push @datas, {
-                    total         => $topic->{total},
-                    status        => $topic->{status},
-                    color         => $colors{$topic->{_id}}, #$topic->{color},
-                    status_id     => $topic->{_id}
-                };
-     }
-    $c->stash->{topics_by_status} = \@datas;
-    $c->stash->{topics_by_status_title} = _loc('Topics by status');
-
-}
 
 sub topics_open_by_status: Local{
     my ( $self, $c, $dashboard_id ) = @_;

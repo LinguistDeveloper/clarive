@@ -701,7 +701,6 @@ sub by_status : Local {
         for ( keys %st ) {
             push @data, [$_,$st{$_}];
         }
-        _warn \@data;
         $c->stash->{json} = { success => \1, data=>\@data };
     } catch {
         my $err = shift;

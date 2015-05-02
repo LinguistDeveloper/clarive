@@ -16,7 +16,7 @@ has dsl            => ( is => 'rw', isa => 'CodeRef', default=>sub{
 	    my ($self, $n, %p ) = @_;
 	    sprintf(q{
 	        push @{ $stash->{dashlets} }, %s; 
-	    }, Data::Dumper::Dumper({ key=>$n->{key}, html=>$n->{html}, name=>$n->{name}, data=>$n->{data} }));
+	    }, Data::Dumper::Dumper({ form=>$self->{form}, key=>$n->{key}, html=>$n->{html}, name=>$n->{name}, data=>$n->{data} }));
 	};
 });
 
