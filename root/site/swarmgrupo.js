@@ -31,7 +31,7 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
 
         self.nodes = [];
         self.links = [];
-        self.links2 = [];
+        //self.links2 = [];
         self.nodes2 = [];
         self.nodes3 = [];
 
@@ -587,16 +587,22 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
 
     },
     start_anim : function(){
+
         var self = this;
+
         self.anim_running = true;
-        setTimeout(function(){ self.anim() },10);
+        setTimeout(function(){ self.anim() },1000);
     },
     stop_anim : function(){
+
         var self = this;
+
         self.anim_running = false;
     },
     anim : function(){
+
         var self = this;
+
         if( !self.anim_running ) return;
         
         if(self.array[self.i].ev == 'add') {
@@ -608,7 +614,7 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
             self.del();
             self.i++;
         }
-        setTimeout(function(){ self.anim() },10);
+        setTimeout(function(){ self.anim() },1000);
     },
     first : function(){
 
@@ -651,9 +657,11 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
 
     },
     add_inicial : function(array){
+
         var self = this;
         var a = self.nodes[0];
         var d = {id: "d"+Math.random(), node: array};
+
         if (!a){
              self.nodes.push(d)
         }else 
@@ -666,6 +674,7 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
         self.start_inicial();
     },
     start_inicial : function(){
+
         var self = this;
 
         self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
@@ -684,6 +693,7 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
         self.force.start();
     },
     add : function(){
+
         var self = this;
         var a = self.nodes[0];
         var d = {id: "d"+Math.random()};
@@ -709,25 +719,32 @@ Cla.Swarmgrupo = Ext.extend( Ext.Panel, {
         }
     },
     useradd  : function(){
+
         var self = this;
+
         //var a = self.nodes2[0];
         var d = {id: "d"+self.array[self.i].node, who: self.array[self.i].who};
         self.nodes2.push(d);
         self.userstart();
     },
     userdel : function(){
+
         var self = this;        
+
         self.nodes2.splice(self.nodes2.length-1); // borra el ultimo nodo creado
         self.userstart();
     },
     del : function(){
+
         var self = this;
+
         self.nodes.splice(self.nodes.length-1); // borra el ultimo nodo creado
         self.links.pop(); // remove b-c
         self.userdel();
         self.start();
     },
     start : function(){
+
         var self = this;
 
         self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
