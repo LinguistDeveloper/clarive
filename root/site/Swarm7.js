@@ -1,4 +1,4 @@
-Cla.Swarm5 = Ext.extend( Ext.Panel, {
+Cla.Swarm7 = Ext.extend( Ext.Panel, {
     initComponent : function(){
         var self = this;
         self.i = 0;
@@ -14,13 +14,10 @@ Cla.Swarm5 = Ext.extend( Ext.Panel, {
             { text:_('Del'), handler:function(){ self.del() } }
         ];
 
-        Cla.Swarm5.superclass.initComponent.call(this);
+        Cla.Swarm7.superclass.initComponent.call(this);
          
         self.on('resize', function(p,w,h){
             if( self.svg ) {
-                //self.svg.trigger('resizeEnd');
-                //self.svg.attr('width', w).attr('height', h);
-                //self.redraw();
             }
         });
         self.on('afterrender', function(){
@@ -60,7 +57,7 @@ Cla.Swarm5 = Ext.extend( Ext.Panel, {
 
         $.injectCSS({
             //".link": { "stroke": "green", 'stroke-width': '2.5px'},
-            //".link2": { "stroke": "blue", 'stroke-width': '2.5px'},
+            ".link2": { "stroke": "blue", 'stroke-width': '2.5px'},
             //".node": { "stroke": "#fff", fill:"#000", 'stroke-width': '1.5px' },
             ".node.a": { "fill": "red" },
             ".node.b": { "fill": "green" },
@@ -69,12 +66,7 @@ Cla.Swarm5 = Ext.extend( Ext.Panel, {
 
         var id = self.body.id; 
         var selector = '#' + id; 
-        //d3.select(selector).selectAll("svg").remove();
-
-
-
-              
-
+        
         self.vis = d3.select("#"+ id ).append("svg:svg").attr("width", '100%').attr("height", '100%').attr("preserveAspectRatio", "xMinYMin meet");
         self.svg = self.vis.append("svg:g").call(d3.behavior.zoom().on("zoom", function(){self.rescale()})).on("dblclick.zoom", null).append('svg:g');
         
@@ -82,16 +74,14 @@ Cla.Swarm5 = Ext.extend( Ext.Panel, {
             .attr('width', self.width)
             .attr('height', self.height)
             .attr('fill', 'white')
+
         self.force = d3.layout.force()
-            //.nodes(self.nodes2)
             .nodes(self.nodes)
             .links(self.links)
-            //.links(self.links2)
             .charge(-50)
             .linkDistance(20)
             .size([self.width, self.height])
             .on("tick", function(){ self.tick() });
-
 
         self.node = self.svg.selectAll(".node");
         self.link = self.svg.selectAll(".link");
@@ -127,85 +117,72 @@ Cla.Swarm5 = Ext.extend( Ext.Panel, {
     first : function(){
         var self = this;
         var i 
-        //for (i=0; i<array.length; i++){
-        var a = { id: "d87654" , who: "diego"}
-        self.nodes.push(a);
-        self.nodes2.push(a);
-        //self.userstart();
-        self.start();
+
+        var d = { id: "d87654" , who: "diego", node: "#cambio"}
+        self.nodes.push(d);
+
+        self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
+        self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 6).attr('fill','red').on("zoom", function(){self.rescale()});
+        self.node.exit().remove();
+
+        self.node4 = self.node4.data(self.force.nodes(), function(d) { return d.id;});
+        self.node4.enter().append("text").text(d.node);
+        self.node4.exit().remove();
+
+        self.node.attr("cx", function(d) { return d.x; })
+            .attr("cy", function(d) { return d.y; })
+            
+        self.node4.attr("x", function(d) { return d.x-10; })
+            .attr("y", function(d) { return d.y-10; })
         
-        //var a ={id: "a"};
-        //self.nodes.push(a);
-        //var a = {id: "a"}, b = {id: "b"}, c = {id: "c"};
-        //self.nodes.push(a,b,c);
-        //self.links.push({source: a, target: b}, {source: a, target: c}, {source: b, target: c});
-        //alert (a.id);
-        //}
-        
+        self.force.start();
     },
     add : function(){
         var self = this;
         var a = self.nodes[0];
         var d = {id: "d"+Math.random()};
         if (!a){
-             self.nodes.push(d)
+             self.nodes.push(d);
         }else 
             {
-            //var c = self.nodes[1];
             self.nodes.push(d);
             self.links.push({source: d, target: a});
             }
         self.useradd();
         self.start();
-        //alert(d.id);
+
     },
     useradd  : function(){
         var self = this;
-        //var a = self.nodes2[0];
+
         var a = self.nodes2[0];
         var d = {id: "d"+self.array[self.i].node, who: self.array[self.i].who};
-        //alert (self.array[self.i].who);
-        //var c = self.nodes[1];
+                if (!a){
+             self.nodes2.push(d);
+        }else 
+            {
         self.nodes2.push(d);
-        //self.nodes3.push(d);
-        //self.links2.push({source: d, target: a});
-        /*var j;
-             var x=220;
-             var y=50;
-             var k=100;
-            for (j=0; j < 5; j++){
-                x= x+j;
-                y= y+j;
-                alert (" j: "+j+" x: "+x+" y: "+y);
-                setTimeout(function(){ self.node.attr("transform", "translate(" + x + "," + y + ")") },j*k);
-            }*/
         self.userstart();
     },
     userdel : function(){
         var self = this;
         self.nodes2.splice(self.nodes2.length-1); // borra el ultimo nodo creado
-        //self.links.shift(); // remove a-b
-        //self.links2.pop(); // remove b-c
         self.userstart();
     },
     del : function(){
         var self = this;
         self.nodes.splice(self.nodes.length-1); // borra el ultimo nodo creado
-        //self.links.shift(); // remove a-b
-        self.links.pop(); // remove b-c
+        self.links.pop();
         self.userdel();
         self.start();
     },
+
     start : function(){
         var self = this;
 
         self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
         self.link.enter().insert("line", ".node").attr("class", "link").attr("stroke","blue");
         self.link.exit().remove();
-
-        //self.link2 = self.link2.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
-        //self.link2.enter().insert("line", ".node").attr("class", "link");
-        //self.link2.exit().remove();
 
         self.node = self.node.data(self.force.nodes(), function(d) { return d.id;});
         self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 6).attr('fill','red').on("zoom", function(){self.rescale()});
@@ -221,12 +198,9 @@ Cla.Swarm5 = Ext.extend( Ext.Panel, {
         
         var self = this;
 
-        //self.link2 = self.link2.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
-        //self.link2.enter().insert("line", ".node").attr("class", "link");
-        //self.link2.exit().remove();
         var randomValuex = Math.random()*200;
         var randomValuey = Math.random()*200;
-        //alert(randomValuex);
+
 
         //quitamos esto para quitar la linea de link2
         self.link2 = self.link2.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });

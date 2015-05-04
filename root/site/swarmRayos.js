@@ -1,4 +1,4 @@
-Cla.Swarm5 = Ext.extend( Ext.Panel, {
+Cla.SwarmRayos = Ext.extend( Ext.Panel, {
     initComponent : function(){
         var self = this;
         self.i = 0;
@@ -14,7 +14,7 @@ Cla.Swarm5 = Ext.extend( Ext.Panel, {
             { text:_('Del'), handler:function(){ self.del() } }
         ];
 
-        Cla.Swarm5.superclass.initComponent.call(this);
+        Cla.SwarmRayos.superclass.initComponent.call(this);
          
         self.on('resize', function(p,w,h){
             if( self.svg ) {
@@ -51,16 +51,11 @@ Cla.Swarm5 = Ext.extend( Ext.Panel, {
         { t:'10000', ev:'del', who:'alex', node: '#49', parent:'Changeset' },
         { t:'11000', ev:'add', who:'fran', node: '#50', parent:'Changeset' },
         { t:'12000', ev:'add', who:'pedro', node: '#51', parent:'Changeset' },
-        { t:'9000', ev:'add', who:'alex', node: '#49', parent:'Emergency' },
-        { t:'10000', ev:'del', who:'alex', node: '#49', parent:'Emergency' },
-        { t:'11000', ev:'add', who:'fran', node: '#50', parent:'Emergency' },
-        { t:'12000', ev:'add', who:'pedro', node: '#51', parent:'Emergency' },
         { t:'13000', ev:'add', who:'ana', node: '#52', parent:'Changeset' }
         ];
 
         $.injectCSS({
-            //".link": { "stroke": "green", 'stroke-width': '2.5px'},
-            //".link2": { "stroke": "blue", 'stroke-width': '2.5px'},
+            ".link": { "stroke": "green", 'stroke-width': '2.5px'},
             //".node": { "stroke": "#fff", fill:"#000", 'stroke-width': '1.5px' },
             ".node.a": { "fill": "red" },
             ".node.b": { "fill": "green" },
@@ -78,7 +73,7 @@ Cla.Swarm5 = Ext.extend( Ext.Panel, {
         self.vis = d3.select("#"+ id ).append("svg:svg").attr("width", '100%').attr("height", '100%').attr("preserveAspectRatio", "xMinYMin meet");
         self.svg = self.vis.append("svg:g").call(d3.behavior.zoom().on("zoom", function(){self.rescale()})).on("dblclick.zoom", null).append('svg:g');
         
-        self.svg.append('svg:rect')
+self.svg.append('svg:rect')
             .attr('width', self.width)
             .attr('height', self.height)
             .attr('fill', 'white')
@@ -98,7 +93,6 @@ Cla.Swarm5 = Ext.extend( Ext.Panel, {
         self.link2 = self.svg.selectAll(".link2");
         self.node2 = self.svg.selectAll(".path");
         self.node3 = self.svg.selectAll(".path");
-        self.node4 = self.svg.selectAll(".path");
 
     },
     start_anim : function(){
@@ -126,11 +120,15 @@ Cla.Swarm5 = Ext.extend( Ext.Panel, {
     },
     first : function(){
         var self = this;
-        var i 
+        var i;
+
+        var a = {id: "a"}, b = {id: "b"}, c = {id: "c"};
+        self.nodes.push(a,b,c);
+        self.links.push({source: a, target: b}, {source: a, target: c}, {source: b, target: c}); 
         //for (i=0; i<array.length; i++){
-        var a = { id: "d87654" , who: "diego"}
-        self.nodes.push(a);
-        self.nodes2.push(a);
+        //var a = { id: "d87654" , who: "diego"}
+        //self.nodes.push(a);
+        //self.nodes2.push(a);
         //self.userstart();
         self.start();
         
@@ -147,13 +145,14 @@ Cla.Swarm5 = Ext.extend( Ext.Panel, {
         var self = this;
         var a = self.nodes[0];
         var d = {id: "d"+Math.random()};
+        var c = self.nodes[1];
         if (!a){
              self.nodes.push(d)
         }else 
             {
             //var c = self.nodes[1];
             self.nodes.push(d);
-            self.links.push({source: d, target: a});
+            self.links.push({source: d, target: a}, {source: d, target: c});
             }
         self.useradd();
         self.start();
@@ -167,7 +166,7 @@ Cla.Swarm5 = Ext.extend( Ext.Panel, {
         //alert (self.array[self.i].who);
         //var c = self.nodes[1];
         self.nodes2.push(d);
-        //self.nodes3.push(d);
+        self.nodes3.push(d);
         //self.links2.push({source: d, target: a});
         /*var j;
              var x=220;
@@ -200,7 +199,7 @@ Cla.Swarm5 = Ext.extend( Ext.Panel, {
         var self = this;
 
         self.link = self.link.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
-        self.link.enter().insert("line", ".node").attr("class", "link").attr("stroke","blue");
+        self.link.enter().insert("line", ".node").attr("class", "link").attr('fill','green');
         self.link.exit().remove();
 
         //self.link2 = self.link2.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
@@ -211,34 +210,30 @@ Cla.Swarm5 = Ext.extend( Ext.Panel, {
         self.node.enter().append("circle").attr("class", function(d) { return "node " + d.id; }).attr("r", 6).attr('fill','red').on("zoom", function(){self.rescale()});
         self.node.exit().remove();
 
-        self.node4 = self.node4.data(self.force.nodes(), function(d) { return d.id;});
-        self.node4.enter().append("text").text(self.array[self.i].node);
-        self.node4.exit().remove();
-
         self.force.start();
     },
     userstart : function(){
         
         var self = this;
 
-        //self.link2 = self.link2.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
-        //self.link2.enter().insert("line", ".node").attr("class", "link");
-        //self.link2.exit().remove();
         var randomValuex = Math.random()*200;
         var randomValuey = Math.random()*200;
         //alert(randomValuex);
 
-        //quitamos esto para quitar la linea de link2
+
         self.link2 = self.link2.data(self.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
-        self.link2.enter().insert("line", ".node").attr("stroke","blue").attr("class", "link").attr("x2", randomValuex-150).attr("y2",randomValuey).transition().duration(3000).attr("x2",randomValuex).attr("stroke",'white').remove();
+        self.link2.enter().insert("line", ".node").attr("class", "link").attr("x2", randomValuex-150).attr("y2",randomValuey).transition()
+      .duration(1500).attr("x2",randomValuex).attr("stroke",'white');
         self.link2.exit().remove();
 
         self.node2 = self.node2.data(self.force.nodes(), function(d) { return d.id;});
-        self.node2.enter().append("png:image").attr("xlink:href", "/static/images/user_min.png").attr("width", 20).attr("height", 20).attr("x", randomValuex-150).attr("y",randomValuey).transition().duration(3000).attr("x",randomValuex);
+        self.node2.enter().append("png:image").attr("xlink:href", "/static/images/user_min.png").attr("width", 20).attr("height", 20)
+        .attr("x", randomValuex-200)  .attr("y",randomValuey).transition().duration(1500).attr("x",randomValuex);
+        //self.node2.enter().append("png:image").attr("xlink:href", "/static/images/user_min.png").attr("width", 40).attr("height", 40).attr("x", function(d) { return d.source.x;} )  .attr("y",function(d) { return d.source.y;}) ;
         self.node2.exit().remove();
 
         self.node3 = self.node3.data(self.force.nodes(), function(d) { return d.id;});
-        self.node3.enter().append("text").attr("x", randomValuex-150).attr("y",randomValuey).text(self.array[self.i].who).transition().duration(3000).attr("x",randomValuex);
+        self.node3.enter().append("text").attr("x", randomValuex).attr("y",randomValuey).text(self.array[self.i].who);
         self.node3.exit().remove();
 
         //self.force.start();
@@ -246,30 +241,21 @@ Cla.Swarm5 = Ext.extend( Ext.Panel, {
 
     tick : function(){
 
+        var randomValuex = Math.random()*200;
+        var randomValuey = Math.random()*200;
+
         var self = this;
 
         self.node.attr("cx", function(d) { return d.x; })
             .attr("cy", function(d) { return d.y; })
             
-        self.node4.attr("x", function(d) { return d.x-10; })
-            .attr("y", function(d) { return d.y-10; })
 
-        self.link.attr("x1", function(d) { return d.source.x; })
-          .attr("y1", function(d) { return d.source.y; })
-          .attr("x2", function(d) { return d.target.x; })
-          .attr("y2", function(d) { return d.target.y; });
-
-        //podemos quitar link2 de aqui y ponemos los self completos
         self.link2.attr("x1", function(d) { return d.source.x; })
           .attr("y1", function(d) { return d.source.y; });
 
-        //estos se quitan con link2  
+
         self.node2;
         self.node3;
-
-        //estos se ponen sin link2
-        //self.node2.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
-        //self.node3.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
     },
     rescale : function() {
 
