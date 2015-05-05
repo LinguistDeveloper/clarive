@@ -965,7 +965,7 @@ register 'statement.sub' => {
 register 'statement.fail' => {
     text => 'FAIL',
     data => { msg => 'abort here' },
-    icon => '/static/images/icons/delete.gif',
+    icon => '/static/images/icons/log_e.png',
     dsl=>sub{
         my ($self, $n, %p ) = @_;
         sprintf(q{

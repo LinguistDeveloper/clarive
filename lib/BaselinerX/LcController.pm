@@ -448,7 +448,7 @@ sub list_repo_contents : Local {
         push @tree, { 
             text => substr($msg,0,255), 
             data => {},
-            icon => '/static/images/icons/error.png',
+            icon => '/static/images/icons/log_e.png',
             leaf=>\1,
             expandable => \0
         };
@@ -507,7 +507,7 @@ sub branches : Local {
             push @tree, { 
                 text => substr($msg,0,255),
                 data => {},
-                icon => '/static/images/icons/error.png',
+                icon => '/static/images/icons/log_e.png',
                 leaf=>\1,
                 expandable => \0
             };
@@ -750,7 +750,7 @@ sub changeset : Local {
         push @tree, {
             text => substr($msg,0,255),
             data => {},
-            icon => '/static/images/icons/error.png',
+            icon => '/static/images/icons/log_e.png',
             leaf=>\1,
             expandable => \0
         }; 
@@ -1241,7 +1241,7 @@ sub tree : Local {
         $c->stash->{json} = [{ 
             text => substr($msg,0,255),
             data => {},
-            icon => '/static/images/icons/error.png',
+            icon => '/static/images/icons/log_e.png',
             leaf=>\1,
             expandable => \0
         }]; 
