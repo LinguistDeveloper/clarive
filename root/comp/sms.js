@@ -6,7 +6,7 @@
             { xtype:'textfield', fieldLabel:_('Title'), name:'title', maxLength: 80, value:_('Alert') },
             { xtype:'textarea', fieldLabel:_('Text'), height: 60, maxLength: 255, name:'text', value:'' },
             { xtype:'textfield', fieldLabel:_('Expires'), name:'expires', value:'24h' },
-            { xtype:'textfield', fieldLabel:_('To User'), name:'username', value:'' },
+            new Baseliner.model.Users({ fieldLabel: _('Username'), name:'username', store: new Baseliner.Topic.StoreUsers({ autoLoad: true }), singleMode: true, }),
             new Baseliner.CLEditor({ name:'more', fieldLabel:_('More Info'), height:340 })
         ]
     });
@@ -17,7 +17,7 @@
             ? _('Are you sure you want to broadcast this message?') 
             : _('Are you sure you want to broadcast this message to all users?');
         Baseliner.confirm(m, function(){
-            Baseliner.ajax_json('/message/sms_create', d, function(res){
+            Baseliner.ajax_json('/systemmessages/sms_create', d, function(res){
                 Baseliner.message(_('SMS'), _('Created message with id %1', res._id) );
                 card_show(true);
             });
@@ -28,7 +28,7 @@
         var sm = grid.getSelectionModel();
         if (sm.hasSelection()) {
             var sel = sm.getSelected();
-            Baseliner.ajax_json('/message/sms_del', { _id:sel.data._id }, function(res){
+            Baseliner.ajax_json('/systemmessages/sms_del', { _id:sel.data._id, action:'del' }, function(res){
                 Baseliner.message(_('SMS'), _('Deleted message with id %1', sel.data._id) );
                 grid.store.reload();
             });
@@ -38,7 +38,7 @@
         var sm = grid.getSelectionModel();
         if (sm.hasSelection()) {
             var sel = sm.getSelected();
-            Baseliner.ajax_json('/message/sms_del', { _id:sel.data._id, action:'cancel' }, function(res){
+            Baseliner.ajax_json('/systemmessages/sms_del', { _id:sel.data._id, action:'cancel' }, function(res){
                 Baseliner.message(_('SMS'), _('Cancelled message with id %1', sel.data._id) );
                 grid.store.reload();
             });
@@ -99,7 +99,7 @@
     };
     var grid = new Ext.grid.GridPanel({ 
         store: new Baseliner.JsonStore({ 
-            url:'/message/sms_list', root: 'data' , totalProperty:"totalCount", id:'_id', autoLoad: true,
+            url:'/systemmessages/sms_list', root: 'data' , totalProperty:"totalCount", id:'_id', autoLoad: true,
             fields:['_id','title','text','more','read','t','expires','expired'] 
         }),
         header: false,
