@@ -163,7 +163,7 @@ sub tree_project_jobs : Local {
             leaf => \1,
             menu => [
                 {
-                  icon => '/static/images/icons/job.png',
+                  icon => '/static/images/icons/open.png',
                   text => _loc('Open...'),
                   page => {
                       url => sprintf( "/job/log/dashboard?mid=%s&name=%s", $_->{mid}, $_->{name} ),
