@@ -129,7 +129,7 @@ sub get {
 
     # if no data found, use default values
     my $config = $self->config_for_key( $key ) // {};
-    if( defined $config && bless($config) eq 'BaselinerX::Type::Config' ) {
+    if( defined $config && blessed($config) eq 'BaselinerX::Type::Config' ) {
         foreach my $item ( @{ $config->metadata || [] } ) {
             my $data_key = $long_key ? $key.$item->{id} : $item->{id};
 
