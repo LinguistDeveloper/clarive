@@ -449,10 +449,11 @@ sub topics_for_user {
         if (!$p->{clear_filter}){  
             my @status_ids;
             if(!$is_root){
-                ##Filtramos por defecto los estados q puedo interactuar (workflow) y los que no tienen el tipo finalizado.        
+                my %p;
+                $p{categories} = \@categories;
                 my %tmp;
                 map { $tmp{ $_->{id_status_from} } = $_->{id_category} if ($_->{id_status_from}); } 
-                    $self->user_workflow( $username );
+                    $self->user_workflow( $username, %p );
                  my @workflow_revert;
                  map { push @workflow_revert, [$tmp{$_}, $_] } keys %tmp;
                  my %category_hash = map { $_ => '1' } @categories;
