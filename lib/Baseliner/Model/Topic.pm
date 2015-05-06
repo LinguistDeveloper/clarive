@@ -349,7 +349,7 @@ sub topics_for_user {
         my @in = @not_in ? grep { $_ > 0 } @categories : @categories;
         if (@not_in && @in){
             @user_categories = grep{ not $_ ~~ @not_in } @user_categories;
-            $where->{'category.id'} = mdb->in(@in,@user_categories);
+            $where->{'category.id'} = mdb->in(@in);
         }else{
             if (@not_in){
                 @in = grep{ not $_ ~~ @not_in } @user_categories;
@@ -525,7 +525,7 @@ sub topics_for_user {
     }
     #_debug( $order_by );
     
-    #_debug( $where );
+    # _debug( $where );
     my $rs = mdb->topic->find( $where ); 
     #_debug( $rs->explain );
     $rs->fields({ mid=>1, labels=>1 }); 
