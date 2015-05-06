@@ -78,7 +78,7 @@ sub report_list {
                 data => [],
                 menu => [
                     {   text=> _loc('New search') . '...',
-                        icon=> '/static/images/icons/report.png',
+                        icon=> '/static/images/icons/search_grey.png',
                         eval=> { handler=> 'Baseliner.new_search'},
                     } 
                 ],

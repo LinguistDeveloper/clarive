@@ -205,7 +205,7 @@
         if( value == 'waiting' ) 
             img = '<img src="/static/images/icons/waiting.png" alt="'+value+'"/>';
         else if( value == 'granted' ) 
-            img = '<img src="/static/images/icons/asterisk_orange.png" alt="'+value+'"/>';
+            img = '<img src="/static/images/icons/asterisk_orange.gif" alt="'+value+'"/>';
         else if( value == 'busy' ) 
             img = '<img src="/static/images/loading-fast.gif" alt="'+value+'"/>';
         else if( value == 'idle' ) 
