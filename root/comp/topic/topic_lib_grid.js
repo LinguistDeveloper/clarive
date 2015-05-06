@@ -1359,6 +1359,7 @@ Cla.topic_grid = function(params){
         //enableDragDrop: true,
         dropable: true,
         autoSizeColumns: true,
+        width: '100%',
         deferredRender: true,
         ddGroup: 'explorer_dd',
         viewConfig: {forceFit: force_fit},
