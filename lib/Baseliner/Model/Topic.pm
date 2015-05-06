@@ -311,7 +311,7 @@ sub topics_for_user {
     $limit ||= 100;
     $dir = !length $dir ? -1 : uc($dir) eq 'DESC' ? -1 : 1;
 
-    my $where = {};
+    my $where = $p->{where} // {};
     my $perm = Baseliner->model('Permissions');
     my $username = $p->{username};
     my $is_root = $perm->is_root( $username );

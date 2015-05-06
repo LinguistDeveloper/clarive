@@ -1,5 +1,6 @@
 package BaselinerX::Type::Dashlet;
 use Baseliner::PlugMouse;
+use Baseliner::Utils;
 with 'Baseliner::Role::Registrable';
 with 'Baseliner::Role::Palette';
 
@@ -15,8 +16,9 @@ has dsl            => ( is => 'rw', isa => 'CodeRef', default=>sub{
 	return sub{
 	    my ($self, $n, %p ) = @_;
 	    sprintf(q{
-	        push @{ $stash->{dashlets} }, %s; 
-	    }, Data::Dumper::Dumper({ form=>$self->{form}, key=>$n->{key}, html=>$n->{html}, name=>$n->{name}, data=>$n->{data} }));
+            my $config = parse_vars %s, $stash;
+	        push @{ $stash->{dashlets} }, $config; 
+	    }, Data::Dumper::Dumper({ key=>$n->{key}, html=>$n->{html}, title=>$n->{text}, name=>$n->{name}, data=>$n->{data} }));
 	};
 });
 

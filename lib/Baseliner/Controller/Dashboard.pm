@@ -21,37 +21,44 @@ register 'dashlet.job.burndown' => {
 
 register 'dashlet.job.status_pie' => {
     form=> '/dashlets/job_status_pie_config.js',
-    name=> 'Job Status pie', 
+    name=> 'Job Status pie chart', 
     icon=> '/static/images/silk/chart_pie.png',
-    js_file => '/dashlets/job_status_pie.js',
-    data => {
-        period  => '1M',
-        type => 'donut',
-    }
+    js_file => '/dashlets/job_status_pie.js'
 };
 
 register 'dashlet.topic.status_pie' => {
     form=> '/dashlets/topic_status_pie_config.js',
-    name=> 'Topic Status pie', 
+    name=> 'Topic Status pie chart', 
     icon=> '/static/images/silk/chart_pie.png',
-    js_file => '/dashlets/topic_status_pie.js',
-    data => {
-        categories => '',
-        statues => '',
-        condition => ''
-    }
+    js_file => '/dashlets/topic_status_pie.js'
+};
+
+register 'dashlet.topic.status_bar' => {
+    form=> '/dashlets/topic_status_bar_config.js',
+    name=> 'Topic Status bar chart', 
+    icon=> '/static/images/silk/chart_bar.png',
+    js_file => '/dashlets/topic_status_bar.js'
 };
 
 register 'dashlet.topic.category_pie' => {
     form=> '/dashlets/topic_category_pie_config.js',
-    name=> 'Topic Category pie', 
+    name=> 'Topic Category pie chart', 
     icon=> '/static/images/silk/chart_pie.png',
-    js_file => '/dashlets/topic_category_pie.js',
-    data => {
-        categories => '',
-        statues => '',
-        condition => ''
-    }
+    js_file => '/dashlets/topic_category_pie.js'
+};
+
+register 'dashlet.topic.list_topics' => {
+    form=> '/dashlets/list_topics_config.js',
+    name=> 'List topics', 
+    icon=> '/static/images/icons/report_default.png',
+    js_file => '/dashlets/list_topics.js'
+};
+
+register 'dashlet.topic.topics_by_date_line' => {
+    form=> '/dashlets/topics_by_date_line_config.js',
+    name=> 'Topics by date line chart', 
+    icon=> '/static/images/silk/chart_curve.png',
+    js_file => '/dashlets/topics_by_date_line.js'
 };
 
 sub init : Local {
@@ -123,13 +130,22 @@ sub topics_by_category: Local {
     my $p = $c->request->parameters;
 
     my (@topics_by_category, $colors, @data );
-    my $condition = $p->{condition};
     my $group_threshold = $p->{group_threshold};
     my $categories = $p->{categories};
     my $statuses = $p->{statuses};
     my $not_in_status = $p->{not_in_status};
+    my $condition = {};
 
-    my $where = {};
+    if ( $p->{condition} ) {
+        try {
+            my $cond = eval('q/'.$p->{condition}.'/');
+            $condition = Util->_decode_json($cond);
+        } catch {
+
+        }
+    }
+
+    my $where = $condition;
     if ( $statuses ) {
         if ( $not_in_status ) {
             $where->{'category_status.id'} = mdb->nin($statuses);
@@ -204,13 +220,22 @@ sub topics_by_status: Local {
     my $p = $c->request->parameters;
 
     my (@topics_by_status, $colors, @data, %status );
-    my $condition = $p->{condition};
     my $group_threshold = $p->{group_threshold};
     my $categories = $p->{categories};
     my $statuses = $p->{statuses};
     my $not_in_status = $p->{not_in_status};
+    my $condition = {};
 
-    my $where = {};
+    if ( $p->{condition} ) {
+        try {
+            my $cond = eval('q/'.$p->{condition}.'/');
+            $condition = Util->_decode_json($cond);
+        } catch {
+
+        }
+    }
+
+    my $where = $condition;
     if ( $statuses ) {
         if ( $not_in_status ) {
             $where->{'category_status.id'} = mdb->nin($statuses);
@@ -280,6 +305,180 @@ sub topics_by_status: Local {
     $c->stash->{json} = { success => \1, colors=>$colors,data=>\@data,topics_list=>$topics_list };
     $c->forward('View::JSON'); 
 }
+
+sub topics_by_date: Local {
+    my ($self, $c) = @_;
+    my $p = $c->req->params;
+
+    my $group = $p->{group} // '';
+    my $date_field = $p->{date_field};
+    my $categories = $p->{categories};
+    my $statuses = $p->{statuses};
+    my $not_in_status = $p->{not_in_status};
+    my $condition = {};
+
+    if ( $p->{condition} ) {
+        try {
+            my $cond = eval('q/'.$p->{condition}.'/');
+            $condition = Util->_decode_json($cond);
+        } catch {
+            _error "JSON condition malformed (".$p->{condition}."): ".shift;
+        }
+    }
+
+    my $where = $condition;
+    if ( _array($statuses) ) {
+        if ( $not_in_status ) {
+            $where->{'category_status.id'} = mdb->nin($statuses);
+        } else {
+            $where->{'category_status.id'} = mdb->in($statuses);
+        }
+    }
+    my $username = $c->username;
+    my $perm = Baseliner->model('Permissions');
+
+    my @user_categories =  map {
+        $_->{id};
+    } $c->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
+
+    if ( _array($categories) ) {
+        use Array::Utils qw(:all);
+        my @categories_ids = _array($categories);
+        @user_categories = intersect(@categories_ids,@user_categories);
+    }
+    $where->{'category.id'} = mdb->in(@user_categories);
+
+    my $is_root = $perm->is_root( $username );
+    if( $username && ! $is_root){
+        Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
+    }
+
+    _warn $where;
+    my @topics = mdb->topic->find($where)->fields({_id=>0,_txt=>0})->all;
+
+    my %topic_by_dates = ();
+    my %colors;
+    my $quarters = { 'Q1' => '01-01', 'Q2' => '04-01', 'Q3' => '07-01', 'Q4' => '10-01'};
+
+    foreach my $topic ( _array @topics ) {
+        my $date = $topic->{$date_field};
+
+        use DateTime;
+        use Class::Date;
+        my $date_fmt = Class::Date->new($date);
+
+        if ($date_fmt) {
+            if ( $group !~ /day|quarter/ ) {
+                my $dt = DateTime->from_epoch( epoch => $date_fmt->epoch(), );
+
+                $dt->truncate( to => $group);
+                $date = substr(''.$dt,0,10);
+            } elsif ( $group eq 'quarter' ){
+                my $dt = DateTime->from_epoch( epoch => $date_fmt->epoch(), );
+                $date = $dt->year . "-". $quarters->{$dt->quarter_abbr};
+            }
+
+            $topic_by_dates{$date}{ $topic->{category_name} }
+                = $topic_by_dates{$date}{ $topic->{category_name} }
+                ? $topic_by_dates{$date}{ $topic->{category_name} } + 1
+                : 1;
+
+        }
+
+        $colors{$topic->{category}->{name}}= $topic->{category}->{color};
+    }
+
+    my %keys = ();
+    my @dates = ('x');
+    for my $rel_date ( keys %topic_by_dates ) {
+        push @dates, $rel_date;
+        for my $rel_type ( keys %{ $topic_by_dates{$rel_date} } ) {
+            $keys{$rel_type} = 1;
+        }
+    }
+
+    my %temp_data;
+    for my $rel_date ( keys %topic_by_dates ) {
+       for my $rel_type (keys %keys) {
+           if ( !$temp_data{$rel_type} ) {
+                $temp_data{$rel_type} = [];
+           }
+          if ( $topic_by_dates{$rel_date}->{$rel_type} ) {
+            push $temp_data{$rel_type}, $topic_by_dates{$rel_date}->{$rel_type};
+          } else {
+            push $temp_data{$rel_type},0;
+          }
+       }
+    }
+    my $matrix = [];
+
+    push $matrix, \@dates;
+
+    for ( keys %temp_data ) {
+        push $matrix, [ $_, _array($temp_data{$_})];
+    }
+
+    $c->stash->{json} = { data=>{ groups => [keys %keys], colors => \%colors, matrix => $matrix} };
+    $c->forward('View::JSON');
+}
+
+sub list_topics: Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->request->parameters;
+
+    my (@topics, $colors, @data, %status );
+    my $group_threshold = $p->{group_threshold};
+    my $categories = $p->{categories};
+    my $statuses = $p->{statuses};
+    my $not_in_status = $p->{not_in_status};
+    my $condition = {};
+
+    if ( $p->{condition} ) {
+        try {
+            my $cond = eval('q/'.$p->{condition}.'/');
+            $condition = Util->_decode_json($cond);
+        } catch {
+            _error "JSON condition malformed (".$p->{condition}."): ".shift;
+        }
+    }
+
+    my $where = $condition;
+    if ( $statuses ) {
+        if ( $not_in_status ) {
+            $where->{'category_status.id'} = mdb->nin($statuses);
+        } else {
+            $where->{'category_status.id'} = mdb->in($statuses);
+        }
+    }
+    my $username = $c->username;
+    my $perm = Baseliner->model('Permissions');
+
+    my @user_categories =  map {
+        $_->{id};
+    } $c->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
+
+    if ( $categories ) {
+        use Array::Utils qw(:all);
+        my @categories_ids = _array($categories);
+        @user_categories = intersect(@categories_ids,@user_categories);
+    }
+
+    my $is_root = $perm->is_root( $username );
+    if( $username && ! $is_root){
+        Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
+    }
+
+    $where->{'category.id'} = mdb->in(@user_categories);
+
+    @topics = mdb->topic->find($where)->fields({_id=>0,_txt=>0})->all;
+    my @topic_cis = map {$_->{mid}} @topics;
+    my @cis = map { ($_->{to_mid},$_->{from_mid})} mdb->master_rel->find({ '$or' => [{from_mid => mdb->in(@topic_cis)},{to_mid => mdb->in(@topic_cis)}]})->all;
+    my %ci_names = map { $_->{mid} => $_->{name}} mdb->master->find({ mid => mdb->in(@cis)})->all;
+
+    $c->stash->{json} = { success => \1, data=>\@topics, cis=>\%ci_names };
+    $c->forward('View::JSON'); 
+}
+
 
 ##################### DEPRECATED
 ##Configuración del dashboard
@@ -1113,31 +1312,31 @@ sub list_emails: Private{
 }
 
 
-sub list_topics: Private{
-    my ( $self, $c, $dashboard_id ) = @_;
-    my $username = $c->username;
-    #my (@topics, $topic, @datas, $SQL);
+# sub list_topics: Private{
+#     my ( $self, $c, $dashboard_id ) = @_;
+#     my $username = $c->username;
+#     #my (@topics, $topic, @datas, $SQL);
     
-    #CONFIGURATION DASHLET
-    ##########################################################################################################
-    my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.topics'); 
-    if($dashboard_id ) {
-        my $dashboard_rs = mdb->dashboard->find_one({_id => mdb->oid($dashboard_id)});
-        my @config_dashlet = grep {$_->{url}=~ 'list_topics'} _array $dashboard_rs->{dashlets};
+#     #CONFIGURATION DASHLET
+#     ##########################################################################################################
+#     my $default_config = Baseliner->model('ConfigStore')->get('config.dashlet.topics'); 
+#     if($dashboard_id ) {
+#         my $dashboard_rs = mdb->dashboard->find_one({_id => mdb->oid($dashboard_id)});
+#         my @config_dashlet = grep {$_->{url}=~ 'list_topics'} _array $dashboard_rs->{dashlets};
         
-        if($config_dashlet[0]->{params}){
-            foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
-                $default_config->{$key} = $config_dashlet[0]->{params}->{$key};
-            };              
-        }       
-    }   
-    ##########################################################################################################      
+#         if($config_dashlet[0]->{params}){
+#             foreach my $key (keys %{ $config_dashlet[0]->{params} || {} }){
+#                 $default_config->{$key} = $config_dashlet[0]->{params}->{$key};
+#             };              
+#         }       
+#     }   
+#     ##########################################################################################################      
     
-    # go to the controller for the list
-    my $p = { limit => $default_config->{rows}, username=>$c->username };
-    my ($info, @rows) = $c->model('Topic')->topics_for_user( $p );
-    $c->stash->{topics} = \@rows ;
-}
+#     # go to the controller for the list
+#     my $p = { limit => $default_config->{rows}, username=>$c->username };
+#     my ($info, @rows) = $c->model('Topic')->topics_for_user( $p );
+#     $c->stash->{topics} = \@rows ;
+# }
 
 sub list_filtered_topics_old: Private{
     my ( $self, $c, $dashboard_id ) = @_;
@@ -1226,7 +1425,7 @@ sub list_releases: Private{
 
     if ( $default_config->{categories} && $default_config->{categories} ne 'ALL') {
         my @categories = split /,/, $default_config->{categories};
-        my @categories_ids = map {$_->{id}} mdb->category->find({ name => mdb->in(@categories)})->all;
+        # my @categories_ids = map {$_->{id}} mdb->category->find({ name => mdb->in(@categories)})->all;
         my @categories_ids = map {$_->{id}} mdb->category->find({ is_release => '1', name => mdb->in(@categories)})->all;
         $p->{categories} = \@categories_ids;
     }
@@ -1448,82 +1647,6 @@ sub topics_open_by_category: Local{
      }
     $c->stash->{topics_open_by_category} = \@datas;
     $c->stash->{topics_open_by_category_title} = _loc('Topics open by category');
-
-}
-
-
-sub topics_open_by_status: Local{
-    my ( $self, $c, $dashboard_id ) = @_;
-    #my $p = $c->request->parameters;
-    my (@topics_open_by_status, @datas);
-
-    my $where = {};
-    my $username = $c->username;
-    my $perm = Baseliner->model('Permissions');
-
-    my $config = get_config_dashlet('topics_open_by_status', $dashboard_id);
-
-    my @user_categories =  map {
-                $_->{id};
-            } $c->model('Topic')->get_categories_permissions( username => $username, type => 'view' );
-
-    my $is_root = $perm->is_root( $username );
-    if( $username && ! $is_root){
-        Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
-    }
-
-    if ( $config->{categories} && $config->{categories} ne 'ALL') {
-        use Array::Utils qw(:all);
-        my @categories = split /,/, $config->{categories};
-        my @categories_ids = map {$_->{id}} mdb->category->find({ name => mdb->in(@categories)})->all;
-        @user_categories = intersect(@categories_ids,@user_categories);
-    }
-
-    my %all_statuses;
-    my @final_statuses;
-    my %status_names;
-
-    map { 
-        $status_names{$_->{id_status}} = {$_->{name},$_->{color}};
-        if ( $_->{type} =~ /^F/ ) {
-            push @final_statuses, $_->{id_status}
-        }
-    } ci->status->find()->all;
-
-    if ( $config->{all_statuses} ) {
-        %all_statuses = map { map { $_ => 1} _array($_->{statuses}) } mdb->category->find({ id => mdb->in(@user_categories)})->all;
-    }
-    $where->{'category.id'} = mdb->in(@user_categories);
-    $where->{'category_status.type'} = mdb->nin(('F','FC')) if !$config->{final} || ($config->{final} && $config->{final} eq 0);
-    my %colors = map { $_->{id_status} => $_->{color} } ci->status->find()->all;
-    @topics_open_by_status = _array(mdb->topic->aggregate( [
-        { '$match' => $where },
-        { '$group' => { _id => '$category_status.id', 'status' => {'$max' => '$category_status.name'},'color' => {'$max' => '$category_status.color'}, 'total' => { '$sum' => 1 }} },
-        { '$sort' => { total => -1}}
-    ]));
-    
-    foreach my $topic (@topics_open_by_status){
-        push @datas, {
-                    total         => $topic->{total},
-                    status        => $topic->{status},
-                    color		  => $colors{$topic->{_id}}, #$topic->{color},
-                    status_id     => $topic->{_id}
-                };
-        delete $all_statuses{$topic->{_id}};
-    }
-    if ( $config->{all_statuses} ) {
-        for my $id_status ( keys %all_statuses ) {
-            push @datas, {
-                total         => 0,
-                status        => $status_names{$id_status}->{name},
-                color         => $status_names{$id_status}->{name},
-                status_id     => $id_status
-            };            
-        }
-    }
-
-    $c->stash->{topics_open_by_status} = \@datas;
-    $c->stash->{topics_open_by_status_title} = _loc('Topics open by status');
 
 }
 

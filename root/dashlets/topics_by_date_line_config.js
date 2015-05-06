@@ -12,17 +12,14 @@
         { xtype : "checkbox", name : "not_in_status", checked: data.not_in_status=='on' ? true : false, boxLabel : _('Exclude selected statuses?') },
         ccategory,
         { xtype:'textfield', fieldLabel: _('Advanced JSON/MongoDB condition for filter'), name: 'condition', value: data.condition },
-        { xtype:'numberfield', fieldLabel: _('Minimum % to group series in Others group'), name: 'group_threshold', value: data.group_threshold || 5},
-        {
-            xtype: 'radiogroup',
-            name: 'type',
-            anchor:'50%',
-            fieldLabel: _('Type'),
-            defaults: {xtype: "radio",name: "type"},
-            items: [
-                {boxLabel: _('Donut'), inputValue: 'donut', checked: data.type  == 'donut'},
-                {boxLabel: _('Pie'), inputValue: 'pie', checked: data.type == undefined || data.type == 'pie'}
-            ]
-        }
+        { xtype:'textfield', fieldLabel: _('Date field in topics to use as X axis'), name: 'date_field', value: data.date_field },
+        new Baseliner.ComboDouble({ fieldLabel: _('Data grouped by'), name:'group', value: data.group, data: [
+            ['day', _('Day')],
+            ['week', _('Week')],
+            ['month', _('Month')],
+            ['quarter', _('Quarter')],
+            ['year', _('Year')]
+          ] 
+        })
     ]);
 })

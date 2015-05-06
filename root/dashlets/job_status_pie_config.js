@@ -6,7 +6,7 @@
             xtype: 'radiogroup',
             name: 'period',
             anchor:'75%',
-            fieldLabel: _('Period'),
+            fieldLabel: _('Filter jobs executed last ...'),
             defaults: {xtype: "radio",name: "period"},
             items: [
                 {boxLabel: _('Day'), inputValue: '1D', checked: data.period  == '1D'},
@@ -20,7 +20,7 @@
             xtype: 'radiogroup',
             name: 'type',
             anchor:'50%',
-            fieldLabel: _('Type'),
+            fieldLabel: _('Chart will be shown as ...'),
             defaults: {xtype: "radio",name: "type"},
             items: [
                 {boxLabel: _('Donut'), inputValue: 'donut', checked: data.type == undefined || data.type  == 'donut'},
