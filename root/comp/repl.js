@@ -537,7 +537,7 @@ To do:
     var tbar = [
             {   xtype: 'button',
                 text: _('Run'),
-                icon:'/static/images/scm/debug/debug_view.gif',
+                icon:'/static/images/icons/debug_view.gif',
                 cls: 'x-btn-text-icon',
                 handler: run_repl
             },

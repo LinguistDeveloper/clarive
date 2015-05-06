@@ -217,7 +217,7 @@ Ext.override(Ext.form.HtmlEditor, {
                 }),
                 new Ext.Toolbar.Button({
                     text: _('View'),
-                    icon:'/static/images/icons/drop-yes.gif',
+                    icon:'/static/images/icons/drop-view.gif',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();
