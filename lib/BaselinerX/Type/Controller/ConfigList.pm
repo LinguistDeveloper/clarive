@@ -63,9 +63,9 @@ sub json : Local {
     my ($self,$c)=@_;
     my $p = $c->req->parameters;
 
-    if( $p->{original} eq 'true' ) {
+    if( $p->{original} && $p->{original} eq 'true' ) {
         $c->forward('json_original') ;
-    } elsif( $p->{modified} eq 'true' ) {
+    } elsif( $p->{modified} && $p->{modified} eq 'true' ) {
         $c->forward('json_modified') ;
     } else {
         $c->forward('json_combined');
