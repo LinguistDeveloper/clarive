@@ -7,7 +7,7 @@ with 'Baseliner::Role::Service';
 register 'service.ci.invoke' => {
     name => 'Invoke CI methods',
     form => '/forms/ci_invoke.js',
-    icon => '/static/images/ci/class.gif',
+    icon => '/static/images/icons/class.gif',
     job_service  => 1,
     handler => \&ci_invoke,
 };

@@ -70,7 +70,7 @@ if( ! $meta->{hidden} ) {
             <td style="font-size: <% $meta->{td_font_size} // 10 %>px" class="fieldlet-html">
 <%
                             $$h{type} eq 'checkbox' 
-                            ? ( !$val || $val eq 'false' ? '<img src="/static/images/icons/delete.gif">' : '<img src="/static/images/icons/checkbox.png">')
+                            ? ( !$val || $val eq 'false' ? '<img src="/static/images/icons/close.png">' : '<img src="/static/images/icons/checkbox.png">')
                             : $$h{type} eq 'index' 
                             ? ++$ix
                             : ref $val ? $val : Util->_markdown($val, { tab_width=>2 })
