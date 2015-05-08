@@ -221,13 +221,12 @@ sub get_rules_notifications{
     my $mid = $p->{mid};
     
     my $notification = {};
-    my @rs_notify = mdb->notification->find({event_key => $event_key, is_active => mdb->true, action => $action})->all;
+    my @rs_notify = mdb->notification->find({event_key => $event_key, is_active => mdb->true, action => $action})->all; 
     #my @prj_mid = map { $_->{mid} } ci->related( mid => $mid, where=>{collection => 'project'}) if $mid;
     
     if ( @rs_notify ) {
 		foreach my $row_send ( @rs_notify ){
-
-			#my $data = ref $row_send->{data} ? $row_send->{data} : _load($row_send->{data});
+            #my $data = ref $row_send->{data} ? $row_send->{data} : _load($row_send->{data});
             my $data = $self->encode_data($row_send->{data});
 
             my $valid = 0;
@@ -236,15 +235,14 @@ sub get_rules_notifications{
             }else{
                 $valid = 1 unless keys $data->{scopes};
             }
-    
     		if ($valid == 1){
         		my $actions;
         		my $roles;
         
         		foreach my $carrier (keys $data->{recipients}){
-            		my $type;
-        			foreach $type (keys $data->{recipients}->{$carrier}){
-            			my @values;
+                    my $type;
+                    foreach $type (keys $data->{recipients}->{$carrier}){
+                        my @values;
                 		foreach my $key_value (keys $data->{recipients}->{$carrier}->{$type}){
                             #my $key = Util->_md5( $row_send->{template_path} . '#' . ( $row_send->{subject} // '') );
                             my $key = Util->_md5( $row_send->{template_path} . '#' . ( $row_send->{subject} // '') );
@@ -263,7 +261,6 @@ sub get_rules_notifications{
         		}
     		}
 		}
-
 		foreach my $key (keys $notification){
 			foreach my $carrier ( keys $notification->{$key}{carrier}) {
     			my @users;
@@ -307,23 +304,22 @@ sub get_rules_notifications{
                                     }
                                 }
                             }                            
-                            
                             @roles = _unique @roles;
                             
                             @tmp_users = Baseliner->model('Users')->get_users_from_mid_roles_topic( roles => \@roles, mid => $mid );
                         }
-                        when ('Roles') 	    {
-                        	my @roles;
-                        	if ( exists $notification->{$key}{carrier}{$carrier}->{$type}->{'*'} ){
-                            	if (exists $notify_scope->{project}){
-                                	@roles = Baseliner->model('Users')->get_roles_from_projects($notify_scope->{project});
-                            	}
+                        when ('Roles')      {
+                            my @roles;
+                            if ( exists $notification->{$key}{carrier}{$carrier}->{$type}->{'*'} ){
+                                if (exists $notify_scope->{project}){
+                                    @roles = Baseliner->model('Users')->get_roles_from_projects($notify_scope->{project});
+                                }
                                 else{
-                            		@roles = ('*');
+                                    @roles = ('*');
                                 }
                             }
                             else{
-                            	@roles = keys $notification->{$key}{carrier}{$carrier}->{$type};
+                                @roles = keys $notification->{$key}{carrier}{$carrier}->{$type};
                             }
                             @tmp_users = Baseliner->model('Users')->get_users_from_mid_roles_topic( roles => \@roles, mid => $mid );
                         }
@@ -341,11 +337,11 @@ sub get_rules_notifications{
                             my @emails = keys $notification->{$key}{carrier}{$carrier}->{$type};
                             push @tmp_users, @emails;
                         }                        
-                        when ('Owner') 	    {
+                        when ('Owner')      {
                             my $topic = mdb->topic->find_one({mid=>"$mid"});
                             push @tmp_users, $topic->{created_by};
                         }                        
-            		};
+                    };
             		push @users, @tmp_users;
         		}
      			if (@users) {
@@ -358,11 +354,11 @@ sub get_rules_notifications{
         			delete $notification->{$key}{carrier}{$carrier} ;
         		}
     		}
-    		my @totCarrier = keys $notification->{$key};
-    		if (!@totCarrier) {
-    			delete $notification->{$key};
-    		}
-		};
+            my @totCarrier = keys $notification->{$key};
+            if (!@totCarrier) {
+                delete $notification->{$key};
+            }
+        };
     }
     if (keys $notification){
     	return $notification;
@@ -558,7 +554,6 @@ sub get_notifications {
     
 	my $send_notification;
     $send_notification = $self->get_rules_notifications( { event_key => $event_key, action => 'SEND', notify_scope => $notify_scope, mid => $mid } );
-    
     my $name_config = $event_key;
     $name_config =~ s/event.//g;
     
@@ -571,28 +566,28 @@ sub get_notifications {
     } else {
         _error( _("Could not find template for $event_key") );
     }
-    
+        
     if(!$self->exclude_default( {event_key => $event_key} )){
         for my $notify ( values %$send_notification ) {
             if( $notify->{template_path} eq $template ){
                 map { $notify->{carrier}{TO}{$_} = 1 } @notify_default;        
             }else{
                 if (@notify_default){
-                    my %users; 
-                    map { $users{$_} = 1 } @notify_default;            
+                    my %users;
+                    map { $users{$_} = 1 } @notify_default;
+                    map { $users{$_} = 1 } keys $notify->{carrier}{TO}; 
                     $notify->{carrier}{TO} = \%users;
                 }
             }
         }
     }
-    
 	my $exclude_notification;
-    $exclude_notification = $self->get_rules_notifications( { event_key => $event_key, action => 'EXCLUDE', notify_scope => $notify_scope, mid => $mid  } );    
+    $exclude_notification = $self->get_rules_notifications( { event_key => $event_key, action => 'EXCLUDE', notify_scope => $notify_scope, mid => $mid  } );
     if ($exclude_notification){
-    	foreach my $key ( keys $exclude_notification ){
-        	foreach my $carrier ( keys $exclude_notification->{$key} ){
-            	foreach my $value ( keys $exclude_notification->{$key}{carrier}{$carrier} ){
-                	delete $send_notification->{$key}{carrier}{$carrier}->{$value};
+        foreach my $key ( keys $exclude_notification ){
+            foreach my $carrier ( keys $exclude_notification->{$key} ){
+                foreach my $value ( keys $exclude_notification->{$key}{carrier}{$carrier} ){
+                    delete $send_notification->{$key}{carrier}{$carrier}->{$value};
                 }
             }
         }
