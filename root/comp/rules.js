@@ -247,14 +247,14 @@
         if( include ) {
             var attr = Baseliner.clone( root.attributes );
             delete attr.loader;
-            delete attr.id;
+            if ( !attr.id.startsWith('rule-') ) attr.id = Cla.id('rule');
             delete attr.children;
             stmts.push({ attributes: attr, children: encode_tree( root ) });
         } else {
             root.eachChild( function(n){
                 var attr = Baseliner.clone( n.attributes );
                 delete attr.loader;
-                delete attr.id;
+                if ( !attr.id.startsWith('rule-') ) attr.id = Cla.id('rule');
                 delete attr.children;
                 stmts.push({ attributes: attr, children: encode_tree( n ) });
             });
@@ -290,7 +290,9 @@
     
     var clipboard;
     var clone_node = function(node){    
-        var copy = new Ext.tree.TreeNode( Ext.apply({}, node.attributes) ) 
+        var nn = Ext.apply({}, node.attributes);
+        nn.id = Cla.id('rule');
+        var copy = new Ext.tree.TreeNode( nn );
         node.eachChild( function( chi ){
             copy.appendChild( clone_node( chi ) );
         });
@@ -329,25 +331,25 @@
                 data: { call_shortcut: clipboard.node.attributes.sub_name, source_key: clipboard.node.attributes.key },
                 key: 'statement.shortcut', 
                 leaf: true,
-                icon: '/static/images/icons/shortcut.png'
+                icon: '/static/images/icons/shortcut.png',
+                id: Cla.id('rule')
             });
         } else if( clipboard ) {
             // paste normal
             var p = clipboard.node;
-            p.id = Ext.id();
             if( clipboard.mode=='copy' ) {
                 if( p.attributes.sub_name ) p.attributes.sub_name = new_id_for_task( p.text );
                 delete p.attributes.has_shortcut;
             }
             p.cascade(function(n_chi){
-                n_chi.id = Ext.id();
+                n_chi.attributes.id = Cla.id('rule');
                 if( clipboard.mode=='copy' ) {
                     if( n_chi.attributes.sub_name ) n_chi.attributes.sub_name = new_id_for_task( n_chi.text );
                     delete n_chi.attributes.has_shortcut;
                 }
             });
             node.getOwnerTree().is_dirty = true;
-            node.appendChild( p );
+            var new_node = node.appendChild( p );
         } else {
             Baseliner.message( _('Paste'), _('Nothing in clipboard to paste') );
         }
@@ -387,7 +389,7 @@
             var processnode = function(n){
                 var at = n.attributes;
                 delete at.loader;
-                at.id = Ext.id();
+                at.id = Cla.id('rule'); 
                 return Ext.apply({ 
                     children: n.children.map(function(chi){ return processnode(chi) }),
                 }, at );
@@ -597,6 +599,7 @@
                     }
                 }
                 //n2.getOwnerTree().is_dirty = true;
+                copy.attributes.id = Cla.id('rule');
                 e.dropNode = copy;
             }
             return true;
@@ -999,7 +1002,6 @@
             Baseliner.ajaxEval( '/rule/dsl', { id_rule: id_rule, rule_type: rule_type, stmts: json, event_key: rule_event }, function(res) {
                 if( res.success ) {
                     var editor;
-                    var idtxt = Ext.id();
                     var stash_txt = new Ext.form.TextArea({ region:'west', split:true, width: 140, value: rule_tree.last_stash || res.data_yaml });
                     var dsl_txt = new Ext.form.TextArea({  value: res.dsl });
                     var style_cons = 'background: black; background-image: none; color: #10C000; font-family: "DejaVu Sans Mono", "Courier New", Courier';
