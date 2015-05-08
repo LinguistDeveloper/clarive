@@ -46,7 +46,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                                 [%= dashlet.title %]
                             </td>
                             <td style='font-weight:bold;'>
-                                <div id="[%= id_div %]_update" style='width: 100%;padding:3px;text-align:center;font-size: 75%;'>
+                                <div id="[%= id_div %]_update" style='color:#BBB;width: 100%;padding:3px;text-align:center;font-size: 75%;'>
                                         (Updated: [%= last_update %])
                                 </div>
                             </td>
@@ -81,24 +81,12 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
         */};
         Cla.ajax_json('/dashboard/init', {dashboard_id: self.dashboard_id}, function(res){
             self.body.update(function(){/*
-                <style>
-                    .inline li{
-                        width:100%; 
-                        background:#FFF;
-                        color:#000;
-                        cursor:pointer;
-                    }
-                    .inline li:hover{
-                        background:blue;
-                        color:#FFF;
-                    }
-                </style>
                  <div id="boot" class="[%= id_class %]" style="width: 100%">
                     <div class="btn-group" style="float:left;margin-right:10px;">
-                      <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown">Dashboards <span class="caret"></span></button>
-                      <ul class="dropdown-menu inline">
+                      <button class="btn dropdown-toggle" data-toggle="dropdown">Dashboards <span class="caret"></span></button>
+                      <ul class="dropdown-menu">
                         [% for(var i=0; i<dashboards.length; i++){ %]
-                            <li onClick="javascript:Baseliner.addNewTabItem( new Cla.Dashboard({ title: _('[%= dashboards[i].name %]'), dashboard_id: [%= dashboards[i].id %] }), _('[%= dashboards[i].name %]'), { tab_icon:'/static/images/icons/dashboard.png' });">[%= dashboards[i].name %]</li>
+                            <li><a onClick="javascript:Baseliner.addNewTabItem( new Cla.Dashboard({ title: _('[%= dashboards[i].name %]'), dashboard_id: [%= dashboards[i].id %] }), _('[%= dashboards[i].name %]'), { tab_icon:'/static/images/icons/dashboard.png' });">[%= dashboards[i].name %]</a></li>
                         [% } %]
                       </ul>
                     </div>
@@ -115,7 +103,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
             var rows = new Array();
             Ext.each( res.dashlets, function(dashlet){
                 if ( !rows[cont] ) rows.push(0);
-
+                console.log(dashlet.id);
                 var buttons_tpl_with_config = function(){/*
                     <img style='cursor:pointer' 
                         src='/static/images/icons/config.gif' 
