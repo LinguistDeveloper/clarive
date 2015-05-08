@@ -4,7 +4,7 @@ with 'Baseliner::Role::CI';
 with 'Baseliner::Role::ErrorThrower';
 with 'Baseliner::Role::CI::Infrastructure';
 
-sub icon { '/static/images/ci/destination.png' }
+sub icon { '/static/images/icons/destination.png' }
 
 requires 'path';
 
