@@ -1,4 +1,246 @@
----------------------------------------------- HEAD (f40fdd1) ----------------------------------------------
+---------------------------------------------- HEAD (f373e1) ----------------------------------------------
+[FIXES]
+
+· (#22818) GIT: users only can get access to your projects
+· (#22818) GIT: users only can get access to your projects V3
+· (#22818) GIT: users only can get access to your projects V2
+· (#22818) GIT: users only can get access to your projects
+· (#22836) remove margin-botton in checkbox template
+· (#22817) fix compatibility IE10 topicadmin js
+· (#22660) fix internal report: Listado de JOBS
+· (#22542) fix submit empty comment
+· (#22532) solved problem with notifications for no default users
+· (#22328) (RC 3)  download all files from topic
+· (#22453) Fixed problem when a topic with huge data in a topicBox is saved before the store is loaded
+· (#22397) fix blank ci field - report
+· do not fail if error when purging job.  Just skip job
+· (#22328) (RC 2)  download all files from topic
+· (RC) download all files from topic
+· (#22249) fix method file for deleted files
+· Compatibility mode with mongo 3.0 for searching
+· Compatibility mode with mongo 3.0 for searching
+· fix acronym tab when access from topic grid
+· fixed problem with renamed files
+· Revert changes in repo_items
+· (#21851) fixed parse process when files have conflicts obtaining no blob reference Ver.2
+· replace bd_field with id_field in list_topic.js
+· (#21851) fixed parse process when files have conflicts obtaining no blob reference
+· fix translate change state in topics view
+· (#21674) fixed bug parsing SOAP code with utf8 symbols
+· (#21753) fix environment var BASELINER_LOGHOME
+· (21674) fix accent in try dsl_build
+· remove alert!
+· (#21555) fix update notifications, traslate messages and filter user by name
+· tab color in show_topic_colored
+· sem release message only when really released
+· release semaphore just in the same pid
+· imported some changes from 6.1 to parallel_run
+· returned 0 if not value for auto_generate_empty_emails config
+· get email template_default
+· (#21267) reports - fix ci names 2
+· (#21267) reports - fix ci names
+· (#21267) fixed sorted columns in reports
+· (#21267) fix sort in ci or project fields
+· (#21267) fix links in reports fields
+· include in not showed always
+· forks in rules were not checking for could not fork situation (undef) which may cause job to exit unexpectedly
+· (#21156) fix count jobs in dashboard baseline"
+· change_pass takes parameter instead of username logged
+· update ci needs colelction and fix param
+· untraslated slot stuff
+· clicking on job slot window links breaks explorer split vertical bar
+· bl_to change in jobs when renaming bls
+· untraslated slot stuff
+· clicking on job slot window links breaks explorer split vertical bar
+· bl_to change in jobs when renaming bls
+· fix null username on update changesets bls GOOD!
+· fix null username on update changesets bls
+· narrower widths in dashlets
+· report rules now work again, with manual security check in report_meta or report_data phases
+· rename all CIs variables bl when renaming a bl
+· change topics after status renamed
+· change category data in topics when changing in the administration
+· log grid data not linked to job, also fix job deleting everything instead of only stash at the end
+· (#20820) fix job log pagging
+· fix transalations in git diff viewer
+· fixed link to access to svn_diff through changeset
+· broke icons again, class is not ref
+· "changed" CI hash opts was reversed. Still giving out false positives due to contaminated data from form variables
+· broken Depends On in CI grid. Depends on me still messy
+· broken project icons in ci view
+· (#20762) fix service.topic.upload accents and mid string
+· purge data for all log rows not just for debug ones
+· purge message correctly located
+· error loading ci if no $collection found
+· error in ci icon
+· (#20224) integers are string always in import csv
+· Fixed resume job message in spanish
+· Projects deleted in project box when no initial projects
+· new method to do eval_respose in tabfu compotible with json
+· Temporary show cis with bls in variable combos
+· Actual colors in statuses pies
+· _txt not indexing rels, but all docs
+· possible undefined hash error
+· _txt indexing all data in all topics in migration
+· _txt too large due to long descriptions in yaml format
+· report to slave not working due to cache writes
+· userinfo adapted to 6.2
+· duplicate title reports
+· expand limit to 100 status changes in topic history
+· fix related cant call shorten method
+· Release in Tab title when applying filter
+· parse_vars avoid infinite recursion when str not substituted
+· fixed _txt included in topic list data, huge lists and chrome crash on 1000+ topics
+· efault dashboard from role
+· default dashboard from roles when no default dashboard for user
+· fix subject mails parse vars
+· add master_rel docs for bls/changesets
+· {notify} instead of method for events
+· Update vasslabs to Clarive in license texts
+· Update vasslabs to Clarive in third party texts
+· Update vasslabs to Clarive in license texts
+· fix ¿ and º characters from mail templates
+· (#19747) remove id_status comparation from get_user_friends in topic model
+· (#19702) fix load topic:meta permissions
+· (#19572) fixed tag combobox with the appropiate tags of the correct recpository
+· (#19640) grid refresh when user has been added, not in close window.
+· (#19631) remove topic property from cache
+· (BUG#19504) fix to show the first commit in revisions section
+· users without permissions can view job info in dashboard
+· (#19406) fixed when find out if a file is binary or not (final)
+· (#19406) fixed when find out if a file is binary or not
+· Instanciate ci only if value exists
+· Remove _log from reports
+· Project and revision columns are not shown in reports
+· dont show tags combo in no git repositories
+· fix errors category not found when refreshing topic grid
+· completed integration of svn with https and simple authentication
+· support of svn with authentication and ssl layer
+· (#19142) fix _txt creation with empty value
+· remove force lowercase to comments caused crash images on comments
+· (#18958) fix start auto_refresh
+· Inactive rules cant be executed as WS
+· mask is not being hidden when user create a new rule
+· fixed problem in KBs escaping markdown characters
+· í,¿,¡ character fixed!
+· (#18792) fix topic results in global search
+· step error in container job, now step is always "RUN" for DSL jobs
+· Report rules without security handler do not fail anymore
+· fix broken call to decode_json, problem when selecting job statuses in monitor
+· (#18565) fix topic _sort project values
+· remove comentary ... mid as var instead of method
+· catched exception when a sha commit is ambiguous for git
+· Quick fix to identify binary files in git
+· fix back_to_core errors when using fake job containers in stash
+· fix added error control in lifecycle to avoid startup errors
+· file history length in git
+· fixed handle of binary files and directories in git
+· (#18206) fix personalized _workflow
+· Find alphanumeric mid for tweaked workflow
+· (#18186) Fixed _mardown and _markup if reserved symbols are used (new)
+· remove console from topic_admin.js
+· (#18206) fix id_status to in topic workflow
+· (#18195) added constrain:true option to new search of reports to avoid unreachable windows
+· (#18186) fixed _markup and _markdown if reserved symbols are used
+· (#18122) fix view last modified and hour for IE
+· (#18109) fix html comments for topic titles
+· improved search method into a git branch
+· Cannot update dashboard.  Already exists message remove in update
+· Topic name id unique in js in my_topics
+· My topics config point to its own config
+· clean console.log
+· clean _log
+· fixed problem when a dashboard is updated with a existing dashboard name
+· fix issue importing and exporting topic_categories
+· fixed access to revision, through revision field of changeset
+· fixed search method in git improved
+· fix I#17873 balix not working with dollar in name
+· Single mode in list_ci.js
+· Generic template fixed for backwards compatibility
+· (#17931) fix autocomplete user and password in ci grideditor
+· (#17921) remove vars subject,to and cc duplicate on service.notify.create
+· fix (#17891) user cant create new window for jobs
+· allowBlank to 'false' instead of 0
+· fix (#17866) hide passwords in event.auth.attempt only for existing users or root
+· (#17833) save button not available in IE 10
+· No fields in new topic
+· (#17772) added bl in ci_grid.js
+· (#17755) error on create topic from -create- button in topic grid
+· Remove empty text from userandrolebox
+· use Baseliner.HtmlEditor instead of htmleditor in sed notification
+· fix warning $default_dashboard
+· (#17707) fixed tabs colors
+· (#17662) ordering the reports fields remotely
+· broken topic formeditor not showing some fieldlets; also added sorting
+
+[ENHANCEMENTS]
+· (#22752) _workflow for promotes ddl
+· (#22380): global port for ssh connections
+· (#22180) now users can edit scope in edit view
+· id column in topic admin category list
+· exclude_default_notifications config var
+· added default value to checkbox field
+· new blazing fast 1000x parse_vars without hash_flatten and recursion control with clearer error message
+· nasty hack to make folders shared to public user, if public user has permissions. If it doesn't, endless loop ensues...
+· make docgen ready for any long or short url
+· ci.update service
+· send args all the way from cla cmd line to a bali service call as $config{args}
+· better user not found message
+· --json command line argument turns json into args
+· handle notification emails in op
+· jobs by hour line graph
+· handle notification emails in op
+· jobs by hour line graph
+· changed controller Calendar to Slot, calendar south is now fully operational
+· state icon change, dashboard icon, job icon in topic
+· Email config to avoid Clarive autogenerating email for users with empty email
+· new job dashlets localized statuses
+· remove JES data in purge
+· new job dashlets for ops
+· new job dashlets for ops
+· change project names in Job monitor  after project save; save variables as part of project
+· better error messaging for web request
+· (#20676) New checkbox in task WebRequest to accept any server certificate
+· (#20556) added column of Bls(tags) for branch history
+· Clarive worker clarived
+· ask user whether to add all release changesets to job or not
+· Added filter capabilities to topic status pie dashlet
+· Added properties files to parse file service
+· Filter parameter on category for topics by status pie
+· topic_rel only migration
+· _lang is the default field for text search language; added weights to title and mid and config weight option
+· Order jobs in reverse order in topic jobs
+· migration rel messages
+· (#18250) added feature to compare a commit with tags
+· Purge events
+· flexible topic grid started, not working yet
+· (#18958) auto refresh job logs only from direct button list view
+· view user info from topic title
+· temporary license updated 2015
+· import/export rule as file
+· dinamic year into clarive login part II
+· dinamic year into clarive login
+· Defaults notify template to /email/generic.html
+· cleanup warnings
+· (#18318) select by combo if exist value options in topic admin
+· added tooltip with last modified in status in filtered and my topics dashlets
+· added project to my and pending topics
+· My topics dashlet 3
+· My topics dashlet 2
+· My topics dashlet
+· Added asignee column to filtered topic dashlet
+· added new options (file history, file diff, blame) to svnscm with compatibility with the new git interface
+· Added maxValue meta to numberfield
+· Change in license
+· Add projects to notification scope in change_status
+· new(17605): cleaning git warnings
+· Advanced functionality in report rules
+· git look sensation
+· Category acronyms in short names
+· now can add job_stash to job in rule task
+· markdown now supports self referencing of images in a topic
+
+---------------------------------------------- 6.2.5 (f40fdd1) ----------------------------------------------
 [FIXES]
 · (#17566) change var message to msg in generic.html
 · (#17566) added vars to,cc and mid
