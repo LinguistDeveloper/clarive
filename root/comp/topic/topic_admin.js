@@ -400,7 +400,7 @@
             xtype:'panel',
             columnWidth:0.50,
             layout:'form',
-            defaults:{anchor:'100%'},
+            defaults:{anchor:'96%'},
             items: [
                 { xtype: 'hidden', name: 'id', value: -1 },
                 category_color,
@@ -437,7 +437,7 @@
         var grid_category_status = new Ext.grid.GridPanel({
             sm: check_category_status_sm,
             header: false,
-            height: 157,
+            height: 350,
             stripeRows: true,
             autoScroll: true,
             enableHdMenu: false,
@@ -448,7 +448,7 @@
             columns: [
                 { hidden: true, dataIndex:'id' },
                 check_category_status_sm,
-                { header: _('Topics: Status'), dataIndex: 'name', width:50, sortable: true },
+                { header: _('Topics: Status'), dataIndex: 'name', width:100, sortable: true },
                 { header: _('Description'), dataIndex: 'description', sortable: true } 
             ],
             autoSizeColumns: true,
@@ -476,8 +476,9 @@
         
         var column2 = {
            xtype:'panel',
-           defaults:{anchor:'98%'},
+           defaults:{ anchor:'100%' },
            columnWidth:0.50,
+           layout: 'fit',
            items: [ grid_category_status ]};      
         
         
@@ -532,7 +533,6 @@
                         }
                     }
             ],
-            defaults: { bodyStyle:'padding:0 18px 0 0'},
             items: [
                 column1,
                 column2
@@ -551,8 +551,10 @@
         
         win = new Baseliner.Window({
             title: _(title),
-            width: 750,
+            width: 800,
             autoHeight: true,
+            resizable: false,
+            maximizable: false,
             items: form_category
         });
         win.show();     

@@ -1,3 +1,27 @@
+---------------------------------------------- 6.2.5 April 2015 ----------------------------------------------
+· Added GIT security functionalities
+· Added SOAP functionality to web requests
+· New dynamic workflow improvements
+· Global port for ssh connections
+· New category acronym
+· Enhancement exclude notifications configuration
+· Enhancement in fieldlets
+· Superfast parse_vars
+· Docgen refactored
+· New service to update cis
+· New job dashlets
+· Enhancements in purge daemon
+· Better error messaging for web request
+· Added filter capabilities to topic status pie dashlet
+· Added properties files to parse file service
+· Filter parameter on category for topics by status pie
+· Order jobs in reverse order in topic jobs
+· Purge events in purge daemon
+· Import/export rule as file
+· Add projects to notification scope in change_status
+· Advanced functionality in report rules
+· Markdown now supports self referencing of images in a topic
+
 ---------------------------------------------- 6.2.4 December 2014 ----------------------------------------------
 · Huge performance improvements
 · Git viewer renewed

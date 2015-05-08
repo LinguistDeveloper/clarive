@@ -810,12 +810,26 @@ sub promotes_and_demotes {
     my ( @menu_s, @menu_p, @menu_d );
 
     my $job_mode = $p{job_mode} // 0;
-    #_warn $topic;
 
     $id_status_from //= $topic->{category_status}{id};
     my %statuses = ci->status->statuses;
 
     _fail _loc 'Missing topic parameter' unless $topic;
+
+    #Personalized _workflow!
+    if($topic->{_workflow}){
+        my @_workflow;
+        my @user_workflow = _unique map {$_->{id_status_to} } Baseliner->model("Topic")->user_workflow( $username );
+        use Array::Utils qw(:all);
+    
+        @_workflow = map { _array(values $_) } $topic->{_workflow} ;
+    
+        my %final = map { $_ => 1 } intersect(@_workflow,@user_workflow);
+
+        my @final_key = keys %final;
+        map { my $st= $_; delete $statuses{$st} if !( $st ~~ @final_key); } keys %statuses;
+    }
+    #end Personalized _workflow!
     
     my $id_status_from_lc = $id_status_from ? $id_status_from : $topic->{id_category_status};
     my %bls = map{ $$_{mid}=>$$_{moniker} || $$_{bl} }ci->bl->find->all;

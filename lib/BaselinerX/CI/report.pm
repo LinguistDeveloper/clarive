@@ -1030,7 +1030,7 @@ method run( :$start=0, :$limit=undef, :$username=undef, :$query=undef, :$filter=
                                             $tmp_ref = $tmp_ref->{$inner_field};
                                         } else{
                                             $tmp_ref->{$inner_field . "_$select"}= $tmp_value if ($tmp_value);
-                                            $meta_cfg_report{$inner_field . "_$select"} = $meta_cfg_report{$inner_field} if (($meta_cfg_report{$inner_field}) && ($meta_cfg_report{$inner_field} eq 'release' || $meta_cfg_report{$inner_field} eq 'ci'));
+                                            $meta_cfg_report{$inner_field . "_$select"} = $meta_cfg_report{$inner_field} if (($meta_cfg_report{$inner_field}) && ($meta_cfg_report{$inner_field} eq 'release' ));
                                             delete $meta_cfg_report{$inner_field} if $meta_cfg_report{$inner_field . "_$select"};
                                         }
                                     }

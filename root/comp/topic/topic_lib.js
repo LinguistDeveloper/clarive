@@ -239,7 +239,6 @@ Baseliner.TopicBox = Ext.extend( Ext.ux.form.SuperBoxSelect, {
     // stackItems: true,
     initComponent: function(){
         var self = this;
-
         if (self.tpl_cfg){
             var columns = self.tpl_cfg.split(';');
             var header = [];
@@ -309,9 +308,24 @@ Baseliner.TopicBox = Ext.extend( Ext.ux.form.SuperBoxSelect, {
             '</div></tpl>' );
         
         Baseliner.TopicBox.superclass.initComponent.call(this);
-    }
+    },
     // }, 
-    // get_save_data : function(){
+    get_save_data : function(){
+        return this.hidden_value;
+    },
+    listeners:{ 
+        additem: function(obj,v){
+            if(obj.getValue()){
+                obj.hidden_value = obj.getValue();
+            }
+
+        },
+        removeItem: function(obj,v){
+            obj.hidden_value = obj.getValue();
+        }
+
+    }
+
     //     var self = this;
     //     var mids = [];
     //     self.store.each(function(row){
@@ -635,6 +649,8 @@ Baseliner.Topic.comment_edit = function(topic_mid, id_com, cb) {
                 text = code.getValue();
                 content_type = 'code';
             }
+            var text_length = text.replace(/\s+|&nbsp;|<br>/g, '');
+            if(text_length.length == 0) { Baseliner.message( _('Error'), _('Missing data') ); return; };
             Baseliner.ajaxEval( '/topic/comment/add',
                 { topic_mid: topic_mid, id_com: id_com, text: text, content_type: content_type },
                 function(res) {
