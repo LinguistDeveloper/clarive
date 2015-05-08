@@ -1099,7 +1099,7 @@ Baseliner.Grid.Buttons.Start = Ext.extend( Ext.Toolbar.Button, {
     constructor: function(config) {
         config = Ext.apply({
             text: _('Activate'),
-            icon:'/static/images/start.gif',
+            icon:'/static/images/icons/start.png',
             cls: 'x-btn-text-icon',         
             disabled: true
         }, config);
@@ -1111,7 +1111,7 @@ Baseliner.Grid.Buttons.Stop = Ext.extend( Ext.Toolbar.Button, {
     constructor: function(config) {
         config = Ext.apply({
             text: _('Deactivate'),
-            icon:'/static/images/stop.gif',
+            icon:'/static/images/icons/stop.png',
             disabled: true,
             cls: 'x-btn-text-icon'
         }, config);
