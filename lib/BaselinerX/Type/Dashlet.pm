@@ -11,6 +11,7 @@ has name  => (is=>'rw', isa=>'Str', default=>'');
 has form  => (is=>'rw', isa=>'Str', default=>'');
 has html  => (is=>'rw', isa=>'Str', default=>'');
 has js_file  => (is=>'rw', isa=>'Str', default=>'');
+has id => (is=>'rw', isa=>'Str', default=>'');
 
 has dsl            => ( is => 'rw', isa => 'CodeRef', default=>sub{
 	return sub{

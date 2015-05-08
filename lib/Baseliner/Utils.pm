@@ -2261,7 +2261,6 @@ sub hide_passwords {
 
 sub _reg_line {
     my %p = @_;
-    _warn \%p;
     
     my @x = _array($p{x});
     my @y = _array($p{y});

@@ -52,6 +52,9 @@
                          position: 'outer-middle'
                        }
                      }
+                 },
+                 tooltip: {
+                    grouped: false // Default true
                  }
             });
         });

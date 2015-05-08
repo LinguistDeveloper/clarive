@@ -45,16 +45,18 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                             <td style='font-weight:bold;'>
                                 [%= dashlet.title %]
                             </td>
+                            <td style='font-weight:bold;'>
+                                <div id="[%= id_div %]_update" style='width: 100%;padding:3px;text-align:center;font-size: 75%;'>
+                                        (Updated: [%= last_update %])
+                                </div>
+                            </td>
                             <td id="[%= id_div %]_icons" style='text-align:right;'>
                             </td>
                         </tr>
                     </table>
                 </div>
-                <div id="[%= id_div %]_update" style='width: 95%;padding:3px;background-color:#FFF;margin-bottom:5px;text-align:center;font-size: 75%;'>
-                        [%= last_update %]
-                </div>
                 <div id="[%= id_div %]" 
-                    style="width: 95%; height: [%= dashlet.data.rows * 300 %]px;text-align:center;vertical-align:middle;" 
+                    style="width: 100%; height: [%= dashlet.data.rows * 300 %]px;text-align:center;vertical-align:middle;" 
                     onmouseout="document.body.style.cursor='default';"><img src="/static/images/loading.gif" />
                 </div>
               </div>
@@ -77,26 +79,42 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
             </script>
 
         */};
-        Cla.ajax_json('/dashboard/init', {}, function(res){
-
+        Cla.ajax_json('/dashboard/init', {dashboard_id: self.dashboard_id}, function(res){
             self.body.update(function(){/*
-                 <div id="boot" class="[%= id_class %]" style="background-color: #FFF;width: 100%">
+                <style>
+                    .inline li{
+                        width:100%; 
+                        background:#FFF;
+                        color:#000;
+                        cursor:pointer;
+                    }
+                    .inline li:hover{
+                        background:blue;
+                        color:#FFF;
+                    }
+                </style>
+                 <div id="boot" class="[%= id_class %]" style="width: 100%">
+                    <div class="btn-group" style="float:left;margin-right:10px;">
+                      <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown">Dashboards <span class="caret"></span></button>
+                      <ul class="dropdown-menu inline">
+                        [% for(var i=0; i<dashboards.length; i++){ %]
+                            <li onClick="javascript:Baseliner.addNewTabItem( new Cla.Dashboard({ title: _('[%= dashboards[i].name %]'), dashboard_id: [%= dashboards[i].id %] }), _('[%= dashboards[i].name %]'), { tab_icon:'/static/images/icons/dashboard.png' });">[%= dashboards[i].name %]</li>
+                        [% } %]
+                      </ul>
+                    </div>
                  </div>
             */}.tmpl({ id_class: id_class, dashboards: res.dashboards }));
 
-
-            var html_bootstrap="<div class='row-fluid' style='padding:32px;width:95%;'>";
+            var html_bootstrap="<div class='row-fluid' style='padding:32px;width:100%;'>";
             var html="<table style='border:1px;padding:32px;width:100%;table-layout:fixed;'><tr>";
             for (var i = 0; i < 12; i++) {
                 html += "<td style='width:8.33%;'></td>"
             };
-            html += "</tr><tr style='padding:10px;width:95%;'>";
+            html += "</tr><tr style='padding:10px;width:100%;'>";
             var cont=0;
             var rows = new Array();
             Ext.each( res.dashlets, function(dashlet){
-                console.log("estoy en la fila "+cont);
                 if ( !rows[cont] ) rows.push(0);
-                console.log("lleva "+rows[cont]+" ocupados y el dashlet mide "+parseInt(dashlet.data.columns));
 
                 var buttons_tpl_with_config = function(){/*
                     <img style='cursor:pointer' 

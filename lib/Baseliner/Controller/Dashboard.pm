@@ -61,6 +61,20 @@ register 'dashlet.topic.topics_by_date_line' => {
     js_file => '/dashlets/topics_by_date_line.js'
 };
 
+register 'dashlet.topic.topics_burndown' => {
+    form=> '/dashlets/topics_burndown_config.js',
+    name=> 'Topics burndown', 
+    icon=> '/static/images/silk/chart_line.png',
+    js_file => '/dashlets/topics_burndown.js'
+};
+
+register 'dashlet.iframe' => {
+    form=> '/dashlets/iframe_config.js',
+    name=> 'Internet frame', 
+    icon=> '/static/images/silk/world.png',
+    js_file => '/dashlets/iframe.js'
+};
+
 sub init : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
@@ -68,24 +82,34 @@ sub init : Local {
     # run the dashboard rule
     # TODO find default
     my $id_rule = $p->{dashboard_id};
+    my @all_rules;
 
     # find a default dashboard
+    my ($default_rule, @all_rules) = $self->user_dashboards({ username => $c->username });
+
     if( !$id_rule ) {
-        my $rule = mdb->rule->find_one({ rule_type=>'dashboard', default_dashboard=>mdb->true }); # first default rule? 
-        $rule = mdb->rule->find_one({ rule_type=>'dashboard' }) unless $rule; # any rule then?
-        if( $rule ) {
-            $id_rule = $rule->{id};
-        } else {
+        $id_rule = $default_rule || @all_rules?@all_rules[0]->{id}:'';
+        if( !$id_rule ) {
             _warn _loc 'No default rule found for user %1', $c->username;
         }
     }
 
-    # create a system default dashboard
-    if( ! mdb->rule->find_one({ id=>"$id_rule" }) ) {
-        _warn _loc 'No default dashboard %1', 
-        $id_rule = mdb->seq('rule');
-        my $default_dashboard = Util->_load(join '', <DATA>) || _fail _loc 'Could not find default dashboard data!';
-        mdb->rule->insert({ %$default_dashboard, rule_name=>_loc('Default Dashboard'), rule_seq=>0+$id_rule, id=>"$id_rule" });
+    # Remove old data
+    if ( !mdb->rule->count({rule_type=>'dashboard'}) ) {
+        mdb->role->update({},{ '$rename'=>{ dashboard => 'dashboards_old'}},{multiple=>1} );
+        for my $user ( ci->user->search_cis() ) {
+            $user->dashboard('');
+            $user->save;
+        }
+        my $default_dashboards = Util->_load(join '',<DATA>);# || _fail _loc 'Could not find default dashboard data!';
+        for my $dashboard ( _array($default_dashboards) ) {
+            my $id = mdb->seq('rule');
+            mdb->rule->insert({ %$dashboard, rule_seq=>0+$id, id=>"$id" });
+            if ( $dashboard->{default_dashboard} ) {
+                $id_rule = $id;
+            }
+        }
+        ($default_rule, @all_rules) = $self->user_dashboards({ username => $c->username });
     }
 
     $id_rule or _fail _loc 'No dashboard defined';
@@ -118,13 +142,82 @@ sub init : Local {
     _debug( $dashlets );
 
     # now list the dashboards for user
-    my @rules = mdb->rule->find({ rule_type=>'dashboard' })->all;
-    my $dashboards = [ map{ {id=>$_->{id}, name=>$_->{rule_name} }  } @rules ];
+    #my @rules = mdb->rule->find({ rule_type=>'dashboard' })->all;
+    #my $dashboards = [ map{ {id=>$_->{id}, name=>$_->{rule_name} }  } @rules ];
 
-    $c->stash->{json} = { dashlets=>$dashlets, dashboards=>$dashboards };
+    $c->stash->{json} = { dashlets=>$dashlets, dashboards=>\@all_rules };
     $c->forward( 'View::JSON' );
 }
 
+sub json : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+
+    my @dashboard_list = ();
+
+    if ( $p->{username} ) {
+        my $where = {};
+        my @dashboard_ids;
+        if ( !$c->model('Permissions')->is_root( $c->username ) ) {
+            my @roles = map { $_->{id} } $c->model('Permissions')->user_roles( $c->username );
+            $where = { id => mdb->in(@roles) };
+            @dashboard_ids = map { _array( $_->{dashboards} ) } mdb->role->find( $where )->all;
+        } else {
+            @dashboard_ids = map { '' . $_->{id} } mdb->rule->find({ rule_type => 'dashboard' })->fields( { id => 1 } )->all;
+        }
+        map {
+            push @dashboard_list,
+            map {
+                +{
+                    name => $_->{rule_name},
+                    id   => '' . $_->{id}
+                }
+            } mdb->rule->find_one( { id => $_ } )
+        } @dashboard_ids;
+    }
+    else {
+        @dashboard_list
+            = map { +{ name => $_->{rule_name}, id => '' . $_->{id} } }
+            mdb->rule->find({ rule_type => 'dashboard' })->all;
+    }
+
+    $c->stash->{json}
+        = { totalCount => scalar(@dashboard_list), data => \@dashboard_list };
+    $c->forward('View::JSON');
+}
+
+sub user_dashboards {
+    my ($self,$p) = @_;
+
+    my $username = $p->{username};
+    my $user_ci = ci->user->search_ci(name=>$username);
+    my @dashboard_list;
+
+    my $where = {};
+    my @dashboard_ids;
+    my $default_dashboard = $user_ci->default_dashboard->{dashboard} || '';
+
+    if ( !Baseliner->model('Permissions')->is_root( $username ) ) {
+        my @roles = map { $_->{id} } Baseliner->model('Permissions')->user_roles( $username );
+        $where = { id => mdb->in(@roles) };
+        @dashboard_ids = map { _array( $_->{dashboards} ) } mdb->role->find( $where )->all;
+    } else {
+        @dashboard_ids = map { '' . $_->{id} } mdb->rule->find({ rule_type => 'dashboard' })->fields( { id => 1 } )->all;
+    }
+    if ( !@dashboard_ids ) {
+        @dashboard_ids = map { '' . $_->{id} } mdb->rule->find({ rule_type => 'dashboard', default_dashboard => '1' })->fields( { id => 1 } )->all;
+    }
+
+    push @dashboard_list,
+        map {
+            +{
+                name => $_->{rule_name},
+                id   => '' . $_->{id}
+            }
+        } mdb->rule->find( { id => mdb->in(@dashboard_ids) } )->all;
+
+    return ($default_dashboard, @dashboard_list);
+}
 sub topics_by_category: Local {
     my ( $self, $c ) = @_;
     my $p = $c->request->parameters;
@@ -353,7 +446,6 @@ sub topics_by_date: Local {
         Baseliner->model('Permissions')->build_project_security( $where, $username, $is_root, @user_categories );
     }
 
-    _warn $where;
     my @topics = mdb->topic->find($where)->fields({_id=>0,_txt=>0})->all;
 
     my %topic_by_dates = ();
@@ -431,7 +523,10 @@ sub list_topics: Local {
     my $categories = $p->{categories};
     my $statuses = $p->{statuses};
     my $not_in_status = $p->{not_in_status};
+    my $filter_user = $p->{assigned_to};
     my $condition = {};
+    my $where = {};
+
 
     if ( $p->{condition} ) {
         try {
@@ -442,7 +537,28 @@ sub list_topics: Local {
         }
     }
 
-    my $where = $condition;
+    $where = $condition;
+
+    _warn "Filter user:".$filter_user."*";
+    if ( $filter_user && $filter_user ne 'Any') {
+        _warn "Tengo filtro de usuario";
+        if ( $filter_user eq _loc('Current')) {
+            _warn "El usuario es current";
+            $filter_user = $c->username;
+        }
+        my $ci_user = ci->user->find_one({ name=>$filter_user });
+        if ($ci_user) {
+            my @topic_mids = 
+                map { $_->{from_mid} }
+                mdb->master_rel->find({ to_mid=>$ci_user->{mid}, rel_type => 'topic_users' })->fields({ from_mid=>1 })->all;
+            if (@topic_mids) {
+                $where->{'mid'} = mdb->in(@topic_mids);
+            } else {
+                $where->{'mid'} = -1;
+            }
+        }
+    }
+
     if ( $statuses ) {
         if ( $not_in_status ) {
             $where->{'category_status.id'} = mdb->nin($statuses);
@@ -470,7 +586,9 @@ sub list_topics: Local {
 
     $where->{'category.id'} = mdb->in(@user_categories);
 
-    @topics = mdb->topic->find($where)->fields({_id=>0,_txt=>0})->all;
+    _warn $where;
+    my $cnt = 0;
+    ($cnt, @topics) = Baseliner->model('Topic')->topics_for_user({ where => $where, username=>$username }); #mdb->topic->find($where)->fields({_id=>0,_txt=>0})->all;
     my @topic_cis = map {$_->{mid}} @topics;
     my @cis = map { ($_->{to_mid},$_->{from_mid})} mdb->master_rel->find({ '$or' => [{from_mid => mdb->in(@topic_cis)},{to_mid => mdb->in(@topic_cis)}]})->all;
     my %ci_names = map { $_->{mid} => $_->{name}} mdb->master->find({ mid => mdb->in(@cis)})->all;
@@ -479,6 +597,122 @@ sub list_topics: Local {
     $c->forward('View::JSON'); 
 }
 
+sub topics_burndown : Local {
+    my ( $self, $c ) = @_;
+    my $p = $c->req->params;
+
+    my $date_type = $p->{date_type};
+
+    my $date;
+
+    if ($date_type eq 'yesterday') {
+        $date = Class::Date->now();
+        $date = $date - '1D';
+    } elsif ( $date_type eq 'today' ) {
+        $date = Class::Date->now();
+    } else {
+        ### TODO: Get specific date
+        $date = Class::Date->new( $p->{date} )
+    }
+
+    my $today    = substr( $date,        0, 10 );
+    my $tomorrow = substr( $date + "1D", 0, 10 );
+    my %hours = map { $_ => 0 } 0 .. 23;
+    my $date_field = $p->{date_field};
+    my $categories = $p->{categories};
+    my $username = $c->username;
+    my $perm = Baseliner->model('Permissions');
+    my $where = {};
+
+    my @user_categories
+        = map { $_->{id}; }
+        $c->model('Topic')
+        ->get_categories_permissions( username => $username, type => 'view' );
+
+    if ( _array($categories) ) {
+        use Array::Utils qw(:all);
+        my @categories_ids = _array($categories);
+        @user_categories = intersect( @categories_ids, @user_categories );
+    }
+
+    my $is_root = $perm->is_root($username);
+    if ( $username && !$is_root ) {
+        Baseliner->model('Permissions')
+            ->build_project_security( $where, $username, $is_root,
+            @user_categories );
+    }
+
+    my @closed_status
+        = map { $_->{name} } ci->status->find( { type => qr/^F|FC$/ } )->all;
+    my @all_tasks
+        = map { $_->{mid} }
+        mdb->topic->find( { 'category.id' => mdb->in(@user_categories) } )
+        ->fields( { mid => 1 } )->all;
+
+    my $remaining_backlog = mdb->topic->find(
+        {   'category.id' => mdb->in(@user_categories),
+            '$and'          => [
+                { $date_field => { '$lt' => $tomorrow } },
+                { $date_field => { '$ne' => '' } }
+            ],
+            'category_status.name' => mdb->nin(@closed_status)
+        }
+    )->fields( { _id => 0, mid => 1 } )->all;
+
+    map { $hours{$_} = $hours{$_} + $remaining_backlog } 0 .. 23;
+
+    my @closed_topic_hours
+        = map { Class::Date->new( $_->{ts} )->hour } mdb->activity->find(
+        {   mid           => mdb->in(@all_tasks),
+            event_key     => 'event.topic.change_status',
+            'vars.status' => mdb->in(@closed_status),
+            ts            => { '$gte' => $today }
+        }
+
+        )->fields( { _id => 0, ts => 1 } )->all;
+
+    map {
+        my $hour = 0 + $_;
+        map { $hours{$_} = $hours{$_} + 1 } 0 .. $hour
+    } @closed_topic_hours;
+
+    my @created_topic_hours
+        = map { Class::Date->new( $_->{created_on} )->hour }
+        mdb->topic->find(
+        {   'category.id' => mdb->in(@user_categories),
+            '$and'          => [
+                { $date_field => { '$lt' => $tomorrow } },
+                { $date_field => { '$ne' => '' } }
+            ],
+            created_on => { '$gte' => $today }
+        }
+
+        )->fields( { _id => 0, created_on => 1 } )->all;
+
+    map {
+        my $hour = 0 + $_;
+        map { $hours{$_} = $hours{$_} - 1 } 0 .. $hour
+    } @created_topic_hours;
+
+    my @data;
+    my @hours_list;
+    my @reg_line;
+
+    map { push @hours_list, $_; push @data, $hours{$_}; } 0 .. 23;
+
+    @reg_line = _array( _reg_line( x => \@hours_list, y => \@data ) );
+
+    unshift @data,       'Topics';
+    unshift @hours_list, 'x';
+    unshift @reg_line,   'Trend';
+
+    $c->stash->{json} = {
+        success => \1,
+        date    => $date->ymd,
+        data    => [ \@hours_list, \@data, \@reg_line ]
+    };
+    $c->forward('View::JSON');
+}
 
 ##################### DEPRECATED
 ##Configuración del dashboard
@@ -560,45 +794,6 @@ sub grid : Local {
     my $p = $c->req->params;
     $c->stash->{template} = '/comp/dashboard_grid.js';
 }
-
-
-sub json : Local {
-    my ( $self, $c ) = @_;
-    my $p = $c->req->params;
-
-    my @dashboard_list = ();
-
-    if ( $p->{username} ) {
-        my $where = {};
-        my @dashboard_ids;
-        if ( !$c->model('Permissions')->is_root( $c->username ) ) {
-            my @roles = map { $_->{id} } $c->model('Permissions')->user_roles( $c->username );
-            $where = { id => mdb->in(@roles) };
-            @dashboard_ids = map { mdb->oid($_) } map { _array( $_->{dashboards} ) } mdb->role->find( $where )->all;
-        } else {
-            @dashboard_ids = map { mdb->oid('' . $_->{_id}) } mdb->dashboard->find()->fields( { _id => 1 } )->all;
-        }
-        map {
-            push @dashboard_list,
-            map {
-                +{
-                    name => $_->{name},
-                    id   => '' . $_->{_id}
-                }
-            } mdb->dashboard->find_one( { _id => $_ } )
-        } @dashboard_ids;
-    }
-    else {
-        @dashboard_list
-            = map { +{ name => $_->{name}, id => '' . $_->{_id} } }
-            mdb->dashboard->find()->all;
-    }
-
-    $c->stash->{json}
-        = { totalCount => scalar(@dashboard_list), data => \@dashboard_list };
-    $c->forward('View::JSON');
-}
-
 
 sub list_dashboard : Local {
     my ($self,$c) = @_;
@@ -1700,19 +1895,70 @@ sub list_status_changed: Local{
     $c->stash->{list_status_changed_title} = _loc('Daily highlights');    
 };
 
-
-
 1;
 
 __DATA__
-rule_active: '1'
-default_dashboard: 1
-rule_desc: ''
-rule_event: ~
-rule_name: Default Dashboard
-rule_tree: '[{"attributes":{"palette":false,"icon":"/static/images/icons/job.png","isTarget":false,"html":"/dashlets/job_burndown.html","text":"Job
-  Burndown","key":"dashlet.job.burndown","leaf":true,"name":"Job Burndown","data":{},"expanded":false},"children":[]}]'
-rule_type: dashboard
-subtype: '-'
-ts: 2015-04-23 19:04:18
-username: root
+---
+- default_dashboard: '1'
+  rule_active: '1'
+  rule_desc: ''
+  rule_name: Complete Dashboard
+  rule_tree: '[{"attributes":{"icon":"/static/images/icons/let.gif","palette":false,"disabled":false,"on_drop_js":null,"key":"statement.var.set_expr","who":"root","text":"SET
+    six_months_ago","expanded":false,"run_sub":true,"leaf":true,"ts":"2015-05-03T16:58:32","name":"SET
+    EXPR","active":1,"holds_children":false,"data":{"expr":"my $now = Class::Date->now();\n''''.($now
+    - ''6M'');","variable":"six_months_ago"},"nested":0,"on_drop":""},"children":[]},{"attributes":{"icon":"/static/images/icons/report_default.png","palette":false,"disabled":false,"ts":"2015-05-07T14:36:27","active":1,"name":"List
+    topics","data":{"autorefresh":"0","fields":"title;name_status;gestion_it,Gestión
+    IT,checkbox;bls,Entornos,ci","columns":"6","categories":"6","rows":"1","statuses":"4","condition":""},"key":"dashlet.topic.list_topics","who":"root","html":"","text":"CRM
+    changesets","expanded":false,"leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/silk/chart_line.png","disabled":false,"ts":"2015-05-08T04:02:05","name":"Topics
+    burndown","active":1,"data":{"rows":"1","columns":"6","autorefresh":"0","categories":"","date_field":"scheduled_start_date","date_type":"today"},"key":"dashlet.topic.topics_burndown","html":"","who":"root","text":"Today''s
+    topics burndown","expanded":false,"leaf":true},"children":[]},{"attributes":{"icon":"/static/images/silk/chart_pie.png","palette":false,"disabled":false,"ts":"2015-05-07T14:44:13","active":1,"name":"Job
+    Status pie","data":{"period":"1Y","autorefresh":60000,"columns":"4","type":"donut","rows":"1"},"key":"dashlet.job.status_pie","who":"root","html":"","text":"Job
+    status - Last year","expanded":false,"leaf":true},"children":[]},{"attributes":{"icon":"/static/images/silk/chart_bar.png","palette":false,"disabled":false,"ts":"2015-05-07T14:42:03","active":1,"name":"Topic
+    Status bar chart","data":{"group_threshold":"5","categories":"","rows":"1","autorefresh":"0","columns":"4","not_in_status":"on","statuses":["9","2","34"],"condition":"{\"category.is_release\":\"1\"}"},"key":"dashlet.topic.status_bar","who":"root","html":"","text":"Open
+    releases by status","expanded":false,"leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/silk/chart_pie.png","disabled":false,"ts":"2015-05-03T08:30:15","name":"Topic
+    Status pie","active":1,"data":{"group_threshold":"2","categories":"6","rows":"1","columns":"4","type":"pie","title":"CRM
+    - Changes in progress by Status","not_in_status":"on","statuses":["21","87","82","36","101","9","2"],"condition":"{\"sistema\":{\"$in\":[\"285\"]}}"},"key":"dashlet.topic.status_pie","html":"","who":"root","text":"CRM
+    changesets in progress","expanded":false,"leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/silk/chart_curve.png","disabled":false,"ts":"2015-05-07T14:45:00","name":"Topics
+    by date line chart","active":1,"data":{"categories":"","rows":"1","group":"month","autorefresh":"0","date_field":"created_on","columns":"8","statuses":"","condition":""},"key":"dashlet.topic.topics_by_date_line","html":"","who":"root","text":"Topics
+    created monthly","expanded":false,"leaf":true},"children":[]},{"attributes":{"icon":"/static/images/silk/chart_pie.png","palette":false,"disabled":false,"ts":"2015-05-07T14:45:07","active":1,"name":"Topic
+    Category pie","data":{"group_threshold":"5","categories":"","rows":"1","autorefresh":"0","columns":"4","type":"pie","not_in_status":"on","statuses":["9","2","34"],"condition":""},"key":"dashlet.topic.category_pie","who":"root","html":"","text":"Open
+    topics by category","expanded":false,"leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/report_default.png","disabled":false,"ts":"2015-05-07T14:45:56","name":"List
+    topics","active":1,"data":{"categories":"","rows":"1","autorefresh":60000,"fields":"title;name_status;area_solicitante,Area,ci;tipo,Tipo,ci","columns":"8","not_in_status":"on","statuses":["9","2","34"],"condition":"{\"created_on\":{\"$lte\":\"${six_months_ago}\"}}"},"key":"dashlet.topic.list_topics","html":"","who":"root","text":"Open
+    requests older than 6 months","expanded":false,"leaf":true},"children":[]},{"attributes":{"icon":"/static/images/silk/chart_pie.png","palette":false,"disabled":false,"ts":"2015-05-07T14:46:24","active":1,"name":"Job
+    Status pie","data":{"period":"3M","autorefresh":"0","columns":"4","type":"pie","rows":"1"},"key":"dashlet.job.status_pie","who":"root","html":"","text":"Job
+    status - Last quearter","expanded":false,"leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/silk/chart_pie.png","disabled":false,"ts":"2015-05-07T14:46:46","name":"Job
+    Status pie","active":1,"data":{"period":"1M","autorefresh":"0","columns":"4","type":"donut","rows":"1"},"key":"dashlet.job.status_pie","html":"","who":"root","text":"Job
+    status - Last month","expanded":false,"leaf":true},"children":[]},{"attributes":{"icon":"/static/images/silk/world.png","palette":false,"disabled":false,"ts":"2015-05-08T04:01:15","active":1,"name":"Internet
+    frame","data":{"rows":"2","columns":"12","autorefresh":"0","url":"http://www.clarive.com/"},"key":"dashlet.iframe","who":"root","html":"","text":"Clarive.com","expanded":false,"leaf":true},"children":[]}]'
+  rule_type: dashboard
+- rule_active: '1'
+  rule_desc: ''
+  rule_event: ~
+  rule_name: Release mgr
+  rule_tree: '[{"attributes":{"icon":"/static/images/silk/chart_curve.png","palette":false,"disabled":false,"ts":"2015-05-07T14:45:00","active":1,"name":"Topics
+    by date line chart","data":{"categories":"","rows":"1","group":"month","autorefresh":"0","date_field":"created_on","columns":"8","statuses":"","condition":""},"key":"dashlet.topic.topics_by_date_line","who":"root","html":"","text":"Topics
+    created monthly","expanded":false,"leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/silk/chart_bar.png","disabled":false,"ts":"2015-05-07T14:42:03","name":"Topic
+    Status bar chart","active":1,"data":{"group_threshold":"5","categories":"","rows":"1","autorefresh":"0","columns":"4","not_in_status":"on","statuses":["9","2","34"],"condition":"{\"category.is_release\":\"1\"}"},"key":"dashlet.topic.status_bar","html":"","who":"root","text":"Open
+    releases by status","expanded":false,"leaf":true},"children":[]},{"attributes":{"icon":"/static/images/silk/chart_line.png","palette":false,"disabled":false,"ts":"2015-05-08T03:59:38","active":1,"name":"Topics
+    burndown","data":{"rows":"1","columns":"6","autorefresh":"0","categories":"","date_field":"scheduled_start_date","date_type":"yesterday"},"key":"dashlet.topic.topics_burndown","who":"root","html":"","text":"Yesterday''s
+    topics burndown","expanded":false,"leaf":true},"children":[]},{"attributes":{"icon":"/static/images/silk/chart_line.png","palette":false,"disabled":false,"ts":"2015-05-08T03:59:44","active":1,"name":"Topics
+    burndown","data":{"rows":"1","columns":"6","autorefresh":"0","categories":"","date_field":"scheduled_start_date","date_type":"today"},"key":"dashlet.topic.topics_burndown","who":"root","html":"","text":"Today''s
+    topics burndown","expanded":false,"leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/silk/chart_pie.png","disabled":false,"ts":"2015-05-07T14:45:07","name":"Topic
+    Category pie","active":1,"data":{"group_threshold":"5","categories":"","rows":"1","autorefresh":"0","columns":"4","type":"pie","not_in_status":"on","statuses":["9","2","34"],"condition":""},"key":"dashlet.topic.category_pie","html":"","who":"root","text":"Open
+    topics by category","expanded":false,"leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/report_default.png","isTarget":false,"html":"","text":"Open
+    topics","key":"dashlet.topic.list_topics","leaf":true,"name":"List topics","data":{"rows":"1","columns":"8","autorefresh":"0","statuses":"","categories":"","assigned_to":"","condition":"{\"category_status.type\":{\"$nin\":[\"F\",\"FC\"]}}","fields":""},"ts":"2015-05-08T03:56:48","who":"root","expanded":false},"children":[]}]'
+  rule_type: dashboard
+- rule_active: '1'
+  rule_desc: ''
+  rule_event: ~
+  rule_name: Default dashboard
+  rule_tree: '[{"attributes":{"icon":"/static/images/silk/chart_pie.png","palette":false,"disabled":false,"ts":"2015-05-08T02:58:25","active":1,"name":"Topic
+    Status pie chart","data":{"group_threshold":"5","categories":"","rows":"1","autorefresh":"0","columns":"4","type":"pie","statuses":"","condition":"{\"category_status.type\":{\"$nin\":[\"F\",\"FC\"]}}"},"key":"dashlet.topic.status_pie","who":"root","html":"","text":"Topics
+    by status","expanded":false,"leaf":true},"children":[]},{"attributes":{"icon":"/static/images/icons/report_default.png","palette":false,"disabled":false,"ts":"2015-05-08T03:00:07","active":1,"name":"List
+    topics","data":{"categories":"","rows":"1","autorefresh":"0","fields":"title;assignee;name_status;projects,Projects","columns":"8","assigned_to":"Any","statuses":"","condition":"{\"category_status.type\":{\"$nin\":[\"F\",\"FC\"]}}"},"key":"dashlet.topic.list_topics","who":"root","html":"","text":"All
+    open topics","expanded":false,"leaf":true},"children":[]},{"attributes":{"palette":false,"icon":"/static/images/icons/report_default.png","disabled":false,"key":"dashlet.topic.list_topics","who":"root","html":"","timeout":"","text":"My
+    open topics","expanded":false,"semaphore_key":"","leaf":true,"ts":"2015-05-08T02:45:30","trap_timeout_action":"abort","parallel_mode":"none","name":"List
+    topics","active":1,"trap_rollback":true,"data":{"categories":"","rows":"1","fields":"","autorefresh":"0","columns":"8","assigned_to":"Actual","not_in_status":"on","statuses":"","condition":"{\"category_status.type\":{\"$nin\":[\"F\",\"FC\"]}}"},"error_trap":"none","note":"","needs_rollback_mode":"none","run_rollback":true,"data_key":"","trap_timeout":"0","run_forward":true},"children":[]},{"attributes":{"icon":"/static/images/silk/chart_pie.png","palette":false,"disabled":false,"ts":"2015-05-08T02:58:57","active":1,"name":"Topic
+    Category pie chart","data":{"group_threshold":"5","categories":"","rows":"1","autorefresh":"0","columns":"4","type":"pie","statuses":"","condition":"{\"category_status.type\":{\"$nin\":[\"F\",\"FC\"]}}"},"key":"dashlet.topic.category_pie","who":"root","html":"","text":"Topics
+    by category","expanded":false,"leaf":true},"children":[]}]'
+  rule_type: dashboard

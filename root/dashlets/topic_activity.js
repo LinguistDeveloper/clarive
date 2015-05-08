@@ -12,7 +12,7 @@ my $iid = Util->_md5;
     var condition = params.data.condition || '';
     var rows = params.data.rows;
     var column_list = params.data.fields || '';
-    var names = { name: 'ID', title: 'Title', assignee: 'Assignee', name_status: 'Status', created_by: 'Created By', created_on: 'Created On', modified_by: 'Modified By', modified_on: 'Modified On' };
+    var names = { name: 'ID', title: 'Title', name_status: 'Status', created_by: 'Created By', created_on: 'Created On', modified_by: 'Modified By', modified_on: 'Modified On' };
     var columns = [{name:'name'}, {name:'title'}, {name:'name_status'}, {name:'created_by'}, {name:'created_on'}];//, {name:'modified_by'}, {name:'modified_on'}];
 
     if ( column_list ) {
@@ -36,7 +36,7 @@ my $iid = Util->_md5;
        })
     }
 
-    Cla.ajax_json('/dashboard/list_topics', { assigned_to: assigned_to, condition: condition, not_in_status: not_in_status, categories: categories, statuses: statuses }, function(res){
+    Cla.ajax_json('/dashboard/topic_activity', { assigned_to: assigned_to, condition: condition, not_in_status: not_in_status, categories: categories, statuses: statuses }, function(res){
         var html = '<style>#boot .pagination a {line-height: 22px;} #boot .table td {padding: 3px} #boot .table th {padding: 3px}  #boot select {width: 60px;  height: 20px;line-height: 20px;} #boot input {width: 100px;height: 20px;padding:0px} #boot .pagination a {float: left;padding: 0 5px;}</style>';
         var div = document.getElementById(id);
         html = html + '<table class="table display nowrap stripe order-column compact" style="width: 100%" id="<% $iid %>"><thead><tr>';
@@ -56,22 +56,20 @@ my $iid = Util->_md5;
               html = html +'</span>';
             } else if ( col.name == 'title' ) {
               var title = topic.title;
-              html = html + '<span title="'+title+'">'+title.substring(0,20)+'</span>'
+              html = html + '<span title="'+title+'">'+title.substring(0,15)+'</span>'
             } else if ( col.name == 'projects' ) {
-                var proj_names = new Array();
-                Ext.each(topic.projects, function(proj){
-                  var tokens = proj.split(';');
+              console.log(topic.projects);
+              var projects = topic.projects.split(';');
+              var proj_names = new Array();
+              Ext.each(projects, function(proj){
+                  var tokens = proj.split(',');
                   proj_names.push(tokens[1]);
                 }
               )
-              if ( proj_names.length > 1 ) {
-                html = html + '<li>' +  proj_names.join('</li><li>') + '</li>';
-              } else {
-                html = html + proj_names.join('');
-              }
+              html = html + proj_names.join(',');
             } else {
               if ( !col.type || col.type == 'text') {
-                html = html + (topic[col.name] || '');
+                html = html + topic[col.name];
               } else if ( col.type == 'ci') {
                 if ( topic[col.name] ) {
                     var value_list = [];
