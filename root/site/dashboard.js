@@ -1,6 +1,6 @@
 Cla.Dashboard = Ext.extend( Ext.Panel, {
     title : _('Dashboard'),
-    closable: false, 
+    closable: true,
     cls: 'tab-style',
     style: 'background-color: #FFF;',
     tab_icon: '/static/images/icons/dashboard.png',

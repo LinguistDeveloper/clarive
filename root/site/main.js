@@ -148,8 +148,11 @@ Ext.onReady(function(){
     } 
 
     if( Prefs.site.show_dashboard ) {
-        // tabs.push({title:_('Dashboard'), closable: false, autoLoad: {url:'/site/dashboard.html', scripts: true}, cls: 'tab-style', tab_icon: '/static/images/icons/dashboard.png' });
-        tabs.push( new Cla.Dashboard({}) );
+        //tabs.push({xtype:'panel',title:_('Dashboard'), closable: false, autoLoad: {url:'/site/dashboard.html', scripts: true}, cls: 'tab-style', tab_icon: '/static/images/icons/dashboard.png' });
+        //var dash = new Ext.Panel({ title:_('Dashboard'), closable: false, autoLoad: {url:'/site/dashboard.html', scripts: true}, cls: 'tab-style', tab_icon: '/static/images/icons/dashboard.png'  }); // new Cla.Dashboard({});
+        //dash.closable = false; 
+        tabs.push( new Cla.Dashboard({ closable: false }) );
+
     }
 
     var menuTab = new Ext.ux.TabCloseMenu({
@@ -160,10 +163,15 @@ Ext.onReady(function(){
 
 
     var tab_panel = new Ext.TabPanel({  region: 'center', id:'main-panel',
-            defaults: { closable: true, autoScroll: true }, 
-            plugins: [menuTab],
+            defaults: { autoScroll: true }, 
+            //plugins: [menuTab],
             enableTabScroll: true,
             layoutOnTabChange: true,
+            listeners:{
+                beforeadd: function(tabp,panel){
+                    if( panel.closable === undefined ) panel.closable = true; 
+                }
+            },
             activeTab: 0, 
             items: tabs
     });
