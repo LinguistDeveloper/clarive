@@ -894,7 +894,7 @@
         else if( status=='READY' ) icon='waiting.png';
         else if( status=='APPROVAL' ) icon='user_delete.gif';
         else if( status=='FINISHED' && rollback!=1 ) { icon='log_i.png'; bold=true; }
-        else if( status=='IN-EDIT' ) icon='log_w.gif';
+        else if( status=='IN-EDIT' ) icon='log_w.png';
         else if( status=='WAITING' ) icon='waiting.png';
         else if( status=='PAUSED' ) icon='paused.png';
         else if( status=='TRAPPED' ) icon='paused.png';
@@ -906,7 +906,7 @@
         // Rollback?
         if( status == 'FINISHED' && rollback == 1 )  {
             value += ' (' + _('Rollback OK') + ')';
-            icon = 'log_e.png';
+            icon = 'log_i.png';
         } 
         else if( status == 'ERROR' && rollback == 1 )  {
             value += ' (' + _('Rollback Failed') + ')';
@@ -929,7 +929,7 @@
         }
         if( icon!=undefined ) {
             var err_warn = ''; // rec.data.has_errors > 0 ? _('(errors: %1)', rec.data.has_errors) : '';
-            err_warn += rec.data.has_warnings > 0 ? '<img src="/static/images/icons/log_w.gif" />' : '';
+            err_warn += rec.data.has_warnings > 0 ? '<img src="/static/images/icons/log_w.png" />' : '';
             return div1 
                 + "<table><tr><td><img alt='"+status+"' border=0 src='/static/images/icons/"+icon+"' /></td>"
                 + '<td>' + value + '</td><td>'+err_warn+'</td></tr></table>' + div2 ;

@@ -19,7 +19,7 @@ register 'service.topic.create' => {
     name => 'Create a new topic',
     handler => \&create,
     job_service  => 1,
-    icon => '/static/images/icons/folder_new.gif',
+    icon => '/static/images/icons/add.gif',
     form => '/forms/topic_create.js' 
 };
 
@@ -27,7 +27,7 @@ register 'service.topic.update' => {
     name => 'Update topic data',
     handler => \&update,
     job_service  => 1,
-    icon => '/static/images/icons/folder_edit.png',
+    icon => '/static/images/icons/edit.gif',
     form => '/forms/topic_update.js' 
 };
 

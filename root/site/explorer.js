@@ -621,7 +621,7 @@ Baseliner.Explorer = Ext.extend( Ext.Panel, {
 
         var button_search_folders = new Ext.Button({
             cls: 'x-btn-icon',
-            icon: '/static/images/icons/search_grey.png',
+            icon: '/static/images/icons/report.png',
             handler: function(){
                 this.disable();
                 var that = this;

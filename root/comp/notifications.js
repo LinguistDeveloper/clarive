@@ -1336,7 +1336,7 @@
     var show_active = function(value,metadata,rec,rowIndex,colIndex,store) {
 		var img =
 			value == '1' ? 'drop-yes.gif' : 'close-small.gif';
-			return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/"+img+"' />" ;
+			return "<img alt='"+value+"' border=0 style='vertical-align: top; margin: 0 0 10 2;' src='/static/images/icons/"+img+"' />" ;
     };
 	
     var show_action = function(value,metadata,rec,rowIndex,colIndex,store) {

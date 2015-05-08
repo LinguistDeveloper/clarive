@@ -217,7 +217,7 @@ Ext.override(Ext.form.HtmlEditor, {
                 }),
                 new Ext.Toolbar.Button({
                     text: _('View'),
-                    icon:'/static/images/drop-yes.gif',
+                    icon:'/static/images/icons/drop-view.gif',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();
@@ -235,7 +235,7 @@ Ext.override(Ext.form.HtmlEditor, {
                 }),
                 new Ext.Toolbar.Button({
                     text: _('Delete'),
-                    icon:'/static/images/del.gif',
+                    icon:'/static/images/icons/delete.gif',
                     cls: 'x-btn-text-icon',
                     handler: function() {
                         var sm = grid.getSelectionModel();

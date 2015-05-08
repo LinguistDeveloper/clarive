@@ -300,17 +300,19 @@
         else if( status=='READY' ) icon='waiting.png';
         else if( status=='APPROVAL' ) icon='verify.gif';
         else if( status=='FINISHED' && rollback!=1 ) { icon='log_i.png'; bold=true; }
-        else if( status=='IN-EDIT' ) icon='log_w.gif';
+        else if( status=='IN-EDIT' ) icon='log_w.png';
+        else if( status=='CANCELLED' ) icon='close.png';
         else { icon='log_e.png'; bold=true; }
         var value = (bold?'<b><% _loc($resumen->{status}) %></b>':'<% _loc($resumen->{status}) %>');
 
         // Rollback?
         if( status == 'FINISHED' && rollback == 1 )  {
             value = ' <% _loc("Rollback OK") %>';
-            icon = 'log_e.png';
+            icon = 'log_i.png';
         }
         else if( status == 'ERROR' && rollback == 1 )  {
             value = ' <% _loc("Rollback Failed") %>';
+             icon = 'log_e.png';
         }
         //else if( type == 'demote' || type == 'rollback' ) value += ' ' + _('(Rollback)');
 	    if( status == 'APPROVAL' ) { // add a link to the approval main

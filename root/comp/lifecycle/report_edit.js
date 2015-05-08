@@ -569,7 +569,7 @@
         tree_all.getLoader().load( tree_all.root );
         tree_all.root.expand();
     }});
-    var btn_clean_all = new Ext.Button({ text: _('Clear'), icon:'/static/images/icons/asterisk_orange.png', handler: function(){ 
+    var btn_clean_all = new Ext.Button({ text: _('Clear'), icon:'/static/images/icons/wipe_cache.png', handler: function(){ 
         var n;
         while (n = tree_selected.root.childNodes[0])
             tree_selected.root.removeChild(n);

@@ -283,7 +283,7 @@
         var icon;
         if( value=='debug' ) icon='log_d.gif';
         else if( value=='info' ) icon='log_i.png';
-        else if( value=='warning' || value=='warn' ) icon='log_w.gif';
+        else if( value=='warning' || value=='warn' ) icon='log_w.png';
         else if( value=='error' ) icon='log_e.png';
         else if( value=='comment' ) icon='post.gif';
         if( icon!=undefined ) {

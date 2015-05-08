@@ -78,7 +78,7 @@ sub report_list {
                 data => [],
                 menu => [
                     {   text=> _loc('New search') . '...',
-                        icon=> '/static/images/icons/report.png',
+                        icon=> '/static/images/icons/search_grey.png',
                         eval=> { handler=> 'Baseliner.new_search'},
                     } 
                 ],
@@ -252,12 +252,12 @@ sub my_searches {
                 menu    => [
                     {
                         text   => _loc('Edit') . '...',
-                        icon   => '/static/images/icons/report.png',                        
+                        icon   => '/static/images/icons/edit.gif',                        
                         eval   => { handler => 'Baseliner.edit_search' }
                     },
                     {
                         text   => _loc('Delete') . '...',
-                        icon   => '/static/images/icons/folder_delete.gif',
+                        icon   => '/static/images/icons/delete.gif',
                         eval   => { handler => 'Baseliner.delete_search' }
                     }                    
                 ],

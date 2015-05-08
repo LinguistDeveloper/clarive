@@ -52,8 +52,8 @@
     };
     
     var render_status = function(value,metadata,rec,rowIndex,colIndex,store) {
-        var icon = value == 'ok' ? '/static/images/yes.png' :
-                   value == 'ko' ? '/static/images/icons/delete.gif' :
+        var icon = value == 'ok' ? '/static/images/icons/log_i.png' :
+                   value == 'ko' ? '/static/images/icons/log_e.png' :
                    value == 'new' ? '/static/images/icons/hourglass.png' : 
                    '/static/images/unknown.gif' ;
 
