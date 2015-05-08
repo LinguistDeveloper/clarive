@@ -17,7 +17,7 @@
                     x: 'x',
                     columns: res.data,
                     types: {
-                      Topics: 'area-spline',
+                      Topics: 'area',
                       Trend: 'line'
                     }
                 },
