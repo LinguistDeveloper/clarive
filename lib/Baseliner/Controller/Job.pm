@@ -722,7 +722,7 @@ sub burndown_new : Local {
 
         my $now = Class::Date->new($date);
         my $yesterday = substr($now - $period, 0, 10);
-        my $where = { $_->{bl} && starttime => { '$gt' => $yesterday } };
+        my $where = { starttime => { '$gt' => $yesterday } };
 
         my @all_bls = map {$_->{name} } grep { $_->{bl} ne '*'} ci->bl->find()->all;
         if ( _array($bls) ) {
@@ -750,6 +750,7 @@ sub burndown_new : Local {
 
         while ( my $job = $jobs->next() ) {
             next if !$job->{endtime};
+            next if !$job->{bl};
             my $start = Class::Date->new($job->{starttime});
             my $end = Class::Date->new($job->{endtime});
             my $rel = $end - $start;
