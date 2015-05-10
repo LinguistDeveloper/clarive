@@ -68,6 +68,76 @@ register 'dashlet.iframe' => {
     js_file => '/dashlets/iframe.js'
 };
 
+sub list_jobs : Local {
+    my ( $self, $c, $dashboard_id ) = @_;
+    my $username = $c->username;
+    my @datas;
+    my $SQL;
+
+    #Cogemos los proyectos que el usuario tiene permiso para ver jobs
+    my @ids_project = $c->model( 'Permissions' )->user_projects_ids(
+        username => $c->username
+    );
+    
+    if ( @ids_project ) {
+
+        my %jobs = map { $_->{mid} => $_ } ci->job->find
+             ->fields({ mid=>1, starttime=>1, endtime=>1, projects=>1, bl=>1, status=>1, jobid=>1 })->all; #{ endtime=>{ '$gt'=>'2013-11-31 00:00' } })->all;
+        my %projects = map { $_->{mid} => $_ } ci->project->find({ mid=>mdb->in(@ids_project) })->all;
+        my %rep;
+        my $now = _ts();
+        # for all jobs
+        for my $job ( values %jobs ) {
+            my $bl = $job->{bl};
+            my $endt = Class::Date->new($job->{endtime});
+            my $days = int( ($now - $endt)->day );
+            my $status = $job->{status};
+            my $type = $status =~ /ERROR|KILLED/ ? 'err' 
+                : $status=~/CANCELLED|APPROVAL|PAUSED|REJECTED/ ? next : 'ok';
+            # for project in job
+            for my $prj ( _array( $job->{projects} ) ) {
+                my $name = $projects{$prj}->{name};
+                next unless $name;
+                my $r = $rep{ $name }{$bl} //= {};
+                # last error by type
+                if( !defined $r->{"last_$type"} || $days < $r->{"last_$type"} ) {
+                    $r->{"last_$type"} = $days;
+                    $r->{"id_$type"} = $job->{jobid};
+                    $r->{"mid_$type"} = $job->{mid};
+                    $r->{"name_$type"} = $job->{name};
+                    $r->{status} = $status;
+                }
+                # last durantion and top mid
+                if( !defined $r->{top_mid} || $job->{mid} > $r->{top_mid} ) {  
+                    my $secs = ($endt-Class::Date->new($job->{starttime}))->second;
+                    $r->{last_duration} = sprintf '%dm%ds', int($secs/60), ($secs % 60);
+                    $r->{top_mid} = $job->{mid};
+                }
+            }
+        }
+        
+        # now create something we can send to the template
+        @datas = sort {
+            #$a->{project}.'#'.$a->{bl} cmp $b->{project}.'#'.$b->{bl}; 
+            $b->{top_mid} <=> $a->{top_mid}
+        } map {
+            my $prj = $_;
+            my $bls = $rep{$prj};
+            my @rows;
+            for my $bl ( keys $bls ) {
+                my $r = $bls->{$bl};
+                push @rows, { project=>$prj, bl=>$bl, %$r };
+            }
+            @rows;
+        } keys %rep;
+        
+    } ## end if ( @ids_project )
+
+    $c->stash->{json} = { data=>\@datas };
+    $c->forward( 'View::JSON' );
+
+} 
+
 sub init : Local {
     my ($self,$c) = @_;
     my $p = $c->req->params;
@@ -1656,95 +1726,6 @@ sub list_my_topics: Private{
     my ($info, @rows) = $c->model('Topic')->topics_for_user( $p );
     $c->stash->{my_topics} = \@rows ;
 }
-
-sub list_jobs : Private {
-    my ( $self, $c, $dashboard_id ) = @_;
-    my $username = $c->username;
-    my @datas;
-    my $SQL;
-
-    #Cogemos los proyectos que el usuario tiene permiso para ver jobs
-    my @ids_project = $c->model( 'Permissions' )->user_projects_ids(
-        username => $c->username
-    );
-    
-    if ( @ids_project ) {
-
-        #CONFIGURATION DASHLET
-        ##########################################################################################################
-        my $default_config = Baseliner->model( 'ConfigStore' )->get( 'config.dashlet.jobs' );
-
-        if ( $dashboard_id && looks_like_number( $dashboard_id ) ) {
-            my $dashboard_rs = mdb->dashboard->find({_id => mdb->oid($dashboard_id)});
-            my @config_dashlet =
-                grep { $_->{url} =~ 'list_jobs' } _array  $dashboard_rs->{dashlets} ;
-
-            if ( $config_dashlet[ 0 ]->{params} ) {
-                foreach my $key ( keys %{$config_dashlet[ 0 ]->{params} || {}} ) {
-                    $default_config->{$key} = $config_dashlet[ 0 ]->{params}->{$key};
-                }
-            }
-        } ## end if ( $dashboard_id && ...)
-        ##########################################################################################################
-
-        my $rows = $default_config->{rows};
-        
-        my %jobs = map { $_->{mid} => $_ } ci->job->find
-             ->fields({ mid=>1, starttime=>1, endtime=>1, projects=>1, bl=>1, status=>1, jobid=>1 })->all; #{ endtime=>{ '$gt'=>'2013-11-31 00:00' } })->all;
-        my %projects = map { $_->{mid} => $_ } ci->project->find({ mid=>mdb->in(@ids_project) })->all;
-        my %rep;
-        my $now = _ts();
-        # for all jobs
-        for my $job ( values %jobs ) {
-            my $bl = $job->{bl};
-            my $endt = Class::Date->new($job->{endtime});
-            my $days = int( ($now - $endt)->day );
-            my $status = $job->{status};
-            my $type = $status =~ /ERROR|KILLED/ ? 'err' 
-                : $status=~/CANCELLED|APPROVAL|PAUSED|REJECTED/ ? next : 'ok';
-            # for project in job
-            for my $prj ( _array( $job->{projects} ) ) {
-                my $name = $projects{$prj}->{name};
-                next unless $name;
-                my $r = $rep{ $name }{$bl} //= {};
-                # last error by type
-                if( !defined $r->{"last_$type"} || $days < $r->{"last_$type"} ) {
-                    $r->{"last_$type"} = $days;
-                    $r->{"id_$type"} = $job->{jobid};
-                    $r->{"mid_$type"} = $job->{mid};
-                    $r->{"name_$type"} = $job->{name};
-                    $r->{status} = $status;
-                }
-                # last durantion and top mid
-                if( !defined $r->{top_mid} || $job->{mid} > $r->{top_mid} ) {  
-                    my $secs = ($endt-Class::Date->new($job->{starttime}))->second;
-                    $r->{last_duration} = sprintf '%dm%ds', int($secs/60), ($secs % 60);
-                    $r->{top_mid} = $job->{mid};
-                }
-            }
-        }
-        
-        # now create something we can send to the template
-        @datas = sort {
-            #$a->{project}.'#'.$a->{bl} cmp $b->{project}.'#'.$b->{bl}; 
-            $b->{top_mid} <=> $a->{top_mid}
-        } map {
-            my $prj = $_;
-            my $bls = $rep{$prj};
-            my @rows;
-            for my $bl ( keys $bls ) {
-                my $r = $bls->{$bl};
-                push @rows, { project=>$prj, bl=>$bl, %$r };
-            }
-            @rows;
-        } keys %rep;
-        
-        @datas = @datas[0..$rows] if $rows < @datas;  # cut to top rows per config
-
-    } ## end if ( @ids_project )
-    $c->stash->{jobs} = \@datas;
-} 
-
 
 sub viewjobs : Local {
     my ( $self, $c, $dashboard_id, $projects, $type, $bl ) = @_;

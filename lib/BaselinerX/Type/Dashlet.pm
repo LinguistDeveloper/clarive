@@ -19,7 +19,7 @@ has dsl            => ( is => 'rw', isa => 'CodeRef', default=>sub{
 	    sprintf(q{
             my $config = parse_vars %s, $stash;
 	        push @{ $stash->{dashlets} }, $config; 
-	    }, Data::Dumper::Dumper({ key=>$n->{key}, html=>$n->{html}, title=>$n->{text}, name=>$n->{name}, data=>$n->{data} }));
+	    }, Data::Dumper::Dumper({ id=>$n->{id}, key=>$n->{key}, html=>$n->{html}, title=>$n->{text}, name=>$n->{name}, data=>$n->{data} }));
 	};
 });
 

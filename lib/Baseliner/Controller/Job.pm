@@ -716,6 +716,7 @@ sub burndown_new : Local {
     my $date = $p->{date} // "".Class::Date->now;
     my $period = $p->{period} // '1D';
     my $bls = $p->{bls};
+    my $joined = $p->{joined} // '1';
     
     try {
 
@@ -764,7 +765,6 @@ sub burndown_new : Local {
                 }
             }
         }
-        _warn \%matrix;
 
         my @data = (' Last '.$period.' ');
         for (@hours) {
@@ -776,7 +776,13 @@ sub burndown_new : Local {
         for (keys %matrix) {
             push @last_matrix, $matrix{$_};
         };
-        $c->stash->{json} = { success => \1, data=>\@last_matrix, group=>\@all_bls };
+        my $last_data = [];
+        if ( !$joined ) {
+            $last_data = \@last_matrix;
+        } else {
+            $last_data = [\@data,\@hours];
+        }
+        $c->stash->{json} = { success => \1, data=>$last_data, group=>\@all_bls };
     } catch {
         my $err = shift;
         $c->stash->{json} = { success => \0, msg => _loc("Error grouping jobs: %1", $err ) };

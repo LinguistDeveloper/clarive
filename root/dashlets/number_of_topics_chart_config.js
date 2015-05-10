@@ -17,7 +17,7 @@
             xtype: 'radiogroup',
             name: 'type',
             anchor:'50%',
-            fieldLabel: _('Type'),
+            fieldLabel: _('Chart will be shown as ...'),
             defaults: {xtype: "radio",name: "type"},
             items: [
                 {boxLabel: _('Donut'), inputValue: 'donut', checked: data.type  == 'donut'},

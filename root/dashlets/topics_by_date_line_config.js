@@ -21,7 +21,7 @@
             ['year', _('Year')]
           ] 
         }),
-        new Baseliner.ComboDouble({ fieldLabel: _('Chart type'), name:'type', value: data.type || 'area', data: [
+        new Baseliner.ComboDouble({ fieldLabel: _('Chart will be shown as ...'), name:'type', value: data.type || 'area', data: [
             ['area', _('Area')],
             ['stack-area', _('Stacked area')],
             ['stack-area-step', _('Area step')],

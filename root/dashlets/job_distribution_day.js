@@ -3,6 +3,7 @@
 
     var graph_jobs_burndown_day;
     var graph_type = params.data.type || 'area';
+    var joined = params.data.joined || '0';
     var stacked = false;
     if ( graph_type.startsWith('stack-') ) {
         graph_type = graph_type.replace('stack-','');
@@ -11,7 +12,7 @@
     var period = params.data.period || '1Y';
     var bls = params.data.bls;
 
-    Cla.ajax_json('/job/burndown_new', { bls: bls, period: period }, function(res){
+    Cla.ajax_json('/job/burndown_new', { joined: joined, bls: bls, period: period }, function(res){
         var groups = new Array();
         if ( stacked ) {
             groups = [res.group];
