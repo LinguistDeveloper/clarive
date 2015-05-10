@@ -14,7 +14,6 @@
 
     Cla.ajax_json('/job/burndown_new', { joined: joined, bls: bls, period: period }, function(res){
         var groups = new Array();
-        console.dir(res);
         if ( stacked ) {
             groups = [res.group];
         }else{
