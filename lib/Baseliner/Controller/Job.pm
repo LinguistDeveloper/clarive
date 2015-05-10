@@ -752,19 +752,26 @@ sub burndown_new : Local {
             next if !$job->{endtime};
             my $start = Class::Date->new($job->{starttime});
             my $end = Class::Date->new($job->{endtime});
-            _warn "Job: ".$job->{name}." ".$job->{bl}."*";
-            for ( @hours ) {
-                # _warn "Start: ".$start->hour.", End: ".$end->hour;
-                if ( $start->hour <= $_ && $end->hour >= $_ ) {
-                    $job_stats{$_}++;
-                    $matrix{$job->{bl}}[$_+1]++;
-                } else {
-                    if ( $end->hour < $start->hour && $_ <= $end->hour) {
-                        $job_stats{$_}++;
-                        $matrix{$job->{bl}}[$_+1]++;
-                    }
-                }
+            my $hour = $end - $start;
+
+            for ( my $i = 0; $i <= $hour; $i++ ) {
+                my $hour_otd = ($start->hour + $i) % 24;
+                $job_stats{$hour_otd}++;
+                $matrix{$job->{bl}}[$hour_otd+1]++;
             }
+
+            # for ( @hours ) {
+            #     if ( $start->hour <= $_ && $end->hour >= $_ ) {
+            #         $job_stats{$_}++;
+            #         $matrix{$job->{bl}}[$_+1]++;
+            #     } else {
+            #         if ( $end->hour < $start->hour && $_ <= $end->hour) {
+            #             _warn "Job: ".$job->{name}." Start: ".$start->hour.", End: ".$end->hour;
+            #             $job_stats{$_}++;
+            #             $matrix{$job->{bl}}[$_+1]++;
+            #         }
+            #     }
+            # }
         }
 
         my @data = (' Last '.$period.' ');
