@@ -155,24 +155,25 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                     />
                 */};
                 var id_div = Ext.id();
-                if ( rows[cont] + parseInt(dashlet.data.columns) > 12 ){
+                var dashlet_columns = dashlet.data.columns ? parseInt(dashlet.data.columns): 6;
+                if ( rows[cont] + dashlet_columns > 12 ){
                     html +="</tr><tr style='padding:10px;width:100%;'>";
                     if ( !rows[cont+1] ) {
-                        rows.push(parseInt(dashlet.data.columns));
+                        rows.push(dashlet_columns);
                     } else {
-                        rows[cont+1] += parseInt(dashlet.data.columns);
+                        rows[cont+1] += dashlet_columns;
                     }
                     cont++;
                 } else {
-                    rows[cont] = rows[cont] + parseInt(dashlet.data.columns);
+                    rows[cont] = rows[cont] + dashlet_columns;
                 }
 
                 if ( parseInt(dashlet.data.rows) > 1 ) {
                     for (var i = 1; i < parseInt(dashlet.data.rows); i++) {
                         if ( !rows[cont+i] ) {
-                            rows.push(parseInt(dashlet.data.columns));
+                            rows.push(dashlet_columns);
                         } else {
-                            rows[cont+i] += parseInt(dashlet.data.columns);
+                            rows[cont+i] += dashlet_columns;
                         }
                     };
                 }
