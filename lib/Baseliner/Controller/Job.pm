@@ -750,7 +750,7 @@ sub burndown_new : Local {
 
         while ( my $job = $jobs->next() ) {
             next if !$job->{endtime};
-            next if !$job->{bl};
+            next if !$job->{bl} || $job->{bl} eq 'null';
             my $start = Class::Date->new($job->{starttime});
             my $end = Class::Date->new($job->{endtime});
             my $rel = $end - $start;
