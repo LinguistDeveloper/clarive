@@ -715,18 +715,37 @@ sub burndown_new : Local {
 
     my $date = $p->{date} // "".Class::Date->now;
     my $period = $p->{period} // '1D';
+    my $bls = $p->{bls};
     
     try {
 
         my $now = Class::Date->new($date);
         my $yesterday = substr($now - $period, 0, 10);
+        my $where = { starttime => { '$gt' => $yesterday } };
 
-        my $jobs = ci->job->find( { starttime => { '$gt' => $yesterday } } );
+        my @all_bls = map {$_->{name} } ci->bl->find()->all;
+        if ( _array($bls) ) {
+            @all_bls = map {$_->{name}} ci->bl->find({mid=>mdb->in(_array($bls))})->all;
+            $where->{bl} = mdb->in(@all_bls);
+            _warn $bls;
+        }
+        my $jobs = ci->job->find( $where );
 
         my %job_stats;
         my @hours = ('x');
         
-        map { $job_stats{$_} = 0; push @hours, ($_)} 0 .. 23;
+        
+        my %matrix = ();
+
+        map { push @hours,"$_" } 0 .. 23;
+        $matrix{'x'} = \@hours;
+
+        for my $bl ( @all_bls ) {
+            my @bl_data = ($bl);
+            map { push @bl_data,0 } 0 .. 23;
+            $matrix{$bl} = \@bl_data;
+        }
+
 
         while ( my $job = $jobs->next() ) {
             next if !$job->{endtime};
@@ -736,20 +755,28 @@ sub burndown_new : Local {
                 # _warn "Start: ".$start->hour.", End: ".$end->hour;
                 if ( $start->hour <= $_ && $end->hour >= $_ ) {
                     $job_stats{$_}++;
+                    $matrix{$job->{bl}}[$_+1]++;
                 } else {
                     if ( $end->hour < $start->hour && $_ <= $end->hour) {
                         $job_stats{$_}++;
+                        $matrix{$job->{bl}}[$_+1]++;
                     }
                 }
             }
         }
+        _warn \%matrix;
 
-        my @data = ('last '.$period);
+        my @data = (' Last '.$period.' ');
         for (@hours) {
             next if $_ eq 'x';
             push @data, $job_stats{$_};
         }
-        $c->stash->{json} = { success => \1, data=>[\@hours,\@data] };
+        my @last_matrix;
+
+        for (keys %matrix) {
+            push @last_matrix, $matrix{$_};
+        };
+        $c->stash->{json} = { success => \1, data=>\@last_matrix, group=>\@all_bls };
     } catch {
         my $err = shift;
         $c->stash->{json} = { success => \0, msg => _loc("Error grouping jobs: %1", $err ) };

@@ -26,25 +26,18 @@ register 'dashlet.job.status_pie' => {
     js_file => '/dashlets/job_status_pie.js'
 };
 
-register 'dashlet.topic.status_pie' => {
-    form=> '/dashlets/topic_status_pie_config.js',
-    name=> 'Topic Status pie chart', 
-    icon=> '/static/images/silk/chart_pie.png',
-    js_file => '/dashlets/topic_status_pie.js'
+register 'dashlet.job.day_distribution' => {
+    form=> '/dashlets/job_distribution_day_config.js',
+    name=> 'Job daily distribution', 
+    icon=> '/static/images/silk/chart_line.png',
+    js_file => '/dashlets/job_distribution_day.js'
 };
 
-register 'dashlet.topic.status_bar' => {
-    form=> '/dashlets/topic_status_bar_config.js',
-    name=> 'Topic Status bar chart', 
-    icon=> '/static/images/silk/chart_bar.png',
-    js_file => '/dashlets/topic_status_bar.js'
-};
-
-register 'dashlet.topic.category_pie' => {
-    form=> '/dashlets/topic_category_pie_config.js',
-    name=> 'Topic Category pie chart', 
+register 'dashlet.topic.number_of_topics' => {
+    form=> '/dashlets/number_of_topics_chart_config.js',
+    name=> 'Topics chart', 
     icon=> '/static/images/silk/chart_pie.png',
-    js_file => '/dashlets/topic_category_pie.js'
+    js_file => '/dashlets/number_of_topics_chart.js'
 };
 
 register 'dashlet.topic.list_topics' => {
@@ -56,7 +49,7 @@ register 'dashlet.topic.list_topics' => {
 
 register 'dashlet.topic.topics_by_date_line' => {
     form=> '/dashlets/topics_by_date_line_config.js',
-    name=> 'Topics by date line chart', 
+    name=> 'Topics time line', 
     icon=> '/static/images/silk/chart_curve.png',
     js_file => '/dashlets/topics_by_date_line.js'
 };
@@ -82,13 +75,12 @@ sub init : Local {
     # run the dashboard rule
     # TODO find default
     my $id_rule = $p->{dashboard_id};
-    my @all_rules;
 
     # find a default dashboard
     my ($default_rule, @all_rules) = $self->user_dashboards({ username => $c->username });
 
     if( !$id_rule ) {
-        $id_rule = $default_rule || @all_rules?@all_rules[0]->{id}:'';
+        $id_rule = $default_rule || @all_rules?$all_rules[0]->{id}:'';
         if( !$id_rule ) {
             _warn _loc 'No default rule found for user %1', $c->username;
         }

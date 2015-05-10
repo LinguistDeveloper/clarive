@@ -20,6 +20,15 @@
             ['quarter', _('Quarter')],
             ['year', _('Year')]
           ] 
+        }),
+        new Baseliner.ComboDouble({ fieldLabel: _('Chart type'), name:'type', value: data.type || 'area', data: [
+            ['area', _('Area')],
+            ['stack-area', _('Stacked area')],
+            ['stack-area-step', _('Area step')],
+            ['line', _('Line')],
+            ['bar', _('Bar')], 
+            ['stack-bar', _('Stacked bar')]
+          ] 
         })
     ]);
 })

@@ -21,7 +21,19 @@
             defaults: {xtype: "radio",name: "type"},
             items: [
                 {boxLabel: _('Donut'), inputValue: 'donut', checked: data.type  == 'donut'},
-                {boxLabel: _('Pie'), inputValue: 'pie', checked: data.type == undefined || data.type == 'pie'}
+                {boxLabel: _('Pie'), inputValue: 'pie', checked: data.type == undefined || data.type == 'pie'},
+                {boxLabel: _('Bar'), inputValue: 'bar', checked: data.type == 'bar'}
+            ]
+        },
+        {
+            xtype: 'radiogroup',
+            name: 'group_by',
+            anchor:'50%',
+            fieldLabel: _('Number of topics grouped by ...'),
+            defaults: {xtype: "radio",name: "group_by"},
+            items: [
+                {boxLabel: _('Category'), inputValue: 'topics_by_category', checked: data.group_by  == 'topics_by_category'},
+                {boxLabel: _('Status'), inputValue: 'topics_by_status', checked: data.group_by == undefined || data.group_by == 'topics_by_status'}
             ]
         }
     ]);

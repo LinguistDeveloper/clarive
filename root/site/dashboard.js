@@ -65,7 +65,7 @@ Cla.Dashboard = Ext.extend( Ext.Panel, {
                 if ( "[%= autorefresh %]" != "0" ) {
                     setInterval(function () {
                         var div = document.getElementById("[%= id_div %]");
-                        if ( div.offsetWidth > 0 && div.offsetHeight > 0 ) {
+                        if ( div && div.offsetWidth > 0 && div.offsetHeight > 0 ) {
                             div.innerHTML= "<img src=/static/images/loading.gif />";
                             Cla.ajaxEval("[%= js_file %]", { id_div: "[%= id_div %]", data: [%= data %] }, function(){
                                 var update = document.getElementById("[%= id_div %]_update");
