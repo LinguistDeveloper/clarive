@@ -2,12 +2,12 @@
     var common = Cla.dashlet_common(params);
     var data = params.data;
     return common.concat([
-        new Baseliner.ComboDouble({ fieldLabel: _('Data grouped by'), name:'group', value: data.group, data: [
-            ['day', _('Day')],
-            ['week', _('Week')],
-            ['month', _('Month')],
-            ['quarter', _('Quarter')],
-            ['year', _('Year')]
+        new Baseliner.ComboDouble({ fieldLabel: _('Period to be shown. Last ...'), name:'period', value: data.period, data: [
+            ['1D', _('Day')],
+            ['7D', _('Week')],
+            ['1M', _('Month')],
+            ['3M', _('Quarter')],
+            ['1Y', _('Year')]
           ] 
         }),
         new Baseliner.ComboDouble({ fieldLabel: _('Chart ty'), name:'type', value: data.type || 'area', data: [

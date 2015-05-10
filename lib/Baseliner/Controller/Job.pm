@@ -752,6 +752,7 @@ sub burndown_new : Local {
             next if !$job->{endtime};
             my $start = Class::Date->new($job->{starttime});
             my $end = Class::Date->new($job->{endtime});
+            _warn "Job: ".$job->{name}." ".$job->{bl}."*";
             for ( @hours ) {
                 # _warn "Start: ".$start->hour.", End: ".$end->hour;
                 if ( $start->hour <= $_ && $end->hour >= $_ ) {
