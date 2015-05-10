@@ -8,7 +8,6 @@
     var not_in_status = params.data.not_in_status;
     var condition = params.data.condition || '';
     var group_by = params.data.group_by || 'topics_by_status';
-    alert(group_by);
     var graph_title;
 
     Cla.ajax_json('/dashboard/'+group_by, { condition: condition, not_in_status: not_in_status, group_threshold: group_threshold, categories: categories, statuses: statuses }, function(res){
