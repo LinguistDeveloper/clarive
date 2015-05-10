@@ -757,9 +757,11 @@ sub burndown_new : Local {
             my $hour = int($rel->hour) + 1;
 
             for ( my $i = 0; $i <= $hour; $i++ ) {
-                my $hour_otd = ($start->hour + $i) % 24;
-                $job_stats{$hour_otd}++;
-                $matrix{$job->{bl}}[$hour_otd+1]++;
+                if ( $matrix{$job->{bl}} ) {
+                    my $hour_otd = ($start->hour + $i) % 24;
+                    $job_stats{$hour_otd}++;
+                    $matrix{$job->{bl}}[$hour_otd+1]++;
+                }
             }
         }
 
